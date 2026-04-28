@@ -1,0 +1,27 @@
+.DS_Store
+.superpowers/
+
+# Local ROM dumps and generated ROM builds
+*.gb
+*.gbc
+*.sav
+*.ss*
+
+# Java / Gradle build output
+java/.gradle/
+java/build/
+java/bin/
+*.class
+
+# IDE metadata
+java/.classpath
+java/.project
+java/.settings/
+
+# Generated disassembly artifacts
+LADX-Disassembly/*.sym
+LADX-Disassembly/*.map
+LADX-Disassembly/*.gbc
+LADX-Disassembly/*.o
+LADX-Disassembly/*.1bpp
+LADX-Disassembly/*.2bpp

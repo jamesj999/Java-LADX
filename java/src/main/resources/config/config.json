@@ -1,0 +1,20 @@
+{
+  "showTitleScreen": true,
+  "playIntroStory": true,
+  "debugEnabled": true,
+  "startMode": "CONFIGURED_LOCATION",
+  "startLocation": {
+    "type": "OVERWORLD",
+    "roomId": "0x92"
+  },
+  "itemProfile": "DEBUG_ALL_ITEMS",
+  "controls": {
+    "menuOpenKey": "ENTER",
+    "upKey": "UP",
+    "downKey": "DOWN",
+    "leftKey": "LEFT",
+    "rightKey": "RIGHT",
+    "aKey": "Z",
+    "bKey": "X"
+  }
+}

@@ -1,0 +1,37 @@
+plugins {
+    id 'application'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation "org.lwjgl:lwjgl:3.3.4"
+    implementation "org.lwjgl:lwjgl-glfw:3.3.4"
+    implementation "org.lwjgl:lwjgl-opengl:3.3.4"
+    testImplementation platform("org.junit:junit-bom:5.10.2")
+    testImplementation "org.junit.jupiter:junit-jupiter"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+    
+    runtimeOnly "org.lwjgl:lwjgl:3.3.4:natives-macos-arm64"
+    runtimeOnly "org.lwjgl:lwjgl-glfw:3.3.4:natives-macos-arm64"
+    runtimeOnly "org.lwjgl:lwjgl-opengl:3.3.4:natives-macos-arm64"
+}
+
+application {
+    mainClass = 'linksawakening.Main'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+run {
+    jvmArgs '-XstartOnFirstThread'
+}
+
+test {
+    useJUnitPlatform()
+}
