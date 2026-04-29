@@ -27,7 +27,6 @@ public final class RoomTransitionCoordinator {
      */
     public void handleWarpAndIndoorBoundaries(Link link) {
         if (!roomSession.hasActiveRoom()
-            || !roomSession.activeRoom().hasWarps()
             || transitionController.isActive()) {
             return;
         }
@@ -48,11 +47,15 @@ public final class RoomTransitionCoordinator {
             if (boundary.type() == RoomBoundaryDecision.Type.INDOOR_SCROLL) {
                 int previousX = link.pixelX();
                 int previousY = link.pixelY();
-                link.setPixelPosition(boundary.linkTargetX(), boundary.linkTargetY());
+                link.setRoomEntryPixelPosition(boundary.linkTargetX(), boundary.linkTargetY());
                 roomSession.startAdjacentIndoorScroll(scrollController, boundary.direction(), previousX, previousY);
                 suppressedWarpTile = Warp.packTileLocation(boundary.linkTargetX(), boundary.linkTargetY());
                 return;
             }
+        }
+
+        if (!room.hasWarps()) {
+            return;
         }
 
         int linkTile = Warp.packTileLocation(link.pixelX(), link.pixelY());
@@ -86,7 +89,7 @@ public final class RoomTransitionCoordinator {
         RoomBoundaryDecision boundary = boundaryController.decide(
             roomSession.boundaryState(previousX, previousY));
         if (boundary.type() == RoomBoundaryDecision.Type.OVERWORLD_SCROLL) {
-            link.setPixelPosition(boundary.linkTargetX(), boundary.linkTargetY());
+            link.setRoomEntryPixelPosition(boundary.linkTargetX(), boundary.linkTargetY());
             roomSession.startAdjacentOverworldScroll(scrollController, boundary.direction(), previousX, previousY);
         } else if (boundary.type() == RoomBoundaryDecision.Type.CLAMP_LINK) {
             link.setPixelPosition(boundary.linkTargetX(), boundary.linkTargetY());
@@ -97,7 +100,7 @@ public final class RoomTransitionCoordinator {
         roomSession.loadWarpDestination(warp);
         int landingX = warp.javaPixelX();
         int landingY = warp.javaPixelY();
-        link.setPixelPosition(landingX, landingY);
+        link.setRoomEntryPixelPosition(landingX, landingY);
         suppressedWarpTile = Warp.packTileLocation(landingX, landingY);
     }
 }

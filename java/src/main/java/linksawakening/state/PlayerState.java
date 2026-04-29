@@ -30,6 +30,7 @@ public final class PlayerState {
     private int rupees = 0;
     private int maxHearts = 3;
     private int health = 3 * HP_PER_HEART;
+    private int invincibilityCounter;
     private int itemA = INVENTORY_SWORD;
     private int itemB = INVENTORY_EMPTY;
     private final int[] subscreen = new int[SUBSCREEN_SLOT_COUNT];
@@ -66,6 +67,24 @@ public final class PlayerState {
 
     public void setHealth(int value) {
         health = clamp(value, 0, maxHearts * HP_PER_HEART);
+    }
+
+    public void damage(int amount) {
+        setHealth(health - Math.max(0, amount));
+    }
+
+    public int invincibilityCounter() {
+        return invincibilityCounter;
+    }
+
+    public void setInvincibilityCounter(int value) {
+        invincibilityCounter = clamp(value, 0, 0xFF);
+    }
+
+    public void tickInvincibility() {
+        if (invincibilityCounter > 0) {
+            invincibilityCounter--;
+        }
     }
 
     public int itemA() {

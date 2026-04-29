@@ -20,6 +20,12 @@ public final class OverworldCollision {
     private int[] gbcOverlay;
     private int physicsTableIndex = RomTables.PHYSICS_TABLE_OVERWORLD;
 
+    /**
+     * Java top-left sprite position that aligns Link's ROM-style center/bottom
+     * sample point with the pit cell's center/bottom target.
+     */
+    public record PitCell(int targetTopLeftX, int targetTopLeftY, int physicsFlag) {}
+
     public OverworldCollision(RomTables romTables) {
         this.romTables = romTables;
     }
@@ -66,6 +72,15 @@ public final class OverworldCollision {
         return isCellBlocking(cellX, cellY);
     }
 
+    public boolean pointNormalPit(int pixelX, int pixelY) {
+        if (roomObjectsArea == null) {
+            return false;
+        }
+        int cellX = cellCoordinate(pixelX);
+        int cellY = cellCoordinate(pixelY);
+        return isCellNormalPit(cellX, cellY);
+    }
+
     /**
      * Whether Link's current foot cell applies the ROM's slow-ground motion
      * gate. Mirrors {@code GetObjectUnderLink}: hLinkPositionX is the sprite
@@ -76,6 +91,26 @@ public final class OverworldCollision {
         int objectId = objectUnderLinkFeet(linkPixelX, linkPixelY);
         int flag = romTables.objectPhysicsFlag(physicsTableIndex, objectId);
         return PhysicsFlags.slowsWalking(flag);
+    }
+
+    public boolean linkOnNormalPit(int linkPixelX, int linkPixelY) {
+        int objectId = objectUnderLinkFeet(linkPixelX, linkPixelY);
+        int flag = romTables.objectPhysicsFlag(physicsTableIndex, objectId);
+        return PhysicsFlags.isNormalPit(flag);
+    }
+
+    public PitCell normalPitUnderLink(int linkPixelX, int linkPixelY) {
+        int cellX = cellCoordinate(linkPixelX + 8);
+        int cellY = cellCoordinate(linkPixelY + 12);
+        if (cellX < 0 || cellX >= OBJECTS_PER_ROW || cellY < 0 || cellY >= OBJECTS_PER_COLUMN) {
+            return null;
+        }
+        int objectId = objectIdAtCell(cellX, cellY);
+        int flag = romTables.objectPhysicsFlag(physicsTableIndex, objectId);
+        if (!PhysicsFlags.isNormalPit(flag)) {
+            return null;
+        }
+        return new PitCell(cellX * CELL_SIZE, cellY * CELL_SIZE, flag);
     }
 
     public int objectUnderLinkFeet(int linkPixelX, int linkPixelY) {
@@ -115,6 +150,15 @@ public final class OverworldCollision {
         }
 
         return idBlocks(rawId);
+    }
+
+    private boolean isCellNormalPit(int cellX, int cellY) {
+        if (cellX < 0 || cellX >= OBJECTS_PER_ROW || cellY < 0 || cellY >= OBJECTS_PER_COLUMN) {
+            return false;
+        }
+        int objectId = objectIdAtCell(cellX, cellY);
+        int flag = romTables.objectPhysicsFlag(physicsTableIndex, objectId);
+        return PhysicsFlags.isNormalPit(flag);
     }
 
     private int objectIdAtCell(int cellX, int cellY) {

@@ -7,6 +7,7 @@ import linksawakening.entity.Link;
 import linksawakening.entity.LinkSpriteSheet;
 import linksawakening.equipment.EquipmentController;
 import linksawakening.equipment.ItemRegistry;
+import linksawakening.equipment.RocsFeather;
 import linksawakening.equipment.Sword;
 import linksawakening.equipment.SwordSpriteSheet;
 import linksawakening.gpu.GPU;
@@ -191,12 +192,13 @@ public class Main {
             () -> ThreadLocalRandom.current().nextInt(0x100));
         cutLeavesEffectRenderer = new CutLeavesEffectRenderer(transientVfxSpriteSheet);
         itemRegistry = new ItemRegistry();
-        itemRegistry.register(PlayerState.INVENTORY_SWORD, new Sword(romTables, swordSpriteSheet));
-        equipmentController = new EquipmentController(inputState, inputConfig, playerState, itemRegistry);
         roomSession = new RoomSession(romData, gpu, new RoomLoader(romData),
             new OverworldTilesetTable(romData), overworldCollision, transientVfxSystem, droppableRupeeSystem);
         link = new Link(inputState, inputConfig, romTables, overworldCollision,
                         linkSpriteSheet, playerState, itemRegistry);
+        itemRegistry.register(PlayerState.INVENTORY_SWORD, new Sword(romTables, swordSpriteSheet));
+        itemRegistry.register(PlayerState.INVENTORY_ROCS_FEATHER, new RocsFeather(link));
+        equipmentController = new EquipmentController(inputState, inputConfig, playerState, itemRegistry);
         roomTransitionCoordinator = new RoomTransitionCoordinator(
             roomSession, new RoomBoundaryController(), transitionController, scrollController);
     }
@@ -485,7 +487,7 @@ public class Main {
         // tiles to the left of the room center so he lands on walkable ground.
         int startX = ROOM_PIXEL_WIDTH / 2 - Link.SPRITE_SIZE / 2 - 32;
         int startY = ROOM_PIXEL_HEIGHT / 2 - Link.SPRITE_SIZE / 2;
-        link.setPixelPosition(startX, startY);
+        link.setRoomEntryPixelPosition(startX, startY);
     }
 
     private static void initGLFW() {

@@ -24,6 +24,8 @@ public final class PhysicsFlags {
     public static final int LOWERED = 0x09;
     public static final int WIDE_STAIRS = 0x0A;
     public static final int LAVA = 0x0B;
+    public static final int NORMAL_PIT = 0x50;
+    public static final int PIT_WARP = 0x51;
 
     // Category bases (match high nibble after a category mask)
     public static final int CAT_LEDGE_OVERWORLD = 0x10;
@@ -60,10 +62,13 @@ public final class PhysicsFlags {
                 return true;
         }
 
+        if (isPitCategory(flag)) {
+            return true;
+        }
+
         switch (flag & 0xF0) {
             case CAT_LEDGE_OVERWORLD:
             case CAT_REMOVABLE_OBSTACLE:
-            case CAT_PIT:
             case CAT_HOOKSHOTABLE:
             case CAT_FINE_COLLISION:
             case CAT_DOOR_CLOSED:
@@ -81,5 +86,13 @@ public final class PhysicsFlags {
      */
     public static boolean slowsWalking(int flag) {
         return flag == SHALLOW_WATER || flag == GRASS;
+    }
+
+    public static boolean isNormalPit(int flag) {
+        return flag == NORMAL_PIT;
+    }
+
+    public static boolean isPitCategory(int flag) {
+        return (flag & 0xF0) == CAT_PIT;
     }
 }

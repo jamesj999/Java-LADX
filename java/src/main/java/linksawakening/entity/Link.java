@@ -2,6 +2,7 @@ package linksawakening.entity;
 
 import linksawakening.equipment.EquippedItem;
 import linksawakening.equipment.ItemRegistry;
+import linksawakening.equipment.RocsFeather;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.Tile;
 import linksawakening.input.InputConfig;
@@ -21,7 +22,7 @@ import linksawakening.state.PlayerState;
  * <p>The 16x16 AABB used for both rendering and collision has its origin at
  * Link's top-left.
  */
-public final class Link {
+public final class Link implements RocsFeather.JumpTarget {
 
     public static final int DIRECTION_DOWN = 0;
     public static final int DIRECTION_UP = 1;
@@ -30,6 +31,8 @@ public final class Link {
 
     public static final int SPRITE_SIZE = 16;
     public static final int SUB_PIXEL_SHIFT = 4;
+    public static final int GROUND_STATUS_NORMAL = 0x00;
+    public static final int GROUND_STATUS_PIT = 0x07;
 
     // Bit order matches JoypadToLinkDirection (bank2.asm:1183): entry 1 = right,
     // 2 = left, 4 = up, 8 = down.
@@ -80,6 +83,19 @@ public final class Link {
     };
 
     private static final int WALK_FRAME_TICKS = 8;
+    private static final int JUMP_FRAME_TICKS = 8;
+    private static final int FALL_FRAME_TICKS = 16;
+    private static final int FALL_DURATION_FRAMES = 96;
+    private static final int PIT_RECOVERY_INVINCIBILITY_FRAMES = 0x40;
+    private static final int PIT_DAMAGE = PlayerState.HP_PER_HEART / 2;
+
+    private static final int[][] JUMP_ANIMATION_STATE = {
+        { 0x64, 0x65, 0x66 }, // DOWN
+        { 0x67, 0x68, 0x69 }, // UP
+        { 0x5E, 0x5F, 0x60 }, // LEFT
+        { 0x61, 0x62, 0x63 }, // RIGHT
+    };
+    private static final int[] FALL_ANIMATION_STATE = { 0x55, 0x56, 0x57, 0x57 };
 
     private final InputState inputState;
     private final InputConfig inputConfig;
@@ -118,6 +134,25 @@ public final class Link {
     private boolean movingThisFrame;
     private int groundMotionCounter;
     private int collisionIgnoreFramesRemaining;
+    private int groundStatus = GROUND_STATUS_NORMAL;
+    private boolean airborne;
+    private int zSubPixels;
+    private int zVelocity;
+    private boolean fallingIntoPit;
+    private int jumpAnimationCounter;
+    private int jumpAnimationFrame;
+    private int pitSlippingCounter;
+    private int fallingFrameCounter;
+    private int pitSlipTargetTopLeftX;
+    private int pitSlipTargetTopLeftY;
+    private int pitSlipPhysicsFlag;
+    private boolean hasPitSlipTarget;
+    private int lastSafeSubX;
+    private int lastSafeSubY;
+    private boolean hasLastSafePosition;
+    private int roomEntrySubX;
+    private int roomEntrySubY;
+    private boolean hasRoomEntryPosition;
     private final Tile[] composedTiles = new Tile[4];
 
     public Link(InputState inputState,
@@ -139,6 +174,17 @@ public final class Link {
     public void setPixelPosition(int pixelX, int pixelY) {
         subX = pixelX << SUB_PIXEL_SHIFT;
         subY = pixelY << SUB_PIXEL_SHIFT;
+    }
+
+    public void setRoomEntryPixelPosition(int pixelX, int pixelY) {
+        setPixelPosition(pixelX, pixelY);
+        markRoomEntryPosition();
+    }
+
+    public void markRoomEntryPosition() {
+        roomEntrySubX = subX;
+        roomEntrySubY = subY;
+        hasRoomEntryPosition = true;
     }
 
     /**
@@ -164,6 +210,30 @@ public final class Link {
         return direction;
     }
 
+    public boolean isAirborne() {
+        return airborne;
+    }
+
+    public int zVelocity() {
+        return zVelocity & 0xFF;
+    }
+
+    public boolean isFallingIntoPit() {
+        return fallingIntoPit;
+    }
+
+    @Override
+    public void useRocsFeather() {
+        if (airborne || groundStatus == GROUND_STATUS_PIT || fallingIntoPit) {
+            return;
+        }
+        airborne = true;
+        zSubPixels = 0;
+        zVelocity = 0x20;
+        jumpAnimationCounter = 0;
+        jumpAnimationFrame = 0;
+    }
+
     /** Advance the walking-cycle timer without processing input or collision. */
     public void tickAnimation() {
         walkTickCounter++;
@@ -174,10 +244,31 @@ public final class Link {
     }
 
     public void update() {
+        if (playerState != null) {
+            playerState.tickInvincibility();
+        }
+
+        if (fallingIntoPit) {
+            tickPitFall();
+            return;
+        }
+
         int mask = buildJoypadMask();
         int newDirection = JOYPAD_TO_DIRECTION[mask];
         if (newDirection != -1 && !itemsLockFacing()) {
             direction = newDirection;
+        }
+        if (!airborne && groundStatus != GROUND_STATUS_PIT) {
+            refreshGroundStatus();
+            updateLastSafePositionIfPossible();
+        }
+
+        if (groundStatus == GROUND_STATUS_PIT) {
+            movingThisFrame = false;
+            walkTickCounter = 0;
+            walkFrame = 0;
+            slipTowardPitCenter();
+            return;
         }
 
         // Equipped items (sword swing, etc.) can block motion for a window of
@@ -192,13 +283,14 @@ public final class Link {
             if (collisionIgnoreFramesRemaining > 0) {
                 collisionIgnoreFramesRemaining--;
             }
+            tickJump();
             return;
         }
 
         int speedX = (byte) romTables.linkSpeedX(mask);
         int speedY = (byte) romTables.linkSpeedY(mask);
         movingThisFrame = (speedX != 0 || speedY != 0);
-        boolean applyGroundMotion = shouldApplyGroundMotion();
+        boolean applyGroundMotion = airborne || shouldApplyGroundMotion();
 
         if (applyGroundMotion && speedX != 0) {
             tryMoveAxis(speedX, true);
@@ -209,6 +301,12 @@ public final class Link {
 
         if (collisionIgnoreFramesRemaining > 0) {
             collisionIgnoreFramesRemaining--;
+        }
+
+        tickJump();
+
+        if (!airborne) {
+            updateLastSafePositionIfPossible();
         }
 
         if (movingThisFrame) {
@@ -293,11 +391,151 @@ public final class Link {
         int[] xs = COLLISION_POINTS_X[dir];
         int[] ys = COLLISION_POINTS_Y[dir];
         for (int i = 0; i < xs.length; i++) {
-            if (collision.pointBlocked(spriteX + xs[i], spriteY + ys[i])) {
+            int pointX = spriteX + xs[i];
+            int pointY = spriteY + ys[i];
+            if (collision.pointBlocked(pointX, pointY)
+                && !collision.pointNormalPit(pointX, pointY)) {
                 return true;
             }
         }
         return false;
+    }
+
+    private void tickJump() {
+        if (!airborne) {
+            return;
+        }
+
+        tickJumpAnimation();
+        zSubPixels += zVelocity;
+        zVelocity -= 2;
+        if (zSubPixels > 0 || zVelocity > 0) {
+            return;
+        }
+
+        airborne = false;
+        zSubPixels = 0;
+        zVelocity = 0;
+        if (linkOverPit()) {
+            enterPitGroundState();
+        } else {
+            groundStatus = GROUND_STATUS_NORMAL;
+            fallingIntoPit = false;
+        }
+    }
+
+    private void tickJumpAnimation() {
+        jumpAnimationCounter++;
+        if (jumpAnimationCounter >= JUMP_FRAME_TICKS) {
+            jumpAnimationCounter = 0;
+            if (jumpAnimationFrame < 2) {
+                jumpAnimationFrame++;
+            }
+        }
+    }
+
+    private boolean linkOverPit() {
+        return collision != null && collision.linkOnNormalPit(pixelX(), pixelY());
+    }
+
+    private void refreshGroundStatus() {
+        if (linkOverPit()) {
+            enterPitGroundState();
+        } else if (!fallingIntoPit) {
+            groundStatus = GROUND_STATUS_NORMAL;
+            hasPitSlipTarget = false;
+        }
+    }
+
+    private void enterPitGroundState() {
+        if (groundStatus != GROUND_STATUS_PIT) {
+            pitSlippingCounter = 0;
+            OverworldCollision.PitCell pit = collision == null ? null : collision.normalPitUnderLink(pixelX(), pixelY());
+            if (pit != null) {
+                pitSlipTargetTopLeftX = pit.targetTopLeftX();
+                pitSlipTargetTopLeftY = pit.targetTopLeftY();
+                pitSlipPhysicsFlag = pit.physicsFlag();
+                hasPitSlipTarget = true;
+            }
+        }
+        groundStatus = GROUND_STATUS_PIT;
+    }
+
+    private void slipTowardPitCenter() {
+        if (!hasPitSlipTarget) {
+            groundStatus = GROUND_STATUS_NORMAL;
+            return;
+        }
+
+        pitSlippingCounter++;
+        if ((pitSlippingCounter & 0x03) != 0) {
+            return;
+        }
+
+        int x = pixelX();
+        int y = pixelY();
+        if (x < pitSlipTargetTopLeftX) {
+            subX += 1 << SUB_PIXEL_SHIFT;
+        } else if (x > pitSlipTargetTopLeftX) {
+            subX -= 1 << SUB_PIXEL_SHIFT;
+        }
+        if (y < pitSlipTargetTopLeftY) {
+            subY += 1 << SUB_PIXEL_SHIFT;
+        } else if (y > pitSlipTargetTopLeftY) {
+            subY -= 1 << SUB_PIXEL_SHIFT;
+        }
+
+        if (Math.abs(pixelX() - pitSlipTargetTopLeftX) <= 1
+            && Math.abs(pixelY() - pitSlipTargetTopLeftY) <= 1) {
+            startPitFall();
+        }
+    }
+
+    private void startPitFall() {
+        // Current top-view fall/recovery support is only for ordinary $50 pits.
+        groundStatus = GROUND_STATUS_PIT;
+        fallingIntoPit = true;
+        airborne = false;
+        zSubPixels = 0;
+        zVelocity = 0;
+        fallingFrameCounter = 0;
+        walkTickCounter = 0;
+        walkFrame = 0;
+        movingThisFrame = false;
+        subY += 3 << SUB_PIXEL_SHIFT;
+    }
+
+    private void tickPitFall() {
+        fallingFrameCounter++;
+        if (fallingFrameCounter < FALL_DURATION_FRAMES) {
+            return;
+        }
+
+        fallingIntoPit = false;
+        groundStatus = GROUND_STATUS_NORMAL;
+        hasPitSlipTarget = false;
+        pitSlippingCounter = 0;
+        fallingFrameCounter = 0;
+        if (playerState != null) {
+            playerState.damage(PIT_DAMAGE);
+            playerState.setInvincibilityCounter(PIT_RECOVERY_INVINCIBILITY_FRAMES);
+        }
+        if (hasRoomEntryPosition) {
+            subX = roomEntrySubX;
+            subY = roomEntrySubY;
+        } else if (hasLastSafePosition) {
+            subX = lastSafeSubX;
+            subY = lastSafeSubY;
+        }
+    }
+
+    private void updateLastSafePositionIfPossible() {
+        if (airborne || fallingIntoPit || groundStatus == GROUND_STATUS_PIT || linkOverPit()) {
+            return;
+        }
+        lastSafeSubX = subX;
+        lastSafeSubY = subY;
+        hasLastSafePosition = true;
     }
 
     private int buildJoypadMask() {
@@ -319,7 +557,8 @@ public final class Link {
         boolean rightFlipY = spriteSheet.rightHalfFlipY(animationState);
 
         int originX = pixelX() + offsetX;
-        int originY = pixelY() + offsetY;
+        int renderY = pixelY() - zPixels();
+        int originY = renderY + offsetY;
 
         // Column-major tile layout: [0]=UL, [1]=LL, [2]=UR, [3]=LR.
         // GB 8x16 flipY swaps the two stacked tiles inside a column and flips
@@ -347,28 +586,51 @@ public final class Link {
         }
         EquippedItem a = itemRegistry.lookup(playerState.itemA());
         if (a != null) {
-            a.render(displayBuffer, pixelX(), pixelY(), direction, offsetX, offsetY);
+            a.render(displayBuffer, pixelX(), pixelY() - zPixels(), direction, offsetX, offsetY);
         }
         EquippedItem b = itemRegistry.lookup(playerState.itemB());
         if (b != null && b != a) {
-            b.render(displayBuffer, pixelX(), pixelY(), direction, offsetX, offsetY);
+            b.render(displayBuffer, pixelX(), pixelY() - zPixels(), direction, offsetX, offsetY);
         }
     }
 
+    private int zPixels() {
+        return Math.max(0, zSubPixels >> SUB_PIXEL_SHIFT);
+    }
+
     private int resolveAnimationState() {
+        if (fallingIntoPit) {
+            int frame = Math.min(FALL_ANIMATION_STATE.length - 1, fallingFrameCounter / FALL_FRAME_TICKS);
+            return FALL_ANIMATION_STATE[frame];
+        }
+
         int baseState = ANIMATION_STATE[direction][walkFrame];
-        if (itemRegistry == null || playerState == null) {
-            return baseState;
-        }
-        int override = queryOverride(itemRegistry.lookup(playerState.itemA()));
+        int override = queryOverride(itemInSlotA());
         if (override >= 0) {
             return override;
         }
-        override = queryOverride(itemRegistry.lookup(playerState.itemB()));
+        override = queryOverride(itemInSlotB());
         if (override >= 0) {
             return override;
+        }
+        if (airborne) {
+            return JUMP_ANIMATION_STATE[direction][jumpAnimationFrame];
         }
         return baseState;
+    }
+
+    private EquippedItem itemInSlotA() {
+        if (itemRegistry == null || playerState == null) {
+            return null;
+        }
+        return itemRegistry.lookup(playerState.itemA());
+    }
+
+    private EquippedItem itemInSlotB() {
+        if (itemRegistry == null || playerState == null) {
+            return null;
+        }
+        return itemRegistry.lookup(playerState.itemB());
     }
 
     private int queryOverride(EquippedItem item) {
