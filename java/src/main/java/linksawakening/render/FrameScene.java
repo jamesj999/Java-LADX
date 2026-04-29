@@ -24,11 +24,15 @@ public final class FrameScene {
         return new FrameScene(layers);
     }
 
-    public void render(byte[] buffer, GPU gpu) {
+    public void drawTo(byte[] buffer, GPU gpu) {
         IndexedRenderer.clear(buffer);
         RenderContext context = new RenderContext(buffer, gpu);
         for (RenderLayer layer : layers) {
             layer.render(context);
         }
+    }
+
+    public int layerCount() {
+        return layers.size();
     }
 }

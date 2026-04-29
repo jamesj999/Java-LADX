@@ -31,7 +31,7 @@ final class FrameSceneTest {
             }
         ));
 
-        scene.render(buffer, gpu);
+        scene.drawTo(buffer, gpu);
 
         assertEquals(List.of("first", "second"), calls);
         assertEquals(0x112233, pixelColor(buffer, 0, 0));

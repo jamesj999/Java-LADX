@@ -2,7 +2,6 @@ package linksawakening;
 
 import linksawakening.config.AppConfig;
 import linksawakening.cutscene.CutsceneManager;
-import linksawakening.cutscene.TitleReveal;
 import linksawakening.dialog.DialogController;
 import linksawakening.entity.Link;
 import linksawakening.entity.LinkSpriteSheet;
@@ -15,17 +14,10 @@ import linksawakening.gpu.Framebuffer;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.physics.OverworldCollision;
-import linksawakening.render.BackgroundRenderLayer;
-import linksawakening.render.CutsceneSpriteRenderLayer;
-import linksawakening.render.DialogRenderLayer;
-import linksawakening.render.DroppableRupeeRenderLayer;
-import linksawakening.render.FrameScene;
-import linksawakening.render.InventoryRenderLayer;
-import linksawakening.render.LinkRenderLayer;
-import linksawakening.render.RenderLayer;
-import linksawakening.render.RoomRenderLayer;
-import linksawakening.render.Shader;
-import linksawakening.render.TransientVfxRenderLayer;
+import linksawakening.render.GameFrameSceneBuilder;
+import linksawakening.render.GameFrameState;
+import linksawakening.render.OpenGlFramePresenter;
+import linksawakening.render.RenderScreen;
 import linksawakening.rom.RomTables;
 import linksawakening.scene.BackgroundScene;
 import linksawakening.scene.BackgroundSceneCatalog;
@@ -49,19 +41,10 @@ import linksawakening.world.RoomRenderSnapshot;
 import linksawakening.world.ScrollController;
 import linksawakening.world.TransitionController;
 import linksawakening.world.Warp;
-import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
-import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL12;
-import org.lwjgl.opengl.GL15;
-import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL30;
 
 import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -71,27 +54,21 @@ import static org.lwjgl.glfw.GLFW.*;
 
 public class Main {
 
-    private static final int BG_MAP_WIDTH = 32;
-    private static final int BG_MAP_HEIGHT = 32;
-    private static final int VIEWPORT_TILE_WIDTH = 20;
-    private static final int VIEWPORT_TILE_HEIGHT = 18;
-
     private static final int MAP_OVERWORLD = 0x00;
 
     private static final int OBJECT_GROUND_STAIRS = 0xC6;
     private static final int W_TILESET_NO_UPDATE = 0xFF;
+    private static final int GAME_BOY_BG_MAP_TILES = 32 * 32;
 
     private static long window;
-    private static int vbo;
-    private static int vao;
-    private static Shader shader;
     private static GPU gpu;
+    private static OpenGlFramePresenter framePresenter;
+    private static final GameFrameSceneBuilder frameSceneBuilder = new GameFrameSceneBuilder();
     private static byte[] romData;
     private static int[] currentTilemap;
     private static int[] currentAttrmap;
     private static int[][] bgPalettes;
     private static int[][] objPalettes;
-    private static int tileTexture;
     private static byte[] indexedDisplayBuffer;
     private static int currentRoomId;
     private static int[] roomObjectsArea;
@@ -197,9 +174,8 @@ public class Main {
         while (!glfwWindowShouldClose(window) && running) {
             glfwPollEvents();
             update();
-            renderFrame();
-            uploadTexture();
-            render();
+            composeFrameBuffer();
+            framePresenter.present(indexedDisplayBuffer);
 
             nextFrameNs += FRAME_DURATION_NS;
             long sleepNs = nextFrameNs - System.nanoTime();
@@ -269,10 +245,10 @@ public class Main {
         applyBackgroundScene(backgroundSceneLoader.load(BackgroundSceneCatalog.TITLE));
         indexedDisplayBuffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
 
-        if (currentTilemap.length != BG_MAP_WIDTH * BG_MAP_HEIGHT) {
+        if (currentTilemap.length != GAME_BOY_BG_MAP_TILES) {
             throw new IllegalStateException("Decoded title tilemap has unexpected size: " + currentTilemap.length);
         }
-        if (currentAttrmap.length != BG_MAP_WIDTH * BG_MAP_HEIGHT) {
+        if (currentAttrmap.length != GAME_BOY_BG_MAP_TILES) {
             throw new IllegalStateException("Decoded title attrmap has unexpected size: " + currentAttrmap.length);
         }
     }
@@ -294,6 +270,10 @@ public class Main {
         }
 
         if (currentScreen == SCREEN_CUTSCENE) {
+            if (skipIntroCutsceneIfRequested(key, action, cutsceneManager)) {
+                currentScreen = SCREEN_TITLE;
+                return;
+            }
             if (action == GLFW_PRESS && dialogController != null
                 && (key == inputConfig.aKey() || key == inputConfig.bKey() || key == GLFW_KEY_ENTER)) {
                 dialogController.advance();
@@ -312,6 +292,13 @@ public class Main {
         if (shouldRunDebugDump(currentAppConfig(), key, action)) {
             dumpLinkSurroundings();
         }
+    }
+
+    static boolean skipIntroCutsceneIfRequested(int key, int action, CutsceneManager manager) {
+        return key == GLFW_KEY_ENTER
+            && action == GLFW_PRESS
+            && manager != null
+            && manager.skipIntroToTitle();
     }
 
     static boolean shouldRunDebugDump(AppConfig config, int key, int action) {
@@ -884,150 +871,49 @@ public class Main {
     }
 
     private static void initOpenGL() {
-        GL.createCapabilities();
-        GL11.glViewport(0, 0, Framebuffer.WIDTH * Framebuffer.SCALE, Framebuffer.HEIGHT * Framebuffer.SCALE);
-
-        shader = new Shader();
-
-        float[] vertices = {
-            -1.0f, -1.0f, 0.0f, 1.0f,
-             1.0f, -1.0f, 1.0f, 1.0f,
-             1.0f,  1.0f, 1.0f, 0.0f,
-            -1.0f,  1.0f, 0.0f, 0.0f
-        };
-
-        FloatBuffer vertexBuffer = BufferUtils.createFloatBuffer(vertices.length);
-        vertexBuffer.put(vertices).flip();
-
-        vao = GL30.glGenVertexArrays();
-        GL30.glBindVertexArray(vao);
-
-        vbo = GL15.glGenBuffers();
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo);
-        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vertexBuffer, GL15.GL_STATIC_DRAW);
-
-        GL20.glEnableVertexAttribArray(0);
-        GL20.glVertexAttribPointer(0, 2, GL11.GL_FLOAT, false, 16, 0);
-        GL20.glEnableVertexAttribArray(1);
-        GL20.glVertexAttribPointer(1, 2, GL11.GL_FLOAT, false, 16, 8);
-
-        GL30.glBindVertexArray(0);
-
-        tileTexture = GL11.glGenTextures();
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, tileTexture);
-        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
-        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
-        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
-        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
+        framePresenter = OpenGlFramePresenter.initialize(window);
     }
 
-    private static void renderFrame() {
-        currentFrameScene().render(indexedDisplayBuffer, gpu);
+    private static void composeFrameBuffer() {
+        frameSceneBuilder.build(currentGameFrameState()).drawTo(indexedDisplayBuffer, gpu);
     }
 
-    private static FrameScene currentFrameScene() {
-        if (bgPalettes == null) {
-            return FrameScene.empty();
-        }
-
-        List<RenderLayer> layers = new ArrayList<>();
-        if (currentScreen == SCREEN_OVERWORLD && roomTileIds != null) {
-            addOverworldLayers(layers);
-        } else if (currentTilemap != null && currentAttrmap != null) {
-            addBackgroundSceneLayers(layers);
-        }
-
-        if (dialogController != null) {
-            layers.add(new DialogRenderLayer(dialogController));
-        }
-        return FrameScene.of(layers);
-    }
-
-    private static void addOverworldLayers(List<RenderLayer> layers) {
-        layers.add(new RoomRenderLayer(currentRoomRenderSnapshot(), scrollController, transitionController));
-        if (link != null) {
-            layers.add(new LinkRenderLayer(link, scrollController));
-        }
-        if (transientVfxSystem != null && cutLeavesEffectRenderer != null) {
-            layers.add(new TransientVfxRenderLayer(transientVfxSystem, cutLeavesEffectRenderer,
-                scrollController, GREEN_OBJECTS_SPRITE_PALETTE));
-        }
-        if (droppableRupeeSystem != null) {
-            layers.add(new DroppableRupeeRenderLayer(droppableRupeeSystem, scrollController));
-        }
-        if (inventoryController != null) {
-            layers.add(new InventoryRenderLayer(inventoryController));
-        }
-    }
-
-    private static void addBackgroundSceneLayers(List<RenderLayer> layers) {
-        int scrollX = cutsceneManager != null ? cutsceneManager.scrollX() : 0;
-        int scrollY = cutsceneManager != null ? cutsceneManager.scrollY() : 0;
-        int[] tilemap = titleRevealTilemap();
-        int[] lineScrollX = cutsceneManager != null
-            ? cutsceneManager.lineScrollX(Framebuffer.HEIGHT)
-            : null;
-
-        if (lineScrollX != null) {
-            layers.add(BackgroundRenderLayer.lineScrolled(tilemap, currentAttrmap, bgPalettes,
-                BG_MAP_WIDTH, BG_MAP_HEIGHT, VIEWPORT_TILE_WIDTH, VIEWPORT_TILE_HEIGHT,
-                lineScrollX, scrollY));
-        } else {
-            layers.add(BackgroundRenderLayer.scrolling(tilemap, currentAttrmap, bgPalettes,
-                BG_MAP_WIDTH, BG_MAP_HEIGHT, VIEWPORT_TILE_WIDTH, VIEWPORT_TILE_HEIGHT,
-                scrollX, scrollY));
-        }
-        if (cutsceneManager != null && objPalettes != null) {
-            layers.add(new CutsceneSpriteRenderLayer(cutsceneManager.sprites(), objPalettes));
-        }
+    private static GameFrameState currentGameFrameState() {
+        return GameFrameState.empty()
+            .withScreen(currentRenderScreen())
+            .withBackground(currentTilemap, currentAttrmap, bgPalettes, objPalettes)
+            .withCutsceneManager(cutsceneManager)
+            .withRoom(currentRoomRenderSnapshot(), scrollController, transitionController)
+            .withLink(link)
+            .withTransientVfx(transientVfxSystem, cutLeavesEffectRenderer, GREEN_OBJECTS_SPRITE_PALETTE)
+            .withDroppableRupees(droppableRupeeSystem)
+            .withInventoryController(inventoryController)
+            .withDialogController(dialogController);
     }
 
     private static RoomRenderSnapshot currentRoomRenderSnapshot() {
+        if (roomTileIds == null || roomTileAttrs == null || bgPalettes == null) {
+            return null;
+        }
         return new RoomRenderSnapshot(roomTileIds, roomTileAttrs, bgPalettes);
     }
 
-    private static int[] titleRevealTilemap() {
-        if (cutsceneManager == null || !cutsceneManager.isShowingTitleScene()) {
-            return currentTilemap;
+    private static RenderScreen currentRenderScreen() {
+        switch (currentScreen) {
+            case SCREEN_OVERWORLD:
+                return RenderScreen.OVERWORLD;
+            case SCREEN_CUTSCENE:
+                return RenderScreen.CUTSCENE;
+            case SCREEN_TITLE:
+            default:
+                return RenderScreen.TITLE;
         }
-        return TitleReveal.maskedTilemap(currentTilemap, cutsceneManager.titleRevealRows(), BG_MAP_WIDTH);
-    }
-
-    private static void uploadTexture() {
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, tileTexture);
-
-        ByteBuffer texBuf = ByteBuffer.allocateDirect(indexedDisplayBuffer.length);
-        texBuf.put(indexedDisplayBuffer).flip();
-
-        GL11.glTexImage2D(
-            GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA,
-            Framebuffer.WIDTH, Framebuffer.HEIGHT,
-            0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, texBuf
-        );
-    }
-
-    private static void render() {
-        glfwMakeContextCurrent(window);
-
-        GL11.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
-
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, tileTexture);
-        shader.use();
-        shader.setUniform1i("uTexture", 0);
-
-        GL30.glBindVertexArray(vao);
-        GL11.glDrawArrays(GL11.GL_TRIANGLE_FAN, 0, 4);
-        GL30.glBindVertexArray(0);
-
-        glfwSwapBuffers(window);
     }
 
     private static void cleanup() {
-        GL30.glDeleteVertexArrays(vao);
-        GL15.glDeleteBuffers(vbo);
-        shader.cleanup();
-        GL11.glDeleteTextures(tileTexture);
+        if (framePresenter != null) {
+            framePresenter.cleanup();
+        }
         glfwDestroyWindow(window);
         glfwTerminate();
     }
