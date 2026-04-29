@@ -82,6 +82,38 @@ final class GameBoyApuTest {
     }
 
     @Test
+    void noiseChannelUsesGameBoyPolynomialClock() {
+        GameBoyApu apu = new GameBoyApu(48_000);
+        apu.writeRegister(GameBoyApu.NR52, 0x80);
+        apu.writeRegister(GameBoyApu.NR50, 0x77);
+        apu.writeRegister(GameBoyApu.NR51, 0x88);
+        apu.writeRegister(GameBoyApu.NR42, 0xF0);
+        apu.writeRegister(GameBoyApu.NR43, 0x07);
+        apu.writeRegister(GameBoyApu.NR44, 0x80);
+
+        short[] pcm = apu.render(32);
+
+        assertTrue(hasSignChangeInLeftChannel(pcm));
+    }
+
+    @Test
+    void noiseChannelAppliesHardwareVolumeEnvelope() {
+        GameBoyApu apu = new GameBoyApu(48_000);
+        apu.writeRegister(GameBoyApu.NR52, 0x80);
+        apu.writeRegister(GameBoyApu.NR50, 0x77);
+        apu.writeRegister(GameBoyApu.NR51, 0x88);
+        apu.writeRegister(GameBoyApu.NR42, 0x51);
+        apu.writeRegister(GameBoyApu.NR43, 0x77);
+        apu.writeRegister(GameBoyApu.NR44, 0x80);
+
+        short initial = apu.render(1)[0];
+        short[] later = apu.render(760);
+        short afterEnvelopeTick = later[(760 - 1) * 2];
+
+        assertTrue(Math.abs(afterEnvelopeTick) < Math.abs(initial));
+    }
+
+    @Test
     void routedChannelsAreSummedInsteadOfAveraged() {
         GameBoyApu oneChannel = new GameBoyApu(48_000);
         oneChannel.writeRegister(GameBoyApu.NR52, 0x80);
@@ -138,6 +170,17 @@ final class GameBoyApuTest {
     private static boolean hasNonZeroSample(short[] pcm) {
         for (short sample : pcm) {
             if (sample != 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean hasSignChangeInLeftChannel(short[] pcm) {
+        int firstSign = Integer.signum(pcm[0]);
+        for (int i = 2; i < pcm.length; i += 2) {
+            int sign = Integer.signum(pcm[i]);
+            if (sign != 0 && sign != firstSign) {
                 return true;
             }
         }

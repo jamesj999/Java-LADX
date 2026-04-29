@@ -41,7 +41,7 @@ public final class GameBoyApu {
         channel1 = new SquareChannel(sampleRate);
         channel2 = new SquareChannel(sampleRate);
         channel3 = new WaveChannel(sampleRate);
-        channel4 = new NoiseChannel();
+        channel4 = new NoiseChannel(sampleRate);
         reset();
     }
 
