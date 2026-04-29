@@ -2,10 +2,8 @@ package linksawakening;
 
 import linksawakening.config.AppConfig;
 import linksawakening.cutscene.CutsceneManager;
-import linksawakening.cutscene.IntroSprite;
 import linksawakening.cutscene.TitleReveal;
 import linksawakening.dialog.DialogController;
-import linksawakening.dialog.DialogRenderer;
 import linksawakening.entity.Link;
 import linksawakening.entity.LinkSpriteSheet;
 import linksawakening.equipment.EquipmentController;
@@ -17,9 +15,17 @@ import linksawakening.gpu.Framebuffer;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.physics.OverworldCollision;
-import linksawakening.render.IndexedRenderer;
+import linksawakening.render.BackgroundRenderLayer;
+import linksawakening.render.CutsceneSpriteRenderLayer;
+import linksawakening.render.DialogRenderLayer;
+import linksawakening.render.DroppableRupeeRenderLayer;
+import linksawakening.render.FrameScene;
+import linksawakening.render.InventoryRenderLayer;
+import linksawakening.render.LinkRenderLayer;
+import linksawakening.render.RenderLayer;
+import linksawakening.render.RoomRenderLayer;
 import linksawakening.render.Shader;
-import linksawakening.rom.RomBank;
+import linksawakening.render.TransientVfxRenderLayer;
 import linksawakening.rom.RomTables;
 import linksawakening.scene.BackgroundScene;
 import linksawakening.scene.BackgroundSceneCatalog;
@@ -136,8 +142,6 @@ public class Main {
     private static final int SCROLL_SPEED = 4; // pixels per frame (original uses ~2-4px)
 
     private static final ScrollController scrollController = new ScrollController();
-    private static final int ATTR_FLIP_X = 0x20;
-    private static final int ATTR_FLIP_Y = 0x40;
     // Mirrors the first OBJ palette entry used for Link and leaf particles.
     private static final int[] GREEN_OBJECTS_SPRITE_PALETTE = {
         0x00000000,
@@ -918,112 +922,68 @@ public class Main {
     }
 
     private static void renderFrame() {
-        IndexedRenderer.clear(indexedDisplayBuffer);
+        currentFrameScene().render(indexedDisplayBuffer, gpu);
+    }
 
+    private static FrameScene currentFrameScene() {
         if (bgPalettes == null) {
-            return;
+            return FrameScene.empty();
         }
 
+        List<RenderLayer> layers = new ArrayList<>();
         if (currentScreen == SCREEN_OVERWORLD && roomTileIds != null) {
-            renderOverworld();
-            if (link != null) {
-                if (!scrollController.isActive()) {
-                    link.render(indexedDisplayBuffer, 0, 0);
-                } else {
-                    // Linearly interpolate Link's screen position from his
-                    // edge-crossing point to his target position in the new
-                    // room. The new room renders with offsetX = 0 at scroll
-                    // end, so link.pixelX() is the target screen X.
-                    int startScreenX = scrollController.linkScreenX();
-                    int startScreenY = scrollController.linkScreenY();
-                    int endScreenX = link.pixelX();
-                    int endScreenY = link.pixelY();
-                    int screenX = startScreenX + (endScreenX - startScreenX) * scrollController.offset() / scrollController.target();
-                    int screenY = startScreenY + (endScreenY - startScreenY) * scrollController.offset() / scrollController.target();
-                    link.render(indexedDisplayBuffer,
-                                screenX - link.pixelX(),
-                                screenY - link.pixelY());
-                }
-            }
-            renderTransientVfx();
-            renderDroppableRupees();
-            inventoryController.render(indexedDisplayBuffer, gpu);
+            addOverworldLayers(layers);
         } else if (currentTilemap != null && currentAttrmap != null) {
-            int scrollX = cutsceneManager != null ? cutsceneManager.scrollX() : 0;
-            int scrollY = cutsceneManager != null ? cutsceneManager.scrollY() : 0;
-            int[] tilemap = titleRevealTilemap();
-            int[] lineScrollX = cutsceneManager != null
-                ? cutsceneManager.lineScrollX(Framebuffer.HEIGHT)
-                : null;
-            if (lineScrollX != null) {
-                IndexedRenderer.renderBackgroundLineScroll(indexedDisplayBuffer, gpu, tilemap, currentAttrmap,
-                    bgPalettes, BG_MAP_WIDTH, BG_MAP_HEIGHT, VIEWPORT_TILE_WIDTH, VIEWPORT_TILE_HEIGHT,
-                    lineScrollX, scrollY);
-            } else {
-                IndexedRenderer.renderBackground(indexedDisplayBuffer, gpu, tilemap, currentAttrmap,
-                    bgPalettes, BG_MAP_WIDTH, BG_MAP_HEIGHT, VIEWPORT_TILE_WIDTH, VIEWPORT_TILE_HEIGHT,
-                    scrollX, scrollY);
-            }
-            renderCutsceneSprites();
+            addBackgroundSceneLayers(layers);
         }
 
-        if (dialogController != null && dialogController.isActive()) {
-            DialogRenderer.render(indexedDisplayBuffer, dialogController);
+        if (dialogController != null) {
+            layers.add(new DialogRenderLayer(dialogController));
+        }
+        return FrameScene.of(layers);
+    }
+
+    private static void addOverworldLayers(List<RenderLayer> layers) {
+        layers.add(new RoomRenderLayer(currentRoomRenderSnapshot(), scrollController, transitionController));
+        if (link != null) {
+            layers.add(new LinkRenderLayer(link, scrollController));
+        }
+        if (transientVfxSystem != null && cutLeavesEffectRenderer != null) {
+            layers.add(new TransientVfxRenderLayer(transientVfxSystem, cutLeavesEffectRenderer,
+                scrollController, GREEN_OBJECTS_SPRITE_PALETTE));
+        }
+        if (droppableRupeeSystem != null) {
+            layers.add(new DroppableRupeeRenderLayer(droppableRupeeSystem, scrollController));
+        }
+        if (inventoryController != null) {
+            layers.add(new InventoryRenderLayer(inventoryController));
         }
     }
 
-    private static void renderTransientVfx() {
-        if (transientVfxSystem == null || cutLeavesEffectRenderer == null || scrollController.isActive()) {
-            return;
+    private static void addBackgroundSceneLayers(List<RenderLayer> layers) {
+        int scrollX = cutsceneManager != null ? cutsceneManager.scrollX() : 0;
+        int scrollY = cutsceneManager != null ? cutsceneManager.scrollY() : 0;
+        int[] tilemap = titleRevealTilemap();
+        int[] lineScrollX = cutsceneManager != null
+            ? cutsceneManager.lineScrollX(Framebuffer.HEIGHT)
+            : null;
+
+        if (lineScrollX != null) {
+            layers.add(BackgroundRenderLayer.lineScrolled(tilemap, currentAttrmap, bgPalettes,
+                BG_MAP_WIDTH, BG_MAP_HEIGHT, VIEWPORT_TILE_WIDTH, VIEWPORT_TILE_HEIGHT,
+                lineScrollX, scrollY));
+        } else {
+            layers.add(BackgroundRenderLayer.scrolling(tilemap, currentAttrmap, bgPalettes,
+                BG_MAP_WIDTH, BG_MAP_HEIGHT, VIEWPORT_TILE_WIDTH, VIEWPORT_TILE_HEIGHT,
+                scrollX, scrollY));
         }
-        for (TransientVfxSystem.Slot slot : transientVfxSystem.activeSlots()) {
-            if (slot.type() != TransientVfxType.BUSH_LEAVES) {
-                continue;
-            }
-            for (CutLeavesEffectRenderer.SpritePlacement sprite :
-                cutLeavesEffectRenderer.renderBushLeaves(slot.worldX(), slot.worldY(), slot.countdown())) {
-                IndexedRenderer.drawSpriteTile(
-                    indexedDisplayBuffer,
-                    sprite.tile(),
-                    sprite.x(),
-                    sprite.y(),
-                    (sprite.attributes() & ATTR_FLIP_X) != 0,
-                    (sprite.attributes() & ATTR_FLIP_Y) != 0,
-                    GREEN_OBJECTS_SPRITE_PALETTE
-                );
-            }
+        if (cutsceneManager != null && objPalettes != null) {
+            layers.add(new CutsceneSpriteRenderLayer(cutsceneManager.sprites(), objPalettes));
         }
     }
 
-    private static void renderCutsceneSprites() {
-        if (cutsceneManager == null || objPalettes == null) {
-            return;
-        }
-        for (IntroSprite sprite : cutsceneManager.sprites()) {
-            int paletteIndex = Math.min(sprite.paletteIndex(), objPalettes.length - 1);
-            if (sprite.height() == 16) {
-                IndexedRenderer.drawSpriteTile8x16(
-                    indexedDisplayBuffer,
-                    gpu,
-                    sprite.tileIndex(),
-                    sprite.x(),
-                    sprite.y(),
-                    sprite.flipX(),
-                    sprite.flipY(),
-                    objPalettes[paletteIndex]
-                );
-            } else {
-                IndexedRenderer.drawSpriteTile(
-                    indexedDisplayBuffer,
-                    gpu.getTile(sprite.tileIndex()),
-                    sprite.x(),
-                    sprite.y(),
-                    sprite.flipX(),
-                    sprite.flipY(),
-                    objPalettes[paletteIndex]
-                );
-            }
-        }
+    private static RoomRenderSnapshot currentRoomRenderSnapshot() {
+        return new RoomRenderSnapshot(roomTileIds, roomTileAttrs, bgPalettes);
     }
 
     private static int[] titleRevealTilemap() {
@@ -1031,60 +991,6 @@ public class Main {
             return currentTilemap;
         }
         return TitleReveal.maskedTilemap(currentTilemap, cutsceneManager.titleRevealRows(), BG_MAP_WIDTH);
-    }
-
-    private static void renderDroppableRupees() {
-        if (droppableRupeeSystem == null || scrollController.isActive()) {
-            return;
-        }
-        droppableRupeeSystem.render(indexedDisplayBuffer, gpu);
-    }
-
-    private static void renderOverworld() {
-        if (!scrollController.isActive()) {
-            // No scrolling — render current room, applying the warp-fade if
-            // a transition is in progress. applyFade is a no-op at fade level
-            // 0, so this costs nothing in the common case.
-            int[][] palettes = transitionController.applyFade(bgPalettes);
-            IndexedRenderer.renderRoom(indexedDisplayBuffer, gpu, roomTileIds, roomTileAttrs, palettes, 0, 0);
-        } else {
-            // During scroll, render both old (prev) and new (current) rooms with offsets
-            int prevOffX = 0, prevOffY = 0;
-            int newOffX = 0, newOffY = 0;
-
-            switch (scrollController.direction()) {
-                case SCROLL_LEFT:
-                    // New room enters from the left, old room exits right
-                    prevOffX = scrollController.offset();
-                    newOffX = -ROOM_PIXEL_WIDTH + scrollController.offset();
-                    break;
-                case SCROLL_RIGHT:
-                    // New room enters from the right, old room exits left
-                    prevOffX = -scrollController.offset();
-                    newOffX = ROOM_PIXEL_WIDTH - scrollController.offset();
-                    break;
-                case SCROLL_UP:
-                    // New room enters from the top, old room exits down
-                    prevOffY = scrollController.offset();
-                    newOffY = -ROOM_PIXEL_HEIGHT + scrollController.offset();
-                    break;
-                case SCROLL_DOWN:
-                    // New room enters from the bottom, old room exits up
-                    prevOffY = -scrollController.offset();
-                    newOffY = ROOM_PIXEL_HEIGHT - scrollController.offset();
-                    break;
-            }
-
-            // Render old room
-            RoomRenderSnapshot previousRoom = scrollController.previousRoom();
-            if (previousRoom != null) {
-                IndexedRenderer.renderRoom(indexedDisplayBuffer, gpu, previousRoom.tileIds(), previousRoom.tileAttrs(),
-                    previousRoom.palettes(), prevOffX, prevOffY);
-            }
-            // Render new room
-            IndexedRenderer.renderRoom(indexedDisplayBuffer, gpu, roomTileIds, roomTileAttrs,
-                bgPalettes, newOffX, newOffY);
-        }
     }
 
     private static void uploadTexture() {
