@@ -33,11 +33,13 @@ import linksawakening.vfx.TransientVfxSpriteSheet;
 import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.DroppableRupeeSystem;
-import linksawakening.world.LoadedRoom;
+import linksawakening.world.ActiveRoom;
 import linksawakening.world.OverworldBushInteraction;
 import linksawakening.world.OverworldTilesetTable;
+import linksawakening.world.RoomBoundaryController;
 import linksawakening.world.RoomLoader;
-import linksawakening.world.RoomRenderSnapshot;
+import linksawakening.world.RoomSession;
+import linksawakening.world.RoomTransitionCoordinator;
 import linksawakening.world.ScrollController;
 import linksawakening.world.TransitionController;
 import linksawakening.world.Warp;
@@ -45,8 +47,6 @@ import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static linksawakening.world.RoomConstants.*;
@@ -54,10 +54,7 @@ import static org.lwjgl.glfw.GLFW.*;
 
 public class Main {
 
-    private static final int MAP_OVERWORLD = 0x00;
-
     private static final int OBJECT_GROUND_STAIRS = 0xC6;
-    private static final int W_TILESET_NO_UPDATE = 0xFF;
     private static final int GAME_BOY_BG_MAP_TILES = 32 * 32;
 
     private static long window;
@@ -70,31 +67,9 @@ public class Main {
     private static int[][] bgPalettes;
     private static int[][] objPalettes;
     private static byte[] indexedDisplayBuffer;
-    private static int currentRoomId;
-    private static int[] roomObjectsArea;
-    private static int[] roomGbcOverlay;
-    private static int[] roomObjectRenderValues;
-    private static int[] roomTileIds;
-    private static int[] roomTileAttrs;
-    private static int currentOverworldTilesetId = W_TILESET_NO_UPDATE;
-
-    // Current map category & ID. Mirrors wIsIndoor (0=overworld, 1=indoor) and
-    // hMapId from the disassembly.
-    private static int currentMapCategory = Warp.CATEGORY_OVERWORLD;
-    private static int currentMapId = MAP_OVERWORLD;
-    // Warps extracted from the active room, used for door detection.
-    private static final List<Warp> currentRoomWarps = new ArrayList<>();
+    private static RoomSession roomSession;
     private static final TransitionController transitionController = new TransitionController();
-    // Tile Link stood on after the last warp — prevents re-triggering the
-    // mirror warp the instant the fade-in completes if Link's landing
-    // position happens to be on a door tile. Cleared once Link leaves it.
-    private static int suppressedWarpTile = -1;
-    // Whether the current indoor room has an IndoorEntrance ($FD) macro on
-    // its south edge. Populated during loadIndoorRoom by scanning for the
-    // $C1/$C2 tiles the macro writes. Rooms with one exit to overworld via
-    // fade when Link walks off the south edge; rooms without scroll to the
-    // adjacent indoor room instead.
-    private static boolean indoorHasSouthEntrance = false;
+    private static RoomTransitionCoordinator roomTransitionCoordinator;
 
     private static boolean running = true;
     private static int currentScreen = 0;
@@ -102,20 +77,11 @@ public class Main {
     private static final int SCREEN_OVERWORLD = 1;
     private static final int SCREEN_CUTSCENE = 2;
 
-    // Overworld grid: 16 columns x 16 rows = 256 rooms
-    private static final int OVERWORLD_COLUMNS = 16;
-    private static final int OVERWORLD_ROWS = 16;
-
     // Room pixel dimensions
     private static final int ROOM_PIXEL_WIDTH = ROOM_TILE_WIDTH * 8;   // 160
     private static final int ROOM_PIXEL_HEIGHT = ROOM_TILE_HEIGHT * 8; // 128
 
     // Scroll state
-    private static final int SCROLL_NONE = ScrollController.NONE;
-    private static final int SCROLL_UP = ScrollController.UP;
-    private static final int SCROLL_DOWN = ScrollController.DOWN;
-    private static final int SCROLL_LEFT = ScrollController.LEFT;
-    private static final int SCROLL_RIGHT = ScrollController.RIGHT;
     private static final int SCROLL_SPEED = 4; // pixels per frame (original uses ~2-4px)
 
     private static final ScrollController scrollController = new ScrollController();
@@ -136,8 +102,6 @@ public class Main {
     private static DialogController dialogController;
     private static CutsceneManager cutsceneManager;
     private static RomTables romTables;
-    private static RoomLoader roomLoader;
-    private static OverworldTilesetTable overworldTilesetTable;
     private static OverworldCollision overworldCollision;
     private static OverworldBushInteraction overworldBushInteraction;
     private static LinkSpriteSheet linkSpriteSheet;
@@ -229,9 +193,12 @@ public class Main {
         itemRegistry = new ItemRegistry();
         itemRegistry.register(PlayerState.INVENTORY_SWORD, new Sword(romTables, swordSpriteSheet));
         equipmentController = new EquipmentController(inputState, inputConfig, playerState, itemRegistry);
-        overworldTilesetTable = new OverworldTilesetTable(romData);
+        roomSession = new RoomSession(romData, gpu, new RoomLoader(romData),
+            new OverworldTilesetTable(romData), overworldCollision, transientVfxSystem, droppableRupeeSystem);
         link = new Link(inputState, inputConfig, romTables, overworldCollision,
                         linkSpriteSheet, playerState, itemRegistry);
+        roomTransitionCoordinator = new RoomTransitionCoordinator(
+            roomSession, new RoomBoundaryController(), transitionController, scrollController);
     }
 
     private static void loadGraphicsData() {
@@ -240,7 +207,6 @@ public class Main {
         }
 
         backgroundSceneLoader = new BackgroundSceneLoader(romData);
-        roomLoader = new RoomLoader(romData);
         gpu.loadTitleScreenTiles(romData);
         applyBackgroundScene(backgroundSceneLoader.load(BackgroundSceneCatalog.TITLE));
         indexedDisplayBuffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
@@ -306,17 +272,19 @@ public class Main {
     }
 
     private static void dumpLinkSurroundings() {
-        if (link == null || roomObjectsArea == null) return;
+        if (link == null || roomSession == null || !roomSession.hasActiveRoom()) return;
+        ActiveRoom room = roomSession.activeRoom();
+        int[] roomObjectsArea = room.roomObjectsArea();
         int lx = link.pixelX();
         int ly = link.pixelY();
         System.out.println("=== Link debug dump ===");
-        System.out.println("currentRoomId=" + String.format("%02X", currentRoomId)
-            + " mapCat=" + currentMapCategory + " mapId=" + String.format("%02X", currentMapId));
+        System.out.println("roomId=" + String.format("%02X", room.roomId())
+            + " mapCat=" + room.mapCategory() + " mapId=" + String.format("%02X", room.mapId()));
         System.out.println("Link pixel (" + lx + "," + ly + ") tile="
             + String.format("%02X", Warp.packTileLocation(lx, ly)));
         int centerCol = (lx + 8) >> 4;
         int centerRow = (ly + 8) >> 4;
-        int tableIdx = (currentMapCategory == Warp.CATEGORY_OVERWORLD)
+        int tableIdx = (room.mapCategory() == Warp.CATEGORY_OVERWORLD)
             ? RomTables.PHYSICS_TABLE_OVERWORLD : RomTables.PHYSICS_TABLE_INDOORS1;
         for (int dy = -1; dy <= 2; dy++) {
             StringBuilder sb = new StringBuilder(" row " + (centerRow + dy) + ":");
@@ -335,55 +303,6 @@ public class Main {
             }
             System.out.println(sb.toString());
         }
-    }
-
-    private static void startScroll(int direction, int linkScreenX, int linkScreenY) {
-        RoomRenderSnapshot previousRoom = new RoomRenderSnapshot(roomTileIds, roomTileAttrs, bgPalettes);
-        // Calculate the target room
-        int nextRoomId = currentRoomId;
-        switch (direction) {
-            case SCROLL_UP:    nextRoomId -= OVERWORLD_COLUMNS; break;
-            case SCROLL_DOWN:  nextRoomId += OVERWORLD_COLUMNS; break;
-            case SCROLL_LEFT:  nextRoomId -= 1; break;
-            case SCROLL_RIGHT: nextRoomId += 1; break;
-        }
-
-        // Load the new room's tileset if needed, then load room data
-        int newTilesetId = overworldTilesetTable.tilesetIdForRoom(nextRoomId);
-        if (shouldLoadRoomSpecificTileset(nextRoomId, newTilesetId)) {
-            gpu.loadRoomSpecificTiles(romData, nextRoomId, newTilesetId);
-            currentOverworldTilesetId = newTilesetId;
-        }
-        loadOverworldRoom(nextRoomId);
-
-        int target = (direction == SCROLL_LEFT || direction == SCROLL_RIGHT)
-            ? ROOM_PIXEL_WIDTH : ROOM_PIXEL_HEIGHT;
-        scrollController.start(direction, linkScreenX, linkScreenY, previousRoom, target);
-    }
-
-    /**
-     * Scroll-style transition between adjacent indoor rooms within the same
-     * map, mirroring the disassembly's {@code .initiateRoomTransition} +
-     * {@code IndoorRoomIncrement} path (room_transition.asm:658). Uses the
-     * same overworld scroll animation — both rooms share indoor VRAM
-     * tilesets within a building, so graphically the scroll is clean.
-     */
-    private static void startIndoorScroll(int direction, int linkScreenX, int linkScreenY) {
-        RoomRenderSnapshot previousRoom = new RoomRenderSnapshot(roomTileIds, roomTileAttrs, bgPalettes);
-        int nextRoomId = currentRoomId;
-        switch (direction) {
-            case SCROLL_UP:    nextRoomId -= 8; break;
-            case SCROLL_DOWN:  nextRoomId += 8; break;
-            case SCROLL_LEFT:  nextRoomId -= 1; break;
-            case SCROLL_RIGHT: nextRoomId += 1; break;
-        }
-        nextRoomId &= 0xFF;
-
-        loadIndoorRoom(currentMapId, nextRoomId);
-
-        int target = (direction == SCROLL_LEFT || direction == SCROLL_RIGHT)
-            ? ROOM_PIXEL_WIDTH : ROOM_PIXEL_HEIGHT;
-        scrollController.start(direction, linkScreenX, linkScreenY, previousRoom, target);
     }
 
     private static void update() {
@@ -439,8 +358,8 @@ public class Main {
                 // indoor-exit trigger needs to see Link at y > 112 to fire.
                 // If we clamp first, Link never crosses the threshold and
                 // the south-edge warp never fires.
-                maybeTriggerWarpTransition();
-                maybeTriggerEdgeScroll();
+                roomTransitionCoordinator.handleWarpAndIndoorBoundaries(link);
+                roomTransitionCoordinator.handleOverworldBoundary(link);
             } else if (scrollController.isActive() && link != null) {
                 // Keep Link's walk animation cycling during a room transition.
                 link.tickAnimation();
@@ -463,14 +382,14 @@ public class Main {
     }
 
     private static void maybeCutBushWithSword() {
-        if (currentMapCategory != Warp.CATEGORY_OVERWORLD
+        if (roomSession == null
+            || !roomSession.hasActiveRoom()
+            || roomSession.mapCategory() != Warp.CATEGORY_OVERWORLD
             || overworldBushInteraction == null
-            || roomObjectsArea == null
-            || roomTileIds == null
-            || roomTileAttrs == null
             || link == null) {
             return;
         }
+        ActiveRoom room = roomSession.activeRoom();
 
         Sword sword = equipmentController.activeSword();
         if (sword == null || !sword.staticCollisionActive()) {
@@ -484,20 +403,20 @@ public class Main {
         }
 
         int areaIndex = ROOM_OBJECTS_BASE + location;
-        if (areaIndex < 0 || areaIndex >= roomObjectsArea.length) {
+        if (areaIndex < 0 || areaIndex >= room.roomObjectsArea().length) {
             return;
         }
-        int originalObjectId = roomObjectsArea[areaIndex];
+        int originalObjectId = room.roomObjectsArea()[areaIndex];
 
         boolean changed = overworldBushInteraction.cutBushAtLocation(
             location,
-            currentRoomId,
+            room.roomId(),
             true,
-            roomObjectsArea,
-            roomObjectRenderValues,
-            roomGbcOverlay,
-            roomTileIds,
-            roomTileAttrs
+            room.roomObjectsArea(),
+            room.renderValues(),
+            room.gbcOverlay(),
+            room.tileIds(),
+            room.tileAttrs()
         );
         if (!changed) {
             return;
@@ -519,183 +438,11 @@ public class Main {
             );
         }
 
-        if (areaIndex >= 0 && areaIndex < roomObjectsArea.length
-            && roomObjectsArea[areaIndex] == OBJECT_GROUND_STAIRS
-            && !currentRoomWarps.isEmpty()) {
-            Warp warp0 = currentRoomWarps.get(0);
-            currentRoomWarps.set(0, warp0.withTileLocation(location));
+        if (areaIndex >= 0 && areaIndex < room.roomObjectsArea().length
+            && room.roomObjectsArea()[areaIndex] == OBJECT_GROUND_STAIRS) {
+            room.replaceFirstWarpTile(location);
         }
     }
-
-    /**
-     * If Link is standing on a tile matching any active warp, queue a fade
-     * transition. Mirrors the disassembly's position→warp lookup at
-     * bank0.asm:2798-2826 (LinkMotionMapFadeOutHandler.loop).
-     */
-    private static void maybeTriggerWarpTransition() {
-        if (currentRoomWarps.isEmpty() || transitionController.isActive()) {
-            return;
-        }
-
-        // Indoor rooms exit by walking off the south edge, not by stepping
-        // onto a specific tile. Mirrors CheckPositionForMapTransition
-        // (bank2.asm:5966) which fires when hLinkPositionY >= $88 ($88 - 16
-        // ≈ Link's top reaching pixel 120 in Java's top-left convention).
-        // Top/left/right edges also exit — we reuse the first warp record
-        // in the room, matching the dog-house-glitch behaviour where any
-        // door-triggered transition picks the lowest-indexed warp.
-        if (currentMapCategory != Warp.CATEGORY_OVERWORLD) {
-            int x = link.pixelX();
-            int y = link.pixelY();
-            boolean offBottom = y + Link.SPRITE_SIZE > ROOM_PIXEL_HEIGHT;
-            boolean offTop = y < 0;
-            boolean offLeft = x < 0;
-            boolean offRight = x + Link.SPRITE_SIZE > ROOM_PIXEL_WIDTH;
-            if (offBottom && indoorHasSouthEntrance && !currentRoomWarps.isEmpty()) {
-                // South edge of a room with an IndoorEntrance macro — the
-                // "main front door" of a single-exit building. Fade out via
-                // warp[0].
-                Warp target = currentRoomWarps.get(0);
-                System.out.println("Indoor front-door exit → cat=" + target.category()
-                    + " map=" + String.format("%02X", target.destMap())
-                    + " room=" + String.format("%02X", target.destRoom())
-                    + " at (" + target.destX() + "," + target.destY() + ")");
-                transitionController.startFadeOut(() -> applyWarp(target));
-                return;
-            }
-            if (offBottom || offTop || offLeft || offRight) {
-                // Scroll-style transition to the adjacent indoor room.
-                // Direction encoding matches the overworld edge-scroll
-                // constants and the post-scroll landing position is the
-                // opposite edge of the new room.
-                int scrollDir;
-                int destX;
-                int destY;
-                if (offLeft) {
-                    scrollDir = SCROLL_LEFT;
-                    destX = ROOM_PIXEL_WIDTH - Link.SPRITE_SIZE;
-                    destY = y;
-                } else if (offRight) {
-                    scrollDir = SCROLL_RIGHT;
-                    destX = 0;
-                    destY = y;
-                } else if (offTop) {
-                    scrollDir = SCROLL_UP;
-                    destX = x;
-                    destY = ROOM_PIXEL_HEIGHT - Link.SPRITE_SIZE;
-                } else {
-                    scrollDir = SCROLL_DOWN;
-                    destX = x;
-                    destY = 0;
-                }
-                link.setPixelPosition(destX, destY);
-                startIndoorScroll(scrollDir, x, y);
-                suppressedWarpTile = Warp.packTileLocation(destX, destY);
-                return;
-            }
-        }
-
-        int linkTile = Warp.packTileLocation(link.pixelX(), link.pixelY());
-        if (linkTile != suppressedWarpTile) {
-            suppressedWarpTile = -1;
-        }
-        if (linkTile == suppressedWarpTile) {
-            return;
-        }
-        for (Warp warp : currentRoomWarps) {
-            if (warp.tileLocation() == linkTile) {
-                final Warp target = warp;
-                System.out.println("Warp trigger: tile=" + String.format("%02X", linkTile)
-                    + " → cat=" + target.category()
-                    + " map=" + String.format("%02X", target.destMap())
-                    + " room=" + String.format("%02X", target.destRoom())
-                    + " at (" + target.destX() + "," + target.destY() + ")");
-                transitionController.startFadeOut(() -> applyWarp(target));
-                return;
-            }
-        }
-    }
-
-    /**
-     * Execute a warp: load the destination room and reposition Link. Invoked
-     * from the fade-out completion callback — the fade-in phase runs over
-     * the freshly loaded room.
-     */
-    private static void applyWarp(Warp warp) {
-        boolean wasIndoor = currentMapCategory != Warp.CATEGORY_OVERWORLD;
-        if (warp.category() == Warp.CATEGORY_OVERWORLD) {
-            if (wasIndoor) {
-                // Indoor → overworld: restore the base overworld VRAM block
-                // that an indoor tile load would have clobbered.
-                gpu.loadBaseOverworldTiles(romData);
-                currentOverworldTilesetId = W_TILESET_NO_UPDATE;
-            }
-            loadOverworldRoom(warp.destRoom());
-            int newTilesetId = overworldTilesetTable.tilesetIdForRoom(warp.destRoom());
-            if (shouldLoadRoomSpecificTileset(warp.destRoom(), newTilesetId)) {
-                gpu.loadRoomSpecificTiles(romData, warp.destRoom(), newTilesetId);
-                currentOverworldTilesetId = newTilesetId;
-            }
-        } else {
-            // Category 1 (indoor) — CATEGORY_SIDESCROLL not implemented yet.
-            loadIndoorRoom(warp.destMap(), warp.destRoom());
-        }
-        int landingX = warp.javaPixelX();
-        int landingY = warp.javaPixelY();
-        link.setPixelPosition(landingX, landingY);
-        suppressedWarpTile = Warp.packTileLocation(landingX, landingY);
-        // No explicit grace needed: door-type landing tiles ($C1/$C2,
-        // $C5/$C6, etc.) are walkable via OverworldCollision's id
-        // override, and if the landing happens to be on a blocked cell
-        // anyway Link.tryMoveAxis's self-regulating "currently stuck"
-        // check lets him step out.
-    }
-
-    private static void maybeTriggerEdgeScroll() {
-        int x = link.pixelX();
-        int y = link.pixelY();
-
-        // Edge-scrolling is an overworld concept: Link walking off one
-        // screen transitions to the adjacent overworld room. Indoor rooms
-        // are standalone — walking off an edge should only clamp, never
-        // scroll. Without this guard, currentRoomId would be interpreted
-        // as an overworld grid index and scroll Link to a random room.
-        boolean scrollAllowed = currentMapCategory == Warp.CATEGORY_OVERWORLD;
-        int roomCol = currentRoomId % OVERWORLD_COLUMNS;
-        int roomRow = currentRoomId / OVERWORLD_COLUMNS;
-
-        if (scrollAllowed && x < 0 && roomCol > 0) {
-            beginScrollWithLink(x, y, SCROLL_LEFT,
-                                ROOM_PIXEL_WIDTH - Link.SPRITE_SIZE, y);
-        } else if (scrollAllowed && x + Link.SPRITE_SIZE > ROOM_PIXEL_WIDTH && roomCol < OVERWORLD_COLUMNS - 1) {
-            beginScrollWithLink(x, y, SCROLL_RIGHT, 0, y);
-        } else if (scrollAllowed && y < 0 && roomRow > 0) {
-            beginScrollWithLink(x, y, SCROLL_UP, x,
-                                ROOM_PIXEL_HEIGHT - Link.SPRITE_SIZE);
-        } else if (scrollAllowed && y + Link.SPRITE_SIZE > ROOM_PIXEL_HEIGHT && roomRow < OVERWORLD_ROWS - 1) {
-            beginScrollWithLink(x, y, SCROLL_DOWN, x, 0);
-        } else {
-            // Clamp Link within the room if he hit an edge with no room
-            // beyond it, or if we're indoors.
-            int clampedX = Math.max(0, Math.min(x, ROOM_PIXEL_WIDTH - Link.SPRITE_SIZE));
-            int clampedY = Math.max(0, Math.min(y, ROOM_PIXEL_HEIGHT - Link.SPRITE_SIZE));
-            if (clampedX != x || clampedY != y) {
-                link.setPixelPosition(clampedX, clampedY);
-            }
-        }
-    }
-
-    private static void beginScrollWithLink(int prevX, int prevY, int direction,
-                                            int nextX, int nextY) {
-        // Capture the screen position where Link crossed the edge so we can
-        // keep him rendered at that spot throughout the transition.
-        link.setPixelPosition(nextX, nextY);
-        startScroll(direction, prevX, prevY);
-    }
-
-    // Starting room: Mabe Village Square (ROOM_OW_MABE_VILLAGE_SQUARE = $92
-    // from rooms.asm).
-    private static final int STARTING_ROOM_ID = 0x92;
 
     private static AppConfig currentAppConfig() {
         return appConfig != null ? appConfig : AppConfig.defaults();
@@ -733,97 +480,12 @@ public class Main {
     }
 
     private static void loadOverworldScreen() {
-        loadOverworldTiles();
-
-        loadOverworldRoom(StartupCoordinator.gameplayStartRoomId(currentAppConfig()));
+        roomSession.loadInitialOverworld(StartupCoordinator.gameplayStartRoomId(currentAppConfig()));
         // Center of Mabe Village Square has the statue (solid). Spawn Link two
         // tiles to the left of the room center so he lands on walkable ground.
         int startX = ROOM_PIXEL_WIDTH / 2 - Link.SPRITE_SIZE / 2 - 32;
         int startY = ROOM_PIXEL_HEIGHT / 2 - Link.SPRITE_SIZE / 2;
         link.setPixelPosition(startX, startY);
-    }
-
-    private static void loadOverworldTiles() {
-        gpu.loadBaseOverworldTiles(romData);
-
-        int startingRoomId = StartupCoordinator.gameplayStartRoomId(currentAppConfig());
-        int tilesetId = overworldTilesetTable.tilesetIdForRoom(startingRoomId);
-        if (shouldLoadRoomSpecificTileset(startingRoomId, tilesetId)) {
-            gpu.loadRoomSpecificTiles(romData, startingRoomId, tilesetId);
-            currentOverworldTilesetId = tilesetId;
-        }
-    }
-
-    private static boolean shouldLoadRoomSpecificTileset(int roomId, int tilesetId) {
-        return OverworldTilesetTable.shouldLoadRoomSpecificTileset(
-            roomId, tilesetId, currentOverworldTilesetId);
-    }
-
-    private static void loadOverworldRoom(int roomId) {
-        if (transientVfxSystem != null) {
-            transientVfxSystem.clear();
-        }
-        if (droppableRupeeSystem != null) {
-            droppableRupeeSystem.clear();
-        }
-
-        LoadedRoom room = roomLoader.loadOverworld(roomId);
-        gpu.loadAnimatedTilesGroup(romData, room.animatedTilesGroup());
-        applyLoadedRoom(room);
-
-        if (overworldCollision != null) {
-            overworldCollision.setRoom(roomObjectsArea);
-            overworldCollision.setGbcOverlay(roomGbcOverlay);
-            overworldCollision.setPhysicsTable(RomTables.PHYSICS_TABLE_OVERWORLD);
-        }
-    }
-
-    /**
-     * Load an indoor room (house / cave / dungeon). Mirrors the dispatch in
-     * bank0.asm:5862: map IDs in [MAP_INDOORS_B_START, MAP_INDOORS_B_END) use
-     * IndoorsBRoomPointers (bank $0B), everything else uses IndoorsA (bank
-     * $0A). The stream format is identical to overworld (same parser). For
-     * the first-iteration MVP the indoor render uses the overworld object
-     * tilemap and the Mabe Village palette, so graphics will be visibly
-     * wrong — the transition mechanic is the focus of this slice.
-     */
-    private static void loadIndoorRoom(int mapId, int roomId) {
-        if (transientVfxSystem != null) {
-            transientVfxSystem.clear();
-        }
-        if (droppableRupeeSystem != null) {
-            droppableRupeeSystem.clear();
-        }
-
-        // Load the full indoor VRAM tile set (shared dungeon tiles + per-map
-        // walls/floor/items + per-room Indoor(tilesetId)Tiles). Without this
-        // the indoor BG would render the overworld tiles still sitting in
-        // VRAM from before the warp.
-        gpu.loadIndoorTiles(romData, mapId, roomId);
-        LoadedRoom room = roomLoader.loadIndoor(mapId, roomId, bgPalettes);
-        gpu.loadAnimatedTilesGroup(romData, room.animatedTilesGroup());
-        applyLoadedRoom(room);
-
-        if (overworldCollision != null) {
-            overworldCollision.setRoom(roomObjectsArea);
-            overworldCollision.setGbcOverlay(null);
-            overworldCollision.setPhysicsTable(RomTables.PHYSICS_TABLE_INDOORS1);
-        }
-    }
-
-    private static void applyLoadedRoom(LoadedRoom room) {
-        currentRoomId = room.roomId();
-        currentMapCategory = room.mapCategory();
-        currentMapId = room.mapId();
-        roomObjectsArea = room.roomObjectsArea();
-        roomGbcOverlay = room.gbcOverlay();
-        roomObjectRenderValues = room.renderValues();
-        roomTileIds = room.tileIds();
-        roomTileAttrs = room.tileAttrs();
-        bgPalettes = room.palettes();
-        currentRoomWarps.clear();
-        currentRoomWarps.addAll(room.warps());
-        indoorHasSouthEntrance = room.indoorHasSouthEntrance();
     }
 
     private static void initGLFW() {
@@ -883,19 +545,12 @@ public class Main {
             .withScreen(currentRenderScreen())
             .withBackground(currentTilemap, currentAttrmap, bgPalettes, objPalettes)
             .withCutsceneManager(cutsceneManager)
-            .withRoom(currentRoomRenderSnapshot(), scrollController, transitionController)
+            .withRoom(roomSession == null ? null : roomSession.renderSnapshot(), scrollController, transitionController)
             .withLink(link)
             .withTransientVfx(transientVfxSystem, cutLeavesEffectRenderer, GREEN_OBJECTS_SPRITE_PALETTE)
             .withDroppableRupees(droppableRupeeSystem)
             .withInventoryController(inventoryController)
             .withDialogController(dialogController);
-    }
-
-    private static RoomRenderSnapshot currentRoomRenderSnapshot() {
-        if (roomTileIds == null || roomTileAttrs == null || bgPalettes == null) {
-            return null;
-        }
-        return new RoomRenderSnapshot(roomTileIds, roomTileAttrs, bgPalettes);
     }
 
     private static RenderScreen currentRenderScreen() {

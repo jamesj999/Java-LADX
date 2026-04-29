@@ -22,4 +22,21 @@ final class MainArchitectureTest {
         assertFalse(source.contains("addOverworldLayers"));
         assertFalse(source.contains("uploadTexture"));
     }
+
+    @Test
+    void mainDoesNotOwnRoomLoadingOrEdgeScrolling() throws Exception {
+        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+
+        assertFalse(source.contains("private static void loadOverworldRoom"));
+        assertFalse(source.contains("private static void loadIndoorRoom"));
+        assertFalse(source.contains("private static void startScroll"));
+        assertFalse(source.contains("private static void startIndoorScroll"));
+        assertFalse(source.contains("private static void maybeTriggerEdgeScroll"));
+        assertFalse(source.contains("private static void beginScrollWithLink"));
+        assertFalse(source.contains("private static void maybeTriggerWarpTransition"));
+        assertFalse(source.contains("private static void applyWarp"));
+        assertFalse(source.contains("private static void handleRoomBoundaryAfterWarpChecks"));
+        assertFalse(source.contains("private static int currentRoomId"));
+        assertFalse(source.contains("private static int[] roomObjectsArea"));
+    }
 }

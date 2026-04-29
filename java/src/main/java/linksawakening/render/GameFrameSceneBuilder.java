@@ -13,14 +13,10 @@ public final class GameFrameSceneBuilder {
     private static final int VIEWPORT_TILE_HEIGHT = 18;
 
     public FrameScene build(GameFrameState state) {
-        if (state.bgPalettes() == null) {
-            return FrameScene.empty();
-        }
-
         List<RenderLayer> layers = new ArrayList<>();
         if (state.screen() == RenderScreen.OVERWORLD && state.room() != null) {
             addOverworldLayers(layers, state);
-        } else if (state.tilemap() != null && state.attrmap() != null) {
+        } else if (state.tilemap() != null && state.attrmap() != null && state.bgPalettes() != null) {
             addBackgroundSceneLayers(layers, state);
         }
 
