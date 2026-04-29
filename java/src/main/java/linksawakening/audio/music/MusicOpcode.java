@@ -48,7 +48,7 @@ public final class MusicOpcode {
     }
 
     public static boolean isNoiseNote(int opcode) {
-        return unsigned(opcode) >= 0xB0;
+        return unsigned(opcode) == 0xFF;
     }
 
     public static int operandSize(int opcode, int channel) {

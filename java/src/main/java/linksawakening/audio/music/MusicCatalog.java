@@ -176,14 +176,21 @@ public final class MusicCatalog {
 
     private static void addBank1BTracks(byte[] romData, List<MusicTrack> tracks) {
         for (int inputId = 1; inputId <= BANK_1B_ENTRIES; inputId++) {
-            int publicId = inputId <= 0x10 ? inputId : inputId + 0x40;
+            int publicId;
+            if (inputId <= 0x10) {
+                publicId = inputId;
+            } else if (inputId <= 0x20) {
+                publicId = inputId + 0x20;
+            } else {
+                publicId = inputId + 0x40;
+            }
             tracks.add(trackFromPointerTable(romData, publicId, BANK_1B, BANK_1B_TABLE, inputId));
         }
     }
 
     private static void addBank1ETracks(byte[] romData, List<MusicTrack> tracks) {
         for (int inputId = 1; inputId <= BANK_1E_ENTRIES; inputId++) {
-            int publicId = inputId + 0x10;
+            int publicId = inputId <= 0x20 ? inputId + 0x10 : inputId + 0x20;
             tracks.add(trackFromPointerTable(romData, publicId, BANK_1E, BANK_1E_TABLE, inputId));
         }
     }

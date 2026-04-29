@@ -3,6 +3,7 @@ package linksawakening.audio.music;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -22,6 +23,7 @@ final class MusicOpcodeTest {
         assertTrue(MusicOpcode.isNoteLength(0xAF));
         assertTrue(MusicOpcode.isPitchedNote(0x02));
         assertTrue(MusicOpcode.isPitchedNote(0x90));
+        assertFalse(MusicOpcode.isNoiseNote(0xB0));
         assertTrue(MusicOpcode.isNoiseNote(0xFF));
     }
 
@@ -36,11 +38,13 @@ final class MusicOpcodeTest {
         assertEquals(1, MusicOpcode.operandSize(0x9F, 1));
         assertEquals(0, MusicOpcode.operandSize(0xA7, 2));
         assertEquals(0, MusicOpcode.operandSize(0x44, 2));
+        assertEquals(0, MusicOpcode.operandSize(0xFF, 4));
     }
 
     @Test
     void rejectsUnsupportedOpcodes() {
         assertThrows(IllegalArgumentException.class, () -> MusicOpcode.operandSize(0x91, 1));
+        assertThrows(IllegalArgumentException.class, () -> MusicOpcode.operandSize(0xB0, 4));
         assertThrows(IllegalArgumentException.class, () -> MusicOpcode.operandSize(0xFF, 1));
     }
 }

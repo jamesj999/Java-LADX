@@ -14,7 +14,10 @@ final class MusicCatalogTest {
         assertTrack(catalog.requireTrack(0x01), "MUSIC_TITLE_SCREEN", 0x1B, 0x4077);
         assertTrack(catalog.requireTrack(0x10), "MUSIC_OBTAIN_ITEM", 0x1B, 0x4077 + (0x0F * 2));
         assertTrack(catalog.requireTrack(0x11), "MUSIC_FILE_SELECT", 0x1E, 0x407F);
-        assertTrack(catalog.requireTrack(0x50), "MUSIC_MINIBOSS", 0x1E, 0x407F + (0x3F * 2));
+        assertTrack(catalog.requireTrack(0x31), "MUSIC_OVERWORLD_INTRO", 0x1B, 0x4077 + (0x10 * 2));
+        assertTrack(catalog.requireTrack(0x41), "MUSIC_EGG_BALLAD_DEFAULT", 0x1E, 0x407F + (0x20 * 2));
+        assertTrack(catalog.requireTrack(0x50), "MUSIC_MINIBOSS", 0x1E, 0x407F + (0x2F * 2));
+        assertTrack(catalog.requireTrack(0x51), "MUSIC_KANALET_CASTLE_COPY", 0x1E, 0x407F + (0x30 * 2));
         assertTrack(catalog.requireTrack(0x61), "MUSIC_COLOR_DUNGEON", 0x1B, 0x4077 + (0x20 * 2));
     }
 
