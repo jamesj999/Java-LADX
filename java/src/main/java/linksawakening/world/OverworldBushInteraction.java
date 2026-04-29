@@ -4,7 +4,7 @@ import linksawakening.entity.Link;
 import linksawakening.rom.RomTables;
 
 /**
- * ROM-backed overworld sword interaction for breakable bush objects.
+ * ROM-backed overworld sword interaction for breakable static objects.
  *
  * <p>Matches the disassembly split between {@code CheckStaticSwordCollision}
  * (bank0.asm:15AF) and {@code RevealObjectUnderObject} (bank14.asm:5526):
@@ -24,6 +24,7 @@ public final class OverworldBushInteraction {
 
     private static final int OBJECT_BUSH = 0x5C;
     private static final int OBJECT_BUSH_GROUND_STAIRS = 0xD3;
+    private static final int OBJECT_TALL_GRASS = 0x0A;
     private static final int OBJECT_SHORT_GRASS = 0x04;
     private static final int OBJECT_DIRT = 0x03;
     private static final int OBJECT_GROUND_STAIRS = 0xC6;
@@ -38,6 +39,33 @@ public final class OverworldBushInteraction {
 
     private final byte[] romData;
     private final RomTables romTables;
+
+    public record CutResult(boolean changed, int originalObjectId, int revealedObjectId,
+                            boolean bushLeavesVisible) {
+        public static CutResult unchanged(int originalObjectId) {
+            return new CutResult(false, originalObjectId, originalObjectId, false);
+        }
+    }
+
+    private record StaticObjectRule(int objectId, boolean bushLeavesVisible,
+                                    RevealedObjectResolver revealedObjectResolver) {
+        private CutResult cut(OverworldBushInteraction interaction, int roomId, boolean isGbcOverworld) {
+            int revealed = revealedObjectResolver.resolve(interaction, roomId, isGbcOverworld);
+            return new CutResult(true, objectId, revealed, bushLeavesVisible);
+        }
+    }
+
+    @FunctionalInterface
+    private interface RevealedObjectResolver {
+        int resolve(OverworldBushInteraction interaction, int roomId, boolean isGbcOverworld);
+    }
+
+    private static final StaticObjectRule[] CUTTABLE_OBJECT_RULES = {
+        new StaticObjectRule(OBJECT_BUSH, true, OverworldBushInteraction::revealGroundAfterCut),
+        new StaticObjectRule(OBJECT_BUSH_GROUND_STAIRS, true,
+            (interaction, roomId, isGbcOverworld) -> interaction.revealBushCoveredStairs(roomId)),
+        new StaticObjectRule(OBJECT_TALL_GRASS, true, OverworldBushInteraction::revealGroundAfterCut),
+    };
 
     public OverworldBushInteraction(byte[] romData, RomTables romTables) {
         this.romData = romData;
@@ -110,29 +138,36 @@ public final class OverworldBushInteraction {
                                      int[] fallbackOverlay,
                                      int[] roomTileIds,
                                      int[] roomTileAttrs) {
+        return cutObjectAtLocation(location, roomId, isGbcOverworld, roomObjectsArea,
+            mutableRenderValues, fallbackOverlay, roomTileIds, roomTileAttrs).changed();
+    }
+
+    public CutResult cutObjectAtLocation(int location, int roomId, boolean isGbcOverworld,
+                                         int[] roomObjectsArea,
+                                         int[] mutableRenderValues,
+                                         int[] fallbackOverlay,
+                                         int[] roomTileIds,
+                                         int[] roomTileAttrs) {
         int areaIndex = ROOM_OBJECTS_BASE + location;
         if (roomObjectsArea == null || areaIndex < 0 || areaIndex >= roomObjectsArea.length) {
-            return false;
+            return CutResult.unchanged(0xFF);
         }
 
         int objectId = roomObjectsArea[areaIndex];
-        int revealedObjectId;
-        if (objectId == OBJECT_BUSH) {
-            revealedObjectId = revealPlainBush(roomId, isGbcOverworld);
-        } else if (objectId == OBJECT_BUSH_GROUND_STAIRS) {
-            revealedObjectId = revealBushCoveredStairs(roomId);
-        } else {
-            return false;
+        StaticObjectRule rule = cuttableRuleFor(objectId);
+        if (rule == null) {
+            return CutResult.unchanged(objectId);
         }
+        CutResult result = rule.cut(this, roomId, isGbcOverworld);
 
-        roomObjectsArea[areaIndex] = revealedObjectId;
+        roomObjectsArea[areaIndex] = result.revealedObjectId();
         if (mutableRenderValues != null && areaIndex < mutableRenderValues.length) {
-            mutableRenderValues[areaIndex] = revealedObjectId;
+            mutableRenderValues[areaIndex] = result.revealedObjectId();
         }
 
         refreshRoomObjectCell(roomId, location, roomObjectsArea, mutableRenderValues,
             fallbackOverlay, roomTileIds, roomTileAttrs);
-        return true;
+        return result;
     }
 
     /**
@@ -216,7 +251,16 @@ public final class OverworldBushInteraction {
         return (((location >> 4) & 0x0F) << 4) + 0x10;
     }
 
-    private int revealPlainBush(int roomId, boolean isGbcOverworld) {
+    private static StaticObjectRule cuttableRuleFor(int objectId) {
+        for (StaticObjectRule rule : CUTTABLE_OBJECT_RULES) {
+            if (rule.objectId() == objectId) {
+                return rule;
+            }
+        }
+        return null;
+    }
+
+    private int revealGroundAfterCut(int roomId, boolean isGbcOverworld) {
         if (!isGbcOverworld) {
             return OBJECT_SHORT_GRASS;
         }

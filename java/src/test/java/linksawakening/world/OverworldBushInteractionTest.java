@@ -22,6 +22,7 @@ final class OverworldBushInteractionTest {
 
     private static final int OBJECT_BUSH = 0x5C;
     private static final int OBJECT_BUSH_GROUND_STAIRS = 0xD3;
+    private static final int OBJECT_TALL_GRASS = 0x0A;
     private static final int OBJECT_SHORT_GRASS = 0x04;
     private static final int OBJECT_DIRT = 0x03;
     private static final int OBJECT_GROUND_STAIRS = 0xC6;
@@ -54,6 +55,89 @@ final class OverworldBushInteractionTest {
     @Test
     void bushCoveredStairsRevealPitElsewhere() {
         assertBushCoveredStairsReveal(0x40, OBJECT_PIT);
+    }
+
+    @Test
+    void tallGrassIsCutToShortGrass() {
+        int roomId = 0x40;
+        int location = hitLocation(Link.DIRECTION_RIGHT, TARGET_LINK_X, TARGET_LINK_Y);
+        int[] roomObjectsArea = emptyRoomObjectsArea();
+        int[] mutableBackupObjects = emptyRoomObjectsArea();
+        int[] roomTileIds = emptyRoomTiles(-1);
+        int[] roomTileAttrs = emptyRoomTiles(-1);
+        int areaIndex = ROOM_OBJECTS_BASE + location;
+        roomObjectsArea[areaIndex] = OBJECT_TALL_GRASS;
+        mutableBackupObjects[areaIndex] = OBJECT_TALL_GRASS;
+
+        boolean changed = INTERACTION.cutBush(
+            true,
+            Link.DIRECTION_RIGHT,
+            TARGET_LINK_X,
+            TARGET_LINK_Y,
+            roomId,
+            true,
+            roomObjectsArea,
+            mutableBackupObjects,
+            null,
+            roomTileIds,
+            roomTileAttrs
+        );
+
+        assertTrue(changed);
+        assertEquals(OBJECT_SHORT_GRASS, roomObjectsArea[areaIndex]);
+        assertEquals(OBJECT_SHORT_GRASS, mutableBackupObjects[areaIndex]);
+    }
+
+    @Test
+    void tallGrassCutRequestsLeafScatterEffect() {
+        int roomId = 0x40;
+        int location = hitLocation(Link.DIRECTION_RIGHT, TARGET_LINK_X, TARGET_LINK_Y);
+        int[] roomObjectsArea = emptyRoomObjectsArea();
+        int[] roomTileIds = emptyRoomTiles(-1);
+        int[] roomTileAttrs = emptyRoomTiles(-1);
+        roomObjectsArea[ROOM_OBJECTS_BASE + location] = OBJECT_TALL_GRASS;
+
+        OverworldBushInteraction.CutResult result = INTERACTION.cutObjectAtLocation(
+            location,
+            roomId,
+            true,
+            roomObjectsArea,
+            null,
+            null,
+            roomTileIds,
+            roomTileAttrs
+        );
+
+        assertTrue(result.changed());
+        assertTrue(result.bushLeavesVisible());
+    }
+
+    @Test
+    void shortGrassIsNotCutAgain() {
+        int roomId = 0x40;
+        int location = hitLocation(Link.DIRECTION_RIGHT, TARGET_LINK_X, TARGET_LINK_Y);
+        int[] roomObjectsArea = emptyRoomObjectsArea();
+        int[] roomTileIds = emptyRoomTiles(-1);
+        int[] roomTileAttrs = emptyRoomTiles(-1);
+        int areaIndex = ROOM_OBJECTS_BASE + location;
+        roomObjectsArea[areaIndex] = OBJECT_SHORT_GRASS;
+
+        boolean changed = INTERACTION.cutBush(
+            true,
+            Link.DIRECTION_RIGHT,
+            TARGET_LINK_X,
+            TARGET_LINK_Y,
+            roomId,
+            true,
+            roomObjectsArea,
+            null,
+            null,
+            roomTileIds,
+            roomTileAttrs
+        );
+
+        assertFalse(changed);
+        assertEquals(OBJECT_SHORT_GRASS, roomObjectsArea[areaIndex]);
     }
 
     @Test

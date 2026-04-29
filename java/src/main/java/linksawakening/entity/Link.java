@@ -116,6 +116,7 @@ public final class Link {
     private int walkTickCounter;
     private int walkFrame;
     private boolean movingThisFrame;
+    private int groundMotionCounter;
     private int collisionIgnoreFramesRemaining;
     private final Tile[] composedTiles = new Tile[4];
 
@@ -197,11 +198,12 @@ public final class Link {
         int speedX = (byte) romTables.linkSpeedX(mask);
         int speedY = (byte) romTables.linkSpeedY(mask);
         movingThisFrame = (speedX != 0 || speedY != 0);
+        boolean applyGroundMotion = shouldApplyGroundMotion();
 
-        if (speedX != 0) {
+        if (applyGroundMotion && speedX != 0) {
             tryMoveAxis(speedX, true);
         }
-        if (speedY != 0) {
+        if (applyGroundMotion && speedY != 0) {
             tryMoveAxis(speedY, false);
         }
 
@@ -243,6 +245,16 @@ public final class Link {
         }
         EquippedItem b = itemRegistry.lookup(playerState.itemB());
         return b != null && b.locksFacing();
+    }
+
+    private boolean shouldApplyGroundMotion() {
+        groundMotionCounter++;
+        if (collision == null || !collision.linkOnSlowGround(pixelX(), pixelY())) {
+            return true;
+        }
+        // GROUND_STATUS_SLOW ($03) uses the same frame-counter mask in the
+        // original: skip the final position update when frameCounter & 3 == 0.
+        return (groundMotionCounter & 0x03) != 0;
     }
 
     private void tryMoveAxis(int signedSpeed, boolean isXAxis) {

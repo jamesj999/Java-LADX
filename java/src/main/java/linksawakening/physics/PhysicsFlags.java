@@ -74,4 +74,12 @@ public final class PhysicsFlags {
                 return false;
         }
     }
+
+    /**
+     * Return true for ground types that use {@code GROUND_STATUS_SLOW}
+     * in {@code ApplyLinkGroundPhysics} (bank2.asm:7750+).
+     */
+    public static boolean slowsWalking(int flag) {
+        return flag == SHALLOW_WATER || flag == GRASS;
+    }
 }

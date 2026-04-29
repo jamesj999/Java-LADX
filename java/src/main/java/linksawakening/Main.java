@@ -408,7 +408,7 @@ public class Main {
         }
         int originalObjectId = room.roomObjectsArea()[areaIndex];
 
-        boolean changed = overworldBushInteraction.cutBushAtLocation(
+        OverworldBushInteraction.CutResult cutResult = overworldBushInteraction.cutObjectAtLocation(
             location,
             room.roomId(),
             true,
@@ -418,11 +418,11 @@ public class Main {
             room.tileIds(),
             room.tileAttrs()
         );
-        if (!changed) {
+        if (!cutResult.changed()) {
             return;
         }
 
-        if (transientVfxSystem != null) {
+        if (transientVfxSystem != null && cutResult.bushLeavesVisible()) {
             transientVfxSystem.spawn(
                 TransientVfxType.BUSH_LEAVES,
                 overworldBushInteraction.effectOriginXForLocation(location),

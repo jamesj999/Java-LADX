@@ -61,13 +61,27 @@ public final class OverworldCollision {
         if (roomObjectsArea == null) {
             return false;
         }
-        int cellX = pixelX < 0
-            ? pixelX / CELL_SIZE - (pixelX % CELL_SIZE == 0 ? 0 : 1)
-            : pixelX / CELL_SIZE;
-        int cellY = pixelY < 0
-            ? pixelY / CELL_SIZE - (pixelY % CELL_SIZE == 0 ? 0 : 1)
-            : pixelY / CELL_SIZE;
+        int cellX = cellCoordinate(pixelX);
+        int cellY = cellCoordinate(pixelY);
         return isCellBlocking(cellX, cellY);
+    }
+
+    /**
+     * Whether Link's current foot cell applies the ROM's slow-ground motion
+     * gate. Mirrors {@code GetObjectUnderLink}: hLinkPositionX is the sprite
+     * center and hLinkPositionY is the sprite bottom, then Y is sampled four
+     * pixels above the bottom edge.
+     */
+    public boolean linkOnSlowGround(int linkPixelX, int linkPixelY) {
+        int objectId = objectUnderLinkFeet(linkPixelX, linkPixelY);
+        int flag = romTables.objectPhysicsFlag(physicsTableIndex, objectId);
+        return PhysicsFlags.slowsWalking(flag);
+    }
+
+    public int objectUnderLinkFeet(int linkPixelX, int linkPixelY) {
+        int cellX = cellCoordinate(linkPixelX + 8);
+        int cellY = cellCoordinate(linkPixelY + 12);
+        return objectIdAtCell(cellX, cellY);
     }
 
     private boolean isCellBlocking(int cellX, int cellY) {
@@ -101,6 +115,25 @@ public final class OverworldCollision {
         }
 
         return idBlocks(rawId);
+    }
+
+    private int objectIdAtCell(int cellX, int cellY) {
+        if (roomObjectsArea == null
+            || cellX < 0 || cellX >= OBJECTS_PER_ROW
+            || cellY < 0 || cellY >= OBJECTS_PER_COLUMN) {
+            return 0xFF;
+        }
+        int areaIndex = ROOM_OBJECTS_BASE + cellY * ROOM_OBJECT_ROW_STRIDE + cellX;
+        if (areaIndex < 0 || areaIndex >= roomObjectsArea.length) {
+            return 0xFF;
+        }
+        return roomObjectsArea[areaIndex];
+    }
+
+    private static int cellCoordinate(int pixel) {
+        return pixel < 0
+            ? pixel / CELL_SIZE - (pixel % CELL_SIZE == 0 ? 0 : 1)
+            : pixel / CELL_SIZE;
     }
 
     private static boolean isTreeOverlayId(int id) {
