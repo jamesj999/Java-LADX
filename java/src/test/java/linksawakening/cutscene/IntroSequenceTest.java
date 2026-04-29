@@ -140,6 +140,19 @@ final class IntroSequenceTest {
         ));
     }
 
+    @Test
+    void skipCompletesIntroOnFullyRevealedTitle() {
+        IntroSequence intro = new IntroSequence();
+
+        tick(intro, 32);
+        intro.skipToTitle();
+
+        assertFalse(intro.isActive());
+        assertEquals(IntroCutsceneScript.SCENE_TITLE, intro.sceneId());
+        assertEquals(TitleReveal.ROW_COUNT, intro.titleRevealRows());
+        assertTrue(intro.sprites().isEmpty());
+    }
+
     private static void tick(IntroSequence intro, int frames) {
         for (int i = 0; i < frames; i++) {
             intro.tick();

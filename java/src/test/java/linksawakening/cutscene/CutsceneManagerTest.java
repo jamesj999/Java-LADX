@@ -30,4 +30,19 @@ final class CutsceneManagerTest {
         dialog.advance();
         assertFalse(manager.isDialogActive());
     }
+
+    @Test
+    void skipIntroCompletesSequenceAndLoadsTitleScene() {
+        DialogController dialog = new DialogController(16);
+        List<String> loadedScenes = new ArrayList<>();
+        CutsceneManager manager = new CutsceneManager(dialog, loadedScenes::add);
+
+        manager.startIntro();
+
+        assertTrue(manager.skipIntroToTitle());
+        assertFalse(manager.isActive());
+        assertTrue(manager.isShowingTitleScene());
+        assertEquals(List.of(IntroCutsceneScript.SCENE_SEA, IntroCutsceneScript.SCENE_TITLE),
+            loadedScenes);
+    }
 }

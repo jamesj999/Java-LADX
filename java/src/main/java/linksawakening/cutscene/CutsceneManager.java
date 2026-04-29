@@ -44,6 +44,15 @@ public final class CutsceneManager implements CutsceneContext {
         return (introSequence != null && introSequence.isActive()) || controller.isActive();
     }
 
+    public boolean skipIntroToTitle() {
+        if (introSequence == null || !introSequence.isActive()) {
+            return false;
+        }
+        introSequence.skipToTitle();
+        setScene(introSequence.sceneId());
+        return true;
+    }
+
     public boolean isShowingTitleScene() {
         return IntroCutsceneScript.SCENE_TITLE.equals(currentScene);
     }

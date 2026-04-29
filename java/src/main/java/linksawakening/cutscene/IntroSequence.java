@@ -108,6 +108,12 @@ public final class IntroSequence {
         return stage != Stage.COMPLETE;
     }
 
+    public void skipToTitle() {
+        stage = Stage.COMPLETE;
+        stageFrame = 0;
+        scrollX = 0;
+    }
+
     public String sceneId() {
         return switch (stage) {
             case SEA -> IntroCutsceneScript.SCENE_SEA;

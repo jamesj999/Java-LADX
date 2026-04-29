@@ -1,6 +1,8 @@
 package linksawakening;
 
 import linksawakening.config.AppConfig;
+import linksawakening.cutscene.CutsceneManager;
+import linksawakening.dialog.DialogController;
 import linksawakening.scene.BackgroundSceneCatalog;
 import linksawakening.scene.BackgroundSceneLoader;
 import linksawakening.scene.BackgroundSceneSpec;
@@ -9,9 +11,13 @@ import linksawakening.world.IndoorRoomPointerTables;
 import linksawakening.world.RoomPointerTable;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_ENTER;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_F1;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_F2;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
@@ -95,6 +101,17 @@ final class MainTest {
         assertFalse(Main.shouldRunDebugDump(disabled, GLFW_KEY_F1, GLFW_PRESS));
         assertFalse(Main.shouldRunDebugDump(enabled, GLFW_KEY_F2, GLFW_PRESS));
         assertFalse(Main.shouldRunDebugDump(enabled, GLFW_KEY_F1, GLFW_RELEASE));
+    }
+
+    @Test
+    void enterPressSkipsActiveIntroCutsceneToTitle() {
+        List<String> loadedScenes = new ArrayList<>();
+        CutsceneManager manager = new CutsceneManager(new DialogController(16), loadedScenes::add);
+        manager.startIntro();
+
+        assertTrue(Main.skipIntroCutsceneIfRequested(GLFW_KEY_ENTER, GLFW_PRESS, manager));
+        assertFalse(manager.isActive());
+        assertTrue(manager.isShowingTitleScene());
     }
 
     private static byte[] loadRom() {
