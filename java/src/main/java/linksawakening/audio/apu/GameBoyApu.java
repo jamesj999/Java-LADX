@@ -130,44 +130,34 @@ public final class GameBoyApu {
 
             double left = 0.0;
             double right = 0.0;
-            int leftCount = 0;
-            int rightCount = 0;
 
             if (routedToLeft(1)) {
                 left += sample1;
-                leftCount++;
             }
             if (routedToLeft(2)) {
                 left += sample2;
-                leftCount++;
             }
             if (routedToLeft(3)) {
                 left += sample3;
-                leftCount++;
             }
             if (routedToLeft(4)) {
                 left += sample4;
-                leftCount++;
             }
             if (routedToRight(1)) {
                 right += sample1;
-                rightCount++;
             }
             if (routedToRight(2)) {
                 right += sample2;
-                rightCount++;
             }
             if (routedToRight(3)) {
                 right += sample3;
-                rightCount++;
             }
             if (routedToRight(4)) {
                 right += sample4;
-                rightCount++;
             }
 
-            pcm[frame * 2] = toPcm(leftCount == 0 ? 0.0 : left / leftCount, leftVolume());
-            pcm[frame * 2 + 1] = toPcm(rightCount == 0 ? 0.0 : right / rightCount, rightVolume());
+            pcm[frame * 2] = toPcm(left, leftVolume());
+            pcm[frame * 2 + 1] = toPcm(right, rightVolume());
         }
         return pcm;
     }

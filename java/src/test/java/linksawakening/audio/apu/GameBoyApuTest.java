@@ -82,6 +82,27 @@ final class GameBoyApuTest {
     }
 
     @Test
+    void routedChannelsAreSummedInsteadOfAveraged() {
+        GameBoyApu oneChannel = new GameBoyApu(48_000);
+        oneChannel.writeRegister(GameBoyApu.NR52, 0x80);
+        oneChannel.writeRegister(GameBoyApu.NR50, 0x77);
+        oneChannel.writeRegister(GameBoyApu.NR51, 0x11);
+        triggerChannel1(oneChannel);
+
+        GameBoyApu twoChannels = new GameBoyApu(48_000);
+        twoChannels.writeRegister(GameBoyApu.NR52, 0x80);
+        twoChannels.writeRegister(GameBoyApu.NR50, 0x77);
+        twoChannels.writeRegister(GameBoyApu.NR51, 0x33);
+        triggerChannel1(twoChannels);
+        triggerChannel2(twoChannels);
+
+        short singleLeft = oneChannel.render(1)[0];
+        short mixedLeft = twoChannels.render(1)[0];
+
+        assertEquals(singleLeft * 2, mixedLeft);
+    }
+
+    @Test
     void disabledMasterPowerOutputsSilence() {
         GameBoyApu apu = new GameBoyApu(48_000);
         apu.writeRegister(GameBoyApu.NR52, 0x00);
@@ -98,6 +119,20 @@ final class GameBoyApuTest {
         for (short sample : pcm) {
             assertEquals(0, sample);
         }
+    }
+
+    private static void triggerChannel1(GameBoyApu apu) {
+        apu.writeRegister(GameBoyApu.NR11, 0x80);
+        apu.writeRegister(GameBoyApu.NR12, 0xF0);
+        apu.writeRegister(GameBoyApu.NR13, 0x00);
+        apu.writeRegister(GameBoyApu.NR14, 0x87);
+    }
+
+    private static void triggerChannel2(GameBoyApu apu) {
+        apu.writeRegister(GameBoyApu.NR21, 0x80);
+        apu.writeRegister(GameBoyApu.NR22, 0xF0);
+        apu.writeRegister(GameBoyApu.NR23, 0x00);
+        apu.writeRegister(GameBoyApu.NR24, 0x87);
     }
 
     private static boolean hasNonZeroSample(short[] pcm) {
