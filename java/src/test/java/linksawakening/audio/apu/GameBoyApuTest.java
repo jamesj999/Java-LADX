@@ -114,6 +114,24 @@ final class GameBoyApuTest {
     }
 
     @Test
+    void squareChannelAppliesHardwareVolumeEnvelope() {
+        GameBoyApu apu = new GameBoyApu(48_000);
+        apu.writeRegister(GameBoyApu.NR52, 0x80);
+        apu.writeRegister(GameBoyApu.NR50, 0x77);
+        apu.writeRegister(GameBoyApu.NR51, 0x11);
+        apu.writeRegister(GameBoyApu.NR11, 0x80);
+        apu.writeRegister(GameBoyApu.NR12, 0x51);
+        apu.writeRegister(GameBoyApu.NR13, 0x00);
+        apu.writeRegister(GameBoyApu.NR14, 0x87);
+
+        short initial = apu.render(1)[0];
+        short[] later = apu.render(760);
+        short afterEnvelopeTick = later[(760 - 1) * 2];
+
+        assertTrue(Math.abs(afterEnvelopeTick) < Math.abs(initial));
+    }
+
+    @Test
     void routedChannelsAreSummedInsteadOfAveraged() {
         GameBoyApu oneChannel = new GameBoyApu(48_000);
         oneChannel.writeRegister(GameBoyApu.NR52, 0x80);

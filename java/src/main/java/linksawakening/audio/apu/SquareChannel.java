@@ -1,6 +1,7 @@
 package linksawakening.audio.apu;
 
 final class SquareChannel {
+    private static final double ENVELOPE_CLOCK_HZ = 64.0;
     private static final int[][] DUTY_PATTERNS = {
             {0, 0, 0, 0, 0, 0, 0, 1},
             {1, 0, 0, 0, 0, 0, 0, 1},
@@ -16,6 +17,7 @@ final class SquareChannel {
     private boolean active;
     private int volume;
     private double phase;
+    private double envelopeClockAccumulator;
 
     SquareChannel(int sampleRate) {
         this.sampleRate = sampleRate;
@@ -30,6 +32,7 @@ final class SquareChannel {
         active = false;
         volume = 0;
         phase = 0.0;
+        envelopeClockAccumulator = 0.0;
     }
 
     void writeDuty(int value) {
@@ -60,6 +63,28 @@ final class SquareChannel {
     }
 
     void tick() {
+        if (!active) {
+            return;
+        }
+
+        int envelopePeriod = envelopeRegister & 0x07;
+        if (envelopePeriod == 0) {
+            return;
+        }
+
+        envelopeClockAccumulator += ENVELOPE_CLOCK_HZ / sampleRate;
+        if (envelopeClockAccumulator < envelopePeriod) {
+            return;
+        }
+
+        envelopeClockAccumulator -= envelopePeriod;
+        if ((envelopeRegister & 0x08) != 0) {
+            if (volume < 0x0F) {
+                volume++;
+            }
+        } else if (volume > 0) {
+            volume--;
+        }
     }
 
     double render() {
@@ -82,6 +107,7 @@ final class SquareChannel {
         active = (envelopeRegister & 0xF8) != 0;
         volume = (envelopeRegister >>> 4) & 0x0F;
         phase = 0.0;
+        envelopeClockAccumulator = 0.0;
     }
 
     private double frequencyHertz() {
