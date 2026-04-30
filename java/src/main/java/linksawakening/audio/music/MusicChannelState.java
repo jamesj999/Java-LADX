@@ -13,6 +13,7 @@ final class MusicChannelState {
     int dutyLength;
     int waveOutputLevel;
     boolean active;
+    boolean playingRest;
 
     MusicChannelState(int channel) {
         this.channel = channel;
@@ -30,5 +31,6 @@ final class MusicChannelState {
         dutyLength = 0;
         waveOutputLevel = 0;
         active = false;
+        playingRest = false;
     }
 }

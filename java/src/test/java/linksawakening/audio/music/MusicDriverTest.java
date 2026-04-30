@@ -338,6 +338,30 @@ final class MusicDriverTest {
         assertEquals(0, apu.readRegister(GameBoyApu.NR12));
     }
 
+    @Test
+    void squareSoftwareEnvelopeDoesNotRetriggerDuringRest() {
+        byte[] rom = syntheticRomWithOneChannel(new byte[] {
+                (byte) 0x9D, (byte) 0x70, (byte) 0x81, (byte) 0x80,
+                (byte) 0xA0,
+                0x4A,
+                (byte) 0xA3,
+                0x01,
+                0x00
+        });
+        GameBoyApu apu = new GameBoyApu(48_000);
+        MusicDriver driver = new MusicDriver(rom, apu);
+
+        driver.start(new MusicTrack(0x01, "TEST", 0x1B, 0x4077, 0x5000, RomBank.romOffset(0x1B, 0x5000)));
+        driver.tick60Hz();
+        assertEquals(0x70, apu.readRegister(GameBoyApu.NR12));
+        driver.tick60Hz();
+        assertEquals(0, apu.readRegister(GameBoyApu.NR12));
+        driver.tick60Hz();
+        driver.tick60Hz();
+
+        assertEquals(0, apu.readRegister(GameBoyApu.NR12));
+    }
+
     private static byte[] syntheticRomWithOneChannel(byte[] definition) {
         return syntheticRomWithOneChannelInBank(0x1B, definition);
     }

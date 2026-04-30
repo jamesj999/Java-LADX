@@ -199,6 +199,7 @@ public final class MusicDriver {
     }
 
     private void silenceChannel(MusicChannelState state) {
+        state.playingRest = true;
         if (state.channel == 1) {
             apu.writeRegister(GameBoyApu.NR12, 0);
         } else if (state.channel == 2) {
@@ -283,6 +284,7 @@ public final class MusicDriver {
     }
 
     private void writePitchedNote(MusicChannelState state, int noteCode) {
+        state.playingRest = false;
         int frequency = frequencyRegister(noteCode);
         int low = frequency & 0xFF;
         int high = ((frequency >>> 8) & 0x07) | TRIGGER;
@@ -308,6 +310,7 @@ public final class MusicDriver {
     }
 
     private void writeNoiseNote(MusicChannelState state, int noteCode) {
+        state.playingRest = false;
         if (noteCode == 0xFF) {
             writeNoiseRegisters(NOISE_FF_START_REGISTERS);
             noiseFfPhase = 1;
@@ -330,7 +333,7 @@ public final class MusicDriver {
     }
 
     private void tickArticulation(MusicChannelState state) {
-        if (state.channel > 2) {
+        if (state.channel > 2 || state.playingRest) {
             return;
         }
 
