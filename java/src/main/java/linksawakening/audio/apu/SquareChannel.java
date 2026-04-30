@@ -1,6 +1,7 @@
 package linksawakening.audio.apu;
 
 final class SquareChannel {
+    private static final double SWEEP_CLOCK_HZ = 128.0;
     private static final double ENVELOPE_CLOCK_HZ = 64.0;
     private static final int[][] DUTY_PATTERNS = {
             {0, 0, 0, 0, 0, 0, 0, 1},
@@ -10,6 +11,7 @@ final class SquareChannel {
     };
 
     private final int sampleRate;
+    private int sweepRegister;
     private int dutyRegister;
     private int envelopeRegister;
     private int frequencyLow;
@@ -17,6 +19,10 @@ final class SquareChannel {
     private boolean active;
     private int volume;
     private double phase;
+    private int sweepShadowFrequency;
+    private int sweepTimer;
+    private boolean sweepEnabled;
+    private double sweepClockAccumulator;
     private double envelopeClockAccumulator;
 
     SquareChannel(int sampleRate) {
@@ -25,6 +31,7 @@ final class SquareChannel {
     }
 
     void reset() {
+        sweepRegister = 0;
         dutyRegister = 0;
         envelopeRegister = 0;
         frequencyLow = 0;
@@ -32,7 +39,15 @@ final class SquareChannel {
         active = false;
         volume = 0;
         phase = 0.0;
+        sweepShadowFrequency = 0;
+        sweepTimer = 0;
+        sweepEnabled = false;
+        sweepClockAccumulator = 0.0;
         envelopeClockAccumulator = 0.0;
+    }
+
+    void writeSweep(int value) {
+        sweepRegister = value & 0xFF;
     }
 
     void writeDuty(int value) {
@@ -67,6 +82,46 @@ final class SquareChannel {
             return;
         }
 
+        tickSweep();
+        tickEnvelope();
+    }
+
+    private void tickSweep() {
+        sweepClockAccumulator += SWEEP_CLOCK_HZ / sampleRate;
+        if (sweepClockAccumulator < 1.0) {
+            return;
+        }
+
+        sweepClockAccumulator -= 1.0;
+        sweepTimer--;
+        if (sweepTimer > 0) {
+            return;
+        }
+
+        sweepTimer = sweepPeriodReload();
+        int period = sweepPeriod();
+        if (!sweepEnabled || period == 0) {
+            return;
+        }
+
+        if (sweepShift() == 0) {
+            return;
+        }
+
+        int newFrequency = calculateSweepFrequency();
+        if (newFrequency > 0x7FF) {
+            active = false;
+            return;
+        }
+
+        sweepShadowFrequency = newFrequency;
+        writeFrequency(newFrequency);
+        if (calculateSweepFrequency() > 0x7FF) {
+            active = false;
+        }
+    }
+
+    private void tickEnvelope() {
         int envelopePeriod = envelopeRegister & 0x07;
         if (envelopePeriod == 0) {
             return;
@@ -107,15 +162,52 @@ final class SquareChannel {
         active = (envelopeRegister & 0xF8) != 0;
         volume = (envelopeRegister >>> 4) & 0x0F;
         phase = 0.0;
+        sweepShadowFrequency = frequencyRegister();
+        sweepTimer = sweepPeriodReload();
+        sweepEnabled = sweepPeriod() != 0 || sweepShift() != 0;
+        sweepClockAccumulator = 0.0;
         envelopeClockAccumulator = 0.0;
+        if (sweepShift() != 0 && calculateSweepFrequency() > 0x7FF) {
+            active = false;
+        }
     }
 
     private double frequencyHertz() {
-        int frequency = frequencyLow | ((frequencyHigh & 0x07) << 8);
+        int frequency = frequencyRegister();
         int denominator = 2048 - frequency;
         if (denominator <= 0) {
             return 0.0;
         }
         return 131_072.0 / denominator;
+    }
+
+    private int frequencyRegister() {
+        return frequencyLow | ((frequencyHigh & 0x07) << 8);
+    }
+
+    private void writeFrequency(int frequency) {
+        frequencyLow = frequency & 0xFF;
+        frequencyHigh = (frequencyHigh & 0xF8) | ((frequency >>> 8) & 0x07);
+    }
+
+    private int calculateSweepFrequency() {
+        int delta = sweepShadowFrequency >>> sweepShift();
+        if ((sweepRegister & 0x08) != 0) {
+            return sweepShadowFrequency - delta;
+        }
+        return sweepShadowFrequency + delta;
+    }
+
+    private int sweepPeriod() {
+        return (sweepRegister >>> 4) & 0x07;
+    }
+
+    private int sweepPeriodReload() {
+        int period = sweepPeriod();
+        return period == 0 ? 8 : period;
+    }
+
+    private int sweepShift() {
+        return sweepRegister & 0x07;
     }
 }

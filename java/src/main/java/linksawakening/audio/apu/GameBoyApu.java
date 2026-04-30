@@ -24,7 +24,7 @@ public final class GameBoyApu {
     public static final int NR52 = 0x26;
 
     private static final int REGISTER_COUNT = NR52 + 1;
-    private static final double MIX_AMPLITUDE = 8192.0;
+    private static final double MIX_AMPLITUDE = 4096.0;
 
     private final int sampleRate;
     private final int[] registers = new int[REGISTER_COUNT];
@@ -65,6 +65,7 @@ public final class GameBoyApu {
         registers[register] = unsignedValue;
 
         switch (register) {
+            case NR10 -> channel1.writeSweep(unsignedValue);
             case NR11 -> channel1.writeDuty(unsignedValue);
             case NR12 -> channel1.writeEnvelope(unsignedValue);
             case NR13 -> channel1.writeFrequencyLow(unsignedValue);

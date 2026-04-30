@@ -97,6 +97,29 @@ final class GameBoyApuTest {
     }
 
     @Test
+    void fullVolumeChannelsShareMixerScale() {
+        GameBoyApu squareApu = new GameBoyApu(48_000);
+        squareApu.writeRegister(GameBoyApu.NR52, 0x80);
+        squareApu.writeRegister(GameBoyApu.NR50, 0x77);
+        squareApu.writeRegister(GameBoyApu.NR51, 0x11);
+        triggerChannel1(squareApu);
+
+        GameBoyApu noiseApu = new GameBoyApu(48_000);
+        noiseApu.writeRegister(GameBoyApu.NR52, 0x80);
+        noiseApu.writeRegister(GameBoyApu.NR50, 0x77);
+        noiseApu.writeRegister(GameBoyApu.NR51, 0x88);
+        noiseApu.writeRegister(GameBoyApu.NR42, 0xF0);
+        noiseApu.writeRegister(GameBoyApu.NR43, 0x10);
+        noiseApu.writeRegister(GameBoyApu.NR44, 0x80);
+
+        short squareSample = squareApu.render(1)[0];
+        short noiseSample = noiseApu.render(1)[0];
+
+        assertEquals(4096, Math.abs(squareSample));
+        assertEquals(Math.abs(squareSample), Math.abs(noiseSample));
+    }
+
+    @Test
     void noiseChannelAppliesHardwareVolumeEnvelope() {
         GameBoyApu apu = new GameBoyApu(48_000);
         apu.writeRegister(GameBoyApu.NR52, 0x80);
@@ -129,6 +152,43 @@ final class GameBoyApuTest {
         short afterEnvelopeTick = later[(760 - 1) * 2];
 
         assertTrue(Math.abs(afterEnvelopeTick) < Math.abs(initial));
+    }
+
+    @Test
+    void channel1HardwareSweepRaisesPitchAfterTrigger() {
+        GameBoyApu apu = new GameBoyApu(48_000);
+        apu.writeRegister(GameBoyApu.NR52, 0x80);
+        apu.writeRegister(GameBoyApu.NR50, 0x77);
+        apu.writeRegister(GameBoyApu.NR51, 0x11);
+        apu.writeRegister(GameBoyApu.NR10, 0x24);
+        apu.writeRegister(GameBoyApu.NR11, 0x80);
+        apu.writeRegister(GameBoyApu.NR12, 0xF0);
+        apu.writeRegister(GameBoyApu.NR13, 0x00);
+        apu.writeRegister(GameBoyApu.NR14, 0x83);
+
+        int earlyTransitions = countLeftChannelSignTransitions(apu.render(4096));
+        int laterTransitions = countLeftChannelSignTransitions(apu.render(4096));
+
+        assertTrue(laterTransitions > earlyTransitions,
+                "expected sweep to raise pitch, early=" + earlyTransitions + " later=" + laterTransitions);
+    }
+
+    @Test
+    void channel1SweepWithZeroShiftDoesNotMuteChannel() {
+        GameBoyApu apu = new GameBoyApu(48_000);
+        apu.writeRegister(GameBoyApu.NR52, 0x80);
+        apu.writeRegister(GameBoyApu.NR50, 0x77);
+        apu.writeRegister(GameBoyApu.NR51, 0x11);
+        apu.writeRegister(GameBoyApu.NR10, 0x70);
+        apu.writeRegister(GameBoyApu.NR11, 0x80);
+        apu.writeRegister(GameBoyApu.NR12, 0xF0);
+        apu.writeRegister(GameBoyApu.NR13, 0xF0);
+        apu.writeRegister(GameBoyApu.NR14, 0x87);
+
+        short[] pcm = apu.render(8192);
+
+        assertTrue(hasNonZeroSample(pcm));
+        assertTrue(apu.isChannelActive(1));
     }
 
     @Test
@@ -192,6 +252,22 @@ final class GameBoyApuTest {
             }
         }
         return false;
+    }
+
+    private static int countLeftChannelSignTransitions(short[] pcm) {
+        int transitions = 0;
+        int previousSign = 0;
+        for (int i = 0; i < pcm.length; i += 2) {
+            int sign = Integer.signum(pcm[i]);
+            if (sign == 0) {
+                continue;
+            }
+            if (previousSign != 0 && sign != previousSign) {
+                transitions++;
+            }
+            previousSign = sign;
+        }
+        return transitions;
     }
 
     private static boolean hasSignChangeInLeftChannel(short[] pcm) {

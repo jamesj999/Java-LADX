@@ -31,7 +31,7 @@ public final class MusicDriver {
             0x07D6, 0x07D9, 0x07DB, 0x07DD,
             0x07DF
     };
-    private static final int[] NOISE_FREQUENCY_TABLE = {
+    private static final int[] NOISE_FREQUENCY_TABLE_1B = {
             0x00,
             0x00, 0x00, 0x00, 0x00, 0xC0,
             0x09, 0x00, 0x38, 0x34, 0xC0,
@@ -50,6 +50,24 @@ public final class MusicDriver {
             0x01, 0x03, 0x06, 0x0C, 0x18,
             0x30, 0x09, 0x12, 0x24, 0x02,
             0x04, 0x08, 0x01, 0x01, 0x48
+    };
+    private static final int[] NOISE_FREQUENCY_TABLE_1E = {
+            0x00,
+            0x00, 0x00, 0x00, 0x00, 0xC0,
+            0x09, 0x00, 0x38, 0x34, 0xC0,
+            0x19, 0x00, 0x38, 0x33, 0xC0,
+            0x46, 0x00, 0x13, 0x10, 0xC0,
+            0x23, 0x00, 0x20, 0x40, 0x80,
+            0x51, 0x00, 0x20, 0x07, 0x80,
+            0xA1, 0x00, 0x00, 0x18, 0x80,
+            0xF2, 0x00, 0x00, 0x18, 0x80,
+            0x81, 0x00, 0x3A, 0x10, 0xC0,
+            0x80, 0x00, 0x00, 0x10, 0xC0,
+            0x57, 0x00, 0x00, 0x60, 0x80,
+            0x10, 0x00, 0x00, 0x10, 0x80,
+            0x01, 0x02, 0x04, 0x08, 0x10,
+            0x20, 0x06, 0x0C, 0x18, 0x01,
+            0x01, 0x01, 0x01, 0x01, 0x30
     };
     private static final int[] SOFTWARE_ENVELOPE_TABLE_1B = { 0xF0, 0x10, 0x32, 0x22, 0x47, 0x81, 0x20, 0x00 };
     private static final int[] SOFTWARE_ENVELOPE_TABLE_1E = { 0xF0, 0x10, 0x32, 0x22, 0x47, 0x60, 0x20, 0x00 };
@@ -77,6 +95,8 @@ public final class MusicDriver {
     private int musicTranspose;
     private int noiseFfPhase;
     private int noiseFfCountdown;
+    private int channel3VolumeEffectMode;
+    private int channel3VolumeEffectCounter;
 
     public MusicDriver(byte[] romData, GameBoyApu apu) {
         this.romData = Objects.requireNonNull(romData, "romData");
@@ -161,7 +181,7 @@ public final class MusicDriver {
                 consumeTime(state);
                 return;
             } else if (MusicOpcode.isDriverFlag(opcode)) {
-                // Mode flags affect finer driver behavior that is outside this first playback slice.
+                applyDriverFlag(opcode);
             } else if (MusicOpcode.isBeginLoop(opcode)) {
                 int count = readByte(trackBank, state.programCounter);
                 state.programCounter++;
@@ -300,6 +320,10 @@ public final class MusicDriver {
             apu.writeRegister(GameBoyApu.NR23, low);
             apu.writeRegister(GameBoyApu.NR24, high);
         } else if (state.channel == 3) {
+            if (channel3VolumeEffectMode != 0) {
+                channel3VolumeEffectMode = 1;
+                channel3VolumeEffectCounter = 0;
+            }
             apu.writeRegister(GameBoyApu.NR30, 0x80);
             apu.writeRegister(GameBoyApu.NR32, state.waveOutputLevel);
             apu.writeRegister(GameBoyApu.NR33, low);
@@ -318,11 +342,12 @@ public final class MusicDriver {
             return;
         }
 
-        int tableOffset = noiseTableOffset(noteCode);
-        apu.writeRegister(GameBoyApu.NR41, NOISE_FREQUENCY_TABLE[tableOffset + 2]);
-        apu.writeRegister(GameBoyApu.NR42, NOISE_FREQUENCY_TABLE[tableOffset]);
-        apu.writeRegister(GameBoyApu.NR43, NOISE_FREQUENCY_TABLE[tableOffset + 3]);
-        apu.writeRegister(GameBoyApu.NR44, NOISE_FREQUENCY_TABLE[tableOffset + 4] | TRIGGER);
+        int[] noiseTable = noiseFrequencyTable();
+        int tableOffset = noiseTableOffset(noteCode, noiseTable);
+        apu.writeRegister(GameBoyApu.NR41, noiseTable[tableOffset + 2]);
+        apu.writeRegister(GameBoyApu.NR42, noiseTable[tableOffset]);
+        apu.writeRegister(GameBoyApu.NR43, noiseTable[tableOffset + 3]);
+        apu.writeRegister(GameBoyApu.NR44, noiseTable[tableOffset + 4] | TRIGGER);
     }
 
     private void consumeTime(MusicChannelState state) {
@@ -332,7 +357,19 @@ public final class MusicDriver {
         articulationApplied[index] = false;
     }
 
+    private void applyDriverFlag(int opcode) {
+        if (opcode == 0x99) {
+            channel3VolumeEffectMode = 1;
+        } else if (opcode == 0x9A) {
+            channel3VolumeEffectMode = 0;
+        }
+    }
+
     private void tickArticulation(MusicChannelState state) {
+        if (state.channel == 3) {
+            tickChannel3VolumeEffect(state);
+            return;
+        }
         if (state.channel > 2 || state.playingRest) {
             return;
         }
@@ -354,6 +391,24 @@ public final class MusicDriver {
         } else {
             apu.writeRegister(GameBoyApu.NR22, envelope);
             apu.writeRegister(GameBoyApu.NR24, apu.readRegister(GameBoyApu.NR24) | TRIGGER);
+        }
+    }
+
+    private void tickChannel3VolumeEffect(MusicChannelState state) {
+        if (state.playingRest || channel3VolumeEffectMode == 0 || channel3VolumeEffectMode == 2) {
+            return;
+        }
+
+        channel3VolumeEffectCounter++;
+        if (channel3VolumeEffectCounter == 3) {
+            apu.writeRegister(GameBoyApu.NR32, 0x40);
+        } else if (channel3VolumeEffectCounter == 5 || channel3VolumeEffectCounter == 10) {
+            apu.writeRegister(GameBoyApu.NR32, 0x60);
+        } else if (channel3VolumeEffectCounter == 7) {
+            apu.writeRegister(GameBoyApu.NR32, 0x00);
+        } else if (channel3VolumeEffectCounter == 13) {
+            channel3VolumeEffectMode = 2;
+            apu.writeRegister(GameBoyApu.NR32, 0x00);
         }
     }
 
@@ -431,6 +486,8 @@ public final class MusicDriver {
         musicTranspose = 0;
         noiseFfPhase = 0;
         noiseFfCountdown = 0;
+        channel3VolumeEffectMode = 0;
+        channel3VolumeEffectCounter = 0;
     }
 
     private static int frequencyRegister(int noteCode) {
@@ -440,9 +497,9 @@ public final class MusicDriver {
         return SQUARE_AND_WAVE_FREQUENCY_TABLE[noteCode / 2];
     }
 
-    private static int noiseTableOffset(int noteCode) {
+    private static int noiseTableOffset(int noteCode, int[] noiseTable) {
         if (noteCode < 0x01 || noteCode > 0x51 || (noteCode - 0x01) % 5 != 0
-                || noteCode + 4 >= NOISE_FREQUENCY_TABLE.length) {
+                || noteCode + 4 >= noiseTable.length) {
             throw new IllegalArgumentException("Invalid noise music note: " + hex(noteCode));
         }
         return noteCode;
@@ -475,6 +532,10 @@ public final class MusicDriver {
 
     private int[] softwareEnvelopeTable() {
         return trackBank == 0x1E ? SOFTWARE_ENVELOPE_TABLE_1E : SOFTWARE_ENVELOPE_TABLE_1B;
+    }
+
+    private int[] noiseFrequencyTable() {
+        return trackBank == 0x1E ? NOISE_FREQUENCY_TABLE_1E : NOISE_FREQUENCY_TABLE_1B;
     }
 
     private static void validateChannel(int channel) {
