@@ -109,6 +109,10 @@ public final class GameBoyApu {
         channel3.writeWaveRam(index, value);
     }
 
+    public int readWaveRam(int index) {
+        return channel3.readWaveRam(index);
+    }
+
     public short[] render(int frames) {
         if (frames < 0) {
             throw new IllegalArgumentException("frames must be non-negative");

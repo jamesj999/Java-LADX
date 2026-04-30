@@ -56,6 +56,13 @@ final class WaveChannel {
         waveRam[index] = value & 0xFF;
     }
 
+    int readWaveRam(int index) {
+        if (index < 0 || index >= waveRam.length) {
+            throw new IllegalArgumentException("Wave RAM index out of range: " + index);
+        }
+        return waveRam[index];
+    }
+
     boolean isActive() {
         return active;
     }

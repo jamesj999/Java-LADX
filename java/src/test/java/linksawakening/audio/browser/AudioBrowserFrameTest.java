@@ -63,4 +63,19 @@ final class AudioBrowserFrameTest {
         assertEquals(false, stopped.stopEnabled());
         assertEquals("Pause", stopped.pauseResumeText());
     }
+
+    @Test
+    void soundEffectPreviewResetsMusicTransportState() {
+        AudioBrowserFrame.TransportState transport = new AudioBrowserFrame.TransportState();
+        transport.playbackStarted();
+        transport.togglePauseResume();
+
+        transport.soundEffectPreviewStarted();
+
+        AudioBrowserFrame.TransportControls controls = transport.controls(true, true);
+        assertTrue(controls.playEnabled());
+        assertEquals(false, controls.pauseResumeEnabled());
+        assertEquals(false, controls.stopEnabled());
+        assertEquals("Pause", controls.pauseResumeText());
+    }
 }

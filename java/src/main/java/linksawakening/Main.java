@@ -10,6 +10,16 @@ import linksawakening.equipment.ItemRegistry;
 import linksawakening.equipment.RocsFeather;
 import linksawakening.equipment.Sword;
 import linksawakening.equipment.SwordSpriteSheet;
+import linksawakening.audio.openal.OpenAlPcmSoundOutput;
+import linksawakening.gameplay.ApuDialogSoundSink;
+import linksawakening.gameplay.DialogTextLoader;
+import linksawakening.gameplay.DialogSoundRouter;
+import linksawakening.gameplay.DialogSoundSink;
+import linksawakening.gameplay.GameplayDialogInput;
+import linksawakening.gameplay.OverworldDialogBlockers;
+import linksawakening.gameplay.OverworldDialogInteraction;
+import linksawakening.gameplay.PcmSoundOutput;
+import linksawakening.gameplay.SignpostDialogTable;
 import linksawakening.gpu.GPU;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.input.InputConfig;
@@ -101,6 +111,10 @@ public class Main {
     private static InventoryMenu inventoryMenu;
     private static InventoryController inventoryController;
     private static DialogController dialogController;
+    private static OverworldDialogInteraction overworldDialogInteraction;
+    private static boolean overworldDialogInputConsumedThisFrame;
+    private static DialogSoundSink dialogSoundSink;
+    private static PcmSoundOutput dialogSoundOutput;
     private static CutsceneManager cutsceneManager;
     private static RomTables romTables;
     private static OverworldCollision overworldCollision;
@@ -180,6 +194,10 @@ public class Main {
         inventoryMenu = new InventoryMenu(tilemapLoader, playerState);
         inventoryController = new InventoryController(inputState, inputConfig, inventoryMenu);
         dialogController = new DialogController(16);
+        overworldDialogInteraction = new OverworldDialogInteraction(
+            SignpostDialogTable.loadFromRom(romData), DialogTextLoader.loadFromRom(romData));
+        dialogSoundOutput = new OpenAlPcmSoundOutput();
+        dialogSoundSink = new ApuDialogSoundSink(dialogSoundOutput);
         cutsceneManager = new CutsceneManager(dialogController, Main::setCutsceneScene);
         romTables = RomTables.loadFromRom(romData);
         overworldCollision = new OverworldCollision(romTables);
@@ -253,6 +271,14 @@ public class Main {
             return;
         }
 
+        if (GameplayDialogInput.handleOverworldKeyPress(key, action, inputConfig, dialogController)) {
+            overworldDialogInputConsumedThisFrame = true;
+            return;
+        }
+        if (tryOpenOverworldDialog(key)) {
+            return;
+        }
+
         inventoryController.dispatchToggleInput();
 
         // Debug: F1 dumps Link's surrounding cells with object IDs and
@@ -311,6 +337,7 @@ public class Main {
         if (currentScreen == SCREEN_CUTSCENE) {
             if (dialogController != null) {
                 dialogController.tick();
+                routeDialogSounds();
             }
             if (cutsceneManager != null && cutsceneManager.isActive()) {
                 cutsceneManager.tick();
@@ -334,21 +361,31 @@ public class Main {
         transitionController.tick();
 
         if (currentScreen == SCREEN_OVERWORLD) {
-            inventoryController.tick();
-            if (transientVfxSystem != null) {
-                transientVfxSystem.tick();
+            if (dialogController != null) {
+                dialogController.tick();
+                routeDialogSounds();
             }
-            if (droppableRupeeSystem != null && link != null) {
-                droppableRupeeSystem.tick(link.pixelX(), link.pixelY(), playerState);
+            OverworldDialogBlockers blockers = currentOverworldDialogBlockers();
+            boolean dialogBlocksGameplay = blockers.pausesGameplay();
+
+            if (!dialogBlocksGameplay) {
+                inventoryController.tick();
+                if (transientVfxSystem != null) {
+                    transientVfxSystem.tick();
+                }
+                if (droppableRupeeSystem != null && link != null) {
+                    droppableRupeeSystem.tick(link.pixelX(), link.pixelY(), playerState);
+                }
             }
 
-            if (inventoryMenu.isFullyOpen()) {
+            if (!dialogBlocksGameplay && inventoryMenu.isFullyOpen()) {
                 inventoryController.dispatchMenuInput();
             }
 
             boolean linkActive = !scrollController.isActive()
                 && !transitionController.isInputBlocked()
-                && !inventoryController.shouldBlockOverworldInput();
+                && !inventoryController.shouldBlockOverworldInput()
+                && !dialogBlocksGameplay;
             if (linkActive && link != null) {
                 equipmentController.dispatchButtonEdges();
                 equipmentController.tickEquippedItems();
@@ -372,7 +409,8 @@ public class Main {
             // inventory window not overlapping; mirror both here.
             if (!scrollController.isActive()
                 && !transitionController.isInputBlocked()
-                && !inventoryController.shouldBlockOverworldInput()) {
+                && !inventoryController.shouldBlockOverworldInput()
+                && !dialogBlocksGameplay) {
                 gpu.tickAnimatedTiles(romData);
             }
         }
@@ -381,6 +419,11 @@ public class Main {
         // consumer this frame (item dispatch, menu toggle) still sees the
         // correct "just pressed" state.
         inputState.tickEdges();
+        overworldDialogInputConsumedThisFrame = false;
+    }
+
+    private static void routeDialogSounds() {
+        DialogSoundRouter.routePending(dialogController, dialogSoundSink);
     }
 
     private static void maybeCutBushWithSword() {
@@ -444,6 +487,36 @@ public class Main {
             && room.roomObjectsArea()[areaIndex] == OBJECT_GROUND_STAIRS) {
             room.replaceFirstWarpTile(location);
         }
+    }
+
+    private static boolean tryOpenOverworldDialog(int key) {
+        if (!GameplayDialogInput.isActionButtonKey(key, inputConfig)
+            || overworldDialogInteraction == null
+            || roomSession == null
+            || !roomSession.hasActiveRoom()
+            || link == null) {
+            return false;
+        }
+        ActiveRoom room = roomSession.activeRoom();
+        return overworldDialogInteraction.tryOpenSignpostDialog(
+            room.roomId(),
+            room.mapCategory(),
+            room.roomObjectsArea(),
+            link.pixelX(),
+            link.pixelY(),
+            link.direction(),
+            true,
+            currentOverworldDialogBlockers(),
+            dialogController);
+    }
+
+    private static OverworldDialogBlockers currentOverworldDialogBlockers() {
+        return new OverworldDialogBlockers(
+            inventoryController != null && inventoryController.shouldBlockOverworldInput(),
+            scrollController.isActive(),
+            transitionController.isInputBlocked(),
+            GameplayDialogInput.blocksGameplay(dialogController),
+            overworldDialogInputConsumedThisFrame);
     }
 
     private static AppConfig currentAppConfig() {
@@ -570,6 +643,9 @@ public class Main {
     private static void cleanup() {
         if (framePresenter != null) {
             framePresenter.cleanup();
+        }
+        if (dialogSoundOutput != null) {
+            dialogSoundOutput.close();
         }
         glfwDestroyWindow(window);
         glfwTerminate();

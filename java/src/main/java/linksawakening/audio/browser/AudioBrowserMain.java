@@ -4,6 +4,8 @@ import linksawakening.audio.apu.GameBoyApu;
 import linksawakening.audio.music.MusicCatalog;
 import linksawakening.audio.music.MusicDriver;
 import linksawakening.audio.openal.OpenAlMusicPlayer;
+import linksawakening.audio.sfx.SoundEffectCatalog;
+import linksawakening.audio.sfx.SoundEffectPlayer;
 
 import javax.swing.SwingUtilities;
 import java.io.IOException;
@@ -27,8 +29,9 @@ public final class AudioBrowserMain {
             MusicCatalog catalog = MusicCatalog.fromRom(romData);
             GameBoyApu apu = new GameBoyApu(SAMPLE_RATE);
             MusicDriver driver = new MusicDriver(romData, apu);
-            player = new OpenAlMusicPlayer(driver, apu);
-            AudioBrowserFrame frame = new AudioBrowserFrame(catalog, player, driver);
+            SoundEffectPlayer soundEffectPlayer = new SoundEffectPlayer(apu);
+            player = new OpenAlMusicPlayer(driver, apu, soundEffectPlayer);
+            AudioBrowserFrame frame = new AudioBrowserFrame(catalog, SoundEffectCatalog.firstPass(), player, driver);
             frame.setVisible(true);
             player = null;
         } catch (RuntimeException e) {

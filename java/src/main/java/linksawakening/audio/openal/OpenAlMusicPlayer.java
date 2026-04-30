@@ -3,6 +3,8 @@ package linksawakening.audio.openal;
 import linksawakening.audio.apu.GameBoyApu;
 import linksawakening.audio.music.MusicDriver;
 import linksawakening.audio.music.MusicTrack;
+import linksawakening.audio.sfx.SoundEffect;
+import linksawakening.audio.sfx.SoundEffectPlayer;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.openal.AL;
 import org.lwjgl.openal.AL10;
@@ -23,6 +25,7 @@ public final class OpenAlMusicPlayer implements AutoCloseable {
 
     private final MusicDriver driver;
     private final GameBoyApu apu;
+    private final SoundEffectPlayer soundEffectPlayer;
     private final int sampleRate;
     private final int[] buffers = new int[BUFFER_COUNT];
     private final ArrayDeque<Integer> freeBuffers = new ArrayDeque<>(BUFFER_COUNT);
@@ -42,8 +45,13 @@ public final class OpenAlMusicPlayer implements AutoCloseable {
     private int tickSampleRemainder;
 
     public OpenAlMusicPlayer(MusicDriver driver, GameBoyApu apu) {
+        this(driver, apu, null);
+    }
+
+    public OpenAlMusicPlayer(MusicDriver driver, GameBoyApu apu, SoundEffectPlayer soundEffectPlayer) {
         this.driver = Objects.requireNonNull(driver, "driver");
         this.apu = Objects.requireNonNull(apu, "apu");
+        this.soundEffectPlayer = soundEffectPlayer;
         sampleRate = apu.sampleRate();
         resetSampleClock();
         initializeOpenAl();
@@ -104,6 +112,28 @@ public final class OpenAlMusicPlayer implements AutoCloseable {
         stopPlayback(true);
         currentTrack = null;
         statusMessage = "Stopped";
+    }
+
+    public boolean isSoundEffectAvailable() {
+        return isAvailable() && soundEffectPlayer != null;
+    }
+
+    public void playSoundEffect(SoundEffect effect) {
+        if (!isSoundEffectAvailable()) {
+            return;
+        }
+        Objects.requireNonNull(effect, "effect");
+
+        try {
+            soundEffectPlayer.play(effect);
+            if (queuedBuffers == 0) {
+                resetSampleClock();
+            }
+            fillQueue();
+            statusMessage = "Playing SFX " + effect.name();
+        } catch (RuntimeException e) {
+            stopAfterPlaybackFailure(e);
+        }
     }
 
     public void setLoopEnabled(boolean loopEnabled) {
@@ -195,7 +225,7 @@ public final class OpenAlMusicPlayer implements AutoCloseable {
     }
 
     private void fillQueue() {
-        while (queuedBuffers < BUFFER_COUNT && !freeBuffers.isEmpty() && ensureDriverPlaying()) {
+        while (queuedBuffers < BUFFER_COUNT && !freeBuffers.isEmpty() && ensureAudioPlaying()) {
             short[] pcm = renderBufferPcm();
             int buffer = freeBuffers.removeFirst();
             ShortBuffer pcmBuffer = BufferUtils.createShortBuffer(pcm.length);
@@ -212,7 +242,7 @@ public final class OpenAlMusicPlayer implements AutoCloseable {
         short[] pcm = new short[BUFFER_FRAMES * 2];
         int framesRendered = 0;
 
-        while (framesRendered < BUFFER_FRAMES && ensureDriverPlaying()) {
+        while (framesRendered < BUFFER_FRAMES && ensureAudioPlaying()) {
             int chunkFrames = Math.min(BUFFER_FRAMES - framesRendered, samplesUntilNextTick);
             short[] chunk = apu.render(chunkFrames);
             System.arraycopy(chunk, 0, pcm, framesRendered * 2, chunk.length);
@@ -220,7 +250,7 @@ public final class OpenAlMusicPlayer implements AutoCloseable {
             framesRendered += chunkFrames;
             samplesUntilNextTick -= chunkFrames;
             if (samplesUntilNextTick == 0) {
-                driver.tick60Hz();
+                tick60HzClients();
                 samplesUntilNextTick = nextTickFrameCount();
             }
         }
@@ -228,8 +258,11 @@ public final class OpenAlMusicPlayer implements AutoCloseable {
         return pcm;
     }
 
-    private boolean ensureDriverPlaying() {
+    private boolean ensureAudioPlaying() {
         if (driver.isPlaying()) {
+            return true;
+        }
+        if (isSoundEffectPlaying()) {
             return true;
         }
         if (!loopEnabled || currentTrack == null) {
@@ -239,6 +272,21 @@ public final class OpenAlMusicPlayer implements AutoCloseable {
         driver.tick60Hz();
         resetSampleClock();
         return driver.isPlaying();
+    }
+
+    private void tick60HzClients() {
+        if (driver.isPlaying()) {
+            driver.tick60Hz();
+        } else if (loopEnabled && currentTrack != null) {
+            ensureAudioPlaying();
+        }
+        if (isSoundEffectPlaying()) {
+            soundEffectPlayer.tick60Hz();
+        }
+    }
+
+    private boolean isSoundEffectPlaying() {
+        return soundEffectPlayer != null && soundEffectPlayer.isPlaying();
     }
 
     private void unqueueProcessedBuffers() {
@@ -269,6 +317,9 @@ public final class OpenAlMusicPlayer implements AutoCloseable {
         }
         if (stopDriver) {
             driver.stop();
+        }
+        if (soundEffectPlayer != null) {
+            soundEffectPlayer.stop();
         }
         paused = false;
         resetSampleClock();
@@ -303,6 +354,9 @@ public final class OpenAlMusicPlayer implements AutoCloseable {
         }
         if (stopDriver) {
             failure = rememberFailure(failure, driver::stop);
+        }
+        if (soundEffectPlayer != null) {
+            failure = rememberFailure(failure, soundEffectPlayer::stop);
         }
         paused = false;
         resetSampleClock();
