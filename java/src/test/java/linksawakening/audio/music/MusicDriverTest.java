@@ -230,6 +230,33 @@ final class MusicDriverTest {
     }
 
     @Test
+    void transposeOpcodeAppliesGloballyAcrossMusicChannels() {
+        byte[] rom = syntheticRomWithChannels(
+                new byte[] {
+                        (byte) 0x9D, (byte) 0xF0, 0x00, (byte) 0x80,
+                        (byte) 0xA0,
+                        0x01,
+                        (byte) 0x84,
+                        0x00
+                },
+                new byte[] {
+                        (byte) 0x9F, (byte) 0xD0,
+                        (byte) 0xA0,
+                        0x01,
+                        0x00
+                });
+        GameBoyApu apu = new GameBoyApu(48_000);
+        MusicDriver driver = new MusicDriver(rom, apu);
+
+        driver.start(new MusicTrack(0x01, "TEST", 0x1B, 0x4077, 0x5000, RomBank.romOffset(0x1B, 0x5000)));
+        driver.tick60Hz();
+        driver.tick60Hz();
+
+        assertEquals(0x44, apu.readRegister(GameBoyApu.NR13));
+        assertEquals(0x87, apu.readRegister(GameBoyApu.NR14));
+    }
+
+    @Test
     void oddPitchedNoteCodeIsRejectedSafely() {
         byte[] rom = syntheticRomWithOneChannel(new byte[] {
                 (byte) 0x9D, (byte) 0xF0, 0x00, (byte) 0x80,
@@ -322,6 +349,17 @@ final class MusicDriverTest {
         writeSpeedTable(rom, bank, 0x5100);
         writeWord(rom, RomBank.romOffset(bank, 0x5200), 0x5300);
         System.arraycopy(definition, 0, rom, RomBank.romOffset(bank, 0x5300), definition.length);
+        return rom;
+    }
+
+    private static byte[] syntheticRomWithChannels(byte[] channel1Definition, byte[] channel2Definition) {
+        byte[] rom = new byte[0x80000];
+        int header = RomBank.romOffset(0x1B, 0x5000);
+        writeHeader(rom, header, 0x5100, 0x5200, 0x5220, 0, 0);
+        writeWord(rom, RomBank.romOffset(0x1B, 0x5200), 0x5300);
+        writeWord(rom, RomBank.romOffset(0x1B, 0x5220), 0x5400);
+        System.arraycopy(channel1Definition, 0, rom, RomBank.romOffset(0x1B, 0x5300), channel1Definition.length);
+        System.arraycopy(channel2Definition, 0, rom, RomBank.romOffset(0x1B, 0x5400), channel2Definition.length);
         return rom;
     }
 

@@ -74,6 +74,7 @@ public final class MusicDriver {
     private final int[] articulationTick = new int[CHANNEL_COUNT];
     private final int[] noteTicks = new int[CHANNEL_COUNT];
     private final boolean[] articulationApplied = new boolean[CHANNEL_COUNT];
+    private int musicTranspose;
     private int noiseFfPhase;
     private int noiseFfCountdown;
 
@@ -94,6 +95,7 @@ public final class MusicDriver {
 
         int headerOffset = track.romOffset();
         requireReadable(headerOffset, HEADER_SIZE, trackBank, track.headerAddress());
+        musicTranspose = (byte) Byte.toUnsignedInt(romData[headerOffset]);
         speedTablePointer = readWordAtOffset(headerOffset + 1);
         for (int channel = 1; channel <= CHANNEL_COUNT; channel++) {
             int streamPointer = readWordAtOffset(headerOffset + 1 + (channel * 2));
@@ -173,7 +175,7 @@ public final class MusicDriver {
                 speedTablePointer = readWord(trackBank, state.programCounter);
                 state.programCounter += 2;
             } else if (MusicOpcode.isSetTranspose(opcode)) {
-                state.transpose = (byte) readByte(trackBank, state.programCounter);
+                musicTranspose = (byte) readByte(trackBank, state.programCounter);
                 state.programCounter++;
             } else if (MusicOpcode.isNoteLength(opcode)) {
                 state.selectedLength = readSpeed((opcode & 0x0F));
@@ -184,7 +186,7 @@ public final class MusicDriver {
                 consumeTime(state);
                 return;
             } else if (MusicOpcode.isPitchedNote(opcode)) {
-                writePitchedNote(state, opcode + state.transpose);
+                writePitchedNote(state, opcode + musicTranspose);
                 consumeTime(state);
                 return;
             } else if (MusicOpcode.isNoiseNote(opcode) && state.channel == 4) {
@@ -423,6 +425,7 @@ public final class MusicDriver {
             noteTicks[i] = 0;
             articulationApplied[i] = false;
         }
+        musicTranspose = 0;
         noiseFfPhase = 0;
         noiseFfCountdown = 0;
     }

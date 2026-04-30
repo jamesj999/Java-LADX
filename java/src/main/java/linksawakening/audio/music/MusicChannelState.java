@@ -9,7 +9,6 @@ final class MusicChannelState {
     int loopRemaining;
     int selectedLength = 1;
     int lengthCounter;
-    int transpose;
     int envelope;
     int dutyLength;
     int waveOutputLevel;
@@ -27,7 +26,6 @@ final class MusicChannelState {
         loopRemaining = 0;
         selectedLength = 1;
         lengthCounter = 0;
-        transpose = 0;
         envelope = 0;
         dutyLength = 0;
         waveOutputLevel = 0;
