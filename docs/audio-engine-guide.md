@@ -4,7 +4,7 @@ This guide is for future agents working on the Link's Awakening DX audio code. I
 
 ## Current Scope
 
-The implemented slice is ROM-driven music playback with a standalone Swing browser. It is not a complete game audio system yet.
+The implemented slice is ROM-driven music playback, ROM-backed SFX playback, and a standalone Swing browser. It is not a complete game audio system yet.
 
 Included:
 
@@ -13,12 +13,14 @@ Included:
 - A software Game Boy APU model for channels 1-4.
 - LWJGL OpenAL streaming for host playback.
 - A standalone AWT/Swing browser launched by Gradle.
+- Dialog/messagebox SFX routed through the real `SoundEffectPlayer` path.
+- SFX pointer-table reads and bank `0x1F` SFX routine execution from the shipped ROM.
 
 Not included yet:
 
-- Gameplay SFX integration.
+- Broad gameplay SFX integration outside dialog/messagebox events.
 - Jingle/SFX priority and channel stealing.
-- CPU-level execution of the original audio routines.
+- CPU-level execution of the original music routines.
 - Perfect analog filtering or hardware speaker coloration.
 
 ## Source Of Truth
@@ -69,6 +71,13 @@ The audio implementation lives under `java/src/main/java/linksawakening/audio`.
 `linksawakening.audio.openal`
 
 - `OpenAlMusicPlayer`: OpenAL device/context/source ownership and streaming buffers.
+
+`linksawakening.audio.sfx`
+
+- `SoundEffectCatalog`: selectable SFX metadata and public ids.
+- `SoundEffectPlayer`: 60 Hz SFX playback facade.
+- `RomSoundEffectTables`: reads SFX handler pointers from ROM bank `0x1F`.
+- `RomSoundEffectEngine`: executes the ROM SFX handlers that write APU registers.
 
 `linksawakening.audio.browser`
 
@@ -307,4 +316,3 @@ When adding UI:
 - Music package tests: `java/src/test/java/linksawakening/audio/music`
 - APU tests: `java/src/test/java/linksawakening/audio/apu`
 - Browser tests: `java/src/test/java/linksawakening/audio/browser`
-

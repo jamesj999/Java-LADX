@@ -71,10 +71,6 @@ public final class AudioBrowserFrame extends JFrame {
     };
     private final Timer updateTimer;
 
-    public AudioBrowserFrame(MusicCatalog catalog, OpenAlMusicPlayer player, MusicDriver driver) {
-        this(catalog, SoundEffectCatalog.firstPass(), player, driver);
-    }
-
     public AudioBrowserFrame(
             MusicCatalog catalog,
             SoundEffectCatalog soundEffectCatalog,

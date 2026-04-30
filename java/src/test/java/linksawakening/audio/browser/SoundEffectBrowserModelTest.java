@@ -5,24 +5,31 @@ import linksawakening.audio.sfx.SoundEffectCatalog;
 import linksawakening.audio.sfx.SoundEffectNamespace;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class SoundEffectBrowserModelTest {
     @Test
-    void filtersSoundEffectsByNameNamespaceOrHexId() {
-        SoundEffectBrowserModel model = new SoundEffectBrowserModel(SoundEffectCatalog.firstPass().effects());
+    void filtersSoundEffectsByNameNamespaceOrHexId() throws IOException {
+        SoundEffectBrowserModel model = new SoundEffectBrowserModel(
+                SoundEffectCatalog.fromRom(loadRom()).effects());
 
         assertEquals(1, model.filteredEffects("rupee").size());
-        assertEquals(4, model.filteredEffects("noise").size());
-        assertEquals(2, model.filteredEffects("0x05").size());
-        assertEquals(8, model.filteredEffects("").size());
+        assertEquals(65, model.filteredEffects("jingle").size());
+        assertEquals(64, model.filteredEffects("noise").size());
+        assertEquals(3, model.filteredEffects("0x05").size());
+        assertEquals(164, model.filteredEffects("").size());
     }
 
     @Test
-    void metadataIncludesNamespaceIdAndSourceLabel() {
-        SoundEffectBrowserModel model = new SoundEffectBrowserModel(SoundEffectCatalog.firstPass().effects());
-        SoundEffect effect = SoundEffectCatalog.firstPass()
+    void metadataIncludesNamespaceIdNameAndRomPointers() throws IOException {
+        byte[] romData = loadRom();
+        SoundEffectBrowserModel model = new SoundEffectBrowserModel(
+                SoundEffectCatalog.fromRom(romData).effects());
+        SoundEffect effect = SoundEffectCatalog.fromRom(romData)
                 .find(SoundEffectNamespace.NOISE, 0x0C)
                 .orElseThrow();
 
@@ -31,6 +38,16 @@ final class SoundEffectBrowserModelTest {
         assertTrue(metadata.contains("NOISE"));
         assertTrue(metadata.contains("0x0C"));
         assertTrue(metadata.contains("NOISE_SFX_EXPLOSION"));
-        assertTrue(metadata.contains("sfx.asm"));
+        assertTrue(metadata.contains("1F:"));
+    }
+
+    private static byte[] loadRom() throws IOException {
+        try (InputStream stream = SoundEffectBrowserModelTest.class.getClassLoader()
+                .getResourceAsStream("rom/azle.gbc")) {
+            if (stream == null) {
+                throw new IOException("Missing ROM resource: rom/azle.gbc");
+            }
+            return stream.readAllBytes();
+        }
     }
 }

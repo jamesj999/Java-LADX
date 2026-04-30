@@ -4,6 +4,7 @@ import linksawakening.audio.apu.GameBoyApu;
 import linksawakening.audio.music.MusicDriver;
 import linksawakening.audio.music.MusicTrack;
 import linksawakening.audio.sfx.SoundEffect;
+import linksawakening.audio.sfx.SoundEffectPcmRenderer;
 import linksawakening.audio.sfx.SoundEffectPlayer;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.openal.AL;
@@ -73,6 +74,7 @@ public final class OpenAlMusicPlayer implements AutoCloseable {
 
         try {
             stopPlayback(true);
+            apu.reset();
             currentTrack = track;
             driver.start(track);
             driver.tick60Hz();
@@ -125,11 +127,10 @@ public final class OpenAlMusicPlayer implements AutoCloseable {
         Objects.requireNonNull(effect, "effect");
 
         try {
-            soundEffectPlayer.play(effect);
-            if (queuedBuffers == 0) {
-                resetSampleClock();
-            }
-            fillQueue();
+            stopPlayback(true);
+            currentTrack = null;
+            short[] pcm = SoundEffectPcmRenderer.renderOneShot(apu, soundEffectPlayer, effect);
+            queueOneShotPcm(pcm);
             statusMessage = "Playing SFX " + effect.name();
         } catch (RuntimeException e) {
             stopAfterPlaybackFailure(e);
@@ -236,6 +237,25 @@ public final class OpenAlMusicPlayer implements AutoCloseable {
             checkAlError("queue buffer");
         }
         restartSourceIfNeeded();
+    }
+
+    private void queueOneShotPcm(short[] pcm) {
+        if (pcm.length == 0) {
+            return;
+        }
+        if (freeBuffers.isEmpty()) {
+            throw new IllegalStateException("no OpenAL buffer available for SFX preview");
+        }
+
+        int buffer = freeBuffers.removeFirst();
+        ShortBuffer pcmBuffer = BufferUtils.createShortBuffer(pcm.length);
+        pcmBuffer.put(pcm).flip();
+        AL10.alBufferData(buffer, AL10.AL_FORMAT_STEREO16, pcmBuffer, sampleRate);
+        AL10.alSourceQueueBuffers(source, buffer);
+        queuedBuffers++;
+        checkAlError("queue SFX buffer");
+        AL10.alSourcePlay(source);
+        checkAlError("start SFX source");
     }
 
     private short[] renderBufferPcm() {

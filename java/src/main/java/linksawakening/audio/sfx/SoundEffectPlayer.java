@@ -2,86 +2,92 @@ package linksawakening.audio.sfx;
 
 import linksawakening.audio.apu.GameBoyApu;
 
-import java.util.Map;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
 import java.util.Objects;
 
 public final class SoundEffectPlayer {
-    private final GameBoyApu apu;
-    private final Map<SoundEffectSequenceLibrary.SequenceKey, SoundEffectSequence> sequences;
+    private static final String ROM_RESOURCE = "rom/azle.gbc";
 
-    private SoundEffectSequence activeSequence;
-    private int stepIndex;
-    private int framesUntilNextStep;
+    private final GameBoyApu apu;
+    private final SoundEffectCatalog catalog;
+    private final RomSoundEffectEngine engine;
+
+    private SoundEffect currentEffect;
 
     public SoundEffectPlayer(GameBoyApu apu) {
-        this(apu, SoundEffectCatalog.firstPass());
+        this(apu, loadRomResource());
     }
 
-    public SoundEffectPlayer(GameBoyApu apu, SoundEffectCatalog catalog) {
+    public SoundEffectPlayer(GameBoyApu apu, byte[] romData) {
+        this(apu, romData, SoundEffectCatalog.fromRom(romData));
+    }
+
+    public SoundEffectPlayer(GameBoyApu apu, byte[] romData, SoundEffectCatalog catalog) {
         this.apu = Objects.requireNonNull(apu, "apu");
-        sequences = SoundEffectSequenceLibrary.firstPassSequences(Objects.requireNonNull(catalog, "catalog"));
+        this.catalog = Objects.requireNonNull(catalog, "catalog");
+        engine = new RomSoundEffectEngine(Objects.requireNonNull(romData, "romData"), apu);
+    }
+
+    public SoundEffectCatalog catalog() {
+        return catalog;
+    }
+
+    public static List<SoundEffect> supportedEffects(SoundEffectCatalog catalog) {
+        Objects.requireNonNull(catalog, "catalog");
+        return catalog.effects();
+    }
+
+    public boolean supports(SoundEffect effect) {
+        Objects.requireNonNull(effect, "effect");
+        return catalog.find(effect.namespace(), effect.id()).isPresent();
     }
 
     public void play(SoundEffect effect) {
         Objects.requireNonNull(effect, "effect");
-        SoundEffectSequence sequence = sequences.get(new SoundEffectSequenceLibrary.SequenceKey(
-                effect.namespace(),
-                effect.id()));
-        if (sequence == null) {
-            throw new IllegalArgumentException("Unsupported sound effect: " + effect.name());
+        if (!supports(effect)) {
+            throw new IllegalArgumentException("Unknown sound effect: " + effect.name());
         }
 
-        activeSequence = sequence;
-        stepIndex = 0;
-        framesUntilNextStep = 0;
-        enableApu();
-        startNextStep();
+        currentEffect = effect;
+        engine.start(effect);
+        if (!engine.isPlaying()) {
+            currentEffect = null;
+        }
     }
 
     public void tick60Hz() {
         if (!isPlaying()) {
             return;
         }
-        framesUntilNextStep--;
-        if (framesUntilNextStep <= 0) {
-            startNextStep();
+        engine.tick60Hz();
+        if (!engine.isPlaying()) {
+            currentEffect = null;
         }
     }
 
     public boolean isPlaying() {
-        return activeSequence != null;
+        return currentEffect != null && engine.isPlaying();
     }
 
     public SoundEffect currentEffect() {
-        return activeSequence == null ? null : activeSequence.effect();
+        return isPlaying() ? currentEffect : null;
     }
 
     public void stop() {
-        activeSequence = null;
-        stepIndex = 0;
-        framesUntilNextStep = 0;
+        currentEffect = null;
+        engine.stop();
     }
 
-    private void enableApu() {
-        apu.writeRegister(GameBoyApu.NR52, 0x80);
-        apu.writeRegister(GameBoyApu.NR50, 0x77);
-        apu.writeRegister(GameBoyApu.NR51, 0xFF);
-    }
-
-    private void startNextStep() {
-        if (activeSequence == null || stepIndex >= activeSequence.steps().size()) {
-            stop();
-            return;
+    private static byte[] loadRomResource() {
+        try (InputStream stream = SoundEffectPlayer.class.getClassLoader().getResourceAsStream(ROM_RESOURCE)) {
+            if (stream == null) {
+                throw new IllegalStateException("ROM resource missing: " + ROM_RESOURCE);
+            }
+            return stream.readAllBytes();
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to load ROM: " + e.getMessage(), e);
         }
-
-        SoundEffectStep step = activeSequence.steps().get(stepIndex);
-        stepIndex++;
-        for (WaveRamWrite write : step.waveRamWrites()) {
-            apu.writeWaveRam(write.index(), write.value());
-        }
-        for (ApuRegisterWrite write : step.registerWrites()) {
-            apu.writeRegister(write.register(), write.value());
-        }
-        framesUntilNextStep = step.durationFrames();
     }
 }

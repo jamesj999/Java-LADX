@@ -11,7 +11,6 @@ import linksawakening.equipment.RocsFeather;
 import linksawakening.equipment.Sword;
 import linksawakening.equipment.SwordSpriteSheet;
 import linksawakening.audio.openal.OpenAlPcmSoundOutput;
-import linksawakening.gameplay.ApuDialogSoundSink;
 import linksawakening.gameplay.DialogTextLoader;
 import linksawakening.gameplay.DialogSoundRouter;
 import linksawakening.gameplay.DialogSoundSink;
@@ -19,6 +18,7 @@ import linksawakening.gameplay.GameplayDialogInput;
 import linksawakening.gameplay.OverworldDialogBlockers;
 import linksawakening.gameplay.OverworldDialogInteraction;
 import linksawakening.gameplay.PcmSoundOutput;
+import linksawakening.gameplay.SfxDialogSoundSink;
 import linksawakening.gameplay.SignpostDialogTable;
 import linksawakening.gpu.GPU;
 import linksawakening.gpu.Framebuffer;
@@ -197,7 +197,7 @@ public class Main {
         overworldDialogInteraction = new OverworldDialogInteraction(
             SignpostDialogTable.loadFromRom(romData), DialogTextLoader.loadFromRom(romData));
         dialogSoundOutput = new OpenAlPcmSoundOutput();
-        dialogSoundSink = new ApuDialogSoundSink(dialogSoundOutput);
+        dialogSoundSink = new SfxDialogSoundSink(dialogSoundOutput);
         cutsceneManager = new CutsceneManager(dialogController, Main::setCutsceneScene);
         romTables = RomTables.loadFromRom(romData);
         overworldCollision = new OverworldCollision(romTables);

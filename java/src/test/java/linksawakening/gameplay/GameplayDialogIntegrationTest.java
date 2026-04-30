@@ -204,9 +204,9 @@ final class GameplayDialogIntegrationTest {
     }
 
     @Test
-    void apuDialogSoundSinkRendersAudiblePcmToOutput() {
+    void sfxDialogSoundSinkRendersAudiblePcmToOutput() {
         RecordingPcmSoundOutput output = new RecordingPcmSoundOutput();
-        ApuDialogSoundSink sink = new ApuDialogSoundSink(output);
+        SfxDialogSoundSink sink = new SfxDialogSoundSink(output);
 
         sink.play(DialogController.SoundEvent.TEXT_PRINT);
 

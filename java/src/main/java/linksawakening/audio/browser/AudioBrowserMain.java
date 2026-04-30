@@ -29,9 +29,10 @@ public final class AudioBrowserMain {
             MusicCatalog catalog = MusicCatalog.fromRom(romData);
             GameBoyApu apu = new GameBoyApu(SAMPLE_RATE);
             MusicDriver driver = new MusicDriver(romData, apu);
-            SoundEffectPlayer soundEffectPlayer = new SoundEffectPlayer(apu);
+            SoundEffectCatalog soundEffectCatalog = SoundEffectCatalog.fromRom(romData);
+            SoundEffectPlayer soundEffectPlayer = new SoundEffectPlayer(apu, romData, soundEffectCatalog);
             player = new OpenAlMusicPlayer(driver, apu, soundEffectPlayer);
-            AudioBrowserFrame frame = new AudioBrowserFrame(catalog, SoundEffectCatalog.firstPass(), player, driver);
+            AudioBrowserFrame frame = new AudioBrowserFrame(catalog, soundEffectCatalog, player, driver);
             frame.setVisible(true);
             player = null;
         } catch (RuntimeException e) {
