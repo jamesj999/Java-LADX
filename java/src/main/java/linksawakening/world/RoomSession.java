@@ -18,6 +18,7 @@ public final class RoomSession {
     private final OverworldCollision overworldCollision;
     private final TransientVfxSystem transientVfxSystem;
     private final DroppableRupeeSystem droppableRupeeSystem;
+    private final RoomLoadListener roomLoadListener;
 
     private ActiveRoom activeRoom;
     private int currentOverworldTilesetId = W_TILESET_NO_UPDATE;
@@ -29,6 +30,18 @@ public final class RoomSession {
                        OverworldCollision overworldCollision,
                        TransientVfxSystem transientVfxSystem,
                        DroppableRupeeSystem droppableRupeeSystem) {
+        this(romData, gpu, roomLoader, overworldTilesetTable, overworldCollision,
+            transientVfxSystem, droppableRupeeSystem, null);
+    }
+
+    public RoomSession(byte[] romData,
+                       GPU gpu,
+                       RoomLoader roomLoader,
+                       OverworldTilesetTable overworldTilesetTable,
+                       OverworldCollision overworldCollision,
+                       TransientVfxSystem transientVfxSystem,
+                       DroppableRupeeSystem droppableRupeeSystem,
+                       RoomLoadListener roomLoadListener) {
         this.romData = romData;
         this.gpu = gpu;
         this.roomLoader = roomLoader;
@@ -36,6 +49,7 @@ public final class RoomSession {
         this.overworldCollision = overworldCollision;
         this.transientVfxSystem = transientVfxSystem;
         this.droppableRupeeSystem = droppableRupeeSystem;
+        this.roomLoadListener = roomLoadListener;
     }
 
     public void loadInitialOverworld(int roomId) {
@@ -54,7 +68,7 @@ public final class RoomSession {
             loadOverworld(warp.destRoom());
             loadRoomSpecificTilesIfNeeded(warp.destRoom());
         } else {
-            loadIndoor(warp.destMap(), warp.destRoom());
+            loadIndoor(warp.destMap(), warp.destRoom(), warp.category());
         }
     }
 
@@ -75,7 +89,7 @@ public final class RoomSession {
                                           int linkScreenY) {
         RoomRenderSnapshot previousRoom = renderSnapshot();
         int nextRoomId = adjacentIndoorRoomId(direction);
-        loadIndoor(activeRoom.mapId(), nextRoomId);
+        loadIndoor(activeRoom.mapId(), nextRoomId, activeRoom.mapCategory());
         scrollController.start(direction, linkScreenX, linkScreenY, previousRoom, scrollTarget(direction));
     }
 
@@ -90,9 +104,14 @@ public final class RoomSession {
     }
 
     public void loadIndoor(int mapId, int roomId) {
+        loadIndoor(mapId, roomId, Warp.CATEGORY_INDOOR);
+    }
+
+    public void loadIndoor(int mapId, int roomId, int mapCategory) {
         clearTransientRoomState();
         gpu.loadIndoorTiles(romData, mapId, roomId);
-        LoadedRoom room = roomLoader.loadIndoor(mapId, roomId, activeRoom == null ? null : activeRoom.palettes());
+        LoadedRoom room = roomLoader.loadIndoor(
+            mapId, roomId, activeRoom == null ? null : activeRoom.palettes(), mapCategory);
         gpu.loadAnimatedTilesGroup(romData, room.animatedTilesGroup());
         setActiveRoom(room);
         overworldCollision.setRoom(activeRoom.roomObjectsArea());
@@ -141,6 +160,9 @@ public final class RoomSession {
 
     private void setActiveRoom(LoadedRoom room) {
         activeRoom = ActiveRoom.from(room);
+        if (roomLoadListener != null) {
+            roomLoadListener.roomLoaded(activeRoom);
+        }
     }
 
     private void clearTransientRoomState() {

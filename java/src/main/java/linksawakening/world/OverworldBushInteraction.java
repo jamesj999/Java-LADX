@@ -1,6 +1,7 @@
 package linksawakening.world;
 
 import linksawakening.entity.Link;
+import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.rom.RomTables;
 
 /**
@@ -41,9 +42,9 @@ public final class OverworldBushInteraction {
     private final RomTables romTables;
 
     public record CutResult(boolean changed, int originalObjectId, int revealedObjectId,
-                            boolean bushLeavesVisible) {
+                            boolean bushLeavesVisible, GameplaySoundEvent soundEvent) {
         public static CutResult unchanged(int originalObjectId) {
-            return new CutResult(false, originalObjectId, originalObjectId, false);
+            return new CutResult(false, originalObjectId, originalObjectId, false, null);
         }
     }
 
@@ -51,7 +52,7 @@ public final class OverworldBushInteraction {
                                     RevealedObjectResolver revealedObjectResolver) {
         private CutResult cut(OverworldBushInteraction interaction, int roomId, boolean isGbcOverworld) {
             int revealed = revealedObjectResolver.resolve(interaction, roomId, isGbcOverworld);
-            return new CutResult(true, objectId, revealed, bushLeavesVisible);
+            return new CutResult(true, objectId, revealed, bushLeavesVisible, GameplaySoundEvent.CUT_GRASS);
         }
     }
 

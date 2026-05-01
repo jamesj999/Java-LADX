@@ -3,6 +3,7 @@ package linksawakening.audio.openal;
 import linksawakening.audio.apu.GameBoyApu;
 import linksawakening.audio.music.MusicDriver;
 import linksawakening.audio.music.MusicTrack;
+import linksawakening.audio.music.MusicTrackPlayer;
 import linksawakening.audio.sfx.SoundEffect;
 import linksawakening.audio.sfx.SoundEffectPcmRenderer;
 import linksawakening.audio.sfx.SoundEffectPlayer;
@@ -20,7 +21,7 @@ import java.nio.ShortBuffer;
 import java.util.ArrayDeque;
 import java.util.Objects;
 
-public final class OpenAlMusicPlayer implements AutoCloseable {
+public final class OpenAlMusicPlayer implements AutoCloseable, MusicTrackPlayer {
     private static final int BUFFER_COUNT = 4;
     private static final int BUFFER_FRAMES = 1024;
 
@@ -66,6 +67,7 @@ public final class OpenAlMusicPlayer implements AutoCloseable {
         return statusMessage;
     }
 
+    @Override
     public void play(MusicTrack track) {
         if (!isAvailable()) {
             return;
@@ -73,6 +75,7 @@ public final class OpenAlMusicPlayer implements AutoCloseable {
         Objects.requireNonNull(track, "track");
 
         try {
+            makeContextCurrent();
             stopPlayback(true);
             apu.reset();
             currentTrack = track;
@@ -91,6 +94,7 @@ public final class OpenAlMusicPlayer implements AutoCloseable {
         if (!isAvailable() || paused) {
             return;
         }
+        makeContextCurrent();
         AL10.alSourcePause(source);
         paused = true;
         statusMessage = "Paused";
@@ -101,16 +105,19 @@ public final class OpenAlMusicPlayer implements AutoCloseable {
             return;
         }
         paused = false;
+        makeContextCurrent();
         if (queuedBuffers > 0) {
             AL10.alSourcePlay(source);
         }
         statusMessage = currentTrack == null ? "OpenAL ready" : "Playing " + currentTrack.name();
     }
 
+    @Override
     public void stop() {
         if (!isAvailable()) {
             return;
         }
+        makeContextCurrent();
         stopPlayback(true);
         currentTrack = null;
         statusMessage = "Stopped";
@@ -127,6 +134,7 @@ public final class OpenAlMusicPlayer implements AutoCloseable {
         Objects.requireNonNull(effect, "effect");
 
         try {
+            makeContextCurrent();
             stopPlayback(true);
             currentTrack = null;
             short[] pcm = SoundEffectPcmRenderer.renderOneShot(apu, soundEffectPlayer, effect);
@@ -144,6 +152,7 @@ public final class OpenAlMusicPlayer implements AutoCloseable {
     public void setVolume(float volume) {
         this.volume = clamp(volume);
         if (isAvailable()) {
+            makeContextCurrent();
             AL10.alSourcef(source, AL10.AL_GAIN, this.volume);
         }
     }
@@ -154,11 +163,18 @@ public final class OpenAlMusicPlayer implements AutoCloseable {
         }
 
         try {
+            makeContextCurrent();
             unqueueProcessedBuffers();
             fillQueue();
             restartSourceIfNeeded();
         } catch (RuntimeException e) {
             stopAfterPlaybackFailure(e);
+        }
+    }
+
+    private void makeContextCurrent() {
+        if (context != MemoryUtil.NULL && !ALC10.alcMakeContextCurrent(context)) {
+            throw new IllegalStateException("could not make music OpenAL context current");
         }
     }
 

@@ -26,4 +26,23 @@ final class RoomLoaderTest {
         assertEquals(0xE5, loaded.roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE]);
         assertEquals(RoomConstants.ROOM_TILE_WIDTH * RoomConstants.ROOM_TILE_HEIGHT, loaded.tileIds().length);
     }
+
+    @Test
+    void indoorLoaderCanPreserveSideScrollingMapCategory() {
+        LoadedRoom loaded = new RoomLoader(loadRom()).loadIndoor(
+            0x00, 0x00, null, Warp.CATEGORY_SIDESCROLL);
+
+        assertEquals(Warp.CATEGORY_SIDESCROLL, loaded.mapCategory());
+    }
+
+    private static byte[] loadRom() {
+        try (var stream = RoomLoaderTest.class.getClassLoader().getResourceAsStream("rom/azle.gbc")) {
+            if (stream == null) {
+                throw new IllegalStateException("ROM resource missing");
+            }
+            return stream.readAllBytes();
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to load ROM", e);
+        }
+    }
 }

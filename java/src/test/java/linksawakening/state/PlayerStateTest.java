@@ -39,4 +39,17 @@ final class PlayerStateTest {
         playerState.tickInvincibility();
         assertEquals(0, playerState.invincibilityCounter());
     }
+
+    @Test
+    void swordLevelCanRepresentSwordlessAndDebugSwordStates() {
+        PlayerState playerState = new PlayerState();
+
+        assertEquals(1, playerState.swordLevel());
+
+        playerState.setSwordLevel(0);
+        assertEquals(0, playerState.swordLevel());
+
+        playerState.setSwordLevel(3);
+        assertEquals(2, playerState.swordLevel());
+    }
 }

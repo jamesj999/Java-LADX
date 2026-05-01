@@ -1,8 +1,12 @@
 package linksawakening.ui;
 
+import linksawakening.gameplay.GameplaySoundEvent;
+import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.GPU;
 import linksawakening.state.PlayerState;
+
+import java.util.Objects;
 
 /**
  * Port of the DMG inventory-slide mechanic from the LADX disassembly
@@ -32,6 +36,7 @@ public final class InventoryMenu {
 
     private final InventoryTilemapLoader tilemapLoader;
     private final PlayerState playerState;
+    private final GameplaySoundSink soundSink;
 
     private int windowY = WINDOW_Y_CLOSED;
     private int subscreenScrollIncrement = CLOSED_INCREMENT;
@@ -43,8 +48,16 @@ public final class InventoryMenu {
     private int cursorFrameCounter = 0;
 
     public InventoryMenu(InventoryTilemapLoader tilemapLoader, PlayerState playerState) {
+        this(tilemapLoader, playerState, GameplaySoundSink.none());
+    }
+
+    public InventoryMenu(
+            InventoryTilemapLoader tilemapLoader,
+            PlayerState playerState,
+            GameplaySoundSink soundSink) {
         this.tilemapLoader = tilemapLoader;
         this.playerState = playerState;
+        this.soundSink = Objects.requireNonNull(soundSink, "soundSink");
     }
 
     /**
@@ -55,8 +68,10 @@ public final class InventoryMenu {
         if (inventoryAppearing) {
             return;
         }
+        boolean opening = isFullyClosed();
         subscreenScrollIncrement = -subscreenScrollIncrement;
         inventoryAppearing = true;
+        soundSink.play(opening ? GameplaySoundEvent.INVENTORY_OPEN : GameplaySoundEvent.INVENTORY_CLOSE);
     }
 
     /**
@@ -113,8 +128,9 @@ public final class InventoryMenu {
         } else if (dy != 0 && dx == 0) {
             next += dy * SUBSCREEN_COLS;
         }
-        if (next >= 0 && next < PlayerState.SUBSCREEN_SLOT_COUNT) {
+        if (next >= 0 && next < PlayerState.SUBSCREEN_SLOT_COUNT && next != cursorSlot) {
             cursorSlot = next;
+            soundSink.play(GameplaySoundEvent.MENU_MOVE);
         }
         cursorFrameCounter = 0;
     }
@@ -124,6 +140,7 @@ public final class InventoryMenu {
             return;
         }
         playerState.swapItemAWithSubscreen(cursorSlot);
+        soundSink.play(GameplaySoundEvent.MENU_VALIDATE);
     }
 
     public void pressB() {
@@ -131,6 +148,7 @@ public final class InventoryMenu {
             return;
         }
         playerState.swapItemBWithSubscreen(cursorSlot);
+        soundSink.play(GameplaySoundEvent.MENU_VALIDATE);
     }
 
     public void render(byte[] displayBuffer, GPU gpu) {

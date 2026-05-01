@@ -1,9 +1,15 @@
 package linksawakening.equipment;
 
 import linksawakening.entity.Link;
+import linksawakening.gameplay.GameplaySoundEvent;
+import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.Tile;
 import linksawakening.rom.RomTables;
+
+import java.util.Objects;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.IntSupplier;
 
 /**
  * Port of the sword swing + charge logic from the LADX disassembly (see
@@ -82,6 +88,8 @@ public final class Sword implements EquippedItem {
 
     private final RomTables romTables;
     private final SwordSpriteSheet spriteSheet;
+    private final GameplaySoundSink soundSink;
+    private final IntSupplier randomByteSupplier;
 
     private int state = STATE_NONE;
     private int timer;
@@ -96,8 +104,19 @@ public final class Sword implements EquippedItem {
     private int queuedSpinDelayFrames;
 
     public Sword(RomTables romTables, SwordSpriteSheet spriteSheet) {
+        this(romTables, spriteSheet, GameplaySoundSink.none(),
+                () -> ThreadLocalRandom.current().nextInt(0x100));
+    }
+
+    public Sword(
+            RomTables romTables,
+            SwordSpriteSheet spriteSheet,
+            GameplaySoundSink soundSink,
+            IntSupplier randomByteSupplier) {
         this.romTables = romTables;
         this.spriteSheet = spriteSheet;
+        this.soundSink = Objects.requireNonNull(soundSink, "soundSink");
+        this.randomByteSupplier = Objects.requireNonNull(randomByteSupplier, "randomByteSupplier");
     }
 
     public int state() {
@@ -128,6 +147,7 @@ public final class Sword implements EquippedItem {
         timer = DRAW_FRAMES;
         charge = 0;
         holdingFrames = 0;
+        soundSink.play(swordSwingSound(randomByteSupplier.getAsInt()));
     }
 
     @Override
@@ -137,6 +157,7 @@ public final class Sword implements EquippedItem {
                 spinBaseDirection = lastKnownDirection;
                 spinAttackQueued = true;
                 queuedSpinDelayFrames = 1;
+                soundSink.play(GameplaySoundEvent.SPIN_ATTACK);
             } else {
                 state = STATE_NONE;
             }
@@ -197,6 +218,9 @@ public final class Sword implements EquippedItem {
                 holdingFrames++;
                 if (charge < MAX_CHARGE) {
                     charge++;
+                    if (charge == MAX_CHARGE) {
+                        soundSink.play(GameplaySoundEvent.SWORD_FULLY_CHARGED);
+                    }
                 }
                 return;
             default:
@@ -403,6 +427,19 @@ public final class Sword implements EquippedItem {
             case Link.DIRECTION_UP:    return 2;
             case Link.DIRECTION_DOWN:  return 3;
             default: return 3;
+        }
+    }
+
+    private static GameplaySoundEvent swordSwingSound(int randomByte) {
+        switch (randomByte & 0x03) {
+            case 0:
+                return GameplaySoundEvent.SWORD_SWING_A;
+            case 1:
+                return GameplaySoundEvent.SWORD_SWING_B;
+            case 2:
+                return GameplaySoundEvent.SWORD_SWING_C;
+            default:
+                return GameplaySoundEvent.SWORD_SWING_D;
         }
     }
 }

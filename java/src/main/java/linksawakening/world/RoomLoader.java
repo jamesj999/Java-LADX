@@ -56,6 +56,10 @@ public final class RoomLoader {
     }
 
     public LoadedRoom loadIndoor(int mapId, int roomId, int[][] fallbackPalettes) {
+        return loadIndoor(mapId, roomId, fallbackPalettes, Warp.CATEGORY_INDOOR);
+    }
+
+    public LoadedRoom loadIndoor(int mapId, int roomId, int[][] fallbackPalettes, int mapCategory) {
         RoomPointerTable pointerTable = IndoorRoomPointerTables.forMap(mapId);
         int roomPointerOffset = RomBank.romOffset(pointerTable.bank(), pointerTable.address() + roomId * 2);
         int roomLo = Byte.toUnsignedInt(romData[roomPointerOffset]);
@@ -71,7 +75,7 @@ public final class RoomLoader {
 
         return new LoadedRoom(
             roomId,
-            Warp.CATEGORY_INDOOR,
+            mapCategory,
             mapId,
             animatedTilesGroup,
             objects,

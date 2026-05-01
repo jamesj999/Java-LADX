@@ -2,6 +2,7 @@ package linksawakening;
 
 import linksawakening.config.AppConfig;
 import linksawakening.cutscene.CutsceneManager;
+import linksawakening.cutscene.IntroCutsceneScript;
 import linksawakening.dialog.DialogController;
 import linksawakening.entity.Link;
 import linksawakening.entity.LinkSpriteSheet;
@@ -10,15 +11,26 @@ import linksawakening.equipment.ItemRegistry;
 import linksawakening.equipment.RocsFeather;
 import linksawakening.equipment.Sword;
 import linksawakening.equipment.SwordSpriteSheet;
+import linksawakening.audio.apu.GameBoyApu;
+import linksawakening.audio.music.AreaMusicResolver;
+import linksawakening.audio.music.GameplayMusicController;
+import linksawakening.audio.music.MusicCatalog;
+import linksawakening.audio.music.MusicDriver;
+import linksawakening.audio.music.MusicTrackIds;
+import linksawakening.audio.music.RoomMusicContext;
+import linksawakening.audio.openal.OpenAlMusicPlayer;
 import linksawakening.audio.openal.OpenAlPcmSoundOutput;
 import linksawakening.gameplay.DialogTextLoader;
 import linksawakening.gameplay.DialogSoundRouter;
 import linksawakening.gameplay.DialogSoundSink;
+import linksawakening.gameplay.GameplaySoundSink;
+import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplayDialogInput;
 import linksawakening.gameplay.OverworldDialogBlockers;
 import linksawakening.gameplay.OverworldDialogInteraction;
 import linksawakening.gameplay.PcmSoundOutput;
 import linksawakening.gameplay.SfxDialogSoundSink;
+import linksawakening.gameplay.SfxGameplaySoundSink;
 import linksawakening.gameplay.SignpostDialogTable;
 import linksawakening.gpu.GPU;
 import linksawakening.gpu.Framebuffer;
@@ -115,6 +127,9 @@ public class Main {
     private static boolean overworldDialogInputConsumedThisFrame;
     private static DialogSoundSink dialogSoundSink;
     private static PcmSoundOutput dialogSoundOutput;
+    private static GameplaySoundSink gameplaySoundSink = GameplaySoundSink.none();
+    private static OpenAlMusicPlayer musicPlayer;
+    private static GameplayMusicController gameplayMusicController;
     private static CutsceneManager cutsceneManager;
     private static RomTables romTables;
     private static OverworldCollision overworldCollision;
@@ -143,6 +158,8 @@ public class Main {
         } else if (currentAppConfig().startMode() == AppConfig.StartMode.NORMAL
             || !currentAppConfig().showTitleScreen()) {
             startConfiguredGameplay();
+        } else {
+            startTitleScreenWithoutIntro();
         }
 
         initGLFW();
@@ -190,14 +207,16 @@ public class Main {
         inputConfig = currentAppConfig().inputConfig();
         inputState = new InputState();
         playerState = new PlayerState();
+        initMusicSystem();
+        dialogSoundOutput = new OpenAlPcmSoundOutput();
+        dialogSoundSink = new SfxDialogSoundSink(dialogSoundOutput);
+        gameplaySoundSink = new SfxGameplaySoundSink(romData, dialogSoundOutput);
         InventoryTilemapLoader tilemapLoader = InventoryTilemapLoader.loadFromRom(romData);
-        inventoryMenu = new InventoryMenu(tilemapLoader, playerState);
+        inventoryMenu = new InventoryMenu(tilemapLoader, playerState, gameplaySoundSink);
         inventoryController = new InventoryController(inputState, inputConfig, inventoryMenu);
         dialogController = new DialogController(16);
         overworldDialogInteraction = new OverworldDialogInteraction(
             SignpostDialogTable.loadFromRom(romData), DialogTextLoader.loadFromRom(romData));
-        dialogSoundOutput = new OpenAlPcmSoundOutput();
-        dialogSoundSink = new SfxDialogSoundSink(dialogSoundOutput);
         cutsceneManager = new CutsceneManager(dialogController, Main::setCutsceneScene);
         romTables = RomTables.loadFromRom(romData);
         overworldCollision = new OverworldCollision(romTables);
@@ -211,14 +230,25 @@ public class Main {
         cutLeavesEffectRenderer = new CutLeavesEffectRenderer(transientVfxSpriteSheet);
         itemRegistry = new ItemRegistry();
         roomSession = new RoomSession(romData, gpu, new RoomLoader(romData),
-            new OverworldTilesetTable(romData), overworldCollision, transientVfxSystem, droppableRupeeSystem);
+            new OverworldTilesetTable(romData), overworldCollision, transientVfxSystem, droppableRupeeSystem,
+            Main::selectMusicForLoadedRoom);
         link = new Link(inputState, inputConfig, romTables, overworldCollision,
-                        linkSpriteSheet, playerState, itemRegistry);
-        itemRegistry.register(PlayerState.INVENTORY_SWORD, new Sword(romTables, swordSpriteSheet));
+                        linkSpriteSheet, playerState, itemRegistry, gameplaySoundSink);
+        itemRegistry.register(PlayerState.INVENTORY_SWORD, new Sword(romTables, swordSpriteSheet,
+            gameplaySoundSink, () -> ThreadLocalRandom.current().nextInt(0x100)));
         itemRegistry.register(PlayerState.INVENTORY_ROCS_FEATHER, new RocsFeather(link));
         equipmentController = new EquipmentController(inputState, inputConfig, playerState, itemRegistry);
         roomTransitionCoordinator = new RoomTransitionCoordinator(
             roomSession, new RoomBoundaryController(), transitionController, scrollController);
+    }
+
+    private static void initMusicSystem() {
+        GameBoyApu musicApu = new GameBoyApu(48_000);
+        MusicCatalog musicCatalog = MusicCatalog.fromRom(romData);
+        musicPlayer = new OpenAlMusicPlayer(new MusicDriver(romData, musicApu), musicApu);
+        musicPlayer.setLoopEnabled(true);
+        gameplayMusicController = new GameplayMusicController(
+            AreaMusicResolver.fromRom(romData), musicCatalog, musicPlayer);
     }
 
     private static void loadGraphicsData() {
@@ -258,6 +288,7 @@ public class Main {
         if (currentScreen == SCREEN_CUTSCENE) {
             if (skipIntroCutsceneIfRequested(key, action, cutsceneManager)) {
                 currentScreen = SCREEN_TITLE;
+                playDirectMusic(directTitleScreenMusicTrack());
                 return;
             }
             if (action == GLFW_PRESS && dialogController != null
@@ -334,6 +365,10 @@ public class Main {
     }
 
     private static void update() {
+        if (musicPlayer != null) {
+            musicPlayer.update();
+        }
+
         if (currentScreen == SCREEN_CUTSCENE) {
             if (dialogController != null) {
                 dialogController.tick();
@@ -426,6 +461,13 @@ public class Main {
         DialogSoundRouter.routePending(dialogController, dialogSoundSink);
     }
 
+    private static void selectMusicForLoadedRoom(ActiveRoom room) {
+        if (gameplayMusicController == null || playerState == null || room == null) {
+            return;
+        }
+        gameplayMusicController.selectAfterTransition(RoomMusicContext.from(room, playerState));
+    }
+
     private static void maybeCutBushWithSword() {
         if (roomSession == null
             || !roomSession.hasActiveRoom()
@@ -466,6 +508,8 @@ public class Main {
         if (!cutResult.changed()) {
             return;
         }
+
+        gameplaySoundSink.play(cutResult.soundEvent());
 
         if (transientVfxSystem != null && cutResult.bushLeavesVisible()) {
             transientVfxSystem.spawn(
@@ -533,18 +577,45 @@ public class Main {
 
     private static void startIntroCutscene() {
         currentScreen = SCREEN_CUTSCENE;
+        playDirectMusic(introCutsceneMusicTrack());
         gpu.loadIntroSequenceTiles(romData);
         cutsceneManager.startIntro();
+    }
+
+    private static void startTitleScreenWithoutIntro() {
+        currentScreen = SCREEN_TITLE;
+        playDirectMusic(directTitleScreenMusicTrack());
     }
 
     private static void setCutsceneScene(String sceneId) {
         if (BackgroundSceneCatalog.requiresTitleTileset(sceneId)) {
             gpu.loadTitleScreenTiles(romData);
         }
+        if (IntroCutsceneScript.SCENE_TITLE.equals(sceneId) && currentScreen == SCREEN_CUTSCENE) {
+            playDirectMusic(naturalIntroTitleMusicTrack());
+        }
         BackgroundSceneSpec spec = BackgroundSceneCatalog.forCutsceneScene(sceneId);
         if (spec != null) {
             applyBackgroundScene(backgroundSceneLoader.load(spec));
         }
+    }
+
+    private static void playDirectMusic(int trackId) {
+        if (gameplayMusicController != null) {
+            gameplayMusicController.playDirect(trackId);
+        }
+    }
+
+    static int introCutsceneMusicTrack() {
+        return MusicTrackIds.MUSIC_TITLE_CUTSCENE;
+    }
+
+    static int naturalIntroTitleMusicTrack() {
+        return MusicTrackIds.MUSIC_TITLE_SCREEN;
+    }
+
+    static int directTitleScreenMusicTrack() {
+        return MusicTrackIds.MUSIC_TITLE_SCREEN_NO_INTRO;
     }
 
     private static void applyBackgroundScene(BackgroundScene scene) {
@@ -646,6 +717,9 @@ public class Main {
         }
         if (dialogSoundOutput != null) {
             dialogSoundOutput.close();
+        }
+        if (musicPlayer != null) {
+            musicPlayer.close();
         }
         glfwDestroyWindow(window);
         glfwTerminate();

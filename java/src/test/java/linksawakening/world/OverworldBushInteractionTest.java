@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 
 import linksawakening.entity.Link;
+import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.rom.RomTables;
 import org.junit.jupiter.api.Test;
 
@@ -110,6 +111,30 @@ final class OverworldBushInteractionTest {
 
         assertTrue(result.changed());
         assertTrue(result.bushLeavesVisible());
+    }
+
+    @Test
+    void cuttableObjectsRequestCutGrassNoiseEffect() {
+        int roomId = 0x40;
+        int location = hitLocation(Link.DIRECTION_RIGHT, TARGET_LINK_X, TARGET_LINK_Y);
+        int[] roomObjectsArea = emptyRoomObjectsArea();
+        int[] roomTileIds = emptyRoomTiles(-1);
+        int[] roomTileAttrs = emptyRoomTiles(-1);
+        roomObjectsArea[ROOM_OBJECTS_BASE + location] = OBJECT_BUSH;
+
+        OverworldBushInteraction.CutResult result = INTERACTION.cutObjectAtLocation(
+            location,
+            roomId,
+            true,
+            roomObjectsArea,
+            null,
+            null,
+            roomTileIds,
+            roomTileAttrs
+        );
+
+        assertTrue(result.changed());
+        assertEquals(GameplaySoundEvent.CUT_GRASS, result.soundEvent());
     }
 
     @Test

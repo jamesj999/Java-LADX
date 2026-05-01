@@ -31,6 +31,7 @@ public final class PlayerState {
     private int maxHearts = 3;
     private int health = 3 * HP_PER_HEART;
     private int invincibilityCounter;
+    private int swordLevel = 1;
     private int itemA = INVENTORY_SWORD;
     private int itemB = INVENTORY_EMPTY;
     private final int[] subscreen = new int[SUBSCREEN_SLOT_COUNT];
@@ -85,6 +86,14 @@ public final class PlayerState {
         if (invincibilityCounter > 0) {
             invincibilityCounter--;
         }
+    }
+
+    public int swordLevel() {
+        return swordLevel;
+    }
+
+    public void setSwordLevel(int value) {
+        swordLevel = clamp(value, 0, 2);
     }
 
     public int itemA() {

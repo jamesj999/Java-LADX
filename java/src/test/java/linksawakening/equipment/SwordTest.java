@@ -8,6 +8,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import linksawakening.entity.Link;
+import linksawakening.gameplay.GameplaySoundEvent;
+import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.rom.RomTables;
 import org.junit.jupiter.api.Test;
@@ -18,6 +20,87 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 final class SwordTest {
 
     private static final int STATE_DRAW = 1; // SWORD_ANIMATION_STATE_DRAW in the ROM
+
+    @Test
+    void startingSlashPlaysOneOfTheRomSwordSwingNoiseEffects() {
+        RecordingGameplaySoundSink soundSink = new RecordingGameplaySoundSink();
+        SequenceIntSupplier randomBytes = new SequenceIntSupplier(0, 1, 2, 3);
+        Sword sword = new Sword(null, null, soundSink, randomBytes);
+
+        sword.onPress();
+
+        assertEquals(List.of(GameplaySoundEvent.SWORD_SWING_A), soundSink.events);
+
+        while (sword.state() != Sword.STATE_NONE) {
+            sword.tick(false);
+        }
+        sword.onPress();
+        while (sword.state() != Sword.STATE_NONE) {
+            sword.tick(false);
+        }
+        sword.onPress();
+        while (sword.state() != Sword.STATE_NONE) {
+            sword.tick(false);
+        }
+        sword.onPress();
+
+        assertEquals(List.of(
+                GameplaySoundEvent.SWORD_SWING_A,
+                GameplaySoundEvent.SWORD_SWING_B,
+                GameplaySoundEvent.SWORD_SWING_C,
+                GameplaySoundEvent.SWORD_SWING_D), soundSink.events);
+    }
+
+    @Test
+    void pressingSwordWhileSwingingDoesNotReplaySwingSound() {
+        RecordingGameplaySoundSink soundSink = new RecordingGameplaySoundSink();
+        Sword sword = new Sword(null, null, soundSink, new SequenceIntSupplier(0));
+
+        sword.onPress();
+        sword.onPress();
+
+        assertEquals(List.of(GameplaySoundEvent.SWORD_SWING_A), soundSink.events);
+    }
+
+    @Test
+    void reachingMaximumChargePlaysChargingSwordJingleOnce() {
+        RecordingGameplaySoundSink soundSink = new RecordingGameplaySoundSink();
+        Sword sword = new Sword(null, null, soundSink, new SequenceIntSupplier(0));
+
+        sword.onPress();
+        while (sword.state() != Sword.STATE_HOLDING) {
+            sword.tick(true);
+        }
+        while (sword.charge() < Sword.MAX_CHARGE) {
+            sword.tick(true);
+        }
+        sword.tick(true);
+
+        assertEquals(List.of(
+                GameplaySoundEvent.SWORD_SWING_A,
+                GameplaySoundEvent.SWORD_FULLY_CHARGED), soundSink.events);
+    }
+
+    @Test
+    void releasingFullyChargedSwordPlaysSpinAttackNoise() {
+        RecordingGameplaySoundSink soundSink = new RecordingGameplaySoundSink();
+        Sword sword = new Sword(null, null, soundSink, new SequenceIntSupplier(0));
+
+        sword.onPress();
+        while (sword.state() != Sword.STATE_HOLDING) {
+            sword.tick(true);
+        }
+        while (sword.charge() < Sword.MAX_CHARGE) {
+            sword.tick(true);
+        }
+
+        sword.onRelease();
+
+        assertEquals(List.of(
+                GameplaySoundEvent.SWORD_SWING_A,
+                GameplaySoundEvent.SWORD_FULLY_CHARGED,
+                GameplaySoundEvent.SPIN_ATTACK), soundSink.events);
+    }
 
     @Test
     void tapSlashDoesNotExposeAnExtraSwingEndFrame() {
@@ -367,5 +450,28 @@ final class SwordTest {
         }
         sword.attackDirection(direction);
         return sword;
+    }
+
+    private static final class RecordingGameplaySoundSink implements GameplaySoundSink {
+        private final List<GameplaySoundEvent> events = new ArrayList<>();
+
+        @Override
+        public void play(GameplaySoundEvent event) {
+            events.add(event);
+        }
+    }
+
+    private static final class SequenceIntSupplier implements java.util.function.IntSupplier {
+        private final int[] values;
+        private int index;
+
+        private SequenceIntSupplier(int... values) {
+            this.values = values;
+        }
+
+        @Override
+        public int getAsInt() {
+            return values[Math.min(index++, values.length - 1)];
+        }
     }
 }

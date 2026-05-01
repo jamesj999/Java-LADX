@@ -3,9 +3,13 @@ package linksawakening.entity;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import linksawakening.equipment.EquippedItem;
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.equipment.Sword;
+import linksawakening.gameplay.GameplaySoundEvent;
+import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.physics.OverworldCollision;
@@ -48,6 +52,43 @@ final class LinkTest {
         link.useRocsFeather();
 
         assertEquals(0x22, resolvedAnimationState(link));
+    }
+
+    @Test
+    void acceptedRocsFeatherJumpPlaysJumpJingleOnce() {
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        RecordingGameplaySoundSink soundSink = new RecordingGameplaySoundSink();
+        Link link = new Link(new InputState(), inputConfig, null, null, null,
+                new PlayerState(), new ItemRegistry(), soundSink);
+
+        link.useRocsFeather();
+        link.useRocsFeather();
+
+        assertEquals(List.of(GameplaySoundEvent.ROC_FEATHER_JUMP), soundSink.events);
+    }
+
+    @Test
+    void startingPitFallPlaysLinkFallWaveEffectOnce() throws Exception {
+        byte[] rom = loadRom();
+        RomTables romTables = RomTables.loadFromRom(rom);
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        InputState inputState = new InputState();
+        inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
+        int[] roomObjects = emptyRoomObjectsArea();
+        roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 2] = OBJECT_PIT;
+        OverworldCollision collision = new OverworldCollision(romTables);
+        collision.setRoom(roomObjects);
+        RecordingGameplaySoundSink soundSink = new RecordingGameplaySoundSink();
+        Link link = new Link(inputState, inputConfig, romTables, collision, null,
+                new PlayerState(), new ItemRegistry(), soundSink);
+        link.setPixelPosition(0x20, 0x20);
+
+        runUntilPitFallStarts(link);
+        for (int i = 0; i < 8; i++) {
+            link.update();
+        }
+
+        assertEquals(List.of(GameplaySoundEvent.PIT_FALL), soundSink.events);
     }
 
     @Test
@@ -663,6 +704,15 @@ final class LinkTest {
         @Override
         public int overrideAnimationState(int direction, int walkFrame) {
             return animationState;
+        }
+    }
+
+    private static final class RecordingGameplaySoundSink implements GameplaySoundSink {
+        private final List<GameplaySoundEvent> events = new ArrayList<>();
+
+        @Override
+        public void play(GameplaySoundEvent event) {
+            events.add(event);
         }
     }
 }

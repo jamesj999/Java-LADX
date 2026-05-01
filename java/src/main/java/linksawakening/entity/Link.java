@@ -3,6 +3,8 @@ package linksawakening.entity;
 import linksawakening.equipment.EquippedItem;
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.equipment.RocsFeather;
+import linksawakening.gameplay.GameplaySoundEvent;
+import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.Tile;
 import linksawakening.input.InputConfig;
@@ -10,6 +12,8 @@ import linksawakening.input.InputState;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
 import linksawakening.state.PlayerState;
+
+import java.util.Objects;
 
 /**
  * Link's state and per-frame update, ported from the LADX disassembly's
@@ -153,6 +157,7 @@ public final class Link implements RocsFeather.JumpTarget {
     private int roomEntrySubX;
     private int roomEntrySubY;
     private boolean hasRoomEntryPosition;
+    private final GameplaySoundSink soundSink;
     private final Tile[] composedTiles = new Tile[4];
 
     public Link(InputState inputState,
@@ -162,6 +167,18 @@ public final class Link implements RocsFeather.JumpTarget {
                 LinkSpriteSheet spriteSheet,
                 PlayerState playerState,
                 ItemRegistry itemRegistry) {
+        this(inputState, inputConfig, romTables, collision, spriteSheet, playerState,
+                itemRegistry, GameplaySoundSink.none());
+    }
+
+    public Link(InputState inputState,
+                InputConfig inputConfig,
+                RomTables romTables,
+                OverworldCollision collision,
+                LinkSpriteSheet spriteSheet,
+                PlayerState playerState,
+                ItemRegistry itemRegistry,
+                GameplaySoundSink soundSink) {
         this.inputState = inputState;
         this.inputConfig = inputConfig;
         this.romTables = romTables;
@@ -169,6 +186,7 @@ public final class Link implements RocsFeather.JumpTarget {
         this.spriteSheet = spriteSheet;
         this.playerState = playerState;
         this.itemRegistry = itemRegistry;
+        this.soundSink = Objects.requireNonNull(soundSink, "soundSink");
     }
 
     public void setPixelPosition(int pixelX, int pixelY) {
@@ -232,6 +250,7 @@ public final class Link implements RocsFeather.JumpTarget {
         zVelocity = 0x20;
         jumpAnimationCounter = 0;
         jumpAnimationFrame = 0;
+        soundSink.play(GameplaySoundEvent.ROC_FEATHER_JUMP);
     }
 
     /** Advance the walking-cycle timer without processing input or collision. */
@@ -503,6 +522,7 @@ public final class Link implements RocsFeather.JumpTarget {
         walkFrame = 0;
         movingThisFrame = false;
         subY += 3 << SUB_PIXEL_SHIFT;
+        soundSink.play(GameplaySoundEvent.PIT_FALL);
     }
 
     private void tickPitFall() {

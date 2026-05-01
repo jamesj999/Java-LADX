@@ -40,14 +40,27 @@ public final class OpenAlPcmSoundOutput implements PcmSoundOutput {
 
     @Override
     public void play(short[] stereoPcm, int sampleRate) {
+        play(stereoPcm, sampleRate, false);
+    }
+
+    @Override
+    public void playReplacing(short[] stereoPcm, int sampleRate) {
+        play(stereoPcm, sampleRate, true);
+    }
+
+    private void play(short[] stereoPcm, int sampleRate, boolean replaceQueuedPlayback) {
         if (!isAvailable() || stereoPcm == null || stereoPcm.length == 0 || sampleRate <= 0) {
             return;
         }
         PendingOpenAlBuffer pendingBuffer = null;
         try {
             ALC10.alcMakeContextCurrent(context);
-            unqueueProcessedBuffers();
-            dropOldestBuffersBeforeQueueing();
+            if (replaceQueuedPlayback) {
+                clearQueuedBuffers();
+            } else {
+                unqueueProcessedBuffers();
+                dropOldestBuffersBeforeQueueing();
+            }
 
             pendingBuffer = new PendingOpenAlBuffer(AL10.alGenBuffers());
             checkAlError("create dialog buffer");
@@ -123,15 +136,20 @@ public final class OpenAlPcmSoundOutput implements PcmSoundOutput {
 
     private void dropOldestBuffersBeforeQueueing() {
         for (int ignored : bufferQueue.buffersToDropBeforeQueueing()) {
-            AL10.alSourceStop(source);
-            while (AL10.alGetSourcei(source, AL10.AL_BUFFERS_QUEUED) > 0) {
-                int buffer = AL10.alSourceUnqueueBuffers(source);
-                AL10.alDeleteBuffers(buffer);
-                bufferQueue.markDeleted(buffer);
-            }
+            clearQueuedBuffers();
             break;
         }
         checkAlError("drop old dialog buffers");
+    }
+
+    private void clearQueuedBuffers() {
+        AL10.alSourceStop(source);
+        while (AL10.alGetSourcei(source, AL10.AL_BUFFERS_QUEUED) > 0) {
+            int buffer = AL10.alSourceUnqueueBuffers(source);
+            AL10.alDeleteBuffers(buffer);
+            bufferQueue.markDeleted(buffer);
+        }
+        checkAlError("clear dialog buffers");
     }
 
     private void releaseNativeResources() {
@@ -140,12 +158,7 @@ public final class OpenAlPcmSoundOutput implements PcmSoundOutput {
                 ALC10.alcMakeContextCurrent(context);
             }
             if (source != 0) {
-                AL10.alSourceStop(source);
-                while (AL10.alGetSourcei(source, AL10.AL_BUFFERS_QUEUED) > 0) {
-                    int buffer = AL10.alSourceUnqueueBuffers(source);
-                    AL10.alDeleteBuffers(buffer);
-                    bufferQueue.markDeleted(buffer);
-                }
+                clearQueuedBuffers();
                 for (int buffer : bufferQueue.buffersToDeleteOnClose()) {
                     AL10.alDeleteBuffers(buffer);
                 }

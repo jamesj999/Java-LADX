@@ -3,6 +3,7 @@ package linksawakening;
 import linksawakening.config.AppConfig;
 import linksawakening.cutscene.CutsceneManager;
 import linksawakening.dialog.DialogController;
+import linksawakening.audio.music.MusicTrackIds;
 import linksawakening.scene.BackgroundSceneCatalog;
 import linksawakening.scene.BackgroundSceneLoader;
 import linksawakening.scene.BackgroundSceneSpec;
@@ -112,6 +113,13 @@ final class MainTest {
         assertTrue(Main.skipIntroCutsceneIfRequested(GLFW_KEY_ENTER, GLFW_PRESS, manager));
         assertFalse(manager.isActive());
         assertTrue(manager.isShowingTitleScene());
+    }
+
+    @Test
+    void titleAndIntroMusicTracksMatchDisassemblyEntryPoints() {
+        assertEquals(MusicTrackIds.MUSIC_TITLE_CUTSCENE, Main.introCutsceneMusicTrack());
+        assertEquals(MusicTrackIds.MUSIC_TITLE_SCREEN, Main.naturalIntroTitleMusicTrack());
+        assertEquals(MusicTrackIds.MUSIC_TITLE_SCREEN_NO_INTRO, Main.directTitleScreenMusicTrack());
     }
 
     private static byte[] loadRom() {
