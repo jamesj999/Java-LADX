@@ -137,6 +137,22 @@ final class GameBoyApuTest {
     }
 
     @Test
+    void noiseChannelLengthCounterStopsEnabledNotes() {
+        GameBoyApu apu = new GameBoyApu(48_000);
+        apu.writeRegister(GameBoyApu.NR52, 0x80);
+        apu.writeRegister(GameBoyApu.NR50, 0x77);
+        apu.writeRegister(GameBoyApu.NR51, 0x88);
+        apu.writeRegister(GameBoyApu.NR41, 0x3A);
+        apu.writeRegister(GameBoyApu.NR42, 0xF0);
+        apu.writeRegister(GameBoyApu.NR43, 0x10);
+        apu.writeRegister(GameBoyApu.NR44, 0xC0);
+
+        apu.render(1_126);
+
+        assertTrue(!apu.isChannelActive(4));
+    }
+
+    @Test
     void squareChannelAppliesHardwareVolumeEnvelope() {
         GameBoyApu apu = new GameBoyApu(48_000);
         apu.writeRegister(GameBoyApu.NR52, 0x80);
