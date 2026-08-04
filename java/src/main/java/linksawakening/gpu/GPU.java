@@ -427,4 +427,12 @@ public class GPU {
         }
         return null;
     }
+
+    public EntitySpriteTileSnapshot snapshotEntityTiles() {
+        Tile[] entityTiles = new Tile[EntitySpriteTileSnapshot.TILE_COUNT];
+        for (int i = 0; i < entityTiles.length; i++) {
+            entityTiles[i] = tiles[EntitySpriteTileSnapshot.BASE_TILE_INDEX + i];
+        }
+        return new EntitySpriteTileSnapshot(entityTiles);
+    }
 }

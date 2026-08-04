@@ -1,6 +1,7 @@
 package linksawakening.render;
 
 import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.gpu.EntitySpriteTileSnapshot;
 import linksawakening.world.RoomEntity;
 import linksawakening.world.RoomEntitySnapshot;
 import linksawakening.world.ScrollController;
@@ -59,13 +60,14 @@ public final class EntityRenderLayer implements RenderLayer {
 
     private void renderSnapshot(RenderContext context, RoomEntitySnapshot entities,
                                 int[][] palettes, ScreenOffset offset) {
+        EntitySpriteTileSnapshot tiles = entities.spriteTiles();
         for (RoomEntity entity : entities.loadedEntities()) {
-            renderEntity(context, entity, palettes, offset.x(), offset.y());
+            renderEntity(context, entity, palettes, tiles, offset.x(), offset.y());
         }
     }
 
     private void renderEntity(RenderContext context, RoomEntity entity, int[][] palettes,
-                              int offsetX, int offsetY) {
+                              EntitySpriteTileSnapshot tiles, int offsetX, int offsetY) {
         EntitySpriteDefinition definition = entity.spriteDefinition();
         if (!definition.supported() || entity.spriteVariant() < 0
             || entity.spriteVariant() >= definition.variantCount()) {
@@ -83,22 +85,30 @@ public final class EntityRenderLayer implements RenderLayer {
             boolean flipX = (flipAttribute & OAM_XFLIP) != 0;
             int firstX = entityX + (flipX ? 8 : 0);
             int secondX = entityX + (flipX ? 0 : 8);
-            renderOamSprite(context, palettes, variant.first(), flipAttribute, firstX, entityY);
-            renderOamSprite(context, palettes, variant.second(), flipAttribute, secondX, entityY);
+            renderOamSprite(context, palettes, tiles, variant.first(), flipAttribute, firstX, entityY);
+            renderOamSprite(context, palettes, tiles, variant.second(), flipAttribute, secondX, entityY);
         } else if (definition.shape() == EntitySpriteDefinition.Shape.SINGLE) {
-            renderOamSprite(context, palettes, variant.first(), flipAttribute, entityX + 4, entityY);
+            renderOamSprite(context, palettes, tiles, variant.first(), flipAttribute,
+                entityX + 4, entityY);
         }
     }
 
     private void renderOamSprite(RenderContext context, int[][] palettes,
+                                 EntitySpriteTileSnapshot tiles,
                                  EntitySpriteDefinition.OamAttribute oam,
                                  int entityFlipAttribute, int screenX, int screenY) {
         int attributes = oam.attributes() ^ entityFlipAttribute;
         int paletteIndex = attributes & OAM_PALETTE_MASK;
         int[] palette = palettes[Math.min(paletteIndex, palettes.length - 1)];
-        IndexedRenderer.drawSpriteTile8x16(context.buffer(), context.gpu(), oam.tile(),
-            screenX, screenY, (attributes & OAM_XFLIP) != 0,
-            (attributes & OAM_YFLIP) != 0, palette);
+        if (tiles == null) {
+            IndexedRenderer.drawSpriteTile8x16(context.buffer(), context.gpu(), oam.tile(),
+                screenX, screenY, (attributes & OAM_XFLIP) != 0,
+                (attributes & OAM_YFLIP) != 0, palette);
+        } else {
+            IndexedRenderer.drawSpriteTile8x16(context.buffer(), tiles, oam.tile(),
+                screenX, screenY, (attributes & OAM_XFLIP) != 0,
+                (attributes & OAM_YFLIP) != 0, palette);
+        }
     }
 
     private ScreenOffset currentRoomOffset() {

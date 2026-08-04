@@ -50,6 +50,19 @@ final class GPUEntityTilesTest {
     }
 
     @Test
+    void entityTileSnapshotIsIndependentOfLaterVramWrites() {
+        GPU gpu = new GPU();
+        int base = 0x40 * GPU.TILE_DATA_SIZE;
+        gpu.writeVRAM(base, (byte) 0xFF);
+        EntitySpriteTileSnapshot snapshot = gpu.snapshotEntityTiles();
+
+        gpu.writeVRAM(base, (byte) 0x00);
+
+        assertEquals(1, snapshot.tile(0x40).getPixel(0, 0));
+        assertEquals(0, gpu.getTile(0x40).getPixel(0, 0));
+    }
+
+    @Test
     void shippedRoom92UsesAdjustedGbcNpcBanksAndSixteenTileDestinations() throws Exception {
         byte[] rom = loadRom();
         EntitySpriteSelection selection = new EntitySpriteCatalog(rom)

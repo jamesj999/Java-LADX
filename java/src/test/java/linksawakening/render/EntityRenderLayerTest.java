@@ -4,6 +4,7 @@ import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteSelection;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.GPU;
+import linksawakening.gpu.EntitySpriteTileSnapshot;
 import linksawakening.world.EntityStatus;
 import linksawakening.world.RoomEntity;
 import linksawakening.world.RoomEntitySnapshot;
@@ -160,6 +161,46 @@ final class EntityRenderLayerTest {
         assertEquals(previousColor, pixelColor(buffer, 12, 0));
     }
 
+    @Test
+    void preservesPreviousRoomEntityTilesAfterDestinationSheetsOverwriteVram() {
+        GPU gpu = new GPU();
+        int previousColor = 0x123456;
+        int currentColor = 0x654321;
+        int[][] palettes = { { 0, previousColor, currentColor, 0 } };
+        writeSolidTile(gpu, 0x40, 1);
+        writeSolidTile(gpu, 0x41, 1);
+        EntitySpriteTileSnapshot previousTiles = gpu.snapshotEntityTiles();
+        writeSolidTile(gpu, 0x40, 2);
+        writeSolidTile(gpu, 0x41, 2);
+        EntitySpriteTileSnapshot currentTiles = gpu.snapshotEntityTiles();
+
+        EntitySpriteDefinition single = new EntitySpriteDefinition(0x02, 0x00, 0x4000,
+            EntitySpriteDefinition.Shape.SINGLE, 0, List.of(
+                new EntitySpriteDefinition.Variant(
+                    new EntitySpriteDefinition.OamAttribute(0x40, 0x00), null)));
+        RoomEntity previousEntity = new RoomEntity(0, 0, 0x02, 8, 16, EntityStatus.ACTIVE,
+            single, 0, 0);
+        RoomEntity currentEntity = new RoomEntity(0, 0, 0x02, 152, 16, EntityStatus.ACTIVE,
+            single, 0, 0);
+        EntitySpriteSelection selection = new EntitySpriteSelection(
+            linksawakening.world.EntityRoomLoader.RoomTable.OVERWORLD, 0, 0,
+            new int[] {0xFF, 0xFF, 0xFF, 0xFF}, true, palettes);
+        RoomEntitySnapshot previousEntities = snapshot(selection, previousTiles, previousEntity);
+        RoomEntitySnapshot currentEntities = snapshot(selection, currentTiles, currentEntity);
+        RoomRenderSnapshot previousRoom = new RoomRenderSnapshot(new int[] { 0 }, new int[] { 0 },
+            palettes, previousEntities);
+        ScrollController scroll = new ScrollController();
+        scroll.start(ScrollController.LEFT, 0, 0, previousRoom, 160);
+        scroll.tick(8);
+
+        byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
+        new EntityRenderLayer(currentEntities, palettes, scroll)
+            .render(new RenderContext(buffer, gpu));
+
+        assertEquals(previousColor, pixelColor(buffer, 12, 0));
+        assertEquals(currentColor, pixelColor(buffer, 140, 0));
+    }
+
     private static EntitySpriteDefinition pairDefinition(EntitySpriteDefinition.OamAttribute first,
                                                           EntitySpriteDefinition.OamAttribute second) {
         return new EntitySpriteDefinition(0x7A, 0x06, 0x5C89,
@@ -179,6 +220,12 @@ final class EntityRenderLayerTest {
             slots.add(RoomEntity.disabled(slots.size()));
         }
         return new RoomEntitySnapshot(slots, selection);
+    }
+
+    private static RoomEntitySnapshot snapshot(EntitySpriteSelection selection,
+                                                EntitySpriteTileSnapshot tiles,
+                                                RoomEntity... entities) {
+        return snapshot(selection, entities).withSpriteTiles(tiles);
     }
 
     private static byte[] filledBuffer(int red, int green, int blue) {

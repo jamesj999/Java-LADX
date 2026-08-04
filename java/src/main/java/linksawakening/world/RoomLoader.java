@@ -32,6 +32,11 @@ public final class RoomLoader {
     }
 
     LoadedRoom loadOverworld(int roomId, int clearedEntitiesMask) {
+        return loadOverworld(roomId, clearedEntitiesMask, null);
+    }
+
+    LoadedRoom loadOverworld(int roomId, int clearedEntitiesMask,
+                             byte[] overworldRoomStatus) {
         int roomPointerOffset = RomBank.romOffset(OVERWORLD_ROOM_BANK, OVERWORLD_ROOM_POINTERS_ADDR + roomId * 2);
         int roomLo = Byte.toUnsignedInt(romData[roomPointerOffset]);
         int roomHi = Byte.toUnsignedInt(romData[roomPointerOffset + 1]);
@@ -48,7 +53,7 @@ public final class RoomLoader {
         int[] objects = parsed.roomObjectsArea();
         RoomTilemap tilemap = tilemapBuilder.buildOverworld(roomId, objects);
         RoomEntitySnapshot entities = loadEntities(EntityRoomLoader.RoomTable.OVERWORLD,
-            roomId, clearedEntitiesMask);
+            roomId, clearedEntitiesMask, MAP_OVERWORLD, overworldRoomStatus);
 
         return new LoadedRoom(
             roomId,
@@ -90,7 +95,8 @@ public final class RoomLoader {
         int[] objects = parsed.roomObjectsArea();
         RoomTilemap tilemap = tilemapBuilder.buildIndoor(mapId, roomId, objects);
         EntityRoomLoader.RoomTable entityTable = entityTableForIndoorMap(mapId);
-        RoomEntitySnapshot entities = loadEntities(entityTable, roomId, clearedEntitiesMask);
+        RoomEntitySnapshot entities = loadEntities(entityTable, roomId, clearedEntitiesMask,
+            mapId, null);
 
         return new LoadedRoom(
             roomId,
@@ -110,9 +116,11 @@ public final class RoomLoader {
     }
 
     private RoomEntitySnapshot loadEntities(EntityRoomLoader.RoomTable table, int roomId,
-                                            int clearedEntitiesMask) {
+                                            int clearedEntitiesMask, int mapId,
+                                            byte[] overworldRoomStatus) {
         return entityLoader.load(table, roomId, clearedEntitiesMask)
-            .withSpriteSelection(entitySpriteCatalog.load(table, roomId));
+            .withSpriteSelection(entitySpriteCatalog.load(table, roomId, mapId,
+                overworldRoomStatus));
     }
 
     private static EntityRoomLoader.RoomTable entityTableForIndoorMap(int mapId) {

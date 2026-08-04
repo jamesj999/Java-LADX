@@ -3,6 +3,7 @@ package linksawakening.render;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.GPU;
 import linksawakening.gpu.Tile;
+import linksawakening.gpu.EntitySpriteTileSnapshot;
 import linksawakening.world.RoomConstants;
 
 public final class IndexedRenderer {
@@ -119,6 +120,21 @@ public final class IndexedRenderer {
         int baseTileIndex = tileIndex & 0xFE;
         Tile top = gpu.getTile(flipY ? baseTileIndex + 1 : baseTileIndex);
         Tile bottom = gpu.getTile(flipY ? baseTileIndex : baseTileIndex + 1);
+        drawSpriteTile8x16(buffer, top, bottom, screenX, screenY, flipX, flipY, palette);
+    }
+
+    public static void drawSpriteTile8x16(byte[] buffer, EntitySpriteTileSnapshot tiles,
+                                          int tileIndex, int screenX, int screenY,
+                                          boolean flipX, boolean flipY, int[] palette) {
+        int baseTileIndex = tileIndex & 0xFE;
+        Tile top = tiles.tile(flipY ? baseTileIndex + 1 : baseTileIndex);
+        Tile bottom = tiles.tile(flipY ? baseTileIndex : baseTileIndex + 1);
+        drawSpriteTile8x16(buffer, top, bottom, screenX, screenY, flipX, flipY, palette);
+    }
+
+    private static void drawSpriteTile8x16(byte[] buffer, Tile top, Tile bottom,
+                                           int screenX, int screenY, boolean flipX, boolean flipY,
+                                           int[] palette) {
         drawSpriteTile(buffer, top, screenX, screenY, flipX, flipY, palette);
         drawSpriteTile(buffer, bottom, screenX, screenY + 8, flipX, flipY, palette);
     }

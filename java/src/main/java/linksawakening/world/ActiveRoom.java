@@ -18,6 +18,10 @@ public final class ActiveRoom {
     private final RoomEntitySnapshot entities;
 
     private ActiveRoom(LoadedRoom room) {
+        this(room, room.entities());
+    }
+
+    private ActiveRoom(LoadedRoom room, RoomEntitySnapshot entities) {
         this.roomId = room.roomId();
         this.mapCategory = room.mapCategory();
         this.mapId = room.mapId();
@@ -29,11 +33,15 @@ public final class ActiveRoom {
         this.palettes = room.palettes();
         this.warps = new ArrayList<>(room.warps());
         this.indoorHasSouthEntrance = room.indoorHasSouthEntrance();
-        this.entities = room.entities();
+        this.entities = entities;
     }
 
     public static ActiveRoom from(LoadedRoom room) {
         return new ActiveRoom(room);
+    }
+
+    public static ActiveRoom from(LoadedRoom room, RoomEntitySnapshot entities) {
+        return new ActiveRoom(room, entities);
     }
 
     public int roomId() {

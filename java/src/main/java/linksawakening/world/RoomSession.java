@@ -159,13 +159,15 @@ public final class RoomSession {
     }
 
     private void setActiveRoom(LoadedRoom room) {
-        activeRoom = ActiveRoom.from(room);
-        if (activeRoom.entities() != null && activeRoom.entities().spriteSelection() != null) {
-            var selection = activeRoom.entities().spriteSelection();
+        RoomEntitySnapshot entities = room.entities();
+        if (entities != null && entities.spriteSelection() != null) {
+            var selection = entities.spriteSelection();
             if (selection.hasStandardSheets()) {
                 gpu.loadEntitySpriteSheets(romData, selection.sheetValues());
+                entities = entities.withSpriteTiles(gpu.snapshotEntityTiles());
             }
         }
+        activeRoom = ActiveRoom.from(room, entities);
         if (roomLoadListener != null) {
             roomLoadListener.roomLoaded(activeRoom);
         }

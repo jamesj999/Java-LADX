@@ -18,4 +18,8 @@ public class Tile {
     public void setPixel(int x, int y, int color) {
         colorIndex[y * 8 + x] = color;
     }
+
+    public Tile copy() {
+        return new Tile(colorIndex.clone());
+    }
 }

@@ -27,6 +27,7 @@ final class RoomSessionTest {
         assertEquals(Warp.CATEGORY_OVERWORLD, session.mapCategory());
         assertNotNull(session.activeRoom().roomObjectsArea());
         assertEquals(0x92, session.activeRoom().entities().spriteSelection().roomId());
+        assertNotNull(session.activeRoom().entities().spriteTiles());
         assertNotNull(session.renderSnapshot());
     }
 
@@ -41,8 +42,10 @@ final class RoomSessionTest {
 
         assertEquals(0x93, session.currentRoomId());
         assertNotSame(previousEntities, session.activeRoom().entities());
+        assertNotSame(previousEntities.spriteTiles(), session.activeRoom().entities().spriteTiles());
         assertEquals(0x93, session.activeRoom().entities().spriteSelection().roomId());
         assertEquals(previousEntities, scrollController.previousRoom().entities());
+        assertNotNull(scrollController.previousRoom().entities().spriteTiles());
         assertTrue(scrollController.isActive());
         assertEquals(ScrollController.RIGHT, scrollController.direction());
         assertNotNull(scrollController.previousRoom());
