@@ -53,6 +53,10 @@ resource.
   variants, `$30` tile offset, pause/walk countdowns, direction/speed tables,
   fixed-point movement, normal collision point, and one-hit basic-sword death
   path are covered. The shared rock projectile spawn remains unsupported.
+- Moblin now reads its bank-$03 eight-variant display list and runs through
+  the same ordinary roaming-enemy countdown, direction, fixed-point movement,
+  and collision path. Its direction-gated arrow spawn and recoil/damage
+  branches remain pending.
 - `CreateFollowingNpcEntity` now runs on room load/state changes with the
   source indoor/map/room exclusions, source-order slot reuse, highest-free-slot
   `SpawnNewEntity` behavior, Link/wC13B spawn coordinates, Ghost trigger-state

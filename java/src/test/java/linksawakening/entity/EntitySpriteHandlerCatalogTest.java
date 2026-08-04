@@ -239,6 +239,14 @@ final class EntitySpriteHandlerCatalogTest {
         assertEquals(0x32, octorok.variant(1).first().tile());
         assertEquals(0x34, octorok.variant(4).first().tile());
 
+        EntitySpriteDefinition moblin = catalog.forEntityType(
+            0x0B, EntityRoomLoader.RoomTable.OVERWORLD);
+        assertEquals(8, moblin.variantCount());
+        assertEquals(0x60, moblin.variant(0).first().tile());
+        assertEquals(0x03, moblin.variant(0).first().attributes());
+        assertEquals(0x6A, moblin.variant(6).first().tile());
+        assertEquals(0x23, moblin.variant(6).first().attributes());
+
         EntitySpriteDefinition grandpa = catalog.forEntityType(
             0x77, EntityRoomLoader.RoomTable.INDOORS_A);
         assertEquals(-9, grandpa.rectangleVariant(0).get(0).yOffset());

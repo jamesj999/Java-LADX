@@ -18,6 +18,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_PIECE_OF_POWER = 0x33;
     private static final int ENTITY_BUTTERFLY = 0x6E;
     private static final int ENTITY_OCTOROK = 0x09;
+    private static final int ENTITY_MOBLIN = 0x0B;
     private static final int ENTITY_KEESE = 0x19;
     private static final int ENTITY_GHOST = 0xD4;
     private static final int ENTITY_ROOSTER = 0xD5;
@@ -150,7 +151,7 @@ public final class RoomEntityRuntime {
                 if (entity.type() == ENTITY_KEESE) {
                     keeseMotion.initialize(entity.slot(), randomByteSupplier);
                 }
-                if (entity.type() == ENTITY_OCTOROK) {
+                if (entity.type() == ENTITY_OCTOROK || entity.type() == ENTITY_MOBLIN) {
                     roamingEnemyMotion.initialize(entity.slot());
                 }
                 if (isFollowingNpcType(entity.type())) {
@@ -181,7 +182,7 @@ public final class RoomEntityRuntime {
                     randomByteSupplier);
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_OCTOROK) {
+                && isRoamingEnemyType(entity.type())) {
                 updated = roamingEnemyMotion.advance(entity, linkEntityX, linkEntityY,
                     randomByteSupplier, backgroundCollision);
             }
@@ -331,6 +332,10 @@ public final class RoomEntityRuntime {
     private static boolean isFollowingNpcType(int type) {
         return type == ENTITY_GHOST || type == ENTITY_ROOSTER
             || type == ENTITY_MARIN_AT_THE_SHORE || type == ENTITY_BOW_WOW;
+    }
+
+    private static boolean isRoamingEnemyType(int type) {
+        return type == ENTITY_OCTOROK || type == ENTITY_MOBLIN;
     }
 
     private static boolean isDynamicFollowingNpc(RoomEntity entity) {

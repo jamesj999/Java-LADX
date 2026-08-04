@@ -247,6 +247,28 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void moblinUsesTheSameRomRoamingStateMachineAndDirectionalDisplayPairs() {
+        EntitySpriteDefinition definition = pairDefinition(0x0B, 8);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x0B, 64, 64, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+        IntSupplier randomBytes = sequence(0x02, 0x03);
+
+        runtime.tick(0, 200, 32, randomBytes);
+        for (int frame = 1; frame <= 0x12; frame++) {
+            runtime.tick(frame, 200, 32, randomBytes);
+        }
+
+        assertEquals(0, runtime.octorokState(0));
+        assertEquals(3, runtime.octorokDirection(0));
+        assertEquals(8, runtime.octorokSpeedY(0));
+        runtime.tick(0x13, 200, 32, randomBytes);
+        runtime.tick(0x14, 200, 32, randomBytes);
+        assertEquals(65, runtime.snapshot().slots().get(0).y());
+        assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
+    }
+
+    @Test
     void octorokStopsAtTheRoamingEnemyBackgroundCollisionPoint() {
         EntitySpriteDefinition definition = pairDefinition(0x09, 8);
         RoomEntitySnapshot initial = snapshot(
