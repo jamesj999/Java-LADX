@@ -1,5 +1,6 @@
 .DS_Store
 .superpowers/
+.worktrees/
 
 # Local ROM dumps and generated ROM builds
 *.gb
