@@ -53,17 +53,20 @@ resource.
   variants, `$30` tile offset, pause/walk countdowns, direction/speed tables,
   fixed-point movement, normal collision point, and one-hit basic-sword death
   path are covered. The shared rock projectile spawn remains unsupported.
-- The room sprite selection can carry ROM-backed follower display-list
-  overrides for Bow-Wow, Marin, the Ghost, and the Flying Rooster. This keeps
-  table selection separate from the still-pending dynamic follower spawning
-  and history-driven movement.
+- `CreateFollowingNpcEntity` now runs on room load/state changes with the
+  source indoor/map/room exclusions, source-order slot reuse, highest-free-slot
+  `SpawnNewEntity` behavior, Link/wC13B spawn coordinates, Ghost trigger-state
+  update, Bow-Wow's Mrs. Meow-Meow exclusion, and ROM-backed follower display
+  lists for Bow-Wow, Marin, Ghost, and Rooster. Marin's sixteen-byte X/Y/Z/
+  direction history is seeded through the same consecutive-byte fill helper;
+  history-driven per-frame follower handlers remain pending.
 
 The complete Java test suite passes after these runtime increments. Remaining
-entity behavior—including roaming-enemy projectiles, the rest of the enemy damage matrix, recoil,
-stun/lift/throw/burning/death handlers, dynamic display-list selection beyond
-the follower override path, scripted spawns, and follower spawning/history—is
-intentionally still unsupported rather than represented by guessed shapes or
-generic movement.
+entity behavior—including roaming-enemy projectiles, the rest of the enemy
+damage matrix, recoil, stun/lift/throw/burning/death handlers, dynamic
+display-list selection beyond the follower path, scripted spawns, and
+history-driven follower handlers—is intentionally still unsupported rather than
+represented by guessed shapes or generic movement.
 
 ## Next entity increments
 

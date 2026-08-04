@@ -77,6 +77,27 @@ final class RoomSessionTest {
     }
 
     @Test
+    void synchronizesDynamicFollowerSpawningAndFollowerDisplaySelection() {
+        RoomSession session = newSession();
+        session.loadInitialOverworld(0x92);
+
+        session.setFollowingNpcState(
+            new FollowingNpcState(true, 0, false, false, 0, 0, false),
+            0x50, 0x60, 0x00, 0x00, 0x00);
+
+        RoomEntity rooster = session.activeRoom().entities().slots().get(15);
+        assertEquals(0xD5, rooster.type());
+        assertEquals(EntityStatus.ACTIVE, rooster.status());
+        assertEquals(0x50, rooster.x());
+        assertEquals(0x60, rooster.y());
+        assertEquals(0x19, rooster.spriteDefinition().bank());
+        assertEquals(0x59BC, rooster.spriteDefinition().address());
+        assertEquals(0x59BC, session.activeRoom().entities().spriteSelection()
+            .spriteOverrideFor(0xD5).address());
+        assertEquals(rooster, session.activeRoom().entities().slots().get(15));
+    }
+
+    @Test
     void persistsClearedFirstEightEntitySlotsWhenTheRoomReloads() {
         RoomSession session = newSession();
         session.loadInitialOverworld(0x92);

@@ -1,12 +1,14 @@
 package linksawakening.world;
 
 import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.gpu.GPU;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
 import linksawakening.vfx.TransientVfxSystem;
 
 import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
 import static linksawakening.world.RoomConstants.ROOM_PIXEL_HEIGHT;
@@ -24,11 +26,20 @@ public final class RoomSession {
     private final DroppableRupeeSystem droppableRupeeSystem;
     private final RoomLoadListener roomLoadListener;
     private final RomRandomByteSource entityRandomByteSource = new RomRandomByteSource();
+    private final FollowingNpcEntitySpawner followingNpcEntitySpawner;
+    private final LinkPositionHistory followingLinkPositionHistory = new LinkPositionHistory();
 
     private ActiveRoom activeRoom;
     private RoomEntityRuntime entityRuntime;
     private final int[] clearedEntitiesByRoom = new int[0x100];
     private int currentOverworldTilesetId = W_TILESET_NO_UPDATE;
+    private FollowingNpcState followingNpcState = FollowingNpcState.none();
+    private int followingLinkX = 0x08;
+    private int followingLinkY = 0x10;
+    private int followingLinkZ;
+    private int followingEntityYOffset;
+    private int followingLinkDirection;
+    private boolean followingNpcRoomNeedsSync;
 
     public RoomSession(byte[] romData,
                        GPU gpu,
@@ -57,6 +68,8 @@ public final class RoomSession {
         this.transientVfxSystem = transientVfxSystem;
         this.droppableRupeeSystem = droppableRupeeSystem;
         this.roomLoadListener = roomLoadListener;
+        this.followingNpcEntitySpawner = new FollowingNpcEntitySpawner(
+            new EntitySpriteHandlerCatalog(romData));
     }
 
     public void loadInitialOverworld(int roomId) {
@@ -157,21 +170,58 @@ public final class RoomSession {
 
     /**
      * Applies the follower display-list selections used by
-     * {@code CreateFollowingNpcEntity}. Entity spawning and follower physics
-     * remain separate state work; this method keeps the renderer's selection
-     * ROM-driven when the follower system has already selected its entities.
+     * {@code CreateFollowingNpcEntity}. This low-level hook is retained for
+     * callers that already own the dynamic entity state; new code should use
+     * {@link #setFollowingNpcState(FollowingNpcState, int, int, int, int, int)}
+     * so spawning and selection stay in one ROM-shaped path.
      */
     public void setFollowerSpriteOverrides(Map<Integer, EntitySpriteDefinition> overrides) {
         if (activeRoom == null || activeRoom.entities() == null
             || activeRoom.entities().spriteSelection() == null) {
             return;
         }
+        Map<Integer, EntitySpriteDefinition> merged = new HashMap<>(
+            activeRoom.entities().spriteSelection().spriteOverrides());
+        if (overrides != null) {
+            merged.putAll(overrides);
+        }
         RoomEntitySnapshot updated = activeRoom.entities().withSpriteSelection(
-            activeRoom.entities().spriteSelection().withSpriteOverrides(overrides));
+            activeRoom.entities().spriteSelection().withSpriteOverrides(merged));
         activeRoom.replaceEntities(updated);
         if (entityRuntime != null) {
             entityRuntime.setSpriteSelection(updated.spriteSelection());
         }
+    }
+
+    /**
+     * Binds the current WRAM-like follower flags and Link coordinates to the
+     * active room. The operation is applied once per room load or follower
+     * state change, matching the room-transition caller in room_transition.asm.
+     * Coordinates are hLinkPositionX/Y/Z and entityYOffset is wC13B.
+     */
+    public void setFollowingNpcState(FollowingNpcState state,
+                                     int linkX,
+                                     int linkY,
+                                     int linkZ,
+                                     int entityYOffset,
+                                     int linkDirection) {
+        if (state == null) {
+            throw new IllegalArgumentException("Follower state cannot be null");
+        }
+        followingLinkX = linkX & 0xFF;
+        followingLinkY = linkY & 0xFF;
+        followingLinkZ = linkZ & 0xFF;
+        followingEntityYOffset = entityYOffset & 0xFF;
+        followingLinkDirection = linkDirection & 0xFF;
+        if (!state.equals(followingNpcState)) {
+            followingNpcRoomNeedsSync = true;
+        }
+        followingNpcState = state;
+        synchronizeFollowingNpcEntitiesIfNeeded();
+    }
+
+    public FollowingNpcState followingNpcState() {
+        return followingNpcState;
     }
 
     public void tickEntities(int frameCounter) {
@@ -272,9 +322,33 @@ public final class RoomSession {
         entityRuntime = entities == null ? null : RoomEntityRuntime.from(
             entities, activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD,
             entityRandomByteSource);
+        followingNpcRoomNeedsSync = true;
+        synchronizeFollowingNpcEntitiesIfNeeded();
         if (roomLoadListener != null) {
             roomLoadListener.roomLoaded(activeRoom);
         }
+    }
+
+    private void synchronizeFollowingNpcEntitiesIfNeeded() {
+        if (!followingNpcRoomNeedsSync || activeRoom == null || entityRuntime == null
+            || activeRoom.entities() == null) {
+            return;
+        }
+        FollowingNpcRoomContext room = new FollowingNpcRoomContext(
+            activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD,
+            false,
+            activeRoom.mapId(),
+            activeRoom.roomId());
+        FollowingNpcEntitySpawner.Result result = followingNpcEntitySpawner.synchronize(
+            activeRoom.entities(), room, followingNpcState,
+            followingLinkX, followingLinkY, followingLinkZ,
+            followingEntityYOffset, followingLinkDirection, followingLinkPositionHistory);
+        followingNpcState = result.state();
+        followingNpcRoomNeedsSync = false;
+        activeRoom.replaceEntities(result.snapshot());
+        entityRuntime = RoomEntityRuntime.from(
+            result.snapshot(), activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD,
+            entityRandomByteSource);
     }
 
     private void clearTransientRoomState() {
