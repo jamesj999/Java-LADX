@@ -42,6 +42,7 @@ public final class RoomEntityRuntime {
     private final ButterflyMotion butterflyMotion = new ButterflyMotion();
     private final KeeseMotion keeseMotion = new KeeseMotion();
     private final RoamingEnemyMotion roamingEnemyMotion = new RoamingEnemyMotion();
+    private final GhiniMotion ghiniMotion = new GhiniMotion();
     private final FollowingNpcMotion followingNpcMotion = new FollowingNpcMotion();
     private final BowWowMotion bowWowMotion = new BowWowMotion();
     private final int[] slowTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -162,6 +163,9 @@ public final class RoomEntityRuntime {
                 if (entity.type() == ENTITY_OCTOROK || entity.type() == ENTITY_MOBLIN) {
                     roamingEnemyMotion.initialize(entity.slot());
                 }
+                if (entity.type() == ENTITY_GHINI) {
+                    ghiniMotion.initialize(entity.slot());
+                }
                 if (isFollowingNpcType(entity.type())) {
                     if (entity.type() == ENTITY_BOW_WOW) {
                         bowWowMotion.initialize(entity.slot());
@@ -195,6 +199,10 @@ public final class RoomEntityRuntime {
                     randomByteSupplier, backgroundCollision);
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_GHINI) {
+                updated = ghiniMotion.advance(entity, frame, randomByteSupplier);
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
                 && isDynamicFollowingNpc(entity)) {
                 if (entity.type() == ENTITY_BOW_WOW) {
                     updated = bowWowMotion.advance(entity, frame, linkEntityX, linkEntityY,
@@ -214,8 +222,8 @@ public final class RoomEntityRuntime {
                 || updated.z() != entity.z()) {
                 slots[index] = new RoomEntity(
                     updated.slot(), updated.sourceLoadOrder(), updated.type(), updated.x(), updated.y(),
-                    status, entity.spriteDefinition(), variant, entity.entityFlipAttribute(),
-                    entity.spriteTileOffset(), updated.z());
+                    status, updated.spriteDefinition(), variant, updated.entityFlipAttribute(),
+                    updated.spriteTileOffset(), updated.z());
             }
         }
     }
@@ -333,6 +341,7 @@ public final class RoomEntityRuntime {
         butterflyMotion.clear(slot);
         keeseMotion.clear(slot);
         roamingEnemyMotion.clear(slot);
+        ghiniMotion.clear(slot);
         followingNpcMotion.clear(slot);
         bowWowMotion.clear(slot);
         slots[slot] = RoomEntity.disabled(slot);
@@ -413,6 +422,30 @@ public final class RoomEntityRuntime {
 
     int octorokSpeedY(int slot) {
         return roamingEnemyMotion.speedY(slot);
+    }
+
+    int ghiniTransitionCountdown(int slot) {
+        return ghiniMotion.transitionCountdown(slot);
+    }
+
+    int ghiniPrivateCountdown1(int slot) {
+        return ghiniMotion.privateCountdown1(slot);
+    }
+
+    int ghiniTargetXDirection(int slot) {
+        return ghiniMotion.targetXDirection(slot);
+    }
+
+    int ghiniTargetYDirection(int slot) {
+        return ghiniMotion.targetYDirection(slot);
+    }
+
+    int ghiniSpeedX(int slot) {
+        return ghiniMotion.speedX(slot);
+    }
+
+    int ghiniSpeedY(int slot) {
+        return ghiniMotion.speedY(slot);
     }
 
     int butterflyPrivateStateX(int slot) {
@@ -524,6 +557,7 @@ public final class RoomEntityRuntime {
         butterflyMotion.clear(slot);
         keeseMotion.clear(slot);
         followingNpcMotion.clear(slot);
+        ghiniMotion.clear(slot);
         bowWowMotion.clear(slot);
         slots[slot] = RoomEntity.disabled(slot);
     }

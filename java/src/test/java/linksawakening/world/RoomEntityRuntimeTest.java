@@ -370,6 +370,64 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void ghiniUsesItsRomTargetTimersAccelerationAndZCorrection() {
+        EntitySpriteDefinition definition = pairDefinition(0x12, 2);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x12, 64, 64, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+
+        runtime.tick(0, 96, 96, sequence(0x00, 0x00));
+        assertEquals(0x20, runtime.ghiniTransitionCountdown(0));
+        assertEquals(0x18, runtime.ghiniPrivateCountdown1(0));
+        assertEquals(0, runtime.ghiniTargetXDirection(0));
+        assertEquals(0, runtime.ghiniTargetYDirection(0));
+        assertEquals(1, runtime.ghiniSpeedX(0));
+        assertEquals(1, runtime.ghiniSpeedY(0));
+        assertEquals(1, runtime.snapshot().slots().get(0).z());
+
+        runtime.tick(4, 96, 96, sequence(0x00, 0x00));
+        assertEquals(2, runtime.ghiniSpeedX(0));
+        assertEquals(2, runtime.ghiniSpeedY(0));
+        assertEquals(2, runtime.snapshot().slots().get(0).z());
+    }
+
+    @Test
+    void ghiniUsesTheRomNormalEnemyContactAndHealthValues() {
+        EntitySpriteDefinition definition = pairDefinition(0x12, 2);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x12, 64, 64, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+
+        List<EntityCombatEvent> contact = runtime.resolveCombat(
+            1, 64, 64, false, true, false, 0, 0, 0, 0);
+        assertEquals(1, contact.size());
+        assertEquals(0x08, contact.get(0).linkDamage());
+
+        List<EntityCombatEvent> firstHit = runtime.resolveCombat(
+            0, 120, 120, false, true, true, 72, 1, 72, 1);
+        assertEquals(1, firstHit.size());
+        assertEquals(0x07, runtime.enemyHealth(0));
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
+    }
+
+    @Test
+    void ghiniTakesEachTargetDirectionFromTheSameRandomByteAsItsTimer() {
+        EntitySpriteDefinition definition = pairDefinition(0x12, 2);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x12, 64, 64, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+
+        runtime.tick(0, 96, 96, sequence(0x1F, 0x0F));
+
+        assertEquals(0x3F, runtime.ghiniTransitionCountdown(0));
+        assertEquals(1, runtime.ghiniTargetXDirection(0));
+        assertEquals(0x1F, runtime.ghiniPrivateCountdown1(0));
+        assertEquals(1, runtime.ghiniTargetYDirection(0));
+        assertEquals(0xFF, runtime.ghiniSpeedX(0));
+        assertEquals(0xFF, runtime.ghiniSpeedY(0));
+    }
+
+    @Test
     void dynamicGhostRuntimeAdvancesZBobEvenWhenItsVariantIsUnchanged() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
             .forFollowerEntityType(0xD4);

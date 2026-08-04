@@ -64,6 +64,11 @@ resource.
   frame-driven display cadences are wired into the runtime; Armos activation
   and launch, Ghini hiding/flight, and Hardhat movement/collision states
   remain pending.
+- Ordinary Ghini flight now mirrors bank `$04`'s shared-byte random target
+  timers, signed speed approach to the `$0C/$F4` and `$08/$F8` tables,
+  four-frame visual-Z correction, edge turnarounds, and direction flip. Its
+  normal hitbox uses the ROM health-group `$13` values: eight health and
+  `$08` contact damage; hiding and giant-Ghini branches remain pending.
 - `CreateFollowingNpcEntity` now runs on room load/state changes with the
   source indoor/map/room exclusions, source-order slot reuse, highest-free-slot
   `SpawnNewEntity` behavior, Link/wC13B spawn coordinates, Ghost trigger-state
