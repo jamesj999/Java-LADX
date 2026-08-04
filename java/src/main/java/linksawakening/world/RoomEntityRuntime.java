@@ -21,6 +21,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_KEESE = 0x19;
     private static final int ENTITY_GHOST = 0xD4;
     private static final int ENTITY_ROOSTER = 0xD5;
+    private static final int ENTITY_MARIN_AT_THE_SHORE = 0xC1;
 
     private final RoomEntity[] slots;
     private EntitySpriteSelection spriteSelection;
@@ -29,6 +30,10 @@ public final class RoomEntityRuntime {
     private final IntSupplier defaultRandomByteSupplier;
     private final RomRandomByteSource fallbackRomRandomByteSource;
     private FollowingNpcState followingNpcState = FollowingNpcState.none();
+    private LinkPositionHistory followingLinkPositionHistory = new LinkPositionHistory();
+    private int followingLinkZ;
+    private int followingLinkDirection;
+    private int followingEntityYOffset;
     private final ButterflyMotion butterflyMotion = new ButterflyMotion();
     private final KeeseMotion keeseMotion = new KeeseMotion();
     private final RoamingEnemyMotion roamingEnemyMotion = new RoamingEnemyMotion();
@@ -47,7 +52,7 @@ public final class RoomEntityRuntime {
         this.fallbackRomRandomByteSource = defaultRandomByteSupplier == null
             ? new RomRandomByteSource() : null;
         for (RoomEntity entity : slots) {
-            if (entity.type() == ENTITY_GHOST || entity.type() == ENTITY_ROOSTER) {
+            if (isFollowingNpcType(entity.type())) {
                 followingNpcMotion.initialize(entity.slot(), entity.type());
             }
         }
@@ -96,7 +101,22 @@ public final class RoomEntityRuntime {
     public void tick(int frameCounter, int linkEntityX, int linkEntityY,
                      IntSupplier randomByteSupplier,
                      RoomEntityBackgroundCollision backgroundCollision) {
+        tick(frameCounter, linkEntityX, linkEntityY, randomByteSupplier, backgroundCollision,
+            null, 0, 0, 0);
+    }
+
+    void tick(int frameCounter, int linkEntityX, int linkEntityY,
+              IntSupplier randomByteSupplier,
+              RoomEntityBackgroundCollision backgroundCollision,
+              LinkPositionHistory linkPositionHistory,
+              int linkZ, int linkDirection, int entityYOffset) {
         Objects.requireNonNull(randomByteSupplier, "randomByteSupplier");
+        if (linkPositionHistory != null) {
+            followingLinkPositionHistory = linkPositionHistory;
+        }
+        followingLinkZ = linkZ & 0xFF;
+        followingLinkDirection = linkDirection & 0xFF;
+        followingEntityYOffset = entityYOffset & 0xFF;
         int frame = frameCounter & 0xFF;
         for (int index = slots.length - 1; index >= 0; index--) {
             RoomEntity entity = slots[index];
@@ -127,7 +147,7 @@ public final class RoomEntityRuntime {
                 if (entity.type() == ENTITY_OCTOROK) {
                     roamingEnemyMotion.initialize(entity.slot());
                 }
-                if (entity.type() == ENTITY_GHOST || entity.type() == ENTITY_ROOSTER) {
+                if (isFollowingNpcType(entity.type())) {
                     followingNpcMotion.initialize(entity.slot(), entity.type());
                 }
             } else if (status == EntityStatus.ACTIVE) {
@@ -156,9 +176,10 @@ public final class RoomEntityRuntime {
                     randomByteSupplier, backgroundCollision);
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
-                && (entity.type() == ENTITY_GHOST || entity.type() == ENTITY_ROOSTER)) {
+                && isDynamicFollowingNpc(entity)) {
                 updated = followingNpcMotion.advance(entity, frame, linkEntityX, linkEntityY,
-                    backgroundCollision);
+                    followingLinkZ, followingLinkDirection, followingEntityYOffset,
+                    followingLinkPositionHistory, backgroundCollision);
             }
             int variant = variantFor(updated, frame);
             if (status == EntityStatus.ACTIVE && shouldDisappear(entity)) {
@@ -289,6 +310,15 @@ public final class RoomEntityRuntime {
             throw new IllegalArgumentException("Follower state cannot be null");
         }
         followingNpcState = state;
+    }
+
+    private static boolean isFollowingNpcType(int type) {
+        return type == ENTITY_GHOST || type == ENTITY_ROOSTER
+            || type == ENTITY_MARIN_AT_THE_SHORE;
+    }
+
+    private static boolean isDynamicFollowingNpc(RoomEntity entity) {
+        return entity.sourceLoadOrder() == -1 && isFollowingNpcType(entity.type());
     }
 
     int slowTransitionCountdown(int slot) {

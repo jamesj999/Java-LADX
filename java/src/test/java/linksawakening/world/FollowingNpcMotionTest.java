@@ -92,6 +92,58 @@ final class FollowingNpcMotionTest {
         assertEquals(0, frame16.z());
     }
 
+    @Test
+    void marinConsumesTheNextPositionAndZHistoryEntriesWhileRefreshingTheCurrentEntry() {
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
+            .forFollowerEntityType(0xC1);
+        RoomEntity entity = new RoomEntity(0, -1, 0xC1, 0x10, 0x20,
+            EntityStatus.ACTIVE, definition, 0);
+        LinkPositionHistory history = new LinkPositionHistory();
+        history.fill(0x10, 0x20, 0x01, 0x02);
+        history.write(1, 0x30, 0x40, 0x03, 0x01);
+        FollowingNpcMotion motion = new FollowingNpcMotion();
+        motion.initialize(entity.slot(), entity.type());
+
+        RoomEntity result = motion.advance(entity, 0, 0x50, 0x60, 0x04, 0x00,
+            0x00, history, null);
+
+        assertEquals(0x30, result.x());
+        assertEquals(0x40, result.y());
+        assertEquals(0x03, result.z());
+        assertEquals(0x02, result.spriteVariant());
+        assertEquals(0x50, history.xAt(0));
+        assertEquals(0x60, history.yAt(0));
+        assertEquals(0x04, history.zAt(0));
+        assertEquals(0x00, history.directionAt(0));
+    }
+
+    @Test
+    void marinAdvancesItsHistoryIndicesAndUsesTheFollowingDirectionOnTheNextFrame() {
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
+            .forFollowerEntityType(0xC1);
+        RoomEntity entity = new RoomEntity(0, -1, 0xC1, 0x10, 0x20,
+            EntityStatus.ACTIVE, definition, 0);
+        LinkPositionHistory history = new LinkPositionHistory();
+        history.fill(0x10, 0x20, 0x00, 0x03);
+        history.write(1, 0x30, 0x40, 0x01, 0x00);
+        history.write(2, 0x31, 0x41, 0x02, 0x03);
+        FollowingNpcMotion motion = new FollowingNpcMotion();
+        motion.initialize(entity.slot(), entity.type());
+
+        RoomEntity first = motion.advance(entity, 0, 0x50, 0x60, 0x00, 0x00,
+            0x00, history, null);
+        RoomEntity second = motion.advance(first, 1, 0x51, 0x61, 0x00, 0x00,
+            0x00, history, null);
+        RoomEntity third = motion.advance(second, 2, 0x52, 0x62, 0x00, 0x00,
+            0x00, history, null);
+
+        assertEquals(0x31, third.x());
+        assertEquals(0x41, third.y());
+        assertEquals(0x06, third.spriteVariant());
+        assertEquals(0x52, history.xAt(1));
+        assertEquals(0x62, history.yAt(1));
+    }
+
     private static byte[] syntheticRom() {
         return new byte[0x100000];
     }

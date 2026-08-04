@@ -229,6 +229,16 @@ public final class RoomSession {
     }
 
     public void tickEntities(int frameCounter, int linkEntityX, int linkEntityY) {
+        tickEntities(frameCounter, linkEntityX, linkEntityY,
+            followingLinkZ, followingLinkDirection);
+    }
+
+    public void tickEntities(int frameCounter, int linkEntityX, int linkEntityY,
+                             int linkEntityZ, int linkDirection) {
+        followingLinkX = linkEntityX & 0xFF;
+        followingLinkY = linkEntityY & 0xFF;
+        followingLinkZ = linkEntityZ & 0xFF;
+        followingLinkDirection = linkDirection & 0xFF;
         if (activeRoom == null || entityRuntime == null) {
             return;
         }
@@ -236,7 +246,8 @@ public final class RoomSession {
         // non-emulator policy explicit while preserving the ROM seed update.
         entityRandomByteSource.beginFrame(frameCounter & 0xFF, 0);
         entityRuntime.tick(frameCounter, linkEntityX, linkEntityY, entityRandomByteSource,
-            this::entityBackgroundCollision);
+            this::entityBackgroundCollision, followingLinkPositionHistory, followingLinkZ,
+            followingLinkDirection, followingEntityYOffset);
         activeRoom.replaceEntities(entityRuntime.snapshot());
     }
 

@@ -486,7 +486,9 @@ public class Main {
                 && !dialogBlocksGameplay) {
                 roomSession.tickEntities(frameCounter,
                     link == null ? 0x08 : link.romEntityX(),
-                    link == null ? 0x10 : link.romEntityY());
+                    link == null ? 0x10 : link.romEntityY(),
+                    link == null ? 0x00 : link.romEntityZ(),
+                    link == null ? 0x00 : link.direction());
             }
 
             // Advance the animated BG tiles (waterfalls, weather vanes, etc.).

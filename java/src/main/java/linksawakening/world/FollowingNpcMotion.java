@@ -9,6 +9,11 @@ package linksawakening.world;
 final class FollowingNpcMotion {
     private static final int ENTITY_GHOST = 0xD4;
     private static final int ENTITY_ROOSTER = 0xD5;
+    private static final int ENTITY_MARIN_AT_THE_SHORE = 0xC1;
+
+    // Data_018_59E4 in 18_marin_as_follower.asm. The table maps the ROM's
+    // four direction values to the first variant in each directional pair.
+    private static final int[] MARIN_DIRECTION_VARIANTS = {6, 4, 2, 0};
 
     private static final int[] GHOST_Z = {0x0C, 0x0D, 0x0E, 0x0F,
         0x0F, 0x0E, 0x0D, 0x0C};
@@ -17,6 +22,13 @@ final class FollowingNpcMotion {
     private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] marinInertia = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] marinPrivateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] marinDisplayDirection = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] marinLastLinkX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] marinLastLinkY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] marinLinkInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final LinkPositionHistory fallbackHistory = new LinkPositionHistory();
 
     void initialize(int slot, int type) {
         clear(slot);
@@ -24,11 +36,22 @@ final class FollowingNpcMotion {
 
     RoomEntity advance(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY,
                        RoomEntityBackgroundCollision backgroundCollision) {
+        return advance(entity, frameCounter, linkEntityX, linkEntityY, 0, 0, 0,
+            null, backgroundCollision);
+    }
+
+    RoomEntity advance(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY,
+                       int linkEntityZ, int linkDirection, int entityYOffset,
+                       LinkPositionHistory linkPositionHistory,
+                       RoomEntityBackgroundCollision backgroundCollision) {
         return switch (entity.type()) {
             case ENTITY_GHOST -> advanceGhost(entity, frameCounter, linkEntityX, linkEntityY,
                 backgroundCollision);
             case ENTITY_ROOSTER -> advanceRooster(entity, frameCounter, linkEntityX, linkEntityY,
                 backgroundCollision);
+            case ENTITY_MARIN_AT_THE_SHORE -> advanceMarin(entity, frameCounter, linkEntityX,
+                linkEntityY, linkEntityZ, linkDirection, entityYOffset,
+                linkPositionHistory == null ? fallbackHistory : linkPositionHistory);
             default -> entity;
         };
     }
@@ -38,6 +61,12 @@ final class FollowingNpcMotion {
         speedY[slot] = 0;
         speedXAccumulator[slot] = 0;
         speedYAccumulator[slot] = 0;
+        marinInertia[slot] = 0;
+        marinPrivateState1[slot] = 0;
+        marinDisplayDirection[slot] = 0;
+        marinLastLinkX[slot] = 0;
+        marinLastLinkY[slot] = 0;
+        marinLinkInitialized[slot] = false;
     }
 
     private RoomEntity advanceGhost(RoomEntity entity, int frameCounter,
@@ -86,6 +115,56 @@ final class FollowingNpcMotion {
             y = position[1];
         }
         return withPositionAndVariant(entity, x, y, 0, variant);
+    }
+
+    /**
+     * Ports the ordinary {@code label_018_5C6A} branch. The game records the
+     * current Link position into one history ring entry, then displays Marin
+     * from the following position and Z entries. Position-history and Z-history
+     * use separate indices in the original WRAM tables.
+     */
+    private RoomEntity advanceMarin(RoomEntity entity, int frameCounter,
+                                    int linkEntityX, int linkEntityY, int linkEntityZ,
+                                    int linkDirection, int entityYOffset,
+                                    LinkPositionHistory history) {
+        int slot = entity.slot();
+        int currentPositionIndex = marinInertia[slot] & 0x0F;
+        int currentZIndex = marinPrivateState1[slot] & 0x0F;
+        int adjustedLinkY = (linkEntityY + entityYOffset) & 0xFF;
+        int previousDirection = history.directionAt(currentPositionIndex) & 0x03;
+
+        history.writePositionAndDirection(currentPositionIndex, linkEntityX, adjustedLinkY,
+            linkDirection);
+        history.writeZ(currentZIndex, linkEntityZ);
+
+        if (!marinLinkInitialized[slot]) {
+            marinDisplayDirection[slot] = previousDirection;
+            marinLastLinkX[slot] = linkEntityX & 0xFF;
+            marinLastLinkY[slot] = adjustedLinkY;
+            marinLinkInitialized[slot] = true;
+        }
+
+        int displayDirection = marinDisplayDirection[slot] & 0x03;
+        int variant = MARIN_DIRECTION_VARIANTS[displayDirection]
+            + ((frameCounter >>> 3) & 0x01);
+        int nextPositionIndex = (currentPositionIndex + 1) & 0x0F;
+        int nextZIndex = (currentZIndex + 1) & 0x0F;
+        int x = history.xAt(nextPositionIndex);
+        int y = history.yAt(nextPositionIndex);
+        int z = history.zAt(nextZIndex);
+        marinDisplayDirection[slot] = history.directionAt(nextPositionIndex) & 0x03;
+
+        // The source increments wEntitiesInertia only while Link has speed.
+        // RoomSession calls this handler after Link movement, so a changed ROM
+        // coordinate is the host-side equivalent for this history cadence.
+        if (marinLastLinkX[slot] != (linkEntityX & 0xFF)
+            || marinLastLinkY[slot] != adjustedLinkY) {
+            marinInertia[slot] = (currentPositionIndex + 1) & 0x0F;
+        }
+        marinPrivateState1[slot] = nextZIndex;
+        marinLastLinkX[slot] = linkEntityX & 0xFF;
+        marinLastLinkY[slot] = adjustedLinkY;
+        return withPositionAndVariant(entity, x, y, z, variant);
     }
 
     private int[] move(RoomEntity entity, int x, int y,

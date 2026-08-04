@@ -234,6 +234,11 @@ public final class Link implements RocsFeather.JumpTarget {
         return pixelY() + 0x10;
     }
 
+    /** ROM hLinkPositionZ used by follower position history and OAM Z state. */
+    public int romEntityZ() {
+        return zPixels();
+    }
+
     /** ROM wC145: the Y origin used by sword collision while airborne. */
     public int romSwordCollisionY() {
         return romEntityY() - zPixels();

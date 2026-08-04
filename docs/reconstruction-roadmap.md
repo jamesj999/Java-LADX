@@ -65,6 +65,11 @@ resource.
   rollback, and Ghost's eight-frame visual-Z bob table. Marin's history-driven
   per-frame handler and the followers' special interaction states remain
   pending.
+- Marin's ordinary `label_018_5C6A` follower branch now consumes the shared
+  sixteen-entry X/Y/Z/direction history with separate position and Z indices,
+  refreshes the current Link entry, carries the movement delay ring, and uses
+  `Data_018_59E4` for directional display variants. The singing, lift,
+  dialogue, transition, and special room-state branches remain pending.
 - The Color Dungeon entity-tile path now reads the four bank-$20 room tables
   (`$46AA`, `$46D6`, `$4702`, `$472E`) as `[address high byte, bank]` pairs and
   copies each present 16-tile row into the fixed OAM slots `$40`, `$50`, `$60`,

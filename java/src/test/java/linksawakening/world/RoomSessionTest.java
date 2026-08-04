@@ -2,9 +2,9 @@ package linksawakening.world;
 
 import linksawakening.gpu.GPU;
 import linksawakening.physics.OverworldCollision;
+import linksawakening.rom.RomBank;
 import linksawakening.rom.RomTables;
 import linksawakening.vfx.TransientVfxSystem;
-import linksawakening.rom.RomBank;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;

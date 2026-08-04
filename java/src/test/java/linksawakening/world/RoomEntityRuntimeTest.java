@@ -309,6 +309,27 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void dynamicMarinRuntimeConsumesTheSharedLinkHistory() {
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
+            .forFollowerEntityType(0xC1);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, -1, 0xC1, 0x10, 0x20, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial, false, () -> 0);
+        runtime.setFollowingNpcState(new FollowingNpcState(false, 0, true, false,
+            0, 0, false));
+        LinkPositionHistory history = new LinkPositionHistory();
+        history.fill(0x10, 0x20, 0x01, 0x02);
+        history.write(1, 0x30, 0x40, 0x03, 0x01);
+
+        runtime.tick(0, 0x50, 0x60, () -> 0, null, history, 0x04, 0x00, 0x00);
+
+        RoomEntity marin = runtime.snapshot().slots().get(0);
+        assertEquals(0x30, marin.x());
+        assertEquals(0x40, marin.y());
+        assertEquals(0x03, marin.z());
+    }
+
+    @Test
     void kidHandlersAnimateTheirTwoWalkingFramesEverySixteenFrames() {
         EntitySpriteDefinition definition = pairDefinition(0x70, 4);
         RoomEntitySnapshot initial = snapshot(
