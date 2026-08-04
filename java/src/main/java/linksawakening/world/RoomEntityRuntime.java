@@ -4,6 +4,8 @@ import linksawakening.entity.EntitySpriteSelection;
 import linksawakening.gpu.EntitySpriteTileSnapshot;
 
 import java.util.Arrays;
+import java.util.Objects;
+import java.util.function.IntSupplier;
 
 /**
  * Mutable per-room entity state for the handler work that can be expressed by
@@ -18,14 +20,19 @@ public final class RoomEntityRuntime {
     private final EntitySpriteSelection spriteSelection;
     private final EntitySpriteTileSnapshot spriteTiles;
     private final boolean indoorRoom;
+    private final IntSupplier defaultRandomByteSupplier;
+    private final ButterflyMotion butterflyMotion = new ButterflyMotion();
     private final int[] slowTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] slowTimerInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
-    private RoomEntityRuntime(RoomEntitySnapshot initial, boolean indoorRoom) {
+    private RoomEntityRuntime(RoomEntitySnapshot initial, boolean indoorRoom,
+                               IntSupplier defaultRandomByteSupplier) {
         this.slots = initial.slots().toArray(RoomEntity[]::new);
         this.spriteSelection = initial.spriteSelection();
         this.spriteTiles = initial.spriteTiles();
         this.indoorRoom = indoorRoom;
+        this.defaultRandomByteSupplier = Objects.requireNonNull(defaultRandomByteSupplier,
+            "defaultRandomByteSupplier");
     }
 
     public static RoomEntityRuntime from(RoomEntitySnapshot initial) {
@@ -33,14 +40,30 @@ public final class RoomEntityRuntime {
     }
 
     public static RoomEntityRuntime from(RoomEntitySnapshot initial, boolean indoorRoom) {
+        return from(initial, indoorRoom, () -> 0);
+    }
+
+    public static RoomEntityRuntime from(RoomEntitySnapshot initial, boolean indoorRoom,
+                                         IntSupplier randomByteSupplier) {
         if (initial == null) {
             throw new IllegalArgumentException("Initial entity snapshot cannot be null");
         }
-        return new RoomEntityRuntime(initial, indoorRoom);
+        return new RoomEntityRuntime(initial, indoorRoom, randomByteSupplier);
     }
 
     /** Advances the ROM handlers that have deterministic frame-only variants. */
     public void tick(int frameCounter) {
+        tick(frameCounter, 0, 0, defaultRandomByteSupplier);
+    }
+
+    /**
+     * Advances the active entity handlers with the Link coordinates needed by
+     * moving entities. The random-byte supplier is deliberately injected so
+     * ROM handlers can be tested independently from the host's entropy source.
+     */
+    public void tick(int frameCounter, int linkPixelX, int linkPixelY,
+                     IntSupplier randomByteSupplier) {
+        Objects.requireNonNull(randomByteSupplier, "randomByteSupplier");
         int frame = frameCounter & 0xFF;
         for (int index = 0; index < slots.length; index++) {
             RoomEntity entity = slots[index];
@@ -49,6 +72,7 @@ public final class RoomEntityRuntime {
             }
 
             EntityStatus status = entity.status();
+            boolean wasInitializing = status == EntityStatus.INIT;
             if (status == EntityStatus.INIT) {
                 status = EntityStatus.ACTIVE;
                 initializeEntityTimers(entity);
@@ -61,13 +85,20 @@ public final class RoomEntityRuntime {
                     }
                 }
             }
-            int variant = variantFor(entity, frame);
+            RoomEntity updated = entity;
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_BUTTERFLY) {
+                updated = butterflyMotion.advance(entity, frame, linkPixelX, linkPixelY,
+                    randomByteSupplier);
+            }
+            int variant = variantFor(updated, frame);
             if (status == EntityStatus.ACTIVE && shouldDisappear(entity)) {
                 variant = (slowTransitionCountdown[entity.slot()] & 0x01) != 0 ? 0 : -1;
             }
-            if (status != entity.status() || variant != entity.spriteVariant()) {
+            if (status != entity.status() || variant != entity.spriteVariant()
+                || updated.x() != entity.x() || updated.y() != entity.y()) {
                 slots[index] = new RoomEntity(
-                    entity.slot(), entity.sourceLoadOrder(), entity.type(), entity.x(), entity.y(),
+                    updated.slot(), updated.sourceLoadOrder(), updated.type(), updated.x(), updated.y(),
                     status, entity.spriteDefinition(), variant, entity.entityFlipAttribute());
             }
         }
@@ -117,6 +148,7 @@ public final class RoomEntityRuntime {
         }
         slowTransitionCountdown[slot] = 0;
         slowTimerInitialized[slot] = false;
+        butterflyMotion.clear(slot);
         slots[slot] = RoomEntity.disabled(slot);
         return entity.sourceLoadOrder() >= 0 && entity.sourceLoadOrder() < 8
             ? 1 << entity.sourceLoadOrder() : 0;

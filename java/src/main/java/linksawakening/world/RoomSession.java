@@ -19,6 +19,7 @@ public final class RoomSession {
     private final TransientVfxSystem transientVfxSystem;
     private final DroppableRupeeSystem droppableRupeeSystem;
     private final RoomLoadListener roomLoadListener;
+    private final RomRandomByteSource entityRandomByteSource = new RomRandomByteSource();
 
     private ActiveRoom activeRoom;
     private RoomEntityRuntime entityRuntime;
@@ -151,10 +152,17 @@ public final class RoomSession {
     }
 
     public void tickEntities(int frameCounter) {
+        tickEntities(frameCounter, 0, 0);
+    }
+
+    public void tickEntities(int frameCounter, int linkPixelX, int linkPixelY) {
         if (activeRoom == null || entityRuntime == null) {
             return;
         }
-        entityRuntime.tick(frameCounter);
+        // rLY is not a meaningful value in the host renderer. Keep the
+        // non-emulator policy explicit while preserving the ROM seed update.
+        entityRandomByteSource.beginFrame(frameCounter & 0xFF, 0);
+        entityRuntime.tick(frameCounter, linkPixelX, linkPixelY, entityRandomByteSource);
         activeRoom.replaceEntities(entityRuntime.snapshot());
     }
 
@@ -217,7 +225,8 @@ public final class RoomSession {
         }
         activeRoom = ActiveRoom.from(room, entities);
         entityRuntime = entities == null ? null : RoomEntityRuntime.from(
-            entities, activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD);
+            entities, activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD,
+            entityRandomByteSource);
         if (roomLoadListener != null) {
             roomLoadListener.roomLoaded(activeRoom);
         }

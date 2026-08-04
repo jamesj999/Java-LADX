@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.IntSupplier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -46,6 +48,48 @@ final class RoomEntityRuntimeTest {
 
         assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
         assertEquals(1, runtime.snapshot().slots().get(1).spriteVariant());
+    }
+
+    @Test
+    void butterflyUsesBankSixSignedFixedPointPositionUpdates() {
+        EntitySpriteDefinition definition = butterflyDefinition();
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x6E, 24, 32, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+
+        // State 0 selects +4 X speed; state 16 selects -4 Y speed.
+        IntSupplier randomBytes = sequence(0x00, 0x01);
+        for (int frame = 0; frame <= 17; frame++) {
+            runtime.tick(frame, 200, 32, randomBytes);
+        }
+
+        RoomEntity butterfly = runtime.snapshot().slots().get(0);
+        assertEquals(28, butterfly.x());
+        assertEquals(31, butterfly.y());
+    }
+
+    @Test
+    void butterflyAppliesTheTwoPixelVectorTowardLinkOnItsSixtyFourFramePhase() {
+        EntitySpriteDefinition definition = butterflyDefinition();
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x6E, 24, 32, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+
+        // The initial speed is zero. At state 0 the handler chooses a speed,
+        // then writes the vector toward Link into its private state. The
+        // subsequent 32-frame speed selection adds that private X component.
+        IntSupplier randomBytes = sequence(0x00, 0x00, 0x00);
+        runtime.tick(64, 40, 32, randomBytes);
+        for (int frame = 65; frame <= 99; frame++) {
+            runtime.tick(frame, 40, 32, randomBytes);
+        }
+
+        // The attraction vector is stored in private state at frame 64. The
+        // frame-96 speed refresh therefore selects 4 + 2 = 6, which produces
+        // its first pixel one frame earlier than a plain +4 speed.
+        RoomEntity butterfly = runtime.snapshot().slots().get(0);
+        assertEquals(33, butterfly.x());
+        assertEquals(36, butterfly.y());
     }
 
     @Test
@@ -197,6 +241,20 @@ final class RoomEntityRuntimeTest {
         }
         return new EntitySpriteDefinition(type, 0x03, 0x5B65,
             EntitySpriteDefinition.Shape.PAIR, 0, displayList);
+    }
+
+    private static EntitySpriteDefinition butterflyDefinition() {
+        return new EntitySpriteDefinition(0x6E, 0x06, 0x6BBD,
+            EntitySpriteDefinition.Shape.SINGLE, 0, List.of(
+                new EntitySpriteDefinition.Variant(
+                    new EntitySpriteDefinition.OamAttribute(0x5E, 0x01), null),
+                new EntitySpriteDefinition.Variant(
+                    new EntitySpriteDefinition.OamAttribute(0x5E, 0x41), null)));
+    }
+
+    private static IntSupplier sequence(int... values) {
+        AtomicInteger index = new AtomicInteger();
+        return () -> values[Math.min(index.getAndIncrement(), values.length - 1)];
     }
 
     private static RoomEntitySnapshot snapshot(RoomEntity... entities) {

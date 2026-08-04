@@ -400,9 +400,6 @@ public class Main {
         transitionController.tick();
 
         if (currentScreen == SCREEN_OVERWORLD) {
-            if (roomSession != null) {
-                roomSession.tickEntities(frameCounter);
-            }
             if (dialogController != null) {
                 dialogController.tick();
                 routeDialogSounds();
@@ -454,6 +451,14 @@ public class Main {
             } else if (scrollController.isActive() && link != null) {
                 // Keep Link's walk animation cycling during a room transition.
                 link.tickAnimation();
+            }
+
+            // The original calls AnimateEntities after Link movement and
+            // room-transition application. Give handlers the same current
+            // position and active-room snapshot.
+            if (roomSession != null) {
+                roomSession.tickEntities(frameCounter,
+                    link == null ? 0 : link.pixelX(), link == null ? 0 : link.pixelY());
             }
 
             // Advance the animated BG tiles (waterfalls, weather vanes, etc.).
