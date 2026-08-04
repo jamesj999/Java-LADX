@@ -63,6 +63,31 @@ final class RoomSessionTest {
         assertEquals(List.of(0x92, 0x93), loadedRoomIds);
     }
 
+    @Test
+    void ticksTheLoadedEntityRuntimeAndRefreshesTheRenderSnapshot() {
+        RoomSession session = newSession();
+        session.loadInitialOverworld(0x92);
+
+        session.tickEntities(0);
+
+        assertEquals(EntityStatus.ACTIVE, session.activeRoom().entities().slots().get(0).status());
+        assertEquals(0x6E, session.activeRoom().entities().slots().get(3).type());
+        assertEquals(1, session.activeRoom().entities().slots().get(3).spriteVariant());
+        assertEquals(session.activeRoom().entities(), session.renderSnapshot().entities());
+    }
+
+    @Test
+    void persistsClearedFirstEightEntitySlotsWhenTheRoomReloads() {
+        RoomSession session = newSession();
+        session.loadInitialOverworld(0x92);
+
+        session.clearEntity(0);
+        session.loadOverworld(0x92);
+
+        assertEquals(0x3E, session.activeRoom().entities().slots().get(0).type());
+        assertEquals(1, session.activeRoom().entities().slots().get(0).sourceLoadOrder());
+    }
+
     private static RoomSession newSession() {
         return newSession(room -> {
         });

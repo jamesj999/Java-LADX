@@ -93,10 +93,12 @@ public final class EntityRoomLoader {
             if (!cleared && loadedSlot < MAX_ENTITIES) {
                 int x = (location & 0x0F) * 0x10 + 0x08;
                 int y = (location & 0xF0) + 0x10;
+                int[] initializedPosition = applyInitialPositionTransform(table, roomId, type, x, y);
                 EntitySpriteDefinition spriteDefinition = spriteHandlers
                     .forEntityType(type, table);
                 slots.set(loadedSlot, new RoomEntity(
-                    loadedSlot, sourceLoadOrder, type, x, y, EntityStatus.INIT,
+                    loadedSlot, sourceLoadOrder, type, initializedPosition[0], initializedPosition[1],
+                    EntityStatus.INIT,
                     spriteDefinition,
                     spriteDefinition.supported() ? spriteDefinition.initialVariant() : -1));
                 loadedSlot++;
@@ -105,6 +107,41 @@ public final class EntityRoomLoader {
         }
 
         return new RoomEntitySnapshot(slots);
+    }
+
+    /**
+     * Port of the position-changing entity init handlers in bank 3. These
+     * writes happen after the room stream is decoded and before the first
+     * active handler runs, so keeping them in the loader preserves both room
+     * rendering and subsequent collision coordinates.
+     */
+    private static int[] applyInitialPositionTransform(RoomTable table, int roomId, int type,
+                                                        int x, int y) {
+        if (table == RoomTable.OVERWORLD && isOverworldTreeOrPotDrop(type)) {
+            x += 8;
+            y += 8;
+        }
+        if (type == 0x39) {
+            x += 8;
+        }
+        if (type == 0x43 || type == 0x7C) {
+            x += 8;
+            y += 8;
+        }
+        if (type == 0xC2) {
+            y -= 3;
+        }
+        if (table == RoomTable.OVERWORLD && type == 0x3D
+            && (roomId == 0xA4 || roomId == 0xD2)) {
+            x += 8;
+            y += 8;
+        }
+        return new int[] {x, y};
+    }
+
+    private static boolean isOverworldTreeOrPotDrop(int type) {
+        return type == 0x2E || type == 0x2F || type == 0x32 || type == 0x33
+            || type == 0x34 || type == 0x36 || type == 0x37 || type == 0x38;
     }
 
     private int checkedRomOffset(int bank, int address, int length, String description) {

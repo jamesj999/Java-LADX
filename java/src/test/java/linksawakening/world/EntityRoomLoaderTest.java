@@ -97,6 +97,56 @@ final class EntityRoomLoaderTest {
     }
 
     @Test
+    void appliesExactBankThreeInitialPositionTransforms() {
+        byte[] rom = syntheticRom();
+        writePointer(rom, EntityRoomLoader.RoomTable.OVERWORLD, 0, 0x5150);
+        writeStream(rom, 0x5150,
+            0x12, 0x33, // TreeOrPotDroppable: shift both axes on overworld.
+            0x23, 0x39, // Instrument: shift X on every map.
+            0x34, 0xC2, // Marin at Tal Tal: shift Y by -3.
+            0xFF);
+
+        List<RoomEntity> overworld = new EntityRoomLoader(rom)
+            .load(EntityRoomLoader.RoomTable.OVERWORLD, 0)
+            .loadedEntities();
+        assertEquals(0x30, overworld.get(0).x());
+        assertEquals(0x28, overworld.get(0).y());
+        assertEquals(0x40, overworld.get(1).x());
+        assertEquals(0x30, overworld.get(1).y());
+        assertEquals(0x48, overworld.get(2).x());
+        assertEquals(0x3D, overworld.get(2).y());
+
+        writePointer(rom, EntityRoomLoader.RoomTable.INDOORS_A, 0, 0x5150);
+        List<RoomEntity> indoor = new EntityRoomLoader(rom)
+            .load(EntityRoomLoader.RoomTable.INDOORS_A, 0)
+            .loadedEntities();
+        assertEquals(0x28, indoor.get(0).x());
+        assertEquals(0x20, indoor.get(0).y());
+        assertEquals(0x40, indoor.get(1).x());
+        assertEquals(0x30, indoor.get(1).y());
+    }
+
+    @Test
+    void shiftsTreeSecretSeashellOnlyInItsTwoSpecialOverworldRooms() {
+        byte[] rom = syntheticRom();
+        writePointer(rom, EntityRoomLoader.RoomTable.OVERWORLD, 0xA4, 0x5160);
+        writeStream(rom, 0x5160, 0x12, 0x3D, 0xFF);
+        writePointer(rom, EntityRoomLoader.RoomTable.OVERWORLD, 0x10, 0x5160);
+
+        RoomEntity special = new EntityRoomLoader(rom)
+            .load(EntityRoomLoader.RoomTable.OVERWORLD, 0xA4)
+            .loadedEntities().get(0);
+        RoomEntity ordinary = new EntityRoomLoader(rom)
+            .load(EntityRoomLoader.RoomTable.OVERWORLD, 0x10)
+            .loadedEntities().get(0);
+
+        assertEquals(0x30, special.x());
+        assertEquals(0x28, special.y());
+        assertEquals(0x28, ordinary.x());
+        assertEquals(0x20, ordinary.y());
+    }
+
+    @Test
     void emptyStreamsAndSeventeenthDefinitionRespectSixteenSlots() {
         byte[] rom = syntheticRom();
         writePointer(rom, EntityRoomLoader.RoomTable.OVERWORLD, 0, 0x5200);
@@ -175,7 +225,7 @@ final class EntityRoomLoaderTest {
     }
 
     private static byte[] syntheticRom() {
-        return new byte[RomBank.romOffset(0x17, 0x4000)];
+        return new byte[RomBank.romOffset(0x1A, 0x4000)];
     }
 
     private static void writePointer(byte[] rom, EntityRoomLoader.RoomTable table,

@@ -21,6 +21,8 @@ public final class RoomSession {
     private final RoomLoadListener roomLoadListener;
 
     private ActiveRoom activeRoom;
+    private RoomEntityRuntime entityRuntime;
+    private final int[] clearedEntitiesByRoom = new int[0x100];
     private int currentOverworldTilesetId = W_TILESET_NO_UPDATE;
 
     public RoomSession(byte[] romData,
@@ -95,7 +97,7 @@ public final class RoomSession {
 
     public void loadOverworld(int roomId) {
         clearTransientRoomState();
-        LoadedRoom room = roomLoader.loadOverworld(roomId);
+        LoadedRoom room = roomLoader.loadOverworld(roomId, clearedEntitiesByRoom[roomId], null);
         gpu.loadAnimatedTilesGroup(romData, room.animatedTilesGroup());
         setActiveRoom(room);
         overworldCollision.setRoom(activeRoom.roomObjectsArea());
@@ -111,7 +113,8 @@ public final class RoomSession {
         clearTransientRoomState();
         gpu.loadIndoorTiles(romData, mapId, roomId);
         LoadedRoom room = roomLoader.loadIndoor(
-            mapId, roomId, activeRoom == null ? null : activeRoom.palettes(), mapCategory);
+            mapId, roomId, activeRoom == null ? null : activeRoom.palettes(), mapCategory,
+            clearedEntitiesByRoom[roomId]);
         gpu.loadAnimatedTilesGroup(romData, room.animatedTilesGroup());
         setActiveRoom(room);
         overworldCollision.setRoom(activeRoom.roomObjectsArea());
@@ -147,6 +150,26 @@ public final class RoomSession {
         return activeRoom == null ? null : activeRoom.renderSnapshot();
     }
 
+    public void tickEntities(int frameCounter) {
+        if (activeRoom == null || entityRuntime == null) {
+            return;
+        }
+        entityRuntime.tick(frameCounter);
+        activeRoom.replaceEntities(entityRuntime.snapshot());
+    }
+
+    public int clearEntity(int slot) {
+        if (activeRoom == null || entityRuntime == null) {
+            return 0;
+        }
+        int mask = entityRuntime.clearEntity(slot);
+        if (mask != 0) {
+            clearedEntitiesByRoom[activeRoom.roomId()] |= mask;
+        }
+        activeRoom.replaceEntities(entityRuntime.snapshot());
+        return mask;
+    }
+
     public RoomBoundaryState boundaryState(int linkX, int linkY) {
         return new RoomBoundaryState(
             activeRoom.mapCategory(),
@@ -168,6 +191,7 @@ public final class RoomSession {
             }
         }
         activeRoom = ActiveRoom.from(room, entities);
+        entityRuntime = entities == null ? null : RoomEntityRuntime.from(entities);
         if (roomLoadListener != null) {
             roomLoadListener.roomLoaded(activeRoom);
         }

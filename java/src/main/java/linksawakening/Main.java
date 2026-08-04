@@ -95,6 +95,7 @@ public class Main {
     private static RoomTransitionCoordinator roomTransitionCoordinator;
 
     private static boolean running = true;
+    private static int frameCounter;
     private static int currentScreen = 0;
     private static final int SCREEN_TITLE = 0;
     private static final int SCREEN_OVERWORLD = 1;
@@ -365,6 +366,8 @@ public class Main {
     }
 
     private static void update() {
+        frameCounter = (frameCounter + 1) & 0xFF;
+
         if (musicPlayer != null) {
             musicPlayer.update();
         }
@@ -396,6 +399,9 @@ public class Main {
         transitionController.tick();
 
         if (currentScreen == SCREEN_OVERWORLD) {
+            if (roomSession != null) {
+                roomSession.tickEntities(frameCounter);
+            }
             if (dialogController != null) {
                 dialogController.tick();
                 routeDialogSounds();

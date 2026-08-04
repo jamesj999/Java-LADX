@@ -17,6 +17,19 @@ public final class EntitySpriteHandlerCatalog {
     private static final int ENTITY_KID_70 = 0x70;
     private static final int ENTITY_KID_73 = 0x73;
     private static final int ENTITY_CROW = 0x7A;
+    private static final int ENTITY_DROPPABLE_HEART = 0x2D;
+    private static final int ENTITY_DROPPABLE_RUPEE = 0x2E;
+    private static final int ENTITY_IRON_MASKS_MASK = 0x32;
+    private static final int ENTITY_PIECE_OF_POWER = 0x33;
+    private static final int ENTITY_GUARDIAN_ACORN = 0x34;
+    private static final int ENTITY_HEART_PIECE = 0x35;
+    private static final int ENTITY_HEART_CONTAINER = 0x36;
+    private static final int ENTITY_DROPPABLE_ARROWS = 0x37;
+    private static final int ENTITY_DROPPABLE_BOMBS = 0x38;
+    private static final int ENTITY_SLEEPY_TOADSTOOL = 0x3A;
+    private static final int ENTITY_DROPPABLE_MAGIC_POWDER = 0x3B;
+    private static final int ENTITY_HIDING_SLIME_KEY = 0x3C;
+    private static final int ENTITY_DROPPABLE_SECRET_SEASHELL = 0x3D;
     private static final int ENTITY_MARIN = 0x3E;
     private static final int ENTITY_MARIN_AT_TAL_TAL_HEIGHTS = 0xC2;
 
@@ -58,6 +71,45 @@ public final class EntitySpriteHandlerCatalog {
         }
         if (entityType == ENTITY_BUTTERFLY) {
             return decodeSingle(entityType, 0x06, 0x6BBD, 2, 0);
+        }
+        if (entityType == ENTITY_DROPPABLE_HEART) {
+            return decodeSingle(entityType, 0x03, 0x5D36, 1, 0);
+        }
+        if (entityType == ENTITY_DROPPABLE_RUPEE) {
+            return decodeSingle(entityType, 0x03, 0x609C, 1, 0);
+        }
+        if (entityType == ENTITY_IRON_MASKS_MASK) {
+            return decodePair(entityType, 0x03, 0x5B80, 2, 0);
+        }
+        if (entityType == ENTITY_PIECE_OF_POWER) {
+            return decodePair(entityType, 0x03, 0x5B65, 2, 0);
+        }
+        if (entityType == ENTITY_GUARDIAN_ACORN) {
+            return decodeSingle(entityType, 0x03, 0x5B5B, 1, 0);
+        }
+        if (entityType == ENTITY_HEART_PIECE) {
+            return decodePair(entityType, 0x03, 0x5A4D, 1, 0);
+        }
+        if (entityType == ENTITY_HEART_CONTAINER) {
+            return decodePair(entityType, 0x03, 0x59D8, 1, 0);
+        }
+        if (entityType == ENTITY_DROPPABLE_ARROWS) {
+            return decodePair(entityType, 0x03, 0x6079, 1, 0);
+        }
+        if (entityType == ENTITY_DROPPABLE_BOMBS) {
+            return decodeSingle(entityType, 0x03, 0x5FC0, 1, 0);
+        }
+        if (entityType == ENTITY_SLEEPY_TOADSTOOL) {
+            return decodePair(entityType, 0x03, 0x5D47, 1, 0);
+        }
+        if (entityType == ENTITY_DROPPABLE_MAGIC_POWDER) {
+            return decodeSingle(entityType, 0x03, 0x6055, 1, 0);
+        }
+        if (entityType == ENTITY_HIDING_SLIME_KEY) {
+            return decodeSingle(entityType, 0x03, 0x5FFB, 1, 0);
+        }
+        if (entityType == ENTITY_DROPPABLE_SECRET_SEASHELL) {
+            return decodeSingle(entityType, 0x03, 0x5FD1, 1, 0);
         }
         return EntitySpriteDefinition.unsupported(entityType);
     }

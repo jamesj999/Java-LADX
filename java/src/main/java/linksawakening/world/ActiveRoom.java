@@ -15,7 +15,7 @@ public final class ActiveRoom {
     private final int[][] palettes;
     private final List<Warp> warps;
     private final boolean indoorHasSouthEntrance;
-    private final RoomEntitySnapshot entities;
+    private RoomEntitySnapshot entities;
 
     private ActiveRoom(LoadedRoom room) {
         this(room, room.entities());
@@ -98,6 +98,10 @@ public final class ActiveRoom {
 
     public RoomEntitySnapshot entities() {
         return entities;
+    }
+
+    void replaceEntities(RoomEntitySnapshot entities) {
+        this.entities = entities;
     }
 
     public void replaceFirstWarpTile(int tileLocation) {

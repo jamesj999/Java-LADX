@@ -73,6 +73,45 @@ final class EntitySpriteHandlerCatalogTest {
             0x6E, EntityRoomLoader.RoomTable.OVERWORLD);
         assertDefinition(butterfly, 0x06, 0x6BBD,
             EntitySpriteDefinition.Shape.SINGLE, 2, 0);
+
+        EntitySpriteDefinition pieceOfPower = catalog.forEntityType(
+            0x33, EntityRoomLoader.RoomTable.OVERWORLD);
+        assertDefinition(pieceOfPower, 0x03, 0x5B65,
+            EntitySpriteDefinition.Shape.PAIR, 2, 0);
+
+        EntitySpriteDefinition guardianAcorn = catalog.forEntityType(
+            0x34, EntityRoomLoader.RoomTable.OVERWORLD);
+        assertDefinition(guardianAcorn, 0x03, 0x5B5B,
+            EntitySpriteDefinition.Shape.SINGLE, 1, 0);
+
+        EntitySpriteDefinition heartPiece = catalog.forEntityType(
+            0x35, EntityRoomLoader.RoomTable.OVERWORLD);
+        assertDefinition(heartPiece, 0x03, 0x5A4D,
+            EntitySpriteDefinition.Shape.PAIR, 1, 0);
+
+        EntitySpriteDefinition heartContainer = catalog.forEntityType(
+            0x36, EntityRoomLoader.RoomTable.OVERWORLD);
+        assertDefinition(heartContainer, 0x03, 0x59D8,
+            EntitySpriteDefinition.Shape.PAIR, 1, 0);
+
+        assertDefinition(catalog.forEntityType(0x2D, EntityRoomLoader.RoomTable.OVERWORLD),
+            0x03, 0x5D36, EntitySpriteDefinition.Shape.SINGLE, 1, 0);
+        assertDefinition(catalog.forEntityType(0x2E, EntityRoomLoader.RoomTable.OVERWORLD),
+            0x03, 0x609C, EntitySpriteDefinition.Shape.SINGLE, 1, 0);
+        assertDefinition(catalog.forEntityType(0x32, EntityRoomLoader.RoomTable.OVERWORLD),
+            0x03, 0x5B80, EntitySpriteDefinition.Shape.PAIR, 2, 0);
+        assertDefinition(catalog.forEntityType(0x37, EntityRoomLoader.RoomTable.OVERWORLD),
+            0x03, 0x6079, EntitySpriteDefinition.Shape.PAIR, 1, 0);
+        assertDefinition(catalog.forEntityType(0x38, EntityRoomLoader.RoomTable.OVERWORLD),
+            0x03, 0x5FC0, EntitySpriteDefinition.Shape.SINGLE, 1, 0);
+        assertDefinition(catalog.forEntityType(0x3A, EntityRoomLoader.RoomTable.OVERWORLD),
+            0x03, 0x5D47, EntitySpriteDefinition.Shape.PAIR, 1, 0);
+        assertDefinition(catalog.forEntityType(0x3B, EntityRoomLoader.RoomTable.OVERWORLD),
+            0x03, 0x6055, EntitySpriteDefinition.Shape.SINGLE, 1, 0);
+        assertDefinition(catalog.forEntityType(0x3C, EntityRoomLoader.RoomTable.OVERWORLD),
+            0x03, 0x5FFB, EntitySpriteDefinition.Shape.SINGLE, 1, 0);
+        assertDefinition(catalog.forEntityType(0x3D, EntityRoomLoader.RoomTable.OVERWORLD),
+            0x03, 0x5FD1, EntitySpriteDefinition.Shape.SINGLE, 1, 0);
     }
 
     @Test
@@ -112,6 +151,79 @@ final class EntitySpriteHandlerCatalogTest {
         assertEquals(0x5E, butterfly.variant(0).first().tile());
         assertEquals(0x01, butterfly.variant(0).first().attributes());
         assertEquals(0x41, butterfly.variant(1).first().attributes());
+
+        EntitySpriteDefinition pieceOfPower = catalog.forEntityType(
+            0x33, EntityRoomLoader.RoomTable.OVERWORLD);
+        assertEquals(0x14, pieceOfPower.variant(0).first().tile());
+        assertEquals(0x02, pieceOfPower.variant(0).first().attributes());
+        assertEquals(0x14, pieceOfPower.variant(1).first().tile());
+        assertEquals(0x14, pieceOfPower.variant(1).first().attributes());
+
+        EntitySpriteDefinition guardianAcorn = catalog.forEntityType(
+            0x34, EntityRoomLoader.RoomTable.OVERWORLD);
+        assertEquals(0xAE, guardianAcorn.variant(0).first().tile());
+        assertEquals(0x14, guardianAcorn.variant(0).first().attributes());
+
+        EntitySpriteDefinition heartPiece = catalog.forEntityType(
+            0x35, EntityRoomLoader.RoomTable.OVERWORLD);
+        assertEquals(0xAC, heartPiece.variant(0).first().tile());
+        assertEquals(0x02, heartPiece.variant(0).first().attributes());
+        assertEquals(0x22, heartPiece.variant(0).second().attributes());
+
+        EntitySpriteDefinition heartContainer = catalog.forEntityType(
+            0x36, EntityRoomLoader.RoomTable.OVERWORLD);
+        assertEquals(0xAA, heartContainer.variant(0).first().tile());
+        assertEquals(0x14, heartContainer.variant(0).first().attributes());
+        assertEquals(0x34, heartContainer.variant(0).second().attributes());
+
+        EntitySpriteDefinition droppableHeart = catalog.forEntityType(
+            0x2D, EntityRoomLoader.RoomTable.OVERWORLD);
+        assertEquals(0xA8, droppableHeart.variant(0).first().tile());
+        assertEquals(0x14, droppableHeart.variant(0).first().attributes());
+
+        EntitySpriteDefinition droppableRupee = catalog.forEntityType(
+            0x2E, EntityRoomLoader.RoomTable.OVERWORLD);
+        assertEquals(0xA6, droppableRupee.variant(0).first().tile());
+        assertEquals(0x15, droppableRupee.variant(0).first().attributes());
+
+        EntitySpriteDefinition ironMask = catalog.forEntityType(
+            0x32, EntityRoomLoader.RoomTable.OVERWORLD);
+        assertEquals(0x74, ironMask.variant(0).first().tile());
+        assertEquals(0x00, ironMask.variant(0).first().attributes());
+        assertEquals(0x76, ironMask.variant(0).second().tile());
+        assertEquals(0x20, ironMask.variant(1).first().attributes());
+
+        EntitySpriteDefinition arrows = catalog.forEntityType(
+            0x37, EntityRoomLoader.RoomTable.OVERWORLD);
+        assertEquals(0x2A, arrows.variant(0).first().tile());
+        assertEquals(0x41, arrows.variant(0).first().attributes());
+        assertEquals(0x61, arrows.variant(0).second().attributes());
+
+        EntitySpriteDefinition bombs = catalog.forEntityType(
+            0x38, EntityRoomLoader.RoomTable.OVERWORLD);
+        assertEquals(0x80, bombs.variant(0).first().tile());
+        assertEquals(0x15, bombs.variant(0).first().attributes());
+
+        EntitySpriteDefinition toadstool = catalog.forEntityType(
+            0x3A, EntityRoomLoader.RoomTable.OVERWORLD);
+        assertEquals(0x5E, toadstool.variant(0).first().tile());
+        assertEquals(0x02, toadstool.variant(0).first().attributes());
+        assertEquals(0x22, toadstool.variant(0).second().attributes());
+
+        EntitySpriteDefinition powder = catalog.forEntityType(
+            0x3B, EntityRoomLoader.RoomTable.OVERWORLD);
+        assertEquals(0x8E, powder.variant(0).first().tile());
+        assertEquals(0x16, powder.variant(0).first().attributes());
+
+        EntitySpriteDefinition slimeKey = catalog.forEntityType(
+            0x3C, EntityRoomLoader.RoomTable.OVERWORLD);
+        assertEquals(0xCA, slimeKey.variant(0).first().tile());
+        assertEquals(0x14, slimeKey.variant(0).first().attributes());
+
+        EntitySpriteDefinition seashell = catalog.forEntityType(
+            0x3D, EntityRoomLoader.RoomTable.OVERWORLD);
+        assertEquals(0x9E, seashell.variant(0).first().tile());
+        assertEquals(0x14, seashell.variant(0).first().attributes());
     }
 
     private static void assertDefinition(EntitySpriteDefinition definition, int bank, int address,
