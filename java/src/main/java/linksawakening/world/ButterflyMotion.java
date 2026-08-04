@@ -49,7 +49,7 @@ final class ButterflyMotion {
         return new RoomEntity(
             entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
             entity.status(), entity.spriteDefinition(), entity.spriteVariant(),
-            entity.entityFlipAttribute());
+            entity.entityFlipAttribute(), entity.spriteTileOffset());
     }
 
     void clear(int slot) {

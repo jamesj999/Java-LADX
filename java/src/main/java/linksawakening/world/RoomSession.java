@@ -1,11 +1,13 @@
 package linksawakening.world;
 
+import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.gpu.GPU;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
 import linksawakening.vfx.TransientVfxSystem;
 
 import java.util.List;
+import java.util.Map;
 
 import static linksawakening.world.RoomConstants.ROOM_PIXEL_HEIGHT;
 import static linksawakening.world.RoomConstants.ROOM_PIXEL_WIDTH;
@@ -151,6 +153,25 @@ public final class RoomSession {
 
     public RoomRenderSnapshot renderSnapshot() {
         return activeRoom == null ? null : activeRoom.renderSnapshot();
+    }
+
+    /**
+     * Applies the follower display-list selections used by
+     * {@code CreateFollowingNpcEntity}. Entity spawning and follower physics
+     * remain separate state work; this method keeps the renderer's selection
+     * ROM-driven when the follower system has already selected its entities.
+     */
+    public void setFollowerSpriteOverrides(Map<Integer, EntitySpriteDefinition> overrides) {
+        if (activeRoom == null || activeRoom.entities() == null
+            || activeRoom.entities().spriteSelection() == null) {
+            return;
+        }
+        RoomEntitySnapshot updated = activeRoom.entities().withSpriteSelection(
+            activeRoom.entities().spriteSelection().withSpriteOverrides(overrides));
+        activeRoom.replaceEntities(updated);
+        if (entityRuntime != null) {
+            entityRuntime.setSpriteSelection(updated.spriteSelection());
+        }
     }
 
     public void tickEntities(int frameCounter) {

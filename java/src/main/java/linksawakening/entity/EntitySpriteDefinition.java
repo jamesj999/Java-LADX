@@ -8,6 +8,7 @@ public final class EntitySpriteDefinition {
     public enum Shape {
         PAIR,
         SINGLE,
+        RECTANGLE,
         UNSUPPORTED
     }
 
@@ -27,27 +28,61 @@ public final class EntitySpriteDefinition {
         }
     }
 
+    /** One [Y offset, X offset, tile, attributes] tuple from a rectangle list. */
+    public record RectangleSprite(int yOffset, int xOffset, OamAttribute oam) {
+        public RectangleSprite {
+            if (yOffset < -128 || yOffset > 127 || xOffset < -128 || xOffset > 127) {
+                throw new IllegalArgumentException("Rectangle offsets must be signed bytes");
+            }
+            if (oam == null) {
+                throw new IllegalArgumentException("Rectangle OAM entry cannot be null");
+            }
+        }
+    }
+
     private final int entityType;
     private final int bank;
     private final int address;
     private final Shape shape;
     private final int initialVariant;
     private final List<Variant> variants;
+    private final List<List<RectangleSprite>> rectangleVariants;
 
     public EntitySpriteDefinition(int entityType, int bank, int address, Shape shape,
                                   int initialVariant, List<Variant> variants) {
+        this(entityType, bank, address, shape, initialVariant, variants, List.of());
+    }
+
+    public EntitySpriteDefinition(int entityType, int bank, int address, Shape shape,
+                                  int initialVariant, List<Variant> variants,
+                                  List<List<RectangleSprite>> rectangleVariants) {
         if ((entityType & ~0xFF) != 0) {
             throw new IllegalArgumentException("Entity type must be an unsigned byte");
         }
-        if (shape == null || variants == null) {
+        if (shape == null || variants == null || rectangleVariants == null) {
             throw new IllegalArgumentException("Entity shape and variants cannot be null");
         }
         if (shape == Shape.UNSUPPORTED) {
-            if (!variants.isEmpty() || initialVariant != -1) {
+            if (!variants.isEmpty() || !rectangleVariants.isEmpty() || initialVariant != -1) {
                 throw new IllegalArgumentException("Unsupported definitions cannot have variants");
             }
+        } else if (shape == Shape.RECTANGLE) {
+            if (!variants.isEmpty() || rectangleVariants.isEmpty()
+                || initialVariant < 0 || initialVariant >= rectangleVariants.size()) {
+                throw new IllegalArgumentException("Rectangle definition has invalid variants");
+            }
+            for (List<RectangleSprite> variant : rectangleVariants) {
+                if (variant == null || variant.isEmpty() || variant.stream().anyMatch(s -> s == null)) {
+                    throw new IllegalArgumentException("Rectangle variants cannot be empty");
+                }
+            }
         } else if (variants.isEmpty() || initialVariant < 0 || initialVariant >= variants.size()) {
+            if (!rectangleVariants.isEmpty()) {
+                throw new IllegalArgumentException("Pair and single definitions cannot have rectangles");
+            }
             throw new IllegalArgumentException("Supported entity definition has invalid variants");
+        } else if (!rectangleVariants.isEmpty()) {
+            throw new IllegalArgumentException("Pair and single definitions cannot have rectangles");
         }
         this.entityType = entityType;
         this.bank = bank;
@@ -55,6 +90,7 @@ public final class EntitySpriteDefinition {
         this.shape = shape;
         this.initialVariant = initialVariant;
         this.variants = List.copyOf(variants);
+        this.rectangleVariants = copyRectangleVariants(rectangleVariants);
     }
 
     public static EntitySpriteDefinition unsupported(int entityType) {
@@ -83,7 +119,7 @@ public final class EntitySpriteDefinition {
     }
 
     public int variantCount() {
-        return variants.size();
+        return shape == Shape.RECTANGLE ? rectangleVariants.size() : variants.size();
     }
 
     public boolean supported() {
@@ -96,5 +132,22 @@ public final class EntitySpriteDefinition {
 
     public List<Variant> variants() {
         return variants;
+    }
+
+    public List<RectangleSprite> rectangleVariant(int index) {
+        return rectangleVariants.get(index);
+    }
+
+    public List<List<RectangleSprite>> rectangleVariants() {
+        return rectangleVariants;
+    }
+
+    private static List<List<RectangleSprite>> copyRectangleVariants(
+                                                                List<List<RectangleSprite>> source) {
+        List<List<RectangleSprite>> copy = new java.util.ArrayList<>(source.size());
+        for (List<RectangleSprite> variant : source) {
+            copy.add(List.copyOf(variant));
+        }
+        return List.copyOf(copy);
     }
 }

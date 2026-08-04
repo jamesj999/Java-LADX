@@ -39,6 +39,34 @@ final class EntitySpriteHandlerCatalogTest {
     }
 
     @Test
+    void decodesRectangleDisplayListsWithSignedOffsets() {
+        byte[] rom = syntheticRom();
+        write(rom, 0x06, 0x5200,
+            0xF7, 0x00, 0x70, 0x02,
+            0x07, 0xF8, 0x72, 0x22,
+            0xF8, 0x08, 0x74, 0x42,
+            0x08, 0xF0, 0x76, 0x62);
+
+        EntitySpriteDefinition rectangle = new EntitySpriteHandlerCatalog(rom)
+            .decodeRectangle(0xD2, 0x06, 0x5200, 1, 4, 0);
+
+        assertEquals(EntitySpriteDefinition.Shape.RECTANGLE, rectangle.shape());
+        assertEquals(1, rectangle.variantCount());
+        assertEquals(4, rectangle.rectangleVariant(0).size());
+        EntitySpriteDefinition.RectangleSprite first = rectangle.rectangleVariant(0).get(0);
+        assertEquals(-9, first.yOffset());
+        assertEquals(0, first.xOffset());
+        assertEquals(0x70, first.oam().tile());
+        assertEquals(0x02, first.oam().attributes());
+
+        EntitySpriteDefinition.RectangleSprite last = rectangle.rectangleVariant(0).get(3);
+        assertEquals(8, last.yOffset());
+        assertEquals(-16, last.xOffset());
+        assertEquals(0x76, last.oam().tile());
+        assertEquals(0x62, last.oam().attributes());
+    }
+
+    @Test
     void mapsSupportedHandlersToDisassemblyBanksAddressesAndInitialVariants() {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
 
@@ -84,6 +112,11 @@ final class EntitySpriteHandlerCatalogTest {
         assertDefinition(caveBKeese, 0x06, 0x6710,
             EntitySpriteDefinition.Shape.PAIR, 2, 0);
 
+        EntitySpriteDefinition grandpa = catalog.forEntityType(
+            0x77, EntityRoomLoader.RoomTable.INDOORS_A);
+        assertDefinition(grandpa, 0x06, 0x5C51,
+            EntitySpriteDefinition.Shape.RECTANGLE, 2, 0);
+
         EntitySpriteDefinition pieceOfPower = catalog.forEntityType(
             0x33, EntityRoomLoader.RoomTable.OVERWORLD);
         assertDefinition(pieceOfPower, 0x03, 0x5B65,
@@ -122,6 +155,20 @@ final class EntitySpriteHandlerCatalogTest {
             0x03, 0x5FFB, EntitySpriteDefinition.Shape.SINGLE, 1, 0);
         assertDefinition(catalog.forEntityType(0x3D, EntityRoomLoader.RoomTable.OVERWORLD),
             0x03, 0x5FD1, EntitySpriteDefinition.Shape.SINGLE, 1, 0);
+    }
+
+    @Test
+    void mapsFollowerDisplayListOverridesToTheirOwnRomTables() {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
+
+        assertDefinition(catalog.forFollowerEntityType(0x6D), 0x05, 0x401C,
+            EntitySpriteDefinition.Shape.PAIR, 7, 0);
+        assertDefinition(catalog.forFollowerEntityType(0xC1), 0x18, 0x59B8,
+            EntitySpriteDefinition.Shape.PAIR, 11, 0);
+        assertDefinition(catalog.forFollowerEntityType(0xD4), 0x19, 0x5DF8,
+            EntitySpriteDefinition.Shape.PAIR, 6, 0);
+        assertDefinition(catalog.forFollowerEntityType(0xD5), 0x19, 0x59BC,
+            EntitySpriteDefinition.Shape.PAIR, 8, 0);
     }
 
     @Test
@@ -179,6 +226,13 @@ final class EntitySpriteHandlerCatalogTest {
             0x19, EntityRoomLoader.RoomTable.INDOORS_A, 0x0A);
         assertEquals(0x62, caveBKeese.variant(0).first().tile());
         assertEquals(0x60, caveBKeese.variant(1).first().tile());
+
+        EntitySpriteDefinition grandpa = catalog.forEntityType(
+            0x77, EntityRoomLoader.RoomTable.INDOORS_A);
+        assertEquals(-9, grandpa.rectangleVariant(0).get(0).yOffset());
+        assertEquals(0, grandpa.rectangleVariant(0).get(0).xOffset());
+        assertEquals(0x70, grandpa.rectangleVariant(0).get(0).oam().tile());
+        assertEquals(0x78, grandpa.rectangleVariant(1).get(0).oam().tile());
 
         EntitySpriteDefinition guardianAcorn = catalog.forEntityType(
             0x34, EntityRoomLoader.RoomTable.OVERWORLD);
@@ -245,6 +299,17 @@ final class EntitySpriteHandlerCatalogTest {
             0x3D, EntityRoomLoader.RoomTable.OVERWORLD);
         assertEquals(0x9E, seashell.variant(0).first().tile());
         assertEquals(0x14, seashell.variant(0).first().attributes());
+
+        EntitySpriteDefinition bowWowFollowing = catalog.forFollowerEntityType(0x6D);
+        assertEquals(0x40, bowWowFollowing.variant(0).first().tile());
+        assertEquals(0x40, bowWowFollowing.variant(0).second().tile());
+        EntitySpriteDefinition marinFollowing = catalog.forFollowerEntityType(0xC1);
+        assertEquals(0x42, marinFollowing.variant(0).first().tile());
+        assertEquals(0x40, marinFollowing.variant(0).second().tile());
+        EntitySpriteDefinition ghostFollowing = catalog.forFollowerEntityType(0xD4);
+        assertEquals(0x42, ghostFollowing.variant(0).first().tile());
+        EntitySpriteDefinition roosterFollowing = catalog.forFollowerEntityType(0xD5);
+        assertEquals(0x42, roosterFollowing.variant(0).first().tile());
     }
 
     private static void assertDefinition(EntitySpriteDefinition definition, int bank, int address,

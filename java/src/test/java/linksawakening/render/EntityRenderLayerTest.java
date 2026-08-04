@@ -71,6 +71,67 @@ final class EntityRenderLayerTest {
     }
 
     @Test
+    void rendersRectangleOffsetsAndPerEntityTileOffset() {
+        GPU gpu = new GPU();
+        int color = 0x123456;
+        int secondColor = 0x654321;
+        int[][] palettes = {{0, color, secondColor, 0}};
+        writeSolidTile(gpu, 0x20, 1);
+        writeSolidTile(gpu, 0x21, 1);
+        writeSolidTile(gpu, 0x22, 2);
+        writeSolidTile(gpu, 0x23, 2);
+
+        EntitySpriteDefinition rectangle = new EntitySpriteDefinition(0x77, 0x06, 0x5C51,
+            EntitySpriteDefinition.Shape.RECTANGLE, 0, List.of(), List.of(List.of(
+                new EntitySpriteDefinition.RectangleSprite(-8, -8,
+                    new EntitySpriteDefinition.OamAttribute(0x00, 0x00)),
+                new EntitySpriteDefinition.RectangleSprite(-8, 0,
+                    new EntitySpriteDefinition.OamAttribute(0x02, 0x00)))));
+        RoomEntity entity = new RoomEntity(0, 0, 0x77, 24, 32, EntityStatus.ACTIVE,
+            rectangle, 0, 0, 0x20);
+        byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
+
+        new EntityRenderLayer(snapshot(entity), palettes, new ScrollController())
+            .render(new RenderContext(buffer, gpu));
+
+        assertEquals(color, pixelColor(buffer, 8, 8));
+        assertEquals(secondColor, pixelColor(buffer, 16, 8));
+        assertEquals(color, pixelColor(buffer, 8, 16));
+        assertEquals(secondColor, pixelColor(buffer, 16, 16));
+    }
+
+    @Test
+    void appliesFollowerDisplayListOverrideFromRoomSpriteSelection() {
+        GPU gpu = new GPU();
+        int atHomeColor = 0x112233;
+        int followingColor = 0x445566;
+        int[][] palettes = {{0, atHomeColor, followingColor, 0}};
+        writeSolidTile(gpu, 0x20, 1);
+        writeSolidTile(gpu, 0x21, 1);
+        writeSolidTile(gpu, 0x22, 2);
+        writeSolidTile(gpu, 0x23, 2);
+
+        EntitySpriteDefinition atHome = pairDefinition(
+            new EntitySpriteDefinition.OamAttribute(0x20, 0x00),
+            new EntitySpriteDefinition.OamAttribute(0x20, 0x00));
+        EntitySpriteDefinition following = pairDefinition(
+            new EntitySpriteDefinition.OamAttribute(0x22, 0x00),
+            new EntitySpriteDefinition.OamAttribute(0x22, 0x00));
+        EntitySpriteSelection selection = new EntitySpriteSelection(
+            linksawakening.world.EntityRoomLoader.RoomTable.OVERWORLD, 0, 0,
+            new int[] {0xFF, 0xFF, 0xFF, 0xFF}, true, palettes)
+            .withSpriteOverride(0x6D, following);
+        RoomEntity entity = new RoomEntity(0, 0, 0x6D, 24, 32, EntityStatus.ACTIVE,
+            atHome, 0, 0);
+        byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
+
+        new EntityRenderLayer(snapshot(selection, entity), palettes, new ScrollController())
+            .render(new RenderContext(buffer, gpu));
+
+        assertEquals(followingColor, pixelColor(buffer, 16, 16));
+    }
+
+    @Test
     void entityFlipXSwapsPairColumnsAndXorsDisplayListAttributes() {
         GPU gpu = new GPU();
         int leftColor = 0x112233;

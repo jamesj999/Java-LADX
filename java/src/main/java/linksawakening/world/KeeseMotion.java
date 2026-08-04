@@ -153,6 +153,7 @@ final class KeeseMotion {
     private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y,
                                                      int variant) {
         return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
-            entity.status(), entity.spriteDefinition(), variant, entity.entityFlipAttribute());
+            entity.status(), entity.spriteDefinition(), variant, entity.entityFlipAttribute(),
+            entity.spriteTileOffset());
     }
 }

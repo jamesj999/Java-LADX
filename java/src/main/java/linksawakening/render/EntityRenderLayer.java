@@ -62,41 +62,77 @@ public final class EntityRenderLayer implements RenderLayer {
                                 int[][] palettes, ScreenOffset offset) {
         EntitySpriteTileSnapshot tiles = entities.spriteTiles();
         for (RoomEntity entity : entities.loadedEntities()) {
-            renderEntity(context, entity, palettes, tiles, offset.x(), offset.y());
+            EntitySpriteDefinition definition = entity.spriteDefinition();
+            if (entities.spriteSelection() != null) {
+                EntitySpriteDefinition override = entities.spriteSelection()
+                    .spriteOverrideFor(entity.type());
+                if (override != null) {
+                    definition = override;
+                }
+            }
+            renderEntity(context, entity, definition, palettes, tiles, offset.x(), offset.y());
         }
     }
 
-    private void renderEntity(RenderContext context, RoomEntity entity, int[][] palettes,
+    private void renderEntity(RenderContext context, RoomEntity entity,
+                              EntitySpriteDefinition definition, int[][] palettes,
                               EntitySpriteTileSnapshot tiles, int offsetX, int offsetY) {
-        EntitySpriteDefinition definition = entity.spriteDefinition();
         if (!definition.supported() || entity.spriteVariant() < 0
             || entity.spriteVariant() >= definition.variantCount()) {
             return;
         }
 
-        EntitySpriteDefinition.Variant variant = definition.variant(entity.spriteVariant());
         int entityX = entity.x() + offsetX - OAM_X_SCREEN_ORIGIN;
         int entityY = entity.y() + offsetY - OAM_Y_SCREEN_ORIGIN;
         int flipAttribute = entity.entityFlipAttribute();
         if (definition.shape() == EntitySpriteDefinition.Shape.PAIR) {
+            EntitySpriteDefinition.Variant variant = definition.variant(entity.spriteVariant());
             if (variant.second() == null) {
                 return;
             }
             boolean flipX = (flipAttribute & OAM_XFLIP) != 0;
             int firstX = entityX + (flipX ? 8 : 0);
             int secondX = entityX + (flipX ? 0 : 8);
-            renderOamSprite(context, palettes, tiles, variant.first(), flipAttribute, firstX, entityY);
-            renderOamSprite(context, palettes, tiles, variant.second(), flipAttribute, secondX, entityY);
+            renderOamSprite(context, palettes, tiles, withTileOffset(variant.first(), entity),
+                flipAttribute, firstX, entityY);
+            renderOamSprite(context, palettes, tiles, withTileOffset(variant.second(), entity),
+                flipAttribute, secondX, entityY);
         } else if (definition.shape() == EntitySpriteDefinition.Shape.SINGLE) {
-            renderOamSprite(context, palettes, tiles, variant.first(), flipAttribute,
+            EntitySpriteDefinition.Variant variant = definition.variant(entity.spriteVariant());
+            renderOamSprite(context, palettes, tiles, withTileOffset(variant.first(), entity),
+                flipAttribute,
                 entityX + 4, entityY);
+        } else if (definition.shape() == EntitySpriteDefinition.Shape.RECTANGLE) {
+            for (EntitySpriteDefinition.RectangleSprite sprite
+                : definition.rectangleVariant(entity.spriteVariant())) {
+                // RenderActiveEntitySpritesRect turns a raw $FF tile into a
+                // hidden OAM entry. Keep that sentinel out of the host draw
+                // path instead of accidentally drawing entity-sheet tile 0.
+                if (sprite.oam().tile() == 0xFF) {
+                    continue;
+                }
+                renderOamSprite(context, palettes, tiles,
+                    withTileOffset(sprite.oam(), entity), flipAttribute,
+                    entityX + sprite.xOffset(), entityY + sprite.yOffset());
+            }
         }
+    }
+
+    private static EntitySpriteDefinition.OamAttribute withTileOffset(
+        EntitySpriteDefinition.OamAttribute oam, RoomEntity entity) {
+        return new EntitySpriteDefinition.OamAttribute(
+            (oam.tile() + entity.spriteTileOffset()) & 0xFF, oam.attributes());
     }
 
     private void renderOamSprite(RenderContext context, int[][] palettes,
                                  EntitySpriteTileSnapshot tiles,
                                  EntitySpriteDefinition.OamAttribute oam,
                                  int entityFlipAttribute, int screenX, int screenY) {
+        // Pair rendering treats any tile whose low nibble is $F as the ROM's
+        // hidden-sprite sentinel after applying hActiveEntityTilesOffset.
+        if ((oam.tile() & 0x0F) == 0x0F) {
+            return;
+        }
         int attributes = oam.attributes() ^ entityFlipAttribute;
         int paletteIndex = attributes & OAM_PALETTE_MASK;
         int[] palette = palettes[Math.min(paletteIndex, palettes.length - 1)];

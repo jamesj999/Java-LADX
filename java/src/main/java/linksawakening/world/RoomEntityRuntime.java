@@ -20,7 +20,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_KEESE = 0x19;
 
     private final RoomEntity[] slots;
-    private final EntitySpriteSelection spriteSelection;
+    private EntitySpriteSelection spriteSelection;
     private final EntitySpriteTileSnapshot spriteTiles;
     private final boolean indoorRoom;
     private final IntSupplier defaultRandomByteSupplier;
@@ -131,7 +131,8 @@ public final class RoomEntityRuntime {
                 || updated.x() != entity.x() || updated.y() != entity.y()) {
                 slots[index] = new RoomEntity(
                     updated.slot(), updated.sourceLoadOrder(), updated.type(), updated.x(), updated.y(),
-                    status, entity.spriteDefinition(), variant, entity.entityFlipAttribute());
+                    status, entity.spriteDefinition(), variant, entity.entityFlipAttribute(),
+                    entity.spriteTileOffset());
             }
         }
     }
@@ -239,6 +240,10 @@ public final class RoomEntityRuntime {
         return new RoomEntitySnapshot(Arrays.asList(slots), spriteSelection, spriteTiles);
     }
 
+    void setSpriteSelection(EntitySpriteSelection selection) {
+        spriteSelection = selection;
+    }
+
     int slowTransitionCountdown(int slot) {
         if (slot < 0 || slot >= slots.length) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
@@ -331,7 +336,8 @@ public final class RoomEntityRuntime {
     private static RoomEntity withStatus(RoomEntity entity, EntityStatus status) {
         return new RoomEntity(
             entity.slot(), entity.sourceLoadOrder(), entity.type(), entity.x(), entity.y(),
-            status, entity.spriteDefinition(), entity.spriteVariant(), entity.entityFlipAttribute());
+            status, entity.spriteDefinition(), entity.spriteVariant(), entity.entityFlipAttribute(),
+            entity.spriteTileOffset());
     }
 
     private void disableEntityWithoutPersistence(int slot) {

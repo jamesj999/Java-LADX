@@ -12,12 +12,20 @@ public record RoomEntity(
     EntityStatus status,
     EntitySpriteDefinition spriteDefinition,
     int spriteVariant,
-    int entityFlipAttribute) {
+    int entityFlipAttribute,
+    int spriteTileOffset) {
 
     public RoomEntity(int slot, int sourceLoadOrder, int type, int x, int y,
                       EntityStatus status, EntitySpriteDefinition spriteDefinition,
                       int spriteVariant) {
         this(slot, sourceLoadOrder, type, x, y, status, spriteDefinition, spriteVariant, 0);
+    }
+
+    public RoomEntity(int slot, int sourceLoadOrder, int type, int x, int y,
+                      EntityStatus status, EntitySpriteDefinition spriteDefinition,
+                      int spriteVariant, int entityFlipAttribute) {
+        this(slot, sourceLoadOrder, type, x, y, status, spriteDefinition, spriteVariant,
+            entityFlipAttribute, 0);
     }
 
     public RoomEntity {
@@ -34,6 +42,10 @@ public record RoomEntity(
         if ((entityFlipAttribute & ~0xFF) != 0) {
             throw new IllegalArgumentException("Entity flip attributes must be an unsigned byte: "
                 + entityFlipAttribute);
+        }
+        if ((spriteTileOffset & ~0xFF) != 0) {
+            throw new IllegalArgumentException("Entity tile offsets must be unsigned bytes: "
+                + spriteTileOffset);
         }
         if (status == null) {
             throw new IllegalArgumentException("Entity status cannot be null");

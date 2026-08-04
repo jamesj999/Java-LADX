@@ -14,6 +14,7 @@ public final class EntitySpriteHandlerCatalog {
 
     private static final int ENTITY_BUTTERFLY = 0x6E;
     private static final int ENTITY_KEESE = 0x19;
+    private static final int ENTITY_BOW_WOW = 0x6D;
     private static final int ENTITY_DOG = 0x6F;
     private static final int ENTITY_KID_70 = 0x70;
     private static final int ENTITY_KID_73 = 0x73;
@@ -32,6 +33,8 @@ public final class EntitySpriteHandlerCatalog {
     private static final int ENTITY_HIDING_SLIME_KEY = 0x3C;
     private static final int ENTITY_DROPPABLE_SECRET_SEASHELL = 0x3D;
     private static final int ENTITY_MARIN = 0x3E;
+    private static final int ENTITY_GRANDPA_ULRIRA = 0x77;
+    private static final int ENTITY_MARIN_AT_THE_SHORE = 0xC1;
     private static final int ENTITY_MARIN_AT_TAL_TAL_HEIGHTS = 0xC2;
 
     private final byte[] romData;
@@ -61,6 +64,9 @@ public final class EntitySpriteHandlerCatalog {
         if (entityType == ENTITY_CROW) {
             return decodePair(entityType, 0x06, 0x5C89, 4, 2);
         }
+        if (entityType == ENTITY_BOW_WOW) {
+            return decodePair(entityType, 0x05, 0x4000, 7, 0);
+        }
         if (entityType == ENTITY_DOG) {
             return decodePair(entityType, 0x19, 0x48CA, 4, 2);
         }
@@ -81,6 +87,9 @@ public final class EntitySpriteHandlerCatalog {
         }
         if (entityType == ENTITY_KEESE) {
             return decodePair(entityType, 0x06, mapId == 0x0A ? 0x6710 : 0x6708, 2, 0);
+        }
+        if (entityType == ENTITY_GRANDPA_ULRIRA) {
+            return decodeRectangle(entityType, 0x06, 0x5C51, 2, 4, 0);
         }
         if (entityType == ENTITY_DROPPABLE_HEART) {
             return decodeSingle(entityType, 0x03, 0x5D36, 1, 0);
@@ -121,7 +130,28 @@ public final class EntitySpriteHandlerCatalog {
         if (entityType == ENTITY_DROPPABLE_SECRET_SEASHELL) {
             return decodeSingle(entityType, 0x03, 0x5FD1, 1, 0);
         }
+        if (entityType == ENTITY_MARIN_AT_THE_SHORE) {
+            return decodePair(entityType, 0x18, 0x5EB7, 8, 0);
+        }
         return EntitySpriteDefinition.unsupported(entityType);
+    }
+
+    /**
+     * Returns the display list selected by CreateFollowingNpcEntity handlers.
+     * The caller supplies the matching follower entity type in the same form
+     * used by the disassembly's dynamic entity spawner.
+     */
+    public EntitySpriteDefinition forFollowerEntityType(int entityType) {
+        if ((entityType & ~0xFF) != 0) {
+            throw new IllegalArgumentException("Entity type must be an unsigned byte: " + entityType);
+        }
+        return switch (entityType) {
+            case ENTITY_BOW_WOW -> decodePair(entityType, 0x05, 0x401C, 7, 0);
+            case ENTITY_MARIN_AT_THE_SHORE -> decodePair(entityType, 0x18, 0x59B8, 11, 0);
+            case 0xD4 -> decodePair(entityType, 0x19, 0x5DF8, 6, 0);
+            case 0xD5 -> decodePair(entityType, 0x19, 0x59BC, 8, 0);
+            default -> EntitySpriteDefinition.unsupported(entityType);
+        };
     }
 
     public EntitySpriteDefinition decodePair(int entityType, int bank, int address,
@@ -157,6 +187,40 @@ public final class EntitySpriteHandlerCatalog {
             EntitySpriteDefinition.Shape.SINGLE, initialVariant, variants);
     }
 
+    public EntitySpriteDefinition decodeRectangle(int entityType, int bank, int address,
+                                                   int variantCount, int spriteCount,
+                                                   int initialVariant) {
+        if (spriteCount <= 0) {
+            throw new IllegalArgumentException("Rectangle display lists need sprites");
+        }
+        long strideLong = (long) spriteCount * 4;
+        if (strideLong > Integer.MAX_VALUE) {
+            throw new IllegalArgumentException("Rectangle display list is too large");
+        }
+        int stride = (int) strideLong;
+        int offset = validateDisplayList(entityType, bank, address, variantCount, stride,
+            initialVariant);
+        List<List<EntitySpriteDefinition.RectangleSprite>> rectangleVariants =
+            new ArrayList<>(variantCount);
+        for (int variant = 0; variant < variantCount; variant++) {
+            List<EntitySpriteDefinition.RectangleSprite> sprites = new ArrayList<>(spriteCount);
+            int variantOffset = offset + variant * stride;
+            for (int sprite = 0; sprite < spriteCount; sprite++) {
+                int index = variantOffset + sprite * 4;
+                int yOffset = signedByte(romData[index]);
+                int xOffset = signedByte(romData[index + 1]);
+                sprites.add(new EntitySpriteDefinition.RectangleSprite(
+                    yOffset, xOffset,
+                    new EntitySpriteDefinition.OamAttribute(
+                        Byte.toUnsignedInt(romData[index + 2]),
+                        Byte.toUnsignedInt(romData[index + 3]))));
+            }
+            rectangleVariants.add(List.copyOf(sprites));
+        }
+        return new EntitySpriteDefinition(entityType, bank, address,
+            EntitySpriteDefinition.Shape.RECTANGLE, initialVariant, List.of(), rectangleVariants);
+    }
+
     private int validateDisplayList(int entityType, int bank, int address,
                                     int variantCount, int stride, int initialVariant) {
         if ((entityType & ~0xFF) != 0) {
@@ -178,5 +242,9 @@ public final class EntitySpriteHandlerCatalog {
                 + Integer.toHexString(Math.max(offset, 0)));
         }
         return offset;
+    }
+
+    private static int signedByte(byte value) {
+        return value;
     }
 }

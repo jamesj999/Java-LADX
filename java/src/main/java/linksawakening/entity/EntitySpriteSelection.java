@@ -2,6 +2,9 @@ package linksawakening.entity;
 
 import linksawakening.world.EntityRoomLoader;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /** Immutable room selection for the four standard entity sprite slots. */
 public final class EntitySpriteSelection {
 
@@ -11,16 +14,36 @@ public final class EntitySpriteSelection {
     private final int[] sheetValues;
     private final boolean standardSheets;
     private final int[][] objectPalettes;
+    private final Map<Integer, EntitySpriteDefinition> spriteOverrides;
 
     public EntitySpriteSelection(EntityRoomLoader.RoomTable roomTable, int roomId,
                                  int groupIndex, int[] sheetValues,
                                  boolean standardSheets, int[][] objectPalettes) {
+        this(roomTable, roomId, groupIndex, sheetValues, standardSheets, objectPalettes, Map.of());
+    }
+
+    public EntitySpriteSelection(EntityRoomLoader.RoomTable roomTable, int roomId,
+                                 int groupIndex, int[] sheetValues,
+                                 boolean standardSheets, int[][] objectPalettes,
+                                 Map<Integer, EntitySpriteDefinition> spriteOverrides) {
         this.roomTable = roomTable;
         this.roomId = roomId;
         this.groupIndex = groupIndex;
         this.sheetValues = sheetValues.clone();
         this.standardSheets = standardSheets;
         this.objectPalettes = clonePalettes(objectPalettes);
+        if (spriteOverrides == null) {
+            throw new IllegalArgumentException("Entity sprite overrides cannot be null");
+        }
+        Map<Integer, EntitySpriteDefinition> overrides = new HashMap<>();
+        for (Map.Entry<Integer, EntitySpriteDefinition> entry : spriteOverrides.entrySet()) {
+            int type = entry.getKey();
+            if ((type & ~0xFF) != 0 || entry.getValue() == null) {
+                throw new IllegalArgumentException("Entity sprite overrides must contain valid types");
+            }
+            overrides.put(type, entry.getValue());
+        }
+        this.spriteOverrides = Map.copyOf(overrides);
     }
 
     public EntityRoomLoader.RoomTable roomTable() {
@@ -45,6 +68,27 @@ public final class EntitySpriteSelection {
 
     public int[][] objectPalettes() {
         return clonePalettes(objectPalettes);
+    }
+
+    public EntitySpriteDefinition spriteOverrideFor(int entityType) {
+        return spriteOverrides.get(entityType);
+    }
+
+    public Map<Integer, EntitySpriteDefinition> spriteOverrides() {
+        return spriteOverrides;
+    }
+
+    public EntitySpriteSelection withSpriteOverrides(
+        Map<Integer, EntitySpriteDefinition> overrides) {
+        return new EntitySpriteSelection(roomTable, roomId, groupIndex, sheetValues,
+            standardSheets, objectPalettes, overrides);
+    }
+
+    public EntitySpriteSelection withSpriteOverride(int entityType,
+                                                    EntitySpriteDefinition definition) {
+        Map<Integer, EntitySpriteDefinition> overrides = new HashMap<>(spriteOverrides);
+        overrides.put(entityType, definition);
+        return withSpriteOverrides(overrides);
     }
 
     private static int[][] clonePalettes(int[][] source) {

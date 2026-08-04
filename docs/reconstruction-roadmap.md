@@ -45,19 +45,29 @@ resource.
   `ReturnIfNonInteractive_06` for the currently wired gameplay path. Link
   handlers receive the ROM entity coordinates rather than Java sprite
   top-left coordinates.
+- Rectangle OAM lists now decode signed `[Y offset, X offset, tile,
+  attributes]` tuples, apply the ROM tile-offset register, and render each
+  sprite at the hardware OAM origin. Grandpa Ulrira's two ROM variants are
+  covered as the first concrete rectangle handler.
+- The room sprite selection can carry ROM-backed follower display-list
+  overrides for Bow-Wow, Marin, the Ghost, and the Flying Rooster. This keeps
+  table selection separate from the still-pending dynamic follower spawning
+  and history-driven movement.
 
 The complete Java test suite passes after these runtime increments. Remaining
 entity behavior—including the rest of the enemy damage matrix, recoil,
-stun/lift/throw/burning/death handlers, dynamic display rectangles, scripted
-spawns, and followers—is intentionally still unsupported rather than
-represented by guessed shapes or generic movement.
+stun/lift/throw/burning/death handlers, dynamic display-list selection beyond
+the follower override path, scripted spawns, and follower spawning/history—is
+intentionally still unsupported rather than represented by guessed shapes or
+generic movement.
 
 ## Next entity increments
 
 1. Port simple enemy movement, collision, damage, stun, lift, throw, burning,
    and death transitions using the existing room collision model.
-2. Add rectangle and dynamically selected sprite helpers, entity tile offsets,
-   follower overrides, and the Color Dungeon's separate entity-tile loader.
+2. Extend rectangle and dynamically selected sprite handlers, complete entity
+   tile-offset state, follower spawning/history, and the Color Dungeon's
+   separate entity-tile loader.
 3. Port scripted spawns, followers, room events, drops, and boss/multi-entity
    state machines from the corresponding banked handlers.
 
