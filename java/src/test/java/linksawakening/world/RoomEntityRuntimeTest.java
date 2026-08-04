@@ -911,6 +911,68 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void antiFairyUsesTheRomRandomSpeedVectorAndFrameAnimation() {
+        EntitySpriteDefinition definition = pairDefinition(0x15, 2);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x15, 64, 64, EntityStatus.INIT, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+
+        // EntityRandomSpeedX/Y[1] = (+12, -12). The init handler runs before
+        // the first active handler pass.
+        runtime.tick(0, 120, 120, sequence(0x01));
+        assertEquals(0x0C, runtime.antiFairySpeedX(0));
+        assertEquals(0xF4, runtime.antiFairySpeedY(0));
+        assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
+
+        runtime.tick(1, 120, 120, sequence(0x00));
+        assertEquals(64, runtime.snapshot().slots().get(0).x());
+        assertEquals(63, runtime.snapshot().slots().get(0).y());
+
+        runtime.tick(2, 120, 120, sequence(0x00));
+        assertEquals(65, runtime.snapshot().slots().get(0).x());
+        assertEquals(62, runtime.snapshot().slots().get(0).y());
+
+        runtime.tick(8, 120, 120, sequence(0x00));
+        assertEquals(1, runtime.snapshot().slots().get(0).spriteVariant());
+    }
+
+    @Test
+    void antiFairyReversesTheMovingAxisAtARomBackgroundCollisionPoint() {
+        EntitySpriteDefinition definition = pairDefinition(0x15, 2);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x15, 64, 64, EntityStatus.INIT, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+        runtime.tick(0, 120, 120, sequence(0x02));
+
+        RoomEntityBackgroundCollision leftWall = (entity, direction, nextX, nextY) -> direction == 1;
+        runtime.tick(1, 120, 120, sequence(0x00), leftWall);
+
+        assertEquals(64, runtime.snapshot().slots().get(0).x());
+        assertEquals(0x0C, runtime.antiFairySpeedX(0));
+        assertEquals(64, runtime.snapshot().slots().get(0).y());
+    }
+
+    @Test
+    void antiFairyUsesHealthGroupSixCombatValues() {
+        EntitySpriteDefinition definition = pairDefinition(0x15, 2);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x15, 64, 64, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+
+        List<EntityCombatEvent> contact = runtime.resolveCombat(
+            1, 64, 64, false, true, false, 0, 0, 0, 0);
+        assertEquals(1, contact.size());
+        assertEquals(0x04, contact.get(0).linkDamage());
+        assertEquals(0x04, runtime.enemyHealth(0));
+
+        List<EntityCombatEvent> sword = runtime.resolveCombat(
+            1, 72, 72, false, true, true, 72, 1, 72, 1);
+        assertEquals(1, sword.size());
+        assertTrue(sword.get(0).swordHit());
+        assertEquals(0x03, runtime.enemyHealth(0));
+    }
+
+    @Test
     void dynamicGhostRuntimeAdvancesZBobEvenWhenItsVariantIsUnchanged() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
             .forFollowerEntityType(0xD4);

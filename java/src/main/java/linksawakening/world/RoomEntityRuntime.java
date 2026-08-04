@@ -21,6 +21,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_MOBLIN = 0x0B;
     private static final int ENTITY_TEKTITE = 0x0D;
     private static final int ENTITY_LEEVER = 0x0E;
+    private static final int ENTITY_ANTI_FAIRY = 0x15;
     private static final int ENTITY_STALFOS_AGGRESSIVE = 0x1A;
     private static final int ENTITY_GIBDO = 0x1F;
     private static final int ENTITY_PEAHAT = 0xA0;
@@ -49,6 +50,7 @@ public final class RoomEntityRuntime {
     private final RoamingEnemyMotion roamingEnemyMotion = new RoamingEnemyMotion();
     private final TektiteMotion tektiteMotion = new TektiteMotion();
     private final LeeverMotion leeverMotion = new LeeverMotion();
+    private final AntiFairyMotion antiFairyMotion = new AntiFairyMotion();
     private final StalfosAggressiveMotion stalfosAggressiveMotion =
         new StalfosAggressiveMotion();
     private final GibdoMotion gibdoMotion = new GibdoMotion();
@@ -182,6 +184,9 @@ public final class RoomEntityRuntime {
                 if (entity.type() == ENTITY_LEEVER) {
                     leeverMotion.initialize(entity.slot());
                 }
+                if (entity.type() == ENTITY_ANTI_FAIRY) {
+                    antiFairyMotion.initialize(entity.slot(), randomByteSupplier);
+                }
                 if (entity.type() == ENTITY_STALFOS_AGGRESSIVE) {
                     stalfosAggressiveMotion.initialize(entity.slot(), randomByteSupplier);
                 }
@@ -246,6 +251,11 @@ public final class RoomEntityRuntime {
                 && entity.type() == ENTITY_LEEVER) {
                 updated = leeverMotion.advance(entity, frame, linkEntityX, linkEntityY,
                     randomByteSupplier, backgroundCollision);
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_ANTI_FAIRY) {
+                updated = antiFairyMotion.advance(entity, frame, backgroundCollision,
+                    randomByteSupplier);
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_STALFOS_AGGRESSIVE) {
@@ -422,6 +432,7 @@ public final class RoomEntityRuntime {
         roamingEnemyMotion.clear(slot);
         tektiteMotion.clear(slot);
         leeverMotion.clear(slot);
+        antiFairyMotion.clear(slot);
         stalfosAggressiveMotion.clear(slot);
         gibdoMotion.clear(slot);
         peaHatMotion.clear(slot);
@@ -544,6 +555,14 @@ public final class RoomEntityRuntime {
 
     int leeverSpeedY(int slot) {
         return leeverMotion.speedY(slot);
+    }
+
+    int antiFairySpeedX(int slot) {
+        return antiFairyMotion.speedX(slot);
+    }
+
+    int antiFairySpeedY(int slot) {
+        return antiFairyMotion.speedY(slot);
     }
 
     int stalfosState(int slot) {
@@ -776,6 +795,7 @@ public final class RoomEntityRuntime {
         roamingEnemyMotion.clear(slot);
         tektiteMotion.clear(slot);
         leeverMotion.clear(slot);
+        antiFairyMotion.clear(slot);
         stalfosAggressiveMotion.clear(slot);
         gibdoMotion.clear(slot);
         peaHatMotion.clear(slot);

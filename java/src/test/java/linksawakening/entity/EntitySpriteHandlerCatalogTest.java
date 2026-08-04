@@ -137,6 +137,11 @@ final class EntitySpriteHandlerCatalogTest {
         assertDefinition(stalfos, 0x06, 0x4AA8,
             EntitySpriteDefinition.Shape.PAIR, 3, 0);
 
+        EntitySpriteDefinition antiFairy = catalog.forEntityType(
+            0x15, EntityRoomLoader.RoomTable.INDOORS_B);
+        assertDefinition(antiFairy, 0x06, 0x786E,
+            EntitySpriteDefinition.Shape.PAIR, 2, 0);
+
         EntitySpriteDefinition gibdo = catalog.forEntityType(
             0x1F, EntityRoomLoader.RoomTable.INDOORS_B);
         assertDefinition(gibdo, 0x06, 0x7E6F,
@@ -327,6 +332,14 @@ final class EntitySpriteHandlerCatalogTest {
         assertEquals(0x20, stalfos.variant(1).first().attributes());
         assertEquals(0x4E, stalfos.variant(2).first().tile());
         assertEquals(0x20, stalfos.variant(2).second().attributes());
+
+        EntitySpriteDefinition antiFairy = catalog.forEntityType(
+            0x15, EntityRoomLoader.RoomTable.INDOORS_B);
+        assertEquals(0x5A, antiFairy.variant(0).first().tile());
+        assertEquals(0x00, antiFairy.variant(0).first().attributes());
+        assertEquals(0x20, antiFairy.variant(0).second().attributes());
+        assertEquals(0x14, antiFairy.variant(1).first().attributes());
+        assertEquals(0x34, antiFairy.variant(1).second().attributes());
 
         EntitySpriteDefinition gibdo = catalog.forEntityType(
             0x1F, EntityRoomLoader.RoomTable.INDOORS_B);

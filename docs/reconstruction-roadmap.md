@@ -91,6 +91,12 @@ resource.
   chase-only combat gate, `$08` Link-vector refresh, and fixed-point movement.
   Its health-group `$01` values provide two health points and `$04` contact
   damage; background interaction and recoil remain pending.
+- Anti-Fairy now decodes the bank `$06` pair display list and mirrors
+  `EntityInitWithRandomSpeed`, the four diagonal `$0C/$F4` fixed-point speed
+  choices, horizontal-priority axis reversal, and `$08`-frame sprite cadence.
+  Its health-group `$06` path provides four health points and `$04` contact
+  damage; recoil and the exact collision-flag/object interaction remain
+  pending.
 - PeaHat now decodes the bank `$07` pair display list and mirrors its resting,
   takeoff, and flying states, slow-countdown cadence, carry-aware animation,
   direct Z ascent/descent, and contiguous ROM phase-speed tables. Its grounded

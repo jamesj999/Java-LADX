@@ -6,6 +6,7 @@ public final class RoomEntityCombatRules {
     private static final int ENTITY_MOBLIN = 0x0B;
     private static final int ENTITY_TEKTITE = 0x0D;
     private static final int ENTITY_LEEVER = 0x0E;
+    private static final int ENTITY_ANTI_FAIRY = 0x15;
     private static final int ENTITY_STALFOS_AGGRESSIVE = 0x1A;
     private static final int ENTITY_GIBDO = 0x1F;
     private static final int ENTITY_PEAHAT = 0xA0;
@@ -27,11 +28,13 @@ public final class RoomEntityCombatRules {
     private static final int MOBLIN_CONTACT_DAMAGE = 0x04;
     private static final int GHINI_CONTACT_DAMAGE = 0x08;
     private static final int HARDHAT_CONTACT_DAMAGE = 0x08;
+    private static final int ANTI_FAIRY_CONTACT_DAMAGE = 0x04;
     private static final int GIBDO_CONTACT_DAMAGE = 0x08;
     private static final int OCTOROK_AND_KEESE_INITIAL_HEALTH = 0x01;
     private static final int MOBLIN_INITIAL_HEALTH = 0x02;
     private static final int GHINI_INITIAL_HEALTH = 0x08;
     private static final int HARDHAT_INITIAL_HEALTH = 0x04;
+    private static final int ANTI_FAIRY_INITIAL_HEALTH = 0x04;
     private static final int GIBDO_INITIAL_HEALTH = 0x06;
     private static final int BASIC_SWORD_DAMAGE = 0x01;
 
@@ -41,6 +44,7 @@ public final class RoomEntityCombatRules {
     static boolean supportsEnemyCollision(int type) {
         return switch (type & 0xFF) {
             case ENTITY_KEESE, ENTITY_MOBLIN, ENTITY_TEKTITE, ENTITY_LEEVER,
+                ENTITY_ANTI_FAIRY,
                 ENTITY_STALFOS_AGGRESSIVE, ENTITY_GIBDO, ENTITY_PEAHAT,
                 ENTITY_GHINI,
                 ENTITY_HARDHAT_BEETLE,
@@ -60,6 +64,7 @@ public final class RoomEntityCombatRules {
             case ENTITY_MOBLIN, ENTITY_TEKTITE, ENTITY_LEEVER, ENTITY_STALFOS_AGGRESSIVE ->
                 MOBLIN_CONTACT_DAMAGE;
             case ENTITY_GIBDO -> GIBDO_CONTACT_DAMAGE;
+            case ENTITY_ANTI_FAIRY -> ANTI_FAIRY_CONTACT_DAMAGE;
             case ENTITY_GHINI -> GHINI_CONTACT_DAMAGE;
             case ENTITY_HARDHAT_BEETLE -> HARDHAT_CONTACT_DAMAGE;
             default -> 0;
@@ -73,6 +78,7 @@ public final class RoomEntityCombatRules {
             case ENTITY_MOBLIN, ENTITY_TEKTITE, ENTITY_LEEVER, ENTITY_STALFOS_AGGRESSIVE ->
                 MOBLIN_INITIAL_HEALTH;
             case ENTITY_GIBDO -> GIBDO_INITIAL_HEALTH;
+            case ENTITY_ANTI_FAIRY -> ANTI_FAIRY_INITIAL_HEALTH;
             case ENTITY_GHINI -> GHINI_INITIAL_HEALTH;
             case ENTITY_HARDHAT_BEETLE -> HARDHAT_INITIAL_HEALTH;
             default -> 0;
