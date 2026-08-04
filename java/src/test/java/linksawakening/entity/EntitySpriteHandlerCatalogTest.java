@@ -152,6 +152,16 @@ final class EntitySpriteHandlerCatalogTest {
         assertDefinition(sparkClockwise, 0x06, 0x6615,
             EntitySpriteDefinition.Shape.PAIR, 2, 0);
 
+        EntitySpriteDefinition zol = catalog.forEntityType(
+            0x1B, EntityRoomLoader.RoomTable.INDOORS_A);
+        assertDefinition(zol, 0x06, 0x7C09,
+            EntitySpriteDefinition.Shape.PAIR, 2, 0);
+
+        EntitySpriteDefinition gel = catalog.forEntityType(
+            0x1C, EntityRoomLoader.RoomTable.INDOORS_A);
+        assertDefinition(gel, 0x06, 0x7BFA,
+            EntitySpriteDefinition.Shape.SINGLE, 2, 0);
+
         EntitySpriteDefinition gibdo = catalog.forEntityType(
             0x1F, EntityRoomLoader.RoomTable.INDOORS_B);
         assertDefinition(gibdo, 0x06, 0x7E6F,
@@ -358,6 +368,23 @@ final class EntitySpriteHandlerCatalogTest {
         assertEquals(0x20, spark.variant(0).second().attributes());
         assertEquals(0x14, spark.variant(1).first().attributes());
         assertEquals(0x34, spark.variant(1).second().attributes());
+
+        EntitySpriteDefinition zol = catalog.forEntityType(
+            0x1B, EntityRoomLoader.RoomTable.INDOORS_A);
+        assertEquals(0x52, zol.variant(0).first().tile());
+        assertEquals(0x02, zol.variant(0).first().attributes());
+        assertEquals(0x54, zol.variant(1).first().tile());
+
+        EntitySpriteDefinition slimeEyeZol = catalog.forZolSlimeEye();
+        assertEquals(0x7C11, slimeEyeZol.address());
+        assertEquals(0x00, slimeEyeZol.variant(0).first().attributes());
+        assertEquals(0x20, slimeEyeZol.variant(0).second().attributes());
+
+        EntitySpriteDefinition gel = catalog.forEntityType(
+            0x1C, EntityRoomLoader.RoomTable.INDOORS_A);
+        assertEquals(0x56, gel.variant(0).first().tile());
+        assertEquals(0x02, gel.variant(0).first().attributes());
+        assertEquals(0x22, gel.variant(1).first().attributes());
 
         EntitySpriteDefinition gibdo = catalog.forEntityType(
             0x1F, EntityRoomLoader.RoomTable.INDOORS_B);

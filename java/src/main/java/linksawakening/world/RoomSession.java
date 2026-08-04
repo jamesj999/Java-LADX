@@ -26,6 +26,7 @@ public final class RoomSession {
     private final DroppableRupeeSystem droppableRupeeSystem;
     private final RoomLoadListener roomLoadListener;
     private final RomRandomByteSource entityRandomByteSource = new RomRandomByteSource();
+    private final EntitySpriteHandlerCatalog entitySpriteHandlerCatalog;
     private final FollowingNpcEntitySpawner followingNpcEntitySpawner;
     private final LinkPositionHistory followingLinkPositionHistory = new LinkPositionHistory();
 
@@ -68,8 +69,8 @@ public final class RoomSession {
         this.transientVfxSystem = transientVfxSystem;
         this.droppableRupeeSystem = droppableRupeeSystem;
         this.roomLoadListener = roomLoadListener;
-        this.followingNpcEntitySpawner = new FollowingNpcEntitySpawner(
-            new EntitySpriteHandlerCatalog(romData));
+        this.entitySpriteHandlerCatalog = new EntitySpriteHandlerCatalog(romData);
+        this.followingNpcEntitySpawner = new FollowingNpcEntitySpawner(entitySpriteHandlerCatalog);
     }
 
     public void loadInitialOverworld(int roomId) {
@@ -335,7 +336,7 @@ public final class RoomSession {
         activeRoom = ActiveRoom.from(room, entities);
         entityRuntime = entities == null ? null : RoomEntityRuntime.from(
             entities, activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD,
-            entityRandomByteSource);
+            entityRandomByteSource, entitySpriteHandlerCatalog);
         if (entityRuntime != null) {
             entityRuntime.setFollowingNpcState(followingNpcState);
         }
@@ -365,7 +366,7 @@ public final class RoomSession {
         activeRoom.replaceEntities(result.snapshot());
         entityRuntime = RoomEntityRuntime.from(
             result.snapshot(), activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD,
-            entityRandomByteSource);
+            entityRandomByteSource, entitySpriteHandlerCatalog);
         entityRuntime.setFollowingNpcState(followingNpcState);
     }
 

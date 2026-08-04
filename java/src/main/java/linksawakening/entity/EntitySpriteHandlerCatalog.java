@@ -20,6 +20,8 @@ public final class EntitySpriteHandlerCatalog {
     private static final int ENTITY_ANTI_FAIRY = 0x15;
     private static final int ENTITY_SPARK_COUNTER_CLOCKWISE = 0x16;
     private static final int ENTITY_SPARK_CLOCKWISE = 0x17;
+    private static final int ENTITY_ZOL = 0x1B;
+    private static final int ENTITY_GEL = 0x1C;
     private static final int ENTITY_STALFOS_AGGRESSIVE = 0x1A;
     private static final int ENTITY_GIBDO = 0x1F;
     private static final int ENTITY_PEAHAT = 0xA0;
@@ -120,6 +122,12 @@ public final class EntitySpriteHandlerCatalog {
             || entityType == ENTITY_SPARK_CLOCKWISE) {
             return decodePair(entityType, 0x06, 0x6615, 2, 0);
         }
+        if (entityType == ENTITY_ZOL) {
+            return decodePair(entityType, 0x06, 0x7C09, 2, 0);
+        }
+        if (entityType == ENTITY_GEL) {
+            return decodeSingle(entityType, 0x06, 0x7BFA, 2, 0);
+        }
         if (entityType == ENTITY_STALFOS_AGGRESSIVE) {
             return decodePair(entityType, 0x06, 0x4AA8, 3, 0);
         }
@@ -184,6 +192,11 @@ public final class EntitySpriteHandlerCatalog {
             return decodePair(entityType, 0x18, 0x5EB7, 8, 0);
         }
         return EntitySpriteDefinition.unsupported(entityType);
+    }
+
+    /** The green Zol list selected after Slime Eye has split its Zol. */
+    public EntitySpriteDefinition forZolSlimeEye() {
+        return decodePair(0x1B, 0x06, 0x7C11, 2, 0);
     }
 
     /**

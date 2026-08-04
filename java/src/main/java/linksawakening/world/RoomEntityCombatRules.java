@@ -10,6 +10,8 @@ public final class RoomEntityCombatRules {
     private static final int ENTITY_SPARK_COUNTER_CLOCKWISE = 0x16;
     private static final int ENTITY_SPARK_CLOCKWISE = 0x17;
     private static final int ENTITY_STALFOS_AGGRESSIVE = 0x1A;
+    private static final int ENTITY_ZOL = 0x1B;
+    private static final int ENTITY_GEL = 0x1C;
     private static final int ENTITY_GIBDO = 0x1F;
     private static final int ENTITY_PEAHAT = 0xA0;
     private static final int ENTITY_ARMOS_STATUE = 0x0F;
@@ -23,6 +25,8 @@ public final class RoomEntityCombatRules {
     private static final int HITBOX_WIDTH = 0x05;
     private static final int HITBOX_Y = 0x08;
     private static final int HITBOX_HEIGHT = 0x05;
+    private static final int SMALL_ENEMY_HITBOX_WIDTH = 0x02;
+    private static final int SMALL_ENEMY_HITBOX_HEIGHT = 0x02;
 
     // HealthGroupForEntity (bank 3:41F6), InitialHealthForGroup (bank
     // 3:47BC), and EntityDamagesForGroup (bank 3:47F1).
@@ -37,6 +41,8 @@ public final class RoomEntityCombatRules {
     private static final int GHINI_INITIAL_HEALTH = 0x08;
     private static final int HARDHAT_INITIAL_HEALTH = 0x04;
     private static final int ANTI_FAIRY_INITIAL_HEALTH = 0x04;
+    private static final int ZOL_INITIAL_HEALTH = 0x02;
+    private static final int GEL_INITIAL_HEALTH = 0x01;
     private static final int GIBDO_INITIAL_HEALTH = 0x06;
     private static final int BASIC_SWORD_DAMAGE = 0x01;
 
@@ -48,7 +54,7 @@ public final class RoomEntityCombatRules {
             case ENTITY_KEESE, ENTITY_MOBLIN, ENTITY_TEKTITE, ENTITY_LEEVER,
                 ENTITY_ANTI_FAIRY, ENTITY_SPARK_COUNTER_CLOCKWISE,
                 ENTITY_SPARK_CLOCKWISE,
-                ENTITY_STALFOS_AGGRESSIVE, ENTITY_GIBDO, ENTITY_PEAHAT,
+                ENTITY_STALFOS_AGGRESSIVE, ENTITY_ZOL, ENTITY_GEL, ENTITY_GIBDO, ENTITY_PEAHAT,
                 ENTITY_GHINI,
                 ENTITY_HARDHAT_BEETLE,
                 ENTITY_OCTOROK -> true;
@@ -62,7 +68,7 @@ public final class RoomEntityCombatRules {
 
     static int contactDamage(int type) {
         return switch (type & 0xFF) {
-            case ENTITY_KEESE, ENTITY_OCTOROK, ENTITY_PEAHAT ->
+            case ENTITY_KEESE, ENTITY_OCTOROK, ENTITY_PEAHAT, ENTITY_ZOL, ENTITY_GEL ->
                 OCTOROK_AND_KEESE_CONTACT_DAMAGE;
             case ENTITY_MOBLIN, ENTITY_TEKTITE, ENTITY_LEEVER, ENTITY_STALFOS_AGGRESSIVE ->
                 MOBLIN_CONTACT_DAMAGE;
@@ -84,6 +90,8 @@ public final class RoomEntityCombatRules {
                 MOBLIN_INITIAL_HEALTH;
             case ENTITY_SPARK_COUNTER_CLOCKWISE, ENTITY_SPARK_CLOCKWISE ->
                 OCTOROK_AND_KEESE_INITIAL_HEALTH;
+            case ENTITY_ZOL -> ZOL_INITIAL_HEALTH;
+            case ENTITY_GEL -> GEL_INITIAL_HEALTH;
             case ENTITY_GIBDO -> GIBDO_INITIAL_HEALTH;
             case ENTITY_ANTI_FAIRY -> ANTI_FAIRY_INITIAL_HEALTH;
             case ENTITY_GHINI -> GHINI_INITIAL_HEALTH;
@@ -106,14 +114,16 @@ public final class RoomEntityCombatRules {
         if (!supportsLinkCollision(entity.type())) {
             return false;
         }
+        int hitboxWidth = hitboxWidth(entity.type());
+        int hitboxHeight = hitboxHeight(entity.type());
         int xDistance = unsignedByteAbs(
             entity.x() + HITBOX_X - linkPixelX - 0x08);
-        if (xDistance >= HITBOX_WIDTH + 0x04) {
+        if (xDistance >= hitboxWidth + 0x04) {
             return false;
         }
         int yDistance = unsignedByteAbs(
             entity.y() + HITBOX_Y - linkPixelY - 0x08);
-        return yDistance < HITBOX_HEIGHT + 0x04;
+        return yDistance < hitboxHeight + 0x04;
     }
 
     /**
@@ -125,14 +135,24 @@ public final class RoomEntityCombatRules {
         if (!supportsEnemyCollision(entity.type()) || swordWidth <= 0 || swordHeight <= 0) {
             return false;
         }
+        int hitboxWidth = hitboxWidth(entity.type());
+        int hitboxHeight = hitboxHeight(entity.type());
         int xDistance = unsignedByteAbs(
             entity.x() + HITBOX_X - swordX);
-        if (xDistance >= HITBOX_WIDTH + swordWidth) {
+        if (xDistance >= hitboxWidth + swordWidth) {
             return false;
         }
         int yDistance = unsignedByteAbs(
             entity.y() + HITBOX_Y - swordY);
-        return yDistance < HITBOX_HEIGHT + swordHeight;
+        return yDistance < hitboxHeight + swordHeight;
+    }
+
+    private static int hitboxWidth(int type) {
+        return (type & 0xFF) == ENTITY_GEL ? SMALL_ENEMY_HITBOX_WIDTH : HITBOX_WIDTH;
+    }
+
+    private static int hitboxHeight(int type) {
+        return (type & 0xFF) == ENTITY_GEL ? SMALL_ENEMY_HITBOX_HEIGHT : HITBOX_HEIGHT;
     }
 
     private static int unsignedByteAbs(int value) {

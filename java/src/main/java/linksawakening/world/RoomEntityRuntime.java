@@ -1,6 +1,8 @@
 package linksawakening.world;
 
 import linksawakening.entity.EntitySpriteSelection;
+import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.gpu.EntitySpriteTileSnapshot;
 
 import java.util.ArrayList;
@@ -24,6 +26,8 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_ANTI_FAIRY = 0x15;
     private static final int ENTITY_SPARK_COUNTER_CLOCKWISE = 0x16;
     private static final int ENTITY_SPARK_CLOCKWISE = 0x17;
+    private static final int ENTITY_ZOL = 0x1B;
+    private static final int ENTITY_GEL = 0x1C;
     private static final int ENTITY_STALFOS_AGGRESSIVE = 0x1A;
     private static final int ENTITY_GIBDO = 0x1F;
     private static final int ENTITY_PEAHAT = 0xA0;
@@ -42,6 +46,7 @@ public final class RoomEntityRuntime {
     private final boolean indoorRoom;
     private final IntSupplier defaultRandomByteSupplier;
     private final RomRandomByteSource fallbackRomRandomByteSource;
+    private final EntitySpriteHandlerCatalog spriteHandlers;
     private FollowingNpcState followingNpcState = FollowingNpcState.none();
     private LinkPositionHistory followingLinkPositionHistory = new LinkPositionHistory();
     private int followingLinkZ;
@@ -54,6 +59,7 @@ public final class RoomEntityRuntime {
     private final LeeverMotion leeverMotion = new LeeverMotion();
     private final AntiFairyMotion antiFairyMotion = new AntiFairyMotion();
     private final SparkMotion sparkMotion = new SparkMotion();
+    private final ZolGelMotion zolGelMotion = new ZolGelMotion();
     private final StalfosAggressiveMotion stalfosAggressiveMotion =
         new StalfosAggressiveMotion();
     private final GibdoMotion gibdoMotion = new GibdoMotion();
@@ -71,7 +77,8 @@ public final class RoomEntityRuntime {
     private final int[] enemyIgnoreHitsCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
 
     private RoomEntityRuntime(RoomEntitySnapshot initial, boolean indoorRoom,
-                               IntSupplier defaultRandomByteSupplier) {
+                               IntSupplier defaultRandomByteSupplier,
+                               EntitySpriteHandlerCatalog spriteHandlers) {
         this.slots = initial.slots().toArray(RoomEntity[]::new);
         this.spriteSelection = initial.spriteSelection();
         this.spriteTiles = initial.spriteTiles();
@@ -79,6 +86,7 @@ public final class RoomEntityRuntime {
         this.defaultRandomByteSupplier = defaultRandomByteSupplier;
         this.fallbackRomRandomByteSource = defaultRandomByteSupplier == null
             ? new RomRandomByteSource() : null;
+        this.spriteHandlers = spriteHandlers;
         for (RoomEntity entity : slots) {
             enemyHealth[entity.slot()] = RoomEntityCombatRules.initialHealth(entity.type());
             if (isFollowingNpcType(entity.type())) {
@@ -99,7 +107,7 @@ public final class RoomEntityRuntime {
         if (initial == null) {
             throw new IllegalArgumentException("Initial entity snapshot cannot be null");
         }
-        return new RoomEntityRuntime(initial, indoorRoom, null);
+        return new RoomEntityRuntime(initial, indoorRoom, null, null);
     }
 
     public static RoomEntityRuntime from(RoomEntitySnapshot initial, boolean indoorRoom,
@@ -107,7 +115,16 @@ public final class RoomEntityRuntime {
         if (initial == null) {
             throw new IllegalArgumentException("Initial entity snapshot cannot be null");
         }
-        return new RoomEntityRuntime(initial, indoorRoom, randomByteSupplier);
+        return new RoomEntityRuntime(initial, indoorRoom, randomByteSupplier, null);
+    }
+
+    public static RoomEntityRuntime from(RoomEntitySnapshot initial, boolean indoorRoom,
+                                         IntSupplier randomByteSupplier,
+                                         EntitySpriteHandlerCatalog spriteHandlers) {
+        if (initial == null) {
+            throw new IllegalArgumentException("Initial entity snapshot cannot be null");
+        }
+        return new RoomEntityRuntime(initial, indoorRoom, randomByteSupplier, spriteHandlers);
     }
 
     /** Advances the ROM handlers that have deterministic frame-only variants. */
@@ -193,6 +210,9 @@ public final class RoomEntityRuntime {
                 if (isSparkType(entity.type())) {
                     sparkMotion.initialize(entity.slot(), entity.type());
                 }
+                if (isZolGelType(entity.type())) {
+                    zolGelMotion.initialize(entity.slot(), entity.type(), randomByteSupplier);
+                }
                 if (entity.type() == ENTITY_STALFOS_AGGRESSIVE) {
                     stalfosAggressiveMotion.initialize(entity.slot(), randomByteSupplier);
                 }
@@ -269,6 +289,14 @@ public final class RoomEntityRuntime {
             if (status == EntityStatus.ACTIVE && !wasInitializing && isSparkType(entity.type())) {
                 updated = sparkMotion.advance(entity, frame, backgroundCollision);
             }
+            if (status == EntityStatus.ACTIVE && !wasInitializing && isZolGelType(entity.type())) {
+                ZolGelMotion.Update zolGelUpdate = zolGelMotion.advance(entity, linkEntityX,
+                    linkEntityY, linkZ, randomByteSupplier, backgroundCollision);
+                updated = zolGelUpdate.entity();
+                if (zolGelUpdate.split() != null) {
+                    updated = applyZolSplit(entity, updated, zolGelUpdate.split());
+                }
+            }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_STALFOS_AGGRESSIVE) {
                 updated = stalfosAggressiveMotion.advance(entity, frame, linkEntityX, linkEntityY,
@@ -313,6 +341,8 @@ public final class RoomEntityRuntime {
                 variant = (slowTransitionCountdown[entity.slot()] & 0x01) != 0 ? 0 : -1;
             }
             if (status != entity.status() || variant != entity.spriteVariant()
+                || updated.type() != entity.type()
+                || updated.spriteDefinition() != entity.spriteDefinition()
                 || updated.x() != entity.x() || updated.y() != entity.y()
                 || updated.z() != entity.z()) {
                 slots[index] = new RoomEntity(
@@ -386,6 +416,9 @@ public final class RoomEntityRuntime {
             if (entity.type() == ENTITY_PEAHAT && !peaHatMotion.isGrounded(entity)) {
                 continue;
             }
+            if (isZolGelType(entity.type()) && zolGelMotion.skipsEnemyCollision(entity.slot())) {
+                continue;
+            }
             if (enemyFlashCountdown[entity.slot()] > 0
                 || enemyIgnoreHitsCountdown[entity.slot()] > 0) {
                 continue;
@@ -414,7 +447,18 @@ public final class RoomEntityRuntime {
                     // next $0A collision passes.
                     enemyFlashCountdown[entity.slot()] = 0x18;
                     enemyIgnoreHitsCountdown[entity.slot()] = 0x0A;
+                    if (isZolGelType(entity.type())) {
+                        zolGelMotion.onSwordHit(entity.slot());
+                    }
+                    if (entity.type() == ENTITY_ZOL && spriteHandlers != null) {
+                        entity = withDefinition(entity, spriteHandlers.forZolSlimeEye(),
+                            entity.spriteVariant());
+                        slots[entity.slot()] = entity;
+                    }
                 }
+            }
+            if (linkCollision && entity.type() == ENTITY_GEL) {
+                zolGelMotion.onLinkCollision(entity.slot());
             }
             events.add(new EntityCombatEvent(
                 entity.slot(), entity.type(),
@@ -446,6 +490,7 @@ public final class RoomEntityRuntime {
         leeverMotion.clear(slot);
         antiFairyMotion.clear(slot);
         sparkMotion.clear(slot);
+        zolGelMotion.clear(slot);
         stalfosAggressiveMotion.clear(slot);
         gibdoMotion.clear(slot);
         peaHatMotion.clear(slot);
@@ -483,12 +528,67 @@ public final class RoomEntityRuntime {
         return type == ENTITY_SPARK_COUNTER_CLOCKWISE || type == ENTITY_SPARK_CLOCKWISE;
     }
 
+    private static boolean isZolGelType(int type) {
+        return type == ENTITY_ZOL || type == ENTITY_GEL;
+    }
+
     private static boolean isRoamingEnemyType(int type) {
         return type == ENTITY_OCTOROK || type == ENTITY_MOBLIN;
     }
 
     private static boolean isDynamicFollowingNpc(RoomEntity entity) {
         return entity.sourceLoadOrder() == -1 && isFollowingNpcType(entity.type());
+    }
+
+    private RoomEntity applyZolSplit(RoomEntity original, RoomEntity updated,
+                                      ZolGelMotion.Split split) {
+        EntitySpriteDefinition gelDefinition = spriteDefinitionFor(ENTITY_GEL);
+        int gelVariant = gelDefinition.supported() ? 0 : -1;
+        int slot = original.slot();
+        RoomEntity gel = new RoomEntity(slot, original.sourceLoadOrder(), ENTITY_GEL,
+            (split.originalX() - 4) & 0xFF, split.originalY(), EntityStatus.ACTIVE,
+            gelDefinition, gelVariant, original.entityFlipAttribute(), original.spriteTileOffset(),
+            split.originalZ());
+        enemyHealth[slot] = RoomEntityCombatRules.initialHealth(ENTITY_GEL);
+        enemyFlashCountdown[slot] = 0;
+        enemyIgnoreHitsCountdown[slot] = 0;
+
+        int freeSlot = findFreeEntitySlot();
+        if (freeSlot >= 0) {
+            RoomEntity spawnedGel = new RoomEntity(freeSlot, original.sourceLoadOrder(), ENTITY_GEL,
+                (split.originalX() + 8) & 0xFF, split.originalY(), EntityStatus.ACTIVE,
+                gelDefinition, gelVariant, original.entityFlipAttribute(), original.spriteTileOffset(),
+                split.originalZ());
+            slots[freeSlot] = spawnedGel;
+            dyingCountdown[freeSlot] = 0;
+            enemyHealth[freeSlot] = RoomEntityCombatRules.initialHealth(ENTITY_GEL);
+            enemyFlashCountdown[freeSlot] = 0;
+            // SpawnNewEntity sets the new entity's ignore-hits countdown to 1.
+            enemyIgnoreHitsCountdown[freeSlot] = 1;
+            zolGelMotion.prepareSpawnedGel(freeSlot);
+        }
+        return gel;
+    }
+
+    private int findFreeEntitySlot() {
+        for (int slot = slots.length - 1; slot >= 0; slot--) {
+            if (!slots[slot].loaded()) {
+                return slot;
+            }
+        }
+        return -1;
+    }
+
+    private EntitySpriteDefinition spriteDefinitionFor(int entityType) {
+        if (spriteHandlers == null) {
+            return EntitySpriteDefinition.unsupported(entityType);
+        }
+        EntityRoomLoader.RoomTable table = spriteSelection == null
+            ? (indoorRoom ? EntityRoomLoader.RoomTable.INDOORS_A
+                : EntityRoomLoader.RoomTable.OVERWORLD)
+            : spriteSelection.roomTable();
+        int mapId = spriteSelection == null ? -1 : spriteSelection.roomId();
+        return spriteHandlers.forEntityType(entityType, table, mapId);
     }
 
     int slowTransitionCountdown(int slot) {
@@ -600,6 +700,26 @@ public final class RoomEntityRuntime {
 
     int sparkSpeedY(int slot) {
         return sparkMotion.speedY(slot);
+    }
+
+    int zolState(int slot) {
+        return zolGelMotion.state(slot);
+    }
+
+    int zolTransitionCountdown(int slot) {
+        return zolGelMotion.transitionCountdown(slot);
+    }
+
+    int zolSpeedX(int slot) {
+        return zolGelMotion.speedX(slot);
+    }
+
+    int zolSpeedY(int slot) {
+        return zolGelMotion.speedY(slot);
+    }
+
+    int zolSpeedZ(int slot) {
+        return zolGelMotion.speedZ(slot);
     }
 
     int stalfosState(int slot) {
@@ -822,6 +942,16 @@ public final class RoomEntityRuntime {
             entity.spriteTileOffset(), entity.z());
     }
 
+    private static RoomEntity withDefinition(RoomEntity entity,
+                                              EntitySpriteDefinition definition, int variant) {
+        int selectedVariant = definition.supported()
+            ? Math.min(Math.max(variant, 0), definition.variantCount() - 1) : -1;
+        return new RoomEntity(
+            entity.slot(), entity.sourceLoadOrder(), entity.type(), entity.x(), entity.y(),
+            entity.status(), definition, selectedVariant, entity.entityFlipAttribute(),
+            entity.spriteTileOffset(), entity.z());
+    }
+
     private void disableEntityWithoutPersistence(int slot) {
         slowTransitionCountdown[slot] = 0;
         slowTimerInitialized[slot] = false;
@@ -836,6 +966,7 @@ public final class RoomEntityRuntime {
         leeverMotion.clear(slot);
         antiFairyMotion.clear(slot);
         sparkMotion.clear(slot);
+        zolGelMotion.clear(slot);
         stalfosAggressiveMotion.clear(slot);
         gibdoMotion.clear(slot);
         peaHatMotion.clear(slot);

@@ -1048,6 +1048,78 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void zolUsesTheRomInchingAndLeapStateLoop() {
+        EntitySpriteDefinition definition = pairDefinition(0x1B, 2);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x1B, 64, 64, EntityStatus.INIT, definition, 0)),
+            false, sequence(0x01));
+
+        runtime.tick(0, 80, 64, sequence(0x01));
+        assertEquals(2, runtime.enemyHealth(0));
+        assertEquals(0, runtime.zolState(0));
+
+        runtime.tick(1, 80, 64, sequence(0x01));
+        assertEquals(1, runtime.zolState(0));
+        assertEquals(7, runtime.zolTransitionCountdown(0));
+        assertEquals(0x04, runtime.zolSpeedX(0));
+        assertEquals(0x00, runtime.zolSpeedY(0));
+
+        runtime.tick(2, 80, 64, sequence(0x01));
+        assertEquals(6, runtime.zolTransitionCountdown(0));
+        assertEquals(64, runtime.snapshot().slots().get(0).x());
+    }
+
+    @Test
+    void zolSplittingTurnsTheOriginalSlotIntoAGelAndUsesTheLastFreeSlot() {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
+        EntitySpriteDefinition definition = pairDefinition(0x1B, 2);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x1B, 64, 64, EntityStatus.INIT, definition, 0)),
+            false, sequence(0x01), catalog);
+
+        runtime.tick(0, 80, 64, sequence(0x01));
+        List<EntityCombatEvent> sword = runtime.resolveCombat(
+            1, 120, 120, false, true, true, 72, 1, 72, 1);
+        assertEquals(1, sword.size());
+        assertEquals(1, runtime.enemyHealth(0));
+        assertEquals(0x7C11, runtime.snapshot().slots().get(0).spriteDefinition().address());
+
+        for (int frame = 1; frame <= 16; frame++) {
+            runtime.tick(frame, 80, 64, sequence(0x01));
+        }
+
+        RoomEntity originalSlot = runtime.snapshot().slots().get(0);
+        RoomEntity spawnedSlot = runtime.snapshot().slots().get(15);
+        assertEquals(0x1C, originalSlot.type());
+        assertEquals(0x1C, spawnedSlot.type());
+        assertEquals(EntityStatus.ACTIVE, spawnedSlot.status());
+        assertEquals(0, originalSlot.sourceLoadOrder());
+        assertEquals(0, spawnedSlot.sourceLoadOrder());
+        assertEquals(originalSlot.x() + 12 & 0xFF, spawnedSlot.x());
+        assertEquals(originalSlot.y(), spawnedSlot.y());
+        assertEquals(originalSlot.z(), spawnedSlot.z());
+        assertEquals(1, runtime.enemyHealth(15));
+    }
+
+    @Test
+    void gelUsesTheRomSmallEnemyHitboxAndClingingCollisionState() {
+        EntitySpriteDefinition definition = pairDefinition(0x1C, 2);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x1C, 64, 64, EntityStatus.ACTIVE, definition, 0)));
+
+        assertTrue(runtime.resolveCombat(1, 72, 64, false, true,
+            false, 0, 0, 0, 0).isEmpty());
+
+        List<EntityCombatEvent> contact = runtime.resolveCombat(
+            1, 68, 64, false, true, false, 0, 0, 0, 0);
+        assertEquals(1, contact.size());
+        assertEquals(4, contact.get(0).linkDamage());
+        assertEquals(4, runtime.zolState(0));
+        assertTrue(runtime.resolveCombat(1, 68, 64, false, true,
+            false, 0, 0, 0, 0).isEmpty());
+    }
+
+    @Test
     void dynamicGhostRuntimeAdvancesZBobEvenWhenItsVariantIsUnchanged() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
             .forFollowerEntityType(0xD4);

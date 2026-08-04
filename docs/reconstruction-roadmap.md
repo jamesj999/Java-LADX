@@ -104,6 +104,14 @@ resource.
   probes use the ROM Spark collision-point row; health group `$2C` provides
   one health point and `$04` contact damage. Recoil and the remaining enemy
   interaction flags remain pending.
+- Zol/Gel (`$1B/$1C`) now decode the bank `$06` red Zol, green Slime Eye Zol,
+  and single-sprite Gel lists, mirror the shared Z-motion and state `0`-`4`
+  inch/leap loop, use the ROM normal/small-enemy hitboxes and health-group
+  damage values, and turn a damaged Zol into two ROM-backed Gel entities in
+  the highest free slots. The split preserves source load order and ROM
+  position/Z setup; Gel clinging suppresses the ordinary enemy collision path.
+  Joypad-driven release from the clinging state, recoil, and the remaining
+  damage-state branches remain pending.
 - PeaHat now decodes the bank `$07` pair display list and mirrors its resting,
   takeoff, and flying states, slow-countdown cadence, carry-aware animation,
   direct Z ascent/descent, and contiguous ROM phase-speed tables. Its grounded
