@@ -22,6 +22,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_GHOST = 0xD4;
     private static final int ENTITY_ROOSTER = 0xD5;
     private static final int ENTITY_MARIN_AT_THE_SHORE = 0xC1;
+    private static final int ENTITY_BOW_WOW = 0x6D;
 
     private final RoomEntity[] slots;
     private EntitySpriteSelection spriteSelection;
@@ -38,6 +39,7 @@ public final class RoomEntityRuntime {
     private final KeeseMotion keeseMotion = new KeeseMotion();
     private final RoamingEnemyMotion roamingEnemyMotion = new RoamingEnemyMotion();
     private final FollowingNpcMotion followingNpcMotion = new FollowingNpcMotion();
+    private final BowWowMotion bowWowMotion = new BowWowMotion();
     private final int[] slowTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] slowTimerInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final int[] dyingCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -53,7 +55,11 @@ public final class RoomEntityRuntime {
             ? new RomRandomByteSource() : null;
         for (RoomEntity entity : slots) {
             if (isFollowingNpcType(entity.type())) {
-                followingNpcMotion.initialize(entity.slot(), entity.type());
+                if (entity.type() == ENTITY_BOW_WOW) {
+                    bowWowMotion.initialize(entity.slot());
+                } else {
+                    followingNpcMotion.initialize(entity.slot(), entity.type());
+                }
             }
         }
     }
@@ -148,7 +154,11 @@ public final class RoomEntityRuntime {
                     roamingEnemyMotion.initialize(entity.slot());
                 }
                 if (isFollowingNpcType(entity.type())) {
-                    followingNpcMotion.initialize(entity.slot(), entity.type());
+                    if (entity.type() == ENTITY_BOW_WOW) {
+                        bowWowMotion.initialize(entity.slot());
+                    } else {
+                        followingNpcMotion.initialize(entity.slot(), entity.type());
+                    }
                 }
             } else if (status == EntityStatus.ACTIVE) {
                 decrementSlowTransitionCountdown(entity.slot(), frame);
@@ -177,9 +187,14 @@ public final class RoomEntityRuntime {
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && isDynamicFollowingNpc(entity)) {
-                updated = followingNpcMotion.advance(entity, frame, linkEntityX, linkEntityY,
-                    followingLinkZ, followingLinkDirection, followingEntityYOffset,
-                    followingLinkPositionHistory, backgroundCollision);
+                if (entity.type() == ENTITY_BOW_WOW) {
+                    updated = bowWowMotion.advance(entity, frame, linkEntityX, linkEntityY,
+                        followingLinkZ, randomByteSupplier, backgroundCollision);
+                } else {
+                    updated = followingNpcMotion.advance(entity, frame, linkEntityX, linkEntityY,
+                        followingLinkZ, followingLinkDirection, followingEntityYOffset,
+                        followingLinkPositionHistory, backgroundCollision);
+                }
             }
             int variant = variantFor(updated, frame);
             if (status == EntityStatus.ACTIVE && shouldDisappear(entity)) {
@@ -292,6 +307,7 @@ public final class RoomEntityRuntime {
         keeseMotion.clear(slot);
         roamingEnemyMotion.clear(slot);
         followingNpcMotion.clear(slot);
+        bowWowMotion.clear(slot);
         slots[slot] = RoomEntity.disabled(slot);
         return entity.sourceLoadOrder() >= 0 && entity.sourceLoadOrder() < 8
             ? 1 << entity.sourceLoadOrder() : 0;
@@ -314,7 +330,7 @@ public final class RoomEntityRuntime {
 
     private static boolean isFollowingNpcType(int type) {
         return type == ENTITY_GHOST || type == ENTITY_ROOSTER
-            || type == ENTITY_MARIN_AT_THE_SHORE;
+            || type == ENTITY_MARIN_AT_THE_SHORE || type == ENTITY_BOW_WOW;
     }
 
     private static boolean isDynamicFollowingNpc(RoomEntity entity) {
@@ -457,6 +473,7 @@ public final class RoomEntityRuntime {
         butterflyMotion.clear(slot);
         keeseMotion.clear(slot);
         followingNpcMotion.clear(slot);
+        bowWowMotion.clear(slot);
         slots[slot] = RoomEntity.disabled(slot);
     }
 }

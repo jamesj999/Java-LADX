@@ -65,6 +65,12 @@ resource.
   rollback, and Ghost's eight-frame visual-Z bob table. Marin's history-driven
   per-frame handler and the followers' special interaction states remain
   pending.
+- Bow-Wow's dynamic follower now mirrors bank `$05` setup offsets, the
+  `hLinkPositionZModified` visual-Y target, ROM random speed tables, signed
+  fixed-point X/Y movement, gravity/Z clamping, movement display variants, and
+  the handler's `$20` target-correction window. Its edible-entity scan,
+  kidnapping/retrieval, interaction, and scripted five-sprite OAM branches
+  remain pending.
 - Marin's ordinary `label_018_5C6A` follower branch now consumes the shared
   sixteen-entry X/Y/Z/direction history with separate position and Z indices,
   refreshes the current Link entry, carries the movement delay ring, and uses

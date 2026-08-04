@@ -330,6 +330,30 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void dynamicBowWowRunsItsRomSetupThenFollowerSpeedPhase() {
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
+            .forFollowerEntityType(FollowingNpcEntitySpawner.ENTITY_BOW_WOW);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, -1, FollowingNpcEntitySpawner.ENTITY_BOW_WOW,
+                0x40, 0x50, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial, false, () -> 0);
+        runtime.setFollowingNpcState(new FollowingNpcState(false, 0, false, true,
+            0, 0, false));
+
+        runtime.tick(0, 0x60, 0x70, () -> 0);
+        assertEquals(0x44, runtime.snapshot().slots().get(0).x());
+        assertEquals(0x58, runtime.snapshot().slots().get(0).y());
+
+        runtime.tick(1, 0x60, 0x70, () -> 0);
+        runtime.tick(2, 0x60, 0x70, () -> 0);
+        runtime.tick(3, 0x60, 0x70, () -> 0);
+
+        RoomEntity bowWow = runtime.snapshot().slots().get(0);
+        assertEquals(0x44, bowWow.x());
+        assertEquals(0x57, bowWow.y());
+    }
+
+    @Test
     void kidHandlersAnimateTheirTwoWalkingFramesEverySixteenFrames() {
         EntitySpriteDefinition definition = pairDefinition(0x70, 4);
         RoomEntitySnapshot initial = snapshot(
