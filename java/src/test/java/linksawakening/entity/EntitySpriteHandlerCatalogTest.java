@@ -132,6 +132,11 @@ final class EntitySpriteHandlerCatalogTest {
         assertDefinition(leever, 0x04, 0x7EE5,
             EntitySpriteDefinition.Shape.PAIR, 4, 0);
 
+        EntitySpriteDefinition stalfos = catalog.forEntityType(
+            0x1A, EntityRoomLoader.RoomTable.INDOORS_A);
+        assertDefinition(stalfos, 0x06, 0x4AA8,
+            EntitySpriteDefinition.Shape.PAIR, 3, 0);
+
         EntitySpriteDefinition peaHat = catalog.forEntityType(
             0xA0, EntityRoomLoader.RoomTable.INDOORS_B);
         assertDefinition(peaHat, 0x07, 0x6701,
@@ -303,6 +308,15 @@ final class EntitySpriteHandlerCatalogTest {
         assertEquals(0x52, leever.variant(2).first().tile());
         assertEquals(0x50, leever.variant(3).first().tile());
         assertEquals(0x22, leever.variant(3).second().attributes());
+
+        EntitySpriteDefinition stalfos = catalog.forEntityType(
+            0x1A, EntityRoomLoader.RoomTable.INDOORS_A);
+        assertEquals(0x4A, stalfos.variant(0).first().tile());
+        assertEquals(0x00, stalfos.variant(0).first().attributes());
+        assertEquals(0x4C, stalfos.variant(1).first().tile());
+        assertEquals(0x20, stalfos.variant(1).first().attributes());
+        assertEquals(0x4E, stalfos.variant(2).first().tile());
+        assertEquals(0x20, stalfos.variant(2).second().attributes());
 
         EntitySpriteDefinition peaHat = catalog.forEntityType(
             0xA0, EntityRoomLoader.RoomTable.INDOORS_B);

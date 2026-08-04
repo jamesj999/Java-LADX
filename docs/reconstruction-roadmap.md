@@ -96,6 +96,11 @@ resource.
   direct Z ascent/descent, and contiguous ROM phase-speed tables. Its grounded
   health-group `$00` contact/sword path is wired; hitbox-flag and sword-clink
   plumbing, recoil, background interaction, and water behavior remain pending.
+- Aggressive Stalfos now decodes the bank `$06` three-variant display list and
+  mirrors its slot-phased Link pursuit, proximity-triggered jump, fixed-point
+  four-state Z arc, `$10`/`$20` landing countdowns, and health group `$2A`
+  combat values. Landing dust/background collision flags, recoil, Color Dungeon
+  special handling, and the full damage-state matrix remain pending.
 - `CreateFollowingNpcEntity` now runs on room load/state changes with the
   source indoor/map/room exclusions, source-order slot reuse, highest-free-slot
   `SpawnNewEntity` behavior, Link/wC13B spawn coordinates, Ghost trigger-state

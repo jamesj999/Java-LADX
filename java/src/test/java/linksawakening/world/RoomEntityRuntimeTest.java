@@ -771,6 +771,65 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void stalfosAggressiveUsesTheRomPursuitAndJumpArc() {
+        EntitySpriteDefinition definition = pairDefinition(0x1A, 3);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x1A, 64, 64, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+
+        runtime.tick(0, 64, 64, sequence(0x00));
+        assertEquals(1, runtime.stalfosState(0));
+        assertEquals(0, runtime.snapshot().slots().get(0).z());
+
+        runtime.tick(1, 64, 64, sequence(0x00));
+        assertEquals(2, runtime.stalfosState(0));
+        assertEquals(0x28, runtime.stalfosSpeedZ(0));
+        assertEquals(0x10, runtime.stalfosSpeedX(0));
+        assertEquals(0x10, runtime.stalfosSpeedY(0));
+        assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
+
+        runtime.tick(2, 64, 64, sequence(0x00));
+        assertEquals(0x02, runtime.snapshot().slots().get(0).z());
+        assertEquals(0x26, runtime.stalfosSpeedZ(0));
+        assertEquals(2, runtime.snapshot().slots().get(0).spriteVariant());
+
+        for (int frame = 3; frame <= 21; frame++) {
+            runtime.tick(frame, 64, 64, sequence(0x00));
+        }
+        assertEquals(3, runtime.stalfosState(0));
+        assertEquals(0x10, runtime.stalfosTransitionCountdown(0));
+        assertEquals(0xC0, runtime.stalfosSpeedZ(0));
+        assertEquals(2, runtime.snapshot().slots().get(0).spriteVariant());
+
+        int frame = 22;
+        while (runtime.stalfosState(0) != 0 && frame < 100) {
+            runtime.tick(frame++, 64, 64, sequence(0x00));
+        }
+        assertEquals(0, runtime.stalfosState(0));
+        assertEquals(0, runtime.snapshot().slots().get(0).z());
+        assertEquals(0x20, runtime.stalfosTransitionCountdown(0));
+        assertEquals(0, runtime.stalfosSpeedZ(0));
+    }
+
+    @Test
+    void stalfosAggressiveUsesHealthGroupTwoACombatValues() {
+        EntitySpriteDefinition definition = pairDefinition(0x1A, 3);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x1A, 64, 64, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+
+        List<EntityCombatEvent> contact = runtime.resolveCombat(
+            1, 64, 64, false, true, false, 0, 0, 0, 0);
+        assertEquals(1, contact.size());
+        assertEquals(0x04, contact.get(0).linkDamage());
+
+        List<EntityCombatEvent> sword = runtime.resolveCombat(
+            1, 72, 72, false, true, true, 72, 1, 72, 1);
+        assertEquals(1, sword.size());
+        assertEquals(1, runtime.enemyHealth(0));
+    }
+
+    @Test
     void dynamicGhostRuntimeAdvancesZBobEvenWhenItsVariantIsUnchanged() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
             .forFollowerEntityType(0xD4);
