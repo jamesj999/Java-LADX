@@ -51,6 +51,39 @@ public final class RoomEntityRuntime {
         }
     }
 
+    /**
+     * Runs the room-entity portion of PickableCollectIfNeeded. A non-null
+     * event means the entity completed its pickup collision and its first-eight
+     * persistence bit is ready for the room session to record.
+     */
+    public EntityPickupEvent collectIfNeeded(int frameCounter,
+                                             int linkPixelX,
+                                             int linkPixelY,
+                                             boolean linkAirborne,
+                                             boolean linkInteractive) {
+        if (linkAirborne || !linkInteractive) {
+            return null;
+        }
+
+        for (RoomEntity entity : slots) {
+            if (!entity.loaded() || entity.status() != EntityStatus.ACTIVE
+                || !RoomEntityPickupRules.isPickable(entity.type())
+                || !RoomEntityPickupRules.collisionCadenceMatches(frameCounter, entity.slot())
+                || !RoomEntityPickupRules.overlapsLink(entity, linkPixelX, linkPixelY)) {
+                continue;
+            }
+
+            int persistentClearMask = persistentClearMask(entity);
+            if (requiresHeldPickupTransition(entity.type())) {
+                slots[entity.slot()] = withStatus(entity, EntityStatus.LIFTED);
+            } else {
+                clearEntity(entity.slot());
+            }
+            return new EntityPickupEvent(entity.slot(), entity.type(), persistentClearMask);
+        }
+        return null;
+    }
+
     /** Unloads a slot and returns the persistent first-eight load-order bit. */
     public int clearEntity(int slot) {
         if (slot < 0 || slot >= slots.length) {
@@ -78,5 +111,23 @@ public final class RoomEntityRuntime {
             case ENTITY_BUTTERFLY -> ((frameCounter + entity.slot() * 8) >>> 3) & 0x01;
             default -> entity.spriteVariant();
         };
+    }
+
+    private static int persistentClearMask(RoomEntity entity) {
+        return entity.sourceLoadOrder() >= 0 && entity.sourceLoadOrder() < 8
+            ? 1 << entity.sourceLoadOrder() : 0;
+    }
+
+    private static boolean requiresHeldPickupTransition(int type) {
+        return switch (type) {
+            case 0x30, 0x31, 0x33, 0x34, 0x35, 0x36, 0x39, 0x3A, 0x3C -> true;
+            default -> false;
+        };
+    }
+
+    private static RoomEntity withStatus(RoomEntity entity, EntityStatus status) {
+        return new RoomEntity(
+            entity.slot(), entity.sourceLoadOrder(), entity.type(), entity.x(), entity.y(),
+            status, entity.spriteDefinition(), entity.spriteVariant(), entity.entityFlipAttribute());
     }
 }

@@ -35,6 +35,17 @@ public final class PlayerState {
     private int itemA = INVENTORY_SWORD;
     private int itemB = INVENTORY_EMPTY;
     private final int[] subscreen = new int[SUBSCREEN_SLOT_COUNT];
+    private int arrowCount;
+    private int maxArrows;
+    private int bombCount;
+    private int maxBombs;
+    private int magicPowderCount;
+    private int maxMagicPowder;
+    private int heartPieces;
+    private int seashells;
+    private int activePowerUp;
+    private int addHealthBuffer;
+    private int addRupeeBuffer;
 
     public PlayerState() {
         // Stub test data so the inventory menu has something to equip until
@@ -88,12 +99,122 @@ public final class PlayerState {
         }
     }
 
+    /** Amount of health still waiting in the ROM's wAddHealthBuffer. */
+    public int addHealthBuffer() {
+        return addHealthBuffer;
+    }
+
+    /** Amount of rupees still waiting in the ROM's wAddRupeeBufferLow. */
+    public int addRupeeBuffer() {
+        return addRupeeBuffer;
+    }
+
+    /**
+     * Advances the resource counters with the same frame parity as bank2's
+     * UpdateRupeesCount and UpdateHealth routines.
+     */
+    public void tickResourceBuffers(int frameCounter) {
+        if ((frameCounter & 0x01) == 0) {
+            tickRupeeBuffer();
+        } else {
+            tickHealthBuffer();
+        }
+    }
+
+    /** Applies the immediate state portion of a bank3 pickable handler. */
+    public void applyEntityPickup(int entityType) {
+        switch (entityType & 0xFF) {
+            case 0x2D -> addHealthBuffer = Math.min(0xFF, addHealthBuffer + HP_PER_HEART);
+            case 0x2E -> addRupeeBuffer = Math.min(0xFF, addRupeeBuffer + 1);
+            case 0x33 -> activePowerUp = 1;
+            case 0x34 -> activePowerUp = 2;
+            case 0x37 -> arrowCount = incrementUpTo(arrowCount, maxArrows);
+            case 0x38 -> {
+                giveInventoryItem(INVENTORY_BOMBS);
+                bombCount = incrementUpTo(bombCount, maxBombs);
+            }
+            case 0x3B -> {
+                giveInventoryItem(INVENTORY_MAGIC_POWDER);
+                magicPowderCount = incrementUpTo(magicPowderCount, maxMagicPowder);
+            }
+            case 0x3D -> seashells = Math.min(99, seashells + 1);
+            default -> {
+                // Transition-driven pickups are advanced by their entity
+                // handlers; their room event still reaches this method when
+                // they need a future-specific state implementation.
+            }
+        }
+    }
+
     public int swordLevel() {
         return swordLevel;
     }
 
     public void setSwordLevel(int value) {
         swordLevel = clamp(value, 0, 2);
+    }
+
+    public int arrowCount() {
+        return arrowCount;
+    }
+
+    public void setArrowCount(int value) {
+        arrowCount = clamp(value, 0, maxArrows);
+    }
+
+    public int maxArrows() {
+        return maxArrows;
+    }
+
+    public void setMaxArrows(int value) {
+        maxArrows = clamp(value, 0, 99);
+        arrowCount = Math.min(arrowCount, maxArrows);
+    }
+
+    public int bombCount() {
+        return bombCount;
+    }
+
+    public void setBombCount(int value) {
+        bombCount = clamp(value, 0, maxBombs);
+    }
+
+    public int maxBombs() {
+        return maxBombs;
+    }
+
+    public void setMaxBombs(int value) {
+        maxBombs = clamp(value, 0, 99);
+        bombCount = Math.min(bombCount, maxBombs);
+    }
+
+    public int magicPowderCount() {
+        return magicPowderCount;
+    }
+
+    public void setMagicPowderCount(int value) {
+        magicPowderCount = clamp(value, 0, maxMagicPowder);
+    }
+
+    public int maxMagicPowder() {
+        return maxMagicPowder;
+    }
+
+    public void setMaxMagicPowder(int value) {
+        maxMagicPowder = clamp(value, 0, 99);
+        magicPowderCount = Math.min(magicPowderCount, maxMagicPowder);
+    }
+
+    public int heartPieces() {
+        return heartPieces;
+    }
+
+    public int seashells() {
+        return seashells;
+    }
+
+    public int activePowerUp() {
+        return activePowerUp;
     }
 
     public int itemA() {
@@ -128,6 +249,60 @@ public final class PlayerState {
         int tmp = itemB;
         itemB = subscreen[slotIndex];
         subscreen[slotIndex] = tmp;
+    }
+
+    private void tickHealthBuffer() {
+        if (addHealthBuffer == 0) {
+            return;
+        }
+        int maxHealth = maxHearts * HP_PER_HEART;
+        if (health >= maxHealth) {
+            addHealthBuffer = 0;
+            return;
+        }
+        health++;
+        addHealthBuffer--;
+    }
+
+    private void tickRupeeBuffer() {
+        if (addRupeeBuffer == 0) {
+            return;
+        }
+        if (rupees >= MAX_RUPEES) {
+            addRupeeBuffer = 0;
+            return;
+        }
+        rupees++;
+        addRupeeBuffer--;
+    }
+
+    private void giveInventoryItem(int inventoryId) {
+        if (itemB == inventoryId || itemA == inventoryId) {
+            return;
+        }
+        for (int item : subscreen) {
+            if (item == inventoryId) {
+                return;
+            }
+        }
+        if (itemB == INVENTORY_EMPTY) {
+            itemB = inventoryId;
+            return;
+        }
+        if (itemA == INVENTORY_EMPTY) {
+            itemA = inventoryId;
+            return;
+        }
+        for (int index = 0; index < subscreen.length; index++) {
+            if (subscreen[index] == INVENTORY_EMPTY) {
+                subscreen[index] = inventoryId;
+                return;
+            }
+        }
+    }
+
+    private static int incrementUpTo(int value, int maximum) {
+        return value < maximum ? value + 1 : value;
     }
 
     private static int clamp(int value, int min, int max) {

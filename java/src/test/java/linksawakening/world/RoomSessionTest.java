@@ -88,6 +88,31 @@ final class RoomSessionTest {
         assertEquals(1, session.activeRoom().entities().slots().get(0).sourceLoadOrder());
     }
 
+    @Test
+    void collectsAStaticPickupThroughTheActiveRoomSessionAndPersistsIt() {
+        RoomSession session = newSession();
+        session.loadInitialOverworld(0xA4);
+
+        RoomEntity pickup = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x3D)
+            .findFirst()
+            .orElseThrow();
+        session.tickEntities(0);
+        int collectionFrame = (pickup.slot() & 1) == 0 ? 1 : 0;
+
+        EntityPickupEvent event = session.collectEntityIfNeeded(
+            collectionFrame, pickup.x(), pickup.y(), false, true);
+
+        assertNotNull(event);
+        assertEquals(pickup.slot(), event.slot());
+        assertEquals(EntityStatus.DISABLED,
+            session.activeRoom().entities().slots().get(pickup.slot()).status());
+
+        session.loadOverworld(0xA4);
+
+        assertEquals(0xAE, session.activeRoom().entities().slots().get(0).type());
+    }
+
     private static RoomSession newSession() {
         return newSession(room -> {
         });

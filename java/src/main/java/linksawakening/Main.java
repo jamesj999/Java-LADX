@@ -57,6 +57,7 @@ import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.DroppableRupeeSystem;
 import linksawakening.world.ActiveRoom;
+import linksawakening.world.EntityPickupEvent;
 import linksawakening.world.OverworldBushInteraction;
 import linksawakening.world.OverworldTilesetTable;
 import linksawakening.world.RoomBoundaryController;
@@ -411,6 +412,9 @@ public class Main {
 
             if (!dialogBlocksGameplay) {
                 inventoryController.tick();
+                if (playerState != null) {
+                    playerState.tickResourceBuffers(frameCounter);
+                }
                 if (transientVfxSystem != null) {
                     transientVfxSystem.tick();
                 }
@@ -431,6 +435,13 @@ public class Main {
                 equipmentController.dispatchButtonEdges();
                 equipmentController.tickEquippedItems();
                 link.update();
+                if (roomSession != null && playerState != null) {
+                    EntityPickupEvent pickup = roomSession.collectEntityIfNeeded(
+                        frameCounter, link.pixelX(), link.pixelY(), link.isAirborne(), true);
+                    if (pickup != null) {
+                        playerState.applyEntityPickup(pickup.type());
+                    }
+                }
                 maybeCutBushWithSword();
                 // Warp-transition check runs BEFORE edge-scroll/clamp:
                 // indoor rooms clamp Link at y=112 (== ROOM_PIXEL_HEIGHT −

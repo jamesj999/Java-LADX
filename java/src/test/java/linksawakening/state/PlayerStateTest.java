@@ -52,4 +52,48 @@ final class PlayerStateTest {
         playerState.setSwordLevel(3);
         assertEquals(2, playerState.swordLevel());
     }
+
+    @Test
+    void pickupBuffersAdvanceOnTheSameAlternatingFramesAsTheRom() {
+        PlayerState playerState = new PlayerState();
+        playerState.setHealth(0);
+        playerState.setRupees(0);
+
+        playerState.applyEntityPickup(0x2D);
+        playerState.applyEntityPickup(0x2E);
+
+        assertEquals(8, playerState.addHealthBuffer());
+        assertEquals(1, playerState.addRupeeBuffer());
+
+        playerState.tickResourceBuffers(0);
+        assertEquals(0, playerState.health());
+        assertEquals(1, playerState.rupees());
+
+        playerState.tickResourceBuffers(1);
+        assertEquals(1, playerState.health());
+        assertEquals(7, playerState.addHealthBuffer());
+        assertEquals(1, playerState.rupees());
+    }
+
+    @Test
+    void boundedAmmoPickupsMatchTheRomCapacityChecks() {
+        PlayerState playerState = new PlayerState();
+        playerState.setMaxArrows(2);
+        playerState.setArrowCount(1);
+        playerState.setMaxBombs(2);
+        playerState.setBombCount(1);
+        playerState.setMaxMagicPowder(2);
+        playerState.setMagicPowderCount(1);
+
+        playerState.applyEntityPickup(0x37);
+        playerState.applyEntityPickup(0x38);
+        playerState.applyEntityPickup(0x3B);
+        playerState.applyEntityPickup(0x37);
+        playerState.applyEntityPickup(0x38);
+        playerState.applyEntityPickup(0x3B);
+
+        assertEquals(2, playerState.arrowCount());
+        assertEquals(2, playerState.bombCount());
+        assertEquals(2, playerState.magicPowderCount());
+    }
 }

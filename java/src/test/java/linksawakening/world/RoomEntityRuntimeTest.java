@@ -7,6 +7,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class RoomEntityRuntimeTest {
 
@@ -56,6 +60,83 @@ final class RoomEntityRuntimeTest {
         assertEquals(0, runtime.clearEntity(1));
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(1).status());
+    }
+
+    @Test
+    void collectionUsesTheRomPickableTableAndFrameSlotCadence() {
+        EntitySpriteDefinition definition = pairDefinition(0x2D, 1);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x2D, 24, 32, EntityStatus.INIT, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+
+        runtime.tick(0);
+
+        assertNull(runtime.collectIfNeeded(0, 24, 34, false, true));
+        EntityPickupEvent pickup = runtime.collectIfNeeded(1, 24, 34, false, true);
+
+        assertNotNull(pickup);
+        assertEquals(0, pickup.slot());
+        assertEquals(0x2D, pickup.type());
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
+    }
+
+    @Test
+    void collectionUsesThePickupHitboxEdgesFromHitboxPositions() {
+        EntitySpriteDefinition definition = pairDefinition(0x2D, 1);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x2D, 24, 32, EntityStatus.ACTIVE, definition, 0));
+
+        RoomEntityRuntime xInside = RoomEntityRuntime.from(initial);
+        assertNotNull(xInside.collectIfNeeded(1, 34, 34, false, true));
+
+        RoomEntityRuntime xOutside = RoomEntityRuntime.from(initial);
+        assertNull(xOutside.collectIfNeeded(1, 35, 34, false, true));
+
+        RoomEntityRuntime yInside = RoomEntityRuntime.from(initial);
+        assertNotNull(yInside.collectIfNeeded(1, 24, 43, false, true));
+
+        RoomEntityRuntime yOutside = RoomEntityRuntime.from(initial);
+        assertNull(yOutside.collectIfNeeded(1, 24, 44, false, true));
+    }
+
+    @Test
+    void collectionSkipsAirborneAndNonInteractiveLinkStates() {
+        EntitySpriteDefinition definition = pairDefinition(0x2D, 1);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x2D, 24, 32, EntityStatus.ACTIVE, definition, 0));
+
+        assertNull(RoomEntityRuntime.from(initial).collectIfNeeded(1, 24, 34, true, true));
+        assertNull(RoomEntityRuntime.from(initial).collectIfNeeded(1, 24, 34, false, false));
+    }
+
+    @Test
+    void transitionPickupsRemainInTheHeldStateAfterCollection() {
+        EntitySpriteDefinition definition = pairDefinition(0x33, 2);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x33, 24, 32, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+
+        EntityPickupEvent pickup = runtime.collectIfNeeded(1, 24, 34, false, true);
+
+        assertNotNull(pickup);
+        assertEquals(1, pickup.persistentClearMask());
+        assertEquals(EntityStatus.LIFTED, runtime.snapshot().slots().get(0).status());
+        assertNull(runtime.collectIfNeeded(1, 24, 34, false, true));
+    }
+
+    @Test
+    void swordCollectionTableMatchesTheSeventeenPickableEntries() {
+        int[] canBeCollected = {0x2D, 0x2E, 0x31, 0x33, 0x34, 0x37, 0x38, 0x3B};
+        int[] cannotBeCollected = {0x2F, 0x30, 0x32, 0x35, 0x36, 0x39, 0x3A, 0x3C, 0x3D};
+
+        for (int type : canBeCollected) {
+            assertTrue(RoomEntityPickupRules.canBeCollectedBySword(type),
+                "type 0x" + Integer.toHexString(type));
+        }
+        for (int type : cannotBeCollected) {
+            assertFalse(RoomEntityPickupRules.canBeCollectedBySword(type),
+                "type 0x" + Integer.toHexString(type));
+        }
     }
 
     private static EntitySpriteDefinition pairDefinition(int type, int variants) {

@@ -170,6 +170,31 @@ public final class RoomSession {
         return mask;
     }
 
+    /**
+     * Applies the ROM pickup collision cadence to the active room entities.
+     * Item-specific effects are returned to the gameplay layer so room state
+     * and persistent entity state stay separate.
+     */
+    public EntityPickupEvent collectEntityIfNeeded(int frameCounter,
+                                                   int linkPixelX,
+                                                   int linkPixelY,
+                                                   boolean linkAirborne,
+                                                   boolean linkInteractive) {
+        if (activeRoom == null || entityRuntime == null) {
+            return null;
+        }
+        EntityPickupEvent event = entityRuntime.collectIfNeeded(
+            frameCounter, linkPixelX, linkPixelY, linkAirborne, linkInteractive);
+        if (event == null) {
+            return null;
+        }
+        if (event.persistentClearMask() != 0) {
+            clearedEntitiesByRoom[activeRoom.roomId()] |= event.persistentClearMask();
+        }
+        activeRoom.replaceEntities(entityRuntime.snapshot());
+        return event;
+    }
+
     public RoomBoundaryState boundaryState(int linkX, int linkY) {
         return new RoomBoundaryState(
             activeRoom.mapCategory(),
