@@ -322,6 +322,9 @@ public final class RoomSession {
         entityRuntime = entities == null ? null : RoomEntityRuntime.from(
             entities, activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD,
             entityRandomByteSource);
+        if (entityRuntime != null) {
+            entityRuntime.setFollowingNpcState(followingNpcState);
+        }
         followingNpcRoomNeedsSync = true;
         synchronizeFollowingNpcEntitiesIfNeeded();
         if (roomLoadListener != null) {
@@ -349,6 +352,7 @@ public final class RoomSession {
         entityRuntime = RoomEntityRuntime.from(
             result.snapshot(), activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD,
             entityRandomByteSource);
+        entityRuntime.setFollowingNpcState(followingNpcState);
     }
 
     private void clearTransientRoomState() {

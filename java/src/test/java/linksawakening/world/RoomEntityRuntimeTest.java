@@ -1,6 +1,7 @@
 package linksawakening.world;
 
 import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.entity.EntitySpriteHandlerCatalog;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -289,6 +290,25 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void dynamicGhostRuntimeAdvancesZBobEvenWhenItsVariantIsUnchanged() {
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
+            .forFollowerEntityType(0xD4);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, -1, 0xD4, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial, false, () -> 0);
+        runtime.setFollowingNpcState(new FollowingNpcState(false, 1, false, false,
+            0, 0, false));
+
+        for (int frame = 0; frame <= 8; frame++) {
+            runtime.tick(frame, 0x40, 0x30, () -> 0);
+        }
+
+        RoomEntity ghost = runtime.snapshot().slots().get(0);
+        assertEquals(0x0D, ghost.z());
+        assertEquals(4, ghost.spriteVariant());
+    }
+
+    @Test
     void kidHandlersAnimateTheirTwoWalkingFramesEverySixteenFrames() {
         EntitySpriteDefinition definition = pairDefinition(0x70, 4);
         RoomEntitySnapshot initial = snapshot(
@@ -462,6 +482,10 @@ final class RoomEntityRuntimeTest {
     private static IntSupplier sequence(int... values) {
         AtomicInteger index = new AtomicInteger();
         return () -> values[Math.min(index.getAndIncrement(), values.length - 1)];
+    }
+
+    private static byte[] syntheticRom() {
+        return new byte[0x100000];
     }
 
     private static RoomEntitySnapshot snapshot(RoomEntity... entities) {

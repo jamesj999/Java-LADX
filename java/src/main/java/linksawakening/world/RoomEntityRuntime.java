@@ -19,6 +19,8 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_BUTTERFLY = 0x6E;
     private static final int ENTITY_OCTOROK = 0x09;
     private static final int ENTITY_KEESE = 0x19;
+    private static final int ENTITY_GHOST = 0xD4;
+    private static final int ENTITY_ROOSTER = 0xD5;
 
     private final RoomEntity[] slots;
     private EntitySpriteSelection spriteSelection;
@@ -26,9 +28,11 @@ public final class RoomEntityRuntime {
     private final boolean indoorRoom;
     private final IntSupplier defaultRandomByteSupplier;
     private final RomRandomByteSource fallbackRomRandomByteSource;
+    private FollowingNpcState followingNpcState = FollowingNpcState.none();
     private final ButterflyMotion butterflyMotion = new ButterflyMotion();
     private final KeeseMotion keeseMotion = new KeeseMotion();
     private final RoamingEnemyMotion roamingEnemyMotion = new RoamingEnemyMotion();
+    private final FollowingNpcMotion followingNpcMotion = new FollowingNpcMotion();
     private final int[] slowTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] slowTimerInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final int[] dyingCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -42,6 +46,11 @@ public final class RoomEntityRuntime {
         this.defaultRandomByteSupplier = defaultRandomByteSupplier;
         this.fallbackRomRandomByteSource = defaultRandomByteSupplier == null
             ? new RomRandomByteSource() : null;
+        for (RoomEntity entity : slots) {
+            if (entity.type() == ENTITY_GHOST || entity.type() == ENTITY_ROOSTER) {
+                followingNpcMotion.initialize(entity.slot(), entity.type());
+            }
+        }
     }
 
     public static RoomEntityRuntime from(RoomEntitySnapshot initial) {
@@ -94,6 +103,10 @@ public final class RoomEntityRuntime {
             if (!entity.loaded()) {
                 continue;
             }
+            if (entity.sourceLoadOrder() == -1 && isDisabledFollower(entity.type())) {
+                clearEntity(entity.slot());
+                continue;
+            }
 
             EntityStatus status = entity.status();
             boolean wasInitializing = status == EntityStatus.INIT;
@@ -113,6 +126,9 @@ public final class RoomEntityRuntime {
                 }
                 if (entity.type() == ENTITY_OCTOROK) {
                     roamingEnemyMotion.initialize(entity.slot());
+                }
+                if (entity.type() == ENTITY_GHOST || entity.type() == ENTITY_ROOSTER) {
+                    followingNpcMotion.initialize(entity.slot(), entity.type());
                 }
             } else if (status == EntityStatus.ACTIVE) {
                 decrementSlowTransitionCountdown(entity.slot(), frame);
@@ -139,16 +155,22 @@ public final class RoomEntityRuntime {
                 updated = roamingEnemyMotion.advance(entity, linkEntityX, linkEntityY,
                     randomByteSupplier, backgroundCollision);
             }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && (entity.type() == ENTITY_GHOST || entity.type() == ENTITY_ROOSTER)) {
+                updated = followingNpcMotion.advance(entity, frame, linkEntityX, linkEntityY,
+                    backgroundCollision);
+            }
             int variant = variantFor(updated, frame);
             if (status == EntityStatus.ACTIVE && shouldDisappear(entity)) {
                 variant = (slowTransitionCountdown[entity.slot()] & 0x01) != 0 ? 0 : -1;
             }
             if (status != entity.status() || variant != entity.spriteVariant()
-                || updated.x() != entity.x() || updated.y() != entity.y()) {
+                || updated.x() != entity.x() || updated.y() != entity.y()
+                || updated.z() != entity.z()) {
                 slots[index] = new RoomEntity(
                     updated.slot(), updated.sourceLoadOrder(), updated.type(), updated.x(), updated.y(),
                     status, entity.spriteDefinition(), variant, entity.entityFlipAttribute(),
-                    entity.spriteTileOffset());
+                    entity.spriteTileOffset(), updated.z());
             }
         }
     }
@@ -248,6 +270,7 @@ public final class RoomEntityRuntime {
         butterflyMotion.clear(slot);
         keeseMotion.clear(slot);
         roamingEnemyMotion.clear(slot);
+        followingNpcMotion.clear(slot);
         slots[slot] = RoomEntity.disabled(slot);
         return entity.sourceLoadOrder() >= 0 && entity.sourceLoadOrder() < 8
             ? 1 << entity.sourceLoadOrder() : 0;
@@ -259,6 +282,13 @@ public final class RoomEntityRuntime {
 
     void setSpriteSelection(EntitySpriteSelection selection) {
         spriteSelection = selection;
+    }
+
+    void setFollowingNpcState(FollowingNpcState state) {
+        if (state == null) {
+            throw new IllegalArgumentException("Follower state cannot be null");
+        }
+        followingNpcState = state;
     }
 
     int slowTransitionCountdown(int slot) {
@@ -370,11 +400,24 @@ public final class RoomEntityRuntime {
         };
     }
 
+    private boolean isDisabledFollower(int type) {
+        return switch (type) {
+            case FollowingNpcEntitySpawner.ENTITY_ROOSTER -> !followingNpcState.roosterFollowing();
+            case FollowingNpcEntitySpawner.ENTITY_GHOST ->
+                followingNpcState.ghostFollowingState() != 1;
+            case FollowingNpcEntitySpawner.ENTITY_MARIN_AT_THE_SHORE ->
+                !followingNpcState.marinFollowing();
+            case FollowingNpcEntitySpawner.ENTITY_BOW_WOW ->
+                !followingNpcState.bowWowFollowing();
+            default -> false;
+        };
+    }
+
     private static RoomEntity withStatus(RoomEntity entity, EntityStatus status) {
         return new RoomEntity(
             entity.slot(), entity.sourceLoadOrder(), entity.type(), entity.x(), entity.y(),
             status, entity.spriteDefinition(), entity.spriteVariant(), entity.entityFlipAttribute(),
-            entity.spriteTileOffset());
+            entity.spriteTileOffset(), entity.z());
     }
 
     private void disableEntityWithoutPersistence(int slot) {
@@ -383,6 +426,7 @@ public final class RoomEntityRuntime {
         dyingCountdown[slot] = 0;
         butterflyMotion.clear(slot);
         keeseMotion.clear(slot);
+        followingNpcMotion.clear(slot);
         slots[slot] = RoomEntity.disabled(slot);
     }
 }

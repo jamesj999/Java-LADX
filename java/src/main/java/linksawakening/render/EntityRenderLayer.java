@@ -83,7 +83,7 @@ public final class EntityRenderLayer implements RenderLayer {
         }
 
         int entityX = entity.x() + offsetX - OAM_X_SCREEN_ORIGIN;
-        int entityY = entity.y() + offsetY - OAM_Y_SCREEN_ORIGIN;
+        int entityY = entity.y() + offsetY - OAM_Y_SCREEN_ORIGIN - entity.z();
         int flipAttribute = entity.entityFlipAttribute();
         if (definition.shape() == EntitySpriteDefinition.Shape.PAIR) {
             EntitySpriteDefinition.Variant variant = definition.variant(entity.spriteVariant());

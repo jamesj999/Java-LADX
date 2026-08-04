@@ -58,8 +58,13 @@ resource.
   `SpawnNewEntity` behavior, Link/wC13B spawn coordinates, Ghost trigger-state
   update, Bow-Wow's Mrs. Meow-Meow exclusion, and ROM-backed follower display
   lists for Bow-Wow, Marin, Ghost, and Rooster. Marin's sixteen-byte X/Y/Z/
-  direction history is seeded through the same consecutive-byte fill helper;
-  history-driven per-frame follower handlers remain pending.
+  direction history is seeded through the same consecutive-byte fill helper.
+- Ordinary overworld Ghost and Flying Rooster follower movement now mirrors the
+  bank `$19` handlers' proximity gates, direction variants, vector refresh
+  cadence, signed fixed-point position accumulators, background-collision
+  rollback, and Ghost's eight-frame visual-Z bob table. Marin's history-driven
+  per-frame handler and the followers' special interaction states remain
+  pending.
 
 The complete Java test suite passes after these runtime increments. Remaining
 entity behavior—including roaming-enemy projectiles, the rest of the enemy

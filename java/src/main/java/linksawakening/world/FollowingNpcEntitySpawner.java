@@ -152,7 +152,7 @@ public final class FollowingNpcEntitySpawner {
     private static RoomEntity withPosition(RoomEntity entity, int x, int y) {
         return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
             entity.status(), entity.spriteDefinition(), entity.spriteVariant(),
-            entity.entityFlipAttribute(), entity.spriteTileOffset());
+            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z());
     }
 
     private static EntitySpriteSelection withOverrides(EntitySpriteSelection selection,

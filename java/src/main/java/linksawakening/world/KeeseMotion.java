@@ -154,6 +154,6 @@ final class KeeseMotion {
                                                      int variant) {
         return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
             entity.status(), entity.spriteDefinition(), variant, entity.entityFlipAttribute(),
-            entity.spriteTileOffset());
+            entity.spriteTileOffset(), entity.z());
     }
 }
