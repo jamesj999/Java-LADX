@@ -69,6 +69,12 @@ resource.
   four-frame visual-Z correction, edge turnarounds, and direction flip. Its
   normal hitbox uses the ROM health-group `$13` values: eight health and
   `$08` contact damage; hiding and giant-Ghini branches remain pending.
+- Hardhat Beetle now mirrors bank `$06`'s four-frame random target refresh,
+  ROM infinity-norm vector calculation, signed speed approach, fixed-point
+  movement, and axis-specific background stop. Its normal health-group
+  `$0B` path (four health and `$08` contact damage) is wired; recoil, shield/
+  sword-clink state, water behavior, and the full collision table remain
+  pending.
 - `CreateFollowingNpcEntity` now runs on room load/state changes with the
   source indoor/map/room exclusions, source-order slot reuse, highest-free-slot
   `SpawnNewEntity` behavior, Link/wC13B spawn coordinates, Ghost trigger-state

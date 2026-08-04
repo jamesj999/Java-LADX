@@ -6,6 +6,7 @@ public final class RoomEntityCombatRules {
     private static final int ENTITY_MOBLIN = 0x0B;
     private static final int ENTITY_GHINI = 0x12;
     private static final int ENTITY_KEESE = 0x19;
+    private static final int ENTITY_HARDHAT_BEETLE = 0x20;
 
     // HitboxPositions._00 in home/entities.asm:3AAA. Octorok, Moblin, and
     // Keese all select the normal collision box in hitbox_flags.asm.
@@ -19,9 +20,11 @@ public final class RoomEntityCombatRules {
     private static final int OCTOROK_AND_KEESE_CONTACT_DAMAGE = 0x04;
     private static final int MOBLIN_CONTACT_DAMAGE = 0x04;
     private static final int GHINI_CONTACT_DAMAGE = 0x08;
+    private static final int HARDHAT_CONTACT_DAMAGE = 0x08;
     private static final int OCTOROK_AND_KEESE_INITIAL_HEALTH = 0x01;
     private static final int MOBLIN_INITIAL_HEALTH = 0x02;
     private static final int GHINI_INITIAL_HEALTH = 0x08;
+    private static final int HARDHAT_INITIAL_HEALTH = 0x04;
     private static final int BASIC_SWORD_DAMAGE = 0x01;
 
     private RoomEntityCombatRules() {
@@ -29,7 +32,8 @@ public final class RoomEntityCombatRules {
 
     static boolean supportsEnemyCollision(int type) {
         return switch (type & 0xFF) {
-            case ENTITY_KEESE, ENTITY_MOBLIN, ENTITY_GHINI, ENTITY_OCTOROK -> true;
+            case ENTITY_KEESE, ENTITY_MOBLIN, ENTITY_GHINI, ENTITY_HARDHAT_BEETLE,
+                ENTITY_OCTOROK -> true;
             default -> false;
         };
     }
@@ -39,6 +43,7 @@ public final class RoomEntityCombatRules {
             case ENTITY_KEESE, ENTITY_OCTOROK -> OCTOROK_AND_KEESE_CONTACT_DAMAGE;
             case ENTITY_MOBLIN -> MOBLIN_CONTACT_DAMAGE;
             case ENTITY_GHINI -> GHINI_CONTACT_DAMAGE;
+            case ENTITY_HARDHAT_BEETLE -> HARDHAT_CONTACT_DAMAGE;
             default -> 0;
         };
     }
@@ -48,6 +53,7 @@ public final class RoomEntityCombatRules {
             case ENTITY_KEESE, ENTITY_OCTOROK -> OCTOROK_AND_KEESE_INITIAL_HEALTH;
             case ENTITY_MOBLIN -> MOBLIN_INITIAL_HEALTH;
             case ENTITY_GHINI -> GHINI_INITIAL_HEALTH;
+            case ENTITY_HARDHAT_BEETLE -> HARDHAT_INITIAL_HEALTH;
             default -> 0;
         };
     }

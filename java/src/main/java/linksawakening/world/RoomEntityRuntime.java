@@ -43,6 +43,7 @@ public final class RoomEntityRuntime {
     private final KeeseMotion keeseMotion = new KeeseMotion();
     private final RoamingEnemyMotion roamingEnemyMotion = new RoamingEnemyMotion();
     private final GhiniMotion ghiniMotion = new GhiniMotion();
+    private final HardHatMotion hardHatMotion = new HardHatMotion();
     private final FollowingNpcMotion followingNpcMotion = new FollowingNpcMotion();
     private final BowWowMotion bowWowMotion = new BowWowMotion();
     private final int[] slowTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -166,6 +167,9 @@ public final class RoomEntityRuntime {
                 if (entity.type() == ENTITY_GHINI) {
                     ghiniMotion.initialize(entity.slot());
                 }
+                if (entity.type() == ENTITY_HARDHAT_BEETLE) {
+                    hardHatMotion.initialize(entity.slot());
+                }
                 if (isFollowingNpcType(entity.type())) {
                     if (entity.type() == ENTITY_BOW_WOW) {
                         bowWowMotion.initialize(entity.slot());
@@ -201,6 +205,11 @@ public final class RoomEntityRuntime {
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_GHINI) {
                 updated = ghiniMotion.advance(entity, frame, randomByteSupplier);
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_HARDHAT_BEETLE) {
+                updated = hardHatMotion.advance(entity, frame, linkEntityX, linkEntityY,
+                    randomByteSupplier, backgroundCollision);
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && isDynamicFollowingNpc(entity)) {
@@ -342,6 +351,7 @@ public final class RoomEntityRuntime {
         keeseMotion.clear(slot);
         roamingEnemyMotion.clear(slot);
         ghiniMotion.clear(slot);
+        hardHatMotion.clear(slot);
         followingNpcMotion.clear(slot);
         bowWowMotion.clear(slot);
         slots[slot] = RoomEntity.disabled(slot);
@@ -446,6 +456,14 @@ public final class RoomEntityRuntime {
 
     int ghiniSpeedY(int slot) {
         return ghiniMotion.speedY(slot);
+    }
+
+    int hardHatSpeedX(int slot) {
+        return hardHatMotion.speedX(slot);
+    }
+
+    int hardHatSpeedY(int slot) {
+        return hardHatMotion.speedY(slot);
     }
 
     int butterflyPrivateStateX(int slot) {
@@ -558,6 +576,7 @@ public final class RoomEntityRuntime {
         keeseMotion.clear(slot);
         followingNpcMotion.clear(slot);
         ghiniMotion.clear(slot);
+        hardHatMotion.clear(slot);
         bowWowMotion.clear(slot);
         slots[slot] = RoomEntity.disabled(slot);
     }

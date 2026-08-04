@@ -428,6 +428,45 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void hardHatUsesTheRomTargetVectorAndFourFrameSpeedRefresh() {
+        EntitySpriteDefinition definition = pairDefinition(0x20, 2);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x20, 64, 64, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+
+        runtime.tick(0, 80, 72, sequence(0x00));
+        assertEquals(1, runtime.hardHatSpeedX(0));
+        assertEquals(1, runtime.hardHatSpeedY(0));
+        assertEquals(64, runtime.snapshot().slots().get(0).x());
+        assertEquals(64, runtime.snapshot().slots().get(0).y());
+
+        for (int frame = 1; frame <= 4; frame++) {
+            runtime.tick(frame, 80, 72, sequence(0x00));
+        }
+        assertEquals(2, runtime.hardHatSpeedX(0));
+        assertEquals(2, runtime.hardHatSpeedY(0));
+    }
+
+    @Test
+    void hardHatUsesItsRomNormalEnemyHealthAndContactValues() {
+        EntitySpriteDefinition definition = pairDefinition(0x20, 2);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x20, 64, 64, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+
+        List<EntityCombatEvent> contact = runtime.resolveCombat(
+            1, 64, 64, false, true, false, 0, 0, 0, 0);
+        assertEquals(1, contact.size());
+        assertEquals(0x08, contact.get(0).linkDamage());
+
+        List<EntityCombatEvent> firstHit = runtime.resolveCombat(
+            0, 120, 120, false, true, true, 72, 1, 72, 1);
+        assertEquals(1, firstHit.size());
+        assertEquals(0x03, runtime.enemyHealth(0));
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
+    }
+
+    @Test
     void dynamicGhostRuntimeAdvancesZBobEvenWhenItsVariantIsUnchanged() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
             .forFollowerEntityType(0xD4);
