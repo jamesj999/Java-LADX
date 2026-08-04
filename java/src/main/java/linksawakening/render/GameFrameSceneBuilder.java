@@ -31,6 +31,12 @@ public final class GameFrameSceneBuilder {
         if (state.link() != null) {
             layers.add(new LinkRenderLayer(state.link(), state.scrollController()));
         }
+        if (state.room().entities() != null
+            && state.room().entities().spriteSelection() != null) {
+            layers.add(new EntityRenderLayer(state.room().entities(),
+                state.room().entities().spriteSelection().objectPalettes(),
+                state.scrollController()));
+        }
         if (state.transientVfxSystem() != null && state.cutLeavesEffectRenderer() != null) {
             layers.add(new TransientVfxRenderLayer(state.transientVfxSystem(),
                 state.cutLeavesEffectRenderer(), state.scrollController(), state.transientVfxPalette()));

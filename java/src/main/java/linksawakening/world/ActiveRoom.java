@@ -15,6 +15,7 @@ public final class ActiveRoom {
     private final int[][] palettes;
     private final List<Warp> warps;
     private final boolean indoorHasSouthEntrance;
+    private final RoomEntitySnapshot entities;
 
     private ActiveRoom(LoadedRoom room) {
         this.roomId = room.roomId();
@@ -28,6 +29,7 @@ public final class ActiveRoom {
         this.palettes = room.palettes();
         this.warps = new ArrayList<>(room.warps());
         this.indoorHasSouthEntrance = room.indoorHasSouthEntrance();
+        this.entities = room.entities();
     }
 
     public static ActiveRoom from(LoadedRoom room) {
@@ -86,6 +88,10 @@ public final class ActiveRoom {
         return indoorHasSouthEntrance;
     }
 
+    public RoomEntitySnapshot entities() {
+        return entities;
+    }
+
     public void replaceFirstWarpTile(int tileLocation) {
         if (warps.isEmpty()) {
             return;
@@ -94,6 +100,6 @@ public final class ActiveRoom {
     }
 
     public RoomRenderSnapshot renderSnapshot() {
-        return new RoomRenderSnapshot(tileIds, tileAttrs, palettes);
+        return new RoomRenderSnapshot(tileIds, tileAttrs, palettes, entities);
     }
 }

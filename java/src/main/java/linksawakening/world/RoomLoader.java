@@ -1,5 +1,6 @@
 package linksawakening.world;
 
+import linksawakening.entity.EntitySpriteCatalog;
 import linksawakening.rom.RomBank;
 
 public final class RoomLoader {
@@ -14,15 +15,23 @@ public final class RoomLoader {
     private final RoomObjectParser parser;
     private final RoomTilemapBuilder tilemapBuilder;
     private final RoomPaletteLoader paletteLoader;
+    private final EntityRoomLoader entityLoader;
+    private final EntitySpriteCatalog entitySpriteCatalog;
 
     public RoomLoader(byte[] romData) {
         this.romData = romData;
         this.parser = new RoomObjectParser(romData);
         this.tilemapBuilder = new RoomTilemapBuilder(romData);
         this.paletteLoader = new RoomPaletteLoader(romData);
+        this.entityLoader = new EntityRoomLoader(romData);
+        this.entitySpriteCatalog = new EntitySpriteCatalog(romData);
     }
 
     public LoadedRoom loadOverworld(int roomId) {
+        return loadOverworld(roomId, 0);
+    }
+
+    LoadedRoom loadOverworld(int roomId, int clearedEntitiesMask) {
         int roomPointerOffset = RomBank.romOffset(OVERWORLD_ROOM_BANK, OVERWORLD_ROOM_POINTERS_ADDR + roomId * 2);
         int roomLo = Byte.toUnsignedInt(romData[roomPointerOffset]);
         int roomHi = Byte.toUnsignedInt(romData[roomPointerOffset + 1]);
@@ -38,6 +47,8 @@ public final class RoomLoader {
         RoomObjectParseResult parsed = parser.parseOverworld(roomDataOffset + 2, floorObject, 0);
         int[] objects = parsed.roomObjectsArea();
         RoomTilemap tilemap = tilemapBuilder.buildOverworld(roomId, objects);
+        RoomEntitySnapshot entities = loadEntities(EntityRoomLoader.RoomTable.OVERWORLD,
+            roomId, clearedEntitiesMask);
 
         return new LoadedRoom(
             roomId,
@@ -51,7 +62,8 @@ public final class RoomLoader {
             tilemap.tileAttrs(),
             paletteLoader.loadOverworld(roomId),
             parsed.warps(),
-            false
+            false,
+            entities
         );
     }
 
@@ -60,6 +72,11 @@ public final class RoomLoader {
     }
 
     public LoadedRoom loadIndoor(int mapId, int roomId, int[][] fallbackPalettes, int mapCategory) {
+        return loadIndoor(mapId, roomId, fallbackPalettes, mapCategory, 0);
+    }
+
+    LoadedRoom loadIndoor(int mapId, int roomId, int[][] fallbackPalettes, int mapCategory,
+                          int clearedEntitiesMask) {
         RoomPointerTable pointerTable = IndoorRoomPointerTables.forMap(mapId);
         int roomPointerOffset = RomBank.romOffset(pointerTable.bank(), pointerTable.address() + roomId * 2);
         int roomLo = Byte.toUnsignedInt(romData[roomPointerOffset]);
@@ -72,6 +89,8 @@ public final class RoomLoader {
         RoomObjectParseResult parsed = parser.parseIndoor(roomDataOffset + 2, floorAndTemplate);
         int[] objects = parsed.roomObjectsArea();
         RoomTilemap tilemap = tilemapBuilder.buildIndoor(mapId, roomId, objects);
+        EntityRoomLoader.RoomTable entityTable = entityTableForIndoorMap(mapId);
+        RoomEntitySnapshot entities = loadEntities(entityTable, roomId, clearedEntitiesMask);
 
         return new LoadedRoom(
             roomId,
@@ -85,8 +104,24 @@ public final class RoomLoader {
             tilemap.tileAttrs(),
             paletteLoader.loadIndoor(mapId, roomId, fallbackPalettes),
             parsed.warps(),
-            hasSouthEntrance(objects)
+            hasSouthEntrance(objects),
+            entities
         );
+    }
+
+    private RoomEntitySnapshot loadEntities(EntityRoomLoader.RoomTable table, int roomId,
+                                            int clearedEntitiesMask) {
+        return entityLoader.load(table, roomId, clearedEntitiesMask)
+            .withSpriteSelection(entitySpriteCatalog.load(table, roomId));
+    }
+
+    private static EntityRoomLoader.RoomTable entityTableForIndoorMap(int mapId) {
+        if (mapId == 0xFF) {
+            return EntityRoomLoader.RoomTable.COLOR_DUNGEON;
+        }
+        return mapId >= 0x06 && mapId < 0x1A
+            ? EntityRoomLoader.RoomTable.INDOORS_B
+            : EntityRoomLoader.RoomTable.INDOORS_A;
     }
 
     private boolean hasSouthEntrance(int[] roomObjectsArea) {

@@ -75,7 +75,8 @@ For each pair, the renderer will reproduce `RenderActiveEntitySpritesPair`:
 - the two 8x16 columns occupy X and X+8, swapping when the entity flip bit is set;
 - the tile byte is an already-resolved VRAM tile number, plus any entity tile offset;
 - attributes combine the display-list byte with the entity flip attribute;
-- low attribute bits select one of the eight ROM object palettes;
+- low attribute bits select one of the six always-resident ROM object palettes;
+  Eagle's Tower conditionally adds the seventh palette at bank-$21:$5548;
 - bits `$20`/`$40` flip X/Y, and color-zero pixels are transparent;
 - off-screen pixels are clipped to the 160x144 framebuffer.
 

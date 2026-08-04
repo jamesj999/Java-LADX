@@ -160,6 +160,12 @@ public final class RoomSession {
 
     private void setActiveRoom(LoadedRoom room) {
         activeRoom = ActiveRoom.from(room);
+        if (activeRoom.entities() != null && activeRoom.entities().spriteSelection() != null) {
+            var selection = activeRoom.entities().spriteSelection();
+            if (selection.hasStandardSheets()) {
+                gpu.loadEntitySpriteSheets(romData, selection.sheetValues());
+            }
+        }
         if (roomLoadListener != null) {
             roomLoadListener.roomLoaded(activeRoom);
         }

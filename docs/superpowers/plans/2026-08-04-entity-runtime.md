@@ -7,8 +7,8 @@ Load room entities and their ROM-backed sprite sheets into the Java gameplay pat
 ## Architecture
 
 - `linksawakening.world.EntityRoomLoader` reads bank-$16 room entity pointers and returns sixteen slot records.
-- `linksawakening.world.RoomEntity` and `RoomEntitySnapshot` carry slot state, source order, type, position, render definition, and four selected sheet bytes.
-- `linksawakening.entity.EntitySpriteCatalog` selects room sprite groups, decodes `bbtttttt` sheet values, and loads the eight ROM object palettes.
+- `linksawakening.world.RoomEntity` and `RoomEntitySnapshot` carry slot state, source order, type, position, and render definition; `EntitySpriteSelection` carries the four selected sheet bytes and object palettes.
+- `linksawakening.entity.EntitySpriteCatalog` selects room sprite groups, decodes `bbtttttt` sheet values, and loads the six resident ROM object palettes plus Eagle's Tower's conditional seventh palette.
 - `linksawakening.entity.EntitySpriteDefinition` and `EntitySpriteHandlerCatalog` decode the small set of disassembly display lists supported by this increment; unsupported types remain marked unsupported.
 - `GPU.loadEntitySpriteSheets` copies the four `$100`-byte sheet rows to VRAM tiles `$40`, `$50`, `$60`, and `$70` from adjusted GBC banks.
 - `EntityRenderLayer` reproduces pair and single OAM placement using `IndexedRenderer` and the interpolated room-scroll offset.
@@ -59,7 +59,7 @@ Run all Gradle commands from `java/`. Use `apply_patch` for source edits. Each i
 2. Add a real-ROM assertion for overworld room `$92`: group lookup comes from `RoomSpritesheetGroupsTable` and the four returned sheet bytes match `OverworldEntitySpritesheetsTable[group * 4 .. group * 4 + 3]`.
 3. Run the focused test and confirm it fails only because the catalog is absent.
 4. Implement `EntitySpriteCatalog` with explicit table bounds checks and `RoomEntitySnapshot` sheet metadata. Keep Color Dungeon on an explicit no-standard-sheets path until its special loader is ported.
-5. Add an object-palette test that decodes bank-$21 address `$5518` into eight four-color RGB palettes and verifies the first palette's known ROM colors.
+5. Add an object-palette test that decodes bank-$21 address `$5518` into six four-color RGB palettes, verifies the first palette's known ROM colors, and covers Eagle's Tower's conditional palette at `$5548`.
 6. Run:
 
    ```text

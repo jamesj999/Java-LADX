@@ -1,6 +1,11 @@
 package linksawakening.world;
 
-public record RoomRenderSnapshot(int[] tileIds, int[] tileAttrs, int[][] palettes) {
+public record RoomRenderSnapshot(int[] tileIds, int[] tileAttrs, int[][] palettes,
+                                 RoomEntitySnapshot entities) {
+
+    public RoomRenderSnapshot(int[] tileIds, int[] tileAttrs, int[][] palettes) {
+        this(tileIds, tileAttrs, palettes, null);
+    }
 
     public RoomRenderSnapshot {
         tileIds = tileIds.clone();

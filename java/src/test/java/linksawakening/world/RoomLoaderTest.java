@@ -3,6 +3,7 @@ package linksawakening.world;
 import linksawakening.rom.RomBank;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class RoomLoaderTest {
@@ -17,6 +18,11 @@ final class RoomLoaderTest {
         rom[room] = 0x0B;
         rom[room + 1] = (byte) 0xE5;
         rom[room + 2] = (byte) 0xFE;
+        int entityPointer = RomBank.romOffset(0x16, 0x4000);
+        rom[entityPointer] = 0x00;
+        rom[entityPointer + 1] = 0x50;
+        int entityStream = RomBank.romOffset(0x16, 0x5000);
+        rom[entityStream] = (byte) 0xFF;
 
         LoadedRoom loaded = new RoomLoader(rom).loadOverworld(0);
 
@@ -33,6 +39,17 @@ final class RoomLoaderTest {
             0x00, 0x00, null, Warp.CATEGORY_SIDESCROLL);
 
         assertEquals(Warp.CATEGORY_SIDESCROLL, loaded.mapCategory());
+    }
+
+    @Test
+    void overworldLoaderAttachesRomBackedEntitySnapshotAndSpriteSelection() {
+        LoadedRoom loaded = new RoomLoader(loadRom()).loadOverworld(0x92);
+
+        assertEquals(7, loaded.entities().loadedEntities().size());
+        assertEquals(0x73, loaded.entities().loadedEntities().get(0).type());
+        assertEquals(0x43, loaded.entities().spriteSelection().groupIndex());
+        assertArrayEquals(new int[] { 0xA4, 0xE5, 0xE6, 0xDC },
+            loaded.entities().spriteSelection().sheetValues());
     }
 
     private static byte[] loadRom() {

@@ -13,7 +13,24 @@ public record LoadedRoom(int roomId,
                          int[] tileAttrs,
                          int[][] palettes,
                          List<Warp> warps,
-                         boolean indoorHasSouthEntrance) {
+                         boolean indoorHasSouthEntrance,
+                         RoomEntitySnapshot entities) {
+
+    public LoadedRoom(int roomId,
+                      int mapCategory,
+                      int mapId,
+                      int animatedTilesGroup,
+                      int[] roomObjectsArea,
+                      int[] gbcOverlay,
+                      int[] renderValues,
+                      int[] tileIds,
+                      int[] tileAttrs,
+                      int[][] palettes,
+                      List<Warp> warps,
+                      boolean indoorHasSouthEntrance) {
+        this(roomId, mapCategory, mapId, animatedTilesGroup, roomObjectsArea, gbcOverlay,
+            renderValues, tileIds, tileAttrs, palettes, warps, indoorHasSouthEntrance, null);
+    }
 
     public LoadedRoom {
         roomObjectsArea = roomObjectsArea.clone();

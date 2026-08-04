@@ -11,6 +11,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class RoomSessionTest {
@@ -25,6 +26,7 @@ final class RoomSessionTest {
         assertEquals(0x92, session.currentRoomId());
         assertEquals(Warp.CATEGORY_OVERWORLD, session.mapCategory());
         assertNotNull(session.activeRoom().roomObjectsArea());
+        assertEquals(0x92, session.activeRoom().entities().spriteSelection().roomId());
         assertNotNull(session.renderSnapshot());
     }
 
@@ -33,10 +35,14 @@ final class RoomSessionTest {
         RoomSession session = newSession();
         ScrollController scrollController = new ScrollController();
         session.loadInitialOverworld(0x92);
+        var previousEntities = session.activeRoom().entities();
 
         session.startAdjacentOverworldScroll(scrollController, ScrollController.RIGHT, 161, 40);
 
         assertEquals(0x93, session.currentRoomId());
+        assertNotSame(previousEntities, session.activeRoom().entities());
+        assertEquals(0x93, session.activeRoom().entities().spriteSelection().roomId());
+        assertEquals(previousEntities, scrollController.previousRoom().entities());
         assertTrue(scrollController.isActive());
         assertEquals(ScrollController.RIGHT, scrollController.direction());
         assertNotNull(scrollController.previousRoom());
