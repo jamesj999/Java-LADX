@@ -13,6 +13,10 @@ public final class EntityRenderLayer implements RenderLayer {
     private static final int OAM_PALETTE_MASK = 0x07;
     private static final int OAM_XFLIP = 0x20;
     private static final int OAM_YFLIP = 0x40;
+    // EntityRoomLoader preserves hActiveEntityPosX/Y, which are the values
+    // written to hardware OAM. The framebuffer stores sprite top-left pixels.
+    private static final int OAM_X_SCREEN_ORIGIN = 0x08;
+    private static final int OAM_Y_SCREEN_ORIGIN = 0x10;
 
     private final RoomEntitySnapshot snapshot;
     private final int[][] objectPalettes;
@@ -69,8 +73,8 @@ public final class EntityRenderLayer implements RenderLayer {
         }
 
         EntitySpriteDefinition.Variant variant = definition.variant(entity.spriteVariant());
-        int entityX = entity.x() + offsetX;
-        int entityY = entity.y() + offsetY;
+        int entityX = entity.x() + offsetX - OAM_X_SCREEN_ORIGIN;
+        int entityY = entity.y() + offsetY - OAM_Y_SCREEN_ORIGIN;
         int flipAttribute = entity.entityFlipAttribute();
         if (definition.shape() == EntitySpriteDefinition.Shape.PAIR) {
             if (variant.second() == null) {

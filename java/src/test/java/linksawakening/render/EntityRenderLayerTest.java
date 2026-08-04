@@ -54,9 +54,9 @@ final class EntityRenderLayerTest {
                 new EntitySpriteDefinition.Variant(
                     new EntitySpriteDefinition.OamAttribute(0x24, 0x02), null)));
 
-        RoomEntity pairEntity = new RoomEntity(0, 0, 0x7A, 16, 16, EntityStatus.ACTIVE,
+        RoomEntity pairEntity = new RoomEntity(0, 0, 0x7A, 24, 32, EntityStatus.ACTIVE,
             pair, 0, 0);
-        RoomEntity singleEntity = new RoomEntity(1, 1, 0x91, 48, 16, EntityStatus.ACTIVE,
+        RoomEntity singleEntity = new RoomEntity(1, 1, 0x91, 56, 32, EntityStatus.ACTIVE,
             single, 0, 0);
         byte[] buffer = filledBuffer(0x7A, 0x6B, 0x5C);
 
@@ -92,7 +92,7 @@ final class EntityRenderLayerTest {
         EntitySpriteDefinition pair = pairDefinition(
             new EntitySpriteDefinition.OamAttribute(0x20, 0x00),
             new EntitySpriteDefinition.OamAttribute(0x22, 0x00));
-        RoomEntity entity = new RoomEntity(0, 0, 0x01, 16, 16, EntityStatus.ACTIVE,
+        RoomEntity entity = new RoomEntity(0, 0, 0x01, 24, 32, EntityStatus.ACTIVE,
             pair, 0, 0x20);
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
 
@@ -115,7 +115,7 @@ final class EntityRenderLayerTest {
             EntitySpriteDefinition.Shape.SINGLE, 0, List.of(
                 new EntitySpriteDefinition.Variant(
                     new EntitySpriteDefinition.OamAttribute(0x30, 0x00), null)));
-        RoomEntity entity = new RoomEntity(0, 0, 0x02, -4, -4, EntityStatus.ACTIVE,
+        RoomEntity entity = new RoomEntity(0, 0, 0x02, 4, 12, EntityStatus.ACTIVE,
             single, 0, 0);
         RoomEntitySnapshot snapshot = snapshot(entity);
         ScrollController scroll = new ScrollController();
@@ -140,7 +140,7 @@ final class EntityRenderLayerTest {
             EntitySpriteDefinition.Shape.SINGLE, 0, List.of(
                 new EntitySpriteDefinition.Variant(
                     new EntitySpriteDefinition.OamAttribute(0x30, 0x00), null)));
-        RoomEntity entity = new RoomEntity(0, 0, 0x02, 0, 0, EntityStatus.ACTIVE,
+        RoomEntity entity = new RoomEntity(0, 0, 0x02, 8, 16, EntityStatus.ACTIVE,
             single, 0, 0);
         EntitySpriteSelection selection = new EntitySpriteSelection(
             linksawakening.world.EntityRoomLoader.RoomTable.OVERWORLD, 0, 0,
