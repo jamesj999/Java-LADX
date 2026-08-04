@@ -59,6 +59,11 @@ resource.
   sword path, `$04` contact damage, `$18` flash, and `$0A` ignore-hit window
   are also ROM-backed. Its direction-gated arrow spawn and recoil/damage
   branches remain pending.
+- Armos Statue, Ghini, and Hardhat Beetle now decode their banked pair
+  display lists, including the map-$0A Cave B Hardhat table. Their verified
+  frame-driven display cadences are wired into the runtime; Armos activation
+  and launch, Ghini hiding/flight, and Hardhat movement/collision states
+  remain pending.
 - `CreateFollowingNpcEntity` now runs on room load/state changes with the
   source indoor/map/room exclusions, source-order slot reuse, highest-free-slot
   `SpawnNewEntity` behavior, Link/wC13B spawn coordinates, Ghost trigger-state

@@ -19,7 +19,10 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_BUTTERFLY = 0x6E;
     private static final int ENTITY_OCTOROK = 0x09;
     private static final int ENTITY_MOBLIN = 0x0B;
+    private static final int ENTITY_ARMOS_STATUE = 0x0F;
+    private static final int ENTITY_GHINI = 0x12;
     private static final int ENTITY_KEESE = 0x19;
+    private static final int ENTITY_HARDHAT_BEETLE = 0x20;
     private static final int ENTITY_GHOST = 0xD4;
     private static final int ENTITY_ROOSTER = 0xD5;
     private static final int ENTITY_MARIN_AT_THE_SHORE = 0xC1;
@@ -448,6 +451,9 @@ public final class RoomEntityRuntime {
         return switch (entity.type()) {
             case ENTITY_PIECE_OF_POWER -> (frameCounter >>> 3) & 0x01;
             case ENTITY_BUTTERFLY -> ((frameCounter + entity.slot() * 8) >>> 3) & 0x01;
+            case ENTITY_ARMOS_STATUE -> (frameCounter >>> 4) & 0x01;
+            case ENTITY_GHINI -> ((frameCounter >>> 4) ^ entity.slot()) & 0x01;
+            case ENTITY_HARDHAT_BEETLE -> (frameCounter >>> 3) & 0x01;
             case 0x70, 0x73 -> (frameCounter >>> 4) & 0x01;
             default -> entity.spriteVariant();
         };

@@ -117,6 +117,26 @@ final class EntitySpriteHandlerCatalogTest {
         assertDefinition(caveBKeese, 0x06, 0x6710,
             EntitySpriteDefinition.Shape.PAIR, 2, 0);
 
+        EntitySpriteDefinition armos = catalog.forEntityType(
+            0x0F, EntityRoomLoader.RoomTable.OVERWORLD);
+        assertDefinition(armos, 0x06, 0x7446,
+            EntitySpriteDefinition.Shape.PAIR, 2, 0);
+
+        EntitySpriteDefinition ghini = catalog.forEntityType(
+            0x12, EntityRoomLoader.RoomTable.OVERWORLD);
+        assertDefinition(ghini, 0x04, 0x5BFC,
+            EntitySpriteDefinition.Shape.PAIR, 2, 0);
+
+        EntitySpriteDefinition hardHat = catalog.forEntityType(
+            0x20, EntityRoomLoader.RoomTable.INDOORS_A);
+        assertDefinition(hardHat, 0x06, 0x4F2C,
+            EntitySpriteDefinition.Shape.PAIR, 2, 0);
+
+        EntitySpriteDefinition caveBHardHat = catalog.forEntityType(
+            0x20, EntityRoomLoader.RoomTable.INDOORS_A, 0x0A);
+        assertDefinition(caveBHardHat, 0x06, 0x4F34,
+            EntitySpriteDefinition.Shape.PAIR, 2, 0);
+
         EntitySpriteDefinition grandpa = catalog.forEntityType(
             0x77, EntityRoomLoader.RoomTable.INDOORS_A);
         assertDefinition(grandpa, 0x06, 0x5C51,
@@ -246,6 +266,30 @@ final class EntitySpriteHandlerCatalogTest {
         assertEquals(0x03, moblin.variant(0).first().attributes());
         assertEquals(0x6A, moblin.variant(6).first().tile());
         assertEquals(0x23, moblin.variant(6).first().attributes());
+
+        EntitySpriteDefinition armos = catalog.forEntityType(
+            0x0F, EntityRoomLoader.RoomTable.OVERWORLD);
+        assertEquals(0x60, armos.variant(0).first().tile());
+        assertEquals(0x07, armos.variant(0).first().attributes());
+        assertEquals(0x64, armos.variant(1).first().tile());
+
+        EntitySpriteDefinition ghini = catalog.forEntityType(
+            0x12, EntityRoomLoader.RoomTable.OVERWORLD);
+        assertEquals(0x58, ghini.variant(0).first().tile());
+        assertEquals(0x02, ghini.variant(0).first().attributes());
+        assertEquals(0x5C, ghini.variant(1).first().tile());
+
+        EntitySpriteDefinition hardHat = catalog.forEntityType(
+            0x20, EntityRoomLoader.RoomTable.INDOORS_A);
+        assertEquals(0x44, hardHat.variant(0).first().tile());
+        assertEquals(0x01, hardHat.variant(0).first().attributes());
+        assertEquals(0x21, hardHat.variant(0).second().attributes());
+        assertEquals(0x46, hardHat.variant(1).first().tile());
+
+        EntitySpriteDefinition caveBHardHat = catalog.forEntityType(
+            0x20, EntityRoomLoader.RoomTable.INDOORS_A, 0x0A);
+        assertEquals(0x64, caveBHardHat.variant(0).first().tile());
+        assertEquals(0x66, caveBHardHat.variant(1).first().tile());
 
         EntitySpriteDefinition grandpa = catalog.forEntityType(
             0x77, EntityRoomLoader.RoomTable.INDOORS_A);

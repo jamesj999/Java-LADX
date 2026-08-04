@@ -15,7 +15,10 @@ public final class EntitySpriteHandlerCatalog {
     private static final int ENTITY_BUTTERFLY = 0x6E;
     private static final int ENTITY_OCTOROK = 0x09;
     private static final int ENTITY_MOBLIN = 0x0B;
+    private static final int ENTITY_ARMOS_STATUE = 0x0F;
+    private static final int ENTITY_GHINI = 0x12;
     private static final int ENTITY_KEESE = 0x19;
+    private static final int ENTITY_HARDHAT_BEETLE = 0x20;
     private static final int ENTITY_BOW_WOW = 0x6D;
     private static final int ENTITY_DOG = 0x6F;
     private static final int ENTITY_KID_70 = 0x70;
@@ -95,6 +98,15 @@ public final class EntitySpriteHandlerCatalog {
         }
         if (entityType == ENTITY_MOBLIN) {
             return decodePair(entityType, 0x03, 0x5917, 8, 0);
+        }
+        if (entityType == ENTITY_ARMOS_STATUE) {
+            return decodePair(entityType, 0x06, 0x7446, 2, 0);
+        }
+        if (entityType == ENTITY_GHINI) {
+            return decodePair(entityType, 0x04, 0x5BFC, 2, 0);
+        }
+        if (entityType == ENTITY_HARDHAT_BEETLE) {
+            return decodePair(entityType, 0x06, mapId == 0x0A ? 0x4F34 : 0x4F2C, 2, 0);
         }
         if (entityType == ENTITY_GRANDPA_ULRIRA) {
             return decodeRectangle(entityType, 0x06, 0x5C51, 2, 4, 0);

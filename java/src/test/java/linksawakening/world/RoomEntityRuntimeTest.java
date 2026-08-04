@@ -346,6 +346,30 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void simplePairEnemiesUseTheirRomAnimationCadences() {
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x0F, 24, 32, EntityStatus.ACTIVE, pairDefinition(0x0F, 2), 0),
+            new RoomEntity(1, 1, 0x12, 40, 32, EntityStatus.ACTIVE, pairDefinition(0x12, 2), 0),
+            new RoomEntity(2, 2, 0x20, 56, 32, EntityStatus.ACTIVE, pairDefinition(0x20, 2), 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+
+        runtime.tick(0);
+        assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
+        assertEquals(1, runtime.snapshot().slots().get(1).spriteVariant());
+        assertEquals(0, runtime.snapshot().slots().get(2).spriteVariant());
+
+        runtime.tick(8);
+        assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
+        assertEquals(1, runtime.snapshot().slots().get(1).spriteVariant());
+        assertEquals(1, runtime.snapshot().slots().get(2).spriteVariant());
+
+        runtime.tick(16);
+        assertEquals(1, runtime.snapshot().slots().get(0).spriteVariant());
+        assertEquals(0, runtime.snapshot().slots().get(1).spriteVariant());
+        assertEquals(0, runtime.snapshot().slots().get(2).spriteVariant());
+    }
+
+    @Test
     void dynamicGhostRuntimeAdvancesZBobEvenWhenItsVariantIsUnchanged() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
             .forFollowerEntityType(0xD4);
