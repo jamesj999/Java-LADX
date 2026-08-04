@@ -4,6 +4,7 @@ import linksawakening.gpu.GPU;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
 import linksawakening.vfx.TransientVfxSystem;
+import linksawakening.rom.RomBank;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -95,6 +96,23 @@ final class RoomSessionTest {
         assertEquals(0x59BC, session.activeRoom().entities().spriteSelection()
             .spriteOverrideFor(0xD5).address());
         assertEquals(rooster, session.activeRoom().entities().slots().get(15));
+    }
+
+    @Test
+    void loadsColorDungeonEntityRowsThroughTheSpecialRoomPath() {
+        byte[] rom = loadRom();
+        RoomSession session = newSession();
+
+        session.loadIndoor(0xFF, 0x00);
+
+        int sourceOffset = RomBank.romOffset(0x35, 0x5100);
+        int expectedPixel = ((Byte.toUnsignedInt(rom[sourceOffset]) >>> 7) & 0x01)
+            | (((Byte.toUnsignedInt(rom[sourceOffset + 1]) >>> 7) & 0x01) << 1);
+        assertEquals(EntityRoomLoader.RoomTable.COLOR_DUNGEON,
+            session.activeRoom().entities().spriteSelection().roomTable());
+        assertNotNull(session.activeRoom().entities().spriteTiles());
+        assertEquals(expectedPixel,
+            session.activeRoom().entities().spriteTiles().tile(0x40).getPixel(0, 0));
     }
 
     @Test

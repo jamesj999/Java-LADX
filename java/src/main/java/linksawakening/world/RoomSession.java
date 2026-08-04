@@ -316,6 +316,9 @@ public final class RoomSession {
             if (selection.hasStandardSheets()) {
                 gpu.loadEntitySpriteSheets(romData, selection.sheetValues());
                 entities = entities.withSpriteTiles(gpu.snapshotEntityTiles());
+            } else if (selection.roomTable() == EntityRoomLoader.RoomTable.COLOR_DUNGEON) {
+                gpu.loadColorDungeonEntitySheets(romData, selection.roomId());
+                entities = entities.withSpriteTiles(gpu.snapshotEntityTiles());
             }
         }
         activeRoom = ActiveRoom.from(room, entities);

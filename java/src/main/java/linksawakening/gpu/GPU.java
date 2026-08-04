@@ -87,6 +87,13 @@ public class GPU {
     private static final int ENTITY_SHEET_SOURCE_BASE = 0x4000;
     private static final int ENTITY_SHEET_VRAM_BASE = 0x40;
 
+    // ColorDungeonEntitySpritesheetsTable_Slot1..4 in bank20.asm:$46AA.
+    // Each room entry is [source address high byte, source bank], unlike the
+    // standard bbtttttt selectors above.
+    private static final int COLOR_DUNGEON_SHEET_TABLE_BANK = 0x20;
+    private static final int[] COLOR_DUNGEON_SHEET_TABLES = {0x46AA, 0x46D6, 0x4702, 0x472E};
+    private static final int COLOR_DUNGEON_ROOM_COUNT = 0x16;
+
     private final byte[] vram;
     private final Tile[] tiles;
 
@@ -147,6 +154,36 @@ public class GPU {
             int destinationTile = ENTITY_SHEET_VRAM_BASE + slot * ENTITY_SHEET_TILE_COUNT;
             loadTilesFromROM(romData, bank, sourceAddress, ENTITY_SHEET_TILE_COUNT,
                 destinationTile);
+        }
+    }
+
+    /**
+     * Load the Color Dungeon's room-selected entity rows. This mirrors
+     * {@code LoadColorDungeonTiles} in bank20.asm: each table entry contains
+     * an address high byte and bank, and a zero address high byte leaves that
+     * fixed OAM slot unchanged.
+     */
+    public void loadColorDungeonEntitySheets(byte[] romData, int roomId) {
+        if (romData == null) {
+            throw new IllegalArgumentException("ROM data cannot be null");
+        }
+        if (roomId < 0 || roomId >= COLOR_DUNGEON_ROOM_COUNT) {
+            throw new IllegalArgumentException("Color Dungeon room id out of range: " + roomId);
+        }
+        for (int slot = 0; slot < COLOR_DUNGEON_SHEET_TABLES.length; slot++) {
+            int tableOffset = romOffset(COLOR_DUNGEON_SHEET_TABLE_BANK,
+                COLOR_DUNGEON_SHEET_TABLES[slot] + roomId * 2);
+            if (tableOffset < 0 || tableOffset + 2 > romData.length) {
+                throw new IllegalArgumentException("Color Dungeon sheet table exceeds ROM bounds");
+            }
+            int sourceHighByte = Byte.toUnsignedInt(romData[tableOffset]);
+            if (sourceHighByte == 0) {
+                continue;
+            }
+            int sourceBank = Byte.toUnsignedInt(romData[tableOffset + 1]);
+            int destinationTile = ENTITY_SHEET_VRAM_BASE + slot * ENTITY_SHEET_TILE_COUNT;
+            loadTilesFromROM(romData, sourceBank, sourceHighByte << 8,
+                ENTITY_SHEET_TILE_COUNT, destinationTile);
         }
     }
 

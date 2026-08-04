@@ -65,6 +65,12 @@ resource.
   rollback, and Ghost's eight-frame visual-Z bob table. Marin's history-driven
   per-frame handler and the followers' special interaction states remain
   pending.
+- The Color Dungeon entity-tile path now reads the four bank-$20 room tables
+  (`$46AA`, `$46D6`, `$4702`, `$472E`) as `[address high byte, bank]` pairs and
+  copies each present 16-tile row into the fixed OAM slots `$40`, `$50`, `$60`,
+  and `$70`. Zero entries preserve the existing slot, matching
+  `LoadColorDungeonTiles` rather than treating the room as a standard sheet
+  group.
 
 The complete Java test suite passes after these runtime increments. Remaining
 entity behavior—including roaming-enemy projectiles, the rest of the enemy
@@ -78,8 +84,8 @@ represented by guessed shapes or generic movement.
 1. Port simple enemy movement, collision, damage, stun, lift, throw, burning,
    and death transitions using the existing room collision model.
 2. Extend rectangle and dynamically selected sprite handlers, complete entity
-   tile-offset state, follower spawning/history, and the Color Dungeon's
-   separate entity-tile loader.
+   tile-offset state, follower history and special states, and the remaining
+   Color Dungeon symbol/animation path.
 3. Port scripted spawns, followers, room events, drops, and boss/multi-entity
    state machines from the corresponding banked handlers.
 
