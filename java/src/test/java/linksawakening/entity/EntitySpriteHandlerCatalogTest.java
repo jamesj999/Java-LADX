@@ -107,6 +107,11 @@ final class EntitySpriteHandlerCatalogTest {
         assertDefinition(keese, 0x06, 0x6708,
             EntitySpriteDefinition.Shape.PAIR, 2, 0);
 
+        EntitySpriteDefinition octorok = catalog.forEntityType(
+            0x09, EntityRoomLoader.RoomTable.OVERWORLD);
+        assertDefinition(octorok, 0x03, 0x57FB,
+            EntitySpriteDefinition.Shape.PAIR, 8, 0);
+
         EntitySpriteDefinition caveBKeese = catalog.forEntityType(
             0x19, EntityRoomLoader.RoomTable.INDOORS_A, 0x0A);
         assertDefinition(caveBKeese, 0x06, 0x6710,
@@ -226,6 +231,13 @@ final class EntitySpriteHandlerCatalogTest {
             0x19, EntityRoomLoader.RoomTable.INDOORS_A, 0x0A);
         assertEquals(0x62, caveBKeese.variant(0).first().tile());
         assertEquals(0x60, caveBKeese.variant(1).first().tile());
+
+        EntitySpriteDefinition octorok = catalog.forEntityType(
+            0x09, EntityRoomLoader.RoomTable.OVERWORLD);
+        assertEquals(0x30, octorok.variant(0).first().tile());
+        assertEquals(0x02, octorok.variant(0).first().attributes());
+        assertEquals(0x32, octorok.variant(1).first().tile());
+        assertEquals(0x34, octorok.variant(4).first().tile());
 
         EntitySpriteDefinition grandpa = catalog.forEntityType(
             0x77, EntityRoomLoader.RoomTable.INDOORS_A);

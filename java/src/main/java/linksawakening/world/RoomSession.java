@@ -185,7 +185,8 @@ public final class RoomSession {
         // rLY is not a meaningful value in the host renderer. Keep the
         // non-emulator policy explicit while preserving the ROM seed update.
         entityRandomByteSource.beginFrame(frameCounter & 0xFF, 0);
-        entityRuntime.tick(frameCounter, linkEntityX, linkEntityY, entityRandomByteSource);
+        entityRuntime.tick(frameCounter, linkEntityX, linkEntityY, entityRandomByteSource,
+            this::entityBackgroundCollision);
         activeRoom.replaceEntities(entityRuntime.snapshot());
     }
 
@@ -283,6 +284,26 @@ public final class RoomSession {
         if (droppableRupeeSystem != null) {
             droppableRupeeSystem.clear();
         }
+    }
+
+    /**
+     * Mirrors the ordinary entity collision point used by bank $03's
+     * ApplyEntityCollisionWithObject for normal collision boxes. The shared
+     * room physics query supplies the active overworld/indoor table.
+     */
+    private boolean entityBackgroundCollision(RoomEntity entity, int direction,
+                                              int nextX, int nextY) {
+        int pointX = switch (direction) {
+            case 0 -> nextX + 5;  // right: x - 8 + 13
+            case 1 -> nextX - 6;  // left:  x - 8 + 2
+            default -> nextX;     // vertical movement: x - 8 + 8
+        };
+        int pointY = switch (direction) {
+            case 2 -> nextY - 14; // up:   y - 16 + 2
+            case 3 -> nextY - 3;  // down: y - 16 + 13
+            default -> nextY - 8; // horizontal movement: y - 16 + 8
+        };
+        return overworldCollision.pointBlocked(pointX, pointY);
     }
 
     private void loadRoomSpecificTilesIfNeeded(int roomId) {

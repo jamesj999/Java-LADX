@@ -49,13 +49,17 @@ resource.
   attributes]` tuples, apply the ROM tile-offset register, and render each
   sprite at the hardware OAM origin. Grandpa Ulrira's two ROM variants are
   covered as the first concrete rectangle handler.
+- Octorok now uses the bank-$03 roaming-enemy handler: its eight ROM display
+  variants, `$30` tile offset, pause/walk countdowns, direction/speed tables,
+  fixed-point movement, normal collision point, and one-hit basic-sword death
+  path are covered. The shared rock projectile spawn remains unsupported.
 - The room sprite selection can carry ROM-backed follower display-list
   overrides for Bow-Wow, Marin, the Ghost, and the Flying Rooster. This keeps
   table selection separate from the still-pending dynamic follower spawning
   and history-driven movement.
 
 The complete Java test suite passes after these runtime increments. Remaining
-entity behavior—including the rest of the enemy damage matrix, recoil,
+entity behavior—including roaming-enemy projectiles, the rest of the enemy damage matrix, recoil,
 stun/lift/throw/burning/death handlers, dynamic display-list selection beyond
 the follower override path, scripted spawns, and follower spawning/history—is
 intentionally still unsupported rather than represented by guessed shapes or

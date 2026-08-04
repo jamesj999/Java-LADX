@@ -214,6 +214,81 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void octorokUsesTheSharedRoamingEnemyTimersAndDirectionSpeeds() {
+        EntitySpriteDefinition definition = pairDefinition(0x09, 8);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x09, 64, 64, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+        IntSupplier randomBytes = sequence(0x02, 0x03);
+
+        // State 0 pauses for ($10 + random & $0F) frames, then state 1
+        // selects direction 3 (down) and the ROM's +8/16 fixed-point speed.
+        runtime.tick(0, 200, 32, randomBytes);
+        assertEquals(1, runtime.octorokState(0));
+        assertEquals(0x12, runtime.octorokTransitionCountdown(0));
+        assertEquals(0, runtime.octorokSpeedY(0));
+
+        for (int frame = 1; frame <= 0x12; frame++) {
+            runtime.tick(frame, 200, 32, randomBytes);
+        }
+        assertEquals(0, runtime.octorokState(0),
+            () -> "state=" + runtime.octorokState(0)
+                + " timer=" + runtime.octorokTransitionCountdown(0));
+        assertEquals(0x23, runtime.octorokTransitionCountdown(0));
+        assertEquals(3, runtime.octorokDirection(0));
+        assertEquals(8, runtime.octorokSpeedY(0));
+        assertEquals(64, runtime.snapshot().slots().get(0).y());
+
+        runtime.tick(0x13, 200, 32, randomBytes);
+        runtime.tick(0x14, 200, 32, randomBytes);
+        assertEquals(65, runtime.snapshot().slots().get(0).y());
+        assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
+    }
+
+    @Test
+    void octorokStopsAtTheRoamingEnemyBackgroundCollisionPoint() {
+        EntitySpriteDefinition definition = pairDefinition(0x09, 8);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x09, 64, 64, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+        IntSupplier randomBytes = sequence(0x00, 0x03, 0x01);
+
+        runtime.tick(0, 200, 32, randomBytes);
+        for (int frame = 1; frame <= 0x12; frame++) {
+            runtime.tick(frame, 200, 32, randomBytes);
+        }
+
+        RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) -> direction == 3;
+        runtime.tick(0x13, 200, 32, randomBytes, wall);
+        runtime.tick(0x14, 200, 32, randomBytes, wall);
+        runtime.tick(0x15, 200, 32, randomBytes, wall);
+
+        assertEquals(64, runtime.snapshot().slots().get(0).y());
+        assertEquals(0, runtime.octorokSpeedY(0));
+    }
+
+    @Test
+    void octorokUsesTheNormalEnemyHitboxAndOneBasicSwordDamage() {
+        EntitySpriteDefinition definition = pairDefinition(0x09, 8);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x09, 64, 64, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+
+        List<EntityCombatEvent> contact = runtime.resolveCombat(
+            1, 64, 64, false, true, false, 0, 0, 0, 0);
+        assertEquals(1, contact.size());
+        assertEquals(4, contact.get(0).linkDamage());
+
+        RoomEntityRuntime swordRuntime = RoomEntityRuntime.from(initial);
+        List<EntityCombatEvent> events = swordRuntime.resolveCombat(
+            0, 120, 120, false, true, true, 72, 1, 72, 1);
+
+        assertEquals(1, events.size());
+        assertTrue(events.get(0).swordHit());
+        assertEquals(EntityStatus.DYING, swordRuntime.snapshot().slots().get(0).status());
+    }
+
+    @Test
     void kidHandlersAnimateTheirTwoWalkingFramesEverySixteenFrames() {
         EntitySpriteDefinition definition = pairDefinition(0x70, 4);
         RoomEntitySnapshot initial = snapshot(

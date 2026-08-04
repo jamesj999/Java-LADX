@@ -104,7 +104,8 @@ public final class EntityRoomLoader {
                     loadedSlot, sourceLoadOrder, type, initializedPosition[0], initializedPosition[1],
                     EntityStatus.INIT,
                     spriteDefinition,
-                    spriteDefinition.supported() ? spriteDefinition.initialVariant() : -1));
+                    spriteDefinition.supported() ? spriteDefinition.initialVariant() : -1,
+                    0, initialSpriteTileOffset(type)));
                 loadedSlot++;
             }
             sourceLoadOrder++;
@@ -146,6 +147,11 @@ public final class EntityRoomLoader {
     private static boolean isOverworldTreeOrPotDrop(int type) {
         return type == 0x2E || type == 0x2F || type == 0x32 || type == 0x33
             || type == 0x34 || type == 0x36 || type == 0x37 || type == 0x38;
+    }
+
+    /** OctorokEntityHandler writes $30 to hActiveEntityTilesOffset. */
+    private static int initialSpriteTileOffset(int type) {
+        return type == 0x09 ? 0x30 : 0;
     }
 
     private int checkedRomOffset(int bank, int address, int length, String description) {

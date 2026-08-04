@@ -127,6 +127,20 @@ final class EntityRoomLoaderTest {
     }
 
     @Test
+    void initializesOctorokWithTheHandlerTileOffset() {
+        byte[] rom = syntheticRom();
+        writePointer(rom, EntityRoomLoader.RoomTable.OVERWORLD, 0, 0x5170);
+        writeStream(rom, 0x5170, 0x22, 0x09, 0xFF);
+
+        RoomEntity octorok = new EntityRoomLoader(rom)
+            .load(EntityRoomLoader.RoomTable.OVERWORLD, 0)
+            .loadedEntities().get(0);
+
+        assertEquals(0x09, octorok.type());
+        assertEquals(0x30, octorok.spriteTileOffset());
+    }
+
+    @Test
     void shiftsTreeSecretSeashellOnlyInItsTwoSpecialOverworldRooms() {
         byte[] rom = syntheticRom();
         writePointer(rom, EntityRoomLoader.RoomTable.OVERWORLD, 0xA4, 0x5160);

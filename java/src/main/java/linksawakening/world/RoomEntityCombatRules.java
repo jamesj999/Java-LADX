@@ -2,6 +2,7 @@ package linksawakening.world;
 
 /** ROM collision constants and predicates for the currently ported enemies. */
 public final class RoomEntityCombatRules {
+    private static final int ENTITY_OCTOROK = 0x09;
     private static final int ENTITY_KEESE = 0x19;
 
     // HitboxPositions._00 in home/entities.asm:3AAA.
@@ -16,7 +17,7 @@ public final class RoomEntityCombatRules {
     }
 
     static boolean supportsEnemyCollision(int type) {
-        return (type & 0xFF) == ENTITY_KEESE;
+        return (type & 0xFF) == ENTITY_KEESE || (type & 0xFF) == ENTITY_OCTOROK;
     }
 
     static int contactDamage(int type) {

@@ -17,6 +17,7 @@ import java.util.function.IntSupplier;
 public final class RoomEntityRuntime {
     private static final int ENTITY_PIECE_OF_POWER = 0x33;
     private static final int ENTITY_BUTTERFLY = 0x6E;
+    private static final int ENTITY_OCTOROK = 0x09;
     private static final int ENTITY_KEESE = 0x19;
 
     private final RoomEntity[] slots;
@@ -27,6 +28,7 @@ public final class RoomEntityRuntime {
     private final RomRandomByteSource fallbackRomRandomByteSource;
     private final ButterflyMotion butterflyMotion = new ButterflyMotion();
     private final KeeseMotion keeseMotion = new KeeseMotion();
+    private final RoamingEnemyMotion roamingEnemyMotion = new RoamingEnemyMotion();
     private final int[] slowTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] slowTimerInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final int[] dyingCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -68,7 +70,7 @@ public final class RoomEntityRuntime {
             fallbackRomRandomByteSource.beginFrame(frameCounter & 0xFF, 0);
             randomByteSupplier = fallbackRomRandomByteSource;
         }
-        tick(frameCounter, 0, 0, randomByteSupplier);
+        tick(frameCounter, 0, 0, randomByteSupplier, null);
     }
 
     /**
@@ -79,6 +81,12 @@ public final class RoomEntityRuntime {
      */
     public void tick(int frameCounter, int linkEntityX, int linkEntityY,
                      IntSupplier randomByteSupplier) {
+        tick(frameCounter, linkEntityX, linkEntityY, randomByteSupplier, null);
+    }
+
+    public void tick(int frameCounter, int linkEntityX, int linkEntityY,
+                     IntSupplier randomByteSupplier,
+                     RoomEntityBackgroundCollision backgroundCollision) {
         Objects.requireNonNull(randomByteSupplier, "randomByteSupplier");
         int frame = frameCounter & 0xFF;
         for (int index = slots.length - 1; index >= 0; index--) {
@@ -103,6 +111,9 @@ public final class RoomEntityRuntime {
                 if (entity.type() == ENTITY_KEESE) {
                     keeseMotion.initialize(entity.slot(), randomByteSupplier);
                 }
+                if (entity.type() == ENTITY_OCTOROK) {
+                    roamingEnemyMotion.initialize(entity.slot());
+                }
             } else if (status == EntityStatus.ACTIVE) {
                 decrementSlowTransitionCountdown(entity.slot(), frame);
                 if (shouldDisappear(entity)) {
@@ -122,6 +133,11 @@ public final class RoomEntityRuntime {
                 && entity.type() == ENTITY_KEESE) {
                 updated = keeseMotion.advance(entity, frame, linkEntityX, linkEntityY,
                     randomByteSupplier);
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_OCTOROK) {
+                updated = roamingEnemyMotion.advance(entity, linkEntityX, linkEntityY,
+                    randomByteSupplier, backgroundCollision);
             }
             int variant = variantFor(updated, frame);
             if (status == EntityStatus.ACTIVE && shouldDisappear(entity)) {
@@ -231,6 +247,7 @@ public final class RoomEntityRuntime {
         dyingCountdown[slot] = 0;
         butterflyMotion.clear(slot);
         keeseMotion.clear(slot);
+        roamingEnemyMotion.clear(slot);
         slots[slot] = RoomEntity.disabled(slot);
         return entity.sourceLoadOrder() >= 0 && entity.sourceLoadOrder() < 8
             ? 1 << entity.sourceLoadOrder() : 0;
@@ -269,6 +286,26 @@ public final class RoomEntityRuntime {
 
     int keeseSpeedY(int slot) {
         return keeseMotion.speedY(slot);
+    }
+
+    int octorokState(int slot) {
+        return roamingEnemyMotion.state(slot);
+    }
+
+    int octorokTransitionCountdown(int slot) {
+        return roamingEnemyMotion.transitionCountdown(slot);
+    }
+
+    int octorokDirection(int slot) {
+        return roamingEnemyMotion.direction(slot);
+    }
+
+    int octorokSpeedX(int slot) {
+        return roamingEnemyMotion.speedX(slot);
+    }
+
+    int octorokSpeedY(int slot) {
+        return roamingEnemyMotion.speedY(slot);
     }
 
     int butterflyPrivateStateX(int slot) {
