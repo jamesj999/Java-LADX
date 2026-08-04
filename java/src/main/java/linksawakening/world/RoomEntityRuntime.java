@@ -44,6 +44,9 @@ public final class RoomEntityRuntime {
     private final int[] slowTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] slowTimerInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final int[] dyingCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] enemyHealth = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] enemyFlashCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] enemyIgnoreHitsCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
 
     private RoomEntityRuntime(RoomEntitySnapshot initial, boolean indoorRoom,
                                IntSupplier defaultRandomByteSupplier) {
@@ -55,6 +58,7 @@ public final class RoomEntityRuntime {
         this.fallbackRomRandomByteSource = defaultRandomByteSupplier == null
             ? new RomRandomByteSource() : null;
         for (RoomEntity entity : slots) {
+            enemyHealth[entity.slot()] = RoomEntityCombatRules.initialHealth(entity.type());
             if (isFollowingNpcType(entity.type())) {
                 if (entity.type() == ENTITY_BOW_WOW) {
                     bowWowMotion.initialize(entity.slot());
@@ -130,6 +134,7 @@ public final class RoomEntityRuntime {
             if (!entity.loaded()) {
                 continue;
             }
+            decrementEnemyCombatCountdowns(entity.slot());
             if (entity.sourceLoadOrder() == -1 && isDisabledFollower(entity.type())) {
                 clearEntity(entity.slot());
                 continue;
@@ -269,6 +274,10 @@ public final class RoomEntityRuntime {
                 || !RoomEntityCombatRules.supportsEnemyCollision(entity.type())) {
                 continue;
             }
+            if (enemyFlashCountdown[entity.slot()] > 0
+                || enemyIgnoreHitsCountdown[entity.slot()] > 0) {
+                continue;
+            }
 
             boolean linkCollision = !linkAirborne && linkInteractive
                 && RoomEntityCombatRules.collisionCadenceMatches(frameCounter, entity.slot())
@@ -280,9 +289,20 @@ public final class RoomEntityRuntime {
                 continue;
             }
 
-            if (swordHit && RoomEntityCombatRules.canBeKilledByBasicSword(entity.type())) {
-                dyingCountdown[entity.slot()] = 0x40;
-                slots[entity.slot()] = withStatus(entity, EntityStatus.DYING);
+            if (swordHit) {
+                int swordDamage = RoomEntityCombatRules.basicSwordDamage(entity.type());
+                enemyHealth[entity.slot()] = Math.max(0,
+                    enemyHealth[entity.slot()] - swordDamage);
+                if (enemyHealth[entity.slot()] == 0) {
+                    dyingCountdown[entity.slot()] = 0x40;
+                    slots[entity.slot()] = withStatus(entity, EntityStatus.DYING);
+                } else {
+                    // jr_003_73B6 and StartIgnoringHitsForEntity: a normal
+                    // sword hit flashes for $18 frames and suppresses the
+                    // next $0A collision passes.
+                    enemyFlashCountdown[entity.slot()] = 0x18;
+                    enemyIgnoreHitsCountdown[entity.slot()] = 0x0A;
+                }
             }
             events.add(new EntityCombatEvent(
                 entity.slot(), entity.type(),
@@ -304,6 +324,9 @@ public final class RoomEntityRuntime {
         slowTransitionCountdown[slot] = 0;
         slowTimerInitialized[slot] = false;
         dyingCountdown[slot] = 0;
+        enemyHealth[slot] = 0;
+        enemyFlashCountdown[slot] = 0;
+        enemyIgnoreHitsCountdown[slot] = 0;
         butterflyMotion.clear(slot);
         keeseMotion.clear(slot);
         roamingEnemyMotion.clear(slot);
@@ -404,6 +427,20 @@ public final class RoomEntityRuntime {
         return dyingCountdown[slot];
     }
 
+    int enemyHealth(int slot) {
+        if (slot < 0 || slot >= slots.length) {
+            throw new IllegalArgumentException("Entity slot out of range: " + slot);
+        }
+        return enemyHealth[slot];
+    }
+
+    int enemyFlashCountdown(int slot) {
+        if (slot < 0 || slot >= slots.length) {
+            throw new IllegalArgumentException("Entity slot out of range: " + slot);
+        }
+        return enemyFlashCountdown[slot];
+    }
+
     private static int variantFor(RoomEntity entity, int frameCounter) {
         if (!entity.spriteDefinition().supported() || entity.spriteDefinition().variantCount() < 2) {
             return entity.spriteVariant();
@@ -475,10 +512,22 @@ public final class RoomEntityRuntime {
         slowTransitionCountdown[slot] = 0;
         slowTimerInitialized[slot] = false;
         dyingCountdown[slot] = 0;
+        enemyHealth[slot] = 0;
+        enemyFlashCountdown[slot] = 0;
+        enemyIgnoreHitsCountdown[slot] = 0;
         butterflyMotion.clear(slot);
         keeseMotion.clear(slot);
         followingNpcMotion.clear(slot);
         bowWowMotion.clear(slot);
         slots[slot] = RoomEntity.disabled(slot);
+    }
+
+    private void decrementEnemyCombatCountdowns(int slot) {
+        if (enemyFlashCountdown[slot] > 0) {
+            enemyFlashCountdown[slot]--;
+        }
+        if (enemyIgnoreHitsCountdown[slot] > 0) {
+            enemyIgnoreHitsCountdown[slot]--;
+        }
     }
 }

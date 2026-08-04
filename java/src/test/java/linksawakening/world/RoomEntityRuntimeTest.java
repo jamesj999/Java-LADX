@@ -312,6 +312,40 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void moblinUsesTwoHealthPointsAndTheRomDamageCooldown() {
+        EntitySpriteDefinition definition = pairDefinition(0x0B, 8);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x0B, 64, 64, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+
+        List<EntityCombatEvent> contact = runtime.resolveCombat(
+            1, 64, 64, false, true, false, 0, 0, 0, 0);
+        assertEquals(1, contact.size());
+        assertEquals(4, contact.get(0).linkDamage());
+
+        List<EntityCombatEvent> firstHit = runtime.resolveCombat(
+            0, 120, 120, false, true, true, 72, 1, 72, 1);
+        assertEquals(1, firstHit.size());
+        assertTrue(firstHit.get(0).swordHit());
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
+        assertEquals(1, runtime.enemyHealth(0));
+        assertEquals(0x18, runtime.enemyFlashCountdown(0));
+        assertTrue(runtime.resolveCombat(
+            1, 120, 120, false, true, true, 72, 1, 72, 1).isEmpty());
+
+        for (int frame = 1; frame <= 0x18; frame++) {
+            runtime.tick(frame, 120, 120, sequence(0x00));
+        }
+        assertEquals(0, runtime.enemyFlashCountdown(0));
+
+        List<EntityCombatEvent> secondHit = runtime.resolveCombat(
+            0x19, 120, 120, false, true, true, 72, 1, 72, 1);
+        assertEquals(1, secondHit.size());
+        assertEquals(EntityStatus.DYING, runtime.snapshot().slots().get(0).status());
+        assertEquals(0, runtime.enemyHealth(0));
+    }
+
+    @Test
     void dynamicGhostRuntimeAdvancesZBobEvenWhenItsVariantIsUnchanged() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
             .forFollowerEntityType(0xD4);

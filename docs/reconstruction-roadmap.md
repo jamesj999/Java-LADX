@@ -55,7 +55,9 @@ resource.
   path are covered. The shared rock projectile spawn remains unsupported.
 - Moblin now reads its bank-$03 eight-variant display list and runs through
   the same ordinary roaming-enemy countdown, direction, fixed-point movement,
-  and collision path. Its direction-gated arrow spawn and recoil/damage
+  and collision path. Its normal hitbox, health-group `$01`/two-health
+  sword path, `$04` contact damage, `$18` flash, and `$0A` ignore-hit window
+  are also ROM-backed. Its direction-gated arrow spawn and recoil/damage
   branches remain pending.
 - `CreateFollowingNpcEntity` now runs on room load/state changes with the
   source indoor/map/room exclusions, source-order slot reuse, highest-free-slot

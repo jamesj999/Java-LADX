@@ -3,29 +3,52 @@ package linksawakening.world;
 /** ROM collision constants and predicates for the currently ported enemies. */
 public final class RoomEntityCombatRules {
     private static final int ENTITY_OCTOROK = 0x09;
+    private static final int ENTITY_MOBLIN = 0x0B;
     private static final int ENTITY_KEESE = 0x19;
 
-    // HitboxPositions._00 in home/entities.asm:3AAA.
-    private static final int KEESE_HITBOX_X = 0x08;
-    private static final int KEESE_HITBOX_WIDTH = 0x05;
-    private static final int KEESE_HITBOX_Y = 0x08;
-    private static final int KEESE_HITBOX_HEIGHT = 0x05;
-    private static final int KEESE_CONTACT_DAMAGE = 0x04;
-    private static final int KEESE_INITIAL_HEALTH = 0x01;
+    // HitboxPositions._00 in home/entities.asm:3AAA. Octorok, Moblin, and
+    // Keese all select the normal collision box in hitbox_flags.asm.
+    private static final int HITBOX_X = 0x08;
+    private static final int HITBOX_WIDTH = 0x05;
+    private static final int HITBOX_Y = 0x08;
+    private static final int HITBOX_HEIGHT = 0x05;
+
+    // HealthGroupForEntity (bank 3:41F6), InitialHealthForGroup (bank
+    // 3:47BC), and EntityDamagesForGroup (bank 3:47F1).
+    private static final int OCTOROK_AND_KEESE_CONTACT_DAMAGE = 0x04;
+    private static final int MOBLIN_CONTACT_DAMAGE = 0x04;
+    private static final int OCTOROK_AND_KEESE_INITIAL_HEALTH = 0x01;
+    private static final int MOBLIN_INITIAL_HEALTH = 0x02;
+    private static final int BASIC_SWORD_DAMAGE = 0x01;
 
     private RoomEntityCombatRules() {
     }
 
     static boolean supportsEnemyCollision(int type) {
-        return (type & 0xFF) == ENTITY_KEESE || (type & 0xFF) == ENTITY_OCTOROK;
+        return switch (type & 0xFF) {
+            case ENTITY_KEESE, ENTITY_MOBLIN, ENTITY_OCTOROK -> true;
+            default -> false;
+        };
     }
 
     static int contactDamage(int type) {
-        return supportsEnemyCollision(type) ? KEESE_CONTACT_DAMAGE : 0;
+        return switch (type & 0xFF) {
+            case ENTITY_KEESE, ENTITY_OCTOROK -> OCTOROK_AND_KEESE_CONTACT_DAMAGE;
+            case ENTITY_MOBLIN -> MOBLIN_CONTACT_DAMAGE;
+            default -> 0;
+        };
     }
 
-    static boolean canBeKilledByBasicSword(int type) {
-        return supportsEnemyCollision(type) && KEESE_INITIAL_HEALTH <= 1;
+    static int initialHealth(int type) {
+        return switch (type & 0xFF) {
+            case ENTITY_KEESE, ENTITY_OCTOROK -> OCTOROK_AND_KEESE_INITIAL_HEALTH;
+            case ENTITY_MOBLIN -> MOBLIN_INITIAL_HEALTH;
+            default -> 0;
+        };
+    }
+
+    static int basicSwordDamage(int type) {
+        return supportsEnemyCollision(type) ? BASIC_SWORD_DAMAGE : 0;
     }
 
     /** Mirrors func_003_6C6B's alternating entity-slot cadence. */
@@ -39,13 +62,13 @@ public final class RoomEntityCombatRules {
             return false;
         }
         int xDistance = unsignedByteAbs(
-            entity.x() + KEESE_HITBOX_X - linkPixelX - 0x08);
-        if (xDistance >= KEESE_HITBOX_WIDTH + 0x04) {
+            entity.x() + HITBOX_X - linkPixelX - 0x08);
+        if (xDistance >= HITBOX_WIDTH + 0x04) {
             return false;
         }
         int yDistance = unsignedByteAbs(
-            entity.y() + KEESE_HITBOX_Y - linkPixelY - 0x08);
-        return yDistance < KEESE_HITBOX_HEIGHT + 0x04;
+            entity.y() + HITBOX_Y - linkPixelY - 0x08);
+        return yDistance < HITBOX_HEIGHT + 0x04;
     }
 
     /**
@@ -58,13 +81,13 @@ public final class RoomEntityCombatRules {
             return false;
         }
         int xDistance = unsignedByteAbs(
-            entity.x() + KEESE_HITBOX_X - swordX);
-        if (xDistance >= KEESE_HITBOX_WIDTH + swordWidth) {
+            entity.x() + HITBOX_X - swordX);
+        if (xDistance >= HITBOX_WIDTH + swordWidth) {
             return false;
         }
         int yDistance = unsignedByteAbs(
-            entity.y() + KEESE_HITBOX_Y - swordY);
-        return yDistance < KEESE_HITBOX_HEIGHT + swordHeight;
+            entity.y() + HITBOX_Y - swordY);
+        return yDistance < HITBOX_HEIGHT + swordHeight;
     }
 
     private static int unsignedByteAbs(int value) {
