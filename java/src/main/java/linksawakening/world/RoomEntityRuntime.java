@@ -17,18 +17,26 @@ public final class RoomEntityRuntime {
     private final RoomEntity[] slots;
     private final EntitySpriteSelection spriteSelection;
     private final EntitySpriteTileSnapshot spriteTiles;
+    private final boolean indoorRoom;
+    private final int[] slowTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] slowTimerInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
-    private RoomEntityRuntime(RoomEntitySnapshot initial) {
+    private RoomEntityRuntime(RoomEntitySnapshot initial, boolean indoorRoom) {
         this.slots = initial.slots().toArray(RoomEntity[]::new);
         this.spriteSelection = initial.spriteSelection();
         this.spriteTiles = initial.spriteTiles();
+        this.indoorRoom = indoorRoom;
     }
 
     public static RoomEntityRuntime from(RoomEntitySnapshot initial) {
+        return from(initial, false);
+    }
+
+    public static RoomEntityRuntime from(RoomEntitySnapshot initial, boolean indoorRoom) {
         if (initial == null) {
             throw new IllegalArgumentException("Initial entity snapshot cannot be null");
         }
-        return new RoomEntityRuntime(initial);
+        return new RoomEntityRuntime(initial, indoorRoom);
     }
 
     /** Advances the ROM handlers that have deterministic frame-only variants. */
@@ -40,9 +48,23 @@ public final class RoomEntityRuntime {
                 continue;
             }
 
-            EntityStatus status = entity.status() == EntityStatus.INIT
-                ? EntityStatus.ACTIVE : entity.status();
+            EntityStatus status = entity.status();
+            if (status == EntityStatus.INIT) {
+                status = EntityStatus.ACTIVE;
+                initializeEntityTimers(entity);
+            } else if (status == EntityStatus.ACTIVE) {
+                decrementSlowTransitionCountdown(entity.slot(), frame);
+                if (shouldDisappear(entity)) {
+                    if (slowTransitionCountdown[entity.slot()] == 0) {
+                        clearEntity(entity.slot());
+                        continue;
+                    }
+                }
+            }
             int variant = variantFor(entity, frame);
+            if (status == EntityStatus.ACTIVE && shouldDisappear(entity)) {
+                variant = (slowTransitionCountdown[entity.slot()] & 0x01) != 0 ? 0 : -1;
+            }
             if (status != entity.status() || variant != entity.spriteVariant()) {
                 slots[index] = new RoomEntity(
                     entity.slot(), entity.sourceLoadOrder(), entity.type(), entity.x(), entity.y(),
@@ -93,6 +115,8 @@ public final class RoomEntityRuntime {
         if (!entity.loaded()) {
             return 0;
         }
+        slowTransitionCountdown[slot] = 0;
+        slowTimerInitialized[slot] = false;
         slots[slot] = RoomEntity.disabled(slot);
         return entity.sourceLoadOrder() >= 0 && entity.sourceLoadOrder() < 8
             ? 1 << entity.sourceLoadOrder() : 0;
@@ -102,6 +126,13 @@ public final class RoomEntityRuntime {
         return new RoomEntitySnapshot(Arrays.asList(slots), spriteSelection, spriteTiles);
     }
 
+    int slowTransitionCountdown(int slot) {
+        if (slot < 0 || slot >= slots.length) {
+            throw new IllegalArgumentException("Entity slot out of range: " + slot);
+        }
+        return slowTransitionCountdown[slot];
+    }
+
     private static int variantFor(RoomEntity entity, int frameCounter) {
         if (!entity.spriteDefinition().supported() || entity.spriteDefinition().variantCount() < 2) {
             return entity.spriteVariant();
@@ -109,8 +140,32 @@ public final class RoomEntityRuntime {
         return switch (entity.type()) {
             case ENTITY_PIECE_OF_POWER -> (frameCounter >>> 3) & 0x01;
             case ENTITY_BUTTERFLY -> ((frameCounter + entity.slot() * 8) >>> 3) & 0x01;
+            case 0x70, 0x73 -> (frameCounter >>> 4) & 0x01;
             default -> entity.spriteVariant();
         };
+    }
+
+    private void initializeEntityTimers(RoomEntity entity) {
+        if (indoorRoom && RoomEntityPickupRules.usesIndoorDefaultSlowTimer(entity.type())) {
+            slowTransitionCountdown[entity.slot()] = 0x80;
+            slowTimerInitialized[entity.slot()] = true;
+        }
+    }
+
+    private void decrementSlowTransitionCountdown(int slot, int frameCounter) {
+        if ((frameCounter & 0x03) == 0 && slowTimerInitialized[slot]
+            && slowTransitionCountdown[slot] > 0) {
+            slowTransitionCountdown[slot]--;
+        }
+    }
+
+    private boolean shouldDisappear(RoomEntity entity) {
+        return slowTimerInitialized[entity.slot()]
+            && switch (entity.type()) {
+                case 0x2D, 0x2E, 0x2F, 0x37, 0x38, 0x3B -> true;
+                default -> false;
+            }
+            && slowTransitionCountdown[entity.slot()] < 0x1C;
     }
 
     private static int persistentClearMask(RoomEntity entity) {

@@ -216,7 +216,8 @@ public final class RoomSession {
             }
         }
         activeRoom = ActiveRoom.from(room, entities);
-        entityRuntime = entities == null ? null : RoomEntityRuntime.from(entities);
+        entityRuntime = entities == null ? null : RoomEntityRuntime.from(
+            entities, activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD);
         if (roomLoadListener != null) {
             roomLoadListener.roomLoaded(activeRoom);
         }

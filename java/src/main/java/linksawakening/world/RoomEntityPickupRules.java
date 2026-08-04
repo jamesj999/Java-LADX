@@ -43,6 +43,14 @@ public final class RoomEntityPickupRules {
             && type != IRON_MASKS_MASK;
     }
 
+    /** EntityInitTreeOrPotDroppable's indoor $80 slow-transition timer set. */
+    static boolean usesIndoorDefaultSlowTimer(int type) {
+        return switch (type) {
+            case 0x2D, 0x2E, 0x2F, 0x32, 0x33, 0x34, 0x36, 0x37, 0x38 -> true;
+            default -> false;
+        };
+    }
+
     /** Mirrors PickableCanBeCollectedBySwordTable in bank3.asm. */
     public static boolean canBeCollectedBySword(int type) {
         if (type < FIRST_PICKABLE_TYPE || type > LAST_PICKABLE_TYPE) {

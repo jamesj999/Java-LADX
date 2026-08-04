@@ -49,6 +49,23 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void kidHandlersAnimateTheirTwoWalkingFramesEverySixteenFrames() {
+        EntitySpriteDefinition definition = pairDefinition(0x70, 4);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x70, 24, 32, EntityStatus.INIT, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+
+        runtime.tick(0);
+        assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
+        runtime.tick(8);
+        assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
+        runtime.tick(16);
+        assertEquals(1, runtime.snapshot().slots().get(0).spriteVariant());
+        runtime.tick(32);
+        assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
+    }
+
+    @Test
     void onlyTheFirstEightLoadOrdersContributeToThePersistentClearMask() {
         EntitySpriteDefinition definition = pairDefinition(0x33, 2);
         RoomEntitySnapshot initial = snapshot(
@@ -122,6 +139,38 @@ final class RoomEntityRuntimeTest {
         assertEquals(1, pickup.persistentClearMask());
         assertEquals(EntityStatus.LIFTED, runtime.snapshot().slots().get(0).status());
         assertNull(runtime.collectIfNeeded(1, 24, 34, false, true));
+    }
+
+    @Test
+    void indoorDroppablesUseTheRomSlowFadeAndUnloadAtZero() {
+        EntitySpriteDefinition definition = pairDefinition(0x37, 1);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x37, 24, 32, EntityStatus.INIT, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial, true);
+
+        runtime.tick(0);
+
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
+        assertEquals(0x80, runtime.slowTransitionCountdown(0));
+
+        int frame = 1;
+        while (runtime.slowTransitionCountdown(0) > 3) {
+            runtime.tick(frame++);
+        }
+        assertEquals(3, runtime.slowTransitionCountdown(0));
+
+        while ((frame & 0x03) != 0) {
+            runtime.tick(frame++);
+        }
+        runtime.tick(frame);
+
+        assertEquals(2, runtime.slowTransitionCountdown(0));
+        assertEquals(-1, runtime.snapshot().slots().get(0).spriteVariant());
+
+        while (runtime.snapshot().slots().get(0).loaded()) {
+            runtime.tick(frame++);
+        }
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
     }
 
     @Test
