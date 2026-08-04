@@ -20,6 +20,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_OCTOROK = 0x09;
     private static final int ENTITY_MOBLIN = 0x0B;
     private static final int ENTITY_TEKTITE = 0x0D;
+    private static final int ENTITY_LEEVER = 0x0E;
     private static final int ENTITY_ARMOS_STATUE = 0x0F;
     private static final int ENTITY_GHINI = 0x12;
     private static final int ENTITY_KEESE = 0x19;
@@ -44,6 +45,7 @@ public final class RoomEntityRuntime {
     private final KeeseMotion keeseMotion = new KeeseMotion();
     private final RoamingEnemyMotion roamingEnemyMotion = new RoamingEnemyMotion();
     private final TektiteMotion tektiteMotion = new TektiteMotion();
+    private final LeeverMotion leeverMotion = new LeeverMotion();
     private final ArmosMotion armosMotion = new ArmosMotion();
     private final GhiniMotion ghiniMotion = new GhiniMotion();
     private final HardHatMotion hardHatMotion = new HardHatMotion();
@@ -170,6 +172,9 @@ public final class RoomEntityRuntime {
                 if (entity.type() == ENTITY_TEKTITE) {
                     tektiteMotion.initialize(entity.slot(), randomByteSupplier);
                 }
+                if (entity.type() == ENTITY_LEEVER) {
+                    leeverMotion.initialize(entity.slot());
+                }
                 if (entity.type() == ENTITY_ARMOS_STATUE) {
                     armosMotion.initialize(entity.slot());
                 }
@@ -196,6 +201,11 @@ public final class RoomEntityRuntime {
                 }
             }
             RoomEntity updated = entity;
+            if (wasInitializing && entity.type() == ENTITY_LEEVER) {
+                // EntityInitLeever calls SetEntitySpriteVariant($FF) before
+                // the first active handler dispatch.
+                updated = withVariant(entity, -1);
+            }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_BUTTERFLY) {
                 updated = butterflyMotion.advance(entity, frame, linkEntityX, linkEntityY,
@@ -214,6 +224,11 @@ public final class RoomEntityRuntime {
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_TEKTITE) {
                 updated = tektiteMotion.advance(entity, linkEntityX, linkEntityY,
+                    randomByteSupplier, backgroundCollision);
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_LEEVER) {
+                updated = leeverMotion.advance(entity, frame, linkEntityX, linkEntityY,
                     randomByteSupplier, backgroundCollision);
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
@@ -313,6 +328,9 @@ public final class RoomEntityRuntime {
                 || !RoomEntityCombatRules.supportsEnemyCollision(entity.type())) {
                 continue;
             }
+            if (entity.type() == ENTITY_LEEVER && !leeverMotion.isChasing(entity.slot())) {
+                continue;
+            }
             if (enemyFlashCountdown[entity.slot()] > 0
                 || enemyIgnoreHitsCountdown[entity.slot()] > 0) {
                 continue;
@@ -370,6 +388,7 @@ public final class RoomEntityRuntime {
         keeseMotion.clear(slot);
         roamingEnemyMotion.clear(slot);
         tektiteMotion.clear(slot);
+        leeverMotion.clear(slot);
         armosMotion.clear(slot);
         ghiniMotion.clear(slot);
         hardHatMotion.clear(slot);
@@ -473,6 +492,22 @@ public final class RoomEntityRuntime {
 
     int tektiteSpeedZ(int slot) {
         return tektiteMotion.speedZ(slot);
+    }
+
+    int leeverState(int slot) {
+        return leeverMotion.state(slot);
+    }
+
+    int leeverTransitionCountdown(int slot) {
+        return leeverMotion.transitionCountdown(slot);
+    }
+
+    int leeverSpeedX(int slot) {
+        return leeverMotion.speedX(slot);
+    }
+
+    int leeverSpeedY(int slot) {
+        return leeverMotion.speedY(slot);
     }
 
     int armosState(int slot) {
@@ -622,6 +657,13 @@ public final class RoomEntityRuntime {
             entity.spriteTileOffset(), entity.z());
     }
 
+    private static RoomEntity withVariant(RoomEntity entity, int variant) {
+        return new RoomEntity(
+            entity.slot(), entity.sourceLoadOrder(), entity.type(), entity.x(), entity.y(),
+            entity.status(), entity.spriteDefinition(), variant, entity.entityFlipAttribute(),
+            entity.spriteTileOffset(), entity.z());
+    }
+
     private void disableEntityWithoutPersistence(int slot) {
         slowTransitionCountdown[slot] = 0;
         slowTimerInitialized[slot] = false;
@@ -633,6 +675,7 @@ public final class RoomEntityRuntime {
         keeseMotion.clear(slot);
         roamingEnemyMotion.clear(slot);
         tektiteMotion.clear(slot);
+        leeverMotion.clear(slot);
         armosMotion.clear(slot);
         followingNpcMotion.clear(slot);
         ghiniMotion.clear(slot);

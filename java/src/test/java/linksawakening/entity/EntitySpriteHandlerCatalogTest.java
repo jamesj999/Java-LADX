@@ -127,6 +127,11 @@ final class EntitySpriteHandlerCatalogTest {
         assertDefinition(tektite, 0x06, 0x78B7,
             EntitySpriteDefinition.Shape.PAIR, 2, 0);
 
+        EntitySpriteDefinition leever = catalog.forEntityType(
+            0x0E, EntityRoomLoader.RoomTable.OVERWORLD);
+        assertDefinition(leever, 0x04, 0x7EE5,
+            EntitySpriteDefinition.Shape.PAIR, 4, 0);
+
         EntitySpriteDefinition ghini = catalog.forEntityType(
             0x12, EntityRoomLoader.RoomTable.OVERWORLD);
         assertDefinition(ghini, 0x04, 0x5BFC,
@@ -284,6 +289,15 @@ final class EntitySpriteHandlerCatalogTest {
         assertEquals(0x02, tektite.variant(0).first().attributes());
         assertEquals(0x5A, tektite.variant(1).first().tile());
         assertEquals(0x22, tektite.variant(1).second().attributes());
+
+        EntitySpriteDefinition leever = catalog.forEntityType(
+            0x0E, EntityRoomLoader.RoomTable.OVERWORLD);
+        assertEquals(0x56, leever.variant(0).first().tile());
+        assertEquals(0x02, leever.variant(0).first().attributes());
+        assertEquals(0x54, leever.variant(1).first().tile());
+        assertEquals(0x52, leever.variant(2).first().tile());
+        assertEquals(0x50, leever.variant(3).first().tile());
+        assertEquals(0x22, leever.variant(3).second().attributes());
 
         EntitySpriteDefinition ghini = catalog.forEntityType(
             0x12, EntityRoomLoader.RoomTable.OVERWORLD);

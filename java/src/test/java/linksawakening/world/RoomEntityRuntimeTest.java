@@ -596,6 +596,106 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void leeverUsesTheRomHideEmergeAndChaseStateBoundaries() {
+        EntitySpriteDefinition definition = pairDefinition(0x0E, 4);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x0E, 64, 64, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+        IntSupplier randomBytes = sequence(0x00);
+
+        runtime.tick(0, 120, 120, randomBytes);
+        assertEquals(1, runtime.leeverState(0));
+        assertEquals(0x1F, runtime.leeverTransitionCountdown(0));
+        assertEquals(-1, runtime.snapshot().slots().get(0).spriteVariant());
+
+        for (int frame = 1; frame <= 30; frame++) {
+            runtime.tick(frame, 120, 120, randomBytes);
+        }
+        assertEquals(1, runtime.leeverState(0));
+        assertEquals(1, runtime.leeverTransitionCountdown(0));
+        assertEquals(1, runtime.snapshot().slots().get(0).spriteVariant());
+
+        runtime.tick(31, 120, 120, randomBytes);
+        assertEquals(2, runtime.leeverState(0));
+        assertEquals(0x70, runtime.leeverTransitionCountdown(0));
+
+        runtime.tick(32, 80, 64, randomBytes);
+        assertEquals(0x08, runtime.leeverSpeedX(0));
+        assertEquals(0, runtime.leeverSpeedY(0));
+        assertEquals(2, runtime.snapshot().slots().get(0).spriteVariant());
+    }
+
+    @Test
+    void leeverInitializationAppliesTheRomHiddenSpriteVariantBeforeItsFirstHandlerPass() {
+        EntitySpriteDefinition definition = pairDefinition(0x0E, 4);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x0E, 64, 64, EntityStatus.INIT, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+
+        runtime.tick(0, 120, 120, sequence(0x00));
+
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
+        assertEquals(-1, runtime.snapshot().slots().get(0).spriteVariant());
+        assertEquals(0, runtime.leeverState(0));
+        assertEquals(0, runtime.leeverTransitionCountdown(0));
+    }
+
+    @Test
+    void leeverBurrowsAfterItsChaseTimerAndStartsTheRomHidingWindow() {
+        EntitySpriteDefinition definition = pairDefinition(0x0E, 4);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x0E, 64, 64, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+        IntSupplier randomBytes = sequence(0x00);
+
+        for (int frame = 0; frame <= 143; frame++) {
+            runtime.tick(frame, 120, 64, randomBytes);
+        }
+        assertEquals(3, runtime.leeverState(0));
+        assertEquals(0x1F, runtime.leeverTransitionCountdown(0));
+        assertEquals(0, runtime.leeverSpeedX(0));
+        assertEquals(0, runtime.leeverSpeedY(0));
+
+        for (int frame = 144; frame <= 173; frame++) {
+            runtime.tick(frame, 120, 64, randomBytes);
+        }
+        runtime.tick(174, 120, 64, randomBytes);
+        assertEquals(0, runtime.leeverState(0));
+        assertEquals(0x30, runtime.leeverTransitionCountdown(0));
+        assertEquals(0x08, runtime.leeverSpeedX(0));
+        assertEquals(0, runtime.leeverSpeedY(0));
+
+        runtime.tick(175, 120, 64, randomBytes);
+        assertEquals(-1, runtime.snapshot().slots().get(0).spriteVariant());
+    }
+
+    @Test
+    void leeverOnlyUsesItsHealthGroupOneCombatValuesWhileChasing() {
+        EntitySpriteDefinition definition = pairDefinition(0x0E, 4);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x0E, 64, 64, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+        IntSupplier randomBytes = sequence(0x00);
+
+        List<EntityCombatEvent> hiddenContact = runtime.resolveCombat(
+            1, 64, 64, false, true, false, 0, 0, 0, 0);
+        assertTrue(hiddenContact.isEmpty());
+
+        for (int frame = 0; frame <= 31; frame++) {
+            runtime.tick(frame, 120, 120, randomBytes);
+        }
+        List<EntityCombatEvent> contact = runtime.resolveCombat(
+            1, 64, 64, false, true, false, 0, 0, 0, 0);
+        assertEquals(1, contact.size());
+        assertEquals(0x04, contact.get(0).linkDamage());
+
+        List<EntityCombatEvent> sword = runtime.resolveCombat(
+            0, 120, 120, false, true, true, 72, 1, 72, 1);
+        assertEquals(1, sword.size());
+        assertEquals(1, runtime.enemyHealth(0));
+    }
+
+    @Test
     void dynamicGhostRuntimeAdvancesZBobEvenWhenItsVariantIsUnchanged() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
             .forFollowerEntityType(0xD4);

@@ -86,6 +86,11 @@ resource.
   fixed-point X/Y/Z updates. Its health-group `$01` path provides two health
   points and `$04` contact damage; wall-collision reversal, recoil, and full
   background/water interaction remain pending.
+- Leever now decodes the four-entry bank `$04` display list and mirrors the
+  hide/emerge/chase/burrow state loop, `$1F`/`$70`/`$30` ROM countdown bases,
+  chase-only combat gate, `$08` Link-vector refresh, and fixed-point movement.
+  Its health-group `$01` values provide two health points and `$04` contact
+  damage; background interaction and recoil remain pending.
 - `CreateFollowingNpcEntity` now runs on room load/state changes with the
   source indoor/map/room exclusions, source-order slot reuse, highest-free-slot
   `SpawnNewEntity` behavior, Link/wC13B spawn coordinates, Ghost trigger-state
