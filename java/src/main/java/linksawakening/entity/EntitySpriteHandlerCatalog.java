@@ -18,6 +18,7 @@ public final class EntitySpriteHandlerCatalog {
     private static final int ENTITY_TEKTITE = 0x0D;
     private static final int ENTITY_LEEVER = 0x0E;
     private static final int ENTITY_STALFOS_AGGRESSIVE = 0x1A;
+    private static final int ENTITY_GIBDO = 0x1F;
     private static final int ENTITY_PEAHAT = 0xA0;
     private static final int ENTITY_ARMOS_STATUE = 0x0F;
     private static final int ENTITY_GHINI = 0x12;
@@ -111,6 +112,9 @@ public final class EntitySpriteHandlerCatalog {
         }
         if (entityType == ENTITY_STALFOS_AGGRESSIVE) {
             return decodePair(entityType, 0x06, 0x4AA8, 3, 0);
+        }
+        if (entityType == ENTITY_GIBDO) {
+            return decodePair(entityType, 0x06, mapId == 0x07 ? 0x7E77 : 0x7E6F, 2, 0);
         }
         if (entityType == ENTITY_PEAHAT) {
             return decodePair(entityType, 0x07, 0x6701, 2, 0);

@@ -830,6 +830,87 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void gibdoRunsTheRomInitDirectionChoiceAndFixedPointWalk() {
+        EntitySpriteDefinition definition = pairDefinition(0x1F, 2);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x1F, 64, 64, EntityStatus.INIT, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+
+        // EntityInitHandlersTable._1F only increments the state. The first
+        // handler pass therefore takes the forced-direction path.
+        runtime.tick(0, 120, 120, sequence(0xFF));
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
+        assertEquals(1, runtime.gibdoState(0));
+        assertEquals(0, runtime.gibdoSpeedX(0));
+        assertEquals(0, runtime.gibdoSpeedY(0));
+
+        // LikeLikeGibdoSpeeds[2] is $F8 (-8 pixels per 16 frames).
+        runtime.tick(1, 120, 120, sequence(0x02));
+        assertEquals(0, runtime.gibdoState(0));
+        assertEquals(0xF8, runtime.gibdoSpeedX(0));
+        assertEquals(0, runtime.gibdoSpeedY(0));
+        assertEquals(64, runtime.snapshot().slots().get(0).x());
+
+        // A nonzero random low six bits keeps the selected direction and the
+        // ROM fixed-point update moves the entity left by one pixel here.
+        runtime.tick(2, 120, 120, sequence(0x01));
+        assertEquals(63, runtime.snapshot().slots().get(0).x());
+        assertEquals(0xF8, runtime.gibdoSpeedX(0));
+    }
+
+    @Test
+    void gibdoFallsBackToTheRomVerticalSpeedTableWhenHorizontalSpeedIsZero() {
+        EntitySpriteDefinition definition = pairDefinition(0x1F, 2);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x1F, 64, 64, EntityStatus.INIT, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+
+        runtime.tick(0, 120, 120, sequence(0x00));
+        runtime.tick(1, 120, 120, sequence(0x00, 0x01));
+
+        assertEquals(0, runtime.gibdoSpeedX(0));
+        assertEquals(0x08, runtime.gibdoSpeedY(0));
+        assertEquals(64, runtime.snapshot().slots().get(0).x());
+        assertEquals(64, runtime.snapshot().slots().get(0).y());
+    }
+
+    @Test
+    void gibdoReversesTheMovingAxisWhenTheBackgroundQueryBlocksIt() {
+        EntitySpriteDefinition definition = pairDefinition(0x1F, 2);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x1F, 64, 64, EntityStatus.INIT, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+        runtime.tick(0, 120, 120, sequence(0xFF));
+        runtime.tick(1, 120, 120, sequence(0x02));
+
+        RoomEntityBackgroundCollision leftWall = (entity, direction, nextX, nextY) -> direction == 1;
+        runtime.tick(2, 120, 120, sequence(0x01), leftWall);
+
+        assertEquals(64, runtime.snapshot().slots().get(0).x());
+        assertEquals(0x08, runtime.gibdoSpeedX(0));
+    }
+
+    @Test
+    void gibdoUsesHealthGroupTwoFCombatValues() {
+        EntitySpriteDefinition definition = pairDefinition(0x1F, 2);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x1F, 64, 64, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+
+        List<EntityCombatEvent> contact = runtime.resolveCombat(
+            1, 64, 64, false, true, false, 0, 0, 0, 0);
+        assertEquals(1, contact.size());
+        assertEquals(0x08, contact.get(0).linkDamage());
+        assertEquals(0x06, runtime.enemyHealth(0));
+
+        List<EntityCombatEvent> sword = runtime.resolveCombat(
+            1, 72, 72, false, true, true, 72, 1, 72, 1);
+        assertEquals(1, sword.size());
+        assertTrue(sword.get(0).swordHit());
+        assertEquals(0x05, runtime.enemyHealth(0));
+    }
+
+    @Test
     void dynamicGhostRuntimeAdvancesZBobEvenWhenItsVariantIsUnchanged() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
             .forFollowerEntityType(0xD4);

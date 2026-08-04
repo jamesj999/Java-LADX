@@ -101,6 +101,12 @@ resource.
   four-state Z arc, `$10`/`$20` landing countdowns, and health group `$2A`
   combat values. Landing dust/background collision flags, recoil, Color Dungeon
   special handling, and the full damage-state matrix remain pending.
+- Gibdo now selects the regular bank `$06` pair list or Turtle Rock's alternate
+  list, mirrors its init-state direction choice, `$00/$08/$F8/$00` and
+  `$F8/$08` random-walk speed tables, fixed-point movement, and directional
+  background bounce. Its normal health-group `$2F` path provides six health
+  points and `$08` contact damage; exact collision-flag/object interaction,
+  recoil, and the full damage-state matrix remain pending.
 - `CreateFollowingNpcEntity` now runs on room load/state changes with the
   source indoor/map/room exclusions, source-order slot reuse, highest-free-slot
   `SpawnNewEntity` behavior, Link/wC13B spawn coordinates, Ghost trigger-state

@@ -137,6 +137,16 @@ final class EntitySpriteHandlerCatalogTest {
         assertDefinition(stalfos, 0x06, 0x4AA8,
             EntitySpriteDefinition.Shape.PAIR, 3, 0);
 
+        EntitySpriteDefinition gibdo = catalog.forEntityType(
+            0x1F, EntityRoomLoader.RoomTable.INDOORS_B);
+        assertDefinition(gibdo, 0x06, 0x7E6F,
+            EntitySpriteDefinition.Shape.PAIR, 2, 0);
+
+        EntitySpriteDefinition turtleRockGibdo = catalog.forEntityType(
+            0x1F, EntityRoomLoader.RoomTable.INDOORS_B, 0x07);
+        assertDefinition(turtleRockGibdo, 0x06, 0x7E77,
+            EntitySpriteDefinition.Shape.PAIR, 2, 0);
+
         EntitySpriteDefinition peaHat = catalog.forEntityType(
             0xA0, EntityRoomLoader.RoomTable.INDOORS_B);
         assertDefinition(peaHat, 0x07, 0x6701,
@@ -317,6 +327,19 @@ final class EntitySpriteHandlerCatalogTest {
         assertEquals(0x20, stalfos.variant(1).first().attributes());
         assertEquals(0x4E, stalfos.variant(2).first().tile());
         assertEquals(0x20, stalfos.variant(2).second().attributes());
+
+        EntitySpriteDefinition gibdo = catalog.forEntityType(
+            0x1F, EntityRoomLoader.RoomTable.INDOORS_B);
+        assertEquals(0x74, gibdo.variant(0).first().tile());
+        assertEquals(0x02, gibdo.variant(0).first().attributes());
+        assertEquals(0x76, gibdo.variant(0).second().tile());
+        assertEquals(0x22, gibdo.variant(1).second().attributes());
+
+        EntitySpriteDefinition turtleRockGibdo = catalog.forEntityType(
+            0x1F, EntityRoomLoader.RoomTable.INDOORS_B, 0x07);
+        assertEquals(0x44, turtleRockGibdo.variant(0).first().tile());
+        assertEquals(0x46, turtleRockGibdo.variant(0).second().tile());
+        assertEquals(0x22, turtleRockGibdo.variant(1).first().attributes());
 
         EntitySpriteDefinition peaHat = catalog.forEntityType(
             0xA0, EntityRoomLoader.RoomTable.INDOORS_B);
