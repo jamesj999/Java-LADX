@@ -6,6 +6,7 @@ public final class RoomEntityCombatRules {
     private static final int ENTITY_MOBLIN = 0x0B;
     private static final int ENTITY_TEKTITE = 0x0D;
     private static final int ENTITY_LEEVER = 0x0E;
+    private static final int ENTITY_PEAHAT = 0xA0;
     private static final int ENTITY_ARMOS_STATUE = 0x0F;
     private static final int ENTITY_GHINI = 0x12;
     private static final int ENTITY_KEESE = 0x19;
@@ -35,7 +36,8 @@ public final class RoomEntityCombatRules {
 
     static boolean supportsEnemyCollision(int type) {
         return switch (type & 0xFF) {
-            case ENTITY_KEESE, ENTITY_MOBLIN, ENTITY_TEKTITE, ENTITY_LEEVER, ENTITY_GHINI,
+            case ENTITY_KEESE, ENTITY_MOBLIN, ENTITY_TEKTITE, ENTITY_LEEVER, ENTITY_PEAHAT,
+                ENTITY_GHINI,
                 ENTITY_HARDHAT_BEETLE,
                 ENTITY_OCTOROK -> true;
             default -> false;
@@ -48,8 +50,10 @@ public final class RoomEntityCombatRules {
 
     static int contactDamage(int type) {
         return switch (type & 0xFF) {
-            case ENTITY_KEESE, ENTITY_OCTOROK -> OCTOROK_AND_KEESE_CONTACT_DAMAGE;
-            case ENTITY_MOBLIN, ENTITY_TEKTITE, ENTITY_LEEVER -> MOBLIN_CONTACT_DAMAGE;
+            case ENTITY_KEESE, ENTITY_OCTOROK, ENTITY_PEAHAT ->
+                OCTOROK_AND_KEESE_CONTACT_DAMAGE;
+            case ENTITY_MOBLIN, ENTITY_TEKTITE, ENTITY_LEEVER ->
+                MOBLIN_CONTACT_DAMAGE;
             case ENTITY_GHINI -> GHINI_CONTACT_DAMAGE;
             case ENTITY_HARDHAT_BEETLE -> HARDHAT_CONTACT_DAMAGE;
             default -> 0;
@@ -58,7 +62,8 @@ public final class RoomEntityCombatRules {
 
     static int initialHealth(int type) {
         return switch (type & 0xFF) {
-            case ENTITY_KEESE, ENTITY_OCTOROK -> OCTOROK_AND_KEESE_INITIAL_HEALTH;
+            case ENTITY_KEESE, ENTITY_OCTOROK, ENTITY_PEAHAT ->
+                OCTOROK_AND_KEESE_INITIAL_HEALTH;
             case ENTITY_MOBLIN, ENTITY_TEKTITE, ENTITY_LEEVER -> MOBLIN_INITIAL_HEALTH;
             case ENTITY_GHINI -> GHINI_INITIAL_HEALTH;
             case ENTITY_HARDHAT_BEETLE -> HARDHAT_INITIAL_HEALTH;

@@ -696,6 +696,81 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void peaHatRunsTheRomRestTakeoffAndHeightAnimationStates() {
+        EntitySpriteDefinition definition = pairDefinition(0xA0, 2);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0xA0, 64, 64, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+        IntSupplier randomBytes = sequence(0x00);
+
+        runtime.tick(0, 120, 120, randomBytes);
+        assertEquals(1, runtime.peaHatState(0));
+        assertEquals(0, runtime.peaHatPrivateState1(0));
+        assertEquals(0, runtime.snapshot().slots().get(0).z());
+        assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
+
+        for (int frame = 1; frame <= 128; frame++) {
+            runtime.tick(frame, 120, 120, randomBytes);
+        }
+        assertEquals(1, runtime.peaHatState(0));
+        assertEquals(8, runtime.peaHatPrivateState1(0));
+
+        runtime.tick(129, 120, 120, randomBytes);
+        assertEquals(2, runtime.peaHatState(0));
+        assertEquals(0x80, runtime.peaHatSlowTransitionCountdown(0));
+
+        for (int frame = 130; frame <= 136; frame++) {
+            runtime.tick(frame, 120, 120, randomBytes);
+        }
+        assertEquals(1, runtime.snapshot().slots().get(0).z());
+    }
+
+    @Test
+    void peaHatUsesTheRomPhaseTablesAfterReachingItsMaximumHeight() {
+        EntitySpriteDefinition definition = pairDefinition(0xA0, 2);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0xA0, 64, 64, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+        IntSupplier randomBytes = sequence(0x00);
+
+        for (int frame = 0; frame <= 280; frame++) {
+            runtime.tick(frame, 120, 120, randomBytes);
+        }
+
+        assertEquals(2, runtime.peaHatState(0));
+        assertEquals(0x10, runtime.snapshot().slots().get(0).z());
+        assertEquals(0, runtime.peaHatPrivateState4(0));
+        assertEquals(0x07, runtime.peaHatSpeedX(0));
+        assertEquals(0, runtime.peaHatSpeedY(0));
+
+        for (int frame = 281; frame <= 304; frame++) {
+            runtime.tick(frame, 120, 120, randomBytes);
+        }
+
+        assertEquals(0x0F, runtime.peaHatPrivateState4(0));
+        assertEquals(0x06, runtime.peaHatSpeedX(0));
+        assertEquals(0xFD, runtime.peaHatSpeedY(0));
+    }
+
+    @Test
+    void peaHatIsCombatVulnerableOnlyWhileGrounded() {
+        EntitySpriteDefinition definition = pairDefinition(0xA0, 2);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0xA0, 64, 64, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+
+        List<EntityCombatEvent> grounded = runtime.resolveCombat(
+            1, 64, 64, false, true, false, 0, 0, 0, 0);
+        assertEquals(1, grounded.size());
+        assertEquals(0x04, grounded.get(0).linkDamage());
+
+        runtime.tick(0, 120, 120, sequence(0x00));
+        List<EntityCombatEvent> airborne = runtime.resolveCombat(
+            1, 64, 64, false, true, false, 0, 0, 0, 0);
+        assertTrue(airborne.isEmpty());
+    }
+
+    @Test
     void dynamicGhostRuntimeAdvancesZBobEvenWhenItsVariantIsUnchanged() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
             .forFollowerEntityType(0xD4);

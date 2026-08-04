@@ -91,6 +91,11 @@ resource.
   chase-only combat gate, `$08` Link-vector refresh, and fixed-point movement.
   Its health-group `$01` values provide two health points and `$04` contact
   damage; background interaction and recoil remain pending.
+- PeaHat now decodes the bank `$07` pair display list and mirrors its resting,
+  takeoff, and flying states, slow-countdown cadence, carry-aware animation,
+  direct Z ascent/descent, and contiguous ROM phase-speed tables. Its grounded
+  health-group `$00` contact/sword path is wired; hitbox-flag and sword-clink
+  plumbing, recoil, background interaction, and water behavior remain pending.
 - `CreateFollowingNpcEntity` now runs on room load/state changes with the
   source indoor/map/room exclusions, source-order slot reuse, highest-free-slot
   `SpawnNewEntity` behavior, Link/wC13B spawn coordinates, Ghost trigger-state

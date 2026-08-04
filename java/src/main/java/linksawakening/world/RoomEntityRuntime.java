@@ -21,6 +21,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_MOBLIN = 0x0B;
     private static final int ENTITY_TEKTITE = 0x0D;
     private static final int ENTITY_LEEVER = 0x0E;
+    private static final int ENTITY_PEAHAT = 0xA0;
     private static final int ENTITY_ARMOS_STATUE = 0x0F;
     private static final int ENTITY_GHINI = 0x12;
     private static final int ENTITY_KEESE = 0x19;
@@ -46,6 +47,7 @@ public final class RoomEntityRuntime {
     private final RoamingEnemyMotion roamingEnemyMotion = new RoamingEnemyMotion();
     private final TektiteMotion tektiteMotion = new TektiteMotion();
     private final LeeverMotion leeverMotion = new LeeverMotion();
+    private final PeaHatMotion peaHatMotion = new PeaHatMotion();
     private final ArmosMotion armosMotion = new ArmosMotion();
     private final GhiniMotion ghiniMotion = new GhiniMotion();
     private final HardHatMotion hardHatMotion = new HardHatMotion();
@@ -175,6 +177,9 @@ public final class RoomEntityRuntime {
                 if (entity.type() == ENTITY_LEEVER) {
                     leeverMotion.initialize(entity.slot());
                 }
+                if (entity.type() == ENTITY_PEAHAT) {
+                    peaHatMotion.initialize(entity.slot());
+                }
                 if (entity.type() == ENTITY_ARMOS_STATUE) {
                     armosMotion.initialize(entity.slot());
                 }
@@ -230,6 +235,11 @@ public final class RoomEntityRuntime {
                 && entity.type() == ENTITY_LEEVER) {
                 updated = leeverMotion.advance(entity, frame, linkEntityX, linkEntityY,
                     randomByteSupplier, backgroundCollision);
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_PEAHAT) {
+                updated = peaHatMotion.advance(entity, frame, randomByteSupplier,
+                    backgroundCollision);
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_ARMOS_STATUE) {
@@ -331,6 +341,9 @@ public final class RoomEntityRuntime {
             if (entity.type() == ENTITY_LEEVER && !leeverMotion.isChasing(entity.slot())) {
                 continue;
             }
+            if (entity.type() == ENTITY_PEAHAT && !peaHatMotion.isGrounded(entity)) {
+                continue;
+            }
             if (enemyFlashCountdown[entity.slot()] > 0
                 || enemyIgnoreHitsCountdown[entity.slot()] > 0) {
                 continue;
@@ -389,6 +402,7 @@ public final class RoomEntityRuntime {
         roamingEnemyMotion.clear(slot);
         tektiteMotion.clear(slot);
         leeverMotion.clear(slot);
+        peaHatMotion.clear(slot);
         armosMotion.clear(slot);
         ghiniMotion.clear(slot);
         hardHatMotion.clear(slot);
@@ -508,6 +522,38 @@ public final class RoomEntityRuntime {
 
     int leeverSpeedY(int slot) {
         return leeverMotion.speedY(slot);
+    }
+
+    int peaHatState(int slot) {
+        return peaHatMotion.state(slot);
+    }
+
+    int peaHatSlowTransitionCountdown(int slot) {
+        return peaHatMotion.slowTransitionCountdown(slot);
+    }
+
+    int peaHatPrivateState1(int slot) {
+        return peaHatMotion.privateState1(slot);
+    }
+
+    int peaHatPrivateState2(int slot) {
+        return peaHatMotion.privateState2(slot);
+    }
+
+    int peaHatPrivateState3(int slot) {
+        return peaHatMotion.privateState3(slot);
+    }
+
+    int peaHatPrivateState4(int slot) {
+        return peaHatMotion.privateState4(slot);
+    }
+
+    int peaHatSpeedX(int slot) {
+        return peaHatMotion.speedX(slot);
+    }
+
+    int peaHatSpeedY(int slot) {
+        return peaHatMotion.speedY(slot);
     }
 
     int armosState(int slot) {
@@ -676,6 +722,7 @@ public final class RoomEntityRuntime {
         roamingEnemyMotion.clear(slot);
         tektiteMotion.clear(slot);
         leeverMotion.clear(slot);
+        peaHatMotion.clear(slot);
         armosMotion.clear(slot);
         followingNpcMotion.clear(slot);
         ghiniMotion.clear(slot);

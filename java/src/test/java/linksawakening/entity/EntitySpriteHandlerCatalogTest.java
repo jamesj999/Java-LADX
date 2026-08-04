@@ -132,6 +132,11 @@ final class EntitySpriteHandlerCatalogTest {
         assertDefinition(leever, 0x04, 0x7EE5,
             EntitySpriteDefinition.Shape.PAIR, 4, 0);
 
+        EntitySpriteDefinition peaHat = catalog.forEntityType(
+            0xA0, EntityRoomLoader.RoomTable.INDOORS_B);
+        assertDefinition(peaHat, 0x07, 0x6701,
+            EntitySpriteDefinition.Shape.PAIR, 2, 0);
+
         EntitySpriteDefinition ghini = catalog.forEntityType(
             0x12, EntityRoomLoader.RoomTable.OVERWORLD);
         assertDefinition(ghini, 0x04, 0x5BFC,
@@ -298,6 +303,13 @@ final class EntitySpriteHandlerCatalogTest {
         assertEquals(0x52, leever.variant(2).first().tile());
         assertEquals(0x50, leever.variant(3).first().tile());
         assertEquals(0x22, leever.variant(3).second().attributes());
+
+        EntitySpriteDefinition peaHat = catalog.forEntityType(
+            0xA0, EntityRoomLoader.RoomTable.INDOORS_B);
+        assertEquals(0x40, peaHat.variant(0).first().tile());
+        assertEquals(0x02, peaHat.variant(0).first().attributes());
+        assertEquals(0x42, peaHat.variant(1).first().tile());
+        assertEquals(0x22, peaHat.variant(1).second().attributes());
 
         EntitySpriteDefinition ghini = catalog.forEntityType(
             0x12, EntityRoomLoader.RoomTable.OVERWORLD);
