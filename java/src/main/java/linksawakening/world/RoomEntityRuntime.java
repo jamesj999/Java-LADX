@@ -19,6 +19,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_BUTTERFLY = 0x6E;
     private static final int ENTITY_OCTOROK = 0x09;
     private static final int ENTITY_MOBLIN = 0x0B;
+    private static final int ENTITY_TEKTITE = 0x0D;
     private static final int ENTITY_ARMOS_STATUE = 0x0F;
     private static final int ENTITY_GHINI = 0x12;
     private static final int ENTITY_KEESE = 0x19;
@@ -42,6 +43,7 @@ public final class RoomEntityRuntime {
     private final ButterflyMotion butterflyMotion = new ButterflyMotion();
     private final KeeseMotion keeseMotion = new KeeseMotion();
     private final RoamingEnemyMotion roamingEnemyMotion = new RoamingEnemyMotion();
+    private final TektiteMotion tektiteMotion = new TektiteMotion();
     private final ArmosMotion armosMotion = new ArmosMotion();
     private final GhiniMotion ghiniMotion = new GhiniMotion();
     private final HardHatMotion hardHatMotion = new HardHatMotion();
@@ -165,6 +167,9 @@ public final class RoomEntityRuntime {
                 if (entity.type() == ENTITY_OCTOROK || entity.type() == ENTITY_MOBLIN) {
                     roamingEnemyMotion.initialize(entity.slot());
                 }
+                if (entity.type() == ENTITY_TEKTITE) {
+                    tektiteMotion.initialize(entity.slot(), randomByteSupplier);
+                }
                 if (entity.type() == ENTITY_ARMOS_STATUE) {
                     armosMotion.initialize(entity.slot());
                 }
@@ -204,6 +209,11 @@ public final class RoomEntityRuntime {
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && isRoamingEnemyType(entity.type())) {
                 updated = roamingEnemyMotion.advance(entity, linkEntityX, linkEntityY,
+                    randomByteSupplier, backgroundCollision);
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_TEKTITE) {
+                updated = tektiteMotion.advance(entity, linkEntityX, linkEntityY,
                     randomByteSupplier, backgroundCollision);
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
@@ -359,6 +369,7 @@ public final class RoomEntityRuntime {
         butterflyMotion.clear(slot);
         keeseMotion.clear(slot);
         roamingEnemyMotion.clear(slot);
+        tektiteMotion.clear(slot);
         armosMotion.clear(slot);
         ghiniMotion.clear(slot);
         hardHatMotion.clear(slot);
@@ -442,6 +453,26 @@ public final class RoomEntityRuntime {
 
     int octorokSpeedY(int slot) {
         return roamingEnemyMotion.speedY(slot);
+    }
+
+    int tektiteState(int slot) {
+        return tektiteMotion.state(slot);
+    }
+
+    int tektiteTransitionCountdown(int slot) {
+        return tektiteMotion.transitionCountdown(slot);
+    }
+
+    int tektiteSpeedX(int slot) {
+        return tektiteMotion.speedX(slot);
+    }
+
+    int tektiteSpeedY(int slot) {
+        return tektiteMotion.speedY(slot);
+    }
+
+    int tektiteSpeedZ(int slot) {
+        return tektiteMotion.speedZ(slot);
     }
 
     int armosState(int slot) {
@@ -601,6 +632,7 @@ public final class RoomEntityRuntime {
         butterflyMotion.clear(slot);
         keeseMotion.clear(slot);
         roamingEnemyMotion.clear(slot);
+        tektiteMotion.clear(slot);
         armosMotion.clear(slot);
         followingNpcMotion.clear(slot);
         ghiniMotion.clear(slot);

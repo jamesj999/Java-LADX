@@ -514,6 +514,88 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void tektiteLandsWithTheRomCountdownThenStartsItsNextJump() {
+        EntitySpriteDefinition definition = pairDefinition(0x0D, 2);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x0D, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0x80));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+        IntSupplier randomBytes = sequence(0x00, 0x00, 0x00, 0x00);
+
+        runtime.tick(0, 120, 120, randomBytes);
+        assertEquals(1, runtime.tektiteState(0));
+        assertEquals(0x10, runtime.tektiteTransitionCountdown(0));
+        assertEquals(0, runtime.snapshot().slots().get(0).z());
+        assertEquals(1, runtime.snapshot().slots().get(0).spriteVariant());
+
+        for (int frame = 1; frame <= 16; frame++) {
+            runtime.tick(frame, 120, 120, randomBytes);
+        }
+        assertEquals(1, runtime.tektiteState(0));
+        assertEquals(0, runtime.tektiteTransitionCountdown(0));
+
+        for (int frame = 17; frame <= 31; frame++) {
+            runtime.tick(frame, 120, 120, randomBytes);
+        }
+        runtime.tick(32, 120, 120, randomBytes);
+        assertEquals(0, runtime.tektiteState(0));
+        assertEquals(0x10, runtime.tektiteSpeedZ(0));
+        assertEquals(0x10, runtime.tektiteSpeedX(0));
+        assertEquals(0x10, runtime.tektiteSpeedY(0));
+        assertEquals(1, runtime.snapshot().slots().get(0).z());
+        assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
+    }
+
+    @Test
+    void tektiteAddsTheRomLandingTimerBaseAfterMaskingRandomness() {
+        EntitySpriteDefinition definition = pairDefinition(0x0D, 2);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x0D, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0x80));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+
+        runtime.tick(0, 120, 120, sequence(0x1F));
+
+        assertEquals(0x2F, runtime.tektiteTransitionCountdown(0));
+    }
+
+    @Test
+    void tektiteCanReplaceItsRandomJumpDirectionWithTheRomLinkVector() {
+        EntitySpriteDefinition definition = pairDefinition(0x0D, 2);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x0D, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0x80));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+
+        IntSupplier randomBytes = sequence(0x00, 0x00, 0x00, 0x01);
+        runtime.tick(0, 120, 120, randomBytes);
+        for (int frame = 1; frame <= 32; frame++) {
+            runtime.tick(frame, 80, 72, randomBytes);
+        }
+
+        assertEquals(0x14, runtime.tektiteSpeedX(0));
+        // GetEntityYDistanceToLink includes the post-launch Z position, so
+        // dy is 9 here and the ROM divide loop yields 11.
+        assertEquals(0x0B, runtime.tektiteSpeedY(0));
+    }
+
+    @Test
+    void tektiteUsesTheHealthGroupOneContactAndSwordValues() {
+        EntitySpriteDefinition definition = pairDefinition(0x0D, 2);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x0D, 64, 64, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+
+        List<EntityCombatEvent> contact = runtime.resolveCombat(
+            1, 64, 64, false, true, false, 0, 0, 0, 0);
+        assertEquals(1, contact.size());
+        assertEquals(0x04, contact.get(0).linkDamage());
+
+        List<EntityCombatEvent> firstHit = runtime.resolveCombat(
+            0, 120, 120, false, true, true, 72, 1, 72, 1);
+        assertEquals(1, firstHit.size());
+        assertEquals(0x01, runtime.enemyHealth(0));
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
+    }
+
+    @Test
     void dynamicGhostRuntimeAdvancesZBobEvenWhenItsVariantIsUnchanged() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
             .forFollowerEntityType(0xD4);

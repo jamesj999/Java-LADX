@@ -80,6 +80,12 @@ resource.
   movement. Its ROM normal hitbox drives wake-up; final-Link-position plumbing,
   flash/harmlessness transitions, background interaction, and active-state
   sword/contact damage remain pending.
+- Tektite now decodes the bank `$06` pair display list and mirrors its state-0
+  Z-gravity/landing transition, state-1 `$20` inertia animation, `$10` landing
+  countdown, ROM direction tables, Z-aware `$14` vector toward Link, and
+  fixed-point X/Y/Z updates. Its health-group `$01` path provides two health
+  points and `$04` contact damage; wall-collision reversal, recoil, and full
+  background/water interaction remain pending.
 - `CreateFollowingNpcEntity` now runs on room load/state changes with the
   source indoor/map/room exclusions, source-order slot reuse, highest-free-slot
   `SpawnNewEntity` behavior, Link/wC13B spawn coordinates, Ghost trigger-state
