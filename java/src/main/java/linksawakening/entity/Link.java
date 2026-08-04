@@ -224,6 +224,21 @@ public final class Link implements RocsFeather.JumpTarget {
         return subY >> SUB_PIXEL_SHIFT;
     }
 
+    /** ROM hLinkPositionX: the first 8x16 OAM column's X origin. */
+    public int romEntityX() {
+        return pixelX() + 0x08;
+    }
+
+    /** ROM hLinkPositionY before the separate vertical Z offset is applied. */
+    public int romEntityY() {
+        return pixelY() + 0x10;
+    }
+
+    /** ROM wC145: the Y origin used by sword collision while airborne. */
+    public int romSwordCollisionY() {
+        return romEntityY() - zPixels();
+    }
+
     public int direction() {
         return direction;
     }

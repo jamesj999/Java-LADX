@@ -5,6 +5,8 @@ import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
 import linksawakening.vfx.TransientVfxSystem;
 
+import java.util.List;
+
 import static linksawakening.world.RoomConstants.ROOM_PIXEL_HEIGHT;
 import static linksawakening.world.RoomConstants.ROOM_PIXEL_WIDTH;
 
@@ -155,15 +157,36 @@ public final class RoomSession {
         tickEntities(frameCounter, 0, 0);
     }
 
-    public void tickEntities(int frameCounter, int linkPixelX, int linkPixelY) {
+    public void tickEntities(int frameCounter, int linkEntityX, int linkEntityY) {
         if (activeRoom == null || entityRuntime == null) {
             return;
         }
         // rLY is not a meaningful value in the host renderer. Keep the
         // non-emulator policy explicit while preserving the ROM seed update.
         entityRandomByteSource.beginFrame(frameCounter & 0xFF, 0);
-        entityRuntime.tick(frameCounter, linkPixelX, linkPixelY, entityRandomByteSource);
+        entityRuntime.tick(frameCounter, linkEntityX, linkEntityY, entityRandomByteSource);
         activeRoom.replaceEntities(entityRuntime.snapshot());
+    }
+
+    /** Applies the active room's ROM enemy/sword collision pass. */
+    public List<EntityCombatEvent> resolveEntityCombat(int frameCounter,
+                                                       int linkEntityX,
+                                                       int linkEntityY,
+                                                       boolean linkAirborne,
+                                                       boolean linkInteractive,
+                                                       boolean swordCollisionActive,
+                                                       int swordX,
+                                                       int swordWidth,
+                                                       int swordY,
+                                                       int swordHeight) {
+        if (activeRoom == null || entityRuntime == null) {
+            return List.of();
+        }
+        List<EntityCombatEvent> events = entityRuntime.resolveCombat(
+            frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive,
+            swordCollisionActive, swordX, swordWidth, swordY, swordHeight);
+        activeRoom.replaceEntities(entityRuntime.snapshot());
+        return events;
     }
 
     public int clearEntity(int slot) {

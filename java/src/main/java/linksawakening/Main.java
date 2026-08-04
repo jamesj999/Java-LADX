@@ -57,6 +57,7 @@ import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.DroppableRupeeSystem;
 import linksawakening.world.ActiveRoom;
+import linksawakening.world.EntityCombatEvent;
 import linksawakening.world.EntityPickupEvent;
 import linksawakening.world.OverworldBushInteraction;
 import linksawakening.world.OverworldTilesetTable;
@@ -453,12 +454,39 @@ public class Main {
                 link.tickAnimation();
             }
 
+            if (link != null && roomSession != null
+                && !scrollController.isActive()
+                && !transitionController.isInputBlocked()
+                && !inventoryController.shouldBlockOverworldInput()
+                && !dialogBlocksGameplay) {
+                Sword sword = equipmentController.activeSword();
+                Sword.CollisionBox swordBox = sword == null
+                    ? Sword.CollisionBox.inactive()
+                    : sword.enemyCollisionBox(link.romEntityX(), link.romSwordCollisionY(),
+                        link.direction());
+                for (EntityCombatEvent event : roomSession.resolveEntityCombat(
+                    frameCounter, link.romEntityX(), link.romEntityY(),
+                    link.isAirborne(), true,
+                    swordBox.active(), swordBox.x(), swordBox.width(),
+                    swordBox.y(), swordBox.height())) {
+                    if (event.linkDamage() > 0 && playerState.invincibilityCounter() == 0) {
+                        playerState.damage(event.linkDamage());
+                        playerState.setInvincibilityCounter(0x50);
+                    }
+                }
+            }
+
             // The original calls AnimateEntities after Link movement and
             // room-transition application. Give handlers the same current
             // position and active-room snapshot.
-            if (roomSession != null) {
+            if (roomSession != null
+                && !scrollController.isActive()
+                && !transitionController.isInputBlocked()
+                && !inventoryController.shouldBlockOverworldInput()
+                && !dialogBlocksGameplay) {
                 roomSession.tickEntities(frameCounter,
-                    link == null ? 0 : link.pixelX(), link == null ? 0 : link.pixelY());
+                    link == null ? 0x08 : link.romEntityX(),
+                    link == null ? 0x10 : link.romEntityY());
             }
 
             // Advance the animated BG tiles (waterfalls, weather vanes, etc.).

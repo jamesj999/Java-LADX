@@ -23,16 +23,42 @@ progress log, not a claim of complete game parity.
 The complete Java test suite passes for this slice with the shipped ROM test
 resource.
 
+## Verified entity runtime increments — 2026-08-04
+
+- Static pickup and NPC handlers now advance through a mutable sixteen-slot
+  runtime, including frame-driven Piece of Power, Butterfly, and kid variants.
+- Room-defined indoor droppables mirror the `$80` slow-transition timer,
+  four-frame decrement cadence, blink sentinel, and unload boundary.
+- Pickup collision uses the ROM pickable table, hitbox `$1C`, frame/slot
+  cadence, capacity-aware resource buffers, and first-eight room persistence.
+- Butterfly movement mirrors bank `$06`'s signed fixed-point speed/accumulator
+  math, phase-shifted random speed updates, and the two-pixel vector toward
+  Link. `RomRandomByteSource` mirrors bank `$00`'s seed update while exposing
+  the renderer's explicit `rLY` policy.
+- Keese now use the bank `$06` display lists, Cave B variant, sleep/wake
+  window, direction/speed tables, fixed-point flight, reverse entity-slot
+  order, and ROM random cadence. The supported Keese collision path also
+  mirrors the alternating Link-contact check, hitbox `$00`, basic sword
+  rectangle, and a bounded dying transition.
+- Entity movement is gated at the game-loop boundary during scroll, room
+  transitions, inventory overlap, and dialog, matching
+  `ReturnIfNonInteractive_06` for the currently wired gameplay path. Link
+  handlers receive the ROM entity coordinates rather than Java sprite
+  top-left coordinates.
+
+The complete Java test suite passes after these runtime increments. Remaining
+entity behavior—including the rest of the enemy damage matrix, recoil,
+stun/lift/throw/burning/death handlers, dynamic display rectangles, scripted
+spawns, and followers—is intentionally still unsupported rather than
+represented by guessed shapes or generic movement.
+
 ## Next entity increments
 
-1. Add mutable runtime state and handler dispatch for the static NPC/pickup
-   families, including entity-cleared persistence and the exact handler-side
-   sprite variant changes.
-2. Port simple enemy movement, collision, damage, stun, lift, throw, burning,
+1. Port simple enemy movement, collision, damage, stun, lift, throw, burning,
    and death transitions using the existing room collision model.
-3. Add rectangle and dynamically selected sprite helpers, entity tile offsets,
+2. Add rectangle and dynamically selected sprite helpers, entity tile offsets,
    follower overrides, and the Color Dungeon's separate entity-tile loader.
-4. Port scripted spawns, followers, room events, drops, and boss/multi-entity
+3. Port scripted spawns, followers, room events, drops, and boss/multi-entity
    state machines from the corresponding banked handlers.
 
 ## Broader parity gaps

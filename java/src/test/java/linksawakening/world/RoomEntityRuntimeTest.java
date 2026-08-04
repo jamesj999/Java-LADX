@@ -93,6 +93,127 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void butterflyUsesTheRomRatioForDiagonalAttractionVectors() {
+        EntitySpriteDefinition definition = butterflyDefinition();
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x6E, 64, 64, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+
+        // GetVectorTowardsLink(2) turns dx=16, dy=8 into (2,1), not (2,2).
+        runtime.tick(0, 80, 72, sequence(0x00, 0x00));
+
+        assertEquals(2, runtime.butterflyPrivateStateX(0));
+        assertEquals(1, runtime.butterflyPrivateStateY(0));
+    }
+
+    @Test
+    void keeseSleepsOutsideTheRomWakeWindowAndWakesInsideIt() {
+        EntitySpriteDefinition definition = keeseDefinition();
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x19, 64, 64, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+
+        runtime.tick(0, 96, 64, sequence(0x00));
+        assertEquals(0, runtime.keeseState(0));
+        assertEquals(0, runtime.keeseTransitionCountdown(0));
+        assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
+
+        runtime.tick(1, 72, 64, sequence(0x00));
+        assertEquals(1, runtime.keeseState(0));
+        assertEquals(0x50, runtime.keeseTransitionCountdown(0));
+        assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
+        assertEquals(64, runtime.snapshot().slots().get(0).x());
+        assertEquals(64, runtime.snapshot().slots().get(0).y());
+    }
+
+    @Test
+    void keeseRetunesItsAngleAndLoadsTheRomSpeedTablesEveryTenFlightFrames() {
+        EntitySpriteDefinition definition = keeseDefinition();
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x19, 64, 64, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+        IntSupplier randomBytes = sequence(0x00, 0x01, 0x01);
+
+        runtime.tick(0, 72, 64, randomBytes);
+        for (int frame = 1; frame <= 10; frame++) {
+            runtime.tick(frame, 72, 64, randomBytes);
+        }
+
+        assertEquals(1, runtime.keeseState(0));
+        assertEquals(0x0D, runtime.keeseAngle(0));
+        assertEquals(0x05, runtime.keeseSpeedX(0));
+        assertEquals(0xF3, runtime.keeseSpeedY(0));
+        assertEquals(1, runtime.snapshot().slots().get(0).spriteVariant());
+    }
+
+    @Test
+    void entityHandlersConsumeSharedRandomBytesInRomReverseSlotOrder() {
+        EntitySpriteDefinition definition = keeseDefinition();
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x19, 64, 64, EntityStatus.ACTIVE, definition, 0),
+            new RoomEntity(1, 1, 0x19, 64, 80, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+
+        // AnimateEntities starts at MAX_ENTITIES - 1 and decrements. Slot 1
+        // therefore consumes the first wake timer byte.
+        runtime.tick(0, 72, 72, sequence(0x00, 0x3F));
+
+        assertEquals(0x8F, runtime.keeseTransitionCountdown(0));
+        assertEquals(0x50, runtime.keeseTransitionCountdown(1));
+    }
+
+    @Test
+    void keeseUsesTheRomEnemyHitboxCadenceAndContactDamage() {
+        EntitySpriteDefinition definition = keeseDefinition();
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x19, 64, 64, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+
+        List<EntityCombatEvent> skipped = runtime.resolveCombat(
+            0, 64, 64, false, true, false, 0, 0, 0, 0);
+        assertTrue(skipped.isEmpty());
+
+        List<EntityCombatEvent> contact = runtime.resolveCombat(
+            1, 64, 64, false, true, false, 0, 0, 0, 0);
+        assertEquals(1, contact.size());
+        assertEquals(0, contact.get(0).slot());
+        assertEquals(0x19, contact.get(0).type());
+        assertEquals(4, contact.get(0).linkDamage());
+        assertFalse(contact.get(0).swordHit());
+
+        assertTrue(runtime.resolveCombat(1, 73, 64, false, true,
+            false, 0, 0, 0, 0).isEmpty());
+        assertTrue(runtime.resolveCombat(1, 64, 64, true, true,
+            false, 0, 0, 0, 0).isEmpty());
+        assertTrue(runtime.resolveCombat(1, 64, 64, false, false,
+            false, 0, 0, 0, 0).isEmpty());
+    }
+
+    @Test
+    void aBasicSwordHitPutsKeeseIntoTheRomDyingState() {
+        EntitySpriteDefinition definition = keeseDefinition();
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x19, 64, 64, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+
+        List<EntityCombatEvent> events = runtime.resolveCombat(
+            0, 120, 120, false, true, true, 72, 1, 72, 1);
+
+        assertEquals(1, events.size());
+        assertTrue(events.get(0).swordHit());
+        assertEquals(0, events.get(0).linkDamage());
+        assertEquals(EntityStatus.DYING, runtime.snapshot().slots().get(0).status());
+        assertEquals(0x40, runtime.dyingCountdown(0));
+
+        for (int frame = 1; frame < 0x40; frame++) {
+            runtime.tick(frame, 120, 120, sequence(0x00));
+        }
+        assertTrue(runtime.snapshot().slots().get(0).loaded());
+        runtime.tick(0x40, 120, 120, sequence(0x00));
+        assertFalse(runtime.snapshot().slots().get(0).loaded());
+    }
+
+    @Test
     void kidHandlersAnimateTheirTwoWalkingFramesEverySixteenFrames() {
         EntitySpriteDefinition definition = pairDefinition(0x70, 4);
         RoomEntitySnapshot initial = snapshot(
@@ -248,8 +369,19 @@ final class RoomEntityRuntimeTest {
             EntitySpriteDefinition.Shape.SINGLE, 0, List.of(
                 new EntitySpriteDefinition.Variant(
                     new EntitySpriteDefinition.OamAttribute(0x5E, 0x01), null),
-                new EntitySpriteDefinition.Variant(
+            new EntitySpriteDefinition.Variant(
                     new EntitySpriteDefinition.OamAttribute(0x5E, 0x41), null)));
+    }
+
+    private static EntitySpriteDefinition keeseDefinition() {
+        return new EntitySpriteDefinition(0x19, 0x06, 0x6708,
+            EntitySpriteDefinition.Shape.PAIR, 0, List.of(
+                new EntitySpriteDefinition.Variant(
+                    new EntitySpriteDefinition.OamAttribute(0x42, 0x00),
+                    new EntitySpriteDefinition.OamAttribute(0x42, 0x20)),
+                new EntitySpriteDefinition.Variant(
+                    new EntitySpriteDefinition.OamAttribute(0x40, 0x00),
+                    new EntitySpriteDefinition.OamAttribute(0x40, 0x20))));
     }
 
     private static IntSupplier sequence(int... values) {

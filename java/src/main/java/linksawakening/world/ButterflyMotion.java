@@ -19,7 +19,7 @@ final class ButterflyMotion {
     private final int[] privateStateX = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] privateStateY = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    RoomEntity advance(RoomEntity entity, int frameCounter, int linkPixelX, int linkPixelY,
+    RoomEntity advance(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY,
                        IntSupplier randomByteSupplier) {
         int slot = entity.slot();
         int state = (frameCounter + slot * 8) & 0xFF;
@@ -41,7 +41,7 @@ final class ButterflyMotion {
         // GetVectorTowardsLink uses an infinity-norm vector of length two and
         // stores it in private state for the next speed refresh.
         if ((state & 0x3F) == 0) {
-            Vector vector = vectorTowardsLink(x, y, linkPixelX, linkPixelY);
+            Vector vector = vectorTowardsLink(x, y, linkEntityX, linkEntityY);
             privateStateX[slot] = vector.x() & 0xFF;
             privateStateY[slot] = vector.y() & 0xFF;
         }
@@ -59,6 +59,14 @@ final class ButterflyMotion {
         speedYAccumulator[slot] = 0;
         privateStateX[slot] = 0;
         privateStateY[slot] = 0;
+    }
+
+    int privateStateX(int slot) {
+        return privateStateX[slot];
+    }
+
+    int privateStateY(int slot) {
+        return privateStateY[slot];
     }
 
     /** Mirrors AddEntitySpeedToPos_06, including its negative-speed phase. */
@@ -79,30 +87,32 @@ final class ButterflyMotion {
         return (position + delta) & 0xFF;
     }
 
+    /** Port of bank3.asm:GetVectorTowardsLink with vector length two. */
     private static Vector vectorTowardsLink(int entityX, int entityY, int linkX, int linkY) {
         int distanceX = signedByte((linkX - entityX) & 0xFF);
         int distanceY = signedByte((linkY - entityY) & 0xFF);
         int absoluteX = Math.abs(distanceX);
         int absoluteY = Math.abs(distanceY);
 
-        // The original divides the smaller distance into a vector whose
-        // larger component is exactly two. For a length-two vector this is
-        // equivalent to the short loop below, including its saturation.
-        boolean swapAxes = absoluteX < absoluteY;
+        // GetVectorTowardsLink divides the smaller distance by the larger
+        // distance for exactly two iterations. The larger component remains
+        // the requested vector length; only the smaller component is derived.
+        boolean yIsTheLargerAxis = absoluteY > absoluteX;
         int smallerDistance = Math.min(absoluteX, absoluteY);
+        int largerDistance = Math.max(absoluteX, absoluteY);
         int result = 0;
         int remainder = 0;
         for (int count = 0; count < 2; count++) {
             int sum = remainder + smallerDistance;
-            if (sum >= 2) {
-                sum -= 2;
+            if (largerDistance == 0 || sum >= largerDistance) {
+                sum -= largerDistance;
                 result++;
             }
             remainder = sum;
         }
 
-        int x = swapAxes ? result : 2;
-        int y = swapAxes ? 2 : result;
+        int x = yIsTheLargerAxis ? result : 2;
+        int y = yIsTheLargerAxis ? 2 : result;
         if (distanceX < 0) {
             x = -x;
         }

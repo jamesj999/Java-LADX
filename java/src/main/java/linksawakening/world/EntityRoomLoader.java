@@ -49,6 +49,10 @@ public final class EntityRoomLoader {
     }
 
     public RoomEntitySnapshot load(RoomTable table, int roomId, int clearedMask) {
+        return load(table, roomId, clearedMask, -1);
+    }
+
+    public RoomEntitySnapshot load(RoomTable table, int roomId, int clearedMask, int mapId) {
         if (table == null) {
             throw new IllegalArgumentException("Room entity table cannot be null");
         }
@@ -95,7 +99,7 @@ public final class EntityRoomLoader {
                 int y = (location & 0xF0) + 0x10;
                 int[] initializedPosition = applyInitialPositionTransform(table, roomId, type, x, y);
                 EntitySpriteDefinition spriteDefinition = spriteHandlers
-                    .forEntityType(type, table);
+                    .forEntityType(type, table, mapId);
                 slots.set(loadedSlot, new RoomEntity(
                     loadedSlot, sourceLoadOrder, type, initializedPosition[0], initializedPosition[1],
                     EntityStatus.INIT,

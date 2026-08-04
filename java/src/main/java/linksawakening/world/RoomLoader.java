@@ -118,7 +118,7 @@ public final class RoomLoader {
     private RoomEntitySnapshot loadEntities(EntityRoomLoader.RoomTable table, int roomId,
                                             int clearedEntitiesMask, int mapId,
                                             byte[] overworldRoomStatus) {
-        return entityLoader.load(table, roomId, clearedEntitiesMask)
+        return entityLoader.load(table, roomId, clearedEntitiesMask, mapId)
             .withSpriteSelection(entitySpriteCatalog.load(table, roomId, mapId,
                 overworldRoomStatus));
     }

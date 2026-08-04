@@ -40,6 +40,11 @@ public final class RomTables {
     private static final int SWORD_Y_OFFSET_TABLE_ADDR = 0x4666;
     // LinkDirectionTo_wC13B — additional Y offset (bank2.asm:831)
     private static final int SWORD_Y_BASE_TABLE_ADDR = 0x4696;
+    // Sword collision rectangle tables used by DefaultEnemyDamageCollisionHandler.
+    private static final int SWORD_COLLISION_NEEDED_TABLE_ADDR = 0x45BE;
+    private static final int SWORD_COLLISION_WIDTH_TABLE_ADDR = 0x45D6;
+    private static final int SWORD_COLLISION_OFFSET_TABLE_ADDR = 0x45EE;
+    private static final int SWORD_COLLISION_HEIGHT_TABLE_ADDR = 0x4606;
     private static final int STATIC_SWORD_COLLISION_TABLE_BANK = 0x00;
     private static final int STATIC_SWORD_COLLISION_X_ADDR = 0x158F;
     private static final int STATIC_SWORD_COLLISION_Y_ADDR = 0x159B;
@@ -61,6 +66,10 @@ public final class RomTables {
     private final byte[] swordXOffset;
     private final byte[] swordYOffset;
     private final byte[] swordYBase;
+    private final int[] swordCollisionNeeded;
+    private final int[] swordCollisionWidth;
+    private final int[] swordCollisionOffset;
+    private final int[] swordCollisionHeight;
     private final int[] swordSpriteTiles;
     private final int[] swordSpriteAttrs;
     private final byte[] staticSwordCollisionX;
@@ -69,6 +78,8 @@ public final class RomTables {
     private RomTables(int[][] physicsFlags, byte[] linkSpeedX, byte[] linkSpeedY,
                       int[] swordAnimState, int[] swordDirection,
                       byte[] swordXOffset, byte[] swordYOffset, byte[] swordYBase,
+                      int[] swordCollisionNeeded, int[] swordCollisionWidth,
+                      int[] swordCollisionOffset, int[] swordCollisionHeight,
                       int[] swordSpriteTiles, int[] swordSpriteAttrs,
                       byte[] staticSwordCollisionX, byte[] staticSwordCollisionY) {
         this.physicsFlags = physicsFlags;
@@ -79,6 +90,10 @@ public final class RomTables {
         this.swordXOffset = swordXOffset;
         this.swordYOffset = swordYOffset;
         this.swordYBase = swordYBase;
+        this.swordCollisionNeeded = swordCollisionNeeded;
+        this.swordCollisionWidth = swordCollisionWidth;
+        this.swordCollisionOffset = swordCollisionOffset;
+        this.swordCollisionHeight = swordCollisionHeight;
         this.swordSpriteTiles = swordSpriteTiles;
         this.swordSpriteAttrs = swordSpriteAttrs;
         this.staticSwordCollisionX = staticSwordCollisionX;
@@ -106,6 +121,14 @@ public final class RomTables {
         byte[] swordX = loadSignedTable(romData, SWORD_TABLES_BANK, SWORD_X_OFFSET_TABLE_ADDR, TABLE_LEN);
         byte[] swordY = loadSignedTable(romData, SWORD_TABLES_BANK, SWORD_Y_OFFSET_TABLE_ADDR, TABLE_LEN);
         byte[] swordYBaseBytes = loadSignedTable(romData, SWORD_TABLES_BANK, SWORD_Y_BASE_TABLE_ADDR, TABLE_LEN);
+        int[] swordCollisionNeeded = loadUnsignedTable(
+            romData, SWORD_TABLES_BANK, SWORD_COLLISION_NEEDED_TABLE_ADDR, TABLE_LEN);
+        int[] swordCollisionWidth = loadUnsignedTable(
+            romData, SWORD_TABLES_BANK, SWORD_COLLISION_WIDTH_TABLE_ADDR, TABLE_LEN);
+        int[] swordCollisionOffset = loadUnsignedTable(
+            romData, SWORD_TABLES_BANK, SWORD_COLLISION_OFFSET_TABLE_ADDR, TABLE_LEN);
+        int[] swordCollisionHeight = loadUnsignedTable(
+            romData, SWORD_TABLES_BANK, SWORD_COLLISION_HEIGHT_TABLE_ADDR, TABLE_LEN);
         int[] swordTiles = loadUnsignedTable(romData, SWORD_SPRITE_BANK, SWORD_SPRITE_TILES_ADDR, SWORD_SPRITE_TABLE_LEN);
         int[] swordAttrs = loadUnsignedTable(romData, SWORD_SPRITE_BANK, SWORD_SPRITE_ATTRS_ADDR, SWORD_SPRITE_TABLE_LEN);
         byte[] staticSwordCollisionX = loadSignedTable(
@@ -114,7 +137,10 @@ public final class RomTables {
             romData, STATIC_SWORD_COLLISION_TABLE_BANK, STATIC_SWORD_COLLISION_Y_ADDR, STATIC_SWORD_COLLISION_TABLE_LEN);
 
         return new RomTables(flags, speedX, speedY, swordAnim, swordDir,
-                             swordX, swordY, swordYBaseBytes, swordTiles, swordAttrs,
+                             swordX, swordY, swordYBaseBytes,
+                             swordCollisionNeeded, swordCollisionWidth,
+                             swordCollisionOffset, swordCollisionHeight,
+                             swordTiles, swordAttrs,
                              staticSwordCollisionX, staticSwordCollisionY);
     }
 
@@ -209,6 +235,35 @@ public final class RomTables {
             return 0;
         }
         return swordYBase[index] + swordYOffset[index];
+    }
+
+    /** True when the current sword pose enables the enemy collision rectangle. */
+    public boolean swordEnemyCollisionEnabled(int romDirection, int swordState) {
+        int index = swingTableIndex(romDirection, swordState);
+        return index >= 0 && index < swordCollisionNeeded.length
+            && swordCollisionNeeded[index] != 0;
+    }
+
+    /** wC140 offset from Link X, including LinkDirectionToStaticSword... . */
+    public int swordCollisionXOriginOffset(int romDirection, int swordState) {
+        int index = swingTableIndex(romDirection, swordState);
+        return swordXOffset[index] + swordCollisionNeeded[index];
+    }
+
+    /** wC141 half-width used by DefaultEnemyDamageCollisionHandler. */
+    public int swordCollisionWidth(int romDirection, int swordState) {
+        return swordCollisionWidth[swingTableIndex(romDirection, swordState)];
+    }
+
+    /** wC142 offset from Link Y, excluding Link's vertical position. */
+    public int swordCollisionYOriginOffset(int romDirection, int swordState) {
+        int index = swingTableIndex(romDirection, swordState);
+        return swordYOffset[index] + swordCollisionOffset[index];
+    }
+
+    /** wC143 half-height used by DefaultEnemyDamageCollisionHandler. */
+    public int swordCollisionHeight(int romDirection, int swordState) {
+        return swordCollisionHeight[swingTableIndex(romDirection, swordState)];
     }
 
     /**

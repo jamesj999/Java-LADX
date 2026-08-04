@@ -32,6 +32,13 @@ import java.util.function.IntSupplier;
  */
 public final class Sword implements EquippedItem {
 
+    /** The ROM's wC140..wC143 rectangle for enemy collision. */
+    public record CollisionBox(boolean active, int x, int width, int y, int height) {
+        public static CollisionBox inactive() {
+            return new CollisionBox(false, 0, 0, 0, 0);
+        }
+    }
+
     public static final int STATE_NONE = 0;
     public static final int STATE_DRAW = 1;
     public static final int STATE_SWING_START = 2;
@@ -302,6 +309,33 @@ public final class Sword implements EquippedItem {
 
     public boolean spinAttackActive() {
         return spinFramesRemaining > 0;
+    }
+
+    /**
+     * Computes the enemy collision rectangle populated by UpdateSwordAnimation
+     * in bank2.asm. The rectangle is independent from the visual blade OAM
+     * bounds and is therefore kept as a separate ROM-table lookup.
+     */
+    public CollisionBox enemyCollisionBox(int linkEntityX, int linkEntityY, int linkDirection) {
+        lastKnownDirection = linkDirection;
+        if (!staticCollisionActive() || romTables == null) {
+            return CollisionBox.inactive();
+        }
+        if (spinAttackActive()) {
+            return new CollisionBox(true, linkEntityX + 0x08, 0x18,
+                linkEntityY + 0x08, 0x18);
+        }
+
+        int romDirection = toRomDirection(linkDirection);
+        if (!romTables.swordEnemyCollisionEnabled(romDirection, state)) {
+            return CollisionBox.inactive();
+        }
+        return new CollisionBox(
+            true,
+            linkEntityX + romTables.swordCollisionXOriginOffset(romDirection, state),
+            romTables.swordCollisionWidth(romDirection, state),
+            linkEntityY + romTables.swordCollisionYOriginOffset(romDirection, state),
+            romTables.swordCollisionHeight(romDirection, state));
     }
 
     // Flash is driven by bit 2 of a per-frame counter during HOLDING at max

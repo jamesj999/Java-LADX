@@ -13,6 +13,7 @@ import java.util.List;
 public final class EntitySpriteHandlerCatalog {
 
     private static final int ENTITY_BUTTERFLY = 0x6E;
+    private static final int ENTITY_KEESE = 0x19;
     private static final int ENTITY_DOG = 0x6F;
     private static final int ENTITY_KID_70 = 0x70;
     private static final int ENTITY_KID_73 = 0x73;
@@ -44,6 +45,12 @@ public final class EntitySpriteHandlerCatalog {
 
     public EntitySpriteDefinition forEntityType(int entityType,
                                                  EntityRoomLoader.RoomTable roomTable) {
+        return forEntityType(entityType, roomTable, -1);
+    }
+
+    public EntitySpriteDefinition forEntityType(int entityType,
+                                                 EntityRoomLoader.RoomTable roomTable,
+                                                 int mapId) {
         if ((entityType & ~0xFF) != 0) {
             throw new IllegalArgumentException("Entity type must be an unsigned byte: " + entityType);
         }
@@ -71,6 +78,9 @@ public final class EntitySpriteHandlerCatalog {
         }
         if (entityType == ENTITY_BUTTERFLY) {
             return decodeSingle(entityType, 0x06, 0x6BBD, 2, 0);
+        }
+        if (entityType == ENTITY_KEESE) {
+            return decodePair(entityType, 0x06, mapId == 0x0A ? 0x6710 : 0x6708, 2, 0);
         }
         if (entityType == ENTITY_DROPPABLE_HEART) {
             return decodeSingle(entityType, 0x03, 0x5D36, 1, 0);

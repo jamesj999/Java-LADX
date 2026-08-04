@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class SwordTest {
 
@@ -248,6 +249,27 @@ final class SwordTest {
         drawExpectedSwordPose(expected, romTables, spriteSheet, 40, 48, Link.DIRECTION_RIGHT, Sword.STATE_HOLDING);
 
         assertEquals(Arrays.toString(alphaMask(expected)), Arrays.toString(alphaMask(actual)));
+    }
+
+    @Test
+    void enemyCollisionBoxUsesTheRomNormalSwingTables() throws Exception {
+        Sword sword = new Sword(RomTables.loadFromRom(loadRom()), null);
+        sword.onPress();
+        for (int frame = 0; frame < 4; frame++) {
+            sword.tick(false);
+        }
+
+        assertEquals(Sword.STATE_SWING_START, sword.state());
+        Sword.CollisionBox box = sword.enemyCollisionBox(100, 100, Link.DIRECTION_RIGHT);
+
+        assertTrue(box.active());
+        // Direction RIGHT, SWING_START (bank2 tables at $45BE-$461D):
+        // wC140 = hLinkX + $0D + $08, wC141 = $05,
+        // wC142 = hLinkY - $0D + $08, wC143 = $05.
+        assertEquals(121, box.x());
+        assertEquals(5, box.width());
+        assertEquals(95, box.y());
+        assertEquals(5, box.height());
     }
 
     @Test

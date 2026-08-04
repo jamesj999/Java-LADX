@@ -74,6 +74,16 @@ final class EntitySpriteHandlerCatalogTest {
         assertDefinition(butterfly, 0x06, 0x6BBD,
             EntitySpriteDefinition.Shape.SINGLE, 2, 0);
 
+        EntitySpriteDefinition keese = catalog.forEntityType(
+            0x19, EntityRoomLoader.RoomTable.INDOORS_A);
+        assertDefinition(keese, 0x06, 0x6708,
+            EntitySpriteDefinition.Shape.PAIR, 2, 0);
+
+        EntitySpriteDefinition caveBKeese = catalog.forEntityType(
+            0x19, EntityRoomLoader.RoomTable.INDOORS_A, 0x0A);
+        assertDefinition(caveBKeese, 0x06, 0x6710,
+            EntitySpriteDefinition.Shape.PAIR, 2, 0);
+
         EntitySpriteDefinition pieceOfPower = catalog.forEntityType(
             0x33, EntityRoomLoader.RoomTable.OVERWORLD);
         assertDefinition(pieceOfPower, 0x03, 0x5B65,
@@ -158,6 +168,17 @@ final class EntitySpriteHandlerCatalogTest {
         assertEquals(0x02, pieceOfPower.variant(0).first().attributes());
         assertEquals(0x14, pieceOfPower.variant(1).first().tile());
         assertEquals(0x14, pieceOfPower.variant(1).first().attributes());
+
+        EntitySpriteDefinition keese = catalog.forEntityType(
+            0x19, EntityRoomLoader.RoomTable.INDOORS_A);
+        assertEquals(0x42, keese.variant(0).first().tile());
+        assertEquals(0x20, keese.variant(0).second().attributes());
+        assertEquals(0x40, keese.variant(1).first().tile());
+
+        EntitySpriteDefinition caveBKeese = catalog.forEntityType(
+            0x19, EntityRoomLoader.RoomTable.INDOORS_A, 0x0A);
+        assertEquals(0x62, caveBKeese.variant(0).first().tile());
+        assertEquals(0x60, caveBKeese.variant(1).first().tile());
 
         EntitySpriteDefinition guardianAcorn = catalog.forEntityType(
             0x34, EntityRoomLoader.RoomTable.OVERWORLD);
