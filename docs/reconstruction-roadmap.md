@@ -97,6 +97,13 @@ resource.
   Its health-group `$06` path provides four health points and `$04` contact
   damage; recoil and the exact collision-flag/object interaction remain
   pending.
+- Sparks (`$16` counter-clockwise and `$17` clockwise) now share the bank
+  `$06` pair display list and mirror their type-specific `$FD/$03` Y setup,
+  eight-entry speed/mask tables, `$09` transition countdown, collision-driven
+  direction index, and two-frame animation cadence. Their room collision
+  probes use the ROM Spark collision-point row; health group `$2C` provides
+  one health point and `$04` contact damage. Recoil and the remaining enemy
+  interaction flags remain pending.
 - PeaHat now decodes the bank `$07` pair display list and mirrors its resting,
   takeoff, and flying states, slow-countdown cadence, carry-aware animation,
   direct Z ascent/descent, and contiguous ROM phase-speed tables. Its grounded

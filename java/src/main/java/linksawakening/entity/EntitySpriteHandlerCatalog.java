@@ -18,6 +18,8 @@ public final class EntitySpriteHandlerCatalog {
     private static final int ENTITY_TEKTITE = 0x0D;
     private static final int ENTITY_LEEVER = 0x0E;
     private static final int ENTITY_ANTI_FAIRY = 0x15;
+    private static final int ENTITY_SPARK_COUNTER_CLOCKWISE = 0x16;
+    private static final int ENTITY_SPARK_CLOCKWISE = 0x17;
     private static final int ENTITY_STALFOS_AGGRESSIVE = 0x1A;
     private static final int ENTITY_GIBDO = 0x1F;
     private static final int ENTITY_PEAHAT = 0xA0;
@@ -113,6 +115,10 @@ public final class EntitySpriteHandlerCatalog {
         }
         if (entityType == ENTITY_ANTI_FAIRY) {
             return decodePair(entityType, 0x06, 0x786E, 2, 0);
+        }
+        if (entityType == ENTITY_SPARK_COUNTER_CLOCKWISE
+            || entityType == ENTITY_SPARK_CLOCKWISE) {
+            return decodePair(entityType, 0x06, 0x6615, 2, 0);
         }
         if (entityType == ENTITY_STALFOS_AGGRESSIVE) {
             return decodePair(entityType, 0x06, 0x4AA8, 3, 0);

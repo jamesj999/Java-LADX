@@ -142,6 +142,16 @@ final class EntitySpriteHandlerCatalogTest {
         assertDefinition(antiFairy, 0x06, 0x786E,
             EntitySpriteDefinition.Shape.PAIR, 2, 0);
 
+        EntitySpriteDefinition sparkCounterClockwise = catalog.forEntityType(
+            0x16, EntityRoomLoader.RoomTable.INDOORS_B);
+        assertDefinition(sparkCounterClockwise, 0x06, 0x6615,
+            EntitySpriteDefinition.Shape.PAIR, 2, 0);
+
+        EntitySpriteDefinition sparkClockwise = catalog.forEntityType(
+            0x17, EntityRoomLoader.RoomTable.INDOORS_B);
+        assertDefinition(sparkClockwise, 0x06, 0x6615,
+            EntitySpriteDefinition.Shape.PAIR, 2, 0);
+
         EntitySpriteDefinition gibdo = catalog.forEntityType(
             0x1F, EntityRoomLoader.RoomTable.INDOORS_B);
         assertDefinition(gibdo, 0x06, 0x7E6F,
@@ -340,6 +350,14 @@ final class EntitySpriteHandlerCatalogTest {
         assertEquals(0x20, antiFairy.variant(0).second().attributes());
         assertEquals(0x14, antiFairy.variant(1).first().attributes());
         assertEquals(0x34, antiFairy.variant(1).second().attributes());
+
+        EntitySpriteDefinition spark = catalog.forEntityType(
+            0x16, EntityRoomLoader.RoomTable.INDOORS_B);
+        assertEquals(0x5C, spark.variant(0).first().tile());
+        assertEquals(0x00, spark.variant(0).first().attributes());
+        assertEquals(0x20, spark.variant(0).second().attributes());
+        assertEquals(0x14, spark.variant(1).first().attributes());
+        assertEquals(0x34, spark.variant(1).second().attributes());
 
         EntitySpriteDefinition gibdo = catalog.forEntityType(
             0x1F, EntityRoomLoader.RoomTable.INDOORS_B);

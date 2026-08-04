@@ -385,14 +385,15 @@ public final class RoomSession {
      */
     private boolean entityBackgroundCollision(RoomEntity entity, int direction,
                                               int nextX, int nextY) {
+        boolean spark = entity.type() == 0x16 || entity.type() == 0x17;
         int pointX = switch (direction) {
-            case 0 -> nextX + 5;  // right: x - 8 + 13
-            case 1 -> nextX - 6;  // left:  x - 8 + 2
+            case 0 -> spark ? nextX + 8 : nextX + 5;
+            case 1 -> spark ? nextX - 9 : nextX - 6;
             default -> nextX;     // vertical movement: x - 8 + 8
         };
         int pointY = switch (direction) {
-            case 2 -> nextY - 14; // up:   y - 16 + 2
-            case 3 -> nextY - 3;  // down: y - 16 + 13
+            case 2 -> spark ? nextY - 17 : nextY - 14;
+            case 3 -> spark ? nextY : nextY - 3;
             default -> nextY - 8; // horizontal movement: y - 16 + 8
         };
         return overworldCollision.pointBlocked(pointX, pointY);

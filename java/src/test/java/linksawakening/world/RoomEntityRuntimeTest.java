@@ -973,6 +973,81 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void sparkInitializersSelectTheRomDirectionAndOffset() {
+        EntitySpriteDefinition counterDefinition = pairDefinition(0x16, 2);
+        RoomEntityRuntime counterClockwise = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x16, 64, 64, EntityStatus.INIT, counterDefinition, 0)));
+        counterClockwise.tick(0);
+
+        assertEquals(61, counterClockwise.snapshot().slots().get(0).y());
+        assertEquals(0, counterClockwise.sparkPrivateState2(0));
+        assertEquals(0, counterClockwise.sparkSpeedX(0));
+        assertEquals(0, counterClockwise.sparkSpeedY(0));
+
+        EntitySpriteDefinition clockwiseDefinition = pairDefinition(0x17, 2);
+        RoomEntityRuntime clockwise = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x17, 64, 64, EntityStatus.INIT, clockwiseDefinition, 0)));
+        clockwise.tick(0);
+
+        assertEquals(67, clockwise.snapshot().slots().get(0).y());
+        assertEquals(4, clockwise.sparkPrivateState2(0));
+    }
+
+    @Test
+    void sparkFollowsTheRomEightDirectionTableAndFrameCadence() {
+        EntitySpriteDefinition definition = pairDefinition(0x16, 2);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x16, 64, 64, EntityStatus.INIT, definition, 0)));
+
+        runtime.tick(0);
+        runtime.tick(1, 120, 120, () -> 0);
+
+        assertEquals(0, runtime.sparkPrivateState1(0));
+        assertEquals(9, runtime.sparkTransitionCountdown(0));
+        assertEquals(0x10, runtime.sparkSpeedX(0));
+        assertEquals(0x00, runtime.sparkSpeedY(0));
+
+        runtime.tick(2, 120, 120, () -> 0);
+        assertEquals(65, runtime.snapshot().slots().get(0).x());
+        assertEquals(1, runtime.snapshot().slots().get(0).spriteVariant());
+    }
+
+    @Test
+    void sparkUsesCollisionMaskToAdvanceItsRomDirectionIndex() {
+        EntitySpriteDefinition definition = pairDefinition(0x16, 2);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x16, 64, 64, EntityStatus.INIT, definition, 0)));
+        runtime.tick(0);
+
+        RoomEntityBackgroundCollision rightWall = (entity, direction, nextX, nextY) -> direction == 0;
+        runtime.tick(1, 120, 120, () -> 0, rightWall);
+
+        assertEquals(1, runtime.sparkPrivateState1(0));
+        assertEquals(0x00, runtime.sparkSpeedX(0));
+        assertEquals(0x10, runtime.sparkSpeedY(0));
+        assertEquals(0, runtime.sparkTransitionCountdown(0));
+    }
+
+    @Test
+    void sparkUsesHealthGroupTwoCCombatValues() {
+        EntitySpriteDefinition definition = pairDefinition(0x16, 2);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x16, 64, 64, EntityStatus.ACTIVE, definition, 0)));
+
+        List<EntityCombatEvent> contact = runtime.resolveCombat(
+            1, 64, 64, false, true, false, 0, 0, 0, 0);
+        assertEquals(1, contact.size());
+        assertEquals(0x04, contact.get(0).linkDamage());
+        assertEquals(0x01, runtime.enemyHealth(0));
+
+        List<EntityCombatEvent> sword = runtime.resolveCombat(
+            1, 72, 72, false, true, true, 72, 1, 72, 1);
+        assertEquals(1, sword.size());
+        assertTrue(sword.get(0).swordHit());
+        assertEquals(EntityStatus.DYING, runtime.snapshot().slots().get(0).status());
+    }
+
+    @Test
     void dynamicGhostRuntimeAdvancesZBobEvenWhenItsVariantIsUnchanged() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
             .forFollowerEntityType(0xD4);

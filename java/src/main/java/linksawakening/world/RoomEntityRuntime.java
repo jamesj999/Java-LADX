@@ -22,6 +22,8 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_TEKTITE = 0x0D;
     private static final int ENTITY_LEEVER = 0x0E;
     private static final int ENTITY_ANTI_FAIRY = 0x15;
+    private static final int ENTITY_SPARK_COUNTER_CLOCKWISE = 0x16;
+    private static final int ENTITY_SPARK_CLOCKWISE = 0x17;
     private static final int ENTITY_STALFOS_AGGRESSIVE = 0x1A;
     private static final int ENTITY_GIBDO = 0x1F;
     private static final int ENTITY_PEAHAT = 0xA0;
@@ -51,6 +53,7 @@ public final class RoomEntityRuntime {
     private final TektiteMotion tektiteMotion = new TektiteMotion();
     private final LeeverMotion leeverMotion = new LeeverMotion();
     private final AntiFairyMotion antiFairyMotion = new AntiFairyMotion();
+    private final SparkMotion sparkMotion = new SparkMotion();
     private final StalfosAggressiveMotion stalfosAggressiveMotion =
         new StalfosAggressiveMotion();
     private final GibdoMotion gibdoMotion = new GibdoMotion();
@@ -187,6 +190,9 @@ public final class RoomEntityRuntime {
                 if (entity.type() == ENTITY_ANTI_FAIRY) {
                     antiFairyMotion.initialize(entity.slot(), randomByteSupplier);
                 }
+                if (isSparkType(entity.type())) {
+                    sparkMotion.initialize(entity.slot(), entity.type());
+                }
                 if (entity.type() == ENTITY_STALFOS_AGGRESSIVE) {
                     stalfosAggressiveMotion.initialize(entity.slot(), randomByteSupplier);
                 }
@@ -227,6 +233,9 @@ public final class RoomEntityRuntime {
                 // the first active handler dispatch.
                 updated = withVariant(entity, -1);
             }
+            if (wasInitializing && isSparkType(entity.type())) {
+                updated = sparkMotion.applyInitializationOffset(entity);
+            }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_BUTTERFLY) {
                 updated = butterflyMotion.advance(entity, frame, linkEntityX, linkEntityY,
@@ -256,6 +265,9 @@ public final class RoomEntityRuntime {
                 && entity.type() == ENTITY_ANTI_FAIRY) {
                 updated = antiFairyMotion.advance(entity, frame, backgroundCollision,
                     randomByteSupplier);
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing && isSparkType(entity.type())) {
+                updated = sparkMotion.advance(entity, frame, backgroundCollision);
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_STALFOS_AGGRESSIVE) {
@@ -433,6 +445,7 @@ public final class RoomEntityRuntime {
         tektiteMotion.clear(slot);
         leeverMotion.clear(slot);
         antiFairyMotion.clear(slot);
+        sparkMotion.clear(slot);
         stalfosAggressiveMotion.clear(slot);
         gibdoMotion.clear(slot);
         peaHatMotion.clear(slot);
@@ -464,6 +477,10 @@ public final class RoomEntityRuntime {
     private static boolean isFollowingNpcType(int type) {
         return type == ENTITY_GHOST || type == ENTITY_ROOSTER
             || type == ENTITY_MARIN_AT_THE_SHORE || type == ENTITY_BOW_WOW;
+    }
+
+    private static boolean isSparkType(int type) {
+        return type == ENTITY_SPARK_COUNTER_CLOCKWISE || type == ENTITY_SPARK_CLOCKWISE;
     }
 
     private static boolean isRoamingEnemyType(int type) {
@@ -563,6 +580,26 @@ public final class RoomEntityRuntime {
 
     int antiFairySpeedY(int slot) {
         return antiFairyMotion.speedY(slot);
+    }
+
+    int sparkPrivateState1(int slot) {
+        return sparkMotion.privateState1(slot);
+    }
+
+    int sparkPrivateState2(int slot) {
+        return sparkMotion.privateState2(slot);
+    }
+
+    int sparkTransitionCountdown(int slot) {
+        return sparkMotion.transitionCountdown(slot);
+    }
+
+    int sparkSpeedX(int slot) {
+        return sparkMotion.speedX(slot);
+    }
+
+    int sparkSpeedY(int slot) {
+        return sparkMotion.speedY(slot);
     }
 
     int stalfosState(int slot) {
@@ -716,6 +753,8 @@ public final class RoomEntityRuntime {
             case ENTITY_ARMOS_STATUE -> (frameCounter >>> 4) & 0x01;
             case ENTITY_GHINI -> ((frameCounter >>> 4) ^ entity.slot()) & 0x01;
             case ENTITY_HARDHAT_BEETLE -> (frameCounter >>> 3) & 0x01;
+            case ENTITY_SPARK_COUNTER_CLOCKWISE, ENTITY_SPARK_CLOCKWISE ->
+                (frameCounter >>> 1) & 0x01;
             case 0x70, 0x73 -> (frameCounter >>> 4) & 0x01;
             default -> entity.spriteVariant();
         };
@@ -796,6 +835,7 @@ public final class RoomEntityRuntime {
         tektiteMotion.clear(slot);
         leeverMotion.clear(slot);
         antiFairyMotion.clear(slot);
+        sparkMotion.clear(slot);
         stalfosAggressiveMotion.clear(slot);
         gibdoMotion.clear(slot);
         peaHatMotion.clear(slot);
