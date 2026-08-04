@@ -75,6 +75,11 @@ resource.
   `$0B` path (four health and `$08` contact damage) is wired; recoil, shield/
   sword-clink state, water behavior, and the full collision table remain
   pending.
+- Armos Statue now mirrors the bank `$06` state-0 wake, state-1 `$30` charge
+  countdown, state-2 random timer, contiguous ROM speed tables, and fixed-point
+  movement. Its ROM normal hitbox drives wake-up; final-Link-position plumbing,
+  flash/harmlessness transitions, background interaction, and active-state
+  sword/contact damage remain pending.
 - `CreateFollowingNpcEntity` now runs on room load/state changes with the
   source indoor/map/room exclusions, source-order slot reuse, highest-free-slot
   `SpawnNewEntity` behavior, Link/wC13B spawn coordinates, Ghost trigger-state

@@ -467,6 +467,53 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void armosWakesOnLinkCollisionThenChargesForTheRomCountdown() {
+        EntitySpriteDefinition definition = pairDefinition(0x0F, 2);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x0F, 64, 64, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+
+        runtime.tick(0, 64, 64, sequence(0x00));
+        assertEquals(1, runtime.armosState(0));
+        assertEquals(0x30, runtime.armosTransitionCountdown(0));
+        assertEquals(0, runtime.armosSpeedX(0));
+        assertEquals(0, runtime.armosSpeedY(0));
+
+        runtime.tick(1, 120, 120, sequence(0x00));
+        assertEquals(0x2F, runtime.armosTransitionCountdown(0));
+        assertEquals(0xF8, runtime.armosSpeedX(0));
+        assertEquals(0, runtime.armosSpeedY(0));
+
+        for (int frame = 2; frame <= 0x30; frame++) {
+            runtime.tick(frame, 120, 120, sequence(0x00));
+        }
+        assertEquals(2, runtime.armosState(0));
+        assertEquals(0, runtime.armosTransitionCountdown(0));
+        assertEquals(0, runtime.armosSpeedX(0));
+        assertEquals(0, runtime.armosSpeedY(0));
+        assertEquals(1, runtime.snapshot().slots().get(0).spriteVariant());
+    }
+
+    @Test
+    void armosStateTwoLoadsItsContiguousRomSpeedTables() {
+        EntitySpriteDefinition definition = pairDefinition(0x0F, 2);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x0F, 64, 64, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+
+        runtime.tick(0, 64, 64, sequence(0x00));
+        for (int frame = 1; frame <= 0x30; frame++) {
+            runtime.tick(frame, 120, 120, sequence(0x00));
+        }
+        runtime.tick(0x31, 120, 120, sequence(0x04));
+
+        assertEquals(2, runtime.armosState(0));
+        assertEquals(0x24, runtime.armosTransitionCountdown(0));
+        assertEquals(0, runtime.armosSpeedX(0));
+        assertEquals(0x08, runtime.armosSpeedY(0));
+    }
+
+    @Test
     void dynamicGhostRuntimeAdvancesZBobEvenWhenItsVariantIsUnchanged() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
             .forFollowerEntityType(0xD4);

@@ -4,12 +4,13 @@ package linksawakening.world;
 public final class RoomEntityCombatRules {
     private static final int ENTITY_OCTOROK = 0x09;
     private static final int ENTITY_MOBLIN = 0x0B;
+    private static final int ENTITY_ARMOS_STATUE = 0x0F;
     private static final int ENTITY_GHINI = 0x12;
     private static final int ENTITY_KEESE = 0x19;
     private static final int ENTITY_HARDHAT_BEETLE = 0x20;
 
-    // HitboxPositions._00 in home/entities.asm:3AAA. Octorok, Moblin, and
-    // Keese all select the normal collision box in hitbox_flags.asm.
+    // HitboxPositions._00 in home/entities.asm:3AAA. Octorok, Moblin, Armos,
+    // and Keese all select the normal collision box in hitbox_flags.asm.
     private static final int HITBOX_X = 0x08;
     private static final int HITBOX_WIDTH = 0x05;
     private static final int HITBOX_Y = 0x08;
@@ -36,6 +37,10 @@ public final class RoomEntityCombatRules {
                 ENTITY_OCTOROK -> true;
             default -> false;
         };
+    }
+
+    static boolean supportsLinkCollision(int type) {
+        return supportsEnemyCollision(type) || (type & 0xFF) == ENTITY_ARMOS_STATUE;
     }
 
     static int contactDamage(int type) {
@@ -69,7 +74,7 @@ public final class RoomEntityCombatRules {
 
     /** Mirrors CheckLinkCollisionWithEnemy using HitboxPositions._00. */
     static boolean overlapsLink(RoomEntity entity, int linkPixelX, int linkPixelY) {
-        if (!supportsEnemyCollision(entity.type())) {
+        if (!supportsLinkCollision(entity.type())) {
             return false;
         }
         int xDistance = unsignedByteAbs(

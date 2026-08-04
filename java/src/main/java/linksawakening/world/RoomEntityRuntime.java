@@ -42,6 +42,7 @@ public final class RoomEntityRuntime {
     private final ButterflyMotion butterflyMotion = new ButterflyMotion();
     private final KeeseMotion keeseMotion = new KeeseMotion();
     private final RoamingEnemyMotion roamingEnemyMotion = new RoamingEnemyMotion();
+    private final ArmosMotion armosMotion = new ArmosMotion();
     private final GhiniMotion ghiniMotion = new GhiniMotion();
     private final HardHatMotion hardHatMotion = new HardHatMotion();
     private final FollowingNpcMotion followingNpcMotion = new FollowingNpcMotion();
@@ -164,6 +165,9 @@ public final class RoomEntityRuntime {
                 if (entity.type() == ENTITY_OCTOROK || entity.type() == ENTITY_MOBLIN) {
                     roamingEnemyMotion.initialize(entity.slot());
                 }
+                if (entity.type() == ENTITY_ARMOS_STATUE) {
+                    armosMotion.initialize(entity.slot());
+                }
                 if (entity.type() == ENTITY_GHINI) {
                     ghiniMotion.initialize(entity.slot());
                 }
@@ -201,6 +205,11 @@ public final class RoomEntityRuntime {
                 && isRoamingEnemyType(entity.type())) {
                 updated = roamingEnemyMotion.advance(entity, linkEntityX, linkEntityY,
                     randomByteSupplier, backgroundCollision);
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_ARMOS_STATUE) {
+                updated = armosMotion.advance(entity, frame, linkEntityX, linkEntityY,
+                    randomByteSupplier);
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_GHINI) {
@@ -350,6 +359,7 @@ public final class RoomEntityRuntime {
         butterflyMotion.clear(slot);
         keeseMotion.clear(slot);
         roamingEnemyMotion.clear(slot);
+        armosMotion.clear(slot);
         ghiniMotion.clear(slot);
         hardHatMotion.clear(slot);
         followingNpcMotion.clear(slot);
@@ -432,6 +442,22 @@ public final class RoomEntityRuntime {
 
     int octorokSpeedY(int slot) {
         return roamingEnemyMotion.speedY(slot);
+    }
+
+    int armosState(int slot) {
+        return armosMotion.state(slot);
+    }
+
+    int armosTransitionCountdown(int slot) {
+        return armosMotion.transitionCountdown(slot);
+    }
+
+    int armosSpeedX(int slot) {
+        return armosMotion.speedX(slot);
+    }
+
+    int armosSpeedY(int slot) {
+        return armosMotion.speedY(slot);
     }
 
     int ghiniTransitionCountdown(int slot) {
@@ -574,6 +600,8 @@ public final class RoomEntityRuntime {
         enemyIgnoreHitsCountdown[slot] = 0;
         butterflyMotion.clear(slot);
         keeseMotion.clear(slot);
+        roamingEnemyMotion.clear(slot);
+        armosMotion.clear(slot);
         followingNpcMotion.clear(slot);
         ghiniMotion.clear(slot);
         hardHatMotion.clear(slot);
