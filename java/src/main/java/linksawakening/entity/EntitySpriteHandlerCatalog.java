@@ -22,6 +22,7 @@ public final class EntitySpriteHandlerCatalog {
     private static final int ENTITY_SPARK_CLOCKWISE = 0x17;
     private static final int ENTITY_ZOL = 0x1B;
     private static final int ENTITY_GEL = 0x1C;
+    private static final int ENTITY_HIDING_ZOL = 0x9B;
     private static final int ENTITY_STALFOS_AGGRESSIVE = 0x1A;
     private static final int ENTITY_GIBDO = 0x1F;
     private static final int ENTITY_PEAHAT = 0xA0;
@@ -128,6 +129,9 @@ public final class EntitySpriteHandlerCatalog {
         if (entityType == ENTITY_GEL) {
             return decodeSingle(entityType, 0x06, 0x7BFA, 2, 0);
         }
+        if (entityType == ENTITY_HIDING_ZOL) {
+            return decodeHidingZol(entityType);
+        }
         if (entityType == ENTITY_STALFOS_AGGRESSIVE) {
             return decodePair(entityType, 0x06, 0x4AA8, 3, 0);
         }
@@ -197,6 +201,21 @@ public final class EntitySpriteHandlerCatalog {
     /** The green Zol list selected after Slime Eye has split its Zol. */
     public EntitySpriteDefinition forZolSlimeEye() {
         return decodePair(0x1B, 0x06, 0x7C11, 2, 0);
+    }
+
+    /**
+     * Decodes Hiding Zol's mixed display path. The bank-$07 handler selects
+     * the single-sprite list when the entity variant is $01 and the pair list
+     * for variants $00, $02, and $03. A null second OAM entry represents that
+     * single-sprite branch without inventing a second tile.
+     */
+    private EntitySpriteDefinition decodeHidingZol(int entityType) {
+        EntitySpriteDefinition pair = decodePair(entityType, 0x07, 0x729B, 4, 0);
+        EntitySpriteDefinition single = decodeSingle(entityType, 0x07, 0x72AB, 1, 0);
+        List<EntitySpriteDefinition.Variant> variants = new ArrayList<>(pair.variants());
+        variants.set(1, new EntitySpriteDefinition.Variant(single.variant(0).first(), null));
+        return new EntitySpriteDefinition(entityType, 0x07, 0x729B,
+            EntitySpriteDefinition.Shape.PAIR, 0, variants);
     }
 
     /**

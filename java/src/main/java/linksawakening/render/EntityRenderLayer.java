@@ -88,6 +88,12 @@ public final class EntityRenderLayer implements RenderLayer {
         if (definition.shape() == EntitySpriteDefinition.Shape.PAIR) {
             EntitySpriteDefinition.Variant variant = definition.variant(entity.spriteVariant());
             if (variant.second() == null) {
+                // Hiding Zol's bank-$07 handler selects a single-sprite list
+                // for variant $01 while using the pair list for the other
+                // variants. The catalog represents that mixed path with a
+                // null second OAM entry.
+                renderOamSprite(context, palettes, tiles, withTileOffset(variant.first(), entity),
+                    flipAttribute, entityX + 4, entityY);
                 return;
             }
             boolean flipX = (flipAttribute & OAM_XFLIP) != 0;

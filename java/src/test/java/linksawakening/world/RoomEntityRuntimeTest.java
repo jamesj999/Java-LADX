@@ -1120,6 +1120,91 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void hidingZolUsesTheRomProximityRevealAndRisePhases() {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x9B, 64, 64, EntityStatus.INIT, definition, 0)),
+            false, sequence(0x02));
+
+        runtime.tick(0, 120, 120, sequence(0x02));
+        assertEquals(0, runtime.hidingZolState(0));
+        assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
+
+        runtime.tick(1, 80, 64, sequence(0x02));
+        assertEquals(1, runtime.hidingZolState(0));
+        assertEquals(0x20, runtime.hidingZolTransitionCountdown(0));
+        assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
+
+        runtime.tick(2, 80, 64, sequence(0x02));
+        assertEquals(0x1F, runtime.hidingZolTransitionCountdown(0));
+        assertEquals(1, runtime.snapshot().slots().get(0).spriteVariant());
+
+        for (int frame = 3; frame <= 18; frame++) {
+            runtime.tick(frame, 80, 64, sequence(0x02));
+        }
+        assertEquals(0x0F, runtime.hidingZolTransitionCountdown(0));
+        assertEquals(2, runtime.snapshot().slots().get(0).spriteVariant());
+
+        for (int frame = 19; frame <= 33; frame++) {
+            runtime.tick(frame, 80, 64, sequence(0x02));
+        }
+        assertEquals(2, runtime.hidingZolState(0));
+        assertEquals(0, runtime.hidingZolTransitionCountdown(0));
+        assertEquals(3, runtime.snapshot().slots().get(0).spriteVariant());
+        assertEquals(8, runtime.snapshot().slots().get(0).z());
+    }
+
+    @Test
+    void hidingZolUsesTheRomSwordAndLinkCollisionPhases() {
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
+            .forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x9B, 64, 64, EntityStatus.INIT, definition, 0)),
+            false, sequence(0x00));
+
+        runtime.tick(0, 80, 64, sequence(0x00));
+        assertTrue(runtime.resolveCombat(1, 72, 72, false, true,
+            true, 72, 1, 72, 1).isEmpty());
+
+        int frame = 1;
+        while (runtime.hidingZolState(0) != 3 && frame < 200) {
+            runtime.tick(frame++, 80, 64, sequence(0x00));
+        }
+        assertEquals(3, runtime.hidingZolState(0));
+
+        // The state-2 handler is the frame that enters state 3, so its
+        // state-3 sword continuation has not run yet. Advance one handler
+        // frame before checking state-3 collision behavior.
+        runtime.tick(frame++, 80, 64, sequence(0x00));
+        RoomEntity hidingZol = runtime.snapshot().slots().get(0);
+        List<EntityCombatEvent> contact = runtime.resolveCombat(
+            1, hidingZol.x() + 4, hidingZol.y() + 4, false, true,
+            false, 0, 0, 0, 0);
+        assertTrue(contact.isEmpty());
+
+        List<EntityCombatEvent> sword = runtime.resolveCombat(
+            1, 120, 120, false, true, true,
+            hidingZol.x() + 8, 1, hidingZol.y() + 8, 1);
+        assertEquals(1, sword.size());
+        assertTrue(sword.get(0).swordHit());
+        assertEquals(EntityStatus.DYING, runtime.snapshot().slots().get(0).status());
+    }
+
+    @Test
+    void combatUsesTheEntityVisualYWhenHidingZolIsAirborne() {
+        EntitySpriteDefinition definition = pairDefinition(0x9B, 4);
+        RoomEntity airborne = new RoomEntity(0, 0, 0x9B, 64, 64,
+            EntityStatus.ACTIVE, definition, 0, 0, 0, 0x10);
+
+        assertTrue(RoomEntityCombatRules.overlapsLink(airborne, 64, 48));
+        assertFalse(RoomEntityCombatRules.overlapsLink(airborne, 64, 64));
+        assertTrue(RoomEntityCombatRules.overlapsSword(airborne, 72, 1, 56, 1));
+        assertFalse(RoomEntityCombatRules.overlapsSword(airborne, 72, 1, 72, 1));
+    }
+
+    @Test
     void dynamicGhostRuntimeAdvancesZBobEvenWhenItsVariantIsUnchanged() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
             .forFollowerEntityType(0xD4);

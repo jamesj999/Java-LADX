@@ -12,6 +12,7 @@ public final class RoomEntityCombatRules {
     private static final int ENTITY_STALFOS_AGGRESSIVE = 0x1A;
     private static final int ENTITY_ZOL = 0x1B;
     private static final int ENTITY_GEL = 0x1C;
+    private static final int ENTITY_HIDING_ZOL = 0x9B;
     private static final int ENTITY_GIBDO = 0x1F;
     private static final int ENTITY_PEAHAT = 0xA0;
     private static final int ENTITY_ARMOS_STATUE = 0x0F;
@@ -43,6 +44,7 @@ public final class RoomEntityCombatRules {
     private static final int ANTI_FAIRY_INITIAL_HEALTH = 0x04;
     private static final int ZOL_INITIAL_HEALTH = 0x02;
     private static final int GEL_INITIAL_HEALTH = 0x01;
+    private static final int HIDING_ZOL_INITIAL_HEALTH = 0x01;
     private static final int GIBDO_INITIAL_HEALTH = 0x06;
     private static final int BASIC_SWORD_DAMAGE = 0x01;
 
@@ -54,7 +56,8 @@ public final class RoomEntityCombatRules {
             case ENTITY_KEESE, ENTITY_MOBLIN, ENTITY_TEKTITE, ENTITY_LEEVER,
                 ENTITY_ANTI_FAIRY, ENTITY_SPARK_COUNTER_CLOCKWISE,
                 ENTITY_SPARK_CLOCKWISE,
-                ENTITY_STALFOS_AGGRESSIVE, ENTITY_ZOL, ENTITY_GEL, ENTITY_GIBDO, ENTITY_PEAHAT,
+                ENTITY_STALFOS_AGGRESSIVE, ENTITY_ZOL, ENTITY_GEL, ENTITY_HIDING_ZOL,
+                ENTITY_GIBDO, ENTITY_PEAHAT,
                 ENTITY_GHINI,
                 ENTITY_HARDHAT_BEETLE,
                 ENTITY_OCTOROK -> true;
@@ -68,7 +71,8 @@ public final class RoomEntityCombatRules {
 
     static int contactDamage(int type) {
         return switch (type & 0xFF) {
-            case ENTITY_KEESE, ENTITY_OCTOROK, ENTITY_PEAHAT, ENTITY_ZOL, ENTITY_GEL ->
+            case ENTITY_KEESE, ENTITY_OCTOROK, ENTITY_PEAHAT, ENTITY_ZOL, ENTITY_GEL,
+                ENTITY_HIDING_ZOL ->
                 OCTOROK_AND_KEESE_CONTACT_DAMAGE;
             case ENTITY_MOBLIN, ENTITY_TEKTITE, ENTITY_LEEVER, ENTITY_STALFOS_AGGRESSIVE ->
                 MOBLIN_CONTACT_DAMAGE;
@@ -91,6 +95,7 @@ public final class RoomEntityCombatRules {
             case ENTITY_SPARK_COUNTER_CLOCKWISE, ENTITY_SPARK_CLOCKWISE ->
                 OCTOROK_AND_KEESE_INITIAL_HEALTH;
             case ENTITY_ZOL -> ZOL_INITIAL_HEALTH;
+            case ENTITY_HIDING_ZOL -> HIDING_ZOL_INITIAL_HEALTH;
             case ENTITY_GEL -> GEL_INITIAL_HEALTH;
             case ENTITY_GIBDO -> GIBDO_INITIAL_HEALTH;
             case ENTITY_ANTI_FAIRY -> ANTI_FAIRY_INITIAL_HEALTH;
@@ -122,7 +127,7 @@ public final class RoomEntityCombatRules {
             return false;
         }
         int yDistance = unsignedByteAbs(
-            entity.y() + HITBOX_Y - linkPixelY - 0x08);
+            entity.y() - entity.z() + HITBOX_Y - linkPixelY - 0x08);
         return yDistance < hitboxHeight + 0x04;
     }
 
@@ -143,7 +148,7 @@ public final class RoomEntityCombatRules {
             return false;
         }
         int yDistance = unsignedByteAbs(
-            entity.y() + HITBOX_Y - swordY);
+            entity.y() - entity.z() + HITBOX_Y - swordY);
         return yDistance < hitboxHeight + swordHeight;
     }
 

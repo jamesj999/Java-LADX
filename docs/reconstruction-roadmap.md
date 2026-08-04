@@ -112,6 +112,13 @@ resource.
   position/Z setup; Gel clinging suppresses the ordinary enemy collision path.
   Joypad-driven release from the clinging state, recoil, and the remaining
   damage-state branches remain pending.
+- Hiding Zol (`$9B`) now decodes bank `$07`'s mixed hidden/pair/single display
+  path, mirrors the signed `$20` proximity reveal, `$20` reveal countdown,
+  random three-to-six bounce count, fixed-point Z gravity, horizontal inching,
+  Link-vector leaps, repeated landing cycle, hide countdown, state-3 sword
+  continuation, and full state-4/5 enemy-collision gate. Recoil, jump
+  jingle/audio, background interaction, and the remaining damage-state
+  branches remain pending.
 - PeaHat now decodes the bank `$07` pair display list and mirrors its resting,
   takeoff, and flying states, slow-countdown cadence, carry-aware animation,
   direct Z ascent/descent, and contiguous ROM phase-speed tables. Its grounded

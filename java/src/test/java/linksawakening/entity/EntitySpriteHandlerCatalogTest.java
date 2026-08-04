@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 final class EntitySpriteHandlerCatalogTest {
@@ -161,6 +162,13 @@ final class EntitySpriteHandlerCatalogTest {
             0x1C, EntityRoomLoader.RoomTable.INDOORS_A);
         assertDefinition(gel, 0x06, 0x7BFA,
             EntitySpriteDefinition.Shape.SINGLE, 2, 0);
+
+        EntitySpriteDefinition hidingZol = catalog.forEntityType(
+            0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
+        assertDefinition(hidingZol, 0x07, 0x729B,
+            EntitySpriteDefinition.Shape.PAIR, 4, 0);
+        assertNull(hidingZol.variant(1).second());
+        assertEquals(0x00, hidingZol.variant(1).first().tile());
 
         EntitySpriteDefinition gibdo = catalog.forEntityType(
             0x1F, EntityRoomLoader.RoomTable.INDOORS_B);
@@ -385,6 +393,14 @@ final class EntitySpriteHandlerCatalogTest {
         assertEquals(0x56, gel.variant(0).first().tile());
         assertEquals(0x02, gel.variant(0).first().attributes());
         assertEquals(0x22, gel.variant(1).first().attributes());
+
+        EntitySpriteDefinition hidingZol = catalog.forEntityType(
+            0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
+        assertEquals(0xFF, hidingZol.variant(0).first().tile());
+        assertEquals(0x56, hidingZol.variant(1).first().tile());
+        assertNull(hidingZol.variant(1).second());
+        assertEquals(0x54, hidingZol.variant(2).first().tile());
+        assertEquals(0x52, hidingZol.variant(3).first().tile());
 
         EntitySpriteDefinition gibdo = catalog.forEntityType(
             0x1F, EntityRoomLoader.RoomTable.INDOORS_B);

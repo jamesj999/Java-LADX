@@ -71,6 +71,30 @@ final class EntityRenderLayerTest {
     }
 
     @Test
+    void rendersAFirstOnlyPairVariantAtTheSingleSpriteOrigin() {
+        GPU gpu = new GPU();
+        int color = 0x123456;
+        int[][] palettes = {{0, color, 0, 0}};
+        writeSolidTile(gpu, 0x20, 1);
+        EntitySpriteDefinition mixed = new EntitySpriteDefinition(0x9B, 0x07, 0x729B,
+            EntitySpriteDefinition.Shape.PAIR, 0, List.of(
+                new EntitySpriteDefinition.Variant(
+                    new EntitySpriteDefinition.OamAttribute(0x20, 0x00),
+                    new EntitySpriteDefinition.OamAttribute(0x20, 0x00)),
+                new EntitySpriteDefinition.Variant(
+                    new EntitySpriteDefinition.OamAttribute(0x20, 0x00), null)));
+        RoomEntity entity = new RoomEntity(0, 0, 0x9B, 24, 32, EntityStatus.ACTIVE,
+            mixed, 1, 0);
+        byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
+
+        new EntityRenderLayer(snapshot(entity), palettes, new ScrollController())
+            .render(new RenderContext(buffer, gpu));
+
+        assertEquals(color, pixelColor(buffer, 20, 16));
+        assertEquals(0, pixelColor(buffer, 16, 16));
+    }
+
+    @Test
     void rendersRectangleOffsetsAndPerEntityTileOffset() {
         GPU gpu = new GPU();
         int color = 0x123456;
