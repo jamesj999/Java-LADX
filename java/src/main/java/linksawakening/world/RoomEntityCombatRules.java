@@ -19,6 +19,7 @@ public final class RoomEntityCombatRules {
     private static final int ENTITY_GHINI = 0x12;
     private static final int ENTITY_KEESE = 0x19;
     private static final int ENTITY_HARDHAT_BEETLE = 0x20;
+    private static final int ENTITY_SPIKE_TRAP = 0x27;
 
     // HitboxPositions._00 in home/entities.asm:3AAA. Octorok, Moblin, Armos,
     // and Keese all select the normal collision box in hitbox_flags.asm.
@@ -28,6 +29,8 @@ public final class RoomEntityCombatRules {
     private static final int HITBOX_HEIGHT = 0x05;
     private static final int SMALL_ENEMY_HITBOX_WIDTH = 0x02;
     private static final int SMALL_ENEMY_HITBOX_HEIGHT = 0x02;
+    private static final int BIG_ENEMY_HITBOX_WIDTH = 0x0A;
+    private static final int BIG_ENEMY_HITBOX_HEIGHT = 0x0A;
 
     // HealthGroupForEntity (bank 3:41F6), InitialHealthForGroup (bank
     // 3:47BC), and EntityDamagesForGroup (bank 3:47F1).
@@ -41,6 +44,8 @@ public final class RoomEntityCombatRules {
     private static final int MOBLIN_INITIAL_HEALTH = 0x02;
     private static final int GHINI_INITIAL_HEALTH = 0x08;
     private static final int HARDHAT_INITIAL_HEALTH = 0x04;
+    private static final int SPIKE_TRAP_CONTACT_DAMAGE = 0x08;
+    private static final int SPIKE_TRAP_INITIAL_HEALTH = 0x04;
     private static final int ANTI_FAIRY_INITIAL_HEALTH = 0x04;
     private static final int ZOL_INITIAL_HEALTH = 0x02;
     private static final int GEL_INITIAL_HEALTH = 0x01;
@@ -59,7 +64,7 @@ public final class RoomEntityCombatRules {
                 ENTITY_STALFOS_AGGRESSIVE, ENTITY_ZOL, ENTITY_GEL, ENTITY_HIDING_ZOL,
                 ENTITY_GIBDO, ENTITY_PEAHAT,
                 ENTITY_GHINI,
-                ENTITY_HARDHAT_BEETLE,
+                ENTITY_HARDHAT_BEETLE, ENTITY_SPIKE_TRAP,
                 ENTITY_OCTOROK -> true;
             default -> false;
         };
@@ -82,6 +87,7 @@ public final class RoomEntityCombatRules {
             case ENTITY_ANTI_FAIRY -> ANTI_FAIRY_CONTACT_DAMAGE;
             case ENTITY_GHINI -> GHINI_CONTACT_DAMAGE;
             case ENTITY_HARDHAT_BEETLE -> HARDHAT_CONTACT_DAMAGE;
+            case ENTITY_SPIKE_TRAP -> SPIKE_TRAP_CONTACT_DAMAGE;
             default -> 0;
         };
     }
@@ -101,6 +107,7 @@ public final class RoomEntityCombatRules {
             case ENTITY_ANTI_FAIRY -> ANTI_FAIRY_INITIAL_HEALTH;
             case ENTITY_GHINI -> GHINI_INITIAL_HEALTH;
             case ENTITY_HARDHAT_BEETLE -> HARDHAT_INITIAL_HEALTH;
+            case ENTITY_SPIKE_TRAP -> SPIKE_TRAP_INITIAL_HEALTH;
             default -> 0;
         };
     }
@@ -153,11 +160,19 @@ public final class RoomEntityCombatRules {
     }
 
     private static int hitboxWidth(int type) {
-        return (type & 0xFF) == ENTITY_GEL ? SMALL_ENEMY_HITBOX_WIDTH : HITBOX_WIDTH;
+        return switch (type & 0xFF) {
+            case ENTITY_GEL -> SMALL_ENEMY_HITBOX_WIDTH;
+            case ENTITY_SPIKE_TRAP -> BIG_ENEMY_HITBOX_WIDTH;
+            default -> HITBOX_WIDTH;
+        };
     }
 
     private static int hitboxHeight(int type) {
-        return (type & 0xFF) == ENTITY_GEL ? SMALL_ENEMY_HITBOX_HEIGHT : HITBOX_HEIGHT;
+        return switch (type & 0xFF) {
+            case ENTITY_GEL -> SMALL_ENEMY_HITBOX_HEIGHT;
+            case ENTITY_SPIKE_TRAP -> BIG_ENEMY_HITBOX_HEIGHT;
+            default -> HITBOX_HEIGHT;
+        };
     }
 
     private static int unsignedByteAbs(int value) {

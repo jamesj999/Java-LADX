@@ -119,6 +119,14 @@ resource.
   continuation, and full state-4/5 enemy-collision gate. Recoil, jump
   jingle/audio, background interaction, and the remaining damage-state
   branches remain pending.
+- Spike Trap (`$27`) now decodes bank `$06:$74FA`, consumes the ROM random
+  direction initializer, and mirrors the four-state alignment, launch,
+  fixed-point travel, collision-gated return, and saved-coordinate loop using
+  the source `$20/$E0`, `$F8/$08`, `$E0/$20`, and return-speed tables. Its big
+  enemy hitbox and health-group `$09` values (four health, `$08` contact
+  damage) are wired into the shared combat path. The handler's audio, recoil,
+  and broader `hActiveEntityNoBGCollision` ground/pit/water/conveyor effects
+  remain pending.
 - PeaHat now decodes the bank `$07` pair display list and mirrors its resting,
   takeoff, and flying states, slow-countdown cadence, carry-aware animation,
   direct Z ascent/descent, and contiguous ROM phase-speed tables. Its grounded

@@ -200,6 +200,11 @@ final class EntitySpriteHandlerCatalogTest {
         assertDefinition(caveBHardHat, 0x06, 0x4F34,
             EntitySpriteDefinition.Shape.PAIR, 2, 0);
 
+        EntitySpriteDefinition spikeTrap = catalog.forEntityType(
+            0x27, EntityRoomLoader.RoomTable.INDOORS_A);
+        assertDefinition(spikeTrap, 0x06, 0x74FA,
+            EntitySpriteDefinition.Shape.PAIR, 1, 0);
+
         EntitySpriteDefinition grandpa = catalog.forEntityType(
             0x77, EntityRoomLoader.RoomTable.INDOORS_A);
         assertDefinition(grandpa, 0x06, 0x5C51,
@@ -439,6 +444,13 @@ final class EntitySpriteHandlerCatalogTest {
             0x20, EntityRoomLoader.RoomTable.INDOORS_A, 0x0A);
         assertEquals(0x64, caveBHardHat.variant(0).first().tile());
         assertEquals(0x66, caveBHardHat.variant(1).first().tile());
+
+        EntitySpriteDefinition spikeTrap = catalog.forEntityType(
+            0x27, EntityRoomLoader.RoomTable.INDOORS_A);
+        assertEquals(0x50, spikeTrap.variant(0).first().tile());
+        assertEquals(0x02, spikeTrap.variant(0).first().attributes());
+        assertEquals(0x50, spikeTrap.variant(0).second().tile());
+        assertEquals(0x22, spikeTrap.variant(0).second().attributes());
 
         EntitySpriteDefinition grandpa = catalog.forEntityType(
             0x77, EntityRoomLoader.RoomTable.INDOORS_A);

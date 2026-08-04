@@ -1193,6 +1193,103 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void spikeTrapUsesTheRomRandomDirectionAndFourStateLaunchLoop() {
+        EntitySpriteDefinition definition = pairDefinition(0x27, 1);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x27, 64, 64, EntityStatus.INIT, definition, 0)));
+
+        runtime.tick(0, 120, 120, sequence(0x00));
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
+        assertEquals(0, runtime.spikeTrapState(0));
+        assertEquals(0, runtime.spikeTrapDirection(0));
+
+        runtime.tick(1, 80, 64, sequence(0x00));
+        assertEquals(1, runtime.spikeTrapState(0));
+        assertEquals(64, runtime.spikeTrapPrivateState1(0));
+        assertEquals(64, runtime.spikeTrapPrivateState2(0));
+
+        // Link is within the Y window, so state 1 chooses the right-facing
+        // $20 X speed and immediately enters state 2.
+        runtime.tick(2, 80, 64, sequence(0x00));
+        assertEquals(2, runtime.spikeTrapState(0));
+        assertEquals(0, runtime.spikeTrapDirection(0));
+        assertEquals(0x20, runtime.spikeTrapSpeedX(0));
+        assertEquals(0, runtime.spikeTrapSpeedY(0));
+        assertEquals(0x18, runtime.spikeTrapTransitionCountdown(0));
+
+        runtime.tick(3, 80, 64, sequence(0x00));
+        assertEquals(66, runtime.snapshot().slots().get(0).x());
+        assertEquals(0x17, runtime.spikeTrapTransitionCountdown(0));
+
+        for (int frame = 4; frame <= 26; frame++) {
+            runtime.tick(frame, 80, 64, sequence(0x00));
+        }
+        assertEquals(3, runtime.spikeTrapState(0));
+        assertEquals(112, runtime.snapshot().slots().get(0).x());
+
+        int frame = 27;
+        while (runtime.spikeTrapState(0) != 1 && frame < 280) {
+            runtime.tick(frame++, 80, 64, sequence(0x00));
+        }
+        assertEquals(1, runtime.spikeTrapState(0));
+        assertEquals(64, runtime.snapshot().slots().get(0).x());
+        assertEquals(64, runtime.snapshot().slots().get(0).y());
+        assertEquals(0x20, runtime.spikeTrapTransitionCountdown(0));
+    }
+
+    @Test
+    void spikeTrapFallsBackToTheRomVerticalLaunchTable() {
+        EntitySpriteDefinition definition = pairDefinition(0x27, 1);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x27, 64, 64, EntityStatus.INIT, definition, 0)));
+
+        runtime.tick(0, 120, 120, sequence(0x02));
+        runtime.tick(1, 64, 100, sequence(0x02));
+        runtime.tick(2, 64, 100, sequence(0x02));
+
+        assertEquals(2, runtime.spikeTrapState(0));
+        assertEquals(3, runtime.spikeTrapDirection(0));
+        assertEquals(0, runtime.spikeTrapSpeedX(0));
+        assertEquals(0x20, runtime.spikeTrapSpeedY(0));
+        assertEquals(0x10, runtime.spikeTrapTransitionCountdown(0));
+    }
+
+    @Test
+    void spikeTrapBackgroundCollisionKeepsItInItsLaunchState() {
+        EntitySpriteDefinition definition = pairDefinition(0x27, 1);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x27, 64, 64, EntityStatus.INIT, definition, 0)));
+
+        runtime.tick(0, 120, 120, sequence(0x00));
+        runtime.tick(1, 80, 64, sequence(0x00));
+        RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) -> direction == 0;
+        runtime.tick(2, 80, 64, sequence(0x00), wall);
+
+        assertEquals(1, runtime.spikeTrapState(0));
+        assertEquals(0, runtime.spikeTrapTransitionCountdown(0));
+        assertEquals(0x20, runtime.spikeTrapSpeedX(0));
+    }
+
+    @Test
+    void spikeTrapUsesTheRomHealthGroupNineCombatValues() {
+        EntitySpriteDefinition definition = pairDefinition(0x27, 1);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x27, 64, 64, EntityStatus.ACTIVE, definition, 0)));
+
+        assertEquals(4, runtime.enemyHealth(0));
+        List<EntityCombatEvent> contact = runtime.resolveCombat(
+            1, 64, 64, false, true, false, 0, 0, 0, 0);
+        assertEquals(1, contact.size());
+        assertEquals(8, contact.get(0).linkDamage());
+
+        List<EntityCombatEvent> sword = runtime.resolveCombat(
+            1, 120, 120, false, true, true, 72, 1, 72, 1);
+        assertEquals(1, sword.size());
+        assertTrue(sword.get(0).swordHit());
+        assertEquals(3, runtime.enemyHealth(0));
+    }
+
+    @Test
     void combatUsesTheEntityVisualYWhenHidingZolIsAirborne() {
         EntitySpriteDefinition definition = pairDefinition(0x9B, 4);
         RoomEntity airborne = new RoomEntity(0, 0, 0x9B, 64, 64,
