@@ -33,6 +33,8 @@ public final class EntitySpriteHandlerCatalog {
     private static final int ENTITY_GHINI = 0x12;
     private static final int ENTITY_KEESE = 0x19;
     private static final int ENTITY_HARDHAT_BEETLE = 0x20;
+    private static final int ENTITY_LASER = 0x2A;
+    private static final int ENTITY_LASER_BEAM = 0x2B;
     private static final int ENTITY_SPIKE_TRAP = 0x27;
     private static final int ENTITY_PAIRODD = 0x57;
     private static final int ENTITY_PAIRODD_PROJECTILE = 0x58;
@@ -177,6 +179,14 @@ public final class EntitySpriteHandlerCatalog {
         }
         if (entityType == ENTITY_HARDHAT_BEETLE) {
             return decodePair(entityType, 0x06, mapId == 0x0A ? 0x4F34 : 0x4F2C, 2, 0);
+        }
+        if (entityType == ENTITY_LASER) {
+            return decodePair(entityType, 0x04, 0x6C2D, 8, 0);
+        }
+        if (entityType == ENTITY_LASER_BEAM) {
+            // LaserBeamEntityHandler never renders a normal entity sprite;
+            // its visible pixels are transient VFX $06 from bank $02.
+            return EntitySpriteDefinition.unsupported(entityType);
         }
         if (entityType == ENTITY_SPIKE_TRAP) {
             return decodePair(entityType, 0x06, 0x74FA, 1, 0);

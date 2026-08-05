@@ -679,6 +679,30 @@ final class EntitySpriteHandlerCatalogTest {
             });
     }
 
+    @Test
+    void mapsLaserParentToTheRomRotationDisplayListAndLeavesBeamInvisible() throws Exception {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+
+        EntitySpriteDefinition laser = catalog.forEntityType(
+            0x2A, EntityRoomLoader.RoomTable.INDOORS_A);
+        assertDefinition(laser, 0x04, 0x6C2D,
+            EntitySpriteDefinition.Shape.PAIR, 8, 0);
+        assertPairBytes(laser, new int[][] {
+            {0x70, 0x03, 0x70, 0x23},
+            {0x78, 0x03, 0x7A, 0x03},
+            {0x74, 0x03, 0x76, 0x03},
+            {0x7C, 0x03, 0x7E, 0x03},
+            {0x72, 0x03, 0x72, 0x23},
+            {0x7E, 0x23, 0x7C, 0x23},
+            {0x76, 0x23, 0x74, 0x23},
+            {0x7A, 0x23, 0x78, 0x23}
+        });
+
+        EntitySpriteDefinition beam = catalog.forEntityType(
+            0x2B, EntityRoomLoader.RoomTable.INDOORS_A);
+        assertFalse(beam.supported());
+    }
+
     private static void assertDefinition(EntitySpriteDefinition definition, int bank, int address,
                                           EntitySpriteDefinition.Shape shape, int variants,
                                           int initialVariant) {

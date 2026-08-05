@@ -17,7 +17,27 @@ public record EntityProjectileEvent(
     SoundChannel soundChannel,
     int soundId,
     boolean remove,
-    boolean swordPokeVfx) {
+    boolean swordPokeVfx,
+    int swordPokeX,
+    int swordPokeY,
+    int linkSpeedX,
+    int linkSpeedY,
+    int linkIgnoreCollisionCountdown) {
+
+    public EntityProjectileEvent(int slot, int type, Kind kind, int collisionValue,
+                                 int linkDamage, SoundChannel soundChannel, int soundId,
+                                 boolean remove, boolean swordPokeVfx) {
+        this(slot, type, kind, collisionValue, linkDamage, soundChannel, soundId,
+            remove, swordPokeVfx, 0, 0);
+    }
+
+    public EntityProjectileEvent(int slot, int type, Kind kind, int collisionValue,
+                                 int linkDamage, SoundChannel soundChannel, int soundId,
+                                 boolean remove, boolean swordPokeVfx,
+                                 int swordPokeX, int swordPokeY) {
+        this(slot, type, kind, collisionValue, linkDamage, soundChannel, soundId,
+            remove, swordPokeVfx, swordPokeX, swordPokeY, 0, 0, 0);
+    }
 
     public EntityProjectileEvent {
         if (slot < 0 || slot >= EntityRoomLoader.MAX_ENTITIES) {
@@ -48,6 +68,15 @@ public record EntityProjectileEvent(
         }
         if (soundChannel != SoundChannel.NONE && soundId == -1) {
             throw new IllegalArgumentException("A sound channel requires a sound id");
+        }
+        if ((swordPokeX & ~0xFF) != 0 || (swordPokeY & ~0xFF) != 0) {
+            throw new IllegalArgumentException("Sword-poke coordinates must be unsigned bytes");
+        }
+        if ((linkSpeedX & ~0xFF) != 0 || (linkSpeedY & ~0xFF) != 0) {
+            throw new IllegalArgumentException("Link response speeds must be unsigned bytes");
+        }
+        if (linkIgnoreCollisionCountdown < 0 || linkIgnoreCollisionCountdown > 0xFF) {
+            throw new IllegalArgumentException("Link collision-ignore countdown must be a byte");
         }
     }
 

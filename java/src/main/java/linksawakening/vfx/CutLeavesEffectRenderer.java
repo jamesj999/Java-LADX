@@ -20,6 +20,9 @@ public final class CutLeavesEffectRenderer {
     private static final int POOF_OAM_Y_BIAS = 16;
     private static final int SWORD_POKE_OAM_X_BIAS = 8;
     private static final int SWORD_POKE_OAM_Y_BIAS = 16;
+    private static final int LASER_BEAM_OAM_X_BIAS = 8;
+    private static final int LASER_BEAM_OAM_Y_BIAS = 16;
+    private static final int LASER_BEAM_TILE_ID = 0x24;
     // bank-$02 Data_002_57DD: two four-byte OAM entries per phase. The
     // phase is selected from the transient countdown's bit $08.
     private static final int[][] SWORD_POKE_SPRITE_RECT = {
@@ -108,5 +111,18 @@ public final class CutLeavesEffectRenderer {
             ));
         }
         return List.copyOf(placements);
+    }
+
+    /** ROM bank-$02 RenderTranscientLaserBeam and its one-entry OAM write. */
+    public List<SpritePlacement> renderLaserBeam(int worldX, int worldY, int countdown,
+                                                 int frameCounter, int slotIndex) {
+        int attributes = ((frameCounter ^ slotIndex) & 0x01) << 4;
+        return List.of(new SpritePlacement(
+            worldX - LASER_BEAM_OAM_X_BIAS,
+            worldY - LASER_BEAM_OAM_Y_BIAS,
+            LASER_BEAM_TILE_ID,
+            attributes,
+            spriteSheet.tile(LASER_BEAM_TILE_ID)
+        ));
     }
 }

@@ -3,6 +3,7 @@ package linksawakening.world;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.rom.RomBank;
+import linksawakening.vfx.TransientVfxType;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -2059,6 +2060,118 @@ final class RoomEntityRuntimeTest {
         rockRuntime.tick(0, 0, 0, () -> 0, wall);
         rockRuntime.tick(1, 0, 0, () -> 0, wall);
         assertEquals(0, rockRuntime.snapshot().slots().get(0).spriteVariant());
+    }
+
+    @Test
+    void laserParentRotatesEveryEightFramesAndSpawnsAnInvisibleRomSensor() {
+        EntitySpriteDefinition definition = pairDefinition(0x2A, 8);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x2A, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0)));
+
+        for (int frame = 0; frame < 8; frame++) {
+            runtime.tick(frame, 0x10, 0x10, () -> 0);
+        }
+
+        RoomEntity parent = runtime.snapshot().slots().get(0);
+        RoomEntity sensor = runtime.snapshot().slots().get(15);
+        assertEquals(1, runtime.laserDirection(0));
+        assertEquals(0, parent.spriteVariant());
+        assertEquals(EntityStatus.ACTIVE, sensor.status());
+        assertEquals(0x2A, sensor.type());
+        assertEquals(-1, sensor.sourceLoadOrder());
+        assertEquals(-1, sensor.spriteVariant());
+        assertEquals(0x40, sensor.x());
+        assertEquals(0x50, sensor.y());
+    }
+
+    @Test
+    void laserParentSpawnsBeamAtRomCountdownTenWithCopiedSpeed() {
+        EntitySpriteDefinition definition = pairDefinition(0x2A, 8);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x2A, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0)));
+        runtime.setLaserParentForTest(0, 0x10, 0x20, 0xF0);
+
+        runtime.tick(0, 0x10, 0x10, () -> 0);
+
+        RoomEntity beam = runtime.snapshot().slots().get(15);
+        assertEquals(0x0F, runtime.laserParentTransitionCountdown(0));
+        assertEquals(EntityStatus.ACTIVE, beam.status());
+        assertEquals(0x2B, beam.type());
+        assertEquals(-1, beam.sourceLoadOrder());
+        assertEquals(-1, beam.spriteVariant());
+        assertEquals(0x40, beam.x());
+        assertEquals(0x50, beam.y());
+        assertEquals(0x20, runtime.laserSpeedX(15));
+        assertEquals(0xF0, runtime.laserSpeedY(15));
+    }
+
+    @Test
+    void laserSensorClearsAndArmsItsParentWhenLinkEntersTheRomWindow() {
+        EntitySpriteDefinition definition = pairDefinition(0x2A, 8);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x2A, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0)));
+
+        for (int frame = 0; frame < 8; frame++) {
+            runtime.tick(frame, 0x10, 0x10, () -> 0);
+        }
+
+        EnemyProjectileCollision.LinkState link = new EnemyProjectileCollision.LinkState(
+            0x40, 0x50, 0, 0, 0, false, 0, 0);
+        runtime.tickWithProjectileEvents(8, 0x40, 0x50, () -> 0, null, link);
+
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(15).status());
+        assertEquals(0x1F, runtime.laserParentTransitionCountdown(0));
+        assertEquals(0x40, runtime.laserSpeedX(0));
+        assertEquals(0x40, runtime.laserSpeedY(0));
+        assertEquals(0x0F, runtime.enemyFlashCountdown(0));
+        assertEquals(0x10, runtime.snapshot().slots().get(0).entityFlipAttribute());
+    }
+
+    @Test
+    void laserBeamUsesRomFixedPointMovementAndEmitsTheTransientBeamVfx() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, -1, 0x2B, 0x20, 0x30, EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0x2B), -1)));
+        runtime.setLaserBeamForTest(0, 0x10, 0, 0);
+
+        runtime.tickWithProjectileEvents(0, 0, 0, () -> 0, null,
+            EnemyProjectileCollision.LinkState.nonInteractive());
+
+        RoomEntity beam = runtime.snapshot().slots().get(0);
+        assertEquals(0x21, beam.x());
+        assertEquals(0x30, beam.y());
+        assertEquals(1, runtime.transientVfxRequests().size());
+        RoomEntityRuntime.TransientVfxRequest request =
+            runtime.transientVfxRequests().get(0);
+        assertEquals(TransientVfxType.LASER_BEAM, request.type());
+        assertEquals(0x25, request.worldX());
+        assertEquals(0x30, request.worldY());
+    }
+
+    @Test
+    void laserBeamMirrorShieldReflectionReversesTheRomAxisBeforeMovement() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, -1, 0x2B, 0x40, 0x50, EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0x2B), -1)));
+        runtime.setLaserBeamForTest(0, 0x10, 0, 2);
+        EnemyProjectileCollision.LinkState link = new EnemyProjectileCollision.LinkState(
+            0x40, 0x50, 0, 0, 0, true, 2, 0);
+
+        List<EntityProjectileEvent> events = runtime.tickWithProjectileEvents(
+            0, 0x40, 0x50, () -> 0, null, link);
+
+        assertEquals(1, events.size());
+        assertEquals(EntityProjectileEvent.Kind.SHIELD_BLOCK, events.get(0).kind());
+        assertEquals(0x02, events.get(0).collisionValue());
+        assertFalse(events.get(0).remove());
+        assertEquals(0x41, runtime.snapshot().slots().get(0).x());
+        assertEquals(0x50, runtime.snapshot().slots().get(0).y());
+        assertEquals(0xF0, runtime.laserSpeedX(0));
+        assertEquals(1, runtime.transientVfxRequests().size());
+        assertEquals(TransientVfxType.SWORD_POKE,
+            runtime.transientVfxRequests().get(0).type());
+        assertEquals(0x41, runtime.transientVfxRequests().get(0).worldX());
+        assertEquals(0x50, runtime.transientVfxRequests().get(0).worldY());
     }
 
     @Test

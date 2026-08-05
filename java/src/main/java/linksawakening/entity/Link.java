@@ -138,6 +138,9 @@ public final class Link implements RocsFeather.JumpTarget {
     private boolean movingThisFrame;
     private int groundMotionCounter;
     private int collisionIgnoreFramesRemaining;
+    private boolean forcedSpeedPending;
+    private int forcedSpeedX;
+    private int forcedSpeedY;
     private int groundStatus = GROUND_STATUS_NORMAL;
     private boolean airborne;
     private int zSubPixels;
@@ -214,6 +217,23 @@ public final class Link implements RocsFeather.JumpTarget {
      */
     public void setCollisionIgnoreFrames(int frames) {
         collisionIgnoreFramesRemaining = Math.max(0, frames);
+    }
+
+    /**
+     * Applies the next-frame hLinkSpeedX/hLinkSpeedY values written by an
+     * entity handler such as the mirror-shield laser reflection path.
+     *
+     * <p>The ROM stores these as signed bytes in HRAM.  They are consumed by
+     * the following Link motion update, after AnimateEntities has finished
+     * writing them for the current frame.</p>
+     */
+    public void applyRomSpeed(int speedX, int speedY) {
+        if ((speedX & ~0xFF) != 0 || (speedY & ~0xFF) != 0) {
+            throw new IllegalArgumentException("Link response speeds must be unsigned bytes");
+        }
+        forcedSpeedX = (byte) speedX;
+        forcedSpeedY = (byte) speedY;
+        forcedSpeedPending = true;
     }
 
     public int pixelX() {
@@ -350,8 +370,16 @@ public final class Link implements RocsFeather.JumpTarget {
             return;
         }
 
-        int speedX = (byte) romTables.linkSpeedX(mask);
-        int speedY = (byte) romTables.linkSpeedY(mask);
+        int speedX;
+        int speedY;
+        if (forcedSpeedPending) {
+            speedX = forcedSpeedX;
+            speedY = forcedSpeedY;
+            forcedSpeedPending = false;
+        } else {
+            speedX = (byte) romTables.linkSpeedX(mask);
+            speedY = (byte) romTables.linkSpeedY(mask);
+        }
         movingThisFrame = (speedX != 0 || speedY != 0);
         boolean applyGroundMotion = airborne || shouldApplyGroundMotion();
 

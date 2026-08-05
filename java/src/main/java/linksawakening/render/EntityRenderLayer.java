@@ -14,6 +14,7 @@ import static linksawakening.world.RoomConstants.ROOM_PIXEL_WIDTH;
 public final class EntityRenderLayer implements RenderLayer {
     private static final int ENTITY_PAIRODD = 0x57;
     private static final int OAM_PALETTE_MASK = 0x07;
+    private static final int OAM_PALETTE_FLIP = 0x10;
     private static final int OAM_XFLIP = 0x20;
     private static final int OAM_YFLIP = 0x40;
     // EntityRoomLoader preserves hActiveEntityPosX/Y, which are the values
@@ -179,6 +180,13 @@ public final class EntityRenderLayer implements RenderLayer {
         }
         int attributes = oam.attributes() ^ entityFlipAttribute;
         int paletteIndex = attributes & OAM_PALETTE_MASK;
+        if ((attributes & OAM_PALETTE_FLIP) != 0) {
+            // UpdateEntityTimers writes OAMF_PAL1 while an entity is
+            // flashing; RenderActiveEntitySpritesPair converts that flag to
+            // GBC object palette 4 rather than treating it as part of the
+            // low palette index.
+            paletteIndex = 4;
+        }
         int[] palette = palettes[Math.min(paletteIndex, palettes.length - 1)];
         if (tiles == null) {
             IndexedRenderer.drawSpriteTile8x16(context.buffer(), context.gpu(), oam.tile(),

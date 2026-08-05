@@ -239,6 +239,28 @@ final class EntityRenderLayerTest {
     }
 
     @Test
+    void paletteFlipAttributeSelectsRomObjectPaletteFour() {
+        GPU gpu = new GPU();
+        writeSolidTile(gpu, 0x20, 1);
+        int[][] palettes = new int[6][4];
+        for (int palette = 0; palette < palettes.length; palette++) {
+            palettes[palette] = new int[] {0, 0x100000 + palette, 0, 0};
+        }
+
+        EntitySpriteDefinition pair = pairDefinition(
+            new EntitySpriteDefinition.OamAttribute(0x20, 0x00),
+            new EntitySpriteDefinition.OamAttribute(0x20, 0x00));
+        RoomEntity entity = new RoomEntity(0, 0, 0x01, 24, 32, EntityStatus.ACTIVE,
+            pair, 0, 0x10);
+        byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
+
+        new EntityRenderLayer(snapshot(entity), palettes, new ScrollController())
+            .render(new RenderContext(buffer, gpu));
+
+        assertEquals(palettes[4][1], pixelColor(buffer, 16, 16));
+    }
+
+    @Test
     void clipsEntitiesAndUsesCurrentRoomOffsetDuringScroll() {
         GPU gpu = new GPU();
         int color = 0x123456;

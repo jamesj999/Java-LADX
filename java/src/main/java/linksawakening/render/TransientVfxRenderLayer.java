@@ -13,15 +13,24 @@ public final class TransientVfxRenderLayer implements RenderLayer {
     private final CutLeavesEffectRenderer cutLeavesEffectRenderer;
     private final ScrollController scrollController;
     private final int[] palette;
+    private final int frameCounter;
 
     public TransientVfxRenderLayer(TransientVfxSystem transientVfxSystem,
                                    CutLeavesEffectRenderer cutLeavesEffectRenderer,
                                    ScrollController scrollController,
                                    int[] palette) {
+        this(transientVfxSystem, cutLeavesEffectRenderer, scrollController, palette, 0);
+    }
+
+    public TransientVfxRenderLayer(TransientVfxSystem transientVfxSystem,
+                                   CutLeavesEffectRenderer cutLeavesEffectRenderer,
+                                   ScrollController scrollController,
+                                   int[] palette, int frameCounter) {
         this.transientVfxSystem = transientVfxSystem;
         this.cutLeavesEffectRenderer = cutLeavesEffectRenderer;
         this.scrollController = scrollController;
         this.palette = palette;
+        this.frameCounter = frameCounter & 0xFF;
     }
 
     @Override
@@ -37,6 +46,9 @@ public final class TransientVfxRenderLayer implements RenderLayer {
                     slot.worldX(), slot.worldY(), slot.countdown());
                 case SWORD_POKE -> cutLeavesEffectRenderer.renderSwordPoke(
                     slot.worldX(), slot.worldY(), slot.countdown());
+                case LASER_BEAM -> cutLeavesEffectRenderer.renderLaserBeam(
+                    slot.worldX(), slot.worldY(), slot.countdown(), frameCounter,
+                    slot.slotIndex());
             };
             for (CutLeavesEffectRenderer.SpritePlacement sprite : sprites) {
                 IndexedRenderer.drawSpriteTile(context.buffer(), sprite.tile(), sprite.x(), sprite.y(),

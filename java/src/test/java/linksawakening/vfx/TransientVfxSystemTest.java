@@ -46,6 +46,18 @@ final class TransientVfxSystemTest {
     }
 
     @Test
+    void laserBeamUsesTheRomTransientTypeAndSixteenFrameCountdown() {
+        TransientVfxSystem system = new TransientVfxSystem(1);
+
+        system.spawn(TransientVfxType.LASER_BEAM, 0x44, 0x60);
+
+        assertEquals(
+            List.of(new TransientVfxSystem.Slot(0, TransientVfxType.LASER_BEAM,
+                0x10, 0x44, 0x60)),
+            system.activeSlots());
+    }
+
+    @Test
     void tickDecrementsCountdownAndExpiresAtZero() {
         TransientVfxSystem system = new TransientVfxSystem(1);
         system.spawn(TransientVfxType.BUSH_LEAVES, 0x20, 0x40);
@@ -136,6 +148,28 @@ final class TransientVfxSystemTest {
         CutLeavesEffectRenderer.SpritePlacement first = frame.get(0);
         assertEquals(0x42, first.x());
         assertEquals(0x4C, first.y());
+    }
+
+    @Test
+    void laserBeamRendererUsesTheRomTileAndAlternatingAttributeBit() throws IOException {
+        TransientVfxSpriteSheet spriteSheet = TransientVfxSpriteSheet.loadFromRom(loadRom());
+        CutLeavesEffectRenderer renderer = new CutLeavesEffectRenderer(spriteSheet);
+
+        List<CutLeavesEffectRenderer.SpritePlacement> firstFrame = renderer.renderLaserBeam(
+            0x44, 0x60, 0x10, 0, 0);
+        List<CutLeavesEffectRenderer.SpritePlacement> alternateFrame = renderer.renderLaserBeam(
+            0x44, 0x60, 0x10, 1, 0);
+        List<CutLeavesEffectRenderer.SpritePlacement> alternateSlot = renderer.renderLaserBeam(
+            0x44, 0x60, 0x10, 0, 1);
+
+        assertEquals(1, firstFrame.size());
+        assertEquals(0x44 - 0x08, firstFrame.get(0).x());
+        assertEquals(0x60 - 0x10, firstFrame.get(0).y());
+        assertEquals(0x24, firstFrame.get(0).tileId());
+        assertEquals(0x00, firstFrame.get(0).attributes());
+        assertEquals(0x10, alternateFrame.get(0).attributes());
+        assertEquals(0x10, alternateSlot.get(0).attributes());
+        assertNotNull(firstFrame.get(0).tile());
     }
 
     private static byte[] loadRom() throws IOException {

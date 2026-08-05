@@ -39,7 +39,8 @@ public final class GameFrameSceneBuilder {
         }
         if (state.transientVfxSystem() != null && state.cutLeavesEffectRenderer() != null) {
             layers.add(new TransientVfxRenderLayer(state.transientVfxSystem(),
-                state.cutLeavesEffectRenderer(), state.scrollController(), state.transientVfxPalette()));
+                state.cutLeavesEffectRenderer(), state.scrollController(), state.transientVfxPalette(),
+                state.frameCounter()));
         }
         if (state.droppableRupeeSystem() != null) {
             layers.add(new DroppableRupeeRenderLayer(state.droppableRupeeSystem(), state.scrollController()));

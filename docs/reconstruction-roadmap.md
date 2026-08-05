@@ -236,11 +236,41 @@ unsupported rather than represented by guessed shapes or generic movement.
   8x16 X/Y flips, tile offsets, Z subtraction, transition-selected arrow
   variants, room scrolling, and a real ROM room (`$2F`) publishing a spawned
   rock into the live render snapshot with its loaded entity tile sheet.
-- Remaining projectile gaps are deliberate: laser/mirror-shield special
-  handling, sword-poke transient VFX, object-intersection edge cases, full
-  tunic/power-up damage modifiers and health-buffer timing, and player
-  projectile interactions are not yet complete. The broader engine remains a
-  staged reconstruction, not a complete entity-system claim.
+- Remaining projectile gaps are deliberate: exact object-intersection edge
+  cases, full tunic/power-up damage modifiers and health-buffer timing, and
+  player projectile interactions are not yet complete. The broader engine
+  remains a staged reconstruction, not a complete entity-system claim.
+
+## Verified ROM laser runtime — 2026-08-05
+
+- Beamos parent `$2A` now decodes the eight two-sprite rotation pairs from
+  bank `$04:$6C2D`, advances its direction every eight active frames, and
+  spawns the source-backed invisible sensor and bank-$15 beam at the ROM
+  countdown boundary.
+- The dynamic sensor mirrors `LaserLinkSensorHandler` in bank `$04`: direct
+  signed-byte movement, the half-open `$20` Link window, invincibility gate,
+  parent `$20` transition and `$10` flash write, and the source
+  `ApplyVectorTowardsLink` length `$40` calculation are all live.
+- Beam `$2B` has the bank-$15 fixed-point `$1/16` movement and background
+  boundary path. Its collision event preserves the ROM mirror-shield window
+  (`Data_003_6BDA`), jingle `$07`, sword-poke VFX, selected-axis reflection,
+  `$10` Link collision-ignore countdown, and direction-indexed Link response
+  speeds. The normal beam hit still unloads and reports eight Link damage.
+- Transient VFX `$06` now renders the ROM tile `$24` at the bank-$02 OAM
+  offsets with the frame/slot alternating attribute bit. `RoomSession` routes
+  the parent, sensor, beam, mirror-shield, VFX, shield-level, and Link response
+  state through the live `Main` frame boundary; Link consumes the reflected
+  speed on its next update and the sword reset mirrors `ResetSpinAttack` at
+  bank `$00:$0CAF`.
+- Tests cover the real parent display bytes, sensor cadence/window/vector,
+  beam fixed-point motion, mirror-shield direction filtering and reflection
+  side effects, transient rendering, and the live event boundary. The clean
+  complete Java test suite passes with the shipped ROM.
+
+Deferred laser details remain the parent’s generic background/contact path,
+the exact bank-$15 `ApplySwordIntersectionWithObjects` edge cases beyond the
+runtime collision callback, and routing of firing noise `$08` through the
+audio boundary.
 
 ## Verified enemy sword-hit response — 2026-08-05
 

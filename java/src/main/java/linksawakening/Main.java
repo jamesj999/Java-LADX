@@ -503,9 +503,26 @@ public class Main {
                     link == null ? 0x00 : link.romEntityZ(),
                     link == null ? 0x02 : link.romMotionState(),
                     link == null ? 0x00 : link.direction(),
-                    link != null && link.isUsingShield());
+                    link != null && link.isUsingShield(),
+                    playerState == null ? 1 : playerState.shieldLevel(),
+                    playerState == null ? 0 : playerState.invincibilityCounter());
                 EnemyProjectileEventConsumer.consume(projectileEvents, playerState,
                     gameplaySoundSink);
+                for (var event : projectileEvents) {
+                    if (event.linkIgnoreCollisionCountdown() == 0 || link == null) {
+                        continue;
+                    }
+                    // AnimateEntities writes hLinkSpeedX/Y and
+                    // wIgnoreLinkCollisionsCountdown after Link's movement;
+                    // apply both at this boundary so the next Link update
+                    // consumes the same response as the ROM.
+                    link.applyRomSpeed(event.linkSpeedX(), event.linkSpeedY());
+                    link.setCollisionIgnoreFrames(event.linkIgnoreCollisionCountdown());
+                    Sword reflectedSword = equipmentController.activeSword();
+                    if (reflectedSword != null) {
+                        reflectedSword.resetSpinAttack();
+                    }
+                }
             }
 
             // Advance the animated BG tiles (waterfalls, weather vanes, etc.).

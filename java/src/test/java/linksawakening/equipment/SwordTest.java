@@ -188,6 +188,39 @@ final class SwordTest {
     }
 
     @Test
+    void resetSpinAttackCancelsQueuedAndActiveRomSpinState() {
+        Sword sword = fullyChargedSwordFacing(Link.DIRECTION_RIGHT);
+
+        sword.onRelease();
+        sword.tick(false);
+        sword.tick(false);
+        assertTrue(sword.spinAttackActive());
+
+        sword.resetSpinAttack();
+
+        assertEquals(false, sword.spinAttackActive());
+        assertEquals(Sword.STATE_NONE, sword.state());
+        assertEquals(0, sword.charge());
+    }
+
+    @Test
+    void resetSpinAttackPreservesAnOrdinaryHeldSwordPose() {
+        Sword sword = new Sword(null, null);
+
+        sword.onPress();
+        while (sword.state() != Sword.STATE_HOLDING) {
+            sword.tick(true);
+        }
+        sword.tick(true);
+
+        sword.resetSpinAttack();
+
+        assertEquals(Sword.STATE_HOLDING, sword.state());
+        assertEquals(0, sword.charge());
+        assertEquals(false, sword.spinAttackActive());
+    }
+
+    @Test
     void fullyChargedReleaseKeepsSwordExtendedForReleaseFrame() {
         Sword sword = new Sword(null, null);
 

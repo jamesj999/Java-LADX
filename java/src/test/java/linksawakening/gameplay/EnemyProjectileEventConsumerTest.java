@@ -50,6 +50,21 @@ final class EnemyProjectileEventConsumerTest {
     }
 
     @Test
+    void mirrorShieldLaserBlockPlaysTheRomSwordPokeSound() {
+        PlayerState player = new PlayerState();
+        RecordingSoundSink sounds = new RecordingSoundSink();
+
+        EntityProjectileEvent event = new EntityProjectileEvent(
+            0, 0x2B, EntityProjectileEvent.Kind.SHIELD_BLOCK, 0x02, 0,
+            EntityProjectileEvent.SoundChannel.JINGLE, 0x07, false, true,
+            0x40, 0x50);
+
+        EnemyProjectileEventConsumer.consume(List.of(event), player, sounds);
+
+        assertEquals(List.of(GameplaySoundEvent.SWORD_POKE), sounds.events);
+    }
+
+    @Test
     void invincibilitySuppressesTheProjectileDamageSoundAndHealthChange() {
         PlayerState player = new PlayerState();
         player.setHealth(16);

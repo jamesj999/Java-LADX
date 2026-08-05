@@ -27,7 +27,12 @@ public final class EnemyProjectileEventConsumer {
                 continue;
             }
             if (event.kind() == EntityProjectileEvent.Kind.SHIELD_BLOCK) {
-                playShieldSound(event, soundSink);
+                if (event.soundChannel() == EntityProjectileEvent.SoundChannel.JINGLE
+                    && event.soundId() == 0x07) {
+                    soundSink.play(GameplaySoundEvent.SWORD_POKE);
+                } else {
+                    playShieldSound(event, soundSink);
+                }
                 continue;
             }
             if (event.kind() != EntityProjectileEvent.Kind.LINK_DAMAGE

@@ -10,7 +10,8 @@ public enum TransientVfxType {
 
     BUSH_LEAVES(0x00, 0x1F),
     POOF(0x02, 0x0F),
-    SWORD_POKE(0x05, 0x0F);
+    SWORD_POKE(0x05, 0x0F),
+    LASER_BEAM(0x06, 0x10);
 
     private final int id;
     private final int defaultCountdown;

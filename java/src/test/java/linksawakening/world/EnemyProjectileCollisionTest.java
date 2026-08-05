@@ -86,6 +86,41 @@ final class EnemyProjectileCollisionTest {
     }
 
     @Test
+    void mirrorShieldReflectsLaserOnlyForTheRomDirectionWindow() {
+        EntityProjectileEvent reflected = EnemyProjectileCollision.check(
+            projectile(0x2B, 0x40, 0x50, 0), 2,
+            new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0x00,
+                0, true, 2, 0)).orElseThrow();
+
+        assertEquals(EntityProjectileEvent.Kind.SHIELD_BLOCK, reflected.kind());
+        assertEquals(0x02, reflected.collisionValue());
+        assertEquals(0, reflected.linkDamage());
+        assertEquals(EntityProjectileEvent.SoundChannel.JINGLE, reflected.soundChannel());
+        assertEquals(0x07, reflected.soundId());
+        assertFalse(reflected.remove());
+        assertTrue(reflected.swordPokeVfx());
+        assertEquals(0x40, reflected.swordPokeX());
+        assertEquals(0x50, reflected.swordPokeY());
+        assertEquals(0xF8, reflected.linkSpeedX());
+        assertEquals(0x00, reflected.linkSpeedY());
+        assertEquals(0x10, reflected.linkIgnoreCollisionCountdown());
+
+        EntityProjectileEvent normalShield = EnemyProjectileCollision.check(
+            projectile(0x2B, 0x40, 0x50, 0), 2,
+            new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0x00,
+                0, true, 1, 0)).orElseThrow();
+        assertEquals(EntityProjectileEvent.Kind.LINK_DAMAGE, normalShield.kind());
+        assertEquals(0x08, normalShield.linkDamage());
+        assertTrue(normalShield.remove());
+
+        EntityProjectileEvent wrongDirection = EnemyProjectileCollision.check(
+            projectile(0x2B, 0x40, 0x50, 0), 8,
+            new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0x00,
+                0, true, 2, 0)).orElseThrow();
+        assertEquals(EntityProjectileEvent.Kind.LINK_DAMAGE, wrongDirection.kind());
+    }
+
+    @Test
     void comparesLinkYWithTheProjectileVisualPositionAfterZSubtraction() {
         RoomEntity airborneRock = projectile(0x0A, 0x40, 0x58, 0x08);
 

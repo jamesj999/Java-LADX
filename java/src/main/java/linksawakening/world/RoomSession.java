@@ -303,6 +303,16 @@ public final class RoomSession {
                              int frameCounter, int linkEntityX, int linkEntityY,
                              int linkEntityZ, int linkMotionState, int linkDirection,
                              boolean usingShield) {
+        return tickEntitiesWithProjectileEvents(frameCounter, linkEntityX, linkEntityY,
+            linkEntityZ, linkMotionState, linkDirection, usingShield, 1, 0);
+    }
+
+    /** Advances entities with the additional ROM shield and invincibility fields. */
+    public List<EntityProjectileEvent> tickEntitiesWithProjectileEvents(
+                             int frameCounter, int linkEntityX, int linkEntityY,
+                             int linkEntityZ, int linkMotionState, int linkDirection,
+                             boolean usingShield, int shieldLevel,
+                             int invincibilityCounter) {
         followingLinkX = linkEntityX & 0xFF;
         followingLinkY = linkEntityY & 0xFF;
         followingLinkZ = linkEntityZ & 0xFF;
@@ -319,13 +329,34 @@ public final class RoomSession {
             followingLinkDirection, followingEntityYOffset,
             new EnemyProjectileCollision.LinkState(
                 linkEntityX, linkEntityY, linkEntityZ, linkMotionState,
-                linkDirection, usingShield));
+                romDirectionForProjectileCollision(linkDirection), usingShield, shieldLevel,
+                invincibilityCounter));
+        if (transientVfxSystem != null) {
+            for (RoomEntityRuntime.TransientVfxRequest request
+                : entityRuntime.transientVfxRequests()) {
+                transientVfxSystem.spawn(request.type(), request.worldX(), request.worldY());
+            }
+        }
         int clearedMask = entityRuntime.consumePendingClearedEntityMask();
         if (clearedMask != 0) {
             clearedEntitiesByRoom[activeRoom.roomId()] |= clearedMask;
         }
         activeRoom.replaceEntities(entityRuntime.snapshot());
         return events;
+    }
+
+    /** Link uses Java's down/up/left/right order; projectile ROM tables use right/left/up/down. */
+    private static int romDirectionForProjectileCollision(int linkDirection) {
+        if (linkDirection < 0 || linkDirection > 3) {
+            throw new IllegalArgumentException("Link direction out of range: " + linkDirection);
+        }
+        return switch (linkDirection) {
+            case 0 -> 3; // Java down -> ROM down
+            case 1 -> 2; // Java up -> ROM up
+            case 2 -> 1; // Java left -> ROM left
+            case 3 -> 0; // Java right -> ROM right
+            default -> throw new AssertionError(linkDirection);
+        };
     }
 
     /** Applies the active room's ROM enemy/sword collision pass. */

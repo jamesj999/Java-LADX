@@ -41,6 +41,7 @@ public final class PlayerState {
     private int health = 3 * HP_PER_HEART;
     private int invincibilityCounter;
     private int swordLevel = 1;
+    private int shieldLevel = 1;
     private int itemA = INVENTORY_SWORD;
     private int itemB = INVENTORY_EMPTY;
     private final int[] subscreen = new int[SUBSCREEN_SLOT_COUNT];
@@ -163,6 +164,15 @@ public final class PlayerState {
 
     public void setSwordLevel(int value) {
         swordLevel = clamp(value, 0, 2);
+    }
+
+    /** Mirrors the ROM shield level used by projectile collision handlers. */
+    public int shieldLevel() {
+        return shieldLevel;
+    }
+
+    public void setShieldLevel(int value) {
+        shieldLevel = clamp(value, 0, 2);
     }
 
     public int arrowCount() {

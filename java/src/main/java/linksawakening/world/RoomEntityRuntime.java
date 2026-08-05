@@ -4,6 +4,7 @@ import linksawakening.entity.EntitySpriteSelection;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.gpu.EntitySpriteTileSnapshot;
+import linksawakening.vfx.TransientVfxType;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,6 +48,8 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_ROOSTER = 0xD5;
     private static final int ENTITY_MARIN_AT_THE_SHORE = 0xC1;
     private static final int ENTITY_BOW_WOW = 0x6D;
+    private static final int ENTITY_LASER = 0x2A;
+    private static final int ENTITY_LASER_BEAM = 0x2B;
 
     private final RoomEntity[] slots;
     private EntitySpriteSelection spriteSelection;
@@ -65,6 +68,7 @@ public final class RoomEntityRuntime {
     private final KeeseMotion keeseMotion = new KeeseMotion();
     private final RoamingEnemyMotion roamingEnemyMotion = new RoamingEnemyMotion();
     private final EnemyProjectileMotion enemyProjectileMotion = new EnemyProjectileMotion();
+    private final LaserMotion laserMotion = new LaserMotion();
     private final TektiteMotion tektiteMotion = new TektiteMotion();
     private final LeeverMotion leeverMotion = new LeeverMotion();
     private final AntiFairyMotion antiFairyMotion = new AntiFairyMotion();
@@ -95,12 +99,20 @@ public final class RoomEntityRuntime {
     private final int[] enemyHealth = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyFlashCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyIgnoreHitsCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] baseEntityFlipAttribute = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] enemyProjectileSpawnedThisFrame =
+        new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] dynamicEntitySpawnedThisFrame =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final List<RoamingEnemyMotion.LaunchRequest> projectileLaunchRequests =
         new ArrayList<>();
+    private final List<TransientVfxRequest> transientVfxRequests = new ArrayList<>();
     private ColorShellWorld colorShellWorld = ColorShellWorld.none();
     private int pendingClearedEntityMask;
+
+    /** A ROM transient-VFX creation requested by an entity handler this frame. */
+    public record TransientVfxRequest(TransientVfxType type, int worldX, int worldY) {
+    }
 
     private RoomEntityRuntime(RoomEntitySnapshot initial, boolean indoorRoom,
                                IntSupplier defaultRandomByteSupplier,
@@ -116,7 +128,11 @@ public final class RoomEntityRuntime {
         this.spriteHandlers = spriteHandlers;
         this.enemyCombatTables = enemyCombatTables;
         for (RoomEntity entity : slots) {
+            baseEntityFlipAttribute[entity.slot()] = entity.entityFlipAttribute();
             enemyHealth[entity.slot()] = entity.loaded() ? initialHealth(entity.type()) : 0;
+            if (isLaserType(entity.type())) {
+                laserMotion.initializeForEntity(entity);
+            }
             if (isFollowingNpcType(entity.type())) {
                 if (entity.type() == ENTITY_BOW_WOW) {
                     bowWowMotion.initialize(entity.slot());
@@ -248,6 +264,8 @@ public final class RoomEntityRuntime {
         Objects.requireNonNull(projectileLinkState, "projectileLinkState");
         projectileLaunchRequests.clear();
         Arrays.fill(enemyProjectileSpawnedThisFrame, false);
+        Arrays.fill(dynamicEntitySpawnedThisFrame, false);
+        transientVfxRequests.clear();
         List<EntityProjectileEvent> projectileEvents = new ArrayList<>();
         if (linkPositionHistory != null) {
             followingLinkPositionHistory = linkPositionHistory;
@@ -261,7 +279,8 @@ public final class RoomEntityRuntime {
             if (!entity.loaded()) {
                 continue;
             }
-            if (enemyProjectileSpawnedThisFrame[entity.slot()]) {
+            if (enemyProjectileSpawnedThisFrame[entity.slot()]
+                || dynamicEntitySpawnedThisFrame[entity.slot()]) {
                 continue;
             }
             RoomEntity originalEntity = entity;
@@ -462,6 +481,74 @@ public final class RoomEntityRuntime {
                 updated = pairoddProjectileMotion.advance(entity, frame);
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
+                && laserMotion.isParent(entity.slot())) {
+                LaserMotion.ParentUpdate laserUpdate = laserMotion.advanceParent(entity);
+                updated = laserUpdate.entity();
+                if (laserUpdate.spawnSensor()) {
+                    spawnLaserSensor(entity);
+                }
+                if (laserUpdate.spawnBeam()) {
+                    spawnLaserBeam(entity);
+                }
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && laserMotion.isSensor(entity.slot())) {
+                int ownerSlot = laserMotion.parentSlot(entity.slot());
+                RoomEntity owner = ownerSlot >= 0 && ownerSlot < slots.length
+                    ? slots[ownerSlot] : null;
+                LaserMotion.SensorUpdate sensorUpdate = laserMotion.advanceSensor(
+                    entity, owner, linkEntityX, linkEntityY,
+                    projectileLinkState.invincibilityCounter());
+                if (sensorUpdate.triggeredParent() && ownerSlot >= 0 && ownerSlot < slots.length) {
+                    // LaserLinkSensorHandler starts the parent's visible
+                    // pre-fire flash at the same time as its $20 countdown.
+                    enemyFlashCountdown[ownerSlot] = 0x10;
+                }
+                if (sensorUpdate.unloaded()) {
+                    disableEntityWithoutPersistence(entity.slot());
+                    continue;
+                }
+                updated = sensorUpdate.entity();
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && laserMotion.isBeam(entity.slot())) {
+                var collisionEvent = EnemyProjectileCollision.check(entity,
+                    laserMotion.direction(entity.slot()), projectileLinkState);
+                if (collisionEvent.isPresent()) {
+                    EntityProjectileEvent event = collisionEvent.orElseThrow();
+                    projectileEvents.add(event);
+                    if (event.remove()) {
+                        disableEntityWithoutPersistence(entity.slot());
+                        continue;
+                    }
+                    // Bank-$15 moves the beam before consuming the collision
+                    // byte.  A reflected beam therefore advances once in
+                    // this frame, then reverses the selected speed axis.
+                    LaserMotion.BeamUpdate beamUpdate = laserMotion.advanceBeam(
+                        entity, backgroundCollision);
+                    if (beamUpdate.unloaded()) {
+                        disableEntityWithoutPersistence(entity.slot());
+                        continue;
+                    }
+                    updated = beamUpdate.entity();
+                    laserMotion.reflectBeam(entity.slot(), projectileLinkState.direction());
+                    if (event.swordPokeVfx()) {
+                        transientVfxRequests.add(new TransientVfxRequest(
+                            TransientVfxType.SWORD_POKE, updated.x(), updated.y()));
+                    }
+                } else {
+                    LaserMotion.BeamUpdate beamUpdate = laserMotion.advanceBeam(
+                        entity, backgroundCollision);
+                    if (beamUpdate.unloaded()) {
+                        disableEntityWithoutPersistence(entity.slot());
+                        continue;
+                    }
+                    updated = beamUpdate.entity();
+                    transientVfxRequests.add(new TransientVfxRequest(
+                        TransientVfxType.LASER_BEAM, updated.x() + 0x04, updated.y()));
+                }
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
                 && isEnemyProjectileType(entity.type())) {
                 EnemyProjectileMotion.Update projectileUpdate;
                 boolean hasLinkCollision = enemyProjectileMotion.transitionCountdown(entity.slot()) == 0;
@@ -554,14 +641,19 @@ public final class RoomEntityRuntime {
             if (status == EntityStatus.ACTIVE && shouldDisappear(entity)) {
                 variant = (slowTransitionCountdown[entity.slot()] & 0x01) != 0 ? 0 : -1;
             }
+            int renderFlipAttribute = baseEntityFlipAttribute[entity.slot()];
+            if (enemyFlashCountdown[entity.slot()] > 0) {
+                renderFlipAttribute ^= (enemyFlashCountdown[entity.slot()] << 2) & 0x10;
+            }
             if (status != entity.status() || variant != entity.spriteVariant()
                 || updated.type() != entity.type()
                 || updated.spriteDefinition() != entity.spriteDefinition()
                 || updated.x() != originalEntity.x() || updated.y() != originalEntity.y()
+                || renderFlipAttribute != originalEntity.entityFlipAttribute()
                 || updated.z() != originalEntity.z()) {
                 slots[index] = new RoomEntity(
                     updated.slot(), updated.sourceLoadOrder(), updated.type(), updated.x(), updated.y(),
-                    status, updated.spriteDefinition(), variant, updated.entityFlipAttribute(),
+                    status, updated.spriteDefinition(), variant, renderFlipAttribute,
                     updated.spriteTileOffset(), updated.z());
             }
         }
@@ -818,6 +910,7 @@ public final class RoomEntityRuntime {
         enemyHealth[slot] = 0;
         enemyFlashCountdown[slot] = 0;
         enemyIgnoreHitsCountdown[slot] = 0;
+        baseEntityFlipAttribute[slot] = 0;
         enemyRecoilMotion.clear(slot);
         colorShellMotion.clear(slot);
         butterflyMotion.clear(slot);
@@ -833,6 +926,7 @@ public final class RoomEntityRuntime {
         pairoddMotion.clear(slot);
         pairoddProjectileMotion.clear(slot);
         enemyProjectileMotion.clear(slot);
+        laserMotion.clear(slot);
         waterTektiteMotion.clear(slot);
         stalfosAggressiveMotion.clear(slot);
         gibdoMotion.clear(slot);
@@ -903,6 +997,10 @@ public final class RoomEntityRuntime {
         return type == ENTITY_OCTOROK_ROCK || type == ENTITY_MOBLIN_ARROW;
     }
 
+    private static boolean isLaserType(int type) {
+        return type == ENTITY_LASER || type == ENTITY_LASER_BEAM;
+    }
+
     private static boolean isDynamicFollowingNpc(RoomEntity entity) {
         return entity.sourceLoadOrder() == -1 && isFollowingNpcType(entity.type());
     }
@@ -925,6 +1023,7 @@ public final class RoomEntityRuntime {
 
         int freeSlot = findFreeEntitySlot();
         if (freeSlot >= 0) {
+            baseEntityFlipAttribute[freeSlot] = baseEntityFlipAttribute[original.slot()];
             RoomEntity spawnedGel = new RoomEntity(freeSlot, original.sourceLoadOrder(), ENTITY_GEL,
                 (split.originalX() + 8) & 0xFF, split.originalY(), EntityStatus.ACTIVE,
                 gelDefinition, gelVariant, original.entityFlipAttribute(), original.spriteTileOffset(),
@@ -966,6 +1065,7 @@ public final class RoomEntityRuntime {
             source.x(), source.y(), EntityStatus.ACTIVE, projectileDefinition,
             projectileVariant, 0, 0, source.z());
         slots[freeSlot] = projectile;
+        baseEntityFlipAttribute[freeSlot] = 0;
         enemyTransitionCountdown[freeSlot] = 0;
         enemyStunnedCountdown[freeSlot] = 0;
         enemyHealth[freeSlot] = initialHealth(ENTITY_PAIRODD_PROJECTILE);
@@ -1000,6 +1100,7 @@ public final class RoomEntityRuntime {
             byteValue(source.y() + signedByte(spawn.offsetY())), EntityStatus.ACTIVE,
             projectileDefinition, projectileVariant, 0, 0, source.z());
         slots[freeSlot] = projectile;
+        baseEntityFlipAttribute[freeSlot] = 0;
         enemyTransitionCountdown[freeSlot] = 0;
         enemyStunnedCountdown[freeSlot] = 0;
         enemyHealth[freeSlot] = initialHealth(request.projectileType());
@@ -1009,6 +1110,51 @@ public final class RoomEntityRuntime {
         dyingCountdown[freeSlot] = 0;
         enemyProjectileMotion.initializeSpawn(freeSlot, request.projectileType(), direction);
         enemyProjectileSpawnedThisFrame[freeSlot] = true;
+    }
+
+    private void spawnLaserSensor(RoomEntity parent) {
+        int freeSlot = findFreeEntitySlot();
+        if (freeSlot < 0) {
+            return;
+        }
+
+        RoomEntity sensor = new RoomEntity(freeSlot, -1, ENTITY_LASER,
+            parent.x(), parent.y(), EntityStatus.ACTIVE,
+            EntitySpriteDefinition.unsupported(ENTITY_LASER), -1,
+            0, 0, parent.z());
+        slots[freeSlot] = sensor;
+        baseEntityFlipAttribute[freeSlot] = 0;
+        enemyTransitionCountdown[freeSlot] = 0;
+        enemyStunnedCountdown[freeSlot] = 0;
+        enemyHealth[freeSlot] = 0;
+        enemyFlashCountdown[freeSlot] = 0;
+        enemyIgnoreHitsCountdown[freeSlot] = 1;
+        dyingCountdown[freeSlot] = 0;
+        laserMotion.initializeSensor(freeSlot, parent.slot(), laserMotion.direction(parent.slot()));
+        dynamicEntitySpawnedThisFrame[freeSlot] = true;
+    }
+
+    private void spawnLaserBeam(RoomEntity parent) {
+        int freeSlot = findFreeEntitySlot();
+        if (freeSlot < 0) {
+            return;
+        }
+
+        RoomEntity beam = new RoomEntity(freeSlot, -1, ENTITY_LASER_BEAM,
+            parent.x(), parent.y(), EntityStatus.ACTIVE,
+            EntitySpriteDefinition.unsupported(ENTITY_LASER_BEAM), -1,
+            0, 0, parent.z());
+        slots[freeSlot] = beam;
+        baseEntityFlipAttribute[freeSlot] = 0;
+        enemyTransitionCountdown[freeSlot] = 0;
+        enemyStunnedCountdown[freeSlot] = 0;
+        enemyHealth[freeSlot] = 0;
+        enemyFlashCountdown[freeSlot] = 0;
+        enemyIgnoreHitsCountdown[freeSlot] = 1;
+        dyingCountdown[freeSlot] = 0;
+        laserMotion.initializeBeam(freeSlot, laserMotion.direction(parent.slot()),
+            laserMotion.speedX(parent.slot()), laserMotion.speedY(parent.slot()));
+        dynamicEntitySpawnedThisFrame[freeSlot] = true;
     }
 
     private EntitySpriteDefinition spriteDefinitionFor(int entityType) {
@@ -1144,6 +1290,34 @@ public final class RoomEntityRuntime {
 
     int enemyProjectileTransitionCountdown(int slot) {
         return enemyProjectileMotion.transitionCountdown(slot);
+    }
+
+    int laserDirection(int slot) {
+        return laserMotion.direction(slot);
+    }
+
+    int laserParentTransitionCountdown(int slot) {
+        return laserMotion.parentTransitionCountdown(slot);
+    }
+
+    int laserSpeedX(int slot) {
+        return laserMotion.speedX(slot);
+    }
+
+    int laserSpeedY(int slot) {
+        return laserMotion.speedY(slot);
+    }
+
+    void setLaserParentForTest(int slot, int countdown, int newSpeedX, int newSpeedY) {
+        laserMotion.setParentForTest(slot, countdown, newSpeedX, newSpeedY);
+    }
+
+    void setLaserBeamForTest(int slot, int newSpeedX, int newSpeedY, int direction) {
+        laserMotion.setBeamForTest(slot, newSpeedX, newSpeedY, direction);
+    }
+
+    List<TransientVfxRequest> transientVfxRequests() {
+        return List.copyOf(transientVfxRequests);
     }
 
     int tektiteSpeedZ(int slot) {
@@ -1585,6 +1759,7 @@ public final class RoomEntityRuntime {
         enemyHealth[slot] = 0;
         enemyFlashCountdown[slot] = 0;
         enemyIgnoreHitsCountdown[slot] = 0;
+        baseEntityFlipAttribute[slot] = 0;
         enemyRecoilMotion.clear(slot);
         colorShellMotion.clear(slot);
         butterflyMotion.clear(slot);
@@ -1600,6 +1775,7 @@ public final class RoomEntityRuntime {
         pairoddMotion.clear(slot);
         pairoddProjectileMotion.clear(slot);
         enemyProjectileMotion.clear(slot);
+        laserMotion.clear(slot);
         waterTektiteMotion.clear(slot);
         stalfosAggressiveMotion.clear(slot);
         gibdoMotion.clear(slot);

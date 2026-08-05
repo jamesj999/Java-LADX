@@ -56,6 +56,19 @@ final class PlayerStateTest {
     }
 
     @Test
+    void shieldLevelDefaultsToTheWoodenShieldAndCanRepresentTheMirrorShield() {
+        PlayerState playerState = new PlayerState();
+
+        assertEquals(1, playerState.shieldLevel());
+
+        playerState.setShieldLevel(2);
+        assertEquals(2, playerState.shieldLevel());
+
+        playerState.setShieldLevel(0xFF);
+        assertEquals(2, playerState.shieldLevel());
+    }
+
+    @Test
     void attackTunicAndPegasusBootsStateUseRomDefaultsAndValues() {
         PlayerState playerState = new PlayerState();
 

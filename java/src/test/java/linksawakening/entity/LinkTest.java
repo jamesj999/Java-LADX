@@ -207,6 +207,24 @@ final class LinkTest {
     }
 
     @Test
+    void consumesRomResponseSpeedOnTheNextMotionUpdate() throws Exception {
+        InputState inputState = new InputState();
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
+        RomTables romTables = RomTables.loadFromRom(loadRom());
+        OverworldCollision collision = new OverworldCollision(romTables);
+        collision.setRoom(emptyRoomObjectsArea());
+        Link link = new Link(inputState, inputConfig, romTables, collision, null,
+            new PlayerState(), new ItemRegistry());
+        link.setPixelPosition(0x20, 0x20);
+
+        link.applyRomSpeed(0xF8, 0x00);
+        link.update();
+
+        assertEquals(0x1F, link.pixelX());
+    }
+
+    @Test
     void blockedMotionKeepsPreviousFacingForDiagonalInput() {
         InputState inputState = new InputState();
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);

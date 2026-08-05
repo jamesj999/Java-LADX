@@ -312,6 +312,25 @@ public final class Sword implements EquippedItem {
     }
 
     /**
+     * Mirrors the ROM's ResetSpinAttack helper (bank0.asm:$0CAF).  Entity
+     * collisions use it to cancel a charged or active spin before Link's next
+     * motion update.
+     */
+    public void resetSpinAttack() {
+        boolean wasActive = spinAttackActive();
+        spinAttackQueued = false;
+        queuedSpinDelayFrames = 0;
+        charge = 0;
+        holdingFrames = 0;
+        spinFramesRemaining = 0;
+        spinFrameCounter = 0;
+        spinSector = 0;
+        if (wasActive) {
+            state = STATE_NONE;
+        }
+    }
+
+    /**
      * Computes the enemy collision rectangle populated by UpdateSwordAnimation
      * in bank2.asm. The rectangle is independent from the visual blade OAM
      * bounds and is therefore kept as a separate ROM-table lookup.
