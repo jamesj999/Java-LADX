@@ -646,6 +646,8 @@ public final class RoomEntityRuntime {
 
             EntityCombatEvent.SoundChannel soundChannel = EntityCombatEvent.SoundChannel.NONE;
             int soundId = -1;
+            int enemyDamage = 0;
+            int enemySpecialAction = -1;
             if (swordHit) {
                 RomEnemyCombatTables.SwordDamageResult swordResult =
                     enemyCombatTables == null ? null
@@ -653,6 +655,10 @@ public final class RoomEntityRuntime {
                 int swordDamage = swordResult == null
                     ? RoomEntityCombatRules.basicSwordDamage(entity.type())
                     : swordResult.numericDamage();
+                enemyDamage = swordDamage;
+                if (swordResult != null) {
+                    enemySpecialAction = swordResult.specialAction();
+                }
                 boolean swordResultApplied = swordResult == null
                     ? swordDamage > 0
                     : !swordResult.ignored();
@@ -665,7 +671,8 @@ public final class RoomEntityRuntime {
                 }
                 // ConfigureEntityRecoil reaches StartIgnoringHitsForEntity
                 // before ApplySwordDamagesToEnemy, including lethal hits.
-                enemyIgnoreHitsCountdown[entity.slot()] = 0x0A;
+                enemyIgnoreHitsCountdown[entity.slot()] = attackContext.powerRecoil()
+                    ? 0x20 : 0x0A;
                 if (swordDamage > 0) {
                     enemyHealth[entity.slot()] = Math.max(0,
                         enemyHealth[entity.slot()] - swordDamage);
@@ -680,7 +687,8 @@ public final class RoomEntityRuntime {
                     // sword hit flashes for $18 frames and suppresses the
                     // next $0A collision passes.
                     enemyFlashCountdown[entity.slot()] = 0x18;
-                    enemyIgnoreHitsCountdown[entity.slot()] = 0x0A;
+                    enemyIgnoreHitsCountdown[entity.slot()] = attackContext.powerRecoil()
+                        ? 0x20 : 0x0A;
                     if (isZolGelType(entity.type())) {
                         zolGelMotion.onSwordHit(entity.slot());
                     }
@@ -697,7 +705,7 @@ public final class RoomEntityRuntime {
             events.add(new EntityCombatEvent(
                 entity.slot(), entity.type(),
                 linkCollision ? contactDamage(entity.type()) : 0,
-                swordHit, soundChannel, soundId));
+                swordHit, enemyDamage, enemySpecialAction, soundChannel, soundId));
         }
         return List.copyOf(events);
     }

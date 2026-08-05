@@ -59,6 +59,7 @@ import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.DroppableRupeeSystem;
 import linksawakening.world.ActiveRoom;
+import linksawakening.world.EnemyAttackContext;
 import linksawakening.world.EntityCombatEvent;
 import linksawakening.world.EntityPickupEvent;
 import linksawakening.world.OverworldBushInteraction;
@@ -466,11 +467,17 @@ public class Main {
                     ? Sword.CollisionBox.inactive()
                     : sword.enemyCollisionBox(link.romEntityX(), link.romSwordCollisionY(),
                         link.direction());
+                EnemyAttackContext attackContext = new EnemyAttackContext(
+                    playerState.swordLevel(),
+                    playerState.tunicType() == PlayerState.TUNIC_RED,
+                    playerState.activePowerUp() == PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER,
+                    sword != null && sword.spinAttackActive(),
+                    playerState.runningWithPegasusBoots());
                 var combatEvents = roomSession.resolveEntityCombat(
                     frameCounter, link.romEntityX(), link.romEntityY(),
                     link.isAirborne(), true,
                     swordBox.active(), swordBox.x(), swordBox.width(),
-                    swordBox.y(), swordBox.height());
+                    swordBox.y(), swordBox.height(), attackContext);
                 EnemyCombatEventConsumer.consume(combatEvents, gameplaySoundSink);
                 for (EntityCombatEvent event : combatEvents) {
                     if (event.linkDamage() > 0 && playerState.invincibilityCounter() == 0) {

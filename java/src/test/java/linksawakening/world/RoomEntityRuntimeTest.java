@@ -549,6 +549,27 @@ final class RoomEntityRuntimeTest {
         assertEquals(1, events.size());
         assertEquals(0, runtime.enemyHealth(0));
         assertEquals(EntityStatus.DYING, runtime.snapshot().slots().get(0).status());
+        assertEquals(2, events.get(0).enemyDamage());
+        assertEquals(-1, events.get(0).enemySpecialAction());
+    }
+
+    @Test
+    void zeroRomSwordResultKeepsHealthAndReportsOnlyTheBump() throws IOException {
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x15, 64, 64, EntityStatus.ACTIVE,
+                pairDefinition(0x15, 2), 0)),
+            false, null, null, tables);
+
+        List<EntityCombatEvent> events = runtime.resolveCombat(
+            0, 120, 120, false, true, true, 72, 1, 72, 1);
+
+        assertEquals(1, events.size());
+        assertEquals(4, runtime.enemyHealth(0));
+        assertEquals(0, events.get(0).enemyDamage());
+        assertEquals(-1, events.get(0).enemySpecialAction());
+        assertEquals(EntityCombatEvent.SoundChannel.JINGLE, events.get(0).soundChannel());
+        assertEquals(0x09, events.get(0).soundId());
     }
 
     @Test

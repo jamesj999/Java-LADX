@@ -22,6 +22,10 @@ public final class PlayerState {
     public static final int TUNIC_RED = 0x01;
     public static final int TUNIC_BLUE = 0x02;
 
+    public static final int ACTIVE_POWER_UP_NONE = 0x00;
+    public static final int ACTIVE_POWER_UP_PIECE_OF_POWER = 0x01;
+    public static final int ACTIVE_POWER_UP_GUARDIAN_ACORN = 0x02;
+
     public static final int MAX_RUPEES = 999;
     public static final int MAX_HEARTS = 14;
     public static final int HP_PER_HEART = 8;

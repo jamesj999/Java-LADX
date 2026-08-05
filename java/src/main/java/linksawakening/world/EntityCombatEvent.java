@@ -2,10 +2,17 @@ package linksawakening.world;
 
 /** A single room-entity combat result produced by the ROM collision pass. */
 public record EntityCombatEvent(int slot, int type, int linkDamage, boolean swordHit,
+                                int enemyDamage, int enemySpecialAction,
                                 SoundChannel soundChannel, int soundId) {
 
     public EntityCombatEvent(int slot, int type, int linkDamage, boolean swordHit) {
-        this(slot, type, linkDamage, swordHit, SoundChannel.NONE, -1);
+        this(slot, type, linkDamage, swordHit, 0, -1, SoundChannel.NONE, -1);
+    }
+
+    /** Compatibility constructor for callers that already provide raw sound. */
+    public EntityCombatEvent(int slot, int type, int linkDamage, boolean swordHit,
+                             SoundChannel soundChannel, int soundId) {
+        this(slot, type, linkDamage, swordHit, 0, -1, soundChannel, soundId);
     }
 
     public EntityCombatEvent {
@@ -17,6 +24,16 @@ public record EntityCombatEvent(int slot, int type, int linkDamage, boolean swor
         }
         if (linkDamage < 0) {
             throw new IllegalArgumentException("Link damage cannot be negative: " + linkDamage);
+        }
+        if (enemyDamage < 0) {
+            throw new IllegalArgumentException("Enemy damage cannot be negative: " + enemyDamage);
+        }
+        if (enemySpecialAction < -1 || enemySpecialAction > 0xFF) {
+            throw new IllegalArgumentException("Enemy special action must be -1 or an unsigned byte: "
+                + enemySpecialAction);
+        }
+        if (enemyDamage > 0 && enemySpecialAction != -1) {
+            throw new IllegalArgumentException("Numeric and special enemy damage cannot coexist");
         }
         if (soundChannel == null) {
             throw new IllegalArgumentException("Combat sound channel cannot be null");
