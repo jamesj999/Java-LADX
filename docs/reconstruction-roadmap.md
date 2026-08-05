@@ -127,6 +127,13 @@ resource.
   damage) are wired into the shared combat path. The handler's audio, recoil,
   and broader `hActiveEntityNoBGCollision` ground/pit/water/conveyor effects
   remain pending.
+- Water Tektite (`$99`) now decodes bank `$07:$752D`, keeps its ROM noop
+  initializer, selects the frame-bit-4 `$70/$72` pair animation, and mirrors
+  the three-state `$20` acceleration, signed speed convergence, `$10` restart
+  timer, and background-collision reset loop. Its normal enemy hitbox and
+  health-group `$00` values (one health, `$04` contact damage) are wired into
+  shared combat. Recoil, water/pit/conveyor side effects, and the remaining
+  damage-state branches remain pending.
 - PeaHat now decodes the bank `$07` pair display list and mirrors its resting,
   takeoff, and flying states, slow-countdown cadence, carry-aware animation,
   direct Z ascent/descent, and contiguous ROM phase-speed tables. Its grounded

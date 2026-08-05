@@ -30,6 +30,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_GEL = 0x1C;
     private static final int ENTITY_HIDING_ZOL = 0x9B;
     private static final int ENTITY_SPIKE_TRAP = 0x27;
+    private static final int ENTITY_WATER_TEKTITE = 0x99;
     private static final int ENTITY_STALFOS_AGGRESSIVE = 0x1A;
     private static final int ENTITY_GIBDO = 0x1F;
     private static final int ENTITY_PEAHAT = 0xA0;
@@ -64,6 +65,7 @@ public final class RoomEntityRuntime {
     private final ZolGelMotion zolGelMotion = new ZolGelMotion();
     private final HidingZolMotion hidingZolMotion = new HidingZolMotion();
     private final SpikeTrapMotion spikeTrapMotion = new SpikeTrapMotion();
+    private final WaterTektiteMotion waterTektiteMotion = new WaterTektiteMotion();
     private final StalfosAggressiveMotion stalfosAggressiveMotion =
         new StalfosAggressiveMotion();
     private final GibdoMotion gibdoMotion = new GibdoMotion();
@@ -223,6 +225,9 @@ public final class RoomEntityRuntime {
                 if (entity.type() == ENTITY_SPIKE_TRAP) {
                     spikeTrapMotion.initialize(entity.slot(), randomByteSupplier);
                 }
+                if (entity.type() == ENTITY_WATER_TEKTITE) {
+                    waterTektiteMotion.initialize(entity.slot());
+                }
                 if (entity.type() == ENTITY_STALFOS_AGGRESSIVE) {
                     stalfosAggressiveMotion.initialize(entity.slot(), randomByteSupplier);
                 }
@@ -315,6 +320,11 @@ public final class RoomEntityRuntime {
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_SPIKE_TRAP) {
                 updated = spikeTrapMotion.advance(entity, linkEntityX, linkEntityY,
+                    backgroundCollision);
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_WATER_TEKTITE) {
+                updated = waterTektiteMotion.advance(entity, frame, randomByteSupplier,
                     backgroundCollision);
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
@@ -522,6 +532,7 @@ public final class RoomEntityRuntime {
         zolGelMotion.clear(slot);
         hidingZolMotion.clear(slot);
         spikeTrapMotion.clear(slot);
+        waterTektiteMotion.clear(slot);
         stalfosAggressiveMotion.clear(slot);
         gibdoMotion.clear(slot);
         peaHatMotion.clear(slot);
@@ -805,6 +816,30 @@ public final class RoomEntityRuntime {
         return spikeTrapMotion.privateState2(slot);
     }
 
+    int waterTektiteState(int slot) {
+        return waterTektiteMotion.state(slot);
+    }
+
+    int waterTektiteTransitionCountdown(int slot) {
+        return waterTektiteMotion.transitionCountdown(slot);
+    }
+
+    int waterTektiteSpeedX(int slot) {
+        return waterTektiteMotion.speedX(slot);
+    }
+
+    int waterTektiteSpeedY(int slot) {
+        return waterTektiteMotion.speedY(slot);
+    }
+
+    int waterTektitePrivateState1(int slot) {
+        return waterTektiteMotion.privateState1(slot);
+    }
+
+    int waterTektitePrivateState2(int slot) {
+        return waterTektiteMotion.privateState2(slot);
+    }
+
     int stalfosState(int slot) {
         return stalfosAggressiveMotion.state(slot);
     }
@@ -1052,6 +1087,7 @@ public final class RoomEntityRuntime {
         zolGelMotion.clear(slot);
         hidingZolMotion.clear(slot);
         spikeTrapMotion.clear(slot);
+        waterTektiteMotion.clear(slot);
         stalfosAggressiveMotion.clear(slot);
         gibdoMotion.clear(slot);
         peaHatMotion.clear(slot);

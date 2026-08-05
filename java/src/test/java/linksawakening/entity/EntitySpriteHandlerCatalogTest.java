@@ -205,6 +205,11 @@ final class EntitySpriteHandlerCatalogTest {
         assertDefinition(spikeTrap, 0x06, 0x74FA,
             EntitySpriteDefinition.Shape.PAIR, 1, 0);
 
+        EntitySpriteDefinition waterTektite = catalog.forEntityType(
+            0x99, EntityRoomLoader.RoomTable.INDOORS_A);
+        assertDefinition(waterTektite, 0x07, 0x752D,
+            EntitySpriteDefinition.Shape.PAIR, 2, 0);
+
         EntitySpriteDefinition grandpa = catalog.forEntityType(
             0x77, EntityRoomLoader.RoomTable.INDOORS_A);
         assertDefinition(grandpa, 0x06, 0x5C51,
@@ -347,6 +352,17 @@ final class EntitySpriteHandlerCatalogTest {
         assertEquals(0x02, tektite.variant(0).first().attributes());
         assertEquals(0x5A, tektite.variant(1).first().tile());
         assertEquals(0x22, tektite.variant(1).second().attributes());
+
+        EntitySpriteDefinition waterTektite = catalog.forEntityType(
+            0x99, EntityRoomLoader.RoomTable.INDOORS_A);
+        assertEquals(0x70, waterTektite.variant(0).first().tile());
+        assertEquals(0x00, waterTektite.variant(0).first().attributes());
+        assertEquals(0x70, waterTektite.variant(0).second().tile());
+        assertEquals(0x20, waterTektite.variant(0).second().attributes());
+        assertEquals(0x72, waterTektite.variant(1).first().tile());
+        assertEquals(0x00, waterTektite.variant(1).first().attributes());
+        assertEquals(0x72, waterTektite.variant(1).second().tile());
+        assertEquals(0x20, waterTektite.variant(1).second().attributes());
 
         EntitySpriteDefinition leever = catalog.forEntityType(
             0x0E, EntityRoomLoader.RoomTable.OVERWORLD);

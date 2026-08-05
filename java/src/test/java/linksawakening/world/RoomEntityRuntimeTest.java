@@ -1290,6 +1290,123 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void waterTektiteUsesNoopInitializationAndTheRomFrameVariant() {
+        EntitySpriteDefinition definition = pairDefinition(0x99, 2);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x99, 64, 64, EntityStatus.INIT, definition, 0)));
+        AtomicInteger randomCalls = new AtomicInteger();
+        IntSupplier randomBytes = () -> {
+            randomCalls.incrementAndGet();
+            return 0x00;
+        };
+
+        runtime.tick(0, 120, 120, randomBytes);
+        assertEquals(0, randomCalls.get());
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
+
+        runtime.tick(0x00, 120, 120, randomBytes);
+        assertEquals(2, randomCalls.get());
+        assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
+        runtime.tick(0x10, 120, 120, randomBytes);
+        assertEquals(1, runtime.snapshot().slots().get(0).spriteVariant());
+    }
+
+    @Test
+    void waterTektiteUsesTheRomThreeStateAccelerationAndSignedDecelerationLoop() {
+        EntitySpriteDefinition definition = pairDefinition(0x99, 2);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x99, 64, 64, EntityStatus.INIT, definition, 0)));
+        IntSupplier randomBytes = sequence(0x00, 0x02);
+
+        runtime.tick(0, 120, 120, randomBytes);
+        runtime.tick(1, 120, 120, randomBytes);
+        assertEquals(1, runtime.waterTektiteState(0));
+        assertEquals(0x20, runtime.waterTektiteTransitionCountdown(0));
+        assertEquals(0xFF, runtime.waterTektitePrivateState1(0));
+        assertEquals(0x01, runtime.waterTektitePrivateState2(0));
+
+        runtime.tick(2, 120, 120, randomBytes);
+        assertEquals(0, runtime.waterTektiteSpeedX(0));
+        assertEquals(0, runtime.waterTektiteSpeedY(0));
+        runtime.tick(3, 120, 120, randomBytes);
+        assertEquals(0xFF, runtime.waterTektiteSpeedX(0));
+        assertEquals(0x01, runtime.waterTektiteSpeedY(0));
+        assertEquals(64, runtime.snapshot().slots().get(0).x());
+        assertEquals(64, runtime.snapshot().slots().get(0).y());
+
+        for (int frame = 4; frame <= 33; frame++) {
+            runtime.tick(frame, 120, 120, randomBytes);
+        }
+        assertEquals(2, runtime.waterTektiteState(0));
+        assertEquals(0xF1, runtime.waterTektiteSpeedX(0));
+        assertEquals(0x0F, runtime.waterTektiteSpeedY(0));
+
+        runtime.tick(34, 120, 120, randomBytes);
+        assertEquals(0xF2, runtime.waterTektiteSpeedX(0));
+        assertEquals(0x0E, runtime.waterTektiteSpeedY(0));
+        runtime.tick(35, 120, 120, randomBytes);
+        assertEquals(0xF2, runtime.waterTektiteSpeedX(0));
+        assertEquals(0x0E, runtime.waterTektiteSpeedY(0));
+        runtime.tick(36, 120, 120, randomBytes);
+        assertEquals(0xF3, runtime.waterTektiteSpeedX(0));
+        assertEquals(0x0D, runtime.waterTektiteSpeedY(0));
+    }
+
+    @Test
+    void waterTektiteResetsToStateZeroWhenTheMovedPositionHitsBackground() {
+        EntitySpriteDefinition definition = pairDefinition(0x99, 2);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x99, 64, 64, EntityStatus.INIT, definition, 0)));
+        IntSupplier randomBytes = sequence(0x02);
+
+        runtime.tick(0, 120, 120, randomBytes);
+        for (int frame = 1; frame <= 33; frame++) {
+            runtime.tick(frame, 120, 120, randomBytes);
+        }
+        assertEquals(2, runtime.waterTektiteState(0));
+        int beforeX = runtime.snapshot().slots().get(0).x();
+        int beforeY = runtime.snapshot().slots().get(0).y();
+        RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) -> true;
+
+        runtime.tick(34, 120, 120, randomBytes, wall);
+
+        RoomEntity blocked = runtime.snapshot().slots().get(0);
+        assertEquals(beforeX, blocked.x());
+        assertEquals(beforeY, blocked.y());
+        assertEquals(0, runtime.waterTektiteState(0));
+        assertEquals(0x10, runtime.waterTektiteTransitionCountdown(0));
+        assertEquals(0, runtime.waterTektiteSpeedX(0));
+        assertEquals(0, runtime.waterTektiteSpeedY(0));
+    }
+
+    @Test
+    void waterTektiteUsesHealthGroupZeroAndTheNormalEnemyHitbox() {
+        EntitySpriteDefinition definition = pairDefinition(0x99, 2);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x99, 64, 64, EntityStatus.ACTIVE, definition, 0)));
+
+        assertEquals(1, runtime.enemyHealth(0));
+        assertTrue(RoomEntityCombatRules.overlapsLink(
+            runtime.snapshot().slots().get(0), 64, 64));
+        assertFalse(RoomEntityCombatRules.overlapsLink(
+            runtime.snapshot().slots().get(0), 73, 64));
+
+        List<EntityCombatEvent> contact = runtime.resolveCombat(
+            1, 64, 64, false, true, false, 0, 0, 0, 0);
+        assertEquals(1, contact.size());
+        assertEquals(4, contact.get(0).linkDamage());
+
+        runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x99, 64, 64, EntityStatus.ACTIVE, definition, 0)));
+        List<EntityCombatEvent> sword = runtime.resolveCombat(
+            1, 120, 120, false, true, true, 72, 1, 72, 1);
+        assertEquals(1, sword.size());
+        assertTrue(sword.get(0).swordHit());
+        assertEquals(0, runtime.enemyHealth(0));
+        assertEquals(EntityStatus.DYING, runtime.snapshot().slots().get(0).status());
+    }
+
+    @Test
     void combatUsesTheEntityVisualYWhenHidingZolIsAirborne() {
         EntitySpriteDefinition definition = pairDefinition(0x9B, 4);
         RoomEntity airborne = new RoomEntity(0, 0, 0x9B, 64, 64,

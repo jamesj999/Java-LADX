@@ -31,6 +31,7 @@ public final class EntitySpriteHandlerCatalog {
     private static final int ENTITY_KEESE = 0x19;
     private static final int ENTITY_HARDHAT_BEETLE = 0x20;
     private static final int ENTITY_SPIKE_TRAP = 0x27;
+    private static final int ENTITY_WATER_TEKTITE = 0x99;
     private static final int ENTITY_BOW_WOW = 0x6D;
     private static final int ENTITY_DOG = 0x6F;
     private static final int ENTITY_KID_70 = 0x70;
@@ -153,6 +154,9 @@ public final class EntitySpriteHandlerCatalog {
         }
         if (entityType == ENTITY_SPIKE_TRAP) {
             return decodePair(entityType, 0x06, 0x74FA, 1, 0);
+        }
+        if (entityType == ENTITY_WATER_TEKTITE) {
+            return decodePair(entityType, 0x07, 0x752D, 2, 0);
         }
         if (entityType == ENTITY_GRANDPA_ULRIRA) {
             return decodeRectangle(entityType, 0x06, 0x5C51, 2, 4, 0);

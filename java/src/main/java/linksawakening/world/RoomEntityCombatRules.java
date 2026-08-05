@@ -20,6 +20,7 @@ public final class RoomEntityCombatRules {
     private static final int ENTITY_KEESE = 0x19;
     private static final int ENTITY_HARDHAT_BEETLE = 0x20;
     private static final int ENTITY_SPIKE_TRAP = 0x27;
+    private static final int ENTITY_WATER_TEKTITE = 0x99;
 
     // HitboxPositions._00 in home/entities.asm:3AAA. Octorok, Moblin, Armos,
     // and Keese all select the normal collision box in hitbox_flags.asm.
@@ -64,7 +65,7 @@ public final class RoomEntityCombatRules {
                 ENTITY_STALFOS_AGGRESSIVE, ENTITY_ZOL, ENTITY_GEL, ENTITY_HIDING_ZOL,
                 ENTITY_GIBDO, ENTITY_PEAHAT,
                 ENTITY_GHINI,
-                ENTITY_HARDHAT_BEETLE, ENTITY_SPIKE_TRAP,
+                ENTITY_HARDHAT_BEETLE, ENTITY_SPIKE_TRAP, ENTITY_WATER_TEKTITE,
                 ENTITY_OCTOROK -> true;
             default -> false;
         };
@@ -77,6 +78,7 @@ public final class RoomEntityCombatRules {
     static int contactDamage(int type) {
         return switch (type & 0xFF) {
             case ENTITY_KEESE, ENTITY_OCTOROK, ENTITY_PEAHAT, ENTITY_ZOL, ENTITY_GEL,
+                ENTITY_WATER_TEKTITE,
                 ENTITY_HIDING_ZOL ->
                 OCTOROK_AND_KEESE_CONTACT_DAMAGE;
             case ENTITY_MOBLIN, ENTITY_TEKTITE, ENTITY_LEEVER, ENTITY_STALFOS_AGGRESSIVE ->
@@ -94,7 +96,7 @@ public final class RoomEntityCombatRules {
 
     static int initialHealth(int type) {
         return switch (type & 0xFF) {
-            case ENTITY_KEESE, ENTITY_OCTOROK, ENTITY_PEAHAT ->
+            case ENTITY_KEESE, ENTITY_OCTOROK, ENTITY_PEAHAT, ENTITY_WATER_TEKTITE ->
                 OCTOROK_AND_KEESE_INITIAL_HEALTH;
             case ENTITY_MOBLIN, ENTITY_TEKTITE, ENTITY_LEEVER, ENTITY_STALFOS_AGGRESSIVE ->
                 MOBLIN_INITIAL_HEALTH;
