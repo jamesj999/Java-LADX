@@ -516,6 +516,26 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void colorShellsAreAdmittedAsRomCombatTargets() throws IOException {
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0xE9, 64, 64, EntityStatus.ACTIVE,
+                pairDefinition(0xE9, 2), 0),
+            new RoomEntity(1, 1, 0xEA, 96, 64, EntityStatus.ACTIVE,
+                pairDefinition(0xEA, 2), 0),
+            new RoomEntity(2, 2, 0xEB, 128, 64, EntityStatus.ACTIVE,
+                pairDefinition(0xEB, 2), 0)),
+            false, null, null, tables);
+
+        assertTrue(RoomEntityCombatRules.supportsEnemyCollision(0xE9));
+        assertTrue(RoomEntityCombatRules.supportsEnemyCollision(0xEA));
+        assertTrue(RoomEntityCombatRules.supportsEnemyCollision(0xEB));
+        assertEquals(tables.initialHealth(0xE9), runtime.enemyHealth(0));
+        assertEquals(tables.initialHealth(0xEA), runtime.enemyHealth(1));
+        assertEquals(tables.initialHealth(0xEB), runtime.enemyHealth(2));
+    }
+
+    @Test
     void romCombatTablesDriveInitialHealthAndContactDamage() throws IOException {
         RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(

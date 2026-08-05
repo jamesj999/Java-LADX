@@ -22,6 +22,9 @@ public final class RoomEntityCombatRules {
     private static final int ENTITY_SPIKE_TRAP = 0x27;
     private static final int ENTITY_PAIRODD = 0x57;
     private static final int ENTITY_WATER_TEKTITE = 0x99;
+    private static final int ENTITY_COLOR_SHELL_RED = 0xE9;
+    private static final int ENTITY_COLOR_SHELL_GREEN = 0xEA;
+    private static final int ENTITY_COLOR_SHELL_BLUE = 0xEB;
 
     // HitboxPositions._00 in home/entities.asm:3AAA. Octorok, Moblin, Armos,
     // and Keese all select the normal collision box in hitbox_flags.asm.
@@ -68,7 +71,8 @@ public final class RoomEntityCombatRules {
                 ENTITY_GIBDO, ENTITY_PEAHAT,
                 ENTITY_GHINI,
                 ENTITY_HARDHAT_BEETLE, ENTITY_SPIKE_TRAP, ENTITY_WATER_TEKTITE,
-                ENTITY_PAIRODD,
+                ENTITY_PAIRODD, ENTITY_COLOR_SHELL_RED, ENTITY_COLOR_SHELL_GREEN,
+                ENTITY_COLOR_SHELL_BLUE,
                 ENTITY_OCTOROK -> true;
             default -> false;
         };
