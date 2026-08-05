@@ -104,6 +104,15 @@ public final class ActiveRoom {
         this.entities = entities;
     }
 
+    void replaceTilemap(int[] tileIds, int[] tileAttrs) {
+        if (tileIds == null || tileIds.length != this.tileIds.length
+            || tileAttrs == null || tileAttrs.length != this.tileAttrs.length) {
+            throw new IllegalArgumentException("Replacement tilemap dimensions must match room");
+        }
+        System.arraycopy(tileIds, 0, this.tileIds, 0, tileIds.length);
+        System.arraycopy(tileAttrs, 0, this.tileAttrs, 0, tileAttrs.length);
+    }
+
     public void replaceFirstWarpTile(int tileLocation) {
         if (warps.isEmpty()) {
             return;

@@ -16,6 +16,14 @@ public final class CutLeavesEffectRenderer {
     private static final int OAM_Y_BIAS = 16;
     private static final int SPRITES_PER_FRAME = 4;
     private static final int FRAME_COUNT = 8;
+    private static final int POOF_OAM_X_BIAS = 8;
+    private static final int POOF_OAM_Y_BIAS = 16;
+    private static final int[][] POOF_SPRITE_RECT = {
+        { 0, 0, 0x32, 0x01, 0, 8, 0x32, 0x21 },
+        { 0, 0, 0x32, 0x01, 0, 8, 0x32, 0x21 },
+        { 0, 0, 0x30, 0x01, 0, 8, 0x30, 0x21 },
+        { 0, 0, 0x30, 0x01, 0, 8, 0x30, 0x21 }
+    };
 
     private static final int[][] CUT_LEAVES_SPRITE_RECT = {
         { 2, -4, TILE_ID, 0x00, -5,  4, TILE_ID, 0x60,  5,  6, TILE_ID, 0x00,  1, 10, TILE_ID, 0x20 },
@@ -51,6 +59,24 @@ public final class CutLeavesEffectRenderer {
                 frame[offset + 2],
                 frame[offset + 3],
                 leafTile
+            ));
+        }
+        return List.copyOf(placements);
+    }
+
+    /** ROM bank-$02 RenderTranscientPoof, using the shared VFX OAM tile sheet. */
+    public List<SpritePlacement> renderPoof(int worldX, int worldY, int countdown) {
+        int frameIndex = Math.min(Math.max(countdown, 0), 0x0F) >>> 2;
+        int[] frame = POOF_SPRITE_RECT[frameIndex & 0x03];
+        List<SpritePlacement> placements = new ArrayList<>(2);
+        for (int i = 0; i < 2; i++) {
+            int offset = i * 4;
+            placements.add(new SpritePlacement(
+                worldX + frame[offset] - POOF_OAM_X_BIAS,
+                worldY + frame[offset + 1] - POOF_OAM_Y_BIAS,
+                frame[offset + 2],
+                frame[offset + 3],
+                spriteSheet.tile(frame[offset + 2])
             ));
         }
         return List.copyOf(placements);

@@ -238,6 +238,7 @@ public class Main {
         roomSession = new RoomSession(romData, gpu, new RoomLoader(romData),
             new OverworldTilesetTable(romData), overworldCollision, transientVfxSystem, droppableRupeeSystem,
             Main::selectMusicForLoadedRoom);
+        roomSession.setColorShellSoundSink(gameplaySoundSink);
         link = new Link(inputState, inputConfig, romTables, overworldCollision,
                         linkSpriteSheet, playerState, itemRegistry, gameplaySoundSink);
         itemRegistry.register(PlayerState.INVENTORY_SWORD, new Sword(romTables, swordSpriteSheet,

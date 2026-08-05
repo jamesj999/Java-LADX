@@ -398,7 +398,7 @@ final class ColorShellMotion {
         positionY[slot] = clampPosition ? clamp(y, 0x1E, 0x72) : y & 0xFF;
     }
 
-    private static boolean isColorShellType(int type) {
+    static boolean isColorShellType(int type) {
         return type >= ENTITY_COLOR_SHELL_RED && type <= ENTITY_COLOR_SHELL_BLUE;
     }
 

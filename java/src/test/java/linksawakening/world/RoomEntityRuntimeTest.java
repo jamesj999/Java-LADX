@@ -537,6 +537,46 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void colorShellRuntimeDispatchesRomStateAndWorldSideEffects() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RuntimeColorShellWorld world = new RuntimeColorShellWorld();
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0xE9, 0x40, 0x40, EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0xE9), -1)),
+            false, () -> 0x00, catalog);
+        runtime.setColorShellWorld(world);
+        runtime.setColorShellStateForTest(0, 0x08, 1, 0, 0, 0);
+        world.objectValue = 0x5E;
+
+        runtime.tick(0, 0x40, 0x40, () -> 0x00, null);
+
+        RoomEntity shell = runtime.snapshot().slots().get(0);
+        assertEquals(0x0C, runtime.colorShellState(0));
+        assertEquals(0xF0, runtime.colorShellPhysicsFlags(0));
+        assertEquals(0x67A8, shell.spriteDefinition().address());
+        assertEquals(List.of(0x67), world.objectWrites);
+        assertEquals(List.of(0x04), world.noises);
+    }
+
+    @Test
+    void colorShellCompletionUnloadsAndPublishesItsRoomPersistenceMask() {
+        RuntimeColorShellWorld world = new RuntimeColorShellWorld();
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0xE9, 0x40, 0x40, EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0xE9), -1)));
+        runtime.setColorShellWorld(world);
+        runtime.setColorShellStateForTest(0, 0x0D, 1, 0, 0, 0);
+
+        runtime.tick(0, 0x40, 0x40, () -> 0x00, null);
+
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
+        assertEquals(1, runtime.consumePendingClearedEntityMask());
+        assertEquals(List.of(0x5F), world.objectWrites);
+        assertEquals(List.of(List.of(0x40, 0x40)), world.poofs);
+    }
+
+    @Test
     void romBurningStatusUsesTheSharedSpecialDamageValueAndExpiresIntoDeath()
         throws IOException {
         byte[] rom = romWithSwordResult(0x09, 0xFE);
@@ -2237,6 +2277,37 @@ final class RoomEntityRuntimeTest {
     private static IntSupplier sequence(int... values) {
         AtomicInteger index = new AtomicInteger();
         return () -> values[Math.min(index.getAndIncrement(), values.length - 1)];
+    }
+
+    private static final class RuntimeColorShellWorld implements ColorShellWorld {
+        private int objectValue;
+        private final List<Integer> objectWrites = new ArrayList<>();
+        private final List<Integer> noises = new ArrayList<>();
+        private final List<List<Integer>> poofs = new ArrayList<>();
+
+        @Override
+        public int objectAt(RoomEntity entity, int relativeOffset) {
+            return objectValue;
+        }
+
+        @Override
+        public void writeObject(RoomEntity entity, int objectId) {
+            objectWrites.add(objectId);
+        }
+
+        @Override
+        public void playJingle(int id) {
+        }
+
+        @Override
+        public void playNoise(int id) {
+            noises.add(id);
+        }
+
+        @Override
+        public void spawnPoof(int x, int y) {
+            poofs.add(List.of(x, y));
+        }
     }
 
     private static byte[] romWithSwordResult(int entityType, int rawValue) throws IOException {

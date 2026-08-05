@@ -1,5 +1,6 @@
 package linksawakening.world;
 
+import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gpu.GPU;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomBank;
@@ -8,10 +9,12 @@ import linksawakening.vfx.TransientVfxSystem;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -156,6 +159,53 @@ final class RoomSessionTest {
         assertNotNull(session.activeRoom().entities().spriteTiles());
         assertEquals(expectedPixel,
             session.activeRoom().entities().spriteTiles().tile(0x40).getPixel(0, 0));
+    }
+
+    @Test
+    void colorShellPuzzleWritesBackIntoTheLiveRoomTilemap() {
+        RoomSession session = newSession();
+        session.loadIndoor(0xFF, 0x07);
+        session.tickEntities(0);
+
+        RoomEntity shell = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0xE9)
+            .findFirst()
+            .orElseThrow();
+        int objectIndex = RoomConstants.ROOM_OBJECTS_BASE
+            + ((shell.y() - 0x07) & 0xF0)
+            + (((shell.x() - 0x01) & 0xF0) >>> 4);
+        session.activeRoom().roomObjectsArea()[objectIndex - 1] = 0x5E;
+        int[] beforeTiles = session.activeRoom().tileIds().clone();
+        session.setColorShellStateForTest(shell.slot(), 0x08, 1, 0, 0, 0);
+
+        session.tickEntities(1);
+
+        assertEquals(0x67, session.activeRoom().roomObjectsArea()[objectIndex]);
+        assertNotEquals(Arrays.toString(beforeTiles),
+            Arrays.toString(session.activeRoom().tileIds()));
+    }
+
+    @Test
+    void colorShellRomSoundWritesReachTheGameplaySoundBoundary() {
+        RoomSession session = newSession();
+        List<GameplaySoundEvent> sounds = new ArrayList<>();
+        session.setColorShellSoundSink(sounds::add);
+        session.loadIndoor(0xFF, 0x07);
+        session.tickEntities(0);
+
+        RoomEntity shell = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0xE9)
+            .findFirst()
+            .orElseThrow();
+        int objectIndex = RoomConstants.ROOM_OBJECTS_BASE
+            + ((shell.y() - 0x07) & 0xF0)
+            + (((shell.x() - 0x01) & 0xF0) >>> 4);
+        session.activeRoom().roomObjectsArea()[objectIndex - 1] = 0x00;
+        session.setColorShellStateForTest(shell.slot(), 0x08, 1, 0, 0, 0);
+
+        session.tickEntities(1);
+
+        assertEquals(List.of(GameplaySoundEvent.WRONG_ANSWER), sounds);
     }
 
     @Test

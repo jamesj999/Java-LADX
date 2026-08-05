@@ -86,6 +86,7 @@ public final class RoomEntityRuntime {
     private final EnemyRecoilMotion enemyRecoilMotion = new EnemyRecoilMotion();
     private final FollowingNpcMotion followingNpcMotion = new FollowingNpcMotion();
     private final BowWowMotion bowWowMotion = new BowWowMotion();
+    private final ColorShellMotion colorShellMotion = new ColorShellMotion();
     private final int[] slowTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] slowTimerInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -98,6 +99,8 @@ public final class RoomEntityRuntime {
         new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final List<RoamingEnemyMotion.LaunchRequest> projectileLaunchRequests =
         new ArrayList<>();
+    private ColorShellWorld colorShellWorld = ColorShellWorld.none();
+    private int pendingClearedEntityMask;
 
     private RoomEntityRuntime(RoomEntitySnapshot initial, boolean indoorRoom,
                                IntSupplier defaultRandomByteSupplier,
@@ -274,16 +277,23 @@ public final class RoomEntityRuntime {
             if (status == EntityStatus.DYING) {
                 if (dyingCountdown[entity.slot()] == 0) {
                     disableEntityWithoutPersistence(entity.slot());
+                } else {
+                    slots[index] = refreshColorShellDisplay(entity, status);
                 }
                 continue;
             } else if (status == EntityStatus.BURNING) {
                 if (enemyTransitionCountdown[entity.slot()] == 0) {
                     finishBurning(entity);
+                } else {
+                    slots[index] = refreshColorShellDisplay(entity, status);
                 }
                 continue;
             } else if (status == EntityStatus.STUNNED) {
                 if (enemyStunnedCountdown[entity.slot()] == 0) {
-                    slots[index] = withStatus(entity, EntityStatus.ACTIVE);
+                    slots[index] = refreshColorShellDisplay(
+                        withStatus(entity, EntityStatus.ACTIVE), EntityStatus.ACTIVE);
+                } else {
+                    slots[index] = refreshColorShellDisplay(entity, status);
                 }
                 continue;
             } else if (status == EntityStatus.INIT) {
@@ -349,6 +359,9 @@ public final class RoomEntityRuntime {
                     } else {
                         followingNpcMotion.initialize(entity.slot(), entity.type());
                     }
+                }
+                if (ColorShellMotion.isColorShellType(entity.type())) {
+                    colorShellMotion.initialize(entity.slot());
                 }
             } else if (status == EntityStatus.ACTIVE) {
                 decrementSlowTransitionCountdown(entity.slot(), frame);
@@ -519,6 +532,23 @@ public final class RoomEntityRuntime {
                         followingLinkZ, followingLinkDirection, followingEntityYOffset,
                         followingLinkPositionHistory, backgroundCollision);
                 }
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && ColorShellMotion.isColorShellType(entity.type())) {
+                ColorShellMotion.Update shellUpdate = colorShellMotion.advance(
+                    entity, frame, linkEntityX, linkEntityY, randomByteSupplier,
+                    backgroundCollision, enemyIgnoreHitsCountdown[entity.slot()],
+                    colorShellWorld, Arrays.asList(slots));
+                updated = shellUpdate.entity();
+                enemyIgnoreHitsCountdown[entity.slot()] = shellUpdate.nextIgnoreHitsCountdown();
+                if (shellUpdate.unloadRequested()) {
+                    pendingClearedEntityMask |= persistentClearMask(entity);
+                    disableEntityWithoutPersistence(entity.slot());
+                    continue;
+                }
+            }
+            if (ColorShellMotion.isColorShellType(updated.type())) {
+                updated = refreshColorShellDisplay(updated, status);
             }
             int variant = variantFor(updated, frame);
             if (status == EntityStatus.ACTIVE && shouldDisappear(entity)) {
@@ -777,6 +807,7 @@ public final class RoomEntityRuntime {
         enemyFlashCountdown[slot] = 0;
         enemyIgnoreHitsCountdown[slot] = 0;
         enemyRecoilMotion.clear(slot);
+        colorShellMotion.clear(slot);
         butterflyMotion.clear(slot);
         keeseMotion.clear(slot);
         roamingEnemyMotion.clear(slot);
@@ -817,6 +848,16 @@ public final class RoomEntityRuntime {
             throw new IllegalArgumentException("Follower state cannot be null");
         }
         followingNpcState = state;
+    }
+
+    void setColorShellWorld(ColorShellWorld world) {
+        colorShellWorld = world == null ? ColorShellWorld.none() : world;
+    }
+
+    int consumePendingClearedEntityMask() {
+        int pending = pendingClearedEntityMask;
+        pendingClearedEntityMask = 0;
+        return pending;
     }
 
     private static boolean isFollowingNpcType(int type) {
@@ -958,6 +999,15 @@ public final class RoomEntityRuntime {
             : spriteSelection.roomTable();
         int mapId = spriteSelection == null ? -1 : spriteSelection.roomId();
         return spriteHandlers.forEntityType(entityType, table, mapId);
+    }
+
+    private RoomEntity refreshColorShellDisplay(RoomEntity entity, EntityStatus status) {
+        if (!ColorShellMotion.isColorShellType(entity.type()) || spriteHandlers == null) {
+            return entity;
+        }
+        EntitySpriteDefinition definition = spriteHandlers.forColorShellState(
+            entity.type(), colorShellMotion.state(entity.slot()), status);
+        return withDefinition(entity, definition, colorShellMotion.spriteVariant(entity.slot()));
     }
 
     private void finishBurning(RoomEntity entity) {
@@ -1380,6 +1430,20 @@ public final class RoomEntityRuntime {
         return enemyIgnoreHitsCountdown[slot];
     }
 
+    int colorShellState(int slot) {
+        return colorShellMotion.state(slot);
+    }
+
+    int colorShellPhysicsFlags(int slot) {
+        return colorShellMotion.physicsFlags(slot);
+    }
+
+    void setColorShellStateForTest(int slot, int state, int transitionCountdown,
+                                   int direction, int speedX, int speedY) {
+        colorShellMotion.setStateForTest(slot, state, transitionCountdown,
+            direction, speedX, speedY);
+    }
+
     int enemyRecoilSpeedX(int slot) {
         return enemyRecoilMotion.recoilSpeedX(slot);
     }
@@ -1500,6 +1564,7 @@ public final class RoomEntityRuntime {
         enemyFlashCountdown[slot] = 0;
         enemyIgnoreHitsCountdown[slot] = 0;
         enemyRecoilMotion.clear(slot);
+        colorShellMotion.clear(slot);
         butterflyMotion.clear(slot);
         keeseMotion.clear(slot);
         roamingEnemyMotion.clear(slot);

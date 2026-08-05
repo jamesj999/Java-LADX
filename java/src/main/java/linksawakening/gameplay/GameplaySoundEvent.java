@@ -18,5 +18,7 @@ public enum GameplaySoundEvent {
     LINK_HURT,
     ENEMY_BUMP,
     ENEMY_HIT,
-    ENEMY_BURNING
+    ENEMY_BURNING,
+    WRONG_ANSWER,
+    DOOR_UNLOCKED
 }

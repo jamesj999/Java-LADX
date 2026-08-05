@@ -30,11 +30,13 @@ public final class TransientVfxRenderLayer implements RenderLayer {
             return;
         }
         for (TransientVfxSystem.Slot slot : transientVfxSystem.activeSlots()) {
-            if (slot.type() != TransientVfxType.BUSH_LEAVES) {
-                continue;
-            }
-            for (CutLeavesEffectRenderer.SpritePlacement sprite :
-                cutLeavesEffectRenderer.renderBushLeaves(slot.worldX(), slot.worldY(), slot.countdown())) {
+            var sprites = switch (slot.type()) {
+                case BUSH_LEAVES -> cutLeavesEffectRenderer.renderBushLeaves(
+                    slot.worldX(), slot.worldY(), slot.countdown());
+                case POOF -> cutLeavesEffectRenderer.renderPoof(
+                    slot.worldX(), slot.worldY(), slot.countdown());
+            };
+            for (CutLeavesEffectRenderer.SpritePlacement sprite : sprites) {
                 IndexedRenderer.drawSpriteTile(context.buffer(), sprite.tile(), sprite.x(), sprite.y(),
                     (sprite.attributes() & ATTR_FLIP_X) != 0,
                     (sprite.attributes() & ATTR_FLIP_Y) != 0,

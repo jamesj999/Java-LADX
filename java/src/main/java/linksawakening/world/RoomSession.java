@@ -2,10 +2,13 @@ package linksawakening.world;
 
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.gameplay.GameplaySoundEvent;
+import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.gpu.GPU;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
 import linksawakening.vfx.TransientVfxSystem;
+import linksawakening.vfx.TransientVfxType;
 
 import java.util.List;
 import java.util.HashMap;
@@ -25,6 +28,7 @@ public final class RoomSession {
     private final TransientVfxSystem transientVfxSystem;
     private final DroppableRupeeSystem droppableRupeeSystem;
     private final RoomLoadListener roomLoadListener;
+    private final RoomTilemapBuilder roomTilemapBuilder;
     private final RomRandomByteSource entityRandomByteSource = new RomRandomByteSource();
     private final EntitySpriteHandlerCatalog entitySpriteHandlerCatalog;
     private final FollowingNpcEntitySpawner followingNpcEntitySpawner;
@@ -42,6 +46,39 @@ public final class RoomSession {
     private int followingEntityYOffset;
     private int followingLinkDirection;
     private boolean followingNpcRoomNeedsSync;
+    private GameplaySoundSink colorShellSoundSink = GameplaySoundSink.none();
+    private final ColorShellWorld colorShellWorld = new ColorShellWorld() {
+        @Override
+        public int objectAt(RoomEntity entity, int relativeOffset) {
+            return colorShellObjectAt(entity, relativeOffset);
+        }
+
+        @Override
+        public void writeObject(RoomEntity entity, int objectId) {
+            writeColorShellObject(entity, objectId);
+        }
+
+        @Override
+        public void playJingle(int id) {
+            if ((id & 0xFF) == 0x1D) {
+                colorShellSoundSink.play(GameplaySoundEvent.WRONG_ANSWER);
+            }
+        }
+
+        @Override
+        public void playNoise(int id) {
+            if ((id & 0xFF) == 0x04) {
+                colorShellSoundSink.play(GameplaySoundEvent.DOOR_UNLOCKED);
+            }
+        }
+
+        @Override
+        public void spawnPoof(int x, int y) {
+            if (transientVfxSystem != null) {
+                transientVfxSystem.spawn(TransientVfxType.POOF, x, y);
+            }
+        }
+    };
 
     public RoomSession(byte[] romData,
                        GPU gpu,
@@ -70,6 +107,7 @@ public final class RoomSession {
         this.transientVfxSystem = transientVfxSystem;
         this.droppableRupeeSystem = droppableRupeeSystem;
         this.roomLoadListener = roomLoadListener;
+        this.roomTilemapBuilder = new RoomTilemapBuilder(romData);
         this.entitySpriteHandlerCatalog = new EntitySpriteHandlerCatalog(romData);
         this.followingNpcEntitySpawner = new FollowingNpcEntitySpawner(entitySpriteHandlerCatalog);
         this.enemyCombatTables = new RomEnemyCombatTables(romData);
@@ -227,6 +265,18 @@ public final class RoomSession {
         return followingNpcState;
     }
 
+    public void setColorShellSoundSink(GameplaySoundSink soundSink) {
+        colorShellSoundSink = soundSink == null ? GameplaySoundSink.none() : soundSink;
+    }
+
+    void setColorShellStateForTest(int slot, int state, int transitionCountdown,
+                                   int direction, int speedX, int speedY) {
+        if (entityRuntime != null) {
+            entityRuntime.setColorShellStateForTest(slot, state, transitionCountdown,
+                direction, speedX, speedY);
+        }
+    }
+
     public void tickEntities(int frameCounter) {
         tickEntities(frameCounter, 0, 0);
     }
@@ -270,6 +320,10 @@ public final class RoomSession {
             new EnemyProjectileCollision.LinkState(
                 linkEntityX, linkEntityY, linkEntityZ, linkMotionState,
                 linkDirection, usingShield));
+        int clearedMask = entityRuntime.consumePendingClearedEntityMask();
+        if (clearedMask != 0) {
+            clearedEntitiesByRoom[activeRoom.roomId()] |= clearedMask;
+        }
         activeRoom.replaceEntities(entityRuntime.snapshot());
         return events;
     }
@@ -376,6 +430,7 @@ public final class RoomSession {
             entities, activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD,
             entityRandomByteSource, entitySpriteHandlerCatalog, enemyCombatTables);
         if (entityRuntime != null) {
+            entityRuntime.setColorShellWorld(colorShellWorld);
             entityRuntime.setFollowingNpcState(followingNpcState);
         }
         followingNpcRoomNeedsSync = true;
@@ -405,6 +460,7 @@ public final class RoomSession {
         entityRuntime = RoomEntityRuntime.from(
             result.snapshot(), activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD,
             entityRandomByteSource, entitySpriteHandlerCatalog, enemyCombatTables);
+        entityRuntime.setColorShellWorld(colorShellWorld);
         entityRuntime.setFollowingNpcState(followingNpcState);
     }
 
@@ -415,6 +471,42 @@ public final class RoomSession {
         if (droppableRupeeSystem != null) {
             droppableRupeeSystem.clear();
         }
+    }
+
+    private int colorShellObjectAt(RoomEntity entity, int relativeOffset) {
+        if (activeRoom == null || entity == null) {
+            return 0xFF;
+        }
+        int index = colorShellObjectIndex(entity) + relativeOffset;
+        int[] objects = activeRoom.roomObjectsArea();
+        return index >= 0 && index < objects.length ? objects[index] : 0xFF;
+    }
+
+    private void writeColorShellObject(RoomEntity entity, int objectId) {
+        if (activeRoom == null || entity == null) {
+            return;
+        }
+        int index = colorShellObjectIndex(entity);
+        int[] objects = activeRoom.roomObjectsArea();
+        if (index < 0 || index >= objects.length) {
+            return;
+        }
+        objects[index] = objectId & 0xFF;
+        refreshActiveRoomTilemap();
+    }
+
+    private void refreshActiveRoomTilemap() {
+        RoomTilemap tilemap = activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
+            ? roomTilemapBuilder.buildOverworld(activeRoom.roomId(), activeRoom.roomObjectsArea())
+            : roomTilemapBuilder.buildIndoor(activeRoom.mapId(), activeRoom.roomId(),
+                activeRoom.roomObjectsArea());
+        activeRoom.replaceTilemap(tilemap.tileIds(), tilemap.tileAttrs());
+    }
+
+    private static int colorShellObjectIndex(RoomEntity entity) {
+        int x = (entity.x() - 0x01) & 0xFF;
+        int y = (entity.y() - 0x07) & 0xFF;
+        return RoomConstants.ROOM_OBJECTS_BASE + (y & 0xF0) + ((x & 0xF0) >>> 4);
     }
 
     /**
