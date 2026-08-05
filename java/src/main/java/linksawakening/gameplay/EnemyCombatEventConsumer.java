@@ -18,11 +18,21 @@ public final class EnemyCombatEventConsumer {
         Objects.requireNonNull(soundSink, "soundSink");
 
         for (EntityCombatEvent event : events) {
-            if (event == null
-                || event.soundChannel() != EntityCombatEvent.SoundChannel.JINGLE) {
+            if (event == null) {
                 continue;
             }
-            switch (event.soundId()) {
+            consumeSoundWrite(event.soundChannel(), event.soundId(), soundSink);
+            consumeSoundWrite(event.secondarySoundChannel(), event.secondarySoundId(), soundSink);
+        }
+    }
+
+    private static void consumeSoundWrite(EntityCombatEvent.SoundChannel channel, int id,
+                                          GameplaySoundSink soundSink) {
+        if (channel == null || channel == EntityCombatEvent.SoundChannel.NONE || id < 0) {
+            return;
+        }
+        if (channel == EntityCombatEvent.SoundChannel.JINGLE) {
+            switch (id) {
                 case JINGLE_BUMP_ID -> soundSink.play(GameplaySoundEvent.ENEMY_BUMP);
                 case JINGLE_ENEMY_HIT_ID -> soundSink.play(GameplaySoundEvent.ENEMY_HIT);
                 default -> {
@@ -30,6 +40,8 @@ public final class EnemyCombatEventConsumer {
                     // to an unrelated gameplay effect.
                 }
             }
+        } else if (channel == EntityCombatEvent.SoundChannel.NOISE && id == 0x12) {
+            soundSink.play(GameplaySoundEvent.ENEMY_BURNING);
         }
     }
 }

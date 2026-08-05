@@ -3,16 +3,27 @@ package linksawakening.world;
 /** A single room-entity combat result produced by the ROM collision pass. */
 public record EntityCombatEvent(int slot, int type, int linkDamage, boolean swordHit,
                                 int enemyDamage, int enemySpecialAction,
-                                SoundChannel soundChannel, int soundId) {
+                                SoundChannel soundChannel, int soundId,
+                                SoundChannel secondarySoundChannel, int secondarySoundId) {
 
     public EntityCombatEvent(int slot, int type, int linkDamage, boolean swordHit) {
-        this(slot, type, linkDamage, swordHit, 0, -1, SoundChannel.NONE, -1);
+        this(slot, type, linkDamage, swordHit, 0, -1,
+            SoundChannel.NONE, -1, SoundChannel.NONE, -1);
     }
 
     /** Compatibility constructor for callers that already provide raw sound. */
     public EntityCombatEvent(int slot, int type, int linkDamage, boolean swordHit,
                              SoundChannel soundChannel, int soundId) {
-        this(slot, type, linkDamage, swordHit, 0, -1, soundChannel, soundId);
+        this(slot, type, linkDamage, swordHit, 0, -1,
+            soundChannel, soundId, SoundChannel.NONE, -1);
+    }
+
+    /** Compatibility constructor for callers that provide combat data and one raw sound. */
+    public EntityCombatEvent(int slot, int type, int linkDamage, boolean swordHit,
+                             int enemyDamage, int enemySpecialAction,
+                             SoundChannel soundChannel, int soundId) {
+        this(slot, type, linkDamage, swordHit, enemyDamage, enemySpecialAction,
+            soundChannel, soundId, SoundChannel.NONE, -1);
     }
 
     public EntityCombatEvent {
@@ -35,18 +46,25 @@ public record EntityCombatEvent(int slot, int type, int linkDamage, boolean swor
         if (enemyDamage > 0 && enemySpecialAction != -1) {
             throw new IllegalArgumentException("Numeric and special enemy damage cannot coexist");
         }
-        if (soundChannel == null) {
-            throw new IllegalArgumentException("Combat sound channel cannot be null");
+        validateSoundPair(soundChannel, soundId, "Combat");
+        validateSoundPair(secondarySoundChannel, secondarySoundId, "Secondary combat");
+    }
+
+    private static void validateSoundPair(SoundChannel channel, int id, String label) {
+        if (channel == null) {
+            throw new IllegalArgumentException(label + " sound channel cannot be null");
         }
-        if (soundId < -1 || soundId > 0xFF) {
-            throw new IllegalArgumentException("Sound id must be -1 or an unsigned byte: "
-                + soundId);
+        if (id < -1 || id > 0xFF) {
+            throw new IllegalArgumentException(label + " sound id must be -1 or an unsigned byte: "
+                + id);
         }
-        if (soundChannel == SoundChannel.NONE && soundId != -1) {
-            throw new IllegalArgumentException("A sound id requires a sound channel");
+        if (channel == SoundChannel.NONE && id != -1) {
+            throw new IllegalArgumentException("A sound id requires a "
+                + label.toLowerCase() + " sound channel");
         }
-        if (soundChannel != SoundChannel.NONE && soundId == -1) {
-            throw new IllegalArgumentException("A sound channel requires a sound id");
+        if (channel != SoundChannel.NONE && id == -1) {
+            throw new IllegalArgumentException("A " + label.toLowerCase()
+                + " sound channel requires a sound id");
         }
     }
 

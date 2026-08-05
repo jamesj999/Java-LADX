@@ -26,6 +26,20 @@ final class EnemyCombatEventConsumerTest {
     }
 
     @Test
+    void mapsSecondaryBurningNoiseAfterTheEnemyHitJingle() {
+        RecordingSoundSink sounds = new RecordingSoundSink();
+        List<EntityCombatEvent> events = List.of(
+            new EntityCombatEvent(0, 0x09, 0, true, 0, 0xFE,
+                EntityCombatEvent.SoundChannel.JINGLE, 0x03,
+                EntityCombatEvent.SoundChannel.NOISE, 0x12));
+
+        EnemyCombatEventConsumer.consume(events, sounds);
+
+        assertEquals(List.of(GameplaySoundEvent.ENEMY_HIT, GameplaySoundEvent.ENEMY_BURNING),
+            sounds.events);
+    }
+
+    @Test
     void ignoresUnknownChannelsIdsAndNoSoundEvents() {
         RecordingSoundSink sounds = new RecordingSoundSink();
         List<EntityCombatEvent> events = List.of(

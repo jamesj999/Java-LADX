@@ -54,6 +54,8 @@ final class SfxGameplaySoundSinkTest {
                 SoundEffectNamespace.JINGLE, 0x09, "JINGLE_BUMP");
         assertMapped(map, GameplaySoundEvent.ENEMY_HIT,
                 SoundEffectNamespace.JINGLE, 0x03, "JINGLE_ENEMY_HIT");
+        assertMapped(map, GameplaySoundEvent.ENEMY_BURNING,
+                SoundEffectNamespace.NOISE, 0x12, "NOISE_SFX_BURSTING_FLAME");
     }
 
     @Test

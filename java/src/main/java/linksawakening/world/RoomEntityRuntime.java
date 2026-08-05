@@ -705,7 +705,8 @@ public final class RoomEntityRuntime {
             events.add(new EntityCombatEvent(
                 entity.slot(), entity.type(),
                 linkCollision ? contactDamage(entity.type()) : 0,
-                swordHit, enemyDamage, enemySpecialAction, soundChannel, soundId));
+                swordHit, enemyDamage, enemySpecialAction, soundChannel, soundId,
+                EntityCombatEvent.SoundChannel.NONE, -1));
         }
         return List.copyOf(events);
     }
