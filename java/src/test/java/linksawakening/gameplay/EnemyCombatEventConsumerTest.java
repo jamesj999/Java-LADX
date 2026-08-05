@@ -40,6 +40,25 @@ final class EnemyCombatEventConsumerTest {
     }
 
     @Test
+    void routesRomSwordPokeSoundAndVfxRequest() {
+        RecordingSoundSink sounds = new RecordingSoundSink();
+        linksawakening.vfx.TransientVfxSystem vfx =
+            new linksawakening.vfx.TransientVfxSystem(1);
+        EntityCombatEvent event = new EntityCombatEvent(
+            0, 0x27, 0, true, 0, -1,
+            EntityCombatEvent.SoundChannel.JINGLE, 0x07,
+            EntityCombatEvent.SoundChannel.NONE, -1,
+            new EntityCombatEvent.SwordPokeVfx(0x40, 0x50));
+
+        EnemyCombatEventConsumer.consume(List.of(event), sounds, vfx);
+
+        assertEquals(List.of(GameplaySoundEvent.SWORD_POKE), sounds.events);
+        assertEquals(List.of(new linksawakening.vfx.TransientVfxSystem.Slot(
+            0, linksawakening.vfx.TransientVfxType.SWORD_POKE, 0x0F, 0x40, 0x50)),
+            vfx.activeSlots());
+    }
+
+    @Test
     void ignoresUnknownChannelsIdsAndNoSoundEvents() {
         RecordingSoundSink sounds = new RecordingSoundSink();
         List<EntityCombatEvent> events = List.of(

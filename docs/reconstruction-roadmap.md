@@ -291,8 +291,9 @@ than represented by guessed shapes or generic movement.
 - The main loop supplies the live sword level, tunic, Piece-of-Power, spin,
   and boots-running state. The default tunic is green and boots-running is
   false until the movement subsystem sets that ROM state. Power hits use the
-  ROM `$20` ignore window; the remaining power wave register, sword-poke VFX,
-  and entity-specific special-action handlers remain pending.
+  ROM `$20` ignore window; the remaining power wave register and
+  entity-specific clink/special-action handlers remain pending. The modeled
+  spike-trap clink response is recorded below.
 - Tests prove ROM bytes and lookup math for Octorok, Moblin, ignored results,
   and a raw `$FF` special result, plus runtime health progression and bump vs.
   enemy-hit feedback. This increment does not claim complete weapon coverage,
@@ -317,9 +318,8 @@ than represented by guessed shapes or generic movement.
 - Tests cover raw `$FE`, `$FF`, and `$FD` ROM outcomes, primary/secondary sound
   routing, collision suppression during non-active statuses, exact countdown
   boundaries, Gibdo conversion, Color Shell health, and countdown cleanup.
-  Deferred work includes fire-sprite animation, burn-expiry noise `$13`, poof
-  and sword-poke VFX, lifting/thrown physics, and the full bank-$36 Color Shell
-  handler.
+  Deferred work includes burn-expiry noise `$13`, poof VFX, lifting/thrown
+  physics, and the full bank-$36 Color Shell handler.
 
 ## Verified ROM Color Shell runtime — 2026-08-05
 
@@ -364,6 +364,27 @@ than represented by guessed shapes or generic movement.
 - Tests cover the shipped ROM bytes, both animation phases, palette/flip
   selection, tile-offset and Z positioning, room selection installation, and
   the complete Java suite passes from a clean build.
+
+## Verified ROM sword-poke presentation — 2026-08-05
+
+- The transient VFX path now decodes type `$05`, countdown `$0F`, and both
+  phases of bank `$02` `Data_002_57DD`: tiles `$3C` and `$3A`, raw attributes
+  `$00/$20`, and the source Y-then-X OAM offsets. The renderer preserves the
+  established transient OAM origin conversion and shared ROM VFX tile sheet.
+- Combat events can carry the source `(wC140-$08, wC142-$08)` request. The
+  gameplay boundary routes jingle `$07` to `JINGLE_SWORD_POKING` and spawns
+  the transient effect into the live render layer.
+- The currently modeled `ENTITY_SPIKE_TRAP` (`$27`) now follows the source
+  `ENTITY_OPT1_SWORD_CLINK_OFF` branch: no enemy damage or normal recoil,
+  ignore-hits countdown `$10`, cleared recoil state, and the exact sword-poke
+  coordinates. Its simultaneous Link contact damage remains independent.
+- The concrete visible checkpoint is a sword striking a spike trap: the
+  engine now shows the two-sprite transient clink and plays the source jingle.
+  Ordinary enemy sword hits retain their existing damage, recoil, status, and
+  bump/hit sound behavior; other clink-off entity handlers remain pending.
+- Tests cover both ROM VFX phases, transient lifetime, event routing, sound
+  catalog mapping, spike-trap no-damage behavior, ordinary-enemy regression,
+  and the complete Java suite passes from a clean build.
 
 ## Next entity increments
 

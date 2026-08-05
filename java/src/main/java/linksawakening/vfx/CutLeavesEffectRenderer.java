@@ -18,6 +18,15 @@ public final class CutLeavesEffectRenderer {
     private static final int FRAME_COUNT = 8;
     private static final int POOF_OAM_X_BIAS = 8;
     private static final int POOF_OAM_Y_BIAS = 16;
+    private static final int SWORD_POKE_OAM_X_BIAS = 8;
+    private static final int SWORD_POKE_OAM_Y_BIAS = 16;
+    // bank-$02 Data_002_57DD: two four-byte OAM entries per phase. The
+    // phase is selected from the transient countdown's bit $08.
+    private static final int[][] SWORD_POKE_SPRITE_RECT = {
+        // Stored as source Y offset, source X offset, tile, attributes.
+        { 0, -1, 0x3C, 0x00, 0, 7, 0x3C, 0x20 },
+        { 0, -1, 0x3A, 0x00, 0, 7, 0x3A, 0x20 }
+    };
     private static final int[][] POOF_SPRITE_RECT = {
         { 0, 0, 0x32, 0x01, 0, 8, 0x32, 0x21 },
         { 0, 0, 0x32, 0x01, 0, 8, 0x32, 0x21 },
@@ -77,6 +86,25 @@ public final class CutLeavesEffectRenderer {
                 frame[offset + 2],
                 frame[offset + 3],
                 spriteSheet.tile(frame[offset + 2])
+            ));
+        }
+        return List.copyOf(placements);
+    }
+
+    /** ROM bank-$02 RenderTranscientSwordPoke and Data_002_57DD. */
+    public List<SpritePlacement> renderSwordPoke(int worldX, int worldY, int countdown) {
+        int phase = (countdown & 0x08) == 0 ? 0 : 1;
+        int[] frame = SWORD_POKE_SPRITE_RECT[phase];
+        List<SpritePlacement> placements = new ArrayList<>(2);
+        for (int i = 0; i < 2; i++) {
+            int offset = i * 4;
+            int tileId = frame[offset + 2];
+            placements.add(new SpritePlacement(
+                worldX + frame[offset + 1] - SWORD_POKE_OAM_X_BIAS,
+                worldY + frame[offset] - SWORD_POKE_OAM_Y_BIAS,
+                tileId,
+                frame[offset + 3],
+                spriteSheet.tile(tileId)
             ));
         }
         return List.copyOf(placements);

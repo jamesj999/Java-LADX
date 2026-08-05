@@ -479,7 +479,7 @@ public class Main {
                     link.isAirborne(), true,
                     swordBox.active(), swordBox.x(), swordBox.width(),
                     swordBox.y(), swordBox.height(), attackContext);
-                EnemyCombatEventConsumer.consume(combatEvents, gameplaySoundSink);
+                EnemyCombatEventConsumer.consume(combatEvents, gameplaySoundSink, transientVfxSystem);
                 for (EntityCombatEvent event : combatEvents) {
                     if (event.linkDamage() > 0 && playerState.invincibilityCounter() == 0) {
                         playerState.damage(event.linkDamage());

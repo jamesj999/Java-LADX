@@ -1692,7 +1692,7 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
-    void spikeTrapUsesTheRomHealthGroupNineCombatValues() {
+    void spikeTrapSwordCollisionPublishesTheRomSwordPokeWithoutDamage() {
         EntitySpriteDefinition definition = pairDefinition(0x27, 1);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, 0x27, 64, 64, EntityStatus.ACTIVE, definition, 0)));
@@ -1706,8 +1706,18 @@ final class RoomEntityRuntimeTest {
         List<EntityCombatEvent> sword = runtime.resolveCombat(
             1, 120, 120, false, true, true, 72, 1, 72, 1);
         assertEquals(1, sword.size());
-        assertTrue(sword.get(0).swordHit());
-        assertEquals(3, runtime.enemyHealth(0));
+        EntityCombatEvent event = sword.get(0);
+        assertTrue(event.swordHit());
+        assertEquals(0, event.enemyDamage());
+        assertEquals(-1, event.enemySpecialAction());
+        assertEquals(EntityCombatEvent.SoundChannel.JINGLE, event.soundChannel());
+        assertEquals(0x07, event.soundId());
+        assertEquals(new EntityCombatEvent.SwordPokeVfx(0x40, 0x40),
+            event.swordPokeVfx());
+        assertEquals(4, runtime.enemyHealth(0));
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
+        assertEquals(0x10, runtime.enemyIgnoreHitsCountdown(0));
+        assertFalse(runtime.enemyRecoilActive(0));
     }
 
     @Test

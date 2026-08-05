@@ -35,6 +35,8 @@ public final class TransientVfxRenderLayer implements RenderLayer {
                     slot.worldX(), slot.worldY(), slot.countdown());
                 case POOF -> cutLeavesEffectRenderer.renderPoof(
                     slot.worldX(), slot.worldY(), slot.countdown());
+                case SWORD_POKE -> cutLeavesEffectRenderer.renderSwordPoke(
+                    slot.worldX(), slot.worldY(), slot.countdown());
             };
             for (CutLeavesEffectRenderer.SpritePlacement sprite : sprites) {
                 IndexedRenderer.drawSpriteTile(context.buffer(), sprite.tile(), sprite.x(), sprite.y(),

@@ -1,6 +1,8 @@
 package linksawakening.gameplay;
 
 import linksawakening.world.EntityCombatEvent;
+import linksawakening.vfx.TransientVfxSystem;
+import linksawakening.vfx.TransientVfxType;
 
 import java.util.List;
 import java.util.Objects;
@@ -9,11 +11,17 @@ import java.util.Objects;
 public final class EnemyCombatEventConsumer {
     private static final int JINGLE_BUMP_ID = 0x09;
     private static final int JINGLE_ENEMY_HIT_ID = 0x03;
+    private static final int JINGLE_SWORD_POKE_ID = 0x07;
 
     private EnemyCombatEventConsumer() {
     }
 
     public static void consume(List<EntityCombatEvent> events, GameplaySoundSink soundSink) {
+        consume(events, soundSink, null);
+    }
+
+    public static void consume(List<EntityCombatEvent> events, GameplaySoundSink soundSink,
+                               TransientVfxSystem transientVfxSystem) {
         Objects.requireNonNull(events, "events");
         Objects.requireNonNull(soundSink, "soundSink");
 
@@ -23,6 +31,10 @@ public final class EnemyCombatEventConsumer {
             }
             consumeSoundWrite(event.soundChannel(), event.soundId(), soundSink);
             consumeSoundWrite(event.secondarySoundChannel(), event.secondarySoundId(), soundSink);
+            if (transientVfxSystem != null && event.swordPokeVfx() != null) {
+                transientVfxSystem.spawn(TransientVfxType.SWORD_POKE,
+                    event.swordPokeVfx().worldX(), event.swordPokeVfx().worldY());
+            }
         }
     }
 
@@ -35,6 +47,7 @@ public final class EnemyCombatEventConsumer {
             switch (id) {
                 case JINGLE_BUMP_ID -> soundSink.play(GameplaySoundEvent.ENEMY_BUMP);
                 case JINGLE_ENEMY_HIT_ID -> soundSink.play(GameplaySoundEvent.ENEMY_HIT);
+                case JINGLE_SWORD_POKE_ID -> soundSink.play(GameplaySoundEvent.SWORD_POKE);
                 default -> {
                     // Unknown ROM sound writes must not be guessed or routed
                     // to an unrelated gameplay effect.

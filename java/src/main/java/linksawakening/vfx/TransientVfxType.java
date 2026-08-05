@@ -9,7 +9,8 @@ package linksawakening.vfx;
 public enum TransientVfxType {
 
     BUSH_LEAVES(0x00, 0x1F),
-    POOF(0x02, 0x0F);
+    POOF(0x02, 0x0F),
+    SWORD_POKE(0x05, 0x0F);
 
     private final int id;
     private final int defaultCountdown;

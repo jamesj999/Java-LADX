@@ -28,6 +28,24 @@ final class TransientVfxSystemTest {
     }
 
     @Test
+    void swordPokeUsesTheRomTransientTypeAndCountdown() {
+        TransientVfxSystem system = new TransientVfxSystem(1);
+
+        int slotIndex = system.spawn(TransientVfxType.SWORD_POKE, 0x40, 0x50);
+
+        assertEquals(0, slotIndex);
+        assertEquals(
+            List.of(new TransientVfxSystem.Slot(0, TransientVfxType.SWORD_POKE,
+                0x0F, 0x40, 0x50)),
+            system.activeSlots()
+        );
+
+        system.tick();
+
+        assertEquals(0x0E, system.activeSlots().getFirst().countdown());
+    }
+
+    @Test
     void tickDecrementsCountdownAndExpiresAtZero() {
         TransientVfxSystem system = new TransientVfxSystem(1);
         system.spawn(TransientVfxType.BUSH_LEAVES, 0x20, 0x40);

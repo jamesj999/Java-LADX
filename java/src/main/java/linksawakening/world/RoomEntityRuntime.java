@@ -692,7 +692,19 @@ public final class RoomEntityRuntime {
             int secondarySoundId = -1;
             int enemyDamage = 0;
             int enemySpecialAction = -1;
-            if (swordHit) {
+            EntityCombatEvent.SwordPokeVfx swordPokeVfx = null;
+            if (swordHit && RoomEntityCombatRules.swordPokeForSwordCollision(entity.type())) {
+                // EnemyCollidedWithSword's ENTITY_OPT1_SWORD_CLINK_OFF path
+                // calls label_D07/label_D15: no damage or normal recoil,
+                // sixteen ignored-hit frames, then the sword-poke VFX and
+                // jingle writes.
+                swordPokeVfx = new EntityCombatEvent.SwordPokeVfx(
+                    byteValue(swordX - 0x08), byteValue(swordY - 0x08));
+                enemyIgnoreHitsCountdown[entity.slot()] = 0x10;
+                enemyRecoilMotion.clear(entity.slot());
+                soundChannel = EntityCombatEvent.SoundChannel.JINGLE;
+                soundId = 0x07;
+            } else if (swordHit) {
                 RomEnemyCombatTables.SwordDamageResult swordResult =
                     enemyCombatTables == null ? null
                         : enemyCombatTables.resolveSwordDamage(entity.type(), attackContext);
@@ -772,7 +784,7 @@ public final class RoomEntityRuntime {
                 entity.slot(), entity.type(),
                 linkCollision ? contactDamage(entity.type()) : 0,
                 swordHit, enemyDamage, enemySpecialAction, soundChannel, soundId,
-                secondarySoundChannel, secondarySoundId));
+                secondarySoundChannel, secondarySoundId, swordPokeVfx));
         }
         return List.copyOf(events);
     }

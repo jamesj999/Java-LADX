@@ -126,6 +126,14 @@ public final class RoomEntityCombatRules {
         return supportsEnemyCollision(type) ? BASIC_SWORD_DAMAGE : 0;
     }
 
+    /**
+     * Mirrors Options1ForEntity._27 in data/entities/options1.asm: the spike
+     * trap takes the EnemyCollidedWithSword sword-clink path.
+     */
+    static boolean swordPokeForSwordCollision(int type) {
+        return (type & 0xFF) == ENTITY_SPIKE_TRAP;
+    }
+
     /** Mirrors func_003_6C6B's alternating entity-slot cadence. */
     static boolean collisionCadenceMatches(int frameCounter, int slot) {
         return (((frameCounter & 0xFF) ^ slot) & 0x01) != 0;
