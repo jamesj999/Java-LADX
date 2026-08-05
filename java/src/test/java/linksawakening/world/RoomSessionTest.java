@@ -78,6 +78,18 @@ final class RoomSessionTest {
     }
 
     @Test
+    void returnsProjectileEventsFromTheEntityPassWhenLinkStateIsProvided() {
+        RoomSession session = newSession();
+        session.loadInitialOverworld(0x92);
+
+        List<EntityProjectileEvent> events = session.tickEntitiesWithProjectileEvents(
+            0, 0x08, 0x10, 0x00, 0x02, 0x00, false);
+
+        assertTrue(events.isEmpty());
+        assertEquals(session.activeRoom().entities(), session.renderSnapshot().entities());
+    }
+
+    @Test
     void synchronizesDynamicFollowerSpawningAndFollowerDisplaySelection() {
         RoomSession session = newSession();
         session.loadInitialOverworld(0x92);

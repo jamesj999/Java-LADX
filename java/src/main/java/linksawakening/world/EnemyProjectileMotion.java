@@ -76,6 +76,17 @@ final class EnemyProjectileMotion {
     }
 
     Update advance(RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision) {
+        return advance(entity, backgroundCollision, false);
+    }
+
+    /**
+     * Advances the handler after an earlier Link collision has populated the
+     * ROM collision byte.  A Link collision is not a background blockage: the
+     * ROM still performs this frame's position update, then starts the wall
+     * transition without restoring either coordinate.
+     */
+    Update advance(RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision,
+                   boolean preexistingCollision) {
         int slot = entity.slot();
         if (!initialized[slot]) {
             initializeSpawn(slot, entity.type(), 0);
@@ -101,8 +112,8 @@ final class EnemyProjectileMotion {
         }
 
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
-        boolean collidedWithWall = false;
-        if (backgroundCollision != null && x != entity.x()
+        boolean collidedWithWall = preexistingCollision;
+        if (!preexistingCollision && backgroundCollision != null && x != entity.x()
             && backgroundCollision.blocks(entity, horizontalDirection(speedX[slot]), x,
                 entity.y())) {
             x = entity.x();
@@ -110,7 +121,7 @@ final class EnemyProjectileMotion {
         }
 
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
-        if (backgroundCollision != null && y != entity.y()
+        if (!preexistingCollision && backgroundCollision != null && y != entity.y()
             && backgroundCollision.blocks(entity, verticalDirection(speedY[slot]), x, y)) {
             y = entity.y();
             collidedWithWall = true;
@@ -135,6 +146,10 @@ final class EnemyProjectileMotion {
 
     int speedX(int slot) {
         return speedX[slot];
+    }
+
+    int direction(int slot) {
+        return direction[slot];
     }
 
     int speedY(int slot) {

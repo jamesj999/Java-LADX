@@ -236,20 +236,40 @@ public final class RoomSession {
 
     public void tickEntities(int frameCounter, int linkEntityX, int linkEntityY,
                              int linkEntityZ, int linkDirection) {
+        tickEntitiesWithProjectileEvents(frameCounter, linkEntityX, linkEntityY,
+            linkEntityZ, EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE,
+            linkDirection, false);
+    }
+
+    /**
+     * Advances entities and returns the ROM projectile interactions generated
+     * during this frame.  The older tick overloads route through this method
+     * with a non-interactive Link state, so callers that do not provide player
+     * interaction state retain their previous behavior.
+     */
+    public List<EntityProjectileEvent> tickEntitiesWithProjectileEvents(
+                             int frameCounter, int linkEntityX, int linkEntityY,
+                             int linkEntityZ, int linkMotionState, int linkDirection,
+                             boolean usingShield) {
         followingLinkX = linkEntityX & 0xFF;
         followingLinkY = linkEntityY & 0xFF;
         followingLinkZ = linkEntityZ & 0xFF;
         followingLinkDirection = linkDirection & 0xFF;
         if (activeRoom == null || entityRuntime == null) {
-            return;
+            return List.of();
         }
         // rLY is not a meaningful value in the host renderer. Keep the
         // non-emulator policy explicit while preserving the ROM seed update.
         entityRandomByteSource.beginFrame(frameCounter & 0xFF, 0);
-        entityRuntime.tick(frameCounter, linkEntityX, linkEntityY, entityRandomByteSource,
+        List<EntityProjectileEvent> events = entityRuntime.tickWithProjectileEvents(
+            frameCounter, linkEntityX, linkEntityY, entityRandomByteSource,
             this::entityBackgroundCollision, followingLinkPositionHistory, followingLinkZ,
-            followingLinkDirection, followingEntityYOffset);
+            followingLinkDirection, followingEntityYOffset,
+            new EnemyProjectileCollision.LinkState(
+                linkEntityX, linkEntityY, linkEntityZ, linkMotionState,
+                linkDirection, usingShield));
         activeRoom.replaceEntities(entityRuntime.snapshot());
+        return events;
     }
 
     /** Applies the active room's ROM enemy/sword collision pass. */

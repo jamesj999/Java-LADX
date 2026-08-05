@@ -152,7 +152,8 @@ public final class RoomEntityRuntime {
             fallbackRomRandomByteSource.beginFrame(frameCounter & 0xFF, 0);
             randomByteSupplier = fallbackRomRandomByteSource;
         }
-        tick(frameCounter, 0, 0, randomByteSupplier, null);
+        tickInternal(frameCounter, 0, 0, randomByteSupplier, null,
+            null, 0, 0, 0, EnemyProjectileCollision.LinkState.nonInteractive(), false);
     }
 
     /**
@@ -163,20 +164,23 @@ public final class RoomEntityRuntime {
      */
     public void tick(int frameCounter, int linkEntityX, int linkEntityY,
                      IntSupplier randomByteSupplier) {
-        tick(frameCounter, linkEntityX, linkEntityY, randomByteSupplier, null);
+        tickInternal(frameCounter, linkEntityX, linkEntityY, randomByteSupplier, null,
+            null, 0, 0, 0, EnemyProjectileCollision.LinkState.nonInteractive(), false);
     }
 
     public void tick(int frameCounter, int linkEntityX, int linkEntityY,
                      IntSupplier randomByteSupplier,
                      RoomEntityBackgroundCollision backgroundCollision) {
-        tick(frameCounter, linkEntityX, linkEntityY, randomByteSupplier, backgroundCollision,
-            null, 0, 0, 0, false);
+        tickInternal(frameCounter, linkEntityX, linkEntityY, randomByteSupplier,
+            backgroundCollision, null, 0, 0, 0,
+            EnemyProjectileCollision.LinkState.nonInteractive(), false);
     }
 
     public void tick(int frameCounter, int linkEntityX, int linkEntityY,
                      IntSupplier randomByteSupplier, boolean creditsGameplay) {
-        tick(frameCounter, linkEntityX, linkEntityY, randomByteSupplier, null,
-            null, 0, 0, 0, creditsGameplay);
+        tickInternal(frameCounter, linkEntityX, linkEntityY, randomByteSupplier, null,
+            null, 0, 0, 0, EnemyProjectileCollision.LinkState.nonInteractive(),
+            creditsGameplay);
     }
 
     void tick(int frameCounter, int linkEntityX, int linkEntityY,
@@ -184,20 +188,43 @@ public final class RoomEntityRuntime {
               RoomEntityBackgroundCollision backgroundCollision,
               LinkPositionHistory linkPositionHistory,
               int linkZ, int linkDirection, int entityYOffset) {
-        tick(frameCounter, linkEntityX, linkEntityY, randomByteSupplier,
+        tickInternal(frameCounter, linkEntityX, linkEntityY, randomByteSupplier,
             backgroundCollision, linkPositionHistory, linkZ, linkDirection,
-            entityYOffset, false);
+            entityYOffset, EnemyProjectileCollision.LinkState.nonInteractive(), false);
     }
 
-    private void tick(int frameCounter, int linkEntityX, int linkEntityY,
-                      IntSupplier randomByteSupplier,
+    List<EntityProjectileEvent> tickWithProjectileEvents(
+        int frameCounter, int linkEntityX, int linkEntityY,
+        IntSupplier randomByteSupplier, RoomEntityBackgroundCollision backgroundCollision,
+        EnemyProjectileCollision.LinkState projectileLinkState) {
+        return tickInternal(frameCounter, linkEntityX, linkEntityY, randomByteSupplier,
+            backgroundCollision, null, projectileLinkState.z(), projectileLinkState.direction(),
+            0, projectileLinkState, false);
+    }
+
+    List<EntityProjectileEvent> tickWithProjectileEvents(
+        int frameCounter, int linkEntityX, int linkEntityY,
+        IntSupplier randomByteSupplier, RoomEntityBackgroundCollision backgroundCollision,
+        LinkPositionHistory linkPositionHistory,
+        int linkZ, int linkDirection, int entityYOffset,
+        EnemyProjectileCollision.LinkState projectileLinkState) {
+        return tickInternal(frameCounter, linkEntityX, linkEntityY, randomByteSupplier,
+            backgroundCollision, linkPositionHistory, linkZ, linkDirection, entityYOffset,
+            projectileLinkState, false);
+    }
+
+    private List<EntityProjectileEvent> tickInternal(int frameCounter, int linkEntityX,
+                      int linkEntityY, IntSupplier randomByteSupplier,
                       RoomEntityBackgroundCollision backgroundCollision,
                       LinkPositionHistory linkPositionHistory,
                       int linkZ, int linkDirection, int entityYOffset,
+                      EnemyProjectileCollision.LinkState projectileLinkState,
                       boolean creditsGameplay) {
         Objects.requireNonNull(randomByteSupplier, "randomByteSupplier");
+        Objects.requireNonNull(projectileLinkState, "projectileLinkState");
         projectileLaunchRequests.clear();
         Arrays.fill(enemyProjectileSpawnedThisFrame, false);
+        List<EntityProjectileEvent> projectileEvents = new ArrayList<>();
         if (linkPositionHistory != null) {
             followingLinkPositionHistory = linkPositionHistory;
         }
@@ -384,8 +411,26 @@ public final class RoomEntityRuntime {
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && isEnemyProjectileType(entity.type())) {
-                EnemyProjectileMotion.Update projectileUpdate = enemyProjectileMotion.advance(
-                    entity, backgroundCollision);
+                EnemyProjectileMotion.Update projectileUpdate;
+                boolean hasLinkCollision = enemyProjectileMotion.transitionCountdown(entity.slot()) == 0;
+                if (hasLinkCollision) {
+                    var collisionEvent = EnemyProjectileCollision.check(entity,
+                        enemyProjectileMotion.direction(entity.slot()), projectileLinkState);
+                    if (collisionEvent.isPresent()) {
+                        EntityProjectileEvent event = collisionEvent.orElseThrow();
+                        projectileEvents.add(event);
+                        if (event.remove()) {
+                            disableEntityWithoutPersistence(entity.slot());
+                            continue;
+                        }
+                        projectileUpdate = enemyProjectileMotion.advance(entity, backgroundCollision,
+                            event.startsWallTransition());
+                    } else {
+                        projectileUpdate = enemyProjectileMotion.advance(entity, backgroundCollision);
+                    }
+                } else {
+                    projectileUpdate = enemyProjectileMotion.advance(entity, backgroundCollision);
+                }
                 if (projectileUpdate.unloaded()) {
                     disableEntityWithoutPersistence(entity.slot());
                     continue;
@@ -451,6 +496,7 @@ public final class RoomEntityRuntime {
                     updated.spriteTileOffset(), updated.z());
             }
         }
+        return List.copyOf(projectileEvents);
     }
 
     List<RoamingEnemyMotion.LaunchRequest> projectileLaunchRequests() {
