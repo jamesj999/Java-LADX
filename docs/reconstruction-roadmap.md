@@ -266,8 +266,37 @@ movement.
   Z-adjusted recoil vectors; fixed-point accumulation and blocking; runtime
   Moblin/Octorok health/flash/ignore/death behavior; raw sound routing; and
   explicit/dying slot cleanup. The slice intentionally does not claim the
-  full tunic/power-up damage matrix, sword-poke VFX, or recoil for other enemy
-  handlers.
+  sword-poke VFX or recoil for other enemy handlers.
+
+## Verified ROM enemy sword damage — 2026-08-05
+
+- `RomEnemyCombatTables` now reads `HealthGroupForEntity` from bank
+  `$03:$41F6`, `Data_003_43EC` from `$03:$43EC`, `Data_003_473C` from
+  `$03:$473C`, `InitialHealthForGroup` from `$03:$47BC`, and
+  `EntityDamagesForGroup` from `$03:$47F1` using the corrected banked-ROM
+  offset formula. The active `RoomSession` supplies these tables to every
+  `RoomEntityRuntime`; isolated no-ROM fixtures retain an explicit test-only
+  compatibility path.
+- Sword damage now mirrors `ApplySwordDamagesToEnemy` at bank `$03:$719D`:
+  sword level, red tunic, Piece of Power, spin attack, and the explicit
+  Pegasus-Boots-running state select the effective attack type before the
+  health-group matrix and raw damage-value lookup. Numeric results subtract
+  only their ROM amount; `$F0-$FF` results remain explicit special-action data
+  rather than being treated as huge health damage.
+- Initial health and Link contact damage in the ROM-backed runtime now use the
+  entity's decoded health group instead of the former Java per-family
+  constants. Combat events expose numeric enemy damage and raw special-action
+  bytes while preserving the existing Link-damage and jingle compatibility
+  constructors.
+- The main loop supplies the live sword level, tunic, Piece-of-Power, spin,
+  and boots-running state. The default tunic is green and boots-running is
+  false until the movement subsystem sets that ROM state. Power hits use the
+  ROM `$20` ignore window; the remaining power wave register, sword-poke VFX,
+  and entity-specific special-action handlers remain pending.
+- Tests prove ROM bytes and lookup math for Octorok, Moblin, ignored results,
+  and a raw `$FF` special result, plus runtime health progression and bump vs.
+  enemy-hit feedback. This increment does not claim complete weapon coverage,
+  all entity-specific collision branches, or equipment acquisition.
 
 ## Next entity increments
 
