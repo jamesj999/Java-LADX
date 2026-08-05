@@ -1138,7 +1138,8 @@ public final class RoomEntityRuntime {
             || type == ENTITY_ANTI_FAIRY || type == ENTITY_STALFOS_AGGRESSIVE
             || type == ENTITY_HARDHAT_BEETLE || type == ENTITY_ARMOS_STATUE
             || type == ENTITY_SPARK_COUNTER_CLOCKWISE
-            || type == ENTITY_SPARK_CLOCKWISE;
+            || type == ENTITY_SPARK_CLOCKWISE
+            || type == ENTITY_ZOL || type == ENTITY_GEL;
     }
 
     private static boolean usesSharedRecoil(int type) {

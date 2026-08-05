@@ -114,8 +114,9 @@ resource.
   damage values, and turn a damaged Zol into two ROM-backed Gel entities in
   the highest free slots. The split preserves source load order and ROM
   position/Z setup; Gel clinging suppresses the ordinary enemy collision path.
-  Joypad-driven release from the clinging state, recoil, and the remaining
-  damage-state branches remain pending.
+  Shared bank-$06 sword recoil is covered in the verified increment below;
+  joypad-driven release from the clinging state, background interaction, and
+  the remaining damage-state branches remain pending.
 - Hiding Zol (`$9B`) now decodes bank `$07`'s mixed hidden/pair/single display
   path, mirrors the signed `$20` proximity reveal, `$20` reveal countdown,
   random three-to-six bounce count, fixed-point Z gravity, horizontal inching,
@@ -569,6 +570,20 @@ runtime collision callback.
   smoke, and the remaining Spark damage-state work remain separate gaps.
 - The six-type bank-$06 recoil regression and the complete Java suite cover
   this increment.
+
+## Verified ROM Zol/Gel recoil — 2026-08-05
+
+- Zol (`$1B`) and Gel (`$1C`) now configure the shared ROM `$30` sword-recoil
+  vector and use the normal `$0A` ignore-hits window.
+- The live runtime applies one fixed-point recoil step before
+  `ZolGelMotion.advance`, matching `AnimateZolGel`'s
+  `ApplyRecoilIfNeeded_06` call after split handling and before the state
+  dispatch. A blocked step preserves recoil state and the countdown because
+  these are non-roaming bank-$06 handlers.
+- The existing split reset clears recoil for both resulting Gel slots, and
+  the focused Zol/Gel regressions plus the complete Java suite cover this
+  increment. Clinging-input release, background interaction, recoil smoke,
+  and remaining damage-state branches remain pending.
 
 ## Next entity increments
 

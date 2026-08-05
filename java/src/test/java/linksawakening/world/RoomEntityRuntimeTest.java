@@ -941,7 +941,7 @@ final class RoomEntityRuntimeTest {
 
     @Test
     void bankSixNormalEnemiesConfigureTheRomSharedSwordRecoil() {
-        int[] types = {0x19, 0x0D, 0x15, 0x1A, 0x16, 0x17};
+        int[] types = {0x19, 0x0D, 0x15, 0x1A, 0x16, 0x17, 0x1B, 0x1C};
         for (int type : types) {
             EntitySpriteDefinition definition = pairDefinition(type, 3);
             RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
@@ -958,6 +958,64 @@ final class RoomEntityRuntimeTest {
             assertEquals(0xD0, runtime.enemyRecoilSpeedX(0),
                 "type=" + Integer.toHexString(type));
             assertEquals(0xD0, runtime.enemyRecoilSpeedY(0),
+                "type=" + Integer.toHexString(type));
+        }
+    }
+
+    @Test
+    void zolAndGelApplyBankSixRecoilBeforeTheirStateMovement() throws IOException {
+        int[] types = {0x1B, 0x1C};
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
+        for (int type : types) {
+            EntitySpriteDefinition definition = pairDefinition(type, 2);
+            // ConfigureEntityRecoil runs before the ROM damage lookup. A
+            // level-zero context keeps the one-health entity active so the
+            // following handler tick can observe that recoil step.
+            EnemyAttackContext nonDamaging =
+                new EnemyAttackContext(0, false, false, false, false);
+            RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+                new RoomEntity(0, 0, type, 64, 64, EntityStatus.ACTIVE, definition, 0)),
+                false, sequence(0x01), null, tables);
+
+            runtime.resolveCombat(0, 120, 120, false, false,
+                true, 72, 1, 72, 1, nonDamaging);
+            runtime.tick(1, 72, 72, sequence(0x01));
+
+            assertEquals(61, runtime.snapshot().slots().get(0).x(),
+                "type=" + Integer.toHexString(type));
+            assertEquals(61, runtime.snapshot().slots().get(0).y(),
+                "type=" + Integer.toHexString(type));
+            assertEquals(0x09, runtime.enemyIgnoreHitsCountdown(0),
+                "type=" + Integer.toHexString(type));
+        }
+    }
+
+    @Test
+    void zolAndGelKeepBankSixRecoilWhenBackgroundBlocksTheStep() throws IOException {
+        int[] types = {0x1B, 0x1C};
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
+        for (int type : types) {
+            EntitySpriteDefinition definition = pairDefinition(type, 2);
+            EnemyAttackContext nonDamaging =
+                new EnemyAttackContext(0, false, false, false, false);
+            RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+                new RoomEntity(0, 0, type, 64, 64, EntityStatus.ACTIVE, definition, 0)),
+                false, sequence(0x01), null, tables);
+
+            runtime.resolveCombat(0, 120, 120, false, false,
+                true, 72, 1, 72, 1, nonDamaging);
+            RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) ->
+                direction == 1 || direction == 2;
+
+            runtime.tick(1, 72, 72, sequence(0x01), wall);
+
+            assertEquals(64, runtime.snapshot().slots().get(0).x(),
+                "type=" + Integer.toHexString(type));
+            assertEquals(64, runtime.snapshot().slots().get(0).y(),
+                "type=" + Integer.toHexString(type));
+            assertTrue(runtime.enemyRecoilActive(0),
+                "type=" + Integer.toHexString(type));
+            assertEquals(0x09, runtime.enemyIgnoreHitsCountdown(0),
                 "type=" + Integer.toHexString(type));
         }
     }
@@ -1655,6 +1713,9 @@ final class RoomEntityRuntimeTest {
         assertEquals(originalSlot.y(), spawnedSlot.y());
         assertEquals(originalSlot.z(), spawnedSlot.z());
         assertEquals(1, runtime.enemyHealth(15));
+        assertFalse(runtime.enemyRecoilActive(0));
+        assertFalse(runtime.enemyRecoilActive(15));
+        assertEquals(0, runtime.enemyIgnoreHitsCountdown(0));
     }
 
     @Test
