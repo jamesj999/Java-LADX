@@ -1005,6 +1005,52 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void armosUsesRomActivationFlagsAndOnlyTheActiveStateJoinsCombat() {
+        EntitySpriteDefinition definition = pairDefinition(0x0F, 2);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x0F, 64, 64, EntityStatus.ACTIVE, definition, 0)));
+
+        assertEquals(0x92, runtime.physicsFlags(0));
+        assertTrue(runtime.resolveCombat(1, 64, 64, false, true,
+            true, 72, 1, 72, 1).isEmpty());
+
+        runtime.tick(0, 64, 64, sequence(0x00));
+        assertEquals(1, runtime.armosState(0));
+        assertEquals(0x18, runtime.enemyFlashCountdown(0));
+        assertEquals(0x92, runtime.physicsFlags(0));
+        assertTrue(runtime.resolveCombat(1, 64, 64, false, true,
+            true, 72, 1, 72, 1).isEmpty());
+
+        for (int frame = 1; frame <= 0x30; frame++) {
+            runtime.tick(frame, 120, 120, sequence(0x00));
+        }
+
+        assertEquals(2, runtime.armosState(0));
+        assertEquals(0x12, runtime.physicsFlags(0));
+
+        RoomEntity active = runtime.snapshot().slots().get(0);
+        List<EntityCombatEvent> contact = runtime.resolveCombat(
+            1, active.x(), active.y(), false, true,
+            false, 0, 0, 0, 0);
+        assertEquals(1, contact.size());
+        assertEquals(0x10, contact.get(0).linkDamage());
+
+        List<EntityCombatEvent> sword = runtime.resolveCombat(
+            0, 0, 0, true, true,
+            true, active.x() + 8, 1, active.y() + 8, 1);
+        assertEquals(1, sword.size());
+        assertTrue(sword.get(0).swordHit());
+        assertEquals(1, sword.get(0).enemyDamage());
+        assertEquals(3, runtime.enemyHealth(0));
+        assertEquals(0x0A, runtime.enemyIgnoreHitsCountdown(0));
+        assertTrue(runtime.enemyRecoilActive(0));
+
+        runtime.tick(0x31, 0, 0, sequence(0x00));
+        assertEquals(0x09, runtime.enemyIgnoreHitsCountdown(0));
+        assertTrue(runtime.enemyRecoilActive(0));
+    }
+
+    @Test
     void armosStateTwoLoadsItsContiguousRomSpeedTables() {
         EntitySpriteDefinition definition = pairDefinition(0x0F, 2);
         RoomEntitySnapshot initial = snapshot(

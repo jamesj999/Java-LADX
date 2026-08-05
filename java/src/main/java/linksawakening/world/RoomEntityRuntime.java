@@ -41,6 +41,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_GIBDO = 0x1F;
     private static final int ENTITY_PEAHAT = 0xA0;
     private static final int ENTITY_ARMOS_STATUE = 0x0F;
+    private static final int ARMOS_INITIAL_PHYSICS_FLAGS = 0x92;
     private static final int ENTITY_GHINI = 0x12;
     private static final int ENTITY_KEESE = 0x19;
     private static final int ENTITY_HARDHAT_BEETLE = 0x20;
@@ -132,6 +133,8 @@ public final class RoomEntityRuntime {
         for (RoomEntity entity : slots) {
             baseEntityFlipAttribute[entity.slot()] = entity.entityFlipAttribute();
             enemyHealth[entity.slot()] = entity.loaded() ? initialHealth(entity.type()) : 0;
+            enemyPhysicsFlags[entity.slot()] = entity.loaded()
+                ? initialPhysicsFlags(entity.type()) : 0;
             if (isLaserType(entity.type())) {
                 laserMotion.initializeForEntity(entity);
             }
@@ -721,8 +724,20 @@ public final class RoomEntityRuntime {
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_ARMOS_STATUE) {
-                updated = armosMotion.advance(entity, frame, linkEntityX, linkEntityY,
-                    randomByteSupplier);
+                ArmosMotion.Update armosUpdate = armosMotion.advance(
+                    entity, frame, linkEntityX, linkEntityY, randomByteSupplier);
+                updated = armosUpdate.entity();
+                if (armosUpdate.woke()) {
+                    // ArmosStatueEntityHandler's wake branch starts the same
+                    // $18 visible flash used by the ROM's enemy hit handlers.
+                    enemyFlashCountdown[entity.slot()] = 0x18;
+                }
+                if (armosUpdate.activated()) {
+                    // State 1 clears the harmless physics bit and enables the
+                    // normal hitbox/sword path for state 2.
+                    enemyPhysicsFlags[entity.slot()] &= 0x7F;
+                    enemyIgnoreHitsCountdown[entity.slot()] = 0;
+                }
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_GHINI) {
@@ -862,6 +877,10 @@ public final class RoomEntityRuntime {
             RoomEntity entity = slots[index];
             if (!entity.loaded() || entity.status() != EntityStatus.ACTIVE
                 || !RoomEntityCombatRules.supportsEnemyCollision(entity.type())) {
+                continue;
+            }
+            if (entity.type() == ENTITY_ARMOS_STATUE
+                && !armosMotion.isActive(entity.slot())) {
                 continue;
             }
             if (entity.type() == ENTITY_LEEVER && !leeverMotion.isChasing(entity.slot())) {
@@ -1117,7 +1136,7 @@ public final class RoomEntityRuntime {
     private static boolean usesBank6Recoil(int type) {
         return type == ENTITY_KEESE || type == ENTITY_TEKTITE
             || type == ENTITY_ANTI_FAIRY || type == ENTITY_STALFOS_AGGRESSIVE
-            || type == ENTITY_HARDHAT_BEETLE;
+            || type == ENTITY_HARDHAT_BEETLE || type == ENTITY_ARMOS_STATUE;
     }
 
     private static boolean usesSharedRecoil(int type) {
@@ -1822,10 +1841,15 @@ public final class RoomEntityRuntime {
     }
 
     private void initializeEntityTimers(RoomEntity entity) {
+        enemyPhysicsFlags[entity.slot()] = initialPhysicsFlags(entity.type());
         if (indoorRoom && RoomEntityPickupRules.usesIndoorDefaultSlowTimer(entity.type())) {
             slowTransitionCountdown[entity.slot()] = 0x80;
             slowTimerInitialized[entity.slot()] = true;
         }
+    }
+
+    private static int initialPhysicsFlags(int type) {
+        return type == ENTITY_ARMOS_STATUE ? ARMOS_INITIAL_PHYSICS_FLAGS : 0;
     }
 
     private void decrementSlowTransitionCountdown(int slot, int frameCounter) {

@@ -69,6 +69,7 @@ public final class RoomEntityCombatRules {
                 ENTITY_SPARK_CLOCKWISE,
                 ENTITY_STALFOS_AGGRESSIVE, ENTITY_ZOL, ENTITY_GEL, ENTITY_HIDING_ZOL,
                 ENTITY_GIBDO, ENTITY_PEAHAT,
+                ENTITY_ARMOS_STATUE,
                 ENTITY_GHINI,
                 ENTITY_HARDHAT_BEETLE, ENTITY_SPIKE_TRAP, ENTITY_WATER_TEKTITE,
                 ENTITY_PAIRODD, ENTITY_COLOR_SHELL_RED, ENTITY_COLOR_SHELL_GREEN,
@@ -88,6 +89,7 @@ public final class RoomEntityCombatRules {
                 ENTITY_WATER_TEKTITE, ENTITY_PAIRODD,
                 ENTITY_HIDING_ZOL ->
                 OCTOROK_AND_KEESE_CONTACT_DAMAGE;
+            case ENTITY_ARMOS_STATUE -> 0x10;
             case ENTITY_MOBLIN, ENTITY_TEKTITE, ENTITY_LEEVER, ENTITY_STALFOS_AGGRESSIVE ->
                 MOBLIN_CONTACT_DAMAGE;
             case ENTITY_SPARK_COUNTER_CLOCKWISE, ENTITY_SPARK_CLOCKWISE ->
@@ -105,6 +107,7 @@ public final class RoomEntityCombatRules {
         return switch (type & 0xFF) {
             case ENTITY_KEESE, ENTITY_OCTOROK, ENTITY_PEAHAT, ENTITY_WATER_TEKTITE ->
                 OCTOROK_AND_KEESE_INITIAL_HEALTH;
+            case ENTITY_ARMOS_STATUE -> 0x04;
             case ENTITY_PAIRODD -> PAIRODD_INITIAL_HEALTH;
             case ENTITY_MOBLIN, ENTITY_TEKTITE, ENTITY_LEEVER, ENTITY_STALFOS_AGGRESSIVE ->
                 MOBLIN_INITIAL_HEALTH;

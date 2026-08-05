@@ -65,8 +65,8 @@ resource.
 - Armos Statue, Ghini, and Hardhat Beetle now decode their banked pair
   display lists, including the map-$0A Cave B Hardhat table. Their verified
   frame-driven display cadences are wired into the runtime; Armos activation
-  and launch, Ghini hiding/flight, and Hardhat movement/collision states
-  remain pending.
+  and active combat are covered in the verified increment below, while Ghini
+  hiding/flight and Hardhat movement/collision states remain pending.
 - Ordinary Ghini flight now mirrors bank `$04`'s shared-byte random target
   timers, signed speed approach to the `$0C/$F4` and `$08/$F8` tables,
   four-frame visual-Z correction, edge turnarounds, and direction flip. Its
@@ -80,9 +80,9 @@ resource.
   pending. Its shared sword recoil is verified below.
 - Armos Statue now mirrors the bank `$06` state-0 wake, state-1 `$30` charge
   countdown, state-2 random timer, contiguous ROM speed tables, and fixed-point
-  movement. Its ROM normal hitbox drives wake-up; final-Link-position plumbing,
-  flash/harmlessness transitions, background interaction, and active-state
-  sword/contact damage remain pending.
+  movement. Its ROM normal hitbox drives wake-up; activation, active combat,
+  and bank-$06 recoil are covered in the verified increment below. Final-Link-
+  position plumbing and background interaction remain pending.
 - Tektite now decodes the bank `$06` pair display list and mirrors its state-0
   Z-gravity/landing transition, state-1 `$20` inertia animation, `$10` landing
   countdown, ROM direction tables, Z-aware `$14` vector toward Link, and
@@ -536,6 +536,24 @@ runtime collision callback.
 - Focused bank-$06 runtime tests and the full Java suite verify this
   increment; the visible checkpoint is a sword strike against any of the four
   newly covered enemy families.
+
+## Verified ROM Armos activation and combat — 2026-08-05
+
+- Armos Statue (`$0F`) now projects the source physics transition through the
+  live room runtime: dormant/waking slots begin at `$92` (shadow plus harmless),
+  wake starts the `$18` flash, and state 0/1 remain outside the shared enemy
+  combat pass. State 2 clears the harmless bit to expose active flags `$12` and
+  admits the normal sword and Link-contact paths.
+- The active path uses the ROM health-group data when a room has the shipped
+  combat tables, with the isolated runtime fixture retaining the source-derived
+  four-health and `$10` contact-damage fallback. Normal sword hits use the
+  existing `$0A` ignore-hit window and damage event path.
+- Armos is included in `ApplyRecoilIfNeeded_06`'s shared `$30` sword recoil;
+  bank-$06 background-block behavior remains distinct from bank-$03's
+  stop-on-collision path. The runtime still needs final-Link-position plumbing
+  and Armos-specific background interaction before this handler is complete.
+- Focused Armos activation/combat tests and the complete Java suite pass from a
+  clean build.
 
 ## Next entity increments
 

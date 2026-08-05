@@ -4,6 +4,9 @@ import java.util.function.IntSupplier;
 
 /** Bank-$06 ArmosStatueEntityHandler states 0, 1, and 2. */
 final class ArmosMotion {
+    record Update(RoomEntity entity, boolean woke, boolean activated) {
+    }
+
     // Data_006_74C2. The state-2 X table is eight bytes long.
     private static final int[] SPEED_X_BY_INDEX = {
         0x00, 0x06, 0x08, 0x06, 0x00, 0xFA, 0xF8, 0xFA
@@ -34,12 +37,13 @@ final class ArmosMotion {
         initialized[slot] = true;
     }
 
-    RoomEntity advance(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY,
-                       IntSupplier randomByteSupplier) {
+    Update advance(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY,
+                   IntSupplier randomByteSupplier) {
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot);
         }
+        int previousState = state[slot];
         if (transitionCountdown[slot] > 0) {
             transitionCountdown[slot]--;
         }
@@ -82,9 +86,11 @@ final class ArmosMotion {
             speedY[slot] = SPEED_Y_BY_INDEX[index];
         }
 
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
-            entity.status(), entity.spriteDefinition(), entity.spriteVariant(),
+        RoomEntity updated = new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
+            x, y, entity.status(), entity.spriteDefinition(), entity.spriteVariant(),
             entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z());
+        return new Update(updated, previousState == 0 && state[slot] == 1,
+            previousState == 1 && state[slot] == 2);
     }
 
     void clear(int slot) {
@@ -106,6 +112,10 @@ final class ArmosMotion {
 
     int speedY(int slot) {
         return speedY[slot];
+    }
+
+    boolean isActive(int slot) {
+        return initialized[slot] && state[slot] >= 2;
     }
 
     private static int addSpeedToPosition(int position, int speed, int[] accumulator,

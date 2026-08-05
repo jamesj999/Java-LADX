@@ -21,14 +21,14 @@
 - Reference: `LADX-Disassembly/src/data/entities/health_groups.asm:18-20`
 - Reference: `LADX-Disassembly/src/data/entities/damages.asm:8-16`
 
-- [ ] **Step 1: Add initial harmless/flash tests**
+- [x] **Step 1: Add initial harmless/flash tests**
 
 Extend the existing Armos test to assert `physicsFlags(0) == 0x92` before
 wake. After a wake tick, assert state 1, countdown `$30`, flash countdown
 `$18`, and unchanged `$92` flags. Call `resolveCombat` with an overlapping
 sword and Link position and assert it returns no event while state is below 2.
 
-- [ ] **Step 2: Add active transition and combat tests**
+- [x] **Step 2: Add active transition and combat tests**
 
 After the existing countdown loop, assert `physicsFlags(0) == 0x12` and then
 call `resolveCombat` with an overlapping sword. Assert one sword-hit event,
@@ -37,14 +37,14 @@ and the normal `$0A` ignore-hit countdown. Use an odd collision frame and the
 entity's current coordinates to assert active Link contact reports fallback
 damage `$10`.
 
-- [ ] **Step 3: Add active recoil test**
+- [x] **Step 3: Add active recoil test**
 
 After an active Armos sword hit, tick one frame with no background collision
 and assert the entity moves through the existing recoil path and its ignore
 countdown decrements. This proves Armos is included in `ApplyRecoilIfNeeded_06`
 without adding background behavior.
 
-- [ ] **Step 4: Run the focused tests and confirm RED**
+- [x] **Step 4: Run the focused tests and confirm RED**
 
 Run from `java/`:
 
@@ -62,7 +62,7 @@ not currently admitted to the resolver.
 - Modify: `java/src/main/java/linksawakening/world/ArmosMotion.java`
 - Test: `java/src/test/java/linksawakening/world/RoomEntityRuntimeTest.java`
 
-- [ ] **Step 1: Add an `Update` record and transition booleans**
+- [x] **Step 1: Add an `Update` record and transition booleans**
 
 Change `advance` to return `Update(RoomEntity entity, boolean woke,
 boolean activated)`. Capture the previous state before handler logic, set
@@ -70,12 +70,12 @@ boolean activated)`. Capture the previous state before handler logic, set
 Preserve all existing countdown, position, speed, random-table, and sprite
 behavior inside the returned entity.
 
-- [ ] **Step 2: Add `isActive`**
+- [x] **Step 2: Add `isActive`**
 
 Expose `boolean isActive(int slot)` returning `initialized[slot] && state[slot] >= 2`.
 Keep `clear` resetting state and initialization exactly as before.
 
-- [ ] **Step 3: Run focused tests and confirm only integration failures remain**
+- [x] **Step 3: Run focused tests and confirm only integration failures remain**
 
 Run `gradle test --tests linksawakening.world.RoomEntityRuntimeTest`.
 Expected result: ArmosMotion compiles, while runtime flag/combat assertions
@@ -88,7 +88,7 @@ remain red until Task 3.
 - Modify: `java/src/main/java/linksawakening/world/RoomEntityCombatRules.java`
 - Test: `java/src/test/java/linksawakening/world/RoomEntityRuntimeTest.java`
 
-- [ ] **Step 1: Initialize and transition physics flags**
+- [x] **Step 1: Initialize and transition physics flags**
 
 Set Armos' runtime physics flags to `$92` when its slot is initialized. When
 the Armos update reports `woke`, set `enemyFlashCountdown[slot] = 0x18`.
@@ -97,7 +97,7 @@ When it reports `activated`, clear bit `$80` with
 leave the active flags at `$12`. Do not change the existing background
 collision arguments.
 
-- [ ] **Step 2: Add Armos to shared combat only when active**
+- [x] **Step 2: Add Armos to shared combat only when active**
 
 Include `$0F` in `RoomEntityCombatRules.supportsEnemyCollision`, fallback
 contact damage `$10`, and fallback initial health `$04`. In
@@ -105,13 +105,13 @@ contact damage `$10`, and fallback initial health `$04`. In
 keeps state 0/1 out of both sword and Link combat while letting state 2 use the
 existing sword damage, contact event, and health paths.
 
-- [ ] **Step 3: Include Armos in bank-$06 recoil**
+- [x] **Step 3: Include Armos in bank-$06 recoil**
 
 Add `$0F` to `usesBank6Recoil`. The existing `applyEnemyRecoilIfNeeded` already
 uses the non-roaming bank-$06 collision policy, so blocked recoil must not
 clear the countdown.
 
-- [ ] **Step 4: Run focused tests and confirm GREEN**
+- [x] **Step 4: Run focused tests and confirm GREEN**
 
 Run `gradle test --tests linksawakening.world.RoomEntityRuntimeTest`.
 Expected result: all runtime tests pass, including the new Armos assertions.
@@ -122,22 +122,22 @@ Expected result: all runtime tests pass, including the new Armos assertions.
 - Modify: `docs/reconstruction-roadmap.md`
 - Review: all files changed by Tasks 1-3
 
-- [ ] **Step 1: Run full verification**
+- [x] **Step 1: Run full verification**
 
 From `java/`, run `gradle clean test`. Expected result: BUILD SUCCESSFUL.
 
-- [ ] **Step 2: Run repository checks**
+- [x] **Step 2: Run repository checks**
 
 From the worktree root, run `git diff --check` and `git status --short`.
 Expected result: no whitespace errors and only intended files changed.
 
-- [ ] **Step 3: Update the roadmap**
+- [x] **Step 3: Update the roadmap**
 
 Record that Armos now wakes with the source flash/countdown, becomes active
 with source flags, reaches active sword/contact combat and bank-$06 recoil,
 and that background interaction/final-Link-position details remain pending.
 
-- [ ] **Step 4: Commit the checkpoint**
+- [x] **Step 4: Commit the checkpoint**
 
 Commit the documents and implementation with:
 `git commit -m "feat: complete Armos activation flags"`.
