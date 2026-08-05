@@ -20,6 +20,7 @@ public final class RoomEntityCombatRules {
     private static final int ENTITY_KEESE = 0x19;
     private static final int ENTITY_HARDHAT_BEETLE = 0x20;
     private static final int ENTITY_SPIKE_TRAP = 0x27;
+    private static final int ENTITY_PAIRODD = 0x57;
     private static final int ENTITY_WATER_TEKTITE = 0x99;
 
     // HitboxPositions._00 in home/entities.asm:3AAA. Octorok, Moblin, Armos,
@@ -47,6 +48,7 @@ public final class RoomEntityCombatRules {
     private static final int HARDHAT_INITIAL_HEALTH = 0x04;
     private static final int SPIKE_TRAP_CONTACT_DAMAGE = 0x08;
     private static final int SPIKE_TRAP_INITIAL_HEALTH = 0x04;
+    private static final int PAIRODD_INITIAL_HEALTH = 0x02;
     private static final int ANTI_FAIRY_INITIAL_HEALTH = 0x04;
     private static final int ZOL_INITIAL_HEALTH = 0x02;
     private static final int GEL_INITIAL_HEALTH = 0x01;
@@ -66,6 +68,7 @@ public final class RoomEntityCombatRules {
                 ENTITY_GIBDO, ENTITY_PEAHAT,
                 ENTITY_GHINI,
                 ENTITY_HARDHAT_BEETLE, ENTITY_SPIKE_TRAP, ENTITY_WATER_TEKTITE,
+                ENTITY_PAIRODD,
                 ENTITY_OCTOROK -> true;
             default -> false;
         };
@@ -78,7 +81,7 @@ public final class RoomEntityCombatRules {
     static int contactDamage(int type) {
         return switch (type & 0xFF) {
             case ENTITY_KEESE, ENTITY_OCTOROK, ENTITY_PEAHAT, ENTITY_ZOL, ENTITY_GEL,
-                ENTITY_WATER_TEKTITE,
+                ENTITY_WATER_TEKTITE, ENTITY_PAIRODD,
                 ENTITY_HIDING_ZOL ->
                 OCTOROK_AND_KEESE_CONTACT_DAMAGE;
             case ENTITY_MOBLIN, ENTITY_TEKTITE, ENTITY_LEEVER, ENTITY_STALFOS_AGGRESSIVE ->
@@ -98,6 +101,7 @@ public final class RoomEntityCombatRules {
         return switch (type & 0xFF) {
             case ENTITY_KEESE, ENTITY_OCTOROK, ENTITY_PEAHAT, ENTITY_WATER_TEKTITE ->
                 OCTOROK_AND_KEESE_INITIAL_HEALTH;
+            case ENTITY_PAIRODD -> PAIRODD_INITIAL_HEALTH;
             case ENTITY_MOBLIN, ENTITY_TEKTITE, ENTITY_LEEVER, ENTITY_STALFOS_AGGRESSIVE ->
                 MOBLIN_INITIAL_HEALTH;
             case ENTITY_SPARK_COUNTER_CLOCKWISE, ENTITY_SPARK_CLOCKWISE ->

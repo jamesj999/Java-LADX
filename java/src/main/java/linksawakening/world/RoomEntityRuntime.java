@@ -30,6 +30,8 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_GEL = 0x1C;
     private static final int ENTITY_HIDING_ZOL = 0x9B;
     private static final int ENTITY_SPIKE_TRAP = 0x27;
+    private static final int ENTITY_PAIRODD = 0x57;
+    private static final int ENTITY_PAIRODD_PROJECTILE = 0x58;
     private static final int ENTITY_WATER_TEKTITE = 0x99;
     private static final int ENTITY_STALFOS_AGGRESSIVE = 0x1A;
     private static final int ENTITY_GIBDO = 0x1F;
@@ -65,6 +67,9 @@ public final class RoomEntityRuntime {
     private final ZolGelMotion zolGelMotion = new ZolGelMotion();
     private final HidingZolMotion hidingZolMotion = new HidingZolMotion();
     private final SpikeTrapMotion spikeTrapMotion = new SpikeTrapMotion();
+    private final PairoddMotion pairoddMotion = new PairoddMotion();
+    private final PairoddProjectileMotion pairoddProjectileMotion =
+        new PairoddProjectileMotion();
     private final WaterTektiteMotion waterTektiteMotion = new WaterTektiteMotion();
     private final StalfosAggressiveMotion stalfosAggressiveMotion =
         new StalfosAggressiveMotion();
@@ -225,6 +230,12 @@ public final class RoomEntityRuntime {
                 if (entity.type() == ENTITY_SPIKE_TRAP) {
                     spikeTrapMotion.initialize(entity.slot(), randomByteSupplier);
                 }
+                if (entity.type() == ENTITY_PAIRODD) {
+                    pairoddMotion.initialize(entity.slot(), randomByteSupplier);
+                }
+                if (entity.type() == ENTITY_PAIRODD_PROJECTILE) {
+                    pairoddProjectileMotion.initialize(entity.slot(), randomByteSupplier);
+                }
                 if (entity.type() == ENTITY_WATER_TEKTITE) {
                     waterTektiteMotion.initialize(entity.slot());
                 }
@@ -321,6 +332,20 @@ public final class RoomEntityRuntime {
                 && entity.type() == ENTITY_SPIKE_TRAP) {
                 updated = spikeTrapMotion.advance(entity, linkEntityX, linkEntityY,
                     backgroundCollision);
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_PAIRODD) {
+                PairoddMotion.Update pairoddUpdate = pairoddMotion.advance(entity, frame,
+                    linkEntityX, linkEntityY, randomByteSupplier,
+                    enemyFlashCountdown[entity.slot()] > 0);
+                updated = pairoddUpdate.entity();
+                if (pairoddUpdate.spawnProjectile()) {
+                    spawnPairoddProjectile(entity, linkEntityX, linkEntityY);
+                }
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_PAIRODD_PROJECTILE) {
+                updated = pairoddProjectileMotion.advance(entity, frame);
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_WATER_TEKTITE) {
@@ -446,6 +471,10 @@ public final class RoomEntityRuntime {
             if (entity.type() == ENTITY_PEAHAT && !peaHatMotion.isGrounded(entity)) {
                 continue;
             }
+            if (entity.type() == ENTITY_PAIRODD
+                && !pairoddMotion.allowsEnemyCollision(entity.slot())) {
+                continue;
+            }
             if (isZolGelType(entity.type()) && zolGelMotion.skipsEnemyCollision(entity.slot())) {
                 continue;
             }
@@ -532,6 +561,8 @@ public final class RoomEntityRuntime {
         zolGelMotion.clear(slot);
         hidingZolMotion.clear(slot);
         spikeTrapMotion.clear(slot);
+        pairoddMotion.clear(slot);
+        pairoddProjectileMotion.clear(slot);
         waterTektiteMotion.clear(slot);
         stalfosAggressiveMotion.clear(slot);
         gibdoMotion.clear(slot);
@@ -621,6 +652,27 @@ public final class RoomEntityRuntime {
         return -1;
     }
 
+    private void spawnPairoddProjectile(RoomEntity source, int linkEntityX, int linkEntityY) {
+        int freeSlot = findFreeEntitySlot();
+        if (freeSlot < 0) {
+            return;
+        }
+
+        EntitySpriteDefinition projectileDefinition =
+            spriteDefinitionFor(ENTITY_PAIRODD_PROJECTILE);
+        int projectileVariant = projectileDefinition.supported()
+            ? projectileDefinition.initialVariant() : -1;
+        RoomEntity projectile = new RoomEntity(freeSlot, -1, ENTITY_PAIRODD_PROJECTILE,
+            source.x(), source.y(), EntityStatus.ACTIVE, projectileDefinition,
+            projectileVariant, 0, 0, source.z());
+        slots[freeSlot] = projectile;
+        enemyHealth[freeSlot] = RoomEntityCombatRules.initialHealth(ENTITY_PAIRODD_PROJECTILE);
+        enemyFlashCountdown[freeSlot] = 0;
+        enemyIgnoreHitsCountdown[freeSlot] = 1;
+        dyingCountdown[freeSlot] = 0;
+        pairoddProjectileMotion.initializeSpawn(freeSlot, source, linkEntityX, linkEntityY);
+    }
+
     private EntitySpriteDefinition spriteDefinitionFor(int entityType) {
         if (spriteHandlers == null) {
             return EntitySpriteDefinition.unsupported(entityType);
@@ -694,6 +746,26 @@ public final class RoomEntityRuntime {
 
     int tektiteSpeedY(int slot) {
         return tektiteMotion.speedY(slot);
+    }
+
+    int pairoddState(int slot) {
+        return pairoddMotion.state(slot);
+    }
+
+    int pairoddTransitionCountdown(int slot) {
+        return pairoddMotion.transitionCountdown(slot);
+    }
+
+    int pairoddDirection(int slot) {
+        return pairoddMotion.direction(slot);
+    }
+
+    int pairoddProjectileSpeedX(int slot) {
+        return pairoddProjectileMotion.speedX(slot);
+    }
+
+    int pairoddProjectileSpeedY(int slot) {
+        return pairoddProjectileMotion.speedY(slot);
     }
 
     int tektiteSpeedZ(int slot) {
@@ -1087,6 +1159,8 @@ public final class RoomEntityRuntime {
         zolGelMotion.clear(slot);
         hidingZolMotion.clear(slot);
         spikeTrapMotion.clear(slot);
+        pairoddMotion.clear(slot);
+        pairoddProjectileMotion.clear(slot);
         waterTektiteMotion.clear(slot);
         stalfosAggressiveMotion.clear(slot);
         gibdoMotion.clear(slot);

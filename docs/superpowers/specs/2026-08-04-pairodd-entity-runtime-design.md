@@ -120,7 +120,7 @@ pair variants intact.
 ### Combat and lifecycle
 
 `RoomEntityCombatRules` adds `$57` as a normal enemy with the ROM normal
-hitbox, one initial health point from health group `$30`, and `$04` nominal
+hitbox, two initial health points from health group `$30`, and `$04` nominal
 contact damage from that group's damage byte. `$58` is not added to the generic
 sword/enemy pass. Both motion objects are cleared from `clearEntity` and
 DYING cleanup paths; dynamic projectile slots must not update persistent room
@@ -139,7 +139,7 @@ Focused tests will prove:
 - highest-free-slot dynamic spawn, `sourceLoadOrder == -1`, copied position,
   `$18` vector components, fixed-point projectile movement, and frame-bit-3
   animation;
-- normal Pairodd hitbox, one health, and `$04` contact damage;
+- normal Pairodd hitbox, two health points, and `$04` contact damage;
 - renderer placement for the variant-three four-sprite composite;
 - motion reset on both explicit clear and DYING cleanup.
 

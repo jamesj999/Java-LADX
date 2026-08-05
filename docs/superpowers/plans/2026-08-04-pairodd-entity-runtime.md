@@ -283,8 +283,9 @@ the two pairs left transparent.
 - [ ] **Step 2: Write the combat metadata test**
 
 Assert `$57` uses the normal enemy collision path, reports contact damage `$04`,
-starts with one health point, and is destroyed by one basic sword hit. Assert
-`$58` is absent from the generic enemy/sword pass.
+starts with two health points, and remains active after one basic sword hit.
+Assert the second hit destroys it after the ROM flash window. Assert `$58` is
+absent from the generic enemy/sword pass.
 
 - [ ] **Step 3: Run the tests and verify the expected failure**
 
@@ -300,7 +301,7 @@ the combat test reports unsupported/incorrect `$57` metadata.
 Add a private pair-render helper in `EntityRenderLayer`. Before ordinary pair
 rendering, recognize entity type `$57` and variant `$03`, render definition
 variants six and seven at the two shifted pair origins, and return. Add `$57`
-to the normal enemy switch, contact-damage switch, and one-health switch in
+to the normal enemy switch, contact-damage switch, and two-health switch in
 `RoomEntityCombatRules`; leave `$58` out.
 
 - [ ] **Step 5: Run focused and full tests**
@@ -328,7 +329,7 @@ git commit -m "feat: render and damage Pairodd from ROM data"
 
 Document the bank `$04` display lists, `$20/$40/$30` state countdowns, exact
 mirrored coordinates, reverse-slot `$58` spawn, `$18` vector, fixed-point
-travel, normal hitbox, and one-health/$04-contact values. Explicitly retain
+travel, normal hitbox, and two-health/$04-contact values. Explicitly retain
 projectile shield/object collision, recoil, audio/VFX, and broader damage-state
 gaps as pending.
 
@@ -349,4 +350,3 @@ branch contains only the intentional committed state.
 git add docs/reconstruction-roadmap.md
 git commit -m "docs: track Pairodd runtime coverage"
 ```
-

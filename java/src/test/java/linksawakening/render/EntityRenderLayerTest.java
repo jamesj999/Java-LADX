@@ -95,6 +95,53 @@ final class EntityRenderLayerTest {
     }
 
     @Test
+    void rendersPairoddVariantThreeAsTwoShiftedPairs() {
+        GPU gpu = new GPU();
+        int firstPairLeft = 0x112233;
+        int firstPairRight = 0x223344;
+        int secondPairLeft = 0x334455;
+        int secondPairRight = 0x445566;
+        int[][] palettes = {
+            {0, 0, 0, 0},
+            {0, firstPairLeft, 0, 0},
+            {0, firstPairRight, 0, 0},
+            {0, secondPairLeft, 0, 0},
+            {0, secondPairRight, 0, 0}
+        };
+        writeSolidTile(gpu, 0x20, 1);
+        writeSolidTile(gpu, 0x22, 1);
+        writeSolidTile(gpu, 0x24, 1);
+        writeSolidTile(gpu, 0x26, 1);
+
+        List<EntitySpriteDefinition.Variant> variants = new ArrayList<>();
+        for (int i = 0; i < 8; i++) {
+            variants.add(new EntitySpriteDefinition.Variant(
+                new EntitySpriteDefinition.OamAttribute(0xFF, 0x00),
+                new EntitySpriteDefinition.OamAttribute(0xFF, 0x00)));
+        }
+        variants.set(6, new EntitySpriteDefinition.Variant(
+            new EntitySpriteDefinition.OamAttribute(0x20, 0x01),
+            new EntitySpriteDefinition.OamAttribute(0x22, 0x02)));
+        variants.set(7, new EntitySpriteDefinition.Variant(
+            new EntitySpriteDefinition.OamAttribute(0x24, 0x23),
+            new EntitySpriteDefinition.OamAttribute(0x26, 0x24)));
+        EntitySpriteDefinition pairodd = new EntitySpriteDefinition(0x57, 0x04, 0x5DD1,
+            EntitySpriteDefinition.Shape.PAIR, 0, variants);
+        RoomEntity entity = new RoomEntity(0, 0, 0x57, 40, 32, EntityStatus.ACTIVE,
+            pairodd, 3, 0);
+        byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
+
+        new EntityRenderLayer(snapshot(entity), palettes, new ScrollController())
+            .render(new RenderContext(buffer, gpu));
+
+        // The handler shifts the pair origins to entityX - 8 and entityX + 8.
+        assertEquals(firstPairLeft, pixelColor(buffer, 24, 16));
+        assertEquals(firstPairRight, pixelColor(buffer, 32, 16));
+        assertEquals(secondPairLeft, pixelColor(buffer, 40, 16));
+        assertEquals(secondPairRight, pixelColor(buffer, 48, 16));
+    }
+
+    @Test
     void rendersRectangleOffsetsAndPerEntityTileOffset() {
         GPU gpu = new GPU();
         int color = 0x123456;

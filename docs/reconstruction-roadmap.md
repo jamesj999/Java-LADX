@@ -134,6 +134,17 @@ resource.
   health-group `$00` values (one health, `$04` contact damage) are wired into
   shared combat. Recoil, water/pit/conveyor side effects, and the remaining
   damage-state branches remain pending.
+- Pairodd (`$57`) now decodes bank `$04:$5DD1`'s eight pair variants and
+  mirrors the `$20` disappear, `$40` reappear, and `$30` resting countdowns,
+  signed `$20` Link proximity windows, exact `($A0-x, $90-y)` teleport, and
+  visible-phase enemy-collision gate. Its `$58` projectile uses the bank
+  `$04:$5EF4` display list, reverse-slot dynamic spawn, source position/Z
+  copy, length-`$18` ROM vector (including Z), and bank-$04 fixed-point travel.
+  Pairodd's normal hitbox and health-group `$30` values (two health points,
+  `$04` contact damage) are wired into shared combat, and variant `$03` renders
+  the handler's two shifted pairs. Projectile Link/shield/object collision,
+  sword-poke VFX, recoil, audio, and broader damage-state/background effects
+  remain pending.
 - PeaHat now decodes the bank `$07` pair display list and mirrors its resting,
   takeoff, and flying states, slow-countdown cadence, carry-aware animation,
   direct Z ascent/descent, and contiguous ROM phase-speed tables. Its grounded

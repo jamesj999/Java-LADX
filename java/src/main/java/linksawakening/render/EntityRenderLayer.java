@@ -11,6 +11,7 @@ import static linksawakening.world.RoomConstants.ROOM_PIXEL_WIDTH;
 
 /** Renders the ROM-backed OAM display lists for the room's loaded entities. */
 public final class EntityRenderLayer implements RenderLayer {
+    private static final int ENTITY_PAIRODD = 0x57;
     private static final int OAM_PALETTE_MASK = 0x07;
     private static final int OAM_XFLIP = 0x20;
     private static final int OAM_YFLIP = 0x40;
@@ -87,22 +88,18 @@ public final class EntityRenderLayer implements RenderLayer {
         int flipAttribute = entity.entityFlipAttribute();
         if (definition.shape() == EntitySpriteDefinition.Shape.PAIR) {
             EntitySpriteDefinition.Variant variant = definition.variant(entity.spriteVariant());
-            if (variant.second() == null) {
-                // Hiding Zol's bank-$07 handler selects a single-sprite list
-                // for variant $01 while using the pair list for the other
-                // variants. The catalog represents that mixed path with a
-                // null second OAM entry.
-                renderOamSprite(context, palettes, tiles, withTileOffset(variant.first(), entity),
-                    flipAttribute, entityX + 4, entityY);
+            if (entity.type() == ENTITY_PAIRODD && entity.spriteVariant() == 3
+                && definition.variantCount() > 7) {
+                // Bank $04 temporarily moves hActiveEntityPosX by -$08,
+                // renders variant $06, moves it by +$10, renders variant
+                // $07, and finally restores the source position.
+                renderPair(context, palettes, tiles, definition.variant(6), entity,
+                    entityX - 8, entityY);
+                renderPair(context, palettes, tiles, definition.variant(7), entity,
+                    entityX + 8, entityY);
                 return;
             }
-            boolean flipX = (flipAttribute & OAM_XFLIP) != 0;
-            int firstX = entityX + (flipX ? 8 : 0);
-            int secondX = entityX + (flipX ? 0 : 8);
-            renderOamSprite(context, palettes, tiles, withTileOffset(variant.first(), entity),
-                flipAttribute, firstX, entityY);
-            renderOamSprite(context, palettes, tiles, withTileOffset(variant.second(), entity),
-                flipAttribute, secondX, entityY);
+            renderPair(context, palettes, tiles, variant, entity, entityX, entityY);
         } else if (definition.shape() == EntitySpriteDefinition.Shape.SINGLE) {
             EntitySpriteDefinition.Variant variant = definition.variant(entity.spriteVariant());
             renderOamSprite(context, palettes, tiles, withTileOffset(variant.first(), entity),
@@ -122,6 +119,29 @@ public final class EntityRenderLayer implements RenderLayer {
                     entityX + sprite.xOffset(), entityY + sprite.yOffset());
             }
         }
+    }
+
+    private void renderPair(RenderContext context, int[][] palettes,
+                            EntitySpriteTileSnapshot tiles,
+                            EntitySpriteDefinition.Variant variant, RoomEntity entity,
+                            int pairOriginX, int entityY) {
+        int flipAttribute = entity.entityFlipAttribute();
+        if (variant.second() == null) {
+            // Hiding Zol's bank-$07 handler selects a single-sprite list
+            // for variant $01 while using the pair list for the other
+            // variants. The catalog represents that mixed path with a
+            // null second OAM entry.
+            renderOamSprite(context, palettes, tiles, withTileOffset(variant.first(), entity),
+                flipAttribute, pairOriginX + 4, entityY);
+            return;
+        }
+        boolean flipX = (flipAttribute & OAM_XFLIP) != 0;
+        int firstX = pairOriginX + (flipX ? 8 : 0);
+        int secondX = pairOriginX + (flipX ? 0 : 8);
+        renderOamSprite(context, palettes, tiles, withTileOffset(variant.first(), entity),
+            flipAttribute, firstX, entityY);
+        renderOamSprite(context, palettes, tiles, withTileOffset(variant.second(), entity),
+            flipAttribute, secondX, entityY);
     }
 
     private static EntitySpriteDefinition.OamAttribute withTileOffset(

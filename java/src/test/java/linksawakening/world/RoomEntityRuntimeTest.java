@@ -346,6 +346,40 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void pairoddUsesItsRomNormalEnemyHealthAndContactDamage() {
+        EntitySpriteDefinition definition = pairDefinition(0x57, 8);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x57, 64, 64, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+
+        assertTrue(RoomEntityCombatRules.supportsEnemyCollision(0x57));
+        assertEquals(2, runtime.enemyHealth(0));
+
+        List<EntityCombatEvent> contact = runtime.resolveCombat(
+            1, 64, 64, false, true, false, 0, 0, 0, 0);
+        assertEquals(1, contact.size());
+        assertEquals(4, contact.get(0).linkDamage());
+
+        List<EntityCombatEvent> firstHit = runtime.resolveCombat(
+            0, 120, 120, false, true, true, 72, 1, 72, 1);
+        assertEquals(1, firstHit.size());
+        assertTrue(firstHit.get(0).swordHit());
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
+        assertEquals(1, runtime.enemyHealth(0));
+
+        for (int frame = 1; frame <= 0x18; frame++) {
+            runtime.tick(frame, 120, 120, sequence(0x00));
+        }
+        List<EntityCombatEvent> secondHit = runtime.resolveCombat(
+            0x19, 120, 120, false, true, true, 72, 1, 72, 1);
+        assertEquals(1, secondHit.size());
+        assertEquals(EntityStatus.DYING, runtime.snapshot().slots().get(0).status());
+
+        assertFalse(RoomEntityCombatRules.supportsEnemyCollision(0x58));
+        assertEquals(0, RoomEntityCombatRules.basicSwordDamage(0x58));
+    }
+
+    @Test
     void simplePairEnemiesUseTheirRomAnimationCadences() {
         RoomEntitySnapshot initial = snapshot(
             new RoomEntity(0, 0, 0x0F, 24, 32, EntityStatus.ACTIVE, pairDefinition(0x0F, 2), 0),
@@ -1404,6 +1438,80 @@ final class RoomEntityRuntimeTest {
         assertTrue(sword.get(0).swordHit());
         assertEquals(0, runtime.enemyHealth(0));
         assertEquals(EntityStatus.DYING, runtime.snapshot().slots().get(0).status());
+    }
+
+    @Test
+    void pairoddRuntimeConsumesItsRandomDirectionInitializerAndStartsTeleportState() {
+        EntitySpriteDefinition definition = pairDefinition(0x57, 8);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x57, 64, 80, EntityStatus.INIT, definition, 0));
+        AtomicInteger randomCalls = new AtomicInteger();
+        IntSupplier randomBytes = () -> {
+            randomCalls.incrementAndGet();
+            return 0x03;
+        };
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial, false, randomBytes);
+
+        runtime.tick(0, 0x00, 0x00, randomBytes);
+        assertEquals(1, randomCalls.get());
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
+        assertEquals(0, runtime.pairoddState(0));
+
+        runtime.tick(1, 64, 80, randomBytes);
+
+        assertEquals(1, runtime.pairoddState(0));
+        assertEquals(0x20, runtime.pairoddTransitionCountdown(0));
+        assertEquals(3, runtime.pairoddDirection(0));
+    }
+
+    @Test
+    void pairoddSpawnsAReverseSlotProjectileWithRomDefinitionPositionAndVector() {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            0x57, EntityRoomLoader.RoomTable.OVERWORLD, -1);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x57, 64, 80, EntityStatus.ACTIVE, definition, 0, 0, 0, 3));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial, false, () -> 0, catalog);
+
+        // Initialize the active snapshot, enter the teleport, and let the
+        // disassembly's countdown reach the mirrored resting position.
+        runtime.tick(0, 0, 0, () -> 0);
+        runtime.tick(1, 64, 80, () -> 0);
+        int frame = 2;
+        while (runtime.pairoddState(0) == 1) {
+            runtime.tick(frame++, 0, 0, () -> 0);
+        }
+        while (runtime.pairoddState(0) == 2) {
+            runtime.tick(frame++, 0, 0, () -> 0);
+        }
+        assertEquals(0, runtime.pairoddState(0));
+        assertEquals(0x30, runtime.pairoddTransitionCountdown(0));
+        assertEquals(0x60, runtime.snapshot().slots().get(0).x());
+        assertEquals(0x40, runtime.snapshot().slots().get(0).y());
+
+        while (runtime.pairoddTransitionCountdown(0) > 0x19) {
+            runtime.tick(frame++, 0, 0, () -> 0);
+        }
+        runtime.tick(frame, 0x70, 0x58, () -> 0);
+
+        RoomEntity projectile = runtime.snapshot().slots().get(15);
+        assertEquals(EntityStatus.ACTIVE, projectile.status());
+        assertEquals(-1, projectile.sourceLoadOrder());
+        assertEquals(0x58, projectile.type());
+        assertEquals(0x60, projectile.x());
+        assertEquals(0x40, projectile.y());
+        assertEquals(3, projectile.z());
+        assertTrue(projectile.spriteDefinition().supported());
+        assertEquals(0x04, projectile.spriteDefinition().bank());
+        assertEquals(0x5EF4, projectile.spriteDefinition().address());
+        // ApplyVectorTowardsLink includes the source Z in its Y displacement:
+        // dx=$10, dy=$1B, length=$18 -> ($0E, $18).
+        assertEquals(0x0E, runtime.pairoddProjectileSpeedX(15));
+        assertEquals(0x18, runtime.pairoddProjectileSpeedY(15));
+
+        assertEquals(0, runtime.clearEntity(15));
+        assertEquals(0, runtime.pairoddProjectileSpeedX(15));
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(15).status());
     }
 
     @Test
