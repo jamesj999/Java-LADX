@@ -4,6 +4,7 @@ import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -512,6 +513,42 @@ final class RoomEntityRuntimeTest {
 
         assertFalse(RoomEntityCombatRules.supportsEnemyCollision(0x58));
         assertEquals(0, RoomEntityCombatRules.basicSwordDamage(0x58));
+    }
+
+    @Test
+    void romCombatTablesDriveInitialHealthAndContactDamage() throws IOException {
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x09, 64, 64, EntityStatus.ACTIVE,
+                pairDefinition(0x09, 2), 0),
+            new RoomEntity(1, 1, 0x0B, 96, 64, EntityStatus.ACTIVE,
+                pairDefinition(0x0B, 2), 0)),
+            false, null, null, tables);
+
+        assertEquals(1, runtime.enemyHealth(0));
+        assertEquals(2, runtime.enemyHealth(1));
+
+        List<EntityCombatEvent> contact = runtime.resolveCombat(
+            1, 64, 64, false, true, false, 0, 0, 0, 0);
+        assertEquals(1, contact.size());
+        assertEquals(4, contact.get(0).linkDamage());
+    }
+
+    @Test
+    void attackContextUsesRomSwordUpgradeDamageInTheRuntime() throws IOException {
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x0B, 64, 64, EntityStatus.ACTIVE,
+                pairDefinition(0x0B, 2), 0)),
+            false, null, null, tables);
+
+        List<EntityCombatEvent> events = runtime.resolveCombat(
+            0, 120, 120, false, true, true, 72, 1, 72, 1,
+            new EnemyAttackContext(2, false, false, false, false));
+
+        assertEquals(1, events.size());
+        assertEquals(0, runtime.enemyHealth(0));
+        assertEquals(EntityStatus.DYING, runtime.snapshot().slots().get(0).status());
     }
 
     @Test
@@ -2029,6 +2066,16 @@ final class RoomEntityRuntimeTest {
 
     private static byte[] syntheticRom() {
         return new byte[0x100000];
+    }
+
+    private static byte[] loadRom() throws IOException {
+        try (var stream = RoomEntityRuntimeTest.class.getClassLoader()
+            .getResourceAsStream("rom/azle.gbc")) {
+            if (stream == null) {
+                throw new IOException("Missing ROM resource: rom/azle.gbc");
+            }
+            return stream.readAllBytes();
+        }
     }
 
     private static RoomEntitySnapshot snapshot(RoomEntity... entities) {

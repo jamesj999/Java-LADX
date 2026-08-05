@@ -17,6 +17,11 @@ public final class PlayerState {
     public static final int INVENTORY_MAGIC_POWDER = 0x0C;
     public static final int INVENTORY_BOOMERANG = 0x0D;
 
+    // Values written to the ROM's wTunicType ($DC0F).
+    public static final int TUNIC_GREEN = 0x00;
+    public static final int TUNIC_RED = 0x01;
+    public static final int TUNIC_BLUE = 0x02;
+
     public static final int MAX_RUPEES = 999;
     public static final int MAX_HEARTS = 14;
     public static final int HP_PER_HEART = 8;
@@ -44,6 +49,8 @@ public final class PlayerState {
     private int heartPieces;
     private int seashells;
     private int activePowerUp;
+    private int tunicType = TUNIC_GREEN;
+    private boolean runningWithPegasusBoots;
     private int addHealthBuffer;
     private int addRupeeBuffer;
 
@@ -215,6 +222,23 @@ public final class PlayerState {
 
     public int activePowerUp() {
         return activePowerUp;
+    }
+
+    public int tunicType() {
+        return tunicType;
+    }
+
+    public void setTunicType(int value) {
+        tunicType = clamp(value, TUNIC_GREEN, TUNIC_BLUE);
+    }
+
+    /** Mirrors wIsRunningWithPegasusBoots; movement owns when this is set. */
+    public boolean runningWithPegasusBoots() {
+        return runningWithPegasusBoots;
+    }
+
+    public void setRunningWithPegasusBoots(boolean value) {
+        runningWithPegasusBoots = value;
     }
 
     public int itemA() {

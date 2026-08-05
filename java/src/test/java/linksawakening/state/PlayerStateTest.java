@@ -3,6 +3,8 @@ package linksawakening.state;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class PlayerStateTest {
 
@@ -51,6 +53,20 @@ final class PlayerStateTest {
 
         playerState.setSwordLevel(3);
         assertEquals(2, playerState.swordLevel());
+    }
+
+    @Test
+    void attackTunicAndPegasusBootsStateUseRomDefaultsAndValues() {
+        PlayerState playerState = new PlayerState();
+
+        assertEquals(PlayerState.TUNIC_GREEN, playerState.tunicType());
+        assertFalse(playerState.runningWithPegasusBoots());
+
+        playerState.setTunicType(PlayerState.TUNIC_RED);
+        playerState.setRunningWithPegasusBoots(true);
+
+        assertEquals(PlayerState.TUNIC_RED, playerState.tunicType());
+        assertTrue(playerState.runningWithPegasusBoots());
     }
 
     @Test

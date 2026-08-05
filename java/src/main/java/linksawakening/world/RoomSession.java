@@ -28,6 +28,7 @@ public final class RoomSession {
     private final RomRandomByteSource entityRandomByteSource = new RomRandomByteSource();
     private final EntitySpriteHandlerCatalog entitySpriteHandlerCatalog;
     private final FollowingNpcEntitySpawner followingNpcEntitySpawner;
+    private final RomEnemyCombatTables enemyCombatTables;
     private final LinkPositionHistory followingLinkPositionHistory = new LinkPositionHistory();
 
     private ActiveRoom activeRoom;
@@ -71,6 +72,7 @@ public final class RoomSession {
         this.roomLoadListener = roomLoadListener;
         this.entitySpriteHandlerCatalog = new EntitySpriteHandlerCatalog(romData);
         this.followingNpcEntitySpawner = new FollowingNpcEntitySpawner(entitySpriteHandlerCatalog);
+        this.enemyCombatTables = new RomEnemyCombatTables(romData);
     }
 
     public void loadInitialOverworld(int roomId) {
@@ -283,12 +285,28 @@ public final class RoomSession {
                                                        int swordWidth,
                                                        int swordY,
                                                        int swordHeight) {
+        return resolveEntityCombat(frameCounter, linkEntityX, linkEntityY, linkAirborne,
+            linkInteractive, swordCollisionActive, swordX, swordWidth, swordY, swordHeight,
+            EnemyAttackContext.standard());
+    }
+
+    public List<EntityCombatEvent> resolveEntityCombat(int frameCounter,
+                                                       int linkEntityX,
+                                                       int linkEntityY,
+                                                       boolean linkAirborne,
+                                                       boolean linkInteractive,
+                                                       boolean swordCollisionActive,
+                                                       int swordX,
+                                                       int swordWidth,
+                                                       int swordY,
+                                                       int swordHeight,
+                                                       EnemyAttackContext attackContext) {
         if (activeRoom == null || entityRuntime == null) {
             return List.of();
         }
         List<EntityCombatEvent> events = entityRuntime.resolveCombat(
             frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive,
-            swordCollisionActive, swordX, swordWidth, swordY, swordHeight);
+            swordCollisionActive, swordX, swordWidth, swordY, swordHeight, attackContext);
         activeRoom.replaceEntities(entityRuntime.snapshot());
         return events;
     }
@@ -356,7 +374,7 @@ public final class RoomSession {
         activeRoom = ActiveRoom.from(room, entities);
         entityRuntime = entities == null ? null : RoomEntityRuntime.from(
             entities, activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD,
-            entityRandomByteSource, entitySpriteHandlerCatalog);
+            entityRandomByteSource, entitySpriteHandlerCatalog, enemyCombatTables);
         if (entityRuntime != null) {
             entityRuntime.setFollowingNpcState(followingNpcState);
         }
@@ -386,7 +404,7 @@ public final class RoomSession {
         activeRoom.replaceEntities(result.snapshot());
         entityRuntime = RoomEntityRuntime.from(
             result.snapshot(), activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD,
-            entityRandomByteSource, entitySpriteHandlerCatalog);
+            entityRandomByteSource, entitySpriteHandlerCatalog, enemyCombatTables);
         entityRuntime.setFollowingNpcState(followingNpcState);
     }
 

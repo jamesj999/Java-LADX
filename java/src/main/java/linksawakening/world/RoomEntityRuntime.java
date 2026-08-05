@@ -54,6 +54,7 @@ public final class RoomEntityRuntime {
     private final IntSupplier defaultRandomByteSupplier;
     private final RomRandomByteSource fallbackRomRandomByteSource;
     private final EntitySpriteHandlerCatalog spriteHandlers;
+    private final RomEnemyCombatTables enemyCombatTables;
     private FollowingNpcState followingNpcState = FollowingNpcState.none();
     private LinkPositionHistory followingLinkPositionHistory = new LinkPositionHistory();
     private int followingLinkZ;
@@ -97,7 +98,8 @@ public final class RoomEntityRuntime {
 
     private RoomEntityRuntime(RoomEntitySnapshot initial, boolean indoorRoom,
                                IntSupplier defaultRandomByteSupplier,
-                               EntitySpriteHandlerCatalog spriteHandlers) {
+                               EntitySpriteHandlerCatalog spriteHandlers,
+                               RomEnemyCombatTables enemyCombatTables) {
         this.slots = initial.slots().toArray(RoomEntity[]::new);
         this.spriteSelection = initial.spriteSelection();
         this.spriteTiles = initial.spriteTiles();
@@ -106,8 +108,9 @@ public final class RoomEntityRuntime {
         this.fallbackRomRandomByteSource = defaultRandomByteSupplier == null
             ? new RomRandomByteSource() : null;
         this.spriteHandlers = spriteHandlers;
+        this.enemyCombatTables = enemyCombatTables;
         for (RoomEntity entity : slots) {
-            enemyHealth[entity.slot()] = RoomEntityCombatRules.initialHealth(entity.type());
+            enemyHealth[entity.slot()] = initialHealth(entity.type());
             if (isFollowingNpcType(entity.type())) {
                 if (entity.type() == ENTITY_BOW_WOW) {
                     bowWowMotion.initialize(entity.slot());
@@ -126,7 +129,7 @@ public final class RoomEntityRuntime {
         if (initial == null) {
             throw new IllegalArgumentException("Initial entity snapshot cannot be null");
         }
-        return new RoomEntityRuntime(initial, indoorRoom, null, null);
+        return new RoomEntityRuntime(initial, indoorRoom, null, null, null);
     }
 
     public static RoomEntityRuntime from(RoomEntitySnapshot initial, boolean indoorRoom,
@@ -134,7 +137,7 @@ public final class RoomEntityRuntime {
         if (initial == null) {
             throw new IllegalArgumentException("Initial entity snapshot cannot be null");
         }
-        return new RoomEntityRuntime(initial, indoorRoom, randomByteSupplier, null);
+        return new RoomEntityRuntime(initial, indoorRoom, randomByteSupplier, null, null);
     }
 
     public static RoomEntityRuntime from(RoomEntitySnapshot initial, boolean indoorRoom,
@@ -143,7 +146,21 @@ public final class RoomEntityRuntime {
         if (initial == null) {
             throw new IllegalArgumentException("Initial entity snapshot cannot be null");
         }
-        return new RoomEntityRuntime(initial, indoorRoom, randomByteSupplier, spriteHandlers);
+        return new RoomEntityRuntime(initial, indoorRoom, randomByteSupplier, spriteHandlers, null);
+    }
+
+    public static RoomEntityRuntime from(RoomEntitySnapshot initial, boolean indoorRoom,
+                                         IntSupplier randomByteSupplier,
+                                         EntitySpriteHandlerCatalog spriteHandlers,
+                                         RomEnemyCombatTables enemyCombatTables) {
+        if (initial == null) {
+            throw new IllegalArgumentException("Initial entity snapshot cannot be null");
+        }
+        if (enemyCombatTables == null) {
+            throw new IllegalArgumentException("ROM enemy combat tables cannot be null");
+        }
+        return new RoomEntityRuntime(initial, indoorRoom, randomByteSupplier, spriteHandlers,
+            enemyCombatTables);
     }
 
     /** Advances the ROM handlers that have deterministic frame-only variants. */
@@ -561,9 +578,28 @@ public final class RoomEntityRuntime {
                                                  boolean linkInteractive,
                                                  boolean swordCollisionActive,
                                                  int swordX,
+                                                       int swordWidth,
+                                                       int swordY,
+                                                       int swordHeight) {
+        return resolveCombat(frameCounter, linkEntityX, linkEntityY, linkAirborne,
+            linkInteractive, swordCollisionActive, swordX, swordWidth, swordY, swordHeight,
+            EnemyAttackContext.standard());
+    }
+
+    public List<EntityCombatEvent> resolveCombat(int frameCounter,
+                                                 int linkEntityX,
+                                                 int linkEntityY,
+                                                 boolean linkAirborne,
+                                                 boolean linkInteractive,
+                                                 boolean swordCollisionActive,
+                                                 int swordX,
                                                  int swordWidth,
                                                  int swordY,
-                                                 int swordHeight) {
+                                                 int swordHeight,
+                                                 EnemyAttackContext attackContext) {
+        if (attackContext == null) {
+            throw new IllegalArgumentException("Enemy attack context cannot be null");
+        }
         List<EntityCombatEvent> events = new ArrayList<>();
         for (int index = slots.length - 1; index >= 0; index--) {
             RoomEntity entity = slots[index];
@@ -611,7 +647,15 @@ public final class RoomEntityRuntime {
             EntityCombatEvent.SoundChannel soundChannel = EntityCombatEvent.SoundChannel.NONE;
             int soundId = -1;
             if (swordHit) {
-                int swordDamage = RoomEntityCombatRules.basicSwordDamage(entity.type());
+                RomEnemyCombatTables.SwordDamageResult swordResult =
+                    enemyCombatTables == null ? null
+                        : enemyCombatTables.resolveSwordDamage(entity.type(), attackContext);
+                int swordDamage = swordResult == null
+                    ? RoomEntityCombatRules.basicSwordDamage(entity.type())
+                    : swordResult.numericDamage();
+                boolean swordResultApplied = swordResult == null
+                    ? swordDamage > 0
+                    : !swordResult.ignored();
                 if (isRoamingEnemyType(entity.type())) {
                     // EnemyCollidedWithSword applies the default `$30` recoil
                     // before ApplySwordDamagesToEnemy changes health.
@@ -622,14 +666,16 @@ public final class RoomEntityRuntime {
                 // ConfigureEntityRecoil reaches StartIgnoringHitsForEntity
                 // before ApplySwordDamagesToEnemy, including lethal hits.
                 enemyIgnoreHitsCountdown[entity.slot()] = 0x0A;
-                enemyHealth[entity.slot()] = Math.max(0,
-                    enemyHealth[entity.slot()] - swordDamage);
+                if (swordDamage > 0) {
+                    enemyHealth[entity.slot()] = Math.max(0,
+                        enemyHealth[entity.slot()] - swordDamage);
+                }
                 soundChannel = EntityCombatEvent.SoundChannel.JINGLE;
-                soundId = swordDamage > 0 ? 0x03 : 0x09;
-                if (enemyHealth[entity.slot()] == 0) {
+                soundId = swordResultApplied ? 0x03 : 0x09;
+                if (swordDamage > 0 && enemyHealth[entity.slot()] == 0) {
                     dyingCountdown[entity.slot()] = 0x40;
                     slots[entity.slot()] = withStatus(entity, EntityStatus.DYING);
-                } else {
+                } else if (swordDamage > 0) {
                     // jr_003_73B6 and StartIgnoringHitsForEntity: a normal
                     // sword hit flashes for $18 frames and suppresses the
                     // next $0A collision passes.
@@ -650,10 +696,22 @@ public final class RoomEntityRuntime {
             }
             events.add(new EntityCombatEvent(
                 entity.slot(), entity.type(),
-                linkCollision ? RoomEntityCombatRules.contactDamage(entity.type()) : 0,
+                linkCollision ? contactDamage(entity.type()) : 0,
                 swordHit, soundChannel, soundId));
         }
         return List.copyOf(events);
+    }
+
+    private int initialHealth(int type) {
+        return enemyCombatTables == null
+            ? RoomEntityCombatRules.initialHealth(type)
+            : enemyCombatTables.initialHealth(type);
+    }
+
+    private int contactDamage(int type) {
+        return enemyCombatTables == null
+            ? RoomEntityCombatRules.contactDamage(type)
+            : enemyCombatTables.contactDamage(type);
     }
 
     /** Unloads a slot and returns the persistent first-eight load-order bit. */
@@ -748,7 +806,7 @@ public final class RoomEntityRuntime {
             (split.originalX() - 4) & 0xFF, split.originalY(), EntityStatus.ACTIVE,
             gelDefinition, gelVariant, original.entityFlipAttribute(), original.spriteTileOffset(),
             split.originalZ());
-        enemyHealth[slot] = RoomEntityCombatRules.initialHealth(ENTITY_GEL);
+        enemyHealth[slot] = initialHealth(ENTITY_GEL);
         enemyFlashCountdown[slot] = 0;
         enemyIgnoreHitsCountdown[slot] = 0;
         enemyRecoilMotion.clear(slot);
@@ -761,7 +819,7 @@ public final class RoomEntityRuntime {
                 split.originalZ());
             slots[freeSlot] = spawnedGel;
             dyingCountdown[freeSlot] = 0;
-            enemyHealth[freeSlot] = RoomEntityCombatRules.initialHealth(ENTITY_GEL);
+            enemyHealth[freeSlot] = initialHealth(ENTITY_GEL);
             enemyFlashCountdown[freeSlot] = 0;
             // SpawnNewEntity sets the new entity's ignore-hits countdown to 1.
             enemyIgnoreHitsCountdown[freeSlot] = 1;
@@ -794,7 +852,7 @@ public final class RoomEntityRuntime {
             source.x(), source.y(), EntityStatus.ACTIVE, projectileDefinition,
             projectileVariant, 0, 0, source.z());
         slots[freeSlot] = projectile;
-        enemyHealth[freeSlot] = RoomEntityCombatRules.initialHealth(ENTITY_PAIRODD_PROJECTILE);
+        enemyHealth[freeSlot] = initialHealth(ENTITY_PAIRODD_PROJECTILE);
         enemyFlashCountdown[freeSlot] = 0;
         enemyIgnoreHitsCountdown[freeSlot] = 1;
         enemyRecoilMotion.clear(freeSlot);
@@ -826,7 +884,7 @@ public final class RoomEntityRuntime {
             byteValue(source.y() + signedByte(spawn.offsetY())), EntityStatus.ACTIVE,
             projectileDefinition, projectileVariant, 0, 0, source.z());
         slots[freeSlot] = projectile;
-        enemyHealth[freeSlot] = RoomEntityCombatRules.initialHealth(request.projectileType());
+        enemyHealth[freeSlot] = initialHealth(request.projectileType());
         enemyFlashCountdown[freeSlot] = 0;
         enemyIgnoreHitsCountdown[freeSlot] = 1;
         enemyRecoilMotion.clear(freeSlot);
