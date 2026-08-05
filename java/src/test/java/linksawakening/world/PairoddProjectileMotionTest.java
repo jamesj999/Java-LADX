@@ -21,6 +21,15 @@ final class PairoddProjectileMotionTest {
     }
 
     @Test
+    void roomLoadedProjectileKeepsTheRandomDirectionUsedByShieldCollision() {
+        PairoddProjectileMotion motion = new PairoddProjectileMotion();
+
+        motion.initialize(0, () -> 0xFF);
+
+        assertEquals(3, motion.direction(0));
+    }
+
+    @Test
     void projectileUsesBankFourFixedPointMovementAndFrameBitThreeAnimation() {
         PairoddProjectileMotion motion = new PairoddProjectileMotion();
         RoomEntity source = entity(0x40, 0x40);

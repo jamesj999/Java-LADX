@@ -61,6 +61,25 @@ final class PairoddProjectileMotion {
         return speedY[slot] & 0xFF;
     }
 
+    int direction(int slot) {
+        return direction[slot] & 0x03;
+    }
+
+    void setForTest(int slot, int newSpeedX, int newSpeedY, int newDirection) {
+        if ((newSpeedX & ~0xFF) != 0 || (newSpeedY & ~0xFF) != 0) {
+            throw new IllegalArgumentException("Pairodd projectile speeds must be bytes");
+        }
+        if (newDirection < 0 || newDirection > 3) {
+            throw new IllegalArgumentException("Pairodd projectile direction out of range");
+        }
+        speedX[slot] = (byte) newSpeedX;
+        speedY[slot] = (byte) newSpeedY;
+        speedXAccumulator[slot] = 0;
+        speedYAccumulator[slot] = 0;
+        direction[slot] = newDirection;
+        initialized[slot] = true;
+    }
+
     private void reset(int slot) {
         speedX[slot] = 0;
         speedY[slot] = 0;

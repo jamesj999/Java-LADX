@@ -1986,6 +1986,7 @@ final class RoomEntityRuntimeTest {
         // dx=$10, dy=$1B, length=$18 -> ($0E, $18).
         assertEquals(0x0E, runtime.pairoddProjectileSpeedX(15));
         assertEquals(0x18, runtime.pairoddProjectileSpeedY(15));
+        assertEquals(0, runtime.pairoddProjectileDirection(15));
 
         assertEquals(0, runtime.clearEntity(15));
         assertEquals(0, runtime.pairoddProjectileSpeedX(15));

@@ -145,8 +145,9 @@ resource.
   copy, length-`$18` ROM vector (including Z), and bank-$04 fixed-point travel.
   Pairodd's normal hitbox and health-group `$30` values (two health points,
   `$04` contact damage) are wired into shared combat, and variant `$03` renders
-  the handler's two shifted pairs. Projectile Link/shield/object collision,
-  sword-poke VFX, recoil, audio, and broader damage-state/background effects
+  the handler's two shifted pairs. Its projectile Link/shield collision and
+  shared sword-poke VFX are verified below; projectile sword/object
+  intersection, recoil, audio, and broader damage-state/background effects
   remain pending.
 - PeaHat now decodes the bank `$07` pair display list and mirrors its resting,
   takeoff, and flying states, slow-countdown cadence, carry-aware animation,
@@ -271,6 +272,26 @@ Deferred laser details remain the parent’s generic background/contact path,
 the exact bank-$15 `ApplySwordIntersectionWithObjects` edge cases beyond the
 runtime collision callback, and routing of firing noise `$08` through the
 audio boundary.
+
+## Verified ROM Pairodd projectile collision — 2026-08-05
+
+- Pairodd projectile `$58` follows the bank-$04 handler order at
+  `$5EFC-$5F28`: bank-$04 fixed-point movement occurs before the shared
+  bank-$03 projectile collision check, and the active slot is cleared when
+  the collision byte is nonzero.
+- The generic shield path uses the projectile's ROM direction byte (random
+  for room-loaded entities and reset-zero for the direct `SpawnNewEntity`
+  path) against `ReversedDirectionsTable` at bank `$03:$6BD6`. A reverse-facing
+  shield emits jingle `$16`, collision `$FF`, and removes `$58`.
+- A normal contact reports the health-group `$0E` `$08` Link damage with wave
+  `$03`, collision `$FF`, and the same removal behavior. Both outcomes publish
+  the bank-$04 `func_004_6BE1.createSwordPokeVfx` request at post-movement X
+  and visual Y (`Y-Z`), rendering transient VFX `$05` through the existing
+  runtime boundary.
+- Focused collision/runtime tests and the existing entity suite pass. The
+  remaining `$58` gaps are `ApplySwordIntersectionWithObjects`/sword hits,
+  projectile background/object interaction, recoil, and any additional audio
+  side effects.
 
 ## Verified enemy sword-hit response — 2026-08-05
 

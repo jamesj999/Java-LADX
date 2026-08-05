@@ -479,6 +479,20 @@ public final class RoomEntityRuntime {
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_PAIRODD_PROJECTILE) {
                 updated = pairoddProjectileMotion.advance(entity, frame);
+                var collisionEvent = EnemyProjectileCollision.check(updated,
+                    pairoddProjectileMotion.direction(entity.slot()), projectileLinkState);
+                if (collisionEvent.isPresent()) {
+                    EntityProjectileEvent event = collisionEvent.orElseThrow();
+                    projectileEvents.add(event);
+                    if (event.swordPokeVfx()) {
+                        transientVfxRequests.add(new TransientVfxRequest(
+                            TransientVfxType.SWORD_POKE, event.swordPokeX(), event.swordPokeY()));
+                    }
+                    if (event.remove()) {
+                        disableEntityWithoutPersistence(entity.slot());
+                        continue;
+                    }
+                }
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && laserMotion.isParent(entity.slot())) {
@@ -1280,6 +1294,10 @@ public final class RoomEntityRuntime {
         return pairoddProjectileMotion.speedY(slot);
     }
 
+    int pairoddProjectileDirection(int slot) {
+        return pairoddProjectileMotion.direction(slot);
+    }
+
     int enemyProjectileSpeedX(int slot) {
         return enemyProjectileMotion.speedX(slot);
     }
@@ -1310,6 +1328,10 @@ public final class RoomEntityRuntime {
 
     void setLaserParentForTest(int slot, int countdown, int newSpeedX, int newSpeedY) {
         laserMotion.setParentForTest(slot, countdown, newSpeedX, newSpeedY);
+    }
+
+    void setPairoddProjectileForTest(int slot, int newSpeedX, int newSpeedY, int direction) {
+        pairoddProjectileMotion.setForTest(slot, newSpeedX, newSpeedY, direction);
     }
 
     void setLaserBeamForTest(int slot, int newSpeedX, int newSpeedY, int direction) {

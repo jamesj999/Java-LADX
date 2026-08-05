@@ -5,14 +5,15 @@ import java.util.Optional;
 /**
  * Pure implementation of bank $03's CheckLinkCollisionWithProjectile.
  *
- * <p>This class intentionally owns only the shared Octorok-rock and
- * Moblin-arrow path.  Generic enemy hitboxes remain in
+ * <p>This class intentionally owns only the shared projectile paths. Generic
+ * enemy hitboxes remain in
  * {@link RoomEntityCombatRules}; the two projectile types are excluded from
  * that pass in the ROM.</p>
  */
 public final class EnemyProjectileCollision {
     static final int ENTITY_OCTOROK_ROCK = 0x0A;
     static final int ENTITY_MOBLIN_ARROW = 0x0C;
+    static final int ENTITY_PAIRODD_PROJECTILE = 0x58;
     static final int ENTITY_LASER_BEAM = 0x2B;
     static final int LINK_MOTION_NON_INTERACTIVE = 0x02;
     static final int COLLISION_NONE = 0x00;
@@ -42,7 +43,7 @@ public final class EnemyProjectileCollision {
         }
         int type = projectile.type() & 0xFF;
         if (type != ENTITY_OCTOROK_ROCK && type != ENTITY_MOBLIN_ARROW
-            && type != ENTITY_LASER_BEAM) {
+            && type != ENTITY_PAIRODD_PROJECTILE && type != ENTITY_LASER_BEAM) {
             return Optional.empty();
         }
         int direction = type == ENTITY_LASER_BEAM
@@ -69,24 +70,32 @@ public final class EnemyProjectileCollision {
 
         if (link.usingShield()
             && link.direction() == REVERSED_DIRECTIONS[direction]) {
+            boolean pairoddProjectile = type == ENTITY_PAIRODD_PROJECTILE;
+            int swordPokeX = pairoddProjectile ? projectile.x() : 0;
+            int swordPokeY = pairoddProjectile ? projectileVisualY : 0;
             return Optional.of(new EntityProjectileEvent(
                 projectile.slot(), type, EntityProjectileEvent.Kind.SHIELD_BLOCK,
                 COLLISION_PROJECTILE, 0,
                 EntityProjectileEvent.SoundChannel.JINGLE, JINGLE_SHIELD_TING,
-                false, false));
+                pairoddProjectile, pairoddProjectile, swordPokeX, swordPokeY));
         }
 
-        // func_003_6CC0 reaches ApplyLinkCollisionWithEnemy for both
-        // projectile types.  Moblin arrows then jump to UnloadEntityAndReturn;
+        // func_003_6CC0 reaches ApplyLinkCollisionWithEnemy for these generic
+        // projectile types. Moblin arrows then jump to UnloadEntityAndReturn;
         // Octorok rocks retain the $FF collision byte and enter the shared
-        // wall-transition path.
-        boolean remove = type == ENTITY_MOBLIN_ARROW;
-        int collisionValue = remove ? COLLISION_NONE : COLLISION_PROJECTILE;
+        // wall-transition path; Pairodd's bank-$04 handler clears its slot
+        // after consuming the same collision byte.
+        boolean pairoddProjectile = type == ENTITY_PAIRODD_PROJECTILE;
+        boolean remove = type == ENTITY_MOBLIN_ARROW || pairoddProjectile;
+        int collisionValue = pairoddProjectile
+            ? COLLISION_PROJECTILE : (remove ? COLLISION_NONE : COLLISION_PROJECTILE);
+        int swordPokeX = pairoddProjectile ? projectile.x() : 0;
+        int swordPokeY = pairoddProjectile ? projectileVisualY : 0;
         return Optional.of(new EntityProjectileEvent(
             projectile.slot(), type, EntityProjectileEvent.Kind.LINK_DAMAGE,
             collisionValue, LINK_DAMAGE,
             EntityProjectileEvent.SoundChannel.WAVE, WAVE_LINK_HURT,
-            remove, false));
+            remove, pairoddProjectile, swordPokeX, swordPokeY));
     }
 
     private static Optional<EntityProjectileEvent> checkLaserBeam(
