@@ -81,6 +81,28 @@ final class RoomSessionTest {
     }
 
     @Test
+    void forwardsHeldActionButtonsToTheLiveEvasiveStalfosHandler() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x00, 0x0F);
+        RoomEntity initial = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x1E)
+            .findFirst()
+            .orElseThrow();
+
+        session.setEntityActionButtonsHeld(true);
+        session.tickEntities(0, initial.x() + 0x10, initial.y());
+        session.tickEntities(1, initial.x() + 0x10, initial.y());
+        session.setEntityActionButtonsHeld(false);
+        session.tickEntities(2, initial.x() + 0x10, initial.y());
+
+        RoomEntity jumping = session.activeRoom().entities().slots().get(initial.slot());
+        assertEquals(0x1E, jumping.type());
+        assertEquals(1, jumping.z());
+        assertEquals(2, jumping.spriteVariant());
+        assertEquals(0x4E7D, jumping.spriteDefinition().address());
+    }
+
+    @Test
     void waterTektiteMovesThroughDeepWaterInTheLiveRoomSession() {
         RoomSession session = newSession();
         session.loadIndoor(0x00, 0x65);

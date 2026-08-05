@@ -497,6 +497,10 @@ public class Main {
                 && !transitionController.isInputBlocked()
                 && !inventoryController.shouldBlockOverworldInput()
                 && !dialogBlocksGameplay) {
+                roomSession.setEntityActionButtonsHeld(
+                    inputState != null && inputConfig != null
+                        && (inputState.isDown(inputConfig.aKey())
+                            || inputState.isDown(inputConfig.bKey())));
                 var projectileEvents = roomSession.tickEntitiesWithProjectileEvents(
                     frameCounter,
                     link == null ? 0x08 : link.romEntityX(),

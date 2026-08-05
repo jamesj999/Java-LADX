@@ -674,9 +674,10 @@ final class RoomEntityRuntimeTest {
     void romBurningGibdoBecomesAnActiveStalfosAfterItsTimerExpires() throws IOException {
         byte[] rom = romWithSwordResult(0x1F, 0xFE);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, 0x1F, 64, 64, EntityStatus.ACTIVE,
-                pairDefinition(0x1F, 2), 0)), false, null, null, tables);
+                pairDefinition(0x1F, 2), 0)), false, null, catalog, tables);
 
         List<EntityCombatEvent> events = runtime.resolveCombat(
             0, 120, 120, false, true, true, 72, 1, 72, 1);
@@ -688,7 +689,9 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x1E, runtime.snapshot().slots().get(0).type());
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
         assertEquals(0, runtime.transitionCountdown(0));
-        assertEquals(0, runtime.physicsFlags(0));
+        assertEquals(0x82, runtime.physicsFlags(0));
+        assertEquals(0x4E7D,
+            runtime.snapshot().slots().get(0).spriteDefinition().address());
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
     }
 
@@ -1745,6 +1748,61 @@ final class RoomEntityRuntimeTest {
         runtime.tick(2, 120, 120, sequence(0x01));
         assertEquals(63, runtime.snapshot().slots().get(0).x());
         assertEquals(0xF8, runtime.gibdoSpeedX(0));
+    }
+
+    @Test
+    void evasiveStalfosUsesTheRomRandomWalkAndNormalAnimation() {
+        EntitySpriteDefinition definition = pairDefinition(0x1E, 3);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x1E, 64, 64, EntityStatus.INIT, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+
+        runtime.tick(0, 120, 120, sequence(0x01));
+        for (int frame = 1; frame <= 4; frame++) {
+            runtime.tick(frame, 120, 120, sequence(0x01));
+        }
+
+        assertEquals(65, runtime.snapshot().slots().get(0).x());
+        assertEquals(64, runtime.snapshot().slots().get(0).y());
+
+        runtime.tick(8, 120, 120, sequence(0x01));
+        assertEquals(1, runtime.snapshot().slots().get(0).spriteVariant());
+    }
+
+    @Test
+    void evasiveStalfosJumpsAwayFromHeldActionButtonsAndLandsWithRomState() {
+        EntitySpriteDefinition definition = pairDefinition(0x1E, 3);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x1E, 64, 64, EntityStatus.ACTIVE, definition, 0)));
+
+        runtime.setActionButtonsHeld(true);
+        runtime.tick(0, 80, 64, sequence(0x00));
+
+        assertEquals(1, runtime.evasiveInertia(0));
+        assertEquals(0x08, runtime.transitionCountdown(0));
+        assertEquals(0x15, runtime.evasiveSpeedZ(0));
+        assertEquals(0xEE, runtime.evasiveSpeedX(0));
+        assertEquals(0x00, runtime.evasiveSpeedY(0));
+        assertEquals(2, runtime.snapshot().slots().get(0).spriteVariant());
+        assertEquals(64, runtime.snapshot().slots().get(0).x());
+        assertEquals(64, runtime.snapshot().slots().get(0).y());
+
+        runtime.setActionButtonsHeld(false);
+        runtime.tick(1, 80, 64, sequence(0x00));
+        assertEquals(62, runtime.snapshot().slots().get(0).x());
+        assertEquals(1, runtime.snapshot().slots().get(0).z());
+        assertEquals(0x14, runtime.evasiveSpeedZ(0));
+
+        int frame = 2;
+        while (runtime.evasiveInertia(0) != 0 && frame < 100) {
+            runtime.tick(frame++, 80, 64, sequence(0x00));
+        }
+
+        assertEquals(0, runtime.evasiveInertia(0));
+        assertEquals(0, runtime.snapshot().slots().get(0).z());
+        assertEquals(0x08, runtime.evasiveSpeedX(0));
+        assertEquals(0x08, runtime.evasiveSpeedY(0));
+        assertEquals(0x10, runtime.evasivePrivateCountdown1(0));
     }
 
     @Test

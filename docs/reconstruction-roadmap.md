@@ -692,6 +692,23 @@ runtime collision callback.
   remaining entity-specific background behavior remain separate pending
   increments.
 
+## Verified ROM Evasive Stalfos runtime — 2026-08-05
+
+- Stalfos Evasive (`$1E`) now decodes the bank-$15 normal pair at `$4E7D`
+  and its fleeing pair at `$4E8E`; the normal handler mirrors the ROM's
+  `$00/$06/$FA/$FA/$06` random walk, fixed-point movement, animation cadence,
+  held A/B jump window, length-`$12` jump-away vector, airborne Z arc, and
+  `$08/$08/$10` landing writes.
+- The live `RoomSession`/`Main` boundary now carries the held A/B condition
+  into the entity tick. A real indoor room `$00:$0F` regression confirms the
+  loaded Evasive Stalfos enters its airborne state and uses the ROM sprite
+  definition. Gibdo burn expiry now leaves the converted entity with Evasive
+  physics flags and a supported display definition when the ROM catalog is
+  active.
+- Angler's Tunnel cloning and clone-driven fleeing-state entry/side-effect
+  integration, jump/whoosh audio routing, and generic ground-status/water/pit
+  behavior remain explicit follow-up slices.
+
 ## Next entity increments
 
 1. Port remaining simple enemy movement, collision exceptions, lifting, and

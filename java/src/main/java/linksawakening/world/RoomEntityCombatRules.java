@@ -10,6 +10,7 @@ public final class RoomEntityCombatRules {
     private static final int ENTITY_SPARK_COUNTER_CLOCKWISE = 0x16;
     private static final int ENTITY_SPARK_CLOCKWISE = 0x17;
     private static final int ENTITY_STALFOS_AGGRESSIVE = 0x1A;
+    private static final int ENTITY_STALFOS_EVASIVE = 0x1E;
     private static final int ENTITY_ZOL = 0x1B;
     private static final int ENTITY_GEL = 0x1C;
     private static final int ENTITY_HIDING_ZOL = 0x9B;
@@ -67,7 +68,8 @@ public final class RoomEntityCombatRules {
             case ENTITY_KEESE, ENTITY_MOBLIN, ENTITY_TEKTITE, ENTITY_LEEVER,
                 ENTITY_ANTI_FAIRY, ENTITY_SPARK_COUNTER_CLOCKWISE,
                 ENTITY_SPARK_CLOCKWISE,
-                ENTITY_STALFOS_AGGRESSIVE, ENTITY_ZOL, ENTITY_GEL, ENTITY_HIDING_ZOL,
+                ENTITY_STALFOS_AGGRESSIVE, ENTITY_STALFOS_EVASIVE,
+                ENTITY_ZOL, ENTITY_GEL, ENTITY_HIDING_ZOL,
                 ENTITY_GIBDO, ENTITY_PEAHAT,
                 ENTITY_ARMOS_STATUE,
                 ENTITY_GHINI,
@@ -90,7 +92,8 @@ public final class RoomEntityCombatRules {
                 ENTITY_HIDING_ZOL ->
                 OCTOROK_AND_KEESE_CONTACT_DAMAGE;
             case ENTITY_ARMOS_STATUE -> 0x10;
-            case ENTITY_MOBLIN, ENTITY_TEKTITE, ENTITY_LEEVER, ENTITY_STALFOS_AGGRESSIVE ->
+            case ENTITY_MOBLIN, ENTITY_TEKTITE, ENTITY_LEEVER,
+                ENTITY_STALFOS_AGGRESSIVE, ENTITY_STALFOS_EVASIVE ->
                 MOBLIN_CONTACT_DAMAGE;
             case ENTITY_SPARK_COUNTER_CLOCKWISE, ENTITY_SPARK_CLOCKWISE ->
                 OCTOROK_AND_KEESE_CONTACT_DAMAGE;
@@ -109,7 +112,8 @@ public final class RoomEntityCombatRules {
                 OCTOROK_AND_KEESE_INITIAL_HEALTH;
             case ENTITY_ARMOS_STATUE -> 0x04;
             case ENTITY_PAIRODD -> PAIRODD_INITIAL_HEALTH;
-            case ENTITY_MOBLIN, ENTITY_TEKTITE, ENTITY_LEEVER, ENTITY_STALFOS_AGGRESSIVE ->
+            case ENTITY_MOBLIN, ENTITY_TEKTITE, ENTITY_LEEVER,
+                ENTITY_STALFOS_AGGRESSIVE, ENTITY_STALFOS_EVASIVE ->
                 MOBLIN_INITIAL_HEALTH;
             case ENTITY_SPARK_COUNTER_CLOCKWISE, ENTITY_SPARK_CLOCKWISE ->
                 OCTOROK_AND_KEESE_INITIAL_HEALTH;

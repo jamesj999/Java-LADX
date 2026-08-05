@@ -139,6 +139,11 @@ final class EntitySpriteHandlerCatalogTest {
         assertDefinition(stalfos, 0x06, 0x4AA8,
             EntitySpriteDefinition.Shape.PAIR, 3, 0);
 
+        EntitySpriteDefinition evasiveStalfos = catalog.forEntityType(
+            0x1E, EntityRoomLoader.RoomTable.INDOORS_A);
+        assertDefinition(evasiveStalfos, 0x15, 0x4E7D,
+            EntitySpriteDefinition.Shape.PAIR, 3, 0);
+
         EntitySpriteDefinition antiFairy = catalog.forEntityType(
             0x15, EntityRoomLoader.RoomTable.INDOORS_B);
         assertDefinition(antiFairy, 0x06, 0x786E,
@@ -676,6 +681,23 @@ final class EntitySpriteHandlerCatalogTest {
                 {0x2C, 0x01, 0x2E, 0x01},
                 {0x2A, 0x41, 0x2A, 0x61},
                 {0x2A, 0x01, 0x2A, 0x21}
+            });
+    }
+
+    @Test
+    void evasiveStalfosVariantsMatchBothRomDisplayListFamilies() throws Exception {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+
+        assertPairBytes(catalog.forEntityType(0x1E, EntityRoomLoader.RoomTable.INDOORS_A),
+            new int[][] {
+                {0x4A, 0x01, 0x4C, 0x01},
+                {0x4C, 0x21, 0x4A, 0x21},
+                {0x4E, 0x01, 0x4E, 0x21}
+            });
+        assertPairBytes(catalog.forStalfosEvasiveState(1),
+            new int[][] {
+                {0x48, 0x01, 0x48, 0x61},
+                {0x48, 0x41, 0x48, 0x21}
             });
     }
 

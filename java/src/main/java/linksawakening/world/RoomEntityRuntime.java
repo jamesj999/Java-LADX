@@ -84,6 +84,7 @@ public final class RoomEntityRuntime {
     private final WaterTektiteMotion waterTektiteMotion = new WaterTektiteMotion();
     private final StalfosAggressiveMotion stalfosAggressiveMotion =
         new StalfosAggressiveMotion();
+    private final StalfosEvasiveMotion stalfosEvasiveMotion = new StalfosEvasiveMotion();
     private final GibdoMotion gibdoMotion = new GibdoMotion();
     private final PeaHatMotion peaHatMotion = new PeaHatMotion();
     private final ArmosMotion armosMotion = new ArmosMotion();
@@ -113,6 +114,7 @@ public final class RoomEntityRuntime {
     private final List<EntityCombatEvent> pendingEntityEvents = new ArrayList<>();
     private ColorShellWorld colorShellWorld = ColorShellWorld.none();
     private int pendingClearedEntityMask;
+    private boolean actionButtonsHeld;
 
     /** A ROM transient-VFX creation requested by an entity handler this frame. */
     public record TransientVfxRequest(TransientVfxType type, int worldX, int worldY) {
@@ -433,6 +435,9 @@ public final class RoomEntityRuntime {
                 if (entity.type() == ENTITY_STALFOS_AGGRESSIVE) {
                     stalfosAggressiveMotion.initialize(entity.slot(), randomByteSupplier);
                 }
+                if (entity.type() == ENTITY_STALFOS_EVASIVE) {
+                    stalfosEvasiveMotion.initialize(entity.slot());
+                }
                 if (entity.type() == ENTITY_GIBDO) {
                     gibdoMotion.initialize(entity.slot());
                 }
@@ -715,6 +720,34 @@ public final class RoomEntityRuntime {
                     randomByteSupplier, backgroundCollision);
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_STALFOS_EVASIVE) {
+                StalfosEvasiveMotion.Update evasiveUpdate = stalfosEvasiveMotion.advance(
+                    entity, frame, linkEntityX, linkEntityY, actionButtonsHeld,
+                    enemyTransitionCountdown[entity.slot()],
+                    enemyIgnoreHitsCountdown[entity.slot()], randomByteSupplier,
+                    backgroundCollision);
+                updated = evasiveUpdate.entity();
+                enemyTransitionCountdown[entity.slot()] = evasiveUpdate.transitionCountdown();
+                if (evasiveUpdate.swordPokeRequested()) {
+                    pendingEntityEvents.add(new EntityCombatEvent(
+                        entity.slot(), entity.type(), 0, false,
+                        EntityCombatEvent.SoundChannel.JINGLE, 0x07));
+                    transientVfxRequests.add(new TransientVfxRequest(
+                        TransientVfxType.SWORD_POKE, updated.x(),
+                        (updated.y() - updated.z()) & 0xFF));
+                }
+                if (evasiveUpdate.unloadRequested()) {
+                    disableEntityWithoutPersistence(entity.slot());
+                    continue;
+                }
+                if (spriteHandlers != null) {
+                    EntitySpriteDefinition evasiveDefinition =
+                        spriteHandlers.forStalfosEvasiveState(
+                            stalfosEvasiveMotion.privateState1(entity.slot()));
+                    updated = withDefinition(updated, evasiveDefinition, updated.spriteVariant());
+                }
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_GIBDO) {
                 updated = gibdoMotion.advance(entity, randomByteSupplier, backgroundCollision);
             }
@@ -891,6 +924,10 @@ public final class RoomEntityRuntime {
             }
             if (entity.type() == ENTITY_ARMOS_STATUE
                 && !armosMotion.isActive(entity.slot())) {
+                continue;
+            }
+            if (entity.type() == ENTITY_STALFOS_EVASIVE
+                && stalfosEvasiveMotion.isAirborne(entity.slot())) {
                 continue;
             }
             if (entity.type() == ENTITY_LEEVER && !leeverMotion.isChasing(entity.slot())) {
@@ -1085,6 +1122,7 @@ public final class RoomEntityRuntime {
         laserMotion.clear(slot);
         waterTektiteMotion.clear(slot);
         stalfosAggressiveMotion.clear(slot);
+        stalfosEvasiveMotion.clear(slot);
         gibdoMotion.clear(slot);
         peaHatMotion.clear(slot);
         armosMotion.clear(slot);
@@ -1108,6 +1146,10 @@ public final class RoomEntityRuntime {
     void setGroundInteraction(RoomEntityGroundInteraction groundInteraction) {
         this.groundInteraction = groundInteraction == null
             ? (entity, frameCounter) -> entity : groundInteraction;
+    }
+
+    void setActionButtonsHeld(boolean actionButtonsHeld) {
+        this.actionButtonsHeld = actionButtonsHeld;
     }
 
     void setFollowingNpcState(FollowingNpcState state) {
@@ -1162,6 +1204,7 @@ public final class RoomEntityRuntime {
     private static boolean usesSharedRecoil(int type) {
         return type == ENTITY_LEEVER || type == ENTITY_PEAHAT
             || type == ENTITY_WATER_TEKTITE
+            || type == ENTITY_STALFOS_EVASIVE
             || isRoamingEnemyType(type) || usesBank6Recoil(type);
     }
 
@@ -1361,9 +1404,10 @@ public final class RoomEntityRuntime {
             enemyHealth[slot] = initialHealth(ENTITY_STALFOS_EVASIVE);
             enemyFlashCountdown[slot] = 0;
             enemyIgnoreHitsCountdown[slot] = 0;
-            enemyPhysicsFlags[slot] = 0;
+            enemyPhysicsFlags[slot] = initialPhysicsFlags(ENTITY_STALFOS_EVASIVE);
             dyingCountdown[slot] = 0;
             enemyRecoilMotion.clear(slot);
+            stalfosEvasiveMotion.clear(slot);
             return;
         }
 
@@ -1677,6 +1721,30 @@ public final class RoomEntityRuntime {
         return stalfosAggressiveMotion.speedZ(slot);
     }
 
+    int evasivePrivateState1(int slot) {
+        return stalfosEvasiveMotion.privateState1(slot);
+    }
+
+    int evasivePrivateCountdown1(int slot) {
+        return stalfosEvasiveMotion.privateCountdown1(slot);
+    }
+
+    int evasiveInertia(int slot) {
+        return stalfosEvasiveMotion.inertia(slot);
+    }
+
+    int evasiveSpeedX(int slot) {
+        return stalfosEvasiveMotion.speedX(slot);
+    }
+
+    int evasiveSpeedY(int slot) {
+        return stalfosEvasiveMotion.speedY(slot);
+    }
+
+    int evasiveSpeedZ(int slot) {
+        return stalfosEvasiveMotion.speedZ(slot);
+    }
+
     int gibdoState(int slot) {
         return gibdoMotion.state(slot);
     }
@@ -1871,7 +1939,11 @@ public final class RoomEntityRuntime {
     }
 
     private static int initialPhysicsFlags(int type) {
-        return type == ENTITY_ARMOS_STATUE ? ARMOS_INITIAL_PHYSICS_FLAGS : 0;
+        return switch (type) {
+            case ENTITY_ARMOS_STATUE -> ARMOS_INITIAL_PHYSICS_FLAGS;
+            case ENTITY_STALFOS_EVASIVE -> 0x82;
+            default -> 0;
+        };
     }
 
     private void decrementSlowTransitionCountdown(int slot, int frameCounter) {
@@ -1977,6 +2049,7 @@ public final class RoomEntityRuntime {
         laserMotion.clear(slot);
         waterTektiteMotion.clear(slot);
         stalfosAggressiveMotion.clear(slot);
+        stalfosEvasiveMotion.clear(slot);
         gibdoMotion.clear(slot);
         peaHatMotion.clear(slot);
         armosMotion.clear(slot);

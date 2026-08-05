@@ -52,6 +52,7 @@ public final class RoomSession {
     private int followingEntityYOffset;
     private int followingLinkDirection;
     private boolean followingNpcRoomNeedsSync;
+    private boolean actionButtonsHeld;
     private GameplaySoundSink colorShellSoundSink = GameplaySoundSink.none();
     private final ColorShellWorld colorShellWorld = new ColorShellWorld() {
         @Override
@@ -272,6 +273,14 @@ public final class RoomSession {
         return followingNpcState;
     }
 
+    /** Supplies the held J_A|J_B state consumed by input-driven entity handlers. */
+    public void setEntityActionButtonsHeld(boolean actionButtonsHeld) {
+        this.actionButtonsHeld = actionButtonsHeld;
+        if (entityRuntime != null) {
+            entityRuntime.setActionButtonsHeld(actionButtonsHeld);
+        }
+    }
+
     public void setColorShellSoundSink(GameplaySoundSink soundSink) {
         colorShellSoundSink = soundSink == null ? GameplaySoundSink.none() : soundSink;
     }
@@ -339,6 +348,7 @@ public final class RoomSession {
         if (activeRoom == null || entityRuntime == null) {
             return List.of();
         }
+        entityRuntime.setActionButtonsHeld(actionButtonsHeld);
         // rLY is not a meaningful value in the host renderer. Keep the
         // non-emulator policy explicit while preserving the ROM seed update.
         entityRandomByteSource.beginFrame(frameCounter & 0xFF, 0);
@@ -493,6 +503,7 @@ public final class RoomSession {
             entityRuntime.setColorShellWorld(colorShellWorld);
             entityRuntime.setFollowingNpcState(followingNpcState);
             entityRuntime.setGroundInteraction(this::entityGroundInteraction);
+            entityRuntime.setActionButtonsHeld(actionButtonsHeld);
         }
         followingNpcRoomNeedsSync = true;
         synchronizeFollowingNpcEntitiesIfNeeded();
@@ -524,6 +535,7 @@ public final class RoomSession {
         entityRuntime.setColorShellWorld(colorShellWorld);
         entityRuntime.setFollowingNpcState(followingNpcState);
         entityRuntime.setGroundInteraction(this::entityGroundInteraction);
+        entityRuntime.setActionButtonsHeld(actionButtonsHeld);
     }
 
     private void clearTransientRoomState() {

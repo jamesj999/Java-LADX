@@ -27,6 +27,7 @@ public final class EntitySpriteHandlerCatalog {
     private static final int ENTITY_GEL = 0x1C;
     private static final int ENTITY_HIDING_ZOL = 0x9B;
     private static final int ENTITY_STALFOS_AGGRESSIVE = 0x1A;
+    private static final int ENTITY_STALFOS_EVASIVE = 0x1E;
     private static final int ENTITY_GIBDO = 0x1F;
     private static final int ENTITY_PEAHAT = 0xA0;
     private static final int ENTITY_ARMOS_STATUE = 0x0F;
@@ -165,6 +166,9 @@ public final class EntitySpriteHandlerCatalog {
         if (entityType == ENTITY_STALFOS_AGGRESSIVE) {
             return decodePair(entityType, 0x06, 0x4AA8, 3, 0);
         }
+        if (entityType == ENTITY_STALFOS_EVASIVE) {
+            return decodePair(entityType, 0x15, 0x4E7D, 3, 0);
+        }
         if (entityType == ENTITY_GIBDO) {
             return decodePair(entityType, 0x06, mapId == 0x07 ? 0x7E77 : 0x7E6F, 2, 0);
         }
@@ -246,6 +250,16 @@ public final class EntitySpriteHandlerCatalog {
             return decodePair(entityType, 0x18, 0x5EB7, 8, 0);
         }
         return EntitySpriteDefinition.unsupported(entityType);
+    }
+
+    /** Selects the two bank-$15 display-list pairs used by Stalfos Evasive. */
+    public EntitySpriteDefinition forStalfosEvasiveState(int privateState1) {
+        if (privateState1 < 0) {
+            throw new IllegalArgumentException("Stalfos Evasive private state cannot be negative");
+        }
+        return privateState1 == 0
+            ? decodePair(ENTITY_STALFOS_EVASIVE, 0x15, 0x4E7D, 3, 0)
+            : decodePair(ENTITY_STALFOS_EVASIVE, 0x15, 0x4E8E, 2, 0);
     }
 
     /**
