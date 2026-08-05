@@ -1136,7 +1136,9 @@ public final class RoomEntityRuntime {
     private static boolean usesBank6Recoil(int type) {
         return type == ENTITY_KEESE || type == ENTITY_TEKTITE
             || type == ENTITY_ANTI_FAIRY || type == ENTITY_STALFOS_AGGRESSIVE
-            || type == ENTITY_HARDHAT_BEETLE || type == ENTITY_ARMOS_STATUE;
+            || type == ENTITY_HARDHAT_BEETLE || type == ENTITY_ARMOS_STATUE
+            || type == ENTITY_SPARK_COUNTER_CLOCKWISE
+            || type == ENTITY_SPARK_CLOCKWISE;
     }
 
     private static boolean usesSharedRecoil(int type) {

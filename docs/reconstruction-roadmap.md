@@ -105,8 +105,9 @@ resource.
   eight-entry speed/mask tables, `$09` transition countdown, collision-driven
   direction index, and two-frame animation cadence. Their room collision
   probes use the ROM Spark collision-point row; health group `$2C` provides
-  one health point and `$04` contact damage. Recoil and the remaining enemy
-  interaction flags remain pending.
+  one health point and `$04` contact damage. Their shared bank-$06 sword recoil
+  is covered in the verified increment below; no-background interaction,
+  recoil smoke, and the remaining damage-state branches remain pending.
 - Zol/Gel (`$1B/$1C`) now decode the bank `$06` red Zol, green Slime Eye Zol,
   and single-sprite Gel lists, mirror the shared Z-motion and state `0`-`4`
   inch/leap loop, use the ROM normal/small-enemy hitboxes and health-group
@@ -554,6 +555,20 @@ runtime collision callback.
   and Armos-specific background interaction before this handler is complete.
 - Focused Armos activation/combat tests and the complete Java suite pass from a
   clean build.
+
+## Verified ROM Spark recoil — 2026-08-05
+
+- Spark entities `$16` and `$17` now reach the source bank-$06
+  `ApplyRecoilIfNeeded_06` path after a normal sword hit. The existing shared
+  `$30` vector-away calculation, `$0A` ignore-hit countdown, fixed-point
+  accumulators, and pre-movement ordering are reused without duplicating the
+  recoil state machine.
+- Spark remains a non-roaming bank-$06 handler, so the runtime preserves its
+  no-stop-on-background-block recoil policy rather than applying bank-$03's
+  `StopEntityRecoilOnCollision` behavior. `hActiveEntityNoBGCollision`, recoil
+  smoke, and the remaining Spark damage-state work remain separate gaps.
+- The six-type bank-$06 recoil regression and the complete Java suite cover
+  this increment.
 
 ## Next entity increments
 

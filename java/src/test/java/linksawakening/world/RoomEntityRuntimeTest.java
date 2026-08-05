@@ -941,7 +941,7 @@ final class RoomEntityRuntimeTest {
 
     @Test
     void bankSixNormalEnemiesConfigureTheRomSharedSwordRecoil() {
-        int[] types = {0x19, 0x0D, 0x15, 0x1A};
+        int[] types = {0x19, 0x0D, 0x15, 0x1A, 0x16, 0x17};
         for (int type : types) {
             EntitySpriteDefinition definition = pairDefinition(type, 3);
             RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
