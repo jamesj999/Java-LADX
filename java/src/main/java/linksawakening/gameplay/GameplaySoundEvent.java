@@ -15,5 +15,7 @@ public enum GameplaySoundEvent {
     MENU_MOVE,
     MENU_VALIDATE,
     SHIELD_TING,
-    LINK_HURT
+    LINK_HURT,
+    ENEMY_BUMP,
+    ENEMY_HIT
 }

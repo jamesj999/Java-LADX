@@ -23,6 +23,7 @@ import linksawakening.audio.openal.OpenAlPcmSoundOutput;
 import linksawakening.gameplay.DialogTextLoader;
 import linksawakening.gameplay.DialogSoundRouter;
 import linksawakening.gameplay.DialogSoundSink;
+import linksawakening.gameplay.EnemyCombatEventConsumer;
 import linksawakening.gameplay.EnemyProjectileEventConsumer;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.gameplay.GameplaySoundEvent;
@@ -465,11 +466,13 @@ public class Main {
                     ? Sword.CollisionBox.inactive()
                     : sword.enemyCollisionBox(link.romEntityX(), link.romSwordCollisionY(),
                         link.direction());
-                for (EntityCombatEvent event : roomSession.resolveEntityCombat(
+                var combatEvents = roomSession.resolveEntityCombat(
                     frameCounter, link.romEntityX(), link.romEntityY(),
                     link.isAirborne(), true,
                     swordBox.active(), swordBox.x(), swordBox.width(),
-                    swordBox.y(), swordBox.height())) {
+                    swordBox.y(), swordBox.height());
+                EnemyCombatEventConsumer.consume(combatEvents, gameplaySoundSink);
+                for (EntityCombatEvent event : combatEvents) {
                     if (event.linkDamage() > 0 && playerState.invincibilityCounter() == 0) {
                         playerState.damage(event.linkDamage());
                         playerState.setInvincibilityCounter(0x50);
