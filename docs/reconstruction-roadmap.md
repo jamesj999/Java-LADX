@@ -276,6 +276,23 @@ Deferred laser details remain the parent’s generic background/contact path,
 the exact bank-$15 `ApplySwordIntersectionWithObjects` edge cases beyond the
 runtime collision callback.
 
+## Verified ROM Spike Trap audio — 2026-08-05
+
+- Spike Trap `$27` now carries the bank-$06 `$753F-$75C1` sound writes through
+  the live entity-event boundary: a clear launch emits
+  `NOISE_SFX_WHOOSH` `$0A`, while the state-2 forward endpoint or background
+  collision emits `JINGLE_SWORD_POKING` `$07` exactly once.
+- Blocked launches remain silent, matching the source branch that clears the
+  transition countdown and returns before `$759A`. Existing movement,
+  countdown, and state transitions are unchanged.
+- Noise `$0A` resolves to the shipped ROM `NOISE_SFX_WHOOSH` catalog entry;
+  jingle `$07` reuses the existing `SWORD_POKE` mapping. The live
+  `RoomSession`/`Main` consumer therefore reaches the same audio sink without
+  a parallel sound path.
+- Focused Spike Trap/runtime/audio tests cover both launch outcomes and both
+  jingle triggers. Remaining entity audio writes outside the already-covered
+  handlers remain deferred.
+
 ## Verified ROM Pairodd projectile collision — 2026-08-05
 
 - Pairodd projectile `$58` follows the bank-$04 handler order at

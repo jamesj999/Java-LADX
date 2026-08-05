@@ -535,8 +535,14 @@ public final class RoomEntityRuntime {
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_SPIKE_TRAP) {
-                updated = spikeTrapMotion.advance(entity, linkEntityX, linkEntityY,
-                    backgroundCollision);
+                SpikeTrapMotion.Update spikeTrapUpdate = spikeTrapMotion.advance(
+                    entity, linkEntityX, linkEntityY, backgroundCollision);
+                updated = spikeTrapUpdate.entity();
+                if (spikeTrapUpdate.soundChannel() != EntityCombatEvent.SoundChannel.NONE) {
+                    pendingEntityEvents.add(new EntityCombatEvent(
+                        entity.slot(), entity.type(), 0, false,
+                        spikeTrapUpdate.soundChannel(), spikeTrapUpdate.soundId()));
+                }
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_PAIRODD) {

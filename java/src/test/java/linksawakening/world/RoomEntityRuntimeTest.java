@@ -1748,6 +1748,92 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void spikeTrapLaunchPublishesOneRomWhooshNoise() {
+        EntitySpriteDefinition definition = pairDefinition(0x27, 1);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x27, 64, 64, EntityStatus.INIT, definition, 0)));
+
+        runtime.tick(0, 120, 120, sequence(0x00));
+        runtime.tick(1, 80, 64, sequence(0x00));
+        runtime.tick(2, 80, 64, sequence(0x00));
+
+        List<EntityCombatEvent> launchEvents = runtime.consumePendingEntityEvents();
+        assertEquals(1, launchEvents.size());
+        assertEquals(0, launchEvents.get(0).slot());
+        assertEquals(0x27, launchEvents.get(0).type());
+        assertEquals(EntityCombatEvent.SoundChannel.NOISE,
+            launchEvents.get(0).soundChannel());
+        assertEquals(0x0A, launchEvents.get(0).soundId());
+
+        runtime.tick(3, 80, 64, sequence(0x00));
+        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+    }
+
+    @Test
+    void spikeTrapBlockedLaunchDoesNotPublishTheWhooshNoise() {
+        EntitySpriteDefinition definition = pairDefinition(0x27, 1);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x27, 64, 64, EntityStatus.INIT, definition, 0)));
+
+        runtime.tick(0, 120, 120, sequence(0x00));
+        runtime.tick(1, 80, 64, sequence(0x00));
+        RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) -> direction == 0;
+        runtime.tick(2, 80, 64, sequence(0x00), wall);
+
+        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+    }
+
+    @Test
+    void spikeTrapForwardEndpointPublishesOneRomSwordPokeJingle() {
+        EntitySpriteDefinition definition = pairDefinition(0x27, 1);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x27, 64, 64, EntityStatus.INIT, definition, 0)));
+
+        runtime.tick(0, 120, 120, sequence(0x00));
+        runtime.tick(1, 80, 64, sequence(0x00));
+        runtime.tick(2, 80, 64, sequence(0x00));
+        assertEquals(0x0A, runtime.consumePendingEntityEvents().getFirst().soundId());
+
+        for (int frame = 3; frame <= 25; frame++) {
+            runtime.tick(frame, 80, 64, sequence(0x00));
+            assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+        }
+
+        runtime.tick(26, 80, 64, sequence(0x00));
+        List<EntityCombatEvent> endpointEvents = runtime.consumePendingEntityEvents();
+        assertEquals(1, endpointEvents.size());
+        assertEquals(EntityCombatEvent.SoundChannel.JINGLE,
+            endpointEvents.get(0).soundChannel());
+        assertEquals(0x07, endpointEvents.get(0).soundId());
+        assertEquals(3, runtime.spikeTrapState(0));
+
+        runtime.tick(27, 80, 64, sequence(0x00));
+        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+    }
+
+    @Test
+    void spikeTrapForwardBackgroundCollisionPublishesTheSameRomJingle() {
+        EntitySpriteDefinition definition = pairDefinition(0x27, 1);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x27, 64, 64, EntityStatus.INIT, definition, 0)));
+
+        runtime.tick(0, 120, 120, sequence(0x00));
+        runtime.tick(1, 80, 64, sequence(0x00));
+        runtime.tick(2, 80, 64, sequence(0x00));
+        assertEquals(0x0A, runtime.consumePendingEntityEvents().getFirst().soundId());
+
+        RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) -> true;
+        runtime.tick(3, 80, 64, sequence(0x00), wall);
+
+        List<EntityCombatEvent> collisionEvents = runtime.consumePendingEntityEvents();
+        assertEquals(1, collisionEvents.size());
+        assertEquals(EntityCombatEvent.SoundChannel.JINGLE,
+            collisionEvents.get(0).soundChannel());
+        assertEquals(0x07, collisionEvents.get(0).soundId());
+        assertEquals(3, runtime.spikeTrapState(0));
+    }
+
+    @Test
     void spikeTrapFallsBackToTheRomVerticalLaunchTable() {
         EntitySpriteDefinition definition = pairDefinition(0x27, 1);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
