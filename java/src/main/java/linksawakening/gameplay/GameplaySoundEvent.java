@@ -4,6 +4,7 @@ public enum GameplaySoundEvent {
     ROC_FEATHER_JUMP,
     PIT_FALL,
     WATER_SPLASH,
+    ITEM_FALLING,
     SWORD_SWING_A,
     SWORD_SWING_B,
     SWORD_SWING_C,

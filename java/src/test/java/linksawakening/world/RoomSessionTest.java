@@ -1,8 +1,10 @@
 package linksawakening.world;
 
+import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gpu.GPU;
 import linksawakening.physics.OverworldCollision;
+import linksawakening.physics.PhysicsFlags;
 import linksawakening.rom.RomBank;
 import linksawakening.rom.RomTables;
 import linksawakening.vfx.TransientVfxSystem;
@@ -17,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class RoomSessionTest {
@@ -319,6 +322,61 @@ final class RoomSessionTest {
     }
 
     @Test
+    void ordinaryEntityEntersRomFallingStateOnPitPhysics() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x00, 0x0F);
+        RoomEntity initial = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x1E)
+            .findFirst()
+            .orElseThrow();
+        for (RoomEntity entity : session.activeRoom().entities().loadedEntities()) {
+            if (entity.slot() != initial.slot()) {
+                session.clearEntity(entity.slot());
+            }
+        }
+        // Indoors1 uses object $01 for the ordinary pit; $7B is the
+        // overworld table's pit object and is shallow water indoors.
+        fillActiveObjects(session, 0x01);
+        session.setEntityIgnoreHitsCountdownForTest(initial.slot(), 0x02);
+
+        session.tickEntities(0, 0, 0);
+        session.tickEntities(1, 0, 0);
+
+        RoomEntity falling = session.activeRoom().entities().slots().get(initial.slot());
+        assertEquals(EntityStatus.FALLING, falling.status());
+        assertEquals((falling.x() - 1) & 0xF0,
+            session.entityFallingTargetXForTest(initial.slot()) - 0x08 & 0xF0);
+        assertEquals(0x48, session.entityTransitionCountdownForTest(initial.slot()));
+    }
+
+    @Test
+    void pitTransitionKeepsRomFollowerAndPickupExceptions() {
+        OverworldCollision.GroundInteractionSample pit =
+            new OverworldCollision.GroundInteractionSample(
+                0x01, PhysicsFlags.NORMAL_PIT, 0x20, 0x30);
+        for (int type : new int[] {0x6D, 0xD5, 0x36}) {
+            RoomEntity entity = syntheticEntity(type);
+            assertNull(RoomSession.pitTransitionFor(
+                entity, pit, EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE),
+                "type=" + Integer.toHexString(type));
+        }
+
+        RoomEntity marin = syntheticEntity(0xC1);
+        assertNull(RoomSession.pitTransitionFor(
+            marin, pit, RoomSession.LINK_MOTION_FALLING_DOWN),
+            "Marin only falls through a well");
+
+        OverworldCollision.GroundInteractionSample well =
+            new OverworldCollision.GroundInteractionSample(
+                0x61, PhysicsFlags.SOLID, 0x40, 0x50);
+        assertNull(RoomSession.pitTransitionFor(
+            marin, well, EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE));
+        assertEquals(new RoomEntityGroundInteraction.PitTransition(0x48, 0x60),
+            RoomSession.pitTransitionFor(
+                marin, well, RoomSession.LINK_MOTION_FALLING_DOWN));
+    }
+
+    @Test
     void ordinaryEntityEnteringRomDeepWaterUnloadsAndCreatesSplashSideEffects() {
         TransientVfxSystem vfx = new TransientVfxSystem(16);
         RoomSession session = newSession(vfx);
@@ -564,5 +622,10 @@ final class RoomSessionTest {
                     + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + column] = objectId;
             }
         }
+    }
+
+    private static RoomEntity syntheticEntity(int type) {
+        return new RoomEntity(0, 0, type, 0x20, 0x30, EntityStatus.ACTIVE,
+            EntitySpriteDefinition.unsupported(type), -1);
     }
 }

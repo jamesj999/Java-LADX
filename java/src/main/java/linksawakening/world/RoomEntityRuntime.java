@@ -56,8 +56,14 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_ROOSTER = 0xD5;
     private static final int ENTITY_MARIN_AT_THE_SHORE = 0xC1;
     private static final int ENTITY_BOW_WOW = 0x6D;
+    private static final int ENTITY_HEART_CONTAINER = 0x36;
+    private static final int ENTITY_MOBLIN_SWORD = 0x14;
     private static final int ENTITY_LASER = 0x2A;
     private static final int ENTITY_LASER_BEAM = 0x2B;
+    private static final int MAP_COLOR_DUNGEON = 0xFF;
+    private static final int FALLING_JINGLE_ID = 0x18;
+    private static final int[] FALLING_VISUAL_Y_OFFSETS = {0, 0, 4, 0};
+    private static final int[] FALLING_VECTOR_LENGTHS = {0, 1, 3, 6};
 
     private final RoomEntity[] slots;
     private EntitySpriteSelection spriteSelection;
@@ -113,6 +119,13 @@ public final class RoomEntityRuntime {
     private final int[] enemyFlashCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyIgnoreHitsCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] entityGroundStatus = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] fallingTargetX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] fallingTargetY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] fallingSpeedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] fallingSpeedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] fallingSpeedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] fallingSpeedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] fallingVisualYOffset = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] baseEntityFlipAttribute = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] entityOptions1Override = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] enemyProjectileSpawnedThisFrame =
@@ -376,7 +389,10 @@ public final class RoomEntityRuntime {
                 continue;
             }
             RoomEntity originalEntity = entity;
-            decrementEnemyCombatCountdowns(entity.slot());
+            EntityStatus initialStatus = entity.status();
+            boolean wasInitializing = initialStatus == EntityStatus.INIT;
+            boolean ignoreHitsDecrementedBeforeHandler =
+                decrementEnemyCombatCountdowns(entity.slot(), !wasInitializing);
             decrementEnemyStatusCountdowns(entity.slot());
             if (entity.sourceLoadOrder() == -1 && isDisabledFollower(entity.type())) {
                 clearEntity(entity.slot());
@@ -384,8 +400,31 @@ public final class RoomEntityRuntime {
             }
 
             EntityStatus status = entity.status();
-            boolean wasInitializing = status == EntityStatus.INIT;
-            if (status == EntityStatus.DYING) {
+            if (status == EntityStatus.FALLING) {
+                if (entityMapId == MAP_COLOR_DUNGEON
+                    && ColorShellMotion.isColorShellType(entity.type())) {
+                    colorShellMotion.enterState6(entity);
+                    RoomEntity activeShell = refreshColorShellDisplay(
+                        withStatus(entity, EntityStatus.ACTIVE), EntityStatus.ACTIVE);
+                    slots[index] = activeShell;
+                    continue;
+                }
+                RoomEntity falling = advanceFallingEntity(entity);
+                if (falling == null) {
+                    disableEntityWithoutPersistence(entity.slot());
+                    continue;
+                }
+                int renderFlipAttribute = baseEntityFlipAttribute[entity.slot()];
+                if (enemyFlashCountdown[entity.slot()] > 0) {
+                    renderFlipAttribute ^= (enemyFlashCountdown[entity.slot()] << 2) & 0x10;
+                }
+                slots[index] = new RoomEntity(
+                    falling.slot(), falling.sourceLoadOrder(), falling.type(), falling.x(),
+                    falling.y(), EntityStatus.FALLING, falling.spriteDefinition(),
+                    falling.spriteVariant(), renderFlipAttribute, falling.spriteTileOffset(),
+                    falling.z());
+                continue;
+            } else if (status == EntityStatus.DYING) {
                 if (dyingCountdown[entity.slot()] == 0) {
                     disableEntityWithoutPersistence(entity.slot());
                 } else {
@@ -838,6 +877,11 @@ public final class RoomEntityRuntime {
                 updated = Objects.requireNonNull(groundResult.entity(),
                     "Room entity ground interaction returned a null entity");
                 entityGroundStatus[updated.slot()] = groundResult.groundStatus() & 0xFF;
+                if (groundResult.pitTransition() != null
+                    && beginFalling(updated, groundResult.pitTransition(),
+                        ignoreHitsDecrementedBeforeHandler)) {
+                    status = EntityStatus.FALLING;
+                }
                 if (groundResult.waterSplash()) {
                     transientVfxRequests.add(new TransientVfxRequest(
                         TransientVfxType.WATER_SPLASH, updated.x(), updated.y()));
@@ -1138,6 +1182,13 @@ public final class RoomEntityRuntime {
         enemyFlashCountdown[slot] = 0;
         enemyIgnoreHitsCountdown[slot] = 0;
         entityGroundStatus[slot] = 0;
+        fallingTargetX[slot] = 0;
+        fallingTargetY[slot] = 0;
+        fallingSpeedX[slot] = 0;
+        fallingSpeedY[slot] = 0;
+        fallingSpeedXAccumulator[slot] = 0;
+        fallingSpeedYAccumulator[slot] = 0;
+        fallingVisualYOffset[slot] = 0;
         baseEntityFlipAttribute[slot] = 0;
         entityOptions1Override[slot] = -1;
         enemyRecoilMotion.clear(slot);
@@ -2005,6 +2056,46 @@ public final class RoomEntityRuntime {
         return enemyIgnoreHitsCountdown[slot];
     }
 
+    int fallingTargetX(int slot) {
+        if (slot < 0 || slot >= slots.length) {
+            throw new IllegalArgumentException("Entity slot out of range: " + slot);
+        }
+        return fallingTargetX[slot];
+    }
+
+    int fallingTargetY(int slot) {
+        if (slot < 0 || slot >= slots.length) {
+            throw new IllegalArgumentException("Entity slot out of range: " + slot);
+        }
+        return fallingTargetY[slot];
+    }
+
+    int fallingVisualYOffset(int slot) {
+        if (slot < 0 || slot >= slots.length) {
+            throw new IllegalArgumentException("Entity slot out of range: " + slot);
+        }
+        return fallingVisualYOffset[slot];
+    }
+
+    void setEnemyIgnoreHitsCountdownForTest(int slot, int value) {
+        validateCountdownTestValue(slot, value);
+        enemyIgnoreHitsCountdown[slot] = value;
+    }
+
+    void setEnemyFlashCountdownForTest(int slot, int value) {
+        validateCountdownTestValue(slot, value);
+        enemyFlashCountdown[slot] = value;
+    }
+
+    private static void validateCountdownTestValue(int slot, int value) {
+        if (slot < 0 || slot >= EntityRoomLoader.MAX_ENTITIES) {
+            throw new IllegalArgumentException("Entity slot out of range: " + slot);
+        }
+        if (value < 0 || value > 0xFF) {
+            throw new IllegalArgumentException("Countdown must be an unsigned byte: " + value);
+        }
+    }
+
     int options1(int slot) {
         if (slot < 0 || slot >= slots.length) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
@@ -2149,6 +2240,146 @@ public final class RoomEntityRuntime {
             entity.spriteTileOffset(), entity.z());
     }
 
+    private boolean beginFalling(RoomEntity entity,
+                                 RoomEntityGroundInteraction.PitTransition transition,
+                                 boolean ignoreHitsDecrementedBeforeHandler) {
+        int slot = entity.slot();
+        int ignoreHitsCountdown = enemyIgnoreHitsCountdown[slot];
+        if (ignoreHitsDecrementedBeforeHandler) {
+            // The Java runtime keeps a shared combat countdown pass for the
+            // already-ported handlers.  In the ROM, the pit branch reads the
+            // value before that branch's own decrement; reconstruct that
+            // value here so INIT and ACTIVE entities both get one decrement
+            // at the same source-level point.
+            ignoreHitsCountdown = (ignoreHitsCountdown + 1) & 0xFF;
+        }
+        if (ignoreHitsCountdown == 0) {
+            return false;
+        }
+
+        ignoreHitsCountdown--;
+        enemyIgnoreHitsCountdown[slot] = ignoreHitsCountdown;
+        enemyFlashCountdown[slot] = 0;
+        fallingTargetX[slot] = transition.targetX() & 0xFF;
+        fallingTargetY[slot] = transition.targetY() & 0xFF;
+        fallingSpeedX[slot] = 0;
+        fallingSpeedY[slot] = 0;
+        fallingSpeedXAccumulator[slot] = 0;
+        fallingSpeedYAccumulator[slot] = 0;
+        fallingVisualYOffset[slot] = 0;
+
+        boolean longFallingTransition = entity.type() == ENTITY_MOBLIN_SWORD
+            || entity.type() == ENTITY_MOBLIN || entity.type() == ENTITY_OCTOROK;
+        enemyTransitionCountdown[slot] = longFallingTransition ? 0x6F : 0x48;
+        if (!longFallingTransition && ignoreHitsCountdown == 0) {
+            enemyTransitionCountdown[slot] = 0x2F;
+            pendingEntityEvents.add(new EntityCombatEvent(
+                slot, entity.type(), 0, false,
+                EntityCombatEvent.SoundChannel.JINGLE, FALLING_JINGLE_ID));
+        }
+        return true;
+    }
+
+    /** Port of bank-$03 EntityFallHandler's pre-impact falling branch. */
+    private RoomEntity advanceFallingEntity(RoomEntity entity) {
+        int slot = entity.slot();
+        int transition = enemyTransitionCountdown[slot] & 0xFF;
+        if (transition == 0) {
+            return null;
+        }
+
+        if (transition >= 0x40) {
+            // The ROM dispatches the entity's active handler during this
+            // opening interval. Family-specific execution remains deferred
+            // until its handler receives the complete falling context.
+            return entity;
+        }
+
+        int phase = (transition >>> 4) & 0x03;
+        fallingVisualYOffset[slot] = FALLING_VISUAL_Y_OFFSETS[phase];
+        if (transition == 0x3F) {
+            pendingEntityEvents.add(new EntityCombatEvent(
+                slot, entity.type(), 0, false,
+                EntityCombatEvent.SoundChannel.JINGLE, FALLING_JINGLE_ID));
+        }
+
+        FallingVector vector = vectorTowardsTarget(entity.x(), entity.y(), entity.z(),
+            fallingTargetX[slot], fallingTargetY[slot], FALLING_VECTOR_LENGTHS[phase]);
+        fallingSpeedX[slot] = vector.x();
+        fallingSpeedY[slot] = vector.y();
+        int x = addFallingSpeedToPosition(entity.x(), fallingSpeedX[slot],
+            fallingSpeedXAccumulator, slot);
+        int y = addFallingSpeedToPosition(entity.y(), fallingSpeedY[slot],
+            fallingSpeedYAccumulator, slot);
+        return withPositionAndVariant(entity, x, y, phase);
+    }
+
+    private static FallingVector vectorTowardsTarget(int entityX, int entityY, int entityZ,
+                                                      int targetX, int targetY, int length) {
+        int distanceX = signedByte(targetX - entityX);
+        int distanceY = signedByte(targetY - entityY + entityZ);
+        int absoluteX = Math.abs(distanceX);
+        int absoluteY = Math.abs(distanceY);
+        boolean swapped = absoluteX < absoluteY;
+        int smaller = Math.min(absoluteX, absoluteY);
+        int larger = Math.max(absoluteX, absoluteY);
+        int result = romDivide(length, smaller, larger);
+        int x = swapped ? result : length;
+        int y = swapped ? length : result;
+        if (distanceX < 0) {
+            x = -x;
+        }
+        if (distanceY < 0) {
+            y = -y;
+        }
+        return new FallingVector(x & 0xFF, y & 0xFF);
+    }
+
+    private static int romDivide(int length, int smallerDistance, int largerDistance) {
+        if (length == 0) {
+            return 0;
+        }
+        if (largerDistance == 0) {
+            return length;
+        }
+        int result = 0;
+        int remainder = 0;
+        for (int count = 0; count < length; count++) {
+            int sum = remainder + smallerDistance;
+            if (sum >= largerDistance) {
+                sum -= largerDistance;
+                result++;
+            }
+            remainder = sum & 0xFF;
+        }
+        return result;
+    }
+
+    private static int addFallingSpeedToPosition(int position, int speed, int[] accumulator,
+                                                  int slot) {
+        speed &= 0xFF;
+        if (speed == 0) {
+            return position & 0xFF;
+        }
+        int fractionalSum = accumulator[slot] + ((speed << 4) & 0xF0);
+        accumulator[slot] = fractionalSum & 0xFF;
+        int delta = signedByte(speed) >> 4;
+        if (fractionalSum > 0xFF) {
+            delta++;
+        }
+        return (position + delta) & 0xFF;
+    }
+
+    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y,
+                                                       int variant) {
+        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
+            x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(), variant,
+            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z());
+    }
+
+    private record FallingVector(int x, int y) {
+    }
+
     private void disableEntityWithoutPersistence(int slot) {
         slowTransitionCountdown[slot] = 0;
         slowTimerInitialized[slot] = false;
@@ -2160,6 +2391,13 @@ public final class RoomEntityRuntime {
         enemyFlashCountdown[slot] = 0;
         enemyIgnoreHitsCountdown[slot] = 0;
         entityGroundStatus[slot] = 0;
+        fallingTargetX[slot] = 0;
+        fallingTargetY[slot] = 0;
+        fallingSpeedX[slot] = 0;
+        fallingSpeedY[slot] = 0;
+        fallingSpeedXAccumulator[slot] = 0;
+        fallingSpeedYAccumulator[slot] = 0;
+        fallingVisualYOffset[slot] = 0;
         baseEntityFlipAttribute[slot] = 0;
         entityOptions1Override[slot] = -1;
         enemyRecoilMotion.clear(slot);
@@ -2217,13 +2455,16 @@ public final class RoomEntityRuntime {
         return 0;
     }
 
-    private void decrementEnemyCombatCountdowns(int slot) {
+    private boolean decrementEnemyCombatCountdowns(int slot, boolean decrementIgnoreHits) {
         if (enemyFlashCountdown[slot] > 0) {
             enemyFlashCountdown[slot]--;
         }
-        if (!enemyRecoilMotion.isActive(slot) && enemyIgnoreHitsCountdown[slot] > 0) {
+        if (decrementIgnoreHits && !enemyRecoilMotion.isActive(slot)
+            && enemyIgnoreHitsCountdown[slot] > 0) {
             enemyIgnoreHitsCountdown[slot]--;
+            return true;
         }
+        return false;
     }
 
     private void decrementEnemyStatusCountdowns(int slot) {

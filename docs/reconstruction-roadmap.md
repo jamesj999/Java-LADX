@@ -736,6 +736,27 @@ runtime collision callback.
   side-scroll speed-X/speed-Y damping branch remain pending rather than being
   approximated here.
 
+## Verified ROM entity pit falling — 2026-08-05
+
+- The live room ground boundary now recognizes the raw well object `$61` and
+  the ROM pit physics bytes `$50/$51`, then enters entity status `$02` only
+  when the source ignore-hits countdown is nonzero. Falling targets use the
+  sampled padded-room cell's `left + $08` and `top + $10` coordinates.
+- The runtime preserves the source `$6F` countdown for Octorok, Moblin, and
+  Moblin Sword, `$48` for other entities, the `$2F`/jingle `$18` expiry path,
+  flash clearing, phase variants, `[0,0,4,0]` visual-Y state, repeated-remainder
+  vector math, signed fixed-point movement, and unload at countdown zero.
+- The Color Dungeon shell exception returns color shells to active state `$06`
+  rather than running the generic falling handler. BowWow, Rooster, and Heart
+  Containers remain on the ground; Marin only follows Link into a well while
+  Link is in motion state `$06`.
+- Raw jingle `$18` now reaches the gameplay sound map as the ROM item-falling
+  effect. Focused runtime/session/audio tests and the complete Java suite cover
+  the slice with the shipped ROM.
+- The first `$30` falling frames still defer each entity family's active
+  handler and wall-collision rollback, and the renderer has not yet applied the
+  separate phase-$02 visual-Y `+4` correction to its final OAM coordinate.
+
 ## Next entity increments
 
 1. Port remaining simple enemy movement, collision exceptions, lifting, and

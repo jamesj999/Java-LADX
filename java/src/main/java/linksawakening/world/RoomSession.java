@@ -28,6 +28,9 @@ public final class RoomSession {
     private static final int ENTITY_ROOSTER = 0xD5;
     private static final int ENTITY_BOW_WOW = 0x6D;
     private static final int ENTITY_MARIN_AT_THE_SHORE = 0xC1;
+    private static final int ENTITY_HEART_CONTAINER = 0x36;
+    static final int LINK_MOTION_FALLING_DOWN = 0x06;
+    private static final int OBJECT_WELL = 0x61;
     private static final int OBJECT_WATER_LADDER_SIDESCROLL = 0x67;
     private static final int[] ENTITY_CONVEYOR_MOVEMENT_X = {0, 0, -1, 1, 1, -1, 1, -1};
     private static final int[] ENTITY_CONVEYOR_MOVEMENT_Y = {1, -1, 0, 0, 1, 1, -1, -1};
@@ -60,6 +63,7 @@ public final class RoomSession {
     private int followingLinkDirection;
     private boolean followingNpcRoomNeedsSync;
     private boolean actionButtonsHeld;
+    private int currentLinkMotionState = EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE;
     private GameplaySoundSink colorShellSoundSink = GameplaySoundSink.none();
     private final ColorShellWorld colorShellWorld = new ColorShellWorld() {
         @Override
@@ -307,6 +311,20 @@ public final class RoomSession {
         return entityRuntime.groundStatus(slot);
     }
 
+    void setEntityIgnoreHitsCountdownForTest(int slot, int value) {
+        if (entityRuntime != null) {
+            entityRuntime.setEnemyIgnoreHitsCountdownForTest(slot, value);
+        }
+    }
+
+    int entityFallingTargetXForTest(int slot) {
+        return entityRuntime == null ? 0 : entityRuntime.fallingTargetX(slot);
+    }
+
+    int entityTransitionCountdownForTest(int slot) {
+        return entityRuntime == null ? 0 : entityRuntime.transitionCountdown(slot);
+    }
+
     public void tickEntities(int frameCounter) {
         tickEntities(frameCounter, 0, 0);
     }
@@ -359,6 +377,7 @@ public final class RoomSession {
         followingLinkY = linkEntityY & 0xFF;
         followingLinkZ = linkEntityZ & 0xFF;
         followingLinkDirection = linkDirection & 0xFF;
+        currentLinkMotionState = linkMotionState & 0xFF;
         if (activeRoom == null || entityRuntime == null) {
             return List.of();
         }
@@ -682,7 +701,28 @@ public final class RoomSession {
                 entity.y() + ENTITY_CONVEYOR_MOVEMENT_Y[movementIndex]);
         }
 
-        return new RoomEntityGroundInteraction.Result(updated, groundStatus, false, splash);
+        RoomEntityGroundInteraction.PitTransition pit = pitTransitionFor(
+            entity, sample, currentLinkMotionState);
+        return new RoomEntityGroundInteraction.Result(updated, groundStatus, pit, false, splash);
+    }
+
+    static RoomEntityGroundInteraction.PitTransition pitTransitionFor(
+            RoomEntity entity, OverworldCollision.GroundInteractionSample sample,
+            int linkMotionState) {
+        boolean pit = sample.objectId() == OBJECT_WELL
+            || sample.physicsFlag() == PhysicsFlags.NORMAL_PIT
+            || sample.physicsFlag() == PhysicsFlags.PIT_WARP;
+        if (!pit || entity.type() == ENTITY_BOW_WOW || entity.type() == ENTITY_ROOSTER
+            || entity.type() == ENTITY_HEART_CONTAINER) {
+            return null;
+        }
+        if (entity.type() == ENTITY_MARIN_AT_THE_SHORE
+            && (linkMotionState != LINK_MOTION_FALLING_DOWN
+                || sample.objectId() != OBJECT_WELL)) {
+            return null;
+        }
+        return new RoomEntityGroundInteraction.PitTransition(
+            sample.objectLeft() + 0x08, sample.objectTop() + 0x10);
     }
 
     private static int groundStatusFor(OverworldCollision.GroundInteractionSample sample) {

@@ -180,6 +180,16 @@ final class ColorShellMotion {
         this.speedY[slot] = speedY & 0xFF;
     }
 
+    /** Enters the Color Dungeon's state-$06 branch without discarding WRAM position. */
+    void enterState6(RoomEntity entity) {
+        int slot = entity.slot();
+        initialize(slot);
+        positionX[slot] = entity.x();
+        positionY[slot] = entity.y();
+        positionZ[slot] = entity.z();
+        state[slot] = 0x06;
+    }
+
     private void advanceState0(int linkEntityX, int linkEntityY,
                                IntSupplier randomByteSupplier, int slot) {
         if (transitionCountdown[slot] == 0) {

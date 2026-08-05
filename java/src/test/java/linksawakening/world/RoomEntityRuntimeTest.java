@@ -83,6 +83,104 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void pitResultStartsRomFallingStateWithAlignedTargetAndCountdown() {
+        EntitySpriteDefinition definition = pairDefinition(0x4D, 4);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x4D, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+        runtime.setEnemyIgnoreHitsCountdownForTest(0, 0x02);
+        runtime.setEnemyFlashCountdownForTest(0, 0x08);
+        runtime.setGroundInteraction((entity, frame, previousStatus, speedZ, sideScrolling) ->
+            RoomEntityGroundInteraction.Result.pit(entity, 0x01, 0x68, 0x70));
+
+        runtime.tick(0, 0, 0, () -> 0);
+
+        RoomEntity falling = runtime.snapshot().slots().get(0);
+        assertEquals(EntityStatus.FALLING, falling.status());
+        assertEquals(0x48, runtime.transitionCountdown(0));
+        assertEquals(0x01, runtime.enemyIgnoreHitsCountdown(0));
+        assertEquals(0x00, runtime.enemyFlashCountdown(0));
+        assertEquals(0x68, runtime.fallingTargetX(0));
+        assertEquals(0x70, runtime.fallingTargetY(0));
+        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+    }
+
+    @Test
+    void octorokUsesTheRomLongFallingCountdown() {
+        EntitySpriteDefinition definition = pairDefinition(0x09, 8);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x09, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+        runtime.setEnemyIgnoreHitsCountdownForTest(0, 0x02);
+        runtime.setGroundInteraction((entity, frame, previousStatus, speedZ, sideScrolling) ->
+            RoomEntityGroundInteraction.Result.pit(entity, 0x01, 0x68, 0x70));
+
+        runtime.tick(0, 0, 0, () -> 0);
+
+        assertEquals(EntityStatus.FALLING, runtime.snapshot().slots().get(0).status());
+        assertEquals(0x6F, runtime.transitionCountdown(0));
+        assertEquals(0x01, runtime.enemyIgnoreHitsCountdown(0));
+        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+    }
+
+    @Test
+    void colorDungeonShellFallingDispatchReturnsToItsRomStateSix() {
+        EntitySpriteDefinition definition = EntitySpriteDefinition.unsupported(0xE9);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0xE9, 0x40, 0x50, EntityStatus.ACTIVE, definition, -1));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial, true, () -> 0, null);
+        runtime.setEntityMapIdForTest(0xFF);
+        runtime.setEnemyIgnoreHitsCountdownForTest(0, 0x02);
+        runtime.setGroundInteraction((entity, frame, previousStatus, speedZ, sideScrolling) ->
+            RoomEntityGroundInteraction.Result.pit(entity, 0x01, 0x68, 0x70));
+
+        runtime.tick(0, 0, 0, () -> 0);
+        assertEquals(EntityStatus.FALLING, runtime.snapshot().slots().get(0).status());
+
+        runtime.tick(1, 0, 0, () -> 0);
+
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
+        assertEquals(0x06, runtime.colorShellState(0));
+    }
+
+    @Test
+    void fallingHandlerUsesRomVectorPhaseJingleAndUnloadBoundary() {
+        EntitySpriteDefinition definition = pairDefinition(0x4D, 4);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x4D, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+        runtime.setEnemyIgnoreHitsCountdownForTest(0, 0x02);
+        runtime.setGroundInteraction((entity, frame, previousStatus, speedZ, sideScrolling) ->
+            RoomEntityGroundInteraction.Result.pit(entity, 0x01, 0x68, 0x70));
+
+        runtime.tick(0, 0, 0, () -> 0);
+        List<EntityCombatEvent> fallingEvents = new ArrayList<>();
+        for (int frame = 1; frame <= 16; frame++) {
+            runtime.tick(frame, 0, 0, () -> 0);
+            fallingEvents.addAll(runtime.consumePendingEntityEvents());
+        }
+
+        RoomEntity moving = runtime.snapshot().slots().get(0);
+        assertEquals(EntityStatus.FALLING, moving.status());
+        assertEquals(0x43, moving.x());
+        assertEquals(0x52, moving.y());
+        assertEquals(0x03, moving.spriteVariant());
+        assertEquals(0, runtime.fallingVisualYOffset(0));
+        assertEquals(List.of(new EntityCombatEvent(0, 0x4D, 0, false,
+            EntityCombatEvent.SoundChannel.JINGLE, 0x18)),
+            fallingEvents);
+
+        for (int frame = 17; frame <= 25; frame++) {
+            runtime.tick(frame, 0, 0, () -> 0);
+        }
+        assertEquals(4, runtime.fallingVisualYOffset(0));
+        for (int frame = 26; frame <= 72; frame++) {
+            runtime.tick(frame, 0, 0, () -> 0);
+        }
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
+    }
+
+    @Test
     void staggersButterflyWingVariantsByEntitySlot() {
         EntitySpriteDefinition definition = new EntitySpriteDefinition(0x6E, 0x06, 0x6BBD,
             EntitySpriteDefinition.Shape.SINGLE, 0, List.of(
