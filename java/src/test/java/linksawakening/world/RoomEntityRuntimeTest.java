@@ -1575,6 +1575,41 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void peaHatRestoresItsPositionWhenTheRomBackgroundHelperBlocksRightwardMotion() {
+        EntitySpriteDefinition definition = pairDefinition(0xA0, 2);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0xA0, 64, 64, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime blocked = RoomEntityRuntime.from(initial);
+        RoomEntityRuntime unblocked = RoomEntityRuntime.from(initial);
+        IntSupplier blockedRandom = sequence(0x00);
+        IntSupplier unblockedRandom = sequence(0x00);
+
+        for (int frame = 0; frame <= 280; frame++) {
+            blocked.tick(frame, 120, 120, blockedRandom);
+            unblocked.tick(frame, 120, 120, unblockedRandom);
+        }
+        RoomEntity phaseStart = blocked.snapshot().slots().get(0);
+        assertEquals(2, blocked.peaHatState(0));
+        assertEquals(0x07, blocked.peaHatSpeedX(0));
+
+        RoomEntityBackgroundCollision rightWall =
+            (entity, direction, nextX, nextY) -> direction == 0;
+        for (int frame = 281; frame <= 304; frame++) {
+            blocked.tick(frame, 120, 120, blockedRandom, rightWall);
+            unblocked.tick(frame, 120, 120, unblockedRandom);
+        }
+
+        RoomEntity blockedEntity = blocked.snapshot().slots().get(0);
+        RoomEntity unblockedEntity = unblocked.snapshot().slots().get(0);
+        assertEquals(phaseStart.x(), blockedEntity.x());
+        assertTrue(unblockedEntity.x() > blockedEntity.x());
+        assertEquals(unblockedEntity.y(), blockedEntity.y());
+        assertEquals(unblocked.peaHatState(0), blocked.peaHatState(0));
+        assertEquals(unblocked.peaHatSpeedX(0), blocked.peaHatSpeedX(0));
+        assertEquals(unblocked.peaHatSpeedY(0), blocked.peaHatSpeedY(0));
+    }
+
+    @Test
     void stalfosAggressiveUsesTheRomPursuitAndJumpArc() {
         EntitySpriteDefinition definition = pairDefinition(0x1A, 3);
         RoomEntitySnapshot initial = snapshot(

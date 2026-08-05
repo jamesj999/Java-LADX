@@ -21,7 +21,7 @@ ROM-shaped wall query reports a block.
 - Modify: `java/src/test/java/linksawakening/world/RoomEntityRuntimeTest.java`
   beside the existing PeaHat tests.
 
-- [ ] **Step 1: Add the flying-state blocked/control test.** Advance identical
+- [x] **Step 1: Add the flying-state blocked/control test.** Advance identical
   runtimes through frame `280`, where the existing ROM phase-table regression
   confirms PeaHat is flying with positive X speed. Then run frames `281..304`
   with a right-wall callback on one runtime and no callback on the control:
@@ -63,7 +63,7 @@ void peaHatRestoresItsPositionWhenTheRomBackgroundHelperBlocksRightwardMotion() 
 }
 ```
 
-- [ ] **Step 2: Run focused tests and verify RED.** From `java/`, run:
+- [x] **Step 2: Run focused tests and verify RED.** From `java/`, run:
 
 ```bash
 gradle test --tests linksawakening.world.RoomEntityRuntimeTest
@@ -80,7 +80,7 @@ pass.
 - Modify: `java/src/main/java/linksawakening/world/PeaHatMotion.java` after
   its fixed-point X/Y calculation and before the state switch.
 
-- [ ] **Step 1: Query and restore the two axes in source order.** Add:
+- [x] **Step 1: Query and restore the two axes in source order.** Add:
 
 ```java
 if (backgroundCollision != null) {
@@ -109,7 +109,7 @@ private static int directionForY(int speed) {
 
 Do not reverse speeds, reset countdowns, or change PeaHat state on a block.
 
-- [ ] **Step 2: Run focused tests and verify GREEN.** Run:
+- [x] **Step 2: Run focused tests and verify GREEN.** Run:
 
 ```bash
 gradle test --tests linksawakening.world.RoomEntityRuntimeTest
@@ -125,11 +125,11 @@ Expected: the blocked/control regression and all existing runtime tests pass.
   before `## Next entity increments`.
 - Modify: this plan to mark completed steps.
 
-- [ ] **Step 1: Update the PeaHat roadmap status.** State that wall rollback
+- [x] **Step 1: Update the PeaHat roadmap status.** State that wall rollback
   through the shared bank-$07 background path is verified below while generic
   ground/water/pit/conveyor interaction remains pending.
 
-- [ ] **Step 2: Add a dated verification entry.** Insert:
+- [x] **Step 2: Add a dated verification entry.** Insert:
 
 ```markdown
 ## Verified ROM PeaHat wall rollback — 2026-08-05
@@ -143,13 +143,13 @@ Expected: the blocked/control regression and all existing runtime tests pass.
   pending.
 ```
 
-- [ ] **Step 3: Run final verification.** From `java/`, run `gradle clean test`.
+- [x] **Step 3: Run final verification.** From `java/`, run `gradle clean test`.
   From the worktree root, run `git diff --check` and
   `git status --short --branch`. Expected: `BUILD SUCCESSFUL`, no whitespace
   errors, and only the intended source, test, roadmap, and plan files changed
   before commit.
 
-- [ ] **Step 4: Commit the checkpoint.** Mark all plan checkboxes complete and
+- [x] **Step 4: Commit the checkpoint.** Mark all plan checkboxes complete and
   commit:
 
 ```bash

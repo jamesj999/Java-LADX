@@ -158,8 +158,9 @@ resource.
   takeoff, and flying states, slow-countdown cadence, carry-aware animation,
   direct Z ascent/descent, and contiguous ROM phase-speed tables. Its grounded
   health-group `$00` contact/sword path is wired, and its grounded shared
-  bank-$07 recoil is verified below; hitbox-flag and sword-clink plumbing,
-  background interaction, and water behavior remain pending.
+  bank-$07 recoil and wall rollback are verified below; hitbox-flag and
+  sword-clink plumbing, generic ground/water/pit/conveyor interaction, and
+  remaining damage-state behavior remain pending.
 - Aggressive Stalfos now decodes the bank `$06` three-variant display list and
   mirrors its slot-phased Link pursuit, proximity-triggered jump, fixed-point
   four-state Z arc, `$10`/`$20` landing countdowns, and health group `$2A`
@@ -632,6 +633,16 @@ runtime collision callback.
 - Focused PeaHat regressions and the complete Java suite cover this increment.
   Hitbox-flag and sword-clink plumbing, generic background/water behavior,
   recoil smoke, and remaining damage-state branches remain pending.
+
+## Verified ROM PeaHat wall rollback — 2026-08-05
+
+- PeaHat's bank-$07 post-movement path now queries the room background in
+  right/left/up/down order and restores blocked X/Y coordinates without
+  reversing ordinary speed or changing its rest/takeoff/flying state.
+- The flying-state blocked/control regression and the complete Java suite
+  cover this increment. Ground status, water/pit/conveyor effects, collision
+  flags, sword-clink behavior, and remaining damage-state branches remain
+  pending.
 
 ## Next entity increments
 

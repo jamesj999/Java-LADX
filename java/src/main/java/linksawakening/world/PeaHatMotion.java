@@ -61,6 +61,17 @@ final class PeaHatMotion {
         int z = entity.z();
         int variant = entity.spriteVariant();
 
+        if (backgroundCollision != null) {
+            if (x != entity.x() && backgroundCollision.blocks(entity,
+                    directionForX(speedX[slot]), x, y)) {
+                x = entity.x();
+            }
+            if (y != entity.y() && backgroundCollision.blocks(entity,
+                    directionForY(speedY[slot]), x, y)) {
+                y = entity.y();
+            }
+        }
+
         switch (state[slot]) {
             case 0 -> {
                 if (z != 0 && (frame & 0x07) == 0) {
@@ -195,6 +206,14 @@ final class PeaHatMotion {
     private static int signedShiftRight(int value, int amount) {
         int signedValue = (value & 0x80) != 0 ? value - 0x100 : value;
         return (signedValue >> amount) & 0xFF;
+    }
+
+    private static int directionForX(int speed) {
+        return (speed & 0x80) != 0 ? 1 : 0;
+    }
+
+    private static int directionForY(int speed) {
+        return (speed & 0x80) != 0 ? 2 : 3;
     }
 
     private static int addSpeedToPosition(int position, int speed, int[] accumulator,
