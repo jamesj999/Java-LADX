@@ -21,17 +21,17 @@ step semantics; leave `WaterTektiteMotion` unchanged.
 - Modify: `java/src/test/java/linksawakening/world/RoomEntityRuntimeTest.java`
   beside the existing Water Tektite tests.
 
-- [ ] **Step 1: Add the active-hit test.** Use a level-zero
+- [x] **Step 1: Add the active-hit test.** Use a level-zero
   `EnemyAttackContext` and ROM combat tables so the one-health entity remains
   active. Submit a sword hit, assert `$D0/$D0` recoil and `$0A` countdown,
   tick once, then assert `(64,64) -> (61,61)` and `$09`.
 
-- [ ] **Step 2: Add the blocked-step test.** Configure the same hit, provide a
+- [x] **Step 2: Add the blocked-step test.** Configure the same hit, provide a
   background callback that blocks directions left and up, tick once, and
   assert that position remains `(64,64)`, recoil remains active, and the
   countdown is `$09`.
 
-- [ ] **Step 3: Run the focused tests and verify RED.** From `java/`, run:
+- [x] **Step 3: Run the focused tests and verify RED.** From `java/`, run:
 
 ```bash
 gradle test --tests linksawakening.world.RoomEntityRuntimeTest
@@ -48,11 +48,11 @@ other recoil tests continue to pass.
 - Modify: `java/src/main/java/linksawakening/world/RoomEntityRuntime.java`
   in `usesSharedRecoil`.
 
-- [ ] **Step 1: Add the source-backed family admission.** Include
+- [x] **Step 1: Add the source-backed family admission.** Include
   `ENTITY_WATER_TEKTITE` beside the existing bank-$07 shared-recoil entity
   entries. Do not alter `EnemyRecoilMotion` or Water Tektite state movement.
 
-- [ ] **Step 2: Run the focused tests and verify GREEN.** Run the same focused
+- [x] **Step 2: Run the focused tests and verify GREEN.** Run the same focused
   Gradle test command and confirm both new regressions and the full runtime
   class pass.
 
@@ -64,18 +64,18 @@ other recoil tests continue to pass.
   and before `## Next entity increments`.
 - Modify: this plan to mark completed steps.
 
-- [ ] **Step 1: Update the roadmap.** State that shared bank-$07 recoil is
+- [x] **Step 1: Update the roadmap.** State that shared bank-$07 recoil is
   verified while water/pit/conveyor side effects and remaining damage states
   remain pending.
 
-- [ ] **Step 2: Add a dated verification entry.** Record the pre-motion
+- [x] **Step 2: Add a dated verification entry.** Record the pre-motion
   recoil ordering, fixed-point movement, and blocked-step countdown behavior.
 
-- [ ] **Step 3: Run final verification.** From `java/`, run
+- [x] **Step 3: Run final verification.** From `java/`, run
   `gradle clean test`. From the worktree root, run `git diff --check` and
   `git status --short --branch`.
 
-- [ ] **Step 4: Commit the checkpoint.** Commit the intended files with:
+- [x] **Step 4: Commit the checkpoint.** Commit the intended files with:
 
 ```bash
 git add java/src/main/java/linksawakening/world/RoomEntityRuntime.java \

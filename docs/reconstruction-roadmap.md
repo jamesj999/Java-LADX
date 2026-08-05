@@ -140,8 +140,9 @@ resource.
   the three-state `$20` acceleration, signed speed convergence, `$10` restart
   timer, and background-collision reset loop. Its normal enemy hitbox and
   health-group `$00` values (one health, `$04` contact damage) are wired into
-  shared combat. Recoil, water/pit/conveyor side effects, and the remaining
-  damage-state branches remain pending.
+  shared combat, and its bank-$07 shared recoil is verified below. Water/pit/
+  conveyor side effects and the remaining damage-state branches remain
+  pending.
 - Pairodd (`$57`) now decodes bank `$04:$5DD1`'s eight pair variants and
   mirrors the `$20` disappear, `$40` reappear, and `$30` resting countdowns,
   signed `$20` Link proximity windows, exact `($A0-x, $90-y)` teleport, and
@@ -653,6 +654,17 @@ runtime collision callback.
   recoil, jingle `$07`, sword-poke VFX, and a `$10` ignore-hits window.
 - Grounded PeaHat damage/recoil remains unchanged. Ground/water/pit/conveyor
   interaction and other clink-off entity handlers remain pending.
+
+## Verified ROM Water Tektite shared recoil — 2026-08-05
+
+- Water Tektite (`$99`) now enters the bank-$07 shared `$30` recoil path after
+  a sword hit, before its frame selection and three-state movement handler.
+- The runtime applies one fixed-point `$D0/$D0` recoil step, consumes the
+  `$0A` ignore-hits countdown, and preserves active recoil when the room
+  background blocks the left/up step.
+- Focused Water Tektite regressions and the complete Java suite cover this
+  increment. Water/pit/conveyor interaction and remaining damage-state
+  branches remain pending.
 
 ## Next entity increments
 

@@ -2346,6 +2346,58 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void waterTektiteAppliesBankSevenRecoilBeforeItsStateMovement() throws IOException {
+        EntitySpriteDefinition definition = pairDefinition(0x99, 2);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
+        EnemyAttackContext nonDamaging =
+            new EnemyAttackContext(0, false, false, false, false);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x99, 64, 64, EntityStatus.ACTIVE, definition, 0)),
+            false, sequence(0x01), null, tables);
+
+        List<EntityCombatEvent> events = runtime.resolveCombat(
+            0, 120, 120, false, false, true, 72, 1, 72, 1, nonDamaging);
+
+        assertEquals(1, events.size());
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
+        assertEquals(0x0A, runtime.enemyIgnoreHitsCountdown(0));
+        assertTrue(runtime.enemyRecoilActive(0));
+        assertEquals(0xD0, runtime.enemyRecoilSpeedX(0));
+        assertEquals(0xD0, runtime.enemyRecoilSpeedY(0));
+
+        runtime.tick(1, 72, 72, sequence(0x01));
+
+        assertEquals(61, runtime.snapshot().slots().get(0).x());
+        assertEquals(61, runtime.snapshot().slots().get(0).y());
+        assertEquals(0x09, runtime.enemyIgnoreHitsCountdown(0));
+        assertEquals(1, runtime.waterTektiteState(0));
+    }
+
+    @Test
+    void waterTektiteKeepsBankSevenRecoilWhenBackgroundBlocksTheStep() throws IOException {
+        EntitySpriteDefinition definition = pairDefinition(0x99, 2);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
+        EnemyAttackContext nonDamaging =
+            new EnemyAttackContext(0, false, false, false, false);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x99, 64, 64, EntityStatus.ACTIVE, definition, 0)),
+            false, sequence(0x01), null, tables);
+
+        runtime.resolveCombat(0, 120, 120, false, false,
+            true, 72, 1, 72, 1, nonDamaging);
+        RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) ->
+            direction == 1 || direction == 2;
+
+        runtime.tick(1, 72, 72, sequence(0x01), wall);
+
+        assertEquals(64, runtime.snapshot().slots().get(0).x());
+        assertEquals(64, runtime.snapshot().slots().get(0).y());
+        assertTrue(runtime.enemyRecoilActive(0));
+        assertEquals(0x09, runtime.enemyIgnoreHitsCountdown(0));
+        assertEquals(1, runtime.waterTektiteState(0));
+    }
+
+    @Test
     void waterTektiteUsesHealthGroupZeroAndTheNormalEnemyHitbox() {
         EntitySpriteDefinition definition = pairDefinition(0x99, 2);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(

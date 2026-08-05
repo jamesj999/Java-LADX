@@ -1146,6 +1146,7 @@ public final class RoomEntityRuntime {
 
     private static boolean usesSharedRecoil(int type) {
         return type == ENTITY_LEEVER || type == ENTITY_PEAHAT
+            || type == ENTITY_WATER_TEKTITE
             || isRoamingEnemyType(type) || usesBank6Recoil(type);
     }
 
