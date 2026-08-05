@@ -52,13 +52,16 @@ resource.
 - Octorok now uses the bank-$03 roaming-enemy handler: its eight ROM display
   variants, `$30` tile offset, pause/walk countdowns, direction/speed tables,
   fixed-point movement, normal collision point, and one-hit basic-sword death
-  path are covered. The shared rock projectile spawn remains unsupported.
+  path are covered. Its direction-gated rock projectile path is covered in the
+  verified projectile increment below; recoil and the remaining damage states
+  remain pending.
 - Moblin now reads its bank-$03 eight-variant display list and runs through
   the same ordinary roaming-enemy countdown, direction, fixed-point movement,
   and collision path. Its normal hitbox, health-group `$01`/two-health
   sword path, `$04` contact damage, `$18` flash, and `$0A` ignore-hit window
-  are also ROM-backed. Its direction-gated arrow spawn and recoil/damage
-  branches remain pending.
+  are also ROM-backed. Its direction-gated arrow path is covered in the
+  verified projectile increment below; recoil and the remaining damage states
+  remain pending.
 - Armos Statue, Ghini, and Hardhat Beetle now decode their banked pair
   display lists, including the map-$0A Cave B Hardhat table. Their verified
   frame-driven display cadences are wired into the runtime; Armos activation
@@ -192,11 +195,51 @@ resource.
   group.
 
 The complete Java test suite passes after these runtime increments. Remaining
-entity behavior—including roaming-enemy projectiles, the rest of the enemy
-damage matrix, recoil, stun/lift/throw/burning/death handlers, dynamic
-display-list selection beyond the follower path, scripted spawns, and
-history-driven follower handlers—is intentionally still unsupported rather than
-represented by guessed shapes or generic movement.
+entity behavior—including the rest of the enemy damage matrix, recoil,
+stun/lift/throw/burning/death handlers, dynamic display-list selection beyond
+the follower path, scripted spawns, and history-driven follower handlers—is
+intentionally still unsupported rather than represented by guessed shapes or
+generic movement.
+
+## Verified enemy projectile runtime — 2026-08-05
+
+- Octorok rock `$0A` reads its pair display list from bank `$03:$6A1E` (two
+  variants); Moblin arrow `$0C` reads bank `$03:$6BC6` (four variants). The
+  runtime keeps these ROM-decoded OAM bytes as the only projectile art source.
+- The shared roaming handler emits a launch only in state `$01`, with
+  transition countdown exactly `$0A`, private state 1 equal to zero, and the
+  stored direction equal to `GetEntityDirectionToLink_03`. Octorok launches are
+  suppressed during credits; Iron Mask never emits a projectile, and the
+  eligibility check consumes no random byte.
+- `SpawnOctorokRock`/`SpawnMoblinArrow` reverse-scan for the highest disabled
+  slot. The projectile has source load order `-1`, one frame of ignore-hits,
+  copied source Z, and the ROM direction tables. Octorok's direction-2/3
+  offset/speed reads intentionally preserve the adjacent-label table behavior
+  in the source ROM.
+- `ArrowRenderAndMove` and `ArrowRockAfterHittingWall` use the shared fixed
+  point movement path: a background collision starts countdown `$18`, sets Z
+  speed `$10`, bounces Y before X after three arithmetic shifts, and unloads at
+  countdown `$01`. Moblin transition frames select
+  `[0, 3, 1, 2][countdown >> 3 & 3]`; Octorok rocks retain their raw two-entry
+  display list without spin animation.
+- `CheckLinkCollisionWithProjectile` (bank `$03:$6BDE`) is routed through the
+  room session with the ROM byte-wide, half-open X/Y window, visual Y
+  (`entity Y - entity Z`), motion-state and ground-Z gates, and the reversed
+  shield-direction table. An opposite-facing shield produces jingle `$16`
+  without damage; an unshielded hit produces raw wave `$03` and the existing
+  player `$50` invincibility window. Moblin arrows unload on contact, while
+  Octorok rocks enter the normal projectile transition. The main loop now
+  supplies Link's equipped-slot/button shield state and consumes these events.
+- The normal entity renderer consumes both projectile display definitions with
+  the existing pair/OAM path. Tests cover all six variants, palette bytes,
+  8x16 X/Y flips, tile offsets, Z subtraction, transition-selected arrow
+  variants, room scrolling, and a real ROM room (`$2F`) publishing a spawned
+  rock into the live render snapshot with its loaded entity tile sheet.
+- Remaining projectile gaps are deliberate: laser/mirror-shield special
+  handling, sword-poke transient VFX, object-intersection edge cases, recoil,
+  full tunic/power-up damage modifiers and health-buffer timing, and player
+  projectile interactions are not yet complete. The broader engine remains a
+  staged reconstruction, not a complete entity-system claim.
 
 ## Next entity increments
 
