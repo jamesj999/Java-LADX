@@ -20,6 +20,7 @@ public enum GameplaySoundEvent {
     ENEMY_HIT,
     SWORD_POKE,
     ENEMY_BURNING,
+    ENEMY_DESTROYED,
     WRONG_ANSWER,
     DOOR_UNLOCKED
 }

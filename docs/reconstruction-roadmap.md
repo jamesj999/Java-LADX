@@ -375,8 +375,21 @@ audio boundary.
 - Tests cover raw `$FE`, `$FF`, and `$FD` ROM outcomes, primary/secondary sound
   routing, collision suppression during non-active statuses, exact countdown
   boundaries, Gibdo conversion, Color Shell health, and countdown cleanup.
-  Deferred work includes burn-expiry noise `$13`, poof VFX, lifting/thrown
-  physics, and the full bank-$36 Color Shell handler.
+  Deferred work includes death/poof presentation beyond the shared death
+  countdown, lifting/thrown physics, and the full bank-$36 Color Shell handler.
+
+## Verified ROM burn expiry — 2026-08-05
+
+- `EntityBurningHandler` bank `$03:$4C4C-$4CA3` now reaches the Java status
+  boundary with the same non-Gibdo side effects: DYING countdown `$1F`,
+  physics flags `$04`, and `NOISE_SFX_ENEMY_DESTROYED` `$13`.
+- The runtime emits that raw noise as a pending status event, and the live
+  `Main`/`RoomSession` boundary maps it to the explicit gameplay sound
+  `ENEMY_DESTROYED` using the shipped ROM effect. Gibdo `$1F` conversion to
+  Stalfos Evasive `$1E` remains silent, matching the source branch.
+- The source branch does not call `AddTranscientVfx`; poof/death presentation
+  beyond the existing DYING countdown remains intentionally deferred.
+- Focused burn/audio tests and the clean complete Java test suite pass.
 
 ## Verified ROM Color Shell runtime — 2026-08-05
 

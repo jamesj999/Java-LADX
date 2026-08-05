@@ -513,6 +513,8 @@ public class Main {
                     swordBoxForEntityTick.height());
                 EnemyProjectileEventConsumer.consume(projectileEvents, playerState,
                     gameplaySoundSink);
+                EnemyCombatEventConsumer.consume(roomSession.consumeEntityStatusEvents(),
+                    gameplaySoundSink, transientVfxSystem);
                 for (var event : projectileEvents) {
                     if (event.linkIgnoreCollisionCountdown() == 0 || link == null) {
                         continue;

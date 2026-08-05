@@ -40,6 +40,18 @@ final class EnemyCombatEventConsumerTest {
     }
 
     @Test
+    void mapsBurnExpiryNoiseToTheEnemyDestroyedSound() {
+        RecordingSoundSink sounds = new RecordingSoundSink();
+        List<EntityCombatEvent> events = List.of(
+            new EntityCombatEvent(0, 0x09, 0, false, 0, -1,
+                EntityCombatEvent.SoundChannel.NOISE, 0x13));
+
+        EnemyCombatEventConsumer.consume(events, sounds);
+
+        assertEquals(List.of(GameplaySoundEvent.ENEMY_DESTROYED), sounds.events);
+    }
+
+    @Test
     void routesRomSwordPokeSoundAndVfxRequest() {
         RecordingSoundSink sounds = new RecordingSoundSink();
         linksawakening.vfx.TransientVfxSystem vfx =

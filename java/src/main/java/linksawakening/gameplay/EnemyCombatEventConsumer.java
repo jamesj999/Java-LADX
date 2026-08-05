@@ -12,6 +12,8 @@ public final class EnemyCombatEventConsumer {
     private static final int JINGLE_BUMP_ID = 0x09;
     private static final int JINGLE_ENEMY_HIT_ID = 0x03;
     private static final int JINGLE_SWORD_POKE_ID = 0x07;
+    private static final int NOISE_ENEMY_BURNING_ID = 0x12;
+    private static final int NOISE_ENEMY_DESTROYED_ID = 0x13;
 
     private EnemyCombatEventConsumer() {
     }
@@ -53,8 +55,15 @@ public final class EnemyCombatEventConsumer {
                     // to an unrelated gameplay effect.
                 }
             }
-        } else if (channel == EntityCombatEvent.SoundChannel.NOISE && id == 0x12) {
-            soundSink.play(GameplaySoundEvent.ENEMY_BURNING);
+        } else if (channel == EntityCombatEvent.SoundChannel.NOISE) {
+            switch (id) {
+                case NOISE_ENEMY_BURNING_ID -> soundSink.play(GameplaySoundEvent.ENEMY_BURNING);
+                case NOISE_ENEMY_DESTROYED_ID -> soundSink.play(GameplaySoundEvent.ENEMY_DESTROYED);
+                default -> {
+                    // Unknown ROM sound writes must not be guessed or routed
+                    // to an unrelated gameplay effect.
+                }
+            }
         }
     }
 }

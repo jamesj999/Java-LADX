@@ -96,6 +96,7 @@ public final class RoomEntityRuntime {
     private final int[] enemyTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyStunnedCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] dyingCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] enemyPhysicsFlags = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyHealth = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyFlashCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyIgnoreHitsCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -107,6 +108,7 @@ public final class RoomEntityRuntime {
     private final List<RoamingEnemyMotion.LaunchRequest> projectileLaunchRequests =
         new ArrayList<>();
     private final List<TransientVfxRequest> transientVfxRequests = new ArrayList<>();
+    private final List<EntityCombatEvent> pendingStatusEvents = new ArrayList<>();
     private ColorShellWorld colorShellWorld = ColorShellWorld.none();
     private int pendingClearedEntityMask;
 
@@ -306,6 +308,7 @@ public final class RoomEntityRuntime {
         Arrays.fill(enemyProjectileSpawnedThisFrame, false);
         Arrays.fill(dynamicEntitySpawnedThisFrame, false);
         transientVfxRequests.clear();
+        pendingStatusEvents.clear();
         List<EntityProjectileEvent> projectileEvents = new ArrayList<>();
         if (linkPositionHistory != null) {
             followingLinkPositionHistory = linkPositionHistory;
@@ -978,6 +981,7 @@ public final class RoomEntityRuntime {
         enemyTransitionCountdown[slot] = 0;
         enemyStunnedCountdown[slot] = 0;
         dyingCountdown[slot] = 0;
+        enemyPhysicsFlags[slot] = 0;
         enemyHealth[slot] = 0;
         enemyFlashCountdown[slot] = 0;
         enemyIgnoreHitsCountdown[slot] = 0;
@@ -1034,6 +1038,12 @@ public final class RoomEntityRuntime {
     int consumePendingClearedEntityMask() {
         int pending = pendingClearedEntityMask;
         pendingClearedEntityMask = 0;
+        return pending;
+    }
+
+    List<EntityCombatEvent> consumePendingStatusEvents() {
+        List<EntityCombatEvent> pending = List.copyOf(pendingStatusEvents);
+        pendingStatusEvents.clear();
         return pending;
     }
 
@@ -1259,13 +1269,18 @@ public final class RoomEntityRuntime {
             enemyHealth[slot] = initialHealth(ENTITY_STALFOS_EVASIVE);
             enemyFlashCountdown[slot] = 0;
             enemyIgnoreHitsCountdown[slot] = 0;
+            enemyPhysicsFlags[slot] = 0;
             dyingCountdown[slot] = 0;
             enemyRecoilMotion.clear(slot);
             return;
         }
 
+        enemyPhysicsFlags[slot] = 0x04;
         dyingCountdown[slot] = 0x1F;
         slots[slot] = withStatus(entity, EntityStatus.DYING);
+        pendingStatusEvents.add(new EntityCombatEvent(
+            slot, entity.type(), 0, false,
+            EntityCombatEvent.SoundChannel.NOISE, 0x13));
     }
 
     int slowTransitionCountdown(int slot) {
@@ -1397,6 +1412,13 @@ public final class RoomEntityRuntime {
 
     List<TransientVfxRequest> transientVfxRequests() {
         return List.copyOf(transientVfxRequests);
+    }
+
+    int physicsFlags(int slot) {
+        if (slot < 0 || slot >= slots.length) {
+            throw new IllegalArgumentException("Entity slot out of range: " + slot);
+        }
+        return enemyPhysicsFlags[slot];
     }
 
     int tektiteSpeedZ(int slot) {
@@ -1835,6 +1857,7 @@ public final class RoomEntityRuntime {
         enemyTransitionCountdown[slot] = 0;
         enemyStunnedCountdown[slot] = 0;
         dyingCountdown[slot] = 0;
+        enemyPhysicsFlags[slot] = 0;
         enemyHealth[slot] = 0;
         enemyFlashCountdown[slot] = 0;
         enemyIgnoreHitsCountdown[slot] = 0;

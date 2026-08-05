@@ -609,6 +609,12 @@ final class RoomEntityRuntimeTest {
         }
         assertEquals(EntityStatus.DYING, runtime.snapshot().slots().get(0).status());
         assertEquals(0x1F, runtime.dyingCountdown(0));
+        assertEquals(0x04, runtime.physicsFlags(0));
+        List<EntityCombatEvent> expiryEvents = runtime.consumePendingStatusEvents();
+        assertEquals(1, expiryEvents.size());
+        assertEquals(EntityCombatEvent.SoundChannel.NOISE,
+            expiryEvents.getFirst().soundChannel());
+        assertEquals(0x13, expiryEvents.getFirst().soundId());
     }
 
     @Test
@@ -660,6 +666,8 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x1E, runtime.snapshot().slots().get(0).type());
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
         assertEquals(0, runtime.transitionCountdown(0));
+        assertEquals(0, runtime.physicsFlags(0));
+        assertTrue(runtime.consumePendingStatusEvents().isEmpty());
     }
 
     @Test
