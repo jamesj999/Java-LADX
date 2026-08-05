@@ -768,6 +768,19 @@ runtime collision callback.
 3. Port scripted spawns, followers, room events, drops, and boss/multi-entity
    state machines from the corresponding banked handlers.
 
+## Verified ROM entity collision-point selection — 2026-08-05
+
+- The shared room collision probe now loads `HitboxFlagsForEntity` from bank
+  `$03:$40FB` and selects the source's normal, small, big, or Spark collision
+  row from the low two bits of the entity hitbox flags.
+- `EntityCollisionPointsX/Y` are loaded from bank `$03:$785F/$786F` as signed
+  ROM offsets, and the live callback uses the source `posX - $08` and
+  `posY - $10` sample math in right/left/up/down order. Existing handler-local
+  movement and rollback behavior remains unchanged.
+- ROM-table and all-four-box probe tests pass alongside the live room suites.
+  Directional collision flags, collided-object reporting, and the larger shared
+  post-handler rollback state machine remain separate follow-up work.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

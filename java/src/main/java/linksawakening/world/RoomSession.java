@@ -49,6 +49,7 @@ public final class RoomSession {
     private final FollowingNpcEntitySpawner followingNpcEntitySpawner;
     private final RomEnemyCombatTables enemyCombatTables;
     private final RomTables romTables;
+    private final EntityCollisionPointProbe entityCollisionPointProbe;
     private final LinkPositionHistory followingLinkPositionHistory = new LinkPositionHistory();
 
     private ActiveRoom activeRoom;
@@ -130,6 +131,7 @@ public final class RoomSession {
         this.followingNpcEntitySpawner = new FollowingNpcEntitySpawner(entitySpriteHandlerCatalog);
         this.enemyCombatTables = new RomEnemyCombatTables(romData);
         this.romTables = RomTables.loadFromRom(romData);
+        this.entityCollisionPointProbe = new EntityCollisionPointProbe(romTables);
     }
 
     public void loadInitialOverworld(int roomId) {
@@ -623,23 +625,16 @@ public final class RoomSession {
     }
 
     /**
-     * Mirrors the ordinary entity collision point used by bank $03's
-     * ApplyEntityCollisionWithObject for normal collision boxes. The shared
-     * room physics query supplies the active overworld/indoor table.
+     * Mirrors the entity collision point selected by bank $03's
+     * ApplyEntityCollisionWithObject. The shared room physics query supplies
+     * the active overworld/indoor table.
      */
     private boolean entityBackgroundCollision(RoomEntity entity, int direction,
                                               int nextX, int nextY) {
-        boolean spark = entity.type() == 0x16 || entity.type() == 0x17;
-        int pointX = switch (direction) {
-            case 0 -> spark ? nextX + 8 : nextX + 5;
-            case 1 -> spark ? nextX - 9 : nextX - 6;
-            default -> nextX;     // vertical movement: x - 8 + 8
-        };
-        int pointY = switch (direction) {
-            case 2 -> spark ? nextY - 17 : nextY - 14;
-            case 3 -> spark ? nextY : nextY - 3;
-            default -> nextY - 8; // horizontal movement: y - 16 + 8
-        };
+        EntityCollisionPointProbe.Sample sample = entityCollisionPointProbe.sample(
+            entity, direction, nextX, nextY);
+        int pointX = sample.x();
+        int pointY = sample.y();
         if (entity.type() == ENTITY_WATER_TEKTITE) {
             int physicsFlag = overworldCollision.objectPhysicsFlagAtPoint(pointX, pointY);
             if (physicsFlag == PhysicsFlags.SHALLOW_WATER

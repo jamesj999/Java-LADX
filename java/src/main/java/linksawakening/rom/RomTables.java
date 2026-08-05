@@ -26,6 +26,20 @@ public final class RomTables {
     private static final int ENTITY_OPTIONS_ADDR = 0x42F1;
     private static final int ENTITY_OPTIONS_TABLE_SIZE = 0x100;
 
+    // HitboxFlagsForEntity in bank $03. The table contains entries $00..$FA;
+    // the following health-group table begins at $41F6.
+    private static final int ENTITY_HITBOX_FLAGS_BANK = 0x03;
+    private static final int ENTITY_HITBOX_FLAGS_ADDR = 0x40FB;
+    private static final int ENTITY_HITBOX_FLAGS_TABLE_SIZE = 0xFB;
+
+    // Shared entity wall-collision probe tables in bank $03. Each table has
+    // four signed offsets for each of the four collision-box types, in ROM
+    // direction order: right, left, up, down.
+    private static final int ENTITY_COLLISION_POINTS_BANK = 0x03;
+    private static final int ENTITY_COLLISION_POINTS_X_ADDR = 0x785F;
+    private static final int ENTITY_COLLISION_POINTS_Y_ADDR = 0x786F;
+    private static final int ENTITY_COLLISION_POINTS_TABLE_SIZE = 0x10;
+
     private static final int LINK_SPEED_TABLE_BANK = 0x02;
     private static final int LINK_SPEED_TABLE_X_ADDR = 0x48C5;
     private static final int LINK_SPEED_TABLE_Y_ADDR = 0x48E5;
@@ -67,6 +81,9 @@ public final class RomTables {
 
     private final int[][] physicsFlags;
     private final int[] entityOptions1;
+    private final int[] entityHitboxFlags;
+    private final byte[] entityCollisionPointsX;
+    private final byte[] entityCollisionPointsY;
     private final byte[] linkSpeedX;
     private final byte[] linkSpeedY;
     private final int[] swordAnimState;
@@ -84,6 +101,8 @@ public final class RomTables {
     private final byte[] staticSwordCollisionY;
 
     private RomTables(int[][] physicsFlags, int[] entityOptions1,
+                      int[] entityHitboxFlags, byte[] entityCollisionPointsX,
+                      byte[] entityCollisionPointsY,
                       byte[] linkSpeedX, byte[] linkSpeedY,
                       int[] swordAnimState, int[] swordDirection,
                       byte[] swordXOffset, byte[] swordYOffset, byte[] swordYBase,
@@ -93,6 +112,9 @@ public final class RomTables {
                       byte[] staticSwordCollisionX, byte[] staticSwordCollisionY) {
         this.physicsFlags = physicsFlags;
         this.entityOptions1 = entityOptions1;
+        this.entityHitboxFlags = entityHitboxFlags;
+        this.entityCollisionPointsX = entityCollisionPointsX;
+        this.entityCollisionPointsY = entityCollisionPointsY;
         this.linkSpeedX = linkSpeedX;
         this.linkSpeedY = linkSpeedY;
         this.swordAnimState = swordAnimState;
@@ -121,6 +143,15 @@ public final class RomTables {
 
         int[] options1 = loadUnsignedTable(
             romData, ENTITY_OPTIONS_BANK, ENTITY_OPTIONS_ADDR, ENTITY_OPTIONS_TABLE_SIZE);
+        int[] hitboxFlags = loadUnsignedTable(
+            romData, ENTITY_HITBOX_FLAGS_BANK, ENTITY_HITBOX_FLAGS_ADDR,
+            ENTITY_HITBOX_FLAGS_TABLE_SIZE);
+        byte[] collisionPointsX = loadSignedTable(
+            romData, ENTITY_COLLISION_POINTS_BANK, ENTITY_COLLISION_POINTS_X_ADDR,
+            ENTITY_COLLISION_POINTS_TABLE_SIZE);
+        byte[] collisionPointsY = loadSignedTable(
+            romData, ENTITY_COLLISION_POINTS_BANK, ENTITY_COLLISION_POINTS_Y_ADDR,
+            ENTITY_COLLISION_POINTS_TABLE_SIZE);
 
         byte[] speedX = new byte[LINK_SPEED_TABLE_LENGTH];
         byte[] speedY = new byte[LINK_SPEED_TABLE_LENGTH];
@@ -149,7 +180,8 @@ public final class RomTables {
         byte[] staticSwordCollisionY = loadSignedTable(
             romData, STATIC_SWORD_COLLISION_TABLE_BANK, STATIC_SWORD_COLLISION_Y_ADDR, STATIC_SWORD_COLLISION_TABLE_LEN);
 
-        return new RomTables(flags, options1, speedX, speedY, swordAnim, swordDir,
+        return new RomTables(flags, options1, hitboxFlags, collisionPointsX,
+                             collisionPointsY, speedX, speedY, swordAnim, swordDir,
                              swordX, swordY, swordYBaseBytes,
                              swordCollisionNeeded, swordCollisionWidth,
                              swordCollisionOffset, swordCollisionHeight,
@@ -199,6 +231,39 @@ public final class RomTables {
             return 0;
         }
         return entityOptions1[entityType];
+    }
+
+    /** ROM {@code HitboxFlagsForEntity[entityType]}. */
+    public int entityHitboxFlags(int entityType) {
+        if (entityType < 0 || entityType >= entityHitboxFlags.length) {
+            return 0;
+        }
+        return entityHitboxFlags[entityType];
+    }
+
+    /** The low two bits used by ApplyEntityInteractionWithBackground. */
+    public int entityCollisionBoxType(int entityType) {
+        return entityHitboxFlags(entityType) & 0x03;
+    }
+
+    /** Signed X offset from EntityCollisionPointsX[box][direction]. */
+    public int entityCollisionPointX(int collisionBoxType, int direction) {
+        int index = collisionPointIndex(collisionBoxType, direction);
+        return entityCollisionPointsX[index];
+    }
+
+    /** Signed Y offset from EntityCollisionPointsY[box][direction]. */
+    public int entityCollisionPointY(int collisionBoxType, int direction) {
+        int index = collisionPointIndex(collisionBoxType, direction);
+        return entityCollisionPointsY[index];
+    }
+
+    private static int collisionPointIndex(int collisionBoxType, int direction) {
+        if (collisionBoxType < 0 || collisionBoxType >= 4
+            || direction < 0 || direction >= 4) {
+            return 0;
+        }
+        return collisionBoxType * 4 + direction;
     }
 
     /** Back-compat shim: overworld physics flag for an object id. */
