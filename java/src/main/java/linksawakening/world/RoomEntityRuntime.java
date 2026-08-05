@@ -700,6 +700,7 @@ public final class RoomEntityRuntime {
                     enemyStunnedCountdown[entity.slot()] = 0;
                     enemyFlashCountdown[entity.slot()] = 0;
                     enemyIgnoreHitsCountdown[entity.slot()] = 0x0A;
+                    enemyRecoilMotion.clear(entity.slot());
                     slots[entity.slot()] = withStatus(entity, EntityStatus.BURNING);
                     secondarySoundChannel = EntityCombatEvent.SoundChannel.NOISE;
                     secondarySoundId = 0x12;
@@ -712,6 +713,7 @@ public final class RoomEntityRuntime {
                     enemyStunnedCountdown[entity.slot()] = 0xFF;
                     enemyFlashCountdown[entity.slot()] = 0;
                     enemyIgnoreHitsCountdown[entity.slot()] = 0x0A;
+                    enemyRecoilMotion.clear(entity.slot());
                     slots[entity.slot()] = withStatus(entity, EntityStatus.STUNNED);
                 } else if (swordDamage > 0 && enemyHealth[entity.slot()] == 0) {
                     dyingCountdown[entity.slot()] = 0x40;

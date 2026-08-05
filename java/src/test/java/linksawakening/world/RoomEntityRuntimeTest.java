@@ -622,6 +622,54 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void unknownRomSpecialDamageRemainsEventDataWithoutChangingHealthOrStatus()
+        throws IOException {
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(romWithSwordResult(0x09, 0xFD));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x09, 64, 64, EntityStatus.ACTIVE,
+                pairDefinition(0x09, 2), 0)), false, null, null, tables);
+
+        List<EntityCombatEvent> events = runtime.resolveCombat(
+            0, 120, 120, false, true, true, 72, 1, 72, 1);
+
+        assertEquals(1, events.size());
+        assertEquals(0xFD, events.get(0).enemySpecialAction());
+        assertEquals(0, events.get(0).enemyDamage());
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
+        assertEquals(1, runtime.enemyHealth(0));
+        assertEquals(EntityCombatEvent.SoundChannel.NONE,
+            events.get(0).secondarySoundChannel());
+        assertEquals(-1, events.get(0).secondarySoundId());
+    }
+
+    @Test
+    void clearingBurningOrStunnedEntitiesResetsTheirStatusCountdowns() throws IOException {
+        RomEnemyCombatTables burningTables =
+            new RomEnemyCombatTables(romWithSwordResult(0x09, 0xFE));
+        RoomEntityRuntime burningRuntime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x09, 64, 64, EntityStatus.ACTIVE,
+                pairDefinition(0x09, 2), 0)), false, null, null, burningTables);
+        burningRuntime.resolveCombat(0, 120, 120, false, true,
+            true, 72, 1, 72, 1);
+        burningRuntime.clearEntity(0);
+
+        assertEquals(EntityStatus.DISABLED, burningRuntime.snapshot().slots().get(0).status());
+        assertEquals(0, burningRuntime.transitionCountdown(0));
+        assertEquals(0, burningRuntime.stunnedCountdown(0));
+
+        RomEnemyCombatTables stunnedTables = new RomEnemyCombatTables(loadRom());
+        RoomEntityRuntime stunnedRuntime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0xE9, 64, 64, EntityStatus.ACTIVE,
+                pairDefinition(0xE9, 2), 0)), false, null, null, stunnedTables);
+        stunnedRuntime.resolveCombat(0, 120, 120, false, true,
+            true, 72, 1, 72, 1);
+        stunnedRuntime.clearEntity(0);
+
+        assertEquals(0, stunnedRuntime.transitionCountdown(0));
+        assertEquals(0, stunnedRuntime.stunnedCountdown(0));
+    }
+
+    @Test
     void romCombatTablesDriveInitialHealthAndContactDamage() throws IOException {
         RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
