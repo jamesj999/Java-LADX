@@ -346,6 +346,25 @@ than represented by guessed shapes or generic movement.
   live room tilemap replacement, raw sound IDs, poof frames, and completion
   persistence. The complete Java test suite passes with the shipped ROM.
 
+## Verified ROM burning status presentation — 2026-08-05
+
+- The status path now decodes `FireSpriteVariants` from bank `$03:$4C44` and
+  carries that pair as a room-selection overlay instead of replacing the
+  entity's normal display definition.
+- During `BURNING`, the renderer selects `(hFrameCounter >> 3) & 1`, applies
+  the source `$02/$22` and `$14/$34` attributes, entity tile offset, flip
+  attribute, visual Z, and room-scroll offset, then draws the fire over the
+  normal entity body. The frame counter is passed from the live main loop into
+  the render scene.
+- This is the first general enemy status effect with a visible framebuffer
+  result: a source `$FE` burn attack now produces animated fire feedback. The
+  existing burn timers, Gibdo replacement, and death transition remain the
+  separate runtime behavior already documented above; no unsupported status
+  is given a guessed overlay.
+- Tests cover the shipped ROM bytes, both animation phases, palette/flip
+  selection, tile-offset and Z positioning, room selection installation, and
+  the complete Java suite passes from a clean build.
+
 ## Next entity increments
 
 1. Port remaining simple enemy movement, collision, damage, lifting, and

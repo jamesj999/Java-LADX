@@ -12,8 +12,9 @@ though the status transition itself is already source-backed.
 The authoritative source is `LADX-Disassembly/src/code/entities/bank3.asm`:
 
 - `FireSpriteVariants` at bank `$03:$4C44` contains two pair variants. Each
-  variant uses tile `$34`; the attributes are palette `$02`/`$04` and their
-  X-flipped counterparts.
+  variant uses tile `$34`; the raw attribute pairs are `$02/$22` and
+  `$14/$34` (GBC palettes `$02` and `$04`, with the source's DMG palette bit
+  retained in the second variant, plus X-flip on the second sprite).
 - `EntityBurningHandler` at `$4C4C` selects variant
   `(hFrameCounter >> 3) & 1`, renders that pair at the active entity's OAM
   position, restores the entity's normal sprite variant, then executes the
