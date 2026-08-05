@@ -94,8 +94,9 @@ resource.
   hide/emerge/chase/burrow state loop, `$1F`/`$70`/`$30` ROM countdown bases,
   chase-only combat gate, `$08` Link-vector refresh, and fixed-point movement.
   Its health-group `$01` values provide two health points and `$04` contact
-  damage; shared bank-$04 recoil is verified below, while generic background
-  interaction and remaining damage states remain pending.
+  damage; shared bank-$04 recoil and wall rollback are verified below, while
+  generic ground/water/pit/conveyor interaction and remaining damage states
+  remain pending.
 - Anti-Fairy now decodes the bank `$06` pair display list and mirrors
   `EntityInitWithRandomSpeed`, the four diagonal `$0C/$F4` fixed-point speed
   choices, horizontal-priority axis reversal, and `$08`-frame sprite cadence.
@@ -610,6 +611,15 @@ runtime collision callback.
 - Focused Leever regressions and the complete Java suite cover this increment.
   Generic wall/ground/water/pit/conveyor interaction, recoil smoke, and
   remaining damage-state branches remain pending.
+
+## Verified ROM Leever wall rollback — 2026-08-05
+
+- Leever's bank-$04 post-movement path now queries the room background in
+  right/left/up/down order and restores blocked X/Y coordinates without
+  reversing its ordinary speed, matching the shared ROM helper.
+- The chase-state blocked and unblocked regressions plus the complete Java
+  suite cover this increment. Ground status, water/pit/conveyor effects,
+  recoil smoke, and remaining damage-state branches remain pending.
 
 ## Next entity increments
 

@@ -39,9 +39,19 @@ final class LeeverMotion {
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
 
-        // ApplyEntityInteractionWithBackground supplies the ROM collision
-        // flags used by the Leever handler. The generic room query does not yet
-        // expose those flags or the object-under-entity state.
+        // ApplyEntityInteractionWithBackground restores blocked coordinates
+        // before the Leever state handler; it does not reverse ordinary speed.
+        if (backgroundCollision != null) {
+            if (x != entity.x() && backgroundCollision.blocks(entity,
+                    directionForX(speedX[slot]), x, y)) {
+                x = entity.x();
+            }
+            if (y != entity.y() && backgroundCollision.blocks(entity,
+                    directionForY(speedY[slot]), x, y)) {
+                y = entity.y();
+            }
+        }
+
         int variant = entity.spriteVariant();
         switch (state[slot]) {
             case 0 -> {
@@ -173,6 +183,14 @@ final class LeeverMotion {
             delta++;
         }
         return (position + delta) & 0xFF;
+    }
+
+    private static int directionForX(int speed) {
+        return signedByte(speed) < 0 ? 1 : 0;
+    }
+
+    private static int directionForY(int speed) {
+        return signedByte(speed) < 0 ? 2 : 3;
     }
 
     private static int signedByte(int value) {

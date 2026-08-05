@@ -1411,6 +1411,46 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void leeverRestoresItsPositionWhenTheRomBackgroundHelperBlocksRightwardMotion() {
+        EntitySpriteDefinition definition = pairDefinition(0x0E, 4);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x0E, 64, 64, EntityStatus.ACTIVE, definition, 0)));
+
+        for (int frame = 0; frame <= 31; frame++) {
+            runtime.tick(frame, 120, 120, sequence(0x00));
+        }
+        runtime.tick(32, 80, 64, sequence(0x00));
+        assertEquals(2, runtime.leeverState(0));
+        assertEquals(0x08, runtime.leeverSpeedX(0));
+
+        RoomEntityBackgroundCollision rightWall =
+            (entity, direction, nextX, nextY) -> direction == 0;
+        runtime.tick(33, 80, 64, sequence(0x00), rightWall);
+        runtime.tick(34, 80, 64, sequence(0x00), rightWall);
+
+        assertEquals(64, runtime.snapshot().slots().get(0).x());
+        assertEquals(0x08, runtime.leeverSpeedX(0));
+        assertEquals(2, runtime.leeverState(0));
+    }
+
+    @Test
+    void leeverAdvancesItsPositionWhenTheBackgroundDoesNotBlock() {
+        EntitySpriteDefinition definition = pairDefinition(0x0E, 4);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x0E, 64, 64, EntityStatus.ACTIVE, definition, 0)));
+
+        for (int frame = 0; frame <= 31; frame++) {
+            runtime.tick(frame, 120, 120, sequence(0x00));
+        }
+        runtime.tick(32, 80, 64, sequence(0x00));
+        runtime.tick(33, 80, 64, sequence(0x00));
+        runtime.tick(34, 80, 64, sequence(0x00));
+
+        assertEquals(65, runtime.snapshot().slots().get(0).x());
+        assertEquals(0x08, runtime.leeverSpeedX(0));
+    }
+
+    @Test
     void peaHatRunsTheRomRestTakeoffAndHeightAnimationStates() {
         EntitySpriteDefinition definition = pairDefinition(0xA0, 2);
         RoomEntitySnapshot initial = snapshot(

@@ -16,7 +16,7 @@
 
 - Modify: `java/src/test/java/linksawakening/world/RoomEntityRuntimeTest.java` beside the existing Leever tests.
 
-- [ ] **Step 1: Add the blocked-wall regression.** Add:
+- [x] **Step 1: Add the blocked-wall regression.** Add:
 
 ```java
 @Test
@@ -43,7 +43,7 @@ void leeverRestoresItsPositionWhenTheRomBackgroundHelperBlocksRightwardMotion() 
 }
 ```
 
-- [ ] **Step 2: Add the unblocked control.** Add:
+- [x] **Step 2: Add the unblocked control.** Add:
 
 ```java
 @Test
@@ -64,7 +64,7 @@ void leeverAdvancesItsPositionWhenTheBackgroundDoesNotBlock() {
 }
 ```
 
-- [ ] **Step 3: Run focused tests and verify RED.** From `java/`, run:
+- [x] **Step 3: Run focused tests and verify RED.** From `java/`, run:
 
 ```bash
 gradle test --tests linksawakening.world.RoomEntityRuntimeTest
@@ -80,7 +80,7 @@ background callback.
 
 - Modify: `java/src/main/java/linksawakening/world/LeeverMotion.java` immediately after its fixed-point X/Y update and near its numeric helpers.
 
-- [ ] **Step 1: Query and restore the two axes in source order.** Add after
+- [x] **Step 1: Query and restore the two axes in source order.** Add after
 the `x` and `y` calculations:
 
 ```java
@@ -99,7 +99,7 @@ if (backgroundCollision != null) {
 Use the post-X coordinate in the Y query. Do not change `speedX`, `speedY`,
 `state`, or `transitionCountdown` in either branch.
 
-- [ ] **Step 2: Add direction helpers.** Add:
+- [x] **Step 2: Add direction helpers.** Add:
 
 ```java
 private static int directionForX(int speed) {
@@ -113,7 +113,7 @@ private static int directionForY(int speed) {
 
 Reuse the existing `signedByte` helper.
 
-- [ ] **Step 3: Run focused tests and verify GREEN.** Run:
+- [x] **Step 3: Run focused tests and verify GREEN.** Run:
 
 ```bash
 gradle test --tests linksawakening.world.RoomEntityRuntimeTest
@@ -128,11 +128,11 @@ Expected: both new wall tests and all existing Leever/runtime tests pass.
 - Modify: `docs/reconstruction-roadmap.md` in the Leever status bullet and before `## Next entity increments`.
 - Modify: `docs/superpowers/plans/2026-08-05-leever-background.md` to mark completed steps.
 
-- [ ] **Step 1: Update the Leever status.** State that shared bank-$04 wall
+- [x] **Step 1: Update the Leever status.** State that shared bank-$04 wall
 rollback is verified below, while ground/water/pit/conveyor behavior and
 remaining damage states remain pending.
 
-- [ ] **Step 2: Add a dated verification entry.** Insert:
+- [x] **Step 2: Add a dated verification entry.** Insert:
 
 ```markdown
 ## Verified ROM Leever wall rollback — 2026-08-05
@@ -145,12 +145,12 @@ remaining damage states remain pending.
   recoil smoke, and remaining damage-state branches remain pending.
 ```
 
-- [ ] **Step 3: Run final verification.** Run `gradle clean test` from `java/`,
+- [x] **Step 3: Run final verification.** Run `gradle clean test` from `java/`,
 then `git diff --check` and `git status --short --branch` from the worktree
 root. Expected: `BUILD SUCCESSFUL`, no whitespace errors, and only intended
 files changed.
 
-- [ ] **Step 4: Commit the checkpoint.** Mark all checkboxes complete and run:
+- [x] **Step 4: Commit the checkpoint.** Mark all checkboxes complete and run:
 
 ```bash
 git add java/src/main/java/linksawakening/world/LeeverMotion.java \
