@@ -68,6 +68,41 @@ final class LinkTest {
     }
 
     @Test
+    void renderUsesTheSelectedRomTunicPaletteAtTheSameBodyPixels() throws Exception {
+        byte[] rom = loadRom();
+        LinkSpriteSheet spriteSheet = LinkSpriteSheet.loadFromRom(rom);
+        LinkTunicPalette tunicPalette = LinkTunicPalette.loadFromRom(rom);
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        InputState inputState = new InputState();
+        PlayerState playerState = new PlayerState();
+        Link link = new Link(inputState, inputConfig, null, null, spriteSheet,
+            playerState, new ItemRegistry(), GameplaySoundSink.none(), tunicPalette);
+        link.setPixelPosition(40, 40);
+
+        byte[] green = new byte[linksawakening.gpu.Framebuffer.WIDTH
+            * linksawakening.gpu.Framebuffer.HEIGHT * 4];
+        link.render(green, 0, 0);
+
+        playerState.setTunicType(PlayerState.TUNIC_RED);
+        byte[] red = new byte[green.length];
+        link.render(red, 0, 0);
+
+        int changedPixels = 0;
+        int greenTunicColor = tunicPalette.forTunic(PlayerState.TUNIC_GREEN)[2];
+        int redTunicColor = tunicPalette.forTunic(PlayerState.TUNIC_RED)[2];
+        for (int i = 0; i < green.length; i += 4) {
+            int greenColor = pixelColor(green, i);
+            int redColor = pixelColor(red, i);
+            if (greenColor != redColor) {
+                changedPixels++;
+                assertEquals(greenTunicColor, greenColor);
+                assertEquals(redTunicColor, redColor);
+            }
+        }
+        assertTrue(changedPixels > 0, "The Link body should contain tunic-colored pixels");
+    }
+
+    @Test
     void startingPitFallPlaysLinkFallWaveEffectOnce() throws Exception {
         byte[] rom = loadRom();
         RomTables romTables = RomTables.loadFromRom(rom);
@@ -631,6 +666,12 @@ final class LinkTest {
             }
             return in.readAllBytes();
         }
+    }
+
+    private static int pixelColor(byte[] buffer, int offset) {
+        return ((buffer[offset] & 0xFF) << 16)
+            | ((buffer[offset + 1] & 0xFF) << 8)
+            | (buffer[offset + 2] & 0xFF);
     }
 
     private static Link linkInRoom(InputConfig inputConfig, RomTables romTables, int[] roomObjectsArea) {

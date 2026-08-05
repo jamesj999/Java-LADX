@@ -76,16 +76,6 @@ public final class Link implements RocsFeather.JumpTarget {
         { 0x0A, 0x0B },  // RIGHT
     };
 
-    // Mirrors the first entry of ObjectPalettes (palettes.asm:1477) — the
-    // "green objects" palette that covers Link, leaf particles, etc. OBJ
-    // color 0 is transparent by hardware convention, so its RGB is unused.
-    private static final int[] SPRITE_PALETTE = {
-        0x00000000, // 0: transparent (OBJ convention; #F8F888 in ROM, never rendered)
-        0x00000000, // 1: #000000 — outlines, hair
-        0x0010A840, // 2: #10A840 — green tunic / hat
-        0x00F8B888, // 3: #F8B888 — skin, highlights
-    };
-
     private static final int WALK_FRAME_TICKS = 8;
     private static final int JUMP_FRAME_TICKS = 8;
     private static final int FALL_FRAME_TICKS = 16;
@@ -108,6 +98,7 @@ public final class Link implements RocsFeather.JumpTarget {
     private final LinkSpriteSheet spriteSheet;
     private final PlayerState playerState;
     private final ItemRegistry itemRegistry;
+    private final LinkTunicPalette tunicPalette;
 
     // Two collision check points per direction, as offsets from the
     // sprite's top-left. Ported from LinkCollisionPointsX/Y
@@ -171,7 +162,7 @@ public final class Link implements RocsFeather.JumpTarget {
                 PlayerState playerState,
                 ItemRegistry itemRegistry) {
         this(inputState, inputConfig, romTables, collision, spriteSheet, playerState,
-                itemRegistry, GameplaySoundSink.none());
+                itemRegistry, GameplaySoundSink.none(), LinkTunicPalette.greenCompatibility());
     }
 
     public Link(InputState inputState,
@@ -182,6 +173,19 @@ public final class Link implements RocsFeather.JumpTarget {
                 PlayerState playerState,
                 ItemRegistry itemRegistry,
                 GameplaySoundSink soundSink) {
+        this(inputState, inputConfig, romTables, collision, spriteSheet, playerState,
+            itemRegistry, soundSink, LinkTunicPalette.greenCompatibility());
+    }
+
+    public Link(InputState inputState,
+                InputConfig inputConfig,
+                RomTables romTables,
+                OverworldCollision collision,
+                LinkSpriteSheet spriteSheet,
+                PlayerState playerState,
+                ItemRegistry itemRegistry,
+                GameplaySoundSink soundSink,
+                LinkTunicPalette tunicPalette) {
         this.inputState = inputState;
         this.inputConfig = inputConfig;
         this.romTables = romTables;
@@ -190,6 +194,7 @@ public final class Link implements RocsFeather.JumpTarget {
         this.playerState = playerState;
         this.itemRegistry = itemRegistry;
         this.soundSink = Objects.requireNonNull(soundSink, "soundSink");
+        this.tunicPalette = Objects.requireNonNull(tunicPalette, "tunicPalette");
     }
 
     public void setPixelPosition(int pixelX, int pixelY) {
@@ -651,6 +656,8 @@ public final class Link implements RocsFeather.JumpTarget {
         int originX = pixelX() + offsetX;
         int renderY = pixelY() - zPixels();
         int originY = renderY + offsetY;
+        int[] palette = tunicPalette.forTunic(
+            playerState == null ? PlayerState.TUNIC_GREEN : playerState.tunicType());
 
         // Column-major tile layout: [0]=UL, [1]=LL, [2]=UR, [3]=LR.
         // GB 8x16 flipY swaps the two stacked tiles inside a column and flips
@@ -660,10 +667,14 @@ public final class Link implements RocsFeather.JumpTarget {
         Tile rightTop = composedTiles[rightFlipY ? 3 : 2];
         Tile rightBottom = composedTiles[rightFlipY ? 2 : 3];
 
-        drawTile(displayBuffer, leftTop,     originX,     originY,     leftFlipX,  leftFlipY);
-        drawTile(displayBuffer, leftBottom,  originX,     originY + 8, leftFlipX,  leftFlipY);
-        drawTile(displayBuffer, rightTop,    originX + 8, originY,     rightFlipX, rightFlipY);
-        drawTile(displayBuffer, rightBottom, originX + 8, originY + 8, rightFlipX, rightFlipY);
+        drawTile(displayBuffer, leftTop,     originX,     originY,     leftFlipX,  leftFlipY,
+            palette);
+        drawTile(displayBuffer, leftBottom,  originX,     originY + 8, leftFlipX,  leftFlipY,
+            palette);
+        drawTile(displayBuffer, rightTop,    originX + 8, originY,     rightFlipX, rightFlipY,
+            palette);
+        drawTile(displayBuffer, rightBottom, originX + 8, originY + 8, rightFlipX, rightFlipY,
+            palette);
 
         // Let equipped items paint their own sprites on top (e.g. the sword
         // blade during a swing). Matches the disassembly's ordering where
@@ -733,7 +744,7 @@ public final class Link implements RocsFeather.JumpTarget {
     }
 
     private static void drawTile(byte[] buffer, Tile tile, int screenX, int screenY,
-                                 boolean flipX, boolean flipY) {
+                                 boolean flipX, boolean flipY, int[] palette) {
         if (tile == null) {
             return;
         }
@@ -750,7 +761,7 @@ public final class Link implements RocsFeather.JumpTarget {
                 if (colorIndex == 0) {
                     continue; // transparent
                 }
-                int color = SPRITE_PALETTE[colorIndex];
+                int color = palette[colorIndex];
                 int offset = (py * Framebuffer.WIDTH + px) * 4;
                 buffer[offset] = (byte) ((color >> 16) & 0xFF);
                 buffer[offset + 1] = (byte) ((color >> 8) & 0xFF);

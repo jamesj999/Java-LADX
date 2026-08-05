@@ -6,6 +6,7 @@ import linksawakening.cutscene.IntroCutsceneScript;
 import linksawakening.dialog.DialogController;
 import linksawakening.entity.Link;
 import linksawakening.entity.LinkSpriteSheet;
+import linksawakening.entity.LinkTunicPalette;
 import linksawakening.equipment.EquipmentController;
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.equipment.RocsFeather;
@@ -240,7 +241,8 @@ public class Main {
             Main::selectMusicForLoadedRoom);
         roomSession.setColorShellSoundSink(gameplaySoundSink);
         link = new Link(inputState, inputConfig, romTables, overworldCollision,
-                        linkSpriteSheet, playerState, itemRegistry, gameplaySoundSink);
+                        linkSpriteSheet, playerState, itemRegistry, gameplaySoundSink,
+                        LinkTunicPalette.loadFromRom(romData));
         itemRegistry.register(PlayerState.INVENTORY_SWORD, new Sword(romTables, swordSpriteSheet,
             gameplaySoundSink, () -> ThreadLocalRandom.current().nextInt(0x100)));
         itemRegistry.register(PlayerState.INVENTORY_ROCS_FEATHER, new RocsFeather(link));

@@ -795,6 +795,20 @@ runtime collision callback.
   ledge, switch-block, hookshot-chain, entity-specific physics exceptions, and
   the remaining handler migrations remain explicit follow-up work.
 
+## Verified ROM Link tunic palette — 2026-08-06
+
+- `LinkTunicPalette` now loads the six object palettes from `ObjectPalettes` at
+  bank `$21:$5518` through the existing ROM RGB555 decoder. The live `Main`
+  construction supplies that source to Link instead of relying on the former
+  hardcoded green colors.
+- `Link.render` selects palette 0 for green, palette 2 for red, and palette 3
+  for blue from the live `PlayerState.tunicType()`. Tile selection, geometry,
+  flips, transparency, and existing no-ROM test constructors are unchanged.
+- Synthetic ROM palette tests and a shipped-ROM framebuffer regression verify
+  the mapping and that tunic-colored pixels change at stable body locations.
+  Sword/equipment palette effects and Color Dungeon dynamic palette writes
+  remain separate source-backed work.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,
