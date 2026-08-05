@@ -1605,6 +1605,37 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void runtimePublishesArrowTransitionVariantsButLeavesRockVariantUnspun() {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
+        EntitySpriteDefinition arrowDefinition = catalog.forEntityType(
+            0x0C, EntityRoomLoader.RoomTable.OVERWORLD, -1);
+        RoomEntityRuntime arrowRuntime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, -1, 0x0C, 0x20, 0x20, EntityStatus.ACTIVE,
+                arrowDefinition, 0)), false, () -> 0, catalog);
+        RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) -> direction == 0;
+
+        arrowRuntime.tick(0, 0, 0, () -> 0, wall);
+        assertEquals(0x18, arrowRuntime.enemyProjectileTransitionCountdown(0));
+        arrowRuntime.tick(1, 0, 0, () -> 0, wall);
+        assertEquals(0x17, arrowRuntime.enemyProjectileTransitionCountdown(0));
+        assertEquals(1, arrowRuntime.snapshot().slots().get(0).spriteVariant());
+        for (int frame = 2; frame <= 9; frame++) {
+            arrowRuntime.tick(frame, 0, 0, () -> 0, wall);
+        }
+        assertEquals(0x0F, arrowRuntime.enemyProjectileTransitionCountdown(0));
+        assertEquals(3, arrowRuntime.snapshot().slots().get(0).spriteVariant());
+
+        EntitySpriteDefinition rockDefinition = catalog.forEntityType(
+            0x0A, EntityRoomLoader.RoomTable.OVERWORLD, -1);
+        RoomEntityRuntime rockRuntime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, -1, 0x0A, 0x20, 0x20, EntityStatus.ACTIVE,
+                rockDefinition, 0)), false, () -> 0, catalog);
+        rockRuntime.tick(0, 0, 0, () -> 0, wall);
+        rockRuntime.tick(1, 0, 0, () -> 0, wall);
+        assertEquals(0, rockRuntime.snapshot().slots().get(0).spriteVariant());
+    }
+
+    @Test
     void enemyProjectileWallTransitionUnloadsAndClearsTheReverseSlot() {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
         EntitySpriteDefinition definition = catalog.forEntityType(

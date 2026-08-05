@@ -90,6 +90,37 @@ final class RoomSessionTest {
     }
 
     @Test
+    void publishesARealRomProjectileIntoTheSessionRenderSnapshot() {
+        RoomSession session = newSession();
+        session.loadInitialOverworld(0x2F);
+        RoomEntity parent = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x09)
+            .findFirst()
+            .orElseThrow();
+
+        RoomEntity projectile = null;
+        for (int frame = 0; frame < 0x40 && projectile == null; frame++) {
+            RoomEntity currentParent = session.activeRoom().entities().slots()
+                .get(parent.slot());
+            session.tickEntitiesWithProjectileEvents(
+                frame, (currentParent.x() + 0x20) & 0xFF, currentParent.y(),
+                0x00, 0x00, 0x00, false);
+            projectile = session.activeRoom().entities().loadedEntities().stream()
+                .filter(entity -> entity.type() == 0x0A)
+                .findFirst()
+                .orElse(null);
+        }
+
+        assertNotNull(projectile);
+        assertEquals(-1, projectile.sourceLoadOrder());
+        assertEquals(0x03, projectile.spriteDefinition().bank());
+        assertEquals(0x6A1E, projectile.spriteDefinition().address());
+        assertTrue(projectile.spriteDefinition().supported());
+        assertEquals(session.activeRoom().entities(), session.renderSnapshot().entities());
+        assertNotNull(session.renderSnapshot().entities().spriteTiles());
+    }
+
+    @Test
     void synchronizesDynamicFollowerSpawningAndFollowerDisplaySelection() {
         RoomSession session = newSession();
         session.loadInitialOverworld(0x92);
