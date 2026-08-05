@@ -37,6 +37,28 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void activeEntitiesPassThroughTheGroundInteractionBoundaryAfterMotion() {
+        EntitySpriteDefinition definition = pairDefinition(0x4D, 1);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x4D, 32, 48, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+        AtomicInteger calls = new AtomicInteger();
+        runtime.setGroundInteraction((entity, frameCounter) -> {
+            calls.incrementAndGet();
+            return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
+                entity.x() + 1, entity.y(), entity.status(), entity.spriteDefinition(),
+                entity.spriteVariant(), entity.entityFlipAttribute(), entity.spriteTileOffset(),
+                entity.z());
+        });
+
+        runtime.tick(0, 0, 0, () -> 0);
+        runtime.tick(1, 0, 0, () -> 0);
+
+        assertEquals(2, calls.get());
+        assertEquals(34, runtime.snapshot().slots().get(0).x());
+    }
+
+    @Test
     void staggersButterflyWingVariantsByEntitySlot() {
         EntitySpriteDefinition definition = new EntitySpriteDefinition(0x6E, 0x06, 0x6BBD,
             EntitySpriteDefinition.Shape.SINGLE, 0, List.of(

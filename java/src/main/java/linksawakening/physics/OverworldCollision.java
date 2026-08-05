@@ -138,6 +138,28 @@ public final class OverworldCollision {
     }
 
     /**
+     * Reads the object physics byte used by bank-$03's
+     * {@code func_003_7E0E} before {@code ApplyEntityInteractionWithBackground}.
+     * The helper samples {@code entityX - 1}, {@code entityY - 7} in the
+     * padded room-object buffer, rather than one of the entity's directional
+     * wall-collision points.
+     */
+    public int objectPhysicsFlagAtGroundInteraction(int entityX, int entityY) {
+        if (roomObjectsArea == null) {
+            return PhysicsFlags.NONE;
+        }
+        int sampleX = (entityX - 1) & 0xFF;
+        int sampleY = (entityY - 7) & 0xFF;
+        int areaIndex = ROOM_OBJECTS_BASE + (sampleY & 0xF0)
+            + ((sampleX & 0xF0) >>> 4);
+        if (areaIndex < 0 || areaIndex >= roomObjectsArea.length) {
+            return PhysicsFlags.NONE;
+        }
+        int objectId = roomObjectsArea[areaIndex] & 0xFF;
+        return romTables.objectPhysicsFlag(physicsTableIndex, objectId);
+    }
+
+    /**
      * Reads the object physics byte at the coordinate sampled by bank-$03's
      * {@code ApplySwordIntersectionWithObjects}: X is aligned directly and Y
      * is aligned after subtracting eight pixels. This intentionally uses the

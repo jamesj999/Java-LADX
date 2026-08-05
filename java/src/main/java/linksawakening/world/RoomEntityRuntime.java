@@ -60,6 +60,7 @@ public final class RoomEntityRuntime {
     private final RomRandomByteSource fallbackRomRandomByteSource;
     private final EntitySpriteHandlerCatalog spriteHandlers;
     private final RomEnemyCombatTables enemyCombatTables;
+    private RoomEntityGroundInteraction groundInteraction = (entity, frameCounter) -> entity;
     private FollowingNpcState followingNpcState = FollowingNpcState.none();
     private LinkPositionHistory followingLinkPositionHistory = new LinkPositionHistory();
     private int followingLinkZ;
@@ -773,6 +774,15 @@ public final class RoomEntityRuntime {
                     continue;
                 }
             }
+            if (status == EntityStatus.ACTIVE && !wasInitializing) {
+                // ApplyEntityInteractionWithBackground runs after each ROM
+                // entity handler's movement and before the final display-list
+                // presentation. The room session supplies terrain physics;
+                // direct runtime users retain the no-op default.
+                updated = Objects.requireNonNull(
+                    groundInteraction.apply(updated, frame),
+                    "Room entity ground interaction returned null");
+            }
             if (ColorShellMotion.isColorShellType(updated.type())) {
                 updated = refreshColorShellDisplay(updated, status);
             }
@@ -1093,6 +1103,11 @@ public final class RoomEntityRuntime {
 
     void setSpriteSelection(EntitySpriteSelection selection) {
         spriteSelection = selection;
+    }
+
+    void setGroundInteraction(RoomEntityGroundInteraction groundInteraction) {
+        this.groundInteraction = groundInteraction == null
+            ? (entity, frameCounter) -> entity : groundInteraction;
     }
 
     void setFollowingNpcState(FollowingNpcState state) {

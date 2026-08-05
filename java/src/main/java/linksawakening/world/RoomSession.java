@@ -21,6 +21,9 @@ import static linksawakening.world.RoomConstants.ROOM_PIXEL_WIDTH;
 public final class RoomSession {
     private static final int W_TILESET_NO_UPDATE = 0xFF;
     private static final int ENTITY_WATER_TEKTITE = 0x99;
+    private static final int ENTITY_OPT1_NO_GROUND_INTERACTION = 0x10;
+    private static final int[] ENTITY_CONVEYOR_MOVEMENT_X = {0, 0, -1, 1, 1, -1, 1, -1};
+    private static final int[] ENTITY_CONVEYOR_MOVEMENT_Y = {1, -1, 0, 0, 1, 1, -1, -1};
 
     private final byte[] romData;
     private final GPU gpu;
@@ -35,6 +38,7 @@ public final class RoomSession {
     private final EntitySpriteHandlerCatalog entitySpriteHandlerCatalog;
     private final FollowingNpcEntitySpawner followingNpcEntitySpawner;
     private final RomEnemyCombatTables enemyCombatTables;
+    private final RomTables romTables;
     private final LinkPositionHistory followingLinkPositionHistory = new LinkPositionHistory();
 
     private ActiveRoom activeRoom;
@@ -113,6 +117,7 @@ public final class RoomSession {
         this.entitySpriteHandlerCatalog = new EntitySpriteHandlerCatalog(romData);
         this.followingNpcEntitySpawner = new FollowingNpcEntitySpawner(entitySpriteHandlerCatalog);
         this.enemyCombatTables = new RomEnemyCombatTables(romData);
+        this.romTables = RomTables.loadFromRom(romData);
     }
 
     public void loadInitialOverworld(int roomId) {
@@ -487,6 +492,7 @@ public final class RoomSession {
         if (entityRuntime != null) {
             entityRuntime.setColorShellWorld(colorShellWorld);
             entityRuntime.setFollowingNpcState(followingNpcState);
+            entityRuntime.setGroundInteraction(this::entityGroundInteraction);
         }
         followingNpcRoomNeedsSync = true;
         synchronizeFollowingNpcEntitiesIfNeeded();
@@ -517,6 +523,7 @@ public final class RoomSession {
             entityRandomByteSource, entitySpriteHandlerCatalog, enemyCombatTables);
         entityRuntime.setColorShellWorld(colorShellWorld);
         entityRuntime.setFollowingNpcState(followingNpcState);
+        entityRuntime.setGroundInteraction(this::entityGroundInteraction);
     }
 
     private void clearTransientRoomState() {
@@ -590,6 +597,48 @@ public final class RoomSession {
             }
         }
         return overworldCollision.pointBlocked(pointX, pointY);
+    }
+
+    /**
+     * Mirrors the conveyor portion of bank-$03's
+     * ApplyEntityInteractionWithBackground. Terrain physics and the entity
+     * options byte stay ROM-backed; the runtime invokes this after the
+     * entity-family handler has completed its movement for the frame.
+     */
+    private RoomEntity entityGroundInteraction(RoomEntity entity, int frameCounter) {
+        int options = romTables.entityOptions1(entity.type());
+        if ((options & ENTITY_OPT1_NO_GROUND_INTERACTION) != 0) {
+            return entity;
+        }
+
+        // The ROM skips ground interaction while an entity is moving upward;
+        // a negative Z byte denotes a falling entity and continues through
+        // the shared helper.
+        int z = entity.z() & 0xFF;
+        if (z != 0 && (z & 0x80) == 0) {
+            return entity;
+        }
+        if ((frameCounter & 0x03) != 0) {
+            return entity;
+        }
+
+        int physicsFlag = overworldCollision.objectPhysicsFlagAtGroundInteraction(
+            entity.x(), entity.y());
+        int movementIndex = physicsFlag - PhysicsFlags.CAT_CONVEYOR;
+        if (movementIndex < 0 || movementIndex >= ENTITY_CONVEYOR_MOVEMENT_X.length) {
+            return entity;
+        }
+
+        return withEntityPosition(entity,
+            entity.x() + ENTITY_CONVEYOR_MOVEMENT_X[movementIndex],
+            entity.y() + ENTITY_CONVEYOR_MOVEMENT_Y[movementIndex]);
+    }
+
+    private static RoomEntity withEntityPosition(RoomEntity entity, int x, int y) {
+        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
+            x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(),
+            entity.spriteVariant(), entity.entityFlipAttribute(), entity.spriteTileOffset(),
+            entity.z());
     }
 
     private boolean pairoddProjectileObjectCollision(RoomEntity entity) {

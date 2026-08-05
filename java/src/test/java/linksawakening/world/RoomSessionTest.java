@@ -134,6 +134,68 @@ final class RoomSessionTest {
     }
 
     @Test
+    void ordinaryEntitiesReceiveTheRomConveyorNudgeEveryFourFrames() {
+        RoomSession passableSession = newSession();
+        RoomSession conveyorSession = newSession();
+        passableSession.loadInitialOverworld(0x2F);
+        conveyorSession.loadInitialOverworld(0x2F);
+
+        RoomEntity passableInitial = passableSession.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x09)
+            .findFirst()
+            .orElseThrow();
+        RoomEntity conveyorInitial = conveyorSession.activeRoom().entities().slots()
+            .get(passableInitial.slot());
+        assertEquals(passableInitial.x(), conveyorInitial.x());
+        assertEquals(passableInitial.y(), conveyorInitial.y());
+        fillActiveObjects(passableSession, 0x01);
+        fillActiveObjects(conveyorSession, 0xCF);
+
+        for (int frame = 0; frame <= 4; frame++) {
+            passableSession.tickEntities(frame, 0, 0);
+            conveyorSession.tickEntities(frame, 0, 0);
+        }
+
+        RoomEntity passable = passableSession.activeRoom().entities().slots()
+            .get(passableInitial.slot());
+        RoomEntity conveyor = conveyorSession.activeRoom().entities().slots()
+            .get(conveyorInitial.slot());
+        // Overworld $CF is physics $F4, whose bank-$03 movement table entry is
+        // (+1,+1). The ordinary entity's own motion is identical in both runs.
+        assertEquals((passable.x() + 1) & 0xFF, conveyor.x());
+        assertEquals((passable.y() + 1) & 0xFF, conveyor.y());
+    }
+
+    @Test
+    void noGroundInteractionEntitiesIgnoreTheRomConveyorNudge() {
+        RoomSession passableSession = newSession();
+        RoomSession conveyorSession = newSession();
+        passableSession.loadIndoor(0x00, 0x05);
+        conveyorSession.loadIndoor(0x00, 0x05);
+
+        RoomEntity passableInitial = passableSession.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x17)
+            .findFirst()
+            .orElseThrow();
+        RoomEntity conveyorInitial = conveyorSession.activeRoom().entities().slots()
+            .get(passableInitial.slot());
+        fillActiveObjects(passableSession, 0x02);
+        fillActiveObjects(conveyorSession, 0xCF);
+
+        for (int frame = 0; frame <= 4; frame++) {
+            passableSession.tickEntities(frame, 0, 0);
+            conveyorSession.tickEntities(frame, 0, 0);
+        }
+
+        RoomEntity passable = passableSession.activeRoom().entities().slots()
+            .get(passableInitial.slot());
+        RoomEntity conveyor = conveyorSession.activeRoom().entities().slots()
+            .get(conveyorInitial.slot());
+        assertEquals(passable.x(), conveyor.x());
+        assertEquals(passable.y(), conveyor.y());
+    }
+
+    @Test
     void returnsProjectileEventsFromTheEntityPassWhenLinkStateIsProvided() {
         RoomSession session = newSession();
         session.loadInitialOverworld(0x92);
@@ -326,6 +388,16 @@ final class RoomSessionTest {
             return stream.readAllBytes();
         } catch (Exception e) {
             throw new IllegalStateException("Failed to load ROM", e);
+        }
+    }
+
+    private static void fillActiveObjects(RoomSession session, int objectId) {
+        int[] roomObjects = session.activeRoom().roomObjectsArea();
+        for (int row = 0; row < RoomConstants.OBJECTS_PER_COLUMN; row++) {
+            for (int column = 0; column < RoomConstants.OBJECTS_PER_ROW; column++) {
+                roomObjects[RoomConstants.ROOM_OBJECTS_BASE
+                    + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + column] = objectId;
+            }
         }
     }
 }

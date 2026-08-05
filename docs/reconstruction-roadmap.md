@@ -88,8 +88,8 @@ resource.
   countdown, ROM direction tables, Z-aware `$14` vector toward Link, and
   fixed-point X/Y/Z updates. Its health-group `$01` path provides two health
   points and `$04` contact damage; wall-collision reversal and shared bank-$06
-  recoil are verified below, while full background/water interaction remains
-  pending.
+  recoil are verified below, while full water/pit/ground-status interaction
+  remains pending.
 - Leever now decodes the four-entry bank `$04` display list and mirrors the
   hide/emerge/chase/burrow state loop, `$1F`/`$70`/`$30` ROM countdown bases,
   chase-only combat gate, `$08` Link-vector refresh, and fixed-point movement.
@@ -141,8 +141,8 @@ resource.
   timer, and background-collision reset loop. Its normal enemy hitbox and
   health-group `$00` values (one health, `$04` contact damage) are wired into
   shared combat, and its bank-$07 shared recoil and shallow/deep-water
-  collision exception are verified below. Pit/conveyor side effects and the
-  remaining damage-state branches remain pending.
+  collision exception are verified below. Pit/ground-status side effects and
+  the remaining damage-state branches remain pending.
 - Pairodd (`$57`) now decodes bank `$04:$5DD1`'s eight pair variants and
   mirrors the `$20` disappear, `$40` reappear, and `$30` resting countdowns,
   signed `$20` Link proximity windows, exact `($A0-x, $90-y)` teleport, and
@@ -160,7 +160,7 @@ resource.
   direct Z ascent/descent, and contiguous ROM phase-speed tables. Its grounded
   health-group `$00` contact/sword path is wired, and its grounded shared
   bank-$07 recoil and wall rollback plus airborne contact/clink behavior are
-  verified below; generic ground/water/pit/conveyor interaction and remaining
+  verified below; generic ground-status/water/pit interaction and remaining
   damage-state behavior remain pending.
 - Aggressive Stalfos now decodes the bank `$06` three-variant display list and
   mirrors its slot-phased Link pursuit, proximity-triggered jump, fixed-point
@@ -675,6 +675,22 @@ runtime collision callback.
 - A real ROM indoor room containing Water Tektite now advances through a
   deep-water field instead of repeatedly resetting against it. Pit/conveyor
   interaction and the remaining damage-state branches remain pending.
+
+## Verified ROM entity conveyor interaction — 2026-08-05
+
+- The live entity runtime now applies bank-$03's conveyor movement tables
+  after an active handler update, every fourth frame. The room physics lookup
+  uses the exact `entityX - 1`, `entityY - 7` sample in the padded room-object
+  buffer and the selected overworld/indoor ROM physics table.
+- `RomTables` now loads `Options1ForEntity` from bank `$03:$42F1`; entities
+  with `ENTITY_OPT1_NO_GROUND_INTERACTION` are excluded before terrain
+  movement. The source Z gate and one-byte coordinate wrapping are preserved.
+- Real ROM regressions cover an Octorok on overworld conveyor `$CF` (physics
+  `$F4`, diagonal `+1,+1`) and a Spark `$17` on an indoor conveyor, which
+  remains unchanged because its no-ground option is set.
+- Ground-status updates, water splash effects, pit transitions, and the
+  remaining entity-specific background behavior remain separate pending
+  increments.
 
 ## Next entity increments
 

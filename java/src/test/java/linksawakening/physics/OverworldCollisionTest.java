@@ -44,4 +44,23 @@ final class OverworldCollisionTest {
 
         assertEquals(0x07, collision.objectPhysicsFlagAtPoint(0x30, 0x20));
     }
+
+    @Test
+    void groundInteractionPhysicsLookupUsesTheRomEntityCoordinateSample() {
+        byte[] rom = new byte[0x100000];
+        int physicsOffset = RomBank.romOffset(0x08, 0x4AD4);
+        rom[physicsOffset + 0x100 + 0x42] = (byte) 0xF2;
+        RomTables tables = RomTables.loadFromRom(rom);
+        OverworldCollision collision = new OverworldCollision(tables);
+        collision.setPhysicsTable(RomTables.PHYSICS_TABLE_INDOORS1);
+
+        int[] roomObjects = new int[0x100];
+        Arrays.fill(roomObjects, 0xFF);
+        // func_003_7E0E samples entityX - 1 and entityY - 7. At ($40,$37)
+        // that selects padded row $30, column 3: $11 + $30 + 3.
+        roomObjects[0x44] = 0x42;
+        collision.setRoom(roomObjects);
+
+        assertEquals(0xF2, collision.objectPhysicsFlagAtGroundInteraction(0x40, 0x37));
+    }
 }

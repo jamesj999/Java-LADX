@@ -19,6 +19,13 @@ public final class RomTables {
     public static final int PHYSICS_TABLE_INDOORS1 = 1;
     public static final int PHYSICS_TABLE_INDOORS2 = 2;
 
+    // Options1ForEntity in bank $03, included by entities/bank3.asm. The
+    // entity initialization path copies this 256-byte ROM table into
+    // wEntitiesOptions1Table before dispatching the entity handler.
+    private static final int ENTITY_OPTIONS_BANK = 0x03;
+    private static final int ENTITY_OPTIONS_ADDR = 0x42F1;
+    private static final int ENTITY_OPTIONS_TABLE_SIZE = 0x100;
+
     private static final int LINK_SPEED_TABLE_BANK = 0x02;
     private static final int LINK_SPEED_TABLE_X_ADDR = 0x48C5;
     private static final int LINK_SPEED_TABLE_Y_ADDR = 0x48E5;
@@ -59,6 +66,7 @@ public final class RomTables {
     private static final int SWORD_SPRITE_TABLE_LEN = 16;
 
     private final int[][] physicsFlags;
+    private final int[] entityOptions1;
     private final byte[] linkSpeedX;
     private final byte[] linkSpeedY;
     private final int[] swordAnimState;
@@ -75,7 +83,8 @@ public final class RomTables {
     private final byte[] staticSwordCollisionX;
     private final byte[] staticSwordCollisionY;
 
-    private RomTables(int[][] physicsFlags, byte[] linkSpeedX, byte[] linkSpeedY,
+    private RomTables(int[][] physicsFlags, int[] entityOptions1,
+                      byte[] linkSpeedX, byte[] linkSpeedY,
                       int[] swordAnimState, int[] swordDirection,
                       byte[] swordXOffset, byte[] swordYOffset, byte[] swordYBase,
                       int[] swordCollisionNeeded, int[] swordCollisionWidth,
@@ -83,6 +92,7 @@ public final class RomTables {
                       int[] swordSpriteTiles, int[] swordSpriteAttrs,
                       byte[] staticSwordCollisionX, byte[] staticSwordCollisionY) {
         this.physicsFlags = physicsFlags;
+        this.entityOptions1 = entityOptions1;
         this.linkSpeedX = linkSpeedX;
         this.linkSpeedY = linkSpeedY;
         this.swordAnimState = swordAnimState;
@@ -108,6 +118,9 @@ public final class RomTables {
                 flags[t][i] = Byte.toUnsignedInt(romData[baseOffset + t * PHYSICS_FLAGS_TABLE_SIZE + i]);
             }
         }
+
+        int[] options1 = loadUnsignedTable(
+            romData, ENTITY_OPTIONS_BANK, ENTITY_OPTIONS_ADDR, ENTITY_OPTIONS_TABLE_SIZE);
 
         byte[] speedX = new byte[LINK_SPEED_TABLE_LENGTH];
         byte[] speedY = new byte[LINK_SPEED_TABLE_LENGTH];
@@ -136,7 +149,7 @@ public final class RomTables {
         byte[] staticSwordCollisionY = loadSignedTable(
             romData, STATIC_SWORD_COLLISION_TABLE_BANK, STATIC_SWORD_COLLISION_Y_ADDR, STATIC_SWORD_COLLISION_TABLE_LEN);
 
-        return new RomTables(flags, speedX, speedY, swordAnim, swordDir,
+        return new RomTables(flags, options1, speedX, speedY, swordAnim, swordDir,
                              swordX, swordY, swordYBaseBytes,
                              swordCollisionNeeded, swordCollisionWidth,
                              swordCollisionOffset, swordCollisionHeight,
@@ -175,6 +188,17 @@ public final class RomTables {
             return 0;
         }
         return physicsFlags[tableIndex][objectId];
+    }
+
+    /**
+     * ROM {@code Options1ForEntity[entityType]} from bank $03. Bit $10 in
+     * this byte is {@code ENTITY_OPT1_B_NO_GROUND_INTERACTION}.
+     */
+    public int entityOptions1(int entityType) {
+        if (entityType < 0 || entityType >= ENTITY_OPTIONS_TABLE_SIZE) {
+            return 0;
+        }
+        return entityOptions1[entityType];
     }
 
     /** Back-compat shim: overworld physics flag for an object id. */
