@@ -1,5 +1,6 @@
 package linksawakening.world;
 
+import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.rom.RomBank;
 import org.junit.jupiter.api.Test;
 
@@ -141,6 +142,29 @@ final class EntityRoomLoaderTest {
     }
 
     @Test
+    void loadsColorShellsWithTheirInactiveRomRectangleDefinitions() {
+        byte[] rom = syntheticRom();
+        writePointer(rom, EntityRoomLoader.RoomTable.OVERWORLD, 0, 0x5180);
+        writeStream(rom, 0x5180,
+            0x12, 0xE9,
+            0x23, 0xEA,
+            0x34, 0xEB,
+            0xFF);
+
+        List<RoomEntity> shells = new EntityRoomLoader(rom)
+            .load(EntityRoomLoader.RoomTable.OVERWORLD, 0)
+            .loadedEntities();
+
+        assertEquals(3, shells.size());
+        assertEquals(EntitySpriteDefinition.Shape.RECTANGLE,
+            shells.get(0).spriteDefinition().shape());
+        assertEquals(0x67A8, shells.get(0).spriteDefinition().address());
+        assertEquals(0x67D8, shells.get(1).spriteDefinition().address());
+        assertEquals(0x6808, shells.get(2).spriteDefinition().address());
+        assertEquals(4, shells.get(0).spriteDefinition().variantCount());
+    }
+
+    @Test
     void shiftsTreeSecretSeashellOnlyInItsTwoSpecialOverworldRooms() {
         byte[] rom = syntheticRom();
         writePointer(rom, EntityRoomLoader.RoomTable.OVERWORLD, 0xA4, 0x5160);
@@ -239,7 +263,7 @@ final class EntityRoomLoaderTest {
     }
 
     private static byte[] syntheticRom() {
-        return new byte[RomBank.romOffset(0x1A, 0x4000)];
+        return new byte[RomBank.romOffset(0x20, 0x8000)];
     }
 
     private static void writePointer(byte[] rom, EntityRoomLoader.RoomTable table,

@@ -2,6 +2,7 @@ package linksawakening.entity;
 
 import linksawakening.rom.RomBank;
 import linksawakening.world.EntityRoomLoader;
+import linksawakening.world.EntityStatus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,6 +59,15 @@ public final class EntitySpriteHandlerCatalog {
     private static final int ENTITY_GRANDPA_ULRIRA = 0x77;
     private static final int ENTITY_MARIN_AT_THE_SHORE = 0xC1;
     private static final int ENTITY_MARIN_AT_TAL_TAL_HEIGHTS = 0xC2;
+    private static final int ENTITY_COLOR_SHELL_RED = 0xE9;
+    private static final int ENTITY_COLOR_SHELL_BLUE = 0xEB;
+
+    private static final int[] COLOR_SHELL_ACTIVE_DISPLAY_ADDRESSES = {
+        0x6688, 0x66E8, 0x6748
+    };
+    private static final int[] COLOR_SHELL_INACTIVE_DISPLAY_ADDRESSES = {
+        0x67A8, 0x67D8, 0x6808
+    };
 
     private final byte[] romData;
 
@@ -81,6 +91,12 @@ public final class EntitySpriteHandlerCatalog {
         }
         if (roomTable == null) {
             throw new IllegalArgumentException("Room entity table cannot be null");
+        }
+
+        if (isColorShellType(entityType)) {
+            // Room streams begin in INIT. The bank-$36 renderer uses its
+            // inactive four-variant list until the first active handler tick.
+            return forColorShellState(entityType, 0, EntityStatus.INIT);
         }
 
         if (entityType == ENTITY_CROW) {
@@ -222,6 +238,31 @@ public final class EntitySpriteHandlerCatalog {
         return EntitySpriteDefinition.unsupported(entityType);
     }
 
+    /**
+     * Selects the bank-$20 rectangle list used by bank-$36's
+     * {@code func_036_69D9}. States below six while ACTIVE use the animated
+     * eight-variant list; all other status/state combinations use the
+     * four-variant inactive list.
+     */
+    public EntitySpriteDefinition forColorShellState(int entityType, int state,
+                                                      EntityStatus status) {
+        if (!isColorShellType(entityType)) {
+            throw new IllegalArgumentException("Not a Color Shell entity type: 0x"
+                + Integer.toHexString(entityType));
+        }
+        if (state < 0 || state > 0x0D) {
+            throw new IllegalArgumentException("Color Shell state out of range: " + state);
+        }
+        if (status == null) {
+            throw new IllegalArgumentException("Entity status cannot be null");
+        }
+        int color = entityType - ENTITY_COLOR_SHELL_RED;
+        boolean activeList = status == EntityStatus.ACTIVE && state < 0x06;
+        int address = (activeList ? COLOR_SHELL_ACTIVE_DISPLAY_ADDRESSES
+                                  : COLOR_SHELL_INACTIVE_DISPLAY_ADDRESSES)[color];
+        return decodeRectangle(entityType, 0x20, address, activeList ? 8 : 4, 3, 0);
+    }
+
     /** The green Zol list selected after Slime Eye has split its Zol. */
     public EntitySpriteDefinition forZolSlimeEye() {
         return decodePair(0x1B, 0x06, 0x7C11, 2, 0);
@@ -352,5 +393,9 @@ public final class EntitySpriteHandlerCatalog {
 
     private static int signedByte(byte value) {
         return value;
+    }
+
+    private static boolean isColorShellType(int entityType) {
+        return entityType >= ENTITY_COLOR_SHELL_RED && entityType <= ENTITY_COLOR_SHELL_BLUE;
     }
 }

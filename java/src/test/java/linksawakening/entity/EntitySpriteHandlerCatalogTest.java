@@ -2,6 +2,7 @@ package linksawakening.entity;
 
 import linksawakening.rom.RomBank;
 import linksawakening.world.EntityRoomLoader;
+import linksawakening.world.EntityStatus;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -601,6 +602,49 @@ final class EntitySpriteHandlerCatalogTest {
             0x0C, EntityRoomLoader.RoomTable.OVERWORLD);
         assertDefinition(moblinArrow, 0x03, 0x6BC6,
             EntitySpriteDefinition.Shape.PAIR, 4, 0);
+    }
+
+    @Test
+    void mapsColorShellStatesToTheSixBankTwentyRectangleFamilies() throws Exception {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+        int[] types = {0xE9, 0xEA, 0xEB};
+        int[] activeAddresses = {0x6688, 0x66E8, 0x6748};
+        int[] inactiveAddresses = {0x67A8, 0x67D8, 0x6808};
+
+        for (int index = 0; index < types.length; index++) {
+            EntitySpriteDefinition active = catalog.forColorShellState(
+                types[index], 0x00, EntityStatus.ACTIVE);
+            assertDefinition(active, 0x20, activeAddresses[index],
+                EntitySpriteDefinition.Shape.RECTANGLE, 8, 0);
+            assertEquals(3, active.rectangleVariant(0).size());
+
+            EntitySpriteDefinition inactive = catalog.forColorShellState(
+                types[index], 0x06, EntityStatus.ACTIVE);
+            assertDefinition(inactive, 0x20, inactiveAddresses[index],
+                EntitySpriteDefinition.Shape.RECTANGLE, 4, 0);
+            assertEquals(3, inactive.rectangleVariant(0).size());
+
+            EntitySpriteDefinition stunned = catalog.forColorShellState(
+                types[index], 0x00, EntityStatus.STUNNED);
+            assertEquals(inactive.address(), stunned.address());
+        }
+    }
+
+    @Test
+    void colorShellRectangleBytesPreserveRomOffsetsAttributesAndHiddenOam() throws Exception {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+
+        EntitySpriteDefinition active = catalog.forColorShellState(
+            0xE9, 0x00, EntityStatus.ACTIVE);
+        EntitySpriteDefinition.RectangleSprite first = active.rectangleVariant(0).get(0);
+        assertEquals(0, first.yOffset());
+        assertEquals(8, first.xOffset());
+        assertEquals(0x48, first.oam().tile());
+        assertEquals(0x02, first.oam().attributes());
+
+        EntitySpriteDefinition.RectangleSprite hidden = active.rectangleVariant(1).get(2);
+        assertEquals(0xFF, hidden.oam().tile());
+        assertEquals(0xFF, hidden.oam().attributes());
     }
 
     @Test
