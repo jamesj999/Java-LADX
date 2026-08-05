@@ -610,7 +610,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(EntityStatus.DYING, runtime.snapshot().slots().get(0).status());
         assertEquals(0x1F, runtime.dyingCountdown(0));
         assertEquals(0x04, runtime.physicsFlags(0));
-        List<EntityCombatEvent> expiryEvents = runtime.consumePendingStatusEvents();
+        List<EntityCombatEvent> expiryEvents = runtime.consumePendingEntityEvents();
         assertEquals(1, expiryEvents.size());
         assertEquals(EntityCombatEvent.SoundChannel.NOISE,
             expiryEvents.getFirst().soundChannel());
@@ -667,7 +667,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
         assertEquals(0, runtime.transitionCountdown(0));
         assertEquals(0, runtime.physicsFlags(0));
-        assertTrue(runtime.consumePendingStatusEvents().isEmpty());
+        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
     }
 
     @Test
@@ -2112,6 +2112,31 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x50, beam.y());
         assertEquals(0x20, runtime.laserSpeedX(15));
         assertEquals(0xF0, runtime.laserSpeedY(15));
+        List<EntityCombatEvent> events = runtime.consumePendingEntityEvents();
+        assertEquals(1, events.size());
+        assertEquals(EntityCombatEvent.SoundChannel.NOISE,
+            events.getFirst().soundChannel());
+        assertEquals(0x08, events.getFirst().soundId());
+    }
+
+    @Test
+    void laserParentDoesNotEmitFiringNoiseWhenTheBeamSlotIsUnavailable() {
+        List<RoomEntity> entities = new ArrayList<>();
+        entities.add(new RoomEntity(0, 0, 0x2A, 0x40, 0x50, EntityStatus.ACTIVE,
+            pairDefinition(0x2A, 8), 0));
+        for (int slot = 1; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
+            entities.add(new RoomEntity(slot, slot, 0xFF, 0, 0, EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0xFF), -1));
+        }
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+            new RoomEntitySnapshot(entities));
+        runtime.setLaserParentForTest(0, 0x10, 0x20, 0xF0);
+
+        runtime.tick(0, 0x10, 0x10, () -> 0);
+
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(15).status());
+        assertEquals(0xFF, runtime.snapshot().slots().get(15).type());
+        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
     }
 
     @Test

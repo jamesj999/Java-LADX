@@ -60,6 +60,8 @@ final class SfxGameplaySoundSinkTest {
                 SoundEffectNamespace.NOISE, 0x12, "NOISE_SFX_BURSTING_FLAME");
         assertMapped(map, GameplaySoundEvent.ENEMY_DESTROYED,
                 SoundEffectNamespace.NOISE, 0x13, "NOISE_SFX_ENEMY_DESTROYED");
+        assertMapped(map, GameplaySoundEvent.BEAMOS_LASER,
+                SoundEffectNamespace.NOISE, 0x08, "NOISE_SFX_BEAMOS_LASER");
     }
 
     @Test

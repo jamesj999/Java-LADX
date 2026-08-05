@@ -52,6 +52,18 @@ final class EnemyCombatEventConsumerTest {
     }
 
     @Test
+    void mapsBeamosFiringNoiseToTheLaserSound() {
+        RecordingSoundSink sounds = new RecordingSoundSink();
+        List<EntityCombatEvent> events = List.of(
+            new EntityCombatEvent(0, 0x2A, 0, false, 0, -1,
+                EntityCombatEvent.SoundChannel.NOISE, 0x08));
+
+        EnemyCombatEventConsumer.consume(events, sounds);
+
+        assertEquals(List.of(GameplaySoundEvent.BEAMOS_LASER), sounds.events);
+    }
+
+    @Test
     void routesRomSwordPokeSoundAndVfxRequest() {
         RecordingSoundSink sounds = new RecordingSoundSink();
         linksawakening.vfx.TransientVfxSystem vfx =

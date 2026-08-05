@@ -14,6 +14,7 @@ public final class EnemyCombatEventConsumer {
     private static final int JINGLE_SWORD_POKE_ID = 0x07;
     private static final int NOISE_ENEMY_BURNING_ID = 0x12;
     private static final int NOISE_ENEMY_DESTROYED_ID = 0x13;
+    private static final int NOISE_BEAMOS_LASER_ID = 0x08;
 
     private EnemyCombatEventConsumer() {
     }
@@ -59,6 +60,7 @@ public final class EnemyCombatEventConsumer {
             switch (id) {
                 case NOISE_ENEMY_BURNING_ID -> soundSink.play(GameplaySoundEvent.ENEMY_BURNING);
                 case NOISE_ENEMY_DESTROYED_ID -> soundSink.play(GameplaySoundEvent.ENEMY_DESTROYED);
+                case NOISE_BEAMOS_LASER_ID -> soundSink.play(GameplaySoundEvent.BEAMOS_LASER);
                 default -> {
                     // Unknown ROM sound writes must not be guessed or routed
                     // to an unrelated gameplay effect.

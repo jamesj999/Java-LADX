@@ -358,12 +358,12 @@ public final class RoomSession {
         return events;
     }
 
-    /** Returns and clears entity status-side-effect events emitted by the last tick. */
-    public List<EntityCombatEvent> consumeEntityStatusEvents() {
+    /** Returns and clears entity side-effect events emitted by the last tick. */
+    public List<EntityCombatEvent> consumeEntityEvents() {
         if (entityRuntime == null) {
             return List.of();
         }
-        return entityRuntime.consumePendingStatusEvents();
+        return entityRuntime.consumePendingEntityEvents();
     }
 
     /** Link uses Java's down/up/left/right order; projectile ROM tables use right/left/up/down. */

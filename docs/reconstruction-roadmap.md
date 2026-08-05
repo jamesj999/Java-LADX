@@ -267,11 +267,14 @@ unsupported rather than represented by guessed shapes or generic movement.
   beam fixed-point motion, mirror-shield direction filtering and reflection
   side effects, transient rendering, and the live event boundary. The clean
   complete Java test suite passes with the shipped ROM.
+- Successful beam creation at the parent countdown `$10` now emits the raw
+  `NOISE_SFX_BEAMOS_LASER` `$08` event through the same live audio boundary;
+  failed beam-slot allocation emits neither the beam nor the noise, matching
+  the bank-$04 `SpawnNewEntity` carry branch.
 
 Deferred laser details remain the parent’s generic background/contact path,
 the exact bank-$15 `ApplySwordIntersectionWithObjects` edge cases beyond the
-runtime collision callback, and routing of firing noise `$08` through the
-audio boundary.
+runtime collision callback.
 
 ## Verified ROM Pairodd projectile collision — 2026-08-05
 

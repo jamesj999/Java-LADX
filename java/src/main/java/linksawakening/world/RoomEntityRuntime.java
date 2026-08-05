@@ -108,7 +108,7 @@ public final class RoomEntityRuntime {
     private final List<RoamingEnemyMotion.LaunchRequest> projectileLaunchRequests =
         new ArrayList<>();
     private final List<TransientVfxRequest> transientVfxRequests = new ArrayList<>();
-    private final List<EntityCombatEvent> pendingStatusEvents = new ArrayList<>();
+    private final List<EntityCombatEvent> pendingEntityEvents = new ArrayList<>();
     private ColorShellWorld colorShellWorld = ColorShellWorld.none();
     private int pendingClearedEntityMask;
 
@@ -308,7 +308,7 @@ public final class RoomEntityRuntime {
         Arrays.fill(enemyProjectileSpawnedThisFrame, false);
         Arrays.fill(dynamicEntitySpawnedThisFrame, false);
         transientVfxRequests.clear();
-        pendingStatusEvents.clear();
+        pendingEntityEvents.clear();
         List<EntityProjectileEvent> projectileEvents = new ArrayList<>();
         if (linkPositionHistory != null) {
             followingLinkPositionHistory = linkPositionHistory;
@@ -562,7 +562,11 @@ public final class RoomEntityRuntime {
                     spawnLaserSensor(entity);
                 }
                 if (laserUpdate.spawnBeam()) {
-                    spawnLaserBeam(entity);
+                    if (spawnLaserBeam(entity)) {
+                        pendingEntityEvents.add(new EntityCombatEvent(
+                            entity.slot(), entity.type(), 0, false,
+                            EntityCombatEvent.SoundChannel.NOISE, 0x08));
+                    }
                 }
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
@@ -1041,9 +1045,9 @@ public final class RoomEntityRuntime {
         return pending;
     }
 
-    List<EntityCombatEvent> consumePendingStatusEvents() {
-        List<EntityCombatEvent> pending = List.copyOf(pendingStatusEvents);
-        pendingStatusEvents.clear();
+    List<EntityCombatEvent> consumePendingEntityEvents() {
+        List<EntityCombatEvent> pending = List.copyOf(pendingEntityEvents);
+        pendingEntityEvents.clear();
         return pending;
     }
 
@@ -1215,10 +1219,10 @@ public final class RoomEntityRuntime {
         dynamicEntitySpawnedThisFrame[freeSlot] = true;
     }
 
-    private void spawnLaserBeam(RoomEntity parent) {
+    private boolean spawnLaserBeam(RoomEntity parent) {
         int freeSlot = findFreeEntitySlot();
         if (freeSlot < 0) {
-            return;
+            return false;
         }
 
         RoomEntity beam = new RoomEntity(freeSlot, -1, ENTITY_LASER_BEAM,
@@ -1236,6 +1240,7 @@ public final class RoomEntityRuntime {
         laserMotion.initializeBeam(freeSlot, laserMotion.direction(parent.slot()),
             laserMotion.speedX(parent.slot()), laserMotion.speedY(parent.slot()));
         dynamicEntitySpawnedThisFrame[freeSlot] = true;
+        return true;
     }
 
     private EntitySpriteDefinition spriteDefinitionFor(int entityType) {
@@ -1278,7 +1283,7 @@ public final class RoomEntityRuntime {
         enemyPhysicsFlags[slot] = 0x04;
         dyingCountdown[slot] = 0x1F;
         slots[slot] = withStatus(entity, EntityStatus.DYING);
-        pendingStatusEvents.add(new EntityCombatEvent(
+        pendingEntityEvents.add(new EntityCombatEvent(
             slot, entity.type(), 0, false,
             EntityCombatEvent.SoundChannel.NOISE, 0x13));
     }
