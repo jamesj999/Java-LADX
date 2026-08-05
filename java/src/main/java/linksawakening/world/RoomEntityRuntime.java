@@ -110,7 +110,7 @@ public final class RoomEntityRuntime {
         this.spriteHandlers = spriteHandlers;
         this.enemyCombatTables = enemyCombatTables;
         for (RoomEntity entity : slots) {
-            enemyHealth[entity.slot()] = initialHealth(entity.type());
+            enemyHealth[entity.slot()] = entity.loaded() ? initialHealth(entity.type()) : 0;
             if (isFollowingNpcType(entity.type())) {
                 if (entity.type() == ENTITY_BOW_WOW) {
                     bowWowMotion.initialize(entity.slot());
@@ -578,9 +578,9 @@ public final class RoomEntityRuntime {
                                                  boolean linkInteractive,
                                                  boolean swordCollisionActive,
                                                  int swordX,
-                                                       int swordWidth,
-                                                       int swordY,
-                                                       int swordHeight) {
+                                                 int swordWidth,
+                                                 int swordY,
+                                                 int swordHeight) {
         return resolveCombat(frameCounter, linkEntityX, linkEntityY, linkAirborne,
             linkInteractive, swordCollisionActive, swordX, swordWidth, swordY, swordHeight,
             EnemyAttackContext.standard());
