@@ -67,7 +67,9 @@ public final class RoomEntityRuntime {
     private final RomRandomByteSource fallbackRomRandomByteSource;
     private final EntitySpriteHandlerCatalog spriteHandlers;
     private final RomEnemyCombatTables enemyCombatTables;
-    private RoomEntityGroundInteraction groundInteraction = (entity, frameCounter) -> entity;
+    private RoomEntityGroundInteraction groundInteraction =
+        (entity, frameCounter, previousGroundStatus, speedZ, sideScrolling) ->
+            RoomEntityGroundInteraction.Result.unchanged(entity, 0);
     private FollowingNpcState followingNpcState = FollowingNpcState.none();
     private LinkPositionHistory followingLinkPositionHistory = new LinkPositionHistory();
     private int followingLinkZ;
@@ -110,6 +112,7 @@ public final class RoomEntityRuntime {
     private final int[] enemyHealth = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyFlashCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyIgnoreHitsCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] entityGroundStatus = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] baseEntityFlipAttribute = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] entityOptions1Override = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] enemyProjectileSpawnedThisFrame =
@@ -123,6 +126,7 @@ public final class RoomEntityRuntime {
     private ColorShellWorld colorShellWorld = ColorShellWorld.none();
     private int pendingClearedEntityMask;
     private boolean actionButtonsHeld;
+    private boolean groundInteractionSideScrolling;
     private int entityMapId = -1;
 
     /** A ROM transient-VFX creation requested by an entity handler this frame. */
@@ -826,9 +830,25 @@ public final class RoomEntityRuntime {
                 // entity handler's movement and before the final display-list
                 // presentation. The room session supplies terrain physics;
                 // direct runtime users retain the no-op default.
-                updated = Objects.requireNonNull(
-                    groundInteraction.apply(updated, frame),
+                int previousGroundStatus = entityGroundStatus[updated.slot()];
+                RoomEntityGroundInteraction.Result groundResult = Objects.requireNonNull(
+                    groundInteraction.apply(updated, frame, previousGroundStatus,
+                        verticalSpeedZ(updated), groundInteractionSideScrolling),
                     "Room entity ground interaction returned null");
+                updated = Objects.requireNonNull(groundResult.entity(),
+                    "Room entity ground interaction returned a null entity");
+                entityGroundStatus[updated.slot()] = groundResult.groundStatus() & 0xFF;
+                if (groundResult.waterSplash()) {
+                    transientVfxRequests.add(new TransientVfxRequest(
+                        TransientVfxType.WATER_SPLASH, updated.x(), updated.y()));
+                    pendingEntityEvents.add(new EntityCombatEvent(
+                        updated.slot(), updated.type(), 0, false,
+                        EntityCombatEvent.SoundChannel.JINGLE, 0x0E));
+                }
+                if (groundResult.unloaded()) {
+                    disableEntityWithoutPersistence(updated.slot());
+                    continue;
+                }
             }
             if (ColorShellMotion.isColorShellType(updated.type())) {
                 updated = refreshColorShellDisplay(updated, status);
@@ -1117,6 +1137,7 @@ public final class RoomEntityRuntime {
         enemyHealth[slot] = 0;
         enemyFlashCountdown[slot] = 0;
         enemyIgnoreHitsCountdown[slot] = 0;
+        entityGroundStatus[slot] = 0;
         baseEntityFlipAttribute[slot] = 0;
         entityOptions1Override[slot] = -1;
         enemyRecoilMotion.clear(slot);
@@ -1160,11 +1181,24 @@ public final class RoomEntityRuntime {
 
     void setGroundInteraction(RoomEntityGroundInteraction groundInteraction) {
         this.groundInteraction = groundInteraction == null
-            ? (entity, frameCounter) -> entity : groundInteraction;
+            ? (entity, frameCounter, previousGroundStatus, speedZ, sideScrolling) ->
+                RoomEntityGroundInteraction.Result.unchanged(entity, 0)
+            : groundInteraction;
+    }
+
+    int groundStatus(int slot) {
+        if (slot < 0 || slot >= entityGroundStatus.length) {
+            throw new IllegalArgumentException("Entity slot out of range: " + slot);
+        }
+        return entityGroundStatus[slot];
     }
 
     void setActionButtonsHeld(boolean actionButtonsHeld) {
         this.actionButtonsHeld = actionButtonsHeld;
+    }
+
+    void setGroundInteractionSideScrolling(boolean sideScrolling) {
+        groundInteractionSideScrolling = sideScrolling;
     }
 
     void setEntityMapId(int mapId) {
@@ -2125,6 +2159,7 @@ public final class RoomEntityRuntime {
         enemyHealth[slot] = 0;
         enemyFlashCountdown[slot] = 0;
         enemyIgnoreHitsCountdown[slot] = 0;
+        entityGroundStatus[slot] = 0;
         baseEntityFlipAttribute[slot] = 0;
         entityOptions1Override[slot] = -1;
         enemyRecoilMotion.clear(slot);
@@ -2154,6 +2189,32 @@ public final class RoomEntityRuntime {
         hardHatMotion.clear(slot);
         bowWowMotion.clear(slot);
         slots[slot] = RoomEntity.disabled(slot);
+    }
+
+    private int verticalSpeedZ(RoomEntity entity) {
+        int slot = entity.slot();
+        if (entity.type() == ENTITY_TEKTITE) {
+            return tektiteMotion.speedZ(slot);
+        }
+        if (entity.type() == ENTITY_STALFOS_AGGRESSIVE) {
+            return stalfosAggressiveMotion.speedZ(slot);
+        }
+        if (entity.type() == ENTITY_STALFOS_EVASIVE) {
+            return stalfosEvasiveMotion.speedZ(slot);
+        }
+        if (isZolGelType(entity.type())) {
+            return zolGelMotion.speedZ(slot);
+        }
+        if (entity.type() == ENTITY_HIDING_ZOL) {
+            return hidingZolMotion.speedZ(slot);
+        }
+        if (isEnemyProjectileType(entity.type())) {
+            return enemyProjectileMotion.speedZ(slot);
+        }
+        if (ColorShellMotion.isColorShellType(entity.type())) {
+            return colorShellMotion.speedZ(slot);
+        }
+        return 0;
     }
 
     private void decrementEnemyCombatCountdowns(int slot) {

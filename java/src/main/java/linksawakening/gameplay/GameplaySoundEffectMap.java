@@ -21,6 +21,8 @@ public final class GameplaySoundEffectMap {
         Map<GameplaySoundEvent, SoundEffect> effects = new EnumMap<>(GameplaySoundEvent.class);
         put(effects, catalog, GameplaySoundEvent.ROC_FEATHER_JUMP, SoundEffectNamespace.JINGLE, 0x0D);
         put(effects, catalog, GameplaySoundEvent.PIT_FALL, SoundEffectNamespace.WAVE, 0x0C);
+        put(effects, catalog, GameplaySoundEvent.WATER_SPLASH,
+            SoundEffectNamespace.JINGLE, 0x0E);
         put(effects, catalog, GameplaySoundEvent.SWORD_SWING_A, SoundEffectNamespace.NOISE, 0x02);
         put(effects, catalog, GameplaySoundEvent.SWORD_SWING_B, SoundEffectNamespace.NOISE, 0x14);
         put(effects, catalog, GameplaySoundEvent.SWORD_SWING_C, SoundEffectNamespace.NOISE, 0x15);

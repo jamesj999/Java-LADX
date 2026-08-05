@@ -43,12 +43,14 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x4D, 32, 48, EntityStatus.ACTIVE, definition, 0));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
         AtomicInteger calls = new AtomicInteger();
-        runtime.setGroundInteraction((entity, frameCounter) -> {
+        runtime.setGroundInteraction((entity, frameCounter, previousStatus, speedZ,
+                                      sideScrolling) -> {
             calls.incrementAndGet();
-            return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
+            RoomEntity updated = new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
                 entity.x() + 1, entity.y(), entity.status(), entity.spriteDefinition(),
                 entity.spriteVariant(), entity.entityFlipAttribute(), entity.spriteTileOffset(),
                 entity.z());
+            return RoomEntityGroundInteraction.Result.unchanged(updated, 0x02);
         });
 
         runtime.tick(0, 0, 0, () -> 0);
@@ -56,6 +58,28 @@ final class RoomEntityRuntimeTest {
 
         assertEquals(2, calls.get());
         assertEquals(34, runtime.snapshot().slots().get(0).x());
+        assertEquals(0x02, runtime.groundStatus(0));
+    }
+
+    @Test
+    void groundResultQueuesSplashAndUnloadsTheSlotInSourceOrder() {
+        EntitySpriteDefinition definition = pairDefinition(0x4D, 1);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x4D, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+        runtime.setGroundInteraction((entity, frame, previousStatus, speedZ, sideScrolling) ->
+            RoomEntityGroundInteraction.Result.unloaded(entity, 0x02, true));
+
+        runtime.tick(0, 0, 0, () -> 0);
+
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
+        assertEquals(0, runtime.groundStatus(0));
+        assertEquals(List.of(new RoomEntityRuntime.TransientVfxRequest(
+            TransientVfxType.WATER_SPLASH, 0x40, 0x50)),
+            runtime.transientVfxRequests());
+        assertEquals(List.of(new EntityCombatEvent(0, 0x4D, 0, false,
+            EntityCombatEvent.SoundChannel.JINGLE, 0x0E)),
+            runtime.consumePendingEntityEvents());
     }
 
     @Test
@@ -1847,9 +1871,9 @@ final class RoomEntityRuntimeTest {
         runtime.setEntityMapIdForTest(0x03);
         runtime.setEvasivePrivateCountdown1ForTest(0, 0x02);
         List<Integer> groundInteractionSlots = new ArrayList<>();
-        runtime.setGroundInteraction((entity, frame) -> {
+        runtime.setGroundInteraction((entity, frame, previousStatus, speedZ, sideScrolling) -> {
             groundInteractionSlots.add(entity.slot());
-            return entity;
+            return RoomEntityGroundInteraction.Result.unchanged(entity, previousStatus);
         });
 
         runtime.tick(0, 0x70, 0x50, sequence(0x01));

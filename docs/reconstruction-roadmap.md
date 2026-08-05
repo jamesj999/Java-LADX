@@ -715,6 +715,27 @@ runtime collision callback.
   or clears at the ROM screen edge. Generic ground-status/water/pit behavior
   remains an explicit follow-up slice.
 
+## Verified ROM entity ground status and water splash — 2026-08-05
+
+- The post-handler terrain boundary now samples the padded room-object buffer
+  at the ROM's `entityX - 1`, `entityY - 7` coordinates and selects the active
+  overworld or indoor physics table. Per-slot ground status is reset and
+  retained with the same lifecycle as the entity slot.
+- Positive nonzero Z and `ENTITY_OPT1_NO_GROUND_INTERACTION` skip terrain
+  sampling. Deep-water/lava unloads ordinary entities and emits the source
+  water splash directly; Fish, PeaHat, Rooster, BowWow, and Marin retain the
+  source deep-water status. Shallow water, grass, side-scroll water, and the
+  unclassified physics fallback map to the ROM status bytes. The existing
+  eight-entry conveyor nudge remains every fourth frame.
+- Normal top-down status transitions use the ROM options and downward-Z gate.
+  Water splash VFX `$01` now renders the ROM `$18` Link tile through both
+  `Data_002_57FD` two-sprite phases, and jingle `$0E` reaches the gameplay
+  sound catalog as `JINGLE_WATER_SPLASH`.
+- Focused collision, runtime, room-session, VFX, and audio tests plus a clean
+  Java suite pass with the shipped ROM. Pit falling, wall rollback, and the
+  side-scroll speed-X/speed-Y damping branch remain pending rather than being
+  approximated here.
+
 ## Next entity increments
 
 1. Port remaining simple enemy movement, collision exceptions, lifting, and

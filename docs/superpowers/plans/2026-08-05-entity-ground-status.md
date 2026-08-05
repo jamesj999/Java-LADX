@@ -69,7 +69,7 @@ void groundInteractionSampleReturnsObjectPhysicsAndAlignedCell() {
 - [ ] **Step 2: Run the focused test and verify it fails for the missing API**
 
 ```bash
-./gradlew test --tests linksawakening.physics.OverworldCollisionTest \
+gradle test --tests linksawakening.physics.OverworldCollisionTest \
   --rerun-tasks
 ```
 
@@ -111,7 +111,7 @@ public int objectPhysicsFlagAtGroundInteraction(int entityX, int entityY) {
 - [ ] **Step 4: Run the focused test and commit**
 
 ```bash
-./gradlew test --tests linksawakening.physics.OverworldCollisionTest
+gradle test --tests linksawakening.physics.OverworldCollisionTest
 git add java/src/main/java/linksawakening/physics/OverworldCollision.java \
   java/src/test/java/linksawakening/physics/OverworldCollisionTest.java
 git commit -m "feat: expose ROM entity ground samples"
@@ -165,7 +165,7 @@ void groundResultQueuesSplashAndUnloadsTheSlotInSourceOrder() {
 - [ ] **Step 2: Run the focused test and verify the callback contract fails**
 
 ```bash
-./gradlew test --tests linksawakening.world.RoomEntityRuntimeTest \
+gradle test --tests linksawakening.world.RoomEntityRuntimeTest \
   --rerun-tasks
 ```
 
@@ -220,7 +220,7 @@ Update the two existing lambdas in `RoomEntityRuntimeTest` to accept
 `Result.unchanged(updatedEntity, previousStatus)`. Run:
 
 ```bash
-./gradlew test --tests linksawakening.world.RoomEntityRuntimeTest
+gradle test --tests linksawakening.world.RoomEntityRuntimeTest
 ```
 
 Expected: focused runtime tests pass.
@@ -265,7 +265,7 @@ nonzero positive value before ticking and asserts status `$00`.
 - [ ] **Step 2: Run the focused session tests and verify they fail**
 
 ```bash
-./gradlew test --tests linksawakening.world.RoomSessionTest \
+gradle test --tests linksawakening.world.RoomSessionTest \
   --rerun-tasks
 ```
 
@@ -296,9 +296,7 @@ if ((options & ENTITY_OPT1_NO_GROUND_INTERACTION) == 0
         || entity.type() == ENTITY_PEAHAT
         || entity.type() == ENTITY_ROOSTER
         || entity.type() == ENTITY_BOW_WOW
-        || (entity.type() == ENTITY_MARIN_AT_THE_SHORE
-            && followingLinkMotionState == LINK_MOTION_FALLING_DOWN
-            && sample.objectId() == OBJECT_WELL);
+        || entity.type() == ENTITY_MARIN_AT_THE_SHORE;
     if (deep && !retainedDeepWater) {
         return new RoomEntityGroundInteraction.Result(entity, 0, true,
             splashAllowed(entity, oldStatus, 0, speedZ, sideScrolling,
@@ -342,7 +340,7 @@ the rendered `RoomEntity.z()` value.
 - [ ] **Step 5: Run focused session tests and commit**
 
 ```bash
-./gradlew test --tests linksawakening.physics.OverworldCollisionTest \
+gradle test --tests linksawakening.physics.OverworldCollisionTest \
   --tests linksawakening.world.RoomEntityRuntimeTest \
   --tests linksawakening.world.RoomSessionTest
 git add java/src/main/java/linksawakening/physics/OverworldCollision.java \
@@ -380,8 +378,8 @@ void waterSplashRendererUsesRomTwoSpritePhases() throws IOException {
     CutLeavesEffectRenderer renderer = new CutLeavesEffectRenderer(
         TransientVfxSpriteSheet.loadFromRom(loadRom()));
 
-    var first = renderer.renderWaterSplash(0x40, 0x60, 0x0F);
-    var second = renderer.renderWaterSplash(0x40, 0x60, 0x08);
+    var first = renderer.renderWaterSplash(0x40, 0x60, 0x07);
+    var second = renderer.renderWaterSplash(0x40, 0x60, 0x0F);
 
     assertEquals(2, first.size());
     assertEquals(0x40 - 0x08 - 0x02, first.get(0).x());
@@ -400,7 +398,7 @@ event resolves to JINGLE `$0E` named `JINGLE_WATER_SPLASH`.
 - [ ] **Step 2: Run focused tests and verify they fail**
 
 ```bash
-./gradlew test --tests linksawakening.vfx.TransientVfxSystemTest \
+gradle test --tests linksawakening.vfx.TransientVfxSystemTest \
   --tests linksawakening.gameplay.EnemyCombatEventConsumerTest \
   --tests linksawakening.gameplay.GameplaySoundEffectMapTest --rerun-tasks
 ```
@@ -429,7 +427,7 @@ and map raw JINGLE `$0E` in `EnemyCombatEventConsumer`.
 - [ ] **Step 4: Run focused VFX/audio tests and commit**
 
 ```bash
-./gradlew test --tests linksawakening.vfx.TransientVfxSystemTest \
+gradle test --tests linksawakening.vfx.TransientVfxSystemTest \
   --tests linksawakening.gameplay.EnemyCombatEventConsumerTest \
   --tests linksawakening.gameplay.GameplaySoundEffectMapTest
 git add java/src/main/java/linksawakening/vfx \
@@ -449,7 +447,7 @@ git commit -m "feat: render entity water splashes"
 - [ ] **Step 1: Run the full clean suite**
 
 ```bash
-./gradlew clean test
+gradle clean test
 ```
 
 Expected: `BUILD SUCCESSFUL`, with zero failed or errored tests.

@@ -42,6 +42,8 @@ public final class TransientVfxRenderLayer implements RenderLayer {
             var sprites = switch (slot.type()) {
                 case BUSH_LEAVES -> cutLeavesEffectRenderer.renderBushLeaves(
                     slot.worldX(), slot.worldY(), slot.countdown());
+                case WATER_SPLASH -> cutLeavesEffectRenderer.renderWaterSplash(
+                    slot.worldX(), slot.worldY(), slot.countdown());
                 case POOF -> cutLeavesEffectRenderer.renderPoof(
                     slot.worldX(), slot.worldY(), slot.countdown());
                 case SWORD_POKE -> cutLeavesEffectRenderer.renderSwordPoke(

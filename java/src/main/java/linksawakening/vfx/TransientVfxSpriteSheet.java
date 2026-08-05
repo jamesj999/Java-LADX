@@ -9,32 +9,42 @@ public final class TransientVfxSpriteSheet {
 
     private static final int BANK_SIZE = 0x4000;
     private static final int CHARACTER_VFX_BANK = 0x0C;
+    private static final int LINK_CHARACTER_ADDR = 0x4000;
     private static final int CHARACTER_VFX_ADDR = 0x4200;
-    private static final int CHARACTER_VFX_TILE_COUNT = 0x20;
+    private static final int CHARACTER_TILE_COUNT = 0x20;
     private static final int TILE_BYTES = 0x10;
-    private static final int BASE_TILE_INDEX = 0x20;
+    private static final int BASE_TILE_INDEX = 0x00;
 
-    private final Tile[] tiles;
+    private final Tile[] linkTiles;
+    private final Tile[] vfxTiles;
 
-    private TransientVfxSpriteSheet(Tile[] tiles) {
-        this.tiles = tiles;
+    private TransientVfxSpriteSheet(Tile[] linkTiles, Tile[] vfxTiles) {
+        this.linkTiles = linkTiles;
+        this.vfxTiles = vfxTiles;
     }
 
     public static TransientVfxSpriteSheet loadFromRom(byte[] romData) {
-        Tile[] tiles = new Tile[CHARACTER_VFX_TILE_COUNT];
-        int offset = romOffset(CHARACTER_VFX_BANK, CHARACTER_VFX_ADDR);
-        for (int i = 0; i < tiles.length; i++) {
-            tiles[i] = decodeTile(romData, offset + i * TILE_BYTES);
+        Tile[] linkTiles = new Tile[CHARACTER_TILE_COUNT];
+        Tile[] vfxTiles = new Tile[CHARACTER_TILE_COUNT];
+        int linkOffset = romOffset(CHARACTER_VFX_BANK, LINK_CHARACTER_ADDR);
+        int vfxOffset = romOffset(CHARACTER_VFX_BANK, CHARACTER_VFX_ADDR);
+        for (int i = 0; i < CHARACTER_TILE_COUNT; i++) {
+            linkTiles[i] = decodeTile(romData, linkOffset + i * TILE_BYTES);
+            vfxTiles[i] = decodeTile(romData, vfxOffset + i * TILE_BYTES);
         }
-        return new TransientVfxSpriteSheet(tiles);
+        return new TransientVfxSpriteSheet(linkTiles, vfxTiles);
     }
 
     public Tile tile(int tileIndex) {
         int localIndex = tileIndex - BASE_TILE_INDEX;
-        if (localIndex < 0 || localIndex >= tiles.length) {
+        if (localIndex >= 0 && localIndex < linkTiles.length) {
+            return linkTiles[localIndex];
+        }
+        int vfxIndex = localIndex - linkTiles.length;
+        if (vfxIndex < 0 || vfxIndex >= vfxTiles.length) {
             return null;
         }
-        return tiles[localIndex];
+        return vfxTiles[vfxIndex];
     }
 
     public int baseTileIndex() {

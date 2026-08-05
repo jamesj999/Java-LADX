@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class TransientVfxSystemTest {
@@ -170,6 +171,23 @@ final class TransientVfxSystemTest {
         assertEquals(0x10, alternateFrame.get(0).attributes());
         assertEquals(0x10, alternateSlot.get(0).attributes());
         assertNotNull(firstFrame.get(0).tile());
+    }
+
+    @Test
+    void waterSplashRendererUsesRomTwoSpritePhases() throws IOException {
+        CutLeavesEffectRenderer renderer = new CutLeavesEffectRenderer(
+            TransientVfxSpriteSheet.loadFromRom(loadRom()));
+
+        var first = renderer.renderWaterSplash(0x40, 0x60, 0x07);
+        var second = renderer.renderWaterSplash(0x40, 0x60, 0x0F);
+
+        assertEquals(2, first.size());
+        assertEquals(0x40 - 0x08 - 0x02, first.get(0).x());
+        assertEquals(0x60 - 0x10 - 0x0A, first.get(0).y());
+        assertEquals(0x18, first.get(0).tileId());
+        assertEquals(0x20, first.get(1).attributes());
+        assertNotEquals(first.get(0).x(), second.get(0).x());
+        assertNotNull(first.get(0).tile());
     }
 
     private static byte[] loadRom() throws IOException {

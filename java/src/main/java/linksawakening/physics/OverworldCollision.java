@@ -26,6 +26,10 @@ public final class OverworldCollision {
      */
     public record PitCell(int targetTopLeftX, int targetTopLeftY, int physicsFlag) {}
 
+    /** The complete padded-buffer sample used by entity ground interaction. */
+    public record GroundInteractionSample(int objectId, int physicsFlag,
+                                          int objectLeft, int objectTop) {}
+
     public OverworldCollision(RomTables romTables) {
         this.romTables = romTables;
     }
@@ -145,18 +149,31 @@ public final class OverworldCollision {
      * wall-collision points.
      */
     public int objectPhysicsFlagAtGroundInteraction(int entityX, int entityY) {
+        return groundInteractionSample(entityX, entityY).physicsFlag();
+    }
+
+    /**
+     * Reads the raw object and aligned coordinates returned by
+     * {@code func_003_7E0E}. The caller can therefore follow the same sample
+     * for status, splash, conveyor, and (later) pit handling.
+     */
+    public GroundInteractionSample groundInteractionSample(int entityX, int entityY) {
         if (roomObjectsArea == null) {
-            return PhysicsFlags.NONE;
+            return new GroundInteractionSample(0xFF, PhysicsFlags.NONE, 0, 0);
         }
         int sampleX = (entityX - 1) & 0xFF;
         int sampleY = (entityY - 7) & 0xFF;
-        int areaIndex = ROOM_OBJECTS_BASE + (sampleY & 0xF0)
-            + ((sampleX & 0xF0) >>> 4);
+        int objectLeft = sampleX & 0xF0;
+        int objectTop = sampleY & 0xF0;
+        int areaIndex = ROOM_OBJECTS_BASE + objectTop + (objectLeft >>> 4);
         if (areaIndex < 0 || areaIndex >= roomObjectsArea.length) {
-            return PhysicsFlags.NONE;
+            return new GroundInteractionSample(0xFF, PhysicsFlags.NONE,
+                objectLeft, objectTop);
         }
         int objectId = roomObjectsArea[areaIndex] & 0xFF;
-        return romTables.objectPhysicsFlag(physicsTableIndex, objectId);
+        return new GroundInteractionSample(objectId,
+            romTables.objectPhysicsFlag(physicsTableIndex, objectId),
+            objectLeft, objectTop);
     }
 
     /**

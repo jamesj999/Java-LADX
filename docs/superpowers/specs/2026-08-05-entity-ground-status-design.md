@@ -26,16 +26,18 @@ The authoritative path is `LADX-Disassembly/src/code/entities/bank3.asm`:
   `(entityX - 1, entityY - 7)`, returning the raw object, its physics byte,
   and the sampled cell's top-left coordinates.
 - Deep-water and lava physics unload ordinary entities. Fish (`$CC`), PeaHat
-  (`$A0`), Rooster (`$D5`), and BowWow (`$6D`) retain ground status `$02`;
-  Marin at the shore (`$C1`) does so only when Link's motion state is falling
-  and the sampled object is the well (`$61`).
+  (`$A0`), Rooster (`$D5`), BowWow (`$6D`), and Marin at the shore (`$C1`)
+  retain ground status `$02`. Marin's separate pit-falling exception—falling
+  only when Link is falling on the well (`$61`)—belongs to the deferred pit
+  state machine, not this deep-water branch.
 - The regular status mapping is ROM-shaped: deep-water/side-scroll water and
   nonzero unclassified physics use `$01`, shallow water uses `$02`, and grass
   uses `$03`.
-- A splash is considered only when options bit `$08` is set, the old and new
-  ground status differ, neither status is tall grass, and the source's
-  downward-motion gate permits it. The event writes jingle `$0E` and transient
-  VFX `$01` at the entity position.
+- A regular status-transition splash is considered only when options bit `$08`
+  is set, the old and new ground status differ, neither status is tall grass,
+  and the source's downward-motion gate permits it. An ordinary deep-water or
+  lava unload jumps directly to `.createWaterSplash`, bypassing that gate. The
+  event writes jingle `$0E` and transient VFX `$01` at the entity position.
 - Conveyor movement is every fourth frame using the existing eight-entry ROM
   X/Y tables and remains after the terrain/status work.
 
@@ -117,4 +119,4 @@ snapshot does not yet expose the shared ROM speed tables.
 - VFX tests prove the `$18`/`$20` tile sources, ROM two-sprite placement, and
   countdown phase. Audio tests prove jingle `$0E` maps to the new gameplay
   event and catalog lookup.
-- `./gradlew clean test` in `java/` must pass after the focused tests pass.
+- `gradle clean test` in `java/` must pass after the focused tests pass.

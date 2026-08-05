@@ -35,6 +35,8 @@ public final class PhysicsFlags {
     public static final int CAT_DOOR_OPEN = 0x70;
     public static final int CAT_FINE_COLLISION = 0x80;
     public static final int CAT_DOOR_CLOSED = 0x90;
+    public static final int WATER_SIDESCROLL = 0xB0;
+    public static final int LADDER_SIDESCROLL = 0xB1;
     public static final int CAT_KEYHOLE = 0xC0;
     public static final int CAT_LEDGE = 0xD0;
     public static final int CAT_SPIKES = 0xE0;

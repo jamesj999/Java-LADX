@@ -22,6 +22,13 @@ public final class RoomSession {
     private static final int W_TILESET_NO_UPDATE = 0xFF;
     private static final int ENTITY_WATER_TEKTITE = 0x99;
     private static final int ENTITY_OPT1_NO_GROUND_INTERACTION = 0x10;
+    private static final int ENTITY_OPT1_SPLASH_IN_WATER = 0x08;
+    private static final int ENTITY_FISH = 0xCC;
+    private static final int ENTITY_PEAHAT = 0xA0;
+    private static final int ENTITY_ROOSTER = 0xD5;
+    private static final int ENTITY_BOW_WOW = 0x6D;
+    private static final int ENTITY_MARIN_AT_THE_SHORE = 0xC1;
+    private static final int OBJECT_WATER_LADDER_SIDESCROLL = 0x67;
     private static final int[] ENTITY_CONVEYOR_MOVEMENT_X = {0, 0, -1, 1, 1, -1, 1, -1};
     private static final int[] ENTITY_CONVEYOR_MOVEMENT_Y = {1, -1, 0, 0, 1, 1, -1, -1};
 
@@ -293,6 +300,13 @@ public final class RoomSession {
         }
     }
 
+    int entityGroundStatusForTest(int slot) {
+        if (entityRuntime == null) {
+            return 0;
+        }
+        return entityRuntime.groundStatus(slot);
+    }
+
     public void tickEntities(int frameCounter) {
         tickEntities(frameCounter, 0, 0);
     }
@@ -504,6 +518,8 @@ public final class RoomSession {
             entityRuntime.setFollowingNpcState(followingNpcState);
             entityRuntime.setEntityMapId(activeRoom.mapId());
             entityRuntime.setGroundInteraction(this::entityGroundInteraction);
+            entityRuntime.setGroundInteractionSideScrolling(
+                activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL);
             entityRuntime.setActionButtonsHeld(actionButtonsHeld);
         }
         followingNpcRoomNeedsSync = true;
@@ -537,6 +553,8 @@ public final class RoomSession {
         entityRuntime.setFollowingNpcState(followingNpcState);
         entityRuntime.setEntityMapId(activeRoom.mapId());
         entityRuntime.setGroundInteraction(this::entityGroundInteraction);
+        entityRuntime.setGroundInteractionSideScrolling(
+            activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL);
         entityRuntime.setActionButtonsHeld(actionButtonsHeld);
     }
 
@@ -614,15 +632,17 @@ public final class RoomSession {
     }
 
     /**
-     * Mirrors the conveyor portion of bank-$03's
+     * Mirrors the terrain/status and conveyor portion of bank-$03's
      * ApplyEntityInteractionWithBackground. Terrain physics and the entity
      * options byte stay ROM-backed; the runtime invokes this after the
      * entity-family handler has completed its movement for the frame.
      */
-    private RoomEntity entityGroundInteraction(RoomEntity entity, int frameCounter) {
+    private RoomEntityGroundInteraction.Result entityGroundInteraction(
+            RoomEntity entity, int frameCounter, int previousGroundStatus,
+            int speedZ, boolean sideScrolling) {
         int options = romTables.entityOptions1(entity.type());
         if ((options & ENTITY_OPT1_NO_GROUND_INTERACTION) != 0) {
-            return entity;
+            return RoomEntityGroundInteraction.Result.unchanged(entity, 0);
         }
 
         // The ROM skips ground interaction while an entity is moving upward;
@@ -630,22 +650,79 @@ public final class RoomSession {
         // the shared helper.
         int z = entity.z() & 0xFF;
         if (z != 0 && (z & 0x80) == 0) {
-            return entity;
-        }
-        if ((frameCounter & 0x03) != 0) {
-            return entity;
+            return RoomEntityGroundInteraction.Result.unchanged(entity, 0);
         }
 
-        int physicsFlag = overworldCollision.objectPhysicsFlagAtGroundInteraction(
-            entity.x(), entity.y());
+        OverworldCollision.GroundInteractionSample sample =
+            overworldCollision.groundInteractionSample(entity.x(), entity.y());
+        int physicsFlag = sample.physicsFlag();
+        int groundStatus = groundStatusFor(sample);
+        boolean deepWaterOrLava = physicsFlag == PhysicsFlags.DEEP_WATER
+            || physicsFlag == PhysicsFlags.LAVA;
+        boolean retainsDeepWaterStatus = entity.type() == ENTITY_FISH
+            || entity.type() == ENTITY_PEAHAT
+            || entity.type() == ENTITY_ROOSTER
+            || entity.type() == ENTITY_BOW_WOW
+            || entity.type() == ENTITY_MARIN_AT_THE_SHORE;
+        if (deepWaterOrLava && !retainsDeepWaterStatus) {
+            // The source unloads ordinary entities before jumping directly to
+            // .createWaterSplash, so this splash is not gated by options or
+            // the status-transition speed test.
+            return RoomEntityGroundInteraction.Result.unloaded(entity, 0x00, true);
+        }
+
+        boolean splash = splashAllowed(options, previousGroundStatus, groundStatus,
+            speedZ, sideScrolling);
         int movementIndex = physicsFlag - PhysicsFlags.CAT_CONVEYOR;
-        if (movementIndex < 0 || movementIndex >= ENTITY_CONVEYOR_MOVEMENT_X.length) {
-            return entity;
+        RoomEntity updated = entity;
+        if (movementIndex >= 0 && movementIndex < ENTITY_CONVEYOR_MOVEMENT_X.length
+            && (frameCounter & 0x03) == 0) {
+            updated = withEntityPosition(entity,
+                entity.x() + ENTITY_CONVEYOR_MOVEMENT_X[movementIndex],
+                entity.y() + ENTITY_CONVEYOR_MOVEMENT_Y[movementIndex]);
         }
 
-        return withEntityPosition(entity,
-            entity.x() + ENTITY_CONVEYOR_MOVEMENT_X[movementIndex],
-            entity.y() + ENTITY_CONVEYOR_MOVEMENT_Y[movementIndex]);
+        return new RoomEntityGroundInteraction.Result(updated, groundStatus, false, splash);
+    }
+
+    private static int groundStatusFor(OverworldCollision.GroundInteractionSample sample) {
+        int physicsFlag = sample.physicsFlag();
+        if (physicsFlag == PhysicsFlags.DEEP_WATER || physicsFlag == PhysicsFlags.LAVA) {
+            return 0x02;
+        }
+        if (sample.objectId() == OBJECT_WATER_LADDER_SIDESCROLL
+            || physicsFlag == PhysicsFlags.WATER_SIDESCROLL) {
+            return 0x01;
+        }
+        if (physicsFlag == PhysicsFlags.NONE) {
+            return 0x00;
+        }
+        if (physicsFlag == PhysicsFlags.SHALLOW_WATER) {
+            return 0x02;
+        }
+        if (physicsFlag == PhysicsFlags.GRASS) {
+            return 0x03;
+        }
+        return 0x01;
+    }
+
+    private static boolean splashAllowed(int options, int previousGroundStatus,
+                                         int currentGroundStatus, int speedZ,
+                                         boolean sideScrolling) {
+        if ((options & ENTITY_OPT1_SPLASH_IN_WATER) == 0
+            || previousGroundStatus == currentGroundStatus
+            || previousGroundStatus == 0x03
+            || currentGroundStatus == 0x03) {
+            return false;
+        }
+        if (sideScrolling) {
+            // The side-scroll branch uses shared speed-X/Y tables, which are
+            // not yet part of the Java entity snapshot. Keep this path
+            // source-safe until that table is ported.
+            return false;
+        }
+        int unsignedSpeedZ = speedZ & 0xFF;
+        return (unsignedSpeedZ & 0x80) != 0 && unsignedSpeedZ < 0xE7;
     }
 
     private static RoomEntity withEntityPosition(RoomEntity entity, int x, int y) {

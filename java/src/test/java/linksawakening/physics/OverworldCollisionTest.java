@@ -63,4 +63,23 @@ final class OverworldCollisionTest {
 
         assertEquals(0xF2, collision.objectPhysicsFlagAtGroundInteraction(0x40, 0x37));
     }
+
+    @Test
+    void groundInteractionSampleReturnsObjectPhysicsAndAlignedCell() {
+        byte[] rom = new byte[0x100000];
+        int physicsOffset = RomBank.romOffset(0x08, 0x4AD4);
+        rom[physicsOffset + 0x100 + 0x42] = 0x07;
+        RomTables tables = RomTables.loadFromRom(rom);
+        OverworldCollision collision = new OverworldCollision(tables);
+        collision.setPhysicsTable(RomTables.PHYSICS_TABLE_INDOORS1);
+
+        int[] roomObjects = new int[0x100];
+        Arrays.fill(roomObjects, 0xFF);
+        roomObjects[0x44] = 0x42;
+        collision.setRoom(roomObjects);
+
+        assertEquals(new OverworldCollision.GroundInteractionSample(
+            0x42, 0x07, 0x30, 0x30),
+            collision.groundInteractionSample(0x40, 0x37));
+    }
 }

@@ -3,6 +3,7 @@ package linksawakening.gameplay;
 public enum GameplaySoundEvent {
     ROC_FEATHER_JUMP,
     PIT_FALL,
+    WATER_SPLASH,
     SWORD_SWING_A,
     SWORD_SWING_B,
     SWORD_SWING_C,

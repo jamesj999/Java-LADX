@@ -6,6 +6,7 @@ import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomBank;
 import linksawakening.rom.RomTables;
 import linksawakening.vfx.TransientVfxSystem;
+import linksawakening.vfx.TransientVfxType;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -103,6 +104,27 @@ final class RoomSessionTest {
     }
 
     @Test
+    void positiveZSkipsRomGroundSamplingForAnAirborneEntity() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x00, 0x0F);
+        RoomEntity initial = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x1E)
+            .findFirst()
+            .orElseThrow();
+        fillActiveObjects(session, 0x1B);
+
+        session.setEntityActionButtonsHeld(true);
+        session.tickEntities(0, initial.x() + 0x10, initial.y());
+        session.tickEntities(1, initial.x() + 0x10, initial.y());
+        session.setEntityActionButtonsHeld(false);
+        session.tickEntities(2, initial.x() + 0x10, initial.y());
+
+        RoomEntity airborne = session.activeRoom().entities().slots().get(initial.slot());
+        assertEquals(1, airborne.z());
+        assertEquals(0, session.entityGroundStatusForTest(initial.slot()));
+    }
+
+    @Test
     void liveAnglersTunnelEvasiveStalfosCreatesTheRomFleeingCloneAfterLanding() {
         RoomSession session = newSession();
         session.loadIndoor(0x03, 0x0F);
@@ -191,6 +213,32 @@ final class RoomSessionTest {
     }
 
     @Test
+    void peaHatRetainsTheRomDeepWaterGroundStatus() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x00, 0x6B);
+        List<RoomEntity> peaHats = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0xA0)
+            .toList();
+        assertTrue(!peaHats.isEmpty());
+        for (RoomEntity entity : session.activeRoom().entities().loadedEntities()) {
+            if (entity.type() != 0xA0) {
+                session.clearEntity(entity.slot());
+            }
+        }
+        fillActiveObjects(session, 0x0E);
+
+        session.tickEntities(0);
+        session.tickEntities(1);
+
+        for (RoomEntity peaHat : peaHats) {
+            RoomEntity current = session.activeRoom().entities().slots().get(peaHat.slot());
+            assertEquals(EntityStatus.ACTIVE, current.status());
+            assertEquals(0x02, session.entityGroundStatusForTest(peaHat.slot()));
+        }
+        assertEquals(0, session.consumeEntityEvents().size());
+    }
+
+    @Test
     void ordinaryEntitiesReceiveTheRomConveyorNudgeEveryFourFrames() {
         RoomSession passableSession = newSession();
         RoomSession conveyorSession = newSession();
@@ -250,6 +298,56 @@ final class RoomSessionTest {
             .get(conveyorInitial.slot());
         assertEquals(passable.x(), conveyor.x());
         assertEquals(passable.y(), conveyor.y());
+    }
+
+    @Test
+    void ordinaryEntityKeepsTheRomShallowWaterGroundStatus() {
+        RoomSession session = newSession();
+        session.loadInitialOverworld(0x2F);
+        RoomEntity initial = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x09)
+            .findFirst()
+            .orElseThrow();
+        fillActiveObjects(session, 0x1B);
+
+        session.tickEntities(0);
+        session.tickEntities(1);
+
+        RoomEntity entity = session.activeRoom().entities().slots().get(initial.slot());
+        assertEquals(EntityStatus.ACTIVE, entity.status());
+        assertEquals(0x02, session.entityGroundStatusForTest(initial.slot()));
+    }
+
+    @Test
+    void ordinaryEntityEnteringRomDeepWaterUnloadsAndCreatesSplashSideEffects() {
+        TransientVfxSystem vfx = new TransientVfxSystem(16);
+        RoomSession session = newSession(vfx);
+        session.loadInitialOverworld(0x2F);
+        RoomEntity initial = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x09)
+            .findFirst()
+            .orElseThrow();
+        for (RoomEntity entity : session.activeRoom().entities().loadedEntities()) {
+            if (entity.slot() != initial.slot()) {
+                session.clearEntity(entity.slot());
+            }
+        }
+        fillActiveObjects(session, 0x0E);
+
+        session.tickEntities(0);
+        session.tickEntities(1);
+
+        assertEquals(EntityStatus.DISABLED,
+            session.activeRoom().entities().slots().get(initial.slot()).status());
+        assertEquals(0, session.entityGroundStatusForTest(initial.slot()));
+        assertEquals(1, vfx.activeCount());
+        assertEquals(TransientVfxType.WATER_SPLASH,
+            vfx.activeSlots().getFirst().type());
+        List<EntityCombatEvent> events = session.consumeEntityEvents();
+        assertEquals(1, events.size());
+        assertEquals(EntityCombatEvent.SoundChannel.JINGLE,
+            events.getFirst().soundChannel());
+        assertEquals(0x0E, events.getFirst().soundId());
     }
 
     @Test
@@ -423,6 +521,16 @@ final class RoomSessionTest {
     }
 
     private static RoomSession newSession(RoomLoadListener roomLoadListener) {
+        return newSession(new TransientVfxSystem(16), roomLoadListener);
+    }
+
+    private static RoomSession newSession(TransientVfxSystem transientVfxSystem) {
+        return newSession(transientVfxSystem, room -> {
+        });
+    }
+
+    private static RoomSession newSession(TransientVfxSystem transientVfxSystem,
+                                          RoomLoadListener roomLoadListener) {
         byte[] rom = loadRom();
         RomTables romTables = RomTables.loadFromRom(rom);
         return new RoomSession(
@@ -431,7 +539,7 @@ final class RoomSessionTest {
             new RoomLoader(rom),
             new OverworldTilesetTable(rom),
             new OverworldCollision(romTables),
-            new TransientVfxSystem(16),
+            transientVfxSystem,
             null,
             roomLoadListener
         );
