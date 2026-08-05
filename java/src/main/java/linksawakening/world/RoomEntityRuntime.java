@@ -251,9 +251,22 @@ public final class RoomEntityRuntime {
         boolean swordCollisionActive, int swordX, int swordWidth,
         int swordY, int swordHeight) {
         return tickInternal(frameCounter, linkEntityX, linkEntityY, randomByteSupplier,
-            backgroundCollision, null, projectileLinkState.z(), projectileLinkState.direction(),
-            0, projectileLinkState, false, swordCollisionActive, swordX, swordWidth,
-            swordY, swordHeight);
+            backgroundCollision, null, null, projectileLinkState.z(),
+            projectileLinkState.direction(), 0, projectileLinkState, false,
+            swordCollisionActive, swordX, swordWidth, swordY, swordHeight);
+    }
+
+    List<EntityProjectileEvent> tickWithProjectileEvents(
+        int frameCounter, int linkEntityX, int linkEntityY,
+        IntSupplier randomByteSupplier, RoomEntityBackgroundCollision backgroundCollision,
+        RoomEntityObjectCollision objectCollision,
+        EnemyProjectileCollision.LinkState projectileLinkState,
+        boolean swordCollisionActive, int swordX, int swordWidth,
+        int swordY, int swordHeight) {
+        return tickInternal(frameCounter, linkEntityX, linkEntityY, randomByteSupplier,
+            backgroundCollision, objectCollision, null, projectileLinkState.z(),
+            projectileLinkState.direction(), 0, projectileLinkState, false,
+            swordCollisionActive, swordX, swordWidth, swordY, swordHeight);
     }
 
     List<EntityProjectileEvent> tickWithProjectileEvents(
@@ -276,9 +289,24 @@ public final class RoomEntityRuntime {
         boolean swordCollisionActive, int swordX, int swordWidth,
         int swordY, int swordHeight) {
         return tickInternal(frameCounter, linkEntityX, linkEntityY, randomByteSupplier,
-            backgroundCollision, linkPositionHistory, linkZ, linkDirection, entityYOffset,
-            projectileLinkState, false, swordCollisionActive, swordX, swordWidth,
-            swordY, swordHeight);
+            backgroundCollision, null, linkPositionHistory, linkZ, linkDirection,
+            entityYOffset, projectileLinkState, false, swordCollisionActive,
+            swordX, swordWidth, swordY, swordHeight);
+    }
+
+    List<EntityProjectileEvent> tickWithProjectileEvents(
+        int frameCounter, int linkEntityX, int linkEntityY,
+        IntSupplier randomByteSupplier, RoomEntityBackgroundCollision backgroundCollision,
+        RoomEntityObjectCollision objectCollision,
+        LinkPositionHistory linkPositionHistory,
+        int linkZ, int linkDirection, int entityYOffset,
+        EnemyProjectileCollision.LinkState projectileLinkState,
+        boolean swordCollisionActive, int swordX, int swordWidth,
+        int swordY, int swordHeight) {
+        return tickInternal(frameCounter, linkEntityX, linkEntityY, randomByteSupplier,
+            backgroundCollision, objectCollision, linkPositionHistory, linkZ,
+            linkDirection, entityYOffset, projectileLinkState, false,
+            swordCollisionActive, swordX, swordWidth, swordY, swordHeight);
     }
 
     private List<EntityProjectileEvent> tickInternal(int frameCounter, int linkEntityX,
@@ -289,13 +317,14 @@ public final class RoomEntityRuntime {
                       EnemyProjectileCollision.LinkState projectileLinkState,
                       boolean creditsGameplay) {
         return tickInternal(frameCounter, linkEntityX, linkEntityY, randomByteSupplier,
-            backgroundCollision, linkPositionHistory, linkZ, linkDirection, entityYOffset,
+            backgroundCollision, null, linkPositionHistory, linkZ, linkDirection, entityYOffset,
             projectileLinkState, creditsGameplay, false, 0, 0, 0, 0);
     }
 
     private List<EntityProjectileEvent> tickInternal(int frameCounter, int linkEntityX,
                       int linkEntityY, IntSupplier randomByteSupplier,
                       RoomEntityBackgroundCollision backgroundCollision,
+                      RoomEntityObjectCollision objectCollision,
                       LinkPositionHistory linkPositionHistory,
                       int linkZ, int linkDirection, int entityYOffset,
                       EnemyProjectileCollision.LinkState projectileLinkState,
@@ -522,6 +551,8 @@ public final class RoomEntityRuntime {
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_PAIRODD_PROJECTILE) {
                 updated = pairoddProjectileMotion.advance(entity, frame);
+                boolean objectCollisionHit = objectCollision != null
+                    && objectCollision.collides(updated);
                 boolean removePairoddProjectile = false;
                 boolean swordPokeVfxQueued = false;
                 var collisionEvent = EnemyProjectileCollision.check(updated,
@@ -546,6 +577,15 @@ public final class RoomEntityRuntime {
                     if (event.swordPokeVfx() && !swordPokeVfxQueued) {
                         transientVfxRequests.add(new TransientVfxRequest(
                             TransientVfxType.SWORD_POKE, event.swordPokeX(), event.swordPokeY()));
+                        swordPokeVfxQueued = true;
+                    }
+                    removePairoddProjectile = true;
+                }
+                if (objectCollisionHit) {
+                    if (!swordPokeVfxQueued) {
+                        transientVfxRequests.add(new TransientVfxRequest(
+                            TransientVfxType.SWORD_POKE, updated.x(),
+                            (updated.y() - updated.z()) & 0xFF));
                     }
                     removePairoddProjectile = true;
                 }

@@ -119,6 +119,26 @@ public final class OverworldCollision {
         return objectIdAtCell(cellX, cellY);
     }
 
+    /**
+     * Reads the object physics byte at the coordinate sampled by bank-$03's
+     * {@code ApplySwordIntersectionWithObjects}: X is aligned directly and Y
+     * is aligned after subtracting eight pixels. This intentionally uses the
+     * padded room buffer rather than the flattened active 10x8 grid.
+     */
+    public int objectPhysicsFlagAtEntityPosition(int entityX, int entityY) {
+        if (roomObjectsArea == null) {
+            return 0;
+        }
+        int x = entityX & 0xFF;
+        int y = (entityY - 0x08) & 0xFF;
+        int areaIndex = ROOM_OBJECTS_BASE + (y & 0xF0) + ((x & 0xF0) >>> 4);
+        if (areaIndex < 0 || areaIndex >= roomObjectsArea.length) {
+            return 0;
+        }
+        int objectId = roomObjectsArea[areaIndex] & 0xFF;
+        return romTables.objectPhysicsFlag(physicsTableIndex, objectId);
+    }
+
     private boolean isCellBlocking(int cellX, int cellY) {
         if (cellX < 0 || cellX >= OBJECTS_PER_ROW || cellY < 0 || cellY >= OBJECTS_PER_COLUMN) {
             // Off-room cells are the caller's problem - they trigger room scroll,

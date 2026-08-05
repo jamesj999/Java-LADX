@@ -2002,6 +2002,44 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void pairoddProjectileIsRemovedAfterRoomObjectIntersectionAndQueuesRomVfx() {
+        EntitySpriteDefinition definition = pairDefinition(0x58, 2);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, -1, 0x58, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0)));
+
+        List<EntityProjectileEvent> events = runtime.tickWithProjectileEvents(
+            0, 0, 0, () -> 0, null, entity -> true,
+            EnemyProjectileCollision.LinkState.nonInteractive(),
+            false, 0, 0, 0, 0);
+
+        assertTrue(events.isEmpty());
+        assertFalse(runtime.snapshot().slots().get(0).loaded());
+        assertEquals(1, runtime.transientVfxRequests().size());
+        RoomEntityRuntime.TransientVfxRequest request = runtime.transientVfxRequests().get(0);
+        assertEquals(TransientVfxType.SWORD_POKE, request.type());
+        assertEquals(0x40, request.worldX());
+        assertEquals(0x40, request.worldY());
+    }
+
+    @Test
+    void pairoddProjectileKeepsItsLinkCollisionPathWhenTheRoomObjectPasses() {
+        EntitySpriteDefinition definition = pairDefinition(0x58, 2);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, -1, 0x58, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0)));
+
+        List<EntityProjectileEvent> events = runtime.tickWithProjectileEvents(
+            0, 0x40, 0x40, () -> 0, null, entity -> false,
+            new EnemyProjectileCollision.LinkState(
+                0x40, 0x40, 0, 0, 0, false, 1, 0),
+            false, 0, 0, 0, 0);
+
+        assertEquals(1, events.size());
+        assertEquals(EntityProjectileEvent.Kind.LINK_DAMAGE, events.get(0).kind());
+        assertEquals(0x08, events.get(0).linkDamage());
+        assertFalse(runtime.snapshot().slots().get(0).loaded());
+    }
+
+    @Test
     void moblinLaunchUsesTheHighestDisabledSlotAndDoesNotTickItTwice() {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
         EntitySpriteDefinition definition = catalog.forEntityType(

@@ -337,7 +337,8 @@ public final class RoomSession {
         entityRandomByteSource.beginFrame(frameCounter & 0xFF, 0);
         List<EntityProjectileEvent> events = entityRuntime.tickWithProjectileEvents(
             frameCounter, linkEntityX, linkEntityY, entityRandomByteSource,
-            this::entityBackgroundCollision, followingLinkPositionHistory, followingLinkZ,
+            this::entityBackgroundCollision, this::pairoddProjectileObjectCollision,
+            followingLinkPositionHistory, followingLinkZ,
             followingLinkDirection, followingEntityYOffset,
             new EnemyProjectileCollision.LinkState(
                 linkEntityX, linkEntityY, linkEntityZ, linkMotionState,
@@ -580,6 +581,12 @@ public final class RoomSession {
             default -> nextY - 8; // horizontal movement: y - 16 + 8
         };
         return overworldCollision.pointBlocked(pointX, pointY);
+    }
+
+    private boolean pairoddProjectileObjectCollision(RoomEntity entity) {
+        int physicsFlag = overworldCollision.objectPhysicsFlagAtEntityPosition(
+            entity.x(), entity.y());
+        return PairoddProjectileObjectCollision.collidesWithPhysicsFlag(physicsFlag);
     }
 
     private void loadRoomSpecificTilesIfNeeded(int roomId) {

@@ -297,10 +297,15 @@ runtime collision callback.
   `$09`, Link collision-ignore countdown `$0C`, collision `$FF`, slot removal,
   and one shared sword-poke VFX request. It is represented as a separate
   `SWORD_HIT` projectile event and remains excluded from generic enemy combat.
+- The post-movement `ApplySwordIntersectionWithObjects` path at bank-$03
+  `$7CAB-$7E0B` now samples the padded room buffer at the ROM `$11` base and
+  `$10` row stride, uses the active ROM physics table, and removes `$58` on
+  the source `$01`/range/ledge/`$FF` outcomes. The existing final sword-poke
+  VFX request is preserved without inventing audio or bounce behavior.
 - Focused collision/runtime tests and the existing entity suite pass. The
-  remaining `$58` gaps are `ApplySwordIntersectionWithObjects` background
-  behavior, projectile recoil/other damage-state handling, and any additional
-  audio side effects.
+  remaining `$58` gaps are shared thrown-object state beyond this ordinary
+  Pairodd path, projectile recoil/other damage-state handling, and any
+  additional audio side effects.
 
 ## Verified enemy sword-hit response — 2026-08-05
 
