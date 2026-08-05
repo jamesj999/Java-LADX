@@ -1610,6 +1610,34 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void peaHatUsesTheRomSwordClinkPathWhileAirborne() {
+        EntitySpriteDefinition definition = pairDefinition(0xA0, 2);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0xA0, 64, 64, EntityStatus.ACTIVE, definition, 0)));
+
+        runtime.tick(0, 120, 120, sequence(0x00));
+        assertEquals(1, runtime.peaHatState(0));
+
+        List<EntityCombatEvent> events = runtime.resolveCombat(
+            1, 120, 120, false, false, true, 72, 1, 72, 1);
+
+        assertEquals(1, events.size());
+        EntityCombatEvent event = events.get(0);
+        assertEquals(0xA0, event.type());
+        assertTrue(event.swordHit());
+        assertEquals(0, event.linkDamage());
+        assertEquals(0, event.enemyDamage());
+        assertEquals(EntityCombatEvent.SoundChannel.JINGLE, event.soundChannel());
+        assertEquals(0x07, event.soundId());
+        assertEquals(new EntityCombatEvent.SwordPokeVfx(0x40, 0x40),
+            event.swordPokeVfx());
+        assertEquals(1, runtime.enemyHealth(0));
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
+        assertEquals(0x10, runtime.enemyIgnoreHitsCountdown(0));
+        assertFalse(runtime.enemyRecoilActive(0));
+    }
+
+    @Test
     void stalfosAggressiveUsesTheRomPursuitAndJumpArc() {
         EntitySpriteDefinition definition = pairDefinition(0x1A, 3);
         RoomEntitySnapshot initial = snapshot(

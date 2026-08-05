@@ -886,9 +886,8 @@ public final class RoomEntityRuntime {
             if (entity.type() == ENTITY_LEEVER && !leeverMotion.isChasing(entity.slot())) {
                 continue;
             }
-            if (entity.type() == ENTITY_PEAHAT && !peaHatMotion.isGrounded(entity)) {
-                continue;
-            }
+            boolean peaHatGrounded = entity.type() != ENTITY_PEAHAT
+                || peaHatMotion.isGrounded(entity);
             if (entity.type() == ENTITY_PAIRODD
                 && !pairoddMotion.allowsEnemyCollision(entity.slot())) {
                 continue;
@@ -910,6 +909,7 @@ public final class RoomEntityRuntime {
 
             boolean linkCollision = !linkAirborne && linkInteractive
                 && RoomEntityCombatRules.collisionCadenceMatches(frameCounter, entity.slot())
+                && peaHatGrounded
                 && hidingZolLinkCollision
                 && RoomEntityCombatRules.overlapsLink(entity, linkEntityX, linkEntityY);
             boolean swordHit = swordCollisionActive
@@ -928,7 +928,9 @@ public final class RoomEntityRuntime {
             int enemyDamage = 0;
             int enemySpecialAction = -1;
             EntityCombatEvent.SwordPokeVfx swordPokeVfx = null;
-            if (swordHit && RoomEntityCombatRules.swordPokeForSwordCollision(entity.type())) {
+            boolean peaHatSwordClink = entity.type() == ENTITY_PEAHAT && !peaHatGrounded;
+            if (swordHit && RoomEntityCombatRules.swordPokeForSwordCollision(
+                    entity.type(), peaHatSwordClink)) {
                 // EnemyCollidedWithSword's ENTITY_OPT1_SWORD_CLINK_OFF path
                 // calls label_D07/label_D15: no damage or normal recoil,
                 // sixteen ignored-hit frames, then the sword-poke VFX and

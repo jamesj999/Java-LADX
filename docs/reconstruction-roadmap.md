@@ -158,9 +158,9 @@ resource.
   takeoff, and flying states, slow-countdown cadence, carry-aware animation,
   direct Z ascent/descent, and contiguous ROM phase-speed tables. Its grounded
   health-group `$00` contact/sword path is wired, and its grounded shared
-  bank-$07 recoil and wall rollback are verified below; hitbox-flag and
-  sword-clink plumbing, generic ground/water/pit/conveyor interaction, and
-  remaining damage-state behavior remain pending.
+  bank-$07 recoil and wall rollback plus airborne contact/clink behavior are
+  verified below; generic ground/water/pit/conveyor interaction and remaining
+  damage-state behavior remain pending.
 - Aggressive Stalfos now decodes the bank `$06` three-variant display list and
   mirrors its slot-phased Link pursuit, proximity-triggered jump, fixed-point
   four-state Z arc, `$10`/`$20` landing countdowns, and health group `$2A`
@@ -643,6 +643,16 @@ runtime collision callback.
   cover this increment. Ground status, water/pit/conveyor effects, collision
   flags, sword-clink behavior, and remaining damage-state branches remain
   pending.
+
+## Verified ROM PeaHat airborne sword clink — 2026-08-05
+
+- Airborne PeaHat now suppresses Link contact while retaining sword-rectangle
+  eligibility, matching its dynamic hitbox and
+  `ENTITY_OPT1_SWORD_CLINK_OFF` flags.
+- A colliding sword uses the shared ROM clink branch: no enemy damage or
+  recoil, jingle `$07`, sword-poke VFX, and a `$10` ignore-hits window.
+- Grounded PeaHat damage/recoil remains unchanged. Ground/water/pit/conveyor
+  interaction and other clink-off entity handlers remain pending.
 
 ## Next entity increments
 

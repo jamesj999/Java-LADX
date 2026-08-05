@@ -21,7 +21,7 @@ airborne PeaHat state. Reuse the existing clink event/VFX/countdown branch.
 - Modify: `java/src/test/java/linksawakening/world/RoomEntityRuntimeTest.java`
   beside the existing PeaHat combat tests.
 
-- [ ] **Step 1: Add the airborne sword-clink test.** Add:
+- [x] **Step 1: Add the airborne sword-clink test.** Add:
 
 ```java
 @Test
@@ -53,7 +53,7 @@ void peaHatUsesTheRomSwordClinkPathWhileAirborne() {
 }
 ```
 
-- [ ] **Step 2: Run focused tests and verify RED.** From `java/`, run:
+- [x] **Step 2: Run focused tests and verify RED.** From `java/`, run:
 
 ```bash
 gradle test --tests linksawakening.world.RoomEntityRuntimeTest
@@ -72,19 +72,19 @@ spike-trap tests continue to pass.
 - Modify: `java/src/main/java/linksawakening/world/RoomEntityCombatRules.java`
   to accept the dynamic clink state without changing static spike-trap rules.
 
-- [ ] **Step 1: Separate airborne contact from sword eligibility.** Compute
+- [x] **Step 1: Separate airborne contact from sword eligibility.** Compute
   the PeaHat grounded state before collision tests. Skip the entity only when
   it is airborne and neither a Link-contact nor a sword test could be useful;
   more directly, gate `linkCollision` on the grounded state while allowing
   `swordHit` to evaluate for airborne PeaHat.
 
-- [ ] **Step 2: Route dynamic clink state through the existing branch.** Extend
+- [x] **Step 2: Route dynamic clink state through the existing branch.** Extend
   the sword-poke predicate with an explicit dynamic flag, and pass
   `entity.type() == ENTITY_PEAHAT && !peaHatGrounded`. Do not add PeaHat to
   normal recoil or damage in the clink case; the existing branch owns that
   response.
 
-- [ ] **Step 3: Run focused tests and verify GREEN.** Run:
+- [x] **Step 3: Run focused tests and verify GREEN.** Run:
 
 ```bash
 gradle test --tests linksawakening.world.RoomEntityRuntimeTest
@@ -101,11 +101,11 @@ existing spike-trap clink tests, and all other runtime tests pass.
   before `## Next entity increments`.
 - Modify: this plan to mark completed steps.
 
-- [ ] **Step 1: Update the PeaHat roadmap status.** State that airborne
+- [x] **Step 1: Update the PeaHat roadmap status.** State that airborne
   hitbox/contact separation and sword-clink response are verified below while
   generic ground/water/pit/conveyor behavior remains pending.
 
-- [ ] **Step 2: Add a dated verification entry.** Insert:
+- [x] **Step 2: Add a dated verification entry.** Insert:
 
 ```markdown
 ## Verified ROM PeaHat airborne sword clink — 2026-08-05
@@ -119,13 +119,13 @@ existing spike-trap clink tests, and all other runtime tests pass.
   interaction and other clink-off entity handlers remain pending.
 ```
 
-- [ ] **Step 3: Run final verification.** From `java/`, run `gradle clean test`.
+- [x] **Step 3: Run final verification.** From `java/`, run `gradle clean test`.
   From the worktree root, run `git diff --check` and
   `git status --short --branch`. Expected: `BUILD SUCCESSFUL`, no whitespace
   errors, and only the intended source, test, roadmap, and plan files changed
   before commit.
 
-- [ ] **Step 4: Commit the checkpoint.** Mark all plan checkboxes complete and
+- [x] **Step 4: Commit the checkpoint.** Mark all plan checkboxes complete and
   commit:
 
 ```bash

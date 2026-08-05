@@ -137,6 +137,11 @@ public final class RoomEntityCombatRules {
         return (type & 0xFF) == ENTITY_SPIKE_TRAP;
     }
 
+    /** Adds a handler-owned dynamic sword-clink flag to the static exceptions. */
+    static boolean swordPokeForSwordCollision(int type, boolean dynamicSwordClinkOff) {
+        return dynamicSwordClinkOff || swordPokeForSwordCollision(type);
+    }
+
     /** Mirrors func_003_6C6B's alternating entity-slot cadence. */
     static boolean collisionCadenceMatches(int frameCounter, int slot) {
         return (((frameCounter & 0xFF) ^ slot) & 0x01) != 0;
