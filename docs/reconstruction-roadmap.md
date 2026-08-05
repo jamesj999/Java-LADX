@@ -145,10 +145,10 @@ resource.
   copy, length-`$18` ROM vector (including Z), and bank-$04 fixed-point travel.
   Pairodd's normal hitbox and health-group `$30` values (two health points,
   `$04` contact damage) are wired into shared combat, and variant `$03` renders
-  the handler's two shifted pairs. Its projectile Link/shield collision and
-  shared sword-poke VFX are verified below; projectile sword/object
-  intersection, recoil, audio, and broader damage-state/background effects
-  remain pending.
+  the handler's two shifted pairs. Its projectile Link/shield collision,
+  shared sword-poke VFX, and bank-$03 sword-hit branch are verified below;
+  projectile sword/object intersection, recoil, audio, and broader
+  damage-state/background effects remain pending.
 - PeaHat now decodes the bank `$07` pair display list and mirrors its resting,
   takeoff, and flying states, slow-countdown cadence, carry-aware animation,
   direct Z ascent/descent, and contiguous ROM phase-speed tables. Its grounded
@@ -288,10 +288,16 @@ audio boundary.
   the bank-$04 `func_004_6BE1.createSwordPokeVfx` request at post-movement X
   and visual Y (`Y-Z`), rendering transient VFX `$05` through the existing
   runtime boundary.
+- The optional live sword rectangle now reaches the entity tick after generic
+  combat has run. The `$58` branch uses the normal `[8,5,8,5]` hitbox and
+  post-movement visual Y, then mirrors bank-$03 `$6F20-$6F27`: bump jingle
+  `$09`, Link collision-ignore countdown `$0C`, collision `$FF`, slot removal,
+  and one shared sword-poke VFX request. It is represented as a separate
+  `SWORD_HIT` projectile event and remains excluded from generic enemy combat.
 - Focused collision/runtime tests and the existing entity suite pass. The
-  remaining `$58` gaps are `ApplySwordIntersectionWithObjects`/sword hits,
-  projectile background/object interaction, recoil, and any additional audio
-  side effects.
+  remaining `$58` gaps are `ApplySwordIntersectionWithObjects` background
+  behavior, projectile recoil/other damage-state handling, and any additional
+  audio side effects.
 
 ## Verified enemy sword-hit response — 2026-08-05
 

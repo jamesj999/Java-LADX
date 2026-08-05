@@ -82,7 +82,8 @@ public record EntityProjectileEvent(
 
     public enum Kind {
         SHIELD_BLOCK,
-        LINK_DAMAGE
+        LINK_DAMAGE,
+        SWORD_HIT
     }
 
     /** Raw Game Boy sound request channel used by the later gameplay router. */

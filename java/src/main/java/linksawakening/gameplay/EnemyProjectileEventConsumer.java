@@ -9,6 +9,7 @@ import java.util.Objects;
 /** Applies one frame of ROM enemy-projectile events at the gameplay boundary. */
 public final class EnemyProjectileEventConsumer {
     private static final int SHIELD_TING_ID = 0x16;
+    private static final int ENEMY_BUMP_ID = 0x09;
     private static final int LINK_HURT_ID = 0x03;
     private static final int LINK_INVINCIBILITY_FRAMES = 0x50;
 
@@ -32,6 +33,13 @@ public final class EnemyProjectileEventConsumer {
                     soundSink.play(GameplaySoundEvent.SWORD_POKE);
                 } else {
                     playShieldSound(event, soundSink);
+                }
+                continue;
+            }
+            if (event.kind() == EntityProjectileEvent.Kind.SWORD_HIT) {
+                if (event.soundChannel() == EntityProjectileEvent.SoundChannel.JINGLE
+                    && event.soundId() == ENEMY_BUMP_ID) {
+                    soundSink.play(GameplaySoundEvent.ENEMY_BUMP);
                 }
                 continue;
             }

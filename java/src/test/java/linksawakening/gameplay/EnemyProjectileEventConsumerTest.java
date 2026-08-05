@@ -65,6 +65,23 @@ final class EnemyProjectileEventConsumerTest {
     }
 
     @Test
+    void pairoddSwordHitPlaysTheRomBumpSoundWithoutDamagingLink() {
+        PlayerState player = new PlayerState();
+        player.setHealth(16);
+        RecordingSoundSink sounds = new RecordingSoundSink();
+
+        EntityProjectileEvent event = new EntityProjectileEvent(
+            0, 0x58, EntityProjectileEvent.Kind.SWORD_HIT, 0xFF, 0,
+            EntityProjectileEvent.SoundChannel.JINGLE, 0x09, true, true,
+            0x40, 0x50, 0, 0, 0x0C);
+
+        EnemyProjectileEventConsumer.consume(List.of(event), player, sounds);
+
+        assertEquals(16, player.health());
+        assertEquals(List.of(GameplaySoundEvent.ENEMY_BUMP), sounds.events);
+    }
+
+    @Test
     void invincibilitySuppressesTheProjectileDamageSoundAndHealthChange() {
         PlayerState player = new PlayerState();
         player.setHealth(16);

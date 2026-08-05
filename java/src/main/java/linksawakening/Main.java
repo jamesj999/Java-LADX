@@ -458,13 +458,14 @@ public class Main {
                 link.tickAnimation();
             }
 
+            Sword.CollisionBox swordBoxForEntityTick = Sword.CollisionBox.inactive();
             if (link != null && roomSession != null
                 && !scrollController.isActive()
                 && !transitionController.isInputBlocked()
                 && !inventoryController.shouldBlockOverworldInput()
                 && !dialogBlocksGameplay) {
                 Sword sword = equipmentController.activeSword();
-                Sword.CollisionBox swordBox = sword == null
+                swordBoxForEntityTick = sword == null
                     ? Sword.CollisionBox.inactive()
                     : sword.enemyCollisionBox(link.romEntityX(), link.romSwordCollisionY(),
                         link.direction());
@@ -477,8 +478,9 @@ public class Main {
                 var combatEvents = roomSession.resolveEntityCombat(
                     frameCounter, link.romEntityX(), link.romEntityY(),
                     link.isAirborne(), true,
-                    swordBox.active(), swordBox.x(), swordBox.width(),
-                    swordBox.y(), swordBox.height(), attackContext);
+                    swordBoxForEntityTick.active(), swordBoxForEntityTick.x(),
+                    swordBoxForEntityTick.width(), swordBoxForEntityTick.y(),
+                    swordBoxForEntityTick.height(), attackContext);
                 EnemyCombatEventConsumer.consume(combatEvents, gameplaySoundSink, transientVfxSystem);
                 for (EntityCombatEvent event : combatEvents) {
                     if (event.linkDamage() > 0 && playerState.invincibilityCounter() == 0) {
@@ -505,7 +507,10 @@ public class Main {
                     link == null ? 0x00 : link.direction(),
                     link != null && link.isUsingShield(),
                     playerState == null ? 1 : playerState.shieldLevel(),
-                    playerState == null ? 0 : playerState.invincibilityCounter());
+                    playerState == null ? 0 : playerState.invincibilityCounter(),
+                    swordBoxForEntityTick.active(), swordBoxForEntityTick.x(),
+                    swordBoxForEntityTick.width(), swordBoxForEntityTick.y(),
+                    swordBoxForEntityTick.height());
                 EnemyProjectileEventConsumer.consume(projectileEvents, playerState,
                     gameplaySoundSink);
                 for (var event : projectileEvents) {

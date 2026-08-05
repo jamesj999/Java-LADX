@@ -313,6 +313,18 @@ public final class RoomSession {
                              int linkEntityZ, int linkMotionState, int linkDirection,
                              boolean usingShield, int shieldLevel,
                              int invincibilityCounter) {
+        return tickEntitiesWithProjectileEvents(frameCounter, linkEntityX, linkEntityY,
+            linkEntityZ, linkMotionState, linkDirection, usingShield, shieldLevel,
+            invincibilityCounter, false, 0, 0, 0, 0);
+    }
+
+    /** Advances entities with Link's optional current sword collision rectangle. */
+    public List<EntityProjectileEvent> tickEntitiesWithProjectileEvents(
+                             int frameCounter, int linkEntityX, int linkEntityY,
+                             int linkEntityZ, int linkMotionState, int linkDirection,
+                             boolean usingShield, int shieldLevel,
+                             int invincibilityCounter, boolean swordCollisionActive,
+                             int swordX, int swordWidth, int swordY, int swordHeight) {
         followingLinkX = linkEntityX & 0xFF;
         followingLinkY = linkEntityY & 0xFF;
         followingLinkZ = linkEntityZ & 0xFF;
@@ -330,7 +342,8 @@ public final class RoomSession {
             new EnemyProjectileCollision.LinkState(
                 linkEntityX, linkEntityY, linkEntityZ, linkMotionState,
                 romDirectionForProjectileCollision(linkDirection), usingShield, shieldLevel,
-                invincibilityCounter));
+                invincibilityCounter), swordCollisionActive, swordX, swordWidth,
+            swordY, swordHeight);
         if (transientVfxSystem != null) {
             for (RoomEntityRuntime.TransientVfxRequest request
                 : entityRuntime.transientVfxRequests()) {

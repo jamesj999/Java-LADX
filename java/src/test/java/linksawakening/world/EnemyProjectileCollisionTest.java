@@ -118,6 +118,31 @@ final class EnemyProjectileCollisionTest {
     }
 
     @Test
+    void pairoddProjectileSwordHitUsesItsNormalHitboxAndVisualY() {
+        RoomEntity projectile = projectile(0x58, 0x38, 0x58, 0x08);
+
+        EntityProjectileEvent swordHit = EnemyProjectileCollision.checkSwordCollision(
+            projectile, true, 0x40, 1, 0x58, 1).orElseThrow();
+
+        assertEquals(EntityProjectileEvent.Kind.SWORD_HIT, swordHit.kind());
+        assertEquals(0xFF, swordHit.collisionValue());
+        assertEquals(0, swordHit.linkDamage());
+        assertEquals(EntityProjectileEvent.SoundChannel.JINGLE, swordHit.soundChannel());
+        assertEquals(0x09, swordHit.soundId());
+        assertTrue(swordHit.remove());
+        assertTrue(swordHit.swordPokeVfx());
+        assertEquals(0x38, swordHit.swordPokeX());
+        assertEquals(0x50, swordHit.swordPokeY());
+        assertEquals(0x0C, swordHit.linkIgnoreCollisionCountdown());
+
+        assertTrue(EnemyProjectileCollision.checkSwordCollision(
+            projectile, true, 0x46, 1, 0x58, 1).isEmpty());
+        assertTrue(EnemyProjectileCollision.checkSwordCollision(
+            projectile, true, 0x40, 1, 0x5E, 1).isEmpty());
+        assertFalse(RoomEntityCombatRules.supportsEnemyCollision(0x58));
+    }
+
+    @Test
     void mirrorShieldReflectsLaserOnlyForTheRomDirectionWindow() {
         EntityProjectileEvent reflected = EnemyProjectileCollision.check(
             projectile(0x2B, 0x40, 0x50, 0), 2,
@@ -219,6 +244,49 @@ final class EnemyProjectileCollisionTest {
         assertEquals(0x40, vfx.worldX());
         assertEquals(0x50, vfx.worldY());
         assertEquals(0, runtime.pairoddProjectileSpeedX(0));
+    }
+
+    @Test
+    void runtimeChecksPairoddSwordAfterBankFourMovementAndPublishesBumpResponse() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            projectile(0x58, 0x32, 0x58, 0x08)), false, () -> 0);
+        runtime.setPairoddProjectileForTest(0, 0x60, 0, 0);
+
+        List<EntityProjectileEvent> events = runtime.tickWithProjectileEvents(
+            0, 0, 0, () -> 0, null,
+            link(0, 0, 0, 0x02, 0, false),
+            true, 0x40, 1, 0x58, 1);
+
+        assertEquals(1, events.size());
+        EntityProjectileEvent event = events.getFirst();
+        assertEquals(EntityProjectileEvent.Kind.SWORD_HIT, event.kind());
+        assertEquals(0x09, event.soundId());
+        assertEquals(0x0C, event.linkIgnoreCollisionCountdown());
+        assertTrue(event.remove());
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
+        assertEquals(1, runtime.transientVfxRequests().size());
+        RoomEntityRuntime.TransientVfxRequest vfx = runtime.transientVfxRequests().getFirst();
+        assertEquals(TransientVfxType.SWORD_POKE, vfx.type());
+        assertEquals(0x38, vfx.worldX());
+        assertEquals(0x50, vfx.worldY());
+        assertEquals(0, runtime.pairoddProjectileSpeedX(0));
+    }
+
+    @Test
+    void runtimePreservesLinkAndSwordResponsesWhenBothPairoddChecksHit() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            projectile(0x58, 0x38, 0x58, 0x08)), false, () -> 0);
+
+        List<EntityProjectileEvent> events = runtime.tickWithProjectileEvents(
+            0, 0x38, 0x50, () -> 0, null,
+            link(0x38, 0x50, 0, 0x00, 0, false),
+            true, 0x40, 1, 0x58, 1);
+
+        assertEquals(2, events.size());
+        assertEquals(EntityProjectileEvent.Kind.LINK_DAMAGE, events.get(0).kind());
+        assertEquals(EntityProjectileEvent.Kind.SWORD_HIT, events.get(1).kind());
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
+        assertEquals(1, runtime.transientVfxRequests().size());
     }
 
     private static EnemyProjectileCollision.LinkState link(int x, int y, int z,

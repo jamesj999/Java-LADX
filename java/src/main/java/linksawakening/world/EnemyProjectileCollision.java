@@ -21,7 +21,16 @@ public final class EnemyProjectileCollision {
     static final int LINK_DAMAGE = 0x08;
     static final int JINGLE_SHIELD_TING = 0x16;
     static final int JINGLE_SWORD_POKE = 0x07;
+    static final int JINGLE_ENEMY_BUMP = 0x09;
     static final int WAVE_LINK_HURT = 0x03;
+    static final int LINK_IGNORE_COLLISION_COUNTDOWN = 0x0C;
+
+    // HitboxPositions._00 at home/entities.asm:$3AAA. Pairodd's projectile
+    // uses the normal hitbox flags, just like the regular Pairodd entity.
+    private static final int NORMAL_HITBOX_X = 0x08;
+    private static final int NORMAL_HITBOX_WIDTH = 0x05;
+    private static final int NORMAL_HITBOX_Y = 0x08;
+    private static final int NORMAL_HITBOX_HEIGHT = 0x05;
 
     /* ReversedDirectionsTable at bank $03:$6BD6. */
     private static final int[] REVERSED_DIRECTIONS = {1, 0, 3, 2};
@@ -98,6 +107,42 @@ public final class EnemyProjectileCollision {
             remove, pairoddProjectile, swordPokeX, swordPokeY));
     }
 
+    /**
+     * Mirrors the `$58` branch of EnemyCollidedWithSword in bank $03. This is
+     * deliberately separate from RoomEntityCombatRules: Pairodd projectiles
+     * are not part of the generic enemy combat pass.
+     */
+    static Optional<EntityProjectileEvent> checkSwordCollision(
+        RoomEntity projectile, boolean swordCollisionActive,
+        int swordX, int swordWidth, int swordY, int swordHeight) {
+        if (projectile == null) {
+            throw new IllegalArgumentException("Projectile cannot be null");
+        }
+        if ((projectile.type() & 0xFF) != ENTITY_PAIRODD_PROJECTILE
+            || !swordCollisionActive || swordWidth <= 0 || swordHeight <= 0) {
+            return Optional.empty();
+        }
+
+        int projectileVisualY = (projectile.y() - projectile.z()) & 0xFF;
+        int xDistance = unsignedByteAbs(
+            projectile.x() + NORMAL_HITBOX_X - swordX);
+        if (xDistance >= NORMAL_HITBOX_WIDTH + swordWidth) {
+            return Optional.empty();
+        }
+        int yDistance = unsignedByteAbs(
+            projectileVisualY + NORMAL_HITBOX_Y - swordY);
+        if (yDistance >= NORMAL_HITBOX_HEIGHT + swordHeight) {
+            return Optional.empty();
+        }
+
+        return Optional.of(new EntityProjectileEvent(
+            projectile.slot(), ENTITY_PAIRODD_PROJECTILE,
+            EntityProjectileEvent.Kind.SWORD_HIT, COLLISION_PROJECTILE, 0,
+            EntityProjectileEvent.SoundChannel.JINGLE, JINGLE_ENEMY_BUMP,
+            true, true, projectile.x(), projectileVisualY,
+            0, 0, LINK_IGNORE_COLLISION_COUNTDOWN));
+    }
+
     private static Optional<EntityProjectileEvent> checkLaserBeam(
         RoomEntity projectile, int projectileDirection, LinkState link) {
         if (link.usingShield() && link.shieldLevel() >= 2
@@ -131,6 +176,11 @@ public final class EnemyProjectileCollision {
         // rejects values >= $0C.  Keep the wrap explicit; Math.abs is not an
         // equivalent at the screen's byte boundaries.
         return ((linkPosition - projectilePosition + 0x06) & 0xFF) < 0x0C;
+    }
+
+    private static int unsignedByteAbs(int value) {
+        int difference = value & 0xFF;
+        return difference < 0x80 ? difference : 0x100 - difference;
     }
 
     private static int checkedDirection(int direction) {
