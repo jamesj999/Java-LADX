@@ -321,6 +321,31 @@ than represented by guessed shapes or generic movement.
   and sword-poke VFX, lifting/thrown physics, and the full bank-$36 Color Shell
   handler.
 
+## Verified ROM Color Shell runtime — 2026-08-05
+
+- Color Shells `$E9-$EB` now select their bank-$20 rectangle display lists at
+  runtime: the active eight-variant families are used while state is below
+  `$06`, and the inactive four-variant families are used for the remaining
+  states and non-active statuses.
+- The bank-$36 handler states `0-$0D` are represented with the source
+  direction, fixed-point movement, countdowns, Z arc, animation cadence,
+  harmlessness, puzzle-object checks, and completion scan. The room's
+  `$0C/$0D` puzzle states write the ROM-selected object IDs back into the live
+  room object buffer rather than only changing an entity-local flag.
+- A correct symbol match publishes the ROM noise `$04`, changes the room
+  object to the color-specific solved value, and eventually emits the poof
+  sprite and first-eight cleared-room persistence mask. A wrong match routes
+  jingle `$1D` through the gameplay sound boundary and returns the shell to
+  its movement path.
+- The concrete visible checkpoint is Color Dungeon rooms containing Color
+  Shells: their movement, active/inactive art, puzzle tilemap changes, sound
+  feedback, and completion poof now have a live runtime path. Unrelated rooms
+  are expected to look unchanged until their own source-backed handler slices
+  are ported.
+- Tests cover bank-$36 state transitions, ROM rectangle bytes and attributes,
+  live room tilemap replacement, raw sound IDs, poof frames, and completion
+  persistence. The complete Java test suite passes with the shipped ROM.
+
 ## Next entity increments
 
 1. Port remaining simple enemy movement, collision, damage, lifting, and
