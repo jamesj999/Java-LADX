@@ -49,7 +49,7 @@ final class EnemyRecoilMotionTest {
         motion.configure(0, 64, 64, 0, 64, 64, 0x30);
 
         assertEquals(0xD0, motion.recoilSpeedX(0));
-        assertEquals(0x00, motion.recoilSpeedY(0));
+        assertEquals(0x30, motion.recoilSpeedY(0));
     }
 
     @Test

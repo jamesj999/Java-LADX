@@ -443,6 +443,43 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void clearingARecoilingEnemyClearsAllRecoilStateBeforeSlotReuse() {
+        EntitySpriteDefinition definition = pairDefinition(0x0B, 8);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x0B, 64, 64, EntityStatus.ACTIVE, definition, 0)));
+
+        runtime.resolveCombat(0, 120, 120, false, true, true, 72, 1, 72, 1);
+        assertTrue(runtime.enemyRecoilActive(0));
+
+        assertEquals(1, runtime.clearEntity(0));
+
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
+        assertFalse(runtime.enemyRecoilActive(0));
+        assertEquals(0, runtime.enemyRecoilSpeedX(0));
+        assertEquals(0, runtime.enemyRecoilSpeedY(0));
+        assertEquals(0, runtime.enemyIgnoreHitsCountdown(0));
+    }
+
+    @Test
+    void dyingCleanupClearsRecoilStateWhenTheRomDeathCountdownExpires() {
+        EntitySpriteDefinition definition = pairDefinition(0x09, 8);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x09, 64, 64, EntityStatus.ACTIVE, definition, 0)));
+
+        runtime.resolveCombat(0, 120, 120, false, true, true, 72, 1, 72, 1);
+        assertTrue(runtime.enemyRecoilActive(0));
+
+        for (int frame = 0; frame < 0x40; frame++) {
+            runtime.tick(frame, 120, 120, sequence(0x00));
+        }
+
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
+        assertFalse(runtime.enemyRecoilActive(0));
+        assertEquals(0, runtime.enemyRecoilSpeedX(0));
+        assertEquals(0, runtime.enemyRecoilSpeedY(0));
+    }
+
+    @Test
     void pairoddUsesItsRomNormalEnemyHealthAndContactDamage() {
         EntitySpriteDefinition definition = pairDefinition(0x57, 8);
         RoomEntitySnapshot initial = snapshot(

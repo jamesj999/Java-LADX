@@ -41,7 +41,9 @@ final class EnemyRecoilMotion {
         if (distanceX < 0) {
             vectorX = -vectorX;
         }
-        if (distanceY < 0) {
+        // GetEntityYDistanceToLink leaves the zero case on its UP branch;
+        // GetVectorTowardsLink therefore negates a zero-distance Y result.
+        if (distanceY <= 0) {
             vectorY = -vectorY;
         }
 
@@ -110,8 +112,13 @@ final class EnemyRecoilMotion {
 
     /** Port of GetVectorTowardsLink's repeated-remainder division. */
     private static int romDivide(int length, int smallerDistance, int largerDistance) {
-        if (length == 0 || largerDistance == 0) {
+        if (length == 0) {
             return 0;
+        }
+        // With both distances zero, the ROM's compare-with-zero path enters
+        // the quotient increment on every iteration.
+        if (largerDistance == 0) {
+            return length;
         }
         int result = 0;
         int remainder = 0;

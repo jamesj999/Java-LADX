@@ -195,11 +195,12 @@ resource.
   group.
 
 The complete Java test suite passes after these runtime increments. Remaining
-entity behavior—including the rest of the enemy damage matrix, recoil,
-stun/lift/throw/burning/death handlers, dynamic display-list selection beyond
-the follower path, scripted spawns, and history-driven follower handlers—is
-intentionally still unsupported rather than represented by guessed shapes or
-generic movement.
+entity behavior—including the rest of the enemy damage matrix, recoil for
+enemy families outside the shared Octorok/Moblin path, stun/lift/throw/
+burning/death handlers, dynamic display-list selection beyond the follower
+path, scripted spawns, and history-driven follower handlers—is intentionally
+still unsupported rather than represented by guessed shapes or generic
+movement.
 
 ## Verified enemy projectile runtime — 2026-08-05
 
@@ -236,10 +237,37 @@ generic movement.
   variants, room scrolling, and a real ROM room (`$2F`) publishing a spawned
   rock into the live render snapshot with its loaded entity tile sheet.
 - Remaining projectile gaps are deliberate: laser/mirror-shield special
-  handling, sword-poke transient VFX, object-intersection edge cases, recoil,
-  full tunic/power-up damage modifiers and health-buffer timing, and player
+  handling, sword-poke transient VFX, object-intersection edge cases, full
+  tunic/power-up damage modifiers and health-buffer timing, and player
   projectile interactions are not yet complete. The broader engine remains a
   staged reconstruction, not a complete entity-system claim.
+
+## Verified enemy sword-hit response — 2026-08-05
+
+- The shared bank-$03 roaming path now mirrors `ConfigureEntityRecoil` at
+  `$6FCC`: it computes the integer dominant-axis vector toward Link with the
+  ROM's `GetVectorTowardsLink` algorithm, negates it, and configures the
+  default `$30` recoil speed for Octoroks (`$09`) and Moblins (`$0B`) before
+  applying sword damage.
+- `EnemyRecoilMotion` mirrors `UpdateEntityPosWithSpeed_03` at `$7F25` with
+  signed sixteen-subpixel X/Y speeds, independent accumulators, unsigned
+  coordinate wrapping, X-before-Y ordering, and background-block rollback.
+  The runtime applies it before `RoamingEnemyMotion`, forces the handler's
+  state-1 recoil path, consumes the existing `$0A` ignore-hits countdown, and
+  clears recoil on `StopEntityRecoilOnCollision`-equivalent blocking and slot
+  cleanup. The ROM `$18` flash window and existing collision gates remain in
+  effect.
+- Combat events preserve the final raw `hJingle` write from
+  `EnemyCollidedWithSword`/`ApplySwordDamagesToEnemy`: JINGLE `$09` for a
+  clink-only path and JINGLE `$03` for a normal damage hit. The gameplay
+  consumer maps these to the ROM catalog's `JINGLE_BUMP` and
+  `JINGLE_ENEMY_HIT` effects without guessing unknown IDs.
+- Tests cover horizontal, vertical, diagonal, equal-axis, zero-distance, and
+  Z-adjusted recoil vectors; fixed-point accumulation and blocking; runtime
+  Moblin/Octorok health/flash/ignore/death behavior; raw sound routing; and
+  explicit/dying slot cleanup. The slice intentionally does not claim the
+  full tunic/power-up damage matrix, sword-poke VFX, or recoil for other enemy
+  handlers.
 
 ## Next entity increments
 
