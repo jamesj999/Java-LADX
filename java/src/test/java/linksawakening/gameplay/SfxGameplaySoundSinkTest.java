@@ -46,6 +46,10 @@ final class SfxGameplaySoundSinkTest {
                 SoundEffectNamespace.JINGLE, 0x0A, "JINGLE_MOVE_SELECTION");
         assertMapped(map, GameplaySoundEvent.MENU_VALIDATE,
                 SoundEffectNamespace.JINGLE, 0x13, "JINGLE_VALIDATE");
+        assertMapped(map, GameplaySoundEvent.SHIELD_TING,
+                SoundEffectNamespace.JINGLE, 0x16, "JINGLE_SHIELD_TING");
+        assertMapped(map, GameplaySoundEvent.LINK_HURT,
+                SoundEffectNamespace.WAVE, 0x03, "WAVE_SFX_LINK_HURT");
     }
 
     @Test

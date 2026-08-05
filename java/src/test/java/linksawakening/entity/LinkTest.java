@@ -182,6 +182,31 @@ final class LinkTest {
     }
 
     @Test
+    void exposesShieldUseOnlyForTheEquippedSlotWhoseButtonIsHeld() {
+        InputState inputState = new InputState();
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        PlayerState playerState = new PlayerState();
+        playerState.setItemA(PlayerState.INVENTORY_SHIELD);
+        Link link = new Link(inputState, inputConfig, null, null, null,
+            playerState, new ItemRegistry());
+
+        assertEquals(0, link.romMotionState());
+        assertFalse(link.isUsingShield());
+
+        inputState.onKeyEvent(inputConfig.aKey(), GLFW_PRESS);
+        assertTrue(link.isUsingShield());
+
+        inputState.onKeyEvent(inputConfig.aKey(), GLFW_RELEASE);
+        playerState.setItemA(PlayerState.INVENTORY_SWORD);
+        playerState.setItemB(PlayerState.INVENTORY_SHIELD);
+        inputState.onKeyEvent(inputConfig.bKey(), GLFW_PRESS);
+        assertTrue(link.isUsingShield());
+
+        inputState.onKeyEvent(inputConfig.bKey(), GLFW_RELEASE);
+        assertFalse(link.isUsingShield());
+    }
+
+    @Test
     void blockedMotionKeepsPreviousFacingForDiagonalInput() {
         InputState inputState = new InputState();
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);

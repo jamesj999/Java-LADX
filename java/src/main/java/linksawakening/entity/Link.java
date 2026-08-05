@@ -239,6 +239,30 @@ public final class Link implements RocsFeather.JumpTarget {
         return zPixels();
     }
 
+    /**
+     * ROM wLinkMotionState values needed by entity collision handlers. Normal
+     * ground and airborne motion both remain interactive; falling into or
+     * slipping across a pit uses the non-interactive falling state.
+     */
+    public int romMotionState() {
+        return groundStatus == GROUND_STATUS_PIT || fallingIntoPit ? 0x06 : 0x00;
+    }
+
+    /**
+     * Mirrors wIsUsingShield: merely owning the shield is insufficient; the
+     * button bound to the slot containing it must be held this frame.
+     */
+    public boolean isUsingShield() {
+        if (inputState == null || inputConfig == null || playerState == null) {
+            return false;
+        }
+        boolean usingA = playerState.itemA() == PlayerState.INVENTORY_SHIELD
+            && inputState.isDown(inputConfig.aKey());
+        boolean usingB = playerState.itemB() == PlayerState.INVENTORY_SHIELD
+            && inputState.isDown(inputConfig.bKey());
+        return usingA || usingB;
+    }
+
     /** ROM wC145: the Y origin used by sword collision while airborne. */
     public int romSwordCollisionY() {
         return romEntityY() - zPixels();

@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class MainArchitectureTest {
 
@@ -38,5 +39,13 @@ final class MainArchitectureTest {
         assertFalse(source.contains("private static void handleRoomBoundaryAfterWarpChecks"));
         assertFalse(source.contains("private static int currentRoomId"));
         assertFalse(source.contains("private static int[] roomObjectsArea"));
+    }
+
+    @Test
+    void mainConsumesProjectileEventsAtTheEntityFrameBoundary() throws Exception {
+        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+
+        assertTrue(source.contains("tickEntitiesWithProjectileEvents"));
+        assertTrue(source.contains("EnemyProjectileEventConsumer.consume"));
     }
 }

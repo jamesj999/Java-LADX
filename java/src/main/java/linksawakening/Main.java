@@ -23,6 +23,7 @@ import linksawakening.audio.openal.OpenAlPcmSoundOutput;
 import linksawakening.gameplay.DialogTextLoader;
 import linksawakening.gameplay.DialogSoundRouter;
 import linksawakening.gameplay.DialogSoundSink;
+import linksawakening.gameplay.EnemyProjectileEventConsumer;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplayDialogInput;
@@ -484,11 +485,16 @@ public class Main {
                 && !transitionController.isInputBlocked()
                 && !inventoryController.shouldBlockOverworldInput()
                 && !dialogBlocksGameplay) {
-                roomSession.tickEntities(frameCounter,
+                var projectileEvents = roomSession.tickEntitiesWithProjectileEvents(
+                    frameCounter,
                     link == null ? 0x08 : link.romEntityX(),
                     link == null ? 0x10 : link.romEntityY(),
                     link == null ? 0x00 : link.romEntityZ(),
-                    link == null ? 0x00 : link.direction());
+                    link == null ? 0x02 : link.romMotionState(),
+                    link == null ? 0x00 : link.direction(),
+                    link != null && link.isUsingShield());
+                EnemyProjectileEventConsumer.consume(projectileEvents, playerState,
+                    gameplaySoundSink);
             }
 
             // Advance the animated BG tiles (waterfalls, weather vanes, etc.).
