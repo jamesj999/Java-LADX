@@ -438,6 +438,7 @@ final class RoomEntityRuntimeTest {
 
         assertEquals(1, events.size());
         assertEquals(EntityStatus.DYING, runtime.snapshot().slots().get(0).status());
+        assertEquals(0x0A, runtime.enemyIgnoreHitsCountdown(0));
         assertEquals(EntityCombatEvent.SoundChannel.JINGLE, events.get(0).soundChannel());
         assertEquals(0x03, events.get(0).soundId());
     }

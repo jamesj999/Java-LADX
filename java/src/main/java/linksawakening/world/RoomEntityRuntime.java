@@ -619,6 +619,9 @@ public final class RoomEntityRuntime {
                         entity.slot(), entity.x(), entity.y(), entity.z(),
                         linkEntityX, linkEntityY, 0x30);
                 }
+                // ConfigureEntityRecoil reaches StartIgnoringHitsForEntity
+                // before ApplySwordDamagesToEnemy, including lethal hits.
+                enemyIgnoreHitsCountdown[entity.slot()] = 0x0A;
                 enemyHealth[entity.slot()] = Math.max(0,
                     enemyHealth[entity.slot()] - swordDamage);
                 soundChannel = EntityCombatEvent.SoundChannel.JINGLE;
