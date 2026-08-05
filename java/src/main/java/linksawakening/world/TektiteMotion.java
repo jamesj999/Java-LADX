@@ -56,9 +56,21 @@ final class TektiteMotion {
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
 
         // ApplyEntityInteractionWithBackground populates directional collision
-        // flags before TektiteHorizontal/VerticalCollision. The room model does
-        // not yet expose those flags, so the generic query is intentionally not
-        // treated as equivalent to the ROM's collision-point/object lookup.
+        // flags before TektiteHorizontal/VerticalCollision. Restore the blocked
+        // coordinate and mirror each helper's negate-and-arithmetic-half step.
+        if (backgroundCollision != null) {
+            if (x != entity.x() && backgroundCollision.blocks(entity,
+                    directionForX(speedX[slot]), x, y)) {
+                x = entity.x();
+                speedX[slot] = negateAndHalve(speedX[slot]);
+            }
+            if (y != entity.y() && backgroundCollision.blocks(entity,
+                    directionForY(speedY[slot]), x, y)) {
+                y = entity.y();
+                // TektiteVerticalCollision loads the X-speed table in the ROM.
+                speedX[slot] = negateAndHalve(speedX[slot]);
+            }
+        }
 
         int z = entity.z();
         int variant = entity.spriteVariant();
@@ -180,6 +192,18 @@ final class TektiteMotion {
             delta++;
         }
         return (position + delta) & 0xFF;
+    }
+
+    private static int directionForX(int speed) {
+        return signedByte(speed) < 0 ? 1 : 0;
+    }
+
+    private static int directionForY(int speed) {
+        return signedByte(speed) < 0 ? 2 : 3;
+    }
+
+    private static int negateAndHalve(int speed) {
+        return (-signedByte(speed) >> 1) & 0xFF;
     }
 
     private static int signedByte(int value) {

@@ -87,8 +87,8 @@ resource.
   Z-gravity/landing transition, state-1 `$20` inertia animation, `$10` landing
   countdown, ROM direction tables, Z-aware `$14` vector toward Link, and
   fixed-point X/Y/Z updates. Its health-group `$01` path provides two health
-  points and `$04` contact damage; wall-collision reversal, recoil, and full
-  background/water interaction remain pending.
+  points and `$04` contact damage; wall-collision reversal is verified below,
+  while recoil and full background/water interaction remain pending.
 - Leever now decodes the four-entry bank `$04` display list and mirrors the
   hide/emerge/chase/burrow state loop, `$1F`/`$70`/`$30` ROM countdown bases,
   chase-only combat gate, `$08` Link-vector refresh, and fixed-point movement.
@@ -584,6 +584,19 @@ runtime collision callback.
   the focused Zol/Gel regressions plus the complete Java suite cover this
   increment. Clinging-input release, background interaction, recoil smoke,
   and remaining damage-state branches remain pending.
+
+## Verified ROM Tektite wall reversal — 2026-08-05
+
+- Tektite now restores a blocked X or Y coordinate after its fixed-point
+  movement update, then applies the source `negate`/arithmetic-half helper to
+  speed X for horizontal and vertical collision flags in ROM order.
+- The vertical path intentionally updates speed X as written by
+  `TektiteVerticalCollision`; speed Y is unchanged. Direction mapping uses
+  the disassembly's right/left/up/down values exposed by the room collision
+  callback.
+- Focused Tektite regressions and the complete Java suite cover this
+  increment. Recoil, water/pit/conveyor behavior, and remaining damage-state
+  branches remain pending.
 
 ## Next entity increments
 

@@ -1160,6 +1160,52 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void tektiteReversesAndHalvesSpeedXAfterHorizontalWallCollision() {
+        EntitySpriteDefinition definition = pairDefinition(0x0D, 2);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x0D, 64, 64, EntityStatus.ACTIVE,
+                definition, 0, 0, 0, 0x80)));
+        IntSupplier randomBytes = sequence(0x00, 0x00, 0x00, 0x00);
+
+        for (int frame = 0; frame <= 32; frame++) {
+            runtime.tick(frame, 120, 120, randomBytes);
+        }
+        assertEquals(0, runtime.tektiteState(0));
+        assertEquals(0x10, runtime.tektiteSpeedX(0));
+        assertEquals(0x10, runtime.tektiteSpeedY(0));
+
+        RoomEntityBackgroundCollision rightWall =
+            (entity, direction, nextX, nextY) -> direction == 0;
+        runtime.tick(33, 120, 120, randomBytes, rightWall);
+
+        assertEquals(64, runtime.snapshot().slots().get(0).x());
+        assertEquals(65, runtime.snapshot().slots().get(0).y());
+        assertEquals(0xF8, runtime.tektiteSpeedX(0));
+        assertEquals(0x10, runtime.tektiteSpeedY(0));
+    }
+
+    @Test
+    void tektiteVerticalWallCollisionUsesTheRomXSpeedHelper() {
+        EntitySpriteDefinition definition = pairDefinition(0x0D, 2);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x0D, 64, 64, EntityStatus.ACTIVE,
+                definition, 0, 0, 0, 0x80)));
+        IntSupplier randomBytes = sequence(0x00, 0x00, 0x00, 0x00);
+
+        for (int frame = 0; frame <= 32; frame++) {
+            runtime.tick(frame, 120, 120, randomBytes);
+        }
+        RoomEntityBackgroundCollision downWall =
+            (entity, direction, nextX, nextY) -> direction == 3;
+        runtime.tick(33, 120, 120, randomBytes, downWall);
+
+        assertEquals(65, runtime.snapshot().slots().get(0).x());
+        assertEquals(64, runtime.snapshot().slots().get(0).y());
+        assertEquals(0xF8, runtime.tektiteSpeedX(0));
+        assertEquals(0x10, runtime.tektiteSpeedY(0));
+    }
+
+    @Test
     void tektiteAddsTheRomLandingTimerBaseAfterMaskingRandomness() {
         EntitySpriteDefinition definition = pairDefinition(0x0D, 2);
         RoomEntitySnapshot initial = snapshot(

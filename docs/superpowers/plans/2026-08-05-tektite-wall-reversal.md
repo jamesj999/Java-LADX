@@ -15,7 +15,7 @@
 **Files:**
 - Modify: java/src/test/java/linksawakening/world/RoomEntityRuntimeTest.java beside the existing Tektite motion tests.
 
-- [ ] **Step 1: Add horizontal collision regression**
+- [x] **Step 1: Add horizontal collision regression**
 
 Add:
 
@@ -44,7 +44,7 @@ Add:
         assertEquals(0x10, runtime.tektiteSpeedY(0));
     }
 
-- [ ] **Step 2: Add vertical collision regression**
+- [x] **Step 2: Add vertical collision regression**
 
 Add:
 
@@ -69,7 +69,7 @@ Add:
         assertEquals(0x10, runtime.tektiteSpeedY(0));
     }
 
-- [ ] **Step 3: Run the focused tests and verify RED**
+- [x] **Step 3: Run the focused tests and verify RED**
 
 Run from java/:
 
@@ -82,7 +82,7 @@ Expected: both new tests fail because TektiteMotion currently ignores the backgr
 **Files:**
 - Modify: java/src/main/java/linksawakening/world/TektiteMotion.java in advance and near its private numeric helpers.
 
-- [ ] **Step 1: Query and restore directional collisions**
+- [x] **Step 1: Query and restore directional collisions**
 
 Immediately after computing x and y, add:
 
@@ -101,7 +101,7 @@ Immediately after computing x and y, add:
 
 Use the proposed coordinates in each callback, and do not change speed Y in the vertical branch: the source TektiteVerticalCollision helper addresses the X-speed table.
 
-- [ ] **Step 2: Add the source arithmetic helper**
+- [x] **Step 2: Add the source arithmetic helper**
 
 Add:
 
@@ -111,7 +111,7 @@ Add:
 
 Use the existing signedByte method. Add direction helpers that map negative X/Y speeds to left/up (`1`/`2`) and non-negative speeds to right/down (`0`/`3`).
 
-- [ ] **Step 3: Run the focused tests and verify GREEN**
+- [x] **Step 3: Run the focused tests and verify GREEN**
 
 Run from java/:
 
@@ -124,19 +124,19 @@ Expected: BUILD SUCCESSFUL; both new collision tests pass and all existing Tekti
 **Files:**
 - Modify: docs/reconstruction-roadmap.md in the Tektite bullet and immediately before ## Next entity increments.
 
-- [ ] **Step 1: Update the Tektite status**
+- [x] **Step 1: Update the Tektite status**
 
 Replace the Tektite bullet ending with wording that wall-collision reversal is verified below while recoil and full background/water interaction remain pending.
 
-- [ ] **Step 2: Add the verified increment record**
+- [x] **Step 2: Add the verified increment record**
 
 Record that the runtime restores blocked X/Y coordinates, applies the source negate-and-half speed-X helper for horizontal and vertical collision flags in order, and leaves recoil, water/pit/conveyor behavior, and remaining damage states pending.
 
-- [ ] **Step 3: Run final verification**
+- [x] **Step 3: Run final verification**
 
 Run gradle clean test from java/, then git diff --check and git status --short --branch from the worktree root. Expected: BUILD SUCCESSFUL, no whitespace errors, and only intended files changed.
 
-- [ ] **Step 4: Commit the checkpoint**
+- [x] **Step 4: Commit the checkpoint**
 
     git add java/src/main/java/linksawakening/world/TektiteMotion.java java/src/test/java/linksawakening/world/RoomEntityRuntimeTest.java docs/reconstruction-roadmap.md docs/superpowers/plans/2026-08-05-tektite-wall-reversal.md
     git commit -m "feat: add Tektite wall reversal"
