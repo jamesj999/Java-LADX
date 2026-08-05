@@ -14,7 +14,9 @@ public final class EntitySpriteHandlerCatalog {
 
     private static final int ENTITY_BUTTERFLY = 0x6E;
     private static final int ENTITY_OCTOROK = 0x09;
+    private static final int ENTITY_OCTOROK_ROCK = 0x0A;
     private static final int ENTITY_MOBLIN = 0x0B;
+    private static final int ENTITY_MOBLIN_ARROW = 0x0C;
     private static final int ENTITY_TEKTITE = 0x0D;
     private static final int ENTITY_LEEVER = 0x0E;
     private static final int ENTITY_ANTI_FAIRY = 0x15;
@@ -111,8 +113,14 @@ public final class EntitySpriteHandlerCatalog {
         if (entityType == ENTITY_OCTOROK) {
             return decodePair(entityType, 0x03, 0x57FB, 8, 0);
         }
+        if (entityType == ENTITY_OCTOROK_ROCK) {
+            return decodePair(entityType, 0x03, 0x6A1E, 2, 0);
+        }
         if (entityType == ENTITY_MOBLIN) {
             return decodePair(entityType, 0x03, 0x5917, 8, 0);
+        }
+        if (entityType == ENTITY_MOBLIN_ARROW) {
+            return decodePair(entityType, 0x03, 0x6BC6, 4, 0);
         }
         if (entityType == ENTITY_TEKTITE) {
             return decodePair(entityType, 0x06, 0x78B7, 2, 0);

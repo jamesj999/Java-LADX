@@ -588,6 +588,39 @@ final class EntitySpriteHandlerCatalogTest {
         assertEquals(0x42, roosterFollowing.variant(0).first().tile());
     }
 
+    @Test
+    void mapsEnemyProjectileHandlersToTheirDisassemblyDisplayLists() throws Exception {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+
+        EntitySpriteDefinition octorokRock = catalog.forEntityType(
+            0x0A, EntityRoomLoader.RoomTable.OVERWORLD);
+        assertDefinition(octorokRock, 0x03, 0x6A1E,
+            EntitySpriteDefinition.Shape.PAIR, 2, 0);
+
+        EntitySpriteDefinition moblinArrow = catalog.forEntityType(
+            0x0C, EntityRoomLoader.RoomTable.OVERWORLD);
+        assertDefinition(moblinArrow, 0x03, 0x6BC6,
+            EntitySpriteDefinition.Shape.PAIR, 4, 0);
+    }
+
+    @Test
+    void enemyProjectileVariantsMatchAllShippedRomTileAndAttributeBytes() throws Exception {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+
+        assertPairBytes(catalog.forEntityType(0x0A, EntityRoomLoader.RoomTable.OVERWORLD),
+            new int[][] {
+                {0x6C, 0x01, 0x6C, 0x21},
+                {0x5C, 0x01, 0x5C, 0x21}
+            });
+        assertPairBytes(catalog.forEntityType(0x0C, EntityRoomLoader.RoomTable.OVERWORLD),
+            new int[][] {
+                {0x2E, 0x21, 0x2C, 0x21},
+                {0x2C, 0x01, 0x2E, 0x01},
+                {0x2A, 0x41, 0x2A, 0x61},
+                {0x2A, 0x01, 0x2A, 0x21}
+            });
+    }
+
     private static void assertDefinition(EntitySpriteDefinition definition, int bank, int address,
                                           EntitySpriteDefinition.Shape shape, int variants,
                                           int initialVariant) {
@@ -596,6 +629,17 @@ final class EntitySpriteHandlerCatalogTest {
         assertEquals(shape, definition.shape());
         assertEquals(variants, definition.variantCount());
         assertEquals(initialVariant, definition.initialVariant());
+    }
+
+    private static void assertPairBytes(EntitySpriteDefinition definition, int[][] expected) {
+        assertEquals(expected.length, definition.variantCount());
+        for (int variant = 0; variant < expected.length; variant++) {
+            EntitySpriteDefinition.Variant actual = definition.variant(variant);
+            assertEquals(expected[variant][0], actual.first().tile());
+            assertEquals(expected[variant][1], actual.first().attributes());
+            assertEquals(expected[variant][2], actual.second().tile());
+            assertEquals(expected[variant][3], actual.second().attributes());
+        }
     }
 
     private static byte[] syntheticRom() {
