@@ -11,7 +11,6 @@ public final class EnemyProjectileEventConsumer {
     private static final int SHIELD_TING_ID = 0x16;
     private static final int ENEMY_BUMP_ID = 0x09;
     private static final int LINK_HURT_ID = 0x03;
-    private static final int LINK_INVINCIBILITY_FRAMES = 0x50;
 
     private EnemyProjectileEventConsumer() {
     }
@@ -50,8 +49,7 @@ public final class EnemyProjectileEventConsumer {
             }
 
             playHurtSound(event, soundSink);
-            playerState.damage(event.linkDamage());
-            playerState.setInvincibilityCounter(LINK_INVINCIBILITY_FRAMES);
+            playerState.applyRomEnemyDamage(event.linkDamage());
         }
     }
 

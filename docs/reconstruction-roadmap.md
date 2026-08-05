@@ -238,9 +238,28 @@ unsupported rather than represented by guessed shapes or generic movement.
   variants, room scrolling, and a real ROM room (`$2F`) publishing a spawned
   rock into the live render snapshot with its loaded entity tile sheet.
 - Remaining projectile gaps are deliberate: exact object-intersection edge
-  cases, full tunic/power-up damage modifiers and health-buffer timing, and
-  player projectile interactions are not yet complete. The broader engine
-  remains a staged reconstruction, not a complete entity-system claim.
+  cases and player projectile interactions are not yet complete. The broader
+  engine remains a staged reconstruction, not a complete entity-system claim.
+
+## Verified ROM Link damage buffering — 2026-08-05
+
+- Accepted generic enemy contact and projectile hits now pass through the
+  bank-$03 `ApplyLinkCollisionWithEnemy` modifier order. Blue Tunic halves
+  nominal damage; Guardian Acorn nullifies nominal `$04` and halves other
+  values; effective damage is accumulated in an unsigned-byte
+  `wSubtractHealthBuffer` equivalent.
+- The live Main entity-contact path and projectile event consumer preserve the
+  source `$50` invincibility window and hurt sound while deferring health loss
+  to the existing odd-frame resource tick. Pending healing takes precedence,
+  and a full-health healing buffer falls through to the source damage-reduce
+  branch on the same tick.
+- Piece of Power and Guardian Acorn hits now increment the source power-up hit
+  counter and clear the active power-up on the third accepted hit. Pickup
+  boundaries reset that counter. Pit damage remains a separate immediate path,
+  and medicine/low-health presentation are still pending.
+- Tests cover the source modifier precedence, zero-effective Guardian Acorn
+  acceptance, byte wrapping, delayed health progression, healing precedence,
+  power-up expiry, projectile consumption, and the complete Java suite.
 
 ## Verified ROM laser runtime — 2026-08-05
 
@@ -520,7 +539,7 @@ runtime collision callback.
 
 ## Next entity increments
 
-1. Port remaining simple enemy movement, collision, damage, lifting, and
+1. Port remaining simple enemy movement, collision exceptions, lifting, and
    throwing behavior, plus entity-specific burning/death presentation, using
    the existing room collision model.
 2. Extend rectangle and dynamically selected sprite handlers, complete entity

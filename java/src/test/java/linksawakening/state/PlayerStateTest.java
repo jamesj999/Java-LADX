@@ -105,6 +105,115 @@ final class PlayerStateTest {
     }
 
     @Test
+    void blueTunicHalvesNominalDamageIntoTheRomBuffer() {
+        PlayerState playerState = new PlayerState();
+        playerState.setTunicType(PlayerState.TUNIC_BLUE);
+
+        assertEquals(4, playerState.applyRomEnemyDamage(8));
+        assertEquals(4, playerState.subtractHealthBuffer());
+        assertEquals(0x50, playerState.invincibilityCounter());
+    }
+
+    @Test
+    void blueTunicUsesTheRomRawShiftForOnePointDamage() {
+        PlayerState playerState = new PlayerState();
+        playerState.setTunicType(PlayerState.TUNIC_BLUE);
+
+        assertEquals(0, playerState.applyRomEnemyDamage(1));
+        assertEquals(0, playerState.subtractHealthBuffer());
+    }
+
+    @Test
+    void guardianAcornNullifiesFourDamageButHalvesOtherDamage() {
+        PlayerState playerState = new PlayerState();
+        playerState.setActivePowerUp(PlayerState.ACTIVE_POWER_UP_GUARDIAN_ACORN);
+
+        assertEquals(0, playerState.applyRomEnemyDamage(4));
+        assertEquals(0, playerState.subtractHealthBuffer());
+        assertEquals(0x50, playerState.invincibilityCounter());
+
+        playerState.setInvincibilityCounter(0);
+        assertEquals(4, playerState.applyRomEnemyDamage(8));
+        assertEquals(4, playerState.subtractHealthBuffer());
+    }
+
+    @Test
+    void enemyDamageDrainsOneHealthPointPerOddFrame() {
+        PlayerState playerState = new PlayerState();
+        playerState.setHealth(16);
+
+        playerState.applyRomEnemyDamage(8);
+
+        assertEquals(16, playerState.health());
+        playerState.tickResourceBuffers(0);
+        assertEquals(16, playerState.health());
+        playerState.tickResourceBuffers(1);
+        assertEquals(15, playerState.health());
+        assertEquals(7, playerState.subtractHealthBuffer());
+    }
+
+    @Test
+    void healingTakesPrecedenceOverPendingDamageWhenHealthIsNotFull() {
+        PlayerState playerState = new PlayerState();
+        playerState.setHealth(8);
+        playerState.applyRomEnemyDamage(8);
+        playerState.applyEntityPickup(0x2D);
+
+        playerState.tickResourceBuffers(1);
+
+        assertEquals(9, playerState.health());
+        assertEquals(7, playerState.addHealthBuffer());
+        assertEquals(8, playerState.subtractHealthBuffer());
+    }
+
+    @Test
+    void fullHealthClearsHealingAndFallsThroughToDamageReduction() {
+        PlayerState playerState = new PlayerState();
+        playerState.setMaxHearts(2);
+        playerState.setHealth(16);
+        playerState.applyRomEnemyDamage(8);
+        playerState.applyEntityPickup(0x2D);
+
+        playerState.tickResourceBuffers(1);
+
+        assertEquals(15, playerState.health());
+        assertEquals(0, playerState.addHealthBuffer());
+        assertEquals(7, playerState.subtractHealthBuffer());
+    }
+
+    @Test
+    void activePowerUpExpiresAfterTheThirdAcceptedHitAndPickupResetsCount() {
+        PlayerState playerState = new PlayerState();
+        playerState.setActivePowerUp(PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER);
+
+        playerState.applyRomEnemyDamage(8);
+        playerState.setInvincibilityCounter(0);
+        playerState.applyRomEnemyDamage(8);
+        assertEquals(2, playerState.powerUpHits());
+        assertEquals(PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER,
+            playerState.activePowerUp());
+
+        playerState.setInvincibilityCounter(0);
+        playerState.applyRomEnemyDamage(8);
+        assertEquals(3, playerState.powerUpHits());
+        assertEquals(PlayerState.ACTIVE_POWER_UP_NONE, playerState.activePowerUp());
+
+        playerState.setActivePowerUp(PlayerState.ACTIVE_POWER_UP_GUARDIAN_ACORN);
+        assertEquals(0, playerState.powerUpHits());
+    }
+
+    @Test
+    void enemyDamageAccumulatesAsAnUnsignedRomByte() {
+        PlayerState playerState = new PlayerState();
+
+        playerState.applyRomEnemyDamage(0xFF);
+        playerState.setInvincibilityCounter(0);
+        playerState.applyRomEnemyDamage(1);
+
+        assertEquals(0, playerState.subtractHealthBuffer());
+    }
+
+    @Test
     void boundedAmmoPickupsMatchTheRomCapacityChecks() {
         PlayerState playerState = new PlayerState();
         playerState.setMaxArrows(2);

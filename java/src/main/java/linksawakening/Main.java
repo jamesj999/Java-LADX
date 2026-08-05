@@ -484,8 +484,7 @@ public class Main {
                 EnemyCombatEventConsumer.consume(combatEvents, gameplaySoundSink, transientVfxSystem);
                 for (EntityCombatEvent event : combatEvents) {
                     if (event.linkDamage() > 0 && playerState.invincibilityCounter() == 0) {
-                        playerState.damage(event.linkDamage());
-                        playerState.setInvincibilityCounter(0x50);
+                        playerState.applyRomEnemyDamage(event.linkDamage());
                     }
                 }
             }

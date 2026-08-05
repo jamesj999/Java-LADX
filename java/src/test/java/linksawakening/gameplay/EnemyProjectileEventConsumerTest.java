@@ -23,12 +23,17 @@ final class EnemyProjectileEventConsumerTest {
 
         EnemyProjectileEventConsumer.consume(List.of(event), player, sounds);
 
-        assertEquals(8, player.health());
+        assertEquals(16, player.health());
+        assertEquals(8, player.subtractHealthBuffer());
         assertEquals(0x50, player.invincibilityCounter());
         assertEquals(List.of(GameplaySoundEvent.LINK_HURT), sounds.events);
 
+        player.tickResourceBuffers(1);
+        assertEquals(15, player.health());
+        assertEquals(7, player.subtractHealthBuffer());
+
         EnemyProjectileEventConsumer.consume(List.of(event), player, sounds);
-        assertEquals(8, player.health());
+        assertEquals(15, player.health());
         assertEquals(List.of(GameplaySoundEvent.LINK_HURT), sounds.events);
     }
 

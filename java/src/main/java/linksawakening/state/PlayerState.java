@@ -57,7 +57,9 @@ public final class PlayerState {
     private int tunicType = TUNIC_GREEN;
     private boolean runningWithPegasusBoots;
     private int addHealthBuffer;
+    private int subtractHealthBuffer;
     private int addRupeeBuffer;
+    private int powerUpHits;
 
     public PlayerState() {
         // Stub test data so the inventory menu has something to equip until
@@ -97,6 +99,32 @@ public final class PlayerState {
         setHealth(health - Math.max(0, amount));
     }
 
+    /**
+     * Applies the generic enemy collision damage path from bank3.asm. The
+     * nominal damage is buffered; UpdateHealth consumes that buffer on odd
+     * frames instead of changing health immediately.
+     */
+    public int applyRomEnemyDamage(int nominalDamage) {
+        int effectiveDamage = nominalDamage & 0xFF;
+        if (tunicType == TUNIC_BLUE) {
+            effectiveDamage >>= 1;
+        } else if (activePowerUp == ACTIVE_POWER_UP_GUARDIAN_ACORN) {
+            effectiveDamage = effectiveDamage == 0x04
+                ? 0
+                : effectiveDamage >> 1;
+        }
+
+        subtractHealthBuffer = (subtractHealthBuffer + effectiveDamage) & 0xFF;
+        invincibilityCounter = 0x50;
+        if (activePowerUp != ACTIVE_POWER_UP_NONE) {
+            powerUpHits = (powerUpHits + 1) & 0xFF;
+            if (powerUpHits >= 3) {
+                activePowerUp = ACTIVE_POWER_UP_NONE;
+            }
+        }
+        return effectiveDamage;
+    }
+
     public int invincibilityCounter() {
         return invincibilityCounter;
     }
@@ -114,6 +142,11 @@ public final class PlayerState {
     /** Amount of health still waiting in the ROM's wAddHealthBuffer. */
     public int addHealthBuffer() {
         return addHealthBuffer;
+    }
+
+    /** Amount of health still waiting in the ROM's wSubtractHealthBuffer. */
+    public int subtractHealthBuffer() {
+        return subtractHealthBuffer;
     }
 
     /** Amount of rupees still waiting in the ROM's wAddRupeeBufferLow. */
@@ -138,8 +171,8 @@ public final class PlayerState {
         switch (entityType & 0xFF) {
             case 0x2D -> addHealthBuffer = Math.min(0xFF, addHealthBuffer + HP_PER_HEART);
             case 0x2E -> addRupeeBuffer = Math.min(0xFF, addRupeeBuffer + 1);
-            case 0x33 -> activePowerUp = 1;
-            case 0x34 -> activePowerUp = 2;
+            case 0x33 -> setActivePowerUp(ACTIVE_POWER_UP_PIECE_OF_POWER);
+            case 0x34 -> setActivePowerUp(ACTIVE_POWER_UP_GUARDIAN_ACORN);
             case 0x37 -> arrowCount = incrementUpTo(arrowCount, maxArrows);
             case 0x38 -> {
                 giveInventoryItem(INVENTORY_BOMBS);
@@ -238,6 +271,17 @@ public final class PlayerState {
         return activePowerUp;
     }
 
+    /** Mirrors the ROM pickup boundary that starts a fresh power-up streak. */
+    public void setActivePowerUp(int value) {
+        activePowerUp = clamp(value, ACTIVE_POWER_UP_NONE, ACTIVE_POWER_UP_GUARDIAN_ACORN);
+        powerUpHits = 0;
+    }
+
+    /** Number of accepted enemy hits taken while the current power-up was active. */
+    public int powerUpHits() {
+        return powerUpHits;
+    }
+
     public int tunicType() {
         return tunicType;
     }
@@ -290,16 +334,23 @@ public final class PlayerState {
     }
 
     private void tickHealthBuffer() {
-        if (addHealthBuffer == 0) {
+        if (addHealthBuffer != 0) {
+            int maxHealth = maxHearts * HP_PER_HEART;
+            if (health >= maxHealth) {
+                addHealthBuffer = 0;
+            } else {
+                health++;
+                addHealthBuffer--;
+                return;
+            }
+        }
+        if (subtractHealthBuffer == 0) {
             return;
         }
-        int maxHealth = maxHearts * HP_PER_HEART;
-        if (health >= maxHealth) {
-            addHealthBuffer = 0;
-            return;
+        subtractHealthBuffer--;
+        if (health > 0) {
+            health--;
         }
-        health++;
-        addHealthBuffer--;
     }
 
     private void tickRupeeBuffer() {
