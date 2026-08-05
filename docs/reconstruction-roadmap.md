@@ -75,9 +75,9 @@ resource.
 - Hardhat Beetle now mirrors bank `$06`'s four-frame random target refresh,
   ROM infinity-norm vector calculation, signed speed approach, fixed-point
   movement, and axis-specific background stop. Its normal health-group
-  `$0B` path (four health and `$08` contact damage) is wired; recoil, shield/
+  `$0B` path (four health and `$08` contact damage) is wired; shield/
   sword-clink state, water behavior, and the full collision table remain
-  pending.
+  pending. Its shared sword recoil is verified below.
 - Armos Statue now mirrors the bank `$06` state-0 wake, state-1 `$30` charge
   countdown, state-2 random timer, contiguous ROM speed tables, and fixed-point
   movement. Its ROM normal hitbox drives wake-up; final-Link-position plumbing,
@@ -385,6 +385,24 @@ than represented by guessed shapes or generic movement.
 - Tests cover both ROM VFX phases, transient lifetime, event routing, sound
   catalog mapping, spike-trap no-damage behavior, ordinary-enemy regression,
   and the complete Java suite passes from a clean build.
+
+## Verified ROM Hard Hat recoil — 2026-08-05
+
+- Hard Hat Beetle's bank-$06 handler now uses the shared `$30` sword-recoil
+  vector before its ordinary `UpdateEntityPosWithSpeed_06` and target-seeking
+  movement. The runtime preserves the signed sixteen-subpixel accumulators,
+  normal health/flash/ignore-hit state, and the conditional roaming-state hook
+  only for Octorok/Moblin.
+- The bank-specific collision behavior is preserved: unlike bank-$03's
+  `StopEntityRecoilOnCollision` path, `ApplyRecoilIfNeeded_06` does not clear
+  Hard Hat's recoil/countdown when background interaction blocks a step.
+- The visible checkpoint is a sword strike against a Hard Hat Beetle: its
+  body now moves away from Link during the source ignore-hit window while its
+  normal target movement remains active. Water behavior, shield/clink rules,
+  recoil smoke, and the broader bank-$04/$06 recoil family remain pending.
+- Focused recoil/runtime tests and the complete Java suite cover this
+  increment; ordinary Octorok/Moblin recoil and spike-trap sword clinks remain
+  regression-checked.
 
 ## Next entity increments
 

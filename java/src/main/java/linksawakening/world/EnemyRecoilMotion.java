@@ -1,7 +1,8 @@
 package linksawakening.world;
 
 /**
- * Bank-$03's shared sword-recoil state for ordinary roaming enemies.
+ * Shared sword-recoil state used by the bank-$03 roaming enemies and the
+ * bank-$06 Hard Hat Beetle handler.
  *
  * <p>The ROM stores entity speeds as signed pixels per sixteen frames and
  * keeps a separate eight-bit fractional accumulator for each axis. This
@@ -57,6 +58,16 @@ final class EnemyRecoilMotion {
 
     /** Applies one ROM fixed-point recoil step and returns a new entity value. */
     Update advance(RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision) {
+        return advance(entity, backgroundCollision, true);
+    }
+
+    /**
+     * Applies one recoil step, optionally preserving state after a background
+     * block. Bank-$03 calls StopEntityRecoilOnCollision; bank-$06 Hard Hat does
+     * not, so its handler uses {@code clearOnBlocked == false}.
+     */
+    Update advance(RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision,
+                   boolean clearOnBlocked) {
         int slot = entity.slot();
         if (!active[slot]) {
             return new Update(entity, false);
@@ -79,7 +90,7 @@ final class EnemyRecoilMotion {
                 blocked = true;
             }
         }
-        if (blocked) {
+        if (blocked && clearOnBlocked) {
             clear(slot);
         }
 

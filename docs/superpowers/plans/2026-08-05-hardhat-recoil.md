@@ -14,7 +14,9 @@ the already verified Octorok, Moblin, and spike-trap paths.
   normal health reduction, `$18` flash, and `$0A` ignore-hits countdown.
 - Add a tick assertion proving recoil moves the entity before the normal
   Hard Hat speed update and consumes one countdown step.
-- Add a blocking assertion using the existing room background collision hook.
+- Add a blocking assertion using the existing room background collision hook;
+  bank `$06` does not call `StopEntityRecoilOnCollision`, so the recoil state
+  and decremented countdown must remain active.
 
 Run the focused test before implementation and confirm it fails because Hard
 Hat currently has no recoil state.
@@ -24,6 +26,8 @@ Hat currently has no recoil state.
 - Treat Hard Hat as a shared-recoil entity in the runtime pre-handler phase.
 - Configure the `$30` vector for Hard Hat's normal sword-hit branch.
 - Restrict `RoamingEnemyMotion.beginRecoil` to the Octorok/Moblin path.
+- Preserve the bank-specific difference between bank `$03`'s collision stop
+  and bank `$06`'s continued countdown/recoil state.
 - Keep the source clink-off spike-trap exception free of recoil.
 
 ### 3. Verify and document the visible increment

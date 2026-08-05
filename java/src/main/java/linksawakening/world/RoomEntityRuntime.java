@@ -374,9 +374,9 @@ public final class RoomEntityRuntime {
             }
             RoomEntity updated = entity;
             if (status == EntityStatus.ACTIVE && !wasInitializing
-                && isRoamingEnemyType(entity.type())) {
-                // AnimateRoamingEnemy applies the shared recoil before its
-                // state-specific movement and collision handler.
+                && usesSharedRecoil(entity.type())) {
+                // Bank-$03 AnimateRoamingEnemy and bank-$06 HardHatBeetle
+                // both apply the shared recoil before their own movement.
                 EnemyRecoilMotion.Update recoil = applyEnemyRecoilIfNeeded(
                     entity, backgroundCollision);
                 entity = recoil.entity();
@@ -718,7 +718,7 @@ public final class RoomEntityRuntime {
                 boolean swordResultApplied = swordResult == null
                     ? swordDamage > 0
                     : !swordResult.ignored();
-                if (isRoamingEnemyType(entity.type())) {
+                if (usesSharedRecoil(entity.type())) {
                     // EnemyCollidedWithSword applies the default `$30` recoil
                     // before ApplySwordDamagesToEnemy changes health.
                     enemyRecoilMotion.configure(
@@ -887,6 +887,10 @@ public final class RoomEntityRuntime {
 
     private static boolean isRoamingEnemyType(int type) {
         return type == ENTITY_OCTOROK || type == ENTITY_MOBLIN;
+    }
+
+    private static boolean usesSharedRecoil(int type) {
+        return isRoamingEnemyType(type) || type == ENTITY_HARDHAT_BEETLE;
     }
 
     private static boolean isEnemyProjectileType(int type) {
@@ -1634,13 +1638,15 @@ public final class RoomEntityRuntime {
             return new EnemyRecoilMotion.Update(entity, false);
         }
 
-        roamingEnemyMotion.beginRecoil(slot);
-        // ApplyRecoilIfNeeded_03 decrements the shared countdown immediately
-        // before applying one fixed-point recoil step.
+        if (isRoamingEnemyType(entity.type())) {
+            roamingEnemyMotion.beginRecoil(slot);
+        }
+        // ApplyRecoilIfNeeded_03/06 decrements the shared countdown
+        // immediately before applying one fixed-point recoil step.
         enemyIgnoreHitsCountdown[slot]--;
         EnemyRecoilMotion.Update update = enemyRecoilMotion.advance(
-            entity, backgroundCollision);
-        if (update.blocked()) {
+            entity, backgroundCollision, isRoamingEnemyType(entity.type()));
+        if (update.blocked() && isRoamingEnemyType(entity.type())) {
             // StopEntityRecoilOnCollision clears the ignore-hits countdown.
             enemyIgnoreHitsCountdown[slot] = 0;
         }

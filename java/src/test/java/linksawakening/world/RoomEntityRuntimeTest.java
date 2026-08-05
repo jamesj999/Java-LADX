@@ -888,6 +888,49 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void hardHatSwordHitConfiguresAndAppliesTheRomSharedRecoil() {
+        EntitySpriteDefinition definition = pairDefinition(0x20, 2);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x20, 64, 64, EntityStatus.ACTIVE, definition, 0)));
+
+        List<EntityCombatEvent> events = runtime.resolveCombat(
+            0, 72, 72, false, true, true, 72, 1, 72, 1);
+
+        assertEquals(1, events.size());
+        assertEquals(0x03, runtime.enemyHealth(0));
+        assertEquals(0x18, runtime.enemyFlashCountdown(0));
+        assertEquals(0x0A, runtime.enemyIgnoreHitsCountdown(0));
+        assertTrue(runtime.enemyRecoilActive(0));
+        assertEquals(0xD0, runtime.enemyRecoilSpeedX(0));
+        assertEquals(0xD0, runtime.enemyRecoilSpeedY(0));
+
+        runtime.tick(1, 72, 72, sequence(0x00));
+
+        RoomEntity afterRecoil = runtime.snapshot().slots().get(0);
+        assertEquals(61, afterRecoil.x());
+        assertEquals(61, afterRecoil.y());
+        assertEquals(0x09, runtime.enemyIgnoreHitsCountdown(0));
+    }
+
+    @Test
+    void hardHatSharedRecoilKeepsStateWhenTheRomBackgroundPathBlocksIt() {
+        EntitySpriteDefinition definition = pairDefinition(0x20, 2);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x20, 64, 64, EntityStatus.ACTIVE, definition, 0)));
+
+        runtime.resolveCombat(0, 72, 72, false, true, true, 72, 1, 72, 1);
+        RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) ->
+            direction == 1 || direction == 2;
+
+        runtime.tick(1, 72, 72, sequence(0x00), wall);
+
+        assertEquals(64, runtime.snapshot().slots().get(0).x());
+        assertEquals(64, runtime.snapshot().slots().get(0).y());
+        assertTrue(runtime.enemyRecoilActive(0));
+        assertEquals(0x09, runtime.enemyIgnoreHitsCountdown(0));
+    }
+
+    @Test
     void armosWakesOnLinkCollisionThenChargesForTheRomCountdown() {
         EntitySpriteDefinition definition = pairDefinition(0x0F, 2);
         RoomEntitySnapshot initial = snapshot(

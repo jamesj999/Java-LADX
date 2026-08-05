@@ -32,9 +32,10 @@ shared pre-handler phase. The runtime will:
    order of `ApplyRecoilIfNeeded_06` followed by `UpdateEntityPosWithSpeed_06`.
 3. Leave Hard Hat's ordinary speed and four-frame target refresh intact, so the
    same frame can apply normal motion after the temporary recoil movement.
-4. Decrement the existing ignore-hits countdown while recoil is active and
-   clear recoil when the background blocks it, matching the shared helper's
-   externally observable state.
+4. Decrement the existing ignore-hits countdown while recoil is active. The
+   bank-$06 helper does not call `StopEntityRecoilOnCollision`, so a blocked
+   Hard Hat recoil step retains its active recoil state and countdown; this is
+   deliberately different from the bank-$03 roaming path.
 
 The existing `RoamingEnemyMotion.beginRecoil` call remains restricted to
 Octorok/Moblin. Hard Hat has no roaming state-1 recoil branch; it only needs the
@@ -56,6 +57,7 @@ entity-handler scheduler.
   preserves normal damage/flash/ignore-hit state.
 - Assert the next runtime tick applies recoil before ordinary Hard Hat motion
   and decrements the countdown.
-- Assert a blocked recoil step clears the active recoil state.
+- Assert a blocked recoil step preserves the active recoil state and leaves
+  the countdown at `$09` after the first decrement.
 - Assert Octorok/Moblin recoil and spike-trap clink behavior remain unchanged.
 - Run focused tests, `git diff --check`, and a fresh `gradle clean test`.
