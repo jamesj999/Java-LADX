@@ -4,6 +4,7 @@ import linksawakening.entity.EntitySpriteDefinition;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -108,6 +109,42 @@ final class RoamingEnemyMotionTest {
         motion.setStateForTest(0, 1, 0x0B, 0, 0, 0);
         assertNotNull(motion.advance(moblin, 0x50, 0x40, () -> 0, null, true)
             .launchRequest());
+    }
+
+    @Test
+    void richCollisionRecordsTheRomDirectionBitAndIsConsumedOnTheNextDispatch() {
+        RoamingEnemyMotion motion = new RoamingEnemyMotion();
+        RoomEntity source = entity(0, 0x09, 0x40, 0x40);
+        motion.setStateForTest(0, 0, 0x08, 0, 0, 0);
+        AtomicReference<EntityBackgroundCollisionResult> probe = new AtomicReference<>();
+
+        RoomEntityBackgroundInteraction interaction = (entity, direction, nextX, nextY) -> {
+            EntityBackgroundCollisionResult result = EntityBackgroundCollisionResult.blocked(
+                direction, 0x22, 0x01, nextX, nextY);
+            probe.set(result);
+            return result;
+        };
+
+        motion.advanceWithInteraction(source, 0x50, 0x40, () -> 0x0A, interaction, false);
+        RoamingEnemyMotion.Update blocked = motion.advanceWithInteraction(
+            source, 0x50, 0x40, () -> 0x0A, interaction, false);
+
+        assertEquals(source.x(), blocked.entity().x());
+        assertEquals(0x01, motion.collisionFlags(0));
+        assertEquals(0x22, motion.horizontallyCollidedObject(0));
+        assertEquals(0x08, motion.speedX(0));
+        assertEquals(0, motion.state(0));
+        assertEquals(0x01, probe.get().collisionFlag());
+
+        RoamingEnemyMotion.Update consumed = motion.advanceWithInteraction(
+            source, 0x50, 0x40, () -> 0x0A, interaction, false);
+
+        assertEquals(1, motion.state(0));
+        assertEquals(0x1A, motion.transitionCountdown(0));
+        assertEquals(0, motion.collisionFlags(0));
+        assertEquals(0, motion.speedX(0));
+        assertEquals(source.x(), consumed.entity().x());
+        assertEquals(source.y(), consumed.entity().y());
     }
 
     private static RoomEntity entity(int slot, int type, int x, int y) {

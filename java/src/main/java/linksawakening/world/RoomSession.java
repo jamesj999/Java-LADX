@@ -539,6 +539,7 @@ public final class RoomSession {
             entityRuntime.setFollowingNpcState(followingNpcState);
             entityRuntime.setEntityMapId(activeRoom.mapId());
             entityRuntime.setGroundInteraction(this::entityGroundInteraction);
+            entityRuntime.setBackgroundInteraction(this::entityBackgroundCollisionResult);
             entityRuntime.setGroundInteractionSideScrolling(
                 activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL);
             entityRuntime.setActionButtonsHeld(actionButtonsHeld);
@@ -574,6 +575,7 @@ public final class RoomSession {
         entityRuntime.setFollowingNpcState(followingNpcState);
         entityRuntime.setEntityMapId(activeRoom.mapId());
         entityRuntime.setGroundInteraction(this::entityGroundInteraction);
+        entityRuntime.setBackgroundInteraction(this::entityBackgroundCollisionResult);
         entityRuntime.setGroundInteractionSideScrolling(
             activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL);
         entityRuntime.setActionButtonsHeld(actionButtonsHeld);
@@ -631,18 +633,29 @@ public final class RoomSession {
      */
     private boolean entityBackgroundCollision(RoomEntity entity, int direction,
                                               int nextX, int nextY) {
+        return entityBackgroundCollisionResult(entity, direction, nextX, nextY).blocked();
+    }
+
+    private EntityBackgroundCollisionResult entityBackgroundCollisionResult(
+            RoomEntity entity, int direction, int nextX, int nextY) {
         EntityCollisionPointProbe.Sample sample = entityCollisionPointProbe.sample(
             entity, direction, nextX, nextY);
         int pointX = sample.x();
         int pointY = sample.y();
+        int objectId = overworldCollision.objectIdAtPoint(pointX, pointY);
+        int physicsFlag = overworldCollision.objectPhysicsFlagAtPoint(pointX, pointY);
+        boolean blocked = overworldCollision.pointBlocked(pointX, pointY);
         if (entity.type() == ENTITY_WATER_TEKTITE) {
-            int physicsFlag = overworldCollision.objectPhysicsFlagAtPoint(pointX, pointY);
             if (physicsFlag == PhysicsFlags.SHALLOW_WATER
                 || physicsFlag == PhysicsFlags.DEEP_WATER) {
-                return false;
+                blocked = false;
             }
         }
-        return overworldCollision.pointBlocked(pointX, pointY);
+        return blocked
+            ? EntityBackgroundCollisionResult.blocked(direction, objectId, physicsFlag,
+                pointX, pointY)
+            : EntityBackgroundCollisionResult.passableWithObject(direction, objectId,
+                physicsFlag, pointX, pointY);
     }
 
     /**

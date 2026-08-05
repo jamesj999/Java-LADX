@@ -103,6 +103,16 @@ public final class OverworldCollision {
         return romTables.objectPhysicsFlag(physicsTableIndex, objectId);
     }
 
+    /** Returns the raw room object sampled at an entity collision point. */
+    public int objectIdAtPoint(int pixelX, int pixelY) {
+        if (roomObjectsArea == null) {
+            return 0xFF;
+        }
+        int cellX = cellCoordinate(pixelX);
+        int cellY = cellCoordinate(pixelY);
+        return objectIdAtCell(cellX, cellY);
+    }
+
     /**
      * Whether Link's current foot cell applies the ROM's slow-ground motion
      * gate. Mirrors {@code GetObjectUnderLink}: hLinkPositionX is the sprite

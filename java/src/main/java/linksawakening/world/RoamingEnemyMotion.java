@@ -23,7 +23,9 @@ final class RoamingEnemyMotion {
     private final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
-    private final boolean[] collisionPending = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] collisionsTable = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] horizontallyCollidedObject = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] verticallyCollidedObject = new int[EntityRoomLoader.MAX_ENTITIES];
 
     void initialize(int slot) {
         state[slot] = 0;
@@ -35,7 +37,9 @@ final class RoamingEnemyMotion {
         speedYAccumulator[slot] = 0;
         privateState1[slot] = 0;
         inertia[slot] = 0;
-        collisionPending[slot] = false;
+        collisionsTable[slot] = 0;
+        horizontallyCollidedObject[slot] = 0;
+        verticallyCollidedObject[slot] = 0;
         initialized[slot] = true;
     }
 
@@ -49,6 +53,24 @@ final class RoamingEnemyMotion {
     Update advance(RoomEntity entity, int linkEntityX, int linkEntityY,
                    IntSupplier randomByteSupplier,
                    RoomEntityBackgroundCollision backgroundCollision,
+                   boolean creditsGameplay) {
+        RoomEntityBackgroundInteraction interaction = backgroundCollision == null
+            ? null : RoomEntityBackgroundInteraction.fromBoolean(backgroundCollision);
+        return advanceInternal(entity, linkEntityX, linkEntityY, randomByteSupplier,
+            interaction, creditsGameplay);
+    }
+
+    Update advanceWithInteraction(RoomEntity entity, int linkEntityX, int linkEntityY,
+                                   IntSupplier randomByteSupplier,
+                                   RoomEntityBackgroundInteraction backgroundInteraction,
+                                   boolean creditsGameplay) {
+        return advanceInternal(entity, linkEntityX, linkEntityY, randomByteSupplier,
+            backgroundInteraction, creditsGameplay);
+    }
+
+    private Update advanceInternal(RoomEntity entity, int linkEntityX, int linkEntityY,
+                   IntSupplier randomByteSupplier,
+                   RoomEntityBackgroundInteraction backgroundInteraction,
                    boolean creditsGameplay) {
         int slot = entity.slot();
         if (!initialized[slot]) {
@@ -79,25 +101,37 @@ final class RoamingEnemyMotion {
 
         int x = entity.x();
         int y = entity.y();
-        if (collisionPending[slot] || transitionCountdown[slot] == 0) {
+        if ((collisionsTable[slot] & 0x0F) != 0 || transitionCountdown[slot] == 0) {
             transitionCountdown[slot] = 0x10 | (randomByteSupplier.getAsInt() & 0x0F);
             state[slot] = 1;
             speedX[slot] = 0;
             speedY[slot] = 0;
-            collisionPending[slot] = false;
+            collisionsTable[slot] = 0;
         } else {
             int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
-            if (nextX != x && backgroundCollision != null
-                && backgroundCollision.blocks(entity, direction[slot], nextX, y)) {
-                collisionPending[slot] = true;
+            if (nextX != x && backgroundInteraction != null) {
+                EntityBackgroundCollisionResult result = backgroundInteraction.probe(
+                    entity, direction[slot], nextX, y);
+                if (result.blocked()) {
+                    collisionsTable[slot] |= result.collisionFlag();
+                    horizontallyCollidedObject[slot] = result.objectId();
+                } else {
+                    x = nextX;
+                }
             } else {
                 x = nextX;
             }
 
             int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
-            if (nextY != y && backgroundCollision != null
-                && backgroundCollision.blocks(entity, direction[slot], x, nextY)) {
-                collisionPending[slot] = true;
+            if (nextY != y && backgroundInteraction != null) {
+                EntityBackgroundCollisionResult result = backgroundInteraction.probe(
+                    entity, direction[slot], x, nextY);
+                if (result.blocked()) {
+                    collisionsTable[slot] |= result.collisionFlag();
+                    verticallyCollidedObject[slot] = result.objectId();
+                } else {
+                    y = nextY;
+                }
             } else {
                 y = nextY;
             }
@@ -166,6 +200,18 @@ final class RoamingEnemyMotion {
         return speedY[slot];
     }
 
+    int collisionFlags(int slot) {
+        return collisionsTable[slot];
+    }
+
+    int horizontallyCollidedObject(int slot) {
+        return horizontallyCollidedObject[slot];
+    }
+
+    int verticallyCollidedObject(int slot) {
+        return verticallyCollidedObject[slot];
+    }
+
     void setStateForTest(int slot, int newState, int newTransitionCountdown,
                          int newInertia, int newPrivateState1, int newDirection) {
         state[slot] = newState & 0xFF;
@@ -177,7 +223,9 @@ final class RoamingEnemyMotion {
         speedY[slot] = SPEED_Y_BY_DIRECTION[direction[slot]];
         speedXAccumulator[slot] = 0;
         speedYAccumulator[slot] = 0;
-        collisionPending[slot] = false;
+        collisionsTable[slot] = 0;
+        horizontallyCollidedObject[slot] = 0;
+        verticallyCollidedObject[slot] = 0;
         initialized[slot] = true;
     }
 

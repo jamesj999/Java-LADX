@@ -76,6 +76,7 @@ public final class RoomEntityRuntime {
     private RoomEntityGroundInteraction groundInteraction =
         (entity, frameCounter, previousGroundStatus, speedZ, sideScrolling) ->
             RoomEntityGroundInteraction.Result.unchanged(entity, 0);
+    private RoomEntityBackgroundInteraction backgroundInteraction;
     private FollowingNpcState followingNpcState = FollowingNpcState.none();
     private LinkPositionHistory followingLinkPositionHistory = new LinkPositionHistory();
     private int followingLinkZ;
@@ -555,9 +556,12 @@ public final class RoomEntityRuntime {
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && isRoamingEnemyType(entity.type())) {
-                RoamingEnemyMotion.Update roamingUpdate = roamingEnemyMotion.advance(
-                    entity, linkEntityX, linkEntityY, randomByteSupplier,
-                    backgroundCollision, creditsGameplay);
+                RoamingEnemyMotion.Update roamingUpdate = backgroundInteraction == null
+                    ? roamingEnemyMotion.advance(entity, linkEntityX, linkEntityY,
+                        randomByteSupplier, backgroundCollision, creditsGameplay)
+                    : roamingEnemyMotion.advanceWithInteraction(entity, linkEntityX,
+                        linkEntityY, randomByteSupplier, backgroundInteraction,
+                        creditsGameplay);
                 updated = roamingUpdate.entity();
                 if (roamingUpdate.launchRequest() != null) {
                     projectileLaunchRequests.add(roamingUpdate.launchRequest());
@@ -1235,6 +1239,10 @@ public final class RoomEntityRuntime {
             ? (entity, frameCounter, previousGroundStatus, speedZ, sideScrolling) ->
                 RoomEntityGroundInteraction.Result.unchanged(entity, 0)
             : groundInteraction;
+    }
+
+    void setBackgroundInteraction(RoomEntityBackgroundInteraction backgroundInteraction) {
+        this.backgroundInteraction = backgroundInteraction;
     }
 
     int groundStatus(int slot) {

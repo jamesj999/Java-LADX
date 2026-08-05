@@ -781,6 +781,20 @@ runtime collision callback.
   Directional collision flags, collided-object reporting, and the larger shared
   post-handler rollback state machine remain separate follow-up work.
 
+## Verified ROM entity collision result boundary — 2026-08-06
+
+- Entity background probes now return the sampled object ID, ROM physics byte,
+  sample coordinates, and the source `$01/$02/$04/$08` directional collision
+  bit while preserving the existing boolean callback for unmigrated handlers.
+- The live room session wires that rich boundary through the ROM-selected
+  collision-point tables. The bank-$03 Octorok/Moblin/Iron Mask roaming path
+  records a blocked axis and consumes the collision byte on the following
+  state-0 dispatch, then enters state 1 and clears speed as in
+  `RoamingEnemyState0Handler`.
+- Focused result/roaming tests and the complete Java suite pass. Fine-shape,
+  ledge, switch-block, hookshot-chain, entity-specific physics exceptions, and
+  the remaining handler migrations remain explicit follow-up work.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,
