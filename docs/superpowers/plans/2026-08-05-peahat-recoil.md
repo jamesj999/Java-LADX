@@ -22,7 +22,7 @@ tables.
 - Modify: `java/src/test/java/linksawakening/world/RoomEntityRuntimeTest.java`
   beside the existing PeaHat tests.
 
-- [ ] **Step 1: Add the normal recoil test.** Use a grounded `$A0` fixture and
+- [x] **Step 1: Add the normal recoil test.** Use a grounded `$A0` fixture and
   a level-zero `EnemyAttackContext` so the one-health test entity remains
   active long enough for the handler tick to consume recoil:
 
@@ -55,7 +55,7 @@ void peaHatSwordHitConfiguresBankSevenRecoilBeforeItsStateMovement() {
 }
 ```
 
-- [ ] **Step 2: Add the blocked recoil test.** Use the same fixture and
+- [x] **Step 2: Add the blocked recoil test.** Use the same fixture and
   callback as the existing non-roaming bank-$06 recoil regressions:
 
 ```java
@@ -82,7 +82,7 @@ void peaHatKeepsBankSevenRecoilWhenBackgroundBlocksTheStep() {
 }
 ```
 
-- [ ] **Step 3: Run focused tests and verify RED.** From `java/`, run:
+- [x] **Step 3: Run focused tests and verify RED.** From `java/`, run:
 
 ```bash
 gradle test --tests linksawakening.world.RoomEntityRuntimeTest
@@ -99,7 +99,7 @@ continue to pass.
 - Modify: `java/src/main/java/linksawakening/world/RoomEntityRuntime.java` in
   `usesSharedRecoil`.
 
-- [ ] **Step 1: Add the source-specific type admission.** Add PeaHat without
+- [x] **Step 1: Add the source-specific type admission.** Add PeaHat without
   changing `usesBank6Recoil`, `isRoamingEnemyType`, or the blocked-step policy:
 
 ```java
@@ -113,7 +113,7 @@ private static boolean usesSharedRecoil(int type) {
 PeaHat, matching `ApplyRecoilIfNeeded_07`; Octorok and Moblin retain their
 bank-$03 stop-on-collision behavior.
 
-- [ ] **Step 2: Run focused tests and verify GREEN.** Run:
+- [x] **Step 2: Run focused tests and verify GREEN.** Run:
 
 ```bash
 gradle test --tests linksawakening.world.RoomEntityRuntimeTest
@@ -131,11 +131,11 @@ must restore position while retaining recoil and the `$09` countdown.
   before `## Next entity increments`.
 - Modify: this plan to mark completed steps.
 
-- [ ] **Step 1: Update the PeaHat roadmap status.** State that grounded
+- [x] **Step 1: Update the PeaHat roadmap status.** State that grounded
   sword-recoil through the shared bank-$07 path is verified below while
   hitbox/clink, background, and water behavior remain pending.
 
-- [ ] **Step 2: Add a dated verification entry.** Insert:
+- [x] **Step 2: Add a dated verification entry.** Insert:
 
 ```markdown
 ## Verified ROM PeaHat recoil — 2026-08-05
@@ -150,13 +150,13 @@ must restore position while retaining recoil and the `$09` countdown.
   recoil smoke, and remaining damage-state branches remain pending.
 ```
 
-- [ ] **Step 3: Run final verification.** From `java/`, run `gradle clean test`.
+- [x] **Step 3: Run final verification.** From `java/`, run `gradle clean test`.
   From the worktree root, run `git diff --check` and
   `git status --short --branch`. Expected: `BUILD SUCCESSFUL`, no whitespace
   errors, and only the intended test, runtime, roadmap, and plan files changed
   before commit.
 
-- [ ] **Step 4: Commit the checkpoint.** Mark all plan checkboxes complete and
+- [x] **Step 4: Commit the checkpoint.** Mark all plan checkboxes complete and
   commit:
 
 ```bash

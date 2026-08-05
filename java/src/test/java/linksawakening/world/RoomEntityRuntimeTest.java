@@ -1526,6 +1526,55 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void peaHatSwordHitConfiguresBankSevenRecoilBeforeItsStateMovement() throws IOException {
+        EntitySpriteDefinition definition = pairDefinition(0xA0, 2);
+        EnemyAttackContext nonDamaging =
+            new EnemyAttackContext(0, false, false, false, false);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0xA0, 64, 64, EntityStatus.ACTIVE, definition, 0)),
+            false, sequence(0x01), null, new RomEnemyCombatTables(loadRom()));
+
+        List<EntityCombatEvent> events = runtime.resolveCombat(
+            0, 120, 120, false, false, true, 72, 1, 72, 1, nonDamaging);
+
+        assertEquals(1, events.size());
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
+        assertEquals(0x0A, runtime.enemyIgnoreHitsCountdown(0));
+        assertTrue(runtime.enemyRecoilActive(0));
+        assertEquals(0xD0, runtime.enemyRecoilSpeedX(0));
+        assertEquals(0xD0, runtime.enemyRecoilSpeedY(0));
+
+        runtime.tick(1, 72, 72, sequence(0x01));
+
+        RoomEntity afterRecoil = runtime.snapshot().slots().get(0);
+        assertEquals(61, afterRecoil.x());
+        assertEquals(61, afterRecoil.y());
+        assertEquals(0x09, runtime.enemyIgnoreHitsCountdown(0));
+    }
+
+    @Test
+    void peaHatKeepsBankSevenRecoilWhenBackgroundBlocksTheStep() throws IOException {
+        EntitySpriteDefinition definition = pairDefinition(0xA0, 2);
+        EnemyAttackContext nonDamaging =
+            new EnemyAttackContext(0, false, false, false, false);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0xA0, 64, 64, EntityStatus.ACTIVE, definition, 0)),
+            false, sequence(0x01), null, new RomEnemyCombatTables(loadRom()));
+
+        runtime.resolveCombat(0, 120, 120, false, false,
+            true, 72, 1, 72, 1, nonDamaging);
+        RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) ->
+            direction == 1 || direction == 2;
+
+        runtime.tick(1, 72, 72, sequence(0x01), wall);
+
+        assertEquals(64, runtime.snapshot().slots().get(0).x());
+        assertEquals(64, runtime.snapshot().slots().get(0).y());
+        assertTrue(runtime.enemyRecoilActive(0));
+        assertEquals(0x09, runtime.enemyIgnoreHitsCountdown(0));
+    }
+
+    @Test
     void stalfosAggressiveUsesTheRomPursuitAndJumpArc() {
         EntitySpriteDefinition definition = pairDefinition(0x1A, 3);
         RoomEntitySnapshot initial = snapshot(

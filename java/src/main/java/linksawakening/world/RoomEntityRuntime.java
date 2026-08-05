@@ -469,8 +469,8 @@ public final class RoomEntityRuntime {
             RoomEntity updated = entity;
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && usesSharedRecoil(entity.type())) {
-                // Bank-$03 AnimateRoamingEnemy and bank-$06 HardHatBeetle
-                // both apply the shared recoil before their own movement.
+                // Bank-$03 AnimateRoamingEnemy and the bank-$04/$06/$07
+                // handlers apply the shared recoil before their own movement.
                 EnemyRecoilMotion.Update recoil = applyEnemyRecoilIfNeeded(
                     entity, backgroundCollision);
                 entity = recoil.entity();
@@ -1143,7 +1143,8 @@ public final class RoomEntityRuntime {
     }
 
     private static boolean usesSharedRecoil(int type) {
-        return type == ENTITY_LEEVER || isRoamingEnemyType(type) || usesBank6Recoil(type);
+        return type == ENTITY_LEEVER || type == ENTITY_PEAHAT
+            || isRoamingEnemyType(type) || usesBank6Recoil(type);
     }
 
     private static boolean isEnemyProjectileType(int type) {
