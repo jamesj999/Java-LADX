@@ -210,6 +210,16 @@ final class EntitySpriteHandlerCatalogTest {
         assertDefinition(waterTektite, 0x07, 0x752D,
             EntitySpriteDefinition.Shape.PAIR, 2, 0);
 
+        EntitySpriteDefinition pairodd = catalog.forEntityType(
+            0x57, EntityRoomLoader.RoomTable.INDOORS_A);
+        assertDefinition(pairodd, 0x04, 0x5DD1,
+            EntitySpriteDefinition.Shape.PAIR, 8, 0);
+
+        EntitySpriteDefinition pairoddProjectile = catalog.forEntityType(
+            0x58, EntityRoomLoader.RoomTable.INDOORS_A);
+        assertDefinition(pairoddProjectile, 0x04, 0x5EF4,
+            EntitySpriteDefinition.Shape.PAIR, 2, 0);
+
         EntitySpriteDefinition grandpa = catalog.forEntityType(
             0x77, EntityRoomLoader.RoomTable.INDOORS_A);
         assertDefinition(grandpa, 0x06, 0x5C51,
@@ -363,6 +373,31 @@ final class EntitySpriteHandlerCatalogTest {
         assertEquals(0x00, waterTektite.variant(1).first().attributes());
         assertEquals(0x72, waterTektite.variant(1).second().tile());
         assertEquals(0x20, waterTektite.variant(1).second().attributes());
+
+        EntitySpriteDefinition pairodd = catalog.forEntityType(
+            0x57, EntityRoomLoader.RoomTable.INDOORS_A);
+        int[] pairoddTiles = {0x70, 0x72, 0x72, 0x70, 0x74, 0x74, 0x00, 0x00,
+            0x7A, 0x7A, 0xFF, 0xFF, 0x76, 0x78, 0x78, 0x76};
+        int[] pairoddAttributes = {0x01, 0x01, 0x21, 0x21, 0x01, 0x21, 0x00, 0x00,
+            0x01, 0x21, 0x00, 0x00, 0x01, 0x01, 0x21, 0x21};
+        for (int variant = 0; variant < pairodd.variantCount(); variant++) {
+            EntitySpriteDefinition.Variant pair = pairodd.variant(variant);
+            assertEquals(pairoddTiles[variant * 2], pair.first().tile());
+            assertEquals(pairoddAttributes[variant * 2], pair.first().attributes());
+            assertEquals(pairoddTiles[variant * 2 + 1], pair.second().tile());
+            assertEquals(pairoddAttributes[variant * 2 + 1], pair.second().attributes());
+        }
+
+        EntitySpriteDefinition pairoddProjectile = catalog.forEntityType(
+            0x58, EntityRoomLoader.RoomTable.INDOORS_A);
+        assertEquals(0x7C, pairoddProjectile.variant(0).first().tile());
+        assertEquals(0x00, pairoddProjectile.variant(0).first().attributes());
+        assertEquals(0x7C, pairoddProjectile.variant(0).second().tile());
+        assertEquals(0x20, pairoddProjectile.variant(0).second().attributes());
+        assertEquals(0x7E, pairoddProjectile.variant(1).first().tile());
+        assertEquals(0x00, pairoddProjectile.variant(1).first().attributes());
+        assertEquals(0x7E, pairoddProjectile.variant(1).second().tile());
+        assertEquals(0x20, pairoddProjectile.variant(1).second().attributes());
 
         EntitySpriteDefinition leever = catalog.forEntityType(
             0x0E, EntityRoomLoader.RoomTable.OVERWORLD);
