@@ -264,6 +264,36 @@ final class SwordTest {
     }
 
     @Test
+    void romSwordPalettesChangeColorsWithoutChangingBladeGeometry() throws Exception {
+        byte[] romData = loadRom();
+        SwordPalette palette = SwordPalette.loadFromRom(romData);
+        Sword sword = new Sword(RomTables.loadFromRom(romData), SwordSpriteSheet.loadFromRom(romData),
+            GameplaySoundSink.none(), () -> 0, palette);
+
+        sword.onPress();
+        while (sword.state() != Sword.STATE_HOLDING) {
+            sword.tick(true);
+        }
+        while (sword.charge() < Sword.MAX_CHARGE) {
+            sword.tick(true);
+        }
+
+        byte[] normalBuffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
+        sword.render(normalBuffer, 40, 48, Link.DIRECTION_RIGHT, 0, 0);
+
+        for (int i = 0; i < 4; i++) {
+            sword.tick(true);
+        }
+        byte[] chargedBuffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
+        sword.render(chargedBuffer, 40, 48, Link.DIRECTION_RIGHT, 0, 0);
+
+        assertTrue(containsOpaqueColor(normalBuffer, palette.normal()[2]));
+        assertTrue(containsOpaqueColor(chargedBuffer, palette.charged()[2]));
+        assertEquals(Arrays.toString(alphaMask(normalBuffer)),
+            Arrays.toString(alphaMask(chargedBuffer)));
+    }
+
+    @Test
     void holdingSwordRendersUsingRomHoldingEntry() throws Exception {
         byte[] romData = loadRom();
         RomTables romTables = RomTables.loadFromRom(romData);
@@ -428,6 +458,21 @@ final class SwordTest {
             }
             return in.readAllBytes();
         }
+    }
+
+    private static boolean containsOpaqueColor(byte[] rgbaBuffer, int color) {
+        int red = (color >>> 16) & 0xFF;
+        int green = (color >>> 8) & 0xFF;
+        int blue = color & 0xFF;
+        for (int offset = 0; offset < rgbaBuffer.length; offset += 4) {
+            if (Byte.toUnsignedInt(rgbaBuffer[offset + 3]) == 0xFF
+                && Byte.toUnsignedInt(rgbaBuffer[offset]) == red
+                && Byte.toUnsignedInt(rgbaBuffer[offset + 1]) == green
+                && Byte.toUnsignedInt(rgbaBuffer[offset + 2]) == blue) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static byte[] alphaMask(byte[] rgbaBuffer) {

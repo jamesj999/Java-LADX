@@ -809,6 +809,19 @@ runtime collision callback.
   Sword/equipment palette effects and Color Dungeon dynamic palette writes
   remain separate source-backed work.
 
+## Verified ROM sword palettes — 2026-08-06
+
+- `SwordPalette` now decodes the six object palettes from `ObjectPalettes` at
+  bank `$21:$5518` and selects row `3` (`BlueTunicPalette`) for the normal
+  blade and row `4` for the fully charged red/orange flash.
+- The live `Main` startup path supplies that ROM-backed palette to `Sword`.
+  Existing no-ROM constructors retain an explicit fixture-only compatibility
+  palette; they do not affect the live path.
+- A shipped-ROM framebuffer test verifies that normal and charged colors change
+  while the sword's alpha mask and tile geometry remain identical. The broader
+  GBC palette upload/VRAM state machine, Color Dungeon transitions, and other
+  equipped-item palette effects remain separate work.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

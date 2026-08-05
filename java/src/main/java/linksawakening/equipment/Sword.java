@@ -76,27 +76,11 @@ public final class Sword implements EquippedItem {
           Link.DIRECTION_UP, Link.DIRECTION_RIGHT, Link.DIRECTION_RIGHT, Link.DIRECTION_DOWN },
     };
 
-    // Silver/steel palette for the normal sword blade. Color 0 is
-    // transparent (OBJ convention). The original uses GBC OBJ palette 3.
-    private static final int[] BLADE_PALETTE = {
-        0x00000000,
-        0x00101010,
-        0x00787878,
-        0x00F0F0F0,
-    };
-    // "Charged" palette — GBC branch in func_020_4AB3 swaps to OBJ palette 4
-    // when fully charged. We approximate with a warmer, brighter tint.
-    private static final int[] BLADE_PALETTE_CHARGED = {
-        0x00000000,
-        0x00201000,
-        0x00A89068,
-        0x00F8F8B8,
-    };
-
     private final RomTables romTables;
     private final SwordSpriteSheet spriteSheet;
     private final GameplaySoundSink soundSink;
     private final IntSupplier randomByteSupplier;
+    private final SwordPalette swordPalette;
 
     private int state = STATE_NONE;
     private int timer;
@@ -112,7 +96,7 @@ public final class Sword implements EquippedItem {
 
     public Sword(RomTables romTables, SwordSpriteSheet spriteSheet) {
         this(romTables, spriteSheet, GameplaySoundSink.none(),
-                () -> ThreadLocalRandom.current().nextInt(0x100));
+                () -> ThreadLocalRandom.current().nextInt(0x100), SwordPalette.compatibility());
     }
 
     public Sword(
@@ -120,10 +104,20 @@ public final class Sword implements EquippedItem {
             SwordSpriteSheet spriteSheet,
             GameplaySoundSink soundSink,
             IntSupplier randomByteSupplier) {
+        this(romTables, spriteSheet, soundSink, randomByteSupplier, SwordPalette.compatibility());
+    }
+
+    public Sword(
+            RomTables romTables,
+            SwordSpriteSheet spriteSheet,
+            GameplaySoundSink soundSink,
+            IntSupplier randomByteSupplier,
+            SwordPalette swordPalette) {
         this.romTables = romTables;
         this.spriteSheet = spriteSheet;
         this.soundSink = Objects.requireNonNull(soundSink, "soundSink");
         this.randomByteSupplier = Objects.requireNonNull(randomByteSupplier, "randomByteSupplier");
+        this.swordPalette = Objects.requireNonNull(swordPalette, "swordPalette");
     }
 
     public int state() {
@@ -274,7 +268,7 @@ public final class Sword implements EquippedItem {
         int bladeX = linkPixelX + romTables.swordBladeXOffset(romDir, lookupState) + offsetX;
         int bladeY = linkPixelY + romTables.swordBladeYOffset(romDir, lookupState) + offsetY;
 
-        int[] palette = chargedFlashActive() ? BLADE_PALETTE_CHARGED : BLADE_PALETTE;
+        int[] palette = chargedFlashActive() ? swordPalette.charged() : swordPalette.normal();
 
         // Two 8x16 stacked sprites side by side, matching func_020_4AB3.
         // Tile $FF for the left half means only the right half is drawn

@@ -11,6 +11,7 @@ import linksawakening.equipment.EquipmentController;
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.equipment.RocsFeather;
 import linksawakening.equipment.Sword;
+import linksawakening.equipment.SwordPalette;
 import linksawakening.equipment.SwordSpriteSheet;
 import linksawakening.audio.apu.GameBoyApu;
 import linksawakening.audio.music.AreaMusicResolver;
@@ -230,6 +231,7 @@ public class Main {
         overworldBushInteraction = new OverworldBushInteraction(romData, romTables);
         linkSpriteSheet = LinkSpriteSheet.loadFromRom(romData);
         SwordSpriteSheet swordSpriteSheet = SwordSpriteSheet.loadFromRom(romData);
+        SwordPalette swordPalette = SwordPalette.loadFromRom(romData);
         TransientVfxSpriteSheet transientVfxSpriteSheet = TransientVfxSpriteSheet.loadFromRom(romData);
         transientVfxSystem = new TransientVfxSystem(16);
         droppableRupeeSystem = new DroppableRupeeSystem(16,
@@ -244,7 +246,7 @@ public class Main {
                         linkSpriteSheet, playerState, itemRegistry, gameplaySoundSink,
                         LinkTunicPalette.loadFromRom(romData));
         itemRegistry.register(PlayerState.INVENTORY_SWORD, new Sword(romTables, swordSpriteSheet,
-            gameplaySoundSink, () -> ThreadLocalRandom.current().nextInt(0x100)));
+            gameplaySoundSink, () -> ThreadLocalRandom.current().nextInt(0x100), swordPalette));
         itemRegistry.register(PlayerState.INVENTORY_ROCS_FEATHER, new RocsFeather(link));
         equipmentController = new EquipmentController(inputState, inputConfig, playerState, itemRegistry);
         roomTransitionCoordinator = new RoomTransitionCoordinator(
