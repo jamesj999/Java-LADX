@@ -247,6 +247,49 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void runtimeExposesTheRoamingEnemyLaunchRequestWithoutSpawningAProjectile() {
+        EntitySpriteDefinition definition = pairDefinition(0x09, 8);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x09, 64, 64, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+        AtomicInteger randomCalls = new AtomicInteger();
+        IntSupplier randomBytes = () -> {
+            randomCalls.incrementAndGet();
+            return 0;
+        };
+
+        runtime.tick(0, 80, 64, randomBytes, false);
+        for (int frame = 1; frame <= 6; frame++) {
+            runtime.tick(frame, 80, 64, randomBytes, false);
+        }
+
+        assertEquals(1, randomCalls.get());
+        assertEquals(1, runtime.projectileLaunchRequests().size());
+        RoamingEnemyMotion.LaunchRequest request = runtime.projectileLaunchRequests().get(0);
+        assertEquals(0, request.sourceSlot());
+        assertEquals(0x09, request.sourceType());
+        assertEquals(0x0A, request.projectileType());
+        assertEquals(1, runtime.snapshot().loadedEntities().size());
+        assertEquals(0x09, runtime.snapshot().slots().get(0).type());
+    }
+
+    @Test
+    void runtimePassesCreditsContextToSuppressOnlyOctorokLaunches() {
+        EntitySpriteDefinition definition = pairDefinition(0x09, 8);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x09, 64, 64, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+
+        runtime.tick(0, 80, 64, () -> 0, true);
+        for (int frame = 1; frame <= 6; frame++) {
+            runtime.tick(frame, 80, 64, () -> 0, true);
+        }
+
+        assertTrue(runtime.projectileLaunchRequests().isEmpty());
+        assertEquals(1, runtime.snapshot().loadedEntities().size());
+    }
+
+    @Test
     void moblinUsesTheSameRomRoamingStateMachineAndDirectionalDisplayPairs() {
         EntitySpriteDefinition definition = pairDefinition(0x0B, 8);
         RoomEntitySnapshot initial = snapshot(

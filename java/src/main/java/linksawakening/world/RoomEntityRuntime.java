@@ -86,6 +86,8 @@ public final class RoomEntityRuntime {
     private final int[] enemyHealth = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyFlashCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyIgnoreHitsCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final List<RoamingEnemyMotion.LaunchRequest> projectileLaunchRequests =
+        new ArrayList<>();
 
     private RoomEntityRuntime(RoomEntitySnapshot initial, boolean indoorRoom,
                                IntSupplier defaultRandomByteSupplier,
@@ -163,7 +165,13 @@ public final class RoomEntityRuntime {
                      IntSupplier randomByteSupplier,
                      RoomEntityBackgroundCollision backgroundCollision) {
         tick(frameCounter, linkEntityX, linkEntityY, randomByteSupplier, backgroundCollision,
-            null, 0, 0, 0);
+            null, 0, 0, 0, false);
+    }
+
+    public void tick(int frameCounter, int linkEntityX, int linkEntityY,
+                     IntSupplier randomByteSupplier, boolean creditsGameplay) {
+        tick(frameCounter, linkEntityX, linkEntityY, randomByteSupplier, null,
+            null, 0, 0, 0, creditsGameplay);
     }
 
     void tick(int frameCounter, int linkEntityX, int linkEntityY,
@@ -171,7 +179,19 @@ public final class RoomEntityRuntime {
               RoomEntityBackgroundCollision backgroundCollision,
               LinkPositionHistory linkPositionHistory,
               int linkZ, int linkDirection, int entityYOffset) {
+        tick(frameCounter, linkEntityX, linkEntityY, randomByteSupplier,
+            backgroundCollision, linkPositionHistory, linkZ, linkDirection,
+            entityYOffset, false);
+    }
+
+    private void tick(int frameCounter, int linkEntityX, int linkEntityY,
+                      IntSupplier randomByteSupplier,
+                      RoomEntityBackgroundCollision backgroundCollision,
+                      LinkPositionHistory linkPositionHistory,
+                      int linkZ, int linkDirection, int entityYOffset,
+                      boolean creditsGameplay) {
         Objects.requireNonNull(randomByteSupplier, "randomByteSupplier");
+        projectileLaunchRequests.clear();
         if (linkPositionHistory != null) {
             followingLinkPositionHistory = linkPositionHistory;
         }
@@ -294,8 +314,13 @@ public final class RoomEntityRuntime {
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && isRoamingEnemyType(entity.type())) {
-                updated = roamingEnemyMotion.advance(entity, linkEntityX, linkEntityY,
-                    randomByteSupplier, backgroundCollision);
+                RoamingEnemyMotion.Update roamingUpdate = roamingEnemyMotion.advance(
+                    entity, linkEntityX, linkEntityY, randomByteSupplier,
+                    backgroundCollision, creditsGameplay);
+                updated = roamingUpdate.entity();
+                if (roamingUpdate.launchRequest() != null) {
+                    projectileLaunchRequests.add(roamingUpdate.launchRequest());
+                }
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_TEKTITE) {
@@ -406,6 +431,10 @@ public final class RoomEntityRuntime {
                     updated.spriteTileOffset(), updated.z());
             }
         }
+    }
+
+    List<RoamingEnemyMotion.LaunchRequest> projectileLaunchRequests() {
+        return List.copyOf(projectileLaunchRequests);
     }
 
     /**
