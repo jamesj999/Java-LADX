@@ -6,6 +6,7 @@ import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.gpu.GPU;
 import linksawakening.physics.OverworldCollision;
+import linksawakening.physics.PhysicsFlags;
 import linksawakening.rom.RomTables;
 import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.vfx.TransientVfxType;
@@ -19,6 +20,7 @@ import static linksawakening.world.RoomConstants.ROOM_PIXEL_WIDTH;
 
 public final class RoomSession {
     private static final int W_TILESET_NO_UPDATE = 0xFF;
+    private static final int ENTITY_WATER_TEKTITE = 0x99;
 
     private final byte[] romData;
     private final GPU gpu;
@@ -580,6 +582,13 @@ public final class RoomSession {
             case 3 -> spark ? nextY : nextY - 3;
             default -> nextY - 8; // horizontal movement: y - 16 + 8
         };
+        if (entity.type() == ENTITY_WATER_TEKTITE) {
+            int physicsFlag = overworldCollision.objectPhysicsFlagAtPoint(pointX, pointY);
+            if (physicsFlag == PhysicsFlags.SHALLOW_WATER
+                || physicsFlag == PhysicsFlags.DEEP_WATER) {
+                return false;
+            }
+        }
         return overworldCollision.pointBlocked(pointX, pointY);
     }
 

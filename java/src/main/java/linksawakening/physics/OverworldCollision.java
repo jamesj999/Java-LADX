@@ -82,6 +82,24 @@ public final class OverworldCollision {
     }
 
     /**
+     * Returns the ROM physics byte for the cell sampled at a background
+     * collision point. Invalid/off-room points have no entity terrain flag.
+     */
+    public int objectPhysicsFlagAtPoint(int pixelX, int pixelY) {
+        if (roomObjectsArea == null) {
+            return PhysicsFlags.NONE;
+        }
+        int cellX = cellCoordinate(pixelX);
+        int cellY = cellCoordinate(pixelY);
+        if (cellX < 0 || cellX >= OBJECTS_PER_ROW
+            || cellY < 0 || cellY >= OBJECTS_PER_COLUMN) {
+            return PhysicsFlags.NONE;
+        }
+        int objectId = objectIdAtCell(cellX, cellY);
+        return romTables.objectPhysicsFlag(physicsTableIndex, objectId);
+    }
+
+    /**
      * Whether Link's current foot cell applies the ROM's slow-ground motion
      * gate. Mirrors {@code GetObjectUnderLink}: hLinkPositionX is the sprite
      * center and hLinkPositionY is the sprite bottom, then Y is sampled four

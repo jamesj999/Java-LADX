@@ -81,6 +81,59 @@ final class RoomSessionTest {
     }
 
     @Test
+    void waterTektiteMovesThroughDeepWaterInTheLiveRoomSession() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x00, 0x65);
+        RoomEntity initial = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x99)
+            .findFirst()
+            .orElseThrow();
+        assertEquals(0x58, initial.x());
+        assertEquals(0x40, initial.y());
+
+        int[] roomObjects = session.activeRoom().roomObjectsArea();
+        for (int row = 0; row < RoomConstants.OBJECTS_PER_COLUMN; row++) {
+            for (int column = 0; column < RoomConstants.OBJECTS_PER_ROW; column++) {
+                roomObjects[RoomConstants.ROOM_OBJECTS_BASE
+                    + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + column] = 0x0E;
+            }
+        }
+
+        for (int frame = 0; frame <= 8; frame++) {
+            session.tickEntities(frame, 0, 0);
+        }
+
+        RoomEntity moved = session.activeRoom().entities().slots().get(initial.slot());
+        assertTrue(moved.x() != initial.x() || moved.y() != initial.y());
+    }
+
+    @Test
+    void waterTektiteStillStopsOnSolidTerrainInTheLiveRoomSession() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x00, 0x65);
+        RoomEntity initial = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x99)
+            .findFirst()
+            .orElseThrow();
+
+        int[] roomObjects = session.activeRoom().roomObjectsArea();
+        for (int row = 0; row < RoomConstants.OBJECTS_PER_COLUMN; row++) {
+            for (int column = 0; column < RoomConstants.OBJECTS_PER_ROW; column++) {
+                roomObjects[RoomConstants.ROOM_OBJECTS_BASE
+                    + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + column] = 0x10;
+            }
+        }
+
+        for (int frame = 0; frame <= 8; frame++) {
+            session.tickEntities(frame, 0, 0);
+        }
+
+        RoomEntity blocked = session.activeRoom().entities().slots().get(initial.slot());
+        assertEquals(initial.x(), blocked.x());
+        assertEquals(initial.y(), blocked.y());
+    }
+
+    @Test
     void returnsProjectileEventsFromTheEntityPassWhenLinkStateIsProvided() {
         RoomSession session = newSession();
         session.loadInitialOverworld(0x92);

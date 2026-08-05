@@ -140,9 +140,9 @@ resource.
   the three-state `$20` acceleration, signed speed convergence, `$10` restart
   timer, and background-collision reset loop. Its normal enemy hitbox and
   health-group `$00` values (one health, `$04` contact damage) are wired into
-  shared combat, and its bank-$07 shared recoil is verified below. Water/pit/
-  conveyor side effects and the remaining damage-state branches remain
-  pending.
+  shared combat, and its bank-$07 shared recoil and shallow/deep-water
+  collision exception are verified below. Pit/conveyor side effects and the
+  remaining damage-state branches remain pending.
 - Pairodd (`$57`) now decodes bank `$04:$5DD1`'s eight pair variants and
   mirrors the `$20` disappear, `$40` reappear, and `$30` resting countdowns,
   signed `$20` Link proximity windows, exact `($A0-x, $90-y)` teleport, and
@@ -665,6 +665,16 @@ runtime collision callback.
 - Focused Water Tektite regressions and the complete Java suite cover this
   increment. Water/pit/conveyor interaction and remaining damage-state
   branches remain pending.
+
+## Verified ROM Water Tektite water collision — 2026-08-05
+
+- The live room collision boundary now follows bank-$03's
+  `ApplyEntityCollisionWithObject` exception for Water Tektite (`$99`):
+  shallow-water `$05` and deep-water `$07` are passable, while all other
+  physics flags continue through ordinary background blocking.
+- A real ROM indoor room containing Water Tektite now advances through a
+  deep-water field instead of repeatedly resetting against it. Pit/conveyor
+  interaction and the remaining damage-state branches remain pending.
 
 ## Next entity increments
 

@@ -22,17 +22,17 @@ other entity and terrain type.
 - Modify: `java/src/test/java/linksawakening/physics/OverworldCollisionTest.java`.
 - Modify: `java/src/test/java/linksawakening/world/RoomSessionTest.java`.
 
-- [ ] **Step 1: Test the padded point physics lookup.** Place a known object
+- [x] **Step 1: Test the padded point physics lookup.** Place a known object
   in the padded room array, select the relevant physics table, and assert the
   new lookup returns its ROM flag at the same coordinate used by background
   collision.
 
-- [ ] **Step 2: Test a real Water Tektite room on deep water.** Load indoor
+- [x] **Step 2: Test a real Water Tektite room on deep water.** Load indoor
   map `$00`, room `$65`, replace the active 10x8 object cells with deep-water
   object `$0E`, advance through the resident Water Tektite's initial state
   frames, and assert it moves from its original position.
 
-- [ ] **Step 3: Run focused tests and verify RED.** From `java/`, run:
+- [x] **Step 3: Run focused tests and verify RED.** From `java/`, run:
 
 ```bash
 gradle test --tests linksawakening.physics.OverworldCollisionTest \
@@ -50,14 +50,14 @@ because deep water is still treated as blocked.
 - Modify: `java/src/main/java/linksawakening/physics/OverworldCollision.java`.
 - Modify: `java/src/main/java/linksawakening/world/RoomSession.java`.
 
-- [ ] **Step 1: Add the coordinate physics lookup.** Reuse the existing cell
+- [x] **Step 1: Add the coordinate physics lookup.** Reuse the existing cell
   conversion and padded-buffer indexing; return the active table's ROM flag.
 
-- [ ] **Step 2: Apply the narrow Water Tektite rule.** In the session
+- [x] **Step 2: Apply the narrow Water Tektite rule.** In the session
   collision callback, pass only shallow/deep water for entity `$99`; delegate
   all other cases to `pointBlocked`.
 
-- [ ] **Step 3: Run focused tests and verify GREEN.** Run the two focused test
+- [x] **Step 3: Run focused tests and verify GREEN.** Run the two focused test
   classes, then confirm no unrelated collision or room-session tests regress.
 
 ### Task 3: Document and checkpoint
@@ -68,15 +68,15 @@ because deep water is still treated as blocked.
   before `## Next entity increments`.
 - Modify: this plan to mark completed steps.
 
-- [ ] **Step 1: Record the verified exception.** State that Water Tektite now
+- [x] **Step 1: Record the verified exception.** State that Water Tektite now
   passes `$05/$07` and retains ordinary blocking elsewhere; leave broader
   ground/pit/conveyor behavior pending.
 
-- [ ] **Step 2: Run final verification.** From `java/`, run
+- [x] **Step 2: Run final verification.** From `java/`, run
   `gradle clean test`; from the worktree root run `git diff --check` and
   `git status --short --branch`.
 
-- [ ] **Step 3: Commit the checkpoint.** Commit the intended files with:
+- [x] **Step 3: Commit the checkpoint.** Commit the intended files with:
 
 ```bash
 git add java/src/main/java/linksawakening/physics/OverworldCollision.java \

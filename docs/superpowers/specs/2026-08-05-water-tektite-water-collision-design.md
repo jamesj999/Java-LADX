@@ -42,8 +42,8 @@ change Link collision semantics.
   ROM deep-water object `$0E`, and advance the room session. The resident
   Water Tektite must leave its initial position instead of being reset by a
   wall collision.
-- Keep the existing solid-cell behavior covered through the unchanged
-  `pointBlocked` path.
+- Replace the same cells with a solid terrain object and assert that Water
+  Tektite remains blocked through the unchanged `pointBlocked` path.
 
 ## Scope boundary
 
