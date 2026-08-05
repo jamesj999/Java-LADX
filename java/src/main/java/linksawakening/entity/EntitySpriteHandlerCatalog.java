@@ -263,6 +263,11 @@ public final class EntitySpriteHandlerCatalog {
         return decodeRectangle(entityType, 0x20, address, activeList ? 8 : 4, 3, 0);
     }
 
+    /** The bank-$03 fire pair rendered over entities in {@code BURNING} status. */
+    public EntitySpriteDefinition forBurningEntity() {
+        return decodePair(0x00, 0x03, 0x4C44, 2, 0);
+    }
+
     /** The green Zol list selected after Slime Eye has split its Zol. */
     public EntitySpriteDefinition forZolSlimeEye() {
         return decodePair(0x1B, 0x06, 0x7C11, 2, 0);

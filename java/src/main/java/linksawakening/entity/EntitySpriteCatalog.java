@@ -26,12 +26,14 @@ public final class EntitySpriteCatalog {
     private static final int OW_ROOM_STATUS_OWL_TALKED = 0x20;
 
     private final byte[] romData;
+    private final EntitySpriteHandlerCatalog entitySpriteHandlerCatalog;
 
     public EntitySpriteCatalog(byte[] romData) {
         if (romData == null) {
             throw new IllegalArgumentException("ROM data cannot be null");
         }
         this.romData = romData;
+        this.entitySpriteHandlerCatalog = new EntitySpriteHandlerCatalog(romData);
     }
 
     public EntitySpriteSelection load(EntityRoomLoader.RoomTable roomTable, int roomId) {
@@ -76,7 +78,8 @@ public final class EntitySpriteCatalog {
         // four entity-specific tables, not through the standard group tables.
         if (roomTable == EntityRoomLoader.RoomTable.COLOR_DUNGEON) {
             return new EntitySpriteSelection(roomTable, roomId, groupIndex,
-                new int[0], false, palettes);
+                new int[0], false, palettes)
+                .withBurningSpriteDefinition(entitySpriteHandlerCatalog.forBurningEntity());
         }
 
         int tableAddress = roomTable == EntityRoomLoader.RoomTable.OVERWORLD
@@ -89,7 +92,8 @@ public final class EntitySpriteCatalog {
             sheetValues[slot] = Byte.toUnsignedInt(romData[sheetOffset + slot]);
         }
         return new EntitySpriteSelection(roomTable, roomId, groupIndex, sheetValues,
-            true, palettes);
+            true, palettes)
+            .withBurningSpriteDefinition(entitySpriteHandlerCatalog.forBurningEntity());
     }
 
     private static int applyRoomContextOverride(EntityRoomLoader.RoomTable roomTable, int roomId,

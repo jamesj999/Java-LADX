@@ -15,17 +15,28 @@ public final class EntitySpriteSelection {
     private final boolean standardSheets;
     private final int[][] objectPalettes;
     private final Map<Integer, EntitySpriteDefinition> spriteOverrides;
+    private final EntitySpriteDefinition burningSpriteDefinition;
 
     public EntitySpriteSelection(EntityRoomLoader.RoomTable roomTable, int roomId,
                                  int groupIndex, int[] sheetValues,
                                  boolean standardSheets, int[][] objectPalettes) {
-        this(roomTable, roomId, groupIndex, sheetValues, standardSheets, objectPalettes, Map.of());
+        this(roomTable, roomId, groupIndex, sheetValues, standardSheets, objectPalettes,
+            Map.of(), null);
     }
 
     public EntitySpriteSelection(EntityRoomLoader.RoomTable roomTable, int roomId,
                                  int groupIndex, int[] sheetValues,
                                  boolean standardSheets, int[][] objectPalettes,
                                  Map<Integer, EntitySpriteDefinition> spriteOverrides) {
+        this(roomTable, roomId, groupIndex, sheetValues, standardSheets, objectPalettes,
+            spriteOverrides, null);
+    }
+
+    private EntitySpriteSelection(EntityRoomLoader.RoomTable roomTable, int roomId,
+                                  int groupIndex, int[] sheetValues,
+                                  boolean standardSheets, int[][] objectPalettes,
+                                  Map<Integer, EntitySpriteDefinition> spriteOverrides,
+                                  EntitySpriteDefinition burningSpriteDefinition) {
         this.roomTable = roomTable;
         this.roomId = roomId;
         this.groupIndex = groupIndex;
@@ -44,6 +55,10 @@ public final class EntitySpriteSelection {
             overrides.put(type, entry.getValue());
         }
         this.spriteOverrides = Map.copyOf(overrides);
+        if (burningSpriteDefinition != null && !burningSpriteDefinition.supported()) {
+            throw new IllegalArgumentException("Burning sprite definition must be supported");
+        }
+        this.burningSpriteDefinition = burningSpriteDefinition;
     }
 
     public EntityRoomLoader.RoomTable roomTable() {
@@ -78,10 +93,22 @@ public final class EntitySpriteSelection {
         return spriteOverrides;
     }
 
+    public EntitySpriteDefinition burningSpriteDefinition() {
+        return burningSpriteDefinition;
+    }
+
+    public EntitySpriteSelection withBurningSpriteDefinition(EntitySpriteDefinition definition) {
+        if (definition != null && !definition.supported()) {
+            throw new IllegalArgumentException("Burning sprite definition must be supported");
+        }
+        return new EntitySpriteSelection(roomTable, roomId, groupIndex, sheetValues,
+            standardSheets, objectPalettes, spriteOverrides, definition);
+    }
+
     public EntitySpriteSelection withSpriteOverrides(
         Map<Integer, EntitySpriteDefinition> overrides) {
         return new EntitySpriteSelection(roomTable, roomId, groupIndex, sheetValues,
-            standardSheets, objectPalettes, overrides);
+            standardSheets, objectPalettes, overrides, burningSpriteDefinition);
     }
 
     public EntitySpriteSelection withSpriteOverride(int entityType,

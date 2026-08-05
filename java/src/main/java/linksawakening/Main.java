@@ -765,7 +765,8 @@ public class Main {
             .withTransientVfx(transientVfxSystem, cutLeavesEffectRenderer, GREEN_OBJECTS_SPRITE_PALETTE)
             .withDroppableRupees(droppableRupeeSystem)
             .withInventoryController(inventoryController)
-            .withDialogController(dialogController);
+            .withDialogController(dialogController)
+            .withFrameCounter(frameCounter);
     }
 
     private static RenderScreen currentRenderScreen() {

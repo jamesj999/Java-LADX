@@ -35,7 +35,7 @@ public final class GameFrameSceneBuilder {
             && state.room().entities().spriteSelection() != null) {
             layers.add(new EntityRenderLayer(state.room().entities(),
                 state.room().entities().spriteSelection().objectPalettes(),
-                state.scrollController()));
+                state.scrollController(), state.frameCounter()));
         }
         if (state.transientVfxSystem() != null && state.cutLeavesEffectRenderer() != null) {
             layers.add(new TransientVfxRenderLayer(state.transientVfxSystem(),

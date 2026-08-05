@@ -5,6 +5,7 @@ import linksawakening.gpu.EntitySpriteTileSnapshot;
 import linksawakening.world.RoomEntity;
 import linksawakening.world.RoomEntitySnapshot;
 import linksawakening.world.ScrollController;
+import linksawakening.world.EntityStatus;
 
 import static linksawakening.world.RoomConstants.ROOM_PIXEL_HEIGHT;
 import static linksawakening.world.RoomConstants.ROOM_PIXEL_WIDTH;
@@ -23,9 +24,15 @@ public final class EntityRenderLayer implements RenderLayer {
     private final RoomEntitySnapshot snapshot;
     private final int[][] objectPalettes;
     private final ScrollController scrollController;
+    private final int frameCounter;
 
     public EntityRenderLayer(RoomEntitySnapshot snapshot, int[][] objectPalettes,
                              ScrollController scrollController) {
+        this(snapshot, objectPalettes, scrollController, 0);
+    }
+
+    public EntityRenderLayer(RoomEntitySnapshot snapshot, int[][] objectPalettes,
+                             ScrollController scrollController, int frameCounter) {
         if (snapshot == null || objectPalettes == null || scrollController == null) {
             throw new IllegalArgumentException("Entity render inputs cannot be null");
         }
@@ -40,6 +47,7 @@ public final class EntityRenderLayer implements RenderLayer {
         this.snapshot = snapshot;
         this.objectPalettes = clonePalettes(objectPalettes);
         this.scrollController = scrollController;
+        this.frameCounter = frameCounter & 0xFF;
     }
 
     @Override
@@ -71,15 +79,25 @@ public final class EntityRenderLayer implements RenderLayer {
                     definition = override;
                 }
             }
-            renderEntity(context, entity, definition, palettes, tiles, offset.x(), offset.y());
+            renderEntity(context, entity, definition, entity.spriteVariant(), palettes, tiles,
+                offset.x(), offset.y());
+            if (entity.status() == EntityStatus.BURNING && entities.spriteSelection() != null) {
+                EntitySpriteDefinition burning = entities.spriteSelection()
+                    .burningSpriteDefinition();
+                if (burning != null) {
+                    renderEntity(context, entity, burning, (frameCounter >>> 3) & 0x01,
+                        palettes, tiles, offset.x(), offset.y());
+                }
+            }
         }
     }
 
     private void renderEntity(RenderContext context, RoomEntity entity,
-                              EntitySpriteDefinition definition, int[][] palettes,
+                              EntitySpriteDefinition definition, int spriteVariant,
+                              int[][] palettes,
                               EntitySpriteTileSnapshot tiles, int offsetX, int offsetY) {
-        if (!definition.supported() || entity.spriteVariant() < 0
-            || entity.spriteVariant() >= definition.variantCount()) {
+        if (!definition.supported() || spriteVariant < 0
+            || spriteVariant >= definition.variantCount()) {
             return;
         }
 
@@ -87,8 +105,8 @@ public final class EntityRenderLayer implements RenderLayer {
         int entityY = entity.y() + offsetY - OAM_Y_SCREEN_ORIGIN - entity.z();
         int flipAttribute = entity.entityFlipAttribute();
         if (definition.shape() == EntitySpriteDefinition.Shape.PAIR) {
-            EntitySpriteDefinition.Variant variant = definition.variant(entity.spriteVariant());
-            if (entity.type() == ENTITY_PAIRODD && entity.spriteVariant() == 3
+            EntitySpriteDefinition.Variant variant = definition.variant(spriteVariant);
+            if (entity.type() == ENTITY_PAIRODD && spriteVariant == 3
                 && definition.variantCount() > 7) {
                 // Bank $04 temporarily moves hActiveEntityPosX by -$08,
                 // renders variant $06, moves it by +$10, renders variant
@@ -101,13 +119,13 @@ public final class EntityRenderLayer implements RenderLayer {
             }
             renderPair(context, palettes, tiles, variant, entity, entityX, entityY);
         } else if (definition.shape() == EntitySpriteDefinition.Shape.SINGLE) {
-            EntitySpriteDefinition.Variant variant = definition.variant(entity.spriteVariant());
+            EntitySpriteDefinition.Variant variant = definition.variant(spriteVariant);
             renderOamSprite(context, palettes, tiles, withTileOffset(variant.first(), entity),
                 flipAttribute,
                 entityX + 4, entityY);
         } else if (definition.shape() == EntitySpriteDefinition.Shape.RECTANGLE) {
             for (EntitySpriteDefinition.RectangleSprite sprite
-                : definition.rectangleVariant(entity.spriteVariant())) {
+                : definition.rectangleVariant(spriteVariant)) {
                 // RenderActiveEntitySpritesRect turns a raw $FF tile into a
                 // hidden OAM entry. Keep that sentinel out of the host draw
                 // path instead of accidentally drawing entity-sheet tile 0.

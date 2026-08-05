@@ -648,6 +648,20 @@ final class EntitySpriteHandlerCatalogTest {
     }
 
     @Test
+    void decodesTheRomBurningFirePair() throws Exception {
+        EntitySpriteDefinition fire = new EntitySpriteHandlerCatalog(loadRom())
+            .forBurningEntity();
+
+        assertDefinition(fire, 0x03, 0x4C44, EntitySpriteDefinition.Shape.PAIR, 2, 0);
+        assertEquals(0x34, fire.variant(0).first().tile());
+        assertEquals(0x02, fire.variant(0).first().attributes());
+        assertEquals(0x34, fire.variant(0).second().tile());
+        assertEquals(0x22, fire.variant(0).second().attributes());
+        assertEquals(0x14, fire.variant(1).first().attributes());
+        assertEquals(0x34, fire.variant(1).second().attributes());
+    }
+
+    @Test
     void enemyProjectileVariantsMatchAllShippedRomTileAndAttributeBytes() throws Exception {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
 

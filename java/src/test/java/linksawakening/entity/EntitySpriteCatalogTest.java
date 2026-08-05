@@ -29,6 +29,8 @@ final class EntitySpriteCatalogTest {
         assertEquals(0x02, overworld.groupIndex());
         assertTrue(overworld.hasStandardSheets());
         assertArrayEquals(new int[] {0xA4, 0xFF, 0x7C, 0xC8}, overworld.sheetValues());
+        assertEquals(0x03, overworld.burningSpriteDefinition().bank());
+        assertEquals(0x4C44, overworld.burningSpriteDefinition().address());
 
         EntitySpriteSelection indoorsA = catalog.load(
             EntityRoomLoader.RoomTable.INDOORS_A, 0x05);
@@ -52,6 +54,7 @@ final class EntitySpriteCatalogTest {
         assertEquals(0x12, selection.groupIndex());
         assertFalse(selection.hasStandardSheets());
         assertArrayEquals(new int[0], selection.sheetValues());
+        assertEquals(0x4C44, selection.burningSpriteDefinition().address());
     }
 
     @Test

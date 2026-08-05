@@ -6,6 +6,7 @@ import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.GPU;
 import linksawakening.gpu.EntitySpriteTileSnapshot;
 import linksawakening.world.EntityStatus;
+import linksawakening.world.EntityRoomLoader;
 import linksawakening.world.RoomEntity;
 import linksawakening.world.RoomEntitySnapshot;
 import linksawakening.world.RoomRenderSnapshot;
@@ -428,6 +429,70 @@ final class EntityRenderLayerTest {
         assertEquals(palettes[0][1], pixelColor(buffer, 40, 20));
         assertEquals(palettes[0][1], pixelColor(buffer, 32, 12));
         assertEquals(palettes[0][3], pixelColor(buffer, 32, 20));
+    }
+
+    @Test
+    void rendersBurningFireOverlayWithRomPhaseTransformAndTileOffset() {
+        GPU gpu = new GPU();
+        int bodyColor = 0x112233;
+        int firePaletteTwo = 0x445566;
+        int firePaletteFour = 0x778899;
+        int[][] palettes = {
+            {0, 0, bodyColor, 0},
+            {0, 0, 0, 0},
+            {0, firePaletteTwo, 0, 0},
+            {0, 0, 0, 0},
+            {0, firePaletteFour, 0, 0},
+            {0, 0, 0, 0}
+        };
+        writeSolidTile(gpu, 0x40, 2);
+        writeSolidTile(gpu, 0x41, 2);
+        writePatternTile(gpu, 0x44, new int[][] {
+            {1, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0}
+        });
+        writeSolidTile(gpu, 0x45, 0);
+
+        EntitySpriteDefinition body = new EntitySpriteDefinition(
+            0x09, 0x03, 0x57FB, EntitySpriteDefinition.Shape.PAIR, 0,
+            List.of(new EntitySpriteDefinition.Variant(
+                new EntitySpriteDefinition.OamAttribute(0x30, 0x00),
+                new EntitySpriteDefinition.OamAttribute(0x30, 0x00))));
+        EntitySpriteDefinition fire = new EntitySpriteDefinition(
+            0x00, 0x03, 0x4C44, EntitySpriteDefinition.Shape.PAIR, 0,
+            List.of(
+                new EntitySpriteDefinition.Variant(
+                    new EntitySpriteDefinition.OamAttribute(0x34, 0x02),
+                    new EntitySpriteDefinition.OamAttribute(0x34, 0x22)),
+                new EntitySpriteDefinition.Variant(
+                    new EntitySpriteDefinition.OamAttribute(0x34, 0x14),
+                    new EntitySpriteDefinition.OamAttribute(0x34, 0x34))));
+        EntitySpriteSelection selection = new EntitySpriteSelection(
+            EntityRoomLoader.RoomTable.OVERWORLD, 0, 0,
+            new int[] {0xFF, 0xFF, 0xFF, 0xFF}, true, palettes)
+            .withBurningSpriteDefinition(fire);
+        RoomEntity entity = new RoomEntity(0, 0, 0x09, 24, 32, EntityStatus.BURNING,
+            body, 0, 0x20, 0x10, 4);
+
+        byte[] phaseZero = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
+        new EntityRenderLayer(snapshot(selection, entity), palettes, new ScrollController(), 0)
+            .render(new RenderContext(phaseZero, gpu));
+        assertEquals(firePaletteTwo, pixelColor(phaseZero, 16, 12));
+        assertEquals(firePaletteTwo, pixelColor(phaseZero, 31, 12));
+        assertEquals(bodyColor, pixelColor(phaseZero, 17, 12));
+
+        byte[] phaseEight = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
+        new EntityRenderLayer(snapshot(selection, entity), palettes, new ScrollController(), 8)
+            .render(new RenderContext(phaseEight, gpu));
+        assertEquals(firePaletteFour, pixelColor(phaseEight, 16, 12));
+        assertEquals(firePaletteFour, pixelColor(phaseEight, 31, 12));
+        assertEquals(bodyColor, pixelColor(phaseEight, 17, 12));
     }
 
     private static EntitySpriteDefinition pairDefinition(EntitySpriteDefinition.OamAttribute first,
