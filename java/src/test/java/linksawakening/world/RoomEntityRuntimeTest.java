@@ -1356,6 +1356,61 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void leeverSwordHitConfiguresBankFourRecoilBeforeItsStateMovement() {
+        EntitySpriteDefinition definition = pairDefinition(0x0E, 4);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x0E, 64, 64, EntityStatus.ACTIVE, definition, 0)));
+
+        for (int frame = 0; frame <= 31; frame++) {
+            runtime.tick(frame, 120, 120, sequence(0x00));
+        }
+        assertEquals(2, runtime.leeverState(0));
+
+        List<EntityCombatEvent> events = runtime.resolveCombat(
+            0, 120, 120, false, true, true, 72, 1, 72, 1);
+
+        assertEquals(1, events.size());
+        assertEquals(EntityCombatEvent.SoundChannel.JINGLE, events.get(0).soundChannel());
+        assertEquals(0x03, events.get(0).soundId());
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
+        assertEquals(1, runtime.enemyHealth(0));
+        assertEquals(0x0A, runtime.enemyIgnoreHitsCountdown(0));
+        assertTrue(runtime.enemyRecoilActive(0));
+        assertEquals(0xD0, runtime.enemyRecoilSpeedX(0));
+        assertEquals(0xD0, runtime.enemyRecoilSpeedY(0));
+
+        runtime.tick(1, 120, 120, sequence(0x00));
+
+        RoomEntity afterRecoil = runtime.snapshot().slots().get(0);
+        assertEquals(61, afterRecoil.x());
+        assertEquals(61, afterRecoil.y());
+        assertEquals(0x09, runtime.enemyIgnoreHitsCountdown(0));
+    }
+
+    @Test
+    void leeverKeepsBankFourRecoilWhenBackgroundBlocksTheStep() {
+        EntitySpriteDefinition definition = pairDefinition(0x0E, 4);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x0E, 64, 64, EntityStatus.ACTIVE, definition, 0)));
+
+        for (int frame = 0; frame <= 31; frame++) {
+            runtime.tick(frame, 120, 120, sequence(0x00));
+        }
+        assertEquals(2, runtime.leeverState(0));
+
+        runtime.resolveCombat(0, 72, 72, false, true, true, 72, 1, 72, 1);
+        RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) ->
+            direction == 1 || direction == 2;
+
+        runtime.tick(1, 120, 120, sequence(0x00), wall);
+
+        assertEquals(64, runtime.snapshot().slots().get(0).x());
+        assertEquals(64, runtime.snapshot().slots().get(0).y());
+        assertTrue(runtime.enemyRecoilActive(0));
+        assertEquals(0x09, runtime.enemyIgnoreHitsCountdown(0));
+    }
+
+    @Test
     void peaHatRunsTheRomRestTakeoffAndHeightAnimationStates() {
         EntitySpriteDefinition definition = pairDefinition(0xA0, 2);
         RoomEntitySnapshot initial = snapshot(

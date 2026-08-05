@@ -87,13 +87,15 @@ resource.
   Z-gravity/landing transition, state-1 `$20` inertia animation, `$10` landing
   countdown, ROM direction tables, Z-aware `$14` vector toward Link, and
   fixed-point X/Y/Z updates. Its health-group `$01` path provides two health
-  points and `$04` contact damage; wall-collision reversal is verified below,
-  while recoil and full background/water interaction remain pending.
+  points and `$04` contact damage; wall-collision reversal and shared bank-$06
+  recoil are verified below, while full background/water interaction remains
+  pending.
 - Leever now decodes the four-entry bank `$04` display list and mirrors the
   hide/emerge/chase/burrow state loop, `$1F`/`$70`/`$30` ROM countdown bases,
   chase-only combat gate, `$08` Link-vector refresh, and fixed-point movement.
   Its health-group `$01` values provide two health points and `$04` contact
-  damage; background interaction and recoil remain pending.
+  damage; shared bank-$04 recoil is verified below, while generic background
+  interaction and remaining damage states remain pending.
 - Anti-Fairy now decodes the bank `$06` pair display list and mirrors
   `EntityInitWithRandomSpeed`, the four diagonal `$0C/$F4` fixed-point speed
   choices, horizontal-priority axis reversal, and `$08`-frame sprite cadence.
@@ -597,6 +599,17 @@ runtime collision callback.
 - Focused Tektite regressions and the complete Java suite cover this
   increment. Recoil, water/pit/conveyor behavior, and remaining damage-state
   branches remain pending.
+
+## Verified ROM Leever recoil — 2026-08-05
+
+- Leever (`$0E`) now enters the shared ROM `$30` recoil path after a normal
+  sword hit, before its bank-$04 hide/emerge/chase/burrow state movement.
+- The runtime decrements the `$0A` ignore-hits countdown and preserves recoil
+  after a blocked step, matching `ApplyRecoilIfNeeded_04` rather than the
+  bank-$03 roaming stop-on-collision helper.
+- Focused Leever regressions and the complete Java suite cover this increment.
+  Generic wall/ground/water/pit/conveyor interaction, recoil smoke, and
+  remaining damage-state branches remain pending.
 
 ## Next entity increments
 

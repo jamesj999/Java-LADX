@@ -16,7 +16,7 @@
 
 - Modify: `java/src/test/java/linksawakening/world/RoomEntityRuntimeTest.java` beside the existing Leever tests.
 
-- [ ] **Step 1: Add the normal recoil test.** Add:
+- [x] **Step 1: Add the normal recoil test.** Add:
 
 ```java
 @Test
@@ -24,6 +24,11 @@ void leeverSwordHitConfiguresBankFourRecoilBeforeItsStateMovement() {
     EntitySpriteDefinition definition = pairDefinition(0x0E, 4);
     RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
         new RoomEntity(0, 0, 0x0E, 64, 64, EntityStatus.ACTIVE, definition, 0)));
+
+    for (int frame = 0; frame <= 31; frame++) {
+        runtime.tick(frame, 120, 120, sequence(0x00));
+    }
+    assertEquals(2, runtime.leeverState(0));
 
     List<EntityCombatEvent> events = runtime.resolveCombat(
         0, 120, 120, false, true, true, 72, 1, 72, 1);
@@ -47,7 +52,7 @@ void leeverSwordHitConfiguresBankFourRecoilBeforeItsStateMovement() {
 }
 ```
 
-- [ ] **Step 2: Add the blocked recoil test.** Add:
+- [x] **Step 2: Add the blocked recoil test.** Add:
 
 ```java
 @Test
@@ -55,6 +60,11 @@ void leeverKeepsBankFourRecoilWhenBackgroundBlocksTheStep() {
     EntitySpriteDefinition definition = pairDefinition(0x0E, 4);
     RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
         new RoomEntity(0, 0, 0x0E, 64, 64, EntityStatus.ACTIVE, definition, 0)));
+
+    for (int frame = 0; frame <= 31; frame++) {
+        runtime.tick(frame, 120, 120, sequence(0x00));
+    }
+    assertEquals(2, runtime.leeverState(0));
 
     runtime.resolveCombat(0, 72, 72, false, true, true, 72, 1, 72, 1);
     RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) ->
@@ -69,7 +79,7 @@ void leeverKeepsBankFourRecoilWhenBackgroundBlocksTheStep() {
 }
 ```
 
-- [ ] **Step 3: Run focused tests and verify RED.** From `java/`, run:
+- [x] **Step 3: Run focused tests and verify RED.** From `java/`, run:
 
 ```bash
 gradle test --tests linksawakening.world.RoomEntityRuntimeTest
@@ -84,7 +94,7 @@ excludes entity `$0E`; existing runtime tests continue to pass.
 
 - Modify: `java/src/main/java/linksawakening/world/RoomEntityRuntime.java` in `usesSharedRecoil`/`usesBank6Recoil`.
 
-- [ ] **Step 1: Add the source-specific type admission.** Add Leever to the
+- [x] **Step 1: Add the source-specific type admission.** Add Leever to the
 shared-recoil predicate without changing the bank-$03 blocked-step policy:
 
 ```java
@@ -97,7 +107,7 @@ Keep `isRoamingEnemyType` unchanged. `applyEnemyRecoilIfNeeded` will therefore
 pass `clearOnBlocked == false` to `EnemyRecoilMotion.advance` for Leever, while
 Octorok/Moblin continue clearing recoil on a blocked step.
 
-- [ ] **Step 2: Run focused tests and verify GREEN.** Run:
+- [x] **Step 2: Run focused tests and verify GREEN.** Run:
 
 ```bash
 gradle test --tests linksawakening.world.RoomEntityRuntimeTest
@@ -114,11 +124,11 @@ must restore position while retaining the `$09` countdown and active recoil.
 - Modify: `docs/reconstruction-roadmap.md` in the Leever status bullet and before `## Next entity increments`.
 - Modify: `docs/superpowers/plans/2026-08-05-leever-recoil.md` to mark completed steps.
 
-- [ ] **Step 1: Update the Leever roadmap status.** Change the Leever bullet
+- [x] **Step 1: Update the Leever roadmap status.** Change the Leever bullet
 to state that its bank-$04 shared `$30` recoil is verified below while generic
 background interaction and remaining damage behavior remain pending.
 
-- [ ] **Step 2: Add a dated verification entry.** Insert:
+- [x] **Step 2: Add a dated verification entry.** Insert:
 
 ```markdown
 ## Verified ROM Leever recoil — 2026-08-05
@@ -133,12 +143,12 @@ background interaction and remaining damage behavior remain pending.
   remaining damage-state branches remain pending.
 ```
 
-- [ ] **Step 3: Run final verification.** From `java/`, run `gradle clean test`.
+- [x] **Step 3: Run final verification.** From `java/`, run `gradle clean test`.
 From the worktree root, run `git diff --check` and `git status --short --branch`.
 Expected: `BUILD SUCCESSFUL`, no whitespace errors, and only the intended
 source, test, roadmap, and plan files changed before commit.
 
-- [ ] **Step 4: Commit the checkpoint.** Mark all plan checkboxes complete and
+- [x] **Step 4: Commit the checkpoint.** Mark all plan checkboxes complete and
 commit:
 
 ```bash
