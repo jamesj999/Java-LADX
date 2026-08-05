@@ -42,6 +42,16 @@ final class LinkTunicPaletteTest {
             palette.forTunic(PlayerState.TUNIC_GREEN));
     }
 
+    @Test
+    void noRomCompatibilityKeepsLegacyTunicStatesVisible() {
+        LinkTunicPalette palette = LinkTunicPalette.greenCompatibility();
+
+        assertArrayEquals(palette.forTunic(PlayerState.TUNIC_GREEN),
+            palette.forTunic(PlayerState.TUNIC_RED));
+        assertArrayEquals(palette.forTunic(PlayerState.TUNIC_GREEN),
+            palette.forTunic(PlayerState.TUNIC_BLUE));
+    }
+
     private static byte[] syntheticRom() {
         return new byte[RomBank.romOffset(0x22, 0x4000)];
     }

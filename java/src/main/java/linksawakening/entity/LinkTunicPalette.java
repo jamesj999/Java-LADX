@@ -42,13 +42,9 @@ public final class LinkTunicPalette {
 
     /** Compatibility source for isolated Link fixtures without a ROM. */
     static LinkTunicPalette greenCompatibility() {
+        int[] green = {0x00000000, 0x00000000, 0x0010A840, 0x00F8B888};
         return new LinkTunicPalette(new int[][] {
-            {0x00000000, 0x00000000, 0x0010A840, 0x00F8B888},
-            {0, 0, 0, 0},
-            {0, 0, 0, 0},
-            {0, 0, 0, 0},
-            {0, 0, 0, 0},
-            {0, 0, 0, 0}
+            green, green.clone(), green.clone(), green.clone(), green.clone(), green.clone()
         });
     }
 
