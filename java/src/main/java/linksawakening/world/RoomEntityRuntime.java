@@ -36,6 +36,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_PAIRODD_PROJECTILE = 0x58;
     private static final int ENTITY_WATER_TEKTITE = 0x99;
     private static final int ENTITY_STALFOS_AGGRESSIVE = 0x1A;
+    private static final int ENTITY_STALFOS_EVASIVE = 0x1E;
     private static final int ENTITY_GIBDO = 0x1F;
     private static final int ENTITY_PEAHAT = 0xA0;
     private static final int ENTITY_ARMOS_STATUE = 0x0F;
@@ -87,6 +88,8 @@ public final class RoomEntityRuntime {
     private final BowWowMotion bowWowMotion = new BowWowMotion();
     private final int[] slowTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] slowTimerInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] enemyTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] enemyStunnedCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] dyingCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyHealth = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyFlashCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -260,6 +263,7 @@ public final class RoomEntityRuntime {
             }
             RoomEntity originalEntity = entity;
             decrementEnemyCombatCountdowns(entity.slot());
+            decrementEnemyStatusCountdowns(entity.slot());
             if (entity.sourceLoadOrder() == -1 && isDisabledFollower(entity.type())) {
                 clearEntity(entity.slot());
                 continue;
@@ -268,11 +272,18 @@ public final class RoomEntityRuntime {
             EntityStatus status = entity.status();
             boolean wasInitializing = status == EntityStatus.INIT;
             if (status == EntityStatus.DYING) {
-                if (dyingCountdown[entity.slot()] > 0) {
-                    dyingCountdown[entity.slot()]--;
-                }
                 if (dyingCountdown[entity.slot()] == 0) {
                     disableEntityWithoutPersistence(entity.slot());
+                }
+                continue;
+            } else if (status == EntityStatus.BURNING) {
+                if (enemyTransitionCountdown[entity.slot()] == 0) {
+                    finishBurning(entity);
+                }
+                continue;
+            } else if (status == EntityStatus.STUNNED) {
+                if (enemyStunnedCountdown[entity.slot()] == 0) {
+                    slots[index] = withStatus(entity, EntityStatus.ACTIVE);
                 }
                 continue;
             } else if (status == EntityStatus.INIT) {
@@ -646,6 +657,9 @@ public final class RoomEntityRuntime {
 
             EntityCombatEvent.SoundChannel soundChannel = EntityCombatEvent.SoundChannel.NONE;
             int soundId = -1;
+            EntityCombatEvent.SoundChannel secondarySoundChannel =
+                EntityCombatEvent.SoundChannel.NONE;
+            int secondarySoundId = -1;
             int enemyDamage = 0;
             int enemySpecialAction = -1;
             if (swordHit) {
@@ -679,7 +693,27 @@ public final class RoomEntityRuntime {
                 }
                 soundChannel = EntityCombatEvent.SoundChannel.JINGLE;
                 soundId = swordResultApplied ? 0x03 : 0x09;
-                if (swordDamage > 0 && enemyHealth[entity.slot()] == 0) {
+                if (enemySpecialAction == 0xFE) {
+                    // ApplySwordDamagesToEnemy's burning branch starts the
+                    // shared $60 transition and emits NOISE_SFX_BURSTING_FLAME.
+                    enemyTransitionCountdown[entity.slot()] = 0x60;
+                    enemyStunnedCountdown[entity.slot()] = 0;
+                    enemyFlashCountdown[entity.slot()] = 0;
+                    enemyIgnoreHitsCountdown[entity.slot()] = 0x0A;
+                    slots[entity.slot()] = withStatus(entity, EntityStatus.BURNING);
+                    secondarySoundChannel = EntityCombatEvent.SoundChannel.NOISE;
+                    secondarySoundId = 0x12;
+                } else if (enemySpecialAction == 0xFF) {
+                    // EntityBecomeStunned uses private countdown 2 and clears
+                    // vertical speed; the runtime has no separate Z velocity
+                    // for this status, so the countdown is the authoritative
+                    // stun state here.
+                    enemyTransitionCountdown[entity.slot()] = 0;
+                    enemyStunnedCountdown[entity.slot()] = 0xFF;
+                    enemyFlashCountdown[entity.slot()] = 0;
+                    enemyIgnoreHitsCountdown[entity.slot()] = 0x0A;
+                    slots[entity.slot()] = withStatus(entity, EntityStatus.STUNNED);
+                } else if (swordDamage > 0 && enemyHealth[entity.slot()] == 0) {
                     dyingCountdown[entity.slot()] = 0x40;
                     slots[entity.slot()] = withStatus(entity, EntityStatus.DYING);
                 } else if (swordDamage > 0) {
@@ -706,7 +740,7 @@ public final class RoomEntityRuntime {
                 entity.slot(), entity.type(),
                 linkCollision ? contactDamage(entity.type()) : 0,
                 swordHit, enemyDamage, enemySpecialAction, soundChannel, soundId,
-                EntityCombatEvent.SoundChannel.NONE, -1));
+                secondarySoundChannel, secondarySoundId));
         }
         return List.copyOf(events);
     }
@@ -734,6 +768,8 @@ public final class RoomEntityRuntime {
         }
         slowTransitionCountdown[slot] = 0;
         slowTimerInitialized[slot] = false;
+        enemyTransitionCountdown[slot] = 0;
+        enemyStunnedCountdown[slot] = 0;
         dyingCountdown[slot] = 0;
         enemyHealth[slot] = 0;
         enemyFlashCountdown[slot] = 0;
@@ -815,6 +851,8 @@ public final class RoomEntityRuntime {
             (split.originalX() - 4) & 0xFF, split.originalY(), EntityStatus.ACTIVE,
             gelDefinition, gelVariant, original.entityFlipAttribute(), original.spriteTileOffset(),
             split.originalZ());
+        enemyTransitionCountdown[slot] = 0;
+        enemyStunnedCountdown[slot] = 0;
         enemyHealth[slot] = initialHealth(ENTITY_GEL);
         enemyFlashCountdown[slot] = 0;
         enemyIgnoreHitsCountdown[slot] = 0;
@@ -827,6 +865,8 @@ public final class RoomEntityRuntime {
                 gelDefinition, gelVariant, original.entityFlipAttribute(), original.spriteTileOffset(),
                 split.originalZ());
             slots[freeSlot] = spawnedGel;
+            enemyTransitionCountdown[freeSlot] = 0;
+            enemyStunnedCountdown[freeSlot] = 0;
             dyingCountdown[freeSlot] = 0;
             enemyHealth[freeSlot] = initialHealth(ENTITY_GEL);
             enemyFlashCountdown[freeSlot] = 0;
@@ -861,6 +901,8 @@ public final class RoomEntityRuntime {
             source.x(), source.y(), EntityStatus.ACTIVE, projectileDefinition,
             projectileVariant, 0, 0, source.z());
         slots[freeSlot] = projectile;
+        enemyTransitionCountdown[freeSlot] = 0;
+        enemyStunnedCountdown[freeSlot] = 0;
         enemyHealth[freeSlot] = initialHealth(ENTITY_PAIRODD_PROJECTILE);
         enemyFlashCountdown[freeSlot] = 0;
         enemyIgnoreHitsCountdown[freeSlot] = 1;
@@ -893,6 +935,8 @@ public final class RoomEntityRuntime {
             byteValue(source.y() + signedByte(spawn.offsetY())), EntityStatus.ACTIVE,
             projectileDefinition, projectileVariant, 0, 0, source.z());
         slots[freeSlot] = projectile;
+        enemyTransitionCountdown[freeSlot] = 0;
+        enemyStunnedCountdown[freeSlot] = 0;
         enemyHealth[freeSlot] = initialHealth(request.projectileType());
         enemyFlashCountdown[freeSlot] = 0;
         enemyIgnoreHitsCountdown[freeSlot] = 1;
@@ -912,6 +956,25 @@ public final class RoomEntityRuntime {
             : spriteSelection.roomTable();
         int mapId = spriteSelection == null ? -1 : spriteSelection.roomId();
         return spriteHandlers.forEntityType(entityType, table, mapId);
+    }
+
+    private void finishBurning(RoomEntity entity) {
+        int slot = entity.slot();
+        enemyTransitionCountdown[slot] = 0;
+        if (entity.type() == ENTITY_GIBDO) {
+            EntitySpriteDefinition definition = spriteDefinitionFor(ENTITY_STALFOS_EVASIVE);
+            RoomEntity stalfos = withType(entity, ENTITY_STALFOS_EVASIVE, definition);
+            slots[slot] = withStatus(stalfos, EntityStatus.ACTIVE);
+            enemyHealth[slot] = initialHealth(ENTITY_STALFOS_EVASIVE);
+            enemyFlashCountdown[slot] = 0;
+            enemyIgnoreHitsCountdown[slot] = 0;
+            dyingCountdown[slot] = 0;
+            enemyRecoilMotion.clear(slot);
+            return;
+        }
+
+        dyingCountdown[slot] = 0x1F;
+        slots[slot] = withStatus(entity, EntityStatus.DYING);
     }
 
     int slowTransitionCountdown(int slot) {
@@ -1273,6 +1336,20 @@ public final class RoomEntityRuntime {
         return butterflyMotion.privateStateY(slot);
     }
 
+    int transitionCountdown(int slot) {
+        if (slot < 0 || slot >= slots.length) {
+            throw new IllegalArgumentException("Entity slot out of range: " + slot);
+        }
+        return enemyTransitionCountdown[slot];
+    }
+
+    int stunnedCountdown(int slot) {
+        if (slot < 0 || slot >= slots.length) {
+            throw new IllegalArgumentException("Entity slot out of range: " + slot);
+        }
+        return enemyStunnedCountdown[slot];
+    }
+
     int dyingCountdown(int slot) {
         if (slot < 0 || slot >= slots.length) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
@@ -1385,6 +1462,15 @@ public final class RoomEntityRuntime {
             entity.spriteTileOffset(), entity.z());
     }
 
+    private static RoomEntity withType(RoomEntity entity, int type,
+                                       EntitySpriteDefinition definition) {
+        int variant = definition.supported() ? definition.initialVariant() : -1;
+        return new RoomEntity(
+            entity.slot(), entity.sourceLoadOrder(), type, entity.x(), entity.y(),
+            entity.status(), definition, variant, entity.entityFlipAttribute(),
+            entity.spriteTileOffset(), entity.z());
+    }
+
     private static RoomEntity withVariant(RoomEntity entity, int variant) {
         return new RoomEntity(
             entity.slot(), entity.sourceLoadOrder(), entity.type(), entity.x(), entity.y(),
@@ -1405,6 +1491,8 @@ public final class RoomEntityRuntime {
     private void disableEntityWithoutPersistence(int slot) {
         slowTransitionCountdown[slot] = 0;
         slowTimerInitialized[slot] = false;
+        enemyTransitionCountdown[slot] = 0;
+        enemyStunnedCountdown[slot] = 0;
         dyingCountdown[slot] = 0;
         enemyHealth[slot] = 0;
         enemyFlashCountdown[slot] = 0;
@@ -1441,6 +1529,18 @@ public final class RoomEntityRuntime {
         }
         if (!enemyRecoilMotion.isActive(slot) && enemyIgnoreHitsCountdown[slot] > 0) {
             enemyIgnoreHitsCountdown[slot]--;
+        }
+    }
+
+    private void decrementEnemyStatusCountdowns(int slot) {
+        if (enemyTransitionCountdown[slot] > 0) {
+            enemyTransitionCountdown[slot]--;
+        }
+        if (enemyStunnedCountdown[slot] > 0) {
+            enemyStunnedCountdown[slot]--;
+        }
+        if (dyingCountdown[slot] > 0) {
+            dyingCountdown[slot]--;
         }
     }
 

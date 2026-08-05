@@ -2,6 +2,7 @@ package linksawakening.world;
 
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.rom.RomBank;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -533,6 +534,91 @@ final class RoomEntityRuntimeTest {
         assertEquals(tables.initialHealth(0xE9), runtime.enemyHealth(0));
         assertEquals(tables.initialHealth(0xEA), runtime.enemyHealth(1));
         assertEquals(tables.initialHealth(0xEB), runtime.enemyHealth(2));
+    }
+
+    @Test
+    void romBurningStatusUsesTheSharedSpecialDamageValueAndExpiresIntoDeath()
+        throws IOException {
+        byte[] rom = romWithSwordResult(0x09, 0xFE);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x09, 64, 64, EntityStatus.ACTIVE,
+                pairDefinition(0x09, 2), 0)), false, null, null, tables);
+
+        List<EntityCombatEvent> events = runtime.resolveCombat(
+            0, 120, 120, false, true, true, 72, 1, 72, 1);
+
+        assertEquals(1, events.size());
+        assertEquals(0xFE, events.get(0).enemySpecialAction());
+        assertEquals(0, events.get(0).enemyDamage());
+        assertEquals(EntityStatus.BURNING, runtime.snapshot().slots().get(0).status());
+        assertEquals(1, runtime.enemyHealth(0));
+        assertEquals(0x60, runtime.transitionCountdown(0));
+        assertEquals(0x0A, runtime.enemyIgnoreHitsCountdown(0));
+        assertEquals(EntityCombatEvent.SoundChannel.JINGLE, events.get(0).soundChannel());
+        assertEquals(0x03, events.get(0).soundId());
+        assertEquals(EntityCombatEvent.SoundChannel.NOISE,
+            events.get(0).secondarySoundChannel());
+        assertEquals(0x12, events.get(0).secondarySoundId());
+        assertTrue(runtime.resolveCombat(1, 120, 120, false, true,
+            true, 72, 1, 72, 1).isEmpty());
+
+        for (int frame = 0; frame < 0x60; frame++) {
+            runtime.tick(frame, 120, 120, sequence(0x00));
+        }
+        assertEquals(EntityStatus.DYING, runtime.snapshot().slots().get(0).status());
+        assertEquals(0x1F, runtime.dyingCountdown(0));
+    }
+
+    @Test
+    void romStunStatusUsesColorShellsRawSpecialDamageValueAndRecovers() throws IOException {
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0xE9, 64, 64, EntityStatus.ACTIVE,
+                pairDefinition(0xE9, 2), 0)), false, null, null, tables);
+
+        List<EntityCombatEvent> events = runtime.resolveCombat(
+            0, 120, 120, false, true, true, 72, 1, 72, 1);
+
+        assertEquals(1, events.size());
+        assertEquals(0xFF, events.get(0).enemySpecialAction());
+        assertEquals(0, events.get(0).enemyDamage());
+        assertEquals(EntityStatus.STUNNED, runtime.snapshot().slots().get(0).status());
+        assertEquals(tables.initialHealth(0xE9), runtime.enemyHealth(0));
+        assertEquals(0xFF, runtime.stunnedCountdown(0));
+        assertEquals(EntityCombatEvent.SoundChannel.JINGLE, events.get(0).soundChannel());
+        assertEquals(0x03, events.get(0).soundId());
+        assertEquals(EntityCombatEvent.SoundChannel.NONE,
+            events.get(0).secondarySoundChannel());
+        assertEquals(-1, events.get(0).secondarySoundId());
+        assertTrue(runtime.resolveCombat(1, 120, 120, false, true,
+            true, 72, 1, 72, 1).isEmpty());
+
+        for (int frame = 0; frame < 0xFF; frame++) {
+            runtime.tick(frame, 120, 120, sequence(0x00));
+        }
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
+        assertEquals(0, runtime.stunnedCountdown(0));
+    }
+
+    @Test
+    void romBurningGibdoBecomesAnActiveStalfosAfterItsTimerExpires() throws IOException {
+        byte[] rom = romWithSwordResult(0x1F, 0xFE);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x1F, 64, 64, EntityStatus.ACTIVE,
+                pairDefinition(0x1F, 2), 0)), false, null, null, tables);
+
+        List<EntityCombatEvent> events = runtime.resolveCombat(
+            0, 120, 120, false, true, true, 72, 1, 72, 1);
+        assertEquals(0xFE, events.get(0).enemySpecialAction());
+
+        for (int frame = 0; frame < 0x60; frame++) {
+            runtime.tick(frame, 120, 120, sequence(0x00));
+        }
+        assertEquals(0x1E, runtime.snapshot().slots().get(0).type());
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
+        assertEquals(0, runtime.transitionCountdown(0));
     }
 
     @Test
@@ -2103,6 +2189,19 @@ final class RoomEntityRuntimeTest {
     private static IntSupplier sequence(int... values) {
         AtomicInteger index = new AtomicInteger();
         return () -> values[Math.min(index.getAndIncrement(), values.length - 1)];
+    }
+
+    private static byte[] romWithSwordResult(int entityType, int rawValue) throws IOException {
+        byte[] rom = loadRom();
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        int healthGroup = tables.healthGroup(entityType);
+        int damageMatrixOffset = RomBank.romOffset(0x03, 0x43EC);
+        int damageValuesOffset = RomBank.romOffset(0x03, 0x473C);
+        // Force level-one sword damage to use entry 1, then replace that
+        // shared raw value with the controlled special result under test.
+        rom[damageMatrixOffset + healthGroup * 0x10] = 0x01;
+        rom[damageValuesOffset + 0x01] = (byte) rawValue;
+        return rom;
     }
 
     private static byte[] syntheticRom() {
