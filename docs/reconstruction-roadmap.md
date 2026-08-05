@@ -196,11 +196,11 @@ resource.
 
 The complete Java test suite passes after these runtime increments. Remaining
 entity behavior—including the rest of the enemy damage matrix, recoil for
-enemy families outside the shared Octorok/Moblin path, stun/lift/throw/
-burning/death handlers, dynamic display-list selection beyond the follower
-path, scripted spawns, and history-driven follower handlers—is intentionally
-still unsupported rather than represented by guessed shapes or generic
-movement.
+enemy families outside the shared Octorok/Moblin path, lifting/throwing
+physics, entity-specific burning/death presentation and handlers, dynamic
+display-list selection beyond the follower path, scripted spawns, and
+history-driven follower handlers—is intentionally still unsupported rather
+than represented by guessed shapes or generic movement.
 
 ## Verified enemy projectile runtime — 2026-08-05
 
@@ -298,10 +298,34 @@ movement.
   enemy-hit feedback. This increment does not claim complete weapon coverage,
   all entity-specific collision branches, or equipment acquisition.
 
+## Verified ROM enemy status response — 2026-08-05
+
+- The shared bank-$03 damage path at `$7235-$7278` now routes raw `$FE` to
+  BURNING with transition countdown `$60`, ignore-hits `$0A`, jingle `$03`,
+  and bursting-flame noise `$12`; raw `$FF` routes to STUNNED with private
+  countdown `$FF`, unchanged health, and ignore-hits `$0A`. Numeric damage
+  remains on the existing health/flash/death path.
+- The common status lifecycle follows `EntityBurningHandler` at
+  `$4C4C-$4CA3` and `EntityStunnedHandler` at `$4E07-$4E9D`: burning
+  non-Gibdos enter DYING with countdown `$1F`, while Gibdo `$1F` becomes
+  Stalfos Evasive `$1E`; stunned entities return ACTIVE when their countdown
+  expires. Timer decrements follow bank-$14 `$4D73-$4DDC`.
+- Color Shells `$E9-$EB` are now admitted through the shared combat gate, so
+  their shipped ROM `$FF` result is reachable without inventing movement or
+  health data. New countdowns and recoil state are cleared on status transfer,
+  slot cleanup, and dynamic replacement.
+- Tests cover raw `$FE`, `$FF`, and `$FD` ROM outcomes, primary/secondary sound
+  routing, collision suppression during non-active statuses, exact countdown
+  boundaries, Gibdo conversion, Color Shell health, and countdown cleanup.
+  Deferred work includes fire-sprite animation, burn-expiry noise `$13`, poof
+  and sword-poke VFX, lifting/thrown physics, and the full bank-$36 Color Shell
+  handler.
+
 ## Next entity increments
 
-1. Port simple enemy movement, collision, damage, stun, lift, throw, burning,
-   and death transitions using the existing room collision model.
+1. Port remaining simple enemy movement, collision, damage, lifting, and
+   throwing behavior, plus entity-specific burning/death presentation, using
+   the existing room collision model.
 2. Extend rectangle and dynamically selected sprite handlers, complete entity
    tile-offset state, follower history and special states, and the remaining
    Color Dungeon symbol/animation path.
