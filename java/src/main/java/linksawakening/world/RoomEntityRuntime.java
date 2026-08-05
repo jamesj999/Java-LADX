@@ -889,8 +889,14 @@ public final class RoomEntityRuntime {
         return type == ENTITY_OCTOROK || type == ENTITY_MOBLIN;
     }
 
+    private static boolean usesBank6Recoil(int type) {
+        return type == ENTITY_KEESE || type == ENTITY_TEKTITE
+            || type == ENTITY_ANTI_FAIRY || type == ENTITY_STALFOS_AGGRESSIVE
+            || type == ENTITY_HARDHAT_BEETLE;
+    }
+
     private static boolean usesSharedRecoil(int type) {
-        return isRoamingEnemyType(type) || type == ENTITY_HARDHAT_BEETLE;
+        return isRoamingEnemyType(type) || usesBank6Recoil(type);
     }
 
     private static boolean isEnemyProjectileType(int type) {

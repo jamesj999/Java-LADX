@@ -196,11 +196,11 @@ resource.
 
 The complete Java test suite passes after these runtime increments. Remaining
 entity behavior—including the rest of the enemy damage matrix, recoil for
-enemy families outside the shared Octorok/Moblin path, lifting/throwing
-physics, entity-specific burning/death presentation and handlers, dynamic
-display-list selection beyond the follower path, scripted spawns, and
-history-driven follower handlers—is intentionally still unsupported rather
-than represented by guessed shapes or generic movement.
+enemy families outside the now-covered bank-$03/bank-$06 paths,
+lifting/throwing physics, entity-specific burning/death presentation and
+handlers, dynamic display-list selection beyond the follower path, scripted
+spawns, and history-driven follower handlers—is intentionally still
+unsupported rather than represented by guessed shapes or generic movement.
 
 ## Verified enemy projectile runtime — 2026-08-05
 
@@ -403,6 +403,25 @@ than represented by guessed shapes or generic movement.
 - Focused recoil/runtime tests and the complete Java suite cover this
   increment; ordinary Octorok/Moblin recoil and spike-trap sword clinks remain
   regression-checked.
+
+## Verified ROM bank-$06 enemy recoil — 2026-08-05
+
+- Keese (`$19`), Tektite (`$0D`), Anti-Fairy (`$15`), and aggressive Stalfos
+  (`$1A`) now configure the shared `$30` sword-recoil vector from the ROM
+  combat path. Their handlers apply `ApplyRecoilIfNeeded_06` before their
+  existing family movement, preserving the current state machines and
+  fixed-point accumulators.
+- Bank-$06 retains its source distinction from bank-$03: a blocked temporary
+  recoil movement does not invoke `StopEntityRecoilOnCollision` or clear the
+  ignore countdown. The Octorok/Moblin collision-stop behavior, Hard Hat path,
+  and spike-trap clink exception remain regression-covered.
+- Spark (`$16/$17`) is explicitly deferred because its handler sets
+  `hActiveEntityNoBGCollision`; Zol/Gel (`$1B/$1C`) is deferred because its
+  recoil call follows split handling. Bank-$04/$07 families, recoil smoke,
+  and remaining damage-state branches remain separate gaps.
+- Focused bank-$06 runtime tests and the full Java suite verify this
+  increment; the visible checkpoint is a sword strike against any of the four
+  newly covered enemy families.
 
 ## Next entity increments
 

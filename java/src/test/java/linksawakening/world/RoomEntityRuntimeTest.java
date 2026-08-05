@@ -931,6 +931,43 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void bankSixNormalEnemiesConfigureTheRomSharedSwordRecoil() {
+        int[] types = {0x19, 0x0D, 0x15, 0x1A};
+        for (int type : types) {
+            EntitySpriteDefinition definition = pairDefinition(type, 3);
+            RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+                new RoomEntity(0, 0, type, 64, 64, EntityStatus.ACTIVE, definition, 0)));
+
+            List<EntityCombatEvent> events = runtime.resolveCombat(
+                0, 72, 72, false, true, true, 72, 1, 72, 1);
+
+            assertEquals(1, events.size(), "type=" + Integer.toHexString(type));
+            assertEquals(0x0A, runtime.enemyIgnoreHitsCountdown(0),
+                "type=" + Integer.toHexString(type));
+            assertTrue(runtime.enemyRecoilActive(0),
+                "type=" + Integer.toHexString(type));
+            assertEquals(0xD0, runtime.enemyRecoilSpeedX(0),
+                "type=" + Integer.toHexString(type));
+            assertEquals(0xD0, runtime.enemyRecoilSpeedY(0),
+                "type=" + Integer.toHexString(type));
+        }
+    }
+
+    @Test
+    void tektiteAppliesBankSixRecoilBeforeItsOrdinaryMotion() {
+        EntitySpriteDefinition definition = pairDefinition(0x0D, 2);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x0D, 64, 64, EntityStatus.ACTIVE, definition, 0)));
+
+        runtime.resolveCombat(0, 72, 72, false, true, true, 72, 1, 72, 1);
+        runtime.tick(1, 72, 72, sequence(0x00));
+
+        assertEquals(61, runtime.snapshot().slots().get(0).x());
+        assertEquals(61, runtime.snapshot().slots().get(0).y());
+        assertEquals(0x09, runtime.enemyIgnoreHitsCountdown(0));
+    }
+
+    @Test
     void armosWakesOnLinkCollisionThenChargesForTheRomCountdown() {
         EntitySpriteDefinition definition = pairDefinition(0x0F, 2);
         RoomEntitySnapshot initial = snapshot(
