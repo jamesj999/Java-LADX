@@ -689,7 +689,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x1E, runtime.snapshot().slots().get(0).type());
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
         assertEquals(0, runtime.transitionCountdown(0));
-        assertEquals(0x82, runtime.physicsFlags(0));
+        assertEquals(0x12, runtime.physicsFlags(0));
         assertEquals(0x4E7D,
             runtime.snapshot().slots().get(0).spriteDefinition().address());
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
@@ -1803,6 +1803,129 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x08, runtime.evasiveSpeedX(0));
         assertEquals(0x08, runtime.evasiveSpeedY(0));
         assertEquals(0x10, runtime.evasivePrivateCountdown1(0));
+    }
+
+    @Test
+    void evasiveStalfosClonesInAnglersTunnelWithRomAttributesAndVector() {
+        EntitySpriteDefinition definition = pairDefinition(0x1E, 3);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x1E, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0,
+                0, 0, 0x03)));
+        runtime.setEntityMapIdForTest(0x03);
+        // AnimateEntities decrements private countdowns before dispatching the
+        // handler; raw value two therefore enters the source's ==1 branch.
+        runtime.setEvasivePrivateCountdown1ForTest(0, 0x02);
+
+        runtime.tick(0, 0x70, 0x50, sequence(0x01));
+
+        RoomEntity clone = runtime.snapshot().slots().get(15);
+        assertEquals(EntityStatus.ACTIVE, clone.status());
+        assertEquals(-1, clone.sourceLoadOrder());
+        assertEquals(0x1E, clone.type());
+        assertEquals(0x40, clone.x());
+        assertEquals(0x50, clone.y());
+        assertEquals(0x03, clone.z());
+        assertEquals(1, runtime.evasivePrivateState1(15));
+        assertEquals(0x52, runtime.physicsFlags(15));
+        assertEquals(0x1A, runtime.options1(15));
+        assertEquals(0x00, runtime.enemyIgnoreHitsCountdown(15));
+        // GetVectorTowardsLink($18) sees dx=$30 and dy=$03 (source Z is
+        // included in the Y distance), producing X=$18, Y=$01.
+        assertEquals(0x18, runtime.evasiveSpeedX(15));
+        assertEquals(0x01, runtime.evasiveSpeedY(15));
+        List<EntityCombatEvent> events = runtime.consumePendingEntityEvents();
+        assertEquals(1, events.size());
+        assertEquals(EntityCombatEvent.SoundChannel.NOISE, events.getFirst().soundChannel());
+        assertEquals(0x0A, events.getFirst().soundId());
+    }
+
+    @Test
+    void evasiveStalfosCloneSkipsGenericGroundInteractionButKeepsFleeingMotion() {
+        EntitySpriteDefinition definition = pairDefinition(0x1E, 3);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x1E, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0)));
+        runtime.setEntityMapIdForTest(0x03);
+        runtime.setEvasivePrivateCountdown1ForTest(0, 0x02);
+        List<Integer> groundInteractionSlots = new ArrayList<>();
+        runtime.setGroundInteraction((entity, frame) -> {
+            groundInteractionSlots.add(entity.slot());
+            return entity;
+        });
+
+        runtime.tick(0, 0x70, 0x50, sequence(0x01));
+        groundInteractionSlots.clear();
+        runtime.tick(1, 0x70, 0x50, sequence(0x01));
+
+        assertFalse(groundInteractionSlots.contains(15));
+    }
+
+    @Test
+    void evasiveStalfosCloneIsGatedBelowAnglersTunnelAndDoesNotWhoosh() {
+        EntitySpriteDefinition definition = pairDefinition(0x1E, 3);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x1E, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0)));
+        runtime.setEntityMapIdForTest(0x02);
+        runtime.setEvasivePrivateCountdown1ForTest(0, 0x02);
+
+        runtime.tick(0, 0x70, 0x50, sequence(0x01));
+
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(15).status());
+        assertEquals(0x01, runtime.evasivePrivateCountdown1(0));
+        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+    }
+
+    @Test
+    void evasiveStalfosCloneDoesNotEmitWhooshWhenAllSlotsAreOccupied() {
+        EntitySpriteDefinition definition = pairDefinition(0x1E, 3);
+        List<RoomEntity> entities = new ArrayList<>();
+        entities.add(new RoomEntity(0, 0, 0x1E, 0x40, 0x50, EntityStatus.ACTIVE,
+            definition, 0));
+        for (int slot = 1; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
+            entities.add(new RoomEntity(slot, -1, 0xFF, 0, 0, EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0xFF), -1));
+        }
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(entities));
+        runtime.setEntityMapIdForTest(0x03);
+        runtime.setEvasivePrivateCountdown1ForTest(0, 0x02);
+
+        runtime.tick(0, 0x70, 0x50, sequence(0x01));
+
+        assertEquals(0x1E, runtime.snapshot().slots().get(0).type());
+        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+    }
+
+    @Test
+    void fleeingEvasiveStalfosPokesAndClearsOnBackgroundCollision() {
+        EntitySpriteDefinition definition = pairDefinition(0x1E, 2);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x1E, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0,
+                0, 0, 0x02)));
+        runtime.setEvasiveFleeingForTest(0, 0x10, 0);
+        RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) -> direction == 0;
+
+        runtime.tick(0, 0x70, 0x50, sequence(0x00), wall);
+
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
+        List<EntityCombatEvent> events = runtime.consumePendingEntityEvents();
+        assertEquals(1, events.size());
+        assertEquals(EntityCombatEvent.SoundChannel.JINGLE, events.getFirst().soundChannel());
+        assertEquals(0x07, events.getFirst().soundId());
+        assertEquals(List.of(new RoomEntityRuntime.TransientVfxRequest(
+            TransientVfxType.SWORD_POKE, 0x40, 0x4E)), runtime.transientVfxRequests());
+    }
+
+    @Test
+    void fleeingEvasiveStalfosClearsAtTheRomScreenEdgeWithoutSwordPoke() {
+        EntitySpriteDefinition definition = pairDefinition(0x1E, 2);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x1E, 0xA7, 0x50, EntityStatus.ACTIVE, definition, 0)));
+        runtime.setEvasiveFleeingForTest(0, 0x10, 0);
+
+        runtime.tick(0, 0x70, 0x50, sequence(0x00));
+
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
+        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+        assertTrue(runtime.transientVfxRequests().isEmpty());
     }
 
     @Test

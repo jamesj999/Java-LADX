@@ -502,6 +502,7 @@ public final class RoomSession {
         if (entityRuntime != null) {
             entityRuntime.setColorShellWorld(colorShellWorld);
             entityRuntime.setFollowingNpcState(followingNpcState);
+            entityRuntime.setEntityMapId(activeRoom.mapId());
             entityRuntime.setGroundInteraction(this::entityGroundInteraction);
             entityRuntime.setActionButtonsHeld(actionButtonsHeld);
         }
@@ -534,6 +535,7 @@ public final class RoomSession {
             entityRandomByteSource, entitySpriteHandlerCatalog, enemyCombatTables);
         entityRuntime.setColorShellWorld(colorShellWorld);
         entityRuntime.setFollowingNpcState(followingNpcState);
+        entityRuntime.setEntityMapId(activeRoom.mapId());
         entityRuntime.setGroundInteraction(this::entityGroundInteraction);
         entityRuntime.setActionButtonsHeld(actionButtonsHeld);
     }

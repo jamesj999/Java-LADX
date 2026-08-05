@@ -76,6 +76,18 @@ final class EnemyCombatEventConsumerTest {
     }
 
     @Test
+    void mapsEvasiveStalfosCloneWhooshThroughTheSharedRomNoiseEffect() {
+        RecordingSoundSink sounds = new RecordingSoundSink();
+        List<EntityCombatEvent> events = List.of(
+            new EntityCombatEvent(0, 0x1E, 0, false, 0, -1,
+                EntityCombatEvent.SoundChannel.NOISE, 0x0A));
+
+        EnemyCombatEventConsumer.consume(events, sounds);
+
+        assertEquals(List.of(GameplaySoundEvent.SPIKE_TRAP_WHOOSH), sounds.events);
+    }
+
+    @Test
     void routesRomSwordPokeSoundAndVfxRequest() {
         RecordingSoundSink sounds = new RecordingSoundSink();
         linksawakening.vfx.TransientVfxSystem vfx =

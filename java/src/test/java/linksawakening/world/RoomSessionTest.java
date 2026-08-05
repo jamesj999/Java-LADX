@@ -103,6 +103,41 @@ final class RoomSessionTest {
     }
 
     @Test
+    void liveAnglersTunnelEvasiveStalfosCreatesTheRomFleeingCloneAfterLanding() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x03, 0x0F);
+        RoomEntity initial = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x1E)
+            .findFirst()
+            .orElseThrow();
+        int linkX = initial.x() + 0x10;
+
+        session.setEntityActionButtonsHeld(true);
+        session.tickEntities(0, linkX, initial.y());
+        session.tickEntities(1, linkX, initial.y());
+        session.setEntityActionButtonsHeld(false);
+
+        RoomEntity clone = null;
+        for (int frame = 2; frame < 80; frame++) {
+            session.tickEntities(frame, linkX, initial.y());
+            clone = session.activeRoom().entities().slots().stream()
+                .filter(entity -> entity.sourceLoadOrder() == -1 && entity.type() == 0x1E)
+                .findFirst()
+                .orElse(null);
+            if (clone != null) {
+                break;
+            }
+        }
+
+        assertNotNull(clone);
+        assertEquals(0x4E8E, clone.spriteDefinition().address());
+        List<EntityCombatEvent> events = session.consumeEntityEvents();
+        assertEquals(1, events.size());
+        assertEquals(EntityCombatEvent.SoundChannel.NOISE, events.getFirst().soundChannel());
+        assertEquals(0x0A, events.getFirst().soundId());
+    }
+
+    @Test
     void waterTektiteMovesThroughDeepWaterInTheLiveRoomSession() {
         RoomSession session = newSession();
         session.loadIndoor(0x00, 0x65);

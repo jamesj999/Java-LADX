@@ -19,7 +19,11 @@ final class StalfosEvasiveMotion {
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     record Update(RoomEntity entity, int transitionCountdown,
-                  boolean unloadRequested, boolean swordPokeRequested) {
+                  boolean unloadRequested, boolean swordPokeRequested,
+                  CloneRequest cloneRequest) {
+    }
+
+    record CloneRequest(int sourceSlot, int x, int y, int z, int speedX, int speedY) {
     }
 
     void initialize(int slot) {
@@ -50,15 +54,17 @@ final class StalfosEvasiveMotion {
     Update advance(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY,
                    boolean actionButtonsHeld, int transitionCountdown,
                    int ignoreHitsCountdown, IntSupplier randomByteSupplier,
-                   RoomEntityBackgroundCollision backgroundCollision) {
+                   RoomEntityBackgroundCollision backgroundCollision, int mapId) {
         int slot = entity.slot();
         if (!initialized[slot]) {
             // A Gibdo burn conversion calls ConfigureNewEntity.attributes and
             // returns ACTIVE without running EntityInitHandlersTable.$1E.
             initializeForActiveEntity(slot);
         }
+        boolean cloneBranchReady = false;
         if (privateCountdown1[slot] > 0) {
             privateCountdown1[slot]--;
+            cloneBranchReady = privateCountdown1[slot] == 1;
         }
 
         int frame = frameCounter & 0xFF;
@@ -66,8 +72,24 @@ final class StalfosEvasiveMotion {
             return advanceFleeing(entity, frame, transitionCountdown, ignoreHitsCountdown,
                 backgroundCollision);
         }
+
+        CloneRequest cloneRequest = null;
+        if (cloneBranchReady) {
+            // The source returns immediately when hMapId is below
+            // MAP_ANGLERS_TUNNEL, before its inertia dispatch or movement.
+            if (mapId < 0x03) {
+                int variant = (frame >>> 3) & 0x01;
+                return new Update(withPositionAndVariant(
+                    entity, entity.x(), entity.y(), entity.z(), variant),
+                    transitionCountdown, false, false, null);
+            }
+            Vector vector = vectorTowardsLink(entity.x(), entity.y(), entity.z(),
+                linkEntityX, linkEntityY, 0x18);
+            cloneRequest = new CloneRequest(slot, entity.x(), entity.y(), entity.z(),
+                vector.x(), vector.y());
+        }
         if (inertia[slot] != 0) {
-            return advanceAirborne(entity, transitionCountdown, backgroundCollision);
+            return advanceAirborne(entity, transitionCountdown, backgroundCollision, cloneRequest);
         }
 
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
@@ -95,7 +117,7 @@ final class StalfosEvasiveMotion {
             speedX[slot] = (-vector.x()) & 0xFF;
             speedY[slot] = (-vector.y()) & 0xFF;
             return new Update(withPositionAndVariant(entity, x, y, entity.z(), 0x02),
-                transitionCountdown, false, false);
+                transitionCountdown, false, false, cloneRequest);
         }
 
         // jr_015_4FCE: the initialization state or random low six bits forces
@@ -105,11 +127,12 @@ final class StalfosEvasiveMotion {
         }
         int variant = (frame >>> 3) & 0x01;
         return new Update(withPositionAndVariant(entity, x, y, entity.z(), variant),
-            transitionCountdown, false, false);
+            transitionCountdown, false, false, cloneRequest);
     }
 
     private Update advanceAirborne(RoomEntity entity, int transitionCountdown,
-                                    RoomEntityBackgroundCollision backgroundCollision) {
+                                    RoomEntityBackgroundCollision backgroundCollision,
+                                    CloneRequest cloneRequest) {
         int slot = entity.slot();
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
@@ -128,7 +151,7 @@ final class StalfosEvasiveMotion {
             privateCountdown1[slot] = 0x10;
         }
         return new Update(withPositionAndVariant(entity, x, y, z, 0x02),
-            transitionCountdown, false, false);
+            transitionCountdown, false, false, cloneRequest);
     }
 
     private Update advanceFleeing(RoomEntity entity, int frame, int transitionCountdown,
@@ -141,12 +164,12 @@ final class StalfosEvasiveMotion {
         RoomEntity updated = withPositionAndVariant(entity, movement.x(), movement.y(),
             entity.z(), (frame >>> 3) & 0x01);
         if (movement.blocked() || ignoreHitsCountdown != 0) {
-            return new Update(updated, transitionCountdown, true, true);
+            return new Update(updated, transitionCountdown, true, true, null);
         }
         if (movement.x() >= 0xA8 || ((movement.y() - updated.z()) & 0xFF) >= 0x84) {
-            return new Update(updated, transitionCountdown, true, false);
+            return new Update(updated, transitionCountdown, true, false, null);
         }
-        return new Update(updated, transitionCountdown, false, false);
+        return new Update(updated, transitionCountdown, false, false, null);
     }
 
     void clear(int slot) {
@@ -189,6 +212,27 @@ final class StalfosEvasiveMotion {
 
     int speedZ(int slot) {
         return speedZ[slot];
+    }
+
+    void setPrivateCountdown1ForTest(int slot, int value) {
+        initialized[slot] = true;
+        privateCountdown1[slot] = value & 0xFF;
+    }
+
+    void setFleeingForTest(int slot, int newSpeedX, int newSpeedY) {
+        reset(slot);
+        initialized[slot] = true;
+        privateState1[slot] = 1;
+        speedX[slot] = newSpeedX & 0xFF;
+        speedY[slot] = newSpeedY & 0xFF;
+    }
+
+    void initializeClone(int slot, int newSpeedX, int newSpeedY) {
+        reset(slot);
+        initialized[slot] = true;
+        privateState1[slot] = 1;
+        speedX[slot] = newSpeedX & 0xFF;
+        speedY[slot] = newSpeedY & 0xFF;
     }
 
     boolean isAirborne(int slot) {

@@ -39,6 +39,13 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_STALFOS_AGGRESSIVE = 0x1A;
     private static final int ENTITY_STALFOS_EVASIVE = 0x1E;
     private static final int ENTITY_GIBDO = 0x1F;
+    private static final int ENTITY_OPT1_NO_GROUND_INTERACTION = 0x10;
+    private static final int ENTITY_OPT1_SPLASH_IN_WATER = 0x08;
+    private static final int ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL = 0x02;
+    private static final int EVASIVE_PHYSICS_FLAGS = 0x12;
+    private static final int EVASIVE_CLONE_PHYSICS_FLAGS = 0x52;
+    private static final int EVASIVE_CLONE_OPTIONS = ENTITY_OPT1_NO_GROUND_INTERACTION
+        | ENTITY_OPT1_SPLASH_IN_WATER | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
     private static final int ENTITY_PEAHAT = 0xA0;
     private static final int ENTITY_ARMOS_STATUE = 0x0F;
     private static final int ARMOS_INITIAL_PHYSICS_FLAGS = 0x92;
@@ -104,6 +111,7 @@ public final class RoomEntityRuntime {
     private final int[] enemyFlashCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyIgnoreHitsCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] baseEntityFlipAttribute = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] entityOptions1Override = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] enemyProjectileSpawnedThisFrame =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] dynamicEntitySpawnedThisFrame =
@@ -115,6 +123,7 @@ public final class RoomEntityRuntime {
     private ColorShellWorld colorShellWorld = ColorShellWorld.none();
     private int pendingClearedEntityMask;
     private boolean actionButtonsHeld;
+    private int entityMapId = -1;
 
     /** A ROM transient-VFX creation requested by an entity handler this frame. */
     public record TransientVfxRequest(TransientVfxType type, int worldX, int worldY) {
@@ -133,6 +142,7 @@ public final class RoomEntityRuntime {
             ? new RomRandomByteSource() : null;
         this.spriteHandlers = spriteHandlers;
         this.enemyCombatTables = enemyCombatTables;
+        Arrays.fill(entityOptions1Override, -1);
         for (RoomEntity entity : slots) {
             baseEntityFlipAttribute[entity.slot()] = entity.entityFlipAttribute();
             enemyHealth[entity.slot()] = entity.loaded() ? initialHealth(entity.type()) : 0;
@@ -725,9 +735,12 @@ public final class RoomEntityRuntime {
                     entity, frame, linkEntityX, linkEntityY, actionButtonsHeld,
                     enemyTransitionCountdown[entity.slot()],
                     enemyIgnoreHitsCountdown[entity.slot()], randomByteSupplier,
-                    backgroundCollision);
+                    backgroundCollision, entityMapId);
                 updated = evasiveUpdate.entity();
                 enemyTransitionCountdown[entity.slot()] = evasiveUpdate.transitionCountdown();
+                if (evasiveUpdate.cloneRequest() != null) {
+                    spawnEvasiveClone(entity, evasiveUpdate.cloneRequest());
+                }
                 if (evasiveUpdate.swordPokeRequested()) {
                     pendingEntityEvents.add(new EntityCombatEvent(
                         entity.slot(), entity.type(), 0, false,
@@ -807,7 +820,8 @@ public final class RoomEntityRuntime {
                     continue;
                 }
             }
-            if (status == EntityStatus.ACTIVE && !wasInitializing) {
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && !hasNoGroundInteractionOverride(updated.slot())) {
                 // ApplyEntityInteractionWithBackground runs after each ROM
                 // entity handler's movement and before the final display-list
                 // presentation. The room session supplies terrain physics;
@@ -1104,6 +1118,7 @@ public final class RoomEntityRuntime {
         enemyFlashCountdown[slot] = 0;
         enemyIgnoreHitsCountdown[slot] = 0;
         baseEntityFlipAttribute[slot] = 0;
+        entityOptions1Override[slot] = -1;
         enemyRecoilMotion.clear(slot);
         colorShellMotion.clear(slot);
         butterflyMotion.clear(slot);
@@ -1150,6 +1165,18 @@ public final class RoomEntityRuntime {
 
     void setActionButtonsHeld(boolean actionButtonsHeld) {
         this.actionButtonsHeld = actionButtonsHeld;
+    }
+
+    void setEntityMapId(int mapId) {
+        if (mapId < -1 || mapId > 0xFF) {
+            throw new IllegalArgumentException("Entity map id must be -1 or an unsigned byte: "
+                + mapId);
+        }
+        entityMapId = mapId;
+    }
+
+    void setEntityMapIdForTest(int mapId) {
+        setEntityMapId(mapId);
     }
 
     void setFollowingNpcState(FollowingNpcState state) {
@@ -1218,6 +1245,11 @@ public final class RoomEntityRuntime {
 
     private static boolean isDynamicFollowingNpc(RoomEntity entity) {
         return entity.sourceLoadOrder() == -1 && isFollowingNpcType(entity.type());
+    }
+
+    private boolean hasNoGroundInteractionOverride(int slot) {
+        return entityOptions1Override[slot] >= 0
+            && (entityOptions1Override[slot] & ENTITY_OPT1_NO_GROUND_INTERACTION) != 0;
     }
 
     private RoomEntity applyZolSplit(RoomEntity original, RoomEntity updated,
@@ -1289,6 +1321,41 @@ public final class RoomEntityRuntime {
         enemyRecoilMotion.clear(freeSlot);
         dyingCountdown[freeSlot] = 0;
         pairoddProjectileMotion.initializeSpawn(freeSlot, source, linkEntityX, linkEntityY);
+    }
+
+    private boolean spawnEvasiveClone(RoomEntity source,
+                                      StalfosEvasiveMotion.CloneRequest request) {
+        int freeSlot = findFreeEntitySlot();
+        if (freeSlot < 0) {
+            return false;
+        }
+
+        EntitySpriteDefinition cloneDefinition = spriteDefinitionForEvasiveState(
+            source.spriteDefinition(), 1);
+        int cloneVariant = cloneDefinition.supported() ? cloneDefinition.initialVariant() : -1;
+        RoomEntity clone = new RoomEntity(freeSlot, -1, ENTITY_STALFOS_EVASIVE,
+            request.x(), request.y(), EntityStatus.ACTIVE, cloneDefinition, cloneVariant,
+            0, 0, request.z());
+        slots[freeSlot] = clone;
+        baseEntityFlipAttribute[freeSlot] = 0;
+        entityOptions1Override[freeSlot] = EVASIVE_CLONE_OPTIONS;
+        enemyTransitionCountdown[freeSlot] = 0;
+        enemyStunnedCountdown[freeSlot] = 0;
+        dyingCountdown[freeSlot] = 0;
+        enemyPhysicsFlags[freeSlot] = EVASIVE_CLONE_PHYSICS_FLAGS;
+        enemyHealth[freeSlot] = initialHealth(ENTITY_STALFOS_EVASIVE);
+        enemyFlashCountdown[freeSlot] = 0;
+        // SpawnNewEntity writes one frame, but the Evasive handler immediately
+        // stores register B over it. AnimateEntities keeps B at zero, so this
+        // clone enters its fleeing handler with no ignore-hits countdown.
+        enemyIgnoreHitsCountdown[freeSlot] = 0;
+        enemyRecoilMotion.clear(freeSlot);
+        stalfosEvasiveMotion.initializeClone(freeSlot, request.speedX(), request.speedY());
+        dynamicEntitySpawnedThisFrame[freeSlot] = true;
+        pendingEntityEvents.add(new EntityCombatEvent(
+            source.slot(), source.type(), 0, false,
+            EntityCombatEvent.SoundChannel.NOISE, 0x0A));
+        return true;
     }
 
     private void spawnEnemyProjectile(RoomEntity source,
@@ -1385,6 +1452,14 @@ public final class RoomEntityRuntime {
         return spriteHandlers.forEntityType(entityType, table, mapId);
     }
 
+    private EntitySpriteDefinition spriteDefinitionForEvasiveState(
+            EntitySpriteDefinition fallback, int privateState1) {
+        if (spriteHandlers == null) {
+            return fallback;
+        }
+        return spriteHandlers.forStalfosEvasiveState(privateState1);
+    }
+
     private RoomEntity refreshColorShellDisplay(RoomEntity entity, EntityStatus status) {
         if (!ColorShellMotion.isColorShellType(entity.type()) || spriteHandlers == null) {
             return entity;
@@ -1404,7 +1479,8 @@ public final class RoomEntityRuntime {
             enemyHealth[slot] = initialHealth(ENTITY_STALFOS_EVASIVE);
             enemyFlashCountdown[slot] = 0;
             enemyIgnoreHitsCountdown[slot] = 0;
-            enemyPhysicsFlags[slot] = initialPhysicsFlags(ENTITY_STALFOS_EVASIVE);
+            entityOptions1Override[slot] = -1;
+            enemyPhysicsFlags[slot] = EVASIVE_PHYSICS_FLAGS;
             dyingCountdown[slot] = 0;
             enemyRecoilMotion.clear(slot);
             stalfosEvasiveMotion.clear(slot);
@@ -1745,6 +1821,14 @@ public final class RoomEntityRuntime {
         return stalfosEvasiveMotion.speedZ(slot);
     }
 
+    void setEvasivePrivateCountdown1ForTest(int slot, int value) {
+        stalfosEvasiveMotion.setPrivateCountdown1ForTest(slot, value);
+    }
+
+    void setEvasiveFleeingForTest(int slot, int newSpeedX, int newSpeedY) {
+        stalfosEvasiveMotion.setFleeingForTest(slot, newSpeedX, newSpeedY);
+    }
+
     int gibdoState(int slot) {
         return gibdoMotion.state(slot);
     }
@@ -1887,6 +1971,17 @@ public final class RoomEntityRuntime {
         return enemyIgnoreHitsCountdown[slot];
     }
 
+    int options1(int slot) {
+        if (slot < 0 || slot >= slots.length) {
+            throw new IllegalArgumentException("Entity slot out of range: " + slot);
+        }
+        if (entityOptions1Override[slot] >= 0) {
+            return entityOptions1Override[slot];
+        }
+        return slots[slot].type() == ENTITY_STALFOS_EVASIVE
+            ? ENTITY_OPT1_SPLASH_IN_WATER : 0;
+    }
+
     int colorShellState(int slot) {
         return colorShellMotion.state(slot);
     }
@@ -1941,7 +2036,7 @@ public final class RoomEntityRuntime {
     private static int initialPhysicsFlags(int type) {
         return switch (type) {
             case ENTITY_ARMOS_STATUE -> ARMOS_INITIAL_PHYSICS_FLAGS;
-            case ENTITY_STALFOS_EVASIVE -> 0x82;
+            case ENTITY_STALFOS_EVASIVE -> EVASIVE_PHYSICS_FLAGS;
             default -> 0;
         };
     }
@@ -2031,6 +2126,7 @@ public final class RoomEntityRuntime {
         enemyFlashCountdown[slot] = 0;
         enemyIgnoreHitsCountdown[slot] = 0;
         baseEntityFlipAttribute[slot] = 0;
+        entityOptions1Override[slot] = -1;
         enemyRecoilMotion.clear(slot);
         colorShellMotion.clear(slot);
         butterflyMotion.clear(slot);

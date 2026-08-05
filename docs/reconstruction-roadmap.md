@@ -705,9 +705,15 @@ runtime collision callback.
   definition. Gibdo burn expiry now leaves the converted entity with Evasive
   physics flags and a supported display definition when the ROM catalog is
   active.
-- Angler's Tunnel cloning and clone-driven fleeing-state entry/side-effect
-  integration, jump/whoosh audio routing, and generic ground-status/water/pit
-  behavior remain explicit follow-up slices.
+- Angler's Tunnel cloning now follows the bank-$15 `$4F02-$4F50` branch: the
+  map gate, highest-free-slot allocation, copied position/Z, `$52` clone
+  physics, `$1A` options, fleeing display pair, fixed-point length-$18 vector,
+  and the handler's final zero ignore-hits write are covered by runtime tests.
+  The live `$03` room path creates the `$15:$4E8E` clone and emits raw noise
+  `$0A`, which the existing shipped sound boundary consumes as the whoosh.
+- Fleeing collision/ignore handling now emits jingle `$07` and sword-poke VFX
+  or clears at the ROM screen edge. Generic ground-status/water/pit behavior
+  remains an explicit follow-up slice.
 
 ## Next entity increments
 
