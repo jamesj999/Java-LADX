@@ -81,6 +81,7 @@ public final class RoomEntityRuntime {
     private final ArmosMotion armosMotion = new ArmosMotion();
     private final GhiniMotion ghiniMotion = new GhiniMotion();
     private final HardHatMotion hardHatMotion = new HardHatMotion();
+    private final EnemyRecoilMotion enemyRecoilMotion = new EnemyRecoilMotion();
     private final FollowingNpcMotion followingNpcMotion = new FollowingNpcMotion();
     private final BowWowMotion bowWowMotion = new BowWowMotion();
     private final int[] slowTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -240,6 +241,7 @@ public final class RoomEntityRuntime {
             if (enemyProjectileSpawnedThisFrame[entity.slot()]) {
                 continue;
             }
+            RoomEntity originalEntity = entity;
             decrementEnemyCombatCountdowns(entity.slot());
             if (entity.sourceLoadOrder() == -1 && isDisabledFollower(entity.type())) {
                 clearEntity(entity.slot());
@@ -330,6 +332,15 @@ public final class RoomEntityRuntime {
                 }
             }
             RoomEntity updated = entity;
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && isRoamingEnemyType(entity.type())) {
+                // AnimateRoamingEnemy applies the shared recoil before its
+                // state-specific movement and collision handler.
+                EnemyRecoilMotion.Update recoil = applyEnemyRecoilIfNeeded(
+                    entity, backgroundCollision);
+                entity = recoil.entity();
+                updated = entity;
+            }
             if (wasInitializing && entity.type() == ENTITY_LEEVER) {
                 // EntityInitLeever calls SetEntitySpriteVariant($FF) before
                 // the first active handler dispatch.
@@ -488,8 +499,8 @@ public final class RoomEntityRuntime {
             if (status != entity.status() || variant != entity.spriteVariant()
                 || updated.type() != entity.type()
                 || updated.spriteDefinition() != entity.spriteDefinition()
-                || updated.x() != entity.x() || updated.y() != entity.y()
-                || updated.z() != entity.z()) {
+                || updated.x() != originalEntity.x() || updated.y() != originalEntity.y()
+                || updated.z() != originalEntity.z()) {
                 slots[index] = new RoomEntity(
                     updated.slot(), updated.sourceLoadOrder(), updated.type(), updated.x(), updated.y(),
                     status, updated.spriteDefinition(), variant, updated.entityFlipAttribute(),
@@ -597,10 +608,21 @@ public final class RoomEntityRuntime {
                 continue;
             }
 
+            EntityCombatEvent.SoundChannel soundChannel = EntityCombatEvent.SoundChannel.NONE;
+            int soundId = -1;
             if (swordHit) {
                 int swordDamage = RoomEntityCombatRules.basicSwordDamage(entity.type());
+                if (isRoamingEnemyType(entity.type())) {
+                    // EnemyCollidedWithSword applies the default `$30` recoil
+                    // before ApplySwordDamagesToEnemy changes health.
+                    enemyRecoilMotion.configure(
+                        entity.slot(), entity.x(), entity.y(), entity.z(),
+                        linkEntityX, linkEntityY, 0x30);
+                }
                 enemyHealth[entity.slot()] = Math.max(0,
                     enemyHealth[entity.slot()] - swordDamage);
+                soundChannel = EntityCombatEvent.SoundChannel.JINGLE;
+                soundId = swordDamage > 0 ? 0x03 : 0x09;
                 if (enemyHealth[entity.slot()] == 0) {
                     dyingCountdown[entity.slot()] = 0x40;
                     slots[entity.slot()] = withStatus(entity, EntityStatus.DYING);
@@ -626,7 +648,7 @@ public final class RoomEntityRuntime {
             events.add(new EntityCombatEvent(
                 entity.slot(), entity.type(),
                 linkCollision ? RoomEntityCombatRules.contactDamage(entity.type()) : 0,
-                swordHit));
+                swordHit, soundChannel, soundId));
         }
         return List.copyOf(events);
     }
@@ -646,6 +668,7 @@ public final class RoomEntityRuntime {
         enemyHealth[slot] = 0;
         enemyFlashCountdown[slot] = 0;
         enemyIgnoreHitsCountdown[slot] = 0;
+        enemyRecoilMotion.clear(slot);
         butterflyMotion.clear(slot);
         keeseMotion.clear(slot);
         roamingEnemyMotion.clear(slot);
@@ -725,6 +748,7 @@ public final class RoomEntityRuntime {
         enemyHealth[slot] = RoomEntityCombatRules.initialHealth(ENTITY_GEL);
         enemyFlashCountdown[slot] = 0;
         enemyIgnoreHitsCountdown[slot] = 0;
+        enemyRecoilMotion.clear(slot);
 
         int freeSlot = findFreeEntitySlot();
         if (freeSlot >= 0) {
@@ -738,6 +762,7 @@ public final class RoomEntityRuntime {
             enemyFlashCountdown[freeSlot] = 0;
             // SpawnNewEntity sets the new entity's ignore-hits countdown to 1.
             enemyIgnoreHitsCountdown[freeSlot] = 1;
+            enemyRecoilMotion.clear(freeSlot);
             zolGelMotion.prepareSpawnedGel(freeSlot);
         }
         return gel;
@@ -769,6 +794,7 @@ public final class RoomEntityRuntime {
         enemyHealth[freeSlot] = RoomEntityCombatRules.initialHealth(ENTITY_PAIRODD_PROJECTILE);
         enemyFlashCountdown[freeSlot] = 0;
         enemyIgnoreHitsCountdown[freeSlot] = 1;
+        enemyRecoilMotion.clear(freeSlot);
         dyingCountdown[freeSlot] = 0;
         pairoddProjectileMotion.initializeSpawn(freeSlot, source, linkEntityX, linkEntityY);
     }
@@ -800,6 +826,7 @@ public final class RoomEntityRuntime {
         enemyHealth[freeSlot] = RoomEntityCombatRules.initialHealth(request.projectileType());
         enemyFlashCountdown[freeSlot] = 0;
         enemyIgnoreHitsCountdown[freeSlot] = 1;
+        enemyRecoilMotion.clear(freeSlot);
         dyingCountdown[freeSlot] = 0;
         enemyProjectileMotion.initializeSpawn(freeSlot, request.projectileType(), direction);
         enemyProjectileSpawnedThisFrame[freeSlot] = true;
@@ -1204,6 +1231,18 @@ public final class RoomEntityRuntime {
         return enemyIgnoreHitsCountdown[slot];
     }
 
+    int enemyRecoilSpeedX(int slot) {
+        return enemyRecoilMotion.recoilSpeedX(slot);
+    }
+
+    int enemyRecoilSpeedY(int slot) {
+        return enemyRecoilMotion.recoilSpeedY(slot);
+    }
+
+    boolean enemyRecoilActive(int slot) {
+        return enemyRecoilMotion.isActive(slot);
+    }
+
     private static int variantFor(RoomEntity entity, int frameCounter) {
         if (!entity.spriteDefinition().supported() || entity.spriteDefinition().variantCount() < 2) {
             return entity.spriteVariant();
@@ -1300,6 +1339,7 @@ public final class RoomEntityRuntime {
         enemyHealth[slot] = 0;
         enemyFlashCountdown[slot] = 0;
         enemyIgnoreHitsCountdown[slot] = 0;
+        enemyRecoilMotion.clear(slot);
         butterflyMotion.clear(slot);
         keeseMotion.clear(slot);
         roamingEnemyMotion.clear(slot);
@@ -1329,9 +1369,33 @@ public final class RoomEntityRuntime {
         if (enemyFlashCountdown[slot] > 0) {
             enemyFlashCountdown[slot]--;
         }
-        if (enemyIgnoreHitsCountdown[slot] > 0) {
+        if (!enemyRecoilMotion.isActive(slot) && enemyIgnoreHitsCountdown[slot] > 0) {
             enemyIgnoreHitsCountdown[slot]--;
         }
+    }
+
+    private EnemyRecoilMotion.Update applyEnemyRecoilIfNeeded(
+            RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision) {
+        int slot = entity.slot();
+        if (!enemyRecoilMotion.isActive(slot)) {
+            return new EnemyRecoilMotion.Update(entity, false);
+        }
+        if (enemyIgnoreHitsCountdown[slot] == 0) {
+            enemyRecoilMotion.clear(slot);
+            return new EnemyRecoilMotion.Update(entity, false);
+        }
+
+        roamingEnemyMotion.beginRecoil(slot);
+        // ApplyRecoilIfNeeded_03 decrements the shared countdown immediately
+        // before applying one fixed-point recoil step.
+        enemyIgnoreHitsCountdown[slot]--;
+        EnemyRecoilMotion.Update update = enemyRecoilMotion.advance(
+            entity, backgroundCollision);
+        if (update.blocked()) {
+            // StopEntityRecoilOnCollision clears the ignore-hits countdown.
+            enemyIgnoreHitsCountdown[slot] = 0;
+        }
+        return update;
     }
 
     private static int byteValue(int value) {

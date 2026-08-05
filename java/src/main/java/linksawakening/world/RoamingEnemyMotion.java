@@ -139,6 +139,13 @@ final class RoamingEnemyMotion {
         initialized[slot] = false;
     }
 
+    /** Mirrors AnimateRoamingEnemy forcing state 1 while the enemy recoils. */
+    void beginRecoil(int slot) {
+        state[slot] = 1;
+        transitionCountdown[slot] = 0x40;
+        initialized[slot] = true;
+    }
+
     int state(int slot) {
         return state[slot];
     }

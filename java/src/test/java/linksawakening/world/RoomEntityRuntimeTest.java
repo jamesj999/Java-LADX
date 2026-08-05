@@ -389,11 +389,57 @@ final class RoomEntityRuntimeTest {
         }
         assertEquals(0, runtime.enemyFlashCountdown(0));
 
+        RoomEntity movedMoblin = runtime.snapshot().slots().get(0);
         List<EntityCombatEvent> secondHit = runtime.resolveCombat(
-            0x19, 120, 120, false, true, true, 72, 1, 72, 1);
+            0x19, 120, 120, false, true, true,
+            movedMoblin.x() + 8, 1, movedMoblin.y() + 8, 1);
         assertEquals(1, secondHit.size());
         assertEquals(EntityStatus.DYING, runtime.snapshot().slots().get(0).status());
         assertEquals(0, runtime.enemyHealth(0));
+    }
+
+    @Test
+    void moblinSwordHitConfiguresRomRecoilAndEnemyHitJingle() {
+        EntitySpriteDefinition definition = pairDefinition(0x0B, 8);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x0B, 64, 64, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+
+        List<EntityCombatEvent> events = runtime.resolveCombat(
+            0, 120, 120, false, true, true, 72, 1, 72, 1);
+
+        assertEquals(1, events.size());
+        EntityCombatEvent event = events.get(0);
+        assertEquals(EntityCombatEvent.SoundChannel.JINGLE, event.soundChannel());
+        assertEquals(0x03, event.soundId());
+        assertEquals(0x18, runtime.enemyFlashCountdown(0));
+        assertEquals(0x0A, runtime.enemyIgnoreHitsCountdown(0));
+        assertTrue(runtime.enemyRecoilActive(0));
+        assertEquals(0xD0, runtime.enemyRecoilSpeedX(0));
+        assertEquals(0xD0, runtime.enemyRecoilSpeedY(0));
+
+        runtime.tick(1, 120, 120, sequence(0x00));
+
+        RoomEntity afterRecoil = runtime.snapshot().slots().get(0);
+        assertEquals(61, afterRecoil.x(), "x=" + afterRecoil.x());
+        assertEquals(61, afterRecoil.y(), "y=" + afterRecoil.y());
+        assertEquals(0x09, runtime.enemyIgnoreHitsCountdown(0));
+    }
+
+    @Test
+    void lethalOctorokSwordHitStillPublishesFinalEnemyHitJingle() {
+        EntitySpriteDefinition definition = pairDefinition(0x09, 8);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x09, 64, 64, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+
+        List<EntityCombatEvent> events = runtime.resolveCombat(
+            0, 120, 120, false, true, true, 72, 1, 72, 1);
+
+        assertEquals(1, events.size());
+        assertEquals(EntityStatus.DYING, runtime.snapshot().slots().get(0).status());
+        assertEquals(EntityCombatEvent.SoundChannel.JINGLE, events.get(0).soundChannel());
+        assertEquals(0x03, events.get(0).soundId());
     }
 
     @Test
