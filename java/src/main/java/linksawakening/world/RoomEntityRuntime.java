@@ -20,7 +20,9 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_PIECE_OF_POWER = 0x33;
     private static final int ENTITY_BUTTERFLY = 0x6E;
     private static final int ENTITY_OCTOROK = 0x09;
+    private static final int ENTITY_OCTOROK_ROCK = 0x0A;
     private static final int ENTITY_MOBLIN = 0x0B;
+    private static final int ENTITY_MOBLIN_ARROW = 0x0C;
     private static final int ENTITY_TEKTITE = 0x0D;
     private static final int ENTITY_LEEVER = 0x0E;
     private static final int ENTITY_ANTI_FAIRY = 0x15;
@@ -60,6 +62,7 @@ public final class RoomEntityRuntime {
     private final ButterflyMotion butterflyMotion = new ButterflyMotion();
     private final KeeseMotion keeseMotion = new KeeseMotion();
     private final RoamingEnemyMotion roamingEnemyMotion = new RoamingEnemyMotion();
+    private final EnemyProjectileMotion enemyProjectileMotion = new EnemyProjectileMotion();
     private final TektiteMotion tektiteMotion = new TektiteMotion();
     private final LeeverMotion leeverMotion = new LeeverMotion();
     private final AntiFairyMotion antiFairyMotion = new AntiFairyMotion();
@@ -86,6 +89,8 @@ public final class RoomEntityRuntime {
     private final int[] enemyHealth = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyFlashCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyIgnoreHitsCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] enemyProjectileSpawnedThisFrame =
+        new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final List<RoamingEnemyMotion.LaunchRequest> projectileLaunchRequests =
         new ArrayList<>();
 
@@ -192,6 +197,7 @@ public final class RoomEntityRuntime {
                       boolean creditsGameplay) {
         Objects.requireNonNull(randomByteSupplier, "randomByteSupplier");
         projectileLaunchRequests.clear();
+        Arrays.fill(enemyProjectileSpawnedThisFrame, false);
         if (linkPositionHistory != null) {
             followingLinkPositionHistory = linkPositionHistory;
         }
@@ -202,6 +208,9 @@ public final class RoomEntityRuntime {
         for (int index = slots.length - 1; index >= 0; index--) {
             RoomEntity entity = slots[index];
             if (!entity.loaded()) {
+                continue;
+            }
+            if (enemyProjectileSpawnedThisFrame[entity.slot()]) {
                 continue;
             }
             decrementEnemyCombatCountdowns(entity.slot());
@@ -320,6 +329,7 @@ public final class RoomEntityRuntime {
                 updated = roamingUpdate.entity();
                 if (roamingUpdate.launchRequest() != null) {
                     projectileLaunchRequests.add(roamingUpdate.launchRequest());
+                    spawnEnemyProjectile(entity, roamingUpdate.launchRequest());
                 }
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
@@ -371,6 +381,16 @@ public final class RoomEntityRuntime {
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_PAIRODD_PROJECTILE) {
                 updated = pairoddProjectileMotion.advance(entity, frame);
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && isEnemyProjectileType(entity.type())) {
+                EnemyProjectileMotion.Update projectileUpdate = enemyProjectileMotion.advance(
+                    entity, backgroundCollision);
+                if (projectileUpdate.unloaded()) {
+                    disableEntityWithoutPersistence(entity.slot());
+                    continue;
+                }
+                updated = projectileUpdate.entity();
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_WATER_TEKTITE) {
@@ -592,6 +612,7 @@ public final class RoomEntityRuntime {
         spikeTrapMotion.clear(slot);
         pairoddMotion.clear(slot);
         pairoddProjectileMotion.clear(slot);
+        enemyProjectileMotion.clear(slot);
         waterTektiteMotion.clear(slot);
         stalfosAggressiveMotion.clear(slot);
         gibdoMotion.clear(slot);
@@ -636,6 +657,10 @@ public final class RoomEntityRuntime {
 
     private static boolean isRoamingEnemyType(int type) {
         return type == ENTITY_OCTOROK || type == ENTITY_MOBLIN;
+    }
+
+    private static boolean isEnemyProjectileType(int type) {
+        return type == ENTITY_OCTOROK_ROCK || type == ENTITY_MOBLIN_ARROW;
     }
 
     private static boolean isDynamicFollowingNpc(RoomEntity entity) {
@@ -700,6 +725,38 @@ public final class RoomEntityRuntime {
         enemyIgnoreHitsCountdown[freeSlot] = 1;
         dyingCountdown[freeSlot] = 0;
         pairoddProjectileMotion.initializeSpawn(freeSlot, source, linkEntityX, linkEntityY);
+    }
+
+    private void spawnEnemyProjectile(RoomEntity source,
+                                      RoamingEnemyMotion.LaunchRequest request) {
+        // Dynamic projectiles must carry the ROM-decoded display definition;
+        // a behavior-only runtime without a catalog can still expose the
+        // launch request, but must not insert an unrenderable placeholder.
+        if (spriteHandlers == null) {
+            return;
+        }
+        int freeSlot = findFreeEntitySlot();
+        if (freeSlot < 0) {
+            return;
+        }
+
+        int direction = roamingEnemyMotion.direction(source.slot());
+        EnemyProjectileMotion.SpawnData spawn = EnemyProjectileMotion.spawnData(
+            request.projectileType(), direction);
+        EntitySpriteDefinition projectileDefinition = spriteDefinitionFor(request.projectileType());
+        int projectileVariant = projectileDefinition.supported()
+            ? spawn.initialVariant() : -1;
+        RoomEntity projectile = new RoomEntity(freeSlot, -1, request.projectileType(),
+            byteValue(source.x() + signedByte(spawn.offsetX())),
+            byteValue(source.y() + signedByte(spawn.offsetY())), EntityStatus.ACTIVE,
+            projectileDefinition, projectileVariant, 0, 0, source.z());
+        slots[freeSlot] = projectile;
+        enemyHealth[freeSlot] = RoomEntityCombatRules.initialHealth(request.projectileType());
+        enemyFlashCountdown[freeSlot] = 0;
+        enemyIgnoreHitsCountdown[freeSlot] = 1;
+        dyingCountdown[freeSlot] = 0;
+        enemyProjectileMotion.initializeSpawn(freeSlot, request.projectileType(), direction);
+        enemyProjectileSpawnedThisFrame[freeSlot] = true;
     }
 
     private EntitySpriteDefinition spriteDefinitionFor(int entityType) {
@@ -795,6 +852,18 @@ public final class RoomEntityRuntime {
 
     int pairoddProjectileSpeedY(int slot) {
         return pairoddProjectileMotion.speedY(slot);
+    }
+
+    int enemyProjectileSpeedX(int slot) {
+        return enemyProjectileMotion.speedX(slot);
+    }
+
+    int enemyProjectileSpeedY(int slot) {
+        return enemyProjectileMotion.speedY(slot);
+    }
+
+    int enemyProjectileTransitionCountdown(int slot) {
+        return enemyProjectileMotion.transitionCountdown(slot);
     }
 
     int tektiteSpeedZ(int slot) {
@@ -1082,6 +1151,13 @@ public final class RoomEntityRuntime {
         return enemyFlashCountdown[slot];
     }
 
+    int enemyIgnoreHitsCountdown(int slot) {
+        if (slot < 0 || slot >= slots.length) {
+            throw new IllegalArgumentException("Entity slot out of range: " + slot);
+        }
+        return enemyIgnoreHitsCountdown[slot];
+    }
+
     private static int variantFor(RoomEntity entity, int frameCounter) {
         if (!entity.spriteDefinition().supported() || entity.spriteDefinition().variantCount() < 2) {
             return entity.spriteVariant();
@@ -1190,6 +1266,7 @@ public final class RoomEntityRuntime {
         spikeTrapMotion.clear(slot);
         pairoddMotion.clear(slot);
         pairoddProjectileMotion.clear(slot);
+        enemyProjectileMotion.clear(slot);
         waterTektiteMotion.clear(slot);
         stalfosAggressiveMotion.clear(slot);
         gibdoMotion.clear(slot);
@@ -1209,5 +1286,14 @@ public final class RoomEntityRuntime {
         if (enemyIgnoreHitsCountdown[slot] > 0) {
             enemyIgnoreHitsCountdown[slot]--;
         }
+    }
+
+    private static int byteValue(int value) {
+        return value & 0xFF;
+    }
+
+    private static int signedByte(int value) {
+        int unsigned = value & 0xFF;
+        return unsigned < 0x80 ? unsigned : unsigned - 0x100;
     }
 }

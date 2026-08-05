@@ -12,6 +12,7 @@ import java.util.function.IntSupplier;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -247,11 +248,13 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
-    void runtimeExposesTheRoamingEnemyLaunchRequestWithoutSpawningAProjectile() {
-        EntitySpriteDefinition definition = pairDefinition(0x09, 8);
+    void runtimeExposesTheRoamingEnemyLaunchRequestAndSpawnsTheProjectile() {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            0x09, EntityRoomLoader.RoomTable.OVERWORLD, -1);
         RoomEntitySnapshot initial = snapshot(
             new RoomEntity(0, 0, 0x09, 64, 64, EntityStatus.ACTIVE, definition, 0));
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial, false, null, catalog);
         AtomicInteger randomCalls = new AtomicInteger();
         IntSupplier randomBytes = () -> {
             randomCalls.incrementAndGet();
@@ -269,8 +272,13 @@ final class RoomEntityRuntimeTest {
         assertEquals(0, request.sourceSlot());
         assertEquals(0x09, request.sourceType());
         assertEquals(0x0A, request.projectileType());
-        assertEquals(1, runtime.snapshot().loadedEntities().size());
-        assertEquals(0x09, runtime.snapshot().slots().get(0).type());
+        assertEquals(2, runtime.snapshot().loadedEntities().size());
+        RoomEntity projectile = runtime.snapshot().slots().get(15);
+        assertEquals(EntityStatus.ACTIVE, projectile.status());
+        assertEquals(-1, projectile.sourceLoadOrder());
+        assertEquals(0x0A, projectile.type());
+        assertEquals(0x48, projectile.x());
+        assertEquals(0x40, projectile.y());
     }
 
     @Test
@@ -1555,6 +1563,101 @@ final class RoomEntityRuntimeTest {
         assertEquals(0, runtime.clearEntity(15));
         assertEquals(0, runtime.pairoddProjectileSpeedX(15));
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(15).status());
+    }
+
+    @Test
+    void moblinLaunchUsesTheHighestDisabledSlotAndDoesNotTickItTwice() {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            0x0B, EntityRoomLoader.RoomTable.OVERWORLD, -1);
+        List<RoomEntity> slots = new ArrayList<>();
+        for (int slot = 0; slot < 15; slot++) {
+            slots.add(RoomEntity.disabled(slot));
+        }
+        slots.add(new RoomEntity(15, 0, 0x0B, 0x40, 0x50, EntityStatus.ACTIVE,
+            definition, 0, 0, 0, 0x03));
+        RoomEntitySnapshot initial = new RoomEntitySnapshot(slots);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial, false, () -> 0, catalog);
+
+        for (int frame = 0; frame <= 6; frame++) {
+            runtime.tick(frame, 0x70, 0x50, () -> 0);
+        }
+
+        RoomEntity projectile = runtime.snapshot().slots().get(14);
+        assertEquals(EntityStatus.ACTIVE, projectile.status());
+        assertEquals(-1, projectile.sourceLoadOrder());
+        assertEquals(0x0C, projectile.type());
+        assertEquals(0x48, projectile.x());
+        assertEquals(0x4C, projectile.y());
+        assertEquals(0x03, projectile.z());
+        assertEquals(0, projectile.spriteVariant());
+        assertTrue(projectile.spriteDefinition().supported());
+        assertEquals(1, runtime.enemyIgnoreHitsCountdown(14));
+        assertEquals(0x20, runtime.enemyProjectileSpeedX(14));
+        assertEquals(1, runtime.projectileLaunchRequests().size());
+        assertEquals(15, runtime.projectileLaunchRequests().get(0).sourceSlot());
+        assertEquals(0x0C, runtime.projectileLaunchRequests().get(0).projectileType());
+
+        assertEquals(0, runtime.clearEntity(14));
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(14).status());
+        assertEquals(0, runtime.enemyProjectileSpeedX(14));
+        assertEquals(0, runtime.enemyProjectileTransitionCountdown(14));
+    }
+
+    @Test
+    void enemyProjectileWallTransitionUnloadsAndClearsTheReverseSlot() {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            0x0B, EntityRoomLoader.RoomTable.OVERWORLD, -1);
+        List<RoomEntity> slots = new ArrayList<>();
+        for (int slot = 0; slot < 15; slot++) {
+            slots.add(RoomEntity.disabled(slot));
+        }
+        slots.add(new RoomEntity(15, 0, 0x0B, 0x40, 0x50, EntityStatus.ACTIVE,
+            definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+            new RoomEntitySnapshot(slots), false, () -> 0, catalog);
+        RoomEntityBackgroundCollision rightWall = (entity, direction, nextX, nextY) -> direction == 0;
+
+        for (int frame = 0; frame <= 6; frame++) {
+            runtime.tick(frame, 0x70, 0x50, () -> 0);
+        }
+        runtime.tick(7, 0x70, 0x50, () -> 0, rightWall);
+        assertEquals(0x18, runtime.enemyProjectileTransitionCountdown(14));
+
+        for (int frame = 8; frame <= 30; frame++) {
+            runtime.tick(frame, 0x70, 0x50, () -> 0, rightWall);
+        }
+
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(14).status());
+        assertEquals(0, runtime.enemyProjectileSpeedX(14));
+        assertEquals(0, runtime.enemyProjectileTransitionCountdown(14));
+    }
+
+    @Test
+    void fullEntityTableLeavesTheLaunchSourceAndProjectileStateUnchanged() {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
+        EntitySpriteDefinition moblinDefinition = catalog.forEntityType(
+            0x0B, EntityRoomLoader.RoomTable.OVERWORLD, -1);
+        List<RoomEntity> entities = new ArrayList<>();
+        for (int slot = 0; slot < 15; slot++) {
+            entities.add(new RoomEntity(slot, -1, 0x01, 0x20, 0x20,
+                EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(0x01), -1));
+        }
+        entities.add(new RoomEntity(15, 0, 0x0B, 0x40, 0x50, EntityStatus.ACTIVE,
+            moblinDefinition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+            new RoomEntitySnapshot(entities), false, () -> 0, catalog);
+
+        for (int frame = 0; frame <= 6; frame++) {
+            runtime.tick(frame, 0x70, 0x50, () -> 0);
+        }
+
+        assertEquals(0x0B, runtime.snapshot().slots().get(15).type());
+        assertEquals(0x0A, runtime.octorokTransitionCountdown(15));
+        for (int slot = 0; slot < 15; slot++) {
+            assertNotEquals(0x0C, runtime.snapshot().slots().get(slot).type());
+        }
     }
 
     @Test
