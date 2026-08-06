@@ -52,6 +52,29 @@ final class GPUColorDungeonTilesTest {
         assertEquals(0xA5, Byte.toUnsignedInt(gpu.readVRAM(destination + 0xFF)));
     }
 
+    @Test
+    void loadsColorDungeonRoomAndFixedBgBlocksIntoGameplaySlots() {
+        byte[] rom = syntheticRom();
+        int roomId = 0x02;
+        int table = RomBank.romOffset(0x20, 0x45EA) + roomId * 2;
+        rom[table] = 0x63;
+        rom[table + 1] = 0x35;
+        rom[RomBank.romOffset(0x35, 0x6300)] = 0x31;
+        rom[RomBank.romOffset(0x35, 0x6000)] = 0x32;
+        rom[RomBank.romOffset(0x35, 0x6100)] = 0x33;
+        rom[RomBank.romOffset(0x2D, 0x4000)] = 0x34;
+        rom[RomBank.romOffset(0x20, 0x45C9)] = 0x4A;
+        rom[RomBank.romOffset(0x2D, 0x4A00)] = 0x35;
+
+        GPU gpu = new GPU();
+        gpu.loadIndoorTiles(rom, 0xFF, roomId);
+
+        assertEquals(0x31, Byte.toUnsignedInt(gpu.readVRAM(0x100 * GPU.TILE_DATA_SIZE)));
+        assertEquals(0x32, Byte.toUnsignedInt(gpu.readVRAM(0x110 * GPU.TILE_DATA_SIZE)));
+        assertEquals(0x33, Byte.toUnsignedInt(gpu.readVRAM(0x0F0 * GPU.TILE_DATA_SIZE)));
+        assertEquals(0x35, Byte.toUnsignedInt(gpu.readVRAM(0x120 * GPU.TILE_DATA_SIZE)));
+    }
+
     private static byte[] syntheticRom() {
         return new byte[RomBank.romOffset(0x36, 0x4000)];
     }
