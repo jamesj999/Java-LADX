@@ -815,8 +815,8 @@ runtime collision callback.
   path now receives the same value through its rich-probe overload, and the
   session boundary verifies that its four-argument helper observes the active
   countdown.
-- Remaining gaps are switch-block WRAM state, hookshot-chain transitions, and
-  remaining handler-specific migrations.
+- Remaining gaps are switch-block toggle/animation producers, hookshot-chain
+  transitions, and remaining handler-specific migrations.
 
 ## Verified ROM entity ledge collision state — 2026-08-06
 
@@ -830,9 +830,24 @@ runtime collision callback.
   movement adapters and the direct roaming handler. Negative-Z samples clear
   the timer before resolution, matching the source's negative-Z path.
 - Resolver, runtime lifecycle, roaming, and shipped-room indoor/overworld
-  cadence tests pass with the complete Java suite. Switch-block WRAM state,
-  hookshot-chain transitions, and remaining handler-specific migrations remain
-  explicit follow-up work.
+  cadence tests pass with the complete Java suite. Switch-block toggle/
+  animation producers, hookshot-chain transitions, and remaining
+  handler-specific migrations remain explicit follow-up work.
+
+## Verified ROM entity switch-block collision state — 2026-08-06
+
+- Entity physics `$04` now follows the bank-$03 `ApplyEntityCollisionWithObject`
+  branch: bombs `$02` and wrecking balls `$A8` pass, non-switch `$04` objects
+  remain solid ocean, and object IDs `$DB`/`$DC` select the ROM table bytes
+  `[0x00, 0x02]`.
+- The live room collision boundary carries the session-wide unsigned
+  `wSwitchBlocksState` equivalent. State `$00` makes `$DB` passable and `$DC`
+  solid; state `$02` reverses those results. Valid mismatches retain the ROM
+  no-wall exception, while invalid ocean objects remain blocked regardless.
+- Resolver and shipped-room session tests verify object IDs, physics `$04`,
+  both states, and the bomb/wrecking-ball exceptions. Crystal-switch/VBlank
+  toggle animation, `wLinkStandingOnSwitchBlock`, hookshot-chain transitions,
+  and room-event producers remain separate source-backed increments.
 
 ## Verified ROM Link tunic palette — 2026-08-06
 

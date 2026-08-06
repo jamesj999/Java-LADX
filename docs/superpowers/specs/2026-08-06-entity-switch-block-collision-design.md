@@ -1,6 +1,6 @@
 # Entity switch-block collision state design
 
-**Status:** Proposed for implementation on `feature/entity-runtime`
+**Status:** Implemented and verified on `feature/entity-runtime`
 
 ## Goal
 
@@ -68,3 +68,12 @@ crystal-switch handler, `UpdateSwitchBlockTiles` animation stages, the
 the broader room-event scripting system. Those are explicit follow-up slices
 that will consume the same session state instead of introducing a second
 switch-state model.
+
+## Verification record
+
+The focused command
+`gradle -p java test --tests linksawakening.world.EntityBackgroundCollisionResolverTest --tests linksawakening.world.RoomSessionTest`
+and `gradle -p java clean test` both reported `BUILD SUCCESSFUL` on the
+committed implementation. The source audit used `bank3.asm` `$7C3F-$7C73`,
+`SwitchBlockLoweredStatePerObject` `$7CA9`, and the shared state table bytes
+`[0, 2]`.
