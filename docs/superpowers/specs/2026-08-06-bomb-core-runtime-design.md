@@ -72,7 +72,7 @@ The source boundaries are:
 - countdown `$22` down through `$18`: the small two-sprite
   `BombRightBeforeExplodingSprite` warning presentation is rendered in the
   same handler;
-- countdown `$18`: decrement and play `NOISE_SFX_EXPLOSION` (`$0B`), matching
+- countdown `$18`: decrement and play `NOISE_SFX_EXPLOSION` (`$0C`), matching
   `BombEntityHandler`'s transition into the explosion handler;
 - countdown `$17` down through `$00`: the explosion rectangle is selected by
   the exact ROM `ExplosionSpriteVariantFrames` table; and
@@ -112,8 +112,9 @@ runtime.
 
 ### Audio and palette effects
 
-The explosion sound will use the existing noise catalog entry `$0B`, exposed
-through the Java gameplay sound event path. Indoor DMG palette flashing is a
+The explosion sound will use the existing noise catalog entry `$0C`, exposed
+through the Java gameplay sound event path. `$0B` remains the hookshot noise
+and must not be reused for bombs. Indoor DMG palette flashing is a
 separate presentation subsystem; it will only be wired here if the existing
 palette API can express the source flash without bypassing the renderer. The
 ROM explosion geometry and timing are required regardless.

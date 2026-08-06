@@ -15,7 +15,7 @@
 - Modify `java/src/main/java/linksawakening/world/RoomEntityRuntime.java`, `RoomEntity.java`/selection plumbing as needed, and runtime tests for spawn, lifecycle, throw, lift, bounce, and unload.
 - Modify `java/src/main/java/linksawakening/world/RoomSession.java` and its tests to expose placement and refresh the immutable room snapshot.
 - Add `java/src/main/java/linksawakening/equipment/Bomb.java`; modify `ItemRegistry` consumers, `Main.java`, and equipment tests for inventory/edge wiring.
-- Modify `java/src/main/java/linksawakening/gameplay/GameplaySoundEvent.java` and `GameplaySoundEffectMap.java`, plus sound-map tests, for noise `$0B`.
+- Modify `java/src/main/java/linksawakening/gameplay/GameplaySoundEvent.java` and `GameplaySoundEffectMap.java`, plus sound-map tests, for explosion noise `$0C` (`$0B` remains hookshot).
 - Modify `docs/reconstruction-roadmap.md` only after verification, recording the verified core scope and the deferred bomb branches.
 
 ## Task 1: Decode every bomb display list from the shipped ROM
@@ -158,7 +158,7 @@ Test that:
   - pressing the registered bomb item calls a placement target once per edge;
   - zero bombs leaves the count unchanged and emits `WRONG_ANSWER`;
   - a successful placement decrements the count once, rejects a second active bomb, and forwards Link's source coordinates/direction to `RoomSession`; and
-  - `BOMB_EXPLOSION` resolves through `SoundEffectCatalog` to noise `$0B`.
+  - `BOMB_EXPLOSION` resolves through `SoundEffectCatalog` to noise `$0C`, without changing hookshot noise `$0B`.
 
 Use the existing `EquipmentController`/`InputState` test style and a fake
 placement target so item tests do not require a GLFW window or full main loop.
@@ -177,7 +177,8 @@ Add the bomb equipment handler with a narrow target interface, register it for
 `PlayerState.INVENTORY_BOMBS`, and route the target through `RoomSession` into
 the runtime. Reuse `PlayerState` bomb-count methods and the existing gameplay
 sound sink; preserve source decrement-before-spawn ordering. Wire the new
-sound event to `SoundEffectNamespace.NOISE, 0x0B`.
+sound event to `SoundEffectNamespace.NOISE, 0x0C`. Keep the existing hookshot
+mapping at `SoundEffectNamespace.NOISE, 0x0B`.
 
 Register the item at the same construction point as Sword, Roc's Feather,
 and Hookshot. Keep existing callers and tests that do not provide a bomb
