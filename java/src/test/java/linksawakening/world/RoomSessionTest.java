@@ -586,6 +586,17 @@ final class RoomSessionTest {
         assertEquals(0xAE, session.activeRoom().entities().slots().get(0).type());
     }
 
+    @Test
+    void loadsTheDisassemblyNewGameRoomThroughTheIndoorPath() {
+        RoomSession session = newSession();
+
+        session.loadIndoor(0x10, 0xA3);
+
+        assertEquals(0x10, session.mapId());
+        assertEquals(0xA3, session.currentRoomId());
+        assertEquals(Warp.CATEGORY_INDOOR, session.mapCategory());
+    }
+
     private static RoomSession newSession() {
         return newSession(room -> {
         });

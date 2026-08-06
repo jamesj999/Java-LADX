@@ -234,4 +234,30 @@ final class PlayerStateTest {
         assertEquals(2, playerState.bombCount());
         assertEquals(2, playerState.magicPowderCount());
     }
+
+    @Test
+    void initializeNewGameClearsTheDebugInventoryAndUsesThreeFullHearts() {
+        PlayerState playerState = new PlayerState();
+        playerState.setItemA(PlayerState.INVENTORY_BOW);
+        playerState.setItemB(PlayerState.INVENTORY_HOOKSHOT);
+        playerState.setMaxHearts(12);
+        playerState.setHealth(1);
+        playerState.setRupees(999);
+
+        playerState.initializeNewGame(0x30, 0x30, 0x20);
+
+        assertEquals(3, playerState.maxHearts());
+        assertEquals(3 * PlayerState.HP_PER_HEART, playerState.health());
+        assertEquals(0, playerState.rupees());
+        assertEquals(0, playerState.swordLevel());
+        assertEquals(0, playerState.shieldLevel());
+        assertEquals(PlayerState.INVENTORY_EMPTY, playerState.itemA());
+        assertEquals(PlayerState.INVENTORY_EMPTY, playerState.itemB());
+        assertEquals(0x30, playerState.maxArrows());
+        assertEquals(0x30, playerState.maxBombs());
+        assertEquals(0x20, playerState.maxMagicPowder());
+        for (int slot = 0; slot < PlayerState.SUBSCREEN_SLOT_COUNT; slot++) {
+            assertEquals(PlayerState.INVENTORY_EMPTY, playerState.subscreenItem(slot));
+        }
+    }
 }

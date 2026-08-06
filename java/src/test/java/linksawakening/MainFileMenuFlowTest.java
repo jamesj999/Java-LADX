@@ -4,6 +4,9 @@ import linksawakening.audio.music.MusicTrackIds;
 import linksawakening.render.RenderScreen;
 import org.junit.jupiter.api.Test;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -22,5 +25,17 @@ final class MainFileMenuFlowTest {
     void fileMenuHasItsOwnRenderScreenAndDisassemblyMusicTrack() {
         assertEquals(RenderScreen.FILE_MENU, Main.renderScreenFor(Main.SCREEN_FILE_MENU));
         assertEquals(MusicTrackIds.MUSIC_FILE_SELECT, Main.fileSelectionMusicTrack());
+    }
+
+    @Test
+    void committingAnEmptyFileUsesTheDedicatedNewGameBootstrap() throws Exception {
+        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+        String branchStart = "if (action.type() == FileMenuAction.Type.START_NEW_GAME)";
+        int start = source.indexOf(branchStart);
+        int end = source.indexOf("} else if (action.type() == FileMenuAction.Type.LOAD_GAME)", start);
+
+        String branch = source.substring(start, end);
+        assertTrue(branch.contains("startNewGame();"));
+        assertFalse(branch.contains("startConfiguredGameplay();"));
     }
 }
