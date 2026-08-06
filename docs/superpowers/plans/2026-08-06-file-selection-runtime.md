@@ -14,15 +14,15 @@
 
 **Files:**
 - Create: java/src/main/java/linksawakening/ui/FileMenuRomData.java
-- Modify: java/src/main/java/linksawakening/render/BackgroundSceneCatalog.java
+- Modify: java/src/main/java/linksawakening/scene/BackgroundSceneCatalog.java
 - Create: java/src/test/java/linksawakening/ui/FileMenuRomDataTest.java
-- Modify: java/src/test/java/linksawakening/render/BackgroundSceneLoaderTest.java
+- Modify: java/src/test/java/linksawakening/scene/BackgroundSceneLoaderTest.java
 
 - [ ] Write failing adapter tests for the 0x40-byte name-entry table, 0x100-byte codepoint-to-tile table, selection cursor Y table, name cursor tables, and defensive copies.
 - [ ] Write failing catalog/loader tests for selection, command-row, and creation map/attrmap/palette specs.
 - [ ] Run:
   ~~~sh
-  gradle test --tests linksawakening.ui.FileMenuRomDataTest --tests linksawakening.render.BackgroundSceneLoaderTest
+  gradle test --tests linksawakening.ui.FileMenuRomDataTest --tests linksawakening.scene.BackgroundSceneLoaderTest
   ~~~
   Confirm the new tests fail before adding production behavior.
 - [ ] Implement FileMenuRomData using RomBank/from-bank-address ROM reads:
@@ -40,8 +40,8 @@
   - all use menu palette block bank $21 address $7536.
 - [ ] Run the focused tests and commit:
   ~~~sh
-  gradle test --tests linksawakening.ui.FileMenuRomDataTest --tests linksawakening.render.BackgroundSceneLoaderTest
-  git add java/src/main/java/linksawakening/ui/FileMenuRomData.java java/src/main/java/linksawakening/render/BackgroundSceneCatalog.java java/src/test/java/linksawakening/ui/FileMenuRomDataTest.java java/src/test/java/linksawakening/render/BackgroundSceneLoaderTest.java
+  gradle test --tests linksawakening.ui.FileMenuRomDataTest --tests linksawakening.scene.BackgroundSceneLoaderTest
+  git add java/src/main/java/linksawakening/ui/FileMenuRomData.java java/src/main/java/linksawakening/scene/BackgroundSceneCatalog.java java/src/test/java/linksawakening/ui/FileMenuRomDataTest.java java/src/test/java/linksawakening/scene/BackgroundSceneLoaderTest.java
   git commit -m "feat: load ROM-backed file menu data"
   ~~~
 
@@ -85,11 +85,11 @@
 ### Task 3: Load exact menu tiles and render snapshots
 
 **Files:**
-- Modify: java/src/main/java/linksawakening/render/GPU.java
+- Modify: java/src/main/java/linksawakening/gpu/GPU.java
 - Modify: java/src/main/java/linksawakening/render/RenderScreen.java
 - Modify: java/src/main/java/linksawakening/render/GameFrameState.java
 - Modify: java/src/main/java/linksawakening/render/GameFrameSceneBuilder.java
-- Create/modify: java/src/test/java/linksawakening/render/GPUFileMenuTilesTest.java
+- Create/modify: java/src/test/java/linksawakening/gpu/GPUFileMenuTilesTest.java
 - Create/modify: java/src/test/java/linksawakening/render/GameFrameSceneBuilderFileMenuTest.java
 
 - [ ] Write failing GPU and framebuffer tests for the ROM-backed menu tile destinations and for a file-menu snapshot producing a background plus object-sprite render layer.
@@ -104,7 +104,7 @@
 - [ ] Run focused tests and commit:
   ~~~sh
   gradle test --tests linksawakening.render.GPUFileMenuTilesTest --tests linksawakening.render.GameFrameSceneBuilderFileMenuTest
-  git add java/src/main/java/linksawakening/render/GPU.java java/src/main/java/linksawakening/render/RenderScreen.java java/src/main/java/linksawakening/render/GameFrameState.java java/src/main/java/linksawakening/render/GameFrameSceneBuilder.java java/src/test/java/linksawakening/render/GPUFileMenuTilesTest.java java/src/test/java/linksawakening/render/GameFrameSceneBuilderFileMenuTest.java
+  git add java/src/main/java/linksawakening/gpu/GPU.java java/src/main/java/linksawakening/render/RenderScreen.java java/src/main/java/linksawakening/render/GameFrameState.java java/src/main/java/linksawakening/render/GameFrameSceneBuilder.java java/src/test/java/linksawakening/gpu/GPUFileMenuTilesTest.java java/src/test/java/linksawakening/render/GameFrameSceneBuilderFileMenuTest.java
   git commit -m "feat: render ROM-backed file menu frames"
   ~~~
 
