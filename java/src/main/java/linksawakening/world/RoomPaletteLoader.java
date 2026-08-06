@@ -3,6 +3,7 @@ package linksawakening.world;
 import linksawakening.rom.RomBank;
 
 public final class RoomPaletteLoader {
+    private static final int MAP_COLOR_DUNGEON = 0xFF;
     private static final int MAP_INDOORS_B_START = 0x06;
     private static final int MAP_INDOORS_B_END = 0x1A;
 
@@ -11,6 +12,8 @@ public final class RoomPaletteLoader {
     private static final int INDOOR_PALETTE_MAPS_BASE_MAP = 0x0A;
     private static final int INTERIOR_PALETTES_BANK = 0x21;
     private static final int INTERIOR_PALETTES_ADDR = 0x443F;
+    private static final int COLOR_DUNGEON_PALETTE_BANK = 0x21;
+    private static final int COLOR_DUNGEON_PALETTE_ADDR = 0x67D0;
 
     private static final int OVERWORLD_PALETTE_MAP_BANK = 0x21;
     private static final int OVERWORLD_PALETTE_MAP_ADDR = 0x42EF;
@@ -37,6 +40,10 @@ public final class RoomPaletteLoader {
     }
 
     public int[][] loadIndoor(int mapId, int roomId, int[][] fallbackPalettes) {
+        if (mapId == MAP_COLOR_DUNGEON) {
+            return loadPaletteBlock(RomBank.romOffset(
+                COLOR_DUNGEON_PALETTE_BANK, COLOR_DUNGEON_PALETTE_ADDR));
+        }
         if (mapId < INDOOR_PALETTE_MAPS_BASE_MAP) {
             return fallbackPalettes;
         }

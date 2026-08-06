@@ -21,4 +21,17 @@ final class RoomPaletteLoaderTest {
 
         assertEquals(0xFF0000, palettes[0][0]);
     }
+
+    @Test
+    void colorDungeonUsesItsDedicatedPaletteBlock() {
+        byte[] rom = new byte[RomBank.romOffset(0x21, 0x6800)];
+        int palette = RomBank.romOffset(0x21, 0x67D0);
+        rom[palette] = (byte) 0x1F;
+        rom[palette + 1] = 0x00;
+        int[][] fallback = {{0x123456, 0, 0, 0}};
+
+        int[][] result = new RoomPaletteLoader(rom).loadIndoor(0xFF, 0x00, fallback);
+
+        assertEquals(RomBank.decodeRgb555(0x001F), result[0][0]);
+    }
 }
