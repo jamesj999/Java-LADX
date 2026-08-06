@@ -16,7 +16,7 @@
 - Modify: `java/src/main/java/linksawakening/world/RoomPaletteLoader.java`
 - Test: `java/src/test/java/linksawakening/world/RoomPaletteLoaderTest.java`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Add a test that writes a known RGB555 color at `$21:$67D0` and a different
 color at the ordinary indoor table location, then calls
@@ -39,7 +39,7 @@ void colorDungeonUsesItsDedicatedPaletteBlock() {
 }
 ```
 
-- [ ] **Step 2: Run the focused test and verify it fails**
+- [x] **Step 2: Run the focused test and verify it fails**
 
 Run:
 
@@ -50,18 +50,18 @@ gradle test --tests linksawakening.world.RoomPaletteLoaderTest
 Expected: FAIL because map `$FF` currently indexes the ordinary indoor palette
 map instead of `$21:$67D0`.
 
-- [ ] **Step 3: Implement the minimal ROM branch**
+- [x] **Step 3: Implement the minimal ROM branch**
 
 Add constants for `MAP_COLOR_DUNGEON = 0xFF`, palette bank `$21`, and address
 `$67D0`. At the top of `loadIndoor`, return `loadPaletteBlock` for map `$FF`
 before the ordinary map-table arithmetic. Keep the existing fallback behavior
 for all non-Color-Dungeon maps.
 
-- [ ] **Step 4: Run the focused test and verify it passes**
+- [x] **Step 4: Run the focused test and verify it passes**
 
 Run the same Gradle command; expected result is `BUILD SUCCESSFUL`.
 
-- [ ] **Step 5: Commit the palette boundary**
+- [x] **Step 5: Commit the palette boundary**
 
 ```bash
 git add java/src/main/java/linksawakening/world/RoomPaletteLoader.java \
@@ -75,7 +75,7 @@ git commit -m "feat: load Color Dungeon room palettes from ROM"
 - Modify: `java/src/main/java/linksawakening/world/RoomTilemapBuilder.java`
 - Test: `java/src/test/java/linksawakening/world/RoomTilemapBuilderTest.java`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Add a synthetic-room test with one active object ID. Put distinct tile bytes at
 the ordinary indoor table and at `$08:$4760 + objectId * 4`; put a distinct
@@ -105,7 +105,7 @@ void colorDungeonUsesDedicatedObjectTileAndAttributeTables() {
 }
 ```
 
-- [ ] **Step 2: Run the focused test and verify it fails**
+- [x] **Step 2: Run the focused test and verify it fails**
 
 Run:
 
@@ -115,7 +115,7 @@ gradle test --tests linksawakening.world.RoomTilemapBuilderTest
 
 Expected: FAIL with the ordinary indoor tile byte or attribute byte.
 
-- [ ] **Step 3: Implement the two map-specific bases**
+- [x] **Step 3: Implement the two map-specific bases**
 
 Add `MAP_COLOR_DUNGEON`, `COLOR_DUNGEON_TILEMAP_BANK = 0x08`,
 `COLOR_DUNGEON_TILEMAP_ADDR = 0x4760`, `COLOR_DUNGEON_ATTR_BANK = 0x23`, and
@@ -124,7 +124,7 @@ Add `MAP_COLOR_DUNGEON`, `COLOR_DUNGEON_TILEMAP_BANK = 0x08`,
 ordinary indoor and overworld branches. Leave the existing 2x2 write loop and
 unsigned object-byte lookup unchanged.
 
-- [ ] **Step 4: Run the focused test and the existing tilemap tests**
+- [x] **Step 4: Run the focused test and the existing tilemap tests**
 
 ```bash
 gradle test --tests linksawakening.world.RoomTilemapBuilderTest
@@ -132,7 +132,7 @@ gradle test --tests linksawakening.world.RoomTilemapBuilderTest
 
 Expected: all tilemap tests pass.
 
-- [ ] **Step 5: Commit the object-table boundary**
+- [x] **Step 5: Commit the object-table boundary**
 
 ```bash
 git add java/src/main/java/linksawakening/world/RoomTilemapBuilder.java \
@@ -146,7 +146,7 @@ git commit -m "feat: select Color Dungeon room object tables"
 - Modify: `java/src/main/java/linksawakening/gpu/GPU.java`
 - Test: `java/src/test/java/linksawakening/gpu/GPUColorDungeonTilesTest.java`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Add a test that writes markers to the room-source table at `$20:$45EA`, the
 source row named by that table, fixed Color Dungeon blocks `$6000` and `$6100`,
@@ -179,7 +179,7 @@ void loadsColorDungeonRoomAndFixedBgBlocksIntoGameplaySlots() {
 }
 ```
 
-- [ ] **Step 2: Run the focused test and verify it fails**
+- [x] **Step 2: Run the focused test and verify it fails**
 
 Run:
 
@@ -190,7 +190,7 @@ gradle test --tests linksawakening.gpu.GPUColorDungeonTilesTest
 Expected: FAIL because the current method treats `$FF` as an ordinary map
 index and never loads the room-selected Color Dungeon row.
 
-- [ ] **Step 3: Implement the dedicated loader path**
+- [x] **Step 3: Implement the dedicated loader path**
 
 Add constants for the Color Dungeon bank `$35`, fixed addresses `$6000` and
 `$6100`, room source table `$20:$45EA`, and wall pointer `$20:$45C9`. At the
@@ -208,7 +208,7 @@ Use existing `loadTilesFromROM` validation and `bankAddrToRomOffset`; reject
 out-of-range room IDs before reading the two-byte source table entry. Do not
 change the ordinary indoor path in the same edit.
 
-- [ ] **Step 4: Run the focused GPU tests**
+- [x] **Step 4: Run the focused GPU tests**
 
 ```bash
 gradle test --tests linksawakening.gpu.GPUColorDungeonTilesTest
@@ -216,7 +216,7 @@ gradle test --tests linksawakening.gpu.GPUColorDungeonTilesTest
 
 Expected: all Color Dungeon GPU tests pass.
 
-- [ ] **Step 5: Commit the BG loader boundary**
+- [x] **Step 5: Commit the BG loader boundary**
 
 ```bash
 git add java/src/main/java/linksawakening/gpu/GPU.java \
@@ -230,7 +230,7 @@ git commit -m "feat: load Color Dungeon BG tiles from ROM"
 - Modify: `docs/reconstruction-roadmap.md`
 - Test: `java/src/test/java/linksawakening/world/RoomSessionTest.java`
 
-- [ ] **Step 1: Add the shipped-ROM integration assertions**
+- [x] **Step 1: Add the shipped-ROM integration assertions**
 
 Extend the existing `loadsColorDungeonEntityRowsThroughTheSpecialRoomPath`
 test after `session.loadIndoor(0xFF, 0x00)` to assert that the active room
@@ -239,7 +239,7 @@ the room's first tile/attribute pair matches the dedicated room object path.
 Use the active room's existing immutable accessors; do not inspect GPU internals
 from this integration test.
 
-- [ ] **Step 2: Run the integration test and inspect the live snapshot**
+- [x] **Step 2: Run the integration test and inspect the live snapshot**
 
 ```bash
 gradle test --tests linksawakening.world.RoomSessionTest.loadsColorDungeonEntityRowsThroughTheSpecialRoomPath
@@ -248,7 +248,7 @@ gradle test --tests linksawakening.world.RoomSessionTest.loadsColorDungeonEntity
 Expected: PASS, with the entity rows, palette, and tilemap all loaded from the
 shipped ROM path.
 
-- [ ] **Step 3: Update the reconstruction roadmap**
+- [x] **Step 3: Update the reconstruction roadmap**
 
 Add a dated entry under the verified parity sections stating that map `$FF`
 now uses the dedicated Color Dungeon object tilemap/attributes, `$67D0` room
@@ -256,7 +256,7 @@ palettes, fixed BG blocks, and `$45EA` room-selected BG rows. Record the
 non-goals: switch-block state, symbols, dynamic palette effects, and event
 scripts remain outstanding.
 
-- [ ] **Step 4: Run the complete verification suite**
+- [x] **Step 4: Run the complete verification suite**
 
 ```bash
 gradle clean test
@@ -267,14 +267,14 @@ git status --short --branch
 Expected: `BUILD SUCCESSFUL`, no whitespace errors, and only the intended
 roadmap/test/source changes present.
 
-- [ ] **Step 5: Request a focused code review**
+- [x] **Step 5: Request a focused code review**
 
 Ask a fresh reviewer to inspect the four commits against the spec, with special
 attention to ROM bank/address math, slot `$100`/`$110` ordering, and accidental
 changes to ordinary indoor rooms. Address any Critical or Important finding,
 rerun `gradle clean test`, and record the review result in the handoff.
 
-- [ ] **Step 6: Commit the integration documentation**
+- [x] **Step 6: Commit the integration documentation**
 
 ```bash
 git add docs/reconstruction-roadmap.md \
