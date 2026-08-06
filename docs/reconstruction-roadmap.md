@@ -795,6 +795,21 @@ runtime collision callback.
   ledge, switch-block, hookshot-chain, entity-specific physics exceptions, and
   the remaining handler migrations remain explicit follow-up work.
 
+## Verified ROM entity collision resolution — 2026-08-06
+
+- `FineCollisionShapes` at bank `$03:$7A85` is ROM-loaded as 18 four-byte
+  rows. The entity resolver now follows the shared
+  `ApplyEntityCollisionWithObject` boundary for fine/open-door shapes,
+  water-only Fish/Water Tektite behavior, grounded/airborne pit/lava handling,
+  bomb/wrecking-ball fine and switch exceptions, generic entity physics, and
+  rich collision result reporting.
+- The existing roaming enemy path receives the resolver through `RoomSession`.
+  The shipped-ROM room `$2F` Octorok regression covers deep-water passability
+  versus solid blocking.
+- Remaining gaps are ignore-hits countdown plumbing, direction/state-dependent
+  ledge timers, switch-block WRAM state, hookshot-chain transitions, and
+  remaining handler-specific migrations.
+
 ## Verified ROM Link tunic palette — 2026-08-06
 
 - `LinkTunicPalette` now loads the six object palettes from `ObjectPalettes` at
