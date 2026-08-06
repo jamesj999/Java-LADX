@@ -815,8 +815,8 @@ runtime collision callback.
   path now receives the same value through its rich-probe overload, and the
   session boundary verifies that its four-argument helper observes the active
   countdown.
-- Remaining gaps are switch-block toggle/animation producers, hookshot-chain
-  transitions, and remaining handler-specific migrations.
+- Remaining gaps are switch-block producers beyond the crystal-switch path,
+  hookshot-chain transitions, and remaining handler-specific migrations.
 
 ## Verified ROM entity ledge collision state — 2026-08-06
 
@@ -830,8 +830,8 @@ runtime collision callback.
   movement adapters and the direct roaming handler. Negative-Z samples clear
   the timer before resolution, matching the source's negative-Z path.
 - Resolver, runtime lifecycle, roaming, and shipped-room indoor/overworld
-  cadence tests pass with the complete Java suite. Switch-block toggle/
-  animation producers, hookshot-chain transitions, and remaining
+  cadence tests pass with the complete Java suite. Switch-block producers
+  beyond the crystal-switch path, hookshot-chain transitions, and remaining
   handler-specific migrations remain explicit follow-up work.
 
 ## Verified ROM entity switch-block collision state — 2026-08-06
@@ -845,9 +845,33 @@ runtime collision callback.
   solid; state `$02` reverses those results. Valid mismatches retain the ROM
   no-wall exception, while invalid ocean objects remain blocked regardless.
 - Resolver and shipped-room session tests verify object IDs, physics `$04`,
-  both states, and the bomb/wrecking-ball exceptions. Crystal-switch/VBlank
-  toggle animation, `wLinkStandingOnSwitchBlock`, hookshot-chain transitions,
-  and room-event producers remain separate source-backed increments.
+  both states, and the bomb/wrecking-ball exceptions. The crystal-switch/VBlank
+  toggle path is recorded below; `wLinkStandingOnSwitchBlock`, hookshot-chain
+  transitions, and room-event producers remain separate source-backed
+  increments.
+
+## Verified ROM crystal-switch animation — 2026-08-06
+
+- Entity `$66` now uses `CrystalSwitchSpriteVariants` at bank `$15:$4320`,
+  including the shipped pair bytes `$58/$03` and `$58/$23`. Its normal sword
+  hit path preserves the ROM `$18` flash and `$0A` ignore-hit timers, but the
+  preceding `$FF` health write prevents the crystal from entering the death
+  path.
+- On the following entity tick, the live runtime consumes the flash, sets the
+  crystal transition countdown to `$18`, and requests stage `$01` only when
+  `wSwitchableObjectAnimationStage` is zero. The raw floor-switch sound is
+  `WAVE_SFX_FLOOR_SWITCH = $0E` and is routed through the gameplay sound
+  boundary.
+- `RoomSession.tickGameplayVBlank()` follows `UpdateSwitchBlockTiles`: stage
+  `$02 -> $03` toggles `wSwitchBlocksState` with XOR `$02`; transition frames
+  read `SwitchBlockTiles` from bank `$2C:$6800` in the GBC path and copy four
+  tiles to global GPU slots `$104/$108` (`$9040/$9080`). Ordinary animated BG
+  tiles resume after the switch stage returns to zero.
+- Indoor loads initialize both switch-block slots from the ROM final-state
+  tables after room-specific tiles. Focused state-machine, GPU, sprite,
+  runtime, audio, room-session, and complete-suite tests pass. Standing on a
+  switch block, hookshot-chain transitions, mobile-block requests, non-sword
+  producers, and complete Link motion blocking remain explicit follow-up work.
 
 ## Verified ROM Link tunic palette — 2026-08-06
 

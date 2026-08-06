@@ -25,7 +25,7 @@ sound event.
   address `$6800`.
 - VRAM destinations: `$9040` and `$9080`, represented by Java tile slots
   `$104` and `$108`.
-- `WAVE_SFX_FLOOR_SWITCH` is raw WAVE id `$0D`.
+- `WAVE_SFX_FLOOR_SWITCH` is raw WAVE id `$0E`.
 
 ## Files expected to change
 
@@ -93,8 +93,9 @@ Run the focused runtime, sprite, and audio tests.
 
 1. Add `switchableObjectAnimationStage` to `RoomSession`.
 2. Apply runtime switch requests only when the session stage is zero.
-3. Add `tickGameplayVBlank()` to advance switch blocks and then preserve the
-   existing ordinary animated-tile tick.
+3. Add `tickGameplayVBlank()` to advance switch blocks with ROM priority and
+   preserve the existing ordinary animated-tile tick while the switch stage is
+   idle.
 4. Replace the direct `GPU.tickAnimatedTiles` call in `Main` with the session
    VBlank method under the existing gameplay gates.
 
@@ -115,4 +116,3 @@ Run all focused tests and the complete Java test suite.
    ```
 
 4. Commit the implementation in logical units only after the tests are green.
-

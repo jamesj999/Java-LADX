@@ -61,10 +61,12 @@ cannot die. On the following entity tick, the crystal consumes its flash:
 `switchableObjectAnimationStage`, so the request is applied at the same
 runtime boundary that owns the collision state. The session's VBlank method
 advances the stage and asks `GPU` to copy four ROM tiles for each stage that
-has a copy. It then runs the existing ordinary animated-tile tick.
+has a copy. While the switch stage is active it returns immediately, matching
+`AnimateTiles`; the existing ordinary animated-tile tick resumes once the
+switch stage is idle.
 
 The crystal's floor-switch wave sound is carried as an entity event with the
-raw WAVE id `$0D`; the existing gameplay sound consumer maps that event to the
+raw WAVE id `$0E`; the existing gameplay sound consumer maps that event to the
 wave sound namespace.
 
 When indoor tiles are loaded, the session initializes both switch-block VRAM
@@ -92,4 +94,3 @@ Focused tests cover the pure stage sequence, ROM tile destinations and source
 offsets, crystal sprite data, crystal sword-hit/flash/request behavior, and
 WAVE sound mapping. The Java project test suite must also pass after the
 integration hook is added.
-
