@@ -53,7 +53,8 @@ CPU address space:
 | DX3 | `$3AA` | `$03` |
 
 Slot 0 begins at image offset `$100`; slots 1 and 2 begin at `$4AD` and
-`$85A`. The image ends at `$C01`.
+`$85A`. With the source-defined `$3AD` slot stride, the image ends at
+`$C07`.
 
 Main offsets used by the current Java model are derived from WRAM `$D800`:
 
@@ -119,4 +120,3 @@ copies.
   store, new-file commit writes/flushed the selected slot, and initialized
   slot selection reaches saved-room loading.
 - `gradle clean test` and `git diff --check` must pass.
-

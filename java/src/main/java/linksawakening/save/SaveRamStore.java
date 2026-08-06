@@ -1,0 +1,77 @@
+package linksawakening.save;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Objects;
+
+/** Host persistence adapter for the source-shaped SRAM image. */
+public final class SaveRamStore {
+
+    private final Path path;
+    private final SaveRamImage image;
+
+    private SaveRamStore(Path path, SaveRamImage image) {
+        this.path = path;
+        this.image = image;
+    }
+
+    public static SaveRamStore open(Path path) throws IOException {
+        Objects.requireNonNull(path, "path");
+        SaveRamImage image;
+        if (!Files.exists(path)) {
+            image = SaveRamImage.empty();
+        } else {
+            byte[] bytes = Files.readAllBytes(path);
+            image = bytes.length == SaveRamLayout.IMAGE_SIZE
+                ? SaveRamImage.fromBytes(bytes)
+                : SaveRamImage.empty();
+            image.initializeInvalidSlots();
+        }
+        return new SaveRamStore(path, image);
+    }
+
+    public static SaveRamStore inMemory() {
+        return new SaveRamStore(null, SaveRamImage.empty());
+    }
+
+    public static Path defaultPath() {
+        String userHome = System.getProperty("user.home");
+        if (userHome == null || userHome.isBlank()) {
+            throw new IllegalStateException("Java user.home is not configured");
+        }
+        return Path.of(userHome, ".linksawakening", "azle.sav");
+    }
+
+    public SaveRamImage image() {
+        return SaveRamImage.fromBytes(image.bytes());
+    }
+
+    public int saveFilesMask() {
+        return image.saveFilesMask();
+    }
+
+    public int[][] savedNames() {
+        return image.savedNames();
+    }
+
+    public SaveSlotState readSlot(int slot) {
+        return image.readSlot(slot);
+    }
+
+    public void createNewGame(int slot, int[] nameBytes) {
+        image.createNewGame(slot, nameBytes);
+    }
+
+    public void flush() throws IOException {
+        if (path == null) {
+            return;
+        }
+        Path absolutePath = path.toAbsolutePath();
+        Path parent = absolutePath.getParent();
+        if (parent != null) {
+            Files.createDirectories(parent);
+        }
+        Files.write(path, image.bytes());
+    }
+}
