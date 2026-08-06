@@ -65,13 +65,15 @@ resource.
 - Armos Statue, Ghini, and Hardhat Beetle now decode their banked pair
   display lists, including the map-$0A Cave B Hardhat table. Their verified
   frame-driven display cadences are wired into the runtime; Armos activation
-  and active combat are covered in the verified increment below, while Ghini
-  hiding/flight and Hardhat movement/collision states remain pending.
+  and active combat are covered in the verified increment below. At this
+  checkpoint, Ghini hiding/flight and Hardhat movement/collision states
+  remained pending.
 - Ordinary Ghini flight now mirrors bank `$04`'s shared-byte random target
   timers, signed speed approach to the `$0C/$F4` and `$08/$F8` tables,
   four-frame visual-Z correction, edge turnarounds, and direction flip. Its
   normal hitbox uses the ROM health-group `$13` values: eight health and
-  `$08` contact damage; hiding and giant-Ghini branches remain pending.
+  `$08` contact damage. At this checkpoint, hiding and giant-Ghini branches
+  remained pending.
 - Hardhat Beetle now mirrors bank `$06`'s four-frame random target refresh,
   ROM infinity-norm vector calculation, signed speed approach, fixed-point
   movement, and axis-specific background stop. Its normal health-group
@@ -1164,6 +1166,30 @@ runtime collision callback.
   still use the queued `applyRomSpeed` path with their existing collision-ignore
   and sword-reset effects.
 - Focused tests pass, and `gradle -p java test` passed.
+
+## Verified ROM Ghini family runtime — 2026-08-06
+
+- Hiding Ghini `$10`, Giant Ghini `$11`, and ordinary Ghini `$12` now decode
+  their shipped-ROM bank-$04 pair/rectangle display lists, including the
+  giant's source palettes and pre-oriented X-flip variants.
+- The shared Ghini handler now mirrors hidden startup, the unsigned `$10`
+  proximity window, the live Link `wCollisionType` wake signal, hidden
+  reveal-frame presentation, private countdown `$30`, visible flight motion,
+  ROM fixed-point timing, Z correction, and source X-flip/orientation rules.
+- All three ROM types use health `$08` and contact damage `$08`; Giant Ghini
+  uses the source large hitbox. Hidden Ghinis are excluded from Link and
+  sword combat until visible, while visible Ghinis use the existing death and
+  shared bank-$04 recoil paths. The source no-ground/no-wall options are
+  honored.
+- Link resets and reports the source-shaped collision bits per update. Main
+  and RoomSession carry that byte directly into the runtime tick while legacy
+  callers retain a zero-collision default.
+- Shipped-ROM catalog, loader, Link, motion, runtime, RoomSession boundary,
+  and Main architecture tests pass; the fresh clean Java suite passes with
+  843 tests and `git diff --check` is clean.
+- Bomb entity `$02` interaction, explosion/destroyable-object effects, and
+  remaining Ghini-specific branches outside the shared hiding/flight/combat
+  path remain separate follow-up work. This slice does not add an emulator.
 
 ## Broader parity gaps
 

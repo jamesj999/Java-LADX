@@ -6,7 +6,7 @@
 
 **Architecture:** Decode the two bank-$04 display-list forms through `EntitySpriteHandlerCatalog`, extend the existing per-slot `GhiniMotion` state machine for the shared hidden/visible handler, and pass a source-shaped `wCollisionType` byte from `Link` through `Main`/`RoomSession` into `RoomEntityRuntime`. Reuse the existing combat, recoil, renderer, and room-loader boundaries; do not add bomb or emulator code.
 
-**Tech Stack:** Java 17 records/classes, JUnit 5, Gradle, shipped LADX DX ROM resource, existing indexed/OAM renderer.
+**Tech Stack:** Java 21 records/classes, JUnit 5, Gradle, shipped LADX DX ROM resource, existing indexed/OAM renderer.
 
 ---
 
@@ -79,7 +79,9 @@
 
   ```bash
   git add java/src/main/java/linksawakening/entity/EntitySpriteHandlerCatalog.java \
-      java/src/test/java/linksawakening/entity/EntitySpriteHandlerCatalogTest.java
+      java/src/main/java/linksawakening/world/EntityRoomLoader.java \
+      java/src/test/java/linksawakening/entity/EntitySpriteHandlerCatalogTest.java \
+      java/src/test/java/linksawakening/world/EntityRoomLoaderTest.java
   git commit -m "feat: decode ROM Ghini display lists"
   ```
 
