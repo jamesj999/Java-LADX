@@ -124,8 +124,8 @@ public final class RoomEntityRuntime {
     private final int[] droppedItemBySlot = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] dropPrivateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] dropPrivateCountdown3 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] dropSpeedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] dropSpeedZ = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] enemyDropActive = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final EnemyDropMotion enemyDropMotion = new EnemyDropMotion();
     private final int[] enemyTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyStunnedCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] dyingCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -955,6 +955,11 @@ public final class RoomEntityRuntime {
                 }
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
+                && enemyDropActive[updated.slot()]) {
+                updated = enemyDropMotion.advance(updated, frame,
+                    entityGroundStatus[updated.slot()], groundInteractionSideScrolling);
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
                 && !hasNoGroundInteractionOverride(updated.slot())) {
                 // ApplyEntityInteractionWithBackground runs after each ROM
                 // entity handler's movement and before the final display-list
@@ -983,6 +988,17 @@ public final class RoomEntityRuntime {
                 if (groundResult.unloaded()) {
                     disableEntityWithoutPersistence(updated.slot());
                     continue;
+                }
+                if (status == EntityStatus.ACTIVE && enemyDropActive[updated.slot()]) {
+                    boolean dropGroundCollision = groundInteractionSideScrolling
+                        && enemyDropMotion.speedY(updated.slot()) != 0
+                        && (enemyDropMotion.speedY(updated.slot()) & 0x80) == 0
+                        && backgroundCollision != null
+                        && backgroundCollision.blocks(updated,
+                            EntityBackgroundCollisionResult.DOWN,
+                            updated.x(), updated.y());
+                    updated = enemyDropMotion.bounce(updated, groundResult.groundStatus(),
+                        groundInteractionSideScrolling, dropGroundCollision);
                 }
             }
             if (ColorShellMotion.isColorShellType(updated.type())) {
@@ -1751,8 +1767,8 @@ public final class RoomEntityRuntime {
         enemyRecoilMotion.clear(freeSlot);
         dropPrivateCountdown1[freeSlot] = 0x18;
         dropPrivateCountdown3[freeSlot] = 0x03;
-        dropSpeedY[freeSlot] = groundInteractionSideScrolling ? 0xEC : 0;
-        dropSpeedZ[freeSlot] = groundInteractionSideScrolling ? 0 : 0x18;
+        enemyDropMotion.initialize(freeSlot, groundInteractionSideScrolling);
+        enemyDropActive[freeSlot] = true;
         dynamicEntitySpawnedThisFrame[freeSlot] = true;
     }
 
@@ -2009,12 +2025,12 @@ public final class RoomEntityRuntime {
 
     int dropSpeedY(int slot) {
         validateEntitySlot(slot);
-        return dropSpeedY[slot];
+        return enemyDropMotion.speedY(slot);
     }
 
     int dropSpeedZ(int slot) {
         validateEntitySlot(slot);
-        return dropSpeedZ[slot];
+        return enemyDropMotion.speedZ(slot);
     }
 
     int keeseState(int slot) {
@@ -2599,8 +2615,8 @@ public final class RoomEntityRuntime {
         droppedItemBySlot[slot] = 0;
         dropPrivateCountdown1[slot] = 0;
         dropPrivateCountdown3[slot] = 0;
-        dropSpeedY[slot] = 0;
-        dropSpeedZ[slot] = 0;
+        enemyDropActive[slot] = false;
+        enemyDropMotion.clear(slot);
     }
 
     private void decrementEnemyDropCountdowns(RoomEntity entity) {
@@ -2945,6 +2961,9 @@ public final class RoomEntityRuntime {
 
     private int verticalSpeedZ(RoomEntity entity) {
         int slot = entity.slot();
+        if (enemyDropActive[slot]) {
+            return enemyDropMotion.speedZ(slot);
+        }
         if (entity.type() == ENTITY_TEKTITE) {
             return tektiteMotion.speedZ(slot);
         }

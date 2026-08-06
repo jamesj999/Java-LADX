@@ -3634,6 +3634,8 @@ final class RoomEntityRuntimeTest {
 
         assertEquals(0x17, runtime.dropPrivateCountdown1(14));
         assertEquals(0x02, runtime.dropPrivateCountdown3(14));
+        assertEquals((sourceZ + 1) & 0xFF, runtime.snapshot().slots().get(14).z());
+        assertEquals(0x16, runtime.dropSpeedZ(14));
         assertNull(runtime.collectIfNeeded(1, sourceX, sourceY + 2,
             false, true));
 
@@ -3685,6 +3687,32 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x03, runtime.dropPrivateCountdown3(14));
         assertEquals(0xEC, runtime.dropSpeedY(14));
         assertEquals(0x00, runtime.dropSpeedZ(14));
+    }
+
+    @Test
+    void sideScrollDropUsesDownCollisionToAlignAndStopWeakLanding()
+            throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RoomEntity source = new RoomEntity(15, 0, 0x0B, 0x50, 0x60,
+            EntityStatus.DYING, catalog.forEntityType(
+                0x0B, EntityRoomLoader.RoomTable.OVERWORLD, -1), 0, 0, 0, 0x09);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotAt(source).withSideScrolling(true),
+            false, () -> 0, catalog, tables);
+        runtime.setEnemyDropResolver(new EnemyDropResolver(rom));
+        runtime.setDroppedItemForTest(15, 0x2D);
+
+        runtime.tick(0, 0, 0, () -> 0);
+        RoomEntityBackgroundCollision collision = (entity, direction, nextX, nextY) ->
+            direction == EntityBackgroundCollisionResult.DOWN;
+        for (int frame = 1; frame <= 11; frame++) {
+            runtime.tick(frame, 0, 0, () -> 0, collision);
+        }
+
+        RoomEntity drop = runtime.snapshot().slots().get(14);
+        assertEquals(0x55, drop.y());
+        assertEquals(0x00, runtime.dropSpeedY(14));
     }
 
     @Test
