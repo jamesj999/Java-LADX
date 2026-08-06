@@ -284,6 +284,81 @@ final class EntitySpriteHandlerCatalogTest {
     }
 
     @Test
+    void mapsTheGhiniFamilyToItsExactRomDisplayLists() {
+        byte[] rom = syntheticRom();
+        write(rom, 0x04, 0x5BFC,
+            0x58, 0x12, 0x5A, 0x12,
+            0x5C, 0x12, 0x5E, 0x12);
+        write(rom, 0x04, 0x5D26,
+            0xF8, 0xF8, 0x60, 0x12,
+            0xF8, 0x00, 0x62, 0x12,
+            0xF8, 0x08, 0x62, 0x32,
+            0xF8, 0x10, 0x60, 0x32,
+            0x08, 0xF8, 0x64, 0x12,
+            0x08, 0x00, 0x66, 0x12,
+            0x08, 0x08, 0x68, 0x12,
+            0x08, 0x10, 0x6A, 0x12,
+            0xF8, 0xF8, 0x60, 0x12,
+            0xF8, 0x00, 0x62, 0x12,
+            0xF8, 0x08, 0x62, 0x32,
+            0xF8, 0x10, 0x60, 0x32,
+            0x08, 0xF8, 0x64, 0x12,
+            0x08, 0x00, 0x6C, 0x12,
+            0x08, 0x08, 0x6E, 0x12,
+            0x08, 0x10, 0x6A, 0x12,
+            0xF8, 0xF8, 0x60, 0x12,
+            0xF8, 0x00, 0x62, 0x12,
+            0xF8, 0x08, 0x62, 0x32,
+            0xF8, 0x10, 0x60, 0x32,
+            0x08, 0xF8, 0x6A, 0x32,
+            0x08, 0x00, 0x68, 0x32,
+            0x08, 0x08, 0x66, 0x32,
+            0x08, 0x10, 0x64, 0x32,
+            0xF8, 0xF8, 0x60, 0x12,
+            0xF8, 0x00, 0x62, 0x12,
+            0xF8, 0x08, 0x62, 0x32,
+            0xF8, 0x10, 0x60, 0x32,
+            0x08, 0xF8, 0x6A, 0x32,
+            0x08, 0x00, 0x6E, 0x32,
+            0x08, 0x08, 0x6C, 0x32,
+            0x08, 0x10, 0x64, 0x32);
+
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        int[][] pairBytes = {
+            {0x58, 0x12, 0x5A, 0x12},
+            {0x5C, 0x12, 0x5E, 0x12}
+        };
+        for (int entityType : new int[] {0x10, 0x12}) {
+            EntitySpriteDefinition ghini = catalog.forEntityType(
+                entityType, EntityRoomLoader.RoomTable.OVERWORLD);
+            assertDefinition(ghini, 0x04, 0x5BFC,
+                EntitySpriteDefinition.Shape.PAIR, 2, 0);
+            assertPairBytes(ghini, pairBytes);
+        }
+
+        EntitySpriteDefinition giant = catalog.forEntityType(
+            0x11, EntityRoomLoader.RoomTable.OVERWORLD);
+        assertDefinition(giant, 0x04, 0x5D26,
+            EntitySpriteDefinition.Shape.RECTANGLE, 4, 0);
+        assertEquals(8, giant.rectangleVariant(0).size());
+
+        EntitySpriteDefinition.RectangleSprite first = giant.rectangleVariant(0).get(0);
+        assertEquals(-8, first.yOffset());
+        assertEquals(-8, first.xOffset());
+        assertEquals(0x60, first.oam().tile());
+        assertEquals(0x12, first.oam().attributes());
+
+        int[] expectedVariant3BottomTiles = {0x6A, 0x6E, 0x6C, 0x64};
+        for (int index = 0; index < expectedVariant3BottomTiles.length; index++) {
+            EntitySpriteDefinition.RectangleSprite sprite = giant
+                .rectangleVariant(3).get(index + 4);
+            assertEquals(8, sprite.yOffset());
+            assertEquals(0x32, sprite.oam().attributes());
+            assertEquals(expectedVariant3BottomTiles[index], sprite.oam().tile());
+        }
+    }
+
+    @Test
     void mapsFollowerDisplayListOverridesToTheirOwnRomTables() {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
 

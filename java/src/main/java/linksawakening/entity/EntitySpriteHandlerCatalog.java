@@ -33,6 +33,8 @@ public final class EntitySpriteHandlerCatalog {
     private static final int ENTITY_GIBDO = 0x1F;
     private static final int ENTITY_PEAHAT = 0xA0;
     private static final int ENTITY_ARMOS_STATUE = 0x0F;
+    private static final int ENTITY_HIDING_GHINI = 0x10;
+    private static final int ENTITY_GIANT_GHINI = 0x11;
     private static final int ENTITY_GHINI = 0x12;
     private static final int ENTITY_KEESE = 0x19;
     private static final int ENTITY_HARDHAT_BEETLE = 0x20;
@@ -203,8 +205,11 @@ public final class EntitySpriteHandlerCatalog {
         if (entityType == ENTITY_ARMOS_STATUE) {
             return decodePair(entityType, 0x06, 0x7446, 2, 0);
         }
-        if (entityType == ENTITY_GHINI) {
+        if (entityType == ENTITY_HIDING_GHINI || entityType == ENTITY_GHINI) {
             return decodePair(entityType, 0x04, 0x5BFC, 2, 0);
+        }
+        if (entityType == ENTITY_GIANT_GHINI) {
+            return decodeRectangle(entityType, 0x04, 0x5D26, 4, 8, 0);
         }
         if (entityType == ENTITY_HARDHAT_BEETLE) {
             return decodePair(entityType, 0x06, mapId == 0x0A ? 0x4F34 : 0x4F2C, 2, 0);

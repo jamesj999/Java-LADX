@@ -166,6 +166,27 @@ final class EntityRoomLoaderTest {
     }
 
     @Test
+    void initializesOrdinaryGhiniAtRomZWithoutGuessingHiddenGhiniZ() {
+        byte[] rom = syntheticRom();
+        writePointer(rom, EntityRoomLoader.RoomTable.OVERWORLD, 0, 0x5170);
+        writeStream(rom, 0x5170,
+            0x00, 0x12,
+            0x01, 0x10,
+            0x02, 0x11,
+            0x03, 0x86,
+            0xFF);
+
+        List<RoomEntity> entities = new EntityRoomLoader(rom)
+            .load(EntityRoomLoader.RoomTable.OVERWORLD, 0)
+            .loadedEntities();
+
+        assertEquals(0x10, entities.get(0).z());
+        assertEquals(0, entities.get(1).z());
+        assertEquals(0, entities.get(2).z());
+        assertEquals(0x13, entities.get(3).z());
+    }
+
+    @Test
     void loadsColorShellsWithTheirInactiveRomRectangleDefinitions() {
         byte[] rom = syntheticRom();
         writePointer(rom, EntityRoomLoader.RoomTable.OVERWORLD, 0, 0x5180);

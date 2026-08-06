@@ -15,6 +15,8 @@ public final class EntityRoomLoader {
     private static final int ENTITY_POINTER_BANK = 0x16;
     private static final int ENTITY_STREAM_END = 0xFF;
     private static final int MAX_ROOM_ID = 0xFF;
+    private static final int ENTITY_GHINI = 0x12;
+    private static final int GHINI_INITIAL_Z = 0x10;
 
     public enum RoomTable {
         OVERWORLD(0x4000),
@@ -106,8 +108,10 @@ public final class EntityRoomLoader {
                             initializedPosition[0], initializedPosition[1])
                         : spriteDefinition.initialVariant()
                     : -1;
-                int initialZ = spriteDefinition.supported() && FloatingItemMotion.isFloatingItem(type)
-                    ? FloatingItemMotion.initialZ(type) : 0;
+                int initialZ = type == ENTITY_GHINI
+                    ? GHINI_INITIAL_Z
+                    : spriteDefinition.supported() && FloatingItemMotion.isFloatingItem(type)
+                        ? FloatingItemMotion.initialZ(type) : 0;
                 slots.set(loadedSlot, new RoomEntity(
                     loadedSlot, sourceLoadOrder, type, initializedPosition[0], initializedPosition[1],
                     EntityStatus.INIT,
