@@ -732,9 +732,13 @@ public final class RoomEntityRuntime {
                 if (entity.type() == ENTITY_BOMB) {
                     BombMotion.Decision bombDecision = advanceBombEntity(index, entity);
                     entity = slots[index];
-                    if (tryLiftBombIfRequested(index, bombDecision, linkEntityX, linkEntityY,
-                            linkZ, romLinkDirection)
-                        || bombDecision.unloadAfterPresentation()) {
+                    boolean lifted = tryLiftBombIfRequested(index, bombDecision, linkEntityX,
+                        linkEntityY, linkZ, romLinkDirection);
+                    // EntityGetLiftedUp (03:4E35) jp's to EntityLiftedHandler (03:5732),
+                    // whose common tail jp's to label_397B. A successful source lift
+                    // therefore exits EntityThrownHandler before its bounce/recoil work;
+                    // do not run ThrownEntityMotion on the newly lifted entity here.
+                    if (lifted || bombDecision.unloadAfterPresentation()) {
                         continue;
                     }
                 }
@@ -787,9 +791,12 @@ public final class RoomEntityRuntime {
                 if (entity.type() == ENTITY_BOMB) {
                     BombMotion.Decision bombDecision = advanceBombEntity(index, entity);
                     entity = slots[index];
-                    if (tryLiftBombIfRequested(index, bombDecision, linkEntityX, linkEntityY,
-                            linkZ, romLinkDirection)
-                        || bombDecision.unloadAfterPresentation()) {
+                    boolean lifted = tryLiftBombIfRequested(index, bombDecision, linkEntityX,
+                        linkEntityY, linkZ, romLinkDirection);
+                    // The stunned handler has the same source trampoline/JP exit as the
+                    // thrown handler. A successful bomb lift must not fall through to
+                    // recoil, bounce, or the generic stunned countdown path.
+                    if (lifted || bombDecision.unloadAfterPresentation()) {
                         continue;
                     }
                 }
@@ -2550,6 +2557,9 @@ public final class RoomEntityRuntime {
     private boolean tryLiftBombIfRequested(int index, BombMotion.Decision decision,
                                             int linkEntityX, int linkEntityY, int linkZ,
                                             int romLinkDirection) {
+        // BombEntityHandler's button path reaches EntityGetLiftedUp, which jumps into
+        // EntityLiftedHandler rather than returning to its caller. The caller models
+        // that non-local return by stopping this entity's current handler after true.
         if (decision.phase() != BombMotion.Phase.NORMAL || !bombButtonHeld) {
             return false;
         }

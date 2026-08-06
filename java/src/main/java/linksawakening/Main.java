@@ -530,10 +530,14 @@ public class Main {
                     roomSession.setEntityPowerBraceletButtonHeld(powerBraceletButtonHeld);
                     roomSession.setEntityBombButtonHeld(bombButtonHeld);
                     var liftedState = roomSession.liftedEntityState();
-                    boolean liftedThrowButtonHeld = liftedState.type() == 0x02
+                    boolean bombBeingThrown = liftedState.type() == 0x02;
+                    boolean liftedThrowButtonHeld = bombBeingThrown
                         ? bombButtonHeld : powerBraceletButtonHeld;
                     if (liftedThrowButtonHeld && liftedState.carryState() == 0x01) {
-                        roomSession.throwLiftedEntity(link.direction());
+                        boolean thrown = roomSession.throwLiftedEntity(link.direction());
+                        if (thrown && bombBeingThrown) {
+                            link.startRomItemAttackStep();
+                        }
                     }
                 }
                 if (!link.isCarryingLiftedObject()) {

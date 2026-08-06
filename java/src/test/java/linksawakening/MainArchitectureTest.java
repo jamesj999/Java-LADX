@@ -84,6 +84,19 @@ final class MainArchitectureTest {
     }
 
     @Test
+    void mainStartsLinkItemAttackStepAfterASuccessfulBombThrow() throws Exception {
+        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+        String normalizedSource = source.replaceAll("\\s+", " ");
+
+        assertTrue(normalizedSource.contains(
+            "boolean bombBeingThrown = liftedState.type() == 0x02;"));
+        assertTrue(normalizedSource.contains(
+            "boolean thrown = roomSession.throwLiftedEntity(link.direction());"));
+        assertTrue(normalizedSource.contains(
+            "if (thrown && bombBeingThrown) { link.startRomItemAttackStep(); }"));
+    }
+
+    @Test
     void roomSessionExposesOnlyTheCanonicalBombPlacementBridge() throws Exception {
         String source = Files.readString(Path.of("src/main/java/linksawakening/world/RoomSession.java"));
         String normalizedSource = source.replaceAll("\\s+", " ");
