@@ -121,19 +121,21 @@ Task 3 is complete in commit 7649c92.
 - Modify: docs/reconstruction-roadmap.md
 - Create/modify: java/src/test/java/linksawakening/MainFileMenuFlowTest.java
 
-- [ ] Write failing flow tests for title Enter entering file selection and a committed empty-slot name returning START_NEW_GAME to the existing configured gameplay bootstrap.
-- [ ] Run the focused flow test and confirm it fails before implementation.
-- [ ] Add a file-menu screen state and controller initialization after ROM/background setup.
-- [ ] On title Enter, load menu tiles, initialize the controller, select the correct selection map based on save state, and switch to FILE_MENU.
-- [ ] Tick the controller while on the file-menu screen; on START_NEW_GAME, call the existing configured gameplay bootstrap. Keep initialized-slot load and SRAM/copy/erase behavior explicit as unsupported follow-ups rather than fabricating persistence.
-- [ ] Carry file-menu snapshots into GameFrameState and map FILE_MENU through currentRenderScreen().
-- [ ] Run focused flow tests and update the roadmap to record the verified boundary and remaining save-system gaps.
-- [ ] Commit:
+- [x] Write failing flow tests for title Enter entering file selection and a committed empty-slot name returning START_NEW_GAME to the existing configured gameplay bootstrap.
+- [x] Run the focused flow test and confirm it fails before implementation.
+- [x] Add a file-menu screen state and controller initialization after ROM/background setup.
+- [x] On title Enter, load menu tiles, initialize the controller, select the correct selection map based on save state, and switch to FILE_MENU.
+- [x] Tick the controller while on the file-menu screen; on START_NEW_GAME, call the existing configured gameplay bootstrap. Keep initialized-slot load and SRAM/copy/erase behavior explicit as unsupported follow-ups rather than fabricating persistence.
+- [x] Carry file-menu snapshots into GameFrameState and map FILE_MENU through currentRenderScreen().
+- [x] Run focused flow tests and update the roadmap to record the verified boundary and remaining save-system gaps.
+- [x] Commit:
   ~~~sh
   gradle test --tests linksawakening.MainFileMenuFlowTest
   git add java/src/main/java/linksawakening/Main.java docs/reconstruction-roadmap.md java/src/test/java/linksawakening/MainFileMenuFlowTest.java
   git commit -m "feat: enter ROM-backed file menu from title"
   ~~~
+
+Task 4 is complete in commit 700b5ab.
 
 ### Task 5: Full verification and handoff
 
