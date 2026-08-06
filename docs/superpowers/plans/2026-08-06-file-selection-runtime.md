@@ -55,7 +55,7 @@ Task 1 is complete in commit 3a75533.
 - Create: java/src/main/java/linksawakening/ui/FileMenuController.java
 - Create: java/src/test/java/linksawakening/ui/FileMenuControllerTest.java
 
-- [ ] Write failing controller tests for:
+- [x] Write failing controller tests for:
   - empty-slot selection entering creation;
   - selection wrapping across slots 0..2 and command row 3 only when the save bitfield is nonzero;
   - command-row left/right toggle;
@@ -64,10 +64,10 @@ Task 1 is complete in commit 3a75533.
   - five-byte stored names converting through the ROM codepoint table;
   - dynamic map writes and cursor OAM positions;
   - immutable snapshot arrays.
-- [ ] Run the focused controller test and confirm it fails before implementation.
-- [ ] Implement FileMenuAction with NONE, START_NEW_GAME, and LOAD_GAME actions, including selected slot and cloned name bytes where relevant.
-- [ ] Implement FileMenuFrameSnapshot as an immutable render payload containing scene id, selected slot, command-row toggle, name-entry state, decoded tilemap/attrmap, BG/OBJ palettes, and file-menu sprites.
-- [ ] Implement FileMenuController with ROM-backed data and a background-scene provider:
+- [x] Run the focused controller test and confirm it fails before implementation.
+- [x] Implement FileMenuAction with NONE, START_NEW_GAME, and LOAD_GAME actions, including selected slot and cloned name bytes where relevant.
+- [x] Implement FileMenuFrameSnapshot as an immutable render payload containing scene id, selected slot, command-row toggle, name-entry state, decoded tilemap/attrmap, BG/OBJ palettes, and file-menu sprites.
+- [x] Implement FileMenuController with ROM-backed data and a background-scene provider:
   - use save bitfield bits 0..2 for initialized slots;
   - use slot 3 for the command row only when at least one save exists;
   - selection cursor Y values from ROM $48E4;
@@ -77,12 +77,14 @@ Task 1 is complete in commit 3a75533.
   - selected name destinations $98C5, $9925, $9985;
   - stored zero bytes render as tile $7E; nonzero bytes index CodepointToTileMap after decrement;
   - creation movement and editing follow the ROM’s 0x40-character table and five-byte name capacity.
-- [ ] Run focused tests and commit:
+- [x] Run focused tests and commit:
   ~~~sh
   gradle test --tests linksawakening.ui.FileMenuControllerTest
   git add java/src/main/java/linksawakening/ui/FileMenuAction.java java/src/main/java/linksawakening/ui/FileMenuFrameSnapshot.java java/src/main/java/linksawakening/ui/FileMenuController.java java/src/test/java/linksawakening/ui/FileMenuControllerTest.java
   git commit -m "feat: model ROM file selection and new game entry"
   ~~~
+
+Task 2 is complete in commit 11ccc55.
 
 ### Task 3: Load exact menu tiles and render snapshots
 
