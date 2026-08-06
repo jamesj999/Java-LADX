@@ -815,9 +815,24 @@ runtime collision callback.
   path now receives the same value through its rich-probe overload, and the
   session boundary verifies that its four-argument helper observes the active
   countdown.
-- Remaining gaps are direction/state-dependent ledge timers, switch-block WRAM
-  state, hookshot-chain transitions, and remaining handler-specific
-  migrations.
+- Remaining gaps are switch-block WRAM state, hookshot-chain transitions, and
+  remaining handler-specific migrations.
+
+## Verified ROM entity ledge collision state — 2026-08-06
+
+- The `$D0-$D3` ledge branch now compares the ROM physics direction with each
+  entity's thrown direction, blocks grounded matching-direction contacts, and
+  starts the ledge transition timer for airborne matching contacts.
+- Nonmatching ledges now use the source zero-timer and wrecking-ball rules. A
+  live per-entity timer decrements on the ROM's indoor three-of-four-frame
+  cadence and overworld odd-frame cadence, with unsigned-byte wrap behavior.
+- The frame-aware rich probe feeds the same current frame into both legacy
+  movement adapters and the direct roaming handler. Negative-Z samples clear
+  the timer before resolution, matching the source's negative-Z path.
+- Resolver, runtime lifecycle, roaming, and shipped-room indoor/overworld
+  cadence tests pass with the complete Java suite. Switch-block WRAM state,
+  hookshot-chain transitions, and remaining handler-specific migrations remain
+  explicit follow-up work.
 
 ## Verified ROM Link tunic palette — 2026-08-06
 
