@@ -1,6 +1,6 @@
 # Entity ledge collision state design
 
-**Status:** Approved under the standing pixel-perfect reconstruction objective
+**Status:** Implemented and verified on `feature/entity-runtime`
 
 ## Goal
 
