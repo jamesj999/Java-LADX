@@ -24,6 +24,15 @@ final class EntityBackgroundCollisionResolverTest {
     }
 
     @Test
+    void normalEntitiesUseTheRomFineShapeForOpenDoors() {
+        RoomEntity entity = entity(0x30, 0);
+        RomTables tables = tablesWithOpenDoorFineRow(
+            1, 0, 1, 0, 0, 0, 0, 0, entity.type(), 0);
+
+        assertTrue(resolve(tables, entity, 0, 0, 0x7C).blocked());
+    }
+
+    @Test
     void ordinaryEntitiesPassNoneAndDeepWaterButBlockSolidAndHookshotableObjects() {
         RoomEntity entity = entity(0x30, 0);
         RomTables tables = tables(0, 0, 0, 0, entity.type(), 0);
@@ -79,10 +88,13 @@ final class EntityBackgroundCollisionResolverTest {
     }
 
     @Test
-    void bombPassesABlockingFineCollisionShape() {
+    void bombAndWreckingBallPassBlockingFineCollisionShapes() {
         RoomEntity bomb = entity(0x02, 0);
+        RoomEntity wreckingBall = entity(0xA8, 0);
 
         assertFalse(resolve(tables(1, 1, 1, 1, bomb.type(), 0), bomb,
+            0, 0, 0x80).blocked());
+        assertFalse(resolve(tables(1, 1, 1, 1, wreckingBall.type(), 0), wreckingBall,
             0, 0, 0x80).blocked());
     }
 
@@ -108,17 +120,51 @@ final class EntityBackgroundCollisionResolverTest {
             0, 0, PhysicsFlags.SOLID).blocked());
     }
 
+    @Test
+    void leftCollisionResultUsesTheLeftDirectionFlag() {
+        RoomEntity entity = entity(0x30, 0);
+        EntityBackgroundCollisionResult result = resolve(
+            tables(0, 0, 0, 0, entity.type(), 0), entity,
+            EntityBackgroundCollisionResult.LEFT, 0, 0, PhysicsFlags.SOLID);
+
+        assertTrue(result.blocked());
+        assertEquals(EntityBackgroundCollisionResult.LEFT, result.direction());
+        assertEquals(0x02, result.collisionFlag());
+    }
+
     private static RomTables tables(int fineRow0, int fineRow1,
                                     int fineRow2, int fineRow3,
                                     int entityType, int options) {
+        return tablesWithFineRows(
+            new int[] {0, 0, 0, 0},
+            new int[] {fineRow0, fineRow1, fineRow2, fineRow3},
+            entityType, options);
+    }
+
+    private static RomTables tablesWithOpenDoorFineRow(
+            int openDoorRow0, int openDoorRow1, int openDoorRow2, int openDoorRow3,
+            int fineRow0, int fineRow1, int fineRow2, int fineRow3,
+            int entityType, int options) {
+        return tablesWithFineRows(
+            new int[] {openDoorRow0, openDoorRow1, openDoorRow2, openDoorRow3},
+            new int[] {fineRow0, fineRow1, fineRow2, fineRow3},
+            entityType, options);
+    }
+
+    private static RomTables tablesWithFineRows(int[] openDoorRow, int[] fineRow,
+                                                int entityType, int options) {
         byte[] rom = new byte[0x100000];
         int fineOffset = RomBank.romOffset(0x03, 0x7A85) + (0x80 - 0x7C) * 4;
-        rom[fineOffset] = (byte) fineRow0;
-        rom[fineOffset + 1] = (byte) fineRow1;
-        rom[fineOffset + 2] = (byte) fineRow2;
-        rom[fineOffset + 3] = (byte) fineRow3;
+        writeFineRow(rom, fineOffset - (0x80 - 0x7C) * 4, openDoorRow);
+        writeFineRow(rom, fineOffset, fineRow);
         rom[RomBank.romOffset(0x03, 0x42F1) + entityType] = (byte) options;
         return RomTables.loadFromRom(rom);
+    }
+
+    private static void writeFineRow(byte[] rom, int offset, int[] row) {
+        for (int quadrant = 0; quadrant < row.length; quadrant++) {
+            rom[offset + quadrant] = (byte) row[quadrant];
+        }
     }
 
     private static RoomEntity entity(int type, int z) {
@@ -128,8 +174,15 @@ final class EntityBackgroundCollisionResolverTest {
 
     private static EntityBackgroundCollisionResult resolve(
             RomTables tables, RoomEntity entity, int sampleX, int sampleY, int physics) {
+        return resolve(tables, entity, EntityBackgroundCollisionResult.RIGHT,
+            sampleX, sampleY, physics);
+    }
+
+    private static EntityBackgroundCollisionResult resolve(
+            RomTables tables, RoomEntity entity, int direction,
+            int sampleX, int sampleY, int physics) {
         return new EntityBackgroundCollisionResolver(tables).resolve(
-            entity, EntityBackgroundCollisionResult.RIGHT,
+            entity, direction,
             new EntityCollisionPointProbe.Sample(sampleX, sampleY), 0x22, physics);
     }
 }
