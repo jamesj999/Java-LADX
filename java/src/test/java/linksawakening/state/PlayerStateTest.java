@@ -1,7 +1,11 @@
 package linksawakening.state;
 
+import linksawakening.save.SaveRamLayout;
+import linksawakening.save.SaveRamImage;
+import linksawakening.save.SaveSlotState;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -259,5 +263,68 @@ final class PlayerStateTest {
         for (int slot = 0; slot < PlayerState.SUBSCREEN_SLOT_COUNT; slot++) {
             assertEquals(PlayerState.INVENTORY_EMPTY, playerState.subscreenItem(slot));
         }
+    }
+
+    @Test
+    void applySavedGameReplacesPersistentFieldsAndClearsTransientRuntimeState() {
+        PlayerState playerState = new PlayerState();
+        playerState.setActivePowerUp(PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER);
+        playerState.setInvincibilityCounter(0x40);
+        playerState.setRunningWithPegasusBoots(true);
+        playerState.applyEntityPickup(0x2D);
+        playerState.applyEntityPickup(0x2E);
+
+        byte[] bytes = SaveRamImage.empty().bytes();
+        int main = SaveRamLayout.slotOffset(0) + SaveRamLayout.mainOffset();
+        bytes[main + SaveRamLayout.MAIN_ITEM_B_OFFSET] = (byte) PlayerState.INVENTORY_BOW;
+        bytes[main + SaveRamLayout.MAIN_ITEM_A_OFFSET] = (byte) PlayerState.INVENTORY_HOOKSHOT;
+        for (int slot = 0; slot < PlayerState.SUBSCREEN_SLOT_COUNT; slot++) {
+            bytes[main + SaveRamLayout.MAIN_SUBSCREEN_OFFSET + slot] = (byte) (0x30 + slot);
+        }
+        bytes[main + SaveRamLayout.MAIN_HEALTH_OFFSET] = 17;
+        bytes[main + SaveRamLayout.MAIN_MAX_HEARTS_OFFSET] = 5;
+        bytes[main + SaveRamLayout.MAIN_HEART_PIECES_OFFSET] = 2;
+        bytes[main + SaveRamLayout.MAIN_SEASHELLS_OFFSET] = 19;
+        bytes[main + SaveRamLayout.MAIN_SHIELD_OFFSET] = 2;
+        bytes[main + SaveRamLayout.MAIN_SWORD_OFFSET] = 2;
+        bytes[main + SaveRamLayout.MAIN_ARROWS_OFFSET] = 4;
+        bytes[main + SaveRamLayout.MAIN_MAX_ARROWS_OFFSET] = 12;
+        bytes[main + SaveRamLayout.MAIN_BOMBS_OFFSET] = 5;
+        bytes[main + SaveRamLayout.MAIN_MAX_BOMBS_OFFSET] = 10;
+        bytes[main + SaveRamLayout.MAIN_MAGIC_POWDER_OFFSET] = 6;
+        bytes[main + SaveRamLayout.MAIN_MAX_MAGIC_POWDER_OFFSET] = 20;
+        bytes[main + SaveRamLayout.MAIN_RUPEE_HIGH_OFFSET] = 0x05;
+        bytes[main + SaveRamLayout.MAIN_RUPEE_LOW_OFFSET] = 0x09;
+        bytes[main + SaveRamLayout.MAIN_NAME_OFFSET] = 1;
+        bytes[main + SaveRamLayout.MAIN_NAME_OFFSET + 1] = 2;
+        bytes[SaveRamLayout.slotOffset(0) + SaveRamLayout.dx3Offset()] = (byte) PlayerState.TUNIC_RED;
+
+        SaveSlotState saved = SaveRamImage.fromBytes(bytes).readSlot(0);
+        playerState.applySavedGame(saved);
+
+        assertEquals(509, playerState.rupees());
+        assertEquals(17, playerState.health());
+        assertEquals(5, playerState.maxHearts());
+        assertEquals(2, playerState.heartPieces());
+        assertEquals(19, playerState.seashells());
+        assertEquals(PlayerState.INVENTORY_BOW, playerState.itemB());
+        assertEquals(PlayerState.INVENTORY_HOOKSHOT, playerState.itemA());
+        assertEquals(0x30, playerState.subscreenItem(0));
+        assertEquals(2, playerState.shieldLevel());
+        assertEquals(2, playerState.swordLevel());
+        assertEquals(4, playerState.arrowCount());
+        assertEquals(12, playerState.maxArrows());
+        assertEquals(5, playerState.bombCount());
+        assertEquals(10, playerState.maxBombs());
+        assertEquals(6, playerState.magicPowderCount());
+        assertEquals(20, playerState.maxMagicPowder());
+        assertEquals(PlayerState.TUNIC_RED, playerState.tunicType());
+        assertEquals(0, playerState.invincibilityCounter());
+        assertEquals(PlayerState.ACTIVE_POWER_UP_NONE, playerState.activePowerUp());
+        assertFalse(playerState.runningWithPegasusBoots());
+        assertEquals(0, playerState.addHealthBuffer());
+        assertEquals(0, playerState.addRupeeBuffer());
+        assertEquals(0, playerState.subtractHealthBuffer());
+        assertArrayEquals(new int[] {1, 2, 0, 0, 0}, saved.nameBytes());
     }
 }

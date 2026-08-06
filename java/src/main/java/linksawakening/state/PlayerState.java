@@ -1,6 +1,9 @@
 package linksawakening.state;
 
+import linksawakening.save.SaveSlotState;
+
 import java.util.Arrays;
+import java.util.Objects;
 
 public final class PlayerState {
 
@@ -301,8 +304,16 @@ public final class PlayerState {
         return heartPieces;
     }
 
+    public void setHeartPieces(int value) {
+        heartPieces = clamp(value, 0, 3);
+    }
+
     public int seashells() {
         return seashells;
+    }
+
+    public void setSeashells(int value) {
+        seashells = clamp(value, 0, 99);
     }
 
     public int activePowerUp() {
@@ -351,6 +362,47 @@ public final class PlayerState {
 
     public void setItemB(int inventoryId) {
         itemB = inventoryId & 0xFF;
+    }
+
+    public void setSubscreenItems(int[] items) {
+        Objects.requireNonNull(items, "items");
+        if (items.length != SUBSCREEN_SLOT_COUNT) {
+            throw new IllegalArgumentException("Expected " + SUBSCREEN_SLOT_COUNT
+                + " subscreen items, got " + items.length);
+        }
+        for (int index = 0; index < items.length; index++) {
+            subscreen[index] = items[index] & 0xFF;
+        }
+    }
+
+    /** Applies the persistent fields currently represented by the Java model. */
+    public void applySavedGame(SaveSlotState saved) {
+        Objects.requireNonNull(saved, "saved");
+        setMaxHearts(saved.maxHearts());
+        setHealth(saved.health());
+        setRupees(saved.rupees());
+        setHeartPieces(saved.heartPieces());
+        setSeashells(saved.seashells());
+        setSwordLevel(saved.swordLevel());
+        setShieldLevel(saved.shieldLevel());
+        setItemA(saved.itemA());
+        setItemB(saved.itemB());
+        setSubscreenItems(saved.subscreen());
+        setMaxArrows(saved.maxArrows());
+        setArrowCount(saved.arrowCount());
+        setMaxBombs(saved.maxBombs());
+        setBombCount(saved.bombCount());
+        setMaxMagicPowder(saved.maxMagicPowder());
+        setMagicPowderCount(saved.magicPowderCount());
+        setTunicType(saved.tunicType());
+
+        invincibilityCounter = 0;
+        activePowerUp = ACTIVE_POWER_UP_NONE;
+        runningWithPegasusBoots = false;
+        addHealthBuffer = 0;
+        subtractHealthBuffer = 0;
+        addRupeeBuffer = 0;
+        powerUpHits = 0;
     }
 
     public int subscreenItem(int slotIndex) {

@@ -297,6 +297,15 @@ public final class Link implements RocsFeather.JumpTarget {
         return direction;
     }
 
+    public void setDirection(int newDirection) {
+        if (newDirection < DIRECTION_DOWN || newDirection > DIRECTION_RIGHT) {
+            throw new IllegalArgumentException("Invalid Link direction: " + newDirection);
+        }
+        direction = newDirection;
+        walkTickCounter = 0;
+        walkFrame = 0;
+    }
+
     public boolean isAirborne() {
         return airborne;
     }

@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
@@ -214,6 +215,17 @@ final class LinkTest {
         link.update();
 
         assertEquals(Link.DIRECTION_RIGHT, link.direction());
+    }
+
+    @Test
+    void savedLoadsCanRestoreFacingAndRejectInvalidDirections() {
+        Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
+            null, null, null, new PlayerState(), new ItemRegistry());
+
+        link.setDirection(Link.DIRECTION_UP);
+
+        assertEquals(Link.DIRECTION_UP, link.direction());
+        assertThrows(IllegalArgumentException.class, () -> link.setDirection(4));
     }
 
     @Test
