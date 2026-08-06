@@ -67,6 +67,22 @@ final class BackgroundSceneLoaderTest {
         assertEquals(0x00FFBD9C, beach.objectPalettes()[3][3]);
     }
 
+    @Test
+    void shippedRomFileMenuScenesDecodeToFullMapsAndPaletteBlocks() {
+        BackgroundSceneLoader loader = new BackgroundSceneLoader(loadRom());
+
+        BackgroundScene selection = loader.load(BackgroundSceneCatalog.FILE_SELECTION);
+        BackgroundScene commands = loader.load(BackgroundSceneCatalog.FILE_SELECTION_COMMANDS);
+        BackgroundScene creation = loader.load(BackgroundSceneCatalog.FILE_CREATION);
+
+        for (BackgroundScene scene : new BackgroundScene[] { selection, commands, creation }) {
+            assertEquals(32 * 32, scene.tilemap().length);
+            assertEquals(32 * 32, scene.attrmap().length);
+            assertEquals(8, scene.palettes().length);
+            assertEquals(8, scene.objectPalettes().length);
+        }
+    }
+
     private static byte[] loadRom() {
         try (var stream = BackgroundSceneLoaderTest.class.getClassLoader().getResourceAsStream("rom/azle.gbc")) {
             if (stream == null) {
