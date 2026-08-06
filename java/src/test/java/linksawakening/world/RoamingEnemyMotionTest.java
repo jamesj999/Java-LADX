@@ -147,6 +147,40 @@ final class RoamingEnemyMotionTest {
         assertEquals(source.y(), consumed.entity().y());
     }
 
+    @Test
+    void stateAwareRichCollisionReceivesTheRoamingIgnoreHitsCountdown() {
+        RoamingEnemyMotion motion = new RoamingEnemyMotion();
+        RoomEntity source = entity(0, 0x09, 0x40, 0x40);
+        motion.setStateForTest(0, 0, 0x08, 0, 0, 0);
+        AtomicInteger observedIgnoreHits = new AtomicInteger(-1);
+
+        RoomEntityBackgroundInteraction interaction = new RoomEntityBackgroundInteraction() {
+            @Override
+            public EntityBackgroundCollisionResult probe(RoomEntity entity, int direction,
+                                                           int nextX, int nextY) {
+                return EntityBackgroundCollisionResult.passable(direction, 0, nextX, nextY);
+            }
+
+            @Override
+            public EntityBackgroundCollisionResult probe(RoomEntity entity, int direction,
+                                                           int nextX, int nextY,
+                                                           int ignoreHitsCountdown) {
+                observedIgnoreHits.set(ignoreHitsCountdown);
+                return EntityBackgroundCollisionResult.blocked(
+                    direction, 0x22, 0x01, nextX, nextY);
+            }
+        };
+
+        motion.advanceWithInteraction(source, 0x50, 0x40, () -> 0x0A,
+            interaction, 0x0A, false);
+        RoamingEnemyMotion.Update blocked = motion.advanceWithInteraction(
+            source, 0x50, 0x40, () -> 0x0A, interaction, 0x0A, false);
+
+        assertEquals(0x0A, observedIgnoreHits.get());
+        assertEquals(source.x(), blocked.entity().x());
+        assertEquals(0x01, motion.collisionFlags(0));
+    }
+
     private static RoomEntity entity(int slot, int type, int x, int y) {
         return new RoomEntity(slot, 0, type, x, y, EntityStatus.ACTIVE,
             EntitySpriteDefinition.unsupported(type), -1);

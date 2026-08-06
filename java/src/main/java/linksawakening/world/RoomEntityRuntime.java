@@ -653,7 +653,7 @@ public final class RoomEntityRuntime {
                         randomByteSupplier, backgroundCollision, creditsGameplay)
                     : roamingEnemyMotion.advanceWithInteraction(entity, linkEntityX,
                         linkEntityY, randomByteSupplier, backgroundInteraction,
-                        creditsGameplay);
+                        enemyIgnoreHitsCountdown[entity.slot()], creditsGameplay);
                 updated = roamingUpdate.entity();
                 if (roamingUpdate.launchRequest() != null) {
                     projectileLaunchRequests.add(roamingUpdate.launchRequest());
