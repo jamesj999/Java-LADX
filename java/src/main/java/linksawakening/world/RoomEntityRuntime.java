@@ -734,11 +734,11 @@ public final class RoomEntityRuntime {
                     entity = slots[index];
                     boolean lifted = tryLiftBombIfRequested(index, bombDecision, linkEntityX,
                         linkEntityY, linkZ, romLinkDirection);
-                    // EntityGetLiftedUp (03:4E35) jp's to EntityLiftedHandler (03:5732),
-                    // whose common tail jp's to label_397B. A successful source lift
-                    // therefore exits EntityThrownHandler before its bounce/recoil work;
-                    // do not run ThrownEntityMotion on the newly lifted entity here.
-                    if (lifted || bombDecision.unloadAfterPresentation()) {
+                    if (lifted) {
+                        applyBombLiftPostActiveThrownWork(index, slots[index], backgroundCollision);
+                        continue;
+                    }
+                    if (bombDecision.unloadAfterPresentation()) {
                         continue;
                     }
                 }
@@ -793,10 +793,11 @@ public final class RoomEntityRuntime {
                     entity = slots[index];
                     boolean lifted = tryLiftBombIfRequested(index, bombDecision, linkEntityX,
                         linkEntityY, linkZ, romLinkDirection);
-                    // The stunned handler has the same source trampoline/JP exit as the
-                    // thrown handler. A successful bomb lift must not fall through to
-                    // recoil, bounce, or the generic stunned countdown path.
-                    if (lifted || bombDecision.unloadAfterPresentation()) {
+                    if (lifted) {
+                        applyBombLiftPostActiveStunnedWork(index, slots[index], backgroundCollision);
+                        continue;
+                    }
+                    if (bombDecision.unloadAfterPresentation()) {
                         continue;
                     }
                 }
@@ -2557,9 +2558,6 @@ public final class RoomEntityRuntime {
     private boolean tryLiftBombIfRequested(int index, BombMotion.Decision decision,
                                             int linkEntityX, int linkEntityY, int linkZ,
                                             int romLinkDirection) {
-        // BombEntityHandler's button path reaches EntityGetLiftedUp, which jumps into
-        // EntityLiftedHandler rather than returning to its caller. The caller models
-        // that non-local return by stopping this entity's current handler after true.
         if (decision.phase() != BombMotion.Phase.NORMAL || !bombButtonHeld) {
             return false;
         }
@@ -2574,6 +2572,39 @@ public final class RoomEntityRuntime {
         slots[index] = advanceLiftedEntity(renderLiftedBomb(slots[index]), linkEntityX,
             linkEntityY, linkZ, romLinkDirection);
         return true;
+    }
+
+    /**
+     * Mirrors the work after BombEntityHandler returns to EntityThrownHandler. The ROM
+     * EntityGetLiftedUp call returns through label_397B to the bomb's BounceOffWalls
+     * continuation, so the wrapper still runs its post-active physics. Its movement is
+     * deliberately applied to a throw-motion copy only: EntityLiftedHandler has already
+     * established the Link-relative position that must remain visible this frame.
+     */
+    private void applyBombLiftPostActiveThrownWork(
+            int index, RoomEntity lifted, RoomEntityBackgroundCollision backgroundCollision) {
+        int slot = lifted.slot();
+        enemyIgnoreHitsCountdown[slot] = 0x02;
+        thrownEntityMotion.advance(lifted, groundInteractionSideScrolling, backgroundCollision);
+        enemyIgnoreHitsCountdown[slot] = 0;
+        // EntityCheckThrowAtTriggers is intentionally outside this Task 5 bridge because
+        // its source behavior mutates room objects. Keep the lifted snapshot authoritative.
+        slots[index] = lifted;
+    }
+
+    /** Mirrors EntityStunnedHandler's recoil/bounce/clear-speed tail after a bomb lift. */
+    private void applyBombLiftPostActiveStunnedWork(
+            int index, RoomEntity lifted, RoomEntityBackgroundCollision backgroundCollision) {
+        if (enemyRecoilMotion.isActive(lifted.slot())) {
+            applyEnemyRecoilIfNeeded(lifted, backgroundCollision);
+        } else if (enemyIgnoreHitsCountdown[lifted.slot()] > 0) {
+            // ApplyRecoilIfNeeded_03 consumes the countdown even when the Java
+            // recoil velocity bridge has no active motion for this slot.
+            enemyIgnoreHitsCountdown[lifted.slot()]--;
+        }
+        thrownEntityMotion.advance(lifted, groundInteractionSideScrolling, backgroundCollision);
+        thrownEntityMotion.clear(lifted.slot());
+        slots[index] = lifted;
     }
 
     private EntitySpriteDefinition spriteDefinitionForEvasiveState(

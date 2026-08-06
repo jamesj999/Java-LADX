@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -131,7 +132,7 @@ final class BombLiftThrowRuntimeTest {
     }
 
     @Test
-    void thrownBombLiftExitsThroughTheLiftedHandlerWithoutASecondThrowStep() throws IOException {
+    void thrownBombLiftRunsPostActiveBounceWithoutASecondThrowStep() throws IOException {
         RoomEntityRuntime runtime = bombRuntime();
         int slot = runtime.spawnBomb(0x40, 0x50, 0, 0);
         fullyLift(runtime, slot);
@@ -139,11 +140,19 @@ final class BombLiftThrowRuntimeTest {
 
         RoomEntity thrown = runtime.snapshot().slots().get(slot);
         int expectedLiftedX = (thrown.x() + 0x10) & 0xFF;
+        AtomicInteger wallQueries = new AtomicInteger();
+        List<EntityStatus> observedStatuses = new ArrayList<>();
         runtime.setBombButtonHeld(true);
         runtime.tick(100, thrown.x(), thrown.y(), () -> 0,
-            (entity, direction, nextX, nextY) -> true, null, 0, 3, 0);
+            (entity, direction, nextX, nextY) -> {
+                wallQueries.incrementAndGet();
+                observedStatuses.add(entity.status());
+                return true;
+            }, null, 0, 3, 0);
 
         RoomEntity lifted = runtime.snapshot().slots().get(slot);
+        assertEquals(1, wallQueries.get());
+        assertEquals(List.of(EntityStatus.LIFTED), observedStatuses);
         assertEquals(slot, lifted.slot());
         assertEquals(EntityStatus.LIFTED, lifted.status());
         assertEquals(expectedLiftedX, lifted.x());
@@ -153,7 +162,7 @@ final class BombLiftThrowRuntimeTest {
     }
 
     @Test
-    void stunnedBombLiftExitsThroughTheLiftedHandlerWithoutASecondBounceStep()
+    void stunnedBombLiftRunsPostActiveBounceWithoutASecondBounceStep()
         throws IOException {
         RoomEntityRuntime runtime = bombRuntime();
         int slot = runtime.spawnBomb(0x40, 0x50, 0, 0);
@@ -171,11 +180,25 @@ final class BombLiftThrowRuntimeTest {
 
         RoomEntity stunned = runtime.snapshot().slots().get(slot);
         int expectedLiftedX = (stunned.x() + 0x10) & 0xFF;
+        runtime.setEnemyIgnoreHitsCountdownForTest(slot, 0x02);
+        AtomicInteger wallQueries = new AtomicInteger();
+        List<EntityStatus> observedStatuses = new ArrayList<>();
         runtime.setBombButtonHeld(true);
-        runtime.tick(frame, stunned.x(), stunned.y(), () -> 0, alwaysBlocked,
+        runtime.tick(frame, stunned.x(), stunned.y(), () -> 0,
+            (entity, direction, nextX, nextY) -> {
+                wallQueries.incrementAndGet();
+                observedStatuses.add(entity.status());
+                return true;
+            },
             null, 0, 3, 0);
 
         RoomEntity lifted = runtime.snapshot().slots().get(slot);
+        // The thrown motion is already stopped when EntityBecomeStunned runs, so the
+        // source bounce has no wall probe here. ApplyRecoilIfNeeded still consumes the
+        // active ignore-hit countdown before the lifted snapshot is retained.
+        assertEquals(0, wallQueries.get());
+        assertEquals(List.of(), observedStatuses);
+        assertEquals(0, runtime.enemyIgnoreHitsCountdown(slot));
         assertEquals(slot, lifted.slot());
         assertEquals(EntityStatus.LIFTED, lifted.status());
         assertEquals(expectedLiftedX, lifted.x());
