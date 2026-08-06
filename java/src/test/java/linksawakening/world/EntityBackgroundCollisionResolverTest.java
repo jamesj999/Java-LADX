@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 final class EntityBackgroundCollisionResolverTest {
 
     @Test
-    void fineCollisionUsesTheRomShapeQuadrantAtTheSamplePoint() {
+    void fineAndOpenDoorCollisionUseTheRomShapeQuadrantAtTheSamplePoint() {
         RomTables tables = tables(1, 0, 1, 0, 0x30, 0);
         RoomEntity entity = entity(0x30, 0);
 
@@ -21,15 +21,11 @@ final class EntityBackgroundCollisionResolverTest {
         assertFalse(resolve(tables, entity, 0x08, 0x00, 0x80).blocked());
         assertTrue(resolve(tables, entity, 0x00, 0x08, 0x80).blocked());
         assertFalse(resolve(tables, entity, 0x08, 0x08, 0x80).blocked());
-    }
 
-    @Test
-    void normalEntitiesUseTheRomFineShapeForOpenDoors() {
-        RoomEntity entity = entity(0x30, 0);
-        RomTables tables = tablesWithOpenDoorFineRow(
+        RomTables openDoorTables = tablesWithOpenDoorFineRow(
             1, 0, 1, 0, 0, 0, 0, 0, entity.type(), 0);
-
-        assertTrue(resolve(tables, entity, 0, 0, 0x7C).blocked());
+        assertTrue(resolve(openDoorTables, entity, 0, 0, 0x7C).blocked());
+        assertFalse(resolve(openDoorTables, entity, 0x08, 0x00, 0x7C).blocked());
     }
 
     @Test
@@ -99,16 +95,10 @@ final class EntityBackgroundCollisionResolverTest {
     }
 
     @Test
-    void openDoorsAreSolidForBothSparkDirectionsAndBosses() {
-        RoomEntity normalEntity = entity(0x30, 0);
+    void openDoorsAreSolidForSparksAndBosses() {
         RoomEntity counterClockwiseSpark = entity(0x16, 0);
         RoomEntity clockwiseSpark = entity(0x17, 0);
         RoomEntity boss = entity(0x40, 0);
-        RomTables normalEntityTables = tablesWithOpenDoorFineRow(
-            1, 0, 1, 0, 0, 0, 0, 0, normalEntity.type(), 0);
-
-        assertTrue(resolve(normalEntityTables, normalEntity, 0, 0, 0x7C).blocked());
-        assertFalse(resolve(normalEntityTables, normalEntity, 0x08, 0x00, 0x7C).blocked());
 
         assertTrue(resolve(tables(0, 0, 0, 0, counterClockwiseSpark.type(), 0),
             counterClockwiseSpark, 0, 0, 0x7C).blocked());
