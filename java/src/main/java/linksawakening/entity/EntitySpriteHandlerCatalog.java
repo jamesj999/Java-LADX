@@ -292,20 +292,18 @@ public final class EntitySpriteHandlerCatalog {
         return decodePair(0x00, 0x03, 0x4C44, 2, 0);
     }
 
+    /** Decodes the bank-$03 {@code Data_003_5488} ordinary death display list. */
     public EntitySpriteDefinition forDeathEntity() {
         return decodeRectangle(0x00, 0x03, 0x5488, 4, 4, 0);
     }
 
+    /**
+     * Decodes the bank-$03 {@code Data_003_54C8} power-recoil death display list.
+     * The source's five four-entry groups are exposed as four variants by
+     * concatenating groups 3 and 4 into the final eight-entry frame.
+     */
     public EntitySpriteDefinition forPowerRecoilDeathEntity() {
-        EntitySpriteDefinition source = decodeRectangle(0x00, 0x03, 0x54C8, 5, 4, 0);
-        List<List<EntitySpriteDefinition.RectangleSprite>> variants =
-            new ArrayList<>(source.rectangleVariants().subList(0, 3));
-        List<EntitySpriteDefinition.RectangleSprite> finalFrame =
-            new ArrayList<>(source.rectangleVariant(3));
-        finalFrame.addAll(source.rectangleVariant(4));
-        variants.add(List.copyOf(finalFrame));
-        return new EntitySpriteDefinition(0x00, 0x03, 0x54C8,
-            EntitySpriteDefinition.Shape.RECTANGLE, 0, List.of(), variants);
+        return decodePowerRecoilDeathRectangle();
     }
 
     /** The green Zol list selected after Slime Eye has split its Zol. */
@@ -382,6 +380,32 @@ public final class EntitySpriteHandlerCatalog {
     public EntitySpriteDefinition decodeRectangle(int entityType, int bank, int address,
                                                    int variantCount, int spriteCount,
                                                    int initialVariant) {
+        List<List<EntitySpriteDefinition.RectangleSprite>> rectangleVariants =
+            decodeRectangleVariants(entityType, bank, address, variantCount, spriteCount,
+                initialVariant);
+        return new EntitySpriteDefinition(entityType, bank, address,
+            EntitySpriteDefinition.Shape.RECTANGLE, initialVariant, List.of(), rectangleVariants);
+    }
+
+    private EntitySpriteDefinition decodePowerRecoilDeathRectangle() {
+        int entityType = 0x00;
+        int bank = 0x03;
+        int address = 0x54C8;
+        List<List<EntitySpriteDefinition.RectangleSprite>> sourceVariants =
+            decodeRectangleVariants(entityType, bank, address, 5, 4, 0);
+        List<List<EntitySpriteDefinition.RectangleSprite>> variants =
+            new ArrayList<>(sourceVariants.subList(0, 3));
+        List<EntitySpriteDefinition.RectangleSprite> finalFrame =
+            new ArrayList<>(sourceVariants.get(3));
+        finalFrame.addAll(sourceVariants.get(4));
+        variants.add(List.copyOf(finalFrame));
+        return new EntitySpriteDefinition(entityType, bank, address,
+            EntitySpriteDefinition.Shape.RECTANGLE, 0, List.of(), variants);
+    }
+
+    private List<List<EntitySpriteDefinition.RectangleSprite>> decodeRectangleVariants(
+            int entityType, int bank, int address, int variantCount, int spriteCount,
+            int initialVariant) {
         if (spriteCount <= 0) {
             throw new IllegalArgumentException("Rectangle display lists need sprites");
         }
@@ -409,8 +433,7 @@ public final class EntitySpriteHandlerCatalog {
             }
             rectangleVariants.add(List.copyOf(sprites));
         }
-        return new EntitySpriteDefinition(entityType, bank, address,
-            EntitySpriteDefinition.Shape.RECTANGLE, initialVariant, List.of(), rectangleVariants);
+        return List.copyOf(rectangleVariants);
     }
 
     private int validateDisplayList(int entityType, int bank, int address,
