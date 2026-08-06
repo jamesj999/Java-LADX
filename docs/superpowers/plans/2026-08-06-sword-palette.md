@@ -144,7 +144,7 @@ Expected result: `BUILD SUCCESSFUL`; the live construction has no call to `Sword
 
 Add a dated section documenting the bank/address, row mapping, live `Main` wiring, framebuffer invariants, and the remaining GBC palette-upload/Color Dungeon non-goals.
 
-- [ ] **Step 2: Run final hygiene checks**
+- [x] **Step 2: Run final hygiene checks**
 
 Run from the worktree root:
 
