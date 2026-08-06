@@ -67,9 +67,9 @@ the shipped ROM rather than a Java fixture, then commit:
 
 Test a pure phase decision for unsigned transition countdown values:
 
-  - `$A0` and `$23` select the normal bomb;
-  - `$22` and `$18` select the warning pair;
-  - `$17` selects explosion variant `$01`, `$0F` selects `$01`, `$10` selects `$02`, `$14` selects `$03`, and `$00` selects `$00` only if the caller asks for presentation before unload;
+  - `$A0` and `$22` select the normal bomb;
+  - `$21` and `$18` select the warning pair, while `$22` remains normal;
+  - `$17` selects explosion variant `$03`, `$14` selects `$03`, `$13` selects `$02`, `$10` selects `$02`, `$0F` selects `$01`, `$08` selects `$01`, `$07` selects `$00`, and `$00` selects `$00` before unload;
   - `$18` emits the one-shot explosion-sound transition; and
   - zero is an unload decision after the explosion presentation tick.
 

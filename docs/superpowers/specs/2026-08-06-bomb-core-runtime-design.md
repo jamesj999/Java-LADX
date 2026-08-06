@@ -67,16 +67,17 @@ ROM display definition.
 
 The source boundaries are:
 
-- countdown `$A0` down through `$23`: normal bomb presentation and bouncing
+- countdown `$A0` down through `$22`: normal bomb presentation and bouncing
   physics;
-- countdown `$22` down through `$18`: the small two-sprite
+- countdown `$21` down through `$18`: the small two-sprite
   `BombRightBeforeExplodingSprite` warning presentation is rendered in the
   same handler;
 - countdown `$18`: decrement and play `NOISE_SFX_EXPLOSION` (`$0C`), matching
   `BombEntityHandler`'s transition into the explosion handler;
 - countdown `$17` down through `$00`: the explosion rectangle is selected by
-  the exact ROM `ExplosionSpriteVariantFrames` table; and
-- countdown `$00`: unload the entity.
+  the exact ROM `ExplosionSpriteVariantFrames` table. Its ranges are
+  `$17..$14 → 3`, `$13..$10 → 2`, `$0F..$08 → 1`, and `$07..$00 → 0`; and
+- countdown `$00`: render the final explosion frame, then unload the entity.
 
 The explosion handler's source interaction window, countdown `$16` through
 `$0E`, will be represented as an explicit runtime event/phase boundary. The
