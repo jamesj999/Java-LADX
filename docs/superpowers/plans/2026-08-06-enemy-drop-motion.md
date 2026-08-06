@@ -29,7 +29,7 @@ void topDownLaunchUsesFixedPointZAndRomGravity() {
 
     entity = motion.advance(entity, 0, 0, false);
 
-    assertEquals(0x41, entity.z());
+    assertEquals(0x01, entity.z());
     assertEquals(0x16, motion.speedZ(0));
 }
 
