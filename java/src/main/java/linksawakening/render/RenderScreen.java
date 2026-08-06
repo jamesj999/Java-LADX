@@ -3,5 +3,6 @@ package linksawakening.render;
 public enum RenderScreen {
     TITLE,
     OVERWORLD,
-    CUTSCENE
+    CUTSCENE,
+    FILE_MENU
 }

@@ -4,6 +4,7 @@ import linksawakening.cutscene.IntroFrameSnapshot;
 import linksawakening.cutscene.IntroSprite;
 import linksawakening.cutscene.TitleReveal;
 import linksawakening.gpu.Framebuffer;
+import linksawakening.ui.FileMenuFrameSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +19,8 @@ public final class GameFrameSceneBuilder {
         List<RenderLayer> layers = new ArrayList<>();
         if (state.screen() == RenderScreen.OVERWORLD && state.room() != null) {
             addOverworldLayers(layers, state);
-        } else if ((state.introFrameSnapshot() != null || state.tilemap() != null)
+        } else if (state.fileMenuFrame() != null
+            || (state.introFrameSnapshot() != null || state.tilemap() != null)
             && (state.introFrameSnapshot() != null || state.attrmap() != null)
             && (state.introFrameSnapshot() != null || state.bgPalettes() != null)) {
             addBackgroundSceneLayers(layers, state);
@@ -55,17 +57,24 @@ public final class GameFrameSceneBuilder {
     }
 
     private static void addBackgroundSceneLayers(List<RenderLayer> layers, GameFrameState state) {
+        FileMenuFrameSnapshot fileMenu = state.fileMenuFrame();
         IntroFrameSnapshot snapshot = state.introFrameSnapshot();
-        int scrollX = snapshot != null
+        int scrollX = fileMenu != null ? 0 : snapshot != null
             ? snapshot.scrollX()
             : state.cutsceneManager() != null ? state.cutsceneManager().scrollX() : 0;
-        int scrollY = snapshot != null
+        int scrollY = fileMenu != null ? 0 : snapshot != null
             ? snapshot.scrollY() + snapshot.verticalWaveOffset()
             : state.cutsceneManager() != null ? state.cutsceneManager().scrollY() : 0;
-        int[] tilemap = snapshot != null ? snapshot.tilemap() : titleRevealTilemap(state);
-        int[] attrmap = snapshot != null ? snapshot.attrmap() : state.attrmap();
-        int[][] palettes = snapshot != null ? snapshot.bgPalettes() : state.bgPalettes();
-        int[] lineScrollX = snapshot != null
+        int[] tilemap = fileMenu != null
+            ? fileMenu.tilemap()
+            : snapshot != null ? snapshot.tilemap() : titleRevealTilemap(state);
+        int[] attrmap = fileMenu != null
+            ? fileMenu.attrmap()
+            : snapshot != null ? snapshot.attrmap() : state.attrmap();
+        int[][] palettes = fileMenu != null
+            ? fileMenu.bgPalettes()
+            : snapshot != null ? snapshot.bgPalettes() : state.bgPalettes();
+        int[] lineScrollX = fileMenu != null ? null : snapshot != null
             ? resizeLineScroll(snapshot.lineScrollX(), Framebuffer.HEIGHT)
             : state.cutsceneManager() != null
                 ? state.cutsceneManager().lineScrollX(Framebuffer.HEIGHT)
@@ -80,14 +89,18 @@ public final class GameFrameSceneBuilder {
                 BG_MAP_WIDTH, BG_MAP_HEIGHT, VIEWPORT_TILE_WIDTH, VIEWPORT_TILE_HEIGHT,
                 scrollX, scrollY));
         }
-        int[][] objectPalettes = snapshot != null ? snapshot.objPalettes() : state.objPalettes();
+        int[][] objectPalettes = fileMenu != null
+            ? fileMenu.objectPalettes()
+            : snapshot != null ? snapshot.objPalettes() : state.objPalettes();
         if (objectPalettes != null) {
-            Iterable<IntroSprite> sprites = snapshot != null
+            Iterable<IntroSprite> sprites = fileMenu != null
+                ? fileMenu.sprites()
+                : snapshot != null
                 ? snapshot.sprites()
                 : state.cutsceneManager() != null
                     ? state.cutsceneManager().sprites()
                     : List.of();
-            if (snapshot != null || state.cutsceneManager() != null) {
+            if (fileMenu != null || snapshot != null || state.cutsceneManager() != null) {
                 layers.add(new CutsceneSpriteRenderLayer(sprites, objectPalettes));
             }
         }

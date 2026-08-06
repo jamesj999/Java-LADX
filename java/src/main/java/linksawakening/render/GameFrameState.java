@@ -4,6 +4,7 @@ import linksawakening.cutscene.CutsceneManager;
 import linksawakening.cutscene.IntroFrameSnapshot;
 import linksawakening.dialog.DialogController;
 import linksawakening.entity.Link;
+import linksawakening.ui.FileMenuFrameSnapshot;
 import linksawakening.ui.InventoryController;
 import linksawakening.vfx.CutLeavesEffectRenderer;
 import linksawakening.vfx.TransientVfxSystem;
@@ -30,18 +31,19 @@ public record GameFrameState(
     InventoryController inventoryController,
     DialogController dialogController,
     int frameCounter,
-    IntroFrameSnapshot introFrameSnapshot
+    IntroFrameSnapshot introFrameSnapshot,
+    FileMenuFrameSnapshot fileMenuFrame
 ) {
     public static GameFrameState empty() {
         return new GameFrameState(RenderScreen.TITLE, null, null, null, null, null, null, null,
-            null, null, null, null, null, null, null, null, 0, null);
+            null, null, null, null, null, null, null, null, 0, null, null);
     }
 
     public GameFrameState withScreen(RenderScreen screen) {
         return new GameFrameState(screen, tilemap, attrmap, bgPalettes, objPalettes, cutsceneManager,
             room, scrollController, transitionController, link, transientVfxSystem,
             cutLeavesEffectRenderer, transientVfxPalette, droppableRupeeSystem,
-            inventoryController, dialogController, frameCounter, introFrameSnapshot);
+            inventoryController, dialogController, frameCounter, introFrameSnapshot, fileMenuFrame);
     }
 
     public GameFrameState withBackground(int[] tilemap, int[] attrmap, int[][] bgPalettes,
@@ -50,7 +52,7 @@ public record GameFrameState(
             cutsceneManager, room, scrollController, transitionController, link,
             transientVfxSystem, cutLeavesEffectRenderer, transientVfxPalette,
             droppableRupeeSystem, inventoryController, dialogController, frameCounter,
-            introFrameSnapshot);
+            introFrameSnapshot, fileMenuFrame);
     }
 
     public GameFrameState withCutsceneManager(CutsceneManager cutsceneManager) {
@@ -58,7 +60,7 @@ public record GameFrameState(
             cutsceneManager, room, scrollController, transitionController, link,
             transientVfxSystem, cutLeavesEffectRenderer, transientVfxPalette,
             droppableRupeeSystem, inventoryController, dialogController, frameCounter,
-            introFrameSnapshot);
+            introFrameSnapshot, fileMenuFrame);
     }
 
     public GameFrameState withRoom(RoomRenderSnapshot room, ScrollController scrollController,
@@ -67,7 +69,7 @@ public record GameFrameState(
             cutsceneManager, room, scrollController, transitionController, link,
             transientVfxSystem, cutLeavesEffectRenderer, transientVfxPalette,
             droppableRupeeSystem, inventoryController, dialogController, frameCounter,
-            introFrameSnapshot);
+            introFrameSnapshot, fileMenuFrame);
     }
 
     public GameFrameState withLink(Link link) {
@@ -75,7 +77,7 @@ public record GameFrameState(
             cutsceneManager, room, scrollController, transitionController, link,
             transientVfxSystem, cutLeavesEffectRenderer, transientVfxPalette,
             droppableRupeeSystem, inventoryController, dialogController, frameCounter,
-            introFrameSnapshot);
+            introFrameSnapshot, fileMenuFrame);
     }
 
     public GameFrameState withTransientVfx(TransientVfxSystem transientVfxSystem,
@@ -85,7 +87,7 @@ public record GameFrameState(
             cutsceneManager, room, scrollController, transitionController, link,
             transientVfxSystem, cutLeavesEffectRenderer, transientVfxPalette,
             droppableRupeeSystem, inventoryController, dialogController, frameCounter,
-            introFrameSnapshot);
+            introFrameSnapshot, fileMenuFrame);
     }
 
     public GameFrameState withDroppableRupees(DroppableRupeeSystem droppableRupeeSystem) {
@@ -93,7 +95,7 @@ public record GameFrameState(
             cutsceneManager, room, scrollController, transitionController, link,
             transientVfxSystem, cutLeavesEffectRenderer, transientVfxPalette,
             droppableRupeeSystem, inventoryController, dialogController, frameCounter,
-            introFrameSnapshot);
+            introFrameSnapshot, fileMenuFrame);
     }
 
     public GameFrameState withInventoryController(InventoryController inventoryController) {
@@ -101,7 +103,7 @@ public record GameFrameState(
             cutsceneManager, room, scrollController, transitionController, link,
             transientVfxSystem, cutLeavesEffectRenderer, transientVfxPalette,
             droppableRupeeSystem, inventoryController, dialogController, frameCounter,
-            introFrameSnapshot);
+            introFrameSnapshot, fileMenuFrame);
     }
 
     public GameFrameState withDialogController(DialogController dialogController) {
@@ -109,7 +111,7 @@ public record GameFrameState(
             cutsceneManager, room, scrollController, transitionController, link,
             transientVfxSystem, cutLeavesEffectRenderer, transientVfxPalette,
             droppableRupeeSystem, inventoryController, dialogController, frameCounter,
-            introFrameSnapshot);
+            introFrameSnapshot, fileMenuFrame);
     }
 
     public GameFrameState withFrameCounter(int frameCounter) {
@@ -117,7 +119,7 @@ public record GameFrameState(
             cutsceneManager, room, scrollController, transitionController, link,
             transientVfxSystem, cutLeavesEffectRenderer, transientVfxPalette,
             droppableRupeeSystem, inventoryController, dialogController,
-            frameCounter & 0xFF, introFrameSnapshot);
+            frameCounter & 0xFF, introFrameSnapshot, fileMenuFrame);
     }
 
     public GameFrameState withIntroFrameSnapshot(IntroFrameSnapshot introFrameSnapshot) {
@@ -125,6 +127,14 @@ public record GameFrameState(
             cutsceneManager, room, scrollController, transitionController, link,
             transientVfxSystem, cutLeavesEffectRenderer, transientVfxPalette,
             droppableRupeeSystem, inventoryController, dialogController, frameCounter,
-            introFrameSnapshot);
+            introFrameSnapshot, fileMenuFrame);
+    }
+
+    public GameFrameState withFileMenuFrame(FileMenuFrameSnapshot fileMenuFrame) {
+        return new GameFrameState(screen, tilemap, attrmap, bgPalettes, objPalettes,
+            cutsceneManager, room, scrollController, transitionController, link,
+            transientVfxSystem, cutLeavesEffectRenderer, transientVfxPalette,
+            droppableRupeeSystem, inventoryController, dialogController, frameCounter,
+            introFrameSnapshot, fileMenuFrame);
     }
 }

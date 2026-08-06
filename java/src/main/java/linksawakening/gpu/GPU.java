@@ -131,6 +131,17 @@ public class GPU {
     }
 
     /**
+     * Load the base and file-menu tile sheets using the destinations in
+     * LoadMenuTiles (bank0.asm:$2C03).
+     */
+    public void loadMenuTiles(byte[] romData) {
+        loadBaseOverworldTiles(romData);
+        loadTilesFromROM(romData, 0x0F | 0x20, 0x4000, 0x40, 0x080);
+        loadTilesFromROM(romData, 0x0F | 0x20, 0x5000, 0x80, 0x100);
+        loadTilesFromROM(romData, 0x0C | 0x20, 0x47A0, 0x02, 0x0E0);
+    }
+
+    /**
      * Load the four standard entity sheets into the four OAM sprite slots.
      * Each selector is the ROM's {@code bbtttttt} value from
      * {@code wLoadedEntitySpritesheets}; {@code $FF} keeps that slot intact.
