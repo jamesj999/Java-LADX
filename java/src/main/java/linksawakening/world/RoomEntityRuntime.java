@@ -2286,6 +2286,13 @@ public final class RoomEntityRuntime {
         return dyingCountdown[slot];
     }
 
+    boolean powerRecoilDeath(int slot) {
+        if (slot < 0 || slot >= slots.length) {
+            throw new IllegalArgumentException("Entity slot out of range: " + slot);
+        }
+        return powerRecoilDeath[slot];
+    }
+
     int enemyHealth(int slot) {
         if (slot < 0 || slot >= slots.length) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);

@@ -56,6 +56,98 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void hydratesPowerRecoilDeathStateFromAnInitialDyingEntity() {
+        EntitySpriteDefinition body = pairDefinition(0x09, 2);
+        RoomEntity initialEntity = new RoomEntity(0, 0, 0x09, 64, 64,
+            EntityStatus.DYING, body, 1, 0, 0, 0, 2, true);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(initialEntity));
+
+        assertTrue(runtime.powerRecoilDeath(0));
+        assertEquals(2, runtime.snapshot().slots().get(0).deathSpriteVariant());
+    }
+
+    @Test
+    void colorShellDyingRefreshPreservesDeathPresentationMetadata() throws IOException {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+        EntitySpriteDefinition body = pairDefinition(0xE9, 2);
+        RoomEntity initialEntity = new RoomEntity(0, 0, 0xE9, 64, 64,
+            EntityStatus.ACTIVE, body, 1);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+            snapshot(initialEntity), false, null, catalog);
+
+        runtime.resolveCombat(0, 120, 120, false, true, true,
+            72, 1, 72, 1, new EnemyAttackContext(1, false, true, false, false));
+        assertEquals(EntityStatus.DYING, runtime.snapshot().slots().get(0).status());
+        assertEquals(-1, runtime.snapshot().slots().get(0).deathSpriteVariant());
+        assertTrue(runtime.snapshot().slots().get(0).powerRecoilDeath());
+
+        for (int frame = 1; frame <= 0x30; frame++) {
+            runtime.tick(frame, 120, 120, () -> 0);
+        }
+
+        RoomEntity rebuilt = runtime.snapshot().slots().get(0);
+        assertEquals(EntityStatus.DYING, rebuilt.status());
+        assertEquals(0x10, runtime.dyingCountdown(0));
+        assertEquals(2, rebuilt.deathSpriteVariant());
+        assertTrue(rebuilt.powerRecoilDeath());
+        assertEquals(EntitySpriteDefinition.Shape.RECTANGLE,
+            rebuilt.spriteDefinition().shape());
+    }
+
+    @Test
+    void disablingARecoilDeathClearsItsInternalPowerState() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x19, 64, 64, EntityStatus.ACTIVE,
+                keeseDefinition(), 0)));
+
+        runtime.resolveCombat(0, 120, 120, false, true, true,
+            72, 1, 72, 1, new EnemyAttackContext(1, false, true, false, false));
+        assertTrue(runtime.powerRecoilDeath(0));
+
+        for (int frame = 0; frame < 0x40; frame++) {
+            runtime.tick(frame, 120, 120, sequence(0x00));
+        }
+
+        assertFalse(runtime.snapshot().slots().get(0).loaded());
+        assertFalse(runtime.powerRecoilDeath(0));
+    }
+
+    @Test
+    void clearingThenReusingAProjectileSlotDoesNotRetainPowerDeathState() throws IOException {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+        EntitySpriteDefinition octorok = catalog.forEntityType(
+            0x09, EntityRoomLoader.RoomTable.OVERWORLD, -1);
+        EntitySpriteDefinition keese = catalog.forEntityType(
+            0x19, EntityRoomLoader.RoomTable.OVERWORLD, -1);
+        List<RoomEntity> slots = new ArrayList<>();
+        slots.add(new RoomEntity(0, 0, 0x09, 64, 64, EntityStatus.ACTIVE, octorok, 0));
+        for (int slot = 1; slot < 15; slot++) {
+            slots.add(RoomEntity.disabled(slot));
+        }
+        slots.add(new RoomEntity(15, 1, 0x19, 120, 120, EntityStatus.ACTIVE, keese, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+            new RoomEntitySnapshot(slots), false, null, catalog);
+
+        runtime.resolveCombat(0, 80, 64, false, true, true,
+            112, 16, 112, 16, new EnemyAttackContext(1, false, true, false, false));
+        assertTrue(runtime.powerRecoilDeath(15));
+        runtime.clearEntity(15);
+        assertFalse(runtime.powerRecoilDeath(15));
+
+        runtime.tick(0, 80, 64, () -> 0, false);
+        for (int frame = 1; frame <= 6; frame++) {
+            runtime.tick(frame, 80, 64, () -> 0, false);
+        }
+
+        RoomEntity projectile = runtime.snapshot().slots().get(15);
+        assertEquals(EntityStatus.ACTIVE, projectile.status());
+        assertEquals(0x0A, projectile.type());
+        assertEquals(-1, projectile.deathSpriteVariant());
+        assertFalse(projectile.powerRecoilDeath());
+        assertFalse(runtime.powerRecoilDeath(15));
+    }
+
+    @Test
     void followsPieceOfPowerFrameDrivenPaletteVariant() {
         EntitySpriteDefinition definition = pairDefinition(0x33, 2);
         RoomEntitySnapshot initial = snapshot(
