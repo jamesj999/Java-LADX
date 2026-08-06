@@ -7,8 +7,15 @@ import org.junit.jupiter.api.Test;
 import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class OverworldCollisionTest {
+
+    private static final int ROOM_OBJECTS_BASE = 0x11;
+    private static final int ROOM_OBJECT_ROW_STRIDE = 0x10;
+    private static final int SWITCH_BLOCK_CELL = ROOM_OBJECTS_BASE
+        + 2 * ROOM_OBJECT_ROW_STRIDE + 2;
 
     @Test
     void objectPhysicsLookupUsesThePaddedRoomCoordinateSample() {
@@ -81,5 +88,90 @@ final class OverworldCollisionTest {
         assertEquals(new OverworldCollision.GroundInteractionSample(
             0x42, 0x07, 0x30, 0x30),
             collision.groundInteractionSample(0x40, 0x37));
+    }
+
+    @Test
+    void switchBlockPointCollisionUsesTheRomStateTable() {
+        byte[] rom = romWithSwitchBlockPhysics();
+        RomTables tables = RomTables.loadFromRom(rom);
+        OverworldCollision collision = new OverworldCollision(tables);
+        int[] roomObjects = emptyRoomObjectsArea();
+        collision.setRoom(roomObjects);
+
+        roomObjects[SWITCH_BLOCK_CELL] = 0xDB;
+        collision.setSwitchBlocksState(0x00);
+        assertFalse(collision.pointBlocked(0x20, 0x20));
+
+        roomObjects[SWITCH_BLOCK_CELL] = 0xDC;
+        assertTrue(collision.pointBlocked(0x20, 0x20));
+
+        collision.setSwitchBlocksState(0x02);
+        assertFalse(collision.pointBlocked(0x20, 0x20));
+    }
+
+    @Test
+    void standingOnAMismatchedSwitchBlockTemporarilyPassesItsCollision() {
+        byte[] rom = romWithSwitchBlockPhysics();
+        RomTables tables = RomTables.loadFromRom(rom);
+        OverworldCollision collision = new OverworldCollision(tables);
+        int[] roomObjects = emptyRoomObjectsArea();
+        roomObjects[SWITCH_BLOCK_CELL] = 0xDC;
+        collision.setRoom(roomObjects);
+        collision.setSwitchBlocksState(0x00);
+
+        assertTrue(collision.pointBlocked(0x20, 0x20));
+        assertTrue(collision.refreshLinkGroundInteraction(0x18, 0x14));
+        assertTrue(collision.linkStandingOnSwitchBlock());
+        assertFalse(collision.pointBlocked(0x20, 0x20));
+
+        collision.setSwitchBlocksState(0x02);
+        assertFalse(collision.refreshLinkGroundInteraction(0x18, 0x14));
+        assertFalse(collision.linkStandingOnSwitchBlock());
+    }
+
+    @Test
+    void nonSwitchPhysicsDoesNotUseTheSwitchStateOverride() {
+        byte[] rom = romWithSwitchBlockPhysics();
+        int physicsOffset = RomBank.romOffset(0x08, 0x4AD4);
+        rom[physicsOffset + 0xDC] = 0x01;
+        RomTables tables = RomTables.loadFromRom(rom);
+        OverworldCollision collision = new OverworldCollision(tables);
+        int[] roomObjects = emptyRoomObjectsArea();
+        roomObjects[SWITCH_BLOCK_CELL] = 0xDC;
+        collision.setRoom(roomObjects);
+        collision.setSwitchBlocksState(0x02);
+
+        assertTrue(collision.pointBlocked(0x20, 0x20));
+        assertFalse(collision.refreshLinkGroundInteraction(0x18, 0x14));
+    }
+
+    @Test
+    void changingRoomsClearsTheTransientStandingOverride() {
+        byte[] rom = romWithSwitchBlockPhysics();
+        RomTables tables = RomTables.loadFromRom(rom);
+        OverworldCollision collision = new OverworldCollision(tables);
+        int[] roomObjects = emptyRoomObjectsArea();
+        roomObjects[SWITCH_BLOCK_CELL] = 0xDC;
+        collision.setRoom(roomObjects);
+        collision.setSwitchBlocksState(0x00);
+        assertTrue(collision.refreshLinkGroundInteraction(0x18, 0x14));
+
+        collision.setRoom(emptyRoomObjectsArea());
+
+        assertFalse(collision.linkStandingOnSwitchBlock());
+    }
+
+    private static byte[] romWithSwitchBlockPhysics() {
+        byte[] rom = new byte[0x100000];
+        int physicsOffset = RomBank.romOffset(0x08, 0x4AD4);
+        rom[physicsOffset + 0xDB] = 0x04;
+        rom[physicsOffset + 0xDC] = 0x04;
+        return rom;
+    }
+
+    private static int[] emptyRoomObjectsArea() {
+        int[] roomObjects = new int[0x100];
+        Arrays.fill(roomObjects, 0xFF);
+        return roomObjects;
     }
 }

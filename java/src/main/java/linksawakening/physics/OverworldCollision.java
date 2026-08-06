@@ -1,6 +1,7 @@
 package linksawakening.physics;
 
 import linksawakening.rom.RomTables;
+import linksawakening.world.SwitchBlockLinkInteraction;
 
 /**
  * Queries against the active overworld room's 16x16 object grid. Matches the
@@ -19,6 +20,8 @@ public final class OverworldCollision {
     private int[] roomObjectsArea;
     private int[] gbcOverlay;
     private int physicsTableIndex = RomTables.PHYSICS_TABLE_OVERWORLD;
+    private int switchBlocksState;
+    private boolean linkStandingOnSwitchBlock;
 
     /**
      * Java top-left sprite position that aligns Link's ROM-style center/bottom
@@ -36,6 +39,21 @@ public final class OverworldCollision {
 
     public void setRoom(int[] roomObjectsArea) {
         this.roomObjectsArea = roomObjectsArea;
+        linkStandingOnSwitchBlock = false;
+    }
+
+    /** Mirrors the unsigned WRAM {@code wSwitchBlocksState} value. */
+    public void setSwitchBlocksState(int value) {
+        if (value != 0x00 && value != 0x02) {
+            throw new IllegalArgumentException("Switch-block state must be $00 or $02: "
+                + value);
+        }
+        switchBlocksState = value;
+    }
+
+    /** Mirrors {@code wLinkStandingOnSwitchBlock}. */
+    public boolean linkStandingOnSwitchBlock() {
+        return linkStandingOnSwitchBlock;
     }
 
     /**
@@ -152,6 +170,19 @@ public final class OverworldCollision {
     }
 
     /**
+     * Refreshes the transient switch-block footing flag from Link's current
+     * ground sample. This is the bank-$02 ground-physics branch that runs
+     * before the next leading-edge collision probe.
+     */
+    public boolean refreshLinkGroundInteraction(int linkPixelX, int linkPixelY) {
+        int objectId = objectUnderLinkFeet(linkPixelX, linkPixelY);
+        int physicsFlag = romTables.objectPhysicsFlag(physicsTableIndex, objectId);
+        linkStandingOnSwitchBlock = SwitchBlockLinkInteraction.marksStanding(
+            objectId, physicsFlag, switchBlocksState);
+        return linkStandingOnSwitchBlock;
+    }
+
+    /**
      * Reads the object physics byte used by bank-$03's
      * {@code func_003_7E0E} before {@code ApplyEntityInteractionWithBackground}.
      * The helper samples {@code entityX - 1}, {@code entityY - 7} in the
@@ -216,7 +247,14 @@ public final class OverworldCollision {
         if (areaIndex < 0 || areaIndex >= roomObjectsArea.length) {
             return false;
         }
-        int rawId = roomObjectsArea[areaIndex];
+        int rawId = roomObjectsArea[areaIndex] & 0xFF;
+        int physicsFlag = romTables.objectPhysicsFlag(physicsTableIndex, rawId);
+
+        if (physicsFlag == SwitchBlockLinkInteraction.PHYSICS_OCEAN_SWITCH_BLOCK
+            && SwitchBlockLinkInteraction.isSwitchBlock(rawId)) {
+            return SwitchBlockLinkInteraction.blocks(
+                rawId, physicsFlag, switchBlocksState, linkStandingOnSwitchBlock);
+        }
 
         // Screen-edge trees: the stream often places walkable grass (e.g.
         // $04) at a room's leftmost/rightmost column while the GBC overlay
