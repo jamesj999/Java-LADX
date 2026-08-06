@@ -141,7 +141,7 @@ Task 4 is complete in commit 700b5ab.
 
 **Files:** no planned source changes.
 
-- [ ] Run gradle clean test.
-- [ ] Run git diff --check and inspect git status --short.
-- [ ] Review the final diff for accidental changes outside the isolated worktree and confirm the root checkout remains untouched.
-- [ ] Report exact verification results and the intentionally deferred file-menu behaviors: copy, erase, load existing save, SRAM persistence, fades, and exact audio sequencing.
+- [x] Run gradle clean test.
+- [x] Run git diff --check and inspect git status --short.
+- [x] Review the final diff for accidental changes outside the isolated worktree and confirm the root checkout remains untouched.
+- [x] Report exact verification results and the intentionally deferred file-menu behaviors: copy, erase, load existing save, SRAM persistence, fades, and exact audio sequencing.
