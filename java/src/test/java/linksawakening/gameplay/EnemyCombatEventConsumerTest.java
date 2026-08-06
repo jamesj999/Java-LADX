@@ -120,6 +120,17 @@ final class EnemyCombatEventConsumerTest {
     }
 
     @Test
+    void mapsBombExplosionNoiseToTheBombExplosionGameplaySound() {
+        RecordingSoundSink sounds = new RecordingSoundSink();
+        EntityCombatEvent event = new EntityCombatEvent(0, 0x02, 0, false, 0, -1,
+            EntityCombatEvent.SoundChannel.NOISE, 0x0C);
+
+        EnemyCombatEventConsumer.consume(List.of(event), sounds);
+
+        assertEquals(List.of(GameplaySoundEvent.BOMB_EXPLOSION), sounds.events);
+    }
+
+    @Test
     void mapsEvasiveStalfosCloneWhooshThroughTheSharedRomNoiseEffect() {
         RecordingSoundSink sounds = new RecordingSoundSink();
         List<EntityCombatEvent> events = List.of(

@@ -20,6 +20,7 @@ public final class EnemyCombatEventConsumer {
     private static final int NOISE_BEAMOS_LASER_ID = 0x08;
     private static final int NOISE_SPIKE_TRAP_WHOOSH_ID = 0x0A;
     private static final int NOISE_HOOKSHOT_ID = 0x0B;
+    private static final int NOISE_BOMB_EXPLOSION_ID = 0x0C;
 
     private EnemyCombatEventConsumer() {
     }
@@ -71,6 +72,8 @@ public final class EnemyCombatEventConsumer {
                 case NOISE_SPIKE_TRAP_WHOOSH_ID ->
                     soundSink.play(GameplaySoundEvent.SPIKE_TRAP_WHOOSH);
                 case NOISE_HOOKSHOT_ID -> soundSink.play(GameplaySoundEvent.HOOKSHOT);
+                case NOISE_BOMB_EXPLOSION_ID ->
+                    soundSink.play(GameplaySoundEvent.BOMB_EXPLOSION);
                 default -> {
                     // Unknown ROM sound writes must not be guessed or routed
                     // to an unrelated gameplay effect.

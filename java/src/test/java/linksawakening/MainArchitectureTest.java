@@ -62,4 +62,18 @@ final class MainArchitectureTest {
         assertTrue(source.contains("link.applyRomFinalPosition(event.linkSpeedX(), event.linkSpeedY())"));
         assertTrue(source.contains("link.applyRomSpeed(event.linkSpeedX(), event.linkSpeedY())"));
     }
+
+    @Test
+    void mainRegistersBombWithLinkRomPlacementState() throws Exception {
+        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+
+        assertTrue(source.contains("PlayerState.INVENTORY_BOMBS"));
+        assertTrue(source.contains("new Bomb("));
+        assertTrue(source.contains("roomSession.placeBomb("));
+        assertTrue(source.contains("link.romEntityX()"));
+        assertTrue(source.contains("link.romEntityY()"));
+        assertTrue(source.contains("link.romEntityZ()"));
+        assertTrue(source.contains("romDirectionForLink(link.direction())"));
+        assertTrue(source.contains("link.isAirborne()"));
+    }
 }

@@ -398,6 +398,40 @@ public final class RoomSession {
         return true;
     }
 
+    /**
+     * Mirrors the ordinary player-bomb placement bridge. The item has already
+     * applied PlaceBomb's inventory ordering; this method owns the room/runtime
+     * allocation and immutable snapshot refresh.
+     */
+    public boolean placeBomb(int linkEntityX, int linkEntityY, int linkEntityZ,
+                             int romDirection, boolean linkAirborne,
+                             boolean linkPushing) {
+        if (linkAirborne || linkPushing || activeRoom == null || entityRuntime == null) {
+            return false;
+        }
+        int slot = entityRuntime.spawnBomb(linkEntityX, linkEntityY, linkEntityZ, romDirection);
+        if (slot < 0) {
+            return false;
+        }
+        activeRoom.replaceEntities(entityRuntime.snapshot());
+        return true;
+    }
+
+    /** Compatibility overload for callers that already enforce item-use gates. */
+    public boolean placeBomb(int linkEntityX, int linkEntityY, int linkEntityZ,
+                             int romDirection) {
+        return placeBomb(linkEntityX, linkEntityY, linkEntityZ, romDirection, false, false);
+    }
+
+    /** Returns whether the live room currently owns an ordinary bomb entity. */
+    public boolean bombActive() {
+        return entityRuntime != null && entityRuntime.bombActive();
+    }
+
+    int bombDirectionForTest(int slot) {
+        return entityRuntime == null ? 0xFF : entityRuntime.bombDirection(slot);
+    }
+
     /** Returns whether the live room currently owns entity {@code $03}. */
     public boolean hookshotActive() {
         return entityRuntime != null && entityRuntime.hookshotActive();

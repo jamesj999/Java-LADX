@@ -48,6 +48,19 @@ final class GameplaySoundEffectMapTest {
         assertEquals("NOISE_SFX_HOOKSHOT", effect.name());
     }
 
+    @Test
+    void mapsBombExplosionToTheRomExplosionNoiseWithoutChangingHookshot() throws IOException {
+        GameplaySoundEffectMap map = GameplaySoundEffectMap.fromCatalog(
+            SoundEffectCatalog.fromRom(loadRom()));
+
+        SoundEffect effect = map.resolve(GameplaySoundEvent.BOMB_EXPLOSION).orElseThrow();
+
+        assertEquals(SoundEffectNamespace.NOISE, effect.namespace());
+        assertEquals(0x0C, effect.id());
+        assertEquals("NOISE_SFX_EXPLOSION", effect.name());
+        assertEquals(0x0B, map.resolve(GameplaySoundEvent.HOOKSHOT).orElseThrow().id());
+    }
+
     private static byte[] loadRom() throws IOException {
         try (InputStream stream = GameplaySoundEffectMapTest.class.getClassLoader()
                 .getResourceAsStream("rom/azle.gbc")) {

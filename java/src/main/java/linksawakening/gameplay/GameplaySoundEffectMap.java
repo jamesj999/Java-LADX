@@ -48,6 +48,8 @@ public final class GameplaySoundEffectMap {
             SoundEffectNamespace.NOISE, 0x0A);
         put(effects, catalog, GameplaySoundEvent.HOOKSHOT,
             SoundEffectNamespace.NOISE, 0x0B);
+        put(effects, catalog, GameplaySoundEvent.BOMB_EXPLOSION,
+            SoundEffectNamespace.NOISE, 0x0C);
         put(effects, catalog, GameplaySoundEvent.WRONG_ANSWER, SoundEffectNamespace.JINGLE, 0x1D);
         put(effects, catalog, GameplaySoundEvent.DOOR_UNLOCKED, SoundEffectNamespace.NOISE, 0x04);
         put(effects, catalog, GameplaySoundEvent.SWITCH_BLOCK_TOGGLE,

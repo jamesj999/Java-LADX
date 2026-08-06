@@ -145,6 +145,32 @@ final class RoomSessionTest {
     }
 
     @Test
+    void bombPlacementPublishesRomCoordinatesAndHonorsItemUseGuards() {
+        RoomSession session = newSession();
+
+        assertFalse(session.placeBomb(0x40, 0x50, 0x07, 3, false, false));
+        session.loadInitialOverworld(0x92);
+
+        assertFalse(session.placeBomb(0x40, 0x50, 0x07, 3, true, false));
+        assertFalse(session.placeBomb(0x40, 0x50, 0x07, 3, false, true));
+        assertTrue(session.placeBomb(0x40, 0x50, 0x07, 3, false, false));
+        assertTrue(session.bombActive());
+
+        RoomEntity bomb = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x02)
+            .findFirst().orElseThrow();
+        assertEquals(0x40, bomb.x());
+        assertEquals(0x50, bomb.y());
+        assertEquals(0x08, bomb.z());
+        assertEquals(3, session.bombDirectionForTest(bomb.slot()));
+        assertEquals(session.activeRoom().entities(), session.renderSnapshot().entities());
+
+        assertFalse(session.placeBomb(0x44, 0x54, 0, 1, false, false));
+        assertEquals(1, session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x02).count());
+    }
+
+    @Test
     void indoorHookshotBridgeRewritesPaddedObjectsAndBackgroundTiles() {
         RoomSession session = newSession();
         session.loadIndoor(0x00, 0x0F);
