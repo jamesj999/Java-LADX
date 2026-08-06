@@ -73,13 +73,17 @@ public final class EntitySpriteCatalog {
             overworldRoomStatus);
         int[][] palettes = loadObjectPalettes(
             roomTable == EntityRoomLoader.RoomTable.OVERWORLD && roomId == 0x0E);
+        EntitySpriteDefinition death = entitySpriteHandlerCatalog.forDeathEntity();
+        EntitySpriteDefinition powerDeath =
+            entitySpriteHandlerCatalog.forPowerRecoilDeathEntity();
 
         // Color Dungeon NPC tiles are loaded by LoadColorDungeonTiles through
         // four entity-specific tables, not through the standard group tables.
         if (roomTable == EntityRoomLoader.RoomTable.COLOR_DUNGEON) {
             return new EntitySpriteSelection(roomTable, roomId, groupIndex,
                 new int[0], false, palettes)
-                .withBurningSpriteDefinition(entitySpriteHandlerCatalog.forBurningEntity());
+                .withBurningSpriteDefinition(entitySpriteHandlerCatalog.forBurningEntity())
+                .withDeathSpriteDefinitions(death, powerDeath);
         }
 
         int tableAddress = roomTable == EntityRoomLoader.RoomTable.OVERWORLD
@@ -93,7 +97,8 @@ public final class EntitySpriteCatalog {
         }
         return new EntitySpriteSelection(roomTable, roomId, groupIndex, sheetValues,
             true, palettes)
-            .withBurningSpriteDefinition(entitySpriteHandlerCatalog.forBurningEntity());
+            .withBurningSpriteDefinition(entitySpriteHandlerCatalog.forBurningEntity())
+            .withDeathSpriteDefinitions(death, powerDeath);
     }
 
     private static int applyRoomContextOverride(EntityRoomLoader.RoomTable roomTable, int roomId,
