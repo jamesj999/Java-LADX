@@ -1,6 +1,6 @@
 # ROM Common Enemy-Drop Motion Design
 
-**Date:** 2026-08-06  
+**Date:** 2026-08-06
 **Status:** Approved for implementation as the next reconstruction slice
 
 ## Goal
