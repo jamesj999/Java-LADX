@@ -3,6 +3,7 @@ package linksawakening.audio.music;
 public final class MusicTrackIds {
     public static final int MUSIC_NONE = 0x00;
     public static final int MUSIC_TITLE_SCREEN = 0x01;
+    public static final int MUSIC_FILE_SELECT = 0x11;
     public static final int MUSIC_MINIGAME = 0x02;
     public static final int MUSIC_MABE_VILLAGE = 0x04;
     public static final int MUSIC_OVERWORLD = 0x05;

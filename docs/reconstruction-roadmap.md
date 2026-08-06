@@ -856,6 +856,22 @@ runtime collision callback.
   file-select/save/new-game flow remain separate follow-up slices; a CPU/PPU
   emulator is still out of scope.
 
+## Verified ROM-backed file selection and New Game boundary — 2026-08-06
+
+- Title-screen Enter now loads the menu tile path from LoadMenuTiles, switches
+  to a distinct file-menu render screen, and selects the ROM-encoded
+  no-save or command-row background map/attrmap with the file-selection music
+  track $11.
+- The controller reads the name-entry character table, codepoint-to-tile
+  table, cursor positions, and save-name rendering locations from the
+  disassembly. Selection wrapping, the copy/erase arrow position, New Game
+  character movement, A/B editing, and Start action are covered by focused
+  controller tests.
+- Empty-slot name entry emits START_NEW_GAME and returns through the
+  existing configured gameplay bootstrap. Existing-save loading, SRAM
+  persistence, copy/erase execution, fades, and exact menu jingle/audio
+  sequencing remain explicit follow-up work rather than fabricated behavior.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

@@ -55,6 +55,9 @@ import linksawakening.startup.StartupCoordinator;
 import linksawakening.ui.InventoryMenu;
 import linksawakening.ui.InventoryController;
 import linksawakening.ui.InventoryTilemapLoader;
+import linksawakening.ui.FileMenuAction;
+import linksawakening.ui.FileMenuController;
+import linksawakening.ui.FileMenuRomData;
 import linksawakening.vfx.CutLeavesEffectRenderer;
 import linksawakening.vfx.TransientVfxSpriteSheet;
 import linksawakening.vfx.TransientVfxSystem;
@@ -104,9 +107,10 @@ public class Main {
     private static boolean running = true;
     private static int frameCounter;
     private static int currentScreen = 0;
-    private static final int SCREEN_TITLE = 0;
-    private static final int SCREEN_OVERWORLD = 1;
-    private static final int SCREEN_CUTSCENE = 2;
+    static final int SCREEN_TITLE = 0;
+    static final int SCREEN_OVERWORLD = 1;
+    static final int SCREEN_CUTSCENE = 2;
+    static final int SCREEN_FILE_MENU = 3;
 
     // Room pixel dimensions
     private static final int ROOM_PIXEL_WIDTH = ROOM_TILE_WIDTH * 8;   // 160
@@ -139,6 +143,7 @@ public class Main {
     private static OpenAlMusicPlayer musicPlayer;
     private static GameplayMusicController gameplayMusicController;
     private static CutsceneManager cutsceneManager;
+    private static FileMenuController fileMenuController;
     private static RomTables romTables;
     private static OverworldCollision overworldCollision;
     private static OverworldBushInteraction overworldBushInteraction;
@@ -290,8 +295,8 @@ public class Main {
         }
 
         if (currentScreen == SCREEN_TITLE) {
-            if (key == GLFW_KEY_ENTER && action == GLFW_PRESS) {
-                startConfiguredGameplay();
+            if (shouldEnterFileSelection(currentScreen, key, action)) {
+                startFileSelection();
             }
             return;
         }
@@ -306,6 +311,10 @@ public class Main {
                 && (key == inputConfig.aKey() || key == inputConfig.bKey() || key == GLFW_KEY_ENTER)) {
                 dialogController.advance();
             }
+            return;
+        }
+
+        if (currentScreen == SCREEN_FILE_MENU) {
             return;
         }
 
@@ -395,6 +404,22 @@ public class Main {
                 currentScreen = SCREEN_TITLE;
             }
             inputState.tickEdges();
+            return;
+        }
+
+        if (currentScreen == SCREEN_FILE_MENU) {
+            if (fileMenuController == null) {
+                throw new IllegalStateException("File menu controller is not initialized");
+            }
+            FileMenuAction action = fileMenuController.tick(inputState, inputConfig);
+            if (action.type() == FileMenuAction.Type.START_NEW_GAME) {
+                startConfiguredGameplay();
+            } else if (action.type() == FileMenuAction.Type.LOAD_GAME) {
+                throw new UnsupportedOperationException(
+                    "ROM save loading is not implemented in this reconstruction slice");
+            }
+            inputState.tickEdges();
+            overworldDialogInputConsumedThisFrame = false;
             return;
         }
 
@@ -668,6 +693,7 @@ public class Main {
     }
 
     private static void startConfiguredGameplay() {
+        fileMenuController = null;
         currentScreen = SCREEN_OVERWORLD;
         if (currentAppConfig().playIntroStory()) {
             System.err.println("Intro story startup is not implemented yet; spawning at start location");
@@ -676,6 +702,7 @@ public class Main {
     }
 
     private static void startIntroCutscene() {
+        fileMenuController = null;
         currentScreen = SCREEN_CUTSCENE;
         playDirectMusic(introCutsceneMusicTrack());
         gpu.loadIntroSequenceTiles(romData);
@@ -691,8 +718,31 @@ public class Main {
     }
 
     private static void startTitleScreenWithoutIntro() {
+        fileMenuController = null;
         currentScreen = SCREEN_TITLE;
         playDirectMusic(directTitleScreenMusicTrack());
+    }
+
+    private static void startFileSelection() {
+        currentScreen = SCREEN_FILE_MENU;
+        gpu.loadMenuTiles(romData);
+        fileMenuController = new FileMenuController(
+            new FileMenuRomData(romData),
+            Main::loadFileMenuBackgroundScene,
+            0,
+            new int[3][5]);
+        playDirectMusic(fileSelectionMusicTrack());
+        // The Enter event that leaves the title must not also activate the
+        // first empty file. Its edge belongs to the title screen.
+        inputState.tickEdges();
+    }
+
+    private static BackgroundScene loadFileMenuBackgroundScene(String sceneId) {
+        BackgroundSceneSpec spec = BackgroundSceneCatalog.forFileMenuScene(sceneId);
+        if (spec == null) {
+            throw new IllegalArgumentException("No file-menu background scene for " + sceneId);
+        }
+        return backgroundSceneLoader.load(spec);
     }
 
     private static void setCutsceneScene(String sceneId) {
@@ -724,6 +774,14 @@ public class Main {
 
     static int directTitleScreenMusicTrack() {
         return MusicTrackIds.MUSIC_TITLE_SCREEN_NO_INTRO;
+    }
+
+    static int fileSelectionMusicTrack() {
+        return MusicTrackIds.MUSIC_FILE_SELECT;
+    }
+
+    static boolean shouldEnterFileSelection(int screen, int key, int action) {
+        return screen == SCREEN_TITLE && key == GLFW_KEY_ENTER && action == GLFW_PRESS;
     }
 
     private static void applyBackgroundScene(BackgroundScene scene) {
@@ -800,6 +858,8 @@ public class Main {
             .withBackground(currentTilemap, currentAttrmap, bgPalettes, objPalettes)
             .withCutsceneManager(cutsceneManager)
             .withIntroFrameSnapshot(cutsceneManager == null ? null : cutsceneManager.frameSnapshot())
+            .withFileMenuFrame(currentScreen == SCREEN_FILE_MENU && fileMenuController != null
+                ? fileMenuController.snapshot() : null)
             .withRoom(roomSession == null ? null : roomSession.renderSnapshot(), scrollController, transitionController)
             .withLink(link)
             .withTransientVfx(transientVfxSystem, cutLeavesEffectRenderer, GREEN_OBJECTS_SPRITE_PALETTE)
@@ -810,11 +870,17 @@ public class Main {
     }
 
     private static RenderScreen currentRenderScreen() {
-        switch (currentScreen) {
+        return renderScreenFor(currentScreen);
+    }
+
+    static RenderScreen renderScreenFor(int screen) {
+        switch (screen) {
             case SCREEN_OVERWORLD:
                 return RenderScreen.OVERWORLD;
             case SCREEN_CUTSCENE:
                 return RenderScreen.CUTSCENE;
+            case SCREEN_FILE_MENU:
+                return RenderScreen.FILE_MENU;
             case SCREEN_TITLE:
             default:
                 return RenderScreen.TITLE;
