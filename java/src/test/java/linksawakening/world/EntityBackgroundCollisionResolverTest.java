@@ -182,6 +182,47 @@ final class EntityBackgroundCollisionResolverTest {
     }
 
     @Test
+    void switchBlockObjectKindMatchesTheRomStateByte() {
+        RoomEntity ordinary = entity(0x30, 0);
+        EntityBackgroundCollisionResolver resolver = new EntityBackgroundCollisionResolver(
+            tables(0, 0, 0, 0, ordinary.type(), 0));
+
+        assertFalse(resolveSwitchBlockWithState(resolver, ordinary, 0xDB, 0x00)
+            .result().blocked());
+        assertTrue(resolveSwitchBlockWithState(resolver, ordinary, 0xDC, 0x00)
+            .result().blocked());
+        assertTrue(resolveSwitchBlockWithState(resolver, ordinary, 0xDB, 0x02)
+            .result().blocked());
+        assertFalse(resolveSwitchBlockWithState(resolver, ordinary, 0xDC, 0x02)
+            .result().blocked());
+        assertTrue(resolveSwitchBlockWithState(resolver, ordinary, 0xDA, 0x00)
+            .result().blocked());
+        assertTrue(resolveSwitchBlockWithState(resolver, ordinary, 0xDD, 0x02)
+            .result().blocked());
+    }
+
+    @Test
+    void switchBlockBombExceptionsPassRegardlessOfObjectKindOrState() {
+        EntityBackgroundCollisionResolver resolver = new EntityBackgroundCollisionResolver(
+            tables(0, 0, 0, 0, 0x02, 0));
+        for (int type : new int[] {0x02, 0xA8}) {
+            RoomEntity entity = entity(type, 0);
+            for (int objectId : new int[] {0xDB, 0xDC}) {
+                for (int state : new int[] {0x00, 0x02}) {
+                    EntityBackgroundCollisionResolution result =
+                        resolveSwitchBlockWithState(resolver, entity, objectId, state);
+                    assertFalse(result.result().blocked(),
+                        "type=" + Integer.toHexString(type)
+                            + " object=" + Integer.toHexString(objectId)
+                            + " state=" + Integer.toHexString(state));
+                    assertEquals(objectId, result.result().objectId());
+                    assertEquals(0x04, result.result().physicsFlag());
+                }
+            }
+        }
+    }
+
+    @Test
     void openDoorsAreSolidForSparksAndBosses() {
         RoomEntity counterClockwiseSpark = entity(0x16, 0);
         RoomEntity clockwiseSpark = entity(0x17, 0);
@@ -285,5 +326,14 @@ final class EntityBackgroundCollisionResolverTest {
             new EntityCollisionPointProbe.Sample(0x20, 0x30), 0x22, physics,
             new EntityBackgroundCollisionState(frameCounter, indoorRoom,
                 thrownDirection, ledgeTimer));
+    }
+
+    private static EntityBackgroundCollisionResolution resolveSwitchBlockWithState(
+            EntityBackgroundCollisionResolver resolver, RoomEntity entity,
+            int objectId, int switchBlocksState) {
+        return resolver.resolveWithState(entity, EntityBackgroundCollisionResult.RIGHT,
+            new EntityCollisionPointProbe.Sample(0x20, 0x30), objectId, 0x04,
+            new EntityBackgroundCollisionState(0x00, false, 0xFF, 0x00,
+                switchBlocksState));
     }
 }
