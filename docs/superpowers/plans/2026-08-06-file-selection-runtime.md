@@ -96,21 +96,23 @@ Task 2 is complete in commit 11ccc55.
 - Create/modify: java/src/test/java/linksawakening/gpu/GPUFileMenuTilesTest.java
 - Create/modify: java/src/test/java/linksawakening/render/GameFrameSceneBuilderFileMenuTest.java
 
-- [ ] Write failing GPU and framebuffer tests for the ROM-backed menu tile destinations and for a file-menu snapshot producing a background plus object-sprite render layer.
-- [ ] Run the focused tests and confirm they fail before implementation.
-- [ ] Add GPU.loadMenuTiles mirroring LoadMenuTiles/LoadBaseTiles:
+- [x] Write failing GPU and framebuffer tests for the ROM-backed menu tile destinations and for a file-menu snapshot producing a background plus object-sprite render layer.
+- [x] Run the focused tests and confirm they fail before implementation.
+- [x] Add GPU.loadMenuTiles mirroring LoadMenuTiles/LoadBaseTiles:
   - copy the contiguous 0x100-tile base block from adjusted bank $2C, $4800 to VRAM tile $080;
   - copy MenuTiles bank $2F, $4000, 0x40 tiles to tile $080;
   - copy FontTiles bank $2F, $5000, 0x80 tiles to tile $100;
   - copy Items1Tiles adjusted bank $2C, $47A0, 2 tiles to tile $0E0.
-- [ ] Add FILE_MENU to RenderScreen, carry FileMenuFrameSnapshot in GameFrameState, and preserve all existing empty/with-method behavior.
-- [ ] Make GameFrameSceneBuilder prefer the file-menu snapshot for the file-menu screen while reusing the existing background and CutsceneSpriteRenderLayer infrastructure.
-- [ ] Run focused tests and commit:
+- [x] Add FILE_MENU to RenderScreen, carry FileMenuFrameSnapshot in GameFrameState, and preserve all existing empty/with-method behavior.
+- [x] Make GameFrameSceneBuilder prefer the file-menu snapshot for the file-menu screen while reusing the existing background and CutsceneSpriteRenderLayer infrastructure.
+- [x] Run focused tests and commit:
   ~~~sh
   gradle test --tests linksawakening.render.GPUFileMenuTilesTest --tests linksawakening.render.GameFrameSceneBuilderFileMenuTest
   git add java/src/main/java/linksawakening/gpu/GPU.java java/src/main/java/linksawakening/render/RenderScreen.java java/src/main/java/linksawakening/render/GameFrameState.java java/src/main/java/linksawakening/render/GameFrameSceneBuilder.java java/src/test/java/linksawakening/gpu/GPUFileMenuTilesTest.java java/src/test/java/linksawakening/render/GameFrameSceneBuilderFileMenuTest.java
   git commit -m "feat: render ROM-backed file menu frames"
   ~~~
+
+Task 3 is complete in commit 7649c92.
 
 ### Task 4: Wire title Enter to file selection and New Game transition
 
