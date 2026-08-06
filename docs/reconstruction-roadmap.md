@@ -921,6 +921,27 @@ runtime collision callback.
   triggers, power-bracelet level/tunic fast-transition sources, and story-item
   pickup presentation remain separate follow-up work.
 
+## Verified ROM common entity death presentation — 2026-08-06
+
+- The shared non-boss death rectangle lists now decode directly from bank `$03`:
+  normal death frames use `Data_003_5488` at `$5488`, while the power-recoil
+  variant uses the source groups at `$54C8`.
+- `RoomEntity` keeps death-frame selection and power-recoil selection separate
+  from the ordinary active sprite variant. The runtime starts lethal deaths at
+  countdown `$40`, selects the ROM body phase through `$20`, then advances the
+  four rectangle frames from the countdown bits through `$1F`; burning expiry
+  enters the source `$1F` rectangle phase.
+- The renderer consumes the death definition and frame independently of the
+  normal entity display definition, preserving ROM signed offsets, hidden
+  `$FF` pieces, tile attributes, palette selection, and the existing OAM
+  clipping/scroll behavior.
+- Runtime tests cover normal and power-recoil lethal transitions, the `$20` to
+  `$1F` boundary, burning expiry, initial-state hydration, DYING-state display
+  reconstruction, cleanup, slot reuse, and the full rectangle renderer.
+- This slice intentionally does not claim `DidKillEnemy`, drops, room
+  persistence, bosses, or entity-specific death handlers/poof effects; those
+  remain source-backed follow-up work.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,
