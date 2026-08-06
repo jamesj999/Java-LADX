@@ -18,6 +18,14 @@ public interface RoomEntityBackgroundInteraction {
         return probe(entity, direction, nextX, nextY);
     }
 
+    /** Rich probe variant carrying the current ROM frame for stateful physics. */
+    default EntityBackgroundCollisionResult probe(RoomEntity entity, int direction,
+                                                    int nextX, int nextY,
+                                                    int ignoreHitsCountdown,
+                                                    int frameCounter) {
+        return probe(entity, direction, nextX, nextY, ignoreHitsCountdown);
+    }
+
     static RoomEntityBackgroundInteraction fromBoolean(
             RoomEntityBackgroundCollision backgroundCollision) {
         Objects.requireNonNull(backgroundCollision, "backgroundCollision");

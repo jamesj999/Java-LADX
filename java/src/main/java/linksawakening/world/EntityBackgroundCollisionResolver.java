@@ -63,86 +63,146 @@ final class EntityBackgroundCollisionResolver {
             int objectId,
             int physicsFlag,
             int ignoreHitsCountdown) {
+        return resolveWithState(entity, direction, sample, objectId, physicsFlag,
+            ignoreHitsCountdown,
+            new EntityBackgroundCollisionState(0, false, 0xFF, 0)).result();
+    }
+
+    EntityBackgroundCollisionResolution resolveWithState(
+            RoomEntity entity,
+            int direction,
+            EntityCollisionPointProbe.Sample sample,
+            int objectId,
+            int physicsFlag,
+            EntityBackgroundCollisionState state) {
+        return resolveWithState(entity, direction, sample, objectId, physicsFlag, 0, state);
+    }
+
+    EntityBackgroundCollisionResolution resolveWithState(
+            RoomEntity entity,
+            int direction,
+            EntityCollisionPointProbe.Sample sample,
+            int objectId,
+            int physicsFlag,
+            int ignoreHitsCountdown,
+            EntityBackgroundCollisionState state) {
         Objects.requireNonNull(entity, "entity");
         Objects.requireNonNull(sample, "sample");
+        Objects.requireNonNull(state, "state");
 
         int unsignedObjectId = objectId & UNSIGNED_BYTE_MASK;
         int unsignedPhysicsFlag = physicsFlag & UNSIGNED_BYTE_MASK;
         boolean noWall = hasNoWallCollision(entity);
-        boolean blocked = isBlocked(entity, sample, unsignedPhysicsFlag, noWall,
-            ignoreHitsCountdown);
-        return blocked
+        CollisionDecision decision = isBlocked(entity, sample, unsignedPhysicsFlag, noWall,
+            ignoreHitsCountdown, state);
+        EntityBackgroundCollisionResult result = decision.blocked()
             ? EntityBackgroundCollisionResult.blocked(direction, unsignedObjectId,
                 unsignedPhysicsFlag, sample.x(), sample.y())
             : EntityBackgroundCollisionResult.passableWithObject(direction, unsignedObjectId,
                 unsignedPhysicsFlag, sample.x(), sample.y());
+        return new EntityBackgroundCollisionResolution(result, decision.nextLedgeTimer());
     }
 
-    private boolean isBlocked(RoomEntity entity,
-                              EntityCollisionPointProbe.Sample sample,
-                              int physicsFlag,
-                              boolean noWall,
-                              int ignoreHitsCountdown) {
+    private CollisionDecision isBlocked(RoomEntity entity,
+                                         EntityCollisionPointProbe.Sample sample,
+                                         int physicsFlag,
+                                         boolean noWall,
+                                         int ignoreHitsCountdown,
+                                         EntityBackgroundCollisionState state) {
         if (isWaterEntity(entity)) {
             if (physicsFlag == PHYSICS_SHALLOW_WATER || physicsFlag == PHYSICS_DEEP_WATER) {
-                return false;
+                return passable(state);
             }
-            return !noWall;
+            return decision(!noWall, state);
         }
 
         if (physicsFlag == PHYSICS_NONE) {
-            return false;
+            return passable(state);
         }
 
         if (physicsFlag == PHYSICS_LAVA
             || physicsFlag == PHYSICS_NORMAL_PIT
             || physicsFlag == PHYSICS_PIT_WARP) {
             if (entity.z() != 0) {
-                return false;
+                return passable(state);
             }
             if ((ignoreHitsCountdown & UNSIGNED_BYTE_MASK) != 0
                 && entity.type() != ENTITY_MOLDORM) {
-                return false;
+                return passable(state);
             }
-            return !noWall;
+            return decision(!noWall, state);
         }
 
         if (isFineOrOpenDoorPhysics(physicsFlag)) {
             if (isOpenDoorPhysics(physicsFlag) && isSparkOrBoss(entity)) {
-                return true;
+                return blocked(state);
             }
             if (physicsFlag >= PHYSICS_FINE_START && isBombOrWreckingBall(entity)) {
-                return false;
+                return passable(state);
             }
             int quadrant = fineCollisionQuadrant(sample);
-            return romTables.entityFineCollisionShape(physicsFlag, quadrant) != 0 && !noWall;
+            return decision(romTables.entityFineCollisionShape(physicsFlag, quadrant) != 0
+                && !noWall, state);
         }
 
         if (isConservativeLedgePhysics(physicsFlag)) {
-            // Unconditional blocking is intentional until thrown-direction and
-            // WRAM ledge-timer state are exposed.
-            return true;
+            return resolveLedgeCollision(entity, physicsFlag, state);
         }
         if (physicsFlag == PHYSICS_SWITCH_BLOCK) {
             if (isBombOrWreckingBall(entity)) {
-                return false;
+                return passable(state);
             }
             // Object/state-dependent switch-block exceptions remain deferred
             // until the required WRAM state is exposed.
-            return true;
+            return blocked(state);
         }
         if (physicsFlag == PHYSICS_TRACTOR) {
-            return true;
+            return blocked(state);
         }
         if (isBroadPassablePhysics(physicsFlag)) {
-            return false;
+            return passable(state);
         }
         if (isGenericCollisionPhysics(physicsFlag)
             || physicsFlag == PHYSICS_SOLID
             || physicsFlag == PHYSICS_DOOR) {
-            return !noWall;
+            return decision(!noWall, state);
         }
-        return false;
+        return passable(state);
+    }
+
+    private static CollisionDecision resolveLedgeCollision(
+            RoomEntity entity, int physicsFlag, EntityBackgroundCollisionState state) {
+        int nextTimer = state.ledgeTimer();
+        int ledgeDirection = physicsFlag - PHYSICS_LEDGE_START;
+        if (ledgeDirection == state.thrownDirection()) {
+            if (entity.z() == 0) {
+                return new CollisionDecision(true, nextTimer);
+            }
+            return new CollisionDecision(false, (nextTimer + 1) & UNSIGNED_BYTE_MASK);
+        }
+
+        if (entity.type() == ENTITY_WRECKING_BALL || nextTimer == 0) {
+            return new CollisionDecision(true, nextTimer);
+        }
+
+        if ((state.frameCounter() & 0x03) != 0
+            && (state.indoorRoom() || (state.frameCounter() & 0x01) != 0)) {
+            nextTimer = (nextTimer - 1) & UNSIGNED_BYTE_MASK;
+        }
+        return new CollisionDecision(false, nextTimer);
+    }
+
+    private static CollisionDecision blocked(EntityBackgroundCollisionState state) {
+        return new CollisionDecision(true, state.ledgeTimer());
+    }
+
+    private static CollisionDecision passable(EntityBackgroundCollisionState state) {
+        return new CollisionDecision(false, state.ledgeTimer());
+    }
+
+    private static CollisionDecision decision(boolean blocked,
+                                              EntityBackgroundCollisionState state) {
+        return new CollisionDecision(blocked, state.ledgeTimer());
     }
 
     private boolean hasNoWallCollision(RoomEntity entity) {
@@ -190,5 +250,8 @@ final class EntityBackgroundCollisionResolver {
         int yQuadrant = (sample.y() & UNSIGNED_BYTE_MASK) >>> FINE_QUADRANT_SHIFT
             & FINE_QUADRANT_MASK;
         return xQuadrant | (yQuadrant << 1);
+    }
+
+    private record CollisionDecision(boolean blocked, int nextLedgeTimer) {
     }
 }
