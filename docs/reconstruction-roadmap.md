@@ -806,9 +806,16 @@ runtime collision callback.
 - The existing roaming enemy path receives the resolver through `RoomSession`.
   The shipped-ROM room `$2F` Octorok regression covers deep-water passability
   versus solid blocking.
-- Remaining gaps are ignore-hits countdown plumbing, direction/state-dependent
-  ledge timers, switch-block WRAM state, hookshot-chain transitions, and
-  remaining handler-specific migrations.
+- The resolver now receives the live `wEntitiesIgnoreHitsCountdownTable`
+  equivalent through a state-aware rich probe. Grounded entities pass lava,
+  normal pits, and pit-warps while the countdown is nonzero, with Moldorm's
+  source exception preserved; airborne entities remain passable.
+- A Moblin recoil regression proves the state-aware probe is adapted into the
+  legacy movement callback used by the live runtime. The session boundary also
+  verifies that its four-argument helper observes the active countdown.
+- Remaining gaps are direction/state-dependent ledge timers, switch-block WRAM
+  state, hookshot-chain transitions, and remaining handler-specific
+  migrations.
 
 ## Verified ROM Link tunic palette — 2026-08-06
 

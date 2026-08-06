@@ -15,7 +15,7 @@
 **Files:**
 - Modify: `java/src/test/java/linksawakening/world/EntityBackgroundCollisionResolverTest.java`
 
-- [ ] **Step 1: Add the grounded pit countdown test before production changes.** Add:
+- [x] **Step 1: Add the grounded pit countdown test before production changes.** Add:
 
 ```java
 @Test
@@ -24,12 +24,12 @@ void ignoreHitsMakesGroundedPitsPassableExceptForMoldorm() {
     for (int physics : new int[] {0x0B, 0x50, 0x51}) {
         RomTables tables = tables(0, 0, 0, 0, ordinary.type(), 0);
         assertTrue(resolve(tables, ordinary, 0, 0, physics).blocked());
-        assertFalse(resolve(tables, ordinary, 0, 0, physics, 1).blocked());
+        assertFalse(resolveWithIgnoreHits(tables, ordinary, 0, 0, physics, 1).blocked());
     }
 
     RoomEntity moldorm = entity(0x59, 0);
     RomTables moldormTables = tables(0, 0, 0, 0, moldorm.type(), 0);
-    assertTrue(resolve(moldormTables, moldorm, 0, 0, 0x50, 1).blocked());
+    assertTrue(resolveWithIgnoreHits(moldormTables, moldorm, 0, 0, 0x50, 1).blocked());
 
     RoomEntity airborne = entity(ordinary.type(), 1);
     assertFalse(resolve(moldormTables, airborne, 0, 0, 0x50).blocked());
@@ -45,7 +45,7 @@ return new EntityBackgroundCollisionResolver(tables).resolve(
     physics, ignoreHitsCountdown);
 ```
 
-- [ ] **Step 2: Run the resolver test and verify RED.** Run:
+- [x] **Step 2: Run the resolver test and verify RED.** Run:
 
 ```bash
 gradle -p java test --tests linksawakening.world.EntityBackgroundCollisionResolverTest
@@ -59,7 +59,7 @@ Expected: compilation fails because the resolver has no countdown-aware overload
 - Modify: `java/src/test/java/linksawakening/world/RoomEntityRuntimeTest.java`
 - Modify: `java/src/test/java/linksawakening/world/RoomSessionTest.java`
 
-- [ ] **Step 1: Add the runtime adapter regression.** In `RoomEntityRuntimeTest`, add a Moblin recoil test using a rich probe that passes and a legacy boolean callback that blocks:
+- [x] **Step 1: Add the runtime adapter regression.** In `RoomEntityRuntimeTest`, add a Moblin recoil test using a rich probe that passes and a legacy boolean callback that blocks:
 
 ```java
 @Test
@@ -67,7 +67,7 @@ void richBackgroundProbeSuppliesIgnoreHitsToLegacyRecoilMovement() {
     RoomEntity initial = new RoomEntity(0, 0, 0x0B, 0x40, 0x40,
         EntityStatus.ACTIVE, pairDefinition(0x0B, 2), 0);
     RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(initial));
-    AtomicInteger observedIgnoreHits = new AtomicInteger(-1);
+    List<Integer> observedIgnoreHits = new ArrayList<>();
     runtime.setBackgroundInteraction(new RoomEntityBackgroundInteraction() {
         @Override
         public EntityBackgroundCollisionResult probe(RoomEntity entity, int direction,
@@ -79,7 +79,7 @@ void richBackgroundProbeSuppliesIgnoreHitsToLegacyRecoilMovement() {
         public EntityBackgroundCollisionResult probe(RoomEntity entity, int direction,
                                                        int nextX, int nextY,
                                                        int ignoreHitsCountdown) {
-            observedIgnoreHits.set(ignoreHitsCountdown);
+            observedIgnoreHits.add(ignoreHitsCountdown);
             return EntityBackgroundCollisionResult.passable(direction, 0, nextX, nextY);
         }
     });
@@ -93,12 +93,12 @@ void richBackgroundProbeSuppliesIgnoreHitsToLegacyRecoilMovement() {
     runtime.tick(0, 0, 0, () -> 0,
         (entity, direction, nextX, nextY) -> true);
 
-    assertEquals(0x08, observedIgnoreHits.get());
+    assertTrue(observedIgnoreHits.contains(0x09));
     assertEquals(0x3D, runtime.snapshot().slots().get(0).x());
 }
 ```
 
-- [ ] **Step 2: Add the RoomSession state regression.** Add this test, using the existing helpers:
+- [x] **Step 2: Add the RoomSession state regression.** Add this test, using the existing helpers:
 
 ```java
 @Test
@@ -121,7 +121,7 @@ void liveEntityCollisionProbeUsesActiveIgnoreHitsCountdownForGroundedPits() {
 }
 ```
 
-- [ ] **Step 3: Run the two tests and verify RED.** Run:
+- [x] **Step 3: Run the two tests and verify RED.** Run:
 
 ```bash
 gradle -p java test \
@@ -137,7 +137,7 @@ Expected: the new runtime test fails to compile at the state-aware `@Override`, 
 - Modify: `java/src/main/java/linksawakening/world/RoomEntityBackgroundInteraction.java`
 - Modify: `java/src/main/java/linksawakening/world/EntityBackgroundCollisionResolver.java`
 
-- [ ] **Step 1: Add the compatibility-preserving default probe.** Keep the four-argument method abstract and add:
+- [x] **Step 1: Add the compatibility-preserving default probe.** Keep the four-argument method abstract and add:
 
 ```java
 default EntityBackgroundCollisionResult probe(RoomEntity entity, int direction,
@@ -147,7 +147,7 @@ default EntityBackgroundCollisionResult probe(RoomEntity entity, int direction,
 }
 ```
 
-- [ ] **Step 2: Add the resolver overload.** Keep the existing `resolve` signature and delegate it with zero:
+- [x] **Step 2: Add the resolver overload.** Keep the existing `resolve` signature and delegate it with zero:
 
 ```java
 return resolve(entity, direction, sample, objectId, physicsFlag, 0);
@@ -172,7 +172,7 @@ if (physicsFlag == PHYSICS_LAVA
 
 Define `ENTITY_MOLDORM = 0x59` beside the other entity constants. Do not modify any other physics branch.
 
-- [ ] **Step 3: Run the resolver test and verify GREEN.** Run the focused resolver command again and expect PASS.
+- [x] **Step 3: Run the resolver test and verify GREEN.** Run the focused resolver command again and expect PASS.
 
 ### Task 4: Wire RoomSession and legacy movement handlers to live state
 
@@ -180,7 +180,7 @@ Define `ENTITY_MOLDORM = 0x59` beside the other entity constants. Do not modify 
 - Modify: `java/src/main/java/linksawakening/world/RoomSession.java`
 - Modify: `java/src/main/java/linksawakening/world/RoomEntityRuntime.java`
 
-- [ ] **Step 1: Give RoomSession a state-aware rich probe.** Add this field beside the existing collision resolver field:
+- [x] **Step 1: Give RoomSession a state-aware rich probe.** Add this field beside the existing collision resolver field:
 
 ```java
 private final RoomEntityBackgroundInteraction entityBackgroundInteraction =
@@ -223,7 +223,7 @@ The existing four-argument helper must read
 `entityRuntime.enemyIgnoreHitsCountdown(entity.slot())` when a runtime is
 active, otherwise use zero, so direct session tests observe the same state.
 
-- [ ] **Step 2: Adapt the runtime's old collision callback.** At the beginning of `tickInternal`, after null validation and before the entity loop, if `backgroundInteraction != null`, replace the local `backgroundCollision` callback with a lambda that calls:
+- [x] **Step 2: Adapt the runtime's old collision callback.** At the beginning of `tickInternal`, after null validation and before the entity loop, if `backgroundInteraction != null`, replace the local `backgroundCollision` callback with a lambda that calls:
 
 ```java
 backgroundInteraction.probe(entity, direction, nextX, nextY,
@@ -232,7 +232,7 @@ backgroundInteraction.probe(entity, direction, nextX, nextY,
 
 Do not alter the public tick overloads. Runtime callers with only the old callback continue using it unchanged.
 
-- [ ] **Step 3: Run the runtime and session regressions.** Run:
+- [x] **Step 3: Run the runtime and session regressions.** Run:
 
 ```bash
 gradle -p java test \
@@ -240,9 +240,9 @@ gradle -p java test \
   --tests linksawakening.world.RoomSessionTest.liveEntityCollisionProbeUsesActiveIgnoreHitsCountdownForGroundedPits
 ```
 
-Expected: both pass, including the countdown value observed after the existing start-of-frame and recoil decrements.
+Expected: both pass, including the countdown value observed after the existing recoil decrement (`$09` for the `$0A` sword-hit countdown).
 
-- [ ] **Step 4: Commit the focused implementation.** Commit the interface, resolver, session, runtime, and tests:
+- [x] **Step 4: Commit the focused implementation.** Commit the interface, resolver, session, runtime, and tests:
 
 ```bash
 git add java/src/main/java/linksawakening/world/RoomEntityBackgroundInteraction.java \
@@ -260,7 +260,7 @@ git commit -m "feat: propagate entity ignore-hits collision state"
 **Files:**
 - Modify: `docs/reconstruction-roadmap.md`
 
-- [ ] **Step 1: Run focused collision coverage.** Run:
+- [x] **Step 1: Run focused collision coverage.** Run:
 
 ```bash
 gradle -p java test \
@@ -269,7 +269,7 @@ gradle -p java test \
   --tests linksawakening.world.RoomSessionTest
 ```
 
-- [ ] **Step 2: Run the complete Java suite and whitespace verification.** Run:
+- [x] **Step 2: Run the complete Java suite and whitespace verification.** Run:
 
 ```bash
 gradle -p java clean test
@@ -278,9 +278,9 @@ git diff --check HEAD~1..HEAD
 
 Expected: `BUILD SUCCESSFUL` and no whitespace errors.
 
-- [ ] **Step 3: Record the exact scope and remaining gaps.** Add a dated roadmap entry stating that the shared resolver now receives the live ignore-hits countdown, that grounded pits/lava/pit-warps pass during nonzero countdown except Moldorm, and that ledge timers, switch-block state, hookshot transitions, and per-handler decrement timing remain separate work.
+- [x] **Step 3: Record the exact scope and remaining gaps.** Add a dated roadmap entry stating that the shared resolver now receives the live ignore-hits countdown, that grounded pits/lava/pit-warps pass during nonzero countdown except Moldorm, and that ledge timers, switch-block state, hookshot transitions, and per-handler decrement timing remain separate work.
 
-- [ ] **Step 4: Commit the roadmap entry.** Run:
+- [x] **Step 4: Commit the roadmap entry.** Run:
 
 ```bash
 git add docs/reconstruction-roadmap.md
