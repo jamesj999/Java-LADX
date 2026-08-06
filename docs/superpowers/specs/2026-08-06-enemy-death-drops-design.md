@@ -40,8 +40,8 @@ The implementation follows these disassembly paths:
 The ROM data is read from the shipped ROM, never copied into a Java literal
 drop table except for test assertions over decoded bytes. The indexed data
 comes from bank `$03`'s `DestroyedEntityHealthGroupOffsetTable`,
-`DropTableByIndex`, `RandomDropChanceTable`,
-`RandomDropChanceTableLowHealth`, and `DropTableRandom`.
+`DropTableByIndex`, `RandomDropChanceTable` at `$55AB`,
+`RandomDropChanceTableLowHealth` at `$55B9`, and `DropTableRandom`.
 
 ## Architecture
 
