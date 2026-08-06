@@ -12,6 +12,9 @@ import java.util.OptionalInt;
 final class BombMotion {
     static final int INITIAL_COUNTDOWN = 0xA0;
 
+    private BombMotion() {
+    }
+
     private static final int WARNING_START = 0x21;
     private static final int EXPLOSION_SOUND_COUNTDOWN = 0x18;
 
@@ -29,7 +32,7 @@ final class BombMotion {
         EXPLOSION
     }
 
-    record Decision(Phase phase, int explosionVariant, boolean playExplosionSound,
+    record Decision(Phase phase, OptionalInt explosionVariant, boolean playExplosionSound,
                     OptionalInt countdownOverride, boolean unloadAfterPresentation) {
     }
 
@@ -44,7 +47,7 @@ final class BombMotion {
         if (countdown < EXPLOSION_SOUND_COUNTDOWN) {
             return new Decision(
                 Phase.EXPLOSION,
-                EXPLOSION_VARIANT_FRAMES[countdown],
+                OptionalInt.of(EXPLOSION_VARIANT_FRAMES[countdown]),
                 false,
                 OptionalInt.empty(),
                 countdown == 0);
@@ -54,14 +57,14 @@ final class BombMotion {
             boolean startsExplosion = countdown == EXPLOSION_SOUND_COUNTDOWN;
             return new Decision(
                 Phase.WARNING,
-                -1,
+                OptionalInt.empty(),
                 startsExplosion,
                 startsExplosion ? OptionalInt.of(EXPLOSION_SOUND_COUNTDOWN - 1)
                     : OptionalInt.empty(),
                 false);
         }
 
-        return new Decision(Phase.NORMAL, -1, false, OptionalInt.empty(), false);
+        return new Decision(Phase.NORMAL, OptionalInt.empty(), false, OptionalInt.empty(), false);
     }
 
     private static void validateUnsignedCountdown(int countdown) {
