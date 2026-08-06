@@ -49,6 +49,7 @@ public final class RoomSession {
     private final FollowingNpcEntitySpawner followingNpcEntitySpawner;
     private final RomEnemyCombatTables enemyCombatTables;
     private final RomTables romTables;
+    private final EnemyDropResolver enemyDropResolver;
     private final EntityCollisionPointProbe entityCollisionPointProbe;
     private final LinkPositionHistory followingLinkPositionHistory = new LinkPositionHistory();
 
@@ -57,6 +58,11 @@ public final class RoomSession {
     private final int[] clearedEntitiesByRoom = new int[0x100];
     private int currentOverworldTilesetId = W_TILESET_NO_UPDATE;
     private FollowingNpcState followingNpcState = FollowingNpcState.none();
+    private EnemyDropResolver.CounterState enemyDropCounters =
+        new EnemyDropResolver.CounterState(0, 0);
+    private int enemyDropMaxHearts = 3;
+    private int enemyDropHealth = 6;
+    private boolean enemyDropActivePowerUp;
     private int followingLinkX = 0x08;
     private int followingLinkY = 0x10;
     private int followingLinkZ;
@@ -132,6 +138,7 @@ public final class RoomSession {
         this.followingNpcEntitySpawner = new FollowingNpcEntitySpawner(entitySpriteHandlerCatalog);
         this.enemyCombatTables = new RomEnemyCombatTables(romData);
         this.romTables = RomTables.loadFromRom(romData);
+        this.enemyDropResolver = new EnemyDropResolver(romData);
         this.entityCollisionPointProbe = new EntityCollisionPointProbe(romTables);
     }
 
@@ -303,6 +310,21 @@ public final class RoomSession {
         }
     }
 
+    /** Supplies the player fields consumed by the ROM enemy-drop resolver. */
+    public void setEnemyDropPlayerState(int maxHearts, int health, boolean activePowerUp) {
+        if (maxHearts < 0 || maxHearts > 0xFF) {
+            throw new IllegalArgumentException("Maximum hearts must be an unsigned byte: "
+                + maxHearts);
+        }
+        if (health < 0 || health > 0xFF) {
+            throw new IllegalArgumentException("Health must be an unsigned byte: " + health);
+        }
+        enemyDropMaxHearts = maxHearts;
+        enemyDropHealth = health;
+        enemyDropActivePowerUp = activePowerUp;
+        configureEnemyDropRuntime();
+    }
+
     public RoomEntityRuntime.LiftedEntityState liftedEntityState() {
         return entityRuntime == null
             ? RoomEntityRuntime.LiftedEntityState.none()
@@ -427,6 +449,7 @@ public final class RoomSession {
                 romDirectionForProjectileCollision(linkDirection), usingShield, shieldLevel,
                 invincibilityCounter), swordCollisionActive, swordX, swordWidth,
             swordY, swordHeight);
+        enemyDropCounters = entityRuntime.enemyDropCounters();
         if (transientVfxSystem != null) {
             for (RoomEntityRuntime.TransientVfxRequest request
                 : entityRuntime.transientVfxRequests()) {
@@ -602,6 +625,7 @@ public final class RoomSession {
             entityRuntime.setActionButtonsHeld(actionButtonsHeld);
             entityRuntime.setPowerBraceletButtonHeld(powerBraceletButtonHeld);
             entityRuntime.setLiftedLinkC13B(followingEntityYOffset);
+            configureEnemyDropRuntime();
         }
         followingNpcRoomNeedsSync = true;
         synchronizeFollowingNpcEntitiesIfNeeded();
@@ -640,6 +664,30 @@ public final class RoomSession {
         entityRuntime.setActionButtonsHeld(actionButtonsHeld);
         entityRuntime.setPowerBraceletButtonHeld(powerBraceletButtonHeld);
         entityRuntime.setLiftedLinkC13B(followingEntityYOffset);
+        configureEnemyDropRuntime();
+    }
+
+    private void configureEnemyDropRuntime() {
+        if (entityRuntime == null) {
+            return;
+        }
+        entityRuntime.setEnemyDropResolver(enemyDropResolver);
+        entityRuntime.setEnemyDropCounters(enemyDropCounters);
+        entityRuntime.setEnemyDropPlayerState(
+            enemyDropMaxHearts, enemyDropHealth, enemyDropActivePowerUp);
+        entityRuntime.setEnemyDropBossBattle(roomHasBossBattle());
+    }
+
+    private boolean roomHasBossBattle() {
+        if (activeRoom == null || activeRoom.entities() == null) {
+            return false;
+        }
+        for (RoomEntity entity : activeRoom.entities().loadedEntities()) {
+            if ((romTables.entityOptions1(entity.type()) & 0x80) != 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void clearTransientRoomState() {

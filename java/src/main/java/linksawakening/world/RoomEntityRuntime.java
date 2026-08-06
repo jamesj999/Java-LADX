@@ -1544,6 +1544,10 @@ public final class RoomEntityRuntime {
         enemyDropResolver = resolver;
     }
 
+    void setEnemyDropCounters(EnemyDropResolver.CounterState counters) {
+        enemyDropCounters = Objects.requireNonNull(counters, "Drop counters cannot be null");
+    }
+
     void setEnemyDropPlayerState(int maxHearts, int health, boolean activePowerUp) {
         validateEnemyDropByte(maxHearts, "Maximum hearts");
         validateEnemyDropByte(health, "Health");

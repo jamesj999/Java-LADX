@@ -567,6 +567,9 @@ public class Main {
                         && (inputState.isDown(inputConfig.aKey())
                             || inputState.isDown(inputConfig.bKey())));
                 roomSession.setEntityPowerBraceletButtonHeld(isPowerBraceletButtonHeld());
+                roomSession.setEnemyDropPlayerState(
+                    playerState.maxHearts(), playerState.health(),
+                    playerState.activePowerUp() != PlayerState.ACTIVE_POWER_UP_NONE);
                 var projectileEvents = roomSession.tickEntitiesWithProjectileEvents(
                     frameCounter,
                     link == null ? 0x08 : link.romEntityX(),
