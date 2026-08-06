@@ -152,6 +152,7 @@ public final class RoomEntityRuntime {
     private final int[] liftedSourceDirection = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] liftedStateInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final int[] thrownDirection = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] ledgeTransitionTimer = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] thrownMotionInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final List<RoamingEnemyMotion.LaunchRequest> projectileLaunchRequests =
         new ArrayList<>();
@@ -210,6 +211,7 @@ public final class RoomEntityRuntime {
         this.enemyCombatTables = enemyCombatTables;
         Arrays.fill(entityOptions1Override, -1);
         Arrays.fill(droppedItemBySlot, 0);
+        Arrays.fill(thrownDirection, 0xFF);
         for (RoomEntity entity : slots) {
             baseEntityFlipAttribute[entity.slot()] = entity.entityFlipAttribute();
             enemyHealth[entity.slot()] = entity.loaded() ? initialHealth(entity.type()) : 0;
@@ -429,10 +431,11 @@ public final class RoomEntityRuntime {
                       int swordY, int swordHeight) {
         Objects.requireNonNull(randomByteSupplier, "randomByteSupplier");
         Objects.requireNonNull(projectileLinkState, "projectileLinkState");
+        int frame = frameCounter & 0xFF;
         if (backgroundInteraction != null) {
             backgroundCollision = (entity, direction, nextX, nextY) ->
                 backgroundInteraction.probe(entity, direction, nextX, nextY,
-                    enemyIgnoreHitsCountdown[entity.slot()]).blocked();
+                    enemyIgnoreHitsCountdown[entity.slot()], frame).blocked();
         }
         projectileLaunchRequests.clear();
         Arrays.fill(enemyProjectileSpawnedThisFrame, false);
@@ -447,7 +450,6 @@ public final class RoomEntityRuntime {
         followingLinkDirection = linkDirection & 0xFF;
         followingEntityYOffset = entityYOffset & 0xFF;
         int romLinkDirection = romDirectionForJavaDirection(linkDirection);
-        int frame = frameCounter & 0xFF;
         for (int index = slots.length - 1; index >= 0; index--) {
             RoomEntity entity = slots[index];
             if (!entity.loaded()) {
@@ -653,7 +655,7 @@ public final class RoomEntityRuntime {
                         randomByteSupplier, backgroundCollision, creditsGameplay)
                     : roamingEnemyMotion.advanceWithInteraction(entity, linkEntityX,
                         linkEntityY, randomByteSupplier, backgroundInteraction,
-                        enemyIgnoreHitsCountdown[entity.slot()], creditsGameplay);
+                        enemyIgnoreHitsCountdown[entity.slot()], frame, creditsGameplay);
                 updated = roamingUpdate.entity();
                 if (roamingUpdate.launchRequest() != null) {
                     projectileLaunchRequests.add(roamingUpdate.launchRequest());
@@ -1473,7 +1475,8 @@ public final class RoomEntityRuntime {
         liftedPhase[slot] = 0;
         liftedSourceDirection[slot] = 0;
         liftedStateInitialized[slot] = false;
-        thrownDirection[slot] = 0;
+        thrownDirection[slot] = 0xFF;
+        ledgeTransitionTimer[slot] = 0;
         thrownMotionInitialized[slot] = false;
         baseEntityFlipAttribute[slot] = 0;
         entityOptions1Override[slot] = -1;
@@ -2514,6 +2517,16 @@ public final class RoomEntityRuntime {
         return enemyIgnoreHitsCountdown[slot];
     }
 
+    int thrownDirection(int slot) {
+        validateEntitySlot(slot);
+        return thrownDirection[slot] & 0xFF;
+    }
+
+    int ledgeTransitionTimer(int slot) {
+        validateEntitySlot(slot);
+        return ledgeTransitionTimer[slot] & 0xFF;
+    }
+
     int fallingTargetX(int slot) {
         if (slot < 0 || slot >= slots.length) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
@@ -2543,6 +2556,24 @@ public final class RoomEntityRuntime {
     void setEnemyFlashCountdownForTest(int slot, int value) {
         validateCountdownTestValue(slot, value);
         enemyFlashCountdown[slot] = value;
+    }
+
+    void setThrownDirection(int slot, int value) {
+        validateCountdownTestValue(slot, value);
+        thrownDirection[slot] = value;
+    }
+
+    void setLedgeTransitionTimer(int slot, int value) {
+        validateCountdownTestValue(slot, value);
+        ledgeTransitionTimer[slot] = value;
+    }
+
+    void setThrownDirectionForTest(int slot, int value) {
+        setThrownDirection(slot, value);
+    }
+
+    void setLedgeTransitionTimerForTest(int slot, int value) {
+        setLedgeTransitionTimer(slot, value);
     }
 
     private static void validateCountdownTestValue(int slot, int value) {
@@ -2925,7 +2956,8 @@ public final class RoomEntityRuntime {
         liftedPhase[slot] = 0;
         liftedSourceDirection[slot] = 0;
         liftedStateInitialized[slot] = false;
-        thrownDirection[slot] = 0;
+        thrownDirection[slot] = 0xFF;
+        ledgeTransitionTimer[slot] = 0;
         thrownMotionInitialized[slot] = false;
         baseEntityFlipAttribute[slot] = 0;
         entityOptions1Override[slot] = -1;

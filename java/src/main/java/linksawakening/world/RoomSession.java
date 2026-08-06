@@ -66,6 +66,15 @@ public final class RoomSession {
                 return entityBackgroundCollisionResult(
                     entity, direction, nextX, nextY, ignoreHitsCountdown);
             }
+
+            @Override
+            public EntityBackgroundCollisionResult probe(RoomEntity entity, int direction,
+                                                           int nextX, int nextY,
+                                                           int ignoreHitsCountdown,
+                                                           int frameCounter) {
+                return entityBackgroundCollisionResult(
+                    entity, direction, nextX, nextY, ignoreHitsCountdown, frameCounter);
+            }
         };
     private final LinkPositionHistory followingLinkPositionHistory = new LinkPositionHistory();
 
@@ -384,6 +393,22 @@ public final class RoomSession {
         if (entityRuntime != null) {
             entityRuntime.setEnemyIgnoreHitsCountdownForTest(slot, value);
         }
+    }
+
+    void setEntityThrownDirectionForTest(int slot, int value) {
+        if (entityRuntime != null) {
+            entityRuntime.setThrownDirection(slot, value);
+        }
+    }
+
+    void setEntityLedgeTimerForTest(int slot, int value) {
+        if (entityRuntime != null) {
+            entityRuntime.setLedgeTransitionTimer(slot, value);
+        }
+    }
+
+    int entityLedgeTimerForTest(int slot) {
+        return entityRuntime == null ? 0 : entityRuntime.ledgeTransitionTimer(slot);
     }
 
     int entityFallingTargetXForTest(int slot) {
@@ -767,25 +792,57 @@ public final class RoomSession {
         int ignoreHitsCountdown = entityRuntime == null
             ? 0 : entityRuntime.enemyIgnoreHitsCountdown(entity.slot());
         return entityBackgroundCollisionResult(
-            entity, direction, nextX, nextY, ignoreHitsCountdown);
+            entity, direction, nextX, nextY, ignoreHitsCountdown, 0);
     }
 
     private EntityBackgroundCollisionResult entityBackgroundCollisionResult(
             RoomEntity entity, int direction, int nextX, int nextY,
             int ignoreHitsCountdown) {
+        return entityBackgroundCollisionResult(entity, direction, nextX, nextY,
+            ignoreHitsCountdown, 0);
+    }
+
+    private EntityBackgroundCollisionResult entityBackgroundCollisionResult(
+            RoomEntity entity, int direction, int nextX, int nextY,
+            int ignoreHitsCountdown, int frameCounter) {
         EntityCollisionPointProbe.Sample sample = entityCollisionPointProbe.sample(
             entity, direction, nextX, nextY);
         int pointX = sample.x();
         int pointY = sample.y();
         int objectId = overworldCollision.objectIdAtPoint(pointX, pointY);
         int physicsFlag = overworldCollision.objectPhysicsFlagAtPoint(pointX, pointY);
-        return entityBackgroundCollisionResolver.resolve(
-            entity, direction, sample, objectId, physicsFlag, ignoreHitsCountdown);
+        int ledgeTimer = entityRuntime == null
+            ? 0 : entityRuntime.ledgeTransitionTimer(entity.slot());
+        if ((entity.z() & 0x80) != 0) {
+            ledgeTimer = 0;
+        }
+        int thrownDirection = entityRuntime == null
+            ? 0xFF : entityRuntime.thrownDirection(entity.slot());
+        EntityBackgroundCollisionState state = new EntityBackgroundCollisionState(
+            frameCounter, activeRoom != null
+                && activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD,
+            thrownDirection, ledgeTimer);
+        EntityBackgroundCollisionResolution resolution =
+            entityBackgroundCollisionResolver.resolveWithState(
+                entity, direction, sample, objectId, physicsFlag,
+                ignoreHitsCountdown, state);
+        if (entityRuntime != null) {
+            entityRuntime.setLedgeTransitionTimer(entity.slot(), resolution.nextLedgeTimer());
+        }
+        return resolution.result();
     }
 
     EntityBackgroundCollisionResult entityBackgroundCollisionResultForTest(
             RoomEntity entity, int direction, int nextX, int nextY) {
         return entityBackgroundCollisionResult(entity, direction, nextX, nextY);
+    }
+
+    EntityBackgroundCollisionResult entityBackgroundCollisionResultForTest(
+            RoomEntity entity, int direction, int nextX, int nextY, int frameCounter) {
+        int ignoreHitsCountdown = entityRuntime == null
+            ? 0 : entityRuntime.enemyIgnoreHitsCountdown(entity.slot());
+        return entityBackgroundCollisionResult(entity, direction, nextX, nextY,
+            ignoreHitsCountdown, frameCounter);
     }
 
     /**
