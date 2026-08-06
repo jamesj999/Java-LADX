@@ -99,9 +99,19 @@ final class EntityBackgroundCollisionResolver {
         }
 
         if (isConservativeLedgePhysics(physicsFlag)) {
+            // Unconditional blocking is intentional until thrown-direction and
+            // WRAM ledge-timer state are exposed.
             return true;
         }
-        if (physicsFlag == PHYSICS_TRACTOR || physicsFlag == PHYSICS_SWITCH_BLOCK) {
+        if (physicsFlag == PHYSICS_SWITCH_BLOCK) {
+            if (isBombOrWreckingBall(entity)) {
+                return false;
+            }
+            // Object/state-dependent switch-block exceptions remain deferred
+            // until the required WRAM state is exposed.
+            return true;
+        }
+        if (physicsFlag == PHYSICS_TRACTOR) {
             return true;
         }
         if (isBroadPassablePhysics(physicsFlag)) {

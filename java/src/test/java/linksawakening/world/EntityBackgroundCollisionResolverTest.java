@@ -95,6 +95,20 @@ final class EntityBackgroundCollisionResolverTest {
     }
 
     @Test
+    void bombAndWreckingBallPassSwitchBlocksButOrdinaryEntitiesDoNot() {
+        RoomEntity bomb = entity(0x02, 0);
+        RoomEntity wreckingBall = entity(0xA8, 0);
+        RoomEntity ordinary = entity(0x30, 0);
+
+        assertFalse(resolve(tables(0, 0, 0, 0, bomb.type(), 0), bomb,
+            0, 0, 0x04).blocked());
+        assertFalse(resolve(tables(0, 0, 0, 0, wreckingBall.type(), 0), wreckingBall,
+            0, 0, 0x04).blocked());
+        assertTrue(resolve(tables(0, 0, 0, 0, ordinary.type(), 0), ordinary,
+            0, 0, 0x04).blocked());
+    }
+
+    @Test
     void openDoorsAreSolidForSparksAndBosses() {
         RoomEntity counterClockwiseSpark = entity(0x16, 0);
         RoomEntity clockwiseSpark = entity(0x17, 0);
