@@ -293,6 +293,18 @@ final class EntityRoomLoaderTest {
     }
 
     @Test
+    void shippedRomRoom67InitializesTheGhiniFamilyWithSourceZValues() throws Exception {
+        List<RoomEntity> entities = new EntityRoomLoader(loadRom())
+            .load(EntityRoomLoader.RoomTable.OVERWORLD, 0x67)
+            .loadedEntities();
+
+        assertEquals(List.of(0x10, 0x10, 0x12, 0x11),
+            entities.stream().map(RoomEntity::type).toList());
+        assertEquals(List.of(0, 0, 0x10, 0),
+            entities.stream().map(RoomEntity::z).toList());
+    }
+
+    @Test
     void shippedRomUsesIndoorAndColorDungeonPointerTables() throws Exception {
         EntityRoomLoader loader = new EntityRoomLoader(loadRom());
 
