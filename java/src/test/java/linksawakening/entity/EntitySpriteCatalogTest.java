@@ -63,7 +63,8 @@ final class EntitySpriteCatalogTest {
         assertEquals(0x5488, selection.deathSpriteDefinition().address());
         assertEquals(0x54C8, selection.powerRecoilDeathSpriteDefinition().address());
         assertNull(selection.spriteOverlayFor(0x86));
-        assertNull(selection.spriteOverlayFor(0xE5));
+        assertNotNull(selection.spriteOverlayFor(0xE5));
+        assertEquals(0x7AEB, selection.spriteOverlayFor(0xE5).address());
     }
 
     @Test

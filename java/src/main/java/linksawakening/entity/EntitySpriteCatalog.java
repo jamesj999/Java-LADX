@@ -82,6 +82,9 @@ public final class EntitySpriteCatalog {
         if (roomTable == EntityRoomLoader.RoomTable.COLOR_DUNGEON) {
             return new EntitySpriteSelection(roomTable, roomId, groupIndex,
                 new int[0], false, palettes)
+                // The bank-$06 $86 branch is deferred, but $E5 still uses
+                // the ordinary handler and therefore keeps its rectangle.
+                .withSpriteOverlay(0xE5, entitySpriteHandlerCatalog.forFloatingItemOverlay())
                 .withBurningSpriteDefinition(entitySpriteHandlerCatalog.forBurningEntity())
                 .withDeathSpriteDefinitions(death, powerDeath);
         }

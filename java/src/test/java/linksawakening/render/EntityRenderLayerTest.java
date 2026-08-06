@@ -579,6 +579,51 @@ final class EntityRenderLayerTest {
     }
 
     @Test
+    void sideScrollingMovesMixedSingleDownFourPixelsButLeavesPairsUnchanged() {
+        GPU gpu = new GPU();
+        int color = 0x556677;
+        int[][] palettes = {{0, color, 0, 0}};
+        writePatternTile(gpu, 0x20, new int[][] {
+            {1, 1, 1, 1, 1, 1, 1, 1},
+            {0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0}
+        });
+        EntitySpriteDefinition definition = new EntitySpriteDefinition(
+            0x86, 0x06, 0x7ADD, EntitySpriteDefinition.Shape.PAIR, 0,
+            List.of(
+                new EntitySpriteDefinition.Variant(
+                    new EntitySpriteDefinition.OamAttribute(0x20, 0x00), null),
+                new EntitySpriteDefinition.Variant(
+                    new EntitySpriteDefinition.OamAttribute(0x20, 0x00), null),
+                new EntitySpriteDefinition.Variant(
+                    new EntitySpriteDefinition.OamAttribute(0x20, 0x00), null),
+                new EntitySpriteDefinition.Variant(
+                    new EntitySpriteDefinition.OamAttribute(0x20, 0x00), null),
+                new EntitySpriteDefinition.Variant(
+                    new EntitySpriteDefinition.OamAttribute(0x20, 0x00), null),
+                new EntitySpriteDefinition.Variant(
+                    new EntitySpriteDefinition.OamAttribute(0x20, 0x00),
+                    new EntitySpriteDefinition.OamAttribute(0x20, 0x00))));
+        RoomEntity mixedSingle = new RoomEntity(0, 0, 0x86, 24, 32,
+            EntityStatus.ACTIVE, definition, 0, 0);
+        RoomEntity pair = new RoomEntity(1, 1, 0x86, 56, 32,
+            EntityStatus.ACTIVE, definition, 5, 0);
+        byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
+
+        new EntityRenderLayer(snapshot(mixedSingle, pair).withSideScrolling(true),
+            palettes, new ScrollController()).render(new RenderContext(buffer, gpu));
+
+        assertEquals(color, pixelColor(buffer, 20, 12));
+        assertEquals(0, pixelColor(buffer, 20, 16));
+        assertEquals(color, pixelColor(buffer, 48, 16));
+    }
+
+    @Test
     void rendersPowerRecoilDeathRectangleInsteadOfBodyAndSkipsHiddenEntry() {
         GPU gpu = new GPU();
         int bodyColor = 0x112233;

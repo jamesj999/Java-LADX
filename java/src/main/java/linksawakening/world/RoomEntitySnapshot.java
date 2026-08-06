@@ -13,6 +13,7 @@ public final class RoomEntitySnapshot {
     private final List<RoomEntity> loadedEntities;
     private final EntitySpriteSelection spriteSelection;
     private final EntitySpriteTileSnapshot spriteTiles;
+    private final boolean sideScrolling;
 
     public RoomEntitySnapshot(List<RoomEntity> slots) {
         this(slots, null, null);
@@ -24,6 +25,11 @@ public final class RoomEntitySnapshot {
 
     public RoomEntitySnapshot(List<RoomEntity> slots, EntitySpriteSelection spriteSelection,
                               EntitySpriteTileSnapshot spriteTiles) {
+        this(slots, spriteSelection, spriteTiles, false);
+    }
+
+    public RoomEntitySnapshot(List<RoomEntity> slots, EntitySpriteSelection spriteSelection,
+                              EntitySpriteTileSnapshot spriteTiles, boolean sideScrolling) {
         if (slots == null || slots.size() != EntityRoomLoader.MAX_ENTITIES) {
             throw new IllegalArgumentException("A room must expose exactly "
                 + EntityRoomLoader.MAX_ENTITIES + " entity slots");
@@ -31,6 +37,7 @@ public final class RoomEntitySnapshot {
         this.slots = List.copyOf(slots);
         this.spriteSelection = spriteSelection;
         this.spriteTiles = spriteTiles;
+        this.sideScrolling = sideScrolling;
         List<RoomEntity> loaded = new ArrayList<>();
         for (RoomEntity entity : this.slots) {
             if (entity.loaded()) {
@@ -41,11 +48,20 @@ public final class RoomEntitySnapshot {
     }
 
     public RoomEntitySnapshot withSpriteSelection(EntitySpriteSelection selection) {
-        return new RoomEntitySnapshot(slots, selection, spriteTiles);
+        return new RoomEntitySnapshot(slots, selection, spriteTiles, sideScrolling);
     }
 
     public RoomEntitySnapshot withSpriteTiles(EntitySpriteTileSnapshot tiles) {
-        return new RoomEntitySnapshot(slots, spriteSelection, tiles);
+        return new RoomEntitySnapshot(slots, spriteSelection, tiles, sideScrolling);
+    }
+
+    /** Returns whether the room uses the side-scroll OAM path. */
+    public boolean sideScrolling() {
+        return sideScrolling;
+    }
+
+    public RoomEntitySnapshot withSideScrolling(boolean sideScrolling) {
+        return new RoomEntitySnapshot(slots, spriteSelection, spriteTiles, sideScrolling);
     }
 
     public List<RoomEntity> slots() {

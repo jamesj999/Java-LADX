@@ -243,7 +243,10 @@ public final class PlayerState {
             }
             case TEN_BOMBS -> bombCount = incrementByTenUpTo(bombCount, maxBombs);
             case HEALTH_18 -> addHealthBuffer = Math.min(0xFF, addHealthBuffer + 0x18);
-            case TEN_ARROWS -> arrowCount = Math.min(99, arrowCount + 10);
+            // FloatingArrowsHandler adds BCD $10 and performs no capacity
+            // check. PlayerState stores semantic decimal counts, so the
+            // equivalent is decimal modulo-100 addition.
+            case TEN_ARROWS -> arrowCount = (arrowCount + 10) % 100;
         }
     }
 

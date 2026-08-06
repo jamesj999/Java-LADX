@@ -584,6 +584,9 @@ public final class RoomSession {
                 entities = entities.withSpriteTiles(gpu.snapshotEntityTiles());
             }
         }
+        if (entities != null) {
+            entities = entities.withSideScrolling(room.mapCategory() == Warp.CATEGORY_SIDESCROLL);
+        }
         activeRoom = ActiveRoom.from(room, entities);
         entityRuntime = entities == null ? null : RoomEntityRuntime.from(
             entities, activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD,

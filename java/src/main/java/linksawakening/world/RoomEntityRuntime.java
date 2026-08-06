@@ -187,6 +187,7 @@ public final class RoomEntityRuntime {
         this.slots = initial.slots().toArray(RoomEntity[]::new);
         this.spriteSelection = initial.spriteSelection();
         this.spriteTiles = initial.spriteTiles();
+        this.groundInteractionSideScrolling = initial.sideScrolling();
         this.indoorRoom = indoorRoom;
         this.defaultRandomByteSupplier = defaultRandomByteSupplier;
         this.fallbackRomRandomByteSource = defaultRandomByteSupplier == null
@@ -1045,7 +1046,8 @@ public final class RoomEntityRuntime {
             if (!entity.loaded() || entity.status() != EntityStatus.ACTIVE
                 || !RoomEntityPickupRules.isPickable(entity.type())
                 || (floatingType && !floating)
-                || !RoomEntityPickupRules.collisionCadenceMatches(frameCounter, entity.slot())
+                || (!floating && !RoomEntityPickupRules.collisionCadenceMatches(
+                    frameCounter, entity.slot()))
                 || (!floating && linkAirborne)
                 || (floating && !FloatingItemMotion.linkZAllowsCollection(
                     groundInteractionSideScrolling, linkZ))
@@ -1472,7 +1474,8 @@ public final class RoomEntityRuntime {
     }
 
     public RoomEntitySnapshot snapshot() {
-        return new RoomEntitySnapshot(Arrays.asList(slots), spriteSelection, spriteTiles);
+        return new RoomEntitySnapshot(Arrays.asList(slots), spriteSelection, spriteTiles,
+            groundInteractionSideScrolling);
     }
 
     void setSpriteSelection(EntitySpriteSelection selection) {

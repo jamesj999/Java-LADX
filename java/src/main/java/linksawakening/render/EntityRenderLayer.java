@@ -93,7 +93,7 @@ public final class EntityRenderLayer implements RenderLayer {
             }
             int variant = renderingDeath ? entity.deathSpriteVariant() : entity.spriteVariant();
             renderEntity(context, entity, definition, variant, palettes, tiles,
-                offset.x(), offset.y());
+                offset.x(), offset.y(), entities.sideScrolling());
             if (!renderingDeath && definition.supported() && entities.spriteSelection() != null) {
                 EntitySpriteDefinition overlay = entities.spriteSelection()
                     .spriteOverlayFor(entity.type());
@@ -102,7 +102,7 @@ public final class EntityRenderLayer implements RenderLayer {
                     // rectangle after its main display list. Its tile and
                     // attribute bytes remain in the ROM-backed definition.
                     renderEntity(context, entity, overlay, (frameCounter & 0x08) != 0 ? 1 : 0,
-                        palettes, tiles, offset.x(), offset.y());
+                        palettes, tiles, offset.x(), offset.y(), entities.sideScrolling());
                 }
             }
             if (entity.status() == EntityStatus.BURNING && entities.spriteSelection() != null) {
@@ -110,7 +110,7 @@ public final class EntityRenderLayer implements RenderLayer {
                     .burningSpriteDefinition();
                 if (burning != null) {
                     renderEntity(context, entity, burning, (frameCounter >>> 3) & 0x01,
-                        palettes, tiles, offset.x(), offset.y());
+                        palettes, tiles, offset.x(), offset.y(), entities.sideScrolling());
                 }
             }
         }
@@ -119,7 +119,8 @@ public final class EntityRenderLayer implements RenderLayer {
     private void renderEntity(RenderContext context, RoomEntity entity,
                               EntitySpriteDefinition definition, int spriteVariant,
                               int[][] palettes,
-                              EntitySpriteTileSnapshot tiles, int offsetX, int offsetY) {
+                              EntitySpriteTileSnapshot tiles, int offsetX, int offsetY,
+                              boolean sideScrolling) {
         if (!definition.supported() || spriteVariant < 0
             || spriteVariant >= definition.variantCount()) {
             return;
@@ -136,17 +137,18 @@ public final class EntityRenderLayer implements RenderLayer {
                 // renders variant $06, moves it by +$10, renders variant
                 // $07, and finally restores the source position.
                 renderPair(context, palettes, tiles, definition.variant(6), entity,
-                    entityX - 8, entityY);
+                    entityX - 8, entityY, sideScrolling);
                 renderPair(context, palettes, tiles, definition.variant(7), entity,
-                    entityX + 8, entityY);
+                    entityX + 8, entityY, sideScrolling);
                 return;
             }
-            renderPair(context, palettes, tiles, variant, entity, entityX, entityY);
+            renderPair(context, palettes, tiles, variant, entity, entityX, entityY,
+                sideScrolling);
         } else if (definition.shape() == EntitySpriteDefinition.Shape.SINGLE) {
             EntitySpriteDefinition.Variant variant = definition.variant(spriteVariant);
             renderOamSprite(context, palettes, tiles, withTileOffset(variant.first(), entity),
                 flipAttribute,
-                entityX + 4, entityY);
+                entityX + 4, entityY - (sideScrolling ? 4 : 0));
         } else if (definition.shape() == EntitySpriteDefinition.Shape.RECTANGLE) {
             for (EntitySpriteDefinition.RectangleSprite sprite
                 : definition.rectangleVariant(spriteVariant)) {
@@ -166,7 +168,7 @@ public final class EntityRenderLayer implements RenderLayer {
     private void renderPair(RenderContext context, int[][] palettes,
                             EntitySpriteTileSnapshot tiles,
                             EntitySpriteDefinition.Variant variant, RoomEntity entity,
-                            int pairOriginX, int entityY) {
+                            int pairOriginX, int entityY, boolean sideScrolling) {
         int flipAttribute = entity.entityFlipAttribute();
         if (variant.second() == null) {
             // Hiding Zol's bank-$07 handler selects a single-sprite list
@@ -174,7 +176,8 @@ public final class EntityRenderLayer implements RenderLayer {
             // variants. The catalog represents that mixed path with a
             // null second OAM entry.
             renderOamSprite(context, palettes, tiles, withTileOffset(variant.first(), entity),
-                flipAttribute, pairOriginX + 4, entityY);
+                flipAttribute, pairOriginX + 4,
+                entityY - (sideScrolling ? 4 : 0));
             return;
         }
         boolean flipX = (flipAttribute & OAM_XFLIP) != 0;

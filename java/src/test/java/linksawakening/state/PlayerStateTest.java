@@ -284,6 +284,17 @@ final class PlayerStateTest {
     }
 
     @Test
+    void floatingArrowsUseDecimalModulo100WithoutCapacityCheck() {
+        PlayerState playerState = new PlayerState();
+        playerState.initializeNewGame(99, 20, 20);
+        playerState.setArrowCount(95);
+
+        playerState.applyFloatingItemPickup(0xE5, 5);
+
+        assertEquals(5, playerState.arrowCount());
+    }
+
+    @Test
     void initializeNewGameClearsTheDebugInventoryAndUsesThreeFullHearts() {
         PlayerState playerState = new PlayerState();
         playerState.setItemA(PlayerState.INVENTORY_BOW);

@@ -3449,7 +3449,7 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(entity));
         runtime.setGroundInteractionSideScrolling(true);
 
-        EntityPickupEvent pickup = runtime.collectIfNeeded(1, 24, 47,
+        EntityPickupEvent pickup = runtime.collectIfNeeded(0, 24, 47,
             true, true, 0, 0x00);
 
         assertNotNull(pickup);

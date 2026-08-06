@@ -963,7 +963,8 @@ runtime collision callback.
   are ten rupees, ten arrows, capacity-limited ten bombs, magic-powder
   inventory/count, and the `$18` health buffer.
 - Color Dungeon `$86` `func_036_4F9B`, indoor `$E5` room `$1C` `wDE00`, the
-  `$86` toadstool-status unload branch, `DidKillEnemy`/drop persistence, and
+  `$86` toadstool-status unload branch, `hReplaceTiles`/
+  `REPLACE_TILES_MAGIC_POWDER`, `DidKillEnemy`/drop persistence, and
   floating-item wave-audio delivery remain explicit deferrals. The existing
   event boundary carries only the modeled pickup state and does not invent
   those semantics.

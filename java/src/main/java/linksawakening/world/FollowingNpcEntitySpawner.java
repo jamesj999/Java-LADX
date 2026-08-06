@@ -121,7 +121,8 @@ public final class FollowingNpcEntitySpawner {
         }
 
         RoomEntitySnapshot snapshot = new RoomEntitySnapshot(slots,
-            withOverrides(initial.spriteSelection(), overrides), initial.spriteTiles());
+            withOverrides(initial.spriteSelection(), overrides), initial.spriteTiles(),
+            initial.sideScrolling());
         return new Result(snapshot, state, changed);
     }
 
