@@ -3519,6 +3519,8 @@ public final class RoomEntityRuntime {
         liftedSourceDirection[slot] = 0;
         liftedStateInitialized[slot] = false;
         thrownDirection[slot] = 0xFF;
+        bombDirection[slot] = 0xFF;
+        bombFinalPresentationPending[slot] = false;
         ledgeTransitionTimer[slot] = 0;
         thrownMotionInitialized[slot] = false;
         baseEntityFlipAttribute[slot] = 0;

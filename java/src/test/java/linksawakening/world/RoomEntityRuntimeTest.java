@@ -7,6 +7,8 @@ import linksawakening.vfx.TransientVfxType;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -4216,6 +4218,37 @@ final class RoomEntityRuntimeTest {
         assertEquals(0xA0, runtime.transitionCountdown(slot));
         assertTrue(runtime.bombActive());
         assertEquals(1, runtime.snapshot().loadedEntities().size());
+    }
+
+    @Test
+    void alternateBombDisableClearsPendingPresentationAndDirectionBeforeReuse()
+        throws Exception {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+            new RoomEntitySnapshot(new ArrayList<>(snapshot().slots())), false, null, catalog);
+        int slot = runtime.spawnBomb(0x40, 0x50, 0, 3);
+
+        runtime.setBombTransitionCountdownForTest(slot, 0x01);
+        runtime.tick(0, 0x40, 0x50, () -> 0);
+
+        Field pendingField = RoomEntityRuntime.class
+            .getDeclaredField("bombFinalPresentationPending");
+        pendingField.setAccessible(true);
+        boolean[] pending = (boolean[]) pendingField.get(runtime);
+        assertTrue(pending[slot]);
+
+        Method disable = RoomEntityRuntime.class
+            .getDeclaredMethod("disableEntityWithoutPersistence", int.class);
+        disable.setAccessible(true);
+        disable.invoke(runtime, slot);
+
+        assertFalse(pending[slot]);
+        assertEquals(0xFF, runtime.bombDirection(slot));
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(slot).status());
+        assertEquals(slot, runtime.spawnBomb(0x44, 0x54, 0, 1));
+        assertEquals(1, runtime.bombDirection(slot));
+        assertFalse(pending[slot]);
     }
 
     private static RoomEntity ghiniEntity(EntitySpriteHandlerCatalog catalog, int slot, int type,
