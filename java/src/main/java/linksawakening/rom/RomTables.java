@@ -40,6 +40,15 @@ public final class RomTables {
     private static final int ENTITY_COLLISION_POINTS_Y_ADDR = 0x786F;
     private static final int ENTITY_COLLISION_POINTS_TABLE_SIZE = 0x10;
 
+    // FineCollisionShapes in bank $03. Four unsigned shape bytes for each
+    // physics flag from $7C through $8D.
+    private static final int ENTITY_FINE_COLLISION_SHAPES_BANK = 0x03;
+    private static final int ENTITY_FINE_COLLISION_SHAPES_ADDR = 0x7A85;
+    private static final int ENTITY_FINE_COLLISION_SHAPES_FIRST_PHYSICS = 0x7C;
+    private static final int ENTITY_FINE_COLLISION_SHAPES_LAST_PHYSICS = 0x8D;
+    private static final int ENTITY_FINE_COLLISION_SHAPES_QUADRANTS = 4;
+    private static final int ENTITY_FINE_COLLISION_SHAPES_LENGTH = 0x48;
+
     private static final int LINK_SPEED_TABLE_BANK = 0x02;
     private static final int LINK_SPEED_TABLE_X_ADDR = 0x48C5;
     private static final int LINK_SPEED_TABLE_Y_ADDR = 0x48E5;
@@ -84,6 +93,7 @@ public final class RomTables {
     private final int[] entityHitboxFlags;
     private final byte[] entityCollisionPointsX;
     private final byte[] entityCollisionPointsY;
+    private final int[] entityFineCollisionShapes;
     private final byte[] linkSpeedX;
     private final byte[] linkSpeedY;
     private final int[] swordAnimState;
@@ -103,6 +113,7 @@ public final class RomTables {
     private RomTables(int[][] physicsFlags, int[] entityOptions1,
                       int[] entityHitboxFlags, byte[] entityCollisionPointsX,
                       byte[] entityCollisionPointsY,
+                      int[] entityFineCollisionShapes,
                       byte[] linkSpeedX, byte[] linkSpeedY,
                       int[] swordAnimState, int[] swordDirection,
                       byte[] swordXOffset, byte[] swordYOffset, byte[] swordYBase,
@@ -115,6 +126,7 @@ public final class RomTables {
         this.entityHitboxFlags = entityHitboxFlags;
         this.entityCollisionPointsX = entityCollisionPointsX;
         this.entityCollisionPointsY = entityCollisionPointsY;
+        this.entityFineCollisionShapes = entityFineCollisionShapes;
         this.linkSpeedX = linkSpeedX;
         this.linkSpeedY = linkSpeedY;
         this.swordAnimState = swordAnimState;
@@ -152,6 +164,9 @@ public final class RomTables {
         byte[] collisionPointsY = loadSignedTable(
             romData, ENTITY_COLLISION_POINTS_BANK, ENTITY_COLLISION_POINTS_Y_ADDR,
             ENTITY_COLLISION_POINTS_TABLE_SIZE);
+        int[] fineCollisionShapes = loadUnsignedTable(
+            romData, ENTITY_FINE_COLLISION_SHAPES_BANK, ENTITY_FINE_COLLISION_SHAPES_ADDR,
+            ENTITY_FINE_COLLISION_SHAPES_LENGTH);
 
         byte[] speedX = new byte[LINK_SPEED_TABLE_LENGTH];
         byte[] speedY = new byte[LINK_SPEED_TABLE_LENGTH];
@@ -181,7 +196,8 @@ public final class RomTables {
             romData, STATIC_SWORD_COLLISION_TABLE_BANK, STATIC_SWORD_COLLISION_Y_ADDR, STATIC_SWORD_COLLISION_TABLE_LEN);
 
         return new RomTables(flags, options1, hitboxFlags, collisionPointsX,
-                             collisionPointsY, speedX, speedY, swordAnim, swordDir,
+                             collisionPointsY, fineCollisionShapes,
+                             speedX, speedY, swordAnim, swordDir,
                              swordX, swordY, swordYBaseBytes,
                              swordCollisionNeeded, swordCollisionWidth,
                              swordCollisionOffset, swordCollisionHeight,
@@ -256,6 +272,18 @@ public final class RomTables {
     public int entityCollisionPointY(int collisionBoxType, int direction) {
         int index = collisionPointIndex(collisionBoxType, direction);
         return entityCollisionPointsY[index];
+    }
+
+    /** Unsigned fine-collision shape byte for a physics flag and quadrant. */
+    public int entityFineCollisionShape(int physicsFlag, int quadrant) {
+        if (physicsFlag < ENTITY_FINE_COLLISION_SHAPES_FIRST_PHYSICS
+            || physicsFlag > ENTITY_FINE_COLLISION_SHAPES_LAST_PHYSICS
+            || quadrant < 0 || quadrant >= ENTITY_FINE_COLLISION_SHAPES_QUADRANTS) {
+            return 0;
+        }
+        return entityFineCollisionShapes[
+            (physicsFlag - ENTITY_FINE_COLLISION_SHAPES_FIRST_PHYSICS)
+                * ENTITY_FINE_COLLISION_SHAPES_QUADRANTS + quadrant];
     }
 
     private static int collisionPointIndex(int collisionBoxType, int direction) {
