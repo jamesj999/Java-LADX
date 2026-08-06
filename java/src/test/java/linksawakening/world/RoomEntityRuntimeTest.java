@@ -387,13 +387,41 @@ final class RoomEntityRuntimeTest {
         assertEquals(0, events.get(0).linkDamage());
         assertEquals(EntityStatus.DYING, runtime.snapshot().slots().get(0).status());
         assertEquals(0x40, runtime.dyingCountdown(0));
+        assertEquals(-1, runtime.snapshot().slots().get(0).deathSpriteVariant());
+        assertFalse(runtime.snapshot().slots().get(0).powerRecoilDeath());
 
-        for (int frame = 1; frame < 0x40; frame++) {
+        for (int frame = 1; frame <= 0x20; frame++) {
+            runtime.tick(frame, 120, 120, sequence(0x00));
+        }
+        assertEquals(0x20, runtime.dyingCountdown(0));
+        assertEquals(-1, runtime.snapshot().slots().get(0).deathSpriteVariant());
+        runtime.tick(0x21, 120, 120, sequence(0x00));
+        assertEquals(0x1F, runtime.dyingCountdown(0));
+        assertEquals(3, runtime.snapshot().slots().get(0).deathSpriteVariant());
+
+        for (int frame = 0x22; frame < 0x40; frame++) {
             runtime.tick(frame, 120, 120, sequence(0x00));
         }
         assertTrue(runtime.snapshot().slots().get(0).loaded());
         runtime.tick(0x40, 120, 120, sequence(0x00));
         assertFalse(runtime.snapshot().slots().get(0).loaded());
+    }
+
+    @Test
+    void aPowerRecoilSwordHitMarksTheRomPowerDeathPresentation() {
+        EntitySpriteDefinition definition = keeseDefinition();
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x19, 64, 64, EntityStatus.ACTIVE, definition, 0)));
+
+        List<EntityCombatEvent> events = runtime.resolveCombat(
+            0, 120, 120, false, true, true, 72, 1, 72, 1,
+            new EnemyAttackContext(1, false, true, false, false));
+
+        assertEquals(1, events.size());
+        assertEquals(EntityStatus.DYING, runtime.snapshot().slots().get(0).status());
+        assertEquals(0x40, runtime.dyingCountdown(0));
+        assertEquals(-1, runtime.snapshot().slots().get(0).deathSpriteVariant());
+        assertTrue(runtime.snapshot().slots().get(0).powerRecoilDeath());
     }
 
     @Test
@@ -787,6 +815,8 @@ final class RoomEntityRuntimeTest {
         }
         assertEquals(EntityStatus.DYING, runtime.snapshot().slots().get(0).status());
         assertEquals(0x1F, runtime.dyingCountdown(0));
+        assertEquals(3, runtime.snapshot().slots().get(0).deathSpriteVariant());
+        assertFalse(runtime.snapshot().slots().get(0).powerRecoilDeath());
         assertEquals(0x04, runtime.physicsFlags(0));
         List<EntityCombatEvent> expiryEvents = runtime.consumePendingEntityEvents();
         assertEquals(1, expiryEvents.size());

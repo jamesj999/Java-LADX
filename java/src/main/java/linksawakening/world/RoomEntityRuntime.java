@@ -124,6 +124,7 @@ public final class RoomEntityRuntime {
     private final int[] enemyTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyStunnedCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] dyingCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] powerRecoilDeath = new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyPhysicsFlags = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyHealth = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyFlashCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -198,6 +199,9 @@ public final class RoomEntityRuntime {
             enemyHealth[entity.slot()] = entity.loaded() ? initialHealth(entity.type()) : 0;
             enemyPhysicsFlags[entity.slot()] = entity.loaded()
                 ? initialPhysicsFlags(entity.type()) : 0;
+            if (entity.status() == EntityStatus.DYING) {
+                powerRecoilDeath[entity.slot()] = entity.powerRecoilDeath();
+            }
             if (isLaserType(entity.type())) {
                 laserMotion.initializeForEntity(entity);
             }
@@ -481,7 +485,10 @@ public final class RoomEntityRuntime {
                 if (dyingCountdown[entity.slot()] == 0) {
                     disableEntityWithoutPersistence(entity.slot());
                 } else {
-                    slots[index] = refreshColorShellDisplay(entity, status);
+                    RoomEntity updated = refreshColorShellDisplay(entity, status);
+                    slots[index] = withDeathPresentation(updated,
+                        deathSpriteVariantForCountdown(dyingCountdown[entity.slot()]),
+                        powerRecoilDeath[entity.slot()]);
                 }
                 continue;
             } else if (status == EntityStatus.BURNING) {
@@ -1323,7 +1330,10 @@ public final class RoomEntityRuntime {
                     slots[entity.slot()] = withStatus(entity, EntityStatus.STUNNED);
                 } else if (swordDamage > 0 && enemyHealth[entity.slot()] == 0) {
                     dyingCountdown[entity.slot()] = 0x40;
-                    slots[entity.slot()] = withStatus(entity, EntityStatus.DYING);
+                    powerRecoilDeath[entity.slot()] = attackContext.powerRecoil();
+                    slots[entity.slot()] = withDeathPresentation(
+                        withStatus(entity, EntityStatus.DYING), -1,
+                        powerRecoilDeath[entity.slot()]);
                 } else if (swordDamage > 0) {
                     // jr_003_73B6 and StartIgnoringHitsForEntity: a normal
                     // sword hit flashes for $18 frames and suppresses the
@@ -1379,6 +1389,7 @@ public final class RoomEntityRuntime {
         enemyTransitionCountdown[slot] = 0;
         enemyStunnedCountdown[slot] = 0;
         dyingCountdown[slot] = 0;
+        powerRecoilDeath[slot] = false;
         enemyPhysicsFlags[slot] = 0;
         enemyHealth[slot] = 0;
         enemyFlashCountdown[slot] = 0;
@@ -1580,6 +1591,8 @@ public final class RoomEntityRuntime {
         enemyHealth[slot] = initialHealth(ENTITY_GEL);
         enemyFlashCountdown[slot] = 0;
         enemyIgnoreHitsCountdown[slot] = 0;
+        dyingCountdown[slot] = 0;
+        powerRecoilDeath[slot] = false;
         enemyRecoilMotion.clear(slot);
 
         int freeSlot = findFreeEntitySlot();
@@ -1593,6 +1606,7 @@ public final class RoomEntityRuntime {
             enemyTransitionCountdown[freeSlot] = 0;
             enemyStunnedCountdown[freeSlot] = 0;
             dyingCountdown[freeSlot] = 0;
+            powerRecoilDeath[freeSlot] = false;
             enemyHealth[freeSlot] = initialHealth(ENTITY_GEL);
             enemyFlashCountdown[freeSlot] = 0;
             // SpawnNewEntity sets the new entity's ignore-hits countdown to 1.
@@ -1634,6 +1648,7 @@ public final class RoomEntityRuntime {
         enemyIgnoreHitsCountdown[freeSlot] = 1;
         enemyRecoilMotion.clear(freeSlot);
         dyingCountdown[freeSlot] = 0;
+        powerRecoilDeath[freeSlot] = false;
         pairoddProjectileMotion.initializeSpawn(freeSlot, source, linkEntityX, linkEntityY);
     }
 
@@ -1656,6 +1671,7 @@ public final class RoomEntityRuntime {
         enemyTransitionCountdown[freeSlot] = 0;
         enemyStunnedCountdown[freeSlot] = 0;
         dyingCountdown[freeSlot] = 0;
+        powerRecoilDeath[freeSlot] = false;
         enemyPhysicsFlags[freeSlot] = EVASIVE_CLONE_PHYSICS_FLAGS;
         enemyHealth[freeSlot] = initialHealth(ENTITY_STALFOS_EVASIVE);
         enemyFlashCountdown[freeSlot] = 0;
@@ -1704,6 +1720,7 @@ public final class RoomEntityRuntime {
         enemyIgnoreHitsCountdown[freeSlot] = 1;
         enemyRecoilMotion.clear(freeSlot);
         dyingCountdown[freeSlot] = 0;
+        powerRecoilDeath[freeSlot] = false;
         enemyProjectileMotion.initializeSpawn(freeSlot, request.projectileType(), direction);
         enemyProjectileSpawnedThisFrame[freeSlot] = true;
     }
@@ -1726,6 +1743,7 @@ public final class RoomEntityRuntime {
         enemyFlashCountdown[freeSlot] = 0;
         enemyIgnoreHitsCountdown[freeSlot] = 1;
         dyingCountdown[freeSlot] = 0;
+        powerRecoilDeath[freeSlot] = false;
         laserMotion.initializeSensor(freeSlot, parent.slot(), laserMotion.direction(parent.slot()));
         dynamicEntitySpawnedThisFrame[freeSlot] = true;
     }
@@ -1748,6 +1766,7 @@ public final class RoomEntityRuntime {
         enemyFlashCountdown[freeSlot] = 0;
         enemyIgnoreHitsCountdown[freeSlot] = 1;
         dyingCountdown[freeSlot] = 0;
+        powerRecoilDeath[freeSlot] = false;
         laserMotion.initializeBeam(freeSlot, laserMotion.direction(parent.slot()),
             laserMotion.speedX(parent.slot()), laserMotion.speedY(parent.slot()));
         dynamicEntitySpawnedThisFrame[freeSlot] = true;
@@ -1796,6 +1815,7 @@ public final class RoomEntityRuntime {
             entityOptions1Override[slot] = -1;
             enemyPhysicsFlags[slot] = EVASIVE_PHYSICS_FLAGS;
             dyingCountdown[slot] = 0;
+            powerRecoilDeath[slot] = false;
             enemyRecoilMotion.clear(slot);
             stalfosEvasiveMotion.clear(slot);
             return;
@@ -1803,7 +1823,9 @@ public final class RoomEntityRuntime {
 
         enemyPhysicsFlags[slot] = 0x04;
         dyingCountdown[slot] = 0x1F;
-        slots[slot] = withStatus(entity, EntityStatus.DYING);
+        powerRecoilDeath[slot] = false;
+        slots[slot] = withDeathPresentation(
+            withStatus(entity, EntityStatus.DYING), 3, false);
         pendingEntityEvents.add(new EntityCombatEvent(
             slot, entity.type(), 0, false,
             EntityCombatEvent.SoundChannel.NOISE, 0x13));
@@ -2440,36 +2462,61 @@ public final class RoomEntityRuntime {
     }
 
     private static RoomEntity withStatus(RoomEntity entity, EntityStatus status) {
-        return new RoomEntity(
+        return preserveDeathMetadata(entity, new RoomEntity(
             entity.slot(), entity.sourceLoadOrder(), entity.type(), entity.x(), entity.y(),
             status, entity.spriteDefinition(), entity.spriteVariant(), entity.entityFlipAttribute(),
-            entity.spriteTileOffset(), entity.z());
+            entity.spriteTileOffset(), entity.z()));
     }
 
     private static RoomEntity withType(RoomEntity entity, int type,
                                        EntitySpriteDefinition definition) {
         int variant = definition.supported() ? definition.initialVariant() : -1;
-        return new RoomEntity(
+        return preserveDeathMetadata(entity, new RoomEntity(
             entity.slot(), entity.sourceLoadOrder(), type, entity.x(), entity.y(),
             entity.status(), definition, variant, entity.entityFlipAttribute(),
-            entity.spriteTileOffset(), entity.z());
+            entity.spriteTileOffset(), entity.z()));
     }
 
     private static RoomEntity withVariant(RoomEntity entity, int variant) {
-        return new RoomEntity(
+        return preserveDeathMetadata(entity, new RoomEntity(
             entity.slot(), entity.sourceLoadOrder(), entity.type(), entity.x(), entity.y(),
             entity.status(), entity.spriteDefinition(), variant, entity.entityFlipAttribute(),
-            entity.spriteTileOffset(), entity.z());
+            entity.spriteTileOffset(), entity.z()));
     }
 
     private static RoomEntity withDefinition(RoomEntity entity,
                                               EntitySpriteDefinition definition, int variant) {
         int selectedVariant = definition.supported()
             ? Math.min(Math.max(variant, 0), definition.variantCount() - 1) : -1;
-        return new RoomEntity(
+        return preserveDeathMetadata(entity, new RoomEntity(
             entity.slot(), entity.sourceLoadOrder(), entity.type(), entity.x(), entity.y(),
             entity.status(), definition, selectedVariant, entity.entityFlipAttribute(),
-            entity.spriteTileOffset(), entity.z());
+            entity.spriteTileOffset(), entity.z()));
+    }
+
+    private static RoomEntity preserveDeathMetadata(RoomEntity source, RoomEntity rebuilt) {
+        if (source.status() != EntityStatus.DYING || rebuilt.status() != EntityStatus.DYING) {
+            return rebuilt;
+        }
+        return new RoomEntity(rebuilt.slot(), rebuilt.sourceLoadOrder(), rebuilt.type(),
+            rebuilt.x(), rebuilt.y(), rebuilt.status(), rebuilt.spriteDefinition(),
+            rebuilt.spriteVariant(), rebuilt.entityFlipAttribute(), rebuilt.spriteTileOffset(),
+            rebuilt.z(), source.deathSpriteVariant(), source.powerRecoilDeath());
+    }
+
+    private static RoomEntity withDeathPresentation(RoomEntity entity, int variant,
+                                                     boolean powerRecoil) {
+        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
+            entity.x(), entity.y(), entity.status(), entity.spriteDefinition(),
+            entity.spriteVariant(), entity.entityFlipAttribute(), entity.spriteTileOffset(),
+            entity.z(), variant, powerRecoil);
+    }
+
+    private static int deathSpriteVariantForCountdown(int countdown) {
+        if (countdown >= 0x20 || countdown <= 0) {
+            return -1;
+        }
+        return ((countdown << 1) & 0x30) >>> 4;
     }
 
     private boolean beginFalling(RoomEntity entity,
@@ -2604,9 +2651,10 @@ public final class RoomEntityRuntime {
 
     private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y,
                                                        int variant) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
+        return preserveDeathMetadata(entity, new RoomEntity(
+            entity.slot(), entity.sourceLoadOrder(), entity.type(),
             x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z());
+            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z()));
     }
 
     private record FallingVector(int x, int y) {
@@ -2618,6 +2666,7 @@ public final class RoomEntityRuntime {
         enemyTransitionCountdown[slot] = 0;
         enemyStunnedCountdown[slot] = 0;
         dyingCountdown[slot] = 0;
+        powerRecoilDeath[slot] = false;
         enemyPhysicsFlags[slot] = 0;
         enemyHealth[slot] = 0;
         enemyFlashCountdown[slot] = 0;
