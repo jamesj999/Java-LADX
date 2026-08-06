@@ -101,6 +101,62 @@ final class EntityBackgroundCollisionResolverTest {
     }
 
     @Test
+    void ledgeDirectionUsesThrownDirectionAndZToStartTheLedgeTimer() {
+        RoomEntity grounded = entity(0x09, 0);
+        RoomEntity airborne = entity(0x09, 1);
+        EntityBackgroundCollisionResolver resolver = new EntityBackgroundCollisionResolver(
+            tables(0, 0, 0, 0, grounded.type(), 0));
+
+        EntityBackgroundCollisionResolution groundedResult = resolveWithState(
+            resolver, grounded, 0x00, true, 0x00, 0x00, 0xD0);
+        assertTrue(groundedResult.result().blocked());
+        assertEquals(0x00, groundedResult.nextLedgeTimer());
+
+        EntityBackgroundCollisionResolution airborneResult = resolveWithState(
+            resolver, airborne, 0x00, true, 0x00, 0x00, 0xD0);
+        assertFalse(airborneResult.result().blocked());
+        assertEquals(0x01, airborneResult.nextLedgeTimer());
+
+        EntityBackgroundCollisionResolution wrappedResult = resolveWithState(
+            resolver, airborne, 0x00, true, 0x00, 0xFF, 0xD0);
+        assertFalse(wrappedResult.result().blocked());
+        assertEquals(0x00, wrappedResult.nextLedgeTimer());
+    }
+
+    @Test
+    void ledgeTimerUsesRomCadenceAndWreckingBallStaysSolid() {
+        RoomEntity ordinary = entity(0x09, 0);
+        EntityBackgroundCollisionResolver resolver = new EntityBackgroundCollisionResolver(
+            tables(0, 0, 0, 0, ordinary.type(), 0));
+
+        EntityBackgroundCollisionResolution zeroTimer = resolveWithState(
+            resolver, ordinary, 0x00, true, 0x00, 0x00, 0xD1);
+        assertTrue(zeroTimer.result().blocked());
+        assertEquals(0x00, zeroTimer.nextLedgeTimer());
+
+        EntityBackgroundCollisionResolution indoor = resolveWithState(
+            resolver, ordinary, 0x01, true, 0x00, 0x02, 0xD1);
+        assertFalse(indoor.result().blocked());
+        assertEquals(0x01, indoor.nextLedgeTimer());
+
+        EntityBackgroundCollisionResolution outdoorEven = resolveWithState(
+            resolver, ordinary, 0x02, false, 0x00, 0x02, 0xD1);
+        assertFalse(outdoorEven.result().blocked());
+        assertEquals(0x02, outdoorEven.nextLedgeTimer());
+
+        EntityBackgroundCollisionResolution outdoorOdd = resolveWithState(
+            resolver, ordinary, 0x03, false, 0x00, 0x02, 0xD1);
+        assertFalse(outdoorOdd.result().blocked());
+        assertEquals(0x01, outdoorOdd.nextLedgeTimer());
+
+        RoomEntity wreckingBall = entity(0xA8, 0);
+        EntityBackgroundCollisionResolution ball = resolveWithState(
+            resolver, wreckingBall, 0x01, true, 0x00, 0x02, 0xD1);
+        assertTrue(ball.result().blocked());
+        assertEquals(0x02, ball.nextLedgeTimer());
+    }
+
+    @Test
     void bombAndWreckingBallPassBlockingFineCollisionShapes() {
         RoomEntity bomb = entity(0x02, 0);
         RoomEntity wreckingBall = entity(0xA8, 0);
@@ -220,5 +276,14 @@ final class EntityBackgroundCollisionResolverTest {
             entity, EntityBackgroundCollisionResult.RIGHT,
             new EntityCollisionPointProbe.Sample(sampleX, sampleY), 0x22, physics,
             ignoreHitsCountdown);
+    }
+
+    private static EntityBackgroundCollisionResolution resolveWithState(
+            EntityBackgroundCollisionResolver resolver, RoomEntity entity, int frameCounter,
+            boolean indoorRoom, int thrownDirection, int ledgeTimer, int physics) {
+        return resolver.resolveWithState(entity, EntityBackgroundCollisionResult.RIGHT,
+            new EntityCollisionPointProbe.Sample(0x20, 0x30), 0x22, physics,
+            new EntityBackgroundCollisionState(frameCounter, indoorRoom,
+                thrownDirection, ledgeTimer));
     }
 }
