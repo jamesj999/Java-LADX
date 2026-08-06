@@ -179,6 +179,8 @@ Define `ENTITY_MOLDORM = 0x59` beside the other entity constants. Do not modify 
 **Files:**
 - Modify: `java/src/main/java/linksawakening/world/RoomSession.java`
 - Modify: `java/src/main/java/linksawakening/world/RoomEntityRuntime.java`
+- Modify: `java/src/main/java/linksawakening/world/RoamingEnemyMotion.java`
+- Modify: `java/src/test/java/linksawakening/world/RoamingEnemyMotionTest.java`
 
 - [x] **Step 1: Give RoomSession a state-aware rich probe.** Add this field beside the existing collision resolver field:
 
@@ -232,7 +234,23 @@ backgroundInteraction.probe(entity, direction, nextX, nextY,
 
 Do not alter the public tick overloads. Runtime callers with only the old callback continue using it unchanged.
 
-- [x] **Step 3: Run the runtime and session regressions.** Run:
+- [x] **Step 3: Propagate state through the direct roaming probe.** Keep the existing six-argument `advanceWithInteraction` overload and delegate it with zero, then add:
+
+```java
+Update advanceWithInteraction(RoomEntity entity, int linkEntityX, int linkEntityY,
+                               IntSupplier randomByteSupplier,
+                               RoomEntityBackgroundInteraction backgroundInteraction,
+                               int ignoreHitsCountdown,
+                               boolean creditsGameplay)
+```
+
+Pass `ignoreHitsCountdown` to the five-argument probe for both the X and Y
+movement samples. Update the live `RoomEntityRuntime` call to pass
+`enemyIgnoreHitsCountdown[entity.slot()]`. The new
+`RoamingEnemyMotionTest.stateAwareRichCollisionReceivesTheRoamingIgnoreHitsCountdown`
+must assert the supplied `$0A` value and the blocked collision flag.
+
+- [x] **Step 4: Run the runtime and session regressions.** Run:
 
 ```bash
 gradle -p java test \
@@ -242,16 +260,18 @@ gradle -p java test \
 
 Expected: both pass, including the countdown value observed after the existing recoil decrement (`$09` for the `$0A` sword-hit countdown).
 
-- [x] **Step 4: Commit the focused implementation.** Commit the interface, resolver, session, runtime, and tests:
+- [x] **Step 5: Commit the focused implementation.** Commit the interface, resolver, session, runtime, roaming motion, and tests:
 
 ```bash
 git add java/src/main/java/linksawakening/world/RoomEntityBackgroundInteraction.java \
     java/src/main/java/linksawakening/world/EntityBackgroundCollisionResolver.java \
     java/src/main/java/linksawakening/world/RoomSession.java \
     java/src/main/java/linksawakening/world/RoomEntityRuntime.java \
+    java/src/main/java/linksawakening/world/RoamingEnemyMotion.java \
     java/src/test/java/linksawakening/world/EntityBackgroundCollisionResolverTest.java \
     java/src/test/java/linksawakening/world/RoomEntityRuntimeTest.java \
-    java/src/test/java/linksawakening/world/RoomSessionTest.java
+    java/src/test/java/linksawakening/world/RoomSessionTest.java \
+    java/src/test/java/linksawakening/world/RoamingEnemyMotionTest.java
 git commit -m "feat: propagate entity ignore-hits collision state"
 ```
 
@@ -265,6 +285,7 @@ git commit -m "feat: propagate entity ignore-hits collision state"
 ```bash
 gradle -p java test \
   --tests linksawakening.world.EntityBackgroundCollisionResolverTest \
+  --tests linksawakening.world.RoamingEnemyMotionTest \
   --tests linksawakening.world.RoomEntityRuntimeTest \
   --tests linksawakening.world.RoomSessionTest
 ```

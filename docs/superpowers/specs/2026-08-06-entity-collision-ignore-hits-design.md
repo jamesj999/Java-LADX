@@ -41,6 +41,11 @@ therefore sees the same state-aware result without widening all of their
 individual APIs. Direct runtime callers that only provide the old boolean
 callback retain their current behavior.
 
+The bank-$03 roaming handler is also a direct rich-probe consumer, so
+`RoamingEnemyMotion` exposes a state-aware overload. The existing overload
+delegates with a zero countdown for compatibility; the live runtime selects
+the new overload and passes the slot's current value to both axis probes.
+
 `RoomSession` owns the state-aware rich probe. It keeps the existing ROM sample,
 object, and physics lookup, then calls the resolver overload with the supplied
 countdown. The four-argument test/helper path uses the active runtime's current
@@ -59,6 +64,8 @@ physics, and no-wall decisions remain unchanged.
 - Add a room-session regression that sets the active entity countdown and
   probes the shipped room through the session boundary, proving the four-
   argument helper observes live runtime state.
+- Add a roaming-motion regression that proves the five-argument probe receives
+  the supplied countdown on a movement collision.
 - Add a runtime regression with an Octorok receiving recoil. Install a rich
   probe that passes and an old boolean callback that blocks; the entity must
   move through the rich path, and the rich callback must observe the current

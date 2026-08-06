@@ -811,8 +811,10 @@ runtime collision callback.
   normal pits, and pit-warps while the countdown is nonzero, with Moldorm's
   source exception preserved; airborne entities remain passable.
 - A Moblin recoil regression proves the state-aware probe is adapted into the
-  legacy movement callback used by the live runtime. The session boundary also
-  verifies that its four-argument helper observes the active countdown.
+  legacy movement callback used by the live runtime. The roaming movement
+  path now receives the same value through its rich-probe overload, and the
+  session boundary verifies that its four-argument helper observes the active
+  countdown.
 - Remaining gaps are direction/state-dependent ledge timers, switch-block WRAM
   state, hookshot-chain transitions, and remaining handler-specific
   migrations.
