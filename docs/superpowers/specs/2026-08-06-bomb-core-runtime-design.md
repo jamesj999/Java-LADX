@@ -101,15 +101,21 @@ an additional generic flip to the explosion rectangle.
 
 ### Thrown and lifted bombs
 
-The source bomb handler still participates while a bomb is being lifted or
-thrown. The Java runtime will keep the bomb fuse alive across those statuses,
-use the existing ROM-derived `ThrownEntityMotion` tables for the throw, and
-restore the ordinary bomb countdown `$A0` when the source throw path does so.
-Bomb wall reversal and the source grabbable/terrain gates will be applied by
-the existing background and lift/throw infrastructure. A thrown bomb's
-special enemy-bomb conversion and bomb-arrow conversion are outside this
-increment unless the source path is already represented by the current item
-runtime.
+The source has a status distinction that the Java runtime must preserve. The
+lifted handler special-cases entity `$02` and calls `RenderBomb` only; the
+global entity-timer path still decrements its transition countdown, but the
+warning/explosion handler is not run while it remains lifted. The thrown and
+stunned handlers call the active bomb handler before their bounce/throw work.
+
+The lifecycle increment covers the active handler. The later lift/throw slice
+will keep the bomb visible while lifted, use the existing ROM-derived
+`ThrownEntityMotion` tables for the throw, restore the ordinary bomb countdown
+`$A0` when the source throw path does so, and resume the active bomb handler
+for warning/explosion timing. Bomb wall reversal and the source
+grabbable/terrain gates will be applied by the existing background and
+lift/throw infrastructure. A thrown bomb's special enemy-bomb conversion and
+bomb-arrow conversion are outside this increment unless the source path is
+already represented by the current item runtime.
 
 ### Audio and palette effects
 
@@ -130,6 +136,9 @@ ROM explosion geometry and timing are required regardless.
   transient explosion entity.
 - Extend the existing sprite-definition selection and renderer contracts only
   as needed for the bomb's single, pair, and rectangle phases.
+- Preserve `RenderBomb`'s source visual-position increment of two pixels for
+  the normal single-sprite phase; the warning pair and explosion rectangle use
+  the unshifted active position.
 - Preserve the current frame order: equipment edge dispatch occurs before
   Link movement, then room combat/entity ticks consume the resulting bomb
   state.

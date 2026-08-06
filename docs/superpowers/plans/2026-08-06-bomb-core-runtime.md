@@ -4,7 +4,7 @@
 
 **Goal:** Implement the ordinary ROM-backed player bomb from placement through fuse, pre-explosion warning, explosion presentation, sound, and unload in the Java room runtime.
 
-**Architecture:** Keep entity type `$02` in one room-entity slot. Decode the source bomb, warning-pair, and explosion-rectangle display lists through `EntitySpriteHandlerCatalog`; use a small pure `BombMotion` helper for countdown phase/variant decisions; bridge equipment placement through `RoomSession` into `RoomEntityRuntime`; and emit the explosion sound through the existing gameplay sound event path. Preserve the current room tick order and leave bombable-room mutations, bomb arrows, and enemy-bomb branches as explicit follow-up slices.
+**Architecture:** Keep entity type `$02` in one room-entity slot. Decode the source bomb, warning-pair, and explosion-rectangle display lists through `EntitySpriteHandlerCatalog`; use a small pure `BombMotion` helper for countdown phase/variant decisions; bridge equipment placement through `RoomSession` into `RoomEntityRuntime`; and emit the explosion sound through the existing gameplay sound event path. Preserve the current room tick order and leave bombable-room mutations, bomb arrows, and enemy-bomb branches as explicit follow-up slices. The active lifecycle owns the phase presentation; lifted/throw status integration remains Task 5 because the source lifted handler has a bomb-specific render-only branch.
 
 **Tech Stack:** Java 21 records/classes, JUnit 5, Gradle, shipped `azle.gbc` ROM, existing indexed framebuffer/OAM renderer and ROM bank helpers.
 
@@ -12,7 +12,7 @@
 
 - Modify `java/src/main/java/linksawakening/entity/EntitySpriteHandlerCatalog.java` and its tests to decode the bank-$03 bomb display lists.
 - Add `java/src/main/java/linksawakening/world/BombMotion.java` and focused tests for source countdown phases.
-- Modify `java/src/main/java/linksawakening/world/RoomEntityRuntime.java`, `RoomEntity.java`/selection plumbing as needed, and runtime tests for spawn, lifecycle, throw, lift, bounce, and unload.
+- Modify `java/src/main/java/linksawakening/world/RoomEntityRuntime.java`, `RoomEntity.java`/selection plumbing as needed, and runtime/render tests for active spawn, lifecycle, source visual offsets, and unload.
 - Modify `java/src/main/java/linksawakening/world/RoomSession.java` and its tests to expose placement and refresh the immutable room snapshot.
 - Add `java/src/main/java/linksawakening/equipment/Bomb.java`; modify `ItemRegistry` consumers, `Main.java`, and equipment tests for inventory/edge wiring.
 - Modify `java/src/main/java/linksawakening/gameplay/GameplaySoundEvent.java` and `GameplaySoundEffectMap.java`, plus sound-map tests, for explosion noise `$0C` (`$0B` remains hookshot).
@@ -101,7 +101,8 @@ Run the focused test and `git diff --check`, then commit:
 
 **Files:** `RoomEntityRuntime.java`, `RoomEntity.java` or sprite-selection
 plumbing if required, `RoomEntityRuntimeTest.java`, and
-`EntityRenderLayerTest.java` if render coverage needs a new fixture.
+`EntityRenderLayer.java`/`EntityRenderLayerTest.java` for the source normal-
+bomb visual offset.
 
 - [ ] **Step 1: Write failing spawn/lifecycle tests.**
 
@@ -110,7 +111,8 @@ Add tests that spawn a bomb through the runtime and assert:
   - the free slot contains type `$02`, source position/Z/direction, the ROM bomb definition, and transition countdown `$A0`;
   - the pre-tick `$22..$18` snapshots use the warning pair while retaining the same slot;
   - the `$18` tick emits exactly one explosion sound event and advances into the explosion phase;
-  - countdown values `$17..$00` select the exact ROM rectangle variants and zero clears the slot; and
+  - countdown values `$17..$00` select the exact ROM rectangle variants and zero clears the slot;
+  - the normal single phase applies the source `RenderBomb` Y increment of two pixels, while warning/explosion phases do not; and
   - `wHasPlacedBomb`-equivalent state is cleared when the bomb unloads.
 
 Use a fake sound sink/event collector and the real catalog where the test
@@ -128,15 +130,17 @@ phase-specific runtime state.
 - [ ] **Step 3: Implement the smallest runtime bridge.**
 
 Add a bomb spawn method and per-slot bomb state/countdown initialization. Make
-the entity handler run the bomb phase before generic enemy-only handling,
-including when the source status is lifted/thrown. Use the existing entity
-countdown decrement boundary and existing `clearEntity` path. Do not mark a
-pre-tick player bomb as a dynamic spawn that would skip its first handler tick.
+the active entity handler run the bomb phase before generic enemy-only
+handling. Leave lifted/throw status dispatch to Task 5, matching the source's
+lifted render-only bomb branch. Use the existing entity countdown decrement
+boundary and existing `clearEntity` path. Do not mark a pre-tick player bomb
+as a dynamic spawn that would skip its first handler tick.
 
 Select the catalog definition for the current phase while preserving the
-same `RoomEntity` slot/type. Keep normal bomb physics and source wall-bounce
-tables behind the existing collision resolver; do not add guessed movement
-constants.
+same `RoomEntity` slot/type. Preserve the source normal single-sprite visual
+Y increment of two pixels in the rendering contract. Keep normal bomb physics
+and source wall-bounce tables behind the existing collision resolver; do not
+add guessed movement constants.
 
 - [ ] **Step 4: Run the focused runtime/render tests and inspect.**
 
