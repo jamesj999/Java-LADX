@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import linksawakening.equipment.EquippedItem;
+import linksawakening.equipment.Hookshot;
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.equipment.Sword;
 import linksawakening.gameplay.GameplaySoundEvent;
@@ -215,6 +216,56 @@ final class LinkTest {
         link.update();
 
         assertEquals(Link.DIRECTION_RIGHT, link.direction());
+    }
+
+    @Test
+    void itemUsePreconditionMatchesEquippedMotionCarryAndPitGates() throws Exception {
+        InputState inputState = new InputState();
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        PlayerState playerState = new PlayerState();
+        ItemRegistry itemRegistry = new ItemRegistry();
+        Link link = new Link(inputState, inputConfig, null, null, null,
+            playerState, itemRegistry);
+
+        assertTrue(link.canUseItems());
+
+        Sword sword = new Sword(null, null);
+        itemRegistry.register(playerState.itemA(), sword);
+        sword.onPress();
+        assertFalse(link.canUseItems());
+
+        HookshotTarget hookshotTarget = new HookshotTarget();
+        playerState.setItemA(PlayerState.INVENTORY_HOOKSHOT);
+        itemRegistry.register(playerState.itemA(), new Hookshot(hookshotTarget));
+        hookshotTarget.active = true;
+        assertFalse(link.canUseItems());
+
+        hookshotTarget.active = false;
+        link.setCarryingLiftedObjectState(1, 3);
+        assertFalse(link.canUseItems());
+
+        link.setCarryingLiftedObjectState(0, 3);
+        assertTrue(link.canUseItems());
+
+        link.useRocsFeather();
+        assertTrue(link.isAirborne());
+        assertTrue(link.canUseItems());
+
+        Link pitLink = pitLink(inputConfig);
+        runUntilPitFallStarts(pitLink);
+        assertFalse(pitLink.canUseItems());
+    }
+
+    @Test
+    void itemAttackStepStartsWithTheRomPlayerProjectileCountdown() {
+        Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
+            null, null, null, new PlayerState(), new ItemRegistry());
+
+        assertEquals(0, link.romAttackStepAnimationCountdown());
+
+        link.startRomItemAttackStep();
+
+        assertEquals(0x0C, link.romAttackStepAnimationCountdown());
     }
 
     @Test
@@ -882,6 +933,19 @@ final class LinkTest {
         return linkInRoom(inputConfig, romTables, roomObjectsArea, new PlayerState(), RomTables.PHYSICS_TABLE_OVERWORLD);
     }
 
+    private static Link pitLink(InputConfig inputConfig) throws Exception {
+        byte[] rom = loadRom();
+        RomTables romTables = RomTables.loadFromRom(rom);
+        int[] roomObjects = emptyRoomObjectsArea();
+        roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 2] = OBJECT_PIT;
+        OverworldCollision collision = new OverworldCollision(romTables);
+        collision.setRoom(roomObjects);
+        Link link = new Link(new InputState(), inputConfig, romTables, collision, null,
+            new PlayerState(), new ItemRegistry());
+        link.setPixelPosition(0x20, 0x20);
+        return link;
+    }
+
     private static Link linkInRoom(InputConfig inputConfig,
                                    RomTables romTables,
                                    int[] roomObjectsArea,
@@ -1002,6 +1066,20 @@ final class LinkTest {
         @Override
         public boolean blocksMotion() {
             return true;
+        }
+    }
+
+    private static final class HookshotTarget implements Hookshot.LaunchTarget {
+        private boolean active;
+
+        @Override
+        public boolean fireHookshot() {
+            return true;
+        }
+
+        @Override
+        public boolean hookshotActive() {
+            return active;
         }
     }
 

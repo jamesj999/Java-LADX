@@ -91,6 +91,8 @@ public final class Link implements RocsFeather.JumpTarget {
     private static final int FALL_DURATION_FRAMES = 96;
     private static final int PIT_RECOVERY_INVINCIBILITY_FRAMES = 0x40;
     private static final int PIT_DAMAGE = PlayerState.HP_PER_HEART / 2;
+    private static final int ATTACK_STEP_ITEM_ANY = 0x00;
+    private static final int ROM_ITEM_ATTACK_STEP_COUNTDOWN = 0x0C | ATTACK_STEP_ITEM_ANY;
     private static final int COLLISION_TYPE_UP = 0x01;
     private static final int COLLISION_TYPE_DOWN = 0x02;
     private static final int COLLISION_TYPE_LEFT = 0x04;
@@ -147,6 +149,7 @@ public final class Link implements RocsFeather.JumpTarget {
     private int forcedSpeedX;
     private int forcedSpeedY;
     private int groundStatus = GROUND_STATUS_NORMAL;
+    private int romAttackStepAnimationCountdown;
     private boolean airborne;
     private int zSubPixels;
     private int zVelocity;
@@ -299,6 +302,28 @@ public final class Link implements RocsFeather.JumpTarget {
      */
     public int romMotionState() {
         return groundStatus == GROUND_STATUS_PIT || fallingIntoPit ? 0x06 : 0x00;
+    }
+
+    /** Mirrors wLinkAttackStepAnimationCountdown after a player projectile spawn. */
+    public int romAttackStepAnimationCountdown() {
+        return romAttackStepAnimationCountdown & 0xFF;
+    }
+
+    /** Starts the ROM's generic item attack-step animation window. */
+    public void startRomItemAttackStep() {
+        romAttackStepAnimationCountdown = ROM_ITEM_ATTACK_STEP_COUNTDOWN;
+    }
+
+    /**
+     * Mirrors the leading CheckItemsToUse gate used before an equipped item
+     * spends inventory. Airborne motion remains eligible; PlaceBomb does not
+     * reject it, while pit, carry, and interactive item motion do.
+     */
+    public boolean canUseItems() {
+        if (romMotionState() != 0 || isCarryingLiftedObject()) {
+            return false;
+        }
+        return !itemsBlockMotion();
     }
 
     /** Mirrors the unsigned {@code wCollisionType} byte written by Link motion. */

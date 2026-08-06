@@ -66,6 +66,7 @@ final class MainArchitectureTest {
     @Test
     void mainRegistersBombWithLinkRomPlacementState() throws Exception {
         String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+        String normalizedSource = source.replaceAll("\\s+", " ");
 
         assertTrue(source.contains("PlayerState.INVENTORY_BOMBS"));
         assertTrue(source.contains("new Bomb("));
@@ -74,6 +75,11 @@ final class MainArchitectureTest {
         assertTrue(source.contains("link.romEntityY()"));
         assertTrue(source.contains("link.romEntityZ()"));
         assertTrue(source.contains("romDirectionForLink(link.direction())"));
-        assertTrue(source.contains("link.isAirborne()"));
+        assertTrue(source.contains("link::canUseItems"));
+        assertTrue(normalizedSource.contains(
+            "if (placed) { link.startRomItemAttackStep(); } return placed;"));
+        assertFalse(normalizedSource.contains(
+            "roomSession.placeBomb( link.romEntityX(), link.romEntityY(), link.romEntityZ(), "
+                + "romDirectionForLink(link.direction()), link.isAirborne(), false"));
     }
 }

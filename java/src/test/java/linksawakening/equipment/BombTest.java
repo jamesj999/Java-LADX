@@ -71,6 +71,20 @@ final class BombTest {
     }
 
     @Test
+    void blockedItemUseDoesNotSpendInventoryPlayWrongAnswerOrAllocate() {
+        PlayerState player = playerWithBombs(2);
+        RecordingTarget target = new RecordingTarget();
+        RecordingSoundSink sounds = new RecordingSoundSink();
+        Bomb bomb = new Bomb(player, sounds, target, () -> false);
+
+        bomb.onPress();
+
+        assertEquals(2, player.bombCount());
+        assertEquals(0, target.placementRequests);
+        assertEquals(List.of(), sounds.events);
+    }
+
+    @Test
     void activeBombRejectsPlacementBeforeInventoryCheck() {
         PlayerState player = playerWithBombs(0);
         RecordingTarget target = new RecordingTarget();
@@ -98,6 +112,22 @@ final class BombTest {
         assertEquals(1, target.countObservedAtPlacement);
     }
 
+    @Test
+    void failedPlacementStillConsumesInventoryAfterTheItemUseGate() {
+        PlayerState player = playerWithBombs(2);
+        RecordingTarget target = new RecordingTarget(player);
+        target.placementSucceeds = false;
+        RecordingSoundSink sounds = new RecordingSoundSink();
+        Bomb bomb = new Bomb(player, sounds, target);
+
+        bomb.onPress();
+
+        assertEquals(1, player.bombCount());
+        assertEquals(1, target.placementRequests);
+        assertEquals(1, target.countObservedAtPlacement);
+        assertEquals(List.of(), sounds.events);
+    }
+
     private static PlayerState playerWithBombs(int count) {
         PlayerState player = new PlayerState();
         player.setMaxBombs(9);
@@ -115,6 +145,7 @@ final class BombTest {
         private int placementRequests;
         private int countObservedAtPlacement = -1;
         private boolean active;
+        private boolean placementSucceeds = true;
 
         private RecordingTarget() {
             this(null);
@@ -128,7 +159,7 @@ final class BombTest {
         public boolean placeBomb() {
             placementRequests++;
             countObservedAtPlacement = player == null ? -1 : player.bombCount();
-            return true;
+            return placementSucceeds;
         }
 
         @Override

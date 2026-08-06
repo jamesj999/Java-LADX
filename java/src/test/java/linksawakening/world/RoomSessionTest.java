@@ -145,15 +145,13 @@ final class RoomSessionTest {
     }
 
     @Test
-    void bombPlacementPublishesRomCoordinatesAndHonorsItemUseGuards() {
+    void bombPlacementPublishesRomCoordinatesAndLeavesItemUseGatesToLink() {
         RoomSession session = newSession();
 
         assertFalse(session.placeBomb(0x40, 0x50, 0x07, 3, false, false));
         session.loadInitialOverworld(0x92);
 
-        assertFalse(session.placeBomb(0x40, 0x50, 0x07, 3, true, false));
-        assertFalse(session.placeBomb(0x40, 0x50, 0x07, 3, false, true));
-        assertTrue(session.placeBomb(0x40, 0x50, 0x07, 3, false, false));
+        assertTrue(session.placeBomb(0x40, 0x50, 0x07, 3, true, true));
         assertTrue(session.bombActive());
 
         RoomEntity bomb = session.activeRoom().entities().loadedEntities().stream()

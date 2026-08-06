@@ -5,6 +5,7 @@ import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.state.PlayerState;
 
 import java.util.Objects;
+import java.util.function.BooleanSupplier;
 
 /**
  * Edge-triggered ordinary bomb use from {@code PlaceBomb} (bank0.asm:$135A).
@@ -22,15 +23,25 @@ public final class Bomb implements EquippedItem {
     private final PlayerState playerState;
     private final GameplaySoundSink soundSink;
     private final PlacementTarget target;
+    private final BooleanSupplier itemUseAllowed;
 
     public Bomb(PlayerState playerState, GameplaySoundSink soundSink, PlacementTarget target) {
+        this(playerState, soundSink, target, () -> true);
+    }
+
+    public Bomb(PlayerState playerState, GameplaySoundSink soundSink, PlacementTarget target,
+                BooleanSupplier itemUseAllowed) {
         this.playerState = Objects.requireNonNull(playerState, "playerState");
         this.soundSink = Objects.requireNonNull(soundSink, "soundSink");
         this.target = Objects.requireNonNull(target, "target");
+        this.itemUseAllowed = Objects.requireNonNull(itemUseAllowed, "itemUseAllowed");
     }
 
     @Override
     public void onPress() {
+        if (!itemUseAllowed.getAsBoolean()) {
+            return;
+        }
         // PlaceBomb tests wHasPlacedBomb before reading the inventory count.
         if (target.bombActive()) {
             return;

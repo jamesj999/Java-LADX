@@ -406,7 +406,15 @@ public final class RoomSession {
     public boolean placeBomb(int linkEntityX, int linkEntityY, int linkEntityZ,
                              int romDirection, boolean linkAirborne,
                              boolean linkPushing) {
-        if (linkAirborne || linkPushing || activeRoom == null || entityRuntime == null) {
+        // Kept for callers using the original bridge signature. The ROM's
+        // PlaceBomb path delegates airborne/pushing item-use decisions to
+        // CheckItemsToUse; this room allocation bridge must not duplicate them.
+        return placeBomb(linkEntityX, linkEntityY, linkEntityZ, romDirection);
+    }
+
+    public boolean placeBomb(int linkEntityX, int linkEntityY, int linkEntityZ,
+                             int romDirection) {
+        if (activeRoom == null || entityRuntime == null) {
             return false;
         }
         int slot = entityRuntime.spawnBomb(linkEntityX, linkEntityY, linkEntityZ, romDirection);
@@ -415,12 +423,6 @@ public final class RoomSession {
         }
         activeRoom.replaceEntities(entityRuntime.snapshot());
         return true;
-    }
-
-    /** Compatibility overload for callers that already enforce item-use gates. */
-    public boolean placeBomb(int linkEntityX, int linkEntityY, int linkEntityZ,
-                             int romDirection) {
-        return placeBomb(linkEntityX, linkEntityY, linkEntityZ, romDirection, false, false);
     }
 
     /** Returns whether the live room currently owns an ordinary bomb entity. */

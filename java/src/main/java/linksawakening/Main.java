@@ -273,16 +273,20 @@ public class Main {
                     if (link == null || roomSession == null) {
                         return false;
                     }
-                    return roomSession.placeBomb(
+                    boolean placed = roomSession.placeBomb(
                         link.romEntityX(), link.romEntityY(), link.romEntityZ(),
-                        romDirectionForLink(link.direction()), link.isAirborne(), false);
+                        romDirectionForLink(link.direction()));
+                    if (placed) {
+                        link.startRomItemAttackStep();
+                    }
+                    return placed;
                 }
 
                 @Override
                 public boolean bombActive() {
                     return roomSession != null && roomSession.bombActive();
                 }
-            }));
+            }, link::canUseItems));
         itemRegistry.register(PlayerState.INVENTORY_HOOKSHOT, new Hookshot(
             new Hookshot.LaunchTarget() {
                 @Override
