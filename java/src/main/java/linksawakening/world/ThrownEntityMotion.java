@@ -25,6 +25,9 @@ final class ThrownEntityMotion {
         0x04, 0x04, 0x04, 0x04, 0x10, 0x10, 0x10, 0x10,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
     };
+    // PlayerProjectileSpeedX/YPerDirection at bank $00:$13A5/$13A9.
+    private static final int[] PLACED_BOMB_SPEED_X = {0x20, 0xE0, 0x00, 0x00};
+    private static final int[] PLACED_BOMB_SPEED_Y = {0x00, 0x00, 0xE0, 0x20};
 
     private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -48,6 +51,19 @@ final class ThrownEntityMotion {
         speedX[slot] = SPEED_X[tableIndex];
         speedY[slot] = SPEED_Y[tableIndex];
         speedZ[slot] = SPEED_Z[tableIndex];
+        speedXAccumulator[slot] = 0;
+        speedYAccumulator[slot] = 0;
+        speedZAccumulator[slot] = 0;
+        active[slot] = true;
+    }
+
+    /** Starts BombEntityHandler's placed-bomb motion from SpawnPlayerProjectile. */
+    void startPlacedBomb(int slot, int romDirection) {
+        validateSlot(slot);
+        validateDirection(romDirection);
+        speedX[slot] = PLACED_BOMB_SPEED_X[romDirection];
+        speedY[slot] = PLACED_BOMB_SPEED_Y[romDirection];
+        speedZ[slot] = 0;
         speedXAccumulator[slot] = 0;
         speedYAccumulator[slot] = 0;
         speedZAccumulator[slot] = 0;

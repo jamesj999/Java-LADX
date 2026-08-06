@@ -99,10 +99,15 @@ final class BombLiftThrowRuntimeTest {
         RoomEntityRuntime runtime = bombRuntime();
         int slot = runtime.spawnBomb(0x40, 0x50, 0, 0);
         runtime.setBombTransitionCountdownForTest(slot, 0x01);
+        RoomEntity beforeExplosion = runtime.snapshot().slots().get(slot);
         runtime.tick(0, 0x40, 0x50, () -> 0);
 
         assertFalse(runtime.beginLift(slot, ThrownEntityMotion.ROM_DIRECTION_RIGHT));
-        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(slot).status());
+        RoomEntity afterExplosion = runtime.snapshot().slots().get(slot);
+        assertEquals(EntityStatus.ACTIVE, afterExplosion.status());
+        assertEquals(beforeExplosion.x(), afterExplosion.x());
+        assertEquals(beforeExplosion.y(), afterExplosion.y());
+        assertEquals(beforeExplosion.z(), afterExplosion.z());
         assertFalse(runtime.bombActive());
     }
 
@@ -142,22 +147,25 @@ final class BombLiftThrowRuntimeTest {
         int expectedLiftedX = (thrown.x() + 0x10) & 0xFF;
         AtomicInteger wallQueries = new AtomicInteger();
         List<EntityStatus> observedStatuses = new ArrayList<>();
+        List<Integer> proposedX = new ArrayList<>();
         runtime.setBombButtonHeld(true);
         runtime.tick(100, thrown.x(), thrown.y(), () -> 0,
             (entity, direction, nextX, nextY) -> {
                 wallQueries.incrementAndGet();
                 observedStatuses.add(entity.status());
-                return true;
+                proposedX.add(nextX);
+                return false;
             }, null, 0, 3, 0);
 
         RoomEntity lifted = runtime.snapshot().slots().get(slot);
         assertEquals(1, wallQueries.get());
         assertEquals(List.of(EntityStatus.LIFTED), observedStatuses);
+        assertEquals((expectedLiftedX + 1) & 0xFF, lifted.x());
+        assertEquals(proposedX.get(0), lifted.x());
         assertEquals(slot, lifted.slot());
         assertEquals(EntityStatus.LIFTED, lifted.status());
-        assertEquals(expectedLiftedX, lifted.x());
         assertEquals(thrown.y(), lifted.y());
-        assertEquals(0, lifted.z());
+        assertEquals(0x01, lifted.z());
         assertNormalBombDefinition(lifted);
     }
 
@@ -194,17 +202,81 @@ final class BombLiftThrowRuntimeTest {
 
         RoomEntity lifted = runtime.snapshot().slots().get(slot);
         // The thrown motion is already stopped when EntityBecomeStunned runs, so the
-        // source bounce has no wall probe here. ApplyRecoilIfNeeded still consumes the
-        // active ignore-hit countdown before the lifted snapshot is retained.
+        // source bounce has no wall probe here. The runtime tick prepass accounts for
+        // the one source countdown decrement when no recoil motion is active.
         assertEquals(0, wallQueries.get());
         assertEquals(List.of(), observedStatuses);
-        assertEquals(0, runtime.enemyIgnoreHitsCountdown(slot));
+        assertEquals(0x01, runtime.enemyIgnoreHitsCountdown(slot));
         assertEquals(slot, lifted.slot());
         assertEquals(EntityStatus.LIFTED, lifted.status());
         assertEquals(expectedLiftedX, lifted.x());
         assertEquals(stunned.y(), lifted.y());
         assertEquals(0, lifted.z());
         assertNormalBombDefinition(lifted);
+    }
+
+    @Test
+    void stunnedBombLiftRetainsTheReturnedRomRecoilPosition() throws IOException {
+        RoomEntityRuntime runtime = bombRuntime();
+        int slot = runtime.spawnBomb(0x40, 0x50, 0, 0);
+        fullyLift(runtime, slot);
+        assertTrue(runtime.throwLiftedEntity(ThrownEntityMotion.ROM_DIRECTION_RIGHT));
+        runtime.setBombTransitionCountdownForTest(slot, 0xA0);
+
+        RoomEntityBackgroundCollision alwaysBlocked = (entity, direction, nextX, nextY) -> true;
+        int frame = 0;
+        while (runtime.snapshot().slots().get(slot).status() != EntityStatus.STUNNED
+            && frame < 12) {
+            runtime.tick(frame++, 0, 0, () -> 0, alwaysBlocked);
+        }
+        assertEquals(EntityStatus.STUNNED, runtime.snapshot().slots().get(slot).status());
+
+        RoomEntity stunned = runtime.snapshot().slots().get(slot);
+        int expectedLiftedX = (stunned.x() + 0x10) & 0xFF;
+        runtime.configureEnemyRecoilForTest(slot, stunned.x() + 0x10, stunned.y(), 0x10);
+        runtime.setEnemyIgnoreHitsCountdownForTest(slot, 0x02);
+        runtime.setBombButtonHeld(true);
+        runtime.tick(frame, stunned.x(), stunned.y(), () -> 0,
+            (entity, direction, nextX, nextY) -> false,
+            null, 0, 3, 0);
+
+        RoomEntity lifted = runtime.snapshot().slots().get(slot);
+        assertEquals((expectedLiftedX - 1) & 0xFF, lifted.x());
+        assertEquals(0x01, runtime.enemyIgnoreHitsCountdown(slot));
+        assertEquals(slot, lifted.slot());
+        assertEquals(EntityStatus.LIFTED, lifted.status());
+        assertNormalBombDefinition(lifted);
+    }
+
+    @Test
+    void placedBombUsesSpawnProjectileSpeedsAndPreservesWallBounce() throws IOException {
+        RoomEntityRuntime runtime = bombRuntime();
+        int slot = runtime.spawnBomb(0x40, 0x50, 0, ThrownEntityMotion.ROM_DIRECTION_RIGHT);
+        AtomicInteger wallQueries = new AtomicInteger();
+
+        runtime.tick(0, 0x40, 0x50, () -> 0,
+            (entity, direction, nextX, nextY) -> {
+                wallQueries.incrementAndGet();
+                assertEquals(ThrownEntityMotion.ROM_DIRECTION_RIGHT, direction);
+                assertEquals(0x42, nextX);
+                return true;
+            });
+
+        RoomEntity afterWall = runtime.snapshot().slots().get(slot);
+        assertEquals(1, wallQueries.get());
+        assertEquals(0x40, afterWall.x());
+        assertEquals(0x50, afterWall.y());
+        assertEquals(0x01, afterWall.z());
+        assertEquals(EntityStatus.ACTIVE, afterWall.status());
+
+        runtime.tick(1, 0x40, 0x50, () -> 0,
+            (entity, direction, nextX, nextY) -> false);
+
+        RoomEntity afterBounce = runtime.snapshot().slots().get(slot);
+        assertEquals(0x3F, afterBounce.x());
+        assertEquals(0x50, afterBounce.y());
+        assertEquals(0x00, afterBounce.z());
+        assertEquals(EntityStatus.ACTIVE, afterBounce.status());
     }
 
     @Test

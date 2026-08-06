@@ -174,6 +174,8 @@ public final class RoomEntityRuntime {
     private final int[] bombDirection = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] bombFinalPresentationPending =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] placedBombMotionInitialized =
+        new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final int[] thrownDirection = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] ledgeTransitionTimer = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] thrownMotionInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
@@ -719,6 +721,11 @@ public final class RoomEntityRuntime {
             }
             if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_BOMB) {
                 BombMotion.Decision bombDecision = advanceBombEntity(index, entity);
+                entity = slots[index];
+                if (bombDecision.phase() != BombMotion.Phase.EXPLOSION) {
+                    slots[index] = advancePlacedBombEntity(
+                        entity, backgroundCollision);
+                }
                 tryLiftBombIfRequested(index, bombDecision, linkEntityX, linkEntityY,
                     linkZ, romLinkDirection);
                 continue;
@@ -1445,6 +1452,10 @@ public final class RoomEntityRuntime {
         liftedEffectiveDirection = romDirection;
         enemyTransitionCountdown[slot] = 0x02;
         if (entity.type() == ENTITY_BOMB) {
+            if (placedBombMotionInitialized[slot]) {
+                thrownEntityMotion.clear(slot);
+                placedBombMotionInitialized[slot] = false;
+            }
             bombFinalPresentationPending[slot] = false;
             enemyFlashCountdown[slot] = 0;
             entity = withDefinition(entity, spriteDefinitionFor(ENTITY_BOMB), 0);
@@ -1540,6 +1551,17 @@ public final class RoomEntityRuntime {
             updated = withStatus(updated, EntityStatus.STUNNED);
         }
         return updated;
+    }
+
+    private RoomEntity advancePlacedBombEntity(
+            RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision) {
+        int slot = entity.slot();
+        if (!placedBombMotionInitialized[slot]) {
+            thrownEntityMotion.startPlacedBomb(slot, bombDirection[slot]);
+            placedBombMotionInitialized[slot] = true;
+        }
+        return thrownEntityMotion.advance(entity, groundInteractionSideScrolling,
+            backgroundCollision).entity();
     }
 
     private static boolean isLiftableEntity(RoomEntity entity) {
@@ -1832,6 +1854,7 @@ public final class RoomEntityRuntime {
         liftedStateInitialized[slot] = false;
         thrownDirection[slot] = 0xFF;
         bombDirection[slot] = 0xFF;
+        placedBombMotionInitialized[slot] = false;
         ledgeTransitionTimer[slot] = 0;
         thrownMotionInitialized[slot] = false;
         hookshotChainMotion.clear(slot);
@@ -1929,6 +1952,8 @@ public final class RoomEntityRuntime {
             definition, variant, 0, 0, (linkEntityZ + 1) & 0xFF);
         slots[freeSlot] = bomb;
         bombDirection[freeSlot] = romDirection;
+        thrownEntityMotion.startPlacedBomb(freeSlot, romDirection);
+        placedBombMotionInitialized[freeSlot] = true;
         bombFinalPresentationPending[freeSlot] = false;
         enemyTransitionCountdown[freeSlot] = BombMotion.INITIAL_COUNTDOWN;
         enemyStunnedCountdown[freeSlot] = 0;
@@ -2585,26 +2610,27 @@ public final class RoomEntityRuntime {
             int index, RoomEntity lifted, RoomEntityBackgroundCollision backgroundCollision) {
         int slot = lifted.slot();
         enemyIgnoreHitsCountdown[slot] = 0x02;
-        thrownEntityMotion.advance(lifted, groundInteractionSideScrolling, backgroundCollision);
+        RoomEntity moved = thrownEntityMotion.advance(
+            lifted, groundInteractionSideScrolling, backgroundCollision).entity();
         enemyIgnoreHitsCountdown[slot] = 0;
         // EntityCheckThrowAtTriggers is intentionally outside this Task 5 bridge because
-        // its source behavior mutates room objects. Keep the lifted snapshot authoritative.
-        slots[index] = lifted;
+        // its source behavior mutates room objects. Keep the lifted presentation explicit
+        // while retaining the source-valid movement returned by BouncingEntityPhysics.
+        slots[index] = withStatus(moved, EntityStatus.LIFTED);
     }
 
     /** Mirrors EntityStunnedHandler's recoil/bounce/clear-speed tail after a bomb lift. */
     private void applyBombLiftPostActiveStunnedWork(
             int index, RoomEntity lifted, RoomEntityBackgroundCollision backgroundCollision) {
+        RoomEntity moved = lifted;
         if (enemyRecoilMotion.isActive(lifted.slot())) {
-            applyEnemyRecoilIfNeeded(lifted, backgroundCollision);
-        } else if (enemyIgnoreHitsCountdown[lifted.slot()] > 0) {
-            // ApplyRecoilIfNeeded_03 consumes the countdown even when the Java
-            // recoil velocity bridge has no active motion for this slot.
-            enemyIgnoreHitsCountdown[lifted.slot()]--;
+            moved = applyEnemyRecoilIfNeeded(lifted, backgroundCollision).entity();
         }
-        thrownEntityMotion.advance(lifted, groundInteractionSideScrolling, backgroundCollision);
+        moved = thrownEntityMotion.advance(
+            moved, groundInteractionSideScrolling, backgroundCollision).entity();
         thrownEntityMotion.clear(lifted.slot());
-        slots[index] = lifted;
+        thrownMotionInitialized[lifted.slot()] = false;
+        slots[index] = withStatus(moved, EntityStatus.LIFTED);
     }
 
     private EntitySpriteDefinition spriteDefinitionForEvasiveState(
@@ -3283,6 +3309,16 @@ public final class RoomEntityRuntime {
         return enemyRecoilMotion.recoilSpeedY(slot);
     }
 
+    void configureEnemyRecoilForTest(int slot, int linkEntityX, int linkEntityY, int length) {
+        validateEntitySlot(slot);
+        RoomEntity entity = slots[slot];
+        if (!entity.loaded()) {
+            throw new IllegalArgumentException("Entity slot is not loaded: " + slot);
+        }
+        enemyRecoilMotion.configure(slot, entity.x(), entity.y(), entity.z(),
+            linkEntityX, linkEntityY, length);
+    }
+
     boolean enemyRecoilActive(int slot) {
         return enemyRecoilMotion.isActive(slot);
     }
@@ -3626,6 +3662,7 @@ public final class RoomEntityRuntime {
         thrownDirection[slot] = 0xFF;
         bombDirection[slot] = 0xFF;
         bombFinalPresentationPending[slot] = false;
+        placedBombMotionInitialized[slot] = false;
         ledgeTransitionTimer[slot] = 0;
         thrownMotionInitialized[slot] = false;
         baseEntityFlipAttribute[slot] = 0;
