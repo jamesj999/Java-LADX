@@ -172,6 +172,8 @@ public final class RoomEntityRuntime {
     private final int[] liftedSourceDirection = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] liftedStateInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final int[] bombDirection = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] bombFinalPresentationPending =
+        new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final int[] thrownDirection = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] ledgeTransitionTimer = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] thrownMotionInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
@@ -255,6 +257,7 @@ public final class RoomEntityRuntime {
         Arrays.fill(entityOptions1Override, -1);
         Arrays.fill(droppedItemBySlot, 0);
         Arrays.fill(bombDirection, 0xFF);
+        Arrays.fill(bombFinalPresentationPending, false);
         Arrays.fill(thrownDirection, 0xFF);
         for (RoomEntity entity : slots) {
             baseEntityFlipAttribute[entity.slot()] = entity.entityFlipAttribute();
@@ -551,6 +554,7 @@ public final class RoomEntityRuntime {
                       int swordY, int swordHeight) {
         Objects.requireNonNull(randomByteSupplier, "randomByteSupplier");
         Objects.requireNonNull(projectileLinkState, "projectileLinkState");
+        finalizePendingBombPresentations();
         int frame = frameCounter & 0xFF;
         int romCollisionType = collisionType & 0xFF;
         if (backgroundInteraction != null) {
@@ -1761,6 +1765,7 @@ public final class RoomEntityRuntime {
         }
         resetEnemyDropState(slot);
         RoomEntity entity = slots[slot];
+        bombFinalPresentationPending[slot] = false;
         if (!entity.loaded()) {
             return 0;
         }
@@ -1868,6 +1873,7 @@ public final class RoomEntityRuntime {
     /** Creates the ROM's ordinary player bomb entity type {@code $02}. */
     int spawnBomb(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
         validateRomDirection(romDirection);
+        finalizePendingBombPresentations();
         if (bombActive()) {
             return -1;
         }
@@ -1883,6 +1889,7 @@ public final class RoomEntityRuntime {
             definition, variant, 0, 0, (linkEntityZ + 1) & 0xFF);
         slots[freeSlot] = bomb;
         bombDirection[freeSlot] = romDirection;
+        bombFinalPresentationPending[freeSlot] = false;
         enemyTransitionCountdown[freeSlot] = BombMotion.INITIAL_COUNTDOWN;
         enemyStunnedCountdown[freeSlot] = 0;
         enemyHealth[freeSlot] = 0;
@@ -1897,7 +1904,8 @@ public final class RoomEntityRuntime {
 
     boolean bombActive() {
         for (RoomEntity entity : slots) {
-            if (entity.loaded() && entity.type() == ENTITY_BOMB) {
+            if (entity.loaded() && entity.type() == ENTITY_BOMB
+                && !bombFinalPresentationPending[entity.slot()]) {
                 return true;
             }
         }
@@ -2452,6 +2460,14 @@ public final class RoomEntityRuntime {
         return spriteHandlers.forEntityType(entityType, table, mapId);
     }
 
+    private void finalizePendingBombPresentations() {
+        for (int slot = 0; slot < slots.length; slot++) {
+            if (bombFinalPresentationPending[slot]) {
+                clearEntity(slot);
+            }
+        }
+    }
+
     private void advanceBombEntity(int index, RoomEntity entity) {
         int slot = entity.slot();
         BombMotion.Decision decision = BombMotion.decide(enemyTransitionCountdown[slot] & 0xFF);
@@ -2479,11 +2495,11 @@ public final class RoomEntityRuntime {
         };
         int variant = decision.explosionVariant().orElse(0);
         RoomEntity updated = withDefinition(entity, definition, variant);
+        slots[index] = updated;
         if (decision.unloadAfterPresentation()) {
-            clearEntity(slot);
+            bombFinalPresentationPending[slot] = true;
             return;
         }
-        slots[index] = updated;
     }
 
     private EntitySpriteDefinition spriteDefinitionForEvasiveState(

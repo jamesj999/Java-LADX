@@ -4178,10 +4178,44 @@ final class RoomEntityRuntimeTest {
         runtime.setBombTransitionCountdownForTest(slot, 0x01);
         runtime.tick(6, 0x40, 0x50, () -> 0);
 
+        RoomEntity finalExplosion = runtime.snapshot().slots().get(slot);
+        assertEquals(slot, finalExplosion.slot());
+        assertEquals(0x02, finalExplosion.type());
+        assertEquals(EntityStatus.ACTIVE, finalExplosion.status());
+        assertEquals(0x6530, finalExplosion.spriteDefinition().address());
+        assertEquals(0, finalExplosion.spriteVariant());
+        assertEquals(0xD8, runtime.physicsFlags(slot));
+        assertFalse(runtime.bombActive());
+        assertEquals(1, runtime.snapshot().loadedEntities().size());
+
+        runtime.tick(7, 0x40, 0x50, () -> 0);
+
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(slot).status());
         assertFalse(runtime.bombActive());
         assertEquals(0, runtime.physicsFlags(slot));
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+    }
+
+    @Test
+    void spawnBombFinalizesPendingFinalPresentationBeforeReusingItsSlot() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+            new RoomEntitySnapshot(new ArrayList<>(snapshot().slots())), false, null, catalog);
+        int slot = runtime.spawnBomb(0x40, 0x50, 0, 0);
+
+        runtime.setBombTransitionCountdownForTest(slot, 0x01);
+        runtime.tick(0, 0x40, 0x50, () -> 0);
+
+        assertFalse(runtime.bombActive());
+        assertEquals(slot, runtime.spawnBomb(0x44, 0x54, 0, 1));
+        RoomEntity replacement = runtime.snapshot().slots().get(slot);
+        assertEquals(EntityStatus.ACTIVE, replacement.status());
+        assertEquals(0x02, replacement.type());
+        assertEquals(0x652E, replacement.spriteDefinition().address());
+        assertEquals(0xA0, runtime.transitionCountdown(slot));
+        assertTrue(runtime.bombActive());
+        assertEquals(1, runtime.snapshot().loadedEntities().size());
     }
 
     private static RoomEntity ghiniEntity(EntitySpriteHandlerCatalog catalog, int slot, int type,
