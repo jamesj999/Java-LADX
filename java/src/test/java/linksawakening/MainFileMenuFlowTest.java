@@ -38,4 +38,38 @@ final class MainFileMenuFlowTest {
         assertTrue(branch.contains("startNewGame();"));
         assertFalse(branch.contains("startConfiguredGameplay();"));
     }
+
+    @Test
+    void fileMenuStartupUsesThePersistentSaveImageForMaskAndNames() throws Exception {
+        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+        int start = source.indexOf("fileMenuController = new FileMenuController(");
+        int end = source.indexOf("playDirectMusic(fileSelectionMusicTrack());", start);
+        String constructor = source.substring(start, end);
+
+        assertTrue(constructor.contains("saveRamStore.saveFilesMask()"));
+        assertTrue(constructor.contains("saveRamStore.savedNames()"));
+        assertFalse(constructor.contains("new int[3][5]"));
+    }
+
+    @Test
+    void newGamePersistsTheSelectedSlotBeforeEnteringGameplay() throws Exception {
+        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+        int start = source.indexOf("if (action.type() == FileMenuAction.Type.START_NEW_GAME)");
+        int end = source.indexOf("} else if (action.type() == FileMenuAction.Type.LOAD_GAME)", start);
+        String branch = source.substring(start, end);
+
+        assertTrue(branch.contains("saveRamStore.createNewGame(action.selectedSlot(), action.nameBytes());"));
+        assertTrue(branch.contains("saveRamStore.flush();"));
+    }
+
+    @Test
+    void initializedFileSelectionLoadsTheSavedRoomInsteadOfThrowing() throws Exception {
+        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+        int start = source.indexOf("} else if (action.type() == FileMenuAction.Type.LOAD_GAME)");
+        int end = source.indexOf("inputState.tickEdges();", start);
+        String branch = source.substring(start, end);
+
+        assertTrue(branch.contains("startSavedGame"));
+        assertFalse(branch.contains("UnsupportedOperationException"));
+    }
 }

@@ -46,6 +46,8 @@ import linksawakening.render.GameFrameState;
 import linksawakening.render.OpenGlFramePresenter;
 import linksawakening.render.RenderScreen;
 import linksawakening.rom.RomTables;
+import linksawakening.save.SaveRamStore;
+import linksawakening.save.SaveSlotState;
 import linksawakening.scene.BackgroundScene;
 import linksawakening.scene.BackgroundSceneCatalog;
 import linksawakening.scene.BackgroundSceneLoader;
@@ -80,6 +82,7 @@ import linksawakening.world.Warp;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -145,6 +148,7 @@ public class Main {
     private static GameplayMusicController gameplayMusicController;
     private static CutsceneManager cutsceneManager;
     private static FileMenuController fileMenuController;
+    private static SaveRamStore saveRamStore;
     private static RomTables romTables;
     private static OverworldCollision overworldCollision;
     private static OverworldBushInteraction overworldBushInteraction;
@@ -218,6 +222,11 @@ public class Main {
     }
 
     private static void initMenuSystem() {
+        try {
+            saveRamStore = SaveRamStore.open(SaveRamStore.defaultPath());
+        } catch (IOException exception) {
+            throw new IllegalStateException("Failed to open save image", exception);
+        }
         inputConfig = currentAppConfig().inputConfig();
         inputState = new InputState();
         playerState = new PlayerState();
@@ -414,10 +423,20 @@ public class Main {
             }
             FileMenuAction action = fileMenuController.tick(inputState, inputConfig);
             if (action.type() == FileMenuAction.Type.START_NEW_GAME) {
+                try {
+                    saveRamStore.createNewGame(action.selectedSlot(), action.nameBytes());
+                    saveRamStore.flush();
+                } catch (IOException exception) {
+                    throw new IllegalStateException("Failed to persist new save file", exception);
+                }
                 startNewGame();
             } else if (action.type() == FileMenuAction.Type.LOAD_GAME) {
-                throw new UnsupportedOperationException(
-                    "ROM save loading is not implemented in this reconstruction slice");
+                SaveSlotState saved = saveRamStore.readSlot(action.selectedSlot());
+                if (saved.spawnPositionX() == 0) {
+                    startNewGame();
+                } else {
+                    startSavedGame(saved);
+                }
             }
             inputState.tickEdges();
             overworldDialogInputConsumedThisFrame = false;
@@ -708,8 +727,23 @@ public class Main {
 
         NewGameStartProfile profile = NewGameStartProfile.romDefaults();
         profile.initializePlayerState(playerState);
+        link.setDirection(Link.DIRECTION_DOWN);
         roomSession.loadIndoor(profile.mapId(), profile.roomId());
         link.setRoomEntryPixelPosition(profile.entryX(), profile.entryY());
+    }
+
+    private static void startSavedGame(SaveSlotState saved) {
+        fileMenuController = null;
+        currentScreen = SCREEN_OVERWORLD;
+        playerState.applySavedGame(saved);
+        if (saved.spawnIsIndoor() != 0) {
+            roomSession.loadIndoor(saved.spawnMapId(), saved.spawnMapRoom());
+            link.setDirection(Link.DIRECTION_UP);
+        } else {
+            roomSession.loadInitialOverworld(saved.spawnMapRoom());
+            link.setDirection(Link.DIRECTION_DOWN);
+        }
+        link.setRoomEntryPixelPosition(saved.spawnPositionX(), saved.spawnPositionY());
     }
 
     private static void startIntroCutscene() {
@@ -740,8 +774,8 @@ public class Main {
         fileMenuController = new FileMenuController(
             new FileMenuRomData(romData),
             Main::loadFileMenuBackgroundScene,
-            0,
-            new int[3][5]);
+            saveRamStore.saveFilesMask(),
+            saveRamStore.savedNames());
         playDirectMusic(fileSelectionMusicTrack());
         // The Enter event that leaves the title must not also activate the
         // first empty file. Its edge belongs to the title screen.

@@ -868,9 +868,10 @@ runtime collision callback.
   character movement, A/B editing, and Start action are covered by focused
   controller tests.
 - Empty-slot name entry emits START_NEW_GAME and now enters the dedicated
-  ROM-backed new-game bootstrap. Existing-save loading, SRAM persistence,
-  copy/erase execution, fades, and exact menu jingle/audio sequencing remain
-  explicit follow-up work rather than fabricated behavior.
+  ROM-backed new-game bootstrap. The file menu now hydrates its names and
+  initialized-slot mask from the source-shaped SRAM image; copy/erase
+  execution, fades, and exact menu jingle/audio sequencing remain explicit
+  follow-up work.
 
 ## Verified ROM-backed New Game bootstrap — 2026-08-06
 
@@ -883,9 +884,23 @@ runtime collision callback.
   bombs, and `$20` magic powder. The ROM direction and standing animation
   values are recorded in the immutable startup profile.
 - A shipped-ROM room-session regression verifies the indoor map/room path.
-  SRAM initialization and loading, copy/erase behavior, the wrecking-ball
-  world-state consumer, and exact file-menu transition effects remain
-  separate source-backed increments.
+
+## Verified ROM-shaped save-slot persistence — 2026-08-06
+
+- The host save image mirrors the disassembly's skipped `$100` SRAM prefix,
+  three `$3AD` slots, valid prefix sequence `[1,3,5,7,9]`, `$380` main block,
+  DX1/DX2/DX3 regions, and source-derived modeled field offsets. Unknown raw
+  bytes remain available for later decoders.
+- New-file creation writes the selected name, health `$18`, max hearts `$03`,
+  and zero death count at the ROM offsets, then flushes the exact image before
+  entering the existing `initNewGame` runtime profile. Missing host images and
+  invalid slot prefixes initialize like `InitSaveFiles`.
+- Initialized slots decode the currently modeled player state and saved
+  indoor/overworld spawn. Indoor loads restore up-facing standing entry;
+  zero saved X uses the ROM new-game bootstrap sentinel path.
+- Exact in-game `SaveGameToFile` triggers, death-count mutation, copy/erase
+  screens, unmodeled WRAM/DX fields, and exact file-menu transition effects
+  remain separate source-backed increments.
 
 ## Broader parity gaps
 
