@@ -522,19 +522,23 @@ final class EntityRenderLayerTest {
         GPU gpu = new GPU();
         int bodyColor = 0x112233;
         int normalColor = 0x445566;
-        int powerColor = 0x778899;
+        int powerVariantZeroColor = 0x556677;
+        int powerVariantThreeColor = 0x778899;
         int backgroundColor = 0x7A6B5C;
         int[][] palettes = {
             {0, bodyColor, 0, 0},
             {0, normalColor, 0, 0},
-            {0, powerColor, 0, 0}
+            {0, powerVariantThreeColor, powerVariantZeroColor, 0}
         };
         writeSolidTile(gpu, 0x20, 1);
         writeSolidTile(gpu, 0x21, 1);
         writeSolidTile(gpu, 0x22, 1);
         writeSolidTile(gpu, 0x23, 1);
-        writeSolidTile(gpu, 0x24, 1);
-        writeSolidTile(gpu, 0x25, 1);
+        writeSolidTile(gpu, 0x24, 2);
+        writeSolidTile(gpu, 0x25, 2);
+        writeSolidTile(gpu, 0x26, 1);
+        writeSolidTile(gpu, 0x27, 1);
+        writeSolidTile(gpu, 0xFF, 1);
 
         EntitySpriteDefinition body = new EntitySpriteDefinition(
             0x09, 0x03, 0x57FB, EntitySpriteDefinition.Shape.PAIR, 0,
@@ -562,7 +566,7 @@ final class EntityRenderLayerTest {
                 new EntitySpriteDefinition.OamAttribute(0x24, 0x02))),
             List.of(
                 new EntitySpriteDefinition.RectangleSprite(0, 0,
-                    new EntitySpriteDefinition.OamAttribute(0x24, 0x02)),
+                    new EntitySpriteDefinition.OamAttribute(0x26, 0x02)),
                 new EntitySpriteDefinition.RectangleSprite(0, 8,
                     new EntitySpriteDefinition.OamAttribute(0xFF, 0x00))));
         EntitySpriteDefinition power = new EntitySpriteDefinition(
@@ -580,8 +584,128 @@ final class EntityRenderLayerTest {
             .render(new RenderContext(buffer, gpu));
 
         // Entity OAM positions are adjusted by $08/$10 before reaching the framebuffer.
-        assertEquals(powerColor, pixelColor(buffer, 16, 16));
+        assertEquals(powerVariantThreeColor, pixelColor(buffer, 16, 16));
         assertEquals(backgroundColor, pixelColor(buffer, 24, 16));
+    }
+
+    @Test
+    void fallsBackToBodyWhenDeathSpriteVariantIsUnset() {
+        GPU gpu = new GPU();
+        int bodyColor = 0x112233;
+        int normalColor = 0x445566;
+        int powerColor = 0x778899;
+        int[][] palettes = {
+            {0, bodyColor, 0, 0},
+            {0, normalColor, 0, 0},
+            {0, powerColor, 0, 0}
+        };
+        writeSolidTile(gpu, 0x20, 1);
+        writeSolidTile(gpu, 0x21, 1);
+        writeSolidTile(gpu, 0x28, 1);
+        writeSolidTile(gpu, 0x29, 1);
+        writeSolidTile(gpu, 0x2A, 1);
+        writeSolidTile(gpu, 0x2B, 1);
+
+        EntitySpriteDefinition body = pairDefinition(
+            new EntitySpriteDefinition.OamAttribute(0x20, 0x00),
+            new EntitySpriteDefinition.OamAttribute(0x20, 0x00));
+        EntitySpriteSelection selection = new EntitySpriteSelection(
+            EntityRoomLoader.RoomTable.OVERWORLD, 0, 0,
+            new int[] {0xFF, 0xFF, 0xFF, 0xFF}, true, palettes)
+            .withDeathSpriteDefinitions(
+                rectangleDefinition(0x5488, 0x28, 0x01),
+                rectangleDefinition(0x54C8, 0x2A, 0x02));
+        RoomEntity entity = new RoomEntity(0, 0, 0x09, 24, 32, EntityStatus.DYING,
+            body, 0, 0, 0, 0, -1, false);
+        byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
+
+        new EntityRenderLayer(snapshot(selection, entity), palettes, new ScrollController())
+            .render(new RenderContext(buffer, gpu));
+
+        assertEquals(bodyColor, pixelColor(buffer, 16, 16));
+    }
+
+    @Test
+    void rendersNormalDeathDefinitionWhenPowerRecoilIsFalse() {
+        GPU gpu = new GPU();
+        int bodyColor = 0x112233;
+        int normalColor = 0x445566;
+        int powerColor = 0x778899;
+        int[][] palettes = {
+            {0, bodyColor, 0, 0},
+            {0, normalColor, 0, 0},
+            {0, powerColor, 0, 0}
+        };
+        writeSolidTile(gpu, 0x20, 1);
+        writeSolidTile(gpu, 0x21, 1);
+        writeSolidTile(gpu, 0x2C, 1);
+        writeSolidTile(gpu, 0x2D, 1);
+        writeSolidTile(gpu, 0x2E, 1);
+        writeSolidTile(gpu, 0x2F, 1);
+
+        EntitySpriteDefinition body = pairDefinition(
+            new EntitySpriteDefinition.OamAttribute(0x20, 0x00),
+            new EntitySpriteDefinition.OamAttribute(0x20, 0x00));
+        EntitySpriteSelection selection = new EntitySpriteSelection(
+            EntityRoomLoader.RoomTable.OVERWORLD, 0, 0,
+            new int[] {0xFF, 0xFF, 0xFF, 0xFF}, true, palettes)
+            .withDeathSpriteDefinitions(
+                rectangleDefinition(0x5488, 0x2C, 0x01),
+                rectangleDefinition(0x54C8, 0x2E, 0x02));
+        RoomEntity entity = new RoomEntity(0, 0, 0x09, 24, 32, EntityStatus.DYING,
+            body, 0, 0, 0, 0, 3, false);
+        byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
+
+        new EntityRenderLayer(snapshot(selection, entity), palettes, new ScrollController())
+            .render(new RenderContext(buffer, gpu));
+
+        assertEquals(normalColor, pixelColor(buffer, 16, 16));
+    }
+
+    @Test
+    void deathDefinitionTakesPrecedenceWhileActiveEntityUsesSpriteOverride() {
+        GPU gpu = new GPU();
+        int bodyColor = 0x112233;
+        int overrideColor = 0x445566;
+        int deathColor = 0x778899;
+        int[][] palettes = {
+            {0, bodyColor, 0, 0},
+            {0, overrideColor, 0, 0},
+            {0, deathColor, 0, 0}
+        };
+        writeSolidTile(gpu, 0x30, 1);
+        writeSolidTile(gpu, 0x31, 1);
+        writeSolidTile(gpu, 0x34, 1);
+        writeSolidTile(gpu, 0x35, 1);
+        writeSolidTile(gpu, 0x38, 1);
+        writeSolidTile(gpu, 0x39, 1);
+
+        EntitySpriteDefinition body = pairDefinition(
+            new EntitySpriteDefinition.OamAttribute(0x30, 0x00),
+            new EntitySpriteDefinition.OamAttribute(0x30, 0x00));
+        EntitySpriteDefinition override = new EntitySpriteDefinition(
+            0x09, 0x03, 0x4000, EntitySpriteDefinition.Shape.PAIR, 0,
+            List.of(new EntitySpriteDefinition.Variant(
+                new EntitySpriteDefinition.OamAttribute(0x38, 0x01),
+                new EntitySpriteDefinition.OamAttribute(0x38, 0x01))));
+        EntitySpriteSelection selection = new EntitySpriteSelection(
+            EntityRoomLoader.RoomTable.OVERWORLD, 0, 0,
+            new int[] {0xFF, 0xFF, 0xFF, 0xFF}, true, palettes)
+            .withDeathSpriteDefinitions(
+                rectangleDefinition(0x5488, 0x32, 0x01),
+                rectangleDefinition(0x54C8, 0x34, 0x02))
+            .withSpriteOverride(0x09, override);
+        RoomEntity dying = new RoomEntity(0, 0, 0x09, 24, 32, EntityStatus.DYING,
+            body, 0, 0, 0, 0, 3, true);
+        RoomEntity active = new RoomEntity(1, 1, 0x09, 64, 32, EntityStatus.ACTIVE,
+            body, 0, 0, 0, 0, -1, false);
+        byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
+
+        new EntityRenderLayer(snapshot(selection, dying, active), palettes, new ScrollController())
+            .render(new RenderContext(buffer, gpu));
+
+        assertEquals(deathColor, pixelColor(buffer, 16, 16));
+        assertEquals(overrideColor, pixelColor(buffer, 56, 16));
     }
 
     private static EntitySpriteDefinition pairDefinition(EntitySpriteDefinition.OamAttribute first,
@@ -589,6 +713,16 @@ final class EntityRenderLayerTest {
         return new EntitySpriteDefinition(0x7A, 0x06, 0x5C89,
             EntitySpriteDefinition.Shape.PAIR, 0,
             List.of(new EntitySpriteDefinition.Variant(first, second)));
+    }
+
+    private static EntitySpriteDefinition rectangleDefinition(int address, int tile,
+                                                               int attributes) {
+        List<EntitySpriteDefinition.RectangleSprite> rectangle = List.of(
+            new EntitySpriteDefinition.RectangleSprite(0, 0,
+                new EntitySpriteDefinition.OamAttribute(tile, attributes)));
+        return new EntitySpriteDefinition(0x00, 0x03, address,
+            EntitySpriteDefinition.Shape.RECTANGLE, 0, List.of(),
+            List.of(rectangle, rectangle, rectangle, rectangle));
     }
 
     private static RoomEntitySnapshot snapshot(RoomEntity... entities) {
