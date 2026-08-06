@@ -323,6 +323,32 @@ final class RoomSessionTest {
     }
 
     @Test
+    void liveOctorokUsesEntityPhysicsInsteadOfLinkBlockingPolicy() {
+        RoomSession session = newSession();
+        session.loadInitialOverworld(0x2F);
+        RoomEntity octorok = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x09)
+            .findFirst()
+            .orElseThrow();
+
+        fillActiveObjects(session, 0x0E); // Overworld deep-water physics $07.
+        EntityBackgroundCollisionResult water =
+            session.entityBackgroundCollisionResultForTest(
+                octorok, EntityBackgroundCollisionResult.RIGHT, octorok.x(), octorok.y());
+        assertFalse(water.blocked());
+        assertEquals(0x0E, water.objectId());
+        assertEquals(PhysicsFlags.DEEP_WATER, water.physicsFlag());
+
+        fillActiveObjects(session, 0x00); // Overworld solid physics $01.
+        EntityBackgroundCollisionResult solid =
+            session.entityBackgroundCollisionResultForTest(
+                octorok, EntityBackgroundCollisionResult.RIGHT, octorok.x(), octorok.y());
+        assertTrue(solid.blocked());
+        assertEquals(0x00, solid.objectId());
+        assertEquals(PhysicsFlags.SOLID, solid.physicsFlag());
+    }
+
+    @Test
     void ordinaryEntityEntersRomFallingStateOnPitPhysics() {
         RoomSession session = newSession();
         session.loadIndoor(0x00, 0x0F);
