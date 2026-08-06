@@ -95,8 +95,11 @@ public final class EntitySpriteCatalog {
         for (int slot = 0; slot < ENTITY_SHEET_SLOT_COUNT; slot++) {
             sheetValues[slot] = Byte.toUnsignedInt(romData[sheetOffset + slot]);
         }
+        EntitySpriteDefinition floatingOverlay = entitySpriteHandlerCatalog.forFloatingItemOverlay();
         return new EntitySpriteSelection(roomTable, roomId, groupIndex, sheetValues,
             true, palettes)
+            .withSpriteOverlay(0x86, floatingOverlay)
+            .withSpriteOverlay(0xE5, floatingOverlay)
             .withBurningSpriteDefinition(entitySpriteHandlerCatalog.forBurningEntity())
             .withDeathSpriteDefinitions(death, powerDeath);
     }

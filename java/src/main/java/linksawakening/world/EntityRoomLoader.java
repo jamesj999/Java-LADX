@@ -100,12 +100,19 @@ public final class EntityRoomLoader {
                 int[] initializedPosition = applyInitialPositionTransform(table, roomId, type, x, y);
                 EntitySpriteDefinition spriteDefinition = spriteHandlers
                     .forEntityType(type, table, mapId);
+                int spriteVariant = spriteDefinition.supported()
+                    ? FloatingItemMotion.isFloatingItem(type)
+                        ? FloatingItemMotion.initialVariant(type,
+                            initializedPosition[0], initializedPosition[1])
+                        : spriteDefinition.initialVariant()
+                    : -1;
+                int initialZ = spriteDefinition.supported() && FloatingItemMotion.isFloatingItem(type)
+                    ? FloatingItemMotion.initialZ(type) : 0;
                 slots.set(loadedSlot, new RoomEntity(
                     loadedSlot, sourceLoadOrder, type, initializedPosition[0], initializedPosition[1],
                     EntityStatus.INIT,
                     spriteDefinition,
-                    spriteDefinition.supported() ? spriteDefinition.initialVariant() : -1,
-                    0, initialSpriteTileOffset(type)));
+                    spriteVariant, 0, initialSpriteTileOffset(type), initialZ));
                 loadedSlot++;
             }
             sourceLoadOrder++;

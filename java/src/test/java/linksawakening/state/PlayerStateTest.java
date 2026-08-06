@@ -240,6 +240,50 @@ final class PlayerStateTest {
     }
 
     @Test
+    void floatingItemEffectsMatchTheSixVariantDispatchEntries() {
+        PlayerState playerState = new PlayerState();
+        playerState.initializeNewGame(99, 20, 20);
+        playerState.setMaxArrows(99);
+        playerState.setMaxBombs(20);
+        playerState.setMaxMagicPowder(20);
+        playerState.setHealth(0);
+
+        playerState.applyFloatingItemPickup(0x86, 0);
+        assertEquals(10, playerState.addRupeeBuffer());
+
+        playerState.applyFloatingItemPickup(0x86, 1);
+        assertEquals(PlayerState.INVENTORY_MAGIC_POWDER, playerState.itemB());
+        assertEquals(10, playerState.magicPowderCount());
+
+        playerState.applyFloatingItemPickup(0x86, 2);
+        assertEquals(10, playerState.bombCount());
+
+        playerState.applyFloatingItemPickup(0x86, 3);
+        assertEquals(10, playerState.addRupeeBuffer());
+
+        playerState.applyFloatingItemPickup(0xE5, 4);
+        assertEquals(0x18, playerState.addHealthBuffer());
+
+        playerState.applyFloatingItemPickup(0xE5, 5);
+        assertEquals(10, playerState.arrowCount());
+    }
+
+    @Test
+    void floatingBombAndPowderEffectsRespectTheirRomCapacityChecks() {
+        PlayerState playerState = new PlayerState();
+        playerState.setMaxBombs(12);
+        playerState.setBombCount(8);
+        playerState.setMaxMagicPowder(12);
+        playerState.setMagicPowderCount(8);
+
+        playerState.applyFloatingItemPickup(0x86, 2);
+        playerState.applyFloatingItemPickup(0x86, 1);
+
+        assertEquals(12, playerState.bombCount());
+        assertEquals(12, playerState.magicPowderCount());
+    }
+
+    @Test
     void initializeNewGameClearsTheDebugInventoryAndUsesThreeFullHearts() {
         PlayerState playerState = new PlayerState();
         playerState.setItemA(PlayerState.INVENTORY_BOW);

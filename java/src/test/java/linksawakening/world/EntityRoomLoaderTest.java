@@ -142,6 +142,30 @@ final class EntityRoomLoaderTest {
     }
 
     @Test
+    void initializesFloatingItemsWithPositionVariantAndRomInitialZ() {
+        byte[] rom = syntheticRom();
+        writePointer(rom, EntityRoomLoader.RoomTable.OVERWORLD, 0, 0x5170);
+        writeStream(rom, 0x5170,
+            0x00, 0x86,
+            0x01, 0x86,
+            0x10, 0xE5,
+            0x11, 0xE5,
+            0xFF);
+
+        List<RoomEntity> entities = new EntityRoomLoader(rom)
+            .load(EntityRoomLoader.RoomTable.OVERWORLD, 0)
+            .loadedEntities();
+
+        assertEquals(0, entities.get(0).spriteVariant());
+        assertEquals(1, entities.get(1).spriteVariant());
+        assertEquals(4, entities.get(2).spriteVariant());
+        assertEquals(5, entities.get(3).spriteVariant());
+        for (RoomEntity entity : entities) {
+            assertEquals(0x13, entity.z());
+        }
+    }
+
+    @Test
     void loadsColorShellsWithTheirInactiveRomRectangleDefinitions() {
         byte[] rom = syntheticRom();
         writePointer(rom, EntityRoomLoader.RoomTable.OVERWORLD, 0, 0x5180);

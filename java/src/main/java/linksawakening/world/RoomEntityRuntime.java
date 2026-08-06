@@ -969,6 +969,10 @@ public final class RoomEntityRuntime {
             if (ColorShellMotion.isColorShellType(updated.type())) {
                 updated = refreshColorShellDisplay(updated, status);
             }
+            if (status == EntityStatus.ACTIVE && isRuntimeFloatingItem(updated)) {
+                updated = withZ(updated,
+                    FloatingItemMotion.zForFrame(groundInteractionSideScrolling, frame));
+            }
             int variant = variantFor(updated, frame);
             if (status == EntityStatus.ACTIVE && shouldDisappear(entity)) {
                 variant = (slowTransitionCountdown[entity.slot()] & 0x01) != 0 ? 0 : -1;
@@ -1007,7 +1011,7 @@ public final class RoomEntityRuntime {
                                              boolean linkAirborne,
                                              boolean linkInteractive) {
         return collectIfNeeded(frameCounter, linkPixelX, linkPixelY, linkAirborne,
-            linkInteractive, 0);
+            linkInteractive, 0, 0);
     }
 
     /** Pickup collision with Link's Java direction available for held items. */
@@ -1017,17 +1021,37 @@ public final class RoomEntityRuntime {
                                              boolean linkAirborne,
                                              boolean linkInteractive,
                                              int linkDirection) {
-        if (linkAirborne || !linkInteractive) {
+        return collectIfNeeded(frameCounter, linkPixelX, linkPixelY, linkAirborne,
+            linkInteractive, linkDirection, 0);
+    }
+
+    /** Pickup collision with Link's ROM-facing Z available for floating items. */
+    public EntityPickupEvent collectIfNeeded(int frameCounter,
+                                             int linkPixelX,
+                                             int linkPixelY,
+                                             boolean linkAirborne,
+                                             boolean linkInteractive,
+                                             int linkDirection,
+                                             int linkZ) {
+        if (!linkInteractive) {
             return null;
         }
         int romDirection = romDirectionForJavaDirection(linkDirection);
 
         for (int index = slots.length - 1; index >= 0; index--) {
             RoomEntity entity = slots[index];
+            boolean floatingType = FloatingItemMotion.isFloatingItem(entity.type());
+            boolean floating = isRuntimeFloatingItem(entity);
             if (!entity.loaded() || entity.status() != EntityStatus.ACTIVE
                 || !RoomEntityPickupRules.isPickable(entity.type())
+                || (floatingType && !floating)
                 || !RoomEntityPickupRules.collisionCadenceMatches(frameCounter, entity.slot())
-                || !RoomEntityPickupRules.overlapsLink(entity, linkPixelX, linkPixelY)) {
+                || (!floating && linkAirborne)
+                || (floating && !FloatingItemMotion.linkZAllowsCollection(
+                    groundInteractionSideScrolling, linkZ))
+                || !(floating
+                    ? RoomEntityPickupRules.overlapsFloatingItem(entity, linkPixelX, linkPixelY)
+                    : RoomEntityPickupRules.overlapsLink(entity, linkPixelX, linkPixelY))) {
                 continue;
             }
 
@@ -1037,7 +1061,8 @@ public final class RoomEntityRuntime {
             } else {
                 clearEntity(entity.slot());
             }
-            return new EntityPickupEvent(entity.slot(), entity.type(), persistentClearMask);
+            return new EntityPickupEvent(entity.slot(), entity.type(), persistentClearMask,
+                floating ? entity.spriteVariant() : -1);
         }
         return null;
     }
@@ -2455,6 +2480,16 @@ public final class RoomEntityRuntime {
         };
     }
 
+    /**
+     * The standard bank-$06 floating handler is available only where its
+     * standard sprite definition was loaded. Color Dungeon's $86 handler is
+     * a separate bank-$36 path and remains intentionally deferred.
+     */
+    private static boolean isRuntimeFloatingItem(RoomEntity entity) {
+        return FloatingItemMotion.isFloatingItem(entity.type())
+            && entity.spriteDefinition().supported();
+    }
+
     private boolean isDisabledFollower(int type) {
         return switch (type) {
             case FollowingNpcEntitySpawner.ENTITY_ROOSTER -> !followingNpcState.roosterFollowing();
@@ -2489,6 +2524,13 @@ public final class RoomEntityRuntime {
             entity.slot(), entity.sourceLoadOrder(), entity.type(), entity.x(), entity.y(),
             entity.status(), entity.spriteDefinition(), variant, entity.entityFlipAttribute(),
             entity.spriteTileOffset(), entity.z()));
+    }
+
+    private static RoomEntity withZ(RoomEntity entity, int z) {
+        return preserveDeathMetadata(entity, new RoomEntity(
+            entity.slot(), entity.sourceLoadOrder(), entity.type(), entity.x(), entity.y(),
+            entity.status(), entity.spriteDefinition(), entity.spriteVariant(),
+            entity.entityFlipAttribute(), entity.spriteTileOffset(), z));
     }
 
     private static RoomEntity withDefinition(RoomEntity entity,

@@ -15,6 +15,7 @@ public final class EntitySpriteSelection {
     private final boolean standardSheets;
     private final int[][] objectPalettes;
     private final Map<Integer, EntitySpriteDefinition> spriteOverrides;
+    private final Map<Integer, EntitySpriteDefinition> spriteOverlays;
     private final EntitySpriteDefinition burningSpriteDefinition;
     private final EntitySpriteDefinition deathSpriteDefinition;
     private final EntitySpriteDefinition powerRecoilDeathSpriteDefinition;
@@ -23,7 +24,7 @@ public final class EntitySpriteSelection {
                                  int groupIndex, int[] sheetValues,
                                  boolean standardSheets, int[][] objectPalettes) {
         this(roomTable, roomId, groupIndex, sheetValues, standardSheets, objectPalettes,
-            Map.of(), null, null, null);
+            Map.of(), Map.of(), null, null, null);
     }
 
     public EntitySpriteSelection(EntityRoomLoader.RoomTable roomTable, int roomId,
@@ -31,13 +32,14 @@ public final class EntitySpriteSelection {
                                  boolean standardSheets, int[][] objectPalettes,
                                  Map<Integer, EntitySpriteDefinition> spriteOverrides) {
         this(roomTable, roomId, groupIndex, sheetValues, standardSheets, objectPalettes,
-            spriteOverrides, null, null, null);
+            spriteOverrides, Map.of(), null, null, null);
     }
 
     private EntitySpriteSelection(EntityRoomLoader.RoomTable roomTable, int roomId,
                                   int groupIndex, int[] sheetValues,
                                   boolean standardSheets, int[][] objectPalettes,
                                   Map<Integer, EntitySpriteDefinition> spriteOverrides,
+                                  Map<Integer, EntitySpriteDefinition> spriteOverlays,
                                   EntitySpriteDefinition burningSpriteDefinition,
                                   EntitySpriteDefinition deathSpriteDefinition,
                                   EntitySpriteDefinition powerRecoilDeathSpriteDefinition) {
@@ -59,6 +61,21 @@ public final class EntitySpriteSelection {
             overrides.put(type, entry.getValue());
         }
         this.spriteOverrides = Map.copyOf(overrides);
+        if (spriteOverlays == null) {
+            throw new IllegalArgumentException("Entity sprite overlays cannot be null");
+        }
+        Map<Integer, EntitySpriteDefinition> overlays = new HashMap<>();
+        for (Map.Entry<Integer, EntitySpriteDefinition> entry : spriteOverlays.entrySet()) {
+            int type = entry.getKey();
+            if ((type & ~0xFF) != 0 || entry.getValue() == null) {
+                throw new IllegalArgumentException("Entity sprite overlays must contain valid types");
+            }
+            if (!entry.getValue().supported()) {
+                throw new IllegalArgumentException("Entity sprite overlays must be supported");
+            }
+            overlays.put(type, entry.getValue());
+        }
+        this.spriteOverlays = Map.copyOf(overlays);
         if (burningSpriteDefinition != null && !burningSpriteDefinition.supported()) {
             throw new IllegalArgumentException("Burning sprite definition must be supported");
         }
@@ -101,6 +118,15 @@ public final class EntitySpriteSelection {
         return spriteOverrides;
     }
 
+    /** Returns the immutable ROM display-list overlay associated with an entity type. */
+    public EntitySpriteDefinition spriteOverlayFor(int entityType) {
+        return spriteOverlays.get(entityType);
+    }
+
+    public Map<Integer, EntitySpriteDefinition> spriteOverlays() {
+        return spriteOverlays;
+    }
+
     public EntitySpriteDefinition burningSpriteDefinition() {
         return burningSpriteDefinition;
     }
@@ -118,7 +144,7 @@ public final class EntitySpriteSelection {
             throw new IllegalArgumentException("Burning sprite definition must be supported");
         }
         return new EntitySpriteSelection(roomTable, roomId, groupIndex, sheetValues,
-            standardSheets, objectPalettes, spriteOverrides, definition,
+            standardSheets, objectPalettes, spriteOverrides, spriteOverlays, definition,
             deathSpriteDefinition, powerRecoilDeathSpriteDefinition);
     }
 
@@ -127,14 +153,14 @@ public final class EntitySpriteSelection {
         validateOptionalDeathDefinition(death, "Death");
         validateOptionalDeathDefinition(powerDeath, "Power-recoil death");
         return new EntitySpriteSelection(roomTable, roomId, groupIndex, sheetValues,
-            standardSheets, objectPalettes, spriteOverrides, burningSpriteDefinition,
+            standardSheets, objectPalettes, spriteOverrides, spriteOverlays, burningSpriteDefinition,
             death, powerDeath);
     }
 
     public EntitySpriteSelection withSpriteOverrides(
         Map<Integer, EntitySpriteDefinition> overrides) {
         return new EntitySpriteSelection(roomTable, roomId, groupIndex, sheetValues,
-            standardSheets, objectPalettes, overrides, burningSpriteDefinition,
+            standardSheets, objectPalettes, overrides, spriteOverlays, burningSpriteDefinition,
             deathSpriteDefinition, powerRecoilDeathSpriteDefinition);
     }
 
@@ -143,6 +169,20 @@ public final class EntitySpriteSelection {
         Map<Integer, EntitySpriteDefinition> overrides = new HashMap<>(spriteOverrides);
         overrides.put(entityType, definition);
         return withSpriteOverrides(overrides);
+    }
+
+    public EntitySpriteSelection withSpriteOverlays(
+        Map<Integer, EntitySpriteDefinition> overlays) {
+        return new EntitySpriteSelection(roomTable, roomId, groupIndex, sheetValues,
+            standardSheets, objectPalettes, spriteOverrides, overlays, burningSpriteDefinition,
+            deathSpriteDefinition, powerRecoilDeathSpriteDefinition);
+    }
+
+    public EntitySpriteSelection withSpriteOverlay(int entityType,
+                                                   EntitySpriteDefinition definition) {
+        Map<Integer, EntitySpriteDefinition> overlays = new HashMap<>(spriteOverlays);
+        overlays.put(entityType, definition);
+        return withSpriteOverlays(overlays);
     }
 
     private static void validateOptionalDeathDefinition(EntitySpriteDefinition definition,

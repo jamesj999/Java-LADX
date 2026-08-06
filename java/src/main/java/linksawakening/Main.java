@@ -499,9 +499,14 @@ public class Main {
                 if (roomSession != null && playerState != null) {
                     EntityPickupEvent pickup = roomSession.collectEntityIfNeeded(
                         frameCounter, link.pixelX(), link.pixelY(), link.isAirborne(), true,
-                        link.direction());
+                        link.direction(), link.romEntityZ());
                     if (pickup != null) {
-                        playerState.applyEntityPickup(pickup.type());
+                        if (pickup.sourceVariant() >= 0) {
+                            playerState.applyFloatingItemPickup(
+                                pickup.type(), pickup.sourceVariant());
+                        } else {
+                            playerState.applyEntityPickup(pickup.type());
+                        }
                     }
                 }
                 maybeCutBushWithSword();

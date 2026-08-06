@@ -58,6 +58,8 @@ public final class EntitySpriteHandlerCatalog {
     private static final int ENTITY_DROPPABLE_MAGIC_POWDER = 0x3B;
     private static final int ENTITY_HIDING_SLIME_KEY = 0x3C;
     private static final int ENTITY_DROPPABLE_SECRET_SEASHELL = 0x3D;
+    private static final int ENTITY_FLOATING_ITEM = 0x86;
+    private static final int ENTITY_FLOATING_ITEM_2 = 0xE5;
     private static final int ENTITY_MARIN = 0x3E;
     private static final int ENTITY_GRANDPA_ULRIRA = 0x77;
     private static final int ENTITY_MARIN_AT_THE_SHORE = 0xC1;
@@ -94,6 +96,15 @@ public final class EntitySpriteHandlerCatalog {
         }
         if (roomTable == null) {
             throw new IllegalArgumentException("Room entity table cannot be null");
+        }
+
+        // Color Dungeon's $86 handler is bank-$36 func_036_4F9B, not the
+        // ordinary bank-$06 floating-item display path. That branch remains
+        // intentionally deferred until its dedicated renderer is modeled.
+        if ((entityType == ENTITY_FLOATING_ITEM || entityType == ENTITY_FLOATING_ITEM_2)
+            && !(roomTable == EntityRoomLoader.RoomTable.COLOR_DUNGEON
+                && entityType == ENTITY_FLOATING_ITEM)) {
+            return decodeFloatingItemMain(entityType);
         }
 
         if (isColorShellType(entityType)) {
@@ -306,6 +317,11 @@ public final class EntitySpriteHandlerCatalog {
         return decodePowerRecoilDeathRectangle();
     }
 
+    /** Decodes Data_006_7AEB, the two-frame rectangle list after the main item sprite. */
+    public EntitySpriteDefinition forFloatingItemOverlay() {
+        return decodeRectangle(ENTITY_FLOATING_ITEM, 0x06, 0x7AEB, 2, 2, 0);
+    }
+
     /** The green Zol list selected after Slime Eye has split its Zol. */
     public EntitySpriteDefinition forZolSlimeEye() {
         return decodePair(0x1B, 0x06, 0x7C11, 2, 0);
@@ -323,6 +339,27 @@ public final class EntitySpriteHandlerCatalog {
         List<EntitySpriteDefinition.Variant> variants = new ArrayList<>(pair.variants());
         variants.set(1, new EntitySpriteDefinition.Variant(single.variant(0).first(), null));
         return new EntitySpriteDefinition(entityType, 0x07, 0x729B,
+            EntitySpriteDefinition.Shape.PAIR, 0, variants);
+    }
+
+    /**
+     * Decodes Data_006_7ADD as a mixed pair definition. The bank-$06 handler
+     * renders variants $00-$06 as single sprites, except that variant $05 of
+     * ENTITY_FLOATING_ITEM_2 deliberately points at Data_006_7AD1 + 2. That
+     * source address is inside the preceding Boo Buddy code; preserve its ROM
+     * bytes rather than correcting the disassembly's source quirk.
+     */
+    private EntitySpriteDefinition decodeFloatingItemMain(int entityType) {
+        EntitySpriteDefinition singles = decodeSingle(entityType, 0x06, 0x7ADD, 7, 0);
+        List<EntitySpriteDefinition.Variant> variants = new ArrayList<>(7);
+        for (EntitySpriteDefinition.Variant variant : singles.variants()) {
+            variants.add(variant);
+        }
+        if (entityType == ENTITY_FLOATING_ITEM_2) {
+            EntitySpriteDefinition quirk = decodePair(entityType, 0x06, 0x7AD3, 1, 0);
+            variants.set(5, quirk.variant(0));
+        }
+        return new EntitySpriteDefinition(entityType, 0x06, 0x7ADD,
             EntitySpriteDefinition.Shape.PAIR, 0, variants);
     }
 

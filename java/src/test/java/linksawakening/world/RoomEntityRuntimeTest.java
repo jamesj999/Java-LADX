@@ -3407,6 +3407,57 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void floatingItemsAnimateRomZOnTheFirstAndSubsequentActiveFramesWithoutMovingXY() {
+        EntitySpriteDefinition definition = pairDefinition(0x86, 7);
+        RoomEntity initialEntity = new RoomEntity(0, 0, 0x86, 24, 64,
+            EntityStatus.INIT, definition, 0, 0, 0, 0x13);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(initialEntity));
+
+        runtime.tick(0);
+        RoomEntity first = runtime.snapshot().slots().get(0);
+        assertEquals(EntityStatus.ACTIVE, first.status());
+        assertEquals(0x0F, first.z());
+        assertEquals(24, first.x());
+        assertEquals(64, first.y());
+
+        runtime.tick(24);
+        assertEquals(0x11, runtime.snapshot().slots().get(0).z());
+    }
+
+    @Test
+    void floatingCollectionUsesVisualYPersistenceAndSourceVariantData() {
+        RoomEntity entity = new RoomEntity(0, 0, 0x86, 24, 64,
+            EntityStatus.ACTIVE, pairDefinition(0x86, 7), 0, 0, 0, 0x13);
+        RoomEntityRuntime belowLinkZ = RoomEntityRuntime.from(snapshot(entity));
+        assertNull(belowLinkZ.collectIfNeeded(1, 24, 47, true, true, 0, 0x0B));
+
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(entity));
+        EntityPickupEvent pickup = runtime.collectIfNeeded(1, 24, 47,
+            true, true, 0, 0x0C);
+
+        assertNotNull(pickup);
+        assertEquals(0x86, pickup.type());
+        assertEquals(0, pickup.sourceVariant());
+        assertEquals(1, pickup.persistentClearMask());
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
+    }
+
+    @Test
+    void floatingCollectionAllowsAirborneLinkInSideScrollingRoomsWithoutZGate() {
+        RoomEntity entity = new RoomEntity(0, 0, 0xE5, 24, 64,
+            EntityStatus.ACTIVE, pairDefinition(0xE5, 7), 5, 0, 0, 0x13);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(entity));
+        runtime.setGroundInteractionSideScrolling(true);
+
+        EntityPickupEvent pickup = runtime.collectIfNeeded(1, 24, 47,
+            true, true, 0, 0x00);
+
+        assertNotNull(pickup);
+        assertEquals(0xE5, pickup.type());
+        assertEquals(5, pickup.sourceVariant());
+    }
+
+    @Test
     void collectionUsesThePickupHitboxEdgesFromHitboxPositions() {
         EntitySpriteDefinition definition = pairDefinition(0x2D, 1);
         RoomEntitySnapshot initial = snapshot(

@@ -523,7 +523,7 @@ public final class RoomSession {
                                                    boolean linkAirborne,
                                                    boolean linkInteractive) {
         return collectEntityIfNeeded(frameCounter, linkPixelX, linkPixelY, linkAirborne,
-            linkInteractive, followingLinkDirection);
+            linkInteractive, followingLinkDirection, followingLinkZ);
     }
 
     public EntityPickupEvent collectEntityIfNeeded(int frameCounter,
@@ -532,11 +532,25 @@ public final class RoomSession {
                                                    boolean linkAirborne,
                                                    boolean linkInteractive,
                                                    int linkDirection) {
+        return collectEntityIfNeeded(frameCounter, linkPixelX, linkPixelY, linkAirborne,
+            linkInteractive, linkDirection, followingLinkZ);
+    }
+
+    public EntityPickupEvent collectEntityIfNeeded(int frameCounter,
+                                                   int linkPixelX,
+                                                   int linkPixelY,
+                                                   boolean linkAirborne,
+                                                   boolean linkInteractive,
+                                                   int linkDirection,
+                                                   int linkZ) {
         if (activeRoom == null || entityRuntime == null) {
             return null;
         }
+        followingLinkZ = linkZ & 0xFF;
+        followingLinkDirection = linkDirection & 0xFF;
         EntityPickupEvent event = entityRuntime.collectIfNeeded(
-            frameCounter, linkPixelX, linkPixelY, linkAirborne, linkInteractive, linkDirection);
+            frameCounter, linkPixelX, linkPixelY, linkAirborne, linkInteractive,
+            linkDirection, linkZ);
         if (event == null) {
             return null;
         }

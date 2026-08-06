@@ -7,6 +7,9 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class EntitySpriteCatalogTest {
@@ -59,6 +62,8 @@ final class EntitySpriteCatalogTest {
         assertEquals(0x4C44, selection.burningSpriteDefinition().address());
         assertEquals(0x5488, selection.deathSpriteDefinition().address());
         assertEquals(0x54C8, selection.powerRecoilDeathSpriteDefinition().address());
+        assertNull(selection.spriteOverlayFor(0x86));
+        assertNull(selection.spriteOverlayFor(0xE5));
     }
 
     @Test
@@ -129,6 +134,21 @@ final class EntitySpriteCatalogTest {
 
         assertEquals(0x43, selection.groupIndex());
         assertArrayEquals(new int[] {0xA4, 0xE5, 0xE6, 0xDC}, selection.sheetValues());
+    }
+
+    @Test
+    void preservesFloatingOverlayMetadataWhenSpriteOverridesAreChanged() throws Exception {
+        EntitySpriteSelection selection = new EntitySpriteCatalog(loadRom())
+            .load(EntityRoomLoader.RoomTable.OVERWORLD, 0x00);
+
+        EntitySpriteDefinition overlay = selection.spriteOverlayFor(0x86);
+        assertNotNull(overlay);
+        assertSame(overlay, selection.spriteOverlayFor(0xE5));
+
+        EntitySpriteSelection changed = selection.withSpriteOverride(
+            0x6D, EntitySpriteDefinition.unsupported(0x6D));
+        assertSame(overlay, changed.spriteOverlayFor(0x86));
+        assertSame(overlay, changed.spriteOverlayFor(0xE5));
     }
 
     private static byte[] syntheticRom() {

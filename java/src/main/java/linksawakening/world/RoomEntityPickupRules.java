@@ -38,9 +38,10 @@ public final class RoomEntityPickupRules {
 
     /** Returns whether the type uses PickableCollectIfNeeded in its handler. */
     public static boolean isPickable(int type) {
-        return type >= FIRST_PICKABLE_TYPE
-            && type <= LAST_PICKABLE_TYPE
-            && type != IRON_MASKS_MASK;
+        return (type >= FIRST_PICKABLE_TYPE
+                && type <= LAST_PICKABLE_TYPE
+                && type != IRON_MASKS_MASK)
+            || FloatingItemMotion.isFloatingItem(type);
     }
 
     /** EntityInitTreeOrPotDroppable's indoor $80 slow-transition timer set. */
@@ -70,6 +71,22 @@ public final class RoomEntityPickupRules {
      * is intentional even though ordinary room coordinates do not wrap.
      */
     public static boolean overlapsLink(RoomEntity entity, int linkPixelX, int linkPixelY) {
+        return overlapsAtY(entity, linkPixelX, linkPixelY, entity.y());
+    }
+
+    /**
+     * Mirrors the floating-item handler's collisionEvenInTheAir path. The
+     * entity's visual Y is its room Y minus its current ROM Z; ordinary
+     * static pickables intentionally continue using {@link #overlapsLink}.
+     */
+    public static boolean overlapsFloatingItem(RoomEntity entity,
+                                                int linkPixelX,
+                                                int linkPixelY) {
+        return overlapsAtY(entity, linkPixelX, linkPixelY, entity.y() - entity.z());
+    }
+
+    private static boolean overlapsAtY(RoomEntity entity, int linkPixelX,
+                                       int linkPixelY, int entityY) {
         int xDistance = unsignedByteAbs(
             entity.x() + HITBOX_X - linkPixelX - 0x08);
         if (xDistance >= HITBOX_WIDTH + 0x04) {
@@ -77,7 +94,7 @@ public final class RoomEntityPickupRules {
         }
 
         int yDistance = unsignedByteAbs(
-            entity.y() + HITBOX_Y - linkPixelY - 0x08);
+            entityY + HITBOX_Y - linkPixelY - 0x08);
         return yDistance < HITBOX_HEIGHT + 0x04;
     }
 

@@ -1,6 +1,7 @@
 package linksawakening.state;
 
 import linksawakening.save.SaveSlotState;
+import linksawakening.world.FloatingItemMotion;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -229,6 +230,20 @@ public final class PlayerState {
                 // handlers; their room event still reaches this method when
                 // they need a future-specific state implementation.
             }
+        }
+    }
+
+    /** Applies the source-variant dispatch at FloatingItemEntityHandler. */
+    public void applyFloatingItemPickup(int entityType, int sourceVariant) {
+        switch (FloatingItemMotion.pickupEffect(entityType, sourceVariant)) {
+            case TEN_RUPEES -> addRupeeBuffer = 10;
+            case MAGIC_POWDER -> {
+                giveInventoryItem(INVENTORY_MAGIC_POWDER);
+                magicPowderCount = incrementByTenUpTo(magicPowderCount, maxMagicPowder);
+            }
+            case TEN_BOMBS -> bombCount = incrementByTenUpTo(bombCount, maxBombs);
+            case HEALTH_18 -> addHealthBuffer = Math.min(0xFF, addHealthBuffer + 0x18);
+            case TEN_ARROWS -> arrowCount = Math.min(99, arrowCount + 10);
         }
     }
 
@@ -482,6 +497,10 @@ public final class PlayerState {
 
     private static int incrementUpTo(int value, int maximum) {
         return value < maximum ? value + 1 : value;
+    }
+
+    private static int incrementByTenUpTo(int value, int maximum) {
+        return Math.min(maximum, value + 10);
     }
 
     private static int clamp(int value, int min, int max) {

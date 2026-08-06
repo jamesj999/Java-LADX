@@ -693,6 +693,44 @@ final class EntitySpriteHandlerCatalogTest {
     }
 
     @Test
+    void decodesFloatingItemsMixedMainListSourceQuirkAndRectangleOverlay() throws Exception {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+
+        EntitySpriteDefinition floating = catalog.forEntityType(
+            0x86, EntityRoomLoader.RoomTable.OVERWORLD);
+        assertDefinition(floating, 0x06, 0x7ADD,
+            EntitySpriteDefinition.Shape.PAIR, 7, 0);
+        int[][] singles = {
+            {0xA6, 0x15}, {0x8E, 0x16}, {0x80, 0x15}, {0xA6, 0x15},
+            {0xA9, 0x14}, {0x2A, 0x41}, {0x2A, 0x61}
+        };
+        for (int variant = 0; variant < singles.length; variant++) {
+            assertEquals(singles[variant][0], floating.variant(variant).first().tile());
+            assertEquals(singles[variant][1], floating.variant(variant).first().attributes());
+            assertNull(floating.variant(variant).second());
+        }
+
+        EntitySpriteDefinition second = catalog.forEntityType(
+            0xE5, EntityRoomLoader.RoomTable.OVERWORLD);
+        assertEquals(0xA9, second.variant(4).first().tile());
+        assertEquals(0x14, second.variant(4).first().attributes());
+        assertEquals(0x0C, second.variant(5).first().tile());
+        assertEquals(0xFE, second.variant(5).first().attributes());
+        assertEquals(0x01, second.variant(5).second().tile());
+        assertEquals(0xC0, second.variant(5).second().attributes());
+
+        EntitySpriteDefinition overlay = catalog.forFloatingItemOverlay();
+        assertDefinition(overlay, 0x06, 0x7AEB,
+            EntitySpriteDefinition.Shape.RECTANGLE, 2, 0);
+        assertEquals(0, overlay.rectangleVariant(0).get(0).yOffset());
+        assertEquals(-4, overlay.rectangleVariant(0).get(0).xOffset());
+        assertEquals(0x22, overlay.rectangleVariant(0).get(0).oam().tile());
+        assertEquals(0x00, overlay.rectangleVariant(0).get(0).oam().attributes());
+        assertEquals(12, overlay.rectangleVariant(1).get(1).xOffset());
+        assertEquals(0x60, overlay.rectangleVariant(1).get(1).oam().attributes());
+    }
+
+    @Test
     void enemyProjectileVariantsMatchAllShippedRomTileAndAttributeBytes() throws Exception {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
 

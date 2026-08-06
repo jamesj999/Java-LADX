@@ -942,6 +942,32 @@ runtime collision callback.
   persistence, bosses, or entity-specific death handlers/poof effects; those
   remain source-backed follow-up work.
 
+## Verified ROM floating-item runtime — 2026-08-06
+
+- `ENTITY_FLOATING_ITEM` `$86` and `ENTITY_FLOATING_ITEM_2` `$E5` now decode
+  their bank-$06 main display data from `$7ADD`, preserving the seven single
+  entries and the `$E5` variant-$05 source quirk at `$7AD3`. The shared
+  two-frame, two-entry rectangle overlay comes from `$7AEB` and is carried by
+  immutable `EntitySpriteSelection` metadata into the renderer.
+- Room initialization mirrors the bank-$03 position-derived variants and
+  initial Z `$13`. Active ticks select the exact bank-$06 top-down or
+  side-scroll Z table using `(frameCounter >> 3) & 7` while leaving X/Y
+  unchanged.
+- Floating pickup events preserve the source variant. Their collection path
+  uses visual Y (`entity.y - entity.z`) and the source collision boundary:
+  top-down Link collection requires ROM Z `>= $0C`, while side-scroll bypasses
+  that Z gate. Airborne floating items therefore remain collectible through
+  the collision-even-in-air path; ordinary static pickables retain their
+  existing airborne rejection.
+- Main/RoomSession now forward Link's ROM Z. The implemented resource writes
+  are ten rupees, ten arrows, capacity-limited ten bombs, magic-powder
+  inventory/count, and the `$18` health buffer.
+- Color Dungeon `$86` `func_036_4F9B`, indoor `$E5` room `$1C` `wDE00`, the
+  `$86` toadstool-status unload branch, `DidKillEnemy`/drop persistence, and
+  floating-item wave-audio delivery remain explicit deferrals. The existing
+  event boundary carries only the modeled pickup state and does not invent
+  those semantics.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

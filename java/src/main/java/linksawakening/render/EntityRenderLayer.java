@@ -94,6 +94,17 @@ public final class EntityRenderLayer implements RenderLayer {
             int variant = renderingDeath ? entity.deathSpriteVariant() : entity.spriteVariant();
             renderEntity(context, entity, definition, variant, palettes, tiles,
                 offset.x(), offset.y());
+            if (!renderingDeath && definition.supported() && entities.spriteSelection() != null) {
+                EntitySpriteDefinition overlay = entities.spriteSelection()
+                    .spriteOverlayFor(entity.type());
+                if (overlay != null) {
+                    // FloatingItemEntityHandler renders the two-entry
+                    // rectangle after its main display list. Its tile and
+                    // attribute bytes remain in the ROM-backed definition.
+                    renderEntity(context, entity, overlay, (frameCounter & 0x08) != 0 ? 1 : 0,
+                        palettes, tiles, offset.x(), offset.y());
+                }
+            }
             if (entity.status() == EntityStatus.BURNING && entities.spriteSelection() != null) {
                 EntitySpriteDefinition burning = entities.spriteSelection()
                     .burningSpriteDefinition();
