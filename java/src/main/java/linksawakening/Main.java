@@ -71,6 +71,7 @@ import linksawakening.world.ActiveRoom;
 import linksawakening.world.EnemyAttackContext;
 import linksawakening.world.EntityCombatEvent;
 import linksawakening.world.EntityPickupEvent;
+import linksawakening.world.EntityProjectileEvent;
 import linksawakening.world.OverworldBushInteraction;
 import linksawakening.world.OverworldTilesetTable;
 import linksawakening.world.RoomBoundaryController;
@@ -606,7 +607,9 @@ public class Main {
                 EnemyCombatEventConsumer.consume(roomSession.consumeEntityEvents(),
                     gameplaySoundSink, transientVfxSystem);
                 for (var event : projectileEvents) {
-                    if (event.linkIgnoreCollisionCountdown() == 0 || link == null) {
+                    boolean hookshotPull = event.kind() == EntityProjectileEvent.Kind.HOOKSHOT_PULL;
+                    if ((!hookshotPull && event.linkIgnoreCollisionCountdown() == 0)
+                        || link == null) {
                         continue;
                     }
                     // AnimateEntities writes hLinkSpeedX/Y and
@@ -614,6 +617,9 @@ public class Main {
                     // apply both at this boundary so the next Link update
                     // consumes the same response as the ROM.
                     link.applyRomSpeed(event.linkSpeedX(), event.linkSpeedY());
+                    if (hookshotPull) {
+                        continue;
+                    }
                     link.setCollisionIgnoreFrames(event.linkIgnoreCollisionCountdown());
                     Sword reflectedSword = equipmentController.activeSword();
                     if (reflectedSword != null) {

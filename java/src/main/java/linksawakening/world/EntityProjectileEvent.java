@@ -24,6 +24,13 @@ public record EntityProjectileEvent(
     int linkSpeedY,
     int linkIgnoreCollisionCountdown) {
 
+    /** Source-shaped hLinkSpeedX/Y write emitted by hookshot state {@code $01}. */
+    public static EntityProjectileEvent hookshotPull(int slot, int speedX, int speedY) {
+        return new EntityProjectileEvent(slot, 0x03, Kind.HOOKSHOT_PULL,
+            0, 0, SoundChannel.NONE, -1, false, false,
+            0, 0, speedX, speedY, 0);
+    }
+
     public EntityProjectileEvent(int slot, int type, Kind kind, int collisionValue,
                                  int linkDamage, SoundChannel soundChannel, int soundId,
                                  boolean remove, boolean swordPokeVfx) {
@@ -83,7 +90,8 @@ public record EntityProjectileEvent(
     public enum Kind {
         SHIELD_BLOCK,
         LINK_DAMAGE,
-        SWORD_HIT
+        SWORD_HIT,
+        HOOKSHOT_PULL
     }
 
     /** Raw Game Boy sound request channel used by the later gameplay router. */

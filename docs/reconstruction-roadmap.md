@@ -1110,6 +1110,27 @@ runtime collision callback.
   Link's forced return movement, bridge spawning, and the three dynamic chain
   link OAM entries remain explicit follow-up work.
 
+## Verified ROM hookshot background interaction and pull — 2026-08-06
+
+- The chain now consumes the existing rich entity/background probe rather than
+  reducing its sample to a boolean. Hookshotable detection is the ROM physics
+  byte `$60`; object IDs remain diagnostic data and are not used as a guessed
+  interaction list.
+- Entity `$03` preserves source state `$01` for a non-point-blank
+  hookshotable collision, unloads at the exact effective countdown boundary
+  `$26`, and passes switch-block samples when Link's synchronized
+  `wLinkStandingOnSwitchBlock` flag is set.
+- Generic wall contact rolls the chain back, defers the collision-table wall
+  response by one handler tick, then emits jingle `$07` and the existing
+  sword-poke transient VFX at visual Y (`entity Y - entity Z`) before the
+  normal return path.
+- Pulling emits the ROM-shaped inverse `$30` Link vector through the existing
+  post-entity event boundary. The `$0B` hookshot noise is emitted every fourth
+  active handler frame and routed through the ROM sound-effect catalog.
+- Focused motion, resolver, runtime, gameplay-audio, Main-boundary, and live
+  RoomSession probe tests cover the increment. Bridge entity `$68` spawning
+  and the three dynamic chain-link OAM entries remain separate follow-up work.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

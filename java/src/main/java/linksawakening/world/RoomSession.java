@@ -918,7 +918,8 @@ public final class RoomSession {
         EntityBackgroundCollisionState state = new EntityBackgroundCollisionState(
             frameCounter, activeRoom != null
                 && activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD,
-            thrownDirection, ledgeTimer, switchBlocksState);
+            thrownDirection, ledgeTimer, switchBlocksState,
+            overworldCollision.linkStandingOnSwitchBlock());
         EntityBackgroundCollisionResolution resolution =
             entityBackgroundCollisionResolver.resolveWithState(
                 entity, direction, sample, objectId, physicsFlag,

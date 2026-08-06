@@ -223,6 +223,18 @@ final class EntityBackgroundCollisionResolverTest {
     }
 
     @Test
+    void hookshotChainPassesSwitchBlockOnlyWhenLinkIsStandingOnOne() {
+        EntityBackgroundCollisionResolver resolver = new EntityBackgroundCollisionResolver(
+            tables(0, 0, 0, 0, HookshotChainMotion.ENTITY_TYPE, 0));
+        RoomEntity hookshot = entity(HookshotChainMotion.ENTITY_TYPE, 0);
+
+        assertTrue(resolveSwitchBlockWithState(resolver, hookshot, 0xDC, 0x00, false)
+            .result().blocked());
+        assertFalse(resolveSwitchBlockWithState(resolver, hookshot, 0xDC, 0x00, true)
+            .result().blocked());
+    }
+
+    @Test
     void openDoorsAreSolidForSparksAndBosses() {
         RoomEntity counterClockwiseSpark = entity(0x16, 0);
         RoomEntity clockwiseSpark = entity(0x17, 0);
@@ -331,9 +343,15 @@ final class EntityBackgroundCollisionResolverTest {
     private static EntityBackgroundCollisionResolution resolveSwitchBlockWithState(
             EntityBackgroundCollisionResolver resolver, RoomEntity entity,
             int objectId, int switchBlocksState) {
+        return resolveSwitchBlockWithState(resolver, entity, objectId, switchBlocksState, false);
+    }
+
+    private static EntityBackgroundCollisionResolution resolveSwitchBlockWithState(
+            EntityBackgroundCollisionResolver resolver, RoomEntity entity,
+            int objectId, int switchBlocksState, boolean linkStandingOnSwitchBlock) {
         return resolver.resolveWithState(entity, EntityBackgroundCollisionResult.RIGHT,
             new EntityCollisionPointProbe.Sample(0x20, 0x30), objectId, 0x04,
             new EntityBackgroundCollisionState(0x00, false, 0xFF, 0x00,
-                switchBlocksState));
+                switchBlocksState, linkStandingOnSwitchBlock));
     }
 }

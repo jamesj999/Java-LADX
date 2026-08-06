@@ -36,6 +36,18 @@ final class GameplaySoundEffectMapTest {
         assertEquals("WAVE_SFX_FLOOR_SWITCH", effect.name());
     }
 
+    @Test
+    void mapsHookshotToTheRomHookshotNoise() throws IOException {
+        GameplaySoundEffectMap map = GameplaySoundEffectMap.fromCatalog(
+            SoundEffectCatalog.fromRom(loadRom()));
+
+        SoundEffect effect = map.resolve(GameplaySoundEvent.HOOKSHOT).orElseThrow();
+
+        assertEquals(SoundEffectNamespace.NOISE, effect.namespace());
+        assertEquals(0x0B, effect.id());
+        assertEquals("NOISE_SFX_HOOKSHOT", effect.name());
+    }
+
     private static byte[] loadRom() throws IOException {
         try (InputStream stream = GameplaySoundEffectMapTest.class.getClassLoader()
                 .getResourceAsStream("rom/azle.gbc")) {

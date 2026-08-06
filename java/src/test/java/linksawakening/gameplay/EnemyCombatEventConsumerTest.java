@@ -109,6 +109,17 @@ final class EnemyCombatEventConsumerTest {
     }
 
     @Test
+    void mapsHookshotNoiseToTheRomHookshotGameplaySound() {
+        RecordingSoundSink sounds = new RecordingSoundSink();
+        EntityCombatEvent event = new EntityCombatEvent(0, 0x03, 0, false, 0, -1,
+            EntityCombatEvent.SoundChannel.NOISE, 0x0B);
+
+        EnemyCombatEventConsumer.consume(List.of(event), sounds);
+
+        assertEquals(List.of(GameplaySoundEvent.HOOKSHOT), sounds.events);
+    }
+
+    @Test
     void mapsEvasiveStalfosCloneWhooshThroughTheSharedRomNoiseEffect() {
         RecordingSoundSink sounds = new RecordingSoundSink();
         List<EntityCombatEvent> events = List.of(

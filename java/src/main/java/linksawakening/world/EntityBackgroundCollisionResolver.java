@@ -9,6 +9,7 @@ final class EntityBackgroundCollisionResolver {
     private static final int ENTITY_FISH = 0xCC;
     private static final int ENTITY_WATER_TEKTITE = 0x99;
     private static final int ENTITY_BOMB = 0x02;
+    private static final int ENTITY_HOOKSHOT_CHAIN = 0x03;
     private static final int ENTITY_WRECKING_BALL = 0xA8;
     private static final int ENTITY_MOLDORM = 0x59;
     private static final int ENTITY_SPARK_COUNTER_CLOCKWISE = 0x16;
@@ -174,6 +175,10 @@ final class EntityBackgroundCollisionResolver {
             RoomEntity entity, int objectId, boolean noWall,
             EntityBackgroundCollisionState state) {
         if (isBombOrWreckingBall(entity)) {
+            return passable(state);
+        }
+        if (entity.type() == ENTITY_HOOKSHOT_CHAIN
+            && state.linkStandingOnSwitchBlock()) {
             return passable(state);
         }
         if (objectId < OBJECT_LOWERED_BLOCK || objectId > OBJECT_RAISED_BLOCK) {

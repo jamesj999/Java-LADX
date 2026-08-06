@@ -48,4 +48,12 @@ final class MainArchitectureTest {
         assertTrue(source.contains("tickEntitiesWithProjectileEvents"));
         assertTrue(source.contains("EnemyProjectileEventConsumer.consume"));
     }
+
+    @Test
+    void mainAppliesHookshotPullEventsWithoutProjectileIgnoreSideEffects() throws Exception {
+        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+
+        assertTrue(source.contains("EntityProjectileEvent.Kind.HOOKSHOT_PULL"));
+        assertTrue(source.contains("link.applyRomSpeed(event.linkSpeedX(), event.linkSpeedY())"));
+    }
 }

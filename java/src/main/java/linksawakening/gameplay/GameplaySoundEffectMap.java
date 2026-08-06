@@ -46,6 +46,8 @@ public final class GameplaySoundEffectMap {
         put(effects, catalog, GameplaySoundEvent.BEAMOS_LASER, SoundEffectNamespace.NOISE, 0x08);
         put(effects, catalog, GameplaySoundEvent.SPIKE_TRAP_WHOOSH,
             SoundEffectNamespace.NOISE, 0x0A);
+        put(effects, catalog, GameplaySoundEvent.HOOKSHOT,
+            SoundEffectNamespace.NOISE, 0x0B);
         put(effects, catalog, GameplaySoundEvent.WRONG_ANSWER, SoundEffectNamespace.JINGLE, 0x1D);
         put(effects, catalog, GameplaySoundEvent.DOOR_UNLOCKED, SoundEffectNamespace.NOISE, 0x04);
         put(effects, catalog, GameplaySoundEvent.SWITCH_BLOCK_TOGGLE,

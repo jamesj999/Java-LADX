@@ -488,14 +488,82 @@ public final class RoomEntityRuntime {
                     clearEntity(entity.slot());
                     continue;
                 }
+
+                if ((frame & 0x03) == 0) {
+                    pendingEntityEvents.add(new EntityCombatEvent(
+                        entity.slot(), entity.type(), 0, false,
+                        EntityCombatEvent.SoundChannel.NOISE, 0x0B));
+                }
+
+                if (hookshotState.wallCollisionPending()) {
+                    HookshotChainMotion.State poked = HookshotChainMotion.completeWallPoke(
+                        hookshotState);
+                    hookshotChainMotion.setState(entity.slot(), poked);
+                    pendingEntityEvents.add(new EntityCombatEvent(
+                        entity.slot(), entity.type(), 0, false,
+                        EntityCombatEvent.SoundChannel.JINGLE, 0x07));
+                    transientVfxRequests.add(new TransientVfxRequest(
+                        TransientVfxType.SWORD_POKE, entity.x(),
+                        (entity.y() - entity.z()) & 0xFF));
+                    slots[index] = entity;
+                    continue;
+                }
+
+                if (hookshotState.entityState() == HookshotChainMotion.PULLING_STATE) {
+                    if (HookshotChainMotion.overlapsLink(hookshotState,
+                        linkEntityX, linkEntityY)) {
+                        clearEntity(entity.slot());
+                        continue;
+                    }
+                    HookshotChainMotion.PullSpeed pullSpeed =
+                        HookshotChainMotion.pullLinkSpeed(
+                            hookshotState, linkEntityX, linkEntityY);
+                    projectileEvents.add(EntityProjectileEvent.hookshotPull(
+                        entity.slot(), pullSpeed.speedX(), pullSpeed.speedY()));
+                    slots[index] = entity;
+                    continue;
+                }
+
                 HookshotChainMotion.Position nextPosition =
                     HookshotChainMotion.nextPosition(hookshotState);
-                boolean blocked = backgroundCollision != null
-                    && backgroundCollision.blocks(entity, hookshotState.direction(),
-                        nextPosition.x(), nextPosition.y());
-                HookshotChainMotion.Step step = hookshotChainMotion.advance(
-                    entity.slot(), linkEntityX, linkEntityY, blocked);
-                if (step.collided() || step.reachedLink()) {
+                HookshotChainMotion.Step step = HookshotChainMotion.advance(
+                    hookshotState, linkEntityX, linkEntityY, false);
+                EntityBackgroundCollisionResult collisionResult = null;
+                boolean blocked = false;
+                if (step.state().transitionCountdown() != 0) {
+                    if (backgroundInteraction != null) {
+                        collisionResult = backgroundInteraction.probe(
+                            entity, hookshotState.direction(), nextPosition.x(), nextPosition.y(),
+                            enemyIgnoreHitsCountdown[entity.slot()], frame);
+                        blocked = collisionResult.blocked();
+                    } else {
+                        blocked = backgroundCollision != null
+                            && backgroundCollision.blocks(entity, hookshotState.direction(),
+                                nextPosition.x(), nextPosition.y());
+                    }
+                }
+                if (blocked) {
+                    HookshotChainMotion.State stopped = HookshotChainMotion.rollbackTo(
+                        step.state(), hookshotState.x(), hookshotState.y());
+                    if (collisionResult != null
+                        && collisionResult.physicsFlag() == 0x60) {
+                        if (HookshotChainMotion.shouldUnloadForHookshotable(
+                            step.state().transitionCountdown())) {
+                            clearEntity(entity.slot());
+                            continue;
+                        }
+                        hookshotChainMotion.setState(entity.slot(),
+                            HookshotChainMotion.enterPulling(stopped));
+                    } else {
+                        hookshotChainMotion.setState(entity.slot(),
+                            HookshotChainMotion.deferWallPoke(stopped));
+                    }
+                    slots[index] = entity;
+                    continue;
+                }
+
+                hookshotChainMotion.setState(entity.slot(), step.state());
+                if (step.reachedLink()) {
                     clearEntity(entity.slot());
                     continue;
                 }
@@ -1624,6 +1692,16 @@ public final class RoomEntityRuntime {
 
     int hookshotTransitionCountdown(int slot) {
         return hookshotChainMotion.transitionCountdown(slot);
+    }
+
+    int hookshotEntityState(int slot) {
+        HookshotChainMotion.State state = hookshotChainMotion.state(slot);
+        return state == null ? 0 : state.entityState();
+    }
+
+    boolean hookshotWallCollisionPending(int slot) {
+        HookshotChainMotion.State state = hookshotChainMotion.state(slot);
+        return state != null && state.wallCollisionPending();
     }
 
     public RoomEntitySnapshot snapshot() {

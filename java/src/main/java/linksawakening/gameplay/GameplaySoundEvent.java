@@ -25,6 +25,7 @@ public enum GameplaySoundEvent {
     ENEMY_DESTROYED,
     BEAMOS_LASER,
     SPIKE_TRAP_WHOOSH,
+    HOOKSHOT,
     WRONG_ANSWER,
     DOOR_UNLOCKED,
     SWITCH_BLOCK_TOGGLE

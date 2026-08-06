@@ -3,7 +3,8 @@ package linksawakening.world;
 /** ROM state read by ApplyEntityCollisionWithObject's ledge branch. */
 record EntityBackgroundCollisionState(int frameCounter, boolean indoorRoom,
                                       int thrownDirection, int ledgeTimer,
-                                      int switchBlocksState) {
+                                      int switchBlocksState,
+                                      boolean linkStandingOnSwitchBlock) {
     EntityBackgroundCollisionState {
         frameCounter &= 0xFF;
         thrownDirection &= 0xFF;
@@ -13,6 +14,13 @@ record EntityBackgroundCollisionState(int frameCounter, boolean indoorRoom,
 
     EntityBackgroundCollisionState(int frameCounter, boolean indoorRoom,
                                    int thrownDirection, int ledgeTimer) {
-        this(frameCounter, indoorRoom, thrownDirection, ledgeTimer, 0);
+        this(frameCounter, indoorRoom, thrownDirection, ledgeTimer, 0, false);
+    }
+
+    EntityBackgroundCollisionState(int frameCounter, boolean indoorRoom,
+                                   int thrownDirection, int ledgeTimer,
+                                   int switchBlocksState) {
+        this(frameCounter, indoorRoom, thrownDirection, ledgeTimer,
+            switchBlocksState, false);
     }
 }

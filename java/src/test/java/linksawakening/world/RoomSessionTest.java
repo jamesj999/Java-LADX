@@ -104,6 +104,21 @@ final class RoomSessionTest {
     }
 
     @Test
+    void liveRoomEntityProbePreservesHookshotablePhysicsForTheChain() {
+        RoomSession session = newSession();
+        session.loadInitialOverworld(0x92);
+        fillActiveObjects(session, 0x6E);
+
+        EntityBackgroundCollisionResult result = session.entityBackgroundCollisionResultForTest(
+            syntheticEntity(HookshotChainMotion.ENTITY_TYPE),
+            EntityBackgroundCollisionResult.RIGHT, 0x40, 0x40);
+
+        assertEquals(0x6E, result.objectId());
+        assertEquals(0x60, result.physicsFlag());
+        assertTrue(result.blocked());
+    }
+
+    @Test
     void forwardsHeldActionButtonsToTheLiveEvasiveStalfosHandler() {
         RoomSession session = newSession();
         session.loadIndoor(0x00, 0x0F);
