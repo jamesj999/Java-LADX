@@ -679,7 +679,15 @@ public class Main {
         currentScreen = SCREEN_CUTSCENE;
         playDirectMusic(introCutsceneMusicTrack());
         gpu.loadIntroSequenceTiles(romData);
-        cutsceneManager.startIntro();
+        cutsceneManager.startIntro(romData, Main::loadIntroBackgroundScene);
+    }
+
+    private static BackgroundScene loadIntroBackgroundScene(String sceneId) {
+        BackgroundSceneSpec spec = BackgroundSceneCatalog.forCutsceneScene(sceneId);
+        if (spec == null) {
+            throw new IllegalArgumentException("No intro background scene for " + sceneId);
+        }
+        return backgroundSceneLoader.load(spec);
     }
 
     private static void startTitleScreenWithoutIntro() {
@@ -791,6 +799,7 @@ public class Main {
             .withScreen(currentRenderScreen())
             .withBackground(currentTilemap, currentAttrmap, bgPalettes, objPalettes)
             .withCutsceneManager(cutsceneManager)
+            .withIntroFrameSnapshot(cutsceneManager == null ? null : cutsceneManager.frameSnapshot())
             .withRoom(roomSession == null ? null : roomSession.renderSnapshot(), scrollController, transitionController)
             .withLink(link)
             .withTransientVfx(transientVfxSystem, cutLeavesEffectRenderer, GREEN_OBJECTS_SPRITE_PALETTE)

@@ -28,6 +28,8 @@ public final class IntroRomData {
     public static final int TITLE_SPARKLE_X_POSITIONS_ADDRESS = 0x73C0;
     public static final int TITLE_SPARKLE_Y_POSITIONS_ADDRESS = 0x73C8;
     public static final int INTRO_VERTICAL_OFFSETS_ADDRESS = 0x7CF9;
+    public static final int INTRO_COLOR_MODIFIER_BANK = 0x20;
+    public static final int INTRO_COLOR_MODIFIER_ADDRESS = 0x6B9C;
     public static final int DX_FADE_IN_PALETTE_ADDRESS = 0x79A0;
     public static final int INERT_LINK_VARIANTS_ADDRESS = 0x7A27;
     public static final int TITLE_POST_BEACH_TILEMAP_ADDRESS = 0x7AE4;
@@ -95,6 +97,12 @@ public final class IntroRomData {
 
     public int[] introVerticalOffsets() {
         return readUnsignedBytes("IntroBGVerticalOffsetTable", INTRO_VERTICAL_OFFSETS_ADDRESS, 8);
+    }
+
+    public int[] introColorModifiers() {
+        int offset = checkedOffset("IntroColorModifierTable", INTRO_COLOR_MODIFIER_BANK,
+            INTRO_COLOR_MODIFIER_ADDRESS, 8);
+        return readUnsignedBytesAt(offset, 8);
     }
 
     public List<TitleRow> titleRows() {

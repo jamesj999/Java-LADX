@@ -4,6 +4,7 @@ import linksawakening.scene.BackgroundScene;
 import linksawakening.scene.BackgroundSceneCatalog;
 import linksawakening.scene.BackgroundSceneLoader;
 import linksawakening.scene.BackgroundSceneSpec;
+import linksawakening.rom.RomBank;
 import linksawakening.world.RomRandomByteSource;
 
 import java.io.IOException;
@@ -69,6 +70,8 @@ public final class IntroSequence {
     private final int[] lightningStatuses;
     private final int[] shipHeave;
     private final int[] verticalOffsets;
+    private final int[] colorModifiers;
+    private final IntroRomData.PaletteBlock dxFadeInPalette;
     private final List<IntroRomData.OamEntry> shipTiles;
     private final List<IntroRomData.OamEntry> additionalShipTiles;
 
@@ -121,6 +124,8 @@ public final class IntroSequence {
         this.lightningStatuses = rom.lightningEntityStatuses();
         this.shipHeave = rom.shipHeaveTable();
         this.verticalOffsets = rom.introVerticalOffsets();
+        this.colorModifiers = rom.introColorModifiers();
+        this.dxFadeInPalette = rom.dxFadeInPalette();
         this.shipTiles = rom.shipTiles();
         this.additionalShipTiles = rom.additionalShipTiles();
         setScene(IntroCutsceneScript.SCENE_SEA);
@@ -465,8 +470,8 @@ public final class IntroSequence {
             verticalWaveOffset,
             tilemap,
             attrmap,
-            bgPalettes,
-            objPalettes,
+            dynamicBgPalettes(),
+            dynamicObjPalettes(),
             sprites,
             titleRevealRows);
     }
@@ -599,6 +604,45 @@ public final class IntroSequence {
         attrmap = scene.attrmap().clone();
         bgPalettes = copyPalettes(scene.palettes());
         objPalettes = copyPalettes(scene.objectPalettes());
+    }
+
+    private int[][] dynamicBgPalettes() {
+        int[][] palettes = copyPalettes(bgPalettes);
+        if (lightningVisibleCountdown == 0
+            || (stage != Stage.SEA && stage != Stage.LINK_FACE && stage != Stage.SEA_FADE)) {
+            return palettes;
+        }
+        int modifierIndex = (lightningVisibleCountdown >>> 1) & 0x03;
+        int modifier = colorModifiers[modifierIndex * 2]
+            | (colorModifiers[modifierIndex * 2 + 1] << 8);
+        for (int palette = 0; palette < palettes.length; palette++) {
+            for (int color = 0; color < Math.min(3, palettes[palette].length); color++) {
+                palettes[palette][color] = applyRgb555Modifier(palettes[palette][color], modifier);
+            }
+        }
+        return palettes;
+    }
+
+    private static int applyRgb555Modifier(int rgb888, int modifier) {
+        int red = ((rgb888 >>> 16) & 0xFF) * 31 / 255;
+        int green = ((rgb888 >>> 8) & 0xFF) * 31 / 255;
+        int blue = (rgb888 & 0xFF) * 31 / 255;
+        int color = red | (green << 5) | (blue << 10);
+        return RomBank.decodeRgb555(color | modifier);
+    }
+
+    private int[][] dynamicObjPalettes() {
+        int[][] palettes = copyPalettes(objPalettes);
+        if (stage != Stage.TITLE_DX && stage != Stage.COMPLETE) {
+            return palettes;
+        }
+        int pair = Math.min(7, titleHoldFrame / 8);
+        int[][] fadeRows = dxFadeInPalette.rows();
+        if (palettes.length > 6 && fadeRows.length >= pair * 2 + 2) {
+            palettes[6] = fadeRows[pair * 2].clone();
+            palettes[7] = fadeRows[pair * 2 + 1].clone();
+        }
+        return palettes;
     }
 
     private void applyTitleRow(IntroRomData.TitleRow row) {

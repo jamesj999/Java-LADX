@@ -838,6 +838,24 @@ runtime collision callback.
   regression pass. Switch-block state, symbol animation, dynamic palette
   effects, and Color Dungeon event scripts remain separate follow-up work.
 
+## Verified ROM-backed opening intro runtime — 2026-08-06
+
+- The default startup path now passes the shipped ROM into the intro sequence,
+  loads the intro tile data through the existing GPU path, and forwards each
+  ROM-derived frame snapshot into the renderer. The ordinary room-render path
+  remains unchanged.
+- Intro ship OAM, heave timing, lightning entities, rain cadence, title draw
+  rows, sea color modifiers, vertical wave offsets, inert Link/Marin variants,
+  sparkles, post-beach data, and DX fade palette rows are read from their
+  disassembly-backed ROM locations rather than approximated Java tables.
+- Shipped-ROM tests cover the initial frame, lightning palette/frame changes,
+  title DX palette changes, and a framebuffer regression proving that an
+  animated intro snapshot changes the rendered opening frame while its static
+  background map remains stable.
+- Exact beach palette interpolation, complete DX logo OAM/timing, and the
+  file-select/save/new-game flow remain separate follow-up slices; a CPU/PPU
+  emulator is still out of scope.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,
