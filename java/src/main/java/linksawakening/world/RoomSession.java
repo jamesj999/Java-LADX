@@ -529,6 +529,19 @@ public final class RoomSession {
                              boolean usingShield, int shieldLevel,
                              int invincibilityCounter, boolean swordCollisionActive,
                              int swordX, int swordWidth, int swordY, int swordHeight) {
+        return tickEntitiesWithProjectileEvents(frameCounter, linkEntityX, linkEntityY,
+            linkEntityZ, linkMotionState, linkDirection, 0, usingShield, shieldLevel,
+            invincibilityCounter, swordCollisionActive, swordX, swordWidth, swordY,
+            swordHeight);
+    }
+
+    /** Advances entities with Link's current ROM collision byte. */
+    public List<EntityProjectileEvent> tickEntitiesWithProjectileEvents(
+                             int frameCounter, int linkEntityX, int linkEntityY,
+                             int linkEntityZ, int linkMotionState, int linkDirection,
+                             int collisionType, boolean usingShield, int shieldLevel,
+                             int invincibilityCounter, boolean swordCollisionActive,
+                             int swordX, int swordWidth, int swordY, int swordHeight) {
         followingLinkX = linkEntityX & 0xFF;
         followingLinkY = linkEntityY & 0xFF;
         followingLinkZ = linkEntityZ & 0xFF;
@@ -546,7 +559,8 @@ public final class RoomSession {
         // non-emulator policy explicit while preserving the ROM seed update.
         entityRandomByteSource.beginFrame(frameCounter & 0xFF, 0);
         List<EntityProjectileEvent> events = entityRuntime.tickWithProjectileEvents(
-            frameCounter, linkEntityX, linkEntityY, entityRandomByteSource,
+            frameCounter, linkEntityX, linkEntityY, collisionType & 0xFF,
+            entityRandomByteSource,
             this::entityBackgroundCollision, this::pairoddProjectileObjectCollision,
             followingLinkPositionHistory, followingLinkZ,
             followingLinkDirection, followingEntityYOffset,

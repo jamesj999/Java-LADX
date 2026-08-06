@@ -596,6 +596,7 @@ public class Main {
                     link == null ? 0x00 : link.romEntityZ(),
                     link == null ? 0x02 : link.romMotionState(),
                     link == null ? 0x00 : link.direction(),
+                    link == null ? 0x00 : link.romCollisionType(),
                     link != null && link.isUsingShield(),
                     playerState == null ? 1 : playerState.shieldLevel(),
                     playerState == null ? 0 : playerState.invincibilityCounter(),

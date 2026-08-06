@@ -46,6 +46,7 @@ final class MainArchitectureTest {
         String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
 
         assertTrue(source.contains("tickEntitiesWithProjectileEvents"));
+        assertTrue(source.contains("link.romCollisionType()"));
         assertTrue(source.contains("EnemyProjectileEventConsumer.consume"));
     }
 

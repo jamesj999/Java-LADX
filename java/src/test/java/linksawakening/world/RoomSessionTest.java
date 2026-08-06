@@ -86,6 +86,47 @@ final class RoomSessionTest {
     }
 
     @Test
+    void forwardsPerFrameLinkCollisionTypeToGhiniAndOldOverloadDefaultsToZero() {
+        RoomSession session = newSession();
+        session.loadInitialOverworld(0x67);
+        RoomEntity hiddenGhini = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x10)
+            .findFirst()
+            .orElseThrow();
+
+        session.tickEntities(0, hiddenGhini.x(), hiddenGhini.y(), hiddenGhini.z(), 0);
+        RoomEntity initialized = session.activeRoom().entities().slots().get(hiddenGhini.slot());
+
+        session.tickEntitiesWithProjectileEvents(
+            1, initialized.x(), initialized.y(), initialized.z(), 0, 0, 0x01,
+            false, 1, 0, false, 0, 0, 0, 0);
+        RoomEntity revealTick = session.activeRoom().entities().slots().get(hiddenGhini.slot());
+        assertEquals(-1, revealTick.spriteVariant());
+
+        session.tickEntitiesWithProjectileEvents(
+            2, revealTick.x(), revealTick.y(), revealTick.z(), 0, 0,
+            false, 1, 0, false, 0, 0, 0, 0);
+        RoomEntity visibleTick = session.activeRoom().entities().slots().get(hiddenGhini.slot());
+        assertTrue(visibleTick.spriteVariant() >= 0);
+
+        RoomSession oldOverloadSession = newSession();
+        oldOverloadSession.loadInitialOverworld(0x67);
+        RoomEntity oldOverloadGhini = oldOverloadSession.activeRoom().entities().loadedEntities()
+            .stream()
+            .filter(entity -> entity.type() == 0x10)
+            .findFirst()
+            .orElseThrow();
+        oldOverloadSession.tickEntities(
+            0, oldOverloadGhini.x(), oldOverloadGhini.y(), oldOverloadGhini.z(), 0);
+        oldOverloadSession.tickEntitiesWithProjectileEvents(
+            1, oldOverloadGhini.x(), oldOverloadGhini.y(), oldOverloadGhini.z(), 0, 0,
+            false, 1, 0, false, 0, 0, 0, 0);
+
+        assertEquals(-1, oldOverloadSession.activeRoom().entities().slots()
+            .get(oldOverloadGhini.slot()).spriteVariant());
+    }
+
+    @Test
     void hookshotLaunchPublishesTheRomProjectileAndHonorsFireGuards() {
         RoomSession session = newSession();
         session.loadInitialOverworld(0x92);
