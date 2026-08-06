@@ -404,15 +404,6 @@ public final class RoomSession {
      * allocation and immutable snapshot refresh.
      */
     public boolean placeBomb(int linkEntityX, int linkEntityY, int linkEntityZ,
-                             int romDirection, boolean linkAirborne,
-                             boolean linkPushing) {
-        // Kept for callers using the original bridge signature. The ROM's
-        // PlaceBomb path delegates airborne/pushing item-use decisions to
-        // CheckItemsToUse; this room allocation bridge must not duplicate them.
-        return placeBomb(linkEntityX, linkEntityY, linkEntityZ, romDirection);
-    }
-
-    public boolean placeBomb(int linkEntityX, int linkEntityY, int linkEntityZ,
                              int romDirection) {
         if (activeRoom == null || entityRuntime == null) {
             return false;

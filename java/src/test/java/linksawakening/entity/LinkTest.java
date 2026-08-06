@@ -257,15 +257,28 @@ final class LinkTest {
     }
 
     @Test
-    void itemAttackStepStartsWithTheRomPlayerProjectileCountdown() {
+    void itemAttackStepCountdownStartsAndDecrementsLikeRom() {
+        PlayerState playerState = new PlayerState();
+        ItemRegistry itemRegistry = new ItemRegistry();
+        itemRegistry.register(playerState.itemA(), new BlockingItem());
         Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
-            null, null, null, new PlayerState(), new ItemRegistry());
+            null, null, null, playerState, itemRegistry);
 
         assertEquals(0, link.romAttackStepAnimationCountdown());
 
         link.startRomItemAttackStep();
 
         assertEquals(0x0C, link.romAttackStepAnimationCountdown());
+        link.update();
+        assertEquals(0x0B, link.romAttackStepAnimationCountdown());
+
+        for (int i = 0; i < 0x0B; i++) {
+            link.update();
+        }
+        assertEquals(0, link.romAttackStepAnimationCountdown());
+
+        link.update();
+        assertEquals(0, link.romAttackStepAnimationCountdown());
     }
 
     @Test

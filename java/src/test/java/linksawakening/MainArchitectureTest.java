@@ -82,4 +82,16 @@ final class MainArchitectureTest {
             "roomSession.placeBomb( link.romEntityX(), link.romEntityY(), link.romEntityZ(), "
                 + "romDirectionForLink(link.direction()), link.isAirborne(), false"));
     }
+
+    @Test
+    void roomSessionExposesOnlyTheCanonicalBombPlacementBridge() throws Exception {
+        String source = Files.readString(Path.of("src/main/java/linksawakening/world/RoomSession.java"));
+        String normalizedSource = source.replaceAll("\\s+", " ");
+
+        assertTrue(normalizedSource.contains(
+            "public boolean placeBomb(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection)"));
+        assertFalse(normalizedSource.contains(
+            "public boolean placeBomb(int linkEntityX, int linkEntityY, int linkEntityZ, "
+                + "int romDirection, boolean"));
+    }
 }

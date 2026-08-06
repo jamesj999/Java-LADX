@@ -92,6 +92,7 @@ public final class Link implements RocsFeather.JumpTarget {
     private static final int PIT_RECOVERY_INVINCIBILITY_FRAMES = 0x40;
     private static final int PIT_DAMAGE = PlayerState.HP_PER_HEART / 2;
     private static final int ATTACK_STEP_ITEM_ANY = 0x00;
+    private static final int ATTACK_STEP_DURATION_MASK = 0x7F;
     private static final int ROM_ITEM_ATTACK_STEP_COUNTDOWN = 0x0C | ATTACK_STEP_ITEM_ANY;
     private static final int COLLISION_TYPE_UP = 0x01;
     private static final int COLLISION_TYPE_DOWN = 0x02;
@@ -427,6 +428,7 @@ public final class Link implements RocsFeather.JumpTarget {
     }
 
     public void update() {
+        tickRomAttackStepAnimationCountdown();
         romCollisionType = 0;
         if (playerState != null) {
             playerState.tickInvincibility();
@@ -510,6 +512,12 @@ public final class Link implements RocsFeather.JumpTarget {
         } else {
             walkTickCounter = 0;
             walkFrame = 0;
+        }
+    }
+
+    private void tickRomAttackStepAnimationCountdown() {
+        if ((romAttackStepAnimationCountdown & ATTACK_STEP_DURATION_MASK) != 0) {
+            romAttackStepAnimationCountdown = (romAttackStepAnimationCountdown - 1) & 0xFF;
         }
     }
 
