@@ -51,6 +51,23 @@ final class FollowingNpcEntitySpawnerTest {
     }
 
     @Test
+    void runtimeSnapshotPreservesSideScrollingThroughFollowerSynchronization() {
+        RoomEntitySnapshot initial = new RoomEntitySnapshot(disabledSlots(), selection())
+            .withSideScrolling(true);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+
+        FollowingNpcEntitySpawner.Result result = new FollowingNpcEntitySpawner(
+            new EntitySpriteHandlerCatalog(syntheticRom()))
+            .synchronize(runtime.snapshot(),
+                new FollowingNpcRoomContext(false, false, 0x00, 0x20),
+                new FollowingNpcState(true, 0, false, false, 0, 0, false),
+                0x58, 0x60, 0x00, 0x00, 0x00, new LinkPositionHistory());
+
+        assertTrue(runtime.snapshot().sideScrolling());
+        assertTrue(result.snapshot().sideScrolling());
+    }
+
+    @Test
     void sourceOrderUsesHighestFreeSlotForRoosterGhostMarinThenBowWow() {
         FollowingNpcEntitySpawner.Result result = new FollowingNpcEntitySpawner(
             new EntitySpriteHandlerCatalog(syntheticRom()))

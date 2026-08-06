@@ -617,7 +617,7 @@ public final class RoomSession {
         }
         FollowingNpcRoomContext room = new FollowingNpcRoomContext(
             activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD,
-            false,
+            activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL,
             activeRoom.mapId(),
             activeRoom.roomId());
         FollowingNpcEntitySpawner.Result result = followingNpcEntitySpawner.synchronize(

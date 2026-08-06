@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
@@ -470,6 +471,21 @@ final class RoomSessionTest {
         assertEquals(0x59BC, session.activeRoom().entities().spriteSelection()
             .spriteOverrideFor(0xD5).address());
         assertEquals(rooster, session.activeRoom().entities().slots().get(15));
+    }
+
+    @Test
+    void sideScrollingRoomExcludesFollowingNpcDuringRoomSessionSynchronization() {
+        RoomSession session = newSession();
+        session.loadInitialOverworld(0x92);
+        session.loadIndoor(0x10, 0xA3, Warp.CATEGORY_SIDESCROLL);
+
+        session.setFollowingNpcState(
+            new FollowingNpcState(true, 0, false, false, 0, 0, false),
+            0x50, 0x60, 0x00, 0x00, 0x00);
+
+        assertTrue(session.activeRoom().entities().sideScrolling());
+        assertFalse(session.activeRoom().entities().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == FollowingNpcEntitySpawner.ENTITY_ROOSTER));
     }
 
     @Test

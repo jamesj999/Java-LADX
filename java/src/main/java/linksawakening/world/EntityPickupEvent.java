@@ -20,6 +20,10 @@ public record EntityPickupEvent(int slot, int type, int persistentClearMask,
             throw new IllegalArgumentException("Entity clear mask must be an unsigned byte: "
                 + persistentClearMask);
         }
+        if (sourceVariant >= 0 && type != 0x86 && type != 0xE5) {
+            throw new IllegalArgumentException(
+                "Entity source variant is reserved for floating item types: " + type);
+        }
         if (sourceVariant < -1 || sourceVariant > 0xFF) {
             throw new IllegalArgumentException("Entity source variant must be -1 or an unsigned byte: "
                 + sourceVariant);
