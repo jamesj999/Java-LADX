@@ -17,9 +17,36 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class RoomEntityRuntimeTest {
+
+    @Test
+    void deathPresentationFieldsAreIndependentFromNormalSpriteVariant() {
+        EntitySpriteDefinition body = pairDefinition(0x09, 2);
+        RoomEntity entity = new RoomEntity(0, 0, 0x09, 64, 64, EntityStatus.DYING,
+            body, 1, 0, 0, 0, 3, true);
+        assertEquals(1, entity.spriteVariant());
+        assertEquals(3, entity.deathSpriteVariant());
+        assertTrue(entity.powerRecoilDeath());
+    }
+
+    @Test
+    void rejectsDeathSpriteVariantsOutsideTheFourFrameRange() {
+        EntitySpriteDefinition body = pairDefinition(0x09, 2);
+        assertThrows(IllegalArgumentException.class, () -> new RoomEntity(0, 0, 0x09,
+            64, 64, EntityStatus.DYING, body, 1, 0, 0, 0, -2, false));
+        assertThrows(IllegalArgumentException.class, () -> new RoomEntity(0, 0, 0x09,
+            64, 64, EntityStatus.DYING, body, 1, 0, 0, 0, 4, false));
+    }
+
+    @Test
+    void rejectsDeathSpriteVariantsForNonDyingEntities() {
+        EntitySpriteDefinition body = pairDefinition(0x09, 2);
+        assertThrows(IllegalArgumentException.class, () -> new RoomEntity(0, 0, 0x09,
+            64, 64, EntityStatus.ACTIVE, body, 1, 0, 0, 0, 0, false));
+    }
 
     @Test
     void followsPieceOfPowerFrameDrivenPaletteVariant() {
