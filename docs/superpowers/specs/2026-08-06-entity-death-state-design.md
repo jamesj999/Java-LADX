@@ -74,10 +74,13 @@ plus immutable `with...` builders. `EntitySpriteCatalog.load` attaches these
 definitions for the standard and Color Dungeon selections.
 
 `EntityRenderLayer` chooses a death definition whenever an entity has status
-`DYING`. Its rectangle variant comes from the `RoomEntity.spriteVariant` value
-maintained by the runtime. It chooses the power-recoil definition from a
-per-entity death presentation flag exposed by the snapshot entity, while all
-other statuses retain their existing body and burning-overlay behavior.
+`DYING`. Its rectangle variant comes from a dedicated
+`RoomEntity.deathSpriteVariant` value maintained by the runtime; it does not
+reuse `RoomEntity.spriteVariant`, because ordinary entity definitions can have
+fewer than four variants. It chooses the power-recoil definition from a
+per-entity `RoomEntity.powerRecoilDeath` flag exposed by the snapshot entity,
+while all other statuses retain their existing body and burning-overlay
+behavior.
 
 The render path preserves the current OAM coordinate convention:
 
@@ -92,12 +95,14 @@ the existing `withTileOffset` and hidden-OAM handling.
 
 ### Runtime state and frame boundary
 
-Add a small per-slot death presentation state to `RoomEntityRuntime`:
+Add a small per-slot death presentation state to `RoomEntityRuntime`, exposed
+through dedicated fields on `RoomEntity`:
 
 - whether the lethal hit used power recoil;
 - the current source countdown (`$40` for a normal lethal hit, `$1F` after
   burning); and
-- the derived rectangle variant for the current snapshot.
+- the derived rectangle variant for the current snapshot. The entity's normal
+  `spriteVariant` remains untouched.
 
 On entry to `DYING`, initialize the state before publishing the next entity
 snapshot. On each death tick, retain the entity and update the display variant
@@ -139,4 +144,3 @@ or entity-specific death parity.
    entries for both normal and power frames.
 4. The complete Java suite will run with `./gradlew clean test`, followed by
    `git diff --check` and a clean worktree check before handoff.
-
