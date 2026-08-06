@@ -19,10 +19,15 @@ public final class IntroRomData {
     public static final int INTRO_SHIP_EXTRA_TILES_ADDRESS = 0x7550;
     public static final int SHIP_HEAVE_TABLE_ADDRESS = 0x7560;
     public static final int INTRO_LIGHTNING_TILES_ADDRESS = 0x75CB;
+    public static final int LIGHTNING_ENTITY_POSITIONS_ADDRESS = 0x707B;
+    public static final int LIGHTNING_ENTITY_STATUSES_ADDRESS = 0x7081;
     public static final int INTRO_MARIN_VARIANTS_ADDRESS = 0x764F;
     public static final int TITLE_TILE_MAP_POINTERS_ADDRESS = 0x7264;
     public static final int TITLE_ATTRIBUTE_MAP_POINTERS_ADDRESS = 0x732A;
     public static final int INTRO_SPARKLE_VARIANTS_ADDRESS = 0x77BD;
+    public static final int TITLE_SPARKLE_X_POSITIONS_ADDRESS = 0x73C0;
+    public static final int TITLE_SPARKLE_Y_POSITIONS_ADDRESS = 0x73C8;
+    public static final int INTRO_VERTICAL_OFFSETS_ADDRESS = 0x7CF9;
     public static final int DX_FADE_IN_PALETTE_ADDRESS = 0x79A0;
     public static final int INERT_LINK_VARIANTS_ADDRESS = 0x7A27;
     public static final int TITLE_POST_BEACH_TILEMAP_ADDRESS = 0x7AE4;
@@ -60,6 +65,14 @@ public final class IntroRomData {
         return List.copyOf(frames);
     }
 
+    public int[] lightningEntityPositions() {
+        return readUnsignedBytes("Data_001_707B", LIGHTNING_ENTITY_POSITIONS_ADDRESS, 6);
+    }
+
+    public int[] lightningEntityStatuses() {
+        return readUnsignedBytes("Data_001_7081", LIGHTNING_ENTITY_STATUSES_ADDRESS, 6);
+    }
+
     public List<SpritePair> marinVariants() {
         return readSpritePairs("IntroMarinSpriteVariants", INTRO_MARIN_VARIANTS_ADDRESS, 4);
     }
@@ -70,6 +83,18 @@ public final class IntroRomData {
 
     public List<SpritePair> sparkleVariants() {
         return readSpritePairs("IntroSparkleSpriteVariants", INTRO_SPARKLE_VARIANTS_ADDRESS, 8);
+    }
+
+    public int[] titleSparkleXPositions() {
+        return readUnsignedBytes("Data_001_73C0", TITLE_SPARKLE_X_POSITIONS_ADDRESS, 8);
+    }
+
+    public int[] titleSparkleYPositions() {
+        return readUnsignedBytes("Data_001_73C8", TITLE_SPARKLE_Y_POSITIONS_ADDRESS, 8);
+    }
+
+    public int[] introVerticalOffsets() {
+        return readUnsignedBytes("IntroBGVerticalOffsetTable", INTRO_VERTICAL_OFFSETS_ADDRESS, 8);
     }
 
     public List<TitleRow> titleRows() {

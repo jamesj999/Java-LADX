@@ -1,107 +1,156 @@
 package linksawakening.cutscene;
 
+import linksawakening.scene.BackgroundScene;
+import linksawakening.scene.BackgroundSceneCatalog;
+import linksawakening.scene.BackgroundSceneLoader;
+import linksawakening.scene.BackgroundSceneSpec;
+import linksawakening.world.RomRandomByteSource;
+
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Function;
 
+/**
+ * Domain-specific runtime for the shipped opening sequence.
+ *
+ * <p>This follows the intro handlers' state and timer boundaries without
+ * pretending to execute the Game Boy CPU. ROM tables provide all entity
+ * records and animation data; this class only models the state that affects
+ * the frame renderer.</p>
+ */
 public final class IntroSequence {
-
     public static final int SEA_SCROLL_FRAMES = (0xC0 - 0x50) * 8;
-    public static final int LINK_FACE_FRAMES = 160;
-    private static final int BEACH_MARIN_SOURCE_START_X = 0xB0;
-    private static final int BEACH_MARIN_SOURCE_STOP_X = 0x47;
-    private static final int BEACH_MARIN_MIRROR_OAM_BASE_X = 0xA0;
-    private static final int BEACH_LINK_START_X = 0xFE;
-    private static final int BEACH_LINK_Y = 0x6E;
-    public static final int BEACH_MARIN_WALK_FRAMES =
-        (BEACH_MARIN_SOURCE_START_X - BEACH_MARIN_SOURCE_STOP_X) * 4;
+    public static final int LINK_FACE_FRAMES = 0xA0;
+    public static final int SEA_FADE_FRAMES = 0x58 - 1;
+    public static final int BEACH_FADE_FRAMES = 0xA0;
+    public static final int BEACH_MARIN_WALK_FRAMES = (0xB0 - 0x47) * 4;
     public static final int BEACH_MARIN_WAIT_FRAMES = 0x40;
-    private static final int BEACH_LINK_SCROLL_IN_FRAMES = 0x60;
-    private static final int BEACH_MARIN_SECOND_WAIT_FRAMES = 0x40;
-    private static final int BEACH_SCROLL_TO_PAUSE_3A_FRAMES = (0x3A - 0x30) * 4;
-    private static final int BEACH_PAUSE_3A_FRAMES = 0x30;
-    private static final int BEACH_SCROLL_TO_PAUSE_40_FRAMES = (0x40 - 0x3A) * 4;
-    private static final int BEACH_PAUSE_40_FRAMES = 0x50;
-    private static final int BEACH_SCROLL_TO_FINAL_HOLD_FRAMES = (0x56 - 0x40) * 4;
-    private static final int BEACH_FINAL_HOLD_FRAMES = 0xE0;
-    private static final int[] BEACH_SECTION_Y = { 0x30, 0x56, 0x68 };
-    public static final int BEACH_FRAMES =
-        BEACH_MARIN_WALK_FRAMES
-            + BEACH_MARIN_WAIT_FRAMES
-            + BEACH_LINK_SCROLL_IN_FRAMES
-            + BEACH_MARIN_SECOND_WAIT_FRAMES
-            + BEACH_SCROLL_TO_PAUSE_3A_FRAMES
-            + BEACH_PAUSE_3A_FRAMES
-            + BEACH_SCROLL_TO_PAUSE_40_FRAMES
-            + BEACH_PAUSE_40_FRAMES
-            + BEACH_SCROLL_TO_FINAL_HOLD_FRAMES
-            + BEACH_FINAL_HOLD_FRAMES;
     public static final int TITLE_REVEAL_STEP_FRAMES = 1;
     public static final int TITLE_HOLD_FRAMES = 160;
+
+    private static final int INITIAL_SHIP_X = 0xC0;
+    private static final int INITIAL_SHIP_Y = 0x4E;
+    private static final int LINK_FACE_SCREAM_FRAME = 0x80;
+    private static final int LINK_FACE_LIGHTNING_FRAME = 0x90;
+    private static final int BEACH_MARIN_START_X = 0xB0;
+    private static final int BEACH_MARIN_STOP_X = 0x47;
+    private static final int BEACH_LINK_START_X = 0xFE;
+    private static final int BEACH_LINK_Y = 0x6E;
+    private static final int[] SEA_LIGHTNING_SCROLLS = { 0x10, 0x30, 0x38, 0x58, 0x5A, 0x69 };
+    private static final int BEACH_SCREEN_HEIGHT = 144;
+    private static final int[] BEACH_SECTION_ENDS = { 0x30, 0x56, 0x68 };
 
     private enum Stage {
         SEA,
         LINK_FACE,
+        SEA_FADE,
+        BEACH_FADE,
         BEACH,
-        TITLE,
+        TITLE_REVEAL,
+        TITLE_DX,
         COMPLETE
     }
 
-    private static final int[][] SHIP_TILES = {
-        { 0x00, 0x00, 0x1C, 0x02 },
-        { 0x00, 0x08, 0x1E, 0x02 },
-        { 0x10, -0x08, 0x20, 0x02 },
-        { 0x10, 0x00, 0x22, 0x02 },
-        { 0x10, 0x08, 0x24, 0x02 },
-        { 0x10, 0x10, 0x26, 0x02 }
-    };
-    private static final int[] SHIP_HEAVE_TABLE = { 2, 1, 0, 0, 0, 1, 2, 2 };
+    private record Lightning(int variant, int x, int y, int remaining) {
+    }
+
+    private final IntroRomData rom;
+    private final Function<String, BackgroundScene> backgroundProvider;
+    private final RomRandomByteSource random = new RomRandomByteSource(0xA2);
+    private final List<IntroRomData.TitleRow> titleRows;
+    private final List<IntroRomData.SpritePair> marinVariants;
+    private final List<IntroRomData.SpritePair> inertLinkVariants;
+    private final List<IntroRomData.SpritePair> sparkleVariants;
+    private final List<List<IntroRomData.OamEntry>> lightningTiles;
+    private final int[] lightningPositions;
+    private final int[] lightningStatuses;
+    private final int[] shipHeave;
+    private final int[] verticalOffsets;
+    private final List<IntroRomData.OamEntry> shipTiles;
+    private final List<IntroRomData.OamEntry> additionalShipTiles;
 
     private Stage stage = Stage.SEA;
+    private int frameCounter;
     private int stageFrame;
-    private int frameCount;
     private int scrollX;
-    private int shipX = 0xC0;
-    private int shipY = 0x4E;
+    private int scrollY;
+    private int verticalWaveOffset;
+    private int shipX = INITIAL_SHIP_X;
+    private int shipY = INITIAL_SHIP_Y;
+    private int seaFadeTimer = 1;
+    private int beachFadeTimer = BEACH_FADE_FRAMES;
+    private int linkFaceTimer;
+    private int marinState;
+    private int marinX = BEACH_MARIN_START_X;
+    private int marinInertia = 1;
+    private int marinTimer;
+    private int linkX = BEACH_LINK_START_X;
+    private boolean linkVisible;
+    private int beachFrameCounter;
+    private int beachScrollX;
+    private int titleRowIndex;
+    private int titleRevealRows;
+    private int titleHoldFrame;
+    private int[] sectionScrollOffsets = new int[4];
+    private final List<Lightning> lightning = new ArrayList<>();
+    private int lightningVisibleCountdown;
+    private int[] tilemap;
+    private int[] attrmap;
+    private int[][] bgPalettes;
+    private int[][] objPalettes;
+    private List<IntroSprite> sprites = List.of();
+    private IntroFrameSnapshot snapshot;
+
+    /** Compatibility constructor for older callers; runtime data still comes from the bundled ROM. */
+    public IntroSequence() {
+        this(defaultResources());
+    }
+
+    public IntroSequence(byte[] romData, Function<String, BackgroundScene> backgroundProvider) {
+        this.rom = new IntroRomData(romData);
+        this.backgroundProvider = Objects.requireNonNull(backgroundProvider, "backgroundProvider");
+        this.titleRows = rom.titleRows();
+        this.marinVariants = rom.marinVariants();
+        this.inertLinkVariants = rom.inertLinkVariants();
+        this.sparkleVariants = rom.sparkleVariants();
+        this.lightningTiles = rom.lightningTiles();
+        this.lightningPositions = rom.lightningEntityPositions();
+        this.lightningStatuses = rom.lightningEntityStatuses();
+        this.shipHeave = rom.shipHeaveTable();
+        this.verticalOffsets = rom.introVerticalOffsets();
+        this.shipTiles = rom.shipTiles();
+        this.additionalShipTiles = rom.additionalShipTiles();
+        setScene(IntroCutsceneScript.SCENE_SEA);
+        random.beginFrame(0, 0);
+        refreshSnapshot();
+    }
+
+    private IntroSequence(DefaultResources resources) {
+        this(resources.romData(), resources.backgroundProvider());
+    }
 
     public void tick() {
         if (stage == Stage.COMPLETE) {
             return;
         }
 
-        frameCount++;
+        frameCounter++;
         stageFrame++;
-
+        random.beginFrame(frameCounter & 0xFF, 0);
         switch (stage) {
             case SEA -> tickSea();
-            case LINK_FACE -> tickTimed(Stage.BEACH, LINK_FACE_FRAMES);
-            case BEACH -> tickTimed(Stage.TITLE, BEACH_FRAMES);
-            case TITLE -> tickTimed(Stage.COMPLETE, TITLE_HOLD_FRAMES);
+            case LINK_FACE -> tickLinkFace();
+            case SEA_FADE -> tickSeaFade();
+            case BEACH_FADE -> tickBeachFade();
+            case BEACH -> tickBeach();
+            case TITLE_REVEAL -> tickTitleReveal();
+            case TITLE_DX -> tickTitleDx();
             case COMPLETE -> { }
         }
-    }
-
-    private void tickSea() {
-        if ((stageFrame % 8) == 0) {
-            scrollX = (scrollX + 1) & 0xFF;
-            shipX--;
-        }
-        if (stageFrame >= SEA_SCROLL_FRAMES) {
-            transitionTo(Stage.LINK_FACE);
-        }
-    }
-
-    private void tickTimed(Stage nextStage, int frames) {
-        if (stageFrame >= frames) {
-            transitionTo(nextStage);
-        }
-    }
-
-    private void transitionTo(Stage nextStage) {
-        stage = nextStage;
-        stageFrame = 0;
-        if (nextStage != Stage.SEA) {
-            scrollX = 0;
-        }
+        refreshSnapshot();
     }
 
     public boolean isActive() {
@@ -112,287 +161,501 @@ public final class IntroSequence {
         stage = Stage.COMPLETE;
         stageFrame = 0;
         scrollX = 0;
+        scrollY = 0;
+        beachScrollX = 0;
+        lightning.clear();
+        linkVisible = false;
+        titleRowIndex = titleRows.size();
+        titleRevealRows = titleRows.size();
+        setScene(IntroCutsceneScript.SCENE_TITLE);
+        applyAllTitleRows();
+        sprites = List.of();
+        refreshSnapshot();
     }
 
     public String sceneId() {
         return switch (stage) {
-            case SEA -> IntroCutsceneScript.SCENE_SEA;
+            case SEA, SEA_FADE -> IntroCutsceneScript.SCENE_SEA;
             case LINK_FACE -> IntroCutsceneScript.SCENE_LINK_FACE;
-            case BEACH -> IntroCutsceneScript.SCENE_BEACH;
-            case TITLE, COMPLETE -> IntroCutsceneScript.SCENE_TITLE;
+            case BEACH_FADE, BEACH -> IntroCutsceneScript.SCENE_BEACH;
+            case TITLE_REVEAL, TITLE_DX, COMPLETE -> IntroCutsceneScript.SCENE_TITLE;
         };
     }
 
     public int scrollX() {
-        if (stage == Stage.BEACH) {
-            return beachScrollX();
-        }
-        return scrollX;
+        return sceneId().equals(IntroCutsceneScript.SCENE_BEACH) ? beachScrollX : scrollX;
     }
 
     public int scrollY() {
-        return 0;
+        return scrollY;
     }
 
     public int scrollXForLine(int screenY) {
-        if (stage != Stage.BEACH) {
+        int[] lineScroll = snapshot == null ? null : snapshot.lineScrollX();
+        if (lineScroll == null || lineScroll.length == 0) {
             return scrollX();
         }
-        return (beachScrollX() + beachSectionScrollOffset(beachSectionIndex(screenY))) & 0xFF;
+        return lineScroll[Math.max(0, Math.min(screenY, lineScroll.length - 1))];
     }
 
     public int[] lineScrollX(int height) {
-        if (stage != Stage.BEACH) {
+        int[] lineScroll = snapshot == null ? null : snapshot.lineScrollX();
+        if (lineScroll == null) {
             return null;
         }
-        int[] scrolls = new int[height];
-        for (int y = 0; y < height; y++) {
-            scrolls[y] = scrollXForLine(y);
+        int[] resized = new int[height];
+        for (int index = 0; index < height; index++) {
+            resized[index] = lineScroll[Math.min(index, lineScroll.length - 1)];
         }
-        return scrolls;
+        return resized;
     }
 
     public int titleRevealRows() {
-        if (stage == Stage.COMPLETE) {
-            return TitleReveal.ROW_COUNT;
-        }
-        if (stage != Stage.TITLE) {
-            return 0;
-        }
-        return Math.min(TitleReveal.ROW_COUNT, stageFrame / TITLE_REVEAL_STEP_FRAMES);
+        return titleRevealRows;
+    }
+
+    public List<IntroSprite> sprites() {
+        return snapshot.sprites();
+    }
+
+    public IntroFrameSnapshot snapshot() {
+        return snapshot;
     }
 
     int shipX() {
         return shipX;
     }
 
-    public List<IntroSprite> sprites() {
-        List<IntroSprite> sprites = new ArrayList<>();
-        if (stage == Stage.SEA) {
-            addRain(sprites, 0x10);
-            addShip(sprites);
-        } else if (stage == Stage.LINK_FACE) {
-            addRain(sprites, 0x15);
-            if (stageFrame >= 144 && stageFrame < 176) {
-                addLightning(sprites, 0x58, 0x30);
+    private void tickSea() {
+        decrementLightning();
+        if ((frameCounter & 0x07) == 0) {
+            scrollX = (scrollX + 1) & 0xFF;
+            shipX = (shipX - 1) & 0xFF;
+            triggerSeaLightningIfNeeded();
+        }
+        if (stageFrame >= SEA_SCROLL_FRAMES) {
+            lightning.clear();
+            transitionTo(Stage.LINK_FACE);
+        }
+    }
+
+    private void tickLinkFace() {
+        decrementLightning();
+        linkFaceTimer++;
+        if (linkFaceTimer == LINK_FACE_LIGHTNING_FRAME) {
+            triggerLightning(0);
+        }
+        if (linkFaceTimer >= LINK_FACE_FRAMES) {
+            lightning.clear();
+            seaFadeTimer = 1;
+            transitionTo(Stage.SEA_FADE);
+            return;
+        }
+    }
+
+    private void tickSeaFade() {
+        decrementLightning();
+        seaFadeTimer++;
+        if (seaFadeTimer >= 0x58) {
+            beachFadeTimer = BEACH_FADE_FRAMES;
+            transitionTo(Stage.BEACH_FADE);
+        }
+    }
+
+    private void tickBeachFade() {
+        beachFadeTimer--;
+        updateWaveOffsets();
+        if (beachFadeTimer <= 0) {
+            marinState = 0;
+            marinX = BEACH_MARIN_START_X;
+            marinInertia = 1;
+            marinTimer = 0;
+            linkVisible = false;
+            beachScrollX = 0;
+            beachFrameCounter = 0;
+            transitionTo(Stage.BEACH);
+        }
+    }
+
+    private void tickBeach() {
+        beachFrameCounter++;
+        updateWaveOffsets();
+        switch (marinState) {
+            case 0 -> tickMarinState0();
+            case 1 -> tickMarinState1();
+            case 2 -> tickMarinState2();
+            case 3 -> tickMarinState3();
+            case 4 -> tickMarinState4();
+            default -> throw new IllegalStateException("Unknown Marin state " + marinState);
+        }
+    }
+
+    private void tickMarinState0() {
+        if (marinX < 0x48) {
+            marinTimer = 0x40;
+            marinState = 1;
+            return;
+        }
+        marinInertia--;
+        if (marinInertia == 0) {
+            marinInertia = 4;
+            marinX--;
+        }
+    }
+
+    private void tickMarinState1() {
+        if (marinTimer > 0) {
+            marinTimer--;
+            return;
+        }
+        marinState = 2;
+        linkVisible = true;
+        linkX = BEACH_LINK_START_X;
+        beachFrameCounter = 0;
+    }
+
+    private void tickMarinState2() {
+        linkX = (linkX - 1) & 0xFF;
+        if ((beachFrameCounter & 0x01) == 0) {
+            beachScrollX++;
+            if (beachScrollX == 0x30) {
+                marinTimer = 0x40;
+                marinState = 3;
             }
-        } else if (stage == Stage.BEACH) {
-            addBeachSprites(sprites);
-        } else if (stage == Stage.TITLE) {
-            addTitleSparkles(sprites);
-        }
-        return List.copyOf(sprites);
-    }
-
-    private void addRain(List<IntroSprite> sprites, int rows) {
-        for (int i = 0; i < rows; i++) {
-            int x = (0x10 + i * 0x1C + frameCount * 2) % 0xA0;
-            int y = (0x10 + i * 0x25 + frameCount * 3) % 0x90;
-            int tile = (i & 1) == 0 ? 0x28 : 0x70 + ((i & 3) * 2);
-            sprites.add(new IntroSprite(tile, x, y, 0, false, false));
         }
     }
 
-    private void addShip(List<IntroSprite> sprites) {
-        int heave = SHIP_HEAVE_TABLE[((frameCount + 0xD0) >> 4) & 0x07];
-        for (int[] entry : SHIP_TILES) {
-            sprites.add(IntroSprite.fromOam8x16(
-                entry[2],
-                shipX + entry[1],
-                shipY + heave + entry[0],
-                entry[3] & 0x07,
-                (entry[3] & 0x20) != 0,
-                (entry[3] & 0x40) != 0
-            ));
-        }
-    }
-
-    private void addLightning(List<IntroSprite> sprites, int x, int y) {
-        sprites.add(IntroSprite.fromOam8x16(0x34, x, y, 1, false, false));
-        sprites.add(IntroSprite.fromOam8x16(0x36, x + 8, y, 1, false, false));
-        sprites.add(IntroSprite.fromOam8x16(0x2C, x, y + 16, 1, false, false));
-        sprites.add(IntroSprite.fromOam8x16(0x2E, x - 8, y + 32, 1, false, false));
-    }
-
-    private void addBeachSprites(List<IntroSprite> sprites) {
-        int marinX = beachMarinX();
-        int marinTileBase = beachMarinTileBase();
-        sprites.add(IntroSprite.fromOam8x16(marinTileBase, marinX, 0x68, 3, false, false));
-        sprites.add(IntroSprite.fromOam8x16(marinTileBase + 2, marinX + 8, 0x68, 3, false, false));
-
-        int linkApproachFrame = beachLinkApproachFrame();
-        if (linkApproachFrame < 0) {
+    private void tickMarinState3() {
+        if (marinTimer > 0) {
+            marinTimer--;
             return;
         }
-
-        int linkX = beachLinkX(linkApproachFrame);
-        if (linkX >= 0xF0) {
+        if ((beachFrameCounter & 0x01) == 0) {
+            linkX = (linkX - 1) & 0xFF;
+        }
+        if ((beachFrameCounter & 0x03) != 0) {
             return;
         }
-        sprites.add(IntroSprite.fromOam8x16(0x10, linkX, BEACH_LINK_Y, 0, false, false));
-        sprites.add(IntroSprite.fromOam8x16(0x12, linkX + 8, BEACH_LINK_Y, 0, false, false));
+        beachScrollX++;
+        if (beachScrollX == 0x3A) {
+            marinTimer = 0x30;
+        } else if (beachScrollX == 0x40) {
+            marinTimer = 0x50;
+        } else if (beachScrollX == 0x56) {
+            beachScrollX = 0xA0;
+            marinTimer = 0xE0;
+            marinState = 4;
+        }
     }
 
-    private int beachMarinX() {
-        int sourceX = stageFrame < BEACH_MARIN_WALK_FRAMES
-            ? BEACH_MARIN_SOURCE_START_X - stageFrame / 4
-            : BEACH_MARIN_SOURCE_STOP_X;
-        // Preserve the disassembly's timing while matching the mirrored beach composition.
-        return BEACH_MARIN_MIRROR_OAM_BASE_X - sourceX;
+    private void tickMarinState4() {
+        if ((beachFrameCounter & 0x01) == 0 && marinTimer > 0) {
+            marinTimer--;
+        }
+        if (marinTimer == 0) {
+            transitionTo(Stage.TITLE_REVEAL);
+        }
     }
 
-    private int beachMarinTileBase() {
-        int linkApproachFrame = beachLinkApproachFrame();
-        if (stageFrame < BEACH_MARIN_WALK_FRAMES) {
-            return ((frameCount >> 3) & 0x01) * 4;
+    private void tickTitleReveal() {
+        if (stageFrame % TITLE_REVEAL_STEP_FRAMES != 0) {
+            return;
         }
-        if (linkApproachFrame >= 0 && linkApproachFrame < BEACH_LINK_SCROLL_IN_FRAMES) {
-            return ((linkApproachFrame >> 2) & 0x01) * 4;
+        if (titleRowIndex < titleRows.size()) {
+            applyTitleRow(titleRows.get(titleRowIndex));
+            titleRowIndex++;
+            titleRevealRows = titleRowIndex;
+            return;
         }
-        return 0x04;
+        transitionTo(Stage.TITLE_DX);
     }
 
-    private int beachLinkX(int linkApproachFrame) {
-        if (linkApproachFrame < BEACH_LINK_SCROLL_IN_FRAMES) {
-            return BEACH_LINK_START_X - linkApproachFrame;
+    private void tickTitleDx() {
+        titleHoldFrame++;
+        if (titleHoldFrame >= TITLE_HOLD_FRAMES) {
+            stage = Stage.COMPLETE;
         }
-        return 0x9E - beachState3MovingFrames(linkApproachFrame) / 2;
     }
 
-    private int beachState3MovingFrames(int linkApproachFrame) {
-        int frame = linkApproachFrame - BEACH_LINK_SCROLL_IN_FRAMES - BEACH_MARIN_SECOND_WAIT_FRAMES;
-        if (frame <= 0) {
-            return 0;
+    private void transitionTo(Stage nextStage) {
+        stage = nextStage;
+        stageFrame = 0;
+        switch (nextStage) {
+            case LINK_FACE -> {
+                linkFaceTimer = 0;
+                scrollX = 0;
+                setScene(IntroCutsceneScript.SCENE_LINK_FACE);
+            }
+            case SEA_FADE -> {
+                scrollX = 0;
+                setScene(IntroCutsceneScript.SCENE_SEA);
+            }
+            case BEACH_FADE -> {
+                scrollX = 0;
+                setScene(IntroCutsceneScript.SCENE_BEACH);
+            }
+            case BEACH -> { }
+            case TITLE_REVEAL -> {
+                titleRowIndex = 0;
+                titleRevealRows = 0;
+                titleHoldFrame = 0;
+                scrollX = 0;
+                scrollY = 0;
+                setScene(IntroCutsceneScript.SCENE_TITLE);
+            }
+            case TITLE_DX, COMPLETE, SEA -> { }
         }
-
-        int moving = Math.min(frame, BEACH_SCROLL_TO_PAUSE_3A_FRAMES);
-        frame -= BEACH_SCROLL_TO_PAUSE_3A_FRAMES + BEACH_PAUSE_3A_FRAMES;
-        if (frame <= 0) {
-            return moving;
-        }
-
-        moving += Math.min(frame, BEACH_SCROLL_TO_PAUSE_40_FRAMES);
-        frame -= BEACH_SCROLL_TO_PAUSE_40_FRAMES + BEACH_PAUSE_40_FRAMES;
-        if (frame <= 0) {
-            return moving;
-        }
-
-        moving += Math.min(frame, BEACH_SCROLL_TO_FINAL_HOLD_FRAMES);
-        return moving;
     }
 
-    private int beachScrollX() {
-        int linkApproachFrame = beachLinkApproachFrame();
-        if (linkApproachFrame < 0) {
-            return 0;
+    private void decrementLightning() {
+        lightningVisibleCountdown = Math.max(0, lightningVisibleCountdown - 1);
+        for (int index = lightning.size() - 1; index >= 0; index--) {
+            Lightning current = lightning.get(index);
+            if (current.remaining() <= 1) {
+                lightning.remove(index);
+            } else {
+                lightning.set(index,
+                    new Lightning(current.variant(), current.x(), current.y(), current.remaining() - 1));
+            }
         }
-        if (linkApproachFrame < BEACH_LINK_SCROLL_IN_FRAMES) {
-            return linkApproachFrame / 2;
-        }
-
-        int frame = linkApproachFrame - BEACH_LINK_SCROLL_IN_FRAMES;
-        if (frame < BEACH_MARIN_SECOND_WAIT_FRAMES) {
-            return 0x30;
-        }
-        frame -= BEACH_MARIN_SECOND_WAIT_FRAMES;
-
-        if (frame < BEACH_SCROLL_TO_PAUSE_3A_FRAMES) {
-            return 0x30 + frame / 4;
-        }
-        frame -= BEACH_SCROLL_TO_PAUSE_3A_FRAMES;
-        if (frame < BEACH_PAUSE_3A_FRAMES) {
-            return 0x3A;
-        }
-        frame -= BEACH_PAUSE_3A_FRAMES;
-
-        if (frame < BEACH_SCROLL_TO_PAUSE_40_FRAMES) {
-            return 0x3A + frame / 4;
-        }
-        frame -= BEACH_SCROLL_TO_PAUSE_40_FRAMES;
-        if (frame < BEACH_PAUSE_40_FRAMES) {
-            return 0x40;
-        }
-        frame -= BEACH_PAUSE_40_FRAMES;
-
-        if (frame < BEACH_SCROLL_TO_FINAL_HOLD_FRAMES) {
-            return 0x40 + frame / 4;
-        }
-        return 0x56;
     }
 
-    private int beachSectionIndex(int screenY) {
-        if (screenY < BEACH_SECTION_Y[0]) {
-            return 0;
+    private void triggerSeaLightningIfNeeded() {
+        for (int index = 0; index < SEA_LIGHTNING_SCROLLS.length; index++) {
+            if (scrollX == SEA_LIGHTNING_SCROLLS[index]) {
+                triggerLightning(index);
+                return;
+            }
         }
-        if (screenY < BEACH_SECTION_Y[1]) {
-            return 1;
-        }
-        if (screenY < BEACH_SECTION_Y[2]) {
-            return 2;
-        }
-        return 3;
     }
 
-    private int beachSectionScrollOffset(int sectionIndex) {
-        int fastWaveFrames = beachFastWaveScrollFrames();
-        int slowWaveFrames = beachSlowWaveScrollFrames();
-        return switch (sectionIndex) {
-            case 0 -> (fastWaveFrames / 8 + slowWaveFrames / 16) & 0xFF;
-            case 1 -> (0x92
-                + fixedPointScrollOffset(fastWaveFrames, 0x50)
-                + fixedPointScrollOffset(slowWaveFrames, 0x28)) & 0xFF;
-            case 2 -> (fixedPointScrollOffset(fastWaveFrames, 0x58)
-                + fixedPointScrollOffset(slowWaveFrames, 0x2C)) & 0xFF;
-            default -> (fixedPointScrollOffset(fastWaveFrames, 0xB0)
-                + fixedPointScrollOffset(slowWaveFrames, 0x58)) & 0xFF;
+    private void triggerLightning(int index) {
+        if (index < 0 || index >= lightningPositions.length) {
+            return;
+        }
+        lightning.add(new Lightning(
+            Math.max(0, lightningStatuses[index] - 1), lightningPositions[index], 0x30, 0x20));
+        lightningVisibleCountdown = 0x1C;
+    }
+
+    private void updateWaveOffsets() {
+        if ((frameCounter & 0x07) == 0) {
+            sectionScrollOffsets[0]++;
+        }
+        if ((frameCounter & 0x0F) == 0) {
+            sectionScrollOffsets[1]++;
+            sectionScrollOffsets[3]++;
+        }
+        if ((frameCounter & 0x1F) == 0) {
+            sectionScrollOffsets[2]++;
+        }
+        int waveIndex = ((frameCounter + 0xFC) >>> 4) & 0x07;
+        verticalWaveOffset = -verticalOffsets[waveIndex];
+    }
+
+    private void refreshSnapshot() {
+        sprites = renderSprites();
+        snapshot = new IntroFrameSnapshot(
+            sceneId(),
+            substate(),
+            frameCounter,
+            scrollX(),
+            scrollY,
+            sceneId().equals(IntroCutsceneScript.SCENE_BEACH) ? lineScrollMap() : null,
+            verticalWaveOffset,
+            tilemap,
+            attrmap,
+            bgPalettes,
+            objPalettes,
+            sprites,
+            titleRevealRows);
+    }
+
+    private String substate() {
+        return switch (stage) {
+            case SEA -> "SEA";
+            case LINK_FACE -> linkFaceTimer >= LINK_FACE_LIGHTNING_FRAME
+                ? "LINK_FACE_LIGHTNING"
+                : linkFaceTimer >= LINK_FACE_SCREAM_FRAME ? "LINK_FACE_SCREAM" : "LINK_FACE";
+            case SEA_FADE -> "SEA_FADE";
+            case BEACH_FADE -> "BEACH_FADE";
+            case BEACH -> "MARIN_STATE_" + marinState;
+            case TITLE_REVEAL -> "TITLE_REVEAL";
+            case TITLE_DX -> "TITLE_DX";
+            case COMPLETE -> "STABLE_TITLE";
         };
     }
 
-    private int beachFastWaveScrollFrames() {
-        int linkApproachFrame = beachLinkApproachFrame();
-        if (linkApproachFrame < 0) {
-            return stageFrame;
+    private List<IntroSprite> renderSprites() {
+        List<IntroSprite> rendered = new ArrayList<>();
+        if (stage == Stage.SEA || stage == Stage.SEA_FADE) {
+            renderRain(rendered, 0x10);
+            renderShip(rendered);
+            renderLightning(rendered);
+        } else if (stage == Stage.LINK_FACE) {
+            renderRain(rendered, 0x15);
+            renderLightning(rendered);
+        } else if (stage == Stage.BEACH_FADE || stage == Stage.BEACH) {
+            renderBeachEntities(rendered);
+        } else if (stage == Stage.TITLE_DX) {
+            renderTitleSparkle(rendered);
         }
-        return BEACH_MARIN_WALK_FRAMES + Math.min(linkApproachFrame, BEACH_LINK_SCROLL_IN_FRAMES);
+        return List.copyOf(rendered);
     }
 
-    private int beachSlowWaveScrollFrames() {
-        int linkApproachFrame = beachLinkApproachFrame();
-        if (linkApproachFrame <= BEACH_LINK_SCROLL_IN_FRAMES + BEACH_MARIN_SECOND_WAIT_FRAMES) {
-            return 0;
+    private void renderRain(List<IntroSprite> rendered, int rows) {
+        int y = (random.getAsInt() & 0x18) + 0x10;
+        int x = (random.getAsInt() & 0x18) + 0x10;
+        for (int row = 0; row < rows; row++) {
+            int tile = 0x28;
+            if ((random.getAsInt() & 0x01) != 0) {
+                tile = (random.getAsInt() & 0x06) + 0x70;
+            }
+            rendered.add(new IntroSprite(tile, x - 8, y - 16, 0, false, false));
+            x += 0x1C;
+            if (x >= 0xA0) {
+                x -= 0x98;
+                y += 0x25;
+            }
         }
-        return beachState3MovingFrames(linkApproachFrame);
     }
 
-    private static int fixedPointScrollOffset(int frames, int increment) {
-        return (frames * increment / 0x100) & 0xFF;
+    private void renderShip(List<IntroSprite> rendered) {
+        int heaveIndex = stage == Stage.SEA_FADE ? 0 : (frameCounter + 0xD0) >>> 4 & 0x07;
+        int heave = shipHeave[heaveIndex];
+        for (IntroRomData.OamEntry entry : shipTiles) {
+            rendered.add(toSprite(entry, shipX, shipY + heave));
+        }
+        if (stage == Stage.SEA_FADE && seaFadeTimer >= 0x10) {
+            for (IntroRomData.OamEntry entry : additionalShipTiles) {
+                rendered.add(toSprite(entry, shipX, shipY));
+            }
+        }
     }
 
-    private int beachLinkApproachFrame() {
-        int linkStartFrame = BEACH_MARIN_WALK_FRAMES + BEACH_MARIN_WAIT_FRAMES;
-        return stageFrame - linkStartFrame;
+    private void renderLightning(List<IntroSprite> rendered) {
+        for (Lightning current : lightning) {
+            if (current.variant() >= lightningTiles.size()) {
+                continue;
+            }
+            for (IntroRomData.OamEntry entry : lightningTiles.get(current.variant())) {
+                rendered.add(toSprite(entry, current.x(), current.y()));
+            }
+        }
     }
 
-    private void addTitleSparkles(List<IntroSprite> sprites) {
-        int phase = (frameCount / 8) & 0x07;
-        int[][] variants = {
-            { 0x38, 0x38, 1 },
-            { 0x3A, 0x3A, 1 },
-            { 0x3A, 0x3A, 1 },
-            { 0x3C, 0x3E, 0 },
-            { 0x3C, 0x3E, 0 },
-            { 0x3A, 0x3A, 1 },
-            { 0x3A, 0x3A, 1 },
-            { 0x38, 0x38, 1 }
-        };
-        int[][] positions = {
-            { 0x18, 0x20 }, { 0x38, 0x48 }, { 0x40, 0x44 }, { 0x58, 0x28 },
-            { 0x60, 0x44 }, { 0x80, 0x28 }, { 0x88, 0x28 }, { 0x18, 0x40 }
-        };
-        int variant = (frameCount / 4) & 0x07;
-        sprites.add(IntroSprite.fromOam8x16(variants[variant][0],
-            positions[phase][0], positions[phase][1], 0, false, false));
-        sprites.add(IntroSprite.fromOam8x16(variants[variant][1],
-            positions[phase][0] + 8, positions[phase][1], 0, variants[variant][2] != 0, false));
+    private void renderBeachEntities(List<IntroSprite> rendered) {
+        int marinVariant = Math.min(marinState, marinVariants.size() - 1);
+        IntroRomData.SpritePair marin = marinVariants.get(marinVariant);
+        addPair(rendered, marin, marinX, 0x68);
+        if (!linkVisible || linkX >= 0xF0) {
+            return;
+        }
+        int linkVariant = Math.min(marinState == 3 ? 1 : 0, inertLinkVariants.size() - 1);
+        addPair(rendered, inertLinkVariants.get(linkVariant), linkX, BEACH_LINK_Y);
+    }
+
+    private void renderTitleSparkle(List<IntroSprite> rendered) {
+        int variant = frameCounter / 4 & 0x07;
+        int position = frameCounter / 0x40 & 0x07;
+        IntroRomData.SpritePair pair = sparkleVariants.get(variant);
+        addPair(rendered, pair, rom.titleSparkleXPositions()[position],
+            rom.titleSparkleYPositions()[position]);
+    }
+
+    private void addPair(List<IntroSprite> rendered, IntroRomData.SpritePair pair,
+                         int oamX, int oamY) {
+        rendered.add(new IntroSprite(pair.firstTileIndex(), oamX - 8, oamY - 16,
+            pair.firstAttributes() & 0x07, (pair.firstAttributes() & 0x20) != 0,
+            (pair.firstAttributes() & 0x40) != 0, 16));
+        rendered.add(new IntroSprite(pair.secondTileIndex(), oamX, oamY - 16,
+            pair.secondAttributes() & 0x07, (pair.secondAttributes() & 0x20) != 0,
+            (pair.secondAttributes() & 0x40) != 0, 16));
+    }
+
+    private IntroSprite toSprite(IntroRomData.OamEntry entry, int oamX, int oamY) {
+        return new IntroSprite(entry.tileIndex(), oamX + entry.xOffset() - 8,
+            oamY + entry.yOffset() - 16, entry.attributes() & 0x07,
+            (entry.attributes() & 0x20) != 0, (entry.attributes() & 0x40) != 0, 16);
+    }
+
+    private int[] lineScrollMap() {
+        int[] lineScroll = new int[BEACH_SCREEN_HEIGHT];
+        for (int y = 0; y < lineScroll.length; y++) {
+            int section = y < BEACH_SECTION_ENDS[0] ? 0
+                : y < BEACH_SECTION_ENDS[1] ? 1
+                : y < BEACH_SECTION_ENDS[2] ? 2 : 3;
+            lineScroll[y] = (beachScrollX + sectionScrollOffsets[section]) & 0xFF;
+        }
+        return lineScroll;
+    }
+
+    private void setScene(String sceneId) {
+        BackgroundScene scene = backgroundProvider.apply(sceneId);
+        if (scene == null) {
+            throw new IllegalArgumentException("No background scene for " + sceneId);
+        }
+        tilemap = scene.tilemap().clone();
+        attrmap = scene.attrmap().clone();
+        bgPalettes = copyPalettes(scene.palettes());
+        objPalettes = copyPalettes(scene.objectPalettes());
+    }
+
+    private void applyTitleRow(IntroRomData.TitleRow row) {
+        copyDrawRow(tilemap, row.tileTargetAddress(), row.tileBytes());
+        copyDrawRow(attrmap, row.attributeTargetAddress(), row.attributeBytes());
+    }
+
+    private void applyAllTitleRows() {
+        for (IntroRomData.TitleRow row : titleRows) {
+            applyTitleRow(row);
+        }
+    }
+
+    private static void copyDrawRow(int[] map, int targetAddress, int[] values) {
+        int offset = targetAddress - 0x9800;
+        if (offset < 0 || offset + values.length > map.length) {
+            throw new IllegalArgumentException(String.format(
+                "Intro draw command target $%04X is outside the 32x32 map", targetAddress));
+        }
+        System.arraycopy(values, 0, map, offset, values.length);
+    }
+
+    private static int[][] copyPalettes(int[][] source) {
+        int[][] copy = new int[source.length][];
+        for (int row = 0; row < source.length; row++) {
+            copy[row] = source[row].clone();
+        }
+        return copy;
+    }
+
+    private static DefaultResources defaultResources() {
+        byte[] romData = loadBundledRom();
+        BackgroundSceneLoader loader = new BackgroundSceneLoader(romData);
+        return new DefaultResources(romData, sceneId -> {
+            BackgroundSceneSpec spec = BackgroundSceneCatalog.forCutsceneScene(sceneId);
+            if (spec == null) {
+                throw new IllegalArgumentException("No cutscene background spec for " + sceneId);
+            }
+            return loader.load(spec);
+        });
+    }
+
+    private static byte[] loadBundledRom() {
+        try (InputStream stream = IntroSequence.class.getClassLoader()
+            .getResourceAsStream("rom/azle.gbc")) {
+            if (stream == null) {
+                throw new IllegalStateException("ROM resource missing");
+            }
+            return stream.readAllBytes();
+        } catch (IOException exception) {
+            throw new IllegalStateException("Unable to load ROM", exception);
+        }
+    }
+
+    private record DefaultResources(
+        byte[] romData,
+        Function<String, BackgroundScene> backgroundProvider
+    ) {
     }
 }

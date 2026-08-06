@@ -105,6 +105,15 @@ final class IntroRomDataTest {
     }
 
     @Test
+    void readsBeachWaveCompensationFromRom() {
+        byte[] rom = syntheticRom();
+        writeBytes(rom, 0x7CF9, 3, 2, 1, 0, 0, 1, 2, 3);
+
+        assertArrayEquals(new int[] { 3, 2, 1, 0, 0, 1, 2, 3 },
+            new IntroRomData(rom).introVerticalOffsets());
+    }
+
+    @Test
     void rejectsTruncatedFixedTableReads() {
         byte[] rom = Arrays.copyOf(syntheticRom(), RomBank.romOffset(BANK, 0x7538) + 23);
 
@@ -121,7 +130,7 @@ final class IntroRomDataTest {
     }
 
     private static byte[] syntheticRom() {
-        return new byte[RomBank.romOffset(BANK, 0x7AE4) + 20 * 19];
+        return new byte[RomBank.romOffset(BANK, 0x7CF9) + 8];
     }
 
     private static int[] sequence(int length, int start) {
