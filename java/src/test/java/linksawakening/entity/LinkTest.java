@@ -508,6 +508,55 @@ final class LinkTest {
     }
 
     @Test
+    void reportsRomCollisionTypeForEachBlockedDirectionAndResetsNextUpdate() throws Exception {
+        byte[] rom = loadRom();
+        RomTables romTables = RomTables.loadFromRom(rom);
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        CollisionAttempt[] attempts = {
+            new CollisionAttempt(Link.DIRECTION_UP, 0x01, 0x20, 0x40,
+                3, 2, 0x26, 0x3F),
+            new CollisionAttempt(Link.DIRECTION_DOWN, 0x02, 0x20, 0x20,
+                3, 2, 0x26, 0x30),
+            new CollisionAttempt(Link.DIRECTION_LEFT, 0x04, 0x40, 0x20,
+                2, 3, 0x3F, 0x29),
+            new CollisionAttempt(Link.DIRECTION_RIGHT, 0x08, 0x20, 0x20,
+                2, 3, 0x30, 0x29),
+        };
+
+        for (CollisionAttempt attempt : attempts) {
+            InputState inputState = new InputState();
+            pressDirection(inputState, inputConfig, attempt.direction());
+            int[] roomObjects = emptyRoomObjectsArea();
+            int blockingCell = ROOM_OBJECTS_BASE
+                + attempt.blockRow() * ROOM_OBJECT_ROW_STRIDE + attempt.blockColumn();
+            roomObjects[blockingCell] = 0x00;
+
+            OverworldCollision collision = new OverworldCollision(romTables);
+            collision.setRoom(roomObjects);
+            Link link = new Link(inputState, inputConfig, romTables, collision, null,
+                new PlayerState(), new ItemRegistry());
+            link.setPixelPosition(attempt.startX(), attempt.startY());
+
+            assertFalse(collision.linkOnNormalPit(attempt.startX(), attempt.startY()));
+            assertTrue(collision.pointBlocked(attempt.probeX(), attempt.probeY()));
+
+            int guard = 0;
+            while (link.romCollisionType() == 0 && guard++ < 16) {
+                link.update();
+            }
+
+            assertEquals(attempt.sourceBit(), link.romCollisionType(),
+                "direction " + attempt.direction());
+
+            roomObjects[blockingCell] = 0xFF;
+            link.update();
+
+            assertEquals(0, link.romCollisionType(),
+                "collision type should reset for direction " + attempt.direction());
+        }
+    }
+
+    @Test
     void rocsFeatherJumpCanClearPit() throws Exception {
         byte[] rom = loadRom();
         RomTables romTables = RomTables.loadFromRom(rom);
@@ -916,6 +965,25 @@ final class LinkTest {
         assertFalse(link.isFallingIntoPit());
     }
 
+    private static void pressDirection(InputState inputState, InputConfig inputConfig, int direction) {
+        switch (direction) {
+            case Link.DIRECTION_DOWN:
+                inputState.onKeyEvent(inputConfig.downKey(), GLFW_PRESS);
+                break;
+            case Link.DIRECTION_UP:
+                inputState.onKeyEvent(inputConfig.upKey(), GLFW_PRESS);
+                break;
+            case Link.DIRECTION_LEFT:
+                inputState.onKeyEvent(inputConfig.leftKey(), GLFW_PRESS);
+                break;
+            case Link.DIRECTION_RIGHT:
+                inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
+                break;
+            default:
+                throw new IllegalArgumentException("direction " + direction);
+        }
+    }
+
     private static void placeAtRoomEntry(Link link, int pixelX, int pixelY) {
         link.setRoomEntryPixelPosition(pixelX, pixelY);
     }
@@ -924,6 +992,10 @@ final class LinkTest {
         int[] roomObjectsArea = new int[0x100];
         java.util.Arrays.fill(roomObjectsArea, 0xFF);
         return roomObjectsArea;
+    }
+
+    private record CollisionAttempt(int direction, int sourceBit, int startX, int startY,
+                                    int blockRow, int blockColumn, int probeX, int probeY) {
     }
 
     private static final class BlockingItem implements EquippedItem {

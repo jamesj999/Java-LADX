@@ -91,6 +91,10 @@ public final class Link implements RocsFeather.JumpTarget {
     private static final int FALL_DURATION_FRAMES = 96;
     private static final int PIT_RECOVERY_INVINCIBILITY_FRAMES = 0x40;
     private static final int PIT_DAMAGE = PlayerState.HP_PER_HEART / 2;
+    private static final int COLLISION_TYPE_UP = 0x01;
+    private static final int COLLISION_TYPE_DOWN = 0x02;
+    private static final int COLLISION_TYPE_LEFT = 0x04;
+    private static final int COLLISION_TYPE_RIGHT = 0x08;
 
     private static final int[][] JUMP_ANIMATION_STATE = {
         { 0x64, 0x65, 0x66 }, // DOWN
@@ -138,6 +142,7 @@ public final class Link implements RocsFeather.JumpTarget {
     private boolean movingThisFrame;
     private int groundMotionCounter;
     private int collisionIgnoreFramesRemaining;
+    private int romCollisionType;
     private boolean forcedSpeedPending;
     private int forcedSpeedX;
     private int forcedSpeedY;
@@ -296,6 +301,11 @@ public final class Link implements RocsFeather.JumpTarget {
         return groundStatus == GROUND_STATUS_PIT || fallingIntoPit ? 0x06 : 0x00;
     }
 
+    /** Mirrors the unsigned {@code wCollisionType} byte written by Link motion. */
+    public int romCollisionType() {
+        return romCollisionType & 0xFF;
+    }
+
     /**
      * Mirrors wIsUsingShield: merely owning the shield is insufficient; the
      * button bound to the slot containing it must be held this frame.
@@ -392,6 +402,7 @@ public final class Link implements RocsFeather.JumpTarget {
     }
 
     public void update() {
+        romCollisionType = 0;
         if (playerState != null) {
             playerState.tickInvincibility();
         }
@@ -530,6 +541,13 @@ public final class Link implements RocsFeather.JumpTarget {
 
         if (collisionIgnoreFramesRemaining == 0
             && leadingEdgeBlocked(candidatePixelX, candidatePixelY, moveDirection)) {
+            romCollisionType |= switch (moveDirection) {
+                case DIRECTION_UP -> COLLISION_TYPE_UP;
+                case DIRECTION_DOWN -> COLLISION_TYPE_DOWN;
+                case DIRECTION_LEFT -> COLLISION_TYPE_LEFT;
+                case DIRECTION_RIGHT -> COLLISION_TYPE_RIGHT;
+                default -> 0;
+            };
             return;
         }
 
