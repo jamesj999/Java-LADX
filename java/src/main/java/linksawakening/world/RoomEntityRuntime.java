@@ -429,6 +429,11 @@ public final class RoomEntityRuntime {
                       int swordY, int swordHeight) {
         Objects.requireNonNull(randomByteSupplier, "randomByteSupplier");
         Objects.requireNonNull(projectileLinkState, "projectileLinkState");
+        if (backgroundInteraction != null) {
+            backgroundCollision = (entity, direction, nextX, nextY) ->
+                backgroundInteraction.probe(entity, direction, nextX, nextY,
+                    enemyIgnoreHitsCountdown[entity.slot()]).blocked();
+        }
         projectileLaunchRequests.clear();
         Arrays.fill(enemyProjectileSpawnedThisFrame, false);
         Arrays.fill(dynamicEntitySpawnedThisFrame, false);

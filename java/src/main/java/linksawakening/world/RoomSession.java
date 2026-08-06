@@ -51,6 +51,22 @@ public final class RoomSession {
     private final EnemyDropResolver enemyDropResolver;
     private final EntityCollisionPointProbe entityCollisionPointProbe;
     private final EntityBackgroundCollisionResolver entityBackgroundCollisionResolver;
+    private final RoomEntityBackgroundInteraction entityBackgroundInteraction =
+        new RoomEntityBackgroundInteraction() {
+            @Override
+            public EntityBackgroundCollisionResult probe(RoomEntity entity, int direction,
+                                                           int nextX, int nextY) {
+                return entityBackgroundCollisionResult(entity, direction, nextX, nextY, 0);
+            }
+
+            @Override
+            public EntityBackgroundCollisionResult probe(RoomEntity entity, int direction,
+                                                           int nextX, int nextY,
+                                                           int ignoreHitsCountdown) {
+                return entityBackgroundCollisionResult(
+                    entity, direction, nextX, nextY, ignoreHitsCountdown);
+            }
+        };
     private final LinkPositionHistory followingLinkPositionHistory = new LinkPositionHistory();
 
     private ActiveRoom activeRoom;
@@ -620,7 +636,7 @@ public final class RoomSession {
             entityRuntime.setFollowingNpcState(followingNpcState);
             entityRuntime.setEntityMapId(activeRoom.mapId());
             entityRuntime.setGroundInteraction(this::entityGroundInteraction);
-            entityRuntime.setBackgroundInteraction(this::entityBackgroundCollisionResult);
+            entityRuntime.setBackgroundInteraction(entityBackgroundInteraction);
             entityRuntime.setGroundInteractionSideScrolling(
                 activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL);
             entityRuntime.setActionButtonsHeld(actionButtonsHeld);
@@ -659,7 +675,7 @@ public final class RoomSession {
         entityRuntime.setFollowingNpcState(followingNpcState);
         entityRuntime.setEntityMapId(activeRoom.mapId());
         entityRuntime.setGroundInteraction(this::entityGroundInteraction);
-        entityRuntime.setBackgroundInteraction(this::entityBackgroundCollisionResult);
+        entityRuntime.setBackgroundInteraction(entityBackgroundInteraction);
         entityRuntime.setGroundInteractionSideScrolling(
             activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL);
         entityRuntime.setActionButtonsHeld(actionButtonsHeld);
@@ -748,6 +764,15 @@ public final class RoomSession {
 
     private EntityBackgroundCollisionResult entityBackgroundCollisionResult(
             RoomEntity entity, int direction, int nextX, int nextY) {
+        int ignoreHitsCountdown = entityRuntime == null
+            ? 0 : entityRuntime.enemyIgnoreHitsCountdown(entity.slot());
+        return entityBackgroundCollisionResult(
+            entity, direction, nextX, nextY, ignoreHitsCountdown);
+    }
+
+    private EntityBackgroundCollisionResult entityBackgroundCollisionResult(
+            RoomEntity entity, int direction, int nextX, int nextY,
+            int ignoreHitsCountdown) {
         EntityCollisionPointProbe.Sample sample = entityCollisionPointProbe.sample(
             entity, direction, nextX, nextY);
         int pointX = sample.x();
@@ -755,7 +780,7 @@ public final class RoomSession {
         int objectId = overworldCollision.objectIdAtPoint(pointX, pointY);
         int physicsFlag = overworldCollision.objectPhysicsFlagAtPoint(pointX, pointY);
         return entityBackgroundCollisionResolver.resolve(
-            entity, direction, sample, objectId, physicsFlag);
+            entity, direction, sample, objectId, physicsFlag, ignoreHitsCountdown);
     }
 
     EntityBackgroundCollisionResult entityBackgroundCollisionResultForTest(

@@ -188,6 +188,46 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void richBackgroundProbeSuppliesIgnoreHitsToLegacyRecoilMovement() {
+        RoomEntity initial = new RoomEntity(0, 0, 0x0B, 0x40, 0x40,
+            EntityStatus.ACTIVE, pairDefinition(0x0B, 2), 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(initial));
+        List<Integer> observedIgnoreHits = new ArrayList<>();
+        runtime.setBackgroundInteraction(new RoomEntityBackgroundInteraction() {
+            @Override
+            public EntityBackgroundCollisionResult probe(RoomEntity entity, int direction,
+                                                           int nextX, int nextY) {
+                return EntityBackgroundCollisionResult.passable(direction, 0, nextX, nextY);
+            }
+
+            @Override
+            public EntityBackgroundCollisionResult probe(RoomEntity entity, int direction,
+                                                       int nextX, int nextY,
+                                                       int ignoreHitsCountdown) {
+                observedIgnoreHits.add(ignoreHitsCountdown);
+                return EntityBackgroundCollisionResult.passable(direction, 0, nextX, nextY);
+            }
+        });
+
+        List<EntityCombatEvent> events = runtime.resolveCombat(
+            0, 0x40, 0x40, false, false, true,
+            0x30, 0x30, 0x30, 0x30);
+        assertEquals(1, events.size());
+        assertTrue(runtime.enemyRecoilActive(0));
+
+        runtime.tick(0, 0, 0, () -> 0,
+            (entity, direction, nextX, nextY) -> true);
+
+        assertTrue(observedIgnoreHits.contains(0x09),
+            () -> "observed=" + observedIgnoreHits
+                + " x=" + runtime.snapshot().slots().get(0).x()
+                + " status=" + runtime.snapshot().slots().get(0).status()
+                + " recoil=" + runtime.enemyRecoilActive(0)
+                + " countdown=" + runtime.enemyIgnoreHitsCountdown(0));
+        assertEquals(0x3D, runtime.snapshot().slots().get(0).x());
+    }
+
+    @Test
     void groundResultQueuesSplashAndUnloadsTheSlotInSourceOrder() {
         EntitySpriteDefinition definition = pairDefinition(0x4D, 1);
         RoomEntitySnapshot initial = snapshot(

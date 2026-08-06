@@ -349,6 +349,25 @@ final class RoomSessionTest {
     }
 
     @Test
+    void liveEntityCollisionProbeUsesActiveIgnoreHitsCountdownForGroundedPits() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x00, 0x0F);
+        RoomEntity entity = session.activeRoom().entities().loadedEntities().stream()
+            .filter(candidate -> candidate.type() == 0x1E)
+            .findFirst()
+            .orElseThrow();
+        fillActiveObjects(session, 0x01); // Indoors1 object $01 is normal pit.
+
+        session.setEntityIgnoreHitsCountdownForTest(entity.slot(), 1);
+        assertFalse(session.entityBackgroundCollisionResultForTest(
+            entity, EntityBackgroundCollisionResult.RIGHT, entity.x(), entity.y()).blocked());
+
+        session.setEntityIgnoreHitsCountdownForTest(entity.slot(), 0);
+        assertTrue(session.entityBackgroundCollisionResultForTest(
+            entity, EntityBackgroundCollisionResult.RIGHT, entity.x(), entity.y()).blocked());
+    }
+
+    @Test
     void ordinaryEntityEntersRomFallingStateOnPitPhysics() {
         RoomSession session = newSession();
         session.loadIndoor(0x00, 0x0F);

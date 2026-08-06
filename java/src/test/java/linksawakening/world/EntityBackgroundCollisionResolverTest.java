@@ -84,6 +84,23 @@ final class EntityBackgroundCollisionResolverTest {
     }
 
     @Test
+    void ignoreHitsMakesGroundedPitsPassableExceptForMoldorm() {
+        RoomEntity ordinary = entity(0x09, 0);
+        for (int physics : new int[] {0x0B, 0x50, 0x51}) {
+            RomTables tables = tables(0, 0, 0, 0, ordinary.type(), 0);
+            assertTrue(resolve(tables, ordinary, 0, 0, physics).blocked());
+            assertFalse(resolveWithIgnoreHits(tables, ordinary, 0, 0, physics, 1).blocked());
+        }
+
+        RoomEntity moldorm = entity(0x59, 0);
+        RomTables moldormTables = tables(0, 0, 0, 0, moldorm.type(), 0);
+        assertTrue(resolveWithIgnoreHits(moldormTables, moldorm, 0, 0, 0x50, 1).blocked());
+
+        RoomEntity airborne = entity(ordinary.type(), 1);
+        assertFalse(resolve(moldormTables, airborne, 0, 0, 0x50).blocked());
+    }
+
+    @Test
     void bombAndWreckingBallPassBlockingFineCollisionShapes() {
         RoomEntity bomb = entity(0x02, 0);
         RoomEntity wreckingBall = entity(0xA8, 0);
@@ -194,5 +211,14 @@ final class EntityBackgroundCollisionResolverTest {
         return new EntityBackgroundCollisionResolver(tables).resolve(
             entity, direction,
             new EntityCollisionPointProbe.Sample(sampleX, sampleY), 0x22, physics);
+    }
+
+    private static EntityBackgroundCollisionResult resolveWithIgnoreHits(
+            RomTables tables, RoomEntity entity, int sampleX, int sampleY, int physics,
+            int ignoreHitsCountdown) {
+        return new EntityBackgroundCollisionResolver(tables).resolve(
+            entity, EntityBackgroundCollisionResult.RIGHT,
+            new EntityCollisionPointProbe.Sample(sampleX, sampleY), 0x22, physics,
+            ignoreHitsCountdown);
     }
 }

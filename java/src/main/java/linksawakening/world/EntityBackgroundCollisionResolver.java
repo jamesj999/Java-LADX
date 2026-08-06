@@ -10,6 +10,7 @@ final class EntityBackgroundCollisionResolver {
     private static final int ENTITY_WATER_TEKTITE = 0x99;
     private static final int ENTITY_BOMB = 0x02;
     private static final int ENTITY_WRECKING_BALL = 0xA8;
+    private static final int ENTITY_MOLDORM = 0x59;
     private static final int ENTITY_SPARK_COUNTER_CLOCKWISE = 0x16;
     private static final int ENTITY_SPARK_CLOCKWISE = 0x17;
 
@@ -52,13 +53,24 @@ final class EntityBackgroundCollisionResolver {
             EntityCollisionPointProbe.Sample sample,
             int objectId,
             int physicsFlag) {
+        return resolve(entity, direction, sample, objectId, physicsFlag, 0);
+    }
+
+    EntityBackgroundCollisionResult resolve(
+            RoomEntity entity,
+            int direction,
+            EntityCollisionPointProbe.Sample sample,
+            int objectId,
+            int physicsFlag,
+            int ignoreHitsCountdown) {
         Objects.requireNonNull(entity, "entity");
         Objects.requireNonNull(sample, "sample");
 
         int unsignedObjectId = objectId & UNSIGNED_BYTE_MASK;
         int unsignedPhysicsFlag = physicsFlag & UNSIGNED_BYTE_MASK;
         boolean noWall = hasNoWallCollision(entity);
-        boolean blocked = isBlocked(entity, sample, unsignedPhysicsFlag, noWall);
+        boolean blocked = isBlocked(entity, sample, unsignedPhysicsFlag, noWall,
+            ignoreHitsCountdown);
         return blocked
             ? EntityBackgroundCollisionResult.blocked(direction, unsignedObjectId,
                 unsignedPhysicsFlag, sample.x(), sample.y())
@@ -69,7 +81,8 @@ final class EntityBackgroundCollisionResolver {
     private boolean isBlocked(RoomEntity entity,
                               EntityCollisionPointProbe.Sample sample,
                               int physicsFlag,
-                              boolean noWall) {
+                              boolean noWall,
+                              int ignoreHitsCountdown) {
         if (isWaterEntity(entity)) {
             if (physicsFlag == PHYSICS_SHALLOW_WATER || physicsFlag == PHYSICS_DEEP_WATER) {
                 return false;
@@ -84,7 +97,14 @@ final class EntityBackgroundCollisionResolver {
         if (physicsFlag == PHYSICS_LAVA
             || physicsFlag == PHYSICS_NORMAL_PIT
             || physicsFlag == PHYSICS_PIT_WARP) {
-            return entity.z() == 0 && !noWall;
+            if (entity.z() != 0) {
+                return false;
+            }
+            if ((ignoreHitsCountdown & UNSIGNED_BYTE_MASK) != 0
+                && entity.type() != ENTITY_MOLDORM) {
+                return false;
+            }
+            return !noWall;
         }
 
         if (isFineOrOpenDoorPhysics(physicsFlag)) {
