@@ -30,6 +30,16 @@ final class BackgroundSceneLoaderTest {
     }
 
     @Test
+    void fileMenuSceneSpecsPointAtDisassemblyBackgrounds() {
+        assertEquals(new BackgroundSceneSpec(0x20, 0x6336, 0x24, 0x5F80, 0x21, 0x7536),
+            BackgroundSceneCatalog.forFileMenuScene("selection"));
+        assertEquals(new BackgroundSceneSpec(0x20, 0x6328, 0x24, 0x5F74, 0x21, 0x7536),
+            BackgroundSceneCatalog.forFileMenuScene("selection_commands"));
+        assertEquals(new BackgroundSceneSpec(0x20, 0x644D, 0x24, 0x6045, 0x21, 0x7536),
+            BackgroundSceneCatalog.forFileMenuScene("creation"));
+    }
+
+    @Test
     void decodedBackgroundsPreserveFullGameBoyBgMap() {
         BackgroundSceneLoader loader = new BackgroundSceneLoader(loadRom());
 
