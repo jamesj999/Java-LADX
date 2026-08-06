@@ -13,6 +13,9 @@ import static linksawakening.world.RoomConstants.ROOM_PIXEL_WIDTH;
 
 /** Renders the ROM-backed OAM display lists for the room's loaded entities. */
 public final class EntityRenderLayer implements RenderLayer {
+    private static final int ENTITY_BOMB = 0x02;
+    private static final int BOMB_NORMAL_DEFINITION_BANK = 0x03;
+    private static final int BOMB_NORMAL_DEFINITION_ADDRESS = 0x652E;
     private static final int ENTITY_PAIRODD = 0x57;
     private static final int OAM_PALETTE_MASK = 0x07;
     private static final int OAM_PALETTE_FLIP = 0x10;
@@ -149,6 +152,14 @@ public final class EntityRenderLayer implements RenderLayer {
 
         int entityX = entity.x() + offsetX - OAM_X_SCREEN_ORIGIN;
         int entityY = entity.y() + offsetY - OAM_Y_SCREEN_ORIGIN - entity.z();
+        if (entity.type() == ENTITY_BOMB
+            && definition.bank() == BOMB_NORMAL_DEFINITION_BANK
+            && definition.address() == BOMB_NORMAL_DEFINITION_ADDRESS) {
+            // RenderBomb increments hActiveEntityVisualPosY twice before the
+            // normal single BombSprite is sent to OAM. The warning pair and
+            // explosion rectangle use the unshifted active position.
+            entityY += 2;
+        }
         int flipAttribute = entity.entityFlipAttribute();
         if (definition.shape() == EntitySpriteDefinition.Shape.PAIR) {
             EntitySpriteDefinition.Variant variant = definition.variant(spriteVariant);

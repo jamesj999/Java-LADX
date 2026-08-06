@@ -4056,6 +4056,134 @@ final class RoomEntityRuntimeTest {
         }
     }
 
+    @Test
+    void spawnBombUsesTheRomSlotStateAndDoesNotSkipItsFirstTick() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+            new RoomEntitySnapshot(new ArrayList<>(snapshot().slots())), false, null, catalog);
+
+        int slot = runtime.spawnBomb(0x40, 0x50, 0x07, 3);
+
+        assertEquals(EntityRoomLoader.MAX_ENTITIES - 1, slot);
+        RoomEntity bomb = runtime.snapshot().slots().get(slot);
+        assertEquals(0x02, bomb.type());
+        assertEquals(-1, bomb.sourceLoadOrder());
+        assertEquals(EntityStatus.ACTIVE, bomb.status());
+        assertEquals(0x40, bomb.x());
+        assertEquals(0x50, bomb.y());
+        assertEquals(0x08, bomb.z());
+        assertEquals(EntitySpriteDefinition.Shape.SINGLE, bomb.spriteDefinition().shape());
+        assertEquals(0x03, bomb.spriteDefinition().bank());
+        assertEquals(0x652E, bomb.spriteDefinition().address());
+        assertEquals(0, bomb.spriteVariant());
+        assertEquals(0xA0, runtime.transitionCountdown(slot));
+        assertEquals(0xD2, runtime.physicsFlags(slot));
+        assertEquals(0x0A, runtime.options1(slot));
+        assertEquals(3, runtime.bombDirection(slot));
+        assertTrue(runtime.bombActive());
+
+        runtime.tick(0, 0x40, 0x50, () -> 0);
+
+        RoomEntity afterFirstTick = runtime.snapshot().slots().get(slot);
+        assertEquals(slot, afterFirstTick.slot());
+        assertEquals(0x02, afterFirstTick.type());
+        assertEquals(0x9F, runtime.transitionCountdown(slot));
+        assertEquals(1, runtime.snapshot().loadedEntities().size());
+    }
+
+    @Test
+    void bombSpawnRejectsASecondLoadedBombAndReusesTheSlotAfterClear() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot());
+
+        int firstSlot = runtime.spawnBomb(0x40, 0x50, 0, 0);
+
+        assertEquals(EntityRoomLoader.MAX_ENTITIES - 1, firstSlot);
+        assertEquals(-1, runtime.spawnBomb(0x42, 0x52, 0, 1));
+
+        runtime.clearEntity(firstSlot);
+
+        assertFalse(runtime.bombActive());
+        assertEquals(EntityRoomLoader.MAX_ENTITIES - 1,
+            runtime.spawnBomb(0x42, 0x52, 0, 1));
+    }
+
+    @Test
+    void bombSpawnRejectsAFullEntityTableWithoutChangingItsSlots() {
+        List<RoomEntity> slots = new ArrayList<>();
+        EntitySpriteDefinition unsupported = EntitySpriteDefinition.unsupported(0xFF);
+        for (int slot = 0; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
+            slots.add(new RoomEntity(slot, slot, 0xFF, 0x20, 0x20,
+                EntityStatus.ACTIVE, unsupported, -1));
+        }
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(slots));
+
+        assertEquals(-1, runtime.spawnBomb(0x40, 0x50, 0, 0));
+        assertFalse(runtime.bombActive());
+        assertEquals(0xFF, runtime.snapshot().slots().get(15).type());
+    }
+
+    @Test
+    void bombKeepsOneSlotAcrossWarningExplosionSoundAndUnload() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+            new RoomEntitySnapshot(new ArrayList<>(snapshot().slots())), false, null, catalog);
+        int slot = runtime.spawnBomb(0x40, 0x50, 0, 0);
+
+        runtime.setBombTransitionCountdownForTest(slot, 0x22);
+        runtime.tick(0, 0x40, 0x50, () -> 0);
+        RoomEntity warning = runtime.snapshot().slots().get(slot);
+        assertEquals(0x02, warning.type());
+        assertEquals(0x5484, warning.spriteDefinition().address());
+        assertEquals(0, warning.spriteVariant());
+        assertEquals(0x21, runtime.transitionCountdown(slot));
+        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+
+        // UpdateEntityTimers decrements before BombEntityHandler sees $18.
+        runtime.setBombTransitionCountdownForTest(slot, 0x19);
+        runtime.tick(1, 0x40, 0x50, () -> 0);
+        RoomEntity warningAtSound = runtime.snapshot().slots().get(slot);
+        assertEquals(slot, warningAtSound.slot());
+        assertEquals(0x02, warningAtSound.type());
+        assertEquals(0x5484, warningAtSound.spriteDefinition().address());
+        assertEquals(0x17, runtime.transitionCountdown(slot));
+        assertEquals(List.of(new EntityCombatEvent(slot, 0x02, 0, false,
+            EntityCombatEvent.SoundChannel.NOISE, 0x0C)),
+            runtime.consumePendingEntityEvents());
+
+        runtime.tick(2, 0x40, 0x50, () -> 0);
+        RoomEntity explosionVariantThree = runtime.snapshot().slots().get(slot);
+        assertEquals(slot, explosionVariantThree.slot());
+        assertEquals(0x02, explosionVariantThree.type());
+        assertEquals(0x6530, explosionVariantThree.spriteDefinition().address());
+        assertEquals(3, explosionVariantThree.spriteVariant());
+        assertEquals(0xD8, runtime.physicsFlags(slot));
+        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+
+        runtime.setBombTransitionCountdownForTest(slot, 0x14);
+        runtime.tick(3, 0x40, 0x50, () -> 0);
+        assertEquals(0x6530, runtime.snapshot().slots().get(slot).spriteDefinition().address());
+        assertEquals(2, runtime.snapshot().slots().get(slot).spriteVariant());
+
+        runtime.setBombTransitionCountdownForTest(slot, 0x10);
+        runtime.tick(4, 0x40, 0x50, () -> 0);
+        assertEquals(1, runtime.snapshot().slots().get(slot).spriteVariant());
+
+        runtime.setBombTransitionCountdownForTest(slot, 0x08);
+        runtime.tick(5, 0x40, 0x50, () -> 0);
+        assertEquals(0, runtime.snapshot().slots().get(slot).spriteVariant());
+        assertTrue(runtime.bombActive());
+
+        runtime.setBombTransitionCountdownForTest(slot, 0x01);
+        runtime.tick(6, 0x40, 0x50, () -> 0);
+
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(slot).status());
+        assertFalse(runtime.bombActive());
+        assertEquals(0, runtime.physicsFlags(slot));
+        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+    }
+
     private static RoomEntity ghiniEntity(EntitySpriteHandlerCatalog catalog, int slot, int type,
                                           EntityStatus status) {
         EntitySpriteDefinition definition = catalog.forEntityType(

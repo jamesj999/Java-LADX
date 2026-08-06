@@ -46,6 +46,10 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL = 0x02;
     private static final int ENTITY_PHYSICS_HARMLESS = 0x80;
     private static final int ENTITY_PHYSICS_PROJECTILE_NOCLIP = 0x40;
+    private static final int BOMB_INITIAL_PHYSICS_FLAGS = 0xD2;
+    private static final int BOMB_OPTIONS1 = ENTITY_OPT1_SPLASH_IN_WATER
+        | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
+    private static final int BOMB_EXPLOSION_PHYSICS_LOW_BITS = 0x08;
     private static final int EVASIVE_PHYSICS_FLAGS = 0x12;
     private static final int EVASIVE_CLONE_PHYSICS_FLAGS = 0x52;
     private static final int EVASIVE_CLONE_OPTIONS = ENTITY_OPT1_NO_GROUND_INTERACTION
@@ -167,6 +171,7 @@ public final class RoomEntityRuntime {
     private final int[] liftedPhase = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] liftedSourceDirection = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] liftedStateInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] bombDirection = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] thrownDirection = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] ledgeTransitionTimer = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] thrownMotionInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
@@ -249,6 +254,7 @@ public final class RoomEntityRuntime {
         this.hookshotChainOam = initial.hookshotChainOam();
         Arrays.fill(entityOptions1Override, -1);
         Arrays.fill(droppedItemBySlot, 0);
+        Arrays.fill(bombDirection, 0xFF);
         Arrays.fill(thrownDirection, 0xFF);
         for (RoomEntity entity : slots) {
             baseEntityFlipAttribute[entity.slot()] = entity.entityFlipAttribute();
@@ -704,6 +710,10 @@ public final class RoomEntityRuntime {
                 }
                 slots[index] = withPositionAndVariant(entity,
                     step.state().x(), step.state().y(), entity.spriteVariant());
+                continue;
+            }
+            if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_BOMB) {
+                advanceBombEntity(index, entity);
                 continue;
             }
             if (status == EntityStatus.LIFTED) {
@@ -1776,6 +1786,7 @@ public final class RoomEntityRuntime {
         liftedSourceDirection[slot] = 0;
         liftedStateInitialized[slot] = false;
         thrownDirection[slot] = 0xFF;
+        bombDirection[slot] = 0xFF;
         ledgeTransitionTimer[slot] = 0;
         thrownMotionInitialized[slot] = false;
         hookshotChainMotion.clear(slot);
@@ -1852,6 +1863,58 @@ public final class RoomEntityRuntime {
         entityOptions1Override[freeSlot] = ENTITY_OPT1_NO_GROUND_INTERACTION
             | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
         return freeSlot;
+    }
+
+    /** Creates the ROM's ordinary player bomb entity type {@code $02}. */
+    int spawnBomb(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
+        validateRomDirection(romDirection);
+        if (bombActive()) {
+            return -1;
+        }
+        int freeSlot = findFreeEntitySlot();
+        if (freeSlot < 0) {
+            return -1;
+        }
+
+        EntitySpriteDefinition definition = spriteDefinitionFor(ENTITY_BOMB);
+        int variant = definition.supported() ? definition.initialVariant() : -1;
+        RoomEntity bomb = new RoomEntity(freeSlot, -1, ENTITY_BOMB,
+            linkEntityX & 0xFF, linkEntityY & 0xFF, EntityStatus.ACTIVE,
+            definition, variant, 0, 0, (linkEntityZ + 1) & 0xFF);
+        slots[freeSlot] = bomb;
+        bombDirection[freeSlot] = romDirection;
+        enemyTransitionCountdown[freeSlot] = BombMotion.INITIAL_COUNTDOWN;
+        enemyStunnedCountdown[freeSlot] = 0;
+        enemyHealth[freeSlot] = 0;
+        enemyFlashCountdown[freeSlot] = 0;
+        enemyIgnoreHitsCountdown[freeSlot] = 0;
+        enemyPhysicsFlags[freeSlot] = BOMB_INITIAL_PHYSICS_FLAGS;
+        entityGroundStatus[freeSlot] = 0;
+        baseEntityFlipAttribute[freeSlot] = 0;
+        entityOptions1Override[freeSlot] = BOMB_OPTIONS1;
+        return freeSlot;
+    }
+
+    boolean bombActive() {
+        for (RoomEntity entity : slots) {
+            if (entity.loaded() && entity.type() == ENTITY_BOMB) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    int bombDirection(int slot) {
+        validateEntitySlot(slot);
+        return bombDirection[slot] & 0xFF;
+    }
+
+    void setBombTransitionCountdownForTest(int slot, int value) {
+        validateCountdownTestValue(slot, value);
+        if (!slots[slot].loaded() || slots[slot].type() != ENTITY_BOMB) {
+            throw new IllegalArgumentException("Entity slot does not contain a bomb: " + slot);
+        }
+        enemyTransitionCountdown[slot] = value;
     }
 
     private boolean spawnHookshotBridge(int bridgeX, int bridgeY, int direction,
@@ -2387,6 +2450,40 @@ public final class RoomEntityRuntime {
             : spriteSelection.roomTable();
         int mapId = spriteSelection == null ? -1 : spriteSelection.roomId();
         return spriteHandlers.forEntityType(entityType, table, mapId);
+    }
+
+    private void advanceBombEntity(int index, RoomEntity entity) {
+        int slot = entity.slot();
+        BombMotion.Decision decision = BombMotion.decide(enemyTransitionCountdown[slot] & 0xFF);
+        if (decision.playExplosionSound()) {
+            pendingEntityEvents.add(new EntityCombatEvent(
+                slot, ENTITY_BOMB, 0, false,
+                EntityCombatEvent.SoundChannel.NOISE, 0x0C));
+        }
+        if (decision.countdownOverride().isPresent()) {
+            enemyTransitionCountdown[slot] = decision.countdownOverride().getAsInt();
+        }
+        if (decision.phase() == BombMotion.Phase.EXPLOSION) {
+            enemyPhysicsFlags[slot] = (enemyPhysicsFlags[slot] & 0xF0)
+                | BOMB_EXPLOSION_PHYSICS_LOW_BITS;
+        }
+
+        EntitySpriteDefinition definition = switch (decision.phase()) {
+            case NORMAL -> spriteDefinitionFor(ENTITY_BOMB);
+            case WARNING -> spriteHandlers == null
+                ? EntitySpriteDefinition.unsupported(ENTITY_BOMB)
+                : spriteHandlers.forBombRightBeforeExploding();
+            case EXPLOSION -> spriteHandlers == null
+                ? EntitySpriteDefinition.unsupported(ENTITY_BOMB)
+                : spriteHandlers.forBombExplosion();
+        };
+        int variant = decision.explosionVariant().orElse(0);
+        RoomEntity updated = withDefinition(entity, definition, variant);
+        if (decision.unloadAfterPresentation()) {
+            clearEntity(slot);
+            return;
+        }
+        slots[index] = updated;
     }
 
     private EntitySpriteDefinition spriteDefinitionForEvasiveState(
@@ -3036,6 +3133,9 @@ public final class RoomEntityRuntime {
         if (isGhiniType(slots[slot].type())) {
             return GHINI_OPTIONS1;
         }
+        if (slots[slot].type() == ENTITY_BOMB) {
+            return BOMB_OPTIONS1;
+        }
         return slots[slot].type() == ENTITY_STALFOS_EVASIVE
             ? ENTITY_OPT1_SPLASH_IN_WATER : 0;
     }
@@ -3114,7 +3214,8 @@ public final class RoomEntityRuntime {
         return switch (type) {
             case ENTITY_ARMOS_STATUE -> ARMOS_INITIAL_PHYSICS_FLAGS;
             case ENTITY_STALFOS_EVASIVE -> EVASIVE_PHYSICS_FLAGS;
-            case ENTITY_BOMB, ENTITY_LIFTABLE_ROCK, ENTITY_LIFTABLE_STATUE,
+            case ENTITY_BOMB -> BOMB_INITIAL_PHYSICS_FLAGS;
+            case ENTITY_LIFTABLE_ROCK, ENTITY_LIFTABLE_STATUE,
                 ENTITY_WRECKING_BALL, ENTITY_SIDE_VIEW_POT, ENTITY_ROOSTER,
                 ENTITY_CUCCO, ENTITY_HORSE_PIECE -> ENTITY_PHYSICS_GRABBABLE;
             default -> 0;

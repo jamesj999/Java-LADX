@@ -838,6 +838,50 @@ final class EntityRenderLayerTest {
         assertEquals(overrideColor, pixelColor(buffer, 56, 16));
     }
 
+    @Test
+    void shiftsOnlyTheNormalBombVisualYByTheSourceTwoPixels() {
+        GPU gpu = new GPU();
+        int bombColor = 0x123456;
+        int[][] palettes = {{0, bombColor, 0, 0}};
+        writeSolidTile(gpu, 0x20, 1);
+        writeSolidTile(gpu, 0x21, 1);
+
+        EntitySpriteDefinition normal = new EntitySpriteDefinition(
+            0x02, 0x03, 0x652E, EntitySpriteDefinition.Shape.SINGLE, 0,
+            List.of(new EntitySpriteDefinition.Variant(
+                new EntitySpriteDefinition.OamAttribute(0x20, 0x00), null)));
+        EntitySpriteDefinition warning = new EntitySpriteDefinition(
+            0x02, 0x03, 0x5484, EntitySpriteDefinition.Shape.PAIR, 0,
+            List.of(new EntitySpriteDefinition.Variant(
+                new EntitySpriteDefinition.OamAttribute(0x20, 0x00),
+                new EntitySpriteDefinition.OamAttribute(0x20, 0x00))));
+        EntitySpriteDefinition explosion = new EntitySpriteDefinition(
+            0x02, 0x03, 0x6530, EntitySpriteDefinition.Shape.RECTANGLE, 0, List.of(),
+            List.of(List.of(new EntitySpriteDefinition.RectangleSprite(0, 0,
+                new EntitySpriteDefinition.OamAttribute(0x20, 0x00)))));
+
+        byte[] normalBuffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
+        new EntityRenderLayer(snapshot(new RoomEntity(0, 0, 0x02, 24, 32,
+            EntityStatus.ACTIVE, normal, 0)), palettes, new ScrollController())
+            .render(new RenderContext(normalBuffer, gpu));
+        assertEquals(bombColor, pixelColor(normalBuffer, 20, 18));
+        assertEquals(0, pixelColor(normalBuffer, 20, 16));
+
+        byte[] warningBuffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
+        new EntityRenderLayer(snapshot(new RoomEntity(0, 0, 0x02, 24, 32,
+            EntityStatus.ACTIVE, warning, 0)), palettes, new ScrollController())
+            .render(new RenderContext(warningBuffer, gpu));
+        assertEquals(bombColor, pixelColor(warningBuffer, 16, 16));
+        assertEquals(0, pixelColor(warningBuffer, 16, 14));
+
+        byte[] explosionBuffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
+        new EntityRenderLayer(snapshot(new RoomEntity(0, 0, 0x02, 24, 32,
+            EntityStatus.ACTIVE, explosion, 0)), palettes, new ScrollController())
+            .render(new RenderContext(explosionBuffer, gpu));
+        assertEquals(bombColor, pixelColor(explosionBuffer, 16, 16));
+        assertEquals(0, pixelColor(explosionBuffer, 16, 14));
+    }
+
     private static EntitySpriteDefinition pairDefinition(EntitySpriteDefinition.OamAttribute first,
                                                           EntitySpriteDefinition.OamAttribute second) {
         return new EntitySpriteDefinition(0x7A, 0x06, 0x5C89,
