@@ -1,6 +1,8 @@
 package linksawakening.render;
 
 import linksawakening.entity.EntitySpriteSelection;
+import linksawakening.cutscene.IntroFrameSnapshot;
+import linksawakening.cutscene.IntroSprite;
 import linksawakening.world.RoomConstants;
 import linksawakening.world.EntityRoomLoader;
 import linksawakening.world.RoomEntity;
@@ -39,6 +41,25 @@ final class GameFrameSceneBuilderTest {
         );
 
         assertEquals(1, scene.layerCount());
+    }
+
+    @Test
+    void backgroundStateUsesTheDynamicIntroSnapshotAndSpriteLayer() {
+        GameFrameSceneBuilder builder = new GameFrameSceneBuilder();
+        int[] tilemap = new int[32 * 32];
+        int[] attrmap = new int[32 * 32];
+        int[][] palettes = { { 0, 0, 0, 0 } };
+        IntroFrameSnapshot snapshot = new IntroFrameSnapshot(
+            "intro-sea", "SEA", 3, 4, 0, null, 0,
+            tilemap, attrmap, palettes, palettes,
+            List.of(new IntroSprite(0, 0, 0, 0, false, false)), 0);
+
+        FrameScene scene = builder.build(GameFrameState.empty()
+            .withScreen(RenderScreen.CUTSCENE)
+            .withBackground(tilemap, attrmap, palettes, palettes)
+            .withIntroFrameSnapshot(snapshot));
+
+        assertEquals(2, scene.layerCount());
     }
 
     @Test

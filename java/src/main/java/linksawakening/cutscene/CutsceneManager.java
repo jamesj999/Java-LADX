@@ -1,9 +1,11 @@
 package linksawakening.cutscene;
 
 import linksawakening.dialog.DialogController;
+import linksawakening.scene.BackgroundScene;
 
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public final class CutsceneManager implements CutsceneContext {
 
@@ -11,6 +13,7 @@ public final class CutsceneManager implements CutsceneContext {
     private final Consumer<String> sceneLoader;
     private final CutsceneController controller;
     private IntroSequence introSequence;
+    private IntroFrameSnapshot frameSnapshot;
     private String currentScene = "";
 
     public CutsceneManager(DialogController dialogController, Consumer<String> sceneLoader) {
@@ -21,6 +24,14 @@ public final class CutsceneManager implements CutsceneContext {
 
     public void startIntro() {
         introSequence = new IntroSequence();
+        frameSnapshot = introSequence.snapshot();
+        controller.start(CutsceneScript.of());
+        setScene(introSequence.sceneId());
+    }
+
+    public void startIntro(byte[] romData, Function<String, BackgroundScene> backgroundProvider) {
+        introSequence = new IntroSequence(romData, backgroundProvider);
+        frameSnapshot = introSequence.snapshot();
         controller.start(CutsceneScript.of());
         setScene(introSequence.sceneId());
     }
@@ -29,6 +40,7 @@ public final class CutsceneManager implements CutsceneContext {
         if (introSequence != null && introSequence.isActive()) {
             String previousScene = introSequence.sceneId();
             introSequence.tick();
+            frameSnapshot = introSequence.snapshot();
             String nextScene = introSequence.sceneId();
             if (!nextScene.equals(previousScene)) {
                 setScene(nextScene);
@@ -49,6 +61,7 @@ public final class CutsceneManager implements CutsceneContext {
             return false;
         }
         introSequence.skipToTitle();
+        frameSnapshot = introSequence.snapshot();
         setScene(introSequence.sceneId());
         return true;
     }
@@ -58,23 +71,27 @@ public final class CutsceneManager implements CutsceneContext {
     }
 
     public int scrollX() {
-        return introSequence != null ? introSequence.scrollX() : 0;
+        return frameSnapshot != null ? frameSnapshot.scrollX() : 0;
     }
 
     public int scrollY() {
-        return introSequence != null ? introSequence.scrollY() : 0;
+        return frameSnapshot != null ? frameSnapshot.scrollY() : 0;
     }
 
     public int[] lineScrollX(int height) {
-        return introSequence != null ? introSequence.lineScrollX(height) : null;
+        return frameSnapshot != null ? resizeLineScroll(frameSnapshot.lineScrollX(), height) : null;
     }
 
     public java.util.List<IntroSprite> sprites() {
-        return introSequence != null ? introSequence.sprites() : java.util.List.of();
+        return frameSnapshot != null ? frameSnapshot.sprites() : java.util.List.of();
     }
 
     public int titleRevealRows() {
-        return introSequence != null ? introSequence.titleRevealRows() : 7;
+        return frameSnapshot != null ? frameSnapshot.titleRevealRows() : 7;
+    }
+
+    public IntroFrameSnapshot frameSnapshot() {
+        return frameSnapshot;
     }
 
     @Override
@@ -91,5 +108,16 @@ public final class CutsceneManager implements CutsceneContext {
     @Override
     public boolean isDialogActive() {
         return dialogController.isActive();
+    }
+
+    private static int[] resizeLineScroll(int[] lineScroll, int height) {
+        if (lineScroll == null || lineScroll.length == 0) {
+            return null;
+        }
+        int[] resized = new int[height];
+        for (int index = 0; index < height; index++) {
+            resized[index] = lineScroll[Math.min(index, lineScroll.length - 1)];
+        }
+        return resized;
     }
 }

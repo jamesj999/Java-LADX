@@ -1,5 +1,7 @@
 package linksawakening.render;
 
+import linksawakening.cutscene.IntroFrameSnapshot;
+import linksawakening.cutscene.IntroSprite;
 import linksawakening.cutscene.TitleReveal;
 import linksawakening.gpu.Framebuffer;
 
@@ -16,7 +18,9 @@ public final class GameFrameSceneBuilder {
         List<RenderLayer> layers = new ArrayList<>();
         if (state.screen() == RenderScreen.OVERWORLD && state.room() != null) {
             addOverworldLayers(layers, state);
-        } else if (state.tilemap() != null && state.attrmap() != null && state.bgPalettes() != null) {
+        } else if ((state.introFrameSnapshot() != null || state.tilemap() != null)
+            && (state.introFrameSnapshot() != null || state.attrmap() != null)
+            && (state.introFrameSnapshot() != null || state.bgPalettes() != null)) {
             addBackgroundSceneLayers(layers, state);
         }
 
@@ -51,25 +55,53 @@ public final class GameFrameSceneBuilder {
     }
 
     private static void addBackgroundSceneLayers(List<RenderLayer> layers, GameFrameState state) {
-        int scrollX = state.cutsceneManager() != null ? state.cutsceneManager().scrollX() : 0;
-        int scrollY = state.cutsceneManager() != null ? state.cutsceneManager().scrollY() : 0;
-        int[] tilemap = titleRevealTilemap(state);
-        int[] lineScrollX = state.cutsceneManager() != null
-            ? state.cutsceneManager().lineScrollX(Framebuffer.HEIGHT)
-            : null;
+        IntroFrameSnapshot snapshot = state.introFrameSnapshot();
+        int scrollX = snapshot != null
+            ? snapshot.scrollX()
+            : state.cutsceneManager() != null ? state.cutsceneManager().scrollX() : 0;
+        int scrollY = snapshot != null
+            ? snapshot.scrollY() + snapshot.verticalWaveOffset()
+            : state.cutsceneManager() != null ? state.cutsceneManager().scrollY() : 0;
+        int[] tilemap = snapshot != null ? snapshot.tilemap() : titleRevealTilemap(state);
+        int[] attrmap = snapshot != null ? snapshot.attrmap() : state.attrmap();
+        int[][] palettes = snapshot != null ? snapshot.bgPalettes() : state.bgPalettes();
+        int[] lineScrollX = snapshot != null
+            ? resizeLineScroll(snapshot.lineScrollX(), Framebuffer.HEIGHT)
+            : state.cutsceneManager() != null
+                ? state.cutsceneManager().lineScrollX(Framebuffer.HEIGHT)
+                : null;
 
         if (lineScrollX != null) {
-            layers.add(BackgroundRenderLayer.lineScrolled(tilemap, state.attrmap(), state.bgPalettes(),
+            layers.add(BackgroundRenderLayer.lineScrolled(tilemap, attrmap, palettes,
                 BG_MAP_WIDTH, BG_MAP_HEIGHT, VIEWPORT_TILE_WIDTH, VIEWPORT_TILE_HEIGHT,
                 lineScrollX, scrollY));
         } else {
-            layers.add(BackgroundRenderLayer.scrolling(tilemap, state.attrmap(), state.bgPalettes(),
+            layers.add(BackgroundRenderLayer.scrolling(tilemap, attrmap, palettes,
                 BG_MAP_WIDTH, BG_MAP_HEIGHT, VIEWPORT_TILE_WIDTH, VIEWPORT_TILE_HEIGHT,
                 scrollX, scrollY));
         }
-        if (state.cutsceneManager() != null && state.objPalettes() != null) {
-            layers.add(new CutsceneSpriteRenderLayer(state.cutsceneManager().sprites(), state.objPalettes()));
+        int[][] objectPalettes = snapshot != null ? snapshot.objPalettes() : state.objPalettes();
+        if (objectPalettes != null) {
+            Iterable<IntroSprite> sprites = snapshot != null
+                ? snapshot.sprites()
+                : state.cutsceneManager() != null
+                    ? state.cutsceneManager().sprites()
+                    : List.of();
+            if (snapshot != null || state.cutsceneManager() != null) {
+                layers.add(new CutsceneSpriteRenderLayer(sprites, objectPalettes));
+            }
         }
+    }
+
+    private static int[] resizeLineScroll(int[] lineScroll, int height) {
+        if (lineScroll == null || lineScroll.length == 0) {
+            return null;
+        }
+        int[] resized = new int[height];
+        for (int index = 0; index < height; index++) {
+            resized[index] = lineScroll[Math.min(index, lineScroll.length - 1)];
+        }
+        return resized;
     }
 
     private static int[] titleRevealTilemap(GameFrameState state) {
