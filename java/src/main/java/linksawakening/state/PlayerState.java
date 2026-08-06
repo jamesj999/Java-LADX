@@ -1,5 +1,7 @@
 package linksawakening.state;
 
+import java.util.Arrays;
+
 public final class PlayerState {
 
     public static final int INVENTORY_EMPTY = 0x00;
@@ -68,6 +70,42 @@ public final class PlayerState {
         for (int i = 0; i < subscreen.length; i++) {
             subscreen[i] = INVENTORY_BOMBS + i;
         }
+    }
+
+    /**
+     * Initializes the fields represented by a newly created ROM save file.
+     *
+     * <p>The normal constructor intentionally retains its debug inventory for
+     * existing development entry points.  The real file-menu New Game path
+     * calls this method after the ROM's zeroed save block has been selected.
+     * The capacity arguments are the values written by
+     * {@code LoadSavedFile.initNewGame}.</p>
+     */
+    public void initializeNewGame(int maxArrows, int maxBombs, int maxMagicPowder) {
+        rupees = 0;
+        maxHearts = 3;
+        health = maxHearts * HP_PER_HEART;
+        invincibilityCounter = 0;
+        swordLevel = 0;
+        shieldLevel = 0;
+        itemA = INVENTORY_EMPTY;
+        itemB = INVENTORY_EMPTY;
+        Arrays.fill(subscreen, INVENTORY_EMPTY);
+        arrowCount = 0;
+        this.maxArrows = clamp(maxArrows, 0, 99);
+        bombCount = 0;
+        this.maxBombs = clamp(maxBombs, 0, 99);
+        magicPowderCount = 0;
+        this.maxMagicPowder = clamp(maxMagicPowder, 0, 99);
+        heartPieces = 0;
+        seashells = 0;
+        activePowerUp = ACTIVE_POWER_UP_NONE;
+        tunicType = TUNIC_GREEN;
+        runningWithPegasusBoots = false;
+        addHealthBuffer = 0;
+        subtractHealthBuffer = 0;
+        addRupeeBuffer = 0;
+        powerUpHits = 0;
     }
 
     public int rupees() {
