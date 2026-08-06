@@ -873,6 +873,24 @@ runtime collision callback.
   switch block, hookshot-chain transitions, mobile-block requests, non-sword
   producers, and complete Link motion blocking remain explicit follow-up work.
 
+## Verified ROM Link switch-block footing state — 2026-08-06
+
+- Link's room collision now follows `ApplyCollisionWithOceanOrSwitchBlock` in
+  bank `$02`: object `$DB` expects `wSwitchBlocksState == $00`, object `$DC`
+  expects `$02`, and a mismatched block is solid unless the transient
+  `wLinkStandingOnSwitchBlock` override is active.
+- The live `OverworldCollision` boundary applies the rule only to physics byte
+  `$04` and the two source object IDs. Link refreshes the standing override
+  from the ROM foot sample before its leading-edge movement probe, allowing
+  Link to move off a block during a state transition.
+- `RoomSession` synchronizes its room-owned switch state after room loads,
+  test state changes, and the existing crystal-switch VBlank toggle. Focused
+  decision, collision, Link movement, and room-session tests plus the complete
+  Java suite pass with the shipped ROM.
+- The source's footstep sound and `Data_002_786F` `wC13B` presentation offset,
+  switch-button/mobile-block producers, and hookshot-chain transitions remain
+  separate source-backed increments.
+
 ## Verified ROM Link tunic palette — 2026-08-06
 
 - `LinkTunicPalette` now loads the six object palettes from `ObjectPalettes` at
