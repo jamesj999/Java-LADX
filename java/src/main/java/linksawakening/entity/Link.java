@@ -76,6 +76,15 @@ public final class Link implements RocsFeather.JumpTarget {
         { 0x0A, 0x0B },  // RIGHT
     };
 
+    // LinkAnimationsList_LiftingObject (bank2.asm:1249), indexed in the
+    // same Java direction order as the walking table.
+    private static final int[][] LIFTING_ANIMATION_STATE = {
+        { 0x44, 0x45 },  // DOWN
+        { 0x42, 0x43 },  // UP
+        { 0x40, 0x41 },  // LEFT
+        { 0x3E, 0x3F },  // RIGHT
+    };
+
     private static final int WALK_FRAME_TICKS = 8;
     private static final int JUMP_FRAME_TICKS = 8;
     private static final int FALL_FRAME_TICKS = 16;
@@ -145,6 +154,8 @@ public final class Link implements RocsFeather.JumpTarget {
     private int pitSlipTargetTopLeftY;
     private int pitSlipPhysicsFlag;
     private boolean hasPitSlipTarget;
+    private int carryingLiftedObjectState;
+    private int carryingLiftedObjectRomDirection = 3;
     private int lastSafeSubX;
     private int lastSafeSubY;
     private boolean hasLastSafePosition;
@@ -297,6 +308,34 @@ public final class Link implements RocsFeather.JumpTarget {
         return direction;
     }
 
+    /**
+     * Applies wIsCarryingLiftedObject and the direction written by
+     * EntityLiftedHandler. The direction argument uses the ROM order:
+     * right, left, up, down.
+     */
+    public void setCarryingLiftedObjectState(int carryState, int romDirection) {
+        if ((carryState & ~0xFF) != 0) {
+            throw new IllegalArgumentException("Carry state must be an unsigned byte: "
+                + carryState);
+        }
+        if (romDirection < 0 || romDirection > 3) {
+            throw new IllegalArgumentException("ROM direction must be between 0 and 3");
+        }
+        carryingLiftedObjectState = carryState;
+        carryingLiftedObjectRomDirection = romDirection;
+        if (carryState != 0) {
+            direction = javaDirectionForRomDirection(romDirection);
+        }
+    }
+
+    public int carryingLiftedObjectState() {
+        return carryingLiftedObjectState;
+    }
+
+    public boolean isCarryingLiftedObject() {
+        return carryingLiftedObjectState != 0;
+    }
+
     public void setDirection(int newDirection) {
         if (newDirection < DIRECTION_DOWN || newDirection > DIRECTION_RIGHT) {
             throw new IllegalArgumentException("Invalid Link direction: " + newDirection);
@@ -352,7 +391,7 @@ public final class Link implements RocsFeather.JumpTarget {
 
         int mask = buildJoypadMask();
         int newDirection = JOYPAD_TO_DIRECTION[mask];
-        if (newDirection != -1 && !itemsLockFacing()) {
+        if (newDirection != -1 && !itemsLockFacing() && !isLiftTransitionBlockingMotion()) {
             direction = newDirection;
         }
         if (!airborne && groundStatus != GROUND_STATUS_PIT) {
@@ -427,6 +466,9 @@ public final class Link implements RocsFeather.JumpTarget {
     }
 
     private boolean itemsBlockMotion() {
+        if (isLiftTransitionBlockingMotion()) {
+            return true;
+        }
         if (itemRegistry == null || playerState == null) {
             return false;
         }
@@ -716,7 +758,16 @@ public final class Link implements RocsFeather.JumpTarget {
             return FALL_ANIMATION_STATE[frame];
         }
 
+        // func_002_4338 copies the intermediate ROM carry animation state
+        // directly (for example $37/$39/$3B/$3D). The final carry state is
+        // the regular two-frame lifting list below.
+        if (carryingLiftedObjectState >= 2) {
+            return carryingLiftedObjectState;
+        }
         int baseState = ANIMATION_STATE[direction][walkFrame];
+        if (carryingLiftedObjectState == 1) {
+            return LIFTING_ANIMATION_STATE[direction][walkFrame];
+        }
         int override = queryOverride(itemInSlotA());
         if (override >= 0) {
             return override;
@@ -729,6 +780,20 @@ public final class Link implements RocsFeather.JumpTarget {
             return JUMP_ANIMATION_STATE[direction][jumpAnimationFrame];
         }
         return baseState;
+    }
+
+    private boolean isLiftTransitionBlockingMotion() {
+        return carryingLiftedObjectState >= 2;
+    }
+
+    private static int javaDirectionForRomDirection(int romDirection) {
+        return switch (romDirection) {
+            case 0 -> DIRECTION_RIGHT;
+            case 1 -> DIRECTION_LEFT;
+            case 2 -> DIRECTION_UP;
+            case 3 -> DIRECTION_DOWN;
+            default -> throw new AssertionError(romDirection);
+        };
     }
 
     private EquippedItem itemInSlotA() {

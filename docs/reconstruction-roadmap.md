@@ -902,6 +902,25 @@ runtime collision callback.
   screens, unmodeled WRAM/DX fields, and exact file-menu transition effects
   remain separate source-backed increments.
 
+## Verified ROM entity lifting and generic throwing — 2026-08-06
+
+- Status `$07` now follows `EntityLiftedHandler`'s phase/countdown tables,
+  including the contiguous-ROM phase-$04 table reads, Link-relative X/Y/Z
+  offsets, side-scroll Y adjustment, and the non-boolean carry states used by
+  the source animation path.
+- Stunned grabbable rocks and the other modeled liftable families enter the
+  lifted state only through the held A/B Power Bracelet slot. Link restores the
+  source direction while carrying, selects animation states `$3E..$45` at
+  carry state `$01`, and item dispatch is gated during the carry state.
+- Generic status `$08` now selects the bank-$14 top-view/side-scroll and
+  bomb/non-bomb velocity windows, uses the ROM fixed-point accumulators and
+  gravity, and applies the negate-and-quarter wall response. The room session
+  and Main frame boundary forward input and synchronize the carry state.
+- Focused table/runtime/Link tests and the complete Java suite pass. Bomb
+  explosion/destroyable-object effects, entity-specific thrown handlers and
+  triggers, power-bracelet level/tunic fast-transition sources, and story-item
+  pickup presentation remain separate follow-up work.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

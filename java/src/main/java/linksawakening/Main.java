@@ -483,12 +483,23 @@ public class Main {
                 && !inventoryController.shouldBlockOverworldInput()
                 && !dialogBlocksGameplay;
             if (linkActive && link != null) {
-                equipmentController.dispatchButtonEdges();
-                equipmentController.tickEquippedItems(frameCounter);
+                boolean powerBraceletButtonHeld = isPowerBraceletButtonHeld();
+                if (roomSession != null) {
+                    roomSession.setEntityPowerBraceletButtonHeld(powerBraceletButtonHeld);
+                    if (powerBraceletButtonHeld
+                        && roomSession.liftedEntityState().carryState() == 0x01) {
+                        roomSession.throwLiftedEntity(link.direction());
+                    }
+                }
+                if (!link.isCarryingLiftedObject()) {
+                    equipmentController.dispatchButtonEdges();
+                    equipmentController.tickEquippedItems(frameCounter);
+                }
                 link.update();
                 if (roomSession != null && playerState != null) {
                     EntityPickupEvent pickup = roomSession.collectEntityIfNeeded(
-                        frameCounter, link.pixelX(), link.pixelY(), link.isAirborne(), true);
+                        frameCounter, link.pixelX(), link.pixelY(), link.isAirborne(), true,
+                        link.direction());
                     if (pickup != null) {
                         playerState.applyEntityPickup(pickup.type());
                     }
@@ -550,6 +561,7 @@ public class Main {
                     inputState != null && inputConfig != null
                         && (inputState.isDown(inputConfig.aKey())
                             || inputState.isDown(inputConfig.bKey())));
+                roomSession.setEntityPowerBraceletButtonHeld(isPowerBraceletButtonHeld());
                 var projectileEvents = roomSession.tickEntitiesWithProjectileEvents(
                     frameCounter,
                     link == null ? 0x08 : link.romEntityX(),
@@ -582,6 +594,7 @@ public class Main {
                         reflectedSword.resetSpinAttack();
                     }
                 }
+                synchronizeLinkLiftedPresentation();
             }
 
             // Advance the animated BG tiles (waterfalls, weather vanes, etc.).
@@ -604,6 +617,41 @@ public class Main {
 
     private static void routeDialogSounds() {
         DialogSoundRouter.routePending(dialogController, dialogSoundSink);
+    }
+
+    private static boolean isPowerBraceletButtonHeld() {
+        if (inputState == null || inputConfig == null || playerState == null) {
+            return false;
+        }
+        boolean braceletOnA = playerState.itemA() == PlayerState.INVENTORY_POWER_BRACELET
+            && inputState.isDown(inputConfig.aKey());
+        boolean braceletOnB = playerState.itemB() == PlayerState.INVENTORY_POWER_BRACELET
+            && inputState.isDown(inputConfig.bKey());
+        return braceletOnA || braceletOnB;
+    }
+
+    private static void synchronizeLinkLiftedPresentation() {
+        if (link == null || roomSession == null) {
+            return;
+        }
+        var state = roomSession.liftedEntityState();
+        if (state.active()) {
+            link.setCarryingLiftedObjectState(state.carryState(),
+                state.effectiveRomDirection());
+        } else {
+            link.setCarryingLiftedObjectState(0, romDirectionForLink(link.direction()));
+        }
+    }
+
+    private static int romDirectionForLink(int javaDirection) {
+        return switch (javaDirection) {
+            case Link.DIRECTION_RIGHT -> 0;
+            case Link.DIRECTION_LEFT -> 1;
+            case Link.DIRECTION_UP -> 2;
+            case Link.DIRECTION_DOWN -> 3;
+            default -> throw new IllegalArgumentException("Link direction out of range: "
+                + javaDirection);
+        };
     }
 
     private static void selectMusicForLoadedRoom(ActiveRoom room) {

@@ -60,6 +60,14 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_MOBLIN_SWORD = 0x14;
     private static final int ENTITY_LASER = 0x2A;
     private static final int ENTITY_LASER_BEAM = 0x2B;
+    private static final int ENTITY_BOMB = 0x02;
+    private static final int ENTITY_LIFTABLE_ROCK = 0x05;
+    private static final int ENTITY_LIFTABLE_STATUE = 0x9D;
+    private static final int ENTITY_WRECKING_BALL = 0xA8;
+    private static final int ENTITY_SIDE_VIEW_POT = 0xD6;
+    private static final int ENTITY_CUCCO = 0x6C;
+    private static final int ENTITY_HORSE_PIECE = 0x98;
+    private static final int ENTITY_PHYSICS_GRABBABLE = 0x20;
     private static final int MAP_COLOR_DUNGEON = 0xFF;
     private static final int FALLING_JINGLE_ID = 0x18;
     private static final int[] FALLING_VISUAL_Y_OFFSETS = {0, 0, 4, 0};
@@ -110,6 +118,7 @@ public final class RoomEntityRuntime {
     private final FollowingNpcMotion followingNpcMotion = new FollowingNpcMotion();
     private final BowWowMotion bowWowMotion = new BowWowMotion();
     private final ColorShellMotion colorShellMotion = new ColorShellMotion();
+    private final ThrownEntityMotion thrownEntityMotion = new ThrownEntityMotion();
     private final int[] slowTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] slowTimerInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -133,6 +142,11 @@ public final class RoomEntityRuntime {
         new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] dynamicEntitySpawnedThisFrame =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] liftedPhase = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] liftedSourceDirection = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] liftedStateInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] thrownDirection = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] thrownMotionInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final List<RoamingEnemyMotion.LaunchRequest> projectileLaunchRequests =
         new ArrayList<>();
     private final List<TransientVfxRequest> transientVfxRequests = new ArrayList<>();
@@ -140,8 +154,26 @@ public final class RoomEntityRuntime {
     private ColorShellWorld colorShellWorld = ColorShellWorld.none();
     private int pendingClearedEntityMask;
     private boolean actionButtonsHeld;
+    private boolean powerBraceletButtonHeld;
     private boolean groundInteractionSideScrolling;
     private int entityMapId = -1;
+    private int liftedEntitySlot = -1;
+    private int liftedCarryState;
+    private int liftedEffectiveDirection;
+    private int liftedLinkC13B;
+
+    /** The ROM-facing state needed by Link's carry animation and throw input. */
+    public record LiftedEntityState(int slot, int type, int phase,
+                                   int transitionCountdown, int carryState,
+                                   int sourceRomDirection, int effectiveRomDirection) {
+        static LiftedEntityState none() {
+            return new LiftedEntityState(-1, 0xFF, 0, 0, 0, 0, 0);
+        }
+
+        public boolean active() {
+            return slot >= 0;
+        }
+    }
 
     /** A ROM transient-VFX creation requested by an entity handler this frame. */
     public record TransientVfxRequest(TransientVfxType type, int worldX, int worldY) {
@@ -175,6 +207,16 @@ public final class RoomEntityRuntime {
                 } else {
                     followingNpcMotion.initialize(entity.slot(), entity.type());
                 }
+            }
+            if (entity.status() == EntityStatus.LIFTED) {
+                liftedStateInitialized[entity.slot()] = true;
+                liftedSourceDirection[entity.slot()] = LiftedEntityMotion.ROM_DIRECTION_DOWN;
+                liftedEffectiveDirection = LiftedEntityMotion.ROM_DIRECTION_DOWN;
+                enemyTransitionCountdown[entity.slot()] = 0x02;
+                liftedEntitySlot = entity.slot();
+            }
+            if (entity.status() == EntityStatus.THROWN) {
+                thrownDirection[entity.slot()] = ThrownEntityMotion.ROM_DIRECTION_DOWN;
             }
         }
     }
@@ -379,6 +421,7 @@ public final class RoomEntityRuntime {
         followingLinkZ = linkZ & 0xFF;
         followingLinkDirection = linkDirection & 0xFF;
         followingEntityYOffset = entityYOffset & 0xFF;
+        int romLinkDirection = romDirectionForJavaDirection(linkDirection);
         int frame = frameCounter & 0xFF;
         for (int index = slots.length - 1; index >= 0; index--) {
             RoomEntity entity = slots[index];
@@ -401,7 +444,16 @@ public final class RoomEntityRuntime {
             }
 
             EntityStatus status = entity.status();
-            if (status == EntityStatus.FALLING) {
+            if (status == EntityStatus.LIFTED) {
+                slots[index] = advanceLiftedEntity(entity, linkEntityX, linkEntityY, linkZ,
+                    romLinkDirection);
+                continue;
+            } else if (status == EntityStatus.THROWN) {
+                RoomEntity thrown = advanceThrownEntity(entity, backgroundCollision,
+                    groundInteractionSideScrolling, romLinkDirection);
+                slots[index] = thrown;
+                continue;
+            } else if (status == EntityStatus.FALLING) {
                 if (entityMapId == MAP_COLOR_DUNGEON
                     && ColorShellMotion.isColorShellType(entity.type())) {
                     colorShellMotion.enterState6(entity);
@@ -440,6 +492,15 @@ public final class RoomEntityRuntime {
                 }
                 continue;
             } else if (status == EntityStatus.STUNNED) {
+                if (powerBraceletButtonHeld && isLiftableEntity(entity)
+                    && (enemyPhysicsFlags[entity.slot()] & ENTITY_PHYSICS_GRABBABLE) != 0
+                    && RoomEntityPickupRules.overlapsLink(entity, linkEntityX, linkEntityY)) {
+                    if (beginLift(entity.slot(), romLinkDirection)) {
+                        slots[index] = advanceLiftedEntity(
+                            slots[index], linkEntityX, linkEntityY, linkZ, romLinkDirection);
+                    }
+                    continue;
+                }
                 if (enemyStunnedCountdown[entity.slot()] == 0) {
                     slots[index] = refreshColorShellDisplay(
                         withStatus(entity, EntityStatus.ACTIVE), EntityStatus.ACTIVE);
@@ -938,9 +999,21 @@ public final class RoomEntityRuntime {
                                              int linkPixelY,
                                              boolean linkAirborne,
                                              boolean linkInteractive) {
+        return collectIfNeeded(frameCounter, linkPixelX, linkPixelY, linkAirborne,
+            linkInteractive, 0);
+    }
+
+    /** Pickup collision with Link's Java direction available for held items. */
+    public EntityPickupEvent collectIfNeeded(int frameCounter,
+                                             int linkPixelX,
+                                             int linkPixelY,
+                                             boolean linkAirborne,
+                                             boolean linkInteractive,
+                                             int linkDirection) {
         if (linkAirborne || !linkInteractive) {
             return null;
         }
+        int romDirection = romDirectionForJavaDirection(linkDirection);
 
         for (int index = slots.length - 1; index >= 0; index--) {
             RoomEntity entity = slots[index];
@@ -953,13 +1026,138 @@ public final class RoomEntityRuntime {
 
             int persistentClearMask = persistentClearMask(entity);
             if (requiresHeldPickupTransition(entity.type())) {
-                slots[entity.slot()] = withStatus(entity, EntityStatus.LIFTED);
+                beginLift(entity.slot(), romDirection);
             } else {
                 clearEntity(entity.slot());
             }
             return new EntityPickupEvent(entity.slot(), entity.type(), persistentClearMask);
         }
         return null;
+    }
+
+    /**
+     * Starts EntityGetLiftedUp's shared state transition. Directions are the
+     * ROM order (right, left, up, down); RoomSession performs the Java-to-ROM
+     * conversion at its boundary.
+     */
+    boolean beginLift(int slot, int romDirection) {
+        validateEntitySlot(slot);
+        validateRomDirection(romDirection);
+        RoomEntity entity = slots[slot];
+        if (!entity.loaded()) {
+            return false;
+        }
+        if (liftedEntitySlot >= 0 && liftedEntitySlot != slot
+            && slots[liftedEntitySlot].status() == EntityStatus.LIFTED) {
+            return false;
+        }
+
+        liftedEntitySlot = slot;
+        liftedPhase[slot] = 0;
+        liftedSourceDirection[slot] = romDirection;
+        liftedStateInitialized[slot] = true;
+        liftedCarryState = 0;
+        liftedEffectiveDirection = romDirection;
+        enemyTransitionCountdown[slot] = 0x02;
+        slots[slot] = withStatus(entity, EntityStatus.LIFTED);
+        return true;
+    }
+
+    /** Hands the fully held entity to func_014_53A3's generic throw path. */
+    boolean throwLiftedEntity(int romDirection) {
+        validateRomDirection(romDirection);
+        LiftedEntityState state = liftedEntityState();
+        if (!state.active() || state.carryState() != 0x01) {
+            return false;
+        }
+
+        int slot = state.slot();
+        RoomEntity entity = slots[slot];
+        thrownDirection[slot] = romDirection;
+        thrownEntityMotion.start(slot, romDirection, entity.type(),
+            groundInteractionSideScrolling);
+        thrownMotionInitialized[slot] = true;
+        liftedStateInitialized[slot] = false;
+        liftedPhase[slot] = 0;
+        liftedCarryState = 0;
+        liftedEffectiveDirection = 0;
+        liftedEntitySlot = -1;
+        enemyTransitionCountdown[slot] = 0;
+        slots[slot] = withStatus(entity, EntityStatus.THROWN);
+        return true;
+    }
+
+    LiftedEntityState liftedEntityState() {
+        if (liftedEntitySlot < 0 || liftedEntitySlot >= slots.length) {
+            return LiftedEntityState.none();
+        }
+        RoomEntity entity = slots[liftedEntitySlot];
+        if (!entity.loaded() || entity.status() != EntityStatus.LIFTED) {
+            return LiftedEntityState.none();
+        }
+        return new LiftedEntityState(liftedEntitySlot, entity.type(),
+            liftedPhase[liftedEntitySlot], enemyTransitionCountdown[liftedEntitySlot],
+            liftedCarryState, liftedSourceDirection[liftedEntitySlot],
+            liftedEffectiveDirection);
+    }
+
+    private RoomEntity advanceLiftedEntity(RoomEntity entity, int linkEntityX,
+                                            int linkEntityY, int linkZ,
+                                            int romLinkDirection) {
+        int slot = entity.slot();
+        if (!liftedStateInitialized[slot]) {
+            liftedPhase[slot] = 0;
+            liftedSourceDirection[slot] = romLinkDirection;
+            liftedStateInitialized[slot] = true;
+            liftedEffectiveDirection = romLinkDirection;
+            enemyTransitionCountdown[slot] = 0x02;
+        }
+
+        LiftedEntityMotion.Update update = LiftedEntityMotion.advance(
+            liftedPhase[slot], enemyTransitionCountdown[slot],
+            liftedSourceDirection[slot], romLinkDirection,
+            byteValue(linkEntityX), byteValue(linkEntityY), byteValue(linkZ),
+            liftedLinkC13B, entity.type(), groundInteractionSideScrolling,
+            false, entity.z());
+        liftedPhase[slot] = update.phase();
+        enemyTransitionCountdown[slot] = update.transitionCountdown();
+        liftedCarryState = update.carryState();
+        liftedEffectiveDirection = update.effectiveDirection();
+        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
+            update.x(), update.y(), EntityStatus.LIFTED, entity.spriteDefinition(),
+            entity.spriteVariant(), entity.entityFlipAttribute(), entity.spriteTileOffset(),
+            update.z());
+    }
+
+    private RoomEntity advanceThrownEntity(RoomEntity entity,
+                                            RoomEntityBackgroundCollision backgroundCollision,
+                                            boolean sideScrolling,
+                                            int romLinkDirection) {
+        int slot = entity.slot();
+        if (!thrownMotionInitialized[slot]) {
+            thrownDirection[slot] = romLinkDirection;
+            thrownEntityMotion.start(slot, romLinkDirection, entity.type(), sideScrolling);
+            thrownMotionInitialized[slot] = true;
+        }
+        ThrownEntityMotion.Update update = thrownEntityMotion.advance(
+            entity, sideScrolling, backgroundCollision);
+        RoomEntity updated = update.entity();
+        if (thrownEntityMotion.speedX(slot) == 0 && thrownEntityMotion.speedY(slot) == 0) {
+            thrownEntityMotion.clear(slot);
+            thrownMotionInitialized[slot] = false;
+            enemyStunnedCountdown[slot] = 0xFF;
+            updated = withStatus(updated, EntityStatus.STUNNED);
+        }
+        return updated;
+    }
+
+    private static boolean isLiftableEntity(RoomEntity entity) {
+        return switch (entity.type()) {
+            case ENTITY_BOMB, ENTITY_LIFTABLE_ROCK, ENTITY_LIFTABLE_STATUE,
+                ENTITY_WRECKING_BALL, ENTITY_SIDE_VIEW_POT, ENTITY_ROOSTER,
+                ENTITY_CUCCO, ENTITY_HORSE_PIECE -> true;
+            default -> false;
+        };
     }
 
     /**
@@ -1193,6 +1391,11 @@ public final class RoomEntityRuntime {
         fallingSpeedXAccumulator[slot] = 0;
         fallingSpeedYAccumulator[slot] = 0;
         fallingVisualYOffset[slot] = 0;
+        liftedPhase[slot] = 0;
+        liftedSourceDirection[slot] = 0;
+        liftedStateInitialized[slot] = false;
+        thrownDirection[slot] = 0;
+        thrownMotionInitialized[slot] = false;
         baseEntityFlipAttribute[slot] = 0;
         entityOptions1Override[slot] = -1;
         enemyRecoilMotion.clear(slot);
@@ -1221,6 +1424,12 @@ public final class RoomEntityRuntime {
         hardHatMotion.clear(slot);
         followingNpcMotion.clear(slot);
         bowWowMotion.clear(slot);
+        thrownEntityMotion.clear(slot);
+        if (liftedEntitySlot == slot) {
+            liftedEntitySlot = -1;
+            liftedCarryState = 0;
+            liftedEffectiveDirection = 0;
+        }
         slots[slot] = RoomEntity.disabled(slot);
         return entity.sourceLoadOrder() >= 0 && entity.sourceLoadOrder() < 8
             ? 1 << entity.sourceLoadOrder() : 0;
@@ -1254,6 +1463,18 @@ public final class RoomEntityRuntime {
 
     void setActionButtonsHeld(boolean actionButtonsHeld) {
         this.actionButtonsHeld = actionButtonsHeld;
+    }
+
+    void setPowerBraceletButtonHeld(boolean powerBraceletButtonHeld) {
+        this.powerBraceletButtonHeld = powerBraceletButtonHeld;
+    }
+
+    void setLiftedLinkC13B(int linkC13B) {
+        if ((linkC13B & ~0xFF) != 0) {
+            throw new IllegalArgumentException("Lifted Link C13B must be an unsigned byte: "
+                + linkC13B);
+        }
+        this.liftedLinkC13B = linkC13B;
     }
 
     void setGroundInteractionSideScrolling(boolean sideScrolling) {
@@ -2170,6 +2391,9 @@ public final class RoomEntityRuntime {
         return switch (type) {
             case ENTITY_ARMOS_STATUE -> ARMOS_INITIAL_PHYSICS_FLAGS;
             case ENTITY_STALFOS_EVASIVE -> EVASIVE_PHYSICS_FLAGS;
+            case ENTITY_BOMB, ENTITY_LIFTABLE_ROCK, ENTITY_LIFTABLE_STATUE,
+                ENTITY_WRECKING_BALL, ENTITY_SIDE_VIEW_POT, ENTITY_ROOSTER,
+                ENTITY_CUCCO, ENTITY_HORSE_PIECE -> ENTITY_PHYSICS_GRABBABLE;
             default -> 0;
         };
     }
@@ -2406,6 +2630,11 @@ public final class RoomEntityRuntime {
         fallingSpeedXAccumulator[slot] = 0;
         fallingSpeedYAccumulator[slot] = 0;
         fallingVisualYOffset[slot] = 0;
+        liftedPhase[slot] = 0;
+        liftedSourceDirection[slot] = 0;
+        liftedStateInitialized[slot] = false;
+        thrownDirection[slot] = 0;
+        thrownMotionInitialized[slot] = false;
         baseEntityFlipAttribute[slot] = 0;
         entityOptions1Override[slot] = -1;
         enemyRecoilMotion.clear(slot);
@@ -2434,6 +2663,12 @@ public final class RoomEntityRuntime {
         ghiniMotion.clear(slot);
         hardHatMotion.clear(slot);
         bowWowMotion.clear(slot);
+        thrownEntityMotion.clear(slot);
+        if (liftedEntitySlot == slot) {
+            liftedEntitySlot = -1;
+            liftedCarryState = 0;
+            liftedEffectiveDirection = 0;
+        }
         slots[slot] = RoomEntity.disabled(slot);
     }
 
@@ -2520,5 +2755,31 @@ public final class RoomEntityRuntime {
     private static int signedByte(int value) {
         int unsigned = value & 0xFF;
         return unsigned < 0x80 ? unsigned : unsigned - 0x100;
+    }
+
+    private static int romDirectionForJavaDirection(int javaDirection) {
+        if (javaDirection < 0 || javaDirection > 3) {
+            throw new IllegalArgumentException("Link direction out of range: " + javaDirection);
+        }
+        return switch (javaDirection) {
+            case 0 -> LiftedEntityMotion.ROM_DIRECTION_DOWN;
+            case 1 -> LiftedEntityMotion.ROM_DIRECTION_UP;
+            case 2 -> LiftedEntityMotion.ROM_DIRECTION_LEFT;
+            case 3 -> LiftedEntityMotion.ROM_DIRECTION_RIGHT;
+            default -> throw new AssertionError(javaDirection);
+        };
+    }
+
+    private static void validateEntitySlot(int slot) {
+        if (slot < 0 || slot >= EntityRoomLoader.MAX_ENTITIES) {
+            throw new IllegalArgumentException("Entity slot out of range: " + slot);
+        }
+    }
+
+    private static void validateRomDirection(int direction) {
+        if (direction < LiftedEntityMotion.ROM_DIRECTION_RIGHT
+            || direction > LiftedEntityMotion.ROM_DIRECTION_DOWN) {
+            throw new IllegalArgumentException("ROM direction must be between 0 and 3");
+        }
     }
 }

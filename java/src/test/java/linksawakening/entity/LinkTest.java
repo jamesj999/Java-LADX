@@ -229,6 +229,36 @@ final class LinkTest {
     }
 
     @Test
+    void fullyHeldObjectsUseTheRomLiftingAnimationListByDirection() throws Exception {
+        Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
+            null, null, null, new PlayerState(), new ItemRegistry());
+
+        link.setCarryingLiftedObjectState(1, 0);
+        assertEquals(0x3E, resolvedAnimationState(link));
+        link.setCarryingLiftedObjectState(1, 1);
+        assertEquals(0x40, resolvedAnimationState(link));
+        link.setCarryingLiftedObjectState(1, 2);
+        assertEquals(0x42, resolvedAnimationState(link));
+        link.setCarryingLiftedObjectState(1, 3);
+        assertEquals(0x44, resolvedAnimationState(link));
+    }
+
+    @Test
+    void intermediateLiftStatesAreRomAnimationStatesAndBlockMotion() throws Exception {
+        InputState inputState = new InputState();
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        Link link = new Link(inputState, inputConfig, null, null, null,
+            new PlayerState(), new ItemRegistry());
+
+        link.setCarryingLiftedObjectState(0x37, 3);
+        inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
+        link.update();
+
+        assertEquals(0x37, resolvedAnimationState(link));
+        assertEquals(Link.DIRECTION_DOWN, link.direction());
+    }
+
+    @Test
     void exposesShieldUseOnlyForTheEquippedSlotWhoseButtonIsHeld() {
         InputState inputState = new InputState();
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);

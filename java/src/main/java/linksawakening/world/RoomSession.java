@@ -64,6 +64,7 @@ public final class RoomSession {
     private int followingLinkDirection;
     private boolean followingNpcRoomNeedsSync;
     private boolean actionButtonsHeld;
+    private boolean powerBraceletButtonHeld;
     private int currentLinkMotionState = EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE;
     private GameplaySoundSink colorShellSoundSink = GameplaySoundSink.none();
     private final ColorShellWorld colorShellWorld = new ColorShellWorld() {
@@ -294,6 +295,33 @@ public final class RoomSession {
         }
     }
 
+    /** Supplies the held A/B state used by EntityGetLiftedUp. */
+    public void setEntityPowerBraceletButtonHeld(boolean buttonHeld) {
+        this.powerBraceletButtonHeld = buttonHeld;
+        if (entityRuntime != null) {
+            entityRuntime.setPowerBraceletButtonHeld(buttonHeld);
+        }
+    }
+
+    public RoomEntityRuntime.LiftedEntityState liftedEntityState() {
+        return entityRuntime == null
+            ? RoomEntityRuntime.LiftedEntityState.none()
+            : entityRuntime.liftedEntityState();
+    }
+
+    /** Throws the currently held object using Link's Java direction order. */
+    public boolean throwLiftedEntity(int linkDirection) {
+        if (entityRuntime == null) {
+            return false;
+        }
+        boolean thrown = entityRuntime.throwLiftedEntity(
+            romDirectionForProjectileCollision(linkDirection));
+        if (thrown) {
+            activeRoom.replaceEntities(entityRuntime.snapshot());
+        }
+        return thrown;
+    }
+
     public void setColorShellSoundSink(GameplaySoundSink soundSink) {
         colorShellSoundSink = soundSink == null ? GameplaySoundSink.none() : soundSink;
     }
@@ -384,6 +412,8 @@ public final class RoomSession {
             return List.of();
         }
         entityRuntime.setActionButtonsHeld(actionButtonsHeld);
+        entityRuntime.setPowerBraceletButtonHeld(powerBraceletButtonHeld);
+        entityRuntime.setLiftedLinkC13B(followingEntityYOffset);
         // rLY is not a meaningful value in the host renderer. Keep the
         // non-emulator policy explicit while preserving the ROM seed update.
         entityRandomByteSource.beginFrame(frameCounter & 0xFF, 0);
@@ -492,11 +522,21 @@ public final class RoomSession {
                                                    int linkPixelY,
                                                    boolean linkAirborne,
                                                    boolean linkInteractive) {
+        return collectEntityIfNeeded(frameCounter, linkPixelX, linkPixelY, linkAirborne,
+            linkInteractive, followingLinkDirection);
+    }
+
+    public EntityPickupEvent collectEntityIfNeeded(int frameCounter,
+                                                   int linkPixelX,
+                                                   int linkPixelY,
+                                                   boolean linkAirborne,
+                                                   boolean linkInteractive,
+                                                   int linkDirection) {
         if (activeRoom == null || entityRuntime == null) {
             return null;
         }
         EntityPickupEvent event = entityRuntime.collectIfNeeded(
-            frameCounter, linkPixelX, linkPixelY, linkAirborne, linkInteractive);
+            frameCounter, linkPixelX, linkPixelY, linkAirborne, linkInteractive, linkDirection);
         if (event == null) {
             return null;
         }
@@ -543,6 +583,8 @@ public final class RoomSession {
             entityRuntime.setGroundInteractionSideScrolling(
                 activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL);
             entityRuntime.setActionButtonsHeld(actionButtonsHeld);
+            entityRuntime.setPowerBraceletButtonHeld(powerBraceletButtonHeld);
+            entityRuntime.setLiftedLinkC13B(followingEntityYOffset);
         }
         followingNpcRoomNeedsSync = true;
         synchronizeFollowingNpcEntitiesIfNeeded();
@@ -579,6 +621,8 @@ public final class RoomSession {
         entityRuntime.setGroundInteractionSideScrolling(
             activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL);
         entityRuntime.setActionButtonsHeld(actionButtonsHeld);
+        entityRuntime.setPowerBraceletButtonHeld(powerBraceletButtonHeld);
+        entityRuntime.setLiftedLinkC13B(followingEntityYOffset);
     }
 
     private void clearTransientRoomState() {
