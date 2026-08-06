@@ -412,6 +412,36 @@ final class RoomSessionTest {
     }
 
     @Test
+    void liveEntityCollisionProbeUsesRomSwitchBlockStateAndObjectKind() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x00, 0x0F);
+        RoomEntity entity = session.activeRoom().entities().loadedEntities().stream()
+            .filter(candidate -> candidate.type() == 0x1E)
+            .findFirst()
+            .orElseThrow();
+
+        fillActiveObjects(session, 0xDB);
+        session.setEntitySwitchBlocksStateForTest(0x00);
+        EntityBackgroundCollisionResult lower = session.entityBackgroundCollisionResultForTest(
+            entity, EntityBackgroundCollisionResult.RIGHT, entity.x(), entity.y());
+        assertFalse(lower.blocked());
+        assertEquals(0xDB, lower.objectId());
+        assertEquals(0x04, lower.physicsFlag());
+
+        fillActiveObjects(session, 0xDC);
+        EntityBackgroundCollisionResult raisedStateZero =
+            session.entityBackgroundCollisionResultForTest(
+                entity, EntityBackgroundCollisionResult.RIGHT, entity.x(), entity.y());
+        assertTrue(raisedStateZero.blocked());
+
+        session.setEntitySwitchBlocksStateForTest(0x02);
+        EntityBackgroundCollisionResult raisedStateTwo =
+            session.entityBackgroundCollisionResultForTest(
+                entity, EntityBackgroundCollisionResult.RIGHT, entity.x(), entity.y());
+        assertFalse(raisedStateTwo.blocked());
+    }
+
+    @Test
     void ordinaryEntityEntersRomFallingStateOnPitPhysics() {
         RoomSession session = newSession();
         session.loadIndoor(0x00, 0x0F);
