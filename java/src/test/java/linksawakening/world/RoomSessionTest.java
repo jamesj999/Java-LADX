@@ -368,6 +368,50 @@ final class RoomSessionTest {
     }
 
     @Test
+    void liveEntityCollisionProbeUsesRomLedgeTimerCadenceForIndoorAndOverworldRooms() {
+        RoomSession indoor = newSession();
+        indoor.loadIndoor(0x00, 0x0F);
+        RoomEntity indoorEntity = indoor.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x1E)
+            .findFirst()
+            .orElseThrow();
+        fillActiveObjects(indoor, 0x23); // Indoors1 object $23 has physics $D0.
+        indoor.setEntityThrownDirectionForTest(indoorEntity.slot(), 0x01);
+        indoor.setEntityLedgeTimerForTest(indoorEntity.slot(), 0x02);
+
+        EntityBackgroundCollisionResult indoorResult =
+            indoor.entityBackgroundCollisionResultForTest(
+                indoorEntity, EntityBackgroundCollisionResult.RIGHT,
+                indoorEntity.x(), indoorEntity.y(), 0x01);
+        assertFalse(indoorResult.blocked());
+        assertEquals(0x01, indoor.entityLedgeTimerForTest(indoorEntity.slot()));
+
+        RoomSession outdoor = newSession();
+        outdoor.loadInitialOverworld(0x2F);
+        RoomEntity outdoorEntity = outdoor.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x09)
+            .findFirst()
+            .orElseThrow();
+        fillActiveObjects(outdoor, 0xF3); // Overworld object $F3 has physics $D0.
+        outdoor.setEntityThrownDirectionForTest(outdoorEntity.slot(), 0x01);
+        outdoor.setEntityLedgeTimerForTest(outdoorEntity.slot(), 0x02);
+
+        EntityBackgroundCollisionResult evenFrame =
+            outdoor.entityBackgroundCollisionResultForTest(
+                outdoorEntity, EntityBackgroundCollisionResult.RIGHT,
+                outdoorEntity.x(), outdoorEntity.y(), 0x02);
+        assertFalse(evenFrame.blocked());
+        assertEquals(0x02, outdoor.entityLedgeTimerForTest(outdoorEntity.slot()));
+
+        EntityBackgroundCollisionResult oddFrame =
+            outdoor.entityBackgroundCollisionResultForTest(
+                outdoorEntity, EntityBackgroundCollisionResult.RIGHT,
+                outdoorEntity.x(), outdoorEntity.y(), 0x03);
+        assertFalse(oddFrame.blocked());
+        assertEquals(0x01, outdoor.entityLedgeTimerForTest(outdoorEntity.slot()));
+    }
+
+    @Test
     void ordinaryEntityEntersRomFallingStateOnPitPhysics() {
         RoomSession session = newSession();
         session.loadIndoor(0x00, 0x0F);

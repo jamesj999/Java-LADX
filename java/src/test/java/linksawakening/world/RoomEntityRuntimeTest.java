@@ -228,6 +228,25 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void ledgeCollisionStateUsesRomResetBytesAndClearsWithTheEntity() {
+        RoomEntity initial = new RoomEntity(0, 0, 0x09, 0x40, 0x40,
+            EntityStatus.ACTIVE, pairDefinition(0x09, 2), 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(initial));
+
+        assertEquals(0xFF, runtime.thrownDirection(0));
+        assertEquals(0x00, runtime.ledgeTransitionTimer(0));
+
+        runtime.setThrownDirectionForTest(0, 0x02);
+        runtime.setLedgeTransitionTimerForTest(0, 0x07);
+        assertEquals(0x02, runtime.thrownDirection(0));
+        assertEquals(0x07, runtime.ledgeTransitionTimer(0));
+
+        runtime.clearEntity(0);
+        assertEquals(0xFF, runtime.thrownDirection(0));
+        assertEquals(0x00, runtime.ledgeTransitionTimer(0));
+    }
+
+    @Test
     void groundResultQueuesSplashAndUnloadsTheSlotInSourceOrder() {
         EntitySpriteDefinition definition = pairDefinition(0x4D, 1);
         RoomEntitySnapshot initial = snapshot(
