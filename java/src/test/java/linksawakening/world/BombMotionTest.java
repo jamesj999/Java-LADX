@@ -20,8 +20,10 @@ final class BombMotionTest {
     }
 
     @Test
-    void warningPairOccupiesTheLastEightFuseCounts() {
+    void warningPairCoversCountdowns0x18Through0x21Inclusive() {
         assertDecision(BombMotion.decide(0x21), BombMotion.Phase.WARNING,
+            OptionalInt.empty(), false, OptionalInt.empty(), false);
+        assertDecision(BombMotion.decide(0x1C), BombMotion.Phase.WARNING,
             OptionalInt.empty(), false, OptionalInt.empty(), false);
         assertDecision(BombMotion.decide(0x18), BombMotion.Phase.WARNING,
             OptionalInt.empty(), true, OptionalInt.of(0x17), false);
