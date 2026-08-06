@@ -460,6 +460,30 @@ final class RoomSessionTest {
     }
 
     @Test
+    void shippedCrystalRoomCarriesAHitIntoTheRoomOwnedSwitchStage() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x00, 0x22);
+        RoomEntity crystal = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x66)
+            .findFirst()
+            .orElseThrow();
+        session.tickEntities(0, 0, 0);
+
+        List<EntityCombatEvent> hit = session.resolveEntityCombat(
+            1, 0, 0, false, false, true,
+            crystal.x() + 0x08, 1, crystal.y() + 0x08, 1);
+
+        assertEquals(1, hit.size());
+        assertEquals(0x66, hit.get(0).type());
+        session.tickEntities(1, 0, 0);
+
+        assertEquals(0x01, session.switchableObjectAnimationStageForTest());
+        assertEquals(List.of(new EntityCombatEvent(crystal.slot(), 0x66, 0, false,
+            EntityCombatEvent.SoundChannel.WAVE, 0x0E)),
+            session.consumeEntityEvents());
+    }
+
+    @Test
     void ordinaryEntityEntersRomFallingStateOnPitPhysics() {
         RoomSession session = newSession();
         session.loadIndoor(0x00, 0x0F);
