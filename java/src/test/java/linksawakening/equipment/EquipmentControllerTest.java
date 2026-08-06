@@ -52,10 +52,28 @@ final class EquipmentControllerTest {
         assertEquals(1, bombs.heldTicks);
     }
 
+    @Test
+    void forwardsTheGlobalFrameCounterToEquippedItems() {
+        InputState input = new InputState();
+        InputConfig inputConfig = new InputConfig(GLFW_KEY_ENTER, GLFW_KEY_UP, GLFW_KEY_DOWN,
+            GLFW_KEY_LEFT, GLFW_KEY_RIGHT, GLFW_KEY_A, GLFW_KEY_B);
+        PlayerState player = new PlayerState();
+        player.setItemA(PlayerState.INVENTORY_SWORD);
+        ItemRegistry registry = new ItemRegistry();
+        RecordingItem sword = new RecordingItem();
+        registry.register(PlayerState.INVENTORY_SWORD, sword);
+        EquipmentController controller = new EquipmentController(input, inputConfig, player, registry);
+
+        controller.tickEquippedItems(0xA5);
+
+        assertEquals(0xA5, sword.frameCounter);
+    }
+
     private static final class RecordingItem implements EquippedItem {
         private int presses;
         private int releases;
         private int heldTicks;
+        private int frameCounter = -1;
 
         @Override
         public void onPress() {
@@ -72,6 +90,12 @@ final class EquipmentControllerTest {
             if (buttonHeld) {
                 heldTicks++;
             }
+        }
+
+        @Override
+        public void tick(boolean buttonHeld, int frameCounter) {
+            this.frameCounter = frameCounter;
+            tick(buttonHeld);
         }
     }
 }

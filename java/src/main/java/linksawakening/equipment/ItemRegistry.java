@@ -24,13 +24,28 @@ public final class ItemRegistry {
 
     /** Advance every registered item's state machine once. Called once per frame. */
     public void tickAll(boolean aHeld, boolean bHeld, int itemAId, int itemBId) {
+        tickAll(aHeld, bHeld, itemAId, itemBId, null);
+    }
+
+    /** Advance every registered item while exposing the global ROM frame. */
+    public void tickAll(boolean aHeld, boolean bHeld, int itemAId, int itemBId,
+                        int frameCounter) {
+        tickAll(aHeld, bHeld, itemAId, itemBId, Integer.valueOf(frameCounter));
+    }
+
+    private void tickAll(boolean aHeld, boolean bHeld, int itemAId, int itemBId,
+                         Integer frameCounter) {
         for (int id = 0; id < byInventoryId.length; id++) {
             EquippedItem item = byInventoryId[id];
             if (item == null) {
                 continue;
             }
             boolean held = (id == itemAId && aHeld) || (id == itemBId && bHeld);
-            item.tick(held);
+            if (frameCounter == null) {
+                item.tick(held);
+            } else {
+                item.tick(held, frameCounter);
+            }
         }
     }
 }

@@ -25,9 +25,21 @@ public final class EquipmentController {
     }
 
     public void tickEquippedItems() {
+        tickEquippedItems(null);
+    }
+
+    public void tickEquippedItems(int frameCounter) {
+        tickEquippedItems(Integer.valueOf(frameCounter));
+    }
+
+    private void tickEquippedItems(Integer frameCounter) {
         boolean aHeld = inputState.isDown(inputConfig.aKey());
         boolean bHeld = inputState.isDown(inputConfig.bKey());
-        itemRegistry.tickAll(aHeld, bHeld, playerState.itemA(), playerState.itemB());
+        if (frameCounter == null) {
+            itemRegistry.tickAll(aHeld, bHeld, playerState.itemA(), playerState.itemB());
+        } else {
+            itemRegistry.tickAll(aHeld, bHeld, playerState.itemA(), playerState.itemB(), frameCounter);
+        }
     }
 
     public Sword activeSword() {

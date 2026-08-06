@@ -19,8 +19,10 @@ the authoritative selection:
 
 Color index zero remains transparent in the host renderer, just as it is for
 the existing sword draw path. Tile selection, OAM coordinates, flips,
-animation timing, and alpha behavior are outside this slice and must not
-change.
+animation state transitions, and alpha behavior are outside this slice and
+must not change. The charged palette phase itself must remain tied to the
+global `hFrameCounter` sampled by the disassembly, rather than to a
+sword-local holding counter.
 
 ## Design
 
@@ -32,9 +34,11 @@ explicit compatibility palette so unit fixtures remain usable without
 silently changing the live ROM-driven path.
 
 `Main` constructs the ROM palette beside the ROM-backed sword sprite sheet and
-passes it to `Sword`. `Sword.render` chooses the charged row only when its
-existing `chargedFlashActive()` state is true; otherwise it chooses the normal
-row. The old approximate arrays are removed from the live implementation.
+passes it to `Sword`. The equipment controller forwards the live global frame
+counter to equipped items, and `Sword` uses bit 2 of that counter when its
+existing max-charge condition is true. `Sword.render` chooses the charged row
+only on that source phase; otherwise it chooses the normal row. The old
+approximate arrays are removed from the live implementation.
 
 ## Verification
 
@@ -44,9 +48,10 @@ Tests will verify:
    them to normal/charged sword colors without exposing mutable storage;
 2. the shipped-ROM sword render uses the decoded normal row at visible blade
    pixels;
-3. the charged render uses row 4 while preserving the same tile geometry and
-   transparency mask;
-4. the complete Gradle Java suite still passes.
+3. the charged render uses row 4 on global frame phase 4 and the normal row on
+   phase 0 while preserving the same tile geometry and transparency mask;
+4. the equipment controller forwards the global frame counter;
+5. the complete Gradle Java suite still passes.
 
 ## Non-goals
 

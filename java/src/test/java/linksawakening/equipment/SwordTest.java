@@ -278,12 +278,11 @@ final class SwordTest {
             sword.tick(true);
         }
 
+        sword.tick(true, 0);
         byte[] normalBuffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
         sword.render(normalBuffer, 40, 48, Link.DIRECTION_RIGHT, 0, 0);
 
-        for (int i = 0; i < 4; i++) {
-            sword.tick(true);
-        }
+        sword.tick(true, 4);
         byte[] chargedBuffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
         sword.render(chargedBuffer, 40, 48, Link.DIRECTION_RIGHT, 0, 0);
 

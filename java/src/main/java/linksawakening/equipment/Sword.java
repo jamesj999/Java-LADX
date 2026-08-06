@@ -85,7 +85,7 @@ public final class Sword implements EquippedItem {
     private int state = STATE_NONE;
     private int timer;
     private int charge;
-    private int holdingFrames; // frames spent in HOLDING (drives charge + flash phase)
+    private int frameCounter;
     private int spinFramesRemaining;
     private int spinFrameCounter;
     private int spinSector;
@@ -147,7 +147,6 @@ public final class Sword implements EquippedItem {
         state = STATE_DRAW;
         timer = DRAW_FRAMES;
         charge = 0;
-        holdingFrames = 0;
         soundSink.play(swordSwingSound(randomByteSupplier.getAsInt()));
     }
 
@@ -163,12 +162,17 @@ public final class Sword implements EquippedItem {
                 state = STATE_NONE;
             }
             charge = 0;
-            holdingFrames = 0;
         }
     }
 
     @Override
     public void tick(boolean buttonHeld) {
+        tick(buttonHeld, (frameCounter + 1) & 0xFF);
+    }
+
+    @Override
+    public void tick(boolean buttonHeld, int frameCounter) {
+        this.frameCounter = frameCounter & 0xFF;
         if (spinAttackQueued) {
             if (queuedSpinDelayFrames > 0) {
                 queuedSpinDelayFrames--;
@@ -216,7 +220,6 @@ public final class Sword implements EquippedItem {
                 }
                 return;
             case STATE_HOLDING:
-                holdingFrames++;
                 if (charge < MAX_CHARGE) {
                     charge++;
                     if (charge == MAX_CHARGE) {
@@ -315,7 +318,6 @@ public final class Sword implements EquippedItem {
         spinAttackQueued = false;
         queuedSpinDelayFrames = 0;
         charge = 0;
-        holdingFrames = 0;
         spinFramesRemaining = 0;
         spinFrameCounter = 0;
         spinSector = 0;
@@ -351,11 +353,10 @@ public final class Sword implements EquippedItem {
             romTables.swordCollisionHeight(romDirection, state));
     }
 
-    // Flash is driven by bit 2 of a per-frame counter during HOLDING at max
-    // charge (bank0.asm:17BF computes `(hFrameCounter << 2) & $10` which
-    // flips every 4 frames). We piggyback on holdingFrames for the phase.
+    // Flash is driven by bit 2 of the global frame counter during HOLDING at
+    // max charge (bank0.asm:17BF computes `(hFrameCounter << 2) & $10`).
     private boolean chargedFlashActive() {
-        return state == STATE_HOLDING && charge >= MAX_CHARGE && (holdingFrames & 0x04) != 0;
+        return state == STATE_HOLDING && charge >= MAX_CHARGE && (frameCounter & 0x04) != 0;
     }
 
     private int effectiveLinkAnimationState() {

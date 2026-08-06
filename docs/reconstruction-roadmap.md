@@ -817,10 +817,13 @@ runtime collision callback.
 - The live `Main` startup path supplies that ROM-backed palette to `Sword`.
   Existing no-ROM constructors retain an explicit fixture-only compatibility
   palette; they do not affect the live path.
-- A shipped-ROM framebuffer test verifies that normal and charged colors change
-  while the sword's alpha mask and tile geometry remain identical. The broader
-  GBC palette upload/VRAM state machine, Color Dungeon transitions, and other
-  equipped-item palette effects remain separate work.
+- The equipment controller forwards the global frame counter and `Sword` uses
+  its bit 2 (`$04`) phase for the charged palette, matching the source
+  `hFrameCounter` branch. A shipped-ROM framebuffer test verifies that normal
+  and charged colors change while the sword's alpha mask and tile geometry
+  remain identical. The broader GBC palette upload/VRAM state machine, Color
+  Dungeon transitions, and other equipped-item palette effects remain separate
+  work.
 
 ## Broader parity gaps
 

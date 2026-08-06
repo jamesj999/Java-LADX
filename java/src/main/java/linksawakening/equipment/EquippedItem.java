@@ -27,6 +27,15 @@ public interface EquippedItem {
      */
     default void tick(boolean buttonHeld) {}
 
+    /**
+     * Per-frame update with the global ROM frame counter. Items that need
+     * hardware-phase timing may override this overload; legacy items continue
+     * through {@link #tick(boolean)}.
+     */
+    default void tick(boolean buttonHeld, int frameCounter) {
+        tick(buttonHeld);
+    }
+
     /** True while this item prevents Link from walking. */
     default boolean blocksMotion() {
         return false;

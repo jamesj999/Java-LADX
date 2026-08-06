@@ -439,7 +439,7 @@ public class Main {
                 && !dialogBlocksGameplay;
             if (linkActive && link != null) {
                 equipmentController.dispatchButtonEdges();
-                equipmentController.tickEquippedItems();
+                equipmentController.tickEquippedItems(frameCounter);
                 link.update();
                 if (roomSession != null && playerState != null) {
                     EntityPickupEvent pickup = roomSession.collectEntityIfNeeded(
