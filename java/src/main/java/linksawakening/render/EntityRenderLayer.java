@@ -2,6 +2,7 @@ package linksawakening.render;
 
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.gpu.EntitySpriteTileSnapshot;
+import linksawakening.world.HookshotChainOam;
 import linksawakening.world.RoomEntity;
 import linksawakening.world.RoomEntitySnapshot;
 import linksawakening.world.ScrollController;
@@ -113,6 +114,26 @@ public final class EntityRenderLayer implements RenderLayer {
                         palettes, tiles, offset.x(), offset.y(), entities.sideScrolling());
                 }
             }
+        }
+        renderHookshotChainOam(context, entities, palettes, offset.x(), offset.y());
+    }
+
+    private void renderHookshotChainOam(RenderContext context, RoomEntitySnapshot entities,
+                                        int[][] palettes, int offsetX, int offsetY) {
+        for (HookshotChainOam.Entry entry : entities.hookshotChainOam()) {
+            if (!entry.visible()) {
+                continue;
+            }
+            int attributes = entry.attributes();
+            int paletteIndex = attributes & OAM_PALETTE_MASK;
+            if ((attributes & OAM_PALETTE_FLIP) != 0) {
+                paletteIndex = 4;
+            }
+            int[] palette = palettes[Math.min(paletteIndex, palettes.length - 1)];
+            IndexedRenderer.drawSpriteTile8x16(context.buffer(), context.gpu(),
+                entry.tileIndex(), entry.rawX() + offsetX - OAM_X_SCREEN_ORIGIN,
+                entry.rawY() + offsetY - OAM_Y_SCREEN_ORIGIN,
+                (attributes & OAM_XFLIP) != 0, (attributes & OAM_YFLIP) != 0, palette);
         }
     }
 

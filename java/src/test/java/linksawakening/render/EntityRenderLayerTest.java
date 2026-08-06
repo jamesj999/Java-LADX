@@ -7,6 +7,7 @@ import linksawakening.gpu.GPU;
 import linksawakening.gpu.EntitySpriteTileSnapshot;
 import linksawakening.world.EntityStatus;
 import linksawakening.world.EntityRoomLoader;
+import linksawakening.world.HookshotChainOam;
 import linksawakening.world.RoomEntity;
 import linksawakening.world.RoomEntitySnapshot;
 import linksawakening.world.RoomRenderSnapshot;
@@ -19,6 +20,26 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class EntityRenderLayerTest {
+
+    @Test
+    void rendersVisibleHookshotChainOamFromTheLiveLinkTileLoad() {
+        GPU gpu = new GPU();
+        int chainTopColor = 0x123456;
+        int chainBottomColor = 0x654321;
+        int[][] palettes = {{0, chainTopColor, chainBottomColor, 0}};
+        writeSolidTile(gpu, 0x24, 1);
+        writeSolidTile(gpu, 0x25, 2);
+
+        RoomEntitySnapshot snapshot = snapshot().withHookshotChainOam(
+            HookshotChainOam.entries(0x40, 0x40, 0x40, 0x40, 0));
+        byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
+
+        new EntityRenderLayer(snapshot, palettes, new ScrollController())
+            .render(new RenderContext(buffer, gpu));
+
+        assertEquals(chainTopColor, pixelColor(buffer, 0x3C, 0x30));
+        assertEquals(chainBottomColor, pixelColor(buffer, 0x3C, 0x38));
+    }
 
     @Test
     void rendersPairAndSingleObjectsWithPaletteSelectionAndTransparentPixels() {

@@ -1107,8 +1107,8 @@ runtime collision callback.
 - The complete Java test suite covers the launch contract, slot exhaustion,
   fixed-point outbound movement, return boundary, hitbox predicate, runtime
   cleanup, and sprite bytes. Hookshotable-object interaction, `$01` pulling,
-  Link's forced return movement, bridge spawning, and the three dynamic chain
-  link OAM entries remain explicit follow-up work.
+  and Link's forced return movement remain separate runtime follow-up work;
+  bridge spawning and the dynamic chain OAM are recorded below.
 
 ## Verified ROM hookshot background interaction and pull — 2026-08-06
 
@@ -1129,7 +1129,29 @@ runtime collision callback.
   active handler frame and routed through the ROM sound-effect catalog.
 - Focused motion, resolver, runtime, gameplay-audio, Main-boundary, and live
   RoomSession probe tests cover the increment. Bridge entity `$68` spawning
-  and the three dynamic chain-link OAM entries remain separate follow-up work.
+  and the three dynamic chain-link OAM entries are recorded below.
+
+## Verified ROM hookshot chain and indoor bridge rendering — 2026-08-06
+
+- `RenderHookshotChain` now emits three source-shaped dynamic OAM entries with
+  wrapped signed quarter-deltas, raw X offset `$04`, tile `$24`, zero
+  attributes, and the ROM's alternating visibility cadence. The renderer
+  resolves tile `$24` from the live Link-character GPU load and preserves room
+  scroll offsets.
+- Indoor hookshot movement samples the exact padded room-object cell after a
+  successful outbound step. Negative Y speed selects object `$9E` and bridge
+  direction 0; positive Y speed selects `$9F` and bridge direction 1, matching
+  the source's deliberately opposite pull-direction naming.
+- Bridge entity `$68` uses the source `$30/$D0` fixed-point vertical motion,
+  pre-move object-cell tile targeting, object `$9D` replacement, no-physics
+  clear condition, and direction/status-dependent two-column tile patterns.
+- `RoomSession` applies the bridge request to the padded object buffer, lets
+  the ROM-backed `$9D` tilemap rebuild provide IDs/attributes, and reapplies
+  the source `$81` tile-column writes with bounds guards. Room changes clear
+  bridge override state.
+- Focused OAM, bridge-motion, runtime, render, and real-ROM RoomSession tests
+  pass, as does the complete Java suite. A generic OAM-buffer emulator and
+  broader hookshot return/pulling behavior remain intentionally separate.
 
 ## Broader parity gaps
 

@@ -80,6 +80,8 @@ public final class RoomSession {
 
     private ActiveRoom activeRoom;
     private RoomEntityRuntime entityRuntime;
+    private final Map<Integer, RoomEntityRuntime.HookshotBridgeUpdate>
+        hookshotBridgeTileOverrides = new HashMap<>();
     private final int[] clearedEntitiesByRoom = new int[0x100];
     private int currentOverworldTilesetId = W_TILESET_NO_UPDATE;
     private FollowingNpcState followingNpcState = FollowingNpcState.none();
@@ -568,6 +570,7 @@ public final class RoomSession {
         if (clearedMask != 0) {
             clearedEntitiesByRoom[activeRoom.roomId()] |= clearedMask;
         }
+        applyHookshotBridgeUpdates(entityRuntime.hookshotBridgeUpdates());
         activeRoom.replaceEntities(entityRuntime.snapshot());
         return events;
     }
@@ -748,6 +751,7 @@ public final class RoomSession {
             entityRuntime.setEntityMapId(activeRoom.mapId());
             entityRuntime.setGroundInteraction(this::entityGroundInteraction);
             entityRuntime.setBackgroundInteraction(entityBackgroundInteraction);
+            entityRuntime.setObjectQuery(this::entityObjectSample);
             entityRuntime.setGroundInteractionSideScrolling(
                 activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL);
             entityRuntime.setActionButtonsHeld(actionButtonsHeld);
@@ -798,6 +802,7 @@ public final class RoomSession {
         entityRuntime.setEntityMapId(activeRoom.mapId());
         entityRuntime.setGroundInteraction(this::entityGroundInteraction);
         entityRuntime.setBackgroundInteraction(entityBackgroundInteraction);
+        entityRuntime.setObjectQuery(this::entityObjectSample);
         entityRuntime.setGroundInteractionSideScrolling(
             activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL);
         entityRuntime.setActionButtonsHeld(actionButtonsHeld);
@@ -836,6 +841,7 @@ public final class RoomSession {
         if (droppableRupeeSystem != null) {
             droppableRupeeSystem.clear();
         }
+        hookshotBridgeTileOverrides.clear();
     }
 
     private int colorShellObjectAt(RoomEntity entity, int relativeOffset) {
@@ -866,6 +872,72 @@ public final class RoomSession {
             : roomTilemapBuilder.buildIndoor(activeRoom.mapId(), activeRoom.roomId(),
                 activeRoom.roomObjectsArea());
         activeRoom.replaceTilemap(tilemap.tileIds(), tilemap.tileAttrs());
+        applyHookshotBridgeTileOverrides();
+    }
+
+    private RoomEntityObjectSample entityObjectSample(RoomEntity entity) {
+        OverworldCollision.GroundInteractionSample sample =
+            overworldCollision.groundInteractionSample(entity.x(), entity.y());
+        return new RoomEntityObjectSample(sample.objectId(), sample.physicsFlag(),
+            sample.objectLeft(), sample.objectTop());
+    }
+
+    private void applyHookshotBridgeUpdates(
+            List<RoomEntityRuntime.HookshotBridgeUpdate> updates) {
+        if (activeRoom == null || updates == null || updates.isEmpty()) {
+            return;
+        }
+        int[] objects = activeRoom.roomObjectsArea();
+        boolean changed = false;
+        for (RoomEntityRuntime.HookshotBridgeUpdate update : updates) {
+            int areaIndex = hookshotObjectAreaIndex(update.objectLeft(), update.objectTop());
+            if (areaIndex < 0 || areaIndex >= objects.length) {
+                continue;
+            }
+            RoomEntityRuntime.HookshotBridgeUpdate previous =
+                hookshotBridgeTileOverrides.put(areaIndex, update);
+            if (objects[areaIndex] != 0x9D || !update.equals(previous)) {
+                objects[areaIndex] = 0x9D;
+                changed = true;
+            }
+        }
+        if (changed) {
+            refreshActiveRoomTilemap();
+        }
+    }
+
+    private void applyHookshotBridgeTileOverrides() {
+        if (activeRoom == null || hookshotBridgeTileOverrides.isEmpty()) {
+            return;
+        }
+        int[] tileIds = activeRoom.tileIds();
+        for (RoomEntityRuntime.HookshotBridgeUpdate update
+            : hookshotBridgeTileOverrides.values()) {
+            int tileX = (update.objectLeft() & 0xFF) >>> 3;
+            int tileY = (update.objectTop() & 0xFF) >>> 3;
+            if (tileX < 0 || tileX + 1 >= RoomConstants.ROOM_TILE_WIDTH
+                || tileY < 0 || tileY + 1 >= RoomConstants.ROOM_TILE_HEIGHT) {
+                continue;
+            }
+            int topLeft = tileY * RoomConstants.ROOM_TILE_WIDTH + tileX;
+            int bottomLeft = topLeft + RoomConstants.ROOM_TILE_WIDTH;
+            if (update.direction() == HookshotBridgeMotion.PULL_DOWN_DIRECTION) {
+                tileIds[topLeft] = 0x04;
+                tileIds[topLeft + 1] = 0x05;
+                tileIds[bottomLeft] = update.active() ? 0x08 : 0x04;
+                tileIds[bottomLeft + 1] = update.active() ? 0x09 : 0x05;
+            } else {
+                tileIds[topLeft] = update.active() ? 0x0A : 0x04;
+                tileIds[topLeft + 1] = update.active() ? 0x0B : 0x05;
+                tileIds[bottomLeft] = 0x04;
+                tileIds[bottomLeft + 1] = 0x05;
+            }
+        }
+    }
+
+    private static int hookshotObjectAreaIndex(int objectLeft, int objectTop) {
+        return RoomConstants.ROOM_OBJECTS_BASE + (objectTop & 0xF0)
+            + ((objectLeft & 0xF0) >>> 4);
     }
 
     private static int colorShellObjectIndex(RoomEntity entity) {

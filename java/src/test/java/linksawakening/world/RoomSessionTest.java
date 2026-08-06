@@ -104,6 +104,47 @@ final class RoomSessionTest {
     }
 
     @Test
+    void indoorHookshotBridgeRewritesPaddedObjectsAndBackgroundTiles() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x00, 0x0F);
+        fillActiveObjects(session, 0x9E);
+
+        assertTrue(session.fireHookshot(0x40, 0x40, 0, 2, false, false));
+        session.tickEntities(0, 0x40, 0x40, 0, 2);
+
+        int objectIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x30 + (0x30 >>> 4);
+        assertEquals(0x9D, session.activeRoom().roomObjectsArea()[objectIndex]);
+        RoomEntity bridge = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == HookshotBridgeMotion.ENTITY_TYPE)
+            .findFirst().orElseThrow();
+        assertEquals(0x40, bridge.y());
+
+        int tileIndex = (0x30 >>> 3) * RoomConstants.ROOM_TILE_WIDTH + (0x30 >>> 3);
+        int[] tileIds = session.activeRoom().tileIds();
+        assertEquals(0x04, tileIds[tileIndex]);
+        assertEquals(0x05, tileIds[tileIndex + 1]);
+        assertEquals(0x08, tileIds[tileIndex + RoomConstants.ROOM_TILE_WIDTH]);
+        assertEquals(0x09, tileIds[tileIndex + RoomConstants.ROOM_TILE_WIDTH + 1]);
+
+        session.tickEntities(1, 0x40, 0x40, 0, 2);
+        RoomEntity movedBridge = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == HookshotBridgeMotion.ENTITY_TYPE)
+            .findFirst().orElseThrow();
+        assertEquals(0x43, movedBridge.y());
+
+        session.activeRoom().roomObjectsArea()[objectIndex] = 0x00;
+        session.tickEntities(2, 0x40, 0x40, 0, 2);
+        assertFalse(session.activeRoom().entities().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == HookshotBridgeMotion.ENTITY_TYPE));
+        assertEquals(0x9D, session.activeRoom().roomObjectsArea()[objectIndex]);
+        tileIds = session.activeRoom().tileIds();
+        assertEquals(0x04, tileIds[tileIndex]);
+        assertEquals(0x05, tileIds[tileIndex + 1]);
+        assertEquals(0x04, tileIds[tileIndex + RoomConstants.ROOM_TILE_WIDTH]);
+        assertEquals(0x05, tileIds[tileIndex + RoomConstants.ROOM_TILE_WIDTH + 1]);
+    }
+
+    @Test
     void liveRoomEntityProbePreservesHookshotablePhysicsForTheChain() {
         RoomSession session = newSession();
         session.loadInitialOverworld(0x92);

@@ -65,6 +65,10 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_LASER_BEAM = 0x2B;
     private static final int ENTITY_BOMB = 0x02;
     private static final int ENTITY_HOOKSHOT_CHAIN = HookshotChainMotion.ENTITY_TYPE;
+    private static final int ENTITY_HOOKSHOT_BRIDGE = HookshotBridgeMotion.ENTITY_TYPE;
+    private static final int OBJECT_HOOKSHOT_BRIDGE_PULL_DOWN = 0x9E;
+    private static final int OBJECT_HOOKSHOT_BRIDGE_PULL_UP = 0x9F;
+    private static final int OBJECT_HOOKSHOT_BRIDGE_REPLACEMENT = 0x9D;
     private static final int ENTITY_LIFTABLE_ROCK = 0x05;
     private static final int ENTITY_LIFTABLE_STATUE = 0x9D;
     private static final int ENTITY_WRECKING_BALL = 0xA8;
@@ -99,6 +103,7 @@ public final class RoomEntityRuntime {
     private final RoamingEnemyMotion roamingEnemyMotion = new RoamingEnemyMotion();
     private final EnemyProjectileMotion enemyProjectileMotion = new EnemyProjectileMotion();
     private final HookshotChainMotion hookshotChainMotion = new HookshotChainMotion();
+    private final HookshotBridgeMotion hookshotBridgeMotion = new HookshotBridgeMotion();
     private final LaserMotion laserMotion = new LaserMotion();
     private final TektiteMotion tektiteMotion = new TektiteMotion();
     private final LeeverMotion leeverMotion = new LeeverMotion();
@@ -153,6 +158,7 @@ public final class RoomEntityRuntime {
         new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] dynamicEntitySpawnedThisFrame =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private List<HookshotChainOam.Entry> hookshotChainOam = List.of();
     private final int[] liftedPhase = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] liftedSourceDirection = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] liftedStateInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
@@ -163,6 +169,7 @@ public final class RoomEntityRuntime {
         new ArrayList<>();
     private final List<TransientVfxRequest> transientVfxRequests = new ArrayList<>();
     private final List<EntityCombatEvent> pendingEntityEvents = new ArrayList<>();
+    private final List<HookshotBridgeUpdate> hookshotBridgeUpdates = new ArrayList<>();
     private boolean switchBlockAnimationActive;
     private boolean pendingSwitchBlockAnimationRequest;
     private ColorShellWorld colorShellWorld = ColorShellWorld.none();
@@ -184,6 +191,7 @@ public final class RoomEntityRuntime {
     private int liftedCarryState;
     private int liftedEffectiveDirection;
     private int liftedLinkC13B;
+    private RoomEntityObjectQuery objectQuery;
 
     /** The ROM-facing state needed by Link's carry animation and throw input. */
     public record LiftedEntityState(int slot, int type, int phase,
@@ -202,6 +210,23 @@ public final class RoomEntityRuntime {
     public record TransientVfxRequest(TransientVfxType type, int worldX, int worldY) {
     }
 
+    /** A ROM bridge handler request to replace one padded object cell and draw its columns. */
+    public record HookshotBridgeUpdate(int objectLeft, int objectTop, int direction,
+                                       boolean active) {
+        public HookshotBridgeUpdate(int objectLeft, int objectTop, int direction) {
+            this(objectLeft, objectTop, direction, true);
+        }
+
+        public HookshotBridgeUpdate {
+            objectLeft &= 0xF0;
+            objectTop &= 0xF0;
+            if (direction < HookshotBridgeMotion.PULL_DOWN_DIRECTION
+                || direction > HookshotBridgeMotion.PULL_UP_DIRECTION) {
+                throw new IllegalArgumentException("Bridge direction must be 0 or 1: " + direction);
+            }
+        }
+    }
+
     private RoomEntityRuntime(RoomEntitySnapshot initial, boolean indoorRoom,
                                IntSupplier defaultRandomByteSupplier,
                                EntitySpriteHandlerCatalog spriteHandlers,
@@ -216,6 +241,7 @@ public final class RoomEntityRuntime {
             ? new RomRandomByteSource() : null;
         this.spriteHandlers = spriteHandlers;
         this.enemyCombatTables = enemyCombatTables;
+        this.hookshotChainOam = initial.hookshotChainOam();
         Arrays.fill(entityOptions1Override, -1);
         Arrays.fill(droppedItemBySlot, 0);
         Arrays.fill(thrownDirection, 0xFF);
@@ -449,6 +475,7 @@ public final class RoomEntityRuntime {
         Arrays.fill(dynamicEntitySpawnedThisFrame, false);
         transientVfxRequests.clear();
         pendingEntityEvents.clear();
+        hookshotBridgeUpdates.clear();
         pendingSwitchBlockAnimationRequest = false;
         List<EntityProjectileEvent> projectileEvents = new ArrayList<>();
         if (linkPositionHistory != null) {
@@ -481,6 +508,10 @@ public final class RoomEntityRuntime {
             EntityStatus status = entity.status();
             if (status == EntityStatus.ACTIVE) {
                 decrementEnemyDropCountdowns(entity);
+            }
+            if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_HOOKSHOT_BRIDGE) {
+                advanceHookshotBridgeEntity(index, entity);
+                continue;
             }
             if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_HOOKSHOT_CHAIN) {
                 HookshotChainMotion.State hookshotState = hookshotChainMotion.state(entity.slot());
@@ -560,6 +591,27 @@ public final class RoomEntityRuntime {
                     }
                     slots[index] = entity;
                     continue;
+                }
+
+                if (indoorRoom && step.state().transitionCountdown() != 0
+                    && hookshotState.speedY() != 0 && objectQuery != null) {
+                    RoomEntity movedChain = withPositionAndVariant(entity,
+                        step.state().x(), step.state().y(), entity.spriteVariant());
+                    RoomEntityObjectSample object = objectQuery.sample(movedChain);
+                    if (object != null) {
+                        int bridgeObject = (hookshotState.speedY() & 0x80) != 0
+                            ? OBJECT_HOOKSHOT_BRIDGE_PULL_DOWN
+                            : OBJECT_HOOKSHOT_BRIDGE_PULL_UP;
+                        if (object.objectId() == bridgeObject
+                            && spawnHookshotBridge(object.objectLeft() + 0x08,
+                                object.objectTop() + 0x10,
+                                bridgeObject == OBJECT_HOOKSHOT_BRIDGE_PULL_DOWN ? 0 : 1,
+                                step.state().transitionCountdown())) {
+                            hookshotBridgeUpdates.add(new HookshotBridgeUpdate(
+                                object.objectLeft(), object.objectTop(),
+                                bridgeObject == OBJECT_HOOKSHOT_BRIDGE_PULL_DOWN ? 0 : 1));
+                        }
+                    }
                 }
 
                 hookshotChainMotion.setState(entity.slot(), step.state());
@@ -1150,6 +1202,7 @@ public final class RoomEntityRuntime {
                     updated.spriteTileOffset(), updated.z());
             }
         }
+        updateHookshotChainOam(linkEntityX, linkEntityY, frame);
         return List.copyOf(projectileEvents);
     }
 
@@ -1571,6 +1624,29 @@ public final class RoomEntityRuntime {
             : enemyCombatTables.contactDamage(type);
     }
 
+    private void advanceHookshotBridgeEntity(int index, RoomEntity entity) {
+        HookshotBridgeMotion.State bridgeState = hookshotBridgeMotion.state(entity.slot());
+        if (bridgeState == null) {
+            clearEntity(entity.slot());
+            return;
+        }
+
+        HookshotBridgeMotion.ObjectCell cell = HookshotBridgeMotion.objectCell(bridgeState);
+        HookshotBridgeMotion.Step step = hookshotBridgeMotion.advance(entity.slot());
+        RoomEntity moved = withPositionAndVariant(entity, step.state().x(), step.state().y(),
+            entity.spriteVariant());
+        RoomEntityObjectSample object = objectQuery == null ? null : objectQuery.sample(moved);
+        boolean clear = object != null && object.objectId() != OBJECT_HOOKSHOT_BRIDGE_REPLACEMENT
+            && object.physicsFlag() == 0;
+        hookshotBridgeUpdates.add(new HookshotBridgeUpdate(
+            cell.objectLeft(), cell.objectTop(), bridgeState.direction(), !clear));
+        if (clear) {
+            clearEntity(entity.slot());
+        } else {
+            slots[index] = moved;
+        }
+    }
+
     /** Unloads a slot and returns the persistent first-eight load-order bit. */
     public int clearEntity(int slot) {
         if (slot < 0 || slot >= slots.length) {
@@ -1606,6 +1682,10 @@ public final class RoomEntityRuntime {
         ledgeTransitionTimer[slot] = 0;
         thrownMotionInitialized[slot] = false;
         hookshotChainMotion.clear(slot);
+        hookshotBridgeMotion.clear(slot);
+        if (entity.type() == ENTITY_HOOKSHOT_CHAIN) {
+            hookshotChainOam = List.of();
+        }
         baseEntityFlipAttribute[slot] = 0;
         entityOptions1Override[slot] = -1;
         enemyRecoilMotion.clear(slot);
@@ -1677,6 +1757,36 @@ public final class RoomEntityRuntime {
         return freeSlot;
     }
 
+    private boolean spawnHookshotBridge(int bridgeX, int bridgeY, int direction,
+                                        int transitionCountdown) {
+        if (!indoorRoom) {
+            return false;
+        }
+        int freeSlot = findFreeEntitySlot();
+        if (freeSlot < 0) {
+            return false;
+        }
+        EntitySpriteDefinition definition = spriteDefinitionFor(ENTITY_HOOKSHOT_BRIDGE);
+        int variant = definition.supported() ? definition.initialVariant() : -1;
+        RoomEntity bridge = new RoomEntity(freeSlot, -1, ENTITY_HOOKSHOT_BRIDGE,
+            bridgeX & 0xFF, bridgeY & 0xFF, EntityStatus.ACTIVE,
+            definition, variant, 0, 0, 0);
+        slots[freeSlot] = bridge;
+        hookshotBridgeMotion.initializeSpawn(freeSlot, bridge.x(), bridge.y(), direction);
+        enemyPhysicsFlags[freeSlot] = ENTITY_PHYSICS_HARMLESS
+            | ENTITY_PHYSICS_PROJECTILE_NOCLIP;
+        enemyHealth[freeSlot] = 0;
+        enemyTransitionCountdown[freeSlot] = transitionCountdown & 0xFF;
+        enemyStunnedCountdown[freeSlot] = 0;
+        enemyFlashCountdown[freeSlot] = 0;
+        enemyIgnoreHitsCountdown[freeSlot] = 0;
+        baseEntityFlipAttribute[freeSlot] = 0;
+        entityOptions1Override[freeSlot] = ENTITY_OPT1_NO_GROUND_INTERACTION
+            | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
+        dynamicEntitySpawnedThisFrame[freeSlot] = true;
+        return true;
+    }
+
     boolean hookshotActive() {
         return hookshotSlot() >= 0;
     }
@@ -1706,7 +1816,18 @@ public final class RoomEntityRuntime {
 
     public RoomEntitySnapshot snapshot() {
         return new RoomEntitySnapshot(Arrays.asList(slots), spriteSelection, spriteTiles,
-            groundInteractionSideScrolling);
+            groundInteractionSideScrolling, hookshotChainOam);
+    }
+
+    private void updateHookshotChainOam(int linkEntityX, int linkEntityY, int frameCounter) {
+        int slot = hookshotSlot();
+        if (slot < 0 || !slots[slot].loaded()) {
+            hookshotChainOam = List.of();
+            return;
+        }
+        RoomEntity chain = slots[slot];
+        hookshotChainOam = HookshotChainOam.entries(
+            chain.x(), chain.y(), linkEntityX, linkEntityY, frameCounter);
     }
 
     void setSpriteSelection(EntitySpriteSelection selection) {
@@ -1722,6 +1843,10 @@ public final class RoomEntityRuntime {
 
     void setBackgroundInteraction(RoomEntityBackgroundInteraction backgroundInteraction) {
         this.backgroundInteraction = backgroundInteraction;
+    }
+
+    void setObjectQuery(RoomEntityObjectQuery objectQuery) {
+        this.objectQuery = objectQuery;
     }
 
     int groundStatus(int slot) {
@@ -1824,6 +1949,10 @@ public final class RoomEntityRuntime {
         List<EntityCombatEvent> pending = List.copyOf(pendingEntityEvents);
         pendingEntityEvents.clear();
         return pending;
+    }
+
+    List<HookshotBridgeUpdate> hookshotBridgeUpdates() {
+        return List.copyOf(hookshotBridgeUpdates);
     }
 
     private static boolean isFollowingNpcType(int type) {

@@ -14,6 +14,7 @@ public final class RoomEntitySnapshot {
     private final EntitySpriteSelection spriteSelection;
     private final EntitySpriteTileSnapshot spriteTiles;
     private final boolean sideScrolling;
+    private final List<HookshotChainOam.Entry> hookshotChainOam;
 
     public RoomEntitySnapshot(List<RoomEntity> slots) {
         this(slots, null, null);
@@ -30,14 +31,24 @@ public final class RoomEntitySnapshot {
 
     public RoomEntitySnapshot(List<RoomEntity> slots, EntitySpriteSelection spriteSelection,
                               EntitySpriteTileSnapshot spriteTiles, boolean sideScrolling) {
+        this(slots, spriteSelection, spriteTiles, sideScrolling, List.of());
+    }
+
+    public RoomEntitySnapshot(List<RoomEntity> slots, EntitySpriteSelection spriteSelection,
+                              EntitySpriteTileSnapshot spriteTiles, boolean sideScrolling,
+                              List<HookshotChainOam.Entry> hookshotChainOam) {
         if (slots == null || slots.size() != EntityRoomLoader.MAX_ENTITIES) {
             throw new IllegalArgumentException("A room must expose exactly "
                 + EntityRoomLoader.MAX_ENTITIES + " entity slots");
+        }
+        if (hookshotChainOam == null) {
+            throw new IllegalArgumentException("Hookshot chain OAM cannot be null");
         }
         this.slots = List.copyOf(slots);
         this.spriteSelection = spriteSelection;
         this.spriteTiles = spriteTiles;
         this.sideScrolling = sideScrolling;
+        this.hookshotChainOam = List.copyOf(hookshotChainOam);
         List<RoomEntity> loaded = new ArrayList<>();
         for (RoomEntity entity : this.slots) {
             if (entity.loaded()) {
@@ -48,11 +59,13 @@ public final class RoomEntitySnapshot {
     }
 
     public RoomEntitySnapshot withSpriteSelection(EntitySpriteSelection selection) {
-        return new RoomEntitySnapshot(slots, selection, spriteTiles, sideScrolling);
+        return new RoomEntitySnapshot(slots, selection, spriteTiles, sideScrolling,
+            hookshotChainOam);
     }
 
     public RoomEntitySnapshot withSpriteTiles(EntitySpriteTileSnapshot tiles) {
-        return new RoomEntitySnapshot(slots, spriteSelection, tiles, sideScrolling);
+        return new RoomEntitySnapshot(slots, spriteSelection, tiles, sideScrolling,
+            hookshotChainOam);
     }
 
     /** Returns whether the room uses the side-scroll OAM path. */
@@ -61,7 +74,8 @@ public final class RoomEntitySnapshot {
     }
 
     public RoomEntitySnapshot withSideScrolling(boolean sideScrolling) {
-        return new RoomEntitySnapshot(slots, spriteSelection, spriteTiles, sideScrolling);
+        return new RoomEntitySnapshot(slots, spriteSelection, spriteTiles, sideScrolling,
+            hookshotChainOam);
     }
 
     public List<RoomEntity> slots() {
@@ -78,5 +92,15 @@ public final class RoomEntitySnapshot {
 
     public EntitySpriteTileSnapshot spriteTiles() {
         return spriteTiles;
+    }
+
+    public List<HookshotChainOam.Entry> hookshotChainOam() {
+        return hookshotChainOam;
+    }
+
+    public RoomEntitySnapshot withHookshotChainOam(
+        List<HookshotChainOam.Entry> hookshotChainOam) {
+        return new RoomEntitySnapshot(slots, spriteSelection, spriteTiles, sideScrolling,
+            hookshotChainOam);
     }
 }
