@@ -121,6 +121,11 @@ public final class RoomEntityRuntime {
     private final ThrownEntityMotion thrownEntityMotion = new ThrownEntityMotion();
     private final int[] slowTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] slowTimerInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] droppedItemBySlot = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] dropPrivateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] dropPrivateCountdown3 = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] dropSpeedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] dropSpeedZ = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyStunnedCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] dyingCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -154,6 +159,15 @@ public final class RoomEntityRuntime {
     private final List<EntityCombatEvent> pendingEntityEvents = new ArrayList<>();
     private ColorShellWorld colorShellWorld = ColorShellWorld.none();
     private int pendingClearedEntityMask;
+    private EnemyDropResolver enemyDropResolver;
+    private EnemyDropResolver.CounterState enemyDropCounters =
+        new EnemyDropResolver.CounterState(0, 0);
+    private int enemyDropMaxHearts = 3;
+    private int enemyDropHealth = 6;
+    private boolean enemyDropActivePowerUp;
+    private boolean enemyDropBossBattle;
+    private int killCount;
+    private final int[] killOrder = new int[0x100];
     private boolean actionButtonsHeld;
     private boolean powerBraceletButtonHeld;
     private boolean groundInteractionSideScrolling;
@@ -195,6 +209,7 @@ public final class RoomEntityRuntime {
         this.spriteHandlers = spriteHandlers;
         this.enemyCombatTables = enemyCombatTables;
         Arrays.fill(entityOptions1Override, -1);
+        Arrays.fill(droppedItemBySlot, 0);
         for (RoomEntity entity : slots) {
             baseEntityFlipAttribute[entity.slot()] = entity.entityFlipAttribute();
             enemyHealth[entity.slot()] = entity.loaded() ? initialHealth(entity.type()) : 0;
@@ -449,6 +464,9 @@ public final class RoomEntityRuntime {
             }
 
             EntityStatus status = entity.status();
+            if (status == EntityStatus.ACTIVE) {
+                decrementEnemyDropCountdowns(entity);
+            }
             if (status == EntityStatus.LIFTED) {
                 slots[index] = advanceLiftedEntity(entity, linkEntityX, linkEntityY, linkZ,
                     romLinkDirection);
@@ -484,7 +502,7 @@ public final class RoomEntityRuntime {
                 continue;
             } else if (status == EntityStatus.DYING) {
                 if (dyingCountdown[entity.slot()] == 0) {
-                    disableEntityWithoutPersistence(entity.slot());
+                    handleTerminalEnemyDeath(entity, randomByteSupplier);
                 } else {
                     RoomEntity updated = refreshColorShellDisplay(entity, status);
                     slots[index] = withDeathPresentation(updated,
@@ -1407,6 +1425,7 @@ public final class RoomEntityRuntime {
         if (slot < 0 || slot >= slots.length) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
+        resetEnemyDropState(slot);
         RoomEntity entity = slots[slot];
         if (!entity.loaded()) {
             return 0;
@@ -1518,6 +1537,28 @@ public final class RoomEntityRuntime {
 
     void setGroundInteractionSideScrolling(boolean sideScrolling) {
         groundInteractionSideScrolling = sideScrolling;
+    }
+
+    void setEnemyDropResolver(EnemyDropResolver resolver) {
+        enemyDropResolver = resolver;
+    }
+
+    void setEnemyDropPlayerState(int maxHearts, int health, boolean activePowerUp) {
+        validateEnemyDropByte(maxHearts, "Maximum hearts");
+        validateEnemyDropByte(health, "Health");
+        enemyDropMaxHearts = maxHearts;
+        enemyDropHealth = health;
+        enemyDropActivePowerUp = activePowerUp;
+    }
+
+    void setEnemyDropBossBattle(boolean bossBattle) {
+        enemyDropBossBattle = bossBattle;
+    }
+
+    void setDroppedItemForTest(int slot, int itemType) {
+        validateEntitySlot(slot);
+        validateEnemyDropByte(itemType, "Dropped item");
+        droppedItemBySlot[slot] = itemType;
     }
 
     void setEntityMapId(int mapId) {
@@ -1643,6 +1684,69 @@ public final class RoomEntityRuntime {
             zolGelMotion.prepareSpawnedGel(freeSlot);
         }
         return gel;
+    }
+
+    private void handleTerminalEnemyDeath(RoomEntity entity, IntSupplier randomByteSupplier) {
+        if (enemyDropResolver == null || entity.sourceLoadOrder() < 0) {
+            disableEntityWithoutPersistence(entity.slot());
+            return;
+        }
+
+        EnemyDropResolver.Context context = new EnemyDropResolver.Context(
+            entity.type(), enemyDropHealthGroup(entity.type()), droppedItemBySlot[entity.slot()],
+            enemyDropMaxHearts, enemyDropHealth, enemyDropBossBattle,
+            enemyDropActivePowerUp, groundInteractionSideScrolling, enemyDropCounters,
+            randomByteSupplier);
+        EnemyDropResolver.Result result = enemyDropResolver.resolve(context);
+        enemyDropCounters = result.counters();
+
+        int killIndex = killCount & 0xFF;
+        killOrder[killIndex] = entity.sourceLoadOrder() & 0xFF;
+        killCount = (killCount + 1) & 0xFF;
+        pendingClearedEntityMask |= persistentClearMask(entity);
+        if (result.dropped()) {
+            spawnEnemyDrop(entity, result.itemType());
+        }
+        disableEntityWithoutPersistence(entity.slot());
+    }
+
+    private int enemyDropHealthGroup(int entityType) {
+        return enemyCombatTables == null
+            ? RoomEntityCombatRules.initialHealth(entityType)
+            : enemyCombatTables.healthGroup(entityType);
+    }
+
+    private void spawnEnemyDrop(RoomEntity source, int itemType) {
+        int freeSlot = findFreeEntitySlot();
+        if (freeSlot < 0) {
+            return;
+        }
+
+        EntitySpriteDefinition definition = spriteDefinitionFor(itemType);
+        int variant = definition.supported() ? definition.initialVariant() : -1;
+        RoomEntity drop = new RoomEntity(freeSlot, -1, itemType, source.x(), source.y(),
+            EntityStatus.ACTIVE, definition, variant, 0, 0, source.z());
+        slots[freeSlot] = drop;
+        resetEnemyDropState(freeSlot);
+        slowTransitionCountdown[freeSlot] = 0x80;
+        slowTimerInitialized[freeSlot] = true;
+        enemyTransitionCountdown[freeSlot] = 0;
+        enemyStunnedCountdown[freeSlot] = 0;
+        dyingCountdown[freeSlot] = 0;
+        powerRecoilDeath[freeSlot] = false;
+        enemyPhysicsFlags[freeSlot] = initialPhysicsFlags(itemType);
+        enemyHealth[freeSlot] = initialHealth(itemType);
+        enemyFlashCountdown[freeSlot] = 0;
+        enemyIgnoreHitsCountdown[freeSlot] = 1;
+        entityGroundStatus[freeSlot] = 0;
+        baseEntityFlipAttribute[freeSlot] = 0;
+        entityOptions1Override[freeSlot] = -1;
+        enemyRecoilMotion.clear(freeSlot);
+        dropPrivateCountdown1[freeSlot] = 0x18;
+        dropPrivateCountdown3[freeSlot] = 0x03;
+        dropSpeedY[freeSlot] = groundInteractionSideScrolling ? 0xEC : 0;
+        dropSpeedZ[freeSlot] = groundInteractionSideScrolling ? 0 : 0x18;
+        dynamicEntitySpawnedThisFrame[freeSlot] = true;
     }
 
     private int findFreeEntitySlot() {
@@ -1864,6 +1968,46 @@ public final class RoomEntityRuntime {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
         return slowTransitionCountdown[slot];
+    }
+
+    int droppedItemForTest(int slot) {
+        validateEntitySlot(slot);
+        return droppedItemBySlot[slot];
+    }
+
+    int killCount() {
+        return killCount;
+    }
+
+    int killOrderAt(int index) {
+        if (index < 0 || index >= killOrder.length) {
+            throw new IllegalArgumentException("Kill-order index out of range: " + index);
+        }
+        return killOrder[index];
+    }
+
+    EnemyDropResolver.CounterState enemyDropCounters() {
+        return enemyDropCounters;
+    }
+
+    int dropPrivateCountdown1(int slot) {
+        validateEntitySlot(slot);
+        return dropPrivateCountdown1[slot];
+    }
+
+    int dropPrivateCountdown3(int slot) {
+        validateEntitySlot(slot);
+        return dropPrivateCountdown3[slot];
+    }
+
+    int dropSpeedY(int slot) {
+        validateEntitySlot(slot);
+        return dropSpeedY[slot];
+    }
+
+    int dropSpeedZ(int slot) {
+        validateEntitySlot(slot);
+        return dropSpeedZ[slot];
     }
 
     int keeseState(int slot) {
@@ -2444,6 +2588,24 @@ public final class RoomEntityRuntime {
         }
     }
 
+    private void resetEnemyDropState(int slot) {
+        droppedItemBySlot[slot] = 0;
+        dropPrivateCountdown1[slot] = 0;
+        dropPrivateCountdown3[slot] = 0;
+        dropSpeedY[slot] = 0;
+        dropSpeedZ[slot] = 0;
+    }
+
+    private void decrementEnemyDropCountdowns(RoomEntity entity) {
+        int slot = entity.slot();
+        if (dropPrivateCountdown1[slot] > 0) {
+            dropPrivateCountdown1[slot]--;
+        }
+        if (dropPrivateCountdown3[slot] > 0) {
+            dropPrivateCountdown3[slot]--;
+        }
+    }
+
     private static int initialPhysicsFlags(int type) {
         return switch (type) {
             case ENTITY_ARMOS_STATUE -> ARMOS_INITIAL_PHYSICS_FLAGS;
@@ -2713,6 +2875,7 @@ public final class RoomEntityRuntime {
     }
 
     private void disableEntityWithoutPersistence(int slot) {
+        resetEnemyDropState(slot);
         slowTransitionCountdown[slot] = 0;
         slowTimerInitialized[slot] = false;
         enemyTransitionCountdown[slot] = 0;
@@ -2874,6 +3037,12 @@ public final class RoomEntityRuntime {
     private static void validateEntitySlot(int slot) {
         if (slot < 0 || slot >= EntityRoomLoader.MAX_ENTITIES) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
+        }
+    }
+
+    private static void validateEnemyDropByte(int value, String label) {
+        if (value < 0 || value > 0xFF) {
+            throw new IllegalArgumentException(label + " must be an unsigned byte: " + value);
         }
     }
 

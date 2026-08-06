@@ -3534,6 +3534,180 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void terminalStaticDeathRecordsKillAndDynamicDeathDoesNot() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EnemyDropResolver resolver = new EnemyDropResolver(rom);
+
+        RoomEntityRuntime staticRuntime = RoomEntityRuntime.from(snapshotAt(
+            dyingEntity(0, 0, 0x09, catalog)), false, () -> 0, catalog, tables);
+        staticRuntime.setEnemyDropResolver(resolver);
+        staticRuntime.setDroppedItemForTest(0, EnemyDropResolver.ENTITY_NONE);
+        staticRuntime.tick(0, 0, 0, () -> 0);
+
+        assertEquals(EntityStatus.DISABLED, staticRuntime.snapshot().slots().get(0).status());
+        assertEquals(1, staticRuntime.killCount());
+        assertEquals(0, staticRuntime.killOrderAt(0));
+        assertEquals(1, staticRuntime.consumePendingClearedEntityMask());
+
+        RoomEntityRuntime dynamicRuntime = RoomEntityRuntime.from(snapshotAt(
+            dyingEntity(0, -1, 0x09, catalog)), false, () -> 0, catalog, tables);
+        dynamicRuntime.setEnemyDropResolver(resolver);
+        dynamicRuntime.setDroppedItemForTest(0, EnemyDropResolver.ENTITY_NONE);
+        dynamicRuntime.tick(0, 0, 0, () -> 0);
+
+        assertEquals(EntityStatus.DISABLED, dynamicRuntime.snapshot().slots().get(0).status());
+        assertEquals(0, dynamicRuntime.killCount());
+        assertEquals(new EnemyDropResolver.CounterState(0, 0),
+            dynamicRuntime.enemyDropCounters());
+        assertEquals(0, dynamicRuntime.consumePendingClearedEntityMask());
+    }
+
+    @Test
+    void explicitAndRandomNoDropDeathsUnloadWithExpectedCounterAndRandomBehavior()
+            throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            dyingEntity(0, 0, 0x09, catalog),
+            dyingEntity(1, 1, 0x0B, catalog)), false, () -> 0, catalog, tables);
+        runtime.setEnemyDropResolver(new EnemyDropResolver(rom));
+        runtime.setDroppedItemForTest(0, EnemyDropResolver.ENTITY_NONE);
+        runtime.setDroppedItemForTest(1, 0);
+        AtomicInteger randomReads = new AtomicInteger();
+
+        runtime.tick(0, 0, 0, () -> {
+            randomReads.incrementAndGet();
+            return 0x01;
+        });
+
+        assertFalse(runtime.snapshot().slots().get(0).loaded());
+        assertFalse(runtime.snapshot().slots().get(1).loaded());
+        assertEquals(2, runtime.killCount());
+        assertEquals(1, runtime.killOrderAt(0));
+        assertEquals(0, runtime.killOrderAt(1));
+        assertEquals(new EnemyDropResolver.CounterState(1, 1),
+            runtime.enemyDropCounters());
+        assertEquals(1, randomReads.get());
+        assertEquals(0b11, runtime.consumePendingClearedEntityMask());
+    }
+
+    @Test
+    void terminalEnemyDeathSpawnsTopDownDropInReverseFreeSlotAndPreservesItUntilNextTick()
+            throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        int sourceX = 0x44;
+        int sourceY = 0x58;
+        int sourceZ = 0x07;
+        RoomEntity source = new RoomEntity(15, 0, 0x09, sourceX, sourceY,
+            EntityStatus.DYING, catalog.forEntityType(
+                0x09, EntityRoomLoader.RoomTable.OVERWORLD, -1), 0, 0, 0, sourceZ);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotAt(source), false,
+            () -> 0, catalog, tables);
+        runtime.setEnemyDropResolver(new EnemyDropResolver(rom));
+        runtime.setDroppedItemForTest(15, 0x2E);
+
+        runtime.tick(0, 0, 0, () -> 0);
+
+        RoomEntity drop = runtime.snapshot().slots().get(14);
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(15).status());
+        assertEquals(EntityStatus.ACTIVE, drop.status());
+        assertEquals(-1, drop.sourceLoadOrder());
+        assertEquals(0x2E, drop.type());
+        assertEquals(sourceX, drop.x());
+        assertEquals(sourceY, drop.y());
+        assertEquals(sourceZ, drop.z());
+        assertTrue(drop.spriteDefinition().supported());
+        assertEquals(drop.spriteDefinition().initialVariant(), drop.spriteVariant());
+        assertEquals(0x80, runtime.slowTransitionCountdown(14));
+        assertEquals(0x18, runtime.dropPrivateCountdown1(14));
+        assertEquals(0x03, runtime.dropPrivateCountdown3(14));
+        assertEquals(0x18, runtime.dropSpeedZ(14));
+        assertEquals(0x00, runtime.dropSpeedY(14));
+        assertEquals(0, runtime.droppedItemForTest(15));
+
+        runtime.tick(1, 0, 0, () -> 0);
+
+        assertEquals(0x17, runtime.dropPrivateCountdown1(14));
+        assertEquals(0x02, runtime.dropPrivateCountdown3(14));
+        EntityPickupEvent pickup = runtime.collectIfNeeded(1, sourceX, sourceY + 2,
+            false, true);
+        assertNotNull(pickup);
+        assertEquals(14, pickup.slot());
+        assertEquals(0x2E, pickup.type());
+        assertEquals(0, pickup.persistentClearMask());
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(14).status());
+        assertEquals(0, runtime.dropPrivateCountdown1(14));
+        assertEquals(0, runtime.dropPrivateCountdown3(14));
+        assertEquals(0, runtime.dropSpeedZ(14));
+        assertEquals(0, runtime.dropSpeedY(14));
+    }
+
+    @Test
+    void terminalEnemyDeathSpawnsSideScrollHeartWithRomDropConfiguration()
+            throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RoomEntity source = new RoomEntity(15, 0, 0x0B, 0x50, 0x60,
+            EntityStatus.DYING, catalog.forEntityType(
+                0x0B, EntityRoomLoader.RoomTable.OVERWORLD, -1), 0, 0, 0, 0x09);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotAt(source).withSideScrolling(true),
+            false, () -> 0, catalog, tables);
+        runtime.setEnemyDropResolver(new EnemyDropResolver(rom));
+        runtime.setDroppedItemForTest(15, 0x2D);
+
+        runtime.tick(0, 0, 0, () -> 0);
+
+        RoomEntity drop = runtime.snapshot().slots().get(14);
+        assertEquals(EntityStatus.ACTIVE, drop.status());
+        assertEquals(-1, drop.sourceLoadOrder());
+        assertEquals(0x2D, drop.type());
+        assertEquals(0x50, drop.x());
+        assertEquals(0x60, drop.y());
+        assertEquals(0x09, drop.z());
+        assertTrue(drop.spriteDefinition().supported());
+        assertEquals(drop.spriteDefinition().initialVariant(), drop.spriteVariant());
+        assertEquals(0x80, runtime.slowTransitionCountdown(14));
+        assertEquals(0x18, runtime.dropPrivateCountdown1(14));
+        assertEquals(0x03, runtime.dropPrivateCountdown3(14));
+        assertEquals(0xEC, runtime.dropSpeedY(14));
+        assertEquals(0x00, runtime.dropSpeedZ(14));
+    }
+
+    @Test
+    void fullEntitySlotsStillUnloadSourceWhenDropCannotBeSpawned() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        List<RoomEntity> entities = new ArrayList<>();
+        for (int slot = 0; slot < 15; slot++) {
+            entities.add(new RoomEntity(slot, slot + 1, 0xFF, 0x20, 0x20,
+                EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(0xFF), -1));
+        }
+        RoomEntity source = new RoomEntity(15, 0, 0x09, 0x44, 0x58,
+            EntityStatus.DYING, catalog.forEntityType(
+                0x09, EntityRoomLoader.RoomTable.OVERWORLD, -1), 0);
+        entities.add(source);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(entities),
+            false, () -> 0, catalog, tables);
+        runtime.setEnemyDropResolver(new EnemyDropResolver(rom));
+        runtime.setDroppedItemForTest(15, 0x2E);
+
+        runtime.tick(0, 0, 0, () -> 0);
+
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(15).status());
+        assertFalse(runtime.snapshot().slots().stream().anyMatch(
+            entity -> entity.loaded() && (entity.type() == 0x2D || entity.type() == 0x2E)));
+        assertEquals(1, runtime.killCount());
+        assertEquals(1, runtime.consumePendingClearedEntityMask());
+    }
+
+    @Test
     void swordCollectionTableMatchesTheSeventeenPickableEntries() {
         int[] canBeCollected = {0x2D, 0x2E, 0x31, 0x33, 0x34, 0x37, 0x38, 0x3B};
         int[] cannotBeCollected = {0x2F, 0x30, 0x32, 0x35, 0x36, 0x39, 0x3A, 0x3C, 0x3D};
@@ -3577,6 +3751,23 @@ final class RoomEntityRuntimeTest {
                 new EntitySpriteDefinition.Variant(
                     new EntitySpriteDefinition.OamAttribute(0x40, 0x00),
                     new EntitySpriteDefinition.OamAttribute(0x40, 0x20))));
+    }
+
+    private static RoomEntity dyingEntity(int slot, int sourceLoadOrder, int type,
+                                           EntitySpriteHandlerCatalog catalog) {
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            type, EntityRoomLoader.RoomTable.OVERWORLD, -1);
+        return new RoomEntity(slot, sourceLoadOrder, type, 0x40, 0x50,
+            EntityStatus.DYING, definition, definition.initialVariant());
+    }
+
+    private static RoomEntitySnapshot snapshotAt(RoomEntity entity) {
+        List<RoomEntity> slots = new ArrayList<>();
+        while (slots.size() < EntityRoomLoader.MAX_ENTITIES) {
+            slots.add(RoomEntity.disabled(slots.size()));
+        }
+        slots.set(entity.slot(), entity);
+        return new RoomEntitySnapshot(slots);
     }
 
     private static IntSupplier sequence(int... values) {
