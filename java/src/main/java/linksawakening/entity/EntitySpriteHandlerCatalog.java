@@ -292,6 +292,22 @@ public final class EntitySpriteHandlerCatalog {
         return decodePair(0x00, 0x03, 0x4C44, 2, 0);
     }
 
+    public EntitySpriteDefinition forDeathEntity() {
+        return decodeRectangle(0x00, 0x03, 0x5488, 4, 4, 0);
+    }
+
+    public EntitySpriteDefinition forPowerRecoilDeathEntity() {
+        EntitySpriteDefinition source = decodeRectangle(0x00, 0x03, 0x54C8, 5, 4, 0);
+        List<List<EntitySpriteDefinition.RectangleSprite>> variants =
+            new ArrayList<>(source.rectangleVariants().subList(0, 3));
+        List<EntitySpriteDefinition.RectangleSprite> finalFrame =
+            new ArrayList<>(source.rectangleVariant(3));
+        finalFrame.addAll(source.rectangleVariant(4));
+        variants.add(List.copyOf(finalFrame));
+        return new EntitySpriteDefinition(0x00, 0x03, 0x54C8,
+            EntitySpriteDefinition.Shape.RECTANGLE, 0, List.of(), variants);
+    }
+
     /** The green Zol list selected after Slime Eye has split its Zol. */
     public EntitySpriteDefinition forZolSlimeEye() {
         return decodePair(0x1B, 0x06, 0x7C11, 2, 0);

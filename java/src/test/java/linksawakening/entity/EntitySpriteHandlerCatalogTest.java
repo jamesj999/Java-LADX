@@ -667,6 +667,32 @@ final class EntitySpriteHandlerCatalogTest {
     }
 
     @Test
+    void decodesTheRomDeathRectangleFamiliesAndPowerFinalFrame() throws Exception {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+
+        EntitySpriteDefinition death = catalog.forDeathEntity();
+        assertDefinition(death, 0x03, 0x5488,
+            EntitySpriteDefinition.Shape.RECTANGLE, 4, 0);
+        EntitySpriteDefinition.RectangleSprite signed = death.rectangleVariant(3).get(0);
+        assertEquals(4, signed.yOffset());
+        assertEquals(-4, signed.xOffset());
+        assertEquals(0x30, signed.oam().tile());
+        assertEquals(0x01, signed.oam().attributes());
+
+        EntitySpriteDefinition.RectangleSprite hidden = death.rectangleVariant(0).get(2);
+        assertEquals(0xFF, hidden.oam().tile());
+        assertEquals(0xFF, hidden.oam().attributes());
+
+        EntitySpriteDefinition power = catalog.forPowerRecoilDeathEntity();
+        assertDefinition(power, 0x03, 0x54C8,
+            EntitySpriteDefinition.Shape.RECTANGLE, 4, 0);
+        assertEquals(8, power.rectangleVariant(3).size());
+        EntitySpriteDefinition.RectangleSprite fifth = power.rectangleVariant(3).get(4);
+        assertEquals(0x10, fifth.oam().tile());
+        assertEquals(0x42, fifth.oam().attributes());
+    }
+
+    @Test
     void enemyProjectileVariantsMatchAllShippedRomTileAndAttributeBytes() throws Exception {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
 
