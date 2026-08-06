@@ -3,6 +3,8 @@ package linksawakening.world;
 import linksawakening.rom.RomBank;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class RoomTilemapBuilderTest {
@@ -36,6 +38,27 @@ final class RoomTilemapBuilderTest {
         assertEquals(0x03, tilemap.tileAttrs()[0]);
     }
 
+    @Test
+    void colorDungeonUsesDedicatedObjectTileAndAttributeTables() {
+        byte[] rom = syntheticRom();
+        int objectId = 0x22;
+        int[] objects = new int[RoomConstants.ROOM_OBJECTS_AREA_SIZE];
+        Arrays.fill(objects, 0x100);
+        objects[RoomConstants.ROOM_OBJECTS_BASE] = objectId;
+
+        int ordinary = RomBank.romOffset(0x08, 0x43B0) + objectId * 4;
+        rom[ordinary] = 0x11;
+        int colorTile = RomBank.romOffset(0x08, 0x4760) + objectId * 4;
+        rom[colorTile] = 0x66;
+        int colorAttr = RomBank.romOffset(0x23, 0x6000) + objectId * 4;
+        rom[colorAttr] = 0x57;
+
+        RoomTilemap result = new RoomTilemapBuilder(rom).buildIndoor(0xFF, 0x00, objects);
+
+        assertEquals(0x66, result.tileIds()[0]);
+        assertEquals(0x57, result.tileAttrs()[0]);
+    }
+
     private static byte[] ensureLength(byte[] bytes, int length) {
         if (bytes.length >= length) {
             return bytes;
@@ -43,5 +66,9 @@ final class RoomTilemapBuilderTest {
         byte[] out = new byte[length];
         System.arraycopy(bytes, 0, out, 0, bytes.length);
         return out;
+    }
+
+    private static byte[] syntheticRom() {
+        return new byte[RomBank.romOffset(0x26, 0x4000) + 0x50];
     }
 }

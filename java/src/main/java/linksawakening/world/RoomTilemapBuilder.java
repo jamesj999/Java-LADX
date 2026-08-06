@@ -5,11 +5,16 @@ import linksawakening.rom.RomBank;
 import java.util.Arrays;
 
 public final class RoomTilemapBuilder {
+    private static final int MAP_COLOR_DUNGEON = 0xFF;
     private static final int MAP_INDOORS_B_START = 0x06;
     private static final int MAP_INDOORS_B_END = 0x1A;
 
     private static final int INDOOR_OBJECT_TILEMAP_BANK = 0x08;
     private static final int INDOOR_OBJECT_TILEMAP_ADDR = 0x43B0;
+    private static final int COLOR_DUNGEON_OBJECT_TILEMAP_BANK = 0x08;
+    private static final int COLOR_DUNGEON_OBJECT_TILEMAP_ADDR = 0x4760;
+    private static final int COLOR_DUNGEON_OBJECT_ATTR_BANK = 0x23;
+    private static final int COLOR_DUNGEON_OBJECT_ATTR_ADDR = 0x6000;
     private static final int BG_ATTR_PTRS_INDOORS_A_BANK = 0x1A;
     private static final int BG_ATTR_PTRS_INDOORS_A_ADDR = 0x6076;
     private static final int BG_ATTR_PTRS_INDOORS_B_ADDR = 0x6276;
@@ -51,13 +56,21 @@ public final class RoomTilemapBuilder {
         int[] tileIds = new int[RoomConstants.ROOM_TILE_WIDTH * RoomConstants.ROOM_TILE_HEIGHT];
         int[] tileAttrs = new int[RoomConstants.ROOM_TILE_WIDTH * RoomConstants.ROOM_TILE_HEIGHT];
 
-        int objectTilemapOffset = indoor
-            ? RomBank.romOffset(INDOOR_OBJECT_TILEMAP_BANK, INDOOR_OBJECT_TILEMAP_ADDR)
-            : RomBank.romOffset(OVERWORLD_TILEMAP_BANK, OVERWORLD_TILEMAP_ADDR);
-
-        int objectAttrOffset = indoor
-            ? indoorObjectAttrOffset(mapId, roomId)
-            : overworldObjectAttrOffset(roomId);
+        int objectTilemapOffset;
+        int objectAttrOffset;
+        if (indoor && mapId == MAP_COLOR_DUNGEON) {
+            objectTilemapOffset = RomBank.romOffset(
+                COLOR_DUNGEON_OBJECT_TILEMAP_BANK, COLOR_DUNGEON_OBJECT_TILEMAP_ADDR);
+            objectAttrOffset = RomBank.romOffset(
+                COLOR_DUNGEON_OBJECT_ATTR_BANK, COLOR_DUNGEON_OBJECT_ATTR_ADDR);
+        } else {
+            objectTilemapOffset = indoor
+                ? RomBank.romOffset(INDOOR_OBJECT_TILEMAP_BANK, INDOOR_OBJECT_TILEMAP_ADDR)
+                : RomBank.romOffset(OVERWORLD_TILEMAP_BANK, OVERWORLD_TILEMAP_ADDR);
+            objectAttrOffset = indoor
+                ? indoorObjectAttrOffset(mapId, roomId)
+                : overworldObjectAttrOffset(roomId);
+        }
 
         for (int oy = 0; oy < RoomConstants.OBJECTS_PER_COLUMN; oy++) {
             for (int ox = 0; ox < RoomConstants.OBJECTS_PER_ROW; ox++) {
