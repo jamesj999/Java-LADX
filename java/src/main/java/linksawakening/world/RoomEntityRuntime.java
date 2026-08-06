@@ -1064,6 +1064,7 @@ public final class RoomEntityRuntime {
             if (!entity.loaded() || entity.status() != EntityStatus.ACTIVE
                 || !RoomEntityPickupRules.isPickable(entity.type())
                 || (floatingType && !floating)
+                || dropPrivateCountdown1[entity.slot()] > 0
                 || (!floating && !RoomEntityPickupRules.collisionCadenceMatches(
                     frameCounter, entity.slot()))
                 || (!floating && linkAirborne)
@@ -1711,9 +1712,11 @@ public final class RoomEntityRuntime {
     }
 
     private int enemyDropHealthGroup(int entityType) {
-        return enemyCombatTables == null
-            ? RoomEntityCombatRules.initialHealth(entityType)
-            : enemyCombatTables.healthGroup(entityType);
+        if (enemyCombatTables == null) {
+            throw new IllegalStateException(
+                "ROM enemy combat tables are required for enemy drop resolution");
+        }
+        return enemyCombatTables.healthGroup(entityType);
     }
 
     private void spawnEnemyDrop(RoomEntity source, int itemType) {

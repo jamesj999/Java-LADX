@@ -3634,7 +3634,15 @@ final class RoomEntityRuntimeTest {
 
         assertEquals(0x17, runtime.dropPrivateCountdown1(14));
         assertEquals(0x02, runtime.dropPrivateCountdown3(14));
-        EntityPickupEvent pickup = runtime.collectIfNeeded(1, sourceX, sourceY + 2,
+        assertNull(runtime.collectIfNeeded(1, sourceX, sourceY + 2,
+            false, true));
+
+        for (int frame = 2; frame <= 24; frame++) {
+            runtime.tick(frame, 0, 0, () -> 0);
+        }
+        assertEquals(0, runtime.dropPrivateCountdown1(14));
+        runtime.tick(25, 0, 0, () -> 0);
+        EntityPickupEvent pickup = runtime.collectIfNeeded(25, sourceX, sourceY + 2,
             false, true);
         assertNotNull(pickup);
         assertEquals(14, pickup.slot());
