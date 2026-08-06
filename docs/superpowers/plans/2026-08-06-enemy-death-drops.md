@@ -25,7 +25,8 @@
 
 All addresses below are CPU addresses in the bank named, and must be converted with RomBank.romOffset:
 
-- Bank $03:$4826, 52 bytes: DestroyedEntityHealthGroupOffsetTable.
+- Bank $03:$4826, 53 bytes: DestroyedEntityHealthGroupOffsetTable (the source
+  comment says 52, but the label and shipped ROM span 53 bytes).
 - Bank $03:$559D, 14 bytes: DropTableByIndex.
 - Bank $03:$55AB, 14 bytes: RandomDropChanceTable.
 - Bank $03:$55B9, 14 bytes: RandomDropChanceTableLowHealth.

@@ -765,8 +765,8 @@ runtime collision callback.
 2. Extend rectangle and dynamically selected sprite handlers, complete entity
    tile-offset state, follower history and special states, and the remaining
    Color Dungeon symbol/animation path.
-3. Port scripted spawns, followers, room events, drops, and boss/multi-entity
-   state machines from the corresponding banked handlers.
+3. Port scripted spawns, followers, room events, handler-specific drops, and
+   boss/multi-entity state machines from the corresponding banked handlers.
 
 ## Verified ROM entity collision-point selection — 2026-08-05
 
@@ -968,6 +968,26 @@ runtime collision callback.
   floating-item wave-audio delivery remain explicit deferrals. The existing
   event boundary carries only the modeled pickup state and does not invent
   those semantics.
+
+## Verified ROM common enemy death/drop lifecycle — 2026-08-06
+
+- Terminal ordinary enemy deaths now follow the shared `DidKillEnemy` boundary:
+  static entities update kill order/count and first-eight room persistence,
+  while dynamic entities retain source load order `$FF` and skip those writes.
+- `SpawnEnemyDrop` now decodes its common drop tables directly from the shipped
+  ROM, including Guardian Acorn and Piece of Power counters, low-health chance
+  masks, indexed drops, and the eight-entry fallback table. The counters are
+  carried by `RoomSession` across room loads, and `Main` supplies live player
+  health, max hearts, active-power-up, and ROM-derived boss context.
+- Resolved items use the existing entity sprite and pickup paths. The highest
+  free slot receives source position/Z, despawn `$80`, private countdowns
+  `$18/$03`, and top-down/side-scroll initial speed state `$18/$EC`. The
+  private `$18` collection delay is enforced at the live pickup boundary.
+- Focused resolver/runtime tests and the complete Java suite pass. Handler-
+  specific dropped-item writes (Like-Like shield recovery, key points, Color
+  Dungeon scripts, boss/multi-entity drops), side-scroll item motion beyond
+  the initialized ROM speed state, and drop-specific audio/effects remain
+  explicit follow-up work.
 
 ## Broader parity gaps
 
