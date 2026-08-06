@@ -867,10 +867,25 @@ runtime collision callback.
   disassembly. Selection wrapping, the copy/erase arrow position, New Game
   character movement, A/B editing, and Start action are covered by focused
   controller tests.
-- Empty-slot name entry emits START_NEW_GAME and returns through the
-  existing configured gameplay bootstrap. Existing-save loading, SRAM
-  persistence, copy/erase execution, fades, and exact menu jingle/audio
-  sequencing remain explicit follow-up work rather than fabricated behavior.
+- Empty-slot name entry emits START_NEW_GAME and now enters the dedicated
+  ROM-backed new-game bootstrap. Existing-save loading, SRAM persistence,
+  copy/erase execution, fades, and exact menu jingle/audio sequencing remain
+  explicit follow-up work rather than fabricated behavior.
+
+## Verified ROM-backed New Game bootstrap — 2026-08-06
+
+- The `START_NEW_GAME` boundary now follows `LoadSavedFile.initNewGame` from
+  bank `$01:$5394`: it loads indoor map `$10`, room `$A3` (Marin's House),
+  and places Link at the source map-entry position `(X=$50,Y=$60)`.
+- The fresh player state clears the Java model's debug inventory and mutable
+  resources, starts with three full hearts (`$18`), no sword/shield or
+  equipped items, and applies the source capacities of `$30` arrows, `$30`
+  bombs, and `$20` magic powder. The ROM direction and standing animation
+  values are recorded in the immutable startup profile.
+- A shipped-ROM room-session regression verifies the indoor map/room path.
+  SRAM initialization and loading, copy/erase behavior, the wrecking-ball
+  world-state consumer, and exact file-menu transition effects remain
+  separate source-backed increments.
 
 ## Broader parity gaps
 
