@@ -100,9 +100,15 @@ final class EntityBackgroundCollisionResolverTest {
 
     @Test
     void openDoorsAreSolidForBothSparkDirectionsAndBosses() {
+        RoomEntity normalEntity = entity(0x30, 0);
         RoomEntity counterClockwiseSpark = entity(0x16, 0);
         RoomEntity clockwiseSpark = entity(0x17, 0);
         RoomEntity boss = entity(0x40, 0);
+        RomTables normalEntityTables = tablesWithOpenDoorFineRow(
+            1, 0, 1, 0, 0, 0, 0, 0, normalEntity.type(), 0);
+
+        assertTrue(resolve(normalEntityTables, normalEntity, 0, 0, 0x7C).blocked());
+        assertFalse(resolve(normalEntityTables, normalEntity, 0x08, 0x00, 0x7C).blocked());
 
         assertTrue(resolve(tables(0, 0, 0, 0, counterClockwiseSpark.type(), 0),
             counterClockwiseSpark, 0, 0, 0x7C).blocked());
