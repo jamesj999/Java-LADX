@@ -18,14 +18,14 @@
 - Create: java/src/test/java/linksawakening/ui/FileMenuRomDataTest.java
 - Modify: java/src/test/java/linksawakening/scene/BackgroundSceneLoaderTest.java
 
-- [ ] Write failing adapter tests for the 0x40-byte name-entry table, 0x100-byte codepoint-to-tile table, selection cursor Y table, name cursor tables, and defensive copies.
-- [ ] Write failing catalog/loader tests for selection, command-row, and creation map/attrmap/palette specs.
-- [ ] Run:
+- [x] Write failing adapter tests for the 0x40-byte name-entry table, 0x100-byte codepoint-to-tile table, selection cursor Y table, name cursor tables, and defensive copies.
+- [x] Write failing catalog/loader tests for selection, command-row, and creation map/attrmap/palette specs.
+- [x] Run:
   ~~~sh
   gradle test --tests linksawakening.ui.FileMenuRomDataTest --tests linksawakening.scene.BackgroundSceneLoaderTest
   ~~~
   Confirm the new tests fail before adding production behavior.
-- [ ] Implement FileMenuRomData using RomBank/from-bank-address ROM reads:
+- [x] Implement FileMenuRomData using RomBank/from-bank-address ROM reads:
   - bank 1 $48E4, length 4: selected-slot cursor Y positions;
   - bank 1 $4BB5, length $40: name-entry character table;
   - bank 1 $4B30, length $40: name cursor Y positions;
@@ -33,17 +33,19 @@
   - bank 1 $4BB0, length 5: name-position cursor X positions;
   - bank $1C, $4641, length $100: CodepointToTileMap.
   Return clones from all byte-array accessors.
-- [ ] Add exact BackgroundSceneCatalog specs:
+- [x] Add exact BackgroundSceneCatalog specs:
   - selection: tilemap bank $20 address $6336, attrmap bank $24 address $5F80;
   - command row: tilemap bank $20 address $6328, attrmap bank $24 address $5F74;
   - creation: tilemap bank $20 address $644D, attrmap bank $24 address $6045;
   - all use menu palette block bank $21 address $7536.
-- [ ] Run the focused tests and commit:
+- [x] Run the focused tests and commit:
   ~~~sh
   gradle test --tests linksawakening.ui.FileMenuRomDataTest --tests linksawakening.scene.BackgroundSceneLoaderTest
   git add java/src/main/java/linksawakening/ui/FileMenuRomData.java java/src/main/java/linksawakening/scene/BackgroundSceneCatalog.java java/src/test/java/linksawakening/ui/FileMenuRomDataTest.java java/src/test/java/linksawakening/scene/BackgroundSceneLoaderTest.java
   git commit -m "feat: load ROM-backed file menu data"
   ~~~
+
+Task 1 is complete in commit 3a75533.
 
 ### Task 2: Implement pure selection and New Game name-entry state
 
