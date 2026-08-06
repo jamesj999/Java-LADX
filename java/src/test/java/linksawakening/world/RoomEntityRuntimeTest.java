@@ -1273,6 +1273,192 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void ghiniFamilyCombatRulesUseRomHealthDamageAndHitboxEntries() throws IOException {
+        byte[] rom = loadRom();
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+
+        for (int type : new int[] {0x10, 0x11, 0x12}) {
+            assertTrue(RoomEntityCombatRules.supportsEnemyCollision(type));
+            assertEquals(0x08, RoomEntityCombatRules.initialHealth(type));
+            assertEquals(tables.initialHealth(type), RoomEntityCombatRules.initialHealth(type));
+            assertEquals(0x08, RoomEntityCombatRules.contactDamage(type));
+            assertEquals(tables.contactDamage(type), RoomEntityCombatRules.contactDamage(type));
+        }
+
+        RoomEntity normal = ghiniEntity(catalog, 0, 0x10, EntityStatus.ACTIVE);
+        RoomEntity giant = ghiniEntity(catalog, 1, 0x11, EntityStatus.ACTIVE);
+        assertFalse(RoomEntityCombatRules.overlapsLink(normal, 0x5D, 0x50));
+        assertTrue(RoomEntityCombatRules.overlapsLink(giant, 0x5D, 0x50));
+        assertFalse(RoomEntityCombatRules.overlapsSword(normal, 0x62, 1, 0x58, 1));
+        assertTrue(RoomEntityCombatRules.overlapsSword(giant, 0x62, 1, 0x58, 1));
+    }
+
+    @Test
+    void hidingAndGiantGhinisStartHiddenAndSkipGroundAndCombat() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+
+        for (int type : new int[] {0x10, 0x11}) {
+            RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(ghiniEntity(catalog, 0, type, EntityStatus.INIT)), false,
+                sequence(0x00), catalog, tables);
+            List<Integer> groundCalls = new ArrayList<>();
+            runtime.setGroundInteraction((entity, frame, previousStatus, speedZ, sideScrolling) -> {
+                groundCalls.add(entity.slot());
+                return RoomEntityGroundInteraction.Result.unchanged(entity, previousStatus);
+            });
+
+            runtime.tick(0, 0x90, 0x90, 0, sequence(0x00));
+
+            RoomEntity afterInit = runtime.snapshot().slots().get(0);
+            assertEquals(EntityStatus.ACTIVE, afterInit.status());
+            assertEquals(-1, afterInit.spriteVariant(), "type=0x"
+                + Integer.toHexString(type));
+            assertTrue(groundCalls.isEmpty());
+            assertTrue(runtime.resolveCombat(1, 0x50, 0x50, false, true,
+                true, 0x58, 1, 0x58, 1).isEmpty());
+        }
+    }
+
+    @Test
+    void collisionTypeIsExplicitPerTickAndRevealKeepsHiddenPresentationForThatTick()
+        throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+
+        RoomEntityRuntime compatibilityRuntime = RoomEntityRuntime.from(
+            snapshot(ghiniEntity(catalog, 0, 0x10, EntityStatus.ACTIVE)), false,
+            sequence(0x00), catalog, tables);
+        compatibilityRuntime.tick(0, 0x50, 0x50, sequence(0x00));
+        assertEquals(-1, compatibilityRuntime.snapshot().slots().get(0).spriteVariant());
+
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+            snapshot(ghiniEntity(catalog, 0, 0x10, EntityStatus.ACTIVE)), false,
+            sequence(0x00), catalog, tables);
+        RoomEntity before = runtime.snapshot().slots().get(0);
+        runtime.tick(0, 0x50, 0x50, 0x08, sequence(0x00));
+
+        RoomEntity revealTick = runtime.snapshot().slots().get(0);
+        assertEquals(-1, revealTick.spriteVariant());
+        assertEquals(before.x(), revealTick.x());
+        assertEquals(before.y(), revealTick.y());
+        assertTrue(runtime.resolveCombat(1, 0x50, 0x50, false, true,
+            true, 0x58, 1, 0x58, 1).isEmpty());
+
+        runtime.tick(1, 0x50, 0x50, 0, sequence(0x00));
+        RoomEntity visible = runtime.snapshot().slots().get(0);
+        assertTrue(visible.spriteVariant() >= 0);
+        List<EntityCombatEvent> contact = runtime.resolveCombat(
+            1, 0x50, 0x50, false, true, false, 0, 0, 0, 0);
+        assertEquals(1, contact.size());
+        assertEquals(0x08, contact.get(0).linkDamage());
+    }
+
+    @Test
+    void typedGhiniPresentationReachesNormalFlipAndGiantRectangleOutput() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+
+        RoomEntityRuntime normalRuntime = RoomEntityRuntime.from(
+            snapshot(ghiniEntity(catalog, 0, 0x12, EntityStatus.ACTIVE)), false,
+            sequence(0x00), catalog, tables);
+        normalRuntime.tick(0, 0x90, 0x90, 0, sequence(0x00));
+        assertNotEquals(0, normalRuntime.snapshot().slots().get(0).entityFlipAttribute() & 0x20);
+
+        RoomEntityRuntime giantRuntime = RoomEntityRuntime.from(
+            snapshot(ghiniEntity(catalog, 0, 0x11, EntityStatus.ACTIVE)), false,
+            sequence(0x00), catalog, tables);
+        giantRuntime.tick(0, 0x50, 0x50, 0x01, sequence(0x00));
+        giantRuntime.tick(1, 0x90, 0x90, 0, sequence(0x00));
+        RoomEntity giant = giantRuntime.snapshot().slots().get(0);
+        assertEquals(2, giant.spriteVariant());
+        assertEquals(0, giant.entityFlipAttribute() & 0x20);
+
+    }
+
+    @Test
+    void allGhiniTypesUseTheSharedRecoilPath() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EnemyAttackContext nonDamaging = new EnemyAttackContext(0, false, false, false, false);
+
+        for (int type : new int[] {0x10, 0x11, 0x12}) {
+            RoomEntityRuntime runtime = RoomEntityRuntime.from(
+                snapshot(ghiniEntity(catalog, 0, type, EntityStatus.ACTIVE)), false,
+                sequence(0x00), catalog, tables);
+            if (type != 0x12) {
+                runtime.tick(0, 0x50, 0x50, 0x01, sequence(0x00));
+            }
+            runtime.tick(1, 0x90, 0x90, 0, sequence(0x00));
+
+            RoomEntity current = runtime.snapshot().slots().get(0);
+            int linkX = (current.x() + 0x08) & 0xFF;
+            int linkY = (current.y() - current.z() + 0x08) & 0xFF;
+            List<EntityCombatEvent> events = runtime.resolveCombat(
+                0, linkX, linkY, false, false, true, linkX, 1, linkY, 1,
+                nonDamaging);
+            assertEquals(1, events.size(), "type=0x" + Integer.toHexString(type));
+            assertTrue(runtime.enemyRecoilActive(0), "type=0x"
+                + Integer.toHexString(type));
+            assertEquals(0xD0, runtime.enemyRecoilSpeedX(0), "type=0x"
+                + Integer.toHexString(type));
+            assertEquals(0xD0, runtime.enemyRecoilSpeedY(0), "type=0x"
+                + Integer.toHexString(type));
+        }
+    }
+
+    @Test
+    void visibleGiantUsesTheExistingLethalCombatStatusPath() throws IOException {
+        byte[] rom = romWithSwordResult(0x11, 0x08);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+            snapshot(ghiniEntity(catalog, 0, 0x11, EntityStatus.ACTIVE)), false,
+            sequence(0x00), catalog, tables);
+
+        runtime.tick(0, 0x50, 0x50, 0x01, sequence(0x00));
+        runtime.tick(1, 0x90, 0x90, 0, sequence(0x00));
+        List<EntityCombatEvent> events = runtime.resolveCombat(
+            0, 0x90, 0x90, false, false, true, 0x58, 1, 0x58, 1,
+            EnemyAttackContext.standard());
+
+        assertEquals(1, events.size());
+        assertTrue(events.get(0).swordHit());
+        assertEquals(0, runtime.enemyHealth(0));
+        assertEquals(EntityStatus.DYING, runtime.snapshot().slots().get(0).status());
+    }
+
+    @Test
+    void GhiniOptionsDisableGroundInteractionAndWallCollisionForEveryVariant()
+        throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            ghiniEntity(catalog, 0, 0x10, EntityStatus.ACTIVE),
+            ghiniEntity(catalog, 1, 0x11, EntityStatus.ACTIVE),
+            ghiniEntity(catalog, 2, 0x12, EntityStatus.ACTIVE)), false,
+            sequence(0x00), catalog, tables);
+        List<Integer> groundCalls = new ArrayList<>();
+        runtime.setGroundInteraction((entity, frame, previousStatus, speedZ, sideScrolling) -> {
+            groundCalls.add(entity.slot());
+            return RoomEntityGroundInteraction.Result.unchanged(entity, previousStatus);
+        });
+
+        runtime.tick(0, 0x90, 0x90, 0, sequence(0x00));
+
+        assertTrue(groundCalls.isEmpty());
+        for (int slot = 0; slot < 3; slot++) {
+            assertEquals(0x11, runtime.options1(slot));
+        }
+    }
+
+    @Test
     void hardHatUsesTheRomTargetVectorAndFourFrameSpeedRefresh() {
         EntitySpriteDefinition definition = pairDefinition(0x20, 2);
         RoomEntitySnapshot initial = snapshot(
@@ -3868,6 +4054,15 @@ final class RoomEntityRuntimeTest {
             assertFalse(RoomEntityPickupRules.canBeCollectedBySword(type),
                 "type 0x" + Integer.toHexString(type));
         }
+    }
+
+    private static RoomEntity ghiniEntity(EntitySpriteHandlerCatalog catalog, int slot, int type,
+                                          EntityStatus status) {
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            type, EntityRoomLoader.RoomTable.OVERWORLD);
+        int initialZ = type == 0x12 ? 0x10 : 0;
+        return new RoomEntity(slot, slot, type, 0x50, 0x50, status, definition,
+            definition.initialVariant(), 0, 0, initialZ);
     }
 
     private static EntitySpriteDefinition pairDefinition(int type, int variants) {

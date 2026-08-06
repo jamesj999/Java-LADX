@@ -41,6 +41,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_STALFOS_EVASIVE = 0x1E;
     private static final int ENTITY_GIBDO = 0x1F;
     private static final int ENTITY_OPT1_NO_GROUND_INTERACTION = 0x10;
+    private static final int ENTITY_OPT1_NO_WALL_COLLISION = 0x01;
     private static final int ENTITY_OPT1_SPLASH_IN_WATER = 0x08;
     private static final int ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL = 0x02;
     private static final int ENTITY_PHYSICS_HARMLESS = 0x80;
@@ -51,6 +52,8 @@ public final class RoomEntityRuntime {
         | ENTITY_OPT1_SPLASH_IN_WATER | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
     private static final int ENTITY_PEAHAT = 0xA0;
     private static final int ENTITY_ARMOS_STATUE = 0x0F;
+    private static final int ENTITY_HIDING_GHINI = 0x10;
+    private static final int ENTITY_GIANT_GHINI = 0x11;
     private static final int ARMOS_INITIAL_PHYSICS_FLAGS = 0x92;
     private static final int ENTITY_GHINI = 0x12;
     private static final int ENTITY_KEESE = 0x19;
@@ -80,6 +83,8 @@ public final class RoomEntityRuntime {
     private static final int FALLING_JINGLE_ID = 0x18;
     private static final int[] FALLING_VISUAL_Y_OFFSETS = {0, 0, 4, 0};
     private static final int[] FALLING_VECTOR_LENGTHS = {0, 1, 3, 6};
+    private static final int GHINI_OPTIONS1 = ENTITY_OPT1_NO_GROUND_INTERACTION
+        | ENTITY_OPT1_NO_WALL_COLLISION;
 
     private final RoomEntity[] slots;
     private EntitySpriteSelection spriteSelection;
@@ -250,6 +255,9 @@ public final class RoomEntityRuntime {
             enemyHealth[entity.slot()] = entity.loaded() ? initialHealth(entity.type()) : 0;
             enemyPhysicsFlags[entity.slot()] = entity.loaded()
                 ? initialPhysicsFlags(entity.type()) : 0;
+            if (entity.loaded() && isGhiniType(entity.type())) {
+                ghiniMotion.initialize(entity.slot(), entity.type());
+            }
             if (entity.status() == EntityStatus.DYING) {
                 powerRecoilDeath[entity.slot()] = entity.powerRecoilDeath();
             }
@@ -341,11 +349,28 @@ public final class RoomEntityRuntime {
             null, 0, 0, 0, EnemyProjectileCollision.LinkState.nonInteractive(), false);
     }
 
+    /** Advances handlers with the current source-shaped Link collision byte. */
+    public void tick(int frameCounter, int linkEntityX, int linkEntityY,
+                     int collisionType, IntSupplier randomByteSupplier) {
+        tickInternal(frameCounter, linkEntityX, linkEntityY, collisionType,
+            randomByteSupplier, null, null, 0, 0, 0,
+            EnemyProjectileCollision.LinkState.nonInteractive(), false);
+    }
+
     public void tick(int frameCounter, int linkEntityX, int linkEntityY,
                      IntSupplier randomByteSupplier,
                      RoomEntityBackgroundCollision backgroundCollision) {
         tickInternal(frameCounter, linkEntityX, linkEntityY, randomByteSupplier,
             backgroundCollision, null, 0, 0, 0,
+            EnemyProjectileCollision.LinkState.nonInteractive(), false);
+    }
+
+    /** Background-collision compatibility path with an explicit Link byte. */
+    public void tick(int frameCounter, int linkEntityX, int linkEntityY,
+                     int collisionType, IntSupplier randomByteSupplier,
+                     RoomEntityBackgroundCollision backgroundCollision) {
+        tickInternal(frameCounter, linkEntityX, linkEntityY, collisionType,
+            randomByteSupplier, backgroundCollision, null, 0, 0, 0,
             EnemyProjectileCollision.LinkState.nonInteractive(), false);
     }
 
@@ -364,6 +389,17 @@ public final class RoomEntityRuntime {
         tickInternal(frameCounter, linkEntityX, linkEntityY, randomByteSupplier,
             backgroundCollision, linkPositionHistory, linkZ, linkDirection,
             entityYOffset, EnemyProjectileCollision.LinkState.nonInteractive(), false);
+    }
+
+    void tick(int frameCounter, int linkEntityX, int linkEntityY, int collisionType,
+              IntSupplier randomByteSupplier,
+              RoomEntityBackgroundCollision backgroundCollision,
+              LinkPositionHistory linkPositionHistory,
+              int linkZ, int linkDirection, int entityYOffset) {
+        tickInternal(frameCounter, linkEntityX, linkEntityY, collisionType,
+            randomByteSupplier, backgroundCollision, linkPositionHistory, linkZ,
+            linkDirection, entityYOffset, EnemyProjectileCollision.LinkState.nonInteractive(),
+            false);
     }
 
     List<EntityProjectileEvent> tickWithProjectileEvents(
@@ -397,6 +433,22 @@ public final class RoomEntityRuntime {
         return tickInternal(frameCounter, linkEntityX, linkEntityY, randomByteSupplier,
             backgroundCollision, objectCollision, null, projectileLinkState.z(),
             projectileLinkState.direction(), 0, projectileLinkState, false,
+            swordCollisionActive, swordX, swordWidth, swordY, swordHeight);
+    }
+
+    /** Full live-runtime path with a per-frame Link collision byte. */
+    List<EntityProjectileEvent> tickWithProjectileEvents(
+        int frameCounter, int linkEntityX, int linkEntityY, int collisionType,
+        IntSupplier randomByteSupplier, RoomEntityBackgroundCollision backgroundCollision,
+        RoomEntityObjectCollision objectCollision,
+        LinkPositionHistory linkPositionHistory,
+        int linkZ, int linkDirection, int entityYOffset,
+        EnemyProjectileCollision.LinkState projectileLinkState,
+        boolean swordCollisionActive, int swordX, int swordWidth,
+        int swordY, int swordHeight) {
+        return tickInternal(frameCounter, linkEntityX, linkEntityY, collisionType,
+            randomByteSupplier, backgroundCollision, objectCollision, linkPositionHistory,
+            linkZ, linkDirection, entityYOffset, projectileLinkState, false,
             swordCollisionActive, swordX, swordWidth, swordY, swordHeight);
     }
 
@@ -447,9 +499,22 @@ public final class RoomEntityRuntime {
                       int linkZ, int linkDirection, int entityYOffset,
                       EnemyProjectileCollision.LinkState projectileLinkState,
                       boolean creditsGameplay) {
-        return tickInternal(frameCounter, linkEntityX, linkEntityY, randomByteSupplier,
+        return tickInternal(frameCounter, linkEntityX, linkEntityY, 0, randomByteSupplier,
             backgroundCollision, null, linkPositionHistory, linkZ, linkDirection, entityYOffset,
             projectileLinkState, creditsGameplay, false, 0, 0, 0, 0);
+    }
+
+    private List<EntityProjectileEvent> tickInternal(int frameCounter, int linkEntityX,
+                      int linkEntityY, int collisionType, IntSupplier randomByteSupplier,
+                      RoomEntityBackgroundCollision backgroundCollision,
+                      LinkPositionHistory linkPositionHistory,
+                      int linkZ, int linkDirection, int entityYOffset,
+                      EnemyProjectileCollision.LinkState projectileLinkState,
+                      boolean creditsGameplay) {
+        return tickInternal(frameCounter, linkEntityX, linkEntityY, collisionType,
+            randomByteSupplier, backgroundCollision, null, linkPositionHistory, linkZ,
+            linkDirection, entityYOffset, projectileLinkState, creditsGameplay,
+            false, 0, 0, 0, 0);
     }
 
     private List<EntityProjectileEvent> tickInternal(int frameCounter, int linkEntityX,
@@ -462,9 +527,26 @@ public final class RoomEntityRuntime {
                       boolean creditsGameplay,
                       boolean swordCollisionActive, int swordX, int swordWidth,
                       int swordY, int swordHeight) {
+        return tickInternal(frameCounter, linkEntityX, linkEntityY, 0, randomByteSupplier,
+            backgroundCollision, objectCollision, linkPositionHistory, linkZ, linkDirection,
+            entityYOffset, projectileLinkState, creditsGameplay, swordCollisionActive,
+            swordX, swordWidth, swordY, swordHeight);
+    }
+
+    private List<EntityProjectileEvent> tickInternal(int frameCounter, int linkEntityX,
+                      int linkEntityY, int collisionType, IntSupplier randomByteSupplier,
+                      RoomEntityBackgroundCollision backgroundCollision,
+                      RoomEntityObjectCollision objectCollision,
+                      LinkPositionHistory linkPositionHistory,
+                      int linkZ, int linkDirection, int entityYOffset,
+                      EnemyProjectileCollision.LinkState projectileLinkState,
+                      boolean creditsGameplay,
+                      boolean swordCollisionActive, int swordX, int swordWidth,
+                      int swordY, int swordHeight) {
         Objects.requireNonNull(randomByteSupplier, "randomByteSupplier");
         Objects.requireNonNull(projectileLinkState, "projectileLinkState");
         int frame = frameCounter & 0xFF;
+        int romCollisionType = collisionType & 0xFF;
         if (backgroundInteraction != null) {
             backgroundCollision = (entity, direction, nextX, nextY) ->
                 backgroundInteraction.probe(entity, direction, nextX, nextY,
@@ -506,6 +588,7 @@ public final class RoomEntityRuntime {
             }
 
             EntityStatus status = entity.status();
+            boolean preserveGhiniPresentation = false;
             if (status == EntityStatus.ACTIVE) {
                 decrementEnemyDropCountdowns(entity);
             }
@@ -744,8 +827,11 @@ public final class RoomEntityRuntime {
                 if (entity.type() == ENTITY_ARMOS_STATUE) {
                     armosMotion.initialize(entity.slot());
                 }
-                if (entity.type() == ENTITY_GHINI) {
-                    ghiniMotion.initialize(entity.slot());
+                if (isGhiniType(entity.type())) {
+                    ghiniMotion.initialize(entity.slot(), entity.type());
+                    if (isHidingGhiniType(entity.type())) {
+                        preserveGhiniPresentation = true;
+                    }
                 }
                 if (entity.type() == ENTITY_HARDHAT_BEETLE) {
                     hardHatMotion.initialize(entity.slot());
@@ -770,6 +856,9 @@ public final class RoomEntityRuntime {
                 }
             }
             RoomEntity updated = entity;
+            if (preserveGhiniPresentation) {
+                updated = withVariant(entity, -1);
+            }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && usesSharedRecoil(entity.type())) {
                 // Bank-$03 AnimateRoamingEnemy and the bank-$04/$06/$07
@@ -1095,8 +1184,10 @@ public final class RoomEntityRuntime {
                 }
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_GHINI) {
-                updated = ghiniMotion.advance(entity, frame, randomByteSupplier);
+                && isGhiniType(entity.type())) {
+                updated = ghiniMotion.advance(entity, frame, entity.type(),
+                    linkEntityX, linkEntityY, romCollisionType, randomByteSupplier);
+                preserveGhiniPresentation = true;
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_HARDHAT_BEETLE) {
@@ -1134,7 +1225,7 @@ public final class RoomEntityRuntime {
                     entityGroundStatus[updated.slot()], groundInteractionSideScrolling);
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
-                && !hasNoGroundInteractionOverride(updated.slot())) {
+                && !hasNoGroundInteraction(updated)) {
                 // ApplyEntityInteractionWithBackground runs after each ROM
                 // entity handler's movement and before the final display-list
                 // presentation. The room session supplies terrain physics;
@@ -1182,11 +1273,13 @@ public final class RoomEntityRuntime {
                 updated = withZ(updated,
                     FloatingItemMotion.zForFrame(groundInteractionSideScrolling, frame));
             }
-            int variant = variantFor(updated, frame);
+            int variant = preserveGhiniPresentation
+                ? updated.spriteVariant() : variantFor(updated, frame);
             if (status == EntityStatus.ACTIVE && shouldDisappear(entity)) {
                 variant = (slowTransitionCountdown[entity.slot()] & 0x01) != 0 ? 0 : -1;
             }
-            int renderFlipAttribute = baseEntityFlipAttribute[entity.slot()];
+            int renderFlipAttribute = preserveGhiniPresentation
+                ? updated.entityFlipAttribute() : baseEntityFlipAttribute[entity.slot()];
             if (enemyFlashCountdown[entity.slot()] > 0) {
                 renderFlipAttribute ^= (enemyFlashCountdown[entity.slot()] << 2) & 0x10;
             }
@@ -1444,6 +1537,10 @@ public final class RoomEntityRuntime {
             RoomEntity entity = slots[index];
             if (!entity.loaded() || entity.status() != EntityStatus.ACTIVE
                 || !RoomEntityCombatRules.supportsEnemyCollision(entity.type())) {
+                continue;
+            }
+            if (isGhiniType(entity.type())
+                && (ghiniMotion.hidden(entity.slot()) || entity.spriteVariant() < 0)) {
                 continue;
             }
             if (entity.type() == ENTITY_ARMOS_STATUE
@@ -1960,6 +2057,15 @@ public final class RoomEntityRuntime {
             || type == ENTITY_MARIN_AT_THE_SHORE || type == ENTITY_BOW_WOW;
     }
 
+    private static boolean isGhiniType(int type) {
+        return type == ENTITY_HIDING_GHINI || type == ENTITY_GIANT_GHINI
+            || type == ENTITY_GHINI;
+    }
+
+    private static boolean isHidingGhiniType(int type) {
+        return type == ENTITY_HIDING_GHINI || type == ENTITY_GIANT_GHINI;
+    }
+
     private static boolean isSparkType(int type) {
         return type == ENTITY_SPARK_COUNTER_CLOCKWISE || type == ENTITY_SPARK_CLOCKWISE;
     }
@@ -1985,7 +2091,8 @@ public final class RoomEntityRuntime {
         return type == ENTITY_LEEVER || type == ENTITY_PEAHAT
             || type == ENTITY_WATER_TEKTITE
             || type == ENTITY_STALFOS_EVASIVE
-            || isRoamingEnemyType(type) || usesBank6Recoil(type);
+            || isRoamingEnemyType(type) || usesBank6Recoil(type)
+            || isGhiniType(type);
     }
 
     private static boolean isEnemyProjectileType(int type) {
@@ -2003,6 +2110,10 @@ public final class RoomEntityRuntime {
     private boolean hasNoGroundInteractionOverride(int slot) {
         return entityOptions1Override[slot] >= 0
             && (entityOptions1Override[slot] & ENTITY_OPT1_NO_GROUND_INTERACTION) != 0;
+    }
+
+    private boolean hasNoGroundInteraction(RoomEntity entity) {
+        return isGhiniType(entity.type()) || hasNoGroundInteractionOverride(entity.slot());
     }
 
     private RoomEntity applyZolSplit(RoomEntity original, RoomEntity updated,
@@ -2921,6 +3032,9 @@ public final class RoomEntityRuntime {
         }
         if (entityOptions1Override[slot] >= 0) {
             return entityOptions1Override[slot];
+        }
+        if (isGhiniType(slots[slot].type())) {
+            return GHINI_OPTIONS1;
         }
         return slots[slot].type() == ENTITY_STALFOS_EVASIVE
             ? ENTITY_OPT1_SPLASH_IN_WATER : 0;

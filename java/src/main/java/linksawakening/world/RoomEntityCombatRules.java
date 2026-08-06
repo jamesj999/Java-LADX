@@ -17,6 +17,8 @@ public final class RoomEntityCombatRules {
     private static final int ENTITY_GIBDO = 0x1F;
     private static final int ENTITY_PEAHAT = 0xA0;
     private static final int ENTITY_ARMOS_STATUE = 0x0F;
+    private static final int ENTITY_HIDING_GHINI = 0x10;
+    private static final int ENTITY_GIANT_GHINI = 0x11;
     private static final int ENTITY_GHINI = 0x12;
     private static final int ENTITY_KEESE = 0x19;
     private static final int ENTITY_HARDHAT_BEETLE = 0x20;
@@ -75,7 +77,7 @@ public final class RoomEntityCombatRules {
                 ENTITY_ZOL, ENTITY_GEL, ENTITY_HIDING_ZOL,
                 ENTITY_GIBDO, ENTITY_PEAHAT,
                 ENTITY_ARMOS_STATUE,
-                ENTITY_GHINI,
+                ENTITY_HIDING_GHINI, ENTITY_GIANT_GHINI, ENTITY_GHINI,
                 ENTITY_HARDHAT_BEETLE, ENTITY_SPIKE_TRAP, ENTITY_WATER_TEKTITE,
                 ENTITY_PAIRODD, ENTITY_COLOR_SHELL_RED, ENTITY_COLOR_SHELL_GREEN,
                 ENTITY_COLOR_SHELL_BLUE,
@@ -103,7 +105,8 @@ public final class RoomEntityCombatRules {
                 OCTOROK_AND_KEESE_CONTACT_DAMAGE;
             case ENTITY_GIBDO -> GIBDO_CONTACT_DAMAGE;
             case ENTITY_ANTI_FAIRY -> ANTI_FAIRY_CONTACT_DAMAGE;
-            case ENTITY_GHINI -> GHINI_CONTACT_DAMAGE;
+            case ENTITY_HIDING_GHINI, ENTITY_GIANT_GHINI, ENTITY_GHINI ->
+                GHINI_CONTACT_DAMAGE;
             case ENTITY_HARDHAT_BEETLE -> HARDHAT_CONTACT_DAMAGE;
             case ENTITY_SPIKE_TRAP -> SPIKE_TRAP_CONTACT_DAMAGE;
             case ENTITY_CRYSTAL_SWITCH -> CRYSTAL_SWITCH_CONTACT_DAMAGE;
@@ -127,7 +130,8 @@ public final class RoomEntityCombatRules {
             case ENTITY_GEL -> GEL_INITIAL_HEALTH;
             case ENTITY_GIBDO -> GIBDO_INITIAL_HEALTH;
             case ENTITY_ANTI_FAIRY -> ANTI_FAIRY_INITIAL_HEALTH;
-            case ENTITY_GHINI -> GHINI_INITIAL_HEALTH;
+            case ENTITY_HIDING_GHINI, ENTITY_GIANT_GHINI, ENTITY_GHINI ->
+                GHINI_INITIAL_HEALTH;
             case ENTITY_HARDHAT_BEETLE -> HARDHAT_INITIAL_HEALTH;
             case ENTITY_SPIKE_TRAP -> SPIKE_TRAP_INITIAL_HEALTH;
             case ENTITY_CRYSTAL_SWITCH -> CRYSTAL_SWITCH_INITIAL_HEALTH;
@@ -198,7 +202,7 @@ public final class RoomEntityCombatRules {
     private static int hitboxWidth(int type) {
         return switch (type & 0xFF) {
             case ENTITY_GEL -> SMALL_ENEMY_HITBOX_WIDTH;
-            case ENTITY_SPIKE_TRAP -> BIG_ENEMY_HITBOX_WIDTH;
+            case ENTITY_GIANT_GHINI, ENTITY_SPIKE_TRAP -> BIG_ENEMY_HITBOX_WIDTH;
             default -> HITBOX_WIDTH;
         };
     }
@@ -206,7 +210,7 @@ public final class RoomEntityCombatRules {
     private static int hitboxHeight(int type) {
         return switch (type & 0xFF) {
             case ENTITY_GEL -> SMALL_ENEMY_HITBOX_HEIGHT;
-            case ENTITY_SPIKE_TRAP -> BIG_ENEMY_HITBOX_HEIGHT;
+            case ENTITY_GIANT_GHINI, ENTITY_SPIKE_TRAP -> BIG_ENEMY_HITBOX_HEIGHT;
             default -> HITBOX_HEIGHT;
         };
     }
