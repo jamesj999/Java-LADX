@@ -54,7 +54,7 @@ final class EnemyCombatEventConsumerTest {
     void mapsFloorSwitchWaveToTheGameplaySound() {
         RecordingSoundSink sounds = new RecordingSoundSink();
         EntityCombatEvent event = new EntityCombatEvent(0, 0x66, 0, false,
-            EntityCombatEvent.SoundChannel.WAVE, 0x0D);
+            EntityCombatEvent.SoundChannel.WAVE, 0x0E);
 
         EnemyCombatEventConsumer.consume(List.of(event), sounds);
 

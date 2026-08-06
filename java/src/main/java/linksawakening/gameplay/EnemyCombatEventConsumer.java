@@ -14,6 +14,7 @@ public final class EnemyCombatEventConsumer {
     private static final int JINGLE_SWORD_POKE_ID = 0x07;
     private static final int JINGLE_WATER_SPLASH_ID = 0x0E;
     private static final int JINGLE_ITEM_FALLING_ID = 0x18;
+    private static final int WAVE_SWITCH_BLOCK_TOGGLE_ID = 0x0E;
     private static final int NOISE_ENEMY_BURNING_ID = 0x12;
     private static final int NOISE_ENEMY_DESTROYED_ID = 0x13;
     private static final int NOISE_BEAMOS_LASER_ID = 0x08;
@@ -73,6 +74,9 @@ public final class EnemyCombatEventConsumer {
                     // to an unrelated gameplay effect.
                 }
             }
+        } else if (channel == EntityCombatEvent.SoundChannel.WAVE
+            && id == WAVE_SWITCH_BLOCK_TOGGLE_ID) {
+            soundSink.play(GameplaySoundEvent.SWITCH_BLOCK_TOGGLE);
         }
     }
 }

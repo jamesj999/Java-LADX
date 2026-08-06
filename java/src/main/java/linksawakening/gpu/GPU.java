@@ -44,6 +44,13 @@ public class GPU {
     private static final int ANIMATED_TILES_FRAME_VRAM_INDEX = 0x16C;
     private static final int ANIMATED_TILES_FRAME_SIZE = 0x40;
 
+    // SwitchBlockTiles in bank0c.asm and the GBC-adjusted bank used by the
+    // gameplay tile loader. UpdateSwitchBlockTiles copies four tiles at a
+    // time to vTilesSwitchBlockA/B ($9040/$9080).
+    private static final int SWITCH_BLOCK_TILES_BANK = 0x2C;
+    private static final int SWITCH_BLOCK_TILES_ADDR = 0x6800;
+    private static final int SWITCH_BLOCK_TILE_COUNT = 0x04;
+
     // Ping-pong offset table used by dungeon-1 and lava animations.
     // Matches AnimatedTilesDataOffsets in home/animated_tiles.asm:267.
     private static final int[] ANIMATED_TILES_PING_PONG =
@@ -376,6 +383,20 @@ public class GPU {
         }
         animatedTilesDataOffset = newOffset;
         copyAnimatedTilesFrame(romData, animatedTilesDataOffset);
+    }
+
+    /** Copies one ROM switch-block frame into its gameplay VRAM slot. */
+    public void copySwitchBlockTiles(byte[] romData, int sourceOffset, int destinationTile) {
+        if (sourceOffset != 0x00 && sourceOffset != 0x40 && sourceOffset != 0x80) {
+            throw new IllegalArgumentException("Unknown switch-block source offset: "
+                + sourceOffset);
+        }
+        if (destinationTile != 0x104 && destinationTile != 0x108) {
+            throw new IllegalArgumentException("Unknown switch-block destination tile: "
+                + destinationTile);
+        }
+        loadTilesFromROM(romData, SWITCH_BLOCK_TILES_BANK,
+            SWITCH_BLOCK_TILES_ADDR + sourceOffset, SWITCH_BLOCK_TILE_COUNT, destinationTile);
     }
 
     private void copyAnimatedTilesFrame(byte[] romData, int dataOffset) {

@@ -26,6 +26,7 @@ public final class RoomEntityCombatRules {
     private static final int ENTITY_COLOR_SHELL_RED = 0xE9;
     private static final int ENTITY_COLOR_SHELL_GREEN = 0xEA;
     private static final int ENTITY_COLOR_SHELL_BLUE = 0xEB;
+    private static final int ENTITY_CRYSTAL_SWITCH = 0x66;
 
     // HitboxPositions._00 in home/entities.asm:3AAA. Octorok, Moblin, Armos,
     // and Keese all select the normal collision box in hitbox_flags.asm.
@@ -52,6 +53,8 @@ public final class RoomEntityCombatRules {
     private static final int HARDHAT_INITIAL_HEALTH = 0x04;
     private static final int SPIKE_TRAP_CONTACT_DAMAGE = 0x08;
     private static final int SPIKE_TRAP_INITIAL_HEALTH = 0x04;
+    private static final int CRYSTAL_SWITCH_CONTACT_DAMAGE = 0x04;
+    private static final int CRYSTAL_SWITCH_INITIAL_HEALTH = 0x08;
     private static final int PAIRODD_INITIAL_HEALTH = 0x02;
     private static final int ANTI_FAIRY_INITIAL_HEALTH = 0x04;
     private static final int ZOL_INITIAL_HEALTH = 0x02;
@@ -76,6 +79,7 @@ public final class RoomEntityCombatRules {
                 ENTITY_HARDHAT_BEETLE, ENTITY_SPIKE_TRAP, ENTITY_WATER_TEKTITE,
                 ENTITY_PAIRODD, ENTITY_COLOR_SHELL_RED, ENTITY_COLOR_SHELL_GREEN,
                 ENTITY_COLOR_SHELL_BLUE,
+                ENTITY_CRYSTAL_SWITCH,
                 ENTITY_OCTOROK -> true;
             default -> false;
         };
@@ -102,6 +106,7 @@ public final class RoomEntityCombatRules {
             case ENTITY_GHINI -> GHINI_CONTACT_DAMAGE;
             case ENTITY_HARDHAT_BEETLE -> HARDHAT_CONTACT_DAMAGE;
             case ENTITY_SPIKE_TRAP -> SPIKE_TRAP_CONTACT_DAMAGE;
+            case ENTITY_CRYSTAL_SWITCH -> CRYSTAL_SWITCH_CONTACT_DAMAGE;
             default -> 0;
         };
     }
@@ -125,6 +130,7 @@ public final class RoomEntityCombatRules {
             case ENTITY_GHINI -> GHINI_INITIAL_HEALTH;
             case ENTITY_HARDHAT_BEETLE -> HARDHAT_INITIAL_HEALTH;
             case ENTITY_SPIKE_TRAP -> SPIKE_TRAP_INITIAL_HEALTH;
+            case ENTITY_CRYSTAL_SWITCH -> CRYSTAL_SWITCH_INITIAL_HEALTH;
             default -> 0;
         };
     }

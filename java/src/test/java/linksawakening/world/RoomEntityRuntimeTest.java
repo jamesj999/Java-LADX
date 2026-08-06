@@ -60,7 +60,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x18, runtime.transitionCountdown(0));
         assertTrue(runtime.consumePendingSwitchBlockAnimationRequest());
         assertEquals(List.of(new EntityCombatEvent(0, 0x66, 0, false,
-            EntityCombatEvent.SoundChannel.WAVE, 0x0D)),
+            EntityCombatEvent.SoundChannel.WAVE, 0x0E)),
             runtime.consumePendingEntityEvents());
         assertFalse(runtime.consumePendingSwitchBlockAnimationRequest());
     }

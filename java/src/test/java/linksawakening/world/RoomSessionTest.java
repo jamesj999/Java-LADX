@@ -442,6 +442,24 @@ final class RoomSessionTest {
     }
 
     @Test
+    void gameplayVblankAdvancesTheRoomOwnedSwitchStageBeforeOrdinaryAnimations() {
+        RoomSession session = newSession();
+        session.setEntitySwitchBlocksStateForTest(0x00);
+        session.setSwitchableObjectAnimationStageForTest(0x02);
+
+        session.tickGameplayVBlank();
+
+        assertEquals(0x03, session.switchableObjectAnimationStageForTest());
+        assertEquals(0x02, session.entitySwitchBlocksStateForTest());
+
+        session.setSwitchableObjectAnimationStageForTest(0x09);
+        session.tickGameplayVBlank();
+
+        assertEquals(0x00, session.switchableObjectAnimationStageForTest());
+        assertEquals(0x02, session.entitySwitchBlocksStateForTest());
+    }
+
+    @Test
     void ordinaryEntityEntersRomFallingStateOnPitPhysics() {
         RoomSession session = newSession();
         session.loadIndoor(0x00, 0x0F);

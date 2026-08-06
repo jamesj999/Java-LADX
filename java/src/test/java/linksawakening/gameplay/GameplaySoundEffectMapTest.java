@@ -32,7 +32,7 @@ final class GameplaySoundEffectMapTest {
         SoundEffect effect = map.resolve(GameplaySoundEvent.SWITCH_BLOCK_TOGGLE).orElseThrow();
 
         assertEquals(SoundEffectNamespace.WAVE, effect.namespace());
-        assertEquals(0x0D, effect.id());
+        assertEquals(0x0E, effect.id());
         assertEquals("WAVE_SFX_FLOOR_SWITCH", effect.name());
     }
 

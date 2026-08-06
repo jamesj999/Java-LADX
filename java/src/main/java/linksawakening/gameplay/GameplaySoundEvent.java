@@ -26,5 +26,6 @@ public enum GameplaySoundEvent {
     BEAMOS_LASER,
     SPIKE_TRAP_WHOOSH,
     WRONG_ANSWER,
-    DOOR_UNLOCKED
+    DOOR_UNLOCKED,
+    SWITCH_BLOCK_TOGGLE
 }

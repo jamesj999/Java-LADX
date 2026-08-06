@@ -90,6 +90,8 @@ public final class RoomSession {
     private boolean enemyDropActivePowerUp;
     /** WRAM wSwitchBlocksState; the source reset value is zero. */
     private int switchBlocksState;
+    /** WRAM wSwitchableObjectAnimationStage; zero means no update is active. */
+    private int switchableObjectAnimationStage;
     private int followingLinkX = 0x08;
     private int followingLinkY = 0x10;
     private int followingLinkZ;
@@ -228,6 +230,7 @@ public final class RoomSession {
     public void loadIndoor(int mapId, int roomId, int mapCategory) {
         clearTransientRoomState();
         gpu.loadIndoorTiles(romData, mapId, roomId);
+        initializeSwitchBlockTiles();
         LoadedRoom room = roomLoader.loadIndoor(
             mapId, roomId, activeRoom == null ? null : activeRoom.palettes(), mapCategory,
             clearedEntitiesByRoom[roomId]);
@@ -417,8 +420,20 @@ public final class RoomSession {
         switchBlocksState = value;
     }
 
+    void setSwitchableObjectAnimationStageForTest(int value) {
+        if (value < 0 || value > 0xFF) {
+            throw new IllegalArgumentException(
+                "Switch-block animation stage must be an unsigned byte: " + value);
+        }
+        switchableObjectAnimationStage = value;
+    }
+
     int entitySwitchBlocksStateForTest() {
         return switchBlocksState & 0xFF;
+    }
+
+    int switchableObjectAnimationStageForTest() {
+        return switchableObjectAnimationStage & 0xFF;
     }
 
     int entityLedgeTimerForTest(int slot) {
@@ -489,6 +504,8 @@ public final class RoomSession {
         if (activeRoom == null || entityRuntime == null) {
             return List.of();
         }
+        entityRuntime.setSwitchBlockAnimationActive(
+            SwitchBlockAnimation.isAnimating(switchableObjectAnimationStage));
         entityRuntime.setActionButtonsHeld(actionButtonsHeld);
         entityRuntime.setPowerBraceletButtonHeld(powerBraceletButtonHeld);
         entityRuntime.setLiftedLinkC13B(followingEntityYOffset);
@@ -505,6 +522,10 @@ public final class RoomSession {
                 romDirectionForProjectileCollision(linkDirection), usingShield, shieldLevel,
                 invincibilityCounter), swordCollisionActive, swordX, swordWidth,
             swordY, swordHeight);
+        if (entityRuntime.consumePendingSwitchBlockAnimationRequest()
+            && switchableObjectAnimationStage == 0) {
+            switchableObjectAnimationStage = 0x01;
+        }
         enemyDropCounters = entityRuntime.enemyDropCounters();
         if (transientVfxSystem != null) {
             for (RoomEntityRuntime.TransientVfxRequest request
@@ -526,6 +547,25 @@ public final class RoomSession {
             return List.of();
         }
         return entityRuntime.consumePendingEntityEvents();
+    }
+
+    /** Advances the ROM's VBlank tile path, including switch blocks. */
+    public void tickGameplayVBlank() {
+        if (SwitchBlockAnimation.isAnimating(switchableObjectAnimationStage)) {
+            SwitchBlockAnimation.Step step = SwitchBlockAnimation.advance(
+                switchableObjectAnimationStage, switchBlocksState);
+            switchBlocksState = step.switchBlocksState();
+            switchableObjectAnimationStage = step.nextStage();
+            if (step.tileCopy() != null) {
+                gpu.copySwitchBlockTiles(romData,
+                    step.tileCopy().sourceOffset(), step.tileCopy().destinationTile());
+            }
+            // AnimateTiles returns after UpdateSwitchBlockTiles while the
+            // switch animation is active, so ordinary animated BG tiles wait
+            // until the next idle VBlank.
+            return;
+        }
+        gpu.tickAnimatedTiles(romData);
     }
 
     /** Link uses Java's down/up/left/right order; projectile ROM tables use right/left/up/down. */
@@ -687,6 +727,13 @@ public final class RoomSession {
         synchronizeFollowingNpcEntitiesIfNeeded();
         if (roomLoadListener != null) {
             roomLoadListener.roomLoaded(activeRoom);
+        }
+    }
+
+    private void initializeSwitchBlockTiles() {
+        for (SwitchBlockAnimation.TileCopy copy
+            : SwitchBlockAnimation.initialCopies(switchBlocksState)) {
+            gpu.copySwitchBlockTiles(romData, copy.sourceOffset(), copy.destinationTile());
         }
     }
 

@@ -14,6 +14,7 @@ import java.util.List;
 public final class EntitySpriteHandlerCatalog {
 
     private static final int ENTITY_BUTTERFLY = 0x6E;
+    private static final int ENTITY_CRYSTAL_SWITCH = 0x66;
     private static final int ENTITY_OCTOROK = 0x09;
     private static final int ENTITY_OCTOROK_ROCK = 0x0A;
     private static final int ENTITY_MOBLIN = 0x0B;
@@ -115,6 +116,9 @@ public final class EntitySpriteHandlerCatalog {
 
         if (entityType == ENTITY_CROW) {
             return decodePair(entityType, 0x06, 0x5C89, 4, 2);
+        }
+        if (entityType == ENTITY_CRYSTAL_SWITCH) {
+            return decodePair(entityType, 0x15, 0x4320, 1, 0);
         }
         if (entityType == ENTITY_BOW_WOW) {
             return decodePair(entityType, 0x05, 0x4000, 7, 0);

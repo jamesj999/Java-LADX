@@ -19,6 +19,7 @@ import java.util.function.IntSupplier;
  */
 public final class RoomEntityRuntime {
     private static final int ENTITY_PIECE_OF_POWER = 0x33;
+    private static final int ENTITY_CRYSTAL_SWITCH = 0x66;
     private static final int ENTITY_BUTTERFLY = 0x6E;
     private static final int ENTITY_OCTOROK = 0x09;
     private static final int ENTITY_OCTOROK_ROCK = 0x0A;
@@ -158,6 +159,8 @@ public final class RoomEntityRuntime {
         new ArrayList<>();
     private final List<TransientVfxRequest> transientVfxRequests = new ArrayList<>();
     private final List<EntityCombatEvent> pendingEntityEvents = new ArrayList<>();
+    private boolean switchBlockAnimationActive;
+    private boolean pendingSwitchBlockAnimationRequest;
     private ColorShellWorld colorShellWorld = ColorShellWorld.none();
     private int pendingClearedEntityMask;
     private EnemyDropResolver enemyDropResolver;
@@ -442,6 +445,7 @@ public final class RoomEntityRuntime {
         Arrays.fill(dynamicEntitySpawnedThisFrame, false);
         transientVfxRequests.clear();
         pendingEntityEvents.clear();
+        pendingSwitchBlockAnimationRequest = false;
         List<EntityProjectileEvent> projectileEvents = new ArrayList<>();
         if (linkPositionHistory != null) {
             followingLinkPositionHistory = linkPositionHistory;
@@ -629,6 +633,24 @@ public final class RoomEntityRuntime {
                     entity, backgroundCollision);
                 entity = recoil.entity();
                 updated = entity;
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_CRYSTAL_SWITCH) {
+                // CrystalSwitchEntityHandler writes $FF before dispatching
+                // its normal collision helper, so sword damage can never
+                // turn this entity into a dying state.
+                enemyHealth[entity.slot()] = 0xFF;
+                if (enemyFlashCountdown[entity.slot()] > 0) {
+                    // The handler consumes the collision flash as its trigger.
+                    enemyFlashCountdown[entity.slot()] = 0;
+                    if (!switchBlockAnimationActive) {
+                        enemyTransitionCountdown[entity.slot()] = 0x18;
+                        pendingSwitchBlockAnimationRequest = true;
+                        pendingEntityEvents.add(new EntityCombatEvent(
+                            entity.slot(), entity.type(), 0, false,
+                            EntityCombatEvent.SoundChannel.WAVE, 0x0E));
+                    }
+                }
             }
             if (wasInitializing && entity.type() == ENTITY_LEEVER) {
                 // EntityInitLeever calls SetEntitySpriteVariant($FF) before
@@ -1332,8 +1354,20 @@ public final class RoomEntityRuntime {
             int enemySpecialAction = -1;
             EntityCombatEvent.SwordPokeVfx swordPokeVfx = null;
             boolean peaHatSwordClink = entity.type() == ENTITY_PEAHAT && !peaHatGrounded;
-            if (swordHit && RoomEntityCombatRules.swordPokeForSwordCollision(
-                    entity.type(), peaHatSwordClink)) {
+            if (entity.type() == ENTITY_CRYSTAL_SWITCH) {
+                if (swordHit) {
+                    // The crystal handler uses the normal enemy-hit path for
+                    // the flash/ignore timers, but its preceding health write
+                    // prevents the generic damage path from killing it.
+                    enemyIgnoreHitsCountdown[entity.slot()] = attackContext.powerRecoil()
+                        ? 0x20 : 0x0A;
+                    enemyFlashCountdown[entity.slot()] = 0x18;
+                    enemyRecoilMotion.clear(entity.slot());
+                    soundChannel = EntityCombatEvent.SoundChannel.JINGLE;
+                    soundId = 0x03;
+                }
+            } else if (swordHit && RoomEntityCombatRules.swordPokeForSwordCollision(
+                entity.type(), peaHatSwordClink)) {
                 // EnemyCollidedWithSword's ENTITY_OPT1_SWORD_CLINK_OFF path
                 // calls label_D07/label_D15: no damage or normal recoil,
                 // sixteen ignored-hit frames, then the sword-poke VFX and
@@ -1611,6 +1645,20 @@ public final class RoomEntityRuntime {
 
     void setColorShellWorld(ColorShellWorld world) {
         colorShellWorld = world == null ? ColorShellWorld.none() : world;
+    }
+
+    void setSwitchBlockAnimationActive(boolean active) {
+        switchBlockAnimationActive = active;
+    }
+
+    void setSwitchBlockAnimationActiveForTest(boolean active) {
+        setSwitchBlockAnimationActive(active);
+    }
+
+    boolean consumePendingSwitchBlockAnimationRequest() {
+        boolean pending = pendingSwitchBlockAnimationRequest;
+        pendingSwitchBlockAnimationRequest = false;
+        return pending;
     }
 
     int consumePendingClearedEntityMask() {

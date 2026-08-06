@@ -612,7 +612,11 @@ public class Main {
                 && !transitionController.isInputBlocked()
                 && !inventoryController.shouldBlockOverworldInput()
                 && !dialogBlocksGameplay) {
-                gpu.tickAnimatedTiles(romData);
+                if (roomSession == null) {
+                    gpu.tickAnimatedTiles(romData);
+                } else {
+                    roomSession.tickGameplayVBlank();
+                }
             }
         }
 
