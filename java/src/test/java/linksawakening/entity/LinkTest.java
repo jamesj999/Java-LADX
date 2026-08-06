@@ -2,6 +2,7 @@ package linksawakening.entity;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -278,6 +279,24 @@ final class LinkTest {
         assertEquals(0, link.romAttackStepAnimationCountdown());
 
         link.update();
+        assertEquals(0, link.romAttackStepAnimationCountdown());
+    }
+
+    @Test
+    void zeroDurationBitSevenAttackStepClearsTheFullRomByte() throws Exception {
+        PlayerState playerState = new PlayerState();
+        ItemRegistry itemRegistry = new ItemRegistry();
+        itemRegistry.register(playerState.itemA(), new BlockingItem());
+        Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
+            null, null, null, playerState, itemRegistry);
+        Field countdown = Link.class.getDeclaredField("romAttackStepAnimationCountdown");
+        countdown.setAccessible(true);
+        countdown.setInt(link, 0x80);
+
+        assertEquals(0x80, link.romAttackStepAnimationCountdown());
+
+        link.update();
+
         assertEquals(0, link.romAttackStepAnimationCountdown());
     }
 

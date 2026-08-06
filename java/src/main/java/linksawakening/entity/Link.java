@@ -516,7 +516,9 @@ public final class Link implements RocsFeather.JumpTarget {
     }
 
     private void tickRomAttackStepAnimationCountdown() {
-        if ((romAttackStepAnimationCountdown & ATTACK_STEP_DURATION_MASK) != 0) {
+        if ((romAttackStepAnimationCountdown & ATTACK_STEP_DURATION_MASK) == 0) {
+            romAttackStepAnimationCountdown = 0;
+        } else {
             romAttackStepAnimationCountdown = (romAttackStepAnimationCountdown - 1) & 0xFF;
         }
     }
