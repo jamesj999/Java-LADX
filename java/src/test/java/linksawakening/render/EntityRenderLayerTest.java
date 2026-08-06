@@ -517,6 +517,73 @@ final class EntityRenderLayerTest {
         assertEquals(bodyColor, pixelColor(phaseEight, 17, 12));
     }
 
+    @Test
+    void rendersPowerRecoilDeathRectangleInsteadOfBodyAndSkipsHiddenEntry() {
+        GPU gpu = new GPU();
+        int bodyColor = 0x112233;
+        int normalColor = 0x445566;
+        int powerColor = 0x778899;
+        int backgroundColor = 0x7A6B5C;
+        int[][] palettes = {
+            {0, bodyColor, 0, 0},
+            {0, normalColor, 0, 0},
+            {0, powerColor, 0, 0}
+        };
+        writeSolidTile(gpu, 0x20, 1);
+        writeSolidTile(gpu, 0x21, 1);
+        writeSolidTile(gpu, 0x22, 1);
+        writeSolidTile(gpu, 0x23, 1);
+        writeSolidTile(gpu, 0x24, 1);
+        writeSolidTile(gpu, 0x25, 1);
+
+        EntitySpriteDefinition body = new EntitySpriteDefinition(
+            0x09, 0x03, 0x57FB, EntitySpriteDefinition.Shape.PAIR, 0,
+            List.of(new EntitySpriteDefinition.Variant(
+                new EntitySpriteDefinition.OamAttribute(0x20, 0x00),
+                new EntitySpriteDefinition.OamAttribute(0x20, 0x00))));
+        List<List<EntitySpriteDefinition.RectangleSprite>> normalVariants = List.of(
+            List.of(new EntitySpriteDefinition.RectangleSprite(0, 0,
+                new EntitySpriteDefinition.OamAttribute(0x22, 0x01))),
+            List.of(new EntitySpriteDefinition.RectangleSprite(0, 0,
+                new EntitySpriteDefinition.OamAttribute(0x22, 0x01))),
+            List.of(new EntitySpriteDefinition.RectangleSprite(0, 0,
+                new EntitySpriteDefinition.OamAttribute(0x22, 0x01))),
+            List.of(new EntitySpriteDefinition.RectangleSprite(0, 0,
+                new EntitySpriteDefinition.OamAttribute(0x22, 0x01))));
+        EntitySpriteDefinition normal = new EntitySpriteDefinition(
+            0x00, 0x03, 0x5488, EntitySpriteDefinition.Shape.RECTANGLE, 0, List.of(),
+            normalVariants);
+        List<List<EntitySpriteDefinition.RectangleSprite>> powerVariants = List.of(
+            List.of(new EntitySpriteDefinition.RectangleSprite(0, 0,
+                new EntitySpriteDefinition.OamAttribute(0x24, 0x02))),
+            List.of(new EntitySpriteDefinition.RectangleSprite(0, 0,
+                new EntitySpriteDefinition.OamAttribute(0x24, 0x02))),
+            List.of(new EntitySpriteDefinition.RectangleSprite(0, 0,
+                new EntitySpriteDefinition.OamAttribute(0x24, 0x02))),
+            List.of(
+                new EntitySpriteDefinition.RectangleSprite(0, 0,
+                    new EntitySpriteDefinition.OamAttribute(0x24, 0x02)),
+                new EntitySpriteDefinition.RectangleSprite(0, 8,
+                    new EntitySpriteDefinition.OamAttribute(0xFF, 0x00))));
+        EntitySpriteDefinition power = new EntitySpriteDefinition(
+            0x00, 0x03, 0x54C8, EntitySpriteDefinition.Shape.RECTANGLE, 0, List.of(),
+            powerVariants);
+        EntitySpriteSelection selection = new EntitySpriteSelection(
+            EntityRoomLoader.RoomTable.OVERWORLD, 0, 0,
+            new int[] {0xFF, 0xFF, 0xFF, 0xFF}, true, palettes)
+            .withDeathSpriteDefinitions(normal, power);
+        RoomEntity entity = new RoomEntity(0, 0, 0x09, 24, 32, EntityStatus.DYING,
+            body, 0, 0, 0, 0, 3, true);
+        byte[] buffer = filledBuffer(0x7A, 0x6B, 0x5C);
+
+        new EntityRenderLayer(snapshot(selection, entity), palettes, new ScrollController())
+            .render(new RenderContext(buffer, gpu));
+
+        // Entity OAM positions are adjusted by $08/$10 before reaching the framebuffer.
+        assertEquals(powerColor, pixelColor(buffer, 16, 16));
+        assertEquals(backgroundColor, pixelColor(buffer, 24, 16));
+    }
+
     private static EntitySpriteDefinition pairDefinition(EntitySpriteDefinition.OamAttribute first,
                                                           EntitySpriteDefinition.OamAttribute second) {
         return new EntitySpriteDefinition(0x7A, 0x06, 0x5C89,

@@ -73,14 +73,26 @@ public final class EntityRenderLayer implements RenderLayer {
         EntitySpriteTileSnapshot tiles = entities.spriteTiles();
         for (RoomEntity entity : entities.loadedEntities()) {
             EntitySpriteDefinition definition = entity.spriteDefinition();
-            if (entities.spriteSelection() != null) {
+            boolean renderingDeath = false;
+            if (entity.status() == EntityStatus.DYING && entities.spriteSelection() != null) {
+                EntitySpriteDefinition death = entity.powerRecoilDeath()
+                    ? entities.spriteSelection().powerRecoilDeathSpriteDefinition()
+                    : entities.spriteSelection().deathSpriteDefinition();
+                if (death != null && entity.deathSpriteVariant() >= 0
+                    && entity.deathSpriteVariant() < death.variantCount()) {
+                    definition = death;
+                    renderingDeath = true;
+                }
+            }
+            if (!renderingDeath && entities.spriteSelection() != null) {
                 EntitySpriteDefinition override = entities.spriteSelection()
                     .spriteOverrideFor(entity.type());
                 if (override != null) {
                     definition = override;
                 }
             }
-            renderEntity(context, entity, definition, entity.spriteVariant(), palettes, tiles,
+            int variant = renderingDeath ? entity.deathSpriteVariant() : entity.spriteVariant();
+            renderEntity(context, entity, definition, variant, palettes, tiles,
                 offset.x(), offset.y());
             if (entity.status() == EntityStatus.BURNING && entities.spriteSelection() != null) {
                 EntitySpriteDefinition burning = entities.spriteSelection()
