@@ -538,6 +538,8 @@ final class EntityRenderLayerTest {
         writeSolidTile(gpu, 0x25, 2);
         writeSolidTile(gpu, 0x26, 1);
         writeSolidTile(gpu, 0x27, 1);
+        // An accidental 8x16 draw can read the paired $FE/$FF tiles.
+        writeSolidTile(gpu, 0xFE, 1);
         writeSolidTile(gpu, 0xFF, 1);
 
         EntitySpriteDefinition body = new EntitySpriteDefinition(
@@ -586,6 +588,7 @@ final class EntityRenderLayerTest {
         // Entity OAM positions are adjusted by $08/$10 before reaching the framebuffer.
         assertEquals(powerVariantThreeColor, pixelColor(buffer, 16, 16));
         assertEquals(backgroundColor, pixelColor(buffer, 24, 16));
+        assertEquals(backgroundColor, pixelColor(buffer, 24, 24));
     }
 
     @Test
