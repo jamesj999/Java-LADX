@@ -825,6 +825,19 @@ runtime collision callback.
   Dungeon transitions, and other equipped-item palette effects remain separate
   work.
 
+## Verified ROM Color Dungeon room render path — 2026-08-06
+
+- Map `$FF` now loads its room palettes from `Data_021_67D0`, its 2x2 object
+  tile bytes from `ColorDungeonObjectsTilemap` at `$08:$4760`, and its object
+  attributes from `ColorDungeonBGAttributes` at `$23:$6000`.
+- The GPU room-load path now selects the `$20:$45EA` room BG source row,
+  Color Dungeon floor/items blocks, shared dungeon tiles, and the dedicated
+  wall pointer for the gameplay VRAM slots. The existing Color Dungeon entity
+  row loader remains ROM-backed as well.
+- Synthetic ROM boundary tests and the shipped-ROM Color Dungeon room-session
+  regression pass. Switch-block state, symbol animation, dynamic palette
+  effects, and Color Dungeon event scripts remain separate follow-up work.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

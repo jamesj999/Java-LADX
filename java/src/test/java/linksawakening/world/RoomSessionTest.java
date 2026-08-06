@@ -487,6 +487,19 @@ final class RoomSessionTest {
         assertNotNull(session.activeRoom().entities().spriteTiles());
         assertEquals(expectedPixel,
             session.activeRoom().entities().spriteTiles().tile(0x40).getPixel(0, 0));
+
+        int objectId = session.activeRoom().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE];
+        int expectedTileOffset = RomBank.romOffset(0x08, 0x4760) + objectId * 4;
+        int expectedAttrOffset = RomBank.romOffset(0x23, 0x6000) + objectId * 4;
+        int expectedPaletteOffset = RomBank.romOffset(0x21, 0x67D0);
+        int expectedPaletteColor = RomBank.decodeRgb555(
+            Byte.toUnsignedInt(rom[expectedPaletteOffset])
+                | (Byte.toUnsignedInt(rom[expectedPaletteOffset + 1]) << 8));
+        assertEquals(expectedPaletteColor, session.activeRoom().palettes()[0][0]);
+        assertEquals(Byte.toUnsignedInt(rom[expectedTileOffset]),
+            session.activeRoom().tileIds()[0]);
+        assertEquals(Byte.toUnsignedInt(rom[expectedAttrOffset]),
+            session.activeRoom().tileAttrs()[0]);
     }
 
     @Test
