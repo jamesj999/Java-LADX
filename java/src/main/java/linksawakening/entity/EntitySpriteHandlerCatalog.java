@@ -14,6 +14,7 @@ import java.util.List;
 public final class EntitySpriteHandlerCatalog {
 
     private static final int ENTITY_BUTTERFLY = 0x6E;
+    private static final int ENTITY_HOOKSHOT_CHAIN = 0x03;
     private static final int ENTITY_CRYSTAL_SWITCH = 0x66;
     private static final int ENTITY_OCTOROK = 0x09;
     private static final int ENTITY_OCTOROK_ROCK = 0x0A;
@@ -119,6 +120,15 @@ public final class EntitySpriteHandlerCatalog {
         }
         if (entityType == ENTITY_CRYSTAL_SWITCH) {
             return decodePair(entityType, 0x15, 0x4320, 1, 0);
+        }
+        if (entityType == ENTITY_HOOKSHOT_CHAIN) {
+            // HookshotChainSpriteVariants is an inline handler list in
+            // entities/18_hookshot_chain.asm, not a bank display-list label.
+            return new EntitySpriteDefinition(entityType, -1, -1,
+                EntitySpriteDefinition.Shape.PAIR, 0, List.of(
+                    new EntitySpriteDefinition.Variant(
+                        new EntitySpriteDefinition.OamAttribute(0x36, 0x00),
+                        new EntitySpriteDefinition.OamAttribute(0x36, 0x20))));
         }
         if (entityType == ENTITY_BOW_WOW) {
             return decodePair(entityType, 0x05, 0x4000, 7, 0);

@@ -43,6 +43,8 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_OPT1_NO_GROUND_INTERACTION = 0x10;
     private static final int ENTITY_OPT1_SPLASH_IN_WATER = 0x08;
     private static final int ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL = 0x02;
+    private static final int ENTITY_PHYSICS_HARMLESS = 0x80;
+    private static final int ENTITY_PHYSICS_PROJECTILE_NOCLIP = 0x40;
     private static final int EVASIVE_PHYSICS_FLAGS = 0x12;
     private static final int EVASIVE_CLONE_PHYSICS_FLAGS = 0x52;
     private static final int EVASIVE_CLONE_OPTIONS = ENTITY_OPT1_NO_GROUND_INTERACTION
@@ -62,6 +64,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_LASER = 0x2A;
     private static final int ENTITY_LASER_BEAM = 0x2B;
     private static final int ENTITY_BOMB = 0x02;
+    private static final int ENTITY_HOOKSHOT_CHAIN = HookshotChainMotion.ENTITY_TYPE;
     private static final int ENTITY_LIFTABLE_ROCK = 0x05;
     private static final int ENTITY_LIFTABLE_STATUE = 0x9D;
     private static final int ENTITY_WRECKING_BALL = 0xA8;
@@ -95,6 +98,7 @@ public final class RoomEntityRuntime {
     private final KeeseMotion keeseMotion = new KeeseMotion();
     private final RoamingEnemyMotion roamingEnemyMotion = new RoamingEnemyMotion();
     private final EnemyProjectileMotion enemyProjectileMotion = new EnemyProjectileMotion();
+    private final HookshotChainMotion hookshotChainMotion = new HookshotChainMotion();
     private final LaserMotion laserMotion = new LaserMotion();
     private final TektiteMotion tektiteMotion = new TektiteMotion();
     private final LeeverMotion leeverMotion = new LeeverMotion();
@@ -477,6 +481,27 @@ public final class RoomEntityRuntime {
             EntityStatus status = entity.status();
             if (status == EntityStatus.ACTIVE) {
                 decrementEnemyDropCountdowns(entity);
+            }
+            if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_HOOKSHOT_CHAIN) {
+                HookshotChainMotion.State hookshotState = hookshotChainMotion.state(entity.slot());
+                if (hookshotState == null) {
+                    clearEntity(entity.slot());
+                    continue;
+                }
+                HookshotChainMotion.Position nextPosition =
+                    HookshotChainMotion.nextPosition(hookshotState);
+                boolean blocked = backgroundCollision != null
+                    && backgroundCollision.blocks(entity, hookshotState.direction(),
+                        nextPosition.x(), nextPosition.y());
+                HookshotChainMotion.Step step = hookshotChainMotion.advance(
+                    entity.slot(), linkEntityX, linkEntityY, blocked);
+                if (step.collided() || step.reachedLink()) {
+                    clearEntity(entity.slot());
+                    continue;
+                }
+                slots[index] = withPositionAndVariant(entity,
+                    step.state().x(), step.state().y(), entity.spriteVariant());
+                continue;
             }
             if (status == EntityStatus.LIFTED) {
                 slots[index] = advanceLiftedEntity(entity, linkEntityX, linkEntityY, linkZ,
@@ -1512,6 +1537,7 @@ public final class RoomEntityRuntime {
         thrownDirection[slot] = 0xFF;
         ledgeTransitionTimer[slot] = 0;
         thrownMotionInitialized[slot] = false;
+        hookshotChainMotion.clear(slot);
         baseEntityFlipAttribute[slot] = 0;
         entityOptions1Override[slot] = -1;
         enemyRecoilMotion.clear(slot);
@@ -1549,6 +1575,55 @@ public final class RoomEntityRuntime {
         slots[slot] = RoomEntity.disabled(slot);
         return entity.sourceLoadOrder() >= 0 && entity.sourceLoadOrder() < 8
             ? 1 << entity.sourceLoadOrder() : 0;
+    }
+
+    /** Creates the ROM's player-projectile entity type {@code $03}. */
+    int spawnHookshotChain(int linkEntityX, int linkEntityY, int linkEntityZ,
+                           int romDirection) {
+        if (hookshotActive()) {
+            return -1;
+        }
+        int freeSlot = findFreeEntitySlot();
+        if (freeSlot < 0) {
+            return -1;
+        }
+
+        EntitySpriteDefinition definition = spriteDefinitionFor(ENTITY_HOOKSHOT_CHAIN);
+        int variant = definition.supported() ? definition.initialVariant() : -1;
+        RoomEntity chain = new RoomEntity(freeSlot, -1, ENTITY_HOOKSHOT_CHAIN,
+            linkEntityX & 0xFF, linkEntityY & 0xFF, EntityStatus.ACTIVE,
+            definition, variant, 0, 0, (linkEntityZ + 1) & 0xFF);
+        slots[freeSlot] = chain;
+        hookshotChainMotion.initializeSpawn(freeSlot, linkEntityX & 0xFF,
+            linkEntityY & 0xFF, linkEntityZ & 0xFF, romDirection);
+        enemyPhysicsFlags[freeSlot] = 2 | ENTITY_PHYSICS_HARMLESS
+            | ENTITY_PHYSICS_PROJECTILE_NOCLIP;
+        enemyHealth[freeSlot] = 0;
+        enemyTransitionCountdown[freeSlot] = 0;
+        enemyStunnedCountdown[freeSlot] = 0;
+        enemyFlashCountdown[freeSlot] = 0;
+        enemyIgnoreHitsCountdown[freeSlot] = 0;
+        baseEntityFlipAttribute[freeSlot] = 0;
+        entityOptions1Override[freeSlot] = ENTITY_OPT1_NO_GROUND_INTERACTION
+            | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
+        return freeSlot;
+    }
+
+    boolean hookshotActive() {
+        return hookshotSlot() >= 0;
+    }
+
+    int hookshotSlot() {
+        for (int slot = 0; slot < slots.length; slot++) {
+            if (hookshotChainMotion.active(slot)) {
+                return slot;
+            }
+        }
+        return -1;
+    }
+
+    int hookshotTransitionCountdown(int slot) {
+        return hookshotChainMotion.transitionCountdown(slot);
     }
 
     public RoomEntitySnapshot snapshot() {
@@ -2701,6 +2776,7 @@ public final class RoomEntityRuntime {
         dropPrivateCountdown3[slot] = 0;
         enemyDropActive[slot] = false;
         enemyDropMotion.clear(slot);
+        hookshotChainMotion.clear(slot);
     }
 
     private void decrementEnemyDropCountdowns(RoomEntity entity) {

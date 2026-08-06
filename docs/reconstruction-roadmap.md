@@ -1088,6 +1088,28 @@ runtime collision callback.
   Dungeon scripts, boss/multi-entity drops), bounce audio/effects, and the
   remaining item-specific collision exceptions remain explicit follow-up work.
 
+## Verified ROM hookshot launch and open-room return — 2026-08-06
+
+- The equipped hookshot now follows the ROM `UseHookshot`/`FireHookshot`
+  boundary: airborne and pushing launches are rejected, a second active
+  chain is rejected, and the room runtime owns the dynamically allocated
+  entity-$03 slot.
+- `HookshotChainMotion` uses the ROM direction tables (`$30`, `-$30`, and
+  zero), `$2A` transition countdown, and signed four-bit fixed-point position
+  updates. Once the outbound countdown expires, it applies the ROM-shaped
+  `$30` vector toward Link in an open room.
+- The chain's inline `$36/$36+XFLIP` OAM pair is represented directly from
+  `HookshotChainSpriteVariants`. Link's equipped-item path remains motion- and
+  facing-locked for the lifetime of the active chain.
+- Return unload uses entity `$03`'s normal `HitboxPositions._00` geometry and
+  visual-Y (`entity Y - Z`) collision semantics, with a launch grace period so
+  the spawn-on-Link position does not immediately unload.
+- The complete Java test suite covers the launch contract, slot exhaustion,
+  fixed-point outbound movement, return boundary, hitbox predicate, runtime
+  cleanup, and sprite bytes. Hookshotable-object interaction, `$01` pulling,
+  Link's forced return movement, bridge spawning, and the three dynamic chain
+  link OAM entries remain explicit follow-up work.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

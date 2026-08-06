@@ -41,6 +41,18 @@ final class EntitySpriteHandlerCatalogTest {
     }
 
     @Test
+    void hookshotUsesTheInlineHookshotChainSpriteBytes() {
+        EntitySpriteDefinition hookshot = new EntitySpriteHandlerCatalog(syntheticRom())
+            .forEntityType(0x03, EntityRoomLoader.RoomTable.OVERWORLD);
+
+        assertDefinition(hookshot, -1, -1, EntitySpriteDefinition.Shape.PAIR, 1, 0);
+        assertEquals(0x36, hookshot.variant(0).first().tile());
+        assertEquals(0x00, hookshot.variant(0).first().attributes());
+        assertEquals(0x36, hookshot.variant(0).second().tile());
+        assertEquals(0x20, hookshot.variant(0).second().attributes());
+    }
+
+    @Test
     void decodesRectangleDisplayListsWithSignedOffsets() {
         byte[] rom = syntheticRom();
         write(rom, 0x06, 0x5200,

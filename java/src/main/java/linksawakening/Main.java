@@ -8,6 +8,7 @@ import linksawakening.entity.Link;
 import linksawakening.entity.LinkSpriteSheet;
 import linksawakening.entity.LinkTunicPalette;
 import linksawakening.equipment.EquipmentController;
+import linksawakening.equipment.Hookshot;
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.equipment.RocsFeather;
 import linksawakening.equipment.Sword;
@@ -263,6 +264,23 @@ public class Main {
         itemRegistry.register(PlayerState.INVENTORY_SWORD, new Sword(romTables, swordSpriteSheet,
             gameplaySoundSink, () -> ThreadLocalRandom.current().nextInt(0x100), swordPalette));
         itemRegistry.register(PlayerState.INVENTORY_ROCS_FEATHER, new RocsFeather(link));
+        itemRegistry.register(PlayerState.INVENTORY_HOOKSHOT, new Hookshot(
+            new Hookshot.LaunchTarget() {
+                @Override
+                public boolean fireHookshot() {
+                    if (link == null || roomSession == null) {
+                        return false;
+                    }
+                    return roomSession.fireHookshot(
+                        link.romEntityX(), link.romEntityY(), link.romEntityZ(),
+                        romDirectionForLink(link.direction()), link.isAirborne(), false);
+                }
+
+                @Override
+                public boolean hookshotActive() {
+                    return roomSession != null && roomSession.hookshotActive();
+                }
+            }));
         equipmentController = new EquipmentController(inputState, inputConfig, playerState, itemRegistry);
         roomTransitionCoordinator = new RoomTransitionCoordinator(
             roomSession, new RoomBoundaryController(), transitionController, scrollController);

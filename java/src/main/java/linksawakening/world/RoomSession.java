@@ -377,6 +377,30 @@ public final class RoomSession {
         return thrown;
     }
 
+    /**
+     * Mirrors {@code FireHookshot}: the item path supplies Link's current ROM
+     * coordinates and the room owns the player-projectile entity slot.
+     */
+    public boolean fireHookshot(int linkEntityX, int linkEntityY, int linkEntityZ,
+                                int romDirection, boolean linkAirborne,
+                                boolean linkPushing) {
+        if (linkAirborne || linkPushing || activeRoom == null || entityRuntime == null) {
+            return false;
+        }
+        int slot = entityRuntime.spawnHookshotChain(linkEntityX, linkEntityY, linkEntityZ,
+            romDirection);
+        if (slot < 0) {
+            return false;
+        }
+        activeRoom.replaceEntities(entityRuntime.snapshot());
+        return true;
+    }
+
+    /** Returns whether the live room currently owns entity {@code $03}. */
+    public boolean hookshotActive() {
+        return entityRuntime != null && entityRuntime.hookshotActive();
+    }
+
     public void setColorShellSoundSink(GameplaySoundSink soundSink) {
         colorShellSoundSink = soundSink == null ? GameplaySoundSink.none() : soundSink;
     }

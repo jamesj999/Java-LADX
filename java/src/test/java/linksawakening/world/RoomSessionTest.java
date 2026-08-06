@@ -86,6 +86,24 @@ final class RoomSessionTest {
     }
 
     @Test
+    void hookshotLaunchPublishesTheRomProjectileAndHonorsFireGuards() {
+        RoomSession session = newSession();
+        session.loadInitialOverworld(0x92);
+
+        assertFalse(session.fireHookshot(0x40, 0x50, 0, 0, true, false));
+        assertFalse(session.hookshotActive());
+        assertFalse(session.fireHookshot(0x40, 0x50, 0, 0, false, true));
+        assertFalse(session.hookshotActive());
+
+        assertTrue(session.fireHookshot(0x40, 0x50, 0, 0, false, false));
+        assertTrue(session.hookshotActive());
+        assertFalse(session.fireHookshot(0x40, 0x50, 0, 0, false, false));
+        assertEquals(0x03, session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x03)
+            .findFirst().orElseThrow().type());
+    }
+
+    @Test
     void forwardsHeldActionButtonsToTheLiveEvasiveStalfosHandler() {
         RoomSession session = newSession();
         session.loadIndoor(0x00, 0x0F);
