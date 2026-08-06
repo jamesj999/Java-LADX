@@ -197,6 +197,7 @@ public final class RoomEntityRuntime {
     private final int[] killOrder = new int[0x100];
     private boolean actionButtonsHeld;
     private boolean powerBraceletButtonHeld;
+    private boolean bombButtonHeld;
     private boolean groundInteractionSideScrolling;
     private int entityMapId = -1;
     private int liftedEntitySlot = -1;
@@ -717,14 +718,26 @@ public final class RoomEntityRuntime {
                 continue;
             }
             if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_BOMB) {
-                advanceBombEntity(index, entity);
+                BombMotion.Decision bombDecision = advanceBombEntity(index, entity);
+                tryLiftBombIfRequested(index, bombDecision, linkEntityX, linkEntityY,
+                    linkZ, romLinkDirection);
                 continue;
             }
             if (status == EntityStatus.LIFTED) {
-                slots[index] = advanceLiftedEntity(entity, linkEntityX, linkEntityY, linkZ,
+                RoomEntity lifted = renderLiftedBomb(entity);
+                slots[index] = advanceLiftedEntity(lifted, linkEntityX, linkEntityY, linkZ,
                     romLinkDirection);
                 continue;
             } else if (status == EntityStatus.THROWN) {
+                if (entity.type() == ENTITY_BOMB) {
+                    BombMotion.Decision bombDecision = advanceBombEntity(index, entity);
+                    entity = slots[index];
+                    if (tryLiftBombIfRequested(index, bombDecision, linkEntityX, linkEntityY,
+                            linkZ, romLinkDirection)
+                        || bombDecision.unloadAfterPresentation()) {
+                        continue;
+                    }
+                }
                 RoomEntity thrown = advanceThrownEntity(entity, backgroundCollision,
                     groundInteractionSideScrolling, romLinkDirection);
                 slots[index] = thrown;
@@ -771,12 +784,22 @@ public final class RoomEntityRuntime {
                 }
                 continue;
             } else if (status == EntityStatus.STUNNED) {
-                if (powerBraceletButtonHeld && isLiftableEntity(entity)
+                if (entity.type() == ENTITY_BOMB) {
+                    BombMotion.Decision bombDecision = advanceBombEntity(index, entity);
+                    entity = slots[index];
+                    if (tryLiftBombIfRequested(index, bombDecision, linkEntityX, linkEntityY,
+                            linkZ, romLinkDirection)
+                        || bombDecision.unloadAfterPresentation()) {
+                        continue;
+                    }
+                }
+                if (entity.type() != ENTITY_BOMB && powerBraceletButtonHeld
+                    && isLiftableEntity(entity)
                     && (enemyPhysicsFlags[entity.slot()] & ENTITY_PHYSICS_GRABBABLE) != 0
                     && RoomEntityPickupRules.overlapsLink(entity, linkEntityX, linkEntityY)) {
                     if (beginLift(entity.slot(), romLinkDirection)) {
-                        slots[index] = advanceLiftedEntity(
-                            slots[index], linkEntityX, linkEntityY, linkZ, romLinkDirection);
+                        slots[index] = advanceLiftedEntity(renderLiftedBomb(slots[index]),
+                            linkEntityX, linkEntityY, linkZ, romLinkDirection);
                     }
                     continue;
                 }
@@ -1398,6 +1421,9 @@ public final class RoomEntityRuntime {
         if (!entity.loaded()) {
             return false;
         }
+        if (entity.type() == ENTITY_BOMB && bombFinalPresentationPending[slot]) {
+            return false;
+        }
         if (liftedEntitySlot >= 0 && liftedEntitySlot != slot
             && slots[liftedEntitySlot].status() == EntityStatus.LIFTED) {
             return false;
@@ -1410,6 +1436,11 @@ public final class RoomEntityRuntime {
         liftedCarryState = 0;
         liftedEffectiveDirection = romDirection;
         enemyTransitionCountdown[slot] = 0x02;
+        if (entity.type() == ENTITY_BOMB) {
+            bombFinalPresentationPending[slot] = false;
+            enemyFlashCountdown[slot] = 0;
+            entity = withDefinition(entity, spriteDefinitionFor(ENTITY_BOMB), 0);
+        }
         slots[slot] = withStatus(entity, EntityStatus.LIFTED);
         return true;
     }
@@ -1433,7 +1464,8 @@ public final class RoomEntityRuntime {
         liftedCarryState = 0;
         liftedEffectiveDirection = 0;
         liftedEntitySlot = -1;
-        enemyTransitionCountdown[slot] = 0;
+        enemyTransitionCountdown[slot] = entity.type() == ENTITY_BOMB
+            ? BombMotion.INITIAL_COUNTDOWN : 0;
         slots[slot] = withStatus(entity, EntityStatus.THROWN);
         return true;
     }
@@ -2032,6 +2064,11 @@ public final class RoomEntityRuntime {
         this.powerBraceletButtonHeld = powerBraceletButtonHeld;
     }
 
+    /** Supplies the source-prioritized held A/B button for an equipped bomb. */
+    void setBombButtonHeld(boolean bombButtonHeld) {
+        this.bombButtonHeld = bombButtonHeld;
+    }
+
     void setLiftedLinkC13B(int linkC13B) {
         if ((linkC13B & ~0xFF) != 0) {
             throw new IllegalArgumentException("Lifted Link C13B must be an unsigned byte: "
@@ -2468,7 +2505,7 @@ public final class RoomEntityRuntime {
         }
     }
 
-    private void advanceBombEntity(int index, RoomEntity entity) {
+    private BombMotion.Decision advanceBombEntity(int index, RoomEntity entity) {
         int slot = entity.slot();
         BombMotion.Decision decision = BombMotion.decide(enemyTransitionCountdown[slot] & 0xFF);
         if (decision.playExplosionSound()) {
@@ -2498,8 +2535,35 @@ public final class RoomEntityRuntime {
         slots[index] = updated;
         if (decision.unloadAfterPresentation()) {
             bombFinalPresentationPending[slot] = true;
-            return;
         }
+        return decision;
+    }
+
+    private RoomEntity renderLiftedBomb(RoomEntity entity) {
+        if (entity.type() != ENTITY_BOMB) {
+            return entity;
+        }
+        enemyFlashCountdown[entity.slot()] = 0;
+        return withDefinition(entity, spriteDefinitionFor(ENTITY_BOMB), 0);
+    }
+
+    private boolean tryLiftBombIfRequested(int index, BombMotion.Decision decision,
+                                            int linkEntityX, int linkEntityY, int linkZ,
+                                            int romLinkDirection) {
+        if (decision.phase() != BombMotion.Phase.NORMAL || !bombButtonHeld) {
+            return false;
+        }
+        RoomEntity entity = slots[index];
+        if (!entity.loaded() || entity.type() != ENTITY_BOMB
+            || !RoomEntityPickupRules.overlapsLink(entity, linkEntityX, linkEntityY)) {
+            return false;
+        }
+        if (!beginLift(entity.slot(), romLinkDirection)) {
+            return false;
+        }
+        slots[index] = advanceLiftedEntity(renderLiftedBomb(slots[index]), linkEntityX,
+            linkEntityY, linkZ, romLinkDirection);
+        return true;
     }
 
     private EntitySpriteDefinition spriteDefinitionForEvasiveState(

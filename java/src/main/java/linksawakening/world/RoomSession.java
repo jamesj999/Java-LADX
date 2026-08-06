@@ -102,6 +102,7 @@ public final class RoomSession {
     private boolean followingNpcRoomNeedsSync;
     private boolean actionButtonsHeld;
     private boolean powerBraceletButtonHeld;
+    private boolean bombButtonHeld;
     private int currentLinkMotionState = EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE;
     private GameplaySoundSink colorShellSoundSink = GameplaySoundSink.none();
     private final ColorShellWorld colorShellWorld = new ColorShellWorld() {
@@ -345,6 +346,14 @@ public final class RoomSession {
         }
     }
 
+    /** Supplies the held A/B state for the equipped-bomb lift/throw path. */
+    public void setEntityBombButtonHeld(boolean buttonHeld) {
+        this.bombButtonHeld = buttonHeld;
+        if (entityRuntime != null) {
+            entityRuntime.setBombButtonHeld(buttonHeld);
+        }
+    }
+
     /** Supplies the player fields consumed by the ROM enemy-drop resolver. */
     public void setEnemyDropPlayerState(int maxHearts, int health, boolean activePowerUp) {
         if (maxHearts < 0 || maxHearts > 0xFF) {
@@ -581,6 +590,7 @@ public final class RoomSession {
             SwitchBlockAnimation.isAnimating(switchableObjectAnimationStage));
         entityRuntime.setActionButtonsHeld(actionButtonsHeld);
         entityRuntime.setPowerBraceletButtonHeld(powerBraceletButtonHeld);
+        entityRuntime.setBombButtonHeld(bombButtonHeld);
         entityRuntime.setLiftedLinkC13B(followingEntityYOffset);
         // rLY is not a meaningful value in the host renderer. Keep the
         // non-emulator policy explicit while preserving the ROM seed update.
@@ -797,6 +807,7 @@ public final class RoomSession {
                 activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL);
             entityRuntime.setActionButtonsHeld(actionButtonsHeld);
             entityRuntime.setPowerBraceletButtonHeld(powerBraceletButtonHeld);
+            entityRuntime.setBombButtonHeld(bombButtonHeld);
             entityRuntime.setLiftedLinkC13B(followingEntityYOffset);
             configureEnemyDropRuntime();
         }
@@ -848,6 +859,7 @@ public final class RoomSession {
             activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL);
         entityRuntime.setActionButtonsHeld(actionButtonsHeld);
         entityRuntime.setPowerBraceletButtonHeld(powerBraceletButtonHeld);
+        entityRuntime.setBombButtonHeld(bombButtonHeld);
         entityRuntime.setLiftedLinkC13B(followingEntityYOffset);
         configureEnemyDropRuntime();
     }

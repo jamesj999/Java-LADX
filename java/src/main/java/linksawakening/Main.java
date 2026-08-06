@@ -525,10 +525,14 @@ public class Main {
                 && !dialogBlocksGameplay;
             if (linkActive && link != null) {
                 boolean powerBraceletButtonHeld = isPowerBraceletButtonHeld();
+                boolean bombButtonHeld = isBombButtonHeld();
                 if (roomSession != null) {
                     roomSession.setEntityPowerBraceletButtonHeld(powerBraceletButtonHeld);
-                    if (powerBraceletButtonHeld
-                        && roomSession.liftedEntityState().carryState() == 0x01) {
+                    roomSession.setEntityBombButtonHeld(bombButtonHeld);
+                    var liftedState = roomSession.liftedEntityState();
+                    boolean liftedThrowButtonHeld = liftedState.type() == 0x02
+                        ? bombButtonHeld : powerBraceletButtonHeld;
+                    if (liftedThrowButtonHeld && liftedState.carryState() == 0x01) {
                         roomSession.throwLiftedEntity(link.direction());
                     }
                 }
@@ -608,6 +612,7 @@ public class Main {
                         && (inputState.isDown(inputConfig.aKey())
                             || inputState.isDown(inputConfig.bKey())));
                 roomSession.setEntityPowerBraceletButtonHeld(isPowerBraceletButtonHeld());
+                roomSession.setEntityBombButtonHeld(isBombButtonHeld());
                 roomSession.setEnemyDropPlayerState(
                     playerState.maxHearts(), playerState.health(),
                     playerState.activePowerUp() != PlayerState.ACTIVE_POWER_UP_NONE);
@@ -684,6 +689,18 @@ public class Main {
         boolean braceletOnB = playerState.itemB() == PlayerState.INVENTORY_POWER_BRACELET
             && inputState.isDown(inputConfig.bKey());
         return braceletOnA || braceletOnB;
+    }
+
+    /** Mirrors BombEntityHandler's B-slot-first equipped-bomb input check. */
+    private static boolean isBombButtonHeld() {
+        if (inputState == null || inputConfig == null || playerState == null) {
+            return false;
+        }
+        if (playerState.itemB() == PlayerState.INVENTORY_BOMBS) {
+            return inputState.isDown(inputConfig.bKey());
+        }
+        return playerState.itemA() == PlayerState.INVENTORY_BOMBS
+            && inputState.isDown(inputConfig.aKey());
     }
 
     private static void synchronizeLinkLiftedPresentation() {
