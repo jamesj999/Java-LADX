@@ -252,6 +252,18 @@ public final class Link implements RocsFeather.JumpTarget {
         forcedSpeedPending = true;
     }
 
+    /**
+     * Applies the speed bytes written by a handler that immediately calls
+     * {@code UpdateFinalLinkPosition}, bypassing input and collision probes.
+     */
+    public void applyRomFinalPosition(int speedX, int speedY) {
+        if ((speedX & ~0xFF) != 0 || (speedY & ~0xFF) != 0) {
+            throw new IllegalArgumentException("Link final-position speeds must be unsigned bytes");
+        }
+        subY += (byte) speedY;
+        subX += (byte) speedX;
+    }
+
     public int pixelX() {
         return subX >> SUB_PIXEL_SHIFT;
     }

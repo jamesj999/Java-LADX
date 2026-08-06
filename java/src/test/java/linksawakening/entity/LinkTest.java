@@ -218,6 +218,51 @@ final class LinkTest {
     }
 
     @Test
+    void appliesRomFinalPositionImmediatelyWhileMotionIsBlocked() {
+        InputState inputState = new InputState();
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        PlayerState playerState = new PlayerState();
+        ItemRegistry itemRegistry = new ItemRegistry();
+        itemRegistry.register(playerState.itemA(), new BlockingItem());
+        Link link = new Link(inputState, inputConfig, null, null, null,
+            playerState, itemRegistry);
+        link.setPixelPosition(0x40, 0x50);
+
+        inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
+        link.applyRomFinalPosition(0x30, 0xE8);
+
+        assertEquals(0x43, link.pixelX());
+        assertEquals(0x4E, link.pixelY());
+
+        link.update();
+
+        assertEquals(0x43, link.pixelX());
+        assertEquals(0x4E, link.pixelY());
+    }
+
+    @Test
+    void applyRomFinalPositionBypassesBlockedCollisionAndKeepsFractionalPosition() throws Exception {
+        byte[] rom = loadRom();
+        RomTables romTables = RomTables.loadFromRom(rom);
+        int[] roomObjects = emptyRoomObjectsArea();
+        roomObjects[ROOM_OBJECTS_BASE + 5 * ROOM_OBJECT_ROW_STRIDE + 5] = OBJECT_TREE_TOP_LEFT;
+        OverworldCollision collision = new OverworldCollision(romTables);
+        collision.setRoom(roomObjects);
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        Link link = new Link(new InputState(), inputConfig, romTables, collision, null,
+            new PlayerState(), new ItemRegistry());
+        link.setPixelPosition(0x4D, 0x50);
+
+        assertTrue(collision.pointBlocked(0x5B, 0x59));
+
+        for (int i = 0; i < 4; i++) {
+            link.applyRomFinalPosition(0x0C, 0);
+        }
+
+        assertEquals(0x50, link.pixelX());
+    }
+
+    @Test
     void savedLoadsCanRestoreFacingAndRejectInvalidDirections() {
         Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
             null, null, null, new PlayerState(), new ItemRegistry());

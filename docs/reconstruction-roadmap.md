@@ -1153,6 +1153,18 @@ runtime collision callback.
   pass, as does the complete Java suite. A generic OAM-buffer emulator and
   broader hookshot return/pulling behavior remain intentionally separate.
 
+## Verified immediate hookshot pull motion — 2026-08-06
+
+- Hookshot entity state `$01` now emits its inverse vector through the live
+  event boundary.
+- `Main` applies that vector immediately via Link's final-position operation
+  after the entity pass, matching `UpdateFinalLinkPosition` ordering (vertical
+  then horizontal) and bypassing normal input collision.
+- Active Hookshot remains input/facing locked, and non-hookshot response speeds
+  still use the queued `applyRomSpeed` path with their existing collision-ignore
+  and sword-reset effects.
+- Focused tests pass, and `gradle -p java test` passed.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

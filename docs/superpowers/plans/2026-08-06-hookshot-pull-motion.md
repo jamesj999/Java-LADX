@@ -16,7 +16,7 @@
 - Modify: `java/src/test/java/linksawakening/entity/LinkTest.java`
 - Modify: `java/src/test/java/linksawakening/MainArchitectureTest.java`
 
-- [ ] **Step 1: Add the Link behavior test before production code**
+- [x] **Step 1: Add the Link behavior test before production code**
 
 Add this test next to `consumesRomResponseSpeedOnTheNextMotionUpdate` in
 `LinkTest.java`:
@@ -45,7 +45,7 @@ The blocking item proves the method does not depend on `Link.update()`
 consuming a queued speed. The `$30`/`$E8` pair also proves signed byte
 interpretation in both axes.
 
-- [ ] **Step 2: Update the source-wiring assertion before implementation**
+- [x] **Step 2: Update the source-wiring assertion before implementation**
 
 Replace the existing body of
 `mainAppliesHookshotPullEventsWithoutProjectileIgnoreSideEffects` in
@@ -60,7 +60,7 @@ assertTrue(source.contains("link.applyRomSpeed(event.linkSpeedX(), event.linkSpe
 This keeps both the immediate hookshot path and the queued non-hookshot path
 visible in the architectural boundary.
 
-- [ ] **Step 3: Run the focused tests and confirm the intended red state**
+- [x] **Step 3: Run the focused tests and confirm the intended red state**
 
 Run:
 
@@ -77,7 +77,7 @@ not yet exist and `Main` does not yet contain the new call.
 - Modify: `java/src/main/java/linksawakening/entity/Link.java`
 - Test: `java/src/test/java/linksawakening/entity/LinkTest.java`
 
-- [ ] **Step 1: Add the minimal public operation**
+- [x] **Step 1: Add the minimal public operation**
 
 Add this method immediately after `applyRomSpeed`:
 
@@ -100,7 +100,7 @@ position bits directly, so adding the signed speed byte is the same fixed
 point operation already used by the normal movement path. The method applies
 Y before X, as `UpdateFinalLinkPosition` does.
 
-- [ ] **Step 2: Run the focused tests and confirm green**
+- [x] **Step 2: Run the focused tests and confirm green**
 
 Run:
 
@@ -117,7 +117,7 @@ passing.
 - Modify: `java/src/main/java/linksawakening/Main.java:610-625`
 - Test: `java/src/test/java/linksawakening/MainArchitectureTest.java`
 
-- [ ] **Step 1: Change the event dispatch order**
+- [x] **Step 1: Change the event dispatch order**
 
 Replace the event-body speed write with this exact branch:
 
@@ -138,7 +138,7 @@ Keep the surrounding condition that skips events without a Link response and
 the existing `link == null` guard. This makes hookshot pulls immediate while
 leaving laser/reflection countdown semantics unchanged.
 
-- [ ] **Step 2: Run the boundary and hookshot regression tests**
+- [x] **Step 2: Run the boundary and hookshot regression tests**
 
 Run:
 
@@ -153,7 +153,7 @@ Expected: PASS, including the existing event-vector and chain-state tests.
 **Files:**
 - Modify: `docs/reconstruction-roadmap.md`
 
-- [ ] **Step 1: Run the complete test suite**
+- [x] **Step 1: Run the complete test suite**
 
 Run:
 
@@ -163,7 +163,7 @@ gradle -p java test
 
 Expected: `BUILD SUCCESSFUL` with zero failed tests.
 
-- [ ] **Step 2: Inspect repository hygiene**
+- [x] **Step 2: Inspect repository hygiene**
 
 Run:
 
@@ -173,23 +173,25 @@ git status --short --branch
 git diff --stat HEAD~1
 ```
 
-Expected: no whitespace errors; only the planned Link/Main tests,
-implementation, and roadmap entry are changed after the spec/plan commits.
+Expected: no whitespace errors; only the planned Link/Main implementation,
+tests, roadmap entry, and `docs/superpowers/plans/2026-08-06-hookshot-pull-motion.md`
+are changed after the spec/plan commits.
 
-- [ ] **Step 3: Append the verified roadmap entry**
+- [x] **Step 3: Append the verified roadmap entry**
 
 Add a dated section stating that hookshot `$01` now applies the inverse `$30`
 vector immediately after the entity pass, that the active Hookshot remains
 input-locking, and that non-hookshot response speeds remain queued. Include
 the complete-suite command as the verification evidence.
 
-- [ ] **Step 4: Commit the implementation**
+- [x] **Step 4: Commit the implementation**
 
 ```sh
 git add java/src/main/java/linksawakening/entity/Link.java \
   java/src/main/java/linksawakening/Main.java \
   java/src/test/java/linksawakening/entity/LinkTest.java \
   java/src/test/java/linksawakening/MainArchitectureTest.java \
-  docs/reconstruction-roadmap.md
+  docs/reconstruction-roadmap.md \
+  docs/superpowers/plans/2026-08-06-hookshot-pull-motion.md
 git commit -m "feat: apply immediate hookshot pull motion"
 ```

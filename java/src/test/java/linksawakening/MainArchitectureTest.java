@@ -52,8 +52,13 @@ final class MainArchitectureTest {
     @Test
     void mainAppliesHookshotPullEventsWithoutProjectileIgnoreSideEffects() throws Exception {
         String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+        String normalizedSource = source.replaceAll("\\s+", " ");
 
         assertTrue(source.contains("EntityProjectileEvent.Kind.HOOKSHOT_PULL"));
+        assertTrue(normalizedSource.contains(
+            "if (hookshotPull) { link.applyRomFinalPosition(event.linkSpeedX(), event.linkSpeedY()); "
+                + "continue; } link.applyRomSpeed(event.linkSpeedX(), event.linkSpeedY());"));
+        assertTrue(source.contains("link.applyRomFinalPosition(event.linkSpeedX(), event.linkSpeedY())"));
         assertTrue(source.contains("link.applyRomSpeed(event.linkSpeedX(), event.linkSpeedY())"));
     }
 }

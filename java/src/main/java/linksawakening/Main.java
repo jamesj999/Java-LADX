@@ -612,14 +612,11 @@ public class Main {
                         || link == null) {
                         continue;
                     }
-                    // AnimateEntities writes hLinkSpeedX/Y and
-                    // wIgnoreLinkCollisionsCountdown after Link's movement;
-                    // apply both at this boundary so the next Link update
-                    // consumes the same response as the ROM.
-                    link.applyRomSpeed(event.linkSpeedX(), event.linkSpeedY());
                     if (hookshotPull) {
+                        link.applyRomFinalPosition(event.linkSpeedX(), event.linkSpeedY());
                         continue;
                     }
+                    link.applyRomSpeed(event.linkSpeedX(), event.linkSpeedY());
                     link.setCollisionIgnoreFrames(event.linkIgnoreCollisionCountdown());
                     Sword reflectedSword = equipmentController.activeSword();
                     if (reflectedSword != null) {
