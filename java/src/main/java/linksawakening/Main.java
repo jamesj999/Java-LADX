@@ -51,6 +51,7 @@ import linksawakening.scene.BackgroundSceneCatalog;
 import linksawakening.scene.BackgroundSceneLoader;
 import linksawakening.scene.BackgroundSceneSpec;
 import linksawakening.state.PlayerState;
+import linksawakening.startup.NewGameStartProfile;
 import linksawakening.startup.StartupCoordinator;
 import linksawakening.ui.InventoryMenu;
 import linksawakening.ui.InventoryController;
@@ -413,7 +414,7 @@ public class Main {
             }
             FileMenuAction action = fileMenuController.tick(inputState, inputConfig);
             if (action.type() == FileMenuAction.Type.START_NEW_GAME) {
-                startConfiguredGameplay();
+                startNewGame();
             } else if (action.type() == FileMenuAction.Type.LOAD_GAME) {
                 throw new UnsupportedOperationException(
                     "ROM save loading is not implemented in this reconstruction slice");
@@ -699,6 +700,16 @@ public class Main {
             System.err.println("Intro story startup is not implemented yet; spawning at start location");
         }
         loadOverworldScreen();
+    }
+
+    private static void startNewGame() {
+        fileMenuController = null;
+        currentScreen = SCREEN_OVERWORLD;
+
+        NewGameStartProfile profile = NewGameStartProfile.romDefaults();
+        profile.initializePlayerState(playerState);
+        roomSession.loadIndoor(profile.mapId(), profile.roomId());
+        link.setRoomEntryPixelPosition(profile.entryX(), profile.entryY());
     }
 
     private static void startIntroCutscene() {
