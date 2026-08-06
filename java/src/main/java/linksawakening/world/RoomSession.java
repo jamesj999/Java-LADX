@@ -221,6 +221,7 @@ public final class RoomSession {
         overworldCollision.setRoom(activeRoom.roomObjectsArea());
         overworldCollision.setGbcOverlay(activeRoom.gbcOverlay());
         overworldCollision.setPhysicsTable(RomTables.PHYSICS_TABLE_OVERWORLD);
+        synchronizeSwitchBlockCollisionState();
     }
 
     public void loadIndoor(int mapId, int roomId) {
@@ -239,6 +240,7 @@ public final class RoomSession {
         overworldCollision.setRoom(activeRoom.roomObjectsArea());
         overworldCollision.setGbcOverlay(null);
         overworldCollision.setPhysicsTable(RomTables.PHYSICS_TABLE_INDOORS1);
+        synchronizeSwitchBlockCollisionState();
     }
 
     public ActiveRoom activeRoom() {
@@ -418,6 +420,7 @@ public final class RoomSession {
                 "Switch-block state must be an unsigned byte: " + value);
         }
         switchBlocksState = value;
+        synchronizeSwitchBlockCollisionState();
     }
 
     void setSwitchableObjectAnimationStageForTest(int value) {
@@ -434,6 +437,10 @@ public final class RoomSession {
 
     int switchableObjectAnimationStageForTest() {
         return switchableObjectAnimationStage & 0xFF;
+    }
+
+    boolean linkCollisionPointBlockedForTest(int pixelX, int pixelY) {
+        return overworldCollision.pointBlocked(pixelX, pixelY);
     }
 
     int entityLedgeTimerForTest(int slot) {
@@ -556,6 +563,7 @@ public final class RoomSession {
                 switchableObjectAnimationStage, switchBlocksState);
             switchBlocksState = step.switchBlocksState();
             switchableObjectAnimationStage = step.nextStage();
+            synchronizeSwitchBlockCollisionState();
             if (step.tileCopy() != null) {
                 gpu.copySwitchBlockTiles(romData,
                     step.tileCopy().sourceOffset(), step.tileCopy().destinationTile());
@@ -735,6 +743,10 @@ public final class RoomSession {
             : SwitchBlockAnimation.initialCopies(switchBlocksState)) {
             gpu.copySwitchBlockTiles(romData, copy.sourceOffset(), copy.destinationTile());
         }
+    }
+
+    private void synchronizeSwitchBlockCollisionState() {
+        overworldCollision.setSwitchBlocksState(switchBlocksState);
     }
 
     private void synchronizeFollowingNpcEntitiesIfNeeded() {

@@ -460,6 +460,22 @@ final class RoomSessionTest {
     }
 
     @Test
+    void gameplayVblankSynchronizesTheToggledStateIntoLinkCollision() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x00, 0x0F);
+        fillActiveObjects(session, 0xDC);
+        session.setEntitySwitchBlocksStateForTest(0x00);
+
+        assertTrue(session.linkCollisionPointBlockedForTest(0x20, 0x20));
+
+        session.setSwitchableObjectAnimationStageForTest(0x02);
+        session.tickGameplayVBlank();
+
+        assertEquals(0x02, session.entitySwitchBlocksStateForTest());
+        assertFalse(session.linkCollisionPointBlockedForTest(0x20, 0x20));
+    }
+
+    @Test
     void shippedCrystalRoomCarriesAHitIntoTheRoomOwnedSwitchStage() {
         RoomSession session = newSession();
         session.loadIndoor(0x00, 0x22);
