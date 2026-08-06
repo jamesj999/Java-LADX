@@ -37,6 +37,10 @@ final class EntityBackgroundCollisionResolver {
     private static final int PHYSICS_PIT_WARP = 0x51;
     private static final int PHYSICS_SWITCH_BLOCK = 0x04;
     private static final int PHYSICS_TRACTOR = 0xFF;
+    private static final int OBJECT_LOWERED_BLOCK = 0xDB;
+    private static final int OBJECT_RAISED_BLOCK = 0xDC;
+    /** Bank-$03 SwitchBlockLoweredStatePerObject, indexed by $DB/$DC. */
+    private static final int[] SWITCH_BLOCK_STATE_BY_OBJECT = {0x00, 0x02};
     private static final int UNSIGNED_BYTE_MASK = 0xFF;
     private static final int FINE_QUADRANT_SHIFT = 3;
     private static final int FINE_QUADRANT_MASK = 0x01;
@@ -93,8 +97,8 @@ final class EntityBackgroundCollisionResolver {
         int unsignedObjectId = objectId & UNSIGNED_BYTE_MASK;
         int unsignedPhysicsFlag = physicsFlag & UNSIGNED_BYTE_MASK;
         boolean noWall = hasNoWallCollision(entity);
-        CollisionDecision decision = isBlocked(entity, sample, unsignedPhysicsFlag, noWall,
-            ignoreHitsCountdown, state);
+        CollisionDecision decision = isBlocked(entity, sample, unsignedObjectId,
+            unsignedPhysicsFlag, noWall, ignoreHitsCountdown, state);
         EntityBackgroundCollisionResult result = decision.blocked()
             ? EntityBackgroundCollisionResult.blocked(direction, unsignedObjectId,
                 unsignedPhysicsFlag, sample.x(), sample.y())
@@ -105,6 +109,7 @@ final class EntityBackgroundCollisionResolver {
 
     private CollisionDecision isBlocked(RoomEntity entity,
                                          EntityCollisionPointProbe.Sample sample,
+                                         int objectId,
                                          int physicsFlag,
                                          boolean noWall,
                                          int ignoreHitsCountdown,
@@ -149,12 +154,7 @@ final class EntityBackgroundCollisionResolver {
             return resolveLedgeCollision(entity, physicsFlag, state);
         }
         if (physicsFlag == PHYSICS_SWITCH_BLOCK) {
-            if (isBombOrWreckingBall(entity)) {
-                return passable(state);
-            }
-            // Object/state-dependent switch-block exceptions remain deferred
-            // until the required WRAM state is exposed.
-            return blocked(state);
+            return resolveSwitchBlockCollision(entity, objectId, noWall, state);
         }
         if (physicsFlag == PHYSICS_TRACTOR) {
             return blocked(state);
@@ -168,6 +168,23 @@ final class EntityBackgroundCollisionResolver {
             return decision(!noWall, state);
         }
         return passable(state);
+    }
+
+    private static CollisionDecision resolveSwitchBlockCollision(
+            RoomEntity entity, int objectId, boolean noWall,
+            EntityBackgroundCollisionState state) {
+        if (isBombOrWreckingBall(entity)) {
+            return passable(state);
+        }
+        if (objectId < OBJECT_LOWERED_BLOCK || objectId > OBJECT_RAISED_BLOCK) {
+            // The ROM treats other $04 objects as ocean and reaches the
+            // collision-flag path without consulting the entity no-wall bit.
+            return blocked(state);
+        }
+        int expectedState = SWITCH_BLOCK_STATE_BY_OBJECT[objectId - OBJECT_LOWERED_BLOCK];
+        // A valid switch-block mismatch follows doesCollide -> hookshotEnd,
+        // where hActiveEntityNoBGCollision can make the contact passable.
+        return decision(expectedState != state.switchBlocksState() && !noWall, state);
     }
 
     private static CollisionDecision resolveLedgeCollision(

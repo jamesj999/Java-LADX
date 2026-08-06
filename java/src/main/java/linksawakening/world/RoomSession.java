@@ -88,6 +88,8 @@ public final class RoomSession {
     private int enemyDropMaxHearts = 3;
     private int enemyDropHealth = 6;
     private boolean enemyDropActivePowerUp;
+    /** WRAM wSwitchBlocksState; the source reset value is zero. */
+    private int switchBlocksState;
     private int followingLinkX = 0x08;
     private int followingLinkY = 0x10;
     private int followingLinkZ;
@@ -405,6 +407,18 @@ public final class RoomSession {
         if (entityRuntime != null) {
             entityRuntime.setLedgeTransitionTimer(slot, value);
         }
+    }
+
+    void setEntitySwitchBlocksStateForTest(int value) {
+        if (value < 0 || value > 0xFF) {
+            throw new IllegalArgumentException(
+                "Switch-block state must be an unsigned byte: " + value);
+        }
+        switchBlocksState = value;
+    }
+
+    int entitySwitchBlocksStateForTest() {
+        return switchBlocksState & 0xFF;
     }
 
     int entityLedgeTimerForTest(int slot) {
@@ -821,7 +835,7 @@ public final class RoomSession {
         EntityBackgroundCollisionState state = new EntityBackgroundCollisionState(
             frameCounter, activeRoom != null
                 && activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD,
-            thrownDirection, ledgeTimer);
+            thrownDirection, ledgeTimer, switchBlocksState);
         EntityBackgroundCollisionResolution resolution =
             entityBackgroundCollisionResolver.resolveWithState(
                 entity, direction, sample, objectId, physicsFlag,
