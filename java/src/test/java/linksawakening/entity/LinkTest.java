@@ -701,6 +701,74 @@ final class LinkTest {
         assertEquals(0, link.zVelocity());
     }
 
+    @Test
+    void blocksLinkFromEnteringAMismatchedRaisedSwitchBlock() throws Exception {
+        byte[] rom = loadRom();
+        RomTables romTables = RomTables.loadFromRom(rom);
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        int[] roomObjects = emptyRoomObjectsArea();
+        roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 1] = 0xDC;
+        InputState inputState = new InputState();
+        inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
+        OverworldCollision collision = new OverworldCollision(romTables);
+        collision.setPhysicsTable(RomTables.PHYSICS_TABLE_INDOORS1);
+        collision.setRoom(roomObjects);
+        collision.setSwitchBlocksState(0x00);
+        Link link = new Link(inputState, inputConfig, romTables, collision, null,
+            new PlayerState(), new ItemRegistry());
+        link.setPixelPosition(0x07, 0x20);
+
+        assertTrue(collision.pointBlocked(0x13, 0x29));
+        link.update();
+
+        assertEquals(0x07, link.pixelX());
+    }
+
+    @Test
+    void allowsLinkToEnterAMatchingRaisedSwitchBlock() throws Exception {
+        byte[] rom = loadRom();
+        RomTables romTables = RomTables.loadFromRom(rom);
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        int[] roomObjects = emptyRoomObjectsArea();
+        roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 1] = 0xDC;
+        InputState inputState = new InputState();
+        inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
+        OverworldCollision collision = new OverworldCollision(romTables);
+        collision.setPhysicsTable(RomTables.PHYSICS_TABLE_INDOORS1);
+        collision.setRoom(roomObjects);
+        collision.setSwitchBlocksState(0x02);
+        Link link = new Link(inputState, inputConfig, romTables, collision, null,
+            new PlayerState(), new ItemRegistry());
+        link.setPixelPosition(0x07, 0x20);
+
+        link.update();
+
+        assertEquals(0x08, link.pixelX());
+    }
+
+    @Test
+    void standingOverrideLetsLinkLeaveAMismatchedSwitchBlock() throws Exception {
+        byte[] rom = loadRom();
+        RomTables romTables = RomTables.loadFromRom(rom);
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        int[] roomObjects = emptyRoomObjectsArea();
+        roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE] = 0xDC;
+        InputState inputState = new InputState();
+        inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
+        OverworldCollision collision = new OverworldCollision(romTables);
+        collision.setPhysicsTable(RomTables.PHYSICS_TABLE_INDOORS1);
+        collision.setRoom(roomObjects);
+        collision.setSwitchBlocksState(0x00);
+        Link link = new Link(inputState, inputConfig, romTables, collision, null,
+            new PlayerState(), new ItemRegistry());
+        link.setPixelPosition(0x00, 0x20);
+
+        link.update();
+
+        assertEquals(0x01, link.pixelX());
+        assertTrue(collision.linkStandingOnSwitchBlock());
+    }
+
     private static byte[] loadRom() throws IOException {
         try (InputStream in = LinkTest.class.getResourceAsStream("/rom/azle.gbc")) {
             if (in == null) {

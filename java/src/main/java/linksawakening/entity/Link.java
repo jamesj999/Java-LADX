@@ -586,6 +586,9 @@ public final class Link implements RocsFeather.JumpTarget {
     }
 
     private void refreshGroundStatus() {
+        if (collision != null) {
+            collision.refreshLinkGroundInteraction(pixelX(), pixelY());
+        }
         if (linkOverPit()) {
             enterPitGroundState();
         } else if (!fallingIntoPit) {
