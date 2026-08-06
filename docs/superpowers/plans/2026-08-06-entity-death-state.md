@@ -279,7 +279,7 @@ assertFalse(runtime.snapshot().slots().get(0).powerRecoilDeath());
 for (int frame = 1; frame <= 0x20; frame++) {
     runtime.tick(frame, 120, 120, sequence(0x00));
 }
-assertEquals(3, runtime.snapshot().slots().get(0).deathSpriteVariant());
+assertEquals(-1, runtime.snapshot().slots().get(0).deathSpriteVariant());
 assertEquals(0x20, runtime.dyingCountdown(0));
 runtime.tick(0x21, 120, 120, sequence(0x00));
 assertEquals(3, runtime.snapshot().slots().get(0).deathSpriteVariant());
