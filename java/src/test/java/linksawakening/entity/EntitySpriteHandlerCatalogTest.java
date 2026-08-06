@@ -749,6 +749,18 @@ final class EntitySpriteHandlerCatalogTest {
     }
 
     @Test
+    void crystalSwitchUsesItsRomPairAndSingleDisplayListVariant() throws Exception {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+
+        EntitySpriteDefinition crystal = catalog.forEntityType(
+            0x66, EntityRoomLoader.RoomTable.INDOORS_A);
+
+        assertDefinition(crystal, 0x15, 0x4320,
+            EntitySpriteDefinition.Shape.PAIR, 1, 0);
+        assertPairBytes(crystal, new int[][] {{0x58, 0x03, 0x58, 0x23}});
+    }
+
+    @Test
     void evasiveStalfosVariantsMatchBothRomDisplayListFamilies() throws Exception {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
 

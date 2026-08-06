@@ -33,6 +33,59 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void crystalSwitchHitFlashesThenRequestsTheRomSwitchAnimation() throws Exception {
+        byte[] rom = loadRom();
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            0x66, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x66, 64, 64, EntityStatus.ACTIVE, definition, 0)),
+            true, null, catalog, tables);
+
+        List<EntityCombatEvent> hit = runtime.resolveCombat(
+            0, 120, 120, false, true, true, 72, 1, 72, 1);
+
+        assertEquals(1, hit.size());
+        assertTrue(hit.get(0).swordHit());
+        assertEquals(EntityCombatEvent.SoundChannel.JINGLE, hit.get(0).soundChannel());
+        assertEquals(0x03, hit.get(0).soundId());
+        assertEquals(0x18, runtime.enemyFlashCountdown(0));
+        assertEquals(0x0A, runtime.enemyIgnoreHitsCountdown(0));
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
+
+        runtime.tick(0, 120, 120, sequence(0x00));
+
+        assertEquals(0, runtime.enemyFlashCountdown(0));
+        assertEquals(0x18, runtime.transitionCountdown(0));
+        assertTrue(runtime.consumePendingSwitchBlockAnimationRequest());
+        assertEquals(List.of(new EntityCombatEvent(0, 0x66, 0, false,
+            EntityCombatEvent.SoundChannel.WAVE, 0x0D)),
+            runtime.consumePendingEntityEvents());
+        assertFalse(runtime.consumePendingSwitchBlockAnimationRequest());
+    }
+
+    @Test
+    void crystalSwitchDoesNotRequestAnotherAnimationWhileSwitchBlocksAreActive()
+        throws Exception {
+        byte[] rom = loadRom();
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x66, 64, 64, EntityStatus.ACTIVE,
+                catalog.forEntityType(0x66, EntityRoomLoader.RoomTable.INDOORS_A), 0)),
+            true, null, catalog, tables);
+
+        runtime.setSwitchBlockAnimationActiveForTest(true);
+        runtime.setEnemyFlashCountdownForTest(0, 0x02);
+        runtime.tick(0, 120, 120, sequence(0x00));
+
+        assertEquals(0, runtime.enemyFlashCountdown(0));
+        assertFalse(runtime.consumePendingSwitchBlockAnimationRequest());
+        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+    }
+
+    @Test
     void rejectsDeathSpriteVariantsOutsideTheFourFrameRange() {
         EntitySpriteDefinition body = pairDefinition(0x09, 2);
         assertThrows(IllegalArgumentException.class, () -> new RoomEntity(0, 0, 0x09,

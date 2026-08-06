@@ -51,6 +51,17 @@ final class EnemyCombatEventConsumerTest {
     }
 
     @Test
+    void mapsFloorSwitchWaveToTheGameplaySound() {
+        RecordingSoundSink sounds = new RecordingSoundSink();
+        EntityCombatEvent event = new EntityCombatEvent(0, 0x66, 0, false,
+            EntityCombatEvent.SoundChannel.WAVE, 0x0D);
+
+        EnemyCombatEventConsumer.consume(List.of(event), sounds);
+
+        assertEquals(List.of(GameplaySoundEvent.SWITCH_BLOCK_TOGGLE), sounds.events);
+    }
+
+    @Test
     void mapsItemFallingJingleToTheGameplaySound() {
         RecordingSoundSink sounds = new RecordingSoundSink();
         EntityCombatEvent event = new EntityCombatEvent(0, 0x4D, 0, false,
