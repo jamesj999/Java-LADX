@@ -20,7 +20,6 @@ import static linksawakening.world.RoomConstants.ROOM_PIXEL_WIDTH;
 
 public final class RoomSession {
     private static final int W_TILESET_NO_UPDATE = 0xFF;
-    private static final int ENTITY_WATER_TEKTITE = 0x99;
     private static final int ENTITY_OPT1_NO_GROUND_INTERACTION = 0x10;
     private static final int ENTITY_OPT1_SPLASH_IN_WATER = 0x08;
     private static final int ENTITY_FISH = 0xCC;
@@ -51,6 +50,7 @@ public final class RoomSession {
     private final RomTables romTables;
     private final EnemyDropResolver enemyDropResolver;
     private final EntityCollisionPointProbe entityCollisionPointProbe;
+    private final EntityBackgroundCollisionResolver entityBackgroundCollisionResolver;
     private final LinkPositionHistory followingLinkPositionHistory = new LinkPositionHistory();
 
     private ActiveRoom activeRoom;
@@ -138,6 +138,7 @@ public final class RoomSession {
         this.followingNpcEntitySpawner = new FollowingNpcEntitySpawner(entitySpriteHandlerCatalog);
         this.enemyCombatTables = new RomEnemyCombatTables(romData);
         this.romTables = RomTables.loadFromRom(romData);
+        this.entityBackgroundCollisionResolver = new EntityBackgroundCollisionResolver(romTables);
         this.enemyDropResolver = new EnemyDropResolver(romData);
         this.entityCollisionPointProbe = new EntityCollisionPointProbe(romTables);
     }
@@ -753,18 +754,13 @@ public final class RoomSession {
         int pointY = sample.y();
         int objectId = overworldCollision.objectIdAtPoint(pointX, pointY);
         int physicsFlag = overworldCollision.objectPhysicsFlagAtPoint(pointX, pointY);
-        boolean blocked = overworldCollision.pointBlocked(pointX, pointY);
-        if (entity.type() == ENTITY_WATER_TEKTITE) {
-            if (physicsFlag == PhysicsFlags.SHALLOW_WATER
-                || physicsFlag == PhysicsFlags.DEEP_WATER) {
-                blocked = false;
-            }
-        }
-        return blocked
-            ? EntityBackgroundCollisionResult.blocked(direction, objectId, physicsFlag,
-                pointX, pointY)
-            : EntityBackgroundCollisionResult.passableWithObject(direction, objectId,
-                physicsFlag, pointX, pointY);
+        return entityBackgroundCollisionResolver.resolve(
+            entity, direction, sample, objectId, physicsFlag);
+    }
+
+    EntityBackgroundCollisionResult entityBackgroundCollisionResultForTest(
+            RoomEntity entity, int direction, int nextX, int nextY) {
+        return entityBackgroundCollisionResult(entity, direction, nextX, nextY);
     }
 
     /**
