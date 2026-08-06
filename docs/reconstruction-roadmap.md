@@ -983,11 +983,14 @@ runtime collision callback.
   free slot receives source position/Z, despawn `$80`, private countdowns
   `$18/$03`, and top-down/side-scroll initial speed state `$18/$EC`. The
   private `$18` collection delay is enforced at the live pickup boundary.
+- Common drops now execute the ROM `BouncingEntityPhysics` consumer after
+  spawning: top-down Z flight uses the source fixed-point accumulator and
+  gravity, while side-scroll Y motion uses the four ground-status gravity/cap
+  entries and the down-direction collision alignment/bounce threshold.
 - Focused resolver/runtime tests and the complete Java suite pass. Handler-
   specific dropped-item writes (Like-Like shield recovery, key points, Color
-  Dungeon scripts, boss/multi-entity drops), side-scroll item motion beyond
-  the initialized ROM speed state, and drop-specific audio/effects remain
-  explicit follow-up work.
+  Dungeon scripts, boss/multi-entity drops), bounce audio/effects, and the
+  remaining item-specific collision exceptions remain explicit follow-up work.
 
 ## Broader parity gaps
 
