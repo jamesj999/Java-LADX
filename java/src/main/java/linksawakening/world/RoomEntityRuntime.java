@@ -722,7 +722,7 @@ public final class RoomEntityRuntime {
             if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_BOMB) {
                 BombMotion.Decision bombDecision = advanceBombEntity(index, entity);
                 entity = slots[index];
-                if (bombDecision.phase() != BombMotion.Phase.EXPLOSION) {
+                if (bombDecision.phase() == BombMotion.Phase.NORMAL) {
                     slots[index] = advancePlacedBombEntity(
                         entity, backgroundCollision);
                 }
@@ -739,12 +739,6 @@ public final class RoomEntityRuntime {
                 if (entity.type() == ENTITY_BOMB) {
                     BombMotion.Decision bombDecision = advanceBombEntity(index, entity);
                     entity = slots[index];
-                    boolean lifted = tryLiftBombIfRequested(index, bombDecision, linkEntityX,
-                        linkEntityY, linkZ, romLinkDirection);
-                    if (lifted) {
-                        applyBombLiftPostActiveThrownWork(index, slots[index], backgroundCollision);
-                        continue;
-                    }
                     if (bombDecision.unloadAfterPresentation()) {
                         continue;
                     }
@@ -798,19 +792,16 @@ public final class RoomEntityRuntime {
                 if (entity.type() == ENTITY_BOMB) {
                     BombMotion.Decision bombDecision = advanceBombEntity(index, entity);
                     entity = slots[index];
-                    boolean lifted = tryLiftBombIfRequested(index, bombDecision, linkEntityX,
-                        linkEntityY, linkZ, romLinkDirection);
-                    if (lifted) {
-                        applyBombLiftPostActiveStunnedWork(index, slots[index], backgroundCollision);
-                        continue;
-                    }
                     if (bombDecision.unloadAfterPresentation()) {
                         continue;
                     }
+                    entity = applyBombStunnedPostActiveWork(entity, backgroundCollision);
+                    slots[index] = entity;
                 }
-                if (entity.type() != ENTITY_BOMB && powerBraceletButtonHeld
+                if (powerBraceletButtonHeld
                     && isLiftableEntity(entity)
-                    && (enemyPhysicsFlags[entity.slot()] & ENTITY_PHYSICS_GRABBABLE) != 0
+                    && (entity.type() == ENTITY_BOMB
+                        || (enemyPhysicsFlags[entity.slot()] & ENTITY_PHYSICS_GRABBABLE) != 0)
                     && RoomEntityPickupRules.overlapsLink(entity, linkEntityX, linkEntityY)) {
                     if (beginLift(entity.slot(), romLinkDirection)) {
                         slots[index] = advanceLiftedEntity(renderLiftedBomb(slots[index]),
@@ -1557,6 +1548,13 @@ public final class RoomEntityRuntime {
             RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         if (!placedBombMotionInitialized[slot]) {
+            int direction = bombDirection[slot];
+            if (direction < ThrownEntityMotion.ROM_DIRECTION_RIGHT
+                || direction > ThrownEntityMotion.ROM_DIRECTION_DOWN) {
+                // A room-loaded type-$02 entity has no SpawnPlayerProjectile direction.
+                // Preserve its static source state instead of inventing a table index.
+                return entity;
+            }
             thrownEntityMotion.startPlacedBomb(slot, bombDirection[slot]);
             placedBombMotionInitialized[slot] = true;
         }
@@ -2599,38 +2597,19 @@ public final class RoomEntityRuntime {
         return true;
     }
 
-    /**
-     * Mirrors the work after BombEntityHandler returns to EntityThrownHandler. The ROM
-     * EntityGetLiftedUp call returns through label_397B to the bomb's BounceOffWalls
-     * continuation, so the wrapper still runs its post-active physics. Its movement is
-     * deliberately applied to a throw-motion copy only: EntityLiftedHandler has already
-     * established the Link-relative position that must remain visible this frame.
-     */
-    private void applyBombLiftPostActiveThrownWork(
-            int index, RoomEntity lifted, RoomEntityBackgroundCollision backgroundCollision) {
-        int slot = lifted.slot();
-        enemyIgnoreHitsCountdown[slot] = 0x02;
-        RoomEntity moved = thrownEntityMotion.advance(
-            lifted, groundInteractionSideScrolling, backgroundCollision).entity();
-        enemyIgnoreHitsCountdown[slot] = 0;
-        // EntityCheckThrowAtTriggers is intentionally outside this Task 5 bridge because
-        // its source behavior mutates room objects. Keep the lifted presentation explicit
-        // while retaining the source-valid movement returned by BouncingEntityPhysics.
-        slots[index] = withStatus(moved, EntityStatus.LIFTED);
-    }
-
-    /** Mirrors EntityStunnedHandler's recoil/bounce/clear-speed tail after a bomb lift. */
-    private void applyBombLiftPostActiveStunnedWork(
-            int index, RoomEntity lifted, RoomEntityBackgroundCollision backgroundCollision) {
-        RoomEntity moved = lifted;
-        if (enemyRecoilMotion.isActive(lifted.slot())) {
-            moved = applyEnemyRecoilIfNeeded(lifted, backgroundCollision).entity();
+    /** Mirrors EntityStunnedHandler's recoil/bounce/clear-speed tail for a bomb. */
+    private RoomEntity applyBombStunnedPostActiveWork(
+            RoomEntity stunned, RoomEntityBackgroundCollision backgroundCollision) {
+        int slot = stunned.slot();
+        RoomEntity moved = stunned;
+        if (enemyRecoilMotion.isActive(slot)) {
+            moved = applyEnemyRecoilIfNeeded(moved, backgroundCollision).entity();
         }
         moved = thrownEntityMotion.advance(
             moved, groundInteractionSideScrolling, backgroundCollision).entity();
-        thrownEntityMotion.clear(lifted.slot());
-        thrownMotionInitialized[lifted.slot()] = false;
-        slots[index] = withStatus(moved, EntityStatus.LIFTED);
+        thrownEntityMotion.clear(slot);
+        thrownMotionInitialized[slot] = false;
+        return withStatus(moved, stunned.status());
     }
 
     private EntitySpriteDefinition spriteDefinitionForEvasiveState(
