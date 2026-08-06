@@ -80,6 +80,10 @@ public record RoomEntity(
             throw new IllegalArgumentException("Non-dying entities must not have a death sprite "
                 + "variant: " + deathSpriteVariant);
         }
+        if (status != EntityStatus.DYING && powerRecoilDeath) {
+            throw new IllegalArgumentException("Non-dying entities must not use power-recoil "
+                + "death presentation");
+        }
         if (spriteDefinition == null) {
             throw new IllegalArgumentException("Entity sprite definition cannot be null");
         }

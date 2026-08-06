@@ -49,6 +49,13 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void rejectsPowerRecoilDeathForNonDyingEntities() {
+        EntitySpriteDefinition body = pairDefinition(0x09, 2);
+        assertThrows(IllegalArgumentException.class, () -> new RoomEntity(0, 0, 0x09,
+            64, 64, EntityStatus.ACTIVE, body, 1, 0, 0, 0, -1, true));
+    }
+
+    @Test
     void followsPieceOfPowerFrameDrivenPaletteVariant() {
         EntitySpriteDefinition definition = pairDefinition(0x33, 2);
         RoomEntitySnapshot initial = snapshot(
