@@ -765,6 +765,54 @@ final class EntitySpriteHandlerCatalogTest {
     }
 
     @Test
+    void decodesEveryBombDisplayListFromTheShippedRom() throws Exception {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+
+        EntitySpriteDefinition bomb = catalog.forEntityType(
+            0x02, EntityRoomLoader.RoomTable.OVERWORLD);
+        assertDefinition(bomb, 0x03, 0x652E,
+            EntitySpriteDefinition.Shape.SINGLE, 1, 0);
+        assertEquals(0x80, bomb.variant(0).first().tile());
+        assertEquals(0x15, bomb.variant(0).first().attributes());
+        assertNull(bomb.variant(0).second());
+
+        EntitySpriteDefinition warning = catalog.forBombRightBeforeExploding();
+        assertDefinition(warning, 0x03, 0x5484,
+            EntitySpriteDefinition.Shape.PAIR, 1, 0);
+        assertPairBytes(warning, new int[][] {{0x30, 0x01, 0x30, 0x61}});
+
+        EntitySpriteDefinition explosion = catalog.forBombExplosion();
+        assertDefinition(explosion, 0x03, 0x6530,
+            EntitySpriteDefinition.Shape.RECTANGLE, 4, 0);
+        assertRectangleBytes(explosion, new int[][][] {
+            {
+                {-8, -8, 0x32, 0x01}, {-8, 0, 0x32, 0x21},
+                {-8, 8, 0x32, 0x01}, {-8, 16, 0x32, 0x21},
+                {8, -8, 0x32, 0x01}, {8, 0, 0x32, 0x21},
+                {8, 8, 0x32, 0x01}, {8, 16, 0x32, 0x21}
+            },
+            {
+                {-8, -8, 0x10, 0x02}, {-8, 0, 0x12, 0x02},
+                {-8, 8, 0x12, 0x22}, {-8, 16, 0x10, 0x22},
+                {8, -8, 0x10, 0x42}, {8, 0, 0x12, 0x42},
+                {8, 8, 0x12, 0x62}, {8, 16, 0x10, 0x62}
+            },
+            {
+                {-4, -4, 0x30, 0x11}, {-4, 4, 0x30, 0x31},
+                {-4, 4, 0x30, 0x11}, {-4, 12, 0x30, 0x31},
+                {4, -4, 0x30, 0x11}, {4, 4, 0x30, 0x31},
+                {4, 4, 0x30, 0x11}, {4, 12, 0x30, 0x31}
+            },
+            {
+                {-4, -4, 0x30, 0x01}, {-4, 4, 0x30, 0x21},
+                {-4, 4, 0x30, 0x01}, {-4, 12, 0x30, 0x21},
+                {4, -4, 0x30, 0x01}, {4, 4, 0x30, 0x21},
+                {4, 4, 0x30, 0x01}, {4, 12, 0x30, 0x21}
+            }
+        });
+    }
+
+    @Test
     void decodesFloatingItemsMixedMainListSourceQuirkAndRectangleOverlay() throws Exception {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
 
@@ -891,6 +939,22 @@ final class EntitySpriteHandlerCatalogTest {
             assertEquals(expected[variant][1], actual.first().attributes());
             assertEquals(expected[variant][2], actual.second().tile());
             assertEquals(expected[variant][3], actual.second().attributes());
+        }
+    }
+
+    private static void assertRectangleBytes(EntitySpriteDefinition definition,
+                                              int[][][] expected) {
+        assertEquals(expected.length, definition.variantCount());
+        for (int variant = 0; variant < expected.length; variant++) {
+            assertEquals(expected[variant].length, definition.rectangleVariant(variant).size());
+            for (int sprite = 0; sprite < expected[variant].length; sprite++) {
+                EntitySpriteDefinition.RectangleSprite actual =
+                    definition.rectangleVariant(variant).get(sprite);
+                assertEquals(expected[variant][sprite][0], actual.yOffset());
+                assertEquals(expected[variant][sprite][1], actual.xOffset());
+                assertEquals(expected[variant][sprite][2], actual.oam().tile());
+                assertEquals(expected[variant][sprite][3], actual.oam().attributes());
+            }
         }
     }
 

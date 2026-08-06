@@ -13,6 +13,7 @@ import java.util.List;
  */
 public final class EntitySpriteHandlerCatalog {
 
+    private static final int ENTITY_BOMB = 0x02;
     private static final int ENTITY_BUTTERFLY = 0x6E;
     private static final int ENTITY_HOOKSHOT_CHAIN = 0x03;
     private static final int ENTITY_CRYSTAL_SWITCH = 0x66;
@@ -117,6 +118,9 @@ public final class EntitySpriteHandlerCatalog {
             return forColorShellState(entityType, 0, EntityStatus.INIT);
         }
 
+        if (entityType == ENTITY_BOMB) {
+            return decodeSingle(entityType, 0x03, 0x652E, 1, 0);
+        }
         if (entityType == ENTITY_CROW) {
             return decodePair(entityType, 0x06, 0x5C89, 4, 2);
         }
@@ -320,6 +324,16 @@ public final class EntitySpriteHandlerCatalog {
     /** The bank-$03 fire pair rendered over entities in {@code BURNING} status. */
     public EntitySpriteDefinition forBurningEntity() {
         return decodePair(0x00, 0x03, 0x4C44, 2, 0);
+    }
+
+    /** Decodes the bank-$03 pair shown immediately before bomb detonation. */
+    public EntitySpriteDefinition forBombRightBeforeExploding() {
+        return decodePair(ENTITY_BOMB, 0x03, 0x5484, 1, 0);
+    }
+
+    /** Decodes the bank-$03 rectangle list used for bomb explosion frames. */
+    public EntitySpriteDefinition forBombExplosion() {
+        return decodeRectangle(ENTITY_BOMB, 0x03, 0x6530, 4, 8, 0);
     }
 
     /** Decodes the bank-$03 {@code Data_003_5488} ordinary death display list. */
