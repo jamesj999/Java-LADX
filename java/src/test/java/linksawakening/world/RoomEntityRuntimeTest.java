@@ -4290,6 +4290,27 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void liftableRockRubbleUsesTheRomSilentPhysicsAndRockFrame() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+            new RoomEntitySnapshot(new ArrayList<>(snapshot().slots())), false, null, catalog);
+
+        int slot = runtime.spawnLiftableRockRubble(0x48, 0x4F);
+
+        RoomEntity rubble = runtime.snapshot().slots().get(slot);
+        assertEquals(EntityStatus.ACTIVE, rubble.status());
+        assertEquals(0x05, rubble.type());
+        assertEquals(0x05, rubble.spriteVariant());
+        assertEquals(0xC4, runtime.physicsFlags(slot));
+        assertEquals(0x0A, runtime.options1(slot));
+        assertEquals(List.of(), runtime.consumePendingEntityEvents());
+
+        runtime.tick(0, 0, 0, () -> 0);
+        assertEquals(0x05, runtime.snapshot().slots().get(slot).spriteVariant());
+    }
+
+    @Test
     void sideScrollBombPlacementSkipsTheTopViewBumpJingle() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);

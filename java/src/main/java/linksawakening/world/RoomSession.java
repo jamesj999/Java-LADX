@@ -100,6 +100,7 @@ public final class RoomSession {
     private ActiveRoom activeRoom;
     private RoomEntityRuntime entityRuntime;
     private final List<BombExplosionEvent> pendingBombExplosionEvents = new ArrayList<>();
+    private final List<EntityCombatEvent> pendingRoomEntityEvents = new ArrayList<>();
     private final byte[] overworldRoomStatus = new byte[0x100];
     private final byte[] indoorARoomStatus = new byte[0x100];
     private final byte[] indoorBRoomStatus = new byte[0x100];
@@ -719,10 +720,13 @@ public final class RoomSession {
 
     /** Returns and clears entity side-effect events emitted by the last tick. */
     public List<EntityCombatEvent> consumeEntityEvents() {
-        if (entityRuntime == null) {
-            return List.of();
+        List<EntityCombatEvent> events = new ArrayList<>();
+        if (entityRuntime != null) {
+            events.addAll(entityRuntime.consumePendingEntityEvents());
         }
-        return entityRuntime.consumePendingEntityEvents();
+        events.addAll(pendingRoomEntityEvents);
+        pendingRoomEntityEvents.clear();
+        return List.copyOf(events);
     }
 
     /** Returns and clears ROM dialog requests emitted by the last entity tick. */
@@ -1004,6 +1008,7 @@ public final class RoomSession {
         bombedWallTileOverrides.clear();
         bombedBlockTileOverrides.clear();
         pendingBombExplosionEvents.clear();
+        pendingRoomEntityEvents.clear();
     }
 
     private void applyBombObjectInteractions(List<BombExplosionEvent> events) {
@@ -1024,13 +1029,13 @@ public final class RoomSession {
                 applyBasicBombObjectCandidate(candidate);
                 if (bomb != null && bomb.loaded()) {
                     applyPuzzleBombObjectCandidate(BombObjectInteraction.puzzleCandidate(
-                        event.bombX(), bomb.y(), event.countdown()));
+                        event.bombX(), bomb.y(), event.countdown()), event.bombSlot(), bomb.z());
                 }
             } else if (bomb != null && bomb.loaded()) {
                 BombObjectInteraction.Candidate candidate = BombObjectInteraction.puzzleCandidate(
                     event.bombX(), bomb.y(), event.countdown());
                 if (!applyIndoorBombableBlockCandidate(candidate)) {
-                    applyIndoorBombableWallCandidate(candidate);
+                    applyIndoorBombableWallCandidate(candidate, event.bombSlot());
                 }
             }
         }
@@ -1065,7 +1070,8 @@ public final class RoomSession {
         refreshOverworldCollisionAfterObjectMutation();
     }
 
-    private void applyPuzzleBombObjectCandidate(BombObjectInteraction.Candidate candidate) {
+    private void applyPuzzleBombObjectCandidate(BombObjectInteraction.Candidate candidate,
+                                                int sourceSlot, int sourceZ) {
         if (candidate == null) {
             return;
         }
@@ -1077,6 +1083,17 @@ public final class RoomSession {
 
         int blockTop = candidate.objectTop() & 0xE0;
         int blockLeft = candidate.objectLeft() & 0xE0;
+        int[] rubbleXOffsets = {0x18, 0x08, 0x18, 0x08};
+        int[] rubbleYOffsets = {0x20, 0x20, 0x10, 0x10};
+        if (entityRuntime != null) {
+            for (int index = 0; index < rubbleXOffsets.length; index++) {
+                entityRuntime.spawnLiftableRockRubble(
+                    blockLeft + rubbleXOffsets[index],
+                    blockTop + rubbleYOffsets[index] - sourceZ);
+            }
+        }
+        queuePuzzleSolvedJingle(sourceSlot);
+
         int blockLocation = blockTop | (blockLeft >>> 4);
         for (int row = 0; row < 2; row++) {
             for (int column = 0; column < 2; column++) {
@@ -1115,7 +1132,8 @@ public final class RoomSession {
         overworldCollision.setGbcOverlay(activeRoom.gbcOverlay());
     }
 
-    private void applyIndoorBombableWallCandidate(BombObjectInteraction.Candidate candidate) {
+    private void applyIndoorBombableWallCandidate(BombObjectInteraction.Candidate candidate,
+                                                  int sourceSlot) {
         if (candidate == null) {
             return;
         }
@@ -1157,10 +1175,17 @@ public final class RoomSession {
         status[activeRoom.roomId()] |= (byte) currentStatus;
         status[adjacentRoom] |= (byte) adjacentStatus;
         bombedWallTileOverrides.put(areaIndex, wallIndex < 2 ? 0 : 1);
+        queuePuzzleSolvedJingle(sourceSlot);
 
         refreshActiveRoomTilemap();
         overworldCollision.setRoom(activeRoom.roomObjectsArea());
         overworldCollision.setGbcOverlay(null);
+    }
+
+    private void queuePuzzleSolvedJingle(int sourceSlot) {
+        pendingRoomEntityEvents.add(new EntityCombatEvent(
+            sourceSlot, 0x02, 0, false,
+            EntityCombatEvent.SoundChannel.JINGLE, 0x02));
     }
 
     private boolean applyIndoorBombableBlockCandidate(BombObjectInteraction.Candidate candidate) {

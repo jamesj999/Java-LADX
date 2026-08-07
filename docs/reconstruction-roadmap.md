@@ -1351,8 +1351,9 @@ runtime collision callback.
   view, and sets overworld status bit `$04` (`OW_ROOM_STATUS_OPENED`). The
   room loader now feeds that status byte back into the ROM macro parser, so a
   reload reconstructs the blasted skull as rocky ground.
-- The source puzzle jingle/rubble-entity presentation and indoor bombable-wall
-  status/adjacent-room writes remain separate follow-up branches.
+- The later bomb-puzzle presentation slice now covers the source puzzle jingle
+  and rubble entities; indoor bombable-wall status/adjacent-room writes remain
+  a separate branch below.
 - The clean Java suite passes with 944 tests and zero failures, errors, or
   skipped tests. This increment does not add an emulator.
 
@@ -1368,8 +1369,9 @@ runtime collision callback.
   row order (`$72,$72,$73,$73` or `$69,$79,$69,$79`); a room reload clears that
   transient draw override while status-driven object replacement persists.
 - Focused vertical/horizontal ROM-room tests and the clean Java suite pass with
-  946 tests and zero failures, errors, or skipped tests. Puzzle jingle and the
-  remaining bomb-specific presentation branches remain follow-up work.
+  946 tests and zero failures, errors, or skipped tests. The puzzle jingle is
+  covered by the later bomb-puzzle presentation slice; remaining bomb-specific
+  presentation branches remain follow-up work.
 
 ## Verified ROM indoor bombable-block mutation — 2026-08-07
 
@@ -1381,8 +1383,8 @@ runtime collision callback.
   draw-command order (`$10,$12,$11,$13`) before a reload rebuilds the normal
   floor order (`$10,$11,$12,$13`).
 - A shipped-ROM room test covers the live mutation, status persistence, and
-  immediate-versus-reloaded tile order. Puzzle jingle and remaining
-  bomb-specific presentation branches remain separate follow-up work.
+  immediate-versus-reloaded tile order. Remaining bomb-specific presentation
+  branches remain separate follow-up work.
 - The clean Java suite passes with 947 tests and zero failures, errors, or
   skipped tests. This increment does not add an emulator.
 
@@ -1406,8 +1408,26 @@ runtime collision callback.
 - Focused catalog, runtime, and shipped-ROM room-session tests cover the
   display-list bytes, attributes, spawn position, flags, countdown frame
   boundaries, sounds, and cleanup. The clean Java suite passes with 950 tests
-  and zero failures, errors, or skipped tests. Puzzle jingle and remaining
-  bomb-specific presentation branches remain separate follow-up work.
+  and zero failures, errors, or skipped tests. Remaining bomb-specific
+  presentation branches remain separate follow-up work.
+
+## Verified ROM bomb puzzle jingle and giant-skull rubble — 2026-08-07
+
+- Successful giant-skull and indoor bombable-wall mutations now publish the
+  source `JINGLE_PUZZLE_SOLVED` `$02` write through the gameplay sound boundary,
+  backed by the shipped-ROM sound catalog. Basic bombed leaves and indoor
+  bombable blocks do not receive that puzzle-only jingle.
+- Giant-skull destruction mirrors `Spawn2x2RubbleEntities` from bank `$36`: it
+  allocates up to four dynamic type-$05 entities in descending slot order,
+  applies `Data_036_7052`/`Data_036_7056` offsets, subtracts the live bomb Z,
+  initializes countdown `$0F`, and uses physics `$C4` without emitting a
+  second smash sound.
+- The rubble entities render the bank-$19 smashed-rock frame from the first
+  visible handler frame and unload at the source countdown boundary. The room
+  session test covers all four ROM positions, dynamic display-list source,
+  exact puzzle jingle ID, and the clean Java suite passes with 953 tests and
+  zero failures, errors, or skipped tests. Remaining bomb-specific
+  presentation branches remain separate follow-up work.
 
 ## Broader parity gaps
 

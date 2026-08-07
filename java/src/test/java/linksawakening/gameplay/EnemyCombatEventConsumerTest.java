@@ -26,6 +26,17 @@ final class EnemyCombatEventConsumerTest {
     }
 
     @Test
+    void mapsPuzzleSolvedJingleToTheGameplaySound() {
+        RecordingSoundSink sounds = new RecordingSoundSink();
+        EntityCombatEvent event = new EntityCombatEvent(0, 0x02, 0, false,
+            EntityCombatEvent.SoundChannel.JINGLE, 0x02);
+
+        EnemyCombatEventConsumer.consume(List.of(event), sounds);
+
+        assertEquals(List.of(GameplaySoundEvent.PUZZLE_SOLVED), sounds.events);
+    }
+
+    @Test
     void mapsSecondaryBurningNoiseAfterTheEnemyHitJingle() {
         RecordingSoundSink sounds = new RecordingSoundSink();
         List<EntityCombatEvent> events = List.of(

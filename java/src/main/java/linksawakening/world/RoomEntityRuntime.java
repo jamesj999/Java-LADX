@@ -50,6 +50,8 @@ public final class RoomEntityRuntime {
     private static final int LIFTABLE_ROCK_SMASH_PHYSICS_FLAGS =
         0x04 | ENTITY_PHYSICS_HARMLESS | ENTITY_PHYSICS_PROJECTILE_NOCLIP
             | 0x10;
+    private static final int LIFTABLE_ROCK_RUBBLE_PHYSICS_FLAGS =
+        0x04 | ENTITY_PHYSICS_HARMLESS | ENTITY_PHYSICS_PROJECTILE_NOCLIP;
     private static final int LIFTABLE_ROCK_SMASH_MODE_ROCK = 0;
     private static final int LIFTABLE_ROCK_SMASH_MODE_BUSH = 1;
     private static final int LIFTABLE_ROCK_SMASH_MODE_GRASS = 0xFF;
@@ -2347,17 +2349,29 @@ public final class RoomEntityRuntime {
             && sourceSpriteVariant != LIFTABLE_ROCK_SMASH_MODE_GRASS) {
             throw new IllegalArgumentException("Liftable-rock source variant must be 0, 1, or FF");
         }
+        boolean rock = sourceSpriteVariant == LIFTABLE_ROCK_SMASH_MODE_ROCK;
+        int initialCountdown = rock ? 0x0F : 0x1F;
+        return spawnLiftableRockAnimation(entityX, entityY, sourceSpriteVariant,
+            initialCountdown, LIFTABLE_ROCK_SMASH_PHYSICS_FLAGS, rock ? 0x09 : 0x05);
+    }
+
+    /** Creates one of the four silent type-$05 rubble entities from bank-$36. */
+    int spawnLiftableRockRubble(int entityX, int entityY) {
+        return spawnLiftableRockAnimation(entityX, entityY, LIFTABLE_ROCK_SMASH_MODE_ROCK,
+            0x0F, LIFTABLE_ROCK_RUBBLE_PHYSICS_FLAGS, -1);
+    }
+
+    private int spawnLiftableRockAnimation(int entityX, int entityY, int sourceSpriteVariant,
+                                           int initialCountdown, int physicsFlags, int soundId) {
         int freeSlot = findFreeEntitySlot();
         if (freeSlot < 0) {
             return -1;
         }
 
         EntitySpriteDefinition definition = spriteDefinitionFor(ENTITY_LIFTABLE_ROCK);
-        boolean rock = sourceSpriteVariant == LIFTABLE_ROCK_SMASH_MODE_ROCK;
         boolean swampLeaves = !indoorRoom && spriteSelection != null
             && spriteSelection.roomTable() == EntityRoomLoader.RoomTable.OVERWORLD
             && spriteSelection.roomId() == 0x32;
-        int initialCountdown = rock ? 0x0F : 0x1F;
         int variant = definition.supported()
             ? liftableRockSmashVariant(sourceSpriteVariant, swampLeaves, initialCountdown) : -1;
         RoomEntity smash = new RoomEntity(freeSlot, -1, ENTITY_LIFTABLE_ROCK,
@@ -2367,7 +2381,7 @@ public final class RoomEntityRuntime {
         liftableRockSmashActive[freeSlot] = true;
         liftableRockSmashCountdown[freeSlot] = initialCountdown;
         liftableRockSmashSourceVariant[freeSlot] = sourceSpriteVariant;
-        enemyPhysicsFlags[freeSlot] = LIFTABLE_ROCK_SMASH_PHYSICS_FLAGS;
+        enemyPhysicsFlags[freeSlot] = physicsFlags;
         enemyHitboxFlags[freeSlot] = 0;
         enemyHealth[freeSlot] = initialHealth(ENTITY_LIFTABLE_ROCK);
         enemyIgnoreHitsCountdown[freeSlot] = 1;
@@ -2376,9 +2390,11 @@ public final class RoomEntityRuntime {
         enemyFlashCountdown[freeSlot] = 0;
         enemyRecoilMotion.clear(freeSlot);
         entityOptions1Override[freeSlot] = BOMB_OPTIONS1;
-        pendingEntityEvents.add(new EntityCombatEvent(
-            freeSlot, ENTITY_LIFTABLE_ROCK, 0, false,
-            EntityCombatEvent.SoundChannel.NOISE, rock ? 0x09 : 0x05));
+        if (soundId >= 0) {
+            pendingEntityEvents.add(new EntityCombatEvent(
+                freeSlot, ENTITY_LIFTABLE_ROCK, 0, false,
+                EntityCombatEvent.SoundChannel.NOISE, soundId));
+        }
         dynamicEntitySpawnedThisFrame[freeSlot] = true;
         return freeSlot;
     }

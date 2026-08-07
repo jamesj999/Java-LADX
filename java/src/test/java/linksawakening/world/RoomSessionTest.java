@@ -276,6 +276,47 @@ final class RoomSessionTest {
     }
 
     @Test
+    void bombedGiantSkullSpawnsTheRomRubbleGridAndPuzzleJingle() {
+        RoomSession session = newSession();
+        session.loadInitialOverworld(0x97);
+
+        assertTrue(session.placeBomb(0x40, 0x50, 0, 0));
+        boolean destroyed = false;
+        for (int frame = 0; frame <= 140; frame++) {
+            session.tickEntities(frame, 0, 0);
+            if (session.overworldRoomStatusForTest(0x97) == 0x04) {
+                destroyed = true;
+                break;
+            }
+        }
+
+        assertTrue(destroyed);
+        int[][] expectedPositions = {
+            {0x48, 0x4F}, {0x58, 0x4F}, {0x48, 0x5F}, {0x58, 0x5F}
+        };
+        List<RoomEntity> rubble = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x05)
+            .toList();
+        assertEquals(4, rubble.size());
+        for (int[] position : expectedPositions) {
+            RoomEntity entity = rubble.stream()
+                .filter(candidate -> candidate.x() == position[0]
+                    && candidate.y() == position[1])
+                .findFirst()
+                .orElseThrow();
+            assertEquals(0x05, entity.type());
+            assertEquals(0x05, entity.spriteVariant());
+            assertEquals(EntitySpriteDefinition.Shape.DYNAMIC, entity.spriteDefinition().shape());
+            assertEquals(0x19, entity.spriteDefinition().bank());
+            assertEquals(0x7B50, entity.spriteDefinition().address());
+        }
+        List<EntityCombatEvent> events = session.consumeEntityEvents();
+        assertEquals(1, events.size());
+        assertEquals(EntityCombatEvent.SoundChannel.JINGLE, events.getFirst().soundChannel());
+        assertEquals(0x02, events.getFirst().soundId());
+    }
+
+    @Test
     void bombExplosionReplacesAnIndoorWallAndPersistsTheTwoDoorStatuses() {
         RoomSession session = newSession();
         session.loadIndoor(0x06, 0x18);
@@ -293,6 +334,10 @@ final class RoomSessionTest {
         assertEquals(0x3D, session.activeRoom().roomObjectsArea()[areaIndex]);
         assertEquals(0x04, session.indoorRoomStatusForTest(0x06, 0x18));
         assertEquals(0x08, session.indoorRoomStatusForTest(0x06, 0x14));
+        List<EntityCombatEvent> events = session.consumeEntityEvents();
+        assertEquals(1, events.size());
+        assertEquals(EntityCombatEvent.SoundChannel.JINGLE, events.getFirst().soundChannel());
+        assertEquals(0x02, events.getFirst().soundId());
 
         int tileIndex = 0x04;
         int[] tileIds = session.activeRoom().tileIds();
