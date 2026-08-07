@@ -1,5 +1,7 @@
 package linksawakening.save;
 
+import linksawakening.state.PlayerState;
+
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -105,6 +107,45 @@ public final class SaveRamImage {
             = (byte) Math.max(0, Math.min(2, selectedSongIndex));
     }
 
+    /**
+     * Writes every persistent field currently represented by {@link PlayerState}.
+     *
+     * <p>The source copies the complete WRAM save block. Unknown fields in
+     * this host model are deliberately left untouched until their runtime
+     * owners are implemented, so this method cannot erase unrelated progress.</p>
+     */
+    public void writePlayerState(int slot, PlayerState playerState) {
+        SaveRamLayout.checkSlot(slot);
+        Objects.requireNonNull(playerState, "playerState");
+        int slotOffset = SaveRamLayout.slotOffset(slot);
+        int main = slotOffset + SaveRamLayout.mainOffset();
+
+        bytes[main + SaveRamLayout.MAIN_ITEM_B_OFFSET] = (byte) playerState.itemB();
+        bytes[main + SaveRamLayout.MAIN_ITEM_A_OFFSET] = (byte) playerState.itemA();
+        for (int index = 0; index < SaveRamLayout.SUBSCREEN_SLOT_COUNT; index++) {
+            bytes[main + SaveRamLayout.MAIN_SUBSCREEN_OFFSET + index]
+                = (byte) playerState.subscreenItem(index);
+        }
+        bytes[main + SaveRamLayout.MAIN_SEASHELLS_OFFSET] = (byte) playerState.seashells();
+        bytes[main + SaveRamLayout.MAIN_SHIELD_OFFSET] = (byte) playerState.shieldLevel();
+        bytes[main + SaveRamLayout.MAIN_ARROWS_OFFSET] = (byte) playerState.arrowCount();
+        bytes[main + SaveRamLayout.MAIN_MAGIC_POWDER_OFFSET]
+            = (byte) playerState.magicPowderCount();
+        bytes[main + SaveRamLayout.MAIN_BOMBS_OFFSET] = (byte) playerState.bombCount();
+        bytes[main + SaveRamLayout.MAIN_SWORD_OFFSET] = (byte) playerState.swordLevel();
+        bytes[main + SaveRamLayout.MAIN_HEALTH_OFFSET] = (byte) savedHealth(playerState);
+        bytes[main + SaveRamLayout.MAIN_MAX_HEARTS_OFFSET] = (byte) playerState.maxHearts();
+        bytes[main + SaveRamLayout.MAIN_HEART_PIECES_OFFSET] = (byte) playerState.heartPieces();
+        writeRupees(main, playerState.rupees());
+        bytes[main + SaveRamLayout.MAIN_MAX_MAGIC_POWDER_OFFSET]
+            = (byte) playerState.maxMagicPowder();
+        bytes[main + SaveRamLayout.MAIN_MAX_BOMBS_OFFSET] = (byte) playerState.maxBombs();
+        bytes[main + SaveRamLayout.MAIN_MAX_ARROWS_OFFSET] = (byte) playerState.maxArrows();
+        writeOcarinaState(slot, playerState.ocarinaSongFlags(), playerState.selectedSongIndex());
+        bytes[slotOffset + SaveRamLayout.dx3Offset() + SaveRamLayout.DX3_TUNIC_OFFSET]
+            = (byte) playerState.tunicType();
+    }
+
     public SaveSlotState readSlot(int slot) {
         SaveRamLayout.checkSlot(slot);
         int slotOffset = SaveRamLayout.slotOffset(slot);
@@ -177,6 +218,38 @@ public final class SaveRamImage {
         int tens = (unsigned(low) >>> 4) & 0x0F;
         int ones = unsigned(low) & 0x0F;
         return Math.min(999, hundreds * 100 + tens * 10 + ones);
+    }
+
+    private void writeRupees(int main, int rupees) {
+        int value = Math.max(0, Math.min(PlayerState.MAX_RUPEES, rupees));
+        bytes[main + SaveRamLayout.MAIN_RUPEE_HIGH_OFFSET] = (byte) (value / 100);
+        bytes[main + SaveRamLayout.MAIN_RUPEE_LOW_OFFSET]
+            = (byte) ((((value / 10) % 10) << 4) | (value % 10));
+    }
+
+    private static int savedHealth(PlayerState playerState) {
+        if (playerState.health() != 0) {
+            return playerState.health();
+        }
+        int[] startingHealthByMaxHearts = {
+            3 * PlayerState.HP_PER_HEART,
+            3 * PlayerState.HP_PER_HEART,
+            3 * PlayerState.HP_PER_HEART,
+            3 * PlayerState.HP_PER_HEART,
+            3 * PlayerState.HP_PER_HEART,
+            3 * PlayerState.HP_PER_HEART,
+            5 * PlayerState.HP_PER_HEART,
+            5 * PlayerState.HP_PER_HEART,
+            5 * PlayerState.HP_PER_HEART,
+            5 * PlayerState.HP_PER_HEART,
+            7 * PlayerState.HP_PER_HEART,
+            7 * PlayerState.HP_PER_HEART,
+            7 * PlayerState.HP_PER_HEART,
+            7 * PlayerState.HP_PER_HEART,
+            10 * PlayerState.HP_PER_HEART
+        };
+        return startingHealthByMaxHearts[Math.min(
+            Math.max(playerState.maxHearts(), 0), startingHealthByMaxHearts.length - 1)];
     }
 
     private static int unsigned(byte value) {

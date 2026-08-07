@@ -1708,7 +1708,7 @@ runtime collision callback.
   background ignore window, combat values, death preamble, item selection,
   and live room integration. The clean Java suite passes with 1,009 tests
   and zero failures, errors, or skipped tests.
-- The remaining Ocarina boundary is explicit: the modeled song state is now
+- The remaining Ocarina boundary is explicit: the modeled player state is now
   written through the in-game save command, while the rest of the source
   `SaveGameToFile` field copy remains outside the currently modeled save
   state. Remaining entity handlers, room scripts, and broader hardware-visible
@@ -1723,9 +1723,9 @@ runtime collision callback.
   flag mask and zero-based selector bounds used by live Ocarina playback.
   New-game SRAM creation continues to leave both values zero, matching the
   ordinary ROM new-game path.
-- Focused save-image and player-state tests cover raw decoding and live-state
-  application. The live write path is recorded in the following save-command
-  increment.
+- Focused save-image and player-state tests cover raw decoding, live-state
+  application, and the source save-health normalization. The complete modeled
+  write path is recorded in the following save-command increment.
 
 ## Verified ROM Ocarina popup navigation and rendering — 2026-08-07
 
@@ -1749,10 +1749,14 @@ runtime collision callback.
 
 ## Verified ROM Ocarina save-command path — 2026-08-07
 
-- `SaveRamImage.writeOcarinaState` writes the live song flags and selected-song
-  byte at the source main-save offsets `$349/$34A`, masks the three valid song
-  bits, clamps the three-entry selector, and leaves adjacent/unknown SRAM
-  bytes untouched. `SaveRamStore` delegates the same raw-image operation.
+- `SaveRamImage.writePlayerState` writes the currently modeled inventory,
+  resource, health, heart, rupee, Ocarina, and tunic fields at their source
+  SRAM offsets. Its zero-health path uses the ROM
+  `MaxHeartsToStartingHealthTable`; rupees use the source high/low BCD bytes.
+  The lower-level Ocarina writer remains available for exact two-byte updates.
+- Unknown fields, including spawn, death-count, dungeon-status, and photo
+  bytes, are preserved rather than guessed. `SaveRamStore` delegates both raw
+  image operations.
 - The main loop now records the active save slot when a file is created or
   loaded. The source A+B+Start+Select chord is exposed through a configurable
   Select key (default `Tab`) and opens a dedicated two-option save screen only
@@ -1763,11 +1767,12 @@ runtime collision callback.
   follows `LoadSaveMenuTiles` from bank `$0F:$4400` to `vTiles1`, rather than
   reusing the broader file-selection loader. A confirms the ROM-selected
   Return to Game / Save and Quit option; Save and Quit flushes the modeled
-  live Ocarina bytes and returns to file selection.
+  live player fields and returns to file selection.
 - Save-image, controller, ROM-scene, configuration, input-chord, and main-flow
-  tests are included. The clean Java suite passes with 1,024 tests and zero
+  tests are included. The clean Java suite passes with 1,026 tests and zero
   failures, errors, or skipped tests. The remaining save parity work is the
-  broader `$380`-byte `SaveGameToFile` copy and its unmodeled gameplay fields.
+  broader `$380`-byte `SaveGameToFile` copy and its unmodeled gameplay fields;
+  those bytes are currently preserved rather than overwritten by guessed state.
 
 ## Broader parity gaps
 

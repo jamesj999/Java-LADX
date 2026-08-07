@@ -1,5 +1,7 @@
 package linksawakening.save;
 
+import linksawakening.state.PlayerState;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -65,6 +67,10 @@ public final class SaveRamStore {
 
     public void writeOcarinaState(int slot, int songFlags, int selectedSongIndex) {
         image.writeOcarinaState(slot, songFlags, selectedSongIndex);
+    }
+
+    public void writePlayerState(int slot, PlayerState playerState) {
+        image.writePlayerState(slot, playerState);
     }
 
     public void flush() throws IOException {

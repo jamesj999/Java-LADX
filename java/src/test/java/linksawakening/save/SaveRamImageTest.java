@@ -70,6 +70,72 @@ final class SaveRamImageTest {
     }
 
     @Test
+    void writesEveryCurrentlyModeledPlayerFieldAndPreservesUnknownSaveBytes() {
+        SaveRamImage image = SaveRamImage.empty();
+        image.createNewGame(1, new int[] {1, 2, 3, 4, 5});
+        int slotStart = SaveRamLayout.slotOffset(1);
+        int main = slotStart + SaveRamLayout.mainOffset();
+        byte[] before = image.bytes();
+        before[main + SaveRamLayout.MAIN_SPAWN_X_OFFSET] = (byte) 0xA5;
+        before[main + SaveRamLayout.MAIN_DEATH_COUNT_OFFSET] = (byte) 0xB6;
+        before[slotStart + SaveRamLayout.dx3Offset() + 1] = (byte) 0xC7;
+        image = SaveRamImage.fromBytes(before);
+
+        PlayerState player = new PlayerState();
+        player.initializeNewGame(0x30, 0x30, 0x20);
+        player.setItemA(PlayerState.INVENTORY_BOW);
+        player.setItemB(PlayerState.INVENTORY_HOOKSHOT);
+        player.setSubscreenItems(new int[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
+        player.setSeashells(37);
+        player.setShieldLevel(2);
+        player.setSwordLevel(1);
+        player.setMaxArrows(40);
+        player.setArrowCount(17);
+        player.setMaxBombs(60);
+        player.setBombCount(23);
+        player.setMaxMagicPowder(32);
+        player.setMagicPowderCount(19);
+        player.setMaxHearts(10);
+        player.setHealth(0);
+        player.setHeartPieces(2);
+        player.setRupees(509);
+        player.setOcarinaSongFlags(0x07);
+        player.setSelectedSongIndex(2);
+        player.setTunicType(PlayerState.TUNIC_BLUE);
+
+        image.writePlayerState(1, player);
+
+        SaveSlotState state = image.readSlot(1);
+        assertEquals(PlayerState.INVENTORY_BOW, state.itemA());
+        assertEquals(PlayerState.INVENTORY_HOOKSHOT, state.itemB());
+        assertArrayEquals(new int[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, state.subscreen());
+        assertEquals(37, state.seashells());
+        assertEquals(2, state.shieldLevel());
+        assertEquals(1, state.swordLevel());
+        assertEquals(17, state.arrowCount());
+        assertEquals(40, state.maxArrows());
+        assertEquals(23, state.bombCount());
+        assertEquals(60, state.maxBombs());
+        assertEquals(19, state.magicPowderCount());
+        assertEquals(32, state.maxMagicPowder());
+        assertEquals(56, state.health());
+        assertEquals(10, state.maxHearts());
+        assertEquals(2, state.heartPieces());
+        assertEquals(509, state.rupees());
+        assertEquals(0x07, state.ocarinaSongFlags());
+        assertEquals(2, state.selectedSongIndex());
+        assertEquals(PlayerState.TUNIC_BLUE, state.tunicType());
+        assertEquals((byte) 0xA5,
+            image.bytes()[main + SaveRamLayout.MAIN_SPAWN_X_OFFSET]);
+        assertEquals((byte) 0xB6,
+            image.bytes()[main + SaveRamLayout.MAIN_DEATH_COUNT_OFFSET]);
+        assertEquals((byte) 0xC7,
+            image.bytes()[slotStart + SaveRamLayout.dx3Offset() + 1]);
+        assertEquals(0x05, unsigned(image.bytes()[main + SaveRamLayout.MAIN_RUPEE_HIGH_OFFSET]));
+        assertEquals(0x09, unsigned(image.bytes()[main + SaveRamLayout.MAIN_RUPEE_LOW_OFFSET]));
+    }
+
+    @Test
     void decodesModeledFieldsAndKeepsUnknownRawBytes() {
         byte[] bytes = SaveRamImage.empty().bytes();
         int slotStart = SaveRamLayout.slotOffset(0);

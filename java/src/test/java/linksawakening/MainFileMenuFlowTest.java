@@ -82,6 +82,14 @@ final class MainFileMenuFlowTest {
     }
 
     @Test
+    void saveAndQuitUsesTheModeledPlayerStateWriter() throws Exception {
+        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+
+        assertTrue(source.contains("saveCurrentPlayerState();"));
+        assertTrue(source.contains("saveRamStore.writePlayerState(currentSaveSlot, playerState);"));
+    }
+
+    @Test
     void initializedFileSelectionLoadsTheSavedRoomInsteadOfThrowing() throws Exception {
         String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
         int start = source.indexOf("} else if (action.type() == FileMenuAction.Type.LOAD_GAME)");

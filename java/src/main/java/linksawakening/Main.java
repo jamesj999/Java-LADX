@@ -571,7 +571,7 @@ public class Main {
                 fileSaveController = null;
                 currentScreen = SCREEN_OVERWORLD;
             } else if (action.type() == FileSaveAction.Type.SAVE_AND_QUIT) {
-                saveCurrentOcarinaState();
+                saveCurrentPlayerState();
                 startFileSelection();
             }
             inputState.tickEdges();
@@ -1062,12 +1062,11 @@ public class Main {
         inputState.tickEdges();
     }
 
-    private static void saveCurrentOcarinaState() {
+    private static void saveCurrentPlayerState() {
         if (currentSaveSlot < 0 || playerState == null || saveRamStore == null) {
             return;
         }
-        saveRamStore.writeOcarinaState(currentSaveSlot,
-            playerState.ocarinaSongFlags(), playerState.selectedSongIndex());
+        saveRamStore.writePlayerState(currentSaveSlot, playerState);
         try {
             saveRamStore.flush();
         } catch (IOException exception) {
