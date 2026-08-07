@@ -133,6 +133,48 @@ final class RoomSessionTest {
     }
 
     @Test
+    void noSongOcarinaCompletionRequestsTheRomNarratorDialog() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x00, 0x25);
+
+        assertTrue(session.startOcarina(0x01, 0x00, 0x00));
+        session.tickEntities(0);
+
+        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, 0x8E)),
+            session.consumeEntityDialogRequests());
+        assertFalse(session.ocarinaPlaying());
+    }
+
+    @Test
+    void MarinHearsTheRomOcarinaDialogOnlyWhenFollowingOutdoors() {
+        RoomSession session = newSession();
+        session.loadInitialOverworld(0x92);
+        session.setFollowingNpcState(
+            new FollowingNpcState(false, 0, true, false, 0, 0, false),
+            0x40, 0x50, 0, 0, 0);
+
+        assertTrue(session.startOcarina(0x01, 0x01, 0x00));
+        session.tickEntities(0, 0x40, 0x50);
+
+        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(2, 0x77)),
+            session.consumeEntityDialogRequests());
+    }
+
+    @Test
+    void MarinDoesNotHearThatOcarinaDialogInside() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x00, 0x25);
+        session.setFollowingNpcState(
+            new FollowingNpcState(false, 0, true, false, 0, 0, false),
+            0x40, 0x50, 0, 0, 0);
+
+        assertTrue(session.startOcarina(0x01, 0x01, 0x00));
+        session.tickEntities(0, 0x40, 0x50);
+
+        assertTrue(session.consumeEntityDialogRequests().isEmpty());
+    }
+
+    @Test
     void forwardsPerFrameLinkCollisionTypeToGhiniAndOldOverloadDefaultsToZero() {
         RoomSession session = newSession();
         session.loadInitialOverworld(0x67);

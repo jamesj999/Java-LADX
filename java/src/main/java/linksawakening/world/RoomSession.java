@@ -54,6 +54,10 @@ public final class RoomSession {
     private static final int SHOVEL_FINISH_TIMER = 0x18;
     private static final int SHOVEL_DIALOG_TABLE = 0;
     private static final int SHOVEL_DIALOG_ID = 0x79;
+    private static final int OCARINA_NO_SONG_DIALOG_TABLE = 0;
+    private static final int OCARINA_NO_SONG_DIALOG_ID = 0x8E;
+    private static final int OCARINA_MARIN_DIALOG_TABLE = 2;
+    private static final int OCARINA_MARIN_DIALOG_ID = 0x77;
     private static final int[] SHOVEL_TARGET_X = {0x14, 0xFC, 0x08, 0x08};
     private static final int[] SHOVEL_TARGET_Y = {0x0A, 0x0A, 0xFC, 0x14};
     private static final int OW_ROOM_STATUS_OPENED = 0x04;
@@ -1061,6 +1065,9 @@ public final class RoomSession {
             swordY, swordHeight, linkSpeedX, linkSpeedY);
         if (ocarinaPlaybackCountdown > 0) {
             ocarinaPlaybackCountdown--;
+            if (ocarinaPlaybackCountdown == 0) {
+                finishOcarinaPlayback();
+            }
         }
         List<BombExplosionEvent> bombExplosionEvents = entityRuntime.consumeBombExplosionEvents();
         pendingBombExplosionEvents.clear();
@@ -1098,6 +1105,22 @@ public final class RoomSession {
         applyMagicPowderObjectInteractions(entityRuntime.magicPowderObjectRequests());
         activeRoom.replaceEntities(entityRuntime.snapshot());
         return events;
+    }
+
+    /** Mirrors the countdown-zero branches of LinkPlayingOcarinaHandler. */
+    private void finishOcarinaPlayback() {
+        if (followingNpcState.marinFollowing()) {
+            if (selectedSongIndex != 0x01
+                && activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
+                pendingRoomDialogRequests.add(new RoomEntityRuntime.DialogRequest(
+                    OCARINA_MARIN_DIALOG_TABLE, OCARINA_MARIN_DIALOG_ID));
+            }
+            return;
+        }
+        if (ocarinaSongFlags == 0) {
+            pendingRoomDialogRequests.add(new RoomEntityRuntime.DialogRequest(
+                OCARINA_NO_SONG_DIALOG_TABLE, OCARINA_NO_SONG_DIALOG_ID));
+        }
     }
 
     private void tickOcarinaAnimationHandler() {

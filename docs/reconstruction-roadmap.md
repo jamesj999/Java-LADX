@@ -2064,6 +2064,18 @@ runtime collision callback.
   skipped tests. Song completion/dialog and Manbo transition branches remain
   follow-up work.
 
+## Verified ROM Ocarina completion dialogs — 2026-08-07
+
+- Countdown-zero playback now follows the source branch on
+  `LinkPlayingOcarinaHandler`: a player without learned songs requests
+  `Dialog08E`, while Marin requests `Dialog277` only when she is following
+  Link outdoors and the selected song is not Mambo.
+- Dialog requests retain the source table/low-byte identity (`0x00/0x8E` and
+  `0x02/0x77`) and flow through the existing room-to-main dialog queue. Indoor
+  Marin playback and the Mambo branch do not emit the ordinary Marin dialog.
+- Focused completion-condition tests are included; the Manbo transition
+  effect and source destination lookup remain the next Ocarina follow-up.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,
