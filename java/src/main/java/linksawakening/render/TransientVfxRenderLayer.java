@@ -53,6 +53,9 @@ public final class TransientVfxRenderLayer implements RenderLayer {
                 case LASER_BEAM -> cutLeavesEffectRenderer.renderLaserBeam(
                     slot.worldX(), slot.worldY(), slot.countdown(), frameCounter,
                     slot.slotIndex());
+                case SWORD_BEAM -> cutLeavesEffectRenderer.renderSwordBeam(
+                    slot.worldX(), slot.worldY(), slot.countdown(), frameCounter,
+                    slot.slotIndex(), slot.variant());
             };
             for (CutLeavesEffectRenderer.SpritePlacement sprite : sprites) {
                 IndexedRenderer.drawSpriteTile(context.buffer(), sprite.tile(), sprite.x(), sprite.y(),

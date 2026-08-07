@@ -32,6 +32,11 @@ import java.util.function.IntSupplier;
  */
 public final class Sword implements EquippedItem {
 
+    /** Optional bridge to the room-owned ROM sword-beam entity. */
+    public interface BeamTarget {
+        boolean fireSwordBeam();
+    }
+
     /** The ROM's wC140..wC143 rectangle for enemy collision. */
     public record CollisionBox(boolean active, int x, int width, int y, int height) {
         public static CollisionBox inactive() {
@@ -81,6 +86,7 @@ public final class Sword implements EquippedItem {
     private final GameplaySoundSink soundSink;
     private final IntSupplier randomByteSupplier;
     private final SwordPalette swordPalette;
+    private final BeamTarget beamTarget;
 
     private int state = STATE_NONE;
     private int timer;
@@ -96,7 +102,8 @@ public final class Sword implements EquippedItem {
 
     public Sword(RomTables romTables, SwordSpriteSheet spriteSheet) {
         this(romTables, spriteSheet, GameplaySoundSink.none(),
-                () -> ThreadLocalRandom.current().nextInt(0x100), SwordPalette.compatibility());
+                () -> ThreadLocalRandom.current().nextInt(0x100), SwordPalette.compatibility(),
+                () -> false);
     }
 
     public Sword(
@@ -113,11 +120,22 @@ public final class Sword implements EquippedItem {
             GameplaySoundSink soundSink,
             IntSupplier randomByteSupplier,
             SwordPalette swordPalette) {
+        this(romTables, spriteSheet, soundSink, randomByteSupplier, swordPalette, () -> false);
+    }
+
+    public Sword(
+            RomTables romTables,
+            SwordSpriteSheet spriteSheet,
+            GameplaySoundSink soundSink,
+            IntSupplier randomByteSupplier,
+            SwordPalette swordPalette,
+            BeamTarget beamTarget) {
         this.romTables = romTables;
         this.spriteSheet = spriteSheet;
         this.soundSink = Objects.requireNonNull(soundSink, "soundSink");
         this.randomByteSupplier = Objects.requireNonNull(randomByteSupplier, "randomByteSupplier");
         this.swordPalette = Objects.requireNonNull(swordPalette, "swordPalette");
+        this.beamTarget = Objects.requireNonNull(beamTarget, "beamTarget");
     }
 
     public int state() {
@@ -148,6 +166,7 @@ public final class Sword implements EquippedItem {
         timer = DRAW_FRAMES;
         charge = 0;
         soundSink.play(swordSwingSound(randomByteSupplier.getAsInt()));
+        beamTarget.fireSwordBeam();
     }
 
     @Override

@@ -1934,6 +1934,26 @@ runtime collision callback.
   skipped tests. Remaining entity handlers, room scripts, and broader
   hardware-visible ordering remain follow-up work.
 
+## Verified ROM sword-beam producer and runtime — 2026-08-07
+
+- `UseSword` now offers the source's optional projectile branch only when the
+  sword is level two, Link's health is full, and the shared active-projectile
+  count is zero. Entity `$DF` is spawned with the common player-projectile
+  coordinate/Z convention, ROM direction, `$8800`-style ROM rectangle list
+  `$19:$44FC`, and the source physics/options flags.
+- The bank-$19 handler now applies the direction-specific `$451C/$4520`
+  launch offset, doubles the shared `$20/$E0` speed bytes, writes flash `$FF`,
+  and emits jingle `$3B` on its initial state pass. Visible state uses the ROM
+  rectangle variants and the sixteen-subpixel movement accumulator; common
+  entity and `ApplySwordIntersectionWithObjects` paths unload the beam on a
+  hit.
+- Transient VFX type `$0D` now carries the handler-selected direction through
+  the room/session boundary and renders the source two-sprite flicker tables
+  `$559C/$55BC`, including the frame/slot parity gate and palette attributes.
+  The clean Java suite passes with 1,088 tests and zero failures, errors, or
+  skipped tests. Remaining entity handlers, room scripts, and broader
+  hardware-visible ordering remain follow-up work.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

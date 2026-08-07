@@ -13,7 +13,8 @@ public enum TransientVfxType {
     POOF(0x02, 0x0F),
     SWORD_POKE(0x05, 0x0F),
     LASER_BEAM(0x06, 0x10),
-    SMOKE(0x08, 0x0F);
+    SMOKE(0x08, 0x0F),
+    SWORD_BEAM(0x0D, 0x08);
 
     private final int id;
     private final int defaultCountdown;

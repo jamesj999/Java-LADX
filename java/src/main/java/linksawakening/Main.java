@@ -289,7 +289,28 @@ public class Main {
                 }
             }));
         itemRegistry.register(PlayerState.INVENTORY_SWORD, new Sword(romTables, swordSpriteSheet,
-            gameplaySoundSink, () -> ThreadLocalRandom.current().nextInt(0x100), swordPalette));
+            gameplaySoundSink, () -> ThreadLocalRandom.current().nextInt(0x100), swordPalette,
+            new Sword.BeamTarget() {
+                @Override
+                public boolean fireSwordBeam() {
+                    if (link == null || roomSession == null || playerState == null) {
+                        return false;
+                    }
+                    int romDirection = link.applyRomItemDirectionFromInput();
+                    if (playerState.swordLevel() != 2
+                        || playerState.health() != playerState.maxHearts()
+                            * PlayerState.HP_PER_HEART
+                        || roomSession.activeProjectileCount() != 0) {
+                        return false;
+                    }
+                    boolean spawned = roomSession.fireSwordBeam(
+                        link.romEntityX(), link.romEntityY(), link.romEntityZ(), romDirection);
+                    if (spawned) {
+                        link.startRomItemAttackStep();
+                    }
+                    return spawned;
+                }
+            }));
         itemRegistry.register(PlayerState.INVENTORY_ROCS_FEATHER, new RocsFeather(link));
         itemRegistry.register(PlayerState.INVENTORY_BOMBS, new Bomb(
             playerState, gameplaySoundSink, new Bomb.PlacementTarget() {

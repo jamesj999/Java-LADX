@@ -59,6 +59,17 @@ final class TransientVfxSystemTest {
     }
 
     @Test
+    void swordBeamVfxCarriesTheEntitySpriteVariant() {
+        TransientVfxSystem system = new TransientVfxSystem(1);
+
+        system.spawn(TransientVfxType.SWORD_BEAM, 0x44, 0x60, 3);
+
+        assertEquals(TransientVfxType.SWORD_BEAM, system.activeSlots().getFirst().type());
+        assertEquals(0x08, system.activeSlots().getFirst().countdown());
+        assertEquals(3, system.activeSlots().getFirst().variant());
+    }
+
+    @Test
     void tickDecrementsCountdownAndExpiresAtZero() {
         TransientVfxSystem system = new TransientVfxSystem(1);
         system.spawn(TransientVfxType.BUSH_LEAVES, 0x20, 0x40);
@@ -171,6 +182,25 @@ final class TransientVfxSystemTest {
         assertEquals(0x10, alternateFrame.get(0).attributes());
         assertEquals(0x10, alternateSlot.get(0).attributes());
         assertNotNull(firstFrame.get(0).tile());
+    }
+
+    @Test
+    void swordBeamRendererUsesTheRomTwoSpriteVariantAndFlickerTables() throws IOException {
+        CutLeavesEffectRenderer renderer = new CutLeavesEffectRenderer(
+            TransientVfxSpriteSheet.loadFromRom(loadRom()));
+
+        assertTrue(renderer.renderSwordBeam(0x44, 0x60, 0x08, 0, 0, 0).isEmpty());
+        var firstFrame = renderer.renderSwordBeam(0x44, 0x60, 0x08, 1, 0, 0);
+        var alternateTable = renderer.renderSwordBeam(0x44, 0x60, 0x08, 3, 0, 0);
+        var rotated = renderer.renderSwordBeam(0x44, 0x60, 0x08, 1, 0, 2);
+
+        assertEquals(2, firstFrame.size());
+        assertEquals(0x44 - 8, firstFrame.get(0).x());
+        assertEquals(0x60 - 16, firstFrame.get(0).y());
+        assertEquals(0x08, firstFrame.get(0).tileId());
+        assertEquals(0x20, firstFrame.get(0).attributes());
+        assertEquals(0x30, alternateTable.get(0).attributes());
+        assertEquals(0x04, rotated.get(0).tileId());
     }
 
     @Test

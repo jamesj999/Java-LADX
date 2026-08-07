@@ -17,6 +17,7 @@ public final class EnemyCombatEventConsumer {
     private static final int JINGLE_WATER_SPLASH_ID = 0x0E;
     private static final int JINGLE_ITEM_FALLING_ID = 0x18;
     private static final int JINGLE_ENEMY_BOMB_THROW_ID = 0x08;
+    private static final int JINGLE_SWORD_BEAM_ID = 0x3B;
     private static final int WAVE_SWITCH_BLOCK_TOGGLE_ID = 0x0E;
     private static final int NOISE_ENEMY_BURNING_ID = 0x12;
     private static final int NOISE_ENEMY_DESTROYED_ID = 0x13;
@@ -68,6 +69,7 @@ public final class EnemyCombatEventConsumer {
                 case JINGLE_ITEM_FALLING_ID -> soundSink.play(GameplaySoundEvent.ITEM_FALLING);
                 case JINGLE_ENEMY_BOMB_THROW_ID ->
                     soundSink.play(GameplaySoundEvent.ENEMY_BOMB_THROW);
+                case JINGLE_SWORD_BEAM_ID -> soundSink.play(GameplaySoundEvent.SWORD_BEAM);
                 default -> {
                     // Unknown ROM sound writes must not be guessed or routed
                     // to an unrelated gameplay effect.

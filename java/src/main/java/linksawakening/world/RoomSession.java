@@ -593,6 +593,21 @@ public final class RoomSession {
         return true;
     }
 
+    /** Mirrors the level-two branch of UseSword's player-projectile spawn. */
+    public boolean fireSwordBeam(int linkEntityX, int linkEntityY, int linkEntityZ,
+                                 int romDirection) {
+        if (activeRoom == null || entityRuntime == null) {
+            return false;
+        }
+        int slot = entityRuntime.spawnSwordBeam(linkEntityX, linkEntityY, linkEntityZ,
+            romDirection);
+        if (slot < 0) {
+            return false;
+        }
+        activeRoom.replaceEntities(entityRuntime.snapshot());
+        return true;
+    }
+
     /**
      * Mirrors the ordinary player-bomb placement bridge. The item has already
      * applied PlaceBomb's inventory ordering; this method owns the room/runtime
@@ -878,7 +893,8 @@ public final class RoomSession {
         if (transientVfxSystem != null) {
             for (RoomEntityRuntime.TransientVfxRequest request
                 : entityRuntime.transientVfxRequests()) {
-                transientVfxSystem.spawn(request.type(), request.worldX(), request.worldY());
+                transientVfxSystem.spawn(request.type(), request.worldX(), request.worldY(),
+                    request.variant());
             }
         }
         int clearedMask = entityRuntime.consumePendingClearedEntityMask();

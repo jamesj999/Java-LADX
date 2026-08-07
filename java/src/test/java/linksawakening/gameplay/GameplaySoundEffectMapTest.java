@@ -86,6 +86,18 @@ final class GameplaySoundEffectMapTest {
     }
 
     @Test
+    void mapsSwordBeamToTheRomSwordBeamJingle() throws IOException {
+        GameplaySoundEffectMap map = GameplaySoundEffectMap.fromCatalog(
+            SoundEffectCatalog.fromRom(loadRom()));
+
+        SoundEffect effect = map.resolve(GameplaySoundEvent.SWORD_BEAM).orElseThrow();
+
+        assertEquals(SoundEffectNamespace.JINGLE, effect.namespace());
+        assertEquals(0x3B, effect.id());
+        assertEquals("JINGLE_SWORD_BEAM", effect.name());
+    }
+
+    @Test
     void mapsTreasureFoundToTheRomTreasureJingle() throws IOException {
         GameplaySoundEffectMap map = GameplaySoundEffectMap.fromCatalog(
             SoundEffectCatalog.fromRom(loadRom()));

@@ -124,6 +124,27 @@ final class EntitySpriteHandlerCatalogTest {
     }
 
     @Test
+    void mapsSwordBeamToItsFourFrameBankNineteenRectangleDisplayList() {
+        byte[] rom = syntheticRom();
+        write(rom, 0x19, 0x44FC,
+            0x00, 0x00, 0x08, 0x20, 0x00, 0x08, 0x06, 0x20,
+            0x00, 0x00, 0x06, 0x00, 0x00, 0x08, 0x08, 0x00,
+            0x00, 0x04, 0x04, 0x40, 0xFF, 0xFF, 0xFF, 0xFF,
+            0x00, 0x04, 0x04, 0x00, 0xFF, 0xFF, 0xFF, 0xFF);
+
+        EntitySpriteDefinition beam = new EntitySpriteHandlerCatalog(rom)
+            .forEntityType(0xDF, EntityRoomLoader.RoomTable.OVERWORLD);
+
+        assertDefinition(beam, 0x19, 0x44FC,
+            EntitySpriteDefinition.Shape.RECTANGLE, 4, 0);
+        assertEquals(2, beam.rectangleVariant(0).size());
+        assertEquals(0x08, beam.rectangleVariant(0).get(0).oam().tile());
+        assertEquals(0x20, beam.rectangleVariant(0).get(0).oam().attributes());
+        assertEquals(-1, beam.rectangleVariant(2).get(1).xOffset());
+        assertEquals(0xFF, beam.rectangleVariant(2).get(1).oam().tile());
+    }
+
+    @Test
     void decodesSpikedBeetleDisplayListsFromTheShippedRom() throws Exception {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
 

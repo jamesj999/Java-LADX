@@ -23,6 +23,7 @@ public final class EntitySpriteHandlerCatalog {
 
     private static final int ENTITY_ARROW = 0x00;
     private static final int ENTITY_BOOMERANG = 0x01;
+    private static final int ENTITY_SWORD_BEAM = 0xDF;
     private static final int ENTITY_BOMB = 0x02;
     private static final int ENTITY_BUTTERFLY = 0x6E;
     private static final int ENTITY_HOOKSHOT_CHAIN = 0x03;
@@ -153,6 +154,9 @@ public final class EntitySpriteHandlerCatalog {
         }
         if (entityType == ENTITY_BOOMERANG) {
             return decodePair(entityType, 0x19, 0x4451, 4, 0);
+        }
+        if (entityType == ENTITY_SWORD_BEAM) {
+            return decodeRectangle(entityType, 0x19, 0x44FC, 4, 2, 0);
         }
         if (entityType == ENTITY_BOMB) {
             return decodeSingle(entityType, 0x03, 0x652E, 1, 0);

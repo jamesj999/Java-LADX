@@ -31,6 +31,7 @@ public enum GameplaySoundEvent {
     ARROW_SHOT,
     HOOKSHOT,
     BOOMERANG,
+    SWORD_BEAM,
     BOMB_EXPLOSION,
     WRONG_ANSWER,
     DOOR_UNLOCKED,

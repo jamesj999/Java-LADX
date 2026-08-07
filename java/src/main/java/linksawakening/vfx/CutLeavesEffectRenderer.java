@@ -23,6 +23,21 @@ public final class CutLeavesEffectRenderer {
     private static final int LASER_BEAM_OAM_X_BIAS = 8;
     private static final int LASER_BEAM_OAM_Y_BIAS = 16;
     private static final int LASER_BEAM_TILE_ID = 0x24;
+    private static final int SWORD_BEAM_OAM_X_BIAS = 8;
+    private static final int SWORD_BEAM_OAM_Y_BIAS = 16;
+    // bank-$02 Data_002_559C and Data_002_55BC. Stored as source Y offset,
+    // source X offset, tile, attributes; the four variants are eight bytes
+    // each and the second table is the flashing palette variant.
+    private static final int[][] SWORD_BEAM_SPRITE_RECT = {
+        {0, 0, 0x08, 0x20, 0, 8, 0x06, 0x20,
+         0, 0, 0x06, 0x00, 0, 8, 0x08, 0x00,
+         0, 4, 0x04, 0x40, 0, 4, 0x04, 0x40,
+         0, 4, 0x04, 0x00, 0, 4, 0x04, 0x00},
+        {0, 0, 0x08, 0x30, 0, 8, 0x06, 0x30,
+         0, 0, 0x06, 0x10, 0, 8, 0x08, 0x10,
+         0, 4, 0x04, 0x50, 0, 4, 0x04, 0x50,
+         0, 4, 0x04, 0x10, 0, 4, 0x04, 0x10}
+    };
     // bank-$02 Data_002_57DD: two four-byte OAM entries per phase. The
     // phase is selected from the transient countdown's bit $08.
     private static final int[][] SWORD_POKE_SPRITE_RECT = {
@@ -174,5 +189,31 @@ public final class CutLeavesEffectRenderer {
             attributes,
             spriteSheet.tile(LASER_BEAM_TILE_ID)
         ));
+    }
+
+    /** ROM bank-$02 RenderTranscientSwordBeam and Data_002_559C/55BC. */
+    public List<SpritePlacement> renderSwordBeam(int worldX, int worldY, int countdown,
+                                                  int frameCounter, int slotIndex,
+                                                  int variant) {
+        if (((frameCounter ^ slotIndex) & 0x01) == 0) {
+            return List.of();
+        }
+        int table = (frameCounter & 0x02) == 0 ? 0 : 1;
+        int normalizedVariant = variant & 0x03;
+        int[] data = SWORD_BEAM_SPRITE_RECT[table];
+        int base = normalizedVariant * 8;
+        List<SpritePlacement> placements = new ArrayList<>(2);
+        for (int i = 0; i < 2; i++) {
+            int offset = base + i * 4;
+            int tileId = data[offset + 2];
+            placements.add(new SpritePlacement(
+                worldX + data[offset + 1] - SWORD_BEAM_OAM_X_BIAS,
+                worldY + data[offset] - SWORD_BEAM_OAM_Y_BIAS,
+                tileId,
+                data[offset + 3],
+                spriteSheet.tile(tileId)
+            ));
+        }
+        return List.copyOf(placements);
     }
 }

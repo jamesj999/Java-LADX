@@ -64,6 +64,19 @@ final class SwordTest {
     }
 
     @Test
+    void acceptedSwordPressOffersTheOptionalLevelTwoBeamSpawn() {
+        RecordingGameplaySoundSink soundSink = new RecordingGameplaySoundSink();
+        RecordingBeamTarget beamTarget = new RecordingBeamTarget();
+        Sword sword = new Sword(null, null, soundSink, new SequenceIntSupplier(0),
+            SwordPalette.compatibility(), beamTarget);
+
+        sword.onPress();
+
+        assertEquals(1, beamTarget.calls);
+        assertEquals(List.of(GameplaySoundEvent.SWORD_SWING_A), soundSink.events);
+    }
+
+    @Test
     void reachingMaximumChargePlaysChargingSwordJingleOnce() {
         RecordingGameplaySoundSink soundSink = new RecordingGameplaySoundSink();
         Sword sword = new Sword(null, null, soundSink, new SequenceIntSupplier(0));
@@ -571,6 +584,16 @@ final class SwordTest {
         @Override
         public int getAsInt() {
             return values[Math.min(index++, values.length - 1)];
+        }
+    }
+
+    private static final class RecordingBeamTarget implements Sword.BeamTarget {
+        private int calls;
+
+        @Override
+        public boolean fireSwordBeam() {
+            calls++;
+            return true;
         }
     }
 }

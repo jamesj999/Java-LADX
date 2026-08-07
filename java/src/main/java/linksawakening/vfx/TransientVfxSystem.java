@@ -9,7 +9,12 @@ import java.util.List;
  */
 public final class TransientVfxSystem {
 
-    public record Slot(int slotIndex, TransientVfxType type, int countdown, int worldX, int worldY) {}
+    public record Slot(int slotIndex, TransientVfxType type, int countdown, int worldX, int worldY,
+                       int variant) {
+        public Slot(int slotIndex, TransientVfxType type, int countdown, int worldX, int worldY) {
+            this(slotIndex, type, countdown, worldX, worldY, 0);
+        }
+    }
 
     private static final class MutableSlot {
         private final int slotIndex;
@@ -17,17 +22,20 @@ public final class TransientVfxSystem {
         private int countdown;
         private int worldX;
         private int worldY;
+        private int variant;
 
-        private MutableSlot(int slotIndex, TransientVfxType type, int countdown, int worldX, int worldY) {
+        private MutableSlot(int slotIndex, TransientVfxType type, int countdown, int worldX,
+                            int worldY, int variant) {
             this.slotIndex = slotIndex;
             this.type = type;
             this.countdown = countdown;
             this.worldX = worldX;
             this.worldY = worldY;
+            this.variant = variant & 0xFF;
         }
 
         private Slot snapshot() {
-            return new Slot(slotIndex, type, countdown, worldX, worldY);
+            return new Slot(slotIndex, type, countdown, worldX, worldY, variant);
         }
     }
 
@@ -41,13 +49,19 @@ public final class TransientVfxSystem {
     }
 
     public int spawn(TransientVfxType type, int worldX, int worldY) {
+        return spawn(type, worldX, worldY, 0);
+    }
+
+    /** Adds an effect while retaining the handler-selected ROM sprite variant. */
+    public int spawn(TransientVfxType type, int worldX, int worldY, int variant) {
         if (type == null) {
             throw new IllegalArgumentException("type must not be null");
         }
 
         for (int i = 0; i < slots.length; i++) {
             if (slots[i] == null) {
-                slots[i] = new MutableSlot(i, type, type.defaultCountdown(), worldX, worldY);
+                slots[i] = new MutableSlot(i, type, type.defaultCountdown(), worldX, worldY,
+                    variant);
                 return i;
             }
         }

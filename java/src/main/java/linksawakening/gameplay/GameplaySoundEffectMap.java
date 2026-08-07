@@ -58,6 +58,8 @@ public final class GameplaySoundEffectMap {
             SoundEffectNamespace.NOISE, 0x0B);
         put(effects, catalog, GameplaySoundEvent.BOOMERANG,
             SoundEffectNamespace.NOISE, 0x2D);
+        put(effects, catalog, GameplaySoundEvent.SWORD_BEAM,
+            SoundEffectNamespace.JINGLE, 0x3B);
         put(effects, catalog, GameplaySoundEvent.BOMB_EXPLOSION,
             SoundEffectNamespace.NOISE, 0x0C);
         put(effects, catalog, GameplaySoundEvent.WRONG_ANSWER, SoundEffectNamespace.JINGLE, 0x1D);

@@ -123,6 +123,7 @@ public final class RoomEntityRuntime {
     private static final int BOMBER_THROW_JINGLE_ID = 0x08;
     private static final int DAMAGE_TYPE_ARROW = 0x05;
     private static final int DAMAGE_TYPE_BOOMERANG = 0x08;
+    private static final int DAMAGE_TYPE_SWORD_BEAM = 0x01;
     private static final int DAMAGE_TYPE_BOMB = BombExplosionEvent.DAMAGE_TYPE_BOMB;
     private static final int DAMAGE_TYPE_BOMB_ARROW = 0x0C;
     private static final int ENTITY_HOOKSHOT_CHAIN = HookshotChainMotion.ENTITY_TYPE;
@@ -141,6 +142,7 @@ public final class RoomEntityRuntime {
     private static final int OBJECT_BUSH_GROUND_STAIRS = 0xD3;
     private static final int BOOMERANG_SFX_ID = 0x2D;
     private static final int BOOMERANG_SFX_COUNTER_PERIOD = 0x1A;
+    private static final int SWORD_BEAM_JINGLE_ID = 0x3B;
     private static final int IRON_MASKS_MASK_INITIAL_PHYSICS_FLAGS =
         0x02 | ENTITY_PHYSICS_HARMLESS | ENTITY_PHYSICS_SHADOW | ENTITY_PHYSICS_GRABBABLE;
     private static final int MAP_COLOR_DUNGEON = 0xFF;
@@ -344,6 +346,7 @@ public final class RoomEntityRuntime {
     private RoomEntityObjectQuery objectQuery;
     private RoomEntityObjectQuery objectIntersectionQuery;
     private final BoomerangMotion boomerangMotion = new BoomerangMotion();
+    private final SwordBeamMotion swordBeamMotion = new SwordBeamMotion();
     private final List<BoomerangObjectRequest> boomerangObjectRequests = new ArrayList<>();
     private int boomerangSfxCounter;
 
@@ -361,7 +364,11 @@ public final class RoomEntityRuntime {
     }
 
     /** A ROM transient-VFX creation requested by an entity handler this frame. */
-    public record TransientVfxRequest(TransientVfxType type, int worldX, int worldY) {
+    public record TransientVfxRequest(TransientVfxType type, int worldX, int worldY,
+                                      int variant) {
+        public TransientVfxRequest(TransientVfxType type, int worldX, int worldY) {
+            this(type, worldX, worldY, 0);
+        }
     }
 
     /** A boomerang request to reveal the object it intersected after movement. */
@@ -1024,6 +1031,11 @@ public final class RoomEntityRuntime {
             if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_BOOMERANG) {
                 advanceBoomerangEntity(index, entity, frame, linkEntityX, linkEntityY,
                     linkZ, projectileLinkState.motionState());
+                continue;
+            }
+            if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_SWORD_BEAM) {
+                advanceSwordBeamEntity(index, entity, frame, linkEntityX, linkEntityY,
+                    romLinkDirection, projectileLinkState.motionState());
                 continue;
             }
             if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_BOMB) {
@@ -2656,6 +2668,56 @@ public final class RoomEntityRuntime {
             variant);
     }
 
+    /** Advances entity {@code $DF} through the ROM sword-beam handler. */
+    private void advanceSwordBeamEntity(int index, RoomEntity entity, int frame,
+                                        int linkEntityX, int linkEntityY,
+                                        int romLinkDirection, int linkMotionState) {
+        int slot = entity.slot();
+        if (swordBeamMotion.state(slot) == 0) {
+            int x = (linkEntityX + SwordBeamMotion.firstHandlerOffsetX(romLinkDirection))
+                & 0xFF;
+            int y = (linkEntityY + SwordBeamMotion.firstHandlerOffsetY(romLinkDirection))
+                & 0xFF;
+            swordBeamMotion.initializeFirstHandler(slot, romLinkDirection);
+            enemyFlashCountdown[slot] = 0xFF;
+            pendingEntityEvents.add(new EntityCombatEvent(
+                slot, ENTITY_SWORD_BEAM, 0, false,
+                EntityCombatEvent.SoundChannel.JINGLE, SWORD_BEAM_JINGLE_ID));
+            // The state-0 handler only applies the Link-relative launch
+            // offset and enters state 1; it does not render the beam yet.
+            slots[index] = withPositionAndVariant(entity, x, y, -1);
+            return;
+        }
+
+        int variant = swordBeamMotion.direction(slot);
+        if (linkMotionState >= 0x02) {
+            // ReturnIfNonInteractive_19 renders state 1, then returns before
+            // damage, movement, object intersection, or VFX creation.
+            slots[index] = withPositionAndVariant(entity, entity.x(), entity.y(), variant);
+            return;
+        }
+
+        boolean hitEntity = collideSwordBeamWithEntities(entity, frame);
+        RoomEntity moved = swordBeamMotion.advancePosition(entity);
+        RoomEntityObjectQuery intersectionQuery = objectIntersectionQuery != null
+            ? objectIntersectionQuery : objectQuery;
+        RoomEntityObjectSample object = intersectionQuery == null
+            ? null : intersectionQuery.sample(moved);
+        boolean hitObject = object != null
+            && swordBeamObjectCollision(moved, object, frame, slot);
+        if (hitEntity || hitObject) {
+            clearEntity(slot);
+            return;
+        }
+
+        if (((frame + 1) & 0x03) == 0) {
+            transientVfxRequests.add(new TransientVfxRequest(
+                TransientVfxType.SWORD_BEAM, moved.x(),
+                (moved.y() - moved.z()) & 0xFF, variant));
+        }
+        slots[index] = withPositionAndVariant(moved, moved.x(), moved.y(), variant);
+    }
+
     private boolean boomerangObjectCollision(RoomEntity entity,
                                               RoomEntityObjectSample object,
                                               int frame, int slot) {
@@ -2682,6 +2744,64 @@ public final class RoomEntityRuntime {
             return false;
         }
         return true;
+    }
+
+    /** The non-boomerang result path of ApplySwordIntersectionWithObjects. */
+    private boolean swordBeamObjectCollision(RoomEntity entity,
+                                             RoomEntityObjectSample object,
+                                             int frame, int slot) {
+        int physics = object.physicsFlag() & 0xFF;
+        if (physics >= 0xD0 && physics <= 0xD3) {
+            if (thrownDirection[slot] == physics - 0xD0) {
+                if (entity.z() != 0) {
+                    entityUnknownJ[slot] = (entityUnknownJ[slot] + 1) & 0xFF;
+                    return false;
+                }
+                return true;
+            }
+            if (entityUnknownJ[slot] != 0) {
+                if ((frame & 0x03) == 0
+                    || (!indoorRoom && (frame & 0x01) == 0)) {
+                    return false;
+                }
+                entityUnknownJ[slot] = (entityUnknownJ[slot] - 1) & 0xFF;
+            }
+            return false;
+        }
+        return BoomerangMotion.objectPhysicsCollides(physics);
+    }
+
+    /** Common bank-$03 collision pass for entity {@code $DF}. */
+    private boolean collideSwordBeamWithEntities(RoomEntity beam, int frame) {
+        int sourceSlot = beam.slot();
+        int sourceVisualY = (beam.y() - beam.z()) & 0xFF;
+        boolean collided = false;
+        for (int targetSlot = slots.length - 1; targetSlot >= 0; targetSlot--) {
+            if (targetSlot == sourceSlot || ((frame ^ targetSlot) & 0x01) != 0) {
+                continue;
+            }
+
+            RoomEntity target = slots[targetSlot];
+            int targetPhysics = enemyPhysicsFlags[targetSlot];
+            if (!target.loaded()
+                || target.status().value() < EntityStatus.ACTIVE.value()
+                || (targetPhysics & ENTITY_PHYSICS_GRABBABLE) != 0
+                || !RoomEntityCombatRules.supportsEnemyCollision(target.type())
+                || (targetPhysics & ENTITY_PHYSICS_PROJECTILE_NOCLIP) != 0
+                || (enemyHitboxFlags[targetSlot] & HITFLAGS_IGNORE_HITS) != 0
+                || enemyIgnoreHitsCountdown[targetSlot] != 0
+                || target.spriteVariant() < 0
+                || unsignedByteAbs(beam.x() - target.x()) >= 0x0C
+                || unsignedByteAbs(sourceVisualY
+                    - ((target.y() - target.z()) & 0xFF)) >= 0x0C) {
+                continue;
+            }
+
+            collided = true;
+            applyPlayerProjectileDamage(target, DAMAGE_TYPE_SWORD_BEAM,
+                swordBeamMotion.speedX(sourceSlot), swordBeamMotion.speedY(sourceSlot));
+        }
+        return collided;
     }
 
     /**
@@ -3068,6 +3188,7 @@ public final class RoomEntityRuntime {
         hookshotChainMotion.clear(slot);
         hookshotBridgeMotion.clear(slot);
         boomerangMotion.clear(slot);
+        swordBeamMotion.clear(slot);
         if (entity.type() == ENTITY_HOOKSHOT_CHAIN) {
             hookshotChainOam = List.of();
         }
@@ -3242,6 +3363,43 @@ public final class RoomEntityRuntime {
         return freeSlot;
     }
 
+    /** Creates the ROM's level-two sword-beam entity type {@code $DF}. */
+    int spawnSwordBeam(int linkEntityX, int linkEntityY, int linkEntityZ,
+                       int romDirection) {
+        validateRomDirection(romDirection);
+        if (activeProjectileCount() != 0) {
+            return -1;
+        }
+        int freeSlot = findFreeEntitySlot();
+        if (freeSlot < 0) {
+            return -1;
+        }
+
+        EntitySpriteDefinition definition = spriteDefinitionFor(ENTITY_SWORD_BEAM);
+        int variant = definition.supported() ? romDirection : -1;
+        RoomEntity beam = new RoomEntity(freeSlot, -1, ENTITY_SWORD_BEAM,
+            linkEntityX & 0xFF, linkEntityY & 0xFF, EntityStatus.ACTIVE,
+            definition, variant, 0, 0, (linkEntityZ + 1) & 0xFF);
+        slots[freeSlot] = beam;
+        swordBeamMotion.clear(freeSlot);
+        swordBeamMotion.initializeSpawn(freeSlot, romDirection);
+        thrownDirection[freeSlot] = romDirection;
+        entityUnknownJ[freeSlot] = 1;
+        baseEntityFlipAttribute[freeSlot] = 0;
+        entityOptions1Override[freeSlot] = ENTITY_OPT1_NO_GROUND_INTERACTION
+            | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
+        enemyPhysicsFlags[freeSlot] = 2 | ENTITY_PHYSICS_PROJECTILE_NOCLIP;
+        enemyHealth[freeSlot] = 0;
+        enemyTransitionCountdown[freeSlot] = 0;
+        enemyStunnedCountdown[freeSlot] = 0;
+        enemyFlashCountdown[freeSlot] = 0;
+        enemyIgnoreHitsCountdown[freeSlot] = 1;
+        enemyHitboxFlags[freeSlot] = 0;
+        dyingCountdown[freeSlot] = 0;
+        powerRecoilDeath[freeSlot] = false;
+        return freeSlot;
+    }
+
     int activePlayerArrowCount() {
         int count = 0;
         for (RoomEntity entity : slots) {
@@ -3304,6 +3462,18 @@ public final class RoomEntityRuntime {
 
     int boomerangState(int slot) {
         return boomerangMotion.state(slot);
+    }
+
+    int swordBeamState(int slot) {
+        return swordBeamMotion.state(slot);
+    }
+
+    int swordBeamSpeedX(int slot) {
+        return swordBeamMotion.speedX(slot);
+    }
+
+    int swordBeamSpeedY(int slot) {
+        return swordBeamMotion.speedY(slot);
     }
 
     int playerArrowDirection(int slot) {
