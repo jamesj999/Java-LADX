@@ -273,18 +273,28 @@ public class Main {
         itemRegistry.register(PlayerState.INVENTORY_ROCS_FEATHER, new RocsFeather(link));
         itemRegistry.register(PlayerState.INVENTORY_BOMBS, new Bomb(
             playerState, gameplaySoundSink, new Bomb.PlacementTarget() {
+                private boolean playBumpForLastPlacement;
+
                 @Override
                 public boolean placeBomb() {
                     if (link == null || roomSession == null) {
+                        playBumpForLastPlacement = false;
                         return false;
                     }
                     boolean placed = roomSession.placeBomb(
                         link.romEntityX(), link.romEntityY(), link.romEntityZ(),
                         romDirectionForLink(link.direction()));
+                    playBumpForLastPlacement = placed
+                        && roomSession.lastBombPlacementPlayedBump();
                     if (placed) {
                         link.startRomItemAttackStep();
                     }
                     return placed;
+                }
+
+                @Override
+                public boolean playBumpForLastPlacement() {
+                    return playBumpForLastPlacement;
                 }
 
                 @Override
@@ -294,18 +304,27 @@ public class Main {
             }, link::canUseItems));
         itemRegistry.register(PlayerState.INVENTORY_BOW, new Arrow(
             playerState, gameplaySoundSink, new Arrow.ShootTarget() {
+                private boolean playWhooshForLastShot;
+
                 @Override
                 public boolean shootArrow() {
                     if (link == null || roomSession == null) {
+                        playWhooshForLastShot = false;
                         return false;
                     }
-                    boolean shot = roomSession.shootArrow(
+                    RoomSession.ArrowShotResult result = roomSession.shootArrowResult(
                         link.romEntityX(), link.romEntityY(), link.romEntityZ(),
                         link.applyRomItemDirectionFromInput());
-                    if (shot) {
+                    playWhooshForLastShot = result.playWhoosh();
+                    if (result.spawned()) {
                         link.startRomItemAttackStep();
                     }
-                    return shot;
+                    return result.spawned();
+                }
+
+                @Override
+                public boolean playWhooshForLastShot() {
+                    return playWhooshForLastShot;
                 }
 
                 @Override

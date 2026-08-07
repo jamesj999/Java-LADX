@@ -113,6 +113,19 @@ final class BombTest {
     }
 
     @Test
+    void convertedTopViewPlacementPlaysTheSourceBumpJingle() {
+        PlayerState player = playerWithBombs(1);
+        RecordingTarget target = new RecordingTarget(player);
+        target.playBump = true;
+        RecordingSoundSink sounds = new RecordingSoundSink();
+        Bomb bomb = new Bomb(player, sounds, target);
+
+        bomb.onPress();
+
+        assertEquals(List.of(GameplaySoundEvent.ENEMY_BUMP), sounds.events);
+    }
+
+    @Test
     void failedPlacementStillConsumesInventoryAfterTheItemUseGate() {
         PlayerState player = playerWithBombs(2);
         RecordingTarget target = new RecordingTarget(player);
@@ -146,6 +159,7 @@ final class BombTest {
         private int countObservedAtPlacement = -1;
         private boolean active;
         private boolean placementSucceeds = true;
+        private boolean playBump;
 
         private RecordingTarget() {
             this(null);
@@ -165,6 +179,11 @@ final class BombTest {
         @Override
         public boolean bombActive() {
             return active;
+        }
+
+        @Override
+        public boolean playBumpForLastPlacement() {
+            return playBump;
         }
     }
 

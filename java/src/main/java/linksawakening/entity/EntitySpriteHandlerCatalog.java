@@ -494,6 +494,37 @@ public final class EntitySpriteHandlerCatalog {
         };
     }
 
+    /**
+     * Builds the mixed display list emitted by BombArrowHandler. The handler
+     * draws the bomb's single sprite first, then the ordinary arrow pair, all
+     * at the current arrow position.
+     */
+    public EntitySpriteDefinition forBombArrow() {
+        EntitySpriteDefinition arrow = decodePair(ENTITY_ARROW, 0x03, 0x6BC6, 4, 0);
+        EntitySpriteDefinition bomb = decodeSingle(ENTITY_BOMB, 0x03, 0x652E, 1, 0);
+        int[] bombXOffsets = {0x04, -0x04, 0x00, 0x00};
+        int[] bombYOffsets = {-0x02, -0x02, -0x06, 0x04};
+        List<List<EntitySpriteDefinition.DynamicSprite>> variants = new ArrayList<>(4);
+        for (int direction = 0; direction < 4; direction++) {
+            EntitySpriteDefinition.Variant arrowVariant = arrow.variant(direction);
+            List<EntitySpriteDefinition.DynamicSprite> sprites = new ArrayList<>(3);
+            sprites.add(new EntitySpriteDefinition.DynamicSprite(
+                bombYOffsets[direction], bombXOffsets[direction] + 0x04,
+                bomb.variant(0).first(),
+                EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, false));
+            sprites.add(new EntitySpriteDefinition.DynamicSprite(
+                0, 0, arrowVariant.first(),
+                EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, false));
+            if (arrowVariant.second() != null) {
+                sprites.add(new EntitySpriteDefinition.DynamicSprite(
+                    0, 0x08, arrowVariant.second(),
+                    EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, false));
+            }
+            variants.add(List.copyOf(sprites));
+        }
+        return EntitySpriteDefinition.dynamic(ENTITY_ARROW, 0x03, 0x6BC6, 0, variants);
+    }
+
     public EntitySpriteDefinition decodePair(int entityType, int bank, int address,
                                               int variantCount, int initialVariant) {
         int offset = validateDisplayList(entityType, bank, address, variantCount, 4,

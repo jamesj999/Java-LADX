@@ -158,7 +158,7 @@ final class RoomSessionTest {
             .filter(entity -> entity.type() == 0x02)
             .findFirst().orElseThrow();
         assertEquals(0x40, bomb.x());
-        assertEquals(0x50, bomb.y());
+        assertEquals(0x54, bomb.y());
         assertEquals(0x08, bomb.z());
         assertEquals(3, session.bombDirectionForTest(bomb.slot()));
         assertEquals(session.activeRoom().entities(), session.renderSnapshot().entities());

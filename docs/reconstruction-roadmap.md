@@ -269,9 +269,30 @@ unsupported rather than represented by guessed shapes or generic movement.
   routes the ROM `$0A` whoosh through the gameplay sound catalog. Focused
   motion, item, catalog, runtime, sound-map, and full-suite tests cover this
   producer/runtime seam.
-- The bank-$03 `func_003_75A2` enemy-damage pass, bomb-arrow conversion, and
-  the other projectile producers still require their own source-shaped slices;
-  this increment does not claim those interactions are complete.
+- The bank-$03 `func_003_75A2` enemy-damage pass and the other projectile
+  producers still require their own source-shaped slices; this increment does
+  not claim those interactions are complete.
+
+## Verified ROM bomb-arrow conversion and detonation handoff — 2026-08-07
+
+- The shared `wBombArrowCooldown` window now follows the source `$06` timing:
+  bomb-first then arrow removes `wLatestDroppedBombEntityIndex` and marks the
+  new arrow state `$01`, while arrow-first then bomb marks the latest arrow
+  and leaves the ordinary bomb active. The cooldown decrements once per entity
+  frame and the normal whoosh is suppressed for a converted shot.
+- Ordinary bomb placement now preserves `ConvertToBombArrowIfNeeded`'s source
+  private countdown `$10`, directional X/Y offsets, zeroed candidate motion,
+  top-view Z behavior, and conditional top-view `JINGLE_BUMP` emission. This
+  also fixes the earlier mistaken assumption that a freshly placed bomb
+  continues using `SpawnPlayerProjectile` speeds.
+- Bomb-arrow presentation composes the shipped bank-$03 bomb single sprite
+  and arrow pair with the handler's direction-specific offsets. When its wall
+  transition begins, the arrow unloads into a same-slot-independent bomb
+  entity at transition `$17` and emits the source explosion noise `$0C`.
+- The `func_003_75A2` projectile damage/recoil pass, target-hit bomb-arrow
+  behavior, and remaining projectile producers remain separate follow-up work.
+- Focused conversion, ROM catalog, equipment, session, and forced clean Java
+  suite tests pass with 930 test cases.
 
 ## Verified ROM Link damage buffering — 2026-08-05
 
@@ -805,9 +826,10 @@ runtime collision callback.
   boundary resolves that request through the ROM dialog pointer/bank tables
   and the existing preformatted dialog renderer. The raw persistent
   `wIsBowWowFollowingLink` clear gate remains part of the follower/save-state
-  pass, as do the player-arrow damage and bomb-arrow branches.
+  pass, while the player-arrow damage pass and remaining bomb-arrow target-hit
+  branches remain separate.
 - Focused motion/runtime/dialog/renderer regressions and the complete Java
-  suite (922 test cases) pass.
+  suite (928 test cases) pass.
 
 ## Next entity increments
 
@@ -1255,8 +1277,9 @@ runtime collision callback.
   bomb events rather than sword/projectile combat results.
 - `RoomSession.consumeBombExplosionEvents()` carries the seam to gameplay
   without fabricating room mutations or generic enemy health/recoil effects.
-  Enemy bombs, bomb arrows, destroyable-object/puzzle state changes, and the
-  source recoil/damage application remain explicit follow-up work.
+  Enemy bombs, target-hit bomb-arrow damage, destroyable-object/puzzle state
+  changes, and the source recoil/damage application remain explicit follow-up
+  work.
 - Focused runtime/session tests and the forced clean Java suite pass with 892
   tests; this increment does not add an emulator.
 

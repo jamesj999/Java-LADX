@@ -83,6 +83,20 @@ final class ArrowTest {
         assertEquals(1, target.countObservedAtShot);
     }
 
+    @Test
+    void convertedBombArrowSuppressesTheOrdinaryWhoosh() {
+        PlayerState player = playerWithArrows(1);
+        RecordingTarget target = new RecordingTarget(player);
+        target.playWhoosh = false;
+        RecordingSoundSink sounds = new RecordingSoundSink();
+        Arrow arrow = new Arrow(player, sounds, target);
+
+        arrow.onPress();
+
+        assertEquals(1, target.shotRequests);
+        assertEquals(List.of(), sounds.events);
+    }
+
     private static PlayerState playerWithArrows(int count) {
         PlayerState player = new PlayerState();
         player.setMaxArrows(99);
@@ -96,6 +110,7 @@ final class ArrowTest {
         private int shotRequests;
         private int countObservedAtShot = -1;
         private boolean shotSucceeds = true;
+        private boolean playWhoosh = true;
 
         private RecordingTarget() {
             this(null);
@@ -115,6 +130,11 @@ final class ArrowTest {
         @Override
         public int activeProjectileCount() {
             return activeProjectileCount;
+        }
+
+        @Override
+        public boolean playWhooshForLastShot() {
+            return playWhoosh;
         }
     }
 

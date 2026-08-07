@@ -18,6 +18,14 @@ public final class Bomb implements EquippedItem {
         boolean placeBomb();
 
         boolean bombActive();
+
+        /**
+         * Mirrors ConvertToBombArrowIfNeeded's top-view placement jingle.
+         * Ordinary placement targets do not need to provide one.
+         */
+        default boolean playBumpForLastPlacement() {
+            return false;
+        }
     }
 
     private final PlayerState playerState;
@@ -54,6 +62,8 @@ public final class Bomb implements EquippedItem {
         // The ROM spends the bomb before SpawnPlayerProjectile. Do not refund
         // it if the room target cannot allocate a slot.
         playerState.setBombCount(playerState.bombCount() - 1);
-        target.placeBomb();
+        if (target.placeBomb() && target.playBumpForLastPlacement()) {
+            soundSink.play(GameplaySoundEvent.ENEMY_BUMP);
+        }
     }
 }

@@ -58,16 +58,16 @@ final class BombLiftThrowRuntimeTest {
     }
 
     @Test
-    void equippedBombButtonLiftsAActiveBombWithoutTheGrabbablePhysicsBit() throws IOException {
+    void equippedBombButtonWaitsForTheSourceBombPrivateCountdown() throws IOException {
         RoomEntityRuntime runtime = bombRuntime();
         int slot = runtime.spawnBomb(0x40, 0x50, 0, 0);
         runtime.setBombButtonHeld(true);
 
         runtime.tick(0, 0x40, 0x50, () -> 0);
 
-        RoomEntity lifted = runtime.snapshot().slots().get(slot);
-        assertEquals(EntityStatus.LIFTED, lifted.status());
-        assertNormalBombDefinition(lifted);
+        RoomEntity active = runtime.snapshot().slots().get(slot);
+        assertEquals(EntityStatus.ACTIVE, active.status());
+        assertNormalBombDefinition(active);
         assertEquals(0xD2, runtime.physicsFlags(slot));
         assertEquals(1, runtime.snapshot().loadedEntities().size());
     }
@@ -111,7 +111,7 @@ final class BombLiftThrowRuntimeTest {
 
         RoomEntity warning = runtime.snapshot().slots().get(slot);
         assertEquals(EntityStatus.ACTIVE, warning.status());
-        assertEquals(0x40, warning.x());
+        assertEquals(0x48, warning.x());
         assertEquals(0x50, warning.y());
         assertEquals(0x01, warning.z());
         assertEquals(0, wallQueries.get());
@@ -286,7 +286,7 @@ final class BombLiftThrowRuntimeTest {
     }
 
     @Test
-    void placedBombUsesSpawnProjectileSpeedsAndPreservesWallBounce() throws IOException {
+    void placedBombAppliesTheSourceConversionOffsetsAndStaysStatic() throws IOException {
         RoomEntityRuntime runtime = bombRuntime();
         int slot = runtime.spawnBomb(0x40, 0x50, 0, ThrownEntityMotion.ROM_DIRECTION_RIGHT);
         AtomicInteger wallQueries = new AtomicInteger();
@@ -295,25 +295,24 @@ final class BombLiftThrowRuntimeTest {
             (entity, direction, nextX, nextY) -> {
                 wallQueries.incrementAndGet();
                 assertEquals(ThrownEntityMotion.ROM_DIRECTION_RIGHT, direction);
-                assertEquals(0x42, nextX);
                 return true;
             });
 
-        RoomEntity afterWall = runtime.snapshot().slots().get(slot);
-        assertEquals(1, wallQueries.get());
-        assertEquals(0x40, afterWall.x());
-        assertEquals(0x50, afterWall.y());
-        assertEquals(0x01, afterWall.z());
-        assertEquals(EntityStatus.ACTIVE, afterWall.status());
+        RoomEntity afterPlacement = runtime.snapshot().slots().get(slot);
+        assertEquals(0, wallQueries.get());
+        assertEquals(0x48, afterPlacement.x());
+        assertEquals(0x50, afterPlacement.y());
+        assertEquals(0x01, afterPlacement.z());
+        assertEquals(EntityStatus.ACTIVE, afterPlacement.status());
 
         runtime.tick(1, 0x40, 0x50, () -> 0,
             (entity, direction, nextX, nextY) -> false);
 
-        RoomEntity afterBounce = runtime.snapshot().slots().get(slot);
-        assertEquals(0x3F, afterBounce.x());
-        assertEquals(0x50, afterBounce.y());
-        assertEquals(0x00, afterBounce.z());
-        assertEquals(EntityStatus.ACTIVE, afterBounce.status());
+        RoomEntity afterSecondFrame = runtime.snapshot().slots().get(slot);
+        assertEquals(0x48, afterSecondFrame.x());
+        assertEquals(0x50, afterSecondFrame.y());
+        assertEquals(0x01, afterSecondFrame.z());
+        assertEquals(EntityStatus.ACTIVE, afterSecondFrame.status());
     }
 
     @Test

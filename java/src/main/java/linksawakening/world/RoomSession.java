@@ -425,18 +425,33 @@ public final class RoomSession {
         return true;
     }
 
+    /** Returns whether the last successful bomb placement queued the top-view bump jingle. */
+    public boolean lastBombPlacementPlayedBump() {
+        return entityRuntime != null && entityRuntime.lastBombPlacementPlayedBump();
+    }
+
+    /** Result of the ROM ShootArrow bridge, including its conditional whoosh. */
+    public record ArrowShotResult(boolean spawned, boolean playWhoosh) {
+    }
+
     /** Mirrors ShootArrow's player-projectile bridge and refreshes the room snapshot. */
     public boolean shootArrow(int linkEntityX, int linkEntityY, int linkEntityZ,
                               int romDirection) {
+        return shootArrowResult(linkEntityX, linkEntityY, linkEntityZ, romDirection).spawned();
+    }
+
+    public ArrowShotResult shootArrowResult(int linkEntityX, int linkEntityY, int linkEntityZ,
+                                            int romDirection) {
         if (activeRoom == null || entityRuntime == null) {
-            return false;
+            return new ArrowShotResult(false, false);
         }
         int slot = entityRuntime.spawnArrow(linkEntityX, linkEntityY, linkEntityZ, romDirection);
         if (slot < 0) {
-            return false;
+            return new ArrowShotResult(false, false);
         }
+        boolean playWhoosh = entityRuntime.lastArrowShotPlayedWhoosh();
         activeRoom.replaceEntities(entityRuntime.snapshot());
-        return true;
+        return new ArrowShotResult(true, playWhoosh);
     }
 
     /** Returns the active ordinary player-arrow count used by ShootArrow's cap. */

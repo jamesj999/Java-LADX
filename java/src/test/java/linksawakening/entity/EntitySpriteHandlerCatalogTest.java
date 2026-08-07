@@ -884,6 +884,30 @@ final class EntitySpriteHandlerCatalogTest {
     }
 
     @Test
+    void composesTheBombArrowHandlerPresentationFromTheTwoRomLists() throws Exception {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+
+        EntitySpriteDefinition arrow = catalog.forEntityType(
+            0x00, EntityRoomLoader.RoomTable.OVERWORLD);
+        EntitySpriteDefinition bombArrow = catalog.forBombArrow();
+
+        assertDefinition(bombArrow, 0x03, 0x6BC6,
+            EntitySpriteDefinition.Shape.DYNAMIC, 4, 0);
+        assertEquals(3, bombArrow.dynamicVariant(0).size());
+        EntitySpriteDefinition.DynamicSprite bomb = bombArrow.dynamicVariant(0).get(0);
+        assertEquals(-2, bomb.yOffset());
+        assertEquals(8, bomb.xOffset());
+        assertEquals(0x80, bomb.oam().tile());
+        assertEquals(0x15, bomb.oam().attributes());
+        assertEquals(arrow.variant(0).first(), bombArrow.dynamicVariant(0).get(1).oam());
+        assertEquals(arrow.variant(0).second(), bombArrow.dynamicVariant(0).get(2).oam());
+
+        EntitySpriteDefinition.DynamicSprite upBomb = bombArrow.dynamicVariant(2).get(0);
+        assertEquals(-6, upBomb.yOffset());
+        assertEquals(4, upBomb.xOffset());
+    }
+
+    @Test
     void decodesFloatingItemsMixedMainListSourceQuirkAndRectangleOverlay() throws Exception {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
 

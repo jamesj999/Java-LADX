@@ -16,6 +16,11 @@ public final class Arrow implements EquippedItem {
         boolean shootArrow();
 
         int activeProjectileCount();
+
+        /** Mirrors ShootArrow's conditional whoosh when no bomb arrow is made. */
+        default boolean playWhooshForLastShot() {
+            return true;
+        }
     }
 
     private final PlayerState playerState;
@@ -53,7 +58,7 @@ public final class Arrow implements EquippedItem {
         // The ROM spends the arrow before SpawnPlayerProjectile. A failed
         // allocation therefore does not refund the inventory item.
         playerState.setArrowCount(playerState.arrowCount() - 1);
-        if (target.shootArrow()) {
+        if (target.shootArrow() && target.playWhooshForLastShot()) {
             soundSink.play(GameplaySoundEvent.ARROW_SHOT);
         }
     }

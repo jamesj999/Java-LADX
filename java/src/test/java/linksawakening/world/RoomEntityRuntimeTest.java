@@ -4230,7 +4230,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(-1, bomb.sourceLoadOrder());
         assertEquals(EntityStatus.ACTIVE, bomb.status());
         assertEquals(0x40, bomb.x());
-        assertEquals(0x50, bomb.y());
+        assertEquals(0x54, bomb.y());
         assertEquals(0x08, bomb.z());
         assertEquals(EntitySpriteDefinition.Shape.SINGLE, bomb.spriteDefinition().shape());
         assertEquals(0x03, bomb.spriteDefinition().bank());
@@ -4241,6 +4241,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x0A, runtime.options1(slot));
         assertEquals(3, runtime.bombDirection(slot));
         assertTrue(runtime.bombActive());
+        assertTrue(runtime.lastBombPlacementPlayedBump());
 
         runtime.tick(0, 0x40, 0x50, () -> 0);
 
@@ -4249,6 +4250,20 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x02, afterFirstTick.type());
         assertEquals(0x9F, runtime.transitionCountdown(slot));
         assertEquals(1, runtime.snapshot().loadedEntities().size());
+    }
+
+    @Test
+    void sideScrollBombPlacementSkipsTheTopViewBumpJingle() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+            new RoomEntitySnapshot(new ArrayList<>(snapshot().slots())).withSideScrolling(true),
+            false, null, catalog);
+
+        assertTrue(runtime.spawnBomb(0x40, 0x50, 0x07, 3) >= 0);
+
+        assertFalse(runtime.lastBombPlacementPlayedBump());
+        assertEquals(0, runtime.snapshot().loadedEntities().get(0).z());
     }
 
     @Test
@@ -4286,6 +4301,84 @@ final class RoomEntityRuntimeTest {
         runtime.tick(0, 0, 0, () -> 0);
 
         assertEquals(0x52, runtime.snapshot().slots().get(slot).y());
+    }
+
+    @Test
+    void shootingWithinTheBombArrowWindowRemovesTheLatestBombAndMarksTheArrow()
+        throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(), false, null, catalog);
+
+        int bombSlot = runtime.spawnBomb(0x40, 0x50, 0, 0);
+        assertEquals(0x06, runtime.bombArrowCooldownForTest());
+
+        int arrowSlot = runtime.spawnArrow(0x40, 0x50, 0, 0);
+
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(bombSlot).status());
+        assertTrue(runtime.isBombArrowForTest(arrowSlot));
+        assertEquals(0, runtime.bombArrowCooldownForTest());
+        assertFalse(runtime.lastArrowShotPlayedWhoosh());
+        assertEquals(EntitySpriteDefinition.Shape.DYNAMIC,
+            runtime.snapshot().slots().get(arrowSlot).spriteDefinition().shape());
+    }
+
+    @Test
+    void placingWithinTheBombArrowWindowMarksTheLatestArrowButKeepsTheBomb() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot());
+
+        int arrowSlot = runtime.spawnArrow(0x40, 0x50, 0, 1);
+        assertEquals(0x06, runtime.bombArrowCooldownForTest());
+
+        int bombSlot = runtime.spawnBomb(0x40, 0x50, 0, 1);
+
+        assertTrue(runtime.snapshot().slots().get(bombSlot).loaded());
+        assertTrue(runtime.isBombArrowForTest(arrowSlot));
+        assertEquals(0, runtime.bombArrowCooldownForTest());
+        assertEquals(0x10, runtime.bombPrivateCountdown1ForTest(bombSlot));
+    }
+
+    @Test
+    void bombArrowCooldownExpiresAfterSixEntityFrames() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot());
+
+        int arrowSlot = runtime.spawnArrow(0x40, 0x50, 0, 0);
+        assertFalse(runtime.isBombArrowForTest(arrowSlot));
+        for (int frame = 0; frame < 6; frame++) {
+            runtime.tick(frame, 0x40, 0x50, () -> 0);
+        }
+
+        assertEquals(0, runtime.bombArrowCooldownForTest());
+        int bombSlot = runtime.spawnBomb(0x40, 0x50, 0, 0);
+        assertTrue(runtime.snapshot().slots().get(bombSlot).loaded());
+        assertFalse(runtime.isBombArrowForTest(arrowSlot));
+        assertEquals(0x06, runtime.bombArrowCooldownForTest());
+    }
+
+    @Test
+    void bombArrowSpawnsTheSourceBombExplosionAfterAWallTransition() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(), false, null, catalog);
+
+        int bombSlot = runtime.spawnBomb(0x40, 0x50, 0, 0);
+        int arrowSlot = runtime.spawnArrow(0x40, 0x50, 0, 0);
+        assertTrue(runtime.isBombArrowForTest(arrowSlot));
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(bombSlot).status());
+
+        runtime.tick(0, 0x40, 0x50, () -> 0,
+            (entity, direction, nextX, nextY) -> direction == 0);
+        assertEquals(0x18, runtime.playerArrowTransitionCountdown(arrowSlot));
+
+        runtime.tick(1, 0x40, 0x50, () -> 0);
+
+        RoomEntity explosion = runtime.snapshot().loadedEntities().getFirst();
+        assertEquals(0x02, explosion.type());
+        assertEquals(0x17, runtime.transitionCountdown(explosion.slot()));
+        assertEquals(List.of(new EntityCombatEvent(explosion.slot(), 0x02, 0, false,
+            EntityCombatEvent.SoundChannel.NOISE, 0x0C)),
+            runtime.consumePendingEntityEvents());
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(arrowSlot).status());
     }
 
     @Test
@@ -4508,7 +4601,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x04, runtime.swordMoblinAlertingSoundCounter());
         for (BombExplosionEvent event : events) {
             assertEquals(bombSlot, event.bombSlot());
-            assertEquals(0x40, event.bombX());
+            assertEquals(0x48, event.bombX());
             assertEquals(0x4F, event.bombVisualY());
             assertEquals(0x12, event.countdown());
             assertEquals(0x07, event.damageType());
