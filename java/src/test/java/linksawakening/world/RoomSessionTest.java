@@ -317,6 +317,53 @@ final class RoomSessionTest {
     }
 
     @Test
+    void bombExplosionOpensAnOutdoorCaveDoorWithTheRomGbcTilesAndPersistsIt() {
+        RoomSession session = newSession();
+        session.loadInitialOverworld(0x13);
+
+        int location = 0x05;
+        int areaIndex = RoomConstants.ROOM_OBJECTS_BASE
+            + (location & 0xF0) + (location & 0x0F);
+        assertEquals(0xBA, session.activeRoom().roomObjectsArea()[areaIndex]);
+        assertEquals(0xBA, session.activeRoom().renderValues()[areaIndex]);
+        assertEquals(location, session.activeRoom().firstWarp().tileLocation());
+
+        assertTrue(session.placeBomb(0x50, 0x18, 0, 0));
+        for (int frame = 0; frame <= 146; frame++) {
+            session.tickEntities(frame, 0, 0);
+        }
+
+        assertEquals(0xE1, session.activeRoom().roomObjectsArea()[areaIndex]);
+        assertEquals(0xE1, session.activeRoom().renderValues()[areaIndex]);
+        assertEquals(0x04, session.overworldRoomStatusForTest(0x13));
+        assertEquals(location, session.activeRoom().firstWarp().tileLocation());
+
+        int tileIndex = 0x0A;
+        int[] tileIds = session.activeRoom().tileIds();
+        assertEquals(0x64, tileIds[tileIndex]);
+        assertEquals(0x66, tileIds[tileIndex + 1]);
+        assertEquals(0x64, tileIds[tileIndex + RoomConstants.ROOM_TILE_WIDTH]);
+        assertEquals(0x66, tileIds[tileIndex + RoomConstants.ROOM_TILE_WIDTH + 1]);
+
+        List<EntityCombatEvent> events = session.consumeEntityEvents();
+        assertEquals(1, events.size());
+        assertEquals(EntityCombatEvent.SoundChannel.JINGLE, events.getFirst().soundChannel());
+        assertEquals(0x02, events.getFirst().soundId());
+
+        session.loadOverworld(0x13);
+        assertEquals(0xE1, session.activeRoom().roomObjectsArea()[areaIndex]);
+        assertEquals(0xE1, session.activeRoom().renderValues()[areaIndex]);
+        tileIds = session.activeRoom().tileIds();
+        assertEquals(0x64, tileIds[tileIndex]);
+        // The dedicated BombedCaveDoorTilesIndexesGBC order is an immediate
+        // draw command. A later LoadRoomTilemap uses E1's ordinary object
+        // table, just as the source does.
+        assertEquals(0x64, tileIds[tileIndex + 1]);
+        assertEquals(0x66, tileIds[tileIndex + RoomConstants.ROOM_TILE_WIDTH]);
+        assertEquals(0x66, tileIds[tileIndex + RoomConstants.ROOM_TILE_WIDTH + 1]);
+    }
+
+    @Test
     void bombExplosionReplacesAnIndoorWallAndPersistsTheTwoDoorStatuses() {
         RoomSession session = newSession();
         session.loadIndoor(0x06, 0x18);

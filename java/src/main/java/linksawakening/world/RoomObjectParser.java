@@ -80,6 +80,7 @@ public final class RoomObjectParser {
 
     private static final int ROOM_STATUS_DOOR_OPEN_UP = 0x04;
     private static final int ROOM_STATUS_EVENT_3 = 0x40;
+    private static final int OW_ROOM_STATUS_OPENED = 0x04;
     private static final int OBJECT_TREE_TOP_LEFT = 0x25;
     private static final int OBJECT_TREE_TOP_RIGHT = 0x26;
     private static final int OBJECT_TREE_BOTTOM_LEFT = 0x27;
@@ -104,8 +105,24 @@ public final class RoomObjectParser {
         reset(floorObject);
         this.roomStatusFlags = roomStatusFlags;
         parseRoomObjectStream(streamOffset, false);
+        applyOverworldBombableCaveDoorStatus();
         assignDoorPositionsToWarps();
         return new RoomObjectParseResult(roomObjectsArea, warps);
+    }
+
+    private void applyOverworldBombableCaveDoorStatus() {
+        if ((roomStatusFlags & OW_ROOM_STATUS_OPENED) == 0) {
+            return;
+        }
+        for (int row = 0; row < RoomConstants.OBJECTS_PER_COLUMN; row++) {
+            for (int column = 0; column < RoomConstants.OBJECTS_PER_ROW; column++) {
+                int areaIndex = RoomConstants.ROOM_OBJECTS_BASE
+                    + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + column;
+                if (roomObjectsArea[areaIndex] == OBJECT_BOMBABLE_CAVE_DOOR) {
+                    roomObjectsArea[areaIndex] = OBJECT_ROCKY_CAVE_DOOR;
+                }
+            }
+        }
     }
 
     public RoomObjectParseResult parseIndoor(int streamOffset, int floorAndTemplate) {

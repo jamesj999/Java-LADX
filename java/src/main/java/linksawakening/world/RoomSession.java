@@ -33,6 +33,8 @@ public final class RoomSession {
     private static final int ENTITY_MARIN_AT_THE_SHORE = 0xC1;
     private static final int ENTITY_HEART_CONTAINER = 0x36;
     private static final int OBJECT_ROCKY_GROUND = 0x09;
+    private static final int OBJECT_ROCKY_CAVE_DOOR = 0xE1;
+    private static final int OBJECT_BOMBABLE_CAVE_DOOR = 0xBA;
     private static final int OBJECT_GIANT_SKULL_TOP_LEFT = 0xBB;
     private static final int OBJECT_GIANT_SKULL_BOTTOM_RIGHT = 0xBE;
     private static final int OBJECT_BOMBABLE_BLOCK = 0xA9;
@@ -42,6 +44,8 @@ public final class RoomSession {
     private static final int OBJECT_BOMBED_PASSAGE_VERTICAL = 0x3D;
     private static final int OBJECT_BOMBED_PASSAGE_HORIZONTAL = 0x3E;
     private static final int BOMBABLE_WALL_PHYSICS_BASE = 0x99;
+    private static final int BOMBED_CAVE_DOOR_TILES_BANK = 0x03;
+    private static final int BOMBED_CAVE_DOOR_TILES_GBC_ADDR = 0x6751;
     private static final int INDOOR_MAP_LAYOUT_BANK = 0x14;
     private static final int INDOOR_MAP_LAYOUT_BASE_ADDR = 0x4220;
     private static final int COLOR_DUNGEON_MAP_LAYOUT_ADDR = 0x44E0;
@@ -111,6 +115,8 @@ public final class RoomSession {
     private final Map<Integer, Integer> bombedWallTileOverrides = new HashMap<>();
     /** The basic A9 breakable path also draws floor tiles in source command order. */
     private final Set<Integer> bombedBlockTileOverrides = new HashSet<>();
+    /** Bombed overworld cave doors use the dedicated GBC redraw tile order. */
+    private final Set<Integer> bombedCaveDoorTileOverrides = new HashSet<>();
     private final int[] clearedEntitiesByRoom = new int[0x100];
     private int currentOverworldTilesetId = W_TILESET_NO_UPDATE;
     private FollowingNpcState followingNpcState = FollowingNpcState.none();
@@ -1007,6 +1013,7 @@ public final class RoomSession {
         hookshotBridgeTileOverrides.clear();
         bombedWallTileOverrides.clear();
         bombedBlockTileOverrides.clear();
+        bombedCaveDoorTileOverrides.clear();
         pendingBombExplosionEvents.clear();
         pendingRoomEntityEvents.clear();
     }
@@ -1078,6 +1085,7 @@ public final class RoomSession {
         int objectId = objectAtRoomLocation(candidate.location());
         if (objectId < OBJECT_GIANT_SKULL_TOP_LEFT
             || objectId > OBJECT_GIANT_SKULL_BOTTOM_RIGHT) {
+            applyOutdoorBombableCaveDoorCandidate(candidate, sourceSlot);
             return;
         }
 
@@ -1103,6 +1111,30 @@ public final class RoomSession {
             }
         }
         overworldRoomStatus[activeRoom.roomId()] |= (byte) OW_ROOM_STATUS_OPENED;
+        refreshOverworldCollisionAfterObjectMutation();
+    }
+
+    private void applyOutdoorBombableCaveDoorCandidate(BombObjectInteraction.Candidate candidate,
+                                                       int sourceSlot) {
+        int objectId = objectAtRoomLocation(candidate.location());
+        int doorIndex = romTables.objectPhysicsFlag(RomTables.PHYSICS_TABLE_OVERWORLD, objectId)
+            - BOMBABLE_WALL_PHYSICS_BASE;
+        if (objectId != OBJECT_BOMBABLE_CAVE_DOOR || doorIndex < 0 || doorIndex >= 4) {
+            return;
+        }
+
+        int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (candidate.objectTop() & 0xF0)
+            + ((candidate.objectLeft() & 0xF0) >>> 4);
+        int[] objects = activeRoom.roomObjectsArea();
+        if (areaIndex < 0 || areaIndex >= objects.length) {
+            return;
+        }
+
+        writeBombPuzzleObject(candidate.location(), OBJECT_ROCKY_CAVE_DOOR);
+        bombedCaveDoorTileOverrides.add(areaIndex);
+        overworldRoomStatus[activeRoom.roomId()] |= (byte) OW_ROOM_STATUS_OPENED;
+        queuePuzzleSolvedJingle(sourceSlot);
+        refreshActiveRoomTilemap();
         refreshOverworldCollisionAfterObjectMutation();
     }
 
@@ -1309,6 +1341,7 @@ public final class RoomSession {
         applyHookshotBridgeTileOverrides();
         applyBombedWallTileOverrides();
         applyBombedBlockTileOverrides();
+        applyBombedCaveDoorTileOverrides();
     }
 
     private RoomEntityObjectSample entityObjectSample(RoomEntity entity) {
@@ -1423,6 +1456,36 @@ public final class RoomSession {
             tileIds[topLeft + 1] = 0x12;
             tileIds[topLeft + RoomConstants.ROOM_TILE_WIDTH] = 0x11;
             tileIds[topLeft + RoomConstants.ROOM_TILE_WIDTH + 1] = 0x13;
+        }
+    }
+
+    private void applyBombedCaveDoorTileOverrides() {
+        if (activeRoom == null || bombedCaveDoorTileOverrides.isEmpty()) {
+            return;
+        }
+        int[] tileIds = activeRoom.tileIds();
+        for (int areaIndex : bombedCaveDoorTileOverrides) {
+            int areaOffset = areaIndex - RoomConstants.ROOM_OBJECTS_BASE;
+            int objectRow = (areaOffset >>> 4) & 0x0F;
+            int objectColumn = areaOffset & 0x0F;
+            int tileX = objectColumn * 2;
+            int tileY = objectRow * 2;
+            if (objectRow >= RoomConstants.OBJECTS_PER_COLUMN
+                || objectColumn >= RoomConstants.OBJECTS_PER_ROW
+                || tileX + 1 >= RoomConstants.ROOM_TILE_WIDTH
+                || tileY + 1 >= RoomConstants.ROOM_TILE_HEIGHT) {
+                continue;
+            }
+
+            int tileTableOffset = RomBank.romOffset(
+                BOMBED_CAVE_DOOR_TILES_BANK, BOMBED_CAVE_DOOR_TILES_GBC_ADDR);
+            int topLeft = tileY * RoomConstants.ROOM_TILE_WIDTH + tileX;
+            tileIds[topLeft] = Byte.toUnsignedInt(romData[tileTableOffset]);
+            tileIds[topLeft + 1] = Byte.toUnsignedInt(romData[tileTableOffset + 1]);
+            tileIds[topLeft + RoomConstants.ROOM_TILE_WIDTH] =
+                Byte.toUnsignedInt(romData[tileTableOffset + 2]);
+            tileIds[topLeft + RoomConstants.ROOM_TILE_WIDTH + 1] =
+                Byte.toUnsignedInt(romData[tileTableOffset + 3]);
         }
     }
 

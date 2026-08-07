@@ -1429,6 +1429,24 @@ runtime collision callback.
   zero failures, errors, or skipped tests. Remaining bomb-specific
   presentation branches remain separate follow-up work.
 
+## Verified ROM outdoor bombable cave-door mutation — 2026-08-07
+
+- The overworld puzzle pass now resolves the shipped cave-door physics window,
+  publishes puzzle jingle `$02`, replaces bombable door `$BA` with rocky cave
+  door `$E1`, sets `OW_ROOM_STATUS_OPENED` `$04`, refreshes collision, and
+  preserves the existing warp tile location.
+- Overworld reload parsing applies the source status-driven `$BA` to `$E1`
+  replacement and updates the live GBC render-overlay value to match the
+  source WRAM2 backup path.
+- The immediate GBC redraw reads `BombedCaveDoorTilesIndexesGBC` from bank
+  `$03:$6751` (`$64,$66,$64,$66`). A later room load intentionally uses E1's
+  ordinary object-table order (`$64,$64,$66,$66`), matching the source's
+  transient draw versus `LoadRoomTilemap` paths.
+- The shipped `Overworld13` test covers live mutation, jingle, warp location,
+  immediate tile order, status/render persistence, and reload. The clean Java
+  suite passes with 954 tests and zero failures, errors, or skipped tests. This
+  increment does not add an emulator.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

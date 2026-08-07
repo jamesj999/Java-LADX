@@ -27,6 +27,8 @@ public final class RoomTilemapBuilder {
     private static final int OVERWORLD_OBJ_ATTR_BANKS_ADDR = 0x6476;
     private static final int OVERWORLD_OBJ_ATTR_PTRS_BANK = 0x1A;
     private static final int OVERWORLD_OBJ_ATTR_PTRS_ADDR = 0x5E76;
+    private static final int OBJECT_BOMBABLE_CAVE_DOOR = 0xBA;
+    private static final int OBJECT_ROCKY_CAVE_DOOR = 0xE1;
 
     private static final int GBC_OVERLAY_BANK_A = 0x26;
     private static final int GBC_OVERLAY_ADDR_A = 0x4000;
@@ -43,7 +45,7 @@ public final class RoomTilemapBuilder {
 
     public RoomTilemap buildOverworld(int roomId, int[] roomObjectsArea) {
         int[] overlay = loadGbcOverlay(roomId);
-        int[] renderValues = buildOverworldRenderValues(overlay);
+        int[] renderValues = buildOverworldRenderValues(overlay, roomObjectsArea);
         return build(roomId, 0, false, roomObjectsArea, overlay, renderValues);
     }
 
@@ -153,7 +155,7 @@ public final class RoomTilemapBuilder {
         return overlay;
     }
 
-    private int[] buildOverworldRenderValues(int[] gbcOverlay) {
+    private int[] buildOverworldRenderValues(int[] gbcOverlay, int[] roomObjectsArea) {
         int[] renderValues = new int[RoomConstants.ROOM_OBJECTS_AREA_SIZE];
         Arrays.fill(renderValues, 0xFF);
         if (gbcOverlay == null) {
@@ -163,7 +165,19 @@ public final class RoomTilemapBuilder {
             for (int ox = 0; ox < RoomConstants.OBJECTS_PER_ROW; ox++) {
                 int overlayIndex = oy * RoomConstants.OBJECTS_PER_ROW + ox;
                 int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + oy * RoomConstants.ROOM_OBJECT_ROW_STRIDE + ox;
-                renderValues[areaIndex] = gbcOverlay[overlayIndex];
+                int renderValue = gbcOverlay[overlayIndex];
+                // ConfigureRoomObjects changes a persistent bombable cave door
+                // from BA to E1 before LoadRoomTilemap runs. The GBC object
+                // attribute buffer receives that same E1 through
+                // SetupDestroyableObjectIfNeeded; preserve the status-driven
+                // replacement instead of reusing the ROM overlay's BA.
+                if (roomObjectsArea != null
+                    && areaIndex < roomObjectsArea.length
+                    && roomObjectsArea[areaIndex] == OBJECT_ROCKY_CAVE_DOOR
+                    && renderValue == OBJECT_BOMBABLE_CAVE_DOOR) {
+                    renderValue = OBJECT_ROCKY_CAVE_DOOR;
+                }
+                renderValues[areaIndex] = renderValue;
             }
         }
         return renderValues;
