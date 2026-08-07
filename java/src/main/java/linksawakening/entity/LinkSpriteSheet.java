@@ -27,7 +27,9 @@ public final class LinkSpriteSheet {
     private static final int STATE_TABLE_BANK = 0x20;
     private static final int STATE_TABLE_ADDR = 0x5319;
     private static final int ATTRS_TABLE_ADDR = 0x5407;
-    private static final int STATE_TABLE_LENGTH = 112; // entries, 2 bytes each
+    // LinkAnimationStateTable contains entries through $77, including the
+    // $75/$76 Ocarina poses written by LinkPlayingOcarinaHandler.
+    private static final int STATE_TABLE_LENGTH = 120; // entries, 2 bytes each
 
     private final Tile[] tiles;
     private final int[] stateTable;  // 2 bytes per entry: topPair, bottomPair

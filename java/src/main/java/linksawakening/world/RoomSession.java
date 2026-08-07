@@ -167,6 +167,8 @@ public final class RoomSession {
     private int ocarinaPlaybackCountdown;
     private int ocarinaSongFlags;
     private int selectedSongIndex;
+    private int ocarinaAnimationCounter;
+    private int ocarinaAnimationPhase;
     private int currentLinkMotionState = EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE;
     private GameplaySoundSink colorShellSoundSink = GameplaySoundSink.none();
     private final ColorShellWorld colorShellWorld = new ColorShellWorld() {
@@ -534,12 +536,22 @@ public final class RoomSession {
         ocarinaPlaybackCountdown = countdown;
         ocarinaSongFlags = songFlags & 0xFF;
         selectedSongIndex = selectedSong & 0xFF;
+        ocarinaAnimationCounter = 0;
+        ocarinaAnimationPhase = 0;
         return true;
     }
 
     /** Mirrors wLinkPlayingOcarinaCountdown for Link's motion gate. */
     public boolean ocarinaPlaying() {
         return ocarinaPlaybackCountdown != 0;
+    }
+
+    /** Mirrors hLinkAnimationState $75/$76 while LinkPlayingOcarinaHandler runs. */
+    public int ocarinaAnimationState() {
+        if (!ocarinaPlaying()) {
+            return -1;
+        }
+        return ocarinaAnimationPhase == 0 ? 0x76 : 0x75;
     }
 
     /** Supplies the player fields consumed by the ROM enemy-drop resolver. */
@@ -1016,6 +1028,7 @@ public final class RoomSession {
         if (activeRoom == null || entityRuntime == null) {
             return List.of();
         }
+        tickOcarinaAnimationHandler();
         entityRuntime.setSwitchBlockAnimationActive(
             SwitchBlockAnimation.isAnimating(switchableObjectAnimationStage));
         entityRuntime.setActionButtonsHeld(actionButtonsHeld);
@@ -1084,6 +1097,17 @@ public final class RoomSession {
         applyMagicPowderObjectInteractions(entityRuntime.magicPowderObjectRequests());
         activeRoom.replaceEntities(entityRuntime.snapshot());
         return events;
+    }
+
+    private void tickOcarinaAnimationHandler() {
+        if (!ocarinaPlaying()) {
+            return;
+        }
+        ocarinaAnimationCounter++;
+        if (ocarinaAnimationCounter >= 0x38) {
+            ocarinaAnimationCounter = 0;
+            ocarinaAnimationPhase ^= 0x01;
+        }
     }
 
     /** Returns and clears entity side-effect events emitted by the last tick. */

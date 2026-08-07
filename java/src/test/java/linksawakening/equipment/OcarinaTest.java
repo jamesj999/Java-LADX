@@ -67,16 +67,48 @@ final class OcarinaTest {
         assertFalse(target.secondStartAttempt);
     }
 
+    @Test
+    void honorsTheRomUseGateBeforeStartingPlayback() {
+        PlayerState player = new PlayerState();
+        RecordingTarget target = new RecordingTarget();
+        target.startAllowed = false;
+        List<GameplaySoundEvent> sounds = new ArrayList<>();
+        Ocarina ocarina = new Ocarina(player, sounds::add, target);
+
+        ocarina.onPress();
+
+        assertFalse(target.playing);
+        assertEquals(List.of(), sounds);
+    }
+
+    @Test
+    void exposesTheRomPlayingAnimationStateAndNoOverrideWhenIdle() {
+        PlayerState player = new PlayerState();
+        RecordingTarget target = new RecordingTarget();
+        Ocarina ocarina = new Ocarina(player, event -> {}, target);
+
+        assertEquals(-1, ocarina.overrideAnimationState(0, 0));
+
+        target.playing = true;
+        target.animationState = 0x76;
+        assertEquals(0x76, ocarina.overrideAnimationState(0, 0));
+    }
+
     private static final class RecordingTarget implements Ocarina.PlaybackTarget {
         private int countdown;
         private int songFlags;
         private int selectedSong;
         private boolean playing;
+        private boolean startAllowed = true;
         private boolean secondStartAttempt;
+        private int animationState = -1;
         private GameplaySoundEvent sound;
 
         @Override
         public boolean startOcarina(int countdown, int songFlags, int selectedSong) {
+            if (!startAllowed) {
+                return false;
+            }
             if (playing) {
                 secondStartAttempt = true;
                 return false;
@@ -98,6 +130,16 @@ final class OcarinaTest {
         @Override
         public boolean ocarinaPlaying() {
             return playing;
+        }
+
+        @Override
+        public boolean canStartOcarina() {
+            return startAllowed;
+        }
+
+        @Override
+        public int ocarinaAnimationState() {
+            return playing ? animationState : -1;
         }
     }
 }

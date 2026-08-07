@@ -2035,6 +2035,21 @@ runtime collision callback.
   and blocked-use behavior are covered by focused tests. The clean Java suite
   passes with 1,132 tests and zero failures, errors, or skipped tests.
 
+## Verified ROM Ocarina gate and Link playback pose — 2026-08-07
+
+- `UseOcarina` now rejects airborne Link, an active hookshot, carried/item-
+  blocked motion, and an already-running countdown before selecting the ROM
+  song duration and wave sound. The playback target remains the room-owned
+  source countdown used by Pols Voice.
+- `LinkPlayingOcarinaHandler`'s `$38`-frame pose cadence is represented by
+  room-owned `$C5A4/$C5A5` state and resolves Link animation states `$76/$75`.
+  The ROM Link animation/attribute tables now load all 120 entries, including
+  these terminal Ocarina states.
+- Focused gate, animation-state, table-range, and 56-frame cadence tests are
+  covered by a clean Java suite with 1,137 tests and zero failures, errors, or
+  skipped tests. Musical-note spawning and the song-completion branches remain
+  follow-up work.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

@@ -292,6 +292,17 @@ public class Main {
                 public boolean ocarinaPlaying() {
                     return roomSession != null && roomSession.ocarinaPlaying();
                 }
+
+                @Override
+                public boolean canStartOcarina() {
+                    return link != null && roomSession != null && link.canUseItems()
+                        && !link.isAirborne() && !roomSession.hookshotActive();
+                }
+
+                @Override
+                public int ocarinaAnimationState() {
+                    return roomSession == null ? -1 : roomSession.ocarinaAnimationState();
+                }
             }));
         itemRegistry.register(PlayerState.INVENTORY_SWORD, new Sword(romTables, swordSpriteSheet,
             gameplaySoundSink, () -> ThreadLocalRandom.current().nextInt(0x100), swordPalette,

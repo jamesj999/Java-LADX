@@ -9,6 +9,7 @@ import java.util.List;
 import linksawakening.equipment.EquippedItem;
 import linksawakening.equipment.Hookshot;
 import linksawakening.equipment.ItemRegistry;
+import linksawakening.equipment.Ocarina;
 import linksawakening.equipment.Sword;
 import linksawakening.equipment.Shield;
 import linksawakening.gameplay.GameplaySoundEvent;
@@ -57,6 +58,28 @@ final class LinkTest {
         link.useRocsFeather();
 
         assertEquals(0x22, resolvedAnimationState(link));
+    }
+
+    @Test
+    void ocarinaPlaybackUsesTheRomBodyAnimationStates() throws Exception {
+        PlayerState playerState = new PlayerState();
+        playerState.setItemA(PlayerState.INVENTORY_OCARINA);
+        ItemRegistry itemRegistry = new ItemRegistry();
+        OcarinaAnimationTarget target = new OcarinaAnimationTarget();
+        itemRegistry.register(playerState.itemA(), new Ocarina(
+            playerState, GameplaySoundSink.none(), target));
+        Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
+            null, null, null, playerState, itemRegistry);
+
+        target.playing = true;
+        target.animationState = 0x76;
+        assertEquals(0x76, resolvedAnimationState(link));
+
+        target.animationState = 0x75;
+        assertEquals(0x75, resolvedAnimationState(link));
+
+        target.playing = false;
+        assertEquals(0x00, resolvedAnimationState(link));
     }
 
     @Test
@@ -1291,6 +1314,27 @@ final class LinkTest {
         @Override
         public int overrideAnimationState(int direction, int walkFrame) {
             return animationState;
+        }
+    }
+
+    private static final class OcarinaAnimationTarget implements Ocarina.PlaybackTarget {
+        private boolean playing;
+        private int animationState = -1;
+
+        @Override
+        public boolean startOcarina(int countdown, int songFlags, int selectedSong) {
+            playing = true;
+            return true;
+        }
+
+        @Override
+        public boolean ocarinaPlaying() {
+            return playing;
+        }
+
+        @Override
+        public int ocarinaAnimationState() {
+            return playing ? animationState : -1;
         }
     }
 

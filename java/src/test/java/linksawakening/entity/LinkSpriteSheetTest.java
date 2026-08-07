@@ -4,6 +4,7 @@ import linksawakening.gpu.Tile;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 final class LinkSpriteSheetTest {
 
@@ -23,6 +24,24 @@ final class LinkSpriteSheetTest {
         spriteSheet.resolveTiles(0, resolved);
 
         assertEquals(1, resolved[0].getPixel(0, 0));
+    }
+
+    @Test
+    void resolvesTheRomOcarinaAnimationStatesAtTheEndOfTheStateTable() {
+        byte[] romData = new byte[romOffset(0x2C, 0x5800) + 0x1000];
+        int stateOffset = romOffset(0x20, 0x5319) + 0x75 * 2;
+        romData[stateOffset] = 0x12;
+        romData[stateOffset + 1] = 0x14;
+
+        LinkSpriteSheet spriteSheet = LinkSpriteSheet.loadFromRom(romData);
+        Tile[] resolved = new Tile[4];
+
+        spriteSheet.resolveTiles(0x75, resolved);
+
+        assertNotNull(resolved[0]);
+        assertNotNull(resolved[1]);
+        assertNotNull(resolved[2]);
+        assertNotNull(resolved[3]);
     }
 
     private static int romOffset(int bank, int address) {

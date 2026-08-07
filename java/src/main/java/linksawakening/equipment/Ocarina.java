@@ -17,6 +17,16 @@ public final class Ocarina implements EquippedItem {
         boolean startOcarina(int countdown, int songFlags, int selectedSong);
 
         boolean ocarinaPlaying();
+
+        /** Mirrors the pre-UseOcarina air/hookshot gate in the ROM. */
+        default boolean canStartOcarina() {
+            return true;
+        }
+
+        /** Returns Link's ROM body animation state, or {@code -1} when idle. */
+        default int ocarinaAnimationState() {
+            return -1;
+        }
     }
 
     private final PlayerState playerState;
@@ -32,7 +42,7 @@ public final class Ocarina implements EquippedItem {
 
     @Override
     public void onPress() {
-        if (target.ocarinaPlaying()) {
+        if (target.ocarinaPlaying() || !target.canStartOcarina()) {
             return;
         }
 
@@ -52,6 +62,11 @@ public final class Ocarina implements EquippedItem {
     @Override
     public boolean locksFacing() {
         return target.ocarinaPlaying();
+    }
+
+    @Override
+    public int overrideAnimationState(int direction, int walkFrame) {
+        return target.ocarinaAnimationState();
     }
 
     private record Playback(int countdown, GameplaySoundEvent sound) {

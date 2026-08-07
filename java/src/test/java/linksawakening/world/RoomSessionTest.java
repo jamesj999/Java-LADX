@@ -116,6 +116,23 @@ final class RoomSessionTest {
     }
 
     @Test
+    void flipsTheOcarinaBodyPoseAtTheRomFiftySixFrameCadence() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x00, 0x25);
+
+        assertTrue(session.startOcarina(0xFF, 0x01, 0x00));
+        assertEquals(0x76, session.ocarinaAnimationState());
+
+        for (int frame = 0; frame < 55; frame++) {
+            session.tickEntities(frame);
+        }
+        assertEquals(0x76, session.ocarinaAnimationState());
+
+        session.tickEntities(55);
+        assertEquals(0x75, session.ocarinaAnimationState());
+    }
+
+    @Test
     void forwardsPerFrameLinkCollisionTypeToGhiniAndOldOverloadDefaultsToZero() {
         RoomSession session = newSession();
         session.loadInitialOverworld(0x67);
