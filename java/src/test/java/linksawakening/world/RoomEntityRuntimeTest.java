@@ -2829,6 +2829,109 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void wizrobeRunsTheRomRevealStateMachineAndLaunchesItsProjectile() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            0x21, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x21, 0x40, 0x50, EntityStatus.INIT, definition, 0)),
+            true, null, catalog, tables);
+
+        runtime.tick(0, 0x80, 0x50, sequence(0x00));
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
+        assertEquals(0x80, runtime.transitionCountdown(0));
+        assertEquals(-1, runtime.snapshot().slots().get(0).spriteVariant());
+        assertEquals(0x02, runtime.physicsFlags(0));
+
+        for (int frame = 1; frame <= 0x80; frame++) {
+            runtime.tick(frame, 0x80, 0x50, sequence(0x00));
+        }
+        assertEquals(1, runtime.wizrobeState(0));
+        assertEquals(0x20, runtime.wizrobePrivateCountdown1(0));
+        assertEquals(0x01, runtime.wizrobePrivateState1(0));
+        assertEquals(-1, runtime.snapshot().slots().get(0).spriteVariant());
+
+        runtime.setWizrobeStateForTest(0, 2, 0, 1, 2, 0);
+        runtime.tick(0x81, 0x80, 0x50, sequence(0x00));
+        assertEquals(3, runtime.wizrobeState(0));
+        assertEquals(0x01, runtime.wizrobePrivateState1(0));
+        assertEquals(0x01, runtime.wizrobePrivateCountdown1(0));
+
+        runtime.tick(0x82, 0x80, 0x50, sequence(0x00));
+        assertEquals(0x40, runtime.wizrobePrivateCountdown1(0));
+        assertEquals(0, runtime.wizrobeDirection(0));
+        assertEquals(1, runtime.wizrobeNextSpriteVariant(0));
+
+        runtime.setWizrobeStateForTest(0, 3, 0, 0xFF, 0x29, 0);
+        runtime.tick(0x83, 0x80, 0x50, sequence(0x00));
+        assertEquals(0x28, runtime.wizrobePrivateCountdown1(0));
+        RoomEntity projectile = runtime.snapshot().slots().get(15);
+        assertEquals(EntityStatus.ACTIVE, projectile.status());
+        assertEquals(-1, projectile.sourceLoadOrder());
+        assertEquals(0x22, projectile.type());
+        assertEquals(0x48, projectile.x());
+        assertEquals(0x50, projectile.y());
+        assertEquals(0, projectile.spriteVariant());
+        assertEquals(0x42, runtime.physicsFlags(15));
+        assertEquals(0x02, runtime.physicsFlags(0));
+        assertEquals(0x20, runtime.wizrobeProjectileSpeedX(15));
+        assertEquals(0x00, runtime.wizrobeProjectileSpeedY(15));
+    }
+
+    @Test
+    void wizrobeProjectileUsesRomPaletteFlipMovementAndCollisionLifecycle() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            0x22, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, -1, 0x22, 0x3F, 0x50, EntityStatus.ACTIVE, definition, 0)),
+            true, null, catalog, tables);
+        runtime.setWizrobeProjectileForTest(0, 0x20, 0x00, 0);
+
+        List<EntityProjectileEvent> events = runtime.tickWithProjectileEvents(
+            4, 0x40, 0x50, sequence(0x00), null,
+            new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0x00, 0, false));
+
+        assertEquals(1, events.size());
+        assertEquals(EntityProjectileEvent.Kind.LINK_DAMAGE, events.getFirst().kind());
+        assertEquals(0x08, events.getFirst().linkDamage());
+        assertTrue(events.getFirst().remove());
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
+    }
+
+    @Test
+    void wizrobeUsesHealthGroupTwelveContactAndSwordValues() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            0x21, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x21, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0)),
+            true, null, catalog, tables);
+        runtime.setWizrobeStateForTest(0, 3, 0, 0xFF, 0x28, 0);
+
+        List<EntityCombatEvent> contact = runtime.resolveCombat(
+            1, 0x48, 0x58, false, true, false, 0, 0, 0, 0);
+        assertEquals(1, contact.size());
+        assertEquals(0x08, contact.get(0).linkDamage());
+
+        List<EntityCombatEvent> sword = runtime.resolveCombat(
+            2, 0x80, 0x80, false, true, true, 0x48, 1, 0x58, 1);
+        assertEquals(1, sword.size());
+        assertTrue(sword.get(0).swordHit());
+        // Health group $0C's sword rows are zero in Data_003_43EC; Wizrobe
+        // contact damage is $08, but a normal sword hit is ignored.
+        assertEquals(4, runtime.enemyHealth(0));
+        assertEquals(0, sword.get(0).enemyDamage());
+        assertEquals(0, RoomEntityCombatRules.basicSwordDamage(0x21));
+    }
+
+    @Test
     void evasiveStalfosUsesTheRomRandomWalkAndNormalAnimation() {
         EntitySpriteDefinition definition = pairDefinition(0x1E, 3);
         RoomEntitySnapshot initial = snapshot(

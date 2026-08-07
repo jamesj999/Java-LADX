@@ -26,6 +26,7 @@ public final class RoomEntityCombatRules {
     private static final int ENTITY_GHINI = 0x12;
     private static final int ENTITY_KEESE = 0x19;
     private static final int ENTITY_HARDHAT_BEETLE = 0x20;
+    private static final int ENTITY_WIZROBE = 0x21;
     private static final int ENTITY_SPIKE_TRAP = 0x27;
     private static final int ENTITY_PAIRODD = 0x57;
     private static final int ENTITY_BOUNCING_BOMBITE = 0x55;
@@ -55,12 +56,14 @@ public final class RoomEntityCombatRules {
     private static final int MOBLIN_CONTACT_DAMAGE = 0x04;
     private static final int GHINI_CONTACT_DAMAGE = 0x08;
     private static final int HARDHAT_CONTACT_DAMAGE = 0x08;
+    private static final int WIZROBE_CONTACT_DAMAGE = 0x08;
     private static final int ANTI_FAIRY_CONTACT_DAMAGE = 0x04;
     private static final int GIBDO_CONTACT_DAMAGE = 0x08;
     private static final int OCTOROK_AND_KEESE_INITIAL_HEALTH = 0x01;
     private static final int MOBLIN_INITIAL_HEALTH = 0x02;
     private static final int GHINI_INITIAL_HEALTH = 0x08;
     private static final int HARDHAT_INITIAL_HEALTH = 0x04;
+    private static final int WIZROBE_INITIAL_HEALTH = 0x04;
     private static final int SPIKE_TRAP_CONTACT_DAMAGE = 0x08;
     private static final int SPIKE_TRAP_INITIAL_HEALTH = 0x04;
     private static final int CRYSTAL_SWITCH_CONTACT_DAMAGE = 0x04;
@@ -92,6 +95,7 @@ public final class RoomEntityCombatRules {
                 ENTITY_ZOL, ENTITY_GEL, ENTITY_HIDING_ZOL,
                 ENTITY_GIBDO, ENTITY_PEAHAT,
                 ENTITY_GOOMBA, ENTITY_SNAKE,
+                ENTITY_WIZROBE,
                 ENTITY_ARMOS_STATUE,
                 ENTITY_HIDING_GHINI, ENTITY_GIANT_GHINI, ENTITY_GHINI,
                 ENTITY_HARDHAT_BEETLE, ENTITY_SPIKE_TRAP, ENTITY_WATER_TEKTITE,
@@ -128,6 +132,7 @@ public final class RoomEntityCombatRules {
             case ENTITY_HIDING_GHINI, ENTITY_GIANT_GHINI, ENTITY_GHINI ->
                 GHINI_CONTACT_DAMAGE;
             case ENTITY_HARDHAT_BEETLE -> HARDHAT_CONTACT_DAMAGE;
+            case ENTITY_WIZROBE -> WIZROBE_CONTACT_DAMAGE;
             case ENTITY_SPIKE_TRAP -> SPIKE_TRAP_CONTACT_DAMAGE;
             case ENTITY_CRYSTAL_SWITCH -> CRYSTAL_SWITCH_CONTACT_DAMAGE;
             default -> 0;
@@ -157,6 +162,7 @@ public final class RoomEntityCombatRules {
             case ENTITY_HIDING_GHINI, ENTITY_GIANT_GHINI, ENTITY_GHINI ->
                 GHINI_INITIAL_HEALTH;
             case ENTITY_HARDHAT_BEETLE -> HARDHAT_INITIAL_HEALTH;
+            case ENTITY_WIZROBE -> WIZROBE_INITIAL_HEALTH;
             case ENTITY_SPIKE_TRAP -> SPIKE_TRAP_INITIAL_HEALTH;
             case ENTITY_CRYSTAL_SWITCH -> CRYSTAL_SWITCH_INITIAL_HEALTH;
             default -> 0;
@@ -164,7 +170,8 @@ public final class RoomEntityCombatRules {
     }
 
     static int basicSwordDamage(int type) {
-        return supportsEnemyCollision(type) ? BASIC_SWORD_DAMAGE : 0;
+        return (type & 0xFF) == ENTITY_WIZROBE
+            ? 0 : (supportsEnemyCollision(type) ? BASIC_SWORD_DAMAGE : 0);
     }
 
     /**

@@ -118,6 +118,29 @@ final class EnemyProjectileCollisionTest {
     }
 
     @Test
+    void wizrobeProjectileUsesTheGenericDamageValuesAndClearsAfterContact() {
+        EntityProjectileEvent shield = EnemyProjectileCollision.check(
+            projectile(0x22, 0x40, 0x50, 0), 0,
+            link(0x40, 0x50, 0, 0x00, 1, true)).orElseThrow();
+
+        assertEquals(EntityProjectileEvent.Kind.SHIELD_BLOCK, shield.kind());
+        assertEquals(0xFF, shield.collisionValue());
+        assertEquals(0x16, shield.soundId());
+        assertTrue(shield.remove());
+        assertFalse(shield.swordPokeVfx());
+
+        EntityProjectileEvent hit = EnemyProjectileCollision.check(
+            projectile(0x22, 0x40, 0x50, 0), 0,
+            link(0x40, 0x50, 0, 0x00, 0, false)).orElseThrow();
+
+        assertEquals(EntityProjectileEvent.Kind.LINK_DAMAGE, hit.kind());
+        assertEquals(0x08, hit.linkDamage());
+        assertEquals(0xFF, hit.collisionValue());
+        assertTrue(hit.remove());
+        assertFalse(hit.swordPokeVfx());
+    }
+
+    @Test
     void pairoddProjectileSwordHitUsesItsNormalHitboxAndVisualY() {
         RoomEntity projectile = projectile(0x58, 0x38, 0x58, 0x08);
 

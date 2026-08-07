@@ -48,6 +48,8 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_OPT1_NO_WALL_COLLISION = 0x01;
     private static final int ENTITY_OPT1_SPLASH_IN_WATER = 0x08;
     private static final int ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL = 0x02;
+    private static final int WIZROBE_PROJECTILE_OPTIONS1 =
+        ENTITY_OPT1_NO_GROUND_INTERACTION | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
     private static final int ENTITY_PHYSICS_HARMLESS = 0x80;
     private static final int ENTITY_PHYSICS_PROJECTILE_NOCLIP = 0x40;
     private static final int ENTITY_PHYSICS_SHADOW = 0x10;
@@ -80,6 +82,8 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_GHINI = 0x12;
     private static final int ENTITY_KEESE = 0x19;
     private static final int ENTITY_HARDHAT_BEETLE = 0x20;
+    private static final int ENTITY_WIZROBE = 0x21;
+    private static final int ENTITY_WIZROBE_PROJECTILE = 0x22;
     private static final int ENTITY_GHOST = 0xD4;
     private static final int ENTITY_ROOSTER = 0xD5;
     private static final int ENTITY_MARIN_AT_THE_SHORE = 0xC1;
@@ -176,6 +180,9 @@ public final class RoomEntityRuntime {
     private final GibdoMotion gibdoMotion = new GibdoMotion();
     private final GoombaMotion goombaMotion = new GoombaMotion();
     private final SnakeMotion snakeMotion = new SnakeMotion();
+    private final WizrobeMotion wizrobeMotion = new WizrobeMotion();
+    private final WizrobeProjectileMotion wizrobeProjectileMotion =
+        new WizrobeProjectileMotion();
     private final PeaHatMotion peaHatMotion = new PeaHatMotion();
     private final ArmosMotion armosMotion = new ArmosMotion();
     private final GhiniMotion ghiniMotion = new GhiniMotion();
@@ -770,6 +777,8 @@ public final class RoomEntityRuntime {
             boolean preserveBombitePresentation = false;
             boolean preserveIronMaskPresentation = false;
             boolean preserveSnakePresentation = false;
+            boolean preserveWizrobePresentation = false;
+            boolean preserveWizrobeProjectilePresentation = false;
             if (status == EntityStatus.ACTIVE) {
                 decrementEnemyDropCountdowns(entity);
             }
@@ -1094,6 +1103,15 @@ public final class RoomEntityRuntime {
                 if (entity.type() == ENTITY_SNAKE) {
                     snakeMotion.initialize(entity.slot());
                 }
+                if (entity.type() == ENTITY_WIZROBE) {
+                    wizrobeMotion.initializeFromRoom(entity.slot(), entity.spriteVariant());
+                    enemyTransitionCountdown[entity.slot()] = 0x80;
+                    preserveWizrobePresentation = true;
+                }
+                if (entity.type() == ENTITY_WIZROBE_PROJECTILE) {
+                    wizrobeProjectileMotion.initialize(entity.slot(), randomByteSupplier);
+                    preserveWizrobeProjectilePresentation = true;
+                }
                 if (entity.type() == ENTITY_PEAHAT) {
                     peaHatMotion.initialize(entity.slot());
                 }
@@ -1140,6 +1158,11 @@ public final class RoomEntityRuntime {
             }
             RoomEntity updated = entity;
             if (preserveGhiniPresentation) {
+                updated = withVariant(entity, -1);
+            }
+            if (wasInitializing && entity.type() == ENTITY_WIZROBE) {
+                // EntityInitWizrobe decrements the initial display-list variant
+                // before the first active handler dispatch.
                 updated = withVariant(entity, -1);
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
@@ -1427,6 +1450,25 @@ public final class RoomEntityRuntime {
                 }
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_WIZROBE_PROJECTILE) {
+                var collisionEvent = EnemyProjectileCollision.check(entity,
+                    wizrobeProjectileMotion.direction(entity.slot()), projectileLinkState);
+                if (collisionEvent.isPresent()) {
+                    projectileEvents.add(collisionEvent.orElseThrow());
+                }
+                updated = wizrobeProjectileMotion.advance(entity);
+                updated = withFlipAttribute(updated,
+                    wizrobeProjectileMotion.flipAttribute(frame));
+                preserveWizrobeProjectilePresentation = true;
+                boolean objectCollisionHit = objectCollision != null
+                    && objectCollision.collides(updated);
+                if (objectCollisionHit
+                    || collisionEvent.map(EntityProjectileEvent::remove).orElse(false)) {
+                    disableEntityWithoutPersistence(entity.slot());
+                    continue;
+                }
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
                 && laserMotion.isParent(entity.slot())) {
                 LaserMotion.ParentUpdate laserUpdate = laserMotion.advanceParent(entity);
                 updated = laserUpdate.entity();
@@ -1605,6 +1647,20 @@ public final class RoomEntityRuntime {
                 preserveSnakePresentation = true;
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_WIZROBE) {
+                WizrobeMotion.Update wizrobeUpdate = wizrobeMotion.advance(
+                    entity, linkEntityX, linkEntityY, randomByteSupplier,
+                    enemyTransitionCountdown[entity.slot()],
+                    enemyPhysicsFlags[entity.slot()]);
+                updated = wizrobeUpdate.entity();
+                enemyTransitionCountdown[entity.slot()] = wizrobeUpdate.transitionCountdown();
+                enemyPhysicsFlags[entity.slot()] = wizrobeUpdate.physicsFlags();
+                preserveWizrobePresentation = true;
+                if (wizrobeUpdate.projectileSpawn() != null) {
+                    spawnWizrobeProjectile(updated, wizrobeUpdate.projectileSpawn());
+                }
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_PEAHAT) {
                 updated = peaHatMotion.advance(entity, frame, randomByteSupplier,
                     backgroundCollision);
@@ -1719,6 +1775,7 @@ public final class RoomEntityRuntime {
             int variant = preserveGhiniPresentation || preserveMadBomberPresentation
                 || preserveBombitePresentation
                 || preserveIronMaskPresentation || preserveSnakePresentation
+                || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
                 ? updated.spriteVariant() : variantFor(updated, frame);
             if (status == EntityStatus.ACTIVE && shouldDisappear(entity)) {
                 variant = (slowTransitionCountdown[entity.slot()] & 0x01) != 0 ? 0 : -1;
@@ -1726,6 +1783,7 @@ public final class RoomEntityRuntime {
             int renderFlipAttribute = preserveGhiniPresentation || preserveMadBomberPresentation
                 || preserveBombitePresentation
                 || preserveIronMaskPresentation || preserveSnakePresentation
+                || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
                 ? updated.entityFlipAttribute() : baseEntityFlipAttribute[entity.slot()];
             if (preserveBombitePresentation && updated.type() == ENTITY_TIMER_BOMBITE) {
                 renderFlipAttribute |= (bombPrivateCountdown1[updated.slot()] << 3) & 0x10;
@@ -2086,6 +2144,9 @@ public final class RoomEntityRuntime {
                 || peaHatMotion.isGrounded(entity);
             if (entity.type() == ENTITY_PAIRODD
                 && !pairoddMotion.allowsEnemyCollision(entity.slot())) {
+                continue;
+            }
+            if (entity.type() == ENTITY_WIZROBE && wizrobeMotion.state(entity.slot()) != 3) {
                 continue;
             }
             if (isZolGelType(entity.type()) && zolGelMotion.skipsEnemyCollision(entity.slot())) {
@@ -2646,6 +2707,8 @@ public final class RoomEntityRuntime {
         gibdoMotion.clear(slot);
         goombaMotion.clear(slot);
         snakeMotion.clear(slot);
+        wizrobeMotion.clear(slot);
+        wizrobeProjectileMotion.clear(slot);
         peaHatMotion.clear(slot);
         armosMotion.clear(slot);
         ghiniMotion.clear(slot);
@@ -3328,6 +3391,7 @@ public final class RoomEntityRuntime {
         return type == ENTITY_KEESE || type == ENTITY_TEKTITE
             || type == ENTITY_ANTI_FAIRY || type == ENTITY_STALFOS_AGGRESSIVE
             || type == ENTITY_HARDHAT_BEETLE || type == ENTITY_ARMOS_STATUE
+            || type == ENTITY_WIZROBE
             || type == ENTITY_SPARK_COUNTER_CLOCKWISE
             || type == ENTITY_SPARK_CLOCKWISE
             || type == ENTITY_ZOL || type == ENTITY_GEL;
@@ -3388,6 +3452,7 @@ public final class RoomEntityRuntime {
 
     private boolean hasNoGroundInteraction(RoomEntity entity) {
         return isGhiniType(entity.type()) || entity.type() == ENTITY_MAD_BOMBER
+            || entity.type() == ENTITY_WIZROBE_PROJECTILE
             || hasNoGroundInteractionOverride(entity.slot());
     }
 
@@ -3532,6 +3597,36 @@ public final class RoomEntityRuntime {
         dyingCountdown[freeSlot] = 0;
         powerRecoilDeath[freeSlot] = false;
         pairoddProjectileMotion.initializeSpawn(freeSlot, source, linkEntityX, linkEntityY);
+    }
+
+    private void spawnWizrobeProjectile(RoomEntity source,
+                                         WizrobeMotion.ProjectileSpawn spawn) {
+        int freeSlot = findFreeEntitySlot();
+        if (freeSlot < 0) {
+            return;
+        }
+
+        EntitySpriteDefinition projectileDefinition =
+            spriteDefinitionFor(ENTITY_WIZROBE_PROJECTILE);
+        int projectileVariant = projectileDefinition.supported()
+            ? spawn.direction() : -1;
+        RoomEntity projectile = new RoomEntity(freeSlot, -1, ENTITY_WIZROBE_PROJECTILE,
+            spawn.x(), spawn.y(), EntityStatus.ACTIVE, projectileDefinition,
+            projectileVariant, 0, 0, source.z());
+        slots[freeSlot] = projectile;
+        baseEntityFlipAttribute[freeSlot] = 0;
+        entityOptions1Override[freeSlot] = WIZROBE_PROJECTILE_OPTIONS1;
+        enemyTransitionCountdown[freeSlot] = 0;
+        enemyStunnedCountdown[freeSlot] = 0;
+        dyingCountdown[freeSlot] = 0;
+        powerRecoilDeath[freeSlot] = false;
+        enemyPhysicsFlags[freeSlot] = 0x42;
+        enemyHealth[freeSlot] = initialHealth(ENTITY_WIZROBE_PROJECTILE);
+        enemyFlashCountdown[freeSlot] = 0;
+        enemyIgnoreHitsCountdown[freeSlot] = 1;
+        enemyRecoilMotion.clear(freeSlot);
+        wizrobeProjectileMotion.initializeSpawn(freeSlot, spawn.direction());
+        dynamicEntitySpawnedThisFrame[freeSlot] = true;
     }
 
     private boolean spawnEvasiveClone(RoomEntity source,
@@ -4466,6 +4561,53 @@ public final class RoomEntityRuntime {
         return snakeMotion.speedY(slot);
     }
 
+    int wizrobeState(int slot) {
+        return wizrobeMotion.state(slot);
+    }
+
+    int wizrobeDirection(int slot) {
+        return wizrobeMotion.direction(slot);
+    }
+
+    int wizrobePrivateState1(int slot) {
+        return wizrobeMotion.privateState1(slot);
+    }
+
+    int wizrobePrivateCountdown1(int slot) {
+        return wizrobeMotion.privateCountdown1(slot);
+    }
+
+    int wizrobeNextSpriteVariant(int slot) {
+        return wizrobeMotion.nextSpriteVariant(slot);
+    }
+
+    void setWizrobeStateForTest(int slot, int state, int transitionCountdown,
+                                int privateState1, int privateCountdown1, int direction) {
+        validateEntitySlot(slot);
+        validateCountdownTestValue(slot, transitionCountdown);
+        wizrobeMotion.setForTest(slot, state, transitionCountdown, privateState1,
+            privateCountdown1, direction, slots[slot].spriteVariant());
+        enemyTransitionCountdown[slot] = transitionCountdown;
+        enemyPhysicsFlags[slot] = 0x42;
+    }
+
+    int wizrobeProjectileSpeedX(int slot) {
+        return wizrobeProjectileMotion.speedX(slot);
+    }
+
+    int wizrobeProjectileSpeedY(int slot) {
+        return wizrobeProjectileMotion.speedY(slot);
+    }
+
+    int wizrobeProjectileDirection(int slot) {
+        return wizrobeProjectileMotion.direction(slot);
+    }
+
+    void setWizrobeProjectileForTest(int slot, int newSpeedX, int newSpeedY,
+                                     int direction) {
+        wizrobeProjectileMotion.setForTest(slot, newSpeedX, newSpeedY, direction);
+    }
+
     int peaHatState(int slot) {
         return peaHatMotion.state(slot);
     }
@@ -4715,6 +4857,9 @@ public final class RoomEntityRuntime {
         if (slots[slot].type() == ENTITY_MAD_BOMBER) {
             return MAD_BOMBER_OPTIONS1;
         }
+        if (slots[slot].type() == ENTITY_WIZROBE_PROJECTILE) {
+            return WIZROBE_PROJECTILE_OPTIONS1;
+        }
         if (isBombiteType(slots[slot].type())) {
             return BOMBITE_OPTIONS1;
         }
@@ -4825,6 +4970,8 @@ public final class RoomEntityRuntime {
             case ENTITY_STALFOS_EVASIVE -> EVASIVE_PHYSICS_FLAGS;
             case ENTITY_IRON_MASK -> IRON_MASK_INITIAL_PHYSICS_FLAGS;
             case ENTITY_GOOMBA, ENTITY_SNAKE -> GOOMBA_INITIAL_PHYSICS_FLAGS;
+            case ENTITY_WIZROBE -> 0x02;
+            case ENTITY_WIZROBE_PROJECTILE -> 0x42;
             case ENTITY_IRON_MASKS_MASK -> IRON_MASKS_MASK_INITIAL_PHYSICS_FLAGS;
             case ENTITY_BOMB -> BOMB_INITIAL_PHYSICS_FLAGS;
             case ENTITY_BOUNCING_BOMBITE, ENTITY_TIMER_BOMBITE ->
@@ -4909,6 +5056,13 @@ public final class RoomEntityRuntime {
         return preserveDeathMetadata(entity, new RoomEntity(
             entity.slot(), entity.sourceLoadOrder(), entity.type(), entity.x(), entity.y(),
             entity.status(), entity.spriteDefinition(), variant, entity.entityFlipAttribute(),
+            entity.spriteTileOffset(), entity.z()));
+    }
+
+    private static RoomEntity withFlipAttribute(RoomEntity entity, int flipAttribute) {
+        return preserveDeathMetadata(entity, new RoomEntity(
+            entity.slot(), entity.sourceLoadOrder(), entity.type(), entity.x(), entity.y(),
+            entity.status(), entity.spriteDefinition(), entity.spriteVariant(), flipAttribute,
             entity.spriteTileOffset(), entity.z()));
     }
 
@@ -5179,6 +5333,8 @@ public final class RoomEntityRuntime {
         gibdoMotion.clear(slot);
         goombaMotion.clear(slot);
         snakeMotion.clear(slot);
+        wizrobeMotion.clear(slot);
+        wizrobeProjectileMotion.clear(slot);
         peaHatMotion.clear(slot);
         armosMotion.clear(slot);
         followingNpcMotion.clear(slot);

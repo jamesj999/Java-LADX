@@ -1618,6 +1618,28 @@ runtime collision callback.
   errors, or skipped tests; remaining entity handlers and broader room-script
   parity remain follow-up work.
 
+## Verified ROM Wizrobe entity runtime — 2026-08-07
+
+- Entities `$21` and `$22` now decode the exact bank-$06 Wizrobe and projectile
+  display lists at `$7604` and `$65E1`, including the projectile's four-way
+  palette pulse and the source direction-selected projectile frames.
+- The parent follows the source reveal/vanish state machine: transition `$80`,
+  private countdown `$20`, direction-to-Link selection, `$40` firing window,
+  projectile launch at the ROM offset tables, and the `$28` launch cadence.
+  Projectile slots copy the source position/Z, direction, fixed-point speeds,
+  physics `$42`, options `$12`, and `SpawnNewEntity`'s initial ignore-hits
+  frame.
+- Wizrobe projectile Link collision uses the shared shield/hurt event boundary,
+  clears on contact, and retains the source object-intersection clear path.
+  Parent health group `$0C` and projectile group `$0E` are loaded from the ROM
+  combat tables; Wizrobe contact damage is `$08`, while the normal sword rows
+  are zero as defined by `Data_003_43EC`.
+- Shipped-ROM tests cover both display lists, reveal timing, direction/launch
+  payloads, fixed-point projectile motion, palette flipping, projectile
+  collision lifecycle, and combat-table behavior. The clean Java suite passes
+  with 986 tests and zero failures, errors, or skipped tests; remaining entity
+  handlers and broader room-script parity remain follow-up work.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

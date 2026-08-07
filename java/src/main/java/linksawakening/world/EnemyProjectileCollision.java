@@ -7,12 +7,13 @@ import java.util.Optional;
  *
  * <p>This class intentionally owns only the shared projectile paths. Generic
  * enemy hitboxes remain in
- * {@link RoomEntityCombatRules}; the two projectile types are excluded from
- * that pass in the ROM.</p>
+ * {@link RoomEntityCombatRules}; the projectile entity types are excluded
+ * from that pass in the ROM.</p>
  */
 public final class EnemyProjectileCollision {
     static final int ENTITY_OCTOROK_ROCK = 0x0A;
     static final int ENTITY_MOBLIN_ARROW = 0x0C;
+    static final int ENTITY_WIZROBE_PROJECTILE = 0x22;
     static final int ENTITY_PAIRODD_PROJECTILE = 0x58;
     static final int ENTITY_LASER_BEAM = 0x2B;
     static final int LINK_MOTION_NON_INTERACTIVE = 0x02;
@@ -52,6 +53,7 @@ public final class EnemyProjectileCollision {
         }
         int type = projectile.type() & 0xFF;
         if (type != ENTITY_OCTOROK_ROCK && type != ENTITY_MOBLIN_ARROW
+            && type != ENTITY_WIZROBE_PROJECTILE
             && type != ENTITY_PAIRODD_PROJECTILE && type != ENTITY_LASER_BEAM) {
             return Optional.empty();
         }
@@ -80,13 +82,15 @@ public final class EnemyProjectileCollision {
         if (link.usingShield()
             && link.direction() == REVERSED_DIRECTIONS[direction]) {
             boolean pairoddProjectile = type == ENTITY_PAIRODD_PROJECTILE;
+            boolean wizrobeProjectile = type == ENTITY_WIZROBE_PROJECTILE;
             int swordPokeX = pairoddProjectile ? projectile.x() : 0;
             int swordPokeY = pairoddProjectile ? projectileVisualY : 0;
             return Optional.of(new EntityProjectileEvent(
                 projectile.slot(), type, EntityProjectileEvent.Kind.SHIELD_BLOCK,
                 COLLISION_PROJECTILE, 0,
                 EntityProjectileEvent.SoundChannel.JINGLE, JINGLE_SHIELD_TING,
-                pairoddProjectile, pairoddProjectile, swordPokeX, swordPokeY));
+                pairoddProjectile || wizrobeProjectile, pairoddProjectile,
+                swordPokeX, swordPokeY));
         }
 
         // func_003_6CC0 reaches ApplyLinkCollisionWithEnemy for these generic
@@ -95,8 +99,9 @@ public final class EnemyProjectileCollision {
         // wall-transition path; Pairodd's bank-$04 handler clears its slot
         // after consuming the same collision byte.
         boolean pairoddProjectile = type == ENTITY_PAIRODD_PROJECTILE;
-        boolean remove = type == ENTITY_MOBLIN_ARROW || pairoddProjectile;
-        int collisionValue = pairoddProjectile
+        boolean wizrobeProjectile = type == ENTITY_WIZROBE_PROJECTILE;
+        boolean remove = type == ENTITY_MOBLIN_ARROW || pairoddProjectile || wizrobeProjectile;
+        int collisionValue = pairoddProjectile || wizrobeProjectile
             ? COLLISION_PROJECTILE : (remove ? COLLISION_NONE : COLLISION_PROJECTILE);
         int swordPokeX = pairoddProjectile ? projectile.x() : 0;
         int swordPokeY = pairoddProjectile ? projectileVisualY : 0;

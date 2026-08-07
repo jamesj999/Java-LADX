@@ -178,6 +178,16 @@ final class EntitySpriteHandlerCatalogTest {
         assertDefinition(snake, 0x07, 0x683E,
             EntitySpriteDefinition.Shape.PAIR, 4, 0);
 
+        EntitySpriteDefinition wizrobe = catalog.forEntityType(
+            0x21, EntityRoomLoader.RoomTable.INDOORS_A);
+        assertDefinition(wizrobe, 0x06, 0x7604,
+            EntitySpriteDefinition.Shape.PAIR, 5, 0);
+
+        EntitySpriteDefinition wizrobeProjectile = catalog.forEntityType(
+            0x22, EntityRoomLoader.RoomTable.INDOORS_A);
+        assertDefinition(wizrobeProjectile, 0x06, 0x65E1,
+            EntitySpriteDefinition.Shape.PAIR, 4, 0);
+
         EntitySpriteDefinition octorok = catalog.forEntityType(
             0x09, EntityRoomLoader.RoomTable.OVERWORLD);
         assertDefinition(octorok, 0x03, 0x57FB,
@@ -346,6 +356,30 @@ final class EntitySpriteHandlerCatalogTest {
             0x03, 0x5FFB, EntitySpriteDefinition.Shape.SINGLE, 1, 0);
         assertDefinition(catalog.forEntityType(0x3D, EntityRoomLoader.RoomTable.OVERWORLD),
             0x03, 0x5FD1, EntitySpriteDefinition.Shape.SINGLE, 1, 0);
+    }
+
+    @Test
+    void wizrobeDisplayListsMatchTheShippedRomBytes() throws Exception {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+
+        EntitySpriteDefinition wizrobe = catalog.forEntityType(
+            0x21, EntityRoomLoader.RoomTable.INDOORS_A);
+        assertPairBytes(wizrobe, new int[][] {
+            {0x6E, 0x00, 0x6E, 0x20},
+            {0x66, 0x20, 0x64, 0x20},
+            {0x64, 0x00, 0x66, 0x00},
+            {0x62, 0x00, 0x62, 0x20},
+            {0x60, 0x00, 0x60, 0x20}
+        });
+
+        EntitySpriteDefinition projectile = catalog.forEntityType(
+            0x22, EntityRoomLoader.RoomTable.INDOORS_A);
+        assertPairBytes(projectile, new int[][] {
+            {0x6A, 0x23, 0x68, 0x23},
+            {0x68, 0x03, 0x6A, 0x03},
+            {0x6C, 0x43, 0x6C, 0x63},
+            {0x6C, 0x03, 0x6C, 0x23}
+        });
     }
 
     @Test
