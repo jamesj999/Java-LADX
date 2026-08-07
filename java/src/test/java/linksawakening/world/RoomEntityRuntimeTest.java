@@ -4813,6 +4813,78 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void enemyBombExplosionUsesTheSourceLinkCollisionBranch() throws IOException {
+        byte[] rom = loadRom();
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+            snapshot(), false, () -> 0, catalog, tables);
+
+        int bombSlot = runtime.spawnEnemyBomb(0x48, 0x50, 0x00, 0x13);
+        List<EntityProjectileEvent> events = runtime.tickWithProjectileEvents(
+            0, 0x48, 0x50, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(
+                0x48, 0x50, 0x00, 0x00, 0x03, false, 1, 0x00),
+            0x10, 0xF0);
+
+        assertEquals(List.of(new EntityProjectileEvent(
+            bombSlot, 0x02, EntityProjectileEvent.Kind.LINK_DAMAGE, 0x00, 0x08,
+            EntityProjectileEvent.SoundChannel.WAVE, 0x03, false, false,
+            0x00, 0x00, 0x20, 0xE0, 0x10)), events);
+        assertEquals(0x04, runtime.swordMoblinAlertingSoundCounter());
+        assertEquals(List.of(BombExplosionEvent.OBJECT_TARGET),
+            runtime.consumeBombExplosionEvents().stream()
+                .map(BombExplosionEvent::targetSlot).toList());
+    }
+
+    @Test
+    void enemyBombUsesRawEntityYInsteadOfExplosionVisualYForLinkCollision() throws IOException {
+        byte[] rom = loadRom();
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+            snapshot(), false, () -> 0, new EntitySpriteHandlerCatalog(rom),
+            new RomEnemyCombatTables(rom));
+
+        int bombSlot = runtime.spawnEnemyBomb(0x48, 0x68, 0x18, 0x13);
+        List<EntityProjectileEvent> events = runtime.tickWithProjectileEvents(
+            0, 0x48, 0x50, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(
+                0x48, 0x50, 0x00, 0x00, 0x03, false, 1, 0x00),
+            0x10, 0xF0);
+
+        assertEquals(List.of(), events);
+        assertEquals(0x04, runtime.swordMoblinAlertingSoundCounter());
+        List<BombExplosionEvent> explosionEvents = runtime.consumeBombExplosionEvents();
+        assertEquals(List.of(BombExplosionEvent.OBJECT_TARGET),
+            explosionEvents.stream().map(BombExplosionEvent::targetSlot).toList());
+        assertEquals(bombSlot, explosionEvents.getFirst().bombSlot());
+    }
+
+    @Test
+    void protectedEnemyBombStillDoublesLinkSpeedWithoutDamageOrHurtSound() throws IOException {
+        byte[] rom = loadRom();
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+            snapshot(), false, () -> 0, new EntitySpriteHandlerCatalog(rom),
+            new RomEnemyCombatTables(rom));
+
+        int bombSlot = runtime.spawnEnemyBomb(0x48, 0x50, 0x00, 0x13);
+        List<EntityProjectileEvent> events = runtime.tickWithProjectileEvents(
+            0, 0x48, 0x50, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(
+                0x48, 0x50, 0x00, 0x00, 0x03, false, 1, 0x01),
+            0x10, 0xF0);
+
+        assertEquals(List.of(new EntityProjectileEvent(
+            bombSlot, 0x02, EntityProjectileEvent.Kind.LINK_DAMAGE, 0x00, 0x00,
+            EntityProjectileEvent.SoundChannel.NONE, -1, false, false,
+            0x00, 0x00, 0x20, 0xE0, 0x00)), events);
+        assertEquals(0x04, runtime.swordMoblinAlertingSoundCounter());
+        List<BombExplosionEvent> explosionEvents = runtime.consumeBombExplosionEvents();
+        assertEquals(List.of(BombExplosionEvent.OBJECT_TARGET),
+            explosionEvents.stream().map(BombExplosionEvent::targetSlot).toList());
+        assertEquals(bombSlot, explosionEvents.getFirst().bombSlot());
+    }
+
+    @Test
     void bombExplosionUsesNonlethalRomDamageBeforeTheTargetRecoilHandler()
         throws IOException {
         byte[] rom = loadRom();

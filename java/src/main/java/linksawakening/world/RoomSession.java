@@ -671,6 +671,20 @@ public final class RoomSession {
                              int collisionType, boolean usingShield, int shieldLevel,
                              int invincibilityCounter, boolean swordCollisionActive,
                              int swordX, int swordWidth, int swordY, int swordHeight) {
+        return tickEntitiesWithProjectileEvents(frameCounter, linkEntityX, linkEntityY,
+            linkEntityZ, linkMotionState, linkDirection, collisionType, usingShield,
+            shieldLevel, invincibilityCounter, swordCollisionActive, swordX, swordWidth,
+            swordY, swordHeight, 0, 0);
+    }
+
+    /** Advances entities with the current Link speed bytes for enemy-bomb recoil. */
+    public List<EntityProjectileEvent> tickEntitiesWithProjectileEvents(
+                             int frameCounter, int linkEntityX, int linkEntityY,
+                             int linkEntityZ, int linkMotionState, int linkDirection,
+                             int collisionType, boolean usingShield, int shieldLevel,
+                             int invincibilityCounter, boolean swordCollisionActive,
+                             int swordX, int swordWidth, int swordY, int swordHeight,
+                             int linkSpeedX, int linkSpeedY) {
         followingLinkX = linkEntityX & 0xFF;
         followingLinkY = linkEntityY & 0xFF;
         followingLinkZ = linkEntityZ & 0xFF;
@@ -698,7 +712,7 @@ public final class RoomSession {
                 linkEntityX, linkEntityY, linkEntityZ, linkMotionState,
                 romDirectionForProjectileCollision(linkDirection), usingShield, shieldLevel,
                 invincibilityCounter), swordCollisionActive, swordX, swordWidth,
-            swordY, swordHeight);
+            swordY, swordHeight, linkSpeedX, linkSpeedY);
         List<BombExplosionEvent> bombExplosionEvents = entityRuntime.consumeBombExplosionEvents();
         pendingBombExplosionEvents.clear();
         pendingBombExplosionEvents.addAll(bombExplosionEvents);

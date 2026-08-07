@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 final class EnemyProjectileEventConsumerTest {
 
@@ -102,6 +103,25 @@ final class EnemyProjectileEventConsumerTest {
         assertEquals(16, player.health());
         assertEquals(3, player.invincibilityCounter());
         assertEquals(List.of(), sounds.events);
+    }
+
+    @Test
+    void enemyBombCollisionResetsPegasusBootsBeforeApplyingNominalDamageModifiers() {
+        PlayerState player = new PlayerState();
+        player.setActivePowerUp(PlayerState.ACTIVE_POWER_UP_GUARDIAN_ACORN);
+        player.setRunningWithPegasusBoots(true);
+        RecordingSoundSink sounds = new RecordingSoundSink();
+
+        EntityProjectileEvent event = new EntityProjectileEvent(
+            0, 0x02, EntityProjectileEvent.Kind.LINK_DAMAGE, 0, 0x08,
+            EntityProjectileEvent.SoundChannel.WAVE, 0x03, false, false);
+
+        EnemyProjectileEventConsumer.consume(List.of(event), player, sounds);
+
+        assertEquals(4, player.subtractHealthBuffer());
+        assertEquals(0x50, player.invincibilityCounter());
+        assertFalse(player.runningWithPegasusBoots());
+        assertEquals(List.of(GameplaySoundEvent.LINK_HURT), sounds.events);
     }
 
     private static final class RecordingSoundSink implements GameplaySoundSink {

@@ -149,6 +149,8 @@ public final class Link implements RocsFeather.JumpTarget {
     private boolean forcedSpeedPending;
     private int forcedSpeedX;
     private int forcedSpeedY;
+    private int lastRomSpeedX;
+    private int lastRomSpeedY;
     private int groundStatus = GROUND_STATUS_NORMAL;
     private int romAttackStepAnimationCountdown;
     private boolean airborne;
@@ -332,6 +334,16 @@ public final class Link implements RocsFeather.JumpTarget {
         return romCollisionType & 0xFF;
     }
 
+    /** ROM hLinkSpeedX written by the current Link motion update. */
+    public int romSpeedX() {
+        return lastRomSpeedX & 0xFF;
+    }
+
+    /** ROM hLinkSpeedY written by the current Link motion update. */
+    public int romSpeedY() {
+        return lastRomSpeedY & 0xFF;
+    }
+
     /**
      * Mirrors wIsUsingShield: merely owning the shield is insufficient; the
      * button bound to the slot containing it must be held this frame.
@@ -443,6 +455,8 @@ public final class Link implements RocsFeather.JumpTarget {
     public void update() {
         tickRomAttackStepAnimationCountdown();
         romCollisionType = 0;
+        lastRomSpeedX = 0;
+        lastRomSpeedY = 0;
         if (playerState != null) {
             playerState.tickInvincibility();
         }
@@ -496,6 +510,8 @@ public final class Link implements RocsFeather.JumpTarget {
             speedX = (byte) romTables.linkSpeedX(mask);
             speedY = (byte) romTables.linkSpeedY(mask);
         }
+        lastRomSpeedX = speedX & 0xFF;
+        lastRomSpeedY = speedY & 0xFF;
         movingThisFrame = (speedX != 0 || speedY != 0);
         boolean applyGroundMotion = airborne || shouldApplyGroundMotion();
 

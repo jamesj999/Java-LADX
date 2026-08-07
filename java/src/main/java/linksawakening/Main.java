@@ -680,7 +680,9 @@ public class Main {
                     playerState == null ? 0 : playerState.invincibilityCounter(),
                     swordBoxForEntityTick.active(), swordBoxForEntityTick.x(),
                     swordBoxForEntityTick.width(), swordBoxForEntityTick.y(),
-                    swordBoxForEntityTick.height());
+                    swordBoxForEntityTick.height(),
+                    link == null ? 0 : link.romSpeedX(),
+                    link == null ? 0 : link.romSpeedY());
                 EnemyProjectileEventConsumer.consume(projectileEvents, playerState,
                     gameplaySoundSink);
                 EnemyCombatEventConsumer.consume(roomSession.consumeEntityEvents(),
@@ -688,7 +690,9 @@ public class Main {
                 openEntityDialogRequests();
                 for (var event : projectileEvents) {
                     boolean hookshotPull = event.kind() == EntityProjectileEvent.Kind.HOOKSHOT_PULL;
-                    if ((!hookshotPull && event.linkIgnoreCollisionCountdown() == 0)
+                    boolean hasLinkResponse = event.linkIgnoreCollisionCountdown() != 0
+                        || event.linkSpeedX() != 0 || event.linkSpeedY() != 0;
+                    if ((!hookshotPull && !hasLinkResponse)
                         || link == null) {
                         continue;
                     }

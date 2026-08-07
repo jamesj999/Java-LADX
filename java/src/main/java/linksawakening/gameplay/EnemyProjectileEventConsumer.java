@@ -49,6 +49,12 @@ public final class EnemyProjectileEventConsumer {
             }
 
             playHurtSound(event, soundSink);
+            if (event.type() == 0x02) {
+                // ApplyLinkCollisionWithEnemy begins by ResetPegasusBoots for
+                // the enemy-bomb branch, even when a guardian acorn reduces
+                // the resulting damage to zero.
+                playerState.setRunningWithPegasusBoots(false);
+            }
             playerState.applyRomEnemyDamage(event.linkDamage());
         }
     }

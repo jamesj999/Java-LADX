@@ -242,6 +242,12 @@ public final class RoomEntityRuntime {
     private int latestShotArrowEntityIndex = -1;
     private boolean lastArrowShotPlayedWhoosh;
     private boolean lastBombPlacementPlayedBump;
+    // hLinkSpeedX/Y are written by Link before AnimateEntities. These are set
+    // only around the live projectile tick so the enemy-bomb branch can mirror
+    // its post-collision SLA writes without making Link state part of the
+    // entity snapshot.
+    private int currentLinkSpeedX;
+    private int currentLinkSpeedY;
     private boolean groundInteractionSideScrolling;
     private int entityMapId = -1;
     private int liftedEntitySlot = -1;
@@ -487,6 +493,24 @@ public final class RoomEntityRuntime {
         int frameCounter, int linkEntityX, int linkEntityY,
         IntSupplier randomByteSupplier, RoomEntityBackgroundCollision backgroundCollision,
         EnemyProjectileCollision.LinkState projectileLinkState,
+        int linkSpeedX, int linkSpeedY) {
+        validateByte(linkSpeedX, "Link X speed");
+        validateByte(linkSpeedY, "Link Y speed");
+        currentLinkSpeedX = linkSpeedX;
+        currentLinkSpeedY = linkSpeedY;
+        try {
+            return tickWithProjectileEvents(frameCounter, linkEntityX, linkEntityY,
+                randomByteSupplier, backgroundCollision, projectileLinkState);
+        } finally {
+            currentLinkSpeedX = 0;
+            currentLinkSpeedY = 0;
+        }
+    }
+
+    List<EntityProjectileEvent> tickWithProjectileEvents(
+        int frameCounter, int linkEntityX, int linkEntityY,
+        IntSupplier randomByteSupplier, RoomEntityBackgroundCollision backgroundCollision,
+        EnemyProjectileCollision.LinkState projectileLinkState,
         boolean swordCollisionActive, int swordX, int swordWidth,
         int swordY, int swordHeight) {
         return tickInternal(frameCounter, linkEntityX, linkEntityY, randomByteSupplier,
@@ -522,6 +546,32 @@ public final class RoomEntityRuntime {
             randomByteSupplier, backgroundCollision, objectCollision, linkPositionHistory,
             linkZ, linkDirection, entityYOffset, projectileLinkState, false,
             swordCollisionActive, swordX, swordWidth, swordY, swordHeight);
+    }
+
+    /** Full live-runtime path with the Link speed bytes visible to handlers. */
+    List<EntityProjectileEvent> tickWithProjectileEvents(
+        int frameCounter, int linkEntityX, int linkEntityY, int collisionType,
+        IntSupplier randomByteSupplier, RoomEntityBackgroundCollision backgroundCollision,
+        RoomEntityObjectCollision objectCollision,
+        LinkPositionHistory linkPositionHistory,
+        int linkZ, int linkDirection, int entityYOffset,
+        EnemyProjectileCollision.LinkState projectileLinkState,
+        boolean swordCollisionActive, int swordX, int swordWidth,
+        int swordY, int swordHeight, int linkSpeedX, int linkSpeedY) {
+        validateByte(linkSpeedX, "Link X speed");
+        validateByte(linkSpeedY, "Link Y speed");
+        currentLinkSpeedX = linkSpeedX;
+        currentLinkSpeedY = linkSpeedY;
+        try {
+            return tickWithProjectileEvents(frameCounter, linkEntityX, linkEntityY,
+                collisionType, randomByteSupplier, backgroundCollision, objectCollision,
+                linkPositionHistory, linkZ, linkDirection, entityYOffset,
+                projectileLinkState, swordCollisionActive, swordX, swordWidth,
+                swordY, swordHeight);
+        } finally {
+            currentLinkSpeedX = 0;
+            currentLinkSpeedY = 0;
+        }
     }
 
     List<EntityProjectileEvent> tickWithProjectileEvents(
@@ -788,7 +838,8 @@ public final class RoomEntityRuntime {
                 continue;
             }
             if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_BOMB) {
-                BombMotion.Decision bombDecision = advanceBombEntity(index, entity);
+                BombMotion.Decision bombDecision = advanceBombEntity(index, entity,
+                    projectileEvents, linkEntityX, linkEntityY, projectileLinkState);
                 entity = slots[index];
                 if (bombDecision.phase() == BombMotion.Phase.NORMAL) {
                     slots[index] = advancePlacedBombEntity(
@@ -844,7 +895,8 @@ public final class RoomEntityRuntime {
                 continue;
             } else if (status == EntityStatus.THROWN) {
                 if (entity.type() == ENTITY_BOMB) {
-                    BombMotion.Decision bombDecision = advanceBombEntity(index, entity);
+                    BombMotion.Decision bombDecision = advanceBombEntity(index, entity,
+                        projectileEvents, linkEntityX, linkEntityY, projectileLinkState);
                     entity = slots[index];
                     if (bombDecision.unloadAfterPresentation()) {
                         continue;
@@ -897,7 +949,8 @@ public final class RoomEntityRuntime {
                 continue;
             } else if (status == EntityStatus.STUNNED) {
                 if (entity.type() == ENTITY_BOMB) {
-                    BombMotion.Decision bombDecision = advanceBombEntity(index, entity);
+                    BombMotion.Decision bombDecision = advanceBombEntity(index, entity,
+                        projectileEvents, linkEntityX, linkEntityY, projectileLinkState);
                     entity = slots[index];
                     if (bombDecision.unloadAfterPresentation()) {
                         continue;
@@ -2342,6 +2395,44 @@ public final class RoomEntityRuntime {
         return freeSlot;
     }
 
+    /** Creates the source's type-$02 enemy bomb with privateState4 set to $01. */
+    int spawnEnemyBomb(int entityX, int entityY, int entityZ, int transitionCountdown) {
+        validateByte(entityX, "Enemy bomb X");
+        validateByte(entityY, "Enemy bomb Y");
+        validateByte(entityZ, "Enemy bomb Z");
+        validateByte(transitionCountdown, "Enemy bomb transition countdown");
+        int freeSlot = findFreeEntitySlot();
+        if (freeSlot < 0) {
+            return -1;
+        }
+
+        EntitySpriteDefinition definition = spriteDefinitionFor(ENTITY_BOMB);
+        int variant = definition.supported() ? definition.initialVariant() : -1;
+        RoomEntity bomb = new RoomEntity(freeSlot, -1, ENTITY_BOMB,
+            entityX, entityY, EntityStatus.ACTIVE, definition, variant, 0, 0, entityZ);
+        slots[freeSlot] = bomb;
+        bombDirection[freeSlot] = 0xFF;
+        playerArrowBombArrow[freeSlot] = false;
+        bombFinalPresentationPending[freeSlot] = false;
+        bombPrivateState4[freeSlot] = 0x01;
+        bombPrivateCountdown1[freeSlot] = 0;
+        bombPrivateCountdown3[freeSlot] = 0;
+        placedBombMotionInitialized[freeSlot] = false;
+        thrownMotionInitialized[freeSlot] = false;
+        enemyHitboxFlags[freeSlot] = 0;
+        enemyTransitionCountdown[freeSlot] = transitionCountdown;
+        enemyStunnedCountdown[freeSlot] = 0;
+        enemyHealth[freeSlot] = initialHealth(ENTITY_BOMB);
+        enemyFlashCountdown[freeSlot] = 0;
+        enemyIgnoreHitsCountdown[freeSlot] = 0;
+        enemyPhysicsFlags[freeSlot] = BOMB_INITIAL_PHYSICS_FLAGS;
+        entityGroundStatus[freeSlot] = 0;
+        baseEntityFlipAttribute[freeSlot] = 0;
+        entityOptions1Override[freeSlot] = BOMB_OPTIONS1;
+        dynamicEntitySpawnedThisFrame[freeSlot] = true;
+        return freeSlot;
+    }
+
     /** Creates the temporary type-$05 entity used by bombed bushes, grass, and pots. */
     int spawnLiftableRockSmash(int entityX, int entityY, int sourceSpriteVariant) {
         if (sourceSpriteVariant != LIFTABLE_ROCK_SMASH_MODE_ROCK
@@ -3081,7 +3172,10 @@ public final class RoomEntityRuntime {
         }
     }
 
-    private BombMotion.Decision advanceBombEntity(int index, RoomEntity entity) {
+    private BombMotion.Decision advanceBombEntity(
+            int index, RoomEntity entity, List<EntityProjectileEvent> projectileEvents,
+            int linkEntityX, int linkEntityY,
+            EnemyProjectileCollision.LinkState projectileLinkState) {
         int slot = entity.slot();
         BombMotion.Decision decision = BombMotion.decide(enemyTransitionCountdown[slot] & 0xFF);
         if (decision.playExplosionSound()) {
@@ -3109,7 +3203,8 @@ public final class RoomEntityRuntime {
         int variant = decision.explosionVariant().orElse(0);
         RoomEntity updated = withDefinition(entity, definition, variant);
         slots[index] = updated;
-        queueBombExplosionInteractions(updated, decision);
+        queueBombExplosionInteractions(updated, decision, projectileEvents,
+            linkEntityX, linkEntityY, projectileLinkState);
         if (decision.unloadAfterPresentation()) {
             bombFinalPresentationPending[slot] = true;
         }
@@ -3154,14 +3249,23 @@ public final class RoomEntityRuntime {
         return base + frame;
     }
 
-    private void queueBombExplosionInteractions(RoomEntity bomb, BombMotion.Decision decision) {
+    private void queueBombExplosionInteractions(
+            RoomEntity bomb, BombMotion.Decision decision,
+            List<EntityProjectileEvent> projectileEvents,
+            int linkEntityX, int linkEntityY,
+            EnemyProjectileCollision.LinkState projectileLinkState) {
         if (decision.phase() != BombMotion.Phase.EXPLOSION) {
             return;
         }
         int bombSlot = bomb.slot();
         int countdown = enemyTransitionCountdown[bombSlot] & 0xFF;
-        if (bombPrivateState4[bombSlot] != 0
-            || countdown < 0x0E || countdown > 0x16) {
+        // BombExplosionHandler returns before every interaction for Tarin's
+        // transformation explosion. All other bomb variants, including
+        // enemy bombs, still run the shared destroyable-object checks.
+        if (bombPrivateState4[bombSlot] == 0x4C) {
+            return;
+        }
+        if (countdown < 0x0E || countdown > 0x16) {
             return;
         }
 
@@ -3171,6 +3275,11 @@ public final class RoomEntityRuntime {
             BombExplosionEvent.OBJECT_TARGET, bombX, bombVisualY, countdown,
             BombExplosionEvent.DAMAGE_TYPE_BOMB));
         if (countdown != 0x12) {
+            return;
+        }
+        if (bombPrivateState4[bombSlot] != 0) {
+            queueEnemyBombLinkCollision(bomb, projectileEvents, linkEntityX, linkEntityY,
+                projectileLinkState);
             return;
         }
         swordMoblinAlertingSoundCounter = 0x04;
@@ -3190,6 +3299,33 @@ public final class RoomEntityRuntime {
                 bombX, bombVisualY, countdown, BombExplosionEvent.DAMAGE_TYPE_BOMB));
             applyBombDamage(bomb, target);
         }
+    }
+
+    /** Mirrors BombExplosionHandler's separate privateState4 enemy-bomb path. */
+    private void queueEnemyBombLinkCollision(
+            RoomEntity bomb, List<EntityProjectileEvent> projectileEvents,
+            int linkEntityX, int linkEntityY,
+            EnemyProjectileCollision.LinkState projectileLinkState) {
+        swordMoblinAlertingSoundCounter = 0x04;
+        int bombX = bomb.x() & 0xFF;
+        int bombY = bomb.y() & 0xFF;
+        if (!isWithinBombExplosionWindow(bombX, linkEntityX)
+            || !isWithinBombExplosionWindow(bombY, linkEntityY)) {
+            return;
+        }
+
+        boolean collisionProtected = projectileLinkState.invincibilityCounter() != 0;
+        int linkDamage = enemyCombatTables == null
+            ? 0x08 : enemyCombatTables.contactDamage(ENTITY_BOMB);
+        projectileEvents.add(new EntityProjectileEvent(
+            bomb.slot(), ENTITY_BOMB, EntityProjectileEvent.Kind.LINK_DAMAGE, 0,
+            collisionProtected ? 0 : linkDamage,
+            collisionProtected
+                ? EntityProjectileEvent.SoundChannel.NONE
+                : EntityProjectileEvent.SoundChannel.WAVE,
+            collisionProtected ? -1 : 0x03, false, false, 0, 0,
+            (currentLinkSpeedX << 1) & 0xFF, (currentLinkSpeedY << 1) & 0xFF,
+            collisionProtected ? 0 : 0x10));
     }
 
     /**
@@ -4577,6 +4713,12 @@ public final class RoomEntityRuntime {
     }
 
     private static void validateEnemyDropByte(int value, String label) {
+        if (value < 0 || value > 0xFF) {
+            throw new IllegalArgumentException(label + " must be an unsigned byte: " + value);
+        }
+    }
+
+    private static void validateByte(int value, String label) {
         if (value < 0 || value > 0xFF) {
             throw new IllegalArgumentException(label + " must be an unsigned byte: " + value);
         }

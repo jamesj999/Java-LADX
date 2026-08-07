@@ -1447,6 +1447,28 @@ runtime collision callback.
   suite passes with 954 tests and zero failures, errors, or skipped tests. This
   increment does not add an emulator.
 
+## Verified ROM enemy-bomb Link collision — 2026-08-07
+
+- Type-$02 bombs with nonzero `wEntitiesPrivateState4Table` now follow the
+  separate `$12` enemy-bomb branch from `BombExplosionHandler`; the collision
+  window uses the raw active-entity Y rather than the visual `Y-Z` position.
+- The branch resolves the bomb's shipped-ROM contact damage group `$02`
+  (`$08` nominal damage), preserves the generic Link damage boundary, resets
+  Pegasus Boots through the gameplay consumer, and emits the source WAVE hurt
+  request only when Link is not already invincible.
+- The current `hLinkSpeedX/Y` bytes cross the Link → RoomSession → entity
+  runtime boundary. A colliding enemy bomb publishes the source post-collision
+  `SLA` writes, including the protected-hit case where damage is suppressed but
+  recoil still occurs; the `$04` sword/Moblin alert write is retained.
+- Enemy bombs retain the shared `$0E..$16` destroyable-object/puzzle pass before
+  the Link branch, while private state `$4C` keeps the source early return.
+  Shipped-ROM tests cover nominal collision, raw-Y separation, invincibility,
+  ROM speed exposure, and shared object-event ordering.
+- The clean Java suite passes with 959 tests and zero failures, errors, or
+  skipped tests. Source-specific Bomber/Mad Bomber/Bombite throw and spawn
+  wiring, plus remaining enemy-bomb special branches, remain follow-up work;
+  this increment does not add an emulator.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

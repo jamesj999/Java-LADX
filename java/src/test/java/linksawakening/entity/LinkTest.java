@@ -71,6 +71,19 @@ final class LinkTest {
     }
 
     @Test
+    void exposesTheRomSpeedBytesWrittenBeforeEntityAnimation() throws IOException {
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        RomTables romTables = RomTables.loadFromRom(loadRom());
+        Link link = linkInRoom(inputConfig, romTables, emptyRoomObjectsArea());
+
+        link.applyRomSpeed(0xF0, 0x08);
+        link.update();
+
+        assertEquals(0xF0, link.romSpeedX());
+        assertEquals(0x08, link.romSpeedY());
+    }
+
+    @Test
     void renderUsesTheSelectedRomTunicPaletteAtTheSameBodyPixels() throws Exception {
         byte[] rom = loadRom();
         LinkSpriteSheet spriteSheet = LinkSpriteSheet.loadFromRom(rom);
