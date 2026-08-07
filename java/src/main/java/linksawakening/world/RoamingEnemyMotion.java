@@ -233,6 +233,22 @@ final class RoamingEnemyMotion {
         return verticallyCollidedObject[slot];
     }
 
+    /**
+     * Mirrors the three SetEntityVariantForDirection_03 calls made by
+     * EntityFallHandler before dispatching an Octorok or Moblin handler.
+     * The active handler returns immediately for a falling entity, so this
+     * presentation-only update must not advance movement or collision state.
+     */
+    int advancePresentationVariant(int slot, int repetitions) {
+        if (!initialized[slot]) {
+            initialize(slot);
+        }
+        for (int i = 0; i < repetitions; i++) {
+            inertia[slot] = (inertia[slot] + 1) & 0xFF;
+        }
+        return VARIANT_BY_DIRECTION[direction[slot]] | ((inertia[slot] >>> 3) & 0x01);
+    }
+
     void setStateForTest(int slot, int newState, int newTransitionCountdown,
                          int newInertia, int newPrivateState1, int newDirection) {
         state[slot] = newState & 0xFF;

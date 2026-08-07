@@ -15,6 +15,7 @@ public final class RoomEntitySnapshot {
     private final EntitySpriteTileSnapshot spriteTiles;
     private final boolean sideScrolling;
     private final List<HookshotChainOam.Entry> hookshotChainOam;
+    private final int[] visualYOffsetBySlot;
 
     public RoomEntitySnapshot(List<RoomEntity> slots) {
         this(slots, null, null);
@@ -37,6 +38,14 @@ public final class RoomEntitySnapshot {
     public RoomEntitySnapshot(List<RoomEntity> slots, EntitySpriteSelection spriteSelection,
                               EntitySpriteTileSnapshot spriteTiles, boolean sideScrolling,
                               List<HookshotChainOam.Entry> hookshotChainOam) {
+        this(slots, spriteSelection, spriteTiles, sideScrolling, hookshotChainOam,
+            new int[EntityRoomLoader.MAX_ENTITIES]);
+    }
+
+    public RoomEntitySnapshot(List<RoomEntity> slots, EntitySpriteSelection spriteSelection,
+                              EntitySpriteTileSnapshot spriteTiles, boolean sideScrolling,
+                              List<HookshotChainOam.Entry> hookshotChainOam,
+                              int[] visualYOffsetBySlot) {
         if (slots == null || slots.size() != EntityRoomLoader.MAX_ENTITIES) {
             throw new IllegalArgumentException("A room must expose exactly "
                 + EntityRoomLoader.MAX_ENTITIES + " entity slots");
@@ -44,11 +53,21 @@ public final class RoomEntitySnapshot {
         if (hookshotChainOam == null) {
             throw new IllegalArgumentException("Hookshot chain OAM cannot be null");
         }
+        if (visualYOffsetBySlot == null
+            || visualYOffsetBySlot.length != EntityRoomLoader.MAX_ENTITIES) {
+            throw new IllegalArgumentException("Exactly sixteen entity visual Y offsets are required");
+        }
+        for (int offset : visualYOffsetBySlot) {
+            if (offset < 0 || offset > 0xFF) {
+                throw new IllegalArgumentException("Entity visual Y offsets must be unsigned bytes");
+            }
+        }
         this.slots = List.copyOf(slots);
         this.spriteSelection = spriteSelection;
         this.spriteTiles = spriteTiles;
         this.sideScrolling = sideScrolling;
         this.hookshotChainOam = List.copyOf(hookshotChainOam);
+        this.visualYOffsetBySlot = visualYOffsetBySlot.clone();
         List<RoomEntity> loaded = new ArrayList<>();
         for (RoomEntity entity : this.slots) {
             if (entity.loaded()) {
@@ -60,12 +79,12 @@ public final class RoomEntitySnapshot {
 
     public RoomEntitySnapshot withSpriteSelection(EntitySpriteSelection selection) {
         return new RoomEntitySnapshot(slots, selection, spriteTiles, sideScrolling,
-            hookshotChainOam);
+            hookshotChainOam, visualYOffsetBySlot);
     }
 
     public RoomEntitySnapshot withSpriteTiles(EntitySpriteTileSnapshot tiles) {
         return new RoomEntitySnapshot(slots, spriteSelection, tiles, sideScrolling,
-            hookshotChainOam);
+            hookshotChainOam, visualYOffsetBySlot);
     }
 
     /** Returns whether the room uses the side-scroll OAM path. */
@@ -75,7 +94,7 @@ public final class RoomEntitySnapshot {
 
     public RoomEntitySnapshot withSideScrolling(boolean sideScrolling) {
         return new RoomEntitySnapshot(slots, spriteSelection, spriteTiles, sideScrolling,
-            hookshotChainOam);
+            hookshotChainOam, visualYOffsetBySlot);
     }
 
     public List<RoomEntity> slots() {
@@ -98,9 +117,30 @@ public final class RoomEntitySnapshot {
         return hookshotChainOam;
     }
 
+    /** Returns the ROM display-only Y correction for an entity slot. */
+    public int visualYOffset(int slot) {
+        if (slot < 0 || slot >= visualYOffsetBySlot.length) {
+            throw new IllegalArgumentException("Entity slot out of range: " + slot);
+        }
+        return visualYOffsetBySlot[slot];
+    }
+
+    public RoomEntitySnapshot withVisualYOffset(int slot, int offset) {
+        if (slot < 0 || slot >= visualYOffsetBySlot.length) {
+            throw new IllegalArgumentException("Entity slot out of range: " + slot);
+        }
+        if (offset < 0 || offset > 0xFF) {
+            throw new IllegalArgumentException("Entity visual Y offset must be an unsigned byte");
+        }
+        int[] offsets = visualYOffsetBySlot.clone();
+        offsets[slot] = offset;
+        return new RoomEntitySnapshot(slots, spriteSelection, spriteTiles, sideScrolling,
+            hookshotChainOam, offsets);
+    }
+
     public RoomEntitySnapshot withHookshotChainOam(
         List<HookshotChainOam.Entry> hookshotChainOam) {
         return new RoomEntitySnapshot(slots, spriteSelection, spriteTiles, sideScrolling,
-            hookshotChainOam);
+            hookshotChainOam, visualYOffsetBySlot);
     }
 }

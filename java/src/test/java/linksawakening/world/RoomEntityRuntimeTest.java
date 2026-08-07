@@ -414,10 +414,41 @@ final class RoomEntityRuntimeTest {
             runtime.tick(frame, 0, 0, () -> 0);
         }
         assertEquals(4, runtime.fallingVisualYOffset(0));
+        assertEquals(4, runtime.snapshot().visualYOffset(0));
         for (int frame = 26; frame <= 72; frame++) {
             runtime.tick(frame, 0, 0, () -> 0);
         }
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
+    }
+
+    @Test
+    void longFallingHandlerRunsOnlyItsRomPresentationHandoff() {
+        EntitySpriteDefinition definition = pairDefinition(0x09, 8);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x09, 0x40, 0x50, EntityStatus.INIT, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+        runtime.setEnemyIgnoreHitsCountdownForTest(0, 0x04);
+        runtime.setGroundInteraction((entity, frame, previousStatus, speedZ, sideScrolling) ->
+            RoomEntityGroundInteraction.Result.pit(entity, 0x01, 0x68, 0x70));
+        AtomicInteger backgroundProbes = new AtomicInteger();
+        runtime.setBackgroundInteraction((entity, direction, nextX, nextY) -> {
+            backgroundProbes.incrementAndGet();
+            return EntityBackgroundCollisionResult.passable(direction, 0, nextX, nextY);
+        });
+
+        runtime.tick(0, 0, 0, () -> 0);
+        runtime.tick(1, 0, 0, () -> 0);
+        runtime.tick(2, 0, 0, () -> 0);
+        runtime.tick(3, 0, 0, () -> 0);
+        runtime.tick(4, 0, 0, () -> 0);
+
+        RoomEntity falling = runtime.snapshot().slots().get(0);
+        assertEquals(EntityStatus.FALLING, falling.status());
+        assertEquals(0x6C, runtime.transitionCountdown(0));
+        assertEquals(7, falling.spriteVariant());
+        assertEquals(0x40, falling.x());
+        assertEquals(0x50, falling.y());
+        assertEquals(0, backgroundProbes.get());
     }
 
     @Test

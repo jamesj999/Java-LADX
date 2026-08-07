@@ -268,6 +268,7 @@ public final class RoomEntityRuntime {
         Arrays.fill(thrownDirection, 0xFF);
         for (RoomEntity entity : slots) {
             baseEntityFlipAttribute[entity.slot()] = entity.entityFlipAttribute();
+            fallingVisualYOffset[entity.slot()] = initial.visualYOffset(entity.slot());
             enemyHealth[entity.slot()] = entity.loaded() ? initialHealth(entity.type()) : 0;
             enemyPhysicsFlags[entity.slot()] = entity.loaded()
                 ? initialPhysicsFlags(entity.type()) : 0;
@@ -2056,7 +2057,7 @@ public final class RoomEntityRuntime {
 
     public RoomEntitySnapshot snapshot() {
         return new RoomEntitySnapshot(Arrays.asList(slots), spriteSelection, spriteTiles,
-            groundInteractionSideScrolling, hookshotChainOam);
+            groundInteractionSideScrolling, hookshotChainOam, fallingVisualYOffset);
     }
 
     private void updateHookshotChainOam(int linkEntityX, int linkEntityY, int frameCounter) {
@@ -3597,10 +3598,16 @@ public final class RoomEntityRuntime {
         }
 
         if (transition >= 0x40) {
-            // The ROM dispatches the entity's active handler during this
-            // opening interval. Family-specific execution remains deferred
-            // until its handler receives the complete falling context.
-            return entity;
+            // EntityFallHandler calls SetEntityVariantForDirection_03 three
+            // times before the family handler. ReturnIfNonInteractive then
+            // stops that handler after presentation because the status is
+            // still FALLING, so movement and wall collision must not run here.
+            fallingVisualYOffset[slot] = 0;
+            int variant = entity.spriteVariant();
+            if (entity.type() == ENTITY_OCTOROK || entity.type() == ENTITY_MOBLIN) {
+                variant = roamingEnemyMotion.advancePresentationVariant(slot, 3);
+            }
+            return withPositionAndVariant(entity, entity.x(), entity.y(), variant);
         }
 
         int phase = (transition >>> 4) & 0x03;

@@ -755,9 +755,21 @@ runtime collision callback.
 - Raw jingle `$18` now reaches the gameplay sound map as the ROM item-falling
   effect. Focused runtime/session/audio tests and the complete Java suite cover
   the slice with the shipped ROM.
-- The first `$30` falling frames still defer each entity family's active
-  handler and wall-collision rollback, and the renderer has not yet applied the
-  separate phase-$02 visual-Y `+4` correction to its final OAM coordinate.
+
+## Verified ROM falling presentation handoff — 2026-08-07
+
+- During the long `$6F` Octorok/Moblin falling interval, the runtime now mirrors
+  `EntityFallHandler`'s three `SetEntityVariantForDirection_03` calls before
+  presentation. The entity remains status `$02`, so the source
+  `ReturnIfNonInteractive` path still prevents movement and wall collision.
+- The falling phase visual-Y table `[0,0,4,0]` now crosses the immutable room
+  snapshot into the final OAM Y coordinate. The phase-$02 `+4` is display-only;
+  physics Y and Z remain unchanged.
+- Focused runtime/renderer regressions and the complete Java suite (894 test
+  cases) pass with this handoff and snapshot boundary.
+- Moblin Sword's dynamically assembled display list, plus any future
+  family-specific active movement/collision handoff, remains explicitly
+  deferred until its ROM renderer and collision inputs are ported.
 
 ## Next entity increments
 

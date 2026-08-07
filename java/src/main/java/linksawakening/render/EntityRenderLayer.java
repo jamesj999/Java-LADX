@@ -97,7 +97,8 @@ public final class EntityRenderLayer implements RenderLayer {
             }
             int variant = renderingDeath ? entity.deathSpriteVariant() : entity.spriteVariant();
             renderEntity(context, entity, definition, variant, palettes, tiles,
-                offset.x(), offset.y(), entities.sideScrolling());
+                offset.x(), offset.y(), entities.sideScrolling(),
+                entities.visualYOffset(entity.slot()));
             if (!renderingDeath && definition.supported() && entities.spriteSelection() != null) {
                 EntitySpriteDefinition overlay = entities.spriteSelection()
                     .spriteOverlayFor(entity.type());
@@ -106,7 +107,8 @@ public final class EntityRenderLayer implements RenderLayer {
                     // rectangle after its main display list. Its tile and
                     // attribute bytes remain in the ROM-backed definition.
                     renderEntity(context, entity, overlay, (frameCounter & 0x08) != 0 ? 1 : 0,
-                        palettes, tiles, offset.x(), offset.y(), entities.sideScrolling());
+                        palettes, tiles, offset.x(), offset.y(), entities.sideScrolling(),
+                        entities.visualYOffset(entity.slot()));
                 }
             }
             if (entity.status() == EntityStatus.BURNING && entities.spriteSelection() != null) {
@@ -114,7 +116,8 @@ public final class EntityRenderLayer implements RenderLayer {
                     .burningSpriteDefinition();
                 if (burning != null) {
                     renderEntity(context, entity, burning, (frameCounter >>> 3) & 0x01,
-                        palettes, tiles, offset.x(), offset.y(), entities.sideScrolling());
+                        palettes, tiles, offset.x(), offset.y(), entities.sideScrolling(),
+                        entities.visualYOffset(entity.slot()));
                 }
             }
         }
@@ -144,14 +147,15 @@ public final class EntityRenderLayer implements RenderLayer {
                               EntitySpriteDefinition definition, int spriteVariant,
                               int[][] palettes,
                               EntitySpriteTileSnapshot tiles, int offsetX, int offsetY,
-                              boolean sideScrolling) {
+                              boolean sideScrolling, int visualYOffset) {
         if (!definition.supported() || spriteVariant < 0
             || spriteVariant >= definition.variantCount()) {
             return;
         }
 
         int entityX = entity.x() + offsetX - OAM_X_SCREEN_ORIGIN;
-        int entityY = entity.y() + offsetY - OAM_Y_SCREEN_ORIGIN - entity.z();
+        int entityY = entity.y() + offsetY - OAM_Y_SCREEN_ORIGIN - entity.z()
+            + visualYOffset;
         if (entity.type() == ENTITY_BOMB
             && definition.bank() == BOMB_NORMAL_DEFINITION_BANK
             && definition.address() == BOMB_NORMAL_DEFINITION_ADDRESS) {
