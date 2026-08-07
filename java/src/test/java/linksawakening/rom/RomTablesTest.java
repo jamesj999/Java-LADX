@@ -39,4 +39,28 @@ final class RomTablesTest {
         assertEquals(0x80, tables.entityFineCollisionShape(0x80, 3));
         assertEquals(0, tables.entityFineCollisionShape(0x8E, 0));
     }
+
+    @Test
+    void loadsSwimmingSpeedTablesFromBankTwo() {
+        byte[] rom = new byte[0x100000];
+        int speedXOffset = RomBank.romOffset(0x02, 0x4EF0);
+        int speedYOffset = RomBank.romOffset(0x02, 0x4F10);
+        int entryXOffset = RomBank.romOffset(0x02, 0x750A);
+        int entryYOffset = RomBank.romOffset(0x02, 0x750E);
+        rom[speedXOffset + 0x01] = 0x08;
+        rom[speedXOffset + 0x10 + 0x01] = 0x10;
+        rom[speedYOffset + 0x04] = (byte) 0xF8;
+        rom[speedYOffset + 0x10 + 0x04] = (byte) 0xF0;
+        rom[entryXOffset] = 0x08;
+        rom[entryYOffset + 0x03] = 0x08;
+
+        RomTables tables = RomTables.loadFromRom(rom);
+
+        assertEquals(0x08, tables.swimmingSpeedX(0x01, false));
+        assertEquals(0x10, tables.swimmingSpeedX(0x01, true));
+        assertEquals(-0x08, tables.swimmingSpeedY(0x04, false));
+        assertEquals(-0x10, tables.swimmingSpeedY(0x04, true));
+        assertEquals(0x08, tables.swimmingEntrySpeedX(0));
+        assertEquals(0x08, tables.swimmingEntrySpeedY(3));
+    }
 }

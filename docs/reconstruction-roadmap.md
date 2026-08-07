@@ -1877,6 +1877,22 @@ runtime collision callback.
   the clean Java suite remains at 1,052 tests with zero failures, errors, or
   skipped tests.
 
+## Verified ROM flipper swimming motion — 2026-08-07
+
+- Link's leading-edge collision now keeps deep-water physics `$07` solid until
+  the saved `wHasFlippers` state is present. With flippers, the source entry
+  speeds from `Data_002_750A/750E` are written and motion state `$01` takes
+  over; leaving deep water returns to the default motion state.
+- Swimming acceleration reads the two ROM rows at
+  `Data_002_4EF0/4F00` and `Data_002_4F10/4F20`. The source even-frame
+  cadence, newly-pressed A fast-swim window, newly-pressed B diving toggle,
+  diving timeout, and animation states `$46-$4F` are represented without
+  introducing a general emulator loop.
+- Focused shipped-ROM tests cover the no-flippers barrier, entry/exit state,
+  ROM speed-table loading, swimming animation, and diving animation. The
+  broader entity, room-script, and hardware-ordering gaps remain follow-up
+  work.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

@@ -32,6 +32,7 @@ final class LinkTest {
     private static final int ROOM_OBJECT_ROW_STRIDE = 0x10;
     private static final int OBJECT_TALL_GRASS = 0x0A;
     private static final int OBJECT_TREE_TOP_LEFT = 0x25;
+    private static final int OBJECT_DEEP_WATER = 0x0E;
     private static final int OBJECT_PIT = 0xE8;
     private static final int OBJECT_INDOOR_PIT_WARP = 0x1C;
 
@@ -557,6 +558,97 @@ final class LinkTest {
 
         assertEquals(0x28, normal.pixelX());
         assertEquals(0x26, slowed.pixelX());
+    }
+
+    @Test
+    void deepWaterBlocksLinkUntilFlippersAreOwned() throws Exception {
+        byte[] rom = loadRom();
+        RomTables romTables = RomTables.loadFromRom(rom);
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        int[] roomObjects = emptyRoomObjectsArea();
+        roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 3] = OBJECT_DEEP_WATER;
+
+        Link withoutFlippers = linkInRoom(inputConfig, romTables, roomObjects);
+        withoutFlippers.setPixelPosition(0x20, 0x20);
+        for (int i = 0; i < 20; i++) {
+            withoutFlippers.update();
+        }
+
+        PlayerState playerState = new PlayerState();
+        playerState.setHasFlippers(true);
+        Link withFlippers = linkInRoom(
+            inputConfig, romTables, roomObjects, playerState, RomTables.PHYSICS_TABLE_OVERWORLD);
+        withFlippers.setPixelPosition(0x20, 0x20);
+        for (int i = 0; i < 20 && !withFlippers.isSwimming(); i++) {
+            withFlippers.update();
+        }
+
+        assertEquals(0x24, withoutFlippers.pixelX());
+        assertTrue(withFlippers.isSwimming());
+        assertEquals(0x01, withFlippers.romMotionState());
+        assertTrue(withFlippers.pixelX() > withoutFlippers.pixelX());
+    }
+
+    @Test
+    void swimmingUsesRomMotionAnimationAndReturnsToDefaultOnNormalGround() throws Exception {
+        byte[] rom = loadRom();
+        RomTables romTables = RomTables.loadFromRom(rom);
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        int[] roomObjects = emptyRoomObjectsArea();
+        roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 3] = OBJECT_DEEP_WATER;
+        PlayerState playerState = new PlayerState();
+        playerState.setHasFlippers(true);
+        Link link = linkInRoom(
+            inputConfig, romTables, roomObjects, playerState, RomTables.PHYSICS_TABLE_OVERWORLD);
+        link.setPixelPosition(0x20, 0x20);
+
+        int guard = 0;
+        while (!link.isSwimming() && guard++ < 32) {
+            link.update();
+        }
+        assertTrue(link.isSwimming());
+        assertEquals(0x47, resolvedAnimationState(link));
+        assertEquals(0x08, (byte) link.romSpeedX());
+
+        // The room cell immediately beyond the water is empty, so continued
+        // rightward motion must run the source's default-ground exit path.
+        while (link.isSwimming() && guard++ < 128) {
+            link.update();
+        }
+
+        assertFalse(link.isSwimming());
+        assertEquals(0x00, link.romMotionState());
+    }
+
+    @Test
+    void newlyPressedBEntersTheRomDivingSwimmingAnimation() throws Exception {
+        byte[] rom = loadRom();
+        RomTables romTables = RomTables.loadFromRom(rom);
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        InputState inputState = new InputState();
+        PlayerState playerState = new PlayerState();
+        playerState.setHasFlippers(true);
+        int[] roomObjects = emptyRoomObjectsArea();
+        for (int row = 0; row < 8; row++) {
+            for (int column = 0; column < 10; column++) {
+                roomObjects[ROOM_OBJECTS_BASE + row * ROOM_OBJECT_ROW_STRIDE + column]
+                    = OBJECT_DEEP_WATER;
+            }
+        }
+        OverworldCollision collision = new OverworldCollision(romTables);
+        collision.setRoom(roomObjects);
+        Link link = new Link(inputState, inputConfig, romTables, collision, null,
+            playerState, new ItemRegistry());
+        link.setPixelPosition(0x20, 0x20);
+        link.update();
+
+        inputState.tickEdges();
+        inputState.onKeyEvent(inputConfig.bKey(), GLFW_PRESS);
+        link.update();
+
+        assertTrue(link.isSwimming());
+        assertTrue(link.isDiving());
+        assertEquals(0x4E, resolvedAnimationState(link));
     }
 
     @Test

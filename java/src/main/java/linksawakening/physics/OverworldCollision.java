@@ -86,12 +86,21 @@ public final class OverworldCollision {
      * bottom two for DOWN, etc.), not a full bounding box.
      */
     public boolean pointBlocked(int pixelX, int pixelY) {
+        return pointBlockedForLink(pixelX, pixelY, false);
+    }
+
+    /**
+     * Link's leading-edge collision query with the source's flipper exception.
+     * Deep-water physics remains solid for ordinary walking, but becomes
+     * passable once Link owns the flippers (bank2.asm:7706-7734).
+     */
+    public boolean pointBlockedForLink(int pixelX, int pixelY, boolean hasFlippers) {
         if (roomObjectsArea == null) {
             return false;
         }
         int cellX = cellCoordinate(pixelX);
         int cellY = cellCoordinate(pixelY);
-        return isCellBlocking(cellX, cellY);
+        return isCellBlocking(cellX, cellY, hasFlippers);
     }
 
     public boolean pointNormalPit(int pixelX, int pixelY) {
@@ -147,6 +156,12 @@ public final class OverworldCollision {
         int objectId = objectUnderLinkFeet(linkPixelX, linkPixelY);
         int flag = romTables.objectPhysicsFlag(physicsTableIndex, objectId);
         return PhysicsFlags.isNormalPit(flag);
+    }
+
+    public boolean linkOnDeepWater(int linkPixelX, int linkPixelY) {
+        int objectId = objectUnderLinkFeet(linkPixelX, linkPixelY);
+        int flag = romTables.objectPhysicsFlag(physicsTableIndex, objectId);
+        return flag == PhysicsFlags.DEEP_WATER;
     }
 
     public PitCell normalPitUnderLink(int linkPixelX, int linkPixelY) {
@@ -237,7 +252,7 @@ public final class OverworldCollision {
         return romTables.objectPhysicsFlag(physicsTableIndex, objectId);
     }
 
-    private boolean isCellBlocking(int cellX, int cellY) {
+    private boolean isCellBlocking(int cellX, int cellY, boolean hasFlippers) {
         if (cellX < 0 || cellX >= OBJECTS_PER_ROW || cellY < 0 || cellY >= OBJECTS_PER_COLUMN) {
             // Off-room cells are the caller's problem - they trigger room scroll,
             // not a collision block. Treat as passable here.
@@ -249,6 +264,10 @@ public final class OverworldCollision {
         }
         int rawId = roomObjectsArea[areaIndex] & 0xFF;
         int physicsFlag = romTables.objectPhysicsFlag(physicsTableIndex, rawId);
+
+        if (hasFlippers && physicsFlag == PhysicsFlags.DEEP_WATER) {
+            return false;
+        }
 
         if (physicsFlag == SwitchBlockLinkInteraction.PHYSICS_OCEAN_SWITCH_BLOCK
             && SwitchBlockLinkInteraction.isSwitchBlock(rawId)) {

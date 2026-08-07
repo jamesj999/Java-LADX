@@ -37,6 +37,8 @@ public final class Link implements RocsFeather.JumpTarget {
     public static final int SUB_PIXEL_SHIFT = 4;
     public static final int GROUND_STATUS_NORMAL = 0x00;
     public static final int GROUND_STATUS_PIT = 0x07;
+    public static final int LINK_MOTION_DEFAULT = 0x00;
+    public static final int LINK_MOTION_SWIMMING = 0x01;
 
     // Bit order matches JoypadToLinkDirection (bank2.asm:1183): entry 1 = right,
     // 2 = left, 4 = up, 8 = down.
@@ -84,6 +86,16 @@ public final class Link implements RocsFeather.JumpTarget {
         { 0x40, 0x41 },  // LEFT
         { 0x3E, 0x3F },  // RIGHT
     };
+
+    // Data_002_4948 (bank2.asm:1257), in Java direction order. The second
+    // row is selected while hLinkPhysicsModifier is non-zero (diving).
+    private static final int[][] SWIMMING_ANIMATION_STATE = {
+        { 0x4C, 0x4D },  // DOWN
+        { 0x4A, 0x4B },  // UP
+        { 0x48, 0x49 },  // LEFT
+        { 0x46, 0x47 },  // RIGHT
+    };
+    private static final int[] DIVING_ANIMATION_STATE = { 0x4E, 0x4F };
 
     private static final int WALK_FRAME_TICKS = 8;
     private static final int JUMP_FRAME_TICKS = 8;
@@ -152,6 +164,13 @@ public final class Link implements RocsFeather.JumpTarget {
     private int lastRomSpeedX;
     private int lastRomSpeedY;
     private int groundStatus = GROUND_STATUS_NORMAL;
+    private int motionState = LINK_MOTION_DEFAULT;
+    private int physicsModifier;
+    private int swimmingSpeedX;
+    private int swimmingSpeedY;
+    private int swimmingFastCountdown;
+    private int divingCountdown;
+    private int frameCounter;
     private int romAttackStepAnimationCountdown;
     private boolean airborne;
     private int zSubPixels;
@@ -316,6 +335,12 @@ public final class Link implements RocsFeather.JumpTarget {
         zVelocity = 0;
         fallingIntoPit = false;
         groundStatus = GROUND_STATUS_NORMAL;
+        motionState = LINK_MOTION_DEFAULT;
+        physicsModifier = 0;
+        swimmingSpeedX = 0;
+        swimmingSpeedY = 0;
+        swimmingFastCountdown = 0;
+        divingCountdown = 0;
         movingThisFrame = false;
         romCollisionType = 0;
         lastRomSpeedX = 0;
@@ -338,7 +363,18 @@ public final class Link implements RocsFeather.JumpTarget {
      * slipping across a pit uses the non-interactive falling state.
      */
     public int romMotionState() {
-        return groundStatus == GROUND_STATUS_PIT || fallingIntoPit ? 0x06 : 0x00;
+        if (groundStatus == GROUND_STATUS_PIT || fallingIntoPit) {
+            return 0x06;
+        }
+        return motionState;
+    }
+
+    public boolean isSwimming() {
+        return motionState == LINK_MOTION_SWIMMING;
+    }
+
+    public boolean isDiving() {
+        return isSwimming() && physicsModifier != 0;
     }
 
     /** Mirrors wLinkAttackStepAnimationCountdown after a player projectile spawn. */
@@ -466,7 +502,7 @@ public final class Link implements RocsFeather.JumpTarget {
 
     @Override
     public void useRocsFeather() {
-        if (airborne || groundStatus == GROUND_STATUS_PIT || fallingIntoPit) {
+        if (airborne || groundStatus == GROUND_STATUS_PIT || fallingIntoPit || isSwimming()) {
             return;
         }
         airborne = true;
@@ -483,6 +519,7 @@ public final class Link implements RocsFeather.JumpTarget {
         zVelocity = 0x10;
         fallingIntoPit = false;
         groundStatus = GROUND_STATUS_NORMAL;
+        leaveSwimming();
     }
 
     /** Advance the walking-cycle timer without processing input or collision. */
@@ -495,6 +532,7 @@ public final class Link implements RocsFeather.JumpTarget {
     }
 
     public void update() {
+        frameCounter = (frameCounter + 1) & 0xFF;
         tickRomAttackStepAnimationCountdown();
         romCollisionType = 0;
         lastRomSpeedX = 0;
@@ -515,6 +553,11 @@ public final class Link implements RocsFeather.JumpTarget {
 
         if (fallingIntoPit) {
             tickPitFall();
+            return;
+        }
+
+        if (motionState == LINK_MOTION_SWIMMING) {
+            updateSwimming();
             return;
         }
 
@@ -581,7 +624,9 @@ public final class Link implements RocsFeather.JumpTarget {
         tickJump();
 
         if (!airborne) {
-            updateLastSafePositionIfPossible();
+            if (!enterSwimmingIfNeeded()) {
+                updateLastSafePositionIfPossible();
+            }
         }
 
         if (movingThisFrame) {
@@ -641,6 +686,133 @@ public final class Link implements RocsFeather.JumpTarget {
         return (groundMotionCounter & 0x03) != 0;
     }
 
+    private boolean enterSwimmingIfNeeded() {
+        if (!playerHasFlippers() || romTables == null || collision == null
+            || !collision.linkOnDeepWater(pixelX(), pixelY())) {
+            return false;
+        }
+
+        motionState = LINK_MOTION_SWIMMING;
+        physicsModifier = 0;
+        swimmingFastCountdown = 0;
+        divingCountdown = 0;
+        airborne = false;
+        zSubPixels = 0;
+        zVelocity = 0;
+        swimmingSpeedX = romTables.swimmingEntrySpeedX(romDirectionForJavaDirection(direction));
+        swimmingSpeedY = romTables.swimmingEntrySpeedY(romDirectionForJavaDirection(direction));
+        lastRomSpeedX = swimmingSpeedX & 0xFF;
+        lastRomSpeedY = swimmingSpeedY & 0xFF;
+        return true;
+    }
+
+    private void updateSwimming() {
+        if (collision == null || !collision.linkOnDeepWater(pixelX(), pixelY())) {
+            leaveSwimming();
+            return;
+        }
+
+        int mask = buildJoypadMask();
+        int newDirection = JOYPAD_TO_DIRECTION[mask];
+        if (newDirection != -1) {
+            direction = newDirection;
+        }
+
+        if (swimmingFastCountdown > 0) {
+            swimmingFastCountdown--;
+        }
+        if (divingCountdown > 0) {
+            divingCountdown--;
+            if (divingCountdown == 0) {
+                physicsModifier = 0;
+            }
+        }
+
+        if (buttonWasPressed(inputConfig == null ? -1 : inputConfig.bKey())) {
+            physicsModifier ^= 1;
+            divingCountdown = physicsModifier == 0 ? 0 : 0xA0;
+        }
+        if (buttonWasPressed(inputConfig == null ? -1 : inputConfig.aKey())) {
+            swimmingFastCountdown = 0x20;
+        }
+
+        if (itemsBlockMotion()) {
+            movingThisFrame = false;
+            walkTickCounter = 0;
+            walkFrame = 0;
+            lastRomSpeedX = 0;
+            lastRomSpeedY = 0;
+            return;
+        }
+
+        if (forcedSpeedPending) {
+            swimmingSpeedX = forcedSpeedX;
+            swimmingSpeedY = forcedSpeedY;
+            forcedSpeedPending = false;
+        } else if ((frameCounter & 0x01) == 0) {
+            boolean fast = swimmingFastCountdown >= 0x10;
+            int targetX = romTables.swimmingSpeedX(mask, fast);
+            int targetY = romTables.swimmingSpeedY(mask, fast);
+            swimmingSpeedX = approachSignedSpeed(swimmingSpeedX, targetX);
+            swimmingSpeedY = approachSignedSpeed(swimmingSpeedY, targetY);
+        }
+
+        lastRomSpeedX = swimmingSpeedX & 0xFF;
+        lastRomSpeedY = swimmingSpeedY & 0xFF;
+        movingThisFrame = swimmingSpeedX != 0 || swimmingSpeedY != 0;
+        if (swimmingSpeedX != 0) {
+            tryMoveAxis(swimmingSpeedX, true);
+        }
+        if (swimmingSpeedY != 0) {
+            tryMoveAxis(swimmingSpeedY, false);
+        }
+
+        if (!collision.linkOnDeepWater(pixelX(), pixelY())) {
+            leaveSwimming();
+            return;
+        }
+
+        if (movingThisFrame) {
+            walkTickCounter++;
+            if (walkTickCounter >= WALK_FRAME_TICKS) {
+                walkTickCounter = 0;
+                walkFrame ^= 1;
+            }
+        } else {
+            walkTickCounter = 0;
+            walkFrame = 0;
+        }
+    }
+
+    private boolean buttonWasPressed(int key) {
+        return inputState != null && key >= 0 && inputState.wasPressed(key);
+    }
+
+    private boolean playerHasFlippers() {
+        return playerState != null && playerState.hasFlippers();
+    }
+
+    private static int approachSignedSpeed(int current, int target) {
+        current = (byte) current;
+        target = (byte) target;
+        int difference = target - current;
+        if (difference == 0) {
+            return current;
+        }
+        return (byte) (current + (difference < 0 ? -1 : 1));
+    }
+
+    private void leaveSwimming() {
+        motionState = LINK_MOTION_DEFAULT;
+        physicsModifier = 0;
+        swimmingSpeedX = 0;
+        swimmingSpeedY = 0;
+        swimmingFastCountdown = 0;
+        divingCountdown = 0;
+        walkTickCounter = 0;
+        walkFrame = 0;
+    }
+
     private void tryMoveAxis(int signedSpeed, boolean isXAxis) {
         int candidateSubX = isXAxis ? subX + signedSpeed : subX;
         int candidateSubY = isXAxis ? subY : subY + signedSpeed;
@@ -686,7 +858,7 @@ public final class Link implements RocsFeather.JumpTarget {
         for (int i = 0; i < xs.length; i++) {
             int pointX = spriteX + xs[i];
             int pointY = spriteY + ys[i];
-            if (collision.pointBlocked(pointX, pointY)
+            if (collision.pointBlockedForLink(pointX, pointY, playerHasFlippers())
                 && !collision.pointNormalPit(pointX, pointY)) {
                 return true;
             }
@@ -919,6 +1091,12 @@ public final class Link implements RocsFeather.JumpTarget {
         if (fallingIntoPit) {
             int frame = Math.min(FALL_ANIMATION_STATE.length - 1, fallingFrameCounter / FALL_FRAME_TICKS);
             return FALL_ANIMATION_STATE[frame];
+        }
+
+        if (motionState == LINK_MOTION_SWIMMING) {
+            return physicsModifier != 0
+                ? DIVING_ANIMATION_STATE[walkFrame]
+                : SWIMMING_ANIMATION_STATE[direction][walkFrame];
         }
 
         // func_002_4338 copies the intermediate ROM carry animation state

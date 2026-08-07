@@ -54,6 +54,16 @@ public final class RomTables {
     private static final int LINK_SPEED_TABLE_Y_ADDR = 0x48E5;
     private static final int LINK_SPEED_TABLE_LENGTH = 0x20;
 
+    // Swimming target-speed tables in bank 2. Data_002_4EF0/4F00 and
+    // Data_002_4F10/4F20 are two consecutive 16-entry tables: normal
+    // swimming followed by the faster A-button swimming cadence.
+    private static final int SWIMMING_SPEED_TABLE_X_ADDR = 0x4EF0;
+    private static final int SWIMMING_SPEED_TABLE_Y_ADDR = 0x4F10;
+    private static final int SWIMMING_SPEED_TABLE_LENGTH = 0x20;
+    private static final int SWIMMING_ENTRY_SPEED_X_ADDR = 0x750A;
+    private static final int SWIMMING_ENTRY_SPEED_Y_ADDR = 0x750E;
+    private static final int SWIMMING_ENTRY_SPEED_LENGTH = 4;
+
     // Sword-swing animation and position tables in bank 2. All 24 bytes,
     // indexed as direction * 6 + wSwordAnimationState. Direction encoding
     // is the ROM's (RIGHT=0, LEFT=1, UP=2, DOWN=3). Addresses derived from
@@ -96,6 +106,10 @@ public final class RomTables {
     private final int[] entityFineCollisionShapes;
     private final byte[] linkSpeedX;
     private final byte[] linkSpeedY;
+    private final byte[] swimmingSpeedX;
+    private final byte[] swimmingSpeedY;
+    private final byte[] swimmingEntrySpeedX;
+    private final byte[] swimmingEntrySpeedY;
     private final int[] swordAnimState;
     private final int[] swordDirection;
     private final byte[] swordXOffset;
@@ -115,6 +129,8 @@ public final class RomTables {
                       byte[] entityCollisionPointsY,
                       int[] entityFineCollisionShapes,
                       byte[] linkSpeedX, byte[] linkSpeedY,
+                      byte[] swimmingSpeedX, byte[] swimmingSpeedY,
+                      byte[] swimmingEntrySpeedX, byte[] swimmingEntrySpeedY,
                       int[] swordAnimState, int[] swordDirection,
                       byte[] swordXOffset, byte[] swordYOffset, byte[] swordYBase,
                       int[] swordCollisionNeeded, int[] swordCollisionWidth,
@@ -129,6 +145,10 @@ public final class RomTables {
         this.entityFineCollisionShapes = entityFineCollisionShapes;
         this.linkSpeedX = linkSpeedX;
         this.linkSpeedY = linkSpeedY;
+        this.swimmingSpeedX = swimmingSpeedX;
+        this.swimmingSpeedY = swimmingSpeedY;
+        this.swimmingEntrySpeedX = swimmingEntrySpeedX;
+        this.swimmingEntrySpeedY = swimmingEntrySpeedY;
         this.swordAnimState = swordAnimState;
         this.swordDirection = swordDirection;
         this.swordXOffset = swordXOffset;
@@ -175,6 +195,21 @@ public final class RomTables {
         System.arraycopy(romData, speedXOffset, speedX, 0, LINK_SPEED_TABLE_LENGTH);
         System.arraycopy(romData, speedYOffset, speedY, 0, LINK_SPEED_TABLE_LENGTH);
 
+        byte[] swimmingX = new byte[SWIMMING_SPEED_TABLE_LENGTH];
+        byte[] swimmingY = new byte[SWIMMING_SPEED_TABLE_LENGTH];
+        int swimmingXOffset = romOffset(LINK_SPEED_TABLE_BANK, SWIMMING_SPEED_TABLE_X_ADDR);
+        int swimmingYOffset = romOffset(LINK_SPEED_TABLE_BANK, SWIMMING_SPEED_TABLE_Y_ADDR);
+        System.arraycopy(romData, swimmingXOffset, swimmingX, 0,
+            SWIMMING_SPEED_TABLE_LENGTH);
+        System.arraycopy(romData, swimmingYOffset, swimmingY, 0,
+            SWIMMING_SPEED_TABLE_LENGTH);
+        byte[] swimmingEntryX = loadSignedTable(
+            romData, LINK_SPEED_TABLE_BANK, SWIMMING_ENTRY_SPEED_X_ADDR,
+            SWIMMING_ENTRY_SPEED_LENGTH);
+        byte[] swimmingEntryY = loadSignedTable(
+            romData, LINK_SPEED_TABLE_BANK, SWIMMING_ENTRY_SPEED_Y_ADDR,
+            SWIMMING_ENTRY_SPEED_LENGTH);
+
         int[] swordAnim = loadUnsignedTable(romData, SWORD_TABLES_BANK, SWORD_ANIM_TABLE_ADDR, TABLE_LEN);
         int[] swordDir = loadUnsignedTable(romData, SWORD_TABLES_BANK, SWORD_DIR_TABLE_ADDR, TABLE_LEN);
         byte[] swordX = loadSignedTable(romData, SWORD_TABLES_BANK, SWORD_X_OFFSET_TABLE_ADDR, TABLE_LEN);
@@ -197,7 +232,9 @@ public final class RomTables {
 
         return new RomTables(flags, options1, hitboxFlags, collisionPointsX,
                              collisionPointsY, fineCollisionShapes,
-                             speedX, speedY, swordAnim, swordDir,
+                             speedX, speedY, swimmingX, swimmingY,
+                             swimmingEntryX, swimmingEntryY,
+                             swordAnim, swordDir,
                              swordX, swordY, swordYBaseBytes,
                              swordCollisionNeeded, swordCollisionWidth,
                              swordCollisionOffset, swordCollisionHeight,
@@ -306,6 +343,26 @@ public final class RomTables {
 
     public int linkSpeedY(int joypadMask) {
         return linkSpeedY[joypadMask & 0x0F];
+    }
+
+    /** Signed swimming target speed from Data_002_4EF0/4F10 or its fast row. */
+    public int swimmingSpeedX(int joypadMask, boolean fast) {
+        return swimmingSpeedX[(fast ? 0x10 : 0) | (joypadMask & 0x0F)];
+    }
+
+    /** Signed swimming target speed from Data_002_4EF0/4F10 or its fast row. */
+    public int swimmingSpeedY(int joypadMask, boolean fast) {
+        return swimmingSpeedY[(fast ? 0x10 : 0) | (joypadMask & 0x0F)];
+    }
+
+    /** Signed direction-indexed entry speed written when flippers start swimming. */
+    public int swimmingEntrySpeedX(int romDirection) {
+        return swimmingEntrySpeedX[romDirection & 0x03];
+    }
+
+    /** Signed direction-indexed entry speed written when flippers start swimming. */
+    public int swimmingEntrySpeedY(int romDirection) {
+        return swimmingEntrySpeedY[romDirection & 0x03];
     }
 
     /**
