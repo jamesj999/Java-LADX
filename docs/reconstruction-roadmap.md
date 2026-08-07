@@ -1187,9 +1187,28 @@ runtime collision callback.
 - Shipped-ROM catalog, loader, Link, motion, runtime, RoomSession boundary,
   and Main architecture tests pass; the fresh clean Java suite passes with
   843 tests and `git diff --check` is clean.
-- Bomb entity `$02` interaction, explosion/destroyable-object effects, and
+- Bomb entity `$02` destroyable-object/puzzle effects, and
   remaining Ghini-specific branches outside the shared hiding/flight/combat
   path remain separate follow-up work. This slice does not add an emulator.
+
+## Verified ROM bomb explosion interaction seam — 2026-08-06
+
+- Ordinary Link bombs now expose the source `BombExplosionHandler` interaction
+  window after the shared countdown decrement: deferred room-object/puzzle
+  requests are published for countdowns `$16..$0E`, while the entity pass is
+  gated to exactly `$12`.
+- Entity candidates follow `CheckExplosionInteractionWithEntities`: statuses
+  below ACTIVE, projectile-noclip/grabbable physics, and the separate
+  `HITFLAGS_IGNORE_HITS` bit are excluded; eligible targets are scanned in
+  slots `$0F` down to `$00` using the bomb visual Y (`Y-Z`) and the source
+  unsigned `$30` window. Requests carry damage type `$07` and remain typed
+  bomb events rather than sword/projectile combat results.
+- `RoomSession.consumeBombExplosionEvents()` carries the seam to gameplay
+  without fabricating room mutations or generic enemy health/recoil effects.
+  Enemy bombs, bomb arrows, destroyable-object/puzzle state changes, and the
+  source recoil/damage application remain explicit follow-up work.
+- Focused runtime/session tests and the forced clean Java suite pass with 892
+  tests; this increment does not add an emulator.
 
 ## Broader parity gaps
 
