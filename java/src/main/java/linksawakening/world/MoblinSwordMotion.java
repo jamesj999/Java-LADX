@@ -5,10 +5,12 @@ final class MoblinSwordMotion {
     private static final int[] VARIANT_BY_DIRECTION = {6, 4, 2, 0};
     private static final int[] SPEED_X_BY_DIRECTION = {0x06, 0xFA, 0x00, 0x00};
     private static final int[] SPEED_Y_BY_DIRECTION = {0x00, 0x00, 0xFA, 0x06};
+    private static final int MAP_BOWWOW_HIDEOUT = 0x15;
 
     private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] privateState3 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -18,7 +20,10 @@ final class MoblinSwordMotion {
     private final int[] collisionsTable = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
-    record Update(RoomEntity entity) {
+    record Update(RoomEntity entity, boolean dialogRequested) {
+        Update(RoomEntity entity) {
+            this(entity, false);
+        }
     }
 
     /** Mirrors EntityInitMoblinSword, including its post-variant direction flip. */
@@ -47,6 +52,14 @@ final class MoblinSwordMotion {
     Update advance(RoomEntity entity, int linkEntityX, int linkEntityY,
                    RoomEntityBackgroundInteraction backgroundInteraction,
                    int ignoreHitsCountdown, int alertingSoundCounter, int frameCounter) {
+        return advance(entity, linkEntityX, linkEntityY, backgroundInteraction,
+            ignoreHitsCountdown, alertingSoundCounter, -1, 0, frameCounter);
+    }
+
+    Update advance(RoomEntity entity, int linkEntityX, int linkEntityY,
+                   RoomEntityBackgroundInteraction backgroundInteraction,
+                   int ignoreHitsCountdown, int alertingSoundCounter, int mapId,
+                   int transitionSequenceCounter, int frameCounter) {
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot, entity.x());
@@ -63,6 +76,7 @@ final class MoblinSwordMotion {
         }
 
         RoomEntity updated = entity;
+        boolean dialogRequested = false;
         boolean enteredWalkingState = false;
         boolean enteredStateTwo = false;
         if (state[slot] == 0) {
@@ -96,6 +110,11 @@ final class MoblinSwordMotion {
         }
         if (state[slot] == 2 && !enteredStateTwo) {
             if (privateCountdown1[slot] != 0) {
+                if (mapId == MAP_BOWWOW_HIDEOUT && transitionSequenceCounter == 0x04
+                    && privateState3[slot] == 0) {
+                    privateState3[slot] = 1;
+                    dialogRequested = true;
+                }
                 updated = faceLink(updated, linkEntityX, linkEntityY);
             } else {
                 if (transitionCountdown[slot] == 0) {
@@ -113,7 +132,7 @@ final class MoblinSwordMotion {
                 updated = faceLink(updated, linkEntityX, linkEntityY);
             }
         }
-        return new Update(updated);
+        return new Update(updated, dialogRequested);
     }
 
     /** Mirrors the three SetEntityVariantForDirection calls before the sword handler. */
@@ -139,6 +158,10 @@ final class MoblinSwordMotion {
         return privateCountdown1[slot];
     }
 
+    int privateState3(int slot) {
+        return privateState3[slot];
+    }
+
     int direction(int slot) {
         return direction[slot];
     }
@@ -159,6 +182,7 @@ final class MoblinSwordMotion {
         state[slot] = 0;
         transitionCountdown[slot] = 0;
         privateCountdown1[slot] = 0;
+        privateState3[slot] = 0;
         direction[slot] = 0;
         speedX[slot] = 0;
         speedY[slot] = 0;

@@ -4,6 +4,8 @@ import linksawakening.entity.EntitySpriteDefinition;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class MoblinSwordMotionTest {
 
@@ -74,6 +76,26 @@ final class MoblinSwordMotionTest {
         // The state-2 attraction refresh has selected +$0A by this point;
         // the state-2 -> state-0 transition must not reverse it prematurely.
         assertEquals(0x0A, motion.speedX(1));
+    }
+
+    @Test
+    void hideoutAlertOpensDialog190OnceAtTransitionSequenceFour() {
+        MoblinSwordMotion motion = new MoblinSwordMotion();
+        motion.initialize(0, 0x50);
+        RoomEntity current = entity(0, 0x50, 0x40);
+
+        current = motion.advance(current, 0xC0, 0x40, null, 0, 0).entity();
+        current = motion.advance(current, 0x70, 0x40, null, 0, 1).entity();
+
+        MoblinSwordMotion.Update dialogFrame = motion.advance(
+            current, 0x70, 0x40, null, 0, 0, 0x15, 0x04, 2);
+        assertTrue(dialogFrame.dialogRequested());
+        assertEquals(1, motion.privateState3(0));
+
+        MoblinSwordMotion.Update followingFrame = motion.advance(
+            dialogFrame.entity(), 0x70, 0x40, null, 0, 0, 0x15, 0x04, 3);
+        assertFalse(followingFrame.dialogRequested());
+        assertEquals(1, motion.privateState3(0));
     }
 
     private static RoomEntity entity(int slot, int x, int y) {

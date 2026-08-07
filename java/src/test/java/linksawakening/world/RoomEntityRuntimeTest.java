@@ -871,6 +871,27 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void hideoutMoblinSwordPublishesDialog190OnlyOnce() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x14, 0x50, 0x40, EntityStatus.ACTIVE,
+                pairDefinition(0x14, 8), 6)));
+        runtime.setEntityMapIdForTest(0x15);
+        runtime.setTransitionSequenceCounterForTest(0x04);
+
+        runtime.tick(0, 0xC0, 0x40, () -> 0);
+        runtime.tick(1, 0x70, 0x40, () -> 0);
+        runtime.tick(2, 0x70, 0x40, () -> 0);
+
+        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(1, 0x90)),
+            runtime.consumePendingDialogRequests());
+        assertEquals(1, runtime.moblinSwordPrivateState3(0));
+
+        runtime.tick(3, 0x70, 0x40, () -> 0);
+        assertTrue(runtime.consumePendingDialogRequests().isEmpty());
+        assertEquals(1, runtime.moblinSwordPrivateState3(0));
+    }
+
+    @Test
     void octorokStopsAtTheRoamingEnemyBackgroundCollisionPoint() {
         EntitySpriteDefinition definition = pairDefinition(0x09, 8);
         RoomEntitySnapshot initial = snapshot(

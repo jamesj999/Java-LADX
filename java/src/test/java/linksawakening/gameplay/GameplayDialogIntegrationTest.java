@@ -95,6 +95,15 @@ final class GameplayDialogIntegrationTest {
     }
 
     @Test
+    void dialogTextLoaderResolvesMoblinDialog190FromTheRomTable() throws Exception {
+        DialogTextLoader loader = DialogTextLoader.loadFromRom(loadRom());
+
+        assertEquals("Ennh?  Who's    this suspicious-looking runt?!  Okay boys, let's"
+                + "get ridda him!\u00FF",
+            loader.load(new SignpostDialogRef(1, 0x90)));
+    }
+
+    @Test
     void dialogTextLoaderPreservesLowerSixBankBitsWhenHighBitFlagsAreSet() {
         byte[] rom = new byte[romOffset(0x21, 0x4000) + 3];
         int pointerOffset = romOffset(0x1C, 0x4001);

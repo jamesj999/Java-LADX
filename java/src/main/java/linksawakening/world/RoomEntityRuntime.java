@@ -85,6 +85,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_HORSE_PIECE = 0x98;
     private static final int ENTITY_PHYSICS_GRABBABLE = 0x20;
     private static final int MAP_COLOR_DUNGEON = 0xFF;
+    private static final int DIALOG_MOBLIN = 0x90;
     private static final int FALLING_JINGLE_ID = 0x18;
     private static final int[] FALLING_VISUAL_Y_OFFSETS = {0, 0, 4, 0};
     private static final int[] FALLING_VECTOR_LENGTHS = {0, 1, 3, 6};
@@ -186,6 +187,7 @@ public final class RoomEntityRuntime {
     private final List<RoamingEnemyMotion.LaunchRequest> projectileLaunchRequests =
         new ArrayList<>();
     private final List<TransientVfxRequest> transientVfxRequests = new ArrayList<>();
+    private final List<DialogRequest> pendingDialogRequests = new ArrayList<>();
     private final List<EntityCombatEvent> pendingEntityEvents = new ArrayList<>();
     private final List<BombExplosionEvent> pendingBombExplosionEvents = new ArrayList<>();
     private final List<HookshotBridgeUpdate> hookshotBridgeUpdates = new ArrayList<>();
@@ -205,6 +207,10 @@ public final class RoomEntityRuntime {
     private boolean actionButtonsHeld;
     private boolean powerBraceletButtonHeld;
     private boolean bombButtonHeld;
+    // LinkMotionMapFadeInHandler leaves wTransitionSequenceCounter at $04 once
+    // the active room is ready for interaction. Entity ticks are gated during
+    // the host transition, so this is the source value visible to gameplay.
+    private int transitionSequenceCounter = 0x04;
     private int swordMoblinAlertingSoundCounter;
     private boolean groundInteractionSideScrolling;
     private int entityMapId = -1;
@@ -229,6 +235,23 @@ public final class RoomEntityRuntime {
 
     /** A ROM transient-VFX creation requested by an entity handler this frame. */
     public record TransientVfxRequest(TransientVfxType type, int worldX, int worldY) {
+    }
+
+    /** A ROM dialog-table entry requested by an entity handler this frame. */
+    public record DialogRequest(int tableId, int dialogLowId) {
+        public DialogRequest {
+            if (tableId < 0 || tableId > 2) {
+                throw new IllegalArgumentException("Dialog table id must be 0, 1, or 2");
+            }
+            if ((dialogLowId & ~0xFF) != 0) {
+                throw new IllegalArgumentException("Dialog id must be an unsigned byte: "
+                    + dialogLowId);
+            }
+        }
+
+        public int globalDialogId() {
+            return (tableId << 8) | dialogLowId;
+        }
     }
 
     /** A ROM bridge handler request to replace one padded object cell and draw its columns. */
@@ -579,6 +602,7 @@ public final class RoomEntityRuntime {
         Arrays.fill(enemyProjectileSpawnedThisFrame, false);
         Arrays.fill(dynamicEntitySpawnedThisFrame, false);
         transientVfxRequests.clear();
+        pendingDialogRequests.clear();
         pendingEntityEvents.clear();
         pendingBombExplosionEvents.clear();
         hookshotBridgeUpdates.clear();
@@ -982,10 +1006,15 @@ public final class RoomEntityRuntime {
                     swordBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
                         backgroundCollision);
                 }
-                updated = moblinSwordMotion.advance(entity, linkEntityX, linkEntityY,
+                MoblinSwordMotion.Update moblinSwordUpdate = moblinSwordMotion.advance(
+                    entity, linkEntityX, linkEntityY,
                     swordBackgroundInteraction, enemyIgnoreHitsCountdown[entity.slot()],
-                    swordMoblinAlertingSoundCounter, frame)
-                    .entity();
+                    swordMoblinAlertingSoundCounter, entityMapId,
+                    transitionSequenceCounter, frame);
+                updated = moblinSwordUpdate.entity();
+                if (moblinSwordUpdate.dialogRequested()) {
+                    pendingDialogRequests.add(new DialogRequest(1, DIALOG_MOBLIN));
+                }
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_TEKTITE) {
@@ -2184,6 +2213,14 @@ public final class RoomEntityRuntime {
         setEntityMapId(mapId);
     }
 
+    void setTransitionSequenceCounterForTest(int counter) {
+        if (counter < 0 || counter > 0xFF) {
+            throw new IllegalArgumentException(
+                "Transition sequence counter must be an unsigned byte: " + counter);
+        }
+        transitionSequenceCounter = counter;
+    }
+
     void setFollowingNpcState(FollowingNpcState state) {
         if (state == null) {
             throw new IllegalArgumentException("Follower state cannot be null");
@@ -2218,6 +2255,12 @@ public final class RoomEntityRuntime {
     List<EntityCombatEvent> consumePendingEntityEvents() {
         List<EntityCombatEvent> pending = List.copyOf(pendingEntityEvents);
         pendingEntityEvents.clear();
+        return pending;
+    }
+
+    List<DialogRequest> consumePendingDialogRequests() {
+        List<DialogRequest> pending = List.copyOf(pendingDialogRequests);
+        pendingDialogRequests.clear();
         return pending;
     }
 
@@ -2841,6 +2884,10 @@ public final class RoomEntityRuntime {
 
     int moblinSwordPrivateCountdown1(int slot) {
         return moblinSwordMotion.privateCountdown1(slot);
+    }
+
+    int moblinSwordPrivateState3(int slot) {
+        return moblinSwordMotion.privateState3(slot);
     }
 
     int moblinSwordDirection(int slot) {

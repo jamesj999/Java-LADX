@@ -634,6 +634,14 @@ public final class RoomSession {
         return entityRuntime.consumePendingEntityEvents();
     }
 
+    /** Returns and clears ROM dialog requests emitted by the last entity tick. */
+    public List<RoomEntityRuntime.DialogRequest> consumeEntityDialogRequests() {
+        if (entityRuntime == null) {
+            return List.of();
+        }
+        return entityRuntime.consumePendingDialogRequests();
+    }
+
     /** Returns and clears source-shaped bomb-explosion interaction requests from the last tick. */
     public List<BombExplosionEvent> consumeBombExplosionEvents() {
         if (entityRuntime == null) {

@@ -32,11 +32,13 @@ import linksawakening.gameplay.EnemyProjectileEventConsumer;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplayDialogInput;
+import linksawakening.gameplay.LinkDialogPosition;
 import linksawakening.gameplay.OverworldDialogBlockers;
 import linksawakening.gameplay.OverworldDialogInteraction;
 import linksawakening.gameplay.PcmSoundOutput;
 import linksawakening.gameplay.SfxDialogSoundSink;
 import linksawakening.gameplay.SfxGameplaySoundSink;
+import linksawakening.gameplay.SignpostDialogRef;
 import linksawakening.gameplay.SignpostDialogTable;
 import linksawakening.gpu.GPU;
 import linksawakening.gpu.Framebuffer;
@@ -142,6 +144,7 @@ public class Main {
     private static InventoryMenu inventoryMenu;
     private static InventoryController inventoryController;
     private static DialogController dialogController;
+    private static DialogTextLoader dialogTextLoader;
     private static OverworldDialogInteraction overworldDialogInteraction;
     private static boolean overworldDialogInputConsumedThisFrame;
     private static DialogSoundSink dialogSoundSink;
@@ -241,8 +244,9 @@ public class Main {
         inventoryMenu = new InventoryMenu(tilemapLoader, playerState, gameplaySoundSink);
         inventoryController = new InventoryController(inputState, inputConfig, inventoryMenu);
         dialogController = new DialogController(16);
+        dialogTextLoader = DialogTextLoader.loadFromRom(romData);
         overworldDialogInteraction = new OverworldDialogInteraction(
-            SignpostDialogTable.loadFromRom(romData), DialogTextLoader.loadFromRom(romData));
+            SignpostDialogTable.loadFromRom(romData), dialogTextLoader);
         cutsceneManager = new CutsceneManager(dialogController, Main::setCutsceneScene);
         romTables = RomTables.loadFromRom(romData);
         overworldCollision = new OverworldCollision(romTables);
@@ -638,6 +642,7 @@ public class Main {
                     gameplaySoundSink);
                 EnemyCombatEventConsumer.consume(roomSession.consumeEntityEvents(),
                     gameplaySoundSink, transientVfxSystem);
+                openEntityDialogRequests();
                 for (var event : projectileEvents) {
                     boolean hookshotPull = event.kind() == EntityProjectileEvent.Kind.HOOKSHOT_PULL;
                     if ((!hookshotPull && event.linkIgnoreCollisionCountdown() == 0)
@@ -822,6 +827,21 @@ public class Main {
             true,
             currentOverworldDialogBlockers(),
             dialogController);
+    }
+
+    private static void openEntityDialogRequests() {
+        if (roomSession == null || dialogController == null || dialogTextLoader == null
+            || link == null || dialogController.isActive()) {
+            return;
+        }
+        for (var request : roomSession.consumeEntityDialogRequests()) {
+            SignpostDialogRef dialogRef = new SignpostDialogRef(
+                request.tableId(), request.dialogLowId());
+            dialogController.openPreformattedForLinkY(
+                dialogTextLoader.load(dialogRef),
+                LinkDialogPosition.dialogYFromTopLeft(link.pixelY()));
+            return;
+        }
     }
 
     private static OverworldDialogBlockers currentOverworldDialogBlockers() {

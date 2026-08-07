@@ -775,12 +775,17 @@ runtime collision callback.
   direction inertia, background collision reversal, and Link-facing/vector
   updates. The bank-$07 health/contact/recoil family is also wired through
   the runtime combat boundary.
-- Focused motion/runtime/renderer regressions and the complete Java suite
-  (905 test cases) pass. The global `$04` alerting-sound counter now decrements
-  per frame and is fed by modeled bank-$03 projectile wall impacts and the
-  bomb explosion `$12` interaction tick in source slot order. The player-arrow
-  producer and BowWow Hideout dialogue-only branch remain separate follow-up
-  behavior.
+- The global `$04` alerting-sound counter now decrements per frame and is fed
+  by modeled bank-$03 projectile wall impacts and the bomb explosion `$12`
+  interaction tick in source slot order.
+- The BowWow Hideout state-2 branch now emits a one-shot typed request for
+  `Dialog190` when `wTransitionSequenceCounter == $04`; the live gameplay
+  boundary resolves that request through the ROM dialog pointer/bank tables
+  and the existing preformatted dialog renderer. The raw persistent
+  `wIsBowWowFollowingLink` clear gate remains part of the follower/save-state
+  pass, as does the ordinary player-arrow producer.
+- Focused motion/runtime/dialog/renderer regressions and the complete Java
+  suite (908 test cases) pass.
 
 ## Next entity increments
 
