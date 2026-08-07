@@ -17,6 +17,7 @@ public final class RoomEntityCombatRules {
     private static final int ENTITY_GEL = 0x1C;
     private static final int ENTITY_HIDING_ZOL = 0x9B;
     private static final int ENTITY_GIBDO = 0x1F;
+    private static final int ENTITY_GOOMBA = 0x9F;
     private static final int ENTITY_PEAHAT = 0xA0;
     private static final int ENTITY_ARMOS_STATUE = 0x0F;
     private static final int ENTITY_HIDING_GHINI = 0x10;
@@ -89,6 +90,7 @@ public final class RoomEntityCombatRules {
                 ENTITY_STALFOS_AGGRESSIVE, ENTITY_STALFOS_EVASIVE,
                 ENTITY_ZOL, ENTITY_GEL, ENTITY_HIDING_ZOL,
                 ENTITY_GIBDO, ENTITY_PEAHAT,
+                ENTITY_GOOMBA,
                 ENTITY_ARMOS_STATUE,
                 ENTITY_HIDING_GHINI, ENTITY_GIANT_GHINI, ENTITY_GHINI,
                 ENTITY_HARDHAT_BEETLE, ENTITY_SPIKE_TRAP, ENTITY_WATER_TEKTITE,
@@ -109,7 +111,7 @@ public final class RoomEntityCombatRules {
         return switch (type & 0xFF) {
             case ENTITY_KEESE, ENTITY_OCTOROK, ENTITY_PEAHAT, ENTITY_ZOL, ENTITY_GEL,
                 ENTITY_WATER_TEKTITE, ENTITY_PAIRODD,
-                ENTITY_HIDING_ZOL ->
+                ENTITY_HIDING_ZOL, ENTITY_GOOMBA ->
                 OCTOROK_AND_KEESE_CONTACT_DAMAGE;
             case ENTITY_ARMOS_STATUE -> 0x10;
             case ENTITY_MOBLIN, ENTITY_IRON_MASK, ENTITY_MOBLIN_SWORD, ENTITY_TEKTITE, ENTITY_LEEVER,
@@ -133,7 +135,8 @@ public final class RoomEntityCombatRules {
 
     static int initialHealth(int type) {
         return switch (type & 0xFF) {
-            case ENTITY_KEESE, ENTITY_OCTOROK, ENTITY_PEAHAT, ENTITY_WATER_TEKTITE ->
+            case ENTITY_KEESE, ENTITY_OCTOROK, ENTITY_PEAHAT, ENTITY_WATER_TEKTITE,
+                ENTITY_GOOMBA ->
                 OCTOROK_AND_KEESE_INITIAL_HEALTH;
             case ENTITY_ARMOS_STATUE -> 0x04;
             case ENTITY_PAIRODD -> PAIRODD_INITIAL_HEALTH;

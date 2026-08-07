@@ -638,7 +638,7 @@ public class Main {
                     playerState.runningWithPegasusBoots());
                 var combatEvents = roomSession.resolveEntityCombat(
                     frameCounter, link.romEntityX(), link.romEntityY(),
-                    link.isAirborne(), true,
+                    link.isAirborne(), link.zVelocity(), true,
                     swordBoxForEntityTick.active(), swordBoxForEntityTick.x(),
                     swordBoxForEntityTick.width(), swordBoxForEntityTick.y(),
                     swordBoxForEntityTick.height(), attackContext);
@@ -646,6 +646,13 @@ public class Main {
                 for (EntityCombatEvent event : combatEvents) {
                     if (event.linkDamage() > 0 && playerState.invincibilityCounter() == 0) {
                         playerState.applyRomEnemyDamage(event.linkDamage());
+                    }
+                    if (event.linkAction()
+                        == EntityCombatEvent.LinkAction.GOOMBA_BOUNCE_TOP_DOWN) {
+                        link.bounceFromGoomba();
+                    } else if (event.linkAction()
+                        == EntityCombatEvent.LinkAction.GOOMBA_BOUNCE_SIDE_SCROLLING) {
+                        link.applyRomSpeed(0, 0xF0);
                     }
                 }
             }

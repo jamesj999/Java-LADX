@@ -5,18 +5,28 @@ public record EntityCombatEvent(int slot, int type, int linkDamage, boolean swor
                                 int enemyDamage, int enemySpecialAction,
                                 SoundChannel soundChannel, int soundId,
                                 SoundChannel secondarySoundChannel, int secondarySoundId,
-                                SwordPokeVfx swordPokeVfx) {
+                                SwordPokeVfx swordPokeVfx, LinkAction linkAction) {
+
+    public EntityCombatEvent(int slot, int type, int linkDamage, boolean swordHit,
+                             int enemyDamage, int enemySpecialAction,
+                             SoundChannel soundChannel, int soundId,
+                             SoundChannel secondarySoundChannel, int secondarySoundId,
+                             SwordPokeVfx swordPokeVfx) {
+        this(slot, type, linkDamage, swordHit, enemyDamage, enemySpecialAction,
+            soundChannel, soundId, secondarySoundChannel, secondarySoundId,
+            swordPokeVfx, LinkAction.NONE);
+    }
 
     public EntityCombatEvent(int slot, int type, int linkDamage, boolean swordHit) {
         this(slot, type, linkDamage, swordHit, 0, -1,
-            SoundChannel.NONE, -1, SoundChannel.NONE, -1, null);
+            SoundChannel.NONE, -1, SoundChannel.NONE, -1, null, LinkAction.NONE);
     }
 
     /** Compatibility constructor for callers that already provide raw sound. */
     public EntityCombatEvent(int slot, int type, int linkDamage, boolean swordHit,
                              SoundChannel soundChannel, int soundId) {
         this(slot, type, linkDamage, swordHit, 0, -1,
-            soundChannel, soundId, SoundChannel.NONE, -1, null);
+            soundChannel, soundId, SoundChannel.NONE, -1, null, LinkAction.NONE);
     }
 
     /** Compatibility constructor for callers that provide combat data and one raw sound. */
@@ -33,7 +43,8 @@ public record EntityCombatEvent(int slot, int type, int linkDamage, boolean swor
                              SoundChannel soundChannel, int soundId,
                              SoundChannel secondarySoundChannel, int secondarySoundId) {
         this(slot, type, linkDamage, swordHit, enemyDamage, enemySpecialAction,
-            soundChannel, soundId, secondarySoundChannel, secondarySoundId, null);
+            soundChannel, soundId, secondarySoundChannel, secondarySoundId,
+            null, LinkAction.NONE);
     }
 
     public EntityCombatEvent {
@@ -56,6 +67,9 @@ public record EntityCombatEvent(int slot, int type, int linkDamage, boolean swor
         if (enemyDamage > 0 && enemySpecialAction != -1) {
             throw new IllegalArgumentException("Numeric and special enemy damage cannot coexist");
         }
+        if (linkAction == null) {
+            throw new IllegalArgumentException("Link action cannot be null");
+        }
         validateSoundPair(soundChannel, soundId, "Combat");
         validateSoundPair(secondarySoundChannel, secondarySoundId, "Secondary combat");
     }
@@ -67,6 +81,13 @@ public record EntityCombatEvent(int slot, int type, int linkDamage, boolean swor
                 throw new IllegalArgumentException("Sword-poke coordinates must be unsigned bytes");
             }
         }
+    }
+
+    /** A handler-written response that must be applied to Link immediately. */
+    public enum LinkAction {
+        NONE,
+        GOOMBA_BOUNCE_TOP_DOWN,
+        GOOMBA_BOUNCE_SIDE_SCROLLING
     }
 
     private static void validateSoundPair(SoundChannel channel, int id, String label) {

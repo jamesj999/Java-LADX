@@ -2596,6 +2596,137 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void goombaUsesTheRomNormalRoomRandomWalkAndAnimation() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            0x9F, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x9F, 64, 64, EntityStatus.INIT, definition, 0)),
+            true, null, catalog, tables);
+
+        // The room init is a noop for Goomba; its first active handler pass
+        // chooses the random-walk interval and direction.
+        runtime.tick(0, 120, 120, sequence(0x00));
+        runtime.tick(1, 120, 120, sequence(0x00, 0x00));
+
+        assertEquals(1, runtime.goombaState(0));
+        assertEquals(0x30, runtime.goombaTransitionCountdown(0));
+        assertEquals(0x08, runtime.goombaSpeedX(0));
+        assertEquals(0x00, runtime.goombaSpeedY(0));
+        assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
+
+        runtime.tick(2, 120, 120, sequence(0xFF));
+        assertEquals(0x2F, runtime.goombaTransitionCountdown(0));
+        assertEquals(64, runtime.snapshot().slots().get(0).x());
+        assertEquals(0x02, runtime.goombaSpeedY(0));
+
+        runtime.tick(0x10, 120, 120, sequence(0xFF));
+        assertEquals(1, runtime.snapshot().slots().get(0).spriteVariant());
+    }
+
+    @Test
+    void goombaUsesRomHealthGroupZeroContactAndSwordValues() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            0x9F, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x9F, 64, 64, EntityStatus.ACTIVE, definition, 0)),
+            true, null, catalog, tables);
+
+        List<EntityCombatEvent> contact = runtime.resolveCombat(
+            1, 72, 72, false, true, false, 0, 0, 0, 0);
+        assertEquals(1, contact.size());
+        assertEquals(0x04, contact.get(0).linkDamage());
+
+        List<EntityCombatEvent> sword = runtime.resolveCombat(
+            2, 120, 120, false, true, true, 72, 1, 72, 1);
+        assertEquals(1, sword.size());
+        assertTrue(sword.get(0).swordHit());
+        assertEquals(0, runtime.enemyHealth(0));
+        assertEquals(EntityStatus.DYING, runtime.snapshot().slots().get(0).status());
+    }
+
+    @Test
+    void goombaStompUsesTheRomDescendingVelocityBranchAndSharedDeathHandler()
+            throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            0x9F, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x9F, 64, 64, EntityStatus.ACTIVE, definition, 0)),
+            true, null, catalog, tables);
+
+        List<EntityCombatEvent> events = runtime.resolveCombat(
+            1, 72, 72, true, 0xF0, true, false, 0, 0, 0, 0);
+        assertEquals(1, events.size());
+        assertEquals(EntityCombatEvent.LinkAction.GOOMBA_BOUNCE_TOP_DOWN,
+            events.get(0).linkAction());
+        assertEquals(EntityCombatEvent.SoundChannel.WAVE, events.get(0).soundChannel());
+        assertEquals(0x0E, events.get(0).soundId());
+        assertEquals(2, runtime.goombaState(0));
+        assertEquals(0x30, runtime.goombaTransitionCountdown(0));
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
+
+        for (int frame = 0; frame < 0x30; frame++) {
+            runtime.tick(frame, 120, 120, sequence(0x00));
+        }
+        assertEquals(EntityStatus.DYING, runtime.snapshot().slots().get(0).status());
+        assertEquals(0x2D, runtime.droppedItemForTest(0));
+        assertEquals(0x0C, runtime.dyingCountdown(0));
+        assertEquals(0x04, runtime.physicsFlags(0));
+        assertEquals(2, runtime.snapshot().slots().get(0).spriteVariant());
+    }
+
+    @Test
+    void goombaDoesNotStompWhileLinkIsAscending() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            0x9F, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x9F, 64, 64, EntityStatus.ACTIVE, definition, 0)),
+            true, null, catalog, tables);
+
+        List<EntityCombatEvent> events = runtime.resolveCombat(
+            1, 72, 72, true, 0x10, true, false, 0, 0, 0, 0);
+        assertTrue(events.isEmpty());
+        assertEquals(0, runtime.goombaState(0));
+    }
+
+    @Test
+    void goombaSideScrollStompUsesTheRomHorizontalBounceAction() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            0x9F, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x9F, 64, 64, EntityStatus.ACTIVE, definition, 0))
+            .withSideScrolling(true);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+            initial, true, null, catalog, tables);
+
+        List<EntityCombatEvent> events = runtime.resolveCombat(
+            1, 72, 72, true, 0x10, true, false, 0, 0, 0, 0);
+        assertEquals(1, events.size());
+        assertEquals(EntityCombatEvent.LinkAction.GOOMBA_BOUNCE_SIDE_SCROLLING,
+            events.get(0).linkAction());
+        assertEquals(2, runtime.goombaState(0));
+
+        for (int frame = 0; frame < 0x30; frame++) {
+            runtime.tick(frame, 120, 120, sequence(0x00));
+        }
+        assertEquals(EntityStatus.DYING, runtime.snapshot().slots().get(0).status());
+    }
+
+    @Test
     void evasiveStalfosUsesTheRomRandomWalkAndNormalAnimation() {
         EntitySpriteDefinition definition = pairDefinition(0x1E, 3);
         RoomEntitySnapshot initial = snapshot(

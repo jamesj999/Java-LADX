@@ -168,6 +168,11 @@ final class EntitySpriteHandlerCatalogTest {
         assertDefinition(keese, 0x06, 0x6708,
             EntitySpriteDefinition.Shape.PAIR, 2, 0);
 
+        EntitySpriteDefinition goomba = catalog.forEntityType(
+            0x9F, EntityRoomLoader.RoomTable.INDOORS_A);
+        assertDefinition(goomba, 0x07, 0x65CE,
+            EntitySpriteDefinition.Shape.PAIR, 3, 0);
+
         EntitySpriteDefinition octorok = catalog.forEntityType(
             0x09, EntityRoomLoader.RoomTable.OVERWORLD);
         assertDefinition(octorok, 0x03, 0x57FB,
@@ -336,6 +341,17 @@ final class EntitySpriteHandlerCatalogTest {
             0x03, 0x5FFB, EntitySpriteDefinition.Shape.SINGLE, 1, 0);
         assertDefinition(catalog.forEntityType(0x3D, EntityRoomLoader.RoomTable.OVERWORLD),
             0x03, 0x5FD1, EntitySpriteDefinition.Shape.SINGLE, 1, 0);
+    }
+
+    @Test
+    void mapsGoombaToItsExactBankSevenDisplayList() throws Exception {
+        EntitySpriteDefinition goomba = new EntitySpriteHandlerCatalog(loadRom())
+            .forEntityType(0x9F, EntityRoomLoader.RoomTable.INDOORS_A);
+        assertPairBytes(goomba, new int[][] {
+            {0x4A, 0x02, 0x4C, 0x02},
+            {0x4C, 0x22, 0x4A, 0x22},
+            {0x4E, 0x02, 0x4E, 0x22}
+        });
     }
 
     @Test

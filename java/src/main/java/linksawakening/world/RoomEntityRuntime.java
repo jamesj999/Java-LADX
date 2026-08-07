@@ -42,6 +42,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_STALFOS_AGGRESSIVE = 0x1A;
     private static final int ENTITY_STALFOS_EVASIVE = 0x1E;
     private static final int ENTITY_GIBDO = 0x1F;
+    private static final int ENTITY_GOOMBA = 0x9F;
     private static final int ENTITY_OPT1_NO_GROUND_INTERACTION = 0x10;
     private static final int ENTITY_OPT1_NO_WALL_COLLISION = 0x01;
     private static final int ENTITY_OPT1_SPLASH_IN_WATER = 0x08;
@@ -66,6 +67,7 @@ public final class RoomEntityRuntime {
     private static final int BOMB_ARROW_EXPLOSION_COUNTDOWN = 0x17;
     private static final int EVASIVE_PHYSICS_FLAGS = 0x12;
     private static final int IRON_MASK_INITIAL_PHYSICS_FLAGS = 0x12;
+    private static final int GOOMBA_INITIAL_PHYSICS_FLAGS = 0x12;
     private static final int EVASIVE_CLONE_PHYSICS_FLAGS = 0x52;
     private static final int EVASIVE_CLONE_OPTIONS = ENTITY_OPT1_NO_GROUND_INTERACTION
         | ENTITY_OPT1_SPLASH_IN_WATER | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
@@ -171,6 +173,7 @@ public final class RoomEntityRuntime {
         new StalfosAggressiveMotion();
     private final StalfosEvasiveMotion stalfosEvasiveMotion = new StalfosEvasiveMotion();
     private final GibdoMotion gibdoMotion = new GibdoMotion();
+    private final GoombaMotion goombaMotion = new GoombaMotion();
     private final PeaHatMotion peaHatMotion = new PeaHatMotion();
     private final ArmosMotion armosMotion = new ArmosMotion();
     private final GhiniMotion ghiniMotion = new GhiniMotion();
@@ -1082,6 +1085,9 @@ public final class RoomEntityRuntime {
                 if (entity.type() == ENTITY_GIBDO) {
                     gibdoMotion.initialize(entity.slot());
                 }
+                if (entity.type() == ENTITY_GOOMBA) {
+                    goombaMotion.initialize(entity.slot());
+                }
                 if (entity.type() == ENTITY_PEAHAT) {
                     peaHatMotion.initialize(entity.slot());
                 }
@@ -1563,6 +1569,27 @@ public final class RoomEntityRuntime {
                 updated = gibdoMotion.advance(entity, randomByteSupplier, backgroundCollision);
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_GOOMBA) {
+                GoombaMotion.Update goombaUpdate = goombaMotion.advance(
+                    entity, frame, linkEntityX, linkEntityY, randomByteSupplier,
+                    backgroundCollision, enemyTransitionCountdown[entity.slot()],
+                    groundInteractionSideScrolling);
+                updated = goombaUpdate.entity();
+                enemyTransitionCountdown[entity.slot()] = goombaUpdate.transitionCountdown();
+                if (goombaUpdate.startDying()) {
+                    // func_007_666B writes ENTITY_DROPPABLE_HEART and the
+                    // private-countdown-3 death window before setting status
+                    // DYING and physics flags to 4. Keep both the source
+                    // table and the runtime death countdown synchronized;
+                    // the latter drives the shared Java death presentation.
+                    droppedItemBySlot[entity.slot()] = 0x2D;
+                    dropPrivateCountdown3[entity.slot()] = 0x0C;
+                    dyingCountdown[entity.slot()] = 0x0C;
+                    enemyPhysicsFlags[entity.slot()] = 0x04;
+                    status = EntityStatus.DYING;
+                }
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_PEAHAT) {
                 updated = peaHatMotion.advance(entity, frame, randomByteSupplier,
                     backgroundCollision);
@@ -1958,6 +1985,7 @@ public final class RoomEntityRuntime {
                                                  int linkEntityX,
                                                  int linkEntityY,
                                                  boolean linkAirborne,
+                                                 int linkVerticalVelocity,
                                                  boolean linkInteractive,
                                                  boolean swordCollisionActive,
                                                  int swordX,
@@ -1965,7 +1993,22 @@ public final class RoomEntityRuntime {
                                                  int swordY,
                                                  int swordHeight) {
         return resolveCombat(frameCounter, linkEntityX, linkEntityY, linkAirborne,
-            linkInteractive, swordCollisionActive, swordX, swordWidth, swordY, swordHeight,
+            linkVerticalVelocity, linkInteractive, swordCollisionActive, swordX, swordWidth,
+            swordY, swordHeight, EnemyAttackContext.standard());
+    }
+
+    public List<EntityCombatEvent> resolveCombat(int frameCounter,
+                                                 int linkEntityX,
+                                                 int linkEntityY,
+                                                 boolean linkAirborne,
+                                                 boolean linkInteractive,
+                                                 boolean swordCollisionActive,
+                                                 int swordX,
+                                                 int swordWidth,
+                                                 int swordY,
+                                                 int swordHeight) {
+        return resolveCombat(frameCounter, linkEntityX, linkEntityY, linkAirborne,
+            0, linkInteractive, swordCollisionActive, swordX, swordWidth, swordY, swordHeight,
             EnemyAttackContext.standard());
     }
 
@@ -1980,6 +2023,24 @@ public final class RoomEntityRuntime {
                                                  int swordY,
                                                  int swordHeight,
                                                  EnemyAttackContext attackContext) {
+        return resolveCombat(frameCounter, linkEntityX, linkEntityY, linkAirborne,
+            0, linkInteractive, swordCollisionActive, swordX, swordWidth, swordY, swordHeight,
+            attackContext);
+    }
+
+    public List<EntityCombatEvent> resolveCombat(int frameCounter,
+                                                 int linkEntityX,
+                                                 int linkEntityY,
+                                                 boolean linkAirborne,
+                                                 int linkVerticalVelocity,
+                                                 boolean linkInteractive,
+                                                 boolean swordCollisionActive,
+                                                 int swordX,
+                                                 int swordWidth,
+                                                 int swordY,
+                                                 int swordHeight,
+                                                 EnemyAttackContext attackContext) {
+        validateByte(linkVerticalVelocity, "Link vertical velocity");
         if (attackContext == null) {
             throw new IllegalArgumentException("Enemy attack context cannot be null");
         }
@@ -2033,6 +2094,8 @@ public final class RoomEntityRuntime {
                 continue;
             }
 
+            boolean goombaStomp = canGoombaStomp(entity, linkEntityX, linkEntityY,
+                linkAirborne, linkVerticalVelocity, linkInteractive, frameCounter);
             boolean linkCollision = !linkAirborne && linkInteractive
                 && RoomEntityCombatRules.collisionCadenceMatches(frameCounter, entity.slot())
                 && peaHatGrounded
@@ -2043,6 +2106,21 @@ public final class RoomEntityRuntime {
                 && RoomEntityCombatRules.overlapsSword(
                     entity, swordX, swordWidth, swordY, swordHeight);
             if (!linkCollision && !swordHit) {
+                if (!goombaStomp) {
+                    continue;
+                }
+            }
+
+            if (goombaStomp) {
+                goombaMotion.enterStomp(entity.slot());
+                enemyTransitionCountdown[entity.slot()] = 0x30;
+                EntityCombatEvent.LinkAction linkAction = groundInteractionSideScrolling
+                    ? EntityCombatEvent.LinkAction.GOOMBA_BOUNCE_SIDE_SCROLLING
+                    : EntityCombatEvent.LinkAction.GOOMBA_BOUNCE_TOP_DOWN;
+                events.add(new EntityCombatEvent(
+                    entity.slot(), entity.type(), 0, false, 0, -1,
+                    EntityCombatEvent.SoundChannel.WAVE, 0x0E,
+                    EntityCombatEvent.SoundChannel.NONE, -1, null, linkAction));
                 continue;
             }
 
@@ -2551,6 +2629,7 @@ public final class RoomEntityRuntime {
         stalfosAggressiveMotion.clear(slot);
         stalfosEvasiveMotion.clear(slot);
         gibdoMotion.clear(slot);
+        goombaMotion.clear(slot);
         peaHatMotion.clear(slot);
         armosMotion.clear(slot);
         ghiniMotion.clear(slot);
@@ -3246,8 +3325,27 @@ public final class RoomEntityRuntime {
             || type == ENTITY_BOUNCING_BOMBITE || type == ENTITY_TIMER_BOMBITE
             || type == ENTITY_MAD_BOMBER
             || type == ENTITY_BOMBER
+            || type == ENTITY_GOOMBA
             || isRoamingEnemyType(type) || usesBank6Recoil(type)
             || isGhiniType(type);
+    }
+
+    /** Mirrors bank-$03 ApplyLinkCollisionWithEnemy's Goomba stomp branch. */
+    private boolean canGoombaStomp(RoomEntity entity, int linkEntityX, int linkEntityY,
+                                   boolean linkAirborne, int linkVerticalVelocity,
+                                   boolean linkInteractive, int frameCounter) {
+        if (entity.type() != ENTITY_GOOMBA || !linkAirborne || !linkInteractive
+            || !RoomEntityCombatRules.collisionCadenceMatches(frameCounter, entity.slot())
+            || !RoomEntityCombatRules.overlapsLink(entity, linkEntityX, linkEntityY)) {
+            return false;
+        }
+
+        // Top-down hLinkVelocityZ is negative while descending. The side-view
+        // branch instead tests hLinkSpeedY, where a non-negative value means
+        // Link is moving downward onto the Goomba.
+        return groundInteractionSideScrolling
+            ? (linkVerticalVelocity & 0x80) == 0
+            : (linkVerticalVelocity & 0x80) != 0;
     }
 
     private static boolean isBombiteType(int type) {
@@ -4315,6 +4413,22 @@ public final class RoomEntityRuntime {
         return gibdoMotion.speedY(slot);
     }
 
+    int goombaState(int slot) {
+        return goombaMotion.state(slot);
+    }
+
+    int goombaTransitionCountdown(int slot) {
+        return enemyTransitionCountdown[slot];
+    }
+
+    int goombaSpeedX(int slot) {
+        return goombaMotion.speedX(slot);
+    }
+
+    int goombaSpeedY(int slot) {
+        return goombaMotion.speedY(slot);
+    }
+
     int peaHatState(int slot) {
         return peaHatMotion.state(slot);
     }
@@ -4673,6 +4787,7 @@ public final class RoomEntityRuntime {
             case ENTITY_ARMOS_STATUE -> ARMOS_INITIAL_PHYSICS_FLAGS;
             case ENTITY_STALFOS_EVASIVE -> EVASIVE_PHYSICS_FLAGS;
             case ENTITY_IRON_MASK -> IRON_MASK_INITIAL_PHYSICS_FLAGS;
+            case ENTITY_GOOMBA -> GOOMBA_INITIAL_PHYSICS_FLAGS;
             case ENTITY_IRON_MASKS_MASK -> IRON_MASKS_MASK_INITIAL_PHYSICS_FLAGS;
             case ENTITY_BOMB -> BOMB_INITIAL_PHYSICS_FLAGS;
             case ENTITY_BOUNCING_BOMBITE, ENTITY_TIMER_BOMBITE ->
@@ -5025,6 +5140,7 @@ public final class RoomEntityRuntime {
         stalfosAggressiveMotion.clear(slot);
         stalfosEvasiveMotion.clear(slot);
         gibdoMotion.clear(slot);
+        goombaMotion.clear(slot);
         peaHatMotion.clear(slot);
         armosMotion.clear(slot);
         followingNpcMotion.clear(slot);

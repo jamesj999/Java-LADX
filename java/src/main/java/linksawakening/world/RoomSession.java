@@ -810,7 +810,7 @@ public final class RoomSession {
                                                        int swordY,
                                                        int swordHeight) {
         return resolveEntityCombat(frameCounter, linkEntityX, linkEntityY, linkAirborne,
-            linkInteractive, swordCollisionActive, swordX, swordWidth, swordY, swordHeight,
+            0, linkInteractive, swordCollisionActive, swordX, swordWidth, swordY, swordHeight,
             EnemyAttackContext.standard());
     }
 
@@ -825,12 +825,30 @@ public final class RoomSession {
                                                        int swordY,
                                                        int swordHeight,
                                                        EnemyAttackContext attackContext) {
+        return resolveEntityCombat(frameCounter, linkEntityX, linkEntityY, linkAirborne,
+            0, linkInteractive, swordCollisionActive, swordX, swordWidth, swordY, swordHeight,
+            attackContext);
+    }
+
+    public List<EntityCombatEvent> resolveEntityCombat(int frameCounter,
+                                                       int linkEntityX,
+                                                       int linkEntityY,
+                                                       boolean linkAirborne,
+                                                       int linkVerticalVelocity,
+                                                       boolean linkInteractive,
+                                                       boolean swordCollisionActive,
+                                                       int swordX,
+                                                       int swordWidth,
+                                                       int swordY,
+                                                       int swordHeight,
+                                                       EnemyAttackContext attackContext) {
         if (activeRoom == null || entityRuntime == null) {
             return List.of();
         }
         List<EntityCombatEvent> events = entityRuntime.resolveCombat(
-            frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive,
-            swordCollisionActive, swordX, swordWidth, swordY, swordHeight, attackContext);
+            frameCounter, linkEntityX, linkEntityY, linkAirborne, linkVerticalVelocity,
+            linkInteractive, swordCollisionActive, swordX, swordWidth, swordY, swordHeight,
+            attackContext);
         activeRoom.replaceEntities(entityRuntime.snapshot());
         return events;
     }

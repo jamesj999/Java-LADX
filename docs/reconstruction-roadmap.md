@@ -1572,6 +1572,32 @@ runtime collision callback.
   item-grab behavior for the dropped mask, and the remaining entity handlers
   remain follow-up work; this increment does not add an emulator.
 
+## Verified ROM Goomba entity runtime — 2026-08-07
+
+- Entity `$9F` now decodes `GoombaSpriteVariants` from bank `$07:$65CE`,
+  including the exact three pair frames, palette attributes, and X-flipped
+  walking frame. Its shipped-ROM physics, hitbox/health group `$00`, and
+  contact damage `$04` are wired into the shared entity runtime.
+- The bank-$07 normal-room state machine now uses the source `$08/$F8`
+  direction speeds, `$30..$6F` random walk windows, every-fourth
+  Link-directed turn, `$20` state transition, fixed-point movement, gravity,
+  wall reversal, floor snap, and frame-bit `$04` walking animation. The
+  side-scroll branch uses the source horizontal Link-facing speed and the same
+  gravity/collision helper.
+- Airborne Link collision now carries the source vertical-velocity byte through
+  `RoomSession` to the entity runtime. Descending Goomba contact enters state
+  `$02`, sets transition `$30`, emits the floor-switch WAVE `$0E`, and returns a
+  typed Link-bounce action; the main loop applies the top-down `$10` Z bounce or
+  side-view `$F0` Y speed. Ascending contact remains non-colliding.
+- State `$02` now writes the source droppable-heart byte `$2D`, private death
+  window `$0C`, physics `$04`, and shared DYING status, allowing the existing
+  enemy-drop/death handler to finish the ROM path. Shipped-ROM tests cover the
+  display list, random walk, animation, health/contact/sword values, stomp
+  direction gate, side-scroll bounce, and death transition. The clean Java suite
+  passes with 976
+  tests and zero failures, errors, or skipped tests; other entity handlers and
+  remaining Goomba presentation edge cases remain follow-up work.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

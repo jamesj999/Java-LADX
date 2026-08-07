@@ -443,6 +443,14 @@ public final class Link implements RocsFeather.JumpTarget {
         soundSink.play(GameplaySoundEvent.ROC_FEATHER_JUMP);
     }
 
+    /** Applies the top-down Link bounce written by ApplyLinkCollisionWithEnemy. */
+    public void bounceFromGoomba() {
+        airborne = true;
+        zVelocity = 0x10;
+        fallingIntoPit = false;
+        groundStatus = GROUND_STATUS_NORMAL;
+    }
+
     /** Advance the walking-cycle timer without processing input or collision. */
     public void tickAnimation() {
         walkTickCounter++;
