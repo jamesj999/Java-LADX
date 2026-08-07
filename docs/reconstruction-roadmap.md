@@ -1754,8 +1754,8 @@ runtime collision callback.
   SRAM offsets. Its zero-health path uses the ROM
   `MaxHeartsToStartingHealthTable`; rupees use the source high/low BCD bytes.
   The lower-level Ocarina writer remains available for exact two-byte updates.
-- Unknown fields, including spawn, death-count, dungeon-status, and photo
-  bytes, are preserved rather than guessed. `SaveRamStore` delegates both raw
+- Unknown fields, including spawn, death-count, dungeon-item-flag, and photo
+  bytes, are preserved rather than guessed. `SaveRamStore` delegates the raw
   image operations.
 - The main loop now records the active save slot when a file is created or
   loaded. The source A+B+Start+Select chord is exposed through a configurable
@@ -1771,8 +1771,27 @@ runtime collision callback.
 - Save-image, controller, ROM-scene, configuration, input-chord, and main-flow
   tests are included. The clean Java suite passes with 1,026 tests and zero
   failures, errors, or skipped tests. The remaining save parity work is the
-  broader `$380`-byte `SaveGameToFile` copy and its unmodeled gameplay fields;
-  those bytes are currently preserved rather than overwritten by guessed state.
+  unmodeled gameplay fields within the broader `$380`-byte `SaveGameToFile`
+  copy; those bytes are currently preserved rather than overwritten by guessed
+  state.
+
+## Verified ROM room-status save/load path — 2026-08-07
+
+- `RoomSession` now exposes defensive snapshots of the WRAM status tables that
+  its room loader and interaction handlers already mutate: the contiguous
+  overworld, indoor-A, and indoor-B `$100`-byte tables, plus the Color Dungeon
+  `$20`-byte DX2 table. Restoring them occurs before a saved room is loaded, so
+  source status-gated objects and entities see the loaded flags immediately.
+- `SaveRamImage.writeRoomStatuses` mirrors the exact `SaveGameToFile` layout:
+  main offsets `$000..$2FF` receive the three room tables, and the DX2 region
+  receives the Color Dungeon table. DX1 Color Dungeon item flags and other
+  unmodeled fields remain untouched. Save and Quit writes these status tables
+  alongside the currently modeled player fields.
+- Focused SRAM, RoomSession, store-delegation, and main-flow tests cover the
+  offsets, defensive copies, restore boundary, and preservation behavior. The
+  clean Java suite passes with 1,029 tests and zero failures, errors, or skipped
+  tests. Remaining save work is the source state not yet modeled, including
+  dungeon item flags, spawn/death updates, and photo persistence.
 
 ## Broader parity gaps
 

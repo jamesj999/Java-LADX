@@ -136,6 +136,35 @@ final class SaveRamImageTest {
     }
 
     @Test
+    void writesRoomStatusTablesToTheSourceMainAndDx2Regions() {
+        SaveRamImage image = SaveRamImage.empty();
+        image.createNewGame(1, new int[] {1, 2, 3, 4, 5});
+        int slotStart = SaveRamLayout.slotOffset(1);
+        byte[] before = image.bytes();
+        before[slotStart + SaveRamLayout.dx1Offset()] = (byte) 0xD1;
+        before[slotStart + SaveRamLayout.mainOffset() + SaveRamLayout.MAIN_ITEM_B_OFFSET]
+            = (byte) 0xE2;
+        image = SaveRamImage.fromBytes(before);
+
+        byte[] overworld = pattern(0x100, 0x10);
+        byte[] indoorA = pattern(0x100, 0x40);
+        byte[] indoorB = pattern(0x100, 0x70);
+        byte[] colorDungeon = pattern(SaveRamLayout.DX2_SIZE, 0xA0);
+
+        image.writeRoomStatuses(1, overworld, indoorA, indoorB, colorDungeon);
+
+        SaveSlotState state = image.readSlot(1);
+        assertArrayEquals(overworld, state.overworldRoomStatus());
+        assertArrayEquals(indoorA, state.indoorARoomStatus());
+        assertArrayEquals(indoorB, state.indoorBRoomStatus());
+        assertArrayEquals(colorDungeon, state.colorDungeonRoomStatus());
+        assertEquals((byte) 0xD1, image.bytes()[slotStart + SaveRamLayout.dx1Offset()]);
+        assertEquals((byte) 0xE2,
+            image.bytes()[slotStart + SaveRamLayout.mainOffset()
+                + SaveRamLayout.MAIN_ITEM_B_OFFSET]);
+    }
+
+    @Test
     void decodesModeledFieldsAndKeepsUnknownRawBytes() {
         byte[] bytes = SaveRamImage.empty().bytes();
         int slotStart = SaveRamLayout.slotOffset(0);
@@ -234,6 +263,14 @@ final class SaveRamImageTest {
 
     private static void put(byte[] bytes, int base, int offset, int value) {
         bytes[base + offset] = (byte) value;
+    }
+
+    private static byte[] pattern(int length, int start) {
+        byte[] values = new byte[length];
+        for (int index = 0; index < values.length; index++) {
+            values[index] = (byte) (start + index);
+        }
+        return values;
     }
 
     private static int unsigned(byte value) {

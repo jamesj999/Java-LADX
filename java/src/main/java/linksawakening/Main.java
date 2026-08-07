@@ -1005,6 +1005,8 @@ public class Main {
         fileSaveController = null;
         currentScreen = SCREEN_OVERWORLD;
         playerState.applySavedGame(saved);
+        roomSession.restoreRoomStatuses(saved.overworldRoomStatus(), saved.indoorARoomStatus(),
+            saved.indoorBRoomStatus(), saved.colorDungeonRoomStatus());
         if (saved.spawnIsIndoor() != 0) {
             roomSession.loadIndoor(saved.spawnMapId(), saved.spawnMapRoom());
             link.setDirection(Link.DIRECTION_UP);
@@ -1067,10 +1069,17 @@ public class Main {
             return;
         }
         saveRamStore.writePlayerState(currentSaveSlot, playerState);
+        if (roomSession != null) {
+            saveRamStore.writeRoomStatuses(currentSaveSlot,
+                roomSession.overworldRoomStatusSnapshot(),
+                roomSession.indoorARoomStatusSnapshot(),
+                roomSession.indoorBRoomStatusSnapshot(),
+                roomSession.colorDungeonRoomStatusSnapshot());
+        }
         try {
             saveRamStore.flush();
         } catch (IOException exception) {
-            throw new IllegalStateException("Failed to persist Ocarina state", exception);
+            throw new IllegalStateException("Failed to persist player save state", exception);
         }
     }
 

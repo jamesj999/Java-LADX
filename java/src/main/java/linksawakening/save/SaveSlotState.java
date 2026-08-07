@@ -1,5 +1,6 @@
 package linksawakening.save;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 /** Immutable view of the currently modeled fields in one raw SRAM slot. */
@@ -54,6 +55,33 @@ public record SaveSlotState(
     @Override
     public byte[] rawSlot() {
         return rawSlot.clone();
+    }
+
+    public byte[] overworldRoomStatus() {
+        return roomStatus(SaveRamLayout.mainOffset()
+            + SaveRamLayout.MAIN_OVERWORLD_ROOM_STATUS_OFFSET,
+            SaveRamLayout.ROOM_STATUS_TABLE_SIZE);
+    }
+
+    public byte[] indoorARoomStatus() {
+        return roomStatus(SaveRamLayout.mainOffset()
+            + SaveRamLayout.MAIN_INDOOR_A_ROOM_STATUS_OFFSET,
+            SaveRamLayout.ROOM_STATUS_TABLE_SIZE);
+    }
+
+    public byte[] indoorBRoomStatus() {
+        return roomStatus(SaveRamLayout.mainOffset()
+            + SaveRamLayout.MAIN_INDOOR_B_ROOM_STATUS_OFFSET,
+            SaveRamLayout.ROOM_STATUS_TABLE_SIZE);
+    }
+
+    public byte[] colorDungeonRoomStatus() {
+        return roomStatus(SaveRamLayout.dx2Offset(),
+            SaveRamLayout.DX2_COLOR_DUNGEON_ROOM_STATUS_SIZE);
+    }
+
+    private byte[] roomStatus(int offset, int length) {
+        return Arrays.copyOfRange(rawSlot, offset, offset + length);
     }
 
     private static int[] copyExact(int[] values, int expectedLength, String label) {

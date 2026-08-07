@@ -13,6 +13,7 @@ import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.vfx.TransientVfxType;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -23,6 +24,8 @@ import static linksawakening.world.RoomConstants.ROOM_PIXEL_HEIGHT;
 import static linksawakening.world.RoomConstants.ROOM_PIXEL_WIDTH;
 
 public final class RoomSession {
+    private static final int ROOM_STATUS_TABLE_SIZE = 0x100;
+    private static final int COLOR_DUNGEON_SAVE_STATUS_SIZE = 0x20;
     private static final int W_TILESET_NO_UPDATE = 0xFF;
     private static final int ENTITY_OPT1_NO_GROUND_INTERACTION = 0x10;
     private static final int ENTITY_OPT1_SPLASH_IN_WATER = 0x08;
@@ -304,6 +307,38 @@ public final class RoomSession {
 
     public int mapId() {
         return activeRoom.mapId();
+    }
+
+    public byte[] overworldRoomStatusSnapshot() {
+        return overworldRoomStatus.clone();
+    }
+
+    public byte[] indoorARoomStatusSnapshot() {
+        return indoorARoomStatus.clone();
+    }
+
+    public byte[] indoorBRoomStatusSnapshot() {
+        return indoorBRoomStatus.clone();
+    }
+
+    public byte[] colorDungeonRoomStatusSnapshot() {
+        return Arrays.copyOf(colorDungeonRoomStatus, COLOR_DUNGEON_SAVE_STATUS_SIZE);
+    }
+
+    /** Restores the room-status WRAM tables loaded by the source save path. */
+    public void restoreRoomStatuses(byte[] overworldStatus, byte[] indoorAStatus,
+                                    byte[] indoorBStatus, byte[] colorDungeonStatus) {
+        requireLength(overworldStatus, ROOM_STATUS_TABLE_SIZE, "overworldStatus");
+        requireLength(indoorAStatus, ROOM_STATUS_TABLE_SIZE, "indoorAStatus");
+        requireLength(indoorBStatus, ROOM_STATUS_TABLE_SIZE, "indoorBStatus");
+        requireLength(colorDungeonStatus, COLOR_DUNGEON_SAVE_STATUS_SIZE,
+            "colorDungeonStatus");
+        System.arraycopy(overworldStatus, 0, overworldRoomStatus, 0, ROOM_STATUS_TABLE_SIZE);
+        System.arraycopy(indoorAStatus, 0, indoorARoomStatus, 0, ROOM_STATUS_TABLE_SIZE);
+        System.arraycopy(indoorBStatus, 0, indoorBRoomStatus, 0, ROOM_STATUS_TABLE_SIZE);
+        Arrays.fill(colorDungeonRoomStatus, (byte) 0);
+        System.arraycopy(colorDungeonStatus, 0, colorDungeonRoomStatus, 0,
+            COLOR_DUNGEON_SAVE_STATUS_SIZE);
     }
 
     int overworldRoomStatusForTest(int roomId) {
@@ -1394,6 +1429,16 @@ public final class RoomSession {
         }
         return mapId >= 0x06 && mapId < 0x1A
             ? indoorBRoomStatus : indoorARoomStatus;
+    }
+
+    private static void requireLength(byte[] values, int expectedLength, String label) {
+        if (values == null) {
+            throw new NullPointerException(label);
+        }
+        if (values.length != expectedLength) {
+            throw new IllegalArgumentException(label + " must contain " + expectedLength
+                + " bytes, got " + values.length);
+        }
     }
 
     private int colorShellObjectAt(RoomEntity entity, int relativeOffset) {

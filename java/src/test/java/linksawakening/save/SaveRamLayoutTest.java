@@ -56,6 +56,15 @@ final class SaveRamLayoutTest {
     }
 
     @Test
+    void exposesTheContiguousRoomStatusSaveRegions() {
+        assertEquals(0x000, SaveRamLayout.MAIN_OVERWORLD_ROOM_STATUS_OFFSET);
+        assertEquals(0x100, SaveRamLayout.MAIN_INDOOR_A_ROOM_STATUS_OFFSET);
+        assertEquals(0x200, SaveRamLayout.MAIN_INDOOR_B_ROOM_STATUS_OFFSET);
+        assertEquals(0x300, SaveRamLayout.MAIN_ROOM_STATUS_SIZE);
+        assertEquals(0x20, SaveRamLayout.DX2_COLOR_DUNGEON_ROOM_STATUS_SIZE);
+    }
+
+    @Test
     void rejectsInvalidSlotIndexes() {
         assertThrows(IllegalArgumentException.class, () -> SaveRamLayout.slotOffset(-1));
         assertThrows(IllegalArgumentException.class, () -> SaveRamLayout.slotOffset(3));

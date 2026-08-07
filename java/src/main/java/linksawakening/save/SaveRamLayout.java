@@ -23,6 +23,12 @@ public final class SaveRamLayout {
     public static final int IMAGE_SIZE = SRAM_IMAGE_OFFSET + SLOT_COUNT * SLOT_SIZE;
 
     // Offsets within the main WRAM save block, derived from wOverworldRoomStatus=$D800.
+    public static final int ROOM_STATUS_TABLE_SIZE = 0x100;
+    public static final int MAIN_OVERWORLD_ROOM_STATUS_OFFSET = 0x000;
+    public static final int MAIN_INDOOR_A_ROOM_STATUS_OFFSET = 0x100;
+    public static final int MAIN_INDOOR_B_ROOM_STATUS_OFFSET = 0x200;
+    public static final int MAIN_ROOM_STATUS_SIZE = 0x300;
+    public static final int DX2_COLOR_DUNGEON_ROOM_STATUS_SIZE = DX2_SIZE;
     public static final int MAIN_ITEM_B_OFFSET = 0x300;
     public static final int MAIN_ITEM_A_OFFSET = 0x301;
     public static final int MAIN_SUBSCREEN_OFFSET = 0x302;

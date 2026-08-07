@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -1259,6 +1260,22 @@ final class RoomSessionTest {
         assertEquals(Warp.CATEGORY_INDOOR, session.mapCategory());
     }
 
+    @Test
+    void exposesAndRestoresTheRoomStatusTablesUsedBySaveGameToFile() {
+        RoomSession session = newSession();
+        byte[] overworld = pattern(0x100, 0x10);
+        byte[] indoorA = pattern(0x100, 0x40);
+        byte[] indoorB = pattern(0x100, 0x70);
+        byte[] colorDungeon = pattern(0x20, 0xA0);
+
+        session.restoreRoomStatuses(overworld, indoorA, indoorB, colorDungeon);
+
+        assertArrayEquals(overworld, session.overworldRoomStatusSnapshot());
+        assertArrayEquals(indoorA, session.indoorARoomStatusSnapshot());
+        assertArrayEquals(indoorB, session.indoorBRoomStatusSnapshot());
+        assertArrayEquals(colorDungeon, session.colorDungeonRoomStatusSnapshot());
+    }
+
     private static RoomSession newSession() {
         return newSession(room -> {
         });
@@ -1298,6 +1315,14 @@ final class RoomSessionTest {
         } catch (Exception e) {
             throw new IllegalStateException("Failed to load ROM", e);
         }
+    }
+
+    private static byte[] pattern(int length, int start) {
+        byte[] values = new byte[length];
+        for (int index = 0; index < values.length; index++) {
+            values[index] = (byte) (start + index);
+        }
+        return values;
     }
 
     private static void fillActiveObjects(RoomSession session, int objectId) {

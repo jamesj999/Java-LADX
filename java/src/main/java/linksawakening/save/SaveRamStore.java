@@ -69,6 +69,13 @@ public final class SaveRamStore {
         image.writeOcarinaState(slot, songFlags, selectedSongIndex);
     }
 
+    public void writeRoomStatuses(int slot, byte[] overworldRoomStatus,
+                                  byte[] indoorARoomStatus, byte[] indoorBRoomStatus,
+                                  byte[] colorDungeonRoomStatus) {
+        image.writeRoomStatuses(slot, overworldRoomStatus, indoorARoomStatus,
+            indoorBRoomStatus, colorDungeonRoomStatus);
+    }
+
     public void writePlayerState(int slot, PlayerState playerState) {
         image.writePlayerState(slot, playerState);
     }

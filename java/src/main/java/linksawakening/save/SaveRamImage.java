@@ -108,6 +108,42 @@ public final class SaveRamImage {
     }
 
     /**
+     * Writes the room-status bytes copied by the source {@code SaveGameToFile} routine.
+     *
+     * <p>The overworld, indoor-A, and indoor-B tables are contiguous at the
+     * beginning of the main save block. The Color Dungeon table is the DX2
+     * extension and is intentionally limited to the source's 0x20 bytes.</p>
+     */
+    public void writeRoomStatuses(int slot, byte[] overworldRoomStatus,
+                                  byte[] indoorARoomStatus, byte[] indoorBRoomStatus,
+                                  byte[] colorDungeonRoomStatus) {
+        SaveRamLayout.checkSlot(slot);
+        requireLength(overworldRoomStatus, SaveRamLayout.ROOM_STATUS_TABLE_SIZE,
+            "overworldRoomStatus");
+        requireLength(indoorARoomStatus, SaveRamLayout.ROOM_STATUS_TABLE_SIZE,
+            "indoorARoomStatus");
+        requireLength(indoorBRoomStatus, SaveRamLayout.ROOM_STATUS_TABLE_SIZE,
+            "indoorBRoomStatus");
+        requireLength(colorDungeonRoomStatus, SaveRamLayout.DX2_COLOR_DUNGEON_ROOM_STATUS_SIZE,
+            "colorDungeonRoomStatus");
+
+        int slotOffset = SaveRamLayout.slotOffset(slot);
+        int main = slotOffset + SaveRamLayout.mainOffset();
+        System.arraycopy(overworldRoomStatus, 0,
+            bytes, main + SaveRamLayout.MAIN_OVERWORLD_ROOM_STATUS_OFFSET,
+            SaveRamLayout.ROOM_STATUS_TABLE_SIZE);
+        System.arraycopy(indoorARoomStatus, 0,
+            bytes, main + SaveRamLayout.MAIN_INDOOR_A_ROOM_STATUS_OFFSET,
+            SaveRamLayout.ROOM_STATUS_TABLE_SIZE);
+        System.arraycopy(indoorBRoomStatus, 0,
+            bytes, main + SaveRamLayout.MAIN_INDOOR_B_ROOM_STATUS_OFFSET,
+            SaveRamLayout.ROOM_STATUS_TABLE_SIZE);
+        System.arraycopy(colorDungeonRoomStatus, 0,
+            bytes, slotOffset + SaveRamLayout.dx2Offset(),
+            SaveRamLayout.DX2_COLOR_DUNGEON_ROOM_STATUS_SIZE);
+    }
+
+    /**
      * Writes every persistent field currently represented by {@link PlayerState}.
      *
      * <p>The source copies the complete WRAM save block. Unknown fields in
@@ -254,5 +290,13 @@ public final class SaveRamImage {
 
     private static int unsigned(byte value) {
         return value & 0xFF;
+    }
+
+    private static void requireLength(byte[] values, int expectedLength, String label) {
+        Objects.requireNonNull(values, label);
+        if (values.length != expectedLength) {
+            throw new IllegalArgumentException(label + " must contain " + expectedLength
+                + " bytes, got " + values.length);
+        }
     }
 }
