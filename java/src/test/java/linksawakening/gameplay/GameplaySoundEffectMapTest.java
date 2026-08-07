@@ -61,6 +61,18 @@ final class GameplaySoundEffectMapTest {
         assertEquals(0x0B, map.resolve(GameplaySoundEvent.HOOKSHOT).orElseThrow().id());
     }
 
+    @Test
+    void mapsArrowShotToTheRomWhooshNoise() throws IOException {
+        GameplaySoundEffectMap map = GameplaySoundEffectMap.fromCatalog(
+            SoundEffectCatalog.fromRom(loadRom()));
+
+        SoundEffect effect = map.resolve(GameplaySoundEvent.ARROW_SHOT).orElseThrow();
+
+        assertEquals(SoundEffectNamespace.NOISE, effect.namespace());
+        assertEquals(0x0A, effect.id());
+        assertEquals("NOISE_SFX_WHOOSH", effect.name());
+    }
+
     private static byte[] loadRom() throws IOException {
         try (InputStream stream = GameplaySoundEffectMapTest.class.getClassLoader()
                 .getResourceAsStream("rom/azle.gbc")) {

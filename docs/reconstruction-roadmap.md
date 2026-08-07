@@ -251,6 +251,28 @@ unsupported rather than represented by guessed shapes or generic movement.
   cases and player projectile interactions are not yet complete. The broader
   engine remains a staged reconstruction, not a complete entity-system claim.
 
+## Verified ROM ordinary player-arrow producer — 2026-08-07
+
+- `ShootArrow` now follows the source item ordering: the `$10` shooting gate
+  and two-active-projectile cap are checked before the arrow count, zero count
+  routes to the wrong-answer jingle, and a successful request spends the arrow
+  before asking the room to allocate entity `$00`.
+- `SpawnPlayerProjectile` is mirrored for ordinary arrows: Link's current
+  single-axis D-pad input updates facing through `func_157C`, the entity starts
+  at Link X/Y and Z+1, and the source direction-indexed `$20/$E0` speed tables
+  drive the handler-owned fixed-point motion.
+- Player arrows read the shared bank-$03 display list at `$6BC6`, use options
+  `$12` and physics flags `$42`, bounce both axes at quarter speed on a wall,
+  enter the shared `$18` wall-rock countdown, spin through `[0,3,1,2]`, and
+  feed `AlertSwordMoblins`'s global `$04` counter.
+- The live Main/RoomSession equipment bridge now spawns and renders arrows and
+  routes the ROM `$0A` whoosh through the gameplay sound catalog. Focused
+  motion, item, catalog, runtime, sound-map, and full-suite tests cover this
+  producer/runtime seam.
+- The bank-$03 `func_003_75A2` enemy-damage pass, bomb-arrow conversion, and
+  the other projectile producers still require their own source-shaped slices;
+  this increment does not claim those interactions are complete.
+
 ## Verified ROM Link damage buffering — 2026-08-05
 
 - Accepted generic enemy contact and projectile hits now pass through the
@@ -783,9 +805,9 @@ runtime collision callback.
   boundary resolves that request through the ROM dialog pointer/bank tables
   and the existing preformatted dialog renderer. The raw persistent
   `wIsBowWowFollowingLink` clear gate remains part of the follower/save-state
-  pass, as does the ordinary player-arrow producer.
+  pass, as do the player-arrow damage and bomb-arrow branches.
 - Focused motion/runtime/dialog/renderer regressions and the complete Java
-  suite (908 test cases) pass.
+  suite (922 test cases) pass.
 
 ## Next entity increments
 

@@ -71,6 +71,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_MOBLIN_SWORD = 0x14;
     private static final int ENTITY_LASER = 0x2A;
     private static final int ENTITY_LASER_BEAM = 0x2B;
+    private static final int ENTITY_ARROW = 0x00;
     private static final int ENTITY_BOMB = 0x02;
     private static final int ENTITY_HOOKSHOT_CHAIN = HookshotChainMotion.ENTITY_TYPE;
     private static final int ENTITY_HOOKSHOT_BRIDGE = HookshotBridgeMotion.ENTITY_TYPE;
@@ -113,6 +114,7 @@ public final class RoomEntityRuntime {
     private final KeeseMotion keeseMotion = new KeeseMotion();
     private final RoamingEnemyMotion roamingEnemyMotion = new RoamingEnemyMotion();
     private final MoblinSwordMotion moblinSwordMotion = new MoblinSwordMotion();
+    private final PlayerArrowMotion playerArrowMotion = new PlayerArrowMotion();
     private final EnemyProjectileMotion enemyProjectileMotion = new EnemyProjectileMotion();
     private final HookshotChainMotion hookshotChainMotion = new HookshotChainMotion();
     private final HookshotBridgeMotion hookshotBridgeMotion = new HookshotBridgeMotion();
@@ -763,6 +765,21 @@ public final class RoomEntityRuntime {
                 }
                 tryLiftBombIfRequested(index, bombDecision, linkEntityX, linkEntityY,
                     linkZ, romLinkDirection);
+                continue;
+            }
+            if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_ARROW) {
+                PlayerArrowMotion.Update arrowUpdate = playerArrowMotion.advance(
+                    entity, backgroundCollision);
+                if (arrowUpdate.unloaded()) {
+                    disableEntityWithoutPersistence(entity.slot());
+                    continue;
+                }
+                if (arrowUpdate.collidedWithWall()) {
+                    // AlertSwordMoblins is shared by player arrows, enemy
+                    // projectiles, and bomb explosions.
+                    swordMoblinAlertingSoundCounter = 0x04;
+                }
+                slots[index] = arrowUpdate.entity();
                 continue;
             }
             if (status == EntityStatus.LIFTED) {
@@ -1928,6 +1945,7 @@ public final class RoomEntityRuntime {
         keeseMotion.clear(slot);
         roamingEnemyMotion.clear(slot);
         moblinSwordMotion.clear(slot);
+        playerArrowMotion.clear(slot);
         tektiteMotion.clear(slot);
         leeverMotion.clear(slot);
         antiFairyMotion.clear(slot);
@@ -1990,6 +2008,65 @@ public final class RoomEntityRuntime {
         entityOptions1Override[freeSlot] = ENTITY_OPT1_NO_GROUND_INTERACTION
             | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
         return freeSlot;
+    }
+
+    /** Creates the ROM's ordinary player-arrow entity type {@code $00}. */
+    int spawnArrow(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
+        validateRomDirection(romDirection);
+        if (activePlayerArrowCount() >= 0x02) {
+            return -1;
+        }
+        int freeSlot = findFreeEntitySlot();
+        if (freeSlot < 0) {
+            return -1;
+        }
+
+        EntitySpriteDefinition definition = spriteDefinitionFor(ENTITY_ARROW);
+        int variant = romDirection;
+        RoomEntity arrow = new RoomEntity(freeSlot, -1, ENTITY_ARROW,
+            linkEntityX & 0xFF, linkEntityY & 0xFF, EntityStatus.ACTIVE,
+            definition, variant, 0, 0, (linkEntityZ + 1) & 0xFF);
+        slots[freeSlot] = arrow;
+        playerArrowMotion.clear(freeSlot);
+        playerArrowMotion.initializeSpawn(freeSlot, romDirection);
+        baseEntityFlipAttribute[freeSlot] = 0;
+        entityOptions1Override[freeSlot] = ENTITY_OPT1_NO_GROUND_INTERACTION
+            | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
+        enemyPhysicsFlags[freeSlot] = 2 | ENTITY_PHYSICS_PROJECTILE_NOCLIP;
+        enemyHealth[freeSlot] = 0;
+        enemyTransitionCountdown[freeSlot] = 0;
+        enemyStunnedCountdown[freeSlot] = 0;
+        enemyFlashCountdown[freeSlot] = 0;
+        enemyIgnoreHitsCountdown[freeSlot] = 1;
+        dyingCountdown[freeSlot] = 0;
+        powerRecoilDeath[freeSlot] = false;
+        return freeSlot;
+    }
+
+    int activePlayerArrowCount() {
+        int count = 0;
+        for (RoomEntity entity : slots) {
+            if (entity.loaded() && entity.type() == ENTITY_ARROW) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    int playerArrowDirection(int slot) {
+        return playerArrowMotion.direction(slot);
+    }
+
+    int playerArrowSpeedX(int slot) {
+        return playerArrowMotion.speedX(slot);
+    }
+
+    int playerArrowSpeedY(int slot) {
+        return playerArrowMotion.speedY(slot);
+    }
+
+    int playerArrowTransitionCountdown(int slot) {
+        return playerArrowMotion.transitionCountdown(slot);
     }
 
     /** Creates the ROM's ordinary player bomb entity type {@code $02}. */
@@ -3842,6 +3919,7 @@ public final class RoomEntityRuntime {
         spikeTrapMotion.clear(slot);
         pairoddMotion.clear(slot);
         pairoddProjectileMotion.clear(slot);
+        playerArrowMotion.clear(slot);
         enemyProjectileMotion.clear(slot);
         laserMotion.clear(slot);
         waterTektiteMotion.clear(slot);
@@ -3885,6 +3963,9 @@ public final class RoomEntityRuntime {
         }
         if (isEnemyProjectileType(entity.type())) {
             return enemyProjectileMotion.speedZ(slot);
+        }
+        if (entity.type() == ENTITY_ARROW) {
+            return playerArrowMotion.speedZ(slot);
         }
         if (ColorShellMotion.isColorShellType(entity.type())) {
             return colorShellMotion.speedZ(slot);

@@ -54,6 +54,28 @@ final class EntitySpriteHandlerCatalogTest {
     }
 
     @Test
+    void mapsPlayerArrowToTheSharedBankThreeArrowDisplayList() {
+        byte[] rom = syntheticRom();
+        write(rom, 0x03, 0x6BC6,
+            0x2E, 0x21, 0x2C, 0x21,
+            0x2C, 0x01, 0x2E, 0x01,
+            0x2A, 0x41, 0x2A, 0x61,
+            0x2A, 0x01, 0x2A, 0x21);
+
+        EntitySpriteDefinition arrow = new EntitySpriteHandlerCatalog(rom)
+            .forEntityType(0x00, EntityRoomLoader.RoomTable.OVERWORLD);
+
+        assertDefinition(arrow, 0x03, 0x6BC6,
+            EntitySpriteDefinition.Shape.PAIR, 4, 0);
+        assertPairBytes(arrow, new int[][] {
+            {0x2E, 0x21, 0x2C, 0x21},
+            {0x2C, 0x01, 0x2E, 0x01},
+            {0x2A, 0x41, 0x2A, 0x61},
+            {0x2A, 0x01, 0x2A, 0x21}
+        });
+    }
+
+    @Test
     void decodesRectangleDisplayListsWithSignedOffsets() {
         byte[] rom = syntheticRom();
         write(rom, 0x06, 0x5200,

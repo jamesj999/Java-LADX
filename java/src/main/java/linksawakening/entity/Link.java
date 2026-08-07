@@ -357,6 +357,19 @@ public final class Link implements RocsFeather.JumpTarget {
     }
 
     /**
+     * Mirrors {@code func_157C}: a single currently-held D-pad direction
+     * immediately becomes Link's facing before an arrow is spawned; neutral
+     * and diagonal masks preserve the existing facing.
+     */
+    public int applyRomItemDirectionFromInput() {
+        int newDirection = JOYPAD_TO_DIRECTION[buildJoypadMask()];
+        if (newDirection != -1) {
+            direction = newDirection;
+        }
+        return romDirectionForJavaDirection(direction);
+    }
+
+    /**
      * Applies wIsCarryingLiftedObject and the direction written by
      * EntityLiftedHandler. The direction argument uses the ROM order:
      * right, left, up, down.
@@ -761,6 +774,17 @@ public final class Link implements RocsFeather.JumpTarget {
         if (inputState.isDown(inputConfig.leftKey())) mask |= JOY_LEFT;
         if (inputState.isDown(inputConfig.rightKey())) mask |= JOY_RIGHT;
         return mask;
+    }
+
+    private static int romDirectionForJavaDirection(int javaDirection) {
+        return switch (javaDirection) {
+            case DIRECTION_RIGHT -> 0;
+            case DIRECTION_LEFT -> 1;
+            case DIRECTION_UP -> 2;
+            case DIRECTION_DOWN -> 3;
+            default -> throw new IllegalArgumentException("Link direction out of range: "
+                + javaDirection);
+        };
     }
 
     public void render(byte[] displayBuffer, int offsetX, int offsetY) {

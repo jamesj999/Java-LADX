@@ -46,6 +46,8 @@ public final class GameplaySoundEffectMap {
         put(effects, catalog, GameplaySoundEvent.BEAMOS_LASER, SoundEffectNamespace.NOISE, 0x08);
         put(effects, catalog, GameplaySoundEvent.SPIKE_TRAP_WHOOSH,
             SoundEffectNamespace.NOISE, 0x0A);
+        put(effects, catalog, GameplaySoundEvent.ARROW_SHOT,
+            SoundEffectNamespace.NOISE, 0x0A);
         put(effects, catalog, GameplaySoundEvent.HOOKSHOT,
             SoundEffectNamespace.NOISE, 0x0B);
         put(effects, catalog, GameplaySoundEvent.BOMB_EXPLOSION,

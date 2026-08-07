@@ -8,6 +8,7 @@ import linksawakening.entity.Link;
 import linksawakening.entity.LinkSpriteSheet;
 import linksawakening.entity.LinkTunicPalette;
 import linksawakening.equipment.EquipmentController;
+import linksawakening.equipment.Arrow;
 import linksawakening.equipment.Bomb;
 import linksawakening.equipment.Hookshot;
 import linksawakening.equipment.ItemRegistry;
@@ -289,6 +290,27 @@ public class Main {
                 @Override
                 public boolean bombActive() {
                     return roomSession != null && roomSession.bombActive();
+                }
+            }, link::canUseItems));
+        itemRegistry.register(PlayerState.INVENTORY_BOW, new Arrow(
+            playerState, gameplaySoundSink, new Arrow.ShootTarget() {
+                @Override
+                public boolean shootArrow() {
+                    if (link == null || roomSession == null) {
+                        return false;
+                    }
+                    boolean shot = roomSession.shootArrow(
+                        link.romEntityX(), link.romEntityY(), link.romEntityZ(),
+                        link.applyRomItemDirectionFromInput());
+                    if (shot) {
+                        link.startRomItemAttackStep();
+                    }
+                    return shot;
+                }
+
+                @Override
+                public int activeProjectileCount() {
+                    return roomSession == null ? 0 : roomSession.activeProjectileCount();
                 }
             }, link::canUseItems));
         itemRegistry.register(PlayerState.INVENTORY_HOOKSHOT, new Hookshot(

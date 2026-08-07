@@ -425,6 +425,25 @@ public final class RoomSession {
         return true;
     }
 
+    /** Mirrors ShootArrow's player-projectile bridge and refreshes the room snapshot. */
+    public boolean shootArrow(int linkEntityX, int linkEntityY, int linkEntityZ,
+                              int romDirection) {
+        if (activeRoom == null || entityRuntime == null) {
+            return false;
+        }
+        int slot = entityRuntime.spawnArrow(linkEntityX, linkEntityY, linkEntityZ, romDirection);
+        if (slot < 0) {
+            return false;
+        }
+        activeRoom.replaceEntities(entityRuntime.snapshot());
+        return true;
+    }
+
+    /** Returns the active ordinary player-arrow count used by ShootArrow's cap. */
+    public int activeProjectileCount() {
+        return entityRuntime == null ? 0 : entityRuntime.activePlayerArrowCount();
+    }
+
     /** Returns whether the live room currently owns an ordinary bomb entity. */
     public boolean bombActive() {
         return entityRuntime != null && entityRuntime.bombActive();

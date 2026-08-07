@@ -4252,6 +4252,82 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void spawnPlayerArrowUsesLinkStateAndTheRomArrowDisplayList() {
+        byte[] rom = syntheticRom();
+        write(rom, 0x03, 0x6BC6,
+            0x2E, 0x21, 0x2C, 0x21,
+            0x2C, 0x01, 0x2E, 0x01,
+            0x2A, 0x41, 0x2A, 0x61,
+            0x2A, 0x01, 0x2A, 0x21);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+            new RoomEntitySnapshot(new ArrayList<>(snapshot().slots())), false, null, catalog);
+
+        int slot = runtime.spawnArrow(0x40, 0x50, 0x07, 3);
+
+        assertEquals(EntityRoomLoader.MAX_ENTITIES - 1, slot);
+        RoomEntity arrow = runtime.snapshot().slots().get(slot);
+        assertEquals(0x00, arrow.type());
+        assertEquals(-1, arrow.sourceLoadOrder());
+        assertEquals(EntityStatus.ACTIVE, arrow.status());
+        assertEquals(0x40, arrow.x());
+        assertEquals(0x50, arrow.y());
+        assertEquals(0x08, arrow.z());
+        assertEquals(0x03, arrow.spriteVariant());
+        assertEquals(0x03, arrow.spriteDefinition().bank());
+        assertEquals(0x6BC6, arrow.spriteDefinition().address());
+        assertEquals(0x42, runtime.physicsFlags(slot));
+        assertEquals(0x12, runtime.options1(slot));
+        assertEquals(1, runtime.enemyIgnoreHitsCountdown(slot));
+        assertEquals(0x20, runtime.playerArrowSpeedY(slot));
+        assertEquals(3, runtime.playerArrowDirection(slot));
+        assertEquals(1, runtime.activePlayerArrowCount());
+
+        runtime.tick(0, 0, 0, () -> 0);
+
+        assertEquals(0x52, runtime.snapshot().slots().get(slot).y());
+    }
+
+    @Test
+    void playerArrowWallImpactStartsTheSharedMoblinAlertTimer() {
+        byte[] rom = syntheticRom();
+        write(rom, 0x03, 0x6BC6,
+            0x2E, 0x21, 0x2C, 0x21,
+            0x2C, 0x01, 0x2E, 0x01,
+            0x2A, 0x41, 0x2A, 0x61,
+            0x2A, 0x01, 0x2A, 0x21);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+            new RoomEntitySnapshot(new ArrayList<>(snapshot().slots())), false, null, catalog);
+        int slot = runtime.spawnArrow(0x40, 0x50, 0x00, 0);
+
+        runtime.tick(0, 0, 0, () -> 0,
+            (entity, direction, nextX, nextY) -> direction == 0);
+
+        assertEquals(0x04, runtime.swordMoblinAlertingSoundCounter());
+        assertEquals(0x18, runtime.playerArrowTransitionCountdown(slot));
+        assertEquals(0xF8, runtime.playerArrowSpeedX(slot));
+    }
+
+    @Test
+    void playerArrowCountIsCappedAtTwoAndSlotsCanBeReused() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot());
+
+        int first = runtime.spawnArrow(0x40, 0x50, 0, 0);
+        int second = runtime.spawnArrow(0x40, 0x50, 0, 1);
+
+        assertEquals(15, first);
+        assertEquals(14, second);
+        assertEquals(-1, runtime.spawnArrow(0x40, 0x50, 0, 2));
+        assertEquals(2, runtime.activePlayerArrowCount());
+
+        runtime.clearEntity(first);
+
+        assertEquals(15, runtime.spawnArrow(0x40, 0x50, 0, 2));
+        assertEquals(2, runtime.activePlayerArrowCount());
+    }
+
+    @Test
     void bombSpawnRejectsASecondLoadedBombAndReusesTheSlotAfterClear() {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot());
 
@@ -4634,6 +4710,13 @@ final class RoomEntityRuntimeTest {
 
     private static byte[] syntheticRom() {
         return new byte[0x100000];
+    }
+
+    private static void write(byte[] rom, int bank, int address, int... values) {
+        int offset = RomBank.romOffset(bank, address);
+        for (int value : values) {
+            rom[offset++] = (byte) value;
+        }
     }
 
     private static byte[] loadRom() throws IOException {
