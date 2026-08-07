@@ -80,6 +80,13 @@ public class GPU {
     private static final int INVENTORY_EQUIPMENT_ITEMS_TILES_ADDR = 0x4800;
     private static final int INVENTORY_EQUIPMENT_ITEMS_TILES_COUNT = 0x80;
 
+    // TilesGfxSource._08.._0A in home/interrupts.asm. The source label is
+    // OcarinaSymbolsTiles in bank $0C at $6960; the GBC loader selects $2C.
+    private static final int OCARINA_SYMBOLS_TILES_BANK = 0x2C;
+    private static final int OCARINA_SYMBOLS_TILES_ADDR = 0x6960;
+    private static final int SHARED_VFX_TILES_BANK = 0x2C;
+    private static final int SHARED_VFX_TILES_ADDR = 0x4200;
+
     private static final int LINK_CHARACTER_TILES_BANK = 0x0C;
     private static final int LINK_CHARACTER_TILES_ADDR = 0x4000;
     private static final int LINK_CHARACTER_TILES_COUNT = 0x10;
@@ -467,6 +474,26 @@ public class GPU {
 
     public void loadInventoryTiles(byte[] romData) {
         loadTilesFromROM(romData, INVENTORY_TILES_BANK, INVENTORY_TILES_ADDR, INVENTORY_TILES_COUNT, 0x00);
+    }
+
+    /** Copies the three Ocarina popup chunks to vTiles0+$200/$240/$260. */
+    public void loadOcarinaSymbolsTiles(byte[] romData) {
+        loadTilesFromROM(romData, OCARINA_SYMBOLS_TILES_BANK,
+            OCARINA_SYMBOLS_TILES_ADDR, 0x04, 0x20);
+        loadTilesFromROM(romData, OCARINA_SYMBOLS_TILES_BANK,
+            OCARINA_SYMBOLS_TILES_ADDR + 0x40, 0x04, 0x24);
+        loadTilesFromROM(romData, OCARINA_SYMBOLS_TILES_BANK,
+            OCARINA_SYMBOLS_TILES_ADDR + 0x60, 0x04, 0x26);
+    }
+
+    /** Restores the shared VFX chunks displaced by the Ocarina popup. */
+    public void loadSharedVfxTiles(byte[] romData) {
+        loadTilesFromROM(romData, SHARED_VFX_TILES_BANK,
+            SHARED_VFX_TILES_ADDR, 0x04, 0x20);
+        loadTilesFromROM(romData, SHARED_VFX_TILES_BANK,
+            SHARED_VFX_TILES_ADDR + 0x40, 0x04, 0x24);
+        loadTilesFromROM(romData, SHARED_VFX_TILES_BANK,
+            SHARED_VFX_TILES_ADDR + 0x60, 0x04, 0x26);
     }
 
     private void loadTilesFromROM(byte[] romData, int bank, int address, int tileCount, int vramTileIndex) {

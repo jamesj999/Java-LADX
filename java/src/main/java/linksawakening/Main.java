@@ -243,7 +243,7 @@ public class Main {
         dialogSoundSink = new SfxDialogSoundSink(dialogSoundOutput);
         gameplaySoundSink = new SfxGameplaySoundSink(romData, dialogSoundOutput);
         InventoryTilemapLoader tilemapLoader = InventoryTilemapLoader.loadFromRom(romData);
-        inventoryMenu = new InventoryMenu(tilemapLoader, playerState, gameplaySoundSink);
+        inventoryMenu = new InventoryMenu(tilemapLoader, playerState, gameplaySoundSink, romData);
         inventoryController = new InventoryController(inputState, inputConfig, inventoryMenu);
         dialogController = new DialogController(16);
         dialogTextLoader = DialogTextLoader.loadFromRom(romData);

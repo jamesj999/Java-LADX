@@ -37,6 +37,10 @@ public final class InventoryMenu {
     private final InventoryTilemapLoader tilemapLoader;
     private final PlayerState playerState;
     private final GameplaySoundSink soundSink;
+    private final OcarinaSongMenu ocarinaSongMenu;
+    private final OcarinaPopupRenderer ocarinaPopupRenderer;
+    private final byte[] romData;
+    private boolean ocarinaTilesLoaded;
 
     private int windowY = WINDOW_Y_CLOSED;
     private int subscreenScrollIncrement = CLOSED_INCREMENT;
@@ -48,16 +52,27 @@ public final class InventoryMenu {
     private int cursorFrameCounter = 0;
 
     public InventoryMenu(InventoryTilemapLoader tilemapLoader, PlayerState playerState) {
-        this(tilemapLoader, playerState, GameplaySoundSink.none());
+        this(tilemapLoader, playerState, GameplaySoundSink.none(), null);
     }
 
     public InventoryMenu(
             InventoryTilemapLoader tilemapLoader,
             PlayerState playerState,
             GameplaySoundSink soundSink) {
+        this(tilemapLoader, playerState, soundSink, null);
+    }
+
+    public InventoryMenu(
+            InventoryTilemapLoader tilemapLoader,
+            PlayerState playerState,
+            GameplaySoundSink soundSink,
+            byte[] romData) {
         this.tilemapLoader = tilemapLoader;
         this.playerState = playerState;
         this.soundSink = Objects.requireNonNull(soundSink, "soundSink");
+        this.ocarinaSongMenu = new OcarinaSongMenu(playerState, this.soundSink);
+        this.ocarinaPopupRenderer = new OcarinaPopupRenderer(tilemapLoader.ocarinaPopupOam());
+        this.romData = romData;
     }
 
     /**
@@ -65,6 +80,20 @@ public final class InventoryMenu {
      * is mid-slide, matching the disassembly guard on wInventoryAppearing.
      */
     public void requestToggle() {
+        if (inventoryAppearing) {
+            return;
+        }
+        if (ocarinaSongMenu.isVisible()) {
+            // The ROM consumes Start by closing the popup first. Once its
+            // 16-frame closing animation ends, the inventory bar itself is
+            // closed on the following gameplay tick.
+            ocarinaSongMenu.requestClose(true);
+            return;
+        }
+        toggleInventorySlide();
+    }
+
+    private void toggleInventorySlide() {
         if (inventoryAppearing) {
             return;
         }
@@ -78,6 +107,11 @@ public final class InventoryMenu {
      * Advances the slide by one frame. Called every tick before rendering.
      */
     public void tick() {
+        if (ocarinaSongMenu.tick()
+                && ocarinaSongMenu.consumeCloseInventoryRequest()
+                && isFullyOpen()) {
+            toggleInventorySlide();
+        }
         if (inventoryAppearing) {
             windowY += subscreenScrollIncrement;
             if (windowY <= WINDOW_Y_OPEN) {
@@ -113,6 +147,18 @@ public final class InventoryMenu {
         return cursorSlot;
     }
 
+    public boolean isOcarinaMenuVisible() {
+        return ocarinaSongMenu.isVisible();
+    }
+
+    public boolean isOcarinaMenuReady() {
+        return ocarinaSongMenu.isReady();
+    }
+
+    public int ocarinaMenuAnimationFrame() {
+        return ocarinaSongMenu.animationFrame();
+    }
+
     /**
      * Move the cursor one step. {@code dx} and {@code dy} should each be -1,
      * 0, or +1 (pass only one non-zero value per call — diagonals keep the
@@ -120,6 +166,12 @@ public final class InventoryMenu {
      */
     public void moveCursor(int dx, int dy) {
         if (!isFullyOpen()) {
+            return;
+        }
+        if (ocarinaSongMenu.isVisible()) {
+            if (dx != 0 && dy == 0) {
+                ocarinaSongMenu.moveSelection(dx);
+            }
             return;
         }
         int next = cursorSlot;
@@ -131,6 +183,10 @@ public final class InventoryMenu {
         if (next >= 0 && next < PlayerState.SUBSCREEN_SLOT_COUNT && next != cursorSlot) {
             cursorSlot = next;
             soundSink.play(GameplaySoundEvent.MENU_MOVE);
+            if (playerState.subscreenItem(cursorSlot) == PlayerState.INVENTORY_OCARINA
+                    && playerState.ocarinaSongFlags() != 0) {
+                ocarinaSongMenu.requestOpen();
+            }
         }
         cursorFrameCounter = 0;
     }
@@ -139,16 +195,27 @@ public final class InventoryMenu {
         if (!isFullyOpen()) {
             return;
         }
+        int selectedItem = playerState.subscreenItem(cursorSlot);
         playerState.swapItemAWithSubscreen(cursorSlot);
         soundSink.play(GameplaySoundEvent.MENU_VALIDATE);
+        openOcarinaIfSelected(selectedItem);
     }
 
     public void pressB() {
         if (!isFullyOpen()) {
             return;
         }
+        int selectedItem = playerState.subscreenItem(cursorSlot);
         playerState.swapItemBWithSubscreen(cursorSlot);
         soundSink.play(GameplaySoundEvent.MENU_VALIDATE);
+        openOcarinaIfSelected(selectedItem);
+    }
+
+    private void openOcarinaIfSelected(int selectedItem) {
+        if (selectedItem == PlayerState.INVENTORY_OCARINA
+                && playerState.ocarinaSongFlags() != 0) {
+            ocarinaSongMenu.requestOpen();
+        }
     }
 
     public void render(byte[] displayBuffer, GPU gpu) {
@@ -174,5 +241,17 @@ public final class InventoryMenu {
             0,
             offsetY
         );
+
+        if (ocarinaSongMenu.isVisible()) {
+            if (romData != null && !ocarinaTilesLoaded) {
+                gpu.loadOcarinaSymbolsTiles(romData);
+                ocarinaTilesLoaded = true;
+            }
+            ocarinaPopupRenderer.render(displayBuffer, gpu, tilemapLoader.objectPalettes(),
+                ocarinaSongMenu);
+        } else if (ocarinaTilesLoaded && romData != null) {
+            gpu.loadSharedVfxTiles(romData);
+            ocarinaTilesLoaded = false;
+        }
     }
 }

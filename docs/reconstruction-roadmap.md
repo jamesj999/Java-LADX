@@ -1708,10 +1708,9 @@ runtime collision callback.
   background ignore window, combat values, death preamble, item selection,
   and live room integration. The clean Java suite passes with 1,009 tests
   and zero failures, errors, or skipped tests.
-- The remaining Ocarina boundary is explicit: song-menu navigation and
-  writing live state back through the save command are not yet implemented.
-  Remaining entity handlers, room scripts, and broader hardware-visible
-  ordering remain follow-up work.
+- The remaining Ocarina boundary is explicit: writing changed live state back
+  through the save command is not yet implemented. Remaining entity handlers,
+  room scripts, and broader hardware-visible ordering remain follow-up work.
 
 ## Verified ROM Ocarina state in save slots — 2026-08-07
 
@@ -1723,8 +1722,28 @@ runtime collision callback.
   New-game SRAM creation continues to leave both values zero, matching the
   ordinary ROM new-game path.
 - Focused save-image and player-state tests cover raw decoding and live-state
-  application. The animated Ocarina popup/song navigation and writing a
-  changed live state back to SRAM remain separate follow-up work.
+  application. Writing a changed live state back to SRAM remains a separate
+  follow-up work item.
+
+## Verified ROM Ocarina popup navigation and rendering — 2026-08-07
+
+- The inventory cursor now opens the Ocarina popup when it lands on a learned
+  Ocarina, and horizontal input is handled by the popup while it is visible.
+  Selection wraps across the three source entries and skips unavailable songs
+  using the exact `$04/$02/$01` masks from `Data_020_610E`.
+- Start first closes the popup through the source 16-frame close animation,
+  then closes the inventory bar. The popup's opening/closing state and selected
+  song continue to use `PlayerState`, so the existing Ocarina playback path
+  consumes the changed selection directly.
+- `Data_020_604B` is decoded from ROM bank `$20:$604B`; the four animation
+  frames, unavailable-song attribute masking, selection marker, and inventory
+  object palettes are rendered through the existing indexed sprite path.
+  Ocarina symbol tiles follow the VBlank copies to `vTiles0+$200/$240/$260`
+  from bank `$2C:$6960`, with the shared VFX rows restored after the popup.
+- Focused popup, GPU, integration, and framebuffer tests are included. The
+  clean Java suite passes with 1,018 tests and zero failures, errors, or
+  skipped tests. Live save-back, remaining entity handlers, room scripts, and
+  broader hardware-visible ordering remain follow-up work.
 
 ## Broader parity gaps
 
