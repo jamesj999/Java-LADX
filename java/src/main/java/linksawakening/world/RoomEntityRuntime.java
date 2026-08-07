@@ -972,6 +972,17 @@ public final class RoomEntityRuntime {
                 }
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_MOBLIN_SWORD) {
+                RoomEntityBackgroundInteraction swordBackgroundInteraction = backgroundInteraction;
+                if (swordBackgroundInteraction == null && backgroundCollision != null) {
+                    swordBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
+                        backgroundCollision);
+                }
+                updated = moblinSwordMotion.advance(entity, linkEntityX, linkEntityY,
+                    swordBackgroundInteraction, enemyIgnoreHitsCountdown[entity.slot()], frame)
+                    .entity();
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_TEKTITE) {
                 updated = tektiteMotion.advance(entity, linkEntityX, linkEntityY,
                     randomByteSupplier, backgroundCollision);
@@ -2251,6 +2262,7 @@ public final class RoomEntityRuntime {
         return type == ENTITY_LEEVER || type == ENTITY_PEAHAT
             || type == ENTITY_WATER_TEKTITE
             || type == ENTITY_STALFOS_EVASIVE
+            || type == ENTITY_MOBLIN_SWORD
             || isRoamingEnemyType(type) || usesBank6Recoil(type)
             || isGhiniType(type);
     }
@@ -2808,6 +2820,26 @@ public final class RoomEntityRuntime {
 
     int octorokSpeedY(int slot) {
         return roamingEnemyMotion.speedY(slot);
+    }
+
+    int moblinSwordState(int slot) {
+        return moblinSwordMotion.state(slot);
+    }
+
+    int moblinSwordTransitionCountdown(int slot) {
+        return moblinSwordMotion.transitionCountdown(slot);
+    }
+
+    int moblinSwordPrivateCountdown1(int slot) {
+        return moblinSwordMotion.privateCountdown1(slot);
+    }
+
+    int moblinSwordDirection(int slot) {
+        return moblinSwordMotion.direction(slot);
+    }
+
+    int moblinSwordSpeedX(int slot) {
+        return moblinSwordMotion.speedX(slot);
     }
 
     int tektiteState(int slot) {

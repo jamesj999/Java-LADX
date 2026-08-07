@@ -452,7 +452,7 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
-    void longFallingMoblinSwordKeepsItsInitDirectionForRomPresentationHandoff() {
+    void longFallingMoblinSwordAppliesAlertFacingBeforePresentationHandoff() {
         List<List<EntitySpriteDefinition.DynamicSprite>> variants = new ArrayList<>();
         for (int variant = 0; variant < 8; variant++) {
             variants.add(List.of(new EntitySpriteDefinition.DynamicSprite(0, 0,
@@ -480,11 +480,11 @@ final class RoomEntityRuntimeTest {
         RoomEntity falling = runtime.snapshot().slots().get(0);
         assertEquals(EntityStatus.FALLING, falling.status());
         assertEquals(0x6C, runtime.transitionCountdown(0));
-        // Init performs one direction-variant update, then each of the three
-        // falling frames above performs the handler's three updates. The
-        // stored direction is left (base variant 4), with inertia crossing
-        // bit 3 on the final frame.
-        assertEquals(5, falling.spriteVariant());
+        // The active Moblin Sword handler runs before the pit transition. Its
+        // ignore-hits path enters state 2 and faces Link (up on this tie), so
+        // EntityFallHandler's bank-$03 presentation updates use base variant
+        // 2 and cross bit 3 on the final falling frame.
+        assertEquals(3, falling.spriteVariant());
         assertEquals(0x50, falling.x());
         assertEquals(0x50, falling.y());
         assertEquals(0, backgroundProbes.get());
@@ -802,6 +802,52 @@ final class RoomEntityRuntimeTest {
         runtime.tick(0x14, 200, 32, randomBytes);
         assertEquals(65, runtime.snapshot().slots().get(0).y());
         assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
+    }
+
+    @Test
+    void moblinSwordUsesTheBankSevenIdleAlertAndSlowWalkingStates() {
+        EntitySpriteDefinition definition = pairDefinition(0x14, 8);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x14, 0x50, 64, EntityStatus.ACTIVE, definition, 6));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+
+        runtime.tick(0, 0xC0, 64, () -> 0);
+        assertEquals(1, runtime.moblinSwordState(0));
+        assertEquals(0x80, runtime.moblinSwordTransitionCountdown(0));
+        assertEquals(0, runtime.moblinSwordDirection(0));
+        assertEquals(0x06, runtime.moblinSwordSpeedX(0));
+
+        runtime.tick(1, 0xC0, 64, () -> 0);
+        runtime.tick(2, 0xC0, 64, () -> 0);
+        runtime.tick(3, 0xC0, 64, () -> 0);
+        assertEquals(0x51, runtime.snapshot().slots().get(0).x());
+
+        runtime.tick(4, 0x70, 64, () -> 0);
+        assertEquals(2, runtime.moblinSwordState(0));
+        assertEquals(0x80, runtime.moblinSwordTransitionCountdown(0));
+        assertEquals(0x10, runtime.moblinSwordPrivateCountdown1(0));
+        assertEquals(0, runtime.moblinSwordDirection(0));
+    }
+
+    @Test
+    void moblinSwordUsesTheRomHealthContactAndSwordDamageFamily() {
+        EntitySpriteDefinition definition = pairDefinition(0x14, 8);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x14, 64, 64, EntityStatus.ACTIVE, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+
+        List<EntityCombatEvent> contact = runtime.resolveCombat(
+            1, 64, 64, false, true, false, 0, 0, 0, 0);
+        assertEquals(1, contact.size());
+        assertEquals(4, contact.get(0).linkDamage());
+
+        List<EntityCombatEvent> firstHit = runtime.resolveCombat(
+            0, 120, 120, false, true, true, 72, 1, 72, 1);
+        assertEquals(1, firstHit.size());
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
+        assertEquals(1, runtime.enemyHealth(0));
+        assertEquals(0x18, runtime.enemyFlashCountdown(0));
+        assertTrue(runtime.enemyRecoilActive(0));
     }
 
     @Test

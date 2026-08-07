@@ -770,9 +770,14 @@ runtime collision callback.
 - Moblin Sword's bank-$07 inline sword pair, bank-$20 generated pair, warning
   sprite, OAM priority, tile-source split, and eight handler variants now
   decode and render from the shipped ROM.
-- Focused runtime/renderer regressions and the complete Java suite (898 test
-  cases) pass with this handoff and snapshot boundary. Moblin Sword's active
-  movement/collision behavior remains explicitly deferred.
+- The ordinary bank-$07 active states now mirror the ROM's `$06/$16` speed
+  tables, `$80/$30/$18` timers, alert window, ignore-hits alert handoff,
+  direction inertia, background collision reversal, and Link-facing/vector
+  updates. The bank-$07 health/contact/recoil family is also wired through
+  the runtime combat boundary.
+- Focused motion/runtime/renderer regressions and the complete Java suite
+  (904 test cases) pass. The global arrow/bomb alerting-sound counter and the
+  BowWow Hideout dialogue-only branch remain separate follow-up behavior.
 
 ## Next entity increments
 
