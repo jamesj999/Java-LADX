@@ -3083,6 +3083,146 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void polsVoiceUsesTheRomJumpLoopAndAnimation() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            0x18, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x18, 64, 64, EntityStatus.INIT, definition, 0)),
+            true, null, catalog, tables);
+
+        runtime.tick(0, 120, 80, sequence(0x00));
+        runtime.tick(1, 120, 80, sequence(0x00, 0x00));
+
+        assertEquals(1, runtime.polsVoiceState(0));
+        assertEquals(0x10, runtime.polsVoiceSpeedZ(0));
+        assertEquals(0x08, runtime.polsVoiceSpeedX(0));
+        assertEquals(0xFC, runtime.polsVoiceSpeedY(0));
+        assertEquals(0x12, runtime.physicsFlags(0));
+        assertEquals(0x08, runtime.options1(0));
+        assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
+
+        runtime.tick(2, 120, 80, sequence(0xFF));
+        assertEquals(1, runtime.snapshot().slots().get(0).z());
+        assertEquals(0x0F, runtime.polsVoiceSpeedZ(0));
+
+        int frame = 3;
+        while (runtime.polsVoiceState(0) == 1 && frame < 80) {
+            runtime.tick(frame, 120, 80, sequence(0x03));
+            frame++;
+        }
+        assertEquals(2, runtime.polsVoiceState(0));
+        assertEquals(0, runtime.snapshot().slots().get(0).z());
+        assertEquals(0, runtime.polsVoiceSpeedX(0));
+        assertEquals(0, runtime.polsVoiceSpeedY(0));
+        assertEquals(0x1B, runtime.polsVoiceTransitionCountdown(0));
+
+        runtime.tick(frame, 120, 80, sequence(0xFF));
+        assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
+        runtime.tick(frame + 1, 120, 80, sequence(0xFF));
+        assertEquals(1, runtime.snapshot().slots().get(0).spriteVariant());
+    }
+
+    @Test
+    void polsVoiceVectorBranchMatchesTheRomZeroDistanceResult() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            0x18, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x18, 64, 64, EntityStatus.INIT, definition, 0)),
+            true, null, catalog, tables);
+
+        runtime.tick(0, 64, 64, sequence(0x00));
+        runtime.tick(1, 64, 64, sequence(0x00, 0x06));
+
+        // GetVectorTowardsLink's repeated-remainder loop increments both
+        // components when both source distances are zero.
+        assertEquals(0x0A, runtime.polsVoiceSpeedX(0));
+        assertEquals(0x0A, runtime.polsVoiceSpeedY(0));
+    }
+
+    @Test
+    void polsVoiceForcesTheRomIgnoreHitsByteOnlyAroundBackgroundInteraction()
+            throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            0x18, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x18, 64, 64, EntityStatus.INIT, definition, 0)),
+            true, null, catalog, tables);
+        List<Integer> observedIgnoreHits = new ArrayList<>();
+        runtime.setBackgroundInteraction(new RoomEntityBackgroundInteraction() {
+            @Override
+            public EntityBackgroundCollisionResult probe(RoomEntity entity, int direction,
+                                                           int nextX, int nextY) {
+                return EntityBackgroundCollisionResult.passable(direction, 0, nextX, nextY);
+            }
+
+            @Override
+            public EntityBackgroundCollisionResult probe(RoomEntity entity, int direction,
+                                                       int nextX, int nextY,
+                                                       int ignoreHitsCountdown) {
+                observedIgnoreHits.add(ignoreHitsCountdown);
+                return EntityBackgroundCollisionResult.passable(direction, 0, nextX, nextY);
+            }
+        });
+
+        runtime.tick(0, 120, 80, sequence(0x00));
+        runtime.tick(1, 120, 80, sequence(0x00, 0x00));
+        runtime.tick(2, 120, 80, sequence(0xFF));
+
+        assertTrue(observedIgnoreHits.contains(0x01));
+        assertEquals(0, runtime.enemyIgnoreHitsCountdown(0));
+    }
+
+    @Test
+    void polsVoiceUsesTheRomBalladOcarinaDeathPreamble() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            0x18, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x18, 64, 64, EntityStatus.ACTIVE, definition, 0)),
+            true, null, catalog, tables);
+        runtime.setOcarinaPlaybackForTest(0x01, 0x04, 0x00);
+
+        runtime.tick(0, 120, 80, sequence(0x00));
+
+        assertEquals(EntityStatus.DYING, runtime.snapshot().slots().get(0).status());
+        assertEquals(0x1F, runtime.dyingCountdown(0));
+        assertEquals(0x04, runtime.physicsFlags(0));
+        assertEquals(List.of(new EntityCombatEvent(0, 0x18, 0, false,
+            EntityCombatEvent.SoundChannel.NOISE, 0x13)),
+            runtime.consumePendingEntityEvents());
+    }
+
+    @Test
+    void polsVoiceUsesTheRomHealthAndContactDamageValues() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            0x18, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x18, 64, 64, EntityStatus.ACTIVE, definition, 0)),
+            true, null, catalog, tables);
+
+        List<EntityCombatEvent> events = runtime.resolveCombat(
+            1, 72, 72, false, true, false, 0, 0, 0, 0);
+
+        assertEquals(1, events.size());
+        assertEquals(0x08, events.get(0).linkDamage());
+        assertEquals(0x04, runtime.enemyHealth(0));
+    }
+
+    @Test
     void wizrobeRunsTheRomRevealStateMachineAndLaunchesItsProjectile() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);

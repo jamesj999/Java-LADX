@@ -12,6 +12,7 @@ import linksawakening.equipment.Arrow;
 import linksawakening.equipment.Bomb;
 import linksawakening.equipment.Hookshot;
 import linksawakening.equipment.ItemRegistry;
+import linksawakening.equipment.Ocarina;
 import linksawakening.equipment.RocsFeather;
 import linksawakening.equipment.Sword;
 import linksawakening.equipment.SwordPalette;
@@ -268,6 +269,19 @@ public class Main {
         link = new Link(inputState, inputConfig, romTables, overworldCollision,
                         linkSpriteSheet, playerState, itemRegistry, gameplaySoundSink,
                         LinkTunicPalette.loadFromRom(romData));
+        itemRegistry.register(PlayerState.INVENTORY_OCARINA, new Ocarina(
+            playerState, gameplaySoundSink, new Ocarina.PlaybackTarget() {
+                @Override
+                public boolean startOcarina(int countdown, int songFlags, int selectedSong) {
+                    return roomSession != null
+                        && roomSession.startOcarina(countdown, songFlags, selectedSong);
+                }
+
+                @Override
+                public boolean ocarinaPlaying() {
+                    return roomSession != null && roomSession.ocarinaPlaying();
+                }
+            }));
         itemRegistry.register(PlayerState.INVENTORY_SWORD, new Sword(romTables, swordSpriteSheet,
             gameplaySoundSink, () -> ThreadLocalRandom.current().nextInt(0x100), swordPalette));
         itemRegistry.register(PlayerState.INVENTORY_ROCS_FEATHER, new RocsFeather(link));

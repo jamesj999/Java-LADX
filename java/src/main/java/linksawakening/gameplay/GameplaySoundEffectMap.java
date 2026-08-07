@@ -60,6 +60,14 @@ public final class GameplaySoundEffectMap {
         put(effects, catalog, GameplaySoundEvent.DOOR_UNLOCKED, SoundEffectNamespace.NOISE, 0x04);
         put(effects, catalog, GameplaySoundEvent.SWITCH_BLOCK_TOGGLE,
             SoundEffectNamespace.WAVE, 0x0E);
+        put(effects, catalog, GameplaySoundEvent.OCARINA_BALLAD,
+            SoundEffectNamespace.WAVE, 0x09);
+        put(effects, catalog, GameplaySoundEvent.OCARINA_MAMBO,
+            SoundEffectNamespace.WAVE, 0x0B);
+        put(effects, catalog, GameplaySoundEvent.OCARINA_FROG,
+            SoundEffectNamespace.WAVE, 0x0A);
+        put(effects, catalog, GameplaySoundEvent.OCARINA_NO_SONG,
+            SoundEffectNamespace.WAVE, 0x15);
         return new GameplaySoundEffectMap(effects);
     }
 

@@ -82,6 +82,7 @@ public final class RoomEntityRuntime {
     private static final int ARMOS_INITIAL_PHYSICS_FLAGS = 0x92;
     private static final int LIKE_LIKE_INITIAL_PHYSICS_FLAGS = 0x92;
     private static final int ENTITY_GHINI = 0x12;
+    private static final int ENTITY_POLS_VOICE = PolsVoiceMotion.ENTITY_TYPE;
     private static final int ENTITY_KEESE = 0x19;
     private static final int ENTITY_HARDHAT_BEETLE = 0x20;
     private static final int ENTITY_SPIKED_BEETLE = SpikedBeetleMotion.ENTITY_TYPE;
@@ -193,6 +194,7 @@ public final class RoomEntityRuntime {
     private final ArmosMotion armosMotion = new ArmosMotion();
     private final GhiniMotion ghiniMotion = new GhiniMotion();
     private final HardHatMotion hardHatMotion = new HardHatMotion();
+    private final PolsVoiceMotion polsVoiceMotion = new PolsVoiceMotion();
     private final SpikedBeetleMotion spikedBeetleMotion = new SpikedBeetleMotion();
     private final MadBomberMotion madBomberMotion = new MadBomberMotion();
     private final BomberMotion bomberMotion = new BomberMotion();
@@ -287,6 +289,12 @@ public final class RoomEntityRuntime {
     private boolean powerBraceletButtonHeld;
     private boolean bombButtonHeld;
     private boolean runningWithPegasusBoots;
+    // The three WRAM values read by PolsVoiceEntityHandler's Ocarina preamble.
+    // RoomSession supplies these from the active Ocarina item state once per
+    // entity tick; the zero values preserve the ordinary no-song path.
+    private int linkPlayingOcarinaCountdown;
+    private int ocarinaSongFlags;
+    private int selectedSongIndex;
     // LinkMotionMapFadeInHandler leaves wTransitionSequenceCounter at $04 once
     // the active room is ready for interaction. Entity ticks are gated during
     // the host transition, so this is the source value visible to gameplay.
@@ -406,6 +414,9 @@ public final class RoomEntityRuntime {
             }
             if (entity.loaded() && entity.type() == ENTITY_LIKE_LIKE) {
                 likeLikeMotion.initialize(entity.slot());
+            }
+            if (entity.loaded() && entity.type() == ENTITY_POLS_VOICE) {
+                polsVoiceMotion.initialize(entity.slot());
             }
             if (entity.loaded() && entity.type() == ENTITY_SPIKED_BEETLE) {
                 spikedBeetleMotion.initialize(entity.slot());
@@ -802,6 +813,7 @@ public final class RoomEntityRuntime {
             boolean preserveSnakePresentation = false;
             boolean preserveWizrobePresentation = false;
             boolean preserveWizrobeProjectilePresentation = false;
+            boolean preservePolsVoicePresentation = false;
             boolean preserveSpikedBeetlePresentation = false;
             if (status == EntityStatus.ACTIVE) {
                 decrementEnemyDropCountdowns(entity);
@@ -1124,6 +1136,9 @@ public final class RoomEntityRuntime {
                 if (entity.type() == ENTITY_LIKE_LIKE) {
                     likeLikeMotion.initialize(entity.slot());
                 }
+                if (entity.type() == ENTITY_POLS_VOICE) {
+                    polsVoiceMotion.initialize(entity.slot());
+                }
                 if (entity.type() == ENTITY_GOOMBA) {
                     goombaMotion.initialize(entity.slot());
                 }
@@ -1194,6 +1209,20 @@ public final class RoomEntityRuntime {
                 // EntityInitWizrobe decrements the initial display-list variant
                 // before the first active handler dispatch.
                 updated = withVariant(entity, -1);
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_POLS_VOICE
+                && polsVoiceBalladOcarinaTrigger()) {
+                // The handler checks this before rendering, recoil, movement,
+                // or the ordinary collision path. Its private countdown $1F
+                // is the shared EntityDeathHandler's visible death timer.
+                dyingCountdown[entity.slot()] = 0x1F;
+                enemyPhysicsFlags[entity.slot()] = 0x04;
+                status = EntityStatus.DYING;
+                updated = withStatus(entity, EntityStatus.DYING);
+                pendingEntityEvents.add(new EntityCombatEvent(
+                    entity.slot(), entity.type(), 0, false,
+                    EntityCombatEvent.SoundChannel.NOISE, 0x13));
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && usesSharedRecoil(entity.type())) {
@@ -1745,6 +1774,26 @@ public final class RoomEntityRuntime {
                     randomByteSupplier, backgroundCollision);
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_POLS_VOICE) {
+                // PolsVoiceEntityHandler deliberately writes the temporary
+                // ignore-hits byte after moving, so the background helper sees
+                // $01, then clears it with B (zero) before the default enemy
+                // collision pass. The shared Java movement probe is the
+                // handler's background-interaction seam, so bracket it here.
+                enemyIgnoreHitsCountdown[entity.slot()] = 0x01;
+                try {
+                    PolsVoiceMotion.Update polsVoiceUpdate = polsVoiceMotion.advance(
+                        entity, linkEntityX, linkEntityY, randomByteSupplier,
+                        backgroundCollision, enemyTransitionCountdown[entity.slot()]);
+                    updated = polsVoiceUpdate.entity();
+                    enemyTransitionCountdown[entity.slot()] =
+                        polsVoiceUpdate.transitionCountdown();
+                } finally {
+                    enemyIgnoreHitsCountdown[entity.slot()] = 0;
+                }
+                preservePolsVoicePresentation = true;
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_SPIKED_BEETLE) {
                 SpikedBeetleMotion.Update spikedBeetleUpdate = spikedBeetleMotion.advance(
                     entity, frame, linkEntityX, linkEntityY, randomByteSupplier,
@@ -1840,6 +1889,7 @@ public final class RoomEntityRuntime {
                 || preserveBombitePresentation
                 || preserveIronMaskPresentation || preserveSnakePresentation
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
+                || preservePolsVoicePresentation
                 || preserveSpikedBeetlePresentation
                 ? updated.spriteVariant() : variantFor(updated, frame);
             if (status == EntityStatus.ACTIVE && shouldDisappear(entity)) {
@@ -1849,6 +1899,7 @@ public final class RoomEntityRuntime {
                 || preserveBombitePresentation
                 || preserveIronMaskPresentation || preserveSnakePresentation
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
+                || preservePolsVoicePresentation
                 || preserveSpikedBeetlePresentation
                 ? updated.entityFlipAttribute() : baseEntityFlipAttribute[entity.slot()];
             if (preserveBombitePresentation && updated.type() == ENTITY_TIMER_BOMBITE) {
@@ -3519,6 +3570,7 @@ public final class RoomEntityRuntime {
             || type == ENTITY_WIZROBE
             || type == ENTITY_SPARK_COUNTER_CLOCKWISE
             || type == ENTITY_SPARK_CLOCKWISE
+            || type == ENTITY_POLS_VOICE
             || type == ENTITY_ZOL || type == ENTITY_GEL
             || type == ENTITY_LIKE_LIKE;
     }
@@ -4695,6 +4747,26 @@ public final class RoomEntityRuntime {
         return snakeMotion.speedY(slot);
     }
 
+    int polsVoiceState(int slot) {
+        return polsVoiceMotion.state(slot);
+    }
+
+    int polsVoiceTransitionCountdown(int slot) {
+        return enemyTransitionCountdown[slot];
+    }
+
+    int polsVoiceSpeedX(int slot) {
+        return polsVoiceMotion.speedX(slot);
+    }
+
+    int polsVoiceSpeedY(int slot) {
+        return polsVoiceMotion.speedY(slot);
+    }
+
+    int polsVoiceSpeedZ(int slot) {
+        return polsVoiceMotion.speedZ(slot);
+    }
+
     int spikedBeetleState(int slot) {
         return spikedBeetleMotion.state(slot);
     }
@@ -4941,6 +5013,19 @@ public final class RoomEntityRuntime {
         enemyIgnoreHitsCountdown[slot] = value;
     }
 
+    void setOcarinaPlayback(int countdown, int songFlags, int selectedSong) {
+        validateByte(countdown, "Ocarina playback countdown");
+        validateByte(songFlags, "Ocarina song flags");
+        validateByte(selectedSong, "Selected Ocarina song");
+        linkPlayingOcarinaCountdown = countdown;
+        ocarinaSongFlags = songFlags;
+        selectedSongIndex = selectedSong;
+    }
+
+    void setOcarinaPlaybackForTest(int countdown, int songFlags, int selectedSong) {
+        setOcarinaPlayback(countdown, songFlags, selectedSong);
+    }
+
     void setHitboxFlagsForTest(int slot, int value) {
         validateCountdownTestValue(slot, value);
         enemyHitboxFlags[slot] = value;
@@ -5016,6 +5101,9 @@ public final class RoomEntityRuntime {
         if (slots[slot].type() == ENTITY_SPIKED_BEETLE) {
             // The static table starts at splash-only. The handler writes the
             // sword-clink-off bit on its first normal active pass.
+            return ENTITY_OPT1_SPLASH_IN_WATER;
+        }
+        if (slots[slot].type() == ENTITY_POLS_VOICE) {
             return ENTITY_OPT1_SPLASH_IN_WATER;
         }
         if (isBombiteType(slots[slot].type())) {
@@ -5132,6 +5220,7 @@ public final class RoomEntityRuntime {
             case ENTITY_WIZROBE -> 0x02;
             case ENTITY_SWORD_SHIELD_PICKUP -> SWORD_SHIELD_PICKUP_INITIAL_PHYSICS_FLAGS;
             case ENTITY_LIKE_LIKE -> LIKE_LIKE_INITIAL_PHYSICS_FLAGS;
+            case ENTITY_POLS_VOICE -> 0x12;
             case ENTITY_SPIKED_BEETLE -> 0x12;
             case ENTITY_WIZROBE_PROJECTILE -> 0x42;
             case ENTITY_IRON_MASKS_MASK -> IRON_MASKS_MASK_INITIAL_PHYSICS_FLAGS;
@@ -5145,6 +5234,12 @@ public final class RoomEntityRuntime {
                 ENTITY_CUCCO, ENTITY_HORSE_PIECE -> ENTITY_PHYSICS_GRABBABLE;
             default -> 0;
         };
+    }
+
+    private boolean polsVoiceBalladOcarinaTrigger() {
+        return linkPlayingOcarinaCountdown == 0x01
+            && (ocarinaSongFlags & 0x04) != 0
+            && selectedSongIndex == 0;
     }
 
     private void decrementSlowTransitionCountdown(int slot, int frameCounter) {
@@ -5502,6 +5597,7 @@ public final class RoomEntityRuntime {
         followingNpcMotion.clear(slot);
         ghiniMotion.clear(slot);
         hardHatMotion.clear(slot);
+        polsVoiceMotion.clear(slot);
         spikedBeetleMotion.clear(slot);
         bowWowMotion.clear(slot);
         thrownEntityMotion.clear(slot);
@@ -5532,6 +5628,9 @@ public final class RoomEntityRuntime {
         }
         if (entity.type() == ENTITY_HIDING_ZOL) {
             return hidingZolMotion.speedZ(slot);
+        }
+        if (entity.type() == ENTITY_POLS_VOICE) {
+            return polsVoiceMotion.speedZ(slot);
         }
         if (entity.type() == ENTITY_SPIKED_BEETLE) {
             return spikedBeetleMotion.speedZ(slot);

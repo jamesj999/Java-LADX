@@ -138,6 +138,9 @@ public final class RoomSession {
     private boolean actionButtonsHeld;
     private boolean powerBraceletButtonHeld;
     private boolean bombButtonHeld;
+    private int ocarinaPlaybackCountdown;
+    private int ocarinaSongFlags;
+    private int selectedSongIndex;
     private int currentLinkMotionState = EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE;
     private GameplaySoundSink colorShellSoundSink = GameplaySoundSink.none();
     private final ColorShellWorld colorShellWorld = new ColorShellWorld() {
@@ -413,6 +416,34 @@ public final class RoomSession {
         if (entityRuntime != null) {
             entityRuntime.setBombButtonHeld(buttonHeld);
         }
+    }
+
+    /** Starts the source UseOcarina countdown consumed by active entities. */
+    public boolean startOcarina(int countdown, int songFlags, int selectedSong) {
+        if (countdown < 0 || countdown > 0xFF) {
+            throw new IllegalArgumentException("Ocarina countdown must be an unsigned byte: "
+                + countdown);
+        }
+        if (songFlags < 0 || songFlags > 0xFF) {
+            throw new IllegalArgumentException("Ocarina song flags must be an unsigned byte: "
+                + songFlags);
+        }
+        if (selectedSong < 0 || selectedSong > 0xFF) {
+            throw new IllegalArgumentException("Selected Ocarina song must be an unsigned byte: "
+                + selectedSong);
+        }
+        if (activeRoom == null || entityRuntime == null || ocarinaPlaybackCountdown != 0) {
+            return false;
+        }
+        ocarinaPlaybackCountdown = countdown;
+        ocarinaSongFlags = songFlags & 0xFF;
+        selectedSongIndex = selectedSong & 0xFF;
+        return true;
+    }
+
+    /** Mirrors wLinkPlayingOcarinaCountdown for Link's motion gate. */
+    public boolean ocarinaPlaying() {
+        return ocarinaPlaybackCountdown != 0;
     }
 
     /** Supplies the player fields consumed by the ROM enemy-drop resolver. */
@@ -709,6 +740,8 @@ public final class RoomSession {
         entityRuntime.setPowerBraceletButtonHeld(powerBraceletButtonHeld);
         entityRuntime.setBombButtonHeld(bombButtonHeld);
         entityRuntime.setLiftedLinkC13B(followingEntityYOffset);
+        entityRuntime.setOcarinaPlayback(ocarinaPlaybackCountdown,
+            ocarinaSongFlags, selectedSongIndex);
         // rLY is not a meaningful value in the host renderer. Keep the
         // non-emulator policy explicit while preserving the ROM seed update.
         entityRandomByteSource.beginFrame(frameCounter & 0xFF, 0);
@@ -723,6 +756,9 @@ public final class RoomSession {
                 romDirectionForProjectileCollision(linkDirection), usingShield, shieldLevel,
                 invincibilityCounter), swordCollisionActive, swordX, swordWidth,
             swordY, swordHeight, linkSpeedX, linkSpeedY);
+        if (ocarinaPlaybackCountdown > 0) {
+            ocarinaPlaybackCountdown--;
+        }
         List<BombExplosionEvent> bombExplosionEvents = entityRuntime.consumeBombExplosionEvents();
         pendingBombExplosionEvents.clear();
         pendingBombExplosionEvents.addAll(bombExplosionEvents);

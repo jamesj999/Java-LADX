@@ -25,6 +25,7 @@ public final class RoomEntityCombatRules {
     private static final int ENTITY_HIDING_GHINI = 0x10;
     private static final int ENTITY_GIANT_GHINI = 0x11;
     private static final int ENTITY_GHINI = 0x12;
+    private static final int ENTITY_POLS_VOICE = 0x18;
     private static final int ENTITY_KEESE = 0x19;
     private static final int ENTITY_HARDHAT_BEETLE = 0x20;
     private static final int ENTITY_SPIKED_BEETLE = 0x2C;
@@ -96,7 +97,7 @@ public final class RoomEntityCombatRules {
                 ENTITY_SPARK_CLOCKWISE,
                 ENTITY_STALFOS_AGGRESSIVE, ENTITY_STALFOS_EVASIVE,
                 ENTITY_ZOL, ENTITY_GEL, ENTITY_HIDING_ZOL,
-                ENTITY_GIBDO, ENTITY_LIKE_LIKE, ENTITY_PEAHAT,
+                ENTITY_GIBDO, ENTITY_POLS_VOICE, ENTITY_LIKE_LIKE, ENTITY_PEAHAT,
                 ENTITY_GOOMBA, ENTITY_SNAKE,
                 ENTITY_WIZROBE,
                 ENTITY_ARMOS_STATUE,
@@ -132,6 +133,7 @@ public final class RoomEntityCombatRules {
             case ENTITY_BOMBER -> BOMBER_CONTACT_DAMAGE;
             case ENTITY_BOUNCING_BOMBITE, ENTITY_TIMER_BOMBITE -> BOMBITE_CONTACT_DAMAGE;
             case ENTITY_GIBDO -> GIBDO_CONTACT_DAMAGE;
+            case ENTITY_POLS_VOICE -> 0x08;
             case ENTITY_LIKE_LIKE -> 0;
             case ENTITY_ANTI_FAIRY -> ANTI_FAIRY_CONTACT_DAMAGE;
             case ENTITY_HIDING_GHINI, ENTITY_GIANT_GHINI, ENTITY_GHINI ->
@@ -161,6 +163,7 @@ public final class RoomEntityCombatRules {
             case ENTITY_HIDING_ZOL -> HIDING_ZOL_INITIAL_HEALTH;
             case ENTITY_GEL -> GEL_INITIAL_HEALTH;
             case ENTITY_GIBDO -> GIBDO_INITIAL_HEALTH;
+            case ENTITY_POLS_VOICE -> 0x04;
             case ENTITY_LIKE_LIKE -> LIKE_LIKE_INITIAL_HEALTH;
             case ENTITY_MAD_BOMBER -> MAD_BOMBER_INITIAL_HEALTH;
             case ENTITY_BOMBER -> BOMBER_INITIAL_HEALTH;

@@ -86,6 +86,33 @@ final class RoomSessionTest {
     }
 
     @Test
+    void forwardsLiveOcarinaPlaybackToAPolsVoiceEntity() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x00, 0x25);
+        RoomEntity polsVoice = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x18)
+            .findFirst()
+            .orElseThrow();
+
+        session.tickEntities(0, polsVoice.x(), polsVoice.y(), polsVoice.z(), 0);
+        polsVoice = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x18)
+            .findFirst()
+            .orElseThrow();
+
+        assertTrue(session.startOcarina(0x01, 0x04, 0x00));
+        assertTrue(session.ocarinaPlaying());
+        session.tickEntities(1, polsVoice.x(), polsVoice.y(), polsVoice.z(), 0);
+
+        RoomEntity dyingPolsVoice = session.activeRoom().entities().slots().get(polsVoice.slot());
+        assertEquals(EntityStatus.DYING, dyingPolsVoice.status());
+        assertFalse(session.ocarinaPlaying());
+        assertEquals(0x13, session.consumeEntityEvents().stream()
+            .filter(event -> event.type() == 0x18)
+            .findFirst().orElseThrow().soundId());
+    }
+
+    @Test
     void forwardsPerFrameLinkCollisionTypeToGhiniAndOldOverloadDefaultsToZero() {
         RoomSession session = newSession();
         session.loadInitialOverworld(0x67);

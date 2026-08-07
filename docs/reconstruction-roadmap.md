@@ -1686,6 +1686,33 @@ runtime collision callback.
   skipped tests; remaining entity handlers and broader room-script parity
   remain follow-up work.
 
+## Verified ROM Pols Voice and Ocarina playback seam — 2026-08-07
+
+- Entity `$18` now decodes `PolsVoiceSpriteVariants` from bank `$06:$7373`
+  with the exact two pair frames from the shipped ROM. Its physics `$12`,
+  splash-only options `$08`, health group `$0C` (four health), and contact
+  damage `$08` are wired into the shared runtime.
+- The bank-$06 jump handler follows the source state loop: the six random
+  horizontal/vertical speed pairs, the Link-directed vector branch, fixed-
+  point Z motion, `$18 + (rand & $0F)` landing transition, horizontal-speed
+  clear, and delayed standing/jumping presentation variants are covered by
+  ROM-backed tests. The temporary ignore-hits byte `$01` is visible only to
+  the background probe and is cleared before ordinary collision resolution.
+- The Ballad preamble now consumes the live Ocarina playback state at
+  countdown `$01`, sets the source `$1F` death timer and physics `$04`, and
+  emits the bank-$06 noise `$13` event. The Ocarina item selects the ROM
+  Ballad/Mambo/Frog countdowns (`$DC`, `$D0`, `$BB`) and sound events, blocks
+  Link motion while playing, and forwards playback through `RoomSession` to
+  a live Pols Voice room entity.
+- Shipped-ROM tests cover the display list, jump/vector behavior, animation,
+  background ignore window, combat values, death preamble, item selection,
+  and live room integration. The clean Java suite passes with 1,009 tests
+  and zero failures, errors, or skipped tests.
+- The remaining Ocarina boundary is explicit: song-menu navigation and
+  persistent SRAM save/load for `wOcarinaSongFlags` are not yet implemented.
+  Remaining entity handlers, room scripts, and broader hardware-visible
+  ordering remain follow-up work.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

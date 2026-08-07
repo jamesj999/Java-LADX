@@ -23,6 +23,11 @@ public final class PlayerState {
     public static final int INVENTORY_MAGIC_POWDER = 0x0C;
     public static final int INVENTORY_BOOMERANG = 0x0D;
 
+    // Values stored in the ROM's wOcarinaSongFlags byte.
+    public static final int FROGS_SONG_OF_THE_SOUL_FLAG = 0x01;
+    public static final int MANBO_MAMBO_FLAG = 0x02;
+    public static final int BALLAD_OF_THE_WIND_FISH_FLAG = 0x04;
+
     // Values written to the ROM's wTunicType ($DC0F).
     public static final int TUNIC_GREEN = 0x00;
     public static final int TUNIC_RED = 0x01;
@@ -50,6 +55,8 @@ public final class PlayerState {
     private int shieldLevel = 1;
     private int itemA = INVENTORY_SWORD;
     private int itemB = INVENTORY_EMPTY;
+    private int ocarinaSongFlags;
+    private int selectedSongIndex;
     private final int[] subscreen = new int[SUBSCREEN_SLOT_COUNT];
     private int arrowCount;
     private int maxArrows;
@@ -94,6 +101,8 @@ public final class PlayerState {
         shieldLevel = 0;
         itemA = INVENTORY_EMPTY;
         itemB = INVENTORY_EMPTY;
+        ocarinaSongFlags = 0;
+        selectedSongIndex = 0;
         Arrays.fill(subscreen, INVENTORY_EMPTY);
         arrowCount = 0;
         this.maxArrows = clamp(maxArrows, 0, 99);
@@ -380,6 +389,24 @@ public final class PlayerState {
 
     public void setItemB(int inventoryId) {
         itemB = inventoryId & 0xFF;
+    }
+
+    /** Mirrors the persistent wOcarinaSongFlags byte (only bits 0..2 are used). */
+    public int ocarinaSongFlags() {
+        return ocarinaSongFlags;
+    }
+
+    public void setOcarinaSongFlags(int value) {
+        ocarinaSongFlags = value & 0x07;
+    }
+
+    /** Mirrors wSelectedSongIndex, a zero-based Ballad/Mambo/Frog selector. */
+    public int selectedSongIndex() {
+        return selectedSongIndex;
+    }
+
+    public void setSelectedSongIndex(int value) {
+        selectedSongIndex = clamp(value, 0, 2);
     }
 
     public void setSubscreenItems(int[] items) {

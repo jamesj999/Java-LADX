@@ -19,6 +19,9 @@ final class RomEnemyCombatTablesTest {
         assertEquals(0x02, tables.initialHealth(0x0B));
         assertEquals(0x04, tables.contactDamage(0x09));
         assertEquals(0x04, tables.contactDamage(0x0B));
+        assertEquals(0x0C, tables.healthGroup(0x18));
+        assertEquals(0x04, tables.initialHealth(0x18));
+        assertEquals(0x08, tables.contactDamage(0x18));
 
         assertEquals(0x01, tables.damageTypeEntry(0x00, 0x00));
         assertEquals(0x02, tables.damageValue(0x01, 0x01));

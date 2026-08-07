@@ -103,6 +103,19 @@ final class EntitySpriteHandlerCatalogTest {
     }
 
     @Test
+    void decodesPolsVoiceDisplayListFromTheShippedRom() throws Exception {
+        EntitySpriteDefinition polsVoice = new EntitySpriteHandlerCatalog(loadRom())
+            .forEntityType(0x18, EntityRoomLoader.RoomTable.INDOORS_A);
+
+        assertDefinition(polsVoice, 0x06, 0x7373,
+            EntitySpriteDefinition.Shape.PAIR, 2, 0);
+        assertPairBytes(polsVoice, new int[][] {
+            {0x70, 0x01, 0x70, 0x21},
+            {0x72, 0x01, 0x72, 0x21}
+        });
+    }
+
+    @Test
     void decodesRectangleDisplayListsWithSignedOffsets() {
         byte[] rom = syntheticRom();
         write(rom, 0x06, 0x5200,

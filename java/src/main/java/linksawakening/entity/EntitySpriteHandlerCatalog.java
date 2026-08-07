@@ -54,6 +54,7 @@ public final class EntitySpriteHandlerCatalog {
     private static final int ENTITY_HIDING_GHINI = 0x10;
     private static final int ENTITY_GIANT_GHINI = 0x11;
     private static final int ENTITY_GHINI = 0x12;
+    private static final int ENTITY_POLS_VOICE = 0x18;
     private static final int ENTITY_KEESE = 0x19;
     private static final int ENTITY_GOOMBA = 0x9F;
     private static final int ENTITY_SNAKE = 0xA1;
@@ -277,6 +278,9 @@ public final class EntitySpriteHandlerCatalog {
         }
         if (entityType == ENTITY_HARDHAT_BEETLE) {
             return decodePair(entityType, 0x06, mapId == 0x0A ? 0x4F34 : 0x4F2C, 2, 0);
+        }
+        if (entityType == ENTITY_POLS_VOICE) {
+            return decodePair(entityType, 0x06, 0x7373, 2, 0);
         }
         if (entityType == ENTITY_SPIKED_BEETLE) {
             return decodePair(entityType, 0x07, mapId == 0x03 ? 0x7794 : 0x7784, 4, 0);
