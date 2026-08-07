@@ -1754,9 +1754,10 @@ runtime collision callback.
   SRAM offsets. Its zero-health path uses the ROM
   `MaxHeartsToStartingHealthTable`; rupees use the source high/low BCD bytes.
   The lower-level Ocarina writer remains available for exact two-byte updates.
-- Unknown fields, including spawn, death-count, dungeon-item-flag, and photo
-  bytes, are preserved rather than guessed. `SaveRamStore` delegates the raw
-  image operations.
+- Unknown fields, including spawn, death-count, and photo bytes, are preserved
+  rather than guessed. Dungeon item flags now have their own source-shaped
+  runtime owner and save writer. `SaveRamStore` delegates the raw image
+  operations.
 - The main loop now records the active save slot when a file is created or
   loaded. The source A+B+Start+Select chord is exposed through a configurable
   Select key (default `Tab`) and opens a dedicated two-option save screen only
@@ -1785,13 +1786,37 @@ runtime collision callback.
 - `SaveRamImage.writeRoomStatuses` mirrors the exact `SaveGameToFile` layout:
   main offsets `$000..$2FF` receive the three room tables, and the DX2 region
   receives the Color Dungeon table. DX1 Color Dungeon item flags and other
-  unmodeled fields remain untouched. Save and Quit writes these status tables
-  alongside the currently modeled player fields.
+  unmodeled fields remain untouched by this method. Save and Quit writes these
+  status tables alongside the currently modeled player fields.
 - Focused SRAM, RoomSession, store-delegation, and main-flow tests cover the
   offsets, defensive copies, restore boundary, and preservation behavior. The
   clean Java suite passes with 1,029 tests and zero failures, errors, or skipped
   tests. Remaining save work is the source state not yet modeled, including
-  dungeon item flags, spawn/death updates, and photo persistence.
+  spawn/death updates and photo persistence.
+
+## Verified ROM dungeon-item flag state — 2026-08-07
+
+- `DungeonItemState` now keeps the source's five-byte
+  `wCurrentDungeonItemFlags` buffer separate from the nine-entry
+  `wDungeonItemFlags` table at `$DB16-$DB42` and the five-byte
+  `wColorDungeonItemFlags` DX1 extension at `$DDDA`.
+- Loading an ordinary dungeon copies its five-byte entry into the current
+  buffer. Color Dungeon loads DX1; Wind Fish's Egg and non-dungeon indoor maps
+  expose zeroes, matching `GameplayWorldLoad0Handler`'s inventory setup.
+  Source chest-type increments synchronize back to the selected persistent
+  table through the same map split used by `SynchronizeDungeonsItemFlags`.
+- `RoomSession` owns this state and restores it before loading a saved indoor
+  room. `SaveRamImage.writeDungeonItemFlags` writes main offset `$316` for the
+  `$2D`-byte dungeon table and the five-byte DX1 block without disturbing
+  adjacent save fields; the main save flow now reads and writes both regions.
+- Focused source-layout, state, RoomSession, SRAM, and main-flow tests cover
+  ordinary dungeons, Color Dungeon, non-dungeon maps, synchronization, exact
+  offsets, and defensive copies. The clean Java suite passes with 1,038 tests
+  and zero failures, errors, or skipped tests.
+- Chest entity spawning, presentation/dialog sequencing, and the inventory
+  effects that consume these flags remain a separate parity slice; this change
+  establishes their source-faithful state boundary without fabricating a chest
+  handler.
 
 ## Broader parity gaps
 

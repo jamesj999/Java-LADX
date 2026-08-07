@@ -88,6 +88,7 @@ final class MainFileMenuFlowTest {
         assertTrue(source.contains("saveCurrentPlayerState();"));
         assertTrue(source.contains("saveRamStore.writePlayerState(currentSaveSlot, playerState);"));
         assertTrue(source.contains("saveRamStore.writeRoomStatuses(currentSaveSlot,"));
+        assertTrue(source.contains("saveRamStore.writeDungeonItemFlags(currentSaveSlot,"));
     }
 
     @Test
@@ -99,6 +100,7 @@ final class MainFileMenuFlowTest {
 
         assertTrue(branch.contains("startSavedGame"));
         assertTrue(source.contains("roomSession.restoreRoomStatuses(saved.overworldRoomStatus(),"));
+        assertTrue(source.contains("roomSession.restoreDungeonItemFlags(saved.dungeonItemFlags(),"));
         assertFalse(branch.contains("UnsupportedOperationException"));
     }
 }

@@ -29,6 +29,10 @@ public final class SaveRamLayout {
     public static final int MAIN_INDOOR_B_ROOM_STATUS_OFFSET = 0x200;
     public static final int MAIN_ROOM_STATUS_SIZE = 0x300;
     public static final int DX2_COLOR_DUNGEON_ROOM_STATUS_SIZE = DX2_SIZE;
+    // wDungeonItemFlags at DB16, relative to wOverworldRoomStatus at D800.
+    public static final int MAIN_DUNGEON_ITEM_FLAGS_OFFSET = 0x316;
+    public static final int MAIN_DUNGEON_ITEM_FLAGS_SIZE = 0x2D;
+    public static final int DX1_COLOR_DUNGEON_ITEM_FLAGS_SIZE = DX1_SIZE;
     public static final int MAIN_ITEM_B_OFFSET = 0x300;
     public static final int MAIN_ITEM_A_OFFSET = 0x301;
     public static final int MAIN_SUBSCREEN_OFFSET = 0x302;

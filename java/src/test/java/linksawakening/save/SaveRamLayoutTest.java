@@ -65,6 +65,13 @@ final class SaveRamLayoutTest {
     }
 
     @Test
+    void exposesTheDungeonItemFlagSaveRegions() {
+        assertEquals(0x316, SaveRamLayout.MAIN_DUNGEON_ITEM_FLAGS_OFFSET);
+        assertEquals(0x2D, SaveRamLayout.MAIN_DUNGEON_ITEM_FLAGS_SIZE);
+        assertEquals(0x05, SaveRamLayout.DX1_COLOR_DUNGEON_ITEM_FLAGS_SIZE);
+    }
+
+    @Test
     void rejectsInvalidSlotIndexes() {
         assertThrows(IllegalArgumentException.class, () -> SaveRamLayout.slotOffset(-1));
         assertThrows(IllegalArgumentException.class, () -> SaveRamLayout.slotOffset(3));

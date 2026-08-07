@@ -1276,6 +1276,26 @@ final class RoomSessionTest {
         assertArrayEquals(colorDungeon, session.colorDungeonRoomStatusSnapshot());
     }
 
+    @Test
+    void exposesAndRestoresDungeonItemFlagsUsedByTheWorldHandler() {
+        RoomSession session = newSession();
+        byte[] dungeonFlags = pattern(DungeonItemState.DUNGEON_ITEM_FLAGS_SIZE, 0x10);
+        byte[] colorFlags = pattern(DungeonItemState.COLOR_DUNGEON_ITEM_FLAGS_SIZE, 0xE0);
+
+        session.restoreDungeonItemFlags(dungeonFlags, colorFlags);
+        session.loadIndoor(2, 0x25);
+
+        assertArrayEquals(dungeonFlags, session.dungeonItemFlagsSnapshot());
+        assertArrayEquals(colorFlags, session.colorDungeonItemFlagsSnapshot());
+        assertArrayEquals(new byte[] {
+            dungeonFlags[2 * DungeonItemState.ITEM_FLAG_SIZE],
+            dungeonFlags[2 * DungeonItemState.ITEM_FLAG_SIZE + 1],
+            dungeonFlags[2 * DungeonItemState.ITEM_FLAG_SIZE + 2],
+            dungeonFlags[2 * DungeonItemState.ITEM_FLAG_SIZE + 3],
+            dungeonFlags[2 * DungeonItemState.ITEM_FLAG_SIZE + 4]
+        }, session.currentDungeonItemFlagsSnapshot());
+    }
+
     private static RoomSession newSession() {
         return newSession(room -> {
         });

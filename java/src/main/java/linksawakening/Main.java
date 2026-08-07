@@ -1007,6 +1007,8 @@ public class Main {
         playerState.applySavedGame(saved);
         roomSession.restoreRoomStatuses(saved.overworldRoomStatus(), saved.indoorARoomStatus(),
             saved.indoorBRoomStatus(), saved.colorDungeonRoomStatus());
+        roomSession.restoreDungeonItemFlags(saved.dungeonItemFlags(),
+            saved.colorDungeonItemFlags());
         if (saved.spawnIsIndoor() != 0) {
             roomSession.loadIndoor(saved.spawnMapId(), saved.spawnMapRoom());
             link.setDirection(Link.DIRECTION_UP);
@@ -1075,6 +1077,9 @@ public class Main {
                 roomSession.indoorARoomStatusSnapshot(),
                 roomSession.indoorBRoomStatusSnapshot(),
                 roomSession.colorDungeonRoomStatusSnapshot());
+            saveRamStore.writeDungeonItemFlags(currentSaveSlot,
+                roomSession.dungeonItemFlagsSnapshot(),
+                roomSession.colorDungeonItemFlagsSnapshot());
         }
         try {
             saveRamStore.flush();

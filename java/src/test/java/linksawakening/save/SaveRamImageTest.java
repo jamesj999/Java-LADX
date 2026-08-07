@@ -165,6 +165,35 @@ final class SaveRamImageTest {
     }
 
     @Test
+    void writesDungeonItemFlagsToTheMainAndDx1RegionsWithoutTouchingNeighbors() {
+        SaveRamImage image = SaveRamImage.empty();
+        image.createNewGame(1, new int[] {1, 2, 3, 4, 5});
+        int slotStart = SaveRamLayout.slotOffset(1);
+        int main = slotStart + SaveRamLayout.mainOffset();
+        byte[] before = image.bytes();
+        before[main + SaveRamLayout.MAIN_DUNGEON_ITEM_FLAGS_OFFSET - 1] = (byte) 0xA1;
+        before[main + SaveRamLayout.MAIN_DUNGEON_ITEM_FLAGS_OFFSET
+            + SaveRamLayout.MAIN_DUNGEON_ITEM_FLAGS_SIZE] = (byte) 0xB2;
+        before[slotStart + SaveRamLayout.dx1Offset() - 1] = (byte) 0xC3;
+        image = SaveRamImage.fromBytes(before);
+
+        byte[] dungeonFlags = pattern(SaveRamLayout.MAIN_DUNGEON_ITEM_FLAGS_SIZE, 0x10);
+        byte[] colorFlags = pattern(SaveRamLayout.DX1_COLOR_DUNGEON_ITEM_FLAGS_SIZE, 0xE0);
+        image.writeDungeonItemFlags(1, dungeonFlags, colorFlags);
+
+        SaveSlotState state = image.readSlot(1);
+        assertArrayEquals(dungeonFlags, state.dungeonItemFlags());
+        assertArrayEquals(colorFlags, state.colorDungeonItemFlags());
+        assertEquals((byte) 0xA1,
+            image.bytes()[main + SaveRamLayout.MAIN_DUNGEON_ITEM_FLAGS_OFFSET - 1]);
+        assertEquals((byte) 0xB2,
+            image.bytes()[main + SaveRamLayout.MAIN_DUNGEON_ITEM_FLAGS_OFFSET
+                + SaveRamLayout.MAIN_DUNGEON_ITEM_FLAGS_SIZE]);
+        assertEquals((byte) 0xC3,
+            image.bytes()[slotStart + SaveRamLayout.dx1Offset() - 1]);
+    }
+
+    @Test
     void decodesModeledFieldsAndKeepsUnknownRawBytes() {
         byte[] bytes = SaveRamImage.empty().bytes();
         int slotStart = SaveRamLayout.slotOffset(0);

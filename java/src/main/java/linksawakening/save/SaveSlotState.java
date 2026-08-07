@@ -80,6 +80,17 @@ public record SaveSlotState(
             SaveRamLayout.DX2_COLOR_DUNGEON_ROOM_STATUS_SIZE);
     }
 
+    public byte[] dungeonItemFlags() {
+        return roomStatus(SaveRamLayout.mainOffset()
+            + SaveRamLayout.MAIN_DUNGEON_ITEM_FLAGS_OFFSET,
+            SaveRamLayout.MAIN_DUNGEON_ITEM_FLAGS_SIZE);
+    }
+
+    public byte[] colorDungeonItemFlags() {
+        return roomStatus(SaveRamLayout.dx1Offset(),
+            SaveRamLayout.DX1_COLOR_DUNGEON_ITEM_FLAGS_SIZE);
+    }
+
     private byte[] roomStatus(int offset, int length) {
         return Arrays.copyOfRange(rawSlot, offset, offset + length);
     }

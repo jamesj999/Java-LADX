@@ -112,6 +112,7 @@ public final class RoomSession {
     private final byte[] indoorARoomStatus = new byte[0x100];
     private final byte[] indoorBRoomStatus = new byte[0x100];
     private final byte[] colorDungeonRoomStatus = new byte[0x100];
+    private final DungeonItemState dungeonItemState = new DungeonItemState();
     private final Map<Integer, RoomEntityRuntime.HookshotBridgeUpdate>
         hookshotBridgeTileOverrides = new HashMap<>();
     /** Immediate bomb-wall draw commands use a different tile order than the room object table. */
@@ -276,6 +277,7 @@ public final class RoomSession {
 
     public void loadIndoor(int mapId, int roomId, int mapCategory) {
         clearTransientRoomState();
+        dungeonItemState.loadForMap(mapId, true);
         gpu.loadIndoorTiles(romData, mapId, roomId);
         initializeSwitchBlockTiles();
         LoadedRoom room = roomLoader.loadIndoor(
@@ -339,6 +341,22 @@ public final class RoomSession {
         Arrays.fill(colorDungeonRoomStatus, (byte) 0);
         System.arraycopy(colorDungeonStatus, 0, colorDungeonRoomStatus, 0,
             COLOR_DUNGEON_SAVE_STATUS_SIZE);
+    }
+
+    public byte[] dungeonItemFlagsSnapshot() {
+        return dungeonItemState.dungeonItemFlagsSnapshot();
+    }
+
+    public byte[] colorDungeonItemFlagsSnapshot() {
+        return dungeonItemState.colorDungeonItemFlagsSnapshot();
+    }
+
+    public byte[] currentDungeonItemFlagsSnapshot() {
+        return dungeonItemState.currentFlagsSnapshot();
+    }
+
+    public void restoreDungeonItemFlags(byte[] dungeonFlags, byte[] colorFlags) {
+        dungeonItemState.restore(dungeonFlags, colorFlags);
     }
 
     int overworldRoomStatusForTest(int roomId) {

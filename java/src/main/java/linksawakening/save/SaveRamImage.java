@@ -143,6 +143,25 @@ public final class SaveRamImage {
             SaveRamLayout.DX2_COLOR_DUNGEON_ROOM_STATUS_SIZE);
     }
 
+    /** Writes the source's persistent dungeon item table and Color Dungeon extension. */
+    public void writeDungeonItemFlags(int slot, byte[] dungeonItemFlags,
+                                      byte[] colorDungeonItemFlags) {
+        SaveRamLayout.checkSlot(slot);
+        requireLength(dungeonItemFlags, SaveRamLayout.MAIN_DUNGEON_ITEM_FLAGS_SIZE,
+            "dungeonItemFlags");
+        requireLength(colorDungeonItemFlags, SaveRamLayout.DX1_COLOR_DUNGEON_ITEM_FLAGS_SIZE,
+            "colorDungeonItemFlags");
+
+        int slotOffset = SaveRamLayout.slotOffset(slot);
+        int main = slotOffset + SaveRamLayout.mainOffset();
+        System.arraycopy(dungeonItemFlags, 0, bytes,
+            main + SaveRamLayout.MAIN_DUNGEON_ITEM_FLAGS_OFFSET,
+            SaveRamLayout.MAIN_DUNGEON_ITEM_FLAGS_SIZE);
+        System.arraycopy(colorDungeonItemFlags, 0, bytes,
+            slotOffset + SaveRamLayout.dx1Offset(),
+            SaveRamLayout.DX1_COLOR_DUNGEON_ITEM_FLAGS_SIZE);
+    }
+
     /**
      * Writes every persistent field currently represented by {@link PlayerState}.
      *
