@@ -96,6 +96,19 @@ public final class RoomTransitionCoordinator {
         }
     }
 
+    /** Starts a pending Ocarina Mambo transition after entity playback ends. */
+    public boolean handlePendingManboTransition(Link link) {
+        if (link == null || !roomSession.hasActiveRoom() || transitionController.isActive()) {
+            return false;
+        }
+        Warp target = roomSession.consumeManboPondTransitionRequest();
+        if (target == null) {
+            return false;
+        }
+        transitionController.startManboIn(() -> applyWarp(target, link));
+        return true;
+    }
+
     private void applyWarp(Warp warp, Link link) {
         roomSession.loadWarpDestination(warp);
         int landingX = warp.javaPixelX();

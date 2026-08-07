@@ -186,6 +186,7 @@ public class Main {
         gpu = new GPU();
 
         loadROM();
+        transitionController.setRomData(romData);
         appConfig = AppConfig.loadFromResources();
         loadGraphicsData();
         initMenuSystem();
@@ -921,6 +922,9 @@ public class Main {
                     }
                 }
                 openEntityDialogRequests();
+                if (roomTransitionCoordinator.handlePendingManboTransition(link)) {
+                    gameplaySoundSink.play(linksawakening.gameplay.GameplaySoundEvent.MANBO_WARP);
+                }
                 for (var event : projectileEvents) {
                     boolean hookshotPull = event.kind() == EntityProjectileEvent.Kind.HOOKSHOT_PULL;
                     boolean hasLinkResponse = event.linkIgnoreCollisionCountdown() != 0

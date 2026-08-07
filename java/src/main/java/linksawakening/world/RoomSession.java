@@ -82,6 +82,7 @@ public final class RoomSession {
     private final GPU gpu;
     private final RoomLoader roomLoader;
     private final OverworldTilesetTable overworldTilesetTable;
+    private final ManboWarpResolver manboWarpResolver;
     private final OverworldCollision overworldCollision;
     private final TransientVfxSystem transientVfxSystem;
     private final DroppableRupeeSystem droppableRupeeSystem;
@@ -173,6 +174,7 @@ public final class RoomSession {
     private int selectedSongIndex;
     private int ocarinaAnimationCounter;
     private int ocarinaAnimationPhase;
+    private boolean pendingManboTransition;
     private int currentLinkMotionState = EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE;
     private GameplaySoundSink colorShellSoundSink = GameplaySoundSink.none();
     private final ColorShellWorld colorShellWorld = new ColorShellWorld() {
@@ -231,6 +233,7 @@ public final class RoomSession {
         this.gpu = gpu;
         this.roomLoader = roomLoader;
         this.overworldTilesetTable = overworldTilesetTable;
+        this.manboWarpResolver = new ManboWarpResolver(romData);
         this.overworldCollision = overworldCollision;
         this.transientVfxSystem = transientVfxSystem;
         this.droppableRupeeSystem = droppableRupeeSystem;
@@ -542,6 +545,7 @@ public final class RoomSession {
         selectedSongIndex = selectedSong & 0xFF;
         ocarinaAnimationCounter = 0;
         ocarinaAnimationPhase = 0;
+        pendingManboTransition = false;
         return true;
     }
 
@@ -556,6 +560,19 @@ public final class RoomSession {
             return -1;
         }
         return ocarinaAnimationPhase == 0 ? 0x76 : 0x75;
+    }
+
+    /**
+     * Returns the ROM destination prepared by the completed Mambo branch.
+     * The caller starts the non-interactive transition and applies this warp
+     * only after the source's {@code $C0}-frame effect has finished.
+     */
+    public Warp consumeManboPondTransitionRequest() {
+        if (!pendingManboTransition || activeRoom == null) {
+            return null;
+        }
+        pendingManboTransition = false;
+        return manboWarpResolver.resolve(activeRoom.mapCategory(), activeRoom.mapId());
     }
 
     /** Supplies the player fields consumed by the ROM enemy-drop resolver. */
@@ -1110,8 +1127,9 @@ public final class RoomSession {
     /** Mirrors the countdown-zero branches of LinkPlayingOcarinaHandler. */
     private void finishOcarinaPlayback() {
         if (followingNpcState.marinFollowing()) {
-            if (selectedSongIndex != 0x01
-                && activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
+            if (selectedSongIndex == 0x01) {
+                pendingManboTransition = true;
+            } else if (activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
                 pendingRoomDialogRequests.add(new RoomEntityRuntime.DialogRequest(
                     OCARINA_MARIN_DIALOG_TABLE, OCARINA_MARIN_DIALOG_ID));
             }
@@ -1120,6 +1138,8 @@ public final class RoomSession {
         if (ocarinaSongFlags == 0) {
             pendingRoomDialogRequests.add(new RoomEntityRuntime.DialogRequest(
                 OCARINA_NO_SONG_DIALOG_TABLE, OCARINA_NO_SONG_DIALOG_ID));
+        } else if (selectedSongIndex == 0x01) {
+            pendingManboTransition = true;
         }
     }
 
@@ -1473,6 +1493,7 @@ public final class RoomSession {
         pendingRoomEntityEvents.clear();
         pendingChestRewardEvents.clear();
         pendingRoomDialogRequests.clear();
+        pendingManboTransition = false;
         pendingShovelDrop = null;
         shovelUseState = 0;
     }

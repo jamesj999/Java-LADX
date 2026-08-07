@@ -24,8 +24,14 @@ public final class RoomRenderLayer implements RenderLayer {
     public void render(RenderContext context) {
         if (!scrollController.isActive()) {
             int[][] palettes = transitionController.applyFade(currentRoom.palettes());
-            IndexedRenderer.renderRoom(context.buffer(), context.gpu(), currentRoom.tileIds(),
-                currentRoom.tileAttrs(), palettes, 0, 0);
+            int[] waveOffsets = transitionController.manboWaveOffsets(ROOM_PIXEL_HEIGHT);
+            if (waveOffsets == null) {
+                IndexedRenderer.renderRoom(context.buffer(), context.gpu(), currentRoom.tileIds(),
+                    currentRoom.tileAttrs(), palettes, 0, 0);
+            } else {
+                IndexedRenderer.renderRoomLineScroll(context.buffer(), context.gpu(),
+                    currentRoom.tileIds(), currentRoom.tileAttrs(), palettes, waveOffsets);
+            }
             return;
         }
 

@@ -33,6 +33,30 @@ public final class IndexedRenderer {
         }
     }
 
+    /** Renders a room with the source-style per-scanline BG scroll effect. */
+    public static void renderRoomLineScroll(byte[] buffer, GPU gpu, int[] tileIds,
+                                             int[] tileAttrs, int[][] palettes,
+                                             int[] lineOffsets) {
+        if (lineOffsets == null || lineOffsets.length == 0) {
+            renderRoom(buffer, gpu, tileIds, tileAttrs, palettes, 0, 0);
+            return;
+        }
+        for (int screenY = 0; screenY < RoomConstants.ROOM_PIXEL_HEIGHT; screenY++) {
+            int offset = lineOffsets[Math.min(screenY, lineOffsets.length - 1)];
+            int sourceY = Math.floorMod(screenY + offset, RoomConstants.ROOM_PIXEL_HEIGHT);
+            int mapY = sourceY / 8;
+            int tileY = sourceY & 0x07;
+            for (int screenX = 0; screenX < RoomConstants.ROOM_PIXEL_WIDTH; screenX++) {
+                int sourceX = Math.floorMod(screenX + offset, RoomConstants.ROOM_PIXEL_WIDTH);
+                int mapX = sourceX / 8;
+                int tileX = sourceX & 0x07;
+                int mapIndex = mapY * RoomConstants.ROOM_TILE_WIDTH + mapX;
+                renderBackgroundPixel(buffer, gpu, tileIds[mapIndex], tileAttrs[mapIndex],
+                    palettes, screenX, screenY, tileX, tileY);
+            }
+        }
+    }
+
     public static void renderBackground(byte[] buffer, GPU gpu, int[] tilemap, int[] attrmap,
                                         int[][] palettes, int width, int height) {
         renderBackground(buffer, gpu, tilemap, attrmap, palettes, width, height, width, height, 0, 0);

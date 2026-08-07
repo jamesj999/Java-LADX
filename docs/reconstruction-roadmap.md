@@ -2076,6 +2076,20 @@ runtime collision callback.
 - Focused completion-condition tests are included; the Manbo transition
   effect and source destination lookup remain the next Ocarina follow-up.
 
+## Verified ROM Manbo Mambo transition — 2026-08-07
+
+- The selected-song completion branch now raises the source Manbo transition
+  only when a learned Mambo is available, preserving the no-song narrator
+  branch. The source jingle `$2C` is routed through the ROM sound catalog.
+- `Data_014_4DF1` is decoded from bank `$14:$4DF1`; indoor maps `$00-$09`
+  select their five-byte records, Color Dungeon uses the source low-nibble
+  index, and outdoor/unsupported maps use the fixed overworld pond warp
+  (`$45`, `$38`, `$60`, tile `$53`).
+- The non-interactive transition owns the source `$C0`-frame window, fades
+  from the source `$60` threshold, applies the bank-$14 `$4EE8` scanline wave,
+  then loads the resolved room and begins the return fade. The clean Java
+  suite passes with 1,151 tests and zero failures, errors, or skipped tests.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

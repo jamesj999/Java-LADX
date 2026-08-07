@@ -24,7 +24,7 @@ package linksawakening.world;
  */
 public final class TransitionController {
 
-    public enum State { IDLE, FADING_OUT, FADING_IN }
+    public enum State { IDLE, FADING_OUT, FADING_IN, MANBO_IN }
 
     /** Frames per "step" — matches the BGP cycle cadence at bank20.asm:2099. */
     private static final int FRAMES_PER_STEP = 4;
@@ -34,10 +34,25 @@ public final class TransitionController {
 
     private static final int STEPS = MAX_FADE_STEP + 1;
     private static final int FADE_FRAMES = FRAMES_PER_STEP * STEPS; // 16
+    private static final int MANBO_FADE_START = 0x60;
+    public static final int MANBO_TRANSITION_FRAMES = 0xC0;
 
     private State state = State.IDLE;
     private int frameInPhase;
     private Runnable pendingLoad;
+    private ManboTransitionWave manboTransitionWave;
+
+    public TransitionController() {
+    }
+
+    public TransitionController(byte[] romData) {
+        setRomData(romData);
+    }
+
+    /** Supplies the ROM-backed wave table used by Manbo's non-interactive effect. */
+    public void setRomData(byte[] romData) {
+        manboTransitionWave = romData == null ? null : new ManboTransitionWave(romData);
+    }
 
     /**
      * Start a fade-out. When the fade-out completes, {@code loadNewRoom} is
@@ -52,12 +67,30 @@ public final class TransitionController {
         pendingLoad = loadNewRoom;
     }
 
+    /** Starts the source's non-interactive 0xC0-frame Manbo entry effect. */
+    public boolean startManboIn(Runnable onComplete) {
+        if (state != State.IDLE) {
+            return false;
+        }
+        state = State.MANBO_IN;
+        frameInPhase = 0;
+        pendingLoad = onComplete;
+        return true;
+    }
+
     public void tick() {
         if (state == State.IDLE) {
             return;
         }
         frameInPhase++;
-        if (state == State.FADING_OUT && frameInPhase >= FADE_FRAMES) {
+        if (state == State.MANBO_IN && frameInPhase >= MANBO_TRANSITION_FRAMES) {
+            if (pendingLoad != null) {
+                pendingLoad.run();
+                pendingLoad = null;
+            }
+            state = State.FADING_IN;
+            frameInPhase = 0;
+        } else if (state == State.FADING_OUT && frameInPhase >= FADE_FRAMES) {
             if (pendingLoad != null) {
                 pendingLoad.run();
                 pendingLoad = null;
@@ -82,6 +115,19 @@ public final class TransitionController {
         return state;
     }
 
+    /** Current frame within the active transition effect or fade phase. */
+    public int transitionFrame() {
+        return frameInPhase;
+    }
+
+    /** Returns the source scanline offsets while the Manbo effect is active. */
+    public int[] manboWaveOffsets(int scanlineCount) {
+        if (state != State.MANBO_IN || manboTransitionWave == null) {
+            return null;
+        }
+        return manboTransitionWave.offsetsForFrame(frameInPhase, scanlineCount);
+    }
+
     /**
      * Current fade step. 0 = no fade (original palette), MAX_FADE_STEP = fully
      * faded. Symmetric: FADING_OUT ramps 0→MAX; FADING_IN ramps MAX→0.
@@ -92,6 +138,13 @@ public final class TransitionController {
                 return Math.min(MAX_FADE_STEP, frameInPhase / FRAMES_PER_STEP);
             case FADING_IN:
                 return Math.max(0, MAX_FADE_STEP - frameInPhase / FRAMES_PER_STEP);
+            case MANBO_IN:
+                if (frameInPhase < MANBO_FADE_START) {
+                    return 0;
+                }
+                return Math.min(MAX_FADE_STEP,
+                    (frameInPhase - MANBO_FADE_START) * STEPS
+                        / (MANBO_TRANSITION_FRAMES - MANBO_FADE_START));
             case IDLE:
             default:
                 return 0;

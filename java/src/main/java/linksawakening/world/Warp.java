@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import java.util.Objects;
+
 /**
  * A single warp record extracted from a room's object stream.
  *
@@ -82,4 +84,25 @@ public final class Warp {
      */
     public int javaPixelX() { return destX - 8; }
     public int javaPixelY() { return destY - 16; }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (!(other instanceof Warp warp)) {
+            return false;
+        }
+        return category == warp.category
+            && destMap == warp.destMap
+            && destRoom == warp.destRoom
+            && destX == warp.destX
+            && destY == warp.destY
+            && tileLocation == warp.tileLocation;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(category, destMap, destRoom, destX, destY, tileLocation);
+    }
 }

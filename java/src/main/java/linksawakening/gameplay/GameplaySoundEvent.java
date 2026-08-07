@@ -44,5 +44,6 @@ public enum GameplaySoundEvent {
     OCARINA_BALLAD,
     OCARINA_MAMBO,
     OCARINA_FROG,
-    OCARINA_NO_SONG
+    OCARINA_NO_SONG,
+    MANBO_WARP
 }

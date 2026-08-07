@@ -84,6 +84,8 @@ public final class GameplaySoundEffectMap {
             SoundEffectNamespace.WAVE, 0x0A);
         put(effects, catalog, GameplaySoundEvent.OCARINA_NO_SONG,
             SoundEffectNamespace.WAVE, 0x15);
+        put(effects, catalog, GameplaySoundEvent.MANBO_WARP,
+            SoundEffectNamespace.JINGLE, 0x2C);
         return new GameplaySoundEffectMap(effects);
     }
 

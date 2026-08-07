@@ -96,6 +96,36 @@ final class RoomTransitionCoordinatorTest {
         assertFalse(link.isFallingIntoPit());
     }
 
+    @Test
+    void completedMamboPlaybackUsesTheRomDestinationAfterTheNonInteractiveEffect()
+        throws Exception {
+        byte[] rom = loadRom();
+        RomTables romTables = RomTables.loadFromRom(rom);
+        OverworldCollision collision = new OverworldCollision(romTables);
+        RoomSession session = newSession(rom, romTables, collision);
+        session.loadIndoor(0x00, 0x25);
+        assertTrue(session.startOcarina(0x01, 0x02, 0x01));
+        session.tickEntities(0);
+
+        TransitionController transitionController = new TransitionController();
+        RoomTransitionCoordinator coordinator = new RoomTransitionCoordinator(
+            session, new RoomBoundaryController(), transitionController, new ScrollController());
+        Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
+            romTables, collision, null, new PlayerState(), new ItemRegistry());
+
+        coordinator.handlePendingManboTransition(link);
+        assertEquals(TransitionController.State.MANBO_IN, transitionController.state());
+
+        for (int frame = 0; frame < TransitionController.MANBO_TRANSITION_FRAMES; frame++) {
+            transitionController.tick();
+        }
+
+        assertEquals(TransitionController.State.FADING_IN, transitionController.state());
+        assertEquals(0x17, session.currentRoomId());
+        assertEquals(0x48, link.pixelX());
+        assertEquals(0x6C, link.pixelY());
+    }
+
     private static byte[] loadRom() throws IOException {
         try (var stream = RoomTransitionCoordinatorTest.class.getClassLoader()
             .getResourceAsStream("rom/azle.gbc")) {

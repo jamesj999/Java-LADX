@@ -175,6 +175,19 @@ final class RoomSessionTest {
     }
 
     @Test
+    void learnedMamboRequestsTheRomManboTransitionInsteadOfACompletionDialog() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x00, 0x25);
+
+        assertTrue(session.startOcarina(0x01, 0x02, 0x01));
+        session.tickEntities(0);
+
+        assertEquals(new Warp(1, 0x00, 0x17, 0x50, 0x7C, -1),
+            session.consumeManboPondTransitionRequest());
+        assertTrue(session.consumeEntityDialogRequests().isEmpty());
+    }
+
+    @Test
     void forwardsPerFrameLinkCollisionTypeToGhiniAndOldOverloadDefaultsToZero() {
         RoomSession session = newSession();
         session.loadInitialOverworld(0x67);
