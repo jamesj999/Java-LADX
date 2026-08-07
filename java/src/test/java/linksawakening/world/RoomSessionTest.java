@@ -317,6 +317,59 @@ final class RoomSessionTest {
     }
 
     @Test
+    void magicPowderRevealsAnOverworldBushThroughTheLiveRoomBoundary() {
+        TransientVfxSystem vfx = new TransientVfxSystem(16);
+        RoomSession session = newSession(vfx);
+        session.loadInitialOverworld(0x92);
+
+        int location = 0x55;
+        int areaIndex = RoomConstants.ROOM_OBJECTS_BASE
+            + (location & 0xF0) + (location & 0x0F);
+        session.activeRoom().roomObjectsArea()[areaIndex] = 0x5C;
+        session.activeRoom().renderValues()[areaIndex] = 0x5C;
+
+        // The source entity cell is computed from entity X/Y as
+        // ((x - 1) & F0, (y - 9) & F0); these Link coordinates place it on
+        // room cell $55 after the ROM right-facing +$0E offset.
+        assertTrue(session.sprinkleMagicPowder(0x43, 0x59, 0, 0));
+        for (int frame = 0; frame < 16; frame++) {
+            session.tickEntitiesWithProjectileEvents(frame, 0x20, 0x20,
+                0, 0, 0, false);
+        }
+
+        assertEquals(0x04, session.activeRoom().roomObjectsArea()[areaIndex]);
+        assertEquals(0x04, session.activeRoom().renderValues()[areaIndex]);
+        assertEquals(1, vfx.activeCount());
+        assertTrue(session.consumeEntityEvents().stream()
+            .anyMatch(event -> event.type() == 0x08
+                && event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE
+                && event.soundId() == 0x2F));
+    }
+
+    @Test
+    void magicPowderIgnitesAnIndoorTorchThroughTheLiveRoomBoundary() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x00, 0x00);
+
+        int location = 0x22;
+        int areaIndex = RoomConstants.ROOM_OBJECTS_BASE
+            + (location & 0xF0) + (location & 0x0F);
+        session.activeRoom().roomObjectsArea()[areaIndex] = 0xAB;
+
+        assertTrue(session.sprinkleMagicPowder(0x13, 0x29, 0, 0));
+        for (int frame = 0; frame < 16; frame++) {
+            session.tickEntitiesWithProjectileEvents(frame, 0x20, 0x20,
+                0, 0, 0, false);
+        }
+
+        assertEquals(0xAC, session.activeRoom().roomObjectsArea()[areaIndex]);
+        assertTrue(session.consumeEntityEvents().stream()
+            .anyMatch(event -> event.type() == 0x08
+                && event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE
+                && event.soundId() == 0x12));
+    }
+
+    @Test
     void bombedOverworldBushSpawnsTheRomLiftableRockSmashEntity() {
         RoomSession session = newSession();
         session.loadInitialOverworld(0x92);

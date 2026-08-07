@@ -13,6 +13,7 @@ import linksawakening.equipment.Bomb;
 import linksawakening.equipment.Boomerang;
 import linksawakening.equipment.Hookshot;
 import linksawakening.equipment.ItemRegistry;
+import linksawakening.equipment.MagicPowder;
 import linksawakening.equipment.MagicRod;
 import linksawakening.equipment.Ocarina;
 import linksawakening.equipment.RocsFeather;
@@ -337,6 +338,30 @@ public class Main {
                 @Override
                 public int activeProjectileCount() {
                     return roomSession == null ? 0 : roomSession.activeProjectileCount();
+                }
+            }, link::canUseItems));
+        itemRegistry.register(PlayerState.INVENTORY_MAGIC_POWDER, new MagicPowder(
+            playerState, gameplaySoundSink, new MagicPowder.SprinkleTarget() {
+                @Override
+                public boolean sprinkleMagicPowder() {
+                    if (link == null || roomSession == null) {
+                        return false;
+                    }
+                    int romDirection = link.applyRomItemDirectionFromInput();
+                    return roomSession.sprinkleMagicPowder(
+                        link.romEntityX(), link.romEntityY(), link.romEntityZ(), romDirection);
+                }
+
+                @Override
+                public void startMagicPowderAttackStep() {
+                    if (link != null) {
+                        link.startRomMagicPowderAttackStep();
+                    }
+                }
+
+                @Override
+                public boolean magicPowderAttackStepActive() {
+                    return link != null && link.romAttackStepAnimationCountdown() != 0;
                 }
             }, link::canUseItems));
         itemRegistry.register(PlayerState.INVENTORY_ROCS_FEATHER, new RocsFeather(link));

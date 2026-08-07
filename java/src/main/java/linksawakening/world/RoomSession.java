@@ -623,6 +623,21 @@ public final class RoomSession {
         return true;
     }
 
+    /** Mirrors the delayed UseMagicPowder sprinkle-entity spawn bridge. */
+    public boolean sprinkleMagicPowder(int linkEntityX, int linkEntityY, int linkEntityZ,
+                                       int romDirection) {
+        if (activeRoom == null || entityRuntime == null) {
+            return false;
+        }
+        int slot = entityRuntime.spawnMagicPowderSprinkle(
+            linkEntityX, linkEntityY, linkEntityZ, romDirection);
+        if (slot < 0) {
+            return false;
+        }
+        activeRoom.replaceEntities(entityRuntime.snapshot());
+        return true;
+    }
+
     /**
      * Mirrors the ordinary player-bomb placement bridge. The item has already
      * applied PlaceBomb's inventory ordering; this method owns the room/runtime
@@ -921,6 +936,7 @@ public final class RoomSession {
         applyBombObjectInteractions(bombExplosionEvents);
         applyBoomerangObjectInteractions(entityRuntime.boomerangObjectRequests());
         applyMagicRodObjectInteractions(entityRuntime.magicRodObjectRequests());
+        applyMagicPowderObjectInteractions(entityRuntime.magicPowderObjectRequests());
         activeRoom.replaceEntities(entityRuntime.snapshot());
         return events;
     }
@@ -1395,6 +1411,58 @@ public final class RoomSession {
                 refreshOverworldCollisionAfterObjectMutation();
             }
         }
+    }
+
+    private void applyMagicPowderObjectInteractions(
+            List<RoomEntityRuntime.MagicPowderObjectRequest> requests) {
+        if (activeRoom == null || requests == null || requests.isEmpty()) {
+            return;
+        }
+
+        for (RoomEntityRuntime.MagicPowderObjectRequest request : requests) {
+            boolean changed = switch (request.action()) {
+                case REVEAL -> activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
+                    && overworldBushInteraction.revealObjectAtLocation(
+                        request.location(), activeRoom.roomId(), true,
+                        activeRoom.roomObjectsArea(), activeRoom.renderValues(),
+                        activeRoom.gbcOverlay(), activeRoom.tileIds(), activeRoom.tileAttrs())
+                        .changed();
+                case IGNITE_TORCH -> writeMagicPowderTorchObject(
+                    request.location(), 0xAB, 0xAC);
+                case EXTINGUISH_TORCH -> writeMagicPowderTorchObject(
+                    request.location(), 0xAC, 0xAB);
+            };
+
+            if (!changed) {
+                continue;
+            }
+            if (activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
+                refreshOverworldCollisionAfterObjectMutation();
+            } else {
+                overworldCollision.setRoom(activeRoom.roomObjectsArea());
+                overworldCollision.setGbcOverlay(null);
+            }
+        }
+    }
+
+    private boolean writeMagicPowderTorchObject(int location, int expectedObject,
+                                                 int replacementObject) {
+        if (objectAtRoomLocation(location) != expectedObject) {
+            return false;
+        }
+        int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0)
+            + (location & 0x0F);
+        int[] objects = activeRoom.roomObjectsArea();
+        if (areaIndex < 0 || areaIndex >= objects.length) {
+            return false;
+        }
+        objects[areaIndex] = replacementObject & 0xFF;
+        if (activeRoom.renderValues() != null
+            && areaIndex < activeRoom.renderValues().length) {
+            activeRoom.renderValues()[areaIndex] = replacementObject & 0xFF;
+        }
+        refreshActiveRoomTilemap();
+        return true;
     }
 
     private void applyPuzzleBombObjectCandidate(BombObjectInteraction.Candidate candidate,

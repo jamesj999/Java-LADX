@@ -98,6 +98,22 @@ final class GameplaySoundEffectMapTest {
     }
 
     @Test
+    void mapsMagicPowderAndItsPoofToRomJingles() throws IOException {
+        GameplaySoundEffectMap map = GameplaySoundEffectMap.fromCatalog(
+            SoundEffectCatalog.fromRom(loadRom()));
+
+        SoundEffect powder = map.resolve(GameplaySoundEvent.MAGIC_POWDER).orElseThrow();
+        SoundEffect poof = map.resolve(GameplaySoundEvent.MAGIC_POWDER_POOF).orElseThrow();
+
+        assertEquals(SoundEffectNamespace.JINGLE, powder.namespace());
+        assertEquals(0x05, powder.id());
+        assertEquals("JINGLE_POWDER", powder.name());
+        assertEquals(SoundEffectNamespace.JINGLE, poof.namespace());
+        assertEquals(0x2F, poof.id());
+        assertEquals("JINGLE_POOF", poof.name());
+    }
+
+    @Test
     void mapsSwordBeamToTheRomSwordBeamJingle() throws IOException {
         GameplaySoundEffectMap map = GameplaySoundEffectMap.fromCatalog(
             SoundEffectCatalog.fromRom(loadRom()));

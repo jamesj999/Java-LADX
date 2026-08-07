@@ -1973,9 +1973,30 @@ runtime collision callback.
   source `$08/$10` offset, and queues enemy-destroyed noise `$13`; the runtime
   keeps the projectile active after a burn as in the original handler.
 - Focused ROM-byte, countdown, display-list, motion, item-gate, sound, and
-  object-request tests cover the slice. A clean Java suite passes with 1,103
+  object-request tests cover the slice. A clean Java suite passes with 1,105
   tests and zero failures, errors, or skipped tests. Remaining entity handlers,
   room scripts, and broader hardware-visible ordering remain follow-up work.
+
+## Verified ROM Magic Powder producer and sprinkle runtime — 2026-08-07
+
+- `UseMagicPowder` now has a ROM-backed inventory boundary: it rejects an
+  active attack window, allocates entity `$08` before spending the count, plays
+  jingle `$05`, clears an empty A/B powder slot, and starts the source `$0E`
+  item attack-step countdown. Entity `$08` uses the bank-$18 rectangle list at
+  `$7ABA` and the source direction offsets at bank-$20 `$4C3F/$4C43`.
+- `MagicPowderSprinkleEntityHandler` now follows the `$17` transition timer and
+  `((countdown >> 2) & $07)` animation selection. Its exact computed room cell
+  handles outdoor `$5C/$D3` reveals with poof VFX/jingle `$2F`, applies damage
+  type `$09` during the final collision window, and handles indoor unlit torch
+  `$AB -> $AC -> $AB` transitions through the source `$80` slow timer and
+  bursting-flame noise `$12`.
+- The room/session boundary mutates the padded room-object buffer and rebuilds
+  the ROM tilemap/collision view. The bank-$18 torch pairs at `$795E` and
+  `$7962`, sound mappings, source cell math, runtime timers, live overworld
+  reveal, and live indoor torch path are covered by focused tests. A clean
+  Java suite passes with 1,119 tests and zero failures, errors, or skipped
+  tests. The source's already-held-toadstool got-item-dialog branch remains a
+  separate UI-state boundary.
 
 ## Broader parity gaps
 

@@ -420,6 +420,11 @@ public final class Link implements RocsFeather.JumpTarget {
         romAttackStepAnimationCountdown = ROM_ITEM_ATTACK_STEP_COUNTDOWN;
     }
 
+    /** Starts SprinkleMagicPowder's two-frame-longer generic item window ($0E). */
+    public void startRomMagicPowderAttackStep() {
+        romAttackStepAnimationCountdown = 0x0E;
+    }
+
     /** Starts UseMagicRod's high-bit attack-step animation window. */
     public void startRomMagicRodAttackStep() {
         romAttackStepAnimationCountdown = 0x8E;

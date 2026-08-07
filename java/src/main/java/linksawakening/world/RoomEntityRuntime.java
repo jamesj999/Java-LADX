@@ -104,6 +104,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_ARROW = 0x00;
     private static final int ENTITY_BOOMERANG = BoomerangMotion.ENTITY_TYPE;
     private static final int ENTITY_MAGIC_ROD_FIREBALL = 0x04;
+    private static final int ENTITY_MAGIC_POWDER_SPRINKLE = 0x08;
     private static final int ENTITY_SWORD_BEAM = 0xDF;
     private static final int ENTITY_BOMB = 0x02;
     private static final int ENTITY_SWORD_SHIELD_PICKUP = 0x31;
@@ -124,6 +125,7 @@ public final class RoomEntityRuntime {
     private static final int DAMAGE_TYPE_ARROW = 0x05;
     private static final int DAMAGE_TYPE_BOOMERANG = 0x08;
     private static final int DAMAGE_TYPE_MAGIC_ROD = 0x0A;
+    private static final int DAMAGE_TYPE_MAGIC_POWDER = 0x09;
     private static final int DAMAGE_TYPE_SWORD_BEAM = 0x01;
     private static final int DAMAGE_TYPE_BOMB = BombExplosionEvent.DAMAGE_TYPE_BOMB;
     private static final int DAMAGE_TYPE_BOMB_ARROW = 0x0C;
@@ -141,6 +143,11 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_PHYSICS_GRABBABLE = 0x20;
     private static final int OBJECT_BUSH = 0x5C;
     private static final int OBJECT_BUSH_GROUND_STAIRS = 0xD3;
+    private static final int OBJECT_TORCH_UNLIT = 0xAB;
+    private static final int OBJECT_TORCH_LIT = 0xAC;
+    private static final int MAGIC_POWDER_TRANSITION_COUNTDOWN = 0x17;
+    private static final int MAGIC_POWDER_SLOW_TRANSITION_COUNTDOWN = 0x80;
+    private static final int MAGIC_POWDER_POOF_JINGLE_ID = 0x2F;
     private static final int BOOMERANG_SFX_ID = 0x2D;
     private static final int BOOMERANG_SFX_COUNTER_PERIOD = 0x1A;
     private static final int SWORD_BEAM_JINGLE_ID = 0x3B;
@@ -272,6 +279,7 @@ public final class RoomEntityRuntime {
     private final boolean[] bombFinalPresentationPending =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final int[] bombPrivateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] magicPowderPrivateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] entityUnknownJ = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] placedBombMotionInitialized =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
@@ -352,6 +360,8 @@ public final class RoomEntityRuntime {
     private final SwordBeamMotion swordBeamMotion = new SwordBeamMotion();
     private final List<BoomerangObjectRequest> boomerangObjectRequests = new ArrayList<>();
     private final List<MagicRodObjectRequest> magicRodObjectRequests = new ArrayList<>();
+    private final int[] magicPowderState = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final List<MagicPowderObjectRequest> magicPowderObjectRequests = new ArrayList<>();
     private int boomerangSfxCounter;
 
     /** The ROM-facing state needed by Link's carry animation and throw input. */
@@ -400,6 +410,31 @@ public final class RoomEntityRuntime {
             location &= 0xFF;
             objectLeft &= 0xF0;
             objectTop &= 0xF0;
+        }
+    }
+
+    /** Object-side effect emitted by MagicPowderSprinkleEntityHandler. */
+    public enum MagicPowderObjectAction {
+        REVEAL,
+        IGNITE_TORCH,
+        EXTINGUISH_TORCH
+    }
+
+    /** A ROM powder-sprinkle object mutation applied by RoomSession. */
+    public record MagicPowderObjectRequest(int sourceSlot, int location,
+                                           int objectLeft, int objectTop,
+                                           MagicPowderObjectAction action) {
+        public MagicPowderObjectRequest {
+            if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
+                throw new IllegalArgumentException("Magic Powder source slot out of range: "
+                    + sourceSlot);
+            }
+            location &= 0xFF;
+            objectLeft &= 0xF0;
+            objectTop &= 0xF0;
+            if (action == null) {
+                throw new IllegalArgumentException("Magic Powder object action cannot be null");
+            }
         }
     }
 
@@ -876,6 +911,7 @@ public final class RoomEntityRuntime {
         transientVfxRequests.clear();
         boomerangObjectRequests.clear();
         magicRodObjectRequests.clear();
+        magicPowderObjectRequests.clear();
         pendingDialogRequests.clear();
         pendingEntityEvents.clear();
         pendingChestRewardEvents.clear();
@@ -1059,6 +1095,12 @@ public final class RoomEntityRuntime {
             }
             if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_MAGIC_ROD_FIREBALL) {
                 advanceMagicRodFireballEntity(index, entity, frame,
+                    projectileLinkState.motionState());
+                continue;
+            }
+            if (status == EntityStatus.ACTIVE
+                && entity.type() == ENTITY_MAGIC_POWDER_SPRINKLE) {
+                advanceMagicPowderSprinkleEntity(index, entity, frame,
                     projectileLinkState.motionState());
                 continue;
             }
@@ -2806,6 +2848,140 @@ public final class RoomEntityRuntime {
         return objectId == OBJECT_BUSH || objectId == OBJECT_BUSH_GROUND_STAIRS;
     }
 
+    /** Advances entity {@code $08} through MagicPowderSprinkleEntityHandler. */
+    private void advanceMagicPowderSprinkleEntity(int index, RoomEntity entity, int frame,
+                                                   int linkMotionState) {
+        int slot = entity.slot();
+        decrementSlowTransitionCountdown(slot, frame);
+
+        if (magicPowderState[slot] != 0) {
+            // State one has no ordinary sprinkle rectangle: the source emits
+            // its short torch pair only at the state transition boundaries.
+            if (linkMotionState >= 0x02) {
+                slots[index] = withVariant(entity, -1);
+                return;
+            }
+            if (slowTransitionCountdown[slot] != 0) {
+                slots[index] = withVariant(entity, -1);
+                return;
+            }
+
+            int objectLeft = entity.x() & 0xF0;
+            int objectTop = entity.y() & 0xF0;
+            int location = (objectTop | (objectLeft >>> 4)) & 0xFF;
+            magicPowderObjectRequests.add(new MagicPowderObjectRequest(
+                slot, location, objectLeft, objectTop,
+                MagicPowderObjectAction.EXTINGUISH_TORCH));
+            clearEntity(slot);
+            return;
+        }
+
+        int transitionCountdown = enemyTransitionCountdown[slot];
+        if (transitionCountdown == 0) {
+            clearEntity(slot);
+            return;
+        }
+
+        // func_018_7B02 runs before ReturnIfNonInteractive_18 and selects
+        // ((transitionCountdown >> 2) & 7) from the ROM rectangle list.
+        slots[index] = withVariant(entity, (transitionCountdown >>> 2) & 0x07);
+        if (linkMotionState >= 0x02) {
+            return;
+        }
+
+        if (transitionCountdown != 0x07) {
+            if (transitionCountdown < 0x10) {
+                collideMagicPowderWithEntities(entity, frame);
+            }
+            return;
+        }
+
+        RoomEntityObjectQuery intersectionQuery = objectIntersectionQuery != null
+            ? objectIntersectionQuery : objectQuery;
+        RoomEntityObjectSample object = intersectionQuery == null
+            ? null : intersectionQuery.sample(entity);
+        int objectLeft = magicPowderObjectLeft(entity);
+        int objectTop = magicPowderObjectTop(entity);
+        int location = (objectTop | (objectLeft >>> 4)) & 0xFF;
+        int objectId = object == null ? 0xFF : object.objectId() & 0xFF;
+
+        if (!indoorRoom && (objectId == OBJECT_BUSH
+            || objectId == OBJECT_BUSH_GROUND_STAIRS)) {
+            magicPowderObjectRequests.add(new MagicPowderObjectRequest(
+                slot, location, objectLeft, objectTop, MagicPowderObjectAction.REVEAL));
+            transientVfxRequests.add(new TransientVfxRequest(
+                TransientVfxType.POOF, entity.x(), (entity.y() - entity.z()) & 0xFF));
+            pendingEntityEvents.add(new EntityCombatEvent(
+                slot, ENTITY_MAGIC_POWDER_SPRINKLE, 0, false,
+                EntityCombatEvent.SoundChannel.JINGLE, MAGIC_POWDER_POOF_JINGLE_ID));
+            clearEntity(slot);
+            return;
+        }
+
+        if (indoorRoom && objectId == OBJECT_TORCH_UNLIT) {
+            magicPowderState[slot] = 1;
+            slowTransitionCountdown[slot] = MAGIC_POWDER_SLOW_TRANSITION_COUNTDOWN;
+            slowTimerInitialized[slot] = true;
+            enemyTransitionCountdown[slot] = 0;
+            RoomEntity torch = withPositionAndVariant(entity, objectLeft, objectTop, 0);
+            EntitySpriteDefinition torchDefinition = spriteHandlers == null
+                ? entity.spriteDefinition() : spriteHandlers.forMagicPowderTorchState(true);
+            slots[index] = withDefinition(torch, torchDefinition, 0);
+            magicPowderObjectRequests.add(new MagicPowderObjectRequest(
+                slot, location, objectLeft, objectTop,
+                MagicPowderObjectAction.IGNITE_TORCH));
+            pendingEntityEvents.add(new EntityCombatEvent(
+                slot, ENTITY_MAGIC_POWDER_SPRINKLE, 0, false,
+                EntityCombatEvent.SoundChannel.NOISE, 0x12));
+            return;
+        }
+
+        // label_018_7A4B reaches the common collision helper only during the
+        // final sixteen transition ticks and only when private state 4 is 0.
+        if (transitionCountdown < 0x10 && magicPowderPrivateState4[slot] == 0) {
+            collideMagicPowderWithEntities(entity, frame);
+        }
+    }
+
+    private static int magicPowderObjectLeft(RoomEntity entity) {
+        return (((entity.x() + 0x07 - 0x08) & 0xFF) & 0xF0);
+    }
+
+    private static int magicPowderObjectTop(RoomEntity entity) {
+        return (((entity.y() + 0x07 - 0x10) & 0xFF) & 0xF0);
+    }
+
+    private boolean collideMagicPowderWithEntities(RoomEntity sprinkle, int frame) {
+        int sourceSlot = sprinkle.slot();
+        int sourceVisualY = (sprinkle.y() - sprinkle.z()) & 0xFF;
+        boolean collided = false;
+        for (int targetSlot = slots.length - 1; targetSlot >= 0; targetSlot--) {
+            if (targetSlot == sourceSlot || ((frame ^ targetSlot) & 0x01) != 0) {
+                continue;
+            }
+
+            RoomEntity target = slots[targetSlot];
+            int targetPhysics = enemyPhysicsFlags[targetSlot];
+            if (!target.loaded()
+                || target.status().value() < EntityStatus.ACTIVE.value()
+                || (targetPhysics & ENTITY_PHYSICS_GRABBABLE) != 0
+                || !RoomEntityCombatRules.supportsEnemyCollision(target.type())
+                || (targetPhysics & ENTITY_PHYSICS_PROJECTILE_NOCLIP) != 0
+                || (enemyHitboxFlags[targetSlot] & HITFLAGS_IGNORE_HITS) != 0
+                || enemyIgnoreHitsCountdown[targetSlot] != 0
+                || target.spriteVariant() < 0
+                || unsignedByteAbs(sprinkle.x() - target.x()) >= 0x0C
+                || unsignedByteAbs(sourceVisualY
+                    - ((target.y() - target.z()) & 0xFF)) >= 0x0C) {
+                continue;
+            }
+
+            collided = true;
+            applyPlayerProjectileDamage(target, DAMAGE_TYPE_MAGIC_POWDER, 0, 0);
+        }
+        return collided;
+    }
+
     private boolean boomerangObjectCollision(RoomEntity entity,
                                               RoomEntityObjectSample object,
                                               int frame, int slot) {
@@ -3258,6 +3434,8 @@ public final class RoomEntityRuntime {
         playerArrowBombArrow[slot] = false;
         bombPrivateCountdown1[slot] = 0;
         bombPrivateCountdown3[slot] = 0;
+        magicPowderState[slot] = 0;
+        magicPowderPrivateState4[slot] = 0;
         entityUnknownJ[slot] = 0;
         ironMaskPrivateState2[slot] = 0;
         ironMasksMaskSourceHookshotSlot[slot] = 0;
@@ -3302,6 +3480,8 @@ public final class RoomEntityRuntime {
         thrownDirection[slot] = 0xFF;
         bombDirection[slot] = 0xFF;
         bombPrivateState4[slot] = 0;
+        magicPowderState[slot] = 0;
+        magicPowderPrivateState4[slot] = 0;
         bombPrivateCountdown1[slot] = 0;
         bombPrivateCountdown3[slot] = 0;
         placedBombMotionInitialized[slot] = false;
@@ -3560,6 +3740,45 @@ public final class RoomEntityRuntime {
         return freeSlot;
     }
 
+    /** Creates the ROM's type-$08 Magic Powder sprinkle entity. */
+    int spawnMagicPowderSprinkle(int linkEntityX, int linkEntityY, int linkEntityZ,
+                                 int romDirection) {
+        validateRomDirection(romDirection);
+        int freeSlot = findFreeEntitySlot();
+        if (freeSlot < 0) {
+            return -1;
+        }
+
+        int[] xOffsets = {0x0E, -0x0E, 0x00, 0x00};
+        int[] yOffsets = {0x00, 0x00, -0x0C, 0x0C};
+        EntitySpriteDefinition definition = spriteDefinitionFor(
+            ENTITY_MAGIC_POWDER_SPRINKLE);
+        int variant = definition.supported() ? definition.initialVariant() : -1;
+        RoomEntity sprinkle = new RoomEntity(freeSlot, -1,
+            ENTITY_MAGIC_POWDER_SPRINKLE,
+            (linkEntityX + xOffsets[romDirection]) & 0xFF,
+            (linkEntityY + yOffsets[romDirection]) & 0xFF,
+            EntityStatus.ACTIVE, definition, variant, 0, 0, linkEntityZ & 0xFF);
+        slots[freeSlot] = sprinkle;
+        magicPowderState[freeSlot] = 0;
+        enemyTransitionCountdown[freeSlot] = MAGIC_POWDER_TRANSITION_COUNTDOWN;
+        slowTransitionCountdown[freeSlot] = 0;
+        slowTimerInitialized[freeSlot] = false;
+        enemyHitboxFlags[freeSlot] = 0;
+        enemyPhysicsFlags[freeSlot] = 0x03 | ENTITY_PHYSICS_HARMLESS
+            | ENTITY_PHYSICS_PROJECTILE_NOCLIP;
+        enemyHealth[freeSlot] = 0;
+        enemyStunnedCountdown[freeSlot] = 0;
+        enemyFlashCountdown[freeSlot] = 0;
+        enemyIgnoreHitsCountdown[freeSlot] = 0;
+        dyingCountdown[freeSlot] = 0;
+        powerRecoilDeath[freeSlot] = false;
+        baseEntityFlipAttribute[freeSlot] = 0;
+        entityOptions1Override[freeSlot] = ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
+        dynamicEntitySpawnedThisFrame[freeSlot] = true;
+        return freeSlot;
+    }
+
     int activePlayerArrowCount() {
         int count = 0;
         for (RoomEntity entity : slots) {
@@ -3630,6 +3849,40 @@ public final class RoomEntityRuntime {
 
     int magicRodFireballPrivateCountdown1(int slot) {
         return magicRodFireballMotion.privateCountdown1(slot);
+    }
+
+    int magicPowderTransitionCountdown(int slot) {
+        validateEntitySlot(slot);
+        return enemyTransitionCountdown[slot];
+    }
+
+    int magicPowderState(int slot) {
+        validateEntitySlot(slot);
+        return magicPowderState[slot];
+    }
+
+    int magicPowderSlowTransitionCountdown(int slot) {
+        validateEntitySlot(slot);
+        return slowTransitionCountdown[slot];
+    }
+
+    void setMagicPowderTransitionCountdownForTest(int slot, int value) {
+        validateCountdownTestValue(slot, value);
+        if (!isLoadedEntityOfType(slot, ENTITY_MAGIC_POWDER_SPRINKLE)) {
+            throw new IllegalArgumentException("Entity slot does not contain Magic Powder: "
+                + slot);
+        }
+        enemyTransitionCountdown[slot] = value;
+    }
+
+    void setMagicPowderSlowTransitionCountdownForTest(int slot, int value) {
+        validateCountdownTestValue(slot, value);
+        if (!isLoadedEntityOfType(slot, ENTITY_MAGIC_POWDER_SPRINKLE)) {
+            throw new IllegalArgumentException("Entity slot does not contain Magic Powder: "
+                + slot);
+        }
+        slowTransitionCountdown[slot] = value;
+        slowTimerInitialized[slot] = true;
     }
 
     int swordBeamSpeedX(int slot) {
@@ -5346,6 +5599,10 @@ public final class RoomEntityRuntime {
         return List.copyOf(magicRodObjectRequests);
     }
 
+    List<MagicPowderObjectRequest> magicPowderObjectRequests() {
+        return List.copyOf(magicPowderObjectRequests);
+    }
+
     int physicsFlags(int slot) {
         if (slot < 0 || slot >= slots.length) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
@@ -6403,6 +6660,8 @@ public final class RoomEntityRuntime {
         thrownDirection[slot] = 0xFF;
         bombDirection[slot] = 0xFF;
         bombPrivateState4[slot] = 0;
+        magicPowderState[slot] = 0;
+        magicPowderPrivateState4[slot] = 0;
         bombPrivateCountdown1[slot] = 0;
         bombPrivateCountdown3[slot] = 0;
         ironMaskPrivateState2[slot] = 0;

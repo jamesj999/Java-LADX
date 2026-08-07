@@ -174,6 +174,41 @@ final class EntitySpriteHandlerCatalogTest {
     }
 
     @Test
+    void mapsMagicPowderSprinkleAndTorchTransitionListsToRomData() {
+        byte[] rom = syntheticRom();
+        write(rom, 0x18, 0x7ABA,
+            0x06, 0xFE, 0x24, 0x03, 0x03, 0x04, 0x24, 0x13,
+            0x05, 0x0A, 0x24, 0x03, 0x05, 0xFE, 0x24, 0x13,
+            0x02, 0x04, 0x24, 0x03, 0x04, 0x0A, 0x24, 0x13,
+            0x03, 0xFF, 0x24, 0x03, 0x01, 0x04, 0x24, 0x13,
+            0x02, 0x09, 0x24, 0x03, 0x01, 0x00, 0x24, 0x13,
+            0xFF, 0x04, 0x24, 0x03, 0x00, 0x06, 0x24, 0x13,
+            0x00, 0x01, 0x24, 0x03, 0xFE, 0x03, 0x24, 0x13,
+            0xFF, 0x05, 0x24, 0x03, 0xFD, 0x03, 0x24, 0x13);
+        write(rom, 0x18, 0x795E, 0x6C, 0x74, 0x6D, 0x75);
+        write(rom, 0x18, 0x7962, 0x64, 0x74, 0x65, 0x75);
+
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteDefinition sprinkle = catalog.forEntityType(
+            0x08, EntityRoomLoader.RoomTable.OVERWORLD);
+        EntitySpriteDefinition ignite = catalog.forMagicPowderTorchState(true);
+        EntitySpriteDefinition expire = catalog.forMagicPowderTorchState(false);
+
+        assertDefinition(sprinkle, 0x18, 0x7ABA,
+            EntitySpriteDefinition.Shape.RECTANGLE, 8, 0);
+        assertEquals(3, sprinkle.rectangleVariant(0).size());
+        assertEquals(6, sprinkle.rectangleVariant(0).get(0).yOffset());
+        assertEquals(0x24, sprinkle.rectangleVariant(0).get(0).oam().tile());
+        assertEquals(0x03, sprinkle.rectangleVariant(0).get(2).oam().attributes());
+        assertDefinition(ignite, 0x18, 0x795E,
+            EntitySpriteDefinition.Shape.PAIR, 1, 0);
+        assertPairBytes(ignite, new int[][] {{0x6C, 0x74, 0x6D, 0x75}});
+        assertDefinition(expire, 0x18, 0x7962,
+            EntitySpriteDefinition.Shape.PAIR, 1, 0);
+        assertPairBytes(expire, new int[][] {{0x64, 0x74, 0x65, 0x75}});
+    }
+
+    @Test
     void decodesSpikedBeetleDisplayListsFromTheShippedRom() throws Exception {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
 

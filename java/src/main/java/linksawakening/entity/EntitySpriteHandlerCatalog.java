@@ -24,6 +24,7 @@ public final class EntitySpriteHandlerCatalog {
     private static final int ENTITY_ARROW = 0x00;
     private static final int ENTITY_BOOMERANG = 0x01;
     private static final int ENTITY_MAGIC_ROD_FIREBALL = 0x04;
+    private static final int ENTITY_MAGIC_POWDER_SPRINKLE = 0x08;
     private static final int ENTITY_SWORD_BEAM = 0xDF;
     private static final int ENTITY_BOMB = 0x02;
     private static final int ENTITY_BUTTERFLY = 0x6E;
@@ -158,6 +159,9 @@ public final class EntitySpriteHandlerCatalog {
         }
         if (entityType == ENTITY_MAGIC_ROD_FIREBALL) {
             return decodePair(entityType, 0x03, 0x69AA, 2, 0);
+        }
+        if (entityType == ENTITY_MAGIC_POWDER_SPRINKLE) {
+            return decodeRectangle(entityType, 0x18, 0x7ABA, 8, 3, 0);
         }
         if (entityType == ENTITY_SWORD_BEAM) {
             return decodeRectangle(entityType, 0x19, 0x44FC, 4, 2, 0);
@@ -640,6 +644,16 @@ public final class EntitySpriteHandlerCatalog {
     /** Shared bank-$03 fire display used after a Magic Rod fireball hits a wall. */
     public EntitySpriteDefinition forMagicRodFireState() {
         return decodePair(ENTITY_MAGIC_ROD_FIREBALL, 0x03, 0x4C44, 2, 0);
+    }
+
+    /**
+     * Returns the two-entry OAM pair emitted by MagicPowderSprinkle's torch
+     * transition. The source selects Data_018_795E while lighting and
+     * Data_018_7962 while restoring the unlit torch.
+     */
+    public EntitySpriteDefinition forMagicPowderTorchState(boolean lighting) {
+        return decodePair(ENTITY_MAGIC_POWDER_SPRINKLE, 0x18,
+            lighting ? 0x795E : 0x7962, 1, 0);
     }
 
     private EntitySpriteDefinition decodeLiftableRock(EntityRoomLoader.RoomTable roomTable) {

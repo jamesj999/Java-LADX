@@ -499,6 +499,26 @@ public final class PlayerState {
         magicPowderCount = clamp(value, 0, maxMagicPowder);
     }
 
+    /**
+     * Mirrors SprinkleMagicPowder's BCD decrement and empty-button cleanup.
+     * Returns false when the source count was already zero.
+     */
+    public boolean consumeMagicPowder() {
+        if (magicPowderCount == 0) {
+            return false;
+        }
+        magicPowderCount--;
+        if (magicPowderCount == 0) {
+            if (itemA == INVENTORY_MAGIC_POWDER) {
+                itemA = INVENTORY_EMPTY;
+            }
+            if (itemB == INVENTORY_MAGIC_POWDER) {
+                itemB = INVENTORY_EMPTY;
+            }
+        }
+        return true;
+    }
+
     public int maxMagicPowder() {
         return maxMagicPowder;
     }
