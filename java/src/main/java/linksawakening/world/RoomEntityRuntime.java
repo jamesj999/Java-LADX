@@ -83,7 +83,10 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_LASER_BEAM = 0x2B;
     private static final int ENTITY_ARROW = 0x00;
     private static final int ENTITY_BOMB = 0x02;
+    private static final int ENTITY_MAD_BOMBER = 0x93;
     private static final int ENTITY_BOMBER = 0xBA;
+    private static final int MAD_BOMBER_INITIAL_PHYSICS_FLAGS = 0x12;
+    private static final int MAD_BOMBER_OPTIONS1 = ENTITY_OPT1_NO_GROUND_INTERACTION;
     private static final int BOMBER_INITIAL_PHYSICS_FLAGS = 0x13;
     private static final int BOMBER_OPTIONS1 = ENTITY_OPT1_NO_WALL_COLLISION;
     private static final int BOMBER_THROW_JINGLE_ID = 0x08;
@@ -155,6 +158,7 @@ public final class RoomEntityRuntime {
     private final ArmosMotion armosMotion = new ArmosMotion();
     private final GhiniMotion ghiniMotion = new GhiniMotion();
     private final HardHatMotion hardHatMotion = new HardHatMotion();
+    private final MadBomberMotion madBomberMotion = new MadBomberMotion();
     private final BomberMotion bomberMotion = new BomberMotion();
     private final EnemyRecoilMotion enemyRecoilMotion = new EnemyRecoilMotion();
     private final FollowingNpcMotion followingNpcMotion = new FollowingNpcMotion();
@@ -727,6 +731,7 @@ public final class RoomEntityRuntime {
 
             EntityStatus status = entity.status();
             boolean preserveGhiniPresentation = false;
+            boolean preserveMadBomberPresentation = false;
             if (status == EntityStatus.ACTIVE) {
                 decrementEnemyDropCountdowns(entity);
             }
@@ -1053,6 +1058,9 @@ public final class RoomEntityRuntime {
                 if (entity.type() == ENTITY_BOMBER) {
                     bomberMotion.initialize(entity.slot());
                 }
+                if (entity.type() == ENTITY_MAD_BOMBER) {
+                    madBomberMotion.initialize(entity.slot());
+                }
                 if (isFollowingNpcType(entity.type())) {
                     if (entity.type() == ENTITY_BOW_WOW) {
                         bowWowMotion.initialize(entity.slot());
@@ -1135,6 +1143,32 @@ public final class RoomEntityRuntime {
                         spawn.transitionCountdown(), spawn.speedX(), spawn.speedY(),
                         spawn.speedZ());
                     if (bombSlot >= 0 && bomberUpdate.playJingle()) {
+                        pendingEntityEvents.add(new EntityCombatEvent(
+                            bombSlot, ENTITY_BOMB, 0, false,
+                            EntityCombatEvent.SoundChannel.JINGLE,
+                            BOMBER_THROW_JINGLE_ID));
+                    }
+                }
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_MAD_BOMBER) {
+                // MadBomberEntityHandler rewrites this handler-owned drop
+                // byte on every interactive pass before its state dispatch.
+                droppedItemBySlot[entity.slot()] = 0x3C;
+                MadBomberMotion.Update madBomberUpdate = madBomberMotion.advance(
+                    entity, enemyTransitionCountdown[entity.slot()], linkEntityX, linkEntityY,
+                    enemyFlashCountdown[entity.slot()], randomByteSupplier);
+                updated = withVariant(madBomberUpdate.entity(),
+                    madBomberUpdate.spriteVariant());
+                preserveMadBomberPresentation = true;
+                enemyTransitionCountdown[entity.slot()] =
+                    madBomberUpdate.transitionCountdown();
+                if (madBomberUpdate.bombSpawn() != null) {
+                    MadBomberMotion.BombSpawn spawn = madBomberUpdate.bombSpawn();
+                    int bombSlot = spawnEnemyBomb(spawn.x(), spawn.y(), spawn.z(),
+                        spawn.transitionCountdown(), spawn.speedX(), spawn.speedY(),
+                        spawn.speedZ());
+                    if (bombSlot >= 0 && madBomberUpdate.playJingle()) {
                         pendingEntityEvents.add(new EntityCombatEvent(
                             bombSlot, ENTITY_BOMB, 0, false,
                             EntityCombatEvent.SoundChannel.JINGLE,
@@ -1531,12 +1565,12 @@ public final class RoomEntityRuntime {
                 updated = withZ(updated,
                     FloatingItemMotion.zForFrame(groundInteractionSideScrolling, frame));
             }
-            int variant = preserveGhiniPresentation
+            int variant = preserveGhiniPresentation || preserveMadBomberPresentation
                 ? updated.spriteVariant() : variantFor(updated, frame);
             if (status == EntityStatus.ACTIVE && shouldDisappear(entity)) {
                 variant = (slowTransitionCountdown[entity.slot()] & 0x01) != 0 ? 0 : -1;
             }
-            int renderFlipAttribute = preserveGhiniPresentation
+            int renderFlipAttribute = preserveGhiniPresentation || preserveMadBomberPresentation
                 ? updated.entityFlipAttribute() : baseEntityFlipAttribute[entity.slot()];
             if (enemyFlashCountdown[entity.slot()] > 0) {
                 renderFlipAttribute ^= (enemyFlashCountdown[entity.slot()] << 2) & 0x10;
@@ -2244,6 +2278,7 @@ public final class RoomEntityRuntime {
         armosMotion.clear(slot);
         ghiniMotion.clear(slot);
         hardHatMotion.clear(slot);
+        madBomberMotion.clear(slot);
         followingNpcMotion.clear(slot);
         bowWowMotion.clear(slot);
         thrownEntityMotion.clear(slot);
@@ -2931,6 +2966,7 @@ public final class RoomEntityRuntime {
             || type == ENTITY_WATER_TEKTITE
             || type == ENTITY_STALFOS_EVASIVE
             || type == ENTITY_MOBLIN_SWORD
+            || type == ENTITY_MAD_BOMBER
             || type == ENTITY_BOMBER
             || isRoamingEnemyType(type) || usesBank6Recoil(type)
             || isGhiniType(type);
@@ -2954,7 +2990,8 @@ public final class RoomEntityRuntime {
     }
 
     private boolean hasNoGroundInteraction(RoomEntity entity) {
-        return isGhiniType(entity.type()) || hasNoGroundInteractionOverride(entity.slot());
+        return isGhiniType(entity.type()) || entity.type() == ENTITY_MAD_BOMBER
+            || hasNoGroundInteractionOverride(entity.slot());
     }
 
     private RoomEntity applyZolSplit(RoomEntity original, RoomEntity updated,
@@ -4217,6 +4254,9 @@ public final class RoomEntityRuntime {
         if (slots[slot].type() == ENTITY_BOMBER) {
             return BOMBER_OPTIONS1;
         }
+        if (slots[slot].type() == ENTITY_MAD_BOMBER) {
+            return MAD_BOMBER_OPTIONS1;
+        }
         return slots[slot].type() == ENTITY_STALFOS_EVASIVE
             ? ENTITY_OPT1_SPLASH_IN_WATER : 0;
     }
@@ -4307,6 +4347,7 @@ public final class RoomEntityRuntime {
             case ENTITY_ARMOS_STATUE -> ARMOS_INITIAL_PHYSICS_FLAGS;
             case ENTITY_STALFOS_EVASIVE -> EVASIVE_PHYSICS_FLAGS;
             case ENTITY_BOMB -> BOMB_INITIAL_PHYSICS_FLAGS;
+            case ENTITY_MAD_BOMBER -> MAD_BOMBER_INITIAL_PHYSICS_FLAGS;
             case ENTITY_BOMBER -> BOMBER_INITIAL_PHYSICS_FLAGS;
             case ENTITY_LIFTABLE_ROCK, ENTITY_LIFTABLE_STATUE,
                 ENTITY_WRECKING_BALL, ENTITY_SIDE_VIEW_POT, ENTITY_ROOSTER,
@@ -4621,6 +4662,7 @@ public final class RoomEntityRuntime {
         entityOptions1Override[slot] = -1;
         enemyRecoilMotion.clear(slot);
         bomberMotion.clear(slot);
+        madBomberMotion.clear(slot);
         colorShellMotion.clear(slot);
         butterflyMotion.clear(slot);
         keeseMotion.clear(slot);

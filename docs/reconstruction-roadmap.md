@@ -1489,6 +1489,26 @@ runtime collision callback.
   zero failures, errors, or skipped tests; Mad Bomber/Bombite producers and
   remaining enemy-bomb special branches remain follow-up work.
 
+## Verified ROM Mad Bomber enemy-bomb producer — 2026-08-07
+
+- Entity `$93` now decodes `MadBomberSpriteVariants` from bank `$06:$4126`,
+  including the hidden `$FF` variant and the five source animation pairs.
+- The eight source hole positions (`$28/$38/$58/$78/$88` X values and
+  `$20/$40/$50/$70` Y values) and the state `$00..$04` wait, pop-out, throw,
+  and hide cycle are represented directly. A hole is accepted only when Link
+  is at least `$20` units away on one axis, matching the source comparisons.
+- Mad Bomber's flash guard suppresses the throw, while a successful throw
+  creates type `$02` with the source position, `z=$04`, `speedZ=$18`, a
+  length-`$10` vector toward Link, countdown `$40`, private state `$01`, and
+  the `SpawnNewEntity` initial ignore-hits frame. JINGLE_FALL_DOWN `$08`
+  crosses the existing gameplay sound boundary.
+- ROM options/physics, health group `$25`, contact damage `$04`, no-ground
+  interaction, and handler-owned dropped-item byte `$3C` are wired. A
+  shipped-ROM end-to-end test covers the hole selection and bomb payload; the
+  clean Java suite passes with 964 tests and zero failures, errors, or skipped
+  tests. Bombite producers and remaining enemy-bomb special branches remain
+  follow-up work.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

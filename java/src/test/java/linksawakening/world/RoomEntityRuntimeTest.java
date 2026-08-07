@@ -4911,6 +4911,41 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void madBomberUsesItsHoleCycleToSpawnTheSourceEnemyBomb() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            0x93, EntityRoomLoader.RoomTable.OVERWORLD, -1);
+        assertTrue(definition.supported());
+        assertEquals(0x06, definition.bank());
+        assertEquals(0x4126, definition.address());
+        assertEquals(5, definition.variantCount());
+
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotWithSlots(
+            new RoomEntity(0, 0, 0x93, 0x50, 0x50, EntityStatus.ACTIVE,
+                definition, 0, 0, 0, 0x00)),
+            false, () -> 0, catalog, tables);
+
+        for (int frame = 0; frame <= 136; frame++) {
+            runtime.tick(frame, 0xC0, 0xC0, () -> 0);
+        }
+
+        RoomEntity bomb = runtime.snapshot().slots().get(15);
+        assertTrue(bomb.loaded());
+        assertEquals(EntityStatus.ACTIVE, bomb.status());
+        assertEquals(0x02, bomb.type());
+        assertEquals(0x28, bomb.x());
+        assertEquals(0x40, bomb.y());
+        assertEquals(0x04, bomb.z());
+        assertEquals(0x40, runtime.transitionCountdown(15));
+        assertEquals(0x01, runtime.enemyIgnoreHitsCountdown(15));
+        assertEquals(List.of(new EntityCombatEvent(15, 0x02, 0, false,
+            EntityCombatEvent.SoundChannel.JINGLE, 0x08)),
+            runtime.consumePendingEntityEvents());
+    }
+
+    @Test
     void protectedEnemyBombStillDoublesLinkSpeedWithoutDamageOrHurtSound() throws IOException {
         byte[] rom = loadRom();
         RoomEntityRuntime runtime = RoomEntityRuntime.from(
