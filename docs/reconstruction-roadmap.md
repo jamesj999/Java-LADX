@@ -1308,6 +1308,24 @@ runtime collision callback.
 - Focused runtime/session tests and the forced clean Java suite pass with 892
   tests; this increment does not add an emulator.
 
+## Verified ROM Link-bomb damage and recoil — 2026-08-07
+
+- The exact `$12` Link-bomb interaction now resolves damage type `$07` through
+  the shipped ROM health-group, damage-matrix, and damage-value tables before
+  publishing the existing typed explosion event.
+- Numeric, burn (`$FE`), stun (`$FF`), and special (`$F0..$FD`) results retain
+  the source generic-damage branches. Normal lethal hits enter the `$2F`
+  dying countdown; nonlethal hits use the source `$18` flash and `$0A`
+  ignore-hits window.
+- `GetVectorTowardsOtherEntity` is mirrored for the final length-`$30`
+  recoil write, including the active bomb's source Z in the Y-distance math.
+  Slot-order countdown handling is covered for both lethal Octorok and
+  nonlethal Ghini targets.
+- The clean Java suite passes with 938 tests and zero failures, errors, or
+  skipped tests. Enemy-bomb Link collision, destroyable-object/puzzle state
+  mutation, and remaining entity-specific special branches remain follow-up
+  work; this increment does not add an emulator.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

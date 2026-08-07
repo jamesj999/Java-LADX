@@ -4717,6 +4717,73 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void bombExplosionAppliesRomDamageAndFinalSourceRelativeRecoil() throws IOException {
+        byte[] rom = loadRom();
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RoomEntity octorok = new RoomEntity(14, 14, 0x09, 0x40, 0x4F,
+            EntityStatus.ACTIVE, pairDefinition(0x09, 8), 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+            snapshotWithSlots(octorok), false, () -> 0, null, tables);
+
+        int bombSlot = runtime.spawnBomb(0x40, 0x50, 0, 0);
+        runtime.setBombTransitionCountdownForTest(bombSlot, 0x13);
+
+        // The bomb candidate is placed at ($48,$50,$01), so the target's
+        // visual Y is aligned with the explosion while its X is eight pixels
+        // to the left. The ROM's final length-$30 vector must therefore be
+        // -$30 on X and zero on Y.
+        runtime.tick(0, 0x40, 0x50, () -> 0);
+
+        assertEquals(0, runtime.enemyHealth(14));
+        assertEquals(EntityStatus.DYING, runtime.snapshot().slots().get(14).status());
+        // CheckExplosionInteractionWithEntities does not pre-arm the normal
+        // sword hit flash/ignore timers; a lethal ApplySwordDamagesToEnemy
+        // path reaches DYING with both values still clear.
+        assertEquals(0x00, runtime.enemyFlashCountdown(14));
+        assertEquals(0x00, runtime.enemyIgnoreHitsCountdown(14));
+        assertEquals(0xD0, runtime.enemyRecoilSpeedXForTest(14));
+        assertEquals(0x00, runtime.enemyRecoilSpeedYForTest(14));
+        assertEquals(List.of(new EntityCombatEvent(14, 0x09, 0, false,
+            1, -1, EntityCombatEvent.SoundChannel.JINGLE, 0x03,
+            EntityCombatEvent.SoundChannel.NONE, -1, null)),
+            runtime.consumePendingEntityEvents());
+
+        assertEquals(List.of(14), runtime.consumeBombExplosionEvents().stream()
+            .filter(event -> !event.targetsRoomObjects())
+            .map(BombExplosionEvent::targetSlot)
+            .toList());
+    }
+
+    @Test
+    void bombExplosionUsesNonlethalRomDamageBeforeTheTargetRecoilHandler()
+        throws IOException {
+        byte[] rom = loadRom();
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RoomEntity ghini = new RoomEntity(14, 14, 0x12, 0x50, 0x4F,
+            EntityStatus.ACTIVE, pairDefinition(0x12, 2), 0, 0, 0, 0x10);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+            snapshotWithSlots(ghini), false, () -> 0, null, tables);
+
+        int bombSlot = runtime.spawnBomb(0x40, 0x50, 0, 0);
+        runtime.setBombTransitionCountdownForTest(bombSlot, 0x13);
+
+        runtime.tick(0, 0x40, 0x50, () -> 0);
+
+        assertEquals(4, runtime.enemyHealth(14));
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(14).status());
+        // The lower-slot target's handler decrements the newly written flash
+        // once after the higher-slot bomb has applied it.
+        assertEquals(0x17, runtime.enemyFlashCountdown(14));
+        assertEquals(0x09, runtime.enemyIgnoreHitsCountdown(14));
+        assertEquals(0x30, runtime.enemyRecoilSpeedXForTest(14));
+        assertEquals(0x00, runtime.enemyRecoilSpeedYForTest(14));
+        assertEquals(List.of(new EntityCombatEvent(14, 0x12, 0, false,
+            4, -1, EntityCombatEvent.SoundChannel.JINGLE, 0x03,
+            EntityCombatEvent.SoundChannel.NONE, -1, null)),
+            runtime.consumePendingEntityEvents());
+    }
+
+    @Test
     void bombExplosionObjectWindowIsInclusiveAndSilentOutsideIt() {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot());
         int bombSlot = runtime.spawnBomb(0x40, 0x50, 0, 0);

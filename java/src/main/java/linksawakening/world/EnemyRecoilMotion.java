@@ -66,6 +66,45 @@ final class EnemyRecoilMotion {
         active[slot] = true;
     }
 
+    /**
+     * Mirrors GetVectorTowardsOtherEntity's final bomb-explosion write.
+     * Unlike {@link #configure}, the vector points from the active source
+     * entity towards the target and is stored without negation.
+     */
+    void configureFromSource(int slot, int sourceX, int sourceY, int sourceZ,
+                             int targetX, int targetY, int length) {
+        validateSlot(slot);
+        if (length < 0 || length > 0xFF) {
+            throw new IllegalArgumentException("Recoil length must be an unsigned byte");
+        }
+
+        int distanceX = signedByte((targetX - sourceX) & 0xFF);
+        int distanceY = signedByte((targetY - sourceY + sourceZ) & 0xFF);
+        int absoluteX = Math.abs(distanceX);
+        int absoluteY = Math.abs(distanceY);
+        boolean xIsDominant = absoluteX >= absoluteY;
+        int smallerDistance = Math.min(absoluteX, absoluteY);
+        int largerDistance = Math.max(absoluteX, absoluteY);
+        int smallerComponent = romDivide(length, smallerDistance, largerDistance);
+
+        int vectorX = xIsDominant ? length : smallerComponent;
+        int vectorY = xIsDominant ? smallerComponent : length;
+        if (distanceX < 0) {
+            vectorX = -vectorX;
+        }
+        // GetEntityYDistanceToLink starts on the UP branch for a negative
+        // distance, but treats zero as the nonnegative/DOWN branch.
+        if (distanceY < 0) {
+            vectorY = -vectorY;
+        }
+
+        recoilSpeedX[slot] = vectorX & 0xFF;
+        recoilSpeedY[slot] = vectorY & 0xFF;
+        speedXAccumulator[slot] = 0;
+        speedYAccumulator[slot] = 0;
+        active[slot] = true;
+    }
+
     /** Applies one ROM fixed-point recoil step and returns a new entity value. */
     Update advance(RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision) {
         return advance(entity, backgroundCollision, true);

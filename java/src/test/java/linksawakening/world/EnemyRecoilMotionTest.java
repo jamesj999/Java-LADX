@@ -64,6 +64,25 @@ final class EnemyRecoilMotionTest {
     }
 
     @Test
+    void configureFromSourceMirrorsBombVectorSignsAndSourceZ() {
+        EnemyRecoilMotion motion = new EnemyRecoilMotion();
+
+        motion.configureFromSource(0, 0x48, 0x50, 0x01, 0x40, 0x4F, 0x30);
+        assertEquals(0xD0, motion.recoilSpeedX(0));
+        assertEquals(0x00, motion.recoilSpeedY(0));
+
+        motion.configureFromSource(0, 0x40, 0x50, 0x00, 0x40, 0x40, 0x30);
+        assertEquals(0x00, motion.recoilSpeedX(0));
+        assertEquals(0xD0, motion.recoilSpeedY(0));
+
+        // The source Z is added by GetEntityYDistanceToLink; it makes this
+        // target's raw Y coordinate level with the source for vector math.
+        motion.configureFromSource(0, 0x40, 0x50, 0x08, 0x50, 0x48, 0x30);
+        assertEquals(0x30, motion.recoilSpeedX(0));
+        assertEquals(0x00, motion.recoilSpeedY(0));
+    }
+
+    @Test
     void advanceUsesSignedSixteenSubpixelMovementAndUnsignedWrapping() {
         EnemyRecoilMotion motion = new EnemyRecoilMotion();
         RoomEntity entity = entity(0, 0x02, 0x20, 0);

@@ -76,6 +76,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_ARROW = 0x00;
     private static final int ENTITY_BOMB = 0x02;
     private static final int DAMAGE_TYPE_ARROW = 0x05;
+    private static final int DAMAGE_TYPE_BOMB = BombExplosionEvent.DAMAGE_TYPE_BOMB;
     private static final int DAMAGE_TYPE_BOMB_ARROW = 0x0C;
     private static final int ENTITY_HOOKSHOT_CHAIN = HookshotChainMotion.ENTITY_TYPE;
     private static final int ENTITY_HOOKSHOT_BRIDGE = HookshotBridgeMotion.ENTITY_TYPE;
@@ -3070,7 +3071,75 @@ public final class RoomEntityRuntime {
             }
             pendingBombExplosionEvents.add(new BombExplosionEvent(bombSlot, targetSlot,
                 bombX, bombVisualY, countdown, BombExplosionEvent.DAMAGE_TYPE_BOMB));
+            applyBombDamage(bomb, target);
         }
+    }
+
+    /**
+     * Ports the damage-table part of CheckExplosionInteractionWithEntities.
+     * The ROM writes the source-relative length-$30 recoil after the generic
+     * damage routine, even when the selected damage-table value is zero or a
+     * source-specific special value.
+     */
+    private void applyBombDamage(RoomEntity bomb, RoomEntity target) {
+        int targetSlot = target.slot();
+        RomEnemyCombatTables.SwordDamageResult damageResult = enemyCombatTables == null
+            ? null : enemyCombatTables.resolveAttackDamage(target.type(), DAMAGE_TYPE_BOMB);
+        int rawDamage = damageResult == null
+            ? RoomEntityCombatRules.basicSwordDamage(target.type())
+            : damageResult.rawValue();
+
+        if (rawDamage != 0) {
+            int enemyDamage = rawDamage < 0xF0 ? rawDamage : 0;
+            int specialAction = rawDamage >= 0xF0 ? rawDamage : -1;
+            EntityCombatEvent.SoundChannel secondaryChannel =
+                EntityCombatEvent.SoundChannel.NONE;
+            int secondarySoundId = -1;
+
+            if (rawDamage == 0xFE) {
+                enemyTransitionCountdown[targetSlot] = 0x60;
+                enemyStunnedCountdown[targetSlot] = 0;
+                enemyFlashCountdown[targetSlot] = 0;
+                enemyIgnoreHitsCountdown[targetSlot] = 0x0A;
+                enemyPhysicsFlags[targetSlot] = (enemyPhysicsFlags[targetSlot] + 2) & 0xFF;
+                entityOptions1Override[targetSlot] = options1(targetSlot) & 0xC2;
+                slots[targetSlot] = withStatus(target, EntityStatus.BURNING);
+                secondaryChannel = EntityCombatEvent.SoundChannel.NOISE;
+                secondarySoundId = 0x12;
+            } else if (rawDamage == 0xFF) {
+                enemyTransitionCountdown[targetSlot] = 0;
+                enemyStunnedCountdown[targetSlot] = 0xFF;
+                enemyFlashCountdown[targetSlot] = 0;
+                enemyIgnoreHitsCountdown[targetSlot] = 0x0A;
+                slots[targetSlot] = withStatus(target, EntityStatus.STUNNED);
+            } else if (rawDamage == 0xFD) {
+                // The ROM's FD action is dispatched by the target's own
+                // entity-specific branch. Preserve it as a special result;
+                // the bomb vector below still applies unconditionally.
+            } else if (rawDamage < 0xF0) {
+                enemyHealth[targetSlot] = Math.max(0,
+                    enemyHealth[targetSlot] - enemyDamage);
+                if (enemyHealth[targetSlot] == 0) {
+                    // ApplySwordDamagesToEnemy uses $2F for the ordinary
+                    // dying countdown; $40 is the Piece-of-Power override.
+                    dyingCountdown[targetSlot] = 0x2F;
+                    powerRecoilDeath[targetSlot] = false;
+                    slots[targetSlot] = withDeathPresentation(
+                        withStatus(target, EntityStatus.DYING), -1, false);
+                } else {
+                    enemyFlashCountdown[targetSlot] = 0x18;
+                    enemyIgnoreHitsCountdown[targetSlot] = 0x0A;
+                }
+            }
+
+            pendingEntityEvents.add(new EntityCombatEvent(
+                targetSlot, target.type(), 0, false, enemyDamage, specialAction,
+                EntityCombatEvent.SoundChannel.JINGLE, 0x03,
+                secondaryChannel, secondarySoundId, null));
+        }
+
+        enemyRecoilMotion.configureFromSource(targetSlot,
+            bomb.x(), bomb.y(), bomb.z(), target.x(), target.y(), 0x30);
     }
 
     private static boolean isWithinBombExplosionWindow(int source, int target) {
