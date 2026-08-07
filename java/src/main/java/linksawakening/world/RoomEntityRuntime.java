@@ -105,6 +105,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_BOOMERANG = BoomerangMotion.ENTITY_TYPE;
     private static final int ENTITY_MAGIC_ROD_FIREBALL = 0x04;
     private static final int ENTITY_MAGIC_POWDER_SPRINKLE = 0x08;
+    private static final int ENTITY_MUSICAL_NOTE = 0xC9;
     private static final int ENTITY_SWORD_BEAM = 0xDF;
     private static final int ENTITY_BOMB = 0x02;
     private static final int ENTITY_SWORD_SHIELD_PICKUP = 0x31;
@@ -148,6 +149,8 @@ public final class RoomEntityRuntime {
     private static final int MAGIC_POWDER_TRANSITION_COUNTDOWN = 0x17;
     private static final int MAGIC_POWDER_SLOW_TRANSITION_COUNTDOWN = 0x80;
     private static final int MAGIC_POWDER_POOF_JINGLE_ID = 0x2F;
+    private static final int MUSICAL_NOTE_INITIAL_INERTIA = 0x40;
+    private static final int MUSICAL_NOTE_SPEED_Y = 0xFC;
     private static final int BOOMERANG_SFX_ID = 0x2D;
     private static final int BOOMERANG_SFX_COUNTER_PERIOD = 0x1A;
     private static final int SWORD_BEAM_JINGLE_ID = 0x3B;
@@ -326,6 +329,8 @@ public final class RoomEntityRuntime {
     private int linkPlayingOcarinaCountdown;
     private int ocarinaSongFlags;
     private int selectedSongIndex;
+    private int ocarinaAnimationCounter;
+    private int ocarinaAnimationPhase;
     // LinkMotionMapFadeInHandler leaves wTransitionSequenceCounter at $04 once
     // the active room is ready for interaction. Entity ticks are gated during
     // the host transition, so this is the source value visible to gameplay.
@@ -362,6 +367,9 @@ public final class RoomEntityRuntime {
     private final List<MagicRodObjectRequest> magicRodObjectRequests = new ArrayList<>();
     private final int[] magicPowderState = new int[EntityRoomLoader.MAX_ENTITIES];
     private final List<MagicPowderObjectRequest> magicPowderObjectRequests = new ArrayList<>();
+    private final int[] musicalNoteInertia = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] musicalNoteSpeedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] musicalNoteSpeedY = new int[EntityRoomLoader.MAX_ENTITIES];
     private int boomerangSfxCounter;
 
     /** The ROM-facing state needed by Link's carry animation and throw input. */
@@ -920,6 +928,9 @@ public final class RoomEntityRuntime {
         hookshotBridgeUpdates.clear();
         pendingSwitchBlockAnimationRequest = false;
         pendingMusicTrack = -1;
+        if (linkPlayingOcarinaCountdown >= 0x10 && ocarinaAnimationCounter == 0x14) {
+            spawnMusicalNote(linkEntityX, linkEntityY, ocarinaAnimationPhase);
+        }
         List<EntityProjectileEvent> projectileEvents = new ArrayList<>();
         if (linkPositionHistory != null) {
             followingLinkPositionHistory = linkPositionHistory;
@@ -1102,6 +1113,14 @@ public final class RoomEntityRuntime {
                 && entity.type() == ENTITY_MAGIC_POWDER_SPRINKLE) {
                 advanceMagicPowderSprinkleEntity(index, entity, frame,
                     projectileLinkState.motionState());
+                continue;
+            }
+            if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_MUSICAL_NOTE) {
+                RoomEntity note = advanceMusicalNoteEntity(entity);
+                if (note == null) {
+                    continue;
+                }
+                slots[index] = note;
                 continue;
             }
             if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_BOMB) {
@@ -3436,6 +3455,9 @@ public final class RoomEntityRuntime {
         bombPrivateCountdown3[slot] = 0;
         magicPowderState[slot] = 0;
         magicPowderPrivateState4[slot] = 0;
+        musicalNoteInertia[slot] = 0;
+        musicalNoteSpeedX[slot] = 0;
+        musicalNoteSpeedY[slot] = 0;
         entityUnknownJ[slot] = 0;
         ironMaskPrivateState2[slot] = 0;
         ironMasksMaskSourceHookshotSlot[slot] = 0;
@@ -3777,6 +3799,53 @@ public final class RoomEntityRuntime {
         entityOptions1Override[freeSlot] = ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
         dynamicEntitySpawnedThisFrame[freeSlot] = true;
         return freeSlot;
+    }
+
+    private void spawnMusicalNote(int linkEntityX, int linkEntityY, int animationPhase) {
+        int freeSlot = findFreeEntitySlot();
+        if (freeSlot < 0) {
+            return;
+        }
+
+        int phase = animationPhase & 0x01;
+        EntitySpriteDefinition definition = spriteDefinitionFor(ENTITY_MUSICAL_NOTE);
+        int variant = definition.supported() ? definition.initialVariant() : -1;
+        int x = linkEntityX + (phase == 0 ? 0x08 : -0x08);
+        RoomEntity note = new RoomEntity(freeSlot, -1, ENTITY_MUSICAL_NOTE,
+            x & 0xFF, (linkEntityY - 0x08) & 0xFF, EntityStatus.ACTIVE,
+            definition, variant, 0, 0, 0);
+        slots[freeSlot] = note;
+        musicalNoteInertia[freeSlot] = MUSICAL_NOTE_INITIAL_INERTIA;
+        musicalNoteSpeedX[freeSlot] = phase == 0 ? 0x06 : 0x01;
+        musicalNoteSpeedY[freeSlot] = MUSICAL_NOTE_SPEED_Y;
+        enemyPhysicsFlags[freeSlot] = 0;
+        enemyTransitionCountdown[freeSlot] = 0;
+        enemyStunnedCountdown[freeSlot] = 0;
+        enemyFlashCountdown[freeSlot] = 0;
+        enemyIgnoreHitsCountdown[freeSlot] = 0;
+        dyingCountdown[freeSlot] = 0;
+        powerRecoilDeath[freeSlot] = false;
+        baseEntityFlipAttribute[freeSlot] = 0;
+        entityOptions1Override[freeSlot] = ENTITY_OPT1_NO_GROUND_INTERACTION;
+        dynamicEntitySpawnedThisFrame[freeSlot] = true;
+    }
+
+    private RoomEntity advanceMusicalNoteEntity(RoomEntity entity) {
+        int slot = entity.slot();
+        int inertia = (musicalNoteInertia[slot] - 1) & 0xFF;
+        musicalNoteInertia[slot] = inertia;
+        if (inertia == 0) {
+            clearEntity(slot);
+            return null;
+        }
+
+        int speedXAdjustment = (inertia & 0x10) != 0 ? -1 : 1;
+        if ((inertia & 0x01) == 0) {
+            musicalNoteSpeedX[slot] = (musicalNoteSpeedX[slot] + speedXAdjustment) & 0xFF;
+        }
+        int x = (entity.x() + signedByte(musicalNoteSpeedX[slot])) & 0xFF;
+        int y = (entity.y() + signedByte(musicalNoteSpeedY[slot])) & 0xFF;
+        return withPositionAndVariant(entity, x, y, entity.spriteVariant());
     }
 
     int activePlayerArrowCount() {
@@ -6185,16 +6254,41 @@ public final class RoomEntityRuntime {
     }
 
     void setOcarinaPlayback(int countdown, int songFlags, int selectedSong) {
+        setOcarinaPlayback(countdown, songFlags, selectedSong, 0, 0);
+    }
+
+    void setOcarinaPlayback(int countdown, int songFlags, int selectedSong,
+                            int animationCounter, int animationPhase) {
         validateByte(countdown, "Ocarina playback countdown");
         validateByte(songFlags, "Ocarina song flags");
         validateByte(selectedSong, "Selected Ocarina song");
+        validateByte(animationCounter, "Ocarina animation counter");
+        if (animationPhase < 0 || animationPhase > 1) {
+            throw new IllegalArgumentException("Ocarina animation phase must be 0 or 1");
+        }
         linkPlayingOcarinaCountdown = countdown;
         ocarinaSongFlags = songFlags;
         selectedSongIndex = selectedSong;
+        ocarinaAnimationCounter = animationCounter;
+        ocarinaAnimationPhase = animationPhase;
     }
 
     void setOcarinaPlaybackForTest(int countdown, int songFlags, int selectedSong) {
         setOcarinaPlayback(countdown, songFlags, selectedSong);
+    }
+
+    void setOcarinaAnimationForTest(int animationCounter, int animationPhase) {
+        validateByte(animationCounter, "Ocarina animation counter");
+        if (animationPhase < 0 || animationPhase > 1) {
+            throw new IllegalArgumentException("Ocarina animation phase must be 0 or 1");
+        }
+        ocarinaAnimationCounter = animationCounter;
+        ocarinaAnimationPhase = animationPhase;
+    }
+
+    int musicalNoteInertiaForTest(int slot) {
+        validateEntitySlot(slot);
+        return musicalNoteInertia[slot];
     }
 
     void setHitboxFlagsForTest(int slot, int value) {

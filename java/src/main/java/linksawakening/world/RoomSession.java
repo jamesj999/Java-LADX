@@ -1036,7 +1036,8 @@ public final class RoomSession {
         entityRuntime.setBombButtonHeld(bombButtonHeld);
         entityRuntime.setLiftedLinkC13B(followingEntityYOffset);
         entityRuntime.setOcarinaPlayback(ocarinaPlaybackCountdown,
-            ocarinaSongFlags, selectedSongIndex);
+            ocarinaSongFlags, selectedSongIndex, ocarinaAnimationCounter,
+            ocarinaAnimationPhase);
         // rLY is not a meaningful value in the host renderer. Keep the
         // non-emulator policy explicit while preserving the ROM seed update.
         entityRandomByteSource.beginFrame(frameCounter & 0xFF, 0);

@@ -3204,6 +3204,35 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void ocarinaAnimationSpawnsAndAdvancesTheRomMusicalNoteEntity() {
+        byte[] rom = syntheticRom();
+        write(rom, 0x05, 0x7EF8, 0x0E, 0x13);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+            snapshot(), true, null, catalog);
+        runtime.setOcarinaPlaybackForTest(0x20, 0x01, 0x00);
+        runtime.setOcarinaAnimationForTest(0x14, 0x00);
+
+        runtime.tick(0, 0x40, 0x50, sequence(0x00));
+
+        RoomEntity note = runtime.snapshot().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0xC9)
+            .findFirst().orElseThrow();
+        assertEquals(0x48, note.x());
+        assertEquals(0x48, note.y());
+        assertEquals(0x05, note.spriteDefinition().bank());
+        assertEquals(0x7EF8, note.spriteDefinition().address());
+        assertEquals(0x40, runtime.musicalNoteInertiaForTest(note.slot()));
+
+        runtime.tick(1, 0x40, 0x50, sequence(0x00));
+
+        RoomEntity movedNote = runtime.snapshot().slots().get(note.slot());
+        assertEquals(0x4E, movedNote.x());
+        assertEquals(0x44, movedNote.y());
+        assertEquals(0x3F, runtime.musicalNoteInertiaForTest(note.slot()));
+    }
+
+    @Test
     void polsVoiceUsesTheRomHealthAndContactDamageValues() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);

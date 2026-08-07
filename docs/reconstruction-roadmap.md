@@ -2050,6 +2050,20 @@ runtime collision callback.
   skipped tests. Musical-note spawning and the song-completion branches remain
   follow-up work.
 
+## Verified ROM Ocarina musical-note entity — 2026-08-07
+
+- The `$14` phase of `LinkPlayingOcarinaHandler` now creates entity `$C9` with
+  the bank-$05 single-sprite list at `$7EF8`, source phase-dependent X offset
+  and speed, Y speed `$FC`, and inertia `$40`.
+- The note handler decrements inertia, applies the source bit-$10 direction
+  adjustment on even inertia values, updates signed X/Y motion, and unloads
+  exactly when inertia reaches zero. The dynamic entity is marked no-ground-
+  interaction so it does not enter unrelated terrain handling.
+- ROM display-list, spawn timing/coordinates, and first-frame motion are
+  covered by a clean Java suite with 1,139 tests and zero failures, errors, or
+  skipped tests. Song completion/dialog and Manbo transition branches remain
+  follow-up work.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,
