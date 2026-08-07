@@ -42,6 +42,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_STALFOS_AGGRESSIVE = 0x1A;
     private static final int ENTITY_STALFOS_EVASIVE = 0x1E;
     private static final int ENTITY_GIBDO = 0x1F;
+    private static final int ENTITY_LIKE_LIKE = 0x23;
     private static final int ENTITY_GOOMBA = 0x9F;
     private static final int ENTITY_SNAKE = 0xA1;
     private static final int ENTITY_OPT1_NO_GROUND_INTERACTION = 0x10;
@@ -79,6 +80,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_HIDING_GHINI = 0x10;
     private static final int ENTITY_GIANT_GHINI = 0x11;
     private static final int ARMOS_INITIAL_PHYSICS_FLAGS = 0x92;
+    private static final int LIKE_LIKE_INITIAL_PHYSICS_FLAGS = 0x92;
     private static final int ENTITY_GHINI = 0x12;
     private static final int ENTITY_KEESE = 0x19;
     private static final int ENTITY_HARDHAT_BEETLE = 0x20;
@@ -94,11 +96,13 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_LASER_BEAM = 0x2B;
     private static final int ENTITY_ARROW = 0x00;
     private static final int ENTITY_BOMB = 0x02;
+    private static final int ENTITY_SWORD_SHIELD_PICKUP = 0x31;
     private static final int ENTITY_BOUNCING_BOMBITE = 0x55;
     private static final int ENTITY_TIMER_BOMBITE = 0x56;
     private static final int ENTITY_MAD_BOMBER = 0x93;
     private static final int ENTITY_BOMBER = 0xBA;
     private static final int BOMBITE_INITIAL_PHYSICS_FLAGS = 0x02;
+    private static final int SWORD_SHIELD_PICKUP_INITIAL_PHYSICS_FLAGS = 0xB1;
     private static final int BOMBITE_OPTIONS1 = ENTITY_OPT1_SPLASH_IN_WATER;
     private static final int BOMBITE_EXPLOSION_SOUND_ID = 0x0C;
     private static final int BOMBITE_EXPLOSION_COUNTDOWN = 0x17;
@@ -178,6 +182,7 @@ public final class RoomEntityRuntime {
         new StalfosAggressiveMotion();
     private final StalfosEvasiveMotion stalfosEvasiveMotion = new StalfosEvasiveMotion();
     private final GibdoMotion gibdoMotion = new GibdoMotion();
+    private final LikeLikeMotion likeLikeMotion = new LikeLikeMotion();
     private final GoombaMotion goombaMotion = new GoombaMotion();
     private final SnakeMotion snakeMotion = new SnakeMotion();
     private final WizrobeMotion wizrobeMotion = new WizrobeMotion();
@@ -258,6 +263,7 @@ public final class RoomEntityRuntime {
     private final List<TransientVfxRequest> transientVfxRequests = new ArrayList<>();
     private final List<DialogRequest> pendingDialogRequests = new ArrayList<>();
     private final List<EntityCombatEvent> pendingEntityEvents = new ArrayList<>();
+    private final List<LikeLikeEvent> pendingLikeLikeEvents = new ArrayList<>();
     private final List<BombExplosionEvent> pendingBombExplosionEvents = new ArrayList<>();
     private final List<HookshotBridgeUpdate> hookshotBridgeUpdates = new ArrayList<>();
     private boolean switchBlockAnimationActive;
@@ -274,6 +280,8 @@ public final class RoomEntityRuntime {
     private int killCount;
     private final int[] killOrder = new int[0x100];
     private boolean actionButtonsHeld;
+    private int linkItemA;
+    private int linkItemB;
     private boolean powerBraceletButtonHeld;
     private boolean bombButtonHeld;
     private boolean runningWithPegasusBoots;
@@ -335,6 +343,12 @@ public final class RoomEntityRuntime {
         }
     }
 
+    /** Link capture/release side effects emitted by Like Like's handler. */
+    public record LikeLikeEvent(int slot, Kind kind, int entityX, int entityY,
+                                int stolenInventorySlot, int stolenShieldLevel) {
+        public enum Kind { CAPTURE, RELEASE }
+    }
+
     /** A ROM bridge handler request to replace one padded object cell and draw its columns. */
     public record HookshotBridgeUpdate(int objectLeft, int objectTop, int direction,
                                        boolean active) {
@@ -387,6 +401,9 @@ public final class RoomEntityRuntime {
             }
             if (entity.loaded() && isGhiniType(entity.type())) {
                 ghiniMotion.initialize(entity.slot(), entity.type());
+            }
+            if (entity.loaded() && entity.type() == ENTITY_LIKE_LIKE) {
+                likeLikeMotion.initialize(entity.slot());
             }
             if (entity.status() == EntityStatus.DYING) {
                 powerRecoilDeath[entity.slot()] = entity.powerRecoilDeath();
@@ -739,6 +756,7 @@ public final class RoomEntityRuntime {
         transientVfxRequests.clear();
         pendingDialogRequests.clear();
         pendingEntityEvents.clear();
+        pendingLikeLikeEvents.clear();
         pendingBombExplosionEvents.clear();
         hookshotBridgeUpdates.clear();
         pendingSwitchBlockAnimationRequest = false;
@@ -1096,6 +1114,9 @@ public final class RoomEntityRuntime {
                 }
                 if (entity.type() == ENTITY_GIBDO) {
                     gibdoMotion.initialize(entity.slot());
+                }
+                if (entity.type() == ENTITY_LIKE_LIKE) {
+                    likeLikeMotion.initialize(entity.slot());
                 }
                 if (entity.type() == ENTITY_GOOMBA) {
                     goombaMotion.initialize(entity.slot());
@@ -1615,6 +1636,27 @@ public final class RoomEntityRuntime {
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_GIBDO) {
                 updated = gibdoMotion.advance(entity, randomByteSupplier, backgroundCollision);
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_LIKE_LIKE) {
+                LikeLikeMotion.Update likeLikeUpdate = likeLikeMotion.advance(
+                    entity, frame, linkEntityX, linkEntityY, linkZ,
+                    projectileLinkState.motionState(), actionButtonsHeld,
+                    linkItemA, linkItemB, projectileLinkState.shieldLevel(),
+                    slowTransitionCountdown[entity.slot()], randomByteSupplier,
+                    backgroundCollision);
+                updated = likeLikeUpdate.entity();
+                slowTransitionCountdown[entity.slot()] = likeLikeUpdate.slowTransitionCountdown();
+                if (likeLikeUpdate.event() != null) {
+                    pendingLikeLikeEvents.add(likeLikeUpdate.event());
+                    if (likeLikeUpdate.event().kind()
+                        == LikeLikeEvent.Kind.RELEASE) {
+                        slowTimerInitialized[entity.slot()] = true;
+                    }
+                }
+                if (likeLikeUpdate.spriteVariant() >= 0) {
+                    updated = withVariant(updated, likeLikeUpdate.spriteVariant());
+                }
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_GOOMBA) {
@@ -2172,12 +2214,15 @@ public final class RoomEntityRuntime {
 
             boolean goombaStomp = canGoombaStomp(entity, linkEntityX, linkEntityY,
                 linkAirborne, linkVerticalVelocity, linkInteractive, frameCounter);
-            boolean linkCollision = !linkAirborne && linkInteractive
+            boolean linkCollision = entity.type() != ENTITY_LIKE_LIKE
+                && !linkAirborne && linkInteractive
                 && RoomEntityCombatRules.collisionCadenceMatches(frameCounter, entity.slot())
                 && peaHatGrounded
                 && hidingZolLinkCollision
                 && RoomEntityCombatRules.overlapsLink(entity, linkEntityX, linkEntityY);
             boolean swordHit = swordCollisionActive
+                && (entity.type() != ENTITY_LIKE_LIKE
+                    || likeLikeMotion.state(entity.slot()) == 0)
                 && hidingZolSwordCollision
                 && RoomEntityCombatRules.overlapsSword(
                     entity, swordX, swordWidth, swordY, swordHeight);
@@ -2705,6 +2750,7 @@ public final class RoomEntityRuntime {
         stalfosAggressiveMotion.clear(slot);
         stalfosEvasiveMotion.clear(slot);
         gibdoMotion.clear(slot);
+        likeLikeMotion.clear(slot);
         goombaMotion.clear(slot);
         snakeMotion.clear(slot);
         wizrobeMotion.clear(slot);
@@ -3241,6 +3287,17 @@ public final class RoomEntityRuntime {
         this.actionButtonsHeld = actionButtonsHeld;
     }
 
+    void setLikeLikeLinkInventory(int itemA, int itemB) {
+        validateByte(itemA, "Link A inventory slot");
+        validateByte(itemB, "Link B inventory slot");
+        linkItemA = itemA;
+        linkItemB = itemB;
+    }
+
+    void setLikeLikeLinkInventoryForTest(int itemA, int itemB) {
+        setLikeLikeLinkInventory(itemA, itemB);
+    }
+
     void setPowerBraceletButtonHeld(boolean powerBraceletButtonHeld) {
         this.powerBraceletButtonHeld = powerBraceletButtonHeld;
     }
@@ -3345,6 +3402,32 @@ public final class RoomEntityRuntime {
         return pending;
     }
 
+    List<LikeLikeEvent> consumePendingLikeLikeEvents() {
+        List<LikeLikeEvent> pending = List.copyOf(pendingLikeLikeEvents);
+        pendingLikeLikeEvents.clear();
+        return pending;
+    }
+
+    int likeLikeState(int slot) {
+        return likeLikeMotion.state(slot);
+    }
+
+    int likeLikePrivateState1(int slot) {
+        return likeLikeMotion.privateState1(slot);
+    }
+
+    int likeLikeInertia(int slot) {
+        return likeLikeMotion.inertia(slot);
+    }
+
+    int likeLikeWalkState(int slot) {
+        return likeLikeMotion.walkState(slot);
+    }
+
+    int likeLikeWalkSpeedY(int slot) {
+        return likeLikeMotion.walkSpeedY(slot);
+    }
+
     List<DialogRequest> consumePendingDialogRequests() {
         List<DialogRequest> pending = List.copyOf(pendingDialogRequests);
         pendingDialogRequests.clear();
@@ -3394,7 +3477,8 @@ public final class RoomEntityRuntime {
             || type == ENTITY_WIZROBE
             || type == ENTITY_SPARK_COUNTER_CLOCKWISE
             || type == ENTITY_SPARK_CLOCKWISE
-            || type == ENTITY_ZOL || type == ENTITY_GEL;
+            || type == ENTITY_ZOL || type == ENTITY_GEL
+            || type == ENTITY_LIKE_LIKE;
     }
 
     private static boolean usesSharedRecoil(int type) {
@@ -3497,18 +3581,26 @@ public final class RoomEntityRuntime {
     }
 
     private void handleTerminalEnemyDeath(RoomEntity entity, IntSupplier randomByteSupplier) {
-        if (enemyDropResolver == null || entity.sourceLoadOrder() < 0) {
+        boolean swallowedShield = entity.type() == ENTITY_LIKE_LIKE
+            && likeLikeMotion.privateState1(entity.slot()) != 0;
+        if (entity.sourceLoadOrder() < 0 || (enemyDropResolver == null && !swallowedShield)) {
             disableEntityWithoutPersistence(entity.slot());
             return;
         }
 
-        EnemyDropResolver.Context context = new EnemyDropResolver.Context(
-            entity.type(), enemyDropHealthGroup(entity.type()), droppedItemBySlot[entity.slot()],
-            enemyDropMaxHearts, enemyDropHealth, enemyDropBossBattle,
-            enemyDropActivePowerUp, groundInteractionSideScrolling, enemyDropCounters,
-            randomByteSupplier);
-        EnemyDropResolver.Result result = enemyDropResolver.resolve(context);
-        enemyDropCounters = result.counters();
+        EnemyDropResolver.Result result;
+        if (swallowedShield) {
+            result = new EnemyDropResolver.Result(
+                ENTITY_SWORD_SHIELD_PICKUP, enemyDropCounters, 0);
+        } else {
+            EnemyDropResolver.Context context = new EnemyDropResolver.Context(
+                entity.type(), enemyDropHealthGroup(entity.type()), droppedItemBySlot[entity.slot()],
+                enemyDropMaxHearts, enemyDropHealth, enemyDropBossBattle,
+                enemyDropActivePowerUp, groundInteractionSideScrolling, enemyDropCounters,
+                randomByteSupplier);
+            result = enemyDropResolver.resolve(context);
+            enemyDropCounters = result.counters();
+        }
 
         int killIndex = killCount & 0xFF;
         killOrder[killIndex] = entity.sourceLoadOrder() & 0xFF;
@@ -4860,10 +4952,14 @@ public final class RoomEntityRuntime {
         if (slots[slot].type() == ENTITY_WIZROBE_PROJECTILE) {
             return WIZROBE_PROJECTILE_OPTIONS1;
         }
+        if (slots[slot].type() == ENTITY_SWORD_SHIELD_PICKUP) {
+            return ENTITY_OPT1_SPLASH_IN_WATER | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
+        }
         if (isBombiteType(slots[slot].type())) {
             return BOMBITE_OPTIONS1;
         }
         return slots[slot].type() == ENTITY_STALFOS_EVASIVE
+            || slots[slot].type() == ENTITY_LIKE_LIKE
             ? ENTITY_OPT1_SPLASH_IN_WATER : 0;
     }
 
@@ -4971,6 +5067,8 @@ public final class RoomEntityRuntime {
             case ENTITY_IRON_MASK -> IRON_MASK_INITIAL_PHYSICS_FLAGS;
             case ENTITY_GOOMBA, ENTITY_SNAKE -> GOOMBA_INITIAL_PHYSICS_FLAGS;
             case ENTITY_WIZROBE -> 0x02;
+            case ENTITY_SWORD_SHIELD_PICKUP -> SWORD_SHIELD_PICKUP_INITIAL_PHYSICS_FLAGS;
+            case ENTITY_LIKE_LIKE -> LIKE_LIKE_INITIAL_PHYSICS_FLAGS;
             case ENTITY_WIZROBE_PROJECTILE -> 0x42;
             case ENTITY_IRON_MASKS_MASK -> IRON_MASKS_MASK_INITIAL_PHYSICS_FLAGS;
             case ENTITY_BOMB -> BOMB_INITIAL_PHYSICS_FLAGS;

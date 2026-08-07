@@ -2596,6 +2596,115 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void likeLikeRunsTheRomInitDirectionChoiceAndFixedPointWalk() {
+        EntitySpriteDefinition definition = pairDefinition(0x23, 2);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x23, 64, 64, EntityStatus.INIT, definition, 0)));
+
+        runtime.tick(0, 120, 120, sequence(0xFF));
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
+        assertEquals(1, runtime.likeLikeWalkState(0));
+
+        // LikeLikeGibdoSpeeds[1] is $08 (+8 pixels per 16 frames).
+        runtime.tick(1, 120, 120, sequence(0x00, 0x01));
+        assertEquals(0, runtime.likeLikeWalkState(0));
+        assertEquals(0x08, runtime.likeLikeWalkSpeedY(0));
+        assertEquals(64, runtime.snapshot().slots().get(0).y());
+
+        runtime.tick(2, 120, 120, sequence(0xFF));
+        runtime.tick(3, 120, 120, sequence(0xFF));
+        assertEquals(65, runtime.snapshot().slots().get(0).y());
+    }
+
+    @Test
+    void likeLikeCapturesLinkOnTheRomCollisionCadenceWithoutContactDamage() {
+        EntitySpriteDefinition definition = pairDefinition(0x23, 2);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x23, 64, 64, EntityStatus.INIT, definition, 0)));
+
+        runtime.tick(0, 64, 64, sequence(0xFF));
+        runtime.tickWithProjectileEvents(1, 64, 64, sequence(0x00, 0x00), null,
+            new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0));
+        runtime.tickWithProjectileEvents(2, 64, 64, sequence(0x00, 0x00), null,
+            new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0));
+
+        List<RoomEntityRuntime.LikeLikeEvent> events =
+            runtime.consumePendingLikeLikeEvents();
+        assertEquals(1, events.size());
+        assertEquals(RoomEntityRuntime.LikeLikeEvent.Kind.CAPTURE, events.getFirst().kind());
+        assertEquals(-1, events.getFirst().stolenInventorySlot());
+        assertEquals(1, runtime.likeLikeState(0));
+        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+
+        assertTrue(runtime.resolveCombat(3, 64, 64, false, true,
+            true, 72, 1, 72, 1).isEmpty());
+        assertEquals(2, runtime.enemyHealth(0));
+    }
+
+    @Test
+    void likeLikeStealsTheBShieldFirstAndRefusesToStealTheLevelTwoShield() {
+        EntitySpriteDefinition definition = pairDefinition(0x23, 2);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x23, 64, 64, EntityStatus.INIT, definition, 0)));
+        runtime.setLikeLikeLinkInventoryForTest(0x04, 0x04);
+        runtime.tick(0, 64, 64, sequence(0xFF));
+        runtime.tickWithProjectileEvents(1, 64, 64, sequence(0x00), null,
+            new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0));
+        runtime.consumePendingLikeLikeEvents();
+
+        runtime.tickWithProjectileEvents(2, 64, 64, sequence(0x00), null,
+            new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0));
+        RoomEntityRuntime.LikeLikeEvent stolen =
+            runtime.consumePendingLikeLikeEvents().getFirst();
+        assertEquals(RoomEntityRuntime.LikeLikeEvent.Kind.CAPTURE, stolen.kind());
+        assertEquals(0, stolen.stolenInventorySlot());
+        assertEquals(1, stolen.stolenShieldLevel());
+        assertEquals(1, runtime.likeLikePrivateState1(0));
+
+        RoomEntityRuntime levelTwo = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x23, 64, 64, EntityStatus.INIT, definition, 0)));
+        levelTwo.setLikeLikeLinkInventoryForTest(0x00, 0x04);
+        levelTwo.tick(0, 64, 64, sequence(0xFF));
+        levelTwo.tickWithProjectileEvents(1, 64, 64, sequence(0x00), null,
+            new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 2, 0));
+        levelTwo.consumePendingLikeLikeEvents();
+        levelTwo.tickWithProjectileEvents(2, 64, 64, sequence(0x00), null,
+            new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 2, 0));
+        RoomEntityRuntime.LikeLikeEvent protectedShield =
+            levelTwo.consumePendingLikeLikeEvents().getFirst();
+        assertEquals(-1, protectedShield.stolenInventorySlot());
+        assertEquals(0, levelTwo.likeLikePrivateState1(0));
+    }
+
+    @Test
+    void likeLikeReleasesLinkAfterEightHeldActionFramesAndStartsTheRomSlowTimer() {
+        EntitySpriteDefinition definition = pairDefinition(0x23, 2);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x23, 64, 64, EntityStatus.INIT, definition, 0)));
+        runtime.tick(0, 64, 64, sequence(0xFF));
+        runtime.tickWithProjectileEvents(1, 64, 64, sequence(0x00), null,
+            new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0));
+        runtime.consumePendingLikeLikeEvents();
+
+        runtime.setActionButtonsHeld(true);
+        for (int frame = 2; frame <= 8; frame++) {
+            runtime.tickWithProjectileEvents(frame, 64, 64, sequence(0x00), null,
+                new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0));
+            runtime.consumePendingLikeLikeEvents();
+        }
+        assertEquals(1, runtime.likeLikeState(0));
+        assertEquals(7, runtime.likeLikeInertia(0));
+
+        runtime.tickWithProjectileEvents(9, 64, 64, sequence(0x00), null,
+            new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0));
+        RoomEntityRuntime.LikeLikeEvent release =
+            runtime.consumePendingLikeLikeEvents().getFirst();
+        assertEquals(RoomEntityRuntime.LikeLikeEvent.Kind.RELEASE, release.kind());
+        assertEquals(0, runtime.likeLikeState(0));
+        assertEquals(0x15, runtime.slowTransitionCountdown(0));
+    }
+
+    @Test
     void goombaUsesTheRomNormalRoomRandomWalkAndAnimation() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);

@@ -84,6 +84,25 @@ final class LinkTest {
     }
 
     @Test
+    void likeLikeCaptureUsesRomEntityCoordinatesAndFreezesLinkUntilRelease() {
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        Link link = new Link(new InputState(), inputConfig, null, null, null,
+            new PlayerState(), new ItemRegistry());
+        link.setPixelPosition(0x20, 0x20);
+
+        link.applyLikeLikeCapture(0x40, 0x50);
+        assertTrue(link.isLikeLikeCaptured());
+        assertEquals(0x38, link.pixelX());
+        assertEquals(0x40, link.pixelY());
+        link.update();
+        assertEquals(0x38, link.pixelX());
+        assertEquals(0x40, link.pixelY());
+
+        link.releaseLikeLikeCapture();
+        assertFalse(link.isLikeLikeCaptured());
+    }
+
+    @Test
     void renderUsesTheSelectedRomTunicPaletteAtTheSameBodyPixels() throws Exception {
         byte[] rom = loadRom();
         LinkSpriteSheet spriteSheet = LinkSpriteSheet.loadFromRom(rom);

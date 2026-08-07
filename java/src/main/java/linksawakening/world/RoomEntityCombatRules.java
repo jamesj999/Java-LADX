@@ -17,6 +17,7 @@ public final class RoomEntityCombatRules {
     private static final int ENTITY_GEL = 0x1C;
     private static final int ENTITY_HIDING_ZOL = 0x9B;
     private static final int ENTITY_GIBDO = 0x1F;
+    private static final int ENTITY_LIKE_LIKE = 0x23;
     private static final int ENTITY_GOOMBA = 0x9F;
     private static final int ENTITY_SNAKE = 0xA1;
     private static final int ENTITY_PEAHAT = 0xA0;
@@ -74,6 +75,7 @@ public final class RoomEntityCombatRules {
     private static final int GEL_INITIAL_HEALTH = 0x01;
     private static final int HIDING_ZOL_INITIAL_HEALTH = 0x01;
     private static final int GIBDO_INITIAL_HEALTH = 0x06;
+    private static final int LIKE_LIKE_INITIAL_HEALTH = 0x02;
     private static final int MAD_BOMBER_INITIAL_HEALTH = 0x04;
     private static final int MAD_BOMBER_CONTACT_DAMAGE = 0x04;
     private static final int BOMBER_INITIAL_HEALTH = 0x03;
@@ -93,7 +95,7 @@ public final class RoomEntityCombatRules {
                 ENTITY_SPARK_CLOCKWISE,
                 ENTITY_STALFOS_AGGRESSIVE, ENTITY_STALFOS_EVASIVE,
                 ENTITY_ZOL, ENTITY_GEL, ENTITY_HIDING_ZOL,
-                ENTITY_GIBDO, ENTITY_PEAHAT,
+                ENTITY_GIBDO, ENTITY_LIKE_LIKE, ENTITY_PEAHAT,
                 ENTITY_GOOMBA, ENTITY_SNAKE,
                 ENTITY_WIZROBE,
                 ENTITY_ARMOS_STATUE,
@@ -128,6 +130,7 @@ public final class RoomEntityCombatRules {
             case ENTITY_BOMBER -> BOMBER_CONTACT_DAMAGE;
             case ENTITY_BOUNCING_BOMBITE, ENTITY_TIMER_BOMBITE -> BOMBITE_CONTACT_DAMAGE;
             case ENTITY_GIBDO -> GIBDO_CONTACT_DAMAGE;
+            case ENTITY_LIKE_LIKE -> 0;
             case ENTITY_ANTI_FAIRY -> ANTI_FAIRY_CONTACT_DAMAGE;
             case ENTITY_HIDING_GHINI, ENTITY_GIANT_GHINI, ENTITY_GHINI ->
                 GHINI_CONTACT_DAMAGE;
@@ -155,6 +158,7 @@ public final class RoomEntityCombatRules {
             case ENTITY_HIDING_ZOL -> HIDING_ZOL_INITIAL_HEALTH;
             case ENTITY_GEL -> GEL_INITIAL_HEALTH;
             case ENTITY_GIBDO -> GIBDO_INITIAL_HEALTH;
+            case ENTITY_LIKE_LIKE -> LIKE_LIKE_INITIAL_HEALTH;
             case ENTITY_MAD_BOMBER -> MAD_BOMBER_INITIAL_HEALTH;
             case ENTITY_BOMBER -> BOMBER_INITIAL_HEALTH;
             case ENTITY_BOUNCING_BOMBITE, ENTITY_TIMER_BOMBITE -> BOMBITE_INITIAL_HEALTH;

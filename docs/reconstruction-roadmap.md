@@ -1640,6 +1640,31 @@ runtime collision callback.
   with 986 tests and zero failures, errors, or skipped tests; remaining entity
   handlers and broader room-script parity remain follow-up work.
 
+## Verified ROM Like Like entity runtime — 2026-08-07
+
+- Entity `$23` now decodes `LikeLikeSpriteVariants` from bank `$06:$7DD4`,
+  including both exact pair frames and their GBC attributes. The shared
+  bank-$06 Gibdo walk is kept as an independent per-slot motion state and uses
+  the source init direction choice, fixed-point speeds, and background bounce.
+- Like Like's state-0 collision follows the alternating frame cadence and
+  transitions into the swallowed state without applying the harmless entity's
+  `$04` contact damage. The swallowed state scans the B slot before A, steals
+  only a normal shield, refuses a level-two shield, animates the source
+  private-state cadence, and releases after eight held A/B frames with slow
+  timer `$15`.
+- Capture/release requests now cross `RoomEntityRuntime` and `RoomSession` as
+  typed events. The main loop clears the stolen inventory slot, positions Link
+  from the ROM entity coordinates, hides and freezes Link while swallowed, and
+  restores control on release. Sword collisions are disabled during the
+  swallowed handler state, matching the source dispatch.
+- A swallowed shield forces the source `$31` sword/shield pickup on Like Like's
+  terminal death path. Its bank-$03 single-sprite definition at `$5B95`,
+  physics/options, and existing pickup collection path are wired as well.
+  Focused ROM-byte, movement, capture, inventory, release, drop-art, and Link
+  integration tests are covered. The clean Java suite passes with 993 tests
+  and zero failures, errors, or skipped tests; remaining entity handlers and
+  broader room-script parity remain follow-up work.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

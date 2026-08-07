@@ -389,6 +389,16 @@ public final class RoomSession {
         }
     }
 
+    /** Supplies the B/A inventory bytes consumed by Like Like's handler. */
+    public void setEntityInventorySlots(int itemA, int itemB) {
+        if ((itemA & ~0xFF) != 0 || (itemB & ~0xFF) != 0) {
+            throw new IllegalArgumentException("Entity inventory slots must be unsigned bytes");
+        }
+        if (entityRuntime != null) {
+            entityRuntime.setLikeLikeLinkInventory(itemA, itemB);
+        }
+    }
+
     /** Supplies the held A/B state used by EntityGetLiftedUp. */
     public void setEntityPowerBraceletButtonHeld(boolean buttonHeld) {
         this.powerBraceletButtonHeld = buttonHeld;
@@ -747,6 +757,14 @@ public final class RoomSession {
         events.addAll(pendingRoomEntityEvents);
         pendingRoomEntityEvents.clear();
         return List.copyOf(events);
+    }
+
+    /** Returns and clears Like Like capture/release requests from the last tick. */
+    public List<RoomEntityRuntime.LikeLikeEvent> consumeLikeLikeEvents() {
+        if (entityRuntime == null) {
+            return List.of();
+        }
+        return entityRuntime.consumePendingLikeLikeEvents();
     }
 
     /** Returns and clears ROM dialog requests emitted by the last entity tick. */

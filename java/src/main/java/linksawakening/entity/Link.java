@@ -156,6 +156,9 @@ public final class Link implements RocsFeather.JumpTarget {
     private boolean airborne;
     private int zSubPixels;
     private int zVelocity;
+    private boolean likeLikeCaptured;
+    private int likeLikeCaptureSubX;
+    private int likeLikeCaptureSubY;
     private boolean fallingIntoPit;
     private int jumpAnimationCounter;
     private int jumpAnimationFrame;
@@ -296,6 +299,37 @@ public final class Link implements RocsFeather.JumpTarget {
     /** ROM hLinkPositionZ used by follower position history and OAM Z state. */
     public int romEntityZ() {
         return zPixels();
+    }
+
+    /** Applies Like Like's hLinkPositionX/Y and hidden animation state. */
+    public void applyLikeLikeCapture(int romEntityX, int romEntityY) {
+        if ((romEntityX & ~0xFF) != 0 || (romEntityY & ~0xFF) != 0) {
+            throw new IllegalArgumentException("Like Like capture coordinates must be bytes");
+        }
+        likeLikeCaptureSubX = ((romEntityX - 0x08) & 0xFF) << SUB_PIXEL_SHIFT;
+        likeLikeCaptureSubY = ((romEntityY - 0x10) & 0xFF) << SUB_PIXEL_SHIFT;
+        likeLikeCaptured = true;
+        subX = likeLikeCaptureSubX;
+        subY = likeLikeCaptureSubY;
+        airborne = false;
+        zSubPixels = 0;
+        zVelocity = 0;
+        fallingIntoPit = false;
+        groundStatus = GROUND_STATUS_NORMAL;
+        movingThisFrame = false;
+        romCollisionType = 0;
+        lastRomSpeedX = 0;
+        lastRomSpeedY = 0;
+        forcedSpeedPending = false;
+    }
+
+    /** Releases Link when the swallowed Like Like handler accepts A or B. */
+    public void releaseLikeLikeCapture() {
+        likeLikeCaptured = false;
+    }
+
+    public boolean isLikeLikeCaptured() {
+        return likeLikeCaptured;
     }
 
     /**
@@ -467,6 +501,16 @@ public final class Link implements RocsFeather.JumpTarget {
         lastRomSpeedY = 0;
         if (playerState != null) {
             playerState.tickInvincibility();
+        }
+
+        if (likeLikeCaptured) {
+            subX = likeLikeCaptureSubX;
+            subY = likeLikeCaptureSubY;
+            airborne = false;
+            zSubPixels = 0;
+            zVelocity = 0;
+            movingThisFrame = false;
+            return;
         }
 
         if (fallingIntoPit) {
@@ -812,6 +856,9 @@ public final class Link implements RocsFeather.JumpTarget {
     }
 
     public void render(byte[] displayBuffer, int offsetX, int offsetY) {
+        if (likeLikeCaptured) {
+            return;
+        }
         int animationState = resolveAnimationState();
         spriteSheet.resolveTiles(animationState, composedTiles);
 

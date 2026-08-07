@@ -671,6 +671,9 @@ public class Main {
                             || inputState.isDown(inputConfig.bKey())));
                 roomSession.setEntityPowerBraceletButtonHeld(isPowerBraceletButtonHeld());
                 roomSession.setEntityBombButtonHeld(isBombButtonHeld());
+                roomSession.setEntityInventorySlots(
+                    playerState == null ? PlayerState.INVENTORY_EMPTY : playerState.itemA(),
+                    playerState == null ? PlayerState.INVENTORY_EMPTY : playerState.itemB());
                 roomSession.setEnemyDropPlayerState(
                     playerState.maxHearts(), playerState.health(),
                     playerState.activePowerUp() != PlayerState.ACTIVE_POWER_UP_NONE);
@@ -694,6 +697,21 @@ public class Main {
                     gameplaySoundSink);
                 EnemyCombatEventConsumer.consume(roomSession.consumeEntityEvents(),
                     gameplaySoundSink, transientVfxSystem);
+                for (var event : roomSession.consumeLikeLikeEvents()) {
+                    if (event.kind()
+                        == linksawakening.world.RoomEntityRuntime.LikeLikeEvent.Kind.CAPTURE) {
+                        if (event.stolenInventorySlot() == 0) {
+                            playerState.setItemB(PlayerState.INVENTORY_EMPTY);
+                        } else if (event.stolenInventorySlot() == 1) {
+                            playerState.setItemA(PlayerState.INVENTORY_EMPTY);
+                        }
+                        if (link != null) {
+                            link.applyLikeLikeCapture(event.entityX(), event.entityY());
+                        }
+                    } else if (link != null) {
+                        link.releaseLikeLikeCapture();
+                    }
+                }
                 openEntityDialogRequests();
                 for (var event : projectileEvents) {
                     boolean hookshotPull = event.kind() == EntityProjectileEvent.Kind.HOOKSHOT_PULL;

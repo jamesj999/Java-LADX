@@ -406,6 +406,29 @@ final class EntitySpriteHandlerCatalogTest {
     }
 
     @Test
+    void mapsLikeLikeToItsExactBankSixDisplayList() throws Exception {
+        EntitySpriteDefinition likeLike = new EntitySpriteHandlerCatalog(loadRom())
+            .forEntityType(0x23, EntityRoomLoader.RoomTable.INDOORS_A);
+        assertDefinition(likeLike, 0x06, 0x7DD4,
+            EntitySpriteDefinition.Shape.PAIR, 2, 0);
+        assertPairBytes(likeLike, new int[][] {
+            {0x7C, 0x01, 0x7C, 0x21},
+            {0x7E, 0x01, 0x7E, 0x21}
+        });
+    }
+
+    @Test
+    void mapsTheLikeLikeShieldDropToItsExactBankThreeSprite() throws Exception {
+        EntitySpriteDefinition shield = new EntitySpriteHandlerCatalog(loadRom())
+            .forEntityType(0x31, EntityRoomLoader.RoomTable.INDOORS_A);
+        assertDefinition(shield, 0x03, 0x5B95,
+            EntitySpriteDefinition.Shape.SINGLE, 1, 0);
+        assertEquals(0x86, shield.variant(0).first().tile());
+        assertEquals(0x17, shield.variant(0).first().attributes());
+        assertNull(shield.variant(0).second());
+    }
+
+    @Test
     void mapsBomberToItsBankEighteenRectangleDisplayList() throws Exception {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
 

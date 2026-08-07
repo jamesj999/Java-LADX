@@ -46,6 +46,7 @@ public final class EntitySpriteHandlerCatalog {
     private static final int ENTITY_STALFOS_AGGRESSIVE = 0x1A;
     private static final int ENTITY_STALFOS_EVASIVE = 0x1E;
     private static final int ENTITY_GIBDO = 0x1F;
+    private static final int ENTITY_LIKE_LIKE = 0x23;
     private static final int ENTITY_PEAHAT = 0xA0;
     private static final int ENTITY_WIZROBE = 0x21;
     private static final int ENTITY_WIZROBE_PROJECTILE = 0x22;
@@ -70,6 +71,7 @@ public final class EntitySpriteHandlerCatalog {
     private static final int ENTITY_CROW = 0x7A;
     private static final int ENTITY_DROPPABLE_HEART = 0x2D;
     private static final int ENTITY_DROPPABLE_RUPEE = 0x2E;
+    private static final int ENTITY_SWORD_SHIELD_PICKUP = 0x31;
     private static final int ENTITY_IRON_MASKS_MASK = 0x32;
     private static final int ENTITY_PIECE_OF_POWER = 0x33;
     private static final int ENTITY_GUARDIAN_ACORN = 0x34;
@@ -257,6 +259,9 @@ public final class EntitySpriteHandlerCatalog {
         if (entityType == ENTITY_GIBDO) {
             return decodePair(entityType, 0x06, mapId == 0x07 ? 0x7E77 : 0x7E6F, 2, 0);
         }
+        if (entityType == ENTITY_LIKE_LIKE) {
+            return decodePair(entityType, 0x06, 0x7DD4, 2, 0);
+        }
         if (entityType == ENTITY_PEAHAT) {
             return decodePair(entityType, 0x07, 0x6701, 2, 0);
         }
@@ -300,6 +305,9 @@ public final class EntitySpriteHandlerCatalog {
         }
         if (entityType == ENTITY_DROPPABLE_RUPEE) {
             return decodeSingle(entityType, 0x03, 0x609C, 1, 0);
+        }
+        if (entityType == ENTITY_SWORD_SHIELD_PICKUP) {
+            return decodeSingle(entityType, 0x03, 0x5B95, 1, 0);
         }
         if (entityType == ENTITY_IRON_MASKS_MASK) {
             return decodePair(entityType, 0x03, 0x5B80, 2, 0);
