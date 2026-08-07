@@ -142,6 +142,25 @@ final class EntityRoomLoaderTest {
     }
 
     @Test
+    void initializesMoblinSwordVariantFromTheHandlerDirectionSetup() {
+        byte[] rom = syntheticRom();
+        writePointer(rom, EntityRoomLoader.RoomTable.OVERWORLD, 0, 0x5170);
+        writeStream(rom, 0x5170,
+            0x10, 0x14, // hActiveEntityPosX bit $10 clear: initial down variant.
+            0x11, 0x14, // hActiveEntityPosX bit $10 set: initial right variant.
+            0xFF);
+
+        List<RoomEntity> swords = new EntityRoomLoader(rom)
+            .load(EntityRoomLoader.RoomTable.OVERWORLD, 0)
+            .loadedEntities();
+
+        assertEquals(EntitySpriteDefinition.Shape.DYNAMIC,
+            swords.get(0).spriteDefinition().shape());
+        assertEquals(0, swords.get(0).spriteVariant());
+        assertEquals(6, swords.get(1).spriteVariant());
+    }
+
+    @Test
     void initializesFloatingItemsWithPositionVariantAndRomInitialZ() {
         byte[] rom = syntheticRom();
         writePointer(rom, EntityRoomLoader.RoomTable.OVERWORLD, 0, 0x5170);

@@ -452,6 +452,45 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void longFallingMoblinSwordKeepsItsInitDirectionForRomPresentationHandoff() {
+        List<List<EntitySpriteDefinition.DynamicSprite>> variants = new ArrayList<>();
+        for (int variant = 0; variant < 8; variant++) {
+            variants.add(List.of(new EntitySpriteDefinition.DynamicSprite(0, 0,
+                new EntitySpriteDefinition.OamAttribute(0x60, 0x03),
+                EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true)));
+        }
+        EntitySpriteDefinition definition = EntitySpriteDefinition.dynamic(
+            0x14, 0x07, 0x7A95, 0, variants);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x14, 0x50, 0x50, EntityStatus.INIT, definition, 6));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+        runtime.setEnemyIgnoreHitsCountdownForTest(0, 0x04);
+        runtime.setGroundInteraction((entity, frame, previousStatus, speedZ, sideScrolling) ->
+            RoomEntityGroundInteraction.Result.pit(entity, 0x01, 0x68, 0x70));
+        AtomicInteger backgroundProbes = new AtomicInteger();
+        runtime.setBackgroundInteraction((entity, direction, nextX, nextY) -> {
+            backgroundProbes.incrementAndGet();
+            return EntityBackgroundCollisionResult.passable(direction, 0, nextX, nextY);
+        });
+
+        for (int frame = 0; frame <= 4; frame++) {
+            runtime.tick(frame, 0, 0, () -> 0);
+        }
+
+        RoomEntity falling = runtime.snapshot().slots().get(0);
+        assertEquals(EntityStatus.FALLING, falling.status());
+        assertEquals(0x6C, runtime.transitionCountdown(0));
+        // Init performs one direction-variant update, then each of the three
+        // falling frames above performs the handler's three updates. The
+        // stored direction is left (base variant 4), with inertia crossing
+        // bit 3 on the final frame.
+        assertEquals(5, falling.spriteVariant());
+        assertEquals(0x50, falling.x());
+        assertEquals(0x50, falling.y());
+        assertEquals(0, backgroundProbes.get());
+    }
+
+    @Test
     void staggersButterflyWingVariantsByEntitySlot() {
         EntitySpriteDefinition definition = new EntitySpriteDefinition(0x6E, 0x06, 0x6BBD,
             EntitySpriteDefinition.Shape.SINGLE, 0, List.of(

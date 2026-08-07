@@ -16,6 +16,7 @@ public final class EntityRoomLoader {
     private static final int ENTITY_STREAM_END = 0xFF;
     private static final int MAX_ROOM_ID = 0xFF;
     private static final int ENTITY_GHINI = 0x12;
+    private static final int ENTITY_MOBLIN_SWORD = 0x14;
     private static final int GHINI_INITIAL_Z = 0x10;
 
     public enum RoomTable {
@@ -102,12 +103,8 @@ public final class EntityRoomLoader {
                 int[] initializedPosition = applyInitialPositionTransform(table, roomId, type, x, y);
                 EntitySpriteDefinition spriteDefinition = spriteHandlers
                     .forEntityType(type, table, mapId);
-                int spriteVariant = spriteDefinition.supported()
-                    ? FloatingItemMotion.isFloatingItem(type)
-                        ? FloatingItemMotion.initialVariant(type,
-                            initializedPosition[0], initializedPosition[1])
-                        : spriteDefinition.initialVariant()
-                    : -1;
+                int spriteVariant = initialSpriteVariant(type, spriteDefinition,
+                    initializedPosition[0], initializedPosition[1]);
                 int initialZ = type == ENTITY_GHINI
                     ? GHINI_INITIAL_Z
                     : spriteDefinition.supported() && FloatingItemMotion.isFloatingItem(type)
@@ -158,6 +155,24 @@ public final class EntityRoomLoader {
     private static boolean isOverworldTreeOrPotDrop(int type) {
         return type == 0x2E || type == 0x2F || type == 0x32 || type == 0x33
             || type == 0x34 || type == 0x36 || type == 0x37 || type == 0x38;
+    }
+
+    private static int initialSpriteVariant(int type, EntitySpriteDefinition definition,
+                                            int x, int y) {
+        if (!definition.supported()) {
+            return -1;
+        }
+        if (FloatingItemMotion.isFloatingItem(type)) {
+            return FloatingItemMotion.initialVariant(type, x, y);
+        }
+        if (type == ENTITY_MOBLIN_SWORD) {
+            // EntityInitMoblinSword chooses direction $00 when the active
+            // X position has bit $10 set, otherwise direction $03, then
+            // selects the corresponding bank-$03 variant before flipping
+            // the stored direction for its handler.
+            return (x & 0x10) != 0 ? 6 : 0;
+        }
+        return definition.initialVariant();
     }
 
     /** OctorokEntityHandler writes $30 to hActiveEntityTilesOffset. */

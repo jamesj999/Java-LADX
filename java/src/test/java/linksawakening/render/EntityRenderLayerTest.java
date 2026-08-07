@@ -42,6 +42,59 @@ final class EntityRenderLayerTest {
     }
 
     @Test
+    void rendersMoblinSwordDynamicOamInRomOrderUsingBothTileSources() {
+        GPU gpu = new GPU();
+        int bodyColor = 0x112233;
+        int swordColor = 0x223344;
+        int warningColor = 0x334455;
+        int[][] palettes = new int[8][4];
+        palettes[3][1] = bodyColor;
+        palettes[3][2] = swordColor;
+        palettes[6][2] = warningColor;
+
+        writeSolidTile(gpu, 0x04, 2);
+        writeSolidTile(gpu, 0x05, 2);
+        writeSolidTile(gpu, 0x60, 1);
+        writeSolidTile(gpu, 0x61, 1);
+        writeSolidTile(gpu, 0x62, 1);
+        writeSolidTile(gpu, 0x63, 1);
+        writeSolidTile(gpu, 0x86, 2);
+        writeSolidTile(gpu, 0x87, 2);
+        writeSolidTile(gpu, 0xF0, 2);
+        writeSolidTile(gpu, 0xF1, 2);
+
+        EntitySpriteDefinition definition = EntitySpriteDefinition.dynamic(
+            0x14, 0x07, 0x7A95, 0, List.of(List.of(
+                new EntitySpriteDefinition.DynamicSprite(5, -2,
+                    new EntitySpriteDefinition.OamAttribute(0x86, 0x16),
+                    EntitySpriteDefinition.DynamicSprite.TileSource.GPU, false),
+                new EntitySpriteDefinition.DynamicSprite(8, 0,
+                    new EntitySpriteDefinition.OamAttribute(0xF0, 0x03),
+                    EntitySpriteDefinition.DynamicSprite.TileSource.GPU, false),
+                new EntitySpriteDefinition.DynamicSprite(8, 8,
+                    new EntitySpriteDefinition.OamAttribute(0x04, 0x03),
+                    EntitySpriteDefinition.DynamicSprite.TileSource.GPU, false),
+                new EntitySpriteDefinition.DynamicSprite(0, 0,
+                    new EntitySpriteDefinition.OamAttribute(0x60, 0x03),
+                    EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true),
+                new EntitySpriteDefinition.DynamicSprite(0, 8,
+                    new EntitySpriteDefinition.OamAttribute(0x62, 0x03),
+                    EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true))));
+        RoomEntity entity = new RoomEntity(0, 0, 0x14, 24, 32,
+            EntityStatus.ACTIVE, definition, 0);
+        byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
+
+        new EntityRenderLayer(snapshot(null, gpu.snapshotEntityTiles(), entity), palettes,
+            new ScrollController()).render(new RenderContext(buffer, gpu));
+
+        assertEquals(warningColor, pixelColor(buffer, 14, 21));
+        assertEquals(warningColor, pixelColor(buffer, 16, 24));
+        assertEquals(swordColor, pixelColor(buffer, 24, 24));
+        assertEquals(bodyColor, pixelColor(buffer, 16, 16));
+        assertEquals(bodyColor, pixelColor(buffer, 24, 16));
+    }
+
+    @Test
     void rendersPairAndSingleObjectsWithPaletteSelectionAndTransparentPixels() {
         GPU gpu = new GPU();
         int pairTopColor = 0x112233;

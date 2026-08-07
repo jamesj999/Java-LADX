@@ -9,6 +9,7 @@ public final class EntitySpriteDefinition {
         PAIR,
         SINGLE,
         RECTANGLE,
+        DYNAMIC,
         UNSUPPORTED
     }
 
@@ -40,6 +41,25 @@ public final class EntitySpriteDefinition {
         }
     }
 
+    /** One handler-generated OAM entry with offsets relative to hActiveEntityPosX/Y. */
+    public record DynamicSprite(int yOffset, int xOffset, OamAttribute oam,
+                                TileSource tileSource,
+                                boolean appliesEntityFlipAttribute) {
+        public enum TileSource {
+            ENTITY_SHEETS,
+            GPU
+        }
+
+        public DynamicSprite {
+            if (yOffset < -128 || yOffset > 127 || xOffset < -128 || xOffset > 127) {
+                throw new IllegalArgumentException("Dynamic offsets must be signed bytes");
+            }
+            if (oam == null || tileSource == null) {
+                throw new IllegalArgumentException("Dynamic OAM metadata cannot be null");
+            }
+        }
+    }
+
     private final int entityType;
     private final int bank;
     private final int address;
@@ -47,27 +67,39 @@ public final class EntitySpriteDefinition {
     private final int initialVariant;
     private final List<Variant> variants;
     private final List<List<RectangleSprite>> rectangleVariants;
+    private final List<List<DynamicSprite>> dynamicVariants;
 
     public EntitySpriteDefinition(int entityType, int bank, int address, Shape shape,
                                   int initialVariant, List<Variant> variants) {
-        this(entityType, bank, address, shape, initialVariant, variants, List.of());
+        this(entityType, bank, address, shape, initialVariant, variants, List.of(), List.of());
     }
 
     public EntitySpriteDefinition(int entityType, int bank, int address, Shape shape,
                                   int initialVariant, List<Variant> variants,
                                   List<List<RectangleSprite>> rectangleVariants) {
+        this(entityType, bank, address, shape, initialVariant, variants, rectangleVariants,
+            List.of());
+    }
+
+    private EntitySpriteDefinition(int entityType, int bank, int address, Shape shape,
+                                   int initialVariant, List<Variant> variants,
+                                   List<List<RectangleSprite>> rectangleVariants,
+                                   List<List<DynamicSprite>> dynamicVariants) {
         if ((entityType & ~0xFF) != 0) {
             throw new IllegalArgumentException("Entity type must be an unsigned byte");
         }
-        if (shape == null || variants == null || rectangleVariants == null) {
+        if (shape == null || variants == null || rectangleVariants == null
+            || dynamicVariants == null) {
             throw new IllegalArgumentException("Entity shape and variants cannot be null");
         }
         if (shape == Shape.UNSUPPORTED) {
-            if (!variants.isEmpty() || !rectangleVariants.isEmpty() || initialVariant != -1) {
+            if (!variants.isEmpty() || !rectangleVariants.isEmpty() || !dynamicVariants.isEmpty()
+                || initialVariant != -1) {
                 throw new IllegalArgumentException("Unsupported definitions cannot have variants");
             }
         } else if (shape == Shape.RECTANGLE) {
             if (!variants.isEmpty() || rectangleVariants.isEmpty()
+                || !dynamicVariants.isEmpty()
                 || initialVariant < 0 || initialVariant >= rectangleVariants.size()) {
                 throw new IllegalArgumentException("Rectangle definition has invalid variants");
             }
@@ -76,13 +108,23 @@ public final class EntitySpriteDefinition {
                     throw new IllegalArgumentException("Rectangle variants cannot be empty");
                 }
             }
+        } else if (shape == Shape.DYNAMIC) {
+            if (!variants.isEmpty() || !rectangleVariants.isEmpty() || dynamicVariants.isEmpty()
+                || initialVariant < 0 || initialVariant >= dynamicVariants.size()) {
+                throw new IllegalArgumentException("Dynamic definition has invalid variants");
+            }
+            for (List<DynamicSprite> variant : dynamicVariants) {
+                if (variant == null || variant.isEmpty() || variant.stream().anyMatch(s -> s == null)) {
+                    throw new IllegalArgumentException("Dynamic variants cannot be empty");
+                }
+            }
         } else if (variants.isEmpty() || initialVariant < 0 || initialVariant >= variants.size()) {
-            if (!rectangleVariants.isEmpty()) {
+            if (!rectangleVariants.isEmpty() || !dynamicVariants.isEmpty()) {
                 throw new IllegalArgumentException("Pair and single definitions cannot have rectangles");
             }
             throw new IllegalArgumentException("Supported entity definition has invalid variants");
-        } else if (!rectangleVariants.isEmpty()) {
-            throw new IllegalArgumentException("Pair and single definitions cannot have rectangles");
+        } else if (!rectangleVariants.isEmpty() || !dynamicVariants.isEmpty()) {
+            throw new IllegalArgumentException("Pair and single definitions cannot have extra OAM lists");
         }
         this.entityType = entityType;
         this.bank = bank;
@@ -91,6 +133,14 @@ public final class EntitySpriteDefinition {
         this.initialVariant = initialVariant;
         this.variants = List.copyOf(variants);
         this.rectangleVariants = copyRectangleVariants(rectangleVariants);
+        this.dynamicVariants = copyDynamicVariants(dynamicVariants);
+    }
+
+    public static EntitySpriteDefinition dynamic(int entityType, int bank, int address,
+                                                 int initialVariant,
+                                                 List<List<DynamicSprite>> variants) {
+        return new EntitySpriteDefinition(entityType, bank, address, Shape.DYNAMIC,
+            initialVariant, List.of(), List.of(), variants);
     }
 
     public static EntitySpriteDefinition unsupported(int entityType) {
@@ -119,7 +169,11 @@ public final class EntitySpriteDefinition {
     }
 
     public int variantCount() {
-        return shape == Shape.RECTANGLE ? rectangleVariants.size() : variants.size();
+        return switch (shape) {
+            case RECTANGLE -> rectangleVariants.size();
+            case DYNAMIC -> dynamicVariants.size();
+            default -> variants.size();
+        };
     }
 
     public boolean supported() {
@@ -142,10 +196,27 @@ public final class EntitySpriteDefinition {
         return rectangleVariants;
     }
 
+    public List<DynamicSprite> dynamicVariant(int index) {
+        return dynamicVariants.get(index);
+    }
+
+    public List<List<DynamicSprite>> dynamicVariants() {
+        return dynamicVariants;
+    }
+
     private static List<List<RectangleSprite>> copyRectangleVariants(
                                                                 List<List<RectangleSprite>> source) {
         List<List<RectangleSprite>> copy = new java.util.ArrayList<>(source.size());
         for (List<RectangleSprite> variant : source) {
+            copy.add(List.copyOf(variant));
+        }
+        return List.copyOf(copy);
+    }
+
+    private static List<List<DynamicSprite>> copyDynamicVariants(
+        List<List<DynamicSprite>> source) {
+        java.util.ArrayList<List<DynamicSprite>> copy = new java.util.ArrayList<>(source.size());
+        for (List<DynamicSprite> variant : source) {
             copy.add(List.copyOf(variant));
         }
         return List.copyOf(copy);

@@ -198,6 +198,36 @@ public final class EntityRenderLayer implements RenderLayer {
                     withTileOffset(sprite.oam(), entity), flipAttribute,
                     entityX + sprite.xOffset(), entityY + sprite.yOffset());
             }
+        } else if (definition.shape() == EntitySpriteDefinition.Shape.DYNAMIC) {
+            renderDynamic(context, definition.dynamicVariant(spriteVariant), entity,
+                entityX, entityY, palettes, tiles);
+        }
+    }
+
+    private void renderDynamic(RenderContext context,
+                               java.util.List<EntitySpriteDefinition.DynamicSprite> sprites,
+                               RoomEntity entity, int entityX, int entityY, int[][] palettes,
+                               EntitySpriteTileSnapshot tiles) {
+        // OAM entries allocated earlier have priority over later entries on
+        // the Game Boy. Draw the generated list backwards so the first ROM
+        // entry remains visible when the sword overlaps the body pair.
+        for (int index = sprites.size() - 1; index >= 0; index--) {
+            EntitySpriteDefinition.DynamicSprite sprite = sprites.get(index);
+            int xOffset = sprite.xOffset();
+            int entityFlipAttribute = sprite.appliesEntityFlipAttribute()
+                ? entity.entityFlipAttribute() : 0;
+            if (sprite.appliesEntityFlipAttribute()
+                && (entityFlipAttribute & OAM_XFLIP) != 0) {
+                // RenderActiveEntitySpritesPair swaps the two eight-pixel
+                // OAM origins when the active entity carries XFLIP.
+                xOffset = 8 - xOffset;
+            }
+            EntitySpriteTileSnapshot source = sprite.tileSource()
+                == EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS
+                ? tiles : null;
+            renderOamSprite(context, palettes, source, sprite.oam(), entityFlipAttribute,
+                entityX + xOffset, entityY + sprite.yOffset(),
+                sprite.appliesEntityFlipAttribute());
         }
     }
 
@@ -235,6 +265,15 @@ public final class EntityRenderLayer implements RenderLayer {
                                  EntitySpriteTileSnapshot tiles,
                                  EntitySpriteDefinition.OamAttribute oam,
                                  int entityFlipAttribute, int screenX, int screenY) {
+        renderOamSprite(context, palettes, tiles, oam, entityFlipAttribute, screenX, screenY,
+            true);
+    }
+
+    private void renderOamSprite(RenderContext context, int[][] palettes,
+                                 EntitySpriteTileSnapshot tiles,
+                                 EntitySpriteDefinition.OamAttribute oam,
+                                 int entityFlipAttribute, int screenX, int screenY,
+                                 boolean interpretPaletteFlip) {
         // Pair rendering treats any tile whose low nibble is $F as the ROM's
         // hidden-sprite sentinel after applying hActiveEntityTilesOffset.
         if ((oam.tile() & 0x0F) == 0x0F) {
@@ -242,7 +281,7 @@ public final class EntityRenderLayer implements RenderLayer {
         }
         int attributes = oam.attributes() ^ entityFlipAttribute;
         int paletteIndex = attributes & OAM_PALETTE_MASK;
-        if ((attributes & OAM_PALETTE_FLIP) != 0) {
+        if (interpretPaletteFlip && (attributes & OAM_PALETTE_FLIP) != 0) {
             // UpdateEntityTimers writes OAMF_PAL1 while an entity is
             // flashing; RenderActiveEntitySpritesPair converts that flag to
             // GBC object palette 4 rather than treating it as part of the

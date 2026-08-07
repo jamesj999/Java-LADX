@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class EntitySpriteHandlerCatalogTest {
 
@@ -355,6 +356,54 @@ final class EntitySpriteHandlerCatalogTest {
             EntitySpriteDefinition.Shape.PAIR, 6, 0);
         assertDefinition(catalog.forFollowerEntityType(0xD5), 0x19, 0x59BC,
             EntitySpriteDefinition.Shape.PAIR, 8, 0);
+    }
+
+    @Test
+    void moblinSwordDynamicDefinitionMirrorsItsRomOamConstruction() throws Exception {
+        EntitySpriteDefinition sword = new EntitySpriteHandlerCatalog(loadRom())
+            .forEntityType(0x14, EntityRoomLoader.RoomTable.OVERWORLD);
+
+        assertDefinition(sword, 0x07, 0x7A95,
+            EntitySpriteDefinition.Shape.DYNAMIC, 8, 0);
+        assertEquals(5, sword.dynamicVariant(0).size());
+
+        EntitySpriteDefinition.DynamicSprite warning = sword.dynamicVariant(0).get(0);
+        assertEquals(5, warning.yOffset());
+        assertEquals(-2, warning.xOffset());
+        assertEquals(0x86, warning.oam().tile());
+        assertEquals(0x16, warning.oam().attributes());
+        assertEquals(EntitySpriteDefinition.DynamicSprite.TileSource.GPU,
+            warning.tileSource());
+        assertFalse(warning.appliesEntityFlipAttribute());
+
+        EntitySpriteDefinition.DynamicSprite hiddenSword = sword.dynamicVariant(0).get(1);
+        assertEquals(8, hiddenSword.yOffset());
+        assertEquals(0, hiddenSword.xOffset());
+        assertEquals(0xF0, hiddenSword.oam().tile());
+        assertEquals(0x03, hiddenSword.oam().attributes());
+        assertEquals(EntitySpriteDefinition.DynamicSprite.TileSource.GPU,
+            hiddenSword.tileSource());
+
+        EntitySpriteDefinition.DynamicSprite swordTip = sword.dynamicVariant(0).get(2);
+        assertEquals(8, swordTip.yOffset());
+        assertEquals(8, swordTip.xOffset());
+        assertEquals(0x04, swordTip.oam().tile());
+        assertEquals(0x03, swordTip.oam().attributes());
+
+        EntitySpriteDefinition.DynamicSprite body = sword.dynamicVariant(0).get(3);
+        assertEquals(0, body.yOffset());
+        assertEquals(0, body.xOffset());
+        assertEquals(0x60, body.oam().tile());
+        assertEquals(0x03, body.oam().attributes());
+        assertEquals(EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS,
+            body.tileSource());
+        assertTrue(body.appliesEntityFlipAttribute());
+
+        assertEquals(4, sword.dynamicVariant(2).size());
+        assertEquals(0x64, sword.dynamicVariant(2).get(0).oam().tile());
+        assertEquals(-8, sword.dynamicVariant(2).get(2).yOffset());
+        assertEquals(-7, sword.dynamicVariant(2).get(2).xOffset());
+        assertEquals(0xF0, sword.dynamicVariant(2).get(2).oam().tile());
     }
 
     @Test

@@ -758,18 +758,21 @@ runtime collision callback.
 
 ## Verified ROM falling presentation handoff — 2026-08-07
 
-- During the long `$6F` Octorok/Moblin falling interval, the runtime now mirrors
-  `EntityFallHandler`'s three `SetEntityVariantForDirection_03` calls before
-  presentation. The entity remains status `$02`, so the source
-  `ReturnIfNonInteractive` path still prevents movement and wall collision.
+- During the long `$6F` Octorok/Moblin/Moblin Sword falling interval, the
+  runtime now mirrors `EntityFallHandler`'s three
+  `SetEntityVariantForDirection_03` calls before presentation. Moblin Sword's
+  init direction and post-init XOR are preserved, while the entity remains
+  status `$02`, so the source `ReturnIfNonInteractive` path still prevents
+  movement and wall collision.
 - The falling phase visual-Y table `[0,0,4,0]` now crosses the immutable room
   snapshot into the final OAM Y coordinate. The phase-$02 `+4` is display-only;
   physics Y and Z remain unchanged.
-- Focused runtime/renderer regressions and the complete Java suite (894 test
-  cases) pass with this handoff and snapshot boundary.
-- Moblin Sword's dynamically assembled display list, plus any future
-  family-specific active movement/collision handoff, remains explicitly
-  deferred until its ROM renderer and collision inputs are ported.
+- Moblin Sword's bank-$07 inline sword pair, bank-$20 generated pair, warning
+  sprite, OAM priority, tile-source split, and eight handler variants now
+  decode and render from the shipped ROM.
+- Focused runtime/renderer regressions and the complete Java suite (898 test
+  cases) pass with this handoff and snapshot boundary. Moblin Sword's active
+  movement/collision behavior remains explicitly deferred.
 
 ## Next entity increments
 

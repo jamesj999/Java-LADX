@@ -21,6 +21,7 @@ public final class EntitySpriteHandlerCatalog {
     private static final int ENTITY_OCTOROK_ROCK = 0x0A;
     private static final int ENTITY_MOBLIN = 0x0B;
     private static final int ENTITY_MOBLIN_ARROW = 0x0C;
+    private static final int ENTITY_MOBLIN_SWORD = 0x14;
     private static final int ENTITY_TEKTITE = 0x0D;
     private static final int ENTITY_LEEVER = 0x0E;
     private static final int ENTITY_ANTI_FAIRY = 0x15;
@@ -168,6 +169,9 @@ public final class EntitySpriteHandlerCatalog {
         }
         if (entityType == ENTITY_MOBLIN) {
             return decodePair(entityType, 0x03, 0x5917, 8, 0);
+        }
+        if (entityType == ENTITY_MOBLIN_SWORD) {
+            return decodeMoblinSword(entityType);
         }
         if (entityType == ENTITY_MOBLIN_ARROW) {
             return decodePair(entityType, 0x03, 0x6BC6, 4, 0);
@@ -376,6 +380,78 @@ public final class EntitySpriteHandlerCatalog {
     }
 
     /**
+     * Decodes bank-$07's Moblin Sword handler presentation. The handler does
+     * not point at one ordinary display list: it emits a shared-tile warning,
+     * a two-entry bank-$20-generated list, and the inline sword pair in
+     * variant-dependent order.
+     */
+    private EntitySpriteDefinition decodeMoblinSword(int entityType) {
+        EntitySpriteDefinition body = decodePair(entityType, 0x07, 0x7A95, 8, 0);
+        int[] dynamicY = {0x08, 0x0E, 0xF8, 0xF2, 0x00, 0x00, 0x00, 0x00};
+        int[] dynamicX = {0x00, 0x00, 0xF9, 0xF9, 0xF8, 0xF2, 0x08, 0x0E};
+        int[] tileSelector = {0x02, 0x02, 0x06, 0x06, 0x04, 0x04, 0x00, 0x00};
+        List<List<EntitySpriteDefinition.DynamicSprite>> variants = new ArrayList<>(8);
+
+        for (int variant = 0; variant < 8; variant++) {
+            List<EntitySpriteDefinition.DynamicSprite> sprites = new ArrayList<>(5);
+            if (variant < 2) {
+                sprites.add(new EntitySpriteDefinition.DynamicSprite(
+                    (variant ^ 0x01) + 0x04, -0x02,
+                    new EntitySpriteDefinition.OamAttribute(0x86, 0x16),
+                    EntitySpriteDefinition.DynamicSprite.TileSource.GPU, false));
+            }
+            if (variant == 2 || variant == 3) {
+                appendMoblinSwordBody(sprites, body.variant(variant));
+            }
+
+            appendMoblinSwordGeneratedPair(sprites, dynamicY[variant], dynamicX[variant],
+                tileSelector[variant]);
+
+            if (variant != 2 && variant != 3) {
+                appendMoblinSwordBody(sprites, body.variant(variant));
+            }
+            variants.add(List.copyOf(sprites));
+        }
+
+        return EntitySpriteDefinition.dynamic(entityType, 0x07, 0x7A95, 0, variants);
+    }
+
+    private void appendMoblinSwordGeneratedPair(
+        List<EntitySpriteDefinition.DynamicSprite> sprites, int yOffset, int xOffset,
+        int tileSelector) {
+        int tileAddress = 0x4A93 + tileSelector * 2;
+        int attributeAddress = 0x4AA3 + tileSelector * 2;
+        int firstTile = readByte(0x20, tileAddress);
+        if (firstTile == 0xFF) {
+            // func_020_4AB3 turns the $FF tile sentinel into the ROM's $F0
+            // tile before committing the OAM entry.
+            firstTile = 0xF0;
+        }
+        int secondTile = readByte(0x20, tileAddress + 1);
+        int firstAttributes = readByte(0x20, attributeAddress);
+        int secondAttributes = readByte(0x20, attributeAddress + 1);
+        EntitySpriteDefinition.DynamicSprite.TileSource source =
+            EntitySpriteDefinition.DynamicSprite.TileSource.GPU;
+        sprites.add(new EntitySpriteDefinition.DynamicSprite(signedByte(yOffset),
+            signedByte(xOffset), new EntitySpriteDefinition.OamAttribute(
+                firstTile, firstAttributes), source, false));
+        sprites.add(new EntitySpriteDefinition.DynamicSprite(signedByte(yOffset),
+            signedByte(xOffset + 0x08), new EntitySpriteDefinition.OamAttribute(
+                secondTile, secondAttributes), source, false));
+    }
+
+    private static void appendMoblinSwordBody(
+        List<EntitySpriteDefinition.DynamicSprite> sprites,
+        EntitySpriteDefinition.Variant body) {
+        sprites.add(new EntitySpriteDefinition.DynamicSprite(0, 0, body.first(),
+            EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true));
+        if (body.second() != null) {
+            sprites.add(new EntitySpriteDefinition.DynamicSprite(0, 0x08, body.second(),
+                EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true));
+        }
+    }
+
+    /**
      * Decodes Data_006_7ADD as a mixed pair definition. The bank-$06 handler
      * renders variants $00-$06 as single sprites, except that variant $05 of
      * ENTITY_FLOATING_ITEM_2 deliberately points at Data_006_7AD1 + 2. That
@@ -529,8 +605,22 @@ public final class EntitySpriteHandlerCatalog {
         return offset;
     }
 
+    private int readByte(int bank, int address) {
+        int offset = RomBank.romOffset(bank, address);
+        if (offset < 0 || offset >= romData.length) {
+            throw new IllegalArgumentException("ROM byte is outside the ROM at 0x"
+                + Integer.toHexString(offset));
+        }
+        return Byte.toUnsignedInt(romData[offset]);
+    }
+
     private static int signedByte(byte value) {
         return value;
+    }
+
+    private static int signedByte(int value) {
+        value &= 0xFF;
+        return value < 0x80 ? value : value - 0x100;
     }
 
     private static boolean isColorShellType(int entityType) {

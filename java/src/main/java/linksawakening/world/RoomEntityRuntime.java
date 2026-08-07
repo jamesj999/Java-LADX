@@ -111,6 +111,7 @@ public final class RoomEntityRuntime {
     private final ButterflyMotion butterflyMotion = new ButterflyMotion();
     private final KeeseMotion keeseMotion = new KeeseMotion();
     private final RoamingEnemyMotion roamingEnemyMotion = new RoamingEnemyMotion();
+    private final MoblinSwordMotion moblinSwordMotion = new MoblinSwordMotion();
     private final EnemyProjectileMotion enemyProjectileMotion = new EnemyProjectileMotion();
     private final HookshotChainMotion hookshotChainMotion = new HookshotChainMotion();
     private final HookshotBridgeMotion hookshotBridgeMotion = new HookshotBridgeMotion();
@@ -830,6 +831,9 @@ public final class RoomEntityRuntime {
                 }
                 if (entity.type() == ENTITY_OCTOROK || entity.type() == ENTITY_MOBLIN) {
                     roamingEnemyMotion.initialize(entity.slot());
+                }
+                if (entity.type() == ENTITY_MOBLIN_SWORD) {
+                    moblinSwordMotion.initialize(entity.slot(), entity.x());
                 }
                 if (entity.type() == ENTITY_TEKTITE) {
                     tektiteMotion.initialize(entity.slot(), randomByteSupplier);
@@ -1875,6 +1879,7 @@ public final class RoomEntityRuntime {
         butterflyMotion.clear(slot);
         keeseMotion.clear(slot);
         roamingEnemyMotion.clear(slot);
+        moblinSwordMotion.clear(slot);
         tektiteMotion.clear(slot);
         leeverMotion.clear(slot);
         antiFairyMotion.clear(slot);
@@ -3606,6 +3611,8 @@ public final class RoomEntityRuntime {
             int variant = entity.spriteVariant();
             if (entity.type() == ENTITY_OCTOROK || entity.type() == ENTITY_MOBLIN) {
                 variant = roamingEnemyMotion.advancePresentationVariant(slot, 3);
+            } else if (entity.type() == ENTITY_MOBLIN_SWORD) {
+                variant = moblinSwordMotion.advancePresentationVariant(slot, entity.x(), 3);
             }
             return withPositionAndVariant(entity, entity.x(), entity.y(), variant);
         }
@@ -3733,6 +3740,7 @@ public final class RoomEntityRuntime {
         butterflyMotion.clear(slot);
         keeseMotion.clear(slot);
         roamingEnemyMotion.clear(slot);
+        moblinSwordMotion.clear(slot);
         tektiteMotion.clear(slot);
         leeverMotion.clear(slot);
         antiFairyMotion.clear(slot);
