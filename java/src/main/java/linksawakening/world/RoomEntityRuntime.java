@@ -1217,7 +1217,10 @@ public final class RoomEntityRuntime {
                         entity.slot(), entity.type(), 0, false,
                         EntityCombatEvent.SoundChannel.JINGLE, 0x09));
                 }
-                if (bombiteUpdate.explode()) {
+                boolean entityCollisionExplosion = entity.type() == ENTITY_BOUNCING_BOMBITE
+                    && bombiteMotion.state(entity.slot()) == 2
+                    && collideBouncingBombiteWithEntities(updated, frame);
+                if (bombiteUpdate.explode() || entityCollisionExplosion) {
                     // BombiteExplode writes the already-positioned source
                     // coordinates into a fresh type-$02 enemy bomb and then
                     // lets ConfigureNewEntity supply z=0 and ignore-hits=1.
@@ -2166,6 +2169,49 @@ public final class RoomEntityRuntime {
                 enemyTransitionCountdown[targetSlot] = 0x03;
             } else {
                 applyPlayerArrowDamage(arrow, target);
+            }
+        }
+        return collided;
+    }
+
+    /**
+     * Ports the BouncingBombite-specific portion of bank-$03
+     * {@code func_003_75A2}. The ROM scans every target in descending slot
+     * order, on alternating frames, and uses the active Bombite's transition
+     * byte as the source-side explosion latch.
+     */
+    private boolean collideBouncingBombiteWithEntities(RoomEntity source, int frame) {
+        int sourceSlot = source.slot();
+        int sourceVisualY = (source.y() - source.z()) & 0xFF;
+        int sourceSpeedX = bombiteMotion.speedX(sourceSlot);
+        int sourceSpeedY = bombiteMotion.speedY(sourceSlot);
+        boolean collided = false;
+        for (int targetSlot = slots.length - 1; targetSlot >= 0; targetSlot--) {
+            if (targetSlot == sourceSlot
+                || ((frame ^ targetSlot) & 0x01) != 0) {
+                continue;
+            }
+
+            RoomEntity target = slots[targetSlot];
+            if (!target.loaded()
+                || target.status().value() < EntityStatus.ACTIVE.value()
+                || (enemyPhysicsFlags[targetSlot] & ENTITY_PHYSICS_PROJECTILE_NOCLIP) != 0
+                || unsignedByteAbs(source.x() - target.x()) >= 0x0C
+                || unsignedByteAbs(sourceVisualY
+                    - ((target.y() - target.z()) & 0xFF)) >= 0x0C
+                || target.spriteVariant() == -1) {
+                continue;
+            }
+
+            collided = true;
+            // GetEntityTransitionCountdown uses BC, which remains the active
+            // source slot throughout func_003_75A2.
+            enemyTransitionCountdown[sourceSlot] = 0;
+            if (target.type() == ENTITY_BOUNCING_BOMBITE) {
+                bombiteMotion.enterBouncingLitFromEntityCollision(
+                    targetSlot, sourceSpeedX, sourceSpeedY);
+                enemyTransitionCountdown[targetSlot] = 0x40;
+                bombPrivateCountdown1[targetSlot] = 0x08;
             }
         }
         return collided;

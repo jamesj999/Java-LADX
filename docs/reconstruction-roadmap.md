@@ -1533,6 +1533,23 @@ runtime collision callback.
   table branches and remaining enemy-bomb special branches remain follow-up
   work.
 
+## Verified ROM Bouncing Bombite entity collision — 2026-08-07
+
+- Lit Bouncing Bombites now run the Bouncing Bombite-specific portion of the
+  bank-$03 `func_003_75A2` scan after movement: descending target slots,
+  alternating frame cadence, active-status threshold, projectile-noclip filter,
+  strict unsigned twelve-pixel X/visual-Y windows, and the `$FF` sprite-variant
+  exclusion all match the ROM.
+- A valid collision zeroes the active Bombite's transition byte. When the target
+  is another Bouncing Bombite, its current speed bytes are copied directly and
+  its state, transition, and private countdown become `$02`, `$40`, and `$08`;
+  the source then follows the existing `BombiteExplode` payload path.
+- A shipped-ROM regression covers sword-lit source setup, the frame-selected
+  target, copied speed, target state, source disappearance, type-$02 bomb
+  payload, and noise `$0C`. The clean Java suite passes with 967 tests and zero
+  failures, errors, or skipped tests. Remaining target-specific branches in
+  `func_003_75A2` and other enemy-bomb special branches remain follow-up work.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

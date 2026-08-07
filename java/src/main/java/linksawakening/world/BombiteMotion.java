@@ -174,6 +174,21 @@ final class BombiteMotion {
         state[slot] = 2;
     }
 
+    /**
+     * Mirrors func_003_75A2's target-side Bombite writes. The ROM copies the
+     * active Bombite's current speed bytes directly; it does not recalculate
+     * the vector or reset the fixed-point movement accumulators.
+     */
+    void enterBouncingLitFromEntityCollision(int slot, int sourceSpeedX,
+                                              int sourceSpeedY) {
+        if (!initialized[slot]) {
+            initialize(slot);
+        }
+        speedX[slot] = sourceSpeedX & 0xFF;
+        speedY[slot] = sourceSpeedY & 0xFF;
+        state[slot] = 2;
+    }
+
     void clear(int slot) {
         initialize(slot);
         initialized[slot] = false;

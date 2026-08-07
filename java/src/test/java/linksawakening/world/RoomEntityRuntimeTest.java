@@ -5018,6 +5018,56 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void litBouncingBombiteCollidesWithAnotherBombiteUsingTheRomEntityPass()
+        throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            0x55, EntityRoomLoader.RoomTable.INDOORS_A, -1);
+        assertTrue(definition.supported());
+
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotWithSlots(
+            new RoomEntity(0, 0, 0x55, 0x50, 0x50, EntityStatus.ACTIVE,
+                definition, 0, 0, 0, 0x00),
+            new RoomEntity(1, 1, 0x55, 0x58, 0x58, EntityStatus.ACTIVE,
+                definition, 0, 0, 0, 0x00)),
+            true, () -> 0, catalog, tables);
+
+        List<EntityCombatEvent> swordEvents = runtime.resolveCombat(
+            0, 0xC0, 0xC0, false, true, true,
+            0x58, 1, 0x58, 1, EnemyAttackContext.standard());
+        assertEquals(List.of(new EntityCombatEvent(0, 0x55, 0, true, 0, -1,
+            EntityCombatEvent.SoundChannel.NONE, -1)), swordEvents);
+        int sourceSpeedX = runtime.bombiteSpeedX(0);
+        int sourceSpeedY = runtime.bombiteSpeedY(0);
+
+        // Frame 1 selects target slot 1 in func_003_75A2's alternating pass.
+        // The source moves three pixels toward the upper-left first, remaining
+        // inside the ROM's strict twelve-pixel entity-collision windows.
+        runtime.tick(1, 0xC0, 0xC0, () -> 0);
+
+        assertFalse(runtime.snapshot().slots().get(0).loaded());
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(1).status());
+        assertEquals(2, runtime.bombiteState(1));
+        assertEquals(0x40, runtime.transitionCountdown(1));
+        assertEquals(0x08, runtime.bombitePrivateCountdown1(1));
+        assertEquals(sourceSpeedX, runtime.bombiteSpeedX(1));
+        assertEquals(sourceSpeedY, runtime.bombiteSpeedY(1));
+
+        RoomEntity bomb = runtime.snapshot().slots().get(15);
+        assertTrue(bomb.loaded());
+        assertEquals(EntityStatus.ACTIVE, bomb.status());
+        assertEquals(0x02, bomb.type());
+        assertEquals(0x00, bomb.z());
+        assertEquals(0x17, runtime.transitionCountdown(15));
+        assertEquals(0x01, runtime.enemyIgnoreHitsCountdown(15));
+        assertEquals(List.of(new EntityCombatEvent(15, 0x02, 0, false,
+            EntityCombatEvent.SoundChannel.NOISE, 0x0C)),
+            runtime.consumePendingEntityEvents());
+    }
+
+    @Test
     void protectedEnemyBombStillDoublesLinkSpeedWithoutDamageOrHurtSound() throws IOException {
         byte[] rom = loadRom();
         RoomEntityRuntime runtime = RoomEntityRuntime.from(
