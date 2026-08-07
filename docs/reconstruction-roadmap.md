@@ -2020,6 +2020,21 @@ runtime collision callback.
   failures, errors, or skipped tests. Remaining item work includes the other
   unported `UseItem` producers and their room-specific branches.
 
+## Verified ROM shield state and body presentation — 2026-08-07
+
+- The equipped shield now has a source-shaped pressed-button boundary: the
+  ROM draw-shield noise is noise `$16`, kept distinct from jingle `$16` for a
+  projectile shield ting. Item use remains gated by Link's modeled motion and
+  carried-object state.
+- Link's held-shield body states now select the bank-$02 default and
+  mirror-shield tables. Direction, walking frame, and shield level resolve to
+  the source `$24-$35` animation IDs while sword/item overrides retain
+  precedence; projectile and laser paths continue to consume the same live
+  shield-use/mirror-level state.
+- Main registration, raw sound routing, default/mirror animation selection,
+  and blocked-use behavior are covered by focused tests. The clean Java suite
+  passes with 1,132 tests and zero failures, errors, or skipped tests.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

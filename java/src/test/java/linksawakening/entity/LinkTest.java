@@ -10,6 +10,7 @@ import linksawakening.equipment.EquippedItem;
 import linksawakening.equipment.Hookshot;
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.equipment.Sword;
+import linksawakening.equipment.Shield;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.input.InputConfig;
@@ -461,6 +462,28 @@ final class LinkTest {
 
         inputState.onKeyEvent(inputConfig.bKey(), GLFW_RELEASE);
         assertFalse(link.isUsingShield());
+    }
+
+    @Test
+    void shieldUseSelectsTheRomDefaultAndMirrorBodyAnimationTables() throws Exception {
+        InputState inputState = new InputState();
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        PlayerState playerState = new PlayerState();
+        playerState.setItemA(PlayerState.INVENTORY_SHIELD);
+        ItemRegistry itemRegistry = new ItemRegistry();
+        itemRegistry.register(PlayerState.INVENTORY_SHIELD,
+            new Shield(GameplaySoundSink.none()));
+        Link link = new Link(inputState, inputConfig, null, null, null,
+            playerState, itemRegistry);
+
+        inputState.onKeyEvent(inputConfig.aKey(), GLFW_PRESS);
+        assertEquals(0x24, resolvedAnimationState(link));
+
+        playerState.setShieldLevel(2);
+        assertEquals(0x26, resolvedAnimationState(link));
+
+        link.setDirection(Link.DIRECTION_RIGHT);
+        assertEquals(0x2E, resolvedAnimationState(link));
     }
 
     @Test

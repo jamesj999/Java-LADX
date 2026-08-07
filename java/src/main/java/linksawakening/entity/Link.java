@@ -78,6 +78,22 @@ public final class Link implements RocsFeather.JumpTarget {
         { 0x0A, 0x0B },  // RIGHT
     };
 
+    // LinkAnimationsList_WalkUsingDefaultShield and the corresponding mirror
+    // list in bank2.asm:1214-1240. Java direction order is DOWN, UP, LEFT,
+    // RIGHT, matching the ordinary walking table above.
+    private static final int[][] SHIELD_USE_ANIMATION_STATE = {
+        { 0x24, 0x25 },  // DOWN
+        { 0x30, 0x31 },  // UP
+        { 0x28, 0x29 },  // LEFT
+        { 0x2A, 0x2B },  // RIGHT
+    };
+    private static final int[][] MIRROR_SHIELD_USE_ANIMATION_STATE = {
+        { 0x26, 0x27 },  // DOWN
+        { 0x32, 0x33 },  // UP
+        { 0x28, 0x29 },  // LEFT
+        { 0x2E, 0x2F },  // RIGHT
+    };
+
     // LinkAnimationsList_LiftingObject (bank2.asm:1249), indexed in the
     // same Java direction order as the walking table.
     private static final int[][] LIFTING_ANIMATION_STATE = {
@@ -1170,6 +1186,11 @@ public final class Link implements RocsFeather.JumpTarget {
         }
         if (airborne) {
             return JUMP_ANIMATION_STATE[direction][jumpAnimationFrame];
+        }
+        if (isUsingShield() && playerState != null && playerState.shieldLevel() > 0) {
+            int[][] shieldTable = playerState.shieldLevel() >= 2
+                ? MIRROR_SHIELD_USE_ANIMATION_STATE : SHIELD_USE_ANIMATION_STATE;
+            return shieldTable[direction][walkFrame];
         }
         return baseState;
     }

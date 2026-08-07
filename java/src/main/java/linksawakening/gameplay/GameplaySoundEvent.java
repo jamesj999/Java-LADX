@@ -17,6 +17,7 @@ public enum GameplaySoundEvent {
     INVENTORY_CLOSE,
     MENU_MOVE,
     MENU_VALIDATE,
+    SHIELD_DRAW,
     SHIELD_TING,
     PUZZLE_SOLVED,
     LINK_HURT,

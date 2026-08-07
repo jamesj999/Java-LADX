@@ -18,6 +18,7 @@ import linksawakening.equipment.MagicRod;
 import linksawakening.equipment.Ocarina;
 import linksawakening.equipment.RocsFeather;
 import linksawakening.equipment.Shovel;
+import linksawakening.equipment.Shield;
 import linksawakening.equipment.Sword;
 import linksawakening.equipment.SwordPalette;
 import linksawakening.equipment.SwordSpriteSheet;
@@ -365,6 +366,8 @@ public class Main {
                     return link != null && link.romAttackStepAnimationCountdown() != 0;
             }
         }, link::canUseItems));
+        itemRegistry.register(PlayerState.INVENTORY_SHIELD,
+            new Shield(gameplaySoundSink, link::canUseItems));
         itemRegistry.register(PlayerState.INVENTORY_SHOVEL, new Shovel(
             gameplaySoundSink, new Shovel.DigTarget() {
                 private int linkEntityX;
