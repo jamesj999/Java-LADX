@@ -28,6 +28,7 @@ public final class EntitySpriteHandlerCatalog {
     private static final int ENTITY_OCTOROK = 0x09;
     private static final int ENTITY_OCTOROK_ROCK = 0x0A;
     private static final int ENTITY_MOBLIN = 0x0B;
+    private static final int ENTITY_IRON_MASK = 0x24;
     private static final int ENTITY_MOBLIN_ARROW = 0x0C;
     private static final int ENTITY_BOUNCING_BOMBITE = 0x55;
     private static final int ENTITY_TIMER_BOMBITE = 0x56;
@@ -188,6 +189,9 @@ public final class EntitySpriteHandlerCatalog {
         if (entityType == ENTITY_MOBLIN) {
             return decodePair(entityType, 0x03, 0x5917, 8, 0);
         }
+        if (entityType == ENTITY_IRON_MASK) {
+            return forIronMaskState(0);
+        }
         if (entityType == ENTITY_BOMBER) {
             return decodeRectangle(entityType, 0x18, 0x77ED, 4, 3, 0);
         }
@@ -328,6 +332,20 @@ public final class EntitySpriteHandlerCatalog {
         return privateState1 == 0
             ? decodePair(ENTITY_STALFOS_EVASIVE, 0x15, 0x4E7D, 3, 0)
             : decodePair(ENTITY_STALFOS_EVASIVE, 0x15, 0x4E8E, 2, 0);
+    }
+
+    /**
+     * Selects the bank-$03 Iron Mask display list. Private state 2 is zero
+     * while the mask is intact and nonzero after the mask has been removed.
+     */
+    public EntitySpriteDefinition forIronMaskState(int privateState2) {
+        if ((privateState2 & ~0xFF) != 0) {
+            throw new IllegalArgumentException(
+                "Iron Mask private state must be an unsigned byte: " + privateState2);
+        }
+        return privateState2 == 0
+            ? decodePair(ENTITY_IRON_MASK, 0x03, 0x4FCB, 8, 0)
+            : decodePair(ENTITY_IRON_MASK, 0x03, 0x4FEB, 2, 0);
     }
 
     /**

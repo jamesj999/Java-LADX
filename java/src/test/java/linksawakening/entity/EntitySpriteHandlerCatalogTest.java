@@ -173,6 +173,14 @@ final class EntitySpriteHandlerCatalogTest {
         assertDefinition(octorok, 0x03, 0x57FB,
             EntitySpriteDefinition.Shape.PAIR, 8, 0);
 
+        EntitySpriteDefinition maskedIronMask = catalog.forIronMaskState(0);
+        assertDefinition(maskedIronMask, 0x03, 0x4FCB,
+            EntitySpriteDefinition.Shape.PAIR, 8, 0);
+
+        EntitySpriteDefinition unmaskedIronMask = catalog.forIronMaskState(1);
+        assertDefinition(unmaskedIronMask, 0x03, 0x4FEB,
+            EntitySpriteDefinition.Shape.PAIR, 2, 0);
+
         EntitySpriteDefinition caveBKeese = catalog.forEntityType(
             0x19, EntityRoomLoader.RoomTable.INDOORS_A, 0x0A);
         assertDefinition(caveBKeese, 0x06, 0x6710,
@@ -539,6 +547,18 @@ final class EntitySpriteHandlerCatalogTest {
         assertEquals(0x03, moblin.variant(0).first().attributes());
         assertEquals(0x6A, moblin.variant(6).first().tile());
         assertEquals(0x23, moblin.variant(6).first().attributes());
+
+        EntitySpriteDefinition maskedIronMask = catalog.forIronMaskState(0);
+        assertEquals(0x60, maskedIronMask.variant(0).first().tile());
+        assertEquals(0x02, maskedIronMask.variant(0).first().attributes());
+        assertEquals(0x6E, maskedIronMask.variant(7).first().tile());
+        assertEquals(0x22, maskedIronMask.variant(7).first().attributes());
+
+        EntitySpriteDefinition unmaskedIronMask = catalog.forIronMaskState(1);
+        assertEquals(0x70, unmaskedIronMask.variant(0).first().tile());
+        assertEquals(0x02, unmaskedIronMask.variant(0).first().attributes());
+        assertEquals(0x70, unmaskedIronMask.variant(1).second().tile());
+        assertEquals(0x22, unmaskedIronMask.variant(1).second().attributes());
 
         EntitySpriteDefinition armos = catalog.forEntityType(
             0x0F, EntityRoomLoader.RoomTable.OVERWORLD);

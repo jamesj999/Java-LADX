@@ -2,7 +2,7 @@ package linksawakening.world;
 
 import java.util.function.IntSupplier;
 
-/** Bank-$03 state shared by Octorok and the ordinary Moblin roaming handler. */
+/** Bank-$03 state shared by Octorok, Moblin, and masked Iron Mask roaming. */
 final class RoamingEnemyMotion {
     private static final int ENTITY_OCTOROK = 0x09;
     private static final int ENTITY_MOBLIN = 0x0B;
@@ -11,6 +11,8 @@ final class RoamingEnemyMotion {
     private static final int ENTITY_MOBLIN_ARROW = 0x0C;
     private static final int[] SPEED_X_BY_DIRECTION = {0x08, 0xF8, 0x00, 0x00};
     private static final int[] SPEED_Y_BY_DIRECTION = {0x00, 0x00, 0xF8, 0x08};
+    private static final int[] IRON_MASK_SPEED_X_BY_DIRECTION = {0x0C, 0xF4, 0x00, 0x00};
+    private static final int[] IRON_MASK_SPEED_Y_BY_DIRECTION = {0x00, 0x00, 0xF4, 0x0C};
     private static final int[] VARIANT_BY_DIRECTION = {6, 4, 2, 0};
 
     private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -114,8 +116,8 @@ final class RoamingEnemyMotion {
                 direction[slot] = privateState1[slot] == 0
                     ? directionToLink(entity.x(), entity.y(), linkEntityX, linkEntityY)
                     : randomByteSupplier.getAsInt() & 0x03;
-                speedX[slot] = SPEED_X_BY_DIRECTION[direction[slot]];
-                speedY[slot] = SPEED_Y_BY_DIRECTION[direction[slot]];
+                speedX[slot] = speedXFor(entity.type(), direction[slot]);
+                speedY[slot] = speedYFor(entity.type(), direction[slot]);
             }
             return new Update(entity, null);
         }
@@ -295,6 +297,18 @@ final class RoamingEnemyMotion {
     private static int signedByte(int value) {
         value &= 0xFF;
         return value < 0x80 ? value : value - 0x100;
+    }
+
+    private static int speedXFor(int entityType, int entityDirection) {
+        return entityType == ENTITY_IRON_MASK
+            ? IRON_MASK_SPEED_X_BY_DIRECTION[entityDirection]
+            : SPEED_X_BY_DIRECTION[entityDirection];
+    }
+
+    private static int speedYFor(int entityType, int entityDirection) {
+        return entityType == ENTITY_IRON_MASK
+            ? IRON_MASK_SPEED_Y_BY_DIRECTION[entityDirection]
+            : SPEED_Y_BY_DIRECTION[entityDirection];
     }
 
     private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y,

@@ -733,6 +733,116 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void ironMaskUsesItsRomRoamingHandlerSpeedAndMaskedDisplay() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            0x24, EntityRoomLoader.RoomTable.INDOORS_A, -1);
+
+        assertTrue(definition.supported());
+        assertEquals(0x03, definition.bank());
+        assertEquals(0x4FCB, definition.address());
+        assertEquals(8, definition.variantCount());
+
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x24, 0x50, 0x50, EntityStatus.ACTIVE,
+                definition, 0)), true, () -> 0, catalog, tables);
+        IntSupplier randomBytes = sequence(0x00, 0x00, 0x03);
+
+        assertEquals(2, runtime.enemyHealth(0));
+        runtime.tick(0, 0xC0, 0xC0, randomBytes);
+
+        assertEquals(1, runtime.ironMaskState(0));
+        assertEquals(0x10, runtime.ironMaskTransitionCountdown(0));
+        assertEquals(0, runtime.ironMaskSpeedY(0));
+        assertEquals(0x4FCB, runtime.snapshot().slots().get(0).spriteDefinition().address());
+
+        for (int frame = 1; frame <= 0x10; frame++) {
+            runtime.tick(frame, 0xC0, 0xC0, randomBytes);
+        }
+
+        assertEquals(0, runtime.ironMaskState(0));
+        assertEquals(3, runtime.ironMaskDirection(0));
+        assertEquals(0x0C, runtime.ironMaskSpeedY(0));
+        assertEquals(0x20, runtime.ironMaskTransitionCountdown(0));
+        assertEquals(0x4FCB, runtime.snapshot().slots().get(0).spriteDefinition().address());
+
+        runtime.tick(0x11, 0xC0, 0xC0, randomBytes);
+        runtime.tick(0x12, 0xC0, 0xC0, randomBytes);
+        assertEquals(0x51, runtime.snapshot().slots().get(0).y());
+    }
+
+    @Test
+    void maskedIronMaskRejectsARearSwordHitWithTheRomPokeResponse() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            0x24, EntityRoomLoader.RoomTable.INDOORS_A, -1);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x24, 0x50, 0x50, EntityStatus.ACTIVE,
+                definition, 0)), true, () -> 0, catalog, tables);
+
+        // Java direction 1 is ROM UP, while the freshly initialized Iron Mask
+        // is facing ROM RIGHT (direction 0).
+        runtime.tick(0, 0xC0, 0xC0, () -> 0, null, null, 0, 1, 0);
+        List<EntityCombatEvent> events = runtime.resolveCombat(
+            0, 0xC0, 0xC0, false, true, true, 0x58, 1, 0x58, 1);
+
+        assertEquals(1, events.size());
+        EntityCombatEvent event = events.get(0);
+        assertTrue(event.swordHit());
+        assertEquals(0, event.enemyDamage());
+        assertEquals(EntityCombatEvent.SoundChannel.JINGLE, event.soundChannel());
+        assertEquals(0x07, event.soundId());
+        assertEquals(new EntityCombatEvent.SwordPokeVfx(0x50, 0x50), event.swordPokeVfx());
+        assertEquals(2, runtime.enemyHealth(0));
+        assertEquals(0x10, runtime.enemyIgnoreHitsCountdown(0));
+        assertEquals(0xF0, runtime.enemyRecoilSpeedXForTest(0));
+        assertEquals(0xF0, runtime.enemyRecoilSpeedYForTest(0));
+    }
+
+    @Test
+    void hookshotUnmasksAnIronMaskAndSpawnsItsRomMaskEntity() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteDefinition ironMaskDefinition = catalog.forEntityType(
+            0x24, EntityRoomLoader.RoomTable.INDOORS_A, -1);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x24, 0x4D, 0x50, EntityStatus.ACTIVE,
+                ironMaskDefinition, 0)), true, () -> 0, catalog, tables);
+
+        int hookshotSlot = runtime.spawnHookshotChain(0x50, 0x50, 0, 1);
+        assertEquals(15, hookshotSlot);
+
+        runtime.tick(0, 0xC0, 0xC0, () -> 0);
+
+        assertEquals(1, runtime.ironMaskPrivateState2(0));
+        RoomEntity mask = runtime.snapshot().slots().stream()
+            .filter(entity -> entity.loaded() && entity.type() == 0x32)
+            .findFirst()
+            .orElseThrow();
+        RoomEntity chain = runtime.snapshot().slots().get(hookshotSlot);
+        assertEquals(chain.x(), mask.x());
+        assertEquals(chain.y(), mask.y());
+        assertEquals(0x03, mask.spriteDefinition().bank());
+        assertEquals(0x5B80, mask.spriteDefinition().address());
+        assertEquals(chain.spriteVariant() & 0x01, mask.spriteVariant());
+        assertEquals(0xB2, runtime.physicsFlags(mask.slot()));
+
+        runtime.tick(1, 0xC0, 0xC0, () -> 0);
+        runtime.tick(2, 0xC0, 0xC0, () -> 0);
+        runtime.tick(3, 0xC0, 0xC0, () -> 0);
+
+        RoomEntity unmasked = runtime.snapshot().slots().get(0);
+        assertEquals(0x4F, unmasked.x());
+        assertEquals(0x4FEB, unmasked.spriteDefinition().address());
+        assertEquals(0, unmasked.spriteVariant());
+    }
+
+    @Test
     void runtimeExposesTheRoamingEnemyLaunchRequestAndSpawnsTheProjectile() {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
         EntitySpriteDefinition definition = catalog.forEntityType(

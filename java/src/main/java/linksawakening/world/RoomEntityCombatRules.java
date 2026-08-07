@@ -4,6 +4,7 @@ package linksawakening.world;
 public final class RoomEntityCombatRules {
     private static final int ENTITY_OCTOROK = 0x09;
     private static final int ENTITY_MOBLIN = 0x0B;
+    private static final int ENTITY_IRON_MASK = 0x24;
     private static final int ENTITY_MOBLIN_SWORD = 0x14;
     private static final int ENTITY_TEKTITE = 0x0D;
     private static final int ENTITY_LEEVER = 0x0E;
@@ -81,7 +82,8 @@ public final class RoomEntityCombatRules {
 
     static boolean supportsEnemyCollision(int type) {
         return switch (type & 0xFF) {
-            case ENTITY_KEESE, ENTITY_MOBLIN, ENTITY_MOBLIN_SWORD, ENTITY_TEKTITE, ENTITY_LEEVER,
+            case ENTITY_KEESE, ENTITY_MOBLIN, ENTITY_IRON_MASK, ENTITY_MOBLIN_SWORD,
+                ENTITY_TEKTITE, ENTITY_LEEVER,
                 ENTITY_ANTI_FAIRY, ENTITY_SPARK_COUNTER_CLOCKWISE,
                 ENTITY_SPARK_CLOCKWISE,
                 ENTITY_STALFOS_AGGRESSIVE, ENTITY_STALFOS_EVASIVE,
@@ -110,7 +112,7 @@ public final class RoomEntityCombatRules {
                 ENTITY_HIDING_ZOL ->
                 OCTOROK_AND_KEESE_CONTACT_DAMAGE;
             case ENTITY_ARMOS_STATUE -> 0x10;
-            case ENTITY_MOBLIN, ENTITY_MOBLIN_SWORD, ENTITY_TEKTITE, ENTITY_LEEVER,
+            case ENTITY_MOBLIN, ENTITY_IRON_MASK, ENTITY_MOBLIN_SWORD, ENTITY_TEKTITE, ENTITY_LEEVER,
                 ENTITY_STALFOS_AGGRESSIVE, ENTITY_STALFOS_EVASIVE ->
                 MOBLIN_CONTACT_DAMAGE;
             case ENTITY_SPARK_COUNTER_CLOCKWISE, ENTITY_SPARK_CLOCKWISE ->
@@ -135,7 +137,7 @@ public final class RoomEntityCombatRules {
                 OCTOROK_AND_KEESE_INITIAL_HEALTH;
             case ENTITY_ARMOS_STATUE -> 0x04;
             case ENTITY_PAIRODD -> PAIRODD_INITIAL_HEALTH;
-            case ENTITY_MOBLIN, ENTITY_MOBLIN_SWORD, ENTITY_TEKTITE, ENTITY_LEEVER,
+            case ENTITY_MOBLIN, ENTITY_IRON_MASK, ENTITY_MOBLIN_SWORD, ENTITY_TEKTITE, ENTITY_LEEVER,
                 ENTITY_STALFOS_AGGRESSIVE, ENTITY_STALFOS_EVASIVE ->
                 MOBLIN_INITIAL_HEALTH;
             case ENTITY_SPARK_COUNTER_CLOCKWISE, ENTITY_SPARK_CLOCKWISE ->

@@ -1550,6 +1550,28 @@ runtime collision callback.
   failures, errors, or skipped tests. Remaining target-specific branches in
   `func_003_75A2` and other enemy-bomb special branches remain follow-up work.
 
+## Verified ROM Iron Mask entity runtime — 2026-08-07
+
+- Entity `$24` now decodes the masked bank-$03 display list at `$4FCB`, uses
+  the shared roaming state machine with the source `$0C/$F4` speed tables,
+  initializes physics `$12`, and participates in ROM-backed health/contact
+  collision (`$02` health, `$04` contact damage).
+- Masked sword collisions compare Link's ROM direction against the active mask
+  direction. Rear hits preserve health, configure the source length-$10 recoil,
+  start the `$10` ignore window, and publish sword-poke VFX/jingle `$07`;
+  front hits continue through the normal sword-damage path.
+- Hookshot entity collision now follows the Iron Mask branch of
+  `func_003_75A2`: matching approach direction sets private state `$01`, spawns
+  type `$32` at the hook position with the source variant, ROM display list
+  `$03:$5B80`, physics `$B2`, and the source item options. The unmasked target
+  then uses its separate transition/direction/speed handler and display list
+  `$03:$4FEB` rather than the masked roaming animation.
+- Focused ROM display-list, movement, rear-hit, hookshot-unmask, and spawned-mask
+  tests are covered. The clean Java suite passes with 970 tests and zero
+  failures, errors, or skipped tests. Other hookshot projectile damage branches,
+  item-grab behavior for the dropped mask, and the remaining entity handlers
+  remain follow-up work; this increment does not add an emulator.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

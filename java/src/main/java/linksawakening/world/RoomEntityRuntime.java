@@ -24,6 +24,8 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_OCTOROK = 0x09;
     private static final int ENTITY_OCTOROK_ROCK = 0x0A;
     private static final int ENTITY_MOBLIN = 0x0B;
+    private static final int ENTITY_IRON_MASK = 0x24;
+    private static final int ENTITY_IRON_MASKS_MASK = 0x32;
     private static final int ENTITY_MOBLIN_ARROW = 0x0C;
     private static final int ENTITY_TEKTITE = 0x0D;
     private static final int ENTITY_LEEVER = 0x0E;
@@ -46,6 +48,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL = 0x02;
     private static final int ENTITY_PHYSICS_HARMLESS = 0x80;
     private static final int ENTITY_PHYSICS_PROJECTILE_NOCLIP = 0x40;
+    private static final int ENTITY_PHYSICS_SHADOW = 0x10;
     private static final int HITFLAGS_IGNORE_HITS = 0x80;
     private static final int LIFTABLE_ROCK_SMASH_PHYSICS_FLAGS =
         0x04 | ENTITY_PHYSICS_HARMLESS | ENTITY_PHYSICS_PROJECTILE_NOCLIP
@@ -62,6 +65,7 @@ public final class RoomEntityRuntime {
     private static final int BOMB_ARROW_COOLDOWN = 0x06;
     private static final int BOMB_ARROW_EXPLOSION_COUNTDOWN = 0x17;
     private static final int EVASIVE_PHYSICS_FLAGS = 0x12;
+    private static final int IRON_MASK_INITIAL_PHYSICS_FLAGS = 0x12;
     private static final int EVASIVE_CLONE_PHYSICS_FLAGS = 0x52;
     private static final int EVASIVE_CLONE_OPTIONS = ENTITY_OPT1_NO_GROUND_INTERACTION
         | ENTITY_OPT1_SPLASH_IN_WATER | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
@@ -111,6 +115,8 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_CUCCO = 0x6C;
     private static final int ENTITY_HORSE_PIECE = 0x98;
     private static final int ENTITY_PHYSICS_GRABBABLE = 0x20;
+    private static final int IRON_MASKS_MASK_INITIAL_PHYSICS_FLAGS =
+        0x02 | ENTITY_PHYSICS_HARMLESS | ENTITY_PHYSICS_SHADOW | ENTITY_PHYSICS_GRABBABLE;
     private static final int MAP_COLOR_DUNGEON = 0xFF;
     private static final int DIALOG_MOBLIN = 0x90;
     private static final int FALLING_JINGLE_ID = 0x18;
@@ -118,6 +124,8 @@ public final class RoomEntityRuntime {
     private static final int[] FALLING_VECTOR_LENGTHS = {0, 1, 3, 6};
     private static final int GHINI_OPTIONS1 = ENTITY_OPT1_NO_GROUND_INTERACTION
         | ENTITY_OPT1_NO_WALL_COLLISION;
+    private static final int IRON_MASKS_MASK_OPTIONS1 = ENTITY_OPT1_SPLASH_IN_WATER
+        | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
 
     private final RoomEntity[] slots;
     private EntitySpriteSelection spriteSelection;
@@ -135,10 +143,13 @@ public final class RoomEntityRuntime {
     private LinkPositionHistory followingLinkPositionHistory = new LinkPositionHistory();
     private int followingLinkZ;
     private int followingLinkDirection;
+    private int lastRomLinkDirection;
     private int followingEntityYOffset;
     private final ButterflyMotion butterflyMotion = new ButterflyMotion();
     private final KeeseMotion keeseMotion = new KeeseMotion();
     private final RoamingEnemyMotion roamingEnemyMotion = new RoamingEnemyMotion();
+    private final UnmaskedIronMaskMotion unmaskedIronMaskMotion =
+        new UnmaskedIronMaskMotion();
     private final MoblinSwordMotion moblinSwordMotion = new MoblinSwordMotion();
     private final PlayerArrowMotion playerArrowMotion = new PlayerArrowMotion();
     private final EnemyProjectileMotion enemyProjectileMotion = new EnemyProjectileMotion();
@@ -185,6 +196,9 @@ public final class RoomEntityRuntime {
     private final boolean[] powerRecoilDeath = new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyPhysicsFlags = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyHealth = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] ironMaskPrivateState2 = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] ironMasksMaskSourceHookshotSlot =
+        new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyFlashCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyIgnoreHitsCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyHitboxFlags = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -724,6 +738,7 @@ public final class RoomEntityRuntime {
         followingLinkDirection = linkDirection & 0xFF;
         followingEntityYOffset = entityYOffset & 0xFF;
         int romLinkDirection = romDirectionForJavaDirection(linkDirection);
+        lastRomLinkDirection = romLinkDirection;
         for (int index = slots.length - 1; index >= 0; index--) {
             RoomEntity entity = slots[index];
             if (!entity.loaded()) {
@@ -748,6 +763,7 @@ public final class RoomEntityRuntime {
             boolean preserveGhiniPresentation = false;
             boolean preserveMadBomberPresentation = false;
             boolean preserveBombitePresentation = false;
+            boolean preserveIronMaskPresentation = false;
             if (status == EntityStatus.ACTIVE) {
                 decrementEnemyDropCountdowns(entity);
             }
@@ -857,6 +873,13 @@ public final class RoomEntityRuntime {
                 }
 
                 hookshotChainMotion.setState(entity.slot(), step.state());
+                if (collideHookshotWithEntities(entity, step.state(), frame)) {
+                    // func_003_75A2 reaches jr_003_779A for a successful
+                    // Iron Mask unmask, clearing the chain transition byte
+                    // while leaving the chain entity in place.
+                    hookshotChainMotion.setState(entity.slot(),
+                        HookshotChainMotion.completeWallPoke(step.state()));
+                }
                 if (step.reachedLink()) {
                     clearEntity(entity.slot());
                     continue;
@@ -1012,6 +1035,9 @@ public final class RoomEntityRuntime {
                     keeseMotion.initialize(entity.slot(), randomByteSupplier);
                 }
                 if (entity.type() == ENTITY_OCTOROK || entity.type() == ENTITY_MOBLIN) {
+                    roamingEnemyMotion.initialize(entity.slot());
+                }
+                if (entity.type() == ENTITY_IRON_MASK) {
                     roamingEnemyMotion.initialize(entity.slot());
                 }
                 if (entity.type() == ENTITY_MOBLIN_SWORD) {
@@ -1239,17 +1265,39 @@ public final class RoomEntityRuntime {
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && isRoamingEnemyType(entity.type())) {
-                RoamingEnemyMotion.Update roamingUpdate = backgroundInteraction == null
-                    ? roamingEnemyMotion.advance(entity, linkEntityX, linkEntityY,
-                        randomByteSupplier, backgroundCollision, creditsGameplay)
-                    : roamingEnemyMotion.advanceWithInteraction(entity, linkEntityX,
-                        linkEntityY, randomByteSupplier, backgroundInteraction,
-                        enemyIgnoreHitsCountdown[entity.slot()], frame, creditsGameplay);
-                updated = roamingUpdate.entity();
-                if (roamingUpdate.launchRequest() != null) {
-                    projectileLaunchRequests.add(roamingUpdate.launchRequest());
-                    spawnEnemyProjectile(entity, roamingUpdate.launchRequest());
+                if (entity.type() == ENTITY_IRON_MASK
+                    && ironMaskPrivateState2[entity.slot()] != 0) {
+                    UnmaskedIronMaskMotion.Update unmaskedUpdate =
+                        unmaskedIronMaskMotion.advance(entity, frame, randomByteSupplier,
+                            backgroundInteraction, backgroundCollision,
+                            enemyIgnoreHitsCountdown[entity.slot()], frame);
+                    updated = unmaskedUpdate.entity();
+                    enemyTransitionCountdown[entity.slot()] =
+                        unmaskedUpdate.transitionCountdown();
+                } else {
+                    RoamingEnemyMotion.Update roamingUpdate = backgroundInteraction == null
+                        ? roamingEnemyMotion.advance(entity, linkEntityX, linkEntityY,
+                            randomByteSupplier, backgroundCollision, creditsGameplay)
+                        : roamingEnemyMotion.advanceWithInteraction(entity, linkEntityX,
+                            linkEntityY, randomByteSupplier, backgroundInteraction,
+                            enemyIgnoreHitsCountdown[entity.slot()], frame, creditsGameplay);
+                    updated = roamingUpdate.entity();
+                    if (roamingUpdate.launchRequest() != null) {
+                        projectileLaunchRequests.add(roamingUpdate.launchRequest());
+                        spawnEnemyProjectile(entity, roamingUpdate.launchRequest());
+                    }
                 }
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_IRON_MASK) {
+                int privateState2 = ironMaskPrivateState2[entity.slot()];
+                int variant = privateState2 == 0
+                    ? updated.spriteVariant() : ((frame >>> 4) & 0x01);
+                if (spriteHandlers != null) {
+                    updated = withDefinition(updated,
+                        spriteHandlers.forIronMaskState(privateState2), variant);
+                }
+                preserveIronMaskPresentation = true;
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_MOBLIN_SWORD) {
@@ -1628,12 +1676,14 @@ public final class RoomEntityRuntime {
             }
             int variant = preserveGhiniPresentation || preserveMadBomberPresentation
                 || preserveBombitePresentation
+                || preserveIronMaskPresentation
                 ? updated.spriteVariant() : variantFor(updated, frame);
             if (status == EntityStatus.ACTIVE && shouldDisappear(entity)) {
                 variant = (slowTransitionCountdown[entity.slot()] & 0x01) != 0 ? 0 : -1;
             }
             int renderFlipAttribute = preserveGhiniPresentation || preserveMadBomberPresentation
                 || preserveBombitePresentation
+                || preserveIronMaskPresentation
                 ? updated.entityFlipAttribute() : baseEntityFlipAttribute[entity.slot()];
             if (preserveBombitePresentation && updated.type() == ENTITY_TIMER_BOMBITE) {
                 renderFlipAttribute |= (bombPrivateCountdown1[updated.slot()] << 3) & 0x10;
@@ -2017,6 +2067,21 @@ public final class RoomEntityRuntime {
                     soundChannel = EntityCombatEvent.SoundChannel.JINGLE;
                     soundId = 0x03;
                 }
+            } else if (swordHit && entity.type() == ENTITY_IRON_MASK
+                && ironMaskPrivateState2[entity.slot()] == 0
+                && lastRomLinkDirection != roamingEnemyMotion.direction(entity.slot())) {
+                // DefaultEnemyDamageCollisionHandler's masked Iron Mask branch
+                // only accepts a sword hit from the direction the mask faces.
+                // A rear hit pushes Link and the mask apart, then uses the
+                // shared sword-poke presentation without applying damage.
+                swordPokeVfx = new EntityCombatEvent.SwordPokeVfx(
+                    byteValue(swordX - 0x08), byteValue(swordY - 0x08));
+                enemyIgnoreHitsCountdown[entity.slot()] = 0x10;
+                enemyRecoilMotion.configure(
+                    entity.slot(), entity.x(), entity.y(), entity.z(),
+                    linkEntityX, linkEntityY, 0x10);
+                soundChannel = EntityCombatEvent.SoundChannel.JINGLE;
+                soundId = 0x07;
             } else if (swordHit && RoomEntityCombatRules.swordPokeForSwordCollision(
                 entity.type(), peaHatSwordClink)) {
                 // EnemyCollidedWithSword's ENTITY_OPT1_SWORD_CLINK_OFF path
@@ -2217,6 +2282,89 @@ public final class RoomEntityRuntime {
         return collided;
     }
 
+    /**
+     * Ports the Iron Mask target branch of bank-$03 {@code func_003_75A2} for
+     * the active hookshot chain. Other hookshot target damage branches remain
+     * owned by their entity-specific runtimes; this branch is special because
+     * it changes the target's private state and creates a visible mask entity.
+     */
+    private boolean collideHookshotWithEntities(
+            RoomEntity hookshot, HookshotChainMotion.State hookshotState, int frame) {
+        boolean unmasked = false;
+        int sourceSlot = hookshot.slot();
+        int sourceVisualY = (hookshotState.y() - hookshotState.z()) & 0xFF;
+        for (int targetSlot = slots.length - 1; targetSlot >= 0; targetSlot--) {
+            if (targetSlot == sourceSlot || ((frame ^ targetSlot) & 0x01) != 0) {
+                continue;
+            }
+
+            RoomEntity target = slots[targetSlot];
+            if (!target.loaded()
+                || target.status().value() < EntityStatus.ACTIVE.value()
+                || (enemyPhysicsFlags[targetSlot] & ENTITY_PHYSICS_PROJECTILE_NOCLIP) != 0
+                || unsignedByteAbs(hookshotState.x() - target.x()) >= 0x0C
+                || unsignedByteAbs(sourceVisualY
+                    - ((target.y() - target.z()) & 0xFF)) >= 0x0C
+                || target.spriteVariant() == -1
+                || enemyIgnoreHitsCountdown[targetSlot] != 0) {
+                continue;
+            }
+
+            if (target.type() != ENTITY_IRON_MASK
+                || ((roamingEnemyMotion.direction(targetSlot) ^ 0x01)
+                    != hookshotState.direction())
+                || ironMaskPrivateState2[targetSlot] != 0) {
+                continue;
+            }
+
+            ironMaskPrivateState2[targetSlot] = 1;
+            unmaskedIronMaskMotion.initializeFromMasked(targetSlot,
+                roamingEnemyMotion.direction(targetSlot),
+                roamingEnemyMotion.speedX(targetSlot), roamingEnemyMotion.speedY(targetSlot));
+            spawnIronMasksMask(hookshotState.x(), hookshotState.y(),
+                hookshot.spriteVariant() & 0x01, sourceSlot);
+            unmasked = true;
+        }
+        return unmasked;
+    }
+
+    private void spawnIronMasksMask(int x, int y, int variant, int sourceHookshotSlot) {
+        int freeSlot = findFreeEntitySlot();
+        if (freeSlot < 0) {
+            return;
+        }
+
+        EntitySpriteDefinition definition = spriteDefinitionFor(ENTITY_IRON_MASKS_MASK);
+        int selectedVariant = definition.supported()
+            ? Math.min(variant & 0x01, definition.variantCount() - 1) : -1;
+        RoomEntity mask = new RoomEntity(freeSlot, -1, ENTITY_IRON_MASKS_MASK,
+            x & 0xFF, y & 0xFF, EntityStatus.ACTIVE, definition, selectedVariant,
+            0, 0, 0);
+        slots[freeSlot] = mask;
+        baseEntityFlipAttribute[freeSlot] = 0;
+        enemyTransitionCountdown[freeSlot] = 0;
+        enemyStunnedCountdown[freeSlot] = 0;
+        enemyHealth[freeSlot] = initialHealth(ENTITY_IRON_MASKS_MASK);
+        enemyFlashCountdown[freeSlot] = 0;
+        enemyIgnoreHitsCountdown[freeSlot] = 1;
+        enemyPhysicsFlags[freeSlot] = IRON_MASKS_MASK_INITIAL_PHYSICS_FLAGS;
+        entityOptions1Override[freeSlot] = IRON_MASKS_MASK_OPTIONS1;
+        dyingCountdown[freeSlot] = 0;
+        powerRecoilDeath[freeSlot] = false;
+        enemyHitboxFlags[freeSlot] = 0;
+        if (indoorRoom) {
+            slowTransitionCountdown[freeSlot] = 0x80;
+            slowTimerInitialized[freeSlot] = true;
+        }
+        enemyRecoilMotion.clear(freeSlot);
+        dynamicEntitySpawnedThisFrame[freeSlot] = true;
+        // The source writes sourceSlot + 1 to private state 5. The current
+        // mask handler does not consume that byte, but retaining the value
+        // keeps the dynamic entity's provenance ROM-shaped for later pickup
+        // and item-interaction work.
+        ironMasksMaskSourceHookshotSlot[freeSlot] = (sourceHookshotSlot + 1) & 0xFF;
+    }
+
     private void applyPlayerArrowDamage(RoomEntity arrow, RoomEntity target) {
         int targetSlot = target.slot();
         enemyRecoilMotion.configureFromSpeed(targetSlot,
@@ -2329,6 +2477,8 @@ public final class RoomEntityRuntime {
         playerArrowBombArrow[slot] = false;
         bombPrivateCountdown1[slot] = 0;
         bombPrivateCountdown3[slot] = 0;
+        ironMaskPrivateState2[slot] = 0;
+        ironMasksMaskSourceHookshotSlot[slot] = 0;
         liftableRockSmashCountdown[slot] = 0;
         liftableRockSmashSourceVariant[slot] = 0;
         liftableRockSmashActive[slot] = false;
@@ -2383,6 +2533,7 @@ public final class RoomEntityRuntime {
         butterflyMotion.clear(slot);
         keeseMotion.clear(slot);
         roamingEnemyMotion.clear(slot);
+        unmaskedIronMaskMotion.clear(slot);
         moblinSwordMotion.clear(slot);
         playerArrowMotion.clear(slot);
         tektiteMotion.clear(slot);
@@ -3075,7 +3226,7 @@ public final class RoomEntityRuntime {
     }
 
     private static boolean isRoamingEnemyType(int type) {
-        return type == ENTITY_OCTOROK || type == ENTITY_MOBLIN;
+        return type == ENTITY_OCTOROK || type == ENTITY_MOBLIN || type == ENTITY_IRON_MASK;
     }
 
     private static boolean usesBank6Recoil(int type) {
@@ -3812,6 +3963,31 @@ public final class RoomEntityRuntime {
         return roamingEnemyMotion.speedY(slot);
     }
 
+    int ironMaskState(int slot) {
+        return roamingEnemyMotion.state(slot);
+    }
+
+    int ironMaskTransitionCountdown(int slot) {
+        return roamingEnemyMotion.transitionCountdown(slot);
+    }
+
+    int ironMaskDirection(int slot) {
+        return roamingEnemyMotion.direction(slot);
+    }
+
+    int ironMaskSpeedX(int slot) {
+        return roamingEnemyMotion.speedX(slot);
+    }
+
+    int ironMaskSpeedY(int slot) {
+        return roamingEnemyMotion.speedY(slot);
+    }
+
+    int ironMaskPrivateState2(int slot) {
+        validateEntitySlot(slot);
+        return ironMaskPrivateState2[slot];
+    }
+
     int moblinSwordState(int slot) {
         return moblinSwordMotion.state(slot);
     }
@@ -4496,6 +4672,8 @@ public final class RoomEntityRuntime {
         return switch (type) {
             case ENTITY_ARMOS_STATUE -> ARMOS_INITIAL_PHYSICS_FLAGS;
             case ENTITY_STALFOS_EVASIVE -> EVASIVE_PHYSICS_FLAGS;
+            case ENTITY_IRON_MASK -> IRON_MASK_INITIAL_PHYSICS_FLAGS;
+            case ENTITY_IRON_MASKS_MASK -> IRON_MASKS_MASK_INITIAL_PHYSICS_FLAGS;
             case ENTITY_BOMB -> BOMB_INITIAL_PHYSICS_FLAGS;
             case ENTITY_BOUNCING_BOMBITE, ENTITY_TIMER_BOMBITE ->
                 BOMBITE_INITIAL_PHYSICS_FLAGS;
@@ -4802,6 +4980,8 @@ public final class RoomEntityRuntime {
         bombPrivateState4[slot] = 0;
         bombPrivateCountdown1[slot] = 0;
         bombPrivateCountdown3[slot] = 0;
+        ironMaskPrivateState2[slot] = 0;
+        ironMasksMaskSourceHookshotSlot[slot] = 0;
         liftableRockSmashCountdown[slot] = 0;
         liftableRockSmashSourceVariant[slot] = 0;
         liftableRockSmashActive[slot] = false;
@@ -4820,6 +5000,7 @@ public final class RoomEntityRuntime {
         butterflyMotion.clear(slot);
         keeseMotion.clear(slot);
         roamingEnemyMotion.clear(slot);
+        unmaskedIronMaskMotion.clear(slot);
         moblinSwordMotion.clear(slot);
         tektiteMotion.clear(slot);
         leeverMotion.clear(slot);
