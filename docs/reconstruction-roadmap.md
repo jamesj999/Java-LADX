@@ -1818,6 +1818,25 @@ runtime collision callback.
   establishes their source-faithful state boundary without fabricating a chest
   handler.
 
+## Verified ROM chest contents and collected-chest room state — 2026-08-07
+
+- `ChestContentsTable` now reads the shared room chest table at bank
+  `$14:$4560` and the Color Dungeon table at `$14:$4860`, preserving the
+  source's raw item ids. The sword-level replacement for a secret-shell chest
+  (`$20` to `$1C` once the sword is upgraded) follows `func_014_5900`.
+- Room-object loading now applies the source chest-status bit `$10`: every
+  closed chest object `$A0` in the active padded room buffer becomes the open
+  chest object `$A1` when the room status is set. This makes the persisted flag
+  visible in the room representation before rendering.
+- Focused shipped-ROM tests cover both tables, Color Dungeon selection, the
+  sword fallback, byte/range validation, and the status-gated object change.
+  The clean Java suite passes with 1,043 tests and zero failures, errors, or
+  skipped tests.
+- The remaining chest boundary is dynamic entity `$07`: spawning at the
+  interacted chest, open animation, reward-specific inventory updates,
+  dungeon-flag synchronization, and dialog sequencing still need to be wired
+  through the live interaction/entity runtime.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

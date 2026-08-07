@@ -79,8 +79,11 @@ public final class RoomObjectParser {
     private static final int SMALL_HOUSE_OBJECT_IDS_ADDR = 0x76FE;
 
     private static final int ROOM_STATUS_DOOR_OPEN_UP = 0x04;
+    private static final int ROOM_STATUS_CHEST_OPEN = 0x10;
     private static final int ROOM_STATUS_EVENT_3 = 0x40;
     private static final int OW_ROOM_STATUS_OPENED = 0x04;
+    private static final int OBJECT_CHEST_CLOSED = 0xA0;
+    private static final int OBJECT_CHEST_OPEN = 0xA1;
     private static final int OBJECT_TREE_TOP_LEFT = 0x25;
     private static final int OBJECT_TREE_TOP_RIGHT = 0x26;
     private static final int OBJECT_TREE_BOTTOM_LEFT = 0x27;
@@ -105,6 +108,7 @@ public final class RoomObjectParser {
         reset(floorObject);
         this.roomStatusFlags = roomStatusFlags;
         parseRoomObjectStream(streamOffset, false);
+        applyChestStatus();
         applyOverworldBombableCaveDoorStatus();
         assignDoorPositionsToWarps();
         return new RoomObjectParseResult(roomObjectsArea, warps);
@@ -144,6 +148,7 @@ public final class RoomObjectParser {
             applyMacroTable(0, ROOM_TEMPLATE_BANK, table[0], ROOM_TEMPLATE_BANK, table[1]);
         }
         parseRoomObjectStream(streamOffset, true);
+        applyChestStatus();
         applyIndoorBombableBlockStatus(mapId);
         applyIndoorBombableWallStatus();
         assignDoorPositionsToWarps();
@@ -185,6 +190,22 @@ public final class RoomObjectParser {
                 } else if ((objectId == 0x42 || objectId == 0x4A)
                     && (roomStatusFlags & 0x01) != 0) {
                     roomObjectsArea[areaIndex] = 0x3E;
+                }
+            }
+        }
+    }
+
+    /** Mirrors ConfigureRoomObjects' replacement of a collected chest object. */
+    private void applyChestStatus() {
+        if ((roomStatusFlags & ROOM_STATUS_CHEST_OPEN) == 0) {
+            return;
+        }
+        for (int row = 0; row < RoomConstants.OBJECTS_PER_COLUMN; row++) {
+            for (int column = 0; column < RoomConstants.OBJECTS_PER_ROW; column++) {
+                int areaIndex = RoomConstants.ROOM_OBJECTS_BASE
+                    + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + column;
+                if (roomObjectsArea[areaIndex] == OBJECT_CHEST_CLOSED) {
+                    roomObjectsArea[areaIndex] = OBJECT_CHEST_OPEN;
                 }
             }
         }

@@ -43,4 +43,16 @@ final class RoomObjectParserTest {
         assertEquals(0x28, warp.destX());
         assertEquals(0x48, warp.destY());
     }
+
+    @Test
+    void replacesClosedChestsWithOpenChestsWhenTheRoomStatusBitIsSet() {
+        byte[] rom = new byte[] {0x20, (byte) 0xA0, (byte) 0xFE};
+
+        assertEquals(0xA0, new RoomObjectParser(rom)
+            .parseOverworld(0, 0x00, 0)
+            .objectAtLocation(0x20));
+        assertEquals(0xA1, new RoomObjectParser(rom)
+            .parseOverworld(0, 0x00, 0x10)
+            .objectAtLocation(0x20));
+    }
 }
