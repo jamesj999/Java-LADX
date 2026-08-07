@@ -75,6 +75,8 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_LASER_BEAM = 0x2B;
     private static final int ENTITY_ARROW = 0x00;
     private static final int ENTITY_BOMB = 0x02;
+    private static final int DAMAGE_TYPE_ARROW = 0x05;
+    private static final int DAMAGE_TYPE_BOMB_ARROW = 0x0C;
     private static final int ENTITY_HOOKSHOT_CHAIN = HookshotChainMotion.ENTITY_TYPE;
     private static final int ENTITY_HOOKSHOT_BRIDGE = HookshotBridgeMotion.ENTITY_TYPE;
     private static final int OBJECT_HOOKSHOT_BRIDGE_PULL_DOWN = 0x9E;
@@ -790,6 +792,14 @@ public final class RoomEntityRuntime {
                             explosionSlot, ENTITY_BOMB, 0, false,
                             EntityCombatEvent.SoundChannel.NOISE, 0x0C));
                     }
+                    disableEntityWithoutPersistence(entity.slot());
+                    continue;
+                }
+                boolean hitEntity = collidePlayerArrowWithEntities(entity, frame);
+                if (hitEntity && !playerArrowBombArrow[entity.slot()]) {
+                    // func_003_75A2 reaches jr_003_7737 after an ordinary
+                    // arrow target hit. With no wall-collision byte set on
+                    // the active arrow, the state-0 arrow unloads there.
                     disableEntityWithoutPersistence(entity.slot());
                     continue;
                 }
@@ -1883,6 +1893,119 @@ public final class RoomEntityRuntime {
         return List.copyOf(events);
     }
 
+    /**
+     * Port of the common bank-$03 func_003_75A2 pass for player arrows. The
+     * active arrow checks targets in descending slot order and uses the same
+     * alternating frame cadence and unsigned twelve-pixel windows as the ROM.
+     */
+    private boolean collidePlayerArrowWithEntities(RoomEntity arrow, int frame) {
+        boolean collided = false;
+        int arrowSlot = arrow.slot();
+        int attackType = playerArrowBombArrow[arrowSlot]
+            ? DAMAGE_TYPE_BOMB_ARROW : DAMAGE_TYPE_ARROW;
+        int arrowVisualY = (arrow.y() - arrow.z()) & 0xFF;
+        for (int targetSlot = slots.length - 1; targetSlot >= 0; targetSlot--) {
+            if (targetSlot == arrowSlot
+                || ((frame ^ targetSlot) & 0x01) != 0) {
+                continue;
+            }
+
+            RoomEntity target = slots[targetSlot];
+            if (!target.loaded()
+                || target.status().value() < EntityStatus.ACTIVE.value()
+                || !RoomEntityCombatRules.supportsEnemyCollision(target.type())
+                || (enemyPhysicsFlags[targetSlot] & ENTITY_PHYSICS_PROJECTILE_NOCLIP) != 0
+                || (enemyHitboxFlags[targetSlot] & HITFLAGS_IGNORE_HITS) != 0
+                || enemyIgnoreHitsCountdown[targetSlot] != 0
+                || target.spriteVariant() < 0) {
+                continue;
+            }
+
+            if (unsignedByteAbs(arrow.x() - target.x()) >= 0x0C
+                || unsignedByteAbs(
+                    arrowVisualY - ((target.y() - target.z()) & 0xFF)) >= 0x0C) {
+                continue;
+            }
+
+            collided = true;
+            if (attackType == DAMAGE_TYPE_BOMB_ARROW) {
+                // BombArrowHandler selects DAMAGE_TYPE_BOMB_ARROW. The
+                // shared damage helper deliberately treats this active-arrow
+                // state as a harmless target transition rather than calling
+                // ApplySwordDamagesToEnemy.
+                enemyTransitionCountdown[targetSlot] = 0x03;
+            } else {
+                applyPlayerArrowDamage(arrow, target);
+            }
+        }
+        return collided;
+    }
+
+    private void applyPlayerArrowDamage(RoomEntity arrow, RoomEntity target) {
+        int targetSlot = target.slot();
+        enemyRecoilMotion.configureFromSpeed(targetSlot,
+            playerArrowMotion.speedX(arrow.slot()), playerArrowMotion.speedY(arrow.slot()));
+
+        RomEnemyCombatTables.SwordDamageResult damageResult = enemyCombatTables == null
+            ? null : enemyCombatTables.resolveAttackDamage(target.type(), DAMAGE_TYPE_ARROW);
+        int rawDamage = damageResult == null
+            ? RoomEntityCombatRules.basicSwordDamage(target.type())
+            : damageResult.rawValue();
+        if (rawDamage == 0) {
+            return;
+        }
+
+        int enemyDamage = rawDamage < 0xF0 ? rawDamage : 0;
+        int specialAction = rawDamage >= 0xF0 ? rawDamage : -1;
+        EntityCombatEvent.SoundChannel secondaryChannel = EntityCombatEvent.SoundChannel.NONE;
+        int secondarySoundId = -1;
+
+        if (rawDamage == 0xFE) {
+            enemyTransitionCountdown[targetSlot] = 0x60;
+            enemyStunnedCountdown[targetSlot] = 0;
+            enemyFlashCountdown[targetSlot] = 0;
+            enemyIgnoreHitsCountdown[targetSlot] = 0x0A;
+            enemyPhysicsFlags[targetSlot] = (enemyPhysicsFlags[targetSlot] + 2) & 0xFF;
+            enemyRecoilMotion.clear(targetSlot);
+            slots[targetSlot] = withStatus(target, EntityStatus.BURNING);
+            secondaryChannel = EntityCombatEvent.SoundChannel.NOISE;
+            secondarySoundId = 0x12;
+        } else if (rawDamage == 0xFF) {
+            enemyTransitionCountdown[targetSlot] = 0;
+            enemyStunnedCountdown[targetSlot] = 0xFF;
+            enemyFlashCountdown[targetSlot] = 0;
+            enemyIgnoreHitsCountdown[targetSlot] = 0x0A;
+            enemyRecoilMotion.clear(targetSlot);
+            slots[targetSlot] = withStatus(target, EntityStatus.STUNNED);
+        } else if (rawDamage == 0xFD) {
+            // The fairy-conversion branch is entity-specific in the ROM. The
+            // generic table result is still surfaced so the pending special
+            // action is not silently changed into numeric damage.
+            enemyRecoilMotion.clear(targetSlot);
+        } else {
+            enemyHealth[targetSlot] = Math.max(0, enemyHealth[targetSlot] - enemyDamage);
+            if (enemyHealth[targetSlot] == 0) {
+                dyingCountdown[targetSlot] = 0x40;
+                powerRecoilDeath[targetSlot] = false;
+                slots[targetSlot] = withDeathPresentation(
+                    withStatus(target, EntityStatus.DYING), -1, false);
+            } else if (isZolGelType(target.type())) {
+                zolGelMotion.onSwordHit(targetSlot);
+                if (target.type() == ENTITY_ZOL && spriteHandlers != null) {
+                    slots[targetSlot] = withDefinition(target,
+                        spriteHandlers.forZolSlimeEye(), target.spriteVariant());
+                }
+            }
+            enemyFlashCountdown[targetSlot] = 0x18;
+            enemyIgnoreHitsCountdown[targetSlot] = 0x0A;
+        }
+
+        pendingEntityEvents.add(new EntityCombatEvent(
+            targetSlot, target.type(), 0, false, enemyDamage, specialAction,
+            EntityCombatEvent.SoundChannel.JINGLE, 0x03,
+            secondaryChannel, secondarySoundId, null));
+    }
+
     private int initialHealth(int type) {
         return enemyCombatTables == null
             ? RoomEntityCombatRules.initialHealth(type)
@@ -2048,6 +2171,11 @@ public final class RoomEntityRuntime {
 
     /** Creates the ROM's ordinary player-arrow entity type {@code $00}. */
     int spawnArrow(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
+        return spawnArrow(linkEntityX, linkEntityY, linkEntityZ, romDirection, false);
+    }
+
+    int spawnArrow(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection,
+                   boolean pieceOfPower) {
         validateRomDirection(romDirection);
         lastArrowShotPlayedWhoosh = false;
         if (activePlayerArrowCount() >= 0x02) {
@@ -2065,7 +2193,7 @@ public final class RoomEntityRuntime {
             definition, variant, 0, 0, (linkEntityZ + 1) & 0xFF);
         slots[freeSlot] = arrow;
         playerArrowMotion.clear(freeSlot);
-        playerArrowMotion.initializeSpawn(freeSlot, romDirection);
+        playerArrowMotion.initializeSpawn(freeSlot, romDirection, pieceOfPower);
         baseEntityFlipAttribute[freeSlot] = 0;
         entityOptions1Override[freeSlot] = ENTITY_OPT1_NO_GROUND_INTERACTION
             | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
@@ -3589,6 +3717,16 @@ public final class RoomEntityRuntime {
         return enemyIgnoreHitsCountdown[slot];
     }
 
+    int enemyRecoilSpeedXForTest(int slot) {
+        validateEntitySlot(slot);
+        return enemyRecoilMotion.recoilSpeedX(slot);
+    }
+
+    int enemyRecoilSpeedYForTest(int slot) {
+        validateEntitySlot(slot);
+        return enemyRecoilMotion.recoilSpeedY(slot);
+    }
+
     int thrownDirection(int slot) {
         validateEntitySlot(slot);
         return thrownDirection[slot] & 0xFF;
@@ -4215,6 +4353,11 @@ public final class RoomEntityRuntime {
 
     private static int byteValue(int value) {
         return value & 0xFF;
+    }
+
+    private static int unsignedByteAbs(int value) {
+        int difference = value & 0xFF;
+        return difference < 0x80 ? difference : 0x100 - difference;
     }
 
     private static int signedByte(int value) {

@@ -57,6 +57,22 @@ final class RomEnemyCombatTablesTest {
     }
 
     @Test
+    void resolvesFixedProjectileAttackTypesThroughTheSameRomMatrix() throws IOException {
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
+
+        RomEnemyCombatTables.SwordDamageResult arrow = tables.resolveAttackDamage(0x09, 0x05);
+        assertEquals(0, arrow.healthGroup());
+        assertEquals(1, arrow.damageTableEntry());
+        assertEquals(1, arrow.rawValue());
+
+        RomEnemyCombatTables.SwordDamageResult moblinArrow =
+            tables.resolveAttackDamage(0x0B, 0x05);
+        assertEquals(1, moblinArrow.healthGroup());
+        assertEquals(2, moblinArrow.damageTableEntry());
+        assertEquals(4, moblinArrow.rawValue());
+    }
+
+    @Test
     void distinguishesIgnoredAndSpecialRawSwordResults() throws IOException {
         RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
 

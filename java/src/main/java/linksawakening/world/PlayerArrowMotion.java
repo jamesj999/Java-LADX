@@ -11,6 +11,11 @@ final class PlayerArrowMotion {
     private static final int[] OFFSET_Y = {0x00, 0x00, 0x00, 0x00};
     private static final int[] SPEED_X = {0x20, 0xE0, 0x00, 0x00};
     private static final int[] SPEED_Y = {0x00, 0x00, 0xE0, 0x20};
+    /* data_13AD/data_13B5, selected by label_140F after spawning. */
+    private static final int[] FINAL_SPEED_X = {0x40, 0xC0, 0x00, 0x00};
+    private static final int[] FINAL_SPEED_Y = {0x00, 0x00, 0xC0, 0x40};
+    private static final int[] POWER_FINAL_SPEED_X = {0x30, 0xD0, 0x00, 0x00};
+    private static final int[] POWER_FINAL_SPEED_Y = {0x00, 0x00, 0xD0, 0x30};
 
     /* ArrowSpinningSpriteVariantFrames: right, down, left, up. */
     private static final int[] SPIN_VARIANTS = {0, 3, 1, 2};
@@ -33,11 +38,14 @@ final class PlayerArrowMotion {
     }
 
     void initializeSpawn(int slot, int projectileDirection) {
+        initializeSpawn(slot, projectileDirection, false);
+    }
+
+    void initializeSpawn(int slot, int projectileDirection, boolean pieceOfPower) {
         validateSlot(slot);
-        SpawnData data = spawnData(projectileDirection);
         direction[slot] = projectileDirection & 0x03;
-        speedX[slot] = data.speedX();
-        speedY[slot] = data.speedY();
+        speedX[slot] = (pieceOfPower ? POWER_FINAL_SPEED_X : FINAL_SPEED_X)[direction[slot]];
+        speedY[slot] = (pieceOfPower ? POWER_FINAL_SPEED_Y : FINAL_SPEED_Y)[direction[slot]];
         speedZ[slot] = 0;
         zPosition[slot] = 0;
         transitionCountdown[slot] = 0;

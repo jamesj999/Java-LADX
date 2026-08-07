@@ -53,6 +53,17 @@ final class EnemyRecoilMotionTest {
     }
 
     @Test
+    void configureFromSpeedCopiesProjectileVelocityWithoutChangingItsSign() {
+        EnemyRecoilMotion motion = new EnemyRecoilMotion();
+
+        motion.configureFromSpeed(0, 0x40, 0xD0);
+
+        assertEquals(0x40, motion.recoilSpeedX(0));
+        assertEquals(0xD0, motion.recoilSpeedY(0));
+        assertTrue(motion.isActive(0));
+    }
+
+    @Test
     void advanceUsesSignedSixteenSubpixelMovementAndUnsignedWrapping() {
         EnemyRecoilMotion motion = new EnemyRecoilMotion();
         RoomEntity entity = entity(0, 0x02, 0x20, 0);

@@ -25,7 +25,9 @@ final class PlayerArrowMotionTest {
 
         PlayerArrowMotion.Update first = motion.advance(entity, null);
 
-        assertEquals(0x12, first.entity().x());
+        // initializeSpawn models ShootArrow's post-spawn label_140F table,
+        // so the no-Piece-of-Power right speed is $40 (four pixels/frame).
+        assertEquals(0x14, first.entity().x());
         assertEquals(0x20, first.entity().y());
         assertEquals(0x07, first.entity().z());
         assertEquals(0, first.entity().spriteVariant());

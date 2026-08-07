@@ -248,7 +248,8 @@ unsupported rather than represented by guessed shapes or generic movement.
   variants, room scrolling, and a real ROM room (`$2F`) publishing a spawned
   rock into the live render snapshot with its loaded entity tile sheet.
 - Remaining projectile gaps are deliberate: exact object-intersection edge
-  cases and player projectile interactions are not yet complete. The broader
+  cases, additional player-projectile producers, and their target-specific
+  interactions are not yet complete. The broader
   engine remains a staged reconstruction, not a complete entity-system claim.
 
 ## Verified ROM ordinary player-arrow producer — 2026-08-07
@@ -257,10 +258,11 @@ unsupported rather than represented by guessed shapes or generic movement.
   and two-active-projectile cap are checked before the arrow count, zero count
   routes to the wrong-answer jingle, and a successful request spends the arrow
   before asking the room to allocate entity `$00`.
-- `SpawnPlayerProjectile` is mirrored for ordinary arrows: Link's current
-  single-axis D-pad input updates facing through `func_157C`, the entity starts
-  at Link X/Y and Z+1, and the source direction-indexed `$20/$E0` speed tables
-  drive the handler-owned fixed-point motion.
+- `SpawnPlayerProjectile` and `label_140F` are mirrored for ordinary arrows:
+  Link's current single-axis D-pad input updates facing through `func_157C`,
+  the entity starts at Link X/Y and Z+1, and the initial `$20/$E0` table is
+  replaced by the normal `{ $40, $C0, 0, 0 }`/`{ 0, 0, $C0, $40 }` speeds or
+  the Piece-of-Power `{ $30, $D0, 0, 0 }`/`{ 0, 0, $D0, $30 }` speeds.
 - Player arrows read the shared bank-$03 display list at `$6BC6`, use options
   `$12` and physics flags `$42`, bounce both axes at quarter speed on a wall,
   enter the shared `$18` wall-rock countdown, spin through `[0,3,1,2]`, and
@@ -269,9 +271,10 @@ unsupported rather than represented by guessed shapes or generic movement.
   routes the ROM `$0A` whoosh through the gameplay sound catalog. Focused
   motion, item, catalog, runtime, sound-map, and full-suite tests cover this
   producer/runtime seam.
-- The bank-$03 `func_003_75A2` enemy-damage pass and the other projectile
-  producers still require their own source-shaped slices; this increment does
-  not claim those interactions are complete.
+- The bank-$03 `func_003_75A2` target pass and the live Piece-of-Power speed
+  selector are wired in the follow-up arrow-collision increment below. Other
+  projectile producers and target-specific collision exceptions still require
+  their own source-shaped slices.
 
 ## Verified ROM bomb-arrow conversion and detonation handoff — 2026-08-07
 
@@ -289,10 +292,33 @@ unsupported rather than represented by guessed shapes or generic movement.
   and arrow pair with the handler's direction-specific offsets. When its wall
   transition begins, the arrow unloads into a same-slot-independent bomb
   entity at transition `$17` and emits the source explosion noise `$0C`.
-- The `func_003_75A2` projectile damage/recoil pass, target-hit bomb-arrow
-  behavior, and remaining projectile producers remain separate follow-up work.
+- The common `func_003_75A2` scan is now shared by the runtime's arrow path:
+  an active bomb arrow selects attack type `$0C`, leaves target health and
+  recoil untouched, writes target transition `$03`, and remains loaded; the
+  ordinary arrow selects attack type `$05` and unloads after an accepted hit.
 - Focused conversion, ROM catalog, equipment, session, and forced clean Java
-  suite tests pass with 930 test cases.
+  suite tests pass with 935 test cases.
+
+## Verified ROM player-arrow collision and ShootArrow speed handoff — 2026-08-07
+
+- `RoomEntityRuntime` now runs the bank-$03 descending-slot collision cadence
+  before `ArrowRenderAndMove`, including the active/status, projectile-no-clip,
+  ignore-hit, sprite-variant, and unsigned `$0C` X/Y gates.
+- Ordinary arrow hits use ROM damage type `$05`, copy the arrow's signed speed
+  directly into the target recoil velocity, apply the shared numeric/burn/stun
+  damage state transitions, flash/ignore windows, death presentation, and
+  JINGLE `$03`/secondary SFX events. The runtime currently applies this to the
+  enemy families already covered by `RoomEntityCombatRules`.
+- Bomb-arrow hits follow `BombArrowHandler`'s active-state exception: damage
+  table lookup is bypassed, target health/recoil/events are unchanged, and the
+  target transition countdown becomes `$03` while the arrow continues moving.
+- `ShootArrow` now carries the active Piece-of-Power bit from `Main` through
+  `RoomSession` to the two ROM speed tables. Tests cover normal and powered
+  speeds, target damage/recoil, bomb-arrow harmless hits, and the full Java
+  suite (935 cases, zero failures).
+- Remaining target-specific branches in `func_003_75A2` (grabbable objects,
+  bombites, Iron Masks, boss/fairy transformations) and the other player
+  projectile producers remain open work.
 
 ## Verified ROM Link damage buffering — 2026-08-05
 
@@ -1277,9 +1303,8 @@ runtime collision callback.
   bomb events rather than sword/projectile combat results.
 - `RoomSession.consumeBombExplosionEvents()` carries the seam to gameplay
   without fabricating room mutations or generic enemy health/recoil effects.
-  Enemy bombs, target-hit bomb-arrow damage, destroyable-object/puzzle state
-  changes, and the source recoil/damage application remain explicit follow-up
-  work.
+  Enemy bombs, destroyable-object/puzzle state changes, and the remaining
+  source-specific recoil/damage application remain explicit follow-up work.
 - Focused runtime/session tests and the forced clean Java suite pass with 892
   tests; this increment does not add an emulator.
 

@@ -314,7 +314,9 @@ public class Main {
                     }
                     RoomSession.ArrowShotResult result = roomSession.shootArrowResult(
                         link.romEntityX(), link.romEntityY(), link.romEntityZ(),
-                        link.applyRomItemDirectionFromInput());
+                        link.applyRomItemDirectionFromInput(),
+                        playerState.activePowerUp()
+                            == PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER);
                     playWhooshForLastShot = result.playWhoosh();
                     if (result.spawned()) {
                         link.startRomItemAttackStep();

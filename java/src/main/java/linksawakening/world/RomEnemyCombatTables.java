@@ -72,11 +72,17 @@ public final class RomEnemyCombatTables {
     public SwordDamageResult resolveSwordDamage(int entityType,
                                                 EnemyAttackContext attackContext) {
         Objects.requireNonNull(attackContext, "Attack context cannot be null");
-        int healthGroup = healthGroup(entityType);
         int attackType = attackContext.effectiveDamageType();
         if (attackType < 0) {
+            int healthGroup = healthGroup(entityType);
             return new SwordDamageResult(entityType & 0xFF, healthGroup, -1, 0, 0);
         }
+        return resolveAttackDamage(entityType, attackType);
+    }
+
+    /** Mirrors the bank-$03 damage-table lookup for a fixed projectile type. */
+    public SwordDamageResult resolveAttackDamage(int entityType, int attackType) {
+        int healthGroup = healthGroup(entityType);
         int entry = damageTypeEntry(healthGroup, attackType);
         int rawValue = damageValue(attackType, entry);
         return new SwordDamageResult(entityType & 0xFF, healthGroup, attackType,

@@ -437,15 +437,23 @@ public final class RoomSession {
     /** Mirrors ShootArrow's player-projectile bridge and refreshes the room snapshot. */
     public boolean shootArrow(int linkEntityX, int linkEntityY, int linkEntityZ,
                               int romDirection) {
-        return shootArrowResult(linkEntityX, linkEntityY, linkEntityZ, romDirection).spawned();
+        return shootArrowResult(linkEntityX, linkEntityY, linkEntityZ, romDirection, false)
+            .spawned();
     }
 
     public ArrowShotResult shootArrowResult(int linkEntityX, int linkEntityY, int linkEntityZ,
                                             int romDirection) {
+        return shootArrowResult(linkEntityX, linkEntityY, linkEntityZ, romDirection, false);
+    }
+
+    /** ShootArrow's label_140F speed-table selector for Piece of Power. */
+    public ArrowShotResult shootArrowResult(int linkEntityX, int linkEntityY, int linkEntityZ,
+                                            int romDirection, boolean pieceOfPower) {
         if (activeRoom == null || entityRuntime == null) {
             return new ArrowShotResult(false, false);
         }
-        int slot = entityRuntime.spawnArrow(linkEntityX, linkEntityY, linkEntityZ, romDirection);
+        int slot = entityRuntime.spawnArrow(linkEntityX, linkEntityY, linkEntityZ, romDirection,
+            pieceOfPower);
         if (slot < 0) {
             return new ArrowShotResult(false, false);
         }

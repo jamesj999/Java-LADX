@@ -4294,13 +4294,83 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x42, runtime.physicsFlags(slot));
         assertEquals(0x12, runtime.options1(slot));
         assertEquals(1, runtime.enemyIgnoreHitsCountdown(slot));
-        assertEquals(0x20, runtime.playerArrowSpeedY(slot));
+        // ShootArrow calls label_140F after SpawnPlayerProjectile. The
+        // initial $20 movement table is replaced by data_13AD/data_13B5.
+        assertEquals(0x40, runtime.playerArrowSpeedY(slot));
         assertEquals(3, runtime.playerArrowDirection(slot));
         assertEquals(1, runtime.activePlayerArrowCount());
 
         runtime.tick(0, 0, 0, () -> 0);
 
-        assertEquals(0x52, runtime.snapshot().slots().get(slot).y());
+        assertEquals(0x54, runtime.snapshot().slots().get(slot).y());
+    }
+
+    @Test
+    void pieceOfPowerSelectsTheAlternateShootArrowSpeedTable() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot());
+
+        int slot = runtime.spawnArrow(0x40, 0x50, 0, 3, true);
+
+        assertEquals(0x30, runtime.playerArrowSpeedY(slot));
+        assertEquals(0x00, runtime.playerArrowSpeedX(slot));
+    }
+
+    @Test
+    void ordinaryPlayerArrowRunsTheRomEntityDamagePassBeforeMoving() throws IOException {
+        byte[] rom = loadRom();
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteDefinition octorokDefinition = pairDefinition(0x09, 8);
+        RoomEntity octorok = new RoomEntity(15, 15, 0x09, 0x40, 0x50,
+            EntityStatus.ACTIVE, octorokDefinition, 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+            snapshotWithSlots(octorok), false, () -> 0, null, tables);
+
+        int arrowSlot = runtime.spawnArrow(0x40, 0x50, 0, 0);
+        assertEquals(14, arrowSlot);
+
+        // $75A2 checks (hFrameCounter XOR targetSlot) bit 0. Slot 15 is
+        // therefore checked on frame 1. The arrow collision runs before its
+        // own movement, exactly as ArrowEntityHandler does.
+        runtime.tick(1, 0x40, 0x50, () -> 0);
+
+        assertEquals(0, runtime.enemyHealth(15));
+        assertEquals(EntityStatus.DYING, runtime.snapshot().slots().get(15).status());
+        assertEquals(0x18, runtime.enemyFlashCountdown(15));
+        assertEquals(0x0A, runtime.enemyIgnoreHitsCountdown(15));
+        assertEquals(List.of(new EntityCombatEvent(15, 0x09, 0, false,
+            1, -1, EntityCombatEvent.SoundChannel.JINGLE, 0x03,
+            EntityCombatEvent.SoundChannel.NONE, -1, null)),
+            runtime.consumePendingEntityEvents());
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(arrowSlot).status());
+        // func_003_77A7 copies the active arrow's speed directly into the
+        // target recoil velocity, even on a lethal hit.
+        assertEquals(0x40, runtime.enemyRecoilSpeedXForTest(15));
+        assertEquals(0x00, runtime.enemyRecoilSpeedYForTest(15));
+    }
+
+    @Test
+    void bombArrowCollisionIsHarmlessButSetsTheTargetTransitionCountdown() throws IOException {
+        byte[] rom = loadRom();
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteDefinition moblinDefinition = pairDefinition(0x0B, 8);
+        RoomEntity moblin = new RoomEntity(15, 15, 0x0B, 0x40, 0x50,
+            EntityStatus.ACTIVE, moblinDefinition, 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+            snapshotWithSlots(moblin), false, () -> 0, null, tables);
+
+        int candidateBomb = runtime.spawnBomb(0x40, 0x50, 0, 0);
+        int arrowSlot = runtime.spawnArrow(0x40, 0x50, 0, 0);
+        assertTrue(runtime.isBombArrowForTest(arrowSlot));
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(candidateBomb).status());
+
+        runtime.tick(1, 0x40, 0x50, () -> 0);
+
+        assertEquals(2, runtime.enemyHealth(15));
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(15).status());
+        assertEquals(0x03, runtime.transitionCountdown(15));
+        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(arrowSlot).status());
+        assertTrue(runtime.isBombArrowForTest(arrowSlot));
     }
 
     @Test
@@ -4399,7 +4469,7 @@ final class RoomEntityRuntimeTest {
 
         assertEquals(0x04, runtime.swordMoblinAlertingSoundCounter());
         assertEquals(0x18, runtime.playerArrowTransitionCountdown(slot));
-        assertEquals(0xF8, runtime.playerArrowSpeedX(slot));
+        assertEquals(0xF0, runtime.playerArrowSpeedX(slot));
     }
 
     @Test

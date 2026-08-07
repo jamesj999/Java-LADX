@@ -56,6 +56,16 @@ final class EnemyRecoilMotion {
         active[slot] = true;
     }
 
+    /** Mirrors func_003_77A7 copying an active projectile's speed to recoil. */
+    void configureFromSpeed(int slot, int speedX, int speedY) {
+        validateSlot(slot);
+        recoilSpeedX[slot] = speedX & 0xFF;
+        recoilSpeedY[slot] = speedY & 0xFF;
+        speedXAccumulator[slot] = 0;
+        speedYAccumulator[slot] = 0;
+        active[slot] = true;
+    }
+
     /** Applies one ROM fixed-point recoil step and returns a new entity value. */
     Update advance(RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision) {
         return advance(entity, backgroundCollision, true);
