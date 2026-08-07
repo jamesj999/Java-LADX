@@ -86,6 +86,12 @@ public final class RoomLoader {
 
     LoadedRoom loadIndoor(int mapId, int roomId, int[][] fallbackPalettes, int mapCategory,
                           int clearedEntitiesMask) {
+        return loadIndoor(mapId, roomId, fallbackPalettes, mapCategory,
+            clearedEntitiesMask, null);
+    }
+
+    LoadedRoom loadIndoor(int mapId, int roomId, int[][] fallbackPalettes, int mapCategory,
+                          int clearedEntitiesMask, byte[] indoorRoomStatus) {
         RoomPointerTable pointerTable = IndoorRoomPointerTables.forMap(mapId);
         int roomPointerOffset = RomBank.romOffset(pointerTable.bank(), pointerTable.address() + roomId * 2);
         int roomLo = Byte.toUnsignedInt(romData[roomPointerOffset]);
@@ -95,7 +101,11 @@ public final class RoomLoader {
 
         int animatedTilesGroup = Byte.toUnsignedInt(romData[roomDataOffset]);
         int floorAndTemplate = Byte.toUnsignedInt(romData[roomDataOffset + 1]);
-        RoomObjectParseResult parsed = parser.parseIndoor(roomDataOffset + 2, floorAndTemplate);
+        int roomStatusFlags = indoorRoomStatus == null || roomId < 0
+            || roomId >= indoorRoomStatus.length
+            ? 0 : Byte.toUnsignedInt(indoorRoomStatus[roomId]);
+        RoomObjectParseResult parsed = parser.parseIndoor(
+            roomDataOffset + 2, floorAndTemplate, roomStatusFlags);
         int[] objects = parsed.roomObjectsArea();
         RoomTilemap tilemap = tilemapBuilder.buildIndoor(mapId, roomId, objects);
         EntityRoomLoader.RoomTable entityTable = entityTableForIndoorMap(mapId);

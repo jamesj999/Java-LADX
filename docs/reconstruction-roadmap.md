@@ -1357,6 +1357,21 @@ runtime collision callback.
 - The clean Java suite passes with 944 tests and zero failures, errors, or
   skipped tests. This increment does not add an emulator.
 
+## Verified ROM indoor bombable-wall mutation — 2026-08-07
+
+- Indoor room parsing now consumes the selected A/B/Color Dungeon room-status
+  table, replacing normal and hidden bombable wall objects `$3F..$42`/`$47..$4A`
+  with the ROM's vertical `$3D` or horizontal `$3E` passage objects.
+- The live bomb puzzle pass resolves wall orientation through the shipped
+  indoor physics table, writes both door-status bits, and resolves the adjacent
+  room through the ROM bank-$14 map-layout table where one exists.
+- The immediate active-room draw applies the source `BombedWallTilesIndexes`
+  row order (`$72,$72,$73,$73` or `$69,$79,$69,$79`); a room reload clears that
+  transient draw override while status-driven object replacement persists.
+- Focused vertical/horizontal ROM-room tests and the clean Java suite pass with
+  946 tests and zero failures, errors, or skipped tests. Puzzle jingle and the
+  remaining bomb-specific presentation branches remain follow-up work.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

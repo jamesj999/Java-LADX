@@ -106,16 +106,45 @@ public final class RoomObjectParser {
     }
 
     public RoomObjectParseResult parseIndoor(int streamOffset, int floorAndTemplate) {
+        return parseIndoor(streamOffset, floorAndTemplate, 0);
+    }
+
+    public RoomObjectParseResult parseIndoor(int streamOffset, int floorAndTemplate,
+                                             int roomStatusFlags) {
         reset(floorAndTemplate & 0x0F);
-        this.roomStatusFlags = 0;
+        this.roomStatusFlags = roomStatusFlags;
         int templateIdx = (floorAndTemplate >> 4) & 0x0F;
         if (templateIdx < ROOM_TEMPLATE_TABLES.length) {
             int[] table = ROOM_TEMPLATE_TABLES[templateIdx];
             applyMacroTable(0, ROOM_TEMPLATE_BANK, table[0], ROOM_TEMPLATE_BANK, table[1]);
         }
         parseRoomObjectStream(streamOffset, true);
+        applyIndoorBombableWallStatus();
         assignDoorPositionsToWarps();
         return new RoomObjectParseResult(roomObjectsArea, warps);
+    }
+
+    private void applyIndoorBombableWallStatus() {
+        for (int row = 0; row < RoomConstants.OBJECTS_PER_COLUMN; row++) {
+            for (int column = 0; column < RoomConstants.OBJECTS_PER_ROW; column++) {
+                int areaIndex = RoomConstants.ROOM_OBJECTS_BASE
+                    + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + column;
+                int objectId = roomObjectsArea[areaIndex];
+                if ((objectId == 0x3F || objectId == 0x47)
+                    && (roomStatusFlags & 0x04) != 0) {
+                    roomObjectsArea[areaIndex] = 0x3D;
+                } else if ((objectId == 0x40 || objectId == 0x48)
+                    && (roomStatusFlags & 0x08) != 0) {
+                    roomObjectsArea[areaIndex] = 0x3D;
+                } else if ((objectId == 0x41 || objectId == 0x49)
+                    && (roomStatusFlags & 0x02) != 0) {
+                    roomObjectsArea[areaIndex] = 0x3E;
+                } else if ((objectId == 0x42 || objectId == 0x4A)
+                    && (roomStatusFlags & 0x01) != 0) {
+                    roomObjectsArea[areaIndex] = 0x3E;
+                }
+            }
+        }
     }
 
     private void reset(int floorObject) {

@@ -250,6 +250,68 @@ final class RoomSessionTest {
     }
 
     @Test
+    void bombExplosionReplacesAnIndoorWallAndPersistsTheTwoDoorStatuses() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x06, 0x18);
+
+        int location = 0x02;
+        int areaIndex = RoomConstants.ROOM_OBJECTS_BASE
+            + (location & 0xF0) + (location & 0x0F);
+        assertEquals(0x3F, session.activeRoom().roomObjectsArea()[areaIndex]);
+
+        assertTrue(session.placeBomb(0x30, 0x18, 0, 0));
+        for (int frame = 0; frame <= 146; frame++) {
+            session.tickEntities(frame, 0, 0);
+        }
+
+        assertEquals(0x3D, session.activeRoom().roomObjectsArea()[areaIndex]);
+        assertEquals(0x04, session.indoorRoomStatusForTest(0x06, 0x18));
+        assertEquals(0x08, session.indoorRoomStatusForTest(0x06, 0x14));
+
+        int tileIndex = 0x04;
+        int[] tileIds = session.activeRoom().tileIds();
+        assertEquals(0x72, tileIds[tileIndex]);
+        assertEquals(0x72, tileIds[tileIndex + 1]);
+        assertEquals(0x73, tileIds[tileIndex + RoomConstants.ROOM_TILE_WIDTH]);
+        assertEquals(0x73, tileIds[tileIndex + RoomConstants.ROOM_TILE_WIDTH + 1]);
+
+        session.loadIndoor(0x06, 0x18);
+        assertEquals(0x3D, session.activeRoom().roomObjectsArea()[areaIndex]);
+        tileIds = session.activeRoom().tileIds();
+        assertEquals(0x72, tileIds[tileIndex]);
+        assertEquals(0x73, tileIds[tileIndex + 1]);
+        assertEquals(0x72, tileIds[tileIndex + RoomConstants.ROOM_TILE_WIDTH]);
+        assertEquals(0x73, tileIds[tileIndex + RoomConstants.ROOM_TILE_WIDTH + 1]);
+    }
+
+    @Test
+    void bombExplosionUsesTheRomHorizontalIndoorPassageTiles() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x00, 0x0D);
+
+        int location = 0x30;
+        int areaIndex = RoomConstants.ROOM_OBJECTS_BASE
+            + (location & 0xF0) + (location & 0x0F);
+        assertEquals(0x41, session.activeRoom().roomObjectsArea()[areaIndex]);
+
+        assertTrue(session.placeBomb(0x10, 0x48, 0, 0));
+        for (int frame = 0; frame <= 146; frame++) {
+            session.tickEntities(frame, 0, 0);
+        }
+
+        assertEquals(0x3E, session.activeRoom().roomObjectsArea()[areaIndex]);
+        assertEquals(0x02, session.indoorRoomStatusForTest(0x00, 0x0D));
+        assertEquals(0x01, session.indoorRoomStatusForTest(0x00, 0x0C));
+
+        int tileIndex = 3 * 2 * RoomConstants.ROOM_TILE_WIDTH;
+        int[] tileIds = session.activeRoom().tileIds();
+        assertEquals(0x69, tileIds[tileIndex]);
+        assertEquals(0x79, tileIds[tileIndex + 1]);
+        assertEquals(0x69, tileIds[tileIndex + RoomConstants.ROOM_TILE_WIDTH]);
+        assertEquals(0x79, tileIds[tileIndex + RoomConstants.ROOM_TILE_WIDTH + 1]);
+    }
+
+    @Test
     void indoorHookshotBridgeRewritesPaddedObjectsAndBackgroundTiles() {
         RoomSession session = newSession();
         session.loadIndoor(0x00, 0x0F);
