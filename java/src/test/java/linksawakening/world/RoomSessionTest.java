@@ -223,6 +223,33 @@ final class RoomSessionTest {
     }
 
     @Test
+    void bombExplosionTurnsTheGiantSkullIntoPersistentRockyGround() {
+        RoomSession session = newSession();
+        session.loadInitialOverworld(0x97);
+
+        assertTrue(session.placeBomb(0x40, 0x50, 0, 0));
+        for (int frame = 0; frame <= 140; frame++) {
+            session.tickEntities(frame, 0, 0);
+        }
+
+        int[] skullLocations = {0x44, 0x45, 0x54, 0x55};
+        for (int location : skullLocations) {
+            int areaIndex = RoomConstants.ROOM_OBJECTS_BASE
+                + (location & 0xF0) + (location & 0x0F);
+            assertEquals(0x09, session.activeRoom().roomObjectsArea()[areaIndex]);
+            assertEquals(0x09, session.activeRoom().renderValues()[areaIndex]);
+        }
+        assertEquals(0x04, session.overworldRoomStatusForTest(0x97));
+
+        session.loadOverworld(0x97);
+        for (int location : skullLocations) {
+            int areaIndex = RoomConstants.ROOM_OBJECTS_BASE
+                + (location & 0xF0) + (location & 0x0F);
+            assertEquals(0x09, session.activeRoom().roomObjectsArea()[areaIndex]);
+        }
+    }
+
+    @Test
     void indoorHookshotBridgeRewritesPaddedObjectsAndBackgroundTiles() {
         RoomSession session = newSession();
         session.loadIndoor(0x00, 0x0F);

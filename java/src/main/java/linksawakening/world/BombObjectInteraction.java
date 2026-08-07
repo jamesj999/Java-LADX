@@ -39,13 +39,21 @@ final class BombObjectInteraction {
     }
 
     static Candidate basicCandidate(int bombX, int bombVisualY, int countdown) {
+        return candidate(bombX, bombVisualY, countdown);
+    }
+
+    static Candidate puzzleCandidate(int bombX, int bombY, int countdown) {
+        return candidate(bombX, bombY, countdown);
+    }
+
+    private static Candidate candidate(int bombX, int bombY, int countdown) {
         int tableIndex = countdown - FIRST_OBJECT_COUNTDOWN;
         if (tableIndex < 0 || tableIndex >= BASIC_X.length) {
             return null;
         }
 
         int objectLeft = (bombX + BASIC_X[tableIndex] - 0x08) & 0xFF;
-        int objectTop = (bombVisualY + BASIC_Y[tableIndex] - 0x10) & 0xFF;
+        int objectTop = (bombY + BASIC_Y[tableIndex] - 0x10) & 0xFF;
         return new Candidate(objectLeft, objectTop);
     }
 }

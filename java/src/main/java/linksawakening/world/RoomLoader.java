@@ -49,7 +49,11 @@ public final class RoomLoader {
 
         int animatedTilesGroup = Byte.toUnsignedInt(romData[roomDataOffset]);
         int floorObject = Byte.toUnsignedInt(romData[roomDataOffset + 1]);
-        RoomObjectParseResult parsed = parser.parseOverworld(roomDataOffset + 2, floorObject, 0);
+        int roomStatusFlags = overworldRoomStatus == null || roomId < 0
+            || roomId >= overworldRoomStatus.length
+            ? 0 : Byte.toUnsignedInt(overworldRoomStatus[roomId]);
+        RoomObjectParseResult parsed = parser.parseOverworld(
+            roomDataOffset + 2, floorObject, roomStatusFlags);
         int[] objects = parsed.roomObjectsArea();
         RoomTilemap tilemap = tilemapBuilder.buildOverworld(roomId, objects);
         RoomEntitySnapshot entities = loadEntities(EntityRoomLoader.RoomTable.OVERWORLD,

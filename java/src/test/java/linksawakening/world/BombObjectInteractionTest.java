@@ -33,4 +33,18 @@ final class BombObjectInteractionTest {
         assertNull(BombObjectInteraction.basicCandidate(0x48, 0x4F, 0x0D));
         assertNull(BombObjectInteraction.basicCandidate(0x48, 0x4F, 0x17));
     }
+
+    @Test
+    void puzzleCandidateUsesRawBombYInsteadOfVisualY() {
+        BombObjectInteraction.Candidate candidate = BombObjectInteraction.puzzleCandidate(
+            0x20, 0x18, 0x0E);
+
+        assertEquals(0x10, candidate.objectLeft());
+        assertEquals(0x00, candidate.objectTop());
+        assertEquals(0x01, candidate.location());
+
+        BombObjectInteraction.Candidate visualCandidate = BombObjectInteraction.basicCandidate(
+            0x20, 0x17, 0x0E);
+        assertEquals(0xF0, visualCandidate.objectTop());
+    }
 }

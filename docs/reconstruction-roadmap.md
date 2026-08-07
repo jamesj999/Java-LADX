@@ -1342,6 +1342,21 @@ runtime collision callback.
 - The clean Java suite passes with 942 tests and zero failures, errors, or
   skipped tests. This increment does not add an emulator.
 
+## Verified ROM bombed giant-skull persistence — 2026-08-07
+
+- The puzzle candidate uses the raw bomb Y position, as distinct from the
+  basic-object visual Y, and recognizes giant-skull cells `$BB..$BE` in the
+  overworld puzzle pass.
+- A hit snaps to the enclosing 2x2 block, replaces all four cells with rocky
+  ground `$09`, refreshes their ROM-backed tile/attribute cells and collision
+  view, and sets overworld status bit `$04` (`OW_ROOM_STATUS_OPENED`). The
+  room loader now feeds that status byte back into the ROM macro parser, so a
+  reload reconstructs the blasted skull as rocky ground.
+- The source puzzle jingle/rubble-entity presentation and indoor bombable-wall
+  status/adjacent-room writes remain separate follow-up branches.
+- The clean Java suite passes with 944 tests and zero failures, errors, or
+  skipped tests. This increment does not add an emulator.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

@@ -11,10 +11,10 @@ import linksawakening.rom.RomTables;
 import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.vfx.TransientVfxType;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.ArrayList;
 
 import static linksawakening.world.RoomConstants.ROOM_PIXEL_HEIGHT;
 import static linksawakening.world.RoomConstants.ROOM_PIXEL_WIDTH;
@@ -29,6 +29,10 @@ public final class RoomSession {
     private static final int ENTITY_BOW_WOW = 0x6D;
     private static final int ENTITY_MARIN_AT_THE_SHORE = 0xC1;
     private static final int ENTITY_HEART_CONTAINER = 0x36;
+    private static final int OBJECT_ROCKY_GROUND = 0x09;
+    private static final int OBJECT_GIANT_SKULL_TOP_LEFT = 0xBB;
+    private static final int OBJECT_GIANT_SKULL_BOTTOM_RIGHT = 0xBE;
+    private static final int OW_ROOM_STATUS_OPENED = 0x04;
     static final int LINK_MOTION_FALLING_DOWN = 0x06;
     private static final int OBJECT_WELL = 0x61;
     private static final int OBJECT_WATER_LADDER_SIDESCROLL = 0x67;
@@ -83,6 +87,7 @@ public final class RoomSession {
     private ActiveRoom activeRoom;
     private RoomEntityRuntime entityRuntime;
     private final List<BombExplosionEvent> pendingBombExplosionEvents = new ArrayList<>();
+    private final byte[] overworldRoomStatus = new byte[0x100];
     private final Map<Integer, RoomEntityRuntime.HookshotBridgeUpdate>
         hookshotBridgeTileOverrides = new HashMap<>();
     private final int[] clearedEntitiesByRoom = new int[0x100];
@@ -222,7 +227,8 @@ public final class RoomSession {
 
     public void loadOverworld(int roomId) {
         clearTransientRoomState();
-        LoadedRoom room = roomLoader.loadOverworld(roomId, clearedEntitiesByRoom[roomId], null);
+        LoadedRoom room = roomLoader.loadOverworld(
+            roomId, clearedEntitiesByRoom[roomId], overworldRoomStatus);
         gpu.loadAnimatedTilesGroup(romData, room.animatedTilesGroup());
         setActiveRoom(room);
         overworldCollision.setRoom(activeRoom.roomObjectsArea());
@@ -268,6 +274,13 @@ public final class RoomSession {
 
     public int mapId() {
         return activeRoom.mapId();
+    }
+
+    int overworldRoomStatusForTest(int roomId) {
+        if (roomId < 0 || roomId >= overworldRoomStatus.length) {
+            throw new IllegalArgumentException("Room id out of range: " + roomId);
+        }
+        return Byte.toUnsignedInt(overworldRoomStatus[roomId]);
     }
 
     public int[][] palettes() {
@@ -655,7 +668,6 @@ public final class RoomSession {
         List<BombExplosionEvent> bombExplosionEvents = entityRuntime.consumeBombExplosionEvents();
         pendingBombExplosionEvents.clear();
         pendingBombExplosionEvents.addAll(bombExplosionEvents);
-        applyBombObjectInteractions(bombExplosionEvents);
         if (entityRuntime.consumePendingSwitchBlockAnimationRequest()
             && switchableObjectAnimationStage == 0) {
             switchableObjectAnimationStage = 0x01;
@@ -673,6 +685,7 @@ public final class RoomSession {
         }
         applyHookshotBridgeUpdates(entityRuntime.hookshotBridgeUpdates());
         activeRoom.replaceEntities(entityRuntime.snapshot());
+        applyBombObjectInteractions(bombExplosionEvents);
         return events;
     }
 
@@ -975,36 +988,96 @@ public final class RoomSession {
             }
             BombObjectInteraction.Candidate candidate = BombObjectInteraction.basicCandidate(
                 event.bombX(), event.bombVisualY(), event.countdown());
-            if (candidate == null) {
-                continue;
-            }
-            int location = candidate.location();
-            OverworldBushInteraction.CutResult result =
-                overworldBushInteraction.revealObjectAtLocation(
-                    location,
-                    activeRoom.roomId(),
-                    true,
-                    activeRoom.roomObjectsArea(),
-                    activeRoom.renderValues(),
-                    activeRoom.gbcOverlay(),
-                    activeRoom.tileIds(),
-                    activeRoom.tileAttrs());
-            if (!result.changed()) {
-                continue;
-            }
+            applyBasicBombObjectCandidate(candidate);
 
-            // CheckForBombDestroyableObjectBasic spawns the liftable-rock bush
-            // effect at the object cell's center/bottom anchor. The current
-            // transient renderer already owns this exact leaf scatter asset.
-            if (transientVfxSystem != null && result.bushLeavesVisible()) {
-                transientVfxSystem.spawn(
-                    TransientVfxType.BUSH_LEAVES,
-                    overworldBushInteraction.effectOriginXForLocation(location),
-                    overworldBushInteraction.effectOriginYForLocation(location));
+            RoomEntity bomb = event.bombSlot() < activeRoom.entities().slots().size()
+                ? activeRoom.entities().slots().get(event.bombSlot()) : null;
+            if (bomb != null && bomb.loaded()) {
+                applyPuzzleBombObjectCandidate(BombObjectInteraction.puzzleCandidate(
+                    event.bombX(), bomb.y(), event.countdown()));
             }
-            overworldCollision.setRoom(activeRoom.roomObjectsArea());
-            overworldCollision.setGbcOverlay(activeRoom.gbcOverlay());
         }
+    }
+
+    private void applyBasicBombObjectCandidate(BombObjectInteraction.Candidate candidate) {
+        if (candidate == null) {
+            return;
+        }
+        int location = candidate.location();
+        OverworldBushInteraction.CutResult result =
+            overworldBushInteraction.revealObjectAtLocation(
+                location,
+                activeRoom.roomId(),
+                true,
+                activeRoom.roomObjectsArea(),
+                activeRoom.renderValues(),
+                activeRoom.gbcOverlay(),
+                activeRoom.tileIds(),
+                activeRoom.tileAttrs());
+        if (!result.changed()) {
+            return;
+        }
+
+        // CheckForBombDestroyableObjectBasic spawns the liftable-rock bush
+        // effect at the object cell's center/bottom anchor. The current
+        // transient renderer already owns this exact leaf scatter asset.
+        if (transientVfxSystem != null && result.bushLeavesVisible()) {
+            transientVfxSystem.spawn(
+                TransientVfxType.BUSH_LEAVES,
+                overworldBushInteraction.effectOriginXForLocation(location),
+                overworldBushInteraction.effectOriginYForLocation(location));
+        }
+        refreshOverworldCollisionAfterObjectMutation();
+    }
+
+    private void applyPuzzleBombObjectCandidate(BombObjectInteraction.Candidate candidate) {
+        if (candidate == null) {
+            return;
+        }
+        int objectId = objectAtRoomLocation(candidate.location());
+        if (objectId < OBJECT_GIANT_SKULL_TOP_LEFT
+            || objectId > OBJECT_GIANT_SKULL_BOTTOM_RIGHT) {
+            return;
+        }
+
+        int blockTop = candidate.objectTop() & 0xE0;
+        int blockLeft = candidate.objectLeft() & 0xE0;
+        int blockLocation = blockTop | (blockLeft >>> 4);
+        for (int row = 0; row < 2; row++) {
+            for (int column = 0; column < 2; column++) {
+                writeBombPuzzleObject(blockLocation
+                    + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + column,
+                    OBJECT_ROCKY_GROUND);
+            }
+        }
+        overworldRoomStatus[activeRoom.roomId()] |= (byte) OW_ROOM_STATUS_OPENED;
+        refreshOverworldCollisionAfterObjectMutation();
+    }
+
+    private int objectAtRoomLocation(int location) {
+        int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0)
+            + (location & 0x0F);
+        int[] objects = activeRoom.roomObjectsArea();
+        return areaIndex < 0 || areaIndex >= objects.length ? 0xFF : objects[areaIndex] & 0xFF;
+    }
+
+    private void writeBombPuzzleObject(int location, int objectId) {
+        int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0)
+            + (location & 0x0F);
+        int[] objects = activeRoom.roomObjectsArea();
+        if (areaIndex < 0 || areaIndex >= objects.length) {
+            return;
+        }
+        objects[areaIndex] = objectId & 0xFF;
+        activeRoom.renderValues()[areaIndex] = objectId & 0xFF;
+        overworldBushInteraction.refreshRoomObjectCell(
+            activeRoom.roomId(), location, objects, activeRoom.renderValues(),
+            activeRoom.gbcOverlay(), activeRoom.tileIds(), activeRoom.tileAttrs());
+    }
+
+    private void refreshOverworldCollisionAfterObjectMutation() {
+        overworldCollision.setRoom(activeRoom.roomObjectsArea());
+        overworldCollision.setGbcOverlay(activeRoom.gbcOverlay());
     }
 
     private int colorShellObjectAt(RoomEntity entity, int relativeOffset) {
