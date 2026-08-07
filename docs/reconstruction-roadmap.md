@@ -1911,6 +1911,29 @@ runtime collision callback.
   Focused save-image, Link-coordinate, and main-flow tests cover the boundary;
   death-count and photo bytes remain explicit follow-up save fields.
 
+## Verified ROM boomerang producer and runtime — 2026-08-07
+
+- `UseBoomerang` now registers the inventory item against the live room and
+  uses the source shared player-projectile gate. Entity `$01` is spawned with
+  the ROM coordinate/Z convention, `$28` outbound countdown, direction and
+  diagonal pressed-button speed tables, thrown direction, and fresh-projectile
+  `unknownTableJ` state.
+- The bank-$19 handler now mirrors the four-frame `$4451` OAM list, `$2D`
+  cadence-limited noise, `$08` boomerang damage type, outbound-to-return state
+  transition, `$08/$20` Link-vector updates, and the alternating-frame Link
+  return collision window. The shared modeled projectile count also keeps
+  arrows and boomerangs from bypassing each other's ROM item gates.
+- Object intersection uses the padded room buffer and the source
+  `ApplySwordIntersectionWithObjects` physics ranges, including directional
+  ledges and the initial `unknownTableJ` cadence. Outdoors, bush objects
+  (`$5C/$D3`) request the source reveal, smoke at the intersected object
+  coordinates, and noise `$13`; target hits use the ROM combat table and
+  projectile recoil seam. Boomerang display, sound, smoke, launch/return, bush,
+  and projectile-gate tests pass against the shipped ROM.
+- The clean Java suite passes with 1,075 tests and zero failures, errors, or
+  skipped tests. Remaining entity handlers, room scripts, and broader
+  hardware-visible ordering remain follow-up work.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

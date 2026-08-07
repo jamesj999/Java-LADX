@@ -239,17 +239,27 @@ public final class OverworldCollision {
      * padded room buffer rather than the flattened active 10x8 grid.
      */
     public int objectPhysicsFlagAtEntityPosition(int entityX, int entityY) {
+        return entityInteractionSample(entityX, entityY).physicsFlag();
+    }
+
+    /** Complete padded-buffer sample used by ApplySwordIntersectionWithObjects. */
+    public GroundInteractionSample entityInteractionSample(int entityX, int entityY) {
         if (roomObjectsArea == null) {
-            return 0;
+            return new GroundInteractionSample(0xFF, PhysicsFlags.NONE, 0, 0);
         }
         int x = entityX & 0xFF;
         int y = (entityY - 0x08) & 0xFF;
-        int areaIndex = ROOM_OBJECTS_BASE + (y & 0xF0) + ((x & 0xF0) >>> 4);
+        int objectLeft = x & 0xF0;
+        int objectTop = y & 0xF0;
+        int areaIndex = ROOM_OBJECTS_BASE + objectTop + (objectLeft >>> 4);
         if (areaIndex < 0 || areaIndex >= roomObjectsArea.length) {
-            return 0;
+            return new GroundInteractionSample(0xFF, PhysicsFlags.NONE,
+                objectLeft, objectTop);
         }
         int objectId = roomObjectsArea[areaIndex] & 0xFF;
-        return romTables.objectPhysicsFlag(physicsTableIndex, objectId);
+        return new GroundInteractionSample(objectId,
+            romTables.objectPhysicsFlag(physicsTableIndex, objectId),
+            objectLeft, objectTop);
     }
 
     private boolean isCellBlocking(int cellX, int cellY, boolean hasFlippers) {

@@ -12,7 +12,8 @@ public enum TransientVfxType {
     WATER_SPLASH(0x01, 0x0F),
     POOF(0x02, 0x0F),
     SWORD_POKE(0x05, 0x0F),
-    LASER_BEAM(0x06, 0x10);
+    LASER_BEAM(0x06, 0x10),
+    SMOKE(0x08, 0x0F);
 
     private final int id;
     private final int defaultCountdown;

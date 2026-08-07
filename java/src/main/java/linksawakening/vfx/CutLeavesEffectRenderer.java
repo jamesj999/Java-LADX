@@ -42,6 +42,12 @@ public final class CutLeavesEffectRenderer {
         { 0, 0, 0x30, 0x01, 0, 8, 0x30, 0x21 },
         { 0, 0, 0x30, 0x01, 0, 8, 0x30, 0x21 }
     };
+    // bank-$02 Data_002_5736, used by RenderTranscientSmoke. Stored as
+    // source Y offset, source X offset, tile, attributes.
+    private static final int[][] SMOKE_SPRITE_RECT = {
+        { 0, 0, 0x1E, 0x01, 0, 8, 0x1E, 0x61 },
+        { 0, 0, 0x30, 0x01, 0, 8, 0x30, 0x61 }
+    };
 
     private static final int[][] CUT_LEAVES_SPRITE_RECT = {
         { 2, -4, TILE_ID, 0x00, -5,  4, TILE_ID, 0x60,  5,  6, TILE_ID, 0x00,  1, 10, TILE_ID, 0x20 },
@@ -104,6 +110,25 @@ public final class CutLeavesEffectRenderer {
     public List<SpritePlacement> renderSwordPoke(int worldX, int worldY, int countdown) {
         int phase = (countdown & 0x08) == 0 ? 0 : 1;
         int[] frame = SWORD_POKE_SPRITE_RECT[phase];
+        List<SpritePlacement> placements = new ArrayList<>(2);
+        for (int i = 0; i < 2; i++) {
+            int offset = i * 4;
+            int tileId = frame[offset + 2];
+            placements.add(new SpritePlacement(
+                worldX + frame[offset + 1] - SWORD_POKE_OAM_X_BIAS,
+                worldY + frame[offset] - SWORD_POKE_OAM_Y_BIAS,
+                tileId,
+                frame[offset + 3],
+                spriteSheet.tile(tileId)
+            ));
+        }
+        return List.copyOf(placements);
+    }
+
+    /** ROM bank-$02 RenderTranscientSmoke and Data_002_5736. */
+    public List<SpritePlacement> renderSmoke(int worldX, int worldY, int countdown) {
+        int phase = (countdown & 0x08) == 0 ? 0 : 1;
+        int[] frame = SMOKE_SPRITE_RECT[phase];
         List<SpritePlacement> placements = new ArrayList<>(2);
         for (int i = 0; i < 2; i++) {
             int offset = i * 4;

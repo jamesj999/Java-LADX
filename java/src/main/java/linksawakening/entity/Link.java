@@ -1049,6 +1049,14 @@ public final class Link implements RocsFeather.JumpTarget {
         return mask;
     }
 
+    /** Returns the currently held ROM D-pad mask used by projectile launch code. */
+    public int romPressedButtonsMask() {
+        if (inputState == null || inputConfig == null) {
+            return 0;
+        }
+        return buildJoypadMask();
+    }
+
     private static int romDirectionForJavaDirection(int javaDirection) {
         return switch (javaDirection) {
             case DIRECTION_RIGHT -> 0;

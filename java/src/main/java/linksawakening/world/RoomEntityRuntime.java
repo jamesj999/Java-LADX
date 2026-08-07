@@ -102,6 +102,9 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_LASER = 0x2A;
     private static final int ENTITY_LASER_BEAM = 0x2B;
     private static final int ENTITY_ARROW = 0x00;
+    private static final int ENTITY_BOOMERANG = BoomerangMotion.ENTITY_TYPE;
+    private static final int ENTITY_MAGIC_ROD_FIREBALL = 0x04;
+    private static final int ENTITY_SWORD_BEAM = 0xDF;
     private static final int ENTITY_BOMB = 0x02;
     private static final int ENTITY_SWORD_SHIELD_PICKUP = 0x31;
     private static final int ENTITY_BOUNCING_BOMBITE = 0x55;
@@ -119,6 +122,7 @@ public final class RoomEntityRuntime {
     private static final int BOMBER_OPTIONS1 = ENTITY_OPT1_NO_WALL_COLLISION;
     private static final int BOMBER_THROW_JINGLE_ID = 0x08;
     private static final int DAMAGE_TYPE_ARROW = 0x05;
+    private static final int DAMAGE_TYPE_BOOMERANG = 0x08;
     private static final int DAMAGE_TYPE_BOMB = BombExplosionEvent.DAMAGE_TYPE_BOMB;
     private static final int DAMAGE_TYPE_BOMB_ARROW = 0x0C;
     private static final int ENTITY_HOOKSHOT_CHAIN = HookshotChainMotion.ENTITY_TYPE;
@@ -133,6 +137,10 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_CUCCO = 0x6C;
     private static final int ENTITY_HORSE_PIECE = 0x98;
     private static final int ENTITY_PHYSICS_GRABBABLE = 0x20;
+    private static final int OBJECT_BUSH = 0x5C;
+    private static final int OBJECT_BUSH_GROUND_STAIRS = 0xD3;
+    private static final int BOOMERANG_SFX_ID = 0x2D;
+    private static final int BOOMERANG_SFX_COUNTER_PERIOD = 0x1A;
     private static final int IRON_MASKS_MASK_INITIAL_PHYSICS_FLAGS =
         0x02 | ENTITY_PHYSICS_HARMLESS | ENTITY_PHYSICS_SHADOW | ENTITY_PHYSICS_GRABBABLE;
     private static final int MAP_COLOR_DUNGEON = 0xFF;
@@ -261,6 +269,7 @@ public final class RoomEntityRuntime {
     private final boolean[] bombFinalPresentationPending =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final int[] bombPrivateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] entityUnknownJ = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] placedBombMotionInitialized =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] enemyBombMotionInitialized =
@@ -333,6 +342,10 @@ public final class RoomEntityRuntime {
     private int liftedEffectiveDirection;
     private int liftedLinkC13B;
     private RoomEntityObjectQuery objectQuery;
+    private RoomEntityObjectQuery objectIntersectionQuery;
+    private final BoomerangMotion boomerangMotion = new BoomerangMotion();
+    private final List<BoomerangObjectRequest> boomerangObjectRequests = new ArrayList<>();
+    private int boomerangSfxCounter;
 
     /** The ROM-facing state needed by Link's carry animation and throw input. */
     public record LiftedEntityState(int slot, int type, int phase,
@@ -349,6 +362,20 @@ public final class RoomEntityRuntime {
 
     /** A ROM transient-VFX creation requested by an entity handler this frame. */
     public record TransientVfxRequest(TransientVfxType type, int worldX, int worldY) {
+    }
+
+    /** A boomerang request to reveal the object it intersected after movement. */
+    public record BoomerangObjectRequest(int sourceSlot, int location,
+                                         int objectLeft, int objectTop) {
+        public BoomerangObjectRequest {
+            if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
+                throw new IllegalArgumentException("Boomerang source slot out of range: "
+                    + sourceSlot);
+            }
+            location &= 0xFF;
+            objectLeft &= 0xF0;
+            objectTop &= 0xF0;
+        }
     }
 
     /** A ROM dialog-table entry requested by an entity handler this frame. */
@@ -822,6 +849,7 @@ public final class RoomEntityRuntime {
         Arrays.fill(enemyProjectileSpawnedThisFrame, false);
         Arrays.fill(dynamicEntitySpawnedThisFrame, false);
         transientVfxRequests.clear();
+        boomerangObjectRequests.clear();
         pendingDialogRequests.clear();
         pendingEntityEvents.clear();
         pendingChestRewardEvents.clear();
@@ -991,6 +1019,11 @@ public final class RoomEntityRuntime {
                 }
                 slots[index] = withPositionAndVariant(entity,
                     step.state().x(), step.state().y(), entity.spriteVariant());
+                continue;
+            }
+            if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_BOOMERANG) {
+                advanceBoomerangEntity(index, entity, frame, linkEntityX, linkEntityY,
+                    linkZ, projectileLinkState.motionState());
                 continue;
             }
             if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_BOMB) {
@@ -2549,6 +2582,108 @@ public final class RoomEntityRuntime {
         return List.copyOf(events);
     }
 
+    /** Advances entity $01 through the ROM boomerang handler's two states. */
+    private void advanceBoomerangEntity(int index, RoomEntity entity, int frame,
+                                         int linkEntityX, int linkEntityY, int linkEntityZ,
+                                         int linkMotionState) {
+        int slot = entity.slot();
+        boomerangMotion.decrementTransitionCountdown(slot);
+        if (boomerangSfxCounter == 0) {
+            pendingEntityEvents.add(new EntityCombatEvent(
+                slot, ENTITY_BOOMERANG, 0, false,
+                EntityCombatEvent.SoundChannel.NOISE, BOOMERANG_SFX_ID));
+        }
+        boomerangSfxCounter = (boomerangSfxCounter + 1) % BOOMERANG_SFX_COUNTER_PERIOD;
+
+        int variant = entity.spriteVariant();
+        if ((frame & 0x03) == 0) {
+            variant = (variant + 1) & 0x03;
+        }
+
+        // label_3B7B runs before the position update and uses the launch
+        // vector for recoil. This pass also clears the outbound countdown on
+        // a successful enemy/object collision, as the ROM does.
+        collideBoomerangWithEntities(entity, frame);
+        RoomEntity moved = boomerangMotion.advancePosition(entity);
+        RoomEntityObjectQuery intersectionQuery = objectIntersectionQuery != null
+            ? objectIntersectionQuery : objectQuery;
+        RoomEntityObjectSample object = intersectionQuery == null
+            ? null : intersectionQuery.sample(moved);
+        boolean objectCollision = object != null
+            && boomerangObjectCollision(moved, object, frame, slot);
+        boolean bushCollision = object != null && !indoorRoom
+            && (object.objectId() == OBJECT_BUSH
+                || object.objectId() == OBJECT_BUSH_GROUND_STAIRS);
+        RoomEntity positioned = objectCollision
+            && boomerangMotion.transitionCountdown(slot) != 0 ? entity : moved;
+        if (bushCollision) {
+            int location = (object.objectTop() | (object.objectLeft() >>> 4)) & 0xFF;
+            boomerangObjectRequests.add(new BoomerangObjectRequest(
+                slot, location, object.objectLeft(), object.objectTop()));
+        }
+
+        // BoomerangDestroyBushIfNeeded clears the source collision byte before
+        // the state handler, so a bush does not also produce the wall-poke
+        // branch in the same frame.
+        boolean stateCollision = objectCollision && !bushCollision;
+        if (boomerangMotion.state(slot) == 0) {
+            if (boomerangMotion.transitionCountdown(slot) == 0) {
+                boomerangMotion.setVectorTowardsLink(slot, positioned,
+                    linkEntityX, linkEntityY, linkEntityZ, 0x08);
+                boomerangMotion.setState(slot, 1);
+            } else if (stateCollision) {
+                boomerangMotion.setTransitionCountdown(slot, 0);
+                transientVfxRequests.add(new TransientVfxRequest(
+                    TransientVfxType.SWORD_POKE, positioned.x(),
+                    (positioned.y() - positioned.z() + 0x03) & 0xFF));
+                pendingEntityEvents.add(new EntityCombatEvent(
+                    slot, ENTITY_BOOMERANG, 0, false,
+                    EntityCombatEvent.SoundChannel.JINGLE, 0x07));
+            }
+        } else {
+            if ((frame & 0x03) == 0) {
+                boomerangMotion.setVectorTowardsLink(slot, positioned,
+                    linkEntityX, linkEntityY, linkEntityZ, 0x20);
+            }
+            if (((frame ^ slot) & 0x01) != 0 && linkEntityZ == 0
+                && linkMotionState < 0x02
+                && BoomerangMotion.overlapsLink(positioned, linkEntityX, linkEntityY)) {
+                clearEntity(slot);
+                return;
+            }
+        }
+        slots[index] = withPositionAndVariant(positioned, positioned.x(), positioned.y(),
+            variant);
+    }
+
+    private boolean boomerangObjectCollision(RoomEntity entity,
+                                              RoomEntityObjectSample object,
+                                              int frame, int slot) {
+        if (!BoomerangMotion.objectPhysicsCollides(object.physicsFlag())) {
+            return false;
+        }
+        int physics = object.physicsFlag() & 0xFF;
+        if (physics >= 0xD0 && physics <= 0xD3
+            && thrownDirection[slot] == physics - 0xD0) {
+            if (entity.z() != 0) {
+                entityUnknownJ[slot] = (entityUnknownJ[slot] + 1) & 0xFF;
+                return false;
+            }
+            return true;
+        }
+        if (entityUnknownJ[slot] != 0 && physics != 0xFF) {
+            // func_003_7D6B's freshly spawned projectile guard: consume the
+            // source's unknownTableJ on its cadence before accepting a solid
+            // terrain collision.
+            if ((frame & 0x03) == 0 || (!indoorRoom && (frame & 0x01) == 0)) {
+                return false;
+            }
+            entityUnknownJ[slot] = 0;
+            return false;
+        }
+        return true;
+    }
+
     /**
      * Port of the common bank-$03 func_003_75A2 pass for player arrows. The
      * active arrow checks targets in descending slot order and uses the same
@@ -2593,6 +2728,46 @@ public final class RoomEntityRuntime {
             } else {
                 applyPlayerArrowDamage(arrow, target);
             }
+        }
+        return collided;
+    }
+
+    /** Common bank-$03 collision pass for the active boomerang. */
+    private boolean collideBoomerangWithEntities(RoomEntity boomerang, int frame) {
+        int sourceSlot = boomerang.slot();
+        int sourceVisualY = (boomerang.y() - boomerang.z()) & 0xFF;
+        boolean collided = false;
+        for (int targetSlot = slots.length - 1; targetSlot >= 0; targetSlot--) {
+            if (targetSlot == sourceSlot || ((frame ^ targetSlot) & 0x01) != 0) {
+                continue;
+            }
+
+            RoomEntity target = slots[targetSlot];
+            int targetPhysics = enemyPhysicsFlags[targetSlot];
+            boolean grabbable = (targetPhysics & ENTITY_PHYSICS_GRABBABLE) != 0;
+            if (!target.loaded()
+                || target.status().value() < EntityStatus.ACTIVE.value()
+                || (!grabbable && !RoomEntityCombatRules.supportsEnemyCollision(target.type()))
+                || (targetPhysics & ENTITY_PHYSICS_PROJECTILE_NOCLIP) != 0
+                || (enemyHitboxFlags[targetSlot] & HITFLAGS_IGNORE_HITS) != 0
+                || enemyIgnoreHitsCountdown[targetSlot] != 0
+                || target.spriteVariant() < 0
+                || unsignedByteAbs(boomerang.x() - target.x()) >= 0x0C
+                || unsignedByteAbs(sourceVisualY
+                    - ((target.y() - target.z()) & 0xFF)) >= 0x0C) {
+                continue;
+            }
+
+            collided = true;
+            boomerangMotion.setTransitionCountdown(sourceSlot, 0);
+            if (grabbable) {
+                // The source writes sourceSlot + 1 to the target's private
+                // state five. The current runtime has no consumer for that
+                // field, but the source-side transition is still observable.
+                continue;
+            }
+            applyPlayerProjectileDamage(target, DAMAGE_TYPE_BOOMERANG,
+                boomerangMotion.speedX(sourceSlot), boomerangMotion.speedY(sourceSlot));
         }
         return collided;
     }
@@ -2724,12 +2899,18 @@ public final class RoomEntityRuntime {
     }
 
     private void applyPlayerArrowDamage(RoomEntity arrow, RoomEntity target) {
-        int targetSlot = target.slot();
-        enemyRecoilMotion.configureFromSpeed(targetSlot,
+        applyPlayerProjectileDamage(target, playerArrowBombArrow[arrow.slot()]
+            ? DAMAGE_TYPE_BOMB_ARROW : DAMAGE_TYPE_ARROW,
             playerArrowMotion.speedX(arrow.slot()), playerArrowMotion.speedY(arrow.slot()));
+    }
+
+    private void applyPlayerProjectileDamage(RoomEntity target, int damageType,
+                                             int speedX, int speedY) {
+        int targetSlot = target.slot();
+        enemyRecoilMotion.configureFromSpeed(targetSlot, speedX, speedY);
 
         RomEnemyCombatTables.SwordDamageResult damageResult = enemyCombatTables == null
-            ? null : enemyCombatTables.resolveAttackDamage(target.type(), DAMAGE_TYPE_ARROW);
+            ? null : enemyCombatTables.resolveAttackDamage(target.type(), damageType);
         int rawDamage = damageResult == null
             ? RoomEntityCombatRules.basicSwordDamage(target.type())
             : damageResult.rawValue();
@@ -2835,6 +3016,7 @@ public final class RoomEntityRuntime {
         playerArrowBombArrow[slot] = false;
         bombPrivateCountdown1[slot] = 0;
         bombPrivateCountdown3[slot] = 0;
+        entityUnknownJ[slot] = 0;
         ironMaskPrivateState2[slot] = 0;
         ironMasksMaskSourceHookshotSlot[slot] = 0;
         liftableRockSmashCountdown[slot] = 0;
@@ -2885,6 +3067,7 @@ public final class RoomEntityRuntime {
         thrownMotionInitialized[slot] = false;
         hookshotChainMotion.clear(slot);
         hookshotBridgeMotion.clear(slot);
+        boomerangMotion.clear(slot);
         if (entity.type() == ENTITY_HOOKSHOT_CHAIN) {
             hookshotChainOam = List.of();
         }
@@ -2977,7 +3160,7 @@ public final class RoomEntityRuntime {
                    boolean pieceOfPower) {
         validateRomDirection(romDirection);
         lastArrowShotPlayedWhoosh = false;
-        if (activePlayerArrowCount() >= 0x02) {
+        if (activeProjectileCount() >= 0x02) {
             return -1;
         }
         int freeSlot = findFreeEntitySlot();
@@ -3024,6 +3207,41 @@ public final class RoomEntityRuntime {
         return freeSlot;
     }
 
+    /** Creates the ROM's player-boomerang entity type {@code $01}. */
+    int spawnBoomerang(int linkEntityX, int linkEntityY, int linkEntityZ,
+                       int romDirection, int pressedButtonsMask) {
+        validateRomDirection(romDirection);
+        if (activeProjectileCount() != 0) {
+            return -1;
+        }
+        int freeSlot = findFreeEntitySlot();
+        if (freeSlot < 0) {
+            return -1;
+        }
+
+        EntitySpriteDefinition definition = spriteDefinitionFor(ENTITY_BOOMERANG);
+        RoomEntity boomerang = new RoomEntity(freeSlot, -1, ENTITY_BOOMERANG,
+            linkEntityX & 0xFF, linkEntityY & 0xFF, EntityStatus.ACTIVE,
+            definition, romDirection, 0, 0, (linkEntityZ + 1) & 0xFF);
+        slots[freeSlot] = boomerang;
+        boomerangMotion.clear(freeSlot);
+        boomerangMotion.initializeSpawn(freeSlot, romDirection, pressedButtonsMask);
+        thrownDirection[freeSlot] = romDirection;
+        entityUnknownJ[freeSlot] = 1;
+        baseEntityFlipAttribute[freeSlot] = 0;
+        entityOptions1Override[freeSlot] = ENTITY_OPT1_NO_GROUND_INTERACTION
+            | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
+        enemyPhysicsFlags[freeSlot] = 2 | ENTITY_PHYSICS_PROJECTILE_NOCLIP;
+        enemyHealth[freeSlot] = 0;
+        enemyTransitionCountdown[freeSlot] = 0;
+        enemyStunnedCountdown[freeSlot] = 0;
+        enemyFlashCountdown[freeSlot] = 0;
+        enemyIgnoreHitsCountdown[freeSlot] = 1;
+        dyingCountdown[freeSlot] = 0;
+        powerRecoilDeath[freeSlot] = false;
+        return freeSlot;
+    }
+
     int activePlayerArrowCount() {
         int count = 0;
         for (RoomEntity entity : slots) {
@@ -3032,6 +3250,60 @@ public final class RoomEntityRuntime {
             }
         }
         return count;
+    }
+
+    /** Mirrors the player projectile handlers that feed wActiveProjectileCount. */
+    int activeProjectileCount() {
+        int count = 0;
+        for (RoomEntity entity : slots) {
+            if (!entity.loaded()) {
+                continue;
+            }
+            int type = entity.type() & 0xFF;
+            if (type == ENTITY_ARROW || type == ENTITY_BOOMERANG
+                || type == ENTITY_MAGIC_ROD_FIREBALL || type == ENTITY_SWORD_BEAM) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    boolean boomerangActive() {
+        for (RoomEntity entity : slots) {
+            if (entity.loaded() && entity.type() == ENTITY_BOOMERANG) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    int activeBoomerangSlot() {
+        for (RoomEntity entity : slots) {
+            if (entity.loaded() && entity.type() == ENTITY_BOOMERANG) {
+                return entity.slot();
+            }
+        }
+        return -1;
+    }
+
+    int boomerangDirection(int slot) {
+        return boomerangMotion.direction(slot);
+    }
+
+    int boomerangSpeedX(int slot) {
+        return boomerangMotion.speedX(slot);
+    }
+
+    int boomerangSpeedY(int slot) {
+        return boomerangMotion.speedY(slot);
+    }
+
+    int boomerangTransitionCountdown(int slot) {
+        return boomerangMotion.transitionCountdown(slot);
+    }
+
+    int boomerangState(int slot) {
+        return boomerangMotion.state(slot);
     }
 
     int playerArrowDirection(int slot) {
@@ -3437,6 +3709,10 @@ public final class RoomEntityRuntime {
 
     void setObjectQuery(RoomEntityObjectQuery objectQuery) {
         this.objectQuery = objectQuery;
+    }
+
+    void setObjectIntersectionQuery(RoomEntityObjectQuery objectIntersectionQuery) {
+        this.objectIntersectionQuery = objectIntersectionQuery;
     }
 
     int groundStatus(int slot) {
@@ -4726,6 +5002,10 @@ public final class RoomEntityRuntime {
 
     List<TransientVfxRequest> transientVfxRequests() {
         return List.copyOf(transientVfxRequests);
+    }
+
+    List<BoomerangObjectRequest> boomerangObjectRequests() {
+        return List.copyOf(boomerangObjectRequests);
     }
 
     int physicsFlags(int slot) {

@@ -578,6 +578,21 @@ public final class RoomSession {
         return true;
     }
 
+    /** Mirrors UseBoomerang's player-projectile spawn bridge. */
+    public boolean fireBoomerang(int linkEntityX, int linkEntityY, int linkEntityZ,
+                                 int romDirection, int pressedButtonsMask) {
+        if (activeRoom == null || entityRuntime == null) {
+            return false;
+        }
+        int slot = entityRuntime.spawnBoomerang(linkEntityX, linkEntityY, linkEntityZ,
+            romDirection, pressedButtonsMask);
+        if (slot < 0) {
+            return false;
+        }
+        activeRoom.replaceEntities(entityRuntime.snapshot());
+        return true;
+    }
+
     /**
      * Mirrors the ordinary player-bomb placement bridge. The item has already
      * applied PlaceBomb's inventory ordering; this method owns the room/runtime
@@ -633,9 +648,9 @@ public final class RoomSession {
         return new ArrowShotResult(true, playWhoosh);
     }
 
-    /** Returns the active ordinary player-arrow count used by ShootArrow's cap. */
+    /** Returns the modeled player-projectile count used by the item gates. */
     public int activeProjectileCount() {
-        return entityRuntime == null ? 0 : entityRuntime.activePlayerArrowCount();
+        return entityRuntime == null ? 0 : entityRuntime.activeProjectileCount();
     }
 
     /** Returns whether the live room currently owns an ordinary bomb entity. */
@@ -650,6 +665,11 @@ public final class RoomSession {
     /** Returns whether the live room currently owns entity {@code $03}. */
     public boolean hookshotActive() {
         return entityRuntime != null && entityRuntime.hookshotActive();
+    }
+
+    /** Returns whether the live room currently owns the boomerang entity. */
+    public boolean boomerangActive() {
+        return entityRuntime != null && entityRuntime.boomerangActive();
     }
 
     public void setColorShellSoundSink(GameplaySoundSink soundSink) {
@@ -868,6 +888,7 @@ public final class RoomSession {
         applyHookshotBridgeUpdates(entityRuntime.hookshotBridgeUpdates());
         activeRoom.replaceEntities(entityRuntime.snapshot());
         applyBombObjectInteractions(bombExplosionEvents);
+        applyBoomerangObjectInteractions(entityRuntime.boomerangObjectRequests());
         activeRoom.replaceEntities(entityRuntime.snapshot());
         return events;
     }
@@ -1106,6 +1127,7 @@ public final class RoomSession {
             entityRuntime.setGroundInteraction(this::entityGroundInteraction);
             entityRuntime.setBackgroundInteraction(entityBackgroundInteraction);
             entityRuntime.setObjectQuery(this::entityObjectSample);
+            entityRuntime.setObjectIntersectionQuery(this::entityObjectIntersectionSample);
             entityRuntime.setGroundInteractionSideScrolling(
                 activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL);
             entityRuntime.setActionButtonsHeld(actionButtonsHeld);
@@ -1159,6 +1181,7 @@ public final class RoomSession {
         entityRuntime.setGroundInteraction(this::entityGroundInteraction);
         entityRuntime.setBackgroundInteraction(entityBackgroundInteraction);
         entityRuntime.setObjectQuery(this::entityObjectSample);
+        entityRuntime.setObjectIntersectionQuery(this::entityObjectIntersectionSample);
         entityRuntime.setGroundInteractionSideScrolling(
             activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL);
         entityRuntime.setActionButtonsHeld(actionButtonsHeld);
@@ -1264,6 +1287,33 @@ public final class RoomSession {
                 sourceSpriteVariant);
         }
         refreshOverworldCollisionAfterObjectMutation();
+    }
+
+    private void applyBoomerangObjectInteractions(
+            List<RoomEntityRuntime.BoomerangObjectRequest> requests) {
+        if (activeRoom == null || activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD
+            || requests == null || requests.isEmpty()) {
+            return;
+        }
+
+        for (RoomEntityRuntime.BoomerangObjectRequest request : requests) {
+            OverworldBushInteraction.CutResult result =
+                overworldBushInteraction.revealObjectAtLocation(
+                    request.location(), activeRoom.roomId(), true,
+                    activeRoom.roomObjectsArea(), activeRoom.renderValues(),
+                    activeRoom.gbcOverlay(), activeRoom.tileIds(), activeRoom.tileAttrs());
+            if (!result.changed()) {
+                continue;
+            }
+            if (transientVfxSystem != null) {
+                transientVfxSystem.spawn(TransientVfxType.SMOKE,
+                    request.objectLeft() + 0x08, request.objectTop() + 0x10);
+            }
+            pendingRoomEntityEvents.add(new EntityCombatEvent(
+                request.sourceSlot(), 0x01, 0, false,
+                EntityCombatEvent.SoundChannel.NOISE, 0x13));
+            refreshOverworldCollisionAfterObjectMutation();
+        }
     }
 
     private void applyPuzzleBombObjectCandidate(BombObjectInteraction.Candidate candidate,
@@ -1597,6 +1647,13 @@ public final class RoomSession {
     private RoomEntityObjectSample entityObjectSample(RoomEntity entity) {
         OverworldCollision.GroundInteractionSample sample =
             overworldCollision.groundInteractionSample(entity.x(), entity.y());
+        return new RoomEntityObjectSample(sample.objectId(), sample.physicsFlag(),
+            sample.objectLeft(), sample.objectTop());
+    }
+
+    private RoomEntityObjectSample entityObjectIntersectionSample(RoomEntity entity) {
+        OverworldCollision.GroundInteractionSample sample =
+            overworldCollision.entityInteractionSample(entity.x(), entity.y());
         return new RoomEntityObjectSample(sample.objectId(), sample.physicsFlag(),
             sample.objectLeft(), sample.objectTop());
     }

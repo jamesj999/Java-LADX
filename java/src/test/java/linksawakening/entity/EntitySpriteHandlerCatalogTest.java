@@ -102,6 +102,28 @@ final class EntitySpriteHandlerCatalogTest {
     }
 
     @Test
+    void mapsBoomerangToItsFourFrameBankNineteenDisplayList() {
+        byte[] rom = syntheticRom();
+        write(rom, 0x19, 0x4451,
+            0x38, 0x14, 0x38, 0x34,
+            0xA4, 0x14, 0xFF, 0xFF,
+            0x38, 0x54, 0x38, 0x74,
+            0xFF, 0xFF, 0xA4, 0x34);
+
+        EntitySpriteDefinition boomerang = new EntitySpriteHandlerCatalog(rom)
+            .forEntityType(0x01, EntityRoomLoader.RoomTable.OVERWORLD);
+
+        assertDefinition(boomerang, 0x19, 0x4451,
+            EntitySpriteDefinition.Shape.PAIR, 4, 0);
+        assertPairBytes(boomerang, new int[][] {
+            {0x38, 0x14, 0x38, 0x34},
+            {0xA4, 0x14, 0xFF, 0xFF},
+            {0x38, 0x54, 0x38, 0x74},
+            {0xFF, 0xFF, 0xA4, 0x34}
+        });
+    }
+
+    @Test
     void decodesSpikedBeetleDisplayListsFromTheShippedRom() throws Exception {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
 

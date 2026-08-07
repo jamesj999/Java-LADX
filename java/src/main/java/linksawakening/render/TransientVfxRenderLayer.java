@@ -48,6 +48,8 @@ public final class TransientVfxRenderLayer implements RenderLayer {
                     slot.worldX(), slot.worldY(), slot.countdown());
                 case SWORD_POKE -> cutLeavesEffectRenderer.renderSwordPoke(
                     slot.worldX(), slot.worldY(), slot.countdown());
+                case SMOKE -> cutLeavesEffectRenderer.renderSmoke(
+                    slot.worldX(), slot.worldY(), slot.countdown());
                 case LASER_BEAM -> cutLeavesEffectRenderer.renderLaserBeam(
                     slot.worldX(), slot.worldY(), slot.countdown(), frameCounter,
                     slot.slotIndex());

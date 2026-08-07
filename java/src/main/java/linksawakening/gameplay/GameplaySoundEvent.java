@@ -30,6 +30,7 @@ public enum GameplaySoundEvent {
     SPIKE_TRAP_WHOOSH,
     ARROW_SHOT,
     HOOKSHOT,
+    BOOMERANG,
     BOMB_EXPLOSION,
     WRONG_ANSWER,
     DOOR_UNLOCKED,

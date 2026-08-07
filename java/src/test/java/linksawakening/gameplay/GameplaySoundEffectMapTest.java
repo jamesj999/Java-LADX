@@ -74,6 +74,18 @@ final class GameplaySoundEffectMapTest {
     }
 
     @Test
+    void mapsBoomerangToTheRomBoomerangNoise() throws IOException {
+        GameplaySoundEffectMap map = GameplaySoundEffectMap.fromCatalog(
+            SoundEffectCatalog.fromRom(loadRom()));
+
+        SoundEffect effect = map.resolve(GameplaySoundEvent.BOOMERANG).orElseThrow();
+
+        assertEquals(SoundEffectNamespace.NOISE, effect.namespace());
+        assertEquals(0x2D, effect.id());
+        assertEquals("NOISE_SFX_BOOMERANG", effect.name());
+    }
+
+    @Test
     void mapsTreasureFoundToTheRomTreasureJingle() throws IOException {
         GameplaySoundEffectMap map = GameplaySoundEffectMap.fromCatalog(
             SoundEffectCatalog.fromRom(loadRom()));

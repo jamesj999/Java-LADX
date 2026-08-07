@@ -22,6 +22,7 @@ public final class EntitySpriteHandlerCatalog {
     public static final int LIFTABLE_ROCK_CUT_LEAVES_SWAMP_VARIANT_BASE = 14;
 
     private static final int ENTITY_ARROW = 0x00;
+    private static final int ENTITY_BOOMERANG = 0x01;
     private static final int ENTITY_BOMB = 0x02;
     private static final int ENTITY_BUTTERFLY = 0x6E;
     private static final int ENTITY_HOOKSHOT_CHAIN = 0x03;
@@ -149,6 +150,9 @@ public final class EntitySpriteHandlerCatalog {
         }
         if (entityType == ENTITY_ARROW) {
             return decodePair(entityType, 0x03, 0x6BC6, 4, 0);
+        }
+        if (entityType == ENTITY_BOOMERANG) {
+            return decodePair(entityType, 0x19, 0x4451, 4, 0);
         }
         if (entityType == ENTITY_BOMB) {
             return decodeSingle(entityType, 0x03, 0x652E, 1, 0);

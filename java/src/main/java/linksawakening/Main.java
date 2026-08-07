@@ -10,6 +10,7 @@ import linksawakening.entity.LinkTunicPalette;
 import linksawakening.equipment.EquipmentController;
 import linksawakening.equipment.Arrow;
 import linksawakening.equipment.Bomb;
+import linksawakening.equipment.Boomerang;
 import linksawakening.equipment.Hookshot;
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.equipment.Ocarina;
@@ -370,6 +371,28 @@ public class Main {
                     return roomSession != null && roomSession.hookshotActive();
                 }
             }));
+        itemRegistry.register(PlayerState.INVENTORY_BOOMERANG, new Boomerang(
+            new Boomerang.LaunchTarget() {
+                @Override
+                public boolean fireBoomerang() {
+                    if (link == null || roomSession == null) {
+                        return false;
+                    }
+                    boolean spawned = roomSession.fireBoomerang(
+                        link.romEntityX(), link.romEntityY(), link.romEntityZ(),
+                        link.applyRomItemDirectionFromInput(),
+                        link.romPressedButtonsMask());
+                    if (spawned) {
+                        link.startRomItemAttackStep();
+                    }
+                    return spawned;
+                }
+
+                @Override
+                public boolean boomerangActive() {
+                    return roomSession != null && roomSession.boomerangActive();
+                }
+            }, link::canUseItems));
         equipmentController = new EquipmentController(inputState, inputConfig, playerState, itemRegistry);
         roomTransitionCoordinator = new RoomTransitionCoordinator(
             roomSession, new RoomBoundaryController(), transitionController, scrollController);
