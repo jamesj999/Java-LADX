@@ -84,6 +84,17 @@ final class EnemyCombatEventConsumerTest {
     }
 
     @Test
+    void mapsBomberThrowJingleToTheGameplaySound() {
+        RecordingSoundSink sounds = new RecordingSoundSink();
+        EntityCombatEvent event = new EntityCombatEvent(0, 0x02, 0, false,
+            EntityCombatEvent.SoundChannel.JINGLE, 0x08);
+
+        EnemyCombatEventConsumer.consume(List.of(event), sounds);
+
+        assertEquals(List.of(GameplaySoundEvent.ENEMY_BOMB_THROW), sounds.events);
+    }
+
+    @Test
     void mapsBurnExpiryNoiseToTheEnemyDestroyedSound() {
         RecordingSoundSink sounds = new RecordingSoundSink();
         List<EntityCombatEvent> events = List.of(

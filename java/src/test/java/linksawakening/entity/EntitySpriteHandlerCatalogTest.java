@@ -331,6 +331,23 @@ final class EntitySpriteHandlerCatalogTest {
     }
 
     @Test
+    void mapsBomberToItsBankEighteenRectangleDisplayList() throws Exception {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+
+        EntitySpriteDefinition bomber = catalog.forEntityType(
+            0xBA, EntityRoomLoader.RoomTable.OVERWORLD);
+
+        assertDefinition(bomber, 0x18, 0x77ED,
+            EntitySpriteDefinition.Shape.RECTANGLE, 4, 0);
+        assertRectangleBytes(bomber, new int[][][] {
+            {{0, -4, 0x70, 0x02}, {0, 4, 0x72, 0x02}, {0, 12, 0x70, 0x22}},
+            {{0, -4, 0x74, 0x02}, {0, 4, 0x72, 0x02}, {0, 12, 0x74, 0x22}},
+            {{0, -4, 0x76, 0x02}, {0, 4, 0x72, 0x02}, {0, 12, 0x76, 0x22}},
+            {{0, -4, 0x74, 0x02}, {0, 4, 0x72, 0x02}, {0, 12, 0x74, 0x22}}
+        });
+    }
+
+    @Test
     void mapsTheGhiniFamilyToExactShippedRomDisplayLists() throws Exception {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
 

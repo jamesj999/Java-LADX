@@ -4860,6 +4860,57 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void bomberUsesItsSourceHandlerToSpawnAnEnemyBomb() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteDefinition bomberDefinition = catalog.forEntityType(
+            0xBA, EntityRoomLoader.RoomTable.OVERWORLD, -1);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotWithSlots(
+            new RoomEntity(0, 0, 0xBA, 0x50, 0x50, EntityStatus.ACTIVE,
+                bomberDefinition, 0, 0, 0, 0x00)),
+            false, () -> 0, catalog, tables);
+
+        runtime.tick(0, 0x50, 0x50, () -> 0);
+
+        RoomEntity bomb = runtime.snapshot().slots().get(15);
+        assertTrue(bomb.loaded());
+        assertEquals(EntityStatus.ACTIVE, bomb.status());
+        assertEquals(0x02, bomb.type());
+        assertEquals(0x50, bomb.x());
+        assertEquals(0x50, bomb.y());
+        assertEquals(0x10, bomb.z());
+        assertEquals(0x40, runtime.transitionCountdown(15));
+        assertEquals(0x01, runtime.enemyIgnoreHitsCountdown(15));
+        assertEquals(List.of(new EntityCombatEvent(15, 0x02, 0, false,
+            EntityCombatEvent.SoundChannel.JINGLE, 0x08)),
+            runtime.consumePendingEntityEvents());
+    }
+
+    @Test
+    void bomberEnemyBombCarriesTheSourceVectorIntoTheNextBombHandlerFrame()
+        throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotWithSlots(
+            new RoomEntity(0, 0, 0xBA, 0x50, 0x50, EntityStatus.ACTIVE,
+                catalog.forEntityType(0xBA, EntityRoomLoader.RoomTable.OVERWORLD, -1),
+                0, 0, 0, 0x00)),
+            false, () -> 0, catalog, new RomEnemyCombatTables(rom));
+
+        runtime.tick(0, 0x70, 0x50, () -> 0);
+        runtime.consumePendingEntityEvents();
+        runtime.tick(1, 0x70, 0x50, () -> 0);
+
+        RoomEntity bomb = runtime.snapshot().slots().get(15);
+        assertEquals(0x51, bomb.x());
+        assertEquals(0x50, bomb.y());
+        assertEquals(0x10, bomb.z());
+        assertEquals(0x3F, runtime.transitionCountdown(15));
+        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+    }
+
+    @Test
     void protectedEnemyBombStillDoublesLinkSpeedWithoutDamageOrHurtSound() throws IOException {
         byte[] rom = loadRom();
         RoomEntityRuntime runtime = RoomEntityRuntime.from(

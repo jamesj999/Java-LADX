@@ -29,6 +29,7 @@ public final class EntitySpriteHandlerCatalog {
     private static final int ENTITY_OCTOROK_ROCK = 0x0A;
     private static final int ENTITY_MOBLIN = 0x0B;
     private static final int ENTITY_MOBLIN_ARROW = 0x0C;
+    private static final int ENTITY_BOMBER = 0xBA;
     private static final int ENTITY_MOBLIN_SWORD = 0x14;
     private static final int ENTITY_TEKTITE = 0x0D;
     private static final int ENTITY_LEEVER = 0x0E;
@@ -183,6 +184,9 @@ public final class EntitySpriteHandlerCatalog {
         }
         if (entityType == ENTITY_MOBLIN) {
             return decodePair(entityType, 0x03, 0x5917, 8, 0);
+        }
+        if (entityType == ENTITY_BOMBER) {
+            return decodeRectangle(entityType, 0x18, 0x77ED, 4, 3, 0);
         }
         if (entityType == ENTITY_MOBLIN_SWORD) {
             return decodeMoblinSword(entityType);

@@ -70,6 +70,21 @@ final class ThrownEntityMotion {
         active[slot] = true;
     }
 
+    /** Starts BombEntityHandler's source-speed path for an enemy bomb. */
+    void startEnemyBomb(int slot, int speedXValue, int speedYValue, int speedZValue) {
+        validateSlot(slot);
+        validateByte(speedXValue, "Enemy bomb X speed");
+        validateByte(speedYValue, "Enemy bomb Y speed");
+        validateByte(speedZValue, "Enemy bomb Z speed");
+        speedX[slot] = speedXValue;
+        speedY[slot] = speedYValue;
+        speedZ[slot] = speedZValue;
+        speedXAccumulator[slot] = 0;
+        speedYAccumulator[slot] = 0;
+        speedZAccumulator[slot] = 0;
+        active[slot] = true;
+    }
+
     /** Applies UpdateEntityPosWithSpeed_03 and the generic top-view gravity. */
     Update advance(RoomEntity entity, boolean sideScrolling,
                    RoomEntityBackgroundCollision backgroundCollision) {

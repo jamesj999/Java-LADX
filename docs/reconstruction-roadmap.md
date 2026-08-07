@@ -1465,9 +1465,29 @@ runtime collision callback.
   Shipped-ROM tests cover nominal collision, raw-Y separation, invincibility,
   ROM speed exposure, and shared object-event ordering.
 - The clean Java suite passes with 959 tests and zero failures, errors, or
-  skipped tests. Source-specific Bomber/Mad Bomber/Bombite throw and spawn
-  wiring, plus remaining enemy-bomb special branches, remain follow-up work;
-  this increment does not add an emulator.
+  skipped tests. Source-specific Mad Bomber/Bombite throw and spawn wiring,
+  plus remaining enemy-bomb special branches, remain follow-up work; this
+  increment does not add an emulator.
+
+## Verified ROM Bomber enemy-bomb producer — 2026-08-07
+
+- Entity `$BA` now decodes `Data_018_77ED` from bank `$18` as the source's
+  four three-sprite rectangle variants, with the handler's `$04` frame cadence.
+- `BomberEntityHandler` state, inertia, Z bob, random direction/speed tables,
+  fixed-point movement, Link-facing sword window, and the `$7F` inertia spawn
+  cadence are represented by a dedicated runtime motion holder.
+- Bomber-spawned type-$02 bombs copy the source position/Z, receive the
+  `$10` vector toward Link, Z speed `$08`, countdown `$40`, private state `$01`,
+  and `SpawnNewEntity`'s initial ignore-hits frame. Their subsequent movement
+  uses the existing bomb physics path without changing player-bomb behavior.
+- The source JINGLE_FALL_DOWN `$08` write is carried through the entity event
+  boundary and mapped to the gameplay sound sink. Bomber's ROM physics/options,
+  health group `$2B`, contact damage `$08`, and normal collision registration
+  are also wired.
+- Shipped-ROM tests cover the rectangle bytes, first bomb spawn, source vector
+  movement, and sound mapping. The clean Java suite passes with 963 tests and
+  zero failures, errors, or skipped tests; Mad Bomber/Bombite producers and
+  remaining enemy-bomb special branches remain follow-up work.
 
 ## Broader parity gaps
 

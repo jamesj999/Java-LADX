@@ -30,6 +30,7 @@ public final class RoomEntityCombatRules {
     private static final int ENTITY_COLOR_SHELL_GREEN = 0xEA;
     private static final int ENTITY_COLOR_SHELL_BLUE = 0xEB;
     private static final int ENTITY_CRYSTAL_SWITCH = 0x66;
+    private static final int ENTITY_BOMBER = 0xBA;
 
     // HitboxPositions._00 in home/entities.asm:3AAA. Octorok, Moblin, Armos,
     // and Keese all select the normal collision box in hitbox_flags.asm.
@@ -64,6 +65,8 @@ public final class RoomEntityCombatRules {
     private static final int GEL_INITIAL_HEALTH = 0x01;
     private static final int HIDING_ZOL_INITIAL_HEALTH = 0x01;
     private static final int GIBDO_INITIAL_HEALTH = 0x06;
+    private static final int BOMBER_INITIAL_HEALTH = 0x03;
+    private static final int BOMBER_CONTACT_DAMAGE = 0x08;
     private static final int BASIC_SWORD_DAMAGE = 0x01;
 
     private RoomEntityCombatRules() {
@@ -83,7 +86,7 @@ public final class RoomEntityCombatRules {
                 ENTITY_PAIRODD, ENTITY_COLOR_SHELL_RED, ENTITY_COLOR_SHELL_GREEN,
                 ENTITY_COLOR_SHELL_BLUE,
                 ENTITY_CRYSTAL_SWITCH,
-                ENTITY_OCTOROK -> true;
+                ENTITY_OCTOROK, ENTITY_BOMBER -> true;
             default -> false;
         };
     }
@@ -104,6 +107,7 @@ public final class RoomEntityCombatRules {
                 MOBLIN_CONTACT_DAMAGE;
             case ENTITY_SPARK_COUNTER_CLOCKWISE, ENTITY_SPARK_CLOCKWISE ->
                 OCTOROK_AND_KEESE_CONTACT_DAMAGE;
+            case ENTITY_BOMBER -> BOMBER_CONTACT_DAMAGE;
             case ENTITY_GIBDO -> GIBDO_CONTACT_DAMAGE;
             case ENTITY_ANTI_FAIRY -> ANTI_FAIRY_CONTACT_DAMAGE;
             case ENTITY_HIDING_GHINI, ENTITY_GIANT_GHINI, ENTITY_GHINI ->
@@ -130,6 +134,7 @@ public final class RoomEntityCombatRules {
             case ENTITY_HIDING_ZOL -> HIDING_ZOL_INITIAL_HEALTH;
             case ENTITY_GEL -> GEL_INITIAL_HEALTH;
             case ENTITY_GIBDO -> GIBDO_INITIAL_HEALTH;
+            case ENTITY_BOMBER -> BOMBER_INITIAL_HEALTH;
             case ENTITY_ANTI_FAIRY -> ANTI_FAIRY_INITIAL_HEALTH;
             case ENTITY_HIDING_GHINI, ENTITY_GIANT_GHINI, ENTITY_GHINI ->
                 GHINI_INITIAL_HEALTH;

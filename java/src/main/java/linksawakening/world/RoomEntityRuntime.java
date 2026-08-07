@@ -83,6 +83,10 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_LASER_BEAM = 0x2B;
     private static final int ENTITY_ARROW = 0x00;
     private static final int ENTITY_BOMB = 0x02;
+    private static final int ENTITY_BOMBER = 0xBA;
+    private static final int BOMBER_INITIAL_PHYSICS_FLAGS = 0x13;
+    private static final int BOMBER_OPTIONS1 = ENTITY_OPT1_NO_WALL_COLLISION;
+    private static final int BOMBER_THROW_JINGLE_ID = 0x08;
     private static final int DAMAGE_TYPE_ARROW = 0x05;
     private static final int DAMAGE_TYPE_BOMB = BombExplosionEvent.DAMAGE_TYPE_BOMB;
     private static final int DAMAGE_TYPE_BOMB_ARROW = 0x0C;
@@ -151,6 +155,7 @@ public final class RoomEntityRuntime {
     private final ArmosMotion armosMotion = new ArmosMotion();
     private final GhiniMotion ghiniMotion = new GhiniMotion();
     private final HardHatMotion hardHatMotion = new HardHatMotion();
+    private final BomberMotion bomberMotion = new BomberMotion();
     private final EnemyRecoilMotion enemyRecoilMotion = new EnemyRecoilMotion();
     private final FollowingNpcMotion followingNpcMotion = new FollowingNpcMotion();
     private final BowWowMotion bowWowMotion = new BowWowMotion();
@@ -205,6 +210,8 @@ public final class RoomEntityRuntime {
         new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final int[] bombPrivateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] placedBombMotionInitialized =
+        new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] enemyBombMotionInitialized =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final int[] thrownDirection = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] ledgeTransitionTimer = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -842,8 +849,9 @@ public final class RoomEntityRuntime {
                     projectileEvents, linkEntityX, linkEntityY, projectileLinkState);
                 entity = slots[index];
                 if (bombDecision.phase() == BombMotion.Phase.NORMAL) {
-                    slots[index] = advancePlacedBombEntity(
-                        entity, backgroundCollision);
+                    slots[index] = bombPrivateState4[entity.slot()] != 0
+                        ? advanceEnemyBombEntity(entity, backgroundCollision)
+                        : advancePlacedBombEntity(entity, backgroundCollision);
                 }
                 tryLiftBombIfRequested(index, bombDecision, linkEntityX, linkEntityY,
                     linkZ, romLinkDirection);
@@ -1042,6 +1050,9 @@ public final class RoomEntityRuntime {
                 if (entity.type() == ENTITY_HARDHAT_BEETLE) {
                     hardHatMotion.initialize(entity.slot());
                 }
+                if (entity.type() == ENTITY_BOMBER) {
+                    bomberMotion.initialize(entity.slot());
+                }
                 if (isFollowingNpcType(entity.type())) {
                     if (entity.type() == ENTITY_BOW_WOW) {
                         bowWowMotion.initialize(entity.slot());
@@ -1109,6 +1120,27 @@ public final class RoomEntityRuntime {
                 && entity.type() == ENTITY_KEESE) {
                 updated = keeseMotion.advance(entity, frame, linkEntityX, linkEntityY,
                     randomByteSupplier);
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_BOMBER) {
+                BomberMotion.Update bomberUpdate = bomberMotion.advance(
+                    entity, enemyTransitionCountdown[entity.slot()], linkEntityX, linkEntityY,
+                    romLinkDirection, swordCollisionActive, randomByteSupplier,
+                    backgroundCollision);
+                updated = bomberUpdate.entity();
+                enemyTransitionCountdown[entity.slot()] = bomberUpdate.transitionCountdown();
+                if (bomberUpdate.bombSpawn() != null) {
+                    BomberMotion.BombSpawn spawn = bomberUpdate.bombSpawn();
+                    int bombSlot = spawnEnemyBomb(spawn.x(), spawn.y(), spawn.z(),
+                        spawn.transitionCountdown(), spawn.speedX(), spawn.speedY(),
+                        spawn.speedZ());
+                    if (bombSlot >= 0 && bomberUpdate.playJingle()) {
+                        pendingEntityEvents.add(new EntityCombatEvent(
+                            bombSlot, ENTITY_BOMB, 0, false,
+                            EntityCombatEvent.SoundChannel.JINGLE,
+                            BOMBER_THROW_JINGLE_ID));
+                    }
+                }
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && isRoamingEnemyType(entity.type())) {
@@ -1740,6 +1772,18 @@ public final class RoomEntityRuntime {
             }
             thrownEntityMotion.startPlacedBomb(slot, bombDirection[slot]);
             placedBombMotionInitialized[slot] = true;
+        }
+        return thrownEntityMotion.advance(entity, groundInteractionSideScrolling,
+            backgroundCollision).entity();
+    }
+
+    private RoomEntity advanceEnemyBombEntity(
+            RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision) {
+        int slot = entity.slot();
+        if (!enemyBombMotionInitialized[slot]) {
+            // Room-loaded type-$02 entities and legacy test-created enemy
+            // bombs have no source speed tables to advance.
+            return entity;
         }
         return thrownEntityMotion.advance(entity, groundInteractionSideScrolling,
             backgroundCollision).entity();
@@ -2397,10 +2441,28 @@ public final class RoomEntityRuntime {
 
     /** Creates the source's type-$02 enemy bomb with privateState4 set to $01. */
     int spawnEnemyBomb(int entityX, int entityY, int entityZ, int transitionCountdown) {
+        return spawnEnemyBomb(entityX, entityY, entityZ, transitionCountdown,
+            0, 0, 0, false);
+    }
+
+    /** Creates a Bomber-spawned type-$02 enemy bomb with its source speeds. */
+    private int spawnEnemyBomb(int entityX, int entityY, int entityZ,
+                               int transitionCountdown, int speedX, int speedY,
+                               int speedZ) {
+        return spawnEnemyBomb(entityX, entityY, entityZ, transitionCountdown,
+            speedX, speedY, speedZ, true);
+    }
+
+    private int spawnEnemyBomb(int entityX, int entityY, int entityZ,
+                               int transitionCountdown, int speedX, int speedY,
+                               int speedZ, boolean initializeMotion) {
         validateByte(entityX, "Enemy bomb X");
         validateByte(entityY, "Enemy bomb Y");
         validateByte(entityZ, "Enemy bomb Z");
         validateByte(transitionCountdown, "Enemy bomb transition countdown");
+        validateByte(speedX, "Enemy bomb X speed");
+        validateByte(speedY, "Enemy bomb Y speed");
+        validateByte(speedZ, "Enemy bomb Z speed");
         int freeSlot = findFreeEntitySlot();
         if (freeSlot < 0) {
             return -1;
@@ -2418,13 +2480,19 @@ public final class RoomEntityRuntime {
         bombPrivateCountdown1[freeSlot] = 0;
         bombPrivateCountdown3[freeSlot] = 0;
         placedBombMotionInitialized[freeSlot] = false;
+        enemyBombMotionInitialized[freeSlot] = initializeMotion;
+        if (initializeMotion) {
+            thrownEntityMotion.startEnemyBomb(freeSlot, speedX, speedY, speedZ);
+        } else {
+            thrownEntityMotion.clear(freeSlot);
+        }
         thrownMotionInitialized[freeSlot] = false;
         enemyHitboxFlags[freeSlot] = 0;
         enemyTransitionCountdown[freeSlot] = transitionCountdown;
         enemyStunnedCountdown[freeSlot] = 0;
         enemyHealth[freeSlot] = initialHealth(ENTITY_BOMB);
         enemyFlashCountdown[freeSlot] = 0;
-        enemyIgnoreHitsCountdown[freeSlot] = 0;
+        enemyIgnoreHitsCountdown[freeSlot] = initializeMotion ? 1 : 0;
         enemyPhysicsFlags[freeSlot] = BOMB_INITIAL_PHYSICS_FLAGS;
         entityGroundStatus[freeSlot] = 0;
         baseEntityFlipAttribute[freeSlot] = 0;
@@ -2863,6 +2931,7 @@ public final class RoomEntityRuntime {
             || type == ENTITY_WATER_TEKTITE
             || type == ENTITY_STALFOS_EVASIVE
             || type == ENTITY_MOBLIN_SWORD
+            || type == ENTITY_BOMBER
             || isRoamingEnemyType(type) || usesBank6Recoil(type)
             || isGhiniType(type);
     }
@@ -4145,6 +4214,9 @@ public final class RoomEntityRuntime {
         if (slots[slot].type() == ENTITY_BOMB) {
             return BOMB_OPTIONS1;
         }
+        if (slots[slot].type() == ENTITY_BOMBER) {
+            return BOMBER_OPTIONS1;
+        }
         return slots[slot].type() == ENTITY_STALFOS_EVASIVE
             ? ENTITY_OPT1_SPLASH_IN_WATER : 0;
     }
@@ -4191,6 +4263,7 @@ public final class RoomEntityRuntime {
         }
         return switch (entity.type()) {
             case ENTITY_PIECE_OF_POWER -> (frameCounter >>> 3) & 0x01;
+            case ENTITY_BOMBER -> (frameCounter >>> 2) & 0x03;
             case ENTITY_BUTTERFLY -> ((frameCounter + entity.slot() * 8) >>> 3) & 0x01;
             case ENTITY_ARMOS_STATUE -> (frameCounter >>> 4) & 0x01;
             case ENTITY_GHINI -> ((frameCounter >>> 4) ^ entity.slot()) & 0x01;
@@ -4234,6 +4307,7 @@ public final class RoomEntityRuntime {
             case ENTITY_ARMOS_STATUE -> ARMOS_INITIAL_PHYSICS_FLAGS;
             case ENTITY_STALFOS_EVASIVE -> EVASIVE_PHYSICS_FLAGS;
             case ENTITY_BOMB -> BOMB_INITIAL_PHYSICS_FLAGS;
+            case ENTITY_BOMBER -> BOMBER_INITIAL_PHYSICS_FLAGS;
             case ENTITY_LIFTABLE_ROCK, ENTITY_LIFTABLE_STATUE,
                 ENTITY_WRECKING_BALL, ENTITY_SIDE_VIEW_POT, ENTITY_ROOSTER,
                 ENTITY_CUCCO, ENTITY_HORSE_PIECE -> ENTITY_PHYSICS_GRABBABLE;
@@ -4540,11 +4614,13 @@ public final class RoomEntityRuntime {
         liftableRockSmashActive[slot] = false;
         bombFinalPresentationPending[slot] = false;
         placedBombMotionInitialized[slot] = false;
+        enemyBombMotionInitialized[slot] = false;
         ledgeTransitionTimer[slot] = 0;
         thrownMotionInitialized[slot] = false;
         baseEntityFlipAttribute[slot] = 0;
         entityOptions1Override[slot] = -1;
         enemyRecoilMotion.clear(slot);
+        bomberMotion.clear(slot);
         colorShellMotion.clear(slot);
         butterflyMotion.clear(slot);
         keeseMotion.clear(slot);

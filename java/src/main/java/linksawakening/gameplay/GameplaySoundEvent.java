@@ -5,6 +5,7 @@ public enum GameplaySoundEvent {
     PIT_FALL,
     WATER_SPLASH,
     ITEM_FALLING,
+    ENEMY_BOMB_THROW,
     SWORD_SWING_A,
     SWORD_SWING_B,
     SWORD_SWING_C,
