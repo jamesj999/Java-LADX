@@ -2,6 +2,7 @@ package linksawakening.world;
 
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.entity.Link;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gpu.GPU;
 import linksawakening.physics.OverworldCollision;
@@ -367,6 +368,110 @@ final class RoomSessionTest {
             .anyMatch(event -> event.type() == 0x08
                 && event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE
                 && event.soundId() == 0x12));
+    }
+
+    @Test
+    void shovelUsesTheAdjacentRomCellAndTurnsItIntoAConfiguredHoleOnTimerTen() {
+        RoomSession session = newSession();
+        session.loadInitialOverworld(0x92);
+
+        int location = 0x55;
+        int areaIndex = RoomConstants.ROOM_OBJECTS_BASE
+            + (location & 0xF0) + (location & 0x0F);
+        session.activeRoom().roomObjectsArea()[areaIndex] = 0x04;
+        session.activeRoom().renderValues()[areaIndex] = 0x04;
+
+        RoomSession.ShovelStartResult start = session.startShovel(0x44, 0x56, 0, false);
+
+        assertTrue(start.started());
+        assertFalse(start.poking());
+        assertEquals(0x55, start.location());
+        assertEquals(0x71, session.shovelAnimationState(Link.DIRECTION_RIGHT, 1));
+        assertEquals(0x72, session.shovelAnimationState(Link.DIRECTION_RIGHT, 0x10));
+
+        for (int timer = 1; timer <= 15; timer++) {
+            session.advanceShovel(0x44, 0x56, 0, timer);
+        }
+        assertEquals(0x04, session.activeRoom().roomObjectsArea()[areaIndex]);
+
+        session.advanceShovel(0x44, 0x56, 0, 0x10);
+
+        assertEquals(0xCC, session.activeRoom().roomObjectsArea()[areaIndex]);
+        assertEquals(0xCC, session.activeRoom().renderValues()[areaIndex]);
+    }
+
+    @Test
+    void shovelKeepsTheSourcePokePathForBlockedIndoorObjects() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x00, 0x00);
+
+        int location = 0x22;
+        int areaIndex = RoomConstants.ROOM_OBJECTS_BASE
+            + (location & 0xF0) + (location & 0x0F);
+        session.activeRoom().roomObjectsArea()[areaIndex] = 0x04;
+
+        RoomSession.ShovelStartResult start = session.startShovel(0x14, 0x26, 0, false);
+
+        assertTrue(start.started());
+        assertTrue(start.poking());
+        for (int timer = 1; timer <= 0x10; timer++) {
+            session.advanceShovel(0x14, 0x26, 0, timer);
+        }
+        assertEquals(0x04, session.activeRoom().roomObjectsArea()[areaIndex]);
+    }
+
+    @Test
+    void shovelQueuesTheRomRandomDropAfterTheHoleIsDrawn() {
+        RoomSession session = newSession();
+        session.loadInitialOverworld(0x92);
+
+        int location = 0x55;
+        int areaIndex = RoomConstants.ROOM_OBJECTS_BASE
+            + (location & 0xF0) + (location & 0x0F);
+        session.activeRoom().roomObjectsArea()[areaIndex] = 0x04;
+        session.activeRoom().renderValues()[areaIndex] = 0x04;
+
+        assertTrue(session.startShovel(0x44, 0x56, 0, false).started());
+        session.advanceShovel(0x44, 0x56, 0, 0x10);
+
+        // With the ROM seed and rLY policy, frame fourteen produces the
+        // source's successful 1/8 gate and selects the heart on its second
+        // byte (RRA carry set).
+        session.tickEntities(14, 0x44, 0x56);
+
+        RoomEntity drop = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.sourceLoadOrder() == -1
+                && (entity.type() == 0x2D || entity.type() == 0x2E))
+            .findFirst()
+            .orElseThrow();
+        assertEquals(0x2D, drop.type());
+        assertEquals(0x58, drop.x());
+        assertEquals(0x60, drop.y());
+        assertEquals(0x02, drop.z());
+        assertEquals(0x20 - 0x02, session.entityDropSpeedZForTest(drop.slot()));
+        assertEquals(0x0C, session.entityDropSpeedXForTest(drop.slot()));
+    }
+
+    @Test
+    void shovelRequestsMarinsSourceDialogAfterACompletedDig() {
+        RoomSession session = newSession();
+        session.loadInitialOverworld(0x92);
+        session.setFollowingNpcState(
+            new FollowingNpcState(false, 0, true, false, 0, 0, false),
+            0x44, 0x56, 0, 0, 0);
+
+        int location = 0x55;
+        int areaIndex = RoomConstants.ROOM_OBJECTS_BASE
+            + (location & 0xF0) + (location & 0x0F);
+        session.activeRoom().roomObjectsArea()[areaIndex] = 0x04;
+        session.activeRoom().renderValues()[areaIndex] = 0x04;
+
+        assertTrue(session.startShovel(0x44, 0x56, 0, false).started());
+        session.advanceShovel(0x44, 0x56, 0, 0x10);
+        session.advanceShovel(0x44, 0x56, 0, 0x18);
+
+        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, 0x79)),
+            session.consumeEntityDialogRequests());
     }
 
     @Test

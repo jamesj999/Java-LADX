@@ -1998,6 +1998,28 @@ runtime collision callback.
   tests. The source's already-held-toadstool got-item-dialog branch remains a
   separate UI-state boundary.
 
+## Verified ROM shovel producer and dig/drop runtime — 2026-08-07
+
+- `UseShovel` and `func_002_4B49` now drive a ROM-shaped 24-frame Link item
+  window. The animation states come from bank `$02:$4B41`; the poke-vs-dig
+  sound uses jingle `$07` or noise `$0E`, and the active item blocks motion and
+  facing for the same timer interval.
+- `func_002_4D20` is ported with the source direction offsets, padded `$11`
+  room-object addressing, physics-table probe, overworld blocker list, and
+  indoor-only `$05` dig rule. A successful timer-$10 pass writes hole `$CC`
+  to both the live object table and the mutable GBC render overlay, then
+  refreshes the affected 2x2 tile/attribute cell and collision view.
+- The shovel's post-dig branch consumes the source random bytes, suppresses
+  rewards in Eagle's Tower, selects heart `$2D` or rupee `$2E`, starts the
+  reward at object `(+8,+16)`, uses the source `$80/$18/$20` timers/speed, and
+  applies the ROM infinity-norm vector away from Link. A completed successful
+  dig queues Dialog279 when Marin is following.
+- Main/RoomSession registration, raw sound routing, ROM table loading, live
+  room mutation, reward timing, vector setup, and dialog handoff are covered
+  by focused tests. The clean Java suite passes with 1,129 tests and zero
+  failures, errors, or skipped tests. Remaining item work includes the other
+  unported `UseItem` producers and their room-specific branches.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

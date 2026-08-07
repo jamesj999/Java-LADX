@@ -109,6 +109,13 @@ public final class RomTables {
     private static final int MAGIC_ROD_DIRECTION_TABLE_LEN = 8;
     private static final int MAGIC_ROD_SPRITE_TABLE_LEN = 16;
 
+    // LinkDirectionToLinkAnimationState2 (bank2.asm:$4B41), used while the
+    // ROM's shovel timer is active. The table is indexed by ROM direction
+    // (RIGHT, LEFT, UP, DOWN), then by the two timer phases.
+    private static final int SHOVEL_ANIMATION_BANK = 0x02;
+    private static final int SHOVEL_ANIMATION_ADDR = 0x4B41;
+    private static final int SHOVEL_ANIMATION_LENGTH = 8;
+
     private final int[][] physicsFlags;
     private final int[] entityOptions1;
     private final int[] entityHitboxFlags;
@@ -136,6 +143,7 @@ public final class RomTables {
     private final byte[] magicRodYOffset;
     private final int[] magicRodTiles;
     private final int[] magicRodAttributes;
+    private final int[] shovelAnimationStates;
     private final byte[] staticSwordCollisionX;
     private final byte[] staticSwordCollisionY;
 
@@ -153,6 +161,7 @@ public final class RomTables {
                       int[] swordSpriteTiles, int[] swordSpriteAttrs,
                       byte[] magicRodXOffset, byte[] magicRodYOffset,
                       int[] magicRodTiles, int[] magicRodAttributes,
+                      int[] shovelAnimationStates,
                       byte[] staticSwordCollisionX, byte[] staticSwordCollisionY) {
         this.physicsFlags = physicsFlags;
         this.entityOptions1 = entityOptions1;
@@ -181,6 +190,7 @@ public final class RomTables {
         this.magicRodYOffset = magicRodYOffset;
         this.magicRodTiles = magicRodTiles;
         this.magicRodAttributes = magicRodAttributes;
+        this.shovelAnimationStates = shovelAnimationStates;
         this.staticSwordCollisionX = staticSwordCollisionX;
         this.staticSwordCollisionY = staticSwordCollisionY;
     }
@@ -254,6 +264,9 @@ public final class RomTables {
             MAGIC_ROD_TILES_ADDR, MAGIC_ROD_SPRITE_TABLE_LEN);
         int[] magicRodAttrs = loadUnsignedTable(romData, MAGIC_ROD_TABLE_BANK,
             MAGIC_ROD_ATTRIBUTES_ADDR, MAGIC_ROD_SPRITE_TABLE_LEN);
+        int[] shovelAnimationStates = loadUnsignedTable(
+            romData, SHOVEL_ANIMATION_BANK, SHOVEL_ANIMATION_ADDR,
+            SHOVEL_ANIMATION_LENGTH);
         byte[] staticSwordCollisionX = loadSignedTable(
             romData, STATIC_SWORD_COLLISION_TABLE_BANK, STATIC_SWORD_COLLISION_X_ADDR, STATIC_SWORD_COLLISION_TABLE_LEN);
         byte[] staticSwordCollisionY = loadSignedTable(
@@ -269,6 +282,7 @@ public final class RomTables {
                              swordCollisionOffset, swordCollisionHeight,
                              swordTiles, swordAttrs,
                              magicRodX, magicRodY, magicRodTiles, magicRodAttrs,
+                             shovelAnimationStates,
                              staticSwordCollisionX, staticSwordCollisionY);
     }
 
@@ -507,6 +521,19 @@ public final class RomTables {
     /** OAM attributes used by one Magic Rod OAM slot. */
     public int magicRodAttribute(int tableIndex, int spriteSlot) {
         return magicRodAttributes[(tableIndex & 0x07) * 2 + (spriteSlot & 0x01)];
+    }
+
+    /**
+     * Link animation state selected by the ROM shovel timer. Timer values
+     * below $10 use phase zero; values from $10 onward use phase one.
+     */
+    public int shovelAnimationState(int timer, int romDirection) {
+        if (romDirection < 0 || romDirection > 3) {
+            throw new IllegalArgumentException("ROM shovel direction out of range: "
+                + romDirection);
+        }
+        int phase = ((timer & 0xFF) >>> 4) & 0x01;
+        return shovelAnimationStates[(romDirection & 0x03) * 2 + phase];
     }
 
     /**

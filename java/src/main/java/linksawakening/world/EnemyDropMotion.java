@@ -5,8 +5,7 @@ package linksawakening.world;
  *
  * <p>The ROM keeps entity speeds in pixels per sixteen frames and stores a
  * separate fractional accumulator for each position axis. This helper owns
- * only the common drop's speed-Y/Z tables; SpawnEnemyDrop leaves speed X at
- * zero.</p>
+ * only the common drop's speed-X/Y/Z tables.</p>
  */
 final class EnemyDropMotion {
     private static final int TOP_DOWN_GRAVITY = 0x02;
@@ -16,15 +15,76 @@ final class EnemyDropMotion {
 
     private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
 
     void initialize(int slot, boolean sideScrolling) {
+        initialize(slot, sideScrolling, 0x18);
+    }
+
+    /** Initializes a top-down drop with the source-specific initial Z speed. */
+    void initialize(int slot, boolean sideScrolling, int initialSpeedZ) {
         validateSlot(slot);
+        if (initialSpeedZ < 0 || initialSpeedZ > 0xFF) {
+            throw new IllegalArgumentException("Initial drop Z speed out of range: "
+                + initialSpeedZ);
+        }
+        speedX[slot] = 0;
         speedY[slot] = sideScrolling ? 0xEC : 0;
-        speedZ[slot] = sideScrolling ? 0 : 0x18;
+        speedZ[slot] = sideScrolling ? 0 : initialSpeedZ;
+        speedXAccumulator[slot] = 0;
         speedYAccumulator[slot] = 0;
         speedZAccumulator[slot] = 0;
+    }
+
+    /**
+     * Port of the source's ApplyVectorTowardsLink followed by the shovel
+     * branch's two's-complement writes. The item scatters the reward away
+     * from Link using the ROM's infinity-norm vector approximation.
+     */
+    void initializeAwayFromLink(int slot, int entityX, int entityY,
+                                int linkX, int linkY, int vectorLength) {
+        validateSlot(slot);
+        if (vectorLength < 0 || vectorLength > 0xFF) {
+            throw new IllegalArgumentException("Drop vector length out of range: "
+                + vectorLength);
+        }
+        int dx = signedByte((linkX - entityX) & 0xFF);
+        int dy = signedByte((linkY - entityY) & 0xFF);
+        int absX = Math.abs(dx);
+        int absY = Math.abs(dy);
+        boolean swapped = absX < absY;
+        int smaller = swapped ? absX : absY;
+        int larger = swapped ? absY : absX;
+        int minorResult;
+        if (larger == 0) {
+            minorResult = vectorLength;
+        } else {
+            int remainder = 0;
+            minorResult = 0;
+            for (int i = 0; i < vectorLength; i++) {
+                remainder += smaller;
+                if (remainder >= larger) {
+                    remainder -= larger;
+                    minorResult++;
+                }
+            }
+        }
+
+        int towardX = swapped ? minorResult : vectorLength;
+        int towardY = swapped ? vectorLength : minorResult;
+        if (dx < 0) {
+            towardX = (-towardX) & 0xFF;
+        }
+        if (dy < 0) {
+            towardY = (-towardY) & 0xFF;
+        }
+        speedX[slot] = (-towardX) & 0xFF;
+        speedY[slot] = (-towardY) & 0xFF;
+        speedXAccumulator[slot] = 0;
+        speedYAccumulator[slot] = 0;
     }
 
     RoomEntity advance(RoomEntity entity, int frameCounter, int previousGroundStatus,
@@ -42,9 +102,10 @@ final class EnemyDropMotion {
             return withY(entity, y);
         }
 
+        int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int z = addSpeedToPosition(entity.z(), speedZ[slot], speedZAccumulator, slot);
         speedZ[slot] = (speedZ[slot] - TOP_DOWN_GRAVITY) & 0xFF;
-        return withZ(entity, z);
+        return withXZ(entity, x, z);
     }
 
     RoomEntity bounce(RoomEntity entity, int groundStatus, boolean sideScrolling,
@@ -84,6 +145,11 @@ final class EnemyDropMotion {
         return speedY[slot];
     }
 
+    int speedX(int slot) {
+        validateSlot(slot);
+        return speedX[slot];
+    }
+
     int speedZ(int slot) {
         validateSlot(slot);
         return speedZ[slot];
@@ -91,8 +157,10 @@ final class EnemyDropMotion {
 
     void clear(int slot) {
         validateSlot(slot);
+        speedX[slot] = 0;
         speedY[slot] = 0;
         speedZ[slot] = 0;
+        speedXAccumulator[slot] = 0;
         speedYAccumulator[slot] = 0;
         speedZAccumulator[slot] = 0;
     }
@@ -131,6 +199,13 @@ final class EnemyDropMotion {
             entity.x(), y & 0xFF, entity.status(), entity.spriteDefinition(),
             entity.spriteVariant(), entity.entityFlipAttribute(), entity.spriteTileOffset(),
             entity.z());
+    }
+
+    private static RoomEntity withXZ(RoomEntity entity, int x, int z) {
+        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
+            x & 0xFF, entity.y(), entity.status(), entity.spriteDefinition(),
+            entity.spriteVariant(), entity.entityFlipAttribute(), entity.spriteTileOffset(),
+            z & 0xFF);
     }
 
     private static RoomEntity withZ(RoomEntity entity, int z) {

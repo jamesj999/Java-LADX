@@ -28,6 +28,7 @@ public final class EnemyCombatEventConsumer {
     private static final int NOISE_HOOKSHOT_ID = 0x0B;
     private static final int NOISE_BOOMERANG_ID = 0x2D;
     private static final int NOISE_MAGIC_ROD_ID = 0x0D;
+    private static final int NOISE_SHOVEL_DIG_ID = 0x0E;
     private static final int NOISE_BOMB_EXPLOSION_ID = 0x0C;
     private static final int NOISE_DOOR_UNLOCKED_ID = 0x04;
 
@@ -91,6 +92,7 @@ public final class EnemyCombatEventConsumer {
                 case NOISE_HOOKSHOT_ID -> soundSink.play(GameplaySoundEvent.HOOKSHOT);
                 case NOISE_BOOMERANG_ID -> soundSink.play(GameplaySoundEvent.BOOMERANG);
                 case NOISE_MAGIC_ROD_ID -> soundSink.play(GameplaySoundEvent.MAGIC_ROD);
+                case NOISE_SHOVEL_DIG_ID -> soundSink.play(GameplaySoundEvent.SHOVEL_DIG);
                 case NOISE_BOMB_EXPLOSION_ID ->
                     soundSink.play(GameplaySoundEvent.BOMB_EXPLOSION);
                 case NOISE_DOOR_UNLOCKED_ID -> soundSink.play(GameplaySoundEvent.DOOR_UNLOCKED);

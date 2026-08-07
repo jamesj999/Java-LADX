@@ -17,6 +17,7 @@ import linksawakening.equipment.MagicPowder;
 import linksawakening.equipment.MagicRod;
 import linksawakening.equipment.Ocarina;
 import linksawakening.equipment.RocsFeather;
+import linksawakening.equipment.Shovel;
 import linksawakening.equipment.Sword;
 import linksawakening.equipment.SwordPalette;
 import linksawakening.equipment.SwordSpriteSheet;
@@ -362,6 +363,38 @@ public class Main {
                 @Override
                 public boolean magicPowderAttackStepActive() {
                     return link != null && link.romAttackStepAnimationCountdown() != 0;
+            }
+        }, link::canUseItems));
+        itemRegistry.register(PlayerState.INVENTORY_SHOVEL, new Shovel(
+            gameplaySoundSink, new Shovel.DigTarget() {
+                private int linkEntityX;
+                private int linkEntityY;
+                private int romDirection;
+
+                @Override
+                public Shovel.StartResult startShovel() {
+                    if (link == null || roomSession == null) {
+                        return new Shovel.StartResult(false, true);
+                    }
+                    romDirection = link.applyRomItemDirectionFromInput();
+                    linkEntityX = link.romEntityX();
+                    linkEntityY = link.romEntityY();
+                    RoomSession.ShovelStartResult result = roomSession.startShovel(
+                        linkEntityX, linkEntityY, romDirection, link.isAirborne());
+                    return new Shovel.StartResult(result.started(), result.poking());
+                }
+
+                @Override
+                public void advanceShovel(int timer) {
+                    if (roomSession != null) {
+                        roomSession.advanceShovel(linkEntityX, linkEntityY, romDirection, timer);
+                    }
+                }
+
+                @Override
+                public int shovelAnimationState(int javaDirection, int timer) {
+                    return roomSession == null ? -1
+                        : roomSession.shovelAnimationState(javaDirection, timer);
                 }
             }, link::canUseItems));
         itemRegistry.register(PlayerState.INVENTORY_ROCS_FEATHER, new RocsFeather(link));

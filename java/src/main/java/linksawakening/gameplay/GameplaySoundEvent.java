@@ -34,6 +34,7 @@ public enum GameplaySoundEvent {
     MAGIC_ROD,
     MAGIC_POWDER,
     MAGIC_POWDER_POOF,
+    SHOVEL_DIG,
     SWORD_BEAM,
     BOMB_EXPLOSION,
     WRONG_ANSWER,

@@ -89,4 +89,20 @@ final class RomTablesTest {
         assertEquals(0x22, tables.magicRodAttribute(7, 0));
         assertEquals(0x22, tables.magicRodAttribute(7, 1));
     }
+
+    @Test
+    void loadsShovelAnimationPhasesFromBankTwo() {
+        byte[] rom = new byte[0x100000];
+        int offset = RomBank.romOffset(0x02, 0x4B41);
+        int[] states = {0x71, 0x72, 0x6F, 0x70, 0x73, 0x74, 0x6D, 0x6E};
+        for (int i = 0; i < states.length; i++) {
+            rom[offset + i] = (byte) states[i];
+        }
+
+        RomTables tables = RomTables.loadFromRom(rom);
+
+        assertEquals(0x71, tables.shovelAnimationState(1, 0));
+        assertEquals(0x72, tables.shovelAnimationState(0x10, 0));
+        assertEquals(0x6E, tables.shovelAnimationState(0x10, 3));
+    }
 }

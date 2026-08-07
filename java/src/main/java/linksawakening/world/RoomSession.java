@@ -43,6 +43,19 @@ public final class RoomSession {
     private static final int OBJECT_GIANT_SKULL_BOTTOM_RIGHT = 0xBE;
     private static final int OBJECT_BOMBABLE_BLOCK = 0xA9;
     private static final int OBJECT_FLOOR_OD = 0x0D;
+    private static final int OBJECT_SHOVEL_HOLE = 0xCC;
+    private static final int OBJECT_SHOVEL_INDOOR_DIGGABLE = 0x05;
+    private static final int OBJECT_SHOVEL_BLOCKER_A = 0x0C;
+    private static final int OBJECT_SHOVEL_BLOCKER_B = 0x0D;
+    private static final int OBJECT_SHOVEL_BLOCKER_C = 0xB9;
+    private static final int SHOVEL_STATE_ACTIVE = 0x01;
+    private static final int SHOVEL_STATE_DUG = 0x02;
+    private static final int SHOVEL_DIG_TIMER = 0x10;
+    private static final int SHOVEL_FINISH_TIMER = 0x18;
+    private static final int SHOVEL_DIALOG_TABLE = 0;
+    private static final int SHOVEL_DIALOG_ID = 0x79;
+    private static final int[] SHOVEL_TARGET_X = {0x14, 0xFC, 0x08, 0x08};
+    private static final int[] SHOVEL_TARGET_Y = {0x0A, 0x0A, 0xFC, 0x14};
     private static final int OW_ROOM_STATUS_OPENED = 0x04;
     private static final int ROOM_STATUS_CHEST_OPEN = 0x10;
     private static final int INDOOR_ROOM_STATUS_EVENT_3 = 0x40;
@@ -113,6 +126,10 @@ public final class RoomSession {
     private final List<EntityCombatEvent> pendingRoomEntityEvents = new ArrayList<>();
     private final List<RoomEntityRuntime.ChestRewardEvent> pendingChestRewardEvents =
         new ArrayList<>();
+    private final List<RoomEntityRuntime.DialogRequest> pendingRoomDialogRequests =
+        new ArrayList<>();
+    private PendingShovelDrop pendingShovelDrop;
+    private int shovelUseState;
     private final byte[] overworldRoomStatus = new byte[0x100];
     private final byte[] indoorARoomStatus = new byte[0x100];
     private final byte[] indoorBRoomStatus = new byte[0x100];
@@ -639,6 +656,119 @@ public final class RoomSession {
     }
 
     /**
+     * Mirrors {@code UseShovel}: the item always enters its 24-frame pose
+     * window when Link is grounded, while the adjacent-cell probe determines
+     * whether the sound is a poke or a normal dig.
+     *
+     * <p>The coordinates are the ROM's {@code hLinkPositionX/Y} values. The
+     * caller supplies ROM direction order: RIGHT, LEFT, UP, DOWN.</p>
+     */
+    public ShovelStartResult startShovel(int linkEntityX, int linkEntityY,
+                                         int romDirection, boolean linkAirborne) {
+        if (romDirection < 0 || romDirection > 3) {
+            throw new IllegalArgumentException("ROM shovel direction out of range: "
+                + romDirection);
+        }
+        if (activeRoom == null || linkAirborne || shovelUseState != 0) {
+            return new ShovelStartResult(false, true, -1);
+        }
+        ShovelProbe probe = probeShovel(linkEntityX, linkEntityY, romDirection);
+        shovelUseState = SHOVEL_STATE_ACTIVE;
+        return new ShovelStartResult(true, !probe.valid(), probe.location());
+    }
+
+    /** Applies the ROM shovel timer's delayed room mutation and finish path. */
+    public void advanceShovel(int linkEntityX, int linkEntityY, int romDirection, int timer) {
+        if (activeRoom == null || shovelUseState == 0) {
+            return;
+        }
+        int normalizedTimer = timer & 0xFF;
+        if (normalizedTimer == SHOVEL_DIG_TIMER) {
+            ShovelProbe probe = probeShovel(linkEntityX, linkEntityY, romDirection);
+            if (!probe.valid()) {
+                return;
+            }
+            shovelUseState = SHOVEL_STATE_DUG;
+            writeShovelHole(probe);
+            pendingShovelDrop = new PendingShovelDrop(
+                probe.objectLeft(), probe.objectTop(), linkEntityX, linkEntityY,
+                activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD
+                    || activeRoom.roomId() != 0x0E);
+        } else if (normalizedTimer == SHOVEL_FINISH_TIMER) {
+            if (shovelUseState == SHOVEL_STATE_DUG && followingNpcState.marinFollowing()) {
+                pendingRoomDialogRequests.add(new RoomEntityRuntime.DialogRequest(
+                    SHOVEL_DIALOG_TABLE, SHOVEL_DIALOG_ID));
+            }
+            shovelUseState = 0;
+        }
+    }
+
+    /** Resolves the ROM shovel animation table through Java's Link direction order. */
+    public int shovelAnimationState(int javaDirection, int timer) {
+        return romTables.shovelAnimationState(timer,
+            romDirectionForProjectileCollision(javaDirection));
+    }
+
+    private ShovelProbe probeShovel(int linkEntityX, int linkEntityY, int romDirection) {
+        if (activeRoom == null || activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL) {
+            return ShovelProbe.invalid();
+        }
+
+        // func_002_4D20 subtracts Link's sprite-center/bottom origin before
+        // masking to the room-object grid. These are hLinkPositionX/Y, not
+        // Java's top-left pixel coordinates.
+        int objectLeft = (linkEntityX + SHOVEL_TARGET_X[romDirection] - 0x08) & 0xF0;
+        int objectTop = (linkEntityY + SHOVEL_TARGET_Y[romDirection] - 0x10) & 0xF0;
+        int cellX = objectLeft >>> 4;
+        int cellY = objectTop >>> 4;
+        if (cellX < 0 || cellX >= RoomConstants.OBJECTS_PER_ROW
+            || cellY < 0 || cellY >= RoomConstants.OBJECTS_PER_COLUMN) {
+            return ShovelProbe.invalid();
+        }
+
+        int location = objectTop | cellX;
+        int objectId = objectAtRoomLocation(location);
+        int physicsTable = activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
+            ? RomTables.PHYSICS_TABLE_OVERWORLD
+            : activeRoom.mapId() == 0xFF
+                ? RomTables.PHYSICS_TABLE_INDOORS2
+                : RomTables.PHYSICS_TABLE_INDOORS1;
+        boolean valid = romTables.objectPhysicsFlag(physicsTable, objectId) == 0;
+        if (activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
+            valid &= objectId != OBJECT_SHOVEL_BLOCKER_A
+                && objectId != OBJECT_SHOVEL_BLOCKER_B
+                && objectId != OBJECT_SHOVEL_BLOCKER_C;
+        } else {
+            valid &= objectId == OBJECT_SHOVEL_INDOOR_DIGGABLE;
+        }
+        return new ShovelProbe(valid, location, objectLeft, objectTop);
+    }
+
+    private void writeShovelHole(ShovelProbe probe) {
+        int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + probe.location();
+        int[] objects = activeRoom.roomObjectsArea();
+        if (areaIndex < 0 || areaIndex >= objects.length) {
+            return;
+        }
+        objects[areaIndex] = OBJECT_SHOVEL_HOLE;
+        if (activeRoom.renderValues() != null && areaIndex < activeRoom.renderValues().length) {
+            activeRoom.renderValues()[areaIndex] = OBJECT_SHOVEL_HOLE;
+        }
+        if (activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
+            // On GBC the mutable WRAM2 overlay is the render source for both
+            // tile ids and attributes; rebuilding from the immutable ROM
+            // overlay here would immediately undo the hole.
+            overworldBushInteraction.refreshRoomObjectCell(
+                activeRoom.roomId(), probe.location(), objects, activeRoom.renderValues(),
+                activeRoom.gbcOverlay(), activeRoom.tileIds(), activeRoom.tileAttrs());
+            refreshOverworldCollisionAfterObjectMutation();
+        } else {
+            refreshActiveRoomTilemap();
+            overworldCollision.setRoom(activeRoom.roomObjectsArea());
+        }
+    }
+
+    /**
      * Mirrors the ordinary player-bomb placement bridge. The item has already
      * applied PlaceBomb's inventory ordering; this method owns the room/runtime
      * allocation and immutable snapshot refresh.
@@ -795,6 +925,14 @@ public final class RoomSession {
         return entityRuntime == null ? 0 : entityRuntime.transitionCountdown(slot);
     }
 
+    int entityDropSpeedXForTest(int slot) {
+        return entityRuntime == null ? 0 : entityRuntime.dropSpeedX(slot);
+    }
+
+    int entityDropSpeedZForTest(int slot) {
+        return entityRuntime == null ? 0 : entityRuntime.dropSpeedZ(slot);
+    }
+
     public void tickEntities(int frameCounter) {
         tickEntities(frameCounter, 0, 0);
     }
@@ -889,6 +1027,13 @@ public final class RoomSession {
         // rLY is not a meaningful value in the host renderer. Keep the
         // non-emulator policy explicit while preserving the ROM seed update.
         entityRandomByteSource.beginFrame(frameCounter & 0xFF, 0);
+        if (pendingShovelDrop != null) {
+            PendingShovelDrop drop = pendingShovelDrop;
+            pendingShovelDrop = null;
+            entityRuntime.spawnShovelDrop(
+                drop.objectLeft(), drop.objectTop(), drop.linkEntityX(), drop.linkEntityY(),
+                drop.allowDrop());
+        }
         List<EntityProjectileEvent> events = entityRuntime.tickWithProjectileEvents(
             frameCounter, linkEntityX, linkEntityY, collisionType & 0xFF,
             entityRandomByteSource,
@@ -974,10 +1119,13 @@ public final class RoomSession {
 
     /** Returns and clears ROM dialog requests emitted by the last entity tick. */
     public List<RoomEntityRuntime.DialogRequest> consumeEntityDialogRequests() {
-        if (entityRuntime == null) {
-            return List.of();
+        List<RoomEntityRuntime.DialogRequest> requests = new ArrayList<>(
+            pendingRoomDialogRequests);
+        pendingRoomDialogRequests.clear();
+        if (entityRuntime != null) {
+            requests.addAll(entityRuntime.consumePendingDialogRequests());
         }
-        return entityRuntime.consumePendingDialogRequests();
+        return List.copyOf(requests);
     }
 
     /** Returns and clears source-shaped bomb-explosion interaction requests from the last tick. */
@@ -1276,6 +1424,9 @@ public final class RoomSession {
         pendingBombExplosionEvents.clear();
         pendingRoomEntityEvents.clear();
         pendingChestRewardEvents.clear();
+        pendingRoomDialogRequests.clear();
+        pendingShovelDrop = null;
+        shovelUseState = 0;
     }
 
     private void applyBombObjectInteractions(List<BombExplosionEvent> events) {
@@ -1531,6 +1682,21 @@ public final class RoomSession {
             + (location & 0x0F);
         int[] objects = activeRoom.roomObjectsArea();
         return areaIndex < 0 || areaIndex >= objects.length ? 0xFF : objects[areaIndex] & 0xFF;
+    }
+
+    /** Result of the ROM shovel probe made when Link begins using the item. */
+    public record ShovelStartResult(boolean started, boolean poking, int location) {
+    }
+
+    private record ShovelProbe(boolean valid, int location, int objectLeft, int objectTop) {
+        private static ShovelProbe invalid() {
+            return new ShovelProbe(false, -1, -1, -1);
+        }
+    }
+
+    private record PendingShovelDrop(int objectLeft, int objectTop,
+                                     int linkEntityX, int linkEntityY,
+                                     boolean allowDrop) {
     }
 
     /** Result of the source closed-chest action bridge. */

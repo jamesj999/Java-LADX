@@ -4703,6 +4703,61 @@ public final class RoomEntityRuntime {
     }
 
     /**
+     * Mirrors the shovel's delayed random reward branch in
+     * {@code label_002_4C92}. The first random byte is consumed even when the
+     * current room is not allowed to produce a reward; the caller supplies
+     * that room-specific restriction explicitly.
+     */
+    int spawnShovelDrop(int objectLeft, int objectTop, int linkEntityX, int linkEntityY,
+                        boolean allowDrop) {
+        if (defaultRandomByteSupplier == null) {
+            throw new IllegalStateException("Shovel drops require a ROM random-byte supplier");
+        }
+        if ((defaultRandomByteSupplier.getAsInt() & 0x07) != 0 || !allowDrop) {
+            return -1;
+        }
+
+        int itemType = (defaultRandomByteSupplier.getAsInt() & 0x01) == 0 ? 0x2E : 0x2D;
+        int freeSlot = findFreeEntitySlot();
+        if (freeSlot < 0) {
+            return -1;
+        }
+
+        int x = (objectLeft & 0xF0) + 0x08;
+        int y = (objectTop & 0xF0) + 0x10;
+        EntitySpriteDefinition definition = spriteDefinitionFor(itemType);
+        int variant = definition.supported() ? definition.initialVariant() : -1;
+        RoomEntity drop = new RoomEntity(freeSlot, -1, itemType, x & 0xFF, y & 0xFF,
+            EntityStatus.ACTIVE, definition, variant, 0, 0, 0);
+        slots[freeSlot] = drop;
+        resetEnemyDropState(freeSlot);
+        slowTransitionCountdown[freeSlot] = 0x80;
+        slowTimerInitialized[freeSlot] = true;
+        enemyTransitionCountdown[freeSlot] = 0;
+        enemyStunnedCountdown[freeSlot] = 0;
+        dyingCountdown[freeSlot] = 0;
+        powerRecoilDeath[freeSlot] = false;
+        enemyPhysicsFlags[freeSlot] = initialPhysicsFlags(itemType);
+        enemyHealth[freeSlot] = initialHealth(itemType);
+        enemyFlashCountdown[freeSlot] = 0;
+        enemyIgnoreHitsCountdown[freeSlot] = 1;
+        entityGroundStatus[freeSlot] = 0;
+        baseEntityFlipAttribute[freeSlot] = 0;
+        entityOptions1Override[freeSlot] = -1;
+        enemyRecoilMotion.clear(freeSlot);
+        dropPrivateCountdown1[freeSlot] = 0x18;
+        dropPrivateCountdown3[freeSlot] = 0x03;
+        // label_002_4C92 seeds this drop at $20, unlike the common enemy
+        // death path's $18 seed.
+        enemyDropMotion.initialize(freeSlot, groundInteractionSideScrolling, 0x20);
+        enemyDropMotion.initializeAwayFromLink(freeSlot, x & 0xFF, y & 0xFF,
+            linkEntityX & 0xFF, linkEntityY & 0xFF, 0x0C);
+        enemyDropActive[freeSlot] = true;
+        dynamicEntitySpawnedThisFrame[freeSlot] = true;
+        return freeSlot;
+    }
+
+    /**
      * Mirrors SpawnChestWithItem. The arguments are the intersected object's
      * unaligned left/top coordinates; the source masks them to a room cell
      * and places the entity at (+8,+16).
@@ -5407,6 +5462,11 @@ public final class RoomEntityRuntime {
     int dropSpeedY(int slot) {
         validateEntitySlot(slot);
         return enemyDropMotion.speedY(slot);
+    }
+
+    int dropSpeedX(int slot) {
+        validateEntitySlot(slot);
+        return enemyDropMotion.speedX(slot);
     }
 
     int dropSpeedZ(int slot) {
