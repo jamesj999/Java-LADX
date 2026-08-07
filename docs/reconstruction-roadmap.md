@@ -1598,6 +1598,26 @@ runtime collision callback.
   tests and zero failures, errors, or skipped tests; other entity handlers and
   remaining Goomba presentation edge cases remain follow-up work.
 
+## Verified ROM Snake entity runtime — 2026-08-07
+
+- Entity `$A1` now decodes `SnakeSpriteVariants` from bank `$07:$683E`, with
+  the exact four pair frames, palette bytes, and horizontal-flip attributes
+  read from the shipped ROM. Its physics `$12`, normal enemy hitbox, health
+  group `$00`, and contact damage `$04` are wired into the shared runtime.
+- The bank-$07 handler now follows the source ordering: render the persistent
+  direction offset, move with the ROM fixed-point speed tables, apply room
+  background interaction, then dispatch states `$00..$02`. It covers the `$30`
+  init private countdown, `$30..$4F` random walk windows, direction table,
+  `$18` crawl-to-dash transition, axis-proximity dash with doubled speed, and
+  `$20/$40` dash recovery timing.
+- Collision reset writes state `$00`, transition `$08`, and private countdown
+  `$20`, while the frame-bit `$03` crawl and bit-$02 dash animation cadence
+  remains distinct. Shipped-ROM tests cover exact OAM bytes, initialization,
+  fixed-point motion, dash selection, collision reset, and health/contact/sword
+  behavior. The clean Java suite passes with 981 tests and zero failures,
+  errors, or skipped tests; remaining entity handlers and broader room-script
+  parity remain follow-up work.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

@@ -2727,6 +2727,108 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void snakeUsesTheRomInitCountdownRandomWalkAndAnimation() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            0xA1, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0xA1, 64, 64, EntityStatus.INIT, definition, 0)),
+            true, null, catalog, tables);
+
+        runtime.tick(0, 120, 120, sequence(0x00));
+        runtime.tick(1, 120, 120, sequence(0x00));
+
+        assertEquals(1, runtime.snakeState(0));
+        assertEquals(0x30, runtime.snakeTransitionCountdown(0));
+        assertEquals(0x2F, runtime.snakePrivateCountdown1(0));
+        assertEquals(0x08, runtime.snakeSpeedX(0));
+        assertEquals(0x00, runtime.snakeSpeedY(0));
+        assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
+
+        runtime.tick(2, 120, 120, sequence(0xFF));
+        assertEquals(0x2F, runtime.snakeTransitionCountdown(0));
+        assertEquals(0x2E, runtime.snakePrivateCountdown1(0));
+        assertEquals(64, runtime.snapshot().slots().get(0).x());
+
+        runtime.tick(8, 120, 120, sequence(0xFF));
+        assertEquals(2, runtime.snapshot().slots().get(0).spriteVariant());
+    }
+
+    @Test
+    void snakeStartsTheRomAxisDashWhenItsPrivateTimerExpires() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            0xA1, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0xA1, 64, 64, EntityStatus.INIT, definition, 0)),
+            true, null, catalog, tables);
+
+        runtime.tick(0, 120, 120, sequence(0x00));
+        for (int frame = 1; frame <= 48; frame++) {
+            runtime.tick(frame, 64, 120, sequence(0x02));
+        }
+
+        assertEquals(2, runtime.snakeState(0));
+        assertEquals(0x30, runtime.snakeTransitionCountdown(0));
+        assertEquals(0x00, runtime.snakeSpeedX(0));
+        assertEquals(0x10, runtime.snakeSpeedY(0));
+        assertEquals(0, runtime.snakePrivateCountdown1(0));
+    }
+
+    @Test
+    void snakeBackgroundCollisionResetsTheRomStateAndPrivateRecoveryWindow()
+            throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            0xA1, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0xA1, 64, 64, EntityStatus.INIT, definition, 0)),
+            true, null, catalog, tables);
+
+        runtime.tick(0, 120, 120, sequence(0x00));
+        runtime.tick(1, 120, 120, sequence(0x00));
+        runtime.tick(2, 120, 120, sequence(0x00));
+        runtime.tick(3, 120, 120, sequence(0x00), (entity, direction, nextX, nextY) -> true);
+
+        assertEquals(0, runtime.snakeState(0));
+        assertEquals(0x08, runtime.snakeTransitionCountdown(0));
+        assertEquals(0x20, runtime.snakePrivateCountdown1(0));
+        assertEquals(0x00, runtime.snakeSpeedX(0));
+        assertEquals(0x00, runtime.snakeSpeedY(0));
+        assertEquals(64, runtime.snapshot().slots().get(0).x());
+    }
+
+    @Test
+    void snakeUsesHealthGroupZeroContactAndSwordValues() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            0xA1, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0xA1, 64, 64, EntityStatus.ACTIVE, definition, 0)),
+            true, null, catalog, tables);
+
+        List<EntityCombatEvent> contact = runtime.resolveCombat(
+            1, 72, 72, false, true, false, 0, 0, 0, 0);
+        assertEquals(1, contact.size());
+        assertEquals(0x04, contact.get(0).linkDamage());
+
+        List<EntityCombatEvent> sword = runtime.resolveCombat(
+            2, 120, 120, false, true, true, 72, 1, 72, 1);
+        assertEquals(1, sword.size());
+        assertTrue(sword.get(0).swordHit());
+        assertEquals(0, runtime.enemyHealth(0));
+        assertEquals(EntityStatus.DYING, runtime.snapshot().slots().get(0).status());
+    }
+
+    @Test
     void evasiveStalfosUsesTheRomRandomWalkAndNormalAnimation() {
         EntitySpriteDefinition definition = pairDefinition(0x1E, 3);
         RoomEntitySnapshot initial = snapshot(

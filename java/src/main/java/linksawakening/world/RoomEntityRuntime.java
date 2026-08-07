@@ -43,6 +43,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_STALFOS_EVASIVE = 0x1E;
     private static final int ENTITY_GIBDO = 0x1F;
     private static final int ENTITY_GOOMBA = 0x9F;
+    private static final int ENTITY_SNAKE = 0xA1;
     private static final int ENTITY_OPT1_NO_GROUND_INTERACTION = 0x10;
     private static final int ENTITY_OPT1_NO_WALL_COLLISION = 0x01;
     private static final int ENTITY_OPT1_SPLASH_IN_WATER = 0x08;
@@ -174,6 +175,7 @@ public final class RoomEntityRuntime {
     private final StalfosEvasiveMotion stalfosEvasiveMotion = new StalfosEvasiveMotion();
     private final GibdoMotion gibdoMotion = new GibdoMotion();
     private final GoombaMotion goombaMotion = new GoombaMotion();
+    private final SnakeMotion snakeMotion = new SnakeMotion();
     private final PeaHatMotion peaHatMotion = new PeaHatMotion();
     private final ArmosMotion armosMotion = new ArmosMotion();
     private final GhiniMotion ghiniMotion = new GhiniMotion();
@@ -767,6 +769,7 @@ public final class RoomEntityRuntime {
             boolean preserveMadBomberPresentation = false;
             boolean preserveBombitePresentation = false;
             boolean preserveIronMaskPresentation = false;
+            boolean preserveSnakePresentation = false;
             if (status == EntityStatus.ACTIVE) {
                 decrementEnemyDropCountdowns(entity);
             }
@@ -1087,6 +1090,9 @@ public final class RoomEntityRuntime {
                 }
                 if (entity.type() == ENTITY_GOOMBA) {
                     goombaMotion.initialize(entity.slot());
+                }
+                if (entity.type() == ENTITY_SNAKE) {
+                    snakeMotion.initialize(entity.slot());
                 }
                 if (entity.type() == ENTITY_PEAHAT) {
                     peaHatMotion.initialize(entity.slot());
@@ -1590,6 +1596,15 @@ public final class RoomEntityRuntime {
                 }
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_SNAKE) {
+                SnakeMotion.Update snakeUpdate = snakeMotion.advance(
+                    entity, frame, linkEntityX, linkEntityY, randomByteSupplier,
+                    backgroundCollision, enemyTransitionCountdown[entity.slot()]);
+                updated = snakeUpdate.entity();
+                enemyTransitionCountdown[entity.slot()] = snakeUpdate.transitionCountdown();
+                preserveSnakePresentation = true;
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_PEAHAT) {
                 updated = peaHatMotion.advance(entity, frame, randomByteSupplier,
                     backgroundCollision);
@@ -1703,14 +1718,14 @@ public final class RoomEntityRuntime {
             }
             int variant = preserveGhiniPresentation || preserveMadBomberPresentation
                 || preserveBombitePresentation
-                || preserveIronMaskPresentation
+                || preserveIronMaskPresentation || preserveSnakePresentation
                 ? updated.spriteVariant() : variantFor(updated, frame);
             if (status == EntityStatus.ACTIVE && shouldDisappear(entity)) {
                 variant = (slowTransitionCountdown[entity.slot()] & 0x01) != 0 ? 0 : -1;
             }
             int renderFlipAttribute = preserveGhiniPresentation || preserveMadBomberPresentation
                 || preserveBombitePresentation
-                || preserveIronMaskPresentation
+                || preserveIronMaskPresentation || preserveSnakePresentation
                 ? updated.entityFlipAttribute() : baseEntityFlipAttribute[entity.slot()];
             if (preserveBombitePresentation && updated.type() == ENTITY_TIMER_BOMBITE) {
                 renderFlipAttribute |= (bombPrivateCountdown1[updated.slot()] << 3) & 0x10;
@@ -2630,6 +2645,7 @@ public final class RoomEntityRuntime {
         stalfosEvasiveMotion.clear(slot);
         gibdoMotion.clear(slot);
         goombaMotion.clear(slot);
+        snakeMotion.clear(slot);
         peaHatMotion.clear(slot);
         armosMotion.clear(slot);
         ghiniMotion.clear(slot);
@@ -3326,6 +3342,7 @@ public final class RoomEntityRuntime {
             || type == ENTITY_MAD_BOMBER
             || type == ENTITY_BOMBER
             || type == ENTITY_GOOMBA
+            || type == ENTITY_SNAKE
             || isRoamingEnemyType(type) || usesBank6Recoil(type)
             || isGhiniType(type);
     }
@@ -4429,6 +4446,26 @@ public final class RoomEntityRuntime {
         return goombaMotion.speedY(slot);
     }
 
+    int snakeState(int slot) {
+        return snakeMotion.state(slot);
+    }
+
+    int snakeTransitionCountdown(int slot) {
+        return enemyTransitionCountdown[slot];
+    }
+
+    int snakePrivateCountdown1(int slot) {
+        return snakeMotion.privateCountdown1(slot);
+    }
+
+    int snakeSpeedX(int slot) {
+        return snakeMotion.speedX(slot);
+    }
+
+    int snakeSpeedY(int slot) {
+        return snakeMotion.speedY(slot);
+    }
+
     int peaHatState(int slot) {
         return peaHatMotion.state(slot);
     }
@@ -4787,7 +4824,7 @@ public final class RoomEntityRuntime {
             case ENTITY_ARMOS_STATUE -> ARMOS_INITIAL_PHYSICS_FLAGS;
             case ENTITY_STALFOS_EVASIVE -> EVASIVE_PHYSICS_FLAGS;
             case ENTITY_IRON_MASK -> IRON_MASK_INITIAL_PHYSICS_FLAGS;
-            case ENTITY_GOOMBA -> GOOMBA_INITIAL_PHYSICS_FLAGS;
+            case ENTITY_GOOMBA, ENTITY_SNAKE -> GOOMBA_INITIAL_PHYSICS_FLAGS;
             case ENTITY_IRON_MASKS_MASK -> IRON_MASKS_MASK_INITIAL_PHYSICS_FLAGS;
             case ENTITY_BOMB -> BOMB_INITIAL_PHYSICS_FLAGS;
             case ENTITY_BOUNCING_BOMBITE, ENTITY_TIMER_BOMBITE ->
@@ -5141,6 +5178,7 @@ public final class RoomEntityRuntime {
         stalfosEvasiveMotion.clear(slot);
         gibdoMotion.clear(slot);
         goombaMotion.clear(slot);
+        snakeMotion.clear(slot);
         peaHatMotion.clear(slot);
         armosMotion.clear(slot);
         followingNpcMotion.clear(slot);

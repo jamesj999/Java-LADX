@@ -173,6 +173,11 @@ final class EntitySpriteHandlerCatalogTest {
         assertDefinition(goomba, 0x07, 0x65CE,
             EntitySpriteDefinition.Shape.PAIR, 3, 0);
 
+        EntitySpriteDefinition snake = catalog.forEntityType(
+            0xA1, EntityRoomLoader.RoomTable.INDOORS_A);
+        assertDefinition(snake, 0x07, 0x683E,
+            EntitySpriteDefinition.Shape.PAIR, 4, 0);
+
         EntitySpriteDefinition octorok = catalog.forEntityType(
             0x09, EntityRoomLoader.RoomTable.OVERWORLD);
         assertDefinition(octorok, 0x03, 0x57FB,
@@ -351,6 +356,18 @@ final class EntitySpriteHandlerCatalogTest {
             {0x4A, 0x02, 0x4C, 0x02},
             {0x4C, 0x22, 0x4A, 0x22},
             {0x4E, 0x02, 0x4E, 0x22}
+        });
+    }
+
+    @Test
+    void mapsSnakeToItsExactBankSevenDisplayList() throws Exception {
+        EntitySpriteDefinition snake = new EntitySpriteHandlerCatalog(loadRom())
+            .forEntityType(0xA1, EntityRoomLoader.RoomTable.INDOORS_A);
+        assertPairBytes(snake, new int[][] {
+            {0x44, 0x03, 0x46, 0x03},
+            {0x44, 0x03, 0x48, 0x03},
+            {0x46, 0x23, 0x44, 0x23},
+            {0x48, 0x23, 0x44, 0x23}
         });
     }
 
