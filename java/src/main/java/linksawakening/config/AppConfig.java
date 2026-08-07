@@ -183,12 +183,7 @@ public final class AppConfig {
             return ItemProfile.DEBUG_ALL_ITEMS;
         }
         try {
-            ItemProfile requested = ItemProfile.valueOf(value.toUpperCase(Locale.ROOT));
-            if (requested == ItemProfile.NEW_GAME) {
-                System.err.println("NEW_GAME item profile is not implemented yet; using DEBUG_ALL_ITEMS");
-                return ItemProfile.DEBUG_ALL_ITEMS;
-            }
-            return requested;
+            return ItemProfile.valueOf(value.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
             System.err.println("Unknown item profile: " + value + " (falling back to DEBUG_ALL_ITEMS)");
             return ItemProfile.DEBUG_ALL_ITEMS;

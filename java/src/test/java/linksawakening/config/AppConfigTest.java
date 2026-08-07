@@ -58,7 +58,7 @@ final class AppConfigTest {
         assertFalse(config.debugEnabled());
         assertEquals(AppConfig.StartMode.NORMAL, config.startMode());
         assertEquals(0xA1, config.startLocation().roomId());
-        assertEquals(AppConfig.ItemProfile.DEBUG_ALL_ITEMS, config.itemProfile());
+        assertEquals(AppConfig.ItemProfile.NEW_GAME, config.itemProfile());
 
         InputConfig input = config.inputConfig();
         assertEquals(GLFW_KEY_SPACE, input.menuOpenKey());

@@ -8,6 +8,7 @@ import linksawakening.scene.BackgroundSceneCatalog;
 import linksawakening.scene.BackgroundSceneLoader;
 import linksawakening.scene.BackgroundSceneSpec;
 import linksawakening.startup.StartupCoordinator;
+import linksawakening.state.PlayerState;
 import linksawakening.world.IndoorRoomPointerTables;
 import linksawakening.world.RoomPointerTable;
 import org.junit.jupiter.api.Test;
@@ -53,6 +54,24 @@ final class MainTest {
             """);
 
         assertEquals(0x92, StartupCoordinator.gameplayStartRoomId(config));
+    }
+
+    @Test
+    void configuredNewGameProfileClearsTheDebugInventoryBeforeRoomStartup() {
+        PlayerState playerState = new PlayerState();
+        playerState.setItemA(PlayerState.INVENTORY_BOW);
+        playerState.setItemB(PlayerState.INVENTORY_HOOKSHOT);
+
+        Main.applyConfiguredItemProfile(AppConfig.parse("""
+            { "itemProfile": "NEW_GAME" }
+            """), playerState);
+
+        assertEquals(PlayerState.INVENTORY_EMPTY, playerState.itemA());
+        assertEquals(PlayerState.INVENTORY_EMPTY, playerState.itemB());
+        assertEquals(0x30, playerState.maxArrows());
+        assertEquals(0x30, playerState.maxBombs());
+        assertEquals(0x20, playerState.maxMagicPowder());
+        assertEquals(PlayerState.INVENTORY_EMPTY, playerState.subscreenItem(0));
     }
 
     @Test

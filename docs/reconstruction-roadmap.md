@@ -2091,6 +2091,19 @@ runtime collision callback.
   `$30-$C0` arrival effect. The clean Java suite passes with 1,151 tests and
   zero failures, errors, or skipped tests.
 
+## Verified configured new-game player profile — 2026-08-07
+
+- `AppConfig` now preserves the explicit `NEW_GAME` item-profile value instead
+  of silently converting it to `DEBUG_ALL_ITEMS`.
+- Direct configured-room startup applies the same ROM-derived
+  `NewGameStartProfile` used by the file-menu new-game path: empty equipped and
+  subscreen items, three full hearts, zero resources, and the source arrow,
+  bomb, and magic-powder capacities.
+- `DEBUG_ALL_ITEMS` remains the default development profile. Focused config and
+  startup tests cover both the parsed profile and the state reset; the clean
+  Java suite passes with 1,152 tests and zero failures, errors, or skipped
+  tests.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

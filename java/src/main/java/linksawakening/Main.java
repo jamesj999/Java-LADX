@@ -1155,11 +1155,19 @@ public class Main {
         return appConfig != null ? appConfig : AppConfig.defaults();
     }
 
+    /** Applies the configured player profile before a direct gameplay launch. */
+    static void applyConfiguredItemProfile(AppConfig config, PlayerState playerState) {
+        if (config.itemProfile() == AppConfig.ItemProfile.NEW_GAME) {
+            NewGameStartProfile.romDefaults().initializePlayerState(playerState);
+        }
+    }
+
     private static void startConfiguredGameplay() {
         fileMenuController = null;
         fileSaveController = null;
         currentSaveSlot = -1;
         currentScreen = SCREEN_OVERWORLD;
+        applyConfiguredItemProfile(currentAppConfig(), playerState);
         if (currentAppConfig().playIntroStory()) {
             System.err.println("Intro story startup is not implemented yet; spawning at start location");
         }
