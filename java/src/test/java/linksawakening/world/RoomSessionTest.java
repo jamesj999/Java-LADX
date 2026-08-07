@@ -169,6 +169,34 @@ final class RoomSessionTest {
     }
 
     @Test
+    void consumesBombExplosionObjectWindowThroughTheDedicatedSessionSeam() {
+        RoomSession session = newSession();
+        session.loadInitialOverworld(0x92);
+        assertTrue(session.placeBomb(0x40, 0x50, 0, 0));
+        int bombSlot = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x02)
+            .findFirst().orElseThrow().slot();
+
+        for (int frame = 0; frame < 136; frame++) {
+            int currentFrame = frame;
+            session.tickEntities(frame, 0, 0);
+            List<BombExplosionEvent> events = session.consumeBombExplosionEvents();
+            assertTrue(events.isEmpty(),
+                () -> "frame=" + currentFrame + " countdown="
+                    + session.entityTransitionCountdownForTest(bombSlot)
+                    + " events=" + events);
+        }
+        session.tickEntities(136, 0, 0);
+
+        List<BombExplosionEvent> events = session.consumeBombExplosionEvents();
+        assertEquals(1, events.size());
+        assertTrue(events.getFirst().targetsRoomObjects());
+        assertEquals(0x16, events.getFirst().countdown());
+        assertEquals(BombExplosionEvent.DAMAGE_TYPE_BOMB, events.getFirst().damageType());
+        assertTrue(session.consumeBombExplosionEvents().isEmpty());
+    }
+
+    @Test
     void indoorHookshotBridgeRewritesPaddedObjectsAndBackgroundTiles() {
         RoomSession session = newSession();
         session.loadIndoor(0x00, 0x0F);

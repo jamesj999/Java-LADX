@@ -46,6 +46,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL = 0x02;
     private static final int ENTITY_PHYSICS_HARMLESS = 0x80;
     private static final int ENTITY_PHYSICS_PROJECTILE_NOCLIP = 0x40;
+    private static final int HITFLAGS_IGNORE_HITS = 0x80;
     private static final int BOMB_INITIAL_PHYSICS_FLAGS = 0xD2;
     private static final int BOMB_OPTIONS1 = ENTITY_OPT1_SPLASH_IN_WATER
         | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
@@ -153,6 +154,7 @@ public final class RoomEntityRuntime {
     private final int[] enemyHealth = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyFlashCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyIgnoreHitsCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] enemyHitboxFlags = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] entityGroundStatus = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] fallingTargetX = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] fallingTargetY = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -174,6 +176,7 @@ public final class RoomEntityRuntime {
     private final int[] bombDirection = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] bombFinalPresentationPending =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] bombPrivateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] placedBombMotionInitialized =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final int[] thrownDirection = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -183,6 +186,7 @@ public final class RoomEntityRuntime {
         new ArrayList<>();
     private final List<TransientVfxRequest> transientVfxRequests = new ArrayList<>();
     private final List<EntityCombatEvent> pendingEntityEvents = new ArrayList<>();
+    private final List<BombExplosionEvent> pendingBombExplosionEvents = new ArrayList<>();
     private final List<HookshotBridgeUpdate> hookshotBridgeUpdates = new ArrayList<>();
     private boolean switchBlockAnimationActive;
     private boolean pendingSwitchBlockAnimationRequest;
@@ -570,6 +574,7 @@ public final class RoomEntityRuntime {
         Arrays.fill(dynamicEntitySpawnedThisFrame, false);
         transientVfxRequests.clear();
         pendingEntityEvents.clear();
+        pendingBombExplosionEvents.clear();
         hookshotBridgeUpdates.clear();
         pendingSwitchBlockAnimationRequest = false;
         List<EntityProjectileEvent> projectileEvents = new ArrayList<>();
@@ -1826,6 +1831,7 @@ public final class RoomEntityRuntime {
         resetEnemyDropState(slot);
         RoomEntity entity = slots[slot];
         bombFinalPresentationPending[slot] = false;
+        enemyHitboxFlags[slot] = 0;
         if (!entity.loaded()) {
             return 0;
         }
@@ -1852,6 +1858,7 @@ public final class RoomEntityRuntime {
         liftedStateInitialized[slot] = false;
         thrownDirection[slot] = 0xFF;
         bombDirection[slot] = 0xFF;
+        bombPrivateState4[slot] = 0;
         placedBombMotionInitialized[slot] = false;
         ledgeTransitionTimer[slot] = 0;
         thrownMotionInitialized[slot] = false;
@@ -1953,6 +1960,8 @@ public final class RoomEntityRuntime {
         thrownEntityMotion.startPlacedBomb(freeSlot, romDirection);
         placedBombMotionInitialized[freeSlot] = true;
         bombFinalPresentationPending[freeSlot] = false;
+        bombPrivateState4[freeSlot] = 0;
+        enemyHitboxFlags[freeSlot] = 0;
         enemyTransitionCountdown[freeSlot] = BombMotion.INITIAL_COUNTDOWN;
         enemyStunnedCountdown[freeSlot] = 0;
         enemyHealth[freeSlot] = 0;
@@ -2187,6 +2196,12 @@ public final class RoomEntityRuntime {
         return pending;
     }
 
+    List<BombExplosionEvent> consumeBombExplosionEvents() {
+        List<BombExplosionEvent> pending = List.copyOf(pendingBombExplosionEvents);
+        pendingBombExplosionEvents.clear();
+        return pending;
+    }
+
     List<HookshotBridgeUpdate> hookshotBridgeUpdates() {
         return List.copyOf(hookshotBridgeUpdates);
     }
@@ -2363,6 +2378,9 @@ public final class RoomEntityRuntime {
     private int findFreeEntitySlot() {
         for (int slot = slots.length - 1; slot >= 0; slot--) {
             if (!slots[slot].loaded()) {
+                // Dynamic entity paths reuse this slot directly rather than
+                // necessarily passing through clearEntity first.
+                enemyHitboxFlags[slot] = 0;
                 return slot;
             }
         }
@@ -2564,10 +2582,51 @@ public final class RoomEntityRuntime {
         int variant = decision.explosionVariant().orElse(0);
         RoomEntity updated = withDefinition(entity, definition, variant);
         slots[index] = updated;
+        queueBombExplosionInteractions(updated, decision);
         if (decision.unloadAfterPresentation()) {
             bombFinalPresentationPending[slot] = true;
         }
         return decision;
+    }
+
+    private void queueBombExplosionInteractions(RoomEntity bomb, BombMotion.Decision decision) {
+        if (decision.phase() != BombMotion.Phase.EXPLOSION) {
+            return;
+        }
+        int bombSlot = bomb.slot();
+        int countdown = enemyTransitionCountdown[bombSlot] & 0xFF;
+        if (bombPrivateState4[bombSlot] != 0
+            || countdown < 0x0E || countdown > 0x16) {
+            return;
+        }
+
+        int bombX = bomb.x() & 0xFF;
+        int bombVisualY = (bomb.y() - bomb.z()) & 0xFF;
+        pendingBombExplosionEvents.add(new BombExplosionEvent(bombSlot,
+            BombExplosionEvent.OBJECT_TARGET, bombX, bombVisualY, countdown,
+            BombExplosionEvent.DAMAGE_TYPE_BOMB));
+        if (countdown != 0x12) {
+            return;
+        }
+
+        for (int targetSlot = slots.length - 1; targetSlot >= 0; targetSlot--) {
+            RoomEntity target = slots[targetSlot];
+            if (target.status().value() < EntityStatus.ACTIVE.value()
+                || (enemyPhysicsFlags[targetSlot]
+                    & (ENTITY_PHYSICS_PROJECTILE_NOCLIP | ENTITY_PHYSICS_GRABBABLE)) != 0
+                || (enemyHitboxFlags[targetSlot] & HITFLAGS_IGNORE_HITS) != 0
+                || !isWithinBombExplosionWindow(bombX, target.x())
+                || !isWithinBombExplosionWindow(
+                    (target.y() - target.z()) & 0xFF, bombVisualY)) {
+                continue;
+            }
+            pendingBombExplosionEvents.add(new BombExplosionEvent(bombSlot, targetSlot,
+                bombX, bombVisualY, countdown, BombExplosionEvent.DAMAGE_TYPE_BOMB));
+        }
+    }
+
+    private static boolean isWithinBombExplosionWindow(int source, int target) {
+        return (((((source - target) & 0xFF) + 0x18) & 0xFF) < 0x30);
     }
 
     private RoomEntity renderLiftedBomb(RoomEntity entity) {
@@ -3217,9 +3276,24 @@ public final class RoomEntityRuntime {
         enemyIgnoreHitsCountdown[slot] = value;
     }
 
+    void setHitboxFlagsForTest(int slot, int value) {
+        validateCountdownTestValue(slot, value);
+        enemyHitboxFlags[slot] = value;
+    }
+
+    int hitboxFlagsForTest(int slot) {
+        validateEntitySlot(slot);
+        return enemyHitboxFlags[slot];
+    }
+
     void setEnemyFlashCountdownForTest(int slot, int value) {
         validateCountdownTestValue(slot, value);
         enemyFlashCountdown[slot] = value;
+    }
+
+    void setPhysicsFlagsForTest(int slot, int value) {
+        validateCountdownTestValue(slot, value);
+        enemyPhysicsFlags[slot] = value;
     }
 
     void setThrownDirection(int slot, int value) {
@@ -3627,6 +3701,7 @@ public final class RoomEntityRuntime {
         enemyHealth[slot] = 0;
         enemyFlashCountdown[slot] = 0;
         enemyIgnoreHitsCountdown[slot] = 0;
+        enemyHitboxFlags[slot] = 0;
         entityGroundStatus[slot] = 0;
         fallingTargetX[slot] = 0;
         fallingTargetY[slot] = 0;

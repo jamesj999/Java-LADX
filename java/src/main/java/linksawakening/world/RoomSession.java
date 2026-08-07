@@ -634,6 +634,14 @@ public final class RoomSession {
         return entityRuntime.consumePendingEntityEvents();
     }
 
+    /** Returns and clears source-shaped bomb-explosion interaction requests from the last tick. */
+    public List<BombExplosionEvent> consumeBombExplosionEvents() {
+        if (entityRuntime == null) {
+            return List.of();
+        }
+        return entityRuntime.consumeBombExplosionEvents();
+    }
+
     /** Advances the ROM's VBlank tile path, including switch blocks. */
     public void tickGameplayVBlank() {
         if (SwitchBlockAnimation.isAnimating(switchableObjectAnimationStage)) {

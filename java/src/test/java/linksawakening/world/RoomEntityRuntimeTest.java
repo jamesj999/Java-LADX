@@ -4251,6 +4251,112 @@ final class RoomEntityRuntimeTest {
         assertFalse(pending[slot]);
     }
 
+    @Test
+    void bombExplosionPublishesOnlyTargetsInsideTheInclusiveCountdownWindow() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotWithSlots(
+            new RoomEntity(11, 11, 0x4D, 0x40, 0x67, EntityStatus.ACTIVE,
+                pairDefinition(0x4D, 1), 0),
+            new RoomEntity(12, 12, 0x4D, 0x58, 0x4F, EntityStatus.ACTIVE,
+                pairDefinition(0x4D, 1), 0),
+            new RoomEntity(13, 13, 0x4D, 0x57, 0x66, EntityStatus.ACTIVE,
+                pairDefinition(0x4D, 1), 0),
+            new RoomEntity(14, 14, 0x4D, 0x28, 0x4F, EntityStatus.ACTIVE,
+                pairDefinition(0x4D, 1), 0)));
+        int bombSlot = runtime.spawnBomb(0x40, 0x50, 0, 0);
+        runtime.setBombTransitionCountdownForTest(bombSlot, 0x13);
+
+        runtime.tick(0, 0, 0, () -> 0);
+
+        List<BombExplosionEvent> events = runtime.consumeBombExplosionEvents();
+        assertEquals(List.of(13, 12), events.stream()
+            .filter(event -> !event.targetsRoomObjects())
+            .map(BombExplosionEvent::targetSlot)
+            .toList());
+        for (BombExplosionEvent event : events) {
+            assertEquals(bombSlot, event.bombSlot());
+            assertEquals(0x40, event.bombX());
+            assertEquals(0x4F, event.bombVisualY());
+            assertEquals(0x12, event.countdown());
+            assertEquals(0x07, event.damageType());
+        }
+        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+
+        runtime.tick(1, 0, 0, () -> 0);
+        List<BombExplosionEvent> nextFrame = runtime.consumeBombExplosionEvents();
+        assertEquals(List.of(BombExplosionEvent.OBJECT_TARGET), nextFrame.stream()
+            .map(BombExplosionEvent::targetSlot).toList());
+    }
+
+    @Test
+    void bombExplosionFiltersNonInteractiveTargetsAtTheExactInteractionTick() throws Exception {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotWithSlots(
+            new RoomEntity(10, 10, 0x4D, 0x40, 0x4F, EntityStatus.ACTIVE,
+                pairDefinition(0x4D, 1), 0),
+            new RoomEntity(11, 11, 0x4D, 0x40, 0x4F, EntityStatus.ACTIVE,
+                pairDefinition(0x4D, 1), 0),
+            new RoomEntity(12, 12, 0x4D, 0x40, 0x4F, EntityStatus.ACTIVE,
+                pairDefinition(0x4D, 1), 0),
+            new RoomEntity(13, 13, 0x05, 0x40, 0x4F, EntityStatus.ACTIVE,
+                pairDefinition(0x05, 1), 0),
+            new RoomEntity(14, 14, 0x4D, 0x40, 0x4F, EntityStatus.ACTIVE,
+                pairDefinition(0x4D, 1), 0)));
+        setPhysicsFlags(runtime, 14, 0x40);
+        runtime.setHitboxFlagsForTest(12, 0x80);
+        runtime.setEnemyIgnoreHitsCountdownForTest(11, 0x02);
+        int bombSlot = runtime.spawnBomb(0x40, 0x50, 0, 0);
+        runtime.setBombTransitionCountdownForTest(bombSlot, 0x13);
+
+        runtime.tick(0, 0, 0, () -> 0);
+
+        List<BombExplosionEvent> events = runtime.consumeBombExplosionEvents();
+        List<BombExplosionEvent> targetEvents = events.stream()
+            .filter(event -> !event.targetsRoomObjects())
+            .toList();
+        assertEquals(2, targetEvents.size());
+        assertEquals(List.of(11, 10), targetEvents.stream()
+            .map(BombExplosionEvent::targetSlot).toList());
+        assertEquals(0x12, targetEvents.getFirst().countdown());
+        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+    }
+
+    @Test
+    void bombExplosionObjectWindowIsInclusiveAndSilentOutsideIt() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot());
+        int bombSlot = runtime.spawnBomb(0x40, 0x50, 0, 0);
+
+        runtime.setBombTransitionCountdownForTest(bombSlot, 0x18);
+        runtime.tick(0, 0, 0, () -> 0);
+        assertTrue(runtime.consumeBombExplosionEvents().isEmpty());
+
+        runtime.setBombTransitionCountdownForTest(bombSlot, 0x17);
+        runtime.tick(1, 0, 0, () -> 0);
+        assertEquals(List.of(0x16), runtime.consumeBombExplosionEvents().stream()
+            .map(BombExplosionEvent::countdown).toList());
+
+        runtime.setBombTransitionCountdownForTest(bombSlot, 0x0F);
+        runtime.tick(2, 0, 0, () -> 0);
+        assertEquals(List.of(0x0E), runtime.consumeBombExplosionEvents().stream()
+            .map(BombExplosionEvent::countdown).toList());
+
+        runtime.setBombTransitionCountdownForTest(bombSlot, 0x0E);
+        runtime.tick(3, 0, 0, () -> 0);
+        assertTrue(runtime.consumeBombExplosionEvents().isEmpty());
+    }
+
+    private static void setPhysicsFlags(RoomEntityRuntime runtime, int slot, int flags) {
+        runtime.setPhysicsFlagsForTest(slot, flags);
+    }
+
+    @Test
+    void clearingAnEntityResetsTheRomHitboxIgnoreFlag() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot());
+        runtime.setHitboxFlagsForTest(0, 0x80);
+
+        runtime.clearEntity(0);
+
+        assertEquals(0, runtime.hitboxFlagsForTest(0));
+    }
+
     private static RoomEntity ghiniEntity(EntitySpriteHandlerCatalog catalog, int slot, int type,
                                           EntityStatus status) {
         EntitySpriteDefinition definition = catalog.forEntityType(
@@ -4305,6 +4411,17 @@ final class RoomEntityRuntimeTest {
             slots.add(RoomEntity.disabled(slots.size()));
         }
         slots.set(entity.slot(), entity);
+        return new RoomEntitySnapshot(slots);
+    }
+
+    private static RoomEntitySnapshot snapshotWithSlots(RoomEntity... entities) {
+        List<RoomEntity> slots = new ArrayList<>();
+        while (slots.size() < EntityRoomLoader.MAX_ENTITIES) {
+            slots.add(RoomEntity.disabled(slots.size()));
+        }
+        for (RoomEntity entity : entities) {
+            slots.set(entity.slot(), entity);
+        }
         return new RoomEntitySnapshot(slots);
     }
 
