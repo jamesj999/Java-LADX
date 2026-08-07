@@ -105,7 +105,7 @@ public final class RoomLoader {
             || roomId >= indoorRoomStatus.length
             ? 0 : Byte.toUnsignedInt(indoorRoomStatus[roomId]);
         RoomObjectParseResult parsed = parser.parseIndoor(
-            roomDataOffset + 2, floorAndTemplate, roomStatusFlags);
+            roomDataOffset + 2, floorAndTemplate, roomStatusFlags, mapId);
         int[] objects = parsed.roomObjectsArea();
         RoomTilemap tilemap = tilemapBuilder.buildIndoor(mapId, roomId, objects);
         EntityRoomLoader.RoomTable entityTable = entityTableForIndoorMap(mapId);

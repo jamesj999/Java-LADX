@@ -13,9 +13,11 @@ import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.vfx.TransientVfxType;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static linksawakening.world.RoomConstants.ROOM_PIXEL_HEIGHT;
 import static linksawakening.world.RoomConstants.ROOM_PIXEL_WIDTH;
@@ -33,7 +35,10 @@ public final class RoomSession {
     private static final int OBJECT_ROCKY_GROUND = 0x09;
     private static final int OBJECT_GIANT_SKULL_TOP_LEFT = 0xBB;
     private static final int OBJECT_GIANT_SKULL_BOTTOM_RIGHT = 0xBE;
+    private static final int OBJECT_BOMBABLE_BLOCK = 0xA9;
+    private static final int OBJECT_FLOOR_OD = 0x0D;
     private static final int OW_ROOM_STATUS_OPENED = 0x04;
+    private static final int INDOOR_ROOM_STATUS_EVENT_3 = 0x40;
     private static final int OBJECT_BOMBED_PASSAGE_VERTICAL = 0x3D;
     private static final int OBJECT_BOMBED_PASSAGE_HORIZONTAL = 0x3E;
     private static final int BOMBABLE_WALL_PHYSICS_BASE = 0x99;
@@ -103,6 +108,8 @@ public final class RoomSession {
         hookshotBridgeTileOverrides = new HashMap<>();
     /** Immediate bomb-wall draw commands use a different tile order than the room object table. */
     private final Map<Integer, Integer> bombedWallTileOverrides = new HashMap<>();
+    /** The basic A9 breakable path also draws floor tiles in source command order. */
+    private final Set<Integer> bombedBlockTileOverrides = new HashSet<>();
     private final int[] clearedEntitiesByRoom = new int[0x100];
     private int currentOverworldTilesetId = W_TILESET_NO_UPDATE;
     private FollowingNpcState followingNpcState = FollowingNpcState.none();
@@ -994,6 +1001,7 @@ public final class RoomSession {
         }
         hookshotBridgeTileOverrides.clear();
         bombedWallTileOverrides.clear();
+        bombedBlockTileOverrides.clear();
         pendingBombExplosionEvents.clear();
     }
 
@@ -1018,8 +1026,11 @@ public final class RoomSession {
                         event.bombX(), bomb.y(), event.countdown()));
                 }
             } else if (bomb != null && bomb.loaded()) {
-                applyIndoorBombableWallCandidate(BombObjectInteraction.puzzleCandidate(
-                    event.bombX(), bomb.y(), event.countdown()));
+                BombObjectInteraction.Candidate candidate = BombObjectInteraction.puzzleCandidate(
+                    event.bombX(), bomb.y(), event.countdown());
+                if (!applyIndoorBombableBlockCandidate(candidate)) {
+                    applyIndoorBombableWallCandidate(candidate);
+                }
             }
         }
     }
@@ -1153,6 +1164,32 @@ public final class RoomSession {
         overworldCollision.setGbcOverlay(null);
     }
 
+    private boolean applyIndoorBombableBlockCandidate(BombObjectInteraction.Candidate candidate) {
+        if (candidate == null) {
+            return false;
+        }
+        int location = candidate.location();
+        if (objectAtRoomLocation(location) != OBJECT_BOMBABLE_BLOCK) {
+            return false;
+        }
+        int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0)
+            + (location & 0x0F);
+        int[] objects = activeRoom.roomObjectsArea();
+        if (areaIndex < 0 || areaIndex >= objects.length) {
+            return false;
+        }
+
+        objects[areaIndex] = OBJECT_FLOOR_OD;
+        indoorStatusTableForMap(activeRoom.mapId())[activeRoom.roomId()]
+            |= (byte) INDOOR_ROOM_STATUS_EVENT_3;
+        bombedBlockTileOverrides.add(areaIndex);
+
+        refreshActiveRoomTilemap();
+        overworldCollision.setRoom(activeRoom.roomObjectsArea());
+        overworldCollision.setGbcOverlay(null);
+        return true;
+    }
+
     private int adjacentIndoorRoomIdForBombWall(int wallIndex) {
         int mapPosition = indoorMapPosition(activeRoom.mapId(), activeRoom.roomId());
         int mapPositionDelta = switch (wallIndex) {
@@ -1242,6 +1279,7 @@ public final class RoomSession {
         activeRoom.replaceTilemap(tilemap.tileIds(), tilemap.tileAttrs());
         applyHookshotBridgeTileOverrides();
         applyBombedWallTileOverrides();
+        applyBombedBlockTileOverrides();
     }
 
     private RoomEntityObjectSample entityObjectSample(RoomEntity entity) {
@@ -1330,6 +1368,32 @@ public final class RoomSession {
             tileIds[topLeft + 1] = replacement[1];
             tileIds[topLeft + RoomConstants.ROOM_TILE_WIDTH] = replacement[2];
             tileIds[topLeft + RoomConstants.ROOM_TILE_WIDTH + 1] = replacement[3];
+        }
+    }
+
+    private void applyBombedBlockTileOverrides() {
+        if (activeRoom == null || bombedBlockTileOverrides.isEmpty()) {
+            return;
+        }
+        int[] tileIds = activeRoom.tileIds();
+        for (int areaIndex : bombedBlockTileOverrides) {
+            int areaOffset = areaIndex - RoomConstants.ROOM_OBJECTS_BASE;
+            int objectRow = (areaOffset >>> 4) & 0x0F;
+            int objectColumn = areaOffset & 0x0F;
+            int tileX = objectColumn * 2;
+            int tileY = objectRow * 2;
+            if (objectRow >= RoomConstants.OBJECTS_PER_COLUMN
+                || objectColumn >= RoomConstants.OBJECTS_PER_ROW
+                || tileX + 1 >= RoomConstants.ROOM_TILE_WIDTH
+                || tileY + 1 >= RoomConstants.ROOM_TILE_HEIGHT) {
+                continue;
+            }
+
+            int topLeft = tileY * RoomConstants.ROOM_TILE_WIDTH + tileX;
+            tileIds[topLeft] = 0x10;
+            tileIds[topLeft + 1] = 0x12;
+            tileIds[topLeft + RoomConstants.ROOM_TILE_WIDTH] = 0x11;
+            tileIds[topLeft + RoomConstants.ROOM_TILE_WIDTH + 1] = 0x13;
         }
     }
 

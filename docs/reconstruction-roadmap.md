@@ -1372,6 +1372,22 @@ runtime collision callback.
   946 tests and zero failures, errors, or skipped tests. Puzzle jingle and the
   remaining bomb-specific presentation branches remain follow-up work.
 
+## Verified ROM indoor bombable-block mutation — 2026-08-07
+
+- Indoor room loading now applies status bit `$40` (`ROOM_STATUS_EVENT_3`) to
+  the source `ConfigureRoomObjects` map gate, replacing bombable block `$A9`
+  with floor `$0D` on reload for maps at or beyond `MAP_CAVE_B` (`$0A`).
+- The live basic bomb path recognizes `$A9`, writes the same floor object and
+  status byte, refreshes the collision view, and applies the source immediate
+  draw-command order (`$10,$12,$11,$13`) before a reload rebuilds the normal
+  floor order (`$10,$11,$12,$13`).
+- A shipped-ROM room test covers the live mutation, status persistence, and
+  immediate-versus-reloaded tile order. The source liftable-rock smash entity,
+  puzzle jingle, and remaining bomb-specific presentation branches remain
+  separate follow-up work.
+- The clean Java suite passes with 947 tests and zero failures, errors, or
+  skipped tests. This increment does not add an emulator.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

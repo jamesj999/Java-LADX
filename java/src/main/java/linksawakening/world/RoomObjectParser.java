@@ -52,6 +52,8 @@ public final class RoomObjectParser {
     private static final int OBJECT_HOUSE_DOOR_VARIANT = 0xE2;
     private static final int OBJECT_CAVE_DOOR = 0xE3;
     private static final int OBJECT_BOMBABLE_CAVE_DOOR = 0xBA;
+    private static final int OBJECT_BOMBABLE_BLOCK = 0xA9;
+    private static final int OBJECT_FLOOR_OD = 0x0D;
     private static final int OBJECT_GROUND_STAIRS = 0xC6;
     private static final int OBJECT_DOOR_CB = 0xCB;
     private static final int OBJECT_DOOR_61 = 0x61;
@@ -77,6 +79,7 @@ public final class RoomObjectParser {
     private static final int SMALL_HOUSE_OBJECT_IDS_ADDR = 0x76FE;
 
     private static final int ROOM_STATUS_DOOR_OPEN_UP = 0x04;
+    private static final int ROOM_STATUS_EVENT_3 = 0x40;
     private static final int OBJECT_TREE_TOP_LEFT = 0x25;
     private static final int OBJECT_TREE_TOP_RIGHT = 0x26;
     private static final int OBJECT_TREE_BOTTOM_LEFT = 0x27;
@@ -111,6 +114,11 @@ public final class RoomObjectParser {
 
     public RoomObjectParseResult parseIndoor(int streamOffset, int floorAndTemplate,
                                              int roomStatusFlags) {
+        return parseIndoor(streamOffset, floorAndTemplate, roomStatusFlags, -1);
+    }
+
+    public RoomObjectParseResult parseIndoor(int streamOffset, int floorAndTemplate,
+                                             int roomStatusFlags, int mapId) {
         reset(floorAndTemplate & 0x0F);
         this.roomStatusFlags = roomStatusFlags;
         int templateIdx = (floorAndTemplate >> 4) & 0x0F;
@@ -119,9 +127,27 @@ public final class RoomObjectParser {
             applyMacroTable(0, ROOM_TEMPLATE_BANK, table[0], ROOM_TEMPLATE_BANK, table[1]);
         }
         parseRoomObjectStream(streamOffset, true);
+        applyIndoorBombableBlockStatus(mapId);
         applyIndoorBombableWallStatus();
         assignDoorPositionsToWarps();
         return new RoomObjectParseResult(roomObjectsArea, warps);
+    }
+
+    private void applyIndoorBombableBlockStatus(int mapId) {
+        // ConfigureRoomObjects only admits the breakable-block replacement on
+        // MAP_CAVE_B and later indoor maps, matching the source's map gate.
+        if (mapId < 0x0A || (roomStatusFlags & ROOM_STATUS_EVENT_3) == 0) {
+            return;
+        }
+        for (int row = 0; row < RoomConstants.OBJECTS_PER_COLUMN; row++) {
+            for (int column = 0; column < RoomConstants.OBJECTS_PER_ROW; column++) {
+                int areaIndex = RoomConstants.ROOM_OBJECTS_BASE
+                    + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + column;
+                if (roomObjectsArea[areaIndex] == OBJECT_BOMBABLE_BLOCK) {
+                    roomObjectsArea[areaIndex] = OBJECT_FLOOR_OD;
+                }
+            }
+        }
     }
 
     private void applyIndoorBombableWallStatus() {
