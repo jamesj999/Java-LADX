@@ -47,6 +47,12 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_PHYSICS_HARMLESS = 0x80;
     private static final int ENTITY_PHYSICS_PROJECTILE_NOCLIP = 0x40;
     private static final int HITFLAGS_IGNORE_HITS = 0x80;
+    private static final int LIFTABLE_ROCK_SMASH_PHYSICS_FLAGS =
+        0x04 | ENTITY_PHYSICS_HARMLESS | ENTITY_PHYSICS_PROJECTILE_NOCLIP
+            | 0x10;
+    private static final int LIFTABLE_ROCK_SMASH_MODE_ROCK = 0;
+    private static final int LIFTABLE_ROCK_SMASH_MODE_BUSH = 1;
+    private static final int LIFTABLE_ROCK_SMASH_MODE_GRASS = 0xFF;
     private static final int BOMB_INITIAL_PHYSICS_FLAGS = 0xD2;
     private static final int BOMB_OPTIONS1 = ENTITY_OPT1_SPLASH_IN_WATER
         | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
@@ -187,6 +193,12 @@ public final class RoomEntityRuntime {
         new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final int[] bombPrivateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] bombPrivateCountdown3 = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] liftableRockSmashCountdown =
+        new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] liftableRockSmashSourceVariant =
+        new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] liftableRockSmashActive =
+        new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] bombFinalPresentationPending =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final int[] bombPrivateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -816,6 +828,11 @@ public final class RoomEntityRuntime {
                     swordMoblinAlertingSoundCounter = 0x04;
                 }
                 slots[index] = arrowUpdate.entity();
+                continue;
+            }
+            if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_LIFTABLE_ROCK
+                && liftableRockSmashActive[entity.slot()]) {
+                advanceLiftableRockSmash(index, entity, frame);
                 continue;
             }
             if (status == EntityStatus.LIFTED) {
@@ -2054,6 +2071,9 @@ public final class RoomEntityRuntime {
         playerArrowBombArrow[slot] = false;
         bombPrivateCountdown1[slot] = 0;
         bombPrivateCountdown3[slot] = 0;
+        liftableRockSmashCountdown[slot] = 0;
+        liftableRockSmashSourceVariant[slot] = 0;
+        liftableRockSmashActive[slot] = false;
         if (latestDroppedBombEntityIndex == slot) {
             latestDroppedBombEntityIndex = -1;
         }
@@ -2317,6 +2337,49 @@ public final class RoomEntityRuntime {
             latestDroppedBombEntityIndex = freeSlot;
             applyInitialBombArrowCandidateState(freeSlot, romDirection);
         }
+        return freeSlot;
+    }
+
+    /** Creates the temporary type-$05 entity used by bombed bushes, grass, and pots. */
+    int spawnLiftableRockSmash(int entityX, int entityY, int sourceSpriteVariant) {
+        if (sourceSpriteVariant != LIFTABLE_ROCK_SMASH_MODE_ROCK
+            && sourceSpriteVariant != LIFTABLE_ROCK_SMASH_MODE_BUSH
+            && sourceSpriteVariant != LIFTABLE_ROCK_SMASH_MODE_GRASS) {
+            throw new IllegalArgumentException("Liftable-rock source variant must be 0, 1, or FF");
+        }
+        int freeSlot = findFreeEntitySlot();
+        if (freeSlot < 0) {
+            return -1;
+        }
+
+        EntitySpriteDefinition definition = spriteDefinitionFor(ENTITY_LIFTABLE_ROCK);
+        boolean rock = sourceSpriteVariant == LIFTABLE_ROCK_SMASH_MODE_ROCK;
+        boolean swampLeaves = !indoorRoom && spriteSelection != null
+            && spriteSelection.roomTable() == EntityRoomLoader.RoomTable.OVERWORLD
+            && spriteSelection.roomId() == 0x32;
+        int initialCountdown = rock ? 0x0F : 0x1F;
+        int variant = definition.supported()
+            ? liftableRockSmashVariant(sourceSpriteVariant, swampLeaves, initialCountdown) : -1;
+        RoomEntity smash = new RoomEntity(freeSlot, -1, ENTITY_LIFTABLE_ROCK,
+            entityX & 0xFF, entityY & 0xFF, EntityStatus.ACTIVE,
+            definition, variant, 0, 0, 0);
+        slots[freeSlot] = smash;
+        liftableRockSmashActive[freeSlot] = true;
+        liftableRockSmashCountdown[freeSlot] = initialCountdown;
+        liftableRockSmashSourceVariant[freeSlot] = sourceSpriteVariant;
+        enemyPhysicsFlags[freeSlot] = LIFTABLE_ROCK_SMASH_PHYSICS_FLAGS;
+        enemyHitboxFlags[freeSlot] = 0;
+        enemyHealth[freeSlot] = initialHealth(ENTITY_LIFTABLE_ROCK);
+        enemyIgnoreHitsCountdown[freeSlot] = 1;
+        enemyTransitionCountdown[freeSlot] = 0;
+        enemyStunnedCountdown[freeSlot] = 0;
+        enemyFlashCountdown[freeSlot] = 0;
+        enemyRecoilMotion.clear(freeSlot);
+        entityOptions1Override[freeSlot] = BOMB_OPTIONS1;
+        pendingEntityEvents.add(new EntityCombatEvent(
+            freeSlot, ENTITY_LIFTABLE_ROCK, 0, false,
+            EntityCombatEvent.SoundChannel.NOISE, rock ? 0x09 : 0x05));
+        dynamicEntitySpawnedThisFrame[freeSlot] = true;
         return freeSlot;
     }
 
@@ -3035,6 +3098,44 @@ public final class RoomEntityRuntime {
             bombFinalPresentationPending[slot] = true;
         }
         return decision;
+    }
+
+    private void advanceLiftableRockSmash(int index, RoomEntity entity, int frameCounter) {
+        int slot = entity.slot();
+        int countdown = liftableRockSmashCountdown[slot] & 0xFF;
+        if (countdown <= 1) {
+            // LiftableRockEntityHandler unloads on the countdown-$01 frame,
+            // before the display-list helper gets a chance to render it.
+            clearEntity(slot);
+            return;
+        }
+
+        int sourceVariant = liftableRockSmashSourceVariant[slot];
+        boolean swampLeaves = !indoorRoom && spriteSelection != null
+            && spriteSelection.roomTable() == EntityRoomLoader.RoomTable.OVERWORLD
+            && spriteSelection.roomId() == 0x32;
+        int variant = liftableRockSmashVariant(sourceVariant, swampLeaves, countdown);
+        if (sourceVariant == LIFTABLE_ROCK_SMASH_MODE_GRASS
+            && ((frameCounter ^ slot) & 0x01) != 0) {
+            // The $FF tall-grass path in func_019_7C50 only emits OAM on
+            // alternating frames. -1 is the same hidden-display sentinel
+            // consumed by RenderActiveEntitySpritesRect.
+            variant = -1;
+        }
+        slots[index] = withVariant(entity, variant);
+    }
+
+    private static int liftableRockSmashVariant(int sourceVariant, boolean swampLeaves,
+                                                int countdown) {
+        if (sourceVariant == LIFTABLE_ROCK_SMASH_MODE_ROCK) {
+            int frame = (countdown & 0x0C) >>> 2;
+            return EntitySpriteHandlerCatalog.LIFTABLE_ROCK_SMASHED_ROCK_VARIANT_BASE + frame;
+        }
+        int frame = (((countdown & 0x1C) ^ 0x1C) >>> 2);
+        int base = swampLeaves
+            ? EntitySpriteHandlerCatalog.LIFTABLE_ROCK_CUT_LEAVES_SWAMP_VARIANT_BASE
+            : EntitySpriteHandlerCatalog.LIFTABLE_ROCK_CUT_LEAVES_VARIANT_BASE;
+        return base + frame;
     }
 
     private void queueBombExplosionInteractions(RoomEntity bomb, BombMotion.Decision decision) {
@@ -4282,6 +4383,9 @@ public final class RoomEntityRuntime {
         bombPrivateState4[slot] = 0;
         bombPrivateCountdown1[slot] = 0;
         bombPrivateCountdown3[slot] = 0;
+        liftableRockSmashCountdown[slot] = 0;
+        liftableRockSmashSourceVariant[slot] = 0;
+        liftableRockSmashActive[slot] = false;
         bombFinalPresentationPending[slot] = false;
         placedBombMotionInitialized[slot] = false;
         ledgeTransitionTimer[slot] = 0;
@@ -4391,6 +4495,9 @@ public final class RoomEntityRuntime {
         }
         if (bombPrivateCountdown3[slot] > 0) {
             bombPrivateCountdown3[slot]--;
+        }
+        if (liftableRockSmashActive[slot] && liftableRockSmashCountdown[slot] > 0) {
+            liftableRockSmashCountdown[slot]--;
         }
     }
 

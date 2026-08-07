@@ -713,6 +713,7 @@ public final class RoomSession {
         applyHookshotBridgeUpdates(entityRuntime.hookshotBridgeUpdates());
         activeRoom.replaceEntities(entityRuntime.snapshot());
         applyBombObjectInteractions(bombExplosionEvents);
+        activeRoom.replaceEntities(entityRuntime.snapshot());
         return events;
     }
 
@@ -1054,14 +1055,12 @@ public final class RoomSession {
             return;
         }
 
-        // CheckForBombDestroyableObjectBasic spawns the liftable-rock bush
-        // effect at the object cell's center/bottom anchor. The current
-        // transient renderer already owns this exact leaf scatter asset.
-        if (transientVfxSystem != null && result.bushLeavesVisible()) {
-            transientVfxSystem.spawn(
-                TransientVfxType.BUSH_LEAVES,
+        if (result.bushLeavesVisible() && entityRuntime != null) {
+            int sourceSpriteVariant = result.originalObjectId() == 0x0A ? 0xFF : 0x01;
+            entityRuntime.spawnLiftableRockSmash(
                 overworldBushInteraction.effectOriginXForLocation(location),
-                overworldBushInteraction.effectOriginYForLocation(location));
+                overworldBushInteraction.effectOriginYForLocation(location),
+                sourceSpriteVariant);
         }
         refreshOverworldCollisionAfterObjectMutation();
     }
@@ -1183,6 +1182,11 @@ public final class RoomSession {
         indoorStatusTableForMap(activeRoom.mapId())[activeRoom.roomId()]
             |= (byte) INDOOR_ROOM_STATUS_EVENT_3;
         bombedBlockTileOverrides.add(areaIndex);
+
+        if (entityRuntime != null) {
+            entityRuntime.spawnLiftableRockSmash(
+                candidate.objectLeft() + 0x08, candidate.objectTop() + 0x10, 0x00);
+        }
 
         refreshActiveRoomTilemap();
         overworldCollision.setRoom(activeRoom.roomObjectsArea());

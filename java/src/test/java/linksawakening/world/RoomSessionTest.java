@@ -215,11 +215,37 @@ final class RoomSessionTest {
 
         assertEquals(0x04, session.activeRoom().roomObjectsArea()[areaIndex]);
         assertEquals(0x04, session.activeRoom().renderValues()[areaIndex]);
-        assertEquals(1, vfx.activeCount());
-        assertEquals(0x58, vfx.activeSlots().getFirst().worldX());
-        assertEquals(0x60, vfx.activeSlots().getFirst().worldY());
+        assertEquals(0, vfx.activeCount());
         assertTrue(session.consumeBombExplosionEvents().stream()
             .anyMatch(event -> event.targetsRoomObjects() && event.countdown() == 0x16));
+    }
+
+    @Test
+    void bombedOverworldBushSpawnsTheRomLiftableRockSmashEntity() {
+        RoomSession session = newSession();
+        session.loadInitialOverworld(0x92);
+
+        int location = 0x55;
+        int areaIndex = RoomConstants.ROOM_OBJECTS_BASE
+            + (location & 0xF0) + (location & 0x0F);
+        session.activeRoom().roomObjectsArea()[areaIndex] = 0x5C;
+        session.activeRoom().renderValues()[areaIndex] = 0x5C;
+
+        assertTrue(session.placeBomb(0x40, 0x50, 0, 0));
+        for (int frame = 0; frame <= 136; frame++) {
+            session.tickEntities(frame, 0, 0);
+        }
+
+        RoomEntity smash = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x05)
+            .findFirst()
+            .orElseThrow();
+        assertEquals(0x58, smash.x());
+        assertEquals(0x60, smash.y());
+        assertEquals(0x06, smash.spriteVariant());
+        assertEquals(EntitySpriteDefinition.Shape.DYNAMIC, smash.spriteDefinition().shape());
+        assertEquals(0x19, smash.spriteDefinition().bank());
+        assertEquals(0x7B50, smash.spriteDefinition().address());
     }
 
     @Test
@@ -335,6 +361,14 @@ final class RoomSessionTest {
         assertEquals(0x12, tileIds[tileIndex + 1]);
         assertEquals(0x11, tileIds[tileIndex + RoomConstants.ROOM_TILE_WIDTH]);
         assertEquals(0x13, tileIds[tileIndex + RoomConstants.ROOM_TILE_WIDTH + 1]);
+
+        RoomEntity smash = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x05
+                && entity.x() == 0x28 && entity.y() == 0x30)
+            .findFirst()
+            .orElseThrow();
+        assertTrue(smash.spriteVariant() >= 0x02 && smash.spriteVariant() <= 0x05);
+        assertEquals(EntitySpriteDefinition.Shape.DYNAMIC, smash.spriteDefinition().shape());
 
         session.loadIndoor(0x0A, 0x45);
         assertEquals(0x0D, session.activeRoom().roomObjectsArea()[areaIndex]);

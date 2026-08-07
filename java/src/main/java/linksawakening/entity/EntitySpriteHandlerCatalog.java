@@ -13,6 +13,13 @@ import java.util.List;
  */
 public final class EntitySpriteHandlerCatalog {
 
+    public static final int ENTITY_LIFTABLE_ROCK = 0x05;
+    public static final int LIFTABLE_ROCK_INTACT_ROCK_VARIANT = 0;
+    public static final int LIFTABLE_ROCK_INTACT_BUSH_VARIANT = 1;
+    public static final int LIFTABLE_ROCK_SMASHED_ROCK_VARIANT_BASE = 2;
+    public static final int LIFTABLE_ROCK_CUT_LEAVES_VARIANT_BASE = 6;
+    public static final int LIFTABLE_ROCK_CUT_LEAVES_SWAMP_VARIANT_BASE = 14;
+
     private static final int ENTITY_ARROW = 0x00;
     private static final int ENTITY_BOMB = 0x02;
     private static final int ENTITY_BUTTERFLY = 0x6E;
@@ -120,6 +127,9 @@ public final class EntitySpriteHandlerCatalog {
             return forColorShellState(entityType, 0, EntityStatus.INIT);
         }
 
+        if (entityType == ENTITY_LIFTABLE_ROCK) {
+            return decodeLiftableRock(roomTable);
+        }
         if (entityType == ENTITY_ARROW) {
             return decodePair(entityType, 0x03, 0x6BC6, 4, 0);
         }
@@ -523,6 +533,52 @@ public final class EntitySpriteHandlerCatalog {
             variants.add(List.copyOf(sprites));
         }
         return EntitySpriteDefinition.dynamic(ENTITY_ARROW, 0x03, 0x6BC6, 0, variants);
+    }
+
+    private EntitySpriteDefinition decodeLiftableRock(EntityRoomLoader.RoomTable roomTable) {
+        int intactAddress = roomTable == EntityRoomLoader.RoomTable.OVERWORLD
+            ? 0x5398 : 0x53A0;
+        EntitySpriteDefinition intact = decodePair(
+            ENTITY_LIFTABLE_ROCK, 0x03, intactAddress, 2,
+            LIFTABLE_ROCK_INTACT_ROCK_VARIANT);
+
+        List<List<EntitySpriteDefinition.DynamicSprite>> variants = new ArrayList<>(22);
+        variants.add(dynamicPair(intact.variant(LIFTABLE_ROCK_INTACT_ROCK_VARIANT)));
+        variants.add(dynamicPair(intact.variant(LIFTABLE_ROCK_INTACT_BUSH_VARIANT)));
+        appendDynamicRectangleVariants(variants, 0x19, 0x7B10, 4, 4);
+        appendDynamicRectangleVariants(variants, 0x19, 0x7B50, 8, 4);
+        appendDynamicRectangleVariants(variants, 0x19, 0x7BD0, 8, 4);
+        return EntitySpriteDefinition.dynamic(ENTITY_LIFTABLE_ROCK, 0x19, 0x7B50,
+            LIFTABLE_ROCK_INTACT_ROCK_VARIANT, variants);
+    }
+
+    private List<EntitySpriteDefinition.DynamicSprite> dynamicPair(
+            EntitySpriteDefinition.Variant pair) {
+        if (pair.second() == null) {
+            throw new IllegalArgumentException("Liftable-rock pair must contain two OAM entries");
+        }
+        return List.of(
+            new EntitySpriteDefinition.DynamicSprite(0, 0, pair.first(),
+                EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true),
+            new EntitySpriteDefinition.DynamicSprite(0, 0x08, pair.second(),
+                EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true));
+    }
+
+    private void appendDynamicRectangleVariants(
+            List<List<EntitySpriteDefinition.DynamicSprite>> destination,
+            int bank, int address, int variantCount, int spriteCount) {
+        List<List<EntitySpriteDefinition.RectangleSprite>> rectangles =
+            decodeRectangleVariants(ENTITY_LIFTABLE_ROCK, bank, address, variantCount,
+                spriteCount, 0);
+        for (List<EntitySpriteDefinition.RectangleSprite> rectangle : rectangles) {
+            List<EntitySpriteDefinition.DynamicSprite> dynamic = new ArrayList<>(rectangle.size());
+            for (EntitySpriteDefinition.RectangleSprite sprite : rectangle) {
+                dynamic.add(new EntitySpriteDefinition.DynamicSprite(
+                    sprite.yOffset(), sprite.xOffset(), sprite.oam(),
+                    EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, false));
+            }
+            destination.add(List.copyOf(dynamic));
+        }
     }
 
     public EntitySpriteDefinition decodePair(int entityType, int bank, int address,

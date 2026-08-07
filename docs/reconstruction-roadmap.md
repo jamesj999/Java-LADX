@@ -1335,10 +1335,9 @@ runtime collision callback.
   use the existing ROM-backed `RevealObjectUnderObject` resolver. The active
   object, GBC render overlay value, 2x2 tile cell, and collision room view are
   updated together; the bomb path does not reuse the sword cut-grass sound.
-- The room path schedules the existing bush-leaf visual at the source cell's
-  center/bottom anchor. Indoor bombable blocks, puzzle-only skulls and walls,
-  and the source liftable-rock entity's complete smash state remain follow-up
-  branches.
+- The room path hands bombed leaves and grass to the source type-$05 smash
+  entity path at the source cell's center/bottom anchor. Indoor bombable
+  blocks, puzzle-only skulls and walls retain their own interaction branches.
 - The clean Java suite passes with 942 tests and zero failures, errors, or
   skipped tests. This increment does not add an emulator.
 
@@ -1382,11 +1381,33 @@ runtime collision callback.
   draw-command order (`$10,$12,$11,$13`) before a reload rebuilds the normal
   floor order (`$10,$11,$12,$13`).
 - A shipped-ROM room test covers the live mutation, status persistence, and
-  immediate-versus-reloaded tile order. The source liftable-rock smash entity,
-  puzzle jingle, and remaining bomb-specific presentation branches remain
-  separate follow-up work.
+  immediate-versus-reloaded tile order. Puzzle jingle and remaining
+  bomb-specific presentation branches remain separate follow-up work.
 - The clean Java suite passes with 947 tests and zero failures, errors, or
   skipped tests. This increment does not add an emulator.
+
+## Verified ROM bombed liftable-rock smash presentation — 2026-08-07
+
+- Bombed overworld leaves/grass and indoor bombable blocks now spawn the
+  source entity `$05` at the exact interaction origin, with the source raw
+  variant selecting rock, bush, or tall-grass presentation. The post-puzzle
+  room snapshot is refreshed so the newly allocated entity is visible on the
+  same gameplay frame.
+- Entity `$05` decodes its intact pairs from bank `$03:$5398/$53A0` and its
+  smash rectangles from bank `$19:$7B10` (`SmashedRockSpriteRect`),
+  `$7B50` (`CutLeavesSpriteRect`), and `$7BD0`
+  (`CutLeavesSpriteRectSwamp`). The GBC swamp rectangle is selected only for
+  overworld room `$32`, matching the source branch.
+- The smash countdowns are `$0F` for rock/pot/skull and `$1F` for
+  bush/grass. Countdown masks select the ROM display-list frames, the source
+  `$01` terminal frame unloads the entity, and raw `$FF` grass preserves the
+  alternating visibility gate. The emitted noise is `$09` for rock and `$05`
+  for leaves/grass.
+- Focused catalog, runtime, and shipped-ROM room-session tests cover the
+  display-list bytes, attributes, spawn position, flags, countdown frame
+  boundaries, sounds, and cleanup. The clean Java suite passes with 950 tests
+  and zero failures, errors, or skipped tests. Puzzle jingle and remaining
+  bomb-specific presentation branches remain separate follow-up work.
 
 ## Broader parity gaps
 

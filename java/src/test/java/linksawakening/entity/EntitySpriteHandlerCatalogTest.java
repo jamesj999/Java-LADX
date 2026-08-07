@@ -104,6 +104,30 @@ final class EntitySpriteHandlerCatalogTest {
     }
 
     @Test
+    void decodesLiftableRockIntactAndSmashDisplayListsFromTheRom() throws Exception {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+
+        EntitySpriteDefinition outdoor = catalog.forEntityType(
+            EntitySpriteHandlerCatalog.ENTITY_LIFTABLE_ROCK,
+            EntityRoomLoader.RoomTable.OVERWORLD);
+        assertDefinition(outdoor, 0x19, 0x7B50,
+            EntitySpriteDefinition.Shape.DYNAMIC, 22, 0);
+        assertEquals(0xF0, outdoor.dynamicVariant(0).get(0).oam().tile());
+        assertEquals(0xF4, outdoor.dynamicVariant(1).get(0).oam().tile());
+        assertEquals(-3, outdoor.dynamicVariant(2).get(0).yOffset());
+        assertEquals(-4, outdoor.dynamicVariant(2).get(0).xOffset());
+        assertEquals(0x28, outdoor.dynamicVariant(6).get(0).oam().tile());
+        assertEquals(0x00, outdoor.dynamicVariant(6).get(0).oam().attributes());
+        assertEquals(0x06, outdoor.dynamicVariant(14).get(0).oam().attributes());
+
+        EntitySpriteDefinition indoor = catalog.forEntityType(
+            EntitySpriteHandlerCatalog.ENTITY_LIFTABLE_ROCK,
+            EntityRoomLoader.RoomTable.INDOORS_A);
+        assertEquals(0xF0, indoor.dynamicVariant(0).get(0).oam().tile());
+        assertEquals(0x16, indoor.dynamicVariant(0).get(0).oam().attributes());
+    }
+
+    @Test
     void mapsSupportedHandlersToDisassemblyBanksAddressesAndInitialVariants() {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
 

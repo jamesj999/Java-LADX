@@ -4253,6 +4253,43 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void liftableRockSmashUsesTheRomCountdownDisplayFramesAndNoise() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+            new RoomEntitySnapshot(new ArrayList<>(snapshot().slots())), false, null, catalog);
+
+        int slot = runtime.spawnLiftableRockSmash(0x58, 0x60, 0x01);
+
+        RoomEntity initial = runtime.snapshot().slots().get(slot);
+        assertEquals(EntityStatus.ACTIVE, initial.status());
+        assertEquals(0x05, initial.type());
+        assertEquals(0x58, initial.x());
+        assertEquals(0x60, initial.y());
+        assertEquals(0x06, initial.spriteVariant());
+        assertEquals(EntitySpriteDefinition.Shape.DYNAMIC, initial.spriteDefinition().shape());
+        assertEquals(0xD4, runtime.physicsFlags(slot));
+        assertEquals(0x0A, runtime.options1(slot));
+        assertEquals(0x05, runtime.consumePendingEntityEvents().stream()
+            .filter(event -> event.type() == 0x05)
+            .findFirst()
+            .orElseThrow()
+            .soundId());
+
+        runtime.tick(0, 0, 0, () -> 0);
+        assertEquals(0x06, runtime.snapshot().slots().get(slot).spriteVariant());
+        runtime.tick(1, 0, 0, () -> 0);
+        runtime.tick(2, 0, 0, () -> 0);
+        runtime.tick(3, 0, 0, () -> 0);
+        assertEquals(0x07, runtime.snapshot().slots().get(slot).spriteVariant());
+
+        for (int frame = 4; frame <= 29; frame++) {
+            runtime.tick(frame, 0, 0, () -> 0);
+        }
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(slot).status());
+    }
+
+    @Test
     void sideScrollBombPlacementSkipsTheTopViewBumpJingle() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
