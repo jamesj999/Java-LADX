@@ -350,6 +350,8 @@ final class PlayerStateTest {
         bytes[main + SaveRamLayout.MAIN_MAX_MAGIC_POWDER_OFFSET] = 20;
         bytes[main + SaveRamLayout.MAIN_RUPEE_HIGH_OFFSET] = 0x05;
         bytes[main + SaveRamLayout.MAIN_RUPEE_LOW_OFFSET] = 0x09;
+        bytes[main + SaveRamLayout.MAIN_OCARINA_SONG_FLAGS_OFFSET] = 0x05;
+        bytes[main + SaveRamLayout.MAIN_SELECTED_SONG_INDEX_OFFSET] = 0x02;
         bytes[main + SaveRamLayout.MAIN_NAME_OFFSET] = 1;
         bytes[main + SaveRamLayout.MAIN_NAME_OFFSET + 1] = 2;
         bytes[SaveRamLayout.slotOffset(0) + SaveRamLayout.dx3Offset()] = (byte) PlayerState.TUNIC_RED;
@@ -373,6 +375,8 @@ final class PlayerStateTest {
         assertEquals(10, playerState.maxBombs());
         assertEquals(6, playerState.magicPowderCount());
         assertEquals(20, playerState.maxMagicPowder());
+        assertEquals(0x05, playerState.ocarinaSongFlags());
+        assertEquals(0x02, playerState.selectedSongIndex());
         assertEquals(PlayerState.TUNIC_RED, playerState.tunicType());
         assertEquals(0, playerState.invincibilityCounter());
         assertEquals(PlayerState.ACTIVE_POWER_UP_NONE, playerState.activePowerUp());

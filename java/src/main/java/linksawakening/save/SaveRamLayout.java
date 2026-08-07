@@ -27,6 +27,10 @@ public final class SaveRamLayout {
     public static final int MAIN_ITEM_A_OFFSET = 0x301;
     public static final int MAIN_SUBSCREEN_OFFSET = 0x302;
     public static final int MAIN_SEASHELLS_OFFSET = 0x30F;
+    // wOcarinaSongFlags/wSelectedSongIndex at DB49/DB4A, relative to
+    // wOverworldRoomStatus at D800.
+    public static final int MAIN_OCARINA_SONG_FLAGS_OFFSET = 0x349;
+    public static final int MAIN_SELECTED_SONG_INDEX_OFFSET = 0x34A;
     public static final int MAIN_SHIELD_OFFSET = 0x344;
     public static final int MAIN_ARROWS_OFFSET = 0x345;
     public static final int MAIN_MAGIC_POWDER_OFFSET = 0x34C;

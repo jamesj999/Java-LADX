@@ -123,6 +123,8 @@ public final class SaveRamImage {
             unsigned(bytes[main + SaveRamLayout.MAIN_MAX_BOMBS_OFFSET]),
             unsigned(bytes[main + SaveRamLayout.MAIN_MAGIC_POWDER_OFFSET]),
             unsigned(bytes[main + SaveRamLayout.MAIN_MAX_MAGIC_POWDER_OFFSET]),
+            unsigned(bytes[main + SaveRamLayout.MAIN_OCARINA_SONG_FLAGS_OFFSET]),
+            unsigned(bytes[main + SaveRamLayout.MAIN_SELECTED_SONG_INDEX_OFFSET]),
             unsigned(bytes[slotOffset + SaveRamLayout.dx3Offset() + SaveRamLayout.DX3_TUNIC_OFFSET]),
             unsigned(bytes[main + SaveRamLayout.MAIN_SPAWN_INDOOR_OFFSET]),
             unsigned(bytes[main + SaveRamLayout.MAIN_SPAWN_MAP_ID_OFFSET]),

@@ -439,6 +439,8 @@ public final class PlayerState {
         setBombCount(saved.bombCount());
         setMaxMagicPowder(saved.maxMagicPowder());
         setMagicPowderCount(saved.magicPowderCount());
+        setOcarinaSongFlags(saved.ocarinaSongFlags());
+        setSelectedSongIndex(saved.selectedSongIndex());
         setTunicType(saved.tunicType());
 
         invincibilityCounter = 0;

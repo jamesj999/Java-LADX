@@ -75,6 +75,8 @@ final class SaveRamImageTest {
         put(bytes, main, SaveRamLayout.MAIN_MAX_MAGIC_POWDER_OFFSET, 0x20);
         put(bytes, main, SaveRamLayout.MAIN_MAX_BOMBS_OFFSET, 0x30);
         put(bytes, main, SaveRamLayout.MAIN_MAX_ARROWS_OFFSET, 0x30);
+        put(bytes, main, SaveRamLayout.MAIN_OCARINA_SONG_FLAGS_OFFSET, 0x05);
+        put(bytes, main, SaveRamLayout.MAIN_SELECTED_SONG_INDEX_OFFSET, 0x02);
         put(bytes, slotStart, SaveRamLayout.dx3Offset(), 0x02);
         bytes[slotStart + 0x12] = (byte) 0xA5;
         bytes[slotStart + SaveRamLayout.mainOffset() + SaveRamLayout.MAIN_NAME_OFFSET] = 1;
@@ -104,6 +106,8 @@ final class SaveRamImageTest {
         assertEquals(0x20, state.maxMagicPowder());
         assertEquals(0x30, state.maxBombs());
         assertEquals(0x30, state.maxArrows());
+        assertEquals(0x05, state.ocarinaSongFlags());
+        assertEquals(0x02, state.selectedSongIndex());
         assertEquals(2, state.tunicType());
         assertEquals((byte) 0xA5, state.rawSlot()[0x12]);
     }

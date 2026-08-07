@@ -22,6 +22,8 @@ public record SaveSlotState(
     int maxBombs,
     int magicPowderCount,
     int maxMagicPowder,
+    int ocarinaSongFlags,
+    int selectedSongIndex,
     int tunicType,
     int spawnIsIndoor,
     int spawnMapId,

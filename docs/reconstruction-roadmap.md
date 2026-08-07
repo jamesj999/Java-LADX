@@ -1709,9 +1709,22 @@ runtime collision callback.
   and live room integration. The clean Java suite passes with 1,009 tests
   and zero failures, errors, or skipped tests.
 - The remaining Ocarina boundary is explicit: song-menu navigation and
-  persistent SRAM save/load for `wOcarinaSongFlags` are not yet implemented.
+  writing live state back through the save command are not yet implemented.
   Remaining entity handlers, room scripts, and broader hardware-visible
   ordering remain follow-up work.
+
+## Verified ROM Ocarina state in save slots — 2026-08-07
+
+- The SRAM model now decodes `wOcarinaSongFlags` and `wSelectedSongIndex` at
+  main offsets `$349` and `$34A` (`DB49`/`DB4A` relative to `D800`), preserving
+  the source's byte layout rather than adding a parallel host-only store.
+- `PlayerState.applySavedGame` restores both bytes with the same three-song
+  flag mask and zero-based selector bounds used by live Ocarina playback.
+  New-game SRAM creation continues to leave both values zero, matching the
+  ordinary ROM new-game path.
+- Focused save-image and player-state tests cover raw decoding and live-state
+  application. The animated Ocarina popup/song navigation and writing a
+  changed live state back to SRAM remain separate follow-up work.
 
 ## Broader parity gaps
 
