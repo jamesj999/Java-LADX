@@ -205,6 +205,7 @@ public final class RoomEntityRuntime {
     private boolean actionButtonsHeld;
     private boolean powerBraceletButtonHeld;
     private boolean bombButtonHeld;
+    private int swordMoblinAlertingSoundCounter;
     private boolean groundInteractionSideScrolling;
     private int entityMapId = -1;
     private int liftedEntitySlot = -1;
@@ -566,6 +567,9 @@ public final class RoomEntityRuntime {
         finalizePendingBombPresentations();
         int frame = frameCounter & 0xFF;
         int romCollisionType = collisionType & 0xFF;
+        if (swordMoblinAlertingSoundCounter > 0) {
+            swordMoblinAlertingSoundCounter--;
+        }
         if (backgroundInteraction != null) {
             backgroundCollision = (entity, direction, nextX, nextY) ->
                 backgroundInteraction.probe(entity, direction, nextX, nextY,
@@ -979,7 +983,8 @@ public final class RoomEntityRuntime {
                         backgroundCollision);
                 }
                 updated = moblinSwordMotion.advance(entity, linkEntityX, linkEntityY,
-                    swordBackgroundInteraction, enemyIgnoreHitsCountdown[entity.slot()], frame)
+                    swordBackgroundInteraction, enemyIgnoreHitsCountdown[entity.slot()],
+                    swordMoblinAlertingSoundCounter, frame)
                     .entity();
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
@@ -1177,6 +1182,9 @@ public final class RoomEntityRuntime {
                 if (projectileUpdate.unloaded()) {
                     disableEntityWithoutPersistence(entity.slot());
                     continue;
+                }
+                if (projectileUpdate.collidedWithWall()) {
+                    swordMoblinAlertingSoundCounter = 0x04;
                 }
                 updated = projectileUpdate.entity();
             }
@@ -2626,6 +2634,7 @@ public final class RoomEntityRuntime {
         if (countdown != 0x12) {
             return;
         }
+        swordMoblinAlertingSoundCounter = 0x04;
 
         for (int targetSlot = slots.length - 1; targetSlot >= 0; targetSlot--) {
             RoomEntity target = slots[targetSlot];
@@ -2840,6 +2849,10 @@ public final class RoomEntityRuntime {
 
     int moblinSwordSpeedX(int slot) {
         return moblinSwordMotion.speedX(slot);
+    }
+
+    int swordMoblinAlertingSoundCounter() {
+        return swordMoblinAlertingSoundCounter;
     }
 
     int tektiteState(int slot) {

@@ -40,6 +40,13 @@ final class MoblinSwordMotion {
     Update advance(RoomEntity entity, int linkEntityX, int linkEntityY,
                    RoomEntityBackgroundInteraction backgroundInteraction,
                    int ignoreHitsCountdown, int frameCounter) {
+        return advance(entity, linkEntityX, linkEntityY, backgroundInteraction,
+            ignoreHitsCountdown, 0, frameCounter);
+    }
+
+    Update advance(RoomEntity entity, int linkEntityX, int linkEntityY,
+                   RoomEntityBackgroundInteraction backgroundInteraction,
+                   int ignoreHitsCountdown, int alertingSoundCounter, int frameCounter) {
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot, entity.x());
@@ -51,7 +58,7 @@ final class MoblinSwordMotion {
             privateCountdown1[slot]--;
         }
 
-        if (ignoreHitsCountdown > 0) {
+        if (ignoreHitsCountdown > 0 || alertingSoundCounter > 0) {
             enterAlertState(slot);
         }
 

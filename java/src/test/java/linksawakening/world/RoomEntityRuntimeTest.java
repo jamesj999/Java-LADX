@@ -851,6 +851,26 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void projectileWallImpactAlertsMoblinSwordSlotsProcessedLaterInTheFrame() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotWithSlots(
+            new RoomEntity(0, 0, 0x14, 0x50, 64, EntityStatus.ACTIVE,
+                pairDefinition(0x14, 8), 6),
+            new RoomEntity(1, 1, 0x0C, 0x20, 64, EntityStatus.ACTIVE,
+                pairDefinition(0x0C, 4), 0)));
+
+        runtime.tick(0, 0xC0, 64, () -> 0,
+            (entity, direction, nextX, nextY) -> entity.type() == 0x0C && direction == 0);
+
+        assertEquals(0x04, runtime.swordMoblinAlertingSoundCounter());
+        assertEquals(2, runtime.moblinSwordState(0));
+        assertEquals(0x10, runtime.moblinSwordPrivateCountdown1(0));
+
+        runtime.tick(1, 0xC0, 64, () -> 0,
+            (entity, direction, nextX, nextY) -> false);
+        assertEquals(0x03, runtime.swordMoblinAlertingSoundCounter());
+    }
+
+    @Test
     void octorokStopsAtTheRoamingEnemyBackgroundCollisionPoint() {
         EntitySpriteDefinition definition = pairDefinition(0x09, 8);
         RoomEntitySnapshot initial = snapshot(
@@ -4388,6 +4408,7 @@ final class RoomEntityRuntimeTest {
             .filter(event -> !event.targetsRoomObjects())
             .map(BombExplosionEvent::targetSlot)
             .toList());
+        assertEquals(0x04, runtime.swordMoblinAlertingSoundCounter());
         for (BombExplosionEvent event : events) {
             assertEquals(bombSlot, event.bombSlot());
             assertEquals(0x40, event.bombX());

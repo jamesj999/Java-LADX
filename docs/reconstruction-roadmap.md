@@ -776,8 +776,11 @@ runtime collision callback.
   updates. The bank-$07 health/contact/recoil family is also wired through
   the runtime combat boundary.
 - Focused motion/runtime/renderer regressions and the complete Java suite
-  (904 test cases) pass. The global arrow/bomb alerting-sound counter and the
-  BowWow Hideout dialogue-only branch remain separate follow-up behavior.
+  (905 test cases) pass. The global `$04` alerting-sound counter now decrements
+  per frame and is fed by modeled bank-$03 projectile wall impacts and the
+  bomb explosion `$12` interaction tick in source slot order. The player-arrow
+  producer and BowWow Hideout dialogue-only branch remain separate follow-up
+  behavior.
 
 ## Next entity increments
 
