@@ -2938,6 +2938,151 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void spikedBeetleUsesTheRomRestWalkAndAnimationStateMachine() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            0x2C, EntityRoomLoader.RoomTable.INDOORS_A, 0x00);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x2C, 64, 64, EntityStatus.INIT, definition, 0)),
+            true, null, catalog, tables);
+
+        runtime.tick(0, 120, 80, sequence(0x00));
+        runtime.tick(1, 120, 80, sequence(0x00, 0x00));
+
+        assertEquals(1, runtime.spikedBeetleState(0));
+        assertEquals(0x30, runtime.spikedBeetleTransitionCountdown(0));
+        assertEquals(0x06, runtime.spikedBeetleSpeedX(0));
+        assertEquals(0x00, runtime.spikedBeetleSpeedY(0));
+        assertEquals(0x12, runtime.physicsFlags(0));
+        assertEquals(0x48, runtime.options1(0));
+        assertEquals(0x80, runtime.hitboxFlagsForTest(0));
+
+        for (int frame = 2; frame <= 0x31; frame++) {
+            runtime.tick(frame, 120, 80, sequence(0xFF));
+        }
+        assertEquals(0, runtime.spikedBeetleState(0));
+        assertEquals(0x18, runtime.spikedBeetleTransitionCountdown(0));
+        assertEquals(0x06, runtime.spikedBeetleSpeedX(0));
+        assertEquals(0x00, runtime.spikedBeetleSpeedY(0));
+
+        runtime.tick(0x40, 120, 64, sequence(0xFF));
+        assertEquals(1, runtime.spikedBeetleState(0));
+        assertEquals(0xFF, runtime.spikedBeetleTransitionCountdown(0));
+        runtime.tick(0x41, 120, 64, sequence(0xFF));
+        assertEquals(2, runtime.spikedBeetleState(0));
+        assertEquals(0xFF, runtime.spikedBeetleTransitionCountdown(0));
+        assertEquals(0x00, runtime.spikedBeetleSpeedX(0));
+        assertEquals(0x00, runtime.spikedBeetleSpeedY(0));
+    }
+
+    @Test
+    void spikedBeetleRestingKeepsTheLastHandlerSelectedAnimation() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            0x2C, EntityRoomLoader.RoomTable.INDOORS_A, 0x00);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x2C, 64, 64, EntityStatus.INIT, definition, 0)),
+            true, null, catalog, tables);
+
+        runtime.tick(0, 120, 80, sequence(0x00));
+        runtime.tick(0xE1, 120, 80, sequence(0x00, 0x00));
+        for (int frame = 0xE2; frame != 0x12; frame = (frame + 1) & 0xFF) {
+            runtime.tick(frame, 120, 80, sequence(0xFF));
+        }
+
+        assertEquals(0, runtime.spikedBeetleState(0));
+        assertEquals(1, runtime.snapshot().slots().get(0).spriteVariant());
+
+        runtime.tick(0x20, 120, 80, sequence(0xFF));
+        runtime.tick(0x21, 120, 80, sequence(0xFF));
+        assertEquals(1, runtime.snapshot().slots().get(0).spriteVariant());
+    }
+
+    @Test
+    void spikedBeetleFlipsOnTheInitialRomSwordPassAndDoesNotTakeDamage()
+            throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            0x2C, EntityRoomLoader.RoomTable.INDOORS_A, 0x00);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x2C, 64, 64, EntityStatus.ACTIVE, definition, 0)),
+            true, null, catalog, tables);
+
+        List<EntityCombatEvent> events = runtime.resolveCombat(
+            0, 120, 120, false, true, true, 72, 1, 72, 1);
+
+        assertEquals(1, events.size());
+        assertTrue(events.get(0).swordHit());
+        assertEquals(0, events.get(0).enemyDamage());
+        assertEquals(EntityCombatEvent.SoundChannel.JINGLE, events.get(0).soundChannel());
+        assertEquals(0x09, events.get(0).soundId());
+        assertEquals(3, runtime.spikedBeetleState(0));
+        assertEquals(0xFF, runtime.spikedBeetleTransitionCountdown(0));
+        assertEquals(0x10, runtime.spikedBeetleSpeedX(0));
+        assertEquals(0x00, runtime.spikedBeetleSpeedY(0));
+        assertEquals(0x02, runtime.enemyHealth(0));
+
+        runtime.tick(1, 120, 120, sequence(0x00));
+        assertEquals(0x08, runtime.options1(0));
+        assertEquals(0x00, runtime.hitboxFlagsForTest(0));
+    }
+
+    @Test
+    void spikedBeetleNormalHandlerUsesTheRomSwordPokeOptions() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            0x2C, EntityRoomLoader.RoomTable.INDOORS_A, 0x00);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x2C, 64, 64, EntityStatus.INIT, definition, 0)),
+            true, null, catalog, tables);
+
+        runtime.tick(0, 120, 80, sequence(0x00));
+        runtime.tick(1, 120, 80, sequence(0x00, 0x00));
+        List<EntityCombatEvent> events = runtime.resolveCombat(
+            2, 120, 120, false, true, true, 72, 1, 72, 1);
+
+        assertEquals(1, events.size());
+        assertTrue(events.get(0).swordHit());
+        assertEquals(0, events.get(0).enemyDamage());
+        assertEquals(new EntityCombatEvent.SwordPokeVfx(64, 64),
+            events.get(0).swordPokeVfx());
+        assertEquals(EntityCombatEvent.SoundChannel.JINGLE, events.get(0).soundChannel());
+        assertEquals(0x07, events.get(0).soundId());
+        assertEquals(1, runtime.spikedBeetleState(0));
+        assertEquals(0x02, runtime.enemyHealth(0));
+
+        runtime.tick(2, 120, 80, sequence(0xFF));
+        assertEquals(0, runtime.spikedBeetleSpeedX(0));
+        assertEquals(0, runtime.spikedBeetleSpeedY(0));
+    }
+
+    @Test
+    void spikedBeetleUsesTheRomHealthAndContactDamageValues() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            0x2C, EntityRoomLoader.RoomTable.INDOORS_A, 0x00);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x2C, 64, 64, EntityStatus.ACTIVE, definition, 0)),
+            true, null, catalog, tables);
+
+        List<EntityCombatEvent> events = runtime.resolveCombat(
+            1, 72, 72, false, true, false, 0, 0, 0, 0);
+
+        assertEquals(1, events.size());
+        assertEquals(0x04, events.get(0).linkDamage());
+    }
+
+    @Test
     void wizrobeRunsTheRomRevealStateMachineAndLaunchesItsProjectile() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);

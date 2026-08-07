@@ -76,6 +76,33 @@ final class EntitySpriteHandlerCatalogTest {
     }
 
     @Test
+    void decodesSpikedBeetleDisplayListsFromTheShippedRom() throws Exception {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+
+        EntitySpriteDefinition ordinary = catalog.forEntityType(
+            0x2C, EntityRoomLoader.RoomTable.INDOORS_A, 0x00);
+        assertDefinition(ordinary, 0x07, 0x7784,
+            EntitySpriteDefinition.Shape.PAIR, 4, 0);
+        assertPairBytes(ordinary, new int[][] {
+            {0x70, 0x00, 0x70, 0x20},
+            {0x72, 0x00, 0x72, 0x20},
+            {0x74, 0x00, 0x74, 0x20},
+            {0x76, 0x00, 0x76, 0x20}
+        });
+
+        EntitySpriteDefinition anglersTunnel = catalog.forEntityType(
+            0x2C, EntityRoomLoader.RoomTable.INDOORS_A, 0x03);
+        assertDefinition(anglersTunnel, 0x07, 0x7794,
+            EntitySpriteDefinition.Shape.PAIR, 4, 0);
+        assertPairBytes(anglersTunnel, new int[][] {
+            {0x60, 0x00, 0x60, 0x20},
+            {0x62, 0x00, 0x62, 0x20},
+            {0x64, 0x00, 0x64, 0x20},
+            {0x66, 0x00, 0x66, 0x20}
+        });
+    }
+
+    @Test
     void decodesRectangleDisplayListsWithSignedOffsets() {
         byte[] rom = syntheticRom();
         write(rom, 0x06, 0x5200,

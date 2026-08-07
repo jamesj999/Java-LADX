@@ -84,6 +84,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_GHINI = 0x12;
     private static final int ENTITY_KEESE = 0x19;
     private static final int ENTITY_HARDHAT_BEETLE = 0x20;
+    private static final int ENTITY_SPIKED_BEETLE = SpikedBeetleMotion.ENTITY_TYPE;
     private static final int ENTITY_WIZROBE = 0x21;
     private static final int ENTITY_WIZROBE_PROJECTILE = 0x22;
     private static final int ENTITY_GHOST = 0xD4;
@@ -192,6 +193,7 @@ public final class RoomEntityRuntime {
     private final ArmosMotion armosMotion = new ArmosMotion();
     private final GhiniMotion ghiniMotion = new GhiniMotion();
     private final HardHatMotion hardHatMotion = new HardHatMotion();
+    private final SpikedBeetleMotion spikedBeetleMotion = new SpikedBeetleMotion();
     private final MadBomberMotion madBomberMotion = new MadBomberMotion();
     private final BomberMotion bomberMotion = new BomberMotion();
     private final BombiteMotion bombiteMotion = new BombiteMotion();
@@ -404,6 +406,9 @@ public final class RoomEntityRuntime {
             }
             if (entity.loaded() && entity.type() == ENTITY_LIKE_LIKE) {
                 likeLikeMotion.initialize(entity.slot());
+            }
+            if (entity.loaded() && entity.type() == ENTITY_SPIKED_BEETLE) {
+                spikedBeetleMotion.initialize(entity.slot());
             }
             if (entity.status() == EntityStatus.DYING) {
                 powerRecoilDeath[entity.slot()] = entity.powerRecoilDeath();
@@ -797,6 +802,7 @@ public final class RoomEntityRuntime {
             boolean preserveSnakePresentation = false;
             boolean preserveWizrobePresentation = false;
             boolean preserveWizrobeProjectilePresentation = false;
+            boolean preserveSpikedBeetlePresentation = false;
             if (status == EntityStatus.ACTIVE) {
                 decrementEnemyDropCountdowns(entity);
             }
@@ -1147,6 +1153,9 @@ public final class RoomEntityRuntime {
                 }
                 if (entity.type() == ENTITY_HARDHAT_BEETLE) {
                     hardHatMotion.initialize(entity.slot());
+                }
+                if (entity.type() == ENTITY_SPIKED_BEETLE) {
+                    spikedBeetleMotion.initialize(entity.slot());
                 }
                 if (entity.type() == ENTITY_BOMBER) {
                     bomberMotion.initialize(entity.slot());
@@ -1736,6 +1745,19 @@ public final class RoomEntityRuntime {
                     randomByteSupplier, backgroundCollision);
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_SPIKED_BEETLE) {
+                SpikedBeetleMotion.Update spikedBeetleUpdate = spikedBeetleMotion.advance(
+                    entity, frame, linkEntityX, linkEntityY, randomByteSupplier,
+                    backgroundCollision, enemyTransitionCountdown[entity.slot()],
+                    enemyIgnoreHitsCountdown[entity.slot()]);
+                updated = spikedBeetleUpdate.entity();
+                enemyTransitionCountdown[entity.slot()] =
+                    spikedBeetleUpdate.transitionCountdown();
+                entityOptions1Override[entity.slot()] = spikedBeetleUpdate.options1();
+                enemyHitboxFlags[entity.slot()] = spikedBeetleUpdate.hitboxFlags();
+                preserveSpikedBeetlePresentation = true;
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
                 && isDynamicFollowingNpc(entity)) {
                 if (entity.type() == ENTITY_BOW_WOW) {
                     updated = bowWowMotion.advance(entity, frame, linkEntityX, linkEntityY,
@@ -1818,6 +1840,7 @@ public final class RoomEntityRuntime {
                 || preserveBombitePresentation
                 || preserveIronMaskPresentation || preserveSnakePresentation
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
+                || preserveSpikedBeetlePresentation
                 ? updated.spriteVariant() : variantFor(updated, frame);
             if (status == EntityStatus.ACTIVE && shouldDisappear(entity)) {
                 variant = (slowTransitionCountdown[entity.slot()] & 0x01) != 0 ? 0 : -1;
@@ -1826,6 +1849,7 @@ public final class RoomEntityRuntime {
                 || preserveBombitePresentation
                 || preserveIronMaskPresentation || preserveSnakePresentation
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
+                || preserveSpikedBeetlePresentation
                 ? updated.entityFlipAttribute() : baseEntityFlipAttribute[entity.slot()];
             if (preserveBombitePresentation && updated.type() == ENTITY_TIMER_BOMBITE) {
                 renderFlipAttribute |= (bombPrivateCountdown1[updated.slot()] << 3) & 0x10;
@@ -2171,6 +2195,10 @@ public final class RoomEntityRuntime {
                 && (ghiniMotion.hidden(entity.slot()) || entity.spriteVariant() < 0)) {
                 continue;
             }
+            if (entity.type() == ENTITY_SPIKED_BEETLE
+                && !spikedBeetleMotion.allowsCombat(entity.slot())) {
+                continue;
+            }
             if (entity.type() == ENTITY_ARMOS_STATUE
                 && !armosMotion.isActive(entity.slot())) {
                 continue;
@@ -2254,6 +2282,8 @@ public final class RoomEntityRuntime {
             int enemySpecialAction = -1;
             EntityCombatEvent.SwordPokeVfx swordPokeVfx = null;
             boolean peaHatSwordClink = entity.type() == ENTITY_PEAHAT && !peaHatGrounded;
+            boolean spikedBeetleSwordClink = entity.type() == ENTITY_SPIKED_BEETLE
+                && (options1(entity.slot()) & 0x40) != 0;
             if (entity.type() == ENTITY_CRYSTAL_SWITCH) {
                 if (swordHit) {
                     // The crystal handler uses the normal enemy-hit path for
@@ -2281,8 +2311,20 @@ public final class RoomEntityRuntime {
                     linkEntityX, linkEntityY, 0x10);
                 soundChannel = EntityCombatEvent.SoundChannel.JINGLE;
                 soundId = 0x07;
+            } else if (swordHit && entity.type() == ENTITY_SPIKED_BEETLE
+                && !spikedBeetleSwordClink) {
+                // The initial static options byte reaches the Beetle-specific
+                // EnemyCollidedWithSword branch and flips the shell without
+                // applying damage. Later normal handler passes write the
+                // sword-clink-off bit, which takes the shared poke path below.
+                spikedBeetleMotion.flipFromSword(entity.slot(), lastRomLinkDirection);
+                enemyTransitionCountdown[entity.slot()] = 0xFF;
+                enemyIgnoreHitsCountdown[entity.slot()] = 0;
+                enemyRecoilMotion.clear(entity.slot());
+                soundChannel = EntityCombatEvent.SoundChannel.JINGLE;
+                soundId = 0x09;
             } else if (swordHit && RoomEntityCombatRules.swordPokeForSwordCollision(
-                entity.type(), peaHatSwordClink)) {
+                entity.type(), peaHatSwordClink || spikedBeetleSwordClink)) {
                 // EnemyCollidedWithSword's ENTITY_OPT1_SWORD_CLINK_OFF path
                 // calls label_D07/label_D15: no damage or normal recoil,
                 // sixteen ignored-hit frames, then the sword-poke VFX and
@@ -4653,6 +4695,22 @@ public final class RoomEntityRuntime {
         return snakeMotion.speedY(slot);
     }
 
+    int spikedBeetleState(int slot) {
+        return spikedBeetleMotion.state(slot);
+    }
+
+    int spikedBeetleTransitionCountdown(int slot) {
+        return enemyTransitionCountdown[slot];
+    }
+
+    int spikedBeetleSpeedX(int slot) {
+        return spikedBeetleMotion.speedX(slot);
+    }
+
+    int spikedBeetleSpeedY(int slot) {
+        return spikedBeetleMotion.speedY(slot);
+    }
+
     int wizrobeState(int slot) {
         return wizrobeMotion.state(slot);
     }
@@ -4955,6 +5013,11 @@ public final class RoomEntityRuntime {
         if (slots[slot].type() == ENTITY_SWORD_SHIELD_PICKUP) {
             return ENTITY_OPT1_SPLASH_IN_WATER | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
         }
+        if (slots[slot].type() == ENTITY_SPIKED_BEETLE) {
+            // The static table starts at splash-only. The handler writes the
+            // sword-clink-off bit on its first normal active pass.
+            return ENTITY_OPT1_SPLASH_IN_WATER;
+        }
         if (isBombiteType(slots[slot].type())) {
             return BOMBITE_OPTIONS1;
         }
@@ -5069,6 +5132,7 @@ public final class RoomEntityRuntime {
             case ENTITY_WIZROBE -> 0x02;
             case ENTITY_SWORD_SHIELD_PICKUP -> SWORD_SHIELD_PICKUP_INITIAL_PHYSICS_FLAGS;
             case ENTITY_LIKE_LIKE -> LIKE_LIKE_INITIAL_PHYSICS_FLAGS;
+            case ENTITY_SPIKED_BEETLE -> 0x12;
             case ENTITY_WIZROBE_PROJECTILE -> 0x42;
             case ENTITY_IRON_MASKS_MASK -> IRON_MASKS_MASK_INITIAL_PHYSICS_FLAGS;
             case ENTITY_BOMB -> BOMB_INITIAL_PHYSICS_FLAGS;
@@ -5438,6 +5502,7 @@ public final class RoomEntityRuntime {
         followingNpcMotion.clear(slot);
         ghiniMotion.clear(slot);
         hardHatMotion.clear(slot);
+        spikedBeetleMotion.clear(slot);
         bowWowMotion.clear(slot);
         thrownEntityMotion.clear(slot);
         if (liftedEntitySlot == slot) {
@@ -5467,6 +5532,9 @@ public final class RoomEntityRuntime {
         }
         if (entity.type() == ENTITY_HIDING_ZOL) {
             return hidingZolMotion.speedZ(slot);
+        }
+        if (entity.type() == ENTITY_SPIKED_BEETLE) {
+            return spikedBeetleMotion.speedZ(slot);
         }
         if (isEnemyProjectileType(entity.type())) {
             return enemyProjectileMotion.speedZ(slot);

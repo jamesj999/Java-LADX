@@ -1665,6 +1665,27 @@ runtime collision callback.
   and zero failures, errors, or skipped tests; remaining entity handlers and
   broader room-script parity remain follow-up work.
 
+## Verified ROM Spiked Beetle entity runtime — 2026-08-07
+
+- Entity `$2C` now decodes the normal-room and Angler's Tunnel sprite lists
+  from bank `$07:$7784` and `$07:$7794`, respectively, using the exact shipped
+  ROM bytes. Its physics `$12`, contact damage `$04`, health group `$02`, and
+  normal/flipped handler options and hitbox flags are wired into the shared
+  runtime.
+- The bank-$07 state machine now covers the source rest-to-walk countdown,
+  Link/random direction selection, `$06` walking speeds, axis-proximity dash,
+  gradual `$18/$E8` dash acceleration, collision reset, fixed-point movement,
+  landing bounce, and frame-bit walking animation. The flipped state uses the
+  source variant pair, disabled hitbox, and post-sword landing transition.
+- The shared sword special now follows the source boundary: the initial
+  static `$08` options path flips the beetle with the ROM direction speeds and
+  jingle `$09`, while the normal handler's `$48` options path produces the
+  sword-poke/clink event without damage. Shipped-ROM tests cover both paths,
+  state transitions, animation, display lists, health, and contact damage.
+  The clean Java suite passes with 999 tests and zero failures, errors, or
+  skipped tests; remaining entity handlers and broader room-script parity
+  remain follow-up work.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,
