@@ -2087,8 +2087,9 @@ runtime collision callback.
   (`$45`, `$38`, `$60`, tile `$53`).
 - The non-interactive transition owns the source `$C0`-frame window, fades
   from the source `$60` threshold, applies the bank-$14 `$4EE8` scanline wave,
-  then loads the resolved room and begins the return fade. The clean Java
-  suite passes with 1,151 tests and zero failures, errors, or skipped tests.
+  then loads the resolved room and runs the source `TRANSITION_GFX_MANBO_OUT`
+  `$30-$C0` arrival effect. The clean Java suite passes with 1,151 tests and
+  zero failures, errors, or skipped tests.
 
 ## Broader parity gaps
 

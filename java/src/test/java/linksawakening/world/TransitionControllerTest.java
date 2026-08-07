@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 final class TransitionControllerTest {
 
     @Test
-    void ManboEntryRunsForTheRomC0FrameWindowThenStartsTheReturnFade() {
+    void ManboEntryRunsForTheRomC0FrameWindowThenStartsTheRomOutEffect() {
         TransitionController controller = new TransitionController();
         AtomicInteger completed = new AtomicInteger();
 
@@ -29,9 +29,18 @@ final class TransitionControllerTest {
         controller.tick();
 
         assertEquals(1, completed.get());
-        assertEquals(TransitionController.State.FADING_IN, controller.state());
+        assertEquals(TransitionController.State.MANBO_OUT, controller.state());
         assertTrue(controller.isInputBlocked());
+        assertEquals(TransitionController.MANBO_OUT_INITIAL_FRAME,
+            controller.transitionFrame());
         assertEquals(TransitionController.MAX_FADE_STEP, controller.fadeLevel());
+
+        for (int frame = TransitionController.MANBO_OUT_INITIAL_FRAME;
+             frame < TransitionController.MANBO_TRANSITION_FRAMES; frame++) {
+            controller.tick();
+        }
+        assertEquals(TransitionController.State.IDLE, controller.state());
+        assertFalse(controller.isInputBlocked());
     }
 
     @Test

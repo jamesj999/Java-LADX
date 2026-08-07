@@ -30,19 +30,31 @@ public final class ManboTransitionWave {
      * table value on odd frames for both Manbo directions.
      */
     public int offsetFor(int transitionFrame, int scanline) {
+        return offsetFor(transitionFrame, scanline, false);
+    }
+
+    /** Returns the corresponding reversed-phase value used by Manbo-out. */
+    public int offsetFor(int transitionFrame, int scanline, boolean manboOut) {
         int frame = transitionFrame & 0xFF;
         int tableIndex = (((frame >>> 2) + scanline + 1) & 0x1F) | (frame & 0xE0);
+        if (manboOut) {
+            tableIndex ^= 0xE0;
+        }
         int value = signedOffsets[tableIndex];
         return (frame & 0x01) == 0 ? value : -value;
     }
 
     public int[] offsetsForFrame(int transitionFrame, int scanlineCount) {
+        return offsetsForFrame(transitionFrame, scanlineCount, false);
+    }
+
+    public int[] offsetsForFrame(int transitionFrame, int scanlineCount, boolean manboOut) {
         if (scanlineCount < 0) {
             throw new IllegalArgumentException("Scanline count cannot be negative");
         }
         int[] offsets = new int[scanlineCount];
         for (int scanline = 0; scanline < offsets.length; scanline++) {
-            offsets[scanline] = offsetFor(transitionFrame, scanline);
+            offsets[scanline] = offsetFor(transitionFrame, scanline, manboOut);
         }
         return offsets;
     }

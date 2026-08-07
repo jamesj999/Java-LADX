@@ -24,7 +24,7 @@ package linksawakening.world;
  */
 public final class TransitionController {
 
-    public enum State { IDLE, FADING_OUT, FADING_IN, MANBO_IN }
+    public enum State { IDLE, FADING_OUT, FADING_IN, MANBO_IN, MANBO_OUT }
 
     /** Frames per "step" — matches the BGP cycle cadence at bank20.asm:2099. */
     private static final int FRAMES_PER_STEP = 4;
@@ -36,6 +36,7 @@ public final class TransitionController {
     private static final int FADE_FRAMES = FRAMES_PER_STEP * STEPS; // 16
     private static final int MANBO_FADE_START = 0x60;
     public static final int MANBO_TRANSITION_FRAMES = 0xC0;
+    public static final int MANBO_OUT_INITIAL_FRAME = 0x30;
 
     private State state = State.IDLE;
     private int frameInPhase;
@@ -88,7 +89,10 @@ public final class TransitionController {
                 pendingLoad.run();
                 pendingLoad = null;
             }
-            state = State.FADING_IN;
+            state = State.MANBO_OUT;
+            frameInPhase = MANBO_OUT_INITIAL_FRAME;
+        } else if (state == State.MANBO_OUT && frameInPhase >= MANBO_TRANSITION_FRAMES) {
+            state = State.IDLE;
             frameInPhase = 0;
         } else if (state == State.FADING_OUT && frameInPhase >= FADE_FRAMES) {
             if (pendingLoad != null) {
@@ -122,10 +126,12 @@ public final class TransitionController {
 
     /** Returns the source scanline offsets while the Manbo effect is active. */
     public int[] manboWaveOffsets(int scanlineCount) {
-        if (state != State.MANBO_IN || manboTransitionWave == null) {
+        if ((state != State.MANBO_IN && state != State.MANBO_OUT)
+            || manboTransitionWave == null) {
             return null;
         }
-        return manboTransitionWave.offsetsForFrame(frameInPhase, scanlineCount);
+        return manboTransitionWave.offsetsForFrame(frameInPhase, scanlineCount,
+            state == State.MANBO_OUT);
     }
 
     /**
@@ -144,6 +150,13 @@ public final class TransitionController {
                 }
                 return Math.min(MAX_FADE_STEP,
                     (frameInPhase - MANBO_FADE_START) * STEPS
+                        / (MANBO_TRANSITION_FRAMES - MANBO_FADE_START));
+            case MANBO_OUT:
+                if (frameInPhase < MANBO_FADE_START) {
+                    return MAX_FADE_STEP;
+                }
+                return Math.max(0, MAX_FADE_STEP
+                    - (frameInPhase - MANBO_FADE_START) * STEPS
                         / (MANBO_TRANSITION_FRAMES - MANBO_FADE_START));
             case IDLE:
             default:

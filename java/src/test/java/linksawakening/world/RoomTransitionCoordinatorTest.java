@@ -120,10 +120,16 @@ final class RoomTransitionCoordinatorTest {
             transitionController.tick();
         }
 
-        assertEquals(TransitionController.State.FADING_IN, transitionController.state());
+        assertEquals(TransitionController.State.MANBO_OUT, transitionController.state());
         assertEquals(0x17, session.currentRoomId());
         assertEquals(0x48, link.pixelX());
         assertEquals(0x6C, link.pixelY());
+
+        for (int frame = TransitionController.MANBO_OUT_INITIAL_FRAME;
+             frame < TransitionController.MANBO_TRANSITION_FRAMES; frame++) {
+            transitionController.tick();
+        }
+        assertEquals(TransitionController.State.IDLE, transitionController.state());
     }
 
     private static byte[] loadRom() throws IOException {
