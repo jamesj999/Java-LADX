@@ -317,6 +317,18 @@ public final class RoomSession {
         return activeRoom.mapId();
     }
 
+    /**
+     * Returns the source {@code wIndoorRoom} value for the active indoor map.
+     * A negative result means this map has no ROM layout table, so the caller
+     * should preserve the existing save byte rather than inventing one.
+     */
+    public int indoorRoomPositionForSave() {
+        if (activeRoom == null || activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
+            return -1;
+        }
+        return indoorMapPosition(activeRoom.mapId(), activeRoom.roomId());
+    }
+
     public byte[] overworldRoomStatusSnapshot() {
         return overworldRoomStatus.clone();
     }

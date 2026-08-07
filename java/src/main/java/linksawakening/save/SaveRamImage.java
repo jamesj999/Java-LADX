@@ -162,6 +162,26 @@ public final class SaveRamImage {
             SaveRamLayout.DX1_COLOR_DUNGEON_ITEM_FLAGS_SIZE);
     }
 
+    /** Writes the source {@code wSpawnLocationData} fields in the main block. */
+    public void writeSpawnLocation(int slot, int isIndoor, int mapId, int mapRoom,
+                                   int positionX, int positionY, int indoorRoom) {
+        SaveRamLayout.checkSlot(slot);
+        requireByte(isIndoor, "isIndoor");
+        requireByte(mapId, "mapId");
+        requireByte(mapRoom, "mapRoom");
+        requireByte(positionX, "positionX");
+        requireByte(positionY, "positionY");
+        requireByte(indoorRoom, "indoorRoom");
+
+        int main = SaveRamLayout.slotOffset(slot) + SaveRamLayout.mainOffset();
+        bytes[main + SaveRamLayout.MAIN_SPAWN_INDOOR_OFFSET] = (byte) isIndoor;
+        bytes[main + SaveRamLayout.MAIN_SPAWN_MAP_ID_OFFSET] = (byte) mapId;
+        bytes[main + SaveRamLayout.MAIN_SPAWN_MAP_ROOM_OFFSET] = (byte) mapRoom;
+        bytes[main + SaveRamLayout.MAIN_SPAWN_X_OFFSET] = (byte) positionX;
+        bytes[main + SaveRamLayout.MAIN_SPAWN_Y_OFFSET] = (byte) positionY;
+        bytes[main + SaveRamLayout.MAIN_SPAWN_INDOOR_ROOM_OFFSET] = (byte) indoorRoom;
+    }
+
     /**
      * Writes every persistent field currently represented by {@link PlayerState}.
      *
@@ -343,6 +363,12 @@ public final class SaveRamImage {
         if (values.length != expectedLength) {
             throw new IllegalArgumentException(label + " must contain " + expectedLength
                 + " bytes, got " + values.length);
+        }
+    }
+
+    private static void requireByte(int value, String label) {
+        if (value < 0 || value > 0xFF) {
+            throw new IllegalArgumentException(label + " must be an unsigned byte: " + value);
         }
     }
 }

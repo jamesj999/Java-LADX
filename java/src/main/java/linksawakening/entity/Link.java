@@ -257,6 +257,39 @@ public final class Link implements RocsFeather.JumpTarget {
         hasRoomEntryPosition = true;
     }
 
+    /** Returns the Java top-left X coordinate recorded for the current room entry. */
+    public int roomEntryPixelX() {
+        return hasRoomEntryPosition ? roomEntrySubX >> SUB_PIXEL_SHIFT : pixelX();
+    }
+
+    /** Returns the Java top-left Y coordinate recorded for the current room entry. */
+    public int roomEntryPixelY() {
+        return hasRoomEntryPosition ? roomEntrySubY >> SUB_PIXEL_SHIFT : pixelY();
+    }
+
+    /**
+     * Returns the source {@code hLinkPositionX} value for the recorded entry.
+     * The Game Boy stores Link's OAM origin, which is eight pixels to the right
+     * of this host model's top-left sprite coordinate.
+     */
+    public int roomEntryRomPositionX() {
+        return roomEntryPixelX() + 0x08;
+    }
+
+    /**
+     * Returns the source {@code hLinkPositionY} value for the recorded entry.
+     * The Game Boy stores the lower OAM origin, sixteen pixels below this host
+     * model's top-left sprite coordinate.
+     */
+    public int roomEntryRomPositionY() {
+        return roomEntryPixelY() + 0x10;
+    }
+
+    /** Applies a source warp/save position (OAM origin) to the host model. */
+    public void setRoomEntryRomPosition(int romPositionX, int romPositionY) {
+        setRoomEntryPixelPosition(romPositionX - 0x08, romPositionY - 0x10);
+    }
+
     /**
      * Ignore collision on Link's next {@code frames} movement updates. Used
      * after a warp so that Link can walk off his entrance tile even though

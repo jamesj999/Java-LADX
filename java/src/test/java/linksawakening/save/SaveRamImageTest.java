@@ -70,6 +70,41 @@ final class SaveRamImageTest {
     }
 
     @Test
+    void writesTheRomSpawnLocationFieldsWithoutTouchingAdjacentProgress() {
+        SaveRamImage image = SaveRamImage.empty();
+        image.createNewGame(1, new int[] {1, 2, 3, 4, 5});
+        int main = SaveRamLayout.slotOffset(1) + SaveRamLayout.mainOffset();
+        byte[] before = image.bytes();
+        before[main + SaveRamLayout.MAIN_SPAWN_INDOOR_OFFSET - 1] = (byte) 0xA1;
+        before[main + SaveRamLayout.MAIN_SPAWN_INDOOR_ROOM_OFFSET + 1] = (byte) 0xB2;
+        image = SaveRamImage.fromBytes(before);
+
+        image.writeSpawnLocation(1, 1, 0x06, 0x18, 0x52, 0x63, 0x27);
+
+        SaveSlotState state = image.readSlot(1);
+        assertEquals(1, state.spawnIsIndoor());
+        assertEquals(0x06, state.spawnMapId());
+        assertEquals(0x18, state.spawnMapRoom());
+        assertEquals(0x52, state.spawnPositionX());
+        assertEquals(0x63, state.spawnPositionY());
+        assertEquals(0x27, state.spawnIndoorRoom());
+        assertEquals((byte) 0xA1,
+            image.bytes()[main + SaveRamLayout.MAIN_SPAWN_INDOOR_OFFSET - 1]);
+        assertEquals((byte) 0xB2,
+            image.bytes()[main + SaveRamLayout.MAIN_SPAWN_INDOOR_ROOM_OFFSET + 1]);
+    }
+
+    @Test
+    void rejectsSpawnLocationValuesThatCannotBeStoredInTheSourceByteFields() {
+        SaveRamImage image = SaveRamImage.empty();
+
+        assertThrows(IllegalArgumentException.class,
+            () -> image.writeSpawnLocation(0, 0, 0, 0, 0x100, 0, 0));
+        assertThrows(IllegalArgumentException.class,
+            () -> image.writeSpawnLocation(0, 0, 0, 0, 0, -1, 0));
+    }
+
+    @Test
     void writesEveryCurrentlyModeledPlayerFieldAndPreservesUnknownSaveBytes() {
         SaveRamImage image = SaveRamImage.empty();
         image.createNewGame(1, new int[] {1, 2, 3, 4, 5});

@@ -1754,10 +1754,11 @@ runtime collision callback.
   SRAM offsets. Its zero-health path uses the ROM
   `MaxHeartsToStartingHealthTable`; rupees use the source high/low BCD bytes.
   The lower-level Ocarina writer remains available for exact two-byte updates.
-- Unknown fields, including spawn, death-count, and photo bytes, are preserved
-  rather than guessed. Dungeon item flags now have their own source-shaped
-  runtime owner and save writer. `SaveRamStore` delegates the raw image
-  operations.
+- Unknown fields, including death-count and photo bytes, are preserved rather
+  than guessed. The source spawn checkpoint is handled by the dedicated
+  source-offset writer below. Dungeon item flags now have their own
+  source-shaped runtime owner and save writer. `SaveRamStore` delegates the
+  raw image operations.
 - The main loop now records the active save slot when a file is created or
   loaded. The source A+B+Start+Select chord is exposed through a configurable
   Select key (default `Tab`) and opens a dedicated two-option save screen only
@@ -1792,7 +1793,7 @@ runtime collision callback.
   offsets, defensive copies, restore boundary, and preservation behavior. The
   clean Java suite passes with 1,029 tests and zero failures, errors, or skipped
   tests. Remaining save work is the source state not yet modeled, including
-  spawn/death updates and photo persistence.
+  death-count updates and photo persistence.
 
 ## Verified ROM dungeon-item flag state — 2026-08-07
 
@@ -1892,6 +1893,23 @@ runtime collision callback.
   ROM speed-table loading, swimming animation, and diving animation. The
   broader entity, room-script, and hardware-ordering gaps remain follow-up
   work.
+
+## Verified ROM save spawn checkpoint — 2026-08-07
+
+- `SaveGameToFile`'s six-byte `wSpawnLocationData` copy is now represented at
+  the exact main-block offsets `$35F-$364`: indoor flag, map id, room id, X/Y,
+  and `wIndoorRoom`. The raw writer validates byte ranges and leaves adjacent
+  progress bytes untouched.
+- Room entry transitions retain both host top-left coordinates and the source
+  OAM convention (`hLinkPositionX = top-left + $08`,
+  `hLinkPositionY = top-left + $10`). New-game and loaded-game startup now
+  convert the source fields back through that same boundary instead of treating
+  them as renderer coordinates.
+- Save and Quit records the active ROM room and Link's current room-entry
+  checkpoint. Indoor maps with no ROM layout table preserve the prior
+  `wIndoorRoom` byte, matching the source's unmodeled fallback behavior.
+  Focused save-image, Link-coordinate, and main-flow tests cover the boundary;
+  death-count and photo bytes remain explicit follow-up save fields.
 
 ## Broader parity gaps
 

@@ -59,6 +59,14 @@ final class MainFileMenuFlowTest {
     }
 
     @Test
+    void startupTreatsSavedAndNewGamePositionsAsRomOamCoordinates() throws Exception {
+        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+
+        assertTrue(source.contains("link.setRoomEntryRomPosition(profile.entryX(), profile.entryY());"));
+        assertTrue(source.contains("link.setRoomEntryRomPosition(saved.spawnPositionX(),"));
+    }
+
+    @Test
     void fileMenuStartupUsesThePersistentSaveImageForMaskAndNames() throws Exception {
         String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
         int start = source.indexOf("fileMenuController = new FileMenuController(");
@@ -87,6 +95,8 @@ final class MainFileMenuFlowTest {
 
         assertTrue(source.contains("saveCurrentPlayerState();"));
         assertTrue(source.contains("saveRamStore.writePlayerState(currentSaveSlot, playerState);"));
+        assertTrue(source.contains("saveCurrentSpawnLocation();"));
+        assertTrue(source.contains("saveRamStore.writeSpawnLocation("));
         assertTrue(source.contains("saveRamStore.writeRoomStatuses(currentSaveSlot,"));
         assertTrue(source.contains("saveRamStore.writeDungeonItemFlags(currentSaveSlot,"));
     }
@@ -101,6 +111,7 @@ final class MainFileMenuFlowTest {
         assertTrue(branch.contains("startSavedGame"));
         assertTrue(source.contains("roomSession.restoreRoomStatuses(saved.overworldRoomStatus(),"));
         assertTrue(source.contains("roomSession.restoreDungeonItemFlags(saved.dungeonItemFlags(),"));
+        assertTrue(source.contains("link.setRoomEntryRomPosition(saved.spawnPositionX(),"));
         assertFalse(branch.contains("UnsupportedOperationException"));
     }
 }

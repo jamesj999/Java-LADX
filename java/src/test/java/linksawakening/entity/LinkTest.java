@@ -104,6 +104,25 @@ final class LinkTest {
     }
 
     @Test
+    void keepsRoomEntryCoordinatesInBothHostAndRomConventions() {
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        Link link = new Link(new InputState(), inputConfig, null, null, null,
+            new PlayerState(), new ItemRegistry());
+
+        link.setRoomEntryPixelPosition(0x30, 0x40);
+        assertEquals(0x30, link.roomEntryPixelX());
+        assertEquals(0x40, link.roomEntryPixelY());
+        assertEquals(0x38, link.roomEntryRomPositionX());
+        assertEquals(0x50, link.roomEntryRomPositionY());
+
+        link.setRoomEntryRomPosition(0x52, 0x63);
+        assertEquals(0x4A, link.roomEntryPixelX());
+        assertEquals(0x53, link.roomEntryPixelY());
+        assertEquals(0x52, link.roomEntryRomPositionX());
+        assertEquals(0x63, link.roomEntryRomPositionY());
+    }
+
+    @Test
     void renderUsesTheSelectedRomTunicPaletteAtTheSameBodyPixels() throws Exception {
         byte[] rom = loadRom();
         LinkSpriteSheet spriteSheet = LinkSpriteSheet.loadFromRom(rom);

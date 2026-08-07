@@ -1027,7 +1027,7 @@ public class Main {
         profile.initializePlayerState(playerState);
         link.setDirection(Link.DIRECTION_DOWN);
         roomSession.loadIndoor(profile.mapId(), profile.roomId());
-        link.setRoomEntryPixelPosition(profile.entryX(), profile.entryY());
+        link.setRoomEntryRomPosition(profile.entryX(), profile.entryY());
     }
 
     private static void startSavedGame(SaveSlotState saved) {
@@ -1046,7 +1046,7 @@ public class Main {
             roomSession.loadInitialOverworld(saved.spawnMapRoom());
             link.setDirection(Link.DIRECTION_DOWN);
         }
-        link.setRoomEntryPixelPosition(saved.spawnPositionX(), saved.spawnPositionY());
+        link.setRoomEntryRomPosition(saved.spawnPositionX(), saved.spawnPositionY());
     }
 
     private static void startIntroCutscene() {
@@ -1101,6 +1101,7 @@ public class Main {
             return;
         }
         saveRamStore.writePlayerState(currentSaveSlot, playerState);
+        saveCurrentSpawnLocation();
         if (roomSession != null) {
             saveRamStore.writeRoomStatuses(currentSaveSlot,
                 roomSession.overworldRoomStatusSnapshot(),
@@ -1116,6 +1117,30 @@ public class Main {
         } catch (IOException exception) {
             throw new IllegalStateException("Failed to persist player save state", exception);
         }
+    }
+
+    /** Mirrors the source's wSpawnLocationData fields copied by SaveGameToFile. */
+    private static void saveCurrentSpawnLocation() {
+        if (roomSession == null || !roomSession.hasActiveRoom() || link == null) {
+            return;
+        }
+
+        ActiveRoom room = roomSession.activeRoom();
+        boolean isIndoor = room.mapCategory() != Warp.CATEGORY_OVERWORLD;
+        int indoorRoom = roomSession.indoorRoomPositionForSave();
+        if (indoorRoom < 0) {
+            // Small houses/caves have no map-layout table. The source leaves
+            // wIndoorRoom at its previous value in that case.
+            indoorRoom = saveRamStore.readSlot(currentSaveSlot).spawnIndoorRoom();
+        }
+        saveRamStore.writeSpawnLocation(
+            currentSaveSlot,
+            isIndoor ? 1 : 0,
+            isIndoor ? room.mapId() : 0,
+            room.roomId(),
+            link.roomEntryRomPositionX(),
+            link.roomEntryRomPositionY(),
+            indoorRoom);
     }
 
     private static BackgroundScene loadFileMenuBackgroundScene(String sceneId) {

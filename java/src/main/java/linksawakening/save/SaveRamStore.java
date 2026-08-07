@@ -81,6 +81,12 @@ public final class SaveRamStore {
         image.writeDungeonItemFlags(slot, dungeonItemFlags, colorDungeonItemFlags);
     }
 
+    public void writeSpawnLocation(int slot, int isIndoor, int mapId, int mapRoom,
+                                   int positionX, int positionY, int indoorRoom) {
+        image.writeSpawnLocation(slot, isIndoor, mapId, mapRoom,
+            positionX, positionY, indoorRoom);
+    }
+
     public void writePlayerState(int slot, PlayerState playerState) {
         image.writePlayerState(slot, playerState);
     }
