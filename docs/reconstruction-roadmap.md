@@ -1954,6 +1954,29 @@ runtime collision callback.
   skipped tests. Remaining entity handlers, room scripts, and broader
   hardware-visible ordering remain follow-up work.
 
+## Verified ROM Magic Rod producer and fireball runtime — 2026-08-07
+
+- `UseMagicRod` now arms the high-bit `$8E` attack-step window, preserves the
+  source side/forward Link OAM timing, applies `func_157C`'s direction update
+  at the delayed launch boundary, and spawns entity `$04` only when the shared
+  two-projectile gate allows it. The Link auxiliary sprite uses the ROM
+  bank-$02 offset, tile, and attribute tables at `$52E0-$5307` and the shipped
+  Link character tiles/object palettes.
+- The bank-$03 fireball handler now uses the `$69AA` pair, the shared
+  `$20/$E0` projectile speed tables, the frame-counter variant cadence, damage
+  type `$0A`, common target collision path, `ApplySwordIntersectionWithObjects`
+  wall rules, and the `$30` private fire-state countdown with
+  `FireSpriteVariants` at `$4C44`.
+- Burnable overworld bushes (`$5C/$D3`) and side-scrolling frozen blocks (`$8A`)
+  cross the live room boundary through explicit mutation requests. The session
+  reveals the ROM object, refreshes tilemap/collision data, emits smoke at the
+  source `$08/$10` offset, and queues enemy-destroyed noise `$13`; the runtime
+  keeps the projectile active after a burn as in the original handler.
+- Focused ROM-byte, countdown, display-list, motion, item-gate, sound, and
+  object-request tests cover the slice. A clean Java suite passes with 1,103
+  tests and zero failures, errors, or skipped tests. Remaining entity handlers,
+  room scripts, and broader hardware-visible ordering remain follow-up work.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

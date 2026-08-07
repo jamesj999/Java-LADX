@@ -23,6 +23,7 @@ public final class EntitySpriteHandlerCatalog {
 
     private static final int ENTITY_ARROW = 0x00;
     private static final int ENTITY_BOOMERANG = 0x01;
+    private static final int ENTITY_MAGIC_ROD_FIREBALL = 0x04;
     private static final int ENTITY_SWORD_BEAM = 0xDF;
     private static final int ENTITY_BOMB = 0x02;
     private static final int ENTITY_BUTTERFLY = 0x6E;
@@ -154,6 +155,9 @@ public final class EntitySpriteHandlerCatalog {
         }
         if (entityType == ENTITY_BOOMERANG) {
             return decodePair(entityType, 0x19, 0x4451, 4, 0);
+        }
+        if (entityType == ENTITY_MAGIC_ROD_FIREBALL) {
+            return decodePair(entityType, 0x03, 0x69AA, 2, 0);
         }
         if (entityType == ENTITY_SWORD_BEAM) {
             return decodeRectangle(entityType, 0x19, 0x44FC, 4, 2, 0);
@@ -631,6 +635,11 @@ public final class EntitySpriteHandlerCatalog {
             variants.add(List.copyOf(sprites));
         }
         return EntitySpriteDefinition.dynamic(ENTITY_ARROW, 0x03, 0x6BC6, 0, variants);
+    }
+
+    /** Shared bank-$03 fire display used after a Magic Rod fireball hits a wall. */
+    public EntitySpriteDefinition forMagicRodFireState() {
+        return decodePair(ENTITY_MAGIC_ROD_FIREBALL, 0x03, 0x4C44, 2, 0);
     }
 
     private EntitySpriteDefinition decodeLiftableRock(EntityRoomLoader.RoomTable roomTable) {

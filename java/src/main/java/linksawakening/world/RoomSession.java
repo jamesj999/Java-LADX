@@ -608,6 +608,21 @@ public final class RoomSession {
         return true;
     }
 
+    /** Mirrors the delayed UseMagicRod player-projectile spawn bridge. */
+    public boolean fireMagicRodFireball(int linkEntityX, int linkEntityY, int linkEntityZ,
+                                        int romDirection) {
+        if (activeRoom == null || entityRuntime == null) {
+            return false;
+        }
+        int slot = entityRuntime.spawnMagicRodFireball(linkEntityX, linkEntityY, linkEntityZ,
+            romDirection);
+        if (slot < 0) {
+            return false;
+        }
+        activeRoom.replaceEntities(entityRuntime.snapshot());
+        return true;
+    }
+
     /**
      * Mirrors the ordinary player-bomb placement bridge. The item has already
      * applied PlaceBomb's inventory ordering; this method owns the room/runtime
@@ -905,6 +920,7 @@ public final class RoomSession {
         activeRoom.replaceEntities(entityRuntime.snapshot());
         applyBombObjectInteractions(bombExplosionEvents);
         applyBoomerangObjectInteractions(entityRuntime.boomerangObjectRequests());
+        applyMagicRodObjectInteractions(entityRuntime.magicRodObjectRequests());
         activeRoom.replaceEntities(entityRuntime.snapshot());
         return events;
     }
@@ -1329,6 +1345,55 @@ public final class RoomSession {
                 request.sourceSlot(), 0x01, 0, false,
                 EntityCombatEvent.SoundChannel.NOISE, 0x13));
             refreshOverworldCollisionAfterObjectMutation();
+        }
+    }
+
+    private void applyMagicRodObjectInteractions(
+            List<RoomEntityRuntime.MagicRodObjectRequest> requests) {
+        if (activeRoom == null || requests == null || requests.isEmpty()) {
+            return;
+        }
+
+        for (RoomEntityRuntime.MagicRodObjectRequest request : requests) {
+            boolean changed = false;
+            if (activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
+                OverworldBushInteraction.CutResult result =
+                    overworldBushInteraction.revealObjectAtLocation(
+                        request.location(), activeRoom.roomId(), true,
+                        activeRoom.roomObjectsArea(), activeRoom.renderValues(),
+                        activeRoom.gbcOverlay(), activeRoom.tileIds(), activeRoom.tileAttrs());
+                changed = result.changed();
+            } else if (activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL
+                && objectAtRoomLocation(request.location()) == 0x8A) {
+                int areaIndex = RoomConstants.ROOM_OBJECTS_BASE
+                    + (request.location() & 0xF0) + (request.location() & 0x0F);
+                int[] objects = activeRoom.roomObjectsArea();
+                if (areaIndex >= 0 && areaIndex < objects.length) {
+                    objects[areaIndex] = 0x04; // OBJECT_SIDE_VIEW_EMPTY
+                    if (activeRoom.renderValues() != null
+                        && areaIndex < activeRoom.renderValues().length) {
+                        activeRoom.renderValues()[areaIndex] = 0x04;
+                    }
+                    refreshActiveRoomTilemap();
+                    overworldCollision.setRoom(activeRoom.roomObjectsArea());
+                    overworldCollision.setGbcOverlay(null);
+                    changed = true;
+                }
+            }
+
+            if (!changed) {
+                continue;
+            }
+            if (transientVfxSystem != null) {
+                transientVfxSystem.spawn(TransientVfxType.SMOKE,
+                    request.objectLeft() + 0x08, request.objectTop() + 0x10);
+            }
+            pendingRoomEntityEvents.add(new EntityCombatEvent(
+                request.sourceSlot(), 0x04, 0, false,
+                EntityCombatEvent.SoundChannel.NOISE, 0x13));
+            if (activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
+                refreshOverworldCollisionAfterObjectMutation();
+            }
         }
     }
 

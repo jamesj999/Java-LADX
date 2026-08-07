@@ -145,6 +145,35 @@ final class EntitySpriteHandlerCatalogTest {
     }
 
     @Test
+    void mapsMagicRodFireballAndItsSharedFireStateToRomDisplayLists() {
+        byte[] rom = syntheticRom();
+        write(rom, 0x03, 0x69AA,
+            0x36, 0x02, 0x36, 0x22,
+            0x36, 0x03, 0x36, 0x23);
+        write(rom, 0x03, 0x4C44,
+            0x34, 0x02, 0x34, 0x22,
+            0x34, 0x04, 0x34, 0x24);
+
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteDefinition fireball = catalog.forEntityType(
+            0x04, EntityRoomLoader.RoomTable.OVERWORLD);
+        EntitySpriteDefinition fire = catalog.forMagicRodFireState();
+
+        assertDefinition(fireball, 0x03, 0x69AA,
+            EntitySpriteDefinition.Shape.PAIR, 2, 0);
+        assertPairBytes(fireball, new int[][] {
+            {0x36, 0x02, 0x36, 0x22},
+            {0x36, 0x03, 0x36, 0x23}
+        });
+        assertDefinition(fire, 0x03, 0x4C44,
+            EntitySpriteDefinition.Shape.PAIR, 2, 0);
+        assertPairBytes(fire, new int[][] {
+            {0x34, 0x02, 0x34, 0x22},
+            {0x34, 0x04, 0x34, 0x24}
+        });
+    }
+
+    @Test
     void decodesSpikedBeetleDisplayListsFromTheShippedRom() throws Exception {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
 

@@ -40,6 +40,15 @@ public final class LinkTunicPalette {
         return objectPalettes[PALETTE_ROW_FOR_TUNIC[tunicType]].clone();
     }
 
+    /** Returns the ROM object palette selected by an auxiliary OAM attribute. */
+    public int[] forObjectPalette(int paletteIndex) {
+        if (paletteIndex < 0 || paletteIndex >= objectPalettes.length) {
+            throw new IllegalArgumentException("Object palette index out of range: "
+                + paletteIndex);
+        }
+        return objectPalettes[paletteIndex].clone();
+    }
+
     /** Compatibility source for isolated Link fixtures without a ROM. */
     static LinkTunicPalette greenCompatibility() {
         int[] green = {0x00000000, 0x00000000, 0x0010A840, 0x00F8B888};

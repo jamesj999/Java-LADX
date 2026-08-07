@@ -123,6 +123,7 @@ public final class RoomEntityRuntime {
     private static final int BOMBER_THROW_JINGLE_ID = 0x08;
     private static final int DAMAGE_TYPE_ARROW = 0x05;
     private static final int DAMAGE_TYPE_BOOMERANG = 0x08;
+    private static final int DAMAGE_TYPE_MAGIC_ROD = 0x0A;
     private static final int DAMAGE_TYPE_SWORD_BEAM = 0x01;
     private static final int DAMAGE_TYPE_BOMB = BombExplosionEvent.DAMAGE_TYPE_BOMB;
     private static final int DAMAGE_TYPE_BOMB_ARROW = 0x0C;
@@ -346,8 +347,11 @@ public final class RoomEntityRuntime {
     private RoomEntityObjectQuery objectQuery;
     private RoomEntityObjectQuery objectIntersectionQuery;
     private final BoomerangMotion boomerangMotion = new BoomerangMotion();
+    private final MagicRodFireballMotion magicRodFireballMotion =
+        new MagicRodFireballMotion();
     private final SwordBeamMotion swordBeamMotion = new SwordBeamMotion();
     private final List<BoomerangObjectRequest> boomerangObjectRequests = new ArrayList<>();
+    private final List<MagicRodObjectRequest> magicRodObjectRequests = new ArrayList<>();
     private int boomerangSfxCounter;
 
     /** The ROM-facing state needed by Link's carry animation and throw input. */
@@ -377,6 +381,20 @@ public final class RoomEntityRuntime {
         public BoomerangObjectRequest {
             if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
                 throw new IllegalArgumentException("Boomerang source slot out of range: "
+                    + sourceSlot);
+            }
+            location &= 0xFF;
+            objectLeft &= 0xF0;
+            objectTop &= 0xF0;
+        }
+    }
+
+    /** A Magic Rod fireball request to reveal the object it burned. */
+    public record MagicRodObjectRequest(int sourceSlot, int location,
+                                        int objectLeft, int objectTop) {
+        public MagicRodObjectRequest {
+            if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
+                throw new IllegalArgumentException("Magic Rod source slot out of range: "
                     + sourceSlot);
             }
             location &= 0xFF;
@@ -857,6 +875,7 @@ public final class RoomEntityRuntime {
         Arrays.fill(dynamicEntitySpawnedThisFrame, false);
         transientVfxRequests.clear();
         boomerangObjectRequests.clear();
+        magicRodObjectRequests.clear();
         pendingDialogRequests.clear();
         pendingEntityEvents.clear();
         pendingChestRewardEvents.clear();
@@ -1036,6 +1055,11 @@ public final class RoomEntityRuntime {
             if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_SWORD_BEAM) {
                 advanceSwordBeamEntity(index, entity, frame, linkEntityX, linkEntityY,
                     romLinkDirection, projectileLinkState.motionState());
+                continue;
+            }
+            if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_MAGIC_ROD_FIREBALL) {
+                advanceMagicRodFireballEntity(index, entity, frame,
+                    projectileLinkState.motionState());
                 continue;
             }
             if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_BOMB) {
@@ -2718,6 +2742,70 @@ public final class RoomEntityRuntime {
         slots[index] = withPositionAndVariant(moved, moved.x(), moved.y(), variant);
     }
 
+    /** Advances entity {@code $04} through MagicRodFireballEntityHandler. */
+    private void advanceMagicRodFireballEntity(int index, RoomEntity entity, int frame,
+                                               int linkMotionState) {
+        int slot = entity.slot();
+        int variant = MagicRodFireballMotion.frameVariant(frame);
+
+        // The source calls func_003_75A2 before either the wall-fire branch or
+        // ReturnIfNonInteractive. A fireball can therefore still deliver the
+        // common target collision while Link is being transitioned.
+        boolean hitEntity = collideMagicRodFireballWithEntities(entity, frame);
+        if (magicRodFireballMotion.privateCountdown1(slot) != 0) {
+            if (magicRodFireballMotion.tickFireTransition(slot)) {
+                clearEntity(slot);
+                return;
+            }
+            EntitySpriteDefinition fireDefinition = spriteHandlers == null
+                ? entity.spriteDefinition() : spriteHandlers.forMagicRodFireState();
+            slots[index] = withDefinition(entity, fireDefinition, variant);
+            return;
+        }
+
+        // ReturnIfNonInteractive_03 is after the normal sprite write and
+        // before movement/object lookup in the ROM helper.
+        if (linkMotionState >= 0x02) {
+            slots[index] = withVariant(entity, variant);
+            return;
+        }
+
+        RoomEntity moved = magicRodFireballMotion.advancePosition(entity);
+        RoomEntityObjectQuery intersectionQuery = objectIntersectionQuery != null
+            ? objectIntersectionQuery : objectQuery;
+        RoomEntityObjectSample object = intersectionQuery == null
+            ? null : intersectionQuery.sample(moved);
+        if (isMagicRodBurnableObject(object)) {
+            int location = (object.objectTop() | (object.objectLeft() >>> 4)) & 0xFF;
+            magicRodObjectRequests.add(new MagicRodObjectRequest(
+                slot, location, object.objectLeft(), object.objectTop()));
+            slots[index] = withVariant(moved, variant);
+            return;
+        }
+
+        boolean hitObject = object != null
+            && swordBeamObjectCollision(moved, object, frame, slot);
+        if (hitEntity || hitObject) {
+            // ArrowRenderAndMove writes privateCountdown1 after the normal
+            // fireball display has already been rendered. Keep the normal
+            // definition for this frame; the next handler tick switches to
+            // FireSpriteVariants and decrements the $30 countdown.
+            magicRodFireballMotion.beginFireTransition(slot);
+        }
+        slots[index] = withVariant(moved, variant);
+    }
+
+    private boolean isMagicRodBurnableObject(RoomEntityObjectSample object) {
+        if (object == null) {
+            return false;
+        }
+        int objectId = object.objectId() & 0xFF;
+        if (indoorRoom) {
+            return objectId == 0x8A; // OBJECT_FROZEN_BLOCK
+        }
+        return objectId == OBJECT_BUSH || objectId == OBJECT_BUSH_GROUND_STAIRS;
+    }
+
     private boolean boomerangObjectCollision(RoomEntity entity,
                                               RoomEntityObjectSample object,
                                               int frame, int slot) {
@@ -2800,6 +2888,40 @@ public final class RoomEntityRuntime {
             collided = true;
             applyPlayerProjectileDamage(target, DAMAGE_TYPE_SWORD_BEAM,
                 swordBeamMotion.speedX(sourceSlot), swordBeamMotion.speedY(sourceSlot));
+        }
+        return collided;
+    }
+
+    /** Common bank-$03 collision pass with DAMAGE_TYPE_MAGIC_ROD ($0A). */
+    private boolean collideMagicRodFireballWithEntities(RoomEntity fireball, int frame) {
+        int sourceSlot = fireball.slot();
+        int sourceVisualY = (fireball.y() - fireball.z()) & 0xFF;
+        boolean collided = false;
+        for (int targetSlot = slots.length - 1; targetSlot >= 0; targetSlot--) {
+            if (targetSlot == sourceSlot || ((frame ^ targetSlot) & 0x01) != 0) {
+                continue;
+            }
+
+            RoomEntity target = slots[targetSlot];
+            int targetPhysics = enemyPhysicsFlags[targetSlot];
+            if (!target.loaded()
+                || target.status().value() < EntityStatus.ACTIVE.value()
+                || (targetPhysics & ENTITY_PHYSICS_GRABBABLE) != 0
+                || !RoomEntityCombatRules.supportsEnemyCollision(target.type())
+                || (targetPhysics & ENTITY_PHYSICS_PROJECTILE_NOCLIP) != 0
+                || (enemyHitboxFlags[targetSlot] & HITFLAGS_IGNORE_HITS) != 0
+                || enemyIgnoreHitsCountdown[targetSlot] != 0
+                || target.spriteVariant() < 0
+                || unsignedByteAbs(fireball.x() - target.x()) >= 0x0C
+                || unsignedByteAbs(sourceVisualY
+                    - ((target.y() - target.z()) & 0xFF)) >= 0x0C) {
+                continue;
+            }
+
+            collided = true;
+            applyPlayerProjectileDamage(target, DAMAGE_TYPE_MAGIC_ROD,
+                magicRodFireballMotion.speedX(sourceSlot),
+                magicRodFireballMotion.speedY(sourceSlot));
         }
         return collided;
     }
@@ -3188,6 +3310,7 @@ public final class RoomEntityRuntime {
         hookshotChainMotion.clear(slot);
         hookshotBridgeMotion.clear(slot);
         boomerangMotion.clear(slot);
+        magicRodFireballMotion.clear(slot);
         swordBeamMotion.clear(slot);
         if (entity.type() == ENTITY_HOOKSHOT_CHAIN) {
             hookshotChainOam = List.of();
@@ -3400,6 +3523,43 @@ public final class RoomEntityRuntime {
         return freeSlot;
     }
 
+    /** Creates the ROM's Magic Rod fireball entity type {@code $04}. */
+    int spawnMagicRodFireball(int linkEntityX, int linkEntityY, int linkEntityZ,
+                              int romDirection) {
+        validateRomDirection(romDirection);
+        if (activeProjectileCount() >= 0x02) {
+            return -1;
+        }
+        int freeSlot = findFreeEntitySlot();
+        if (freeSlot < 0) {
+            return -1;
+        }
+
+        EntitySpriteDefinition definition = spriteDefinitionFor(ENTITY_MAGIC_ROD_FIREBALL);
+        int variant = definition.supported() ? definition.initialVariant() : -1;
+        RoomEntity fireball = new RoomEntity(freeSlot, -1, ENTITY_MAGIC_ROD_FIREBALL,
+            linkEntityX & 0xFF, linkEntityY & 0xFF, EntityStatus.ACTIVE,
+            definition, variant, 0, 0, (linkEntityZ + 1) & 0xFF);
+        slots[freeSlot] = fireball;
+        magicRodFireballMotion.clear(freeSlot);
+        magicRodFireballMotion.initializeSpawn(freeSlot, romDirection);
+        thrownDirection[freeSlot] = romDirection;
+        entityUnknownJ[freeSlot] = 1;
+        baseEntityFlipAttribute[freeSlot] = 0;
+        entityOptions1Override[freeSlot] = ENTITY_OPT1_NO_GROUND_INTERACTION
+            | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
+        enemyPhysicsFlags[freeSlot] = 2 | ENTITY_PHYSICS_PROJECTILE_NOCLIP;
+        enemyHealth[freeSlot] = 0;
+        enemyTransitionCountdown[freeSlot] = 0;
+        enemyStunnedCountdown[freeSlot] = 0;
+        enemyFlashCountdown[freeSlot] = 0;
+        enemyIgnoreHitsCountdown[freeSlot] = 1;
+        enemyHitboxFlags[freeSlot] = 0;
+        dyingCountdown[freeSlot] = 0;
+        powerRecoilDeath[freeSlot] = false;
+        return freeSlot;
+    }
+
     int activePlayerArrowCount() {
         int count = 0;
         for (RoomEntity entity : slots) {
@@ -3466,6 +3626,10 @@ public final class RoomEntityRuntime {
 
     int swordBeamState(int slot) {
         return swordBeamMotion.state(slot);
+    }
+
+    int magicRodFireballPrivateCountdown1(int slot) {
+        return magicRodFireballMotion.privateCountdown1(slot);
     }
 
     int swordBeamSpeedX(int slot) {
@@ -5178,6 +5342,10 @@ public final class RoomEntityRuntime {
         return List.copyOf(boomerangObjectRequests);
     }
 
+    List<MagicRodObjectRequest> magicRodObjectRequests() {
+        return List.copyOf(magicRodObjectRequests);
+    }
+
     int physicsFlags(int slot) {
         if (slot < 0 || slot >= slots.length) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
@@ -6269,6 +6437,7 @@ public final class RoomEntityRuntime {
         pairoddMotion.clear(slot);
         pairoddProjectileMotion.clear(slot);
         playerArrowMotion.clear(slot);
+        magicRodFireballMotion.clear(slot);
         playerArrowBombArrow[slot] = false;
         if (latestDroppedBombEntityIndex == slot) {
             latestDroppedBombEntityIndex = -1;

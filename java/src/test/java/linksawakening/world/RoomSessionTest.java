@@ -275,6 +275,48 @@ final class RoomSessionTest {
     }
 
     @Test
+    void magicRodBurnsAnOverworldBushThroughTheLiveRoomBoundary() {
+        TransientVfxSystem vfx = new TransientVfxSystem(16);
+        RoomSession session = newSession(vfx);
+        session.loadInitialOverworld(0x92);
+
+        int location = 0x55;
+        int areaIndex = RoomConstants.ROOM_OBJECTS_BASE
+            + (location & 0xF0) + (location & 0x0F);
+        session.activeRoom().roomObjectsArea()[areaIndex] = 0x5C;
+        session.activeRoom().renderValues()[areaIndex] = 0x5C;
+
+        assertTrue(session.fireMagicRodFireball(0x50, 0x58, 0, 0));
+        session.tickEntitiesWithProjectileEvents(0, 0x50, 0x58, 0, 0, 0, false);
+
+        assertEquals(0x04, session.activeRoom().roomObjectsArea()[areaIndex]);
+        assertEquals(0x04, session.activeRoom().renderValues()[areaIndex]);
+        assertEquals(1, vfx.activeCount());
+        assertTrue(session.consumeEntityEvents().stream()
+            .anyMatch(event -> event.type() == 0x04
+                && event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE
+                && event.soundId() == 0x13));
+    }
+
+    @Test
+    void magicRodBurnsAnIndoorFrozenBlockIntoTheSideViewEmptyObject() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x00, 0x00, Warp.CATEGORY_SIDESCROLL);
+
+        int location = 0x22;
+        int areaIndex = RoomConstants.ROOM_OBJECTS_BASE
+            + (location & 0xF0) + (location & 0x0F);
+        session.activeRoom().roomObjectsArea()[areaIndex] = 0x8A;
+
+        assertTrue(session.fireMagicRodFireball(0x20, 0x28, 0, 0));
+        session.tickEntitiesWithProjectileEvents(0, 0x20, 0x28, 0, 0, 0, false);
+
+        assertEquals(0x04, session.activeRoom().roomObjectsArea()[areaIndex]);
+        assertTrue(session.consumeEntityEvents().stream()
+            .anyMatch(event -> event.type() == 0x04 && event.soundId() == 0x13));
+    }
+
+    @Test
     void bombedOverworldBushSpawnsTheRomLiftableRockSmashEntity() {
         RoomSession session = newSession();
         session.loadInitialOverworld(0x92);

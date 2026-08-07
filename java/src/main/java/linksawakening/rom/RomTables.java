@@ -98,6 +98,17 @@ public final class RomTables {
     private static final int SWORD_SPRITE_ATTRS_ADDR = 0x4AA3;
     private static final int SWORD_SPRITE_TABLE_LEN = 16;
 
+    // Magic-rod Link OAM tables in bank $02 (bank2.asm:52E0-5307).
+    // The first four entries are the forward swing and the second four are
+    // the side swing, in ROM direction order RIGHT, LEFT, UP, DOWN.
+    private static final int MAGIC_ROD_TABLE_BANK = 0x02;
+    private static final int MAGIC_ROD_X_OFFSET_ADDR = 0x52E0;
+    private static final int MAGIC_ROD_Y_OFFSET_ADDR = 0x52E8;
+    private static final int MAGIC_ROD_TILES_ADDR = 0x52F0;
+    private static final int MAGIC_ROD_ATTRIBUTES_ADDR = 0x5300;
+    private static final int MAGIC_ROD_DIRECTION_TABLE_LEN = 8;
+    private static final int MAGIC_ROD_SPRITE_TABLE_LEN = 16;
+
     private final int[][] physicsFlags;
     private final int[] entityOptions1;
     private final int[] entityHitboxFlags;
@@ -121,6 +132,10 @@ public final class RomTables {
     private final int[] swordCollisionHeight;
     private final int[] swordSpriteTiles;
     private final int[] swordSpriteAttrs;
+    private final byte[] magicRodXOffset;
+    private final byte[] magicRodYOffset;
+    private final int[] magicRodTiles;
+    private final int[] magicRodAttributes;
     private final byte[] staticSwordCollisionX;
     private final byte[] staticSwordCollisionY;
 
@@ -136,6 +151,8 @@ public final class RomTables {
                       int[] swordCollisionNeeded, int[] swordCollisionWidth,
                       int[] swordCollisionOffset, int[] swordCollisionHeight,
                       int[] swordSpriteTiles, int[] swordSpriteAttrs,
+                      byte[] magicRodXOffset, byte[] magicRodYOffset,
+                      int[] magicRodTiles, int[] magicRodAttributes,
                       byte[] staticSwordCollisionX, byte[] staticSwordCollisionY) {
         this.physicsFlags = physicsFlags;
         this.entityOptions1 = entityOptions1;
@@ -160,6 +177,10 @@ public final class RomTables {
         this.swordCollisionHeight = swordCollisionHeight;
         this.swordSpriteTiles = swordSpriteTiles;
         this.swordSpriteAttrs = swordSpriteAttrs;
+        this.magicRodXOffset = magicRodXOffset;
+        this.magicRodYOffset = magicRodYOffset;
+        this.magicRodTiles = magicRodTiles;
+        this.magicRodAttributes = magicRodAttributes;
         this.staticSwordCollisionX = staticSwordCollisionX;
         this.staticSwordCollisionY = staticSwordCollisionY;
     }
@@ -225,6 +246,14 @@ public final class RomTables {
             romData, SWORD_TABLES_BANK, SWORD_COLLISION_HEIGHT_TABLE_ADDR, TABLE_LEN);
         int[] swordTiles = loadUnsignedTable(romData, SWORD_SPRITE_BANK, SWORD_SPRITE_TILES_ADDR, SWORD_SPRITE_TABLE_LEN);
         int[] swordAttrs = loadUnsignedTable(romData, SWORD_SPRITE_BANK, SWORD_SPRITE_ATTRS_ADDR, SWORD_SPRITE_TABLE_LEN);
+        byte[] magicRodX = loadSignedTable(romData, MAGIC_ROD_TABLE_BANK,
+            MAGIC_ROD_X_OFFSET_ADDR, MAGIC_ROD_DIRECTION_TABLE_LEN);
+        byte[] magicRodY = loadSignedTable(romData, MAGIC_ROD_TABLE_BANK,
+            MAGIC_ROD_Y_OFFSET_ADDR, MAGIC_ROD_DIRECTION_TABLE_LEN);
+        int[] magicRodTiles = loadUnsignedTable(romData, MAGIC_ROD_TABLE_BANK,
+            MAGIC_ROD_TILES_ADDR, MAGIC_ROD_SPRITE_TABLE_LEN);
+        int[] magicRodAttrs = loadUnsignedTable(romData, MAGIC_ROD_TABLE_BANK,
+            MAGIC_ROD_ATTRIBUTES_ADDR, MAGIC_ROD_SPRITE_TABLE_LEN);
         byte[] staticSwordCollisionX = loadSignedTable(
             romData, STATIC_SWORD_COLLISION_TABLE_BANK, STATIC_SWORD_COLLISION_X_ADDR, STATIC_SWORD_COLLISION_TABLE_LEN);
         byte[] staticSwordCollisionY = loadSignedTable(
@@ -239,6 +268,7 @@ public final class RomTables {
                              swordCollisionNeeded, swordCollisionWidth,
                              swordCollisionOffset, swordCollisionHeight,
                              swordTiles, swordAttrs,
+                             magicRodX, magicRodY, magicRodTiles, magicRodAttrs,
                              staticSwordCollisionX, staticSwordCollisionY);
     }
 
@@ -457,6 +487,26 @@ public final class RomTables {
     public int swordSpriteAttr(int swordDirection, int spriteSlot) {
         int index = (swordDirection & 0x7) * 2 + (spriteSlot & 0x1);
         return swordSpriteAttrs[index];
+    }
+
+    /** Signed Link-top-left X offset for one Magic Rod swing direction. */
+    public int magicRodXOffset(int tableIndex) {
+        return magicRodXOffset[tableIndex & 0x07];
+    }
+
+    /** Signed Link-top-left Y offset for one Magic Rod swing direction. */
+    public int magicRodYOffset(int tableIndex) {
+        return magicRodYOffset[tableIndex & 0x07];
+    }
+
+    /** Link-character tile used by one Magic Rod OAM slot. */
+    public int magicRodTile(int tableIndex, int spriteSlot) {
+        return magicRodTiles[(tableIndex & 0x07) * 2 + (spriteSlot & 0x01)];
+    }
+
+    /** OAM attributes used by one Magic Rod OAM slot. */
+    public int magicRodAttribute(int tableIndex, int spriteSlot) {
+        return magicRodAttributes[(tableIndex & 0x07) * 2 + (spriteSlot & 0x01)];
     }
 
     /**

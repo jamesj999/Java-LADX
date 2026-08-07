@@ -97,6 +97,14 @@ public final class LinkSpriteSheet {
         return (attrsTable[animationState * 2 + 1] & 0x40) != 0;
     }
 
+    /** Returns a ROM-backed Link character tile used by auxiliary item OAM. */
+    public Tile tile(int tileIndex) {
+        if (tileIndex < 0 || tileIndex >= tiles.length) {
+            throw new IllegalArgumentException("Link tile index out of range: " + tileIndex);
+        }
+        return tiles[tileIndex];
+    }
+
     private static Tile decodeTile(byte[] romData, int offset) {
         Tile tile = new Tile();
         for (int y = 0; y < 8; y++) {

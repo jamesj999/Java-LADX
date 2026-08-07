@@ -420,6 +420,11 @@ public final class Link implements RocsFeather.JumpTarget {
         romAttackStepAnimationCountdown = ROM_ITEM_ATTACK_STEP_COUNTDOWN;
     }
 
+    /** Starts UseMagicRod's high-bit attack-step animation window. */
+    public void startRomMagicRodAttackStep() {
+        romAttackStepAnimationCountdown = 0x8E;
+    }
+
     /**
      * Mirrors the leading CheckItemsToUse gate used before an equipped item
      * spends inventory. Airborne motion remains eligible; PlaceBomb does not

@@ -13,6 +13,7 @@ import linksawakening.equipment.Bomb;
 import linksawakening.equipment.Boomerang;
 import linksawakening.equipment.Hookshot;
 import linksawakening.equipment.ItemRegistry;
+import linksawakening.equipment.MagicRod;
 import linksawakening.equipment.Ocarina;
 import linksawakening.equipment.RocsFeather;
 import linksawakening.equipment.Sword;
@@ -272,9 +273,10 @@ public class Main {
             new OverworldTilesetTable(romData), overworldCollision, transientVfxSystem, droppableRupeeSystem,
             Main::selectMusicForLoadedRoom);
         roomSession.setColorShellSoundSink(gameplaySoundSink);
+        LinkTunicPalette linkTunicPalette = LinkTunicPalette.loadFromRom(romData);
         link = new Link(inputState, inputConfig, romTables, overworldCollision,
                         linkSpriteSheet, playerState, itemRegistry, gameplaySoundSink,
-                        LinkTunicPalette.loadFromRom(romData));
+                        linkTunicPalette);
         itemRegistry.register(PlayerState.INVENTORY_OCARINA, new Ocarina(
             playerState, gameplaySoundSink, new Ocarina.PlaybackTarget() {
                 @Override
@@ -311,6 +313,32 @@ public class Main {
                     return spawned;
                 }
             }));
+        itemRegistry.register(PlayerState.INVENTORY_MAGIC_ROD, new MagicRod(
+            romTables, linkSpriteSheet, linkTunicPalette, gameplaySoundSink,
+            new MagicRod.LaunchTarget() {
+                @Override
+                public void startMagicRodAttackStep() {
+                    if (link != null) {
+                        link.startRomMagicRodAttackStep();
+                    }
+                }
+
+                @Override
+                public boolean fireMagicRodFireball() {
+                    if (link == null || roomSession == null) {
+                        return false;
+                    }
+                    int romDirection = link.applyRomItemDirectionFromInput();
+                    boolean spawned = roomSession.fireMagicRodFireball(
+                        link.romEntityX(), link.romEntityY(), link.romEntityZ(), romDirection);
+                    return spawned;
+                }
+
+                @Override
+                public int activeProjectileCount() {
+                    return roomSession == null ? 0 : roomSession.activeProjectileCount();
+                }
+            }, link::canUseItems));
         itemRegistry.register(PlayerState.INVENTORY_ROCS_FEATHER, new RocsFeather(link));
         itemRegistry.register(PlayerState.INVENTORY_BOMBS, new Bomb(
             playerState, gameplaySoundSink, new Bomb.PlacementTarget() {

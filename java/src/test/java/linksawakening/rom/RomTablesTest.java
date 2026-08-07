@@ -63,4 +63,30 @@ final class RomTablesTest {
         assertEquals(0x08, tables.swimmingEntrySpeedX(0));
         assertEquals(0x08, tables.swimmingEntrySpeedY(3));
     }
+
+    @Test
+    void loadsMagicRodLinkOamTablesFromBankTwo() {
+        byte[] rom = new byte[0x100000];
+        int xOffset = RomBank.romOffset(0x02, 0x52E0);
+        int yOffset = RomBank.romOffset(0x02, 0x52E8);
+        int tileOffset = RomBank.romOffset(0x02, 0x52F0);
+        int attrOffset = RomBank.romOffset(0x02, 0x5300);
+        rom[xOffset + 0] = 0x0D;
+        rom[xOffset + 7] = (byte) 0xF5;
+        rom[yOffset + 2] = (byte) 0xF3;
+        rom[tileOffset + 8] = 0x06;
+        rom[tileOffset + 9] = 0x08;
+        rom[attrOffset + 14] = 0x22;
+        rom[attrOffset + 15] = 0x22;
+
+        RomTables tables = RomTables.loadFromRom(rom);
+
+        assertEquals(0x0D, tables.magicRodXOffset(0));
+        assertEquals(-0x0B, tables.magicRodXOffset(7));
+        assertEquals(-0x0D, tables.magicRodYOffset(2));
+        assertEquals(0x06, tables.magicRodTile(4, 0));
+        assertEquals(0x08, tables.magicRodTile(4, 1));
+        assertEquals(0x22, tables.magicRodAttribute(7, 0));
+        assertEquals(0x22, tables.magicRodAttribute(7, 1));
+    }
 }

@@ -86,6 +86,18 @@ final class GameplaySoundEffectMapTest {
     }
 
     @Test
+    void mapsMagicRodToTheRomMagicRodNoise() throws IOException {
+        GameplaySoundEffectMap map = GameplaySoundEffectMap.fromCatalog(
+            SoundEffectCatalog.fromRom(loadRom()));
+
+        SoundEffect effect = map.resolve(GameplaySoundEvent.MAGIC_ROD).orElseThrow();
+
+        assertEquals(SoundEffectNamespace.NOISE, effect.namespace());
+        assertEquals(0x0D, effect.id());
+        assertEquals("NOISE_SFX_MAGIC_ROD", effect.name());
+    }
+
+    @Test
     void mapsSwordBeamToTheRomSwordBeamJingle() throws IOException {
         GameplaySoundEffectMap map = GameplaySoundEffectMap.fromCatalog(
             SoundEffectCatalog.fromRom(loadRom()));
