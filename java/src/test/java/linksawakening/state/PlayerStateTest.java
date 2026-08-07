@@ -293,14 +293,27 @@ final class PlayerStateTest {
         playerState.applyChestReward(linksawakening.world.ChestContentsTable.CHEST_BOMB);
         playerState.applyChestReward(linksawakening.world.ChestContentsTable.CHEST_RUPEES_50);
         playerState.applyChestReward(linksawakening.world.ChestContentsTable.CHEST_SEASHELL);
+        playerState.applyChestReward(linksawakening.world.ChestContentsTable.CHEST_FLIPPERS);
         playerState.applyChestReward(linksawakening.world.ChestContentsTable.CHEST_MEDICINE);
+        playerState.applyChestReward(linksawakening.world.ChestContentsTable.CHEST_TAIL_KEY);
+        playerState.applyChestReward(linksawakening.world.ChestContentsTable.CHEST_ANGLER_KEY);
+        playerState.applyChestReward(linksawakening.world.ChestContentsTable.CHEST_FACE_KEY);
+        playerState.applyChestReward(linksawakening.world.ChestContentsTable.CHEST_BIRD_KEY);
+        playerState.applyChestReward(linksawakening.world.ChestContentsTable.CHEST_GOLD_LEAF);
 
         assertEquals(1, playerState.powerBraceletLevel());
         assertEquals(1, playerState.shieldLevel());
         assertEquals(1, playerState.bombCount());
         assertEquals(50, playerState.addRupeeBuffer());
         assertEquals(1, playerState.seashells());
+        assertTrue(playerState.hasFlippers());
         assertTrue(playerState.hasMedicine());
+        assertEquals(1, playerState.medicineCount());
+        assertEquals(1, playerState.tailKeyCount());
+        assertEquals(1, playerState.anglerKeyCount());
+        assertEquals(1, playerState.faceKeyCount());
+        assertEquals(1, playerState.birdKeyCount());
+        assertEquals(1, playerState.goldenLeavesCount());
         assertEquals(1, playerState.chestItemCount(
             linksawakening.world.ChestContentsTable.CHEST_POWER_BRACELET));
     }
@@ -364,8 +377,16 @@ final class PlayerStateTest {
         bytes[main + SaveRamLayout.MAIN_MAX_HEARTS_OFFSET] = 5;
         bytes[main + SaveRamLayout.MAIN_HEART_PIECES_OFFSET] = 2;
         bytes[main + SaveRamLayout.MAIN_SEASHELLS_OFFSET] = 19;
+        bytes[main + SaveRamLayout.MAIN_FLIPPERS_OFFSET] = 1;
         bytes[main + SaveRamLayout.MAIN_POWER_BRACELET_OFFSET] = 2;
         bytes[main + SaveRamLayout.MAIN_MEDICINE_OFFSET] = 1;
+        bytes[main + SaveRamLayout.MAIN_TRADE_SEQUENCE_ITEM_OFFSET] = 0x0E;
+        bytes[main + SaveRamLayout.MAIN_MEDICINE_COUNT_OFFSET] = 2;
+        bytes[main + SaveRamLayout.MAIN_TAIL_KEY_OFFSET] = 1;
+        bytes[main + SaveRamLayout.MAIN_ANGLER_KEY_OFFSET] = 2;
+        bytes[main + SaveRamLayout.MAIN_FACE_KEY_OFFSET] = 3;
+        bytes[main + SaveRamLayout.MAIN_BIRD_KEY_OFFSET] = 4;
+        bytes[main + SaveRamLayout.MAIN_GOLDEN_LEAVES_OFFSET] = 5;
         bytes[main + SaveRamLayout.MAIN_SHIELD_OFFSET] = 2;
         bytes[main + SaveRamLayout.MAIN_SWORD_OFFSET] = 2;
         bytes[main + SaveRamLayout.MAIN_ARROWS_OFFSET] = 4;
@@ -390,8 +411,16 @@ final class PlayerStateTest {
         assertEquals(5, playerState.maxHearts());
         assertEquals(2, playerState.heartPieces());
         assertEquals(19, playerState.seashells());
-        assertEquals(2, playerState.powerBraceletLevel());
+        assertTrue(playerState.hasFlippers());
         assertTrue(playerState.hasMedicine());
+        assertEquals(0x0E, playerState.tradeSequenceItem());
+        assertEquals(2, playerState.medicineCount());
+        assertEquals(1, playerState.tailKeyCount());
+        assertEquals(2, playerState.anglerKeyCount());
+        assertEquals(3, playerState.faceKeyCount());
+        assertEquals(4, playerState.birdKeyCount());
+        assertEquals(5, playerState.goldenLeavesCount());
+        assertEquals(2, playerState.powerBraceletLevel());
         assertEquals(PlayerState.INVENTORY_BOW, playerState.itemB());
         assertEquals(PlayerState.INVENTORY_HOOKSHOT, playerState.itemA());
         assertEquals(0x30, playerState.subscreenItem(0));

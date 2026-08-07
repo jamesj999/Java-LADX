@@ -68,6 +68,15 @@ public final class PlayerState {
     private int maxMagicPowder;
     private int heartPieces;
     private int seashells;
+    private boolean hasFlippers;
+    private boolean hasMedicine;
+    private int tradeSequenceItem;
+    private int medicineCount;
+    private int tailKeyCount;
+    private int anglerKeyCount;
+    private int faceKeyCount;
+    private int birdKeyCount;
+    private int goldenLeavesCount;
     private int activePowerUp;
     private int tunicType = TUNIC_GREEN;
     private boolean runningWithPegasusBoots;
@@ -75,7 +84,6 @@ public final class PlayerState {
     private int subtractHealthBuffer;
     private int addRupeeBuffer;
     private int powerUpHits;
-    private boolean hasMedicine;
     private final int[] chestItemCounts = new int[0x22];
 
     public PlayerState() {
@@ -117,6 +125,15 @@ public final class PlayerState {
         this.maxMagicPowder = clamp(maxMagicPowder, 0, 99);
         heartPieces = 0;
         seashells = 0;
+        hasFlippers = false;
+        hasMedicine = false;
+        tradeSequenceItem = 0;
+        medicineCount = 0;
+        tailKeyCount = 0;
+        anglerKeyCount = 0;
+        faceKeyCount = 0;
+        birdKeyCount = 0;
+        goldenLeavesCount = 0;
         activePowerUp = ACTIVE_POWER_UP_NONE;
         tunicType = TUNIC_GREEN;
         runningWithPegasusBoots = false;
@@ -124,7 +141,6 @@ public final class PlayerState {
         subtractHealthBuffer = 0;
         addRupeeBuffer = 0;
         powerUpHits = 0;
-        hasMedicine = false;
         Arrays.fill(chestItemCounts, 0);
     }
 
@@ -292,6 +308,7 @@ public final class PlayerState {
             case ChestContentsTable.CHEST_OCARINA -> giveInventoryItem(INVENTORY_OCARINA);
             case ChestContentsTable.CHEST_FEATHER -> giveInventoryItem(INVENTORY_ROCS_FEATHER);
             case ChestContentsTable.CHEST_SHOVEL -> giveInventoryItem(INVENTORY_SHOVEL);
+            case ChestContentsTable.CHEST_FLIPPERS -> hasFlippers = true;
             case ChestContentsTable.CHEST_MAGIC_POWDER_BAG -> {
                 giveInventoryItem(INVENTORY_MAGIC_POWDER);
                 magicPowderCount = incrementUpTo(magicPowderCount, maxMagicPowder);
@@ -301,7 +318,17 @@ public final class PlayerState {
                 bombCount = incrementUpTo(bombCount, maxBombs);
             }
             case ChestContentsTable.CHEST_SWORD -> giveInventoryItem(INVENTORY_SWORD);
-            case ChestContentsTable.CHEST_MEDICINE -> hasMedicine = true;
+            case ChestContentsTable.CHEST_MEDICINE -> {
+                hasMedicine = true;
+                medicineCount = incrementByte(medicineCount);
+            }
+            case ChestContentsTable.CHEST_TAIL_KEY -> tailKeyCount = incrementByte(tailKeyCount);
+            case ChestContentsTable.CHEST_ANGLER_KEY ->
+                anglerKeyCount = incrementByte(anglerKeyCount);
+            case ChestContentsTable.CHEST_FACE_KEY -> faceKeyCount = incrementByte(faceKeyCount);
+            case ChestContentsTable.CHEST_BIRD_KEY -> birdKeyCount = incrementByte(birdKeyCount);
+            case ChestContentsTable.CHEST_GOLD_LEAF ->
+                goldenLeavesCount = incrementByte(goldenLeavesCount);
             case ChestContentsTable.CHEST_RUPEES_50 -> addRupeeBuffer =
                 Math.min(MAX_RUPEES, addRupeeBuffer + 50);
             case ChestContentsTable.CHEST_RUPEES_20 -> addRupeeBuffer =
@@ -357,6 +384,70 @@ public final class PlayerState {
 
     public void setHasMedicine(boolean value) {
         hasMedicine = value;
+    }
+
+    public boolean hasFlippers() {
+        return hasFlippers;
+    }
+
+    public void setHasFlippers(boolean value) {
+        hasFlippers = value;
+    }
+
+    public int tradeSequenceItem() {
+        return tradeSequenceItem;
+    }
+
+    public void setTradeSequenceItem(int value) {
+        tradeSequenceItem = clamp(value, 0, 0xFF);
+    }
+
+    public int medicineCount() {
+        return medicineCount;
+    }
+
+    public void setMedicineCount(int value) {
+        medicineCount = clamp(value, 0, 0xFF);
+    }
+
+    public int tailKeyCount() {
+        return tailKeyCount;
+    }
+
+    public void setTailKeyCount(int value) {
+        tailKeyCount = clamp(value, 0, 0xFF);
+    }
+
+    public int anglerKeyCount() {
+        return anglerKeyCount;
+    }
+
+    public void setAnglerKeyCount(int value) {
+        anglerKeyCount = clamp(value, 0, 0xFF);
+    }
+
+    public int faceKeyCount() {
+        return faceKeyCount;
+    }
+
+    public void setFaceKeyCount(int value) {
+        faceKeyCount = clamp(value, 0, 0xFF);
+    }
+
+    public int birdKeyCount() {
+        return birdKeyCount;
+    }
+
+    public void setBirdKeyCount(int value) {
+        birdKeyCount = clamp(value, 0, 0xFF);
+    }
+
+    public int goldenLeavesCount() {
+        return goldenLeavesCount;
+    }
+
+    public void setGoldenLeavesCount(int value) {
+        goldenLeavesCount = clamp(value, 0, 0xFF);
     }
 
     public int chestItemCount(int chestItem) {
@@ -518,8 +609,16 @@ public final class PlayerState {
         setRupees(saved.rupees());
         setHeartPieces(saved.heartPieces());
         setSeashells(saved.seashells());
-        setPowerBraceletLevel(saved.powerBraceletLevel());
+        setHasFlippers(saved.hasFlippers() != 0);
         setHasMedicine(saved.hasMedicine() != 0);
+        setTradeSequenceItem(saved.tradeSequenceItem());
+        setMedicineCount(saved.medicineCount());
+        setTailKeyCount(saved.tailKeyCount());
+        setAnglerKeyCount(saved.anglerKeyCount());
+        setFaceKeyCount(saved.faceKeyCount());
+        setBirdKeyCount(saved.birdKeyCount());
+        setGoldenLeavesCount(saved.goldenLeavesCount());
+        setPowerBraceletLevel(saved.powerBraceletLevel());
         setSwordLevel(saved.swordLevel());
         setShieldLevel(saved.shieldLevel());
         setItemA(saved.itemA());
@@ -626,6 +725,10 @@ public final class PlayerState {
 
     private static int incrementByTenUpTo(int value, int maximum) {
         return Math.min(maximum, value + 10);
+    }
+
+    private static int incrementByte(int value) {
+        return (value + 1) & 0xFF;
     }
 
     private static int clamp(int value, int min, int max) {

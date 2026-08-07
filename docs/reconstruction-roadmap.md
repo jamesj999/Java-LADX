@@ -1858,9 +1858,24 @@ runtime collision callback.
 - Bracelet and medicine save bytes are read and written at the source main
   SRAM offsets `$343` and `$30D`; transient chest counters are cleared when a
   save is applied. Focused ROM tests and the clean Java suite pass with 1,052
-  tests and zero failures, errors, or skipped tests. Remaining chest-specific
-  work is the unmodeled source counters for flippers/lens/keys/leaves and
-  the broader room-script/input ordering outside this interaction seam.
+  tests and zero failures, errors, or skipped tests. The remaining chest
+  boundary is the source-specific magnifying-lens/trade-item edge case and
+  broader room-script/input ordering outside this interaction seam.
+
+## Verified ROM chest-progress save fields — 2026-08-07
+
+- The Java player/save boundary now mirrors the contiguous source bytes
+  `$DB0C-$DB15`: flippers, medicine, trade-sequence item, seashells, the
+  source medicine-count byte, four dungeon keys, and golden-leaf count.
+- Chest rewards for flippers, medicine, Tail/Angler/Face/Bird keys, and golden
+  leaves update those owners with the source increment semantics. Dungeon map,
+  compass, stone-beak, Nightmare-key, and small-key rewards continue through
+  the separate `DungeonItemState` current/persistent flag bridge.
+- `SaveRamImage` reads and writes the fields at main offsets `$30C-$315`, and
+  `PlayerState.applySavedGame` restores them before clearing transient runtime
+  state. Save-image, player-state, and source-offset tests cover round trips;
+  the clean Java suite remains at 1,052 tests with zero failures, errors, or
+  skipped tests.
 
 ## Broader parity gaps
 

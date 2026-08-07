@@ -181,11 +181,24 @@ public final class SaveRamImage {
             bytes[main + SaveRamLayout.MAIN_SUBSCREEN_OFFSET + index]
                 = (byte) playerState.subscreenItem(index);
         }
-        bytes[main + SaveRamLayout.MAIN_SEASHELLS_OFFSET] = (byte) playerState.seashells();
-        bytes[main + SaveRamLayout.MAIN_POWER_BRACELET_OFFSET]
-            = (byte) playerState.powerBraceletLevel();
+        bytes[main + SaveRamLayout.MAIN_FLIPPERS_OFFSET]
+            = (byte) (playerState.hasFlippers() ? 1 : 0);
         bytes[main + SaveRamLayout.MAIN_MEDICINE_OFFSET]
             = (byte) (playerState.hasMedicine() ? 1 : 0);
+        bytes[main + SaveRamLayout.MAIN_TRADE_SEQUENCE_ITEM_OFFSET]
+            = (byte) playerState.tradeSequenceItem();
+        bytes[main + SaveRamLayout.MAIN_SEASHELLS_OFFSET] = (byte) playerState.seashells();
+        bytes[main + SaveRamLayout.MAIN_MEDICINE_COUNT_OFFSET]
+            = (byte) playerState.medicineCount();
+        bytes[main + SaveRamLayout.MAIN_TAIL_KEY_OFFSET] = (byte) playerState.tailKeyCount();
+        bytes[main + SaveRamLayout.MAIN_ANGLER_KEY_OFFSET]
+            = (byte) playerState.anglerKeyCount();
+        bytes[main + SaveRamLayout.MAIN_FACE_KEY_OFFSET] = (byte) playerState.faceKeyCount();
+        bytes[main + SaveRamLayout.MAIN_BIRD_KEY_OFFSET] = (byte) playerState.birdKeyCount();
+        bytes[main + SaveRamLayout.MAIN_GOLDEN_LEAVES_OFFSET]
+            = (byte) playerState.goldenLeavesCount();
+        bytes[main + SaveRamLayout.MAIN_POWER_BRACELET_OFFSET]
+            = (byte) playerState.powerBraceletLevel();
         bytes[main + SaveRamLayout.MAIN_SHIELD_OFFSET] = (byte) playerState.shieldLevel();
         bytes[main + SaveRamLayout.MAIN_ARROWS_OFFSET] = (byte) playerState.arrowCount();
         bytes[main + SaveRamLayout.MAIN_MAGIC_POWDER_OFFSET]
@@ -230,8 +243,16 @@ public final class SaveRamImage {
             unsigned(bytes[main + SaveRamLayout.MAIN_ITEM_B_OFFSET]),
             subscreen,
             unsigned(bytes[main + SaveRamLayout.MAIN_SEASHELLS_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_POWER_BRACELET_OFFSET]),
+            unsigned(bytes[main + SaveRamLayout.MAIN_FLIPPERS_OFFSET]),
             unsigned(bytes[main + SaveRamLayout.MAIN_MEDICINE_OFFSET]),
+            unsigned(bytes[main + SaveRamLayout.MAIN_TRADE_SEQUENCE_ITEM_OFFSET]),
+            unsigned(bytes[main + SaveRamLayout.MAIN_MEDICINE_COUNT_OFFSET]),
+            unsigned(bytes[main + SaveRamLayout.MAIN_TAIL_KEY_OFFSET]),
+            unsigned(bytes[main + SaveRamLayout.MAIN_ANGLER_KEY_OFFSET]),
+            unsigned(bytes[main + SaveRamLayout.MAIN_FACE_KEY_OFFSET]),
+            unsigned(bytes[main + SaveRamLayout.MAIN_BIRD_KEY_OFFSET]),
+            unsigned(bytes[main + SaveRamLayout.MAIN_GOLDEN_LEAVES_OFFSET]),
+            unsigned(bytes[main + SaveRamLayout.MAIN_POWER_BRACELET_OFFSET]),
             unsigned(bytes[main + SaveRamLayout.MAIN_SHIELD_OFFSET]),
             unsigned(bytes[main + SaveRamLayout.MAIN_SWORD_OFFSET]),
             unsigned(bytes[main + SaveRamLayout.MAIN_ARROWS_OFFSET]),
