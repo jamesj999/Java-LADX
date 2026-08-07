@@ -2,6 +2,7 @@ package linksawakening.world;
 
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.entity.Link;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.gpu.GPU;
@@ -43,6 +44,7 @@ public final class RoomSession {
     private static final int OBJECT_BOMBABLE_BLOCK = 0xA9;
     private static final int OBJECT_FLOOR_OD = 0x0D;
     private static final int OW_ROOM_STATUS_OPENED = 0x04;
+    private static final int ROOM_STATUS_CHEST_OPEN = 0x10;
     private static final int INDOOR_ROOM_STATUS_EVENT_3 = 0x40;
     private static final int OBJECT_BOMBED_PASSAGE_VERTICAL = 0x3D;
     private static final int OBJECT_BOMBED_PASSAGE_HORIZONTAL = 0x3E;
@@ -72,6 +74,7 @@ public final class RoomSession {
     private final EntitySpriteHandlerCatalog entitySpriteHandlerCatalog;
     private final FollowingNpcEntitySpawner followingNpcEntitySpawner;
     private final RomEnemyCombatTables enemyCombatTables;
+    private final ChestContentsTable chestContentsTable;
     private final RomTables romTables;
     private final EnemyDropResolver enemyDropResolver;
     private final EntityCollisionPointProbe entityCollisionPointProbe;
@@ -108,6 +111,8 @@ public final class RoomSession {
     private RoomEntityRuntime entityRuntime;
     private final List<BombExplosionEvent> pendingBombExplosionEvents = new ArrayList<>();
     private final List<EntityCombatEvent> pendingRoomEntityEvents = new ArrayList<>();
+    private final List<RoomEntityRuntime.ChestRewardEvent> pendingChestRewardEvents =
+        new ArrayList<>();
     private final byte[] overworldRoomStatus = new byte[0x100];
     private final byte[] indoorARoomStatus = new byte[0x100];
     private final byte[] indoorBRoomStatus = new byte[0x100];
@@ -211,6 +216,7 @@ public final class RoomSession {
         this.entitySpriteHandlerCatalog = new EntitySpriteHandlerCatalog(romData);
         this.followingNpcEntitySpawner = new FollowingNpcEntitySpawner(entitySpriteHandlerCatalog);
         this.enemyCombatTables = new RomEnemyCombatTables(romData);
+        this.chestContentsTable = new ChestContentsTable(romData);
         this.romTables = RomTables.loadFromRom(romData);
         this.entityBackgroundCollisionResolver = new EntityBackgroundCollisionResolver(romTables);
         this.enemyDropResolver = new EnemyDropResolver(romData);
@@ -452,6 +458,14 @@ public final class RoomSession {
         }
         if (entityRuntime != null) {
             entityRuntime.setLikeLikeLinkInventory(itemA, itemB);
+        }
+    }
+
+    /** Supplies the upgrade bytes consumed by the live chest dialog handler. */
+    public void setChestPlayerLevels(int shieldLevel, int swordLevel,
+                                     int powerBraceletLevel) {
+        if (entityRuntime != null) {
+            entityRuntime.setChestPlayerLevels(shieldLevel, swordLevel, powerBraceletLevel);
         }
     }
 
@@ -815,6 +829,15 @@ public final class RoomSession {
         List<BombExplosionEvent> bombExplosionEvents = entityRuntime.consumeBombExplosionEvents();
         pendingBombExplosionEvents.clear();
         pendingBombExplosionEvents.addAll(bombExplosionEvents);
+        List<RoomEntityRuntime.ChestRewardEvent> chestRewards =
+            entityRuntime.consumePendingChestRewardEvents();
+        for (RoomEntityRuntime.ChestRewardEvent reward : chestRewards) {
+            if (reward.itemType() >= ChestContentsTable.CHEST_MAP
+                && reward.itemType() <= ChestContentsTable.CHEST_SMALL_KEY) {
+                dungeonItemState.incrementCurrentFlag(reward.itemType());
+            }
+        }
+        pendingChestRewardEvents.addAll(chestRewards);
         if (entityRuntime.consumePendingSwitchBlockAnimationRequest()
             && switchableObjectAnimationStage == 0) {
             switchableObjectAnimationStage = 0x01;
@@ -846,6 +869,18 @@ public final class RoomSession {
         events.addAll(pendingRoomEntityEvents);
         pendingRoomEntityEvents.clear();
         return List.copyOf(events);
+    }
+
+    /** Returns and clears chest reward applications emitted by the last entity tick(s). */
+    public List<RoomEntityRuntime.ChestRewardEvent> consumeChestRewardEvents() {
+        List<RoomEntityRuntime.ChestRewardEvent> rewards = List.copyOf(pendingChestRewardEvents);
+        pendingChestRewardEvents.clear();
+        return rewards;
+    }
+
+    /** Returns the raw music-track request emitted by a chest, or {@code -1}. */
+    public int consumePendingMusicTrack() {
+        return entityRuntime == null ? -1 : entityRuntime.consumePendingMusicTrack();
     }
 
     /** Returns and clears Like Like capture/release requests from the last tick. */
@@ -1050,7 +1085,8 @@ public final class RoomSession {
         activeRoom = ActiveRoom.from(room, entities);
         entityRuntime = entities == null ? null : RoomEntityRuntime.from(
             entities, activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD,
-            entityRandomByteSource, entitySpriteHandlerCatalog, enemyCombatTables);
+            entityRandomByteSource, entitySpriteHandlerCatalog, enemyCombatTables,
+            chestContentsTable);
         if (entityRuntime != null) {
             entityRuntime.setColorShellWorld(colorShellWorld);
             entityRuntime.setFollowingNpcState(followingNpcState);
@@ -1103,7 +1139,8 @@ public final class RoomSession {
         activeRoom.replaceEntities(result.snapshot());
         entityRuntime = RoomEntityRuntime.from(
             result.snapshot(), activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD,
-            entityRandomByteSource, entitySpriteHandlerCatalog, enemyCombatTables);
+            entityRandomByteSource, entitySpriteHandlerCatalog, enemyCombatTables,
+            chestContentsTable);
         entityRuntime.setColorShellWorld(colorShellWorld);
         entityRuntime.setFollowingNpcState(followingNpcState);
         entityRuntime.setEntityMapId(activeRoom.mapId());
@@ -1155,6 +1192,7 @@ public final class RoomSession {
         bombedCaveDoorTileOverrides.clear();
         pendingBombExplosionEvents.clear();
         pendingRoomEntityEvents.clear();
+        pendingChestRewardEvents.clear();
     }
 
     private void applyBombObjectInteractions(List<BombExplosionEvent> events) {
@@ -1284,6 +1322,55 @@ public final class RoomSession {
         return areaIndex < 0 || areaIndex >= objects.length ? 0xFF : objects[areaIndex] & 0xFF;
     }
 
+    /** Result of the source closed-chest action bridge. */
+    public record ChestOpenResult(boolean opened, int itemType, int entitySlot, int location) {
+    }
+
+    /**
+     * Mirrors the closed-$A0 branch in the source object interaction path.
+     * Link's front-cell calculation intentionally follows the existing
+     * overworld-dialog bridge so both interaction paths address the same
+     * padded room-object buffer.
+     */
+    public ChestOpenResult tryOpenChest(int linkPixelX, int linkPixelY, int linkDirection,
+                                        boolean actionPressed, int swordLevel) {
+        if (!actionPressed || linkDirection != Link.DIRECTION_UP
+            || activeRoom == null || entityRuntime == null) {
+            return new ChestOpenResult(false, -1, -1, -1);
+        }
+        if (linkPixelX < 0 || linkPixelY < 0
+            || linkPixelX >= ROOM_PIXEL_WIDTH || linkPixelY >= ROOM_PIXEL_HEIGHT) {
+            return new ChestOpenResult(false, -1, -1, -1);
+        }
+        int column = Math.floorDiv(linkPixelX + 0x08, 0x10);
+        int row = Math.floorDiv(linkPixelY - 0x01, 0x10);
+        if (column < 0 || column >= RoomConstants.OBJECTS_PER_ROW
+            || row < 0 || row >= RoomConstants.OBJECTS_PER_COLUMN) {
+            return new ChestOpenResult(false, -1, -1, -1);
+        }
+        int location = (row << 4) | column;
+        if (objectAtRoomLocation(location) != 0xA0) {
+            return new ChestOpenResult(false, -1, -1, location);
+        }
+        int itemType = chestContentsTable.itemForSpawn(
+            activeRoom.mapId(), activeRoom.roomId(), swordLevel);
+        int slot = entityRuntime.spawnChestWithItem(column << 4, row << 4, itemType);
+        if (slot < 0) {
+            return new ChestOpenResult(false, -1, -1, location);
+        }
+
+        writeBombPuzzleObject(location, 0xA1);
+        byte[] status = activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
+            ? overworldRoomStatus : indoorStatusTableForMap(activeRoom.mapId());
+        status[activeRoom.roomId()] |= (byte) ROOM_STATUS_CHEST_OPEN;
+        refreshActiveRoomTilemap();
+        overworldCollision.setRoom(activeRoom.roomObjectsArea());
+        overworldCollision.setGbcOverlay(activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
+            ? activeRoom.gbcOverlay() : null);
+        activeRoom.replaceEntities(entityRuntime.snapshot());
+        return new ChestOpenResult(true, itemType, slot, location);
+    }
+
     private void writeBombPuzzleObject(int location, int objectId) {
         int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0)
             + (location & 0x0F);
@@ -1292,7 +1379,9 @@ public final class RoomSession {
             return;
         }
         objects[areaIndex] = objectId & 0xFF;
-        activeRoom.renderValues()[areaIndex] = objectId & 0xFF;
+        if (activeRoom.renderValues() != null) {
+            activeRoom.renderValues()[areaIndex] = objectId & 0xFF;
+        }
         overworldBushInteraction.refreshRoomObjectCell(
             activeRoom.roomId(), location, objects, activeRoom.renderValues(),
             activeRoom.gbcOverlay(), activeRoom.tileIds(), activeRoom.tileAttrs());

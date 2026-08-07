@@ -1,6 +1,7 @@
 package linksawakening.state;
 
 import linksawakening.save.SaveSlotState;
+import linksawakening.world.ChestContentsTable;
 import linksawakening.world.FloatingItemMotion;
 
 import java.util.Arrays;
@@ -53,6 +54,7 @@ public final class PlayerState {
     private int invincibilityCounter;
     private int swordLevel = 1;
     private int shieldLevel = 1;
+    private int powerBraceletLevel = 1;
     private int itemA = INVENTORY_SWORD;
     private int itemB = INVENTORY_EMPTY;
     private int ocarinaSongFlags;
@@ -73,6 +75,8 @@ public final class PlayerState {
     private int subtractHealthBuffer;
     private int addRupeeBuffer;
     private int powerUpHits;
+    private boolean hasMedicine;
+    private final int[] chestItemCounts = new int[0x22];
 
     public PlayerState() {
         // Stub test data so the inventory menu has something to equip until
@@ -99,6 +103,7 @@ public final class PlayerState {
         invincibilityCounter = 0;
         swordLevel = 0;
         shieldLevel = 0;
+        powerBraceletLevel = 0;
         itemA = INVENTORY_EMPTY;
         itemB = INVENTORY_EMPTY;
         ocarinaSongFlags = 0;
@@ -119,6 +124,8 @@ public final class PlayerState {
         subtractHealthBuffer = 0;
         addRupeeBuffer = 0;
         powerUpHits = 0;
+        hasMedicine = false;
+        Arrays.fill(chestItemCounts, 0);
     }
 
     public int rupees() {
@@ -259,6 +266,66 @@ public final class PlayerState {
         }
     }
 
+    /** Applies the immediate reward writes performed by EntityInitChestWithItem. */
+    public void applyChestReward(int chestItem) {
+        if (chestItem < 0 || chestItem > ChestContentsTable.CHEST_ZOL) {
+            throw new IllegalArgumentException("Chest item must be an unsigned chest variant: "
+                + chestItem);
+        }
+        if (chestItem < chestItemCounts.length) {
+            chestItemCounts[chestItem] = Math.min(0xFF, chestItemCounts[chestItem] + 1);
+        }
+        switch (chestItem) {
+            case ChestContentsTable.CHEST_POWER_BRACELET -> {
+                powerBraceletLevel = Math.min(2, powerBraceletLevel + 1);
+                giveInventoryItem(INVENTORY_POWER_BRACELET);
+            }
+            case ChestContentsTable.CHEST_SHIELD -> {
+                setShieldLevel(shieldLevel + 1);
+                giveInventoryItem(INVENTORY_SHIELD);
+            }
+            case ChestContentsTable.CHEST_BOW -> giveInventoryItem(INVENTORY_BOW);
+            case ChestContentsTable.CHEST_HOOKSHOT -> giveInventoryItem(INVENTORY_HOOKSHOT);
+            case ChestContentsTable.CHEST_MAGIC_ROD -> giveInventoryItem(INVENTORY_MAGIC_ROD);
+            case ChestContentsTable.CHEST_PEGASUS_BOOTS ->
+                giveInventoryItem(INVENTORY_PEGASUS_BOOTS);
+            case ChestContentsTable.CHEST_OCARINA -> giveInventoryItem(INVENTORY_OCARINA);
+            case ChestContentsTable.CHEST_FEATHER -> giveInventoryItem(INVENTORY_ROCS_FEATHER);
+            case ChestContentsTable.CHEST_SHOVEL -> giveInventoryItem(INVENTORY_SHOVEL);
+            case ChestContentsTable.CHEST_MAGIC_POWDER_BAG -> {
+                giveInventoryItem(INVENTORY_MAGIC_POWDER);
+                magicPowderCount = incrementUpTo(magicPowderCount, maxMagicPowder);
+            }
+            case ChestContentsTable.CHEST_BOMB -> {
+                giveInventoryItem(INVENTORY_BOMBS);
+                bombCount = incrementUpTo(bombCount, maxBombs);
+            }
+            case ChestContentsTable.CHEST_SWORD -> giveInventoryItem(INVENTORY_SWORD);
+            case ChestContentsTable.CHEST_MEDICINE -> hasMedicine = true;
+            case ChestContentsTable.CHEST_RUPEES_50 -> addRupeeBuffer =
+                Math.min(MAX_RUPEES, addRupeeBuffer + 50);
+            case ChestContentsTable.CHEST_RUPEES_20 -> addRupeeBuffer =
+                Math.min(MAX_RUPEES, addRupeeBuffer + 20);
+            case ChestContentsTable.CHEST_RUPEES_100 -> addRupeeBuffer =
+                Math.min(MAX_RUPEES, addRupeeBuffer + 100);
+            case ChestContentsTable.CHEST_RUPEES_200 -> addRupeeBuffer =
+                Math.min(MAX_RUPEES, addRupeeBuffer + 200);
+            case ChestContentsTable.CHEST_RUPEES_500 -> addRupeeBuffer =
+                Math.min(MAX_RUPEES, addRupeeBuffer + 500);
+            case ChestContentsTable.CHEST_SEASHELL -> setSeashells(seashells + 1);
+            case ChestContentsTable.CHEST_MESSAGE, ChestContentsTable.CHEST_ZOL -> {
+                // The source marks these rooms complete without applying a
+                // normal inventory reward.
+            }
+            default -> {
+                // Flippers, lens, keys, leaves, and dungeon items have their
+                // source-specific WRAM counters in the room/dungeon bridges;
+                // chestItemCounts retains the immediate collection fact until
+                // those dedicated state fields are modeled.
+            }
+        }
+    }
+
     public int swordLevel() {
         return swordLevel;
     }
@@ -274,6 +341,29 @@ public final class PlayerState {
 
     public void setShieldLevel(int value) {
         shieldLevel = clamp(value, 0, 2);
+    }
+
+    public int powerBraceletLevel() {
+        return powerBraceletLevel;
+    }
+
+    public void setPowerBraceletLevel(int value) {
+        powerBraceletLevel = clamp(value, 0, 2);
+    }
+
+    public boolean hasMedicine() {
+        return hasMedicine;
+    }
+
+    public void setHasMedicine(boolean value) {
+        hasMedicine = value;
+    }
+
+    public int chestItemCount(int chestItem) {
+        if (chestItem < 0 || chestItem >= chestItemCounts.length) {
+            throw new IllegalArgumentException("Chest item count index out of range: " + chestItem);
+        }
+        return chestItemCounts[chestItem];
     }
 
     public int arrowCount() {
@@ -428,6 +518,8 @@ public final class PlayerState {
         setRupees(saved.rupees());
         setHeartPieces(saved.heartPieces());
         setSeashells(saved.seashells());
+        setPowerBraceletLevel(saved.powerBraceletLevel());
+        setHasMedicine(saved.hasMedicine() != 0);
         setSwordLevel(saved.swordLevel());
         setShieldLevel(saved.shieldLevel());
         setItemA(saved.itemA());
@@ -450,6 +542,7 @@ public final class PlayerState {
         subtractHealthBuffer = 0;
         addRupeeBuffer = 0;
         powerUpHits = 0;
+        Arrays.fill(chestItemCounts, 0);
     }
 
     public int subscreenItem(int slotIndex) {

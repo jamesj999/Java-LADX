@@ -14,6 +14,7 @@ import java.util.List;
 public final class EntitySpriteHandlerCatalog {
 
     public static final int ENTITY_LIFTABLE_ROCK = 0x05;
+    public static final int ENTITY_CHEST_WITH_ITEM = 0x07;
     public static final int LIFTABLE_ROCK_INTACT_ROCK_VARIANT = 0;
     public static final int LIFTABLE_ROCK_INTACT_BUSH_VARIANT = 1;
     public static final int LIFTABLE_ROCK_SMASHED_ROCK_VARIANT_BASE = 2;
@@ -142,6 +143,9 @@ public final class EntitySpriteHandlerCatalog {
 
         if (entityType == ENTITY_LIFTABLE_ROCK) {
             return decodeLiftableRock(roomTable);
+        }
+        if (entityType == ENTITY_CHEST_WITH_ITEM) {
+            return decodePair(entityType, 0x07, 0x7B57, 0x21, 0);
         }
         if (entityType == ENTITY_ARROW) {
             return decodePair(entityType, 0x03, 0x6BC6, 4, 0);
@@ -354,6 +358,26 @@ public final class EntitySpriteHandlerCatalog {
             return decodePair(entityType, 0x18, 0x5EB7, 8, 0);
         }
         return EntitySpriteDefinition.unsupported(entityType);
+    }
+
+    /**
+     * Returns the chest display list selected by the source's two GBC room
+     * exceptions.  The alternate list is still ROM-backed and has one pair;
+     * every other room uses the normal 33-item list.
+     */
+    public EntitySpriteDefinition forChestState(int mapId, int roomId, int itemVariant) {
+        if ((mapId & ~0xFF) != 0 || (roomId & ~0xFF) != 0) {
+            throw new IllegalArgumentException("Chest map and room ids must be unsigned bytes");
+        }
+        if (itemVariant < 0 || itemVariant > 0x20) {
+            throw new IllegalArgumentException("Chest item variant must be in range 0..0x20: "
+                + itemVariant);
+        }
+        if ((mapId == 0x05 && roomId == 0xCE && itemVariant == 0x00)
+            || (mapId == 0x06 && roomId == 0x1A && itemVariant == 0x01)) {
+            return decodePair(ENTITY_CHEST_WITH_ITEM, 0x07, 0x7B53, 1, 0);
+        }
+        return decodePair(ENTITY_CHEST_WITH_ITEM, 0x07, 0x7B57, 0x21, 0);
     }
 
     /** Selects the two bank-$15 display-list pairs used by Stalfos Evasive. */

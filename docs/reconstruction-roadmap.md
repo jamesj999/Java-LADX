@@ -1832,10 +1832,35 @@ runtime collision callback.
   sword fallback, byte/range validation, and the status-gated object change.
   The clean Java suite passes with 1,043 tests and zero failures, errors, or
   skipped tests.
-- The remaining chest boundary is dynamic entity `$07`: spawning at the
-  interacted chest, open animation, reward-specific inventory updates,
-  dungeon-flag synchronization, and dialog sequencing still need to be wired
-  through the live interaction/entity runtime.
+- The remaining chest boundary after this table/status slice is the dynamic
+  entity `$07` integration described in the following checkpoint.
+
+## Verified ROM chest entity runtime — 2026-08-07
+
+- Closed `$A0` chest interaction now follows the bank-$00 sword-area path:
+  Link must face up and press an action button, the ROM chest table selects
+  the item (including the upgraded-sword seashell replacement), and entity
+  `$07` spawns at the masked object cell with the source `$C2` physics and
+  `$02` options flags.
+- `EntityInitChestWithItem` is mirrored through the live room runtime. It
+  emits door-unlock noise `$04`, writes the open-object state, applies the
+  immediate reward boundary, advances the `$FC` vertical launch through
+  inertia `$10`, emits the ROM presentation sound at `$08`, opens the exact
+  dialog table/low-byte pair at `$26`, and unloads at `$28`.
+- Chest rewards now cross the live session boundary: ordinary inventory,
+  shield/bracelet levels, medicine, rupee/seashell buffers, and dungeon-item
+  flag synchronization are applied to modeled player state. The source
+  Face Shrine/Eagle's Tower alternate chest sprite lists are selected from
+  the map/room/item triple.
+- The special chest Zol path now initializes the spawned Zol with the exact
+  source state `$03`, X speed `$08`, Z speed `$18`, Z position `$06`, and
+  private countdown `$50`, and emits wrong-answer jingle `$1D`.
+- Bracelet and medicine save bytes are read and written at the source main
+  SRAM offsets `$343` and `$30D`; transient chest counters are cleared when a
+  save is applied. Focused ROM tests and the clean Java suite pass with 1,052
+  tests and zero failures, errors, or skipped tests. Remaining chest-specific
+  work is the unmodeled source counters for flippers/lens/keys/leaves and
+  the broader room-script/input ordering outside this interaction seam.
 
 ## Broader parity gaps
 

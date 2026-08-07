@@ -453,6 +453,9 @@ public class Main {
             overworldDialogInputConsumedThisFrame = true;
             return;
         }
+        if (tryOpenChest(key)) {
+            return;
+        }
         if (tryOpenOverworldDialog(key)) {
             return;
         }
@@ -722,6 +725,10 @@ public class Main {
                 roomSession.setEntityInventorySlots(
                     playerState == null ? PlayerState.INVENTORY_EMPTY : playerState.itemA(),
                     playerState == null ? PlayerState.INVENTORY_EMPTY : playerState.itemB());
+                roomSession.setChestPlayerLevels(
+                    playerState == null ? 1 : playerState.shieldLevel(),
+                    playerState == null ? 1 : playerState.swordLevel(),
+                    playerState == null ? 1 : playerState.powerBraceletLevel());
                 roomSession.setEnemyDropPlayerState(
                     playerState.maxHearts(), playerState.health(),
                     playerState.activePowerUp() != PlayerState.ACTIVE_POWER_UP_NONE);
@@ -745,6 +752,15 @@ public class Main {
                     gameplaySoundSink);
                 EnemyCombatEventConsumer.consume(roomSession.consumeEntityEvents(),
                     gameplaySoundSink, transientVfxSystem);
+                for (var reward : roomSession.consumeChestRewardEvents()) {
+                    if (playerState != null) {
+                        playerState.applyChestReward(reward.itemType());
+                    }
+                }
+                int chestMusicTrack = roomSession.consumePendingMusicTrack();
+                if (chestMusicTrack >= 0) {
+                    playDirectMusic(chestMusicTrack);
+                }
                 for (var event : roomSession.consumeLikeLikeEvents()) {
                     if (event.kind()
                         == linksawakening.world.RoomEntityRuntime.LikeLikeEvent.Kind.CAPTURE) {
@@ -947,6 +963,20 @@ public class Main {
             true,
             currentOverworldDialogBlockers(),
             dialogController);
+    }
+
+    private static boolean tryOpenChest(int key) {
+        if (!GameplayDialogInput.isActionButtonKey(key, inputConfig)
+            || roomSession == null
+            || !roomSession.hasActiveRoom()
+            || link == null
+            || playerState == null
+            || currentOverworldDialogBlockers().blocksOpening()) {
+            return false;
+        }
+        RoomSession.ChestOpenResult result = roomSession.tryOpenChest(
+            link.pixelX(), link.pixelY(), link.direction(), true, playerState.swordLevel());
+        return result.opened();
     }
 
     private static void openEntityDialogRequests() {

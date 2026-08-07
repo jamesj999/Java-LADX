@@ -182,6 +182,10 @@ public final class SaveRamImage {
                 = (byte) playerState.subscreenItem(index);
         }
         bytes[main + SaveRamLayout.MAIN_SEASHELLS_OFFSET] = (byte) playerState.seashells();
+        bytes[main + SaveRamLayout.MAIN_POWER_BRACELET_OFFSET]
+            = (byte) playerState.powerBraceletLevel();
+        bytes[main + SaveRamLayout.MAIN_MEDICINE_OFFSET]
+            = (byte) (playerState.hasMedicine() ? 1 : 0);
         bytes[main + SaveRamLayout.MAIN_SHIELD_OFFSET] = (byte) playerState.shieldLevel();
         bytes[main + SaveRamLayout.MAIN_ARROWS_OFFSET] = (byte) playerState.arrowCount();
         bytes[main + SaveRamLayout.MAIN_MAGIC_POWDER_OFFSET]
@@ -226,6 +230,8 @@ public final class SaveRamImage {
             unsigned(bytes[main + SaveRamLayout.MAIN_ITEM_B_OFFSET]),
             subscreen,
             unsigned(bytes[main + SaveRamLayout.MAIN_SEASHELLS_OFFSET]),
+            unsigned(bytes[main + SaveRamLayout.MAIN_POWER_BRACELET_OFFSET]),
+            unsigned(bytes[main + SaveRamLayout.MAIN_MEDICINE_OFFSET]),
             unsigned(bytes[main + SaveRamLayout.MAIN_SHIELD_OFFSET]),
             unsigned(bytes[main + SaveRamLayout.MAIN_SWORD_OFFSET]),
             unsigned(bytes[main + SaveRamLayout.MAIN_ARROWS_OFFSET]),

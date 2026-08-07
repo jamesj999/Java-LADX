@@ -21,6 +21,7 @@ public enum GameplaySoundEvent {
     PUZZLE_SOLVED,
     LINK_HURT,
     ENEMY_BUMP,
+    TREASURE_FOUND,
     ENEMY_HIT,
     SWORD_POKE,
     ENEMY_BURNING,

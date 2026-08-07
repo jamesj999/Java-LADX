@@ -73,6 +73,18 @@ final class GameplaySoundEffectMapTest {
         assertEquals("NOISE_SFX_WHOOSH", effect.name());
     }
 
+    @Test
+    void mapsTreasureFoundToTheRomTreasureJingle() throws IOException {
+        GameplaySoundEffectMap map = GameplaySoundEffectMap.fromCatalog(
+            SoundEffectCatalog.fromRom(loadRom()));
+
+        SoundEffect effect = map.resolve(GameplaySoundEvent.TREASURE_FOUND).orElseThrow();
+
+        assertEquals(SoundEffectNamespace.JINGLE, effect.namespace());
+        assertEquals(0x01, effect.id());
+        assertEquals("JINGLE_TREASURE_FOUND", effect.name());
+    }
+
     private static byte[] loadRom() throws IOException {
         try (InputStream stream = GameplaySoundEffectMapTest.class.getClassLoader()
                 .getResourceAsStream("rom/azle.gbc")) {

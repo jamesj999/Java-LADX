@@ -18,6 +18,7 @@ import java.util.function.IntSupplier;
  * class only advances handler-owned status and sprite-variant fields.
  */
 public final class RoomEntityRuntime {
+    private static final int ENTITY_CHEST_WITH_ITEM = 0x07;
     private static final int ENTITY_PIECE_OF_POWER = 0x33;
     private static final int ENTITY_CRYSTAL_SWITCH = 0x66;
     private static final int ENTITY_BUTTERFLY = 0x6E;
@@ -64,6 +65,10 @@ public final class RoomEntityRuntime {
     private static final int LIFTABLE_ROCK_SMASH_MODE_BUSH = 1;
     private static final int LIFTABLE_ROCK_SMASH_MODE_GRASS = 0xFF;
     private static final int BOMB_INITIAL_PHYSICS_FLAGS = 0xD2;
+    private static final int CHEST_INITIAL_PHYSICS_FLAGS = 0xC2;
+    private static final int CHEST_OPTIONS1 = 0x02;
+    private static final int CHEST_OPEN_NOISE_ID = 0x04;
+    private static final int CHEST_TREASURE_JINGLE_ID = 0x01;
     private static final int BOMB_OPTIONS1 = ENTITY_OPT1_SPLASH_IN_WATER
         | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
     private static final int BOMB_EXPLOSION_PHYSICS_LOW_BITS = 0x08;
@@ -148,6 +153,7 @@ public final class RoomEntityRuntime {
     private final RomRandomByteSource fallbackRomRandomByteSource;
     private final EntitySpriteHandlerCatalog spriteHandlers;
     private final RomEnemyCombatTables enemyCombatTables;
+    private final ChestContentsTable chestContentsTable;
     private RoomEntityGroundInteraction groundInteraction =
         (entity, frameCounter, previousGroundStatus, speedZ, sideScrolling) ->
             RoomEntityGroundInteraction.Result.unchanged(entity, 0);
@@ -262,11 +268,16 @@ public final class RoomEntityRuntime {
     private final int[] thrownDirection = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] ledgeTransitionTimer = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] thrownMotionInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] chestSpeedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] chestSpeedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] chestInertia = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] chestItemBySlot = new int[EntityRoomLoader.MAX_ENTITIES];
     private final List<RoamingEnemyMotion.LaunchRequest> projectileLaunchRequests =
         new ArrayList<>();
     private final List<TransientVfxRequest> transientVfxRequests = new ArrayList<>();
     private final List<DialogRequest> pendingDialogRequests = new ArrayList<>();
     private final List<EntityCombatEvent> pendingEntityEvents = new ArrayList<>();
+    private final List<ChestRewardEvent> pendingChestRewardEvents = new ArrayList<>();
     private final List<LikeLikeEvent> pendingLikeLikeEvents = new ArrayList<>();
     private final List<BombExplosionEvent> pendingBombExplosionEvents = new ArrayList<>();
     private final List<HookshotBridgeUpdate> hookshotBridgeUpdates = new ArrayList<>();
@@ -311,6 +322,10 @@ public final class RoomEntityRuntime {
     // entity snapshot.
     private int currentLinkSpeedX;
     private int currentLinkSpeedY;
+    private int chestShieldLevel = 1;
+    private int chestSwordLevel = 1;
+    private int chestPowerBraceletLevel = 1;
+    private int pendingMusicTrack = -1;
     private boolean groundInteractionSideScrolling;
     private int entityMapId = -1;
     private int liftedEntitySlot = -1;
@@ -353,6 +368,19 @@ public final class RoomEntityRuntime {
         }
     }
 
+    /** Reward application requested by EntityInitChestWithItem. */
+    public record ChestRewardEvent(int slot, int itemType) {
+        public ChestRewardEvent {
+            if (slot < 0 || slot >= EntityRoomLoader.MAX_ENTITIES) {
+                throw new IllegalArgumentException("Chest entity slot out of range: " + slot);
+            }
+            if ((itemType & ~0xFF) != 0) {
+                throw new IllegalArgumentException("Chest item must be an unsigned byte: "
+                    + itemType);
+            }
+        }
+    }
+
     /** Link capture/release side effects emitted by Like Like's handler. */
     public record LikeLikeEvent(int slot, Kind kind, int entityX, int entityY,
                                 int stolenInventorySlot, int stolenShieldLevel) {
@@ -379,7 +407,8 @@ public final class RoomEntityRuntime {
     private RoomEntityRuntime(RoomEntitySnapshot initial, boolean indoorRoom,
                                IntSupplier defaultRandomByteSupplier,
                                EntitySpriteHandlerCatalog spriteHandlers,
-                               RomEnemyCombatTables enemyCombatTables) {
+                               RomEnemyCombatTables enemyCombatTables,
+                               ChestContentsTable chestContentsTable) {
         this.slots = initial.slots().toArray(RoomEntity[]::new);
         this.spriteSelection = initial.spriteSelection();
         this.spriteTiles = initial.spriteTiles();
@@ -390,6 +419,7 @@ public final class RoomEntityRuntime {
             ? new RomRandomByteSource() : null;
         this.spriteHandlers = spriteHandlers;
         this.enemyCombatTables = enemyCombatTables;
+        this.chestContentsTable = chestContentsTable;
         this.hookshotChainOam = initial.hookshotChainOam();
         Arrays.fill(entityOptions1Override, -1);
         Arrays.fill(droppedItemBySlot, 0);
@@ -402,6 +432,9 @@ public final class RoomEntityRuntime {
             enemyHealth[entity.slot()] = entity.loaded() ? initialHealth(entity.type()) : 0;
             enemyPhysicsFlags[entity.slot()] = entity.loaded()
                 ? initialPhysicsFlags(entity.type()) : 0;
+            if (entity.loaded() && entity.type() == ENTITY_CHEST_WITH_ITEM) {
+                chestItemBySlot[entity.slot()] = entity.spriteVariant();
+            }
             if (entity.loaded() && isBombiteType(entity.type())) {
                 bombiteMotion.initialize(entity.slot());
                 // The bank-$04 handlers use the global slow-transition tick
@@ -455,7 +488,7 @@ public final class RoomEntityRuntime {
         if (initial == null) {
             throw new IllegalArgumentException("Initial entity snapshot cannot be null");
         }
-        return new RoomEntityRuntime(initial, indoorRoom, null, null, null);
+        return new RoomEntityRuntime(initial, indoorRoom, null, null, null, null);
     }
 
     public static RoomEntityRuntime from(RoomEntitySnapshot initial, boolean indoorRoom,
@@ -463,7 +496,7 @@ public final class RoomEntityRuntime {
         if (initial == null) {
             throw new IllegalArgumentException("Initial entity snapshot cannot be null");
         }
-        return new RoomEntityRuntime(initial, indoorRoom, randomByteSupplier, null, null);
+        return new RoomEntityRuntime(initial, indoorRoom, randomByteSupplier, null, null, null);
     }
 
     public static RoomEntityRuntime from(RoomEntitySnapshot initial, boolean indoorRoom,
@@ -472,7 +505,8 @@ public final class RoomEntityRuntime {
         if (initial == null) {
             throw new IllegalArgumentException("Initial entity snapshot cannot be null");
         }
-        return new RoomEntityRuntime(initial, indoorRoom, randomByteSupplier, spriteHandlers, null);
+        return new RoomEntityRuntime(initial, indoorRoom, randomByteSupplier, spriteHandlers,
+            null, null);
     }
 
     public static RoomEntityRuntime from(RoomEntitySnapshot initial, boolean indoorRoom,
@@ -486,7 +520,25 @@ public final class RoomEntityRuntime {
             throw new IllegalArgumentException("ROM enemy combat tables cannot be null");
         }
         return new RoomEntityRuntime(initial, indoorRoom, randomByteSupplier, spriteHandlers,
-            enemyCombatTables);
+            enemyCombatTables, null);
+    }
+
+    public static RoomEntityRuntime from(RoomEntitySnapshot initial, boolean indoorRoom,
+                                         IntSupplier randomByteSupplier,
+                                         EntitySpriteHandlerCatalog spriteHandlers,
+                                         RomEnemyCombatTables enemyCombatTables,
+                                         ChestContentsTable chestContentsTable) {
+        if (initial == null) {
+            throw new IllegalArgumentException("Initial entity snapshot cannot be null");
+        }
+        if (enemyCombatTables == null) {
+            throw new IllegalArgumentException("ROM enemy combat tables cannot be null");
+        }
+        if (chestContentsTable == null) {
+            throw new IllegalArgumentException("ROM chest contents table cannot be null");
+        }
+        return new RoomEntityRuntime(initial, indoorRoom, randomByteSupplier, spriteHandlers,
+            enemyCombatTables, chestContentsTable);
     }
 
     /** Advances the ROM handlers that have deterministic frame-only variants. */
@@ -772,10 +824,12 @@ public final class RoomEntityRuntime {
         transientVfxRequests.clear();
         pendingDialogRequests.clear();
         pendingEntityEvents.clear();
+        pendingChestRewardEvents.clear();
         pendingLikeLikeEvents.clear();
         pendingBombExplosionEvents.clear();
         hookshotBridgeUpdates.clear();
         pendingSwitchBlockAnimationRequest = false;
+        pendingMusicTrack = -1;
         List<EntityProjectileEvent> projectileEvents = new ArrayList<>();
         if (linkPositionHistory != null) {
             followingLinkPositionHistory = linkPositionHistory;
@@ -1202,8 +1256,20 @@ public final class RoomEntityRuntime {
                 }
             }
             RoomEntity updated = entity;
+            if (wasInitializing && entity.type() == ENTITY_CHEST_WITH_ITEM) {
+                initializeChestEntity(entity);
+                updated = withPositionAndVariant(entity, entity.x(),
+                    (entity.y() - 0x08) & 0xFF, entity.spriteVariant());
+            }
             if (preserveGhiniPresentation) {
                 updated = withVariant(entity, -1);
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_CHEST_WITH_ITEM) {
+                if (advanceChestEntity(index, entity)) {
+                    continue;
+                }
+                updated = slots[index];
             }
             if (wasInitializing && entity.type() == ENTITY_WIZROBE) {
                 // EntityInitWizrobe decrements the initial display-list variant
@@ -2794,6 +2860,10 @@ public final class RoomEntityRuntime {
         enemyHealth[slot] = 0;
         enemyFlashCountdown[slot] = 0;
         enemyIgnoreHitsCountdown[slot] = 0;
+        chestSpeedY[slot] = 0;
+        chestSpeedYAccumulator[slot] = 0;
+        chestInertia[slot] = 0;
+        chestItemBySlot[slot] = 0;
         entityGroundStatus[slot] = 0;
         fallingTargetX[slot] = 0;
         fallingTargetY[slot] = 0;
@@ -3450,6 +3520,16 @@ public final class RoomEntityRuntime {
         setEntityMapId(mapId);
     }
 
+    /** Supplies the three player upgrade bytes read by ChestWithItemEntityHandler. */
+    void setChestPlayerLevels(int shieldLevel, int swordLevel, int powerBraceletLevel) {
+        validateByte(shieldLevel, "Shield level");
+        validateByte(swordLevel, "Sword level");
+        validateByte(powerBraceletLevel, "Power Bracelet level");
+        chestShieldLevel = shieldLevel;
+        chestSwordLevel = swordLevel;
+        chestPowerBraceletLevel = powerBraceletLevel;
+    }
+
     void setTransitionSequenceCounterForTest(int counter) {
         if (counter < 0 || counter > 0xFF) {
             throw new IllegalArgumentException(
@@ -3492,6 +3572,18 @@ public final class RoomEntityRuntime {
     List<EntityCombatEvent> consumePendingEntityEvents() {
         List<EntityCombatEvent> pending = List.copyOf(pendingEntityEvents);
         pendingEntityEvents.clear();
+        return pending;
+    }
+
+    List<ChestRewardEvent> consumePendingChestRewardEvents() {
+        List<ChestRewardEvent> pending = List.copyOf(pendingChestRewardEvents);
+        pendingChestRewardEvents.clear();
+        return pending;
+    }
+
+    int consumePendingMusicTrack() {
+        int pending = pendingMusicTrack;
+        pendingMusicTrack = -1;
         return pending;
     }
 
@@ -3747,6 +3839,49 @@ public final class RoomEntityRuntime {
         dynamicEntitySpawnedThisFrame[freeSlot] = true;
     }
 
+    /**
+     * Mirrors SpawnChestWithItem. The arguments are the intersected object's
+     * unaligned left/top coordinates; the source masks them to a room cell
+     * and places the entity at (+8,+16).
+     */
+    int spawnChestWithItem(int objectLeft, int objectTop, int itemType) {
+        if (chestContentsTable == null) {
+            throw new IllegalStateException("ROM chest contents table is not configured");
+        }
+        validateByte(objectLeft, "Chest object left");
+        validateByte(objectTop, "Chest object top");
+        if (itemType < 0 || itemType > ChestContentsTable.CHEST_ZOL) {
+            throw new IllegalArgumentException("Chest item variant out of range: " + itemType);
+        }
+        int freeSlot = findFreeEntitySlot();
+        if (freeSlot < 0) {
+            return -1;
+        }
+        EntitySpriteDefinition definition = spriteDefinitionForChest(itemType);
+        int spriteVariant = definition.supported() ? itemType : -1;
+        int x = (objectLeft & 0xF0) + 0x08;
+        int y = (objectTop & 0xF0) + 0x10;
+        RoomEntity chest = new RoomEntity(freeSlot, -1, ENTITY_CHEST_WITH_ITEM,
+            x & 0xFF, y & 0xFF, EntityStatus.INIT, definition, spriteVariant,
+            0, 0, 0);
+        slots[freeSlot] = chest;
+        baseEntityFlipAttribute[freeSlot] = 0;
+        enemyPhysicsFlags[freeSlot] = CHEST_INITIAL_PHYSICS_FLAGS;
+        enemyHitboxFlags[freeSlot] = 0;
+        enemyHealth[freeSlot] = 0;
+        enemyTransitionCountdown[freeSlot] = 0;
+        enemyStunnedCountdown[freeSlot] = 0;
+        enemyFlashCountdown[freeSlot] = 0;
+        enemyIgnoreHitsCountdown[freeSlot] = 0;
+        chestSpeedY[freeSlot] = 0;
+        chestSpeedYAccumulator[freeSlot] = 0;
+        chestInertia[freeSlot] = 0;
+        chestItemBySlot[freeSlot] = itemType;
+        entityOptions1Override[freeSlot] = -1;
+        dynamicEntitySpawnedThisFrame[freeSlot] = false;
+        return freeSlot;
+    }
+
     private int findFreeEntitySlot() {
         for (int slot = slots.length - 1; slot >= 0; slot--) {
             if (!slots[slot].loaded()) {
@@ -3946,6 +4081,103 @@ public final class RoomEntityRuntime {
             : spriteSelection.roomTable();
         int mapId = spriteSelection == null ? -1 : spriteSelection.roomId();
         return spriteHandlers.forEntityType(entityType, table, mapId);
+    }
+
+    private EntitySpriteDefinition spriteDefinitionForChest(int itemType) {
+        if (itemType == ChestContentsTable.CHEST_ZOL) {
+            return EntitySpriteDefinition.unsupported(ENTITY_CHEST_WITH_ITEM);
+        }
+        if (spriteHandlers == null) {
+            return EntitySpriteDefinition.unsupported(ENTITY_CHEST_WITH_ITEM);
+        }
+        int roomId = spriteSelection == null ? -1 : spriteSelection.roomId();
+        if (entityMapId >= 0 && roomId >= 0) {
+            return spriteHandlers.forChestState(entityMapId, roomId, itemType);
+        }
+        return spriteHandlers.forEntityType(ENTITY_CHEST_WITH_ITEM,
+            spriteSelection == null
+                ? (indoorRoom ? EntityRoomLoader.RoomTable.INDOORS_A
+                    : EntityRoomLoader.RoomTable.OVERWORLD)
+                : spriteSelection.roomTable(), entityMapId);
+    }
+
+    private void initializeChestEntity(RoomEntity entity) {
+        int slot = entity.slot();
+        int itemType = chestItemBySlot[slot] & 0xFF;
+        chestSpeedY[slot] = 0xFC;
+        chestSpeedYAccumulator[slot] = 0;
+        chestInertia[slot] = 0;
+        pendingEntityEvents.add(new EntityCombatEvent(
+            slot, ENTITY_CHEST_WITH_ITEM, 0, false,
+            EntityCombatEvent.SoundChannel.NOISE, CHEST_OPEN_NOISE_ID));
+        if (itemType < ChestContentsTable.CHEST_MESSAGE) {
+            pendingChestRewardEvents.add(new ChestRewardEvent(slot, itemType));
+        }
+    }
+
+    /** Returns true when the source handler unloaded the chest this frame. */
+    private boolean advanceChestEntity(int index, RoomEntity entity) {
+        int slot = entity.slot();
+        int itemType = chestItemBySlot[slot] & 0xFF;
+        if (itemType == ChestContentsTable.CHEST_ZOL) {
+            spawnChestZol(entity);
+            clearEntity(slot);
+            return true;
+        }
+
+        int y = addFallingSpeedToPosition(entity.y(), chestSpeedY[slot],
+            chestSpeedYAccumulator, slot);
+        int inertia = (chestInertia[slot] + 1) & 0xFF;
+        chestInertia[slot] = inertia;
+        if (inertia == 0x10) {
+            chestSpeedY[slot] = 0;
+        }
+        if (inertia == 0x08 && chestContentsTable != null) {
+            int soundValue = chestContentsTable.presentationSoundValue(itemType);
+            if (soundValue == CHEST_TREASURE_JINGLE_ID) {
+                pendingEntityEvents.add(new EntityCombatEvent(
+                    slot, ENTITY_CHEST_WITH_ITEM, 0, false,
+                    EntityCombatEvent.SoundChannel.JINGLE, CHEST_TREASURE_JINGLE_ID));
+            } else if (soundValue != 0) {
+                pendingMusicTrack = soundValue;
+            }
+        }
+        if (inertia == 0x26 && chestContentsTable != null) {
+            int roomId = spriteSelection == null ? -1 : spriteSelection.roomId();
+            int dialogLow = chestContentsTable.dialogLowIdFor(itemType,
+                chestShieldLevel, chestSwordLevel, chestPowerBraceletLevel,
+                entityMapId < 0 ? 0 : entityMapId, roomId < 0 ? 0 : roomId);
+            int tableId = itemType == ChestContentsTable.CHEST_MESSAGE && roomId == 0x96
+                ? 1 : 0;
+            pendingDialogRequests.add(new DialogRequest(tableId, dialogLow));
+        }
+        if (inertia == 0x28) {
+            clearEntity(slot);
+            return true;
+        }
+        slots[index] = withPositionAndVariant(entity, entity.x(), y, itemType);
+        return false;
+    }
+
+    private void spawnChestZol(RoomEntity chest) {
+        int freeSlot = findFreeEntitySlot();
+        if (freeSlot < 0) {
+            return;
+        }
+        EntitySpriteDefinition definition = spriteDefinitionFor(ENTITY_ZOL);
+        int variant = definition.supported() ? definition.initialVariant() : -1;
+        RoomEntity zol = new RoomEntity(freeSlot, -1, ENTITY_ZOL, chest.x(), chest.y(),
+            EntityStatus.ACTIVE, definition, variant, 0, 0, 0x06);
+        slots[freeSlot] = zol;
+        zolGelMotion.prepareChestSpawn(freeSlot);
+        enemyPhysicsFlags[freeSlot] = initialPhysicsFlags(ENTITY_ZOL);
+        enemyHitboxFlags[freeSlot] = 0;
+        enemyHealth[freeSlot] = initialHealth(ENTITY_ZOL);
+        enemyIgnoreHitsCountdown[freeSlot] = 1;
+        dynamicEntitySpawnedThisFrame[freeSlot] = true;
+        pendingEntityEvents.add(new EntityCombatEvent(
+            freeSlot, ENTITY_ZOL, 0, false,
+            EntityCombatEvent.SoundChannel.JINGLE, 0x1D));
     }
 
     private void finalizePendingBombPresentations() {
@@ -4571,6 +4803,10 @@ public final class RoomEntityRuntime {
         return zolGelMotion.speedZ(slot);
     }
 
+    int zolPrivateCountdown1(int slot) {
+        return zolGelMotion.privateCountdown1(slot);
+    }
+
     int hidingZolState(int slot) {
         return hidingZolMotion.state(slot);
     }
@@ -5098,6 +5334,9 @@ public final class RoomEntityRuntime {
         if (slots[slot].type() == ENTITY_SWORD_SHIELD_PICKUP) {
             return ENTITY_OPT1_SPLASH_IN_WATER | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
         }
+        if (slots[slot].type() == ENTITY_CHEST_WITH_ITEM) {
+            return CHEST_OPTIONS1;
+        }
         if (slots[slot].type() == ENTITY_SPIKED_BEETLE) {
             // The static table starts at splash-only. The handler writes the
             // sword-clink-off bit on its first normal active pass.
@@ -5225,6 +5464,7 @@ public final class RoomEntityRuntime {
             case ENTITY_WIZROBE_PROJECTILE -> 0x42;
             case ENTITY_IRON_MASKS_MASK -> IRON_MASKS_MASK_INITIAL_PHYSICS_FLAGS;
             case ENTITY_BOMB -> BOMB_INITIAL_PHYSICS_FLAGS;
+            case ENTITY_CHEST_WITH_ITEM -> CHEST_INITIAL_PHYSICS_FLAGS;
             case ENTITY_BOUNCING_BOMBITE, ENTITY_TIMER_BOMBITE ->
                 BOMBITE_INITIAL_PHYSICS_FLAGS;
             case ENTITY_MAD_BOMBER -> MAD_BOMBER_INITIAL_PHYSICS_FLAGS;
@@ -5526,6 +5766,10 @@ public final class RoomEntityRuntime {
         enemyHealth[slot] = 0;
         enemyFlashCountdown[slot] = 0;
         enemyIgnoreHitsCountdown[slot] = 0;
+        chestSpeedY[slot] = 0;
+        chestSpeedYAccumulator[slot] = 0;
+        chestInertia[slot] = 0;
+        chestItemBySlot[slot] = 0;
         enemyHitboxFlags[slot] = 0;
         entityGroundStatus[slot] = 0;
         fallingTargetX[slot] = 0;

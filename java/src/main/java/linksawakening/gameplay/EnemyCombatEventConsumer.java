@@ -10,6 +10,7 @@ import java.util.Objects;
 /** Applies raw enemy-combat sound writes at the gameplay/audio boundary. */
 public final class EnemyCombatEventConsumer {
     private static final int JINGLE_BUMP_ID = 0x09;
+    private static final int JINGLE_TREASURE_FOUND_ID = 0x01;
     private static final int JINGLE_PUZZLE_SOLVED_ID = 0x02;
     private static final int JINGLE_ENEMY_HIT_ID = 0x03;
     private static final int JINGLE_SWORD_POKE_ID = 0x07;
@@ -23,6 +24,7 @@ public final class EnemyCombatEventConsumer {
     private static final int NOISE_SPIKE_TRAP_WHOOSH_ID = 0x0A;
     private static final int NOISE_HOOKSHOT_ID = 0x0B;
     private static final int NOISE_BOMB_EXPLOSION_ID = 0x0C;
+    private static final int NOISE_DOOR_UNLOCKED_ID = 0x04;
 
     private EnemyCombatEventConsumer() {
     }
@@ -57,6 +59,7 @@ public final class EnemyCombatEventConsumer {
         if (channel == EntityCombatEvent.SoundChannel.JINGLE) {
             switch (id) {
                 case JINGLE_BUMP_ID -> soundSink.play(GameplaySoundEvent.ENEMY_BUMP);
+                case JINGLE_TREASURE_FOUND_ID -> soundSink.play(GameplaySoundEvent.TREASURE_FOUND);
                 case JINGLE_PUZZLE_SOLVED_ID -> soundSink.play(GameplaySoundEvent.PUZZLE_SOLVED);
                 case JINGLE_ENEMY_HIT_ID -> soundSink.play(GameplaySoundEvent.ENEMY_HIT);
                 case JINGLE_SWORD_POKE_ID -> soundSink.play(GameplaySoundEvent.SWORD_POKE);
@@ -79,6 +82,7 @@ public final class EnemyCombatEventConsumer {
                 case NOISE_HOOKSHOT_ID -> soundSink.play(GameplaySoundEvent.HOOKSHOT);
                 case NOISE_BOMB_EXPLOSION_ID ->
                     soundSink.play(GameplaySoundEvent.BOMB_EXPLOSION);
+                case NOISE_DOOR_UNLOCKED_ID -> soundSink.play(GameplaySoundEvent.DOOR_UNLOCKED);
                 default -> {
                     // Unknown ROM sound writes must not be guessed or routed
                     // to an unrelated gameplay effect.

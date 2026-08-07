@@ -12,6 +12,10 @@ public final class ChestContentsTable {
     private static final int COLOR_DUNGEON_TABLE_ADDRESS = 0x4860;
     private static final int ROOM_TABLE_SIZE = 0x100;
     private static final int COLOR_DUNGEON_TABLE_SIZE = 0x20;
+    private static final int DIALOG_TABLE_BANK = 0x07;
+    private static final int DIALOG_TABLE_ADDRESS = 0x7B99;
+    private static final int PRESENTATION_SOUND_TABLE_ADDRESS = 0x7BBB;
+    private static final int PRESENTATION_TABLE_SIZE = 0x22;
 
     public static final int MAP_COLOR_DUNGEON = 0xFF;
 
@@ -85,6 +89,65 @@ public final class ChestContentsTable {
         validateByte(swordLevel, "swordLevel");
         int item = itemForRoom(mapId, roomId);
         return item == CHEST_SEASHELL && swordLevel >= 2 ? CHEST_RUPEES_20 : item;
+    }
+
+    /**
+     * Mirrors the bank-$07 dialog selection at chest inertia $26.  The
+     * ordinary table contains low bytes for OpenDialogInTable0; the four
+     * upgraded-item branches and the room-$96 message are explicit source
+     * branches rather than entries in that table.
+     */
+    public int dialogLowIdFor(int itemType, int shieldLevel, int swordLevel,
+                              int powerBraceletLevel, int mapId, int roomId) {
+        validateDialogItem(itemType);
+        validateByte(shieldLevel, "shieldLevel");
+        validateByte(swordLevel, "swordLevel");
+        validateByte(powerBraceletLevel, "powerBraceletLevel");
+        validateByte(mapId, "mapId");
+        validateByte(roomId, "roomId");
+
+        if (itemType == CHEST_MESSAGE && roomId == 0x96) {
+            // Dialog111 is global dialog index $111: table 1, low byte $11.
+            // The caller supplies the table separately because DialogRequest
+            // mirrors OpenDialogInTable1's two-part call contract.
+            return 0x11;
+        }
+        if (itemType == CHEST_SHIELD && shieldLevel == 2) {
+            return 0xED;
+        }
+        if (itemType == CHEST_SWORD && swordLevel == 2) {
+            return 0x9F;
+        }
+        if (itemType == CHEST_POWER_BRACELET && powerBraceletLevel == 2) {
+            return 0xEE;
+        }
+        return readBoundedByte(DIALOG_TABLE_BANK, DIALOG_TABLE_ADDRESS,
+            PRESENTATION_TABLE_SIZE, itemType, "GotItemDialog");
+    }
+
+    /** Mirrors Data_007_7BBB, the sound/music value selected at inertia $08. */
+    public int presentationSoundValue(int itemType) {
+        validateDialogItem(itemType);
+        return readBoundedByte(DIALOG_TABLE_BANK, PRESENTATION_SOUND_TABLE_ADDRESS,
+            PRESENTATION_TABLE_SIZE, itemType, "Data_007_7BBB");
+    }
+
+    private static void validateDialogItem(int itemType) {
+        if (itemType < 0 || itemType > CHEST_MESSAGE) {
+            throw new IllegalArgumentException(
+                "Chest item has no ordinary dialog/presentation entry: " + itemType);
+        }
+    }
+
+    private int readBoundedByte(int bank, int address, int tableSize, int index,
+                                String tableName) {
+        int offset = RomBank.romOffset(bank, address + index);
+        int end = RomBank.romOffset(bank, address + tableSize);
+        if (offset < 0 || offset >= romData.length || offset >= end) {
+            throw new IllegalArgumentException(tableName + " is truncated at ROM offset 0x"
+                + Integer.toHexString(Math.max(offset, 0)));
+        }
+        return Byte.toUnsignedInt(romData[offset]);
     }
 
     private static void validateByte(int value, String label) {

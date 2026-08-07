@@ -99,6 +99,8 @@ final class SaveRamImageTest {
         player.setHealth(0);
         player.setHeartPieces(2);
         player.setRupees(509);
+        player.setPowerBraceletLevel(2);
+        player.setHasMedicine(true);
         player.setOcarinaSongFlags(0x07);
         player.setSelectedSongIndex(2);
         player.setTunicType(PlayerState.TUNIC_BLUE);
@@ -110,6 +112,8 @@ final class SaveRamImageTest {
         assertEquals(PlayerState.INVENTORY_HOOKSHOT, state.itemB());
         assertArrayEquals(new int[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, state.subscreen());
         assertEquals(37, state.seashells());
+        assertEquals(2, state.powerBraceletLevel());
+        assertEquals(1, state.hasMedicine());
         assertEquals(2, state.shieldLevel());
         assertEquals(1, state.swordLevel());
         assertEquals(17, state.arrowCount());
@@ -214,6 +218,8 @@ final class SaveRamImageTest {
         put(bytes, main, SaveRamLayout.MAIN_HEART_PIECES_OFFSET, 2);
         put(bytes, main, SaveRamLayout.MAIN_RUPEE_HIGH_OFFSET, 0x05);
         put(bytes, main, SaveRamLayout.MAIN_RUPEE_LOW_OFFSET, 0x09);
+        put(bytes, main, SaveRamLayout.MAIN_POWER_BRACELET_OFFSET, 2);
+        put(bytes, main, SaveRamLayout.MAIN_MEDICINE_OFFSET, 1);
         put(bytes, main, SaveRamLayout.MAIN_SPAWN_INDOOR_OFFSET, 1);
         put(bytes, main, SaveRamLayout.MAIN_SPAWN_MAP_ID_OFFSET, 0x10);
         put(bytes, main, SaveRamLayout.MAIN_SPAWN_MAP_ROOM_OFFSET, 0xA3);
@@ -236,6 +242,8 @@ final class SaveRamImageTest {
         assertEquals(PlayerState.INVENTORY_HOOKSHOT, state.itemA());
         assertEquals(0x20, state.subscreen()[0]);
         assertEquals(17, state.seashells());
+        assertEquals(2, state.powerBraceletLevel());
+        assertEquals(1, state.hasMedicine());
         assertEquals(2, state.shieldLevel());
         assertEquals(7, state.arrowCount());
         assertEquals(9, state.magicPowderCount());

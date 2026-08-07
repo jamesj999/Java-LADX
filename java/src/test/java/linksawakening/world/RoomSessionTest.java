@@ -1,6 +1,7 @@
 package linksawakening.world;
 
 import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gpu.GPU;
 import linksawakening.physics.OverworldCollision;
@@ -194,6 +195,31 @@ final class RoomSessionTest {
         assertFalse(session.placeBomb(0x44, 0x54, 0, 1));
         assertEquals(1, session.activeRoom().entities().loadedEntities().stream()
             .filter(entity -> entity.type() == 0x02).count());
+    }
+
+    @Test
+    void openingAClosedChestMutatesTheRoomAndSpawnsTheRomChestEntity() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x00, 0x20);
+        int location = 0x22;
+        int areaIndex = RoomConstants.ROOM_OBJECTS_BASE
+            + (location & 0xF0) + (location & 0x0F);
+        session.activeRoom().roomObjectsArea()[areaIndex] = 0xA0;
+
+        RoomSession.ChestOpenResult result = session.tryOpenChest(
+            0x18, 0x21, linksawakening.entity.Link.DIRECTION_UP, true, 1);
+
+        assertTrue(result.opened());
+        assertEquals(0xA1, session.activeRoom().roomObjectsArea()[areaIndex]);
+        assertTrue(session.activeRoom().renderValues() == null);
+        assertEquals(0x10, session.indoorRoomStatusForTest(0x00, 0x20) & 0x10);
+        RoomEntity chest = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == EntitySpriteHandlerCatalog.ENTITY_CHEST_WITH_ITEM)
+            .findFirst().orElseThrow();
+        assertEquals(EntityStatus.INIT, chest.status());
+        assertEquals(0x28, chest.x());
+        assertEquals(0x30, chest.y());
+        assertEquals(result.itemType(), chest.spriteVariant());
     }
 
     @Test

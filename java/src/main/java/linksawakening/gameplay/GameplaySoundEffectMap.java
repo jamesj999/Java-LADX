@@ -41,6 +41,8 @@ public final class GameplaySoundEffectMap {
         put(effects, catalog, GameplaySoundEvent.SHIELD_TING, SoundEffectNamespace.JINGLE, 0x16);
         put(effects, catalog, GameplaySoundEvent.LINK_HURT, SoundEffectNamespace.WAVE, 0x03);
         put(effects, catalog, GameplaySoundEvent.ENEMY_BUMP, SoundEffectNamespace.JINGLE, 0x09);
+        put(effects, catalog, GameplaySoundEvent.TREASURE_FOUND,
+            SoundEffectNamespace.JINGLE, 0x01);
         put(effects, catalog, GameplaySoundEvent.PUZZLE_SOLVED,
             SoundEffectNamespace.JINGLE, 0x02);
         put(effects, catalog, GameplaySoundEvent.ENEMY_HIT, SoundEffectNamespace.JINGLE, 0x03);

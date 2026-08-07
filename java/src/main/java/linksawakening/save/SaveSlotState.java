@@ -15,6 +15,8 @@ public record SaveSlotState(
     int itemB,
     int[] subscreen,
     int seashells,
+    int powerBraceletLevel,
+    int hasMedicine,
     int shieldLevel,
     int swordLevel,
     int arrowCount,

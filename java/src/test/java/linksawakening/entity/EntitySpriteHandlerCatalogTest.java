@@ -54,6 +54,32 @@ final class EntitySpriteHandlerCatalogTest {
     }
 
     @Test
+    void decodesTheChestItemDisplayListAndItsTwoRoomSpecificAlternates() throws Exception {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+
+        EntitySpriteDefinition ordinary = catalog.forEntityType(
+            EntitySpriteHandlerCatalog.ENTITY_CHEST_WITH_ITEM,
+            EntityRoomLoader.RoomTable.INDOORS_A);
+        assertDefinition(ordinary, 0x07, 0x7B57,
+            EntitySpriteDefinition.Shape.PAIR, 0x21, 0);
+        assertPairPrefixBytes(ordinary, new int[][] {
+            {0x82, 0x15, 0x86, 0x15},
+            {0x88, 0x10, 0x8A, 0x10},
+            {0x8C, 0x14, 0x98, 0x16}
+        });
+
+        EntitySpriteDefinition braceletAlternate = catalog.forChestState(0x05, 0xCE, 0x00);
+        assertDefinition(braceletAlternate, 0x07, 0x7B53,
+            EntitySpriteDefinition.Shape.PAIR, 1, 0);
+        assertPairBytes(braceletAlternate, new int[][] {{0x82, 0x17, 0x86, 0x14}});
+
+        EntitySpriteDefinition shieldAlternate = catalog.forChestState(0x06, 0x1A, 0x01);
+        assertDefinition(shieldAlternate, 0x07, 0x7B53,
+            EntitySpriteDefinition.Shape.PAIR, 1, 0);
+        assertPairBytes(shieldAlternate, new int[][] {{0x82, 0x17, 0x86, 0x14}});
+    }
+
+    @Test
     void mapsPlayerArrowToTheSharedBankThreeArrowDisplayList() {
         byte[] rom = syntheticRom();
         write(rom, 0x03, 0x6BC6,
@@ -1219,6 +1245,16 @@ final class EntitySpriteHandlerCatalogTest {
 
     private static void assertPairBytes(EntitySpriteDefinition definition, int[][] expected) {
         assertEquals(expected.length, definition.variantCount());
+        for (int variant = 0; variant < expected.length; variant++) {
+            EntitySpriteDefinition.Variant actual = definition.variant(variant);
+            assertEquals(expected[variant][0], actual.first().tile());
+            assertEquals(expected[variant][1], actual.first().attributes());
+            assertEquals(expected[variant][2], actual.second().tile());
+            assertEquals(expected[variant][3], actual.second().attributes());
+        }
+    }
+
+    private static void assertPairPrefixBytes(EntitySpriteDefinition definition, int[][] expected) {
         for (int variant = 0; variant < expected.length; variant++) {
             EntitySpriteDefinition.Variant actual = definition.variant(variant);
             assertEquals(expected[variant][0], actual.first().tile());

@@ -167,6 +167,16 @@ final class ZolGelMotion {
         speedZ[slot] = 0x20;
     }
 
+    /** Mirrors the special Zol state written by ChestWithItemEntityHandler. */
+    void prepareChestSpawn(int slot) {
+        resetForGel(slot);
+        initialized[slot] = true;
+        state[slot] = 3;
+        speedX[slot] = 0x08;
+        speedZ[slot] = 0x18;
+        privateCountdown1[slot] = 0x50;
+    }
+
     void clear(int slot) {
         state[slot] = 0;
         transitionCountdown[slot] = 0;
@@ -203,6 +213,10 @@ final class ZolGelMotion {
 
     int speedZ(int slot) {
         return speedZ[slot];
+    }
+
+    int privateCountdown1(int slot) {
+        return privateCountdown1[slot];
     }
 
     private void decrementCountdowns(int slot) {

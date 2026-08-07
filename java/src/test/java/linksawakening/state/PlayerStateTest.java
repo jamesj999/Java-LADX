@@ -284,6 +284,28 @@ final class PlayerStateTest {
     }
 
     @Test
+    void chestRewardsApplyTheImmediateInventoryLevelAndBufferWrites() {
+        PlayerState playerState = new PlayerState();
+        playerState.initializeNewGame(99, 20, 20);
+
+        playerState.applyChestReward(linksawakening.world.ChestContentsTable.CHEST_POWER_BRACELET);
+        playerState.applyChestReward(linksawakening.world.ChestContentsTable.CHEST_SHIELD);
+        playerState.applyChestReward(linksawakening.world.ChestContentsTable.CHEST_BOMB);
+        playerState.applyChestReward(linksawakening.world.ChestContentsTable.CHEST_RUPEES_50);
+        playerState.applyChestReward(linksawakening.world.ChestContentsTable.CHEST_SEASHELL);
+        playerState.applyChestReward(linksawakening.world.ChestContentsTable.CHEST_MEDICINE);
+
+        assertEquals(1, playerState.powerBraceletLevel());
+        assertEquals(1, playerState.shieldLevel());
+        assertEquals(1, playerState.bombCount());
+        assertEquals(50, playerState.addRupeeBuffer());
+        assertEquals(1, playerState.seashells());
+        assertTrue(playerState.hasMedicine());
+        assertEquals(1, playerState.chestItemCount(
+            linksawakening.world.ChestContentsTable.CHEST_POWER_BRACELET));
+    }
+
+    @Test
     void floatingArrowsUseDecimalModulo100WithoutCapacityCheck() {
         PlayerState playerState = new PlayerState();
         playerState.initializeNewGame(99, 20, 20);
@@ -328,6 +350,8 @@ final class PlayerStateTest {
         playerState.setRunningWithPegasusBoots(true);
         playerState.applyEntityPickup(0x2D);
         playerState.applyEntityPickup(0x2E);
+        playerState.applyChestReward(
+            linksawakening.world.ChestContentsTable.CHEST_POWER_BRACELET);
 
         byte[] bytes = SaveRamImage.empty().bytes();
         int main = SaveRamLayout.slotOffset(0) + SaveRamLayout.mainOffset();
@@ -340,6 +364,8 @@ final class PlayerStateTest {
         bytes[main + SaveRamLayout.MAIN_MAX_HEARTS_OFFSET] = 5;
         bytes[main + SaveRamLayout.MAIN_HEART_PIECES_OFFSET] = 2;
         bytes[main + SaveRamLayout.MAIN_SEASHELLS_OFFSET] = 19;
+        bytes[main + SaveRamLayout.MAIN_POWER_BRACELET_OFFSET] = 2;
+        bytes[main + SaveRamLayout.MAIN_MEDICINE_OFFSET] = 1;
         bytes[main + SaveRamLayout.MAIN_SHIELD_OFFSET] = 2;
         bytes[main + SaveRamLayout.MAIN_SWORD_OFFSET] = 2;
         bytes[main + SaveRamLayout.MAIN_ARROWS_OFFSET] = 4;
@@ -364,6 +390,8 @@ final class PlayerStateTest {
         assertEquals(5, playerState.maxHearts());
         assertEquals(2, playerState.heartPieces());
         assertEquals(19, playerState.seashells());
+        assertEquals(2, playerState.powerBraceletLevel());
+        assertTrue(playerState.hasMedicine());
         assertEquals(PlayerState.INVENTORY_BOW, playerState.itemB());
         assertEquals(PlayerState.INVENTORY_HOOKSHOT, playerState.itemA());
         assertEquals(0x30, playerState.subscreenItem(0));
@@ -384,6 +412,8 @@ final class PlayerStateTest {
         assertEquals(0, playerState.addHealthBuffer());
         assertEquals(0, playerState.addRupeeBuffer());
         assertEquals(0, playerState.subtractHealthBuffer());
+        assertEquals(0, playerState.chestItemCount(
+            linksawakening.world.ChestContentsTable.CHEST_POWER_BRACELET));
         assertArrayEquals(new int[] {1, 2, 0, 0, 0}, saved.nameBytes());
     }
 }

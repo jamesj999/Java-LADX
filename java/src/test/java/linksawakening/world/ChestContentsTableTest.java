@@ -39,6 +39,29 @@ final class ChestContentsTableTest {
     }
 
     @Test
+    void decodesChestDialogAndPresentationSoundTablesFromBankSeven() {
+        ChestContentsTable table = new ChestContentsTable(loadRom());
+
+        assertEquals(0x90, table.dialogLowIdFor(ChestContentsTable.CHEST_POWER_BRACELET,
+            1, 1, 1, 0x00, 0x00));
+        assertEquals(0xED, table.dialogLowIdFor(ChestContentsTable.CHEST_SHIELD,
+            2, 1, 1, 0x00, 0x00));
+        assertEquals(0x9F, table.dialogLowIdFor(ChestContentsTable.CHEST_SWORD,
+            1, 2, 1, 0x00, 0x00));
+        assertEquals(0xEE, table.dialogLowIdFor(ChestContentsTable.CHEST_POWER_BRACELET,
+            1, 1, 2, 0x00, 0x00));
+        assertEquals(0xAC, table.dialogLowIdFor(ChestContentsTable.CHEST_RUPEES_50,
+            1, 1, 1, 0x00, 0x00));
+        assertEquals(0x06, table.dialogLowIdFor(ChestContentsTable.CHEST_MESSAGE,
+            1, 1, 1, 0x00, 0x00));
+        assertEquals(0x11, table.dialogLowIdFor(ChestContentsTable.CHEST_MESSAGE,
+            1, 1, 1, 0x00, 0x96));
+        assertEquals(0x10, table.presentationSoundValue(ChestContentsTable.CHEST_POWER_BRACELET));
+        assertEquals(0x01, table.presentationSoundValue(ChestContentsTable.CHEST_RUPEES_50));
+        assertEquals(0x01, table.presentationSoundValue(ChestContentsTable.CHEST_SEASHELL));
+    }
+
+    @Test
     void rejectsRoomAndMapValuesOutsideTheSourceByteRanges() {
         ChestContentsTable table = new ChestContentsTable(loadRom());
 
