@@ -4946,6 +4946,78 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void timerBombiteUsesItsRomFuseToProduceAnEnemyBomb() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            0x56, EntityRoomLoader.RoomTable.INDOORS_A, -1);
+        assertTrue(definition.supported());
+        assertEquals(0x04, definition.bank());
+        assertEquals(0x7CEF, definition.address());
+        assertEquals(6, definition.variantCount());
+
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotWithSlots(
+            new RoomEntity(0, 0, 0x56, 0x50, 0x50, EntityStatus.ACTIVE,
+                definition, 0, 0, 0, 0x00)),
+            true, () -> 0, catalog, tables);
+        runtime.setEnemyIgnoreHitsCountdownForTest(0, 0x09);
+
+        boolean explosionSound = false;
+        boolean sourceCleared = false;
+        for (int frame = 0; frame < 520; frame++) {
+            runtime.tick(frame, 0xC0, 0xC0, () -> 0);
+            explosionSound |= runtime.consumePendingEntityEvents().stream()
+                .anyMatch(event -> event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE
+                    && event.soundId() == 0x0C);
+            sourceCleared = !runtime.snapshot().slots().get(0).loaded();
+            if (sourceCleared) {
+                break;
+            }
+        }
+
+        assertTrue(explosionSound);
+        assertTrue(sourceCleared);
+        RoomEntity bomb = runtime.snapshot().slots().get(15);
+        assertTrue(bomb.loaded());
+        assertEquals(EntityStatus.ACTIVE, bomb.status());
+        assertEquals(0x02, bomb.type());
+        assertEquals(0x00, bomb.z());
+        assertEquals(0x17, runtime.transitionCountdown(15));
+        assertEquals(0x01, runtime.enemyIgnoreHitsCountdown(15));
+    }
+
+    @Test
+    void bouncingBombiteUsesItsRomSwordRecoilInsteadOfTakingSwordDamage() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            0x55, EntityRoomLoader.RoomTable.INDOORS_A, -1);
+        assertTrue(definition.supported());
+        assertEquals(0x04, definition.bank());
+        assertEquals(0x7DF5, definition.address());
+        assertEquals(2, definition.variantCount());
+
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotWithSlots(
+            new RoomEntity(0, 0, 0x55, 0x50, 0x50, EntityStatus.ACTIVE,
+                definition, 0, 0, 0, 0x00)),
+            true, () -> 0, catalog, tables);
+
+        List<EntityCombatEvent> events = runtime.resolveCombat(
+            0, 0xC0, 0xC0, false, true, true,
+            0x58, 1, 0x58, 1, EnemyAttackContext.standard());
+
+        assertEquals(List.of(new EntityCombatEvent(0, 0x55, 0, true, 0, -1,
+            EntityCombatEvent.SoundChannel.NONE, -1)), events);
+        assertEquals(4, runtime.enemyHealth(0));
+        assertEquals(2, runtime.bombiteState(0));
+        assertEquals(0x40, runtime.transitionCountdown(0));
+        assertEquals(0x08, runtime.bombitePrivateCountdown1(0));
+        assertEquals(0, runtime.enemyIgnoreHitsCountdown(0));
+    }
+
+    @Test
     void protectedEnemyBombStillDoublesLinkSpeedWithoutDamageOrHurtSound() throws IOException {
         byte[] rom = loadRom();
         RoomEntityRuntime runtime = RoomEntityRuntime.from(

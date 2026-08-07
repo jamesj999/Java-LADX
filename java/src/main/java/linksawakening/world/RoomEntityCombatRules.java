@@ -25,6 +25,8 @@ public final class RoomEntityCombatRules {
     private static final int ENTITY_HARDHAT_BEETLE = 0x20;
     private static final int ENTITY_SPIKE_TRAP = 0x27;
     private static final int ENTITY_PAIRODD = 0x57;
+    private static final int ENTITY_BOUNCING_BOMBITE = 0x55;
+    private static final int ENTITY_TIMER_BOMBITE = 0x56;
     private static final int ENTITY_WATER_TEKTITE = 0x99;
     private static final int ENTITY_COLOR_SHELL_RED = 0xE9;
     private static final int ENTITY_COLOR_SHELL_GREEN = 0xEA;
@@ -70,6 +72,8 @@ public final class RoomEntityCombatRules {
     private static final int MAD_BOMBER_CONTACT_DAMAGE = 0x04;
     private static final int BOMBER_INITIAL_HEALTH = 0x03;
     private static final int BOMBER_CONTACT_DAMAGE = 0x08;
+    private static final int BOMBITE_INITIAL_HEALTH = 0x04;
+    private static final int BOMBITE_CONTACT_DAMAGE = 0x08;
     private static final int BASIC_SWORD_DAMAGE = 0x01;
 
     private RoomEntityCombatRules() {
@@ -89,7 +93,8 @@ public final class RoomEntityCombatRules {
                 ENTITY_PAIRODD, ENTITY_COLOR_SHELL_RED, ENTITY_COLOR_SHELL_GREEN,
                 ENTITY_COLOR_SHELL_BLUE,
                 ENTITY_CRYSTAL_SWITCH,
-                ENTITY_OCTOROK, ENTITY_MAD_BOMBER, ENTITY_BOMBER -> true;
+                ENTITY_OCTOROK, ENTITY_BOUNCING_BOMBITE, ENTITY_TIMER_BOMBITE,
+                ENTITY_MAD_BOMBER, ENTITY_BOMBER -> true;
             default -> false;
         };
     }
@@ -112,6 +117,7 @@ public final class RoomEntityCombatRules {
                 OCTOROK_AND_KEESE_CONTACT_DAMAGE;
             case ENTITY_MAD_BOMBER -> MAD_BOMBER_CONTACT_DAMAGE;
             case ENTITY_BOMBER -> BOMBER_CONTACT_DAMAGE;
+            case ENTITY_BOUNCING_BOMBITE, ENTITY_TIMER_BOMBITE -> BOMBITE_CONTACT_DAMAGE;
             case ENTITY_GIBDO -> GIBDO_CONTACT_DAMAGE;
             case ENTITY_ANTI_FAIRY -> ANTI_FAIRY_CONTACT_DAMAGE;
             case ENTITY_HIDING_GHINI, ENTITY_GIANT_GHINI, ENTITY_GHINI ->
@@ -140,6 +146,7 @@ public final class RoomEntityCombatRules {
             case ENTITY_GIBDO -> GIBDO_INITIAL_HEALTH;
             case ENTITY_MAD_BOMBER -> MAD_BOMBER_INITIAL_HEALTH;
             case ENTITY_BOMBER -> BOMBER_INITIAL_HEALTH;
+            case ENTITY_BOUNCING_BOMBITE, ENTITY_TIMER_BOMBITE -> BOMBITE_INITIAL_HEALTH;
             case ENTITY_ANTI_FAIRY -> ANTI_FAIRY_INITIAL_HEALTH;
             case ENTITY_HIDING_GHINI, ENTITY_GIANT_GHINI, ENTITY_GHINI ->
                 GHINI_INITIAL_HEALTH;

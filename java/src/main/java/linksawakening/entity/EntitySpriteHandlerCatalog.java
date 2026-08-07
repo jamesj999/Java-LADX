@@ -29,6 +29,8 @@ public final class EntitySpriteHandlerCatalog {
     private static final int ENTITY_OCTOROK_ROCK = 0x0A;
     private static final int ENTITY_MOBLIN = 0x0B;
     private static final int ENTITY_MOBLIN_ARROW = 0x0C;
+    private static final int ENTITY_BOUNCING_BOMBITE = 0x55;
+    private static final int ENTITY_TIMER_BOMBITE = 0x56;
     private static final int ENTITY_MAD_BOMBER = 0x93;
     private static final int ENTITY_BOMBER = 0xBA;
     private static final int ENTITY_MOBLIN_SWORD = 0x14;
@@ -191,6 +193,12 @@ public final class EntitySpriteHandlerCatalog {
         }
         if (entityType == ENTITY_MAD_BOMBER) {
             return decodePair(entityType, 0x06, 0x4126, 5, 0);
+        }
+        if (entityType == ENTITY_BOUNCING_BOMBITE) {
+            return decodePair(entityType, 0x04, mapId == 0x07 ? 0x7E0D : 0x7DF5, 2, 0);
+        }
+        if (entityType == ENTITY_TIMER_BOMBITE) {
+            return decodePair(entityType, 0x04, mapId == 0x07 ? 0x7D07 : 0x7CEF, 6, 0);
         }
         if (entityType == ENTITY_MOBLIN_SWORD) {
             return decodeMoblinSword(entityType);

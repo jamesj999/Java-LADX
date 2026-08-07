@@ -83,8 +83,14 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_LASER_BEAM = 0x2B;
     private static final int ENTITY_ARROW = 0x00;
     private static final int ENTITY_BOMB = 0x02;
+    private static final int ENTITY_BOUNCING_BOMBITE = 0x55;
+    private static final int ENTITY_TIMER_BOMBITE = 0x56;
     private static final int ENTITY_MAD_BOMBER = 0x93;
     private static final int ENTITY_BOMBER = 0xBA;
+    private static final int BOMBITE_INITIAL_PHYSICS_FLAGS = 0x02;
+    private static final int BOMBITE_OPTIONS1 = ENTITY_OPT1_SPLASH_IN_WATER;
+    private static final int BOMBITE_EXPLOSION_SOUND_ID = 0x0C;
+    private static final int BOMBITE_EXPLOSION_COUNTDOWN = 0x17;
     private static final int MAD_BOMBER_INITIAL_PHYSICS_FLAGS = 0x12;
     private static final int MAD_BOMBER_OPTIONS1 = ENTITY_OPT1_NO_GROUND_INTERACTION;
     private static final int BOMBER_INITIAL_PHYSICS_FLAGS = 0x13;
@@ -160,6 +166,7 @@ public final class RoomEntityRuntime {
     private final HardHatMotion hardHatMotion = new HardHatMotion();
     private final MadBomberMotion madBomberMotion = new MadBomberMotion();
     private final BomberMotion bomberMotion = new BomberMotion();
+    private final BombiteMotion bombiteMotion = new BombiteMotion();
     private final EnemyRecoilMotion enemyRecoilMotion = new EnemyRecoilMotion();
     private final FollowingNpcMotion followingNpcMotion = new FollowingNpcMotion();
     private final BowWowMotion bowWowMotion = new BowWowMotion();
@@ -243,6 +250,7 @@ public final class RoomEntityRuntime {
     private boolean actionButtonsHeld;
     private boolean powerBraceletButtonHeld;
     private boolean bombButtonHeld;
+    private boolean runningWithPegasusBoots;
     // LinkMotionMapFadeInHandler leaves wTransitionSequenceCounter at $04 once
     // the active room is ready for interaction. Entity ticks are gated during
     // the host transition, so this is the source value visible to gameplay.
@@ -344,6 +352,13 @@ public final class RoomEntityRuntime {
             enemyHealth[entity.slot()] = entity.loaded() ? initialHealth(entity.type()) : 0;
             enemyPhysicsFlags[entity.slot()] = entity.loaded()
                 ? initialPhysicsFlags(entity.type()) : 0;
+            if (entity.loaded() && isBombiteType(entity.type())) {
+                bombiteMotion.initialize(entity.slot());
+                // The bank-$04 handlers use the global slow-transition tick
+                // for TimerBombite's fuse. Keep it live for either family;
+                // BouncingBombite simply leaves its value at zero.
+                slowTimerInitialized[entity.slot()] = true;
+            }
             if (entity.loaded() && isGhiniType(entity.type())) {
                 ghiniMotion.initialize(entity.slot(), entity.type());
             }
@@ -732,6 +747,7 @@ public final class RoomEntityRuntime {
             EntityStatus status = entity.status();
             boolean preserveGhiniPresentation = false;
             boolean preserveMadBomberPresentation = false;
+            boolean preserveBombitePresentation = false;
             if (status == EntityStatus.ACTIVE) {
                 decrementEnemyDropCountdowns(entity);
             }
@@ -1061,6 +1077,10 @@ public final class RoomEntityRuntime {
                 if (entity.type() == ENTITY_MAD_BOMBER) {
                     madBomberMotion.initialize(entity.slot());
                 }
+                if (isBombiteType(entity.type())) {
+                    bombiteMotion.initialize(entity.slot());
+                    slowTimerInitialized[entity.slot()] = true;
+                }
                 if (isFollowingNpcType(entity.type())) {
                     if (entity.type() == ENTITY_BOW_WOW) {
                         bowWowMotion.initialize(entity.slot());
@@ -1174,6 +1194,44 @@ public final class RoomEntityRuntime {
                             EntityCombatEvent.SoundChannel.JINGLE,
                             BOMBER_THROW_JINGLE_ID));
                     }
+                }
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && isBombiteType(entity.type())) {
+                BombiteMotion.Update bombiteUpdate = bombiteMotion.advance(
+                    entity, frame, linkEntityX, linkEntityY,
+                    enemyTransitionCountdown[entity.slot()],
+                    slowTransitionCountdown[entity.slot()],
+                    bombPrivateCountdown1[entity.slot()],
+                    enemyIgnoreHitsCountdown[entity.slot()],
+                    runningWithPegasusBoots, randomByteSupplier, backgroundCollision);
+                updated = withVariant(bombiteUpdate.entity(), bombiteUpdate.spriteVariant());
+                preserveBombitePresentation = true;
+                enemyTransitionCountdown[entity.slot()] =
+                    bombiteUpdate.transitionCountdown();
+                slowTransitionCountdown[entity.slot()] =
+                    bombiteUpdate.slowTransitionCountdown();
+                bombPrivateCountdown1[entity.slot()] = bombiteUpdate.privateCountdown1();
+                if (bombiteUpdate.bumpJingle()) {
+                    pendingEntityEvents.add(new EntityCombatEvent(
+                        entity.slot(), entity.type(), 0, false,
+                        EntityCombatEvent.SoundChannel.JINGLE, 0x09));
+                }
+                if (bombiteUpdate.explode()) {
+                    // BombiteExplode writes the already-positioned source
+                    // coordinates into a fresh type-$02 enemy bomb and then
+                    // lets ConfigureNewEntity supply z=0 and ignore-hits=1.
+                    int bombSlot = spawnEnemyBomb(updated.x(), updated.y(), 0,
+                        BOMBITE_EXPLOSION_COUNTDOWN);
+                    if (bombSlot >= 0) {
+                        enemyIgnoreHitsCountdown[bombSlot] = 0x01;
+                        pendingEntityEvents.add(new EntityCombatEvent(
+                            bombSlot, ENTITY_BOMB, 0, false,
+                            EntityCombatEvent.SoundChannel.NOISE,
+                            BOMBITE_EXPLOSION_SOUND_ID));
+                    }
+                    disableEntityWithoutPersistence(entity.slot());
+                    continue;
                 }
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
@@ -1566,12 +1624,17 @@ public final class RoomEntityRuntime {
                     FloatingItemMotion.zForFrame(groundInteractionSideScrolling, frame));
             }
             int variant = preserveGhiniPresentation || preserveMadBomberPresentation
+                || preserveBombitePresentation
                 ? updated.spriteVariant() : variantFor(updated, frame);
             if (status == EntityStatus.ACTIVE && shouldDisappear(entity)) {
                 variant = (slowTransitionCountdown[entity.slot()] & 0x01) != 0 ? 0 : -1;
             }
             int renderFlipAttribute = preserveGhiniPresentation || preserveMadBomberPresentation
+                || preserveBombitePresentation
                 ? updated.entityFlipAttribute() : baseEntityFlipAttribute[entity.slot()];
+            if (preserveBombitePresentation && updated.type() == ENTITY_TIMER_BOMBITE) {
+                renderFlipAttribute |= (bombPrivateCountdown1[updated.slot()] << 3) & 0x10;
+            }
             if (enemyFlashCountdown[entity.slot()] > 0) {
                 renderFlipAttribute ^= (enemyFlashCountdown[entity.slot()] << 2) & 0x10;
             }
@@ -1867,6 +1930,7 @@ public final class RoomEntityRuntime {
         if (attackContext == null) {
             throw new IllegalArgumentException("Enemy attack context cannot be null");
         }
+        runningWithPegasusBoots = attackContext.pegasusBoots();
         List<EntityCombatEvent> events = new ArrayList<>();
         for (int index = slots.length - 1; index >= 0; index--) {
             RoomEntity entity = slots[index];
@@ -1907,6 +1971,12 @@ public final class RoomEntityRuntime {
             }
             if (enemyFlashCountdown[entity.slot()] > 0
                 || enemyIgnoreHitsCountdown[entity.slot()] > 0) {
+                continue;
+            }
+            if ((entity.type() == ENTITY_TIMER_BOMBITE
+                    && bombiteMotion.state(entity.slot()) == 1)
+                || (entity.type() == ENTITY_BOUNCING_BOMBITE
+                    && bombPrivateCountdown1[entity.slot()] > 0)) {
                 continue;
             }
 
@@ -1956,6 +2026,15 @@ public final class RoomEntityRuntime {
                 enemyRecoilMotion.clear(entity.slot());
                 soundChannel = EntityCombatEvent.SoundChannel.JINGLE;
                 soundId = 0x07;
+            } else if (swordHit && entity.type() == ENTITY_BOUNCING_BOMBITE) {
+                // EnemyCollidedWithSword's Bombite branch is not a damage hit:
+                // it enters state-$02, reverses the vector returned by
+                // GetVectorTowardsLink, and starts the private lit window.
+                bombiteMotion.enterBouncingLitFromSword(
+                    entity.slot(), entity, linkEntityX, linkEntityY);
+                enemyTransitionCountdown[entity.slot()] = 0x40;
+                bombPrivateCountdown1[entity.slot()] = 0x08;
+                enemyRecoilMotion.clear(entity.slot());
             } else if (swordHit) {
                 RomEnemyCombatTables.SwordDamageResult swordResult =
                     enemyCombatTables == null ? null
@@ -2213,6 +2292,7 @@ public final class RoomEntityRuntime {
         if (latestShotArrowEntityIndex == slot) {
             latestShotArrowEntityIndex = -1;
         }
+        bombiteMotion.clear(slot);
         if (!entity.loaded()) {
             return 0;
         }
@@ -2966,10 +3046,15 @@ public final class RoomEntityRuntime {
             || type == ENTITY_WATER_TEKTITE
             || type == ENTITY_STALFOS_EVASIVE
             || type == ENTITY_MOBLIN_SWORD
+            || type == ENTITY_BOUNCING_BOMBITE || type == ENTITY_TIMER_BOMBITE
             || type == ENTITY_MAD_BOMBER
             || type == ENTITY_BOMBER
             || isRoamingEnemyType(type) || usesBank6Recoil(type)
             || isGhiniType(type);
+    }
+
+    private static boolean isBombiteType(int type) {
+        return type == ENTITY_BOUNCING_BOMBITE || type == ENTITY_TIMER_BOMBITE;
     }
 
     private static boolean isEnemyProjectileType(int type) {
@@ -4257,12 +4342,31 @@ public final class RoomEntityRuntime {
         if (slots[slot].type() == ENTITY_MAD_BOMBER) {
             return MAD_BOMBER_OPTIONS1;
         }
+        if (isBombiteType(slots[slot].type())) {
+            return BOMBITE_OPTIONS1;
+        }
         return slots[slot].type() == ENTITY_STALFOS_EVASIVE
             ? ENTITY_OPT1_SPLASH_IN_WATER : 0;
     }
 
     int colorShellState(int slot) {
         return colorShellMotion.state(slot);
+    }
+
+    int bombiteState(int slot) {
+        return bombiteMotion.state(slot);
+    }
+
+    int bombitePrivateCountdown1(int slot) {
+        return bombPrivateCountdown1[slot];
+    }
+
+    int bombiteSpeedX(int slot) {
+        return bombiteMotion.speedX(slot);
+    }
+
+    int bombiteSpeedY(int slot) {
+        return bombiteMotion.speedY(slot);
     }
 
     int colorShellPhysicsFlags(int slot) {
@@ -4347,6 +4451,8 @@ public final class RoomEntityRuntime {
             case ENTITY_ARMOS_STATUE -> ARMOS_INITIAL_PHYSICS_FLAGS;
             case ENTITY_STALFOS_EVASIVE -> EVASIVE_PHYSICS_FLAGS;
             case ENTITY_BOMB -> BOMB_INITIAL_PHYSICS_FLAGS;
+            case ENTITY_BOUNCING_BOMBITE, ENTITY_TIMER_BOMBITE ->
+                BOMBITE_INITIAL_PHYSICS_FLAGS;
             case ENTITY_MAD_BOMBER -> MAD_BOMBER_INITIAL_PHYSICS_FLAGS;
             case ENTITY_BOMBER -> BOMBER_INITIAL_PHYSICS_FLAGS;
             case ENTITY_LIFTABLE_ROCK, ENTITY_LIFTABLE_STATUE,
@@ -4663,6 +4769,7 @@ public final class RoomEntityRuntime {
         enemyRecoilMotion.clear(slot);
         bomberMotion.clear(slot);
         madBomberMotion.clear(slot);
+        bombiteMotion.clear(slot);
         colorShellMotion.clear(slot);
         butterflyMotion.clear(slot);
         keeseMotion.clear(slot);

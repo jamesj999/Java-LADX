@@ -1487,7 +1487,7 @@ runtime collision callback.
 - Shipped-ROM tests cover the rectangle bytes, first bomb spawn, source vector
   movement, and sound mapping. The clean Java suite passes with 963 tests and
   zero failures, errors, or skipped tests; Mad Bomber/Bombite producers and
-  remaining enemy-bomb special branches remain follow-up work.
+  remaining enemy-bomb special branches were follow-up work at this increment.
 
 ## Verified ROM Mad Bomber enemy-bomb producer — 2026-08-07
 
@@ -1506,8 +1506,32 @@ runtime collision callback.
   interaction, and handler-owned dropped-item byte `$3C` are wired. A
   shipped-ROM end-to-end test covers the hole selection and bomb payload; the
   clean Java suite passes with 964 tests and zero failures, errors, or skipped
-  tests. Bombite producers and remaining enemy-bomb special branches remain
-  follow-up work.
+  tests. Bombite producers and remaining enemy-bomb special branches were
+  follow-up work at this increment.
+
+## Verified ROM Bombite enemy-bomb producers — 2026-08-07
+
+- Entity `$55` (Bouncing Bombite) and `$56` (Timer Bombite) now decode their
+  bank-$04 sprite-pair lists, including the Turtle Rock alternatives at
+  `$04:$7E0D` and `$04:$7D07`; the standard lists are `$04:$7DF5` and
+  `$04:$7CEF`.
+- Timer Bombite's source `$00/$01` walk/lit state machine is wired with its
+  `$6F` slow fuse, `$12` Link-distance chase threshold, `$0E` vector, countdown
+  animation table, Pegasus Boots reset, and private-countdown palette flip.
+  Bouncing Bombite's random turn, fixed-point motion, lit collision bounce,
+  and JINGLE_BUMP `$09` path are also represented.
+- The bank-$03 Bouncing Bombite sword special enters state `$02`, reverses the
+  ROM vector, starts transition `$40` and private countdown `$08`, and avoids
+  ordinary sword damage. Both Bombites use health `$04`, contact damage `$08`,
+  physics `$02`, and splash-in-water options from the shipped ROM tables.
+- `BombiteExplode` now creates the source type-$02 enemy bomb at the moved
+  Bombite position with `z=$00`, countdown `$17`, private state `$01`, the
+  initial ignore-hits frame, and `PlayBombExplosionSfx` noise `$0C`. Shipped-ROM
+  tests cover the timer fuse, sprite addresses, explosion payload, and special
+  Bouncing Bombite sword path. The clean Java suite passes with 966 tests and
+  zero failures, errors, or skipped tests; Bombite entity-vs-entity collision
+  table branches and remaining enemy-bomb special branches remain follow-up
+  work.
 
 ## Broader parity gaps
 
