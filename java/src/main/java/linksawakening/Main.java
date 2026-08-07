@@ -67,6 +67,8 @@ import linksawakening.ui.InventoryTilemapLoader;
 import linksawakening.ui.FileMenuAction;
 import linksawakening.ui.FileMenuController;
 import linksawakening.ui.FileMenuRomData;
+import linksawakening.ui.FileSaveAction;
+import linksawakening.ui.FileSaveController;
 import linksawakening.vfx.CutLeavesEffectRenderer;
 import linksawakening.vfx.TransientVfxSpriteSheet;
 import linksawakening.vfx.TransientVfxSystem;
@@ -122,6 +124,7 @@ public class Main {
     static final int SCREEN_OVERWORLD = 1;
     static final int SCREEN_CUTSCENE = 2;
     static final int SCREEN_FILE_MENU = 3;
+    static final int SCREEN_FILE_SAVE = 4;
 
     // Room pixel dimensions
     private static final int ROOM_PIXEL_WIDTH = ROOM_TILE_WIDTH * 8;   // 160
@@ -156,7 +159,9 @@ public class Main {
     private static GameplayMusicController gameplayMusicController;
     private static CutsceneManager cutsceneManager;
     private static FileMenuController fileMenuController;
+    private static FileSaveController fileSaveController;
     private static SaveRamStore saveRamStore;
+    private static int currentSaveSlot = -1;
     private static RomTables romTables;
     private static OverworldCollision overworldCollision;
     private static OverworldBushInteraction overworldBushInteraction;
@@ -430,7 +435,17 @@ public class Main {
             return;
         }
 
+        if (currentScreen == SCREEN_FILE_SAVE) {
+            return;
+        }
+
         if (currentScreen != SCREEN_OVERWORLD || action != GLFW_PRESS) {
+            return;
+        }
+
+        if (shouldEnterFileSave(inputConfig, inputState, key, action)
+            && canPresentFileSave()) {
+            startFileSave();
             return;
         }
 
@@ -531,14 +546,33 @@ public class Main {
                 } catch (IOException exception) {
                     throw new IllegalStateException("Failed to persist new save file", exception);
                 }
+                currentSaveSlot = action.selectedSlot();
                 startNewGame();
             } else if (action.type() == FileMenuAction.Type.LOAD_GAME) {
                 SaveSlotState saved = saveRamStore.readSlot(action.selectedSlot());
+                currentSaveSlot = action.selectedSlot();
                 if (saved.spawnPositionX() == 0) {
                     startNewGame();
                 } else {
                     startSavedGame(saved);
                 }
+            }
+            inputState.tickEdges();
+            overworldDialogInputConsumedThisFrame = false;
+            return;
+        }
+
+        if (currentScreen == SCREEN_FILE_SAVE) {
+            if (fileSaveController == null) {
+                throw new IllegalStateException("File save controller is not initialized");
+            }
+            FileSaveAction action = fileSaveController.tick(inputState, inputConfig);
+            if (action.type() == FileSaveAction.Type.RETURN_TO_GAME) {
+                fileSaveController = null;
+                currentScreen = SCREEN_OVERWORLD;
+            } else if (action.type() == FileSaveAction.Type.SAVE_AND_QUIT) {
+                saveCurrentOcarinaState();
+                startFileSelection();
             }
             inputState.tickEdges();
             overworldDialogInputConsumedThisFrame = false;
@@ -945,6 +979,8 @@ public class Main {
 
     private static void startConfiguredGameplay() {
         fileMenuController = null;
+        fileSaveController = null;
+        currentSaveSlot = -1;
         currentScreen = SCREEN_OVERWORLD;
         if (currentAppConfig().playIntroStory()) {
             System.err.println("Intro story startup is not implemented yet; spawning at start location");
@@ -954,6 +990,7 @@ public class Main {
 
     private static void startNewGame() {
         fileMenuController = null;
+        fileSaveController = null;
         currentScreen = SCREEN_OVERWORLD;
 
         NewGameStartProfile profile = NewGameStartProfile.romDefaults();
@@ -965,6 +1002,7 @@ public class Main {
 
     private static void startSavedGame(SaveSlotState saved) {
         fileMenuController = null;
+        fileSaveController = null;
         currentScreen = SCREEN_OVERWORLD;
         playerState.applySavedGame(saved);
         if (saved.spawnIsIndoor() != 0) {
@@ -979,6 +1017,7 @@ public class Main {
 
     private static void startIntroCutscene() {
         fileMenuController = null;
+        fileSaveController = null;
         currentScreen = SCREEN_CUTSCENE;
         playDirectMusic(introCutsceneMusicTrack());
         gpu.loadIntroSequenceTiles(romData);
@@ -995,12 +1034,14 @@ public class Main {
 
     private static void startTitleScreenWithoutIntro() {
         fileMenuController = null;
+        fileSaveController = null;
         currentScreen = SCREEN_TITLE;
         playDirectMusic(directTitleScreenMusicTrack());
     }
 
     private static void startFileSelection() {
         currentScreen = SCREEN_FILE_MENU;
+        fileSaveController = null;
         gpu.loadMenuTiles(romData);
         fileMenuController = new FileMenuController(
             new FileMenuRomData(romData),
@@ -1011,6 +1052,27 @@ public class Main {
         // The Enter event that leaves the title must not also activate the
         // first empty file. Its edge belongs to the title screen.
         inputState.tickEdges();
+    }
+
+    private static void startFileSave() {
+        currentScreen = SCREEN_FILE_SAVE;
+        fileMenuController = null;
+        gpu.loadSaveMenuTiles(romData);
+        fileSaveController = new FileSaveController(Main::loadFileMenuBackgroundScene);
+        inputState.tickEdges();
+    }
+
+    private static void saveCurrentOcarinaState() {
+        if (currentSaveSlot < 0 || playerState == null || saveRamStore == null) {
+            return;
+        }
+        saveRamStore.writeOcarinaState(currentSaveSlot,
+            playerState.ocarinaSongFlags(), playerState.selectedSongIndex());
+        try {
+            saveRamStore.flush();
+        } catch (IOException exception) {
+            throw new IllegalStateException("Failed to persist Ocarina state", exception);
+        }
     }
 
     private static BackgroundScene loadFileMenuBackgroundScene(String sceneId) {
@@ -1058,6 +1120,25 @@ public class Main {
 
     static boolean shouldEnterFileSelection(int screen, int key, int action) {
         return screen == SCREEN_TITLE && key == GLFW_KEY_ENTER && action == GLFW_PRESS;
+    }
+
+    static boolean shouldEnterFileSave(InputConfig inputConfig, InputState inputState,
+                                       int key, int action) {
+        if (inputConfig == null || inputState == null || action != GLFW_PRESS
+            || key != inputConfig.selectKey()) {
+            return false;
+        }
+        return inputState.isDown(inputConfig.aKey())
+            && inputState.isDown(inputConfig.bKey())
+            && inputState.isDown(inputConfig.menuOpenKey())
+            && inputState.isDown(inputConfig.selectKey());
+    }
+
+    private static boolean canPresentFileSave() {
+        return !scrollController.isActive()
+            && !transitionController.isInputBlocked()
+            && (inventoryController == null || !inventoryController.shouldBlockOverworldInput())
+            && (dialogController == null || !GameplayDialogInput.blocksGameplay(dialogController));
     }
 
     private static void applyBackgroundScene(BackgroundScene scene) {
@@ -1135,7 +1216,9 @@ public class Main {
             .withCutsceneManager(cutsceneManager)
             .withIntroFrameSnapshot(cutsceneManager == null ? null : cutsceneManager.frameSnapshot())
             .withFileMenuFrame(currentScreen == SCREEN_FILE_MENU && fileMenuController != null
-                ? fileMenuController.snapshot() : null)
+                ? fileMenuController.snapshot()
+                : currentScreen == SCREEN_FILE_SAVE && fileSaveController != null
+                    ? fileSaveController.snapshot() : null)
             .withRoom(roomSession == null ? null : roomSession.renderSnapshot(), scrollController, transitionController)
             .withLink(link)
             .withTransientVfx(transientVfxSystem, cutLeavesEffectRenderer, GREEN_OBJECTS_SPRITE_PALETTE)
@@ -1157,6 +1240,8 @@ public class Main {
                 return RenderScreen.CUTSCENE;
             case SCREEN_FILE_MENU:
                 return RenderScreen.FILE_MENU;
+            case SCREEN_FILE_SAVE:
+                return RenderScreen.FILE_SAVE;
             case SCREEN_TITLE:
             default:
                 return RenderScreen.TITLE;

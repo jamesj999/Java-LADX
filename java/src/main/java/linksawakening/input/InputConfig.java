@@ -18,9 +18,15 @@ public final class InputConfig {
     private final int rightKey;
     private final int aKey;
     private final int bKey;
+    private final int selectKey;
 
     public InputConfig(int menuOpenKey, int upKey, int downKey, int leftKey, int rightKey,
                        int aKey, int bKey) {
+        this(menuOpenKey, upKey, downKey, leftKey, rightKey, aKey, bKey, GLFW_KEY_TAB);
+    }
+
+    public InputConfig(int menuOpenKey, int upKey, int downKey, int leftKey, int rightKey,
+                       int aKey, int bKey, int selectKey) {
         this.menuOpenKey = menuOpenKey;
         this.upKey = upKey;
         this.downKey = downKey;
@@ -28,6 +34,7 @@ public final class InputConfig {
         this.rightKey = rightKey;
         this.aKey = aKey;
         this.bKey = bKey;
+        this.selectKey = selectKey;
     }
 
     public int menuOpenKey() {
@@ -58,6 +65,10 @@ public final class InputConfig {
         return bKey;
     }
 
+    public int selectKey() {
+        return selectKey;
+    }
+
     public static InputConfig loadFromResources() {
         return AppConfig.loadFromResources().inputConfig();
     }
@@ -70,7 +81,8 @@ public final class InputConfig {
         int rightKey = resolveKey(entries.getOrDefault("rightKey", "RIGHT"));
         int aKey = resolveKey(entries.getOrDefault("aKey", "Z"));
         int bKey = resolveKey(entries.getOrDefault("bKey", "X"));
-        return new InputConfig(menuOpenKey, upKey, downKey, leftKey, rightKey, aKey, bKey);
+        int selectKey = resolveKey(entries.getOrDefault("selectKey", "TAB"));
+        return new InputConfig(menuOpenKey, upKey, downKey, leftKey, rightKey, aKey, bKey, selectKey);
     }
 
     private static int resolveKey(String name) {

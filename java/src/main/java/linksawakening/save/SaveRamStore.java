@@ -63,6 +63,10 @@ public final class SaveRamStore {
         image.createNewGame(slot, nameBytes);
     }
 
+    public void writeOcarinaState(int slot, int songFlags, int selectedSongIndex) {
+        image.writeOcarinaState(slot, songFlags, selectedSongIndex);
+    }
+
     public void flush() throws IOException {
         if (path == null) {
             return;

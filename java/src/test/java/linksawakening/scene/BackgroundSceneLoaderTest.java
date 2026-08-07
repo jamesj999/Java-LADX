@@ -37,6 +37,8 @@ final class BackgroundSceneLoaderTest {
             BackgroundSceneCatalog.forFileMenuScene("selection_commands"));
         assertEquals(new BackgroundSceneSpec(0x20, 0x644D, 0x24, 0x6045, 0x21, 0x7536),
             BackgroundSceneCatalog.forFileMenuScene("creation"));
+        assertEquals(new BackgroundSceneSpec(0x20, 0x6A6D, 0x24, 0x6262, 0x21, 0x7536),
+            BackgroundSceneCatalog.forFileMenuScene("save"));
     }
 
     @Test
@@ -74,8 +76,9 @@ final class BackgroundSceneLoaderTest {
         BackgroundScene selection = loader.load(BackgroundSceneCatalog.FILE_SELECTION);
         BackgroundScene commands = loader.load(BackgroundSceneCatalog.FILE_SELECTION_COMMANDS);
         BackgroundScene creation = loader.load(BackgroundSceneCatalog.FILE_CREATION);
+        BackgroundScene save = loader.load(BackgroundSceneCatalog.FILE_SAVE);
 
-        for (BackgroundScene scene : new BackgroundScene[] { selection, commands, creation }) {
+        for (BackgroundScene scene : new BackgroundScene[] { selection, commands, creation, save }) {
             assertEquals(32 * 32, scene.tilemap().length);
             assertEquals(32 * 32, scene.attrmap().length);
             assertEquals(8, scene.palettes().length);

@@ -1708,9 +1708,11 @@ runtime collision callback.
   background ignore window, combat values, death preamble, item selection,
   and live room integration. The clean Java suite passes with 1,009 tests
   and zero failures, errors, or skipped tests.
-- The remaining Ocarina boundary is explicit: writing changed live state back
-  through the save command is not yet implemented. Remaining entity handlers,
-  room scripts, and broader hardware-visible ordering remain follow-up work.
+- The remaining Ocarina boundary is explicit: the modeled song state is now
+  written through the in-game save command, while the rest of the source
+  `SaveGameToFile` field copy remains outside the currently modeled save
+  state. Remaining entity handlers, room scripts, and broader hardware-visible
+  ordering remain follow-up work.
 
 ## Verified ROM Ocarina state in save slots — 2026-08-07
 
@@ -1722,8 +1724,8 @@ runtime collision callback.
   New-game SRAM creation continues to leave both values zero, matching the
   ordinary ROM new-game path.
 - Focused save-image and player-state tests cover raw decoding and live-state
-  application. Writing a changed live state back to SRAM remains a separate
-  follow-up work item.
+  application. The live write path is recorded in the following save-command
+  increment.
 
 ## Verified ROM Ocarina popup navigation and rendering — 2026-08-07
 
@@ -1742,8 +1744,30 @@ runtime collision callback.
   from bank `$2C:$6960`, with the shared VFX rows restored after the popup.
 - Focused popup, GPU, integration, and framebuffer tests are included. The
   clean Java suite passes with 1,018 tests and zero failures, errors, or
-  skipped tests. Live save-back, remaining entity handlers, room scripts, and
-  broader hardware-visible ordering remain follow-up work.
+  skipped tests. Remaining entity handlers, room scripts, and broader
+  hardware-visible ordering remain follow-up work.
+
+## Verified ROM Ocarina save-command path — 2026-08-07
+
+- `SaveRamImage.writeOcarinaState` writes the live song flags and selected-song
+  byte at the source main-save offsets `$349/$34A`, masks the three valid song
+  bits, clamps the three-entry selector, and leaves adjacent/unknown SRAM
+  bytes untouched. `SaveRamStore` delegates the same raw-image operation.
+- The main loop now records the active save slot when a file is created or
+  loaded. The source A+B+Start+Select chord is exposed through a configurable
+  Select key (default `Tab`) and opens a dedicated two-option save screen only
+  when gameplay input is otherwise available.
+- The save screen uses `MenuFileSaveTilemap` at bank `$20:$6A6D`,
+  `MenuFileSaveAttrmap` at `$24:$6262`, the shared file-menu palette block,
+  and the source arrow OAM entry (`$BE`, X `$24`, Y `$48/$58`). Its tile sheet
+  follows `LoadSaveMenuTiles` from bank `$0F:$4400` to `vTiles1`, rather than
+  reusing the broader file-selection loader. A confirms the ROM-selected
+  Return to Game / Save and Quit option; Save and Quit flushes the modeled
+  live Ocarina bytes and returns to file selection.
+- Save-image, controller, ROM-scene, configuration, input-chord, and main-flow
+  tests are included. The clean Java suite passes with 1,024 tests and zero
+  failures, errors, or skipped tests. The remaining save parity work is the
+  broader `$380`-byte `SaveGameToFile` copy and its unmodeled gameplay fields.
 
 ## Broader parity gaps
 

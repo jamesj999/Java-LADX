@@ -46,6 +46,30 @@ final class SaveRamImageTest {
     }
 
     @Test
+    void writesLiveOcarinaStateAtTheRomOffsetsWithoutTouchingAdjacentBytes() {
+        SaveRamImage image = SaveRamImage.empty();
+        image.createNewGame(1, new int[] {1, 2, 3, 4, 5});
+
+        int main = SaveRamLayout.slotOffset(1) + SaveRamLayout.mainOffset();
+        byte[] before = image.bytes();
+        before[main + SaveRamLayout.MAIN_OCARINA_SONG_FLAGS_OFFSET - 1] = (byte) 0xA5;
+        before[main + SaveRamLayout.MAIN_SELECTED_SONG_INDEX_OFFSET + 1] = (byte) 0x5A;
+        image = SaveRamImage.fromBytes(before);
+
+        image.writeOcarinaState(1, 0xFF, 99);
+
+        byte[] after = image.bytes();
+        assertEquals(0x07, unsigned(after[main + SaveRamLayout.MAIN_OCARINA_SONG_FLAGS_OFFSET]));
+        assertEquals(0x02, unsigned(after[main + SaveRamLayout.MAIN_SELECTED_SONG_INDEX_OFFSET]));
+        assertEquals((byte) 0xA5,
+            after[main + SaveRamLayout.MAIN_OCARINA_SONG_FLAGS_OFFSET - 1]);
+        assertEquals((byte) 0x5A,
+            after[main + SaveRamLayout.MAIN_SELECTED_SONG_INDEX_OFFSET + 1]);
+        assertEquals(0x07, image.readSlot(1).ocarinaSongFlags());
+        assertEquals(0x02, image.readSlot(1).selectedSongIndex());
+    }
+
+    @Test
     void decodesModeledFieldsAndKeepsUnknownRawBytes() {
         byte[] bytes = SaveRamImage.empty().bytes();
         int slotStart = SaveRamLayout.slotOffset(0);

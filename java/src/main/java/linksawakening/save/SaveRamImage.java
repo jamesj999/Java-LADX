@@ -90,6 +90,21 @@ public final class SaveRamImage {
             main + SaveRamLayout.MAIN_DEATH_COUNT_OFFSET + 3, (byte) 0);
     }
 
+    /**
+     * Writes the live Ocarina fields copied by the source save path.
+     *
+     * <p>The game only assigns bits 0..2 of {@code wOcarinaSongFlags}; the
+     * selected-song byte is constrained to the three song entries exposed by
+     * the Ocarina popup.</p>
+     */
+    public void writeOcarinaState(int slot, int songFlags, int selectedSongIndex) {
+        SaveRamLayout.checkSlot(slot);
+        int main = SaveRamLayout.slotOffset(slot) + SaveRamLayout.mainOffset();
+        bytes[main + SaveRamLayout.MAIN_OCARINA_SONG_FLAGS_OFFSET] = (byte) (songFlags & 0x07);
+        bytes[main + SaveRamLayout.MAIN_SELECTED_SONG_INDEX_OFFSET]
+            = (byte) Math.max(0, Math.min(2, selectedSongIndex));
+    }
+
     public SaveSlotState readSlot(int slot) {
         SaveRamLayout.checkSlot(slot);
         int slotOffset = SaveRamLayout.slotOffset(slot);

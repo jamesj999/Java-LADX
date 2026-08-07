@@ -7,6 +7,7 @@ public final class BackgroundSceneCatalog {
     public static final String FILE_SELECTION_SCENE = "selection";
     public static final String FILE_SELECTION_COMMANDS_SCENE = "selection_commands";
     public static final String FILE_CREATION_SCENE = "creation";
+    public static final String FILE_SAVE_SCENE = "save";
 
     public static final BackgroundSceneSpec TITLE =
         new BackgroundSceneSpec(0x08, 0x710A, 0x24, 0x7BF0, 0x21, 0x7DEE);
@@ -22,6 +23,8 @@ public final class BackgroundSceneCatalog {
         new BackgroundSceneSpec(0x20, 0x6328, 0x24, 0x5F74, 0x21, 0x7536);
     public static final BackgroundSceneSpec FILE_CREATION =
         new BackgroundSceneSpec(0x20, 0x644D, 0x24, 0x6045, 0x21, 0x7536);
+    public static final BackgroundSceneSpec FILE_SAVE =
+        new BackgroundSceneSpec(0x20, 0x6A6D, 0x24, 0x6262, 0x21, 0x7536);
     private BackgroundSceneCatalog() {
     }
 
@@ -55,6 +58,9 @@ public final class BackgroundSceneCatalog {
         }
         if (FILE_CREATION_SCENE.equals(sceneId)) {
             return FILE_CREATION;
+        }
+        if (FILE_SAVE_SCENE.equals(sceneId)) {
+            return FILE_SAVE;
         }
         return null;
     }

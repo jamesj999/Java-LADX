@@ -15,6 +15,7 @@
     "leftKey": "LEFT",
     "rightKey": "RIGHT",
     "aKey": "Z",
-    "bKey": "X"
+    "bKey": "X",
+    "selectKey": "TAB"
   }
 }

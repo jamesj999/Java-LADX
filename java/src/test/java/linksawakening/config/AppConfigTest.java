@@ -12,6 +12,7 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_J;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_K;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_S;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_SPACE;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_TAB;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_W;
 
 final class AppConfigTest {
@@ -46,7 +47,8 @@ final class AppConfigTest {
                 "leftKey": "A",
                 "rightKey": "D",
                 "aKey": "J",
-                "bKey": "K"
+                "bKey": "K",
+                "selectKey": "TAB"
               }
             }
             """);
@@ -66,6 +68,7 @@ final class AppConfigTest {
         assertEquals(GLFW_KEY_D, input.rightKey());
         assertEquals(GLFW_KEY_J, input.aKey());
         assertEquals(GLFW_KEY_K, input.bKey());
+        assertEquals(GLFW_KEY_TAB, input.selectKey());
     }
 
     @Test

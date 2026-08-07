@@ -87,6 +87,12 @@ public class GPU {
     private static final int SHARED_VFX_TILES_BANK = 0x2C;
     private static final int SHARED_VFX_TILES_ADDR = 0x4200;
 
+    // SaveMenuTiles in bank0.asm:2E5E. Unlike the GBC-adjusted menu sheet,
+    // this source is copied from bank $0F by LoadSaveMenuTiles.
+    private static final int SAVE_MENU_TILES_BANK = 0x0F;
+    private static final int SAVE_MENU_TILES_ADDR = 0x4400;
+    private static final int SAVE_MENU_TILES_COUNT = 0x50;
+
     private static final int LINK_CHARACTER_TILES_BANK = 0x0C;
     private static final int LINK_CHARACTER_TILES_ADDR = 0x4000;
     private static final int LINK_CHARACTER_TILES_COUNT = 0x10;
@@ -153,6 +159,12 @@ public class GPU {
         loadTilesFromROM(romData, 0x0F | 0x20, 0x4000, 0x40, 0x080);
         loadTilesFromROM(romData, 0x0F | 0x20, 0x5000, 0x80, 0x100);
         loadTilesFromROM(romData, 0x0C | 0x20, 0x47A0, 0x02, 0x0E0);
+    }
+
+    /** Mirrors LoadSaveMenuTiles (bank0.asm:$2E5E). */
+    public void loadSaveMenuTiles(byte[] romData) {
+        loadTilesFromROM(romData, SAVE_MENU_TILES_BANK, SAVE_MENU_TILES_ADDR,
+            SAVE_MENU_TILES_COUNT, 0x080);
     }
 
     /**

@@ -1,6 +1,8 @@
 package linksawakening;
 
 import linksawakening.audio.music.MusicTrackIds;
+import linksawakening.input.InputConfig;
+import linksawakening.input.InputState;
 import linksawakening.render.RenderScreen;
 import org.junit.jupiter.api.Test;
 
@@ -11,7 +13,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_ENTER;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_TAB;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
+import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 
 final class MainFileMenuFlowTest {
 
@@ -25,6 +29,21 @@ final class MainFileMenuFlowTest {
     void fileMenuHasItsOwnRenderScreenAndDisassemblyMusicTrack() {
         assertEquals(RenderScreen.FILE_MENU, Main.renderScreenFor(Main.SCREEN_FILE_MENU));
         assertEquals(MusicTrackIds.MUSIC_FILE_SELECT, Main.fileSelectionMusicTrack());
+    }
+
+    @Test
+    void fileSaveChordRequiresAllFourSourceButtonsWithSelectPressedLast() {
+        InputConfig inputConfig = new InputConfig(
+            GLFW_KEY_ENTER, 1, 2, 3, 4, 5, 6, GLFW_KEY_TAB);
+        InputState inputState = new InputState();
+        inputState.onKeyEvent(5, GLFW_PRESS);
+        inputState.onKeyEvent(6, GLFW_PRESS);
+        inputState.onKeyEvent(GLFW_KEY_ENTER, GLFW_PRESS);
+        inputState.onKeyEvent(GLFW_KEY_TAB, GLFW_PRESS);
+
+        assertTrue(Main.shouldEnterFileSave(inputConfig, inputState, GLFW_KEY_TAB, GLFW_PRESS));
+        inputState.onKeyEvent(6, GLFW_RELEASE);
+        assertFalse(Main.shouldEnterFileSave(inputConfig, inputState, GLFW_KEY_TAB, GLFW_PRESS));
     }
 
     @Test
