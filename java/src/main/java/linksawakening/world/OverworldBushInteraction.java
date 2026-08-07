@@ -51,8 +51,18 @@ public final class OverworldBushInteraction {
     private record StaticObjectRule(int objectId, boolean bushLeavesVisible,
                                     RevealedObjectResolver revealedObjectResolver) {
         private CutResult cut(OverworldBushInteraction interaction, int roomId, boolean isGbcOverworld) {
+            return apply(interaction, roomId, isGbcOverworld, GameplaySoundEvent.CUT_GRASS);
+        }
+
+        private CutResult reveal(OverworldBushInteraction interaction, int roomId,
+                                 boolean isGbcOverworld) {
+            return apply(interaction, roomId, isGbcOverworld, null);
+        }
+
+        private CutResult apply(OverworldBushInteraction interaction, int roomId,
+                                boolean isGbcOverworld, GameplaySoundEvent soundEvent) {
             int revealed = revealedObjectResolver.resolve(interaction, roomId, isGbcOverworld);
-            return new CutResult(true, objectId, revealed, bushLeavesVisible, GameplaySoundEvent.CUT_GRASS);
+            return new CutResult(true, objectId, revealed, bushLeavesVisible, soundEvent);
         }
     }
 
@@ -161,6 +171,38 @@ public final class OverworldBushInteraction {
         }
         CutResult result = rule.cut(this, roomId, isGbcOverworld);
 
+        roomObjectsArea[areaIndex] = result.revealedObjectId();
+        if (mutableRenderValues != null && areaIndex < mutableRenderValues.length) {
+            mutableRenderValues[areaIndex] = result.revealedObjectId();
+        }
+
+        refreshRoomObjectCell(roomId, location, roomObjectsArea, mutableRenderValues,
+            fallbackOverlay, roomTileIds, roomTileAttrs);
+        return result;
+    }
+
+    /**
+     * Apply the source's bomb/basic-object reveal at a known room-object cell.
+     * Bombs use the same reveal resolver as sword cuts, but do not emit the
+     * sword's cut-grass sound; the spawned bomb-side effect owns its sound.
+     */
+    public CutResult revealObjectAtLocation(int location, int roomId, boolean isGbcOverworld,
+                                            int[] roomObjectsArea,
+                                            int[] mutableRenderValues,
+                                            int[] fallbackOverlay,
+                                            int[] roomTileIds,
+                                            int[] roomTileAttrs) {
+        int areaIndex = ROOM_OBJECTS_BASE + location;
+        if (roomObjectsArea == null || areaIndex < 0 || areaIndex >= roomObjectsArea.length) {
+            return CutResult.unchanged(0xFF);
+        }
+
+        int objectId = roomObjectsArea[areaIndex];
+        StaticObjectRule rule = cuttableRuleFor(objectId);
+        if (rule == null) {
+            return CutResult.unchanged(objectId);
+        }
+        CutResult result = rule.reveal(this, roomId, isGbcOverworld);
         roomObjectsArea[areaIndex] = result.revealedObjectId();
         if (mutableRenderValues != null && areaIndex < mutableRenderValues.length) {
             mutableRenderValues[areaIndex] = result.revealedObjectId();

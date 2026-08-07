@@ -1326,6 +1326,22 @@ runtime collision callback.
   mutation, and remaining entity-specific special branches remain follow-up
   work; this increment does not add an emulator.
 
+## Verified ROM Link-bomb basic object mutation — 2026-08-07
+
+- The room session now consumes the existing `$0E..$16` bomb object-window
+  events and mirrors `BombObjectBasicDestroyingX/Y` as a source-indexed 3x3
+  sweep, preserving the padded YX room-object addressing.
+- Overworld tall grass `$0A`, bush-covered stairs `$D3`, and bush `$5C` now
+  use the existing ROM-backed `RevealObjectUnderObject` resolver. The active
+  object, GBC render overlay value, 2x2 tile cell, and collision room view are
+  updated together; the bomb path does not reuse the sword cut-grass sound.
+- The room path schedules the existing bush-leaf visual at the source cell's
+  center/bottom anchor. Indoor bombable blocks, puzzle-only skulls and walls,
+  and the source liftable-rock entity's complete smash state remain follow-up
+  branches.
+- The clean Java suite passes with 942 tests and zero failures, errors, or
+  skipped tests. This increment does not add an emulator.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

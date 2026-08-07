@@ -197,6 +197,32 @@ final class RoomSessionTest {
     }
 
     @Test
+    void bombExplosionRevealsAnOverworldBushAtTheRomBasicCandidateCell() {
+        TransientVfxSystem vfx = new TransientVfxSystem(16);
+        RoomSession session = newSession(vfx);
+        session.loadInitialOverworld(0x92);
+
+        int location = 0x55;
+        int areaIndex = RoomConstants.ROOM_OBJECTS_BASE
+            + (location & 0xF0) + (location & 0x0F);
+        session.activeRoom().roomObjectsArea()[areaIndex] = 0x5C;
+        session.activeRoom().renderValues()[areaIndex] = 0x5C;
+
+        assertTrue(session.placeBomb(0x40, 0x50, 0, 0));
+        for (int frame = 0; frame <= 136; frame++) {
+            session.tickEntities(frame, 0, 0);
+        }
+
+        assertEquals(0x04, session.activeRoom().roomObjectsArea()[areaIndex]);
+        assertEquals(0x04, session.activeRoom().renderValues()[areaIndex]);
+        assertEquals(1, vfx.activeCount());
+        assertEquals(0x58, vfx.activeSlots().getFirst().worldX());
+        assertEquals(0x60, vfx.activeSlots().getFirst().worldY());
+        assertTrue(session.consumeBombExplosionEvents().stream()
+            .anyMatch(event -> event.targetsRoomObjects() && event.countdown() == 0x16));
+    }
+
+    @Test
     void indoorHookshotBridgeRewritesPaddedObjectsAndBackgroundTiles() {
         RoomSession session = newSession();
         session.loadIndoor(0x00, 0x0F);

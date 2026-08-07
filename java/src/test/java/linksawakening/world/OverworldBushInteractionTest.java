@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class OverworldBushInteractionTest {
@@ -135,6 +136,30 @@ final class OverworldBushInteractionTest {
 
         assertTrue(result.changed());
         assertEquals(GameplaySoundEvent.CUT_GRASS, result.soundEvent());
+    }
+
+    @Test
+    void bombRevealUsesTheSameObjectResolverWithoutSwordSound() {
+        int roomId = 0x40;
+        int location = hitLocation(Link.DIRECTION_RIGHT, TARGET_LINK_X, TARGET_LINK_Y);
+        int[] roomObjectsArea = emptyRoomObjectsArea();
+        int[] roomTileIds = emptyRoomTiles(-1);
+        int[] roomTileAttrs = emptyRoomTiles(-1);
+        roomObjectsArea[ROOM_OBJECTS_BASE + location] = OBJECT_BUSH;
+
+        OverworldBushInteraction.CutResult result = INTERACTION.revealObjectAtLocation(
+            location,
+            roomId,
+            true,
+            roomObjectsArea,
+            null,
+            null,
+            roomTileIds,
+            roomTileAttrs);
+
+        assertTrue(result.changed());
+        assertEquals(OBJECT_SHORT_GRASS, result.revealedObjectId());
+        assertNull(result.soundEvent());
     }
 
     @Test

@@ -14,6 +14,7 @@ import linksawakening.vfx.TransientVfxType;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ArrayList;
 
 import static linksawakening.world.RoomConstants.ROOM_PIXEL_HEIGHT;
 import static linksawakening.world.RoomConstants.ROOM_PIXEL_WIDTH;
@@ -51,6 +52,7 @@ public final class RoomSession {
     private final EnemyDropResolver enemyDropResolver;
     private final EntityCollisionPointProbe entityCollisionPointProbe;
     private final EntityBackgroundCollisionResolver entityBackgroundCollisionResolver;
+    private final OverworldBushInteraction overworldBushInteraction;
     private final RoomEntityBackgroundInteraction entityBackgroundInteraction =
         new RoomEntityBackgroundInteraction() {
             @Override
@@ -80,6 +82,7 @@ public final class RoomSession {
 
     private ActiveRoom activeRoom;
     private RoomEntityRuntime entityRuntime;
+    private final List<BombExplosionEvent> pendingBombExplosionEvents = new ArrayList<>();
     private final Map<Integer, RoomEntityRuntime.HookshotBridgeUpdate>
         hookshotBridgeTileOverrides = new HashMap<>();
     private final int[] clearedEntitiesByRoom = new int[0x100];
@@ -173,6 +176,7 @@ public final class RoomSession {
         this.entityBackgroundCollisionResolver = new EntityBackgroundCollisionResolver(romTables);
         this.enemyDropResolver = new EnemyDropResolver(romData);
         this.entityCollisionPointProbe = new EntityCollisionPointProbe(romTables);
+        this.overworldBushInteraction = new OverworldBushInteraction(romData, romTables);
     }
 
     public void loadInitialOverworld(int roomId) {
@@ -648,6 +652,10 @@ public final class RoomSession {
                 romDirectionForProjectileCollision(linkDirection), usingShield, shieldLevel,
                 invincibilityCounter), swordCollisionActive, swordX, swordWidth,
             swordY, swordHeight);
+        List<BombExplosionEvent> bombExplosionEvents = entityRuntime.consumeBombExplosionEvents();
+        pendingBombExplosionEvents.clear();
+        pendingBombExplosionEvents.addAll(bombExplosionEvents);
+        applyBombObjectInteractions(bombExplosionEvents);
         if (entityRuntime.consumePendingSwitchBlockAnimationRequest()
             && switchableObjectAnimationStage == 0) {
             switchableObjectAnimationStage = 0x01;
@@ -686,10 +694,9 @@ public final class RoomSession {
 
     /** Returns and clears source-shaped bomb-explosion interaction requests from the last tick. */
     public List<BombExplosionEvent> consumeBombExplosionEvents() {
-        if (entityRuntime == null) {
-            return List.of();
-        }
-        return entityRuntime.consumeBombExplosionEvents();
+        List<BombExplosionEvent> pending = List.copyOf(pendingBombExplosionEvents);
+        pendingBombExplosionEvents.clear();
+        return pending;
     }
 
     /** Advances the ROM's VBlank tile path, including switch blocks. */
@@ -953,6 +960,51 @@ public final class RoomSession {
             droppableRupeeSystem.clear();
         }
         hookshotBridgeTileOverrides.clear();
+        pendingBombExplosionEvents.clear();
+    }
+
+    private void applyBombObjectInteractions(List<BombExplosionEvent> events) {
+        if (activeRoom == null || activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD
+            || events == null || events.isEmpty()) {
+            return;
+        }
+
+        for (BombExplosionEvent event : events) {
+            if (!event.targetsRoomObjects()) {
+                continue;
+            }
+            BombObjectInteraction.Candidate candidate = BombObjectInteraction.basicCandidate(
+                event.bombX(), event.bombVisualY(), event.countdown());
+            if (candidate == null) {
+                continue;
+            }
+            int location = candidate.location();
+            OverworldBushInteraction.CutResult result =
+                overworldBushInteraction.revealObjectAtLocation(
+                    location,
+                    activeRoom.roomId(),
+                    true,
+                    activeRoom.roomObjectsArea(),
+                    activeRoom.renderValues(),
+                    activeRoom.gbcOverlay(),
+                    activeRoom.tileIds(),
+                    activeRoom.tileAttrs());
+            if (!result.changed()) {
+                continue;
+            }
+
+            // CheckForBombDestroyableObjectBasic spawns the liftable-rock bush
+            // effect at the object cell's center/bottom anchor. The current
+            // transient renderer already owns this exact leaf scatter asset.
+            if (transientVfxSystem != null && result.bushLeavesVisible()) {
+                transientVfxSystem.spawn(
+                    TransientVfxType.BUSH_LEAVES,
+                    overworldBushInteraction.effectOriginXForLocation(location),
+                    overworldBushInteraction.effectOriginYForLocation(location));
+            }
+            overworldCollision.setRoom(activeRoom.roomObjectsArea());
+            overworldCollision.setGbcOverlay(activeRoom.gbcOverlay());
+        }
     }
 
     private int colorShellObjectAt(RoomEntity entity, int relativeOffset) {
