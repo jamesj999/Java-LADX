@@ -2267,8 +2267,11 @@ runtime collision callback.
 - The Java handler no longer teleports the statue onto Link. It emits the
   existing `LinkFinalPositionRequest`, allowing the host Link boundary to
   restore `hLinkFinalPositionX/Y` at the source-equivalent integration point.
-  The runtime test covers an airborne Link and verifies the statue's own
-  position remains unchanged.
+- Its post-movement background pass now uses the shared ROM collision-point
+  resolver in source X-then-Y order, retaining the pre-step coordinate when a
+  wall blocks the statue and forwarding the source ignore-hits/frame context.
+  Runtime tests cover an airborne Link, the final-position request, and the
+  blocked movement boundary.
 
 ## Broader parity gaps
 

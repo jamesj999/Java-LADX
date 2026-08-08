@@ -1951,6 +1951,28 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void armosStatueRunsItsPostMovementRomBackgroundCollisionPass() {
+        EntitySpriteDefinition definition = pairDefinition(0x0F, 2);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x0F, 64, 64, EntityStatus.ACTIVE, definition, 0)));
+
+        runtime.tick(0, 64, 64, sequence(0x00));
+        List<Integer> directions = new ArrayList<>();
+        runtime.setBackgroundInteraction((entity, direction, nextX, nextY) -> {
+            directions.add(direction);
+            return EntityBackgroundCollisionResult.blocked(
+                direction, 0x01, 0x00, nextX, nextY);
+        });
+
+        runtime.tick(1, 120, 120, sequence(0x00));
+        int beforeBlockedStep = runtime.snapshot().slots().get(0).x();
+        runtime.tick(2, 120, 120, sequence(0x00));
+
+        assertEquals(List.of(EntityBackgroundCollisionResult.LEFT), directions);
+        assertEquals(beforeBlockedStep, runtime.snapshot().slots().get(0).x());
+    }
+
+    @Test
     void armosUsesRomActivationFlagsAndOnlyTheActiveStateJoinsCombat() {
         EntitySpriteDefinition definition = pairDefinition(0x0F, 2);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(

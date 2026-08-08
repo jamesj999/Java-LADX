@@ -40,6 +40,14 @@ final class ArmosMotion {
 
     Update advance(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY,
                    IntSupplier randomByteSupplier) {
+        return advance(entity, frameCounter, linkEntityX, linkEntityY,
+            randomByteSupplier, null, 0);
+    }
+
+    Update advance(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY,
+                   IntSupplier randomByteSupplier,
+                   RoomEntityBackgroundInteraction backgroundInteraction,
+                   int ignoreHitsCountdown) {
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot);
@@ -55,8 +63,27 @@ final class ArmosMotion {
             entity, linkEntityX, linkEntityY);
         boolean linkFinalPositionCopyRequested = linkCollision && state[slot] < 2;
 
-        x = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
-        y = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
+        int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
+        if (nextX != x && backgroundInteraction != null) {
+            EntityBackgroundCollisionResult result = backgroundInteraction.probe(
+                entity, horizontalDirection(speedX[slot]), nextX, y,
+                ignoreHitsCountdown, frameCounter);
+            if (result.blocked()) {
+                nextX = x;
+            }
+        }
+        x = nextX;
+
+        int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
+        if (nextY != y && backgroundInteraction != null) {
+            EntityBackgroundCollisionResult result = backgroundInteraction.probe(
+                entity, verticalDirection(speedY[slot]), x, nextY,
+                ignoreHitsCountdown, frameCounter);
+            if (result.blocked()) {
+                nextY = y;
+            }
+        }
+        y = nextY;
 
         if (state[slot] == 0) {
             if (linkCollision) {
@@ -127,5 +154,15 @@ final class ArmosMotion {
             delta++;
         }
         return (position + delta) & 0xFF;
+    }
+
+    private static int horizontalDirection(int speed) {
+        return (speed & 0x80) != 0 ? EntityBackgroundCollisionResult.LEFT
+            : EntityBackgroundCollisionResult.RIGHT;
+    }
+
+    private static int verticalDirection(int speed) {
+        return (speed & 0x80) != 0 ? EntityBackgroundCollisionResult.UP
+            : EntityBackgroundCollisionResult.DOWN;
     }
 }

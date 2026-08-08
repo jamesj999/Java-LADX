@@ -2174,8 +2174,14 @@ public final class RoomEntityRuntime {
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_ARMOS_STATUE) {
+                RoomEntityBackgroundInteraction armosBackgroundInteraction = backgroundInteraction;
+                if (armosBackgroundInteraction == null && backgroundCollision != null) {
+                    armosBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
+                        backgroundCollision);
+                }
                 ArmosMotion.Update armosUpdate = armosMotion.advance(
-                    entity, frame, linkEntityX, linkEntityY, randomByteSupplier);
+                    entity, frame, linkEntityX, linkEntityY, randomByteSupplier,
+                    armosBackgroundInteraction, enemyIgnoreHitsCountdown[entity.slot()]);
                 updated = armosUpdate.entity();
                 if (armosUpdate.linkFinalPositionCopyRequested()
                     && projectileLinkState.motionState()
