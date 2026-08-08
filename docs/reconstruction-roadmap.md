@@ -2329,11 +2329,12 @@ runtime collision callback.
 
 ## Verified ROM Hiding Zol jump cue — 2026-08-07
 
-- When Hiding Zol state `$01` reaches its reveal countdown boundary, the
-  runtime now emits the source `JINGLE_JUMP` request (`$24`) at the same
-  transition that writes airborne Z and enters state `$02`.
-- A frame-timed regression verifies that the cue is emitted once at the
-  state transition rather than during ordinary airborne frames.
+- When Hiding Zol state `$01` reaches its reveal countdown boundary, and when
+  state `$04` launches the next leap, the runtime emits the source
+  `JINGLE_JUMP` request (`$24`) at the same transition that writes airborne Z
+  and enters the next airborne state.
+- Frame-timed regressions verify that each cue is emitted once at its state
+  transition rather than during ordinary airborne frames.
 
 ## Broader parity gaps
 

@@ -122,6 +122,7 @@ final class HidingZolMotion {
                     speedY[slot] = vector.y();
                     speedZ[slot] = 0x18;
                     state[slot] = 5;
+                    jumpJingle = true;
                 }
                 variant = 3;
             }

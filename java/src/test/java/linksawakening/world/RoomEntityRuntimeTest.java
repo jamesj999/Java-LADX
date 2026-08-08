@@ -4440,6 +4440,45 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void hidingZolRequestsTheRomJumpJingleForEachLaunchedLeap() {
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
+            .forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x9B, 64, 64, EntityStatus.INIT, definition, 0)),
+            false, sequence(0x00));
+
+        runtime.tick(0, 120, 120, sequence(0x00));
+        runtime.tick(1, 80, 64, sequence(0x00));
+        for (int frame = 2; frame <= 33; frame++) {
+            runtime.tick(frame, 80, 64, sequence(0x00));
+        }
+        assertEquals(2, runtime.hidingZolState(0));
+        assertEquals(0x24, runtime.consumePendingEntityEvents().getFirst().soundId());
+
+        int frame = 34;
+        while (runtime.hidingZolState(0) != 4 && frame < 200) {
+            runtime.tick(frame++, 80, 64, sequence(0x00));
+        }
+        assertEquals(4, runtime.hidingZolState(0));
+
+        boolean foundSecondJumpJingle = false;
+        for (int count = 0; count < 40; count++) {
+            runtime.tick(frame++, 80, 64, sequence(0x00));
+            List<EntityCombatEvent> events = runtime.consumePendingEntityEvents();
+            if (!events.isEmpty()) {
+                assertEquals(1, events.size());
+                assertEquals(EntityCombatEvent.SoundChannel.JINGLE,
+                    events.getFirst().soundChannel());
+                assertEquals(0x24, events.getFirst().soundId());
+                foundSecondJumpJingle = true;
+                break;
+            }
+        }
+        assertTrue(foundSecondJumpJingle);
+        assertEquals(5, runtime.hidingZolState(0));
+    }
+
+    @Test
     void spikeTrapUsesTheRomRandomDirectionAndFourStateLaunchLoop() {
         EntitySpriteDefinition definition = pairDefinition(0x27, 1);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
