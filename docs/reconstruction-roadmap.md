@@ -2379,6 +2379,22 @@ runtime collision callback.
 - ROM display-list, movement, collision-priority, combat, physics, and
   non-interactive-frame regressions cover the increment.
 
+## Verified ROM Blooper entity runtime — 2026-08-07
+
+- Blooper (`$A9`) now decodes bank-$07's two-pair display list at `$5BF1`
+  and ports the source pre-movement recoil, fixed-point motion, rich
+  background probes, current-frame water/ground status, pre-move rollback,
+  and two-state swimming/chase speed machine.
+- Its state timings match the ROM: state 0 converges toward Y speed `$04`,
+  starts the `$25` chase when Link is above, state 1 accelerates X on even
+  frames/decelerates Y, returns to state 0 at `$40`, and uses variants 0/1.
+  Physics `$02`, normal contact damage `$04`, and initial health `$01` are
+  ROM-derived; private countdown 3 `$10` is cleared/advanced with the
+  runtime state.
+- Focused ROM display bytes, movement/state timing, water rollback,
+  current-frame ground ordering, combat, and non-interactive Link-frame
+  regressions pass, as does the clean Java suite.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

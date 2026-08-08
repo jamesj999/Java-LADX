@@ -41,6 +41,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_GEL = 0x1C;
     private static final int ENTITY_HIDING_ZOL = 0x9B;
     private static final int ENTITY_STAR = EntitySpriteHandlerCatalog.ENTITY_STAR;
+    private static final int ENTITY_BLOOPER = EntitySpriteHandlerCatalog.ENTITY_BLOOPER;
     private static final int ENTITY_SPIKE_TRAP = 0x27;
     private static final int ENTITY_PAIRODD = 0x57;
     private static final int ENTITY_PAIRODD_PROJECTILE = 0x58;
@@ -222,6 +223,7 @@ public final class RoomEntityRuntime {
     private final ZolGelMotion zolGelMotion = new ZolGelMotion();
     private final HidingZolMotion hidingZolMotion = new HidingZolMotion();
     private final StarMotion starMotion = new StarMotion();
+    private final BlooperMotion blooperMotion = new BlooperMotion();
     private final SpikeTrapMotion spikeTrapMotion = new SpikeTrapMotion();
     private final PairoddMotion pairoddMotion = new PairoddMotion();
     private final PairoddProjectileMotion pairoddProjectileMotion =
@@ -1096,12 +1098,14 @@ public final class RoomEntityRuntime {
             boolean preserveIronMaskPresentation = false;
             boolean preserveSnakePresentation = false;
             boolean preserveStarPresentation = false;
+            boolean preserveBlooperPresentation = false;
             boolean preserveWizrobePresentation = false;
             boolean preserveWizrobeProjectilePresentation = false;
             boolean preservePolsVoicePresentation = false;
             boolean preserveSpikedBeetlePresentation = false;
             boolean preserveArmosKnightPresentation = false;
             boolean keyDropTransitionActive = false;
+            RoomEntityGroundInteraction.Result preAppliedGroundResult = null;
             if (status == EntityStatus.ACTIVE) {
                 decrementEnemyDropCountdowns(entity);
             }
@@ -1435,6 +1439,9 @@ public final class RoomEntityRuntime {
                 if (entity.type() == ENTITY_STAR) {
                     starMotion.initialize(entity.slot(), randomByteSupplier);
                 }
+                if (entity.type() == ENTITY_BLOOPER) {
+                    blooperMotion.initialize(entity.slot());
+                }
                 if (entity.type() == ENTITY_SPIKE_TRAP) {
                     spikeTrapMotion.initialize(entity.slot(), randomByteSupplier);
                 }
@@ -1620,7 +1627,8 @@ public final class RoomEntityRuntime {
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && usesSharedRecoil(entity.type())
-                && (entity.type() != ENTITY_STAR || handlerLinkCollisionEnabled)) {
+                && ((entity.type() != ENTITY_STAR && entity.type() != ENTITY_BLOOPER)
+                    || handlerLinkCollisionEnabled)) {
                 // Bank-$03 AnimateRoamingEnemy and the bank-$04/$06/$07
                 // handlers apply the shared recoil before their own movement.
                 EnemyRecoilMotion.Update recoil = applyEnemyRecoilIfNeeded(
@@ -1900,6 +1908,26 @@ public final class RoomEntityRuntime {
                 updated = starMotion.advance(entity, frame, randomByteSupplier,
                     starBackgroundInteraction, enemyIgnoreHitsCountdown[entity.slot()]);
                 preserveStarPresentation = true;
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_BLOOPER && handlerLinkCollisionEnabled) {
+                RoomEntityBackgroundInteraction blooperBackgroundInteraction = backgroundInteraction;
+                if (blooperBackgroundInteraction == null && backgroundCollision != null) {
+                    blooperBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
+                        backgroundCollision);
+                }
+                BlooperMotion.Movement movement = blooperMotion.move(entity, frame,
+                    blooperBackgroundInteraction, enemyIgnoreHitsCountdown[entity.slot()]);
+                RoomEntityGroundInteraction.Result groundResult = Objects.requireNonNull(
+                    groundInteraction.apply(movement.entity(), frame,
+                        entityGroundStatus[entity.slot()], verticalSpeedZ(movement.entity()),
+                        groundInteractionSideScrolling),
+                    "Room entity ground interaction returned null");
+                BlooperMotion.Update blooperUpdate = blooperMotion.finish(movement, groundResult,
+                    frame, linkEntityX, linkEntityY);
+                updated = blooperUpdate.entity();
+                preAppliedGroundResult = blooperUpdate.groundResult();
+                preserveBlooperPresentation = true;
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_PAIRODD_PROJECTILE) {
@@ -2399,16 +2427,19 @@ public final class RoomEntityRuntime {
                     entityGroundStatus[updated.slot()], groundInteractionSideScrolling);
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
-                && !keyDropTransitionActive && !hasNoGroundInteraction(updated)) {
+                && !keyDropTransitionActive && !hasNoGroundInteraction(updated)
+                && (handlerLinkCollisionEnabled || updated.type() != ENTITY_BLOOPER)) {
                 // ApplyEntityInteractionWithBackground runs after each ROM
                 // entity handler's movement and before the final display-list
                 // presentation. The room session supplies terrain physics;
                 // direct runtime users retain the no-op default.
                 int previousGroundStatus = entityGroundStatus[updated.slot()];
-                RoomEntityGroundInteraction.Result groundResult = Objects.requireNonNull(
-                    groundInteraction.apply(updated, frame, previousGroundStatus,
-                        verticalSpeedZ(updated), groundInteractionSideScrolling),
-                    "Room entity ground interaction returned null");
+                RoomEntityGroundInteraction.Result groundResult = preAppliedGroundResult != null
+                    ? preAppliedGroundResult
+                    : Objects.requireNonNull(
+                        groundInteraction.apply(updated, frame, previousGroundStatus,
+                            verticalSpeedZ(updated), groundInteractionSideScrolling),
+                        "Room entity ground interaction returned null");
                 updated = Objects.requireNonNull(groundResult.entity(),
                     "Room entity ground interaction returned a null entity");
                 entityGroundStatus[updated.slot()] = groundResult.groundStatus() & 0xFF;
@@ -2451,6 +2482,7 @@ public final class RoomEntityRuntime {
                 || preserveBombitePresentation
                 || preserveIronMaskPresentation || preserveSnakePresentation
                 || preserveStarPresentation
+                || preserveBlooperPresentation
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
                 || preservePolsVoicePresentation
                 || preserveSpikedBeetlePresentation || preserveArmosKnightPresentation
@@ -2462,6 +2494,7 @@ public final class RoomEntityRuntime {
                 || preserveBombitePresentation
                 || preserveIronMaskPresentation || preserveSnakePresentation
                 || preserveStarPresentation
+                || preserveBlooperPresentation
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
                 || preservePolsVoicePresentation
                 || preserveSpikedBeetlePresentation || preserveArmosKnightPresentation
@@ -3866,6 +3899,7 @@ public final class RoomEntityRuntime {
             latestShotArrowEntityIndex = -1;
         }
         bombiteMotion.clear(slot);
+        blooperMotion.clear(slot);
         if (!entity.loaded()) {
             return 0;
         }
@@ -3929,6 +3963,7 @@ public final class RoomEntityRuntime {
         zolGelMotion.clear(slot);
         hidingZolMotion.clear(slot);
         starMotion.clear(slot);
+        blooperMotion.clear(slot);
         spikeTrapMotion.clear(slot);
         pairoddMotion.clear(slot);
         pairoddProjectileMotion.clear(slot);
@@ -5055,6 +5090,7 @@ public final class RoomEntityRuntime {
             || type == ENTITY_SNAKE
             || type == ENTITY_HIDING_ZOL
             || type == ENTITY_STAR
+            || type == ENTITY_BLOOPER
             || type == ENTITY_PAIRODD
             || isRoamingEnemyType(type) || usesBank6Recoil(type)
             || isGhiniType(type);
@@ -6376,6 +6412,30 @@ public final class RoomEntityRuntime {
         return starMotion.speedY(slot);
     }
 
+    int blooperState(int slot) {
+        return blooperMotion.state(slot);
+    }
+
+    int blooperTransitionCountdown(int slot) {
+        return blooperMotion.transitionCountdown(slot);
+    }
+
+    int blooperDirection(int slot) {
+        return blooperMotion.direction(slot);
+    }
+
+    int blooperSpeedX(int slot) {
+        return blooperMotion.speedX(slot);
+    }
+
+    int blooperSpeedY(int slot) {
+        return blooperMotion.speedY(slot);
+    }
+
+    int blooperPrivateCountdown3(int slot) {
+        return blooperMotion.privateCountdown3(slot);
+    }
+
     int sparkPrivateState1(int slot) {
         return sparkMotion.privateState1(slot);
     }
@@ -7240,6 +7300,7 @@ public final class RoomEntityRuntime {
             case ENTITY_ARMOS_KNIGHT -> ARMOS_KNIGHT_INITIAL_PHYSICS_FLAGS;
             case ENTITY_STALFOS_EVASIVE -> EVASIVE_PHYSICS_FLAGS;
             case ENTITY_STAR -> 0x12;
+            case ENTITY_BLOOPER -> 0x02;
             case ENTITY_IRON_MASK -> IRON_MASK_INITIAL_PHYSICS_FLAGS;
             case ENTITY_GOOMBA, ENTITY_SNAKE -> GOOMBA_INITIAL_PHYSICS_FLAGS;
             case ENTITY_WIZROBE -> 0x02;
@@ -7616,6 +7677,7 @@ public final class RoomEntityRuntime {
         zolGelMotion.clear(slot);
         hidingZolMotion.clear(slot);
         starMotion.clear(slot);
+        blooperMotion.clear(slot);
         spikeTrapMotion.clear(slot);
         pairoddMotion.clear(slot);
         pairoddProjectileMotion.clear(slot);
@@ -7733,6 +7795,7 @@ public final class RoomEntityRuntime {
         if (liftableRockSmashActive[slot] && liftableRockSmashCountdown[slot] > 0) {
             liftableRockSmashCountdown[slot]--;
         }
+        blooperMotion.decrementPrivateCountdown3(slot);
     }
 
     private void requestArmosLinkPush(RoomEntity entity, int linkEntityX, int linkEntityY,
