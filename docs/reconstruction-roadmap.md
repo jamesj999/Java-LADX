@@ -2427,6 +2427,28 @@ runtime collision callback.
   input-priority regressions pass; the clean Java suite passes with 1,248
   tests and zero failures, errors, or skipped tests.
 
+## Verified ROM Bush Crawler entity runtime — 2026-08-08
+
+- Bush Crawler (`$BB`) now decodes the bank `$07` outdoor and indoor pair
+  lists at `$4012` and `$401A`, plus the lifted `Bushcrawler2` list at `$400A`.
+  Its crawling frame is represented as the source's two consecutive pair
+  renders, including the room-facing pair followed by the animated
+  `Bushcrawler2` pair. The room-facing `$F0..$F6` tiles use the shared GPU
+  region while `$7C/$7E` use the entity-sheet snapshot, matching the ROM's
+  loaded tile regions.
+- The active handler ports the `$30` directional crawl, bank-$07 fixed-point
+  movement, wall stop/retry countdown, signed `-4` visual Y correction, and
+  private-state-$02 random walk using the source cross-label speed table.
+- The Power Bracelet branch converts the source slot to the ROM's lifted
+  type-$05 entity, emits wave SFX `$02`, and spawns the same-position `$BB`
+  replacement with private state `$02` and transition `$40`. Normal Bush
+  Crawlers participate in the enemy collision group and receive the handler's
+  per-pass health `$04` write; the static ROM health group remains `$00`.
+- ROM display bytes, movement timing, two-pass framebuffer rendering, signed
+  snapshot offsets, lift/replacement lifecycle, combat metadata, and lift
+  audio are covered by focused tests. The clean Java suite passes with 1,256 tests and
+  zero failures, errors, or skipped tests.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

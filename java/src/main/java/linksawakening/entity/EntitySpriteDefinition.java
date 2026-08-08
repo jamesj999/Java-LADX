@@ -68,28 +68,38 @@ public final class EntitySpriteDefinition {
     private final List<Variant> variants;
     private final List<List<RectangleSprite>> rectangleVariants;
     private final List<List<DynamicSprite>> dynamicVariants;
+    private final DynamicSprite.TileSource pairTileSource;
 
     public EntitySpriteDefinition(int entityType, int bank, int address, Shape shape,
                                   int initialVariant, List<Variant> variants) {
-        this(entityType, bank, address, shape, initialVariant, variants, List.of(), List.of());
+        this(entityType, bank, address, shape, initialVariant, variants, List.of(), List.of(),
+            DynamicSprite.TileSource.ENTITY_SHEETS);
     }
 
     public EntitySpriteDefinition(int entityType, int bank, int address, Shape shape,
                                   int initialVariant, List<Variant> variants,
                                   List<List<RectangleSprite>> rectangleVariants) {
         this(entityType, bank, address, shape, initialVariant, variants, rectangleVariants,
-            List.of());
+            List.of(), DynamicSprite.TileSource.ENTITY_SHEETS);
+    }
+
+    public EntitySpriteDefinition(int entityType, int bank, int address, Shape shape,
+                                  int initialVariant, List<Variant> variants,
+                                  DynamicSprite.TileSource pairTileSource) {
+        this(entityType, bank, address, shape, initialVariant, variants, List.of(), List.of(),
+            pairTileSource);
     }
 
     private EntitySpriteDefinition(int entityType, int bank, int address, Shape shape,
                                    int initialVariant, List<Variant> variants,
                                    List<List<RectangleSprite>> rectangleVariants,
-                                   List<List<DynamicSprite>> dynamicVariants) {
+                                   List<List<DynamicSprite>> dynamicVariants,
+                                   DynamicSprite.TileSource pairTileSource) {
         if ((entityType & ~0xFF) != 0) {
             throw new IllegalArgumentException("Entity type must be an unsigned byte");
         }
         if (shape == null || variants == null || rectangleVariants == null
-            || dynamicVariants == null) {
+            || dynamicVariants == null || pairTileSource == null) {
             throw new IllegalArgumentException("Entity shape and variants cannot be null");
         }
         if (shape == Shape.UNSUPPORTED) {
@@ -134,13 +144,15 @@ public final class EntitySpriteDefinition {
         this.variants = List.copyOf(variants);
         this.rectangleVariants = copyRectangleVariants(rectangleVariants);
         this.dynamicVariants = copyDynamicVariants(dynamicVariants);
+        this.pairTileSource = pairTileSource;
     }
 
     public static EntitySpriteDefinition dynamic(int entityType, int bank, int address,
                                                  int initialVariant,
                                                  List<List<DynamicSprite>> variants) {
         return new EntitySpriteDefinition(entityType, bank, address, Shape.DYNAMIC,
-            initialVariant, List.of(), List.of(), variants);
+            initialVariant, List.of(), List.of(), variants,
+            DynamicSprite.TileSource.ENTITY_SHEETS);
     }
 
     public static EntitySpriteDefinition unsupported(int entityType) {
@@ -186,6 +198,11 @@ public final class EntitySpriteDefinition {
 
     public List<Variant> variants() {
         return variants;
+    }
+
+    /** Returns the tile region used by ordinary pair display-list entries. */
+    public DynamicSprite.TileSource pairTileSource() {
+        return pairTileSource;
     }
 
     public List<RectangleSprite> rectangleVariant(int index) {

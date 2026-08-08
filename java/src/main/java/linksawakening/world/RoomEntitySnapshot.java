@@ -85,8 +85,9 @@ public final class RoomEntitySnapshot {
             throw new IllegalArgumentException("Exactly sixteen entity visual Y offsets are required");
         }
         for (int offset : visualYOffsetBySlot) {
-            if (offset < 0 || offset > 0xFF) {
-                throw new IllegalArgumentException("Entity visual Y offsets must be unsigned bytes");
+            if (offset < -0x80 || offset > 0x7F) {
+                throw new IllegalArgumentException(
+                    "Entity visual Y offsets must be signed display offsets");
             }
         }
         this.slots = List.copyOf(slots);
@@ -166,8 +167,9 @@ public final class RoomEntitySnapshot {
         if (slot < 0 || slot >= visualYOffsetBySlot.length) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
-        if (offset < 0 || offset > 0xFF) {
-            throw new IllegalArgumentException("Entity visual Y offset must be an unsigned byte");
+        if (offset < -0x80 || offset > 0x7F) {
+            throw new IllegalArgumentException(
+                "Entity visual Y offset must be a signed display offset");
         }
         int[] offsets = visualYOffsetBySlot.clone();
         offsets[slot] = offset;

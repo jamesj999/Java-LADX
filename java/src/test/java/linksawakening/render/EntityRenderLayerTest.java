@@ -2,6 +2,7 @@ package linksawakening.render;
 
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteSelection;
+import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.GPU;
 import linksawakening.gpu.EntitySpriteTileSnapshot;
@@ -145,6 +146,35 @@ final class EntityRenderLayerTest {
         assertEquals(swordColor, pixelColor(buffer, 24, 24));
         assertEquals(bodyColor, pixelColor(buffer, 16, 16));
         assertEquals(bodyColor, pixelColor(buffer, 24, 16));
+    }
+
+    @Test
+    void rendersBushCrawlerCrawlPassesInRomOamPriorityOrder() throws Exception {
+        GPU gpu = new GPU();
+        int crawlingBodyColor = 0x112233;
+        int bushOverlayColor = 0x445566;
+        int[][] palettes = new int[8][4];
+        palettes[4][1] = crawlingBodyColor;
+        palettes[2][1] = bushOverlayColor;
+        for (int tile : new int[] {0xF0, 0xF2, 0xF4, 0xF6, 0x7C, 0x7E}) {
+            writeSolidTile(gpu, tile, 1);
+        }
+
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
+            .forBushCrawlerCrawlState(
+                EntityRoomLoader.RoomTable.OVERWORLD, 0);
+        RoomEntity entity = new RoomEntity(0, 0, 0xBB, 0x40, 0x40,
+            EntityStatus.ACTIVE, definition, 0);
+        byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
+
+        new EntityRenderLayer(snapshot(null, gpu.snapshotEntityTiles(), entity), palettes,
+            new ScrollController()).render(new RenderContext(buffer, gpu));
+
+        // The Bushcrawler2 pair is emitted after the room-specific pair. The
+        // renderer walks the list backwards so the earlier room pair retains
+        // Game Boy OAM priority when both passes overlap.
+        assertEquals(crawlingBodyColor, pixelColor(buffer, 0x38, 0x30));
+        assertEquals(crawlingBodyColor, pixelColor(buffer, 0x40, 0x30));
     }
 
     @Test
@@ -1044,6 +1074,16 @@ final class EntityRenderLayerTest {
                                                 EntitySpriteTileSnapshot tiles,
                                                 RoomEntity... entities) {
         return snapshot(selection, entities).withSpriteTiles(tiles);
+    }
+
+    private static byte[] loadRom() throws Exception {
+        try (var stream = EntityRenderLayerTest.class.getClassLoader()
+            .getResourceAsStream("rom/azle.gbc")) {
+            if (stream == null) {
+                throw new IllegalStateException("ROM resource missing");
+            }
+            return stream.readAllBytes();
+        }
     }
 
     private static byte[] filledBuffer(int red, int green, int blue) {

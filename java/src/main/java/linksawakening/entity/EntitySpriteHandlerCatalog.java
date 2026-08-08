@@ -20,6 +20,7 @@ public final class EntitySpriteHandlerCatalog {
     public static final int ENTITY_BLOOPER = 0xA9;
     public static final int ENTITY_WINGED_OCTOROK = 0xAE;
     public static final int ENTITY_PINCER = 0xB0;
+    public static final int ENTITY_BUSH_CRAWLER = 0xBB;
     public static final int LIFTABLE_ROCK_INTACT_ROCK_VARIANT = 0;
     public static final int LIFTABLE_ROCK_INTACT_BUSH_VARIANT = 1;
     public static final int LIFTABLE_ROCK_SMASHED_ROCK_VARIANT_BASE = 2;
@@ -229,6 +230,11 @@ public final class EntitySpriteHandlerCatalog {
         }
         if (entityType == ENTITY_SNAKE) {
             return decodePair(entityType, 0x07, 0x683E, 4, 0);
+        }
+        if (entityType == ENTITY_BUSH_CRAWLER) {
+            return decodePair(entityType, 0x07,
+                isIndoorRoomTable(roomTable) ? 0x401A : 0x4012, 2, 0,
+                EntitySpriteDefinition.DynamicSprite.TileSource.GPU);
         }
         if (entityType == ENTITY_WIZROBE) {
             return decodePair(entityType, 0x06, 0x7604, 5, 0);
@@ -444,6 +450,50 @@ public final class EntitySpriteHandlerCatalog {
         return privateState1 == 0
             ? decodePair(ENTITY_STALFOS_EVASIVE, 0x15, 0x4E7D, 3, 0)
             : decodePair(ENTITY_STALFOS_EVASIVE, 0x15, 0x4E8E, 2, 0);
+    }
+
+    /**
+     * Selects Bush Crawler's bank-$07 display list for the lifted replacement
+     * state. State $02 is the adjacent Bushcrawler2 list; state $01 is the
+     * ordinary outdoor/indoor pair selected by the room table.
+     */
+    public EntitySpriteDefinition forBushCrawlerState(int privateState1,
+                                                       EntityRoomLoader.RoomTable roomTable) {
+        if (privateState1 < 0 || privateState1 > 0x02) {
+            throw new IllegalArgumentException("Bush Crawler private state out of range: "
+                + privateState1);
+        }
+        if (privateState1 == 0x02) {
+            return decodePair(ENTITY_BUSH_CRAWLER, 0x07, 0x400A, 2, 0);
+        }
+        return forEntityType(ENTITY_BUSH_CRAWLER, roomTable);
+    }
+
+    /**
+     * Builds the two-pass display list used while a normal Bush Crawler is
+     * crawling. The handler first renders its room-specific pair, then the
+     * four-tile Bushcrawler2 pair at the same active position.
+     */
+    public EntitySpriteDefinition forBushCrawlerCrawlState(
+            EntityRoomLoader.RoomTable roomTable, int privateState4) {
+        if (privateState4 < 0 || privateState4 > 1) {
+            throw new IllegalArgumentException("Bush Crawler private state 4 must be 0 or 1: "
+                + privateState4);
+        }
+        EntitySpriteDefinition normal = forEntityType(ENTITY_BUSH_CRAWLER, roomTable);
+        EntitySpriteDefinition crawling = decodePair(ENTITY_BUSH_CRAWLER, 0x07,
+            0x400A, 2, 0);
+        List<List<EntitySpriteDefinition.DynamicSprite>> variants = new ArrayList<>(2);
+        for (int animation = 0; animation < 2; animation++) {
+            List<EntitySpriteDefinition.DynamicSprite> sprites = new ArrayList<>(4);
+            appendDynamicPair(sprites, normal.variant(privateState4),
+                EntitySpriteDefinition.DynamicSprite.TileSource.GPU);
+            appendDynamicPair(sprites, crawling.variant(animation),
+                EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS);
+            variants.add(List.copyOf(sprites));
+        }
+        return EntitySpriteDefinition.dynamic(ENTITY_BUSH_CRAWLER, 0x07,
+            normal.address(), 0, variants);
     }
 
     /**
@@ -760,6 +810,14 @@ public final class EntitySpriteHandlerCatalog {
 
     public EntitySpriteDefinition decodePair(int entityType, int bank, int address,
                                               int variantCount, int initialVariant) {
+        return decodePair(entityType, bank, address, variantCount, initialVariant,
+            EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS);
+    }
+
+    private EntitySpriteDefinition decodePair(int entityType, int bank, int address,
+                                              int variantCount, int initialVariant,
+                                              EntitySpriteDefinition.DynamicSprite.TileSource
+                                                  tileSource) {
         int offset = validateDisplayList(entityType, bank, address, variantCount, 4,
             initialVariant);
         List<EntitySpriteDefinition.Variant> variants = new ArrayList<>(variantCount);
@@ -772,7 +830,7 @@ public final class EntitySpriteHandlerCatalog {
                     Byte.toUnsignedInt(romData[index + 2]), Byte.toUnsignedInt(romData[index + 3]))));
         }
         return new EntitySpriteDefinition(entityType, bank, address,
-            EntitySpriteDefinition.Shape.PAIR, initialVariant, variants);
+            EntitySpriteDefinition.Shape.PAIR, initialVariant, variants, tileSource);
     }
 
     public EntitySpriteDefinition decodeSingle(int entityType, int bank, int address,
@@ -889,6 +947,25 @@ public final class EntitySpriteHandlerCatalog {
     private static int signedByte(int value) {
         value &= 0xFF;
         return value < 0x80 ? value : value - 0x100;
+    }
+
+    private static boolean isIndoorRoomTable(EntityRoomLoader.RoomTable roomTable) {
+        return roomTable == EntityRoomLoader.RoomTable.INDOORS_A
+            || roomTable == EntityRoomLoader.RoomTable.INDOORS_B;
+    }
+
+    private static void appendDynamicPair(
+            List<EntitySpriteDefinition.DynamicSprite> destination,
+            EntitySpriteDefinition.Variant pair,
+            EntitySpriteDefinition.DynamicSprite.TileSource tileSource) {
+        destination.add(new EntitySpriteDefinition.DynamicSprite(
+            0, 0, pair.first(),
+            tileSource, true));
+        if (pair.second() != null) {
+            destination.add(new EntitySpriteDefinition.DynamicSprite(
+                0, 0x08, pair.second(),
+                tileSource, true));
+        }
     }
 
     private static boolean isColorShellType(int entityType) {

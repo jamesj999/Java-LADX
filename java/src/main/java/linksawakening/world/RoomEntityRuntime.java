@@ -45,6 +45,8 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_WINGED_OCTOROK =
         EntitySpriteHandlerCatalog.ENTITY_WINGED_OCTOROK;
     private static final int ENTITY_PINCER = EntitySpriteHandlerCatalog.ENTITY_PINCER;
+    private static final int ENTITY_BUSH_CRAWLER =
+        EntitySpriteHandlerCatalog.ENTITY_BUSH_CRAWLER;
     private static final int ENTITY_SPIKE_TRAP = 0x27;
     private static final int ENTITY_PAIRODD = 0x57;
     private static final int ENTITY_PAIRODD_PROJECTILE = 0x58;
@@ -229,6 +231,7 @@ public final class RoomEntityRuntime {
     private final BlooperMotion blooperMotion = new BlooperMotion();
     private final WingedOctorokMotion wingedOctorokMotion = new WingedOctorokMotion();
     private final PincerMotion pincerMotion = new PincerMotion();
+    private final BushCrawlerMotion bushCrawlerMotion = new BushCrawlerMotion();
     private final SpikeTrapMotion spikeTrapMotion = new SpikeTrapMotion();
     private final PairoddMotion pairoddMotion = new PairoddMotion();
     private final PairoddProjectileMotion pairoddProjectileMotion =
@@ -678,6 +681,9 @@ public final class RoomEntityRuntime {
             if (entity.loaded() && entity.type() == ENTITY_PINCER) {
                 pincerMotion.initialize(entity.slot());
             }
+            if (entity.loaded() && entity.type() == ENTITY_BUSH_CRAWLER) {
+                bushCrawlerMotion.initialize(entity.slot());
+            }
             if (entity.status() == EntityStatus.DYING) {
                 powerRecoilDeath[entity.slot()] = entity.powerRecoilDeath();
             }
@@ -1121,6 +1127,7 @@ public final class RoomEntityRuntime {
             boolean preserveBlooperPresentation = false;
             boolean preserveWingedOctorokPresentation = false;
             boolean preservePincerPresentation = false;
+            boolean preserveBushCrawlerPresentation = false;
             boolean preserveWizrobePresentation = false;
             boolean preserveWizrobeProjectilePresentation = false;
             boolean preservePolsVoicePresentation = false;
@@ -1993,6 +2000,40 @@ public final class RoomEntityRuntime {
                 }
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_BUSH_CRAWLER && handlerLinkCollisionEnabled) {
+                BushCrawlerMotion.Update bushUpdate = bushCrawlerMotion.advance(
+                    entity, frame, linkEntityX, linkEntityY, randomByteSupplier,
+                    backgroundCollision, enemyTransitionCountdown[entity.slot()],
+                    RoomEntityCombatRules.overlapsLink(entity, linkEntityX, linkEntityY),
+                    actionButtonAHeld, actionButtonBHeld, linkItemA, linkItemB);
+                enemyTransitionCountdown[entity.slot()] = bushUpdate.transitionCountdown();
+                fallingVisualYOffset[entity.slot()] = bushUpdate.visualYOffset();
+                updated = bushUpdate.entity();
+                if (bushUpdate.specialState()) {
+                    updated = withDefinition(updated,
+                        spriteDefinitionForBushCrawlerState(0x02), updated.spriteVariant());
+                } else if (bushUpdate.crawlOverlayRendered()) {
+                    updated = withDefinition(updated,
+                        spriteDefinitionForBushCrawlerCrawlState(bushUpdate.privateState4()),
+                        updated.spriteVariant());
+                } else {
+                    updated = withDefinition(updated, spriteDefinitionFor(ENTITY_BUSH_CRAWLER),
+                        updated.spriteVariant());
+                }
+                if (!bushUpdate.specialState()) {
+                    // BushCrawlerEntityHandler writes $04 immediately before
+                    // its default enemy collision path on every interactive
+                    // normal pass. The static health group is $00.
+                    enemyHealth[entity.slot()] = 0x04;
+                }
+                preserveBushCrawlerPresentation = true;
+                if (bushUpdate.liftRequested()
+                    && beginBushCrawlerLift(index, updated, bushUpdate.privateState4(),
+                        romLinkDirection)) {
+                    continue;
+                }
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_PAIRODD_PROJECTILE) {
                 updated = pairoddProjectileMotion.advance(entity, frame);
                 boolean objectCollisionHit = objectCollision != null
@@ -2546,7 +2587,7 @@ public final class RoomEntityRuntime {
                 || preserveIronMaskPresentation || preserveSnakePresentation
                 || preserveStarPresentation
                 || preserveBlooperPresentation || preserveWingedOctorokPresentation
-                || preservePincerPresentation
+                || preservePincerPresentation || preserveBushCrawlerPresentation
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
                 || preservePolsVoicePresentation
                 || preserveSpikedBeetlePresentation || preserveArmosKnightPresentation
@@ -2559,7 +2600,7 @@ public final class RoomEntityRuntime {
                 || preserveIronMaskPresentation || preserveSnakePresentation
                 || preserveStarPresentation
                 || preserveBlooperPresentation || preserveWingedOctorokPresentation
-                || preservePincerPresentation
+                || preservePincerPresentation || preserveBushCrawlerPresentation
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
                 || preservePolsVoicePresentation
                 || preserveSpikedBeetlePresentation || preserveArmosKnightPresentation
@@ -3976,6 +4017,7 @@ public final class RoomEntityRuntime {
         bombiteMotion.clear(slot);
         blooperMotion.clear(slot);
         pincerMotion.clear(slot);
+        bushCrawlerMotion.clear(slot);
         if (!entity.loaded()) {
             return 0;
         }
@@ -4046,6 +4088,7 @@ public final class RoomEntityRuntime {
         pairoddProjectileMotion.clear(slot);
         enemyProjectileMotion.clear(slot);
         wingedOctorokMotion.clear(slot);
+        bushCrawlerMotion.clear(slot);
         wingedSwordAttackThisFrame[slot] = false;
         wingedStateTwoThisFrame[slot] = false;
         laserMotion.clear(slot);
@@ -4911,6 +4954,26 @@ public final class RoomEntityRuntime {
         return wingedOctorokMotion.speedZ(slot);
     }
 
+    int bushCrawlerState(int slot) {
+        return bushCrawlerMotion.state(slot);
+    }
+
+    int bushCrawlerPrivateState1(int slot) {
+        return bushCrawlerMotion.privateState1(slot);
+    }
+
+    int bushCrawlerPrivateState4(int slot) {
+        return bushCrawlerMotion.privateState4(slot);
+    }
+
+    int bushCrawlerSpeedX(int slot) {
+        return bushCrawlerMotion.speedX(slot);
+    }
+
+    int bushCrawlerSpeedY(int slot) {
+        return bushCrawlerMotion.speedY(slot);
+    }
+
     void setSpriteSelection(EntitySpriteSelection selection) {
         spriteSelection = selection;
     }
@@ -5227,6 +5290,7 @@ public final class RoomEntityRuntime {
             || type == ENTITY_STAR
             || type == ENTITY_BLOOPER
             || type == ENTITY_WINGED_OCTOROK
+            || type == ENTITY_BUSH_CRAWLER
             || type == ENTITY_PAIRODD
             || isRoamingEnemyType(type) || usesBank6Recoil(type)
             || isGhiniType(type);
@@ -5807,6 +5871,61 @@ public final class RoomEntityRuntime {
         enemyProjectileSpawnedThisFrame[freeSlot] = true;
     }
 
+    /**
+     * Ports BushCrawlerEntityHandler's Power Bracelet branch: the source
+     * slot becomes a lifted type-$05 entity and a fresh type-$BB slot starts
+     * the private-state-$02 wandering handler at the same position.
+     */
+    private boolean beginBushCrawlerLift(int index, RoomEntity source, int privateState4,
+                                         int romLinkDirection) {
+        if (source.type() != ENTITY_BUSH_CRAWLER) {
+            return false;
+        }
+        slots[index] = source;
+        if (!beginLift(source.slot(), romLinkDirection)) {
+            return false;
+        }
+
+        int slot = source.slot();
+        RoomEntity carried = slots[slot];
+        EntitySpriteDefinition rockDefinition = spriteDefinitionFor(ENTITY_LIFTABLE_ROCK);
+        carried = withType(carried, ENTITY_LIFTABLE_ROCK, rockDefinition);
+        carried = withVariant(carried, rockDefinition.supported()
+            ? (privateState4 ^ 0x01) & 0x01 : -1);
+        slots[slot] = carried;
+        fallingVisualYOffset[slot] = 0;
+        bushCrawlerMotion.clear(slot);
+        pendingEntityEvents.add(new EntityCombatEvent(
+            slot, ENTITY_BUSH_CRAWLER, 0, false,
+            EntityCombatEvent.SoundChannel.WAVE, 0x02));
+
+        int freeSlot = findFreeEntitySlot();
+        if (freeSlot < 0) {
+            return true;
+        }
+        EntitySpriteDefinition crawlerDefinition = spriteDefinitionFor(ENTITY_BUSH_CRAWLER);
+        int crawlerVariant = crawlerDefinition.supported()
+            ? crawlerDefinition.initialVariant() : -1;
+        RoomEntity replacement = new RoomEntity(freeSlot, -1, ENTITY_BUSH_CRAWLER,
+            carried.x(), carried.y(), EntityStatus.ACTIVE, crawlerDefinition,
+            crawlerVariant, 0, 0, carried.z());
+        slots[freeSlot] = replacement;
+        baseEntityFlipAttribute[freeSlot] = 0;
+        entityOptions1Override[freeSlot] = -1;
+        enemyTransitionCountdown[freeSlot] = 0x40;
+        enemyStunnedCountdown[freeSlot] = 0;
+        enemyHealth[freeSlot] = initialHealth(ENTITY_BUSH_CRAWLER);
+        enemyFlashCountdown[freeSlot] = 0;
+        enemyIgnoreHitsCountdown[freeSlot] = 1;
+        enemyHitboxFlags[freeSlot] = initialHitboxFlags(ENTITY_BUSH_CRAWLER);
+        enemyPhysicsFlags[freeSlot] = initialPhysicsFlags(ENTITY_BUSH_CRAWLER);
+        enemyRecoilMotion.clear(freeSlot);
+        fallingVisualYOffset[freeSlot] = 0;
+        bushCrawlerMotion.initializeSpecial(freeSlot);
+        dynamicEntitySpawnedThisFrame[freeSlot] = true;
+        return true;
+    }
+
     private void spawnLaserSensor(RoomEntity parent) {
         int freeSlot = findFreeEntitySlot();
         if (freeSlot < 0) {
@@ -5865,6 +5984,27 @@ public final class RoomEntityRuntime {
             : spriteSelection.roomTable();
         int mapId = spriteSelection == null ? -1 : spriteSelection.roomId();
         return spriteHandlers.forEntityType(entityType, table, mapId);
+    }
+
+    private EntitySpriteDefinition spriteDefinitionForBushCrawlerState(int privateState1) {
+        if (spriteHandlers == null) {
+            return EntitySpriteDefinition.unsupported(ENTITY_BUSH_CRAWLER);
+        }
+        return spriteHandlers.forBushCrawlerState(privateState1, spriteRoomTable());
+    }
+
+    private EntitySpriteDefinition spriteDefinitionForBushCrawlerCrawlState(int privateState4) {
+        if (spriteHandlers == null) {
+            return EntitySpriteDefinition.unsupported(ENTITY_BUSH_CRAWLER);
+        }
+        return spriteHandlers.forBushCrawlerCrawlState(spriteRoomTable(), privateState4);
+    }
+
+    private EntityRoomLoader.RoomTable spriteRoomTable() {
+        return spriteSelection == null
+            ? (indoorRoom ? EntityRoomLoader.RoomTable.INDOORS_A
+                : EntityRoomLoader.RoomTable.OVERWORLD)
+            : spriteSelection.roomTable();
     }
 
     private EntitySpriteDefinition spriteDefinitionForChest(int itemType) {
@@ -7500,6 +7640,7 @@ public final class RoomEntityRuntime {
             case ENTITY_STAR -> 0x12;
             case ENTITY_BLOOPER -> 0x02;
             case ENTITY_WINGED_OCTOROK -> 0x12;
+            case ENTITY_BUSH_CRAWLER -> 0x12;
             case ENTITY_PINCER -> 0x02;
             case ENTITY_IRON_MASK -> IRON_MASK_INITIAL_PHYSICS_FLAGS;
             case ENTITY_GOOMBA, ENTITY_SNAKE -> GOOMBA_INITIAL_PHYSICS_FLAGS;
@@ -7879,6 +8020,7 @@ public final class RoomEntityRuntime {
         starMotion.clear(slot);
         blooperMotion.clear(slot);
         pincerMotion.clear(slot);
+        bushCrawlerMotion.clear(slot);
         spikeTrapMotion.clear(slot);
         pairoddMotion.clear(slot);
         pairoddProjectileMotion.clear(slot);

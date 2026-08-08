@@ -214,19 +214,21 @@ public final class EntityRenderLayer implements RenderLayer {
         }
         int flipAttribute = entity.entityFlipAttribute();
         if (definition.shape() == EntitySpriteDefinition.Shape.PAIR) {
+            EntitySpriteTileSnapshot pairTiles = definition.pairTileSource()
+                == EntitySpriteDefinition.DynamicSprite.TileSource.GPU ? null : tiles;
             EntitySpriteDefinition.Variant variant = definition.variant(spriteVariant);
             if (entity.type() == ENTITY_PAIRODD && spriteVariant == 3
                 && definition.variantCount() > 7) {
                 // Bank $04 temporarily moves hActiveEntityPosX by -$08,
                 // renders variant $06, moves it by +$10, renders variant
                 // $07, and finally restores the source position.
-                renderPair(context, palettes, tiles, definition.variant(6), entity,
+                renderPair(context, palettes, pairTiles, definition.variant(6), entity,
                     entityX - 8, entityY, sideScrolling);
-                renderPair(context, palettes, tiles, definition.variant(7), entity,
+                renderPair(context, palettes, pairTiles, definition.variant(7), entity,
                     entityX + 8, entityY, sideScrolling);
                 return;
             }
-            renderPair(context, palettes, tiles, variant, entity, entityX, entityY,
+            renderPair(context, palettes, pairTiles, variant, entity, entityX, entityY,
                 sideScrolling);
         } else if (definition.shape() == EntitySpriteDefinition.Shape.SINGLE) {
             EntitySpriteDefinition.Variant variant = definition.variant(spriteVariant);
