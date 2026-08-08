@@ -48,6 +48,14 @@ final class ArmosMotion {
                    IntSupplier randomByteSupplier,
                    RoomEntityBackgroundInteraction backgroundInteraction,
                    int ignoreHitsCountdown) {
+        return advance(entity, frameCounter, linkEntityX, linkEntityY,
+            randomByteSupplier, true, backgroundInteraction, ignoreHitsCountdown);
+    }
+
+    Update advance(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY,
+                   IntSupplier randomByteSupplier, boolean linkCollisionAllowed,
+                   RoomEntityBackgroundInteraction backgroundInteraction,
+                   int ignoreHitsCountdown) {
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot);
@@ -59,8 +67,8 @@ final class ArmosMotion {
 
         int x = entity.x();
         int y = entity.y();
-        boolean linkCollision = RoomEntityCombatRules.overlapsLink(
-            entity, linkEntityX, linkEntityY);
+        boolean linkCollision = linkCollisionAllowed
+            && RoomEntityCombatRules.overlapsLink(entity, linkEntityX, linkEntityY);
         boolean linkFinalPositionCopyRequested = linkCollision && state[slot] < 2;
 
         int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);

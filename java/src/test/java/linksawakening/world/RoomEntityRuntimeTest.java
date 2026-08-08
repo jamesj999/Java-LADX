@@ -1973,6 +1973,19 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void armosStatueDoesNotWakeForNonInteractiveLiveLinkMotion() {
+        EntitySpriteDefinition definition = pairDefinition(0x0F, 2);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x0F, 64, 64, EntityStatus.ACTIVE, definition, 0)));
+
+        runtime.tickWithProjectileEvents(0, 64, 64, sequence(0x00), null,
+            new EnemyProjectileCollision.LinkState(64, 64, 0, 0x02, 0, false));
+
+        assertEquals(0, runtime.armosState(0));
+        assertTrue(runtime.consumePendingLinkFinalPositionRequests().isEmpty());
+    }
+
+    @Test
     void armosUsesRomActivationFlagsAndOnlyTheActiveStateJoinsCombat() {
         EntitySpriteDefinition definition = pairDefinition(0x0F, 2);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(

@@ -2270,8 +2270,9 @@ runtime collision callback.
 - Its post-movement background pass now uses the shared ROM collision-point
   resolver in source X-then-Y order, retaining the pre-step coordinate when a
   wall blocks the statue and forwarding the source ignore-hits/frame context.
-  Runtime tests cover an airborne Link, the final-position request, and the
-  blocked movement boundary.
+  The live runtime also applies the source non-interactive Link-motion gate
+  before wake-up. Runtime tests cover an airborne Link, the final-position
+  request, and the blocked movement boundary.
 
 ## Broader parity gaps
 
