@@ -40,6 +40,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_PAIRODD = 0x57;
     private static final int ENTITY_PAIRODD_PROJECTILE = 0x58;
     private static final int ENTITY_WATER_TEKTITE = 0x99;
+    private static final int ENTITY_FISH = FishMotion.ENTITY_TYPE;
     private static final int ENTITY_STALFOS_AGGRESSIVE = 0x1A;
     private static final int ENTITY_STALFOS_EVASIVE = 0x1E;
     private static final int ENTITY_GIBDO = 0x1F;
@@ -207,6 +208,7 @@ public final class RoomEntityRuntime {
     private final PairoddProjectileMotion pairoddProjectileMotion =
         new PairoddProjectileMotion();
     private final WaterTektiteMotion waterTektiteMotion = new WaterTektiteMotion();
+    private final FishMotion fishMotion = new FishMotion();
     private final StalfosAggressiveMotion stalfosAggressiveMotion =
         new StalfosAggressiveMotion();
     private final StalfosEvasiveMotion stalfosEvasiveMotion = new StalfosEvasiveMotion();
@@ -545,6 +547,9 @@ public final class RoomEntityRuntime {
             }
             if (entity.loaded() && entity.type() == ENTITY_POLS_VOICE) {
                 polsVoiceMotion.initialize(entity.slot());
+            }
+            if (entity.loaded() && entity.type() == ENTITY_FISH) {
+                fishMotion.initialize(entity.slot());
             }
             if (entity.loaded() && entity.type() == ENTITY_SPIKED_BEETLE) {
                 spikedBeetleMotion.initialize(entity.slot());
@@ -1308,6 +1313,9 @@ public final class RoomEntityRuntime {
                 if (entity.type() == ENTITY_WATER_TEKTITE) {
                     waterTektiteMotion.initialize(entity.slot());
                 }
+                if (entity.type() == ENTITY_FISH) {
+                    fishMotion.initialize(entity.slot());
+                }
                 if (entity.type() == ENTITY_STALFOS_AGGRESSIVE) {
                     stalfosAggressiveMotion.initialize(entity.slot(), randomByteSupplier);
                 }
@@ -1830,6 +1838,22 @@ public final class RoomEntityRuntime {
                 && entity.type() == ENTITY_WATER_TEKTITE) {
                 updated = waterTektiteMotion.advance(entity, frame, randomByteSupplier,
                     backgroundCollision);
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_FISH) {
+                FishMotion.Update fishUpdate = fishMotion.advance(entity,
+                    enemyTransitionCountdown[entity.slot()], randomByteSupplier,
+                    backgroundCollision);
+                updated = fishUpdate.entity();
+                enemyTransitionCountdown[entity.slot()] = fishUpdate.transitionCountdown();
+                enemyPhysicsFlags[entity.slot()] = fishUpdate.physicsFlags();
+                if (fishUpdate.waterSplash()) {
+                    transientVfxRequests.add(new TransientVfxRequest(
+                        TransientVfxType.WATER_SPLASH, updated.x(), updated.y()));
+                    pendingEntityEvents.add(new EntityCombatEvent(
+                        updated.slot(), updated.type(), 0, false,
+                        EntityCombatEvent.SoundChannel.JINGLE, 0x0E));
+                }
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_STALFOS_AGGRESSIVE) {
@@ -2436,6 +2460,10 @@ public final class RoomEntityRuntime {
             RoomEntity entity = slots[index];
             if (!entity.loaded() || entity.status() != EntityStatus.ACTIVE
                 || !RoomEntityCombatRules.supportsEnemyCollision(entity.type())) {
+                continue;
+            }
+            if (entity.type() == ENTITY_FISH
+                && !fishMotion.allowsEnemyCollision(entity.slot())) {
                 continue;
             }
             if (isGhiniType(entity.type())
@@ -3539,6 +3567,7 @@ public final class RoomEntityRuntime {
         enemyProjectileMotion.clear(slot);
         laserMotion.clear(slot);
         waterTektiteMotion.clear(slot);
+        fishMotion.clear(slot);
         stalfosAggressiveMotion.clear(slot);
         stalfosEvasiveMotion.clear(slot);
         gibdoMotion.clear(slot);
@@ -6366,6 +6395,9 @@ public final class RoomEntityRuntime {
         if (slots[slot].type() == ENTITY_CHEST_WITH_ITEM) {
             return CHEST_OPTIONS1;
         }
+        if (slots[slot].type() == ENTITY_FISH) {
+            return ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
+        }
         if (slots[slot].type() == ENTITY_SPIKED_BEETLE) {
             // The static table starts at splash-only. The handler writes the
             // sword-clink-off bit on its first normal active pass.
@@ -6404,6 +6436,23 @@ public final class RoomEntityRuntime {
 
     int colorShellPhysicsFlags(int slot) {
         return colorShellMotion.physicsFlags(slot);
+    }
+
+    int fishState(int slot) {
+        return fishMotion.state(slot);
+    }
+
+    int fishSpeedX(int slot) {
+        return fishMotion.speedX(slot);
+    }
+
+    int fishSpeedZ(int slot) {
+        return fishMotion.speedZ(slot);
+    }
+
+    int fishTransitionCountdown(int slot) {
+        validateEntitySlot(slot);
+        return enemyTransitionCountdown[slot];
     }
 
     void setColorShellStateForTest(int slot, int state, int transitionCountdown,
@@ -6496,6 +6545,7 @@ public final class RoomEntityRuntime {
             case ENTITY_CHEST_WITH_ITEM -> CHEST_INITIAL_PHYSICS_FLAGS;
             case ENTITY_BOUNCING_BOMBITE, ENTITY_TIMER_BOMBITE ->
                 BOMBITE_INITIAL_PHYSICS_FLAGS;
+            case ENTITY_FISH -> FishMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_MAD_BOMBER -> MAD_BOMBER_INITIAL_PHYSICS_FLAGS;
             case ENTITY_BOMBER -> BOMBER_INITIAL_PHYSICS_FLAGS;
             case ENTITY_LIFTABLE_ROCK, ENTITY_LIFTABLE_STATUE,
@@ -6892,6 +6942,9 @@ public final class RoomEntityRuntime {
         }
         if (entity.type() == ENTITY_TEKTITE) {
             return tektiteMotion.speedZ(slot);
+        }
+        if (entity.type() == ENTITY_FISH) {
+            return fishMotion.speedZ(slot);
         }
         if (entity.type() == ENTITY_STALFOS_AGGRESSIVE) {
             return stalfosAggressiveMotion.speedZ(slot);

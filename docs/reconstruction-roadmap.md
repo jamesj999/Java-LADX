@@ -2104,6 +2104,21 @@ runtime collision callback.
   Java suite passes with 1,152 tests and zero failures, errors, or skipped
   tests.
 
+## Verified ROM Fish entity runtime — 2026-08-07
+
+- Entity `$CC` now uses bank `$15`'s mixed display path: five pair variants at
+  `$449F` and four single jump variants at `$44B3`. The runtime follows the
+  source hidden-swim state, fixed-point horizontal speed `$08`, countdown
+  windows `$40/$50`, jump speed `$18`, signed reversal, and the `$12/$52`
+  physics transitions.
+- The per-room handler emits the source water-splash jingle `$0E` and VFX at
+  both launch and landing, probes the shared background collision path, and
+  exposes fish contact damage only during the jump state where the ROM calls
+  `DefaultEnemyDamageCollisionHandler`.
+- ROM display-list, fixed-point motion, collision reversal, splash event,
+  state-gated combat, and runtime integration are covered. The clean Java
+  suite passes with 1,156 tests and zero failures, errors, or skipped tests.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

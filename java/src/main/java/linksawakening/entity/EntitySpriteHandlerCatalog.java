@@ -72,6 +72,7 @@ public final class EntitySpriteHandlerCatalog {
     private static final int ENTITY_PAIRODD = 0x57;
     private static final int ENTITY_PAIRODD_PROJECTILE = 0x58;
     private static final int ENTITY_WATER_TEKTITE = 0x99;
+    private static final int ENTITY_FISH = 0xCC;
     private static final int ENTITY_BOW_WOW = 0x6D;
     private static final int ENTITY_DOG = 0x6F;
     private static final int ENTITY_KID_70 = 0x70;
@@ -329,6 +330,9 @@ public final class EntitySpriteHandlerCatalog {
         if (entityType == ENTITY_WATER_TEKTITE) {
             return decodePair(entityType, 0x07, 0x752D, 2, 0);
         }
+        if (entityType == ENTITY_FISH) {
+            return decodeFish(entityType);
+        }
         if (entityType == ENTITY_GRANDPA_ULRIRA) {
             return decodeRectangle(entityType, 0x06, 0x5C51, 2, 4, 0);
         }
@@ -500,6 +504,22 @@ public final class EntitySpriteHandlerCatalog {
         List<EntitySpriteDefinition.Variant> variants = new ArrayList<>(pair.variants());
         variants.set(1, new EntitySpriteDefinition.Variant(single.variant(0).first(), null));
         return new EntitySpriteDefinition(entityType, 0x07, 0x729B,
+            EntitySpriteDefinition.Shape.PAIR, 0, variants);
+    }
+
+    /**
+     * Decodes FishEntityHandler's five pair variants followed by its four
+     * single-sprite jump variants. The handler selects the latter by
+     * subtracting five from the active variant before rendering.
+     */
+    private EntitySpriteDefinition decodeFish(int entityType) {
+        EntitySpriteDefinition pair = decodePair(entityType, 0x15, 0x449F, 5, 0);
+        EntitySpriteDefinition single = decodeSingle(entityType, 0x15, 0x44B3, 4, 0);
+        List<EntitySpriteDefinition.Variant> variants = new ArrayList<>(pair.variants());
+        for (int variant = 0; variant < 4; variant++) {
+            variants.add(single.variant(variant));
+        }
+        return new EntitySpriteDefinition(entityType, 0x15, 0x449F,
             EntitySpriteDefinition.Shape.PAIR, 0, variants);
     }
 

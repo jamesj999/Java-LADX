@@ -117,6 +117,45 @@ final class EntitySpriteHandlerCatalogTest {
     }
 
     @Test
+    void mapsFishToItsMixedBankFifteenDisplayLists() {
+        byte[] rom = syntheticRom();
+        write(rom, 0x15, 0x449F,
+            0xFF, 0x00, 0xFF, 0x00,
+            0x54, 0x00, 0x56, 0x00,
+            0x58, 0x00, 0x5A, 0x00,
+            0x56, 0x20, 0x54, 0x20,
+            0x5A, 0x20, 0x58, 0x20);
+        write(rom, 0x15, 0x44B3,
+            0x5C, 0x00, 0x5C, 0x20,
+            0x5E, 0x00, 0x5E, 0x00);
+
+        EntitySpriteDefinition fish = new EntitySpriteHandlerCatalog(rom)
+            .forEntityType(0xCC, EntityRoomLoader.RoomTable.OVERWORLD);
+
+        assertDefinition(fish, 0x15, 0x449F,
+            EntitySpriteDefinition.Shape.PAIR, 9, 0);
+        assertPairPrefixBytes(fish, new int[][] {
+            {0xFF, 0x00, 0xFF, 0x00},
+            {0x54, 0x00, 0x56, 0x00},
+            {0x58, 0x00, 0x5A, 0x00},
+            {0x56, 0x20, 0x54, 0x20},
+            {0x5A, 0x20, 0x58, 0x20}
+        });
+        assertEquals(0x5C, fish.variant(5).first().tile());
+        assertEquals(0x00, fish.variant(5).first().attributes());
+        assertNull(fish.variant(5).second());
+        assertEquals(0x5C, fish.variant(6).first().tile());
+        assertEquals(0x20, fish.variant(6).first().attributes());
+        assertNull(fish.variant(6).second());
+        assertEquals(0x5E, fish.variant(7).first().tile());
+        assertEquals(0x00, fish.variant(7).first().attributes());
+        assertNull(fish.variant(7).second());
+        assertEquals(0x5E, fish.variant(8).first().tile());
+        assertEquals(0x00, fish.variant(8).first().attributes());
+        assertNull(fish.variant(8).second());
+    }
+
+    @Test
     void mapsBoomerangToItsFourFrameBankNineteenDisplayList() {
         byte[] rom = syntheticRom();
         write(rom, 0x19, 0x4451,
