@@ -2303,6 +2303,19 @@ runtime collision callback.
   covers the `$80` countdown, three decrements per active frame, zero boundary,
   and next-frame release.
 
+## Verified ROM Hiding Zol recoil — 2026-08-07
+
+- Hiding Zol (`$9B`) now enters bank-$07's shared `ApplyRecoilIfNeeded_07`
+  path before its reveal/bounce state handler. The runtime consumes the
+  ignore-hits countdown and applies the existing fixed-point recoil vector in
+  the source order.
+- Its bank-$07 collision behavior is preserved: a blocked recoil step retains
+  both the active recoil and the remaining ignore-hits countdown instead of
+  taking the bank-$03 roaming enemy stop-on-collision path.
+- Focused Hiding Zol recoil regressions and the complete Java suite cover this
+  increment. The state-$03/$04/$05 forced-ignore background helper and the
+  remaining damage/audio branches remain separate work.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

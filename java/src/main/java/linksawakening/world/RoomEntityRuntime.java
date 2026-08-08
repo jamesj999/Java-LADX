@@ -5006,6 +5006,7 @@ public final class RoomEntityRuntime {
             || type == ENTITY_BOMBER
             || type == ENTITY_GOOMBA
             || type == ENTITY_SNAKE
+            || type == ENTITY_HIDING_ZOL
             || isRoamingEnemyType(type) || usesBank6Recoil(type)
             || isGhiniType(type);
     }

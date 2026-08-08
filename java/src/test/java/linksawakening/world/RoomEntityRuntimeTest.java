@@ -4292,6 +4292,46 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void hidingZolUsesTheBankSevenRecoilStepBeforeItsHandler() {
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
+            .forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x9B, 64, 64, EntityStatus.ACTIVE, definition, 0)));
+
+        runtime.configureEnemyRecoilForTest(0, 80, 80, 0x30);
+        runtime.setEnemyIgnoreHitsCountdownForTest(0, 0x0A);
+
+        runtime.tick(1, 120, 120, sequence(0x00));
+
+        RoomEntity afterRecoil = runtime.snapshot().slots().get(0);
+        assertEquals(61, afterRecoil.x());
+        assertEquals(61, afterRecoil.y());
+        assertEquals(0x09, runtime.enemyIgnoreHitsCountdown(0));
+        assertTrue(runtime.enemyRecoilActive(0));
+    }
+
+    @Test
+    void hidingZolPreservesBankSevenRecoilWhenTheBackgroundBlocksIt() {
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
+            .forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x9B, 64, 64, EntityStatus.ACTIVE, definition, 0)));
+        runtime.setBackgroundInteraction((entity, direction, nextX, nextY) ->
+            EntityBackgroundCollisionResult.blocked(direction, 0x2A, 0,
+                nextX, nextY));
+        runtime.configureEnemyRecoilForTest(0, 80, 80, 0x30);
+        runtime.setEnemyIgnoreHitsCountdownForTest(0, 0x0A);
+
+        runtime.tick(1, 120, 120, sequence(0x00));
+
+        RoomEntity afterRecoil = runtime.snapshot().slots().get(0);
+        assertEquals(64, afterRecoil.x());
+        assertEquals(64, afterRecoil.y());
+        assertEquals(0x09, runtime.enemyIgnoreHitsCountdown(0));
+        assertTrue(runtime.enemyRecoilActive(0));
+    }
+
+    @Test
     void spikeTrapUsesTheRomRandomDirectionAndFourStateLaunchLoop() {
         EntitySpriteDefinition definition = pairDefinition(0x27, 1);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
