@@ -1817,9 +1817,14 @@ public final class RoomEntityRuntime {
                 updated = sparkMotion.advance(entity, frame, backgroundCollision);
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing && isZolGelType(entity.type())) {
+                RoomEntityBackgroundInteraction zolGelBackgroundInteraction = backgroundInteraction;
+                if (zolGelBackgroundInteraction == null && backgroundCollision != null) {
+                    zolGelBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
+                        backgroundCollision);
+                }
                 ZolGelMotion.Update zolGelUpdate = zolGelMotion.advance(entity, linkEntityX,
-                    linkEntityY, linkZ, randomByteSupplier, backgroundCollision,
-                    joypadHeld || actionButtonsHeld);
+                    linkEntityY, linkZ, randomByteSupplier, zolGelBackgroundInteraction,
+                    frame, joypadHeld || actionButtonsHeld);
                 updated = zolGelUpdate.entity();
                 if (zolGelUpdate.split() != null) {
                     updated = applyZolSplit(entity, updated, zolGelUpdate.split());
@@ -6354,6 +6359,11 @@ public final class RoomEntityRuntime {
 
     int zolPrivateCountdown1(int slot) {
         return zolGelMotion.privateCountdown1(slot);
+    }
+
+    void setZolPrivateCountdown1ForTest(int slot, int value) {
+        validateByte(value, "Zol/Gel private countdown 1");
+        zolGelMotion.setPrivateCountdown1ForTest(slot, value);
     }
 
     int hidingZolState(int slot) {

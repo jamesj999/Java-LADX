@@ -62,12 +62,16 @@ final class ZolGelMotion {
                    IntSupplier randomByteSupplier,
                    RoomEntityBackgroundCollision backgroundCollision) {
         return advance(entity, linkEntityX, linkEntityY, linkEntityZ,
-            randomByteSupplier, backgroundCollision, false);
+            randomByteSupplier,
+            backgroundCollision == null
+                ? null : RoomEntityBackgroundInteraction.fromBoolean(backgroundCollision),
+            0, false);
     }
 
     Update advance(RoomEntity entity, int linkEntityX, int linkEntityY, int linkEntityZ,
                    IntSupplier randomByteSupplier,
-                   RoomEntityBackgroundCollision backgroundCollision,
+                   RoomEntityBackgroundInteraction backgroundInteraction,
+                   int frameCounter,
                    boolean joypadHeld) {
         int slot = entity.slot();
         if (!initialized[slot]) {
@@ -117,7 +121,13 @@ final class ZolGelMotion {
                 decreaseTransitionCountdown(slot);
             }
         } else {
-            int[] moved = move(entity, x, y, backgroundCollision);
+            // ZolGelPhysics still updates position while private countdown 1
+            // is active, but the ROM skips its background helper for that
+            // frame. When it does call the helper, it temporarily exposes
+            // ignore-hits value $02 to the rich room probe.
+            RoomEntityBackgroundInteraction physicsInteraction =
+                privateCountdown1[slot] == 0 ? backgroundInteraction : null;
+            int[] moved = move(entity, x, y, physicsInteraction, 0x02, frameCounter);
             x = moved[0];
             y = moved[1];
             if (state[slot] == 0) {
@@ -232,6 +242,10 @@ final class ZolGelMotion {
         return privateCountdown1[slot];
     }
 
+    void setPrivateCountdown1ForTest(int slot, int value) {
+        privateCountdown1[slot] = value & 0xFF;
+    }
+
     private void decrementCountdowns(int slot) {
         // GelState4Handler only decreases its transition countdown when the
         // ROM sees joypad input; state 4 is therefore intentionally excluded
@@ -277,17 +291,20 @@ final class ZolGelMotion {
     }
 
     private int[] move(RoomEntity entity, int x, int y,
-                       RoomEntityBackgroundCollision backgroundCollision) {
+                       RoomEntityBackgroundInteraction backgroundInteraction,
+                       int ignoreHitsCountdown, int frameCounter) {
         int slot = entity.slot();
         int movedX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
         int movedY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
-        if (backgroundCollision != null) {
-            if (movedX != x && backgroundCollision.blocks(entity,
-                signedByte(speedX[slot]) < 0 ? 1 : 0, movedX, y)) {
+        if (backgroundInteraction != null) {
+            if (movedX != x && backgroundInteraction.probe(entity,
+                signedByte(speedX[slot]) < 0 ? 1 : 0, movedX, y,
+                ignoreHitsCountdown, frameCounter).blocked()) {
                 movedX = x;
             }
-            if (movedY != y && backgroundCollision.blocks(entity,
-                signedByte(speedY[slot]) < 0 ? 2 : 3, movedX, movedY)) {
+            if (movedY != y && backgroundInteraction.probe(entity,
+                signedByte(speedY[slot]) < 0 ? 2 : 3, movedX, movedY,
+                ignoreHitsCountdown, frameCounter).blocked()) {
                 movedY = y;
             }
         }

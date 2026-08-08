@@ -1891,6 +1891,77 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void zolGelPhysicsUsesRomTemporaryIgnoreHitsForRichBackgroundProbes() {
+        EntitySpriteDefinition definition = pairDefinition(0x1B, 2);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x1B, 64, 64, EntityStatus.ACTIVE, definition, 0)));
+        List<Integer> observedIgnoreHits = new ArrayList<>();
+        runtime.setBackgroundInteraction(new RoomEntityBackgroundInteraction() {
+            @Override
+            public EntityBackgroundCollisionResult probe(RoomEntity entity, int direction,
+                                                          int nextX, int nextY) {
+                return EntityBackgroundCollisionResult.passable(direction, 0, nextX, nextY);
+            }
+
+            @Override
+            public EntityBackgroundCollisionResult probe(RoomEntity entity, int direction,
+                                                          int nextX, int nextY,
+                                                          int ignoreHitsCountdown,
+                                                          int frameCounter) {
+                observedIgnoreHits.add(ignoreHitsCountdown);
+                return EntityBackgroundCollisionResult.passable(
+                    direction, 0, nextX, nextY);
+            }
+        });
+
+        runtime.tick(0, 80, 64, sequence(0x00));
+        for (int frame = 1; frame <= 8; frame++) {
+            runtime.tick(frame, 80, 64, sequence(0x00));
+        }
+
+        assertFalse(observedIgnoreHits.isEmpty());
+        assertTrue(observedIgnoreHits.stream().allMatch(value -> value == 0x02),
+            "observed ignore-hit values=" + observedIgnoreHits);
+    }
+
+    @Test
+    void zolGelPhysicsSkipsRichBackgroundProbeWhilePrivateCountdownOneIsActive() {
+        ZolGelMotion motion = new ZolGelMotion();
+        RoomEntity entity = new RoomEntity(0, 0, 0x1B, 64, 64, EntityStatus.ACTIVE,
+            pairDefinition(0x1B, 2), 0);
+        motion.prepareChestSpawn(entity.slot());
+        motion.setPrivateCountdown1ForTest(entity.slot(), 2);
+        List<Integer> observedIgnoreHits = new ArrayList<>();
+        RoomEntityBackgroundInteraction background = new RoomEntityBackgroundInteraction() {
+            @Override
+            public EntityBackgroundCollisionResult probe(RoomEntity probed, int direction,
+                                                          int nextX, int nextY) {
+                return EntityBackgroundCollisionResult.passable(direction, 0, nextX, nextY);
+            }
+
+            @Override
+            public EntityBackgroundCollisionResult probe(RoomEntity probed, int direction,
+                                                          int nextX, int nextY,
+                                                          int ignoreHitsCountdown,
+                                                          int frameCounter) {
+                observedIgnoreHits.add(ignoreHitsCountdown);
+                return EntityBackgroundCollisionResult.passable(
+                    direction, 0, nextX, nextY);
+            }
+        };
+
+        ZolGelMotion.Update first = motion.advance(entity, 80, 64, 0,
+            () -> 0, background, 0, false);
+        assertTrue(observedIgnoreHits.isEmpty());
+        assertEquals(1, motion.privateCountdown1(entity.slot()));
+
+        motion.advance(first.entity(), 80, 64, 0,
+            () -> 0, background, 1, false);
+        assertEquals(List.of(0x02), observedIgnoreHits);
+        assertEquals(0, motion.privateCountdown1(entity.slot()));
+    }
+
+    @Test
     void tektiteAppliesBankSixRecoilBeforeItsOrdinaryMotion() {
         EntitySpriteDefinition definition = pairDefinition(0x0D, 2);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(

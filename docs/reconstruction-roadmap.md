@@ -119,9 +119,10 @@ resource.
   damage values, and turn a damaged Zol into two ROM-backed Gel entities in
   the highest free slots. The split preserves source load order and ROM
   position/Z setup; Gel clinging suppresses the ordinary enemy collision path.
-  Shared bank-$06 sword recoil is covered in the verified increment below;
-  joypad-driven release from the clinging state, background interaction, and
-  the remaining damage-state branches remain pending.
+  Shared bank-$06 sword recoil, joypad-driven clinging release, and the
+  ZolGelPhysics rich background probe boundary are covered in the verified
+  increments below; broader ground/pit/water/conveyor effects and the
+  remaining damage-state branches remain pending.
 - Hiding Zol (`$9B`) now decodes bank `$07`'s mixed hidden/pair/single display
   path, mirrors the signed `$20` proximity reveal, `$20` reveal countdown,
   random three-to-six bounce count, fixed-point Z gravity, horizontal inching,
@@ -2283,6 +2284,10 @@ runtime collision callback.
   releases into state `$03` on the following handler frame with the source
   private countdown `$30` and leap setup. The ordinary per-frame countdown pass
   continues to skip state `$04`.
+- Normal Zol/Gel physics now routes the wall probe through the rich room
+  interaction with the source temporary ignore-hits value `$02`, and skips that
+  probe while private countdown 1 is nonzero. The existing boolean background
+  callers remain supported through the same boundary.
 - The held input now crosses `Main` and `RoomSession` as the full eight-bit
   joypad-active condition, while the existing A/B bridge remains available to
   handlers that require those specific buttons. A ROM-timed runtime regression
