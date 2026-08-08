@@ -4,7 +4,8 @@ import java.util.function.IntSupplier;
 
 /** Bank-$06 ArmosStatueEntityHandler states 0, 1, and 2. */
 final class ArmosMotion {
-    record Update(RoomEntity entity, boolean woke, boolean activated) {
+    record Update(RoomEntity entity, boolean woke, boolean activated,
+                  boolean linkFinalPositionCopyRequested) {
     }
 
     // Data_006_74C2. The state-2 X table is eight bytes long.
@@ -52,14 +53,7 @@ final class ArmosMotion {
         int y = entity.y();
         boolean linkCollision = RoomEntityCombatRules.overlapsLink(
             entity, linkEntityX, linkEntityY);
-        if (linkCollision && state[slot] < 2) {
-            // The original copies hLinkFinalPositionX/Y here. The current
-            // room API exposes hLinkPositionX/Y, so its supplied coordinates
-            // are the faithful available source until final-position state is
-            // threaded through RoomEntityRuntime.
-            x = linkEntityX & 0xFF;
-            y = linkEntityY & 0xFF;
-        }
+        boolean linkFinalPositionCopyRequested = linkCollision && state[slot] < 2;
 
         x = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
         y = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
@@ -90,7 +84,7 @@ final class ArmosMotion {
             x, y, entity.status(), entity.spriteDefinition(), entity.spriteVariant(),
             entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z());
         return new Update(updated, previousState == 0 && state[slot] == 1,
-            previousState == 1 && state[slot] == 2);
+            previousState == 1 && state[slot] == 2, linkFinalPositionCopyRequested);
     }
 
     void clear(int slot) {

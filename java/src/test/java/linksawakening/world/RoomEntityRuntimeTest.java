@@ -1933,6 +1933,24 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void armosStatueRequestsLinkFinalPositionWithoutTeleportingTheStatue() {
+        EntitySpriteDefinition definition = pairDefinition(0x0F, 2);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x0F, 56, 64, EntityStatus.ACTIVE, definition, 0)));
+
+        runtime.tickWithProjectileEvents(0, 64, 64, sequence(0x00), null,
+            // The statue uses CheckLinkCollisionWithEnemy.collisionEvenInTheAir;
+            // Link's Z must not suppress this collision.
+            new EnemyProjectileCollision.LinkState(64, 64, 0x10, 0, 0, false));
+
+        RoomEntity statue = runtime.snapshot().slots().get(0);
+        assertEquals(56, statue.x());
+        assertEquals(64, statue.y());
+        assertEquals(List.of(new RoomEntityRuntime.LinkFinalPositionRequest(0)),
+            runtime.consumePendingLinkFinalPositionRequests());
+    }
+
+    @Test
     void armosUsesRomActivationFlagsAndOnlyTheActiveStateJoinsCombat() {
         EntitySpriteDefinition definition = pairDefinition(0x0F, 2);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(

@@ -2177,6 +2177,12 @@ public final class RoomEntityRuntime {
                 ArmosMotion.Update armosUpdate = armosMotion.advance(
                     entity, frame, linkEntityX, linkEntityY, randomByteSupplier);
                 updated = armosUpdate.entity();
+                if (armosUpdate.linkFinalPositionCopyRequested()
+                    && projectileLinkState.motionState()
+                        < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE) {
+                    pendingLinkFinalPositionRequests.add(
+                        new LinkFinalPositionRequest(entity.slot()));
+                }
                 if (armosUpdate.woke()) {
                     // ArmosStatueEntityHandler's wake branch starts the same
                     // $18 visible flash used by the ROM's enemy hit handlers.

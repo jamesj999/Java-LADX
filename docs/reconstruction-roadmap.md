@@ -2258,6 +2258,18 @@ runtime collision callback.
   source horizontal subtraction only. ROM runtime, phase, camera, and render
   paths are covered; generic background interaction remains separate work.
 
+## Verified ROM Armos Statue final-position request — 2026-08-07
+
+- Armos Statue now follows the source pre-movement collision boundary: the
+  `collisionEvenInTheAir` trampoline ignores Link's Z but rejects
+  non-interactive Link motion, and the handler copies Link's final position
+  only while the statue is below state `$02`.
+- The Java handler no longer teleports the statue onto Link. It emits the
+  existing `LinkFinalPositionRequest`, allowing the host Link boundary to
+  restore `hLinkFinalPositionX/Y` at the source-equivalent integration point.
+  The runtime test covers an airborne Link and verifies the statue's own
+  position remains unchanged.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,
