@@ -18,6 +18,7 @@ public final class RoomEntityCombatRules {
     private static final int ENTITY_HIDING_ZOL = 0x9B;
     private static final int ENTITY_STAR = 0x9C;
     private static final int ENTITY_BLOOPER = 0xA9;
+    private static final int ENTITY_WINGED_OCTOROK = 0xAE;
     private static final int ENTITY_PINCER = 0xB0;
     private static final int ENTITY_GIBDO = 0x1F;
     private static final int ENTITY_LIKE_LIKE = 0x23;
@@ -109,7 +110,7 @@ public final class RoomEntityCombatRules {
                 ENTITY_SPARK_CLOCKWISE,
                 ENTITY_STALFOS_AGGRESSIVE, ENTITY_STALFOS_EVASIVE,
                 ENTITY_ZOL, ENTITY_GEL, ENTITY_HIDING_ZOL,
-                ENTITY_STAR, ENTITY_BLOOPER, ENTITY_PINCER,
+                ENTITY_STAR, ENTITY_BLOOPER, ENTITY_WINGED_OCTOROK, ENTITY_PINCER,
                 ENTITY_GIBDO, ENTITY_POLS_VOICE, ENTITY_LIKE_LIKE, ENTITY_PEAHAT,
                 ENTITY_GOOMBA, ENTITY_SNAKE,
                 ENTITY_WIZROBE,
@@ -137,7 +138,7 @@ public final class RoomEntityCombatRules {
         return switch (type & 0xFF) {
             case ENTITY_KEESE, ENTITY_OCTOROK, ENTITY_PEAHAT, ENTITY_ZOL, ENTITY_GEL,
                 ENTITY_WATER_TEKTITE, ENTITY_PAIRODD,
-                ENTITY_HIDING_ZOL, ENTITY_STAR, ENTITY_BLOOPER,
+                ENTITY_HIDING_ZOL, ENTITY_STAR, ENTITY_BLOOPER, ENTITY_WINGED_OCTOROK,
                 ENTITY_GOOMBA, ENTITY_SNAKE ->
                 OCTOROK_AND_KEESE_CONTACT_DAMAGE;
             case ENTITY_FISH -> OCTOROK_AND_KEESE_CONTACT_DAMAGE;
@@ -172,7 +173,8 @@ public final class RoomEntityCombatRules {
     static int initialHealth(int type) {
         return switch (type & 0xFF) {
             case ENTITY_KEESE, ENTITY_OCTOROK, ENTITY_PEAHAT, ENTITY_WATER_TEKTITE,
-                ENTITY_STAR, ENTITY_BLOOPER, ENTITY_GOOMBA, ENTITY_SNAKE ->
+                ENTITY_STAR, ENTITY_BLOOPER, ENTITY_WINGED_OCTOROK,
+                ENTITY_GOOMBA, ENTITY_SNAKE ->
                 OCTOROK_AND_KEESE_INITIAL_HEALTH;
             case ENTITY_FISH -> OCTOROK_AND_KEESE_INITIAL_HEALTH;
             case ENTITY_CROW -> CROW_INITIAL_HEALTH;

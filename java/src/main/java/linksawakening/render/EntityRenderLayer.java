@@ -7,6 +7,7 @@ import linksawakening.world.PincerBodyOam;
 import linksawakening.world.RoomEntity;
 import linksawakening.world.RoomEntitySnapshot;
 import linksawakening.world.ScrollController;
+import linksawakening.world.WingedOctorokOam;
 import linksawakening.world.EntityStatus;
 
 import static linksawakening.world.RoomConstants.ROOM_PIXEL_HEIGHT;
@@ -15,6 +16,7 @@ import static linksawakening.world.RoomConstants.ROOM_PIXEL_WIDTH;
 /** Renders the ROM-backed OAM display lists for the room's loaded entities. */
 public final class EntityRenderLayer implements RenderLayer {
     private static final int ENTITY_BOMB = 0x02;
+    private static final int ENTITY_WINGED_OCTOROK = 0xAE;
     private static final int ENTITY_PINCER = 0xB0;
     private static final int BOMB_NORMAL_DEFINITION_BANK = 0x03;
     private static final int BOMB_NORMAL_DEFINITION_ADDRESS = 0x652E;
@@ -98,6 +100,13 @@ public final class EntityRenderLayer implements RenderLayer {
                 }
             }
             int variant = renderingDeath ? entity.deathSpriteVariant() : entity.spriteVariant();
+            if (!renderingDeath && entity.type() == ENTITY_WINGED_OCTOROK) {
+                // The pair is allocated before func_007_5805's rectangle in
+                // OAM. Draw the later rectangle first so the earlier pair
+                // keeps Game Boy OAM priority when the two overlap.
+                renderWingedOctorokOam(context, entities.wingedOctorokOam(), entity.slot(),
+                    palettes, offset.x(), offset.y(), entity);
+            }
             renderEntity(context, entity, definition, variant, palettes, tiles,
                 offset.x(), offset.y(), entities.sideScrolling(),
                 entities.visualYOffset(entity.slot()));
@@ -143,6 +152,23 @@ public final class EntityRenderLayer implements RenderLayer {
                 new EntitySpriteDefinition.OamAttribute(entry.tileIndex(), entry.attributes()), 0,
                 entry.rawX() + offsetX - OAM_X_SCREEN_ORIGIN,
                 entry.rawY() + offsetY - OAM_Y_SCREEN_ORIGIN, false);
+        }
+    }
+
+    private void renderWingedOctorokOam(RenderContext context,
+                                        java.util.List<WingedOctorokOam.Entry> oam,
+                                        int sourceSlot, int[][] palettes,
+                                        int offsetX, int offsetY, RoomEntity entity) {
+        for (int index = oam.size() - 1; index >= 0; index--) {
+            WingedOctorokOam.Entry entry = oam.get(index);
+            if (entry.sourceSlot() != sourceSlot) {
+                continue;
+            }
+            renderOamSprite(context, palettes, null,
+                new EntitySpriteDefinition.OamAttribute(entry.tileIndex(), entry.attributes()),
+                entity.entityFlipAttribute(),
+                entry.rawX() + offsetX - OAM_X_SCREEN_ORIGIN,
+                entry.rawY() + offsetY - OAM_Y_SCREEN_ORIGIN);
         }
     }
 

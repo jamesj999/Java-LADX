@@ -2410,6 +2410,23 @@ runtime collision callback.
   renderer, combat, and non-interactive handler-boundary regressions pass,
   followed by the clean Java suite.
 
+## Verified ROM Winged Octorok entity runtime — 2026-08-07
+
+- Winged Octorok (`$AE`) now decodes bank `$07:$562D`'s eight pair variants
+  and the handler-generated `$57F5` two-entry rectangle. The rectangle uses
+  shared GPU tile `$22` with the source state-dependent flip attributes and
+  remains separate from the entity-sheet pair tiles.
+- The active handler ports its state `$00`/`$01` random walk, `$02` airborne
+  jump, fixed-point X/Y/Z motion, landing countdowns, shared recoil gate,
+  countdown-$0A Octorok-rock spawn, Link-facing direction selection, sword
+  jump cue `$24`, and the direct-return collision boundary for state `$02`.
+- ROM combat group data supplies physics `$12`, contact damage `$04`, and
+  initial health `$01`. A/B held input now crosses the Main/RoomSession
+  boundary separately so the source B-slot sword priority is preserved. ROM
+  display, motion, generated GPU OAM, runtime, combat, projectile-spawn, and
+  input-priority regressions pass; the clean Java suite passes with 1,248
+  tests and zero failures, errors, or skipped tests.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

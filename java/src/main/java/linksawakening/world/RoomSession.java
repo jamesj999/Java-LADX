@@ -171,6 +171,8 @@ public final class RoomSession {
     private int followingLinkDirection;
     private boolean followingNpcRoomNeedsSync;
     private boolean actionButtonsHeld;
+    private boolean actionButtonAHeld;
+    private boolean actionButtonBHeld;
     private boolean joypadHeld;
     private boolean powerBraceletButtonHeld;
     private boolean bombButtonHeld;
@@ -496,9 +498,16 @@ public final class RoomSession {
 
     /** Supplies the held J_A|J_B state consumed by input-driven entity handlers. */
     public void setEntityActionButtonsHeld(boolean actionButtonsHeld) {
-        this.actionButtonsHeld = actionButtonsHeld;
+        setEntityActionButtonsHeld(actionButtonsHeld, actionButtonsHeld);
+    }
+
+    /** Supplies the distinct held A/B states consumed by ROM input handlers. */
+    public void setEntityActionButtonsHeld(boolean actionButtonAHeld, boolean actionButtonBHeld) {
+        this.actionButtonAHeld = actionButtonAHeld;
+        this.actionButtonBHeld = actionButtonBHeld;
+        this.actionButtonsHeld = actionButtonAHeld || actionButtonBHeld;
         if (entityRuntime != null) {
-            entityRuntime.setActionButtonsHeld(actionButtonsHeld);
+            entityRuntime.setActionButtonsHeld(actionButtonAHeld, actionButtonBHeld);
         }
     }
 
@@ -1081,7 +1090,7 @@ public final class RoomSession {
         tickOcarinaAnimationHandler();
         entityRuntime.setSwitchBlockAnimationActive(
             SwitchBlockAnimation.isAnimating(switchableObjectAnimationStage));
-        entityRuntime.setActionButtonsHeld(actionButtonsHeld);
+        entityRuntime.setActionButtonsHeld(actionButtonAHeld, actionButtonBHeld);
         entityRuntime.setJoypadHeld(joypadHeld);
         entityRuntime.setPowerBraceletButtonHeld(powerBraceletButtonHeld);
         entityRuntime.setBombButtonHeld(bombButtonHeld);
@@ -1463,7 +1472,7 @@ public final class RoomSession {
             entityRuntime.setObjectIntersectionQuery(this::entityObjectIntersectionSample);
             entityRuntime.setGroundInteractionSideScrolling(
                 activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL);
-            entityRuntime.setActionButtonsHeld(actionButtonsHeld);
+            entityRuntime.setActionButtonsHeld(actionButtonAHeld, actionButtonBHeld);
             entityRuntime.setJoypadHeld(joypadHeld);
             entityRuntime.setPowerBraceletButtonHeld(powerBraceletButtonHeld);
             entityRuntime.setBombButtonHeld(bombButtonHeld);
@@ -1519,7 +1528,7 @@ public final class RoomSession {
         entityRuntime.setObjectIntersectionQuery(this::entityObjectIntersectionSample);
         entityRuntime.setGroundInteractionSideScrolling(
             activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL);
-        entityRuntime.setActionButtonsHeld(actionButtonsHeld);
+        entityRuntime.setActionButtonsHeld(actionButtonAHeld, actionButtonBHeld);
         entityRuntime.setJoypadHeld(joypadHeld);
         entityRuntime.setPowerBraceletButtonHeld(powerBraceletButtonHeld);
         entityRuntime.setBombButtonHeld(bombButtonHeld);

@@ -18,6 +18,7 @@ public final class EntitySpriteHandlerCatalog {
     public static final int ENTITY_KEY_DROP_POINT = 0x30;
     public static final int ENTITY_STAR = 0x9C;
     public static final int ENTITY_BLOOPER = 0xA9;
+    public static final int ENTITY_WINGED_OCTOROK = 0xAE;
     public static final int ENTITY_PINCER = 0xB0;
     public static final int LIFTABLE_ROCK_INTACT_ROCK_VARIANT = 0;
     public static final int LIFTABLE_ROCK_INTACT_BUSH_VARIANT = 1;
@@ -292,6 +293,9 @@ public final class EntitySpriteHandlerCatalog {
         }
         if (entityType == ENTITY_BLOOPER) {
             return decodePair(entityType, 0x07, 0x5BF1, 2, 0);
+        }
+        if (entityType == ENTITY_WINGED_OCTOROK) {
+            return decodePair(entityType, 0x07, 0x562D, 8, 0);
         }
         if (entityType == ENTITY_PINCER) {
             return decodePair(entityType, 0x07, 0x542B, 10, 0);

@@ -42,6 +42,8 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_HIDING_ZOL = 0x9B;
     private static final int ENTITY_STAR = EntitySpriteHandlerCatalog.ENTITY_STAR;
     private static final int ENTITY_BLOOPER = EntitySpriteHandlerCatalog.ENTITY_BLOOPER;
+    private static final int ENTITY_WINGED_OCTOROK =
+        EntitySpriteHandlerCatalog.ENTITY_WINGED_OCTOROK;
     private static final int ENTITY_PINCER = EntitySpriteHandlerCatalog.ENTITY_PINCER;
     private static final int ENTITY_SPIKE_TRAP = 0x27;
     private static final int ENTITY_PAIRODD = 0x57;
@@ -225,6 +227,7 @@ public final class RoomEntityRuntime {
     private final HidingZolMotion hidingZolMotion = new HidingZolMotion();
     private final StarMotion starMotion = new StarMotion();
     private final BlooperMotion blooperMotion = new BlooperMotion();
+    private final WingedOctorokMotion wingedOctorokMotion = new WingedOctorokMotion();
     private final PincerMotion pincerMotion = new PincerMotion();
     private final SpikeTrapMotion spikeTrapMotion = new SpikeTrapMotion();
     private final PairoddMotion pairoddMotion = new PairoddMotion();
@@ -297,6 +300,11 @@ public final class RoomEntityRuntime {
         new boolean[EntityRoomLoader.MAX_ENTITIES];
     private List<HookshotChainOam.Entry> hookshotChainOam = List.of();
     private List<PincerBodyOam.Entry> pincerBodyOam = List.of();
+    private List<WingedOctorokOam.Entry> wingedOctorokOam = List.of();
+    private final boolean[] wingedSwordAttackThisFrame =
+        new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] wingedStateTwoThisFrame =
+        new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final int[] liftedPhase = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] liftedSourceDirection = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] liftedStateInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
@@ -358,6 +366,8 @@ public final class RoomEntityRuntime {
     private int booBuddyTriggerCount;
     private final int[] killOrder = new int[0x100];
     private boolean actionButtonsHeld;
+    private boolean actionButtonAHeld;
+    private boolean actionButtonBHeld;
     private boolean joypadHeld;
     private int linkItemA;
     private int linkItemB;
@@ -617,6 +627,7 @@ public final class RoomEntityRuntime {
         this.chestContentsTable = chestContentsTable;
         this.hookshotChainOam = initial.hookshotChainOam();
         this.pincerBodyOam = initial.pincerBodyOam();
+        this.wingedOctorokOam = initial.wingedOctorokOam();
         Arrays.fill(entityOptions1Override, -1);
         Arrays.fill(droppedItemBySlot, 0);
         Arrays.fill(bombDirection, 0xFF);
@@ -1050,6 +1061,8 @@ public final class RoomEntityRuntime {
         projectileLaunchRequests.clear();
         Arrays.fill(enemyProjectileSpawnedThisFrame, false);
         Arrays.fill(dynamicEntitySpawnedThisFrame, false);
+        Arrays.fill(wingedSwordAttackThisFrame, false);
+        Arrays.fill(wingedStateTwoThisFrame, false);
         transientVfxRequests.clear();
         pendingLinkFinalPositionRequests.clear();
         pendingLinkMotionBlockRequests.clear();
@@ -1106,6 +1119,7 @@ public final class RoomEntityRuntime {
             boolean preserveSnakePresentation = false;
             boolean preserveStarPresentation = false;
             boolean preserveBlooperPresentation = false;
+            boolean preserveWingedOctorokPresentation = false;
             boolean preservePincerPresentation = false;
             boolean preserveWizrobePresentation = false;
             boolean preserveWizrobeProjectilePresentation = false;
@@ -1452,6 +1466,9 @@ public final class RoomEntityRuntime {
                 }
                 if (entity.type() == ENTITY_PINCER) {
                     pincerMotion.initialize(entity.slot());
+                }
+                if (entity.type() == ENTITY_WINGED_OCTOROK) {
+                    wingedOctorokMotion.initialize(entity.slot());
                 }
                 if (entity.type() == ENTITY_SPIKE_TRAP) {
                     spikeTrapMotion.initialize(entity.slot(), randomByteSupplier);
@@ -1952,6 +1969,28 @@ public final class RoomEntityRuntime {
                 enemyTransitionCountdown[entity.slot()] = pincerUpdate.transitionCountdown();
                 enemyPhysicsFlags[entity.slot()] = pincerUpdate.physicsFlags();
                 preservePincerPresentation = true;
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_WINGED_OCTOROK && handlerLinkCollisionEnabled) {
+                WingedOctorokMotion.Update wingedUpdate = wingedOctorokMotion.advance(
+                    entity, frame, linkEntityX, linkEntityY, randomByteSupplier,
+                    backgroundCollision, enemyTransitionCountdown[entity.slot()],
+                    enemyIgnoreHitsCountdown[entity.slot()], actionButtonAHeld,
+                    actionButtonBHeld,
+                    linkItemA, linkItemB);
+                updated = wingedUpdate.entity();
+                enemyTransitionCountdown[entity.slot()] = wingedUpdate.transitionCountdown();
+                preserveWingedOctorokPresentation = true;
+                wingedStateTwoThisFrame[entity.slot()] = wingedUpdate.skippedDefaultCollision();
+                if (wingedUpdate.rockSpawn() != null) {
+                    spawnWingedOctorokRock(updated, wingedUpdate.rockSpawn().direction());
+                }
+                if (wingedUpdate.jumped()) {
+                    wingedSwordAttackThisFrame[entity.slot()] = true;
+                    pendingEntityEvents.add(new EntityCombatEvent(
+                        entity.slot(), entity.type(), 0, false,
+                        EntityCombatEvent.SoundChannel.JINGLE, 0x24));
+                }
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_PAIRODD_PROJECTILE) {
@@ -2506,7 +2545,8 @@ public final class RoomEntityRuntime {
                 || preserveBombitePresentation
                 || preserveIronMaskPresentation || preserveSnakePresentation
                 || preserveStarPresentation
-                || preserveBlooperPresentation || preservePincerPresentation
+                || preserveBlooperPresentation || preserveWingedOctorokPresentation
+                || preservePincerPresentation
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
                 || preservePolsVoicePresentation
                 || preserveSpikedBeetlePresentation || preserveArmosKnightPresentation
@@ -2518,7 +2558,8 @@ public final class RoomEntityRuntime {
                 || preserveBombitePresentation
                 || preserveIronMaskPresentation || preserveSnakePresentation
                 || preserveStarPresentation
-                || preserveBlooperPresentation || preservePincerPresentation
+                || preserveBlooperPresentation || preserveWingedOctorokPresentation
+                || preservePincerPresentation
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
                 || preservePolsVoicePresentation
                 || preserveSpikedBeetlePresentation || preserveArmosKnightPresentation
@@ -2543,6 +2584,7 @@ public final class RoomEntityRuntime {
         }
         updateHookshotChainOam(linkEntityX, linkEntityY, frame);
         updatePincerBodyOam();
+        updateWingedOctorokOam();
         return List.copyOf(projectileEvents);
     }
 
@@ -2917,6 +2959,13 @@ public final class RoomEntityRuntime {
             if (entity.type() == ENTITY_WIZROBE && wizrobeMotion.state(entity.slot()) != 3) {
                 continue;
             }
+            if (entity.type() == ENTITY_WINGED_OCTOROK
+                && (wingedOctorokMotion.state(entity.slot()) == 2
+                    || wingedStateTwoThisFrame[entity.slot()])) {
+                // WingedOctorokEntityHandler returns directly from its jump
+                // state instead of calling DefaultEnemyDamageCollisionHandler.
+                continue;
+            }
             if (isZolGelType(entity.type()) && zolGelMotion.skipsEnemyCollision(entity.slot())) {
                 continue;
             }
@@ -2949,6 +2998,7 @@ public final class RoomEntityRuntime {
                 && RoomEntityCombatRules.overlapsLink(entity, linkEntityX, linkEntityY);
             boolean swordHit = swordCollisionActive
                 && booBuddyAllowsSwordCollision
+                && !wingedSwordAttackThisFrame[entity.slot()]
                 && (entity.type() != ENTITY_LIKE_LIKE
                     || likeLikeMotion.state(entity.slot()) == 0)
                 && hidingZolSwordCollision
@@ -3995,6 +4045,9 @@ public final class RoomEntityRuntime {
         pairoddMotion.clear(slot);
         pairoddProjectileMotion.clear(slot);
         enemyProjectileMotion.clear(slot);
+        wingedOctorokMotion.clear(slot);
+        wingedSwordAttackThisFrame[slot] = false;
+        wingedStateTwoThisFrame[slot] = false;
         laserMotion.clear(slot);
         waterTektiteMotion.clear(slot);
         fishMotion.clear(slot);
@@ -4797,6 +4850,7 @@ public final class RoomEntityRuntime {
     public RoomEntitySnapshot snapshot() {
         return new RoomEntitySnapshot(Arrays.asList(slots), spriteSelection, spriteTiles,
             groundInteractionSideScrolling, hookshotChainOam, pincerBodyOam,
+            wingedOctorokOam,
             fallingVisualYOffset);
     }
 
@@ -4822,6 +4876,39 @@ public final class RoomEntityRuntime {
                 entity.x(), entity.y(), pincerMotion.state(entity.slot())));
         }
         pincerBodyOam = List.copyOf(entries);
+    }
+
+    private void updateWingedOctorokOam() {
+        List<WingedOctorokOam.Entry> entries = new ArrayList<>();
+        for (RoomEntity entity : slots) {
+            if (!entity.loaded() || entity.type() != ENTITY_WINGED_OCTOROK) {
+                continue;
+            }
+            entries.addAll(WingedOctorokOam.entries(entity.slot(),
+                wingedOctorokMotion.privateState2(entity.slot()),
+                entity.x(), entity.y(), entity.z()));
+        }
+        wingedOctorokOam = List.copyOf(entries);
+    }
+
+    List<WingedOctorokOam.Entry> wingedOctorokOam() {
+        return wingedOctorokOam;
+    }
+
+    int wingedOctorokState(int slot) {
+        return wingedOctorokMotion.state(slot);
+    }
+
+    int wingedOctorokSpeedX(int slot) {
+        return wingedOctorokMotion.speedX(slot);
+    }
+
+    int wingedOctorokSpeedY(int slot) {
+        return wingedOctorokMotion.speedY(slot);
+    }
+
+    int wingedOctorokSpeedZ(int slot) {
+        return wingedOctorokMotion.speedZ(slot);
     }
 
     void setSpriteSelection(EntitySpriteSelection selection) {
@@ -4855,7 +4942,13 @@ public final class RoomEntityRuntime {
     }
 
     void setActionButtonsHeld(boolean actionButtonsHeld) {
-        this.actionButtonsHeld = actionButtonsHeld;
+        setActionButtonsHeld(actionButtonsHeld, actionButtonsHeld);
+    }
+
+    void setActionButtonsHeld(boolean actionButtonAHeld, boolean actionButtonBHeld) {
+        this.actionButtonAHeld = actionButtonAHeld;
+        this.actionButtonBHeld = actionButtonBHeld;
+        this.actionButtonsHeld = actionButtonAHeld || actionButtonBHeld;
     }
 
     void setJoypadHeld(boolean joypadHeld) {
@@ -5133,6 +5226,7 @@ public final class RoomEntityRuntime {
             || type == ENTITY_HIDING_ZOL
             || type == ENTITY_STAR
             || type == ENTITY_BLOOPER
+            || type == ENTITY_WINGED_OCTOROK
             || type == ENTITY_PAIRODD
             || isRoamingEnemyType(type) || usesBank6Recoil(type)
             || isGhiniType(type);
@@ -5677,6 +5771,39 @@ public final class RoomEntityRuntime {
         dyingCountdown[freeSlot] = 0;
         powerRecoilDeath[freeSlot] = false;
         enemyProjectileMotion.initializeSpawn(freeSlot, request.projectileType(), direction);
+        enemyProjectileSpawnedThisFrame[freeSlot] = true;
+    }
+
+    private void spawnWingedOctorokRock(RoomEntity source, int direction) {
+        // SpawnNewEntity returns with carry when no room slot is available.
+        // The ROM handler simply abandons the launch in that case.
+        if (spriteHandlers == null) {
+            return;
+        }
+        int freeSlot = findFreeEntitySlot();
+        if (freeSlot < 0) {
+            return;
+        }
+
+        EnemyProjectileMotion.SpawnData spawn = EnemyProjectileMotion.spawnData(
+            ENTITY_OCTOROK_ROCK, direction);
+        EntitySpriteDefinition projectileDefinition = spriteDefinitionFor(ENTITY_OCTOROK_ROCK);
+        int projectileVariant = projectileDefinition.supported() ? 1 : -1;
+        RoomEntity projectile = new RoomEntity(freeSlot, -1, ENTITY_OCTOROK_ROCK,
+            byteValue(source.x() + signedByte(spawn.offsetX())),
+            byteValue(source.y() + signedByte(spawn.offsetY())), EntityStatus.ACTIVE,
+            projectileDefinition, projectileVariant, 0, 0, source.z());
+        slots[freeSlot] = projectile;
+        baseEntityFlipAttribute[freeSlot] = 0;
+        enemyTransitionCountdown[freeSlot] = 0;
+        enemyStunnedCountdown[freeSlot] = 0;
+        enemyHealth[freeSlot] = initialHealth(ENTITY_OCTOROK_ROCK);
+        enemyFlashCountdown[freeSlot] = 0;
+        enemyIgnoreHitsCountdown[freeSlot] = 1;
+        enemyRecoilMotion.clear(freeSlot);
+        dyingCountdown[freeSlot] = 0;
+        powerRecoilDeath[freeSlot] = false;
+        enemyProjectileMotion.initializeSpawn(freeSlot, ENTITY_OCTOROK_ROCK, direction);
         enemyProjectileSpawnedThisFrame[freeSlot] = true;
     }
 
@@ -7372,6 +7499,7 @@ public final class RoomEntityRuntime {
             case ENTITY_STALFOS_EVASIVE -> EVASIVE_PHYSICS_FLAGS;
             case ENTITY_STAR -> 0x12;
             case ENTITY_BLOOPER -> 0x02;
+            case ENTITY_WINGED_OCTOROK -> 0x12;
             case ENTITY_PINCER -> 0x02;
             case ENTITY_IRON_MASK -> IRON_MASK_INITIAL_PHYSICS_FLAGS;
             case ENTITY_GOOMBA, ENTITY_SNAKE -> GOOMBA_INITIAL_PHYSICS_FLAGS;
@@ -7807,6 +7935,9 @@ public final class RoomEntityRuntime {
         if (entity.type() == ENTITY_CROW) {
             return crowMotion.speedZ(slot);
         }
+        if (entity.type() == ENTITY_WINGED_OCTOROK) {
+            return wingedOctorokMotion.speedZ(slot);
+        }
         if (entity.type() == ENTITY_STALFOS_AGGRESSIVE) {
             return stalfosAggressiveMotion.speedZ(slot);
         }
@@ -7869,6 +8000,7 @@ public final class RoomEntityRuntime {
             liftableRockSmashCountdown[slot]--;
         }
         blooperMotion.decrementPrivateCountdown3(slot);
+        wingedOctorokMotion.decrementPrivateCountdown2(slot);
     }
 
     private void requestArmosLinkPush(RoomEntity entity, int linkEntityX, int linkEntityY,

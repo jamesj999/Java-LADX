@@ -865,8 +865,9 @@ public class Main {
                 && !dialogBlocksGameplay) {
                 roomSession.setEntityActionButtonsHeld(
                     inputState != null && inputConfig != null
-                        && (inputState.isDown(inputConfig.aKey())
-                            || inputState.isDown(inputConfig.bKey())));
+                        && inputState.isDown(inputConfig.aKey()),
+                    inputState != null && inputConfig != null
+                        && inputState.isDown(inputConfig.bKey()));
                 roomSession.setEntityJoypadHeld(
                     inputState != null && inputConfig != null
                         && (inputState.isDown(inputConfig.upKey())

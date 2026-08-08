@@ -13,6 +13,7 @@ import linksawakening.world.RoomEntity;
 import linksawakening.world.RoomEntitySnapshot;
 import linksawakening.world.RoomRenderSnapshot;
 import linksawakening.world.ScrollController;
+import linksawakening.world.WingedOctorokOam;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -66,6 +67,31 @@ final class EntityRenderLayerTest {
         assertEquals(bodyColor, pixelColor(buffer, 0x3C, 0x40));
         assertEquals(bodyColor, pixelColor(buffer, 0x3C, 0x48));
         assertEquals(0, pixelColor(buffer, 0x34, 0x40));
+    }
+
+    @Test
+    void rendersWingedOctorokGeneratedRectFromTheGpuTileRegion() {
+        GPU gpu = new GPU();
+        int gpuColor = 0x123456;
+        int[][] palettes = {{0, gpuColor, 0, 0}};
+        writeSolidTile(gpu, 0x22, 1);
+        writeSolidTile(gpu, 0x23, 1);
+        EntitySpriteDefinition hiddenWingedOctorok = new EntitySpriteDefinition(
+            0xAE, 0x07, 0x562D, EntitySpriteDefinition.Shape.PAIR, 0,
+            List.of(new EntitySpriteDefinition.Variant(
+                new EntitySpriteDefinition.OamAttribute(0xFF, 0x00),
+                new EntitySpriteDefinition.OamAttribute(0xFF, 0x20))));
+        RoomEntity entity = new RoomEntity(2, 0, 0xAE, 0x40, 0x50,
+            EntityStatus.ACTIVE, hiddenWingedOctorok, 0);
+        RoomEntitySnapshot snapshot = snapshot(null, gpu.snapshotEntityTiles(), entity)
+            .withWingedOctorokOam(WingedOctorokOam.entries(2, 0, 0x40, 0x50, 0));
+        byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
+
+        new EntityRenderLayer(snapshot, palettes, new ScrollController())
+            .render(new RenderContext(buffer, gpu));
+
+        assertEquals(gpuColor, pixelColor(buffer, 0x34, 0x40));
+        assertEquals(gpuColor, pixelColor(buffer, 0x44, 0x40));
     }
 
     @Test
