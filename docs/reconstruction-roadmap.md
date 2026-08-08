@@ -2119,6 +2119,24 @@ runtime collision callback.
   state-gated combat, and runtime integration are covered. The clean Java
   suite passes with 1,156 tests and zero failures, errors, or skipped tests.
 
+## Verified ROM Crow entity runtime — 2026-08-07
+
+- Entity `$7A` now uses the bank-$06 four-variant display list at `$5C89` and
+  ports the handler's initial visual lift, Link proximity window, `$22/$30`
+  transition timers, `$08` Z movement, infinity-norm steering, one-unit
+  velocity approach, and four-frame outward-flight steering gate.
+- The runtime preserves the source `$52` projectile-no-clip startup flags,
+  `$12` active-flight flags, `$20` allow-out-of-bounds option, `$A8/$88`
+  bounds clear, boomerang noise `$2D`, normal hitbox, health `$02`, and
+  contact damage `$08`. Crow collision is disabled until the handler reaches
+  its active flight states, and bank-$06 recoil is routed through the shared
+  runtime recoil path.
+- ROM display-list, state transitions, fixed-point movement, bounds unload,
+  sound request, combat gating, and runtime integration are covered. The
+  clean Java suite passes with 1,160 tests and zero failures, errors, or
+  skipped tests. The Kanalet Castle crow's room-status/key-drop special case
+  remains a separate room-state follow-up.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

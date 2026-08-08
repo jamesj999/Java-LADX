@@ -41,6 +41,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_PAIRODD_PROJECTILE = 0x58;
     private static final int ENTITY_WATER_TEKTITE = 0x99;
     private static final int ENTITY_FISH = FishMotion.ENTITY_TYPE;
+    private static final int ENTITY_CROW = CrowMotion.ENTITY_TYPE;
     private static final int ENTITY_STALFOS_AGGRESSIVE = 0x1A;
     private static final int ENTITY_STALFOS_EVASIVE = 0x1E;
     private static final int ENTITY_GIBDO = 0x1F;
@@ -51,6 +52,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_OPT1_NO_WALL_COLLISION = 0x01;
     private static final int ENTITY_OPT1_SPLASH_IN_WATER = 0x08;
     private static final int ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL = 0x02;
+    private static final int ENTITY_OPT1_ALLOW_OUT_OF_BOUNDS = 0x20;
     private static final int WIZROBE_PROJECTILE_OPTIONS1 =
         ENTITY_OPT1_NO_GROUND_INTERACTION | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
     private static final int ENTITY_PHYSICS_HARMLESS = 0x80;
@@ -209,6 +211,7 @@ public final class RoomEntityRuntime {
         new PairoddProjectileMotion();
     private final WaterTektiteMotion waterTektiteMotion = new WaterTektiteMotion();
     private final FishMotion fishMotion = new FishMotion();
+    private final CrowMotion crowMotion = new CrowMotion();
     private final StalfosAggressiveMotion stalfosAggressiveMotion =
         new StalfosAggressiveMotion();
     private final StalfosEvasiveMotion stalfosEvasiveMotion = new StalfosEvasiveMotion();
@@ -550,6 +553,9 @@ public final class RoomEntityRuntime {
             }
             if (entity.loaded() && entity.type() == ENTITY_FISH) {
                 fishMotion.initialize(entity.slot());
+            }
+            if (entity.loaded() && entity.type() == ENTITY_CROW) {
+                crowMotion.initialize(entity.slot());
             }
             if (entity.loaded() && entity.type() == ENTITY_SPIKED_BEETLE) {
                 spikedBeetleMotion.initialize(entity.slot());
@@ -1316,6 +1322,9 @@ public final class RoomEntityRuntime {
                 if (entity.type() == ENTITY_FISH) {
                     fishMotion.initialize(entity.slot());
                 }
+                if (entity.type() == ENTITY_CROW) {
+                    crowMotion.initialize(entity.slot());
+                }
                 if (entity.type() == ENTITY_STALFOS_AGGRESSIVE) {
                     stalfosAggressiveMotion.initialize(entity.slot(), randomByteSupplier);
                 }
@@ -1853,6 +1862,23 @@ public final class RoomEntityRuntime {
                     pendingEntityEvents.add(new EntityCombatEvent(
                         updated.slot(), updated.type(), 0, false,
                         EntityCombatEvent.SoundChannel.JINGLE, 0x0E));
+                }
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_CROW) {
+                CrowMotion.Update crowUpdate = crowMotion.advance(entity,
+                    enemyTransitionCountdown[entity.slot()], frame, linkEntityX, linkEntityY);
+                updated = crowUpdate.entity();
+                enemyTransitionCountdown[entity.slot()] = crowUpdate.transitionCountdown();
+                enemyPhysicsFlags[entity.slot()] = crowUpdate.physicsFlags();
+                if (crowUpdate.boomerangSound()) {
+                    pendingEntityEvents.add(new EntityCombatEvent(
+                        updated.slot(), updated.type(), 0, false,
+                        EntityCombatEvent.SoundChannel.NOISE, BOOMERANG_SFX_ID));
+                }
+                if (crowUpdate.unloaded()) {
+                    disableEntityWithoutPersistence(entity.slot());
+                    continue;
                 }
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
@@ -2464,6 +2490,10 @@ public final class RoomEntityRuntime {
             }
             if (entity.type() == ENTITY_FISH
                 && !fishMotion.allowsEnemyCollision(entity.slot())) {
+                continue;
+            }
+            if (entity.type() == ENTITY_CROW
+                && !crowMotion.allowsEnemyCollision(entity.slot())) {
                 continue;
             }
             if (isGhiniType(entity.type())
@@ -3568,6 +3598,7 @@ public final class RoomEntityRuntime {
         laserMotion.clear(slot);
         waterTektiteMotion.clear(slot);
         fishMotion.clear(slot);
+        crowMotion.clear(slot);
         stalfosAggressiveMotion.clear(slot);
         stalfosEvasiveMotion.clear(slot);
         gibdoMotion.clear(slot);
@@ -4621,6 +4652,7 @@ public final class RoomEntityRuntime {
             || type == ENTITY_ANTI_FAIRY || type == ENTITY_STALFOS_AGGRESSIVE
             || type == ENTITY_HARDHAT_BEETLE || type == ENTITY_ARMOS_STATUE
             || type == ENTITY_WIZROBE
+            || type == ENTITY_CROW
             || type == ENTITY_SPARK_COUNTER_CLOCKWISE
             || type == ENTITY_SPARK_CLOCKWISE
             || type == ENTITY_POLS_VOICE
@@ -6398,6 +6430,9 @@ public final class RoomEntityRuntime {
         if (slots[slot].type() == ENTITY_FISH) {
             return ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
         }
+        if (slots[slot].type() == ENTITY_CROW) {
+            return ENTITY_OPT1_ALLOW_OUT_OF_BOUNDS;
+        }
         if (slots[slot].type() == ENTITY_SPIKED_BEETLE) {
             // The static table starts at splash-only. The handler writes the
             // sword-clink-off bit on its first normal active pass.
@@ -6451,6 +6486,27 @@ public final class RoomEntityRuntime {
     }
 
     int fishTransitionCountdown(int slot) {
+        validateEntitySlot(slot);
+        return enemyTransitionCountdown[slot];
+    }
+
+    int crowState(int slot) {
+        return crowMotion.state(slot);
+    }
+
+    int crowSpeedX(int slot) {
+        return crowMotion.speedX(slot);
+    }
+
+    int crowSpeedY(int slot) {
+        return crowMotion.speedY(slot);
+    }
+
+    int crowSpeedZ(int slot) {
+        return crowMotion.speedZ(slot);
+    }
+
+    int crowTransitionCountdown(int slot) {
         validateEntitySlot(slot);
         return enemyTransitionCountdown[slot];
     }
@@ -6546,6 +6602,7 @@ public final class RoomEntityRuntime {
             case ENTITY_BOUNCING_BOMBITE, ENTITY_TIMER_BOMBITE ->
                 BOMBITE_INITIAL_PHYSICS_FLAGS;
             case ENTITY_FISH -> FishMotion.INITIAL_PHYSICS_FLAGS;
+            case ENTITY_CROW -> CrowMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_MAD_BOMBER -> MAD_BOMBER_INITIAL_PHYSICS_FLAGS;
             case ENTITY_BOMBER -> BOMBER_INITIAL_PHYSICS_FLAGS;
             case ENTITY_LIFTABLE_ROCK, ENTITY_LIFTABLE_STATUE,
@@ -6911,6 +6968,7 @@ public final class RoomEntityRuntime {
         enemyProjectileMotion.clear(slot);
         laserMotion.clear(slot);
         waterTektiteMotion.clear(slot);
+        crowMotion.clear(slot);
         stalfosAggressiveMotion.clear(slot);
         stalfosEvasiveMotion.clear(slot);
         gibdoMotion.clear(slot);
@@ -6945,6 +7003,9 @@ public final class RoomEntityRuntime {
         }
         if (entity.type() == ENTITY_FISH) {
             return fishMotion.speedZ(slot);
+        }
+        if (entity.type() == ENTITY_CROW) {
+            return crowMotion.speedZ(slot);
         }
         if (entity.type() == ENTITY_STALFOS_AGGRESSIVE) {
             return stalfosAggressiveMotion.speedZ(slot);
