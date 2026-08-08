@@ -541,6 +541,11 @@ final class EntitySpriteHandlerCatalogTest {
         assertNull(hidingZol.variant(1).second());
         assertEquals(0x00, hidingZol.variant(1).first().tile());
 
+        EntitySpriteDefinition star = catalog.forEntityType(
+            EntitySpriteHandlerCatalog.ENTITY_STAR, EntityRoomLoader.RoomTable.INDOORS_A);
+        assertDefinition(star, 0x07, 0x7247,
+            EntitySpriteDefinition.Shape.PAIR, 5, 0);
+
         EntitySpriteDefinition gibdo = catalog.forEntityType(
             0x1F, EntityRoomLoader.RoomTable.INDOORS_B);
         assertDefinition(gibdo, 0x06, 0x7E6F,
@@ -976,6 +981,18 @@ final class EntitySpriteHandlerCatalogTest {
         assertEquals(0x00, pairoddProjectile.variant(1).first().attributes());
         assertEquals(0x7E, pairoddProjectile.variant(1).second().tile());
         assertEquals(0x20, pairoddProjectile.variant(1).second().attributes());
+
+        EntitySpriteDefinition star = catalog.forEntityType(
+            EntitySpriteHandlerCatalog.ENTITY_STAR, EntityRoomLoader.RoomTable.INDOORS_A);
+        assertDefinition(star, 0x07, 0x7247,
+            EntitySpriteDefinition.Shape.PAIR, 5, 0);
+        assertPairBytes(star, new int[][] {
+            {0x74, 0x01, 0x74, 0x21},
+            {0x76, 0x01, 0x78, 0x01},
+            {0x7A, 0x01, 0x7A, 0x21},
+            {0x78, 0x21, 0x76, 0x21},
+            {0x7C, 0x01, 0x7C, 0x01}
+        });
 
         EntitySpriteDefinition leever = catalog.forEntityType(
             0x0E, EntityRoomLoader.RoomTable.OVERWORLD);

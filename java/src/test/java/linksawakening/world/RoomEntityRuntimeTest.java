@@ -4006,6 +4006,87 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void starUsesTheRomRandomSpeedVectorAndFourFrameAnimation() {
+        EntitySpriteDefinition definition = pairDefinition(0x9C, 5);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x9C, 64, 64, EntityStatus.INIT, definition, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+
+        // EntityInitWithRandomSpeed[1] = (+12, -12). The Star handler keeps
+        // the fifth ROM display-list variant available but selects variants
+        // 0..3 from (hFrameCounter >> 3) & 3.
+        runtime.tick(0, 120, 120, sequence(0x01));
+        assertEquals(0x0C, runtime.starSpeedX(0));
+        assertEquals(0xF4, runtime.starSpeedY(0));
+        assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
+
+        runtime.tick(1, 120, 120, sequence(0x00));
+        assertEquals(64, runtime.snapshot().slots().get(0).x());
+        assertEquals(63, runtime.snapshot().slots().get(0).y());
+
+        runtime.tick(2, 120, 120, sequence(0x00));
+        assertEquals(65, runtime.snapshot().slots().get(0).x());
+        assertEquals(62, runtime.snapshot().slots().get(0).y());
+
+        runtime.tick(24, 120, 120, sequence(0x00));
+        assertEquals(3, runtime.snapshot().slots().get(0).spriteVariant());
+    }
+
+    @Test
+    void starGivesHorizontalBackgroundCollisionPriorityWhenBouncing() {
+        EntitySpriteDefinition definition = pairDefinition(0x9C, 5);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x9C, 64, 64, EntityStatus.INIT, definition, 0)));
+
+        runtime.tick(0, 120, 120, sequence(0x00));
+        runtime.tick(1, 120, 120, sequence(0x00));
+        RoomEntityBackgroundCollision corner = (entity, direction, nextX, nextY) ->
+            direction == 0 || direction == 3;
+        runtime.tick(2, 120, 120, sequence(0x00), corner);
+
+        assertEquals(64, runtime.snapshot().slots().get(0).x());
+        assertEquals(64, runtime.snapshot().slots().get(0).y());
+        assertEquals(0xF4, runtime.starSpeedX(0));
+        assertEquals(0x0C, runtime.starSpeedY(0));
+    }
+
+    @Test
+    void starLeavesItsRecoilAndMovementUntouchedDuringNonInteractiveLinkMotion() {
+        EntitySpriteDefinition definition = pairDefinition(0x9C, 5);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x9C, 64, 64, EntityStatus.INIT, definition, 0)));
+
+        runtime.tick(0, 120, 120, sequence(0x00));
+        EnemyProjectileCollision.LinkState nonInteractive =
+            new EnemyProjectileCollision.LinkState(120, 120, 0, 0x02, 0, false);
+        runtime.tickWithProjectileEvents(1, 120, 120, sequence(0x00), null,
+            nonInteractive);
+        runtime.tickWithProjectileEvents(2, 120, 120, sequence(0x00), null,
+            nonInteractive);
+
+        assertEquals(64, runtime.snapshot().slots().get(0).x());
+        assertEquals(64, runtime.snapshot().slots().get(0).y());
+        assertEquals(0x0C, runtime.starSpeedX(0));
+        assertEquals(0x0C, runtime.starSpeedY(0));
+    }
+
+    @Test
+    void starUsesTheNormalEnemyCombatValuesAndShadowPhysics() {
+        EntitySpriteDefinition definition = pairDefinition(0x9C, 5);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x9C, 64, 64, EntityStatus.ACTIVE, definition, 0)));
+
+        assertTrue(RoomEntityCombatRules.supportsEnemyCollision(0x9C));
+        assertEquals(0x01, runtime.enemyHealth(0));
+        assertEquals(0x12, runtime.physicsFlags(0));
+
+        List<EntityCombatEvent> contact = runtime.resolveCombat(
+            1, 64, 64, false, true, false, 0, 0, 0, 0);
+        assertEquals(1, contact.size());
+        assertEquals(0x04, contact.get(0).linkDamage());
+    }
+
+    @Test
     void sparkInitializersSelectTheRomDirectionAndOffset() {
         EntitySpriteDefinition counterDefinition = pairDefinition(0x16, 2);
         RoomEntityRuntime counterClockwise = RoomEntityRuntime.from(snapshot(

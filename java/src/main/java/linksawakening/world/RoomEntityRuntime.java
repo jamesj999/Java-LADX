@@ -40,6 +40,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_ZOL = 0x1B;
     private static final int ENTITY_GEL = 0x1C;
     private static final int ENTITY_HIDING_ZOL = 0x9B;
+    private static final int ENTITY_STAR = EntitySpriteHandlerCatalog.ENTITY_STAR;
     private static final int ENTITY_SPIKE_TRAP = 0x27;
     private static final int ENTITY_PAIRODD = 0x57;
     private static final int ENTITY_PAIRODD_PROJECTILE = 0x58;
@@ -220,6 +221,7 @@ public final class RoomEntityRuntime {
     private final SparkMotion sparkMotion = new SparkMotion();
     private final ZolGelMotion zolGelMotion = new ZolGelMotion();
     private final HidingZolMotion hidingZolMotion = new HidingZolMotion();
+    private final StarMotion starMotion = new StarMotion();
     private final SpikeTrapMotion spikeTrapMotion = new SpikeTrapMotion();
     private final PairoddMotion pairoddMotion = new PairoddMotion();
     private final PairoddProjectileMotion pairoddProjectileMotion =
@@ -1093,6 +1095,7 @@ public final class RoomEntityRuntime {
             boolean preserveBombitePresentation = false;
             boolean preserveIronMaskPresentation = false;
             boolean preserveSnakePresentation = false;
+            boolean preserveStarPresentation = false;
             boolean preserveWizrobePresentation = false;
             boolean preserveWizrobeProjectilePresentation = false;
             boolean preservePolsVoicePresentation = false;
@@ -1429,6 +1432,9 @@ public final class RoomEntityRuntime {
                 if (entity.type() == ENTITY_HIDING_ZOL) {
                     hidingZolMotion.initialize(entity.slot());
                 }
+                if (entity.type() == ENTITY_STAR) {
+                    starMotion.initialize(entity.slot(), randomByteSupplier);
+                }
                 if (entity.type() == ENTITY_SPIKE_TRAP) {
                     spikeTrapMotion.initialize(entity.slot(), randomByteSupplier);
                 }
@@ -1613,7 +1619,8 @@ public final class RoomEntityRuntime {
                     EntityCombatEvent.SoundChannel.NOISE, 0x13));
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
-                && usesSharedRecoil(entity.type())) {
+                && usesSharedRecoil(entity.type())
+                && (entity.type() != ENTITY_STAR || handlerLinkCollisionEnabled)) {
                 // Bank-$03 AnimateRoamingEnemy and the bank-$04/$06/$07
                 // handlers apply the shared recoil before their own movement.
                 EnemyRecoilMotion.Update recoil = applyEnemyRecoilIfNeeded(
@@ -1882,6 +1889,17 @@ public final class RoomEntityRuntime {
                         entity.slot(), entity.type(), 0, false,
                         EntityCombatEvent.SoundChannel.JINGLE, 0x3C));
                 }
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_STAR && handlerLinkCollisionEnabled) {
+                RoomEntityBackgroundInteraction starBackgroundInteraction = backgroundInteraction;
+                if (starBackgroundInteraction == null && backgroundCollision != null) {
+                    starBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
+                        backgroundCollision);
+                }
+                updated = starMotion.advance(entity, frame, randomByteSupplier,
+                    starBackgroundInteraction, enemyIgnoreHitsCountdown[entity.slot()]);
+                preserveStarPresentation = true;
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_PAIRODD_PROJECTILE) {
@@ -2432,6 +2450,7 @@ public final class RoomEntityRuntime {
             int variant = preserveGhiniPresentation || preserveMadBomberPresentation
                 || preserveBombitePresentation
                 || preserveIronMaskPresentation || preserveSnakePresentation
+                || preserveStarPresentation
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
                 || preservePolsVoicePresentation
                 || preserveSpikedBeetlePresentation || preserveArmosKnightPresentation
@@ -2442,6 +2461,7 @@ public final class RoomEntityRuntime {
             int renderFlipAttribute = preserveGhiniPresentation || preserveMadBomberPresentation
                 || preserveBombitePresentation
                 || preserveIronMaskPresentation || preserveSnakePresentation
+                || preserveStarPresentation
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
                 || preservePolsVoicePresentation
                 || preserveSpikedBeetlePresentation || preserveArmosKnightPresentation
@@ -3908,6 +3928,7 @@ public final class RoomEntityRuntime {
         sparkMotion.clear(slot);
         zolGelMotion.clear(slot);
         hidingZolMotion.clear(slot);
+        starMotion.clear(slot);
         spikeTrapMotion.clear(slot);
         pairoddMotion.clear(slot);
         pairoddProjectileMotion.clear(slot);
@@ -5033,6 +5054,7 @@ public final class RoomEntityRuntime {
             || type == ENTITY_GOOMBA
             || type == ENTITY_SNAKE
             || type == ENTITY_HIDING_ZOL
+            || type == ENTITY_STAR
             || type == ENTITY_PAIRODD
             || isRoamingEnemyType(type) || usesBank6Recoil(type)
             || isGhiniType(type);
@@ -6346,6 +6368,14 @@ public final class RoomEntityRuntime {
         return antiFairyMotion.speedY(slot);
     }
 
+    int starSpeedX(int slot) {
+        return starMotion.speedX(slot);
+    }
+
+    int starSpeedY(int slot) {
+        return starMotion.speedY(slot);
+    }
+
     int sparkPrivateState1(int slot) {
         return sparkMotion.privateState1(slot);
     }
@@ -7209,6 +7239,7 @@ public final class RoomEntityRuntime {
             case ENTITY_ARMOS_STATUE -> ARMOS_INITIAL_PHYSICS_FLAGS;
             case ENTITY_ARMOS_KNIGHT -> ARMOS_KNIGHT_INITIAL_PHYSICS_FLAGS;
             case ENTITY_STALFOS_EVASIVE -> EVASIVE_PHYSICS_FLAGS;
+            case ENTITY_STAR -> 0x12;
             case ENTITY_IRON_MASK -> IRON_MASK_INITIAL_PHYSICS_FLAGS;
             case ENTITY_GOOMBA, ENTITY_SNAKE -> GOOMBA_INITIAL_PHYSICS_FLAGS;
             case ENTITY_WIZROBE -> 0x02;
@@ -7584,6 +7615,7 @@ public final class RoomEntityRuntime {
         sparkMotion.clear(slot);
         zolGelMotion.clear(slot);
         hidingZolMotion.clear(slot);
+        starMotion.clear(slot);
         spikeTrapMotion.clear(slot);
         pairoddMotion.clear(slot);
         pairoddProjectileMotion.clear(slot);

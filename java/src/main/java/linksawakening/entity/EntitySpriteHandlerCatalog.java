@@ -16,6 +16,7 @@ public final class EntitySpriteHandlerCatalog {
     public static final int ENTITY_LIFTABLE_ROCK = 0x05;
     public static final int ENTITY_CHEST_WITH_ITEM = 0x07;
     public static final int ENTITY_KEY_DROP_POINT = 0x30;
+    public static final int ENTITY_STAR = 0x9C;
     public static final int LIFTABLE_ROCK_INTACT_ROCK_VARIANT = 0;
     public static final int LIFTABLE_ROCK_INTACT_BUSH_VARIANT = 1;
     public static final int LIFTABLE_ROCK_SMASHED_ROCK_VARIANT_BASE = 2;
@@ -283,6 +284,9 @@ public final class EntitySpriteHandlerCatalog {
         }
         if (entityType == ENTITY_HIDING_ZOL) {
             return decodeHidingZol(entityType);
+        }
+        if (entityType == ENTITY_STAR) {
+            return decodePair(entityType, 0x07, 0x7247, 5, 0);
         }
         if (entityType == ENTITY_STALFOS_AGGRESSIVE) {
             return decodePair(entityType, 0x06, 0x4AA8, 3, 0);

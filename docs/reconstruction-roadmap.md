@@ -2364,6 +2364,21 @@ runtime collision callback.
   harmless/shadow/projectile-noclip byte. Runtime tests cover both state
   boundaries.
 
+## Verified ROM Star entity runtime — 2026-08-07
+
+- Star (`$9C`) now decodes its bank-$07 `StarSpriteVariants` list directly
+  from ROM (`$7247`), including all five pair variants and the handler's
+  four-frame cadence from `(hFrameCounter >> 3) & $03`.
+- `EntityInitWithRandomSpeed` and `UpdateEntityPosWithSpeed_07` are mirrored
+  with the source four-way `(+12/-12, +12/-12)` vector table, fixed-point
+  accumulators, rich X-then-Y background probes, and horizontal-collision
+  priority when reversing speed.
+- The entity now participates in the normal enemy collision/health group,
+  uses physics `$12`, enters bank-$07 shared recoil before movement, and
+  respects `ReturnIfNonInteractive_07` during Link transition frames.
+- ROM display-list, movement, collision-priority, combat, physics, and
+  non-interactive-frame regressions cover the increment.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,
