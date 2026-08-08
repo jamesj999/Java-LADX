@@ -2037,6 +2037,62 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void armosKnightDamageThresholdSpawnsRomRubbleWithPoofAndNoise() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            0x88, EntityRoomLoader.RoomTable.INDOORS_B);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x88, 0x50, 0x60, EntityStatus.ACTIVE, definition, 0)),
+            true, () -> 0, catalog, new RomEnemyCombatTables(rom));
+
+        runtime.tick(0, 0, 0, () -> 0);
+        runtime.tick(1, 0x50, 0x60, () -> 0);
+        for (int frame = 2; frame <= 0x31; frame++) {
+            runtime.tick(frame, 0x50, 0x60, () -> 0);
+        }
+        for (int frame = 0x32; frame <= 0xB1; frame++) {
+            runtime.tick(frame, 0x50, 0x60, () -> 0);
+        }
+        assertEquals(3, runtime.armosKnightState(0));
+        assertEquals(0x0C, runtime.enemyHealth(0));
+        EnemyAttackContext levelTwoSword = new EnemyAttackContext(2, false, false, false, false);
+
+        for (int hit = 0; hit < 3; hit++) {
+            runtime.setEnemyIgnoreHitsCountdownForTest(0, 0);
+            runtime.setEnemyFlashCountdownForTest(0, 0);
+            RoomEntity armos = runtime.snapshot().slots().get(0);
+            int frame = 0xB2 + hit;
+            List<EntityCombatEvent> hitEvents = runtime.resolveCombat(frame, 0, 0, true, true,
+                true, armos.x() + 8, 1, armos.y() + 8, 1, levelTwoSword);
+            assertEquals(1, hitEvents.size());
+            assertEquals(2, hitEvents.get(0).enemyDamage());
+            assertEquals(0x0A - (hit * 2), runtime.enemyHealth(0));
+
+            runtime.setEnemyIgnoreHitsCountdownForTest(0, 0);
+            runtime.setEnemyFlashCountdownForTest(0, 0);
+            runtime.tick(frame, 0x50, 0x60, () -> 0);
+        }
+
+        assertEquals(0x06, runtime.enemyHealth(0));
+        assertEquals(1, runtime.armosKnightInertia(0));
+        RoomEntity rubble = runtime.snapshot().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x05 && entity.sourceLoadOrder() == -1)
+            .findFirst()
+            .orElseThrow();
+        assertEquals(0x57, rubble.x());
+        assertEquals(0x50, rubble.y());
+        assertEquals(0x05, rubble.spriteVariant());
+        assertEquals(0xC4, runtime.physicsFlags(rubble.slot()));
+        assertEquals(0x0A, runtime.options1(rubble.slot()));
+        assertEquals(List.of(new RoomEntityRuntime.TransientVfxRequest(
+            TransientVfxType.POOF, 0x57, 0x50)), runtime.transientVfxRequests());
+        assertEquals(List.of(new EntityCombatEvent(rubble.slot(), 0x05, 0, false,
+            EntityCombatEvent.SoundChannel.NOISE, 0x29)),
+            runtime.consumePendingEntityEvents());
+    }
+
+    @Test
     void armosKnightRunsTheRomJumpAndBounceStates() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);

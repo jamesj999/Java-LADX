@@ -2,9 +2,12 @@ package linksawakening.world;
 
 /** Bank-$06 ArmosKnightEntityHandler's active state machine. */
 final class ArmosKnightMotion {
+    record RubbleRequest(int x, int y) {
+    }
+
     record Update(RoomEntity entity, int transitionCountdown, int physicsFlags,
                   int hitboxFlags, int options1, int jingleId,
-                  boolean linkMotionBlocked) {
+                  boolean linkMotionBlocked, RubbleRequest rubbleRequest) {
     }
 
     private static final int STATE_WAKE = 0;
@@ -24,6 +27,8 @@ final class ArmosKnightMotion {
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     void initialize(int slot) {
@@ -35,6 +40,8 @@ final class ArmosKnightMotion {
         speedYAccumulator[slot] = 0;
         speedZAccumulator[slot] = 0;
         privateCountdown1[slot] = 0;
+        privateState1[slot] = 0;
+        inertia[slot] = 0;
         initialized[slot] = true;
     }
 
@@ -67,6 +74,19 @@ final class ArmosKnightMotion {
         int variant = entity.spriteVariant();
         if (health < 0x08) {
             variant = health < 0x04 ? 0x03 : 0x02;
+        }
+        RubbleRequest rubbleRequest = null;
+        if ((health & 0xFF) != privateState1[slot]) {
+            privateState1[slot] = health & 0xFF;
+            if ((health & 0xFF) < 0x08) {
+                int maximumInertia = (health & 0xFF) < 0x04 ? 2 : 1;
+                if (inertia[slot] < maximumInertia) {
+                    inertia[slot]++;
+                    int rubbleX = (health & 0xFF) < 0x04 ? x - 1 : x + 7;
+                    int rubbleY = y - z - 0x10;
+                    rubbleRequest = new RubbleRequest(rubbleX & 0xFF, rubbleY & 0xFF);
+                }
+            }
         }
         int jingleId = -1;
         switch (state[slot]) {
@@ -164,7 +184,7 @@ final class ArmosKnightMotion {
             x, y, entity.status(), entity.spriteDefinition(), variant,
             entity.entityFlipAttribute(), entity.spriteTileOffset(), z);
         return new Update(updated, transitionCountdown, physicsFlags, hitboxFlags, options1,
-            jingleId, linkMotionBlocked);
+            jingleId, linkMotionBlocked, rubbleRequest);
     }
 
     void clear(int slot) {
@@ -190,6 +210,10 @@ final class ArmosKnightMotion {
 
     int privateCountdown1(int slot) {
         return privateCountdown1[slot];
+    }
+
+    int inertia(int slot) {
+        return inertia[slot];
     }
 
     private static boolean withinDistance(int value, int target, int distance) {

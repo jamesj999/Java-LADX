@@ -634,6 +634,19 @@ runtime collision callback.
 - Focused Armos activation/combat tests and the complete Java suite pass from a
   clean build.
 
+## Verified ROM Armos Knight damage debris — 2026-08-07
+
+- The active Armos Knight handler now tracks the ROM private-state-1 health
+  transition and its inertia limit: one rubble burst when health enters
+  `$04-$07`, and a second when it enters `$00-$03`.
+- Each burst uses the source positions, the dynamic type-`$05` rock entity,
+  countdown `$0F`, physics `$C4`, rock presentation `$05`, transient poof,
+  and noise `$29`. The runtime keeps the spawn on its existing highest-free
+  slot path and reports the event to the session audio/VFX boundary.
+- Focused motion and live combat tests cover both threshold bands and the
+  ROM-backed level-two sword damage path. Final-Link-position plumbing,
+  `BossIntro`, and Armos-specific background interaction remain pending.
+
 ## Verified ROM Spark recoil — 2026-08-05
 
 - Spark entities `$16` and `$17` now reach the source bank-$06

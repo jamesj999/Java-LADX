@@ -2158,6 +2158,17 @@ public final class RoomEntityRuntime {
                 enemyHitboxFlags[entity.slot()] = armosKnightUpdate.hitboxFlags();
                 entityOptions1Override[entity.slot()] = armosKnightUpdate.options1();
                 preserveArmosKnightPresentation = true;
+                if (armosKnightUpdate.rubbleRequest() != null) {
+                    ArmosKnightMotion.RubbleRequest rubble = armosKnightUpdate.rubbleRequest();
+                    int rubbleSlot = spawnLiftableRockRubble(rubble.x(), rubble.y());
+                    if (rubbleSlot >= 0) {
+                        transientVfxRequests.add(new TransientVfxRequest(
+                            TransientVfxType.POOF, rubble.x(), rubble.y()));
+                        pendingEntityEvents.add(new EntityCombatEvent(
+                            rubbleSlot, ENTITY_LIFTABLE_ROCK, 0, false,
+                            EntityCombatEvent.SoundChannel.NOISE, 0x29));
+                    }
+                }
                 if (armosKnightUpdate.jingleId() >= 0) {
                     pendingEntityEvents.add(new EntityCombatEvent(
                         entity.slot(), entity.type(), 0, false,
@@ -6554,6 +6565,10 @@ public final class RoomEntityRuntime {
 
     int armosKnightPrivateCountdown1(int slot) {
         return armosKnightMotion.privateCountdown1(slot);
+    }
+
+    int armosKnightInertia(int slot) {
+        return armosKnightMotion.inertia(slot);
     }
 
     int ghiniTransitionCountdown(int slot) {
