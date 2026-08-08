@@ -29,4 +29,16 @@ final class ScrollControllerTest {
         assertEquals(0, scroll.offset());
         assertEquals(ScrollController.NONE, scroll.direction());
     }
+
+    @Test
+    void exposesTheRomScreenShakePhaseThroughTheSharedCameraController() {
+        ScrollController scroll = new ScrollController();
+
+        scroll.startScreenShake(0x30, 0x04);
+        scroll.tickScreenShake();
+
+        assertEquals(0x2F, scroll.screenShakeCountdown());
+        assertEquals(0, scroll.screenShakeHorizontal());
+        assertEquals(-2, scroll.screenShakeVertical());
+    }
 }

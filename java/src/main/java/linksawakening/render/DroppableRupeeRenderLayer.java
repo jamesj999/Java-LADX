@@ -16,7 +16,8 @@ public final class DroppableRupeeRenderLayer implements RenderLayer {
     @Override
     public void render(RenderContext context) {
         if (!scrollController.isActive()) {
-            droppableRupeeSystem.render(context.buffer(), context.gpu());
+            droppableRupeeSystem.render(context.buffer(), context.gpu(),
+                -scrollController.screenShakeHorizontal());
         }
     }
 }

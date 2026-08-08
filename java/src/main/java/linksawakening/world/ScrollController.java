@@ -13,6 +13,7 @@ public final class ScrollController {
     private int linkScreenX;
     private int linkScreenY;
     private RoomRenderSnapshot previousRoom;
+    private final ScreenShakeMotion screenShakeMotion = new ScreenShakeMotion();
 
     public void start(int direction, int linkScreenX, int linkScreenY,
                       RoomRenderSnapshot previousRoom, int target) {
@@ -65,5 +66,27 @@ public final class ScrollController {
 
     public RoomRenderSnapshot previousRoom() {
         return previousRoom;
+    }
+
+    /** Starts the ROM's shared screen-shake timer. */
+    public void startScreenShake(int countdown, int phase) {
+        screenShakeMotion.start(countdown, phase);
+    }
+
+    /** Advances the ROM screen-shake timer once before the gameplay frame renders. */
+    public void tickScreenShake() {
+        screenShakeMotion.tick();
+    }
+
+    public int screenShakeHorizontal() {
+        return screenShakeMotion.horizontal();
+    }
+
+    public int screenShakeVertical() {
+        return screenShakeMotion.vertical();
+    }
+
+    public int screenShakeCountdown() {
+        return screenShakeMotion.countdown();
     }
 }

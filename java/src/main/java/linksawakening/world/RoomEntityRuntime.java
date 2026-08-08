@@ -327,6 +327,7 @@ public final class RoomEntityRuntime {
         new ArrayList<>();
     private final List<LinkMotionBlockRequest> pendingLinkMotionBlockRequests =
         new ArrayList<>();
+    private final List<ScreenShakeRequest> pendingScreenShakeRequests = new ArrayList<>();
     private final List<DialogRequest> pendingDialogRequests = new ArrayList<>();
     private final List<EntityCombatEvent> pendingEntityEvents = new ArrayList<>();
     private final List<ChestRewardEvent> pendingChestRewardEvents = new ArrayList<>();
@@ -442,6 +443,22 @@ public final class RoomEntityRuntime {
             if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
                 throw new IllegalArgumentException("Link motion-block source slot out of range: "
                     + sourceSlot);
+            }
+        }
+    }
+
+    /** A ROM handler request to start the source screen-shake timer. */
+    public record ScreenShakeRequest(int sourceSlot, int countdown, int phase) {
+        public ScreenShakeRequest {
+            if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
+                throw new IllegalArgumentException("Screen-shake source slot out of range: "
+                    + sourceSlot);
+            }
+            if (countdown < 0 || countdown > 0xFF) {
+                throw new IllegalArgumentException("Screen-shake countdown must be an unsigned byte");
+            }
+            if (phase < 0 || phase > 0x04 || (phase & 0x01) != 0) {
+                throw new IllegalArgumentException("Screen-shake phase must be 0, 2, or 4");
             }
         }
     }
@@ -1008,6 +1025,7 @@ public final class RoomEntityRuntime {
         transientVfxRequests.clear();
         pendingLinkFinalPositionRequests.clear();
         pendingLinkMotionBlockRequests.clear();
+        pendingScreenShakeRequests.clear();
         boomerangObjectRequests.clear();
         magicRodObjectRequests.clear();
         magicPowderObjectRequests.clear();
@@ -2200,6 +2218,12 @@ public final class RoomEntityRuntime {
                 if (armosKnightUpdate.linkMotionBlocked()) {
                     pendingLinkMotionBlockRequests.add(
                         new LinkMotionBlockRequest(entity.slot()));
+                }
+                if (armosKnightUpdate.screenShakeRequest() != null) {
+                    ArmosKnightMotion.ScreenShakeRequest shake =
+                        armosKnightUpdate.screenShakeRequest();
+                    pendingScreenShakeRequests.add(new ScreenShakeRequest(
+                        entity.slot(), shake.countdown(), shake.phase()));
                 }
                 if (armosKnightUpdate.rubbleRequest() != null) {
                     ArmosKnightMotion.RubbleRequest rubble = armosKnightUpdate.rubbleRequest();
@@ -4816,6 +4840,12 @@ public final class RoomEntityRuntime {
     List<LinkMotionBlockRequest> consumePendingLinkMotionBlockRequests() {
         List<LinkMotionBlockRequest> pending = List.copyOf(pendingLinkMotionBlockRequests);
         pendingLinkMotionBlockRequests.clear();
+        return pending;
+    }
+
+    List<ScreenShakeRequest> consumePendingScreenShakeRequests() {
+        List<ScreenShakeRequest> pending = List.copyOf(pendingScreenShakeRequests);
+        pendingScreenShakeRequests.clear();
         return pending;
     }
 

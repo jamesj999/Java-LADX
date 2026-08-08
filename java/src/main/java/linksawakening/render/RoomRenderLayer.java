@@ -22,15 +22,19 @@ public final class RoomRenderLayer implements RenderLayer {
 
     @Override
     public void render(RenderContext context) {
+        int shakeX = -scrollController.screenShakeHorizontal();
+        int shakeY = -scrollController.screenShakeVertical();
         if (!scrollController.isActive()) {
             int[][] palettes = transitionController.applyFade(currentRoom.palettes());
             int[] waveOffsets = transitionController.manboWaveOffsets(ROOM_PIXEL_HEIGHT);
             if (waveOffsets == null) {
                 IndexedRenderer.renderRoom(context.buffer(), context.gpu(), currentRoom.tileIds(),
-                    currentRoom.tileAttrs(), palettes, 0, 0);
+                    currentRoom.tileAttrs(), palettes, shakeX, shakeY);
             } else {
                 IndexedRenderer.renderRoomLineScroll(context.buffer(), context.gpu(),
-                    currentRoom.tileIds(), currentRoom.tileAttrs(), palettes, waveOffsets);
+                    currentRoom.tileIds(), currentRoom.tileAttrs(), palettes, waveOffsets,
+                    scrollController.screenShakeHorizontal(),
+                    scrollController.screenShakeVertical());
             }
             return;
         }
@@ -39,10 +43,12 @@ public final class RoomRenderLayer implements RenderLayer {
         RoomRenderSnapshot previousRoom = scrollController.previousRoom();
         if (previousRoom != null) {
             IndexedRenderer.renderRoom(context.buffer(), context.gpu(), previousRoom.tileIds(),
-                previousRoom.tileAttrs(), previousRoom.palettes(), offsets.previousX(), offsets.previousY());
+                previousRoom.tileAttrs(), previousRoom.palettes(),
+                offsets.previousX() + shakeX, offsets.previousY() + shakeY);
         }
         IndexedRenderer.renderRoom(context.buffer(), context.gpu(), currentRoom.tileIds(),
-            currentRoom.tileAttrs(), currentRoom.palettes(), offsets.currentX(), offsets.currentY());
+            currentRoom.tileAttrs(), currentRoom.palettes(),
+            offsets.currentX() + shakeX, offsets.currentY() + shakeY);
     }
 
     private RoomOffsets roomOffsets() {

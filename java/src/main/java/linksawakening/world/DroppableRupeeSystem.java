@@ -139,6 +139,11 @@ public final class DroppableRupeeSystem {
     }
 
     public void render(byte[] displayBuffer, GPU gpu) {
+        render(displayBuffer, gpu, 0);
+    }
+
+    /** Renders OAM-backed rupees with the source horizontal screen offset. */
+    public void render(byte[] displayBuffer, GPU gpu, int offsetX) {
         if (displayBuffer == null || gpu == null) {
             return;
         }
@@ -150,7 +155,7 @@ public final class DroppableRupeeSystem {
                 continue;
             }
 
-            int screenX = slot.worldX - 4;
+            int screenX = slot.worldX - 4 + offsetX;
             int screenY = visualY(slot) - 16;
             drawSpriteTile(displayBuffer, top, screenX, screenY);
             drawSpriteTile(displayBuffer, bottom, screenX, screenY + 8);

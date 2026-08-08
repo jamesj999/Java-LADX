@@ -38,6 +38,7 @@ public final class TransientVfxRenderLayer implements RenderLayer {
         if (scrollController.isActive()) {
             return;
         }
+        int shakeX = -scrollController.screenShakeHorizontal();
         for (TransientVfxSystem.Slot slot : transientVfxSystem.activeSlots()) {
             var sprites = switch (slot.type()) {
                 case BUSH_LEAVES -> cutLeavesEffectRenderer.renderBushLeaves(
@@ -58,7 +59,8 @@ public final class TransientVfxRenderLayer implements RenderLayer {
                     slot.slotIndex(), slot.variant());
             };
             for (CutLeavesEffectRenderer.SpritePlacement sprite : sprites) {
-                IndexedRenderer.drawSpriteTile(context.buffer(), sprite.tile(), sprite.x(), sprite.y(),
+                IndexedRenderer.drawSpriteTile(context.buffer(), sprite.tile(), sprite.x() + shakeX,
+                    sprite.y(),
                     (sprite.attributes() & ATTR_FLIP_X) != 0,
                     (sprite.attributes() & ATTR_FLIP_Y) != 0,
                     palette);

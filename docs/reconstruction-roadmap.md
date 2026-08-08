@@ -2218,7 +2218,7 @@ runtime collision callback.
 - Focused runtime and display-definition tests cover the state boundaries and
   the clean Java suite passes with 1,186 tests and zero failures, errors, or
   skipped tests. Health-change debris, `BossIntro`, `PushLinkOutOfEntity_06`,
-  background collision, and screen shake remain separate parity work.
+  and background collision remain separate parity work.
 
 ## Verified ROM Armos Knight intro and Link push boundary — 2026-08-07
 
@@ -2244,8 +2244,19 @@ runtime collision callback.
   `$6A`, then returns to ordinary motion when the request is not repeated.
 - Room runtime, session, and `Main` bridges preserve the per-frame ordering;
   the ROM-backed jump/bounce test covers the `$40` countdown handoff and the
-  Link test covers the one-frame movement and animation behavior. Armos screen
-  shake remains pending.
+  Link test covers the one-frame movement and animation behavior.
+
+## Verified ROM Armos Knight landing screen shake — 2026-08-07
+
+- Armos state `$06` now emits the source `$30` countdown and `$04` phase when
+  its Z position lands, alongside the existing `$30` transition and strong-bump
+  jingle. The shared screen-shake motion follows bank `$14`'s decrement-first
+  table lookup, including the `-2, 0, +2, 0` vertical sequence for this phase.
+- The request crosses `RoomSession` into the camera controller before the next
+  frame. Room BG rendering applies both source hardware-scroll offsets, while
+  OAM-backed Link, entities, transient effects, and dropped rupees apply the
+  source horizontal subtraction only. ROM runtime, phase, camera, and render
+  paths are covered; generic background interaction remains separate work.
 
 ## Broader parity gaps
 

@@ -738,6 +738,7 @@ public class Main {
         transitionController.tick();
 
         if (currentScreen == SCREEN_OVERWORLD) {
+            scrollController.tickScreenShake();
             if (dialogController != null) {
                 dialogController.tick();
                 routeDialogSounds();
@@ -907,6 +908,9 @@ public class Main {
                     if (link != null) {
                         link.blockNextRomMotionFrame();
                     }
+                }
+                for (var request : roomSession.consumeScreenShakeRequests()) {
+                    scrollController.startScreenShake(request.countdown(), request.phase());
                 }
                 EnemyProjectileEventConsumer.consume(projectileEvents, playerState,
                     gameplaySoundSink);

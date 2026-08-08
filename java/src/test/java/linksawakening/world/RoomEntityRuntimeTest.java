@@ -2182,6 +2182,8 @@ final class RoomEntityRuntimeTest {
         assertEquals(List.of(new EntityCombatEvent(0, 0x88, 0, false,
             EntityCombatEvent.SoundChannel.JINGLE, 0x0B)),
             runtime.consumePendingEntityEvents());
+        assertEquals(List.of(new RoomEntityRuntime.ScreenShakeRequest(0, 0x30, 0x04)),
+            runtime.consumePendingScreenShakeRequests());
 
         for (int frame = 0x131; frame <= 0x160; frame++) {
             runtime.tick(frame, 0x50, 0x60, () -> 0);

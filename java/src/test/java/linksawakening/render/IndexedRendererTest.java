@@ -2,6 +2,7 @@ package linksawakening.render;
 
 import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.GPU;
+import linksawakening.world.RoomConstants;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -57,6 +58,30 @@ final class IndexedRendererTest {
 
         assertEquals(leftColor, pixelColor(buffer, 0, 0));
         assertEquals(rightColor, pixelColor(buffer, 0, 8));
+    }
+
+    @Test
+    void roomLineScrollAddsTheHardwareBgOffsetsToTheRomSourceCoordinates() {
+        GPU gpu = new GPU();
+        byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
+        int[][] palettes = {
+            { 0, 0x112233, 0x445566, 0x778899 }
+        };
+        int[] tilemap = new int[20 * 16];
+        int[] attrmap = new int[tilemap.length];
+        tilemap[0] = 0x80;
+        tilemap[1] = 0x81;
+        tilemap[20] = 0x82;
+        tilemap[21] = 0x83;
+        writeSolidTile(gpu, 0x80, 1);
+        writeSolidTile(gpu, 0x81, 1);
+        writeSolidTile(gpu, 0x82, 1);
+        writeSolidTile(gpu, 0x83, 3);
+
+        IndexedRenderer.renderRoomLineScroll(buffer, gpu, tilemap, attrmap, palettes,
+            new int[RoomConstants.ROOM_PIXEL_HEIGHT], 8, 8);
+
+        assertEquals(0x778899, pixelColor(buffer, 0, 0));
     }
 
     @Test

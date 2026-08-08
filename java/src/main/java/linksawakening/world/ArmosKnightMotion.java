@@ -5,9 +5,13 @@ final class ArmosKnightMotion {
     record RubbleRequest(int x, int y) {
     }
 
+    record ScreenShakeRequest(int countdown, int phase) {
+    }
+
     record Update(RoomEntity entity, int transitionCountdown, int physicsFlags,
                   int hitboxFlags, int options1, int jingleId,
-                  boolean linkMotionBlocked, RubbleRequest rubbleRequest) {
+                  boolean linkMotionBlocked, ScreenShakeRequest screenShakeRequest,
+                  RubbleRequest rubbleRequest) {
     }
 
     private static final int STATE_WAKE = 0;
@@ -76,6 +80,7 @@ final class ArmosKnightMotion {
             variant = health < 0x04 ? 0x03 : 0x02;
         }
         RubbleRequest rubbleRequest = null;
+        ScreenShakeRequest screenShakeRequest = null;
         if ((health & 0xFF) != privateState1[slot]) {
             privateState1[slot] = health & 0xFF;
             if ((health & 0xFF) < 0x08) {
@@ -161,6 +166,7 @@ final class ArmosKnightMotion {
                 if (landed) {
                     transitionCountdown = 0x30;
                     jingleId = 0x0B;
+                    screenShakeRequest = new ScreenShakeRequest(0x30, 0x04);
                     if (linkZ == 0) {
                         privateCountdown1[slot] = 0x40;
                     }
@@ -184,7 +190,7 @@ final class ArmosKnightMotion {
             x, y, entity.status(), entity.spriteDefinition(), variant,
             entity.entityFlipAttribute(), entity.spriteTileOffset(), z);
         return new Update(updated, transitionCountdown, physicsFlags, hitboxFlags, options1,
-            jingleId, linkMotionBlocked, rubbleRequest);
+            jingleId, linkMotionBlocked, screenShakeRequest, rubbleRequest);
     }
 
     void clear(int slot) {

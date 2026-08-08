@@ -301,30 +301,32 @@ public final class EntityRenderLayer implements RenderLayer {
     }
 
     private ScreenOffset currentRoomOffset() {
+        int shakeX = -scrollController.screenShakeHorizontal();
         if (!scrollController.isActive()) {
-            return new ScreenOffset(0, 0);
+            return new ScreenOffset(shakeX, 0);
         }
         int offset = scrollController.offset();
         return switch (scrollController.direction()) {
-            case ScrollController.LEFT -> new ScreenOffset(-offset, 0);
-            case ScrollController.RIGHT -> new ScreenOffset(ROOM_PIXEL_WIDTH - offset, 0);
-            case ScrollController.UP -> new ScreenOffset(0, -offset);
-            case ScrollController.DOWN -> new ScreenOffset(0, ROOM_PIXEL_HEIGHT - offset);
-            default -> new ScreenOffset(0, 0);
+            case ScrollController.LEFT -> new ScreenOffset(-offset + shakeX, 0);
+            case ScrollController.RIGHT -> new ScreenOffset(ROOM_PIXEL_WIDTH - offset + shakeX, 0);
+            case ScrollController.UP -> new ScreenOffset(shakeX, -offset);
+            case ScrollController.DOWN -> new ScreenOffset(shakeX, ROOM_PIXEL_HEIGHT - offset);
+            default -> new ScreenOffset(shakeX, 0);
         };
     }
 
     private ScreenOffset previousRoomOffset() {
+        int shakeX = -scrollController.screenShakeHorizontal();
         if (!scrollController.isActive()) {
-            return new ScreenOffset(0, 0);
+            return new ScreenOffset(shakeX, 0);
         }
         int offset = scrollController.offset();
         return switch (scrollController.direction()) {
-            case ScrollController.LEFT -> new ScreenOffset(offset, 0);
-            case ScrollController.RIGHT -> new ScreenOffset(-offset, 0);
-            case ScrollController.UP -> new ScreenOffset(0, offset);
-            case ScrollController.DOWN -> new ScreenOffset(0, -offset);
-            default -> new ScreenOffset(0, 0);
+            case ScrollController.LEFT -> new ScreenOffset(offset + shakeX, 0);
+            case ScrollController.RIGHT -> new ScreenOffset(-offset + shakeX, 0);
+            case ScrollController.UP -> new ScreenOffset(shakeX, offset);
+            case ScrollController.DOWN -> new ScreenOffset(shakeX, -offset);
+            default -> new ScreenOffset(shakeX, 0);
         };
     }
 

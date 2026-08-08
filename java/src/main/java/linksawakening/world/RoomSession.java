@@ -1202,6 +1202,12 @@ public final class RoomSession {
             ? List.of() : entityRuntime.consumePendingLinkMotionBlockRequests();
     }
 
+    /** Returns and clears ROM screen-shake requests emitted by the last entity tick. */
+    public List<RoomEntityRuntime.ScreenShakeRequest> consumeScreenShakeRequests() {
+        return entityRuntime == null
+            ? List.of() : entityRuntime.consumePendingScreenShakeRequests();
+    }
+
     /** Returns and clears chest reward applications emitted by the last entity tick(s). */
     public List<RoomEntityRuntime.ChestRewardEvent> consumeChestRewardEvents() {
         List<RoomEntityRuntime.ChestRewardEvent> rewards = List.copyOf(pendingChestRewardEvents);

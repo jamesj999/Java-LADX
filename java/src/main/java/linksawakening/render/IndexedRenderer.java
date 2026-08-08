@@ -37,17 +37,26 @@ public final class IndexedRenderer {
     public static void renderRoomLineScroll(byte[] buffer, GPU gpu, int[] tileIds,
                                              int[] tileAttrs, int[][] palettes,
                                              int[] lineOffsets) {
+        renderRoomLineScroll(buffer, gpu, tileIds, tileAttrs, palettes, lineOffsets, 0, 0);
+    }
+
+    /** Renders a room with scanline scroll plus the source hardware BG offsets. */
+    public static void renderRoomLineScroll(byte[] buffer, GPU gpu, int[] tileIds,
+                                             int[] tileAttrs, int[][] palettes,
+                                             int[] lineOffsets, int scrollX, int scrollY) {
         if (lineOffsets == null || lineOffsets.length == 0) {
-            renderRoom(buffer, gpu, tileIds, tileAttrs, palettes, 0, 0);
+            renderRoom(buffer, gpu, tileIds, tileAttrs, palettes, -scrollX, -scrollY);
             return;
         }
         for (int screenY = 0; screenY < RoomConstants.ROOM_PIXEL_HEIGHT; screenY++) {
             int offset = lineOffsets[Math.min(screenY, lineOffsets.length - 1)];
-            int sourceY = Math.floorMod(screenY + offset, RoomConstants.ROOM_PIXEL_HEIGHT);
+            int sourceY = Math.floorMod(screenY + offset + scrollY,
+                RoomConstants.ROOM_PIXEL_HEIGHT);
             int mapY = sourceY / 8;
             int tileY = sourceY & 0x07;
             for (int screenX = 0; screenX < RoomConstants.ROOM_PIXEL_WIDTH; screenX++) {
-                int sourceX = Math.floorMod(screenX + offset, RoomConstants.ROOM_PIXEL_WIDTH);
+                int sourceX = Math.floorMod(screenX + offset + scrollX,
+                    RoomConstants.ROOM_PIXEL_WIDTH);
                 int mapX = sourceX / 8;
                 int tileX = sourceX & 0x07;
                 int mapIndex = mapY * RoomConstants.ROOM_TILE_WIDTH + mapX;

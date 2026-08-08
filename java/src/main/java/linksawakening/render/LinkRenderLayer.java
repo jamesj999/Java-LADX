@@ -14,8 +14,9 @@ public final class LinkRenderLayer implements RenderLayer {
 
     @Override
     public void render(RenderContext context) {
+        int shakeX = -scrollController.screenShakeHorizontal();
         if (!scrollController.isActive()) {
-            link.render(context.buffer(), 0, 0);
+            link.render(context.buffer(), shakeX, 0);
             return;
         }
 
@@ -25,6 +26,7 @@ public final class LinkRenderLayer implements RenderLayer {
         int endScreenY = link.pixelY();
         int screenX = startScreenX + (endScreenX - startScreenX) * scrollController.offset() / scrollController.target();
         int screenY = startScreenY + (endScreenY - startScreenY) * scrollController.offset() / scrollController.target();
-        link.render(context.buffer(), screenX - link.pixelX(), screenY - link.pixelY());
+        link.render(context.buffer(), screenX - link.pixelX() + shakeX,
+            screenY - link.pixelY());
     }
 }
