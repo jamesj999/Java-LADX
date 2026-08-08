@@ -204,6 +204,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_GIANT_GOPONGA_FLOWER = GiantGopongaMotion.ENTITY_TYPE;
     private static final int ENTITY_GOPONGA_FLOWER_PROJECTILE =
         GopongaProjectileMotion.ENTITY_TYPE;
+    private static final int ENTITY_POKEY = PokeyMotion.ENTITY_TYPE;
     private static final int ENTITY_HORSE_PIECE = 0x98;
     private static final int ENTITY_PHYSICS_GRABBABLE = 0x20;
     private static final int OBJECT_BUSH = 0x5C;
@@ -283,6 +284,7 @@ public final class RoomEntityRuntime {
     private final GiantGopongaMotion giantGopongaMotion = new GiantGopongaMotion();
     private final GopongaProjectileMotion gopongaProjectileMotion =
         new GopongaProjectileMotion();
+    private final PokeyMotion pokeyMotion = new PokeyMotion();
     private final SpikeTrapMotion spikeTrapMotion = new SpikeTrapMotion();
     private final PairoddMotion pairoddMotion = new PairoddMotion();
     private final PairoddProjectileMotion pairoddProjectileMotion =
@@ -1256,6 +1258,7 @@ public final class RoomEntityRuntime {
             boolean preserveGopongaFlowerPresentation = false;
             boolean preserveGiantGopongaPresentation = false;
             boolean preserveGopongaProjectilePresentation = false;
+            boolean preservePokeyPresentation = false;
             boolean preserveRoosterPresentation = false;
             boolean preserveWizrobePresentation = false;
             boolean preserveWizrobeProjectilePresentation = false;
@@ -1655,6 +1658,9 @@ public final class RoomEntityRuntime {
                 if (entity.type() == ENTITY_CUCCO) {
                     cuccoMotion.initialize(entity.slot());
                 }
+                if (entity.type() == ENTITY_POKEY) {
+                    pokeyMotion.initialize(entity.slot());
+                }
                 if (entity.type() == ENTITY_BOO_BUDDY) {
                     booBuddyMotion.initialize(entity.slot());
                 }
@@ -1898,7 +1904,10 @@ public final class RoomEntityRuntime {
                     EntityCombatEvent.SoundChannel.NOISE, 0x13));
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
-                && usesSharedRecoil(entity.type())
+                && (usesSharedRecoil(entity.type())
+                    || (entity.type() == ENTITY_POKEY
+                        && pokeyMotion.isSegment(entity.slot())
+                        && handlerLinkCollisionEnabled))
                 && entity.type() != ENTITY_MINI_MOLDORM
                 && (entity.type() != ENTITY_MASKED_MIMIC_GORIYA || entityMapId != 0x1F)
                 && ((entity.type() != ENTITY_STAR && entity.type() != ENTITY_BLOOPER)
@@ -2856,6 +2865,60 @@ public final class RoomEntityRuntime {
                 preserveGiantGopongaPresentation = true;
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_POKEY) {
+                int slot = entity.slot();
+                if (!handlerLinkCollisionEnabled) {
+                    // Both Pokey branches return immediately after their
+                    // pre-handler display pass when Link is non-interactive.
+                } else if (pokeyMotion.isSegment(slot)) {
+                    PokeyMotion.Update segmentUpdate = pokeyMotion.advanceSegment(
+                        updated, entityInertia[slot], enemyTransitionCountdown[slot],
+                        backgroundCollision);
+                    updated = segmentUpdate.entity();
+                    entityInertia[slot] = segmentUpdate.inertia();
+                    enemyTransitionCountdown[slot] = segmentUpdate.transitionCountdown();
+                    if (segmentUpdate.unloadRequested()) {
+                        transientVfxRequests.add(new TransientVfxRequest(
+                            TransientVfxType.POOF, updated.x(),
+                            (updated.y() - updated.z()) & 0xFF));
+                        pendingEntityEvents.add(new EntityCombatEvent(
+                            slot, entity.type(), 0, false,
+                            EntityCombatEvent.SoundChannel.JINGLE, 0x2F));
+                        disableEntityWithoutPersistence(slot);
+                        continue;
+                    }
+                    if (segmentUpdate.bumpJingle()) {
+                        pendingEntityEvents.add(new EntityCombatEvent(
+                            slot, entity.type(), 0, false,
+                            EntityCombatEvent.SoundChannel.JINGLE, 0x09));
+                    }
+                } else {
+                    if (entityInertia[slot] < 0x02) {
+                        // PokeyEntityHandler replaces the normal group-$00
+                        // health with two hit points until its body is fully
+                        // separated.
+                        enemyHealth[slot] = 0x02;
+                    }
+                    PokeyMotion.Update pokeyUpdate = pokeyMotion.advanceMain(
+                        updated, frame, entityInertia[slot],
+                        enemyTransitionCountdown[slot], enemyFlashCountdown[slot],
+                        linkEntityX, linkEntityY, randomByteSupplier, backgroundCollision);
+                    updated = pokeyUpdate.entity();
+                    entityInertia[slot] = pokeyUpdate.inertia();
+                    enemyTransitionCountdown[slot] = pokeyUpdate.transitionCountdown();
+                    enemyFlashCountdown[slot] = pokeyUpdate.flashCountdown();
+                    if (pokeyUpdate.segmentSpawn() != null) {
+                        spawnPokeySegment(pokeyUpdate.segmentSpawn());
+                    }
+                    if (spriteHandlers != null) {
+                        updated = withDefinition(updated,
+                            spriteHandlers.forPokeyState(pokeyUpdate.renderInertia()),
+                            updated.spriteVariant());
+                    }
+                }
+                preservePokeyPresentation = true;
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
                 && isGhiniType(entity.type())) {
                 updated = ghiniMotion.advance(entity, frame, entity.type(),
                     linkEntityX, linkEntityY, romCollisionType, randomByteSupplier);
@@ -3020,6 +3083,7 @@ public final class RoomEntityRuntime {
                 || preserveGopongaFlowerPresentation
                 || preserveGiantGopongaPresentation
                 || preserveGopongaProjectilePresentation
+                || preservePokeyPresentation
                 || preserveRoosterPresentation
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
                 || preservePolsVoicePresentation
@@ -3042,6 +3106,7 @@ public final class RoomEntityRuntime {
                 || preserveGopongaFlowerPresentation
                 || preserveGiantGopongaPresentation
                 || preserveGopongaProjectilePresentation
+                || preservePokeyPresentation
                 || preserveRoosterPresentation
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
                 || preservePolsVoicePresentation
@@ -3457,6 +3522,12 @@ public final class RoomEntityRuntime {
                 continue;
             }
             if (entity.type() == ENTITY_WIZROBE && wizrobeMotion.state(entity.slot()) != 3) {
+                continue;
+            }
+            if (entity.type() == ENTITY_POKEY && pokeyMotion.isSegment(entity.slot())
+                && enemyTransitionCountdown[entity.slot()] != 0) {
+                // The detached branch calls DefaultEnemyDamageCollisionHandler
+                // only after its transition countdown reaches zero.
                 continue;
             }
             if (entity.type() == ENTITY_WINGED_OCTOROK
@@ -4486,6 +4557,7 @@ public final class RoomEntityRuntime {
         blooperMotion.clear(slot);
         pincerMotion.clear(slot);
         bushCrawlerMotion.clear(slot);
+        pokeyMotion.clear(slot);
         mimicMotion.clear(slot);
         maskedMimicMotion.clear(slot);
         miniMoldormMotion.clear(slot);
@@ -4550,6 +4622,7 @@ public final class RoomEntityRuntime {
         antiFairyMotion.clear(slot);
         sparkMotion.clear(slot);
         zolGelMotion.clear(slot);
+        pokeyMotion.clear(slot);
         hidingZolMotion.clear(slot);
         starMotion.clear(slot);
         blooperMotion.clear(slot);
@@ -5377,6 +5450,26 @@ public final class RoomEntityRuntime {
     int entityInertia(int slot) {
         validateEntitySlot(slot);
         return entityInertia[slot];
+    }
+
+    int pokeyPrivateState1(int slot) {
+        validateEntitySlot(slot);
+        return pokeyMotion.privateState1(slot);
+    }
+
+    int pokeySpeedX(int slot) {
+        validateEntitySlot(slot);
+        return pokeyMotion.speedX(slot);
+    }
+
+    int pokeySpeedY(int slot) {
+        validateEntitySlot(slot);
+        return pokeyMotion.speedY(slot);
+    }
+
+    int pokeyTransitionCountdown(int slot) {
+        validateEntitySlot(slot);
+        return enemyTransitionCountdown[slot];
     }
 
     int hookshotEntityState(int slot) {
@@ -6401,6 +6494,38 @@ public final class RoomEntityRuntime {
         dynamicEntitySpawnedThisFrame[freeSlot] = true;
     }
 
+    /** Mirrors PokeyEntityHandler's SpawnNewEntity plus its detached-segment setup. */
+    private void spawnPokeySegment(PokeyMotion.SegmentSpawn spawn) {
+        int freeSlot = findFreeEntitySlot();
+        if (freeSlot < 0) {
+            return;
+        }
+
+        EntitySpriteDefinition definition = spriteDefinitionForPokeySegment();
+        int variant = definition.supported() ? definition.initialVariant() : -1;
+        RoomEntity segment = new RoomEntity(freeSlot, -1, ENTITY_POKEY,
+            spawn.x(), spawn.y(), EntityStatus.ACTIVE, definition, variant,
+            0, 0, spawn.z());
+        slots[freeSlot] = segment;
+        baseEntityFlipAttribute[freeSlot] = 0;
+        entityOptions1Override[freeSlot] = -1;
+        enemyTransitionCountdown[freeSlot] = spawn.transitionCountdown();
+        enemyStunnedCountdown[freeSlot] = 0;
+        dyingCountdown[freeSlot] = 0;
+        powerRecoilDeath[freeSlot] = false;
+        enemyPhysicsFlags[freeSlot] = initialPhysicsFlags(ENTITY_POKEY);
+        enemyHitboxFlags[freeSlot] = initialHitboxFlags(ENTITY_POKEY);
+        enemyHealth[freeSlot] = initialHealth(ENTITY_POKEY);
+        enemyFlashCountdown[freeSlot] = 0;
+        // ConfigureNewEntity seeds one ignored-hit frame; the child handler
+        // decrements it before its first interactive collision pass.
+        enemyIgnoreHitsCountdown[freeSlot] = 1;
+        enemyRecoilMotion.clear(freeSlot);
+        entityInertia[freeSlot] = 0;
+        pokeyMotion.initializeSegment(freeSlot, spawn.speedX(), spawn.speedY());
+        dynamicEntitySpawnedThisFrame[freeSlot] = true;
+    }
+
     private void spawnWizrobeProjectile(RoomEntity source,
                                          WizrobeMotion.ProjectileSpawn spawn) {
         int freeSlot = findFreeEntitySlot();
@@ -6684,6 +6809,12 @@ public final class RoomEntityRuntime {
             return EntitySpriteDefinition.unsupported(ENTITY_BUSH_CRAWLER);
         }
         return spriteHandlers.forBushCrawlerState(privateState1, spriteRoomTable());
+    }
+
+    private EntitySpriteDefinition spriteDefinitionForPokeySegment() {
+        return spriteHandlers == null
+            ? EntitySpriteDefinition.unsupported(ENTITY_POKEY)
+            : spriteHandlers.forPokeySegment();
     }
 
     private EntitySpriteDefinition spriteDefinitionForBushCrawlerCrawlState(int privateState4) {
@@ -8170,6 +8301,9 @@ public final class RoomEntityRuntime {
         if (slots[slot].type() == ENTITY_GIANT_GOPONGA_FLOWER) {
             return GiantGopongaMotion.OPTIONS1;
         }
+        if (slots[slot].type() == ENTITY_POKEY) {
+            return PokeyMotion.OPTIONS1;
+        }
         if (slots[slot].type() == ENTITY_GOPONGA_FLOWER_PROJECTILE) {
             return GopongaProjectileMotion.OPTIONS1;
         }
@@ -8625,6 +8759,7 @@ public final class RoomEntityRuntime {
             case ENTITY_GIANT_GOPONGA_FLOWER -> GiantGopongaMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_GOPONGA_FLOWER_PROJECTILE ->
                 GopongaProjectileMotion.INITIAL_PHYSICS_FLAGS;
+            case ENTITY_POKEY -> PokeyMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_ROOSTER -> RoosterMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_BOO_BUDDY -> BooBuddyMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_DROPPABLE_FAIRY -> FAIRY_INITIAL_PHYSICS_FLAGS;
@@ -9005,6 +9140,7 @@ public final class RoomEntityRuntime {
         blooperMotion.clear(slot);
         pincerMotion.clear(slot);
         bushCrawlerMotion.clear(slot);
+        pokeyMotion.clear(slot);
         mimicMotion.clear(slot);
         maskedMimicMotion.clear(slot);
         miniMoldormMotion.clear(slot);

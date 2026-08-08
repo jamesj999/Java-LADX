@@ -58,6 +58,7 @@ public final class RoomEntityCombatRules {
     private static final int ENTITY_GOPONGA_FLOWER = 0x7E;
     private static final int ENTITY_GIANT_GOPONGA_FLOWER = 0x7C;
     private static final int ENTITY_GOPONGA_FLOWER_PROJECTILE = 0x7D;
+    private static final int ENTITY_POKEY = 0xE3;
 
     // HitboxPositions._00 in home/entities.asm:3AAA. Octorok, Moblin, Armos,
     // and Keese all select the normal collision box in hitbox_flags.asm.
@@ -131,6 +132,7 @@ public final class RoomEntityCombatRules {
                 ENTITY_CROW,
                 ENTITY_CUCCO, ENTITY_GOPONGA_FLOWER, ENTITY_GIANT_GOPONGA_FLOWER,
                 ENTITY_GOPONGA_FLOWER_PROJECTILE,
+                ENTITY_POKEY,
                 ENTITY_BOO_BUDDY,
                 ENTITY_SPIKED_BEETLE,
                 ENTITY_PAIRODD, ENTITY_COLOR_SHELL_RED, ENTITY_COLOR_SHELL_GREEN,
@@ -153,7 +155,7 @@ public final class RoomEntityCombatRules {
             case ENTITY_KEESE, ENTITY_OCTOROK, ENTITY_PEAHAT, ENTITY_ZOL, ENTITY_GEL,
                 ENTITY_WATER_TEKTITE, ENTITY_PAIRODD,
                 ENTITY_HIDING_ZOL, ENTITY_STAR, ENTITY_BLOOPER, ENTITY_WINGED_OCTOROK,
-                ENTITY_GOOMBA, ENTITY_SNAKE, ENTITY_BUSH_CRAWLER ->
+                ENTITY_GOOMBA, ENTITY_SNAKE, ENTITY_BUSH_CRAWLER, ENTITY_POKEY ->
                 OCTOROK_AND_KEESE_CONTACT_DAMAGE;
             case ENTITY_FISH -> OCTOROK_AND_KEESE_CONTACT_DAMAGE;
             case ENTITY_CROW -> CROW_CONTACT_DAMAGE;
@@ -196,7 +198,7 @@ public final class RoomEntityCombatRules {
         return switch (type & 0xFF) {
             case ENTITY_KEESE, ENTITY_OCTOROK, ENTITY_PEAHAT, ENTITY_WATER_TEKTITE,
                 ENTITY_STAR, ENTITY_BLOOPER, ENTITY_WINGED_OCTOROK,
-                ENTITY_GOOMBA, ENTITY_SNAKE ->
+                ENTITY_GOOMBA, ENTITY_SNAKE, ENTITY_POKEY ->
                 OCTOROK_AND_KEESE_INITIAL_HEALTH;
             case ENTITY_FISH -> OCTOROK_AND_KEESE_INITIAL_HEALTH;
             case ENTITY_CROW -> CROW_INITIAL_HEALTH;

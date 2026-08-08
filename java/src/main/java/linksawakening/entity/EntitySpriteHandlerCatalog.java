@@ -28,6 +28,7 @@ public final class EntitySpriteHandlerCatalog {
     public static final int ENTITY_GOPONGA_FLOWER = 0x7E;
     public static final int ENTITY_GIANT_GOPONGA_FLOWER = 0x7C;
     public static final int ENTITY_GOPONGA_FLOWER_PROJECTILE = 0x7D;
+    public static final int ENTITY_POKEY = 0xE3;
     public static final int LIFTABLE_ROCK_INTACT_ROCK_VARIANT = 0;
     public static final int LIFTABLE_ROCK_INTACT_BUSH_VARIANT = 1;
     public static final int LIFTABLE_ROCK_SMASHED_ROCK_VARIANT_BASE = 2;
@@ -204,6 +205,9 @@ public final class EntitySpriteHandlerCatalog {
         }
         if (entityType == ENTITY_GOPONGA_FLOWER_PROJECTILE) {
             return decodePair(entityType, 0x06, 0x638F, 4, 0);
+        }
+        if (entityType == ENTITY_POKEY) {
+            return forPokeyState(0);
         }
         if (entityType == ENTITY_BOO_BUDDY) {
             return decodePair(entityType, 0x06, 0x79A9, 8, 0);
@@ -470,6 +474,25 @@ public final class EntitySpriteHandlerCatalog {
             return decodePair(ENTITY_CHEST_WITH_ITEM, 0x07, 0x7B53, 1, 0);
         }
         return decodePair(ENTITY_CHEST_WITH_ITEM, 0x07, 0x7B57, 0x21, 0);
+    }
+
+    /** Selects Pokey's bank-$15 body list for its current detached-segment count. */
+    public EntitySpriteDefinition forPokeyState(int inertia) {
+        if (inertia < 0) {
+            throw new IllegalArgumentException("Pokey inertia cannot be negative: " + inertia);
+        }
+        if (inertia == 0) {
+            return decodeRectangle(ENTITY_POKEY, 0x15, 0x4B17, 4, 6, 0);
+        }
+        if (inertia == 1) {
+            return decodeRectangle(ENTITY_POKEY, 0x15, 0x4B77, 4, 4, 0);
+        }
+        return decodeRectangle(ENTITY_POKEY, 0x15, 0x4BB7, 4, 2, 0);
+    }
+
+    /** Decodes Unknown044SpriteVariants at bank-$15:$4CD5 for detached segments. */
+    public EntitySpriteDefinition forPokeySegment() {
+        return decodePair(ENTITY_POKEY, 0x15, 0x4CD5, 1, 0);
     }
 
     /** Selects the two bank-$15 display-list pairs used by Stalfos Evasive. */
