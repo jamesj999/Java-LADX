@@ -423,6 +423,17 @@ runtime collision callback.
   Pairodd path, projectile recoil/other damage-state handling, and any
   additional audio side effects.
 
+## Verified ROM Pairodd recoil — 2026-08-07
+
+- Pairodd (`$57`) now enters bank-$04's shared `ApplyRecoilIfNeeded_04` path
+  before its resting/disappearing/reappearing state dispatch.
+- The normal sword-hit health path now retains the ROM `$30` recoil vector and
+  `$0A` ignore-hits window, so the next hit tests the entity at its post-recoil
+  position just as the source handler does.
+- A focused pre-handler recoil regression and the complete Java suite cover
+  this increment; projectile-specific and remaining Pairodd damage branches
+  remain separate work.
+
 ## Verified enemy sword-hit response — 2026-08-05
 
 - The shared bank-$03 roaming path now mirrors `ConfigureEntityRecoil` at

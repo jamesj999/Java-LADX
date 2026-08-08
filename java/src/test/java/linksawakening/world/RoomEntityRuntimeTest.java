@@ -1187,8 +1187,10 @@ final class RoomEntityRuntimeTest {
         for (int frame = 1; frame <= 0x18; frame++) {
             runtime.tick(frame, 120, 120, sequence(0x00));
         }
+        RoomEntity afterFirstHit = runtime.snapshot().slots().get(0);
         List<EntityCombatEvent> secondHit = runtime.resolveCombat(
-            0x19, 120, 120, false, true, true, 72, 1, 72, 1);
+            0x19, 120, 120, false, true, true,
+            afterFirstHit.x() + 8, 1, afterFirstHit.y() + 8, 1);
         assertEquals(1, secondHit.size());
         assertEquals(EntityStatus.DYING, runtime.snapshot().slots().get(0).status());
 
@@ -4883,6 +4885,24 @@ final class RoomEntityRuntimeTest {
         assertEquals(1, runtime.pairoddState(0));
         assertEquals(0x20, runtime.pairoddTransitionCountdown(0));
         assertEquals(3, runtime.pairoddDirection(0));
+    }
+
+    @Test
+    void pairoddUsesTheBankFourRecoilStepBeforeItsHandler() {
+        EntitySpriteDefinition definition = pairDefinition(0x57, 8);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x57, 64, 64, EntityStatus.ACTIVE, definition, 0)));
+
+        runtime.configureEnemyRecoilForTest(0, 80, 80, 0x30);
+        runtime.setEnemyIgnoreHitsCountdownForTest(0, 0x0A);
+
+        runtime.tick(1, 120, 120, sequence(0x00));
+
+        RoomEntity afterRecoil = runtime.snapshot().slots().get(0);
+        assertEquals(61, afterRecoil.x());
+        assertEquals(61, afterRecoil.y());
+        assertEquals(0x09, runtime.enemyIgnoreHitsCountdown(0));
+        assertTrue(runtime.enemyRecoilActive(0));
     }
 
     @Test
