@@ -81,6 +81,7 @@ public final class EntitySpriteHandlerCatalog {
     private static final int ENTITY_BOO_BUDDY = 0x50;
     private static final int ENTITY_DROPPABLE_HEART = 0x2D;
     private static final int ENTITY_DROPPABLE_RUPEE = 0x2E;
+    private static final int ENTITY_DROPPABLE_FAIRY = 0x2F;
     private static final int ENTITY_SWORD_SHIELD_PICKUP = 0x31;
     private static final int ENTITY_IRON_MASKS_MASK = 0x32;
     private static final int ENTITY_PIECE_OF_POWER = 0x33;
@@ -345,6 +346,9 @@ public final class EntitySpriteHandlerCatalog {
         }
         if (entityType == ENTITY_DROPPABLE_RUPEE) {
             return decodeSingle(entityType, 0x03, 0x609C, 1, 0);
+        }
+        if (entityType == ENTITY_DROPPABLE_FAIRY) {
+            return decodePair(entityType, 0x03, 0x6157, 2, 0);
         }
         if (entityType == ENTITY_SWORD_SHIELD_PICKUP) {
             return decodeSingle(entityType, 0x03, 0x5B95, 1, 0);

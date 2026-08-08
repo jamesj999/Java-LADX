@@ -2154,6 +2154,20 @@ runtime collision callback.
   are covered. The clean Java suite passes with 1,166 tests and zero failures,
   errors, or skipped tests.
 
+## Verified ROM droppable fairy entity runtime — 2026-08-07
+
+- Entity `$2F` now decodes bank `$03`'s two-pair display list at `$6157` and
+  follows `DroppableFairyEntityHandler`: fixed-point X/Y motion, Z easing toward
+  `$10`, the source close-window random hover speeds, and length-`$09` steering
+  toward Link.
+- Fairy physics/options are ROM-derived (`$B1` / `$13`), including harmless,
+  shadow, grabbable, no-ground, no-wall, and excluded-from-kill-all flags. Static
+  and enemy-dropped fairies use the same handler-owned hover state; they no
+  longer enter the generic bouncing heart/rupee drop path.
+- ROM display decoding, hover/vector behavior, dynamic-drop construction, and
+  runtime flags are covered. The clean Java suite passes with 1,172 tests and
+  zero failures, errors, or skipped tests.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

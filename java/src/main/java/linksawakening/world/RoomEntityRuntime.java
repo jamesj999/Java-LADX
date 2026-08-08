@@ -43,6 +43,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_FISH = FishMotion.ENTITY_TYPE;
     private static final int ENTITY_CROW = CrowMotion.ENTITY_TYPE;
     private static final int ENTITY_BOO_BUDDY = BooBuddyMotion.ENTITY_TYPE;
+    private static final int ENTITY_DROPPABLE_FAIRY = FairyMotion.ENTITY_TYPE;
     private static final int ENTITY_STALFOS_AGGRESSIVE = 0x1A;
     private static final int ENTITY_STALFOS_EVASIVE = 0x1E;
     private static final int ENTITY_GIBDO = 0x1F;
@@ -169,6 +170,9 @@ public final class RoomEntityRuntime {
         | ENTITY_OPT1_NO_WALL_COLLISION;
     private static final int IRON_MASKS_MASK_OPTIONS1 = ENTITY_OPT1_SPLASH_IN_WATER
         | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
+    private static final int FAIRY_INITIAL_PHYSICS_FLAGS = 0xB1;
+    private static final int FAIRY_OPTIONS1 = ENTITY_OPT1_NO_GROUND_INTERACTION
+        | ENTITY_OPT1_NO_WALL_COLLISION | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
 
     private final RoomEntity[] slots;
     private EntitySpriteSelection spriteSelection;
@@ -214,6 +218,7 @@ public final class RoomEntityRuntime {
     private final FishMotion fishMotion = new FishMotion();
     private final CrowMotion crowMotion = new CrowMotion();
     private final BooBuddyMotion booBuddyMotion = new BooBuddyMotion();
+    private final FairyMotion fairyMotion = new FairyMotion();
     private final StalfosAggressiveMotion stalfosAggressiveMotion =
         new StalfosAggressiveMotion();
     private final StalfosEvasiveMotion stalfosEvasiveMotion = new StalfosEvasiveMotion();
@@ -562,6 +567,9 @@ public final class RoomEntityRuntime {
             }
             if (entity.loaded() && entity.type() == ENTITY_BOO_BUDDY) {
                 booBuddyMotion.initialize(entity.slot());
+            }
+            if (entity.loaded() && entity.type() == ENTITY_DROPPABLE_FAIRY) {
+                fairyMotion.initialize(entity.slot());
             }
             if (entity.loaded() && entity.type() == ENTITY_SPIKED_BEETLE) {
                 spikedBeetleMotion.initialize(entity.slot());
@@ -1334,6 +1342,9 @@ public final class RoomEntityRuntime {
                 if (entity.type() == ENTITY_BOO_BUDDY) {
                     booBuddyMotion.initialize(entity.slot());
                 }
+                if (entity.type() == ENTITY_DROPPABLE_FAIRY) {
+                    fairyMotion.initialize(entity.slot());
+                }
                 if (entity.type() == ENTITY_STALFOS_AGGRESSIVE) {
                     stalfosAggressiveMotion.initialize(entity.slot(), randomByteSupplier);
                 }
@@ -1904,6 +1915,14 @@ public final class RoomEntityRuntime {
                     disableEntityWithoutPersistence(entity.slot());
                     continue;
                 }
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_DROPPABLE_FAIRY) {
+                FairyMotion.Update fairyUpdate = fairyMotion.advance(entity, frame,
+                    linkEntityX, linkEntityY, randomByteSupplier,
+                    enemyTransitionCountdown[entity.slot()]);
+                updated = fairyUpdate.entity();
+                enemyTransitionCountdown[entity.slot()] = fairyUpdate.transitionCountdown();
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_STALFOS_AGGRESSIVE) {
@@ -4753,6 +4772,7 @@ public final class RoomEntityRuntime {
         return isGhiniType(entity.type()) || entity.type() == ENTITY_MAD_BOMBER
             || entity.type() == ENTITY_WIZROBE_PROJECTILE
             || entity.type() == ENTITY_BOO_BUDDY
+            || entity.type() == ENTITY_DROPPABLE_FAIRY
             || hasNoGroundInteractionOverride(entity.slot());
     }
 
@@ -4864,8 +4884,12 @@ public final class RoomEntityRuntime {
         enemyRecoilMotion.clear(freeSlot);
         dropPrivateCountdown1[freeSlot] = 0x18;
         dropPrivateCountdown3[freeSlot] = 0x03;
-        enemyDropMotion.initialize(freeSlot, groundInteractionSideScrolling);
-        enemyDropActive[freeSlot] = true;
+        if (itemType == ENTITY_DROPPABLE_FAIRY) {
+            fairyMotion.initialize(freeSlot);
+        } else {
+            enemyDropMotion.initialize(freeSlot, groundInteractionSideScrolling);
+            enemyDropActive[freeSlot] = true;
+        }
         dynamicEntitySpawnedThisFrame[freeSlot] = true;
     }
 
@@ -5639,6 +5663,16 @@ public final class RoomEntityRuntime {
     int dropSpeedZ(int slot) {
         validateEntitySlot(slot);
         return enemyDropMotion.speedZ(slot);
+    }
+
+    int fairySpeedX(int slot) {
+        validateEntitySlot(slot);
+        return fairyMotion.speedX(slot);
+    }
+
+    int fairySpeedY(int slot) {
+        validateEntitySlot(slot);
+        return fairyMotion.speedY(slot);
     }
 
     int keeseState(int slot) {
@@ -6473,6 +6507,9 @@ public final class RoomEntityRuntime {
         if (slots[slot].type() == ENTITY_BOO_BUDDY) {
             return BooBuddyMotion.OPTIONS1;
         }
+        if (slots[slot].type() == ENTITY_DROPPABLE_FAIRY) {
+            return FAIRY_OPTIONS1;
+        }
         if (slots[slot].type() == ENTITY_SPIKED_BEETLE) {
             // The static table starts at splash-only. The handler writes the
             // sword-clink-off bit on its first normal active pass.
@@ -6641,6 +6678,7 @@ public final class RoomEntityRuntime {
         dropPrivateCountdown3[slot] = 0;
         enemyDropActive[slot] = false;
         enemyDropMotion.clear(slot);
+        fairyMotion.clear(slot);
         hookshotChainMotion.clear(slot);
     }
 
@@ -6674,6 +6712,7 @@ public final class RoomEntityRuntime {
             case ENTITY_FISH -> FishMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_CROW -> CrowMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_BOO_BUDDY -> BooBuddyMotion.INITIAL_PHYSICS_FLAGS;
+            case ENTITY_DROPPABLE_FAIRY -> FAIRY_INITIAL_PHYSICS_FLAGS;
             case ENTITY_MAD_BOMBER -> MAD_BOMBER_INITIAL_PHYSICS_FLAGS;
             case ENTITY_BOMBER -> BOMBER_INITIAL_PHYSICS_FLAGS;
             case ENTITY_LIFTABLE_ROCK, ENTITY_LIFTABLE_STATUE,
