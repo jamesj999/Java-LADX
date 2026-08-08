@@ -4885,6 +4885,9 @@ final class RoomEntityRuntimeTest {
         assertEquals(1, runtime.pairoddState(0));
         assertEquals(0x20, runtime.pairoddTransitionCountdown(0));
         assertEquals(3, runtime.pairoddDirection(0));
+        assertEquals(List.of(new EntityCombatEvent(0, 0x57, 0, false,
+            EntityCombatEvent.SoundChannel.JINGLE, 0x3C)),
+            runtime.consumePendingEntityEvents());
     }
 
     @Test

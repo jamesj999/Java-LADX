@@ -434,6 +434,15 @@ runtime collision callback.
   this increment; projectile-specific and remaining Pairodd damage branches
   remain separate work.
 
+## Verified ROM Pairodd teleport cue — 2026-08-07
+
+- Entering Pairodd's disappearing state now emits the source
+  `JINGLE_PAIRODD_TELEPORT` request (`$3C`) exactly once, alongside the
+  `$20` transition write.
+- The room runtime regression covers the random-direction initializer and
+  confirms the cue is attached to the teleport transition rather than a later
+  hidden/reappearing frame.
+
 ## Verified enemy sword-hit response — 2026-08-05
 
 - The shared bank-$03 roaming path now mirrors `ConfigureEntityRecoil` at

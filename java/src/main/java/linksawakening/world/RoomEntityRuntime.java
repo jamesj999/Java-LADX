@@ -1877,6 +1877,11 @@ public final class RoomEntityRuntime {
                 if (pairoddUpdate.spawnProjectile()) {
                     spawnPairoddProjectile(entity, linkEntityX, linkEntityY);
                 }
+                if (pairoddUpdate.teleportJingle()) {
+                    pendingEntityEvents.add(new EntityCombatEvent(
+                        entity.slot(), entity.type(), 0, false,
+                        EntityCombatEvent.SoundChannel.JINGLE, 0x3C));
+                }
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_PAIRODD_PROJECTILE) {

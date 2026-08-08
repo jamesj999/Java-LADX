@@ -41,6 +41,7 @@ final class PairoddMotion {
 
         int variant = entity.spriteVariant();
         boolean spawnProjectile = false;
+        boolean teleportJingle = false;
         int x = entity.x();
         int y = entity.y();
         switch (state[slot]) {
@@ -54,6 +55,7 @@ final class PairoddMotion {
                     && inSignedWindow(linkEntityY - y, 0x20)) {
                     transitionCountdown[slot] = 0x20;
                     state[slot] = STATE_DISAPPEARING;
+                    teleportJingle = true;
                 }
             }
             case STATE_DISAPPEARING -> {
@@ -89,7 +91,7 @@ final class PairoddMotion {
         RoomEntity updated = new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
             x, y, entity.status(), entity.spriteDefinition(), variant,
             entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z());
-        return new Update(updated, spawnProjectile);
+        return new Update(updated, spawnProjectile, teleportJingle);
     }
 
     void clear(int slot) {
@@ -140,6 +142,6 @@ final class PairoddMotion {
         return unsigned < 0x80 ? unsigned : unsigned - 0x100;
     }
 
-    record Update(RoomEntity entity, boolean spawnProjectile) {
+    record Update(RoomEntity entity, boolean spawnProjectile, boolean teleportJingle) {
     }
 }
