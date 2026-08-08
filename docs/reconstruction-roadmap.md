@@ -2579,6 +2579,21 @@ runtime collision callback.
   parity for every other item-use branch and the remaining entity handlers is
   still pending.
 
+## Verified ROM Mini Moldorm entity runtime — 2026-08-08
+
+- Mini Moldorm (`$29`) now decodes bank `$04:$5A49`'s ten two-sprite
+  variants. Its handler-generated display list combines the ROM-selected head
+  with segment `$08` and segment `$09` samples from the per-source-load-order
+  32-entry X/Y history tables.
+- The active handler ports the source four-frame angle cadence, 16-entry
+  fixed-point X/Y speed tables, transition countdown, collision-direction
+  turning rules, flash movement gate, and bank-$04 recoil ordering. History is
+  recorded before recoil and reset when the source ignore-hits path requires it.
+- Mini Moldorm is included in ROM enemy collision, health/contact damage,
+  splash/options, and physics initialization. Focused ROM display, delayed-tail,
+  fixed-point motion, collision, and live runtime tests pass. The clean Java
+  suite passes with 1,297 tests and zero failures, errors, or skipped tests.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

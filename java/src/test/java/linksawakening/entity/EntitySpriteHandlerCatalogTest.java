@@ -867,14 +867,58 @@ final class EntitySpriteHandlerCatalogTest {
     }
 
     @Test
-    void unsupportedTypesRemainExplicitAndDoNotReadGuessedArt() {
-        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
-            .forEntityType(0x29, EntityRoomLoader.RoomTable.OVERWORLD);
+    void mapsMiniMoldormToItsBankFourPairDisplayList() throws Exception {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
 
-        assertEquals(EntitySpriteDefinition.Shape.UNSUPPORTED, definition.shape());
-        assertFalse(definition.supported());
-        assertEquals(0x29, definition.entityType());
-        assertEquals(0, definition.variantCount());
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            EntitySpriteHandlerCatalog.ENTITY_MINI_MOLDORM,
+            EntityRoomLoader.RoomTable.INDOORS_A);
+
+        assertDefinition(definition, 0x04, 0x5A49,
+            EntitySpriteDefinition.Shape.PAIR, 10, 0);
+        assertPairBytes(definition, new int[][] {
+            {0x70, 0x00, 0x70, 0x20},
+            {0x70, 0x40, 0x70, 0x60},
+            {0x72, 0x00, 0x74, 0x00},
+            {0x74, 0x20, 0x72, 0x20},
+            {0x76, 0x00, 0x78, 0x00},
+            {0x78, 0x20, 0x76, 0x20},
+            {0x76, 0x40, 0x78, 0x40},
+            {0x78, 0x60, 0x76, 0x60},
+            {0x7A, 0x00, 0x7A, 0x20},
+            {0x7C, 0x00, 0x7C, 0x20}
+        });
+    }
+
+    @Test
+    void buildsMiniMoldormHeadAndDelayedTailAsOneDynamicDisplayList() throws Exception {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+
+        EntitySpriteDefinition definition = catalog.forMiniMoldormState(
+            0x03, 0x50, 0x60, 0x48, 0x58, 0x40, 0x50);
+
+        assertDefinition(definition, 0x04, 0x5A49,
+            EntitySpriteDefinition.Shape.DYNAMIC, 1, 0);
+        assertEquals(6, definition.dynamicVariant(0).size());
+
+        EntitySpriteDefinition.DynamicSprite head = definition.dynamicVariant(0).get(0);
+        assertEquals(0, head.yOffset());
+        assertEquals(0, head.xOffset());
+        assertEquals(0x74, head.oam().tile());
+        assertEquals(0x20, head.oam().attributes());
+        assertTrue(head.appliesEntityFlipAttribute());
+
+        EntitySpriteDefinition.DynamicSprite firstTail = definition.dynamicVariant(0).get(2);
+        assertEquals(-8, firstTail.yOffset());
+        assertEquals(-8, firstTail.xOffset());
+        assertEquals(0x7A, firstTail.oam().tile());
+        assertEquals(EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS,
+            firstTail.tileSource());
+
+        EntitySpriteDefinition.DynamicSprite secondTail = definition.dynamicVariant(0).get(4);
+        assertEquals(-16, secondTail.yOffset());
+        assertEquals(-16, secondTail.xOffset());
+        assertEquals(0x7C, secondTail.oam().tile());
     }
 
     @Test

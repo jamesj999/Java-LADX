@@ -47,6 +47,8 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_PINCER = EntitySpriteHandlerCatalog.ENTITY_PINCER;
     private static final int ENTITY_BUSH_CRAWLER =
         EntitySpriteHandlerCatalog.ENTITY_BUSH_CRAWLER;
+    private static final int ENTITY_MINI_MOLDORM =
+        EntitySpriteHandlerCatalog.ENTITY_MINI_MOLDORM;
     private static final int ENTITY_SPIKE_TRAP = 0x27;
     private static final int ENTITY_PAIRODD = 0x57;
     private static final int ENTITY_PAIRODD_PROJECTILE = 0x58;
@@ -267,6 +269,7 @@ public final class RoomEntityRuntime {
     private final WingedOctorokMotion wingedOctorokMotion = new WingedOctorokMotion();
     private final PincerMotion pincerMotion = new PincerMotion();
     private final BushCrawlerMotion bushCrawlerMotion = new BushCrawlerMotion();
+    private final MiniMoldormMotion miniMoldormMotion = new MiniMoldormMotion();
     private final CuccoMotion cuccoMotion = new CuccoMotion();
     private final SpikeTrapMotion spikeTrapMotion = new SpikeTrapMotion();
     private final PairoddMotion pairoddMotion = new PairoddMotion();
@@ -776,6 +779,9 @@ public final class RoomEntityRuntime {
             if (entity.loaded() && entity.type() == ENTITY_BUSH_CRAWLER) {
                 bushCrawlerMotion.initialize(entity.slot());
             }
+            if (entity.loaded() && entity.type() == ENTITY_MINI_MOLDORM) {
+                miniMoldormMotion.initialize(entity);
+            }
             if (entity.loaded() && entity.type() == ENTITY_CUCCO) {
                 cuccoMotion.initialize(entity.slot());
             }
@@ -1225,6 +1231,7 @@ public final class RoomEntityRuntime {
             boolean preserveWingedOctorokPresentation = false;
             boolean preservePincerPresentation = false;
             boolean preserveBushCrawlerPresentation = false;
+            boolean preserveMiniMoldormPresentation = false;
             boolean preserveCuccoPresentation = false;
             boolean preserveRoosterPresentation = false;
             boolean preserveWizrobePresentation = false;
@@ -1598,6 +1605,9 @@ public final class RoomEntityRuntime {
                 if (entity.type() == ENTITY_PINCER) {
                     pincerMotion.initialize(entity.slot());
                 }
+                if (entity.type() == ENTITY_MINI_MOLDORM) {
+                    miniMoldormMotion.initialize(entity);
+                }
                 if (entity.type() == ENTITY_WINGED_OCTOROK) {
                     wingedOctorokMotion.initialize(entity.slot());
                 }
@@ -1866,6 +1876,7 @@ public final class RoomEntityRuntime {
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && usesSharedRecoil(entity.type())
+                && entity.type() != ENTITY_MINI_MOLDORM
                 && ((entity.type() != ENTITY_STAR && entity.type() != ENTITY_BLOOPER)
                     || handlerLinkCollisionEnabled)) {
                 // Bank-$03 AnimateRoamingEnemy and the bank-$04/$06/$07
@@ -1874,6 +1885,47 @@ public final class RoomEntityRuntime {
                     entity, backgroundCollision);
                 entity = recoil.entity();
                 updated = entity;
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_MINI_MOLDORM) {
+                int slot = entity.slot();
+                // RenderMiniMoldorm records the history before the bank-$04
+                // recoil helper runs, so keep this ordering explicit.
+                miniMoldormMotion.beginFrame(entity, enemyIgnoreHitsCountdown[slot] != 0);
+                EnemyRecoilMotion.Update recoil = applyEnemyRecoilIfNeeded(
+                    entity, backgroundCollision);
+                entity = recoil.entity();
+                updated = entity;
+                RoomEntityBackgroundInteraction miniBackgroundInteraction = backgroundInteraction;
+                if (miniBackgroundInteraction == null && backgroundCollision != null) {
+                    miniBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
+                        backgroundCollision);
+                }
+                int transitionForMotion = enemyTransitionCountdown[slot];
+                if (transitionForMotion != 0) {
+                    // The common runtime timer has already performed the ROM
+                    // pre-handler decrement; MiniMoldormMotion mirrors that
+                    // decrement for its direct source-derived API as well.
+                    transitionForMotion = (transitionForMotion + 1) & 0xFF;
+                }
+                MiniMoldormMotion.Update miniUpdate = miniMoldormMotion.advanceAfterHistory(
+                    entity, transitionForMotion, enemyIgnoreHitsCountdown[slot],
+                    enemyFlashCountdown[slot], miniBackgroundInteraction,
+                    randomByteSupplier, frame);
+                updated = miniUpdate.entity();
+                enemyTransitionCountdown[slot] = miniUpdate.transitionCountdown();
+                if (spriteHandlers != null) {
+                    updated = withDefinition(updated,
+                        spriteHandlers.forMiniMoldormState(
+                            miniUpdate.headSpriteVariant(), updated.x(),
+                            (updated.y() - updated.z()) & 0xFF,
+                            miniUpdate.segment1X(), miniUpdate.segment1Y(),
+                            miniUpdate.segment2X(), miniUpdate.segment2Y()), 0);
+                } else if (updated.spriteDefinition().supported()
+                    && miniUpdate.headSpriteVariant() < updated.spriteDefinition().variantCount()) {
+                    updated = withVariant(updated, miniUpdate.headSpriteVariant());
+                }
+                preserveMiniMoldormPresentation = true;
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_CRYSTAL_SWITCH) {
@@ -2861,6 +2913,7 @@ public final class RoomEntityRuntime {
                 || preserveStarPresentation
                 || preserveBlooperPresentation || preserveWingedOctorokPresentation
                 || preservePincerPresentation || preserveBushCrawlerPresentation
+                || preserveMiniMoldormPresentation
                 || preserveCuccoPresentation
                 || preserveRoosterPresentation
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
@@ -2877,6 +2930,7 @@ public final class RoomEntityRuntime {
                 || preserveStarPresentation
                 || preserveBlooperPresentation || preserveWingedOctorokPresentation
                 || preservePincerPresentation || preserveBushCrawlerPresentation
+                || preserveMiniMoldormPresentation
                 || preserveCuccoPresentation
                 || preserveRoosterPresentation
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
@@ -4322,6 +4376,7 @@ public final class RoomEntityRuntime {
         blooperMotion.clear(slot);
         pincerMotion.clear(slot);
         bushCrawlerMotion.clear(slot);
+        miniMoldormMotion.clear(slot);
         if (!entity.loaded()) {
             return 0;
         }
@@ -5715,6 +5770,7 @@ public final class RoomEntityRuntime {
             || type == ENTITY_WINGED_OCTOROK
             || type == ENTITY_BUSH_CRAWLER
             || type == ENTITY_PAIRODD
+            || type == ENTITY_MINI_MOLDORM
             || isRoamingEnemyType(type) || usesBank6Recoil(type)
             || isGhiniType(type);
     }
@@ -7973,6 +8029,9 @@ public final class RoomEntityRuntime {
         if (slots[slot].type() == ENTITY_POLS_VOICE) {
             return ENTITY_OPT1_SPLASH_IN_WATER;
         }
+        if (slots[slot].type() == ENTITY_MINI_MOLDORM) {
+            return ENTITY_OPT1_SPLASH_IN_WATER;
+        }
         if (isBombiteType(slots[slot].type())) {
             return BOMBITE_OPTIONS1;
         }
@@ -8384,6 +8443,7 @@ public final class RoomEntityRuntime {
             case ENTITY_IRON_MASK -> IRON_MASK_INITIAL_PHYSICS_FLAGS;
             case ENTITY_GOOMBA, ENTITY_SNAKE -> GOOMBA_INITIAL_PHYSICS_FLAGS;
             case ENTITY_WIZROBE -> 0x02;
+            case ENTITY_MINI_MOLDORM -> 0x02;
             case ENTITY_SWORD_SHIELD_PICKUP -> SWORD_SHIELD_PICKUP_INITIAL_PHYSICS_FLAGS;
             case ENTITY_KEY_DROP_POINT -> KEY_DROP_POINT_INITIAL_PHYSICS_FLAGS;
             case ENTITY_LIKE_LIKE -> LIKE_LIKE_INITIAL_PHYSICS_FLAGS;
@@ -8778,6 +8838,7 @@ public final class RoomEntityRuntime {
         blooperMotion.clear(slot);
         pincerMotion.clear(slot);
         bushCrawlerMotion.clear(slot);
+        miniMoldormMotion.clear(slot);
         cuccoMotion.clear(slot);
         spikeTrapMotion.clear(slot);
         pairoddMotion.clear(slot);

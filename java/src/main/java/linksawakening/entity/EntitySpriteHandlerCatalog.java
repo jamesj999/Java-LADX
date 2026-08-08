@@ -21,6 +21,7 @@ public final class EntitySpriteHandlerCatalog {
     public static final int ENTITY_WINGED_OCTOROK = 0xAE;
     public static final int ENTITY_PINCER = 0xB0;
     public static final int ENTITY_BUSH_CRAWLER = 0xBB;
+    public static final int ENTITY_MINI_MOLDORM = 0x29;
     public static final int ENTITY_CUCCO = 0x6C;
     public static final int LIFTABLE_ROCK_INTACT_ROCK_VARIANT = 0;
     public static final int LIFTABLE_ROCK_INTACT_BUSH_VARIANT = 1;
@@ -282,6 +283,9 @@ public final class EntitySpriteHandlerCatalog {
         if (entityType == ENTITY_LEEVER) {
             return decodePair(entityType, 0x04, 0x7EE5, 4, 0);
         }
+        if (entityType == ENTITY_MINI_MOLDORM) {
+            return decodePair(entityType, 0x04, 0x5A49, 10, 0);
+        }
         if (entityType == ENTITY_ANTI_FAIRY) {
             return decodePair(entityType, 0x06, 0x786E, 2, 0);
         }
@@ -512,6 +516,31 @@ public final class EntitySpriteHandlerCatalog {
         return privateState2 == 0
             ? decodePair(ENTITY_IRON_MASK, 0x03, 0x4FCB, 8, 0)
             : decodePair(ENTITY_IRON_MASK, 0x03, 0x4FEB, 2, 0);
+    }
+
+    /**
+     * Builds Mini Moldorm's handler-generated head and delayed-history tail.
+     * The ROM renders all three two-sprite pairs in one pass, with the latter
+     * two pairs sourced from history rather than from the active entity
+     * position.
+     */
+    public EntitySpriteDefinition forMiniMoldormState(
+            int headVariant, int entityX, int entityY,
+            int segment1X, int segment1Y, int segment2X, int segment2Y) {
+        if (headVariant < 0 || headVariant > 7) {
+            throw new IllegalArgumentException("Mini Moldorm head variant must be 0..7: "
+                + headVariant);
+        }
+        EntitySpriteDefinition pairs = decodePair(ENTITY_MINI_MOLDORM, 0x04,
+            0x5A49, 10, 0);
+        List<EntitySpriteDefinition.DynamicSprite> sprites = new ArrayList<>(6);
+        appendDynamicPairAtOffset(sprites, pairs.variant(headVariant), 0, 0);
+        appendDynamicPairAtOffset(sprites, pairs.variant(8),
+            signedByte(segment1Y - entityY), signedByte(segment1X - entityX));
+        appendDynamicPairAtOffset(sprites, pairs.variant(9),
+            signedByte(segment2Y - entityY), signedByte(segment2X - entityX));
+        return EntitySpriteDefinition.dynamic(ENTITY_MINI_MOLDORM, 0x04,
+            0x5A49, 0, List.of(List.copyOf(sprites)));
     }
 
     /**
@@ -969,6 +998,19 @@ public final class EntitySpriteHandlerCatalog {
             destination.add(new EntitySpriteDefinition.DynamicSprite(
                 0, 0x08, pair.second(),
                 tileSource, true));
+        }
+    }
+
+    private static void appendDynamicPairAtOffset(
+            List<EntitySpriteDefinition.DynamicSprite> destination,
+            EntitySpriteDefinition.Variant pair, int yOffset, int xOffset) {
+        destination.add(new EntitySpriteDefinition.DynamicSprite(
+            signedByte(yOffset), signedByte(xOffset), pair.first(),
+            EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true));
+        if (pair.second() != null) {
+            destination.add(new EntitySpriteDefinition.DynamicSprite(
+                signedByte(yOffset), signedByte(xOffset + 0x08), pair.second(),
+                EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true));
         }
     }
 

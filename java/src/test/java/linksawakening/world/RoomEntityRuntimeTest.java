@@ -243,6 +243,42 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void miniMoldormUsesDelayedRomPositionHistoryForItsDynamicTail() throws Exception {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            EntitySpriteHandlerCatalog.ENTITY_MINI_MOLDORM,
+            EntityRoomLoader.RoomTable.OVERWORLD);
+        RoomEntity initialEntity = new RoomEntity(0, 0,
+            EntitySpriteHandlerCatalog.ENTITY_MINI_MOLDORM, 0x50, 0x60,
+            EntityStatus.ACTIVE, definition, 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+            snapshot(initialEntity), false, () -> 0, catalog);
+
+        runtime.tick(0, 0, 0, () -> 0,
+            (entity, direction, nextX, nextY) -> false);
+
+        RoomEntity updated = runtime.snapshot().slots().get(0);
+        assertEquals(EntitySpriteDefinition.Shape.DYNAMIC,
+            updated.spriteDefinition().shape());
+        assertEquals(0, updated.spriteVariant());
+        assertEquals(6, updated.spriteDefinition().dynamicVariant(0).size());
+        assertEquals(0x74, updated.spriteDefinition().dynamicVariant(0).get(0).oam().tile());
+        assertEquals(-0x50,
+            updated.spriteDefinition().dynamicVariant(0).get(2).xOffset());
+        assertEquals(-0x60,
+            updated.spriteDefinition().dynamicVariant(0).get(2).yOffset());
+        assertEquals(-0x50,
+            updated.spriteDefinition().dynamicVariant(0).get(4).xOffset());
+        assertEquals(-0x60,
+            updated.spriteDefinition().dynamicVariant(0).get(4).yOffset());
+
+        runtime.tick(1, 0, 0, () -> 0,
+            (entity, direction, nextX, nextY) -> false);
+        assertEquals(0x51, runtime.snapshot().slots().get(0).x());
+    }
+
+    @Test
     void richBackgroundProbeSuppliesIgnoreHitsToLegacyRecoilMovement() {
         RoomEntity initial = new RoomEntity(0, 0, 0x0B, 0x40, 0x40,
             EntityStatus.ACTIVE, pairDefinition(0x0B, 2), 0);
