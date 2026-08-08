@@ -1833,8 +1833,21 @@ public final class RoomEntityRuntime {
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_HIDING_ZOL) {
-                updated = hidingZolMotion.advance(entity, linkEntityX, linkEntityY,
-                    randomByteSupplier, backgroundCollision).entity();
+                RoomEntityBackgroundInteraction hidingZolBackgroundInteraction =
+                    backgroundInteraction;
+                if (hidingZolBackgroundInteraction == null && backgroundCollision != null) {
+                    hidingZolBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
+                        backgroundCollision);
+                }
+                HidingZolMotion.Update hidingZolUpdate = hidingZolMotion.advance(
+                    entity, linkEntityX, linkEntityY, randomByteSupplier,
+                    hidingZolBackgroundInteraction, frame);
+                updated = hidingZolUpdate.entity();
+                if (hidingZolUpdate.clearsIgnoreHitsCountdown()) {
+                    // func_007_73F7 temporarily writes $03 around the
+                    // background helper, then clears the shared byte.
+                    enemyIgnoreHitsCountdown[entity.slot()] = 0;
+                }
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_SPIKE_TRAP) {

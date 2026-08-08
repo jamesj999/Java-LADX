@@ -2316,6 +2316,17 @@ runtime collision callback.
   increment. The state-$03/$04/$05 forced-ignore background helper and the
   remaining damage/audio branches remain separate work.
 
+## Verified ROM Hiding Zol background ordering — 2026-08-07
+
+- Hiding Zol state `$03` now performs its source `AddEntitySpeedToPos_07`
+  movement without invoking the later flying background helper.
+- States `$04/$05` now route their post-movement X/Y probes through the rich
+  room interaction with the source temporary ignore-hits value `$03`, then
+  clear the shared ignore-hits byte as `func_007_73F7` does.
+- Focused state-order and forced-ignore regressions cover this boundary, while
+  the helper's ground-status, pit, water, conveyor, and object side effects
+  remain separate work.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

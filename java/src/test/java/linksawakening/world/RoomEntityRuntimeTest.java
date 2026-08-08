@@ -4332,6 +4332,94 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void hidingZolStateThreeMovesWithoutTheLaterBackgroundHelper() {
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
+            .forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x9B, 64, 64, EntityStatus.INIT, definition, 0)),
+            false, sequence(0x00));
+        List<Integer> observedIgnoreHits = new ArrayList<>();
+        runtime.setBackgroundInteraction(new RoomEntityBackgroundInteraction() {
+            @Override
+            public EntityBackgroundCollisionResult probe(RoomEntity entity, int direction,
+                                                           int nextX, int nextY) {
+                observedIgnoreHits.add(-1);
+                return EntityBackgroundCollisionResult.blocked(direction, 0x2A, 0,
+                    nextX, nextY);
+            }
+
+            @Override
+            public EntityBackgroundCollisionResult probe(RoomEntity entity, int direction,
+                                                       int nextX, int nextY,
+                                                       int ignoreHitsCountdown,
+                                                       int frameCounter) {
+                observedIgnoreHits.add(ignoreHitsCountdown);
+                return EntityBackgroundCollisionResult.blocked(direction, 0x2A, 0,
+                    nextX, nextY);
+            }
+        });
+        runtime.tick(0, 80, 64, sequence(0x00));
+
+        int frame = 1;
+        while (runtime.hidingZolState(0) != 3 && frame < 200) {
+            runtime.tick(frame++, 80, 64, sequence(0x00));
+        }
+        assertEquals(3, runtime.hidingZolState(0));
+        observedIgnoreHits.clear();
+
+        runtime.tick(frame++, 80, 64, sequence(0x00));
+        runtime.tick(frame++, 80, 64, sequence(0x00));
+
+        assertTrue(observedIgnoreHits.isEmpty(),
+            () -> "state-3 background probes=" + observedIgnoreHits);
+    }
+
+    @Test
+    void hidingZolFlyingBackgroundHelperForcesTheRomIgnoreHitsValue() {
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
+            .forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x9B, 64, 64, EntityStatus.INIT, definition, 0)),
+            false, sequence(0x00));
+        runtime.tick(0, 80, 64, sequence(0x00));
+
+        int frame = 1;
+        while (runtime.hidingZolState(0) != 5 && frame < 300) {
+            runtime.tick(frame++, 80, 64, sequence(0x00));
+        }
+        assertEquals(5, runtime.hidingZolState(0));
+
+        List<Integer> observedIgnoreHits = new ArrayList<>();
+        runtime.setBackgroundInteraction(new RoomEntityBackgroundInteraction() {
+            @Override
+            public EntityBackgroundCollisionResult probe(RoomEntity entity, int direction,
+                                                           int nextX, int nextY) {
+                observedIgnoreHits.add(-1);
+                return EntityBackgroundCollisionResult.passable(direction, 0,
+                    nextX, nextY);
+            }
+
+            @Override
+            public EntityBackgroundCollisionResult probe(RoomEntity entity, int direction,
+                                                       int nextX, int nextY,
+                                                       int ignoreHitsCountdown,
+                                                       int frameCounter) {
+                observedIgnoreHits.add(ignoreHitsCountdown);
+                return EntityBackgroundCollisionResult.passable(direction, 0,
+                    nextX, nextY);
+            }
+        });
+        runtime.setEnemyIgnoreHitsCountdownForTest(0, 0x09);
+
+        runtime.tick(frame++, 80, 64, sequence(0x00));
+        runtime.tick(frame++, 80, 64, sequence(0x00));
+
+        assertTrue(observedIgnoreHits.contains(0x03),
+            () -> "flying background probes=" + observedIgnoreHits);
+        assertEquals(0, runtime.enemyIgnoreHitsCountdown(0));
+    }
+
+    @Test
     void spikeTrapUsesTheRomRandomDirectionAndFourStateLaunchLoop() {
         EntitySpriteDefinition definition = pairDefinition(0x27, 1);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
