@@ -218,6 +218,27 @@ final class EntitySpriteHandlerCatalogTest {
     }
 
     @Test
+    void mapsMimicToTheEightVariantBankNineteenListIncludingTheCrossLineByte()
+        throws Exception {
+        EntitySpriteDefinition mimic = new EntitySpriteHandlerCatalog(loadRom())
+            .forEntityType(EntitySpriteHandlerCatalog.ENTITY_MIMIC,
+                EntityRoomLoader.RoomTable.INDOORS_B);
+
+        assertDefinition(mimic, 0x19, 0x6A8D,
+            EntitySpriteDefinition.Shape.PAIR, 8, 0);
+        assertPairBytes(mimic, new int[][] {
+            {0x60, 0x01, 0x62, 0x01},
+            {0x62, 0x21, 0x60, 0x21},
+            {0x64, 0x01, 0x66, 0x01},
+            {0x66, 0x21, 0x64, 0x21},
+            {0x68, 0x01, 0x6A, 0x01},
+            {0x6C, 0x01, 0x6E, 0x01},
+            {0x6A, 0x21, 0x68, 0x21},
+            {0x6E, 0x21, 0x6C, 0x21}
+        });
+    }
+
+    @Test
     void mapsBoomerangToItsFourFrameBankNineteenDisplayList() {
         byte[] rom = syntheticRom();
         write(rom, 0x19, 0x4451,

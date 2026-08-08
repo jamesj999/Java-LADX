@@ -2594,6 +2594,22 @@ runtime collision callback.
   fixed-point motion, collision, and live runtime tests pass. The clean Java
   suite passes with 1,297 tests and zero failures, errors, or skipped tests.
 
+## Verified ROM Mimic entity runtime — 2026-08-08
+
+- Mimic (`$28`) now decodes bank `$19:$6A8D`'s eight pair variants. The final
+  pair consumes the `$21` byte at `Data_019_6AAC`, matching the disassembly's
+  cross-line source layout rather than truncating the display list.
+- The ordinary Arm-Mimic handler ports bank-$19 fixed-point movement, the
+  source right/left and up/down joypad masks, the `$F0/$10` speed table, the
+  frame-bit variant selection, background rollback, collision-speed clear,
+  shared recoil ordering, and ROM combat group 4 metadata (health `$04`,
+  contact damage `$18`, physics `$12`, options `$08`).
+- Focused ROM display, motion, collision, runtime, and combat regressions pass;
+  the clean Java suite passes with 1,303 tests and zero failures, errors, or
+  skipped tests. The Mimic handler's alternate private-state-2 Eagle's Tower door-opening
+  animation and Cave B trade-sequence render suppression remain explicitly
+  deferred until the runtime snapshot carries those source state values.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

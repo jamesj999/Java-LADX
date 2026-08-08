@@ -47,6 +47,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_PINCER = EntitySpriteHandlerCatalog.ENTITY_PINCER;
     private static final int ENTITY_BUSH_CRAWLER =
         EntitySpriteHandlerCatalog.ENTITY_BUSH_CRAWLER;
+    private static final int ENTITY_MIMIC = EntitySpriteHandlerCatalog.ENTITY_MIMIC;
     private static final int ENTITY_MINI_MOLDORM =
         EntitySpriteHandlerCatalog.ENTITY_MINI_MOLDORM;
     private static final int ENTITY_SPIKE_TRAP = 0x27;
@@ -269,6 +270,7 @@ public final class RoomEntityRuntime {
     private final WingedOctorokMotion wingedOctorokMotion = new WingedOctorokMotion();
     private final PincerMotion pincerMotion = new PincerMotion();
     private final BushCrawlerMotion bushCrawlerMotion = new BushCrawlerMotion();
+    private final MimicMotion mimicMotion = new MimicMotion();
     private final MiniMoldormMotion miniMoldormMotion = new MiniMoldormMotion();
     private final CuccoMotion cuccoMotion = new CuccoMotion();
     private final SpikeTrapMotion spikeTrapMotion = new SpikeTrapMotion();
@@ -779,6 +781,9 @@ public final class RoomEntityRuntime {
             if (entity.loaded() && entity.type() == ENTITY_BUSH_CRAWLER) {
                 bushCrawlerMotion.initialize(entity.slot());
             }
+            if (entity.loaded() && entity.type() == ENTITY_MIMIC) {
+                mimicMotion.initialize(entity.slot());
+            }
             if (entity.loaded() && entity.type() == ENTITY_MINI_MOLDORM) {
                 miniMoldormMotion.initialize(entity);
             }
@@ -1231,6 +1236,7 @@ public final class RoomEntityRuntime {
             boolean preserveWingedOctorokPresentation = false;
             boolean preservePincerPresentation = false;
             boolean preserveBushCrawlerPresentation = false;
+            boolean preserveMimicPresentation = false;
             boolean preserveMiniMoldormPresentation = false;
             boolean preserveCuccoPresentation = false;
             boolean preserveRoosterPresentation = false;
@@ -1926,6 +1932,20 @@ public final class RoomEntityRuntime {
                     updated = withVariant(updated, miniUpdate.headSpriteVariant());
                 }
                 preserveMiniMoldormPresentation = true;
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_MIMIC) {
+                int slot = entity.slot();
+                RoomEntityBackgroundInteraction mimicBackgroundInteraction = backgroundInteraction;
+                if (mimicBackgroundInteraction == null && backgroundCollision != null) {
+                    mimicBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
+                        backgroundCollision);
+                }
+                MimicMotion.Update mimicUpdate = mimicMotion.advance(
+                    entity, frame, linkPressedButtonsMask, romCollisionType,
+                    mimicBackgroundInteraction, enemyIgnoreHitsCountdown[slot], frame);
+                updated = mimicUpdate.entity();
+                preserveMimicPresentation = true;
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_CRYSTAL_SWITCH) {
@@ -2913,6 +2933,7 @@ public final class RoomEntityRuntime {
                 || preserveStarPresentation
                 || preserveBlooperPresentation || preserveWingedOctorokPresentation
                 || preservePincerPresentation || preserveBushCrawlerPresentation
+                || preserveMimicPresentation
                 || preserveMiniMoldormPresentation
                 || preserveCuccoPresentation
                 || preserveRoosterPresentation
@@ -2930,6 +2951,7 @@ public final class RoomEntityRuntime {
                 || preserveStarPresentation
                 || preserveBlooperPresentation || preserveWingedOctorokPresentation
                 || preservePincerPresentation || preserveBushCrawlerPresentation
+                || preserveMimicPresentation
                 || preserveMiniMoldormPresentation
                 || preserveCuccoPresentation
                 || preserveRoosterPresentation
@@ -4376,6 +4398,7 @@ public final class RoomEntityRuntime {
         blooperMotion.clear(slot);
         pincerMotion.clear(slot);
         bushCrawlerMotion.clear(slot);
+        mimicMotion.clear(slot);
         miniMoldormMotion.clear(slot);
         if (!entity.loaded()) {
             return 0;
@@ -5770,6 +5793,7 @@ public final class RoomEntityRuntime {
             || type == ENTITY_WINGED_OCTOROK
             || type == ENTITY_BUSH_CRAWLER
             || type == ENTITY_PAIRODD
+            || type == ENTITY_MIMIC
             || type == ENTITY_MINI_MOLDORM
             || isRoamingEnemyType(type) || usesBank6Recoil(type)
             || isGhiniType(type);
@@ -8032,6 +8056,9 @@ public final class RoomEntityRuntime {
         if (slots[slot].type() == ENTITY_MINI_MOLDORM) {
             return ENTITY_OPT1_SPLASH_IN_WATER;
         }
+        if (slots[slot].type() == ENTITY_MIMIC) {
+            return ENTITY_OPT1_SPLASH_IN_WATER;
+        }
         if (isBombiteType(slots[slot].type())) {
             return BOMBITE_OPTIONS1;
         }
@@ -8443,6 +8470,7 @@ public final class RoomEntityRuntime {
             case ENTITY_IRON_MASK -> IRON_MASK_INITIAL_PHYSICS_FLAGS;
             case ENTITY_GOOMBA, ENTITY_SNAKE -> GOOMBA_INITIAL_PHYSICS_FLAGS;
             case ENTITY_WIZROBE -> 0x02;
+            case ENTITY_MIMIC -> 0x12;
             case ENTITY_MINI_MOLDORM -> 0x02;
             case ENTITY_SWORD_SHIELD_PICKUP -> SWORD_SHIELD_PICKUP_INITIAL_PHYSICS_FLAGS;
             case ENTITY_KEY_DROP_POINT -> KEY_DROP_POINT_INITIAL_PHYSICS_FLAGS;
@@ -8838,6 +8866,7 @@ public final class RoomEntityRuntime {
         blooperMotion.clear(slot);
         pincerMotion.clear(slot);
         bushCrawlerMotion.clear(slot);
+        mimicMotion.clear(slot);
         miniMoldormMotion.clear(slot);
         cuccoMotion.clear(slot);
         spikeTrapMotion.clear(slot);

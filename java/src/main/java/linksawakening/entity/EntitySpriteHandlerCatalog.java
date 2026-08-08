@@ -21,6 +21,7 @@ public final class EntitySpriteHandlerCatalog {
     public static final int ENTITY_WINGED_OCTOROK = 0xAE;
     public static final int ENTITY_PINCER = 0xB0;
     public static final int ENTITY_BUSH_CRAWLER = 0xBB;
+    public static final int ENTITY_MIMIC = 0x28;
     public static final int ENTITY_MINI_MOLDORM = 0x29;
     public static final int ENTITY_CUCCO = 0x6C;
     public static final int LIFTABLE_ROCK_INTACT_ROCK_VARIANT = 0;
@@ -282,6 +283,11 @@ public final class EntitySpriteHandlerCatalog {
         }
         if (entityType == ENTITY_LEEVER) {
             return decodePair(entityType, 0x04, 0x7EE5, 4, 0);
+        }
+        if (entityType == ENTITY_MIMIC) {
+            // The eighth pair consumes the $21 byte at Data_019_6AAC,
+            // immediately following the source's final commented attribute.
+            return decodePair(entityType, 0x19, 0x6A8D, 8, 0);
         }
         if (entityType == ENTITY_MINI_MOLDORM) {
             return decodePair(entityType, 0x04, 0x5A49, 10, 0);
