@@ -200,6 +200,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_WRECKING_BALL = 0xA8;
     private static final int ENTITY_SIDE_VIEW_POT = 0xD6;
     private static final int ENTITY_CUCCO = 0x6C;
+    private static final int ENTITY_GOPONGA_FLOWER = GopongaFlowerMotion.ENTITY_TYPE;
     private static final int ENTITY_HORSE_PIECE = 0x98;
     private static final int ENTITY_PHYSICS_GRABBABLE = 0x20;
     private static final int OBJECT_BUSH = 0x5C;
@@ -1246,6 +1247,7 @@ public final class RoomEntityRuntime {
             boolean preserveMaskedMimicPresentation = false;
             boolean preserveMiniMoldormPresentation = false;
             boolean preserveCuccoPresentation = false;
+            boolean preserveGopongaFlowerPresentation = false;
             boolean preserveRoosterPresentation = false;
             boolean preserveWizrobePresentation = false;
             boolean preserveWizrobeProjectilePresentation = false;
@@ -2802,6 +2804,17 @@ public final class RoomEntityRuntime {
                 }
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_GOPONGA_FLOWER) {
+                if (GopongaFlowerMotion.overlapsInteractiveLink(
+                    entity, linkEntityX, linkEntityY, handlerLinkCollisionEnabled)) {
+                    pendingLinkFinalPositionRequests.add(
+                        new LinkFinalPositionRequest(entity.slot()));
+                    resetHookshotChainAfterLinkPush();
+                }
+                updated = withVariant(updated, GopongaFlowerMotion.frameVariant(frame));
+                preserveGopongaFlowerPresentation = true;
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
                 && isGhiniType(entity.type())) {
                 updated = ghiniMotion.advance(entity, frame, entity.type(),
                     linkEntityX, linkEntityY, romCollisionType, randomByteSupplier);
@@ -2963,6 +2976,7 @@ public final class RoomEntityRuntime {
                 || preserveMaskedMimicPresentation
                 || preserveMiniMoldormPresentation
                 || preserveCuccoPresentation
+                || preserveGopongaFlowerPresentation
                 || preserveRoosterPresentation
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
                 || preservePolsVoicePresentation
@@ -2982,6 +2996,7 @@ public final class RoomEntityRuntime {
                 || preserveMaskedMimicPresentation
                 || preserveMiniMoldormPresentation
                 || preserveCuccoPresentation
+                || preserveGopongaFlowerPresentation
                 || preserveRoosterPresentation
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
                 || preservePolsVoicePresentation
@@ -8069,6 +8084,9 @@ public final class RoomEntityRuntime {
         if (slots[slot].type() == ENTITY_CUCCO) {
             return ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
         }
+        if (slots[slot].type() == ENTITY_GOPONGA_FLOWER) {
+            return GopongaFlowerMotion.OPTIONS1;
+        }
         if (slots[slot].type() == ENTITY_BOO_BUDDY) {
             return BooBuddyMotion.OPTIONS1;
         }
@@ -8517,6 +8535,7 @@ public final class RoomEntityRuntime {
             case ENTITY_FISH -> FishMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_CROW -> CrowMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_CUCCO -> CuccoMotion.INITIAL_PHYSICS_FLAGS;
+            case ENTITY_GOPONGA_FLOWER -> GopongaFlowerMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_ROOSTER -> RoosterMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_BOO_BUDDY -> BooBuddyMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_DROPPABLE_FAIRY -> FAIRY_INITIAL_PHYSICS_FLAGS;

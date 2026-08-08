@@ -2626,6 +2626,21 @@ runtime collision callback.
   zero failures, errors, or skipped tests. The Cave-Water Goriya trade/state
   handler remains explicitly deferred.
 
+## Verified ROM Goponga Flower entity runtime — 2026-08-08
+
+- Ordinary Goponga Flower (`$7E`) now decodes bank `$06:$63F4`'s two pair
+  variants directly from the shipped ROM: open `$50` and closed `$52`, with
+  the source palette and X-flip attributes preserved.
+- The active handler ports its `$30` frame-mask animation window and the
+  bank-$06 `PushLinkOutOfEntity` collision boundary. The pending Link final
+  position request is emitted even when Link is airborne, matching the source
+  `collisionEvenInTheAir` helper; noninteractive Link motion suppresses it.
+- ROM combat metadata is wired for health `$04`, contact damage `$08`, physics
+  `$02`, options `$02`, and normal enemy/sword collision. Focused ROM display,
+  frame, combat, and Link-push regressions pass; the clean Java suite passes
+  with 1,315 tests and zero failures, errors, or skipped tests. Giant Goponga
+  Flower (`$7C`) and its projectile (`$7D`) remain separate handlers.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,
