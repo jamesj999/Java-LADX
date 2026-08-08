@@ -63,6 +63,7 @@ public final class RoomEntityCombatRules {
     private static final int ENTITY_ZORA = 0xCB;
     private static final int ENTITY_ZOMBIE = 0xBF;
     private static final int ENTITY_BUZZ_BLOB = 0xB9;
+    private static final int ENTITY_SAND_CRAB = 0xC6;
 
     // HitboxPositions._00 in home/entities.asm:3AAA. Octorok, Moblin, Armos,
     // and Keese all select the normal collision box in hitbox_flags.asm.
@@ -137,7 +138,7 @@ public final class RoomEntityCombatRules {
                 ENTITY_CUCCO, ENTITY_GOPONGA_FLOWER, ENTITY_GIANT_GOPONGA_FLOWER,
                 ENTITY_GOPONGA_FLOWER_PROJECTILE,
                 ENTITY_POKEY, ENTITY_PIRANHA_PLANT, ENTITY_ZORA, ENTITY_ZOMBIE,
-                ENTITY_BUZZ_BLOB,
+                ENTITY_BUZZ_BLOB, ENTITY_SAND_CRAB,
                 ENTITY_BOO_BUDDY,
                 ENTITY_SPIKED_BEETLE,
                 ENTITY_PAIRODD, ENTITY_COLOR_SHELL_RED, ENTITY_COLOR_SHELL_GREEN,
@@ -164,6 +165,7 @@ public final class RoomEntityCombatRules {
                 ENTITY_PIRANHA_PLANT, ENTITY_ZORA, ENTITY_ZOMBIE ->
                 OCTOROK_AND_KEESE_CONTACT_DAMAGE;
             case ENTITY_BUZZ_BLOB -> 0x08;
+            case ENTITY_SAND_CRAB -> 0x04;
             case ENTITY_FISH -> OCTOROK_AND_KEESE_CONTACT_DAMAGE;
             case ENTITY_CROW -> CROW_CONTACT_DAMAGE;
             // Cucco's static health-group table points at the ordinary enemy
@@ -209,6 +211,7 @@ public final class RoomEntityCombatRules {
                 ENTITY_ZORA, ENTITY_ZOMBIE ->
                 OCTOROK_AND_KEESE_INITIAL_HEALTH;
             case ENTITY_BUZZ_BLOB -> 0x04;
+            case ENTITY_SAND_CRAB -> 0x02;
             case ENTITY_FISH -> OCTOROK_AND_KEESE_INITIAL_HEALTH;
             case ENTITY_CROW -> CROW_INITIAL_HEALTH;
             case ENTITY_CUCCO -> 0x01;
