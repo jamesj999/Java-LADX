@@ -181,6 +181,8 @@ public final class Link implements RocsFeather.JumpTarget {
     private int lastRomSpeedY;
     private int groundStatus = GROUND_STATUS_NORMAL;
     private int motionState = LINK_MOTION_DEFAULT;
+    private boolean romInteractiveMotionBlocked;
+    private int romAnimationStateOverride = -1;
     private int physicsModifier;
     private int swimmingSpeedX;
     private int swimmingSpeedY;
@@ -363,6 +365,12 @@ public final class Link implements RocsFeather.JumpTarget {
         }
         subX = romFinalSubX;
         subY = romFinalSubY;
+    }
+
+    /** Applies the ROM's next-frame hLinkInteractiveMotionBlocked=$02 write. */
+    public void blockNextRomMotionFrame() {
+        romInteractiveMotionBlocked = true;
+        romAnimationStateOverride = 0x6A;
     }
 
     public int pixelX() {
@@ -617,6 +625,18 @@ public final class Link implements RocsFeather.JumpTarget {
         lastRomSpeedY = 0;
         if (playerState != null) {
             playerState.tickInvincibility();
+        }
+
+        boolean interactiveMotionBlocked = romInteractiveMotionBlocked;
+        romInteractiveMotionBlocked = false;
+        if (!interactiveMotionBlocked) {
+            romAnimationStateOverride = -1;
+        }
+        if (interactiveMotionBlocked) {
+            movingThisFrame = false;
+            walkTickCounter = 0;
+            walkFrame = 0;
+            return;
         }
 
         if (likeLikeCaptured) {
@@ -1174,6 +1194,9 @@ public final class Link implements RocsFeather.JumpTarget {
     }
 
     private int resolveAnimationState() {
+        if (romAnimationStateOverride >= 0) {
+            return romAnimationStateOverride;
+        }
         if (fallingIntoPit) {
             int frame = Math.min(FALL_ANIMATION_STATE.length - 1, fallingFrameCounter / FALL_FRAME_TICKS);
             return FALL_ANIMATION_STATE[frame];

@@ -414,6 +414,28 @@ final class LinkTest {
     }
 
     @Test
+    void romInteractiveMotionBlockStopsOneFrameAndUsesTheRomAnimationState() throws Exception {
+        RomTables romTables = RomTables.loadFromRom(loadRom());
+        InputState inputState = new InputState();
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        Link link = new Link(inputState, inputConfig, romTables, null, null,
+            new PlayerState(), new ItemRegistry());
+        link.setPixelPosition(0x40, 0x50);
+        inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
+
+        link.blockNextRomMotionFrame();
+        link.update();
+
+        assertEquals(0x40, link.pixelX());
+        assertEquals(0x50, link.pixelY());
+        assertEquals(0x6A, resolvedAnimationState(link));
+
+        inputState.onKeyEvent(inputConfig.rightKey(), GLFW_RELEASE);
+        link.update();
+        assertEquals(0x00, resolvedAnimationState(link));
+    }
+
+    @Test
     void applyRomFinalPositionBypassesBlockedCollisionAndKeepsFractionalPosition() throws Exception {
         byte[] rom = loadRom();
         RomTables romTables = RomTables.loadFromRom(rom);

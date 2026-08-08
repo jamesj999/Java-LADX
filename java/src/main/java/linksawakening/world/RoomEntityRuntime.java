@@ -325,6 +325,8 @@ public final class RoomEntityRuntime {
     private final List<TransientVfxRequest> transientVfxRequests = new ArrayList<>();
     private final List<LinkFinalPositionRequest> pendingLinkFinalPositionRequests =
         new ArrayList<>();
+    private final List<LinkMotionBlockRequest> pendingLinkMotionBlockRequests =
+        new ArrayList<>();
     private final List<DialogRequest> pendingDialogRequests = new ArrayList<>();
     private final List<EntityCombatEvent> pendingEntityEvents = new ArrayList<>();
     private final List<ChestRewardEvent> pendingChestRewardEvents = new ArrayList<>();
@@ -429,6 +431,16 @@ public final class RoomEntityRuntime {
         public LinkFinalPositionRequest {
             if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
                 throw new IllegalArgumentException("Link final-position source slot out of range: "
+                    + sourceSlot);
+            }
+        }
+    }
+
+    /** A ROM handler request to block Link's next interactive motion frame. */
+    public record LinkMotionBlockRequest(int sourceSlot) {
+        public LinkMotionBlockRequest {
+            if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
+                throw new IllegalArgumentException("Link motion-block source slot out of range: "
                     + sourceSlot);
             }
         }
@@ -995,6 +1007,7 @@ public final class RoomEntityRuntime {
         Arrays.fill(dynamicEntitySpawnedThisFrame, false);
         transientVfxRequests.clear();
         pendingLinkFinalPositionRequests.clear();
+        pendingLinkMotionBlockRequests.clear();
         boomerangObjectRequests.clear();
         magicRodObjectRequests.clear();
         magicPowderObjectRequests.clear();
@@ -2184,6 +2197,10 @@ public final class RoomEntityRuntime {
                 enemyHitboxFlags[entity.slot()] = armosKnightUpdate.hitboxFlags();
                 entityOptions1Override[entity.slot()] = armosKnightUpdate.options1();
                 preserveArmosKnightPresentation = true;
+                if (armosKnightUpdate.linkMotionBlocked()) {
+                    pendingLinkMotionBlockRequests.add(
+                        new LinkMotionBlockRequest(entity.slot()));
+                }
                 if (armosKnightUpdate.rubbleRequest() != null) {
                     ArmosKnightMotion.RubbleRequest rubble = armosKnightUpdate.rubbleRequest();
                     int rubbleSlot = spawnLiftableRockRubble(rubble.x(), rubble.y());
@@ -4793,6 +4810,12 @@ public final class RoomEntityRuntime {
     List<LinkFinalPositionRequest> consumePendingLinkFinalPositionRequests() {
         List<LinkFinalPositionRequest> pending = List.copyOf(pendingLinkFinalPositionRequests);
         pendingLinkFinalPositionRequests.clear();
+        return pending;
+    }
+
+    List<LinkMotionBlockRequest> consumePendingLinkMotionBlockRequests() {
+        List<LinkMotionBlockRequest> pending = List.copyOf(pendingLinkMotionBlockRequests);
+        pendingLinkMotionBlockRequests.clear();
         return pending;
     }
 

@@ -1195,6 +1195,13 @@ public final class RoomSession {
             ? List.of() : entityRuntime.consumePendingLinkFinalPositionRequests();
     }
 
+    /** Returns and clears handlers that block Link's next interactive motion frame. */
+    public List<RoomEntityRuntime.LinkMotionBlockRequest>
+            consumeLinkMotionBlockRequests() {
+        return entityRuntime == null
+            ? List.of() : entityRuntime.consumePendingLinkMotionBlockRequests();
+    }
+
     /** Returns and clears chest reward applications emitted by the last entity tick(s). */
     public List<RoomEntityRuntime.ChestRewardEvent> consumeChestRewardEvents() {
         List<RoomEntityRuntime.ChestRewardEvent> rewards = List.copyOf(pendingChestRewardEvents);

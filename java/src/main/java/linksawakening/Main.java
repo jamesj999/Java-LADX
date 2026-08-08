@@ -903,6 +903,11 @@ public class Main {
                         playerState.setRunningWithPegasusBoots(false);
                     }
                 }
+                for (var request : roomSession.consumeLinkMotionBlockRequests()) {
+                    if (link != null) {
+                        link.blockNextRomMotionFrame();
+                    }
+                }
                 EnemyProjectileEventConsumer.consume(projectileEvents, playerState,
                     gameplaySoundSink);
                 EnemyCombatEventConsumer.consume(roomSession.consumeEntityEvents(),

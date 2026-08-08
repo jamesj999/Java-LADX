@@ -2218,8 +2218,7 @@ runtime collision callback.
 - Focused runtime and display-definition tests cover the state boundaries and
   the clean Java suite passes with 1,186 tests and zero failures, errors, or
   skipped tests. Health-change debris, `BossIntro`, `PushLinkOutOfEntity_06`,
-  background collision/screen shake, and the private Link-motion block remain
-  separate parity work.
+  background collision, and screen shake remain separate parity work.
 
 ## Verified ROM Armos Knight intro and Link push boundary — 2026-08-07
 
@@ -2236,6 +2235,17 @@ runtime collision callback.
   `Main` captures it after Link movement and applies entity push requests before
   later projectile responses. Focused BossIntro, Link, and ROM-backed Armos
   runtime tests cover the timing, collision, and restoration boundaries.
+
+## Verified ROM Armos Knight private Link-motion block — 2026-08-07
+
+- The post-landing private countdown now carries the source
+  `hLinkInteractiveMotionBlocked=$02` request into the next Link update. Link
+  remains stationary for that frame and uses the handler-written animation state
+  `$6A`, then returns to ordinary motion when the request is not repeated.
+- Room runtime, session, and `Main` bridges preserve the per-frame ordering;
+  the ROM-backed jump/bounce test covers the `$40` countdown handoff and the
+  Link test covers the one-frame movement and animation behavior. Armos screen
+  shake remains pending.
 
 ## Broader parity gaps
 
