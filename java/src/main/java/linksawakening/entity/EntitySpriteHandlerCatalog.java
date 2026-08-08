@@ -58,6 +58,7 @@ public final class EntitySpriteHandlerCatalog {
     private static final int ENTITY_WIZROBE = 0x21;
     private static final int ENTITY_WIZROBE_PROJECTILE = 0x22;
     private static final int ENTITY_ARMOS_STATUE = 0x0F;
+    private static final int ENTITY_ARMOS_KNIGHT = 0x88;
     private static final int ENTITY_HIDING_GHINI = 0x10;
     private static final int ENTITY_GIANT_GHINI = 0x11;
     private static final int ENTITY_GHINI = 0x12;
@@ -300,6 +301,9 @@ public final class EntitySpriteHandlerCatalog {
         }
         if (entityType == ENTITY_ARMOS_STATUE) {
             return decodePair(entityType, 0x06, 0x7446, 2, 0);
+        }
+        if (entityType == ENTITY_ARMOS_KNIGHT) {
+            return decodeRectangle(entityType, 0x06, 0x5523, 4, 8, 0);
         }
         if (entityType == ENTITY_HIDING_GHINI || entityType == ENTITY_GHINI) {
             return decodePair(entityType, 0x04, 0x5BFC, 2, 0);

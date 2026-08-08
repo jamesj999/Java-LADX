@@ -2192,6 +2192,22 @@ runtime collision callback.
   enemy-death drops are also covered here. The full boss movement/rendering
   handlers remain separate parity work.
 
+## Verified ROM Armos Knight active state machine — 2026-08-07
+
+- Entity `$88` now decodes the bank `$06:$5523` rectangle list as four ROM
+  presentation frames of eight sprites each, and its active handler ports the
+  source `$00`–`$07` wake, charge, jump, landing, bounce, and repeat states.
+- The port carries the ROM transition countdowns, fixed-point X/Y/Z motion,
+  health-dependent presentation variants, initial ignore-hit state, the
+  charge-to-jump physics/hitbox/options transition, and jump/bounce jingles
+  `$24`, `$20`, and `$0B` where those states emit them. Armos Knight collision
+  size, contact damage, and initial health are taken from the ROM tables.
+- Focused runtime and display-definition tests cover the state boundaries and
+  the clean Java suite passes with 1,186 tests and zero failures, errors, or
+  skipped tests. Health-change debris, `BossIntro`, `PushLinkOutOfEntity_06`,
+  background collision/screen shake, and the private Link-motion block remain
+  separate parity work.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

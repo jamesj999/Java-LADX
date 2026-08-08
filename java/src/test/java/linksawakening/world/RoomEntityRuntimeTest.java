@@ -1998,6 +1998,98 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void armosKnightWakesChargesAndEnablesItsRomHitbox() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            0x88, EntityRoomLoader.RoomTable.INDOORS_B);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x88, 0x50, 0x60, EntityStatus.ACTIVE, definition, 0)),
+            true, () -> 0, catalog, new RomEnemyCombatTables(rom));
+
+        assertEquals(0x84, runtime.physicsFlags(0));
+        assertEquals(0xC4, runtime.options1(0));
+        assertEquals(0x80, runtime.hitboxFlagsForTest(0));
+
+        runtime.tick(0, 0, 0, () -> 0);
+        assertEquals(0, runtime.armosKnightState(0));
+
+        runtime.tick(1, 0x50, 0x60, () -> 0);
+        assertEquals(1, runtime.armosKnightState(0));
+        assertEquals(0x30, runtime.armosKnightTransitionCountdown(0));
+
+        for (int frame = 2; frame <= 0x31; frame++) {
+            runtime.tick(frame, 0x50, 0x60, () -> 0);
+        }
+        assertEquals(2, runtime.armosKnightState(0));
+        assertEquals(0x80, runtime.armosKnightTransitionCountdown(0));
+        assertEquals(0x84, runtime.physicsFlags(0));
+        assertEquals(0x80, runtime.hitboxFlagsForTest(0));
+
+        for (int frame = 0x32; frame <= 0xB1; frame++) {
+            runtime.tick(frame, 0x50, 0x60, () -> 0);
+        }
+        assertEquals(3, runtime.armosKnightState(0));
+        assertEquals(0x50, runtime.armosKnightTransitionCountdown(0));
+        assertEquals(0x04, runtime.physicsFlags(0));
+        assertEquals(0x00, runtime.hitboxFlagsForTest(0));
+        assertEquals(0x84, runtime.options1(0));
+    }
+
+    @Test
+    void armosKnightRunsTheRomJumpAndBounceStates() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            0x88, EntityRoomLoader.RoomTable.INDOORS_B);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x88, 0x50, 0x60, EntityStatus.ACTIVE, definition, 0)),
+            true, () -> 0, catalog, new RomEnemyCombatTables(rom));
+
+        runtime.tick(0, 0, 0, () -> 0);
+        runtime.tick(1, 0x50, 0x60, () -> 0);
+        for (int frame = 2; frame <= 0x31; frame++) {
+            runtime.tick(frame, 0x50, 0x60, () -> 0);
+        }
+        for (int frame = 0x32; frame <= 0xB1; frame++) {
+            runtime.tick(frame, 0x50, 0x60, () -> 0);
+        }
+        assertEquals(3, runtime.armosKnightState(0));
+        assertEquals(0x50, runtime.armosKnightTransitionCountdown(0));
+
+        for (int frame = 0xB2; frame <= 0x101; frame++) {
+            runtime.tick(frame, 0x50, 0x60, () -> 0);
+        }
+        assertEquals(4, runtime.armosKnightState(0));
+        assertEquals(0x30, runtime.armosKnightSpeedZ(0));
+        assertEquals(List.of(new EntityCombatEvent(0, 0x88, 0, false,
+            EntityCombatEvent.SoundChannel.JINGLE, 0x24)),
+            runtime.consumePendingEntityEvents());
+
+        for (int frame = 0x102; frame <= 0x119; frame++) {
+            runtime.tick(frame, 0x50, 0x60, () -> 0);
+        }
+        assertEquals(5, runtime.armosKnightState(0));
+        assertEquals(0x10, runtime.armosKnightTransitionCountdown(0));
+
+        for (int frame = 0x11A; frame <= 0x130; frame++) {
+            runtime.tick(frame, 0x50, 0x60, () -> 0);
+        }
+        assertEquals(7, runtime.armosKnightState(0));
+        assertEquals(0x30, runtime.armosKnightTransitionCountdown(0));
+        assertEquals(0x40, runtime.armosKnightPrivateCountdown1(0));
+        assertEquals(List.of(new EntityCombatEvent(0, 0x88, 0, false,
+            EntityCombatEvent.SoundChannel.JINGLE, 0x0B)),
+            runtime.consumePendingEntityEvents());
+
+        for (int frame = 0x131; frame <= 0x160; frame++) {
+            runtime.tick(frame, 0x50, 0x60, () -> 0);
+        }
+        assertEquals(2, runtime.armosKnightState(0));
+        assertEquals(0, runtime.armosKnightTransitionCountdown(0));
+    }
+
+    @Test
     void tektiteLandsWithTheRomCountdownThenStartsItsNextJump() {
         EntitySpriteDefinition definition = pairDefinition(0x0D, 2);
         RoomEntitySnapshot initial = snapshot(

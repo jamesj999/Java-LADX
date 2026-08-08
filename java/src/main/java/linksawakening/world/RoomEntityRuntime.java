@@ -94,6 +94,9 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_HIDING_GHINI = 0x10;
     private static final int ENTITY_GIANT_GHINI = 0x11;
     private static final int ARMOS_INITIAL_PHYSICS_FLAGS = 0x92;
+    private static final int ARMOS_KNIGHT_INITIAL_PHYSICS_FLAGS = 0x84;
+    private static final int ARMOS_KNIGHT_OPTIONS1 = 0xC4;
+    private static final int ARMOS_KNIGHT_INITIAL_HITBOX_FLAGS = 0x80;
     private static final int LIKE_LIKE_INITIAL_PHYSICS_FLAGS = 0x92;
     private static final int ENTITY_GHINI = 0x12;
     private static final int ENTITY_POLS_VOICE = PolsVoiceMotion.ENTITY_TYPE;
@@ -238,6 +241,7 @@ public final class RoomEntityRuntime {
         new WizrobeProjectileMotion();
     private final PeaHatMotion peaHatMotion = new PeaHatMotion();
     private final ArmosMotion armosMotion = new ArmosMotion();
+    private final ArmosKnightMotion armosKnightMotion = new ArmosKnightMotion();
     private final GhiniMotion ghiniMotion = new GhiniMotion();
     private final HardHatMotion hardHatMotion = new HardHatMotion();
     private final PolsVoiceMotion polsVoiceMotion = new PolsVoiceMotion();
@@ -573,6 +577,8 @@ public final class RoomEntityRuntime {
             enemyHealth[entity.slot()] = entity.loaded() ? initialHealth(entity.type()) : 0;
             enemyPhysicsFlags[entity.slot()] = entity.loaded()
                 ? initialPhysicsFlags(entity.type()) : 0;
+            enemyHitboxFlags[entity.slot()] = entity.loaded()
+                ? initialHitboxFlags(entity.type()) : 0;
             if (entity.loaded() && entity.type() == ENTITY_CHEST_WITH_ITEM) {
                 chestItemBySlot[entity.slot()] = entity.spriteVariant();
             }
@@ -1029,6 +1035,7 @@ public final class RoomEntityRuntime {
             boolean preserveWizrobeProjectilePresentation = false;
             boolean preservePolsVoicePresentation = false;
             boolean preserveSpikedBeetlePresentation = false;
+            boolean preserveArmosKnightPresentation = false;
             boolean keyDropTransitionActive = false;
             if (status == EntityStatus.ACTIVE) {
                 decrementEnemyDropCountdowns(entity);
@@ -1419,6 +1426,9 @@ public final class RoomEntityRuntime {
                 }
                 if (entity.type() == ENTITY_ARMOS_STATUE) {
                     armosMotion.initialize(entity.slot());
+                }
+                if (entity.type() == ENTITY_ARMOS_KNIGHT) {
+                    armosKnightMotion.initialize(entity.slot());
                 }
                 if (isGhiniType(entity.type())) {
                     ghiniMotion.initialize(entity.slot(), entity.type());
@@ -2135,6 +2145,27 @@ public final class RoomEntityRuntime {
                 }
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_ARMOS_KNIGHT) {
+                ArmosKnightMotion.Update armosKnightUpdate = armosKnightMotion.advance(
+                    entity, linkEntityX, linkEntityY, linkZ,
+                    enemyTransitionCountdown[entity.slot()],
+                    enemyPhysicsFlags[entity.slot()], enemyHitboxFlags[entity.slot()],
+                    options1(entity.slot()), enemyHealth[entity.slot()]);
+                updated = armosKnightUpdate.entity();
+                enemyTransitionCountdown[entity.slot()] =
+                    armosKnightUpdate.transitionCountdown();
+                enemyPhysicsFlags[entity.slot()] = armosKnightUpdate.physicsFlags();
+                enemyHitboxFlags[entity.slot()] = armosKnightUpdate.hitboxFlags();
+                entityOptions1Override[entity.slot()] = armosKnightUpdate.options1();
+                preserveArmosKnightPresentation = true;
+                if (armosKnightUpdate.jingleId() >= 0) {
+                    pendingEntityEvents.add(new EntityCombatEvent(
+                        entity.slot(), entity.type(), 0, false,
+                        EntityCombatEvent.SoundChannel.JINGLE,
+                        armosKnightUpdate.jingleId()));
+                }
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
                 && isGhiniType(entity.type())) {
                 updated = ghiniMotion.advance(entity, frame, entity.type(),
                     linkEntityX, linkEntityY, romCollisionType, randomByteSupplier);
@@ -2262,7 +2293,7 @@ public final class RoomEntityRuntime {
                 || preserveIronMaskPresentation || preserveSnakePresentation
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
                 || preservePolsVoicePresentation
-                || preserveSpikedBeetlePresentation
+                || preserveSpikedBeetlePresentation || preserveArmosKnightPresentation
                 ? updated.spriteVariant() : variantFor(updated, frame);
             if (status == EntityStatus.ACTIVE && shouldDisappear(entity)) {
                 variant = (slowTransitionCountdown[entity.slot()] & 0x01) != 0 ? 0 : -1;
@@ -2272,7 +2303,7 @@ public final class RoomEntityRuntime {
                 || preserveIronMaskPresentation || preserveSnakePresentation
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
                 || preservePolsVoicePresentation
-                || preserveSpikedBeetlePresentation
+                || preserveSpikedBeetlePresentation || preserveArmosKnightPresentation
                 ? updated.entityFlipAttribute() : baseEntityFlipAttribute[entity.slot()];
             if (preserveBombitePresentation && updated.type() == ENTITY_TIMER_BOMBITE) {
                 renderFlipAttribute |= (bombPrivateCountdown1[updated.slot()] << 3) & 0x10;
@@ -4825,7 +4856,7 @@ public final class RoomEntityRuntime {
             || type == ENTITY_SPARK_CLOCKWISE
             || type == ENTITY_POLS_VOICE
             || type == ENTITY_ZOL || type == ENTITY_GEL
-            || type == ENTITY_LIKE_LIKE;
+            || type == ENTITY_LIKE_LIKE || type == ENTITY_ARMOS_KNIGHT;
     }
 
     private static boolean usesSharedRecoil(int type) {
@@ -6501,6 +6532,30 @@ public final class RoomEntityRuntime {
         return armosMotion.speedY(slot);
     }
 
+    int armosKnightState(int slot) {
+        return armosKnightMotion.state(slot);
+    }
+
+    int armosKnightTransitionCountdown(int slot) {
+        return transitionCountdown(slot);
+    }
+
+    int armosKnightSpeedX(int slot) {
+        return armosKnightMotion.speedX(slot);
+    }
+
+    int armosKnightSpeedY(int slot) {
+        return armosKnightMotion.speedY(slot);
+    }
+
+    int armosKnightSpeedZ(int slot) {
+        return armosKnightMotion.speedZ(slot);
+    }
+
+    int armosKnightPrivateCountdown1(int slot) {
+        return armosKnightMotion.privateCountdown1(slot);
+    }
+
     int ghiniTransitionCountdown(int slot) {
         return ghiniMotion.transitionCountdown(slot);
     }
@@ -6763,6 +6818,9 @@ public final class RoomEntityRuntime {
         if (slots[slot].type() == ENTITY_KEY_DROP_POINT) {
             return KEY_DROP_POINT_OPTIONS1;
         }
+        if (slots[slot].type() == ENTITY_ARMOS_KNIGHT) {
+            return ARMOS_KNIGHT_OPTIONS1;
+        }
         if (slots[slot].type() == ENTITY_CHEST_WITH_ITEM) {
             return CHEST_OPTIONS1;
         }
@@ -6975,6 +7033,7 @@ public final class RoomEntityRuntime {
     private static int initialPhysicsFlags(int type) {
         return switch (type) {
             case ENTITY_ARMOS_STATUE -> ARMOS_INITIAL_PHYSICS_FLAGS;
+            case ENTITY_ARMOS_KNIGHT -> ARMOS_KNIGHT_INITIAL_PHYSICS_FLAGS;
             case ENTITY_STALFOS_EVASIVE -> EVASIVE_PHYSICS_FLAGS;
             case ENTITY_IRON_MASK -> IRON_MASK_INITIAL_PHYSICS_FLAGS;
             case ENTITY_GOOMBA, ENTITY_SNAKE -> GOOMBA_INITIAL_PHYSICS_FLAGS;
@@ -7001,6 +7060,11 @@ public final class RoomEntityRuntime {
                 ENTITY_CUCCO, ENTITY_HORSE_PIECE -> ENTITY_PHYSICS_GRABBABLE;
             default -> 0;
         };
+    }
+
+    private static int initialHitboxFlags(int type) {
+        return type == ENTITY_ARMOS_KNIGHT
+            ? ARMOS_KNIGHT_INITIAL_HITBOX_FLAGS : 0;
     }
 
     private boolean polsVoiceBalladOcarinaTrigger() {
@@ -7299,6 +7363,7 @@ public final class RoomEntityRuntime {
         chestInertia[slot] = 0;
         chestItemBySlot[slot] = 0;
         enemyHitboxFlags[slot] = 0;
+        armosKnightMotion.clear(slot);
         entityGroundStatus[slot] = 0;
         fallingTargetX[slot] = 0;
         fallingTargetY[slot] = 0;

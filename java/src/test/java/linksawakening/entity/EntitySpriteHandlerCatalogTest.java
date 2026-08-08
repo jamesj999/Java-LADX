@@ -127,6 +127,27 @@ final class EntitySpriteHandlerCatalogTest {
     }
 
     @Test
+    void mapsArmosKnightToItsFourFramesOfEightSpritesBankSixRectangleList() throws Exception {
+        EntitySpriteDefinition armos = new EntitySpriteHandlerCatalog(loadRom())
+            .forEntityType(0x88, EntityRoomLoader.RoomTable.INDOORS_B);
+
+        assertDefinition(armos, 0x06, 0x5523,
+            EntitySpriteDefinition.Shape.RECTANGLE, 4, 0);
+        assertEquals(8, armos.rectangleVariant(0).size());
+        EntitySpriteDefinition.RectangleSprite first = armos.rectangleVariant(0).get(0);
+        assertEquals(-12, first.yOffset());
+        assertEquals(-8, first.xOffset());
+        assertEquals(0x70, first.oam().tile());
+        assertEquals(0x03, first.oam().attributes());
+
+        EntitySpriteDefinition.RectangleSprite last = armos.rectangleVariant(3).get(7);
+        assertEquals(4, last.yOffset());
+        assertEquals(0x10, last.xOffset());
+        assertEquals(0x74, last.oam().tile());
+        assertEquals(0x22, last.oam().attributes());
+    }
+
+    @Test
     void mapsMusicalNoteToItsBankFiveSingleSprite() {
         byte[] rom = syntheticRom();
         write(rom, 0x05, 0x7EF8, 0x0E, 0x13);
