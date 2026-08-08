@@ -2641,6 +2641,23 @@ runtime collision callback.
   with 1,315 tests and zero failures, errors, or skipped tests. Giant Goponga
   Flower (`$7C`) and its projectile (`$7D`) remain separate handlers.
 
+## Verified ROM Giant Goponga Flower runtime — 2026-08-08
+
+- Giant Goponga Flower (`$7C`) now decodes the bank `$06:$6316` three-state,
+  eight-sprite rectangle list. Its state timers follow the source `$C0/$50`
+  sequence, the mouth-open `$02` presentation, and the projectile launch seam
+  at transition countdown `$4A`.
+- The ROM-spawned Goponga projectile (`$7D`) decodes bank `$06:$638F`'s four
+  pair variants, carries the source length-`$0C` vector toward Link, honors
+  the local transition/ignore-hits timer ordering, moves with the ROM
+  fixed-point accumulator, and unloads at `func_006_5E54`'s screen bounds.
+- Giant contact uses the big enemy hitbox and ROM group `$29` values (health
+  `$04`, contact damage `$08`); the projectile applies its handler health
+  override `$30`, physics `$42`, and excluded-from-kill-all option `$02`.
+  Runtime spawn, airborne Link push, ROM display bytes, state timing, and
+  fixed-point movement are covered by focused tests. The clean Java suite
+  passes with 1,321 tests and zero failures, errors, or skipped tests.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

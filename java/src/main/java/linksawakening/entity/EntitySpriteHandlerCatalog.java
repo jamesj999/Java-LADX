@@ -26,6 +26,8 @@ public final class EntitySpriteHandlerCatalog {
     public static final int ENTITY_MASKED_MIMIC_GORIYA = 0x8F;
     public static final int ENTITY_CUCCO = 0x6C;
     public static final int ENTITY_GOPONGA_FLOWER = 0x7E;
+    public static final int ENTITY_GIANT_GOPONGA_FLOWER = 0x7C;
+    public static final int ENTITY_GOPONGA_FLOWER_PROJECTILE = 0x7D;
     public static final int LIFTABLE_ROCK_INTACT_ROCK_VARIANT = 0;
     public static final int LIFTABLE_ROCK_INTACT_BUSH_VARIANT = 1;
     public static final int LIFTABLE_ROCK_SMASHED_ROCK_VARIANT_BASE = 2;
@@ -196,6 +198,12 @@ public final class EntitySpriteHandlerCatalog {
         }
         if (entityType == ENTITY_GOPONGA_FLOWER) {
             return decodePair(entityType, 0x06, 0x63F4, 2, 0);
+        }
+        if (entityType == ENTITY_GIANT_GOPONGA_FLOWER) {
+            return decodeRectangle(entityType, 0x06, 0x6316, 3, 8, 0);
+        }
+        if (entityType == ENTITY_GOPONGA_FLOWER_PROJECTILE) {
+            return decodePair(entityType, 0x06, 0x638F, 4, 0);
         }
         if (entityType == ENTITY_BOO_BUDDY) {
             return decodePair(entityType, 0x06, 0x79A9, 8, 0);

@@ -56,6 +56,8 @@ public final class RoomEntityCombatRules {
     private static final int ENTITY_BOMBER = 0xBA;
     private static final int ENTITY_ROOSTER = 0xD5;
     private static final int ENTITY_GOPONGA_FLOWER = 0x7E;
+    private static final int ENTITY_GIANT_GOPONGA_FLOWER = 0x7C;
+    private static final int ENTITY_GOPONGA_FLOWER_PROJECTILE = 0x7D;
 
     // HitboxPositions._00 in home/entities.asm:3AAA. Octorok, Moblin, Armos,
     // and Keese all select the normal collision box in hitbox_flags.asm.
@@ -127,7 +129,8 @@ public final class RoomEntityCombatRules {
                 ENTITY_HIDING_GHINI, ENTITY_GIANT_GHINI, ENTITY_GHINI,
                 ENTITY_HARDHAT_BEETLE, ENTITY_SPIKE_TRAP, ENTITY_WATER_TEKTITE, ENTITY_FISH,
                 ENTITY_CROW,
-                ENTITY_CUCCO, ENTITY_GOPONGA_FLOWER,
+                ENTITY_CUCCO, ENTITY_GOPONGA_FLOWER, ENTITY_GIANT_GOPONGA_FLOWER,
+                ENTITY_GOPONGA_FLOWER_PROJECTILE,
                 ENTITY_BOO_BUDDY,
                 ENTITY_SPIKED_BEETLE,
                 ENTITY_PAIRODD, ENTITY_COLOR_SHELL_RED, ENTITY_COLOR_SHELL_GREEN,
@@ -158,7 +161,7 @@ public final class RoomEntityCombatRules {
             // damage row; physics_flags.asm marks it harmless, and the
             // runtime suppresses this raw value at the entity boundary.
             case ENTITY_CUCCO -> OCTOROK_AND_KEESE_CONTACT_DAMAGE;
-            case ENTITY_GOPONGA_FLOWER -> 0x08;
+            case ENTITY_GOPONGA_FLOWER, ENTITY_GIANT_GOPONGA_FLOWER -> 0x08;
             case ENTITY_BOO_BUDDY -> BOO_BUDDY_CONTACT_DAMAGE;
             case ENTITY_ARMOS_STATUE -> 0x10;
             case ENTITY_ARMOS_KNIGHT -> 0x0C;
@@ -198,7 +201,7 @@ public final class RoomEntityCombatRules {
             case ENTITY_FISH -> OCTOROK_AND_KEESE_INITIAL_HEALTH;
             case ENTITY_CROW -> CROW_INITIAL_HEALTH;
             case ENTITY_CUCCO -> 0x01;
-            case ENTITY_GOPONGA_FLOWER -> 0x04;
+            case ENTITY_GOPONGA_FLOWER, ENTITY_GIANT_GOPONGA_FLOWER -> 0x04;
             case ENTITY_BOO_BUDDY -> BOO_BUDDY_INITIAL_HEALTH;
             case ENTITY_ARMOS_STATUE -> 0x04;
             case ENTITY_ARMOS_KNIGHT -> 0x0C;
@@ -297,7 +300,8 @@ public final class RoomEntityCombatRules {
     private static int hitboxWidth(int type) {
         return switch (type & 0xFF) {
             case ENTITY_GEL -> SMALL_ENEMY_HITBOX_WIDTH;
-            case ENTITY_GIANT_GHINI, ENTITY_SPIKE_TRAP, ENTITY_ARMOS_KNIGHT ->
+            case ENTITY_GIANT_GHINI, ENTITY_GIANT_GOPONGA_FLOWER,
+                ENTITY_SPIKE_TRAP, ENTITY_ARMOS_KNIGHT ->
                 BIG_ENEMY_HITBOX_WIDTH;
             default -> HITBOX_WIDTH;
         };
@@ -306,7 +310,8 @@ public final class RoomEntityCombatRules {
     private static int hitboxHeight(int type) {
         return switch (type & 0xFF) {
             case ENTITY_GEL -> SMALL_ENEMY_HITBOX_HEIGHT;
-            case ENTITY_GIANT_GHINI, ENTITY_SPIKE_TRAP, ENTITY_ARMOS_KNIGHT ->
+            case ENTITY_GIANT_GHINI, ENTITY_GIANT_GOPONGA_FLOWER,
+                ENTITY_SPIKE_TRAP, ENTITY_ARMOS_KNIGHT ->
                 BIG_ENEMY_HITBOX_HEIGHT;
             default -> HITBOX_HEIGHT;
         };
