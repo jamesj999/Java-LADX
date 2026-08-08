@@ -83,6 +83,7 @@ final class ZombieRuntimeTest {
         assertEquals(0x48, update.entity().x());
         assertEquals(0x40, update.entity().y());
         assertEquals(-1, update.entity().spriteVariant());
+        assertFalse(update.appliesBackgroundInteraction());
         assertNotNull(update.spawnRequest());
         assertEquals(0x48, update.spawnRequest().x());
         assertEquals(0x40, update.spawnRequest().y());
@@ -110,6 +111,7 @@ final class ZombieRuntimeTest {
         assertEquals(0x30, visible.transitionCountdown());
         assertEquals(1, visible.entity().spriteVariant());
         assertFalse(motion.allowsEnemyCollision(1));
+        assertFalse(visible.appliesBackgroundInteraction());
 
         ZombieMotion.Update moving = motion.advance(visible.entity(), 0, 0x00, 0x12,
             0x70, 0x50, () -> 0, null, null, 0);
@@ -119,6 +121,11 @@ final class ZombieRuntimeTest {
         assertEquals(0x05, moving.speedX());
         assertEquals(0x01, moving.speedY());
         assertTrue(motion.allowsEnemyCollision(1));
+        assertFalse(moving.appliesBackgroundInteraction());
+
+        ZombieMotion.Update movingFrame = motion.advance(moving.entity(), 0, 0x70, 0x12,
+            0x70, 0x50, () -> 0, null, null, 0);
+        assertTrue(movingFrame.appliesBackgroundInteraction());
     }
 
     @Test
@@ -144,10 +151,12 @@ final class ZombieRuntimeTest {
         assertEquals(0x30, state2.transitionCountdown());
         assertEquals(0x52, state2.physicsFlags());
         assertTrue(state2.entity().spriteVariant() == 3 || state2.entity().spriteVariant() == 4);
+        assertTrue(state2.appliesBackgroundInteraction());
 
         ZombieMotion.Update cleared = motion.advance(state2.entity(), 0, 0, 0x52,
             0x70, 0x50, () -> 0, null, null, 0);
         assertTrue(cleared.unloadRequested());
+        assertFalse(cleared.appliesBackgroundInteraction());
     }
 
     @Test

@@ -31,7 +31,8 @@ final class ZombieMotion {
 
     record Update(RoomEntity entity, int state, int privateState1,
                   int transitionCountdown, int physicsFlags, int speedX, int speedY,
-                  SpawnRequest spawnRequest, boolean unloadRequested) {
+                  SpawnRequest spawnRequest, boolean unloadRequested,
+                  boolean appliesBackgroundInteraction) {
     }
 
     void initialize(int slot) {
@@ -69,6 +70,7 @@ final class ZombieMotion {
         RoomEntity updated = entity;
         SpawnRequest spawnRequest = null;
         boolean unloadRequested = false;
+        boolean appliesBackgroundInteraction = false;
 
         if (privateState1[slot] == 0) {
             // The room-loaded entity is a permanently hidden spawn marker. The
@@ -89,7 +91,7 @@ final class ZombieMotion {
                 updated = withVariant(entity, variant);
             }
             return update(updated, countdown, nextPhysicsFlags, nextSpeedX, nextSpeedY,
-                spawnRequest, false);
+                spawnRequest, false, appliesBackgroundInteraction);
         }
 
         int variant = entity.spriteVariant();
@@ -113,6 +115,7 @@ final class ZombieMotion {
                 variant = countdown >= 0x18 ? 1 : 2;
             }
             case 2 -> {
+                appliesBackgroundInteraction = true;
                 PositionAndCollision moved = backgroundInteraction == null
                     ? new PositionAndCollision(
                         addSpeedToPosition(entity.x(), speedX[slot],
@@ -144,7 +147,7 @@ final class ZombieMotion {
 
         updated = withVariant(updated, variant);
         return update(updated, countdown, nextPhysicsFlags, nextSpeedX, nextSpeedY,
-            null, unloadRequested);
+            null, unloadRequested, appliesBackgroundInteraction);
     }
 
     boolean isChild(int slot) {
@@ -179,10 +182,11 @@ final class ZombieMotion {
 
     private Update update(RoomEntity entity, int countdown, int physicsFlags,
                           int nextSpeedX, int nextSpeedY, SpawnRequest spawnRequest,
-                          boolean unloadRequested) {
+                          boolean unloadRequested, boolean appliesBackgroundInteraction) {
         return new Update(entity, state[entity.slot()], privateState1[entity.slot()],
             countdown & 0xFF, physicsFlags & 0xFF, nextSpeedX & 0xFF,
-            nextSpeedY & 0xFF, spawnRequest, unloadRequested);
+            nextSpeedY & 0xFF, spawnRequest, unloadRequested,
+            appliesBackgroundInteraction);
     }
 
     private PositionAndCollision moveWithBackground(RoomEntity entity,

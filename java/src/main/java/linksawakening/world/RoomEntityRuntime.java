@@ -208,6 +208,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_PIRANHA_PLANT = PiranhaMotion.ENTITY_TYPE;
     private static final int ENTITY_ZORA = ZoraMotion.ENTITY_TYPE;
     private static final int ENTITY_ZOMBIE = ZombieMotion.ENTITY_TYPE;
+    private static final int ENTITY_BUZZ_BLOB = BuzzBlobMotion.ENTITY_TYPE;
     private static final int ENTITY_HORSE_PIECE = 0x98;
     private static final int ENTITY_PHYSICS_GRABBABLE = 0x20;
     private static final int OBJECT_BUSH = 0x5C;
@@ -291,6 +292,7 @@ public final class RoomEntityRuntime {
     private final PiranhaMotion piranhaMotion = new PiranhaMotion();
     private final ZoraMotion zoraMotion = new ZoraMotion();
     private final ZombieMotion zombieMotion = new ZombieMotion();
+    private final BuzzBlobMotion buzzBlobMotion = new BuzzBlobMotion();
     private final SpikeTrapMotion spikeTrapMotion = new SpikeTrapMotion();
     private final PairoddMotion pairoddMotion = new PairoddMotion();
     private final PairoddProjectileMotion pairoddProjectileMotion =
@@ -787,6 +789,9 @@ public final class RoomEntityRuntime {
             if (entity.loaded() && entity.type() == ENTITY_BOO_BUDDY) {
                 booBuddyMotion.initialize(entity.slot());
             }
+            if (entity.loaded() && entity.type() == ENTITY_BUZZ_BLOB) {
+                buzzBlobMotion.initialize(entity.slot());
+            }
             if (entity.loaded() && entity.type() == ENTITY_DROPPABLE_FAIRY) {
                 fairyMotion.initialize(entity.slot());
             }
@@ -1268,6 +1273,7 @@ public final class RoomEntityRuntime {
             boolean preservePiranhaPresentation = false;
             boolean preserveZoraPresentation = false;
             boolean preserveZombiePresentation = false;
+            boolean preserveBuzzBlobPresentation = false;
             boolean preserveRoosterPresentation = false;
             boolean preserveWizrobePresentation = false;
             boolean preserveWizrobeProjectilePresentation = false;
@@ -1278,6 +1284,8 @@ public final class RoomEntityRuntime {
             boolean preserveDroppablePresentation = false;
             boolean keyDropTransitionActive = false;
             RoomEntityGroundInteraction.Result preAppliedGroundResult = null;
+            boolean applyGenericGroundInteraction = entity.type() != ENTITY_ZOMBIE
+                && entity.type() != ENTITY_BUZZ_BLOB;
             if (status == EntityStatus.ACTIVE) {
                 decrementEnemyDropCountdowns(entity);
             }
@@ -1679,6 +1687,9 @@ public final class RoomEntityRuntime {
                 if (entity.type() == ENTITY_ZOMBIE) {
                     zombieMotion.initialize(entity.slot());
                 }
+                if (entity.type() == ENTITY_BUZZ_BLOB) {
+                    buzzBlobMotion.initialize(entity.slot());
+                }
                 if (entity.type() == ENTITY_BOO_BUDDY) {
                     booBuddyMotion.initialize(entity.slot());
                 }
@@ -1935,6 +1946,8 @@ public final class RoomEntityRuntime {
                 && entity.type() != ENTITY_MINI_MOLDORM
                 && (entity.type() != ENTITY_MASKED_MIMIC_GORIYA || entityMapId != 0x1F)
                 && ((entity.type() != ENTITY_STAR && entity.type() != ENTITY_BLOOPER)
+                    || handlerLinkCollisionEnabled)
+                && ((entity.type() != ENTITY_ZOMBIE && entity.type() != ENTITY_BUZZ_BLOB)
                     || handlerLinkCollisionEnabled)) {
                 // Bank-$03 AnimateRoamingEnemy and the bank-$04/$06/$07
                 // handlers apply the shared recoil before their own movement.
@@ -2992,6 +3005,7 @@ public final class RoomEntityRuntime {
                 updated = zombieUpdate.entity();
                 enemyTransitionCountdown[slot] = zombieUpdate.transitionCountdown();
                 enemyPhysicsFlags[slot] = zombieUpdate.physicsFlags();
+                applyGenericGroundInteraction = zombieUpdate.appliesBackgroundInteraction();
                 if (zombieUpdate.spawnRequest() != null) {
                     spawnZombieChild(zombieUpdate.spawnRequest());
                 }
@@ -3000,6 +3014,23 @@ public final class RoomEntityRuntime {
                     continue;
                 }
                 preserveZombiePresentation = true;
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_BUZZ_BLOB && !creditsGameplay
+                && handlerLinkCollisionEnabled) {
+                int slot = entity.slot();
+                RoomEntityBackgroundInteraction buzzBlobBackgroundInteraction = backgroundInteraction;
+                if (buzzBlobBackgroundInteraction == null && backgroundCollision != null) {
+                    buzzBlobBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
+                        backgroundCollision);
+                }
+                BuzzBlobMotion.Update buzzBlobUpdate = buzzBlobMotion.advance(
+                    updated, frame, enemyTransitionCountdown[slot], randomByteSupplier,
+                    buzzBlobBackgroundInteraction);
+                updated = buzzBlobUpdate.entity();
+                enemyTransitionCountdown[slot] = buzzBlobUpdate.transitionCountdown();
+                applyGenericGroundInteraction = buzzBlobUpdate.appliesBackgroundInteraction();
+                preserveBuzzBlobPresentation = true;
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && isGhiniType(entity.type())) {
@@ -3102,7 +3133,8 @@ public final class RoomEntityRuntime {
                     entityGroundStatus[updated.slot()], groundInteractionSideScrolling);
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
-                && !keyDropTransitionActive && !hasNoGroundInteraction(updated)
+                && !keyDropTransitionActive && applyGenericGroundInteraction
+                && !hasNoGroundInteraction(updated)
                 && (handlerLinkCollisionEnabled || updated.type() != ENTITY_BLOOPER)) {
                 // ApplyEntityInteractionWithBackground runs after each ROM
                 // entity handler's movement and before the final display-list
@@ -3170,6 +3202,7 @@ public final class RoomEntityRuntime {
                 || preservePiranhaPresentation
                 || preserveZoraPresentation
                 || preserveZombiePresentation
+                || preserveBuzzBlobPresentation
                 || preserveRoosterPresentation
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
                 || preservePolsVoicePresentation
@@ -3196,6 +3229,7 @@ public final class RoomEntityRuntime {
                 || preservePiranhaPresentation
                 || preserveZoraPresentation
                 || preserveZombiePresentation
+                || preserveBuzzBlobPresentation
                 || preserveRoosterPresentation
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
                 || preservePolsVoicePresentation
@@ -3579,6 +3613,11 @@ public final class RoomEntityRuntime {
                 && !zombieMotion.allowsEnemyCollision(entity.slot())) {
                 // ZombieState2Handler is the only Zombie branch that calls
                 // DefaultEnemyDamageCollisionHandler.
+                continue;
+            }
+            if (entity.type() == ENTITY_BUZZ_BLOB && !linkInteractive) {
+                // BuzzBlobEntityHandler returns before its default enemy
+                // collision call when Link is non-interactive.
                 continue;
             }
             if (entity.type() == ENTITY_FISH
@@ -4661,6 +4700,7 @@ public final class RoomEntityRuntime {
         pokeyMotion.clear(slot);
         zoraMotion.clear(slot);
         zombieMotion.clear(slot);
+        buzzBlobMotion.clear(slot);
         mimicMotion.clear(slot);
         maskedMimicMotion.clear(slot);
         miniMoldormMotion.clear(slot);
@@ -4741,6 +4781,7 @@ public final class RoomEntityRuntime {
         gopongaProjectileMotion.clear(slot);
         zoraMotion.clear(slot);
         zombieMotion.clear(slot);
+        buzzBlobMotion.clear(slot);
         wingedSwordAttackThisFrame[slot] = false;
         wingedStateTwoThisFrame[slot] = false;
         laserMotion.clear(slot);
@@ -6086,6 +6127,7 @@ public final class RoomEntityRuntime {
             || type == ENTITY_MASKED_MIMIC_GORIYA
             || type == ENTITY_MINI_MOLDORM
             || type == ENTITY_ZOMBIE
+            || type == ENTITY_BUZZ_BLOB
             || isRoamingEnemyType(type) || usesBank6Recoil(type)
             || isGhiniType(type);
     }
@@ -8489,6 +8531,9 @@ public final class RoomEntityRuntime {
         if (slots[slot].type() == ENTITY_ZOMBIE) {
             return ZombieMotion.OPTIONS1;
         }
+        if (slots[slot].type() == ENTITY_BUZZ_BLOB) {
+            return BuzzBlobMotion.OPTIONS1;
+        }
         if (slots[slot].type() == ENTITY_GOPONGA_FLOWER_PROJECTILE) {
             return GopongaProjectileMotion.OPTIONS1;
         }
@@ -8948,6 +8993,7 @@ public final class RoomEntityRuntime {
             case ENTITY_PIRANHA_PLANT -> PiranhaMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_ZORA -> ZoraMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_ZOMBIE -> ZombieMotion.INITIAL_PHYSICS_FLAGS;
+            case ENTITY_BUZZ_BLOB -> BuzzBlobMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_ROOSTER -> RoosterMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_BOO_BUDDY -> BooBuddyMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_DROPPABLE_FAIRY -> FAIRY_INITIAL_PHYSICS_FLAGS;
@@ -9332,6 +9378,7 @@ public final class RoomEntityRuntime {
         piranhaMotion.clear(slot);
         zoraMotion.clear(slot);
         zombieMotion.clear(slot);
+        buzzBlobMotion.clear(slot);
         mimicMotion.clear(slot);
         maskedMimicMotion.clear(slot);
         miniMoldormMotion.clear(slot);

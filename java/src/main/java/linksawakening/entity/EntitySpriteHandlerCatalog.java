@@ -32,6 +32,7 @@ public final class EntitySpriteHandlerCatalog {
     public static final int ENTITY_PIRANHA_PLANT = 0xA2;
     public static final int ENTITY_ZORA = 0xCB;
     public static final int ENTITY_ZOMBIE = 0xBF;
+    public static final int ENTITY_BUZZ_BLOB = 0xB9;
     public static final int LIFTABLE_ROCK_INTACT_ROCK_VARIANT = 0;
     public static final int LIFTABLE_ROCK_INTACT_BUSH_VARIANT = 1;
     public static final int LIFTABLE_ROCK_SMASHED_ROCK_VARIANT_BASE = 2;
@@ -220,6 +221,9 @@ public final class EntitySpriteHandlerCatalog {
         }
         if (entityType == ENTITY_ZOMBIE) {
             return decodePair(entityType, 0x18, 0x63F8, 5, 0);
+        }
+        if (entityType == ENTITY_BUZZ_BLOB) {
+            return decodePair(entityType, 0x18, 0x7729, 9, 0);
         }
         if (entityType == ENTITY_BOO_BUDDY) {
             return decodePair(entityType, 0x06, 0x79A9, 8, 0);
