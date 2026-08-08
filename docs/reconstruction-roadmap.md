@@ -2137,6 +2137,23 @@ runtime collision callback.
   skipped tests. The Kanalet Castle crow's room-status/key-drop special case
   remains a separate room-state follow-up.
 
+## Verified ROM Boo Buddy entity runtime — 2026-08-07
+
+- Entity `$50` now uses the bank-$06 eight-pair display list at `$79A9` and
+  ports the handler's four-unit fixed-point acceleration, random `$06-$0D`
+  vector length, sword-middle proximity transition, hidden transition frames,
+  private-countdown branch, and shared `$A8/$88` bounds unload.
+- The room's `wC1A2` trigger byte is now reset with room state and fed from
+  successful Magic Powder torch mutations: lighting increments it, the ROM's
+  room `$74` exception is preserved, and flame expiry decrements it. Boo Buddy
+  uses that live counter to enter its state-1 flee vector, set health `$01`,
+  and enable normal enemy collision; its static `$12` physics, `$28` options,
+  `$20` health group (`$04` health), and `$08` contact damage are ROM-derived.
+- ROM display-list decoding, acceleration, transition animation, bounds unload,
+  trigger-driven flee behavior, combat gating, and the live room trigger bridge
+  are covered. The clean Java suite passes with 1,166 tests and zero failures,
+  errors, or skipped tests.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

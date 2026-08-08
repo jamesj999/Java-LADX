@@ -176,6 +176,8 @@ public final class RoomSession {
     private int ocarinaAnimationPhase;
     private boolean pendingManboTransition;
     private int currentLinkMotionState = EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE;
+    /** WRAM wC1A2; ResetRoomVariables clears the room trigger counter. */
+    private int roomTriggerCount;
     private GameplaySoundSink colorShellSoundSink = GameplaySoundSink.none();
     private final ColorShellWorld colorShellWorld = new ColorShellWorld() {
         @Override
@@ -958,6 +960,10 @@ public final class RoomSession {
         return entityRuntime == null ? 0 : entityRuntime.transitionCountdown(slot);
     }
 
+    int roomTriggerCountForTest() {
+        return roomTriggerCount & 0xFF;
+    }
+
     int entityDropSpeedXForTest(int slot) {
         return entityRuntime == null ? 0 : entityRuntime.dropSpeedX(slot);
     }
@@ -1056,6 +1062,7 @@ public final class RoomSession {
         entityRuntime.setPowerBraceletButtonHeld(powerBraceletButtonHeld);
         entityRuntime.setBombButtonHeld(bombButtonHeld);
         entityRuntime.setLiftedLinkC13B(followingEntityYOffset);
+        entityRuntime.setBooBuddyTriggerCount(roomTriggerCount);
         entityRuntime.setOcarinaPlayback(ocarinaPlaybackCountdown,
             ocarinaSongFlags, selectedSongIndex, ocarinaAnimationCounter,
             ocarinaAnimationPhase);
@@ -1385,6 +1392,7 @@ public final class RoomSession {
             entityRandomByteSource, entitySpriteHandlerCatalog, enemyCombatTables,
             chestContentsTable);
         if (entityRuntime != null) {
+            entityRuntime.setBooBuddyTriggerCount(roomTriggerCount);
             entityRuntime.setColorShellWorld(colorShellWorld);
             entityRuntime.setFollowingNpcState(followingNpcState);
             entityRuntime.setEntityMapId(activeRoom.mapId());
@@ -1496,6 +1504,7 @@ public final class RoomSession {
         pendingManboTransition = false;
         pendingShovelDrop = null;
         shovelUseState = 0;
+        roomTriggerCount = 0;
     }
 
     private void applyBombObjectInteractions(List<BombExplosionEvent> events) {
@@ -1655,6 +1664,13 @@ public final class RoomSession {
 
             if (!changed) {
                 continue;
+            }
+            if (request.action() == RoomEntityRuntime.MagicPowderObjectAction.IGNITE_TORCH) {
+                roomTriggerCount = (roomTriggerCount + 1) & 0xFF;
+            } else if (request.action()
+                == RoomEntityRuntime.MagicPowderObjectAction.EXTINGUISH_TORCH
+                && activeRoom.roomId() != 0x74) {
+                roomTriggerCount = (roomTriggerCount - 1) & 0xFF;
             }
             if (activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
                 refreshOverworldCollisionAfterObjectMutation();

@@ -362,6 +362,11 @@ final class EntitySpriteHandlerCatalogTest {
             0x7A, EntityRoomLoader.RoomTable.OVERWORLD);
         assertDefinition(crow, 0x06, 0x5C89, EntitySpriteDefinition.Shape.PAIR, 4, 2);
 
+        EntitySpriteDefinition booBuddy = catalog.forEntityType(
+            0x50, EntityRoomLoader.RoomTable.INDOORS_A);
+        assertDefinition(booBuddy, 0x06, 0x79A9,
+            EntitySpriteDefinition.Shape.PAIR, 8, 0);
+
         EntitySpriteDefinition dog = catalog.forEntityType(
             0x6F, EntityRoomLoader.RoomTable.OVERWORLD);
         assertDefinition(dog, 0x19, 0x48CA, EntitySpriteDefinition.Shape.PAIR, 4, 2);

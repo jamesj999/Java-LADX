@@ -436,10 +436,41 @@ final class RoomSessionTest {
         }
 
         assertEquals(0xAC, session.activeRoom().roomObjectsArea()[areaIndex]);
+        assertEquals(1, session.roomTriggerCountForTest());
         assertTrue(session.consumeEntityEvents().stream()
             .anyMatch(event -> event.type() == 0x08
                 && event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE
                 && event.soundId() == 0x12));
+    }
+
+    @Test
+    void magicPowderTorchExpiryDecrementsTheRomRoomTriggerCounter() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x00, 0x00);
+
+        int location = 0x22;
+        int areaIndex = RoomConstants.ROOM_OBJECTS_BASE
+            + (location & 0xF0) + (location & 0x0F);
+        session.activeRoom().roomObjectsArea()[areaIndex] = 0xAB;
+
+        assertTrue(session.sprinkleMagicPowder(0x13, 0x29, 0, 0));
+        for (int frame = 0; frame < 16; frame++) {
+            session.tickEntitiesWithProjectileEvents(frame, 0x20, 0x20,
+                0, 0, 0, false);
+        }
+        assertEquals(1, session.roomTriggerCountForTest());
+
+        for (int frame = 16; frame < 1024
+            && session.activeRoom().roomObjectsArea()[areaIndex] == 0xAC; frame++) {
+            session.tickEntitiesWithProjectileEvents(frame, 0x20, 0x20,
+                0, 0, 0, false);
+        }
+
+        assertEquals(0xAB, session.activeRoom().roomObjectsArea()[areaIndex]);
+        assertEquals(0, session.roomTriggerCountForTest());
+
+        session.loadIndoor(0x00, 0x00);
+        assertEquals(0, session.roomTriggerCountForTest());
     }
 
     @Test

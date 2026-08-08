@@ -37,6 +37,7 @@ public final class RoomEntityCombatRules {
     private static final int ENTITY_WATER_TEKTITE = 0x99;
     private static final int ENTITY_FISH = 0xCC;
     private static final int ENTITY_CROW = 0x7A;
+    private static final int ENTITY_BOO_BUDDY = 0x50;
     private static final int ENTITY_COLOR_SHELL_RED = 0xE9;
     private static final int ENTITY_COLOR_SHELL_GREEN = 0xEA;
     private static final int ENTITY_COLOR_SHELL_BLUE = 0xEB;
@@ -65,6 +66,7 @@ public final class RoomEntityCombatRules {
     private static final int ANTI_FAIRY_CONTACT_DAMAGE = 0x04;
     private static final int GIBDO_CONTACT_DAMAGE = 0x08;
     private static final int CROW_CONTACT_DAMAGE = 0x08;
+    private static final int BOO_BUDDY_CONTACT_DAMAGE = 0x08;
     private static final int OCTOROK_AND_KEESE_INITIAL_HEALTH = 0x01;
     private static final int MOBLIN_INITIAL_HEALTH = 0x02;
     private static final int GHINI_INITIAL_HEALTH = 0x08;
@@ -81,6 +83,7 @@ public final class RoomEntityCombatRules {
     private static final int HIDING_ZOL_INITIAL_HEALTH = 0x01;
     private static final int GIBDO_INITIAL_HEALTH = 0x06;
     private static final int CROW_INITIAL_HEALTH = 0x02;
+    private static final int BOO_BUDDY_INITIAL_HEALTH = 0x04;
     private static final int LIKE_LIKE_INITIAL_HEALTH = 0x02;
     private static final int MAD_BOMBER_INITIAL_HEALTH = 0x04;
     private static final int MAD_BOMBER_CONTACT_DAMAGE = 0x04;
@@ -108,6 +111,7 @@ public final class RoomEntityCombatRules {
                 ENTITY_HIDING_GHINI, ENTITY_GIANT_GHINI, ENTITY_GHINI,
                 ENTITY_HARDHAT_BEETLE, ENTITY_SPIKE_TRAP, ENTITY_WATER_TEKTITE, ENTITY_FISH,
                 ENTITY_CROW,
+                ENTITY_BOO_BUDDY,
                 ENTITY_SPIKED_BEETLE,
                 ENTITY_PAIRODD, ENTITY_COLOR_SHELL_RED, ENTITY_COLOR_SHELL_GREEN,
                 ENTITY_COLOR_SHELL_BLUE,
@@ -130,6 +134,7 @@ public final class RoomEntityCombatRules {
                 OCTOROK_AND_KEESE_CONTACT_DAMAGE;
             case ENTITY_FISH -> OCTOROK_AND_KEESE_CONTACT_DAMAGE;
             case ENTITY_CROW -> CROW_CONTACT_DAMAGE;
+            case ENTITY_BOO_BUDDY -> BOO_BUDDY_CONTACT_DAMAGE;
             case ENTITY_ARMOS_STATUE -> 0x10;
             case ENTITY_MOBLIN, ENTITY_IRON_MASK, ENTITY_MOBLIN_SWORD, ENTITY_TEKTITE, ENTITY_LEEVER,
                 ENTITY_STALFOS_AGGRESSIVE, ENTITY_STALFOS_EVASIVE ->
@@ -161,6 +166,7 @@ public final class RoomEntityCombatRules {
                 OCTOROK_AND_KEESE_INITIAL_HEALTH;
             case ENTITY_FISH -> OCTOROK_AND_KEESE_INITIAL_HEALTH;
             case ENTITY_CROW -> CROW_INITIAL_HEALTH;
+            case ENTITY_BOO_BUDDY -> BOO_BUDDY_INITIAL_HEALTH;
             case ENTITY_ARMOS_STATUE -> 0x04;
             case ENTITY_PAIRODD -> PAIRODD_INITIAL_HEALTH;
             case ENTITY_MOBLIN, ENTITY_IRON_MASK, ENTITY_MOBLIN_SWORD, ENTITY_TEKTITE, ENTITY_LEEVER,

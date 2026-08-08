@@ -42,6 +42,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_WATER_TEKTITE = 0x99;
     private static final int ENTITY_FISH = FishMotion.ENTITY_TYPE;
     private static final int ENTITY_CROW = CrowMotion.ENTITY_TYPE;
+    private static final int ENTITY_BOO_BUDDY = BooBuddyMotion.ENTITY_TYPE;
     private static final int ENTITY_STALFOS_AGGRESSIVE = 0x1A;
     private static final int ENTITY_STALFOS_EVASIVE = 0x1E;
     private static final int ENTITY_GIBDO = 0x1F;
@@ -212,6 +213,7 @@ public final class RoomEntityRuntime {
     private final WaterTektiteMotion waterTektiteMotion = new WaterTektiteMotion();
     private final FishMotion fishMotion = new FishMotion();
     private final CrowMotion crowMotion = new CrowMotion();
+    private final BooBuddyMotion booBuddyMotion = new BooBuddyMotion();
     private final StalfosAggressiveMotion stalfosAggressiveMotion =
         new StalfosAggressiveMotion();
     private final StalfosEvasiveMotion stalfosEvasiveMotion = new StalfosEvasiveMotion();
@@ -321,6 +323,7 @@ public final class RoomEntityRuntime {
     private boolean enemyDropActivePowerUp;
     private boolean enemyDropBossBattle;
     private int killCount;
+    private int booBuddyTriggerCount;
     private final int[] killOrder = new int[0x100];
     private boolean actionButtonsHeld;
     private int linkItemA;
@@ -556,6 +559,9 @@ public final class RoomEntityRuntime {
             }
             if (entity.loaded() && entity.type() == ENTITY_CROW) {
                 crowMotion.initialize(entity.slot());
+            }
+            if (entity.loaded() && entity.type() == ENTITY_BOO_BUDDY) {
+                booBuddyMotion.initialize(entity.slot());
             }
             if (entity.loaded() && entity.type() == ENTITY_SPIKED_BEETLE) {
                 spikedBeetleMotion.initialize(entity.slot());
@@ -1325,6 +1331,9 @@ public final class RoomEntityRuntime {
                 if (entity.type() == ENTITY_CROW) {
                     crowMotion.initialize(entity.slot());
                 }
+                if (entity.type() == ENTITY_BOO_BUDDY) {
+                    booBuddyMotion.initialize(entity.slot());
+                }
                 if (entity.type() == ENTITY_STALFOS_AGGRESSIVE) {
                     stalfosAggressiveMotion.initialize(entity.slot(), randomByteSupplier);
                 }
@@ -1877,6 +1886,21 @@ public final class RoomEntityRuntime {
                         EntityCombatEvent.SoundChannel.NOISE, BOOMERANG_SFX_ID));
                 }
                 if (crowUpdate.unloaded()) {
+                    disableEntityWithoutPersistence(entity.slot());
+                    continue;
+                }
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_BOO_BUDDY) {
+                BooBuddyMotion.Update booBuddyUpdate = booBuddyMotion.advance(entity, frame,
+                    linkEntityX, linkEntityY, enemyTransitionCountdown[entity.slot()],
+                    booBuddyTriggerCount, swordCollisionActive, randomByteSupplier);
+                updated = booBuddyUpdate.entity();
+                enemyTransitionCountdown[entity.slot()] = booBuddyUpdate.transitionCountdown();
+                if (booBuddyUpdate.healthOverride() >= 0) {
+                    enemyHealth[entity.slot()] = booBuddyUpdate.healthOverride();
+                }
+                if (booBuddyUpdate.unloaded()) {
                     disableEntityWithoutPersistence(entity.slot());
                     continue;
                 }
@@ -2496,6 +2520,14 @@ public final class RoomEntityRuntime {
                 && !crowMotion.allowsEnemyCollision(entity.slot())) {
                 continue;
             }
+            boolean booBuddyAllowsLinkCollision = entity.type() != ENTITY_BOO_BUDDY
+                || booBuddyMotion.allowsEnemyCollision(entity.slot(), booBuddyTriggerCount,
+                    enemyTransitionCountdown[entity.slot()], swordCollisionActive);
+            boolean booBuddyAllowsSwordCollision = entity.type() != ENTITY_BOO_BUDDY
+                || booBuddyMotion.allowsSwordCollision(entity.slot(), booBuddyTriggerCount);
+            if (!booBuddyAllowsLinkCollision && !booBuddyAllowsSwordCollision) {
+                continue;
+            }
             if (isGhiniType(entity.type())
                 && (ghiniMotion.hidden(entity.slot()) || entity.spriteVariant() < 0)) {
                 continue;
@@ -2549,11 +2581,13 @@ public final class RoomEntityRuntime {
                 linkAirborne, linkVerticalVelocity, linkInteractive, frameCounter);
             boolean linkCollision = entity.type() != ENTITY_LIKE_LIKE
                 && !linkAirborne && linkInteractive
+                && booBuddyAllowsLinkCollision
                 && RoomEntityCombatRules.collisionCadenceMatches(frameCounter, entity.slot())
                 && peaHatGrounded
                 && hidingZolLinkCollision
                 && RoomEntityCombatRules.overlapsLink(entity, linkEntityX, linkEntityY);
             boolean swordHit = swordCollisionActive
+                && booBuddyAllowsSwordCollision
                 && (entity.type() != ENTITY_LIKE_LIKE
                     || likeLikeMotion.state(entity.slot()) == 0)
                 && hidingZolSwordCollision
@@ -3599,6 +3633,7 @@ public final class RoomEntityRuntime {
         waterTektiteMotion.clear(slot);
         fishMotion.clear(slot);
         crowMotion.clear(slot);
+        booBuddyMotion.clear(slot);
         stalfosAggressiveMotion.clear(slot);
         stalfosEvasiveMotion.clear(slot);
         gibdoMotion.clear(slot);
@@ -4653,6 +4688,7 @@ public final class RoomEntityRuntime {
             || type == ENTITY_HARDHAT_BEETLE || type == ENTITY_ARMOS_STATUE
             || type == ENTITY_WIZROBE
             || type == ENTITY_CROW
+            || type == ENTITY_BOO_BUDDY
             || type == ENTITY_SPARK_COUNTER_CLOCKWISE
             || type == ENTITY_SPARK_CLOCKWISE
             || type == ENTITY_POLS_VOICE
@@ -4716,6 +4752,7 @@ public final class RoomEntityRuntime {
     private boolean hasNoGroundInteraction(RoomEntity entity) {
         return isGhiniType(entity.type()) || entity.type() == ENTITY_MAD_BOMBER
             || entity.type() == ENTITY_WIZROBE_PROJECTILE
+            || entity.type() == ENTITY_BOO_BUDDY
             || hasNoGroundInteractionOverride(entity.slot());
     }
 
@@ -6433,6 +6470,9 @@ public final class RoomEntityRuntime {
         if (slots[slot].type() == ENTITY_CROW) {
             return ENTITY_OPT1_ALLOW_OUT_OF_BOUNDS;
         }
+        if (slots[slot].type() == ENTITY_BOO_BUDDY) {
+            return BooBuddyMotion.OPTIONS1;
+        }
         if (slots[slot].type() == ENTITY_SPIKED_BEETLE) {
             // The static table starts at splash-only. The handler writes the
             // sword-clink-off bit on its first normal active pass.
@@ -6509,6 +6549,36 @@ public final class RoomEntityRuntime {
     int crowTransitionCountdown(int slot) {
         validateEntitySlot(slot);
         return enemyTransitionCountdown[slot];
+    }
+
+    int booBuddyState(int slot) {
+        return booBuddyMotion.state(slot);
+    }
+
+    int booBuddySpeedX(int slot) {
+        return booBuddyMotion.speedX(slot);
+    }
+
+    int booBuddySpeedY(int slot) {
+        return booBuddyMotion.speedY(slot);
+    }
+
+    int booBuddyTransitionCountdown(int slot) {
+        validateEntitySlot(slot);
+        return enemyTransitionCountdown[slot];
+    }
+
+    int booBuddyTriggerCount() {
+        return booBuddyTriggerCount;
+    }
+
+    void setBooBuddyTriggerCount(int value) {
+        validateByte(value, "Boo Buddy trigger count");
+        booBuddyTriggerCount = value;
+    }
+
+    void setBooBuddyTriggerCountForTest(int value) {
+        setBooBuddyTriggerCount(value);
     }
 
     void setColorShellStateForTest(int slot, int state, int transitionCountdown,
@@ -6603,6 +6673,7 @@ public final class RoomEntityRuntime {
                 BOMBITE_INITIAL_PHYSICS_FLAGS;
             case ENTITY_FISH -> FishMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_CROW -> CrowMotion.INITIAL_PHYSICS_FLAGS;
+            case ENTITY_BOO_BUDDY -> BooBuddyMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_MAD_BOMBER -> MAD_BOMBER_INITIAL_PHYSICS_FLAGS;
             case ENTITY_BOMBER -> BOMBER_INITIAL_PHYSICS_FLAGS;
             case ENTITY_LIFTABLE_ROCK, ENTITY_LIFTABLE_STATUE,
@@ -6968,7 +7039,9 @@ public final class RoomEntityRuntime {
         enemyProjectileMotion.clear(slot);
         laserMotion.clear(slot);
         waterTektiteMotion.clear(slot);
+        fishMotion.clear(slot);
         crowMotion.clear(slot);
+        booBuddyMotion.clear(slot);
         stalfosAggressiveMotion.clear(slot);
         stalfosEvasiveMotion.clear(slot);
         gibdoMotion.clear(slot);

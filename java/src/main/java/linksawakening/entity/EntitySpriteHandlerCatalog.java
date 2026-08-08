@@ -78,6 +78,7 @@ public final class EntitySpriteHandlerCatalog {
     private static final int ENTITY_KID_70 = 0x70;
     private static final int ENTITY_KID_73 = 0x73;
     private static final int ENTITY_CROW = 0x7A;
+    private static final int ENTITY_BOO_BUDDY = 0x50;
     private static final int ENTITY_DROPPABLE_HEART = 0x2D;
     private static final int ENTITY_DROPPABLE_RUPEE = 0x2E;
     private static final int ENTITY_SWORD_SHIELD_PICKUP = 0x31;
@@ -176,6 +177,9 @@ public final class EntitySpriteHandlerCatalog {
         }
         if (entityType == ENTITY_CROW) {
             return decodePair(entityType, 0x06, 0x5C89, 4, 2);
+        }
+        if (entityType == ENTITY_BOO_BUDDY) {
+            return decodePair(entityType, 0x06, 0x79A9, 8, 0);
         }
         if (entityType == ENTITY_CRYSTAL_SWITCH) {
             return decodePair(entityType, 0x15, 0x4320, 1, 0);
