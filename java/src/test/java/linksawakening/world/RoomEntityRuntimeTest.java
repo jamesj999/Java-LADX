@@ -4100,6 +4100,43 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void zolStateOneNonLeapBranchAdvancesToRomStateTwo() {
+        EntitySpriteDefinition definition = pairDefinition(0x1B, 2);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x1B, 64, 64, EntityStatus.ACTIVE, definition, 0)),
+            false, sequence(0x01));
+
+        runtime.tick(0, 80, 64, sequence(0x01));
+        for (int frame = 1; frame <= 7; frame++) {
+            runtime.tick(frame, 80, 64, sequence(0x01));
+        }
+
+        assertEquals(2, runtime.zolState(0));
+        assertEquals(0, runtime.zolTransitionCountdown(0));
+    }
+
+    @Test
+    void zolStateTwoSetsItsSpeedBeforeTheRomPhysicsStep() {
+        EntitySpriteDefinition definition = pairDefinition(0x1B, 2);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x1B, 64, 64, EntityStatus.ACTIVE, definition, 0)),
+            false, sequence(0x00));
+
+        runtime.tick(0, 80, 64, sequence(0x00));
+        for (int frame = 1; frame <= 7; frame++) {
+            runtime.tick(frame, 80, 64, sequence(0x00));
+        }
+        assertEquals(2, runtime.zolState(0));
+        assertEquals(0x50, runtime.zolTransitionCountdown(0));
+
+        runtime.tick(8, 80, 64, sequence(0x00));
+        runtime.tick(9, 80, 64, sequence(0x00));
+
+        assertEquals(0x40, runtime.snapshot().slots().get(0).x());
+        assertEquals(0x40, runtime.snapshot().slots().get(0).y());
+    }
+
+    @Test
     void gelUsesTheRomSmallEnemyHitboxAndClingingCollisionState() {
         EntitySpriteDefinition definition = pairDefinition(0x1C, 2);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(

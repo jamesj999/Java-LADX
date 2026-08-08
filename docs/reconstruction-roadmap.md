@@ -2288,6 +2288,11 @@ runtime collision callback.
   interaction with the source temporary ignore-hits value `$02`, and skips that
   probe while private countdown 1 is nonzero. The existing boolean background
   callers remain supported through the same boundary.
+- The state dispatch now follows the source call order around
+  `ZolGelPhysics`: state `$01`'s non-leap branch enters state `$02` with a zero
+  countdown, and state `$02` writes its signed horizontal speed before the
+  fixed-point physics step. Focused regressions cover both transition timing
+  and the resulting position phase.
 - The held input now crosses `Main` and `RoomSession` as the full eight-bit
   joypad-active condition, while the existing A/B bridge remains available to
   handlers that require those specific buttons. A ROM-timed runtime regression

@@ -121,16 +121,10 @@ final class ZolGelMotion {
                 decreaseTransitionCountdown(slot);
             }
         } else {
-            // ZolGelPhysics still updates position while private countdown 1
-            // is active, but the ROM skips its background helper for that
-            // frame. When it does call the helper, it temporarily exposes
-            // ignore-hits value $02 to the rich room probe.
-            RoomEntityBackgroundInteraction physicsInteraction =
-                privateCountdown1[slot] == 0 ? backgroundInteraction : null;
-            int[] moved = move(entity, x, y, physicsInteraction, 0x02, frameCounter);
-            x = moved[0];
-            y = moved[1];
             if (state[slot] == 0) {
+                int[] moved = physics(entity, x, y, backgroundInteraction, frameCounter);
+                x = moved[0];
+                y = moved[1];
                 if (transitionCountdown[slot] == 0) {
                     transitionCountdown[slot] = 7;
                     state[slot] = 1;
@@ -144,11 +138,21 @@ final class ZolGelMotion {
                     speedX[slot] = 0;
                     speedY[slot] = 0;
                     if ((randomByteSupplier.getAsInt() & 0x0F) != 0) {
-                        state[slot] = 0;
+                        transitionCountdown[slot] = 0;
+                        state[slot] = 2;
+                        int[] moved = physics(entity, x, y,
+                            backgroundInteraction, frameCounter);
+                        x = moved[0];
+                        y = moved[1];
                     } else {
                         transitionCountdown[slot] = 0x50;
                         state[slot] = 2;
                     }
+                } else {
+                    int[] moved = physics(entity, x, y,
+                        backgroundInteraction, frameCounter);
+                    x = moved[0];
+                    y = moved[1];
                 }
             } else if (state[slot] == 2) {
                 if (transitionCountdown[slot] == 0) {
@@ -161,9 +165,18 @@ final class ZolGelMotion {
                     speedX[slot] = (transitionCountdown[slot] & 0x04) == 0
                         ? 0x08 : 0xF8;
                     speedY[slot] = 0;
+                    int[] moved = physics(entity, x, y,
+                        backgroundInteraction, frameCounter);
+                    x = moved[0];
+                    y = moved[1];
                 }
-            } else if (state[slot] == 3 && hitGround) {
-                state[slot] = 0;
+            } else if (state[slot] == 3) {
+                int[] moved = physics(entity, x, y, backgroundInteraction, frameCounter);
+                x = moved[0];
+                y = moved[1];
+                if (hitGround) {
+                    state[slot] = 0;
+                }
             } else if (state[slot] == 4) {
                 if (transitionCountdown[slot] == 0) {
                     privateCountdown3[slot] = 0x30;
@@ -271,6 +284,18 @@ final class ZolGelMotion {
         if (transitionCountdown[slot] > 0) {
             transitionCountdown[slot]--;
         }
+    }
+
+    private int[] physics(RoomEntity entity, int x, int y,
+                          RoomEntityBackgroundInteraction backgroundInteraction,
+                          int frameCounter) {
+        // ZolGelPhysics still updates position while private countdown 1 is
+        // active, but the ROM skips its background helper for that frame. When
+        // it does call the helper, it temporarily exposes ignore-hits value
+        // $02 to the rich room probe.
+        RoomEntityBackgroundInteraction physicsInteraction =
+            privateCountdown1[entity.slot()] == 0 ? backgroundInteraction : null;
+        return move(entity, x, y, physicsInteraction, 0x02, frameCounter);
     }
 
     private void resetForGel(int slot) {
