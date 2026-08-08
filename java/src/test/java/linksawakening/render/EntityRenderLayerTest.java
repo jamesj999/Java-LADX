@@ -8,6 +8,7 @@ import linksawakening.gpu.EntitySpriteTileSnapshot;
 import linksawakening.world.EntityStatus;
 import linksawakening.world.EntityRoomLoader;
 import linksawakening.world.HookshotChainOam;
+import linksawakening.world.PincerBodyOam;
 import linksawakening.world.RoomEntity;
 import linksawakening.world.RoomEntitySnapshot;
 import linksawakening.world.RoomRenderSnapshot;
@@ -39,6 +40,32 @@ final class EntityRenderLayerTest {
 
         assertEquals(chainTopColor, pixelColor(buffer, 0x3C, 0x30));
         assertEquals(chainBottomColor, pixelColor(buffer, 0x3C, 0x38));
+    }
+
+    @Test
+    void rendersPincerBodyOamFromTheEntityTileSnapshot() {
+        GPU gpu = new GPU();
+        int bodyColor = 0x123456;
+        int[][] palettes = {{0, 0, 0, 0}, {0, 0, 0, 0}, {0, bodyColor, 0, 0}};
+        writeSolidTile(gpu, 0x6A, 1);
+        writeSolidTile(gpu, 0x6B, 1);
+        EntitySpriteDefinition hiddenPincer = new EntitySpriteDefinition(
+            0xB0, 0x07, 0x542B, EntitySpriteDefinition.Shape.PAIR, 0,
+            List.of(new EntitySpriteDefinition.Variant(
+                new EntitySpriteDefinition.OamAttribute(0xFF, 0x00),
+                new EntitySpriteDefinition.OamAttribute(0xFF, 0x20))));
+        RoomEntity entity = new RoomEntity(3, 0, 0xB0, 0x4C, 0x58,
+            EntityStatus.ACTIVE, hiddenPincer, 0);
+        RoomEntitySnapshot snapshot = snapshot(null, gpu.snapshotEntityTiles(), entity)
+            .withPincerBodyOam(PincerBodyOam.entries(3, 0x40, 0x50, 0x4C, 0x58, 3));
+        byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
+
+        new EntityRenderLayer(snapshot, palettes, new ScrollController())
+            .render(new RenderContext(buffer, gpu));
+
+        assertEquals(bodyColor, pixelColor(buffer, 0x3C, 0x40));
+        assertEquals(bodyColor, pixelColor(buffer, 0x3C, 0x48));
+        assertEquals(0, pixelColor(buffer, 0x34, 0x40));
     }
 
     @Test

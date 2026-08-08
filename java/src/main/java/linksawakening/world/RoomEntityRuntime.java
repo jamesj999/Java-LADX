@@ -42,6 +42,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_HIDING_ZOL = 0x9B;
     private static final int ENTITY_STAR = EntitySpriteHandlerCatalog.ENTITY_STAR;
     private static final int ENTITY_BLOOPER = EntitySpriteHandlerCatalog.ENTITY_BLOOPER;
+    private static final int ENTITY_PINCER = EntitySpriteHandlerCatalog.ENTITY_PINCER;
     private static final int ENTITY_SPIKE_TRAP = 0x27;
     private static final int ENTITY_PAIRODD = 0x57;
     private static final int ENTITY_PAIRODD_PROJECTILE = 0x58;
@@ -224,6 +225,7 @@ public final class RoomEntityRuntime {
     private final HidingZolMotion hidingZolMotion = new HidingZolMotion();
     private final StarMotion starMotion = new StarMotion();
     private final BlooperMotion blooperMotion = new BlooperMotion();
+    private final PincerMotion pincerMotion = new PincerMotion();
     private final SpikeTrapMotion spikeTrapMotion = new SpikeTrapMotion();
     private final PairoddMotion pairoddMotion = new PairoddMotion();
     private final PairoddProjectileMotion pairoddProjectileMotion =
@@ -294,6 +296,7 @@ public final class RoomEntityRuntime {
     private final boolean[] dynamicEntitySpawnedThisFrame =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
     private List<HookshotChainOam.Entry> hookshotChainOam = List.of();
+    private List<PincerBodyOam.Entry> pincerBodyOam = List.of();
     private final int[] liftedPhase = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] liftedSourceDirection = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] liftedStateInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
@@ -613,6 +616,7 @@ public final class RoomEntityRuntime {
         this.enemyCombatTables = enemyCombatTables;
         this.chestContentsTable = chestContentsTable;
         this.hookshotChainOam = initial.hookshotChainOam();
+        this.pincerBodyOam = initial.pincerBodyOam();
         Arrays.fill(entityOptions1Override, -1);
         Arrays.fill(droppedItemBySlot, 0);
         Arrays.fill(bombDirection, 0xFF);
@@ -659,6 +663,9 @@ public final class RoomEntityRuntime {
             }
             if (entity.loaded() && entity.type() == ENTITY_SPIKED_BEETLE) {
                 spikedBeetleMotion.initialize(entity.slot());
+            }
+            if (entity.loaded() && entity.type() == ENTITY_PINCER) {
+                pincerMotion.initialize(entity.slot());
             }
             if (entity.status() == EntityStatus.DYING) {
                 powerRecoilDeath[entity.slot()] = entity.powerRecoilDeath();
@@ -1099,6 +1106,7 @@ public final class RoomEntityRuntime {
             boolean preserveSnakePresentation = false;
             boolean preserveStarPresentation = false;
             boolean preserveBlooperPresentation = false;
+            boolean preservePincerPresentation = false;
             boolean preserveWizrobePresentation = false;
             boolean preserveWizrobeProjectilePresentation = false;
             boolean preservePolsVoicePresentation = false;
@@ -1441,6 +1449,9 @@ public final class RoomEntityRuntime {
                 }
                 if (entity.type() == ENTITY_BLOOPER) {
                     blooperMotion.initialize(entity.slot());
+                }
+                if (entity.type() == ENTITY_PINCER) {
+                    pincerMotion.initialize(entity.slot());
                 }
                 if (entity.type() == ENTITY_SPIKE_TRAP) {
                     spikeTrapMotion.initialize(entity.slot(), randomByteSupplier);
@@ -1928,6 +1939,19 @@ public final class RoomEntityRuntime {
                 updated = blooperUpdate.entity();
                 preAppliedGroundResult = blooperUpdate.groundResult();
                 preserveBlooperPresentation = true;
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_PINCER && handlerLinkCollisionEnabled) {
+                // PincerEntityHandler clears its stale ground status before
+                // rendering and does not call the generic background helper.
+                entityGroundStatus[entity.slot()] = 0;
+                PincerMotion.Update pincerUpdate = pincerMotion.advance(
+                    entity, enemyTransitionCountdown[entity.slot()],
+                    enemyPhysicsFlags[entity.slot()], linkEntityX, linkEntityY);
+                updated = pincerUpdate.entity();
+                enemyTransitionCountdown[entity.slot()] = pincerUpdate.transitionCountdown();
+                enemyPhysicsFlags[entity.slot()] = pincerUpdate.physicsFlags();
+                preservePincerPresentation = true;
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_PAIRODD_PROJECTILE) {
@@ -2482,7 +2506,7 @@ public final class RoomEntityRuntime {
                 || preserveBombitePresentation
                 || preserveIronMaskPresentation || preserveSnakePresentation
                 || preserveStarPresentation
-                || preserveBlooperPresentation
+                || preserveBlooperPresentation || preservePincerPresentation
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
                 || preservePolsVoicePresentation
                 || preserveSpikedBeetlePresentation || preserveArmosKnightPresentation
@@ -2494,7 +2518,7 @@ public final class RoomEntityRuntime {
                 || preserveBombitePresentation
                 || preserveIronMaskPresentation || preserveSnakePresentation
                 || preserveStarPresentation
-                || preserveBlooperPresentation
+                || preserveBlooperPresentation || preservePincerPresentation
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
                 || preservePolsVoicePresentation
                 || preserveSpikedBeetlePresentation || preserveArmosKnightPresentation
@@ -2518,6 +2542,7 @@ public final class RoomEntityRuntime {
             }
         }
         updateHookshotChainOam(linkEntityX, linkEntityY, frame);
+        updatePincerBodyOam();
         return List.copyOf(projectileEvents);
     }
 
@@ -3900,6 +3925,7 @@ public final class RoomEntityRuntime {
         }
         bombiteMotion.clear(slot);
         blooperMotion.clear(slot);
+        pincerMotion.clear(slot);
         if (!entity.loaded()) {
             return 0;
         }
@@ -3964,6 +3990,7 @@ public final class RoomEntityRuntime {
         hidingZolMotion.clear(slot);
         starMotion.clear(slot);
         blooperMotion.clear(slot);
+        pincerMotion.clear(slot);
         spikeTrapMotion.clear(slot);
         pairoddMotion.clear(slot);
         pairoddProjectileMotion.clear(slot);
@@ -3995,6 +4022,7 @@ public final class RoomEntityRuntime {
             liftedEffectiveDirection = 0;
         }
         slots[slot] = RoomEntity.disabled(slot);
+        updatePincerBodyOam();
         return entity.sourceLoadOrder() >= 0 && entity.sourceLoadOrder() < 8
             ? 1 << entity.sourceLoadOrder() : 0;
     }
@@ -4768,7 +4796,8 @@ public final class RoomEntityRuntime {
 
     public RoomEntitySnapshot snapshot() {
         return new RoomEntitySnapshot(Arrays.asList(slots), spriteSelection, spriteTiles,
-            groundInteractionSideScrolling, hookshotChainOam, fallingVisualYOffset);
+            groundInteractionSideScrolling, hookshotChainOam, pincerBodyOam,
+            fallingVisualYOffset);
     }
 
     private void updateHookshotChainOam(int linkEntityX, int linkEntityY, int frameCounter) {
@@ -4780,6 +4809,19 @@ public final class RoomEntityRuntime {
         RoomEntity chain = slots[slot];
         hookshotChainOam = HookshotChainOam.entries(
             chain.x(), chain.y(), linkEntityX, linkEntityY, frameCounter);
+    }
+
+    private void updatePincerBodyOam() {
+        List<PincerBodyOam.Entry> entries = new ArrayList<>();
+        for (RoomEntity entity : slots) {
+            if (!entity.loaded() || entity.type() != ENTITY_PINCER) {
+                continue;
+            }
+            entries.addAll(PincerBodyOam.entries(entity.slot(),
+                pincerMotion.holeX(entity.slot()), pincerMotion.holeY(entity.slot()),
+                entity.x(), entity.y(), pincerMotion.state(entity.slot())));
+        }
+        pincerBodyOam = List.copyOf(entries);
     }
 
     void setSpriteSelection(EntitySpriteSelection selection) {
@@ -5145,6 +5187,7 @@ public final class RoomEntityRuntime {
             || entity.type() == ENTITY_WIZROBE_PROJECTILE
             || entity.type() == ENTITY_BOO_BUDDY
             || entity.type() == ENTITY_DROPPABLE_FAIRY
+            || entity.type() == ENTITY_PINCER
             || hasNoGroundInteractionOverride(entity.slot());
     }
 
@@ -6436,6 +6479,34 @@ public final class RoomEntityRuntime {
         return blooperMotion.privateCountdown3(slot);
     }
 
+    int pincerState(int slot) {
+        return pincerMotion.state(slot);
+    }
+
+    int pincerHoleX(int slot) {
+        return pincerMotion.holeX(slot);
+    }
+
+    int pincerHoleY(int slot) {
+        return pincerMotion.holeY(slot);
+    }
+
+    int pincerLungeVariant(int slot) {
+        return pincerMotion.lungeVariant(slot);
+    }
+
+    int pincerSpeedX(int slot) {
+        return pincerMotion.speedX(slot);
+    }
+
+    int pincerSpeedY(int slot) {
+        return pincerMotion.speedY(slot);
+    }
+
+    List<PincerBodyOam.Entry> pincerBodyOam() {
+        return List.copyOf(pincerBodyOam);
+    }
+
     int sparkPrivateState1(int slot) {
         return sparkMotion.privateState1(slot);
     }
@@ -7301,6 +7372,7 @@ public final class RoomEntityRuntime {
             case ENTITY_STALFOS_EVASIVE -> EVASIVE_PHYSICS_FLAGS;
             case ENTITY_STAR -> 0x12;
             case ENTITY_BLOOPER -> 0x02;
+            case ENTITY_PINCER -> 0x02;
             case ENTITY_IRON_MASK -> IRON_MASK_INITIAL_PHYSICS_FLAGS;
             case ENTITY_GOOMBA, ENTITY_SNAKE -> GOOMBA_INITIAL_PHYSICS_FLAGS;
             case ENTITY_WIZROBE -> 0x02;
@@ -7678,6 +7750,7 @@ public final class RoomEntityRuntime {
         hidingZolMotion.clear(slot);
         starMotion.clear(slot);
         blooperMotion.clear(slot);
+        pincerMotion.clear(slot);
         spikeTrapMotion.clear(slot);
         pairoddMotion.clear(slot);
         pairoddProjectileMotion.clear(slot);

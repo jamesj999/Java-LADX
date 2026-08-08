@@ -2395,6 +2395,21 @@ runtime collision callback.
   current-frame ground ordering, combat, and non-interactive Link-frame
   regressions pass, as does the clean Java suite.
 
+## Verified ROM Pincer entity runtime — 2026-08-07
+
+- Pincer (`$B0`) now decodes bank-$07's ten-pair display list at `$542B` and
+  follows the source hidden, prepare, lunge, recovery, and return states,
+  including the `$30/$18/$20` countdown boundaries, projectile-noclip
+  transition, ROM vector quantization, fixed-point movement, and stored-hole
+  return.
+- The handler-generated three-tile body uses the source quarter-displacement
+  OAM list (`$6A`, palette attribute `$02`) and is carried through the room
+  snapshot and renderer. Group `$02` combat data supplies health `$02`, contact
+  damage `$08`, and physics `$02`.
+- Focused ROM display bytes, vector/state timing, body OAM, live runtime,
+  renderer, combat, and non-interactive handler-boundary regressions pass,
+  followed by the clean Java suite.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

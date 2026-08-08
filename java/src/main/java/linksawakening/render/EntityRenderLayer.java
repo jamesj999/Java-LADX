@@ -3,6 +3,7 @@ package linksawakening.render;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.gpu.EntitySpriteTileSnapshot;
 import linksawakening.world.HookshotChainOam;
+import linksawakening.world.PincerBodyOam;
 import linksawakening.world.RoomEntity;
 import linksawakening.world.RoomEntitySnapshot;
 import linksawakening.world.ScrollController;
@@ -14,6 +15,7 @@ import static linksawakening.world.RoomConstants.ROOM_PIXEL_WIDTH;
 /** Renders the ROM-backed OAM display lists for the room's loaded entities. */
 public final class EntityRenderLayer implements RenderLayer {
     private static final int ENTITY_BOMB = 0x02;
+    private static final int ENTITY_PINCER = 0xB0;
     private static final int BOMB_NORMAL_DEFINITION_BANK = 0x03;
     private static final int BOMB_NORMAL_DEFINITION_ADDRESS = 0x652E;
     private static final int ENTITY_PAIRODD = 0x57;
@@ -99,6 +101,10 @@ public final class EntityRenderLayer implements RenderLayer {
             renderEntity(context, entity, definition, variant, palettes, tiles,
                 offset.x(), offset.y(), entities.sideScrolling(),
                 entities.visualYOffset(entity.slot()));
+            if (entity.type() == ENTITY_PINCER) {
+                renderPincerBodyOam(context, entities.pincerBodyOam(), entity.slot(), palettes,
+                    tiles, offset.x(), offset.y());
+            }
             if (!renderingDeath && definition.supported() && entities.spriteSelection() != null) {
                 EntitySpriteDefinition overlay = entities.spriteSelection()
                     .spriteOverlayFor(entity.type());
@@ -122,6 +128,22 @@ public final class EntityRenderLayer implements RenderLayer {
             }
         }
         renderHookshotChainOam(context, entities, palettes, offset.x(), offset.y());
+    }
+
+    private void renderPincerBodyOam(RenderContext context,
+                                     java.util.List<PincerBodyOam.Entry> bodyOam,
+                                     int sourceSlot, int[][] palettes,
+                                     EntitySpriteTileSnapshot tiles,
+                                     int offsetX, int offsetY) {
+        for (PincerBodyOam.Entry entry : bodyOam) {
+            if (entry.sourceSlot() != sourceSlot) {
+                continue;
+            }
+            renderOamSprite(context, palettes, tiles,
+                new EntitySpriteDefinition.OamAttribute(entry.tileIndex(), entry.attributes()), 0,
+                entry.rawX() + offsetX - OAM_X_SCREEN_ORIGIN,
+                entry.rawY() + offsetY - OAM_Y_SCREEN_ORIGIN, false);
+        }
     }
 
     private void renderHookshotChainOam(RenderContext context, RoomEntitySnapshot entities,

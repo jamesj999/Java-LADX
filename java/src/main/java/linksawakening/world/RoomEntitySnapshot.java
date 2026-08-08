@@ -15,6 +15,7 @@ public final class RoomEntitySnapshot {
     private final EntitySpriteTileSnapshot spriteTiles;
     private final boolean sideScrolling;
     private final List<HookshotChainOam.Entry> hookshotChainOam;
+    private final List<PincerBodyOam.Entry> pincerBodyOam;
     private final int[] visualYOffsetBySlot;
 
     public RoomEntitySnapshot(List<RoomEntity> slots) {
@@ -39,12 +40,21 @@ public final class RoomEntitySnapshot {
                               EntitySpriteTileSnapshot spriteTiles, boolean sideScrolling,
                               List<HookshotChainOam.Entry> hookshotChainOam) {
         this(slots, spriteSelection, spriteTiles, sideScrolling, hookshotChainOam,
-            new int[EntityRoomLoader.MAX_ENTITIES]);
+            List.of(), new int[EntityRoomLoader.MAX_ENTITIES]);
     }
 
     public RoomEntitySnapshot(List<RoomEntity> slots, EntitySpriteSelection spriteSelection,
                               EntitySpriteTileSnapshot spriteTiles, boolean sideScrolling,
                               List<HookshotChainOam.Entry> hookshotChainOam,
+                              int[] visualYOffsetBySlot) {
+        this(slots, spriteSelection, spriteTiles, sideScrolling, hookshotChainOam,
+            List.of(), visualYOffsetBySlot);
+    }
+
+    public RoomEntitySnapshot(List<RoomEntity> slots, EntitySpriteSelection spriteSelection,
+                              EntitySpriteTileSnapshot spriteTiles, boolean sideScrolling,
+                              List<HookshotChainOam.Entry> hookshotChainOam,
+                              List<PincerBodyOam.Entry> pincerBodyOam,
                               int[] visualYOffsetBySlot) {
         if (slots == null || slots.size() != EntityRoomLoader.MAX_ENTITIES) {
             throw new IllegalArgumentException("A room must expose exactly "
@@ -52,6 +62,9 @@ public final class RoomEntitySnapshot {
         }
         if (hookshotChainOam == null) {
             throw new IllegalArgumentException("Hookshot chain OAM cannot be null");
+        }
+        if (pincerBodyOam == null) {
+            throw new IllegalArgumentException("Pincer body OAM cannot be null");
         }
         if (visualYOffsetBySlot == null
             || visualYOffsetBySlot.length != EntityRoomLoader.MAX_ENTITIES) {
@@ -67,6 +80,7 @@ public final class RoomEntitySnapshot {
         this.spriteTiles = spriteTiles;
         this.sideScrolling = sideScrolling;
         this.hookshotChainOam = List.copyOf(hookshotChainOam);
+        this.pincerBodyOam = List.copyOf(pincerBodyOam);
         this.visualYOffsetBySlot = visualYOffsetBySlot.clone();
         List<RoomEntity> loaded = new ArrayList<>();
         for (RoomEntity entity : this.slots) {
@@ -79,12 +93,12 @@ public final class RoomEntitySnapshot {
 
     public RoomEntitySnapshot withSpriteSelection(EntitySpriteSelection selection) {
         return new RoomEntitySnapshot(slots, selection, spriteTiles, sideScrolling,
-            hookshotChainOam, visualYOffsetBySlot);
+            hookshotChainOam, pincerBodyOam, visualYOffsetBySlot);
     }
 
     public RoomEntitySnapshot withSpriteTiles(EntitySpriteTileSnapshot tiles) {
         return new RoomEntitySnapshot(slots, spriteSelection, tiles, sideScrolling,
-            hookshotChainOam, visualYOffsetBySlot);
+            hookshotChainOam, pincerBodyOam, visualYOffsetBySlot);
     }
 
     /** Returns whether the room uses the side-scroll OAM path. */
@@ -94,7 +108,7 @@ public final class RoomEntitySnapshot {
 
     public RoomEntitySnapshot withSideScrolling(boolean sideScrolling) {
         return new RoomEntitySnapshot(slots, spriteSelection, spriteTiles, sideScrolling,
-            hookshotChainOam, visualYOffsetBySlot);
+            hookshotChainOam, pincerBodyOam, visualYOffsetBySlot);
     }
 
     public List<RoomEntity> slots() {
@@ -117,6 +131,10 @@ public final class RoomEntitySnapshot {
         return hookshotChainOam;
     }
 
+    public List<PincerBodyOam.Entry> pincerBodyOam() {
+        return pincerBodyOam;
+    }
+
     /** Returns the ROM display-only Y correction for an entity slot. */
     public int visualYOffset(int slot) {
         if (slot < 0 || slot >= visualYOffsetBySlot.length) {
@@ -135,12 +153,17 @@ public final class RoomEntitySnapshot {
         int[] offsets = visualYOffsetBySlot.clone();
         offsets[slot] = offset;
         return new RoomEntitySnapshot(slots, spriteSelection, spriteTiles, sideScrolling,
-            hookshotChainOam, offsets);
+            hookshotChainOam, pincerBodyOam, offsets);
     }
 
     public RoomEntitySnapshot withHookshotChainOam(
         List<HookshotChainOam.Entry> hookshotChainOam) {
         return new RoomEntitySnapshot(slots, spriteSelection, spriteTiles, sideScrolling,
-            hookshotChainOam, visualYOffsetBySlot);
+            hookshotChainOam, pincerBodyOam, visualYOffsetBySlot);
+    }
+
+    public RoomEntitySnapshot withPincerBodyOam(List<PincerBodyOam.Entry> pincerBodyOam) {
+        return new RoomEntitySnapshot(slots, spriteSelection, spriteTiles, sideScrolling,
+            hookshotChainOam, pincerBodyOam, visualYOffsetBySlot);
     }
 }

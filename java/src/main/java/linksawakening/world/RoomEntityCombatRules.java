@@ -18,6 +18,7 @@ public final class RoomEntityCombatRules {
     private static final int ENTITY_HIDING_ZOL = 0x9B;
     private static final int ENTITY_STAR = 0x9C;
     private static final int ENTITY_BLOOPER = 0xA9;
+    private static final int ENTITY_PINCER = 0xB0;
     private static final int ENTITY_GIBDO = 0x1F;
     private static final int ENTITY_LIKE_LIKE = 0x23;
     private static final int ENTITY_GOOMBA = 0x9F;
@@ -94,6 +95,7 @@ public final class RoomEntityCombatRules {
     private static final int BOMBER_CONTACT_DAMAGE = 0x08;
     private static final int BOMBITE_INITIAL_HEALTH = 0x04;
     private static final int BOMBITE_CONTACT_DAMAGE = 0x08;
+    private static final int PINCER_CONTACT_DAMAGE = 0x08;
     private static final int BASIC_SWORD_DAMAGE = 0x01;
 
     private RoomEntityCombatRules() {
@@ -107,7 +109,7 @@ public final class RoomEntityCombatRules {
                 ENTITY_SPARK_CLOCKWISE,
                 ENTITY_STALFOS_AGGRESSIVE, ENTITY_STALFOS_EVASIVE,
                 ENTITY_ZOL, ENTITY_GEL, ENTITY_HIDING_ZOL,
-                ENTITY_STAR, ENTITY_BLOOPER,
+                ENTITY_STAR, ENTITY_BLOOPER, ENTITY_PINCER,
                 ENTITY_GIBDO, ENTITY_POLS_VOICE, ENTITY_LIKE_LIKE, ENTITY_PEAHAT,
                 ENTITY_GOOMBA, ENTITY_SNAKE,
                 ENTITY_WIZROBE,
@@ -135,7 +137,8 @@ public final class RoomEntityCombatRules {
         return switch (type & 0xFF) {
             case ENTITY_KEESE, ENTITY_OCTOROK, ENTITY_PEAHAT, ENTITY_ZOL, ENTITY_GEL,
                 ENTITY_WATER_TEKTITE, ENTITY_PAIRODD,
-                ENTITY_HIDING_ZOL, ENTITY_STAR, ENTITY_BLOOPER, ENTITY_GOOMBA, ENTITY_SNAKE ->
+                ENTITY_HIDING_ZOL, ENTITY_STAR, ENTITY_BLOOPER,
+                ENTITY_GOOMBA, ENTITY_SNAKE ->
                 OCTOROK_AND_KEESE_CONTACT_DAMAGE;
             case ENTITY_FISH -> OCTOROK_AND_KEESE_CONTACT_DAMAGE;
             case ENTITY_CROW -> CROW_CONTACT_DAMAGE;
@@ -161,6 +164,7 @@ public final class RoomEntityCombatRules {
             case ENTITY_WIZROBE -> WIZROBE_CONTACT_DAMAGE;
             case ENTITY_SPIKE_TRAP -> SPIKE_TRAP_CONTACT_DAMAGE;
             case ENTITY_CRYSTAL_SWITCH -> CRYSTAL_SWITCH_CONTACT_DAMAGE;
+            case ENTITY_PINCER -> PINCER_CONTACT_DAMAGE;
             default -> 0;
         };
     }
@@ -179,6 +183,7 @@ public final class RoomEntityCombatRules {
             case ENTITY_MOBLIN, ENTITY_IRON_MASK, ENTITY_MOBLIN_SWORD, ENTITY_TEKTITE, ENTITY_LEEVER,
                 ENTITY_STALFOS_AGGRESSIVE, ENTITY_STALFOS_EVASIVE ->
                 MOBLIN_INITIAL_HEALTH;
+            case ENTITY_PINCER -> 0x02;
             case ENTITY_SPARK_COUNTER_CLOCKWISE, ENTITY_SPARK_CLOCKWISE ->
                 OCTOROK_AND_KEESE_INITIAL_HEALTH;
             case ENTITY_ZOL -> ZOL_INITIAL_HEALTH;
