@@ -1824,7 +1824,8 @@ public final class RoomEntityRuntime {
                 }
                 ZolGelMotion.Update zolGelUpdate = zolGelMotion.advance(entity, linkEntityX,
                     linkEntityY, linkZ, randomByteSupplier, zolGelBackgroundInteraction,
-                    frame, joypadHeld || actionButtonsHeld);
+                    frame, enemyIgnoreHitsCountdown[entity.slot()],
+                    joypadHeld || actionButtonsHeld);
                 updated = zolGelUpdate.entity();
                 if (zolGelUpdate.split() != null) {
                     updated = applyZolSplit(entity, updated, zolGelUpdate.split());

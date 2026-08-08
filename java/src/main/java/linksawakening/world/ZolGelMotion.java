@@ -65,13 +65,14 @@ final class ZolGelMotion {
             randomByteSupplier,
             backgroundCollision == null
                 ? null : RoomEntityBackgroundInteraction.fromBoolean(backgroundCollision),
-            0, false);
+            0, 0, false);
     }
 
     Update advance(RoomEntity entity, int linkEntityX, int linkEntityY, int linkEntityZ,
                    IntSupplier randomByteSupplier,
                    RoomEntityBackgroundInteraction backgroundInteraction,
                    int frameCounter,
+                   int ignoreHitsCountdown,
                    boolean joypadHeld) {
         int slot = entity.slot();
         if (!initialized[slot]) {
@@ -115,6 +116,8 @@ final class ZolGelMotion {
             x = (linkEntityX - xOffset) & 0xFF;
             y = (linkEntityY - yOffset) & 0xFF;
             z = linkEntityZ & 0xFF;
+            applyClingingBackgroundProbe(entity, x, y, backgroundInteraction,
+                ignoreHitsCountdown, frameCounter);
             if (joypadHeld) {
                 decreaseTransitionCountdown(slot);
                 decreaseTransitionCountdown(slot);
@@ -296,6 +299,24 @@ final class ZolGelMotion {
         RoomEntityBackgroundInteraction physicsInteraction =
             privateCountdown1[entity.slot()] == 0 ? backgroundInteraction : null;
         return move(entity, x, y, physicsInteraction, 0x02, frameCounter);
+    }
+
+    private void applyClingingBackgroundProbe(RoomEntity entity, int x, int y,
+                                               RoomEntityBackgroundInteraction backgroundInteraction,
+                                               int ignoreHitsCountdown, int frameCounter) {
+        if (backgroundInteraction == null) {
+            return;
+        }
+        if (speedX[entity.slot()] != 0) {
+            backgroundInteraction.probe(entity,
+                signedByte(speedX[entity.slot()]) < 0 ? 1 : 0,
+                x, y, ignoreHitsCountdown, frameCounter);
+        }
+        if (speedY[entity.slot()] != 0) {
+            backgroundInteraction.probe(entity,
+                signedByte(speedY[entity.slot()]) < 0 ? 2 : 3,
+                x, y, ignoreHitsCountdown, frameCounter);
+        }
     }
 
     private void resetForGel(int slot) {

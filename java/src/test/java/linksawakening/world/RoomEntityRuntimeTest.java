@@ -1951,14 +1951,50 @@ final class RoomEntityRuntimeTest {
         };
 
         ZolGelMotion.Update first = motion.advance(entity, 80, 64, 0,
-            () -> 0, background, 0, false);
+            () -> 0, background, 0, 0, false);
         assertTrue(observedIgnoreHits.isEmpty());
         assertEquals(1, motion.privateCountdown1(entity.slot()));
 
         motion.advance(first.entity(), 80, 64, 0,
-            () -> 0, background, 1, false);
+            () -> 0, background, 1, 0, false);
         assertEquals(List.of(0x02), observedIgnoreHits);
         assertEquals(0, motion.privateCountdown1(entity.slot()));
+    }
+
+    @Test
+    void gelClingingStateRunsTheRomBackgroundProbeAfterLinkRelativePlacement() {
+        ZolGelMotion motion = new ZolGelMotion();
+        RoomEntity entity = new RoomEntity(0, 0, 0x1C, 64, 64, EntityStatus.ACTIVE,
+            pairDefinition(0x1C, 2), 0);
+        motion.prepareChestSpawn(entity.slot());
+        motion.onLinkCollision(entity.slot());
+        List<Integer> observedDirections = new ArrayList<>();
+        List<Integer> observedIgnoreHits = new ArrayList<>();
+
+        RoomEntityBackgroundInteraction background = new RoomEntityBackgroundInteraction() {
+            @Override
+            public EntityBackgroundCollisionResult probe(RoomEntity probed, int direction,
+                                                          int nextX, int nextY) {
+                observedDirections.add(direction);
+                return EntityBackgroundCollisionResult.passable(direction, 0, nextX, nextY);
+            }
+
+            @Override
+            public EntityBackgroundCollisionResult probe(RoomEntity probed, int direction,
+                                                          int nextX, int nextY,
+                                                          int ignoreHitsCountdown,
+                                                          int frameCounter) {
+                observedDirections.add(direction);
+                observedIgnoreHits.add(ignoreHitsCountdown);
+                return EntityBackgroundCollisionResult.passable(direction, 0, nextX, nextY);
+            }
+        };
+
+        motion.advance(entity, 80, 64, 0, () -> 0,
+            background, 0, 0x09, false);
+
+        assertEquals(List.of(0), observedDirections);
+        assertEquals(List.of(0x09), observedIgnoreHits);
     }
 
     @Test

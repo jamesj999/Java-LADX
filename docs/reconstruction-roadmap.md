@@ -2288,6 +2288,10 @@ runtime collision callback.
   interaction with the source temporary ignore-hits value `$02`, and skips that
   probe while private countdown 1 is nonzero. The existing boolean background
   callers remain supported through the same boundary.
+- Gel state `$04` now also invokes the rich background probe after its
+  Link-relative placement, using the current signed movement direction and
+  ignore-hits byte as the ROM helper does. The broader helper effects—ground
+  status, pits, water, conveyors, and object side effects—remain separate.
 - The state dispatch now follows the source call order around
   `ZolGelPhysics`: state `$01`'s non-leap branch enters state `$02` with a zero
   countdown, and state `$02` writes its signed horizontal speed before the
