@@ -208,6 +208,9 @@ public final class Link implements RocsFeather.JumpTarget {
     private int lastSafeSubX;
     private int lastSafeSubY;
     private boolean hasLastSafePosition;
+    private int romFinalSubX;
+    private int romFinalSubY;
+    private boolean hasRomFinalPosition;
     private int roomEntrySubX;
     private int roomEntrySubY;
     private boolean hasRoomEntryPosition;
@@ -344,6 +347,22 @@ public final class Link implements RocsFeather.JumpTarget {
         }
         subY += (byte) speedY;
         subX += (byte) speedX;
+    }
+
+    /** Captures hLinkPositionX/Y into the ROM's per-frame final-position shadow. */
+    public void captureRomFinalPosition() {
+        romFinalSubX = subX;
+        romFinalSubY = subY;
+        hasRomFinalPosition = true;
+    }
+
+    /** Copies the captured ROM final position back over an entity push. */
+    public void restoreRomFinalPosition() {
+        if (!hasRomFinalPosition) {
+            return;
+        }
+        subX = romFinalSubX;
+        subY = romFinalSubY;
     }
 
     public int pixelX() {

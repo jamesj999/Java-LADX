@@ -788,6 +788,7 @@ public class Main {
                     equipmentController.tickEquippedItems(frameCounter);
                 }
                 link.update();
+                link.captureRomFinalPosition();
                 if (roomSession != null && playerState != null) {
                     EntityPickupEvent pickup = roomSession.collectEntityIfNeeded(
                         frameCounter, link.pixelX(), link.pixelY(), link.isAirborne(), true,
@@ -894,6 +895,14 @@ public class Main {
                     swordBoxForEntityTick.height(),
                     link == null ? 0 : link.romSpeedX(),
                     link == null ? 0 : link.romSpeedY());
+                for (var request : roomSession.consumeLinkFinalPositionRequests()) {
+                    if (link != null) {
+                        link.restoreRomFinalPosition();
+                    }
+                    if (playerState != null) {
+                        playerState.setRunningWithPegasusBoots(false);
+                    }
+                }
                 EnemyProjectileEventConsumer.consume(projectileEvents, playerState,
                     gameplaySoundSink);
                 EnemyCombatEventConsumer.consume(roomSession.consumeEntityEvents(),

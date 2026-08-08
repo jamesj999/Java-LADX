@@ -1188,6 +1188,13 @@ public final class RoomSession {
         return List.copyOf(events);
     }
 
+    /** Returns and clears handlers that restore Link's pre-entity final position. */
+    public List<RoomEntityRuntime.LinkFinalPositionRequest>
+            consumeLinkFinalPositionRequests() {
+        return entityRuntime == null
+            ? List.of() : entityRuntime.consumePendingLinkFinalPositionRequests();
+    }
+
     /** Returns and clears chest reward applications emitted by the last entity tick(s). */
     public List<RoomEntityRuntime.ChestRewardEvent> consumeChestRewardEvents() {
         List<RoomEntityRuntime.ChestRewardEvent> rewards = List.copyOf(pendingChestRewardEvents);

@@ -400,6 +400,20 @@ final class LinkTest {
     }
 
     @Test
+    void restoresTheCapturedRomFinalPositionAfterAnEntityPush() {
+        Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
+            null, null, null, new PlayerState(), new ItemRegistry());
+        link.setPixelPosition(0x40, 0x50);
+
+        link.captureRomFinalPosition();
+        link.applyRomFinalPosition(0x10, 0xF0);
+        link.restoreRomFinalPosition();
+
+        assertEquals(0x40, link.pixelX());
+        assertEquals(0x50, link.pixelY());
+    }
+
+    @Test
     void applyRomFinalPositionBypassesBlockedCollisionAndKeepsFractionalPosition() throws Exception {
         byte[] rom = loadRom();
         RomTables romTables = RomTables.loadFromRom(rom);

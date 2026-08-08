@@ -2037,6 +2037,51 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void armosKnightStartsTheRomMinibossMusicAfterTheBossIntroDelay() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x88, 0x50, 0x60, EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0x88), 0)), true);
+
+        for (int frame = 0; frame < 0x20; frame++) {
+            runtime.tick(frame, 0x50, 0x60, () -> 0);
+            assertEquals(-1, runtime.consumePendingMusicTrack());
+        }
+
+        runtime.tick(0x20, 0x50, 0x60, () -> 0);
+        assertEquals(0x50, runtime.consumePendingMusicTrack());
+
+        runtime.tick(0x21, 0x50, 0x60, () -> 0);
+        assertEquals(-1, runtime.consumePendingMusicTrack());
+    }
+
+    @Test
+    void armosKnightRequestsCopyingLinksFinalPositionOnActiveCollision() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            0x88, EntityRoomLoader.RoomTable.INDOORS_B);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x88, 0x50, 0x60, EntityStatus.ACTIVE, definition, 0)),
+            true, () -> 0, catalog, new RomEnemyCombatTables(rom));
+
+        runtime.tick(0, 0, 0, () -> 0);
+        runtime.tick(1, 0x50, 0x60, () -> 0);
+        for (int frame = 2; frame <= 0x31; frame++) {
+            runtime.tick(frame, 0x50, 0x60, () -> 0);
+        }
+        for (int frame = 0x32; frame <= 0xB1; frame++) {
+            runtime.tick(frame, 0x50, 0x60, () -> 0);
+        }
+        assertEquals(3, runtime.armosKnightState(0));
+
+        runtime.tickWithProjectileEvents(0xB2, 0x50, 0x60, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0x50, 0x60, 0x04, 0x00, 0, false));
+
+        assertEquals(List.of(new RoomEntityRuntime.LinkFinalPositionRequest(0)),
+            runtime.consumePendingLinkFinalPositionRequests());
+    }
+
+    @Test
     void armosKnightDamageThresholdSpawnsRomRubbleWithPoofAndNoise() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);

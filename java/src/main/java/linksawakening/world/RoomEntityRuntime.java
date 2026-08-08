@@ -242,6 +242,7 @@ public final class RoomEntityRuntime {
     private final PeaHatMotion peaHatMotion = new PeaHatMotion();
     private final ArmosMotion armosMotion = new ArmosMotion();
     private final ArmosKnightMotion armosKnightMotion = new ArmosKnightMotion();
+    private final BossIntroMotion bossIntroMotion = new BossIntroMotion();
     private final GhiniMotion ghiniMotion = new GhiniMotion();
     private final HardHatMotion hardHatMotion = new HardHatMotion();
     private final PolsVoiceMotion polsVoiceMotion = new PolsVoiceMotion();
@@ -322,6 +323,8 @@ public final class RoomEntityRuntime {
     private final List<RoamingEnemyMotion.LaunchRequest> projectileLaunchRequests =
         new ArrayList<>();
     private final List<TransientVfxRequest> transientVfxRequests = new ArrayList<>();
+    private final List<LinkFinalPositionRequest> pendingLinkFinalPositionRequests =
+        new ArrayList<>();
     private final List<DialogRequest> pendingDialogRequests = new ArrayList<>();
     private final List<EntityCombatEvent> pendingEntityEvents = new ArrayList<>();
     private final List<ChestRewardEvent> pendingChestRewardEvents = new ArrayList<>();
@@ -418,6 +421,16 @@ public final class RoomEntityRuntime {
                                       int variant) {
         public TransientVfxRequest(TransientVfxType type, int worldX, int worldY) {
             this(type, worldX, worldY, 0);
+        }
+    }
+
+    /** A ROM handler request to restore Link's pre-entity final position. */
+    public record LinkFinalPositionRequest(int sourceSlot) {
+        public LinkFinalPositionRequest {
+            if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
+                throw new IllegalArgumentException("Link final-position source slot out of range: "
+                    + sourceSlot);
+            }
         }
     }
 
@@ -981,6 +994,7 @@ public final class RoomEntityRuntime {
         Arrays.fill(enemyProjectileSpawnedThisFrame, false);
         Arrays.fill(dynamicEntitySpawnedThisFrame, false);
         transientVfxRequests.clear();
+        pendingLinkFinalPositionRequests.clear();
         boomerangObjectRequests.clear();
         magicRodObjectRequests.clear();
         magicPowderObjectRequests.clear();
@@ -2146,6 +2160,18 @@ public final class RoomEntityRuntime {
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_ARMOS_KNIGHT) {
+                BossIntroMotion.Update bossIntro = bossIntroMotion.advance(
+                    options1(entity.slot()), entity.type(), entityMapId,
+                    transitionSequenceCounter);
+                if (bossIntro.musicTrack() >= 0) {
+                    pendingMusicTrack = bossIntro.musicTrack();
+                }
+                if (bossIntro.dialogLowId() >= 0) {
+                    pendingDialogRequests.add(new DialogRequest(
+                        bossIntro.dialogTableId(), bossIntro.dialogLowId()));
+                }
+                requestArmosLinkPush(entity, linkEntityX, linkEntityY,
+                    projectileLinkState.motionState());
                 ArmosKnightMotion.Update armosKnightUpdate = armosKnightMotion.advance(
                     entity, linkEntityX, linkEntityY, linkZ,
                     enemyTransitionCountdown[entity.slot()],
@@ -4761,6 +4787,12 @@ public final class RoomEntityRuntime {
     List<EntityCombatEvent> consumePendingEntityEvents() {
         List<EntityCombatEvent> pending = List.copyOf(pendingEntityEvents);
         pendingEntityEvents.clear();
+        return pending;
+    }
+
+    List<LinkFinalPositionRequest> consumePendingLinkFinalPositionRequests() {
+        List<LinkFinalPositionRequest> pending = List.copyOf(pendingLinkFinalPositionRequests);
+        pendingLinkFinalPositionRequests.clear();
         return pending;
     }
 
@@ -7541,6 +7573,32 @@ public final class RoomEntityRuntime {
         }
         if (liftableRockSmashActive[slot] && liftableRockSmashCountdown[slot] > 0) {
             liftableRockSmashCountdown[slot]--;
+        }
+    }
+
+    private void requestArmosLinkPush(RoomEntity entity, int linkEntityX, int linkEntityY,
+                                      int linkMotionState) {
+        if (linkMotionState >= EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE
+            || (enemyPhysicsFlags[entity.slot()] & 0x80) != 0
+            || !RoomEntityCombatRules.overlapsLink(entity, linkEntityX, linkEntityY)) {
+            return;
+        }
+        pendingLinkFinalPositionRequests.add(new LinkFinalPositionRequest(entity.slot()));
+        resetHookshotChainAfterLinkPush();
+    }
+
+    private void resetHookshotChainAfterLinkPush() {
+        for (int slot = 0; slot < slots.length; slot++) {
+            if (!slots[slot].loaded() || slots[slot].type() != ENTITY_HOOKSHOT_CHAIN
+                || !hookshotChainMotion.active(slot)) {
+                continue;
+            }
+            HookshotChainMotion.State state = hookshotChainMotion.state(slot);
+            hookshotChainMotion.setState(slot, new HookshotChainMotion.State(
+                state.x(), state.y(), state.z(), state.direction(), state.speedX(),
+                state.speedY(), state.transitionCountdown(), state.speedXAccumulator(),
+                state.speedYAccumulator(), 0, state.wallCollisionPending()));
+            return;
         }
     }
 

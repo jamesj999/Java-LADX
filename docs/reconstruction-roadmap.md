@@ -2221,6 +2221,22 @@ runtime collision callback.
   background collision/screen shake, and the private Link-motion block remain
   separate parity work.
 
+## Verified ROM Armos Knight intro and Link push boundary — 2026-08-07
+
+- Entity `$88` now runs the shared `BossIntro` timing path: the source `$20`
+  frame delay, one-shot guard, boss/miniboss music selection (`$19`/`$50`),
+  transition-sequence dialog gate, and ROM map/special-entity dialog rules are
+  represented by a ROM-shaped request boundary. Armos Knight's `$C4` options
+  select miniboss music `$50` in the live runtime path.
+- `PushLinkOutOfEntity_06` now checks the active Armos hitbox even while Link
+  is airborne, honors the source non-interactive and harmless-physics gates,
+  requests restoration of the Link position captured before entity animation,
+  resets Pegasus Boots, and resets the active hookshot chain state.
+- Link's host motion now exposes the source `hLinkFinalPositionX/Y` shadow;
+  `Main` captures it after Link movement and applies entity push requests before
+  later projectile responses. Focused BossIntro, Link, and ROM-backed Armos
+  runtime tests cover the timing, collision, and restoration boundaries.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,
