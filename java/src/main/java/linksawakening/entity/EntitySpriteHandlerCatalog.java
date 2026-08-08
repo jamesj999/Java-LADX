@@ -15,6 +15,7 @@ public final class EntitySpriteHandlerCatalog {
 
     public static final int ENTITY_LIFTABLE_ROCK = 0x05;
     public static final int ENTITY_CHEST_WITH_ITEM = 0x07;
+    public static final int ENTITY_KEY_DROP_POINT = 0x30;
     public static final int LIFTABLE_ROCK_INTACT_ROCK_VARIANT = 0;
     public static final int LIFTABLE_ROCK_INTACT_BUSH_VARIANT = 1;
     public static final int LIFTABLE_ROCK_SMASHED_ROCK_VARIANT_BASE = 2;
@@ -349,6 +350,9 @@ public final class EntitySpriteHandlerCatalog {
         }
         if (entityType == ENTITY_DROPPABLE_FAIRY) {
             return decodePair(entityType, 0x03, 0x6157, 2, 0);
+        }
+        if (entityType == ENTITY_KEY_DROP_POINT) {
+            return decodeSingle(entityType, 0x03, 0x5C78, 6, 0);
         }
         if (entityType == ENTITY_SWORD_SHIELD_PICKUP) {
             return decodeSingle(entityType, 0x03, 0x5B95, 1, 0);

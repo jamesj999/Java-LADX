@@ -4828,6 +4828,114 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void keyDropPointNormalVariantImmediatelyAwardsASmallKeyAndClears() {
+        EntitySpriteDefinition definition = keyDropDefinition();
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x30, 24, 32, EntityStatus.ACTIVE, definition, 0)));
+
+        assertEquals(0xB1, runtime.physicsFlags(0));
+        assertEquals(0x0A, runtime.options1(0));
+
+        EntityPickupEvent pickup = runtime.collectIfNeeded(1, 24, 34, false, true);
+
+        assertNotNull(pickup);
+        assertEquals(0x30, pickup.type());
+        assertEquals(1, pickup.persistentClearMask());
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
+        assertEquals(List.of(new RoomEntityRuntime.KeyRewardEvent(
+            0, ChestContentsTable.CHEST_SMALL_KEY)),
+            runtime.consumePendingKeyRewardEvents());
+    }
+
+    @Test
+    void keyDropPointDungeonVariantStartsTheHeldRewardTransitionAndUsesRomDialog() {
+        EntitySpriteDefinition definition = keyDropDefinition();
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x30, 24, 32, EntityStatus.ACTIVE, definition, 2)));
+
+        EntityPickupEvent pickup = runtime.collectIfNeeded(1, 24, 34, false, true);
+        assertNotNull(pickup);
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
+        assertEquals(0x68, runtime.keyDropTransitionCountdown(0));
+
+        runtime.setKeyDropTransitionCountdownForTest(0, 0x11);
+        runtime.tick(2, 0x40, 0x50, () -> 0);
+
+        RoomEntity held = runtime.snapshot().slots().get(0);
+        assertEquals(EntityStatus.ACTIVE, held.status());
+        assertEquals(0x40, held.x());
+        assertEquals(0x44, held.y());
+        assertEquals(0x0F, runtime.keyDropTransitionCountdown(0));
+        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, 0xA3)),
+            runtime.consumePendingDialogRequests());
+        assertEquals(List.of(new RoomEntityRuntime.KeyRewardEvent(
+            0, ChestContentsTable.CHEST_ANGLER_KEY)),
+            runtime.consumePendingKeyRewardEvents());
+    }
+
+    @Test
+    void keyDropPointMasterStalfosRoomUsesHookshotPresentationAndReward() {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
+        EntitySpriteDefinition definition = keyDropDefinition();
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, -1, 0x30, 24, 32, EntityStatus.ACTIVE, definition, 0)),
+            true, () -> 0, catalog);
+        runtime.setEntityRoomIdForTest(0x80);
+        runtime.setKeyDropTransitionCountdownForTest(0, 0x11);
+
+        runtime.tick(1, 0x40, 0x50, () -> 0);
+
+        RoomEntity held = runtime.snapshot().slots().get(0);
+        assertEquals(-1, held.spriteDefinition().bank());
+        assertEquals(EntitySpriteDefinition.Shape.PAIR, held.spriteDefinition().shape());
+        assertEquals(0x36, held.spriteDefinition().variant(0).first().tile());
+        assertEquals(0x0F, runtime.keyDropTransitionCountdown(0));
+        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, 0x93)),
+            runtime.consumePendingDialogRequests());
+        assertEquals(List.of(new RoomEntityRuntime.KeyRewardEvent(
+            0, ChestContentsTable.CHEST_HOOKSHOT)),
+            runtime.consumePendingKeyRewardEvents());
+    }
+
+    @Test
+    void keyDropPointAtYarnaQuicksandCenterStartsTheRomFallingHandoff() {
+        EntitySpriteDefinition definition = keyDropDefinition();
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, -1, 0x30, 0x50, 0x48, EntityStatus.ACTIVE, definition, 0)));
+        runtime.setEntityRoomIdForTest(0xCE);
+
+        runtime.tick(0, 0, 0, () -> 0);
+
+        RoomEntity falling = runtime.snapshot().slots().get(0);
+        assertEquals(EntityStatus.FALLING, falling.status());
+        assertEquals(0x2F, runtime.transitionCountdown(0));
+        assertEquals(0x50, runtime.fallingTargetX(0));
+        assertEquals(0x48, runtime.fallingTargetY(0));
+        assertEquals(List.of(new RoomEntityRuntime.KeyQuicksandEvent(0)),
+            runtime.consumePendingKeyQuicksandEvents());
+        assertEquals(List.of(new EntityCombatEvent(0, 0x30, 0, false,
+            EntityCombatEvent.SoundChannel.JINGLE, 0x18)),
+            runtime.consumePendingEntityEvents());
+    }
+
+    @Test
+    void armosKnightKeyDropUsesTheSourceForcedSpriteVariant() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RoomEntity source = new RoomEntity(15, 0, 0x88, 0x50, 0x60,
+            EntityStatus.DYING, catalog.forEntityType(
+                0x88, EntityRoomLoader.RoomTable.OVERWORLD, -1), 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotAt(source), false,
+            () -> 0, catalog, new RomEnemyCombatTables(rom));
+        runtime.setEnemyDropResolver(new EnemyDropResolver(rom));
+        runtime.setDroppedItemForTest(15, 0x30);
+
+        runtime.tick(0, 0, 0, () -> 0);
+
+        assertEquals(3, runtime.snapshot().slots().get(14).spriteVariant());
+    }
+
+    @Test
     void indoorDroppablesUseTheRomSlowFadeAndUnloadAtZero() {
         EntitySpriteDefinition definition = pairDefinition(0x37, 1);
         RoomEntitySnapshot initial = snapshot(
@@ -6046,6 +6154,16 @@ final class RoomEntityRuntimeTest {
         }
         return new EntitySpriteDefinition(type, 0x03, 0x5B65,
             EntitySpriteDefinition.Shape.PAIR, 0, displayList);
+    }
+
+    private static EntitySpriteDefinition keyDropDefinition() {
+        List<EntitySpriteDefinition.Variant> displayList = new ArrayList<>();
+        for (int i = 0; i < 6; i++) {
+            displayList.add(new EntitySpriteDefinition.Variant(
+                new EntitySpriteDefinition.OamAttribute(0xCA, 0x17), null));
+        }
+        return new EntitySpriteDefinition(0x30, 0x03, 0x5C78,
+            EntitySpriteDefinition.Shape.SINGLE, 0, displayList);
     }
 
     private static EntitySpriteDefinition butterflyDefinition() {

@@ -57,7 +57,7 @@ public final class RoomLoader {
         int[] objects = parsed.roomObjectsArea();
         RoomTilemap tilemap = tilemapBuilder.buildOverworld(roomId, objects);
         RoomEntitySnapshot entities = loadEntities(EntityRoomLoader.RoomTable.OVERWORLD,
-            roomId, clearedEntitiesMask, MAP_OVERWORLD, overworldRoomStatus);
+            roomId, clearedEntitiesMask, MAP_OVERWORLD, overworldRoomStatus, false);
 
         return new LoadedRoom(
             roomId,
@@ -92,6 +92,13 @@ public final class RoomLoader {
 
     LoadedRoom loadIndoor(int mapId, int roomId, int[][] fallbackPalettes, int mapCategory,
                           int clearedEntitiesMask, byte[] indoorRoomStatus) {
+        return loadIndoor(mapId, roomId, fallbackPalettes, mapCategory, clearedEntitiesMask,
+            indoorRoomStatus, false);
+    }
+
+    LoadedRoom loadIndoor(int mapId, int roomId, int[][] fallbackPalettes, int mapCategory,
+                          int clearedEntitiesMask, byte[] indoorRoomStatus,
+                          boolean hasBirdKey) {
         RoomPointerTable pointerTable = IndoorRoomPointerTables.forMap(mapId);
         int roomPointerOffset = RomBank.romOffset(pointerTable.bank(), pointerTable.address() + roomId * 2);
         int roomLo = Byte.toUnsignedInt(romData[roomPointerOffset]);
@@ -110,7 +117,7 @@ public final class RoomLoader {
         RoomTilemap tilemap = tilemapBuilder.buildIndoor(mapId, roomId, objects);
         EntityRoomLoader.RoomTable entityTable = entityTableForIndoorMap(mapId);
         RoomEntitySnapshot entities = loadEntities(entityTable, roomId, clearedEntitiesMask,
-            mapId, null);
+            mapId, indoorRoomStatus, hasBirdKey);
 
         return new LoadedRoom(
             roomId,
@@ -131,10 +138,11 @@ public final class RoomLoader {
 
     private RoomEntitySnapshot loadEntities(EntityRoomLoader.RoomTable table, int roomId,
                                             int clearedEntitiesMask, int mapId,
-                                            byte[] overworldRoomStatus) {
-        return entityLoader.load(table, roomId, clearedEntitiesMask, mapId)
+                                            byte[] roomStatus, boolean hasBirdKey) {
+        return entityLoader.load(table, roomId, clearedEntitiesMask, mapId, roomStatus,
+                hasBirdKey)
             .withSpriteSelection(entitySpriteCatalog.load(table, roomId, mapId,
-                overworldRoomStatus));
+                table == EntityRoomLoader.RoomTable.OVERWORLD ? roomStatus : null));
     }
 
     private static EntityRoomLoader.RoomTable entityTableForIndoorMap(int mapId) {

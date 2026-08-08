@@ -102,6 +102,31 @@ final class EntitySpriteHandlerCatalogTest {
     }
 
     @Test
+    void mapsKeyDropPointToItsSixVariantBankThreeDisplayList() {
+        byte[] rom = syntheticRom();
+        write(rom, 0x03, 0x5C78,
+            0xCA, 0x17,
+            0xC0, 0x17,
+            0xC2, 0x14,
+            0xC4, 0x17,
+            0xC6, 0x14,
+            0xCA, 0x17);
+
+        EntitySpriteDefinition key = new EntitySpriteHandlerCatalog(rom)
+            .forEntityType(EntitySpriteHandlerCatalog.ENTITY_KEY_DROP_POINT,
+                EntityRoomLoader.RoomTable.INDOORS_A);
+
+        assertDefinition(key, 0x03, 0x5C78,
+            EntitySpriteDefinition.Shape.SINGLE, 6, 0);
+        assertEquals(0xCA, key.variant(0).first().tile());
+        assertEquals(0x17, key.variant(0).first().attributes());
+        assertEquals(0xC0, key.variant(1).first().tile());
+        assertEquals(0x14, key.variant(2).first().attributes());
+        assertEquals(0xC6, key.variant(4).first().tile());
+        assertNull(key.variant(5).second());
+    }
+
+    @Test
     void mapsMusicalNoteToItsBankFiveSingleSprite() {
         byte[] rom = syntheticRom();
         write(rom, 0x05, 0x7EF8, 0x0E, 0x13);

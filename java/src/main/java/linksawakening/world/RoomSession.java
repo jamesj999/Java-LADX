@@ -61,7 +61,9 @@ public final class RoomSession {
     private static final int[] SHOVEL_TARGET_X = {0x14, 0xFC, 0x08, 0x08};
     private static final int[] SHOVEL_TARGET_Y = {0x0A, 0x0A, 0xFC, 0x14};
     private static final int OW_ROOM_STATUS_OPENED = 0x04;
+    private static final int OW_ROOM_STATUS_FLAG_CHANGED = 0x04;
     private static final int ROOM_STATUS_CHEST_OPEN = 0x10;
+    private static final int ROOM_STATUS_EVENT_1 = 0x10;
     private static final int INDOOR_ROOM_STATUS_EVENT_3 = 0x40;
     private static final int OBJECT_BOMBED_PASSAGE_VERTICAL = 0x3D;
     private static final int OBJECT_BOMBED_PASSAGE_HORIZONTAL = 0x3E;
@@ -131,6 +133,8 @@ public final class RoomSession {
     private final List<EntityCombatEvent> pendingRoomEntityEvents = new ArrayList<>();
     private final List<RoomEntityRuntime.ChestRewardEvent> pendingChestRewardEvents =
         new ArrayList<>();
+    private final List<RoomEntityRuntime.KeyRewardEvent> pendingKeyRewardEvents =
+        new ArrayList<>();
     private final List<RoomEntityRuntime.DialogRequest> pendingRoomDialogRequests =
         new ArrayList<>();
     private PendingShovelDrop pendingShovelDrop;
@@ -175,6 +179,7 @@ public final class RoomSession {
     private int ocarinaAnimationCounter;
     private int ocarinaAnimationPhase;
     private boolean pendingManboTransition;
+    private boolean hasBirdKey;
     private int currentLinkMotionState = EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE;
     /** WRAM wC1A2; ResetRoomVariables clears the room trigger counter. */
     private int roomTriggerCount;
@@ -316,7 +321,7 @@ public final class RoomSession {
         initializeSwitchBlockTiles();
         LoadedRoom room = roomLoader.loadIndoor(
             mapId, roomId, activeRoom == null ? null : activeRoom.palettes(), mapCategory,
-            clearedEntitiesByRoom[roomId], indoorStatusTableForMap(mapId));
+            clearedEntitiesByRoom[roomId], indoorStatusTableForMap(mapId), hasBirdKey);
         gpu.loadAnimatedTilesGroup(romData, room.animatedTilesGroup());
         setActiveRoom(room);
         overworldCollision.setRoom(activeRoom.roomObjectsArea());
@@ -331,6 +336,11 @@ public final class RoomSession {
 
     public boolean hasActiveRoom() {
         return activeRoom != null;
+    }
+
+    /** Supplies the patched EntityInitKeyDropPoint inventory byte. */
+    public void setBirdKeyOwned(boolean owned) {
+        hasBirdKey = owned;
     }
 
     public int currentRoomId() {
@@ -972,6 +982,10 @@ public final class RoomSession {
         return entityRuntime == null ? 0 : entityRuntime.dropSpeedZ(slot);
     }
 
+    void replaceEntityRuntimeForTest(RoomEntityRuntime runtime) {
+        entityRuntime = runtime;
+    }
+
     public void tickEntities(int frameCounter) {
         tickEntities(frameCounter, 0, 0);
     }
@@ -1105,6 +1119,8 @@ public final class RoomSession {
             }
         }
         pendingChestRewardEvents.addAll(chestRewards);
+        harvestKeyQuicksandEvents();
+        harvestKeyRewardEvents();
         if (entityRuntime.consumePendingSwitchBlockAnimationRequest()
             && switchableObjectAnimationStage == 0) {
             switchableObjectAnimationStage = 0x01;
@@ -1176,6 +1192,13 @@ public final class RoomSession {
     public List<RoomEntityRuntime.ChestRewardEvent> consumeChestRewardEvents() {
         List<RoomEntityRuntime.ChestRewardEvent> rewards = List.copyOf(pendingChestRewardEvents);
         pendingChestRewardEvents.clear();
+        return rewards;
+    }
+
+    /** Returns and clears key or hookshot rewards emitted by key-drop entities. */
+    public List<RoomEntityRuntime.KeyRewardEvent> consumeKeyRewardEvents() {
+        List<RoomEntityRuntime.KeyRewardEvent> rewards = List.copyOf(pendingKeyRewardEvents);
+        pendingKeyRewardEvents.clear();
         return rewards;
     }
 
@@ -1356,6 +1379,13 @@ public final class RoomSession {
         if (event.persistentClearMask() != 0) {
             clearedEntitiesByRoom[activeRoom.roomId()] |= event.persistentClearMask();
         }
+        if (event.type() == 0x30 && activeRoom.roomId() == 0x7C
+            && activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD) {
+            // PickDroppableKey sets the Angler's Tunnel source room flag before
+            // it starts the held-item transition.
+            indoorARoomStatus[0x69] |= 0x10;
+        }
+        harvestKeyRewardEvents();
         activeRoom.replaceEntities(entityRuntime.snapshot());
         return event;
     }
@@ -1396,6 +1426,7 @@ public final class RoomSession {
             entityRuntime.setColorShellWorld(colorShellWorld);
             entityRuntime.setFollowingNpcState(followingNpcState);
             entityRuntime.setEntityMapId(activeRoom.mapId());
+            entityRuntime.setEntityRoomId(activeRoom.roomId());
             entityRuntime.setGroundInteraction(this::entityGroundInteraction);
             entityRuntime.setBackgroundInteraction(entityBackgroundInteraction);
             entityRuntime.setObjectQuery(this::entityObjectSample);
@@ -1450,6 +1481,7 @@ public final class RoomSession {
         entityRuntime.setColorShellWorld(colorShellWorld);
         entityRuntime.setFollowingNpcState(followingNpcState);
         entityRuntime.setEntityMapId(activeRoom.mapId());
+        entityRuntime.setEntityRoomId(activeRoom.roomId());
         entityRuntime.setGroundInteraction(this::entityGroundInteraction);
         entityRuntime.setBackgroundInteraction(entityBackgroundInteraction);
         entityRuntime.setObjectQuery(this::entityObjectSample);
@@ -1500,6 +1532,7 @@ public final class RoomSession {
         pendingBombExplosionEvents.clear();
         pendingRoomEntityEvents.clear();
         pendingChestRewardEvents.clear();
+        pendingKeyRewardEvents.clear();
         pendingRoomDialogRequests.clear();
         pendingManboTransition = false;
         pendingShovelDrop = null;
@@ -1998,6 +2031,40 @@ public final class RoomSession {
         }
         return mapId >= 0x06 && mapId < 0x1A
             ? indoorBRoomStatus : indoorARoomStatus;
+    }
+
+    private void harvestKeyQuicksandEvents() {
+        if (entityRuntime == null
+            || entityRuntime.consumePendingKeyQuicksandEvents().isEmpty()) {
+            return;
+        }
+        overworldRoomStatus[0xCE] |= (byte) OW_ROOM_STATUS_FLAG_CHANGED;
+        indoorARoomStatus[0xF8] |= (byte) 0x20;
+    }
+
+    private void harvestKeyRewardEvents() {
+        if (entityRuntime == null) {
+            return;
+        }
+        List<RoomEntityRuntime.KeyRewardEvent> rewards =
+            entityRuntime.consumePendingKeyRewardEvents();
+        for (RoomEntityRuntime.KeyRewardEvent reward : rewards) {
+            if (reward.itemType() >= ChestContentsTable.CHEST_MAP
+                && reward.itemType() <= ChestContentsTable.CHEST_SMALL_KEY) {
+                dungeonItemState.incrementCurrentFlag(reward.itemType());
+            }
+            markActiveRoomCompleted();
+        }
+        pendingKeyRewardEvents.addAll(rewards);
+    }
+
+    private void markActiveRoomCompleted() {
+        if (activeRoom == null) {
+            return;
+        }
+        byte[] status = activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
+            ? overworldRoomStatus : indoorStatusTableForMap(activeRoom.mapId());
+        status[activeRoom.roomId()] |= (byte) ROOM_STATUS_EVENT_1;
     }
 
     private static void requireLength(byte[] values, int expectedLength, String label) {

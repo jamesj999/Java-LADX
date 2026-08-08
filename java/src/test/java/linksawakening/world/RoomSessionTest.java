@@ -44,6 +44,56 @@ final class RoomSessionTest {
     }
 
     @Test
+    void keyDropPointCollectionMarksTheRoomAndPublishesItsSmallKeyReward() {
+        RoomSession session = newSession();
+        byte[] indoorA = new byte[0x100];
+        indoorA[0x69] = 0x10;
+        session.restoreRoomStatuses(new byte[0x100], indoorA,
+            new byte[0x100], new byte[0x20]);
+        session.loadIndoor(0x03, 0x7C, Warp.CATEGORY_SIDESCROLL);
+
+        session.tickEntities(0);
+        RoomEntity key = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x30)
+            .findFirst()
+            .orElseThrow();
+        int pickupFrame = (key.slot() & 0x01) == 0 ? 1 : 0;
+
+        EntityPickupEvent pickup = session.collectEntityIfNeeded(
+            pickupFrame, key.x(), key.y(), false, true, 0, 0);
+
+        assertNotNull(pickup);
+        assertEquals(0x30, pickup.type());
+        assertEquals(EntityStatus.DISABLED,
+            session.activeRoom().entities().slots().get(key.slot()).status());
+        assertEquals(0x10, session.indoorRoomStatusForTest(0x03, 0x7C) & 0x10);
+        assertEquals(List.of(new RoomEntityRuntime.KeyRewardEvent(
+            key.slot(), ChestContentsTable.CHEST_SMALL_KEY)),
+            session.consumeKeyRewardEvents());
+    }
+
+    @Test
+    void keyDropPointQuicksandFallPropagatesBothRomRoomStatusWrites() {
+        RoomSession session = newSession();
+        session.loadOverworld(0xCE);
+        List<RoomEntity> slots = new ArrayList<>();
+        for (int slot = 0; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
+            slots.add(slot == 0
+                ? new RoomEntity(0, -1, 0x30, 0x50, 0x48, EntityStatus.ACTIVE,
+                    EntitySpriteDefinition.unsupported(0x30), 0)
+                : RoomEntity.disabled(slot));
+        }
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(slots));
+        runtime.setEntityRoomIdForTest(0xCE);
+        session.replaceEntityRuntimeForTest(runtime);
+
+        session.tickEntities(0);
+
+        assertEquals(0x04, session.overworldRoomStatusSnapshot()[0xCE] & 0x04);
+        assertEquals(0x20, session.indoorARoomStatusSnapshot()[0xF8] & 0x20);
+    }
+
+    @Test
     void adjacentOverworldScrollLoadsNextRoomAndStartsScroll() {
         RoomSession session = newSession();
         ScrollController scrollController = new ScrollController();

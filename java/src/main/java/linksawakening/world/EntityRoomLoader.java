@@ -17,7 +17,13 @@ public final class EntityRoomLoader {
     private static final int MAX_ROOM_ID = 0xFF;
     private static final int ENTITY_GHINI = 0x12;
     private static final int ENTITY_MOBLIN_SWORD = 0x14;
+    private static final int ENTITY_KEY_DROP_POINT = 0x30;
     private static final int GHINI_INITIAL_Z = 0x10;
+    private static final int ROOM_INDOOR_A_ANGLERS_TUNNEL_KEY_DROP = 0x69;
+    private static final int ROOM_INDOOR_A_ANGLERS_TUNNEL_KEY_FALL = 0x7C;
+    private static final int ROOM_INDOOR_A_CATFISHS_MAW_MSTALFOS_4 = 0x80;
+    private static final int ROOM_INDOOR_A_QUICKSAND_CAVE = 0xF8;
+    private static final int ROOM_INDOOR_B_MOUNTAIN_CAVE_ROOM_1 = 0x7A;
 
     public enum RoomTable {
         OVERWORLD(0x4000),
@@ -56,6 +62,18 @@ public final class EntityRoomLoader {
     }
 
     public RoomEntitySnapshot load(RoomTable table, int roomId, int clearedMask, int mapId) {
+        return load(table, roomId, clearedMask, mapId, null);
+    }
+
+    /** Loads a room while applying the source EntityInit room-status gates. */
+    public RoomEntitySnapshot load(RoomTable table, int roomId, int clearedMask, int mapId,
+                                   byte[] roomStatusTable) {
+        return load(table, roomId, clearedMask, mapId, roomStatusTable, false);
+    }
+
+    /** Loads a room with the patched inventory-state init gates enabled. */
+    public RoomEntitySnapshot load(RoomTable table, int roomId, int clearedMask, int mapId,
+                                   byte[] roomStatusTable, boolean hasBirdKey) {
         if (table == null) {
             throw new IllegalArgumentException("Room entity table cannot be null");
         }
@@ -97,13 +115,15 @@ public final class EntityRoomLoader {
             int type = Byte.toUnsignedInt(romData[streamOffset++]);
             boolean cleared = sourceLoadOrder < 8
                 && (clearedMask & (1 << sourceLoadOrder)) != 0;
-            if (!cleared && loadedSlot < MAX_ENTITIES) {
+            boolean unloadedByInitialization = type == ENTITY_KEY_DROP_POINT
+                && shouldUnloadKeyAtInit(table, roomId, roomStatusTable, hasBirdKey);
+            if (!cleared && !unloadedByInitialization && loadedSlot < MAX_ENTITIES) {
                 int x = (location & 0x0F) * 0x10 + 0x08;
                 int y = (location & 0xF0) + 0x10;
                 int[] initializedPosition = applyInitialPositionTransform(table, roomId, type, x, y);
                 EntitySpriteDefinition spriteDefinition = spriteHandlers
                     .forEntityType(type, table, mapId);
-                int spriteVariant = initialSpriteVariant(type, spriteDefinition,
+                int spriteVariant = initialSpriteVariant(table, roomId, type, spriteDefinition,
                     initializedPosition[0], initializedPosition[1]);
                 int initialZ = type == ENTITY_GHINI
                     ? GHINI_INITIAL_Z
@@ -120,6 +140,32 @@ public final class EntityRoomLoader {
         }
 
         return new RoomEntitySnapshot(slots);
+    }
+
+    private static boolean shouldUnloadKeyAtInit(RoomTable table, int roomId,
+                                                  byte[] roomStatusTable, boolean hasBirdKey) {
+        if (roomStatusTable == null) {
+            return false;
+        }
+        int currentStatus = roomStatusAt(roomStatusTable, roomId);
+        if (table == RoomTable.INDOORS_A && roomId == ROOM_INDOOR_A_QUICKSAND_CAVE) {
+            return (currentStatus & 0x10) != 0 || (currentStatus & 0x20) == 0;
+        }
+        if (table == RoomTable.INDOORS_B
+            && roomId == ROOM_INDOOR_B_MOUNTAIN_CAVE_ROOM_1) {
+            return hasBirdKey || (currentStatus & 0x10) != 0;
+        }
+        if (table == RoomTable.INDOORS_A
+            && roomId == ROOM_INDOOR_A_ANGLERS_TUNNEL_KEY_FALL) {
+            return (roomStatusAt(roomStatusTable, ROOM_INDOOR_A_ANGLERS_TUNNEL_KEY_DROP) & 0x10) == 0
+                || (currentStatus & 0x10) != 0;
+        }
+        return false;
+    }
+
+    private static int roomStatusAt(byte[] roomStatusTable, int roomId) {
+        return roomId >= 0 && roomId < roomStatusTable.length
+            ? Byte.toUnsignedInt(roomStatusTable[roomId]) : 0;
     }
 
     /**
@@ -157,8 +203,8 @@ public final class EntityRoomLoader {
             || type == 0x34 || type == 0x36 || type == 0x37 || type == 0x38;
     }
 
-    private static int initialSpriteVariant(int type, EntitySpriteDefinition definition,
-                                            int x, int y) {
+    private static int initialSpriteVariant(RoomTable table, int roomId, int type,
+                                            EntitySpriteDefinition definition, int x, int y) {
         if (!definition.supported()) {
             return -1;
         }
@@ -171,6 +217,15 @@ public final class EntityRoomLoader {
             // selects the corresponding bank-$03 variant before flipping
             // the stored direction for its handler.
             return (x & 0x10) != 0 ? 6 : 0;
+        }
+        if (type == ENTITY_KEY_DROP_POINT) {
+            if (table == RoomTable.INDOORS_A && roomId == ROOM_INDOOR_A_QUICKSAND_CAVE) {
+                return 2;
+            }
+            if (table == RoomTable.INDOORS_B
+                && roomId == ROOM_INDOOR_B_MOUNTAIN_CAVE_ROOM_1) {
+                return 4;
+            }
         }
         return definition.initialVariant();
     }

@@ -8,6 +8,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class EntityRoomLoaderTest {
 
@@ -338,6 +339,53 @@ final class EntityRoomLoaderTest {
             .loadedEntities().stream().map(RoomEntity::type).toList());
     }
 
+    @Test
+    void initializesKeyDropPointVariantsAndUnloadsByRomRoomStatus() {
+        byte[] rom = syntheticRom();
+        write(rom, 0x03, 0x5C78,
+            0xCA, 0x17, 0xC0, 0x17, 0xC2, 0x14,
+            0xC4, 0x17, 0xC6, 0x14, 0xCA, 0x17);
+        writePointer(rom, EntityRoomLoader.RoomTable.INDOORS_A, 0xF8, 0x5000);
+        writeStream(rom, 0x5000, 0x00, 0x30, 0xFF);
+        writePointer(rom, EntityRoomLoader.RoomTable.INDOORS_B, 0x7A, 0x5010);
+        writeStream(rom, 0x5010, 0x00, 0x30, 0xFF);
+        writePointer(rom, EntityRoomLoader.RoomTable.INDOORS_A, 0x7C, 0x5020);
+        writeStream(rom, 0x5020, 0x00, 0x30, 0xFF);
+
+        EntityRoomLoader loader = new EntityRoomLoader(rom);
+        byte[] status = new byte[0x100];
+        status[0xF8] = 0x20;
+        RoomEntity quicksandKey = loader.load(EntityRoomLoader.RoomTable.INDOORS_A,
+            0xF8, 0, -1, status).loadedEntities().get(0);
+        assertEquals(2, quicksandKey.spriteVariant());
+
+        status[0xF8] = 0x10;
+        assertTrue(loader.load(EntityRoomLoader.RoomTable.INDOORS_A, 0xF8,
+            0, -1, status).loadedEntities().isEmpty());
+        status[0xF8] = 0;
+        assertTrue(loader.load(EntityRoomLoader.RoomTable.INDOORS_A, 0xF8,
+            0, -1, status).loadedEntities().isEmpty());
+
+        status[0x7A] = 0;
+        RoomEntity birdKey = loader.load(EntityRoomLoader.RoomTable.INDOORS_B,
+            0x7A, 0, -1, status).loadedEntities().get(0);
+        assertEquals(4, birdKey.spriteVariant());
+        status[0x7A] = 0x10;
+        assertTrue(loader.load(EntityRoomLoader.RoomTable.INDOORS_B, 0x7A,
+            0, -1, status).loadedEntities().isEmpty());
+        status[0x7A] = 0;
+        assertTrue(loader.load(EntityRoomLoader.RoomTable.INDOORS_B, 0x7A,
+            0, -1, status, true).loadedEntities().isEmpty());
+
+        status[0x69] = 0x10;
+        status[0x7C] = 0;
+        assertEquals(1, loader.load(EntityRoomLoader.RoomTable.INDOORS_A, 0x7C,
+            0, -1, status).loadedEntities().size());
+        status[0x7C] = 0x10;
+        assertTrue(loader.load(EntityRoomLoader.RoomTable.INDOORS_A, 0x7C,
+            0, -1, status).loadedEntities().isEmpty());
+    }
+
     private static byte[] syntheticRom() {
         return new byte[RomBank.romOffset(0x20, 0x8000)];
     }
@@ -351,6 +399,13 @@ final class EntityRoomLoaderTest {
 
     private static void writeStream(byte[] rom, int address, int... bytes) {
         int offset = RomBank.romOffset(0x16, address);
+        for (int value : bytes) {
+            rom[offset++] = (byte) value;
+        }
+    }
+
+    private static void write(byte[] rom, int bank, int address, int... bytes) {
+        int offset = RomBank.romOffset(bank, address);
         for (int value : bytes) {
             rom[offset++] = (byte) value;
         }

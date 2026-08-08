@@ -867,6 +867,7 @@ public class Main {
                             || inputState.isDown(inputConfig.bKey())));
                 roomSession.setEntityPowerBraceletButtonHeld(isPowerBraceletButtonHeld());
                 roomSession.setEntityBombButtonHeld(isBombButtonHeld());
+                roomSession.setBirdKeyOwned(playerState != null && playerState.birdKeyCount() != 0);
                 roomSession.setEntityInventorySlots(
                     playerState == null ? PlayerState.INVENTORY_EMPTY : playerState.itemA(),
                     playerState == null ? PlayerState.INVENTORY_EMPTY : playerState.itemB());
@@ -902,6 +903,12 @@ public class Main {
                         playerState.applyChestReward(reward.itemType());
                     }
                 }
+                for (var reward : roomSession.consumeKeyRewardEvents()) {
+                    if (playerState != null) {
+                        playerState.applyChestReward(reward.itemType());
+                    }
+                }
+                roomSession.setBirdKeyOwned(playerState != null && playerState.birdKeyCount() != 0);
                 int chestMusicTrack = roomSession.consumePendingMusicTrack();
                 if (chestMusicTrack >= 0) {
                     playDirectMusic(chestMusicTrack);
@@ -1181,6 +1188,7 @@ public class Main {
 
         NewGameStartProfile profile = NewGameStartProfile.romDefaults();
         profile.initializePlayerState(playerState);
+        roomSession.setBirdKeyOwned(playerState.birdKeyCount() != 0);
         link.setDirection(Link.DIRECTION_DOWN);
         roomSession.loadIndoor(profile.mapId(), profile.roomId());
         link.setRoomEntryRomPosition(profile.entryX(), profile.entryY());
@@ -1191,6 +1199,7 @@ public class Main {
         fileSaveController = null;
         currentScreen = SCREEN_OVERWORLD;
         playerState.applySavedGame(saved);
+        roomSession.setBirdKeyOwned(playerState.birdKeyCount() != 0);
         roomSession.restoreRoomStatuses(saved.overworldRoomStatus(), saved.indoorARoomStatus(),
             saved.indoorBRoomStatus(), saved.colorDungeonRoomStatus());
         roomSession.restoreDungeonItemFlags(saved.dungeonItemFlags(),

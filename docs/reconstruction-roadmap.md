@@ -2168,6 +2168,27 @@ runtime collision callback.
   runtime flags are covered. The clean Java suite passes with 1,172 tests and
   zero failures, errors, or skipped tests.
 
+## Verified ROM key-drop point entity runtime — 2026-08-08
+
+- Entity `$30` now decodes bank `$03`'s six-entry display list at `$5C78` and
+  follows the source `$68` held-item transition, shared countdown decrement,
+  Link-relative positioning, dialog table `$0` mappings, small-key versus
+  dungeon-key rewards, and the room `$80` Hookshot branch.
+- `EntityInitKeyDropPoint` room-status gates are ported for the quicksand cave,
+  Mountain Cave, and Angler's Tunnel fall room. The patched `wHasBirdKey` gate
+  is carried from `PlayerState` into indoor room loading. The Armos Knight's
+  source-forced key sprite variant `$03` is preserved.
+- `CheckForEntityFallingDownQuicksandHole` now writes the key's falling target
+  and `$2F` transition at Yarna's `$CE` center, emits the item-falling jingle,
+  and propagates the overworld `$04` and indoor-A `$F8/$20` status writes.
+  Runtime/session integration, ROM display bytes, room gates, pickup rewards,
+  and status propagation are covered. The clean Java suite passes with 1,181
+  tests and zero failures, errors, or skipped tests.
+- The dedicated Lanmola and Master Stalfos producer routines that manually
+  spawn this entity (including their source-specific Z/private-countdown setup)
+  remain separate producer-path work; generic enemy-death drops and the Armos
+  producer are covered here.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

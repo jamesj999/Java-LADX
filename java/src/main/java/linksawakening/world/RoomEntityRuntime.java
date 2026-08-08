@@ -19,6 +19,8 @@ import java.util.function.IntSupplier;
  */
 public final class RoomEntityRuntime {
     private static final int ENTITY_CHEST_WITH_ITEM = 0x07;
+    private static final int ENTITY_KEY_DROP_POINT = 0x30;
+    private static final int ENTITY_ARMOS_KNIGHT = 0x88;
     private static final int ENTITY_PIECE_OF_POWER = 0x33;
     private static final int ENTITY_CRYSTAL_SWITCH = 0x66;
     private static final int ENTITY_BUTTERFLY = 0x6E;
@@ -120,7 +122,10 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_BOMBER = 0xBA;
     private static final int BOMBITE_INITIAL_PHYSICS_FLAGS = 0x02;
     private static final int SWORD_SHIELD_PICKUP_INITIAL_PHYSICS_FLAGS = 0xB1;
+    private static final int KEY_DROP_POINT_INITIAL_PHYSICS_FLAGS = 0xB1;
     private static final int BOMBITE_OPTIONS1 = ENTITY_OPT1_SPLASH_IN_WATER;
+    private static final int KEY_DROP_POINT_OPTIONS1 = ENTITY_OPT1_SPLASH_IN_WATER
+        | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
     private static final int BOMBITE_EXPLOSION_SOUND_ID = 0x0C;
     private static final int BOMBITE_EXPLOSION_COUNTDOWN = 0x17;
     private static final int MAD_BOMBER_INITIAL_PHYSICS_FLAGS = 0x12;
@@ -313,6 +318,8 @@ public final class RoomEntityRuntime {
     private final List<DialogRequest> pendingDialogRequests = new ArrayList<>();
     private final List<EntityCombatEvent> pendingEntityEvents = new ArrayList<>();
     private final List<ChestRewardEvent> pendingChestRewardEvents = new ArrayList<>();
+    private final List<KeyRewardEvent> pendingKeyRewardEvents = new ArrayList<>();
+    private final List<KeyQuicksandEvent> pendingKeyQuicksandEvents = new ArrayList<>();
     private final List<LikeLikeEvent> pendingLikeLikeEvents = new ArrayList<>();
     private final List<BombExplosionEvent> pendingBombExplosionEvents = new ArrayList<>();
     private final List<HookshotBridgeUpdate> hookshotBridgeUpdates = new ArrayList<>();
@@ -366,6 +373,7 @@ public final class RoomEntityRuntime {
     private int pendingMusicTrack = -1;
     private boolean groundInteractionSideScrolling;
     private int entityMapId = -1;
+    private int entityRoomId = -1;
     private int liftedEntitySlot = -1;
     private int liftedCarryState;
     private int liftedEffectiveDirection;
@@ -485,6 +493,28 @@ public final class RoomEntityRuntime {
             if ((itemType & ~0xFF) != 0) {
                 throw new IllegalArgumentException("Chest item must be an unsigned byte: "
                     + itemType);
+            }
+        }
+    }
+
+    /** Reward application requested by PickDroppableKey. */
+    public record KeyRewardEvent(int slot, int itemType) {
+        public KeyRewardEvent {
+            if (slot < 0 || slot >= EntityRoomLoader.MAX_ENTITIES) {
+                throw new IllegalArgumentException("Key entity slot out of range: " + slot);
+            }
+            if ((itemType & ~0xFF) != 0) {
+                throw new IllegalArgumentException("Key item must be an unsigned byte: "
+                    + itemType);
+            }
+        }
+    }
+
+    /** Status propagation requested by CheckForEntityFallingDownQuicksandHole. */
+    public record KeyQuicksandEvent(int slot) {
+        public KeyQuicksandEvent {
+            if (slot < 0 || slot >= EntityRoomLoader.MAX_ENTITIES) {
+                throw new IllegalArgumentException("Key entity slot out of range: " + slot);
             }
         }
     }
@@ -948,6 +978,7 @@ public final class RoomEntityRuntime {
         pendingDialogRequests.clear();
         pendingEntityEvents.clear();
         pendingChestRewardEvents.clear();
+        pendingKeyQuicksandEvents.clear();
         pendingLikeLikeEvents.clear();
         pendingBombExplosionEvents.clear();
         hookshotBridgeUpdates.clear();
@@ -995,6 +1026,7 @@ public final class RoomEntityRuntime {
             boolean preserveWizrobeProjectilePresentation = false;
             boolean preservePolsVoicePresentation = false;
             boolean preserveSpikedBeetlePresentation = false;
+            boolean keyDropTransitionActive = false;
             if (status == EntityStatus.ACTIVE) {
                 decrementEnemyDropCountdowns(entity);
             }
@@ -1437,6 +1469,50 @@ public final class RoomEntityRuntime {
                     continue;
                 }
                 updated = slots[index];
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_KEY_DROP_POINT) {
+                // decrementEnemyStatusCountdowns mirrors UpdateEntityTimers'
+                // shared transition-byte decrement before bank-$03's handler
+                // reads it.
+                int slot = entity.slot();
+                if (checkForKeyDropQuicksandHole(updated)) {
+                    pendingKeyQuicksandEvents.add(new KeyQuicksandEvent(slot));
+                    slots[index] = withStatus(updated, EntityStatus.FALLING);
+                    enemyTransitionCountdown[slot] = 0x2F;
+                    fallingTargetX[slot] = 0x50;
+                    fallingTargetY[slot] = 0x48;
+                    fallingSpeedX[slot] = 0;
+                    fallingSpeedY[slot] = 0;
+                    fallingSpeedXAccumulator[slot] = 0;
+                    fallingSpeedYAccumulator[slot] = 0;
+                    fallingVisualYOffset[slot] = 0;
+                    pendingEntityEvents.add(new EntityCombatEvent(
+                        slot, ENTITY_KEY_DROP_POINT, 0, false,
+                        EntityCombatEvent.SoundChannel.JINGLE, 0x18));
+                    continue;
+                }
+                boolean hookshotRoom = entityRoomId == 0x80;
+                if (hookshotRoom) {
+                    updated = withDefinition(updated, spriteDefinitionFor(ENTITY_HOOKSHOT_CHAIN), 0);
+                }
+                KeyDropPointMotion.Update keyUpdate = KeyDropPointMotion.advance(
+                    enemyTransitionCountdown[slot], updated.spriteVariant(), hookshotRoom);
+                enemyTransitionCountdown[slot] = keyUpdate.nextTransitionCountdown();
+                if (keyUpdate.dialogLowId() >= 0) {
+                    pendingDialogRequests.add(new DialogRequest(
+                        KeyDropPointMotion.DIALOG_TABLE, keyUpdate.dialogLowId()));
+                }
+                if (keyUpdate.rewardItemType() >= 0) {
+                    pendingKeyRewardEvents.add(new KeyRewardEvent(
+                        slot, keyUpdate.rewardItemType()));
+                }
+                keyDropTransitionActive = keyUpdate.holdAboveLink();
+                if (keyDropTransitionActive) {
+                    updated = withPositionAndVariant(updated, linkEntityX,
+                        linkEntityY - 0x0C, updated.spriteVariant());
+                    updated = withZ(updated, linkZ);
+                }
             }
             if (wasInitializing && entity.type() == ENTITY_WIZROBE) {
                 // EntityInitWizrobe decrements the initial display-list variant
@@ -2121,12 +2197,12 @@ public final class RoomEntityRuntime {
                 }
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
-                && enemyDropActive[updated.slot()]) {
+                && !keyDropTransitionActive && enemyDropActive[updated.slot()]) {
                 updated = enemyDropMotion.advance(updated, frame,
                     entityGroundStatus[updated.slot()], groundInteractionSideScrolling);
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
-                && !hasNoGroundInteraction(updated)) {
+                && !keyDropTransitionActive && !hasNoGroundInteraction(updated)) {
                 // ApplyEntityInteractionWithBackground runs after each ROM
                 // entity handler's movement and before the final display-list
                 // presentation. The room session supplies terrain physics;
@@ -2275,7 +2351,16 @@ public final class RoomEntityRuntime {
             }
 
             int persistentClearMask = persistentClearMask(entity);
-            if (requiresHeldPickupTransition(entity.type())) {
+            if (entity.type() == ENTITY_KEY_DROP_POINT) {
+                if (entityRoomId == 0x80 || entity.spriteVariant() != 0) {
+                    enemyTransitionCountdown[entity.slot()] =
+                        KeyDropPointMotion.TRANSITION_COUNTDOWN;
+                } else {
+                    pendingKeyRewardEvents.add(new KeyRewardEvent(
+                        entity.slot(), ChestContentsTable.CHEST_SMALL_KEY));
+                    clearEntity(entity.slot());
+                }
+            } else if (requiresHeldPickupTransition(entity.type())) {
                 beginLift(entity.slot(), romDirection);
             } else {
                 clearEntity(entity.slot());
@@ -4566,6 +4651,15 @@ public final class RoomEntityRuntime {
         setEntityMapId(mapId);
     }
 
+    void setEntityRoomId(int roomId) {
+        validateByte(roomId, "Entity room id");
+        entityRoomId = roomId;
+    }
+
+    void setEntityRoomIdForTest(int roomId) {
+        setEntityRoomId(roomId);
+    }
+
     /** Supplies the three player upgrade bytes read by ChestWithItemEntityHandler. */
     void setChestPlayerLevels(int shieldLevel, int swordLevel, int powerBraceletLevel) {
         validateByte(shieldLevel, "Shield level");
@@ -4624,6 +4718,18 @@ public final class RoomEntityRuntime {
     List<ChestRewardEvent> consumePendingChestRewardEvents() {
         List<ChestRewardEvent> pending = List.copyOf(pendingChestRewardEvents);
         pendingChestRewardEvents.clear();
+        return pending;
+    }
+
+    List<KeyRewardEvent> consumePendingKeyRewardEvents() {
+        List<KeyRewardEvent> pending = List.copyOf(pendingKeyRewardEvents);
+        pendingKeyRewardEvents.clear();
+        return pending;
+    }
+
+    List<KeyQuicksandEvent> consumePendingKeyQuicksandEvents() {
+        List<KeyQuicksandEvent> pending = List.copyOf(pendingKeyQuicksandEvents);
+        pendingKeyQuicksandEvents.clear();
         return pending;
     }
 
@@ -4864,6 +4970,9 @@ public final class RoomEntityRuntime {
 
         EntitySpriteDefinition definition = spriteDefinitionFor(itemType);
         int variant = definition.supported() ? definition.initialVariant() : -1;
+        if (itemType == ENTITY_KEY_DROP_POINT && source.type() == ENTITY_ARMOS_KNIGHT) {
+            variant = 3;
+        }
         RoomEntity drop = new RoomEntity(freeSlot, -1, itemType, source.x(), source.y(),
             EntityStatus.ACTIVE, definition, variant, 0, 0, source.z());
         slots[freeSlot] = drop;
@@ -6470,6 +6579,20 @@ public final class RoomEntityRuntime {
         }
     }
 
+    int keyDropTransitionCountdown(int slot) {
+        validateEntitySlot(slot);
+        return enemyTransitionCountdown[slot];
+    }
+
+    void setKeyDropTransitionCountdownForTest(int slot, int value) {
+        validateCountdownTestValue(slot, value);
+        if (!isLoadedEntityOfType(slot, ENTITY_KEY_DROP_POINT)) {
+            throw new IllegalArgumentException("Entity slot does not contain a key drop point: "
+                + slot);
+        }
+        enemyTransitionCountdown[slot] = value;
+    }
+
     int options1(int slot) {
         if (slot < 0 || slot >= slots.length) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
@@ -6494,6 +6617,9 @@ public final class RoomEntityRuntime {
         }
         if (slots[slot].type() == ENTITY_SWORD_SHIELD_PICKUP) {
             return ENTITY_OPT1_SPLASH_IN_WATER | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
+        }
+        if (slots[slot].type() == ENTITY_KEY_DROP_POINT) {
+            return KEY_DROP_POINT_OPTIONS1;
         }
         if (slots[slot].type() == ENTITY_CHEST_WITH_ITEM) {
             return CHEST_OPTIONS1;
@@ -6692,6 +6818,18 @@ public final class RoomEntityRuntime {
         }
     }
 
+    private boolean checkForKeyDropQuicksandHole(RoomEntity entity) {
+        if (indoorRoom || entityRoomId != 0xCE || entity.z() != 0) {
+            return false;
+        }
+        return withinUnsignedWindow(entity.y(), 0x48, 3)
+            && withinUnsignedWindow(entity.x(), 0x50, 3);
+    }
+
+    private static boolean withinUnsignedWindow(int value, int center, int radius) {
+        return (((value - center + radius) & 0xFF) < radius * 2);
+    }
+
     private static int initialPhysicsFlags(int type) {
         return switch (type) {
             case ENTITY_ARMOS_STATUE -> ARMOS_INITIAL_PHYSICS_FLAGS;
@@ -6700,6 +6838,7 @@ public final class RoomEntityRuntime {
             case ENTITY_GOOMBA, ENTITY_SNAKE -> GOOMBA_INITIAL_PHYSICS_FLAGS;
             case ENTITY_WIZROBE -> 0x02;
             case ENTITY_SWORD_SHIELD_PICKUP -> SWORD_SHIELD_PICKUP_INITIAL_PHYSICS_FLAGS;
+            case ENTITY_KEY_DROP_POINT -> KEY_DROP_POINT_INITIAL_PHYSICS_FLAGS;
             case ENTITY_LIKE_LIKE -> LIKE_LIKE_INITIAL_PHYSICS_FLAGS;
             case ENTITY_POLS_VOICE -> 0x12;
             case ENTITY_SPIKED_BEETLE -> 0x12;
