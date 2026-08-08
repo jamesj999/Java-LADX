@@ -907,6 +907,8 @@ public class Main {
                     playerState == null ? 1 : playerState.shieldLevel(),
                     playerState == null ? 1 : playerState.swordLevel(),
                     playerState == null ? 1 : playerState.powerBraceletLevel());
+                roomSession.setEntityGoldenLeavesCount(
+                    playerState == null ? 0 : playerState.goldenLeavesCount());
                 roomSession.setEnemyDropPlayerState(
                     playerState.maxHearts(), playerState.health(),
                     playerState.activePowerUp() != PlayerState.ACTIVE_POWER_UP_NONE);
@@ -954,6 +956,11 @@ public class Main {
                 for (var reward : roomSession.consumeKeyRewardEvents()) {
                     if (playerState != null) {
                         playerState.applyChestReward(reward.itemType());
+                    }
+                }
+                for (var reward : roomSession.consumeSlimeKeyRewardEvents()) {
+                    if (playerState != null) {
+                        playerState.setGoldenLeavesCount(reward.goldenLeavesCount());
                     }
                 }
                 roomSession.setBirdKeyOwned(playerState != null && playerState.birdKeyCount() != 0);

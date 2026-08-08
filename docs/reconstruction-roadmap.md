@@ -916,6 +916,25 @@ runtime collision callback.
 - Focused hidden-drop regressions plus the clean Java suite pass with 1,288
   tests and zero failures, errors, or skipped tests.
 
+## Verified ROM Hiding Slime Key runtime — 2026-08-08
+
+- Hiding Slime Key `$3C` now uses `EntityInitDiggableBushOrPotDroppable` and
+  the shared `$61DE` reveal path: it begins in buried state `$02`, retains the
+  source options `$1B` and physics flags `$B2`, stays hidden over ordinary
+  grass, and reveals only over shovel hole `$CC`.
+- The handler's transition countdown is advanced after the shared timer
+  decrement. At countdown `$10` it clamps/increments `wGoldenLeavesCount`,
+  marks the room complete, selects Dialog `$A2/$E8/$E9` from the resulting
+  count, and remains held above Link until the countdown reaches its unload
+  branch.
+- The runtime publishes the leaf-count/reward event through `RoomSession`;
+  `Main` applies the exact count to `PlayerState`, and the existing dialog
+  boundary consumes the ROM table-0 request. The Pothole Field room `$C6`
+  special reset to five leaves is preserved.
+- Focused reveal/transition tests and the complete Java suite pass; this
+  remains a staged handler increment rather than a claim of complete entity
+  parity.
+
 ## Next entity increments
 
 1. Port remaining simple enemy movement, collision exceptions, lifting, and

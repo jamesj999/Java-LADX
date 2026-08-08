@@ -136,10 +136,13 @@ public final class RoomSession {
         new ArrayList<>();
     private final List<RoomEntityRuntime.KeyRewardEvent> pendingKeyRewardEvents =
         new ArrayList<>();
+    private final List<RoomEntityRuntime.SlimeKeyRewardEvent> pendingSlimeKeyRewardEvents =
+        new ArrayList<>();
     private final List<RoomEntityRuntime.DialogRequest> pendingRoomDialogRequests =
         new ArrayList<>();
     private PendingShovelDrop pendingShovelDrop;
     private int shovelUseState;
+    private int entityGoldenLeavesCount;
     private final byte[] overworldRoomStatus = new byte[0x100];
     private final byte[] indoorARoomStatus = new byte[0x100];
     private final byte[] indoorBRoomStatus = new byte[0x100];
@@ -561,6 +564,18 @@ public final class RoomSession {
                                      int powerBraceletLevel) {
         if (entityRuntime != null) {
             entityRuntime.setChestPlayerLevels(shieldLevel, swordLevel, powerBraceletLevel);
+        }
+    }
+
+    /** Supplies wGoldenLeavesCount to the live Hiding Slime Key handler. */
+    public void setEntityGoldenLeavesCount(int goldenLeavesCount) {
+        if (goldenLeavesCount < 0 || goldenLeavesCount > 0xFF) {
+            throw new IllegalArgumentException("Golden leaves count must be an unsigned byte: "
+                + goldenLeavesCount);
+        }
+        entityGoldenLeavesCount = goldenLeavesCount;
+        if (entityRuntime != null) {
+            entityRuntime.setGoldenLeavesCount(goldenLeavesCount);
         }
     }
 
@@ -1157,6 +1172,7 @@ public final class RoomSession {
             ocarinaSongFlags, selectedSongIndex, ocarinaAnimationCounter,
             ocarinaAnimationPhase);
         entityRuntime.setEntityRoomStatus(activeRoomStatusFlags());
+        entityRuntime.setGoldenLeavesCount(entityGoldenLeavesCount);
         entityRuntime.setSecretSeashellPegasusCollisionState(
             secretSeashellScreenShakeActive, secretSeashellPegasusCollisionActive,
             secretSeashellPegasusCollisionX, secretSeashellPegasusCollisionY);
@@ -1201,6 +1217,7 @@ public final class RoomSession {
         pendingChestRewardEvents.addAll(chestRewards);
         harvestKeyQuicksandEvents();
         harvestKeyRewardEvents();
+        harvestSlimeKeyRewardEvents();
         if (entityRuntime.consumePendingSwitchBlockAnimationRequest()
             && switchableObjectAnimationStage == 0) {
             switchableObjectAnimationStage = 0x01;
@@ -1306,6 +1323,14 @@ public final class RoomSession {
     public List<RoomEntityRuntime.KeyRewardEvent> consumeKeyRewardEvents() {
         List<RoomEntityRuntime.KeyRewardEvent> rewards = List.copyOf(pendingKeyRewardEvents);
         pendingKeyRewardEvents.clear();
+        return rewards;
+    }
+
+    /** Returns and clears Hiding Slime Key leaf-count updates emitted by entity handlers. */
+    public List<RoomEntityRuntime.SlimeKeyRewardEvent> consumeSlimeKeyRewardEvents() {
+        List<RoomEntityRuntime.SlimeKeyRewardEvent> rewards =
+            List.copyOf(pendingSlimeKeyRewardEvents);
+        pendingSlimeKeyRewardEvents.clear();
         return rewards;
     }
 
@@ -1666,6 +1691,7 @@ public final class RoomSession {
         pendingRoomEntityEvents.clear();
         pendingChestRewardEvents.clear();
         pendingKeyRewardEvents.clear();
+        pendingSlimeKeyRewardEvents.clear();
         pendingRoomDialogRequests.clear();
         pendingManboTransition = false;
         pendingShovelDrop = null;
@@ -2198,6 +2224,19 @@ public final class RoomSession {
             markActiveRoomCompleted();
         }
         pendingKeyRewardEvents.addAll(rewards);
+    }
+
+    private void harvestSlimeKeyRewardEvents() {
+        if (entityRuntime == null) {
+            return;
+        }
+        List<RoomEntityRuntime.SlimeKeyRewardEvent> rewards =
+            entityRuntime.consumePendingSlimeKeyRewardEvents();
+        for (RoomEntityRuntime.SlimeKeyRewardEvent reward : rewards) {
+            entityGoldenLeavesCount = reward.goldenLeavesCount();
+            markActiveRoomCompleted();
+        }
+        pendingSlimeKeyRewardEvents.addAll(rewards);
     }
 
     private void markActiveRoomCompleted() {

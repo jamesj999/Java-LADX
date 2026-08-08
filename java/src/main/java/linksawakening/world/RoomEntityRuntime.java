@@ -60,6 +60,13 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_DROPPABLE_ARROWS = 0x37;
     private static final int ENTITY_DROPPABLE_BOMBS = 0x38;
     private static final int ENTITY_DROPPABLE_MAGIC_POWDER = 0x3B;
+    private static final int ENTITY_HIDING_SLIME_KEY = 0x3C;
+    private static final int ROOM_OW_POTHOLE_FIELD_SLIME_KEY = 0xC6;
+    private static final int GOLDEN_LEAVES_FINAL_COUNT = 0x06;
+    private static final int GOLDEN_LEAVES_FIVE_COUNT = 0x05;
+    private static final int DIALOG_SLIME_KEY = 0xA2;
+    private static final int DIALOG_GOLDEN_LEAF = 0xE8;
+    private static final int DIALOG_FINAL_GOLDEN_LEAF = 0xE9;
     private static final int ENTITY_STALFOS_AGGRESSIVE = 0x1A;
     private static final int ENTITY_STALFOS_EVASIVE = 0x1E;
     private static final int ENTITY_GIBDO = 0x1F;
@@ -129,6 +136,9 @@ public final class RoomEntityRuntime {
         ENTITY_OPT1_SPLASH_IN_WATER | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
     private static final int DROPPABLE_HIDDEN_OPTIONS1 =
         ENTITY_OPT1_NO_GROUND_INTERACTION | ENTITY_OPT1_NO_WALL_COLLISION;
+    private static final int HIDING_SLIME_KEY_HIDDEN_OPTIONS1 =
+        ENTITY_OPT1_NO_GROUND_INTERACTION | ENTITY_OPT1_SPLASH_IN_WATER
+            | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL | ENTITY_OPT1_NO_WALL_COLLISION;
     private static final int DROPPABLE_REVEALED_OPTIONS1 =
         ENTITY_OPT1_SPLASH_IN_WATER | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
     private static final int DROPPABLE_HIDDEN_STATE_BURIED = 0x02;
@@ -384,6 +394,7 @@ public final class RoomEntityRuntime {
     private final List<EntityCombatEvent> pendingEntityEvents = new ArrayList<>();
     private final List<ChestRewardEvent> pendingChestRewardEvents = new ArrayList<>();
     private final List<KeyRewardEvent> pendingKeyRewardEvents = new ArrayList<>();
+    private final List<SlimeKeyRewardEvent> pendingSlimeKeyRewardEvents = new ArrayList<>();
     private final List<KeyQuicksandEvent> pendingKeyQuicksandEvents = new ArrayList<>();
     private final List<LikeLikeEvent> pendingLikeLikeEvents = new ArrayList<>();
     private final List<BombExplosionEvent> pendingBombExplosionEvents = new ArrayList<>();
@@ -440,6 +451,7 @@ public final class RoomEntityRuntime {
     private int chestShieldLevel = 1;
     private int chestSwordLevel = 1;
     private int chestPowerBraceletLevel = 1;
+    private int entityGoldenLeavesCount;
     private int pendingMusicTrack = -1;
     private boolean groundInteractionSideScrolling;
     private int entityMapId = -1;
@@ -639,6 +651,23 @@ public final class RoomEntityRuntime {
             if ((itemType & ~0xFF) != 0) {
                 throw new IllegalArgumentException("Key item must be an unsigned byte: "
                     + itemType);
+            }
+        }
+    }
+
+    /** Reward, room-completion, and dialog state emitted by HidingSlimeKeyEntityHandler. */
+    public record SlimeKeyRewardEvent(int slot, int goldenLeavesCount, int dialogLowId) {
+        public SlimeKeyRewardEvent {
+            if (slot < 0 || slot >= EntityRoomLoader.MAX_ENTITIES) {
+                throw new IllegalArgumentException("Slime Key entity slot out of range: " + slot);
+            }
+            if (goldenLeavesCount < 0 || goldenLeavesCount > 0x63) {
+                throw new IllegalArgumentException("Golden leaves count must be between 0 and 99: "
+                    + goldenLeavesCount);
+            }
+            if ((dialogLowId & ~0xFF) != 0) {
+                throw new IllegalArgumentException("Slime Key dialog must be an unsigned byte: "
+                    + dialogLowId);
             }
         }
     }
@@ -1146,6 +1175,7 @@ public final class RoomEntityRuntime {
         pendingDialogRequests.clear();
         pendingEntityEvents.clear();
         pendingChestRewardEvents.clear();
+        pendingSlimeKeyRewardEvents.clear();
         pendingKeyQuicksandEvents.clear();
         pendingLikeLikeEvents.clear();
         pendingBombExplosionEvents.clear();
@@ -1520,6 +1550,13 @@ public final class RoomEntityRuntime {
                 }
                 continue;
             } else if (status == EntityStatus.INIT) {
+                if (entity.type() == ENTITY_HIDING_SLIME_KEY
+                    && (entityRoomStatus & 0x10) != 0) {
+                    // The handler's first instruction is the completed-room
+                    // gate, including the INIT dispatch path.
+                    disableEntityWithoutPersistence(entity.slot());
+                    continue;
+                }
                 status = EntityStatus.ACTIVE;
                 initializeEntityTimers(entity);
                 if (entity.type() == ENTITY_KEESE) {
@@ -1724,6 +1761,15 @@ public final class RoomEntityRuntime {
                 preserveSecretSeashellPresentation = true;
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_HIDING_SLIME_KEY
+                && (entityRoomStatus & 0x10) != 0) {
+                // HidingSlimeKeyEntityHandler checks ROOM_STATUS_EVENT_1 before
+                // calling the shared reveal helper and unloads without touching
+                // the source persistence mask.
+                disableEntityWithoutPersistence(entity.slot());
+                continue;
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
                 && isCommonDroppableType(entity.type())) {
                 CommonDroppableUpdate droppableUpdate = advanceCommonDroppable(
                     entity, linkEntityX, linkEntityY,
@@ -1736,6 +1782,24 @@ public final class RoomEntityRuntime {
                     slots[index] = withStatus(withVariant(updated, -1), status);
                     continue;
                 }
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_HIDING_SLIME_KEY) {
+                int slot = entity.slot();
+                SlimeKeyTransitionUpdate keyUpdate = advanceHidingSlimeKey(
+                    updated, slot, linkEntityX, linkEntityY, linkZ);
+                enemyTransitionCountdown[slot] = keyUpdate.nextTransitionCountdown();
+                if (keyUpdate.reward() != null) {
+                    pendingSlimeKeyRewardEvents.add(keyUpdate.reward());
+                    pendingDialogRequests.add(new DialogRequest(
+                        0, keyUpdate.reward().dialogLowId()));
+                }
+                if (keyUpdate.unload()) {
+                    disableEntityWithoutPersistence(slot);
+                    continue;
+                }
+                keyDropTransitionActive = keyUpdate.holdAboveLink();
+                updated = keyUpdate.entity();
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_KEY_DROP_POINT) {
@@ -5535,6 +5599,12 @@ public final class RoomEntityRuntime {
         return pending;
     }
 
+    List<SlimeKeyRewardEvent> consumePendingSlimeKeyRewardEvents() {
+        List<SlimeKeyRewardEvent> pending = List.copyOf(pendingSlimeKeyRewardEvents);
+        pendingSlimeKeyRewardEvents.clear();
+        return pending;
+    }
+
     List<KeyQuicksandEvent> consumePendingKeyQuicksandEvents() {
         List<KeyQuicksandEvent> pending = List.copyOf(pendingKeyQuicksandEvents);
         pendingKeyQuicksandEvents.clear();
@@ -7825,6 +7895,24 @@ public final class RoomEntityRuntime {
         enemyTransitionCountdown[slot] = value;
     }
 
+    void setHidingSlimeKeyTransitionCountdownForTest(int slot, int value) {
+        validateCountdownTestValue(slot, value);
+        if (!isLoadedEntityOfType(slot, ENTITY_HIDING_SLIME_KEY)) {
+            throw new IllegalArgumentException("Entity slot does not contain a Hiding Slime Key: "
+                + slot);
+        }
+        enemyTransitionCountdown[slot] = value;
+    }
+
+    void setGoldenLeavesCountForTest(int value) {
+        setGoldenLeavesCount(value);
+    }
+
+    void setGoldenLeavesCount(int value) {
+        validateByte(value, "Golden leaves count");
+        entityGoldenLeavesCount = value;
+    }
+
     int options1(int slot) {
         if (slot < 0 || slot >= slots.length) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
@@ -8067,11 +8155,13 @@ public final class RoomEntityRuntime {
         // branch indoors.
         droppablePrivateState3[slot] = entity.type() == ENTITY_DROPPABLE_HEART
             || entity.type() == ENTITY_DROPPABLE_MAGIC_POWDER
+            || entity.type() == ENTITY_HIDING_SLIME_KEY
             || indoorRoom
             ? DROPPABLE_HIDDEN_STATE_BURIED
             : DROPPABLE_HIDDEN_STATE_PEGASUS;
         droppablePrivateState4[slot] = 0;
-        entityOptions1Override[slot] = DROPPABLE_HIDDEN_OPTIONS1;
+        entityOptions1Override[slot] = entity.type() == ENTITY_HIDING_SLIME_KEY
+            ? HIDING_SLIME_KEY_HIDDEN_OPTIONS1 : DROPPABLE_HIDDEN_OPTIONS1;
     }
 
     private CommonDroppableUpdate advanceCommonDroppable(
@@ -8108,7 +8198,8 @@ public final class RoomEntityRuntime {
             }
 
             if (!reveal) {
-                entityOptions1Override[slot] = DROPPABLE_HIDDEN_OPTIONS1;
+                entityOptions1Override[slot] = entity.type() == ENTITY_HIDING_SLIME_KEY
+                    ? HIDING_SLIME_KEY_HIDDEN_OPTIONS1 : DROPPABLE_HIDDEN_OPTIONS1;
                 return new CommonDroppableUpdate(withVariant(entity, -1), true);
             }
             revealCommonDroppable(entity, linkEntityX, linkEntityY);
@@ -8186,7 +8277,48 @@ public final class RoomEntityRuntime {
     private record CommonDroppableUpdate(RoomEntity entity, boolean hidden) {
     }
 
+    private record SlimeKeyTransitionUpdate(RoomEntity entity, int nextTransitionCountdown,
+                                            boolean holdAboveLink, boolean unload,
+                                            SlimeKeyRewardEvent reward) {
+    }
+
     private record Vector(int x, int y) {
+    }
+
+    private SlimeKeyTransitionUpdate advanceHidingSlimeKey(
+            RoomEntity entity, int slot, int linkEntityX, int linkEntityY, int linkZ) {
+        int transition = enemyTransitionCountdown[slot];
+        if (transition == 0) {
+            return new SlimeKeyTransitionUpdate(entity, 0, false, false, null);
+        }
+        if (transition == 1) {
+            // The handler decrements A locally for this branch and then takes
+            // UnloadEntityAndReturn; the transition table byte itself is not
+            // observed again because the entity is gone.
+            return new SlimeKeyTransitionUpdate(entity, transition, false, true, null);
+        }
+
+        SlimeKeyRewardEvent reward = null;
+        int nextTransition = transition;
+        if (transition == 0x10) {
+            nextTransition = 0x0F;
+            int leaves = Math.min(0x63, entityGoldenLeavesCount & 0xFF);
+            if (!indoorRoom && entityRoomId == ROOM_OW_POTHOLE_FIELD_SLIME_KEY) {
+                leaves = GOLDEN_LEAVES_FIVE_COUNT;
+            }
+            leaves = Math.min(0x63, leaves + 1);
+            entityGoldenLeavesCount = leaves;
+            int dialogLowId = leaves == GOLDEN_LEAVES_FINAL_COUNT
+                ? DIALOG_SLIME_KEY
+                : leaves == GOLDEN_LEAVES_FIVE_COUNT
+                    ? DIALOG_FINAL_GOLDEN_LEAF : DIALOG_GOLDEN_LEAF;
+            reward = new SlimeKeyRewardEvent(slot, leaves, dialogLowId);
+        }
+
+        RoomEntity held = withPositionAndVariant(entity, linkEntityX,
+            linkEntityY - 0x0C, entity.spriteVariant());
+        held = withZ(held, linkZ);
+        return new SlimeKeyTransitionUpdate(held, nextTransition, true, false, reward);
     }
 
     private void initializeEntityTimers(RoomEntity entity) {
@@ -8269,6 +8401,9 @@ public final class RoomEntityRuntime {
             case ENTITY_ROOSTER -> RoosterMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_BOO_BUDDY -> BooBuddyMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_DROPPABLE_FAIRY -> FAIRY_INITIAL_PHYSICS_FLAGS;
+            case ENTITY_HIDING_SLIME_KEY ->
+                0x02 | ENTITY_PHYSICS_HARMLESS | ENTITY_PHYSICS_SHADOW
+                    | ENTITY_PHYSICS_GRABBABLE;
             case ENTITY_MAD_BOMBER -> MAD_BOMBER_INITIAL_PHYSICS_FLAGS;
             case ENTITY_BOMBER -> BOMBER_INITIAL_PHYSICS_FLAGS;
             case ENTITY_LIFTABLE_ROCK, ENTITY_LIFTABLE_STATUE,
@@ -8299,6 +8434,7 @@ public final class RoomEntityRuntime {
     private boolean shouldDisappear(RoomEntity entity) {
         return slowTimerInitialized[entity.slot()]
             && isCommonDroppableType(entity.type())
+            && entity.type() != ENTITY_HIDING_SLIME_KEY
             // DroppableDisappearIfNeeded is after the hidden-state helper in
             // every shared drop handler. A hidden item therefore must not be
             // unloaded merely because its global fade timer reached zero.
@@ -8334,7 +8470,8 @@ public final class RoomEntityRuntime {
             || type == ENTITY_DROPPABLE_FAIRY
             || type == ENTITY_DROPPABLE_ARROWS
             || type == ENTITY_DROPPABLE_BOMBS
-            || type == ENTITY_DROPPABLE_MAGIC_POWDER;
+            || type == ENTITY_DROPPABLE_MAGIC_POWDER
+            || type == ENTITY_HIDING_SLIME_KEY;
     }
 
     private boolean isDisabledFollower(int type) {

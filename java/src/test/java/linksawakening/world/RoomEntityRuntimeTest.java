@@ -6059,6 +6059,71 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void hidingSlimeKeyUsesTheBuriedRevealPathAndCannotBeCollectedFromGrass() {
+        EntitySpriteDefinition definition = pairDefinition(0x3C, 1);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x3C, 0x40, 0x50, EntityStatus.INIT, definition, 0)));
+        runtime.setEntityRoomIdForTest(0xC6);
+        runtime.setObjectQuery(entity -> new RoomEntityObjectSample(0x04, 0, 0x40, 0x50));
+
+        runtime.tick(0, 0x20, 0x30, () -> 0);
+
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
+        assertEquals(0x02, runtime.droppablePrivateState3(0));
+        assertEquals(0x1B, runtime.options1(0));
+        assertEquals(-1, runtime.snapshot().slots().get(0).spriteVariant());
+        assertNull(runtime.collectIfNeeded(1, 0x40, 0x50, false, true));
+
+        runtime.setObjectQuery(entity -> new RoomEntityObjectSample(0xCC, 0, 0x40, 0x50));
+        runtime.tick(1, 0x20, 0x30, () -> 0);
+
+        assertEquals(0x00, runtime.droppablePrivateState3(0));
+        assertEquals(0x00, runtime.droppablePrivateState4(0));
+        assertEquals(0x0A, runtime.options1(0));
+        assertEquals(0x18, runtime.dropPrivateCountdown1(0));
+        assertEquals(0x00, runtime.snapshot().slots().get(0).spriteVariant());
+    }
+
+    @Test
+    void hidingSlimeKeyRunsItsLeafRewardAtTransitionCountdownTen() {
+        EntitySpriteDefinition definition = pairDefinition(0x3C, 1);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x3C, 0x40, 0x50, EntityStatus.INIT, definition, 0)));
+        runtime.setEntityRoomIdForTest(0xC6);
+        runtime.setGoldenLeavesCountForTest(5);
+        runtime.setObjectQuery(entity -> new RoomEntityObjectSample(0xCC, 0, 0x40, 0x50));
+
+        runtime.tick(0, 0x20, 0x30, () -> 0);
+        runtime.tick(1, 0x20, 0x30, () -> 0);
+        runtime.setHidingSlimeKeyTransitionCountdownForTest(0, 0x11);
+
+        runtime.tick(2, 0x20, 0x30, () -> 0);
+
+        RoomEntity held = runtime.snapshot().slots().get(0);
+        assertEquals(EntityStatus.ACTIVE, held.status());
+        assertEquals(0x0F, runtime.transitionCountdown(0));
+        assertEquals(0x20, held.x());
+        assertEquals(0x24, held.y());
+        assertEquals(List.of(new RoomEntityRuntime.SlimeKeyRewardEvent(0, 6, 0xA2)),
+            runtime.consumePendingSlimeKeyRewardEvents());
+        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, 0xA2)),
+            runtime.consumePendingDialogRequests());
+    }
+
+    @Test
+    void completedRoomUnloadsAnInitializingHidingSlimeKeyWithoutPersistence() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x3C, 0x40, 0x50, EntityStatus.INIT,
+                pairDefinition(0x3C, 1), 0)));
+        runtime.setEntityRoomStatusForTest(0x10);
+
+        runtime.tick(0);
+
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
+        assertEquals(0, runtime.consumePendingClearedEntityMask());
+    }
+
+    @Test
     void outdoorFairyUsesTheSharedRevealVectorBeforeItsHoverHandler() {
         EntitySpriteDefinition definition = pairDefinition(0x2F, 1);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
