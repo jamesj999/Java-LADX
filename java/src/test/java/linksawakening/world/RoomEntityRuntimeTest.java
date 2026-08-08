@@ -4253,6 +4253,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(0, runtime.hidingZolTransitionCountdown(0));
         assertEquals(3, runtime.snapshot().slots().get(0).spriteVariant());
         assertEquals(8, runtime.snapshot().slots().get(0).z());
+        assertEquals(0x12, runtime.physicsFlags(0));
     }
 
     @Test
@@ -4476,6 +4477,26 @@ final class RoomEntityRuntimeTest {
         }
         assertTrue(foundSecondJumpJingle);
         assertEquals(5, runtime.hidingZolState(0));
+    }
+
+    @Test
+    void hidingZolRestoresHarmlessPhysicsWhenItsFinalLeapHides() {
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
+            .forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x9B, 64, 64, EntityStatus.INIT, definition, 0)),
+            false, sequence(0x00));
+
+        runtime.tick(0, 120, 120, sequence(0x00));
+        runtime.tick(1, 80, 64, sequence(0x00));
+
+        int frame = 2;
+        while (runtime.hidingZolState(0) != 6 && frame < 1000) {
+            runtime.tick(frame++, 80, 64, sequence(0x00));
+        }
+
+        assertEquals(6, runtime.hidingZolState(0));
+        assertEquals(0xD2, runtime.physicsFlags(0));
     }
 
     @Test

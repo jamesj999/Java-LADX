@@ -2336,6 +2336,14 @@ runtime collision callback.
 - Frame-timed regressions verify that each cue is emitted once at its state
   transition rather than during ordinary airborne frames.
 
+## Verified ROM Hiding Zol physics flags — 2026-08-07
+
+- The reveal transition now writes the source airborne physics byte `$12`,
+  removing Hiding Zol's initial harmless/projectile-noclip flags.
+- The final landing that enters hidden state `$06` restores the source `$D2`
+  harmless/shadow/projectile-noclip byte. Runtime tests cover both state
+  boundaries.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

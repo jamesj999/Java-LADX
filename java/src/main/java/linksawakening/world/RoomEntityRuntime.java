@@ -1853,6 +1853,9 @@ public final class RoomEntityRuntime {
                         entity.slot(), entity.type(), 0, false,
                         EntityCombatEvent.SoundChannel.JINGLE, 0x24));
                 }
+                if (hidingZolUpdate.physicsFlags() >= 0) {
+                    enemyPhysicsFlags[entity.slot()] = hidingZolUpdate.physicsFlags();
+                }
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_SPIKE_TRAP) {

@@ -72,6 +72,7 @@ final class HidingZolMotion {
         int variant = entity.spriteVariant();
         boolean clearsIgnoreHitsCountdown = false;
         boolean jumpJingle = false;
+        int physicsFlags = -1;
         switch (state[slot]) {
             case 0 -> {
                 if (transitionCountdown[slot] == 0
@@ -88,6 +89,7 @@ final class HidingZolMotion {
                     variant = 3;
                     state[slot] = 2;
                     jumpJingle = true;
+                    physicsFlags = 0x12;
                 } else {
                     variant = transitionCountdown[slot] >= 0x10 ? 1 : 2;
                 }
@@ -140,6 +142,7 @@ final class HidingZolMotion {
                     if (privateState1[slot] == 0) {
                         state[slot] = 6;
                         transitionCountdown[slot] = 0x30;
+                        physicsFlags = 0xD2;
                     }
                 }
                 variant = 2;
@@ -167,7 +170,8 @@ final class HidingZolMotion {
         RoomEntity updated = new RoomEntity(entity.slot(), entity.sourceLoadOrder(),
             entity.type(), x, y, entity.status(), entity.spriteDefinition(), variant,
             entity.entityFlipAttribute(), entity.spriteTileOffset(), z);
-        return new Update(updated, hitGround, clearsIgnoreHitsCountdown, jumpJingle);
+        return new Update(updated, hitGround, clearsIgnoreHitsCountdown, jumpJingle,
+            physicsFlags);
     }
 
     boolean allowsSwordCollision(int slot) {
@@ -307,7 +311,7 @@ final class HidingZolMotion {
     }
 
     record Update(RoomEntity entity, boolean hitGround, boolean clearsIgnoreHitsCountdown,
-                  boolean jumpJingle) {
+                  boolean jumpJingle, int physicsFlags) {
     }
 
     private record Vector(int x, int y) {
