@@ -867,6 +867,16 @@ public class Main {
                     inputState != null && inputConfig != null
                         && (inputState.isDown(inputConfig.aKey())
                             || inputState.isDown(inputConfig.bKey())));
+                roomSession.setEntityJoypadHeld(
+                    inputState != null && inputConfig != null
+                        && (inputState.isDown(inputConfig.upKey())
+                            || inputState.isDown(inputConfig.downKey())
+                            || inputState.isDown(inputConfig.leftKey())
+                            || inputState.isDown(inputConfig.rightKey())
+                            || inputState.isDown(inputConfig.aKey())
+                            || inputState.isDown(inputConfig.bKey())
+                            || inputState.isDown(inputConfig.selectKey())
+                            || inputState.isDown(inputConfig.menuOpenKey())));
                 roomSession.setEntityPowerBraceletButtonHeld(isPowerBraceletButtonHeld());
                 roomSession.setEntityBombButtonHeld(isBombButtonHeld());
                 roomSession.setBirdKeyOwned(playerState != null && playerState.birdKeyCount() != 0);

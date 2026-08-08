@@ -171,6 +171,7 @@ public final class RoomSession {
     private int followingLinkDirection;
     private boolean followingNpcRoomNeedsSync;
     private boolean actionButtonsHeld;
+    private boolean joypadHeld;
     private boolean powerBraceletButtonHeld;
     private boolean bombButtonHeld;
     private int ocarinaPlaybackCountdown;
@@ -498,6 +499,14 @@ public final class RoomSession {
         this.actionButtonsHeld = actionButtonsHeld;
         if (entityRuntime != null) {
             entityRuntime.setActionButtonsHeld(actionButtonsHeld);
+        }
+    }
+
+    /** Supplies whether any held Game Boy joypad bit is active. */
+    public void setEntityJoypadHeld(boolean joypadHeld) {
+        this.joypadHeld = joypadHeld;
+        if (entityRuntime != null) {
+            entityRuntime.setJoypadHeld(joypadHeld);
         }
     }
 
@@ -1073,6 +1082,7 @@ public final class RoomSession {
         entityRuntime.setSwitchBlockAnimationActive(
             SwitchBlockAnimation.isAnimating(switchableObjectAnimationStage));
         entityRuntime.setActionButtonsHeld(actionButtonsHeld);
+        entityRuntime.setJoypadHeld(joypadHeld);
         entityRuntime.setPowerBraceletButtonHeld(powerBraceletButtonHeld);
         entityRuntime.setBombButtonHeld(bombButtonHeld);
         entityRuntime.setLiftedLinkC13B(followingEntityYOffset);
@@ -1454,6 +1464,7 @@ public final class RoomSession {
             entityRuntime.setGroundInteractionSideScrolling(
                 activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL);
             entityRuntime.setActionButtonsHeld(actionButtonsHeld);
+            entityRuntime.setJoypadHeld(joypadHeld);
             entityRuntime.setPowerBraceletButtonHeld(powerBraceletButtonHeld);
             entityRuntime.setBombButtonHeld(bombButtonHeld);
             entityRuntime.setLiftedLinkC13B(followingEntityYOffset);
@@ -1509,6 +1520,7 @@ public final class RoomSession {
         entityRuntime.setGroundInteractionSideScrolling(
             activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL);
         entityRuntime.setActionButtonsHeld(actionButtonsHeld);
+        entityRuntime.setJoypadHeld(joypadHeld);
         entityRuntime.setPowerBraceletButtonHeld(powerBraceletButtonHeld);
         entityRuntime.setBombButtonHeld(bombButtonHeld);
         entityRuntime.setLiftedLinkC13B(followingEntityYOffset);

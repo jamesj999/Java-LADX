@@ -61,6 +61,14 @@ final class ZolGelMotion {
     Update advance(RoomEntity entity, int linkEntityX, int linkEntityY, int linkEntityZ,
                    IntSupplier randomByteSupplier,
                    RoomEntityBackgroundCollision backgroundCollision) {
+        return advance(entity, linkEntityX, linkEntityY, linkEntityZ,
+            randomByteSupplier, backgroundCollision, false);
+    }
+
+    Update advance(RoomEntity entity, int linkEntityX, int linkEntityY, int linkEntityZ,
+                   IntSupplier randomByteSupplier,
+                   RoomEntityBackgroundCollision backgroundCollision,
+                   boolean joypadHeld) {
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot, entity.type(), randomByteSupplier);
@@ -103,6 +111,11 @@ final class ZolGelMotion {
             x = (linkEntityX - xOffset) & 0xFF;
             y = (linkEntityY - yOffset) & 0xFF;
             z = linkEntityZ & 0xFF;
+            if (joypadHeld) {
+                decreaseTransitionCountdown(slot);
+                decreaseTransitionCountdown(slot);
+                decreaseTransitionCountdown(slot);
+            }
         } else {
             int[] moved = move(entity, x, y, backgroundCollision);
             x = moved[0];
@@ -221,8 +234,8 @@ final class ZolGelMotion {
 
     private void decrementCountdowns(int slot) {
         // GelState4Handler only decreases its transition countdown when the
-        // ROM sees joypad input. The current runtime tick has no joypad
-        // argument, so preserve the clinging state until that input is wired.
+        // ROM sees joypad input; state 4 is therefore intentionally excluded
+        // from the ordinary per-frame countdown pass.
         if (state[slot] != 4 && transitionCountdown[slot] > 0) {
             transitionCountdown[slot]--;
         }
@@ -237,6 +250,12 @@ final class ZolGelMotion {
         }
         if (flashCountdown[slot] > 0) {
             flashCountdown[slot]--;
+        }
+    }
+
+    private void decreaseTransitionCountdown(int slot) {
+        if (transitionCountdown[slot] > 0) {
+            transitionCountdown[slot]--;
         }
     }
 

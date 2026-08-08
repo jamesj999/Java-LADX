@@ -351,6 +351,7 @@ public final class RoomEntityRuntime {
     private int booBuddyTriggerCount;
     private final int[] killOrder = new int[0x100];
     private boolean actionButtonsHeld;
+    private boolean joypadHeld;
     private int linkItemA;
     private int linkItemB;
     private boolean powerBraceletButtonHeld;
@@ -1817,7 +1818,8 @@ public final class RoomEntityRuntime {
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing && isZolGelType(entity.type())) {
                 ZolGelMotion.Update zolGelUpdate = zolGelMotion.advance(entity, linkEntityX,
-                    linkEntityY, linkZ, randomByteSupplier, backgroundCollision);
+                    linkEntityY, linkZ, randomByteSupplier, backgroundCollision,
+                    joypadHeld || actionButtonsHeld);
                 updated = zolGelUpdate.entity();
                 if (zolGelUpdate.split() != null) {
                     updated = applyZolSplit(entity, updated, zolGelUpdate.split());
@@ -4724,6 +4726,10 @@ public final class RoomEntityRuntime {
 
     void setActionButtonsHeld(boolean actionButtonsHeld) {
         this.actionButtonsHeld = actionButtonsHeld;
+    }
+
+    void setJoypadHeld(boolean joypadHeld) {
+        this.joypadHeld = joypadHeld;
     }
 
     void setLikeLikeLinkInventory(int itemA, int itemB) {

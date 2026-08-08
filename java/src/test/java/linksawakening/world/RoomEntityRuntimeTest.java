@@ -4047,6 +4047,34 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void gelReleasesClingingStateAfterRomJoypadCountdownDecrementsThreeTimesPerFrame() {
+        EntitySpriteDefinition definition = pairDefinition(0x1C, 2);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x1C, 64, 64, EntityStatus.ACTIVE, definition, 0)));
+
+        assertEquals(1, runtime.resolveCombat(
+            1, 68, 64, false, true, false, 0, 0, 0, 0).size());
+        assertEquals(4, runtime.zolState(0));
+        assertEquals(0x80, runtime.zolTransitionCountdown(0));
+
+        runtime.setJoypadHeld(true);
+        for (int frame = 0; frame < 42; frame++) {
+            runtime.tick(frame, 68, 64, sequence(0x00));
+        }
+        assertEquals(4, runtime.zolState(0));
+        assertEquals(0x02, runtime.zolTransitionCountdown(0));
+
+        // The third decrement reaches zero at the end of this clinging
+        // handler invocation; the state-4 release runs on the next frame.
+        runtime.tick(42, 68, 64, sequence(0x00));
+        assertEquals(4, runtime.zolState(0));
+        assertEquals(0, runtime.zolTransitionCountdown(0));
+
+        runtime.tick(43, 68, 64, sequence(0x00));
+        assertEquals(3, runtime.zolState(0));
+    }
+
+    @Test
     void hidingZolUsesTheRomProximityRevealAndRisePhases() {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
         EntitySpriteDefinition definition = catalog.forEntityType(

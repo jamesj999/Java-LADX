@@ -2274,6 +2274,21 @@ runtime collision callback.
   before wake-up. Runtime tests cover an airborne Link, the final-position
   request, and the blocked movement boundary.
 
+## Verified ROM Gel clinging release — 2026-08-07
+
+- Gel state `$04` now preserves the ROM's clinging countdown semantics: it
+  follows Link-relative jitter and Z placement, then decrements the transition
+  countdown exactly three times when any held joypad bit is present.
+- Countdown depletion remains ordered after the state-4 handler, so the Gel
+  releases into state `$03` on the following handler frame with the source
+  private countdown `$30` and leap setup. The ordinary per-frame countdown pass
+  continues to skip state `$04`.
+- The held input now crosses `Main` and `RoomSession` as the full eight-bit
+  joypad-active condition, while the existing A/B bridge remains available to
+  handlers that require those specific buttons. A ROM-timed runtime regression
+  covers the `$80` countdown, three decrements per active frame, zero boundary,
+  and next-frame release.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,
