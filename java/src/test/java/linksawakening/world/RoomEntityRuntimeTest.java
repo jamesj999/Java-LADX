@@ -5418,6 +5418,29 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void dynamicBowWowUsesTheRomEatableTableDuringTheLiveEntityTick() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteDefinition bowWowDefinition = catalog.forFollowerEntityType(
+            FollowingNpcEntitySpawner.ENTITY_BOW_WOW);
+        EntitySpriteDefinition targetDefinition = catalog.forEntityType(
+            0x09, EntityRoomLoader.RoomTable.OVERWORLD);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotWithSlots(
+            new RoomEntity(5, -1, FollowingNpcEntitySpawner.ENTITY_BOW_WOW,
+                0x20, 0x20, EntityStatus.ACTIVE, bowWowDefinition, 0),
+            new RoomEntity(10, 0, 0x09, 0x54, 0x68,
+                EntityStatus.ACTIVE, targetDefinition, 0)),
+            false, () -> 0, catalog, new RomEnemyCombatTables(rom));
+        runtime.setFollowingNpcState(new FollowingNpcState(false, 0, false, true,
+            0, 0, false));
+
+        runtime.tick(0, 0x60, 0x70, () -> 0);
+        runtime.tick(1, 0x60, 0x70, () -> 0);
+
+        assertEquals(10, runtime.bowWowTargetSlot(5));
+    }
+
+    @Test
     void kidHandlersAnimateTheirTwoWalkingFramesEverySixteenFrames() {
         EntitySpriteDefinition definition = pairDefinition(0x70, 4);
         RoomEntitySnapshot initial = snapshot(

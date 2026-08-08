@@ -4,9 +4,12 @@ import linksawakening.rom.RomBank;
 
 import java.util.Objects;
 
-/** Immutable decoder for bank-$03's shared entity health and damage tables. */
+/** Immutable decoder for the ROM's shared entity combat and Bow-Wow tables. */
 public final class RomEnemyCombatTables {
     private static final int BANK = 0x03;
+    private static final int BOW_WOW_EATABLE_BANK = 0x14;
+    private static final int BOW_WOW_EATABLE_ADDRESS = 0x5218;
+    private static final int BOW_WOW_EATABLE_COUNT = 0x100;
     private static final int HEALTH_GROUP_ADDRESS = 0x41F6;
     private static final int HEALTH_GROUP_COUNT = 0xFB;
     private static final int DAMAGE_TYPE_MATRIX_ADDRESS = 0x43EC;
@@ -22,6 +25,7 @@ public final class RomEnemyCombatTables {
     private final int[] damageValues;
     private final int[] initialHealthByGroup;
     private final int[] contactDamageByGroup;
+    private final int[] bowWowEatableByEntity;
 
     public RomEnemyCombatTables(byte[] romData) {
         Objects.requireNonNull(romData, "ROM data cannot be null");
@@ -37,6 +41,8 @@ public final class RomEnemyCombatTables {
             romData, INITIAL_HEALTH_ADDRESS, HEALTH_GROUP_COUNT_FOR_DAMAGE);
         contactDamageByGroup = loadUnsigned(
             romData, CONTACT_DAMAGE_ADDRESS, HEALTH_GROUP_COUNT_FOR_DAMAGE);
+        bowWowEatableByEntity = loadUnsigned(romData, BOW_WOW_EATABLE_BANK,
+            BOW_WOW_EATABLE_ADDRESS, BOW_WOW_EATABLE_COUNT);
     }
 
     public int healthGroup(int entityType) {
@@ -50,6 +56,11 @@ public final class RomEnemyCombatTables {
 
     public int contactDamage(int entityType) {
         return contactDamageByGroup[healthGroup(entityType)];
+    }
+
+    /** Mirrors bank-$14's CanBowWowEatEntity lookup. */
+    public boolean canBowWowEatEntity(int entityType) {
+        return bowWowEatableByEntity[entityType & 0xFF] != 0;
     }
 
     /** Entry selected by the health-group/attack-type matrix. */
@@ -130,10 +141,14 @@ public final class RomEnemyCombatTables {
     }
 
     private static int[] loadUnsigned(byte[] romData, int address, int length) {
-        int offset = RomBank.romOffset(BANK, address);
+        return loadUnsigned(romData, BANK, address, length);
+    }
+
+    private static int[] loadUnsigned(byte[] romData, int bank, int address, int length) {
+        int offset = RomBank.romOffset(bank, address);
         if (offset < 0 || length < 0 || offset > romData.length - length) {
-            throw new IllegalArgumentException("ROM table is truncated at bank $03:$"
-                + Integer.toHexString(address));
+            throw new IllegalArgumentException("ROM table is truncated at bank $"
+                + Integer.toHexString(bank) + ":$" + Integer.toHexString(address));
         }
         int[] values = new int[length];
         for (int index = 0; index < length; index++) {

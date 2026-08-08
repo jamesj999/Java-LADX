@@ -29,6 +29,17 @@ final class RomEnemyCombatTablesTest {
     }
 
     @Test
+    void decodesBowWowEatableEntityTableFromBankFourteen() throws IOException {
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
+
+        assertTrue(tables.canBowWowEatEntity(0x09));
+        assertTrue(tables.canBowWowEatEntity(0x0B));
+        assertTrue(tables.canBowWowEatEntity(0xAD));
+        assertTrue(!tables.canBowWowEatEntity(0x00));
+        assertTrue(!tables.canBowWowEatEntity(0x6D));
+    }
+
+    @Test
     void resolvesSwordLevelAndEveryRomAttackModifier() throws IOException {
         RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
 

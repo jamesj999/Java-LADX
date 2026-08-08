@@ -2594,8 +2594,12 @@ public final class RoomEntityRuntime {
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && isDynamicFollowingNpc(entity)) {
                 if (entity.type() == ENTITY_BOW_WOW) {
-                    updated = bowWowMotion.advance(entity, frame, linkEntityX, linkEntityY,
-                        followingLinkZ, randomByteSupplier, backgroundCollision);
+                    BowWowMotion.Update bowWowUpdate = bowWowMotion.advanceWithTargetScan(
+                        entity, frame, linkEntityX, linkEntityY, followingLinkZ,
+                        randomByteSupplier, backgroundCollision, Arrays.asList(slots),
+                        enemyCombatTables == null
+                            ? type -> false : enemyCombatTables::canBowWowEatEntity);
+                    updated = bowWowUpdate.entity();
                 } else {
                     updated = followingNpcMotion.advance(entity, frame, linkEntityX, linkEntityY,
                         followingLinkZ, followingLinkDirection, followingEntityYOffset,
@@ -5006,6 +5010,10 @@ public final class RoomEntityRuntime {
 
     int hookshotTransitionCountdown(int slot) {
         return hookshotChainMotion.transitionCountdown(slot);
+    }
+
+    int bowWowTargetSlot(int slot) {
+        return bowWowMotion.targetSlot(slot);
     }
 
     int hookshotEntityState(int slot) {

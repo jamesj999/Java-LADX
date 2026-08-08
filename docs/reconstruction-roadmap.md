@@ -2481,6 +2481,22 @@ runtime collision callback.
   lift trigger, carry presentation, and state cleanup. The clean Java suite
   passes with 1,271 tests and zero failures, errors, or skipped tests.
 
+## Verified ROM Bow-Wow target acquisition — 2026-08-08
+
+- Bow-Wow (`$6D`) now loads bank `$14:$5218`'s 256-byte
+  `BowWowEatableEntitiesTable` through the ROM combat-table decoder. The live
+  follower tick uses that table instead of treating every nearby entity as a
+  target.
+- The missing bank-$05 target branch now follows the source candidate order
+  selected by the random-byte low bit, skips disabled/dying entities and
+  sprite variant `$01`, applies the Link-relative `$2F/$5E` range tests, and
+  stores the selected slot. A target loads the source length-$30 vector
+  quantization, Z speed `$10`, and state `$04`'s `$28` transition countdown.
+- Focused ROM-table, filter/vector, and live-room regressions cover the branch.
+  The clean Java suite passes with 1,274 tests and zero failures, errors, or
+  skipped tests. Bow-Wow's later target-consumption/audio/dialog branches
+  remain separate work.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

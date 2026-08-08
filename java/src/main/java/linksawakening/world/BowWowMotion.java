@@ -1,6 +1,8 @@
 package linksawakening.world;
 
 import java.util.function.IntSupplier;
+import java.util.function.IntPredicate;
+import java.util.List;
 
 /**
  * The bounded ordinary-following part of bank-$05's Bow-Wow handler.
@@ -22,6 +24,7 @@ final class BowWowMotion {
     private final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] targetX = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] targetY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] targetSlot = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -39,13 +42,24 @@ final class BowWowMotion {
     RoomEntity advance(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY,
                        int linkEntityZ, IntSupplier randomByteSupplier,
                        RoomEntityBackgroundCollision backgroundCollision) {
+        return advanceWithTargetScan(entity, frameCounter, linkEntityX, linkEntityY,
+            linkEntityZ, randomByteSupplier, backgroundCollision, List.of(entity),
+            type -> false).entity();
+    }
+
+    Update advanceWithTargetScan(RoomEntity entity, int frameCounter, int linkEntityX,
+                                 int linkEntityY, int linkEntityZ,
+                                 IntSupplier randomByteSupplier,
+                                 RoomEntityBackgroundCollision backgroundCollision,
+                                 List<RoomEntity> entities,
+                                 IntPredicate canEatEntity) {
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot);
         }
 
         if (privateState4[slot] == 0) {
-            return setup(entity);
+            return new Update(setup(entity), targetSlot[slot]);
         }
 
         decrementTimers(slot);
@@ -63,11 +77,20 @@ final class BowWowMotion {
         switch (activeState[slot]) {
             case 0 -> {
                 if (transitionCountdown[slot] == 0) {
-                    // label_005_4297 scans for an edible entity. The scan is
-                    // intentionally a later slice; consume its initial ROM
-                    // direction byte while keeping the no-target branch.
-                    randomByteSupplier.getAsInt();
-                    transitionCountdown[slot] = 0x10;
+                    transitionCountdown[slot] = 0x28;
+                    int selectedTarget = findTarget(entity, linkEntityX, linkEntityY,
+                        randomByteSupplier, entities, canEatEntity);
+                    if (selectedTarget >= 0) {
+                        RoomEntity target = entities.get(selectedTarget);
+                        targetSlot[slot] = selectedTarget;
+                        Vector vector = vectorTowardsTarget(entity, target, 0x30);
+                        speedX[slot] = vector.x();
+                        speedY[slot] = vector.y();
+                        speedZ[slot] = 0x10;
+                        activeState[slot] = 4;
+                    } else {
+                        transitionCountdown[slot] = 0x10;
+                    }
                 } else if (privateCountdown1[slot] == 0) {
                     privateCountdown1[slot] = 0x20
                         + (randomByteSupplier.getAsInt() & 0x3F);
@@ -114,7 +137,7 @@ final class BowWowMotion {
             default -> activeState[slot] = 0;
         }
 
-        return withPositionAndVariant(entity, x, y, z, variant);
+        return new Update(withPositionAndVariant(entity, x, y, z, variant), targetSlot[slot]);
     }
 
     void clear(int slot) {
@@ -124,6 +147,7 @@ final class BowWowMotion {
         privateCountdown1[slot] = 0;
         targetX[slot] = 0;
         targetY[slot] = 0;
+        targetSlot[slot] = -1;
         speedX[slot] = 0;
         speedY[slot] = 0;
         speedZ[slot] = 0;
@@ -152,6 +176,14 @@ final class BowWowMotion {
 
     int targetY(int slot) {
         return targetY[slot];
+    }
+
+    int targetSlot(int slot) {
+        return targetSlot[slot];
+    }
+
+    int speedZ(int slot) {
+        return speedZ[slot] & 0xFF;
     }
 
     int speedX(int slot) {
@@ -233,6 +265,68 @@ final class BowWowMotion {
         return base == 6 ? 6 : base + ((frameCounter >>> 3) & 0x01);
     }
 
+    private static int findTarget(RoomEntity source, int linkEntityX, int linkEntityY,
+                                  IntSupplier randomByteSupplier, List<RoomEntity> entities,
+                                  IntPredicate canEatEntity) {
+        boolean descending = (randomByteSupplier.getAsInt() & 0x01) == 0;
+        int step = descending ? -1 : 1;
+        int candidate = descending ? EntityRoomLoader.MAX_ENTITIES - 1 : 0;
+        int end = source.slot();
+        while (candidate != end) {
+            if (candidate >= 0 && candidate < entities.size()) {
+                RoomEntity target = entities.get(candidate);
+                if (target.loaded()
+                    && target.status() != EntityStatus.DYING
+                    && target.spriteVariant() != 1
+                    && canEatEntity.test(target.type())
+                    && inUnsignedWindow(linkEntityX - target.x(), 0x2F, 0x5E)
+                    && inUnsignedWindow(linkEntityY - target.y(), 0x2F, 0x5E)) {
+                    return candidate;
+                }
+            }
+            candidate += step;
+        }
+        return -1;
+    }
+
+    private static Vector vectorTowardsTarget(RoomEntity source, RoomEntity target, int length) {
+        int distanceX = signedByte(target.x() - source.x());
+        int distanceY = signedByte(target.y() - source.y() + source.z());
+        int absoluteX = Math.abs(distanceX);
+        int absoluteY = Math.abs(distanceY);
+        boolean swapped = absoluteX < absoluteY;
+        int smaller = Math.min(absoluteX, absoluteY);
+        int larger = Math.max(absoluteX, absoluteY);
+        int result = divideComponent(length, smaller, larger);
+        int vectorX = swapped ? result : length;
+        int vectorY = swapped ? length : result;
+        if (distanceX < 0) {
+            vectorX = -vectorX;
+        }
+        if (distanceY < 0) {
+            vectorY = -vectorY;
+        }
+        return new Vector(vectorX & 0xFF, vectorY & 0xFF);
+    }
+
+    private static int divideComponent(int length, int smaller, int larger) {
+        int result = 0;
+        int remainder = 0;
+        for (int count = 0; count < length; count++) {
+            int sum = remainder + smaller;
+            if (sum > 0xFF || sum >= larger) {
+                sum -= larger;
+                result++;
+            }
+            remainder = sum & 0xFF;
+        }
+        return result;
+    }
+
+    private static boolean inUnsignedWindow(int difference, int offset, int limit) {
+        return ((difference + offset) & 0xFF) < limit;
+    }
+
     private static int addSpeedToPosition(int position, int speed, int[] accumulator,
                                           int slot) {
         speed &= 0xFF;
@@ -267,5 +361,14 @@ final class BowWowMotion {
         return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
             entity.status(), entity.spriteDefinition(), variant, entity.entityFlipAttribute(),
             entity.spriteTileOffset(), z);
+    }
+
+    record Update(RoomEntity entity, int targetSlot) {
+        boolean targetAcquired() {
+            return targetSlot >= 0;
+        }
+    }
+
+    private record Vector(int x, int y) {
     }
 }
