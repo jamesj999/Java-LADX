@@ -4420,6 +4420,26 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void hidingZolRequestsTheRomJumpJingleWhenItLeavesTheGround() {
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
+            .forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x9B, 64, 64, EntityStatus.INIT, definition, 0)),
+            false, sequence(0x00));
+
+        runtime.tick(0, 120, 120, sequence(0x00));
+        runtime.tick(1, 80, 64, sequence(0x00));
+        for (int frame = 2; frame <= 33; frame++) {
+            runtime.tick(frame, 80, 64, sequence(0x00));
+        }
+
+        assertEquals(2, runtime.hidingZolState(0));
+        assertEquals(List.of(new EntityCombatEvent(0, 0x9B, 0, false,
+            EntityCombatEvent.SoundChannel.JINGLE, 0x24)),
+            runtime.consumePendingEntityEvents());
+    }
+
+    @Test
     void spikeTrapUsesTheRomRandomDirectionAndFourStateLaunchLoop() {
         EntitySpriteDefinition definition = pairDefinition(0x27, 1);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(

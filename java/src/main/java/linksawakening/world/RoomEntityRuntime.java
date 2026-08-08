@@ -1848,6 +1848,11 @@ public final class RoomEntityRuntime {
                     // background helper, then clears the shared byte.
                     enemyIgnoreHitsCountdown[entity.slot()] = 0;
                 }
+                if (hidingZolUpdate.jumpJingle()) {
+                    pendingEntityEvents.add(new EntityCombatEvent(
+                        entity.slot(), entity.type(), 0, false,
+                        EntityCombatEvent.SoundChannel.JINGLE, 0x24));
+                }
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_SPIKE_TRAP) {
