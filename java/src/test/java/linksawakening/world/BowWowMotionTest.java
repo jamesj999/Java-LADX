@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntSupplier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 final class BowWowMotionTest {
 
@@ -112,6 +113,36 @@ final class BowWowMotionTest {
         assertEquals(0x24, motion.speedX(5));
         assertEquals(0x30, motion.speedY(5));
         assertEquals(0x10, motion.speedZ(5));
+    }
+
+    @Test
+    void terminalFollowingPhaseReportsTheRomTargetContactWindow() {
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(new byte[0x100000])
+            .forFollowerEntityType(ENTITY_BOW_WOW);
+        RoomEntity bowWow = new RoomEntity(5, -1, ENTITY_BOW_WOW, 0x40, 0x50,
+            EntityStatus.ACTIVE, definition, 0);
+        List<RoomEntity> slots = new ArrayList<>();
+        while (slots.size() < EntityRoomLoader.MAX_ENTITIES) {
+            slots.add(RoomEntity.disabled(slots.size()));
+        }
+        slots.set(5, bowWow);
+        slots.set(6, new RoomEntity(6, 0, 0x09, 0x44, 0x58,
+            EntityStatus.ACTIVE, definition, 0));
+
+        BowWowMotion motion = new BowWowMotion();
+        RoomEntity initialized = motion.advance(bowWow, 0, 0x44, 0x58, 0x00,
+            () -> 0, null);
+        slots.set(5, initialized);
+        BowWowMotion.Update acquired = motion.advanceWithTargetScan(initialized, 1,
+            0x44, 0x58, 0x00, () -> 0, null, slots, type -> type == 0x09);
+        motion.setTransitionCountdownForTest(5, 1);
+
+        BowWowMotion.Update terminal = motion.advanceWithTargetScan(acquired.entity(), 2,
+            0x44, 0x58, 0x00, () -> 0, null, slots, type -> type == 0x09);
+
+        assertNotNull(terminal.targetContact());
+        assertEquals(6, terminal.targetContact().slot());
+        assertEquals(0x09, terminal.targetContact().type());
     }
 
     private static IntSupplier sequence(int... values) {

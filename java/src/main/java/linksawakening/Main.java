@@ -863,6 +863,8 @@ public class Main {
                 && !transitionController.isInputBlocked()
                 && !inventoryController.shouldBlockOverworldInput()
                 && !dialogBlocksGameplay) {
+                roomSession.setEntityDialogActive(
+                    dialogController != null && dialogController.isActive());
                 roomSession.setEntityActionButtonsHeld(
                     inputState != null && inputConfig != null
                         && inputState.isDown(inputConfig.aKey()),

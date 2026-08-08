@@ -174,6 +174,7 @@ public final class RoomSession {
     private boolean actionButtonAHeld;
     private boolean actionButtonBHeld;
     private boolean joypadHeld;
+    private boolean entityDialogActive;
     private int entityPressedButtonsMask;
     private boolean powerBraceletButtonHeld;
     private boolean bombButtonHeld;
@@ -500,6 +501,14 @@ public final class RoomSession {
     /** Supplies the held J_A|J_B state consumed by input-driven entity handlers. */
     public void setEntityActionButtonsHeld(boolean actionButtonsHeld) {
         setEntityActionButtonsHeld(actionButtonsHeld, actionButtonsHeld);
+    }
+
+    /** Supplies wDialogState's active gate to the room entity handlers. */
+    public void setEntityDialogActive(boolean active) {
+        entityDialogActive = active;
+        if (entityRuntime != null) {
+            entityRuntime.setDialogActive(active);
+        }
     }
 
     /** Supplies the distinct held A/B states consumed by ROM input handlers. */
@@ -1114,6 +1123,7 @@ public final class RoomSession {
         tickOcarinaAnimationHandler();
         entityRuntime.setSwitchBlockAnimationActive(
             SwitchBlockAnimation.isAnimating(switchableObjectAnimationStage));
+        entityRuntime.setDialogActive(entityDialogActive);
         entityRuntime.setActionButtonsHeld(actionButtonAHeld, actionButtonBHeld);
         entityRuntime.setJoypadHeld(joypadHeld);
         entityRuntime.setPressedButtonsMask(entityPressedButtonsMask);
@@ -1574,6 +1584,7 @@ public final class RoomSession {
         if (entityRuntime == null) {
             return;
         }
+        entityRuntime.setDialogActive(entityDialogActive);
         entityRuntime.setEnemyDropResolver(enemyDropResolver);
         entityRuntime.setEnemyDropCounters(enemyDropCounters);
         entityRuntime.setEnemyDropPlayerState(

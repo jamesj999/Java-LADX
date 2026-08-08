@@ -116,6 +116,8 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_ROOSTER = 0xD5;
     private static final int ENTITY_MARIN_AT_THE_SHORE = 0xC1;
     private static final int ENTITY_BOW_WOW = 0x6D;
+    private static final int ENTITY_KIKI_THE_MONKEY = 0xAD;
+    private static final int ENTITY_DROPPABLE_SECRET_SEASHELL = 0x3D;
     private static final int ENTITY_HEART_CONTAINER = 0x36;
     private static final int ENTITY_MOBLIN_SWORD = 0x14;
     private static final int ENTITY_LASER = 0x2A;
@@ -180,6 +182,7 @@ public final class RoomEntityRuntime {
         0x02 | ENTITY_PHYSICS_HARMLESS | ENTITY_PHYSICS_SHADOW | ENTITY_PHYSICS_GRABBABLE;
     private static final int MAP_COLOR_DUNGEON = 0xFF;
     private static final int DIALOG_MOBLIN = 0x90;
+    private static final int DIALOG_BOW_WOW = 0x15;
     private static final int FALLING_JINGLE_ID = 0x18;
     private static final int[] FALLING_VISUAL_Y_OFFSETS = {0, 0, 4, 0};
     private static final int[] FALLING_VECTOR_LENGTHS = {0, 1, 3, 6};
@@ -328,6 +331,8 @@ public final class RoomEntityRuntime {
         new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final int[] bombPrivateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] magicPowderPrivateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] entityPrivateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] entityInertia = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] entityUnknownJ = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] placedBombMotionInitialized =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
@@ -376,6 +381,7 @@ public final class RoomEntityRuntime {
     private boolean actionButtonAHeld;
     private boolean actionButtonBHeld;
     private boolean joypadHeld;
+    private boolean dialogActive;
     private int linkPressedButtonsMask;
     private int linkItemA;
     private int linkItemB;
@@ -2600,6 +2606,10 @@ public final class RoomEntityRuntime {
                         enemyCombatTables == null
                             ? type -> false : enemyCombatTables::canBowWowEatEntity);
                     updated = bowWowUpdate.entity();
+                    if (bowWowUpdate.targetContact() != null) {
+                        handleBowWowTargetContact(entity, bowWowUpdate.targetContact(),
+                            randomByteSupplier);
+                    }
                 } else {
                     updated = followingNpcMotion.advance(entity, frame, linkEntityX, linkEntityY,
                         followingLinkZ, followingLinkDirection, followingEntityYOffset,
@@ -4130,6 +4140,8 @@ public final class RoomEntityRuntime {
         bombPrivateCountdown3[slot] = 0;
         magicPowderState[slot] = 0;
         magicPowderPrivateState4[slot] = 0;
+        entityPrivateState4[slot] = 0;
+        entityInertia[slot] = 0;
         musicalNoteInertia[slot] = 0;
         musicalNoteSpeedX[slot] = 0;
         musicalNoteSpeedY[slot] = 0;
@@ -5016,6 +5028,27 @@ public final class RoomEntityRuntime {
         return bowWowMotion.targetSlot(slot);
     }
 
+    int bowWowPrivateCountdown2(int slot) {
+        return bowWowMotion.privateCountdown2(slot);
+    }
+
+    int bowWowTransitionCountdown(int slot) {
+        return bowWowMotion.transitionCountdown(slot);
+    }
+
+    void setBowWowTransitionCountdownForTest(int slot, int value) {
+        validateCountdownTestValue(slot, value);
+        if (!isLoadedEntityOfType(slot, ENTITY_BOW_WOW)) {
+            throw new IllegalArgumentException("Entity slot does not contain Bow-Wow: " + slot);
+        }
+        bowWowMotion.setTransitionCountdownForTest(slot, value);
+    }
+
+    int entityInertia(int slot) {
+        validateEntitySlot(slot);
+        return entityInertia[slot];
+    }
+
     int hookshotEntityState(int slot) {
         HookshotChainMotion.State state = hookshotChainMotion.state(slot);
         return state == null ? 0 : state.entityState();
@@ -5157,6 +5190,16 @@ public final class RoomEntityRuntime {
     void setPressedButtonsMask(int pressedButtonsMask) {
         validateByte(pressedButtonsMask, "Pressed buttons mask");
         this.linkPressedButtonsMask = pressedButtonsMask;
+    }
+
+    /** Supplies wDialogState's nonzero gate to handlers with dialog branches. */
+    void setDialogActive(boolean dialogActive) {
+        this.dialogActive = dialogActive;
+    }
+
+    void setEntityPrivateState4ForTest(int slot, int value) {
+        validateCountdownTestValue(slot, value);
+        entityPrivateState4[slot] = value;
     }
 
     void setLikeLikeLinkInventory(int itemA, int itemB) {
@@ -5571,6 +5614,44 @@ public final class RoomEntityRuntime {
             spawnEnemyDrop(entity, result.itemType());
         }
         disableEntityWithoutPersistence(entity.slot());
+    }
+
+    /** Mirrors Bow-Wow's label_005_4335 target-resolution branches. */
+    private void handleBowWowTargetContact(RoomEntity source,
+                                           BowWowMotion.TargetContact contact,
+                                           IntSupplier randomByteSupplier) {
+        int targetSlot = contact.slot();
+        if (targetSlot < 0 || targetSlot >= slots.length) {
+            return;
+        }
+        RoomEntity target = slots[targetSlot];
+        if (!target.loaded()) {
+            return;
+        }
+
+        if (target.type() == ENTITY_DROPPABLE_SECRET_SEASHELL) {
+            if (entityPrivateState4[targetSlot] == 0 || dialogActive
+                || bowWowMotion.privateCountdown2(source.slot()) != 0) {
+                return;
+            }
+            bowWowMotion.setTransitionCountdown(source.slot(), 0);
+            bowWowMotion.setPrivateCountdown2(source.slot(), 0x80);
+            pendingDialogRequests.add(new DialogRequest(1, DIALOG_BOW_WOW));
+            return;
+        }
+
+        if (enemyFlashCountdown[targetSlot] != 0) {
+            return;
+        }
+        pendingEntityEvents.add(new EntityCombatEvent(
+            source.slot(), source.type(), 0, false,
+            EntityCombatEvent.SoundChannel.JINGLE, 0x03));
+        if (target.type() == ENTITY_KIKI_THE_MONKEY) {
+            enemyFlashCountdown[targetSlot] = 0x18;
+            entityInertia[targetSlot] = (entityInertia[targetSlot] + 1) & 0xFF;
+            return;
+        }
+        handleTerminalEnemyDeath(target, randomByteSupplier);
     }
 
     /**

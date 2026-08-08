@@ -5441,6 +5441,95 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void bowWowConsumesAnOrdinaryTargetThroughDidKillEnemy() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotWithSlots(
+            new RoomEntity(5, -1, FollowingNpcEntitySpawner.ENTITY_BOW_WOW,
+                0x40, 0x50, EntityStatus.ACTIVE,
+                catalog.forFollowerEntityType(FollowingNpcEntitySpawner.ENTITY_BOW_WOW), 0),
+            new RoomEntity(6, 0, 0x09, 0x44, 0x58, EntityStatus.ACTIVE,
+                catalog.forEntityType(0x09, EntityRoomLoader.RoomTable.OVERWORLD), 0)),
+            false, () -> 0, catalog, tables);
+        runtime.setFollowingNpcState(new FollowingNpcState(false, 0, false, true,
+            0, 0, false));
+        runtime.setEnemyDropResolver(new EnemyDropResolver(rom));
+        runtime.setDroppedItemForTest(6, EnemyDropResolver.ENTITY_NONE);
+
+        runtime.tick(0, 0x44, 0x58, () -> 0);
+        runtime.tick(1, 0x44, 0x58, () -> 0);
+        runtime.setBowWowTransitionCountdownForTest(5, 1);
+        runtime.tick(2, 0x44, 0x58, () -> 0);
+
+        assertFalse(runtime.snapshot().slots().get(6).loaded());
+        assertEquals(1, runtime.killCount());
+        assertEquals(1, runtime.consumePendingClearedEntityMask());
+        assertEquals(List.of(new EntityCombatEvent(5,
+            FollowingNpcEntitySpawner.ENTITY_BOW_WOW, 0, false,
+            EntityCombatEvent.SoundChannel.JINGLE, 0x03)),
+            runtime.consumePendingEntityEvents());
+    }
+
+    @Test
+    void bowWowFlashesKikiWithoutConsumingIt() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotWithSlots(
+            new RoomEntity(5, -1, FollowingNpcEntitySpawner.ENTITY_BOW_WOW,
+                0x40, 0x50, EntityStatus.ACTIVE,
+                catalog.forFollowerEntityType(FollowingNpcEntitySpawner.ENTITY_BOW_WOW), 0),
+            new RoomEntity(6, 0, 0xAD, 0x44, 0x58, EntityStatus.ACTIVE,
+                catalog.forEntityType(0xAD, EntityRoomLoader.RoomTable.OVERWORLD), 0)),
+            false, () -> 0, catalog, tables);
+        runtime.setFollowingNpcState(new FollowingNpcState(false, 0, false, true,
+            0, 0, false));
+
+        runtime.tick(0, 0x44, 0x58, () -> 0);
+        runtime.tick(1, 0x44, 0x58, () -> 0);
+        runtime.setBowWowTransitionCountdownForTest(5, 1);
+        runtime.tick(2, 0x44, 0x58, () -> 0);
+
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(6).status());
+        assertEquals(0x18, runtime.enemyFlashCountdown(6));
+        assertEquals(1, runtime.entityInertia(6));
+        assertEquals(List.of(new EntityCombatEvent(5,
+            FollowingNpcEntitySpawner.ENTITY_BOW_WOW, 0, false,
+            EntityCombatEvent.SoundChannel.JINGLE, 0x03)),
+            runtime.consumePendingEntityEvents());
+    }
+
+    @Test
+    void bowWowOpensTheSecretShellDialogOnlyForAnActiveShell() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotWithSlots(
+            new RoomEntity(5, -1, FollowingNpcEntitySpawner.ENTITY_BOW_WOW,
+                0x40, 0x50, EntityStatus.ACTIVE,
+                catalog.forFollowerEntityType(FollowingNpcEntitySpawner.ENTITY_BOW_WOW), 0),
+            new RoomEntity(6, 0, 0x3D, 0x44, 0x58, EntityStatus.ACTIVE,
+                catalog.forEntityType(0x3D, EntityRoomLoader.RoomTable.OVERWORLD), 0)),
+            false, () -> 0, catalog, tables);
+        runtime.setFollowingNpcState(new FollowingNpcState(false, 0, false, true,
+            0, 0, false));
+        runtime.setEntityPrivateState4ForTest(6, 1);
+
+        runtime.tick(0, 0x44, 0x58, () -> 0);
+        runtime.tick(1, 0x44, 0x58, () -> 0);
+        runtime.setBowWowTransitionCountdownForTest(5, 1);
+        runtime.tick(2, 0x44, 0x58, () -> 0);
+
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(6).status());
+        assertEquals(0, runtime.bowWowTransitionCountdown(5));
+        assertEquals(0x80, runtime.bowWowPrivateCountdown2(5));
+        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(1, 0x15)),
+            runtime.consumePendingDialogRequests());
+        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+    }
+
+    @Test
     void kidHandlersAnimateTheirTwoWalkingFramesEverySixteenFrames() {
         EntitySpriteDefinition definition = pairDefinition(0x70, 4);
         RoomEntitySnapshot initial = snapshot(

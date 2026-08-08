@@ -1,8 +1,8 @@
 package linksawakening.world;
 
-import java.util.function.IntSupplier;
-import java.util.function.IntPredicate;
 import java.util.List;
+import java.util.function.IntPredicate;
+import java.util.function.IntSupplier;
 
 /**
  * The bounded ordinary-following part of bank-$05's Bow-Wow handler.
@@ -22,6 +22,7 @@ final class BowWowMotion {
     private final int[] privateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] privateCountdown2 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] targetX = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] targetY = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] targetSlot = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -59,7 +60,7 @@ final class BowWowMotion {
         }
 
         if (privateState4[slot] == 0) {
-            return new Update(setup(entity), targetSlot[slot]);
+            return new Update(setup(entity), targetSlot[slot], null);
         }
 
         decrementTimers(slot);
@@ -73,6 +74,7 @@ final class BowWowMotion {
         int y = entity.y();
         int z = updatedZ[slot];
         int variant = entity.spriteVariant();
+        TargetContact targetContact = null;
 
         switch (activeState[slot]) {
             case 0 -> {
@@ -114,6 +116,7 @@ final class BowWowMotion {
                 variant = movementVariant(frameCounter, slot);
             }
             case 2, 4 -> {
+                boolean resolvesTargetContact = activeState[slot] == 2 || activeState[slot] == 4;
                 if (transitionCountdown[slot] != 0) {
                     int[] moved = move(entity, x, y, slot, backgroundCollision);
                     x = correctTargetX(moved[0], x, slot);
@@ -124,6 +127,9 @@ final class BowWowMotion {
                     speedY[slot] = 0;
                     activeState[slot] = 3;
                     transitionCountdown[slot] = 0x10;
+                    if (resolvesTargetContact) {
+                        targetContact = findTargetContact(x, y, z, targetSlot[slot], entities);
+                    }
                 }
             }
             case 3 -> {
@@ -137,7 +143,8 @@ final class BowWowMotion {
             default -> activeState[slot] = 0;
         }
 
-        return new Update(withPositionAndVariant(entity, x, y, z, variant), targetSlot[slot]);
+        return new Update(withPositionAndVariant(entity, x, y, z, variant), targetSlot[slot],
+            targetContact);
     }
 
     void clear(int slot) {
@@ -145,6 +152,7 @@ final class BowWowMotion {
         privateState4[slot] = 0;
         transitionCountdown[slot] = 0;
         privateCountdown1[slot] = 0;
+        privateCountdown2[slot] = 0;
         targetX[slot] = 0;
         targetY[slot] = 0;
         targetSlot[slot] = -1;
@@ -168,6 +176,10 @@ final class BowWowMotion {
 
     int transitionCountdown(int slot) {
         return transitionCountdown[slot];
+    }
+
+    int privateCountdown2(int slot) {
+        return privateCountdown2[slot];
     }
 
     int targetX(int slot) {
@@ -194,6 +206,32 @@ final class BowWowMotion {
         return speedY[slot] & 0xFF;
     }
 
+    void setTransitionCountdownForTest(int slot, int value) {
+        setTransitionCountdown(slot, value);
+    }
+
+    void setTransitionCountdown(int slot, int value) {
+        if (slot < 0 || slot >= transitionCountdown.length) {
+            throw new IllegalArgumentException("Entity slot out of range: " + slot);
+        }
+        if (value < 0 || value > 0xFF) {
+            throw new IllegalArgumentException("Transition countdown must be an unsigned byte: "
+                + value);
+        }
+        transitionCountdown[slot] = value;
+    }
+
+    void setPrivateCountdown2(int slot, int value) {
+        if (slot < 0 || slot >= privateCountdown2.length) {
+            throw new IllegalArgumentException("Entity slot out of range: " + slot);
+        }
+        if (value < 0 || value > 0xFF) {
+            throw new IllegalArgumentException("Private countdown 2 must be an unsigned byte: "
+                + value);
+        }
+        privateCountdown2[slot] = value;
+    }
+
     private RoomEntity setup(RoomEntity entity) {
         int slot = entity.slot();
         int x = byteValue(entity.x() + 0x04);
@@ -210,6 +248,9 @@ final class BowWowMotion {
         }
         if (privateCountdown1[slot] > 0) {
             privateCountdown1[slot]--;
+        }
+        if (privateCountdown2[slot] > 0) {
+            privateCountdown2[slot]--;
         }
     }
 
@@ -327,6 +368,21 @@ final class BowWowMotion {
         return ((difference + offset) & 0xFF) < limit;
     }
 
+    /** Mirrors label_005_4335's final X/visual-Y contact test. */
+    private static TargetContact findTargetContact(int sourceX, int sourceY, int sourceZ,
+                                                   int targetSlot, List<RoomEntity> entities) {
+        if (targetSlot < 0 || targetSlot >= entities.size()) {
+            return null;
+        }
+        RoomEntity target = entities.get(targetSlot);
+        if (!target.loaded()
+            || !inUnsignedWindow(sourceX - target.x(), 0x0E, 0x1A)
+            || !inUnsignedWindow((sourceY - sourceZ) - target.y(), 0x10, 0x20)) {
+            return null;
+        }
+        return new TargetContact(targetSlot, target.type());
+    }
+
     private static int addSpeedToPosition(int position, int speed, int[] accumulator,
                                           int slot) {
         speed &= 0xFF;
@@ -363,10 +419,13 @@ final class BowWowMotion {
             entity.spriteTileOffset(), z);
     }
 
-    record Update(RoomEntity entity, int targetSlot) {
+    record Update(RoomEntity entity, int targetSlot, TargetContact targetContact) {
         boolean targetAcquired() {
             return targetSlot >= 0;
         }
+    }
+
+    record TargetContact(int slot, int type) {
     }
 
     private record Vector(int x, int y) {
