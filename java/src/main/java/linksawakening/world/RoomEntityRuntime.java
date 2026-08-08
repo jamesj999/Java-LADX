@@ -206,6 +206,7 @@ public final class RoomEntityRuntime {
         GopongaProjectileMotion.ENTITY_TYPE;
     private static final int ENTITY_POKEY = PokeyMotion.ENTITY_TYPE;
     private static final int ENTITY_PIRANHA_PLANT = PiranhaMotion.ENTITY_TYPE;
+    private static final int ENTITY_ZORA = ZoraMotion.ENTITY_TYPE;
     private static final int ENTITY_HORSE_PIECE = 0x98;
     private static final int ENTITY_PHYSICS_GRABBABLE = 0x20;
     private static final int OBJECT_BUSH = 0x5C;
@@ -287,6 +288,7 @@ public final class RoomEntityRuntime {
         new GopongaProjectileMotion();
     private final PokeyMotion pokeyMotion = new PokeyMotion();
     private final PiranhaMotion piranhaMotion = new PiranhaMotion();
+    private final ZoraMotion zoraMotion = new ZoraMotion();
     private final SpikeTrapMotion spikeTrapMotion = new SpikeTrapMotion();
     private final PairoddMotion pairoddMotion = new PairoddMotion();
     private final PairoddProjectileMotion pairoddProjectileMotion =
@@ -1262,6 +1264,7 @@ public final class RoomEntityRuntime {
             boolean preserveGopongaProjectilePresentation = false;
             boolean preservePokeyPresentation = false;
             boolean preservePiranhaPresentation = false;
+            boolean preserveZoraPresentation = false;
             boolean preserveRoosterPresentation = false;
             boolean preserveWizrobePresentation = false;
             boolean preserveWizrobeProjectilePresentation = false;
@@ -1666,6 +1669,9 @@ public final class RoomEntityRuntime {
                 }
                 if (entity.type() == ENTITY_PIRANHA_PLANT) {
                     piranhaMotion.initialize(entity.slot());
+                }
+                if (entity.type() == ENTITY_ZORA) {
+                    zoraMotion.initialize(entity.slot());
                 }
                 if (entity.type() == ENTITY_BOO_BUDDY) {
                     booBuddyMotion.initialize(entity.slot());
@@ -2935,6 +2941,29 @@ public final class RoomEntityRuntime {
                 preservePiranhaPresentation = true;
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_ZORA && !creditsGameplay
+                && handlerLinkCollisionEnabled) {
+                int slot = entity.slot();
+                ZoraMotion.Update zoraUpdate = zoraMotion.advance(
+                    updated, enemyTransitionCountdown[slot], enemyPhysicsFlags[slot],
+                    linkEntityX, linkEntityY, randomByteSupplier, objectQuery);
+                updated = zoraUpdate.entity();
+                enemyTransitionCountdown[slot] = zoraUpdate.transitionCountdown();
+                enemyPhysicsFlags[slot] = zoraUpdate.physicsFlags();
+                if (zoraUpdate.projectileSpawn() != null) {
+                    spawnZoraProjectile(zoraUpdate.projectileSpawn());
+                }
+                if (zoraUpdate.splash()) {
+                    transientVfxRequests.add(new TransientVfxRequest(
+                        TransientVfxType.WATER_SPLASH, updated.x(),
+                        (updated.y() - updated.z()) & 0xFF));
+                    pendingEntityEvents.add(new EntityCombatEvent(
+                        slot, entity.type(), 0, false,
+                        EntityCombatEvent.SoundChannel.JINGLE, 0x0E));
+                }
+                preserveZoraPresentation = true;
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
                 && isGhiniType(entity.type())) {
                 updated = ghiniMotion.advance(entity, frame, entity.type(),
                     linkEntityX, linkEntityY, romCollisionType, randomByteSupplier);
@@ -3101,6 +3130,7 @@ public final class RoomEntityRuntime {
                 || preserveGopongaProjectilePresentation
                 || preservePokeyPresentation
                 || preservePiranhaPresentation
+                || preserveZoraPresentation
                 || preserveRoosterPresentation
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
                 || preservePolsVoicePresentation
@@ -3125,6 +3155,7 @@ public final class RoomEntityRuntime {
                 || preserveGopongaProjectilePresentation
                 || preservePokeyPresentation
                 || preservePiranhaPresentation
+                || preserveZoraPresentation
                 || preserveRoosterPresentation
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
                 || preservePolsVoicePresentation
@@ -4582,6 +4613,7 @@ public final class RoomEntityRuntime {
         pincerMotion.clear(slot);
         bushCrawlerMotion.clear(slot);
         pokeyMotion.clear(slot);
+        zoraMotion.clear(slot);
         mimicMotion.clear(slot);
         maskedMimicMotion.clear(slot);
         miniMoldormMotion.clear(slot);
@@ -4660,6 +4692,7 @@ public final class RoomEntityRuntime {
         cuccoMotion.clear(slot);
         giantGopongaMotion.clear(slot);
         gopongaProjectileMotion.clear(slot);
+        zoraMotion.clear(slot);
         wingedSwordAttackThisFrame[slot] = false;
         wingedStateTwoThisFrame[slot] = false;
         laserMotion.clear(slot);
@@ -6518,6 +6551,36 @@ public final class RoomEntityRuntime {
         dynamicEntitySpawnedThisFrame[freeSlot] = true;
     }
 
+    private void spawnZoraProjectile(ZoraMotion.ProjectileSpawn spawn) {
+        int freeSlot = findFreeEntitySlot();
+        if (freeSlot < 0) {
+            return;
+        }
+
+        EntitySpriteDefinition projectileDefinition =
+            spriteDefinitionFor(ENTITY_GOPONGA_FLOWER_PROJECTILE);
+        int projectileVariant = projectileDefinition.supported()
+            ? projectileDefinition.initialVariant() : -1;
+        RoomEntity projectile = new RoomEntity(freeSlot, -1,
+            ENTITY_GOPONGA_FLOWER_PROJECTILE, spawn.x(), spawn.y(), EntityStatus.ACTIVE,
+            projectileDefinition, projectileVariant, 0, 0, 0);
+        slots[freeSlot] = projectile;
+        baseEntityFlipAttribute[freeSlot] = 0;
+        entityOptions1Override[freeSlot] = GopongaProjectileMotion.OPTIONS1;
+        enemyTransitionCountdown[freeSlot] = 0;
+        enemyStunnedCountdown[freeSlot] = 0;
+        dyingCountdown[freeSlot] = 0;
+        powerRecoilDeath[freeSlot] = false;
+        enemyPhysicsFlags[freeSlot] = GopongaProjectileMotion.INITIAL_PHYSICS_FLAGS;
+        enemyHealth[freeSlot] = GopongaProjectileMotion.HEALTH_OVERRIDE;
+        enemyFlashCountdown[freeSlot] = 0;
+        enemyIgnoreHitsCountdown[freeSlot] =
+            GopongaProjectileMotion.INITIAL_IGNORE_HITS_COUNTDOWN;
+        enemyRecoilMotion.clear(freeSlot);
+        gopongaProjectileMotion.initializeSpawn(freeSlot, spawn.speedX(), spawn.speedY(), true);
+        dynamicEntitySpawnedThisFrame[freeSlot] = true;
+    }
+
     /** Mirrors PokeyEntityHandler's SpawnNewEntity plus its detached-segment setup. */
     private void spawnPokeySegment(PokeyMotion.SegmentSpawn spawn) {
         int freeSlot = findFreeEntitySlot();
@@ -8328,6 +8391,9 @@ public final class RoomEntityRuntime {
         if (slots[slot].type() == ENTITY_POKEY) {
             return PokeyMotion.OPTIONS1;
         }
+        if (slots[slot].type() == ENTITY_ZORA) {
+            return ZoraMotion.OPTIONS1;
+        }
         if (slots[slot].type() == ENTITY_GOPONGA_FLOWER_PROJECTILE) {
             return GopongaProjectileMotion.OPTIONS1;
         }
@@ -8785,6 +8851,7 @@ public final class RoomEntityRuntime {
                 GopongaProjectileMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_POKEY -> PokeyMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_PIRANHA_PLANT -> PiranhaMotion.INITIAL_PHYSICS_FLAGS;
+            case ENTITY_ZORA -> ZoraMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_ROOSTER -> RoosterMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_BOO_BUDDY -> BooBuddyMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_DROPPABLE_FAIRY -> FAIRY_INITIAL_PHYSICS_FLAGS;

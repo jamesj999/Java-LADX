@@ -14,6 +14,7 @@ final class GopongaProjectileMotion {
     private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] flashing = new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     record Update(RoomEntity entity, int transitionCountdown, int ignoreHitsCountdown,
@@ -31,14 +32,20 @@ final class GopongaProjectileMotion {
         speedY[slot] = vector.y();
         speedXAccumulator[slot] = 0;
         speedYAccumulator[slot] = 0;
+        flashing[slot] = false;
         initialized[slot] = true;
     }
 
     void initializeSpawn(int slot, int newSpeedX, int newSpeedY) {
+        initializeSpawn(slot, newSpeedX, newSpeedY, false);
+    }
+
+    void initializeSpawn(int slot, int newSpeedX, int newSpeedY, boolean flash) {
         speedX[slot] = newSpeedX & 0xFF;
         speedY[slot] = newSpeedY & 0xFF;
         speedXAccumulator[slot] = 0;
         speedYAccumulator[slot] = 0;
+        flashing[slot] = flash;
         initialized[slot] = true;
     }
 
@@ -52,6 +59,7 @@ final class GopongaProjectileMotion {
 
         int countdown = transitionCountdown & 0xFF;
         int ignoreHits = ignoreHitsCountdown & 0xFF;
+        int renderFlipAttribute = renderFlipAttribute(entity, slot, frameCounter);
         if (countdown != 0) {
             int decremented = (countdown - 1) & 0xFF;
             if (decremented == 0) {
@@ -61,11 +69,13 @@ final class GopongaProjectileMotion {
             // The handler only decrements A for its animation/unload test;
             // the WRAM transition byte was already decremented by the shared
             // entity ticker and is not written back here.
-            return new Update(withVariant(entity, variant), countdown, ignoreHits, false);
+            return new Update(withVariant(entity, variant, renderFlipAttribute), countdown,
+                ignoreHits, false);
         }
 
         if (ignoreHits >= 0x02) {
-            return new Update(entity, IGNORE_HITS_TRANSITION_COUNTDOWN, ignoreHits, false);
+            return new Update(withFlip(entity, renderFlipAttribute),
+                IGNORE_HITS_TRANSITION_COUNTDOWN, ignoreHits, false);
         }
 
         // The handler clears hActiveEntityIgnoreHitsCountdown before calling
@@ -73,12 +83,13 @@ final class GopongaProjectileMotion {
         ignoreHits = 0;
         int variant = (frameCounter >>> 3) & 0x01;
         if (!handlerLinkCollisionEnabled) {
-            return new Update(withVariant(entity, variant), 0, ignoreHits, false);
+            return new Update(withVariant(entity, variant, renderFlipAttribute), 0,
+                ignoreHits, false);
         }
 
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
-        RoomEntity moved = withPositionAndVariant(entity, x, y, variant);
+        RoomEntity moved = withPositionAndVariant(entity, x, y, variant, renderFlipAttribute);
         int visualY = (moved.y() - moved.z()) & 0xFF;
         boolean unloaded = visualY >= 0x88 || moved.x() >= 0xA8;
         return new Update(moved, 0, ignoreHits, unloaded);
@@ -89,6 +100,7 @@ final class GopongaProjectileMotion {
         speedY[slot] = 0;
         speedXAccumulator[slot] = 0;
         speedYAccumulator[slot] = 0;
+        flashing[slot] = false;
         initialized[slot] = false;
     }
 
@@ -100,17 +112,28 @@ final class GopongaProjectileMotion {
         return speedY[slot] & 0xFF;
     }
 
-    private static RoomEntity withVariant(RoomEntity entity, int variant) {
+    private static RoomEntity withVariant(RoomEntity entity, int variant, int flipAttribute) {
         return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
             entity.x(), entity.y(), entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z());
+            flipAttribute, entity.spriteTileOffset(), entity.z());
     }
 
     private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y,
-                                                      int variant) {
+                                                      int variant, int flipAttribute) {
         return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
             entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z());
+            flipAttribute, entity.spriteTileOffset(), entity.z());
+    }
+
+    private static RoomEntity withFlip(RoomEntity entity, int flipAttribute) {
+        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
+            entity.x(), entity.y(), entity.status(), entity.spriteDefinition(),
+            entity.spriteVariant(), flipAttribute, entity.spriteTileOffset(), entity.z());
+    }
+
+    private int renderFlipAttribute(RoomEntity entity, int slot, int frameCounter) {
+        return flashing[slot] ? ((frameCounter << 2) & 0x10)
+            : entity.entityFlipAttribute();
     }
 
     private static int addSpeedToPosition(int position, int speed, int[] accumulator,
