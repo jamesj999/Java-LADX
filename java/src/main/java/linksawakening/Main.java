@@ -878,6 +878,8 @@ public class Main {
                             || inputState.isDown(inputConfig.bKey())
                             || inputState.isDown(inputConfig.selectKey())
                             || inputState.isDown(inputConfig.menuOpenKey())));
+                roomSession.setEntityPressedButtonsMask(
+                    link == null ? 0 : link.romPressedButtonsMask());
                 roomSession.setEntityPowerBraceletButtonHeld(isPowerBraceletButtonHeld());
                 roomSession.setEntityBombButtonHeld(isBombButtonHeld());
                 roomSession.setEntityAttackStepAnimationCountdown(
@@ -982,6 +984,12 @@ public class Main {
                         reflectedSword.resetSpinAttack();
                     }
                 }
+                for (var request : roomSession.consumeRoosterLinkStateRequests()) {
+                    if (link != null) {
+                        link.applyRoosterFlightState(request.positionZ(), request.velocityZ(),
+                            request.speedX(), request.speedY(), request.romDirection());
+                    }
+                }
                 synchronizeLinkLiftedPresentation();
             }
 
@@ -1043,6 +1051,9 @@ public class Main {
             link.setCarryingLiftedObjectState(state.carryState(),
                 state.effectiveRomDirection());
         } else {
+            if (link.isRoosterCarryActive()) {
+                link.clearRoosterCarryState();
+            }
             link.setCarryingLiftedObjectState(0, romDirectionForLink(link.direction()));
         }
     }

@@ -51,6 +51,7 @@ public final class RoomEntityCombatRules {
     private static final int ENTITY_CRYSTAL_SWITCH = 0x66;
     private static final int ENTITY_MAD_BOMBER = 0x93;
     private static final int ENTITY_BOMBER = 0xBA;
+    private static final int ENTITY_ROOSTER = 0xD5;
 
     // HitboxPositions._00 in home/entities.asm:3AAA. Octorok, Moblin, Armos,
     // and Keese all select the normal collision box in hitbox_flags.asm.
@@ -135,7 +136,8 @@ public final class RoomEntityCombatRules {
     }
 
     static boolean supportsLinkCollision(int type) {
-        return supportsEnemyCollision(type) || (type & 0xFF) == ENTITY_ARMOS_STATUE;
+        return supportsEnemyCollision(type) || (type & 0xFF) == ENTITY_ARMOS_STATUE
+            || (type & 0xFF) == ENTITY_ROOSTER;
     }
 
     static int contactDamage(int type) {

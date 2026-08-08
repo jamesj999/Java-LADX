@@ -174,6 +174,7 @@ public final class RoomSession {
     private boolean actionButtonAHeld;
     private boolean actionButtonBHeld;
     private boolean joypadHeld;
+    private int entityPressedButtonsMask;
     private boolean powerBraceletButtonHeld;
     private boolean bombButtonHeld;
     private int ocarinaPlaybackCountdown;
@@ -516,6 +517,18 @@ public final class RoomSession {
         this.joypadHeld = joypadHeld;
         if (entityRuntime != null) {
             entityRuntime.setJoypadHeld(joypadHeld);
+        }
+    }
+
+    /** Supplies hPressedButtonsMask's currently-held D-pad bits to entities. */
+    public void setEntityPressedButtonsMask(int pressedButtonsMask) {
+        if ((pressedButtonsMask & ~0xFF) != 0) {
+            throw new IllegalArgumentException("Entity pressed-buttons mask must be an unsigned byte: "
+                + pressedButtonsMask);
+        }
+        entityPressedButtonsMask = pressedButtonsMask;
+        if (entityRuntime != null) {
+            entityRuntime.setPressedButtonsMask(pressedButtonsMask);
         }
     }
 
@@ -1103,6 +1116,7 @@ public final class RoomSession {
             SwitchBlockAnimation.isAnimating(switchableObjectAnimationStage));
         entityRuntime.setActionButtonsHeld(actionButtonAHeld, actionButtonBHeld);
         entityRuntime.setJoypadHeld(joypadHeld);
+        entityRuntime.setPressedButtonsMask(entityPressedButtonsMask);
         entityRuntime.setPowerBraceletButtonHeld(powerBraceletButtonHeld);
         entityRuntime.setBombButtonHeld(bombButtonHeld);
         entityRuntime.setLiftedLinkC13B(followingEntityYOffset);
@@ -1223,6 +1237,13 @@ public final class RoomSession {
             consumeLinkFinalPositionRequests() {
         return entityRuntime == null
             ? List.of() : entityRuntime.consumePendingLinkFinalPositionRequests();
+    }
+
+    /** Returns and clears Rooster's Link HRAM writes from the last entity tick. */
+    public List<RoomEntityRuntime.RoosterLinkStateRequest>
+            consumeRoosterLinkStateRequests() {
+        return entityRuntime == null
+            ? List.of() : entityRuntime.consumePendingRoosterLinkStateRequests();
     }
 
     /** Returns and clears handlers that block Link's next interactive motion frame. */
@@ -1485,6 +1506,7 @@ public final class RoomSession {
                 activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL);
             entityRuntime.setActionButtonsHeld(actionButtonAHeld, actionButtonBHeld);
             entityRuntime.setJoypadHeld(joypadHeld);
+            entityRuntime.setPressedButtonsMask(entityPressedButtonsMask);
             entityRuntime.setPowerBraceletButtonHeld(powerBraceletButtonHeld);
             entityRuntime.setBombButtonHeld(bombButtonHeld);
             entityRuntime.setLiftedLinkC13B(followingEntityYOffset);
@@ -1541,6 +1563,7 @@ public final class RoomSession {
             activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL);
         entityRuntime.setActionButtonsHeld(actionButtonAHeld, actionButtonBHeld);
         entityRuntime.setJoypadHeld(joypadHeld);
+        entityRuntime.setPressedButtonsMask(entityPressedButtonsMask);
         entityRuntime.setPowerBraceletButtonHeld(powerBraceletButtonHeld);
         entityRuntime.setBombButtonHeld(bombButtonHeld);
         entityRuntime.setLiftedLinkC13B(followingEntityYOffset);

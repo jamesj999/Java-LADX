@@ -207,6 +207,7 @@ public final class Link implements RocsFeather.JumpTarget {
     private boolean hasPitSlipTarget;
     private int carryingLiftedObjectState;
     private int carryingLiftedObjectRomDirection = 3;
+    private boolean roosterCarryActive;
     private int lastSafeSubX;
     private int lastSafeSubY;
     private boolean hasLastSafePosition;
@@ -557,12 +558,50 @@ public final class Link implements RocsFeather.JumpTarget {
         }
     }
 
+    /** Applies the Link HRAM writes emitted by RoosterEntityHandler. */
+    public void applyRoosterFlightState(int positionZ, int velocityZ,
+                                        int speedX, int speedY, int romDirection) {
+        if ((positionZ & ~0xFF) != 0 || (velocityZ & ~0xFF) != 0) {
+            throw new IllegalArgumentException("Rooster Link Z values must be unsigned bytes");
+        }
+        if (romDirection < 0 || romDirection > 3) {
+            throw new IllegalArgumentException("Rooster ROM direction must be between 0 and 3");
+        }
+        motionState = LINK_MOTION_DEFAULT;
+        airborne = true;
+        zSubPixels = (positionZ & 0xFF) << SUB_PIXEL_SHIFT;
+        zVelocity = velocityZ & 0xFF;
+        groundStatus = GROUND_STATUS_NORMAL;
+        fallingIntoPit = false;
+        physicsModifier = 0;
+        roosterCarryActive = true;
+        direction = javaDirectionForRomDirection(romDirection);
+        applyRomSpeed(speedX, speedY);
+    }
+
+    /** Ends Rooster's custom airborne carry state when it is thrown or cleared. */
+    public void clearRoosterCarryState() {
+        roosterCarryActive = false;
+        airborne = false;
+        zSubPixels = 0;
+        zVelocity = 0;
+        groundStatus = GROUND_STATUS_NORMAL;
+        fallingIntoPit = false;
+        motionState = LINK_MOTION_DEFAULT;
+        physicsModifier = 0;
+        forcedSpeedPending = false;
+    }
+
+    public boolean isRoosterCarryActive() {
+        return roosterCarryActive;
+    }
+
     public int carryingLiftedObjectState() {
         return carryingLiftedObjectState;
     }
 
     public boolean isCarryingLiftedObject() {
-        return carryingLiftedObjectState != 0;
+        return carryingLiftedObjectState != 0 || roosterCarryActive;
     }
 
     public void setDirection(int newDirection) {
@@ -965,7 +1004,7 @@ public final class Link implements RocsFeather.JumpTarget {
     }
 
     private void tickJump() {
-        if (!airborne) {
+        if (!airborne || roosterCarryActive) {
             return;
         }
 
@@ -1238,7 +1277,7 @@ public final class Link implements RocsFeather.JumpTarget {
     }
 
     private boolean isLiftTransitionBlockingMotion() {
-        return carryingLiftedObjectState >= 2;
+        return carryingLiftedObjectState >= 2 && !roosterCarryActive;
     }
 
     private static int javaDirectionForRomDirection(int romDirection) {

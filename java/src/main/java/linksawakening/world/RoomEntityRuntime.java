@@ -345,6 +345,8 @@ public final class RoomEntityRuntime {
     private final List<TransientVfxRequest> transientVfxRequests = new ArrayList<>();
     private final List<LinkFinalPositionRequest> pendingLinkFinalPositionRequests =
         new ArrayList<>();
+    private final List<RoosterLinkStateRequest> pendingRoosterLinkStateRequests =
+        new ArrayList<>();
     private final List<LinkMotionBlockRequest> pendingLinkMotionBlockRequests =
         new ArrayList<>();
     private final List<ScreenShakeRequest> pendingScreenShakeRequests = new ArrayList<>();
@@ -374,6 +376,7 @@ public final class RoomEntityRuntime {
     private boolean actionButtonAHeld;
     private boolean actionButtonBHeld;
     private boolean joypadHeld;
+    private int linkPressedButtonsMask;
     private int linkItemA;
     private int linkItemB;
     private boolean powerBraceletButtonHeld;
@@ -456,6 +459,24 @@ public final class RoomEntityRuntime {
             if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
                 throw new IllegalArgumentException("Link final-position source slot out of range: "
                     + sourceSlot);
+            }
+        }
+    }
+
+    /** Link HRAM writes emitted by Rooster's active lifted handler. */
+    public record RoosterLinkStateRequest(int sourceSlot, int positionZ, int velocityZ,
+                                          int speedX, int speedY, int romDirection) {
+        public RoosterLinkStateRequest {
+            if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
+                throw new IllegalArgumentException("Rooster source slot out of range: "
+                    + sourceSlot);
+            }
+            if ((positionZ & ~0xFF) != 0 || (velocityZ & ~0xFF) != 0
+                || (speedX & ~0xFF) != 0 || (speedY & ~0xFF) != 0) {
+                throw new IllegalArgumentException("Rooster Link state must be byte-shaped");
+            }
+            if (romDirection < 0 || romDirection > 3) {
+                throw new IllegalArgumentException("Rooster ROM direction must be between 0 and 3");
             }
         }
     }
@@ -1076,6 +1097,7 @@ public final class RoomEntityRuntime {
         Arrays.fill(wingedStateTwoThisFrame, false);
         transientVfxRequests.clear();
         pendingLinkFinalPositionRequests.clear();
+        pendingRoosterLinkStateRequests.clear();
         pendingLinkMotionBlockRequests.clear();
         pendingScreenShakeRequests.clear();
         boomerangObjectRequests.clear();
@@ -1134,6 +1156,7 @@ public final class RoomEntityRuntime {
             boolean preservePincerPresentation = false;
             boolean preserveBushCrawlerPresentation = false;
             boolean preserveCuccoPresentation = false;
+            boolean preserveRoosterPresentation = false;
             boolean preserveWizrobePresentation = false;
             boolean preserveWizrobeProjectilePresentation = false;
             boolean preservePolsVoicePresentation = false;
@@ -1348,8 +1371,24 @@ public final class RoomEntityRuntime {
             }
             if (status == EntityStatus.LIFTED) {
                 RoomEntity lifted = renderLiftedEntity(entity, frame);
+                int liftedRomDirection = romLinkDirection;
+                if (entity.type() == ENTITY_ROOSTER) {
+                    RoosterMotion.Update roosterUpdate = RoosterMotion.advanceLifted(
+                        frame, linkZ & 0xFF, linkPressedButtonsMask, romCollisionType,
+                        currentLinkSpeedX, currentLinkSpeedY, romLinkDirection);
+                    lifted = withVariant(lifted, roosterUpdate.spriteVariant());
+                    liftedSourceDirection[entity.slot()] = roosterUpdate.romDirection();
+                    liftedRomDirection = roosterUpdate.romDirection();
+                    pendingRoosterLinkStateRequests.add(new RoosterLinkStateRequest(
+                        entity.slot(), roosterUpdate.positionZ(), roosterUpdate.velocityZ(),
+                        roosterUpdate.speedX(), roosterUpdate.speedY(),
+                        roosterUpdate.romDirection()));
+                    pendingEntityEvents.add(new EntityCombatEvent(
+                        entity.slot(), entity.type(), 0, false,
+                        EntityCombatEvent.SoundChannel.NOISE, RoosterMotion.BOOMERANG_SFX));
+                }
                 slots[index] = advanceLiftedEntity(lifted, linkEntityX, linkEntityY, linkZ,
-                    romLinkDirection);
+                    liftedRomDirection);
                 continue;
             } else if (status == EntityStatus.THROWN) {
                 if (entity.type() == ENTITY_BOMB) {
@@ -2564,6 +2603,24 @@ public final class RoomEntityRuntime {
                 }
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_ROOSTER) {
+                preserveRoosterPresentation = true;
+                if (projectileLinkState.motionState() == 0
+                    && (linkZ & 0xFF) == 0
+                    && linkAttackStepAnimationCountdown == 0
+                    && cuccoPowerBraceletHeld()
+                    && RoomEntityCombatRules.overlapsLink(entity, linkEntityX, linkEntityY)
+                    && beginLift(entity.slot(), romLinkDirection)) {
+                    pendingRoosterLinkStateRequests.add(new RoosterLinkStateRequest(
+                        entity.slot(), 0x02, 0x00, currentLinkSpeedX, currentLinkSpeedY,
+                        romLinkDirection));
+                    pendingEntityEvents.add(new EntityCombatEvent(
+                        entity.slot(), entity.type(), 0, false,
+                        EntityCombatEvent.SoundChannel.WAVE, RoosterMotion.LIFT_WAVE_SFX));
+                    continue;
+                }
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
                 && ColorShellMotion.isColorShellType(entity.type())) {
                 ColorShellMotion.Update shellUpdate = colorShellMotion.advance(
                     entity, frame, linkEntityX, linkEntityY, randomByteSupplier,
@@ -2641,6 +2698,7 @@ public final class RoomEntityRuntime {
                 || preserveBlooperPresentation || preserveWingedOctorokPresentation
                 || preservePincerPresentation || preserveBushCrawlerPresentation
                 || preserveCuccoPresentation
+                || preserveRoosterPresentation
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
                 || preservePolsVoicePresentation
                 || preserveSpikedBeetlePresentation || preserveArmosKnightPresentation
@@ -2655,6 +2713,7 @@ public final class RoomEntityRuntime {
                 || preserveBlooperPresentation || preserveWingedOctorokPresentation
                 || preservePincerPresentation || preserveBushCrawlerPresentation
                 || preserveCuccoPresentation
+                || preserveRoosterPresentation
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
                 || preservePolsVoicePresentation
                 || preserveSpikedBeetlePresentation || preserveArmosKnightPresentation
@@ -5087,6 +5146,11 @@ public final class RoomEntityRuntime {
         this.joypadHeld = joypadHeld;
     }
 
+    void setPressedButtonsMask(int pressedButtonsMask) {
+        validateByte(pressedButtonsMask, "Pressed buttons mask");
+        this.linkPressedButtonsMask = pressedButtonsMask;
+    }
+
     void setLikeLikeLinkInventory(int itemA, int itemB) {
         validateByte(itemA, "Link A inventory slot");
         validateByte(itemB, "Link B inventory slot");
@@ -5229,6 +5293,12 @@ public final class RoomEntityRuntime {
     List<LinkFinalPositionRequest> consumePendingLinkFinalPositionRequests() {
         List<LinkFinalPositionRequest> pending = List.copyOf(pendingLinkFinalPositionRequests);
         pendingLinkFinalPositionRequests.clear();
+        return pending;
+    }
+
+    List<RoosterLinkStateRequest> consumePendingRoosterLinkStateRequests() {
+        List<RoosterLinkStateRequest> pending = List.copyOf(pendingRoosterLinkStateRequests);
+        pendingRoosterLinkStateRequests.clear();
         return pending;
     }
 
@@ -7768,12 +7838,13 @@ public final class RoomEntityRuntime {
             case ENTITY_FISH -> FishMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_CROW -> CrowMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_CUCCO -> CuccoMotion.INITIAL_PHYSICS_FLAGS;
+            case ENTITY_ROOSTER -> RoosterMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_BOO_BUDDY -> BooBuddyMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_DROPPABLE_FAIRY -> FAIRY_INITIAL_PHYSICS_FLAGS;
             case ENTITY_MAD_BOMBER -> MAD_BOMBER_INITIAL_PHYSICS_FLAGS;
             case ENTITY_BOMBER -> BOMBER_INITIAL_PHYSICS_FLAGS;
             case ENTITY_LIFTABLE_ROCK, ENTITY_LIFTABLE_STATUE,
-                ENTITY_WRECKING_BALL, ENTITY_SIDE_VIEW_POT, ENTITY_ROOSTER,
+                ENTITY_WRECKING_BALL, ENTITY_SIDE_VIEW_POT,
                 ENTITY_HORSE_PIECE -> ENTITY_PHYSICS_GRABBABLE;
             default -> 0;
         };

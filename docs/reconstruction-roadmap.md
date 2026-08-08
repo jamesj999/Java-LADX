@@ -2466,6 +2466,21 @@ runtime collision callback.
   The clean Java suite passes with 1,267 tests and zero failures, errors, or
   skipped tests.
 
+## Verified ROM Rooster entity runtime — 2026-08-08
+
+- Rooster (`$D5`) now keeps its source bank-$19 `$59BC` eight-pair display
+  list and ROM physics byte `$D2`; it is no longer incorrectly treated as a
+  generic `$20` grabbable object.
+- The active following handler ports the source B-slot-first Power Bracelet
+  collision gate, `$07` lifted state, Link airborne/Z initialization, held
+  D-pad direction table, eight-frame Z target table, collision-clamped Link
+  speed writes, and per-frame boomerang sound cue. The live Java frame loop
+  carries those HRAM-shaped writes back into Link before the next movement
+  update, including cleanup when the Rooster is thrown or released.
+- Focused motion, runtime, and Link-bridge regressions cover the ROM tables,
+  lift trigger, carry presentation, and state cleanup. The clean Java suite
+  passes with 1,271 tests and zero failures, errors, or skipped tests.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,
