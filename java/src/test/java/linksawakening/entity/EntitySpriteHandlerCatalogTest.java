@@ -239,6 +239,25 @@ final class EntitySpriteHandlerCatalogTest {
     }
 
     @Test
+    void mapsMaskedMimicGoriyaToItsBankNineteenEightVariantPairList() throws Exception {
+        EntitySpriteDefinition maskedMimic = new EntitySpriteHandlerCatalog(loadRom())
+            .forEntityType(0x8F, EntityRoomLoader.RoomTable.INDOORS_A);
+
+        assertDefinition(maskedMimic, 0x19, 0x4796,
+            EntitySpriteDefinition.Shape.PAIR, 8, 0);
+        assertPairBytes(maskedMimic, new int[][] {
+            {0x6A, 0x22, 0x68, 0x22},
+            {0x6E, 0x22, 0x6C, 0x22},
+            {0x68, 0x02, 0x6A, 0x02},
+            {0x6C, 0x02, 0x6E, 0x02},
+            {0x64, 0x02, 0x66, 0x02},
+            {0x66, 0x22, 0x64, 0x22},
+            {0x60, 0x02, 0x62, 0x02},
+            {0x62, 0x22, 0x60, 0x22}
+        });
+    }
+
+    @Test
     void mapsBoomerangToItsFourFrameBankNineteenDisplayList() {
         byte[] rom = syntheticRom();
         write(rom, 0x19, 0x4451,

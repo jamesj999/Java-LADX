@@ -2610,6 +2610,22 @@ runtime collision callback.
   animation and Cave B trade-sequence render suppression remain explicitly
   deferred until the runtime snapshot carries those source state values.
 
+## Verified ROM Masked Mimic entity runtime — 2026-08-08
+
+- Masked Mimic/Goriya (`$8F`) now decodes the ordinary bank `$19:$4796` eight
+  pair variants directly from the ROM. The map `$1F` dispatch to the separate
+  Goriya handler remains excluded rather than being represented by the masked
+  Mimic display list.
+- The ordinary handler ports `Data_019_47B6`/`Data_019_47B9` input selection,
+  including their unchecked fourth entries, same-frame fixed-point movement,
+  dominant-axis Link direction selection, dynamic options `$48`/`$08`,
+  background rollback, direction writes, and the 16-frame inertia variant bit.
+- ROM combat metadata is wired for health `$02`, contact damage `$04`, physics
+  `$12`, and enemy collision. Focused ROM display, motion, collision, runtime,
+  and combat regressions pass; the clean Java suite passes with 1,311 tests and
+  zero failures, errors, or skipped tests. The Cave-Water Goriya trade/state
+  handler remains explicitly deferred.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

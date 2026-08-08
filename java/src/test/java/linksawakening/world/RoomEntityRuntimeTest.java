@@ -99,6 +99,39 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void maskedMimicUsesItsRomInputHandlerAndCombatTables() throws Exception {
+        byte[] rom = loadRom();
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            EntitySpriteHandlerCatalog.ENTITY_MASKED_MIMIC_GORIYA,
+            EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, EntitySpriteHandlerCatalog.ENTITY_MASKED_MIMIC_GORIYA,
+                0x40, 0x50, EntityStatus.ACTIVE, definition, 0)),
+            true, null, catalog, tables);
+
+        runtime.setPressedButtonsMask(0x01);
+        runtime.tick(0, 0x50, 0x50, () -> 0,
+            null, null, 0, 3, 0);
+        assertEquals(0x3F, runtime.snapshot().slots().get(0).x());
+        assertEquals(0x02, runtime.snapshot().slots().get(0).spriteVariant());
+        assertEquals(0x02, runtime.enemyHealth(0));
+        assertEquals(0x12, runtime.physicsFlags(0));
+        assertEquals(0x48, runtime.options1(0));
+
+        runtime.tick(1, 0x50, 0x50, () -> 0,
+            null, null, 0, 3, 0);
+        assertEquals(0x3E, runtime.snapshot().slots().get(0).x());
+        assertEquals(0x08, runtime.options1(0));
+
+        List<EntityCombatEvent> contact = runtime.resolveCombat(
+            1, 0x3E, 0x50, false, true, false, 0, 0, 0, 0);
+        assertEquals(1, contact.size());
+        assertEquals(0x04, contact.get(0).linkDamage());
+    }
+
+    @Test
     void crystalSwitchDoesNotRequestAnotherAnimationWhileSwitchBlocksAreActive()
         throws Exception {
         byte[] rom = loadRom();

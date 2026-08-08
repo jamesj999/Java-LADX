@@ -23,6 +23,7 @@ public final class EntitySpriteHandlerCatalog {
     public static final int ENTITY_BUSH_CRAWLER = 0xBB;
     public static final int ENTITY_MIMIC = 0x28;
     public static final int ENTITY_MINI_MOLDORM = 0x29;
+    public static final int ENTITY_MASKED_MIMIC_GORIYA = 0x8F;
     public static final int ENTITY_CUCCO = 0x6C;
     public static final int LIFTABLE_ROCK_INTACT_ROCK_VARIANT = 0;
     public static final int LIFTABLE_ROCK_INTACT_BUSH_VARIANT = 1;
@@ -291,6 +292,9 @@ public final class EntitySpriteHandlerCatalog {
         }
         if (entityType == ENTITY_MINI_MOLDORM) {
             return decodePair(entityType, 0x04, 0x5A49, 10, 0);
+        }
+        if (entityType == ENTITY_MASKED_MIMIC_GORIYA && mapId != 0x1F) {
+            return decodePair(entityType, 0x19, 0x4796, 8, 0);
         }
         if (entityType == ENTITY_ANTI_FAIRY) {
             return decodePair(entityType, 0x06, 0x786E, 2, 0);

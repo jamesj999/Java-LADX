@@ -50,6 +50,8 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_MIMIC = EntitySpriteHandlerCatalog.ENTITY_MIMIC;
     private static final int ENTITY_MINI_MOLDORM =
         EntitySpriteHandlerCatalog.ENTITY_MINI_MOLDORM;
+    private static final int ENTITY_MASKED_MIMIC_GORIYA =
+        EntitySpriteHandlerCatalog.ENTITY_MASKED_MIMIC_GORIYA;
     private static final int ENTITY_SPIKE_TRAP = 0x27;
     private static final int ENTITY_PAIRODD = 0x57;
     private static final int ENTITY_PAIRODD_PROJECTILE = 0x58;
@@ -271,6 +273,7 @@ public final class RoomEntityRuntime {
     private final PincerMotion pincerMotion = new PincerMotion();
     private final BushCrawlerMotion bushCrawlerMotion = new BushCrawlerMotion();
     private final MimicMotion mimicMotion = new MimicMotion();
+    private final MaskedMimicMotion maskedMimicMotion = new MaskedMimicMotion();
     private final MiniMoldormMotion miniMoldormMotion = new MiniMoldormMotion();
     private final CuccoMotion cuccoMotion = new CuccoMotion();
     private final SpikeTrapMotion spikeTrapMotion = new SpikeTrapMotion();
@@ -784,6 +787,9 @@ public final class RoomEntityRuntime {
             if (entity.loaded() && entity.type() == ENTITY_MIMIC) {
                 mimicMotion.initialize(entity.slot());
             }
+            if (entity.loaded() && entity.type() == ENTITY_MASKED_MIMIC_GORIYA) {
+                maskedMimicMotion.initialize(entity.slot());
+            }
             if (entity.loaded() && entity.type() == ENTITY_MINI_MOLDORM) {
                 miniMoldormMotion.initialize(entity);
             }
@@ -1237,6 +1243,7 @@ public final class RoomEntityRuntime {
             boolean preservePincerPresentation = false;
             boolean preserveBushCrawlerPresentation = false;
             boolean preserveMimicPresentation = false;
+            boolean preserveMaskedMimicPresentation = false;
             boolean preserveMiniMoldormPresentation = false;
             boolean preserveCuccoPresentation = false;
             boolean preserveRoosterPresentation = false;
@@ -1883,6 +1890,7 @@ public final class RoomEntityRuntime {
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && usesSharedRecoil(entity.type())
                 && entity.type() != ENTITY_MINI_MOLDORM
+                && (entity.type() != ENTITY_MASKED_MIMIC_GORIYA || entityMapId != 0x1F)
                 && ((entity.type() != ENTITY_STAR && entity.type() != ENTITY_BLOOPER)
                     || handlerLinkCollisionEnabled)) {
                 // Bank-$03 AnimateRoamingEnemy and the bank-$04/$06/$07
@@ -1946,6 +1954,24 @@ public final class RoomEntityRuntime {
                     mimicBackgroundInteraction, enemyIgnoreHitsCountdown[slot], frame);
                 updated = mimicUpdate.entity();
                 preserveMimicPresentation = true;
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_MASKED_MIMIC_GORIYA
+                && entityMapId != 0x1F) {
+                int slot = entity.slot();
+                RoomEntityBackgroundInteraction maskedMimicBackgroundInteraction =
+                    backgroundInteraction;
+                if (maskedMimicBackgroundInteraction == null && backgroundCollision != null) {
+                    maskedMimicBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
+                        backgroundCollision);
+                }
+                MaskedMimicMotion.Update maskedMimicUpdate = maskedMimicMotion.advance(
+                    entity, linkEntityX, linkEntityY, romLinkDirection,
+                    linkPressedButtonsMask, romCollisionType,
+                    maskedMimicBackgroundInteraction, enemyIgnoreHitsCountdown[slot], frame);
+                updated = maskedMimicUpdate.entity();
+                entityOptions1Override[slot] = maskedMimicUpdate.options1();
+                preserveMaskedMimicPresentation = true;
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_CRYSTAL_SWITCH) {
@@ -2934,6 +2960,7 @@ public final class RoomEntityRuntime {
                 || preserveBlooperPresentation || preserveWingedOctorokPresentation
                 || preservePincerPresentation || preserveBushCrawlerPresentation
                 || preserveMimicPresentation
+                || preserveMaskedMimicPresentation
                 || preserveMiniMoldormPresentation
                 || preserveCuccoPresentation
                 || preserveRoosterPresentation
@@ -2952,6 +2979,7 @@ public final class RoomEntityRuntime {
                 || preserveBlooperPresentation || preserveWingedOctorokPresentation
                 || preservePincerPresentation || preserveBushCrawlerPresentation
                 || preserveMimicPresentation
+                || preserveMaskedMimicPresentation
                 || preserveMiniMoldormPresentation
                 || preserveCuccoPresentation
                 || preserveRoosterPresentation
@@ -4399,6 +4427,7 @@ public final class RoomEntityRuntime {
         pincerMotion.clear(slot);
         bushCrawlerMotion.clear(slot);
         mimicMotion.clear(slot);
+        maskedMimicMotion.clear(slot);
         miniMoldormMotion.clear(slot);
         if (!entity.loaded()) {
             return 0;
@@ -5794,6 +5823,7 @@ public final class RoomEntityRuntime {
             || type == ENTITY_BUSH_CRAWLER
             || type == ENTITY_PAIRODD
             || type == ENTITY_MIMIC
+            || type == ENTITY_MASKED_MIMIC_GORIYA
             || type == ENTITY_MINI_MOLDORM
             || isRoamingEnemyType(type) || usesBank6Recoil(type)
             || isGhiniType(type);
@@ -8471,6 +8501,7 @@ public final class RoomEntityRuntime {
             case ENTITY_GOOMBA, ENTITY_SNAKE -> GOOMBA_INITIAL_PHYSICS_FLAGS;
             case ENTITY_WIZROBE -> 0x02;
             case ENTITY_MIMIC -> 0x12;
+            case ENTITY_MASKED_MIMIC_GORIYA -> 0x12;
             case ENTITY_MINI_MOLDORM -> 0x02;
             case ENTITY_SWORD_SHIELD_PICKUP -> SWORD_SHIELD_PICKUP_INITIAL_PHYSICS_FLAGS;
             case ENTITY_KEY_DROP_POINT -> KEY_DROP_POINT_INITIAL_PHYSICS_FLAGS;
@@ -8867,6 +8898,7 @@ public final class RoomEntityRuntime {
         pincerMotion.clear(slot);
         bushCrawlerMotion.clear(slot);
         mimicMotion.clear(slot);
+        maskedMimicMotion.clear(slot);
         miniMoldormMotion.clear(slot);
         cuccoMotion.clear(slot);
         spikeTrapMotion.clear(slot);
