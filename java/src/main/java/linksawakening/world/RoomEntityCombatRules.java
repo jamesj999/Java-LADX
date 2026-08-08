@@ -61,6 +61,7 @@ public final class RoomEntityCombatRules {
     private static final int ENTITY_POKEY = 0xE3;
     private static final int ENTITY_PIRANHA_PLANT = 0xA2;
     private static final int ENTITY_ZORA = 0xCB;
+    private static final int ENTITY_ZOMBIE = 0xBF;
 
     // HitboxPositions._00 in home/entities.asm:3AAA. Octorok, Moblin, Armos,
     // and Keese all select the normal collision box in hitbox_flags.asm.
@@ -134,7 +135,7 @@ public final class RoomEntityCombatRules {
                 ENTITY_CROW,
                 ENTITY_CUCCO, ENTITY_GOPONGA_FLOWER, ENTITY_GIANT_GOPONGA_FLOWER,
                 ENTITY_GOPONGA_FLOWER_PROJECTILE,
-                ENTITY_POKEY, ENTITY_PIRANHA_PLANT, ENTITY_ZORA,
+                ENTITY_POKEY, ENTITY_PIRANHA_PLANT, ENTITY_ZORA, ENTITY_ZOMBIE,
                 ENTITY_BOO_BUDDY,
                 ENTITY_SPIKED_BEETLE,
                 ENTITY_PAIRODD, ENTITY_COLOR_SHELL_RED, ENTITY_COLOR_SHELL_GREEN,
@@ -158,7 +159,7 @@ public final class RoomEntityCombatRules {
                 ENTITY_WATER_TEKTITE, ENTITY_PAIRODD,
                 ENTITY_HIDING_ZOL, ENTITY_STAR, ENTITY_BLOOPER, ENTITY_WINGED_OCTOROK,
                 ENTITY_GOOMBA, ENTITY_SNAKE, ENTITY_BUSH_CRAWLER, ENTITY_POKEY,
-                ENTITY_PIRANHA_PLANT, ENTITY_ZORA ->
+                ENTITY_PIRANHA_PLANT, ENTITY_ZORA, ENTITY_ZOMBIE ->
                 OCTOROK_AND_KEESE_CONTACT_DAMAGE;
             case ENTITY_FISH -> OCTOROK_AND_KEESE_CONTACT_DAMAGE;
             case ENTITY_CROW -> CROW_CONTACT_DAMAGE;
@@ -202,7 +203,7 @@ public final class RoomEntityCombatRules {
             case ENTITY_KEESE, ENTITY_OCTOROK, ENTITY_PEAHAT, ENTITY_WATER_TEKTITE,
                 ENTITY_STAR, ENTITY_BLOOPER, ENTITY_WINGED_OCTOROK,
                 ENTITY_GOOMBA, ENTITY_SNAKE, ENTITY_POKEY, ENTITY_PIRANHA_PLANT,
-                ENTITY_ZORA ->
+                ENTITY_ZORA, ENTITY_ZOMBIE ->
                 OCTOROK_AND_KEESE_INITIAL_HEALTH;
             case ENTITY_FISH -> OCTOROK_AND_KEESE_INITIAL_HEALTH;
             case ENTITY_CROW -> CROW_INITIAL_HEALTH;
