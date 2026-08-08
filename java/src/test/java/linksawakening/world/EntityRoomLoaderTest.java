@@ -387,7 +387,7 @@ final class EntityRoomLoaderTest {
     }
 
     private static byte[] syntheticRom() {
-        return new byte[RomBank.romOffset(0x20, 0x8000)];
+        return new byte[RomBank.romOffset(0x36, 0x8000)];
     }
 
     private static void writePointer(byte[] rom, EntityRoomLoader.RoomTable table,

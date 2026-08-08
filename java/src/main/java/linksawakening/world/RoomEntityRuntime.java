@@ -205,6 +205,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_GOPONGA_FLOWER_PROJECTILE =
         GopongaProjectileMotion.ENTITY_TYPE;
     private static final int ENTITY_POKEY = PokeyMotion.ENTITY_TYPE;
+    private static final int ENTITY_PIRANHA_PLANT = PiranhaMotion.ENTITY_TYPE;
     private static final int ENTITY_HORSE_PIECE = 0x98;
     private static final int ENTITY_PHYSICS_GRABBABLE = 0x20;
     private static final int OBJECT_BUSH = 0x5C;
@@ -285,6 +286,7 @@ public final class RoomEntityRuntime {
     private final GopongaProjectileMotion gopongaProjectileMotion =
         new GopongaProjectileMotion();
     private final PokeyMotion pokeyMotion = new PokeyMotion();
+    private final PiranhaMotion piranhaMotion = new PiranhaMotion();
     private final SpikeTrapMotion spikeTrapMotion = new SpikeTrapMotion();
     private final PairoddMotion pairoddMotion = new PairoddMotion();
     private final PairoddProjectileMotion pairoddProjectileMotion =
@@ -1259,6 +1261,7 @@ public final class RoomEntityRuntime {
             boolean preserveGiantGopongaPresentation = false;
             boolean preserveGopongaProjectilePresentation = false;
             boolean preservePokeyPresentation = false;
+            boolean preservePiranhaPresentation = false;
             boolean preserveRoosterPresentation = false;
             boolean preserveWizrobePresentation = false;
             boolean preserveWizrobeProjectilePresentation = false;
@@ -1660,6 +1663,9 @@ public final class RoomEntityRuntime {
                 }
                 if (entity.type() == ENTITY_POKEY) {
                     pokeyMotion.initialize(entity.slot());
+                }
+                if (entity.type() == ENTITY_PIRANHA_PLANT) {
+                    piranhaMotion.initialize(entity.slot());
                 }
                 if (entity.type() == ENTITY_BOO_BUDDY) {
                     booBuddyMotion.initialize(entity.slot());
@@ -2919,6 +2925,16 @@ public final class RoomEntityRuntime {
                 preservePokeyPresentation = true;
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_PIRANHA_PLANT && !creditsGameplay
+                && transitionSequenceCounter == 0x04 && handlerLinkCollisionEnabled) {
+                int slot = entity.slot();
+                PiranhaMotion.Update piranhaUpdate = piranhaMotion.advance(
+                    updated, enemyTransitionCountdown[slot], linkEntityX, linkEntityY);
+                updated = piranhaUpdate.entity();
+                enemyTransitionCountdown[slot] = piranhaUpdate.transitionCountdown();
+                preservePiranhaPresentation = true;
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
                 && isGhiniType(entity.type())) {
                 updated = ghiniMotion.advance(entity, frame, entity.type(),
                     linkEntityX, linkEntityY, romCollisionType, randomByteSupplier);
@@ -3084,6 +3100,7 @@ public final class RoomEntityRuntime {
                 || preserveGiantGopongaPresentation
                 || preserveGopongaProjectilePresentation
                 || preservePokeyPresentation
+                || preservePiranhaPresentation
                 || preserveRoosterPresentation
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
                 || preservePolsVoicePresentation
@@ -3107,6 +3124,7 @@ public final class RoomEntityRuntime {
                 || preserveGiantGopongaPresentation
                 || preserveGopongaProjectilePresentation
                 || preservePokeyPresentation
+                || preservePiranhaPresentation
                 || preserveRoosterPresentation
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
                 || preservePolsVoicePresentation
@@ -3478,6 +3496,12 @@ public final class RoomEntityRuntime {
             RoomEntity entity = slots[index];
             if (!entity.loaded() || entity.status() != EntityStatus.ACTIVE
                 || !RoomEntityCombatRules.supportsEnemyCollision(entity.type())) {
+                continue;
+            }
+            if (entity.type() == ENTITY_PIRANHA_PLANT
+                && piranhaMotion.state(entity.slot()) == 0) {
+                // PiranhaPlantState0Handler keeps the plant hidden and does
+                // not call DefaultEnemyDamageCollisionHandler.
                 continue;
             }
             if (entity.type() == ENTITY_FISH
@@ -8760,6 +8784,7 @@ public final class RoomEntityRuntime {
             case ENTITY_GOPONGA_FLOWER_PROJECTILE ->
                 GopongaProjectileMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_POKEY -> PokeyMotion.INITIAL_PHYSICS_FLAGS;
+            case ENTITY_PIRANHA_PLANT -> PiranhaMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_ROOSTER -> RoosterMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_BOO_BUDDY -> BooBuddyMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_DROPPABLE_FAIRY -> FAIRY_INITIAL_PHYSICS_FLAGS;
@@ -9141,6 +9166,7 @@ public final class RoomEntityRuntime {
         pincerMotion.clear(slot);
         bushCrawlerMotion.clear(slot);
         pokeyMotion.clear(slot);
+        piranhaMotion.clear(slot);
         mimicMotion.clear(slot);
         maskedMimicMotion.clear(slot);
         miniMoldormMotion.clear(slot);
