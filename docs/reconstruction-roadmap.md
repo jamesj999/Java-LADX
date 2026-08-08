@@ -27,8 +27,9 @@ resource.
 
 - Static pickup and NPC handlers now advance through a mutable sixteen-slot
   runtime, including frame-driven Piece of Power, Butterfly, and kid variants.
-- Room-defined indoor droppables mirror the `$80` slow-transition timer,
-  four-frame decrement cadence, blink sentinel, and unload boundary.
+- Room-defined indoor droppable initialization mirrors the `$80`
+  slow-transition timer and four-frame cadence while preserving the source
+  hidden-state early return; revealed drops use the shared blink/unload path.
 - Pickup collision uses the ROM pickable table, hitbox `$1C`, frame/slot
   cadence, capacity-aware resource buffers, and first-eight room persistence.
 - Butterfly movement mirrors bank `$06`'s signed fixed-point speed/accumulator
@@ -890,6 +891,30 @@ runtime collision callback.
   branches remain separate.
 - Focused motion/runtime/dialog/renderer regressions and the complete Java
   suite (928 test cases) pass.
+
+## Verified ROM shared hidden-droppable runtime — 2026-08-08
+
+- Ordinary shared drops `$2D/$2E/$2F/$37/$38/$3B` now follow the bank-$03
+  init and active-handler split at `$4F12-$4FAE` and `$61DE-$62B3`.
+  Hearts and magic powder use buried state `$02`; tree/pot drops use Pegasus
+  state `$01` outdoors and buried state `$02` indoors. Hidden entities retain
+  their slot, set options `$11`, suppress their sprite, and return before
+  pickup, movement, or background interaction.
+- The outdoor object branch samples the live object-under-entity boundary and
+  accepts short grass `$04` for hearts and shovel hole `$CC` for the remaining
+  shared buried drops. The Pegasus branch requires both ROM collision latches
+  and applies the source unsigned half-open `$20`-byte window around the entity
+  centre.
+- Reveal state writes options `$0A`, private countdown 1 `$18`, slow timer
+  `$80`, the length-`$0C` vector away from Link, and Z speed `$20`, then enters
+  the existing top-down bouncing physics. Fairy `$2F` hands the seeded X/Y
+  speed to its dedicated hover handler instead of generic drop physics.
+- The `$608C` fade sentinel is preserved: counts below `$1C` alternate visible
+  and hidden presentation, and zero unloads only after the hidden-state helper
+  has returned normally. The inventory/resource writes and handler-specific
+  pickup side effects remain separate follow-up work.
+- Focused hidden-drop regressions plus the clean Java suite pass with 1,288
+  tests and zero failures, errors, or skipped tests.
 
 ## Next entity increments
 

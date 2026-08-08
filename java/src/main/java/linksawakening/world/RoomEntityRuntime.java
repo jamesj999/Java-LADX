@@ -55,6 +55,11 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_CROW = CrowMotion.ENTITY_TYPE;
     private static final int ENTITY_BOO_BUDDY = BooBuddyMotion.ENTITY_TYPE;
     private static final int ENTITY_DROPPABLE_FAIRY = FairyMotion.ENTITY_TYPE;
+    private static final int ENTITY_DROPPABLE_HEART = 0x2D;
+    private static final int ENTITY_DROPPABLE_RUPEE = 0x2E;
+    private static final int ENTITY_DROPPABLE_ARROWS = 0x37;
+    private static final int ENTITY_DROPPABLE_BOMBS = 0x38;
+    private static final int ENTITY_DROPPABLE_MAGIC_POWDER = 0x3B;
     private static final int ENTITY_STALFOS_AGGRESSIVE = 0x1A;
     private static final int ENTITY_STALFOS_EVASIVE = 0x1E;
     private static final int ENTITY_GIBDO = 0x1F;
@@ -122,6 +127,18 @@ public final class RoomEntityRuntime {
         ENTITY_OPT1_NO_GROUND_INTERACTION | ENTITY_OPT1_NO_WALL_COLLISION;
     private static final int SECRET_SEASHELL_REVEALED_OPTIONS1 =
         ENTITY_OPT1_SPLASH_IN_WATER | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
+    private static final int DROPPABLE_HIDDEN_OPTIONS1 =
+        ENTITY_OPT1_NO_GROUND_INTERACTION | ENTITY_OPT1_NO_WALL_COLLISION;
+    private static final int DROPPABLE_REVEALED_OPTIONS1 =
+        ENTITY_OPT1_SPLASH_IN_WATER | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
+    private static final int DROPPABLE_HIDDEN_STATE_BURIED = 0x02;
+    private static final int DROPPABLE_HIDDEN_STATE_PEGASUS = 0x01;
+    private static final int DROPPABLE_REVEAL_COUNTDOWN = 0x18;
+    private static final int DROPPABLE_REVEAL_SLOW_COUNTDOWN = 0x80;
+    private static final int DROPPABLE_REVEAL_VECTOR_LENGTH = 0x0C;
+    private static final int DROPPABLE_REVEAL_SPEED_Z = 0x20;
+    private static final int DROPPABLE_OBJECT_SHORT_GRASS = 0x04;
+    private static final int DROPPABLE_OBJECT_SHOVEL_HOLE = 0xCC;
     private static final int ENTITY_HEART_CONTAINER = 0x36;
     private static final int ENTITY_MOBLIN_SWORD = 0x14;
     private static final int ENTITY_LASER = 0x2A;
@@ -283,6 +300,8 @@ public final class RoomEntityRuntime {
     private final int[] droppedItemBySlot = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] dropPrivateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] dropPrivateCountdown3 = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] droppablePrivateState3 = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] droppablePrivateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] enemyDropActive = new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final EnemyDropMotion enemyDropMotion = new EnemyDropMotion();
     private final int[] enemyTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -1184,6 +1203,7 @@ public final class RoomEntityRuntime {
             boolean preserveSpikedBeetlePresentation = false;
             boolean preserveArmosKnightPresentation = false;
             boolean preserveSecretSeashellPresentation = false;
+            boolean preserveDroppablePresentation = false;
             boolean keyDropTransitionActive = false;
             RoomEntityGroundInteraction.Result preAppliedGroundResult = null;
             if (status == EntityStatus.ACTIVE) {
@@ -1657,6 +1677,14 @@ public final class RoomEntityRuntime {
                 updated = withPositionAndVariant(entity, entity.x(),
                     (entity.y() - 0x08) & 0xFF, entity.spriteVariant());
             }
+            if (wasInitializing && isCommonDroppableType(entity.type())
+                && droppablePrivateState3[entity.slot()] != 0) {
+                // The init handler has already set the hidden options. The
+                // corresponding active handler will be entered on the next
+                // entity tick, so suppress this first display-list pass too.
+                updated = withVariant(entity, -1);
+                preserveDroppablePresentation = true;
+            }
             if (preserveGhiniPresentation) {
                 updated = withVariant(entity, -1);
             }
@@ -1694,6 +1722,20 @@ public final class RoomEntityRuntime {
                         ? SECRET_SEASHELL_HIDDEN_OPTIONS1
                         : SECRET_SEASHELL_REVEALED_OPTIONS1;
                 preserveSecretSeashellPresentation = true;
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && isCommonDroppableType(entity.type())) {
+                CommonDroppableUpdate droppableUpdate = advanceCommonDroppable(
+                    entity, linkEntityX, linkEntityY,
+                    objectQuery == null ? null : objectQuery.sample(entity));
+                updated = droppableUpdate.entity();
+                if (droppableUpdate.hidden()) {
+                    // DroppableRevealOrReturnIfNeeded returns past the caller's
+                    // remaining handler. In particular, no rendering, pickup,
+                    // movement, or background interaction may run while hidden.
+                    slots[index] = withStatus(withVariant(updated, -1), status);
+                    continue;
+                }
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_KEY_DROP_POINT) {
@@ -2760,7 +2802,7 @@ public final class RoomEntityRuntime {
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
                 || preservePolsVoicePresentation
                 || preserveSpikedBeetlePresentation || preserveArmosKnightPresentation
-                || preserveSecretSeashellPresentation
+                || preserveSecretSeashellPresentation || preserveDroppablePresentation
                 ? updated.spriteVariant() : variantFor(updated, frame);
             if (status == EntityStatus.ACTIVE && shouldDisappear(entity)) {
                 variant = (slowTransitionCountdown[entity.slot()] & 0x01) != 0 ? 0 : -1;
@@ -2776,7 +2818,7 @@ public final class RoomEntityRuntime {
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
                 || preservePolsVoicePresentation
                 || preserveSpikedBeetlePresentation || preserveArmosKnightPresentation
-                || preserveSecretSeashellPresentation
+                || preserveSecretSeashellPresentation || preserveDroppablePresentation
                 ? updated.entityFlipAttribute() : baseEntityFlipAttribute[entity.slot()];
             if (preserveBombitePresentation && updated.type() == ENTITY_TIMER_BOMBITE) {
                 renderFlipAttribute |= (bombPrivateCountdown1[updated.slot()] << 3) & 0x10;
@@ -2855,6 +2897,8 @@ public final class RoomEntityRuntime {
                 || !RoomEntityPickupRules.isPickable(entity.type())
                 || (floatingType && !floating)
                 || dropPrivateCountdown1[entity.slot()] > 0
+                || (isCommonDroppableType(entity.type())
+                    && droppablePrivateState3[entity.slot()] != 0)
                 || (entity.type() == ENTITY_DROPPABLE_SECRET_SEASHELL
                     && (secretSeashellMotion.privateState3(entity.slot()) != 0
                         || secretSeashellMotion.privateCountdown1(entity.slot()) != 0))
@@ -5364,6 +5408,30 @@ public final class RoomEntityRuntime {
             collisionX, collisionY);
     }
 
+    void setDroppablePegasusCollisionForTest(boolean screenShakeActive,
+                                             boolean collisionActive,
+                                             int collisionX, int collisionY) {
+        setSecretSeashellPegasusCollisionState(screenShakeActive, collisionActive,
+            collisionX, collisionY);
+    }
+
+    void setDroppableRevealedForTest(int slot, int slowCountdown) {
+        validateCountdownTestValue(slot, slowCountdown);
+        validateEntitySlot(slot);
+        int type = slots[slot].type();
+        if (!isCommonDroppableType(type)) {
+            throw new IllegalArgumentException("Entity slot is not an ordinary droppable: "
+                + slot);
+        }
+        droppablePrivateState3[slot] = 0;
+        droppablePrivateState4[slot] = 0;
+        entityOptions1Override[slot] = DROPPABLE_REVEALED_OPTIONS1;
+        slowTransitionCountdown[slot] = slowCountdown;
+        slowTimerInitialized[slot] = true;
+        enemyDropActive[slot] = false;
+        enemyDropMotion.clear(slot);
+    }
+
     void setSecretSeashellPegasusCollisionState(boolean screenShakeActive,
                                                  boolean collisionActive,
                                                  int collisionX, int collisionY) {
@@ -6820,6 +6888,16 @@ public final class RoomEntityRuntime {
         return dropPrivateCountdown3[slot];
     }
 
+    int droppablePrivateState3(int slot) {
+        validateEntitySlot(slot);
+        return droppablePrivateState3[slot];
+    }
+
+    int droppablePrivateState4(int slot) {
+        validateEntitySlot(slot);
+        return droppablePrivateState4[slot];
+    }
+
     int dropSpeedY(int slot) {
         validateEntitySlot(slot);
         return enemyDropMotion.speedY(slot);
@@ -7981,15 +8059,149 @@ public final class RoomEntityRuntime {
         };
     }
 
+    private void initializeCommonDroppable(RoomEntity entity) {
+        int slot = entity.slot();
+        // EntityInitDiggableBushOrPotDroppable is used by hearts and magic
+        // powder directly. The other ordinary drops use the tree/pot init
+        // handler, which selects the Pegasus branch outdoors and the buried
+        // branch indoors.
+        droppablePrivateState3[slot] = entity.type() == ENTITY_DROPPABLE_HEART
+            || entity.type() == ENTITY_DROPPABLE_MAGIC_POWDER
+            || indoorRoom
+            ? DROPPABLE_HIDDEN_STATE_BURIED
+            : DROPPABLE_HIDDEN_STATE_PEGASUS;
+        droppablePrivateState4[slot] = 0;
+        entityOptions1Override[slot] = DROPPABLE_HIDDEN_OPTIONS1;
+    }
+
+    private CommonDroppableUpdate advanceCommonDroppable(
+            RoomEntity entity, int linkEntityX, int linkEntityY,
+            RoomEntityObjectSample objectUnderEntity) {
+        int slot = entity.slot();
+        int hiddenState = droppablePrivateState3[slot];
+        if (hiddenState != 0) {
+            boolean reveal = false;
+            if (hiddenState == DROPPABLE_HIDDEN_STATE_BURIED) {
+                // DroppableRevealOrReturnIfNeeded deliberately keeps ordinary
+                // buried drops invisible indoors. Outdoors, hearts reveal on
+                // short grass or a shovel hole; the remaining shared drops
+                // require the shovel-hole path and set privateState4 first.
+                if (!indoorRoom) {
+                    int objectId = objectUnderEntity == null
+                        ? 0xFF : objectUnderEntity.objectId() & 0xFF;
+                    if (entity.type() == ENTITY_DROPPABLE_HEART) {
+                        reveal = objectId == DROPPABLE_OBJECT_SHORT_GRASS
+                            || objectId == DROPPABLE_OBJECT_SHOVEL_HOLE;
+                    } else {
+                        droppablePrivateState4[slot] = 1;
+                        reveal = objectId == DROPPABLE_OBJECT_SHOVEL_HOLE;
+                    }
+                }
+            } else if (hiddenState == DROPPABLE_HIDDEN_STATE_PEGASUS) {
+                reveal = secretSeashellScreenShakeActive
+                    && secretSeashellPegasusCollisionActive
+                    && (!secretSeashellPegasusCollisionCoordinatesKnown
+                        || withinUnsignedWindow(entity.x() + 0x08,
+                            secretSeashellPegasusCollisionX, 0x10)
+                        && withinUnsignedWindow(entity.y() + 0x08,
+                            secretSeashellPegasusCollisionY, 0x10));
+            }
+
+            if (!reveal) {
+                entityOptions1Override[slot] = DROPPABLE_HIDDEN_OPTIONS1;
+                return new CommonDroppableUpdate(withVariant(entity, -1), true);
+            }
+            revealCommonDroppable(entity, linkEntityX, linkEntityY);
+        }
+
+        entityOptions1Override[slot] = hiddenState == 0
+            ? entityOptions1Override[slot] : DROPPABLE_REVEALED_OPTIONS1;
+        if (entity.type() != ENTITY_DROPPABLE_FAIRY && !enemyDropActive[slot]) {
+            enemyDropMotion.initialize(slot, groundInteractionSideScrolling);
+            enemyDropActive[slot] = true;
+        }
+        return new CommonDroppableUpdate(
+            withVariant(entity, entity.spriteDefinition().supported() ? 0 : -1), false);
+    }
+
+    private void revealCommonDroppable(RoomEntity entity, int linkEntityX, int linkEntityY) {
+        int slot = entity.slot();
+        droppablePrivateState3[slot] = 0;
+        droppablePrivateState4[slot] = 0;
+        dropPrivateCountdown1[slot] = DROPPABLE_REVEAL_COUNTDOWN;
+        slowTransitionCountdown[slot] = DROPPABLE_REVEAL_SLOW_COUNTDOWN;
+        slowTimerInitialized[slot] = true;
+
+        if (entity.type() == ENTITY_DROPPABLE_FAIRY) {
+            Vector vector = vectorAwayFromLink(entity.x(), entity.y(),
+                linkEntityX, linkEntityY, DROPPABLE_REVEAL_VECTOR_LENGTH);
+            fairyMotion.setSpeed(slot, vector.x(), vector.y());
+            return;
+        }
+
+        enemyDropMotion.initialize(slot, groundInteractionSideScrolling,
+            DROPPABLE_REVEAL_SPEED_Z);
+        enemyDropMotion.initializeAwayFromLink(slot, entity.x(), entity.y(),
+            linkEntityX, linkEntityY, DROPPABLE_REVEAL_VECTOR_LENGTH);
+        enemyDropActive[slot] = true;
+        entityOptions1Override[slot] = DROPPABLE_REVEALED_OPTIONS1;
+    }
+
+    private static Vector vectorAwayFromLink(int entityX, int entityY,
+                                             int linkEntityX, int linkEntityY,
+                                             int vectorLength) {
+        int distanceX = signedByte((linkEntityX - entityX) & 0xFF);
+        int distanceY = signedByte((linkEntityY - entityY) & 0xFF);
+        int absoluteX = Math.abs(distanceX);
+        int absoluteY = Math.abs(distanceY);
+        int smaller = Math.min(absoluteX, absoluteY);
+        int larger = Math.max(absoluteX, absoluteY);
+        int minor = larger == 0 ? vectorLength : divideVectorComponent(
+            smaller, larger, vectorLength);
+        int towardX = absoluteX >= absoluteY ? vectorLength : minor;
+        int towardY = absoluteY > absoluteX ? vectorLength : minor;
+        if (distanceX < 0) {
+            towardX = -towardX;
+        }
+        if (distanceY < 0) {
+            towardY = -towardY;
+        }
+        return new Vector((-towardX) & 0xFF, (-towardY) & 0xFF);
+    }
+
+    private static int divideVectorComponent(int smaller, int larger, int length) {
+        int result = 0;
+        int remainder = 0;
+        for (int count = 0; count < length; count++) {
+            int sum = remainder + smaller;
+            if (sum >= larger) {
+                sum -= larger;
+                result++;
+            }
+            remainder = sum;
+        }
+        return result;
+    }
+
+    private record CommonDroppableUpdate(RoomEntity entity, boolean hidden) {
+    }
+
+    private record Vector(int x, int y) {
+    }
+
     private void initializeEntityTimers(RoomEntity entity) {
-        enemyPhysicsFlags[entity.slot()] = initialPhysicsFlags(entity.type());
+        int slot = entity.slot();
+        enemyPhysicsFlags[slot] = initialPhysicsFlags(entity.type());
+        if (isCommonDroppableType(entity.type())) {
+            initializeCommonDroppable(entity);
+        }
         if (entity.type() == ENTITY_DROPPABLE_SECRET_SEASHELL) {
-            secretSeashellMotion.ensureInitialized(entity.slot(), entityRoomId);
-            entityOptions1Override[entity.slot()] = SECRET_SEASHELL_HIDDEN_OPTIONS1;
+            secretSeashellMotion.ensureInitialized(slot, entityRoomId);
+            entityOptions1Override[slot] = SECRET_SEASHELL_HIDDEN_OPTIONS1;
         }
         if (indoorRoom && RoomEntityPickupRules.usesIndoorDefaultSlowTimer(entity.type())) {
-            slowTransitionCountdown[entity.slot()] = 0x80;
-            slowTimerInitialized[entity.slot()] = true;
+            slowTransitionCountdown[slot] = 0x80;
+            slowTimerInitialized[slot] = true;
         }
     }
 
@@ -7997,6 +8209,8 @@ public final class RoomEntityRuntime {
         droppedItemBySlot[slot] = 0;
         dropPrivateCountdown1[slot] = 0;
         dropPrivateCountdown3[slot] = 0;
+        droppablePrivateState3[slot] = 0;
+        droppablePrivateState4[slot] = 0;
         enemyDropActive[slot] = false;
         enemyDropMotion.clear(slot);
         fairyMotion.clear(slot);
@@ -8084,10 +8298,11 @@ public final class RoomEntityRuntime {
 
     private boolean shouldDisappear(RoomEntity entity) {
         return slowTimerInitialized[entity.slot()]
-            && switch (entity.type()) {
-                case 0x2D, 0x2E, 0x2F, 0x37, 0x38, 0x3B -> true;
-                default -> false;
-            }
+            && isCommonDroppableType(entity.type())
+            // DroppableDisappearIfNeeded is after the hidden-state helper in
+            // every shared drop handler. A hidden item therefore must not be
+            // unloaded merely because its global fade timer reached zero.
+            && droppablePrivateState3[entity.slot()] == 0
             && slowTransitionCountdown[entity.slot()] < 0x1C;
     }
 
@@ -8111,6 +8326,15 @@ public final class RoomEntityRuntime {
     private static boolean isRuntimeFloatingItem(RoomEntity entity) {
         return FloatingItemMotion.isFloatingItem(entity.type())
             && entity.spriteDefinition().supported();
+    }
+
+    private static boolean isCommonDroppableType(int type) {
+        return type == ENTITY_DROPPABLE_HEART
+            || type == ENTITY_DROPPABLE_RUPEE
+            || type == ENTITY_DROPPABLE_FAIRY
+            || type == ENTITY_DROPPABLE_ARROWS
+            || type == ENTITY_DROPPABLE_BOMBS
+            || type == ENTITY_DROPPABLE_MAGIC_POWDER;
     }
 
     private boolean isDisabledFollower(int type) {

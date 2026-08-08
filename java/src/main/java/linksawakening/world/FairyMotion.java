@@ -85,10 +85,14 @@ final class FairyMotion {
     }
 
     void setSpeedForTest(int slot, int newSpeedX, int newSpeedY, int ignoredSpeedZ) {
+        validateByte(ignoredSpeedZ, "Fairy Z speed");
+        setSpeed(slot, newSpeedX, newSpeedY);
+    }
+
+    void setSpeed(int slot, int newSpeedX, int newSpeedY) {
         validateSlot(slot);
         validateByte(newSpeedX, "Fairy X speed");
         validateByte(newSpeedY, "Fairy Y speed");
-        validateByte(ignoredSpeedZ, "Fairy Z speed");
         speedX[slot] = newSpeedX;
         speedY[slot] = newSpeedY;
         speedXAccumulator[slot] = 0;

@@ -5676,7 +5676,7 @@ final class RoomEntityRuntimeTest {
     void collectionUsesTheRomPickableTableAndFrameSlotCadence() {
         EntitySpriteDefinition definition = pairDefinition(0x2D, 1);
         RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x2D, 24, 32, EntityStatus.INIT, definition, 0));
+            new RoomEntity(0, 0, 0x2D, 24, 32, EntityStatus.ACTIVE, definition, 0));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
         runtime.tick(0);
@@ -5987,7 +5987,7 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
-    void indoorDroppablesUseTheRomSlowFadeAndUnloadAtZero() {
+    void indoorDroppablesRemainHiddenWhenTheirInitTimerExpires() {
         EntitySpriteDefinition definition = pairDefinition(0x37, 1);
         RoomEntitySnapshot initial = snapshot(
             new RoomEntity(0, 0, 0x37, 24, 32, EntityStatus.INIT, definition, 0));
@@ -5997,25 +5997,100 @@ final class RoomEntityRuntimeTest {
 
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
         assertEquals(0x80, runtime.slowTransitionCountdown(0));
-
-        int frame = 1;
-        while (runtime.slowTransitionCountdown(0) > 3) {
-            runtime.tick(frame++);
-        }
-        assertEquals(3, runtime.slowTransitionCountdown(0));
-
-        while ((frame & 0x03) != 0) {
-            runtime.tick(frame++);
-        }
-        runtime.tick(frame);
-
-        assertEquals(2, runtime.slowTransitionCountdown(0));
+        assertEquals(0x02, runtime.droppablePrivateState3(0));
+        assertEquals(0x11, runtime.options1(0));
         assertEquals(-1, runtime.snapshot().slots().get(0).spriteVariant());
 
-        while (runtime.snapshot().slots().get(0).loaded()) {
-            runtime.tick(frame++);
+        for (int frame = 1; frame <= 0x200; frame++) {
+            runtime.tick(frame);
         }
-        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
+        assertEquals(0x00, runtime.slowTransitionCountdown(0));
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
+        assertEquals(-1, runtime.snapshot().slots().get(0).spriteVariant());
+    }
+
+    @Test
+    void outdoorDroppableStaysHiddenUntilTheRomPegasusCollisionRevealsIt() {
+        EntitySpriteDefinition definition = pairDefinition(0x37, 1);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x37, 0x40, 0x50, EntityStatus.INIT, definition, 0)));
+
+        runtime.tick(0, 0x20, 0x30, () -> 0);
+
+        assertEquals(0x01, runtime.droppablePrivateState3(0));
+        assertEquals(0x11, runtime.options1(0));
+        assertEquals(-1, runtime.snapshot().slots().get(0).spriteVariant());
+        assertNull(runtime.collectIfNeeded(1, 0x48, 0x58, false, true));
+
+        runtime.setDroppablePegasusCollisionForTest(true, true, 0x48, 0x58);
+        runtime.tick(1, 0x20, 0x30, () -> 0);
+
+        assertEquals(0x00, runtime.droppablePrivateState3(0));
+        assertEquals(0x00, runtime.droppablePrivateState4(0));
+        assertEquals(0x0A, runtime.options1(0));
+        assertEquals(0x18, runtime.dropPrivateCountdown1(0));
+        assertEquals(0x80, runtime.slowTransitionCountdown(0));
+        assertEquals(0x0C, runtime.dropSpeedX(0));
+        assertEquals(0x0C, runtime.dropSpeedY(0));
+        assertEquals(0x1E, runtime.dropSpeedZ(0));
+        assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
+    }
+
+    @Test
+    void outdoorHeartUsesTheRomObjectUnderEntityRevealPath() {
+        EntitySpriteDefinition definition = pairDefinition(0x2D, 1);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x2D, 0x40, 0x50, EntityStatus.INIT, definition, 0)));
+        runtime.setObjectQuery(entity -> new RoomEntityObjectSample(0x04, 0, 0x40, 0x50));
+
+        runtime.tick(0, 0x20, 0x30, () -> 0);
+        assertEquals(0x02, runtime.droppablePrivateState3(0));
+        assertEquals(-1, runtime.snapshot().slots().get(0).spriteVariant());
+
+        runtime.tick(1, 0x20, 0x30, () -> 0);
+
+        assertEquals(0x00, runtime.droppablePrivateState3(0));
+        assertEquals(0x00, runtime.droppablePrivateState4(0));
+        assertEquals(0x0A, runtime.options1(0));
+        assertEquals(0x18, runtime.dropPrivateCountdown1(0));
+        assertEquals(0x0C, runtime.dropSpeedX(0));
+        assertEquals(0x0C, runtime.dropSpeedY(0));
+        assertEquals(0x1E, runtime.dropSpeedZ(0));
+    }
+
+    @Test
+    void outdoorFairyUsesTheSharedRevealVectorBeforeItsHoverHandler() {
+        EntitySpriteDefinition definition = pairDefinition(0x2F, 1);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x2F, 0x40, 0x50, EntityStatus.INIT, definition, 0)));
+
+        runtime.tick(0, 0x20, 0x30, () -> 0);
+        assertEquals(0x01, runtime.droppablePrivateState3(0));
+
+        runtime.setDroppablePegasusCollisionForTest(true, true, 0x48, 0x58);
+        runtime.tick(1, 0x20, 0x30, () -> 0);
+
+        assertEquals(0x00, runtime.droppablePrivateState3(0));
+        assertEquals(0x0A, runtime.options1(0));
+        // The shared reveal seeds $0C away from Link; the fairy handler then
+        // follows its own far-distance length-$09 attraction branch in the
+        // same frame, leaving $F7 in both speed bytes here.
+        assertEquals(0xF7, runtime.fairySpeedX(0));
+        assertEquals(0xF7, runtime.fairySpeedY(0));
+        assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
+    }
+
+    @Test
+    void revealedDroppableUsesTheRomBlinkSentinelBeforeUnloading() {
+        EntitySpriteDefinition definition = pairDefinition(0x2E, 1);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x2E, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0)));
+        runtime.setDroppableRevealedForTest(0, 0x1A);
+
+        runtime.tick(1, 0x20, 0x30, () -> 0);
+
+        assertEquals(0x1A, runtime.slowTransitionCountdown(0));
+        assertEquals(-1, runtime.snapshot().slots().get(0).spriteVariant());
     }
 
     @Test

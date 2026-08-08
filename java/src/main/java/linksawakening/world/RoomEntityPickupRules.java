@@ -47,7 +47,7 @@ public final class RoomEntityPickupRules {
     /** EntityInitTreeOrPotDroppable's indoor $80 slow-transition timer set. */
     static boolean usesIndoorDefaultSlowTimer(int type) {
         return switch (type) {
-            case 0x2D, 0x2E, 0x2F, 0x32, 0x33, 0x34, 0x36, 0x37, 0x38 -> true;
+            case 0x2E, 0x2F, 0x32, 0x33, 0x34, 0x36, 0x37, 0x38 -> true;
             default -> false;
         };
     }
