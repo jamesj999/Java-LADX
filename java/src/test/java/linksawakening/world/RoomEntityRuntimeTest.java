@@ -4919,20 +4919,40 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
-    void armosKnightKeyDropUsesTheSourceForcedSpriteVariant() throws IOException {
-        byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+    void armosKnightDeathUsesItsRomBossCountdownsBeforeDidKillEnemy() {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
         RoomEntity source = new RoomEntity(15, 0, 0x88, 0x50, 0x60,
-            EntityStatus.DYING, catalog.forEntityType(
-                0x88, EntityRoomLoader.RoomTable.OVERWORLD, -1), 0);
+            EntityStatus.DYING, EntitySpriteDefinition.unsupported(0x88), -1,
+            0, 0, 0x05);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotAt(source), false,
-            () -> 0, catalog, new RomEnemyCombatTables(rom));
-        runtime.setEnemyDropResolver(new EnemyDropResolver(rom));
-        runtime.setDroppedItemForTest(15, 0x30);
+            () -> 0, catalog);
 
         runtime.tick(0, 0, 0, () -> 0);
+        assertEquals(0xA0, runtime.transitionCountdown(15));
+        assertEquals(0xFF, runtime.enemyFlashCountdown(15));
+        assertEquals(EntityStatus.DYING, runtime.snapshot().slots().get(15).status());
 
-        assertEquals(3, runtime.snapshot().slots().get(14).spriteVariant());
+        for (int frame = 1; frame <= 0xA0; frame++) {
+            runtime.tick(frame, 0, 0, () -> 0);
+        }
+        assertEquals(0xC0, runtime.transitionCountdown(15));
+        assertEquals(0xFF, runtime.enemyFlashCountdown(15));
+
+        for (int frame = 0xA1; frame <= 0x160; frame++) {
+            runtime.tick(frame, 0, 0, () -> 0);
+        }
+
+        RoomEntity drop = runtime.snapshot().slots().get(14);
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(15).status());
+        assertEquals(EntityStatus.ACTIVE, drop.status());
+        assertEquals(0x30, drop.type());
+        assertEquals(0x03, drop.spriteVariant());
+        assertEquals(0x50, drop.x());
+        assertEquals(0x60, drop.y());
+        assertEquals(0x05, drop.z());
+        assertEquals(List.of(new EntityCombatEvent(15, 0x88, 0, false,
+            EntityCombatEvent.SoundChannel.NOISE, 0x1A)),
+            runtime.consumePendingEntityEvents());
     }
 
     @Test

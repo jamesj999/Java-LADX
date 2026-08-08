@@ -4877,7 +4877,8 @@ public final class RoomEntityRuntime {
     }
 
     private static boolean isBossKeyDropProducer(int entityType) {
-        return entityType == ENTITY_MASTER_STALFOS || entityType == ENTITY_DESERT_LANMOLA;
+        return entityType == ENTITY_MASTER_STALFOS || entityType == ENTITY_DESERT_LANMOLA
+            || entityType == ENTITY_ARMOS_KNIGHT;
     }
 
     private boolean hasNoGroundInteractionOverride(int slot) {
@@ -4999,6 +5000,38 @@ public final class RoomEntityRuntime {
                     pendingEntityEvents.add(new EntityCombatEvent(
                         slot, source.type(), 0, false,
                         EntityCombatEvent.SoundChannel.NOISE, 0x13));
+                }
+            }
+            return;
+        }
+
+        if (source.type() == ENTITY_ARMOS_KNIGHT) {
+            switch (state) {
+                case 0 -> {
+                    // ArmosKnightPrivateState0Handler: transition $A0 and
+                    // the first full flash countdown.
+                    bossDeathProducerState[slot] = 1;
+                    enemyTransitionCountdown[slot] = 0xA0;
+                    enemyFlashCountdown[slot] = 0xFF;
+                    return;
+                }
+                case 1 -> {
+                    // ArmosKnightPrivateState1Handler: the second flash
+                    // begins only after the first countdown reaches zero.
+                    bossDeathProducerState[slot] = 2;
+                    enemyTransitionCountdown[slot] = 0xC0;
+                    enemyFlashCountdown[slot] = 0xFF;
+                    return;
+                }
+                default -> {
+                    // ArmosKnightPrivateState2Handler calls DidKillEnemy;
+                    // its handler has already forced the dropped item to the
+                    // key drop point and the source load order to $FF.
+                    spawnEnemyDrop(source, ENTITY_KEY_DROP_POINT);
+                    disableEntityWithoutPersistence(slot);
+                    pendingEntityEvents.add(new EntityCombatEvent(
+                        slot, source.type(), 0, false,
+                        EntityCombatEvent.SoundChannel.NOISE, 0x1A));
                 }
             }
             return;

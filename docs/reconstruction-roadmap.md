@@ -2187,8 +2187,10 @@ runtime collision callback.
 - The dedicated Lanmola and Master Stalfos producer routines that manually
   spawn this entity are now ported, including their staged death countdowns,
   source-specific variant/Z/speed/private-countdown setup, and source noises.
-  Generic enemy-death drops and the Armos producer are covered here; the full
-  boss movement/rendering handlers remain separate parity work.
+  Armos Knight's separate `$A0/$C0` flash/death countdown path now reaches its
+  `DidKillEnemy` key drop with the source-forced variant `$03`; generic
+  enemy-death drops are also covered here. The full boss movement/rendering
+  handlers remain separate parity work.
 
 ## Broader parity gaps
 
