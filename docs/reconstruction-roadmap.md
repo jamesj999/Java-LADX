@@ -2182,12 +2182,13 @@ runtime collision callback.
   and `$2F` transition at Yarna's `$CE` center, emits the item-falling jingle,
   and propagates the overworld `$04` and indoor-A `$F8/$20` status writes.
   Runtime/session integration, ROM display bytes, room gates, pickup rewards,
-  and status propagation are covered. The clean Java suite passes with 1,181
+  and status propagation are covered. The clean Java suite passes with 1,183
   tests and zero failures, errors, or skipped tests.
 - The dedicated Lanmola and Master Stalfos producer routines that manually
-  spawn this entity (including their source-specific Z/private-countdown setup)
-  remain separate producer-path work; generic enemy-death drops and the Armos
-  producer are covered here.
+  spawn this entity are now ported, including their staged death countdowns,
+  source-specific variant/Z/speed/private-countdown setup, and source noises.
+  Generic enemy-death drops and the Armos producer are covered here; the full
+  boss movement/rendering handlers remain separate parity work.
 
 ## Broader parity gaps
 

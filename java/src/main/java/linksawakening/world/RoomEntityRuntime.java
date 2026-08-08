@@ -20,6 +20,8 @@ import java.util.function.IntSupplier;
 public final class RoomEntityRuntime {
     private static final int ENTITY_CHEST_WITH_ITEM = 0x07;
     private static final int ENTITY_KEY_DROP_POINT = 0x30;
+    private static final int ENTITY_MASTER_STALFOS = 0x5F;
+    private static final int ENTITY_DESERT_LANMOLA = 0x87;
     private static final int ENTITY_ARMOS_KNIGHT = 0x88;
     private static final int ENTITY_PIECE_OF_POWER = 0x33;
     private static final int ENTITY_CRYSTAL_SWITCH = 0x66;
@@ -256,6 +258,7 @@ public final class RoomEntityRuntime {
     private final boolean[] enemyDropActive = new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final EnemyDropMotion enemyDropMotion = new EnemyDropMotion();
     private final int[] enemyTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] bossDeathProducerState = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyStunnedCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] dyingCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] powerRecoilDeath = new boolean[EntityRoomLoader.MAX_ENTITIES];
@@ -1275,6 +1278,10 @@ public final class RoomEntityRuntime {
                     falling.z());
                 continue;
             } else if (status == EntityStatus.DYING) {
+                if (isBossKeyDropProducer(entity.type())) {
+                    advanceBossKeyDropProducer(entity);
+                    continue;
+                }
                 if (dyingCountdown[entity.slot()] == 0) {
                     handleTerminalEnemyDeath(entity, randomByteSupplier);
                 } else {
@@ -4869,6 +4876,10 @@ public final class RoomEntityRuntime {
         return entity.sourceLoadOrder() == -1 && isFollowingNpcType(entity.type());
     }
 
+    private static boolean isBossKeyDropProducer(int entityType) {
+        return entityType == ENTITY_MASTER_STALFOS || entityType == ENTITY_DESERT_LANMOLA;
+    }
+
     private boolean hasNoGroundInteractionOverride(int slot) {
         return entityOptions1Override[slot] >= 0
             && (entityOptions1Override[slot] & ENTITY_OPT1_NO_GROUND_INTERACTION) != 0;
@@ -4952,6 +4963,104 @@ public final class RoomEntityRuntime {
             spawnEnemyDrop(entity, result.itemType());
         }
         disableEntityWithoutPersistence(entity.slot());
+    }
+
+    /**
+     * Ports the boss-specific death handlers that eventually create entity
+     * {@code $30}. Boss entities stay on their active handler while DYING, so
+     * they must not enter the ordinary EnemyDropResolver path.
+     */
+    private void advanceBossKeyDropProducer(RoomEntity source) {
+        int slot = source.slot();
+        if (enemyTransitionCountdown[slot] != 0) {
+            return;
+        }
+
+        int state = bossDeathProducerState[slot];
+        if (source.type() == ENTITY_DESERT_LANMOLA) {
+            switch (state) {
+                case 0 -> {
+                    // func_006_5629: transition $60, then private state 2++.
+                    bossDeathProducerState[slot] = 1;
+                    enemyTransitionCountdown[slot] = 0x60;
+                    return;
+                }
+                case 1 -> {
+                    // func_006_563A: transition $CF, then private state 2++.
+                    bossDeathProducerState[slot] = 2;
+                    enemyTransitionCountdown[slot] = 0xCF;
+                    return;
+                }
+                default -> {
+                    // func_006_564B: variant $02, z from hMultiPurpose3,
+                    // speedZ $10, and private countdown 1 $10.
+                    spawnBossKeyDrop(source, 0x02, source.z(), 0x10, 0x10);
+                    disableEntityWithoutPersistence(slot);
+                    pendingEntityEvents.add(new EntityCombatEvent(
+                        slot, source.type(), 0, false,
+                        EntityCombatEvent.SoundChannel.NOISE, 0x13));
+                }
+            }
+            return;
+        }
+
+        switch (state) {
+            case 0 -> {
+                // func_007_7EB6: transition $A0, then private state 2++.
+                bossDeathProducerState[slot] = 1;
+                enemyTransitionCountdown[slot] = 0xA0;
+            }
+            case 1 -> {
+                // func_007_7EC7: transition $C0, then private state 2++.
+                bossDeathProducerState[slot] = 2;
+                enemyTransitionCountdown[slot] = 0xC0;
+            }
+            default -> {
+                // func_007_7ED6: ConfigureNewEntity leaves z at zero;
+                // the producer supplies speedZ $18 and countdown 1 $20.
+                spawnBossKeyDrop(source, 0x00, 0x00, 0x18, 0x20);
+                disableEntityWithoutPersistence(slot);
+                pendingEntityEvents.add(new EntityCombatEvent(
+                    slot, source.type(), 0, false,
+                    EntityCombatEvent.SoundChannel.NOISE, 0x1A));
+            }
+        }
+    }
+
+    private void spawnBossKeyDrop(RoomEntity source, int spriteVariant, int z,
+                                  int speedZ, int privateCountdown1) {
+        int freeSlot = findFreeEntitySlot();
+        if (freeSlot < 0) {
+            return;
+        }
+
+        EntitySpriteDefinition definition = spriteDefinitionFor(ENTITY_KEY_DROP_POINT);
+        int variant = definition.supported()
+            ? Math.min(spriteVariant, definition.variantCount() - 1) : -1;
+        RoomEntity drop = new RoomEntity(freeSlot, -1, ENTITY_KEY_DROP_POINT,
+            source.x(), source.y(), EntityStatus.ACTIVE, definition, variant,
+            0, 0, z);
+        slots[freeSlot] = drop;
+        resetEnemyDropState(freeSlot);
+        enemyDropMotion.initialize(freeSlot, groundInteractionSideScrolling, speedZ);
+        enemyDropActive[freeSlot] = true;
+        slowTransitionCountdown[freeSlot] = 0;
+        slowTimerInitialized[freeSlot] = false;
+        dropPrivateCountdown1[freeSlot] = privateCountdown1;
+        dropPrivateCountdown3[freeSlot] = 0;
+        enemyTransitionCountdown[freeSlot] = 0;
+        enemyStunnedCountdown[freeSlot] = 0;
+        dyingCountdown[freeSlot] = 0;
+        powerRecoilDeath[freeSlot] = false;
+        enemyPhysicsFlags[freeSlot] = initialPhysicsFlags(ENTITY_KEY_DROP_POINT);
+        enemyHealth[freeSlot] = initialHealth(ENTITY_KEY_DROP_POINT);
+        enemyFlashCountdown[freeSlot] = 0;
+        enemyIgnoreHitsCountdown[freeSlot] = 1;
+        entityGroundStatus[freeSlot] = 0;
+        baseEntityFlipAttribute[freeSlot] = 0;
+        entityOptions1Override[freeSlot] = -1;
+        enemyRecoilMotion.clear(freeSlot);
+        dynamicEntitySpawnedThisFrame[freeSlot] = true;
     }
 
     private int enemyDropHealthGroup(int entityType) {
@@ -7144,6 +7253,7 @@ public final class RoomEntityRuntime {
         slowTransitionCountdown[slot] = 0;
         slowTimerInitialized[slot] = false;
         enemyTransitionCountdown[slot] = 0;
+        bossDeathProducerState[slot] = 0;
         enemyStunnedCountdown[slot] = 0;
         dyingCountdown[slot] = 0;
         powerRecoilDeath[slot] = false;

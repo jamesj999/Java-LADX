@@ -4936,6 +4936,79 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void desertLanmolaDeathUsesTheRomKeyProducerCountdownAndSpawnFields() {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
+        RoomEntity source = new RoomEntity(15, 0, 0x87, 0x44, 0x58,
+            EntityStatus.DYING, EntitySpriteDefinition.unsupported(0x87), -1,
+            0, 0, 0x07);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotAt(source), false,
+            () -> 0, catalog);
+
+        runtime.tick(0, 0, 0, () -> 0);
+        assertEquals(0x60, runtime.transitionCountdown(15));
+        assertEquals(EntityStatus.DYING, runtime.snapshot().slots().get(15).status());
+
+        for (int frame = 1; frame <= 0x60; frame++) {
+            runtime.tick(frame, 0, 0, () -> 0);
+        }
+        assertEquals(0xCF, runtime.transitionCountdown(15));
+
+        for (int frame = 0x61; frame <= 0x12F; frame++) {
+            runtime.tick(frame, 0, 0, () -> 0);
+        }
+
+        RoomEntity drop = runtime.snapshot().slots().get(14);
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(15).status());
+        assertEquals(EntityStatus.ACTIVE, drop.status());
+        assertEquals(0x30, drop.type());
+        assertEquals(0x02, drop.spriteVariant());
+        assertEquals(0x44, drop.x());
+        assertEquals(0x58, drop.y());
+        assertEquals(0x07, drop.z());
+        assertEquals(0x10, runtime.dropPrivateCountdown1(14));
+        assertEquals(0x10, runtime.dropSpeedZ(14));
+        assertEquals(List.of(new EntityCombatEvent(15, 0x87, 0, false,
+            EntityCombatEvent.SoundChannel.NOISE, 0x13)),
+            runtime.consumePendingEntityEvents());
+    }
+
+    @Test
+    void masterStalfosDeathUsesTheRomKeyProducerCountdownAndSpawnFields() {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
+        RoomEntity source = new RoomEntity(15, 0, 0x5F, 0x4C, 0x5A,
+            EntityStatus.DYING, EntitySpriteDefinition.unsupported(0x5F), -1,
+            0, 0, 0x09);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotAt(source), true,
+            () -> 0, catalog);
+
+        runtime.tick(0, 0, 0, () -> 0);
+        assertEquals(0xA0, runtime.transitionCountdown(15));
+
+        for (int frame = 1; frame <= 0xA0; frame++) {
+            runtime.tick(frame, 0, 0, () -> 0);
+        }
+        assertEquals(0xC0, runtime.transitionCountdown(15));
+
+        for (int frame = 0xA1; frame <= 0x160; frame++) {
+            runtime.tick(frame, 0, 0, () -> 0);
+        }
+
+        RoomEntity drop = runtime.snapshot().slots().get(14);
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(15).status());
+        assertEquals(EntityStatus.ACTIVE, drop.status());
+        assertEquals(0x30, drop.type());
+        assertEquals(0x00, drop.spriteVariant());
+        assertEquals(0x4C, drop.x());
+        assertEquals(0x5A, drop.y());
+        assertEquals(0x00, drop.z());
+        assertEquals(0x20, runtime.dropPrivateCountdown1(14));
+        assertEquals(0x18, runtime.dropSpeedZ(14));
+        assertEquals(List.of(new EntityCombatEvent(15, 0x5F, 0, false,
+            EntityCombatEvent.SoundChannel.NOISE, 0x1A)),
+            runtime.consumePendingEntityEvents());
+    }
+
+    @Test
     void indoorDroppablesUseTheRomSlowFadeAndUnloadAtZero() {
         EntitySpriteDefinition definition = pairDefinition(0x37, 1);
         RoomEntitySnapshot initial = snapshot(
