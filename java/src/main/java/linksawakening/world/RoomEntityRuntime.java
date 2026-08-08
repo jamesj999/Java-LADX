@@ -210,6 +210,7 @@ public final class RoomEntityRuntime {
     private int followingLinkDirection;
     private int lastRomLinkDirection;
     private int followingEntityYOffset;
+    private int linkAttackStepAnimationCountdown;
     private final ButterflyMotion butterflyMotion = new ButterflyMotion();
     private final KeeseMotion keeseMotion = new KeeseMotion();
     private final RoamingEnemyMotion roamingEnemyMotion = new RoamingEnemyMotion();
@@ -232,6 +233,7 @@ public final class RoomEntityRuntime {
     private final WingedOctorokMotion wingedOctorokMotion = new WingedOctorokMotion();
     private final PincerMotion pincerMotion = new PincerMotion();
     private final BushCrawlerMotion bushCrawlerMotion = new BushCrawlerMotion();
+    private final CuccoMotion cuccoMotion = new CuccoMotion();
     private final SpikeTrapMotion spikeTrapMotion = new SpikeTrapMotion();
     private final PairoddMotion pairoddMotion = new PairoddMotion();
     private final PairoddProjectileMotion pairoddProjectileMotion =
@@ -684,6 +686,9 @@ public final class RoomEntityRuntime {
             if (entity.loaded() && entity.type() == ENTITY_BUSH_CRAWLER) {
                 bushCrawlerMotion.initialize(entity.slot());
             }
+            if (entity.loaded() && entity.type() == ENTITY_CUCCO) {
+                cuccoMotion.initialize(entity.slot());
+            }
             if (entity.status() == EntityStatus.DYING) {
                 powerRecoilDeath[entity.slot()] = entity.powerRecoilDeath();
             }
@@ -1128,6 +1133,7 @@ public final class RoomEntityRuntime {
             boolean preserveWingedOctorokPresentation = false;
             boolean preservePincerPresentation = false;
             boolean preserveBushCrawlerPresentation = false;
+            boolean preserveCuccoPresentation = false;
             boolean preserveWizrobePresentation = false;
             boolean preserveWizrobeProjectilePresentation = false;
             boolean preservePolsVoicePresentation = false;
@@ -1341,7 +1347,7 @@ public final class RoomEntityRuntime {
                 continue;
             }
             if (status == EntityStatus.LIFTED) {
-                RoomEntity lifted = renderLiftedBomb(entity);
+                RoomEntity lifted = renderLiftedEntity(entity, frame);
                 slots[index] = advanceLiftedEntity(lifted, linkEntityX, linkEntityY, linkZ,
                     romLinkDirection);
                 continue;
@@ -1494,6 +1500,9 @@ public final class RoomEntityRuntime {
                 }
                 if (entity.type() == ENTITY_CROW) {
                     crowMotion.initialize(entity.slot());
+                }
+                if (entity.type() == ENTITY_CUCCO) {
+                    cuccoMotion.initialize(entity.slot());
                 }
                 if (entity.type() == ENTITY_BOO_BUDDY) {
                     booBuddyMotion.initialize(entity.slot());
@@ -2240,6 +2249,49 @@ public final class RoomEntityRuntime {
                 }
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_CUCCO && handlerLinkCollisionEnabled) {
+                CuccoMotion.Update cuccoUpdate = cuccoMotion.advance(entity, frame,
+                    enemyTransitionCountdown[entity.slot()], enemyFlashCountdown[entity.slot()],
+                    linkEntityX, linkEntityY, linkZ, handlerLinkCollisionEnabled,
+                    cuccoPowerBraceletHeld(), linkAttackStepAnimationCountdown != 0,
+                    randomByteSupplier, backgroundCollision,
+                    indoorRoom, followingNpcState.marinFollowing(), transitionSequenceCounter);
+                updated = cuccoUpdate.entity();
+                enemyTransitionCountdown[entity.slot()] = cuccoUpdate.transitionCountdown();
+                enemyFlashCountdown[entity.slot()] = cuccoUpdate.flashCountdown();
+                enemyHealth[entity.slot()] = CuccoMotion.HEALTH_OVERRIDE;
+                preserveCuccoPresentation = true;
+                if (cuccoUpdate.dialogLowId() >= 0) {
+                    pendingDialogRequests.add(new DialogRequest(
+                        cuccoUpdate.dialogTableId(), cuccoUpdate.dialogLowId()));
+                }
+                if (cuccoUpdate.unloaded()) {
+                    disableEntityWithoutPersistence(entity.slot());
+                    continue;
+                }
+                if (cuccoUpdate.liftRequested()
+                    && beginLift(entity.slot(), romLinkDirection)) {
+                    pendingEntityEvents.add(new EntityCombatEvent(
+                        entity.slot(), entity.type(), 0, false,
+                        EntityCombatEvent.SoundChannel.WAVE, CuccoMotion.LIFT_WAVE_SFX));
+                    slots[index] = advanceLiftedEntity(
+                        renderLiftedEntity(slots[index], frame), linkEntityX, linkEntityY,
+                        linkZ, romLinkDirection);
+                    continue;
+                }
+                if (cuccoUpdate.spawnRequest() != null
+                    && spawnCuccoAngry(cuccoUpdate.spawnRequest())) {
+                    pendingEntityEvents.add(new EntityCombatEvent(
+                        entity.slot(), entity.type(), 0, false,
+                        EntityCombatEvent.SoundChannel.WAVE, CuccoMotion.CUCCO_HURT_WAVE_SFX));
+                }
+                if (cuccoUpdate.boomerangSound()) {
+                    pendingEntityEvents.add(new EntityCombatEvent(
+                        updated.slot(), updated.type(), 0, false,
+                        EntityCombatEvent.SoundChannel.NOISE, BOOMERANG_SFX_ID));
+                }
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_BOO_BUDDY) {
                 BooBuddyMotion.Update booBuddyUpdate = booBuddyMotion.advance(entity, frame,
                     linkEntityX, linkEntityY, enemyTransitionCountdown[entity.slot()],
@@ -2588,6 +2640,7 @@ public final class RoomEntityRuntime {
                 || preserveStarPresentation
                 || preserveBlooperPresentation || preserveWingedOctorokPresentation
                 || preservePincerPresentation || preserveBushCrawlerPresentation
+                || preserveCuccoPresentation
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
                 || preservePolsVoicePresentation
                 || preserveSpikedBeetlePresentation || preserveArmosKnightPresentation
@@ -2601,6 +2654,7 @@ public final class RoomEntityRuntime {
                 || preserveStarPresentation
                 || preserveBlooperPresentation || preserveWingedOctorokPresentation
                 || preservePincerPresentation || preserveBushCrawlerPresentation
+                || preserveCuccoPresentation
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
                 || preservePolsVoicePresentation
                 || preserveSpikedBeetlePresentation || preserveArmosKnightPresentation
@@ -2877,6 +2931,14 @@ public final class RoomEntityRuntime {
                 ENTITY_CUCCO, ENTITY_HORSE_PIECE -> true;
             default -> false;
         };
+    }
+
+    /** Mirrors CuccoEntityHandler's B-slot-first Power Bracelet check. */
+    private boolean cuccoPowerBraceletHeld() {
+        if (linkItemB == 0x03) {
+            return actionButtonBHeld;
+        }
+        return linkItemA == 0x03 && actionButtonAHeld;
     }
 
     /**
@@ -3214,9 +3276,15 @@ public final class RoomEntityRuntime {
             if (linkCollision && entity.type() == ENTITY_GEL) {
                 zolGelMotion.onLinkCollision(entity.slot());
             }
+            int linkDamage = linkCollision ? contactDamage(entity.type()) : 0;
+            if ((enemyPhysicsFlags[entity.slot()] & ENTITY_PHYSICS_HARMLESS) != 0) {
+                // func_003_6CC0 keeps CheckLinkCollisionWithEnemy's carry
+                // result for harmless entities but suppresses Link damage.
+                linkDamage = 0;
+            }
             events.add(new EntityCombatEvent(
                 entity.slot(), entity.type(),
-                linkCollision ? contactDamage(entity.type()) : 0,
+                linkDamage,
                 swordHit, enemyDamage, enemySpecialAction, soundChannel, soundId,
                 secondarySoundChannel, secondarySoundId, swordPokeVfx));
         }
@@ -4089,6 +4157,7 @@ public final class RoomEntityRuntime {
         enemyProjectileMotion.clear(slot);
         wingedOctorokMotion.clear(slot);
         bushCrawlerMotion.clear(slot);
+        cuccoMotion.clear(slot);
         wingedSwordAttackThisFrame[slot] = false;
         wingedStateTwoThisFrame[slot] = false;
         laserMotion.clear(slot);
@@ -5038,6 +5107,11 @@ public final class RoomEntityRuntime {
         this.bombButtonHeld = bombButtonHeld;
     }
 
+    void setLinkAttackStepAnimationCountdown(int countdown) {
+        validateByte(countdown, "Link attack-step animation countdown");
+        linkAttackStepAnimationCountdown = countdown;
+    }
+
     void setLiftedLinkC13B(int linkC13B) {
         if ((linkC13B & ~0xFF) != 0) {
             throw new IllegalArgumentException("Lifted Link C13B must be an unsigned byte: "
@@ -5926,6 +6000,33 @@ public final class RoomEntityRuntime {
         return true;
     }
 
+    /** Ports CuccoState2Handler's outdoor angry-Cucco spawn setup. */
+    private boolean spawnCuccoAngry(CuccoMotion.SpawnRequest request) {
+        int freeSlot = findFreeEntitySlot();
+        if (freeSlot < 0) {
+            return false;
+        }
+
+        EntitySpriteDefinition definition = spriteDefinitionFor(ENTITY_CUCCO);
+        int variant = definition.supported() ? definition.initialVariant() : -1;
+        RoomEntity angry = new RoomEntity(freeSlot, -1, ENTITY_CUCCO,
+            request.x(), request.y(), EntityStatus.ACTIVE, definition, variant,
+            0, 0, request.z());
+        slots[freeSlot] = angry;
+        cuccoMotion.initializeAngry(freeSlot, request.speedX(), request.speedY());
+        baseEntityFlipAttribute[freeSlot] = 0;
+        entityOptions1Override[freeSlot] = CuccoMotion.ANGRY_OPTIONS1;
+        enemyPhysicsFlags[freeSlot] = CuccoMotion.ANGRY_PHYSICS_FLAGS;
+        enemyHitboxFlags[freeSlot] = CuccoMotion.ANGRY_HITBOX_FLAGS;
+        enemyHealth[freeSlot] = CuccoMotion.HEALTH_OVERRIDE;
+        enemyTransitionCountdown[freeSlot] = 0;
+        enemyStunnedCountdown[freeSlot] = 0;
+        enemyFlashCountdown[freeSlot] = 0;
+        enemyIgnoreHitsCountdown[freeSlot] = 0;
+        dynamicEntitySpawnedThisFrame[freeSlot] = true;
+        return true;
+    }
+
     private void spawnLaserSensor(RoomEntity parent) {
         int freeSlot = findFreeEntitySlot();
         if (freeSlot < 0) {
@@ -6339,12 +6440,17 @@ public final class RoomEntityRuntime {
         return (((((source - target) & 0xFF) + 0x18) & 0xFF) < 0x30);
     }
 
-    private RoomEntity renderLiftedBomb(RoomEntity entity) {
+    private RoomEntity renderLiftedEntity(RoomEntity entity, int frameCounter) {
         if (entity.type() != ENTITY_BOMB) {
-            return entity;
+            return entity.type() == ENTITY_CUCCO
+                ? withVariant(entity, (frameCounter >>> 2) & 0x01) : entity;
         }
         enemyFlashCountdown[entity.slot()] = 0;
         return withDefinition(entity, spriteDefinitionFor(ENTITY_BOMB), 0);
+    }
+
+    private RoomEntity renderLiftedBomb(RoomEntity entity) {
+        return renderLiftedEntity(entity, 0);
     }
 
     private boolean tryLiftBombIfRequested(int index, BombMotion.Decision decision,
@@ -7432,6 +7538,9 @@ public final class RoomEntityRuntime {
         if (slots[slot].type() == ENTITY_CROW) {
             return ENTITY_OPT1_ALLOW_OUT_OF_BOUNDS;
         }
+        if (slots[slot].type() == ENTITY_CUCCO) {
+            return ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
+        }
         if (slots[slot].type() == ENTITY_BOO_BUDDY) {
             return BooBuddyMotion.OPTIONS1;
         }
@@ -7658,13 +7767,14 @@ public final class RoomEntityRuntime {
                 BOMBITE_INITIAL_PHYSICS_FLAGS;
             case ENTITY_FISH -> FishMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_CROW -> CrowMotion.INITIAL_PHYSICS_FLAGS;
+            case ENTITY_CUCCO -> CuccoMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_BOO_BUDDY -> BooBuddyMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_DROPPABLE_FAIRY -> FAIRY_INITIAL_PHYSICS_FLAGS;
             case ENTITY_MAD_BOMBER -> MAD_BOMBER_INITIAL_PHYSICS_FLAGS;
             case ENTITY_BOMBER -> BOMBER_INITIAL_PHYSICS_FLAGS;
             case ENTITY_LIFTABLE_ROCK, ENTITY_LIFTABLE_STATUE,
                 ENTITY_WRECKING_BALL, ENTITY_SIDE_VIEW_POT, ENTITY_ROOSTER,
-                ENTITY_CUCCO, ENTITY_HORSE_PIECE -> ENTITY_PHYSICS_GRABBABLE;
+                ENTITY_HORSE_PIECE -> ENTITY_PHYSICS_GRABBABLE;
             default -> 0;
         };
     }
@@ -8021,6 +8131,7 @@ public final class RoomEntityRuntime {
         blooperMotion.clear(slot);
         pincerMotion.clear(slot);
         bushCrawlerMotion.clear(slot);
+        cuccoMotion.clear(slot);
         spikeTrapMotion.clear(slot);
         pairoddMotion.clear(slot);
         pairoddProjectileMotion.clear(slot);
@@ -8076,6 +8187,9 @@ public final class RoomEntityRuntime {
         }
         if (entity.type() == ENTITY_CROW) {
             return crowMotion.speedZ(slot);
+        }
+        if (entity.type() == ENTITY_CUCCO) {
+            return cuccoMotion.speedZ(slot);
         }
         if (entity.type() == ENTITY_WINGED_OCTOROK) {
             return wingedOctorokMotion.speedZ(slot);

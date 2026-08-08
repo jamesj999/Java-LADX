@@ -2449,6 +2449,23 @@ runtime collision callback.
   audio are covered by focused tests. The clean Java suite passes with 1,256 tests and
   zero failures, errors, or skipped tests.
 
+## Verified ROM Cucco entity runtime — 2026-08-08
+
+- Cucco (`$6C`) now decodes the four bank `$05:$4514` pair variants, including
+  the source X-flip and tile ordering, through the ROM-backed sprite catalog.
+- The active handler ports the source fixed-point flight states, Z landing and
+  flap timing, Link-facing homing, Marin flash/dialog transition, harmless
+  contact boundary, and the B-slot-first Power Bracelet lift path. The live
+  room tick carries `wLinkAttackStepAnimationCountdown` separately so item-use
+  attack windows suppress lifting as in the source.
+- The outdoor angry-spawn path uses the source random offset tables and
+  vector-to-Link calculation, creates the `$6C` state-$03 entity with the ROM
+  physics/hitbox/options overrides, and emits the source wave/noise cues at the
+  corresponding handler boundaries. ROM display, motion, lift guard, spawn,
+  combat, and runtime regressions are covered by focused tests.
+  The clean Java suite passes with 1,267 tests and zero failures, errors, or
+  skipped tests.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

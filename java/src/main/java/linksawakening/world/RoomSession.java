@@ -553,6 +553,17 @@ public final class RoomSession {
         }
     }
 
+    /** Supplies wLinkAttackStepAnimationCountdown to input-driven entity handlers. */
+    public void setEntityAttackStepAnimationCountdown(int countdown) {
+        if (countdown < 0 || countdown > 0xFF) {
+            throw new IllegalArgumentException("Link attack-step animation countdown must be an unsigned byte: "
+                + countdown);
+        }
+        if (entityRuntime != null) {
+            entityRuntime.setLinkAttackStepAnimationCountdown(countdown);
+        }
+    }
+
     /** Starts the source UseOcarina countdown consumed by active entities. */
     public boolean startOcarina(int countdown, int songFlags, int selectedSong) {
         if (countdown < 0 || countdown > 0xFF) {

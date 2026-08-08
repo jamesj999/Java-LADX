@@ -880,6 +880,8 @@ public class Main {
                             || inputState.isDown(inputConfig.menuOpenKey())));
                 roomSession.setEntityPowerBraceletButtonHeld(isPowerBraceletButtonHeld());
                 roomSession.setEntityBombButtonHeld(isBombButtonHeld());
+                roomSession.setEntityAttackStepAnimationCountdown(
+                    link == null ? 0 : link.romAttackStepAnimationCountdown());
                 roomSession.setBirdKeyOwned(playerState != null && playerState.birdKeyCount() != 0);
                 roomSession.setEntityInventorySlots(
                     playerState == null ? PlayerState.INVENTORY_EMPTY : playerState.itemA(),

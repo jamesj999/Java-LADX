@@ -43,6 +43,7 @@ public final class RoomEntityCombatRules {
     private static final int ENTITY_WATER_TEKTITE = 0x99;
     private static final int ENTITY_FISH = 0xCC;
     private static final int ENTITY_CROW = 0x7A;
+    private static final int ENTITY_CUCCO = 0x6C;
     private static final int ENTITY_BOO_BUDDY = 0x50;
     private static final int ENTITY_COLOR_SHELL_RED = 0xE9;
     private static final int ENTITY_COLOR_SHELL_GREEN = 0xEA;
@@ -121,6 +122,7 @@ public final class RoomEntityCombatRules {
                 ENTITY_HIDING_GHINI, ENTITY_GIANT_GHINI, ENTITY_GHINI,
                 ENTITY_HARDHAT_BEETLE, ENTITY_SPIKE_TRAP, ENTITY_WATER_TEKTITE, ENTITY_FISH,
                 ENTITY_CROW,
+                ENTITY_CUCCO,
                 ENTITY_BOO_BUDDY,
                 ENTITY_SPIKED_BEETLE,
                 ENTITY_PAIRODD, ENTITY_COLOR_SHELL_RED, ENTITY_COLOR_SHELL_GREEN,
@@ -145,6 +147,10 @@ public final class RoomEntityCombatRules {
                 OCTOROK_AND_KEESE_CONTACT_DAMAGE;
             case ENTITY_FISH -> OCTOROK_AND_KEESE_CONTACT_DAMAGE;
             case ENTITY_CROW -> CROW_CONTACT_DAMAGE;
+            // Cucco's static health-group table points at the ordinary enemy
+            // damage row; physics_flags.asm marks it harmless, and the
+            // runtime suppresses this raw value at the entity boundary.
+            case ENTITY_CUCCO -> OCTOROK_AND_KEESE_CONTACT_DAMAGE;
             case ENTITY_BOO_BUDDY -> BOO_BUDDY_CONTACT_DAMAGE;
             case ENTITY_ARMOS_STATUE -> 0x10;
             case ENTITY_ARMOS_KNIGHT -> 0x0C;
@@ -180,6 +186,7 @@ public final class RoomEntityCombatRules {
                 OCTOROK_AND_KEESE_INITIAL_HEALTH;
             case ENTITY_FISH -> OCTOROK_AND_KEESE_INITIAL_HEALTH;
             case ENTITY_CROW -> CROW_INITIAL_HEALTH;
+            case ENTITY_CUCCO -> 0x01;
             case ENTITY_BOO_BUDDY -> BOO_BUDDY_INITIAL_HEALTH;
             case ENTITY_ARMOS_STATUE -> 0x04;
             case ENTITY_ARMOS_KNIGHT -> 0x0C;

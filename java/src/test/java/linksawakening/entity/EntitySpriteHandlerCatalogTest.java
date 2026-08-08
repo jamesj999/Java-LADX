@@ -202,6 +202,22 @@ final class EntitySpriteHandlerCatalogTest {
     }
 
     @Test
+    void mapsCuccoToItsFourVariantBankFivePairDisplayList() throws Exception {
+        EntitySpriteDefinition cucco = new EntitySpriteHandlerCatalog(loadRom())
+            .forEntityType(EntitySpriteHandlerCatalog.ENTITY_CUCCO,
+                EntityRoomLoader.RoomTable.OVERWORLD);
+
+        assertDefinition(cucco, 0x05, 0x4514,
+            EntitySpriteDefinition.Shape.PAIR, 4, 0);
+        assertPairBytes(cucco, new int[][] {
+            {0x50, 0x01, 0x52, 0x01},
+            {0x54, 0x01, 0x56, 0x01},
+            {0x52, 0x21, 0x50, 0x21},
+            {0x56, 0x21, 0x54, 0x21}
+        });
+    }
+
+    @Test
     void mapsBoomerangToItsFourFrameBankNineteenDisplayList() {
         byte[] rom = syntheticRom();
         write(rom, 0x19, 0x4451,
