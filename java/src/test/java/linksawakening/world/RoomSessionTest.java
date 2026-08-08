@@ -1612,7 +1612,19 @@ final class RoomSessionTest {
             .filter(entity -> entity.type() == 0x3D)
             .findFirst()
             .orElseThrow();
+        // Room A4 is one of the two ROM tree-shell rooms. Its shell remains
+        // hidden until the Pegasus-Boots collision branch fires.
+        session.setSecretSeashellPegasusCollisionState(
+            true, true, (pickup.x() + 0x08) & 0xFF, (pickup.y() + 0x08) & 0xFF);
         session.tickEntities(0);
+        session.tickEntities(1);
+        // DroppableRevealOrReturnIfNeeded gives a revealed shell private
+        // countdown $18, and PickableCollectIfNeeded refuses collection until
+        // that countdown reaches zero.
+        for (int frame = 2; frame <= 0x19; frame++) {
+            session.tickEntities(frame);
+        }
+        pickup = session.activeRoom().entities().slots().get(pickup.slot());
         int collectionFrame = (pickup.slot() & 1) == 0 ? 1 : 0;
 
         EntityPickupEvent event = session.collectEntityIfNeeded(
@@ -1622,6 +1634,13 @@ final class RoomSessionTest {
         assertEquals(pickup.slot(), event.slot());
         assertEquals(EntityStatus.DISABLED,
             session.activeRoom().entities().slots().get(pickup.slot()).status());
+        assertEquals(0x10, session.overworldRoomStatusForTest(0xA4) & 0x10);
+        assertTrue(session.consumeEntityDialogRequests().contains(
+            new RoomEntityRuntime.DialogRequest(0, 0xEF)));
+        assertTrue(session.consumeEntityEvents().stream().anyMatch(soundEvent ->
+            soundEvent.type() == 0x3D
+                && soundEvent.soundChannel() == EntityCombatEvent.SoundChannel.WAVE
+                && soundEvent.soundId() == 0x01));
 
         session.loadOverworld(0xA4);
 

@@ -118,6 +118,10 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_BOW_WOW = 0x6D;
     private static final int ENTITY_KIKI_THE_MONKEY = 0xAD;
     private static final int ENTITY_DROPPABLE_SECRET_SEASHELL = 0x3D;
+    private static final int SECRET_SEASHELL_HIDDEN_OPTIONS1 =
+        ENTITY_OPT1_NO_GROUND_INTERACTION | ENTITY_OPT1_NO_WALL_COLLISION;
+    private static final int SECRET_SEASHELL_REVEALED_OPTIONS1 =
+        ENTITY_OPT1_SPLASH_IN_WATER | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
     private static final int ENTITY_HEART_CONTAINER = 0x36;
     private static final int ENTITY_MOBLIN_SWORD = 0x14;
     private static final int ENTITY_LASER = 0x2A;
@@ -271,6 +275,8 @@ public final class RoomEntityRuntime {
     private final FollowingNpcMotion followingNpcMotion = new FollowingNpcMotion();
     private final BowWowMotion bowWowMotion = new BowWowMotion();
     private final ColorShellMotion colorShellMotion = new ColorShellMotion();
+    private final SecretSeashellMotion secretSeashellMotion =
+        new SecretSeashellMotion();
     private final ThrownEntityMotion thrownEntityMotion = new ThrownEntityMotion();
     private final int[] slowTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] slowTimerInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
@@ -419,6 +425,15 @@ public final class RoomEntityRuntime {
     private boolean groundInteractionSideScrolling;
     private int entityMapId = -1;
     private int entityRoomId = -1;
+    private int entityRoomStatus;
+    // These latches represent the HRAM values read by
+    // DroppableRevealOrReturnIfNeeded's tree-shell branch. RoomSession feeds
+    // them from Link's live Pegasus-Boots collision record before dispatch.
+    private boolean secretSeashellScreenShakeActive;
+    private boolean secretSeashellPegasusCollisionActive;
+    private boolean secretSeashellPegasusCollisionCoordinatesKnown;
+    private int secretSeashellPegasusCollisionX;
+    private int secretSeashellPegasusCollisionY;
     private int liftedEntitySlot = -1;
     private int liftedCarryState;
     private int liftedEffectiveDirection;
@@ -1168,6 +1183,7 @@ public final class RoomEntityRuntime {
             boolean preservePolsVoicePresentation = false;
             boolean preserveSpikedBeetlePresentation = false;
             boolean preserveArmosKnightPresentation = false;
+            boolean preserveSecretSeashellPresentation = false;
             boolean keyDropTransitionActive = false;
             RoomEntityGroundInteraction.Result preAppliedGroundResult = null;
             if (status == EntityStatus.ACTIVE) {
@@ -1650,6 +1666,34 @@ public final class RoomEntityRuntime {
                     continue;
                 }
                 updated = slots[index];
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_DROPPABLE_SECRET_SEASHELL) {
+                if (chestSwordLevel >= 0x02
+                    || (entityRoomStatus & 0x10) != 0
+                    || (entityRoomId == 0xE3 && (entityRoomStatus & 0x40) == 0)) {
+                    // DroppableSeashellEntityHandler uses UnloadEntityAndReturn
+                    // for these gates, which deliberately does not mark the
+                    // source load-order bit as completed.
+                    disableEntityWithoutPersistence(entity.slot());
+                    continue;
+                }
+                RoomEntityObjectSample objectUnderEntity = objectQuery == null
+                    ? null : objectQuery.sample(entity);
+                SecretSeashellMotion.Update shellUpdate = secretSeashellMotion.advance(
+                    entity, entityRoomId, frame,
+                    false, secretSeashellScreenShakeActive,
+                    secretSeashellPegasusCollisionActive,
+                    secretSeashellPegasusCollisionCoordinatesKnown,
+                    secretSeashellPegasusCollisionX,
+                    secretSeashellPegasusCollisionY,
+                    linkEntityX, linkEntityY, objectUnderEntity);
+                updated = shellUpdate.entity();
+                entityOptions1Override[entity.slot()] =
+                    secretSeashellMotion.privateState3(entity.slot()) != 0
+                        ? SECRET_SEASHELL_HIDDEN_OPTIONS1
+                        : SECRET_SEASHELL_REVEALED_OPTIONS1;
+                preserveSecretSeashellPresentation = true;
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_KEY_DROP_POINT) {
@@ -2716,6 +2760,7 @@ public final class RoomEntityRuntime {
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
                 || preservePolsVoicePresentation
                 || preserveSpikedBeetlePresentation || preserveArmosKnightPresentation
+                || preserveSecretSeashellPresentation
                 ? updated.spriteVariant() : variantFor(updated, frame);
             if (status == EntityStatus.ACTIVE && shouldDisappear(entity)) {
                 variant = (slowTransitionCountdown[entity.slot()] & 0x01) != 0 ? 0 : -1;
@@ -2731,6 +2776,7 @@ public final class RoomEntityRuntime {
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
                 || preservePolsVoicePresentation
                 || preserveSpikedBeetlePresentation || preserveArmosKnightPresentation
+                || preserveSecretSeashellPresentation
                 ? updated.entityFlipAttribute() : baseEntityFlipAttribute[entity.slot()];
             if (preserveBombitePresentation && updated.type() == ENTITY_TIMER_BOMBITE) {
                 renderFlipAttribute |= (bombPrivateCountdown1[updated.slot()] << 3) & 0x10;
@@ -2800,12 +2846,18 @@ public final class RoomEntityRuntime {
 
         for (int index = slots.length - 1; index >= 0; index--) {
             RoomEntity entity = slots[index];
+            if (entity.type() == ENTITY_DROPPABLE_SECRET_SEASHELL) {
+                secretSeashellMotion.ensureInitialized(entity.slot(), entityRoomId);
+            }
             boolean floatingType = FloatingItemMotion.isFloatingItem(entity.type());
             boolean floating = isRuntimeFloatingItem(entity);
             if (!entity.loaded() || entity.status() != EntityStatus.ACTIVE
                 || !RoomEntityPickupRules.isPickable(entity.type())
                 || (floatingType && !floating)
                 || dropPrivateCountdown1[entity.slot()] > 0
+                || (entity.type() == ENTITY_DROPPABLE_SECRET_SEASHELL
+                    && (secretSeashellMotion.privateState3(entity.slot()) != 0
+                        || secretSeashellMotion.privateCountdown1(entity.slot()) != 0))
                 || (!floating && !RoomEntityPickupRules.collisionCadenceMatches(
                     frameCounter, entity.slot()))
                 || (!floating && linkAirborne)
@@ -4140,6 +4192,7 @@ public final class RoomEntityRuntime {
         bombPrivateCountdown3[slot] = 0;
         magicPowderState[slot] = 0;
         magicPowderPrivateState4[slot] = 0;
+        secretSeashellMotion.clear(slot);
         entityPrivateState4[slot] = 0;
         entityInertia[slot] = 0;
         musicalNoteInertia[slot] = 0;
@@ -5280,10 +5333,47 @@ public final class RoomEntityRuntime {
     void setEntityRoomId(int roomId) {
         validateByte(roomId, "Entity room id");
         entityRoomId = roomId;
+        for (RoomEntity entity : slots) {
+            if (entity.loaded() && entity.type() == ENTITY_DROPPABLE_SECRET_SEASHELL) {
+                secretSeashellMotion.ensureInitialized(entity.slot(), roomId);
+                entityOptions1Override[entity.slot()] =
+                    secretSeashellMotion.privateState3(entity.slot()) != 0
+                        ? SECRET_SEASHELL_HIDDEN_OPTIONS1
+                        : SECRET_SEASHELL_REVEALED_OPTIONS1;
+            }
+        }
     }
 
     void setEntityRoomIdForTest(int roomId) {
         setEntityRoomId(roomId);
+    }
+
+    void setEntityRoomStatus(int roomStatus) {
+        validateByte(roomStatus, "Entity room status");
+        entityRoomStatus = roomStatus;
+    }
+
+    void setEntityRoomStatusForTest(int roomStatus) {
+        setEntityRoomStatus(roomStatus);
+    }
+
+    void setSecretSeashellPegasusCollisionForTest(boolean screenShakeActive,
+                                                   boolean collisionActive,
+                                                   int collisionX, int collisionY) {
+        setSecretSeashellPegasusCollisionState(screenShakeActive, collisionActive,
+            collisionX, collisionY);
+    }
+
+    void setSecretSeashellPegasusCollisionState(boolean screenShakeActive,
+                                                 boolean collisionActive,
+                                                 int collisionX, int collisionY) {
+        validateByte(collisionX, "Pegasus collision X");
+        validateByte(collisionY, "Pegasus collision Y");
+        secretSeashellScreenShakeActive = screenShakeActive;
+        secretSeashellPegasusCollisionActive = collisionActive;
+        secretSeashellPegasusCollisionCoordinatesKnown = true;
+        secretSeashellPegasusCollisionX = collisionX;
+        secretSeashellPegasusCollisionY = collisionY;
     }
 
     /** Supplies the three player upgrade bytes read by ChestWithItemEntityHandler. */
@@ -7691,6 +7781,9 @@ public final class RoomEntityRuntime {
         if (slots[slot].type() == ENTITY_CHEST_WITH_ITEM) {
             return CHEST_OPTIONS1;
         }
+        if (slots[slot].type() == ENTITY_DROPPABLE_SECRET_SEASHELL) {
+            return SECRET_SEASHELL_HIDDEN_OPTIONS1;
+        }
         if (slots[slot].type() == ENTITY_FISH) {
             return ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
         }
@@ -7744,6 +7837,34 @@ public final class RoomEntityRuntime {
 
     int colorShellPhysicsFlags(int slot) {
         return colorShellMotion.physicsFlags(slot);
+    }
+
+    int secretSeashellPrivateState3(int slot) {
+        return secretSeashellMotion.privateState3(slot);
+    }
+
+    int secretSeashellPrivateState4(int slot) {
+        return secretSeashellMotion.privateState4(slot);
+    }
+
+    int secretSeashellPrivateCountdown1(int slot) {
+        return secretSeashellMotion.privateCountdown1(slot);
+    }
+
+    int secretSeashellSlowTransitionCountdown(int slot) {
+        return secretSeashellMotion.slowTransitionCountdown(slot);
+    }
+
+    int secretSeashellSpeedX(int slot) {
+        return secretSeashellMotion.speedX(slot);
+    }
+
+    int secretSeashellSpeedY(int slot) {
+        return secretSeashellMotion.speedY(slot);
+    }
+
+    int secretSeashellSpeedZ(int slot) {
+        return secretSeashellMotion.speedZ(slot);
     }
 
     int fishState(int slot) {
@@ -7862,6 +7983,10 @@ public final class RoomEntityRuntime {
 
     private void initializeEntityTimers(RoomEntity entity) {
         enemyPhysicsFlags[entity.slot()] = initialPhysicsFlags(entity.type());
+        if (entity.type() == ENTITY_DROPPABLE_SECRET_SEASHELL) {
+            secretSeashellMotion.ensureInitialized(entity.slot(), entityRoomId);
+            entityOptions1Override[entity.slot()] = SECRET_SEASHELL_HIDDEN_OPTIONS1;
+        }
         if (indoorRoom && RoomEntityPickupRules.usesIndoorDefaultSlowTimer(entity.type())) {
             slowTransitionCountdown[entity.slot()] = 0x80;
             slowTimerInitialized[entity.slot()] = true;
@@ -8224,6 +8349,7 @@ public final class RoomEntityRuntime {
 
     private void disableEntityWithoutPersistence(int slot) {
         resetEnemyDropState(slot);
+        secretSeashellMotion.clear(slot);
         slowTransitionCountdown[slot] = 0;
         slowTimerInitialized[slot] = false;
         enemyTransitionCountdown[slot] = 0;
@@ -8350,6 +8476,9 @@ public final class RoomEntityRuntime {
         }
         if (entity.type() == ENTITY_CUCCO) {
             return cuccoMotion.speedZ(slot);
+        }
+        if (entity.type() == ENTITY_DROPPABLE_SECRET_SEASHELL) {
+            return secretSeashellMotion.speedZ(slot);
         }
         if (entity.type() == ENTITY_WINGED_OCTOROK) {
             return wingedOctorokMotion.speedZ(slot);

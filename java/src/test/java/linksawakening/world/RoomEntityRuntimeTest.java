@@ -1259,6 +1259,118 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void secretSeashellRemainsHiddenUntilItsRomObjectRevealConditionIsMet()
+        throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RoomEntity shell = new RoomEntity(0, 0, 0x3D, 0x40, 0x50, EntityStatus.ACTIVE,
+            catalog.forEntityType(0x3D, EntityRoomLoader.RoomTable.OVERWORLD), 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(shell), false,
+            () -> 0, catalog, new RomEnemyCombatTables(rom));
+        runtime.setEntityRoomIdForTest(0x10);
+        runtime.setObjectQuery(entity -> new RoomEntityObjectSample(0x09, 0, 0x40, 0x40));
+
+        runtime.tick(0, 0x20, 0x30, () -> 0, null);
+
+        assertEquals(-1, runtime.snapshot().slots().get(0).spriteVariant());
+        assertEquals(0x02, runtime.secretSeashellPrivateState3(0));
+        assertEquals(0x00, runtime.secretSeashellPrivateState4(0));
+
+        runtime.setObjectQuery(entity -> new RoomEntityObjectSample(0x04, 0, 0x40, 0x40));
+        runtime.tick(1, 0x20, 0x30, () -> 0, null);
+
+        RoomEntity revealed = runtime.snapshot().slots().get(0);
+        assertEquals(0, revealed.spriteVariant());
+        assertEquals(0, runtime.secretSeashellPrivateState3(0));
+        assertEquals(0, runtime.secretSeashellPrivateState4(0));
+        assertEquals(0x18, runtime.secretSeashellPrivateCountdown1(0));
+        assertEquals(0x80, runtime.secretSeashellSlowTransitionCountdown(0));
+        assertEquals(0x0C, runtime.secretSeashellSpeedX(0));
+        assertEquals(0x0C, runtime.secretSeashellSpeedY(0));
+        assertEquals(0x20, runtime.secretSeashellSpeedZ(0));
+    }
+
+    @Test
+    void secretSeashellExceptionsExposePrivateStateFourWithoutRevealing()
+        throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RoomEntity shell = new RoomEntity(0, 0, 0x3D, 0x40, 0x50, EntityStatus.ACTIVE,
+            catalog.forEntityType(0x3D, EntityRoomLoader.RoomTable.OVERWORLD), 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(shell), false,
+            () -> 0, catalog, new RomEnemyCombatTables(rom));
+        runtime.setEntityRoomIdForTest(0xDA);
+        runtime.setObjectQuery(entity -> new RoomEntityObjectSample(0x09, 0, 0x40, 0x40));
+
+        runtime.tick(0, 0x20, 0x30, () -> 0, null);
+
+        assertEquals(-1, runtime.snapshot().slots().get(0).spriteVariant());
+        assertEquals(0x02, runtime.secretSeashellPrivateState3(0));
+        assertEquals(0x01, runtime.secretSeashellPrivateState4(0));
+    }
+
+    @Test
+    void secretSeashellTreeRoomsUsePegasusCollisionInsteadOfGrassReveal()
+        throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RoomEntity shell = new RoomEntity(0, 0, 0x3D, 0x40, 0x50, EntityStatus.ACTIVE,
+            catalog.forEntityType(0x3D, EntityRoomLoader.RoomTable.OVERWORLD), 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(shell), false,
+            () -> 0, catalog, new RomEnemyCombatTables(rom));
+        runtime.setEntityRoomIdForTest(0xA4);
+        runtime.setObjectQuery(entity -> new RoomEntityObjectSample(0x04, 0, 0x40, 0x40));
+
+        runtime.tick(0, 0x20, 0x30, () -> 0, null);
+        assertEquals(-1, runtime.snapshot().slots().get(0).spriteVariant());
+        assertEquals(0x01, runtime.secretSeashellPrivateState3(0));
+
+        runtime.setSecretSeashellPegasusCollisionForTest(true, true, 0x90, 0x90);
+        runtime.tick(1, 0x20, 0x30, () -> 0, null);
+
+        assertEquals(-1, runtime.snapshot().slots().get(0).spriteVariant());
+        assertEquals(0x01, runtime.secretSeashellPrivateState3(0));
+
+        runtime.setSecretSeashellPegasusCollisionForTest(true, true, 0x48, 0x58);
+        runtime.tick(2, 0x20, 0x30, () -> 0, null);
+
+        assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
+        assertEquals(0, runtime.secretSeashellPrivateState3(0));
+    }
+
+    @Test
+    void secretSeashellHandlerUnloadsForSwordUpgradeOrCompletedRoomWithoutPersistence()
+        throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RoomEntity shell = new RoomEntity(0, 0, 0x3D, 0x40, 0x50, EntityStatus.ACTIVE,
+            catalog.forEntityType(0x3D, EntityRoomLoader.RoomTable.OVERWORLD), 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(shell), false,
+            () -> 0, catalog, new RomEnemyCombatTables(rom));
+        runtime.setEntityRoomIdForTest(0x10);
+        runtime.setChestPlayerLevels(1, 2, 1);
+        runtime.setObjectQuery(entity -> new RoomEntityObjectSample(0x04, 0, 0x40, 0x40));
+
+        runtime.tick(0, 0x20, 0x30, () -> 0, null);
+
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
+        assertEquals(0, runtime.consumePendingClearedEntityMask());
+
+        shell = new RoomEntity(0, 0, 0x3D, 0x40, 0x50, EntityStatus.ACTIVE,
+            catalog.forEntityType(0x3D, EntityRoomLoader.RoomTable.OVERWORLD), 0);
+        runtime = RoomEntityRuntime.from(snapshot(shell), false,
+            () -> 0, catalog, new RomEnemyCombatTables(rom));
+        runtime.setEntityRoomIdForTest(0x10);
+        runtime.setEntityRoomStatusForTest(0x10);
+        runtime.setObjectQuery(entity -> new RoomEntityObjectSample(0x04, 0, 0x40, 0x40));
+
+        runtime.tick(0, 0x20, 0x30, () -> 0, null);
+
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
+        assertEquals(0, runtime.consumePendingClearedEntityMask());
+    }
+
+    @Test
     void romBurningStatusUsesTheSharedSpecialDamageValueAndExpiresIntoDeath()
         throws IOException {
         byte[] rom = romWithSwordResult(0x09, 0xFE);

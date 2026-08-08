@@ -126,6 +126,11 @@ public final class Link implements RocsFeather.JumpTarget {
     private static final int COLLISION_TYPE_DOWN = 0x02;
     private static final int COLLISION_TYPE_LEFT = 0x04;
     private static final int COLLISION_TYPE_RIGHT = 0x08;
+    private static final int PEGASUS_BOOTS_MAX_CHARGE = 0x20;
+    private static final int PEGASUS_BOOTS_RUNNING_SPEED = 0x20;
+    private static final int PEGASUS_BOOTS_COLLISION_COUNTDOWN = 0x02;
+    private static final int PEGASUS_BOOTS_COLLISION_SHAKE = 0x20;
+    private static final int PEGASUS_BOOTS_COLLISION_VELOCITY_Z = 0x18;
 
     private static final int[][] JUMP_ANIMATION_STATE = {
         { 0x64, 0x65, 0x66 }, // DOWN
@@ -177,6 +182,12 @@ public final class Link implements RocsFeather.JumpTarget {
     private boolean forcedSpeedPending;
     private int forcedSpeedX;
     private int forcedSpeedY;
+    private int pegasusBootsChargeMeter;
+    private int pegasusBootsCollisionCountdown;
+    private int pegasusBootsCollisionPosX;
+    private int pegasusBootsCollisionPosY;
+    private int pendingPegasusScreenShakeCountdown;
+    private int pendingPegasusScreenShakePhase;
     private int lastRomSpeedX;
     private int lastRomSpeedY;
     private int groundStatus = GROUND_STATUS_NORMAL;
@@ -501,6 +512,47 @@ public final class Link implements RocsFeather.JumpTarget {
         return lastRomSpeedY & 0xFF;
     }
 
+    /** Mirrors wPegasusBootsChargeMeter for the live item-use path. */
+    public int pegasusBootsChargeMeter() {
+        return pegasusBootsChargeMeter & 0xFF;
+    }
+
+    /** Mirrors wPegasusBootsCollisionCountdown. */
+    public int pegasusBootsCollisionCountdown() {
+        return pegasusBootsCollisionCountdown & 0xFF;
+    }
+
+    /** Mirrors wPegasusBootsCollisionPosX. */
+    public int pegasusBootsCollisionPosX() {
+        return pegasusBootsCollisionPosX & 0xFF;
+    }
+
+    /** Mirrors wPegasusBootsCollisionPosY. */
+    public int pegasusBootsCollisionPosY() {
+        return pegasusBootsCollisionPosY & 0xFF;
+    }
+
+    /** A screen-shake write emitted by the ROM's Pegasus collision handler. */
+    public record ScreenShakeRequest(int countdown, int phase) {
+    }
+
+    /** Returns and clears the one-shot shake request written this frame. */
+    public ScreenShakeRequest consumePegasusScreenShakeRequest() {
+        ScreenShakeRequest request = new ScreenShakeRequest(
+            pendingPegasusScreenShakeCountdown, pendingPegasusScreenShakePhase);
+        pendingPegasusScreenShakeCountdown = 0;
+        pendingPegasusScreenShakePhase = 0;
+        return request.countdown() == 0 ? null : request;
+    }
+
+    /** Mirrors ResetPegasusBoots for handlers that interrupt a dash. */
+    public void resetPegasusBoots() {
+        pegasusBootsChargeMeter = 0;
+        if (playerState != null) {
+            playerState.setRunningWithPegasusBoots(false);
+        }
+    }
+
     /**
      * Mirrors wIsUsingShield: merely owning the shield is insufficient; the
      * button bound to the slot containing it must be held this frame.
@@ -658,6 +710,9 @@ public final class Link implements RocsFeather.JumpTarget {
 
     public void update() {
         frameCounter = (frameCounter + 1) & 0xFF;
+        if (pegasusBootsCollisionCountdown > 0) {
+            pegasusBootsCollisionCountdown--;
+        }
         tickRomAttackStepAnimationCountdown();
         romCollisionType = 0;
         lastRomSpeedX = 0;
@@ -703,6 +758,7 @@ public final class Link implements RocsFeather.JumpTarget {
         if (newDirection != -1 && !itemsLockFacing() && !isLiftTransitionBlockingMotion()) {
             direction = newDirection;
         }
+        updatePegasusBootsUse();
         if (!airborne && groundStatus != GROUND_STATUS_PIT) {
             refreshGroundStatus();
             updateLastSafePositionIfPossible();
@@ -734,7 +790,10 @@ public final class Link implements RocsFeather.JumpTarget {
 
         int speedX;
         int speedY;
-        if (forcedSpeedPending) {
+        if (playerState != null && playerState.runningWithPegasusBoots()) {
+            speedX = pegasusRunningSpeedX();
+            speedY = pegasusRunningSpeedY();
+        } else if (forcedSpeedPending) {
             speedX = forcedSpeedX;
             speedY = forcedSpeedY;
             forcedSpeedPending = false;
@@ -759,6 +818,7 @@ public final class Link implements RocsFeather.JumpTarget {
         }
 
         tickJump();
+        handlePegasusBootsCollision();
 
         if (!airborne) {
             if (!enterSwimmingIfNeeded()) {
@@ -776,6 +836,90 @@ public final class Link implements RocsFeather.JumpTarget {
             walkTickCounter = 0;
             walkFrame = 0;
         }
+    }
+
+    /** Mirrors CheckItemsToUse's two Pegasus-Boots slot branches and UsePegasusBoots. */
+    private void updatePegasusBootsUse() {
+        if (playerState == null || inputState == null || inputConfig == null) {
+            return;
+        }
+        boolean aHeld = playerState.itemA() == PlayerState.INVENTORY_PEGASUS_BOOTS
+            && inputState.isDown(inputConfig.aKey());
+        boolean bHeld = playerState.itemB() == PlayerState.INVENTORY_PEGASUS_BOOTS
+            && inputState.isDown(inputConfig.bKey());
+        if (!aHeld && !bHeld) {
+            pegasusBootsChargeMeter = 0;
+            return;
+        }
+        if (playerState.runningWithPegasusBoots()
+            || romInteractiveMotionBlocked || airborne
+            || zPixels() != 0 || groundStatus == GROUND_STATUS_PIT
+            || isCarryingLiftedObject() || motionState == LINK_MOTION_SWIMMING) {
+            return;
+        }
+
+        int heldBootsSlots = (aHeld ? 1 : 0) + (bHeld ? 1 : 0);
+        for (int slot = 0; slot < heldBootsSlots; slot++) {
+            if (pegasusBootsChargeMeter >= PEGASUS_BOOTS_MAX_CHARGE) {
+                break;
+            }
+            pegasusBootsChargeMeter++;
+            if (pegasusBootsChargeMeter == PEGASUS_BOOTS_MAX_CHARGE) {
+                playerState.setRunningWithPegasusBoots(true);
+                forcedSpeedPending = false;
+                break;
+            }
+        }
+    }
+
+    private int pegasusRunningSpeedX() {
+        return switch (direction) {
+            case DIRECTION_LEFT -> -PEGASUS_BOOTS_RUNNING_SPEED;
+            case DIRECTION_RIGHT -> PEGASUS_BOOTS_RUNNING_SPEED;
+            default -> 0;
+        };
+    }
+
+    private int pegasusRunningSpeedY() {
+        return switch (direction) {
+            case DIRECTION_UP -> -PEGASUS_BOOTS_RUNNING_SPEED;
+            case DIRECTION_DOWN -> PEGASUS_BOOTS_RUNNING_SPEED;
+            default -> 0;
+        };
+    }
+
+    /** Mirrors bank2.asm:74AD's dash collision response and func_020_49BA. */
+    private void handlePegasusBootsCollision() {
+        if (playerState == null || !playerState.runningWithPegasusBoots()
+            || (romCollisionType & 0x0F) == 0) {
+            return;
+        }
+
+        int reflectedSpeedX = (-signedByte(lastRomSpeedX)) >> 2;
+        int reflectedSpeedY = (-signedByte(lastRomSpeedY)) >> 2;
+        resetPegasusBoots();
+        forcedSpeedX = reflectedSpeedX;
+        forcedSpeedY = reflectedSpeedY;
+        forcedSpeedPending = true;
+        lastRomSpeedX = reflectedSpeedX & 0xFF;
+        lastRomSpeedY = reflectedSpeedY & 0xFF;
+        airborne = true;
+        zSubPixels = 0;
+        zVelocity = PEGASUS_BOOTS_COLLISION_VELOCITY_Z;
+
+        int romDirection = romDirectionForJavaDirection(direction);
+        int[] xOffsets = {0x10, 0xF0, 0x08, 0x08};
+        int[] yOffsets = {0x0C, 0x0C, 0xF0, 0x10};
+        pegasusBootsCollisionPosX = (romEntityX() + xOffsets[romDirection]) & 0xFF;
+        pegasusBootsCollisionPosY = (romEntityY() + yOffsets[romDirection]) & 0xFF;
+        pegasusBootsCollisionCountdown = PEGASUS_BOOTS_COLLISION_COUNTDOWN;
+        pendingPegasusScreenShakeCountdown = PEGASUS_BOOTS_COLLISION_SHAKE;
+        pendingPegasusScreenShakePhase = (romDirection & 0x02) << 1;
+    }
+
+    private static int signedByte(int value) {
+        int normalized = value & 0xFF;
+        return normalized < 0x80 ? normalized : normalized - 0x100;
     }
 
     private void tickRomAttackStepAnimationCountdown() {

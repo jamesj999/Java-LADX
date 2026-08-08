@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
@@ -106,6 +107,69 @@ final class LinkTest {
 
         assertEquals(0xF0, link.romSpeedX());
         assertEquals(0x08, link.romSpeedY());
+    }
+
+    @Test
+    void holdingPegasusBootsChargesForTheRomThirtyTwoFramesThenStartsTheDash()
+        throws IOException {
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        InputState inputState = new InputState();
+        inputState.onKeyEvent(inputConfig.bKey(), GLFW_PRESS);
+        PlayerState playerState = new PlayerState();
+        playerState.setItemB(PlayerState.INVENTORY_PEGASUS_BOOTS);
+        RomTables romTables = RomTables.loadFromRom(loadRom());
+        OverworldCollision collision = new OverworldCollision(romTables);
+        collision.setRoom(emptyRoomObjectsArea());
+        Link link = new Link(inputState, inputConfig, romTables, collision, null,
+            playerState, new ItemRegistry());
+
+        for (int frame = 0; frame < 0x1F; frame++) {
+            link.update();
+        }
+
+        assertFalse(playerState.runningWithPegasusBoots());
+        assertEquals(0x1F, link.pegasusBootsChargeMeter());
+
+        link.update();
+
+        assertTrue(playerState.runningWithPegasusBoots());
+        assertEquals(0x20, link.pegasusBootsChargeMeter());
+        assertEquals(0x20, link.romSpeedY());
+    }
+
+    @Test
+    void pegasusDashCollisionPublishesTheRomTwoFrameDirectionalRecord() throws IOException {
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        InputState inputState = new InputState();
+        inputState.onKeyEvent(inputConfig.bKey(), GLFW_PRESS);
+        inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
+        PlayerState playerState = new PlayerState();
+        playerState.setItemB(PlayerState.INVENTORY_PEGASUS_BOOTS);
+        RomTables romTables = RomTables.loadFromRom(loadRom());
+        int[] roomObjects = emptyRoomObjectsArea();
+        roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 3] = 0x00;
+        OverworldCollision collision = new OverworldCollision(romTables);
+        collision.setRoom(roomObjects);
+        Link link = new Link(inputState, inputConfig, romTables, collision, null,
+            playerState, new ItemRegistry());
+        link.setPixelPosition(0x20, 0x20);
+
+        Link.ScreenShakeRequest shake = null;
+        int guard = 0;
+        while (shake == null && guard++ < 64) {
+            link.update();
+            shake = link.consumePegasusScreenShakeRequest();
+        }
+
+        assertNotNull(shake);
+        assertEquals(0x20, shake.countdown());
+        assertEquals(0, shake.phase());
+        assertEquals(0x02, link.pegasusBootsCollisionCountdown());
+        assertEquals((link.romEntityX() + 0x10) & 0xFF,
+            link.pegasusBootsCollisionPosX());
+        assertEquals((link.romEntityY() + 0x0C) & 0xFF,
+            link.pegasusBootsCollisionPosY());
+        assertFalse(playerState.runningWithPegasusBoots());
     }
 
     @Test

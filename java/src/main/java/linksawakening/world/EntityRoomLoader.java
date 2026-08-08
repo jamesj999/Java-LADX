@@ -17,6 +17,7 @@ public final class EntityRoomLoader {
     private static final int MAX_ROOM_ID = 0xFF;
     private static final int ENTITY_GHINI = 0x12;
     private static final int ENTITY_MOBLIN_SWORD = 0x14;
+    private static final int ENTITY_DROPPABLE_SECRET_SEASHELL = 0x3D;
     private static final int ENTITY_KEY_DROP_POINT = 0x30;
     private static final int GHINI_INITIAL_Z = 0x10;
     private static final int ROOM_INDOOR_A_ANGLERS_TUNNEL_KEY_DROP = 0x69;
@@ -205,6 +206,12 @@ public final class EntityRoomLoader {
 
     private static int initialSpriteVariant(RoomTable table, int roomId, int type,
                                             EntitySpriteDefinition definition, int x, int y) {
+        // EntityInitSecretSeashell immediately suppresses the display-list
+        // variant while privateState3 is non-zero.  Keep the room snapshot
+        // hidden even before the first ACTIVE handler tick.
+        if (type == ENTITY_DROPPABLE_SECRET_SEASHELL) {
+            return -1;
+        }
         if (!definition.supported()) {
             return -1;
         }

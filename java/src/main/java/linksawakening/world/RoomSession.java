@@ -36,6 +36,7 @@ public final class RoomSession {
     private static final int ENTITY_BOW_WOW = 0x6D;
     private static final int ENTITY_MARIN_AT_THE_SHORE = 0xC1;
     private static final int ENTITY_HEART_CONTAINER = 0x36;
+    private static final int ENTITY_DROPPABLE_SECRET_SEASHELL = 0x3D;
     private static final int OBJECT_ROCKY_GROUND = 0x09;
     private static final int OBJECT_ROCKY_CAVE_DOOR = 0xE1;
     private static final int OBJECT_BOMBABLE_CAVE_DOOR = 0xBA;
@@ -188,6 +189,10 @@ public final class RoomSession {
     private int currentLinkMotionState = EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE;
     /** WRAM wC1A2; ResetRoomVariables clears the room trigger counter. */
     private int roomTriggerCount;
+    private boolean secretSeashellScreenShakeActive;
+    private boolean secretSeashellPegasusCollisionActive;
+    private int secretSeashellPegasusCollisionX;
+    private int secretSeashellPegasusCollisionY;
     private GameplaySoundSink colorShellSoundSink = GameplaySoundSink.none();
     private final ColorShellWorld colorShellWorld = new ColorShellWorld() {
         @Override
@@ -556,6 +561,23 @@ public final class RoomSession {
                                      int powerBraceletLevel) {
         if (entityRuntime != null) {
             entityRuntime.setChestPlayerLevels(shieldLevel, swordLevel, powerBraceletLevel);
+        }
+    }
+
+    /** Supplies the live HRAM shake/collision values used by tree shells. */
+    public void setSecretSeashellPegasusCollisionState(boolean screenShakeActive,
+                                                        boolean collisionActive,
+                                                        int collisionX, int collisionY) {
+        if ((collisionX & ~0xFF) != 0 || (collisionY & ~0xFF) != 0) {
+            throw new IllegalArgumentException("Pegasus collision coordinates must be bytes");
+        }
+        secretSeashellScreenShakeActive = screenShakeActive;
+        secretSeashellPegasusCollisionActive = collisionActive;
+        secretSeashellPegasusCollisionX = collisionX;
+        secretSeashellPegasusCollisionY = collisionY;
+        if (entityRuntime != null) {
+            entityRuntime.setSecretSeashellPegasusCollisionState(
+                screenShakeActive, collisionActive, collisionX, collisionY);
         }
     }
 
@@ -1134,6 +1156,10 @@ public final class RoomSession {
         entityRuntime.setOcarinaPlayback(ocarinaPlaybackCountdown,
             ocarinaSongFlags, selectedSongIndex, ocarinaAnimationCounter,
             ocarinaAnimationPhase);
+        entityRuntime.setEntityRoomStatus(activeRoomStatusFlags());
+        entityRuntime.setSecretSeashellPegasusCollisionState(
+            secretSeashellScreenShakeActive, secretSeashellPegasusCollisionActive,
+            secretSeashellPegasusCollisionX, secretSeashellPegasusCollisionY);
         // rLY is not a meaningful value in the host renderer. Keep the
         // non-emulator policy explicit while preserving the ROM seed update.
         entityRandomByteSource.beginFrame(frameCounter & 0xFF, 0);
@@ -1466,6 +1492,15 @@ public final class RoomSession {
             // it starts the held-item transition.
             indoorARoomStatus[0x69] |= 0x10;
         }
+        if (event.type() == ENTITY_DROPPABLE_SECRET_SEASHELL) {
+            // PickSecretSeashell opens Dialog0EF and completes the room after
+            // the shared pickup collision has cleared the source entity.
+            markActiveRoomCompleted();
+            pendingRoomDialogRequests.add(new RoomEntityRuntime.DialogRequest(0, 0xEF));
+            pendingRoomEntityEvents.add(new EntityCombatEvent(
+                event.slot(), event.type(), 0, false,
+                EntityCombatEvent.SoundChannel.WAVE, 0x01));
+        }
         harvestKeyRewardEvents();
         activeRoom.replaceEntities(entityRuntime.snapshot());
         return event;
@@ -1483,6 +1518,10 @@ public final class RoomSession {
     }
 
     private void setActiveRoom(LoadedRoom room) {
+        secretSeashellScreenShakeActive = false;
+        secretSeashellPegasusCollisionActive = false;
+        secretSeashellPegasusCollisionX = 0;
+        secretSeashellPegasusCollisionY = 0;
         RoomEntitySnapshot entities = room.entities();
         if (entities != null && entities.spriteSelection() != null) {
             var selection = entities.spriteSelection();
@@ -1520,6 +1559,10 @@ public final class RoomSession {
             entityRuntime.setPowerBraceletButtonHeld(powerBraceletButtonHeld);
             entityRuntime.setBombButtonHeld(bombButtonHeld);
             entityRuntime.setLiftedLinkC13B(followingEntityYOffset);
+            entityRuntime.setEntityRoomStatus(activeRoomStatusFlags());
+            entityRuntime.setSecretSeashellPegasusCollisionState(
+                secretSeashellScreenShakeActive, secretSeashellPegasusCollisionActive,
+                secretSeashellPegasusCollisionX, secretSeashellPegasusCollisionY);
             configureEnemyDropRuntime();
         }
         followingNpcRoomNeedsSync = true;
@@ -1577,6 +1620,10 @@ public final class RoomSession {
         entityRuntime.setPowerBraceletButtonHeld(powerBraceletButtonHeld);
         entityRuntime.setBombButtonHeld(bombButtonHeld);
         entityRuntime.setLiftedLinkC13B(followingEntityYOffset);
+        entityRuntime.setEntityRoomStatus(activeRoomStatusFlags());
+        entityRuntime.setSecretSeashellPegasusCollisionState(
+            secretSeashellScreenShakeActive, secretSeashellPegasusCollisionActive,
+            secretSeashellPegasusCollisionX, secretSeashellPegasusCollisionY);
         configureEnemyDropRuntime();
     }
 
@@ -2117,6 +2164,15 @@ public final class RoomSession {
         }
         return mapId >= 0x06 && mapId < 0x1A
             ? indoorBRoomStatus : indoorARoomStatus;
+    }
+
+    private int activeRoomStatusFlags() {
+        if (activeRoom == null) {
+            return 0;
+        }
+        byte[] status = activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
+            ? overworldRoomStatus : indoorStatusTableForMap(activeRoom.mapId());
+        return Byte.toUnsignedInt(status[activeRoom.roomId()]);
     }
 
     private void harvestKeyQuicksandEvents() {

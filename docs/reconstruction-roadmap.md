@@ -2506,6 +2506,35 @@ runtime collision callback.
   secret-shell private state by the separate `DroppableRevealOrReturnIfNeeded`
   handler remains part of the broader static-droppable work.
 
+## Verified ROM hidden secret-seashell runtime — 2026-08-08
+
+- Secret Seashell (`$3D`) initialization now preserves the source distinction
+  between ordinary hidden shells (`privateState3 = $02`) and the two tree
+  shells in rooms `$A4`/`$D2` (`privateState3 = $01`). Hidden shells retain an
+  active entity slot but suppress their sprite and ground interaction.
+- The ordinary reveal branch samples the live object under the shell and
+  accepts only short grass `$04` or shovel hole `$CC`; the six ROM exception
+  rooms set `privateState4 = $01` and require the shovel-hole path. Revealing
+  applies the source `$18` pickup delay, `$80` slow-transition timer, length
+  `$0C` vector away from Link, and Z speed `$20` before entering the shared
+  pickable physics.
+- The tree branch now receives the actual Pegasus-Boots collision countdown
+  and collision position produced by Link. It requires both the active screen
+  shake and collision countdown, then applies the ROM unsigned half-open
+  `$20`-byte X/Y window around the shell centre. Link's boots charge meter,
+  `$20` dash speed, two-frame collision record, directional collision offsets,
+  `$20` shake request, and collision bounce are wired through
+  `Main -> RoomSession -> RoomEntityRuntime`.
+- The handler unloads without persistence for sword level `>= 2`, completed
+  room event 1, and room `$E3` without event 3. Collection uses the shared
+  unload/persistence path, marks event 1, opens `Dialog0EF`, and emits wave
+  SFX `$01` through the gameplay sound boundary.
+- Focused ROM-state, coordinate-window, Link boots, live-session, dialog,
+  persistence, and sound-routing regressions pass. The clean Java suite passes
+  with 1,284 tests and zero failures, errors, or skipped tests. Full source
+  parity for every other item-use branch and the remaining entity handlers is
+  still pending.
+
 ## Broader parity gaps
 
 The project still needs a systematic pass over the remaining entity handlers,

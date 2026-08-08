@@ -789,6 +789,19 @@ public class Main {
                     equipmentController.tickEquippedItems(frameCounter);
                 }
                 link.update();
+                Link.ScreenShakeRequest pegasusShake =
+                    link.consumePegasusScreenShakeRequest();
+                if (pegasusShake != null) {
+                    scrollController.startScreenShake(
+                        pegasusShake.countdown(), pegasusShake.phase());
+                }
+                if (roomSession != null) {
+                    roomSession.setSecretSeashellPegasusCollisionState(
+                        scrollController.screenShakeCountdown() != 0,
+                        link.pegasusBootsCollisionCountdown() != 0,
+                        link.pegasusBootsCollisionPosX(),
+                        link.pegasusBootsCollisionPosY());
+                }
                 link.captureRomFinalPosition();
                 if (roomSession != null && playerState != null) {
                     EntityPickupEvent pickup = roomSession.collectEntityIfNeeded(
