@@ -210,6 +210,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_ZOMBIE = ZombieMotion.ENTITY_TYPE;
     private static final int ENTITY_BUZZ_BLOB = BuzzBlobMotion.ENTITY_TYPE;
     private static final int ENTITY_SAND_CRAB = SandCrabMotion.ENTITY_TYPE;
+    private static final int ENTITY_DOG = DogMotion.ENTITY_TYPE;
     private static final int ENTITY_HORSE_PIECE = 0x98;
     private static final int ENTITY_PHYSICS_GRABBABLE = 0x20;
     private static final int OBJECT_BUSH = 0x5C;
@@ -295,6 +296,7 @@ public final class RoomEntityRuntime {
     private final ZombieMotion zombieMotion = new ZombieMotion();
     private final BuzzBlobMotion buzzBlobMotion = new BuzzBlobMotion();
     private final SandCrabMotion sandCrabMotion = new SandCrabMotion();
+    private final DogMotion dogMotion = new DogMotion();
     private final SpikeTrapMotion spikeTrapMotion = new SpikeTrapMotion();
     private final PairoddMotion pairoddMotion = new PairoddMotion();
     private final PairoddProjectileMotion pairoddProjectileMotion =
@@ -797,6 +799,9 @@ public final class RoomEntityRuntime {
             if (entity.loaded() && entity.type() == ENTITY_SAND_CRAB) {
                 sandCrabMotion.initialize(entity.slot());
             }
+            if (entity.loaded() && entity.type() == ENTITY_DOG) {
+                dogMotion.initialize(entity.slot());
+            }
             if (entity.loaded() && entity.type() == ENTITY_DROPPABLE_FAIRY) {
                 fairyMotion.initialize(entity.slot());
             }
@@ -1280,6 +1285,7 @@ public final class RoomEntityRuntime {
             boolean preserveZombiePresentation = false;
             boolean preserveBuzzBlobPresentation = false;
             boolean preserveSandCrabPresentation = false;
+            boolean preserveDogPresentation = false;
             boolean preserveRoosterPresentation = false;
             boolean preserveWizrobePresentation = false;
             boolean preserveWizrobeProjectilePresentation = false;
@@ -1292,9 +1298,14 @@ public final class RoomEntityRuntime {
             RoomEntityGroundInteraction.Result preAppliedGroundResult = null;
             boolean applyGenericGroundInteraction = entity.type() != ENTITY_ZOMBIE
                 && entity.type() != ENTITY_BUZZ_BLOB
-                && entity.type() != ENTITY_SAND_CRAB;
+                && entity.type() != ENTITY_SAND_CRAB
+                && entity.type() != ENTITY_DOG;
             if (status == EntityStatus.ACTIVE) {
                 decrementEnemyDropCountdowns(entity);
+            }
+            if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_DOG) {
+                // DogEntityHandler writes this before ReturnIfNonInteractive_19.
+                enemyHealth[entity.slot()] = DogMotion.HANDLER_HEALTH;
             }
             if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_HOOKSHOT_BRIDGE) {
                 advanceHookshotBridgeEntity(index, entity);
@@ -1699,6 +1710,9 @@ public final class RoomEntityRuntime {
                 }
                 if (entity.type() == ENTITY_SAND_CRAB) {
                     sandCrabMotion.initialize(entity.slot());
+                }
+                if (entity.type() == ENTITY_DOG) {
+                    dogMotion.initialize(entity.slot());
                 }
                 if (entity.type() == ENTITY_BOO_BUDDY) {
                     booBuddyMotion.initialize(entity.slot());
@@ -3061,6 +3075,28 @@ public final class RoomEntityRuntime {
                 preserveSandCrabPresentation = true;
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_DOG && !creditsGameplay
+                && handlerLinkCollisionEnabled) {
+                int slot = entity.slot();
+                RoomEntityBackgroundInteraction dogBackgroundInteraction = backgroundInteraction;
+                if (dogBackgroundInteraction == null && backgroundCollision != null) {
+                    dogBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
+                        backgroundCollision);
+                }
+                DogMotion.Update dogUpdate = dogMotion.advance(
+                    updated, frame, enemyTransitionCountdown[slot], enemyPhysicsFlags[slot],
+                    linkEntityX, linkEntityY, romLinkDirection, actionButtonAHeld,
+                    dialogActive, randomByteSupplier, dogBackgroundInteraction);
+                updated = dogUpdate.entity();
+                enemyTransitionCountdown[slot] = dogUpdate.transitionCountdown();
+                enemyPhysicsFlags[slot] = dogUpdate.physicsFlags();
+                applyGenericGroundInteraction = dogUpdate.appliesBackgroundInteraction();
+                if (dogUpdate.dialogRequested()) {
+                    pendingDialogRequests.add(new DialogRequest(0, dogUpdate.dialogLowId()));
+                }
+                preserveDogPresentation = true;
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
                 && isGhiniType(entity.type())) {
                 updated = ghiniMotion.advance(entity, frame, entity.type(),
                     linkEntityX, linkEntityY, romCollisionType, randomByteSupplier);
@@ -3232,6 +3268,7 @@ public final class RoomEntityRuntime {
                 || preserveZombiePresentation
                 || preserveBuzzBlobPresentation
                 || preserveSandCrabPresentation
+                || preserveDogPresentation
                 || preserveRoosterPresentation
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
                 || preservePolsVoicePresentation
@@ -3260,6 +3297,7 @@ public final class RoomEntityRuntime {
                 || preserveZombiePresentation
                 || preserveBuzzBlobPresentation
                 || preserveSandCrabPresentation
+                || preserveDogPresentation
                 || preserveRoosterPresentation
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
                 || preservePolsVoicePresentation
@@ -4737,6 +4775,7 @@ public final class RoomEntityRuntime {
         zombieMotion.clear(slot);
         buzzBlobMotion.clear(slot);
         sandCrabMotion.clear(slot);
+        dogMotion.clear(slot);
         mimicMotion.clear(slot);
         maskedMimicMotion.clear(slot);
         miniMoldormMotion.clear(slot);
@@ -4819,6 +4858,7 @@ public final class RoomEntityRuntime {
         zombieMotion.clear(slot);
         buzzBlobMotion.clear(slot);
         sandCrabMotion.clear(slot);
+        dogMotion.clear(slot);
         wingedSwordAttackThisFrame[slot] = false;
         wingedStateTwoThisFrame[slot] = false;
         laserMotion.clear(slot);
@@ -8303,6 +8343,14 @@ public final class RoomEntityRuntime {
         return enemyTransitionCountdown[slot];
     }
 
+    int dogState(int slot) {
+        validateEntitySlot(slot);
+        if (!isLoadedEntityOfType(slot, ENTITY_DOG)) {
+            throw new IllegalArgumentException("Entity slot does not contain a dog: " + slot);
+        }
+        return dogMotion.state(slot);
+    }
+
     int stunnedCountdown(int slot) {
         if (slot < 0 || slot >= slots.length) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
@@ -9036,6 +9084,7 @@ public final class RoomEntityRuntime {
             case ENTITY_ZOMBIE -> ZombieMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_BUZZ_BLOB -> BuzzBlobMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_SAND_CRAB -> SandCrabMotion.INITIAL_PHYSICS_FLAGS;
+            case ENTITY_DOG -> DogMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_ROOSTER -> RoosterMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_BOO_BUDDY -> BooBuddyMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_DROPPABLE_FAIRY -> FAIRY_INITIAL_PHYSICS_FLAGS;
@@ -9422,6 +9471,7 @@ public final class RoomEntityRuntime {
         zombieMotion.clear(slot);
         buzzBlobMotion.clear(slot);
         sandCrabMotion.clear(slot);
+        dogMotion.clear(slot);
         mimicMotion.clear(slot);
         maskedMimicMotion.clear(slot);
         miniMoldormMotion.clear(slot);
@@ -9508,6 +9558,9 @@ public final class RoomEntityRuntime {
         }
         if (entity.type() == ENTITY_SPIKED_BEETLE) {
             return spikedBeetleMotion.speedZ(slot);
+        }
+        if (entity.type() == ENTITY_DOG) {
+            return dogMotion.speedZ(slot);
         }
         if (isEnemyProjectileType(entity.type())) {
             return enemyProjectileMotion.speedZ(slot);
