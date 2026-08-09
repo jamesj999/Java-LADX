@@ -34,6 +34,7 @@ public final class EntitySpriteHandlerCatalog {
     public static final int ENTITY_ZOMBIE = 0xBF;
     public static final int ENTITY_BUZZ_BLOB = 0xB9;
     public static final int ENTITY_SAND_CRAB = 0xC6;
+    public static final int ENTITY_URCHIN = 0xC5;
     public static final int LIFTABLE_ROCK_INTACT_ROCK_VARIANT = 0;
     public static final int LIFTABLE_ROCK_INTACT_BUSH_VARIANT = 1;
     public static final int LIFTABLE_ROCK_SMASHED_ROCK_VARIANT_BASE = 2;
@@ -228,6 +229,9 @@ public final class EntitySpriteHandlerCatalog {
         }
         if (entityType == ENTITY_SAND_CRAB) {
             return decodePair(entityType, 0x15, 0x7320, 2, 0);
+        }
+        if (entityType == ENTITY_URCHIN) {
+            return forUrchinState(false);
         }
         if (entityType == ENTITY_BOO_BUDDY) {
             return decodePair(entityType, 0x06, 0x79A9, 8, 0);
@@ -508,6 +512,12 @@ public final class EntitySpriteHandlerCatalog {
             return decodeRectangle(ENTITY_POKEY, 0x15, 0x4B77, 4, 4, 0);
         }
         return decodeRectangle(ENTITY_POKEY, 0x15, 0x4BB7, 4, 2, 0);
+    }
+
+    /** Selects Urchin's normal or credits bank-$15 display-list pair. */
+    public EntitySpriteDefinition forUrchinState(boolean creditsGameplay) {
+        return decodePair(ENTITY_URCHIN, 0x15,
+            creditsGameplay ? 0x7393 : 0x7383, 4, 0);
     }
 
     /** Decodes Unknown044SpriteVariants at bank-$15:$4CD5 for detached segments. */

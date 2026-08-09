@@ -64,6 +64,7 @@ public final class RoomEntityCombatRules {
     private static final int ENTITY_ZOMBIE = 0xBF;
     private static final int ENTITY_BUZZ_BLOB = 0xB9;
     private static final int ENTITY_SAND_CRAB = 0xC6;
+    private static final int ENTITY_URCHIN = 0xC5;
 
     // HitboxPositions._00 in home/entities.asm:3AAA. Octorok, Moblin, Armos,
     // and Keese all select the normal collision box in hitbox_flags.asm.
@@ -153,7 +154,7 @@ public final class RoomEntityCombatRules {
 
     static boolean supportsLinkCollision(int type) {
         return supportsEnemyCollision(type) || (type & 0xFF) == ENTITY_ARMOS_STATUE
-            || (type & 0xFF) == ENTITY_ROOSTER;
+            || (type & 0xFF) == ENTITY_ROOSTER || (type & 0xFF) == ENTITY_URCHIN;
     }
 
     static int contactDamage(int type) {
@@ -315,7 +316,7 @@ public final class RoomEntityCombatRules {
         return switch (type & 0xFF) {
             case ENTITY_GEL -> SMALL_ENEMY_HITBOX_WIDTH;
             case ENTITY_GIANT_GHINI, ENTITY_GIANT_GOPONGA_FLOWER,
-                ENTITY_SPIKE_TRAP, ENTITY_ARMOS_KNIGHT ->
+                ENTITY_SPIKE_TRAP, ENTITY_ARMOS_KNIGHT, ENTITY_URCHIN ->
                 BIG_ENEMY_HITBOX_WIDTH;
             default -> HITBOX_WIDTH;
         };
@@ -325,7 +326,7 @@ public final class RoomEntityCombatRules {
         return switch (type & 0xFF) {
             case ENTITY_GEL -> SMALL_ENEMY_HITBOX_HEIGHT;
             case ENTITY_GIANT_GHINI, ENTITY_GIANT_GOPONGA_FLOWER,
-                ENTITY_SPIKE_TRAP, ENTITY_ARMOS_KNIGHT ->
+                ENTITY_SPIKE_TRAP, ENTITY_ARMOS_KNIGHT, ENTITY_URCHIN ->
                 BIG_ENEMY_HITBOX_HEIGHT;
             default -> HITBOX_HEIGHT;
         };
