@@ -212,6 +212,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_SAND_CRAB = SandCrabMotion.ENTITY_TYPE;
     private static final int ENTITY_DOG = DogMotion.ENTITY_TYPE;
     private static final int ENTITY_URCHIN = UrchinMotion.ENTITY_TYPE;
+    private static final int ENTITY_WITCH_RAT = WitchRatMotion.ENTITY_TYPE;
     private static final int ENTITY_HORSE_PIECE = 0x98;
     private static final int ENTITY_PHYSICS_GRABBABLE = 0x20;
     private static final int OBJECT_BUSH = 0x5C;
@@ -299,6 +300,7 @@ public final class RoomEntityRuntime {
     private final SandCrabMotion sandCrabMotion = new SandCrabMotion();
     private final DogMotion dogMotion = new DogMotion();
     private final UrchinMotion urchinMotion = new UrchinMotion();
+    private final WitchRatMotion witchRatMotion = new WitchRatMotion();
     private final SpikeTrapMotion spikeTrapMotion = new SpikeTrapMotion();
     private final PairoddMotion pairoddMotion = new PairoddMotion();
     private final PairoddProjectileMotion pairoddProjectileMotion =
@@ -807,6 +809,9 @@ public final class RoomEntityRuntime {
             if (entity.loaded() && entity.type() == ENTITY_URCHIN) {
                 urchinMotion.initialize(entity.slot());
             }
+            if (entity.loaded() && entity.type() == ENTITY_WITCH_RAT) {
+                witchRatMotion.initialize(entity.slot());
+            }
             if (entity.loaded() && entity.type() == ENTITY_DROPPABLE_FAIRY) {
                 fairyMotion.initialize(entity.slot());
             }
@@ -1292,6 +1297,7 @@ public final class RoomEntityRuntime {
             boolean preserveSandCrabPresentation = false;
             boolean preserveDogPresentation = false;
             boolean preserveUrchinPresentation = false;
+            boolean preserveWitchRatPresentation = false;
             boolean preserveRoosterPresentation = false;
             boolean preserveWizrobePresentation = false;
             boolean preserveWizrobeProjectilePresentation = false;
@@ -1723,6 +1729,9 @@ public final class RoomEntityRuntime {
                 }
                 if (entity.type() == ENTITY_URCHIN) {
                     urchinMotion.initialize(entity.slot());
+                }
+                if (entity.type() == ENTITY_WITCH_RAT) {
+                    witchRatMotion.initialize(entity.slot());
                 }
                 if (entity.type() == ENTITY_BOO_BUDDY) {
                     booBuddyMotion.initialize(entity.slot());
@@ -3144,6 +3153,22 @@ public final class RoomEntityRuntime {
                 preserveUrchinPresentation = true;
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_WITCH_RAT && handlerLinkCollisionEnabled) {
+                int slot = entity.slot();
+                RoomEntityBackgroundInteraction witchRatBackgroundInteraction = backgroundInteraction;
+                if (witchRatBackgroundInteraction == null && backgroundCollision != null) {
+                    witchRatBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
+                        backgroundCollision);
+                }
+                WitchRatMotion.Update witchRatUpdate = witchRatMotion.advance(
+                    updated, frame, enemyTransitionCountdown[slot], randomByteSupplier,
+                    witchRatBackgroundInteraction);
+                updated = witchRatUpdate.entity();
+                enemyTransitionCountdown[slot] = witchRatUpdate.transitionCountdown();
+                applyGenericGroundInteraction = witchRatUpdate.appliesBackgroundInteraction();
+                preserveWitchRatPresentation = true;
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
                 && isGhiniType(entity.type())) {
                 updated = ghiniMotion.advance(entity, frame, entity.type(),
                     linkEntityX, linkEntityY, romCollisionType, randomByteSupplier);
@@ -3317,6 +3342,7 @@ public final class RoomEntityRuntime {
                 || preserveSandCrabPresentation
                 || preserveDogPresentation
                 || preserveUrchinPresentation
+                || preserveWitchRatPresentation
                 || preserveRoosterPresentation
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
                 || preservePolsVoicePresentation
@@ -3347,6 +3373,7 @@ public final class RoomEntityRuntime {
                 || preserveSandCrabPresentation
                 || preserveDogPresentation
                 || preserveUrchinPresentation
+                || preserveWitchRatPresentation
                 || preserveRoosterPresentation
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
                 || preservePolsVoicePresentation
@@ -4826,6 +4853,7 @@ public final class RoomEntityRuntime {
         sandCrabMotion.clear(slot);
         dogMotion.clear(slot);
         urchinMotion.clear(slot);
+        witchRatMotion.clear(slot);
         mimicMotion.clear(slot);
         maskedMimicMotion.clear(slot);
         miniMoldormMotion.clear(slot);
@@ -4910,6 +4938,7 @@ public final class RoomEntityRuntime {
         sandCrabMotion.clear(slot);
         dogMotion.clear(slot);
         urchinMotion.clear(slot);
+        witchRatMotion.clear(slot);
         wingedSwordAttackThisFrame[slot] = false;
         wingedStateTwoThisFrame[slot] = false;
         laserMotion.clear(slot);
@@ -8403,6 +8432,30 @@ public final class RoomEntityRuntime {
         return dogMotion.state(slot);
     }
 
+    int witchRatState(int slot) {
+        validateEntitySlot(slot);
+        if (!isLoadedEntityOfType(slot, ENTITY_WITCH_RAT)) {
+            throw new IllegalArgumentException("Entity slot does not contain a Witch Rat: " + slot);
+        }
+        return witchRatMotion.state(slot);
+    }
+
+    int witchRatTransitionCountdown(int slot) {
+        validateEntitySlot(slot);
+        if (!isLoadedEntityOfType(slot, ENTITY_WITCH_RAT)) {
+            throw new IllegalArgumentException("Entity slot does not contain a Witch Rat: " + slot);
+        }
+        return enemyTransitionCountdown[slot];
+    }
+
+    int witchRatSpeedZ(int slot) {
+        validateEntitySlot(slot);
+        if (!isLoadedEntityOfType(slot, ENTITY_WITCH_RAT)) {
+            throw new IllegalArgumentException("Entity slot does not contain a Witch Rat: " + slot);
+        }
+        return witchRatMotion.speedZ(slot);
+    }
+
     int stunnedCountdown(int slot) {
         if (slot < 0 || slot >= slots.length) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
@@ -8677,6 +8730,9 @@ public final class RoomEntityRuntime {
         }
         if (slots[slot].type() == ENTITY_URCHIN) {
             return UrchinMotion.OPTIONS1;
+        }
+        if (slots[slot].type() == ENTITY_WITCH_RAT) {
+            return WitchRatMotion.OPTIONS1;
         }
         if (slots[slot].type() == ENTITY_GOPONGA_FLOWER_PROJECTILE) {
             return GopongaProjectileMotion.OPTIONS1;
@@ -9141,6 +9197,7 @@ public final class RoomEntityRuntime {
             case ENTITY_SAND_CRAB -> SandCrabMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_DOG -> DogMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_URCHIN -> UrchinMotion.INITIAL_PHYSICS_FLAGS;
+            case ENTITY_WITCH_RAT -> WitchRatMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_ROOSTER -> RoosterMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_BOO_BUDDY -> BooBuddyMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_DROPPABLE_FAIRY -> FAIRY_INITIAL_PHYSICS_FLAGS;

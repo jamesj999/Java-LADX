@@ -65,6 +65,7 @@ public final class RoomEntityCombatRules {
     private static final int ENTITY_BUZZ_BLOB = 0xB9;
     private static final int ENTITY_SAND_CRAB = 0xC6;
     private static final int ENTITY_URCHIN = 0xC5;
+    private static final int ENTITY_WITCH_RAT = 0xE1;
 
     // HitboxPositions._00 in home/entities.asm:3AAA. Octorok, Moblin, Armos,
     // and Keese all select the normal collision box in hitbox_flags.asm.
@@ -147,7 +148,7 @@ public final class RoomEntityCombatRules {
                 ENTITY_CRYSTAL_SWITCH,
                 ENTITY_OCTOROK, ENTITY_BOUNCING_BOMBITE, ENTITY_TIMER_BOMBITE,
                 ENTITY_MAD_BOMBER, ENTITY_BOMBER, ENTITY_MIMIC, ENTITY_MINI_MOLDORM,
-                ENTITY_MASKED_MIMIC_GORIYA -> true;
+                ENTITY_MASKED_MIMIC_GORIYA, ENTITY_WITCH_RAT -> true;
             default -> false;
         };
     }
@@ -200,6 +201,7 @@ public final class RoomEntityCombatRules {
             case ENTITY_SPIKE_TRAP -> SPIKE_TRAP_CONTACT_DAMAGE;
             case ENTITY_CRYSTAL_SWITCH -> CRYSTAL_SWITCH_CONTACT_DAMAGE;
             case ENTITY_PINCER -> PINCER_CONTACT_DAMAGE;
+            case ENTITY_WITCH_RAT -> 0x04;
             default -> 0;
         };
     }
@@ -247,6 +249,7 @@ public final class RoomEntityCombatRules {
             case ENTITY_WIZROBE -> WIZROBE_INITIAL_HEALTH;
             case ENTITY_SPIKE_TRAP -> SPIKE_TRAP_INITIAL_HEALTH;
             case ENTITY_CRYSTAL_SWITCH -> CRYSTAL_SWITCH_INITIAL_HEALTH;
+            case ENTITY_WITCH_RAT -> 0x01;
             default -> 0;
         };
     }
