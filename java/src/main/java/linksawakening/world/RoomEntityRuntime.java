@@ -3314,6 +3314,17 @@ public final class RoomEntityRuntime {
                         groundInteractionSideScrolling, dropGroundCollision);
                 }
             }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && handlerLinkCollisionEnabled
+                && isRomFriendlyNpcCollision(updated.type())
+                && RoomEntityCombatRules.overlapsLink(updated, linkEntityX, linkEntityY)) {
+                // Friendly handlers call PushLinkOutOfEntity after their own
+                // handler work. Restore Link's pre-entity final position just
+                // as the ROM does, without routing contact through enemy damage.
+                pendingLinkFinalPositionRequests.add(
+                    new LinkFinalPositionRequest(updated.slot()));
+                resetHookshotChainAfterLinkPush();
+            }
             if (ColorShellMotion.isColorShellType(updated.type())) {
                 updated = refreshColorShellDisplay(updated, status);
             }
@@ -3402,6 +3413,11 @@ public final class RoomEntityRuntime {
         updatePincerBodyOam();
         updateWingedOctorokOam();
         return List.copyOf(projectileEvents);
+    }
+
+    /** Mirrors the supported NPC handlers' calls to PushLinkOutOfEntity_*. */
+    private boolean isRomFriendlyNpcCollision(int type) {
+        return RoomEntityCombatRules.supportsFriendlyNpcCollision(type);
     }
 
     List<RoamingEnemyMotion.LaunchRequest> projectileLaunchRequests() {
@@ -4039,11 +4055,21 @@ public final class RoomEntityRuntime {
                 // result for harmless entities but suppresses Link damage.
                 linkDamage = 0;
             }
+            EntityCombatEvent.LinkCollisionResponse linkCollisionResponse =
+                EntityCombatEvent.LinkCollisionResponse.NONE;
+            if (linkDamage > 0 && !swordHit
+                && RoomEntityCombatRules.usesStandardLinkContactResponse(entity.type())) {
+                EnemyRecoilMotion.Vector vector = EnemyRecoilMotion.vectorTowardsLink(
+                    entity.x(), entity.y(), entity.z(), linkEntityX, linkEntityY, 0x14);
+                linkCollisionResponse = new EntityCombatEvent.LinkCollisionResponse(
+                    vector.x() & 0xFF, vector.y() & 0xFF, 0x10);
+            }
             events.add(new EntityCombatEvent(
                 entity.slot(), entity.type(),
                 linkDamage,
                 swordHit, enemyDamage, enemySpecialAction, soundChannel, soundId,
-                secondarySoundChannel, secondarySoundId, swordPokeVfx));
+                secondarySoundChannel, secondarySoundId, swordPokeVfx,
+                linkCollisionResponse));
         }
         return List.copyOf(events);
     }

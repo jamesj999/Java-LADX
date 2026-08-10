@@ -25,6 +25,77 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 final class RoomEntityRuntimeTest {
 
     @Test
+    void friendlyNpcHandlersRestoreLinksPreEntityPositionOnContact() {
+        RoomEntity tarin = new RoomEntity(0, 0, 0x3F, 0x50, 0x60,
+            EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(0x3F), 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(tarin), true, () -> 0);
+
+        runtime.tickWithProjectileEvents(0, 0x00, 0x00, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0, 0, 0, 0, 3, false));
+        runtime.tickWithProjectileEvents(1, 0x50, 0x60, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0x50, 0x60, 0, 0, 3, false));
+
+        assertEquals(List.of(new RoomEntityRuntime.LinkFinalPositionRequest(0)),
+            runtime.consumePendingLinkFinalPositionRequests());
+    }
+
+    @Test
+    void friendlyNpcPushUsesTheRomAirPermittedCollisionEntry() {
+        RoomEntity tarin = new RoomEntity(0, 0, 0x3F, 0x50, 0x60,
+            EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(0x3F), 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(tarin), true, () -> 0);
+
+        runtime.tickWithProjectileEvents(0, 0x00, 0x00, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0, 0, 0, 0, 3, false));
+        runtime.tickWithProjectileEvents(1, 0x50, 0x60, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0x50, 0x60, 1, 0, 3, false));
+
+        assertEquals(List.of(new RoomEntityRuntime.LinkFinalPositionRequest(0)),
+            runtime.consumePendingLinkFinalPositionRequests());
+    }
+
+    @Test
+    void friendlyNpcContactUsesTheRomNpcHitbox() {
+        RoomEntity marin = new RoomEntity(0, 0, 0x3E, 0x50, 0x60,
+            EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(0x3E), 0);
+
+        // HITBOX_NPC is ($08,$06,$06,$08), so this edge contact still
+        // collides; the ordinary enemy box ($08,$05,$08,$05) would miss it.
+        assertTrue(RoomEntityCombatRules.overlapsLink(marin, 0x59, 0x60));
+    }
+
+    @Test
+    void largeFriendlyNpcsUseTheRomBigNpcHitbox() {
+        RoomEntity bear = new RoomEntity(0, 0, 0xB5, 0x40, 0x50,
+            EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(0xB5), 0);
+
+        assertTrue(RoomEntityCombatRules.overlapsLink(bear, 0x4D, 0x50));
+    }
+
+    @Test
+    void ordinaryEnemyContactCarriesTheRomLinkRecoilResponse() {
+        RoomEntity octorok = new RoomEntity(0, 0, 0x09, 0x40, 0x50,
+            EntityStatus.ACTIVE, pairDefinition(0x09, 2), 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(octorok));
+
+        List<EntityCombatEvent> events = runtime.resolveCombat(
+            1, 0x40, 0x58, false, true, false, 0, 0, 0, 0);
+
+        assertEquals(1, events.size());
+        assertEquals(0x04, events.get(0).linkDamage());
+        assertEquals(new EntityCombatEvent.LinkCollisionResponse(0, 0x14, 0x10),
+            events.get(0).linkCollisionResponse());
+    }
+
+    @Test
+    void specialEnemyHandlersDoNotReceiveTheGenericLinkRecoilResponse() {
+        assertFalse(RoomEntityCombatRules.usesStandardLinkContactResponse(0x1C));
+        assertFalse(RoomEntityCombatRules.usesStandardLinkContactResponse(0x2C));
+        assertFalse(RoomEntityCombatRules.usesStandardLinkContactResponse(0x55));
+        assertFalse(RoomEntityCombatRules.usesStandardLinkContactResponse(0x9C));
+    }
+
+    @Test
     void deathPresentationFieldsAreIndependentFromNormalSpriteVariant() {
         EntitySpriteDefinition body = pairDefinition(0x09, 2);
         RoomEntity entity = new RoomEntity(0, 0, 0x09, 64, 64, EntityStatus.DYING,

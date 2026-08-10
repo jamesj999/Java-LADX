@@ -768,6 +768,12 @@ public class Main {
                 && !inventoryController.shouldBlockOverworldInput()
                 && !dialogBlocksGameplay;
             if (linkActive && link != null) {
+                // AnimateEntities runs after Link motion and its normal NPC
+                // handlers restore hLinkFinalPosition when they push Link.
+                // The ROM seeds that shadow from hLinkPosition before the
+                // frame's motion work (bank0.asm:$0F97), so capture it before
+                // any Link movement can change the position.
+                link.captureRomFinalPosition();
                 boolean powerBraceletButtonHeld = isPowerBraceletButtonHeld();
                 boolean bombButtonHeld = isBombButtonHeld();
                 if (roomSession != null) {
@@ -802,7 +808,6 @@ public class Main {
                         link.pegasusBootsCollisionPosX(),
                         link.pegasusBootsCollisionPosY());
                 }
-                link.captureRomFinalPosition();
                 if (roomSession != null && playerState != null) {
                     EntityPickupEvent pickup = roomSession.collectEntityIfNeeded(
                         frameCounter, link.pixelX(), link.pixelY(), link.isAirborne(), true,
@@ -857,6 +862,17 @@ public class Main {
                 for (EntityCombatEvent event : combatEvents) {
                     if (event.linkDamage() > 0 && playerState.invincibilityCounter() == 0) {
                         playerState.applyRomEnemyDamage(event.linkDamage());
+                        if (event.linkCollisionResponse().active()) {
+                            EntityCombatEvent.LinkCollisionResponse response =
+                                event.linkCollisionResponse();
+                            link.applyRomSpeed(response.speedX(), response.speedY());
+                            link.setCollisionIgnoreFrames(
+                                response.ignoreCollisionCountdown());
+                            playerState.setRunningWithPegasusBoots(false);
+                            // ApplyLinkCollisionWithEnemy writes WAVE_SFX_LINK_HURT
+                            // before the shared Link response helper.
+                            gameplaySoundSink.play(GameplaySoundEvent.LINK_HURT);
+                        }
                     }
                     if (event.linkAction()
                         == EntityCombatEvent.LinkAction.GOOMBA_BOUNCE_TOP_DOWN) {

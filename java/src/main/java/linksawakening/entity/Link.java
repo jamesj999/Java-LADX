@@ -1331,8 +1331,13 @@ public final class Link implements RocsFeather.JumpTarget {
         int originX = pixelX() + offsetX;
         int renderY = pixelY() - zPixels();
         int originY = renderY + offsetY;
-        int[] palette = tunicPalette.forTunic(
-            playerState == null ? PlayerState.TUNIC_GREEN : playerState.tunicType());
+        int[] palette = playerState != null
+            && (playerState.invincibilityCounter() & 0x04) != 0
+            // DrawLinkSprite's GBC path selects object palette 4 from bit 2
+            // of wInvincibilityCounter while Link is flashing.
+            ? tunicPalette.forObjectPalette(4)
+            : tunicPalette.forTunic(
+                playerState == null ? PlayerState.TUNIC_GREEN : playerState.tunicType());
 
         // Column-major tile layout: [0]=UL, [1]=LL, [2]=UR, [3]=LR.
         // GB 8x16 flipY swaps the two stacked tiles inside a column and flips

@@ -54,7 +54,6 @@ public final class RoomEntityCombatRules {
     private static final int ENTITY_CRYSTAL_SWITCH = 0x66;
     private static final int ENTITY_MAD_BOMBER = 0x93;
     private static final int ENTITY_BOMBER = 0xBA;
-    private static final int ENTITY_ROOSTER = 0xD5;
     private static final int ENTITY_GOPONGA_FLOWER = 0x7E;
     private static final int ENTITY_GIANT_GOPONGA_FLOWER = 0x7C;
     private static final int ENTITY_GOPONGA_FLOWER_PROJECTILE = 0x7D;
@@ -67,12 +66,52 @@ public final class RoomEntityCombatRules {
     private static final int ENTITY_URCHIN = 0xC5;
     private static final int ENTITY_WITCH_RAT = 0xE1;
 
-    // HitboxPositions._00 in home/entities.asm:3AAA. Octorok, Moblin, Armos,
-    // and Keese all select the normal collision box in hitbox_flags.asm.
+    private static final int ENTITY_MARIN = 0x3E;
+    private static final int ENTITY_TARIN = 0x3F;
+    private static final int ENTITY_WITCH = 0x40;
+    private static final int ENTITY_SHOP_OWNER = 0x4D;
+    private static final int ENTITY_DOG = 0x6F;
+    private static final int ENTITY_KID_70 = 0x70;
+    private static final int ENTITY_KID_71 = 0x71;
+    private static final int ENTITY_KID_72 = 0x72;
+    private static final int ENTITY_KID_73 = 0x73;
+    private static final int ENTITY_PAPAHLS_WIFE = 0x74;
+    private static final int ENTITY_GRANDMA_ULRIRA = 0x75;
+    private static final int ENTITY_MR_WRITE = 0x76;
+    private static final int ENTITY_MR_WRITES_BIRD = 0x85;
+    private static final int ENTITY_RICHARD = 0x95;
+    private static final int ENTITY_RICHARD_FROG = 0x96;
+    private static final int ENTITY_KIKI = 0xAD;
+    private static final int ENTITY_TARIN_BEEKEEPER = 0xB4;
+    private static final int ENTITY_BEAR = 0xB5;
+    private static final int ENTITY_MERMAID = 0xB7;
+    private static final int ENTITY_MARIN_SHORE = 0xC1;
+    private static final int ENTITY_MARIN_TAL_TAL = 0xC2;
+    private static final int ENTITY_MAMU = 0xC3;
+    private static final int ENTITY_WALRUS = 0xC4;
+    private static final int ENTITY_MANBO_AND_FISHES = 0xC7;
+    private static final int ENTITY_MERMAID_STATUE = 0xCE;
+    private static final int ENTITY_ANIMAL_D0 = 0xD0;
+    private static final int ENTITY_ANIMAL_D1 = 0xD1;
+    private static final int ENTITY_ANIMAL_D2 = 0xD2;
+    private static final int ENTITY_GHOST = 0xD4;
+    private static final int ENTITY_ROOSTER = 0xD5;
+
+    // HitboxPositions in home/entities.asm:3AAA. The NPC entries are not the
+    // ordinary enemy entry: Marin and Tarin select HITFLAGS_HITBOX_NPC ($18),
+    // while Bear/Mamu/Walrus select HITFLAGS_HITBOX_BIG_NPC ($34).
     private static final int HITBOX_X = 0x08;
     private static final int HITBOX_WIDTH = 0x05;
     private static final int HITBOX_Y = 0x08;
     private static final int HITBOX_HEIGHT = 0x05;
+    private static final int NPC_HITBOX_X = 0x08;
+    private static final int NPC_HITBOX_WIDTH = 0x06;
+    private static final int NPC_HITBOX_Y = 0x06;
+    private static final int NPC_HITBOX_HEIGHT = 0x08;
+    private static final int BIG_NPC_HITBOX_X = 0x10;
+    private static final int BIG_NPC_HITBOX_WIDTH = 0x0C;
+    private static final int BIG_NPC_HITBOX_Y = 0x08;
+    private static final int BIG_NPC_HITBOX_HEIGHT = 0x10;
     private static final int SMALL_ENEMY_HITBOX_WIDTH = 0x02;
     private static final int SMALL_ENEMY_HITBOX_HEIGHT = 0x02;
     private static final int BIG_ENEMY_HITBOX_WIDTH = 0x0A;
@@ -154,8 +193,37 @@ public final class RoomEntityCombatRules {
     }
 
     static boolean supportsLinkCollision(int type) {
-        return supportsEnemyCollision(type) || (type & 0xFF) == ENTITY_ARMOS_STATUE
-            || (type & 0xFF) == ENTITY_ROOSTER || (type & 0xFF) == ENTITY_URCHIN;
+        return supportsEnemyCollision(type) || supportsFriendlyNpcCollision(type)
+            || (type & 0xFF) == ENTITY_ARMOS_STATUE || (type & 0xFF) == ENTITY_ROOSTER
+            || (type & 0xFF) == ENTITY_URCHIN;
+    }
+
+    /** Entity handlers that call PushLinkOutOfEntity without enemy damage. */
+    static boolean supportsFriendlyNpcCollision(int type) {
+        return switch (type & 0xFF) {
+            case ENTITY_MARIN, ENTITY_TARIN, ENTITY_WITCH, ENTITY_SHOP_OWNER,
+                ENTITY_DOG, ENTITY_KID_70, ENTITY_KID_71, ENTITY_KID_72, ENTITY_KID_73,
+                ENTITY_PAPAHLS_WIFE, ENTITY_GRANDMA_ULRIRA, ENTITY_MR_WRITE,
+                ENTITY_MR_WRITES_BIRD, ENTITY_RICHARD, ENTITY_RICHARD_FROG, ENTITY_KIKI,
+                ENTITY_TARIN_BEEKEEPER, ENTITY_BEAR, ENTITY_MERMAID, ENTITY_MARIN_SHORE,
+                ENTITY_MARIN_TAL_TAL, ENTITY_MAMU, ENTITY_WALRUS, ENTITY_MERMAID_STATUE,
+                ENTITY_ANIMAL_D0, ENTITY_ANIMAL_D1, ENTITY_ANIMAL_D2, ENTITY_GHOST,
+                ENTITY_ROOSTER -> true;
+            default -> false;
+        };
+    }
+
+    /**
+     * Entity types that reach the ordinary ApplyLinkCollisionWithEnemy path.
+     * The excluded handlers write their own Link action or state transition;
+     * their behavior is intentionally left for their dedicated ports.
+     */
+    static boolean usesStandardLinkContactResponse(int type) {
+        return switch (type & 0xFF) {
+            case ENTITY_GEL, ENTITY_STAR, ENTITY_ANTI_FAIRY,
+                ENTITY_BOUNCING_BOMBITE, ENTITY_SPIKED_BEETLE -> false;
+            default -> true;
+        };
     }
 
     static int contactDamage(int type) {
@@ -277,20 +345,22 @@ public final class RoomEntityCombatRules {
         return (((frameCounter & 0xFF) ^ slot) & 0x01) != 0;
     }
 
-    /** Mirrors CheckLinkCollisionWithEnemy using HitboxPositions._00. */
+    /** Mirrors CheckLinkCollisionWithEnemy using the entity's ROM hitbox entry. */
     static boolean overlapsLink(RoomEntity entity, int linkPixelX, int linkPixelY) {
         if (!supportsLinkCollision(entity.type())) {
             return false;
         }
+        int hitboxX = hitboxX(entity.type());
         int hitboxWidth = hitboxWidth(entity.type());
+        int hitboxY = hitboxY(entity.type());
         int hitboxHeight = hitboxHeight(entity.type());
         int xDistance = unsignedByteAbs(
-            entity.x() + HITBOX_X - linkPixelX - 0x08);
+            entity.x() + hitboxX - linkPixelX - 0x08);
         if (xDistance >= hitboxWidth + 0x04) {
             return false;
         }
         int yDistance = unsignedByteAbs(
-            entity.y() - entity.z() + HITBOX_Y - linkPixelY - 0x08);
+            entity.y() - entity.z() + hitboxY - linkPixelY - 0x08);
         return yDistance < hitboxHeight + 0x04;
     }
 
@@ -303,19 +373,27 @@ public final class RoomEntityCombatRules {
         if (!supportsEnemyCollision(entity.type()) || swordWidth <= 0 || swordHeight <= 0) {
             return false;
         }
+        int hitboxX = hitboxX(entity.type());
         int hitboxWidth = hitboxWidth(entity.type());
+        int hitboxY = hitboxY(entity.type());
         int hitboxHeight = hitboxHeight(entity.type());
         int xDistance = unsignedByteAbs(
-            entity.x() + HITBOX_X - swordX);
+            entity.x() + hitboxX - swordX);
         if (xDistance >= hitboxWidth + swordWidth) {
             return false;
         }
         int yDistance = unsignedByteAbs(
-            entity.y() - entity.z() + HITBOX_Y - swordY);
+            entity.y() - entity.z() + hitboxY - swordY);
         return yDistance < hitboxHeight + swordHeight;
     }
 
     private static int hitboxWidth(int type) {
+        if (usesBigNpcHitbox(type)) {
+            return BIG_NPC_HITBOX_WIDTH;
+        }
+        if (usesNpcHitbox(type)) {
+            return NPC_HITBOX_WIDTH;
+        }
         return switch (type & 0xFF) {
             case ENTITY_GEL -> SMALL_ENEMY_HITBOX_WIDTH;
             case ENTITY_GIANT_GHINI, ENTITY_GIANT_GOPONGA_FLOWER,
@@ -326,12 +404,53 @@ public final class RoomEntityCombatRules {
     }
 
     private static int hitboxHeight(int type) {
+        if (usesBigNpcHitbox(type)) {
+            return BIG_NPC_HITBOX_HEIGHT;
+        }
+        if (usesNpcHitbox(type)) {
+            return NPC_HITBOX_HEIGHT;
+        }
         return switch (type & 0xFF) {
             case ENTITY_GEL -> SMALL_ENEMY_HITBOX_HEIGHT;
             case ENTITY_GIANT_GHINI, ENTITY_GIANT_GOPONGA_FLOWER,
                 ENTITY_SPIKE_TRAP, ENTITY_ARMOS_KNIGHT, ENTITY_URCHIN ->
                 BIG_ENEMY_HITBOX_HEIGHT;
             default -> HITBOX_HEIGHT;
+        };
+    }
+
+    private static int hitboxX(int type) {
+        if (usesBigNpcHitbox(type)) {
+            return BIG_NPC_HITBOX_X;
+        }
+        return usesNpcHitbox(type) ? NPC_HITBOX_X : HITBOX_X;
+    }
+
+    private static int hitboxY(int type) {
+        if (usesBigNpcHitbox(type)) {
+            return BIG_NPC_HITBOX_Y;
+        }
+        return usesNpcHitbox(type) ? NPC_HITBOX_Y : HITBOX_Y;
+    }
+
+    /** HITFLAGS_HITBOX_NPC ($18) from data/entities/hitbox_flags.asm. */
+    private static boolean usesNpcHitbox(int type) {
+        return switch (type & 0xFF) {
+            case ENTITY_MARIN, ENTITY_TARIN, ENTITY_WITCH, ENTITY_SHOP_OWNER,
+                ENTITY_KID_70, ENTITY_KID_71, ENTITY_KID_72, ENTITY_KID_73,
+                ENTITY_PAPAHLS_WIFE, ENTITY_GRANDMA_ULRIRA, ENTITY_MR_WRITE,
+                ENTITY_TARIN_BEEKEEPER, ENTITY_MERMAID, ENTITY_MARIN_SHORE,
+                ENTITY_MARIN_TAL_TAL, ENTITY_MERMAID_STATUE, ENTITY_ANIMAL_D0,
+                ENTITY_ANIMAL_D1, ENTITY_ANIMAL_D2, ENTITY_ROOSTER -> true;
+            default -> false;
+        };
+    }
+
+    /** HITFLAGS_HITBOX_BIG_NPC ($34) from data/entities/hitbox_flags.asm. */
+    private static boolean usesBigNpcHitbox(int type) {
+        return switch (type & 0xFF) {
+            case ENTITY_BEAR, ENTITY_MAMU, ENTITY_WALRUS, ENTITY_MANBO_AND_FISHES -> true;
+            default -> false;
         };
     }
 

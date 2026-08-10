@@ -20,12 +20,14 @@ final class EnemyRecoilMotion {
     record Update(RoomEntity entity, boolean blocked) {
     }
 
-    /** Mirrors ConfigureEntityRecoil after GetVectorTowardsLink returns. */
-    void configure(int slot, int entityX, int entityY, int entityZ,
-                   int linkX, int linkY, int length) {
-        validateSlot(slot);
+    record Vector(int x, int y) {
+    }
+
+    /** Mirrors GetVectorTowardsLink's signed vector result. */
+    static Vector vectorTowardsLink(int entityX, int entityY, int entityZ,
+                                    int linkX, int linkY, int length) {
         if (length < 0 || length > 0xFF) {
-            throw new IllegalArgumentException("Recoil length must be an unsigned byte");
+            throw new IllegalArgumentException("Vector length must be an unsigned byte");
         }
 
         int distanceX = signedByte((linkX - entityX) & 0xFF);
@@ -47,10 +49,22 @@ final class EnemyRecoilMotion {
         if (distanceY <= 0) {
             vectorY = -vectorY;
         }
+        return new Vector(vectorX, vectorY);
+    }
+
+    /** Mirrors ConfigureEntityRecoil after GetVectorTowardsLink returns. */
+    void configure(int slot, int entityX, int entityY, int entityZ,
+                   int linkX, int linkY, int length) {
+        validateSlot(slot);
+        if (length < 0 || length > 0xFF) {
+            throw new IllegalArgumentException("Recoil length must be an unsigned byte");
+        }
+
+        Vector vector = vectorTowardsLink(entityX, entityY, entityZ, linkX, linkY, length);
 
         // ConfigureEntityRecoil stores the negated vector: away from Link.
-        recoilSpeedX[slot] = (-vectorX) & 0xFF;
-        recoilSpeedY[slot] = (-vectorY) & 0xFF;
+        recoilSpeedX[slot] = (-vector.x()) & 0xFF;
+        recoilSpeedY[slot] = (-vector.y()) & 0xFF;
         speedXAccumulator[slot] = 0;
         speedYAccumulator[slot] = 0;
         active[slot] = true;

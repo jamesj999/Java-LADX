@@ -246,6 +246,41 @@ final class LinkTest {
     }
 
     @Test
+    void renderUsesTheRomFlashPaletteOnInvincibilityBitTwo() throws Exception {
+        byte[] rom = loadRom();
+        LinkSpriteSheet spriteSheet = LinkSpriteSheet.loadFromRom(rom);
+        LinkTunicPalette tunicPalette = LinkTunicPalette.loadFromRom(rom);
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        PlayerState playerState = new PlayerState();
+        Link link = new Link(new InputState(), inputConfig, null, null, spriteSheet,
+            playerState, new ItemRegistry(), GameplaySoundSink.none(), tunicPalette);
+        link.setPixelPosition(40, 40);
+
+        byte[] normal = new byte[linksawakening.gpu.Framebuffer.WIDTH
+            * linksawakening.gpu.Framebuffer.HEIGHT * 4];
+        link.render(normal, 0, 0);
+
+        playerState.setInvincibilityCounter(0x04);
+        byte[] flashing = new byte[normal.length];
+        link.render(flashing, 0, 0);
+
+        int changedPixels = 0;
+        int[] flashPalette = tunicPalette.forObjectPalette(4);
+        for (int i = 0; i < normal.length; i += 4) {
+            int normalColor = pixelColor(normal, i);
+            int flashingColor = pixelColor(flashing, i);
+            if (normalColor != flashingColor) {
+                changedPixels++;
+                assertTrue(flashingColor == flashPalette[0]
+                    || flashingColor == flashPalette[1]
+                    || flashingColor == flashPalette[2]
+                    || flashingColor == flashPalette[3]);
+            }
+        }
+        assertTrue(changedPixels > 0, "The Link body should flash with object palette 4");
+    }
+
+    @Test
     void startingPitFallPlaysLinkFallWaveEffectOnce() throws Exception {
         byte[] rom = loadRom();
         RomTables romTables = RomTables.loadFromRom(rom);

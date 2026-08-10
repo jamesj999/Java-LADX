@@ -1688,6 +1688,28 @@ final class RoomSessionTest {
     }
 
     @Test
+    void newGameHouseMarinAndTarinUseTheLiveFriendlyPushPath() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x10, 0xA3);
+
+        session.tickEntitiesWithProjectileEvents(0, 0, 0, 0, 0, 0, false, 1, 0);
+        session.consumeLinkFinalPositionRequests();
+
+        int frame = 1;
+        for (int type : new int[] {0x3E, 0x3F}) {
+            RoomEntity npc = session.activeRoom().entities().loadedEntities().stream()
+                .filter(entity -> entity.type() == type)
+                .findFirst().orElseThrow();
+            session.tickEntitiesWithProjectileEvents(
+                frame++, npc.x(), npc.y(), npc.z(), 0, 0, false, 1, 0);
+
+            assertTrue(session.consumeLinkFinalPositionRequests().stream()
+                .anyMatch(request -> request.sourceSlot() == npc.slot()),
+                "type=" + Integer.toHexString(type));
+        }
+    }
+
+    @Test
     void exposesAndRestoresTheRoomStatusTablesUsedBySaveGameToFile() {
         RoomSession session = newSession();
         byte[] overworld = pattern(0x100, 0x10);

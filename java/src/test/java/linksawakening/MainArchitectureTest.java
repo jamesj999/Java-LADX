@@ -51,6 +51,18 @@ final class MainArchitectureTest {
     }
 
     @Test
+    void mainCapturesLinkFinalPositionBeforeLinkMotionForEntityPushes() throws Exception {
+        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+
+        int capture = source.indexOf("link.captureRomFinalPosition();");
+        int update = source.indexOf("link.update();");
+        assertTrue(capture >= 0, "Link final position must be captured for entity pushes");
+        assertTrue(update >= 0, "Main must run Link motion");
+        assertTrue(capture < update,
+            "The ROM final-position shadow must be captured before Link moves");
+    }
+
+    @Test
     void mainAppliesHookshotPullEventsWithoutProjectileIgnoreSideEffects() throws Exception {
         String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
         String normalizedSource = source.replaceAll("\\s+", " ");
