@@ -293,6 +293,27 @@ public final class PlayerState {
         hasToadstool = value;
     }
 
+    /** Applies WitchEntityHandler's slot clear and wHasToadstool reset. */
+    public void beginWitchToadstoolExchange(int inventorySlot) {
+        if (inventorySlot == 0) {
+            itemB = INVENTORY_EMPTY;
+        } else if (inventorySlot == 1) {
+            itemA = INVENTORY_EMPTY;
+        } else {
+            throw new IllegalArgumentException("Inventory slot must be B (0) or A (1): "
+                + inventorySlot);
+        }
+        hasToadstool = false;
+    }
+
+    /** Applies the witch's AssignItemToSlot and BCD +$20 powder reward. */
+    public void applyWitchMagicPowderReward() {
+        giveInventoryItem(INVENTORY_MAGIC_POWDER);
+        // The player model stores quantities as decimal values. WitchEntityHandler
+        // adds BCD $20 with DAA and does not clamp against wMaxMagicPowder.
+        magicPowderCount = Math.min(99, magicPowderCount + 20);
+    }
+
     /** Applies the source-variant dispatch at FloatingItemEntityHandler. */
     public void applyFloatingItemPickup(int entityType, int sourceVariant) {
         switch (FloatingItemMotion.pickupEffect(entityType, sourceVariant)) {

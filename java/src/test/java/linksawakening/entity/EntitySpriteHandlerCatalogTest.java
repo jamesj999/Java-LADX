@@ -148,6 +148,24 @@ final class EntitySpriteHandlerCatalogTest {
     }
 
     @Test
+    void mapsWitchToHerFourFrameBankFiveRectangleDisplayList() throws Exception {
+        EntitySpriteDefinition witch = new EntitySpriteHandlerCatalog(loadRom())
+            .forEntityType(0x40, EntityRoomLoader.RoomTable.INDOORS_B);
+
+        assertDefinition(witch, 0x05, 0x4780,
+            EntitySpriteDefinition.Shape.RECTANGLE, 4, 0);
+        assertEquals(4, witch.rectangleVariant(0).size());
+        EntitySpriteDefinition.RectangleSprite first = witch.rectangleVariant(0).get(0);
+        assertEquals(0, first.yOffset());
+        assertEquals(0, first.xOffset());
+        assertEquals(0x60, first.oam().tile());
+        assertEquals(0x01, first.oam().attributes());
+        EntitySpriteDefinition.RectangleSprite flipped = witch.rectangleVariant(2).get(0);
+        assertEquals(0x62, flipped.oam().tile());
+        assertEquals(0x21, flipped.oam().attributes());
+    }
+
+    @Test
     void mapsMusicalNoteToItsBankFiveSingleSprite() {
         byte[] rom = syntheticRom();
         write(rom, 0x05, 0x7EF8, 0x0E, 0x13);

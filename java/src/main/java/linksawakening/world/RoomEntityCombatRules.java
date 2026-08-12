@@ -448,6 +448,9 @@ public final class RoomEntityCombatRules {
     }
 
     private static int hitboxHeight(int type) {
+        if ((type & 0xFF) == ENTITY_WITCH) {
+            return 0x0E;
+        }
         if (usesBigNpcHitbox(type)) {
             return BIG_NPC_HITBOX_HEIGHT;
         }
@@ -484,6 +487,9 @@ public final class RoomEntityCombatRules {
     }
 
     private static int hitboxY(int type) {
+        if ((type & 0xFF) == ENTITY_WITCH) {
+            return 0x0C;
+        }
         if (usesBigNpcHitbox(type)) {
             return BIG_NPC_HITBOX_Y;
         }

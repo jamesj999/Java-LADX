@@ -136,6 +136,90 @@ final class RoomSessionTest {
     }
 
     @Test
+    void witchExchangeRunsThroughTheLiveIndoorRoomInSourceOrder() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x10, 0xA2);
+        RoomEntity witch = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x40)
+            .findFirst().orElseThrow();
+        assertTrue(witch.spriteDefinition().supported());
+        assertEquals(0x04, session.indoorTorchPaletteEffectAddressForTest());
+
+        session.setToadstoolPlayerState(true, 0);
+        session.setEntityInventorySlots(0, 0x0C);
+        session.setEntityActionButtonsHeld(false, true);
+        session.setEntityDefaultMusicTrack(0x0C);
+        tickInteractive(session, 0, witch);
+        tickInteractive(session, 1, witch);
+
+        assertEquals(List.of(new RoomEntityRuntime.WitchExchangeEvent(witch.slot(), 0)),
+            session.consumeWitchExchangeEvents());
+
+        session.setEntityActionButtonsHeld(false, false);
+        int frame = 2;
+        boolean blocked = false;
+        boolean brewingDialog = false;
+        while (!brewingDialog && frame < 0x40) {
+            tickInteractive(session, frame++, witch);
+            blocked |= !session.consumeLinkMotionBlockRequests().isEmpty();
+            brewingDialog |= session.consumeEntityDialogRequests().stream()
+                .anyMatch(request -> request.globalDialogId() == 0x009);
+        }
+        assertTrue(blocked);
+        assertTrue(brewingDialog);
+
+        session.setEntityDialogActive(true);
+        tickInteractive(session, frame++, witch);
+        session.setEntityDialogActive(false);
+        boolean readyDialog = false;
+        while (!readyDialog && frame < 0x180) {
+            tickInteractive(session, frame++, witch);
+            readyDialog |= session.consumeEntityDialogRequests().stream()
+                .anyMatch(request -> request.globalDialogId() == 0x0FE);
+        }
+        assertTrue(readyDialog);
+        assertEquals(0x0C, session.consumePendingMusicTrack());
+
+        session.setEntityDialogActive(true);
+        tickInteractive(session, frame++, witch);
+        session.setEntityDialogActive(false);
+        tickInteractive(session, frame++, witch);
+        assertEquals(List.of(new RoomEntityRuntime.WitchRewardEvent(witch.slot())),
+            session.consumeWitchRewardEvents());
+        assertTrue(session.gotItemPresentationActive());
+        assertTrue(session.consumeEntityEvents().stream().anyMatch(event ->
+            event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE
+                && event.soundId() == 0x01));
+
+        boolean powderDialog = false;
+        boolean powderHeldPose = false;
+        boolean powderMotionBlocked = false;
+        while (!powderDialog && frame < 0x220) {
+            tickInteractive(session, frame++, witch);
+            powderHeldPose |= !session.consumeLinkHeldItemPoseRequests().isEmpty();
+            powderMotionBlocked |= !session.consumeLinkMotionBlockRequests().isEmpty();
+            powderDialog |= session.consumeEntityDialogRequests().stream()
+                .anyMatch(request -> request.globalDialogId() == 0x099);
+        }
+        assertTrue(powderHeldPose);
+        assertTrue(powderMotionBlocked);
+        assertTrue(powderDialog);
+
+        session.setEntityDialogActive(true);
+        tickInteractive(session, frame++, witch);
+        session.setEntityDialogActive(false);
+        tickInteractive(session, frame++, witch);
+
+        session.setRoomTriggerCountForTest(1);
+        session.igniteIndoorTorchPaletteForTest();
+        for (int tick = 0; tick < 13; tick++) {
+            tickInteractive(session, frame++, witch);
+        }
+        assertTrue(session.consumeEntityDialogRequests().stream()
+            .anyMatch(request -> request.globalDialogId() == 0x17E));
+    }
+
+    @Test
     void forestOwlRestoresActivePowerUpMusicWhenDepartureFinishes() {
         RoomSession session = newSession();
         session.loadInitialOverworld(0x80);
@@ -1909,6 +1993,11 @@ final class RoomSessionTest {
     private static RoomSession newSession() {
         return newSession(room -> {
         });
+    }
+
+    private static void tickInteractive(RoomSession session, int frame, RoomEntity witch) {
+        session.tickEntitiesWithProjectileEvents(
+            frame, witch.x(), 0x56, 0, 0, 1, false);
     }
 
     private static RoomSession newSession(RoomLoadListener roomLoadListener) {

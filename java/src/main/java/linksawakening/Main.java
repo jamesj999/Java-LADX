@@ -804,7 +804,8 @@ public class Main {
             boolean linkActive = !scrollController.isActive()
                 && !transitionController.isInputBlocked()
                 && !inventoryController.shouldBlockOverworldInput()
-                && !dialogBlocksGameplay;
+                && !dialogBlocksGameplay
+                && (roomSession == null || !roomSession.gotItemPresentationActive());
             if (linkActive && link != null) {
                 // AnimateEntities runs after Link motion and its normal NPC
                 // handlers restore hLinkFinalPosition when they push Link.
@@ -937,8 +938,7 @@ public class Main {
             if (roomSession != null
                 && !scrollController.isActive()
                 && !transitionController.isInputBlocked()
-                && !inventoryController.shouldBlockOverworldInput()
-                && !dialogBlocksGameplay) {
+                && !inventoryController.shouldBlockOverworldInput()) {
                 roomSession.setEntityDialogActive(
                     dialogController != null && dialogController.isActive());
                 roomSession.setEntityActionButtonsHeld(
@@ -1074,6 +1074,16 @@ public class Main {
                         playerState.applyToadstoolReward();
                     }
                 }
+                for (var event : roomSession.consumeWitchExchangeEvents()) {
+                    if (playerState != null) {
+                        playerState.beginWitchToadstoolExchange(event.inventorySlot());
+                    }
+                }
+                for (var reward : roomSession.consumeWitchRewardEvents()) {
+                    if (playerState != null) {
+                        playerState.applyWitchMagicPowderReward();
+                    }
+                }
                 roomSession.setBirdKeyOwned(playerState != null && playerState.birdKeyCount() != 0);
                 int chestMusicTrack = roomSession.consumePendingMusicTrack();
                 if (chestMusicTrack >= 0) {
@@ -1207,6 +1217,9 @@ public class Main {
             return;
         }
         gameplayMusicController.selectAfterTransition(RoomMusicContext.from(room, playerState));
+        if (roomSession != null) {
+            roomSession.setEntityDefaultMusicTrack(gameplayMusicController.currentTrackId());
+        }
     }
 
     private static void maybeCutBushWithSword() {

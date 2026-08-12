@@ -65,6 +65,14 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void witchOverridesTheNpcHitboxWithHerSourceCauldronFootprint() {
+        RoomEntity witch = new RoomEntity(0, 0, 0x40, 0x40, 0x40,
+            EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(0x40), 0);
+
+        assertTrue(RoomEntityCombatRules.overlapsLink(witch, 0x40, 0x55));
+    }
+
+    @Test
     void largeFriendlyNpcsUseTheRomBigNpcHitbox() {
         RoomEntity bear = new RoomEntity(0, 0, 0xB5, 0x40, 0x50,
             EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(0xB5), 0);

@@ -68,9 +68,9 @@ final class MainTest {
 
         assertEquals(PlayerState.INVENTORY_EMPTY, playerState.itemA());
         assertEquals(PlayerState.INVENTORY_EMPTY, playerState.itemB());
-        assertEquals(0x30, playerState.maxArrows());
-        assertEquals(0x30, playerState.maxBombs());
-        assertEquals(0x20, playerState.maxMagicPowder());
+        assertEquals(30, playerState.maxArrows());
+        assertEquals(30, playerState.maxBombs());
+        assertEquals(20, playerState.maxMagicPowder());
         assertEquals(PlayerState.INVENTORY_EMPTY, playerState.subscreenItem(0));
     }
 

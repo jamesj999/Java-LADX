@@ -172,6 +172,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_BOMB = 0x02;
     private static final int ENTITY_SWORD_SHIELD_PICKUP = 0x31;
     private static final int ENTITY_OWL_EVENT = 0x41;
+    private static final int ENTITY_WITCH = WitchMotion.ENTITY_TYPE;
     private static final int ROOM_OW_BEACH_WITH_SWORD = 0xF2;
     private static final int ENTITY_BOUNCING_BOMBITE = 0x55;
     private static final int ENTITY_TIMER_BOMBITE = 0x56;
@@ -310,6 +311,8 @@ public final class RoomEntityRuntime {
     private final DogMotion dogMotion = new DogMotion();
     private final UrchinMotion urchinMotion = new UrchinMotion();
     private final WitchRatMotion witchRatMotion = new WitchRatMotion();
+    private final WitchMotion witchMotion = new WitchMotion();
+    private final int[] witchGotItemCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final SpikeTrapMotion spikeTrapMotion = new SpikeTrapMotion();
     private final PairoddMotion pairoddMotion = new PairoddMotion();
     private final PairoddProjectileMotion pairoddProjectileMotion =
@@ -452,6 +455,8 @@ public final class RoomEntityRuntime {
     private final List<ChestRewardEvent> pendingChestRewardEvents = new ArrayList<>();
     private final List<KeyRewardEvent> pendingKeyRewardEvents = new ArrayList<>();
     private final List<SlimeKeyRewardEvent> pendingSlimeKeyRewardEvents = new ArrayList<>();
+    private final List<WitchExchangeEvent> pendingWitchExchangeEvents = new ArrayList<>();
+    private final List<WitchRewardEvent> pendingWitchRewardEvents = new ArrayList<>();
     private final List<KeyQuicksandEvent> pendingKeyQuicksandEvents = new ArrayList<>();
     private final List<LikeLikeEvent> pendingLikeLikeEvents = new ArrayList<>();
     private final List<BombExplosionEvent> pendingBombExplosionEvents = new ArrayList<>();
@@ -469,6 +474,9 @@ public final class RoomEntityRuntime {
     private boolean enemyDropBossBattle;
     private int killCount;
     private int booBuddyTriggerCount;
+    private int bgPaletteEffectAddress;
+    private int paletteDataFlags;
+    private int defaultMusicTrack = 0x05;
     private final int[] killOrder = new int[0x100];
     private boolean actionButtonsHeld;
     private boolean actionButtonAHeld;
@@ -590,6 +598,12 @@ public final class RoomEntityRuntime {
     }
 
     public record ToadstoolRewardEvent(int slot) {
+    }
+
+    public record WitchExchangeEvent(int slot, int inventorySlot) {
+    }
+
+    public record WitchRewardEvent(int slot) {
     }
 
     public record OwlEventCompletion(int slot) {
@@ -1359,6 +1373,8 @@ public final class RoomEntityRuntime {
         pendingHeartContainerRewards.clear();
         pendingSwordPickupRewards.clear();
         pendingToadstoolRewards.clear();
+        pendingWitchExchangeEvents.clear();
+        pendingWitchRewardEvents.clear();
         pendingOwlEventCompletions.clear();
         pendingSlimeKeyRewardEvents.clear();
         pendingKeyQuicksandEvents.clear();
@@ -1431,6 +1447,7 @@ public final class RoomEntityRuntime {
             boolean preserveDogPresentation = false;
             boolean preserveUrchinPresentation = false;
             boolean preserveWitchRatPresentation = false;
+            boolean preserveWitchPresentation = false;
             boolean preserveRoosterPresentation = false;
             boolean preserveWizrobePresentation = false;
             boolean preserveWizrobeProjectilePresentation = false;
@@ -3327,6 +3344,50 @@ public final class RoomEntityRuntime {
                 preserveDogPresentation = true;
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_WITCH) {
+                advanceWitchGotItemPresentation(entity.slot());
+                WitchMotion.Update witchUpdate = witchMotion.advance(
+                    updated, enemyTransitionCountdown[entity.slot()],
+                    new WitchMotion.Input(playerHasToadstool, linkItemB, linkItemA,
+                        actionButtonAHeld, actionButtonBHeld, dialogActive,
+                        linkZ != 0,
+                        linkEntityX, linkEntityY, romLinkDirection,
+                        transitionSequenceCounter, booBuddyTriggerCount,
+                        bgPaletteEffectAddress, paletteDataFlags, defaultMusicTrack));
+                updated = witchUpdate.entity();
+                enemyTransitionCountdown[entity.slot()] = witchUpdate.transitionCountdown();
+                preserveWitchPresentation = true;
+                if (witchUpdate.blockLink()) {
+                    pendingLinkMotionBlockRequests.add(
+                        new LinkMotionBlockRequest(entity.slot()));
+                }
+                if (witchUpdate.dialogGlobalId() >= 0) {
+                    pendingDialogRequests.add(new DialogRequest(
+                        witchUpdate.dialogGlobalId() >>> 8,
+                        witchUpdate.dialogGlobalId() & 0xFF));
+                }
+                if (witchUpdate.musicTrack() >= 0) {
+                    pendingMusicTrack = witchUpdate.musicTrack();
+                }
+                if (witchUpdate.jingleId() >= 0) {
+                    pendingEntityEvents.add(new EntityCombatEvent(
+                        entity.slot(), entity.type(), 0, false,
+                        EntityCombatEvent.SoundChannel.JINGLE, witchUpdate.jingleId()));
+                }
+                if (witchUpdate.exchangeStarted()) {
+                    int inventorySlot = witchUpdate.clearedSlot()
+                        == WitchMotion.InventorySlot.B ? 0 : 1;
+                    pendingWitchExchangeEvents.add(
+                        new WitchExchangeEvent(entity.slot(), inventorySlot));
+                    playerHasToadstool = false;
+                }
+                if (witchUpdate.grantMagicPowder()) {
+                    pendingWitchRewardEvents.add(new WitchRewardEvent(entity.slot()));
+                    witchGotItemCountdown[entity.slot()] = 0x2A;
+                    presentWitchGotItem(entity.slot());
+                }
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_URCHIN && handlerLinkCollisionEnabled) {
                 int slot = entity.slot();
                 RoomEntityBackgroundInteraction urchinBackgroundInteraction = backgroundInteraction;
@@ -3567,6 +3628,7 @@ public final class RoomEntityRuntime {
                 || preserveDogPresentation
                 || preserveUrchinPresentation
                 || preserveWitchRatPresentation
+                || preserveWitchPresentation
                 || preserveRoosterPresentation
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
                 || preservePolsVoicePresentation
@@ -3599,6 +3661,7 @@ public final class RoomEntityRuntime {
                 || preserveDogPresentation
                 || preserveUrchinPresentation
                 || preserveWitchRatPresentation
+                || preserveWitchPresentation
                 || preserveRoosterPresentation
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
                 || preservePolsVoicePresentation
@@ -6480,6 +6543,15 @@ public final class RoomEntityRuntime {
         return pending;
     }
 
+    boolean witchGotItemPresentationActive() {
+        for (int countdown : witchGotItemCountdown) {
+            if (countdown != 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     List<LinkSwordSpinPoseRequest> consumePendingLinkSwordSpinPoseRequests() {
         List<LinkSwordSpinPoseRequest> pending = List.copyOf(pendingLinkSwordSpinPoseRequests);
         pendingLinkSwordSpinPoseRequests.clear();
@@ -6893,6 +6965,27 @@ public final class RoomEntityRuntime {
         toadstoolPickupSequenceActive[slot] = true;
         enemyTransitionCountdown[slot] = 0x68;
         pendingMusicTrack = 0x10;
+    }
+
+    private void advanceWitchGotItemPresentation(int slot) {
+        int countdown = witchGotItemCountdown[slot];
+        if (countdown == 0) {
+            return;
+        }
+        presentWitchGotItem(slot);
+        if (dialogActive) {
+            return;
+        }
+        countdown--;
+        witchGotItemCountdown[slot] = countdown;
+        if (countdown == 0x02) {
+            pendingDialogRequests.add(new DialogRequest(0, 0x99));
+        }
+    }
+
+    private void presentWitchGotItem(int slot) {
+        pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
+        pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
     }
 
     private void advanceToadstoolPickup(RoomEntity entity,
@@ -8637,6 +8730,18 @@ public final class RoomEntityRuntime {
         return rewards;
     }
 
+    List<WitchExchangeEvent> consumePendingWitchExchangeEvents() {
+        List<WitchExchangeEvent> events = List.copyOf(pendingWitchExchangeEvents);
+        pendingWitchExchangeEvents.clear();
+        return events;
+    }
+
+    List<WitchRewardEvent> consumePendingWitchRewardEvents() {
+        List<WitchRewardEvent> events = List.copyOf(pendingWitchRewardEvents);
+        pendingWitchRewardEvents.clear();
+        return events;
+    }
+
     List<OwlEventCompletion> consumePendingOwlEventCompletions() {
         List<OwlEventCompletion> completions = List.copyOf(pendingOwlEventCompletions);
         pendingOwlEventCompletions.clear();
@@ -9669,6 +9774,16 @@ public final class RoomEntityRuntime {
     void setBooBuddyTriggerCount(int value) {
         validateByte(value, "Boo Buddy trigger count");
         booBuddyTriggerCount = value;
+    }
+
+    void setWitchEnvironment(int bgPaletteEffectAddress, int paletteDataFlags,
+                             int defaultMusicTrack) {
+        validateByte(bgPaletteEffectAddress, "BG palette effect address");
+        validateByte(paletteDataFlags, "Palette data flags");
+        validateByte(defaultMusicTrack, "Default music track");
+        this.bgPaletteEffectAddress = bgPaletteEffectAddress;
+        this.paletteDataFlags = paletteDataFlags;
+        this.defaultMusicTrack = defaultMusicTrack;
     }
 
     void setBooBuddyTriggerCountForTest(int value) {

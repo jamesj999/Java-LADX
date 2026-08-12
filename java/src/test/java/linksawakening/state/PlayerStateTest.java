@@ -24,6 +24,47 @@ final class PlayerStateTest {
     }
 
     @Test
+    void witchExchangeClearsTheUsedPowderSlotAndToadstoolThenAwardsTwentyUses() {
+        PlayerState state = new PlayerState();
+        state.initializeNewGame(30, 30, 20);
+        state.applyToadstoolReward();
+        assertEquals(PlayerState.INVENTORY_MAGIC_POWDER, state.itemB());
+
+        state.beginWitchToadstoolExchange(0);
+        assertEquals(PlayerState.INVENTORY_EMPTY, state.itemB());
+        assertFalse(state.hasToadstool());
+
+        state.applyWitchMagicPowderReward();
+        assertEquals(PlayerState.INVENTORY_MAGIC_POWDER, state.itemB());
+        assertEquals(20, state.magicPowderCount());
+    }
+
+    @Test
+    void witchExchangeCanClearTheAButtonSlotWithoutChangingB() {
+        PlayerState state = new PlayerState();
+        state.setItemB(PlayerState.INVENTORY_SWORD);
+        state.setItemA(PlayerState.INVENTORY_MAGIC_POWDER);
+        state.setHasToadstool(true);
+
+        state.beginWitchToadstoolExchange(1);
+
+        assertEquals(PlayerState.INVENTORY_SWORD, state.itemB());
+        assertEquals(PlayerState.INVENTORY_EMPTY, state.itemA());
+        assertFalse(state.hasToadstool());
+    }
+
+    @Test
+    void witchPowderRewardUsesSourceBcdAdditionWithoutCapacityClamp() {
+        PlayerState state = new PlayerState();
+        state.initializeNewGame(30, 30, 20);
+        state.setMagicPowderCount(10);
+
+        state.applyWitchMagicPowderReward();
+
+        assertEquals(30, state.magicPowderCount());
+    }
+
+    @Test
     void damageSubtractsHealthAndClampsAtZero() {
         PlayerState playerState = new PlayerState();
         playerState.setHealth(PlayerState.HP_PER_HEART / 2);

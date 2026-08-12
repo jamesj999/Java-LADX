@@ -103,6 +103,8 @@ public final class RoomSession {
     private final EntityCollisionPointProbe entityCollisionPointProbe;
     private final EntityBackgroundCollisionResolver entityBackgroundCollisionResolver;
     private final OverworldBushInteraction overworldBushInteraction;
+    private final IndoorTorchPaletteEffect indoorTorchPaletteEffect =
+        new IndoorTorchPaletteEffect();
     private final RoomEntityBackgroundInteraction entityBackgroundInteraction =
         new RoomEntityBackgroundInteraction() {
             @Override
@@ -146,6 +148,10 @@ public final class RoomSession {
         pendingSwordPickupRewards = new ArrayList<>();
     private final List<RoomEntityRuntime.ToadstoolRewardEvent>
         pendingToadstoolRewards = new ArrayList<>();
+    private final List<RoomEntityRuntime.WitchExchangeEvent>
+        pendingWitchExchangeEvents = new ArrayList<>();
+    private final List<RoomEntityRuntime.WitchRewardEvent>
+        pendingWitchRewardEvents = new ArrayList<>();
     private final List<RoomEntityRuntime.DialogRequest> pendingRoomDialogRequests =
         new ArrayList<>();
     private PendingShovelDrop pendingShovelDrop;
@@ -200,6 +206,7 @@ public final class RoomSession {
     private int currentLinkMotionState = EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE;
     /** WRAM wC1A2; ResetRoomVariables clears the room trigger counter. */
     private int roomTriggerCount;
+    private int entityDefaultMusicTrack = 0x05;
     private boolean secretSeashellScreenShakeActive;
     private boolean secretSeashellPegasusCollisionActive;
     private int secretSeashellPegasusCollisionX;
@@ -322,10 +329,12 @@ public final class RoomSession {
 
     public void loadOverworld(int roomId) {
         clearTransientRoomState();
+        indoorTorchPaletteEffect.clear();
         LoadedRoom room = roomLoader.loadOverworld(
             roomId, clearedEntitiesByRoom[roomId], overworldRoomStatus);
         gpu.loadAnimatedTilesGroup(romData, room.animatedTilesGroup());
         setActiveRoom(room);
+        updateWitchEnvironment();
         overworldCollision.setRoom(activeRoom.roomObjectsArea());
         overworldCollision.setGbcOverlay(activeRoom.gbcOverlay());
         overworldCollision.setPhysicsTable(RomTables.PHYSICS_TABLE_OVERWORLD);
@@ -346,6 +355,9 @@ public final class RoomSession {
             clearedEntitiesByRoom[roomId], indoorStatusTableForMap(mapId), hasBirdKey);
         gpu.loadAnimatedTilesGroup(romData, room.animatedTilesGroup());
         setActiveRoom(room);
+        indoorTorchPaletteEffect.reset(activeRoom.palettes(), countUnlitTorches());
+        copyIndoorTorchPalettesToActiveRoom();
+        updateWitchEnvironment();
         overworldCollision.setRoom(activeRoom.roomObjectsArea());
         overworldCollision.setGbcOverlay(null);
         overworldCollision.setPhysicsTable(RomTables.PHYSICS_TABLE_INDOORS1);
@@ -589,6 +601,21 @@ public final class RoomSession {
     public void setToadstoolPlayerState(boolean hasToadstool, int magicPowderCount) {
         if (entityRuntime != null) {
             entityRuntime.setToadstoolPlayerState(hasToadstool, magicPowderCount);
+        }
+    }
+
+    public void setEntityDefaultMusicTrack(int trackId) {
+        if ((trackId & ~0xFF) != 0) {
+            throw new IllegalArgumentException("Default music track must be an unsigned byte");
+        }
+        entityDefaultMusicTrack = trackId;
+        updateWitchEnvironment();
+    }
+
+    private void updateWitchEnvironment() {
+        if (entityRuntime != null) {
+            entityRuntime.setWitchEnvironment(indoorTorchPaletteEffect.effectAddress(),
+                indoorTorchPaletteEffect.paletteDataFlags(), entityDefaultMusicTrack);
         }
     }
 
@@ -1087,6 +1114,21 @@ public final class RoomSession {
         return roomTriggerCount & 0xFF;
     }
 
+    int indoorTorchPaletteEffectAddressForTest() {
+        return indoorTorchPaletteEffect.effectAddress();
+    }
+
+    void igniteIndoorTorchPaletteForTest() {
+        indoorTorchPaletteEffect.igniteTorch();
+    }
+
+    void setRoomTriggerCountForTest(int value) {
+        if ((value & ~0xFF) != 0) {
+            throw new IllegalArgumentException("Room trigger count must be an unsigned byte");
+        }
+        roomTriggerCount = value;
+    }
+
     int entityDropSpeedXForTest(int slot) {
         return entityRuntime == null ? 0 : entityRuntime.dropSpeedX(slot);
     }
@@ -1182,6 +1224,8 @@ public final class RoomSession {
         if (activeRoom == null || entityRuntime == null) {
             return List.of();
         }
+        indoorTorchPaletteEffect.tick(entityDialogActive, false);
+        copyIndoorTorchPalettesToActiveRoom();
         tickOcarinaAnimationHandler();
         entityRuntime.setSwitchBlockAnimationActive(
             SwitchBlockAnimation.isAnimating(switchableObjectAnimationStage));
@@ -1193,6 +1237,7 @@ public final class RoomSession {
         entityRuntime.setBombButtonHeld(bombButtonHeld);
         entityRuntime.setLiftedLinkC13B(followingEntityYOffset);
         entityRuntime.setBooBuddyTriggerCount(roomTriggerCount);
+        updateWitchEnvironment();
         entityRuntime.setOcarinaPlayback(ocarinaPlaybackCountdown,
             ocarinaSongFlags, selectedSongIndex, ocarinaAnimationCounter,
             ocarinaAnimationPhase);
@@ -1246,6 +1291,7 @@ public final class RoomSession {
         harvestHeartContainerRewards();
         harvestSwordPickupRewards();
         harvestToadstoolRewards();
+        harvestWitchEvents();
         harvestOwlEventCompletions();
         if (entityRuntime.consumePendingSwitchBlockAnimationRequest()
             && switchableObjectAnimationStage == 0) {
@@ -1346,6 +1392,10 @@ public final class RoomSession {
             ? List.of() : entityRuntime.consumePendingLinkHeldItemPoseRequests();
     }
 
+    public boolean gotItemPresentationActive() {
+        return entityRuntime != null && entityRuntime.witchGotItemPresentationActive();
+    }
+
     public List<RoomEntityRuntime.LinkSwordSpinPoseRequest>
             consumeLinkSwordSpinPoseRequests() {
         return entityRuntime == null
@@ -1401,6 +1451,20 @@ public final class RoomSession {
             List.copyOf(pendingToadstoolRewards);
         pendingToadstoolRewards.clear();
         return rewards;
+    }
+
+    public List<RoomEntityRuntime.WitchExchangeEvent> consumeWitchExchangeEvents() {
+        List<RoomEntityRuntime.WitchExchangeEvent> events =
+            List.copyOf(pendingWitchExchangeEvents);
+        pendingWitchExchangeEvents.clear();
+        return events;
+    }
+
+    public List<RoomEntityRuntime.WitchRewardEvent> consumeWitchRewardEvents() {
+        List<RoomEntityRuntime.WitchRewardEvent> events =
+            List.copyOf(pendingWitchRewardEvents);
+        pendingWitchRewardEvents.clear();
+        return events;
     }
 
     /** Returns the raw music-track request emitted by a chest, or {@code -1}. */
@@ -1768,6 +1832,8 @@ public final class RoomSession {
         pendingHeartContainerRewards.clear();
         pendingSwordPickupRewards.clear();
         pendingToadstoolRewards.clear();
+        pendingWitchExchangeEvents.clear();
+        pendingWitchRewardEvents.clear();
         pendingRoomDialogRequests.clear();
         pendingManboTransition = false;
         pendingShovelDrop = null;
@@ -1935,10 +2001,12 @@ public final class RoomSession {
             }
             if (request.action() == RoomEntityRuntime.MagicPowderObjectAction.IGNITE_TORCH) {
                 roomTriggerCount = (roomTriggerCount + 1) & 0xFF;
+                indoorTorchPaletteEffect.igniteTorch();
             } else if (request.action()
                 == RoomEntityRuntime.MagicPowderObjectAction.EXTINGUISH_TORCH
                 && activeRoom.roomId() != 0x74) {
                 roomTriggerCount = (roomTriggerCount - 1) & 0xFF;
+                indoorTorchPaletteEffect.extinguishTorch();
             }
             if (activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
                 refreshOverworldCollisionAfterObjectMutation();
@@ -1967,6 +2035,43 @@ public final class RoomSession {
         }
         refreshActiveRoomTilemap();
         return true;
+    }
+
+    private int countUnlitTorches() {
+        if (activeRoom == null || activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
+            || activeRoom.roomId() == 0xC4) {
+            return 0;
+        }
+        int count = 0;
+        int[] objects = activeRoom.roomObjectsArea();
+        for (int row = 0; row < RoomConstants.OBJECTS_PER_COLUMN; row++) {
+            for (int column = 0; column < RoomConstants.OBJECTS_PER_ROW; column++) {
+                int index = RoomConstants.ROOM_OBJECTS_BASE
+                    + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + column;
+                if (index < objects.length && objects[index] == 0xAB) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
+    private void copyIndoorTorchPalettesToActiveRoom() {
+        if (activeRoom == null || activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
+            return;
+        }
+        int[][] source = indoorTorchPaletteEffect.palettes();
+        int[][] target = activeRoom.palettes();
+        if (target == null) {
+            return;
+        }
+        for (int palette = 0; palette < Math.min(source.length, target.length); palette++) {
+            if (target[palette] == null) {
+                continue;
+            }
+            System.arraycopy(source[palette], 0, target[palette], 0,
+                Math.min(source[palette].length, target[palette].length));
+        }
     }
 
     private void applyPuzzleBombObjectCandidate(BombObjectInteraction.Candidate candidate,
@@ -2331,6 +2436,15 @@ public final class RoomSession {
     private void harvestToadstoolRewards() {
         if (entityRuntime != null) {
             pendingToadstoolRewards.addAll(entityRuntime.consumePendingToadstoolRewards());
+        }
+    }
+
+    private void harvestWitchEvents() {
+        if (entityRuntime != null) {
+            pendingWitchExchangeEvents.addAll(
+                entityRuntime.consumePendingWitchExchangeEvents());
+            pendingWitchRewardEvents.addAll(
+                entityRuntime.consumePendingWitchRewardEvents());
         }
     }
 

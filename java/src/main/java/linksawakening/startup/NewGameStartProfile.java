@@ -44,6 +44,11 @@ public record NewGameStartProfile(
     /** Applies the fresh-file portion represented by the current player model. */
     public void initializePlayerState(PlayerState playerState) {
         Objects.requireNonNull(playerState, "playerState");
-        playerState.initializeNewGame(maxArrows, maxBombs, maxMagicPowder);
+        playerState.initializeNewGame(fromBcd(maxArrows), fromBcd(maxBombs),
+            fromBcd(maxMagicPowder));
+    }
+
+    private static int fromBcd(int value) {
+        return (value >>> 4) * 10 + (value & 0x0F);
     }
 }

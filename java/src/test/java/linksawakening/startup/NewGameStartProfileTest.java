@@ -58,11 +58,11 @@ final class NewGameStartProfileTest {
         assertEquals(0, playerState.shieldLevel());
         assertEquals(PlayerState.INVENTORY_EMPTY, playerState.itemA());
         assertEquals(PlayerState.INVENTORY_EMPTY, playerState.itemB());
-        assertEquals(0x30, playerState.maxArrows());
+        assertEquals(30, playerState.maxArrows());
         assertEquals(0, playerState.arrowCount());
-        assertEquals(0x30, playerState.maxBombs());
+        assertEquals(30, playerState.maxBombs());
         assertEquals(0, playerState.bombCount());
-        assertEquals(0x20, playerState.maxMagicPowder());
+        assertEquals(20, playerState.maxMagicPowder());
         assertEquals(0, playerState.magicPowderCount());
         assertEquals(0, playerState.heartPieces());
         assertEquals(0, playerState.seashells());
