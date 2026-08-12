@@ -14,7 +14,17 @@ public record LoadedRoom(int roomId,
                          int[][] palettes,
                          List<Warp> warps,
                          boolean indoorHasSouthEntrance,
+                         int shutterDoorMask,
                          RoomEntitySnapshot entities) {
+
+    public LoadedRoom(int roomId, int mapCategory, int mapId, int animatedTilesGroup,
+                      int[] roomObjectsArea, int[] gbcOverlay, int[] renderValues,
+                      int[] tileIds, int[] tileAttrs, int[][] palettes, List<Warp> warps,
+                      boolean indoorHasSouthEntrance, RoomEntitySnapshot entities) {
+        this(roomId, mapCategory, mapId, animatedTilesGroup, roomObjectsArea, gbcOverlay,
+            renderValues, tileIds, tileAttrs, palettes, warps, indoorHasSouthEntrance,
+            0, entities);
+    }
 
     public LoadedRoom(int roomId,
                       int mapCategory,
@@ -29,7 +39,8 @@ public record LoadedRoom(int roomId,
                       List<Warp> warps,
                       boolean indoorHasSouthEntrance) {
         this(roomId, mapCategory, mapId, animatedTilesGroup, roomObjectsArea, gbcOverlay,
-            renderValues, tileIds, tileAttrs, palettes, warps, indoorHasSouthEntrance, null);
+            renderValues, tileIds, tileAttrs, palettes, warps, indoorHasSouthEntrance,
+            0, null);
     }
 
     public LoadedRoom {
@@ -40,6 +51,7 @@ public record LoadedRoom(int roomId,
         tileAttrs = tileAttrs.clone();
         palettes = clonePalettes(palettes);
         warps = List.copyOf(warps);
+        shutterDoorMask &= 0x0F;
     }
 
     @Override

@@ -2,11 +2,17 @@ package linksawakening.world;
 
 import java.util.List;
 
-public record RoomObjectParseResult(int[] roomObjectsArea, List<Warp> warps) {
+public record RoomObjectParseResult(int[] roomObjectsArea, List<Warp> warps,
+                                    int shutterDoorMask) {
+
+    public RoomObjectParseResult(int[] roomObjectsArea, List<Warp> warps) {
+        this(roomObjectsArea, warps, 0);
+    }
 
     public RoomObjectParseResult {
         roomObjectsArea = roomObjectsArea.clone();
         warps = List.copyOf(warps);
+        shutterDoorMask &= 0x0F;
     }
 
     @Override

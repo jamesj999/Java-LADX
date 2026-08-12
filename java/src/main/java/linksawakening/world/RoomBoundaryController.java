@@ -53,17 +53,29 @@ public final class RoomBoundaryController {
         boolean offLeft = x < 0;
         boolean offRight = x + Link.SPRITE_SIZE > ROOM_PIXEL_WIDTH;
 
+        if (offBottom && (state.shutterDoorMask() & 0x02) != 0) {
+            return RoomBoundaryDecision.clamp(x, ROOM_PIXEL_HEIGHT - Link.SPRITE_SIZE);
+        }
         if (offBottom && state.indoorHasSouthEntrance() && state.hasWarps()) {
             return RoomBoundaryDecision.indoorFrontDoorWarp();
         }
         if (offLeft) {
+            if ((state.shutterDoorMask() & 0x04) != 0) {
+                return RoomBoundaryDecision.clamp(0, y);
+            }
             return RoomBoundaryDecision.indoorScroll(ScrollController.LEFT,
                 ROOM_PIXEL_WIDTH - Link.SPRITE_SIZE, y);
         }
         if (offRight) {
+            if ((state.shutterDoorMask() & 0x08) != 0) {
+                return RoomBoundaryDecision.clamp(ROOM_PIXEL_WIDTH - Link.SPRITE_SIZE, y);
+            }
             return RoomBoundaryDecision.indoorScroll(ScrollController.RIGHT, 0, y);
         }
         if (offTop) {
+            if ((state.shutterDoorMask() & 0x01) != 0) {
+                return RoomBoundaryDecision.clamp(x, 0);
+            }
             return RoomBoundaryDecision.indoorScroll(ScrollController.UP, x,
                 ROOM_PIXEL_HEIGHT - Link.SPRITE_SIZE);
         }

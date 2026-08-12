@@ -639,6 +639,33 @@ final class RoomSessionTest {
     }
 
     @Test
+    void rollingBonesRoomOpensItsRomShuttersAndPersistsTheMinibossFlag() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x00, 0x11);
+        assertEquals(0x05, session.activeRoom().shutterDoorMask());
+        assertEquals(0xC1, session.activeRoomEventForTest());
+
+        List<RoomEntity> emptySlots = new ArrayList<>();
+        for (int slot = 0; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
+            emptySlots.add(RoomEntity.disabled(slot));
+        }
+        session.replaceEntityRuntimeForTest(
+            RoomEntityRuntime.from(new RoomEntitySnapshot(emptySlots), true));
+
+        session.tickEntities(0, 0x50, 0x50);
+
+        assertEquals(0, session.activeRoom().shutterDoorMask());
+        assertEquals(0, session.activeRoomEventForTest());
+        assertEquals(0x20, session.indoorRoomStatusForTest(0x00, 0x11) & 0x20);
+        assertTrue(session.consumeEntityEvents().stream().anyMatch(event ->
+            event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE
+                && event.soundId() == 0x1B));
+
+        session.loadIndoor(0x00, 0x11);
+        assertEquals(0, session.activeRoom().shutterDoorMask());
+    }
+
+    @Test
     void tailCaveFirstKeyDoorConsumesTheKeyAndSynchronizesBothRooms() {
         RoomSession session = newSession();
         List<GameplaySoundEvent> sounds = new ArrayList<>();

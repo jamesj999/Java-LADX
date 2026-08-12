@@ -15,6 +15,7 @@ public final class ActiveRoom {
     private final int[][] palettes;
     private final List<Warp> warps;
     private final boolean indoorHasSouthEntrance;
+    private int shutterDoorMask;
     private RoomEntitySnapshot entities;
 
     private ActiveRoom(LoadedRoom room) {
@@ -33,6 +34,7 @@ public final class ActiveRoom {
         this.palettes = room.palettes();
         this.warps = new ArrayList<>(room.warps());
         this.indoorHasSouthEntrance = room.indoorHasSouthEntrance();
+        this.shutterDoorMask = room.shutterDoorMask();
         this.entities = entities;
     }
 
@@ -94,6 +96,14 @@ public final class ActiveRoom {
 
     public boolean indoorHasSouthEntrance() {
         return indoorHasSouthEntrance;
+    }
+
+    public int shutterDoorMask() {
+        return shutterDoorMask;
+    }
+
+    void openShutterDoors() {
+        shutterDoorMask = 0;
     }
 
     public RoomEntitySnapshot entities() {

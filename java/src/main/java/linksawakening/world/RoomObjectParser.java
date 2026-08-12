@@ -96,6 +96,7 @@ public final class RoomObjectParser {
 
     private final byte[] romData;
     private int[] roomObjectsArea;
+    private int shutterDoorMask;
     private final List<Warp> warps = new ArrayList<>();
     private final List<Integer> doorPositions = new ArrayList<>();
     private int roomStatusFlags;
@@ -112,7 +113,7 @@ public final class RoomObjectParser {
         applyOverworldClosedGateStatus();
         applyOverworldBombableCaveDoorStatus();
         assignDoorPositionsToWarps();
-        return new RoomObjectParseResult(roomObjectsArea, warps);
+        return new RoomObjectParseResult(roomObjectsArea, warps, 0);
     }
 
     /** Mirrors LoadRoomObject's OBJECT_CLOSED_GATE status-bit replacement. */
@@ -169,7 +170,7 @@ public final class RoomObjectParser {
         applyIndoorBombableBlockStatus(mapId);
         applyIndoorBombableWallStatus();
         assignDoorPositionsToWarps();
-        return new RoomObjectParseResult(roomObjectsArea, warps);
+        return new RoomObjectParseResult(roomObjectsArea, warps, shutterDoorMask);
     }
 
     private void applyIndoorBombableBlockStatus(int mapId) {
@@ -233,6 +234,7 @@ public final class RoomObjectParser {
         Arrays.fill(roomObjectsArea, 0xFF);
         warps.clear();
         doorPositions.clear();
+        shutterDoorMask = 0;
         fillRoomMapWithObject(floorObject);
     }
 
@@ -305,6 +307,10 @@ public final class RoomObjectParser {
             if ((roomStatusFlags & statusBit) != 0) {
                 idx += 8;
             }
+        }
+        if (idx >= 4 && idx <= 7) {
+            // wC18A/wC18B use top, bottom, left, right in bits 0..3.
+            shutterDoorMask |= 1 << (idx - 4);
         }
         int[] table = INDOOR_DOOR_MACRO_TABLES[idx];
         applyMacroTable(location, INDOOR_DOOR_MACRO_BANK, table[0],

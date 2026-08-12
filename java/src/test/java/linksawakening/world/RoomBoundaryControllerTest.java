@@ -51,4 +51,15 @@ final class RoomBoundaryControllerTest {
         assertEquals(ROOM_PIXEL_WIDTH - Link.SPRITE_SIZE, decision.linkTargetX());
         assertEquals(40, decision.linkTargetY());
     }
+
+    @Test
+    void indoorShutterClampsTheMatchingRoomEdgeUntilItOpens() {
+        RoomBoundaryDecision decision = controller.decide(
+            new RoomBoundaryState(Warp.CATEGORY_INDOOR, 0x11, false, false,
+                0x04, -1, 40));
+
+        assertEquals(RoomBoundaryDecision.Type.CLAMP_LINK, decision.type());
+        assertEquals(0, decision.linkTargetX());
+        assertEquals(40, decision.linkTargetY());
+    }
 }

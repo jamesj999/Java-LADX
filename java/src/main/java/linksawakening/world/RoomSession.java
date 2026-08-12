@@ -81,6 +81,8 @@ public final class RoomSession {
     private static final int EVENT_TRIGGER_KILL_ALL_ENEMIES = 0x01;
     private static final int EVENT_TRIGGER_STEP_ON_BUTTON = 0x03;
     private static final int EVENT_EFFECT_REVEAL_CHEST = 0x60;
+    private static final int EVENT_EFFECT_CLEAR_MIDBOSS = 0xC0;
+    private static final int EVENT_CLEAR_MIDBOSS = 0xC1;
     private static final int OBJECT_SWITCH_BUTTON = 0xAA;
     private static final int SWITCH_BUTTON_PRESS_FRAMES = 0x18;
     private static final int SWITCH_BUTTON_PRESSED = 0x60;
@@ -238,6 +240,8 @@ public final class RoomSession {
     /** WRAM wC1A2; ResetRoomVariables clears the room trigger counter. */
     private int roomTriggerCount;
     private int activeRoomEvent;
+    /** wHasInstrument1..: bit 0 records each dungeon miniboss defeat. */
+    private final byte[] dungeonProgressFlags = new byte[0x1A];
     private boolean roomEventEffectExecuted;
     private int roomEventChestRevealCountdown;
     private int switchButtonPressCounter;
@@ -1741,6 +1745,7 @@ public final class RoomSession {
             activeRoom.roomId(),
             activeRoom.indoorHasSouthEntrance(),
             activeRoom.hasWarps(),
+            activeRoom.shutterDoorMask(),
             linkX,
             linkY
         );
@@ -1766,6 +1771,16 @@ public final class RoomSession {
             entities = entities.withSideScrolling(room.mapCategory() == Warp.CATEGORY_SIDESCROLL);
         }
         activeRoom = ActiveRoom.from(room, entities);
+        boolean minibossDefeated = activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD
+            && activeRoom.mapId() >= 0
+            && activeRoom.mapId() < dungeonProgressFlags.length
+            && ((dungeonProgressFlags[activeRoom.mapId()] & 0x01) != 0
+                || (activeRoomStatusFlags() & ROOM_STATUS_EVENT_2) != 0);
+        if (minibossDefeated && activeRoomEvent == EVENT_CLEAR_MIDBOSS) {
+            dungeonProgressFlags[activeRoom.mapId()] |= 0x01;
+            activeRoom.openShutterDoors();
+            activeRoomEvent = 0;
+        }
         entityRuntime = entities == null ? null : RoomEntityRuntime.from(
             entities, activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD,
             entityRandomByteSource, entitySpriteHandlerCatalog, enemyCombatTables,
@@ -2796,6 +2811,18 @@ public final class RoomSession {
                 transientVfxSystem.spawn(TransientVfxType.CHEST_APPEARS, 0x88,
                     roomEventChestTop(linkEntityX, linkEntityY) + 0x10);
             }
+        } else if ((activeRoomEvent & EVENT_EFFECT_MASK) == EVENT_EFFECT_CLEAR_MIDBOSS) {
+            activeRoom.openShutterDoors();
+            if (activeRoomEvent == EVENT_CLEAR_MIDBOSS
+                && activeRoom.mapId() >= 0
+                && activeRoom.mapId() < dungeonProgressFlags.length) {
+                dungeonProgressFlags[activeRoom.mapId()] |= 0x01;
+                indoorStatusTableForMap(activeRoom.mapId())[activeRoom.roomId()] |= 0x20;
+                pendingRoomEntityEvents.add(new EntityCombatEvent(
+                    0, 0x61, 0, false,
+                    EntityCombatEvent.SoundChannel.JINGLE, 0x1B));
+            }
+            activeRoomEvent = 0;
         }
     }
 

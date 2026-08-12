@@ -72,6 +72,7 @@ public final class RoomLoader {
             paletteLoader.loadOverworld(roomId),
             parsed.warps(),
             false,
+            0,
             entities
         );
     }
@@ -132,6 +133,7 @@ public final class RoomLoader {
             paletteLoader.loadIndoor(mapId, roomId, fallbackPalettes),
             parsed.warps(),
             hasSouthEntrance(objects),
+            parsed.shutterDoorMask(),
             entities
         );
     }
