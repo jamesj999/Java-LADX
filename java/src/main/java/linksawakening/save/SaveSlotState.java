@@ -108,6 +108,11 @@ public record SaveSlotState(
             SaveRamLayout.MAIN_DUNGEON_PROGRESS_FLAGS_SIZE);
     }
 
+    public int bowWowState() {
+        return Byte.toUnsignedInt(rawSlot[SaveRamLayout.mainOffset()
+            + SaveRamLayout.MAIN_BOW_WOW_STATE_OFFSET]);
+    }
+
     private byte[] roomStatus(int offset, int length) {
         return Arrays.copyOfRange(rawSlot, offset, offset + length);
     }

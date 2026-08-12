@@ -93,6 +93,10 @@ public final class SaveRamStore {
         image.writeDungeonProgressFlags(slot, dungeonProgressFlags);
     }
 
+    public void writeBowWowState(int slot, int state) {
+        image.writeBowWowState(slot, state);
+    }
+
     public void writeSpawnLocation(int slot, int isIndoor, int mapId, int mapRoom,
                                    int positionX, int positionY, int indoorRoom) {
         image.writeSpawnLocation(slot, isIndoor, mapId, mapRoom,

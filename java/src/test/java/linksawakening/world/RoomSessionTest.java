@@ -819,6 +819,7 @@ final class RoomSessionTest {
         assertTrue(session.consumeLinkMotionBlockRequests().isEmpty());
         assertEquals(session.activeRoom().firstWarp(),
             session.consumeInstrumentTransitionRequest());
+        assertEquals(0x80, session.bowWowState());
     }
 
     @Test

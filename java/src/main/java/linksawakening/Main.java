@@ -1568,6 +1568,7 @@ public class Main {
         NewGameStartProfile profile = NewGameStartProfile.romDefaults();
         profile.initializePlayerState(playerState);
         roomSession.setBirdKeyOwned(playerState.birdKeyCount() != 0);
+        roomSession.setBowWowState(0);
         link.setDirection(Link.DIRECTION_DOWN);
         gpu.loadBaseTiles(romData);
         roomSession.loadIndoor(profile.mapId(), profile.roomId());
@@ -1591,6 +1592,7 @@ public class Main {
         roomSession.restoreDungeonItemFlags(saved.dungeonItemFlags(),
             saved.colorDungeonItemFlags());
         roomSession.restoreDungeonProgressFlags(saved.dungeonProgressFlags());
+        roomSession.setBowWowState(saved.bowWowState());
         if (saved.spawnIsIndoor() != 0) {
             gpu.loadBaseTiles(romData);
             roomSession.loadIndoor(saved.spawnMapId(), saved.spawnMapRoom());
@@ -1690,6 +1692,7 @@ public class Main {
                 roomSession.colorDungeonItemFlagsSnapshot());
             saveRamStore.writeDungeonProgressFlags(currentSaveSlot,
                 roomSession.dungeonProgressFlagsSnapshot());
+            saveRamStore.writeBowWowState(currentSaveSlot, roomSession.bowWowState());
         }
         try {
             saveRamStore.flush();

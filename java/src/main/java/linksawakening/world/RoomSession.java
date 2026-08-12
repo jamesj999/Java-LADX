@@ -239,6 +239,7 @@ public final class RoomSession {
     private boolean pendingManboTransition;
     private boolean pendingInstrumentTransition;
     private boolean hasBirdKey;
+    private int bowWowState;
     private int currentLinkMotionState = EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE;
     /** WRAM wC1A2; ResetRoomVariables clears the room trigger counter. */
     private int roomTriggerCount;
@@ -600,6 +601,18 @@ public final class RoomSession {
 
     public FollowingNpcState followingNpcState() {
         return followingNpcState;
+    }
+
+    /** Mirrors wIsBowWowFollowingLink, including BOW_WOW_KIDNAPPED=$80. */
+    public int bowWowState() {
+        return bowWowState & 0xFF;
+    }
+
+    public void setBowWowState(int state) {
+        if ((state & ~0xFF) != 0) {
+            throw new IllegalArgumentException("BowWow state must be an unsigned byte");
+        }
+        bowWowState = state;
     }
 
     /** Supplies the held J_A|J_B state consumed by input-driven entity handlers. */
@@ -2802,9 +2815,15 @@ public final class RoomSession {
     }
 
     private void harvestInstrumentCompletions() {
-        if (entityRuntime != null
-            && !entityRuntime.consumePendingInstrumentCompletions().isEmpty()) {
+        if (entityRuntime == null) {
+            return;
+        }
+        for (RoomEntityRuntime.InstrumentCompletionEvent completion
+            : entityRuntime.consumePendingInstrumentCompletions()) {
             pendingInstrumentTransition = true;
+            if (completion.mapId() == 0x00) {
+                bowWowState = 0x80;
+            }
         }
     }
 

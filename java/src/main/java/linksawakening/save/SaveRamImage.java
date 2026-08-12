@@ -189,6 +189,14 @@ public final class SaveRamImage {
             SaveRamLayout.MAIN_DUNGEON_PROGRESS_FLAGS_SIZE);
     }
 
+    /** Writes wIsBowWowFollowingLink at DB56. */
+    public void writeBowWowState(int slot, int state) {
+        SaveRamLayout.checkSlot(slot);
+        requireByte(state, "BowWow state");
+        int main = SaveRamLayout.slotOffset(slot) + SaveRamLayout.mainOffset();
+        bytes[main + SaveRamLayout.MAIN_BOW_WOW_STATE_OFFSET] = (byte) state;
+    }
+
     /** Writes the source {@code wSpawnLocationData} fields in the main block. */
     public void writeSpawnLocation(int slot, int isIndoor, int mapId, int mapRoom,
                                    int positionX, int positionY, int indoorRoom) {
