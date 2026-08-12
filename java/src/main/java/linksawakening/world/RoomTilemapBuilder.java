@@ -32,6 +32,8 @@ public final class RoomTilemapBuilder {
     private static final int OVERWORLD_OBJ_ATTR_PTRS_ADDR = 0x5E76;
     private static final int OBJECT_BOMBABLE_CAVE_DOOR = 0xBA;
     private static final int OBJECT_ROCKY_CAVE_DOOR = 0xE1;
+    private static final int OBJECT_CLOSED_GATE = 0xC2;
+    private static final int OBJECT_CAVE_DOOR = 0xE3;
 
     private static final int GBC_OVERLAY_BANK_A = 0x26;
     private static final int GBC_OVERLAY_ADDR_A = 0x4000;
@@ -181,16 +183,21 @@ public final class RoomTilemapBuilder {
                 int overlayIndex = oy * RoomConstants.OBJECTS_PER_ROW + ox;
                 int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + oy * RoomConstants.ROOM_OBJECT_ROW_STRIDE + ox;
                 int renderValue = gbcOverlay[overlayIndex];
-                // ConfigureRoomObjects changes a persistent bombable cave door
-                // from BA to E1 before LoadRoomTilemap runs. The GBC object
-                // attribute buffer receives that same E1 through
-                // SetupDestroyableObjectIfNeeded; preserve the status-driven
-                // replacement instead of reusing the ROM overlay's BA.
+                // ConfigureRoomObjects performs persistent door replacements
+                // before LoadRoomTilemap. SetupDestroyableObjectIfNeeded writes
+                // the replacement into the mutable GBC object buffer too.
                 if (roomObjectsArea != null
-                    && areaIndex < roomObjectsArea.length
-                    && roomObjectsArea[areaIndex] == OBJECT_ROCKY_CAVE_DOOR
-                    && renderValue == OBJECT_BOMBABLE_CAVE_DOOR) {
-                    renderValue = OBJECT_ROCKY_CAVE_DOOR;
+                    && areaIndex < roomObjectsArea.length) {
+                    int objectId = roomObjectsArea[areaIndex];
+                    boolean persistentReplacement =
+                        objectId == OBJECT_ROCKY_CAVE_DOOR
+                            && renderValue == OBJECT_BOMBABLE_CAVE_DOOR
+                        || objectId == OBJECT_CAVE_DOOR
+                            && renderValue == OBJECT_CLOSED_GATE;
+                    if (persistentReplacement) {
+                        renderValue = objectId;
+                        gbcOverlay[overlayIndex] = objectId;
+                    }
                 }
                 renderValues[areaIndex] = renderValue;
             }

@@ -41,4 +41,18 @@ final class ScrollControllerTest {
         assertEquals(0, scroll.screenShakeHorizontal());
         assertEquals(-2, scroll.screenShakeVertical());
     }
+
+    @Test
+    void scriptedHorizontalShakeTemporarilyOverridesTheSharedPhaseTable() {
+        ScrollController scroll = new ScrollController();
+        scroll.startScreenShake(0x30, 0x04);
+        scroll.tickScreenShake();
+
+        scroll.setScriptedScreenShakeHorizontal(true, -2);
+        assertEquals(-2, scroll.screenShakeHorizontal());
+
+        scroll.setScriptedScreenShakeHorizontal(false, 0);
+        assertEquals(0, scroll.screenShakeHorizontal());
+        assertEquals(-2, scroll.screenShakeVertical());
+    }
 }

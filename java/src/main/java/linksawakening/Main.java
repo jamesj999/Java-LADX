@@ -597,6 +597,10 @@ public class Main {
             return;
         }
 
+        if (roomSession != null && roomSession.tailCaveKeyholeSequenceActive()) {
+            return;
+        }
+
         if (marinWakeUpBlocksKeyInput()) {
             if (GameplayDialogInput.handleOverworldKeyPress(
                 key, action, inputConfig, dialogController)) {
@@ -814,9 +818,14 @@ public class Main {
                 // frame's motion work (bank0.asm:$0F97), so capture it before
                 // any Link movement can change the position.
                 link.captureRomFinalPosition();
+                boolean keyholeSequenceActive = roomSession != null
+                    && roomSession.tailCaveKeyholeSequenceActive();
+                if (keyholeSequenceActive) {
+                    link.blockNextRomMotionFrame();
+                }
                 boolean powerBraceletButtonHeld = isPowerBraceletButtonHeld();
                 boolean bombButtonHeld = isBombButtonHeld();
-                if (roomSession != null) {
+                if (roomSession != null && !keyholeSequenceActive) {
                     roomSession.setEntityPowerBraceletButtonHeld(powerBraceletButtonHeld);
                     roomSession.setEntityBombButtonHeld(bombButtonHeld);
                     var liftedState = roomSession.liftedEntityState();
@@ -830,12 +839,17 @@ public class Main {
                         }
                     }
                 }
-                if (!link.isCarryingLiftedObject()) {
+                if (!keyholeSequenceActive && !link.isCarryingLiftedObject()) {
                     equipmentController.dispatchButtonEdges();
                     equipmentController.tickEquippedItems(frameCounter);
                 }
                 link.tickRomLinkPushing();
                 link.update();
+                if (roomSession != null && playerState != null) {
+                    roomSession.tryUnlockTailCaveKeyhole(
+                        link.pixelX(), link.pixelY(), link.direction(),
+                        link.romCollisionType(), playerState.tailKeyCount() != 0);
+                }
                 Link.ScreenShakeRequest pegasusShake =
                     link.consumePegasusScreenShakeRequest();
                 if (pegasusShake != null) {
@@ -882,6 +896,12 @@ public class Main {
             } else if (scrollController.isActive() && link != null) {
                 // Keep Link's walk animation cycling during a room transition.
                 link.tickAnimation();
+            }
+
+            if (!dialogBlocksGameplay && roomSession != null) {
+                int rumbleHorizontal = roomSession.tickTailCaveKeyholeSequence();
+                scrollController.setScriptedScreenShakeHorizontal(
+                    roomSession.tailCaveKeyholeSequenceActive(), rumbleHorizontal);
             }
 
             Sword.CollisionBox swordBoxForEntityTick = Sword.CollisionBox.inactive();

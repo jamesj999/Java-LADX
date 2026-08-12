@@ -551,12 +551,15 @@ final class LinkTest {
             new PlayerState(), new ItemRegistry());
         link.setPixelPosition(0x40, 0x50);
         inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
+        link.useRocsFeather();
+        assertEquals(0x20, link.zVelocity());
 
         link.blockNextRomMotionFrame();
         link.update();
 
         assertEquals(0x40, link.pixelX());
         assertEquals(0x50, link.pixelY());
+        assertEquals(0, link.zVelocity());
         assertEquals(0x6A, resolvedAnimationState(link));
 
         inputState.onKeyEvent(inputConfig.rightKey(), GLFW_RELEASE);

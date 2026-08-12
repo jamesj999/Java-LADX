@@ -856,6 +856,7 @@ public final class Link implements RocsFeather.JumpTarget {
             romAnimationStateOverride = -1;
         }
         if (interactiveMotionBlocked) {
+            zVelocity = 0;
             movingThisFrame = false;
             walkTickCounter = 0;
             walkFrame = 0;

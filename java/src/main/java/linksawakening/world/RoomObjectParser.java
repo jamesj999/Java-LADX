@@ -109,9 +109,26 @@ public final class RoomObjectParser {
         this.roomStatusFlags = roomStatusFlags;
         parseRoomObjectStream(streamOffset, false);
         applyChestStatus();
+        applyOverworldClosedGateStatus();
         applyOverworldBombableCaveDoorStatus();
         assignDoorPositionsToWarps();
         return new RoomObjectParseResult(roomObjectsArea, warps);
+    }
+
+    /** Mirrors LoadRoomObject's OBJECT_CLOSED_GATE status-bit replacement. */
+    private void applyOverworldClosedGateStatus() {
+        if ((roomStatusFlags & ROOM_STATUS_CHEST_OPEN) == 0) {
+            return;
+        }
+        for (int row = 0; row < RoomConstants.OBJECTS_PER_COLUMN; row++) {
+            for (int column = 0; column < RoomConstants.OBJECTS_PER_ROW; column++) {
+                int areaIndex = RoomConstants.ROOM_OBJECTS_BASE
+                    + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + column;
+                if (roomObjectsArea[areaIndex] == OBJECT_CLOSED_GATE) {
+                    roomObjectsArea[areaIndex] = OBJECT_CAVE_DOOR;
+                }
+            }
+        }
     }
 
     private void applyOverworldBombableCaveDoorStatus() {

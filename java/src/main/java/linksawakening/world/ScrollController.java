@@ -14,6 +14,8 @@ public final class ScrollController {
     private int linkScreenY;
     private RoomRenderSnapshot previousRoom;
     private final ScreenShakeMotion screenShakeMotion = new ScreenShakeMotion();
+    private boolean scriptedScreenShakeActive;
+    private int scriptedScreenShakeHorizontal;
 
     public void start(int direction, int linkScreenX, int linkScreenY,
                       RoomRenderSnapshot previousRoom, int target) {
@@ -79,7 +81,8 @@ public final class ScrollController {
     }
 
     public int screenShakeHorizontal() {
-        return screenShakeMotion.horizontal();
+        return scriptedScreenShakeActive
+            ? scriptedScreenShakeHorizontal : screenShakeMotion.horizontal();
     }
 
     public int screenShakeVertical() {
@@ -88,5 +91,11 @@ public final class ScrollController {
 
     public int screenShakeCountdown() {
         return screenShakeMotion.countdown();
+    }
+
+    /** Applies a source-specific shake that does not use the shared phase table. */
+    public void setScriptedScreenShakeHorizontal(boolean active, int horizontal) {
+        scriptedScreenShakeActive = active;
+        scriptedScreenShakeHorizontal = active ? horizontal : 0;
     }
 }

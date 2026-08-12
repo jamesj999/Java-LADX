@@ -39,6 +39,8 @@ public final class RoomSession {
     private static final int ENTITY_DROPPABLE_SECRET_SEASHELL = 0x3D;
     private static final int OBJECT_ROCKY_GROUND = 0x09;
     private static final int OBJECT_ROCKY_CAVE_DOOR = 0xE1;
+    private static final int OBJECT_CLOSED_GATE = 0xC2;
+    private static final int OBJECT_CAVE_DOOR = 0xE3;
     private static final int OBJECT_BOMBABLE_CAVE_DOOR = 0xBA;
     private static final int OBJECT_GIANT_SKULL_TOP_LEFT = 0xBB;
     private static final int OBJECT_GIANT_SKULL_BOTTOM_RIGHT = 0xBE;
@@ -66,6 +68,13 @@ public final class RoomSession {
     private static final int ROOM_STATUS_CHEST_OPEN = 0x10;
     private static final int ROOM_STATUS_EVENT_1 = 0x10;
     private static final int ROOM_STATUS_EVENT_2 = 0x20;
+    private static final int ROOM_OW_TAIL_CAVE_ENTRANCE = 0xD3;
+    private static final int TAIL_CAVE_GATE_LOCATION = 0x16;
+    private static final int KEYHOLE_DIALOG_TABLE = 2;
+    private static final int TAIL_KEYHOLE_DIALOG_ID = 0x30;
+    private static final int LINK_COLLISION_TYPE_UP = 0x01;
+    private static final int TAIL_CAVE_RUMBLE_INITIAL_COUNTDOWN = 0xDF;
+    private static final int TAIL_CAVE_RUMBLE_GATE_FRAME = 0x08;
     private static final int INDOOR_ROOM_STATUS_EVENT_3 = 0x40;
     private static final int OBJECT_BOMBED_PASSAGE_VERTICAL = 0x3D;
     private static final int OBJECT_BOMBED_PASSAGE_HORIZONTAL = 0x3E;
@@ -206,6 +215,11 @@ public final class RoomSession {
     private int currentLinkMotionState = EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE;
     /** WRAM wC1A2; ResetRoomVariables clears the room trigger counter. */
     private int roomTriggerCount;
+    private int tailCaveKeyholeCountdown;
+    private boolean tailCaveFinalMotionBlockPending;
+    private int nextWorldMusicTrackCountdown;
+    private int tailCaveResumeMusicTrack = 0x05;
+    private int pendingRoomMusicTrack = -1;
     private int entityDefaultMusicTrack = 0x05;
     private boolean secretSeashellScreenShakeActive;
     private boolean secretSeashellPegasusCollisionActive;
@@ -1469,6 +1483,11 @@ public final class RoomSession {
 
     /** Returns the raw music-track request emitted by a chest, or {@code -1}. */
     public int consumePendingMusicTrack() {
+        if (pendingRoomMusicTrack >= 0) {
+            int pending = pendingRoomMusicTrack;
+            pendingRoomMusicTrack = -1;
+            return pending;
+        }
         return entityRuntime == null ? -1 : entityRuntime.consumePendingMusicTrack();
     }
 
@@ -1839,6 +1858,10 @@ public final class RoomSession {
         pendingShovelDrop = null;
         shovelUseState = 0;
         roomTriggerCount = 0;
+        tailCaveKeyholeCountdown = 0;
+        tailCaveFinalMotionBlockPending = false;
+        nextWorldMusicTrackCountdown = 0;
+        pendingRoomMusicTrack = -1;
     }
 
     private void applyBombObjectInteractions(List<BombExplosionEvent> events) {
@@ -2204,6 +2227,123 @@ public final class RoomSession {
             ? activeRoom.gbcOverlay() : null);
         activeRoom.replaceEntities(entityRuntime.snapshot());
         return new ChestOpenResult(true, itemType, slot, location);
+    }
+
+    /**
+     * Mirrors bank 2's Tail Key branch in ApplyCollisionWithObject. The
+     * keyhole is automatic: walking upward into physics category $C0 either
+     * opens Dialog230 or schedules the ROM's $DF-frame gate-opening rumble.
+     */
+    public boolean tryUnlockTailCaveKeyhole(int linkPixelX, int linkPixelY,
+                                            int linkDirection, int collisionType,
+                                            boolean hasTailKey) {
+        if (activeRoom == null
+            || activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD
+            || activeRoom.roomId() != ROOM_OW_TAIL_CAVE_ENTRANCE
+            || linkDirection != Link.DIRECTION_UP
+            || (collisionType & LINK_COLLISION_TYPE_UP) == 0
+            || (overworldRoomStatus[ROOM_OW_TAIL_CAVE_ENTRANCE]
+                & ROOM_STATUS_EVENT_1) != 0) {
+            return false;
+        }
+
+        int collisionPointY = linkPixelY + 0x06;
+        boolean leftProbeIsKeyhole = overworldCollision.objectPhysicsFlagAtPoint(
+            linkPixelX + 0x06, collisionPointY) == PhysicsFlags.CAT_KEYHOLE;
+        boolean rightProbeIsKeyhole = overworldCollision.objectPhysicsFlagAtPoint(
+            linkPixelX + 0x09, collisionPointY) == PhysicsFlags.CAT_KEYHOLE;
+        if (!leftProbeIsKeyhole && !rightProbeIsKeyhole) {
+            return false;
+        }
+        if (!hasTailKey) {
+            pendingRoomDialogRequests.add(new RoomEntityRuntime.DialogRequest(
+                KEYHOLE_DIALOG_TABLE, TAIL_KEYHOLE_DIALOG_ID));
+            return true;
+        }
+
+        overworldRoomStatus[ROOM_OW_TAIL_CAVE_ENTRANCE] |= (byte) ROOM_STATUS_EVENT_1;
+        tailCaveKeyholeCountdown = TAIL_CAVE_RUMBLE_INITIAL_COUNTDOWN;
+        tailCaveResumeMusicTrack = entityDefaultMusicTrack;
+        pendingRoomMusicTrack = 0x00;
+        return true;
+    }
+
+    /** One RenderTranscientRumble step, called once per unpaused gameplay frame. */
+    public int tickTailCaveKeyholeSequence() {
+        tickNextWorldMusicTrackCountdown();
+        if (tailCaveKeyholeCountdown == 0) {
+            tailCaveFinalMotionBlockPending = false;
+            return 0;
+        }
+        tailCaveKeyholeCountdown = (tailCaveKeyholeCountdown - 1) & 0xFF;
+        int countdown = tailCaveKeyholeCountdown;
+        if (countdown == 0xDE) {
+            colorShellSoundSink.play(GameplaySoundEvent.DOOR_UNLOCKED);
+        }
+        if (countdown == 0xA0) {
+            colorShellSoundSink.play(GameplaySoundEvent.OPEN_KEY_CAVERN);
+        }
+        if ((countdown & 0x0F) == 0x08) {
+            writeTailCaveGateAnimationFrame(countdown);
+        }
+        if (countdown == TAIL_CAVE_RUMBLE_GATE_FRAME) {
+            int gateIndex = RoomConstants.ROOM_OBJECTS_BASE + TAIL_CAVE_GATE_LOCATION;
+            if (activeRoom != null
+                && activeRoom.roomObjectsArea()[gateIndex] == OBJECT_CLOSED_GATE) {
+                writeBombPuzzleObject(TAIL_CAVE_GATE_LOCATION, OBJECT_CAVE_DOOR);
+                refreshOverworldCollisionAfterObjectMutation();
+            }
+            colorShellSoundSink.play(GameplaySoundEvent.DUNGEON_OPENED);
+        }
+        if (countdown == 0x0A) {
+            nextWorldMusicTrackCountdown = 0x50;
+        }
+        if (countdown == 0) {
+            tailCaveFinalMotionBlockPending = true;
+        }
+        if (countdown < 0x20 || countdown >= 0x9C) {
+            return 0;
+        }
+        return (countdown & 0x04) == 0 ? 1 : -2;
+    }
+
+    public boolean tailCaveKeyholeSequenceActive() {
+        return tailCaveKeyholeCountdown != 0 || tailCaveFinalMotionBlockPending;
+    }
+
+    int tailCaveKeyholeCountdownForTest() {
+        return tailCaveKeyholeCountdown;
+    }
+
+    int nextWorldMusicTrackCountdownForTest() {
+        return nextWorldMusicTrackCountdown;
+    }
+
+    private void writeTailCaveGateAnimationFrame(int countdown) {
+        if (activeRoom == null || activeRoom.roomId() != ROOM_OW_TAIL_CAVE_ENTRANCE) {
+            return;
+        }
+        int frameIndex = (countdown >>> 3) & 0x02;
+        int topTile = frameIndex == 0 ? 0x7E : 0x0C;
+        int bottomTile = 0x1F;
+        int tileX = (TAIL_CAVE_GATE_LOCATION & 0x0F) * 2;
+        int tileY = (TAIL_CAVE_GATE_LOCATION >>> 4) * 2;
+        int topLeft = tileY * RoomConstants.ROOM_TILE_WIDTH + tileX;
+        int[] tiles = activeRoom.tileIds();
+        tiles[topLeft] = topTile;
+        tiles[topLeft + 1] = topTile;
+        tiles[topLeft + RoomConstants.ROOM_TILE_WIDTH] = bottomTile;
+        tiles[topLeft + RoomConstants.ROOM_TILE_WIDTH + 1] = bottomTile;
+    }
+
+    private void tickNextWorldMusicTrackCountdown() {
+        if (nextWorldMusicTrackCountdown == 0) {
+            return;
+        }
+        nextWorldMusicTrackCountdown--;
+        if (nextWorldMusicTrackCountdown == 0) {
+            pendingRoomMusicTrack = tailCaveResumeMusicTrack;
+        }
     }
 
     private void writeBombPuzzleObject(int location, int objectId) {

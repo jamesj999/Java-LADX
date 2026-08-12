@@ -598,6 +598,150 @@ final class RoomSessionTest {
     }
 
     @Test
+    void tailCaveKeyholeFollowsTheRomLockedAndUnlockedPaths() {
+        RoomSession session = newSession();
+        List<GameplaySoundEvent> sounds = new ArrayList<>();
+        session.setColorShellSoundSink(sounds::add);
+        session.loadInitialOverworld(0xD3);
+        int gateIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x16;
+
+        assertEquals(0xC2, session.activeRoom().roomObjectsArea()[gateIndex]);
+        assertTrue(session.tryUnlockTailCaveKeyhole(
+            0x5A, 0x4A, Link.DIRECTION_UP, 0x01, false));
+        assertEquals(0, session.overworldRoomStatusForTest(0xD3) & 0x10);
+        assertEquals(0xC2, session.activeRoom().roomObjectsArea()[gateIndex]);
+        assertEquals(0x230, session.consumeEntityDialogRequests().getFirst().globalDialogId());
+
+        assertTrue(session.tryUnlockTailCaveKeyhole(
+            0x5A, 0x4A, Link.DIRECTION_UP, 0x01, true));
+        assertEquals(0x00, session.consumePendingMusicTrack());
+        assertEquals(0x10, session.overworldRoomStatusForTest(0xD3) & 0x10);
+        assertEquals(0xC2, session.activeRoom().roomObjectsArea()[gateIndex]);
+        assertEquals(0xDF, session.tailCaveKeyholeCountdownForTest());
+
+        assertEquals(0, session.tickTailCaveKeyholeSequence());
+        assertEquals(List.of(GameplaySoundEvent.DOOR_UNLOCKED), sounds);
+        while (session.tailCaveKeyholeCountdownForTest() > 0x18) {
+            session.tickTailCaveKeyholeSequence();
+        }
+        int gateTileX = 0x06 * 2;
+        int gateTileY = 0x01 * 2;
+        int gateTopLeft = gateTileY * RoomConstants.ROOM_TILE_WIDTH + gateTileX;
+        assertEquals(0x0C, session.activeRoom().tileIds()[gateTopLeft]);
+        assertEquals(0x1F, session.activeRoom().tileIds()[
+            gateTopLeft + RoomConstants.ROOM_TILE_WIDTH]);
+        while (session.tailCaveKeyholeCountdownForTest() > 0x08) {
+            session.tickTailCaveKeyholeSequence();
+        }
+        assertEquals(0xE3, session.activeRoom().roomObjectsArea()[gateIndex]);
+        assertEquals(List.of(GameplaySoundEvent.DOOR_UNLOCKED,
+            GameplaySoundEvent.OPEN_KEY_CAVERN,
+            GameplaySoundEvent.DUNGEON_OPENED), sounds);
+        int[] openedGateTiles = {
+            session.activeRoom().tileIds()[gateTopLeft],
+            session.activeRoom().tileIds()[gateTopLeft + 1],
+            session.activeRoom().tileIds()[gateTopLeft + RoomConstants.ROOM_TILE_WIDTH],
+            session.activeRoom().tileIds()[gateTopLeft + RoomConstants.ROOM_TILE_WIDTH + 1]
+        };
+
+        session.loadInitialOverworld(0xD3);
+        assertEquals(0xE3, session.activeRoom().roomObjectsArea()[gateIndex]);
+        assertEquals(0xE3, session.activeRoom().gbcOverlay()[0x10]);
+        assertEquals(0xE3, session.activeRoom().renderValues()[gateIndex]);
+        assertArrayEquals(openedGateTiles, new int[] {
+            session.activeRoom().tileIds()[gateTopLeft],
+            session.activeRoom().tileIds()[gateTopLeft + 1],
+            session.activeRoom().tileIds()[gateTopLeft + RoomConstants.ROOM_TILE_WIDTH],
+            session.activeRoom().tileIds()[gateTopLeft + RoomConstants.ROOM_TILE_WIDTH + 1]
+        });
+        Warp tailCaveWarp = session.activeRoom().warps().stream()
+            .filter(warp -> warp.tileLocation() == 0x16)
+            .findFirst()
+            .orElseThrow();
+        assertEquals(0x00, tailCaveWarp.destMap());
+        assertEquals(0x17, tailCaveWarp.destRoom());
+    }
+
+    @Test
+    void mysteriousForestChestFeedsTheCanonicalTailCaveUnlock() {
+        RoomSession session = newSession();
+        PlayerState playerState = new PlayerState();
+        session.loadInitialOverworld(0x41);
+
+        RoomSession.ChestOpenResult chest = session.tryOpenChest(
+            0x38, 0x31, Link.DIRECTION_UP, true, playerState.swordLevel());
+        assertTrue(chest.opened());
+        assertEquals(ChestContentsTable.CHEST_TAIL_KEY, chest.itemType());
+        session.tickEntities(0, 0x40, 0x40);
+        session.consumeChestRewardEvents().forEach(
+            reward -> playerState.applyChestReward(reward.itemType()));
+        assertEquals(1, playerState.tailKeyCount());
+
+        session.loadInitialOverworld(0xD3);
+        assertTrue(session.tryUnlockTailCaveKeyhole(
+            0x5A, 0x4A, Link.DIRECTION_UP, 0x01,
+            playerState.tailKeyCount() != 0));
+        assertEquals(0x10, session.overworldRoomStatusForTest(0xD3) & 0x10);
+    }
+
+    @Test
+    void tailCaveKeyholeIgnoresFramesThatDidNotCollideFacingUp() {
+        RoomSession session = newSession();
+        session.loadInitialOverworld(0xD3);
+
+        assertFalse(session.tryUnlockTailCaveKeyhole(
+            0x5A, 0x4A, Link.DIRECTION_DOWN, 0x01, true));
+        assertFalse(session.tryUnlockTailCaveKeyhole(
+            0x5A, 0x4A, Link.DIRECTION_UP, 0x00, true));
+        assertFalse(session.tryUnlockTailCaveKeyhole(
+            0x20, 0x20, Link.DIRECTION_UP, 0x01, true));
+        assertEquals(0, session.overworldRoomStatusForTest(0xD3) & 0x10);
+        assertTrue(session.consumeEntityDialogRequests().isEmpty());
+    }
+
+    @Test
+    void tailCaveKeyholeAcceptsTheSecondRomUpwardCollisionProbe() {
+        RoomSession session = newSession();
+        session.loadInitialOverworld(0xD3);
+
+        assertTrue(session.tryUnlockTailCaveKeyhole(
+            0x58, 0x4A, Link.DIRECTION_UP, 0x01, false));
+        assertEquals(0x230, session.consumeEntityDialogRequests()
+            .getFirst().globalDialogId());
+    }
+
+    @Test
+    void tailCaveRumbleRestoresDefaultMusicAndKeepsTheFinalMotionBlockFrame() {
+        RoomSession session = newSession();
+        session.setEntityDefaultMusicTrack(0x05);
+        session.loadInitialOverworld(0xD3);
+        assertTrue(session.tryUnlockTailCaveKeyhole(
+            0x5A, 0x4A, Link.DIRECTION_UP, 0x01, true));
+        assertEquals(0x00, session.consumePendingMusicTrack());
+
+        while (session.tailCaveKeyholeCountdownForTest() > 0x0A) {
+            session.tickTailCaveKeyholeSequence();
+        }
+        assertEquals(0x50, session.nextWorldMusicTrackCountdownForTest());
+        while (session.tailCaveKeyholeCountdownForTest() > 1) {
+            session.tickTailCaveKeyholeSequence();
+        }
+        assertTrue(session.tailCaveKeyholeSequenceActive());
+        session.tickTailCaveKeyholeSequence();
+        assertTrue(session.tailCaveKeyholeSequenceActive());
+        session.tickTailCaveKeyholeSequence();
+        assertFalse(session.tailCaveKeyholeSequenceActive());
+
+        int remainingMusicFrames = session.nextWorldMusicTrackCountdownForTest();
+        for (int frame = 1; frame < remainingMusicFrames; frame++) {
+            session.tickTailCaveKeyholeSequence();
+            assertEquals(-1, session.consumePendingMusicTrack());
+        }
+        session.tickTailCaveKeyholeSequence();
+        assertEquals(0x05, session.consumePendingMusicTrack());
+    }
+
+    @Test
     void consumesBombExplosionObjectWindowThroughTheDedicatedSessionSeam() {
         RoomSession session = newSession();
         session.loadInitialOverworld(0x92);
