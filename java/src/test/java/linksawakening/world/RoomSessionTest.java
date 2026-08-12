@@ -2455,6 +2455,54 @@ final class RoomSessionTest {
         assertTrue(session.hasDungeonInstrumentForTest(2));
     }
 
+    @Test
+    void kidnappedBowWowMakesTheMabeKidsRunTheirSourceWarningEvent() {
+        RoomSession session = newSession();
+        session.setBowWowState(0x80);
+        session.loadInitialOverworld(0xB0);
+        RoomEntity kid71 = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x71).findFirst().orElseThrow();
+        RoomEntity kid72 = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x72).findFirst().orElseThrow();
+
+        assertEquals(0x06, kid71.spriteDefinition().bank());
+        assertEquals(0x604D, kid71.spriteDefinition().address());
+        assertEquals(0x605D, kid72.spriteDefinition().address());
+
+        session.tickEntities(0, 0x10, 0x10);
+        session.tickEntities(1, 0x10, 0x10);
+        assertEquals(0x0E, session.consumePendingMusicTrack());
+        session.tickEntities(2, kid71.x(), kid71.y());
+
+        assertEquals(0x220,
+            session.consumeEntityDialogRequests().getFirst().globalDialogId());
+
+        session.setEntityActionButtonsHeld(true);
+        session.tickEntities(3, kid71.x(), kid71.y());
+        assertEquals(0x220,
+            session.consumeEntityDialogRequests().getFirst().globalDialogId());
+    }
+
+    @Test
+    void kidnappedBowWowSelectsMadamMeowMeowsSourceQuestDialog() {
+        RoomSession session = newSession();
+        session.setBowWowState(0x80);
+        session.loadIndoor(0x10, 0xA7);
+        RoomEntity madam = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x79).findFirst().orElseThrow();
+
+        assertEquals(0x06, madam.spriteDefinition().bank());
+        assertEquals(0x5B56, madam.spriteDefinition().address());
+        assertEquals(8, madam.spriteDefinition().variantCount());
+
+        session.tickEntities(0, madam.x(), madam.y());
+        session.setEntityActionButtonsHeld(true);
+        session.tickEntities(1, madam.x(), madam.y());
+
+        assertEquals(0x131,
+            session.consumeEntityDialogRequests().getFirst().globalDialogId());
+    }
+
     private static RoomSession newSession() {
         return newSession(room -> {
         });

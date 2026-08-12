@@ -103,7 +103,10 @@ public final class EntitySpriteHandlerCatalog {
     private static final int ENTITY_BOW_WOW = 0x6D;
     private static final int ENTITY_DOG = 0x6F;
     private static final int ENTITY_KID_70 = 0x70;
+    private static final int ENTITY_KID_71 = 0x71;
+    private static final int ENTITY_KID_72 = 0x72;
     private static final int ENTITY_KID_73 = 0x73;
+    private static final int ENTITY_MADAM_MEOWMEOW = 0x79;
     private static final int ENTITY_CROW = 0x7A;
     private static final int ENTITY_BOO_BUDDY = 0x50;
     private static final int ENTITY_DROPPABLE_HEART = 0x2D;
@@ -310,6 +313,13 @@ public final class EntitySpriteHandlerCatalog {
         }
         if (entityType == ENTITY_KID_70 || entityType == ENTITY_KID_73) {
             return decodePair(entityType, 0x06, 0x604D, 4, 0);
+        }
+        if (entityType == ENTITY_KID_71 || entityType == ENTITY_KID_72) {
+            return decodePair(entityType, 0x06,
+                entityType == ENTITY_KID_71 ? 0x604D : 0x605D, 4, 0);
+        }
+        if (entityType == ENTITY_MADAM_MEOWMEOW) {
+            return decodePair(entityType, 0x06, 0x5B56, 8, 0);
         }
         if (entityType == ENTITY_BUTTERFLY) {
             return decodeSingle(entityType, 0x06, 0x6BBD, 2, 0);

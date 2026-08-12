@@ -35,6 +35,9 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_PIECE_OF_POWER = 0x33;
     private static final int ENTITY_CRYSTAL_SWITCH = 0x66;
     private static final int ENTITY_BUTTERFLY = 0x6E;
+    private static final int ENTITY_KID_71 = 0x71;
+    private static final int ENTITY_KID_72 = 0x72;
+    private static final int ENTITY_MADAM_MEOWMEOW = 0x79;
     private static final int ENTITY_OCTOROK = 0x09;
     private static final int ENTITY_OCTOROK_ROCK = 0x0A;
     private static final int ENTITY_MOBLIN = 0x0B;
@@ -499,6 +502,7 @@ public final class RoomEntityRuntime {
     private boolean joypadHeld;
     private boolean dialogActive;
     private boolean activeMusic;
+    private int bowWowState;
     private int linkPressedButtonsMask;
     private int linkItemA;
     private int linkItemB;
@@ -560,6 +564,10 @@ public final class RoomEntityRuntime {
         new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] instrumentParticleYAccumulator =
         new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] kidKidnapState = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] kidKidnapDelay = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] kidSpeedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] kidSpeedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private boolean playerHasToadstool;
     private int playerMagicPowderCount;
     private final int[] owlEventState = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -1726,6 +1734,17 @@ public final class RoomEntityRuntime {
             if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_HEART_CONTAINER
                 && enemyTransitionCountdown[entity.slot()] != 0) {
                 advanceCollectedHeartContainer(entity, linkEntityX, linkEntityY, linkZ);
+                continue;
+            }
+            if (status == EntityStatus.ACTIVE
+                && entity.type() == ENTITY_MADAM_MEOWMEOW) {
+                advanceMadamMeowMeow(entity, frame, linkEntityX, linkEntityY);
+                continue;
+            }
+            if (status == EntityStatus.ACTIVE
+                && (entity.type() == ENTITY_KID_71 || entity.type() == ENTITY_KID_72)
+                && bowWowState == 0x80) {
+                advanceKidnapWarningKid(entity, frame, linkEntityX, linkEntityY);
                 continue;
             }
             if (status == EntityStatus.ACTIVE
@@ -6425,6 +6444,10 @@ public final class RoomEntityRuntime {
         this.activeMusic = activeMusic;
     }
 
+    void setBowWowState(int bowWowState) {
+        this.bowWowState = bowWowState & 0xFF;
+    }
+
     void setEntityPrivateState4ForTest(int slot, int value) {
         validateCountdownTestValue(slot, value);
         entityPrivateState4[slot] = value;
@@ -7162,6 +7185,69 @@ public final class RoomEntityRuntime {
         instrumentPickupSparklesPending[slot] = true;
         enemyTransitionCountdown[slot] = 0x68;
         pendingMusicTrack = 0x1B;
+    }
+
+    private void advanceKidnapWarningKid(RoomEntity entity, int frameCounter,
+                                         int linkEntityX, int linkEntityY) {
+        int slot = entity.slot();
+        int yDistance = signedByte((linkEntityY - entity.y()) & 0xFF);
+        int facingVariant = ((yDistance < 0 ? 0 : 2) ^ 2)
+            + ((frameCounter >>> 3) & 0x01);
+        slots[slot] = withVariant(entity, facingVariant);
+        switch (kidKidnapState[slot]) {
+            case 0 -> {
+                kidKidnapDelay[slot] = 0x30;
+                pendingMusicTrack = 0x0E;
+                kidKidnapState[slot] = 1;
+            }
+            case 1 -> {
+                if (yDistance >= -0x20 && yDistance < 0x20
+                    && transitionSequenceCounter == 0x04) {
+                    if (entity.type() == ENTITY_KID_71) {
+                        pendingDialogRequests.add(new DialogRequest(2, 0x20));
+                    }
+                    kidKidnapState[slot] = 2;
+                } else if (kidKidnapDelay[slot] > 0) {
+                    kidKidnapDelay[slot]--;
+                } else {
+                    EnemyRecoilMotion.Vector vector = EnemyRecoilMotion.vectorTowardsLink(
+                        entity.x(), entity.y(), entity.z(), linkEntityX, linkEntityY, 0x08);
+                    slots[slot] = withPositionAndVariant(entity,
+                        addFallingSpeedToPosition(entity.x(), vector.x() & 0xFF,
+                            kidSpeedXAccumulator, slot),
+                        addFallingSpeedToPosition(entity.y(), vector.y() & 0xFF,
+                            kidSpeedYAccumulator, slot),
+                        facingVariant);
+                    pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
+                }
+            }
+            default -> {
+                int xDistance = Math.abs(signedByte((linkEntityX - entity.x()) & 0xFF));
+                if (actionButtonsHeld && !dialogActive
+                    && xDistance < 0x18 && Math.abs(yDistance) < 0x18) {
+                    pendingDialogRequests.add(new DialogRequest(2, 0x20));
+                }
+            }
+        }
+    }
+
+    private void advanceMadamMeowMeow(RoomEntity entity, int frameCounter,
+                                      int linkEntityX, int linkEntityY) {
+        int xDistance = signedByte((linkEntityX - entity.x()) & 0xFF);
+        int yDistance = signedByte((linkEntityY - entity.y()) & 0xFF);
+        int direction = Math.abs(xDistance) >= Math.abs(yDistance)
+            ? (xDistance < 0 ? 1 : 0) : (yDistance < 0 ? 2 : 3);
+        int variant = direction * 2 + ((frameCounter >>> 4) & 0x01);
+        slots[entity.slot()] = withVariant(entity, variant);
+        if (actionButtonsHeld && !dialogActive
+            && Math.abs(xDistance) < 0x18 && Math.abs(yDistance) < 0x18) {
+            int dialogLowId = switch (bowWowState) {
+                case 0 -> 0x30;
+                case 1 -> 0x32;
+                default -> 0x31;
+            };
+            pendingDialogRequests.add(new DialogRequest(1, dialogLowId));
+        }
     }
 
     private void advanceInstrumentPickup(RoomEntity entity, int frameCounter,

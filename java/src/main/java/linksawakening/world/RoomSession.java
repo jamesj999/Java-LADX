@@ -613,6 +613,9 @@ public final class RoomSession {
             throw new IllegalArgumentException("BowWow state must be an unsigned byte");
         }
         bowWowState = state;
+        if (entityRuntime != null) {
+            entityRuntime.setBowWowState(state);
+        }
     }
 
     /** Supplies the held J_A|J_B state consumed by input-driven entity handlers. */
@@ -1337,6 +1340,7 @@ public final class RoomSession {
             SwitchBlockAnimation.isAnimating(switchableObjectAnimationStage));
         entityRuntime.setDialogActive(entityDialogActive);
         entityRuntime.setActiveMusic(entityMusicActive);
+        entityRuntime.setBowWowState(bowWowState);
         entityRuntime.setActionButtonsHeld(actionButtonAHeld, actionButtonBHeld);
         entityRuntime.setJoypadHeld(joypadHeld);
         entityRuntime.setPressedButtonsMask(entityPressedButtonsMask);
