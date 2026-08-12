@@ -16,6 +16,8 @@ public final class MusicTrackIds {
     public static final int MUSIC_TAIL_CAVE = 0x14;
     public static final int MUSIC_AFTER_BOSS = 0x18;
     public static final int MUSIC_TITLE_CUTSCENE = 0x1A;
+    public static final int MUSIC_INTRO_WAKE_UP = 0x1C;
+    public static final int MUSIC_OBTAIN_ITEM = 0x10;
     public static final int MUSIC_TITLE_SCREEN_NO_INTRO = 0x0D;
     public static final int MUSIC_OVERWORLD_SWORDLESS = 0x1D;
     public static final int MUSIC_2D_UNDERGROUND = 0x21;

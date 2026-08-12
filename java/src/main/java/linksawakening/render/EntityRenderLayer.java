@@ -183,7 +183,7 @@ public final class EntityRenderLayer implements RenderLayer {
             if ((attributes & OAM_PALETTE_FLIP) != 0) {
                 paletteIndex = 4;
             }
-            int[] palette = palettes[Math.min(paletteIndex, palettes.length - 1)];
+            int[] palette = resolvePalette(palettes, paletteIndex);
             IndexedRenderer.drawSpriteTile8x16(context.buffer(), context.gpu(),
                 entry.tileIndex(), entry.rawX() + offsetX - OAM_X_SCREEN_ORIGIN,
                 entry.rawY() + offsetY - OAM_Y_SCREEN_ORIGIN,
@@ -338,7 +338,7 @@ public final class EntityRenderLayer implements RenderLayer {
             // low palette index.
             paletteIndex = 4;
         }
-        int[] palette = palettes[Math.min(paletteIndex, palettes.length - 1)];
+        int[] palette = resolvePalette(palettes, paletteIndex);
         if (tiles == null) {
             IndexedRenderer.drawSpriteTile8x16(context.buffer(), context.gpu(), oam.tile(),
                 screenX, screenY, (attributes & OAM_XFLIP) != 0,
@@ -350,6 +350,14 @@ public final class EntityRenderLayer implements RenderLayer {
         }
     }
 
+    private static int[] resolvePalette(int[][] palettes, int paletteIndex) {
+        if (paletteIndex < 0 || paletteIndex >= palettes.length) {
+            throw new IllegalArgumentException("Object palette index is unavailable: "
+                + paletteIndex);
+        }
+        return palettes[paletteIndex];
+    }
+
     private ScreenOffset currentRoomOffset() {
         int shakeX = -scrollController.screenShakeHorizontal();
         if (!scrollController.isActive()) {
@@ -357,9 +365,9 @@ public final class EntityRenderLayer implements RenderLayer {
         }
         int offset = scrollController.offset();
         return switch (scrollController.direction()) {
-            case ScrollController.LEFT -> new ScreenOffset(-offset + shakeX, 0);
+            case ScrollController.LEFT -> new ScreenOffset(-ROOM_PIXEL_WIDTH + offset + shakeX, 0);
             case ScrollController.RIGHT -> new ScreenOffset(ROOM_PIXEL_WIDTH - offset + shakeX, 0);
-            case ScrollController.UP -> new ScreenOffset(shakeX, -offset);
+            case ScrollController.UP -> new ScreenOffset(shakeX, -ROOM_PIXEL_HEIGHT + offset);
             case ScrollController.DOWN -> new ScreenOffset(shakeX, ROOM_PIXEL_HEIGHT - offset);
             default -> new ScreenOffset(shakeX, 0);
         };

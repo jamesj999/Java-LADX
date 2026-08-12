@@ -121,6 +121,7 @@ public final class EntitySpriteHandlerCatalog {
     private static final int ENTITY_FLOATING_ITEM = 0x86;
     private static final int ENTITY_FLOATING_ITEM_2 = 0xE5;
     private static final int ENTITY_MARIN = 0x3E;
+    private static final int ENTITY_TARIN = 0x3F;
     private static final int ENTITY_GRANDPA_ULRIRA = 0x77;
     private static final int ENTITY_MARIN_AT_THE_SHORE = 0xC1;
     private static final int ENTITY_MARIN_AT_TAL_TAL_HEIGHTS = 0xC2;
@@ -281,6 +282,12 @@ public final class EntitySpriteHandlerCatalog {
                 || roomTable == EntityRoomLoader.RoomTable.INDOORS_B
                 ? decodePair(entityType, 0x05, 0x4E0A, 8, 6)
                 : decodePair(entityType, 0x05, 0x4E2A, 11, 6);
+        }
+        if (entityType == ENTITY_TARIN) {
+            return roomTable == EntityRoomLoader.RoomTable.INDOORS_A
+                || roomTable == EntityRoomLoader.RoomTable.INDOORS_B
+                ? decodePair(entityType, 0x05, 0x4932, 4, 0)
+                : decodePair(entityType, 0x05, 0x4912, 6, 0);
         }
         if (entityType == ENTITY_MARIN_AT_TAL_TAL_HEIGHTS) {
             return decodePair(entityType, 0x18, 0x5EB7, 8, 0);

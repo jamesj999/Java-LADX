@@ -65,6 +65,14 @@ public final class SaveRamStore {
         image.createNewGame(slot, nameBytes);
     }
 
+    public void copySlot(int sourceSlot, int targetSlot) {
+        image.copySlot(sourceSlot, targetSlot);
+    }
+
+    public void eraseSlot(int slot) {
+        image.eraseSlot(slot);
+    }
+
     public void writeOcarinaState(int slot, int songFlags, int selectedSongIndex) {
         image.writeOcarinaState(slot, songFlags, selectedSongIndex);
     }

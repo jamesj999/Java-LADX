@@ -32,6 +32,38 @@ final class SaveRamStoreTest {
     }
 
     @Test
+    void storeExposesCopyAndEraseMutations() {
+        SaveRamStore store = SaveRamStore.inMemory();
+        store.createNewGame(0, new int[] {9, 8, 7, 6, 5});
+
+        store.copySlot(0, 1);
+        store.eraseSlot(0);
+
+        assertEquals(1 << 1, store.saveFilesMask());
+        assertArrayEquals(new int[] {9, 8, 7, 6, 5}, store.savedNames()[1]);
+    }
+
+    @Test
+    void fileMenuMutationsFlushAndReopenWithRebuiltMaskAndNames(@TempDir Path tempDir)
+        throws Exception {
+        Path savePath = tempDir.resolve("azle.sav");
+        SaveRamStore store = SaveRamStore.open(savePath);
+        store.createNewGame(0, new int[] {9, 8, 7, 6, 5});
+        store.createNewGame(1, new int[] {1, 2, 3, 4, 5});
+        store.flush();
+
+        store.copySlot(0, 2);
+        store.eraseSlot(0);
+        store.flush();
+
+        SaveRamStore reopened = SaveRamStore.open(savePath);
+        assertEquals((1 << 1) | (1 << 2), reopened.saveFilesMask());
+        assertArrayEquals(new int[SaveRamLayout.NAME_LENGTH], reopened.savedNames()[0]);
+        assertArrayEquals(new int[] {1, 2, 3, 4, 5}, reopened.savedNames()[1]);
+        assertArrayEquals(new int[] {9, 8, 7, 6, 5}, reopened.savedNames()[2]);
+    }
+
+    @Test
     void missingHostFileStartsWithAnInitializedEmptyImageAndFlushesExactBytes(@TempDir Path tempDir)
         throws Exception {
         Path savePath = tempDir.resolve("nested").resolve("azle.sav");

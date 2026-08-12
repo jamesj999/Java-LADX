@@ -96,7 +96,7 @@ final class GopongaFlowerRuntimeTest {
         runtime.tickWithProjectileEvents(0, 0x40, 0x40, () -> 0, null,
             new EnemyProjectileCollision.LinkState(0x40, 0x40, 0x10, 0, 0, false));
 
-        assertEquals(List.of(new RoomEntityRuntime.LinkFinalPositionRequest(0)),
+        assertEquals(List.of(new RoomEntityRuntime.LinkFinalPositionRequest(0, true, true, false)),
             runtime.consumePendingLinkFinalPositionRequests());
     }
 

@@ -1,6 +1,11 @@
 package linksawakening.render;
 
 import linksawakening.entity.EntitySpriteSelection;
+import linksawakening.entity.Link;
+import linksawakening.equipment.ItemRegistry;
+import linksawakening.input.InputConfig;
+import linksawakening.input.InputState;
+import linksawakening.state.PlayerState;
 import linksawakening.cutscene.IntroFrameSnapshot;
 import linksawakening.cutscene.IntroSprite;
 import linksawakening.world.RoomConstants;
@@ -74,6 +79,22 @@ final class GameFrameSceneBuilderTest {
             .withRoom(new RoomRenderSnapshot(tileIds, tileAttrs, palettes),
                 new ScrollController(), new TransitionController())
         );
+
+        assertEquals(1, scene.layerCount());
+    }
+
+    @Test
+    void wakeBedPresentationSuppressesOrdinaryLinkLayer() {
+        int[] tileIds = new int[RoomConstants.ROOM_TILE_WIDTH * RoomConstants.ROOM_TILE_HEIGHT];
+        Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
+            null, null, null, new PlayerState(), new ItemRegistry());
+        link.showMarinWakeUpBed(3);
+
+        FrameScene scene = new GameFrameSceneBuilder().build(GameFrameState.empty()
+            .withScreen(RenderScreen.OVERWORLD)
+            .withRoom(new RoomRenderSnapshot(tileIds, tileIds, new int[][] {{0, 0, 0, 0}}),
+                new ScrollController(), new TransitionController())
+            .withLink(link));
 
         assertEquals(1, scene.layerCount());
     }

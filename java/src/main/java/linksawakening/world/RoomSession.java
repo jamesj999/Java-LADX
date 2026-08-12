@@ -87,6 +87,7 @@ public final class RoomSession {
     private final RoomLoader roomLoader;
     private final OverworldTilesetTable overworldTilesetTable;
     private final ManboWarpResolver manboWarpResolver;
+    private final OwlEventDialogResolver owlEventDialogResolver;
     private final OverworldCollision overworldCollision;
     private final TransientVfxSystem transientVfxSystem;
     private final DroppableRupeeSystem droppableRupeeSystem;
@@ -259,6 +260,7 @@ public final class RoomSession {
         this.roomLoader = roomLoader;
         this.overworldTilesetTable = overworldTilesetTable;
         this.manboWarpResolver = new ManboWarpResolver(romData);
+        this.owlEventDialogResolver = new OwlEventDialogResolver(romData);
         this.overworldCollision = overworldCollision;
         this.transientVfxSystem = transientVfxSystem;
         this.droppableRupeeSystem = droppableRupeeSystem;
@@ -354,6 +356,15 @@ public final class RoomSession {
 
     public boolean hasActiveRoom() {
         return activeRoom != null;
+    }
+
+    public boolean applyMarinWakeUpPresentation(int x, int y, int spriteVariant) {
+        if (activeRoom == null || entityRuntime == null
+            || !entityRuntime.applyMarinWakeUpPresentation(x, y, spriteVariant)) {
+            return false;
+        }
+        activeRoom.replaceEntities(entityRuntime.snapshot());
+        return true;
     }
 
     /** Supplies the patched EntityInitKeyDropPoint inventory byte. */
@@ -1601,13 +1612,15 @@ public final class RoomSession {
         entityRuntime = entities == null ? null : RoomEntityRuntime.from(
             entities, activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD,
             entityRandomByteSource, entitySpriteHandlerCatalog, enemyCombatTables,
-            chestContentsTable);
+            chestContentsTable, romTables);
         if (entityRuntime != null) {
             entityRuntime.setBooBuddyTriggerCount(roomTriggerCount);
             entityRuntime.setColorShellWorld(colorShellWorld);
             entityRuntime.setFollowingNpcState(followingNpcState);
             entityRuntime.setEntityMapId(activeRoom.mapId());
             entityRuntime.setEntityRoomId(activeRoom.roomId());
+            entityRuntime.setOwlDialogResolver(owlEventDialogResolver::globalDialogId);
+            entityRuntime.setOwlDefaultMusicResolver(owlEventDialogResolver::defaultMusicTrack);
             entityRuntime.setGroundInteraction(this::entityGroundInteraction);
             entityRuntime.setBackgroundInteraction(entityBackgroundInteraction);
             entityRuntime.setObjectQuery(this::entityObjectSample);
@@ -1664,11 +1677,13 @@ public final class RoomSession {
         entityRuntime = RoomEntityRuntime.from(
             result.snapshot(), activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD,
             entityRandomByteSource, entitySpriteHandlerCatalog, enemyCombatTables,
-            chestContentsTable);
+            chestContentsTable, romTables);
         entityRuntime.setColorShellWorld(colorShellWorld);
         entityRuntime.setFollowingNpcState(followingNpcState);
         entityRuntime.setEntityMapId(activeRoom.mapId());
         entityRuntime.setEntityRoomId(activeRoom.roomId());
+        entityRuntime.setOwlDialogResolver(owlEventDialogResolver::globalDialogId);
+        entityRuntime.setOwlDefaultMusicResolver(owlEventDialogResolver::defaultMusicTrack);
         entityRuntime.setGroundInteraction(this::entityGroundInteraction);
         entityRuntime.setBackgroundInteraction(entityBackgroundInteraction);
         entityRuntime.setObjectQuery(this::entityObjectSample);

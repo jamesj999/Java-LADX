@@ -2,6 +2,7 @@ package linksawakening.entity;
 
 import linksawakening.rom.RomBank;
 import linksawakening.world.EntityRoomLoader;
+import linksawakening.world.RoomPaletteLoader;
 
 /** Reads room sprite groups, sheet selectors, and object palettes from the ROM. */
 public final class EntitySpriteCatalog {
@@ -27,6 +28,7 @@ public final class EntitySpriteCatalog {
 
     private final byte[] romData;
     private final EntitySpriteHandlerCatalog entitySpriteHandlerCatalog;
+    private final RoomPaletteLoader roomPaletteLoader;
 
     public EntitySpriteCatalog(byte[] romData) {
         if (romData == null) {
@@ -34,6 +36,7 @@ public final class EntitySpriteCatalog {
         }
         this.romData = romData;
         this.entitySpriteHandlerCatalog = new EntitySpriteHandlerCatalog(romData);
+        this.roomPaletteLoader = new RoomPaletteLoader(romData);
     }
 
     public EntitySpriteSelection load(EntityRoomLoader.RoomTable roomTable, int roomId) {
@@ -48,6 +51,12 @@ public final class EntitySpriteCatalog {
      */
     public EntitySpriteSelection load(EntityRoomLoader.RoomTable roomTable, int roomId,
                                       int mapId, byte[] overworldRoomStatus) {
+        return load(roomTable, roomId, mapId, overworldRoomStatus, false);
+    }
+
+    public EntitySpriteSelection load(EntityRoomLoader.RoomTable roomTable, int roomId,
+                                      int mapId, byte[] overworldRoomStatus,
+                                      boolean sideScrolling) {
         if (roomTable == null) {
             throw new IllegalArgumentException("Room entity table cannot be null");
         }
@@ -71,8 +80,12 @@ public final class EntitySpriteCatalog {
         int groupIndex = Byte.toUnsignedInt(romData[groupOffset]);
         groupIndex = applyRoomContextOverride(roomTable, roomId, groupIndex, mapId,
             overworldRoomStatus);
-        int[][] palettes = loadObjectPalettes(
-            roomTable == EntityRoomLoader.RoomTable.OVERWORLD && roomId == 0x0E);
+        int[][] palettes = switch (roomTable) {
+            case OVERWORLD -> roomPaletteLoader.loadOverworldObjectPalettes(roomId);
+            case COLOR_DUNGEON -> roomPaletteLoader.loadIndoorObjectPalettes(0xFF, roomId);
+            case INDOORS_A, INDOORS_B -> mapId < 0 ? loadObjectPalettes()
+                : roomPaletteLoader.loadIndoorObjectPalettes(mapId, roomId, sideScrolling);
+        };
         EntitySpriteDefinition death = entitySpriteHandlerCatalog.forDeathEntity();
         EntitySpriteDefinition powerDeath =
             entitySpriteHandlerCatalog.forPowerRecoilDeathEntity();

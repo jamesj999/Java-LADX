@@ -113,8 +113,9 @@ final class EntitySpriteCatalogTest {
     }
 
     @Test
-    void addsTheEaglesTowerObjectPaletteOnlyForThatOverworldRoom() {
+    void replacesObjectPaletteSixOnlyForEaglesTowerAfterRoomPaletteComposition() {
         byte[] rom = syntheticRom();
+        write(rom, 0x21, 0x42B1, 0x00, 0x56);
         writePalette(rom, 0x21, 0x5548, 0x001F, 0x03E0, 0x7C00, 0x7FFF);
 
         EntitySpriteSelection normalRoom = new EntitySpriteCatalog(rom)
@@ -122,9 +123,9 @@ final class EntitySpriteCatalogTest {
         EntitySpriteSelection eaglesTower = new EntitySpriteCatalog(rom)
             .load(EntityRoomLoader.RoomTable.OVERWORLD, 0x0E);
 
-        assertEquals(6, normalRoom.objectPalettes().length);
-        assertEquals(7, eaglesTower.objectPalettes().length);
-        assertEquals(0xFF0000, eaglesTower.objectPalettes()[6][0]);
+        assertEquals(8, normalRoom.objectPalettes().length);
+        assertEquals(8, eaglesTower.objectPalettes().length);
+        assertEquals(0xFF0000, eaglesTower.objectPalettes()[5][0]);
     }
 
     @Test
@@ -135,6 +136,19 @@ final class EntitySpriteCatalogTest {
 
         assertEquals(0x43, selection.groupIndex());
         assertArrayEquals(new int[] {0xA4, 0xE5, 0xE6, 0xDC}, selection.sheetValues());
+    }
+
+    @Test
+    void shippedMarinHouseSupportsIndoorTarinDisplayList() throws Exception {
+        EntitySpriteDefinition tarin = new EntitySpriteHandlerCatalog(loadRom())
+            .forEntityType(0x3F, EntityRoomLoader.RoomTable.INDOORS_B, 0x10);
+
+        assertTrue(tarin.supported());
+        assertEquals(EntitySpriteDefinition.Shape.PAIR, tarin.shape());
+        assertEquals(4, tarin.variantCount());
+        assertEquals(0x4932, tarin.address());
+        assertEquals(0x5A, tarin.variant(0).first().tile());
+        assertEquals(0x58, tarin.variant(0).second().tile());
     }
 
     @Test

@@ -4,6 +4,7 @@ import linksawakening.entity.EntitySpriteSelection;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.gpu.EntitySpriteTileSnapshot;
+import linksawakening.rom.RomTables;
 import linksawakening.vfx.TransientVfxType;
 
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.IntSupplier;
+import java.util.function.IntUnaryOperator;
 
 /**
  * Mutable per-room entity state for the handler work that can be expressed by
@@ -133,6 +135,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_GHOST = 0xD4;
     private static final int ENTITY_ROOSTER = 0xD5;
     private static final int ENTITY_MARIN_AT_THE_SHORE = 0xC1;
+    private static final int ENTITY_MARIN_INDOOR = 0x3E;
     private static final int ENTITY_BOW_WOW = 0x6D;
     private static final int ENTITY_KIKI_THE_MONKEY = 0xAD;
     private static final int ENTITY_DROPPABLE_SECRET_SEASHELL = 0x3D;
@@ -250,6 +253,7 @@ public final class RoomEntityRuntime {
     private EntitySpriteSelection spriteSelection;
     private final EntitySpriteTileSnapshot spriteTiles;
     private final boolean indoorRoom;
+    private final RomTables romTables;
     private final IntSupplier defaultRandomByteSupplier;
     private final RomRandomByteSource fallbackRomRandomByteSource;
     private final EntitySpriteHandlerCatalog spriteHandlers;
@@ -499,6 +503,7 @@ public final class RoomEntityRuntime {
     private int currentLinkSpeedY;
     private int chestShieldLevel = 1;
     private int chestSwordLevel = 1;
+    private boolean chestPlayerLevelsKnown;
     private int chestPowerBraceletLevel = 1;
     private int entityGoldenLeavesCount;
     private int pendingMusicTrack = -1;
@@ -512,8 +517,11 @@ public final class RoomEntityRuntime {
     private final int[] owlXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] owlYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] owlZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] owlPreviousMusicTrack = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] owlCompletionEmitted =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private IntUnaryOperator owlDialogResolver = roomId -> 0x0D9;
+    private IntUnaryOperator owlDefaultMusicResolver = roomId -> 0x05;
     private boolean groundInteractionSideScrolling;
     private int entityMapId = -1;
     private int entityRoomId = -1;
@@ -575,8 +583,21 @@ public final class RoomEntityRuntime {
     public record OwlEventCompletion(int slot) {
     }
 
-    /** A ROM handler request to restore Link's pre-entity final position. */
-    public record LinkFinalPositionRequest(int sourceSlot) {
+    /** A ROM handler request carrying the complete Link-side push response. */
+    public record LinkFinalPositionRequest(int sourceSlot, boolean resetPegasusBoots,
+                                           boolean resetHookshotChain,
+                                           boolean markLinkPushing,
+                                           boolean clearLinkPositionIncrement) {
+        public LinkFinalPositionRequest(int sourceSlot) {
+            this(sourceSlot, false, false, false, false);
+        }
+
+        public LinkFinalPositionRequest(int sourceSlot, boolean resetPegasusBoots,
+                                        boolean resetHookshotChain,
+                                        boolean markLinkPushing) {
+            this(sourceSlot, resetPegasusBoots, resetHookshotChain, markLinkPushing, false);
+        }
+
         public LinkFinalPositionRequest {
             if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
                 throw new IllegalArgumentException("Link final-position source slot out of range: "
@@ -800,7 +821,8 @@ public final class RoomEntityRuntime {
                                IntSupplier defaultRandomByteSupplier,
                                EntitySpriteHandlerCatalog spriteHandlers,
                                RomEnemyCombatTables enemyCombatTables,
-                               ChestContentsTable chestContentsTable) {
+                               ChestContentsTable chestContentsTable,
+                               RomTables romTables) {
         this.slots = initial.slots().toArray(RoomEntity[]::new);
         this.spriteSelection = initial.spriteSelection();
         this.spriteTiles = initial.spriteTiles();
@@ -812,6 +834,7 @@ public final class RoomEntityRuntime {
         this.spriteHandlers = spriteHandlers;
         this.enemyCombatTables = enemyCombatTables;
         this.chestContentsTable = chestContentsTable;
+        this.romTables = romTables;
         this.hookshotChainOam = initial.hookshotChainOam();
         this.pincerBodyOam = initial.pincerBodyOam();
         this.wingedOctorokOam = initial.wingedOctorokOam();
@@ -932,7 +955,7 @@ public final class RoomEntityRuntime {
         if (initial == null) {
             throw new IllegalArgumentException("Initial entity snapshot cannot be null");
         }
-        return new RoomEntityRuntime(initial, indoorRoom, null, null, null, null);
+        return new RoomEntityRuntime(initial, indoorRoom, null, null, null, null, null);
     }
 
     public static RoomEntityRuntime from(RoomEntitySnapshot initial, boolean indoorRoom,
@@ -940,7 +963,7 @@ public final class RoomEntityRuntime {
         if (initial == null) {
             throw new IllegalArgumentException("Initial entity snapshot cannot be null");
         }
-        return new RoomEntityRuntime(initial, indoorRoom, randomByteSupplier, null, null, null);
+        return new RoomEntityRuntime(initial, indoorRoom, randomByteSupplier, null, null, null, null);
     }
 
     public static RoomEntityRuntime from(RoomEntitySnapshot initial, boolean indoorRoom,
@@ -950,7 +973,7 @@ public final class RoomEntityRuntime {
             throw new IllegalArgumentException("Initial entity snapshot cannot be null");
         }
         return new RoomEntityRuntime(initial, indoorRoom, randomByteSupplier, spriteHandlers,
-            null, null);
+            null, null, null);
     }
 
     public static RoomEntityRuntime from(RoomEntitySnapshot initial, boolean indoorRoom,
@@ -964,7 +987,7 @@ public final class RoomEntityRuntime {
             throw new IllegalArgumentException("ROM enemy combat tables cannot be null");
         }
         return new RoomEntityRuntime(initial, indoorRoom, randomByteSupplier, spriteHandlers,
-            enemyCombatTables, null);
+            enemyCombatTables, null, null);
     }
 
     public static RoomEntityRuntime from(RoomEntitySnapshot initial, boolean indoorRoom,
@@ -982,7 +1005,22 @@ public final class RoomEntityRuntime {
             throw new IllegalArgumentException("ROM chest contents table cannot be null");
         }
         return new RoomEntityRuntime(initial, indoorRoom, randomByteSupplier, spriteHandlers,
-            enemyCombatTables, chestContentsTable);
+            enemyCombatTables, chestContentsTable, null);
+    }
+
+    /** Full room runtime construction with the ROM entity hitbox table. */
+    public static RoomEntityRuntime from(RoomEntitySnapshot initial, boolean indoorRoom,
+                                         IntSupplier randomByteSupplier,
+                                         EntitySpriteHandlerCatalog spriteHandlers,
+                                         RomEnemyCombatTables enemyCombatTables,
+                                         ChestContentsTable chestContentsTable,
+                                         RomTables romTables) {
+        if (initial == null || enemyCombatTables == null || chestContentsTable == null
+            || romTables == null) {
+            throw new IllegalArgumentException("ROM room runtime inputs cannot be null");
+        }
+        return new RoomEntityRuntime(initial, indoorRoom, randomByteSupplier, spriteHandlers,
+            enemyCombatTables, chestContentsTable, romTables);
     }
 
     /** Advances the ROM handlers that have deterministic frame-only variants. */
@@ -1324,6 +1362,11 @@ public final class RoomEntityRuntime {
             }
             if (enemyProjectileSpawnedThisFrame[entity.slot()]
                 || dynamicEntitySpawnedThisFrame[entity.slot()]) {
+                continue;
+            }
+            if (indoorRoom && entity.type() == ENTITY_MARIN_INDOOR && chestPlayerLevelsKnown
+                && chestSwordLevel != 0) {
+                disableEntityWithoutPersistence(entity.slot());
                 continue;
             }
             RoomEntity originalEntity = entity;
@@ -2979,8 +3022,7 @@ public final class RoomEntityRuntime {
                 if (armosUpdate.linkFinalPositionCopyRequested()
                     && projectileLinkState.motionState()
                         < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE) {
-                    pendingLinkFinalPositionRequests.add(
-                        new LinkFinalPositionRequest(entity.slot()));
+                    requestLinkPush(entity, EntityLinkCollisionRules.RESTORE_ONLY);
                 }
                 if (armosUpdate.woke()) {
                     // ArmosStatueEntityHandler's wake branch starts the same
@@ -3052,9 +3094,7 @@ public final class RoomEntityRuntime {
                 && entity.type() == ENTITY_GOPONGA_FLOWER) {
                 if (GopongaFlowerMotion.overlapsInteractiveLink(
                     entity, linkEntityX, linkEntityY, handlerLinkCollisionEnabled)) {
-                    pendingLinkFinalPositionRequests.add(
-                        new LinkFinalPositionRequest(entity.slot()));
-                    resetHookshotChainAfterLinkPush();
+                    requestLinkPush(entity, EntityLinkCollisionRules.STANDARD_PUSH);
                 }
                 updated = withVariant(updated, GopongaFlowerMotion.frameVariant(frame));
                 preserveGopongaFlowerPresentation = true;
@@ -3063,9 +3103,7 @@ public final class RoomEntityRuntime {
                 && entity.type() == ENTITY_GIANT_GOPONGA_FLOWER) {
                 if (GiantGopongaMotion.overlapsInteractiveLink(
                     entity, linkEntityX, linkEntityY, handlerLinkCollisionEnabled)) {
-                    pendingLinkFinalPositionRequests.add(
-                        new LinkFinalPositionRequest(entity.slot()));
-                    resetHookshotChainAfterLinkPush();
+                    requestLinkPush(entity, EntityLinkCollisionRules.STANDARD_PUSH);
                 }
                 GiantGopongaMotion.Update giantUpdate = giantGopongaMotion.advance(
                     entity, frame, enemyTransitionCountdown[entity.slot()],
@@ -3145,6 +3183,13 @@ public final class RoomEntityRuntime {
                 && entity.type() == ENTITY_ZORA && !creditsGameplay
                 && handlerLinkCollisionEnabled) {
                 int slot = entity.slot();
+                if (RoomEntityCombatRules.overlapsLink(entity, linkEntityX, linkEntityY)) {
+                    // Zora writes ENTITY_PHYSICS_HARMLESS immediately before
+                    // this collision check, then copies hLinkFinalPosition
+                    // and calls ResetPegasusBoots. It does not use the common
+                    // hookshot-chain reset helper.
+                    requestLinkPush(entity, EntityLinkCollisionRules.ZORA);
+                }
                 ZoraMotion.Update zoraUpdate = zoraMotion.advance(
                     updated, enemyTransitionCountdown[slot], enemyPhysicsFlags[slot],
                     linkEntityX, linkEntityY, randomByteSupplier, objectQuery);
@@ -3269,7 +3314,7 @@ public final class RoomEntityRuntime {
                 }
                 applyGenericGroundInteraction = urchinUpdate.appliesBackgroundInteraction();
                 if (urchinUpdate.linkCollision()) {
-                    pendingLinkFinalPositionRequests.add(new LinkFinalPositionRequest(slot));
+                    requestLinkPush(updated, EntityLinkCollisionRules.URCHIN);
                 }
                 if (urchinUpdate.jingleId() >= 0) {
                     pendingEntityEvents.add(new EntityCombatEvent(
@@ -3446,16 +3491,17 @@ public final class RoomEntityRuntime {
                         groundInteractionSideScrolling, dropGroundCollision);
                 }
             }
+            EntityLinkCollisionRules.LinkPushPolicy genericLinkPushPolicy =
+                EntityLinkCollisionRules.genericPolicyFor(updated.type());
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && handlerLinkCollisionEnabled
-                && isRomFriendlyNpcCollision(updated.type())
+                && genericLinkPushPolicy.restoreFinalPosition()
                 && RoomEntityCombatRules.overlapsLink(updated, linkEntityX, linkEntityY)) {
-                // Friendly handlers call PushLinkOutOfEntity after their own
-                // handler work. Restore Link's pre-entity final position just
-                // as the ROM does, without routing contact through enemy damage.
-                pendingLinkFinalPositionRequests.add(
-                    new LinkFinalPositionRequest(updated.slot()));
-                resetHookshotChainAfterLinkPush();
+                // The shared PushLinkOutOfEntity_* helpers run after their
+                // handler-specific work. Restore the pre-entity final
+                // position and carry the helper's other side effects across
+                // the room/runtime boundary.
+                requestLinkPush(updated, genericLinkPushPolicy);
             }
             if (ColorShellMotion.isColorShellType(updated.type())) {
                 updated = refreshColorShellDisplay(updated, status);
@@ -3547,11 +3593,6 @@ public final class RoomEntityRuntime {
         updatePincerBodyOam();
         updateWingedOctorokOam();
         return List.copyOf(projectileEvents);
-    }
-
-    /** Mirrors the supported NPC handlers' calls to PushLinkOutOfEntity_*. */
-    private boolean isRomFriendlyNpcCollision(int type) {
-        return RoomEntityCombatRules.supportsFriendlyNpcCollision(type);
     }
 
     List<RoamingEnemyMotion.LaunchRequest> projectileLaunchRequests() {
@@ -5998,6 +6039,21 @@ public final class RoomEntityRuntime {
             fallingVisualYOffset);
     }
 
+    /** Applies the position and variant writes made by MarinEntityHandler_Indoor. */
+    public boolean applyMarinWakeUpPresentation(int x, int y, int spriteVariant) {
+        for (int slot = 0; slot < slots.length; slot++) {
+            RoomEntity entity = slots[slot];
+            if (entity.loaded() && entity.type() == 0x3E) {
+                slots[slot] = new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
+                    x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(), spriteVariant,
+                    entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(),
+                    entity.deathSpriteVariant(), entity.powerRecoilDeath());
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void updateHookshotChainOam(int linkEntityX, int linkEntityY, int frameCounter) {
         int slot = hookshotSlot();
         if (slot < 0 || !slots[slot].loaded()) {
@@ -6287,6 +6343,7 @@ public final class RoomEntityRuntime {
         chestShieldLevel = shieldLevel;
         chestSwordLevel = swordLevel;
         chestPowerBraceletLevel = powerBraceletLevel;
+        chestPlayerLevelsKnown = true;
     }
 
     int swordPickupStateForTest(int slot) {
@@ -6873,9 +6930,20 @@ public final class RoomEntityRuntime {
         int slot = entity.slot();
         switch (owlEventState[slot]) {
             case 0 -> {
-                if (entityRoomId != ROOM_OW_BEACH_WITH_SWORD
-                    || linkEntityY < 0x44 || linkEntityX < 0x40 || linkEntityX >= 0x70) {
-                    return;
+                if (entityRoomId == ROOM_OW_BEACH_WITH_SWORD) {
+                    if (linkEntityY < 0x44 || linkEntityX < 0x40 || linkEntityX >= 0x70) {
+                        return;
+                    }
+                    owlPreviousMusicTrack[slot] = 0x1D;
+                } else {
+                    if (chestSwordLevel == 0) {
+                        disableEntityWithoutPersistence(slot);
+                        return;
+                    }
+                    if (entityRoomId != 0x80) {
+                        return;
+                    }
+                    owlPreviousMusicTrack[slot] = owlDefaultMusicResolver.applyAsInt(entityRoomId);
                 }
                 pendingMusicTrack = 0x22;
                 owlSpeedX[slot] = 0x18;
@@ -6906,7 +6974,9 @@ public final class RoomEntityRuntime {
             }
             case 2 -> {
                 blockLinkForOwl(slot);
-                pendingDialogRequests.add(new DialogRequest(0, 0xD9));
+                int globalDialogId = owlDialogResolver.applyAsInt(entityRoomId);
+                pendingDialogRequests.add(new DialogRequest(
+                    (globalDialogId >>> 8) & 0xFF, globalDialogId & 0xFF));
                 enemyTransitionCountdown[slot] = 0x10;
                 owlEventState[slot] = 3;
             }
@@ -6950,9 +7020,18 @@ public final class RoomEntityRuntime {
                 EntityCombatEvent.SoundChannel.NOISE, 0x05));
         }
         if (x < 0x08 || x > 0x98 || y < 0x10 || y > 0x88 || z >= 0x40) {
-            pendingMusicTrack = 0x1D;
+            pendingMusicTrack = owlPreviousMusicTrack[slot];
             disableEntityWithoutPersistence(slot);
         }
+    }
+
+    void setOwlDialogResolver(IntUnaryOperator resolver) {
+        owlDialogResolver = Objects.requireNonNull(resolver, "Owl dialog resolver");
+    }
+
+    void setOwlDefaultMusicResolver(IntUnaryOperator resolver) {
+        owlDefaultMusicResolver = Objects.requireNonNull(resolver,
+            "Owl default music resolver");
     }
 
     private void blockLinkForOwl(int slot) {
@@ -10333,12 +10412,23 @@ public final class RoomEntityRuntime {
     private void requestArmosLinkPush(RoomEntity entity, int linkEntityX, int linkEntityY,
                                       int linkMotionState) {
         if (linkMotionState >= EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE
-            || (enemyPhysicsFlags[entity.slot()] & 0x80) != 0
             || !RoomEntityCombatRules.overlapsLink(entity, linkEntityX, linkEntityY)) {
             return;
         }
-        pendingLinkFinalPositionRequests.add(new LinkFinalPositionRequest(entity.slot()));
-        resetHookshotChainAfterLinkPush();
+        requestLinkPush(entity, EntityLinkCollisionRules.STANDARD_PUSH);
+    }
+
+    private void requestLinkPush(RoomEntity entity,
+                                 EntityLinkCollisionRules.LinkPushPolicy policy) {
+        if (entity == null || policy == null || !policy.restoreFinalPosition()) {
+            return;
+        }
+        pendingLinkFinalPositionRequests.add(new LinkFinalPositionRequest(
+            entity.slot(), policy.resetPegasusBoots(), policy.resetHookshotChain(),
+            policy.markLinkPushing(), policy.clearLinkPositionIncrement()));
+        if (policy.resetHookshotChain()) {
+            resetHookshotChainAfterLinkPush();
+        }
     }
 
     private void resetHookshotChainAfterLinkPush() {

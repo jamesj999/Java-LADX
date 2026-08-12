@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 final class EntityRenderLayerTest {
 
@@ -439,6 +440,23 @@ final class EntityRenderLayerTest {
     }
 
     @Test
+    void rejectsAnUnavailableRomObjectPaletteInsteadOfClampingIt() {
+        GPU gpu = new GPU();
+        writeSolidTile(gpu, 0x20, 1);
+        EntitySpriteDefinition pair = pairDefinition(
+            new EntitySpriteDefinition.OamAttribute(0x20, 0x07),
+            new EntitySpriteDefinition.OamAttribute(0x20, 0x07));
+        RoomEntity entity = new RoomEntity(0, 0, 0x01, 24, 32, EntityStatus.ACTIVE,
+            pair, 0, 0);
+        EntityRenderLayer layer = new EntityRenderLayer(snapshot(entity),
+            new int[][] {{0, 0x123456, 0, 0}}, new ScrollController());
+        byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
+
+        assertThrows(IllegalArgumentException.class,
+            () -> layer.render(new RenderContext(buffer, gpu)));
+    }
+
+    @Test
     void clipsEntitiesAndUsesCurrentRoomOffsetDuringScroll() {
         GPU gpu = new GPU();
         int color = 0x123456;
@@ -461,6 +479,39 @@ final class EntityRenderLayerTest {
 
         assertEquals(color, pixelColor(buffer, 152, 0));
         assertEquals(color, pixelColor(buffer, 159, 7));
+    }
+
+    @Test
+    void keepsIncomingRoomEntitiesOutsideTheViewportWhenScrollingLeftOrUp() {
+        GPU gpu = new GPU();
+        int color = 0x123456;
+        int[][] palettes = {{0, color, 0, 0}};
+        writeSolidTile(gpu, 0x30, 1);
+        EntitySpriteDefinition single = new EntitySpriteDefinition(0x02, 0x00, 0x4000,
+            EntitySpriteDefinition.Shape.SINGLE, 0, List.of(
+                new EntitySpriteDefinition.Variant(
+                    new EntitySpriteDefinition.OamAttribute(0x30, 0x00), null)));
+        EntitySpriteSelection selection = new EntitySpriteSelection(
+            EntityRoomLoader.RoomTable.OVERWORLD, 0, 0,
+            new int[] {0xFF, 0xFF, 0xFF, 0xFF}, true, palettes);
+        RoomEntity entity = new RoomEntity(0, 0, 0x02, 24, 32, EntityStatus.ACTIVE,
+            single, 0, 0);
+
+        for (int direction : new int[] {ScrollController.LEFT, ScrollController.UP}) {
+            ScrollController scroll = new ScrollController();
+            scroll.start(direction, 0, 0, null,
+                direction == ScrollController.LEFT ? 160 : 144);
+            scroll.tick(8);
+
+            byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
+            new EntityRenderLayer(snapshot(selection, entity), palettes, scroll)
+                .render(new RenderContext(buffer, gpu));
+
+            int probeX = direction == ScrollController.LEFT ? 12 : 20;
+            int probeY = direction == ScrollController.LEFT ? 16 : 8;
+            assertEquals(0, pixelColor(buffer, probeX, probeY),
+                "incoming room entity leaked into the viewport for direction " + direction);
+        }
     }
 
     @Test
@@ -524,14 +575,14 @@ final class EntityRenderLayerTest {
             palettes, previousEntities);
         ScrollController scroll = new ScrollController();
         scroll.start(ScrollController.LEFT, 0, 0, previousRoom, 160);
-        scroll.tick(8);
+        scroll.tick(40);
 
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
         new EntityRenderLayer(currentEntities, palettes, scroll)
             .render(new RenderContext(buffer, gpu));
 
-        assertEquals(previousColor, pixelColor(buffer, 12, 0));
-        assertEquals(currentColor, pixelColor(buffer, 140, 0));
+        assertEquals(previousColor, pixelColor(buffer, 44, 0));
+        assertEquals(currentColor, pixelColor(buffer, 28, 0));
     }
 
     @Test

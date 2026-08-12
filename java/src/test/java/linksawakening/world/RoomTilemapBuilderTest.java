@@ -59,6 +59,25 @@ final class RoomTilemapBuilderTest {
         assertEquals(0x57, result.tileAttrs()[0]);
     }
 
+    @Test
+    void shippedCameraShopUsesColorDungeonTilesWithOrdinaryIndoorAttributes() throws Exception {
+        byte[] rom = loadRom();
+        int objectId = 0x40;
+        int[] objects = new int[RoomConstants.ROOM_OBJECTS_AREA_SIZE];
+        Arrays.fill(objects, 0x100);
+        objects[RoomConstants.ROOM_OBJECTS_BASE] = objectId;
+
+        RoomTilemap result = new RoomTilemapBuilder(rom).buildIndoor(0x10, 0xB5, objects);
+
+        int colorTile = RomBank.romOffset(0x08, 0x4760) + objectId * 4;
+        int pointer = RomBank.romOffset(0x1A, 0x6276 + 0x1FE);
+        int attrAddress = Byte.toUnsignedInt(rom[pointer])
+            | (Byte.toUnsignedInt(rom[pointer + 1]) << 8);
+        int ordinaryAttr = RomBank.romOffset(0x24, attrAddress) + objectId * 4;
+        assertEquals(Byte.toUnsignedInt(rom[colorTile]), result.tileIds()[0]);
+        assertEquals(Byte.toUnsignedInt(rom[ordinaryAttr]), result.tileAttrs()[0]);
+    }
+
     private static byte[] ensureLength(byte[] bytes, int length) {
         if (bytes.length >= length) {
             return bytes;
@@ -70,5 +89,15 @@ final class RoomTilemapBuilderTest {
 
     private static byte[] syntheticRom() {
         return new byte[RomBank.romOffset(0x26, 0x4000) + 0x50];
+    }
+
+    private static byte[] loadRom() throws Exception {
+        try (var stream = RoomTilemapBuilderTest.class.getClassLoader()
+            .getResourceAsStream("rom/azle.gbc")) {
+            if (stream == null) {
+                throw new IllegalStateException("ROM resource missing");
+            }
+            return stream.readAllBytes();
+        }
     }
 }

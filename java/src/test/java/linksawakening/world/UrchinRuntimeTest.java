@@ -45,13 +45,47 @@ final class UrchinRuntimeTest {
             catalog.forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD), 0)),
             false, () -> 0, catalog, new RomEnemyCombatTables(rom));
 
-        assertFalse(RoomEntityCombatRules.supportsEnemyCollision(ENTITY_URCHIN));
+        assertTrue(RoomEntityCombatRules.supportsEnemyCollision(ENTITY_URCHIN));
         assertTrue(RoomEntityCombatRules.supportsLinkCollision(ENTITY_URCHIN));
         assertEquals(0x12, runtime.physicsFlags(0));
         assertEquals(0x02, runtime.options1(0));
         assertEquals(0x01, runtime.enemyHealth(0));
         assertTrue(RoomEntityCombatRules.overlapsLink(
             runtime.snapshot().slots().get(0), 0x4C, 0x40));
+    }
+
+    @Test
+    void normalContactUsesTheSharedEnemyDamagePath() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
+            0, 0, ENTITY_URCHIN, 0x40, 0x40, EntityStatus.ACTIVE,
+            catalog.forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD), 0)),
+            false, () -> 0, catalog, new RomEnemyCombatTables(rom));
+
+        List<EntityCombatEvent> events = runtime.resolveCombat(
+            1, 0x4C, 0x40, false, true, false, 0, 0, 0, 0);
+
+        assertEquals(1, events.size());
+        EntityCombatEvent event = events.getFirst();
+        assertEquals(ENTITY_URCHIN, event.type());
+        assertEquals(0x04, event.linkDamage());
+        assertTrue(event.linkCollisionResponse().active());
+    }
+
+    @Test
+    void normalContactKeepsItsRomDamageWhenCombatTablesAreUnavailable() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
+            0, 0, ENTITY_URCHIN, 0x40, 0x40, EntityStatus.ACTIVE,
+            catalog.forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD), 0)),
+            false, () -> 0, catalog);
+
+        List<EntityCombatEvent> events = runtime.resolveCombat(
+            1, 0x4C, 0x40, false, true, false, 0, 0, 0, 0);
+
+        assertEquals(0x04, events.getFirst().linkDamage());
     }
 
     @Test

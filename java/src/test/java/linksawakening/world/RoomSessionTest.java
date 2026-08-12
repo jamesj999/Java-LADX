@@ -100,6 +100,42 @@ final class RoomSessionTest {
     }
 
     @Test
+    void postSwordForestOwlUsesItsRomDialogAndPersistsCompletion() {
+        RoomSession session = newSession();
+        session.loadInitialOverworld(0x80);
+        session.setChestPlayerLevels(0, 1, 0);
+
+        session.tickEntities(0, 0x50, 0x50);
+        session.tickEntities(1, 0x50, 0x50);
+        assertEquals(0x22, session.consumePendingMusicTrack());
+        int frame = 2;
+        boolean dialogOpened = false;
+        while (!dialogOpened && frame < 0x300) {
+            session.tickEntities(frame++, 0x50, 0x50);
+            dialogOpened |= session.consumeEntityDialogRequests().stream()
+                .anyMatch(request -> request.globalDialogId() == 0x0C0);
+        }
+        assertTrue(dialogOpened);
+        while ((session.overworldRoomStatusForTest(0x80) & 0x20) == 0
+            && frame < 0x340) {
+            session.tickEntities(frame++, 0x50, 0x50);
+        }
+        assertEquals(0x20, session.overworldRoomStatusForTest(0x80) & 0x20);
+
+        boolean restoredMusic = false;
+        while (session.activeRoom().entities().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == 0x41) && frame < 0x500) {
+            session.tickEntities(frame++, 0x50, 0x50);
+            restoredMusic |= session.consumePendingMusicTrack() == 0x09;
+        }
+        assertTrue(restoredMusic);
+
+        session.loadInitialOverworld(0x80);
+        assertFalse(session.activeRoom().entities().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == 0x41));
+    }
+
+    @Test
     void keyDropPointCollectionMarksTheRoomAndPublishesItsSmallKeyReward() {
         RoomSession session = newSession();
         byte[] indoorA = new byte[0x100];
@@ -1785,6 +1821,34 @@ final class RoomSessionTest {
                 .anyMatch(request -> request.sourceSlot() == npc.slot()),
                 "type=" + Integer.toHexString(type));
         }
+    }
+
+    @Test
+    void houseMarinUnloadsOnceLinkOwnsTheSword() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x10, 0xA3);
+        assertTrue(session.activeRoom().entities().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == 0x3E));
+
+        session.setChestPlayerLevels(1, 1, 0);
+        session.tickEntities(0);
+
+        assertFalse(session.activeRoom().entities().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == 0x3E));
+    }
+
+    @Test
+    void indoorMarinSwordRuleDoesNotUnloadOverworldEntityType3e() {
+        RoomSession session = newSession();
+        session.loadInitialOverworld(0x92);
+        assertTrue(session.activeRoom().entities().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == 0x3E));
+
+        session.setChestPlayerLevels(1, 1, 0);
+        session.tickEntities(0);
+
+        assertTrue(session.activeRoom().entities().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == 0x3E));
     }
 
     @Test

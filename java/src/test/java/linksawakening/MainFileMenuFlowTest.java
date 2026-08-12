@@ -67,6 +67,60 @@ final class MainFileMenuFlowTest {
     }
 
     @Test
+    void newGameRunsMarinsWakeSequenceWithRomBackedDialog() throws Exception {
+        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+
+        assertTrue(source.contains("newGameWakeUpMotion = new MarinWakeUpMotion();"));
+        assertTrue(source.contains("tickNewGameWakeUp()"));
+        assertTrue(source.contains("dialogTextLoader.load(new SignpostDialogRef(0,"));
+        assertTrue(source.contains("tryOpenMarinFollowUpDialog(key)"));
+    }
+
+    @Test
+    void wakeSequenceConsumesOverworldKeysBeforeSaveAndInventoryActions() throws Exception {
+        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+        int wakeGate = source.indexOf("if (marinWakeUpBlocksKeyInput())");
+        int saveChord = source.indexOf("if (shouldEnterFileSave", wakeGate);
+        int inventoryToggle = source.indexOf("inventoryController.dispatchToggleInput()", wakeGate);
+
+        assertTrue(wakeGate >= 0);
+        assertTrue(wakeGate < saveChord);
+        assertTrue(wakeGate < inventoryToggle);
+    }
+
+    @Test
+    void wakeReleaseUsesHeldDirectionsAndMarinFollowUpUsesOnlyA() throws Exception {
+        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+        int wakeTick = source.indexOf("private static boolean tickNewGameWakeUp()");
+        int wakeTickEnd = source.indexOf("private static boolean marinWakeUpBlocksKeyInput()", wakeTick);
+        String wakeBody = source.substring(wakeTick, wakeTickEnd);
+        int followUp = source.indexOf("private static boolean tryOpenMarinFollowUpDialog(int key)");
+        int followUpEnd = source.indexOf("private static OverworldDialogBlockers", followUp);
+        String followUpBody = source.substring(followUp, followUpEnd);
+
+        assertTrue(wakeBody.contains("inputState.isDown(inputConfig.upKey())"));
+        assertFalse(wakeBody.contains("inputState.wasPressed"));
+        assertTrue(followUpBody.contains("key != inputConfig.aKey()"));
+        assertFalse(followUpBody.contains("GameplayDialogInput.isActionButtonKey"));
+    }
+
+    @Test
+    void tarinTalkUsesOnlyAAndUnshieldedHouseSavesRestoreHisSequence() throws Exception {
+        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+        int tarinTalk = source.indexOf("private static boolean tryOpenTarinShieldDialog(int key)");
+        int tarinTalkEnd = source.indexOf("private static boolean tryOpenMarinFollowUpDialog", tarinTalk);
+        String tarinBody = source.substring(tarinTalk, tarinTalkEnd);
+        int savedGame = source.indexOf("private static void startSavedGame");
+        int savedGameEnd = source.indexOf("private static void startIntroCutscene", savedGame);
+        String savedBody = source.substring(savedGame, savedGameEnd);
+
+        assertTrue(tarinBody.contains("key != inputConfig.aKey()"));
+        assertFalse(tarinBody.contains("GameplayDialogInput.isActionButtonKey"));
+        assertTrue(savedBody.contains("restoreNewGameHouseRuntimeIfNeeded(saved)"));
+        assertTrue(savedBody.contains("newGameWakeUpMotion = MarinWakeUpMotion.postWake()"));
+    }
+
+    @Test
     void fileMenuStartupUsesThePersistentSaveImageForMaskAndNames() throws Exception {
         String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
         int start = source.indexOf("fileMenuController = new FileMenuController(");
@@ -87,6 +141,16 @@ final class MainFileMenuFlowTest {
 
         assertTrue(branch.contains("saveRamStore.createNewGame(action.selectedSlot(), action.nameBytes());"));
         assertTrue(branch.contains("saveRamStore.flush();"));
+    }
+
+    @Test
+    void copyAndErasePersistThenRebuildTheFileMenu() throws Exception {
+        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+
+        assertTrue(source.contains("saveRamStore.eraseSlot(action.selectedSlot())"));
+        assertTrue(source.contains("saveRamStore.copySlot(action.selectedSlot(), action.targetSlot())"));
+        assertTrue(source.contains("saveRamStore.flush();"));
+        assertTrue(source.contains("startFileSelection();"));
     }
 
     @Test

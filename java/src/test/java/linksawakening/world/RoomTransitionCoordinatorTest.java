@@ -61,6 +61,32 @@ final class RoomTransitionCoordinatorTest {
         assertEquals(0x28, link.pixelY());
     }
 
+    @Test
+    void newGameHouseSouthDoorReturnsLinkToTheRomOverworldDestination() throws Exception {
+        byte[] rom = loadRom();
+        RomTables romTables = RomTables.loadFromRom(rom);
+        OverworldCollision collision = new OverworldCollision(romTables);
+        RoomSession session = newSession(rom, romTables, collision);
+        session.loadIndoor(0x10, 0xA3);
+        assertTrue(session.activeRoom().indoorHasSouthEntrance());
+        assertEquals(Warp.CATEGORY_OVERWORLD, session.activeRoom().firstWarp().category());
+
+        TransitionController transition = new TransitionController();
+        RoomTransitionCoordinator coordinator = new RoomTransitionCoordinator(
+            session, new RoomBoundaryController(), transition, new ScrollController());
+        Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
+            romTables, collision, null, new PlayerState(), new ItemRegistry());
+        link.setPixelPosition(0x48, RoomConstants.ROOM_PIXEL_HEIGHT);
+
+        coordinator.handleWarpAndIndoorBoundaries(link);
+        for (int frame = 0; frame < 16; frame++) transition.tick();
+
+        assertEquals(Warp.CATEGORY_OVERWORLD, session.mapCategory());
+        assertEquals(0xA2, session.currentRoomId());
+        assertEquals(0x50, link.pixelX());
+        assertEquals(0x42, link.pixelY());
+    }
+
     private static RoomSession newSession(byte[] rom, RomTables romTables, OverworldCollision collision) {
         return new RoomSession(
             rom,

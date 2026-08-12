@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class RoomLoaderTest {
 
@@ -50,6 +51,105 @@ final class RoomLoaderTest {
         assertEquals(0x43, loaded.entities().spriteSelection().groupIndex());
         assertArrayEquals(new int[] { 0xA4, 0xE5, 0xE6, 0xDC },
             loaded.entities().spriteSelection().sheetValues());
+    }
+
+    @Test
+    void ordinaryOverworldRoomAppendsItsTwoRomObjectPalettes() {
+        byte[] rom = loadRom();
+
+        int[][] palettes = new RoomLoader(rom).loadOverworld(0x00)
+            .entities().spriteSelection().objectPalettes();
+
+        assertEquals(8, palettes.length);
+        assertArrayEquals(readPalette(rom, 0x21, 0x5BD0), palettes[6]);
+        assertArrayEquals(readPalette(rom, 0x21, 0x5BD8), palettes[7]);
+    }
+
+    @Test
+    void mabeVillageSquareRewritesObjectPaletteEightColorsOneThroughThree() {
+        byte[] rom = loadRom();
+        int[] rawRoomPalette = readPalette(rom, 0x21, 0x56D8);
+        int[] specialColors = readPalette(rom, 0x21, 0x56C8);
+
+        int[] palette = new RoomLoader(rom).loadOverworld(0x92)
+            .entities().spriteSelection().objectPalettes()[7];
+
+        assertArrayEquals(new int[] {
+            rawRoomPalette[0], specialColors[3], specialColors[1], specialColors[0]
+        }, palette);
+    }
+
+    @Test
+    void ordinaryIndoorRoomAppendsItsTwoRomObjectPalettes() {
+        byte[] rom = loadRom();
+
+        int[][] palettes = new RoomLoader(rom).loadIndoor(0x10, 0xA4, null)
+            .entities().spriteSelection().objectPalettes();
+
+        assertEquals(8, palettes.length);
+        assertArrayEquals(readPalette(rom, 0x21, 0x69F0), palettes[6]);
+        assertArrayEquals(readPalette(rom, 0x21, 0x69F8), palettes[7]);
+    }
+
+    @Test
+    void newGameHouseLoadsMarinAndTarinFromTheRomEntityStream() {
+        LoadedRoom loaded = new RoomLoader(loadRom()).loadIndoor(0x10, 0xA3, null);
+
+        assertEquals(4, loaded.entities().loadedEntities().size());
+        assertEquals(0x3E, loaded.entities().loadedEntities().get(0).type());
+        assertEquals(0x3F, loaded.entities().loadedEntities().get(1).type());
+        assertEquals(0x58, loaded.entities().loadedEntities().get(0).x());
+        assertEquals(0x40, loaded.entities().loadedEntities().get(0).y());
+        assertEquals(0x78, loaded.entities().loadedEntities().get(1).x());
+        assertEquals(0x50, loaded.entities().loadedEntities().get(1).y());
+        assertTrue(loaded.entities().loadedEntities().get(1).spriteDefinition().supported());
+    }
+
+    @Test
+    void ordinaryDungeonRoomAppendsItsTwoRomObjectPalettes() {
+        byte[] rom = loadRom();
+
+        int[][] palettes = new RoomLoader(rom).loadIndoor(0x00, 0x25, null)
+            .entities().spriteSelection().objectPalettes();
+
+        assertEquals(8, palettes.length);
+        assertArrayEquals(readPalette(rom, 0x21, 0x6020), palettes[6]);
+        assertArrayEquals(readPalette(rom, 0x21, 0x6028), palettes[7]);
+    }
+
+    @Test
+    void sideScrollingDungeonRoomUsesDungeonPaletteBObjectRows() {
+        byte[] rom = loadRom();
+
+        int[][] palettes = new RoomLoader(rom).loadIndoor(
+            0x00, 0x00, null, Warp.CATEGORY_SIDESCROLL)
+            .entities().spriteSelection().objectPalettes();
+
+        assertArrayEquals(readPalette(rom, 0x21, 0x6070), palettes[6]);
+        assertArrayEquals(readPalette(rom, 0x21, 0x6078), palettes[7]);
+    }
+
+    @Test
+    void turtleRockSideScrollingOverrideUsesItsDedicatedObjectRows() {
+        byte[] rom = loadRom();
+
+        int[][] palettes = new RoomLoader(rom).loadIndoor(
+            0x07, 0x64, null, Warp.CATEGORY_SIDESCROLL)
+            .entities().spriteSelection().objectPalettes();
+
+        assertArrayEquals(readPalette(rom, 0x21, 0x6790), palettes[6]);
+        assertArrayEquals(readPalette(rom, 0x21, 0x6798), palettes[7]);
+    }
+
+    private static int[] readPalette(byte[] rom, int bank, int address) {
+        int[] palette = new int[4];
+        int offset = RomBank.romOffset(bank, address);
+        for (int color = 0; color < palette.length; color++) {
+            int encoded = Byte.toUnsignedInt(rom[offset++])
+                | (Byte.toUnsignedInt(rom[offset++]) << 8);
+            palette[color] = RomBank.decodeRgb555(encoded);
+        }
+        return palette;
     }
 
     private static byte[] loadRom() {

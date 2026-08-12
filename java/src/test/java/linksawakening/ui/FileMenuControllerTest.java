@@ -4,6 +4,7 @@ import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.rom.RomBank;
 import linksawakening.scene.BackgroundScene;
+import linksawakening.scene.BackgroundSceneCatalog;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -71,6 +72,140 @@ final class FileMenuControllerTest {
         assertTrue(controller.snapshot().commandRowArrowShifted());
         assertEquals(0x5C, controller.snapshot().sprites().get(0).x());
         assertEquals(0xBE, controller.snapshot().sprites().get(0).tileIndex());
+    }
+
+    @Test
+    void eraseRequiresAStoredFileAndExplicitOkConfirmation() {
+        int[][] names = {{1, 2, 3, 4, 5}, {}, {}};
+        FileMenuController controller = newController(1, names);
+        press(controller, GLFW_KEY_UP);
+        press(controller, GLFW_KEY_A);
+
+        assertEquals(FileMenuController.Mode.ERASE_PICK, controller.mode());
+        assertEquals(BackgroundSceneCatalog.FILE_ERASE_SCENE, controller.snapshot().sceneId());
+        press(controller, GLFW_KEY_DOWN);
+        assertEquals(FileMenuAction.Type.NONE, press(controller, GLFW_KEY_A).type());
+        assertEquals(FileMenuController.Mode.ERASE_PICK, controller.mode());
+        press(controller, GLFW_KEY_UP);
+        press(controller, GLFW_KEY_A);
+        assertEquals(FileMenuController.Mode.ERASE_CONFIRM, controller.mode());
+
+        assertEquals(FileMenuAction.Type.NONE, press(controller, GLFW_KEY_A).type());
+        assertEquals(FileMenuController.Mode.SELECT, controller.mode());
+
+        press(controller, GLFW_KEY_UP);
+        press(controller, GLFW_KEY_A);
+        press(controller, GLFW_KEY_A);
+        press(controller, GLFW_KEY_RIGHT);
+        FileMenuAction action = press(controller, GLFW_KEY_A);
+        assertEquals(FileMenuAction.Type.ERASE_SLOT, action.type());
+        assertEquals(0, action.selectedSlot());
+    }
+
+    @Test
+    void eraseBReturnsFromConfirmationThenCancelsToSelection() {
+        FileMenuController controller = newController(1, new int[][] {{1}, {}, {}});
+        press(controller, GLFW_KEY_UP);
+        press(controller, GLFW_KEY_A);
+        press(controller, GLFW_KEY_A);
+
+        press(controller, GLFW_KEY_B);
+        assertEquals(FileMenuController.Mode.ERASE_PICK, controller.mode());
+        press(controller, GLFW_KEY_B);
+        assertEquals(FileMenuController.Mode.SELECT, controller.mode());
+    }
+
+    @Test
+    void copySelectsNonemptySourceDestinationAndExplicitOk() {
+        FileMenuController controller = newController(1, new int[][] {{1, 2}, {}, {}});
+        press(controller, GLFW_KEY_UP);
+        press(controller, GLFW_KEY_RIGHT);
+        press(controller, GLFW_KEY_A);
+
+        assertEquals(FileMenuController.Mode.COPY_SOURCE, controller.mode());
+        assertEquals(BackgroundSceneCatalog.FILE_COPY_SCENE, controller.snapshot().sceneId());
+        press(controller, GLFW_KEY_A);
+        assertEquals(FileMenuController.Mode.COPY_TARGET, controller.mode());
+        press(controller, GLFW_KEY_DOWN);
+        assertEquals(0x53 - 8, controller.snapshot().sprites().get(1).y());
+        press(controller, GLFW_KEY_A);
+        assertEquals(FileMenuController.Mode.COPY_CONFIRM, controller.mode());
+        press(controller, GLFW_KEY_RIGHT);
+
+        FileMenuAction action = press(controller, GLFW_KEY_A);
+        assertEquals(FileMenuAction.Type.COPY_SLOT, action.type());
+        assertEquals(0, action.selectedSlot());
+        assertEquals(1, action.targetSlot());
+    }
+
+    @Test
+    void copyAllowsOverwritingAnOccupiedDestination() {
+        FileMenuController controller = newController(0x03,
+            new int[][] {{1, 2}, {3, 4}, {}});
+        enterCopySourceSelection(controller);
+        press(controller, GLFW_KEY_A);
+        press(controller, GLFW_KEY_DOWN);
+        press(controller, GLFW_KEY_A);
+        press(controller, GLFW_KEY_RIGHT);
+
+        FileMenuAction action = press(controller, GLFW_KEY_A);
+        assertEquals(FileMenuAction.Type.COPY_SLOT, action.type());
+        assertEquals(0, action.selectedSlot());
+        assertEquals(1, action.targetSlot());
+    }
+
+    @Test
+    void copyAllowsTheSourceSlotAsItsDestination() {
+        FileMenuController controller = newController(1, new int[][] {{1, 2}, {}, {}});
+        enterCopySourceSelection(controller);
+        press(controller, GLFW_KEY_A);
+        press(controller, GLFW_KEY_A);
+        press(controller, GLFW_KEY_RIGHT);
+
+        FileMenuAction action = press(controller, GLFW_KEY_A);
+        assertEquals(FileMenuAction.Type.COPY_SLOT, action.type());
+        assertEquals(0, action.selectedSlot());
+        assertEquals(0, action.targetSlot());
+    }
+
+    @Test
+    void copyRejectsEmptySourceAndBBacktracksEachStage() {
+        FileMenuController controller = newController(1, new int[][] {{1}, {}, {}});
+        press(controller, GLFW_KEY_UP);
+        press(controller, GLFW_KEY_RIGHT);
+        press(controller, GLFW_KEY_A);
+        press(controller, GLFW_KEY_DOWN);
+        assertEquals(FileMenuAction.Type.NONE, press(controller, GLFW_KEY_A).type());
+        assertEquals(FileMenuController.Mode.COPY_SOURCE, controller.mode());
+        press(controller, GLFW_KEY_UP);
+        press(controller, GLFW_KEY_A);
+        press(controller, GLFW_KEY_DOWN);
+        press(controller, GLFW_KEY_A);
+        press(controller, GLFW_KEY_B);
+        assertEquals(FileMenuController.Mode.COPY_TARGET, controller.mode());
+        press(controller, GLFW_KEY_B);
+        assertEquals(FileMenuController.Mode.COPY_SOURCE, controller.mode());
+        press(controller, GLFW_KEY_B);
+        assertEquals(FileMenuController.Mode.SELECT, controller.mode());
+    }
+
+    @Test
+    void quitRowCancelsErasePickerAndCopyTarget() {
+        FileMenuController erase = newController(1, new int[][] {{1}, {}, {}});
+        press(erase, GLFW_KEY_UP);
+        press(erase, GLFW_KEY_A);
+        press(erase, GLFW_KEY_UP);
+        press(erase, GLFW_KEY_A);
+        assertEquals(FileMenuController.Mode.SELECT, erase.mode());
+
+        FileMenuController copy = newController(1, new int[][] {{1}, {}, {}});
+        press(copy, GLFW_KEY_UP);
+        press(copy, GLFW_KEY_RIGHT);
+        press(copy, GLFW_KEY_A);
+        press(copy, GLFW_KEY_A);
+        press(copy, GLFW_KEY_UP);
+        press(copy, GLFW_KEY_A);
+        assertEquals(FileMenuController.Mode.SELECT, copy.mode());
     }
 
     @Test
@@ -151,6 +286,13 @@ final class FileMenuControllerTest {
                 new int[][] { { 0, 0, 0, 0 } }, new int[][] { { 0, 0, 0, 0 } }),
             saveMask,
             names);
+    }
+
+    private static void enterCopySourceSelection(FileMenuController controller) {
+        press(controller, GLFW_KEY_UP);
+        press(controller, GLFW_KEY_RIGHT);
+        press(controller, GLFW_KEY_A);
+        assertEquals(FileMenuController.Mode.COPY_SOURCE, controller.mode());
     }
 
     private static int[] backgroundMap() {

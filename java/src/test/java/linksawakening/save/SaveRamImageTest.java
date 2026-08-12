@@ -46,6 +46,60 @@ final class SaveRamImageTest {
     }
 
     @Test
+    void copySlotCopiesTheCompleteRomSlotExtent() {
+        SaveRamImage image = SaveRamImage.empty();
+        image.createNewGame(0, new int[] {1, 2, 3, 4, 5});
+        byte[] seeded = image.bytes();
+        int source = SaveRamLayout.slotOffset(0);
+        int target = SaveRamLayout.slotOffset(1);
+        for (int index = SaveRamLayout.PREFIX_SIZE; index < SaveRamLayout.SLOT_SIZE; index++) {
+            seeded[source + index] = (byte) index;
+        }
+        seeded[target - 1] = (byte) 0x5A;
+        seeded[target + SaveRamLayout.SLOT_SIZE] = (byte) 0xA5;
+        image = SaveRamImage.fromBytes(seeded);
+
+        image.copySlot(0, 1);
+
+        assertArrayEquals(Arrays.copyOfRange(image.bytes(), source,
+                source + SaveRamLayout.SLOT_SIZE),
+            Arrays.copyOfRange(image.bytes(), target, target + SaveRamLayout.SLOT_SIZE));
+        assertEquals((byte) 0x5A, image.bytes()[target - 1]);
+        assertEquals((byte) 0xA5, image.bytes()[target + SaveRamLayout.SLOT_SIZE]);
+    }
+
+    @Test
+    void eraseSlotClearsTheRomExtentAndRestoresTheJavaValidityPrefix() {
+        SaveRamImage image = SaveRamImage.empty();
+        image.createNewGame(1, new int[] {1, 2, 3, 4, 5});
+        byte[] seeded = image.bytes();
+        int target = SaveRamLayout.slotOffset(1);
+        seeded[target - 1] = (byte) 0x5A;
+        seeded[target + SaveRamLayout.SLOT_SIZE] = (byte) 0xA5;
+        image = SaveRamImage.fromBytes(seeded);
+
+        image.eraseSlot(1);
+
+        assertEquals(0, image.saveFilesMask());
+        byte[] slot = Arrays.copyOfRange(image.bytes(), SaveRamLayout.slotOffset(1),
+            SaveRamLayout.slotOffset(1) + SaveRamLayout.SLOT_SIZE);
+        assertArrayEquals(new byte[] {1, 3, 5, 7, 9},
+            Arrays.copyOf(slot, SaveRamLayout.PREFIX_SIZE));
+        assertArrayEquals(new byte[SaveRamLayout.SLOT_SIZE - SaveRamLayout.PREFIX_SIZE],
+            Arrays.copyOfRange(slot, SaveRamLayout.PREFIX_SIZE, slot.length));
+        assertEquals((byte) 0x5A, image.bytes()[target - 1]);
+        assertEquals((byte) 0xA5, image.bytes()[target + SaveRamLayout.SLOT_SIZE]);
+    }
+
+    @Test
+    void copyAndEraseValidateSlotIndexes() {
+        SaveRamImage image = SaveRamImage.empty();
+        assertThrows(IllegalArgumentException.class, () -> image.copySlot(-1, 0));
+        assertThrows(IllegalArgumentException.class, () -> image.copySlot(0, 3));
+        assertThrows(IllegalArgumentException.class, () -> image.eraseSlot(3));
+    }
+
+    @Test
     void writesLiveOcarinaStateAtTheRomOffsetsWithoutTouchingAdjacentBytes() {
         SaveRamImage image = SaveRamImage.empty();
         image.createNewGame(1, new int[] {1, 2, 3, 4, 5});

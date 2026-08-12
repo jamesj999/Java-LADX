@@ -194,6 +194,12 @@ public final class Link implements RocsFeather.JumpTarget {
     private int motionState = LINK_MOTION_DEFAULT;
     private boolean romInteractiveMotionBlocked;
     private int romAnimationStateOverride = -1;
+    private boolean tarinShieldPresentation;
+    private int[] tarinShieldPalette;
+    private int romLinkPushing;
+    private int marinWakeUpBedVariant = -1;
+    /** Mirrors wC10A while Marin's scripted bed-exit jump owns Link motion. */
+    private boolean marinBedJumpMotionLocked;
     private int physicsModifier;
     private int swimmingSpeedX;
     private int swimmingSpeedY;
@@ -379,6 +385,34 @@ public final class Link implements RocsFeather.JumpTarget {
         subY = romFinalSubY;
     }
 
+    /** Mirrors ClearLinkPositionIncrement for handlers that clear HRAM speed bytes. */
+    public void clearRomPositionIncrement() {
+        forcedSpeedX = 0;
+        forcedSpeedY = 0;
+        forcedSpeedPending = false;
+        lastRomSpeedX = 0;
+        lastRomSpeedY = 0;
+    }
+
+    /** Mirrors the transient wIsLinkPushing value consumed by item handlers. */
+    public void markRomLinkPushing(int countdown) {
+        if (countdown < 0 || countdown > 0xFF) {
+            throw new IllegalArgumentException("Link pushing countdown must be an unsigned byte");
+        }
+        romLinkPushing = countdown;
+    }
+
+    /** Mirrors func_20_4B1F's one-frame decrement of wIsLinkPushing. */
+    public void tickRomLinkPushing() {
+        if (romLinkPushing > 0) {
+            romLinkPushing--;
+        }
+    }
+
+    public boolean isRomLinkPushing() {
+        return romLinkPushing != 0;
+    }
+
     /** Applies the ROM's next-frame hLinkInteractiveMotionBlocked=$02 write. */
     public void blockNextRomMotionFrame() {
         romInteractiveMotionBlocked = true;
@@ -391,6 +425,37 @@ public final class Link implements RocsFeather.JumpTarget {
         romAnimationStateOverride = 0x6C;
         direction = DIRECTION_DOWN;
         romAttackStepAnimationCountdown = 0;
+        movingThisFrame = false;
+    }
+
+    /** Applies TarinShield2Handler's shield-specific got-item presentation. */
+    public void showTarinShieldPresentation(int[] palette) {
+        if (palette == null || palette.length < 4) {
+            throw new IllegalArgumentException("Tarin shield palette must contain four colors");
+        }
+        showHeldItemPose();
+        tarinShieldPresentation = true;
+        tarinShieldPalette = palette.clone();
+    }
+
+    public void clearTarinShieldPresentation() {
+        tarinShieldPresentation = false;
+    }
+
+    public boolean isTarinShieldPresentationVisible() {
+        return tarinShieldPresentation;
+    }
+
+    public int[] tarinShieldPalette() {
+        return tarinShieldPalette == null ? null : tarinShieldPalette.clone();
+    }
+
+    /** Mirrors TarinShield2Handler's final LINK_ANIMATION_STATE_STANDING_SHIELD_DOWN write. */
+    public void showStandingShieldDownPose() {
+        tarinShieldPresentation = false;
+        romAnimationStateOverride = 0x22;
+        romInteractiveMotionBlocked = false;
+        direction = DIRECTION_DOWN;
         movingThisFrame = false;
     }
 
@@ -409,6 +474,22 @@ public final class Link implements RocsFeather.JumpTarget {
         romAnimationStateOverride = animationStates[sector];
         direction = directions[sector];
         movingThisFrame = false;
+    }
+
+    /** Hides ordinary Link OAM and selects Marin's dedicated bed display list. */
+    public void showMarinWakeUpBed(int spriteVariant) {
+        if (spriteVariant < 0 || spriteVariant > 4) {
+            throw new IllegalArgumentException("Bed sprite variant must be between 0 and 4");
+        }
+        marinWakeUpBedVariant = spriteVariant;
+    }
+
+    public boolean isMarinWakeUpBedVisible() {
+        return marinWakeUpBedVariant >= 0;
+    }
+
+    public int marinWakeUpBedVariant() {
+        return marinWakeUpBedVariant;
     }
 
     public int pixelX() {
@@ -517,7 +598,7 @@ public final class Link implements RocsFeather.JumpTarget {
      * reject it, while pit, carry, and interactive item motion do.
      */
     public boolean canUseItems() {
-        if (romMotionState() != 0 || isCarryingLiftedObject()) {
+        if (romMotionState() != 0 || isCarryingLiftedObject() || isRomLinkPushing()) {
             return false;
         }
         return !itemsBlockMotion();
@@ -657,6 +738,24 @@ public final class Link implements RocsFeather.JumpTarget {
         applyRomSpeed(speedX, speedY);
     }
 
+    /** Applies Marin's final writes when Link jumps out of the bed. */
+    public void leaveMarinWakeUpBed() {
+        motionState = LINK_MOTION_DEFAULT;
+        romInteractiveMotionBlocked = false;
+        romAnimationStateOverride = -1;
+        marinWakeUpBedVariant = -1;
+        marinBedJumpMotionLocked = true;
+        airborne = true;
+        zSubPixels = 1 << SUB_PIXEL_SHIFT;
+        zVelocity = 0x12;
+        groundStatus = GROUND_STATUS_NORMAL;
+        fallingIntoPit = false;
+        direction = DIRECTION_RIGHT;
+        lastRomSpeedX = 0x0C;
+        lastRomSpeedY = 0;
+        forcedSpeedPending = false;
+    }
+
     /** Ends Rooster's custom airborne carry state when it is thrown or cleared. */
     public void clearRoosterCarryState() {
         roosterCarryActive = false;
@@ -781,7 +880,8 @@ public final class Link implements RocsFeather.JumpTarget {
 
         int mask = buildJoypadMask();
         int newDirection = JOYPAD_TO_DIRECTION[mask];
-        if (newDirection != -1 && !itemsLockFacing() && !isLiftTransitionBlockingMotion()) {
+        if (newDirection != -1 && !marinBedJumpMotionLocked
+            && !itemsLockFacing() && !isLiftTransitionBlockingMotion()) {
             direction = newDirection;
         }
         updatePegasusBootsUse();
@@ -816,7 +916,10 @@ public final class Link implements RocsFeather.JumpTarget {
 
         int speedX;
         int speedY;
-        if (playerState != null && playerState.runningWithPegasusBoots()) {
+        if (marinBedJumpMotionLocked) {
+            speedX = 0x0C;
+            speedY = 0;
+        } else if (playerState != null && playerState.runningWithPegasusBoots()) {
             speedX = pegasusRunningSpeedX();
             speedY = pegasusRunningSpeedY();
         } else if (forcedSpeedPending) {
@@ -1186,6 +1289,7 @@ public final class Link implements RocsFeather.JumpTarget {
         }
 
         airborne = false;
+        marinBedJumpMotionLocked = false;
         zSubPixels = 0;
         zVelocity = 0;
         if (linkOverPit()) {

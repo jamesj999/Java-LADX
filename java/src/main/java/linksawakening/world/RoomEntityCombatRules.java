@@ -2,6 +2,7 @@ package linksawakening.world;
 
 /** ROM collision constants and predicates for the currently ported enemies. */
 public final class RoomEntityCombatRules {
+    private static final int ENTITY_PUSHED_BLOCK = 0x06;
     private static final int ENTITY_OCTOROK = 0x09;
     private static final int ENTITY_MOBLIN = 0x0B;
     private static final int ENTITY_IRON_MASK = 0x24;
@@ -67,6 +68,31 @@ public final class RoomEntityCombatRules {
     private static final int ENTITY_URCHIN = 0xC5;
     private static final int ENTITY_WITCH_RAT = 0xE1;
 
+    private static final int ENTITY_OWL_EVENT = 0x41;
+    private static final int ENTITY_OWL_STATUE = 0x42;
+    private static final int ENTITY_TRENDY_GAME_OWNER = 0x4F;
+    private static final int ENTITY_FISHERMAN_FISHING_GAME = 0x54;
+    private static final int ENTITY_GENIE = 0x5C;
+    private static final int ENTITY_RAFT_OWNER = 0x6A;
+    private static final int ENTITY_GRANDPA_ULRIRA = 0x77;
+    private static final int ENTITY_MADAM_MEOWMEOW = 0x79;
+    private static final int ENTITY_CRAZY_TRACY = 0x7B;
+    private static final int ENTITY_TURTLE_ROCK_HEAD = 0x7F;
+    private static final int ENTITY_HOLE_FILLER = 0xB1;
+    private static final int ENTITY_PAPAHL = 0xB6;
+    private static final int ENTITY_MOVING_BLOCK_MOVER = 0x69;
+    private static final int ENTITY_SMASHABLE_PILLAR = 0xA7;
+    private static final int ENTITY_LIFTABLE_STATUE = 0x9D;
+    private static final int ENTITY_BUNNY_D3 = 0xD3;
+    private static final int ENTITY_BANANAS_SCHULE_SALE = 0xCD;
+    private static final int ENTITY_THWIMP = 0xD7;
+    private static final int ENTITY_THWOMP = 0xD8;
+    private static final int ENTITY_THWOMP_RAMMABLE = 0xD9;
+    private static final int ENTITY_FLYING_ROOSTER_EVENTS = 0xDC;
+    private static final int ENTITY_COLOR_GUARDIAN_BLUE = 0xF6;
+    private static final int ENTITY_COLOR_GUARDIAN_RED = 0xF7;
+    private static final int ENTITY_PHOTOGRAPHER = 0xFA;
+
     private static final int ENTITY_MARIN = 0x3E;
     private static final int ENTITY_TARIN = 0x3F;
     private static final int ENTITY_WITCH = 0x40;
@@ -113,6 +139,14 @@ public final class RoomEntityCombatRules {
     private static final int BIG_NPC_HITBOX_WIDTH = 0x0C;
     private static final int BIG_NPC_HITBOX_Y = 0x08;
     private static final int BIG_NPC_HITBOX_HEIGHT = 0x10;
+    private static final int PILLAR_HITBOX_X = 0x08;
+    private static final int PILLAR_HITBOX_WIDTH = 0x07;
+    private static final int PILLAR_HITBOX_Y = 0x04;
+    private static final int PILLAR_HITBOX_HEIGHT = 0x0A;
+    private static final int SIDE_VIEW_PLATFORM_HITBOX_X = 0x10;
+    private static final int SIDE_VIEW_PLATFORM_HITBOX_WIDTH = 0x10;
+    private static final int SIDE_VIEW_PLATFORM_HITBOX_Y = 0x0C;
+    private static final int SIDE_VIEW_PLATFORM_HITBOX_HEIGHT = 0x12;
     private static final int SMALL_ENEMY_HITBOX_WIDTH = 0x02;
     private static final int SMALL_ENEMY_HITBOX_HEIGHT = 0x02;
     private static final int BIG_ENEMY_HITBOX_WIDTH = 0x0A;
@@ -180,7 +214,7 @@ public final class RoomEntityCombatRules {
                 ENTITY_CUCCO, ENTITY_GOPONGA_FLOWER, ENTITY_GIANT_GOPONGA_FLOWER,
                 ENTITY_GOPONGA_FLOWER_PROJECTILE,
                 ENTITY_POKEY, ENTITY_PIRANHA_PLANT, ENTITY_ZORA, ENTITY_ZOMBIE,
-                ENTITY_BUZZ_BLOB, ENTITY_SAND_CRAB,
+                ENTITY_BUZZ_BLOB, ENTITY_SAND_CRAB, ENTITY_URCHIN,
                 ENTITY_BOO_BUDDY,
                 ENTITY_SPIKED_BEETLE,
                 ENTITY_PAIRODD, ENTITY_COLOR_SHELL_RED, ENTITY_COLOR_SHELL_GREEN,
@@ -195,24 +229,21 @@ public final class RoomEntityCombatRules {
     }
 
     static boolean supportsLinkCollision(int type) {
-        return supportsEnemyCollision(type) || supportsFriendlyNpcCollision(type)
+        return supportsEnemyCollision(type)
+            || EntityLinkCollisionRules.policyFor(type).restoreFinalPosition()
             || (type & 0xFF) == ENTITY_ARMOS_STATUE || (type & 0xFF) == ENTITY_ROOSTER
             || (type & 0xFF) == ENTITY_URCHIN;
     }
 
-    /** Entity handlers that call PushLinkOutOfEntity without enemy damage. */
+    /**
+     * Compatibility predicate for callers that need to identify the
+     * non-damaging PushLinkOutOfEntity handlers. The policy table is the
+     * source of truth; enemy handlers remain available through
+     * {@link #supportsEnemyCollision(int)} as well.
+     */
     static boolean supportsFriendlyNpcCollision(int type) {
-        return switch (type & 0xFF) {
-            case ENTITY_MARIN, ENTITY_TARIN, ENTITY_WITCH, ENTITY_SHOP_OWNER,
-                ENTITY_DOG, ENTITY_KID_70, ENTITY_KID_71, ENTITY_KID_72, ENTITY_KID_73,
-                ENTITY_PAPAHLS_WIFE, ENTITY_GRANDMA_ULRIRA, ENTITY_MR_WRITE,
-                ENTITY_MR_WRITES_BIRD, ENTITY_RICHARD, ENTITY_RICHARD_FROG, ENTITY_KIKI,
-                ENTITY_TARIN_BEEKEEPER, ENTITY_BEAR, ENTITY_MERMAID, ENTITY_MARIN_SHORE,
-                ENTITY_MARIN_TAL_TAL, ENTITY_MAMU, ENTITY_WALRUS, ENTITY_MERMAID_STATUE,
-                ENTITY_ANIMAL_D0, ENTITY_ANIMAL_D1, ENTITY_ANIMAL_D2, ENTITY_GHOST,
-                ENTITY_ROOSTER -> true;
-            default -> false;
-        };
+        return !supportsEnemyCollision(type)
+            && EntityLinkCollisionRules.genericPolicyFor(type).restoreFinalPosition();
     }
 
     /**
@@ -238,6 +269,7 @@ public final class RoomEntityCombatRules {
                 OCTOROK_AND_KEESE_CONTACT_DAMAGE;
             case ENTITY_BUZZ_BLOB -> 0x08;
             case ENTITY_SAND_CRAB -> 0x04;
+            case ENTITY_URCHIN -> OCTOROK_AND_KEESE_CONTACT_DAMAGE;
             case ENTITY_FISH -> OCTOROK_AND_KEESE_CONTACT_DAMAGE;
             case ENTITY_CROW -> CROW_CONTACT_DAMAGE;
             // Cucco's static health-group table points at the ordinary enemy
@@ -399,6 +431,12 @@ public final class RoomEntityCombatRules {
         if (usesNpcHitbox(type)) {
             return NPC_HITBOX_WIDTH;
         }
+        if (usesPillarHitbox(type)) {
+            return PILLAR_HITBOX_WIDTH;
+        }
+        if (usesSideViewPlatformHitbox(type)) {
+            return SIDE_VIEW_PLATFORM_HITBOX_WIDTH;
+        }
         return switch (type & 0xFF) {
             case ENTITY_GEL -> SMALL_ENEMY_HITBOX_WIDTH;
             case ENTITY_GIANT_GHINI, ENTITY_GIANT_GOPONGA_FLOWER,
@@ -416,6 +454,12 @@ public final class RoomEntityCombatRules {
         if (usesNpcHitbox(type)) {
             return NPC_HITBOX_HEIGHT;
         }
+        if (usesPillarHitbox(type)) {
+            return PILLAR_HITBOX_HEIGHT;
+        }
+        if (usesSideViewPlatformHitbox(type)) {
+            return SIDE_VIEW_PLATFORM_HITBOX_HEIGHT;
+        }
         return switch (type & 0xFF) {
             case ENTITY_GEL -> SMALL_ENEMY_HITBOX_HEIGHT;
             case ENTITY_GIANT_GHINI, ENTITY_GIANT_GOPONGA_FLOWER,
@@ -430,6 +474,12 @@ public final class RoomEntityCombatRules {
         if (usesBigNpcHitbox(type)) {
             return BIG_NPC_HITBOX_X;
         }
+        if (usesPillarHitbox(type)) {
+            return PILLAR_HITBOX_X;
+        }
+        if (usesSideViewPlatformHitbox(type)) {
+            return SIDE_VIEW_PLATFORM_HITBOX_X;
+        }
         return usesNpcHitbox(type) ? NPC_HITBOX_X : HITBOX_X;
     }
 
@@ -437,18 +487,42 @@ public final class RoomEntityCombatRules {
         if (usesBigNpcHitbox(type)) {
             return BIG_NPC_HITBOX_Y;
         }
+        if (usesPillarHitbox(type)) {
+            return PILLAR_HITBOX_Y;
+        }
+        if (usesSideViewPlatformHitbox(type)) {
+            return SIDE_VIEW_PLATFORM_HITBOX_Y;
+        }
         return usesNpcHitbox(type) ? NPC_HITBOX_Y : HITBOX_Y;
     }
 
     /** HITFLAGS_HITBOX_NPC ($18) from data/entities/hitbox_flags.asm. */
     private static boolean usesNpcHitbox(int type) {
         return switch (type & 0xFF) {
-            case ENTITY_MARIN, ENTITY_TARIN, ENTITY_WITCH, ENTITY_SHOP_OWNER,
+            case ENTITY_MARIN, ENTITY_TARIN, ENTITY_WITCH, ENTITY_OWL_EVENT,
+                ENTITY_OWL_STATUE, ENTITY_SHOP_OWNER, ENTITY_TRENDY_GAME_OWNER,
                 ENTITY_KID_70, ENTITY_KID_71, ENTITY_KID_72, ENTITY_KID_73,
-                ENTITY_PAPAHLS_WIFE, ENTITY_GRANDMA_ULRIRA, ENTITY_MR_WRITE,
+                ENTITY_PAPAHLS_WIFE, ENTITY_GRANDMA_ULRIRA, ENTITY_GRANDPA_ULRIRA,
+                ENTITY_MADAM_MEOWMEOW, ENTITY_CRAZY_TRACY, ENTITY_MR_WRITE,
+                ENTITY_HOLE_FILLER, ENTITY_PAPAHL,
                 ENTITY_TARIN_BEEKEEPER, ENTITY_MERMAID, ENTITY_MARIN_SHORE,
-                ENTITY_MARIN_TAL_TAL, ENTITY_MERMAID_STATUE, ENTITY_ANIMAL_D0,
-                ENTITY_ANIMAL_D1, ENTITY_ANIMAL_D2, ENTITY_ROOSTER -> true;
+                ENTITY_MARIN_TAL_TAL, ENTITY_MERMAID_STATUE, ENTITY_BANANAS_SCHULE_SALE,
+                ENTITY_ANIMAL_D0, ENTITY_ANIMAL_D1, ENTITY_ANIMAL_D2, ENTITY_BUNNY_D3,
+                ENTITY_PHOTOGRAPHER, ENTITY_ROOSTER -> true;
+            default -> false;
+        };
+    }
+
+    private static boolean usesPillarHitbox(int type) {
+        return switch (type & 0xFF) {
+            case ENTITY_LIFTABLE_STATUE, ENTITY_SMASHABLE_PILLAR -> true;
+            default -> false;
+        };
+    }
+
+    private static boolean usesSideViewPlatformHitbox(int type) {
+        return switch (type & 0xFF) {
+            case ENTITY_THWOMP, ENTITY_THWOMP_RAMMABLE -> true;
             default -> false;
         };
     }

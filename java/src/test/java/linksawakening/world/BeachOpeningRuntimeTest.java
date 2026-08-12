@@ -139,6 +139,36 @@ final class BeachOpeningRuntimeTest {
             runtime.consumePendingOwlEventCompletions());
     }
 
+    @Test
+    void forestOwlRequiresTheSwordAndStartsItsFlightIntoTheRoom() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RoomEntityRuntime swordless = owlRuntime(catalog, rom);
+        swordless.setEntityRoomId(0x80);
+        swordless.setChestPlayerLevels(0, 0, 0);
+
+        swordless.tick(0, 0x50, 0x50, () -> 0);
+
+        assertEquals(EntityStatus.DISABLED, swordless.snapshot().slots().get(0).status());
+        assertEquals(-1, swordless.consumePendingMusicTrack());
+
+        RoomEntityRuntime armed = owlRuntime(catalog, rom);
+        armed.setEntityRoomId(0x80);
+        armed.setChestPlayerLevels(0, 1, 0);
+        armed.setOwlDialogResolver(new OwlEventDialogResolver(rom)::globalDialogId);
+
+        armed.tick(0, 0x50, 0x50, () -> 0);
+        assertEquals(1, armed.owlEventStateForTest(0));
+        assertEquals(0x22, armed.consumePendingMusicTrack());
+    }
+
+    private static RoomEntityRuntime owlRuntime(EntitySpriteHandlerCatalog catalog, byte[] rom) {
+        return RoomEntityRuntime.from(snapshot(new RoomEntity(
+            0, 0, ENTITY_OWL_EVENT, 0x58, 0x50, EntityStatus.ACTIVE,
+            catalog.forOwlEvent(false), 0)), false, () -> 0, catalog,
+            new RomEnemyCombatTables(rom));
+    }
+
     private static boolean hasType(RoomEntitySnapshot snapshot, int type) {
         return snapshot.loadedEntities().stream().anyMatch(entity -> entity.type() == type);
     }

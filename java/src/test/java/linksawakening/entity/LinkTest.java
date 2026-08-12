@@ -110,6 +110,36 @@ final class LinkTest {
     }
 
     @Test
+    void linkPushingFlagUsesTheRomThreeFrameCountdown() {
+        Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
+            null, null, null, new PlayerState(), new ItemRegistry());
+
+        link.markRomLinkPushing(3);
+
+        assertTrue(link.isRomLinkPushing());
+        assertFalse(link.canUseItems());
+        link.tickRomLinkPushing();
+        assertTrue(link.isRomLinkPushing());
+        link.tickRomLinkPushing();
+        assertTrue(link.isRomLinkPushing());
+        link.tickRomLinkPushing();
+        assertFalse(link.isRomLinkPushing());
+    }
+
+    @Test
+    void tarinRewardSwitchesFromHeldItemToStandingShieldDown() throws Exception {
+        Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
+            null, null, null, new PlayerState(), new ItemRegistry());
+        link.showTarinShieldPresentation(new int[] {0, 1, 2, 3});
+        assertEquals(0x6C, resolvedAnimationState(link));
+
+        link.showStandingShieldDownPose();
+
+        assertEquals(0x22, resolvedAnimationState(link));
+        assertFalse(link.isTarinShieldPresentationVisible());
+    }
+
+    @Test
     void holdingPegasusBootsChargesForTheRomThirtyTwoFramesThenStartsTheDash()
         throws IOException {
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);

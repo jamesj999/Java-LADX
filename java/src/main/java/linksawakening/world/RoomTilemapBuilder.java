@@ -6,6 +6,8 @@ import java.util.Arrays;
 
 public final class RoomTilemapBuilder {
     private static final int MAP_COLOR_DUNGEON = 0xFF;
+    private static final int MAP_HOUSE = 0x10;
+    private static final int ROOM_CAMERA_SHOP = 0xB5;
     private static final int MAP_INDOORS_B_START = 0x06;
     private static final int MAP_INDOORS_B_END = 0x1A;
 
@@ -18,6 +20,7 @@ public final class RoomTilemapBuilder {
     private static final int BG_ATTR_PTRS_INDOORS_A_BANK = 0x1A;
     private static final int BG_ATTR_PTRS_INDOORS_A_ADDR = 0x6076;
     private static final int BG_ATTR_PTRS_INDOORS_B_ADDR = 0x6276;
+    private static final int CAMERA_SHOP_ATTR_POINTER_OFFSET = 0x1FE;
     private static final int INDOORS_A_ATTRMAPS_BANK = 0x23;
     private static final int INDOORS_B_ATTRMAPS_BANK = 0x24;
 
@@ -60,11 +63,13 @@ public final class RoomTilemapBuilder {
 
         int objectTilemapOffset;
         int objectAttrOffset;
-        if (indoor && mapId == MAP_COLOR_DUNGEON) {
+        boolean cameraShop = indoor && mapId == MAP_HOUSE && roomId == ROOM_CAMERA_SHOP;
+        if (indoor && (mapId == MAP_COLOR_DUNGEON || cameraShop)) {
             objectTilemapOffset = RomBank.romOffset(
                 COLOR_DUNGEON_OBJECT_TILEMAP_BANK, COLOR_DUNGEON_OBJECT_TILEMAP_ADDR);
-            objectAttrOffset = RomBank.romOffset(
-                COLOR_DUNGEON_OBJECT_ATTR_BANK, COLOR_DUNGEON_OBJECT_ATTR_ADDR);
+            objectAttrOffset = mapId == MAP_COLOR_DUNGEON
+                ? RomBank.romOffset(COLOR_DUNGEON_OBJECT_ATTR_BANK, COLOR_DUNGEON_OBJECT_ATTR_ADDR)
+                : indoorObjectAttrOffset(mapId, roomId);
         } else {
             objectTilemapOffset = indoor
                 ? RomBank.romOffset(INDOOR_OBJECT_TILEMAP_BANK, INDOOR_OBJECT_TILEMAP_ADDR)
@@ -120,6 +125,11 @@ public final class RoomTilemapBuilder {
     }
 
     private int indoorObjectAttrOffset(int mapId, int roomId) {
+        if (mapId == MAP_HOUSE && roomId == ROOM_CAMERA_SHOP) {
+            int pointer = RomBank.romOffset(BG_ATTR_PTRS_INDOORS_A_BANK,
+                BG_ATTR_PTRS_INDOORS_B_ADDR + CAMERA_SHOP_ATTR_POINTER_OFFSET);
+            return RomBank.romOffset(INDOORS_B_ATTRMAPS_BANK, readPointer(pointer));
+        }
         boolean isIndoorsB = mapId >= MAP_INDOORS_B_START && mapId < MAP_INDOORS_B_END;
         int attrPtrsAddr = isIndoorsB ? BG_ATTR_PTRS_INDOORS_B_ADDR : BG_ATTR_PTRS_INDOORS_A_ADDR;
         int attrmapsBank = isIndoorsB ? INDOORS_B_ATTRMAPS_BANK : INDOORS_A_ATTRMAPS_BANK;
@@ -131,6 +141,11 @@ public final class RoomTilemapBuilder {
             return -1;
         }
         return RomBank.romOffset(attrmapsBank, attrTableAddr);
+    }
+
+    private int readPointer(int offset) {
+        return Byte.toUnsignedInt(romData[offset])
+            | (Byte.toUnsignedInt(romData[offset + 1]) << 8);
     }
 
     private int[] loadGbcOverlay(int roomId) {

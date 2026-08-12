@@ -29,6 +29,14 @@ final class AreaMusicResolverTest {
     }
 
     @Test
+    void swordlessIndoorRoomsUseAdventureStartMusicBeforeRoomTable() {
+        AreaMusicResolver resolver = AreaMusicResolver.fromRom(loadRom());
+
+        assertEquals(MusicTrackIds.MUSIC_OVERWORLD_SWORDLESS,
+            resolver.resolve(RoomMusicContext.indoor(0x10, 0xA3, 0)));
+    }
+
+    @Test
     void resolvesIndoorMapsFromHouseMusicTable() {
         AreaMusicResolver resolver = AreaMusicResolver.fromRom(loadRom());
 

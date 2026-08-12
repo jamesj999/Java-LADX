@@ -43,6 +43,11 @@ public class GPU {
     private static final int ANIMATED_TILES_FRAME_COUNT = 0x04;
     private static final int ANIMATED_TILES_FRAME_VRAM_INDEX = 0x16C;
     private static final int ANIMATED_TILES_FRAME_SIZE = 0x40;
+    private static final int ANIMATED_SCROLLING_TILES_BANK = 0x2C;
+    private static final int ANIMATED_SCROLLING_TILES_ADDR = 0x47C0;
+    private static final int DUNGEON_TWO_ANIMATED_GROUP = 0x07;
+    private static final int COLOR_DUNGEON_SCROLLING_VRAM_INDEX = 0x040;
+    private static final int DUNGEON_TWO_SCROLLING_VRAM_INDEX = 0x10C;
 
     // SwitchBlockTiles in bank0c.asm and the GBC-adjusted bank used by the
     // gameplay tile loader. UpdateSwitchBlockTiles copies four tiles at a
@@ -59,6 +64,8 @@ public class GPU {
     private int currentAnimatedTilesGroup = 0;
     private int animatedTilesFrameCount = 0;
     private int animatedTilesDataOffset = 0;
+    private int currentMapId = 0;
+    private final byte[] animatedScrollingTiles = new byte[0x40];
 
     private static final int OVERWORLD2_TILES_BANK = 0x0F;
     private static final int OVERWORLD2_TILES_ADDR = 0x4000;
@@ -75,6 +82,8 @@ public class GPU {
     private static final int INVENTORY_OVERWORLD_ITEMS_TILES_BANK = 0x0C;
     private static final int INVENTORY_OVERWORLD_ITEMS_TILES_ADDR = 0x4C00;
     private static final int INVENTORY_OVERWORLD_ITEMS_TILES_COUNT = 0x40;
+    private static final int INVENTORY_INDOOR_ITEMS_TILES_BANK = 0x12;
+    private static final int INVENTORY_INDOOR_ITEMS_TILES_ADDR = 0x7D00;
 
     private static final int INVENTORY_EQUIPMENT_ITEMS_TILES_BANK = 0x0C;
     private static final int INVENTORY_EQUIPMENT_ITEMS_TILES_ADDR = 0x4800;
@@ -140,6 +149,7 @@ public class GPU {
     }
 
     public void loadBaseOverworldTiles(byte[] romData) {
+        currentMapId = 0;
         // Match the game's LoadBaseTiles: copy 0x100 tiles from InventoryEquipmentItemsTiles
         // to vTiles1 (VRAM tile 0x080). This single bulk copy covers equipment items,
         // inventory items, instruments, and landscape tiles in the correct VRAM positions.
@@ -150,12 +160,23 @@ public class GPU {
             LINK_CHARACTER_TILES_ADDR, 0x40, 0x000);
     }
 
+    /** Mirrors LoadBaseTiles (bank0.asm:$2BCF), used before entering an indoor room. */
+    public void loadBaseTiles(byte[] romData) {
+        currentMapId = 0;
+        loadTilesFromROM(romData, LINK_CHARACTER_TILES_BANK | 0x20,
+            LINK_CHARACTER_TILES_ADDR, 0x40, 0x000);
+        loadTilesFromROM(romData, INVENTORY_EQUIPMENT_ITEMS_TILES_BANK | 0x20,
+            INVENTORY_EQUIPMENT_ITEMS_TILES_ADDR, 0x100, 0x080);
+        loadTilesFromROM(romData, INVENTORY_EQUIPMENT_ITEMS_TILES_BANK | 0x20,
+            0x47A0, 0x02, 0x0E0);
+    }
+
     /**
      * Load the base and file-menu tile sheets using the destinations in
      * LoadMenuTiles (bank0.asm:$2C03).
      */
     public void loadMenuTiles(byte[] romData) {
-        loadBaseOverworldTiles(romData);
+        loadBaseTiles(romData);
         loadTilesFromROM(romData, 0x0F | 0x20, 0x4000, 0x40, 0x080);
         loadTilesFromROM(romData, 0x0F | 0x20, 0x5000, 0x80, 0x100);
         loadTilesFromROM(romData, 0x0C | 0x20, 0x47A0, 0x02, 0x0E0);
@@ -264,9 +285,12 @@ public class GPU {
     private static final int DUNGEON_ITEMS_VRAM_INDEX = 0x0F0;
 
     private static final int MAP_COLOR_DUNGEON = 0xFF;
+    private static final int MAP_HOUSE = 0x10;
+    private static final int ROOM_CAMERA_SHOP = 0xB5;
     private static final int COLOR_DUNGEON_BG_BANK = 0x35;
     private static final int COLOR_DUNGEON_BG_FLOOR_ADDR = 0x6000;
     private static final int COLOR_DUNGEON_BG_ITEMS_ADDR = 0x6100;
+    private static final int CAMERA_SHOP_TILES_ADDR = 0x6600;
     private static final int COLOR_DUNGEON_ROOM_TILES_TABLE_BANK = 0x20;
     private static final int COLOR_DUNGEON_ROOM_TILES_TABLE_ADDR = 0x45EA;
     private static final int COLOR_DUNGEON_WALLS_POINTER_ADDR = 0x45C9;
@@ -285,10 +309,11 @@ public class GPU {
      * and the per-room {@code Indoor(tilesetId)Tiles} goes to {@code vTiles2}.
      *
      * <p>Skipped vs. the original: inventory-items tile patching, Link OAM
-     * tiles (unchanged from overworld), animated scroll tiles (WRAM), and
-     * toadstool/golden-leaf dynamic swaps.
+     * tiles (unchanged from overworld) and toadstool/golden-leaf dynamic swaps.
      */
     public void loadIndoorTiles(byte[] romData, int mapId, int roomId) {
+        currentMapId = mapId;
+        stageAnimatedScrollingTiles(romData, mapId, roomId);
         if (mapId == MAP_COLOR_DUNGEON) {
             loadColorDungeonBgTiles(romData, roomId);
             return;
@@ -329,6 +354,19 @@ public class GPU {
                 itemsHighByte << 8, DUNGEON_ITEMS_TILES_COUNT, DUNGEON_ITEMS_VRAM_INDEX);
         }
 
+        // LoadIndoorTiles copies the map's indoor-item sheet to vTiles1+$400
+        // after the shared gameplay base copy. House maps use the overworld
+        // item sheet; dungeon maps use InventoryIndoorItemsTiles.
+        if (mapId != MAP_COLOR_DUNGEON) {
+            if (mapId >= 0x0A) {
+                loadTilesFromROM(romData, INVENTORY_OVERWORLD_ITEMS_TILES_BANK | 0x20,
+                    INVENTORY_OVERWORLD_ITEMS_TILES_ADDR, 0x30, 0x0C0);
+            } else {
+                loadTilesFromROM(romData, INVENTORY_INDOOR_ITEMS_TILES_BANK | 0x20,
+                    INVENTORY_INDOOR_ITEMS_TILES_ADDR, 0x30, 0x0C0);
+            }
+        }
+
         // Per-room indoor tileset at VRAM tile 0x100 (vTiles2 base).
         // IndoorsTilesetsTable is actually two 256-byte halves: IndoorsA at
         // $6EB3 and IndoorsB at $6FB3 (bank0.asm:1031 — `inc h` for IndoorsB
@@ -343,6 +381,22 @@ public class GPU {
             int tilesetAddr = INDOOR_TILES_BASE_ADDR + (tilesetId * 0x100);
             loadTilesFromROM(romData, DUNGEONS_TILES_BANK | 0x20,
                 tilesetAddr, INDOOR_TILES_COUNT_PER_SET, INDOOR_TILES_VRAM_INDEX);
+        }
+
+        if (mapId == MAP_HOUSE && roomId == ROOM_CAMERA_SHOP) {
+            loadTilesFromROM(romData, COLOR_DUNGEON_BG_BANK, CAMERA_SHOP_TILES_ADDR,
+                0x20, DUNGEON_ITEMS_VRAM_INDEX);
+            return;
+        }
+    }
+
+    private void stageAnimatedScrollingTiles(byte[] romData, int mapId, int roomId) {
+        System.arraycopy(romData, bankAddrToRomOffset(
+                ANIMATED_SCROLLING_TILES_BANK, ANIMATED_SCROLLING_TILES_ADDR),
+            animatedScrollingTiles, 0, animatedScrollingTiles.length);
+        if (mapId == MAP_COLOR_DUNGEON && roomId == 0x01) {
+            System.arraycopy(romData, bankAddrToRomOffset(0x35, 0x4F00),
+                animatedScrollingTiles, 0, 0x20);
         }
     }
 
@@ -395,6 +449,21 @@ public class GPU {
     public void tickAnimatedTiles(byte[] romData) {
         animatedTilesFrameCount = (animatedTilesFrameCount + 1) & 0xFF;
 
+        if (currentAnimatedTilesGroup == DUNGEON_TWO_ANIMATED_GROUP) {
+            if (currentMapId == MAP_COLOR_DUNGEON) {
+                copyAnimatedScrollingTiles(COLOR_DUNGEON_SCROLLING_VRAM_INDEX);
+            } else if (((animatedTilesFrameCount + 1) & 0x03) == 0) {
+                copyAnimatedScrollingTiles(DUNGEON_TWO_SCROLLING_VRAM_INDEX);
+            } else if ((animatedTilesFrameCount & 0x07) == 0) {
+                int sourceOffset = ANIMATED_TILES_PING_PONG[
+                    (animatedTilesFrameCount >> 3) & 0x07];
+                loadTilesFromROM(romData, ANIMATED_TILES_BANK,
+                    ANIMATED_TILES_BASE_ADDR + 0x0300 + sourceOffset,
+                    ANIMATED_TILES_FRAME_COUNT, ANIMATED_TILES_FRAME_VRAM_INDEX);
+            }
+            return;
+        }
+
         int newOffset = nextAnimatedTilesDataOffset(
             currentAnimatedTilesGroup, animatedTilesFrameCount, animatedTilesDataOffset);
         if (newOffset < 0) {
@@ -402,6 +471,14 @@ public class GPU {
         }
         animatedTilesDataOffset = newOffset;
         copyAnimatedTilesFrame(romData, animatedTilesDataOffset);
+    }
+
+    private void copyAnimatedScrollingTiles(int destinationTile) {
+        System.arraycopy(animatedScrollingTiles, 0, vram, destinationTile * TILE_DATA_SIZE,
+            animatedScrollingTiles.length);
+        for (int tile = destinationTile; tile < destinationTile + 4; tile++) {
+            updateTile(tile);
+        }
     }
 
     /** Copies one ROM switch-block frame into its gameplay VRAM slot. */

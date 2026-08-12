@@ -92,6 +92,22 @@ public final class SaveRamImage {
             main + SaveRamLayout.MAIN_DEATH_COUNT_OFFSET + 3, (byte) 0);
     }
 
+    /** Copies the complete source-defined 0x3AD-byte save slot. */
+    public void copySlot(int sourceSlot, int targetSlot) {
+        SaveRamLayout.checkSlot(sourceSlot);
+        SaveRamLayout.checkSlot(targetSlot);
+        System.arraycopy(bytes, SaveRamLayout.slotOffset(sourceSlot), bytes,
+            SaveRamLayout.slotOffset(targetSlot), SaveRamLayout.SLOT_SIZE);
+    }
+
+    /** Clears the ROM slot extent, then restores this model's valid empty-slot prefix. */
+    public void eraseSlot(int slot) {
+        SaveRamLayout.checkSlot(slot);
+        int slotOffset = SaveRamLayout.slotOffset(slot);
+        Arrays.fill(bytes, slotOffset, slotOffset + SaveRamLayout.SLOT_SIZE, (byte) 0);
+        SaveRamLayout.writeValidPrefix(bytes, slotOffset);
+    }
+
     /**
      * Writes the live Ocarina fields copied by the source save path.
      *

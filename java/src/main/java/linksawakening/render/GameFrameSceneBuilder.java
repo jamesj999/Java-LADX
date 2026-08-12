@@ -35,7 +35,23 @@ public final class GameFrameSceneBuilder {
     private static void addOverworldLayers(List<RenderLayer> layers, GameFrameState state) {
         layers.add(new RoomRenderLayer(state.room(), state.scrollController(), state.transitionController()));
         if (state.link() != null) {
-            layers.add(new LinkRenderLayer(state.link(), state.scrollController()));
+            if (state.link().isMarinWakeUpBedVisible()) {
+                if (state.room().entities() != null
+                    && state.room().entities().spriteTiles() != null
+                    && state.room().entities().spriteSelection() != null) {
+                    layers.add(new MarinWakeUpBedRenderLayer(state.link(),
+                        state.room().entities().spriteTiles(),
+                        state.room().entities().spriteSelection().objectPalettes(),
+                        state.scrollController()));
+                }
+            } else {
+                layers.add(new LinkRenderLayer(state.link(), state.scrollController()));
+                if (state.link().isTarinShieldPresentationVisible()
+                    && state.room().entities() != null
+                    && state.room().entities().spriteSelection() != null) {
+                    layers.add(new TarinShieldRenderLayer(state.link(), state.scrollController()));
+                }
+            }
         }
         if (state.room().entities() != null
             && state.room().entities().spriteSelection() != null) {

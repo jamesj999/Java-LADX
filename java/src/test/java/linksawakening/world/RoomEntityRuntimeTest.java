@@ -35,7 +35,7 @@ final class RoomEntityRuntimeTest {
         runtime.tickWithProjectileEvents(1, 0x50, 0x60, () -> 0, null,
             new EnemyProjectileCollision.LinkState(0x50, 0x60, 0, 0, 3, false));
 
-        assertEquals(List.of(new RoomEntityRuntime.LinkFinalPositionRequest(0)),
+        assertEquals(List.of(new RoomEntityRuntime.LinkFinalPositionRequest(0, true, true, false)),
             runtime.consumePendingLinkFinalPositionRequests());
     }
 
@@ -50,7 +50,7 @@ final class RoomEntityRuntimeTest {
         runtime.tickWithProjectileEvents(1, 0x50, 0x60, () -> 0, null,
             new EnemyProjectileCollision.LinkState(0x50, 0x60, 1, 0, 3, false));
 
-        assertEquals(List.of(new RoomEntityRuntime.LinkFinalPositionRequest(0)),
+        assertEquals(List.of(new RoomEntityRuntime.LinkFinalPositionRequest(0, true, true, false)),
             runtime.consumePendingLinkFinalPositionRequests());
     }
 
@@ -70,6 +70,17 @@ final class RoomEntityRuntimeTest {
             EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(0xB5), 0);
 
         assertTrue(RoomEntityCombatRules.overlapsLink(bear, 0x4D, 0x50));
+    }
+
+    @Test
+    void helperEntitiesUseTheirRomPillarAndSideViewHitboxes() {
+        RoomEntity pillar = new RoomEntity(0, 0, 0x9D, 0x50, 0x60,
+            EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(0x9D), 0);
+        RoomEntity thwomp = new RoomEntity(1, 0, 0xD8, 0x50, 0x60,
+            EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(0xD8), 0);
+
+        assertTrue(RoomEntityCombatRules.overlapsLink(pillar, 0x5A, 0x60));
+        assertTrue(RoomEntityCombatRules.overlapsLink(thwomp, 0x68, 0x60));
     }
 
     @Test
@@ -2522,7 +2533,7 @@ final class RoomEntityRuntimeTest {
         runtime.tickWithProjectileEvents(0xB2, 0x50, 0x60, () -> 0, null,
             new EnemyProjectileCollision.LinkState(0x50, 0x60, 0x04, 0x00, 0, false));
 
-        assertEquals(List.of(new RoomEntityRuntime.LinkFinalPositionRequest(0)),
+        assertEquals(List.of(new RoomEntityRuntime.LinkFinalPositionRequest(0, true, true, false)),
             runtime.consumePendingLinkFinalPositionRequests());
     }
 
