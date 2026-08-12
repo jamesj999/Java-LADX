@@ -9,6 +9,7 @@ import linksawakening.physics.OverworldCollision;
 import linksawakening.physics.PhysicsFlags;
 import linksawakening.rom.RomBank;
 import linksawakening.rom.RomTables;
+import linksawakening.state.PlayerState;
 import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.vfx.TransientVfxType;
 import org.junit.jupiter.api.Test;
@@ -46,6 +47,8 @@ final class RoomSessionTest {
     @Test
     void openingBeachEventsCompleteInPlayOrderAndStayGoneAfterReload() {
         RoomSession session = newSession();
+        PlayerState playerState = new PlayerState();
+        playerState.initializeNewGame(0x30, 0x30, 0x20);
         session.loadInitialOverworld(0xF2);
         session.setChestPlayerLevels(0, 0, 0);
 
@@ -63,6 +66,7 @@ final class RoomSessionTest {
         }
         assertTrue(owlDialogOpened);
         assertEquals(0x20, session.overworldRoomStatusForTest(0xF2) & 0x20);
+        assertEquals(0, session.overworldRoomStatusForTest(0xF2) & 0x10);
 
         boolean owlMusicRestored = false;
         while (session.activeRoom().entities().loadedEntities().stream()
@@ -91,7 +95,11 @@ final class RoomSessionTest {
         }
         assertEquals(List.of(new RoomEntityRuntime.SwordPickupRewardEvent(sword.slot())),
             swordRewards);
-        assertEquals(0x30, session.overworldRoomStatusForTest(0xF2) & 0x30);
+        swordRewards.forEach(reward -> playerState.applyBeachSwordReward());
+        assertEquals(1, playerState.swordLevel());
+        assertEquals(PlayerState.INVENTORY_SWORD, playerState.itemB());
+        assertEquals(0x20, session.overworldRoomStatusForTest(0xF2) & 0x20);
+        assertEquals(0x10, session.overworldRoomStatusForTest(0xF2) & 0x10);
         assertEquals(0x05, session.consumePendingMusicTrack());
 
         session.loadInitialOverworld(0xF2);
