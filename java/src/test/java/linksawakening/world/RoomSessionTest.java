@@ -666,6 +666,26 @@ final class RoomSessionTest {
     }
 
     @Test
+    void moldormRoomKillAllEventOpensBothBossRoomShutters() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x00, 0x06);
+        assertEquals(0x03, session.activeRoom().shutterDoorMask());
+        assertEquals(0x21, session.activeRoomEventForTest());
+
+        List<RoomEntity> emptySlots = new ArrayList<>();
+        for (int slot = 0; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
+            emptySlots.add(RoomEntity.disabled(slot));
+        }
+        session.replaceEntityRuntimeForTest(
+            RoomEntityRuntime.from(new RoomEntitySnapshot(emptySlots), true));
+
+        session.tickEntities(0, 0x50, 0x50);
+
+        assertEquals(0, session.activeRoom().shutterDoorMask());
+        assertEquals(0, session.activeRoomEventForTest());
+    }
+
+    @Test
     void tailCaveFirstKeyDoorConsumesTheKeyAndSynchronizesBothRooms() {
         RoomSession session = newSession();
         List<GameplaySoundEvent> sounds = new ArrayList<>();

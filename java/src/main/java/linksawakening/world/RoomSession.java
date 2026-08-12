@@ -80,6 +80,7 @@ public final class RoomSession {
     private static final int EVENT_EFFECT_MASK = 0xE0;
     private static final int EVENT_TRIGGER_KILL_ALL_ENEMIES = 0x01;
     private static final int EVENT_TRIGGER_STEP_ON_BUTTON = 0x03;
+    private static final int EVENT_EFFECT_OPEN_LOCKED_DOORS = 0x20;
     private static final int EVENT_EFFECT_REVEAL_CHEST = 0x60;
     private static final int EVENT_EFFECT_CLEAR_MIDBOSS = 0xC0;
     private static final int EVENT_CLEAR_MIDBOSS = 0xC1;
@@ -2824,14 +2825,19 @@ public final class RoomSession {
         if (!roomEventEffectExecuted) {
             return;
         }
-        if ((activeRoomEvent & EVENT_EFFECT_MASK) == EVENT_EFFECT_REVEAL_CHEST) {
+        int effect = activeRoomEvent & EVENT_EFFECT_MASK;
+        if (effect == EVENT_EFFECT_REVEAL_CHEST) {
             activeRoomEvent = 0;
             roomEventChestRevealCountdown = ROOM_EVENT_CHEST_REVEAL_COUNTDOWN;
             if (transientVfxSystem != null) {
                 transientVfxSystem.spawn(TransientVfxType.CHEST_APPEARS, 0x88,
                     roomEventChestTop(linkEntityX, linkEntityY) + 0x10);
             }
-        } else if ((activeRoomEvent & EVENT_EFFECT_MASK) == EVENT_EFFECT_CLEAR_MIDBOSS) {
+        } else if (effect == EVENT_EFFECT_OPEN_LOCKED_DOORS) {
+            activeRoom.openShutterDoors();
+            activeRoomEvent = 0;
+            colorShellSoundSink.play(GameplaySoundEvent.DOOR_UNLOCKED);
+        } else if (effect == EVENT_EFFECT_CLEAR_MIDBOSS) {
             activeRoom.openShutterDoors();
             if (activeRoomEvent == EVENT_CLEAR_MIDBOSS
                 && activeRoom.mapId() >= 0
