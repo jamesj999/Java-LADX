@@ -59,6 +59,20 @@ final class MainFileMenuFlowTest {
     }
 
     @Test
+    void configuredNewGameDelegatesToDedicatedBootstrapWhileDebugUsesConfiguredPath() throws Exception {
+        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+        int start = source.indexOf("private static void startConfiguredGameplay()");
+        int end = source.indexOf("private static void startNewGame()", start);
+        String method = source.substring(start, end);
+
+        assertTrue(method.contains("StartupCoordinator.shouldStartNewGameGameplay(currentAppConfig())"));
+        assertTrue(method.contains("startNewGame();"));
+        assertTrue(method.contains("return;"));
+        assertTrue(method.contains("applyConfiguredItemProfile(currentAppConfig(), playerState);"));
+        assertTrue(method.contains("loadOverworldScreen();"));
+    }
+
+    @Test
     void startupTreatsSavedAndNewGamePositionsAsRomOamCoordinates() throws Exception {
         String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
 

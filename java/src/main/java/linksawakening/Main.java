@@ -1504,6 +1504,10 @@ public class Main {
     }
 
     private static void startConfiguredGameplay() {
+        if (StartupCoordinator.shouldStartNewGameGameplay(currentAppConfig())) {
+            startNewGame();
+            return;
+        }
         fileMenuController = null;
         fileSaveController = null;
         currentSaveSlot = -1;

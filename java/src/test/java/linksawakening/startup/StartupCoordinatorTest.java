@@ -31,6 +31,19 @@ final class StartupCoordinatorTest {
     }
 
     @Test
+    void newGameItemProfileSelectsDedicatedNewGameGameplay() {
+        AppConfig newGame = AppConfig.parse("""
+            { "itemProfile": "NEW_GAME" }
+            """);
+        AppConfig debugAllItems = AppConfig.parse("""
+            { "itemProfile": "DEBUG_ALL_ITEMS" }
+            """);
+
+        assertTrue(StartupCoordinator.shouldStartNewGameGameplay(newGame));
+        assertFalse(StartupCoordinator.shouldStartNewGameGameplay(debugAllItems));
+    }
+
+    @Test
     void introCutsceneRequiresIntroStoryAndTitleScreen() {
         assertTrue(StartupCoordinator.shouldStartIntroCutscene(AppConfig.parse("""
             { "startMode": "CONFIGURED_LOCATION", "showTitleScreen": true, "playIntroStory": true }

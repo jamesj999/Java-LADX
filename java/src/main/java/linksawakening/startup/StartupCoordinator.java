@@ -13,6 +13,10 @@ public final class StartupCoordinator {
         return config.showTitleScreen() && config.playIntroStory();
     }
 
+    public static boolean shouldStartNewGameGameplay(AppConfig config) {
+        return config.itemProfile() == AppConfig.ItemProfile.NEW_GAME;
+    }
+
     public static int gameplayStartRoomId(AppConfig config) {
         if (config.startMode() == AppConfig.StartMode.NORMAL) {
             return NEW_GAME_START_ROOM_ID;
