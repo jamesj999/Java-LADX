@@ -3,12 +3,14 @@ package linksawakening.world;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.entity.Link;
+import linksawakening.gameplay.BeachSwordRewardConsumer;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gpu.GPU;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.physics.PhysicsFlags;
 import linksawakening.rom.RomBank;
 import linksawakening.rom.RomTables;
+import linksawakening.startup.NewGameStartProfile;
 import linksawakening.state.PlayerState;
 import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.vfx.TransientVfxType;
@@ -48,7 +50,7 @@ final class RoomSessionTest {
     void openingBeachEventsCompleteInPlayOrderAndStayGoneAfterReload() {
         RoomSession session = newSession();
         PlayerState playerState = new PlayerState();
-        playerState.initializeNewGame(0x30, 0x30, 0x20);
+        NewGameStartProfile.romDefaults().initializePlayerState(playerState);
         session.loadInitialOverworld(0xF2);
         session.setChestPlayerLevels(0, 0, 0);
 
@@ -86,16 +88,12 @@ final class RoomSessionTest {
         assertNotNull(pickup);
         assertEquals(0x0F, session.consumePendingMusicTrack());
 
-        List<RoomEntityRuntime.SwordPickupRewardEvent> swordRewards = List.of();
         frame = pickupFrame + 1;
-        while (swordRewards.isEmpty() && frame < pickupFrame + 0x300) {
+        while (playerState.swordLevel() == 0 && frame < pickupFrame + 0x300) {
             session.tickEntities(frame++, sword.x(), sword.y());
             session.consumeEntityDialogRequests();
-            swordRewards = session.consumeSwordPickupRewards();
+            BeachSwordRewardConsumer.consume(session, playerState);
         }
-        assertEquals(List.of(new RoomEntityRuntime.SwordPickupRewardEvent(sword.slot())),
-            swordRewards);
-        swordRewards.forEach(reward -> playerState.applyBeachSwordReward());
         assertEquals(1, playerState.swordLevel());
         assertEquals(PlayerState.INVENTORY_SWORD, playerState.itemB());
         assertEquals(0x20, session.overworldRoomStatusForTest(0xF2) & 0x20);

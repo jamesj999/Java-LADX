@@ -31,6 +31,7 @@ import linksawakening.audio.music.MusicTrackIds;
 import linksawakening.audio.music.RoomMusicContext;
 import linksawakening.audio.openal.OpenAlMusicPlayer;
 import linksawakening.audio.openal.OpenAlPcmSoundOutput;
+import linksawakening.gameplay.BeachSwordRewardConsumer;
 import linksawakening.gameplay.DialogTextLoader;
 import linksawakening.gameplay.DialogSoundRouter;
 import linksawakening.gameplay.DialogSoundSink;
@@ -1064,11 +1065,7 @@ public class Main {
                     }
                     playDirectMusic(0x18);
                 }
-                for (var reward : roomSession.consumeSwordPickupRewards()) {
-                    if (playerState != null) {
-                        playerState.applyBeachSwordReward();
-                    }
-                }
+                BeachSwordRewardConsumer.consume(roomSession, playerState);
                 for (var reward : roomSession.consumeToadstoolRewards()) {
                     if (playerState != null) {
                         playerState.applyToadstoolReward();
