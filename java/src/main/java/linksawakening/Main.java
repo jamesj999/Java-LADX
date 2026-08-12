@@ -1136,6 +1136,7 @@ public class Main {
                 if (roomTransitionCoordinator.handlePendingManboTransition(link)) {
                     gameplaySoundSink.play(linksawakening.gameplay.GameplaySoundEvent.MANBO_WARP);
                 }
+                roomTransitionCoordinator.handlePendingInstrumentTransition(link);
                 for (var event : projectileEvents) {
                     boolean hookshotPull = event.kind() == EntityProjectileEvent.Kind.HOOKSHOT_PULL;
                     boolean hasLinkResponse = event.linkIgnoreCollisionCountdown() != 0

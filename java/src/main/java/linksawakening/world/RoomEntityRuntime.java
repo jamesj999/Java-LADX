@@ -448,6 +448,8 @@ public final class RoomEntityRuntime {
         new ArrayList<>();
     private final List<InstrumentRewardEvent> pendingInstrumentRewards =
         new ArrayList<>();
+    private final List<InstrumentCompletionEvent> pendingInstrumentCompletions =
+        new ArrayList<>();
     private final List<OwlEventCompletion> pendingOwlEventCompletions =
         new ArrayList<>();
     private final List<LinkFinalPositionRequest> pendingLinkFinalPositionRequests =
@@ -635,6 +637,9 @@ public final class RoomEntityRuntime {
     }
 
     public record InstrumentRewardEvent(int slot) {
+    }
+
+    public record InstrumentCompletionEvent(int slot, int mapId) {
     }
 
     public record WitchExchangeEvent(int slot, int inventorySlot) {
@@ -1417,6 +1422,7 @@ public final class RoomEntityRuntime {
         pendingSwordPickupRewards.clear();
         pendingToadstoolRewards.clear();
         pendingInstrumentRewards.clear();
+        pendingInstrumentCompletions.clear();
         pendingWitchExchangeEvents.clear();
         pendingWitchRewardEvents.clear();
         pendingOwlEventCompletions.clear();
@@ -7211,6 +7217,8 @@ public final class RoomEntityRuntime {
             if (slowTransitionCountdown[slot] == 0) {
                 instrumentPickupState[slot] = 4;
                 instrumentPickupSequenceActive[slot] = false;
+                pendingInstrumentCompletions.add(
+                    new InstrumentCompletionEvent(slot, entityMapId & 0xFF));
                 disableEntityWithoutPersistence(slot);
                 return;
             }
@@ -9030,6 +9038,13 @@ public final class RoomEntityRuntime {
         List<InstrumentRewardEvent> rewards = List.copyOf(pendingInstrumentRewards);
         pendingInstrumentRewards.clear();
         return rewards;
+    }
+
+    List<InstrumentCompletionEvent> consumePendingInstrumentCompletions() {
+        List<InstrumentCompletionEvent> completions =
+            List.copyOf(pendingInstrumentCompletions);
+        pendingInstrumentCompletions.clear();
+        return completions;
     }
 
     List<WitchExchangeEvent> consumePendingWitchExchangeEvents() {

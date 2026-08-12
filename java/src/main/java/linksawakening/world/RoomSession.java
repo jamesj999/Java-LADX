@@ -237,6 +237,7 @@ public final class RoomSession {
     private int ocarinaAnimationCounter;
     private int ocarinaAnimationPhase;
     private boolean pendingManboTransition;
+    private boolean pendingInstrumentTransition;
     private boolean hasBirdKey;
     private int currentLinkMotionState = EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE;
     /** WRAM wC1A2; ResetRoomVariables clears the room trigger counter. */
@@ -771,6 +772,7 @@ public final class RoomSession {
         ocarinaAnimationCounter = 0;
         ocarinaAnimationPhase = 0;
         pendingManboTransition = false;
+        pendingInstrumentTransition = false;
         return true;
     }
 
@@ -798,6 +800,15 @@ public final class RoomSession {
         }
         pendingManboTransition = false;
         return manboWarpResolver.resolve(activeRoom.mapCategory(), activeRoom.mapId());
+    }
+
+    /** Returns the room's prepared warp after the instrument effect completes. */
+    public Warp consumeInstrumentTransitionRequest() {
+        if (!pendingInstrumentTransition || activeRoom == null || !activeRoom.hasWarps()) {
+            return null;
+        }
+        pendingInstrumentTransition = false;
+        return activeRoom.firstWarp();
     }
 
     /** Supplies the player fields consumed by the ROM enemy-drop resolver. */
@@ -1375,6 +1386,7 @@ public final class RoomSession {
         harvestSwordPickupRewards();
         harvestToadstoolRewards();
         harvestInstrumentRewards();
+        harvestInstrumentCompletions();
         harvestWitchEvents();
         harvestOwlEventCompletions();
         if (entityRuntime.consumePendingSwitchBlockAnimationRequest()
@@ -1951,6 +1963,7 @@ public final class RoomSession {
         pendingWitchRewardEvents.clear();
         pendingRoomDialogRequests.clear();
         pendingManboTransition = false;
+        pendingInstrumentTransition = false;
         pendingShovelDrop = null;
         shovelUseState = 0;
         roomTriggerCount = 0;
@@ -2786,6 +2799,13 @@ public final class RoomSession {
             dungeonProgressFlags[activeRoom.mapId()] |= 0x02;
         }
         entityRuntime.setEntityRoomStatus(activeRoomStatusFlags());
+    }
+
+    private void harvestInstrumentCompletions() {
+        if (entityRuntime != null
+            && !entityRuntime.consumePendingInstrumentCompletions().isEmpty()) {
+            pendingInstrumentTransition = true;
+        }
     }
 
     private void harvestWitchEvents() {

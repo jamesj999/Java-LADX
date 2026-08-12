@@ -817,6 +817,8 @@ final class RoomSessionTest {
 
         assertFalse(session.activeRoom().entities().slots().get(instrument.slot()).loaded());
         assertTrue(session.consumeLinkMotionBlockRequests().isEmpty());
+        assertEquals(session.activeRoom().firstWarp(),
+            session.consumeInstrumentTransitionRequest());
     }
 
     @Test

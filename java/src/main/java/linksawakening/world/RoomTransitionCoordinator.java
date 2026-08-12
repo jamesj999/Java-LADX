@@ -109,6 +109,19 @@ public final class RoomTransitionCoordinator {
         return true;
     }
 
+    /** Starts disableMovementInTransition after the Sirens Instrument effect. */
+    public boolean handlePendingInstrumentTransition(Link link) {
+        if (link == null || !roomSession.hasActiveRoom() || transitionController.isActive()) {
+            return false;
+        }
+        Warp target = roomSession.consumeInstrumentTransitionRequest();
+        if (target == null) {
+            return false;
+        }
+        transitionController.startFadeOut(() -> applyWarp(target, link));
+        return true;
+    }
+
     private void applyWarp(Warp warp, Link link) {
         roomSession.loadWarpDestination(warp);
         int landingX = warp.javaPixelX();
