@@ -68,6 +68,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_DROPPABLE_ARROWS = 0x37;
     private static final int ENTITY_DROPPABLE_BOMBS = 0x38;
     private static final int ENTITY_DROPPABLE_MAGIC_POWDER = 0x3B;
+    private static final int ENTITY_SLEEPY_TOADSTOOL = 0x3A;
     private static final int ENTITY_HIDING_SLIME_KEY = 0x3C;
     private static final int ROOM_OW_POTHOLE_FIELD_SLIME_KEY = 0xC6;
     private static final int GOLDEN_LEAVES_FINAL_COUNT = 0x06;
@@ -430,6 +431,8 @@ public final class RoomEntityRuntime {
         new ArrayList<>();
     private final List<SwordPickupRewardEvent> pendingSwordPickupRewards =
         new ArrayList<>();
+    private final List<ToadstoolRewardEvent> pendingToadstoolRewards =
+        new ArrayList<>();
     private final List<OwlEventCompletion> pendingOwlEventCompletions =
         new ArrayList<>();
     private final List<LinkFinalPositionRequest> pendingLinkFinalPositionRequests =
@@ -511,6 +514,10 @@ public final class RoomEntityRuntime {
     private final int[] swordPickupState = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] swordPickupSequenceActive =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] toadstoolPickupSequenceActive =
+        new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private boolean playerHasToadstool;
+    private int playerMagicPowderCount;
     private final int[] owlEventState = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] owlSpeedX = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] owlSpeedY = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -580,6 +587,9 @@ public final class RoomEntityRuntime {
     }
 
     public record SwordPickupRewardEvent(int slot) {
+    }
+
+    public record ToadstoolRewardEvent(int slot) {
     }
 
     public record OwlEventCompletion(int slot) {
@@ -1348,6 +1358,7 @@ public final class RoomEntityRuntime {
         pendingChestRewardEvents.clear();
         pendingHeartContainerRewards.clear();
         pendingSwordPickupRewards.clear();
+        pendingToadstoolRewards.clear();
         pendingOwlEventCompletions.clear();
         pendingSlimeKeyRewardEvents.clear();
         pendingKeyQuicksandEvents.clear();
@@ -1658,6 +1669,17 @@ public final class RoomEntityRuntime {
                 }
                 if (swordPickupSequenceActive[entity.slot()]) {
                     advanceSwordPickup(entity, frame, linkEntityX, linkEntityY, linkZ);
+                    continue;
+                }
+            }
+            if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_SLEEPY_TOADSTOOL) {
+                if (!toadstoolPickupSequenceActive[entity.slot()]
+                    && (playerHasToadstool || playerMagicPowderCount != 0)) {
+                    disableEntityWithoutPersistence(entity.slot());
+                    continue;
+                }
+                if (toadstoolPickupSequenceActive[entity.slot()]) {
+                    advanceToadstoolPickup(entity, linkEntityX, linkEntityY, linkZ);
                     continue;
                 }
             }
@@ -3662,6 +3684,8 @@ public final class RoomEntityRuntime {
                 || dropPrivateCountdown1[entity.slot()] > 0
                 || (entity.type() == ENTITY_HEART_CONTAINER
                     && enemyTransitionCountdown[entity.slot()] != 0)
+                || (entity.type() == ENTITY_SLEEPY_TOADSTOOL
+                    && toadstoolPickupSequenceActive[entity.slot()])
                 || (isCommonDroppableType(entity.type())
                     && droppablePrivateState3[entity.slot()] != 0)
                 || (entity.type() == ENTITY_DROPPABLE_SECRET_SEASHELL
@@ -3694,6 +3718,8 @@ public final class RoomEntityRuntime {
             } else if (entity.type() == ENTITY_SWORD_SHIELD_PICKUP
                 && chestSwordLevel == 0) {
                 startSwordPickup(entity.slot());
+            } else if (entity.type() == ENTITY_SLEEPY_TOADSTOOL) {
+                startToadstoolPickup(entity.slot());
             } else if (requiresHeldPickupTransition(entity.type())) {
                 beginLift(entity.slot(), romDirection);
             } else {
@@ -6358,6 +6384,12 @@ public final class RoomEntityRuntime {
         chestPlayerLevelsKnown = true;
     }
 
+    void setToadstoolPlayerState(boolean hasToadstool, int magicPowderCount) {
+        validateByte(magicPowderCount, "Magic Powder count");
+        playerHasToadstool = hasToadstool;
+        playerMagicPowderCount = magicPowderCount;
+    }
+
     int swordPickupStateForTest(int slot) {
         validateEntitySlot(slot);
         return swordPickupState[slot];
@@ -6855,6 +6887,33 @@ public final class RoomEntityRuntime {
         enemyTransitionCountdown[slot] = 0xA0;
         slowTimerInitialized[slot] = true;
         pendingMusicTrack = 0x0F;
+    }
+
+    private void startToadstoolPickup(int slot) {
+        toadstoolPickupSequenceActive[slot] = true;
+        enemyTransitionCountdown[slot] = 0x68;
+        pendingMusicTrack = 0x10;
+    }
+
+    private void advanceToadstoolPickup(RoomEntity entity,
+                                        int linkEntityX, int linkEntityY, int linkZ) {
+        int slot = entity.slot();
+        int countdown = enemyTransitionCountdown[slot];
+        if (countdown == 0x10) {
+            enemyTransitionCountdown[slot] = 0x0F;
+            pendingDialogRequests.add(new DialogRequest(0, 0x0F));
+        } else if (countdown == 1) {
+            pendingToadstoolRewards.add(new ToadstoolRewardEvent(slot));
+            pendingMusicTrack = owlDefaultMusicResolver.applyAsInt(entityRoomId);
+            toadstoolPickupSequenceActive[slot] = false;
+            disableEntityWithoutPersistence(slot);
+            return;
+        }
+        pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
+        pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
+        RoomEntity held = withPositionAndVariant(entity, linkEntityX,
+            (linkEntityY - 0x0C) & 0xFF, entity.spriteVariant());
+        slots[slot] = withZ(held, linkZ & 0xFF);
     }
 
     private void advanceSwordPickup(RoomEntity entity, int frameCounter,
@@ -8572,6 +8631,12 @@ public final class RoomEntityRuntime {
         return rewards;
     }
 
+    List<ToadstoolRewardEvent> consumePendingToadstoolRewards() {
+        List<ToadstoolRewardEvent> rewards = List.copyOf(pendingToadstoolRewards);
+        pendingToadstoolRewards.clear();
+        return rewards;
+    }
+
     List<OwlEventCompletion> consumePendingOwlEventCompletions() {
         List<OwlEventCompletion> completions = List.copyOf(pendingOwlEventCompletions);
         pendingOwlEventCompletions.clear();
@@ -9978,7 +10043,7 @@ public final class RoomEntityRuntime {
 
     private static boolean requiresHeldPickupTransition(int type) {
         return switch (type) {
-            case 0x30, 0x31, 0x33, 0x34, 0x35, 0x36, 0x39, 0x3A, 0x3C -> true;
+            case 0x30, 0x31, 0x33, 0x34, 0x35, 0x36, 0x39, 0x3C -> true;
             default -> false;
         };
     }

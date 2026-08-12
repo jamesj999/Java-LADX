@@ -193,6 +193,7 @@ final class SaveRamImageTest {
         player.setBombCount(23);
         player.setMaxMagicPowder(32);
         player.setMagicPowderCount(19);
+        player.setHasToadstool(true);
         player.setMaxHearts(10);
         player.setHealth(0);
         player.setHeartPieces(2);
@@ -227,6 +228,7 @@ final class SaveRamImageTest {
         assertEquals(23, state.bombCount());
         assertEquals(60, state.maxBombs());
         assertEquals(19, state.magicPowderCount());
+        assertEquals(1, state.hasToadstool());
         assertEquals(32, state.maxMagicPowder());
         assertEquals(56, state.health());
         assertEquals(10, state.maxHearts());

@@ -851,6 +851,8 @@ public class Main {
                     roomSession.setChestPlayerLevels(
                         playerState.shieldLevel(), playerState.swordLevel(),
                         playerState.powerBraceletLevel());
+                    roomSession.setToadstoolPlayerState(
+                        playerState.hasToadstool(), playerState.magicPowderCount());
                     EntityPickupEvent pickup = roomSession.collectEntityIfNeeded(
                         frameCounter, link.pixelX(), link.pixelY(), link.isAirborne(), true,
                         link.direction(), link.romEntityZ());
@@ -968,6 +970,9 @@ public class Main {
                     playerState == null ? 1 : playerState.shieldLevel(),
                     playerState == null ? 1 : playerState.swordLevel(),
                     playerState == null ? 1 : playerState.powerBraceletLevel());
+                roomSession.setToadstoolPlayerState(
+                    playerState != null && playerState.hasToadstool(),
+                    playerState == null ? 0 : playerState.magicPowderCount());
                 roomSession.setEntityGoldenLeavesCount(
                     playerState == null ? 0 : playerState.goldenLeavesCount());
                 roomSession.setEnemyDropPlayerState(
@@ -1062,6 +1067,11 @@ public class Main {
                 for (var reward : roomSession.consumeSwordPickupRewards()) {
                     if (playerState != null) {
                         playerState.applyBeachSwordReward();
+                    }
+                }
+                for (var reward : roomSession.consumeToadstoolRewards()) {
+                    if (playerState != null) {
+                        playerState.applyToadstoolReward();
                     }
                 }
                 roomSession.setBirdKeyOwned(playerState != null && playerState.birdKeyCount() != 0);

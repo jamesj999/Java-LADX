@@ -16,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 final class BeachOpeningRuntimeTest {
     private static final int BEACH_ROOM = 0xF2;
     private static final int ENTITY_SWORD_SHIELD_PICKUP = 0x31;
+    private static final int ENTITY_SLEEPY_TOADSTOOL = 0x3A;
     private static final int ENTITY_OWL_EVENT = 0x41;
 
     @Test
@@ -97,6 +98,63 @@ final class BeachOpeningRuntimeTest {
         assertTrue(foundSpinPose);
         assertEquals(List.of(new RoomEntityRuntime.SwordPickupRewardEvent(0)), rewards);
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
+    }
+
+    @Test
+    void sleepyToadstoolUsesTheRomHeldItemSequenceBeforeGrantingItsReward()
+            throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
+            0, 0, ENTITY_SLEEPY_TOADSTOOL, 0x58, 0x60, EntityStatus.ACTIVE,
+            catalog.forEntityType(ENTITY_SLEEPY_TOADSTOOL,
+                EntityRoomLoader.RoomTable.OVERWORLD), 0)),
+            false, () -> 0, catalog, new RomEnemyCombatTables(rom));
+        runtime.setEntityRoomId(0x50);
+        runtime.setToadstoolPlayerState(false, 0);
+        runtime.setOwlDefaultMusicResolver(roomId -> 0x09);
+
+        EntityPickupEvent pickup = runtime.collectIfNeeded(
+            1, 0x58, 0x60, false, true, 3, 0);
+        assertNotNull(pickup);
+        assertEquals(0x01, pickup.persistentClearMask());
+        assertEquals(0x10, runtime.consumePendingMusicTrack());
+
+        boolean heldAboveLink = false;
+        boolean linkBlocked = false;
+        boolean dialogOpened = false;
+        List<RoomEntityRuntime.ToadstoolRewardEvent> rewards = List.of();
+        for (int frame = 2; frame < 0x100 && rewards.isEmpty(); frame++) {
+            runtime.tick(frame, 0x48, 0x50, () -> 0);
+            heldAboveLink |= !runtime.consumePendingLinkHeldItemPoseRequests().isEmpty();
+            linkBlocked |= !runtime.consumePendingLinkMotionBlockRequests().isEmpty();
+            dialogOpened |= runtime.consumePendingDialogRequests().stream()
+                .anyMatch(request -> request.globalDialogId() == 0x00F);
+            rewards = runtime.consumePendingToadstoolRewards();
+        }
+
+        assertTrue(heldAboveLink);
+        assertTrue(linkBlocked);
+        assertTrue(dialogOpened);
+        assertEquals(List.of(new RoomEntityRuntime.ToadstoolRewardEvent(0)), rewards);
+        assertEquals(0x09, runtime.consumePendingMusicTrack());
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
+    }
+
+    @Test
+    void sleepyToadstoolUnloadsWhenAlreadyOwnedOrPowderIsPresent() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+
+        RoomEntityRuntime owned = toadstoolRuntime(catalog, rom);
+        owned.setToadstoolPlayerState(true, 0);
+        owned.tick(0, 0, 0, () -> 0);
+        assertEquals(EntityStatus.DISABLED, owned.snapshot().slots().get(0).status());
+
+        RoomEntityRuntime powdered = toadstoolRuntime(catalog, rom);
+        powdered.setToadstoolPlayerState(false, 1);
+        powdered.tick(0, 0, 0, () -> 0);
+        assertEquals(EntityStatus.DISABLED, powdered.snapshot().slots().get(0).status());
     }
 
     @Test
@@ -184,6 +242,15 @@ final class BeachOpeningRuntimeTest {
             0, 0, ENTITY_OWL_EVENT, 0x58, 0x50, EntityStatus.ACTIVE,
             catalog.forOwlEvent(false), 0)), false, () -> 0, catalog,
             new RomEnemyCombatTables(rom));
+    }
+
+    private static RoomEntityRuntime toadstoolRuntime(EntitySpriteHandlerCatalog catalog,
+                                                       byte[] rom) {
+        return RoomEntityRuntime.from(snapshot(new RoomEntity(
+            0, 0, ENTITY_SLEEPY_TOADSTOOL, 0x58, 0x60, EntityStatus.ACTIVE,
+            catalog.forEntityType(ENTITY_SLEEPY_TOADSTOOL,
+                EntityRoomLoader.RoomTable.OVERWORLD), 0)),
+            false, () -> 0, catalog, new RomEnemyCombatTables(rom));
     }
 
     private static boolean hasType(RoomEntitySnapshot snapshot, int type) {

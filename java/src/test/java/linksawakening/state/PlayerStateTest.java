@@ -11,6 +11,17 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class PlayerStateTest {
+    @Test
+    void toadstoolRewardSetsItsFlagAndPlacesPowderInInventoryWithoutAddingPowder() {
+        PlayerState state = new PlayerState();
+        state.initializeNewGame(30, 30, 20);
+
+        state.applyToadstoolReward();
+
+        assertTrue(state.hasToadstool());
+        assertEquals(PlayerState.INVENTORY_MAGIC_POWDER, state.itemB());
+        assertEquals(0, state.magicPowderCount());
+    }
 
     @Test
     void damageSubtractsHealthAndClampsAtZero() {

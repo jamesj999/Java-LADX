@@ -65,6 +65,7 @@ public final class PlayerState {
     private int bombCount;
     private int maxBombs;
     private int magicPowderCount;
+    private boolean hasToadstool;
     private int maxMagicPowder;
     private int heartPieces;
     private int seashells;
@@ -122,6 +123,7 @@ public final class PlayerState {
         bombCount = 0;
         this.maxBombs = clamp(maxBombs, 0, 99);
         magicPowderCount = 0;
+        hasToadstool = false;
         this.maxMagicPowder = clamp(maxMagicPowder, 0, 99);
         heartPieces = 0;
         seashells = 0;
@@ -275,6 +277,20 @@ public final class PlayerState {
     public void applyBeachSwordReward() {
         giveInventoryItem(INVENTORY_SWORD);
         setSwordLevel(1);
+    }
+
+    /** Applies SleepyToadstoolEntityHandler's final inventory and flag writes. */
+    public void applyToadstoolReward() {
+        giveInventoryItem(INVENTORY_MAGIC_POWDER);
+        hasToadstool = true;
+    }
+
+    public boolean hasToadstool() {
+        return hasToadstool;
+    }
+
+    public void setHasToadstool(boolean value) {
+        hasToadstool = value;
     }
 
     /** Applies the source-variant dispatch at FloatingItemEntityHandler. */
@@ -662,6 +678,7 @@ public final class PlayerState {
         setBombCount(saved.bombCount());
         setMaxMagicPowder(saved.maxMagicPowder());
         setMagicPowderCount(saved.magicPowderCount());
+        setHasToadstool(saved.hasToadstool() != 0);
         setOcarinaSongFlags(saved.ocarinaSongFlags());
         setSelectedSongIndex(saved.selectedSongIndex());
         setTunicType(saved.tunicType());

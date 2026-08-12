@@ -50,6 +50,7 @@ public final class SaveRamLayout {
     // wOverworldRoomStatus at D800.
     public static final int MAIN_OCARINA_SONG_FLAGS_OFFSET = 0x349;
     public static final int MAIN_SELECTED_SONG_INDEX_OFFSET = 0x34A;
+    public static final int MAIN_HAS_TOADSTOOL_OFFSET = 0x34B;
     public static final int MAIN_SHIELD_OFFSET = 0x344;
     public static final int MAIN_POWER_BRACELET_OFFSET = 0x343;
     public static final int MAIN_ARROWS_OFFSET = 0x345;

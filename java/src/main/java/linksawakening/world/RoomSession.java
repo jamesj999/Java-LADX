@@ -144,6 +144,8 @@ public final class RoomSession {
         pendingHeartContainerRewards = new ArrayList<>();
     private final List<RoomEntityRuntime.SwordPickupRewardEvent>
         pendingSwordPickupRewards = new ArrayList<>();
+    private final List<RoomEntityRuntime.ToadstoolRewardEvent>
+        pendingToadstoolRewards = new ArrayList<>();
     private final List<RoomEntityRuntime.DialogRequest> pendingRoomDialogRequests =
         new ArrayList<>();
     private PendingShovelDrop pendingShovelDrop;
@@ -580,6 +582,13 @@ public final class RoomSession {
                                      int powerBraceletLevel) {
         if (entityRuntime != null) {
             entityRuntime.setChestPlayerLevels(shieldLevel, swordLevel, powerBraceletLevel);
+        }
+    }
+
+    /** Supplies the two WRAM values checked by SleepyToadstoolEntityHandler. */
+    public void setToadstoolPlayerState(boolean hasToadstool, int magicPowderCount) {
+        if (entityRuntime != null) {
+            entityRuntime.setToadstoolPlayerState(hasToadstool, magicPowderCount);
         }
     }
 
@@ -1236,6 +1245,7 @@ public final class RoomSession {
         harvestSlimeKeyRewardEvents();
         harvestHeartContainerRewards();
         harvestSwordPickupRewards();
+        harvestToadstoolRewards();
         harvestOwlEventCompletions();
         if (entityRuntime.consumePendingSwitchBlockAnimationRequest()
             && switchableObjectAnimationStage == 0) {
@@ -1383,6 +1393,13 @@ public final class RoomSession {
         List<RoomEntityRuntime.SwordPickupRewardEvent> rewards =
             List.copyOf(pendingSwordPickupRewards);
         pendingSwordPickupRewards.clear();
+        return rewards;
+    }
+
+    public List<RoomEntityRuntime.ToadstoolRewardEvent> consumeToadstoolRewards() {
+        List<RoomEntityRuntime.ToadstoolRewardEvent> rewards =
+            List.copyOf(pendingToadstoolRewards);
+        pendingToadstoolRewards.clear();
         return rewards;
     }
 
@@ -1750,6 +1767,7 @@ public final class RoomSession {
         pendingSlimeKeyRewardEvents.clear();
         pendingHeartContainerRewards.clear();
         pendingSwordPickupRewards.clear();
+        pendingToadstoolRewards.clear();
         pendingRoomDialogRequests.clear();
         pendingManboTransition = false;
         pendingShovelDrop = null;
@@ -2308,6 +2326,12 @@ public final class RoomSession {
         }
         markActiveRoomCompleted();
         pendingSwordPickupRewards.addAll(rewards);
+    }
+
+    private void harvestToadstoolRewards() {
+        if (entityRuntime != null) {
+            pendingToadstoolRewards.addAll(entityRuntime.consumePendingToadstoolRewards());
+        }
     }
 
     private void harvestOwlEventCompletions() {
