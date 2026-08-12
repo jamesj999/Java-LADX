@@ -385,6 +385,15 @@ public final class Link implements RocsFeather.JumpTarget {
         romAnimationStateOverride = 0x6A;
     }
 
+    /** Applies HoldEntityAboveLink's got-item pose and interaction lock. */
+    public void showHeldItemPose() {
+        romInteractiveMotionBlocked = true;
+        romAnimationStateOverride = 0x6C;
+        direction = DIRECTION_DOWN;
+        romAttackStepAnimationCountdown = 0;
+        movingThisFrame = false;
+    }
+
     public int pixelX() {
         return subX >> SUB_PIXEL_SHIFT;
     }

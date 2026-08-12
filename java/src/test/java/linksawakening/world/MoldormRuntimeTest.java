@@ -2,6 +2,7 @@ package linksawakening.world;
 
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.vfx.TransientVfxType;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -250,6 +251,7 @@ final class MoldormRuntimeTest {
         assertEquals(0x03, runtime.enemyHealth(0));
         assertEquals(0xC8, runtime.moldormPrivateCountdown2(0));
         assertEquals(0x28, runtime.enemyFlashCountdown(0));
+        assertEquals(0, runtime.enemyIgnoreHitsCountdown(0));
 
         runtime.setEnemyIgnoreHitsCountdownForTest(0, 0);
         List<EntityCombatEvent> flashingHeadClink = runtime.resolveCombat(2,
@@ -262,6 +264,99 @@ final class MoldormRuntimeTest {
             0x20, 0x20, false, true, true, 0, 8, 0, 8);
         assertTrue(flashingTailHit.isEmpty());
         assertEquals(0x03, runtime.enemyHealth(0));
+    }
+
+    @Test
+    void lethalTailHitRunsRomBossDestructionAndDropsClampedHeartContainer()
+            throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
+            0, 0, ENTITY_MOLDORM, 0x05, 0x90, EntityStatus.ACTIVE,
+            catalog.forEntityType(ENTITY_MOLDORM, EntityRoomLoader.RoomTable.INDOORS_A), 0)),
+            true, () -> 0, catalog, new RomEnemyCombatTables(rom));
+        runtime.tickWithProjectileEvents(0, 0x20, 0x20, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0x20, 0x20, 0, 0, 0, false));
+        runtime.setEnemyHealthForTest(0, 1);
+
+        List<EntityCombatEvent> lethalHit = runtime.resolveCombat(1,
+            0x20, 0x20, false, true, true, 0, 8, 0, 8);
+
+        assertEquals(1, lethalHit.getFirst().enemyDamage());
+        assertEquals(EntityStatus.DYING, runtime.snapshot().slots().getFirst().status());
+        assertEquals(0, runtime.dyingCountdown(0));
+
+        int poofCount = 0;
+        int poofSoundCount = 0;
+        int bossExplosionSoundCount = 0;
+        int frame = 2;
+        boolean sawInitialDestructionFlash = false;
+        boolean sawVisibleDestructionFlash = false;
+        while (runtime.snapshot().slots().getFirst().loaded() && frame < 700) {
+            runtime.tickWithProjectileEvents(frame++, 0x20, 0x20, () -> 0, null,
+                new EnemyProjectileCollision.LinkState(0x20, 0x20, 0, 0, 0, false));
+            poofCount += runtime.transientVfxRequests().stream()
+                .filter(request -> request.type() == TransientVfxType.POOF)
+                .count();
+            List<EntityCombatEvent> frameEvents = runtime.consumePendingEntityEvents();
+            poofSoundCount += frameEvents.stream()
+                .filter(event -> event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE
+                    && event.soundId() == 0x13)
+                .count();
+            bossExplosionSoundCount += frameEvents.stream()
+                .filter(event -> event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE
+                    && event.soundId() == 0x1A)
+                .count();
+            if (runtime.moldormDestructionState(0) == 1
+                && !sawInitialDestructionFlash) {
+                assertEquals(0xFF, runtime.enemyFlashCountdown(0));
+                sawInitialDestructionFlash = true;
+            }
+            if (runtime.snapshot().slots().getFirst().loaded()
+                && runtime.snapshot().slots().getFirst().entityFlipAttribute() == 0x10) {
+                sawVisibleDestructionFlash = true;
+            }
+        }
+
+        assertTrue(frame < 700);
+        assertTrue(sawInitialDestructionFlash);
+        assertTrue(sawVisibleDestructionFlash);
+        assertEquals(15, poofCount);
+        assertEquals(15, poofSoundCount);
+        assertEquals(1, bossExplosionSoundCount);
+        RoomEntity heart = runtime.snapshot().slots().stream()
+            .filter(entity -> entity.loaded() && entity.type() == 0x36)
+            .findFirst().orElseThrow();
+        assertEquals(0x18, heart.x());
+        assertEquals(0x70, heart.y());
+        assertEquals(0x10, runtime.dropSpeedZ(heart.slot()));
+        assertEquals(0, runtime.consumePendingClearedEntityMask());
+
+        EntityPickupEvent pickup = runtime.collectIfNeeded(
+            (heart.slot() ^ 1) & 1, heart.x(), heart.y(), false, true, 0, heart.z());
+        assertEquals(0x36, pickup.type());
+        assertEquals(EntityStatus.ACTIVE,
+            runtime.snapshot().slots().get(heart.slot()).status());
+        assertEquals(0x70, runtime.transitionCountdown(heart.slot()));
+
+        boolean completed = false;
+        boolean sawHeldItemPose = false;
+        for (int pickupFrame = 0; pickupFrame < 0x70; pickupFrame++) {
+            runtime.tickWithProjectileEvents(pickupFrame, heart.x(), heart.y(), () -> 0, null,
+                new EnemyProjectileCollision.LinkState(
+                    heart.x(), heart.y(), 0, 0, 0, false));
+            if (!runtime.consumePendingLinkHeldItemPoseRequests().isEmpty()) {
+                sawHeldItemPose = true;
+            }
+            if (!runtime.consumePendingHeartContainerRewards().isEmpty()) {
+                completed = true;
+                break;
+            }
+        }
+        assertTrue(completed);
+        assertTrue(sawHeldItemPose);
+        assertEquals(EntityStatus.DISABLED,
+            runtime.snapshot().slots().get(heart.slot()).status());
     }
 
     @Test

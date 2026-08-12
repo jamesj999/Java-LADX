@@ -109,6 +109,17 @@ final class PlayerStateTest {
     }
 
     @Test
+    void heartContainerRewardRaisesMaximumAndQueuesAFullHeal() {
+        PlayerState playerState = new PlayerState();
+        playerState.setHealth(1);
+
+        playerState.applyHeartContainerReward();
+
+        assertEquals(4, playerState.maxHearts());
+        assertEquals(0xFF, playerState.addHealthBuffer());
+    }
+
+    @Test
     void blueTunicHalvesNominalDamageIntoTheRomBuffer() {
         PlayerState playerState = new PlayerState();
         playerState.setTunicType(PlayerState.TUNIC_BLUE);

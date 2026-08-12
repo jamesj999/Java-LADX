@@ -813,7 +813,10 @@ public class Main {
                         frameCounter, link.pixelX(), link.pixelY(), link.isAirborne(), true,
                         link.direction(), link.romEntityZ());
                     if (pickup != null) {
-                        if (pickup.sourceVariant() >= 0) {
+                        if (pickup.type() == 0x36) {
+                            playerState.setActivePowerUp(PlayerState.ACTIVE_POWER_UP_NONE);
+                            playDirectMusic(0x25);
+                        } else if (pickup.sourceVariant() >= 0) {
                             playerState.applyFloatingItemPickup(
                                 pickup.type(), pickup.sourceVariant());
                         } else {
@@ -957,6 +960,15 @@ public class Main {
                         link.blockNextRomMotionFrame();
                     }
                 }
+                for (var request : roomSession.consumeLinkHeldItemPoseRequests()) {
+                    if (link != null) {
+                        link.showHeldItemPose();
+                    }
+                    Sword heldPoseSword = equipmentController.activeSword();
+                    if (heldPoseSword != null) {
+                        heldPoseSword.resetSpinAttack();
+                    }
+                }
                 for (var request : roomSession.consumeScreenShakeRequests()) {
                     scrollController.startScreenShake(request.countdown(), request.phase());
                 }
@@ -978,6 +990,12 @@ public class Main {
                     if (playerState != null) {
                         playerState.setGoldenLeavesCount(reward.goldenLeavesCount());
                     }
+                }
+                for (var reward : roomSession.consumeHeartContainerRewards()) {
+                    if (playerState != null) {
+                        playerState.applyHeartContainerReward();
+                    }
+                    playDirectMusic(0x18);
                 }
                 roomSession.setBirdKeyOwned(playerState != null && playerState.birdKeyCount() != 0);
                 int chestMusicTrack = roomSession.consumePendingMusicTrack();

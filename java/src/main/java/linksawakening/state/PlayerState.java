@@ -265,6 +265,12 @@ public final class PlayerState {
         }
     }
 
+    /** Applies HeartContainerEntityHandler's delayed health reward. */
+    public void applyHeartContainerReward() {
+        setMaxHearts(maxHearts + 1);
+        addHealthBuffer = 0xFF;
+    }
+
     /** Applies the source-variant dispatch at FloatingItemEntityHandler. */
     public void applyFloatingItemPickup(int entityType, int sourceVariant) {
         switch (FloatingItemMotion.pickupEffect(entityType, sourceVariant)) {

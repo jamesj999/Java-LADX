@@ -65,6 +65,7 @@ public final class RoomSession {
     private static final int OW_ROOM_STATUS_FLAG_CHANGED = 0x04;
     private static final int ROOM_STATUS_CHEST_OPEN = 0x10;
     private static final int ROOM_STATUS_EVENT_1 = 0x10;
+    private static final int ROOM_STATUS_EVENT_2 = 0x20;
     private static final int INDOOR_ROOM_STATUS_EVENT_3 = 0x40;
     private static final int OBJECT_BOMBED_PASSAGE_VERTICAL = 0x3D;
     private static final int OBJECT_BOMBED_PASSAGE_HORIZONTAL = 0x3E;
@@ -138,6 +139,8 @@ public final class RoomSession {
         new ArrayList<>();
     private final List<RoomEntityRuntime.SlimeKeyRewardEvent> pendingSlimeKeyRewardEvents =
         new ArrayList<>();
+    private final List<RoomEntityRuntime.HeartContainerRewardEvent>
+        pendingHeartContainerRewards = new ArrayList<>();
     private final List<RoomEntityRuntime.DialogRequest> pendingRoomDialogRequests =
         new ArrayList<>();
     private PendingShovelDrop pendingShovelDrop;
@@ -1218,6 +1221,7 @@ public final class RoomSession {
         harvestKeyQuicksandEvents();
         harvestKeyRewardEvents();
         harvestSlimeKeyRewardEvents();
+        harvestHeartContainerRewards();
         if (entityRuntime.consumePendingSwitchBlockAnimationRequest()
             && switchableObjectAnimationStage == 0) {
             switchableObjectAnimationStage = 0x01;
@@ -1306,6 +1310,12 @@ public final class RoomSession {
             ? List.of() : entityRuntime.consumePendingLinkMotionBlockRequests();
     }
 
+    public List<RoomEntityRuntime.LinkHeldItemPoseRequest>
+            consumeLinkHeldItemPoseRequests() {
+        return entityRuntime == null
+            ? List.of() : entityRuntime.consumePendingLinkHeldItemPoseRequests();
+    }
+
     /** Returns and clears ROM screen-shake requests emitted by the last entity tick. */
     public List<RoomEntityRuntime.ScreenShakeRequest> consumeScreenShakeRequests() {
         return entityRuntime == null
@@ -1331,6 +1341,15 @@ public final class RoomSession {
         List<RoomEntityRuntime.SlimeKeyRewardEvent> rewards =
             List.copyOf(pendingSlimeKeyRewardEvents);
         pendingSlimeKeyRewardEvents.clear();
+        return rewards;
+    }
+
+    /** Returns and clears completed boss heart-container rewards. */
+    public List<RoomEntityRuntime.HeartContainerRewardEvent>
+            consumeHeartContainerRewards() {
+        List<RoomEntityRuntime.HeartContainerRewardEvent> rewards =
+            List.copyOf(pendingHeartContainerRewards);
+        pendingHeartContainerRewards.clear();
         return rewards;
     }
 
@@ -1692,6 +1711,7 @@ public final class RoomSession {
         pendingChestRewardEvents.clear();
         pendingKeyRewardEvents.clear();
         pendingSlimeKeyRewardEvents.clear();
+        pendingHeartContainerRewards.clear();
         pendingRoomDialogRequests.clear();
         pendingManboTransition = false;
         pendingShovelDrop = null;
@@ -2224,6 +2244,32 @@ public final class RoomSession {
             markActiveRoomCompleted();
         }
         pendingKeyRewardEvents.addAll(rewards);
+    }
+
+    private void harvestHeartContainerRewards() {
+        if (entityRuntime == null) {
+            return;
+        }
+        List<RoomEntityRuntime.HeartContainerRewardEvent> rewards =
+            entityRuntime.consumePendingHeartContainerRewards();
+        if (rewards.isEmpty()) {
+            return;
+        }
+        markHeartContainerCollected();
+        pendingHeartContainerRewards.addAll(rewards);
+    }
+
+    void markHeartContainerCollected() {
+        if (activeRoom == null) {
+            return;
+        }
+        byte[] activeStatus = indoorStatusTableForMap(activeRoom.mapId());
+        activeStatus[activeRoom.roomId()] |= (byte) ROOM_STATUS_EVENT_2;
+        if (activeRoom.mapId() == 0x06) {
+            indoorBRoomStatus[0x2E] |= (byte) ROOM_STATUS_EVENT_2;
+        } else if (activeRoom.mapId() == 0x03) {
+            indoorARoomStatus[0x66] |= (byte) ROOM_STATUS_EVENT_2;
+        }
     }
 
     private void harvestSlimeKeyRewardEvents() {

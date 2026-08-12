@@ -187,6 +187,10 @@ public final class MoldormMotion {
         return position == null ? new TailPosition(0, 0) : position;
     }
 
+    List<TailPosition> currentTailSegments(int slot) {
+        return tailSegments(slot);
+    }
+
     private Movement moveAndSteer(RoomEntity entity, int frameCounter,
                                   int transitionCountdown, int ignoreHitsCountdown,
                                   int flashCountdown, IntSupplier randomByteSupplier,

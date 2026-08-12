@@ -73,6 +73,28 @@ final class RoomSessionTest {
     }
 
     @Test
+    void heartContainerCompletionMarksBossRoomAndAnglersStaircase() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x03, 0x65, Warp.CATEGORY_INDOOR);
+
+        session.markHeartContainerCollected();
+
+        assertEquals(0x20, session.indoorRoomStatusForTest(0x03, 0x65) & 0x20);
+        assertEquals(0x20, session.indoorRoomStatusForTest(0x03, 0x66) & 0x20);
+    }
+
+    @Test
+    void heartContainerCompletionMarksEaglesTowerStaircase() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x06, 0x2F, Warp.CATEGORY_INDOOR);
+
+        session.markHeartContainerCollected();
+
+        assertEquals(0x20, session.indoorRoomStatusForTest(0x06, 0x2F) & 0x20);
+        assertEquals(0x20, session.indoorRoomStatusForTest(0x06, 0x2E) & 0x20);
+    }
+
+    @Test
     void harvestingHidingSlimeKeyPublishesItsLeafCountAndCompletesTheRoom() {
         RoomSession session = newSession();
         session.loadOverworld(0xC6);

@@ -652,9 +652,13 @@ public final class EntitySpriteHandlerCatalog {
         if (segments == null || segments.size() != 4) {
             throw new IllegalArgumentException("Moldorm requires four tail history positions");
         }
-        if (privateState3 < 0 || privateState3 > 4) {
-            throw new IllegalArgumentException("Moldorm private state 3 must be 0..4: "
+        if (privateState3 < 0 || privateState3 > 5) {
+            throw new IllegalArgumentException("Moldorm private state 3 must be 0..5: "
                 + privateState3);
+        }
+
+        if (privateState3 == 5) {
+            return EntitySpriteDefinition.unsupported(ENTITY_MOLDORM);
         }
 
         EntitySpriteDefinition head = decodeRectangle(ENTITY_MOLDORM, 0x04,

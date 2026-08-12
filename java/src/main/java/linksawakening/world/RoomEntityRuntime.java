@@ -351,6 +351,8 @@ public final class RoomEntityRuntime {
     private final EnemyDropMotion enemyDropMotion = new EnemyDropMotion();
     private final int[] enemyTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] bossDeathProducerState = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] moldormDestructionTailState =
+        new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyStunnedCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] dyingCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] powerRecoilDeath = new boolean[EntityRoomLoader.MAX_ENTITIES];
@@ -418,11 +420,15 @@ public final class RoomEntityRuntime {
     private final List<RoamingEnemyMotion.LaunchRequest> projectileLaunchRequests =
         new ArrayList<>();
     private final List<TransientVfxRequest> transientVfxRequests = new ArrayList<>();
+    private final List<HeartContainerRewardEvent> pendingHeartContainerRewards =
+        new ArrayList<>();
     private final List<LinkFinalPositionRequest> pendingLinkFinalPositionRequests =
         new ArrayList<>();
     private final List<RoosterLinkStateRequest> pendingRoosterLinkStateRequests =
         new ArrayList<>();
     private final List<LinkMotionBlockRequest> pendingLinkMotionBlockRequests =
+        new ArrayList<>();
+    private final List<LinkHeldItemPoseRequest> pendingLinkHeldItemPoseRequests =
         new ArrayList<>();
     private final List<ScreenShakeRequest> pendingScreenShakeRequests = new ArrayList<>();
     private final List<DialogRequest> pendingDialogRequests = new ArrayList<>();
@@ -540,6 +546,9 @@ public final class RoomEntityRuntime {
         }
     }
 
+    public record HeartContainerRewardEvent(int slot) {
+    }
+
     /** A ROM handler request to restore Link's pre-entity final position. */
     public record LinkFinalPositionRequest(int sourceSlot) {
         public LinkFinalPositionRequest {
@@ -573,6 +582,15 @@ public final class RoomEntityRuntime {
         public LinkMotionBlockRequest {
             if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
                 throw new IllegalArgumentException("Link motion-block source slot out of range: "
+                    + sourceSlot);
+            }
+        }
+    }
+
+    public record LinkHeldItemPoseRequest(int sourceSlot) {
+        public LinkHeldItemPoseRequest {
+            if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
+                throw new IllegalArgumentException("Held-item source slot out of range: "
                     + sourceSlot);
             }
         }
@@ -1230,6 +1248,7 @@ public final class RoomEntityRuntime {
         pendingLinkFinalPositionRequests.clear();
         pendingRoosterLinkStateRequests.clear();
         pendingLinkMotionBlockRequests.clear();
+        pendingLinkHeldItemPoseRequests.clear();
         pendingScreenShakeRequests.clear();
         boomerangObjectRequests.clear();
         magicRodObjectRequests.clear();
@@ -1237,6 +1256,7 @@ public final class RoomEntityRuntime {
         pendingDialogRequests.clear();
         pendingEntityEvents.clear();
         pendingChestRewardEvents.clear();
+        pendingHeartContainerRewards.clear();
         pendingSlimeKeyRewardEvents.clear();
         pendingKeyQuicksandEvents.clear();
         pendingLikeLikeEvents.clear();
@@ -1528,6 +1548,11 @@ public final class RoomEntityRuntime {
                 advanceLiftableRockSmash(index, entity, frame);
                 continue;
             }
+            if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_HEART_CONTAINER
+                && enemyTransitionCountdown[entity.slot()] != 0) {
+                advanceCollectedHeartContainer(entity, linkEntityX, linkEntityY, linkZ);
+                continue;
+            }
             if (status == EntityStatus.LIFTED) {
                 RoomEntity lifted = renderLiftedEntity(entity, frame);
                 int liftedRomDirection = romLinkDirection;
@@ -1587,6 +1612,10 @@ public final class RoomEntityRuntime {
                     falling.z());
                 continue;
             } else if (status == EntityStatus.DYING) {
+                if (entity.type() == ENTITY_MOLDORM) {
+                    advanceMoldormDestruction(entity, frame);
+                    continue;
+                }
                 if (isBossKeyDropProducer(entity.type())) {
                     advanceBossKeyDropProducer(entity);
                     continue;
@@ -3521,6 +3550,8 @@ public final class RoomEntityRuntime {
                 || !RoomEntityPickupRules.isPickable(entity.type())
                 || (floatingType && !floating)
                 || dropPrivateCountdown1[entity.slot()] > 0
+                || (entity.type() == ENTITY_HEART_CONTAINER
+                    && enemyTransitionCountdown[entity.slot()] != 0)
                 || (isCommonDroppableType(entity.type())
                     && droppablePrivateState3[entity.slot()] != 0)
                 || (entity.type() == ENTITY_DROPPABLE_SECRET_SEASHELL
@@ -3547,6 +3578,8 @@ public final class RoomEntityRuntime {
                         entity.slot(), ChestContentsTable.CHEST_SMALL_KEY));
                     clearEntity(entity.slot());
                 }
+            } else if (entity.type() == ENTITY_HEART_CONTAINER) {
+                enemyTransitionCountdown[entity.slot()] = 0x70;
             } else if (requiresHeldPickupTransition(entity.type())) {
                 beginLift(entity.slot(), romDirection);
             } else {
@@ -4054,6 +4087,7 @@ public final class RoomEntityRuntime {
                     if (entity.type() == ENTITY_MOLDORM) {
                         moldormMotion.onSwordHit(entity.slot());
                         enemyFlashCountdown[entity.slot()] = 0x28;
+                        enemyIgnoreHitsCountdown[entity.slot()] = 0;
                     }
                 }
                 soundChannel = EntityCombatEvent.SoundChannel.JINGLE;
@@ -4081,7 +4115,12 @@ public final class RoomEntityRuntime {
                     enemyRecoilMotion.clear(entity.slot());
                     slots[entity.slot()] = withStatus(entity, EntityStatus.STUNNED);
                 } else if (swordDamage > 0 && enemyHealth[entity.slot()] == 0) {
-                    dyingCountdown[entity.slot()] = 0x40;
+                    dyingCountdown[entity.slot()] = entity.type() == ENTITY_MOLDORM
+                        ? 0 : 0x40;
+                    if (entity.type() == ENTITY_MOLDORM) {
+                        bossDeathProducerState[entity.slot()] = 0;
+                        moldormDestructionTailState[entity.slot()] = 0;
+                    }
                     powerRecoilDeath[entity.slot()] = attackContext.powerRecoil();
                     slots[entity.slot()] = withDeathPresentation(
                         withStatus(entity, EntityStatus.DYING), -1,
@@ -4093,8 +4132,8 @@ public final class RoomEntityRuntime {
                     if (entity.type() != ENTITY_MOLDORM) {
                         enemyFlashCountdown[entity.slot()] = 0x18;
                     }
-                    enemyIgnoreHitsCountdown[entity.slot()] = attackContext.powerRecoil()
-                        ? 0x20 : 0x0A;
+                    enemyIgnoreHitsCountdown[entity.slot()] = entity.type() == ENTITY_MOLDORM
+                        ? 0 : attackContext.powerRecoil() ? 0x20 : 0x0A;
                     if (isZolGelType(entity.type())) {
                         zolGelMotion.onSwordHit(entity.slot());
                     }
@@ -6252,6 +6291,12 @@ public final class RoomEntityRuntime {
         return pending;
     }
 
+    List<LinkHeldItemPoseRequest> consumePendingLinkHeldItemPoseRequests() {
+        List<LinkHeldItemPoseRequest> pending = List.copyOf(pendingLinkHeldItemPoseRequests);
+        pendingLinkHeldItemPoseRequests.clear();
+        return pending;
+    }
+
     List<ScreenShakeRequest> consumePendingScreenShakeRequests() {
         List<ScreenShakeRequest> pending = List.copyOf(pendingScreenShakeRequests);
         pendingScreenShakeRequests.clear();
@@ -6523,6 +6568,128 @@ public final class RoomEntityRuntime {
             spawnEnemyDrop(entity, result.itemType());
         }
         disableEntityWithoutPersistence(entity.slot());
+    }
+
+    private void advanceMoldormDestruction(RoomEntity source, int frameCounter) {
+        int slot = source.slot();
+        int tailState = moldormDestructionTailState[slot];
+        if (spriteHandlers != null) {
+            RoomEntity rendered = withDefinition(source, spriteHandlers.forMoldormState(
+                moldormMotion.headSpriteVariant(slot), source.x(),
+                (source.y() - source.z()) & 0xFF,
+                moldormMotion.currentTailSegments(slot), tailState, frameCounter), 0);
+            slots[slot] = withFlipAttribute(rendered,
+                baseEntityFlipAttribute[slot]
+                    ^ ((enemyFlashCountdown[slot] << 2) & 0x10));
+        }
+
+        switch (bossDeathProducerState[slot]) {
+            case 0 -> {
+                enemyTransitionCountdown[slot] = 0x60;
+                enemyFlashCountdown[slot] = 0xFF;
+                bossDeathProducerState[slot] = 1;
+            }
+            case 1 -> {
+                if (enemyTransitionCountdown[slot] == 0) {
+                    enemyTransitionCountdown[slot] = 0xFF;
+                    enemyFlashCountdown[slot] = 0xFF;
+                    bossDeathProducerState[slot] = 2;
+                }
+            }
+            case 2 -> {
+                if ((enemyTransitionCountdown[slot] & 0x1F) != 0) {
+                    return;
+                }
+                if (tailState == 4) {
+                    enemyTransitionCountdown[slot] = 0x30;
+                    bossDeathProducerState[slot] = 3;
+                    return;
+                }
+                MoldormMotion.TailPosition poofPosition =
+                    moldormMotion.currentTailSegments(slot).get(3 - tailState);
+                createMoldormPoof(source, poofPosition.x(), poofPosition.y());
+                moldormDestructionTailState[slot] = tailState + 1;
+            }
+            default -> advanceMoldormBossExplosion(source);
+        }
+    }
+
+    private void advanceMoldormBossExplosion(RoomEntity source) {
+        int slot = source.slot();
+        int countdown = enemyTransitionCountdown[slot];
+        if (countdown == 0) {
+            spawnMoldormHeartContainer(source);
+            disableEntityWithoutPersistence(slot);
+            pendingEntityEvents.add(new EntityCombatEvent(
+                slot, source.type(), 0, false,
+                EntityCombatEvent.SoundChannel.NOISE, 0x1A));
+            return;
+        }
+        if ((countdown & 0x03) != 0) {
+            return;
+        }
+        int index = (countdown >> 2) & 0x07;
+        int[] xOffsets = {0, 6, 8, 6, 0, -6, -8, -6};
+        int[] yOffsets = {-8, -6, 0, 6, 8, 6, 0, -6};
+        createMoldormPoof(source,
+            (source.x() + xOffsets[index]) & 0xFF,
+            ((source.y() - source.z()) + yOffsets[index]) & 0xFF);
+        if (countdown == 0x10) {
+            moldormDestructionTailState[slot] = 5;
+        }
+    }
+
+    private void spawnMoldormHeartContainer(RoomEntity source) {
+        int freeSlot = findFreeEntitySlot();
+        if (freeSlot < 0) {
+            return;
+        }
+        int x = Math.max(0x18, Math.min(0x88, source.x()));
+        int y = Math.max(0x20, Math.min(0x70, source.y()));
+        EntitySpriteDefinition definition = spriteDefinitionFor(ENTITY_HEART_CONTAINER);
+        int variant = definition.supported() ? definition.initialVariant() : -1;
+        slots[freeSlot] = new RoomEntity(freeSlot, -1, ENTITY_HEART_CONTAINER,
+            x, y, EntityStatus.ACTIVE, definition, variant, 0, 0, source.z());
+        resetEnemyDropState(freeSlot);
+        enemyDropMotion.initialize(freeSlot, groundInteractionSideScrolling, 0x10);
+        enemyDropActive[freeSlot] = true;
+        slowTransitionCountdown[freeSlot] = 0;
+        slowTimerInitialized[freeSlot] = false;
+        enemyTransitionCountdown[freeSlot] = 0;
+        enemyStunnedCountdown[freeSlot] = 0;
+        dyingCountdown[freeSlot] = 0;
+        powerRecoilDeath[freeSlot] = false;
+        enemyPhysicsFlags[freeSlot] = initialPhysicsFlags(ENTITY_HEART_CONTAINER);
+        enemyHealth[freeSlot] = initialHealth(ENTITY_HEART_CONTAINER);
+        enemyFlashCountdown[freeSlot] = 0;
+        enemyIgnoreHitsCountdown[freeSlot] = 1;
+        entityGroundStatus[freeSlot] = 0;
+        baseEntityFlipAttribute[freeSlot] = 0;
+        entityOptions1Override[freeSlot] = -1;
+        enemyRecoilMotion.clear(freeSlot);
+        dynamicEntitySpawnedThisFrame[freeSlot] = true;
+    }
+
+    private void createMoldormPoof(RoomEntity source, int x, int y) {
+        transientVfxRequests.add(new TransientVfxRequest(TransientVfxType.POOF, x, y));
+        pendingEntityEvents.add(new EntityCombatEvent(
+            source.slot(), source.type(), 0, false,
+            EntityCombatEvent.SoundChannel.NOISE, 0x13));
+    }
+
+    private void advanceCollectedHeartContainer(RoomEntity entity,
+                                                 int linkEntityX, int linkEntityY,
+                                                 int linkZ) {
+        int slot = entity.slot();
+        if (enemyTransitionCountdown[slot] == 1) {
+            pendingHeartContainerRewards.add(new HeartContainerRewardEvent(slot));
+            disableEntityWithoutPersistence(slot);
+            return;
+        }
+        pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
+        RoomEntity held = withPositionAndVariant(entity, linkEntityX,
+            (linkEntityY - 0x0C) & 0xFF, entity.spriteVariant());
+        slots[slot] = withZ(held, linkZ & 0xFF);
     }
 
     /** Mirrors Bow-Wow's label_005_4335 target-resolution branches. */
@@ -7993,6 +8160,12 @@ public final class RoomEntityRuntime {
         return List.copyOf(transientVfxRequests);
     }
 
+    List<HeartContainerRewardEvent> consumePendingHeartContainerRewards() {
+        List<HeartContainerRewardEvent> rewards = List.copyOf(pendingHeartContainerRewards);
+        pendingHeartContainerRewards.clear();
+        return rewards;
+    }
+
     List<BoomerangObjectRequest> boomerangObjectRequests() {
         return List.copyOf(boomerangObjectRequests);
     }
@@ -8704,6 +8877,11 @@ public final class RoomEntityRuntime {
         enemyFlashCountdown[slot] = value;
     }
 
+    void setEnemyHealthForTest(int slot, int value) {
+        validateCountdownTestValue(slot, value);
+        enemyHealth[slot] = value;
+    }
+
     void setPhysicsFlagsForTest(int slot, int value) {
         validateCountdownTestValue(slot, value);
         enemyPhysicsFlags[slot] = value;
@@ -8896,6 +9074,11 @@ public final class RoomEntityRuntime {
     int moldormPrivateCountdown2(int slot) {
         validateEntitySlot(slot);
         return moldormMotion.privateCountdown2(slot);
+    }
+
+    int moldormDestructionState(int slot) {
+        validateEntitySlot(slot);
+        return bossDeathProducerState[slot];
     }
 
     int moldormInertia(int slot) {
@@ -9649,6 +9832,7 @@ public final class RoomEntityRuntime {
         slowTimerInitialized[slot] = false;
         enemyTransitionCountdown[slot] = 0;
         bossDeathProducerState[slot] = 0;
+        moldormDestructionTailState[slot] = 0;
         enemyStunnedCountdown[slot] = 0;
         dyingCountdown[slot] = 0;
         powerRecoilDeath[slot] = false;
