@@ -1360,6 +1360,13 @@ public final class RoomSession {
         if (clearedMask != 0) {
             clearedEntitiesByRoom[activeRoom.roomId()] |= clearedMask;
         }
+        int roomStatusMask = entityRuntime.consumePendingRoomStatusMask();
+        if (roomStatusMask != 0 && activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD) {
+            byte[] status = indoorStatusTableForMap(activeRoom.mapId());
+            status[activeRoom.roomId()] |= (byte) roomStatusMask;
+            entityRuntime.setEntityRoomStatus(
+                Byte.toUnsignedInt(status[activeRoom.roomId()]));
+        }
         applyHookshotBridgeUpdates(entityRuntime.hookshotBridgeUpdates());
         activeRoom.replaceEntities(entityRuntime.snapshot());
         applyBombObjectInteractions(bombExplosionEvents);

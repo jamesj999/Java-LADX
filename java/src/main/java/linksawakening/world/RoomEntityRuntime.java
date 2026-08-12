@@ -25,6 +25,10 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_MASTER_STALFOS = 0x5F;
     private static final int ENTITY_DESERT_LANMOLA = 0x87;
     private static final int ENTITY_ARMOS_KNIGHT = 0x88;
+    private static final int ENTITY_ROLLING_BONES =
+        EntitySpriteHandlerCatalog.ENTITY_ROLLING_BONES;
+    private static final int ENTITY_ROLLING_BONES_BAR =
+        EntitySpriteHandlerCatalog.ENTITY_ROLLING_BONES_BAR;
     private static final int ENTITY_PIECE_OF_POWER = 0x33;
     private static final int ENTITY_CRYSTAL_SWITCH = 0x66;
     private static final int ENTITY_BUTTERFLY = 0x6E;
@@ -335,6 +339,7 @@ public final class RoomEntityRuntime {
     private final PeaHatMotion peaHatMotion = new PeaHatMotion();
     private final ArmosMotion armosMotion = new ArmosMotion();
     private final ArmosKnightMotion armosKnightMotion = new ArmosKnightMotion();
+    private final RollingBonesMotion rollingBonesMotion = new RollingBonesMotion();
     private final BossIntroMotion bossIntroMotion = new BossIntroMotion();
     private final GhiniMotion ghiniMotion = new GhiniMotion();
     private final HardHatMotion hardHatMotion = new HardHatMotion();
@@ -361,6 +366,8 @@ public final class RoomEntityRuntime {
     private final EnemyDropMotion enemyDropMotion = new EnemyDropMotion();
     private final int[] enemyTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] bossDeathProducerState = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] rollingBonesDeathInitialized =
+        new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final int[] moldormDestructionTailState =
         new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyStunnedCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -465,6 +472,7 @@ public final class RoomEntityRuntime {
     private boolean pendingSwitchBlockAnimationRequest;
     private ColorShellWorld colorShellWorld = ColorShellWorld.none();
     private int pendingClearedEntityMask;
+    private int pendingRoomStatusMask;
     private EnemyDropResolver enemyDropResolver;
     private EnemyDropResolver.CounterState enemyDropCounters =
         new EnemyDropResolver.CounterState(0, 0);
@@ -952,6 +960,12 @@ public final class RoomEntityRuntime {
             }
             if (entity.loaded() && entity.type() == ENTITY_MOLDORM) {
                 moldormMotion.initialize(entity);
+            }
+            if (entity.loaded() && entity.type() == ENTITY_ROLLING_BONES) {
+                rollingBonesMotion.initializeBoss(entity.slot());
+            }
+            if (entity.loaded() && entity.type() == ENTITY_ROLLING_BONES_BAR) {
+                rollingBonesMotion.initializeBar(entity.slot());
             }
             if (entity.loaded() && entity.type() == ENTITY_CUCCO) {
                 cuccoMotion.initialize(entity.slot());
@@ -1454,6 +1468,7 @@ public final class RoomEntityRuntime {
             boolean preservePolsVoicePresentation = false;
             boolean preserveSpikedBeetlePresentation = false;
             boolean preserveArmosKnightPresentation = false;
+            boolean preserveRollingBonesPresentation = false;
             boolean preserveSecretSeashellPresentation = false;
             boolean preserveDroppablePresentation = false;
             boolean keyDropTransitionActive = false;
@@ -1763,6 +1778,10 @@ public final class RoomEntityRuntime {
                     falling.z());
                 continue;
             } else if (status == EntityStatus.DYING) {
+                if (entity.type() == ENTITY_ROLLING_BONES) {
+                    advanceRollingBonesDestruction(entity, randomByteSupplier);
+                    continue;
+                }
                 if (entity.type() == ENTITY_MOLDORM) {
                     advanceMoldormDestruction(entity, frame);
                     continue;
@@ -3142,6 +3161,60 @@ public final class RoomEntityRuntime {
                 }
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_ROLLING_BONES) {
+                RoomEntity bar = firstLoadedEntityOfType(ENTITY_ROLLING_BONES_BAR);
+                if (bar != null) {
+                    BossIntroMotion.Update bossIntro = bossIntroMotion.advance(
+                        options1(entity.slot()), entity.type(), entityMapId,
+                        transitionSequenceCounter);
+                    if (bossIntro.musicTrack() >= 0) {
+                        pendingMusicTrack = bossIntro.musicTrack();
+                    }
+                    RollingBonesMotion.BossUpdate bossUpdate = rollingBonesMotion.advanceBoss(
+                        entity, bar, enemyTransitionCountdown[entity.slot()],
+                        enemyHealth[entity.slot()], backgroundCollision);
+                    updated = bossUpdate.entity();
+                    enemyTransitionCountdown[entity.slot()] =
+                        bossUpdate.transitionCountdown();
+                    preserveRollingBonesPresentation = true;
+                    if (bossUpdate.jingleId() >= 0) {
+                        pendingEntityEvents.add(new EntityCombatEvent(
+                            entity.slot(), entity.type(), 0, false,
+                            EntityCombatEvent.SoundChannel.JINGLE,
+                            bossUpdate.jingleId()));
+                    }
+                }
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_ROLLING_BONES_BAR) {
+                if ((entityRoomStatus & 0x20) != 0) {
+                    disableEntityWithoutPersistence(entity.slot());
+                    continue;
+                }
+                RollingBonesMotion.BarUpdate barUpdate = rollingBonesMotion.advanceBar(
+                    entity, frame, backgroundCollision);
+                updated = barUpdate.entity();
+                if (spriteHandlers != null) {
+                    updated = withDefinition(updated,
+                        spriteHandlers.forRollingBonesBar(
+                            0, updated.y(), updated.spriteVariant()),
+                        updated.spriteVariant());
+                }
+                preserveRollingBonesPresentation = true;
+                if (barUpdate.rollingSound()) {
+                    pendingEntityEvents.add(new EntityCombatEvent(
+                        entity.slot(), entity.type(), 0, false,
+                        EntityCombatEvent.SoundChannel.WAVE, 0x1A));
+                }
+                if (barUpdate.strongBump()) {
+                    pendingEntityEvents.add(new EntityCombatEvent(
+                        entity.slot(), entity.type(), 0, false,
+                        EntityCombatEvent.SoundChannel.JINGLE, 0x0B));
+                    pendingScreenShakeRequests.add(new ScreenShakeRequest(
+                        entity.slot(), barUpdate.screenShakeCountdown(), 0));
+                }
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_GOPONGA_FLOWER) {
                 if (GopongaFlowerMotion.overlapsInteractiveLink(
                     entity, linkEntityX, linkEntityY, handlerLinkCollisionEnabled)) {
@@ -3633,6 +3706,7 @@ public final class RoomEntityRuntime {
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
                 || preservePolsVoicePresentation
                 || preserveSpikedBeetlePresentation || preserveArmosKnightPresentation
+                || preserveRollingBonesPresentation
                 || preserveSecretSeashellPresentation || preserveDroppablePresentation
                 ? updated.spriteVariant() : variantFor(updated, frame);
             if (status == EntityStatus.ACTIVE && shouldDisappear(entity)) {
@@ -3666,6 +3740,7 @@ public final class RoomEntityRuntime {
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
                 || preservePolsVoicePresentation
                 || preserveSpikedBeetlePresentation || preserveArmosKnightPresentation
+                || preserveRollingBonesPresentation
                 || preserveSecretSeashellPresentation || preserveDroppablePresentation
                 ? updated.entityFlipAttribute() : baseEntityFlipAttribute[entity.slot()];
             if (preserveBombitePresentation && updated.type() == ENTITY_TIMER_BOMBITE) {
@@ -4047,6 +4122,11 @@ public final class RoomEntityRuntime {
                 || !RoomEntityCombatRules.supportsEnemyCollision(entity.type())) {
                 continue;
             }
+            if (entity.type() == ENTITY_ROLLING_BONES_BAR && linkAirborne) {
+                // RollingBonesBarEntityHandler returns before the default
+                // collision handler whenever hLinkPositionZ is non-zero.
+                continue;
+            }
             if (entity.type() == ENTITY_PIRANHA_PLANT
                 && piranhaMotion.state(entity.slot()) == 0) {
                 // PiranhaPlantState0Handler keeps the plant hidden and does
@@ -4198,6 +4278,7 @@ public final class RoomEntityRuntime {
             boolean peaHatSwordClink = entity.type() == ENTITY_PEAHAT && !peaHatGrounded;
             boolean spikedBeetleSwordClink = entity.type() == ENTITY_SPIKED_BEETLE
                 && (options1(entity.slot()) & 0x40) != 0;
+            boolean rollingBonesBarSwordClink = entity.type() == ENTITY_ROLLING_BONES_BAR;
             if (entity.type() == ENTITY_CRYSTAL_SWITCH) {
                 if (swordHit) {
                     // The crystal handler uses the normal enemy-hit path for
@@ -4238,7 +4319,8 @@ public final class RoomEntityRuntime {
                 soundChannel = EntityCombatEvent.SoundChannel.JINGLE;
                 soundId = 0x09;
             } else if (swordHit && RoomEntityCombatRules.swordPokeForSwordCollision(
-                entity.type(), peaHatSwordClink || spikedBeetleSwordClink)
+                entity.type(), peaHatSwordClink || spikedBeetleSwordClink
+                    || rollingBonesBarSwordClink)
                 && !moldormTailSwordHit) {
                 // EnemyCollidedWithSword's ENTITY_OPT1_SWORD_CLINK_OFF path
                 // calls label_D07/label_D15: no damage or normal recoil,
@@ -6507,6 +6589,12 @@ public final class RoomEntityRuntime {
         return pending;
     }
 
+    int consumePendingRoomStatusMask() {
+        int pending = pendingRoomStatusMask;
+        pendingRoomStatusMask = 0;
+        return pending;
+    }
+
     List<EntityCombatEvent> consumePendingEntityEvents() {
         List<EntityCombatEvent> pending = List.copyOf(pendingEntityEvents);
         pendingEntityEvents.clear();
@@ -6673,7 +6761,17 @@ public final class RoomEntityRuntime {
             || type == ENTITY_SPARK_CLOCKWISE
             || type == ENTITY_POLS_VOICE
             || type == ENTITY_ZOL || type == ENTITY_GEL
+            || type == ENTITY_ROLLING_BONES
             || type == ENTITY_LIKE_LIKE || type == ENTITY_ARMOS_KNIGHT;
+    }
+
+    private RoomEntity firstLoadedEntityOfType(int type) {
+        for (RoomEntity candidate : slots) {
+            if (candidate.loaded() && candidate.type() == type) {
+                return candidate;
+            }
+        }
+        return null;
     }
 
     private static boolean usesSharedRecoil(int type) {
@@ -6829,6 +6927,40 @@ public final class RoomEntityRuntime {
             spawnEnemyDrop(entity, result.itemType());
         }
         disableEntityWithoutPersistence(entity.slot());
+    }
+
+    /** Ports {@code RollingBonesEntityHandler}'s long miniboss destruction sequence. */
+    private void advanceRollingBonesDestruction(RoomEntity entity,
+                                                 IntSupplier randomByteSupplier) {
+        int slot = entity.slot();
+        if (!rollingBonesDeathInitialized[slot]) {
+            rollingBonesDeathInitialized[slot] = true;
+            enemyTransitionCountdown[slot] = 0xFF;
+            enemyFlashCountdown[slot] = 0xFF;
+            return;
+        }
+        int countdown = enemyTransitionCountdown[slot];
+        enemyFlashCountdown[slot] = countdown;
+        if (countdown == 0) {
+            int killIndex = killCount & 0xFF;
+            killOrder[killIndex] = entity.sourceLoadOrder() & 0xFF;
+            killCount = (killCount + 1) & 0xFF;
+            pendingClearedEntityMask |= persistentClearMask(entity);
+            if (entityMapId != 0x07) {
+                pendingRoomStatusMask |= 0x20;
+            }
+            disableEntityWithoutPersistence(slot);
+            return;
+        }
+        if (countdown < 0x80 && (countdown & 0x07) == 0) {
+            int x = (entity.x() + ((randomByteSupplier.getAsInt() & 0x1F) - 0x10)) & 0xFF;
+            int y = (entity.y() - entity.z()
+                + ((randomByteSupplier.getAsInt() & 0x1F) - 0x14)) & 0xFF;
+            transientVfxRequests.add(new TransientVfxRequest(TransientVfxType.POOF, x, y));
+            pendingEntityEvents.add(new EntityCombatEvent(
+                slot, entity.type(), 0, false,
+                EntityCombatEvent.SoundChannel.NOISE, 0x13));
+        }
     }
 
     private void advanceMoldormDestruction(RoomEntity source, int frameCounter) {
@@ -9464,6 +9596,16 @@ public final class RoomEntityRuntime {
         enemyHealth[slot] = value;
     }
 
+    int rollingBonesBarStateForTest(int slot) {
+        validateEntitySlot(slot);
+        return rollingBonesMotion.barState(slot);
+    }
+
+    int rollingBonesBarSpeedXForTest(int slot) {
+        validateEntitySlot(slot);
+        return rollingBonesMotion.barSpeedX(slot);
+    }
+
     void setPhysicsFlagsForTest(int slot, int value) {
         validateCountdownTestValue(slot, value);
         enemyPhysicsFlags[slot] = value;
@@ -9558,6 +9700,12 @@ public final class RoomEntityRuntime {
         }
         if (slots[slot].type() == ENTITY_ARMOS_KNIGHT) {
             return ARMOS_KNIGHT_OPTIONS1;
+        }
+        if (slots[slot].type() == ENTITY_ROLLING_BONES) {
+            return 0x84;
+        }
+        if (slots[slot].type() == ENTITY_ROLLING_BONES_BAR) {
+            return 0x40;
         }
         if (slots[slot].type() == ENTITY_CHEST_WITH_ITEM) {
             return CHEST_OPTIONS1;
@@ -10064,6 +10212,7 @@ public final class RoomEntityRuntime {
         return switch (type) {
             case ENTITY_ARMOS_STATUE -> ARMOS_INITIAL_PHYSICS_FLAGS;
             case ENTITY_ARMOS_KNIGHT -> ARMOS_KNIGHT_INITIAL_PHYSICS_FLAGS;
+            case ENTITY_ROLLING_BONES_BAR -> 0x42;
             case ENTITY_STALFOS_EVASIVE -> EVASIVE_PHYSICS_FLAGS;
             case ENTITY_STAR -> 0x12;
             case ENTITY_BLOOPER -> 0x02;

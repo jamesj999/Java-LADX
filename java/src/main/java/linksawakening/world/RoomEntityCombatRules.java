@@ -33,6 +33,8 @@ public final class RoomEntityCombatRules {
     private static final int ENTITY_PEAHAT = 0xA0;
     private static final int ENTITY_ARMOS_STATUE = 0x0F;
     private static final int ENTITY_ARMOS_KNIGHT = 0x88;
+    private static final int ENTITY_ROLLING_BONES = 0x81;
+    private static final int ENTITY_ROLLING_BONES_BAR = 0x82;
     private static final int ENTITY_HIDING_GHINI = 0x10;
     private static final int ENTITY_GIANT_GHINI = 0x11;
     private static final int ENTITY_GHINI = 0x12;
@@ -208,6 +210,7 @@ public final class RoomEntityCombatRules {
                 ENTITY_WIZROBE,
                 ENTITY_ARMOS_STATUE,
                 ENTITY_ARMOS_KNIGHT,
+                ENTITY_ROLLING_BONES, ENTITY_ROLLING_BONES_BAR,
                 ENTITY_HIDING_GHINI, ENTITY_GIANT_GHINI, ENTITY_GHINI,
                 ENTITY_HARDHAT_BEETLE, ENTITY_SPIKE_TRAP, ENTITY_WATER_TEKTITE, ENTITY_FISH,
                 ENTITY_CROW,
@@ -280,6 +283,8 @@ public final class RoomEntityCombatRules {
             case ENTITY_BOO_BUDDY -> BOO_BUDDY_CONTACT_DAMAGE;
             case ENTITY_ARMOS_STATUE -> 0x10;
             case ENTITY_ARMOS_KNIGHT -> 0x0C;
+            case ENTITY_ROLLING_BONES -> 0x08;
+            case ENTITY_ROLLING_BONES_BAR -> 0x04;
             case ENTITY_MOBLIN, ENTITY_IRON_MASK, ENTITY_MOBLIN_SWORD, ENTITY_TEKTITE, ENTITY_LEEVER,
                 ENTITY_STALFOS_AGGRESSIVE, ENTITY_STALFOS_EVASIVE,
                 ENTITY_MINI_MOLDORM ->
@@ -325,6 +330,8 @@ public final class RoomEntityCombatRules {
             case ENTITY_BOO_BUDDY -> BOO_BUDDY_INITIAL_HEALTH;
             case ENTITY_ARMOS_STATUE -> 0x04;
             case ENTITY_ARMOS_KNIGHT -> 0x0C;
+            case ENTITY_ROLLING_BONES -> 0x08;
+            case ENTITY_ROLLING_BONES_BAR -> 0x01;
             case ENTITY_PAIRODD -> PAIRODD_INITIAL_HEALTH;
             case ENTITY_MOBLIN, ENTITY_IRON_MASK, ENTITY_MOBLIN_SWORD, ENTITY_TEKTITE, ENTITY_LEEVER,
                 ENTITY_STALFOS_AGGRESSIVE, ENTITY_STALFOS_EVASIVE,

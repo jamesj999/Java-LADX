@@ -6104,6 +6104,90 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void rollingBonesLaunchesTheBarAfterTheRomPreparationDelay() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RoomEntity bar = new RoomEntity(0, 1, 0x82, 0x38, 0x38,
+            EntityStatus.ACTIVE, catalog.forEntityType(
+                0x82, EntityRoomLoader.RoomTable.INDOORS_A, -1), 0);
+        RoomEntity boss = new RoomEntity(1, 0, 0x81, 0x47, 0x38,
+            EntityStatus.ACTIVE, catalog.forEntityType(
+                0x81, EntityRoomLoader.RoomTable.INDOORS_A, -1), 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+            snapshotWithSlots(bar, boss), true, () -> 0, catalog,
+            new RomEnemyCombatTables(rom));
+
+        runtime.tick(0, 0xC0, 0xC0, () -> 0);
+        assertEquals(0x18, runtime.transitionCountdown(1));
+
+        for (int frame = 1; frame <= 0x18; frame++) {
+            runtime.tick(frame, 0xC0, 0xC0, () -> 0);
+        }
+
+        assertEquals(1, runtime.rollingBonesBarStateForTest(0));
+        assertEquals(-0x10, runtime.rollingBonesBarSpeedXForTest(0));
+        assertTrue(runtime.snapshot().slots().get(0).x() < 0x38);
+        assertEquals(EntitySpriteDefinition.Shape.DYNAMIC,
+            runtime.snapshot().slots().get(0).spriteDefinition().shape());
+    }
+
+    @Test
+    void rollingBonesDeathSetsTailCaveMinibossEventAndRemovesTheBar() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RoomEntity bar = new RoomEntity(14, 1, 0x82, 0x38, 0x38,
+            EntityStatus.ACTIVE, catalog.forEntityType(
+                0x82, EntityRoomLoader.RoomTable.INDOORS_A, -1), 0);
+        RoomEntity boss = new RoomEntity(15, 0, 0x81, 0x58, 0x58,
+            EntityStatus.DYING, catalog.forEntityType(
+                0x81, EntityRoomLoader.RoomTable.INDOORS_A, -1), -1);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+            snapshotWithSlots(bar, boss), true, sequence(0x00, 0x1F), catalog,
+            new RomEnemyCombatTables(rom));
+        runtime.setEntityMapIdForTest(0x00);
+
+        runtime.tick(0, 0, 0, sequence(0x00, 0x1F));
+        assertEquals(0xFF, runtime.transitionCountdown(15));
+        assertEquals(0xFF, runtime.enemyFlashCountdown(15));
+
+        for (int frame = 1; frame <= 0xFF; frame++) {
+            runtime.tick(frame, 0, 0, sequence(0x00, 0x1F));
+        }
+
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(15).status());
+        assertEquals(0x20, runtime.consumePendingRoomStatusMask());
+        assertEquals(1, runtime.consumePendingClearedEntityMask());
+
+        runtime.setEntityRoomStatusForTest(0x20);
+        runtime.tick(0x100, 0, 0, () -> 0);
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(14).status());
+    }
+
+    @Test
+    void rollingBonesBarSkipsAirborneLinkAndClinksAGroundedSword() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RoomEntity bar = new RoomEntity(0, 0, 0x82, 0x50, 0x50,
+            EntityStatus.ACTIVE, catalog.forEntityType(
+                0x82, EntityRoomLoader.RoomTable.INDOORS_A, -1), 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotWithSlots(bar), true,
+            () -> 0, catalog, new RomEnemyCombatTables(rom));
+
+        assertTrue(runtime.resolveCombat(
+            1, 0x50, 0x50, true, true, true,
+            0x50, 0x10, 0x50, 0x10).isEmpty());
+
+        List<EntityCombatEvent> events = runtime.resolveCombat(
+            1, 0xC0, 0xC0, false, true, true,
+            0x50, 0x10, 0x50, 0x10);
+
+        assertEquals(1, events.size());
+        assertEquals(0, events.get(0).enemyDamage());
+        assertNotNull(events.get(0).swordPokeVfx());
+        assertEquals(0x07, events.get(0).soundId());
+    }
+
+    @Test
     void desertLanmolaDeathUsesTheRomKeyProducerCountdownAndSpawnFields() {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
         RoomEntity source = new RoomEntity(15, 0, 0x87, 0x44, 0x58,

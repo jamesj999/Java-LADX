@@ -14,6 +14,30 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 final class EntitySpriteHandlerCatalogTest {
 
     @Test
+    void decodesRollingBonesAndBuildsTheSixPairRollingBar() throws Exception {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+
+        EntitySpriteDefinition boss = catalog.forEntityType(
+            EntitySpriteHandlerCatalog.ENTITY_ROLLING_BONES,
+            EntityRoomLoader.RoomTable.INDOORS_A);
+        assertDefinition(boss, 0x06, 0x6E1E,
+            EntitySpriteDefinition.Shape.RECTANGLE, 6, 0);
+        assertEquals(4, boss.rectangleVariant(0).size());
+        assertEquals(0x60, boss.rectangleVariant(0).get(0).oam().tile());
+
+        EntitySpriteDefinition bar = catalog.forRollingBonesBar(0, 0x38);
+        assertEquals(EntitySpriteDefinition.Shape.DYNAMIC, bar.shape());
+        assertEquals(12, bar.dynamicVariant(0).size());
+        assertEquals(-0x18, bar.dynamicVariant(0).get(0).yOffset());
+        assertEquals(0x6C, bar.dynamicVariant(0).get(0).oam().tile());
+        assertEquals(0x07, bar.dynamicVariant(0).get(0).oam().attributes());
+        assertEquals(0x27, bar.dynamicVariant(0).get(1).oam().attributes());
+
+        EntitySpriteDefinition shortened = catalog.forRollingBonesBar(5, 0x38);
+        assertEquals(2, shortened.dynamicVariant(0).size());
+    }
+
+    @Test
     void decodesSyntheticPairAndSingleDisplayListsWithUnsignedBytes() {
         byte[] rom = syntheticRom();
         write(rom, 0x06, 0x5000,

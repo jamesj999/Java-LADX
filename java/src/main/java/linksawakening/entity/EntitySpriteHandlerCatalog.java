@@ -25,6 +25,8 @@ public final class EntitySpriteHandlerCatalog {
     public static final int ENTITY_MIMIC = 0x28;
     public static final int ENTITY_MINI_MOLDORM = 0x29;
     public static final int ENTITY_MOLDORM = 0x59;
+    public static final int ENTITY_ROLLING_BONES = 0x81;
+    public static final int ENTITY_ROLLING_BONES_BAR = 0x82;
     public static final int ENTITY_MASKED_MIMIC_GORIYA = 0x8F;
     public static final int ENTITY_CUCCO = 0x6C;
     public static final int ENTITY_GOPONGA_FLOWER = 0x7E;
@@ -373,6 +375,12 @@ public final class EntitySpriteHandlerCatalog {
                 new MoldormMotion.TailPosition(0, 0),
                 new MoldormMotion.TailPosition(0, 0)), 0, 0);
         }
+        if (entityType == ENTITY_ROLLING_BONES) {
+            return decodeRectangle(entityType, 0x06, 0x6E1E, 6, 4, 0);
+        }
+        if (entityType == ENTITY_ROLLING_BONES_BAR) {
+            return forRollingBonesBar(0, 0x38);
+        }
         if (entityType == ENTITY_MASKED_MIMIC_GORIYA && mapId != 0x1F) {
             return decodePair(entityType, 0x19, 0x4796, 8, 0);
         }
@@ -715,6 +723,32 @@ public final class EntitySpriteHandlerCatalog {
         }
         return EntitySpriteDefinition.dynamic(ENTITY_MOLDORM, 0x04,
             0x57F2, 0, List.of(List.copyOf(sprites)));
+    }
+
+    /** Builds the repeated vertical bar pairs emitted by {@code func_006_6FEA}. */
+    public EntitySpriteDefinition forRollingBonesBar(int privateState1, int entityY) {
+        return forRollingBonesBar(privateState1, entityY, 0);
+    }
+
+    /** Builds the bar using the current animated pair selected by the handler. */
+    public EntitySpriteDefinition forRollingBonesBar(int privateState1, int entityY,
+                                                      int spriteVariant) {
+        if (privateState1 < 0 || privateState1 > 5) {
+            throw new IllegalArgumentException(
+                "Rolling Bones bar private state must be 0..5: " + privateState1);
+        }
+        EntitySpriteDefinition pair = decodePair(ENTITY_ROLLING_BONES_BAR,
+            0x06, 0x6ED5, 2, 0);
+        int selectedVariant = spriteVariant & 0x01;
+        int pairCount = 6 - privateState1;
+        List<EntitySpriteDefinition.DynamicSprite> sprites = new ArrayList<>(pairCount * 2);
+        for (int index = 0; index < pairCount; index++) {
+            int visualY = 0x20 + index * 0x10;
+            appendDynamicPairAtOffset(sprites, pair.variant(selectedVariant),
+                signedByte(visualY - entityY), 0);
+        }
+        return EntitySpriteDefinition.dynamic(ENTITY_ROLLING_BONES_BAR, 0x06,
+            0x6ED5, 0, List.of(List.copyOf(sprites)));
     }
 
     /**
