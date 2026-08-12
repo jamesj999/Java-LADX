@@ -1504,10 +1504,20 @@ public class Main {
     }
 
     private static void startConfiguredGameplay() {
-        if (StartupCoordinator.shouldStartNewGameGameplay(currentAppConfig())) {
-            startNewGame();
-            return;
+        dispatchConfiguredGameplay(
+            currentAppConfig(), Main::startNewGame, Main::startConfiguredLocationGameplay);
+    }
+
+    static void dispatchConfiguredGameplay(AppConfig config, Runnable startNewGame,
+                                           Runnable startConfiguredLocation) {
+        if (StartupCoordinator.shouldStartNewGameGameplay(config)) {
+            startNewGame.run();
+        } else {
+            startConfiguredLocation.run();
         }
+    }
+
+    private static void startConfiguredLocationGameplay() {
         fileMenuController = null;
         fileSaveController = null;
         currentSaveSlot = -1;

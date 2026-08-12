@@ -1,6 +1,7 @@
 package linksawakening;
 
 import linksawakening.audio.music.MusicTrackIds;
+import linksawakening.config.AppConfig;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.render.RenderScreen;
@@ -59,17 +60,29 @@ final class MainFileMenuFlowTest {
     }
 
     @Test
-    void configuredNewGameDelegatesToDedicatedBootstrapWhileDebugUsesConfiguredPath() throws Exception {
-        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
-        int start = source.indexOf("private static void startConfiguredGameplay()");
-        int end = source.indexOf("private static void startNewGame()", start);
-        String method = source.substring(start, end);
+    void configuredNewGameDispatchesOnlyTheDedicatedBootstrap() {
+        int[] calls = new int[2];
+        AppConfig config = AppConfig.parse("""
+            { "itemProfile": "NEW_GAME" }
+            """);
 
-        assertTrue(method.contains("StartupCoordinator.shouldStartNewGameGameplay(currentAppConfig())"));
-        assertTrue(method.contains("startNewGame();"));
-        assertTrue(method.contains("return;"));
-        assertTrue(method.contains("applyConfiguredItemProfile(currentAppConfig(), playerState);"));
-        assertTrue(method.contains("loadOverworldScreen();"));
+        Main.dispatchConfiguredGameplay(config, () -> calls[0]++, () -> calls[1]++);
+
+        assertEquals(1, calls[0]);
+        assertEquals(0, calls[1]);
+    }
+
+    @Test
+    void configuredDebugProfileDispatchesOnlyTheConfiguredLocationBootstrap() {
+        int[] calls = new int[2];
+        AppConfig config = AppConfig.parse("""
+            { "itemProfile": "DEBUG_ALL_ITEMS" }
+            """);
+
+        Main.dispatchConfiguredGameplay(config, () -> calls[0]++, () -> calls[1]++);
+
+        assertEquals(0, calls[0]);
+        assertEquals(1, calls[1]);
     }
 
     @Test
