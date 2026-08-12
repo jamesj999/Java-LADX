@@ -76,6 +76,27 @@ public final class RoomSession {
     private static final int TAIL_CAVE_RUMBLE_INITIAL_COUNTDOWN = 0xDF;
     private static final int TAIL_CAVE_RUMBLE_GATE_FRAME = 0x08;
     private static final int INDOOR_ROOM_STATUS_EVENT_3 = 0x40;
+    private static final int EVENT_TRIGGER_MASK = 0x1F;
+    private static final int EVENT_EFFECT_MASK = 0xE0;
+    private static final int EVENT_TRIGGER_KILL_ALL_ENEMIES = 0x01;
+    private static final int EVENT_TRIGGER_STEP_ON_BUTTON = 0x03;
+    private static final int EVENT_EFFECT_REVEAL_CHEST = 0x60;
+    private static final int OBJECT_SWITCH_BUTTON = 0xAA;
+    private static final int SWITCH_BUTTON_PRESS_FRAMES = 0x18;
+    private static final int SWITCH_BUTTON_PRESSED = 0x60;
+    private static final int ENTITY_OPTION_EXCLUDED_FROM_KILL_ALL = 0x02;
+    private static final int ROOM_EVENT_CHEST_REVEAL_COUNTDOWN = 0x0F;
+    private static final int ROOM_EVENT_CHEST_WRITE_COUNTDOWN = 0x04;
+    private static final int KEY_DOOR_PHYSICS_BASE = 0x90;
+    private static final int KEY_DOOR_ANIMATION_FRAMES = 0x08;
+    private static final int[] KEY_DOOR_CLOSED_OBJECTS = {
+        0x2D, 0x2F, 0x31, 0x33
+    };
+    private static final int[][] KEY_DOOR_OPEN_OBJECTS = {
+        {0x43, 0x44}, {0x8C, 0x08}, {0x09, 0x0A}, {0x0B, 0x0C}
+    };
+    private static final int[] KEY_DOOR_CURRENT_STATUS = {0x04, 0x08, 0x02, 0x01};
+    private static final int[] KEY_DOOR_ADJACENT_STATUS = {0x08, 0x04, 0x01, 0x02};
     private static final int OBJECT_BOMBED_PASSAGE_VERTICAL = 0x3D;
     private static final int OBJECT_BOMBED_PASSAGE_HORIZONTAL = 0x3E;
     private static final int BOMBABLE_WALL_PHYSICS_BASE = 0x99;
@@ -107,6 +128,7 @@ public final class RoomSession {
     private final FollowingNpcEntitySpawner followingNpcEntitySpawner;
     private final RomEnemyCombatTables enemyCombatTables;
     private final ChestContentsTable chestContentsTable;
+    private final DungeonRoomEventTable dungeonRoomEventTable;
     private final RomTables romTables;
     private final EnemyDropResolver enemyDropResolver;
     private final EntityCollisionPointProbe entityCollisionPointProbe;
@@ -215,6 +237,15 @@ public final class RoomSession {
     private int currentLinkMotionState = EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE;
     /** WRAM wC1A2; ResetRoomVariables clears the room trigger counter. */
     private int roomTriggerCount;
+    private int activeRoomEvent;
+    private boolean roomEventEffectExecuted;
+    private int roomEventChestRevealCountdown;
+    private int switchButtonPressCounter;
+    private int switchButtonPressed;
+    private int indoorKeyDoorAnimationCountdown;
+    private int indoorKeyDoorDirection = -1;
+    private int indoorKeyDoorLocation = -1;
+    private boolean worldLinkMotionBlockPending;
     private int tailCaveKeyholeCountdown;
     private boolean tailCaveFinalMotionBlockPending;
     private int nextWorldMusicTrackCountdown;
@@ -293,6 +324,7 @@ public final class RoomSession {
         this.followingNpcEntitySpawner = new FollowingNpcEntitySpawner(entitySpriteHandlerCatalog);
         this.enemyCombatTables = new RomEnemyCombatTables(romData);
         this.chestContentsTable = new ChestContentsTable(romData);
+        this.dungeonRoomEventTable = new DungeonRoomEventTable(romData);
         this.romTables = RomTables.loadFromRom(romData);
         this.entityBackgroundCollisionResolver = new EntityBackgroundCollisionResolver(romTables);
         this.enemyDropResolver = new EnemyDropResolver(romData);
@@ -362,6 +394,7 @@ public final class RoomSession {
     public void loadIndoor(int mapId, int roomId, int mapCategory) {
         clearTransientRoomState();
         dungeonItemState.loadForMap(mapId, true);
+        activeRoomEvent = dungeonRoomEventTable.eventFor(mapId, roomId);
         gpu.loadIndoorTiles(romData, mapId, roomId);
         initializeSwitchBlockTiles();
         LoadedRoom room = roomLoader.loadIndoor(
@@ -1128,6 +1161,10 @@ public final class RoomSession {
         return roomTriggerCount & 0xFF;
     }
 
+    int activeRoomEventForTest() {
+        return activeRoomEvent & 0xFF;
+    }
+
     int indoorTorchPaletteEffectAddressForTest() {
         return indoorTorchPaletteEffect.effectAddress();
     }
@@ -1330,6 +1367,7 @@ public final class RoomSession {
         applyMagicRodObjectInteractions(entityRuntime.magicRodObjectRequests());
         applyMagicPowderObjectInteractions(entityRuntime.magicPowderObjectRequests());
         activeRoom.replaceEntities(entityRuntime.snapshot());
+        tickRoomEvent(linkEntityX, linkEntityY);
         return events;
     }
 
@@ -1393,6 +1431,13 @@ public final class RoomSession {
             consumeLinkMotionBlockRequests() {
         return entityRuntime == null
             ? List.of() : entityRuntime.consumePendingLinkMotionBlockRequests();
+    }
+
+    /** Returns and clears a motion block emitted by a world handler rather than an entity. */
+    public boolean consumeWorldLinkMotionBlockRequest() {
+        boolean pending = worldLinkMotionBlockPending;
+        worldLinkMotionBlockPending = false;
+        return pending;
     }
 
     public List<RoomEntityRuntime.LinkFacingRequest> consumeLinkFacingRequests() {
@@ -1858,6 +1903,14 @@ public final class RoomSession {
         pendingShovelDrop = null;
         shovelUseState = 0;
         roomTriggerCount = 0;
+        activeRoomEvent = 0;
+        roomEventEffectExecuted = false;
+        roomEventChestRevealCountdown = 0;
+        switchButtonPressCounter = 0;
+        indoorKeyDoorAnimationCountdown = 0;
+        indoorKeyDoorDirection = -1;
+        indoorKeyDoorLocation = -1;
+        worldLinkMotionBlockPending = false;
         tailCaveKeyholeCountdown = 0;
         tailCaveFinalMotionBlockPending = false;
         nextWorldMusicTrackCountdown = 0;
@@ -2211,7 +2264,8 @@ public final class RoomSession {
             return new ChestOpenResult(false, -1, -1, location);
         }
         int itemType = chestContentsTable.itemForSpawn(
-            activeRoom.mapId(), activeRoom.roomId(), swordLevel);
+            activeRoom.mapId(), activeRoom.roomId(), swordLevel,
+            activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD);
         int slot = entityRuntime.spawnChestWithItem(column << 4, row << 4, itemType);
         if (slot < 0) {
             return new ChestOpenResult(false, -1, -1, location);
@@ -2227,6 +2281,77 @@ public final class RoomSession {
             ? activeRoom.gbcOverlay() : null);
         activeRoom.replaceEntities(entityRuntime.snapshot());
         return new ChestOpenResult(true, itemType, slot, location);
+    }
+
+    /** Mirrors bank 2's locked-door branch for physics categories $90-$93. */
+    public boolean tryUnlockIndoorKeyDoor(int linkPixelX, int linkPixelY,
+                                          int linkDirection, int collisionType) {
+        if (activeRoom == null
+            || activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
+            || activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL
+            || indoorKeyDoorAnimationCountdown != 0) {
+            return false;
+        }
+        int doorDirection = keyDoorDirectionIndex(linkDirection);
+        if (doorDirection < 0
+            || (collisionType & keyDoorCollisionBit(doorDirection)) == 0) {
+            return false;
+        }
+        int expectedPhysics = KEY_DOOR_PHYSICS_BASE + doorDirection;
+        int touchedLocation = -1;
+        for (int[] point : keyDoorCollisionPoints(linkPixelX, linkPixelY, doorDirection)) {
+            if (overworldCollision.objectPhysicsFlagAtPoint(point[0], point[1])
+                == expectedPhysics) {
+                int column = Math.floorDiv(point[0], 0x10);
+                int row = Math.floorDiv(point[1], 0x10);
+                touchedLocation = (row << 4) | column;
+                break;
+            }
+        }
+        if (touchedLocation < 0) {
+            return false;
+        }
+        int touchedObject = objectAtRoomLocation(touchedLocation);
+        int objectOffset = touchedObject - KEY_DOOR_CLOSED_OBJECTS[doorDirection];
+        if (objectOffset < 0 || objectOffset > 1 || !dungeonItemState.consumeSmallKey()) {
+            return false;
+        }
+        indoorKeyDoorDirection = doorDirection;
+        indoorKeyDoorLocation = touchedLocation
+            - (objectOffset == 0 ? 0 : doorDirection < 2 ? 1 : 0x10);
+        indoorKeyDoorAnimationCountdown = KEY_DOOR_ANIMATION_FRAMES;
+        colorShellSoundSink.play(GameplaySoundEvent.DOOR_UNLOCKED);
+        return true;
+    }
+
+    private static int keyDoorDirectionIndex(int linkDirection) {
+        return switch (linkDirection) {
+            case Link.DIRECTION_UP -> 0;
+            case Link.DIRECTION_DOWN -> 1;
+            case Link.DIRECTION_LEFT -> 2;
+            case Link.DIRECTION_RIGHT -> 3;
+            default -> -1;
+        };
+    }
+
+    private static int keyDoorCollisionBit(int direction) {
+        return switch (direction) {
+            case 0 -> 0x01;
+            case 1 -> 0x02;
+            case 2 -> 0x04;
+            case 3 -> 0x08;
+            default -> 0;
+        };
+    }
+
+    private static int[][] keyDoorCollisionPoints(int x, int y, int direction) {
+        return switch (direction) {
+            case 0 -> new int[][] {{x + 0x06, y + 0x06}, {x + 0x09, y + 0x06}};
+            case 1 -> new int[][] {{x + 0x06, y + 0x0F}, {x + 0x09, y + 0x0F}};
+            case 2 -> new int[][] {{x + 0x04, y + 0x09}, {x + 0x04, y + 0x0C}};
+            case 3 -> new int[][] {{x + 0x0B, y + 0x09}, {x + 0x0B, y + 0x0C}};
+            default -> new int[0][0];
+        };
     }
 
     /**
@@ -2631,6 +2756,132 @@ public final class RoomSession {
         byte[] status = activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
             ? overworldRoomStatus : indoorStatusTableForMap(activeRoom.mapId());
         status[activeRoom.roomId()] |= (byte) ROOM_STATUS_EVENT_1;
+    }
+
+    /** Executes the source's first common dungeon-event path used by Tail Cave. */
+    private void tickRoomEvent(int linkEntityX, int linkEntityY) {
+        tickIndoorKeyDoorAnimation();
+        tickSwitchButton(linkEntityX, linkEntityY);
+        tickRoomEventChestReveal(linkEntityX, linkEntityY);
+        if (activeRoom == null || activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
+            || activeRoomEvent == 0) {
+            return;
+        }
+        if ((activeRoomStatusFlags() & ROOM_STATUS_EVENT_1) != 0) {
+            return;
+        }
+        int trigger = activeRoomEvent & EVENT_TRIGGER_MASK;
+        if (!roomEventEffectExecuted
+            && ((trigger == EVENT_TRIGGER_KILL_ALL_ENEMIES
+                    && killAllEnemiesTriggerResolved())
+                || (trigger == EVENT_TRIGGER_STEP_ON_BUTTON
+                    && switchButtonPressed != 0))) {
+            roomEventEffectExecuted = true;
+            colorShellSoundSink.play(GameplaySoundEvent.PUZZLE_SOLVED);
+        }
+        if (!roomEventEffectExecuted) {
+            return;
+        }
+        if ((activeRoomEvent & EVENT_EFFECT_MASK) == EVENT_EFFECT_REVEAL_CHEST) {
+            activeRoomEvent = 0;
+            roomEventChestRevealCountdown = ROOM_EVENT_CHEST_REVEAL_COUNTDOWN;
+            if (transientVfxSystem != null) {
+                transientVfxSystem.spawn(TransientVfxType.CHEST_APPEARS, 0x88,
+                    roomEventChestTop(linkEntityX, linkEntityY) + 0x10);
+            }
+        }
+    }
+
+    private void tickIndoorKeyDoorAnimation() {
+        if (indoorKeyDoorAnimationCountdown == 0 || indoorKeyDoorDirection < 0
+            || activeRoom == null) {
+            return;
+        }
+        worldLinkMotionBlockPending = true;
+        indoorKeyDoorAnimationCountdown--;
+        if (indoorKeyDoorAnimationCountdown != 0) {
+            return;
+        }
+
+        int direction = indoorKeyDoorDirection;
+        indoorKeyDoorDirection = -1;
+        replaceKeyDoorObjects(direction, indoorKeyDoorLocation);
+        indoorKeyDoorLocation = -1;
+        byte[] status = indoorStatusTableForMap(activeRoom.mapId());
+        status[activeRoom.roomId()] |= (byte) KEY_DOOR_CURRENT_STATUS[direction];
+        int adjacentRoom = adjacentIndoorRoomIdForBombWall(direction);
+        status[adjacentRoom] |= (byte) KEY_DOOR_ADJACENT_STATUS[direction];
+        refreshActiveRoomTilemap();
+        overworldCollision.setRoom(activeRoom.roomObjectsArea());
+        overworldCollision.setGbcOverlay(null);
+    }
+
+    private void replaceKeyDoorObjects(int direction, int location) {
+        int firstClosedObject = KEY_DOOR_CLOSED_OBJECTS[direction];
+        int[] openObjects = KEY_DOOR_OPEN_OBJECTS[direction];
+        int[] objects = activeRoom.roomObjectsArea();
+        int secondLocation = location + (direction < 2 ? 1 : 0x10);
+        int[] locations = {location, secondLocation};
+        for (int objectOffset = 0; objectOffset < locations.length; objectOffset++) {
+            int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + locations[objectOffset];
+            if (areaIndex >= 0 && areaIndex < objects.length
+                && (objects[areaIndex] & 0xFF) == firstClosedObject + objectOffset) {
+                objects[areaIndex] = openObjects[objectOffset];
+                if (activeRoom.renderValues() != null) {
+                    activeRoom.renderValues()[areaIndex] = openObjects[objectOffset];
+                }
+            }
+        }
+    }
+
+    private boolean killAllEnemiesTriggerResolved() {
+        for (RoomEntity entity : activeRoom.entities().slots()) {
+            if (entity.status() != EntityStatus.DISABLED
+                && (romTables.entityOptions1(entity.type())
+                    & ENTITY_OPTION_EXCLUDED_FROM_KILL_ALL) == 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void tickSwitchButton(int linkEntityX, int linkEntityY) {
+        if (activeRoom == null || activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
+            || switchButtonPressed != 0) {
+            return;
+        }
+        int objectUnderLink = overworldCollision.groundInteractionSample(
+            linkEntityX, linkEntityY).objectId();
+        if (objectUnderLink != OBJECT_SWITCH_BUTTON) {
+            switchButtonPressCounter = 0;
+            return;
+        }
+        switchButtonPressCounter = (switchButtonPressCounter + 1) & 0xFF;
+        if (switchButtonPressCounter == SWITCH_BUTTON_PRESS_FRAMES) {
+            switchButtonPressed = SWITCH_BUTTON_PRESSED;
+            gpu.copyPressedFloorSwitchTiles(romData);
+            colorShellSoundSink.play(GameplaySoundEvent.FLOOR_SWITCH);
+        }
+    }
+
+    private void tickRoomEventChestReveal(int linkEntityX, int linkEntityY) {
+        if (roomEventChestRevealCountdown == 0) {
+            return;
+        }
+        roomEventChestRevealCountdown--;
+        if (roomEventChestRevealCountdown != ROOM_EVENT_CHEST_WRITE_COUNTDOWN) {
+            return;
+        }
+        int location = roomEventChestTop(linkEntityX, linkEntityY) | 0x08;
+        writeBombPuzzleObject(location, 0xA0);
+        refreshActiveRoomTilemap();
+        overworldCollision.setRoom(activeRoom.roomObjectsArea());
+    }
+
+    private static int roomEventChestTop(int linkEntityX, int linkEntityY) {
+        boolean linkNearUpperChest = ((linkEntityY - 0x30 + 0x08) & 0xFF) < 0x10
+            && ((linkEntityX - 0x88 + 0x10) & 0xFF) < 0x20;
+        return linkNearUpperChest ? 0x30 : 0x20;
     }
 
     private static void requireLength(byte[] values, int expectedLength, String label) {

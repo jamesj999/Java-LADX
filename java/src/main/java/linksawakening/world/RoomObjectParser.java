@@ -292,6 +292,20 @@ public final class RoomObjectParser {
         if (idx < 0 || idx >= INDOOR_DOOR_MACRO_TABLES.length) {
             return;
         }
+        // ConfigureRoomObjects selects the matching open-door macro when the
+        // directional status bit was synchronized by the adjacent room.
+        if (idx < 4) {
+            int statusBit = switch (idx) {
+                case 0 -> 0x04;
+                case 1 -> 0x08;
+                case 2 -> 0x02;
+                case 3 -> 0x01;
+                default -> 0;
+            };
+            if ((roomStatusFlags & statusBit) != 0) {
+                idx += 8;
+            }
+        }
         int[] table = INDOOR_DOOR_MACRO_TABLES[idx];
         applyMacroTable(location, INDOOR_DOOR_MACRO_BANK, table[0],
             INDOOR_DOOR_MACRO_BANK, table[1]);

@@ -849,6 +849,9 @@ public class Main {
                     roomSession.tryUnlockTailCaveKeyhole(
                         link.pixelX(), link.pixelY(), link.direction(),
                         link.romCollisionType(), playerState.tailKeyCount() != 0);
+                    roomSession.tryUnlockIndoorKeyDoor(
+                        link.pixelX(), link.pixelY(), link.direction(),
+                        link.romCollisionType());
                 }
                 Link.ScreenShakeRequest pegasusShake =
                     link.consumePegasusScreenShakeRequest();
@@ -1037,6 +1040,9 @@ public class Main {
                     if (link != null) {
                         link.blockNextRomMotionFrame();
                     }
+                }
+                if (roomSession.consumeWorldLinkMotionBlockRequest() && link != null) {
+                    link.blockNextRomMotionFrame();
                 }
                 for (var request : roomSession.consumeLinkFacingRequests()) {
                     if (link != null) {

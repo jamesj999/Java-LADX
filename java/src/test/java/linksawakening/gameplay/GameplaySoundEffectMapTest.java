@@ -37,6 +37,18 @@ final class GameplaySoundEffectMapTest {
     }
 
     @Test
+    void mapsFloorButtonToTheRomFloorSwitchWave() throws IOException {
+        GameplaySoundEffectMap map = GameplaySoundEffectMap.fromCatalog(
+            SoundEffectCatalog.fromRom(loadRom()));
+
+        SoundEffect effect = map.resolve(GameplaySoundEvent.FLOOR_SWITCH).orElseThrow();
+
+        assertEquals(SoundEffectNamespace.WAVE, effect.namespace());
+        assertEquals(0x0E, effect.id());
+        assertEquals("WAVE_SFX_FLOOR_SWITCH", effect.name());
+    }
+
+    @Test
     void mapsHookshotToTheRomHookshotNoise() throws IOException {
         GameplaySoundEffectMap map = GameplaySoundEffectMap.fromCatalog(
             SoundEffectCatalog.fromRom(loadRom()));

@@ -61,6 +61,11 @@ public final class ChestContentsTable {
 
     /** Mirrors GetChestsStatusForRoom's raw room-table lookup. */
     public int itemForRoom(int mapId, int roomId) {
+        return itemForRoom(mapId, roomId, false);
+    }
+
+    /** Mirrors func_014_5900's {@code wIsIndoor} high-byte table selection. */
+    public int itemForRoom(int mapId, int roomId, boolean indoor) {
         validateByte(mapId, "mapId");
         validateByte(roomId, "roomId");
         int tableAddress;
@@ -72,7 +77,11 @@ public final class ChestContentsTable {
             tableAddress = COLOR_DUNGEON_TABLE_ADDRESS;
             tableSize = COLOR_DUNGEON_TABLE_SIZE;
         } else {
-            tableAddress = ROOM_TABLE_ADDRESS;
+            int tablePage = indoor ? 1 : 0;
+            if (indoor && mapId >= 0x06 && mapId < 0x1A) {
+                tablePage++;
+            }
+            tableAddress = ROOM_TABLE_ADDRESS + tablePage * ROOM_TABLE_SIZE;
             tableSize = ROOM_TABLE_SIZE;
         }
         int offset = RomBank.romOffset(TABLE_BANK, tableAddress + roomId);
@@ -86,8 +95,12 @@ public final class ChestContentsTable {
 
     /** Mirrors func_014_5900's upgraded-sword replacement for secret-shell chests. */
     public int itemForSpawn(int mapId, int roomId, int swordLevel) {
+        return itemForSpawn(mapId, roomId, swordLevel, false);
+    }
+
+    public int itemForSpawn(int mapId, int roomId, int swordLevel, boolean indoor) {
         validateByte(swordLevel, "swordLevel");
-        int item = itemForRoom(mapId, roomId);
+        int item = itemForRoom(mapId, roomId, indoor);
         return item == CHEST_SEASHELL && swordLevel >= 2 ? CHEST_RUPEES_20 : item;
     }
 

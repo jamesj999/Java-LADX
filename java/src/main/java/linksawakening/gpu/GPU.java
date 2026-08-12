@@ -55,6 +55,9 @@ public class GPU {
     private static final int SWITCH_BLOCK_TILES_BANK = 0x2C;
     private static final int SWITCH_BLOCK_TILES_ADDR = 0x6800;
     private static final int SWITCH_BLOCK_TILE_COUNT = 0x04;
+    private static final int PRESSED_FLOOR_SWITCH_TILES_BANK = 0x32;
+    private static final int PRESSED_FLOOR_SWITCH_TILES_ADDR = 0x7F00;
+    private static final int PRESSED_FLOOR_SWITCH_VRAM_TILE = 0x114;
 
     // Ping-pong offset table used by dungeon-1 and lava animations.
     // Matches AnimatedTilesDataOffsets in home/animated_tiles.asm:267.
@@ -493,6 +496,12 @@ public class GPU {
         }
         loadTilesFromROM(romData, SWITCH_BLOCK_TILES_BANK,
             SWITCH_BLOCK_TILES_ADDR + sourceOffset, SWITCH_BLOCK_TILE_COUNT, destinationTile);
+    }
+
+    /** Mirrors ReplaceTilesButtonPressed's four-tile copy to vTiles2 + $140. */
+    public void copyPressedFloorSwitchTiles(byte[] romData) {
+        loadTilesFromROM(romData, PRESSED_FLOOR_SWITCH_TILES_BANK,
+            PRESSED_FLOOR_SWITCH_TILES_ADDR, 0x04, PRESSED_FLOOR_SWITCH_VRAM_TILE);
     }
 
     private void copyAnimatedTilesFrame(byte[] romData, int dataOffset) {

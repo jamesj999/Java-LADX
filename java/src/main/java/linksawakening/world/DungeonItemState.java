@@ -100,6 +100,17 @@ public final class DungeonItemState {
         synchronize();
     }
 
+    /** Mirrors the locked-door handler's decrement of {@code wSmallKeysCount}. */
+    public boolean consumeSmallKey() {
+        int count = Byte.toUnsignedInt(currentFlags[SMALL_KEYS_INDEX]);
+        if (count == 0) {
+            return false;
+        }
+        currentFlags[SMALL_KEYS_INDEX] = (byte) (count - 1);
+        synchronize();
+        return true;
+    }
+
     /** Mirrors SynchronizeDungeonsItemFlags for the selected indoor map. */
     public void synchronize() {
         if (currentMapId == MAP_COLOR_DUNGEON) {

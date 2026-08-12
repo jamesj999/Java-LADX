@@ -598,6 +598,83 @@ final class RoomSessionTest {
     }
 
     @Test
+    void tailCaveFirstRoomRevealsItsSmallKeyChestAfterStandingOnTheButton() {
+        TransientVfxSystem vfx = new TransientVfxSystem(16);
+        RoomSession session = newSession(vfx);
+        List<GameplaySoundEvent> sounds = new ArrayList<>();
+        session.setColorShellSoundSink(sounds::add);
+        session.loadIndoor(0x00, 0x13);
+        int chestLocation = 0x28;
+        int chestIndex = RoomConstants.ROOM_OBJECTS_BASE + chestLocation;
+        int buttonIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x35;
+
+        assertEquals(0x63, session.activeRoomEventForTest());
+        assertEquals(0xAA, session.activeRoom().roomObjectsArea()[buttonIndex]);
+        assertNotEquals(0xA0, session.activeRoom().roomObjectsArea()[chestIndex]);
+        for (int frame = 0; frame < 23; frame++) {
+            session.tickEntities(frame, 0x58, 0x40);
+        }
+        assertTrue(sounds.isEmpty());
+        assertEquals(0x63, session.activeRoomEventForTest());
+
+        session.tickEntities(23, 0x58, 0x40);
+
+        assertEquals(0, session.activeRoomEventForTest());
+        assertEquals(List.of(GameplaySoundEvent.FLOOR_SWITCH,
+            GameplaySoundEvent.PUZZLE_SOLVED), sounds);
+        assertEquals(TransientVfxType.CHEST_APPEARS,
+            vfx.activeSlots().getFirst().type());
+        assertEquals(0x0F, vfx.activeSlots().getFirst().countdown());
+        assertNotEquals(0xA0, session.activeRoom().roomObjectsArea()[chestIndex]);
+
+        for (int frame = 24; frame <= 34; frame++) {
+            session.tickEntities(frame, 0x40, 0x60);
+        }
+
+        assertEquals(0xA0, session.activeRoom().roomObjectsArea()[chestIndex]);
+        RoomSession.ChestOpenResult chest = session.tryOpenChest(
+            0x78, 0x21, Link.DIRECTION_UP, true, 1);
+        assertTrue(chest.opened());
+        assertEquals(ChestContentsTable.CHEST_SMALL_KEY, chest.itemType());
+    }
+
+    @Test
+    void tailCaveFirstKeyDoorConsumesTheKeyAndSynchronizesBothRooms() {
+        RoomSession session = newSession();
+        List<GameplaySoundEvent> sounds = new ArrayList<>();
+        session.setColorShellSoundSink(sounds::add);
+        byte[] dungeonFlags = new byte[DungeonItemState.DUNGEON_ITEM_FLAGS_SIZE];
+        dungeonFlags[DungeonItemState.SMALL_KEYS_INDEX] = 1;
+        session.restoreDungeonItemFlags(dungeonFlags,
+            new byte[DungeonItemState.COLOR_DUNGEON_ITEM_FLAGS_SIZE]);
+        session.loadIndoor(0x00, 0x0F);
+        int upperDoorIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x39;
+        int lowerDoorIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x49;
+
+        assertEquals(0x33, session.activeRoom().roomObjectsArea()[upperDoorIndex]);
+        assertEquals(0x34, session.activeRoom().roomObjectsArea()[lowerDoorIndex]);
+        assertTrue(session.tryUnlockIndoorKeyDoor(
+            0x85, 0x38, Link.DIRECTION_RIGHT, 0x08));
+        assertEquals(0, session.currentDungeonItemFlagsSnapshot()[
+            DungeonItemState.SMALL_KEYS_INDEX]);
+        assertEquals(List.of(GameplaySoundEvent.DOOR_UNLOCKED), sounds);
+
+        for (int frame = 0; frame < 8; frame++) {
+            session.tickEntities(frame, 0x85, 0x38);
+            assertTrue(session.consumeWorldLinkMotionBlockRequest());
+        }
+
+        assertEquals(0x0B, session.activeRoom().roomObjectsArea()[upperDoorIndex]);
+        assertEquals(0x0C, session.activeRoom().roomObjectsArea()[lowerDoorIndex]);
+        assertEquals(0x01, session.indoorRoomStatusForTest(0x00, 0x0F) & 0x01);
+        assertEquals(0x02, session.indoorRoomStatusForTest(0x00, 0x10) & 0x02);
+
+        session.loadIndoor(0x00, 0x0F);
+        assertEquals(0x0B, session.activeRoom().roomObjectsArea()[upperDoorIndex]);
+        assertEquals(0x0C, session.activeRoom().roomObjectsArea()[lowerDoorIndex]);
+    }
+
+    @Test
     void tailCaveKeyholeFollowsTheRomLockedAndUnlockedPaths() {
         RoomSession session = newSession();
         List<GameplaySoundEvent> sounds = new ArrayList<>();

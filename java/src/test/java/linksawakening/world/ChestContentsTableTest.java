@@ -17,6 +17,14 @@ final class ChestContentsTableTest {
     }
 
     @Test
+    void selectsTheIndoorATablePageForTailCave() {
+        ChestContentsTable table = new ChestContentsTable(loadRom());
+
+        assertEquals(ChestContentsTable.CHEST_SMALL_KEY,
+            table.itemForRoom(0x00, 0x13, true));
+    }
+
+    @Test
     void selectsTheSeparateColorDungeonTable() {
         ChestContentsTable table = new ChestContentsTable(loadRom());
 

@@ -4,7 +4,9 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class DungeonItemStateTest {
 
@@ -58,6 +60,21 @@ final class DungeonItemStateTest {
 
         assertEquals(2, state.currentFlag(DungeonItemState.SMALL_KEYS_INDEX));
         assertEquals(2, state.dungeonItemFlagsSnapshot()[1 * DungeonItemState.ITEM_FLAG_SIZE + 4]);
+    }
+
+    @Test
+    void consumesAndSynchronizesOneSmallKeyWithoutUnderflowing() {
+        DungeonItemState state = new DungeonItemState();
+        byte[] dungeonFlags = new byte[DungeonItemState.DUNGEON_ITEM_FLAGS_SIZE];
+        dungeonFlags[DungeonItemState.SMALL_KEYS_INDEX] = 1;
+        state.restore(dungeonFlags,
+            new byte[DungeonItemState.COLOR_DUNGEON_ITEM_FLAGS_SIZE]);
+        state.loadForMap(0x00, true);
+
+        assertTrue(state.consumeSmallKey());
+        assertEquals(0, state.currentFlag(DungeonItemState.SMALL_KEYS_INDEX));
+        assertEquals(0, state.dungeonItemFlagsSnapshot()[DungeonItemState.SMALL_KEYS_INDEX]);
+        assertFalse(state.consumeSmallKey());
     }
 
     @Test

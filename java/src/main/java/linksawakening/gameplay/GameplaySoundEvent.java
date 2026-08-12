@@ -43,6 +43,7 @@ public enum GameplaySoundEvent {
     DOOR_UNLOCKED,
     OPEN_KEY_CAVERN,
     DUNGEON_OPENED,
+    FLOOR_SWITCH,
     SWITCH_BLOCK_TOGGLE,
     OCARINA_BALLAD,
     OCARINA_MAMBO,

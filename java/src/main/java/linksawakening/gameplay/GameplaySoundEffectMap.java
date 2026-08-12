@@ -80,6 +80,8 @@ public final class GameplaySoundEffectMap {
             SoundEffectNamespace.NOISE, 0x2A);
         put(effects, catalog, GameplaySoundEvent.DUNGEON_OPENED,
             SoundEffectNamespace.JINGLE, 0x23);
+        put(effects, catalog, GameplaySoundEvent.FLOOR_SWITCH,
+            SoundEffectNamespace.WAVE, 0x0E);
         put(effects, catalog, GameplaySoundEvent.SWITCH_BLOCK_TOGGLE,
             SoundEffectNamespace.WAVE, 0x0E);
         put(effects, catalog, GameplaySoundEvent.OCARINA_BALLAD,
