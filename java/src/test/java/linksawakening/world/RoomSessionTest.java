@@ -702,6 +702,48 @@ final class RoomSessionTest {
     }
 
     @Test
+    void tailCaveBossDoorRequiresTheNightmareKeyAndPersistsOpen() {
+        RoomSession session = newSession();
+        List<GameplaySoundEvent> sounds = new ArrayList<>();
+        session.setColorShellSoundSink(sounds::add);
+        session.loadIndoor(0x00, 0x0B);
+        int leftDoorIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x04;
+        int rightDoorIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x05;
+
+        assertEquals(0xA4, session.activeRoom().roomObjectsArea()[leftDoorIndex]);
+        assertEquals(0xA5, session.activeRoom().roomObjectsArea()[rightDoorIndex]);
+        assertTrue(session.tryUnlockIndoorKeyDoor(
+            0x48, 0x00, Link.DIRECTION_UP, 0x01));
+        assertEquals(0x07,
+            session.consumeEntityDialogRequests().getFirst().dialogLowId());
+        assertEquals(0xA4, session.activeRoom().roomObjectsArea()[leftDoorIndex]);
+
+        byte[] dungeonFlags = new byte[DungeonItemState.DUNGEON_ITEM_FLAGS_SIZE];
+        dungeonFlags[DungeonItemState.NIGHTMARE_KEY_INDEX] = 1;
+        session.restoreDungeonItemFlags(dungeonFlags,
+            new byte[DungeonItemState.COLOR_DUNGEON_ITEM_FLAGS_SIZE]);
+        session.loadIndoor(0x00, 0x0B);
+
+        assertTrue(session.tryUnlockIndoorKeyDoor(
+            0x48, 0x00, Link.DIRECTION_UP, 0x01));
+        assertEquals(List.of(GameplaySoundEvent.DOOR_UNLOCKED), sounds);
+        for (int frame = 0; frame < 8; frame++) {
+            session.tickEntities(frame, 0x48, 0x00);
+        }
+
+        assertEquals(0x43, session.activeRoom().roomObjectsArea()[leftDoorIndex]);
+        assertEquals(0x44, session.activeRoom().roomObjectsArea()[rightDoorIndex]);
+        assertEquals(1, session.currentDungeonItemFlagsSnapshot()[
+            DungeonItemState.NIGHTMARE_KEY_INDEX]);
+        assertEquals(0x04, session.indoorRoomStatusForTest(0x00, 0x0B) & 0x04);
+        assertEquals(0x08, session.indoorRoomStatusForTest(0x00, 0x06) & 0x08);
+
+        session.loadIndoor(0x00, 0x0B);
+        assertEquals(0x43, session.activeRoom().roomObjectsArea()[leftDoorIndex]);
+        assertEquals(0x44, session.activeRoom().roomObjectsArea()[rightDoorIndex]);
+    }
+
+    @Test
     void tailCaveKeyholeFollowsTheRomLockedAndUnlockedPaths() {
         RoomSession session = newSession();
         List<GameplaySoundEvent> sounds = new ArrayList<>();

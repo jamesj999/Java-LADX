@@ -307,6 +307,10 @@ public final class RoomObjectParser {
             if ((roomStatusFlags & statusBit) != 0) {
                 idx += 8;
             }
+        } else if (idx == 12 && (roomStatusFlags & 0x04) != 0) {
+            // OBJECT_BOSS_DOOR is top-facing and reloads as OpenDoorTop once
+            // ROOM_STATUS_DOOR_OPEN_UP has been synchronized.
+            idx = 8;
         }
         if (idx >= 4 && idx <= 7) {
             // wC18A/wC18B use top, bottom, left, right in bits 0..3.

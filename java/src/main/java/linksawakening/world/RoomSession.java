@@ -249,6 +249,7 @@ public final class RoomSession {
     private int indoorKeyDoorAnimationCountdown;
     private int indoorKeyDoorDirection = -1;
     private int indoorKeyDoorLocation = -1;
+    private boolean indoorBossDoorOpening;
     private boolean worldLinkMotionBlockPending;
     private int tailCaveKeyholeCountdown;
     private boolean tailCaveFinalMotionBlockPending;
@@ -1932,6 +1933,7 @@ public final class RoomSession {
         indoorKeyDoorAnimationCountdown = 0;
         indoorKeyDoorDirection = -1;
         indoorKeyDoorLocation = -1;
+        indoorBossDoorOpening = false;
         worldLinkMotionBlockPending = false;
         tailCaveKeyholeCountdown = 0;
         tailCaveFinalMotionBlockPending = false;
@@ -2321,12 +2323,14 @@ public final class RoomSession {
         }
         int expectedPhysics = KEY_DOOR_PHYSICS_BASE + doorDirection;
         int touchedLocation = -1;
+        boolean bossDoor = false;
         for (int[] point : keyDoorCollisionPoints(linkPixelX, linkPixelY, doorDirection)) {
-            if (overworldCollision.objectPhysicsFlagAtPoint(point[0], point[1])
-                == expectedPhysics) {
+            int physics = overworldCollision.objectPhysicsFlagAtPoint(point[0], point[1]);
+            if (physics == expectedPhysics || (doorDirection == 0 && physics == 0x98)) {
                 int column = Math.floorDiv(point[0], 0x10);
                 int row = Math.floorDiv(point[1], 0x10);
                 touchedLocation = (row << 4) | column;
+                bossDoor = physics == 0x98;
                 break;
             }
         }
@@ -2334,6 +2338,22 @@ public final class RoomSession {
             return false;
         }
         int touchedObject = objectAtRoomLocation(touchedLocation);
+        if (bossDoor) {
+            int objectOffset = touchedObject - 0xA4;
+            if (objectOffset < 0 || objectOffset > 1) {
+                return false;
+            }
+            if (dungeonItemState.currentFlag(DungeonItemState.NIGHTMARE_KEY_INDEX) == 0) {
+                pendingRoomDialogRequests.add(new RoomEntityRuntime.DialogRequest(0, 0x07));
+                return true;
+            }
+            indoorBossDoorOpening = true;
+            indoorKeyDoorDirection = 0;
+            indoorKeyDoorLocation = touchedLocation - objectOffset;
+            indoorKeyDoorAnimationCountdown = KEY_DOOR_ANIMATION_FRAMES;
+            colorShellSoundSink.play(GameplaySoundEvent.DOOR_UNLOCKED);
+            return true;
+        }
         int objectOffset = touchedObject - KEY_DOOR_CLOSED_OBJECTS[doorDirection];
         if (objectOffset < 0 || objectOffset > 1 || !dungeonItemState.consumeSmallKey()) {
             return false;
@@ -2839,7 +2859,12 @@ public final class RoomSession {
 
         int direction = indoorKeyDoorDirection;
         indoorKeyDoorDirection = -1;
-        replaceKeyDoorObjects(direction, indoorKeyDoorLocation);
+        if (indoorBossDoorOpening) {
+            replaceBossDoorObjects(indoorKeyDoorLocation);
+            indoorBossDoorOpening = false;
+        } else {
+            replaceKeyDoorObjects(direction, indoorKeyDoorLocation);
+        }
         indoorKeyDoorLocation = -1;
         byte[] status = indoorStatusTableForMap(activeRoom.mapId());
         status[activeRoom.roomId()] |= (byte) KEY_DOOR_CURRENT_STATUS[direction];
@@ -2863,6 +2888,21 @@ public final class RoomSession {
                 objects[areaIndex] = openObjects[objectOffset];
                 if (activeRoom.renderValues() != null) {
                     activeRoom.renderValues()[areaIndex] = openObjects[objectOffset];
+                }
+            }
+        }
+    }
+
+    private void replaceBossDoorObjects(int location) {
+        int[] objects = activeRoom.roomObjectsArea();
+        int[] openObjects = KEY_DOOR_OPEN_OBJECTS[0];
+        for (int offset = 0; offset < 2; offset++) {
+            int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + location + offset;
+            if (areaIndex >= 0 && areaIndex < objects.length
+                && objects[areaIndex] == 0xA4 + offset) {
+                objects[areaIndex] = openObjects[offset];
+                if (activeRoom.renderValues() != null) {
+                    activeRoom.renderValues()[areaIndex] = openObjects[offset];
                 }
             }
         }
