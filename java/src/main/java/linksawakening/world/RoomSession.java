@@ -1171,6 +1171,11 @@ public final class RoomSession {
         return activeRoomEvent & 0xFF;
     }
 
+    boolean hasDungeonInstrumentForTest(int mapId) {
+        return mapId >= 0 && mapId < dungeonProgressFlags.length
+            && (dungeonProgressFlags[mapId] & 0x02) != 0;
+    }
+
     int indoorTorchPaletteEffectAddressForTest() {
         return indoorTorchPaletteEffect.effectAddress();
     }
@@ -1726,6 +1731,16 @@ public final class RoomSession {
             // PickDroppableKey sets the Angler's Tunnel source room flag before
             // it starts the held-item transition.
             indoorARoomStatus[0x69] |= 0x10;
+        }
+        if (event.type() == EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS
+            && activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD) {
+            indoorStatusTableForMap(activeRoom.mapId())[activeRoom.roomId()]
+                |= (byte) ROOM_STATUS_EVENT_1;
+            if (activeRoom.mapId() >= 0 && activeRoom.mapId() < dungeonProgressFlags.length) {
+                dungeonProgressFlags[activeRoom.mapId()] |= 0x02;
+            }
+            pendingRoomDialogRequests.add(new RoomEntityRuntime.DialogRequest(
+                1, activeRoom.mapId() & 0xFF));
         }
         if (event.type() == ENTITY_DROPPABLE_SECRET_SEASHELL) {
             // PickSecretSeashell opens Dialog0EF and completes the room after

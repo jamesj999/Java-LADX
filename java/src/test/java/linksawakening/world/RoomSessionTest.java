@@ -686,6 +686,31 @@ final class RoomSessionTest {
     }
 
     @Test
+    void tailCaveInstrumentUsesItsRomSpriteAndCompletesTheInstrumentRoom() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x00, 0x02);
+        RoomEntity instrument = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type()
+                == EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS)
+            .findFirst().orElseThrow();
+        assertEquals(0x03, instrument.spriteDefinition().bank());
+        assertEquals(0x5D83, instrument.spriteDefinition().address());
+        assertEquals(4, instrument.spriteDefinition().variantCount());
+
+        session.tickEntities(0, instrument.x(), instrument.y());
+        EntityPickupEvent pickup = session.collectEntityIfNeeded(
+            (instrument.slot() ^ 1) & 1, instrument.x(), instrument.y(), false, true);
+
+        assertNotNull(pickup);
+        assertEquals(EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS,
+            pickup.type());
+        assertTrue(session.hasDungeonInstrumentForTest(0x00));
+        assertEquals(0x10, session.indoorRoomStatusForTest(0x00, 0x02) & 0x10);
+        assertEquals(0x100,
+            session.consumeEntityDialogRequests().getFirst().globalDialogId());
+    }
+
+    @Test
     void tailCaveFirstKeyDoorConsumesTheKeyAndSynchronizesBothRooms() {
         RoomSession session = newSession();
         List<GameplaySoundEvent> sounds = new ArrayList<>();

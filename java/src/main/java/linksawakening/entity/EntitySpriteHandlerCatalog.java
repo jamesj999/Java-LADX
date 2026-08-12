@@ -115,6 +115,7 @@ public final class EntitySpriteHandlerCatalog {
     private static final int ENTITY_GUARDIAN_ACORN = 0x34;
     private static final int ENTITY_HEART_PIECE = 0x35;
     private static final int ENTITY_HEART_CONTAINER = 0x36;
+    public static final int ENTITY_INSTRUMENT_OF_THE_SIRENS = 0x39;
     private static final int ENTITY_DROPPABLE_ARROWS = 0x37;
     private static final int ENTITY_DROPPABLE_BOMBS = 0x38;
     private static final int ENTITY_SLEEPY_TOADSTOOL = 0x3A;
@@ -198,6 +199,10 @@ public final class EntitySpriteHandlerCatalog {
         }
         if (entityType == ENTITY_CHEST_WITH_ITEM) {
             return decodePair(entityType, 0x07, 0x7B57, 0x21, 0);
+        }
+        if (entityType == ENTITY_INSTRUMENT_OF_THE_SIRENS) {
+            return decodePair(entityType, 0x03, 0x5D83, 4,
+                mapId < 0 ? 0 : mapId & 0x03);
         }
         if (entityType == ENTITY_ARROW) {
             return decodePair(entityType, 0x03, 0x6BC6, 4, 0);
