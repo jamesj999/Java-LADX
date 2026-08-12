@@ -8,14 +8,41 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_A;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_D;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_DOWN;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_ENTER;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_J;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_K;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_LEFT;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_S;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_SPACE;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_TAB;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_UP;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_W;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_X;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_Z;
 
 final class AppConfigTest {
+
+    @Test
+    void checkedInConfigStartsCanonicalNewGameWithDebugControlsAvailable() {
+        AppConfig config = AppConfig.loadFromResources();
+
+        assertFalse(config.showTitleScreen());
+        assertFalse(config.playIntroStory());
+        assertTrue(config.debugEnabled());
+        assertEquals(AppConfig.ItemProfile.NEW_GAME, config.itemProfile());
+
+        InputConfig input = config.inputConfig();
+        assertEquals(GLFW_KEY_ENTER, input.menuOpenKey());
+        assertEquals(GLFW_KEY_UP, input.upKey());
+        assertEquals(GLFW_KEY_DOWN, input.downKey());
+        assertEquals(GLFW_KEY_LEFT, input.leftKey());
+        assertEquals(GLFW_KEY_RIGHT, input.rightKey());
+        assertEquals(GLFW_KEY_Z, input.aKey());
+        assertEquals(GLFW_KEY_X, input.bKey());
+        assertEquals(GLFW_KEY_TAB, input.selectKey());
+    }
 
     @Test
     void defaultsPreserveCurrentStartupBehavior() {
