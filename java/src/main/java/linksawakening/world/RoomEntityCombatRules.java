@@ -24,6 +24,7 @@ public final class RoomEntityCombatRules {
     private static final int ENTITY_GIBDO = 0x1F;
     private static final int ENTITY_MIMIC = 0x28;
     private static final int ENTITY_MINI_MOLDORM = 0x29;
+    private static final int ENTITY_MOLDORM = 0x59;
     private static final int ENTITY_MASKED_MIMIC_GORIYA = 0x8F;
     private static final int ENTITY_LIKE_LIKE = 0x23;
     private static final int ENTITY_GOOMBA = 0x9F;
@@ -187,6 +188,7 @@ public final class RoomEntityCombatRules {
                 ENTITY_CRYSTAL_SWITCH,
                 ENTITY_OCTOROK, ENTITY_BOUNCING_BOMBITE, ENTITY_TIMER_BOMBITE,
                 ENTITY_MAD_BOMBER, ENTITY_BOMBER, ENTITY_MIMIC, ENTITY_MINI_MOLDORM,
+                ENTITY_MOLDORM,
                 ENTITY_MASKED_MIMIC_GORIYA, ENTITY_WITCH_RAT -> true;
             default -> false;
         };
@@ -270,6 +272,7 @@ public final class RoomEntityCombatRules {
             case ENTITY_CRYSTAL_SWITCH -> CRYSTAL_SWITCH_CONTACT_DAMAGE;
             case ENTITY_PINCER -> PINCER_CONTACT_DAMAGE;
             case ENTITY_WITCH_RAT -> 0x04;
+            case ENTITY_MOLDORM -> 0x08;
             default -> 0;
         };
     }
@@ -318,6 +321,7 @@ public final class RoomEntityCombatRules {
             case ENTITY_SPIKE_TRAP -> SPIKE_TRAP_INITIAL_HEALTH;
             case ENTITY_CRYSTAL_SWITCH -> CRYSTAL_SWITCH_INITIAL_HEALTH;
             case ENTITY_WITCH_RAT -> 0x01;
+            case ENTITY_MOLDORM -> 0x04;
             default -> 0;
         };
     }
@@ -332,7 +336,8 @@ public final class RoomEntityCombatRules {
      * trap takes the EnemyCollidedWithSword sword-clink path.
      */
     static boolean swordPokeForSwordCollision(int type) {
-        return (type & 0xFF) == ENTITY_SPIKE_TRAP;
+        return (type & 0xFF) == ENTITY_SPIKE_TRAP
+            || (type & 0xFF) == ENTITY_MOLDORM;
     }
 
     /** Adds a handler-owned dynamic sword-clink flag to the static exceptions. */
@@ -397,7 +402,8 @@ public final class RoomEntityCombatRules {
         return switch (type & 0xFF) {
             case ENTITY_GEL -> SMALL_ENEMY_HITBOX_WIDTH;
             case ENTITY_GIANT_GHINI, ENTITY_GIANT_GOPONGA_FLOWER,
-                ENTITY_SPIKE_TRAP, ENTITY_ARMOS_KNIGHT, ENTITY_URCHIN ->
+                ENTITY_SPIKE_TRAP, ENTITY_ARMOS_KNIGHT, ENTITY_URCHIN,
+                ENTITY_MOLDORM ->
                 BIG_ENEMY_HITBOX_WIDTH;
             default -> HITBOX_WIDTH;
         };
@@ -413,7 +419,8 @@ public final class RoomEntityCombatRules {
         return switch (type & 0xFF) {
             case ENTITY_GEL -> SMALL_ENEMY_HITBOX_HEIGHT;
             case ENTITY_GIANT_GHINI, ENTITY_GIANT_GOPONGA_FLOWER,
-                ENTITY_SPIKE_TRAP, ENTITY_ARMOS_KNIGHT, ENTITY_URCHIN ->
+                ENTITY_SPIKE_TRAP, ENTITY_ARMOS_KNIGHT, ENTITY_URCHIN,
+                ENTITY_MOLDORM ->
                 BIG_ENEMY_HITBOX_HEIGHT;
             default -> HITBOX_HEIGHT;
         };

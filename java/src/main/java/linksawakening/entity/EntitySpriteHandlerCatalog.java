@@ -3,6 +3,7 @@ package linksawakening.entity;
 import linksawakening.rom.RomBank;
 import linksawakening.world.EntityRoomLoader;
 import linksawakening.world.EntityStatus;
+import linksawakening.world.MoldormMotion;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +24,7 @@ public final class EntitySpriteHandlerCatalog {
     public static final int ENTITY_BUSH_CRAWLER = 0xBB;
     public static final int ENTITY_MIMIC = 0x28;
     public static final int ENTITY_MINI_MOLDORM = 0x29;
+    public static final int ENTITY_MOLDORM = 0x59;
     public static final int ENTITY_MASKED_MIMIC_GORIYA = 0x8F;
     public static final int ENTITY_CUCCO = 0x6C;
     public static final int ENTITY_GOPONGA_FLOWER = 0x7E;
@@ -337,6 +339,13 @@ public final class EntitySpriteHandlerCatalog {
         if (entityType == ENTITY_MINI_MOLDORM) {
             return decodePair(entityType, 0x04, 0x5A49, 10, 0);
         }
+        if (entityType == ENTITY_MOLDORM) {
+            return forMoldormState(0, 0, 0, List.of(
+                new MoldormMotion.TailPosition(0, 0),
+                new MoldormMotion.TailPosition(0, 0),
+                new MoldormMotion.TailPosition(0, 0),
+                new MoldormMotion.TailPosition(0, 0)), 0, 0);
+        }
         if (entityType == ENTITY_MASKED_MIMIC_GORIYA && mapId != 0x1F) {
             return decodePair(entityType, 0x19, 0x4796, 8, 0);
         }
@@ -620,6 +629,61 @@ public final class EntitySpriteHandlerCatalog {
             signedByte(segment2Y - entityY), signedByte(segment2X - entityX));
         return EntitySpriteDefinition.dynamic(ENTITY_MINI_MOLDORM, 0x04,
             0x5A49, 0, List.of(List.copyOf(sprites)));
+    }
+
+    /** Builds Moldorm's eight-sprite head and delayed four-pair tail. */
+    public EntitySpriteDefinition forMoldormState(
+            int headVariant, int entityX, int entityY,
+            List<MoldormMotion.TailPosition> segments,
+            int privateState3, int frameCounter) {
+        return forMoldormPresentation(headVariant, entityX, entityY,
+            entityX, entityY, segments, privateState3, frameCounter);
+    }
+
+    /** Builds pre-update Moldorm OAM relative to the post-update entity position. */
+    public EntitySpriteDefinition forMoldormPresentation(
+            int headVariant, int headX, int headY, int renderBaseX, int renderBaseY,
+            List<MoldormMotion.TailPosition> segments,
+            int privateState3, int frameCounter) {
+        if (headVariant < 0 || headVariant > 7) {
+            throw new IllegalArgumentException("Moldorm head variant must be 0..7: "
+                + headVariant);
+        }
+        if (segments == null || segments.size() != 4) {
+            throw new IllegalArgumentException("Moldorm requires four tail history positions");
+        }
+        if (privateState3 < 0 || privateState3 > 4) {
+            throw new IllegalArgumentException("Moldorm private state 3 must be 0..4: "
+                + privateState3);
+        }
+
+        EntitySpriteDefinition head = decodeRectangle(ENTITY_MOLDORM, 0x04,
+            0x57F2, 8, 8, headVariant);
+        EntitySpriteDefinition tail = decodePair(ENTITY_MOLDORM, 0x04,
+            0x58F2, 4, 0);
+        List<EntitySpriteDefinition.DynamicSprite> sprites = new ArrayList<>(16);
+        int headYOffset = signedByte(headY - renderBaseY);
+        int headXOffset = signedByte(headX - renderBaseX);
+        for (EntitySpriteDefinition.RectangleSprite sprite :
+                head.rectangleVariant(headVariant)) {
+            sprites.add(new EntitySpriteDefinition.DynamicSprite(
+                signedByte(sprite.yOffset() + headYOffset),
+                signedByte(sprite.xOffset() + headXOffset), sprite.oam(),
+                EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true));
+        }
+
+        int visibleTailPairs = 4 - privateState3;
+        int[] tailVariants = {0, 0, 1, 2 + ((frameCounter >> 3) & 0x01)};
+        for (int index = 0; index < visibleTailPairs; index++) {
+            MoldormMotion.TailPosition position = segments.get(index);
+            EntitySpriteDefinition.Variant pair = tail.variant(tailVariants[index]);
+            int paletteXor = index == 3 && (frameCounter & 0x04) != 0 ? 0x10 : 0;
+            appendMoldormTailPair(sprites, pair,
+                signedByte(position.y() - renderBaseY),
+                signedByte(position.x() - renderBaseX), paletteXor);
+        }
+        return EntitySpriteDefinition.dynamic(ENTITY_MOLDORM, 0x04,
+            0x57F2, 0, List.of(List.copyOf(sprites)));
     }
 
     /**
@@ -1091,6 +1155,27 @@ public final class EntitySpriteHandlerCatalog {
                 signedByte(yOffset), signedByte(xOffset + 0x08), pair.second(),
                 EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true));
         }
+    }
+
+    private static void appendMoldormTailPair(
+            List<EntitySpriteDefinition.DynamicSprite> destination,
+            EntitySpriteDefinition.Variant pair, int yOffset, int xOffset,
+            int paletteXor) {
+        destination.add(new EntitySpriteDefinition.DynamicSprite(
+            signedByte(yOffset), signedByte(xOffset), xorAttributes(pair.first(), paletteXor),
+            EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true));
+        if (pair.second() != null) {
+            destination.add(new EntitySpriteDefinition.DynamicSprite(
+                signedByte(yOffset), signedByte(xOffset + 0x08),
+                xorAttributes(pair.second(), paletteXor),
+                EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true));
+        }
+    }
+
+    private static EntitySpriteDefinition.OamAttribute xorAttributes(
+            EntitySpriteDefinition.OamAttribute oam, int attributes) {
+        return new EntitySpriteDefinition.OamAttribute(
+            oam.tile(), oam.attributes() ^ attributes);
     }
 
     private static boolean isColorShellType(int entityType) {

@@ -50,6 +50,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_MIMIC = EntitySpriteHandlerCatalog.ENTITY_MIMIC;
     private static final int ENTITY_MINI_MOLDORM =
         EntitySpriteHandlerCatalog.ENTITY_MINI_MOLDORM;
+    private static final int ENTITY_MOLDORM = EntitySpriteHandlerCatalog.ENTITY_MOLDORM;
     private static final int ENTITY_MASKED_MIMIC_GORIYA =
         EntitySpriteHandlerCatalog.ENTITY_MASKED_MIMIC_GORIYA;
     private static final int ENTITY_SPIKE_TRAP = 0x27;
@@ -288,6 +289,7 @@ public final class RoomEntityRuntime {
     private final MimicMotion mimicMotion = new MimicMotion();
     private final MaskedMimicMotion maskedMimicMotion = new MaskedMimicMotion();
     private final MiniMoldormMotion miniMoldormMotion = new MiniMoldormMotion();
+    private final MoldormMotion moldormMotion = new MoldormMotion();
     private final CuccoMotion cuccoMotion = new CuccoMotion();
     private final GiantGopongaMotion giantGopongaMotion = new GiantGopongaMotion();
     private final GopongaProjectileMotion gopongaProjectileMotion =
@@ -833,6 +835,9 @@ public final class RoomEntityRuntime {
             if (entity.loaded() && entity.type() == ENTITY_MINI_MOLDORM) {
                 miniMoldormMotion.initialize(entity);
             }
+            if (entity.loaded() && entity.type() == ENTITY_MOLDORM) {
+                moldormMotion.initialize(entity);
+            }
             if (entity.loaded() && entity.type() == ENTITY_CUCCO) {
                 cuccoMotion.initialize(entity.slot());
             }
@@ -1285,6 +1290,7 @@ public final class RoomEntityRuntime {
             boolean preserveMimicPresentation = false;
             boolean preserveMaskedMimicPresentation = false;
             boolean preserveMiniMoldormPresentation = false;
+            boolean preserveMoldormPresentation = false;
             boolean preserveCuccoPresentation = false;
             boolean preserveGopongaFlowerPresentation = false;
             boolean preserveGiantGopongaPresentation = false;
@@ -1682,6 +1688,9 @@ public final class RoomEntityRuntime {
                 if (entity.type() == ENTITY_MINI_MOLDORM) {
                     miniMoldormMotion.initialize(entity);
                 }
+                if (entity.type() == ENTITY_MOLDORM) {
+                    moldormMotion.initialize(entity);
+                }
                 if (entity.type() == ENTITY_WINGED_OCTOROK) {
                     wingedOctorokMotion.initialize(entity.slot());
                 }
@@ -2040,6 +2049,43 @@ public final class RoomEntityRuntime {
                     updated = withVariant(updated, miniUpdate.headSpriteVariant());
                 }
                 preserveMiniMoldormPresentation = true;
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_MOLDORM) {
+                int slot = entity.slot();
+                RoomEntityBackgroundInteraction moldormBackgroundInteraction =
+                    backgroundInteraction;
+                if (moldormBackgroundInteraction == null && backgroundCollision != null) {
+                    moldormBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
+                        backgroundCollision);
+                }
+                int transitionForMotion = enemyTransitionCountdown[slot];
+                if (transitionForMotion != 0) {
+                    // Common countdowns have already ticked before dispatch;
+                    // the direct motion API performs the same decrement.
+                    transitionForMotion = (transitionForMotion + 1) & 0xFF;
+                }
+                MoldormMotion.Update moldormUpdate = moldormMotion.advance(
+                    entity, frame, transitionForMotion, enemyIgnoreHitsCountdown[slot],
+                    enemyFlashCountdown[slot], enemyHealth[slot], randomByteSupplier,
+                    moldormBackgroundInteraction);
+                updated = moldormUpdate.entity();
+                enemyTransitionCountdown[slot] = moldormUpdate.transitionCountdown();
+                if (moldormUpdate.noiseRequested()) {
+                    pendingEntityEvents.add(new EntityCombatEvent(
+                        slot, entity.type(), 0, false,
+                        EntityCombatEvent.SoundChannel.NOISE, 0x1B));
+                }
+                if (spriteHandlers != null) {
+                    MoldormMotion.Presentation presentation = moldormUpdate.presentation();
+                    updated = withDefinition(updated, spriteHandlers.forMoldormPresentation(
+                        presentation.headSpriteVariant(), presentation.headX(),
+                        presentation.headY(), updated.x(),
+                        (updated.y() - updated.z()) & 0xFF,
+                        presentation.segments(), 0, frame), 0);
+                }
+                enemyPhysicsFlags[slot] = 0x02;
+                preserveMoldormPresentation = true;
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_MIMIC) {
@@ -3341,6 +3387,7 @@ public final class RoomEntityRuntime {
                 || preserveMimicPresentation
                 || preserveMaskedMimicPresentation
                 || preserveMiniMoldormPresentation
+                || preserveMoldormPresentation
                 || preserveCuccoPresentation
                 || preserveGopongaFlowerPresentation
                 || preserveGiantGopongaPresentation
@@ -3372,6 +3419,7 @@ public final class RoomEntityRuntime {
                 || preserveMimicPresentation
                 || preserveMaskedMimicPresentation
                 || preserveMiniMoldormPresentation
+                || preserveMoldormPresentation
                 || preserveCuccoPresentation
                 || preserveGopongaFlowerPresentation
                 || preserveGiantGopongaPresentation
@@ -3852,7 +3900,8 @@ public final class RoomEntityRuntime {
             if (!hidingZolSwordCollision && !hidingZolLinkCollision) {
                 continue;
             }
-            if (enemyFlashCountdown[entity.slot()] > 0
+            if ((enemyFlashCountdown[entity.slot()] > 0
+                    && entity.type() != ENTITY_MOLDORM)
                 || enemyIgnoreHitsCountdown[entity.slot()] > 0) {
                 continue;
             }
@@ -3878,7 +3927,10 @@ public final class RoomEntityRuntime {
                 && (entity.type() != ENTITY_LIKE_LIKE
                     || likeLikeMotion.state(entity.slot()) == 0)
                 && hidingZolSwordCollision
-                && RoomEntityCombatRules.overlapsSword(
+                && moldormOrHeadOverlapsSword(
+                    entity, swordX, swordWidth, swordY, swordHeight);
+            boolean moldormTailSwordHit = swordHit && entity.type() == ENTITY_MOLDORM
+                && !RoomEntityCombatRules.overlapsSword(
                     entity, swordX, swordWidth, swordY, swordHeight);
             if (!linkCollision && !swordHit) {
                 if (!goombaStomp) {
@@ -3950,7 +4002,8 @@ public final class RoomEntityRuntime {
                 soundChannel = EntityCombatEvent.SoundChannel.JINGLE;
                 soundId = 0x09;
             } else if (swordHit && RoomEntityCombatRules.swordPokeForSwordCollision(
-                entity.type(), peaHatSwordClink || spikedBeetleSwordClink)) {
+                entity.type(), peaHatSwordClink || spikedBeetleSwordClink)
+                && !moldormTailSwordHit) {
                 // EnemyCollidedWithSword's ENTITY_OPT1_SWORD_CLINK_OFF path
                 // calls label_D07/label_D15: no damage or normal recoil,
                 // sixteen ignored-hit frames, then the sword-poke VFX and
@@ -3998,6 +4051,10 @@ public final class RoomEntityRuntime {
                 if (swordDamage > 0) {
                     enemyHealth[entity.slot()] = Math.max(0,
                         enemyHealth[entity.slot()] - swordDamage);
+                    if (entity.type() == ENTITY_MOLDORM) {
+                        moldormMotion.onSwordHit(entity.slot());
+                        enemyFlashCountdown[entity.slot()] = 0x28;
+                    }
                 }
                 soundChannel = EntityCombatEvent.SoundChannel.JINGLE;
                 soundId = swordResultApplied ? 0x03 : 0x09;
@@ -4033,7 +4090,9 @@ public final class RoomEntityRuntime {
                     // jr_003_73B6 and StartIgnoringHitsForEntity: a normal
                     // sword hit flashes for $18 frames and suppresses the
                     // next $0A collision passes.
-                    enemyFlashCountdown[entity.slot()] = 0x18;
+                    if (entity.type() != ENTITY_MOLDORM) {
+                        enemyFlashCountdown[entity.slot()] = 0x18;
+                    }
                     enemyIgnoreHitsCountdown[entity.slot()] = attackContext.powerRecoil()
                         ? 0x20 : 0x0A;
                     if (isZolGelType(entity.type())) {
@@ -4072,6 +4131,26 @@ public final class RoomEntityRuntime {
                 linkCollisionResponse));
         }
         return List.copyOf(events);
+    }
+
+    private boolean moldormOrHeadOverlapsSword(RoomEntity entity,
+                                                int swordX, int swordWidth,
+                                                int swordY, int swordHeight) {
+        if (RoomEntityCombatRules.overlapsSword(
+                entity, swordX, swordWidth, swordY, swordHeight)) {
+            return true;
+        }
+        if (entity.type() != ENTITY_MOLDORM) {
+            return false;
+        }
+        if (enemyFlashCountdown[entity.slot()] != 0) {
+            return false;
+        }
+        MoldormMotion.TailPosition tail = moldormMotion.vulnerableTail(entity.slot());
+        RoomEntity tailCollisionEntity = withPositionAndVariant(
+            entity, tail.x(), (tail.y() + entity.z()) & 0xFF, entity.spriteVariant());
+        return RoomEntityCombatRules.overlapsSword(
+            tailCollisionEntity, swordX, swordWidth, swordY, swordHeight);
     }
 
     /** Advances entity $01 through the ROM boomerang handler's two states. */
@@ -4883,6 +4962,7 @@ public final class RoomEntityRuntime {
         mimicMotion.clear(slot);
         maskedMimicMotion.clear(slot);
         miniMoldormMotion.clear(slot);
+        moldormMotion.clear(slot);
         if (!entity.loaded()) {
             return 0;
         }
@@ -6369,6 +6449,7 @@ public final class RoomEntityRuntime {
             || entity.type() == ENTITY_BOO_BUDDY
             || entity.type() == ENTITY_DROPPABLE_FAIRY
             || entity.type() == ENTITY_PINCER
+            || entity.type() == ENTITY_MOLDORM
             || hasNoGroundInteractionOverride(entity.slot());
     }
 
@@ -8780,6 +8861,9 @@ public final class RoomEntityRuntime {
         if (slots[slot].type() == ENTITY_MINI_MOLDORM) {
             return ENTITY_OPT1_SPLASH_IN_WATER;
         }
+        if (slots[slot].type() == ENTITY_MOLDORM) {
+            return MoldormMotion.INITIAL_OPTIONS1;
+        }
         if (slots[slot].type() == ENTITY_MIMIC) {
             return ENTITY_OPT1_SPLASH_IN_WATER;
         }
@@ -8797,6 +8881,26 @@ public final class RoomEntityRuntime {
 
     int bombiteState(int slot) {
         return bombiteMotion.state(slot);
+    }
+
+    int moldormHeadSpriteVariant(int slot) {
+        validateEntitySlot(slot);
+        return moldormMotion.headSpriteVariant(slot);
+    }
+
+    int moldormTransitionCountdown(int slot) {
+        validateEntitySlot(slot);
+        return enemyTransitionCountdown[slot];
+    }
+
+    int moldormPrivateCountdown2(int slot) {
+        validateEntitySlot(slot);
+        return moldormMotion.privateCountdown2(slot);
+    }
+
+    int moldormInertia(int slot) {
+        validateEntitySlot(slot);
+        return moldormMotion.inertia(slot);
     }
 
     int bombitePrivateCountdown1(int slot) {
@@ -9197,6 +9301,7 @@ public final class RoomEntityRuntime {
             case ENTITY_MIMIC -> 0x12;
             case ENTITY_MASKED_MIMIC_GORIYA -> 0x12;
             case ENTITY_MINI_MOLDORM -> 0x02;
+            case ENTITY_MOLDORM -> MoldormMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_SWORD_SHIELD_PICKUP -> SWORD_SHIELD_PICKUP_INITIAL_PHYSICS_FLAGS;
             case ENTITY_KEY_DROP_POINT -> KEY_DROP_POINT_INITIAL_PHYSICS_FLAGS;
             case ENTITY_LIKE_LIKE -> LIKE_LIKE_INITIAL_PHYSICS_FLAGS;
@@ -9240,6 +9345,9 @@ public final class RoomEntityRuntime {
     }
 
     private static int initialHitboxFlags(int type) {
+        if (type == ENTITY_MOLDORM) {
+            return MoldormMotion.INITIAL_HITBOX_FLAGS;
+        }
         return type == ENTITY_ARMOS_KNIGHT
             ? ARMOS_KNIGHT_INITIAL_HITBOX_FLAGS : 0;
     }
@@ -9614,6 +9722,7 @@ public final class RoomEntityRuntime {
         mimicMotion.clear(slot);
         maskedMimicMotion.clear(slot);
         miniMoldormMotion.clear(slot);
+        moldormMotion.clear(slot);
         cuccoMotion.clear(slot);
         spikeTrapMotion.clear(slot);
         pairoddMotion.clear(slot);
