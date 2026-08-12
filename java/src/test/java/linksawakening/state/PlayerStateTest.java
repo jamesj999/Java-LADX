@@ -120,6 +120,17 @@ final class PlayerStateTest {
     }
 
     @Test
+    void beachSwordRewardGrantsTheInventorySwordAndLevelOne() {
+        PlayerState playerState = new PlayerState();
+        playerState.initializeNewGame(0x30, 0x30, 0x20);
+
+        playerState.applyBeachSwordReward();
+
+        assertEquals(1, playerState.swordLevel());
+        assertEquals(PlayerState.INVENTORY_SWORD, playerState.itemB());
+    }
+
+    @Test
     void blueTunicHalvesNominalDamageIntoTheRomBuffer() {
         PlayerState playerState = new PlayerState();
         playerState.setTunicType(PlayerState.TUNIC_BLUE);

@@ -141,6 +141,8 @@ public final class RoomSession {
         new ArrayList<>();
     private final List<RoomEntityRuntime.HeartContainerRewardEvent>
         pendingHeartContainerRewards = new ArrayList<>();
+    private final List<RoomEntityRuntime.SwordPickupRewardEvent>
+        pendingSwordPickupRewards = new ArrayList<>();
     private final List<RoomEntityRuntime.DialogRequest> pendingRoomDialogRequests =
         new ArrayList<>();
     private PendingShovelDrop pendingShovelDrop;
@@ -1222,6 +1224,8 @@ public final class RoomSession {
         harvestKeyRewardEvents();
         harvestSlimeKeyRewardEvents();
         harvestHeartContainerRewards();
+        harvestSwordPickupRewards();
+        harvestOwlEventCompletions();
         if (entityRuntime.consumePendingSwitchBlockAnimationRequest()
             && switchableObjectAnimationStage == 0) {
             switchableObjectAnimationStage = 0x01;
@@ -1316,6 +1320,12 @@ public final class RoomSession {
             ? List.of() : entityRuntime.consumePendingLinkHeldItemPoseRequests();
     }
 
+    public List<RoomEntityRuntime.LinkSwordSpinPoseRequest>
+            consumeLinkSwordSpinPoseRequests() {
+        return entityRuntime == null
+            ? List.of() : entityRuntime.consumePendingLinkSwordSpinPoseRequests();
+    }
+
     /** Returns and clears ROM screen-shake requests emitted by the last entity tick. */
     public List<RoomEntityRuntime.ScreenShakeRequest> consumeScreenShakeRequests() {
         return entityRuntime == null
@@ -1350,6 +1360,13 @@ public final class RoomSession {
         List<RoomEntityRuntime.HeartContainerRewardEvent> rewards =
             List.copyOf(pendingHeartContainerRewards);
         pendingHeartContainerRewards.clear();
+        return rewards;
+    }
+
+    public List<RoomEntityRuntime.SwordPickupRewardEvent> consumeSwordPickupRewards() {
+        List<RoomEntityRuntime.SwordPickupRewardEvent> rewards =
+            List.copyOf(pendingSwordPickupRewards);
+        pendingSwordPickupRewards.clear();
         return rewards;
     }
 
@@ -1712,6 +1729,7 @@ public final class RoomSession {
         pendingKeyRewardEvents.clear();
         pendingSlimeKeyRewardEvents.clear();
         pendingHeartContainerRewards.clear();
+        pendingSwordPickupRewards.clear();
         pendingRoomDialogRequests.clear();
         pendingManboTransition = false;
         pendingShovelDrop = null;
@@ -2257,6 +2275,29 @@ public final class RoomSession {
         }
         markHeartContainerCollected();
         pendingHeartContainerRewards.addAll(rewards);
+    }
+
+    private void harvestSwordPickupRewards() {
+        if (entityRuntime == null) {
+            return;
+        }
+        List<RoomEntityRuntime.SwordPickupRewardEvent> rewards =
+            entityRuntime.consumePendingSwordPickupRewards();
+        if (rewards.isEmpty()) {
+            return;
+        }
+        markActiveRoomCompleted();
+        pendingSwordPickupRewards.addAll(rewards);
+    }
+
+    private void harvestOwlEventCompletions() {
+        if (entityRuntime == null || activeRoom == null) {
+            return;
+        }
+        if (entityRuntime.consumePendingOwlEventCompletions().isEmpty()) {
+            return;
+        }
+        overworldRoomStatus[activeRoom.roomId()] |= (byte) ROOM_STATUS_EVENT_2;
     }
 
     void markHeartContainerCollected() {

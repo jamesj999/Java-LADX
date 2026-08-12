@@ -148,6 +148,19 @@ public final class EntitySpriteHandlerCatalog {
         return forEntityType(entityType, roomTable, -1);
     }
 
+    /** Selects the runtime-dependent display list used by entity $31. */
+    public EntitySpriteDefinition forSwordShieldPickup(boolean beachSword) {
+        return decodeSingle(ENTITY_SWORD_SHIELD_PICKUP, 0x03,
+            beachSword ? 0x5B97 : 0x5B95, 1, 0);
+    }
+
+    /** Selects the perched pair or four-sprite flying layout used by the owl event. */
+    public EntitySpriteDefinition forOwlEvent(boolean flying) {
+        return flying
+            ? decodeRectangle(0x41, 0x06, 0x6A3F, 1, 4, 0)
+            : decodePair(0x41, 0x06, 0x6A37, 2, 0);
+    }
+
     public EntitySpriteDefinition forEntityType(int entityType,
                                                  EntityRoomLoader.RoomTable roomTable,
                                                  int mapId) {
@@ -175,6 +188,9 @@ public final class EntitySpriteHandlerCatalog {
 
         if (entityType == ENTITY_LIFTABLE_ROCK) {
             return decodeLiftableRock(roomTable);
+        }
+        if (entityType == 0x41) {
+            return forOwlEvent(false);
         }
         if (entityType == ENTITY_CHEST_WITH_ITEM) {
             return decodePair(entityType, 0x07, 0x7B57, 0x21, 0);

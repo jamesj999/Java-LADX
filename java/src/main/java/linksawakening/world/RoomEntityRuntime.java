@@ -167,6 +167,8 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_SWORD_BEAM = 0xDF;
     private static final int ENTITY_BOMB = 0x02;
     private static final int ENTITY_SWORD_SHIELD_PICKUP = 0x31;
+    private static final int ENTITY_OWL_EVENT = 0x41;
+    private static final int ROOM_OW_BEACH_WITH_SWORD = 0xF2;
     private static final int ENTITY_BOUNCING_BOMBITE = 0x55;
     private static final int ENTITY_TIMER_BOMBITE = 0x56;
     private static final int ENTITY_MAD_BOMBER = 0x93;
@@ -422,6 +424,10 @@ public final class RoomEntityRuntime {
     private final List<TransientVfxRequest> transientVfxRequests = new ArrayList<>();
     private final List<HeartContainerRewardEvent> pendingHeartContainerRewards =
         new ArrayList<>();
+    private final List<SwordPickupRewardEvent> pendingSwordPickupRewards =
+        new ArrayList<>();
+    private final List<OwlEventCompletion> pendingOwlEventCompletions =
+        new ArrayList<>();
     private final List<LinkFinalPositionRequest> pendingLinkFinalPositionRequests =
         new ArrayList<>();
     private final List<RoosterLinkStateRequest> pendingRoosterLinkStateRequests =
@@ -429,6 +435,8 @@ public final class RoomEntityRuntime {
     private final List<LinkMotionBlockRequest> pendingLinkMotionBlockRequests =
         new ArrayList<>();
     private final List<LinkHeldItemPoseRequest> pendingLinkHeldItemPoseRequests =
+        new ArrayList<>();
+    private final List<LinkSwordSpinPoseRequest> pendingLinkSwordSpinPoseRequests =
         new ArrayList<>();
     private final List<ScreenShakeRequest> pendingScreenShakeRequests = new ArrayList<>();
     private final List<DialogRequest> pendingDialogRequests = new ArrayList<>();
@@ -494,6 +502,18 @@ public final class RoomEntityRuntime {
     private int chestPowerBraceletLevel = 1;
     private int entityGoldenLeavesCount;
     private int pendingMusicTrack = -1;
+    private final int[] swordPickupState = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] swordPickupSequenceActive =
+        new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] owlEventState = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] owlSpeedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] owlSpeedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] owlSpeedZ = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] owlXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] owlYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] owlZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] owlCompletionEmitted =
+        new boolean[EntityRoomLoader.MAX_ENTITIES];
     private boolean groundInteractionSideScrolling;
     private int entityMapId = -1;
     private int entityRoomId = -1;
@@ -549,6 +569,12 @@ public final class RoomEntityRuntime {
     public record HeartContainerRewardEvent(int slot) {
     }
 
+    public record SwordPickupRewardEvent(int slot) {
+    }
+
+    public record OwlEventCompletion(int slot) {
+    }
+
     /** A ROM handler request to restore Link's pre-entity final position. */
     public record LinkFinalPositionRequest(int sourceSlot) {
         public LinkFinalPositionRequest {
@@ -592,6 +618,19 @@ public final class RoomEntityRuntime {
             if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
                 throw new IllegalArgumentException("Held-item source slot out of range: "
                     + sourceSlot);
+            }
+        }
+    }
+
+    public record LinkSwordSpinPoseRequest(int sourceSlot, int countdown) {
+        public LinkSwordSpinPoseRequest {
+            if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
+                throw new IllegalArgumentException("Sword-spin source slot out of range: "
+                    + sourceSlot);
+            }
+            if (countdown < 0 || countdown > 0x20) {
+                throw new IllegalArgumentException("Sword-spin countdown out of range: "
+                    + countdown);
             }
         }
     }
@@ -1249,6 +1288,7 @@ public final class RoomEntityRuntime {
         pendingRoosterLinkStateRequests.clear();
         pendingLinkMotionBlockRequests.clear();
         pendingLinkHeldItemPoseRequests.clear();
+        pendingLinkSwordSpinPoseRequests.clear();
         pendingScreenShakeRequests.clear();
         boomerangObjectRequests.clear();
         magicRodObjectRequests.clear();
@@ -1257,13 +1297,14 @@ public final class RoomEntityRuntime {
         pendingEntityEvents.clear();
         pendingChestRewardEvents.clear();
         pendingHeartContainerRewards.clear();
+        pendingSwordPickupRewards.clear();
+        pendingOwlEventCompletions.clear();
         pendingSlimeKeyRewardEvents.clear();
         pendingKeyQuicksandEvents.clear();
         pendingLikeLikeEvents.clear();
         pendingBombExplosionEvents.clear();
         hookshotBridgeUpdates.clear();
         pendingSwitchBlockAnimationRequest = false;
-        pendingMusicTrack = -1;
         if (linkPlayingOcarinaCountdown >= 0x10 && ocarinaAnimationCounter == 0x14) {
             spawnMusicalNote(linkEntityX, linkEntityY, ocarinaAnimationPhase);
         }
@@ -1551,6 +1592,22 @@ public final class RoomEntityRuntime {
             if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_HEART_CONTAINER
                 && enemyTransitionCountdown[entity.slot()] != 0) {
                 advanceCollectedHeartContainer(entity, linkEntityX, linkEntityY, linkZ);
+                continue;
+            }
+            if (status == EntityStatus.ACTIVE
+                && entity.type() == ENTITY_SWORD_SHIELD_PICKUP) {
+                if (chestSwordLevel == 0 && spriteHandlers != null) {
+                    entity = withDefinition(entity,
+                        spriteHandlers.forSwordShieldPickup(true), entity.spriteVariant());
+                    slots[index] = entity;
+                }
+                if (swordPickupSequenceActive[entity.slot()]) {
+                    advanceSwordPickup(entity, frame, linkEntityX, linkEntityY, linkZ);
+                    continue;
+                }
+            }
+            if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_OWL_EVENT) {
+                advanceOwlEvent(entity, frame, linkEntityX, linkEntityY);
                 continue;
             }
             if (status == EntityStatus.LIFTED) {
@@ -3568,7 +3625,8 @@ public final class RoomEntityRuntime {
                 continue;
             }
 
-            int persistentClearMask = persistentClearMask(entity);
+            int persistentClearMask = entity.type() == ENTITY_SWORD_SHIELD_PICKUP
+                && chestSwordLevel == 0 ? 0 : persistentClearMask(entity);
             if (entity.type() == ENTITY_KEY_DROP_POINT) {
                 if (entityRoomId == 0x80 || entity.spriteVariant() != 0) {
                     enemyTransitionCountdown[entity.slot()] =
@@ -3580,6 +3638,9 @@ public final class RoomEntityRuntime {
                 }
             } else if (entity.type() == ENTITY_HEART_CONTAINER) {
                 enemyTransitionCountdown[entity.slot()] = 0x70;
+            } else if (entity.type() == ENTITY_SWORD_SHIELD_PICKUP
+                && chestSwordLevel == 0) {
+                startSwordPickup(entity.slot());
             } else if (requiresHeldPickupTransition(entity.type())) {
                 beginLift(entity.slot(), romDirection);
             } else {
@@ -6228,6 +6289,21 @@ public final class RoomEntityRuntime {
         chestPowerBraceletLevel = powerBraceletLevel;
     }
 
+    int swordPickupStateForTest(int slot) {
+        validateEntitySlot(slot);
+        return swordPickupState[slot];
+    }
+
+    int slowTransitionCountdownForTest(int slot) {
+        validateEntitySlot(slot);
+        return slowTransitionCountdown[slot];
+    }
+
+    int owlEventStateForTest(int slot) {
+        validateEntitySlot(slot);
+        return owlEventState[slot];
+    }
+
     void setTransitionSequenceCounterForTest(int counter) {
         if (counter < 0 || counter > 0xFF) {
             throw new IllegalArgumentException(
@@ -6294,6 +6370,12 @@ public final class RoomEntityRuntime {
     List<LinkHeldItemPoseRequest> consumePendingLinkHeldItemPoseRequests() {
         List<LinkHeldItemPoseRequest> pending = List.copyOf(pendingLinkHeldItemPoseRequests);
         pendingLinkHeldItemPoseRequests.clear();
+        return pending;
+    }
+
+    List<LinkSwordSpinPoseRequest> consumePendingLinkSwordSpinPoseRequests() {
+        List<LinkSwordSpinPoseRequest> pending = List.copyOf(pendingLinkSwordSpinPoseRequests);
+        pendingLinkSwordSpinPoseRequests.clear();
         return pending;
     }
 
@@ -6690,6 +6772,201 @@ public final class RoomEntityRuntime {
         RoomEntity held = withPositionAndVariant(entity, linkEntityX,
             (linkEntityY - 0x0C) & 0xFF, entity.spriteVariant());
         slots[slot] = withZ(held, linkZ & 0xFF);
+    }
+
+    private void startSwordPickup(int slot) {
+        swordPickupSequenceActive[slot] = true;
+        swordPickupState[slot] = 0;
+        enemyTransitionCountdown[slot] = 0xA0;
+        slowTimerInitialized[slot] = true;
+        pendingMusicTrack = 0x0F;
+    }
+
+    private void advanceSwordPickup(RoomEntity entity, int frameCounter,
+                                    int linkEntityX, int linkEntityY, int linkZ) {
+        int slot = entity.slot();
+        if (dialogActive) {
+            if (enemyTransitionCountdown[slot] > 0) {
+                enemyTransitionCountdown[slot]++;
+            }
+            if (swordPickupState[slot] != 2) {
+                holdSwordAboveLink(entity, linkEntityX, linkEntityY, linkZ,
+                    swordPickupState[slot] == 3);
+            } else {
+                pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
+            }
+            return;
+        }
+        if (swordPickupState[slot] == 1) {
+            decrementSlowTransitionCountdown(slot, frameCounter);
+        }
+        switch (swordPickupState[slot]) {
+            case 0 -> {
+                holdSwordAboveLink(entity, linkEntityX, linkEntityY, linkZ, false);
+                int countdown = enemyTransitionCountdown[slot];
+                if (countdown == 0x10) {
+                    enemyTransitionCountdown[slot]--;
+                    pendingDialogRequests.add(new DialogRequest(0, 0x9B));
+                } else if (countdown == 1) {
+                    pendingMusicTrack = 0x31;
+                    slowTransitionCountdown[slot] = 0x52;
+                    slowTimerInitialized[slot] = true;
+                    swordPickupState[slot] = 1;
+                }
+            }
+            case 1 -> {
+                holdSwordAboveLink(entity, linkEntityX, linkEntityY, linkZ, false);
+                if (slowTransitionCountdown[slot] == 0) {
+                    slots[slot] = withVariant(slots[slot], -1);
+                    enemyTransitionCountdown[slot] = 0x20;
+                    swordPickupState[slot] = 2;
+                    pendingLinkSwordSpinPoseRequests.add(
+                        new LinkSwordSpinPoseRequest(slot, 0x20));
+                    pendingEntityEvents.add(new EntityCombatEvent(
+                        slot, entity.type(), 0, false,
+                        EntityCombatEvent.SoundChannel.NOISE, 0x03));
+                }
+            }
+            case 2 -> {
+                pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
+                pendingLinkSwordSpinPoseRequests.add(new LinkSwordSpinPoseRequest(
+                    slot, enemyTransitionCountdown[slot]));
+                if (enemyTransitionCountdown[slot] == 0) {
+                    enemyTransitionCountdown[slot] = 0x20;
+                    slots[slot] = withVariant(slots[slot], 0);
+                    swordPickupState[slot] = 3;
+                }
+            }
+            default -> {
+                holdSwordAboveLink(entity, linkEntityX, linkEntityY, linkZ, true);
+                if (enemyTransitionCountdown[slot] == 0x1A) {
+                    transientVfxRequests.add(new TransientVfxRequest(
+                        TransientVfxType.SWORD_POKE, entity.x(),
+                        (entity.y() - 0x0C) & 0xFF));
+                    pendingEntityEvents.add(new EntityCombatEvent(
+                        slot, entity.type(), 0, false,
+                        EntityCombatEvent.SoundChannel.JINGLE, 0x07));
+                }
+                if (enemyTransitionCountdown[slot] == 0) {
+                    pendingMusicTrack = 0x05;
+                    pendingSwordPickupRewards.add(new SwordPickupRewardEvent(slot));
+                    swordPickupSequenceActive[slot] = false;
+                    disableEntityWithoutPersistence(slot);
+                }
+            }
+        }
+    }
+
+    private void holdSwordAboveLink(RoomEntity entity, int linkEntityX, int linkEntityY,
+                                    int linkZ, boolean finalPose) {
+        int slot = entity.slot();
+        pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
+        pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
+        int x = finalPose ? (linkEntityX - 4) & 0xFF : linkEntityX;
+        RoomEntity held = withPositionAndVariant(entity, x,
+            (linkEntityY - 0x0C) & 0xFF, entity.spriteVariant());
+        slots[slot] = withZ(held, linkZ & 0xFF);
+    }
+
+    private void advanceOwlEvent(RoomEntity entity, int frameCounter,
+                                 int linkEntityX, int linkEntityY) {
+        int slot = entity.slot();
+        switch (owlEventState[slot]) {
+            case 0 -> {
+                if (entityRoomId != ROOM_OW_BEACH_WITH_SWORD
+                    || linkEntityY < 0x44 || linkEntityX < 0x40 || linkEntityX >= 0x70) {
+                    return;
+                }
+                pendingMusicTrack = 0x22;
+                owlSpeedX[slot] = 0x18;
+                owlSpeedY[slot] = 0x10;
+                owlSpeedZ[slot] = 0xFC;
+                slots[slot] = withZ(entity, 0x20);
+                owlEventState[slot] = 1;
+            }
+            case 1 -> {
+                blockLinkForOwl(slot);
+                RoomEntity flying = spriteHandlers == null ? entity
+                    : withDefinition(entity, spriteHandlers.forOwlEvent(true), 0);
+                int x = addFallingSpeedToPosition(
+                    flying.x(), owlSpeedX[slot], owlXAccumulator, slot);
+                int y = addFallingSpeedToPosition(
+                    flying.y(), owlSpeedY[slot], owlYAccumulator, slot);
+                int z = addFallingSpeedToPosition(
+                    flying.z(), owlSpeedZ[slot], owlZAccumulator, slot);
+                if ((frameCounter & 0x03) == 0) {
+                    owlSpeedX[slot] = approachSignedByteZero(owlSpeedX[slot]);
+                    owlSpeedY[slot] = approachSignedByteZero(owlSpeedY[slot]);
+                }
+                if (signedByte(z) <= 0) {
+                    z = 0;
+                    owlEventState[slot] = 2;
+                }
+                slots[slot] = withZ(withPositionAndVariant(flying, x, y, 0), z);
+            }
+            case 2 -> {
+                blockLinkForOwl(slot);
+                pendingDialogRequests.add(new DialogRequest(0, 0xD9));
+                enemyTransitionCountdown[slot] = 0x10;
+                owlEventState[slot] = 3;
+            }
+            case 3 -> {
+                blockLinkForOwl(slot);
+                if (dialogActive) {
+                    if (enemyTransitionCountdown[slot] > 0) {
+                        enemyTransitionCountdown[slot]++;
+                    }
+                    return;
+                }
+                if (enemyTransitionCountdown[slot] == 0) {
+                    if (!owlCompletionEmitted[slot]) {
+                        pendingOwlEventCompletions.add(new OwlEventCompletion(slot));
+                        owlCompletionEmitted[slot] = true;
+                    }
+                    owlSpeedX[slot] = linkEntityX < entity.x() ? 0x20 : 0xE0;
+                    owlSpeedY[slot] = linkEntityY < entity.y() ? 0x20 : 0xE0;
+                    owlSpeedZ[slot] = 0x04;
+                    owlEventState[slot] = 4;
+                }
+            }
+            default -> advanceDepartingOwl(entity, slot, frameCounter);
+        }
+    }
+
+    private void advanceDepartingOwl(RoomEntity entity, int slot, int frameCounter) {
+        blockLinkForOwl(slot);
+        RoomEntity flying = spriteHandlers == null ? entity
+            : withDefinition(entity, spriteHandlers.forOwlEvent(true), 0);
+        int x = addFallingSpeedToPosition(
+            flying.x(), owlSpeedX[slot], owlXAccumulator, slot);
+        int y = addFallingSpeedToPosition(
+            flying.y(), owlSpeedY[slot], owlYAccumulator, slot);
+        int z = addFallingSpeedToPosition(
+            flying.z(), owlSpeedZ[slot], owlZAccumulator, slot);
+        slots[slot] = withZ(withPositionAndVariant(flying, x, y, 0), z);
+        if ((frameCounter & 0x07) == 0) {
+            pendingEntityEvents.add(new EntityCombatEvent(
+                slot, entity.type(), 0, false,
+                EntityCombatEvent.SoundChannel.NOISE, 0x05));
+        }
+        if (x < 0x08 || x > 0x98 || y < 0x10 || y > 0x88 || z >= 0x40) {
+            pendingMusicTrack = 0x1D;
+            disableEntityWithoutPersistence(slot);
+        }
+    }
+
+    private void blockLinkForOwl(int slot) {
+        pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
+    }
+
+    private static int approachSignedByteZero(int value) {
+        int signed = signedByte(value);
+        if (signed > 0) {
+            signed--;
+        } else if (signed < 0) {
+            signed++;
+        }
+        return signed & 0xFF;
     }
 
     /** Mirrors Bow-Wow's label_005_4335 target-resolution branches. */
@@ -8164,6 +8441,18 @@ public final class RoomEntityRuntime {
         List<HeartContainerRewardEvent> rewards = List.copyOf(pendingHeartContainerRewards);
         pendingHeartContainerRewards.clear();
         return rewards;
+    }
+
+    List<SwordPickupRewardEvent> consumePendingSwordPickupRewards() {
+        List<SwordPickupRewardEvent> rewards = List.copyOf(pendingSwordPickupRewards);
+        pendingSwordPickupRewards.clear();
+        return rewards;
+    }
+
+    List<OwlEventCompletion> consumePendingOwlEventCompletions() {
+        List<OwlEventCompletion> completions = List.copyOf(pendingOwlEventCompletions);
+        pendingOwlEventCompletions.clear();
+        return completions;
     }
 
     List<BoomerangObjectRequest> boomerangObjectRequests() {

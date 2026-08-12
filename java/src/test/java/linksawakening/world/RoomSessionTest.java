@@ -44,6 +44,62 @@ final class RoomSessionTest {
     }
 
     @Test
+    void openingBeachEventsCompleteInPlayOrderAndStayGoneAfterReload() {
+        RoomSession session = newSession();
+        session.loadInitialOverworld(0xF2);
+        session.setChestPlayerLevels(0, 0, 0);
+
+        session.tickEntities(0, 0x3F, 0x44);
+        session.tickEntities(1, 0x40, 0x44);
+        assertEquals(0x22, session.consumePendingMusicTrack());
+
+        boolean owlDialogOpened = false;
+        int frame = 2;
+        while ((session.overworldRoomStatusForTest(0xF2) & 0x20) == 0
+            && frame < 0x300) {
+            session.tickEntities(frame++, 0x58, 0x60);
+            owlDialogOpened |= session.consumeEntityDialogRequests().stream()
+                .anyMatch(request -> request.globalDialogId() == 0x0D9);
+        }
+        assertTrue(owlDialogOpened);
+        assertEquals(0x20, session.overworldRoomStatusForTest(0xF2) & 0x20);
+
+        boolean owlMusicRestored = false;
+        while (session.activeRoom().entities().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == 0x41) && frame < 0x400) {
+            session.tickEntities(frame++, 0x58, 0x60);
+            owlMusicRestored |= session.consumePendingMusicTrack() == 0x1D;
+        }
+        assertTrue(owlMusicRestored);
+
+        RoomEntity sword = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x31)
+            .findFirst()
+            .orElseThrow();
+        int pickupFrame = (frame & 0xFE) | ((sword.slot() ^ 1) & 1);
+        EntityPickupEvent pickup = session.collectEntityIfNeeded(
+            pickupFrame, sword.x(), sword.y(), false, true, 3, 0);
+        assertNotNull(pickup);
+        assertEquals(0x0F, session.consumePendingMusicTrack());
+
+        List<RoomEntityRuntime.SwordPickupRewardEvent> swordRewards = List.of();
+        frame = pickupFrame + 1;
+        while (swordRewards.isEmpty() && frame < pickupFrame + 0x300) {
+            session.tickEntities(frame++, sword.x(), sword.y());
+            session.consumeEntityDialogRequests();
+            swordRewards = session.consumeSwordPickupRewards();
+        }
+        assertEquals(List.of(new RoomEntityRuntime.SwordPickupRewardEvent(sword.slot())),
+            swordRewards);
+        assertEquals(0x30, session.overworldRoomStatusForTest(0xF2) & 0x30);
+        assertEquals(0x05, session.consumePendingMusicTrack());
+
+        session.loadInitialOverworld(0xF2);
+        assertFalse(session.activeRoom().entities().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == 0x31 || entity.type() == 0x41));
+    }
+
+    @Test
     void keyDropPointCollectionMarksTheRoomAndPublishesItsSmallKeyReward() {
         RoomSession session = newSession();
         byte[] indoorA = new byte[0x100];

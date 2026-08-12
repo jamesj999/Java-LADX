@@ -271,6 +271,12 @@ public final class PlayerState {
         addHealthBuffer = 0xFF;
     }
 
+    /** Applies the delayed reward at the end of the beach-sword cutscene. */
+    public void applyBeachSwordReward() {
+        giveInventoryItem(INVENTORY_SWORD);
+        setSwordLevel(1);
+    }
+
     /** Applies the source-variant dispatch at FloatingItemEntityHandler. */
     public void applyFloatingItemPickup(int entityType, int sourceVariant) {
         switch (FloatingItemMotion.pickupEffect(entityType, sourceVariant)) {

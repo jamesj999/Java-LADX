@@ -394,6 +394,23 @@ public final class Link implements RocsFeather.JumpTarget {
         movingThisFrame = false;
     }
 
+    /** Applies the forced base-direction-down spin used while obtaining the beach sword. */
+    public void showSwordAcquisitionSpinPose(int countdown) {
+        if (countdown < 0 || countdown > 0x20) {
+            throw new IllegalArgumentException("Sword-spin countdown must be between 0 and 32");
+        }
+        int sector = Math.min(7, countdown >> 2);
+        int[] animationStates = {3, 4, 3, 4, 3, 2, 3, 4};
+        int[] directions = {
+            DIRECTION_DOWN, DIRECTION_LEFT, DIRECTION_LEFT, DIRECTION_UP,
+            DIRECTION_UP, DIRECTION_RIGHT, DIRECTION_RIGHT, DIRECTION_DOWN
+        };
+        romInteractiveMotionBlocked = true;
+        romAnimationStateOverride = animationStates[sector];
+        direction = directions[sector];
+        movingThisFrame = false;
+    }
+
     public int pixelX() {
         return subX >> SUB_PIXEL_SHIFT;
     }

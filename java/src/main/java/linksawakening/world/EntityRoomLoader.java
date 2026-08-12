@@ -19,6 +19,8 @@ public final class EntityRoomLoader {
     private static final int ENTITY_MOBLIN_SWORD = 0x14;
     private static final int ENTITY_DROPPABLE_SECRET_SEASHELL = 0x3D;
     private static final int ENTITY_KEY_DROP_POINT = 0x30;
+    private static final int ENTITY_SWORD_SHIELD_PICKUP = 0x31;
+    private static final int ENTITY_OWL_EVENT = 0x41;
     private static final int GHINI_INITIAL_Z = 0x10;
     private static final int ROOM_INDOOR_A_ANGLERS_TUNNEL_KEY_DROP = 0x69;
     private static final int ROOM_INDOOR_A_ANGLERS_TUNNEL_KEY_FALL = 0x7C;
@@ -116,8 +118,8 @@ public final class EntityRoomLoader {
             int type = Byte.toUnsignedInt(romData[streamOffset++]);
             boolean cleared = sourceLoadOrder < 8
                 && (clearedMask & (1 << sourceLoadOrder)) != 0;
-            boolean unloadedByInitialization = type == ENTITY_KEY_DROP_POINT
-                && shouldUnloadKeyAtInit(table, roomId, roomStatusTable, hasBirdKey);
+            boolean unloadedByInitialization = shouldUnloadAtInit(
+                table, roomId, type, roomStatusTable, hasBirdKey);
             if (!cleared && !unloadedByInitialization && loadedSlot < MAX_ENTITIES) {
                 int x = (location & 0x0F) * 0x10 + 0x08;
                 int y = (location & 0xF0) + 0x10;
@@ -141,6 +143,24 @@ public final class EntityRoomLoader {
         }
 
         return new RoomEntitySnapshot(slots);
+    }
+
+    private static boolean shouldUnloadAtInit(RoomTable table, int roomId, int type,
+                                               byte[] roomStatusTable, boolean hasBirdKey) {
+        if (type == ENTITY_KEY_DROP_POINT) {
+            return shouldUnloadKeyAtInit(table, roomId, roomStatusTable, hasBirdKey);
+        }
+        if (table != RoomTable.OVERWORLD || roomStatusTable == null) {
+            return false;
+        }
+        int roomStatus = roomStatusAt(roomStatusTable, roomId);
+        if (type == ENTITY_SWORD_SHIELD_PICKUP) {
+            return (roomStatus & 0x10) != 0;
+        }
+        if (type == ENTITY_OWL_EVENT) {
+            return (roomStatus & 0x20) != 0;
+        }
+        return false;
     }
 
     private static boolean shouldUnloadKeyAtInit(RoomTable table, int roomId,

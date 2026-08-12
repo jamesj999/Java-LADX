@@ -768,6 +768,18 @@ final class EntitySpriteHandlerCatalogTest {
     }
 
     @Test
+    void mapsTheBeachSwordToTheAlternateBankThreeSprite() throws Exception {
+        EntitySpriteDefinition sword = new EntitySpriteHandlerCatalog(loadRom())
+            .forSwordShieldPickup(true);
+
+        assertDefinition(sword, 0x03, 0x5B97,
+            EntitySpriteDefinition.Shape.SINGLE, 1, 0);
+        assertEquals(0x84, sword.variant(0).first().tile());
+        assertEquals(0x17, sword.variant(0).first().attributes());
+        assertNull(sword.variant(0).second());
+    }
+
+    @Test
     void mapsBomberToItsBankEighteenRectangleDisplayList() throws Exception {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
 

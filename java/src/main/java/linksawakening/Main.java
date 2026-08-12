@@ -809,6 +809,9 @@ public class Main {
                         link.pegasusBootsCollisionPosY());
                 }
                 if (roomSession != null && playerState != null) {
+                    roomSession.setChestPlayerLevels(
+                        playerState.shieldLevel(), playerState.swordLevel(),
+                        playerState.powerBraceletLevel());
                     EntityPickupEvent pickup = roomSession.collectEntityIfNeeded(
                         frameCounter, link.pixelX(), link.pixelY(), link.isAirborne(), true,
                         link.direction(), link.romEntityZ());
@@ -969,6 +972,11 @@ public class Main {
                         heldPoseSword.resetSpinAttack();
                     }
                 }
+                for (var request : roomSession.consumeLinkSwordSpinPoseRequests()) {
+                    if (link != null) {
+                        link.showSwordAcquisitionSpinPose(request.countdown());
+                    }
+                }
                 for (var request : roomSession.consumeScreenShakeRequests()) {
                     scrollController.startScreenShake(request.countdown(), request.phase());
                 }
@@ -996,6 +1004,11 @@ public class Main {
                         playerState.applyHeartContainerReward();
                     }
                     playDirectMusic(0x18);
+                }
+                for (var reward : roomSession.consumeSwordPickupRewards()) {
+                    if (playerState != null) {
+                        playerState.applyBeachSwordReward();
+                    }
                 }
                 roomSession.setBirdKeyOwned(playerState != null && playerState.birdKeyCount() != 0);
                 int chestMusicTrack = roomSession.consumePendingMusicTrack();
