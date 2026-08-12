@@ -136,6 +136,25 @@ final class RoomSessionTest {
     }
 
     @Test
+    void forestOwlRestoresActivePowerUpMusicWhenDepartureFinishes() {
+        RoomSession session = newSession();
+        session.loadInitialOverworld(0x80);
+        session.setChestPlayerLevels(0, 1, 0);
+        session.setEnemyDropPlayerState(3, 3, true);
+
+        int frame = 0;
+        boolean restoredPowerMusic = false;
+        while (session.activeRoom().entities().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == 0x41) && frame < 0x500) {
+            session.tickEntities(frame++, 0x50, 0x50);
+            restoredPowerMusic |= session.consumePendingMusicTrack() == 0x49;
+            session.consumeEntityDialogRequests();
+        }
+
+        assertTrue(restoredPowerMusic);
+    }
+
+    @Test
     void keyDropPointCollectionMarksTheRoomAndPublishesItsSmallKeyReward() {
         RoomSession session = newSession();
         byte[] indoorA = new byte[0x100];

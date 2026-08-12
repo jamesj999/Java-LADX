@@ -1012,6 +1012,11 @@ public class Main {
                         link.blockNextRomMotionFrame();
                     }
                 }
+                for (var request : roomSession.consumeLinkFacingRequests()) {
+                    if (link != null) {
+                        link.setRomDirection(request.romDirection());
+                    }
+                }
                 for (var request : roomSession.consumeLinkHeldItemPoseRequests()) {
                     if (link != null) {
                         link.showHeldItemPose();

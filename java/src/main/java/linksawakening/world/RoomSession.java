@@ -1325,6 +1325,11 @@ public final class RoomSession {
             ? List.of() : entityRuntime.consumePendingLinkMotionBlockRequests();
     }
 
+    public List<RoomEntityRuntime.LinkFacingRequest> consumeLinkFacingRequests() {
+        return entityRuntime == null
+            ? List.of() : entityRuntime.consumePendingLinkFacingRequests();
+    }
+
     public List<RoomEntityRuntime.LinkHeldItemPoseRequest>
             consumeLinkHeldItemPoseRequests() {
         return entityRuntime == null

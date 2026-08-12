@@ -16,6 +16,12 @@ final class OwlEventDialogResolverTest {
         assertEquals(0x09, resolver.defaultMusicTrack(0x80));
     }
 
+    @Test
+    void rejectsRomThatCannotContainTheMusicTable() {
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+            () -> new OwlEventDialogResolver(new byte[0x8000]));
+    }
+
     private static byte[] loadRom() throws IOException {
         try (var stream = OwlEventDialogResolverTest.class.getClassLoader()
             .getResourceAsStream("rom/azle.gbc")) {

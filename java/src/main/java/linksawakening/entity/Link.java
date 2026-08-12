@@ -790,6 +790,10 @@ public final class Link implements RocsFeather.JumpTarget {
         walkFrame = 0;
     }
 
+    public void setRomDirection(int romDirection) {
+        setDirection(javaDirectionForRomDirection(romDirection));
+    }
+
     public boolean isAirborne() {
         return airborne;
     }

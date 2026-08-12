@@ -12,7 +12,9 @@ public final class OwlEventDialogResolver {
     private final byte[] romData;
 
     public OwlEventDialogResolver(byte[] romData) {
-        int required = RomBank.romOffset(BANK, ROOM_TABLE_ADDRESS) + 0x100;
+        int required = Math.max(
+            RomBank.romOffset(BANK, ROOM_TABLE_ADDRESS) + 0x100,
+            RomBank.romOffset(0x02, OVERWORLD_MUSIC_TABLE_ADDRESS) + 0x100);
         if (romData == null || romData.length < required) {
             throw new IllegalArgumentException("ROM is too small for owl dialog tables");
         }

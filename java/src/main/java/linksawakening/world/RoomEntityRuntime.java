@@ -438,6 +438,7 @@ public final class RoomEntityRuntime {
         new ArrayList<>();
     private final List<LinkMotionBlockRequest> pendingLinkMotionBlockRequests =
         new ArrayList<>();
+    private final List<LinkFacingRequest> pendingLinkFacingRequests = new ArrayList<>();
     private final List<LinkHeldItemPoseRequest> pendingLinkHeldItemPoseRequests =
         new ArrayList<>();
     private final List<LinkSwordSpinPoseRequest> pendingLinkSwordSpinPoseRequests =
@@ -517,6 +518,7 @@ public final class RoomEntityRuntime {
     private final int[] owlXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] owlYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] owlZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] owlBoomerangSfxCounter = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] owlPreviousMusicTrack = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] owlCompletionEmitted =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
@@ -630,6 +632,15 @@ public final class RoomEntityRuntime {
             if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
                 throw new IllegalArgumentException("Link motion-block source slot out of range: "
                     + sourceSlot);
+            }
+        }
+    }
+
+    public record LinkFacingRequest(int sourceSlot, int romDirection) {
+        public LinkFacingRequest {
+            if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES
+                || romDirection < 0 || romDirection > 3) {
+                throw new IllegalArgumentException("Invalid Link-facing request");
             }
         }
     }
@@ -1325,6 +1336,7 @@ public final class RoomEntityRuntime {
         pendingLinkFinalPositionRequests.clear();
         pendingRoosterLinkStateRequests.clear();
         pendingLinkMotionBlockRequests.clear();
+        pendingLinkFacingRequests.clear();
         pendingLinkHeldItemPoseRequests.clear();
         pendingLinkSwordSpinPoseRequests.clear();
         pendingScreenShakeRequests.clear();
@@ -6424,6 +6436,12 @@ public final class RoomEntityRuntime {
         return pending;
     }
 
+    List<LinkFacingRequest> consumePendingLinkFacingRequests() {
+        List<LinkFacingRequest> pending = List.copyOf(pendingLinkFacingRequests);
+        pendingLinkFacingRequests.clear();
+        return pending;
+    }
+
     List<LinkHeldItemPoseRequest> consumePendingLinkHeldItemPoseRequests() {
         List<LinkHeldItemPoseRequest> pending = List.copyOf(pendingLinkHeldItemPoseRequests);
         pendingLinkHeldItemPoseRequests.clear();
@@ -6954,8 +6972,16 @@ public final class RoomEntityRuntime {
             }
             case 1 -> {
                 blockLinkForOwl(slot);
-                RoomEntity flying = spriteHandlers == null ? entity
-                    : withDefinition(entity, spriteHandlers.forOwlEvent(true), 0);
+                pendingLinkFacingRequests.add(new LinkFacingRequest(slot,
+                    directionFromLinkToEntity(entity, linkEntityX, linkEntityY)));
+                if (owlBoomerangSfxCounter[slot] == 0) {
+                    pendingEntityEvents.add(new EntityCombatEvent(slot, entity.type(), 0, false,
+                        EntityCombatEvent.SoundChannel.NOISE, 0x2D));
+                    owlBoomerangSfxCounter[slot] = 0x1A;
+                } else {
+                    owlBoomerangSfxCounter[slot]--;
+                }
+                RoomEntity flying = owlPresentation(entity, frameCounter);
                 int x = addFallingSpeedToPosition(
                     flying.x(), owlSpeedX[slot], owlXAccumulator, slot);
                 int y = addFallingSpeedToPosition(
@@ -6974,6 +7000,7 @@ public final class RoomEntityRuntime {
             }
             case 2 -> {
                 blockLinkForOwl(slot);
+                slots[slot] = owlPresentation(entity, frameCounter);
                 int globalDialogId = owlDialogResolver.applyAsInt(entityRoomId);
                 pendingDialogRequests.add(new DialogRequest(
                     (globalDialogId >>> 8) & 0xFF, globalDialogId & 0xFF));
@@ -6982,6 +7009,7 @@ public final class RoomEntityRuntime {
             }
             case 3 -> {
                 blockLinkForOwl(slot);
+                slots[slot] = owlPresentation(entity, frameCounter);
                 if (dialogActive) {
                     if (enemyTransitionCountdown[slot] > 0) {
                         enemyTransitionCountdown[slot]++;
@@ -7005,8 +7033,7 @@ public final class RoomEntityRuntime {
 
     private void advanceDepartingOwl(RoomEntity entity, int slot, int frameCounter) {
         blockLinkForOwl(slot);
-        RoomEntity flying = spriteHandlers == null ? entity
-            : withDefinition(entity, spriteHandlers.forOwlEvent(true), 0);
+        RoomEntity flying = owlPresentation(entity, frameCounter);
         int x = addFallingSpeedToPosition(
             flying.x(), owlSpeedX[slot], owlXAccumulator, slot);
         int y = addFallingSpeedToPosition(
@@ -7020,9 +7047,26 @@ public final class RoomEntityRuntime {
                 EntityCombatEvent.SoundChannel.NOISE, 0x05));
         }
         if (x < 0x08 || x > 0x98 || y < 0x10 || y > 0x88 || z >= 0x40) {
-            pendingMusicTrack = owlPreviousMusicTrack[slot];
+            pendingMusicTrack = enemyDropActivePowerUp ? 0x49 : owlPreviousMusicTrack[slot];
             disableEntityWithoutPersistence(slot);
         }
+    }
+
+    private RoomEntity owlPresentation(RoomEntity entity, int frameCounter) {
+        if (spriteHandlers == null) {
+            return entity;
+        }
+        boolean flying = ((frameCounter >>> 2) & 0x02) != 0;
+        return withDefinition(entity, spriteHandlers.forOwlEvent(flying), 0);
+    }
+
+    private static int directionFromLinkToEntity(RoomEntity entity, int linkX, int linkY) {
+        int dx = (byte) (entity.x() - linkX);
+        int dy = (byte) (entity.y() - linkY);
+        if (Math.abs(dy) >= Math.abs(dx)) {
+            return dy < 0 ? 2 : 3;
+        }
+        return dx < 0 ? 1 : 0;
     }
 
     void setOwlDialogResolver(IntUnaryOperator resolver) {

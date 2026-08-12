@@ -1,6 +1,7 @@
 package linksawakening.world;
 
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.entity.EntitySpriteDefinition;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -160,6 +161,22 @@ final class BeachOpeningRuntimeTest {
         armed.tick(0, 0x50, 0x50, () -> 0);
         assertEquals(1, armed.owlEventStateForTest(0));
         assertEquals(0x22, armed.consumePendingMusicTrack());
+        armed.tick(1, 0x50, 0x50, () -> 0);
+        assertEquals(List.of(new RoomEntityRuntime.LinkFacingRequest(0, 0)),
+            armed.consumePendingLinkFacingRequests());
+        assertTrue(armed.consumePendingEntityEvents().stream().anyMatch(event ->
+            event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE
+                && event.soundId() == 0x2D));
+        assertEquals(EntitySpriteDefinition.Shape.PAIR,
+            armed.snapshot().slots().get(0).spriteDefinition().shape());
+        armed.tick(2, 0x50, 0x50, () -> 0);
+        assertFalse(armed.consumePendingEntityEvents().stream().anyMatch(event ->
+            event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE
+                && event.soundId() == 0x2D));
+
+        armed.tick(8, 0x50, 0x50, () -> 0);
+        assertEquals(EntitySpriteDefinition.Shape.RECTANGLE,
+            armed.snapshot().slots().get(0).spriteDefinition().shape());
     }
 
     private static RoomEntityRuntime owlRuntime(EntitySpriteHandlerCatalog catalog, byte[] rom) {
