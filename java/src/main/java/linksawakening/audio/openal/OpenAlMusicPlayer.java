@@ -67,6 +67,11 @@ public final class OpenAlMusicPlayer implements AutoCloseable, MusicTrackPlayer 
         return statusMessage;
     }
 
+    /** Returns whether the ROM music driver still has an active channel. */
+    public boolean isMusicPlaying() {
+        return isAvailable() && driver.isPlaying();
+    }
+
     @Override
     public void play(MusicTrack track) {
         if (!isAvailable()) {

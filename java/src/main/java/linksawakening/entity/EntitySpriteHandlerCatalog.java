@@ -159,6 +159,11 @@ public final class EntitySpriteHandlerCatalog {
             beachSword ? 0x5B97 : 0x5B95, 1, 0);
     }
 
+    /** Selects SirensInstrumentState1Handler's two projectile variants. */
+    public EntitySpriteDefinition forInstrumentShard() {
+        return decodePair(ENTITY_INSTRUMENT_OF_THE_SIRENS, 0x03, 0x5E8B, 2, 0);
+    }
+
     /** Selects the perched pair or four-sprite flying layout used by the owl event. */
     public EntitySpriteDefinition forOwlEvent(boolean flying) {
         return flying

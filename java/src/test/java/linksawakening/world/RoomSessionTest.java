@@ -686,8 +686,9 @@ final class RoomSessionTest {
     }
 
     @Test
-    void tailCaveInstrumentUsesItsRomSpriteAndCompletesTheInstrumentRoom() {
-        RoomSession session = newSession();
+    void tailCaveInstrumentUsesItsRomSpriteAndAwardsAtTheRomCountdownBoundary() {
+        TransientVfxSystem transientVfx = new TransientVfxSystem(16);
+        RoomSession session = newSession(transientVfx);
         session.loadIndoor(0x00, 0x02);
         RoomEntity instrument = session.activeRoom().entities().loadedEntities().stream()
             .filter(entity -> entity.type()
@@ -704,10 +705,118 @@ final class RoomSessionTest {
         assertNotNull(pickup);
         assertEquals(EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS,
             pickup.type());
+        assertFalse(session.hasDungeonInstrumentForTest(0x00));
+        assertEquals(0, session.indoorRoomStatusForTest(0x00, 0x02) & 0x10);
+        assertTrue(session.consumeEntityDialogRequests().isEmpty());
+        assertEquals(0x1B, session.consumePendingMusicTrack());
+
+        session.tickEntities(1, instrument.x(), instrument.y());
+        assertEquals(4, transientVfx.activeCount());
+
+        for (int frame = 2; frame < 88; frame++) {
+            session.tickEntities(frame, 0x50, 0x60);
+            assertFalse(session.hasDungeonInstrumentForTest(0x00));
+            assertTrue(session.consumeEntityDialogRequests().isEmpty());
+        }
+
+        session.tickEntities(88, 0x50, 0x60);
+
         assertTrue(session.hasDungeonInstrumentForTest(0x00));
         assertEquals(0x10, session.indoorRoomStatusForTest(0x00, 0x02) & 0x10);
         assertEquals(0x100,
             session.consumeEntityDialogRequests().getFirst().globalDialogId());
+        RoomEntity heldInstrument = session.activeRoom().entities().slots().get(instrument.slot());
+        assertEquals(EntityStatus.ACTIVE, heldInstrument.status());
+        assertEquals(0x50, heldInstrument.x());
+        assertEquals(0x54, heldInstrument.y());
+    }
+
+    @Test
+    void tailCaveInstrumentWaitsForDialogBeforePlayingTheCelloTrack() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x00, 0x02);
+        RoomEntity instrument = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type()
+                == EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS)
+            .findFirst().orElseThrow();
+        session.tickEntities(0, instrument.x(), instrument.y());
+        assertNotNull(session.collectEntityIfNeeded(
+            (instrument.slot() ^ 1) & 1, instrument.x(), instrument.y(), false, true));
+        assertEquals(0x1B, session.consumePendingMusicTrack());
+
+        for (int frame = 1; frame <= 88; frame++) {
+            session.tickEntities(frame, 0x50, 0x60);
+        }
+        assertEquals(0x100,
+            session.consumeEntityDialogRequests().getFirst().globalDialogId());
+
+        session.setEntityMusicActive(true);
+        session.setEntityDialogActive(true);
+        session.tickEntities(89, 0x50, 0x60);
+        assertEquals(-1, session.consumePendingMusicTrack());
+
+        session.setEntityDialogActive(false);
+        session.tickEntities(90, 0x50, 0x60);
+        assertEquals(-1, session.consumePendingMusicTrack());
+
+        session.setEntityMusicActive(false);
+        session.tickEntities(91, 0x50, 0x60);
+
+        assertEquals(0x20, session.consumePendingMusicTrack());
+        assertEquals(0xFF, session.entityTransitionCountdownForTest(instrument.slot()));
+    }
+
+    @Test
+    void tailCaveInstrumentRunsThePerformanceAndWarpCountdownsBeforeReleasingLink() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x00, 0x02);
+        RoomEntity instrument = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type()
+                == EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS)
+            .findFirst().orElseThrow();
+        session.tickEntities(0, instrument.x(), instrument.y());
+        assertNotNull(session.collectEntityIfNeeded(
+            (instrument.slot() ^ 1) & 1, instrument.x(), instrument.y(), false, true));
+        session.consumePendingMusicTrack();
+        for (int frame = 1; frame <= 88; frame++) {
+            session.tickEntities(frame, 0x50, 0x60);
+        }
+        session.consumeEntityDialogRequests();
+        session.tickEntities(89, 0x50, 0x60);
+        assertEquals(0x20, session.consumePendingMusicTrack());
+
+        session.tickEntities(90, 0x50, 0x60);
+        RoomEntity instrumentShard = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.slot() != instrument.slot()
+                && entity.type() == EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS)
+            .findFirst().orElseThrow();
+        assertEquals(0x03, instrumentShard.spriteDefinition().bank());
+        assertEquals(0x5E8B, instrumentShard.spriteDefinition().address());
+        assertEquals(0x4A, instrumentShard.x());
+        assertEquals(0x4C, instrumentShard.y());
+
+        for (int frame = 91; frame < 344; frame++) {
+            session.tickEntities(frame, 0x50, 0x60);
+            assertTrue(session.consumeEntityEvents().isEmpty());
+        }
+        session.tickEntities(344, 0x50, 0x60);
+
+        EntityCombatEvent warpJingle = session.consumeEntityEvents().getFirst();
+        assertEquals(EntityCombatEvent.SoundChannel.JINGLE, warpJingle.soundChannel());
+        assertEquals(0x2B, warpJingle.soundId());
+        assertEquals(EntityStatus.ACTIVE,
+            session.activeRoom().entities().slots().get(instrument.slot()).status());
+
+        for (int frame = 345; frame <= 852; frame++) {
+            session.tickEntities(frame, 0x50, 0x60);
+        }
+        assertEquals(EntityStatus.ACTIVE,
+            session.activeRoom().entities().slots().get(instrument.slot()).status());
+
+        session.tickEntities(856, 0x50, 0x60);
+
+        assertFalse(session.activeRoom().entities().slots().get(instrument.slot()).loaded());
+        assertTrue(session.consumeLinkMotionBlockRequests().isEmpty());
     }
 
     @Test
@@ -2329,6 +2438,18 @@ final class RoomSessionTest {
             dungeonFlags[2 * DungeonItemState.ITEM_FLAG_SIZE + 3],
             dungeonFlags[2 * DungeonItemState.ITEM_FLAG_SIZE + 4]
         }, session.currentDungeonItemFlagsSnapshot());
+    }
+
+    @Test
+    void exposesAndRestoresTheEightSourceDungeonProgressBytes() {
+        RoomSession session = newSession();
+        byte[] flags = pattern(0x08, 0x01);
+
+        session.restoreDungeonProgressFlags(flags);
+
+        assertArrayEquals(flags, session.dungeonProgressFlagsSnapshot());
+        assertTrue(session.hasDungeonInstrumentForTest(1));
+        assertTrue(session.hasDungeonInstrumentForTest(2));
     }
 
     private static RoomSession newSession() {

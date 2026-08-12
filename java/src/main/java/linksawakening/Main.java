@@ -533,7 +533,10 @@ public class Main {
         GameBoyApu musicApu = new GameBoyApu(48_000);
         MusicCatalog musicCatalog = MusicCatalog.fromRom(romData);
         musicPlayer = new OpenAlMusicPlayer(new MusicDriver(romData, musicApu), musicApu);
-        musicPlayer.setLoopEnabled(true);
+        // ROM background tracks contain their own loop commands. Host-level
+        // restarting would also loop finite fanfares such as $1B forever,
+        // preventing wActiveMusicIndex-gated acquisition handlers advancing.
+        musicPlayer.setLoopEnabled(false);
         gameplayMusicController = new GameplayMusicController(
             AreaMusicResolver.fromRom(romData), musicCatalog, musicPlayer);
     }
@@ -965,6 +968,8 @@ public class Main {
                 && !inventoryController.shouldBlockOverworldInput()) {
                 roomSession.setEntityDialogActive(
                     dialogController != null && dialogController.isActive());
+                roomSession.setEntityMusicActive(
+                    musicPlayer != null && musicPlayer.isMusicPlaying());
                 roomSession.setEntityActionButtonsHeld(
                     inputState != null && inputConfig != null
                         && inputState.isDown(inputConfig.aKey()),
@@ -1584,6 +1589,7 @@ public class Main {
             saved.indoorBRoomStatus(), saved.colorDungeonRoomStatus());
         roomSession.restoreDungeonItemFlags(saved.dungeonItemFlags(),
             saved.colorDungeonItemFlags());
+        roomSession.restoreDungeonProgressFlags(saved.dungeonProgressFlags());
         if (saved.spawnIsIndoor() != 0) {
             gpu.loadBaseTiles(romData);
             roomSession.loadIndoor(saved.spawnMapId(), saved.spawnMapRoom());
@@ -1681,6 +1687,8 @@ public class Main {
             saveRamStore.writeDungeonItemFlags(currentSaveSlot,
                 roomSession.dungeonItemFlagsSnapshot(),
                 roomSession.colorDungeonItemFlagsSnapshot());
+            saveRamStore.writeDungeonProgressFlags(currentSaveSlot,
+                roomSession.dungeonProgressFlagsSnapshot());
         }
         try {
             saveRamStore.flush();

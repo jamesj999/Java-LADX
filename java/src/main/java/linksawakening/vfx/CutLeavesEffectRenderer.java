@@ -23,6 +23,8 @@ public final class CutLeavesEffectRenderer {
     private static final int LASER_BEAM_OAM_X_BIAS = 8;
     private static final int LASER_BEAM_OAM_Y_BIAS = 16;
     private static final int LASER_BEAM_TILE_ID = 0x24;
+    private static final int MOVING_SPARKLE_OAM_X_BIAS = 8;
+    private static final int MOVING_SPARKLE_OAM_Y_BIAS = 16;
     private static final int SWORD_BEAM_OAM_X_BIAS = 8;
     private static final int SWORD_BEAM_OAM_Y_BIAS = 16;
     // bank-$02 Data_002_559C and Data_002_55BC. Stored as source Y offset,
@@ -189,6 +191,24 @@ public final class CutLeavesEffectRenderer {
             attributes,
             spriteSheet.tile(LASER_BEAM_TILE_ID)
         ));
+    }
+
+    /** ROM bank-$02 RenderTranscientMovingSparkle and Data_002_5756/575A. */
+    public List<SpritePlacement> renderMovingSparkle(int worldX, int worldY, int countdown,
+                                                      int variant) {
+        int direction = variant & 0x03;
+        int[] speedX = {1, -1, 1, -1};
+        int[] speedY = {1, 1, -1, -1};
+        int movementTicks = Math.max(0, Math.min(0x19, 0x22 - countdown));
+        int x = worldX + speedX[direction] * movementTicks;
+        int y = worldY + speedY[direction] * movementTicks;
+        int tileId = countdown < 0x07 ? 0x3C : 0x3A;
+        return List.of(
+            new SpritePlacement(x - MOVING_SPARKLE_OAM_X_BIAS,
+                y - MOVING_SPARKLE_OAM_Y_BIAS, tileId, 0x00, spriteSheet.tile(tileId)),
+            new SpritePlacement(x + 8 - MOVING_SPARKLE_OAM_X_BIAS,
+                y - MOVING_SPARKLE_OAM_Y_BIAS, tileId, 0x20, spriteSheet.tile(tileId))
+        );
     }
 
     /** ROM bank-$02 RenderTranscientSwordBeam and Data_002_559C/55BC. */

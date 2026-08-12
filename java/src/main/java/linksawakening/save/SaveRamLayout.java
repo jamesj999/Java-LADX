@@ -70,6 +70,8 @@ public final class SaveRamLayout {
     public static final int MAIN_SPAWN_X_OFFSET = 0x362;
     public static final int MAIN_SPAWN_Y_OFFSET = 0x363;
     public static final int MAIN_SPAWN_INDOOR_ROOM_OFFSET = 0x364;
+    public static final int MAIN_DUNGEON_PROGRESS_FLAGS_OFFSET = 0x365;
+    public static final int MAIN_DUNGEON_PROGRESS_FLAGS_SIZE = 0x08;
     public static final int MAIN_MAX_MAGIC_POWDER_OFFSET = 0x376;
     public static final int MAIN_MAX_BOMBS_OFFSET = 0x377;
     public static final int MAIN_MAX_ARROWS_OFFSET = 0x378;

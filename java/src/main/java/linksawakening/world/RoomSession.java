@@ -227,6 +227,7 @@ public final class RoomSession {
     private boolean actionButtonBHeld;
     private boolean joypadHeld;
     private boolean entityDialogActive;
+    private boolean entityMusicActive;
     private int entityPressedButtonsMask;
     private boolean powerBraceletButtonHeld;
     private boolean bombButtonHeld;
@@ -511,6 +512,17 @@ public final class RoomSession {
         dungeonItemState.restore(dungeonFlags, colorFlags);
     }
 
+    /** Snapshots wHasInstrument1..wHasInstrument8 (DB65..DB6C). */
+    public byte[] dungeonProgressFlagsSnapshot() {
+        return Arrays.copyOf(dungeonProgressFlags, 0x08);
+    }
+
+    public void restoreDungeonProgressFlags(byte[] flags) {
+        requireLength(flags, 0x08, "dungeonProgressFlags");
+        Arrays.fill(dungeonProgressFlags, (byte) 0);
+        System.arraycopy(flags, 0, dungeonProgressFlags, 0, flags.length);
+    }
+
     int overworldRoomStatusForTest(int roomId) {
         if (roomId < 0 || roomId >= overworldRoomStatus.length) {
             throw new IllegalArgumentException("Room id out of range: " + roomId);
@@ -599,6 +611,14 @@ public final class RoomSession {
         entityDialogActive = active;
         if (entityRuntime != null) {
             entityRuntime.setDialogActive(active);
+        }
+    }
+
+    /** Supplies the source wActiveMusicIndex gate to entity state machines. */
+    public void setEntityMusicActive(boolean active) {
+        entityMusicActive = active;
+        if (entityRuntime != null) {
+            entityRuntime.setActiveMusic(active);
         }
     }
 
@@ -1292,6 +1312,7 @@ public final class RoomSession {
         entityRuntime.setSwitchBlockAnimationActive(
             SwitchBlockAnimation.isAnimating(switchableObjectAnimationStage));
         entityRuntime.setDialogActive(entityDialogActive);
+        entityRuntime.setActiveMusic(entityMusicActive);
         entityRuntime.setActionButtonsHeld(actionButtonAHeld, actionButtonBHeld);
         entityRuntime.setJoypadHeld(joypadHeld);
         entityRuntime.setPressedButtonsMask(entityPressedButtonsMask);
@@ -1353,6 +1374,7 @@ public final class RoomSession {
         harvestHeartContainerRewards();
         harvestSwordPickupRewards();
         harvestToadstoolRewards();
+        harvestInstrumentRewards();
         harvestWitchEvents();
         harvestOwlEventCompletions();
         if (entityRuntime.consumePendingSwitchBlockAnimationRequest()
@@ -1731,16 +1753,6 @@ public final class RoomSession {
             // PickDroppableKey sets the Angler's Tunnel source room flag before
             // it starts the held-item transition.
             indoorARoomStatus[0x69] |= 0x10;
-        }
-        if (event.type() == EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS
-            && activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD) {
-            indoorStatusTableForMap(activeRoom.mapId())[activeRoom.roomId()]
-                |= (byte) ROOM_STATUS_EVENT_1;
-            if (activeRoom.mapId() >= 0 && activeRoom.mapId() < dungeonProgressFlags.length) {
-                dungeonProgressFlags[activeRoom.mapId()] |= 0x02;
-            }
-            pendingRoomDialogRequests.add(new RoomEntityRuntime.DialogRequest(
-                1, activeRoom.mapId() & 0xFF));
         }
         if (event.type() == ENTITY_DROPPABLE_SECRET_SEASHELL) {
             // PickSecretSeashell opens Dialog0EF and completes the room after
@@ -2760,6 +2772,20 @@ public final class RoomSession {
         if (entityRuntime != null) {
             pendingToadstoolRewards.addAll(entityRuntime.consumePendingToadstoolRewards());
         }
+    }
+
+    private void harvestInstrumentRewards() {
+        if (entityRuntime == null || activeRoom == null
+            || entityRuntime.consumePendingInstrumentRewards().isEmpty()
+            || activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
+            return;
+        }
+        indoorStatusTableForMap(activeRoom.mapId())[activeRoom.roomId()]
+            |= (byte) ROOM_STATUS_EVENT_1;
+        if (activeRoom.mapId() >= 0 && activeRoom.mapId() < dungeonProgressFlags.length) {
+            dungeonProgressFlags[activeRoom.mapId()] |= 0x02;
+        }
+        entityRuntime.setEntityRoomStatus(activeRoomStatusFlags());
     }
 
     private void harvestWitchEvents() {

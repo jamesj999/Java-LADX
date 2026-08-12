@@ -20,6 +20,9 @@ import java.util.function.IntUnaryOperator;
  * class only advances handler-owned status and sprite-variant fields.
  */
 public final class RoomEntityRuntime {
+    private static final int[] INSTRUMENT_MUSIC_TRACKS = {
+        0x20, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E
+    };
     private static final int ENTITY_CHEST_WITH_ITEM = 0x07;
     private static final int ENTITY_KEY_DROP_POINT = 0x30;
     private static final int ENTITY_MASTER_STALFOS = 0x5F;
@@ -443,6 +446,8 @@ public final class RoomEntityRuntime {
         new ArrayList<>();
     private final List<ToadstoolRewardEvent> pendingToadstoolRewards =
         new ArrayList<>();
+    private final List<InstrumentRewardEvent> pendingInstrumentRewards =
+        new ArrayList<>();
     private final List<OwlEventCompletion> pendingOwlEventCompletions =
         new ArrayList<>();
     private final List<LinkFinalPositionRequest> pendingLinkFinalPositionRequests =
@@ -491,6 +496,7 @@ public final class RoomEntityRuntime {
     private boolean actionButtonBHeld;
     private boolean joypadHeld;
     private boolean dialogActive;
+    private boolean activeMusic;
     private int linkPressedButtonsMask;
     private int linkItemA;
     private int linkItemB;
@@ -532,6 +538,26 @@ public final class RoomEntityRuntime {
         new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] toadstoolPickupSequenceActive =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] instrumentPickupSequenceActive =
+        new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] instrumentPickupState =
+        new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] instrumentPickupSparklesPending =
+        new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] instrumentParticleKind =
+        new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] instrumentParticleSpawnCountdown =
+        new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] instrumentParticleSpawnCounter =
+        new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] instrumentParticleSpeedX =
+        new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] instrumentParticleSpeedY =
+        new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] instrumentParticleXAccumulator =
+        new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] instrumentParticleYAccumulator =
+        new int[EntityRoomLoader.MAX_ENTITIES];
     private boolean playerHasToadstool;
     private int playerMagicPowderCount;
     private final int[] owlEventState = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -606,6 +632,9 @@ public final class RoomEntityRuntime {
     }
 
     public record ToadstoolRewardEvent(int slot) {
+    }
+
+    public record InstrumentRewardEvent(int slot) {
     }
 
     public record WitchExchangeEvent(int slot, int inventorySlot) {
@@ -1387,6 +1416,7 @@ public final class RoomEntityRuntime {
         pendingHeartContainerRewards.clear();
         pendingSwordPickupRewards.clear();
         pendingToadstoolRewards.clear();
+        pendingInstrumentRewards.clear();
         pendingWitchExchangeEvents.clear();
         pendingWitchRewardEvents.clear();
         pendingOwlEventCompletions.clear();
@@ -1690,6 +1720,19 @@ public final class RoomEntityRuntime {
             if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_HEART_CONTAINER
                 && enemyTransitionCountdown[entity.slot()] != 0) {
                 advanceCollectedHeartContainer(entity, linkEntityX, linkEntityY, linkZ);
+                continue;
+            }
+            if (status == EntityStatus.ACTIVE
+                && entity.type() == EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS
+                && instrumentParticleKind[entity.slot()] == 1) {
+                advanceInstrumentParticle(entity);
+                continue;
+            }
+            if (status == EntityStatus.ACTIVE
+                && entity.type() == EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS
+                && instrumentPickupSequenceActive[entity.slot()]) {
+                advanceInstrumentPickup(entity, frame, linkEntityX, linkEntityY, linkZ,
+                    randomByteSupplier);
                 continue;
             }
             if (status == EntityStatus.ACTIVE
@@ -3858,6 +3901,9 @@ public final class RoomEntityRuntime {
                 startSwordPickup(entity.slot());
             } else if (entity.type() == ENTITY_SLEEPY_TOADSTOOL) {
                 startToadstoolPickup(entity.slot());
+            } else if (entity.type()
+                == EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS) {
+                startInstrumentPickup(entity.slot());
             } else if (requiresHeldPickupTransition(entity.type())) {
                 beginLift(entity.slot(), romDirection);
             } else {
@@ -6368,6 +6414,11 @@ public final class RoomEntityRuntime {
         this.dialogActive = dialogActive;
     }
 
+    /** Supplies the nonzero wActiveMusicIndex gate used by instrument pickup. */
+    void setActiveMusic(boolean activeMusic) {
+        this.activeMusic = activeMusic;
+    }
+
     void setEntityPrivateState4ForTest(int slot, int value) {
         validateCountdownTestValue(slot, value);
         entityPrivateState4[slot] = value;
@@ -7097,6 +7148,119 @@ public final class RoomEntityRuntime {
         toadstoolPickupSequenceActive[slot] = true;
         enemyTransitionCountdown[slot] = 0x68;
         pendingMusicTrack = 0x10;
+    }
+
+    private void startInstrumentPickup(int slot) {
+        instrumentPickupSequenceActive[slot] = true;
+        instrumentPickupState[slot] = 0;
+        instrumentPickupSparklesPending[slot] = true;
+        enemyTransitionCountdown[slot] = 0x68;
+        pendingMusicTrack = 0x1B;
+    }
+
+    private void advanceInstrumentPickup(RoomEntity entity, int frameCounter,
+                                         int linkEntityX, int linkEntityY, int linkZ,
+                                         IntSupplier randomByteSupplier) {
+        int slot = entity.slot();
+        if (instrumentPickupSparklesPending[slot]) {
+            instrumentPickupSparklesPending[slot] = false;
+            int[] xOffsets = {-0x18, 0x18, -0x18, 0x18};
+            int[] yOffsets = {-0x2C, -0x2C, 0x04, 0x04};
+            for (int variant = 3; variant >= 0; variant--) {
+                transientVfxRequests.add(new TransientVfxRequest(
+                    TransientVfxType.MOVING_SPARKLE,
+                    (linkEntityX + xOffsets[variant]) & 0xFF,
+                    (linkEntityY + yOffsets[variant]) & 0xFF,
+                    variant));
+            }
+        }
+        if (instrumentPickupState[slot] == 0
+            && enemyTransitionCountdown[slot] == 0x10) {
+            enemyTransitionCountdown[slot] = 0x0F;
+            instrumentPickupState[slot] = 1;
+            pendingDialogRequests.add(new DialogRequest(1, entityMapId & 0xFF));
+            pendingInstrumentRewards.add(new InstrumentRewardEvent(slot));
+        } else if (instrumentPickupState[slot] == 1 && !activeMusic && !dialogActive) {
+            int mapId = entityMapId & 0xFF;
+            if (mapId < INSTRUMENT_MUSIC_TRACKS.length) {
+                pendingMusicTrack = INSTRUMENT_MUSIC_TRACKS[mapId];
+                instrumentPickupState[slot] = 2;
+                enemyTransitionCountdown[slot] = 0xFF;
+            }
+        } else if (instrumentPickupState[slot] == 2
+            && enemyTransitionCountdown[slot] == 0) {
+            instrumentPickupState[slot] = 3;
+            slowTransitionCountdown[slot] = 0x80;
+            slowTimerInitialized[slot] = true;
+            pendingEntityEvents.add(new EntityCombatEvent(
+                slot, entity.type(), 0, false,
+                EntityCombatEvent.SoundChannel.JINGLE, 0x2B));
+        } else if (instrumentPickupState[slot] == 2) {
+            instrumentParticleSpawnCountdown[slot] =
+                (instrumentParticleSpawnCountdown[slot] - 1) & 0xFF;
+            if (instrumentParticleSpawnCountdown[slot] == 0xFF) {
+                instrumentParticleSpawnCountdown[slot] = 0x17;
+                instrumentParticleSpawnCounter[slot] =
+                    (instrumentParticleSpawnCounter[slot] + 1) & 0xFF;
+                spawnInstrumentParticle(entity,
+                    instrumentParticleSpawnCounter[slot] & 0x01,
+                    randomByteSupplier.getAsInt() & 0x01);
+            }
+        } else if (instrumentPickupState[slot] == 3) {
+            decrementSlowTransitionCountdown(slot, frameCounter);
+            if (slowTransitionCountdown[slot] == 0) {
+                instrumentPickupState[slot] = 4;
+                instrumentPickupSequenceActive[slot] = false;
+                disableEntityWithoutPersistence(slot);
+                return;
+            }
+        }
+        pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
+        pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
+        RoomEntity held = withPositionAndVariant(entity, linkEntityX,
+            (linkEntityY - 0x0C) & 0xFF, entity.spriteVariant());
+        slots[slot] = withZ(held, linkZ & 0xFF);
+    }
+
+    private void spawnInstrumentParticle(RoomEntity source, int offsetIndex, int variant) {
+        int freeSlot = findFreeEntitySlot();
+        if (freeSlot < 0 || spriteHandlers == null) {
+            return;
+        }
+        int[] xOffsets = {0x0A, -0x06};
+        int[] speedX = {0x04, 0xFC};
+        EntitySpriteDefinition definition = spriteHandlers.forInstrumentShard();
+        slots[freeSlot] = new RoomEntity(freeSlot, -1, source.type(),
+            (source.x() + xOffsets[offsetIndex]) & 0xFF,
+            (source.y() - 0x08) & 0xFF,
+            EntityStatus.ACTIVE, definition, variant & 0x01, 0, 0, 0);
+        instrumentParticleKind[freeSlot] = 1;
+        instrumentParticleSpeedX[freeSlot] = speedX[offsetIndex];
+        instrumentParticleSpeedY[freeSlot] = 0xFD;
+        instrumentParticleXAccumulator[freeSlot] = 0;
+        instrumentParticleYAccumulator[freeSlot] = 0;
+        enemyTransitionCountdown[freeSlot] = 0x38;
+        enemyStunnedCountdown[freeSlot] = 0;
+        dyingCountdown[freeSlot] = 0;
+        enemyHealth[freeSlot] = 0;
+        enemyPhysicsFlags[freeSlot] = ENTITY_PHYSICS_HARMLESS;
+        enemyIgnoreHitsCountdown[freeSlot] = 1;
+        enemyHitboxFlags[freeSlot] = 0;
+        entityOptions1Override[freeSlot] = ENTITY_OPT1_NO_GROUND_INTERACTION;
+        dynamicEntitySpawnedThisFrame[freeSlot] = true;
+    }
+
+    private void advanceInstrumentParticle(RoomEntity entity) {
+        int slot = entity.slot();
+        if (enemyTransitionCountdown[slot] == 0) {
+            disableEntityWithoutPersistence(slot);
+            return;
+        }
+        int x = addFallingSpeedToPosition(entity.x(), instrumentParticleSpeedX[slot],
+            instrumentParticleXAccumulator, slot);
+        int y = addFallingSpeedToPosition(entity.y(), instrumentParticleSpeedY[slot],
+            instrumentParticleYAccumulator, slot);
+        slots[slot] = withPositionAndVariant(entity, x, y, entity.spriteVariant());
     }
 
     private void advanceWitchGotItemPresentation(int slot) {
@@ -8862,6 +9026,12 @@ public final class RoomEntityRuntime {
         return rewards;
     }
 
+    List<InstrumentRewardEvent> consumePendingInstrumentRewards() {
+        List<InstrumentRewardEvent> rewards = List.copyOf(pendingInstrumentRewards);
+        pendingInstrumentRewards.clear();
+        return rewards;
+    }
+
     List<WitchExchangeEvent> consumePendingWitchExchangeEvents() {
         List<WitchExchangeEvent> events = List.copyOf(pendingWitchExchangeEvents);
         pendingWitchExchangeEvents.clear();
@@ -10307,7 +10477,7 @@ public final class RoomEntityRuntime {
 
     private static boolean requiresHeldPickupTransition(int type) {
         return switch (type) {
-            case 0x30, 0x31, 0x33, 0x34, 0x35, 0x36, 0x39, 0x3C -> true;
+            case 0x30, 0x31, 0x33, 0x34, 0x35, 0x36, 0x3C -> true;
             default -> false;
         };
     }
@@ -10586,6 +10756,11 @@ public final class RoomEntityRuntime {
         chestInertia[slot] = 0;
         chestItemBySlot[slot] = 0;
         enemyHitboxFlags[slot] = 0;
+        instrumentParticleKind[slot] = 0;
+        instrumentParticleSpeedX[slot] = 0;
+        instrumentParticleSpeedY[slot] = 0;
+        instrumentParticleXAccumulator[slot] = 0;
+        instrumentParticleYAccumulator[slot] = 0;
         armosKnightMotion.clear(slot);
         entityGroundStatus[slot] = 0;
         fallingTargetX[slot] = 0;

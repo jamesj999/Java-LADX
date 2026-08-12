@@ -178,6 +178,17 @@ public final class SaveRamImage {
             SaveRamLayout.DX1_COLOR_DUNGEON_ITEM_FLAGS_SIZE);
     }
 
+    /** Writes wHasInstrument1..wHasInstrument8 at DB65..DB6C. */
+    public void writeDungeonProgressFlags(int slot, byte[] dungeonProgressFlags) {
+        SaveRamLayout.checkSlot(slot);
+        requireLength(dungeonProgressFlags, SaveRamLayout.MAIN_DUNGEON_PROGRESS_FLAGS_SIZE,
+            "dungeonProgressFlags");
+        int main = SaveRamLayout.slotOffset(slot) + SaveRamLayout.mainOffset();
+        System.arraycopy(dungeonProgressFlags, 0, bytes,
+            main + SaveRamLayout.MAIN_DUNGEON_PROGRESS_FLAGS_OFFSET,
+            SaveRamLayout.MAIN_DUNGEON_PROGRESS_FLAGS_SIZE);
+    }
+
     /** Writes the source {@code wSpawnLocationData} fields in the main block. */
     public void writeSpawnLocation(int slot, int isIndoor, int mapId, int mapRoom,
                                    int positionX, int positionY, int indoorRoom) {
