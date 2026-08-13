@@ -3,6 +3,7 @@ package linksawakening.world;
 import java.io.IOException;
 import linksawakening.entity.Link;
 import linksawakening.equipment.ItemRegistry;
+import linksawakening.gameplay.BeachSwordRewardConsumer;
 import linksawakening.gpu.GPU;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
@@ -19,6 +20,7 @@ import static linksawakening.world.RoomConstants.ROOM_OBJECT_ROW_STRIDE;
 import static linksawakening.world.RoomConstants.ROOM_PIXEL_WIDTH;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class RoomTransitionCoordinatorTest {
@@ -90,7 +92,7 @@ final class RoomTransitionCoordinatorTest {
     }
 
     @Test
-    void freshGameHouseWarpAndSouthTransitionsLeadToLoadedBeachOpeningEntities()
+    void freshGameHouseShieldAndSouthRouteCompletesTheBeachOpeningInPlayOrder()
             throws Exception {
         byte[] rom = loadRom();
         RomTables romTables = RomTables.loadFromRom(rom);
@@ -152,6 +154,45 @@ final class RoomTransitionCoordinatorTest {
         assertEquals(0x60, sword.y());
         assertTrue(sword.spriteDefinition().supported());
         assertTrue(owl.spriteDefinition().supported());
+
+        session.setChestPlayerLevels(
+            playerState.shieldLevel(), playerState.swordLevel(),
+            playerState.powerBraceletLevel());
+        session.tickEntities(0, 0x3F, 0x44);
+        session.tickEntities(1, 0x40, 0x44);
+        assertEquals(0x22, session.consumePendingMusicTrack());
+
+        int frame = 2;
+        boolean owlDialogOpened = false;
+        while ((session.overworldRoomStatusForTest(0xF2) & 0x20) == 0
+            && frame < 0x300) {
+            session.tickEntities(frame++, 0x58, 0x60);
+            owlDialogOpened |= session.consumeEntityDialogRequests().stream()
+                .anyMatch(request -> request.globalDialogId() == 0x0D9);
+        }
+        assertTrue(owlDialogOpened);
+
+        while (session.activeRoom().entities().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == 0x41) && frame < 0x400) {
+            session.tickEntities(frame++, 0x58, 0x60);
+        }
+        int pickupFrame = (frame & 0xFE) | ((sword.slot() ^ 1) & 1);
+        EntityPickupEvent pickup = session.collectEntityIfNeeded(
+            pickupFrame, sword.x(), sword.y(), false, true, 3, 0);
+        assertNotNull(pickup);
+
+        frame = pickupFrame + 1;
+        while (playerState.swordLevel() == 0 && frame < pickupFrame + 0x300) {
+            session.tickEntities(frame++, sword.x(), sword.y());
+            session.consumeEntityDialogRequests();
+            BeachSwordRewardConsumer.consume(session, playerState);
+        }
+        assertEquals(1, playerState.swordLevel());
+        assertEquals(0x30, session.overworldRoomStatusForTest(0xF2) & 0x30);
+
+        session.loadInitialOverworld(0xF2);
+        assertFalse(session.activeRoom().entities().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == 0x31 || entity.type() == 0x41));
     }
 
     @Test
