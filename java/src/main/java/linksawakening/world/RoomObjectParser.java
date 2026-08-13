@@ -181,6 +181,77 @@ public final class RoomObjectParser {
             roomObjectsArea, warps, shutterDoorMask, staircaseLocation);
     }
 
+    /** Applies one source indoor-door macro to an already decoded room buffer. */
+    void applyIndoorDoorMacro(int[] targetRoomObjectsArea, int type, int location) {
+        if (targetRoomObjectsArea == null || targetRoomObjectsArea.length < 0x100
+            || type < INDOOR_DOOR_MACRO_BASE || type > INDOOR_DOOR_MACRO_LAST) {
+            throw new IllegalArgumentException("Invalid indoor door macro target");
+        }
+        roomObjectsArea = targetRoomObjectsArea;
+        applyMacroTable(location, INDOOR_DOOR_MACRO_BANK,
+            INDOOR_DOOR_MACRO_TABLES[type - INDOOR_DOOR_MACRO_BASE][0],
+            INDOOR_DOOR_MACRO_BANK,
+            INDOOR_DOOR_MACRO_TABLES[type - INDOOR_DOOR_MACRO_BASE][1]);
+    }
+
+    /** Applies the final closed-shutter object pair written by {@code func_002_5C04}. */
+    void applyIndoorShutterClosedState(int[] targetRoomObjectsArea, int shutterMask) {
+        if (targetRoomObjectsArea == null || targetRoomObjectsArea.length < 0x100) {
+            throw new IllegalArgumentException("Invalid indoor shutter target");
+        }
+        int offsetsOffset = RomBank.romOffset(0x02, 0x5BF4);
+        int idsOffset = RomBank.romOffset(0x02, 0x5BFC);
+        for (int direction = 0; direction < 4; direction++) {
+            if ((shutterMask & (1 << direction)) == 0) {
+                continue;
+            }
+            int location = indoorShutterLocation(targetRoomObjectsArea, direction);
+            if (location < 0) {
+                continue;
+            }
+            int baseIndex = RoomConstants.ROOM_OBJECTS_BASE
+                + (location & 0xF0) + (location & 0x0F);
+            for (int half = 0; half < 2; half++) {
+                int tableIndex = direction + half * 4;
+                int targetIndex = baseIndex + (romData[offsetsOffset + tableIndex] & 0xFF);
+                targetRoomObjectsArea[targetIndex] = romData[idsOffset + tableIndex] & 0xFF;
+            }
+        }
+    }
+
+    /** Finds a shutter's source macro location from either its open or closed object pair. */
+    int indoorShutterLocation(int[] targetRoomObjectsArea, int direction) {
+        if (targetRoomObjectsArea == null || targetRoomObjectsArea.length < 0x100
+            || direction < 0 || direction >= 4) {
+            throw new IllegalArgumentException("Invalid indoor shutter lookup");
+        }
+        int[] openIdsAddresses = {0x36B0, 0x36E8, 0x36FC, 0x3710};
+        int openIdsOffset = RomBank.romOffset(0x00, openIdsAddresses[direction]);
+        int closedIdsOffset = RomBank.romOffset(0x02, 0x5BFC);
+        int openFirst = romData[openIdsOffset] & 0xFF;
+        int openSecond = romData[openIdsOffset + 1] & 0xFF;
+        int closedFirst = romData[closedIdsOffset + direction] & 0xFF;
+        int closedSecond = romData[closedIdsOffset + direction + 4] & 0xFF;
+        int pairOffset = direction < 2 ? 1 : RoomConstants.ROOM_OBJECT_ROW_STRIDE;
+        for (int row = 0; row < RoomConstants.OBJECTS_PER_COLUMN; row++) {
+            for (int column = 0; column < RoomConstants.OBJECTS_PER_ROW; column++) {
+                int index = RoomConstants.ROOM_OBJECTS_BASE
+                    + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + column;
+                int secondIndex = index + pairOffset;
+                if (secondIndex >= targetRoomObjectsArea.length) {
+                    continue;
+                }
+                int first = targetRoomObjectsArea[index] & 0xFF;
+                int second = targetRoomObjectsArea[secondIndex] & 0xFF;
+                if ((first == openFirst && second == openSecond)
+                    || (first == closedFirst && second == closedSecond)) {
+                    return (row << 4) | column;
+                }
+            }
+        }
+        return -1;
+    }
+
     private void applyIndoorBombableBlockStatus(int mapId) {
         // ConfigureRoomObjects only admits the breakable-block replacement on
         // MAP_CAVE_B and later indoor maps, matching the source's map gate.

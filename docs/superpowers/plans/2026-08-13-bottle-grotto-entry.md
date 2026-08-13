@@ -31,7 +31,7 @@ test demonstrates a mismatch with the disassembly.
 
 Run:
 ```bash
-gradle -p java test --tests linksawakening.world.RoomTransitionCoordinatorTest.freshGameRuntimeSequenceEntersBottleGrottoInOrder --rerun-tasks
+gradle -p java test --tests linksawakening.world.RoomTransitionCoordinatorTest.freshGameRuntimeSequenceCollectsBottleGrottoFirstKeyInOrder --rerun-tasks
 ```
 
 Expected before implementation: `FAIL` at the first unimplemented or incorrect

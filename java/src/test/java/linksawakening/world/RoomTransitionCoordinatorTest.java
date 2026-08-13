@@ -39,6 +39,42 @@ final class RoomTransitionCoordinatorTest {
     private static final int OBJECT_NORMAL_PIT = 0xE8;
 
     @Test
+    void bottleGrottoTwoTorchTriggerOpensTheRoom31EastShutter() throws Exception {
+        byte[] rom = loadRom();
+        RomTables romTables = RomTables.loadFromRom(rom);
+        OverworldCollision collision = new OverworldCollision(romTables);
+        RoomSession session = newSession(rom, romTables, collision);
+        session.loadIndoor(0x01, 0x31);
+
+        assertEquals(0x25, session.activeRoomEventForTest());
+        assertEquals(0xAB, objectAt(session, 0x34));
+        assertEquals(0xAB, objectAt(session, 0x35));
+        assertEquals(0x08, session.activeRoom().shutterDoorMask() & 0x08);
+        int closedEastDoorObject = objectAt(session, 0x39);
+        int[] closedEastDoorTiles = roomObjectTiles(session, 0x39);
+        assertEquals(0x3B, closedEastDoorObject);
+        assertEquals(0x3C, objectAt(session, 0x49));
+
+        int frame = 0;
+        assertTrue(session.sprinkleMagicPowder(0x33, 0x39, 0, 0));
+        for (int tick = 0; tick < 16; tick++) {
+            tickInteractiveEntities(session, frame++, 0x40, 0x50);
+        }
+        assertTrue(session.sprinkleMagicPowder(0x43, 0x39, 0, 0));
+        for (int tick = 0; tick < 16; tick++) {
+            tickInteractiveEntities(session, frame++, 0x50, 0x50);
+        }
+
+        assertEquals(2, session.roomTriggerCountForTest());
+        assertEquals(0, session.activeRoomEventForTest());
+        assertEquals(0, session.activeRoom().shutterDoorMask() & 0x08);
+        assertEquals(0x0B, objectAt(session, 0x39));
+        assertEquals(0x0C, objectAt(session, 0x49));
+        assertFalse(java.util.Arrays.equals(
+            closedEastDoorTiles, roomObjectTiles(session, 0x39)));
+    }
+
+    @Test
     void indoorBoundaryScrollWithoutWarpsUpdatesRoomEntryPosition() throws Exception {
         byte[] rom = loadRom();
         RomTables romTables = RomTables.loadFromRom(rom);
@@ -181,7 +217,7 @@ final class RoomTransitionCoordinatorTest {
     }
 
     @Test
-    void freshGameRuntimeSequenceEntersBottleGrottoInOrder()
+    void freshGameRuntimeSequenceCollectsBottleGrottoFirstKeyInOrder()
             throws Exception {
         byte[] rom = loadRom();
         RomTables romTables = RomTables.loadFromRom(rom);
@@ -650,6 +686,8 @@ final class RoomTransitionCoordinatorTest {
         walkToAndCrossIndoorBoundary(
             coordinator, transition, scroll, collision, link, ScrollController.RIGHT);
         assertEquals(0x17, session.currentRoomId());
+        assertEquals(0, session.activeRoomEventForTest());
+        assertEquals(0, session.activeRoom().shutterDoorMask());
 
         int[] entranceExit = reachableBoundaryPosition(
             collision, link.pixelX(), link.pixelY(), ScrollController.UP);
@@ -1591,6 +1629,106 @@ final class RoomTransitionCoordinatorTest {
             .findFirst().orElseThrow();
         assertEquals(0x38, bottleGrottoExit.destX());
         assertEquals(0x22, bottleGrottoExit.destY());
+
+        walkToAndCrossIndoorBoundary(
+            coordinator, transition, scroll, collision, link, ScrollController.UP);
+        assertEquals(0x31, session.currentRoomId());
+        assertEquals(0x25, session.activeRoomEventForTest());
+        assertEquals(0xAB, objectAt(session, 0x34));
+        assertEquals(0xAB, objectAt(session, 0x35));
+        assertEquals(0x08, session.activeRoom().shutterDoorMask() & 0x08);
+        PowderApproach firstTorchApproach = reachablePowderApproach(
+            collision, link.pixelX(), link.pixelY(), 0x34);
+        assertNotNull(firstTorchApproach, collisionGrid(collision));
+        for (int[] position : firstTorchApproach.path()) {
+            link.setPixelPosition(position[0], position[1]);
+        }
+        assertTrue(session.sprinkleMagicPowder(
+            link.romEntityX(), link.romEntityY(), 0, firstTorchApproach.romDirection()));
+        assertTrue(playerState.consumeMagicPowder());
+        for (int tick = 0; tick < 16; tick++) {
+            tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
+        }
+        PowderApproach secondTorchApproach = reachablePowderApproach(
+            collision, link.pixelX(), link.pixelY(), 0x35);
+        assertNotNull(secondTorchApproach, collisionGrid(collision));
+        for (int[] position : secondTorchApproach.path()) {
+            link.setPixelPosition(position[0], position[1]);
+        }
+        assertTrue(session.sprinkleMagicPowder(
+            link.romEntityX(), link.romEntityY(), 0, secondTorchApproach.romDirection()));
+        assertTrue(playerState.consumeMagicPowder());
+        for (int tick = 0; tick < 16; tick++) {
+            tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
+        }
+        assertEquals(2, session.roomTriggerCountForTest());
+        assertEquals(0, session.activeRoomEventForTest());
+        assertEquals(0, session.activeRoom().shutterDoorMask() & 0x08);
+
+        walkToAndCrossIndoorBoundary(
+            coordinator, transition, scroll, collision, link, ScrollController.RIGHT);
+        assertEquals(0x32, session.currentRoomId());
+        assertEquals(0x81, session.activeRoomEventForTest());
+        List<Integer> bottleStalfosSlots = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x1A || entity.type() == 0x1E)
+            .map(RoomEntity::slot).toList();
+        assertEquals(2, bottleStalfosSlots.size());
+        session.tickEntitiesWithProjectileEvents(
+            frame++, link.romEntityX(), link.romEntityY(),
+            0, 0, Link.DIRECTION_RIGHT, false);
+        for (int stalfosSlot : bottleStalfosSlots) {
+            for (int hit = 0; hit < 8
+                && session.activeRoom().entities().slots().get(stalfosSlot).status()
+                    == EntityStatus.ACTIVE; hit++) {
+                RoomEntity stalfos = session.activeRoom().entities().slots().get(stalfosSlot);
+                List<int[]> combatPath = reachableEntityContactPath(
+                    collision, link.pixelX(), link.pixelY(), stalfos);
+                assertNotNull(combatPath, collisionGrid(collision));
+                for (int[] position : combatPath) {
+                    link.setPixelPosition(position[0], position[1]);
+                }
+                session.resolveEntityCombat(
+                    stalfosSlot ^ 1, link.romEntityX(), link.romEntityY(), false, true, true,
+                    stalfos.x(), 0x08, stalfos.y(), 0x08);
+                for (int recovery = 0; recovery < 0x20; recovery++) {
+                    session.tickEntitiesWithProjectileEvents(
+                        frame++, link.romEntityX(), link.romEntityY(),
+                        0, 0, Link.DIRECTION_RIGHT, false);
+                }
+            }
+        }
+        int firstBottleKeyDeadline = frame + 0x300;
+        while (session.activeRoomEventForTest() != 0 && frame < firstBottleKeyDeadline) {
+            session.tickEntitiesWithProjectileEvents(
+                frame++, link.romEntityX(), link.romEntityY(),
+                0, 0, Link.DIRECTION_RIGHT, false);
+        }
+        assertEquals(0, session.activeRoomEventForTest(),
+            session.activeRoom().entities().loadedEntities().toString());
+        RoomEntity firstBottleKey = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x30).findFirst().orElseThrow();
+        int bottleKeyLandingDeadline = frame + 0x200;
+        while (firstBottleKey.z() != 0 && frame < bottleKeyLandingDeadline) {
+            session.tickEntitiesWithProjectileEvents(
+                frame++, link.romEntityX(), link.romEntityY(),
+                0, 0, Link.DIRECTION_DOWN, false);
+            firstBottleKey = session.activeRoom().entities().slots().get(firstBottleKey.slot());
+        }
+        assertEquals(0, firstBottleKey.z());
+        List<int[]> keyPath = reachableEntityContactPath(
+            collision, link.pixelX(), link.pixelY(), firstBottleKey);
+        assertNotNull(keyPath, collisionGrid(collision));
+        for (int[] position : keyPath) {
+            link.setPixelPosition(position[0], position[1]);
+        }
+        int bottleKeyPickupFrame = (firstBottleKey.slot() & 0x01) == 0
+            ? frame | 1 : frame & ~1;
+        assertNotNull(session.collectEntityIfNeeded(
+            bottleKeyPickupFrame, link.romEntityX(), link.romEntityY(),
+            false, true, Link.DIRECTION_DOWN, 0));
+        assertEquals(1, session.currentDungeonItemFlagsSnapshot()[
+            DungeonItemState.SMALL_KEYS_INDEX]);
+        assertEquals(18, playerState.magicPowderCount());
     }
 
     @Test
@@ -1697,6 +1835,24 @@ final class RoomTransitionCoordinatorTest {
     private static int signedByteDelta(int target, int source) {
         int delta = (target - source) & 0xFF;
         return delta < 0x80 ? delta : delta - 0x100;
+    }
+
+    private static int objectAt(RoomSession session, int location) {
+        return session.activeRoom().roomObjectsArea()[ROOM_OBJECTS_BASE
+            + (location & 0xF0) + (location & 0x0F)];
+    }
+
+    private static int[] roomObjectTiles(RoomSession session, int location) {
+        int tileX = (location & 0x0F) * 2;
+        int tileY = ((location & 0xF0) >>> 4) * 2;
+        int[] tiles = session.activeRoom().tileIds();
+        int rowStride = RoomConstants.ROOM_TILE_WIDTH;
+        return new int[] {
+            tiles[tileY * rowStride + tileX],
+            tiles[tileY * rowStride + tileX + 1],
+            tiles[(tileY + 1) * rowStride + tileX],
+            tiles[(tileY + 1) * rowStride + tileX + 1]
+        };
     }
 
     private static boolean bowWowOutsideLeash(RoomSession session, Link link) {
@@ -2067,6 +2223,40 @@ final class RoomTransitionCoordinatorTest {
             (x, y) -> Math.abs(signedByteDelta(bowWow.x(), x + 8)) <= 0x10
                 && Math.abs(signedByteDelta(bowWow.y(), y + 16)) <= 0x10);
     }
+
+    private static List<int[]> reachableEntityContactPath(OverworldCollision collision,
+                                                           int startX, int startY,
+                                                           RoomEntity entity) {
+        return reachablePositionPath(collision, startX, startY,
+            (x, y) -> Math.abs(signedByteDelta(entity.x(), x + 8)) <= 0x04
+                && Math.abs(signedByteDelta(entity.y(), y + 16)) <= 0x04);
+    }
+
+    private static PowderApproach reachablePowderApproach(OverworldCollision collision,
+                                                            int startX, int startY,
+                                                            int targetLocation) {
+        int[] xOffsets = {0x0E, -0x0E, 0x00, 0x00};
+        int[] yOffsets = {0x00, 0x00, -0x0C, 0x0C};
+        for (int romDirection = 0; romDirection < 4; romDirection++) {
+            int direction = romDirection;
+            List<int[]> path = reachablePositionPath(collision, startX, startY, (x, y) -> {
+                int sprinkleX = (x + 0x08 + xOffsets[direction]) & 0xFF;
+                int sprinkleY = (y + 0x10 + yOffsets[direction]) & 0xFF;
+                int objectLeft = ((sprinkleX - 0x01) & 0xFF) & 0xF0;
+                int objectTop = ((sprinkleY - 0x09) & 0xFF) & 0xF0;
+                int sampledLeft = sprinkleX & 0xF0;
+                int sampledTop = ((sprinkleY - 0x08) & 0xFF) & 0xF0;
+                return (objectTop | (objectLeft >>> 4)) == targetLocation
+                    && (sampledTop | (sampledLeft >>> 4)) == targetLocation;
+            });
+            if (path != null) {
+                return new PowderApproach(path, direction);
+            }
+        }
+        return null;
+    }
+
+    private record PowderApproach(List<int[]> path, int romDirection) {}
 
     private static List<int[]> reachableWarpPath(OverworldCollision collision,
                                                   int startX, int startY,

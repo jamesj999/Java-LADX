@@ -86,6 +86,7 @@ public final class RoomSession {
     private static final int EVENT_TRIGGER_KILL_ALL_ENEMIES = 0x01;
     private static final int EVENT_TRIGGER_PUSH_SINGLE_BLOCK = 0x02;
     private static final int EVENT_TRIGGER_STEP_ON_BUTTON = 0x03;
+    private static final int EVENT_TRIGGER_LIGHT_TORCHES = 0x05;
     private static final int EVENT_EFFECT_OPEN_LOCKED_DOORS = 0x20;
     private static final int EVENT_EFFECT_REVEAL_CHEST = 0x60;
     private static final int EVENT_EFFECT_DROP_KEY = 0x80;
@@ -2073,6 +2074,18 @@ public final class RoomSession {
             entities = entities.withSideScrolling(room.mapCategory() == Warp.CATEGORY_SIDESCROLL);
         }
         activeRoom = ActiveRoom.from(room, entities);
+        if (activeRoom.shutterDoorMask() != 0
+            && activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD) {
+            boolean ordinaryEventPending = activeRoomEvent != 0
+                && (activeRoomStatusFlags() & ROOM_STATUS_EVENT_1) == 0;
+            if (ordinaryEventPending) {
+                new RoomObjectParser(romData).applyIndoorShutterClosedState(
+                    activeRoom.roomObjectsArea(), activeRoom.shutterDoorMask());
+                refreshActiveRoomTilemap();
+            } else {
+                openActiveRoomShutterDoors();
+            }
+        }
         configureStaircase(activeRoom.staircaseLocation());
         boolean minibossDefeated = activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD
             && activeRoom.mapId() >= 0
@@ -2081,7 +2094,7 @@ public final class RoomSession {
                 || (activeRoomStatusFlags() & ROOM_STATUS_EVENT_2) != 0);
         if (minibossDefeated && activeRoomEvent == EVENT_CLEAR_MIDBOSS) {
             dungeonProgressFlags[activeRoom.mapId()] |= 0x01;
-            activeRoom.openShutterDoors();
+            openActiveRoomShutterDoors();
             activeRoomEvent = 0;
         }
         entityRuntime = entities == null ? null : RoomEntityRuntime.from(
@@ -3317,7 +3330,9 @@ public final class RoomSession {
             && ((trigger == EVENT_TRIGGER_KILL_ALL_ENEMIES
                     && killAllEnemiesTriggerResolved())
                 || (trigger == EVENT_TRIGGER_STEP_ON_BUTTON
-                    && switchButtonPressed != 0))) {
+                    && switchButtonPressed != 0)
+                || (trigger == EVENT_TRIGGER_LIGHT_TORCHES
+                    && roomTriggerCount == 0x02))) {
             roomEventEffectExecuted = true;
             colorShellSoundSink.play(GameplaySoundEvent.PUZZLE_SOLVED);
         }
@@ -3333,7 +3348,7 @@ public final class RoomSession {
                     roomEventChestTop(linkEntityX, linkEntityY) + 0x10);
             }
         } else if (effect == EVENT_EFFECT_OPEN_LOCKED_DOORS) {
-            activeRoom.openShutterDoors();
+            openActiveRoomShutterDoors();
             activeRoomEvent = 0;
             colorShellSoundSink.play(GameplaySoundEvent.DOOR_UNLOCKED);
         } else if (effect == EVENT_EFFECT_DROP_KEY) {
@@ -3349,7 +3364,7 @@ public final class RoomSession {
                 transientVfxSystem.spawn(TransientVfxType.STAIRS_APPEARS, 0x88, 0x20);
             }
         } else if (effect == EVENT_EFFECT_CLEAR_MIDBOSS) {
-            activeRoom.openShutterDoors();
+            openActiveRoomShutterDoors();
             if (activeRoomEvent == EVENT_CLEAR_MIDBOSS
                 && activeRoom.mapId() >= 0
                 && activeRoom.mapId() < dungeonProgressFlags.length) {
@@ -3625,6 +3640,33 @@ public final class RoomSession {
         applyBombedWallTileOverrides();
         applyBombedBlockTileOverrides();
         applyBombedCaveDoorTileOverrides();
+    }
+
+    private void openActiveRoomShutterDoors() {
+        if (activeRoom == null) {
+            return;
+        }
+        int shutterMask = activeRoom.shutterDoorMask();
+        if (shutterMask != 0 && activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD) {
+            RoomObjectParser parser = new RoomObjectParser(romData);
+            int[] openDoorTypes = {0xF4, 0xF5, 0xF6, 0xF7};
+            for (int direction = 0; direction < openDoorTypes.length; direction++) {
+                if ((shutterMask & (1 << direction)) != 0) {
+                    int location = parser.indoorShutterLocation(
+                        activeRoom.roomObjectsArea(), direction);
+                    if (location < 0) {
+                        continue;
+                    }
+                    parser.applyIndoorDoorMacro(
+                        activeRoom.roomObjectsArea(), openDoorTypes[direction],
+                        location);
+                }
+            }
+            refreshActiveRoomTilemap();
+            overworldCollision.setRoom(activeRoom.roomObjectsArea());
+            overworldCollision.setGbcOverlay(null);
+        }
+        activeRoom.openShutterDoors();
     }
 
     private RoomEntityObjectSample entityObjectSample(RoomEntity entity) {
