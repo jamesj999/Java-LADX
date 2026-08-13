@@ -738,6 +738,34 @@ final class RoomTransitionCoordinatorTest {
         assertEquals(0x10, session.indoorRoomStatusForTest(0x00, 0x03) & 0x10);
         session.loadIndoor(0x00, 0x03);
         assertEquals(0xBF, session.activeRoom().roomObjectsArea()[hiddenStairsIndex]);
+
+        // .configureStairs leaves the staircase inactive when the room loads.
+        // The source arms it only after Link leaves the 12x12 center box.
+        link.setPixelPosition(0x80, 0x10); // ROM entity center ($88,$20)
+        coordinator.handleWarpAndIndoorBoundaries(link);
+        assertFalse(transition.isActive());
+        link.setPixelPosition(0x90, 0x10); // ROM entity center ($98,$20)
+        coordinator.handleWarpAndIndoorBoundaries(link);
+        assertFalse(transition.isActive());
+        link.setPixelPosition(0x80, 0x10);
+        coordinator.handleWarpAndIndoorBoundaries(link);
+        assertTrue(transition.isActive());
+        while (transition.isActive()) transition.tick();
+        assertEquals(Warp.CATEGORY_SIDESCROLL, session.mapCategory());
+        assertEquals(0x19, session.currentRoomId());
+        assertEquals(0x70, link.pixelX());
+        assertEquals(0x00, link.pixelY());
+
+        link.setPixelPosition(link.pixelX(), -1);
+        coordinator.handleWarpAndIndoorBoundaries(link);
+        assertTrue(transition.isActive());
+        assertFalse(scroll.isActive());
+        while (transition.isActive()) transition.tick();
+        assertEquals(Warp.CATEGORY_INDOOR, session.mapCategory());
+        assertEquals(0x03, session.currentRoomId());
+        assertEquals(0x80, link.pixelX());
+        assertEquals(0x10, link.pixelY());
+        assertEquals(0xBF, session.activeRoom().roomObjectsArea()[hiddenStairsIndex]);
     }
 
     @Test
