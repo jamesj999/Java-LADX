@@ -81,7 +81,7 @@ final class RoomObjectParserTest {
         RoomObjectParseResult result = new RoomObjectParser(rom)
             .parseIndoor(0, 0x00, 0);
 
-        assertEquals(0x23, result.staircaseLocation());
+        assertEquals(0x21, result.staircaseLocation());
     }
 
     @Test

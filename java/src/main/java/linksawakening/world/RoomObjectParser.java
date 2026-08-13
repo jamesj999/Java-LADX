@@ -274,7 +274,7 @@ public final class RoomObjectParser {
                     // ConfigureRoomObjects returns before copying concealed stairs.
                 } else {
                     fillRoomWithConsecutiveObjects(type, location, firstByte);
-                    recordStaircaseStrip(type, location, firstByte, isIndoor);
+                    recordStaircaseLocation(type, location, isIndoor);
                     if (isDoorObjectId(type)) {
                         recordStripDoorPositions(location, firstByte);
                     }
@@ -544,16 +544,6 @@ public final class RoomObjectParser {
 
     private boolean isAreaIndexValid(int areaIndex) {
         return areaIndex >= 0 && areaIndex < roomObjectsArea.length;
-    }
-
-    private void recordStaircaseStrip(int objectId, int location,
-                                      int objectData, boolean isIndoor) {
-        int count = objectData & 0x0F;
-        if (count == 0 || !isStaircaseObject(objectId, isIndoor)) {
-            return;
-        }
-        int step = (objectData & 0x40) != 0 ? RoomConstants.ROOM_OBJECT_ROW_STRIDE : 1;
-        recordStaircaseLocation(objectId, location + (count - 1) * step, isIndoor);
     }
 
     private void recordStaircaseLocation(int objectId, int location, boolean isIndoor) {
