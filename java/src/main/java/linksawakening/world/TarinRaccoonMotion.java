@@ -8,11 +8,6 @@ final class TarinRaccoonMotion {
     record Input(int frameCounter, int linkX, int linkY, int linkDirection,
                  boolean actionHeld, boolean dialogActive, boolean powderHit,
                  int linkAttackStepAnimationCountdown) {
-        Input(int frameCounter, int linkX, int linkY, boolean actionHeld,
-              boolean dialogActive, boolean powderHit) {
-            this(frameCounter, linkX, linkY, -1, actionHeld, dialogActive, powderHit, 0);
-        }
-
         Input(int frameCounter, int linkX, int linkY, int linkDirection,
               boolean actionHeld, boolean dialogActive, boolean powderHit) {
             this(frameCounter, linkX, linkY, linkDirection, actionHeld, dialogActive,
@@ -20,7 +15,7 @@ final class TarinRaccoonMotion {
         }
 
         Input {
-            if (linkDirection < -1 || linkDirection > 3) {
+            if (linkDirection < 0 || linkDirection > 3) {
                 throw new IllegalArgumentException("Invalid Link direction: " + linkDirection);
             }
         }
@@ -80,9 +75,8 @@ final class TarinRaccoonMotion {
         if (xWindow >= 0x20) {
             return false;
         }
-        return input.linkDirection() != -1
-            && directionToLink(entity, input.linkX(), input.linkY())
-                == (input.linkDirection() ^ 0x01);
+        return directionToLink(entity, input.linkX(), input.linkY())
+            == (input.linkDirection() ^ 0x01);
     }
 
     private static int directionToLink(RoomEntity entity, int linkX, int linkY) {

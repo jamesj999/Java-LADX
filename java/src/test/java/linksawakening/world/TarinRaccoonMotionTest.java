@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class TarinRaccoonMotionTest {
@@ -15,7 +16,7 @@ final class TarinRaccoonMotionTest {
         TarinRaccoonMotion motion = new TarinRaccoonMotion();
 
         TarinRaccoonMotion.Update normal = motion.advance(raccoon(),
-            new TarinRaccoonMotion.Input(0, 0x50, 0x60, false, false, false));
+            new TarinRaccoonMotion.Input(0, 0x50, 0x60, 0, false, false, false));
 
         assertEquals(0, normal.state());
         assertEquals(0, normal.spriteVariant());
@@ -23,17 +24,17 @@ final class TarinRaccoonMotionTest {
         assertFalse(normal.shouldGetLost());
 
         TarinRaccoonMotion.Update blocked = motion.advance(normal.entity(),
-            new TarinRaccoonMotion.Input(1, 0x50, 0x1F, false, false, false));
+            new TarinRaccoonMotion.Input(1, 0x50, 0x1F, 0, false, false, false));
 
         assertTrue(blocked.shouldGetLost());
         assertEquals(2, blocked.spriteVariant());
 
         TarinRaccoonMotion.Update laterFrame = motion.advance(blocked.entity(),
-            new TarinRaccoonMotion.Input(8, 0x50, 0x2F, false, false, false));
+            new TarinRaccoonMotion.Input(8, 0x50, 0x2F, 0, false, false, false));
         assertEquals(3, laterFrame.spriteVariant());
 
         TarinRaccoonMotion.Update normalLaterFrame = motion.advance(laterFrame.entity(),
-            new TarinRaccoonMotion.Input(0x10, 0x50, 0x30, false, false, false));
+            new TarinRaccoonMotion.Input(0x10, 0x50, 0x30, 0, false, false, false));
         assertEquals(1, normalLaterFrame.spriteVariant());
         assertFalse(normalLaterFrame.shouldGetLost());
     }
@@ -43,17 +44,17 @@ final class TarinRaccoonMotionTest {
         TarinRaccoonMotion motion = new TarinRaccoonMotion();
 
         TarinRaccoonMotion.Update firstCrossing = motion.advance(raccoon(),
-            new TarinRaccoonMotion.Input(0, 0x78, 0x1F, false, false, false));
+            new TarinRaccoonMotion.Input(0, 0x78, 0x1F, 0, false, false, false));
         assertEquals(0x021, firstCrossing.dialogGlobalId());
 
         TarinRaccoonMotion.Update stillAbove = motion.advance(firstCrossing.entity(),
-            new TarinRaccoonMotion.Input(1, 0x78, 0x1E, false, false, false));
+            new TarinRaccoonMotion.Input(1, 0x78, 0x1E, 0, false, false, false));
         assertEquals(-1, stillAbove.dialogGlobalId());
 
         motion.advance(stillAbove.entity(),
-            new TarinRaccoonMotion.Input(2, 0x78, 0x30, false, false, false));
+            new TarinRaccoonMotion.Input(2, 0x78, 0x30, 0, false, false, false));
         TarinRaccoonMotion.Update secondCrossing = motion.advance(stillAbove.entity(),
-            new TarinRaccoonMotion.Input(3, 0x78, 0x1F, false, false, false));
+            new TarinRaccoonMotion.Input(3, 0x78, 0x1F, 0, false, false, false));
         assertEquals(0x021, secondCrossing.dialogGlobalId());
     }
 
@@ -90,9 +91,17 @@ final class TarinRaccoonMotionTest {
     }
 
     @Test
+    void inputRejectsDirectionsOutsideTheRomRange() {
+        assertThrows(IllegalArgumentException.class,
+            () -> new TarinRaccoonMotion.Input(0, 0, 0, -1, false, false, false));
+        assertThrows(IllegalArgumentException.class,
+            () -> new TarinRaccoonMotion.Input(0, 0, 0, 4, false, false, false));
+    }
+
+    @Test
     void stateZeroLeavesLaterTransformationEventsInactive() {
         TarinRaccoonMotion.Update update = new TarinRaccoonMotion().advance(raccoon(),
-            new TarinRaccoonMotion.Input(0, 0x50, 0x60, false, false, true));
+            new TarinRaccoonMotion.Input(0, 0x50, 0x60, 0, false, false, true));
 
         assertEquals(0, update.state());
         assertFalse(update.linkMotionBlocked());
