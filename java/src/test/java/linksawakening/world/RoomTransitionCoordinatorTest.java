@@ -8,6 +8,8 @@ import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
+import linksawakening.startup.NewGameStartProfile;
+import linksawakening.startup.TarinShieldMotion;
 import linksawakening.state.PlayerState;
 import linksawakening.vfx.TransientVfxSystem;
 import org.junit.jupiter.api.Test;
@@ -85,6 +87,70 @@ final class RoomTransitionCoordinatorTest {
         assertEquals(0xA2, session.currentRoomId());
         assertEquals(0x50, link.pixelX());
         assertEquals(0x42, link.pixelY());
+    }
+
+    @Test
+    void freshGameCanFollowThePlayableHouseToBeachOpeningRoute() throws Exception {
+        byte[] rom = loadRom();
+        RomTables romTables = RomTables.loadFromRom(rom);
+        OverworldCollision collision = new OverworldCollision(romTables);
+        RoomSession session = newSession(rom, romTables, collision);
+        PlayerState playerState = new PlayerState();
+        NewGameStartProfile profile = NewGameStartProfile.romDefaults();
+        profile.initializePlayerState(playerState);
+        session.initializeNewGameWorldState();
+        session.loadIndoor(profile.mapId(), profile.roomId());
+
+        assertTrue(session.activeRoom().entities().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == 0x3E));
+        RoomEntity tarin = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x3F).findFirst().orElseThrow();
+
+        TarinShieldMotion shieldMotion = new TarinShieldMotion();
+        assertEquals(0x54,
+            shieldMotion.tick(false, 0x60, true, playerState.shieldLevel()).dialogLowId());
+        shieldMotion.tick(true, 0x60, false, playerState.shieldLevel());
+        shieldMotion.tick(false, 0x60, false, playerState.shieldLevel());
+        TarinShieldMotion.Update shieldReward = null;
+        for (int frame = 0; frame < 0x80; frame++) {
+            shieldReward = shieldMotion.tick(false, 0x60, false, playerState.shieldLevel());
+        }
+        assertTrue(shieldReward.grantShield());
+        playerState.applyChestReward(ChestContentsTable.CHEST_SHIELD);
+        assertEquals(1, playerState.shieldLevel());
+        assertEquals(0, playerState.swordLevel());
+        assertTrue(tarin.spriteDefinition().supported());
+
+        ScrollController scroll = new ScrollController();
+        TransitionController transition = new TransitionController();
+        RoomTransitionCoordinator coordinator = new RoomTransitionCoordinator(
+            session, new RoomBoundaryController(), transition, scroll);
+        Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
+            romTables, collision, null, playerState, new ItemRegistry());
+        link.setPixelPosition(0x48, RoomConstants.ROOM_PIXEL_HEIGHT);
+        coordinator.handleWarpAndIndoorBoundaries(link);
+        for (int frame = 0; frame < 16; frame++) {
+            transition.tick();
+        }
+        assertEquals(0xA2, session.currentRoomId());
+
+        for (int expectedRoom = 0xB2; expectedRoom <= 0xF2; expectedRoom += 0x10) {
+            link.setPixelPosition(link.pixelX(), RoomConstants.ROOM_PIXEL_HEIGHT);
+            coordinator.handleOverworldBoundary(link);
+            assertEquals(expectedRoom, session.currentRoomId());
+            while (scroll.isActive()) {
+                scroll.tick(8);
+            }
+        }
+
+        RoomEntity sword = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x31).findFirst().orElseThrow();
+        RoomEntity owl = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x41).findFirst().orElseThrow();
+        assertEquals(0x58, sword.x());
+        assertEquals(0x60, sword.y());
+        assertTrue(sword.spriteDefinition().supported());
+        assertTrue(owl.spriteDefinition().supported());
     }
 
     private static RoomSession newSession(byte[] rom, RomTables romTables, OverworldCollision collision) {

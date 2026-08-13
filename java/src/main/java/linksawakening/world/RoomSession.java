@@ -482,6 +482,35 @@ public final class RoomSession {
         return Arrays.copyOf(colorDungeonRoomStatus, COLOR_DUNGEON_SAVE_STATUS_SIZE);
     }
 
+    /**
+     * Clears the persistent WRAM-shaped world state created for a fresh save.
+     * The source new-file path starts with zeroed room-status, entity-clear,
+     * dungeon-item, and dungeon-progress regions; retaining any of these from
+     * a previously played file can incorrectly unload opening entities such
+     * as the beach sword and owl.
+     */
+    public void initializeNewGameWorldState() {
+        Arrays.fill(overworldRoomStatus, (byte) 0);
+        Arrays.fill(indoorARoomStatus, (byte) 0);
+        Arrays.fill(indoorBRoomStatus, (byte) 0);
+        Arrays.fill(colorDungeonRoomStatus, (byte) 0);
+        Arrays.fill(clearedEntitiesByRoom, 0);
+        Arrays.fill(dungeonProgressFlags, (byte) 0);
+        dungeonItemState.restore(
+            new byte[DungeonItemState.DUNGEON_ITEM_FLAGS_SIZE],
+            new byte[DungeonItemState.COLOR_DUNGEON_ITEM_FLAGS_SIZE]);
+        followingNpcState = FollowingNpcState.none();
+        followingNpcRoomNeedsSync = true;
+        followingLinkPositionHistory.fill(0x08, 0x10, 0, 0);
+        hasBirdKey = false;
+        bowWowState = 0;
+        entityGoldenLeavesCount = 0;
+        switchBlocksState = 0;
+        switchableObjectAnimationStage = 0;
+        currentOverworldTilesetId = W_TILESET_NO_UPDATE;
+        clearTransientRoomState();
+    }
+
     /** Restores the room-status WRAM tables loaded by the source save path. */
     public void restoreRoomStatuses(byte[] overworldStatus, byte[] indoorAStatus,
                                     byte[] indoorBStatus, byte[] colorDungeonStatus) {

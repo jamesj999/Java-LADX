@@ -1571,6 +1571,7 @@ public class Main {
 
         NewGameStartProfile profile = NewGameStartProfile.romDefaults();
         profile.initializePlayerState(playerState);
+        roomSession.initializeNewGameWorldState();
         roomSession.setBirdKeyOwned(playerState.birdKeyCount() != 0);
         roomSession.setBowWowState(0);
         link.setDirection(Link.DIRECTION_DOWN);

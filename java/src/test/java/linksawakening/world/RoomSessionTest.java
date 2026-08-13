@@ -32,6 +32,26 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 final class RoomSessionTest {
 
     @Test
+    void newGameWorldInitializationRestoresTheBeachOpeningEntities() {
+        RoomSession session = newSession();
+        byte[] completedOverworld = new byte[0x100];
+        completedOverworld[0xF2] = 0x30;
+        session.restoreRoomStatuses(completedOverworld, new byte[0x100],
+            new byte[0x100], new byte[0x20]);
+        session.loadInitialOverworld(0xF2);
+        assertFalse(session.activeRoom().entities().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == 0x31 || entity.type() == 0x41));
+
+        session.initializeNewGameWorldState();
+        session.loadInitialOverworld(0xF2);
+
+        assertTrue(session.activeRoom().entities().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == 0x31));
+        assertTrue(session.activeRoom().entities().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == 0x41));
+    }
+
+    @Test
     void loadsInitialOverworldRoomIntoActiveRoomState() {
         RoomSession session = newSession();
 
