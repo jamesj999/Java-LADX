@@ -1752,6 +1752,12 @@ public final class RoomEntityRuntime {
                 // BowWowEntityHandler's kidnapped branch checks the handler's
                 // collision byte only after Link enters the $88/$40 pen.
                 bowWowState = 0x01;
+                if (spriteHandlers != null) {
+                    entity = withDefinition(entity,
+                        spriteHandlers.forFollowerEntityType(ENTITY_BOW_WOW),
+                        entity.spriteVariant());
+                    slots[index] = entity;
+                }
                 followingNpcState = new FollowingNpcState(
                     followingNpcState.roosterFollowing(),
                     followingNpcState.ghostFollowingState(),
@@ -3320,6 +3326,8 @@ public final class RoomEntityRuntime {
                         slowTransitionCountdown[entity.slot()], frame,
                         randomByteSupplier, backgroundCollision,
                         handlerLinkCollisionEnabled
+                            && RoomEntityCombatRules.collisionCadenceMatches(
+                                frame, entity.slot())
                             && RoomEntityCombatRules.overlapsLink(
                                 entity, linkEntityX, linkEntityY));
                     updated = kingUpdate.entity();
@@ -3330,6 +3338,18 @@ public final class RoomEntityRuntime {
                     entityOptions1Override[entity.slot()] =
                         moblinKingMotion.state(entity.slot()) == 5
                             ? 0x84 : moblinKingMotion.state(entity.slot()) >= 2 ? 0xC4 : 0x40;
+                    if (moblinKingMotion.state(entity.slot()) == 5) {
+                        enemyPhysicsFlags[entity.slot()] |= ENTITY_PHYSICS_HARMLESS;
+                    } else {
+                        enemyPhysicsFlags[entity.slot()] &= ~ENTITY_PHYSICS_HARMLESS;
+                    }
+                    if (spriteHandlers != null) {
+                        updated = withDefinition(updated,
+                            spriteHandlers.forMoblinKingState(
+                                updated.spriteVariant(),
+                                moblinKingMotion.weaponVariant(entity.slot()),
+                                updated.z() != 0), 0);
+                    }
                     preserveMoblinKingPresentation = true;
                     if (kingUpdate.openIntroDialog()) {
                         pendingDialogRequests.add(new DialogRequest(1, 0x91));
@@ -4592,6 +4612,12 @@ public final class RoomEntityRuntime {
                     entity.x(), entity.y(), entity.z(), linkEntityX, linkEntityY, 0x14);
                 linkCollisionResponse = new EntityCombatEvent.LinkCollisionResponse(
                     vector.x() & 0xFF, vector.y() & 0xFF, 0x10);
+            }
+            if (linkDamage > 0 && !swordHit && entity.type() == ENTITY_MOBLIN_KING
+                && moblinKingMotion.state(entity.slot()) == 9
+                && enemyTransitionCountdown[entity.slot()] == 0x60) {
+                linkCollisionResponse = new EntityCombatEvent.LinkCollisionResponse(
+                    moblinKingMotion.speedX(entity.slot()), 0, 0x28, 0x40);
             }
             events.add(new EntityCombatEvent(
                 entity.slot(), entity.type(),

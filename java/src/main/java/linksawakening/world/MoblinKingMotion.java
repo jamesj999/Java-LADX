@@ -29,6 +29,9 @@ final class MoblinKingMotion {
     private final int[] zAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] privateCountdown2 = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] bodyVariant = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] weaponFrame = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] weaponVisible = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     Update advance(RoomEntity entity, int linkX, int linkY,
                    int transitionCountdown, int slowTransitionCountdown,
@@ -82,7 +85,8 @@ final class MoblinKingMotion {
         int screenShake = 0;
         int linkDamage = 0;
         int ignoreLinkCollisions = 0;
-        int variant = entity.spriteVariant() < 0 ? 0 : entity.spriteVariant();
+        int variant = bodyVariant[slot];
+        weaponVisible[slot] = true;
 
         switch (state[slot]) {
             case 0 -> {
@@ -90,6 +94,7 @@ final class MoblinKingMotion {
                 speedX[slot] = 0;
                 speedY[slot] = 0;
                 variant = 0;
+                weaponFrame[slot] = 0;
                 state[slot] = 1;
                 direction[slot] = directionToLink(x, linkX);
             }
@@ -99,6 +104,7 @@ final class MoblinKingMotion {
                     state[slot] = 2;
                     slowTransitionCountdown = 0x30;
                     variant = 1;
+                    weaponFrame[slot] = 1;
                 }
             }
             case 2 -> {
@@ -126,6 +132,7 @@ final class MoblinKingMotion {
                         speedZ[slot] = 0x10;
                     }
                     variant = (frameCounter >>> 4) & 1;
+                    weaponFrame[slot] = variant;
                     direction[slot] = directionToLink(x, linkX);
                     if (privateCountdown2[slot] == 0) {
                         privateCountdown2[slot] = (randomByteSupplier.getAsInt() & 0x3F) + 0x30;
@@ -134,6 +141,7 @@ final class MoblinKingMotion {
                 }
             }
             case 3 -> {
+                weaponVisible[slot] = false;
                 if (transitionCountdown == 0) {
                     transitionCountdown = 0x22;
                     speedX[slot] = CHARGE_SPEED_X[direction[slot] & 1];
@@ -149,6 +157,7 @@ final class MoblinKingMotion {
                 }
             }
             case 4 -> {
+                weaponVisible[slot] = false;
                 if (touchingLink) {
                     state[slot] = 8;
                     Update hit = applyLinkImpact(entity, x, y, z, variant,
@@ -169,10 +178,13 @@ final class MoblinKingMotion {
                 variant = 4 + ((frameCounter >>> 2) & 1);
             }
             case 5 -> {
+                weaponVisible[slot] = false;
                 if (transitionCountdown == 0) {
                     transitionCountdown = 0x40;
                     state[slot] = 7;
                     variant = 0;
+                    weaponVisible[slot] = true;
+                    weaponFrame[slot] = 0;
                 } else {
                     if (landed) {
                         speedX[slot] = 0;
@@ -182,6 +194,7 @@ final class MoblinKingMotion {
                 }
             }
             case 6 -> {
+                weaponFrame[slot] = 0;
                 int signedSpeedX = signedByte(speedX[slot]);
                 if ((signedSpeedX & 0xFE) == 0) {
                     speedX[slot] = 0;
@@ -194,6 +207,7 @@ final class MoblinKingMotion {
                 }
             }
             case 7 -> {
+                weaponFrame[slot] = 0;
                 speedX[slot] = 0;
                 speedY[slot] = 0;
                 if (transitionCountdown == 0) {
@@ -202,6 +216,7 @@ final class MoblinKingMotion {
                 }
             }
             case 8 -> {
+                weaponVisible[slot] = false;
                 return applyLinkImpact(entity, x, y, z, variant,
                     transitionCountdown, slowTransitionCountdown);
             }
@@ -214,12 +229,14 @@ final class MoblinKingMotion {
                 } else {
                     variant = transitionCountdown >= 0x40
                         ? 0 : ((frameCounter >>> 5) & 1);
+                    weaponFrame[slot] = variant;
                     direction[slot] = directionToLink(x, linkX);
                 }
             }
             default -> state[slot] = 0;
         }
 
+        bodyVariant[slot] = variant;
         return new Update(withPositionAndVariant(entity, x, y, z,
             presentationVariant(slot, variant)),
             transitionCountdown & 0xFF, slowTransitionCountdown & 0xFF, arrow,
@@ -249,6 +266,9 @@ final class MoblinKingMotion {
         zAccumulator[slot] = 0;
         privateCountdown1[slot] = 0;
         privateCountdown2[slot] = 0;
+        bodyVariant[slot] = 0;
+        weaponFrame[slot] = 0;
+        weaponVisible[slot] = true;
     }
 
     int state(int slot) {
@@ -265,6 +285,10 @@ final class MoblinKingMotion {
 
     int speedZ(int slot) {
         return speedZ[slot] & 0xFF;
+    }
+
+    int weaponVariant(int slot) {
+        return weaponVisible[slot] ? (direction[slot] * 2 + weaponFrame[slot]) & 0x03 : -1;
     }
 
     void setPrivateCountdownsForTest(int slot, int countdown1, int countdown2) {

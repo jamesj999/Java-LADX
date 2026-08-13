@@ -982,6 +982,40 @@ public final class EntitySpriteHandlerCatalog {
         };
     }
 
+    /** Builds func_015_4AC9's body, optional weapon, and airborne shadow layers. */
+    public EntitySpriteDefinition forMoblinKingState(int bodyVariant, int weaponVariant,
+                                                     boolean airborne) {
+        if (bodyVariant < 0 || bodyVariant >= 14) {
+            throw new IllegalArgumentException("Moblin King body variant must be 0..13");
+        }
+        if (weaponVariant < -1 || weaponVariant >= 4) {
+            throw new IllegalArgumentException("Moblin King weapon variant must be -1..3");
+        }
+        EntitySpriteDefinition body = decodeRectangle(0xE4, 0x15, 0x4A15, 14, 3, 0);
+        EntitySpriteDefinition weapon = decodeRectangle(0xE4, 0x15, 0x49E5, 4, 3, 0);
+        EntitySpriteDefinition shadow = decodeRectangle(0xE4, 0x15, 0x4ABD, 1, 3, 0);
+        List<EntitySpriteDefinition.DynamicSprite> sprites = new ArrayList<>(9);
+        appendRectangleSprites(sprites, body.rectangleVariant(bodyVariant));
+        if (weaponVariant >= 0) {
+            appendRectangleSprites(sprites, weapon.rectangleVariant(weaponVariant));
+        }
+        if (airborne) {
+            appendRectangleSprites(sprites, shadow.rectangleVariant(0));
+        }
+        return EntitySpriteDefinition.dynamic(0xE4, 0x15, 0x4A15, 0,
+            List.of(List.copyOf(sprites)));
+    }
+
+    private static void appendRectangleSprites(
+            List<EntitySpriteDefinition.DynamicSprite> destination,
+            List<EntitySpriteDefinition.RectangleSprite> source) {
+        for (EntitySpriteDefinition.RectangleSprite sprite : source) {
+            destination.add(new EntitySpriteDefinition.DynamicSprite(
+                sprite.yOffset(), sprite.xOffset(), sprite.oam(),
+                EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, false));
+        }
+    }
+
     /**
      * Builds the mixed display list emitted by BombArrowHandler. The handler
      * draws the bomb's single sprite first, then the ordinary arrow pair, all

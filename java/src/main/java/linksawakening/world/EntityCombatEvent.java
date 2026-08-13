@@ -125,17 +125,25 @@ public record EntityCombatEvent(int slot, int type, int linkDamage, boolean swor
      * after accepting a normal enemy collision.
      */
     public record LinkCollisionResponse(int speedX, int speedY,
-                                        int ignoreCollisionCountdown) {
-        public static final LinkCollisionResponse NONE = new LinkCollisionResponse(0, 0, 0);
+                                        int ignoreCollisionCountdown,
+                                        int invincibilityCountdown) {
+        public static final LinkCollisionResponse NONE = new LinkCollisionResponse(0, 0, 0, 0);
+
+        public LinkCollisionResponse(int speedX, int speedY,
+                                     int ignoreCollisionCountdown) {
+            this(speedX, speedY, ignoreCollisionCountdown, 0);
+        }
 
         public LinkCollisionResponse {
             validateByte(speedX, "Link response X speed");
             validateByte(speedY, "Link response Y speed");
             validateByte(ignoreCollisionCountdown, "Link collision-ignore countdown");
+            validateByte(invincibilityCountdown, "Link invincibility countdown");
         }
 
         public boolean active() {
-            return speedX != 0 || speedY != 0 || ignoreCollisionCountdown != 0;
+            return speedX != 0 || speedY != 0 || ignoreCollisionCountdown != 0
+                || invincibilityCountdown != 0;
         }
     }
 

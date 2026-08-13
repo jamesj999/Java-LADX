@@ -5786,6 +5786,43 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void moblinKingChargeImpactUsesItsDedicatedLinkDamageAndImmunityWrites() {
+        RoomEntity king = new RoomEntity(0, 0, 0xE4, 0x58, 0x58,
+            EntityStatus.ACTIVE, pairDefinition(0xE4, 14), 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(king), true, () -> 0);
+        runtime.setBowWowState(0x80);
+        runtime.setMoblinKingStateForTest(0, 4, 0, 0x28, 0, 0, 0x22);
+
+        runtime.tick(0, 0x58, 0x58, () -> 0, true);
+        assertEquals(4, runtime.moblinKingState(0));
+        runtime.tick(1, 0x58, 0x58, () -> 0, true);
+        List<EntityCombatEvent> events = runtime.resolveCombat(
+            3, 0x58, 0x58, false, true, false, 0, 0, 0, 0);
+
+        EntityCombatEvent impact = events.getFirst();
+        assertEquals(0x08, impact.linkDamage());
+        assertEquals(0x28, impact.linkCollisionResponse().speedX());
+        assertEquals(0, impact.linkCollisionResponse().speedY());
+        assertEquals(0x28, impact.linkCollisionResponse().ignoreCollisionCountdown());
+        assertEquals(0x40, impact.linkCollisionResponse().invincibilityCountdown());
+    }
+
+    @Test
+    void stunnedMoblinKingIsHarmlessToLinkWhileVulnerable() {
+        RoomEntity king = new RoomEntity(0, 0, 0xE4, 0x58, 0x58,
+            EntityStatus.ACTIVE, pairDefinition(0xE4, 14), 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(king), true, () -> 0);
+        runtime.setBowWowState(0x80);
+        runtime.setMoblinKingStateForTest(0, 5, 0, 0, 0, 0, 0x60);
+
+        runtime.tick(0, 0x58, 0x58, () -> 0);
+        List<EntityCombatEvent> events = runtime.resolveCombat(
+            1, 0x58, 0x58, false, true, false, 0, 0, 0, 0);
+
+        assertEquals(0, events.getFirst().linkDamage());
+    }
+
+    @Test
     void defeatingMoblinKingPersistsTheMinibossRoomEventThatOpensTheRescuePath() {
         RoomEntity king = new RoomEntity(0, 0, 0xE4, 0x58, 0x58,
             EntityStatus.ACTIVE, pairDefinition(0xE4, 14), 0);
@@ -5818,6 +5855,24 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x10, runtime.consumePendingMusicTrack());
         assertEquals(List.of(new RoomEntityRuntime.DialogRequest(1, 0x6C)),
             runtime.consumePendingDialogRequests());
+    }
+
+    @Test
+    void rescuedSourceBowWowImmediatelyUsesTheFollowingSpriteTable() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RoomEntity bowWow = new RoomEntity(0, 0, 0x6D, 0x88, 0x40,
+            EntityStatus.ACTIVE,
+            catalog.forEntityType(0x6D, EntityRoomLoader.RoomTable.INDOORS_B), 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+            snapshot(bowWow), true, () -> 0, catalog, new RomEnemyCombatTables(rom));
+        runtime.setBowWowState(0x80);
+
+        runtime.tick(0, 0x88, 0x40, () -> 0, true);
+
+        RoomEntity rescued = runtime.snapshot().slots().get(0);
+        assertEquals(0x05, rescued.spriteDefinition().bank());
+        assertEquals(0x401C, rescued.spriteDefinition().address());
     }
 
     @Test

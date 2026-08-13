@@ -26,6 +26,18 @@ final class EntitySpriteHandlerCatalogTest {
     }
 
     @Test
+    void buildsMoblinKingsBodyWeaponAndAirborneShadowLayers() throws Exception {
+        EntitySpriteDefinition king = new EntitySpriteHandlerCatalog(loadRom())
+            .forMoblinKingState(0, 0, true);
+
+        assertEquals(EntitySpriteDefinition.Shape.DYNAMIC, king.shape());
+        assertEquals(9, king.dynamicVariant(0).size());
+        assertEquals(0x56, king.dynamicVariant(0).get(0).oam().tile());
+        assertEquals(0x54, king.dynamicVariant(0).get(3).oam().tile());
+        assertEquals(0x26, king.dynamicVariant(0).get(6).oam().tile());
+    }
+
+    @Test
     void decodesRollingBonesAndBuildsTheSixPairRollingBar() throws Exception {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
 

@@ -943,6 +943,10 @@ public class Main {
                             link.applyRomSpeed(response.speedX(), response.speedY());
                             link.setCollisionIgnoreFrames(
                                 response.ignoreCollisionCountdown());
+                            if (response.invincibilityCountdown() != 0) {
+                                playerState.setInvincibilityCounter(
+                                    response.invincibilityCountdown());
+                            }
                             playerState.setRunningWithPegasusBoots(false);
                             // ApplyLinkCollisionWithEnemy writes WAVE_SFX_LINK_HURT
                             // before the shared Link response helper.
