@@ -148,6 +148,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_ROOSTER = 0xD5;
     private static final int ENTITY_MARIN_AT_THE_SHORE = 0xC1;
     private static final int ENTITY_MARIN_INDOOR = 0x3E;
+    private static final int ENTITY_TARIN = TarinRaccoonMotion.ENTITY_TYPE;
     private static final int ENTITY_BOW_WOW = 0x6D;
     private static final int ENTITY_KIKI_THE_MONKEY = 0xAD;
     private static final int ENTITY_DROPPABLE_SECRET_SEASHELL = 0x3D;
@@ -324,6 +325,7 @@ public final class RoomEntityRuntime {
     private final WitchRatMotion witchRatMotion = new WitchRatMotion();
     private final WitchMotion witchMotion = new WitchMotion();
     private final int[] witchGotItemCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final TarinRaccoonMotion tarinRaccoonMotion = new TarinRaccoonMotion();
     private final SpikeTrapMotion spikeTrapMotion = new SpikeTrapMotion();
     private final PairoddMotion pairoddMotion = new PairoddMotion();
     private final PairoddProjectileMotion pairoddProjectileMotion =
@@ -503,6 +505,7 @@ public final class RoomEntityRuntime {
     private boolean actionButtonBHeld;
     private boolean joypadHeld;
     private boolean dialogActive;
+    private boolean shouldGetLostInMysteriousWoods;
     private boolean activeMusic;
     private int bowWowState;
     private int linkPressedButtonsMask;
@@ -1463,6 +1466,11 @@ public final class RoomEntityRuntime {
                 || dynamicEntitySpawnedThisFrame[entity.slot()]) {
                 continue;
             }
+            if (!indoorRoom && entity.type() == ENTITY_TARIN
+                && (entityRoomStatus & 0x10) != 0) {
+                disableEntityWithoutPersistence(entity.slot());
+                continue;
+            }
             if (indoorRoom && entity.type() == ENTITY_MARIN_INDOOR && chestPlayerLevelsKnown
                 && chestSwordLevel != 0) {
                 disableEntityWithoutPersistence(entity.slot());
@@ -1518,6 +1526,7 @@ public final class RoomEntityRuntime {
             boolean preserveMoblinKingPresentation = false;
             boolean preserveSecretSeashellPresentation = false;
             boolean preserveDroppablePresentation = false;
+            boolean preserveTarinPresentation = false;
             boolean keyDropTransitionActive = false;
             RoomEntityGroundInteraction.Result preAppliedGroundResult = null;
             boolean applyGenericGroundInteraction = entity.type() != ENTITY_ZOMBIE
@@ -3575,6 +3584,21 @@ public final class RoomEntityRuntime {
                 preserveDogPresentation = true;
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
+                && !indoorRoom && entity.type() == ENTITY_TARIN) {
+                TarinRaccoonMotion.Update tarinUpdate = tarinRaccoonMotion.advance(entity,
+                    new TarinRaccoonMotion.Input(frame, linkEntityX, linkEntityY,
+                        romLinkDirection, actionButtonsHeld, dialogActive, false,
+                        linkAttackStepAnimationCountdown));
+                updated = tarinUpdate.entity();
+                preserveTarinPresentation = true;
+                shouldGetLostInMysteriousWoods = tarinUpdate.shouldGetLost();
+                if (tarinUpdate.dialogGlobalId() >= 0) {
+                    pendingDialogRequests.add(new DialogRequest(
+                        tarinUpdate.dialogGlobalId() >>> 8,
+                        tarinUpdate.dialogGlobalId() & 0xFF));
+                }
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_WITCH) {
                 advanceWitchGotItemPresentation(entity.slot());
                 WitchMotion.Update witchUpdate = witchMotion.advance(
@@ -3868,6 +3892,7 @@ public final class RoomEntityRuntime {
                 || preserveRollingBonesPresentation
                 || preserveMoblinKingPresentation
                 || preserveSecretSeashellPresentation || preserveDroppablePresentation
+                || preserveTarinPresentation
                 ? updated.spriteVariant() : variantFor(updated, frame);
             if (status == EntityStatus.ACTIVE && shouldDisappear(entity)) {
                 variant = (slowTransitionCountdown[entity.slot()] & 0x01) != 0 ? 0 : -1;
@@ -3903,6 +3928,7 @@ public final class RoomEntityRuntime {
                 || preserveRollingBonesPresentation
                 || preserveMoblinKingPresentation
                 || preserveSecretSeashellPresentation || preserveDroppablePresentation
+                || preserveTarinPresentation
                 ? updated.entityFlipAttribute() : baseEntityFlipAttribute[entity.slot()];
             if (preserveBombitePresentation && updated.type() == ENTITY_TIMER_BOMBITE) {
                 renderFlipAttribute |= (bombPrivateCountdown1[updated.slot()] << 3) & 0x10;
@@ -6594,6 +6620,14 @@ public final class RoomEntityRuntime {
     void setLinkAttackStepAnimationCountdown(int countdown) {
         validateByte(countdown, "Link attack-step animation countdown");
         linkAttackStepAnimationCountdown = countdown;
+    }
+
+    void setShouldGetLostInMysteriousWoods(boolean shouldGetLost) {
+        shouldGetLostInMysteriousWoods = shouldGetLost;
+    }
+
+    boolean shouldGetLostInMysteriousWoods() {
+        return shouldGetLostInMysteriousWoods;
     }
 
     void setLiftedLinkC13B(int linkC13B) {

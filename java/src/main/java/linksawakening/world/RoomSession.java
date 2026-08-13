@@ -227,6 +227,7 @@ public final class RoomSession {
     private boolean actionButtonBHeld;
     private boolean joypadHeld;
     private boolean entityDialogActive;
+    private boolean shouldGetLostInMysteriousWoods;
     private boolean entityMusicActive;
     private int entityPressedButtonsMask;
     private boolean powerBraceletButtonHeld;
@@ -494,6 +495,7 @@ public final class RoomSession {
         Arrays.fill(indoorARoomStatus, (byte) 0);
         Arrays.fill(indoorBRoomStatus, (byte) 0);
         Arrays.fill(colorDungeonRoomStatus, (byte) 0);
+        shouldGetLostInMysteriousWoods = false;
         Arrays.fill(clearedEntitiesByRoom, 0);
         Arrays.fill(dungeonProgressFlags, (byte) 0);
         dungeonItemState.reset();
@@ -812,6 +814,11 @@ public final class RoomSession {
         if (entityRuntime != null) {
             entityRuntime.setLinkAttackStepAnimationCountdown(countdown);
         }
+    }
+
+    /** Mirrors the persistent WRAM wShouldGetLostInMysteriousWoods flag. */
+    public boolean shouldGetLostInMysteriousWoods() {
+        return shouldGetLostInMysteriousWoods;
     }
 
     /** Starts the source UseOcarina countdown consumed by active entities. */
@@ -1402,6 +1409,7 @@ public final class RoomSession {
             ocarinaSongFlags, selectedSongIndex, ocarinaAnimationCounter,
             ocarinaAnimationPhase);
         entityRuntime.setEntityRoomStatus(activeRoomStatusFlags());
+        entityRuntime.setShouldGetLostInMysteriousWoods(shouldGetLostInMysteriousWoods);
         entityRuntime.setGoldenLeavesCount(entityGoldenLeavesCount);
         entityRuntime.setSecretSeashellPegasusCollisionState(
             secretSeashellScreenShakeActive, secretSeashellPegasusCollisionActive,
@@ -1427,6 +1435,7 @@ public final class RoomSession {
                 romDirectionForProjectileCollision(linkDirection), usingShield, shieldLevel,
                 invincibilityCounter), swordCollisionActive, swordX, swordWidth,
             swordY, swordHeight, linkSpeedX, linkSpeedY);
+        shouldGetLostInMysteriousWoods = entityRuntime.shouldGetLostInMysteriousWoods();
         int runtimeBowWowState = entityRuntime.bowWowState();
         if (runtimeBowWowState != bowWowState) {
             bowWowState = runtimeBowWowState;
@@ -1924,6 +1933,7 @@ public final class RoomSession {
             entityRuntime.setBombButtonHeld(bombButtonHeld);
             entityRuntime.setLiftedLinkC13B(followingEntityYOffset);
             entityRuntime.setEntityRoomStatus(activeRoomStatusFlags());
+            entityRuntime.setShouldGetLostInMysteriousWoods(shouldGetLostInMysteriousWoods);
             entityRuntime.setSecretSeashellPegasusCollisionState(
                 secretSeashellScreenShakeActive, secretSeashellPegasusCollisionActive,
                 secretSeashellPegasusCollisionX, secretSeashellPegasusCollisionY);
@@ -1987,6 +1997,7 @@ public final class RoomSession {
         entityRuntime.setBombButtonHeld(bombButtonHeld);
         entityRuntime.setLiftedLinkC13B(followingEntityYOffset);
         entityRuntime.setEntityRoomStatus(activeRoomStatusFlags());
+        entityRuntime.setShouldGetLostInMysteriousWoods(shouldGetLostInMysteriousWoods);
         entityRuntime.setSecretSeashellPegasusCollisionState(
             secretSeashellScreenShakeActive, secretSeashellPegasusCollisionActive,
             secretSeashellPegasusCollisionX, secretSeashellPegasusCollisionY);
