@@ -60,6 +60,19 @@ final class MainFileMenuFlowTest {
     }
 
     @Test
+    void newGameBootstrapResetsPersistentWorldStateBeforeLoadingTheHouse() throws Exception {
+        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+        int start = source.indexOf("private static void startNewGame()");
+        int end = source.indexOf("private static void startSavedGame", start);
+        String bootstrap = source.substring(start, end);
+
+        int reset = bootstrap.indexOf("roomSession.initializeNewGameWorldState();");
+        int houseLoad = bootstrap.indexOf("roomSession.loadIndoor(profile.mapId(), profile.roomId());");
+        assertTrue(reset >= 0);
+        assertTrue(houseLoad > reset);
+    }
+
+    @Test
     void configuredNewGameDispatchesOnlyTheDedicatedBootstrap() {
         int[] calls = new int[2];
         AppConfig config = AppConfig.parse("""

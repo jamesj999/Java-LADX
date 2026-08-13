@@ -90,7 +90,8 @@ final class RoomTransitionCoordinatorTest {
     }
 
     @Test
-    void freshGameCanFollowThePlayableHouseToBeachOpeningRoute() throws Exception {
+    void freshGameHouseWarpAndSouthTransitionsLeadToLoadedBeachOpeningEntities()
+            throws Exception {
         byte[] rom = loadRom();
         RomTables romTables = RomTables.loadFromRom(rom);
         OverworldCollision collision = new OverworldCollision(romTables);
