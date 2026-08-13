@@ -3,6 +3,9 @@ package linksawakening.world;
 import linksawakening.entity.EntitySpriteDefinition;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -112,11 +115,141 @@ final class TarinRaccoonMotionTest {
         assertFalse(update.spawnBomb());
     }
 
+    @Test
+    void stateOneBlocksLinkClearsAttackFacesLinkAndCyclesTheSourceVariants() {
+        TarinRaccoonMotion motion = new TarinRaccoonMotion();
+        motion.setStateForTest(SLOT, 1, 0, 0, 0, 0, 0, false);
+
+        List<Integer> observed = new ArrayList<>();
+        RoomEntity entity = raccoon();
+        for (int frame = 0; frame < 0x1000 && observed.size() < 6; frame += 2) {
+            TarinRaccoonMotion.Update update = motion.advance(entity,
+                inputWithCountdowns(frame & 0xFF, 0x50, 0x40, 0, 0x70, 0));
+            assertTrue(update.linkMotionBlocked());
+            assertTrue(update.clearLinkAttack());
+            assertEquals(0, update.linkFacingDirection());
+            if (observed.isEmpty()
+                || observed.get(observed.size() - 1) != update.spriteVariant()) {
+                observed.add(update.spriteVariant());
+            }
+            entity = update.entity();
+        }
+        assertEquals(List.of(0, 4, 5, 6, 7, 1), observed);
+    }
+
+    @Test
+    void stateOneMovesBeforeTheFinalWindowAndBouncesOnBackgroundCollision() {
+        TarinRaccoonMotion motion = new TarinRaccoonMotion();
+        motion.setStateForTest(SLOT, 1, 0x10, 0, 0, 0, 0, false);
+        RoomEntityBackgroundInteraction wall = (entity, direction, x, y) ->
+            EntityBackgroundCollisionResult.blocked(direction, 0xFF, 0, x, y);
+
+        TarinRaccoonMotion.Update update = motion.advance(
+            withPosition(raccoon(), 0x78, 0x2F, 0),
+            inputWithCountdowns(1, 0x50, 0x40, 0, 5, 0), wall);
+
+        assertEquals(0x78, update.entity().x());
+        assertEquals(0xF0, update.speedX());
+        assertEquals(8, update.slowTransitionCountdown());
+        assertEquals(0x09, update.soundId());
+    }
+
+    @Test
+    void stateOneLowYExtendsTheWindowButHighYStartsTheSourceZAndSpeedDamping() {
+        TarinRaccoonMotion low = new TarinRaccoonMotion();
+        low.setStateForTest(SLOT, 1, 0x10, 0, 0, 0, 0, false);
+        RoomEntity lowEntity = withPosition(raccoon(), 0x78, 0x2F, 0);
+        TarinRaccoonMotion.Update extended = low.advance(lowEntity,
+            inputWithCountdowns(1, 0x50, 0x40, 0, 5, 0));
+        assertEquals(8, extended.slowTransitionCountdown());
+        assertEquals(0, extended.speedZ());
+
+        TarinRaccoonMotion high = new TarinRaccoonMotion();
+        high.setStateForTest(SLOT, 1, 0xF0, 0x10, 0, 0, 0, false);
+        RoomEntity highEntity = withPosition(raccoon(), 0x78, 0x30, 0);
+        TarinRaccoonMotion.Update arcing = high.advance(highEntity,
+            inputWithCountdowns(1, 0x50, 0x40, 0, 5, 0));
+        assertEquals(5, arcing.slowTransitionCountdown());
+        assertEquals(1, arcing.speedZ());
+        assertEquals(0xF1, arcing.speedX());
+        assertEquals(0x0F, arcing.speedY());
+    }
+
+    @Test
+    void stateOneExpiryRequestsTheExactBombAndPersistenceWrites() {
+        TarinRaccoonMotion motion = new TarinRaccoonMotion();
+        motion.setStateForTest(SLOT, 1, 0x20, 0xE0, 0x12, 0, 0, false);
+        RoomEntity source = withPosition(raccoon(), 0x66, 0x55, 0x0A);
+
+        TarinRaccoonMotion.Update update = motion.advance(source,
+            inputWithCountdowns(4, 0x50, 0x40, 0, 0, 0));
+
+        assertEquals(2, update.state());
+        assertEquals(9, update.spriteVariant());
+        assertEquals(0, update.speedZ());
+        assertTrue(update.spawnBomb());
+        assertTrue(update.roomChanged());
+        assertTrue(update.tarinFlag());
+    }
+
+    @Test
+    void stateTwoArcLandsWithSourceCountdownFacingAndNearLatch() {
+        TarinRaccoonMotion motion = new TarinRaccoonMotion();
+        motion.setStateForTest(SLOT, 2, 0, 0, 0xF0, 0, 0, false);
+        RoomEntity source = withPosition(raccoon(), 0x78, 0x40, 0);
+
+        TarinRaccoonMotion.Update update = motion.advance(source,
+            inputWithCountdowns(0, 0x79, 0x40, 0, 0, 0));
+
+        assertEquals(3, update.state());
+        assertEquals(0, update.entity().z());
+        assertEquals(0x40, update.transitionCountdown());
+        assertEquals(8, update.spriteVariant());
+        assertTrue(update.nearLinkLatch());
+        assertEquals(0x23, update.soundId());
+    }
+
+    @Test
+    void stateThreeUsesAlreadyDecrementedCountdownThenFacesPushesAndTalks() {
+        TarinRaccoonMotion motion = new TarinRaccoonMotion();
+        motion.setStateForTest(SLOT, 3, 0, 0, 0, 0, 0, false);
+
+        TarinRaccoonMotion.Update dialogA = motion.advance(raccoon(),
+            inputWithCountdowns(1, 0x78, 0x50, 2, 0, 1));
+        assertEquals(0x00A, dialogA.dialogGlobalId());
+        assertFalse(dialogA.linkMotionBlocked());
+
+        TarinRaccoonMotion.Update blocked = motion.advance(dialogA.entity(),
+            inputWithCountdowns(2, 0x78, 0x50, 2, 0, 2));
+        assertTrue(blocked.linkMotionBlocked());
+
+        TarinRaccoonMotion.Update talk = motion.advance(blocked.entity(),
+            new TarinRaccoonMotion.Input(0x20, 0x78, 0x50, 2, true, false,
+                false, 0, false, false, 0, 0x80, 0, 0));
+        assertEquals(0x00B, talk.dialogGlobalId());
+        assertEquals(11, talk.spriteVariant());
+        assertTrue(talk.pushLink());
+    }
+
     private static TarinRaccoonMotion.Input input(int frameCounter, int linkX, int linkY,
                                                   int linkDirection, boolean actionHeld,
                                                   boolean dialogActive) {
         return new TarinRaccoonMotion.Input(frameCounter, linkX, linkY, linkDirection,
             actionHeld, dialogActive, false);
+    }
+
+    private static TarinRaccoonMotion.Input inputWithCountdowns(int frameCounter,
+            int linkX, int linkY, int linkDirection, int slowCountdown,
+            int transitionCountdown) {
+        return new TarinRaccoonMotion.Input(frameCounter, linkX, linkY, linkDirection,
+            false, false, false, 0, false, false, 0, 0x80,
+            slowCountdown, transitionCountdown);
+    }
+
+    private static RoomEntity withPosition(RoomEntity source, int x, int y, int z) {
+        return new RoomEntity(source.slot(), source.sourceLoadOrder(), source.type(), x, y,
+            source.status(), source.spriteDefinition(), source.spriteVariant(),
+            source.entityFlipAttribute(), source.spriteTileOffset(), z);
     }
 
     private static RoomEntity raccoon() {

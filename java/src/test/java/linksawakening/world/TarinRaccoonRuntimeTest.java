@@ -363,6 +363,75 @@ final class TarinRaccoonRuntimeTest {
         assertEquals(0x7E, aboveActive.slowTransitionCountdownForTest(0));
     }
 
+    @Test
+    void stateOneExpirySpawnsTheExactTarinBombAndQueuesDeferredPersistence() {
+        RoomEntityRuntime runtime = raccoonRuntime(false);
+        runtime.setTarinRaccoonStateForTest(0, 1, 0, 0, 0x12, 0, 0, false);
+        runtime.setSlowTransitionCountdownForTest(0, 1);
+        runtime.setLinkAttackStepAnimationCountdown(7);
+
+        tick(runtime, 4, 0x50, 0x40);
+
+        RoomEntity tarin = runtime.snapshot().slots().get(0);
+        RoomEntity bomb = runtime.snapshot().slots().stream()
+            .filter(entity -> entity.loaded() && entity.type() == 0x02)
+            .findFirst().orElseThrow();
+        assertEquals(2, runtime.tarinRaccoonStateForTest(0));
+        assertEquals(9, tarin.spriteVariant());
+        assertEquals(tarin.x(), bomb.x());
+        assertEquals(tarin.y(), bomb.y());
+        assertEquals(tarin.z(), bomb.z());
+        assertEquals(0x4C, runtime.bombPrivateState4ForTest(bomb.slot()));
+        assertEquals(0x20, runtime.transitionCountdown(bomb.slot()));
+        assertEquals(List.of(new RoomEntityRuntime.LinkAttackClearRequest(0)),
+            runtime.consumePendingLinkAttackClearRequests());
+        assertEquals(List.of(new RoomEntityRuntime.RoomStatusPersistenceRequest(0, 0x10, 1)),
+            runtime.consumePendingRoomStatusPersistenceRequests());
+        assertEquals(0, runtime.entityRoomStatusForTest() & 0x10,
+            "persistence must not truncate live states two and three");
+    }
+
+    @Test
+    void stateTwoLandingAndStateThreeDialogUseRuntimeTimerOrdering() {
+        RoomEntityRuntime runtime = raccoonRuntime(false);
+        runtime.setTarinRaccoonStateForTest(0, 2, 0, 0, 0xF0, 0, 0, false);
+
+        tick(runtime, 0, 0x79, 0x40);
+
+        assertEquals(3, runtime.tarinRaccoonStateForTest(0));
+        assertEquals(0x40, runtime.transitionCountdown(0));
+        assertEquals(8, runtime.snapshot().slots().get(0).spriteVariant());
+        assertEquals(0x23, runtime.consumePendingEntityEvents().get(0).soundId());
+
+        runtime.setTransitionCountdownForTest(0, 2);
+        tick(runtime, 1, 0x70, 0x60);
+
+        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, 0x0A)),
+            runtime.consumePendingDialogRequests());
+        assertTrue(runtime.consumePendingLinkMotionBlockRequests().isEmpty());
+    }
+
+    @Test
+    void noninteractivePassFreezesTarinTimersAndTransformationHandler() {
+        RoomEntityRuntime runtime = raccoonRuntime(false);
+        runtime.setTarinRaccoonStateForTest(0, 1, 0, 0, 0, 0, 0, false);
+        runtime.setSlowTransitionCountdownForTest(0, 4);
+        runtime.setDialogActive(true);
+
+        tick(runtime, 4, 0x50, 0x40);
+
+        assertEquals(4, runtime.slowTransitionCountdownForTest(0));
+        assertEquals(1, runtime.tarinRaccoonStateForTest(0));
+        assertTrue(runtime.consumePendingLinkMotionBlockRequests().isEmpty());
+
+        runtime.setDialogActive(false);
+        runtime.setTransitionSequenceCounterForTest(3);
+        tick(runtime, 8, 0x50, 0x40);
+
+        assertEquals(4, runtime.slowTransitionCountdownForTest(0));
+        assertEquals(1, runtime.tarinRaccoonStateForTest(0));
+    }
+
     private static RoomSession actionReadySession() {
         RoomSession session = newSession();
         session.loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);

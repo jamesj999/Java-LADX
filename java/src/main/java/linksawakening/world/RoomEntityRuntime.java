@@ -466,6 +466,10 @@ public final class RoomEntityRuntime {
     private final List<LinkMotionBlockRequest> pendingLinkMotionBlockRequests =
         new ArrayList<>();
     private final List<LinkFacingRequest> pendingLinkFacingRequests = new ArrayList<>();
+    private final List<LinkAttackClearRequest> pendingLinkAttackClearRequests =
+        new ArrayList<>();
+    private final List<RoomStatusPersistenceRequest> pendingRoomStatusPersistenceRequests =
+        new ArrayList<>();
     private final List<LinkHeldItemPoseRequest> pendingLinkHeldItemPoseRequests =
         new ArrayList<>();
     private final List<LinkSwordSpinPoseRequest> pendingLinkSwordSpinPoseRequests =
@@ -723,6 +727,26 @@ public final class RoomEntityRuntime {
             if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES
                 || romDirection < 0 || romDirection > 3) {
                 throw new IllegalArgumentException("Invalid Link-facing request");
+            }
+        }
+    }
+
+    /** A source handler's direct write clearing Link's attack animation countdown. */
+    public record LinkAttackClearRequest(int sourceSlot) {
+        public LinkAttackClearRequest {
+            if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
+                throw new IllegalArgumentException("Link attack-clear source slot out of range");
+            }
+        }
+    }
+
+    /** Deferred room-save writes that must not alter the live handler's room status. */
+    public record RoomStatusPersistenceRequest(int sourceSlot, int roomStatusMask,
+                                               int tarinFlag) {
+        public RoomStatusPersistenceRequest {
+            if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES
+                || (roomStatusMask & ~0xFF) != 0 || (tarinFlag & ~0xFF) != 0) {
+                throw new IllegalArgumentException("Invalid room-status persistence request");
             }
         }
     }
@@ -1462,6 +1486,8 @@ public final class RoomEntityRuntime {
         pendingRoosterLinkStateRequests.clear();
         pendingLinkMotionBlockRequests.clear();
         pendingLinkFacingRequests.clear();
+        pendingLinkAttackClearRequests.clear();
+        pendingRoomStatusPersistenceRequests.clear();
         pendingLinkHeldItemPoseRequests.clear();
         pendingLinkSwordSpinPoseRequests.clear();
         pendingScreenShakeRequests.clear();
@@ -1519,9 +1545,14 @@ public final class RoomEntityRuntime {
             RoomEntity originalEntity = entity;
             EntityStatus initialStatus = entity.status();
             boolean wasInitializing = initialStatus == EntityStatus.INIT;
-            boolean ignoreHitsDecrementedBeforeHandler =
-                decrementEnemyCombatCountdowns(entity.slot(), !wasInitializing);
-            decrementEnemyStatusCountdowns(entity.slot());
+            boolean freezeTarinTimers = !indoorRoom && entity.type() == ENTITY_TARIN
+                && tarinRaccoonMotion.state(entity.slot()) != 0
+                && !tarinTransformationInteractive();
+            boolean ignoreHitsDecrementedBeforeHandler = !freezeTarinTimers
+                && decrementEnemyCombatCountdowns(entity.slot(), !wasInitializing);
+            if (!freezeTarinTimers) {
+                decrementEnemyStatusCountdowns(entity.slot());
+            }
             if (entity.sourceLoadOrder() == -1 && isDisabledFollower(entity.type())) {
                 clearEntity(entity.slot());
                 continue;
@@ -2165,7 +2196,9 @@ public final class RoomEntityRuntime {
                     colorShellMotion.initialize(entity.slot());
                 }
             } else if (status == EntityStatus.ACTIVE) {
-                decrementSlowTransitionCountdown(entity.slot(), frame);
+                if (!freezeTarinTimers) {
+                    decrementSlowTransitionCountdown(entity.slot(), frame);
+                }
                 if (shouldDisappear(entity)) {
                     if (slowTransitionCountdown[entity.slot()] == 0) {
                         clearEntity(entity.slot());
@@ -3624,13 +3657,26 @@ public final class RoomEntityRuntime {
                 preserveDogPresentation = true;
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
-                && !indoorRoom && entity.type() == ENTITY_TARIN) {
-                TarinRaccoonMotion.Update tarinUpdate = tarinRaccoonMotion.advance(entity,
+                && !indoorRoom && entity.type() == ENTITY_TARIN
+                && (tarinRaccoonMotion.state(entity.slot()) == 0
+                    || tarinTransformationInteractive())) {
+                RoomEntityBackgroundInteraction tarinBackgroundInteraction = backgroundInteraction;
+                if (tarinBackgroundInteraction == null && backgroundCollision != null) {
+                    tarinBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
+                        backgroundCollision);
+                }
+                TarinRaccoonMotion.Update tarinUpdate = tarinRaccoonMotion.advance(updated,
                     new TarinRaccoonMotion.Input(frame, linkEntityX, linkEntityY,
                         romLinkDirection, actionButtonAHeld, dialogActive, false,
                         linkAttackStepAnimationCountdown, linkAirborne,
-                        inventoryAppearing, dialogCooldown, windowY));
+                        inventoryAppearing, dialogCooldown, windowY,
+                        slowTransitionCountdown[entity.slot()],
+                        enemyTransitionCountdown[entity.slot()]),
+                    tarinBackgroundInteraction);
                 updated = tarinUpdate.entity();
+                slowTransitionCountdown[entity.slot()] =
+                    tarinUpdate.slowTransitionCountdown();
+                enemyTransitionCountdown[entity.slot()] = tarinUpdate.transitionCountdown();
                 preserveTarinPresentation = true;
                 shouldGetLostInMysteriousWoods = tarinUpdate.shouldGetLost();
                 if (tarinUpdate.linkMotionBlocked()) {
@@ -3641,6 +3687,32 @@ public final class RoomEntityRuntime {
                     pendingDialogRequests.add(new DialogRequest(
                         tarinUpdate.dialogGlobalId() >>> 8,
                         tarinUpdate.dialogGlobalId() & 0xFF));
+                }
+                if (tarinUpdate.clearLinkAttack()) {
+                    pendingLinkAttackClearRequests.add(
+                        new LinkAttackClearRequest(entity.slot()));
+                }
+                if (tarinUpdate.linkFacingDirection() >= 0) {
+                    pendingLinkFacingRequests.add(new LinkFacingRequest(
+                        entity.slot(), tarinUpdate.linkFacingDirection()));
+                }
+                if (tarinUpdate.pushLink()) {
+                    if (RoomEntityCombatRules.overlapsLink(
+                        updated, linkEntityX, linkEntityY)) {
+                        requestLinkPush(updated, EntityLinkCollisionRules.STANDARD_PUSH);
+                    }
+                }
+                if (tarinUpdate.soundId() >= 0) {
+                    pendingEntityEvents.add(new EntityCombatEvent(entity.slot(), entity.type(),
+                        0, false, EntityCombatEvent.SoundChannel.JINGLE,
+                        tarinUpdate.soundId()));
+                }
+                if (tarinUpdate.spawnBomb()) {
+                    spawnTarinTransformationBomb(updated);
+                }
+                if (tarinUpdate.roomChanged() || tarinUpdate.tarinFlag()) {
+                    pendingRoomStatusPersistenceRequests.add(
+                        new RoomStatusPersistenceRequest(entity.slot(), 0x10, 1));
                 }
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
@@ -6145,7 +6217,7 @@ public final class RoomEntityRuntime {
     /** Creates the source's type-$02 enemy bomb with privateState4 set to $01. */
     int spawnEnemyBomb(int entityX, int entityY, int entityZ, int transitionCountdown) {
         return spawnEnemyBomb(entityX, entityY, entityZ, transitionCountdown,
-            0, 0, 0, false);
+            0, 0, 0, false, 0x01);
     }
 
     /** Creates a Bomber-spawned type-$02 enemy bomb with its source speeds. */
@@ -6153,12 +6225,12 @@ public final class RoomEntityRuntime {
                                int transitionCountdown, int speedX, int speedY,
                                int speedZ) {
         return spawnEnemyBomb(entityX, entityY, entityZ, transitionCountdown,
-            speedX, speedY, speedZ, true);
+            speedX, speedY, speedZ, true, 0x01);
     }
 
     private int spawnEnemyBomb(int entityX, int entityY, int entityZ,
                                int transitionCountdown, int speedX, int speedY,
-                               int speedZ, boolean initializeMotion) {
+                               int speedZ, boolean initializeMotion, int privateState4) {
         validateByte(entityX, "Enemy bomb X");
         validateByte(entityY, "Enemy bomb Y");
         validateByte(entityZ, "Enemy bomb Z");
@@ -6179,7 +6251,7 @@ public final class RoomEntityRuntime {
         bombDirection[freeSlot] = 0xFF;
         playerArrowBombArrow[freeSlot] = false;
         bombFinalPresentationPending[freeSlot] = false;
-        bombPrivateState4[freeSlot] = 0x01;
+        bombPrivateState4[freeSlot] = privateState4 & 0xFF;
         bombPrivateCountdown1[freeSlot] = 0;
         bombPrivateCountdown3[freeSlot] = 0;
         placedBombMotionInitialized[freeSlot] = false;
@@ -6202,6 +6274,15 @@ public final class RoomEntityRuntime {
         entityOptions1Override[freeSlot] = BOMB_OPTIONS1;
         dynamicEntitySpawnedThisFrame[freeSlot] = true;
         return freeSlot;
+    }
+
+    private int spawnTarinTransformationBomb(RoomEntity tarin) {
+        return spawnEnemyBomb(tarin.x(), tarin.y(), tarin.z(), 0x20,
+            0, 0, 0, false, 0x4C);
+    }
+
+    private boolean tarinTransformationInteractive() {
+        return transitionSequenceCounter == 0x04 && !dialogActive && !inventoryAppearing;
     }
 
     /** Creates the temporary type-$05 entity used by bombed bushes, grass, and pots. */
@@ -6840,6 +6921,39 @@ public final class RoomEntityRuntime {
         return slowTransitionCountdown[slot];
     }
 
+    void setSlowTransitionCountdownForTest(int slot, int countdown) {
+        validateCountdownTestValue(slot, countdown);
+        slowTransitionCountdown[slot] = countdown;
+        slowTimerInitialized[slot] = true;
+    }
+
+    void setTransitionCountdownForTest(int slot, int countdown) {
+        validateCountdownTestValue(slot, countdown);
+        enemyTransitionCountdown[slot] = countdown;
+    }
+
+    void setTarinRaccoonStateForTest(int slot, int state, int speedX, int speedY,
+                                     int speedZ, int privateState2, int privateState3,
+                                     boolean nearLinkLatch) {
+        validateEntitySlot(slot);
+        tarinRaccoonMotion.setStateForTest(slot, state, speedX, speedY, speedZ,
+            privateState2, privateState3, nearLinkLatch);
+    }
+
+    int tarinRaccoonStateForTest(int slot) {
+        validateEntitySlot(slot);
+        return tarinRaccoonMotion.state(slot);
+    }
+
+    int bombPrivateState4ForTest(int slot) {
+        validateEntitySlot(slot);
+        return bombPrivateState4[slot] & 0xFF;
+    }
+
+    int entityRoomStatusForTest() {
+        return entityRoomStatus & 0xFF;
+    }
+
     int owlEventStateForTest(int slot) {
         validateEntitySlot(slot);
         return owlEventState[slot];
@@ -6917,6 +7031,19 @@ public final class RoomEntityRuntime {
     List<LinkFacingRequest> consumePendingLinkFacingRequests() {
         List<LinkFacingRequest> pending = List.copyOf(pendingLinkFacingRequests);
         pendingLinkFacingRequests.clear();
+        return pending;
+    }
+
+    List<LinkAttackClearRequest> consumePendingLinkAttackClearRequests() {
+        List<LinkAttackClearRequest> pending = List.copyOf(pendingLinkAttackClearRequests);
+        pendingLinkAttackClearRequests.clear();
+        return pending;
+    }
+
+    List<RoomStatusPersistenceRequest> consumePendingRoomStatusPersistenceRequests() {
+        List<RoomStatusPersistenceRequest> pending =
+            List.copyOf(pendingRoomStatusPersistenceRequests);
+        pendingRoomStatusPersistenceRequests.clear();
         return pending;
     }
 

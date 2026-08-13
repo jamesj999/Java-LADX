@@ -152,6 +152,18 @@ final class EntitySpriteCatalogTest {
     }
 
     @Test
+    void shippedOutdoorTarinSupportsRaccoonAndHumanTransformationVariants() throws Exception {
+        EntitySpriteDefinition tarin = new EntitySpriteHandlerCatalog(loadRom())
+            .forEntityType(0x3F, EntityRoomLoader.RoomTable.OVERWORLD, 0x51);
+
+        assertEquals(12, tarin.variantCount());
+        assertEquals(0x4912, tarin.address());
+        assertEquals(0x72, tarin.variant(7).first().tile());
+        assertEquals(0x5A, tarin.variant(8).first().tile());
+        assertEquals(0x50, tarin.variant(11).first().tile());
+    }
+
+    @Test
     void preservesFloatingOverlayMetadataWhenSpriteOverridesAreChanged() throws Exception {
         EntitySpriteSelection selection = new EntitySpriteCatalog(loadRom())
             .load(EntityRoomLoader.RoomTable.OVERWORLD, 0x00);

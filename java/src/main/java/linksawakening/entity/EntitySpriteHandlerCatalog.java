@@ -306,7 +306,7 @@ public final class EntitySpriteHandlerCatalog {
             return roomTable == EntityRoomLoader.RoomTable.INDOORS_A
                 || roomTable == EntityRoomLoader.RoomTable.INDOORS_B
                 ? decodePair(entityType, 0x05, 0x4932, 4, 0)
-                : decodePair(entityType, 0x05, 0x4912, 6, 0);
+                : decodePair(entityType, 0x05, 0x4912, 12, 0);
         }
         if (entityType == ENTITY_MARIN_AT_TAL_TAL_HEIGHTS) {
             return decodePair(entityType, 0x18, 0x5EB7, 8, 0);
