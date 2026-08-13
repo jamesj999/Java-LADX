@@ -6,6 +6,7 @@ import java.util.List;
 import linksawakening.entity.Link;
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.gameplay.BeachSwordRewardConsumer;
+import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gpu.GPU;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
@@ -94,7 +95,7 @@ final class RoomTransitionCoordinatorTest {
     }
 
     @Test
-    void freshGameLiveRuntimeConnectsShieldSwordWitchAndRaccoonInPlayOrder()
+    void freshGameRuntimeSequencePersistsOpeningProgressThroughTailCaveEntry()
             throws Exception {
         byte[] rom = loadRom();
         RomTables romTables = RomTables.loadFromRom(rom);
@@ -402,11 +403,104 @@ final class RoomTransitionCoordinatorTest {
             .anyMatch(entity -> entity.type() == 0x3F),
             "the persisted flag must not truncate Tarin's live transformation");
 
+        // Deliberately reload the room to prove the completed transformation
+        // survives reconstruction before the persisted route continues.
         session.loadInitialOverworld(0x51);
         session.tickEntitiesWithProjectileEvents(
             frame, 0x6A, 0x40, 0, 0, Link.DIRECTION_RIGHT, false);
         assertFalse(session.activeRoom().entities().loadedEntities().stream()
             .anyMatch(entity -> entity.type() == 0x3F));
+
+        walkToAndCrossOverworldBoundary(
+            coordinator, scroll, collision, link, ScrollController.UP);
+        assertEquals(0x41, session.currentRoomId());
+        assertEquals(0x40, session.overworldRoomStatusForTest(0x41) & 0x40);
+        assertTrue(session.consumeEntityEvents().stream().anyMatch(event ->
+            event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE
+                && event.soundId() == 0x02));
+
+        // Exercise the same action/facing bridge that Main calls after input
+        // has positioned Link at the chest.
+        RoomSession.ChestOpenResult tailKeyChest = session.tryOpenChest(
+            0x38, 0x31, Link.DIRECTION_UP, true, playerState.swordLevel());
+        assertTrue(tailKeyChest.opened());
+        assertEquals(ChestContentsTable.CHEST_TAIL_KEY, tailKeyChest.itemType());
+        session.tickEntities(frame++, 0x38, 0x31);
+        session.consumeChestRewardEvents().forEach(
+            reward -> playerState.applyChestReward(reward.itemType()));
+        assertEquals(1, playerState.tailKeyCount());
+        session.setTailKeyOwned(playerState.tailKeyCount() != 0);
+
+        boolean tailKeyOwlDialogOpened = false;
+        int tailKeyOwlDeadline = frame + 0x300;
+        while (!tailKeyOwlDialogOpened && frame < tailKeyOwlDeadline) {
+            session.tickEntities(frame++, 0x50, 0x50);
+            tailKeyOwlDialogOpened |= session.consumeEntityDialogRequests().stream()
+                .anyMatch(request -> request.globalDialogId() == 0x0C1);
+        }
+        assertTrue(tailKeyOwlDialogOpened);
+        int tailKeyOwlExitDeadline = frame + 0x100;
+        while ((session.overworldRoomStatusForTest(0x41) & 0x20) == 0
+            && frame < tailKeyOwlExitDeadline) {
+            session.tickEntities(frame++, 0x50, 0x50);
+        }
+        assertEquals(0x20, session.overworldRoomStatusForTest(0x41) & 0x20);
+
+        int[] routeToTailCave = {
+            ScrollController.DOWN, ScrollController.DOWN, ScrollController.DOWN,
+            ScrollController.LEFT, ScrollController.DOWN, ScrollController.DOWN,
+            ScrollController.DOWN, ScrollController.DOWN, ScrollController.DOWN,
+            ScrollController.RIGHT, ScrollController.RIGHT, ScrollController.DOWN,
+            ScrollController.RIGHT
+        };
+        int[] tailCaveRouteRooms = {
+            0x51, 0x61, 0x71, 0x70, 0x80, 0x90, 0xA0,
+            0xB0, 0xC0, 0xC1, 0xC2, 0xD2, 0xD3
+        };
+        for (int index = 0; index < routeToTailCave.length; index++) {
+            walkToAndCrossOverworldBoundary(
+                coordinator, scroll, collision, link, routeToTailCave[index]);
+            assertEquals(tailCaveRouteRooms[index], session.currentRoomId());
+        }
+
+        // Exercise Main's collision bridge with the source upward collision
+        // bit and the two source keyhole-probe coordinates.
+        var tailCaveSounds = new java.util.ArrayList<GameplaySoundEvent>();
+        session.setColorShellSoundSink(tailCaveSounds::add);
+        assertTrue(session.tryUnlockTailCaveKeyhole(
+            0x5A, 0x4A, Link.DIRECTION_UP, 0x01,
+            playerState.tailKeyCount() != 0));
+        assertEquals(0x10, session.overworldRoomStatusForTest(0xD3) & 0x10);
+        assertEquals(0xDF, session.tailCaveKeyholeCountdownForTest());
+        int rumbleTicks = 0;
+        boolean shookRight = false;
+        boolean shookLeft = false;
+        while (session.tailCaveKeyholeSequenceActive()) {
+            int shake = session.tickTailCaveKeyholeSequence();
+            shookRight |= shake == 1;
+            shookLeft |= shake == -2;
+            rumbleTicks++;
+        }
+        assertEquals(0xE0, rumbleTicks);
+        assertTrue(shookRight);
+        assertTrue(shookLeft);
+        assertEquals(List.of(GameplaySoundEvent.DOOR_UNLOCKED,
+            GameplaySoundEvent.OPEN_KEY_CAVERN,
+            GameplaySoundEvent.DUNGEON_OPENED), tailCaveSounds);
+        assertEquals(0xE3, session.activeRoom().roomObjectsArea()[
+            ROOM_OBJECTS_BASE + 0x16]);
+
+        Warp tailCaveEntrance = session.activeRoom().warps().stream()
+            .filter(warp -> warp.tileLocation() == 0x16)
+            .findFirst().orElseThrow();
+        link.setPixelPosition(
+            (tailCaveEntrance.tileLocation() & 0x0F) * 16,
+            (tailCaveEntrance.tileLocation() >>> 4) * 16);
+        coordinator.handleWarpAndIndoorBoundaries(link);
+        while (transition.isActive()) transition.tick();
+        assertEquals(Warp.CATEGORY_INDOOR, session.mapCategory());
+        assertEquals(0x00, session.activeRoom().mapId());
+        assertEquals(0x17, session.currentRoomId());
     }
 
     @Test
