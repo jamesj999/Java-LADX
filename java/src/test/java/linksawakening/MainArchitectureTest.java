@@ -51,6 +51,45 @@ final class MainArchitectureTest {
     }
 
     @Test
+    void mainWiresSwordAndTailCaveCompletionAtTheEntityFrameBoundary() throws Exception {
+        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+        String normalizedSource = source.replaceAll("\\s+", " ");
+
+        int swordBox = source.indexOf("sword.enemyCollisionBox(");
+        int combat = source.indexOf("roomSession.resolveEntityCombat(");
+        assertTrue(swordBox >= 0 && swordBox < combat,
+            "Main must forward the live Sword collision box into entity combat");
+        assertTrue(normalizedSource.contains(
+            "swordBoxForEntityTick.active(), swordBoxForEntityTick.x(), "
+                + "swordBoxForEntityTick.width(), swordBoxForEntityTick.y(), "
+                + "swordBoxForEntityTick.height(), attackContext)"));
+
+        int dialogGate = source.indexOf("roomSession.setEntityDialogActive(");
+        int musicGate = source.indexOf("roomSession.setEntityMusicActive(");
+        int entityTick = source.indexOf("roomSession.tickEntitiesWithProjectileEvents(");
+        assertTrue(dialogGate >= 0 && dialogGate < entityTick);
+        assertTrue(musicGate >= 0 && musicGate < entityTick);
+
+        int heartReward = source.indexOf("roomSession.consumeHeartContainerRewards()");
+        int applyHeart = source.indexOf("playerState.applyHeartContainerReward()");
+        int pendingMusic = source.indexOf("roomSession.consumePendingMusicTrack()");
+        int playPendingMusic = source.indexOf("playDirectMusic(chestMusicTrack)");
+        int openEntityDialog = source.indexOf("openEntityDialogRequests();");
+        int consumeEntityAudio = source.indexOf(
+            "EnemyCombatEventConsumer.consume(roomSession.consumeEntityEvents()");
+        int instrumentWarp = source.indexOf(
+            "roomTransitionCoordinator.handlePendingInstrumentTransition(link)");
+        assertTrue(heartReward >= 0 && heartReward < applyHeart);
+        assertTrue(consumeEntityAudio >= 0 && consumeEntityAudio < instrumentWarp,
+            "Main must audibly consume the instrument warp jingle before transition");
+        assertTrue(pendingMusic >= 0 && pendingMusic < playPendingMusic
+            && playPendingMusic < instrumentWarp,
+            "Main must play the instrument's pending music before transition");
+        assertTrue(openEntityDialog >= 0 && openEntityDialog < instrumentWarp,
+            "Main must open the instrument dialog before transition");
+    }
+
+    @Test
     void mainAppliesTarinLinkWritesAtTheEntityFrameBoundary() throws Exception {
         String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
 

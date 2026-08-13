@@ -3,10 +3,12 @@ package linksawakening.world;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.List;
+import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.entity.Link;
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.equipment.RocsFeather;
+import linksawakening.equipment.Sword;
 import linksawakening.gameplay.BeachSwordRewardConsumer;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gpu.GPU;
@@ -162,7 +164,7 @@ final class RoomTransitionCoordinatorTest {
     }
 
     @Test
-    void freshGameRuntimeSequencePersistsOpeningProgressThroughTailCaveEntry()
+    void freshGameRuntimeSequenceCompletesTailCaveInOrder()
             throws Exception {
         byte[] rom = loadRom();
         RomTables romTables = RomTables.loadFromRom(rom);
@@ -1054,6 +1056,152 @@ final class RoomTransitionCoordinatorTest {
         assertEquals(0x43, session.activeRoom().roomObjectsArea()[ROOM_OBJECTS_BASE + 0x04]);
         assertEquals(0x44, session.activeRoom().roomObjectsArea()[ROOM_OBJECTS_BASE + 0x05]);
         assertEquals(0x04, session.indoorRoomStatusForTest(0x00, 0x0B) & 0x04);
+
+        walkToAndCrossIndoorBoundary(
+            coordinator, transition, scroll, collision, link, ScrollController.UP);
+        assertEquals(0x06, session.currentRoomId());
+        session.tickEntitiesWithProjectileEvents(
+            frame++, 0, 0, 0, 0, Link.DIRECTION_DOWN, false);
+        RoomEntity moldorm = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == EntitySpriteHandlerCatalog.ENTITY_MOLDORM)
+            .findFirst().orElseThrow();
+        for (int hit = 0; hit < 4; hit++) {
+            int tailX = 0;
+            int tailY = 0;
+            int extensionDeadline = frame + 0x100;
+            do {
+                moldorm = session.activeRoom().entities().slots().get(moldorm.slot());
+                List<EntitySpriteDefinition.DynamicSprite> sprites =
+                    moldorm.spriteDefinition().dynamicVariant(0);
+                assertEquals(16, sprites.size());
+                EntitySpriteDefinition.DynamicSprite vulnerableTail = sprites.get(14);
+                tailX = (moldorm.x() + vulnerableTail.xOffset()) & 0xFF;
+                tailY = (moldorm.y() + vulnerableTail.yOffset() + moldorm.z()) & 0xFF;
+                if (!RoomEntityCombatRules.overlapsSword(
+                        moldorm, tailX, 0x08, tailY, 0x08)) {
+                    break;
+                }
+                session.tickEntitiesWithProjectileEvents(
+                    frame++, 0, 0, 0, 0, Link.DIRECTION_DOWN, false);
+            } while (frame < extensionDeadline);
+            assertFalse(RoomEntityCombatRules.overlapsSword(
+                moldorm, tailX, 0x08, tailY, 0x08));
+            int moldormSlot = moldorm.slot();
+            Sword liveSword = new Sword(romTables, null);
+            liveSword.onPress();
+            for (int swingFrame = 0; swingFrame < 4; swingFrame++) {
+                liveSword.tick(false);
+            }
+            link.setDirection(Link.DIRECTION_RIGHT);
+            Sword.CollisionBox initialSwordBox = liveSword.enemyCollisionBox(
+                link.romEntityX(), link.romSwordCollisionY(), link.direction());
+            link.setPixelPosition(
+                tailX - (initialSwordBox.x() - link.pixelX()),
+                tailY - (initialSwordBox.y() - link.pixelY()));
+            Sword.CollisionBox swordBox = liveSword.enemyCollisionBox(
+                link.romEntityX(), link.romSwordCollisionY(), link.direction());
+            assertTrue(swordBox.active());
+            List<EntityCombatEvent> tailHit = session.resolveEntityCombat(
+                moldormSlot ^ 1, link.romEntityX(), link.romEntityY(),
+                link.isAirborne(), true, swordBox.active(),
+                swordBox.x(), swordBox.width(), swordBox.y(), swordBox.height());
+            assertTrue(tailHit.stream().anyMatch(event ->
+                event.slot() == moldormSlot && event.enemyDamage() == 1),
+                "Moldorm tail hit " + hit + " at (" + tailX + "," + tailY + "): "
+                    + tailHit);
+            for (int recovery = 0; recovery < 0x30; recovery++) {
+                session.tickEntitiesWithProjectileEvents(
+                    frame++, 0, 0, 0, 0, Link.DIRECTION_DOWN, false);
+            }
+        }
+        assertEquals(EntityStatus.DYING,
+            session.activeRoom().entities().slots().get(moldorm.slot()).status());
+
+        int moldormDeadline = frame + 0x400;
+        RoomEntity heartContainer = null;
+        while (heartContainer == null && frame < moldormDeadline) {
+            session.tickEntitiesWithProjectileEvents(
+                frame++, 0, 0, 0, 0, Link.DIRECTION_DOWN, false);
+            heartContainer = session.activeRoom().entities().loadedEntities().stream()
+                .filter(entity -> entity.type() == 0x36)
+                .findFirst().orElse(null);
+        }
+        assertNotNull(heartContainer);
+        int heartPickupFrame = (heartContainer.slot() & 0x01) == 0
+            ? frame | 1 : frame & ~1;
+        assertNotNull(session.collectEntityIfNeeded(
+            heartPickupFrame, heartContainer.x(), heartContainer.y(), false, true,
+            Link.DIRECTION_DOWN, heartContainer.z()));
+        int previousMaxHearts = playerState.maxHearts();
+        for (int held = 0; held < 0x70; held++) {
+            session.tickEntitiesWithProjectileEvents(
+                frame++, 0x50, 0x60, 0, 0, Link.DIRECTION_DOWN, false);
+        }
+        session.consumeHeartContainerRewards().forEach(
+            reward -> playerState.applyHeartContainerReward());
+        assertEquals(previousMaxHearts + 1, playerState.maxHearts());
+        assertEquals(0x20, session.indoorRoomStatusForTest(0x00, 0x06) & 0x20);
+        assertEquals(0, session.activeRoom().shutterDoorMask());
+
+        walkToAndCrossIndoorBoundary(
+            coordinator, transition, scroll, collision, link, ScrollController.UP);
+        assertEquals(0x02, session.currentRoomId());
+        RoomEntity instrument = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type()
+                == EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS)
+            .findFirst().orElseThrow();
+        session.tickEntitiesWithProjectileEvents(
+            frame++, instrument.x(), instrument.y(), 0, 0, Link.DIRECTION_DOWN, false);
+        assertNotNull(session.collectEntityIfNeeded(
+            (instrument.slot() ^ 1) & 1, instrument.x(), instrument.y(), false, true,
+            Link.DIRECTION_DOWN, 0));
+        assertEquals(0x1B, session.consumePendingMusicTrack());
+        for (int performance = 1; performance <= 88; performance++) {
+            session.tickEntitiesWithProjectileEvents(
+                frame++, 0x50, 0x60, 0, 0, Link.DIRECTION_DOWN, false);
+        }
+        assertTrue(session.hasDungeonInstrumentForTest(0x00));
+        assertEquals(0x100,
+            session.consumeEntityDialogRequests().getFirst().globalDialogId());
+        session.setEntityDialogActive(true);
+        session.setEntityMusicActive(true);
+        session.tickEntitiesWithProjectileEvents(
+            frame++, 0x50, 0x60, 0, 0, Link.DIRECTION_DOWN, false);
+        session.setEntityDialogActive(false);
+        session.tickEntitiesWithProjectileEvents(
+            frame++, 0x50, 0x60, 0, 0, Link.DIRECTION_DOWN, false);
+        session.setEntityMusicActive(false);
+        session.tickEntitiesWithProjectileEvents(
+            frame++, 0x50, 0x60, 0, 0, Link.DIRECTION_DOWN, false);
+        assertEquals(0x20, session.consumePendingMusicTrack());
+        int ticksToWarpJingle = 0;
+        boolean heardWarpJingle = false;
+        while (!heardWarpJingle && ticksToWarpJingle < 0x100) {
+            session.tickEntitiesWithProjectileEvents(
+                frame++, 0x50, 0x60, 0, 0, Link.DIRECTION_DOWN, false);
+            ticksToWarpJingle++;
+            heardWarpJingle = session.consumeEntityEvents().stream().anyMatch(event ->
+                event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE
+                    && event.soundId() == 0x2B);
+        }
+        assertTrue(heardWarpJingle);
+        assertEquals(0xFF, ticksToWarpJingle);
+
+        int slowWarpTicks = 0;
+        while (!transition.isActive() && slowWarpTicks < 0x204) {
+            session.tickEntitiesWithProjectileEvents(
+                frame++, 0x50, 0x60, 0, 0, Link.DIRECTION_DOWN, false);
+            slowWarpTicks++;
+            if (coordinator.handlePendingInstrumentTransition(link)) {
+                break;
+            }
+        }
+        assertTrue(transition.isActive());
+        assertTrue(slowWarpTicks >= 0x1FD && slowWarpTicks <= 0x200,
+            "source $80 slow countdown completed in " + slowWarpTicks + " ticks");
+        while (transition.isActive()) transition.tick();
+        assertEquals(Warp.CATEGORY_OVERWORLD, session.mapCategory());
+        assertEquals(0xD3, session.currentRoomId());
     }
 
     @Test
