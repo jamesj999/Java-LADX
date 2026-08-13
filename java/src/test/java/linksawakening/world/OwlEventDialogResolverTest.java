@@ -12,6 +12,7 @@ final class OwlEventDialogResolverTest {
         OwlEventDialogResolver resolver = new OwlEventDialogResolver(loadRom());
 
         assertEquals(0x0D9, resolver.globalDialogId(0xF2));
+        assertEquals(0x0C1, resolver.globalDialogId(0x41));
         assertEquals(0x0C2, resolver.globalDialogId(0xD2));
         assertEquals(0x09, resolver.defaultMusicTrack(0x80));
     }

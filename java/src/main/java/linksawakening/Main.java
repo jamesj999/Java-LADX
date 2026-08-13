@@ -1019,6 +1019,7 @@ public class Main {
                 roomSession.setEntityAttackStepAnimationCountdown(
                     link == null ? 0 : link.romAttackStepAnimationCountdown());
                 roomSession.setBirdKeyOwned(playerState != null && playerState.birdKeyCount() != 0);
+                roomSession.setTailKeyOwned(playerState != null && playerState.tailKeyCount() != 0);
                 roomSession.setEntityInventorySlots(
                     playerState == null ? PlayerState.INVENTORY_EMPTY : playerState.itemA(),
                     playerState == null ? PlayerState.INVENTORY_EMPTY : playerState.itemB());
@@ -1150,6 +1151,7 @@ public class Main {
                     }
                 }
                 roomSession.setBirdKeyOwned(playerState != null && playerState.birdKeyCount() != 0);
+                roomSession.setTailKeyOwned(playerState != null && playerState.tailKeyCount() != 0);
                 int chestMusicTrack = roomSession.consumePendingMusicTrack();
                 if (chestMusicTrack >= 0) {
                     playDirectMusic(chestMusicTrack);
@@ -1607,6 +1609,7 @@ public class Main {
         profile.initializePlayerState(playerState);
         roomSession.initializeNewGameWorldState();
         roomSession.setBirdKeyOwned(playerState.birdKeyCount() != 0);
+        roomSession.setTailKeyOwned(playerState.tailKeyCount() != 0);
         roomSession.setBowWowState(0);
         link.setDirection(Link.DIRECTION_DOWN);
         gpu.loadBaseTiles(romData);
@@ -1626,6 +1629,7 @@ public class Main {
         newGameTarinShieldMotion = null;
         playerState.applySavedGame(saved);
         roomSession.setBirdKeyOwned(playerState.birdKeyCount() != 0);
+        roomSession.setTailKeyOwned(playerState.tailKeyCount() != 0);
         roomSession.restoreRoomStatuses(saved.overworldRoomStatus(), saved.indoorARoomStatus(),
             saved.indoorBRoomStatus(), saved.colorDungeonRoomStatus());
         roomSession.restoreDungeonItemFlags(saved.dungeonItemFlags(),

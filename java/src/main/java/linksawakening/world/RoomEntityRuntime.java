@@ -184,6 +184,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_BOMB = 0x02;
     private static final int ENTITY_SWORD_SHIELD_PICKUP = 0x31;
     private static final int ENTITY_OWL_EVENT = 0x41;
+    private static final int ROOM_OW_TAIL_KEY_CHEST = 0x41;
     private static final int ENTITY_WITCH = WitchMotion.ENTITY_TYPE;
     private static final int ROOM_OW_BEACH_WITH_SWORD = 0xF2;
     private static final int ENTITY_BOUNCING_BOMBITE = 0x55;
@@ -582,7 +583,11 @@ public final class RoomEntityRuntime {
     private final int[] kidSpeedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private boolean playerHasToadstool;
     private int playerMagicPowderCount;
+    private boolean playerHasTailKey;
     private final int[] owlEventState = new int[EntityRoomLoader.MAX_ENTITIES];
+    /** wEntitiesPrivateCountdown1Table for the owl-event handler. */
+    private final int[] owlPrivateCountdown1 =
+        new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] owlSpeedX = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] owlSpeedY = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] owlSpeedZ = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -5641,6 +5646,7 @@ public final class RoomEntityRuntime {
         chestSpeedYAccumulator[slot] = 0;
         chestInertia[slot] = 0;
         chestItemBySlot[slot] = 0;
+        owlPrivateCountdown1[slot] = 0;
         entityGroundStatus[slot] = 0;
         fallingTargetX[slot] = 0;
         fallingTargetY[slot] = 0;
@@ -6923,6 +6929,11 @@ public final class RoomEntityRuntime {
         playerMagicPowderCount = magicPowderCount;
     }
 
+    /** Supplies wHasTailKey to OwlEventEntityHandler. */
+    void setTailKeyOwned(boolean owned) {
+        playerHasTailKey = owned;
+    }
+
     int swordPickupStateForTest(int slot) {
         validateEntitySlot(slot);
         return swordPickupState[slot];
@@ -6969,6 +6980,11 @@ public final class RoomEntityRuntime {
     int owlEventStateForTest(int slot) {
         validateEntitySlot(slot);
         return owlEventState[slot];
+    }
+
+    int owlPrivateCountdown1ForTest(int slot) {
+        validateEntitySlot(slot);
+        return owlPrivateCountdown1[slot];
     }
 
     void setTransitionSequenceCounterForTest(int counter) {
@@ -7857,6 +7873,12 @@ public final class RoomEntityRuntime {
                         return;
                     }
                     owlPreviousMusicTrack[slot] = 0x1D;
+                } else if (entityRoomId == ROOM_OW_TAIL_KEY_CHEST) {
+                    if (!playerHasTailKey || owlPrivateCountdown1[slot] != 0) {
+                        return;
+                    }
+                    owlPreviousMusicTrack[slot] =
+                        owlDefaultMusicResolver.applyAsInt(entityRoomId);
                 } else {
                     if (chestSwordLevel == 0) {
                         disableEntityWithoutPersistence(slot);
@@ -8821,6 +8843,14 @@ public final class RoomEntityRuntime {
         pendingEntityEvents.add(new EntityCombatEvent(
             slot, ENTITY_CHEST_WITH_ITEM, 0, false,
             EntityCombatEvent.SoundChannel.NOISE, CHEST_OPEN_NOISE_ID));
+        if (itemType == ChestContentsTable.CHEST_TAIL_KEY) {
+            for (RoomEntity candidate : slots) {
+                if (candidate.loaded() && candidate.type() == ENTITY_OWL_EVENT) {
+                    owlPrivateCountdown1[candidate.slot()] = 0x38;
+                    break;
+                }
+            }
+        }
         if (itemType < ChestContentsTable.CHEST_MESSAGE) {
             pendingChestRewardEvents.add(new ChestRewardEvent(slot, itemType));
         }
@@ -11432,11 +11462,19 @@ public final class RoomEntityRuntime {
         if (bombPrivateCountdown3[slot] > 0) {
             bombPrivateCountdown3[slot]--;
         }
+        if (owlPrivateCountdown1[slot] > 0 && entityTimersInteractive()) {
+            owlPrivateCountdown1[slot]--;
+        }
         if (liftableRockSmashActive[slot] && liftableRockSmashCountdown[slot] > 0) {
             liftableRockSmashCountdown[slot]--;
         }
         blooperMotion.decrementPrivateCountdown3(slot);
         wingedOctorokMotion.decrementPrivateCountdown2(slot);
+    }
+
+    /** Mirrors UpdateEntityTimers' shared dialog/inventory/ocarina early return. */
+    private boolean entityTimersInteractive() {
+        return !dialogActive && !inventoryAppearing && linkPlayingOcarinaCountdown == 0;
     }
 
     private void requestArmosLinkPush(RoomEntity entity, int linkEntityX, int linkEntityY,

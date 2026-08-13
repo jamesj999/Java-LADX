@@ -68,9 +68,12 @@ public final class RoomSession {
     private static final int ROOM_STATUS_CHEST_OPEN = 0x10;
     private static final int ROOM_STATUS_EVENT_1 = 0x10;
     private static final int ROOM_STATUS_EVENT_2 = 0x20;
+    private static final int ROOM_STATUS_DISCOVERED = 0x40;
+    private static final int ROOM_OW_TAIL_KEY_CHEST = 0x41;
     private static final int ROOM_OW_TAIL_CAVE_ENTRANCE = 0xD3;
     private static final int ROOM_OW_MYSTERIOUS_WOODS_LOST = 0x63;
     private static final int ENTITY_TARIN = TarinRaccoonMotion.ENTITY_TYPE;
+    private static final int ENTITY_OWL_EVENT = 0x41;
     private static final int TAIL_CAVE_GATE_LOCATION = 0x16;
     private static final int KEYHOLE_DIALOG_TABLE = 2;
     private static final int TAIL_KEYHOLE_DIALOG_ID = 0x30;
@@ -245,6 +248,7 @@ public final class RoomSession {
     private boolean pendingManboTransition;
     private boolean pendingInstrumentTransition;
     private boolean hasBirdKey;
+    private boolean hasTailKey;
     private int bowWowState;
     /** WRAM wTarinFlag; persisted NPC/world progression, not player inventory state. */
     private int tarinFlag;
@@ -377,8 +381,19 @@ public final class RoomSession {
                                              int linkScreenY) {
         RoomRenderSnapshot previousRoom = renderSnapshot();
         int nextRoomId = adjacentOverworldRoomId(direction);
+        boolean discoveredTailKeyRoom = nextRoomId == ROOM_OW_TAIL_KEY_CHEST
+            && direction == ScrollController.UP
+            && (overworldRoomStatus[nextRoomId] & ROOM_STATUS_DISCOVERED) == 0;
+        if (discoveredTailKeyRoom) {
+            overworldRoomStatus[nextRoomId] |= (byte) ROOM_STATUS_DISCOVERED;
+        }
         loadRoomSpecificTilesIfNeeded(nextRoomId);
         loadOverworld(nextRoomId);
+        if (discoveredTailKeyRoom) {
+            pendingRoomEntityEvents.add(new EntityCombatEvent(
+                0, ENTITY_OWL_EVENT, 0, false,
+                EntityCombatEvent.SoundChannel.JINGLE, 0x02));
+        }
         scrollController.start(direction, linkScreenX, linkScreenY, previousRoom, scrollTarget(direction));
     }
 
@@ -464,6 +479,14 @@ public final class RoomSession {
         hasBirdKey = owned;
     }
 
+    /** Supplies wHasTailKey to the active owl-event handler. */
+    public void setTailKeyOwned(boolean owned) {
+        hasTailKey = owned;
+        if (entityRuntime != null) {
+            entityRuntime.setTailKeyOwned(owned);
+        }
+    }
+
     public int currentRoomId() {
         return activeRoom.roomId();
     }
@@ -524,6 +547,7 @@ public final class RoomSession {
         followingNpcRoomNeedsSync = true;
         followingLinkPositionHistory.fill(0x08, 0x10, 0, 0);
         hasBirdKey = false;
+        hasTailKey = false;
         bowWowState = 0;
         tarinFlag = 0;
         playerShieldLevel = 0;
@@ -552,6 +576,7 @@ public final class RoomSession {
             COLOR_DUNGEON_SAVE_STATUS_SIZE);
         if (entityRuntime != null && activeRoom != null) {
             entityRuntime.setEntityRoomStatus(activeRoomStatusFlags());
+            entityRuntime.setTailKeyOwned(hasTailKey);
         }
     }
 
@@ -2038,6 +2063,7 @@ public final class RoomSession {
             entityRuntime.setBombButtonHeld(bombButtonHeld);
             entityRuntime.setLiftedLinkC13B(followingEntityYOffset);
             entityRuntime.setEntityRoomStatus(activeRoomStatusFlags());
+            entityRuntime.setTailKeyOwned(hasTailKey);
             entityRuntime.setSecretSeashellPegasusCollisionState(
                 secretSeashellScreenShakeActive, secretSeashellPegasusCollisionActive,
                 secretSeashellPegasusCollisionX, secretSeashellPegasusCollisionY);
@@ -2103,6 +2129,7 @@ public final class RoomSession {
         entityRuntime.setBombButtonHeld(bombButtonHeld);
         entityRuntime.setLiftedLinkC13B(followingEntityYOffset);
         entityRuntime.setEntityRoomStatus(activeRoomStatusFlags());
+        entityRuntime.setTailKeyOwned(hasTailKey);
         entityRuntime.setSecretSeashellPegasusCollisionState(
             secretSeashellScreenShakeActive, secretSeashellPegasusCollisionActive,
             secretSeashellPegasusCollisionX, secretSeashellPegasusCollisionY);

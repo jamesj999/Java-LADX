@@ -393,6 +393,29 @@ final class RoomSessionTest {
     }
 
     @Test
+    void enteringTailKeyRoomFromBelowMarksDiscoveryAndQueuesItsPuzzleJingleOnce() {
+        RoomSession session = newSession();
+        ScrollController scrollController = new ScrollController();
+        session.loadInitialOverworld(0x51);
+
+        session.startAdjacentOverworldScroll(
+            scrollController, ScrollController.UP, 0x50, 0x20);
+
+        assertEquals(0x41, session.currentRoomId());
+        assertEquals(0x40, session.overworldRoomStatusForTest(0x41) & 0x40);
+        assertTrue(session.consumeEntityEvents().stream().anyMatch(event ->
+            event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE
+                && event.soundId() == 0x02));
+
+        session.loadInitialOverworld(0x51);
+        session.startAdjacentOverworldScroll(
+            new ScrollController(), ScrollController.UP, 0x50, 0x20);
+        assertFalse(session.consumeEntityEvents().stream().anyMatch(event ->
+            event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE
+                && event.soundId() == 0x02));
+    }
+
+    @Test
     void notifiesListenerAfterRoomLoads() {
         List<Integer> loadedRoomIds = new ArrayList<>();
         RoomSession session = newSession(room -> loadedRoomIds.add(room.roomId()));
@@ -1006,6 +1029,26 @@ final class RoomSessionTest {
         session.consumeChestRewardEvents().forEach(
             reward -> playerState.applyChestReward(reward.itemType()));
         assertEquals(1, playerState.tailKeyCount());
+        session.setTailKeyOwned(playerState.tailKeyCount() != 0);
+
+        int frame = 1;
+        boolean owlDialogOpened = false;
+        while (!owlDialogOpened && frame < 0x300) {
+            session.tickEntities(frame++, 0x50, 0x50);
+            owlDialogOpened |= session.consumeEntityDialogRequests().stream()
+                .anyMatch(request -> request.globalDialogId() == 0x0C1);
+        }
+        assertTrue(owlDialogOpened);
+        while ((session.overworldRoomStatusForTest(0x41) & 0x20) == 0
+            && frame < 0x340) {
+            session.tickEntities(frame++, 0x50, 0x50);
+        }
+        assertEquals(0x20, session.overworldRoomStatusForTest(0x41) & 0x20);
+
+        session.loadInitialOverworld(0x41);
+        assertEquals(0x20, session.overworldRoomStatusForTest(0x41) & 0x20);
+        assertFalse(session.activeRoom().entities().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == 0x41));
 
         session.loadInitialOverworld(0xD3);
         assertTrue(session.tryUnlockTailCaveKeyhole(

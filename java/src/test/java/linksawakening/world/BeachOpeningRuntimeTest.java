@@ -237,6 +237,63 @@ final class BeachOpeningRuntimeTest {
             armed.snapshot().slots().get(0).spriteDefinition().shape());
     }
 
+    @Test
+    void tailKeyOwlWaitsForOwnershipAndTheChestInitializedPrivateCountdown()
+            throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RoomEntity owl = new RoomEntity(
+            0, 0, ENTITY_OWL_EVENT, 0x58, 0x50, EntityStatus.ACTIVE,
+            catalog.forOwlEvent(false), 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(owl), false, () -> 0,
+            catalog, new RomEnemyCombatTables(rom), new ChestContentsTable(rom));
+        runtime.setEntityRoomId(0x41);
+        runtime.setOwlDialogResolver(new OwlEventDialogResolver(rom)::globalDialogId);
+
+        runtime.tick(0, 0x50, 0x50, () -> 0);
+        assertEquals(0, runtime.owlEventStateForTest(0));
+
+        runtime.setTailKeyOwned(true);
+        int chestSlot = runtime.spawnChestWithItem(
+            0x38, 0x31, ChestContentsTable.CHEST_TAIL_KEY);
+        runtime.tick(1, 0x50, 0x50, () -> 0);
+        assertEquals(EntityRoomLoader.MAX_ENTITIES - 1, chestSlot);
+        assertEquals(0x37, runtime.owlPrivateCountdown1ForTest(0));
+        assertEquals(0, runtime.owlEventStateForTest(0));
+
+        runtime.setDialogActive(true);
+        runtime.tick(2, 0x50, 0x50, () -> 0);
+        assertEquals(0x37, runtime.owlPrivateCountdown1ForTest(0));
+        runtime.setDialogActive(false);
+
+        runtime.setTalkState(true, 0, 0x80);
+        runtime.tick(3, 0x50, 0x50, () -> 0);
+        assertEquals(0x37, runtime.owlPrivateCountdown1ForTest(0));
+        runtime.setTalkState(false, 0, 0x80);
+
+        runtime.setOcarinaPlaybackForTest(1, 0, 0);
+        runtime.tick(4, 0x50, 0x50, () -> 0);
+        assertEquals(0x37, runtime.owlPrivateCountdown1ForTest(0));
+        runtime.setOcarinaPlaybackForTest(0, 0, 0);
+
+        for (int frame = 5; frame < 0x3B; frame++) {
+            runtime.tick(frame, 0x50, 0x50, () -> 0);
+        }
+        assertEquals(0, runtime.owlEventStateForTest(0));
+
+        runtime.tick(0x3B, 0x50, 0x50, () -> 0);
+        assertEquals(1, runtime.owlEventStateForTest(0));
+        assertEquals(0x22, runtime.consumePendingMusicTrack());
+
+        boolean dialogOpened = false;
+        for (int frame = 0x3C; frame < 0x300 && !dialogOpened; frame++) {
+            runtime.tick(frame, 0x50, 0x50, () -> 0);
+            dialogOpened = runtime.consumePendingDialogRequests().stream()
+                .anyMatch(request -> request.globalDialogId() == 0x0C1);
+        }
+        assertTrue(dialogOpened);
+    }
+
     private static RoomEntityRuntime owlRuntime(EntitySpriteHandlerCatalog catalog, byte[] rom) {
         return RoomEntityRuntime.from(snapshot(new RoomEntity(
             0, 0, ENTITY_OWL_EVENT, 0x58, 0x50, EntityStatus.ACTIVE,
