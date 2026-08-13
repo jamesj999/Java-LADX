@@ -588,6 +588,47 @@ final class RoomTransitionCoordinatorTest {
             .toList();
         assertEquals(3, cards.size());
         assertTrue(cards.stream().allMatch(card -> card.spriteDefinition().supported()));
+
+        // The Stone Beak branch is optional. The required route returns south
+        // and west to the ROM's static small-key chest in room $0E.
+        walkToAndCrossIndoorBoundary(
+            coordinator, transition, scroll, collision, link, ScrollController.DOWN);
+        assertEquals(0x10, session.currentRoomId());
+        walkToAndCrossIndoorBoundary(
+            coordinator, transition, scroll, collision, link, ScrollController.LEFT);
+        assertEquals(0x0F, session.currentRoomId());
+        walkToAndCrossIndoorBoundary(
+            coordinator, transition, scroll, collision, link, ScrollController.LEFT);
+        assertEquals(0x0E, session.currentRoomId());
+
+        RoomSession.ChestOpenResult secondSmallKeyChest = session.tryOpenChest(
+            0x38, 0x21, Link.DIRECTION_UP, true, playerState.swordLevel());
+        assertTrue(secondSmallKeyChest.opened());
+        assertEquals(ChestContentsTable.CHEST_SMALL_KEY, secondSmallKeyChest.itemType());
+        session.tickEntitiesWithProjectileEvents(
+            frame++, 0x38, 0x21, 0, 0, Link.DIRECTION_DOWN, false);
+        assertEquals(1, session.currentDungeonItemFlagsSnapshot()[
+            DungeonItemState.SMALL_KEYS_INDEX]);
+
+        walkToAndCrossIndoorBoundary(
+            coordinator, transition, scroll, collision, link, ScrollController.LEFT);
+        assertEquals(0x0D, session.currentRoomId());
+        walkToAndCrossIndoorBoundary(
+            coordinator, transition, scroll, collision, link, ScrollController.UP);
+        assertEquals(0x07, session.currentRoomId());
+
+        link.setPixelPosition(0x48, 0x05);
+        assertTrue(session.tryUnlockIndoorKeyDoor(
+            link.pixelX(), link.pixelY(), Link.DIRECTION_UP, 0x01));
+        for (int tick = 0; tick <= 8; tick++) {
+            session.tickEntitiesWithProjectileEvents(
+                frame++, link.pixelX(), link.pixelY(), 0, 0, Link.DIRECTION_UP, false);
+        }
+        assertEquals(0, session.currentDungeonItemFlagsSnapshot()[
+            DungeonItemState.SMALL_KEYS_INDEX]);
+        walkToAndCrossIndoorBoundary(
+            coordinator, transition, scroll, collision, link, ScrollController.UP);
+        assertEquals(0x04, session.currentRoomId());
     }
 
     @Test
