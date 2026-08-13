@@ -62,6 +62,21 @@ final class EntitySpriteHandlerCatalogTest {
     }
 
     @Test
+    void decodesThreeOfAKindsEightCardFaceVariants() throws Exception {
+        EntitySpriteDefinition cards = new EntitySpriteHandlerCatalog(loadRom())
+            .forEntityType(EntitySpriteHandlerCatalog.ENTITY_THREE_OF_A_KIND,
+                EntityRoomLoader.RoomTable.INDOORS_A);
+
+        assertDefinition(cards, 0x06, 0x4911,
+            EntitySpriteDefinition.Shape.PAIR, 8, 0);
+        assertEquals(0x74, cards.variant(0).first().tile());
+        assertEquals(0x76, cards.variant(0).second().tile());
+        assertEquals(0x76, cards.variant(1).first().tile());
+        assertEquals(0x20, cards.variant(1).first().attributes() & 0x20);
+        assertEquals(0x7E, cards.variant(7).first().tile());
+    }
+
+    @Test
     void decodesSyntheticPairAndSingleDisplayListsWithUnsignedBytes() {
         byte[] rom = syntheticRom();
         write(rom, 0x06, 0x5000,

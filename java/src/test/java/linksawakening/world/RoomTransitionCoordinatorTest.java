@@ -3,6 +3,7 @@ package linksawakening.world;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.List;
+import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.entity.Link;
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.gameplay.BeachSwordRewardConsumer;
@@ -570,6 +571,23 @@ final class RoomTransitionCoordinatorTest {
         walkToAndCrossIndoorBoundary(
             coordinator, transition, scroll, collision, link, ScrollController.RIGHT);
         assertEquals(0x10, session.currentRoomId());
+        assertEquals(0, session.activeRoomEventForTest());
+        assertTrue(session.activeRoom().entities().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == 0x1E));
+
+        // Rolling Bones is reachable to the east, but the progression-bearing
+        // route is north: room $0A supplies the stone beak and its three-card
+        // puzzle is the next sword-solvable room before Link owns the feather.
+        walkToAndCrossIndoorBoundary(
+            coordinator, transition, scroll, collision, link, ScrollController.UP);
+        assertEquals(0x0A, session.currentRoomId());
+        assertEquals(0x61, session.activeRoomEventForTest());
+        List<RoomEntity> cards = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type()
+                == EntitySpriteHandlerCatalog.ENTITY_THREE_OF_A_KIND)
+            .toList();
+        assertEquals(3, cards.size());
+        assertTrue(cards.stream().allMatch(card -> card.spriteDefinition().supported()));
     }
 
     @Test

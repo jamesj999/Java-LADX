@@ -32,6 +32,8 @@ public final class RoomEntityRuntime {
         EntitySpriteHandlerCatalog.ENTITY_ROLLING_BONES;
     private static final int ENTITY_ROLLING_BONES_BAR =
         EntitySpriteHandlerCatalog.ENTITY_ROLLING_BONES_BAR;
+    private static final int ENTITY_THREE_OF_A_KIND =
+        EntitySpriteHandlerCatalog.ENTITY_THREE_OF_A_KIND;
     private static final int ENTITY_PIECE_OF_POWER = 0x33;
     private static final int ENTITY_CRYSTAL_SWITCH = 0x66;
     private static final int ENTITY_BUTTERFLY = 0x6E;
@@ -350,6 +352,7 @@ public final class RoomEntityRuntime {
     private final ArmosMotion armosMotion = new ArmosMotion();
     private final ArmosKnightMotion armosKnightMotion = new ArmosKnightMotion();
     private final RollingBonesMotion rollingBonesMotion = new RollingBonesMotion();
+    private final ThreeOfAKindMotion threeOfAKindMotion = new ThreeOfAKindMotion();
     private final MoblinKingMotion moblinKingMotion = new MoblinKingMotion();
     private final BossIntroMotion bossIntroMotion = new BossIntroMotion();
     private final GhiniMotion ghiniMotion = new GhiniMotion();
@@ -1558,9 +1561,12 @@ public final class RoomEntityRuntime {
             boolean freezeTarinTimers = !indoorRoom && entity.type() == ENTITY_TARIN
                 && tarinRaccoonMotion.state(entity.slot()) != 0
                 && !tarinTransformationTimersInteractive();
+            boolean freezeThreeOfAKindTimers = entity.type() == ENTITY_THREE_OF_A_KIND
+                && !handlerLinkCollisionEnabled;
             boolean ignoreHitsDecrementedBeforeHandler = !freezeTarinTimers
+                && !freezeThreeOfAKindTimers
                 && decrementEnemyCombatCountdowns(entity.slot(), !wasInitializing);
-            if (!freezeTarinTimers) {
+            if (!freezeTarinTimers && !freezeThreeOfAKindTimers) {
                 decrementEnemyStatusCountdowns(entity.slot());
             }
             if (entity.sourceLoadOrder() == -1 && isDisabledFollower(entity.type())) {
@@ -1604,6 +1610,7 @@ public final class RoomEntityRuntime {
             boolean preserveSpikedBeetlePresentation = false;
             boolean preserveArmosKnightPresentation = false;
             boolean preserveRollingBonesPresentation = false;
+            boolean preserveThreeOfAKindPresentation = false;
             boolean preserveMoblinKingPresentation = false;
             boolean preserveSecretSeashellPresentation = false;
             boolean preserveDroppablePresentation = false;
@@ -3193,6 +3200,18 @@ public final class RoomEntityRuntime {
                 }
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_THREE_OF_A_KIND
+                && handlerLinkCollisionEnabled) {
+                enemyHealth[entity.slot()] = 0x20;
+                ThreeOfAKindMotion.Update cardUpdate = threeOfAKindMotion.advance(
+                    entity, frame, enemyTransitionCountdown[entity.slot()],
+                    enemyIgnoreHitsCountdown[entity.slot()], randomByteSupplier,
+                    backgroundCollision);
+                updated = cardUpdate.entity();
+                enemyTransitionCountdown[entity.slot()] = cardUpdate.transitionCountdown();
+                preserveThreeOfAKindPresentation = true;
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_GIBDO) {
                 updated = gibdoMotion.advance(entity, randomByteSupplier, backgroundCollision);
             }
@@ -4020,6 +4039,7 @@ public final class RoomEntityRuntime {
                 || preservePolsVoicePresentation
                 || preserveSpikedBeetlePresentation || preserveArmosKnightPresentation
                 || preserveRollingBonesPresentation
+                || preserveThreeOfAKindPresentation
                 || preserveMoblinKingPresentation
                 || preserveSecretSeashellPresentation || preserveDroppablePresentation
                 || preserveTarinPresentation
@@ -4056,6 +4076,7 @@ public final class RoomEntityRuntime {
                 || preservePolsVoicePresentation
                 || preserveSpikedBeetlePresentation || preserveArmosKnightPresentation
                 || preserveRollingBonesPresentation
+                || preserveThreeOfAKindPresentation
                 || preserveMoblinKingPresentation
                 || preserveSecretSeashellPresentation || preserveDroppablePresentation
                 || preserveTarinPresentation
@@ -4078,6 +4099,9 @@ public final class RoomEntityRuntime {
                     updated.spriteTileOffset(), updated.z());
             }
         }
+        if (handlerLinkCollisionEnabled) {
+            resolveThreeOfAKindPuzzle();
+        }
         updateHookshotChainOam(linkEntityX, linkEntityY, frame);
         updatePincerBodyOam();
         updateWingedOctorokOam();
@@ -4086,6 +4110,44 @@ public final class RoomEntityRuntime {
 
     List<RoamingEnemyMotion.LaunchRequest> projectileLaunchRequests() {
         return List.copyOf(projectileLaunchRequests);
+    }
+
+    private void resolveThreeOfAKindPuzzle() {
+        ThreeOfAKindMotion.PuzzleResult result = threeOfAKindMotion.resolvePuzzle(
+            Arrays.asList(slots), enemyTransitionCountdown);
+        if (result == ThreeOfAKindMotion.PuzzleResult.NONE) {
+            return;
+        }
+        int coordinatorSlot = Arrays.stream(slots)
+            .filter(entity -> entity.status() == EntityStatus.ACTIVE
+                && entity.type() == ENTITY_THREE_OF_A_KIND)
+            .mapToInt(RoomEntity::slot)
+            .findFirst().orElse(0);
+        int jingle = result == ThreeOfAKindMotion.PuzzleResult.MATCH
+            ? threeOfAKindMotion.matchedJingle(coordinatorSlot) : 0x1D;
+        pendingEntityEvents.add(new EntityCombatEvent(
+            coordinatorSlot, ENTITY_THREE_OF_A_KIND, 0, false,
+            EntityCombatEvent.SoundChannel.JINGLE, jingle));
+        if (result != ThreeOfAKindMotion.PuzzleResult.MATCH) {
+            return;
+        }
+        for (int index = 0; index < slots.length; index++) {
+            RoomEntity entity = slots[index];
+            if (!entity.loaded() || entity.type() != ENTITY_THREE_OF_A_KIND) {
+                continue;
+            }
+            int slot = entity.slot();
+            droppedItemBySlot[slot] = threeOfAKindMotion.matchedDrop(slot);
+            dyingCountdown[slot] = 0x1F;
+            enemyHealth[slot] = 0;
+            enemyPhysicsFlags[slot] = 0x04;
+            slots[index] = withStatus(entity, EntityStatus.DYING);
+        }
+        // The source writes the shared noise register once per card in the
+        // same handler pass; only the final register value is audible.
+        pendingEntityEvents.add(new EntityCombatEvent(
+            coordinatorSlot, ENTITY_THREE_OF_A_KIND, 0, false,
+            EntityCombatEvent.SoundChannel.NOISE, 0x13));
     }
 
     /**
@@ -4440,6 +4502,10 @@ public final class RoomEntityRuntime {
             RoomEntity entity = slots[index];
             if (!entity.loaded() || entity.status() != EntityStatus.ACTIVE
                 || !RoomEntityCombatRules.supportsEnemyCollision(entity.type())) {
+                continue;
+            }
+            if (entity.type() == ENTITY_THREE_OF_A_KIND
+                && threeOfAKindMotion.state(entity.slot()) == 2) {
                 continue;
             }
             if (entity.type() == ENTITY_ROLLING_BONES_BAR && linkAirborne) {
@@ -5721,6 +5787,7 @@ public final class RoomEntityRuntime {
         booBuddyMotion.clear(slot);
         stalfosAggressiveMotion.clear(slot);
         stalfosEvasiveMotion.clear(slot);
+        threeOfAKindMotion.clear(slot);
         gibdoMotion.clear(slot);
         likeLikeMotion.clear(slot);
         goombaMotion.clear(slot);
@@ -6953,6 +7020,22 @@ public final class RoomEntityRuntime {
     void setTransitionCountdownForTest(int slot, int countdown) {
         validateCountdownTestValue(slot, countdown);
         enemyTransitionCountdown[slot] = countdown;
+    }
+
+    void setThreeOfAKindSettledForTest(int slot, int face) {
+        validateEntitySlot(slot);
+        threeOfAKindMotion.setSettledForTest(slot, face);
+        enemyTransitionCountdown[slot] = 0;
+    }
+
+    int threeOfAKindStateForTest(int slot) {
+        validateEntitySlot(slot);
+        return threeOfAKindMotion.state(slot);
+    }
+
+    int transitionCountdownForTest(int slot) {
+        validateEntitySlot(slot);
+        return enemyTransitionCountdown[slot];
     }
 
     void setTarinRaccoonStateForTest(int slot, int state, int speedX, int speedY,

@@ -27,6 +27,7 @@ public final class EntitySpriteHandlerCatalog {
     public static final int ENTITY_MOLDORM = 0x59;
     public static final int ENTITY_ROLLING_BONES = 0x81;
     public static final int ENTITY_ROLLING_BONES_BAR = 0x82;
+    public static final int ENTITY_THREE_OF_A_KIND = 0x90;
     public static final int ENTITY_MASKED_MIMIC_GORIYA = 0x8F;
     public static final int ENTITY_CUCCO = 0x6C;
     public static final int ENTITY_GOPONGA_FLOWER = 0x7E;
@@ -400,6 +401,9 @@ public final class EntitySpriteHandlerCatalog {
         }
         if (entityType == ENTITY_ROLLING_BONES_BAR) {
             return forRollingBonesBar(0, 0x38);
+        }
+        if (entityType == ENTITY_THREE_OF_A_KIND) {
+            return decodePair(entityType, 0x06, 0x4911, 8, 0);
         }
         if (entityType == 0xE4) {
             // func_015_4AC9 indexes fourteen three-sprite body variants at

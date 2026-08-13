@@ -27,6 +27,7 @@ public final class RoomEntityCombatRules {
     private static final int ENTITY_MINI_MOLDORM = 0x29;
     private static final int ENTITY_MOLDORM = 0x59;
     private static final int ENTITY_MASKED_MIMIC_GORIYA = 0x8F;
+    private static final int ENTITY_THREE_OF_A_KIND = 0x90;
     private static final int ENTITY_LIKE_LIKE = 0x23;
     private static final int ENTITY_GOOMBA = 0x9F;
     private static final int ENTITY_SNAKE = 0xA1;
@@ -226,7 +227,8 @@ public final class RoomEntityCombatRules {
                 ENTITY_OCTOROK, ENTITY_BOUNCING_BOMBITE, ENTITY_TIMER_BOMBITE,
                 ENTITY_MAD_BOMBER, ENTITY_BOMBER, ENTITY_MIMIC, ENTITY_MINI_MOLDORM,
                 ENTITY_MOLDORM,
-                ENTITY_MASKED_MIMIC_GORIYA, ENTITY_WITCH_RAT, 0xE4 -> true;
+                ENTITY_MASKED_MIMIC_GORIYA, ENTITY_THREE_OF_A_KIND,
+                ENTITY_WITCH_RAT, 0xE4 -> true;
             default -> false;
         };
     }
@@ -291,6 +293,7 @@ public final class RoomEntityCombatRules {
                 MOBLIN_CONTACT_DAMAGE;
             case ENTITY_MIMIC -> 0x18;
             case ENTITY_MASKED_MIMIC_GORIYA -> 0x04;
+            case ENTITY_THREE_OF_A_KIND -> 0x04;
             case ENTITY_SPARK_COUNTER_CLOCKWISE, ENTITY_SPARK_CLOCKWISE ->
                 OCTOROK_AND_KEESE_CONTACT_DAMAGE;
             case ENTITY_MAD_BOMBER -> MAD_BOMBER_CONTACT_DAMAGE;
@@ -340,6 +343,7 @@ public final class RoomEntityCombatRules {
                 MOBLIN_INITIAL_HEALTH;
             case ENTITY_MIMIC -> 0x04;
             case ENTITY_MASKED_MIMIC_GORIYA -> 0x02;
+            case ENTITY_THREE_OF_A_KIND -> 0x01;
             case ENTITY_PINCER -> 0x02;
             case ENTITY_SPARK_COUNTER_CLOCKWISE, ENTITY_SPARK_CLOCKWISE ->
                 OCTOROK_AND_KEESE_INITIAL_HEALTH;
