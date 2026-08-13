@@ -15,6 +15,7 @@ public record LoadedRoom(int roomId,
                          List<Warp> warps,
                          boolean indoorHasSouthEntrance,
                          int shutterDoorMask,
+                         int staircaseLocation,
                          RoomEntitySnapshot entities) {
 
     public LoadedRoom(int roomId, int mapCategory, int mapId, int animatedTilesGroup,
@@ -23,7 +24,7 @@ public record LoadedRoom(int roomId,
                       boolean indoorHasSouthEntrance, RoomEntitySnapshot entities) {
         this(roomId, mapCategory, mapId, animatedTilesGroup, roomObjectsArea, gbcOverlay,
             renderValues, tileIds, tileAttrs, palettes, warps, indoorHasSouthEntrance,
-            0, entities);
+            0, -1, entities);
     }
 
     public LoadedRoom(int roomId,
@@ -40,7 +41,7 @@ public record LoadedRoom(int roomId,
                       boolean indoorHasSouthEntrance) {
         this(roomId, mapCategory, mapId, animatedTilesGroup, roomObjectsArea, gbcOverlay,
             renderValues, tileIds, tileAttrs, palettes, warps, indoorHasSouthEntrance,
-            0, null);
+            0, -1, null);
     }
 
     public LoadedRoom {
@@ -52,6 +53,10 @@ public record LoadedRoom(int roomId,
         palettes = clonePalettes(palettes);
         warps = List.copyOf(warps);
         shutterDoorMask &= 0x0F;
+        if (staircaseLocation < -1 || staircaseLocation > 0xFF) {
+            throw new IllegalArgumentException(
+                "Staircase location must be -1 or an unsigned byte");
+        }
     }
 
     @Override

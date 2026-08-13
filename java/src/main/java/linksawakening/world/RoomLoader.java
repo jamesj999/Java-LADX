@@ -73,6 +73,7 @@ public final class RoomLoader {
             parsed.warps(),
             false,
             0,
+            -1,
             entities
         );
     }
@@ -149,6 +150,7 @@ public final class RoomLoader {
             parsed.warps(),
             hasSouthEntrance(objects),
             parsed.shutterDoorMask(),
+            parsed.staircaseLocation(),
             entities
         );
     }

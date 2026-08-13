@@ -74,6 +74,39 @@ final class RoomSessionTest {
     }
 
     @Test
+    void indoorStaircaseArmsAfterLinkLeavesAndThenReturnsWarpZero() {
+        RoomSession session = newSession();
+        byte[] indoorA = new byte[0x100];
+        indoorA[0x03] = 0x10;
+        session.restoreRoomStatuses(new byte[0x100], indoorA,
+            new byte[0x100], new byte[0x20]);
+        session.loadIndoor(0x00, 0x03);
+
+        assertEquals(0x18, session.activeRoom().staircaseLocation());
+        assertNull(session.pollStaircaseWarp(0x88, 0x20, 0, false));
+        assertNull(session.pollStaircaseWarp(0x98, 0x20, 0, false));
+        assertEquals(session.activeRoom().firstWarp(),
+            session.pollStaircaseWarp(0x88, 0x20, 0, false));
+        assertNull(session.pollStaircaseWarp(0x88, 0x20, 0, false));
+    }
+
+    @Test
+    void activeIndoorStaircaseRejectsAirborneAndCarryingLink() {
+        RoomSession session = newSession();
+        byte[] indoorA = new byte[0x100];
+        indoorA[0x03] = 0x10;
+        session.restoreRoomStatuses(new byte[0x100], indoorA,
+            new byte[0x100], new byte[0x20]);
+        session.loadIndoor(0x00, 0x03);
+
+        assertNull(session.pollStaircaseWarp(0x98, 0x20, 0, false));
+        assertNull(session.pollStaircaseWarp(0x88, 0x20, 1, false));
+        assertNull(session.pollStaircaseWarp(0x88, 0x20, 0, true));
+        assertEquals(session.activeRoom().firstWarp(),
+            session.pollStaircaseWarp(0x88, 0x20, 0, false));
+    }
+
+    @Test
     void openingBeachEventsCompleteInPlayOrderAndStayGoneAfterReload() {
         RoomSession session = newSession();
         PlayerState playerState = new PlayerState();

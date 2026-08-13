@@ -55,4 +55,46 @@ final class RoomObjectParserTest {
             .parseOverworld(0, 0x00, 0x10)
             .objectAtLocation(0x20));
     }
+
+    @Test
+    void recordsTheLastVisibleIndoorStaircaseInObjectStreamOrder() {
+        byte[] rom = new byte[] {
+            0x12, (byte) 0xBE,
+            0x34, (byte) 0xCB,
+            0x56, (byte) 0xC6,
+            (byte) 0xFE
+        };
+
+        RoomObjectParseResult result = new RoomObjectParser(rom)
+            .parseIndoor(0, 0x00, 0x10);
+
+        assertEquals(0x56, result.staircaseLocation());
+    }
+
+    @Test
+    void recordsTheLastStaircaseCellProducedByAnIndoorStrip() {
+        byte[] rom = new byte[] {
+            (byte) 0x83, 0x21, (byte) 0xC5,
+            (byte) 0xFE
+        };
+
+        RoomObjectParseResult result = new RoomObjectParser(rom)
+            .parseIndoor(0, 0x00, 0);
+
+        assertEquals(0x23, result.staircaseLocation());
+    }
+
+    @Test
+    void concealedHiddenStairsDoNotConfigureTheRoomStaircase() {
+        byte[] rom = new byte[] {
+            0x18, (byte) 0xBF,
+            (byte) 0xFE
+        };
+
+        RoomObjectParseResult result = new RoomObjectParser(rom)
+            .parseIndoor(0, 0x00, 0);
+
+        assertEquals(-1, result.staircaseLocation());
+        assertEquals(0x00, result.objectAtLocation(0x18));
+    }
 }

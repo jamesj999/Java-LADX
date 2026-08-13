@@ -54,7 +54,9 @@ public final class RoomObjectParser {
     private static final int OBJECT_BOMBABLE_CAVE_DOOR = 0xBA;
     private static final int OBJECT_BOMBABLE_BLOCK = 0xA9;
     private static final int OBJECT_FLOOR_OD = 0x0D;
+    private static final int OBJECT_STAIRS_DOWN = 0xBE;
     private static final int OBJECT_HIDDEN_STAIRS_DOWN = 0xBF;
+    private static final int OBJECT_STAIRS_UP = 0xCB;
     private static final int OBJECT_GROUND_STAIRS = 0xC6;
     private static final int OBJECT_DOOR_CB = 0xCB;
     private static final int OBJECT_DOOR_61 = 0x61;
@@ -99,6 +101,7 @@ public final class RoomObjectParser {
     private final byte[] romData;
     private int[] roomObjectsArea;
     private int shutterDoorMask;
+    private int staircaseLocation = -1;
     private final List<Warp> warps = new ArrayList<>();
     private final List<Integer> doorPositions = new ArrayList<>();
     private int roomStatusFlags;
@@ -115,7 +118,7 @@ public final class RoomObjectParser {
         applyOverworldClosedGateStatus();
         applyOverworldBombableCaveDoorStatus();
         assignDoorPositionsToWarps();
-        return new RoomObjectParseResult(roomObjectsArea, warps, 0);
+        return new RoomObjectParseResult(roomObjectsArea, warps, 0, staircaseLocation);
     }
 
     /** Mirrors LoadRoomObject's OBJECT_CLOSED_GATE status-bit replacement. */
@@ -172,7 +175,8 @@ public final class RoomObjectParser {
         applyIndoorBombableBlockStatus(mapId);
         applyIndoorBombableWallStatus();
         assignDoorPositionsToWarps();
-        return new RoomObjectParseResult(roomObjectsArea, warps, shutterDoorMask);
+        return new RoomObjectParseResult(
+            roomObjectsArea, warps, shutterDoorMask, staircaseLocation);
     }
 
     private void applyIndoorBombableBlockStatus(int mapId) {
@@ -237,6 +241,7 @@ public final class RoomObjectParser {
         warps.clear();
         doorPositions.clear();
         shutterDoorMask = 0;
+        staircaseLocation = -1;
         fillRoomMapWithObject(floorObject);
     }
 
@@ -345,6 +350,8 @@ public final class RoomObjectParser {
             int targetAreaIndex = baseAreaIndex + offset;
             if (isAreaIndexValid(targetAreaIndex)) {
                 roomObjectsArea[targetAreaIndex] = objectId;
+                recordStaircaseLocation(
+                    objectId, targetAreaIndex - RoomConstants.ROOM_OBJECTS_BASE);
                 if (isMacroExpansionDoorId(objectId)) {
                     doorPositions.add(targetAreaIndex - RoomConstants.ROOM_OBJECTS_BASE);
                 }
@@ -517,6 +524,7 @@ public final class RoomObjectParser {
         int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + location;
         if (isAreaIndexValid(areaIndex)) {
             roomObjectsArea[areaIndex] = objectId;
+            recordStaircaseLocation(objectId, location);
         }
     }
 
@@ -530,6 +538,8 @@ public final class RoomObjectParser {
         for (int i = 0; i < count; i++) {
             if (isAreaIndexValid(areaIndex)) {
                 roomObjectsArea[areaIndex] = objectId;
+                recordStaircaseLocation(
+                    objectId, areaIndex - RoomConstants.ROOM_OBJECTS_BASE);
             }
             areaIndex += step;
         }
@@ -537,5 +547,15 @@ public final class RoomObjectParser {
 
     private boolean isAreaIndexValid(int areaIndex) {
         return areaIndex >= 0 && areaIndex < roomObjectsArea.length;
+    }
+
+    private void recordStaircaseLocation(int objectId, int location) {
+        if (objectId == OBJECT_STAIRS_DOWN
+            || objectId == OBJECT_HIDDEN_STAIRS_DOWN
+            || objectId == OBJECT_STAIRS_UP
+            || objectId == OBJECT_DOOR_C5
+            || objectId == OBJECT_GROUND_STAIRS) {
+            staircaseLocation = location & 0xFF;
+        }
     }
 }

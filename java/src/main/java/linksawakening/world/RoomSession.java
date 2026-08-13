@@ -95,6 +95,9 @@ public final class RoomSession {
     private static final int OBJECT_PUSHABLE_BLOCK = 0xA7;
     private static final int OBJECT_SETTLED_PUSHED_BLOCK = 0xA6;
     private static final int OBJECT_STAIRS_DOWN = 0xBE;
+    private static final int STAIRCASE_NONE = 0;
+    private static final int STAIRCASE_INACTIVE = 1;
+    private static final int STAIRCASE_ACTIVE = 2;
     private static final int EVENT_STAIRWAY_LOCATION = 0x18;
     private static final int PUSH_BLOCK_CONTACT_TICKS = 0x40;
     private static final int PUSHED_BLOCK_MOTION_FRAMES = 0x21;
@@ -274,6 +277,9 @@ public final class RoomSession {
     private boolean roomEventEffectExecuted;
     private int roomEventChestRevealCountdown;
     private int roomEventStairRevealCountdown;
+    private int staircaseState;
+    private int staircaseX;
+    private int staircaseY;
     private int switchButtonPressCounter;
     private int switchButtonPressed;
     private int indoorKeyDoorAnimationCountdown;
@@ -2056,6 +2062,7 @@ public final class RoomSession {
             entities = entities.withSideScrolling(room.mapCategory() == Warp.CATEGORY_SIDESCROLL);
         }
         activeRoom = ActiveRoom.from(room, entities);
+        configureStaircase(activeRoom.staircaseLocation());
         boolean minibossDefeated = activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD
             && activeRoom.mapId() >= 0
             && activeRoom.mapId() < dungeonProgressFlags.length
@@ -2221,6 +2228,9 @@ public final class RoomSession {
         roomEventEffectExecuted = false;
         roomEventChestRevealCountdown = 0;
         roomEventStairRevealCountdown = 0;
+        staircaseState = STAIRCASE_NONE;
+        staircaseX = 0;
+        staircaseY = 0;
         switchButtonPressCounter = 0;
         indoorKeyDoorAnimationCountdown = 0;
         indoorKeyDoorDirection = -1;
@@ -3437,9 +3447,50 @@ public final class RoomSession {
         }
         int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + EVENT_STAIRWAY_LOCATION;
         activeRoom.roomObjectsArea()[areaIndex] = OBJECT_STAIRS_DOWN;
+        configureStaircase(EVENT_STAIRWAY_LOCATION);
         refreshActiveRoomTilemap();
         overworldCollision.setRoom(activeRoom.roomObjectsArea());
         overworldCollision.setGbcOverlay(null);
+    }
+
+    /** Mirrors renderTranscientVFXs' hStaircase leave-and-return state machine. */
+    public Warp pollStaircaseWarp(int linkEntityX, int linkEntityY,
+                                  int linkZ, boolean carryingObject) {
+        if (staircaseState == STAIRCASE_NONE || activeRoom == null) {
+            return null;
+        }
+        if (staircaseState == STAIRCASE_INACTIVE) {
+            if (!withinUnsignedByteRange(linkEntityX, staircaseX, 0x06, 0x0C)
+                || !withinUnsignedByteRange(linkEntityY, staircaseY, 0x06, 0x0C)) {
+                staircaseState = STAIRCASE_ACTIVE;
+            }
+            return null;
+        }
+        if (linkZ != 0 || carryingObject
+            || !withinUnsignedByteRange(linkEntityX, staircaseX, 0x05, 0x0A)
+            || !withinUnsignedByteRange(linkEntityY, staircaseY, 0x05, 0x0A)
+            || !activeRoom.hasWarps()) {
+            return null;
+        }
+        staircaseState = STAIRCASE_NONE;
+        return activeRoom.firstWarp();
+    }
+
+    private void configureStaircase(int location) {
+        if (location < 0) {
+            staircaseState = STAIRCASE_NONE;
+            staircaseX = 0;
+            staircaseY = 0;
+            return;
+        }
+        staircaseState = STAIRCASE_INACTIVE;
+        staircaseY = (location & 0xF0) + 0x10;
+        staircaseX = ((location & 0x0F) << 4) + 0x08;
+    }
+
+    private static boolean withinUnsignedByteRange(int value, int center,
+                                                   int bias, int size) {
+        return ((value - center + bias) & 0xFF) < size;
     }
 
     private static int roomEventChestTop(int linkEntityX, int linkEntityY) {
