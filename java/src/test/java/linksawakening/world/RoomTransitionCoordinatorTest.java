@@ -529,9 +529,47 @@ final class RoomTransitionCoordinatorTest {
             0x78, 0x21, Link.DIRECTION_UP, true, playerState.swordLevel());
         assertTrue(firstSmallKeyChest.opened());
         assertEquals(ChestContentsTable.CHEST_SMALL_KEY, firstSmallKeyChest.itemType());
-        session.tickEntities(frame, 0x78, 0x21);
+        session.tickEntities(frame++, 0x78, 0x21);
         assertEquals(1, session.currentDungeonItemFlagsSnapshot()[
             DungeonItemState.SMALL_KEYS_INDEX]);
+
+        walkToAndCrossIndoorBoundary(
+            coordinator, transition, scroll, collision, link, ScrollController.RIGHT);
+        assertEquals(0x14, session.currentRoomId());
+        walkToAndCrossIndoorBoundary(
+            coordinator, transition, scroll, collision, link, ScrollController.UP);
+        assertEquals(0x0F, session.currentRoomId());
+
+        int upperKeyDoorIndex = ROOM_OBJECTS_BASE + 0x39;
+        int lowerKeyDoorIndex = ROOM_OBJECTS_BASE + 0x49;
+        assertEquals(0x33, session.activeRoom().roomObjectsArea()[upperKeyDoorIndex]);
+        assertEquals(0x34, session.activeRoom().roomObjectsArea()[lowerKeyDoorIndex]);
+        // bank2's right-facing key-door branch probes Link at ($85,$38)
+        // with collision bit $08 against the vertical door pair $39/$49.
+        int firstKeyDoorLinkX = 0x85;
+        int firstKeyDoorLinkY = 0x38;
+        int rightCollisionBit = 0x08;
+        link.setPixelPosition(firstKeyDoorLinkX, firstKeyDoorLinkY);
+        assertTrue(session.tryUnlockIndoorKeyDoor(
+            link.pixelX(), link.pixelY(), Link.DIRECTION_RIGHT, rightCollisionBit));
+        assertEquals(0, session.currentDungeonItemFlagsSnapshot()[
+            DungeonItemState.SMALL_KEYS_INDEX]);
+        for (int tick = 0; tick < 8; tick++) {
+            session.tickEntities(frame++, link.pixelX(), link.pixelY());
+            assertTrue(session.consumeWorldLinkMotionBlockRequest());
+        }
+        session.tickEntities(frame++, link.pixelX(), link.pixelY());
+        assertFalse(session.consumeWorldLinkMotionBlockRequest());
+        assertEquals(0x0B,
+            session.activeRoom().roomObjectsArea()[upperKeyDoorIndex]);
+        assertEquals(0x0C,
+            session.activeRoom().roomObjectsArea()[lowerKeyDoorIndex]);
+        assertEquals(0x01, session.indoorRoomStatusForTest(0x00, 0x0F) & 0x01);
+        assertEquals(0x02, session.indoorRoomStatusForTest(0x00, 0x10) & 0x02);
+
+        walkToAndCrossIndoorBoundary(
+            coordinator, transition, scroll, collision, link, ScrollController.RIGHT);
+        assertEquals(0x10, session.currentRoomId());
     }
 
     @Test
@@ -605,6 +643,108 @@ final class RoomTransitionCoordinatorTest {
             + "\n" + collisionGrid(collision));
         link.setPixelPosition(exit[0], exit[1]);
         crossOverworldBoundary(coordinator, scroll, link, direction);
+    }
+
+    private static void walkToAndCrossIndoorBoundary(
+            RoomTransitionCoordinator coordinator, TransitionController transition,
+            ScrollController scroll, OverworldCollision collision, Link link,
+            int direction) {
+        List<int[]> path = reachableBoundaryPath(
+            collision, link.pixelX(), link.pixelY(), direction);
+        assertNotNull(path, "No collision path to indoor boundary " + direction
+            + "\n" + collisionGrid(collision));
+        for (int[] position : path) {
+            link.setPixelPosition(position[0], position[1]);
+            coordinator.handleWarpAndIndoorBoundaries(link);
+            assertFalse(transition.isActive(),
+                "collision path crossed an active indoor warp");
+            assertFalse(scroll.isActive(),
+                "collision path left the room before its target boundary");
+        }
+        int[] exit = path.getLast();
+        link.setPixelPosition(exit[0], exit[1]);
+        switch (direction) {
+            case ScrollController.UP -> link.setPixelPosition(link.pixelX(), -1);
+            case ScrollController.DOWN ->
+                link.setPixelPosition(link.pixelX(), RoomConstants.ROOM_PIXEL_HEIGHT);
+            case ScrollController.LEFT -> link.setPixelPosition(-1, link.pixelY());
+            case ScrollController.RIGHT ->
+                link.setPixelPosition(RoomConstants.ROOM_PIXEL_WIDTH, link.pixelY());
+            default -> throw new IllegalArgumentException(
+                "Unknown indoor scroll direction: " + direction);
+        }
+        coordinator.handleWarpAndIndoorBoundaries(link);
+        assertTrue(scroll.isActive());
+        assertEquals(direction, scroll.direction());
+        switch (direction) {
+            case ScrollController.UP ->
+                assertEquals(RoomConstants.ROOM_PIXEL_HEIGHT - Link.SPRITE_SIZE,
+                    link.pixelY());
+            case ScrollController.DOWN -> assertEquals(0, link.pixelY());
+            case ScrollController.LEFT ->
+                assertEquals(RoomConstants.ROOM_PIXEL_WIDTH - Link.SPRITE_SIZE,
+                    link.pixelX());
+            case ScrollController.RIGHT -> assertEquals(0, link.pixelX());
+            default -> throw new AssertionError(direction);
+        }
+        while (scroll.isActive()) {
+            scroll.tick(8);
+        }
+    }
+
+    private static List<int[]> reachableBoundaryPath(OverworldCollision collision,
+                                                      int startX, int startY,
+                                                      int targetDirection) {
+        int width = RoomConstants.ROOM_PIXEL_WIDTH - Link.SPRITE_SIZE + 1;
+        int height = RoomConstants.ROOM_PIXEL_HEIGHT - Link.SPRITE_SIZE + 1;
+        boolean[][] visited = new boolean[height][width];
+        int[][] parentX = new int[height][width];
+        int[][] parentY = new int[height][width];
+        for (int row = 0; row < height; row++) {
+            java.util.Arrays.fill(parentX[row], -1);
+            java.util.Arrays.fill(parentY[row], -1);
+        }
+        int clampedX = Math.max(0, Math.min(startX, width - 1));
+        int clampedY = Math.max(0, Math.min(startY, height - 1));
+        visited[clampedY][clampedX] = true;
+        parentX[clampedY][clampedX] = clampedX;
+        parentY[clampedY][clampedX] = clampedY;
+        ArrayDeque<int[]> queue = new ArrayDeque<>();
+        queue.add(new int[] {clampedX, clampedY});
+        int[][] moves = {{0, -1, Link.DIRECTION_UP}, {0, 1, Link.DIRECTION_DOWN},
+            {-1, 0, Link.DIRECTION_LEFT}, {1, 0, Link.DIRECTION_RIGHT}};
+
+        while (!queue.isEmpty()) {
+            int[] position = queue.removeFirst();
+            if (isTargetBoundary(
+                position[0], position[1], width, height, targetDirection)) {
+                ArrayDeque<int[]> reverse = new ArrayDeque<>();
+                int x = position[0];
+                int y = position[1];
+                while (parentX[y][x] != x || parentY[y][x] != y) {
+                    reverse.addFirst(new int[] {x, y});
+                    int nextX = parentX[y][x];
+                    int nextY = parentY[y][x];
+                    x = nextX;
+                    y = nextY;
+                }
+                reverse.addFirst(new int[] {x, y});
+                return List.copyOf(reverse);
+            }
+            for (int[] move : moves) {
+                int x = position[0] + move[0];
+                int y = position[1] + move[1];
+                if (x < 0 || x >= width || y < 0 || y >= height
+                    || visited[y][x] || leadingEdgeBlocked(collision, x, y, move[2])) {
+                    continue;
+                }
+                visited[y][x] = true;
+                parentX[y][x] = position[0];
+                parentY[y][x] = position[1];
+                queue.addLast(new int[] {x, y});
+            }
+        }
+        return null;
     }
 
     /** Floods Link top-left positions using the source's two leading-edge probes. */

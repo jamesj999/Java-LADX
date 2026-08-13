@@ -15,7 +15,7 @@
 **Files:**
 - Modify: `java/src/test/java/linksawakening/world/RoomTransitionCoordinatorTest.java`
 
-- [ ] **Step 1: Write the ordered failing test extension**
+- [x] **Step 1: Write the ordered failing test extension**
 
 After the room `$13` small-key assertion, cross right to room `$14` and up to room `$0F` through a new indoor collision-connectivity helper:
 
@@ -28,7 +28,7 @@ walkToAndCrossIndoorBoundary(
 assertEquals(0x0F, session.currentRoomId());
 ```
 
-- [ ] **Step 2: Run the focused test and verify the handoff**
+- [x] **Step 2: Run the focused test and verify the handoff**
 
 Run:
 
@@ -44,7 +44,7 @@ Expected: either PASS, proving existing production already connects this handoff
 - Modify: `java/src/test/java/linksawakening/world/RoomTransitionCoordinatorTest.java`
 - Modify only on a demonstrated red behavior: `java/src/main/java/linksawakening/world/RoomSession.java`
 
-- [ ] **Step 1: Add the live key-door assertions**
+- [x] **Step 1: Add the live key-door assertions**
 
 Use the source coordinates and collision byte already established by `tailCaveFirstKeyDoorConsumesTheKeyAndSynchronizesBothRooms`:
 
@@ -63,15 +63,15 @@ assertEquals(0x02, session.indoorRoomStatusForTest(0x00, 0x10) & 0x02);
 
 Then cross right through the mutated doorway and assert room `$10`.
 
-- [ ] **Step 2: Verify RED if production behavior is missing**
+- [x] **Step 2: Verify RED if production behavior is missing**
 
 Run the focused Gradle test. If it fails, confirm the failure is the door handoff—not test setup—and trace `ApplyCollisionWithObject`/door animation in `bank2.asm` before editing production.
 
-- [ ] **Step 3: Implement the minimal source-backed correction if required**
+- [x] **Step 3: Implement the minimal source-backed correction if required**
 
 Keep the fix in the existing `RoomSession.tryUnlockIndoorKeyDoor` and pending door-animation path. Do not preload keys, directly mutate status in the test, or bypass collision/room transitions.
 
-- [ ] **Step 4: Verify focused and full suites**
+- [x] **Step 4: Verify focused and full suites**
 
 Run:
 
@@ -83,7 +83,7 @@ git diff --check
 
 Expected: focused PASS, full BUILD SUCCESSFUL, and no whitespace errors.
 
-- [ ] **Step 5: Review and commit**
+- [x] **Step 5: Review and commit**
 
 Review the diff against this plan and the disassembly, then commit only the scoped files:
 
