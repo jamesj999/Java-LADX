@@ -51,6 +51,20 @@ final class MainArchitectureTest {
     }
 
     @Test
+    void mainSuppliesLiveInventoryAndDialogTalkGatesBeforeEntityTick() throws Exception {
+        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+
+        int talkState = source.indexOf("roomSession.setEntityTalkState(");
+        int entityTick = source.indexOf("roomSession.tickEntitiesWithProjectileEvents(");
+        assertTrue(talkState >= 0, "Main must supply the live NPC talk gates");
+        assertTrue(entityTick >= 0, "Main must tick the room entities");
+        assertTrue(talkState < entityTick, "Talk gates must be supplied before entity handlers");
+        assertTrue(source.contains("inventoryMenu.isTransitioning()"));
+        assertTrue(source.contains("inventoryMenu.windowY()"));
+        assertTrue(source.contains("dialogController.dialogCooldown()"));
+    }
+
+    @Test
     void mainCapturesLinkFinalPositionBeforeLinkMotionForEntityPushes() throws Exception {
         String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
 

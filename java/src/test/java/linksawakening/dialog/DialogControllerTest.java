@@ -138,6 +138,24 @@ final class DialogControllerTest {
     }
 
     @Test
+    void closingStartsTheSourceDialogCooldownAndTicksItToZero() {
+        DialogController dialog = new DialogController(16);
+        dialog.open("A");
+        dialog.advance();
+
+        dialog.advance();
+
+        assertFalse(dialog.isActive());
+        assertEquals(0x18, dialog.dialogCooldown());
+
+        dialog.tick();
+        assertEquals(0x17, dialog.dialogCooldown());
+
+        tick(dialog, 0x17);
+        assertEquals(0, dialog.dialogCooldown());
+    }
+
+    @Test
     void wrapsVisibleTextToConfiguredLineWidth() {
         DialogController dialog = new DialogController(5);
 

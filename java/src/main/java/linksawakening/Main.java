@@ -972,6 +972,10 @@ public class Main {
                 && !inventoryController.shouldBlockOverworldInput()) {
                 roomSession.setEntityDialogActive(
                     dialogController != null && dialogController.isActive());
+                roomSession.setEntityTalkState(
+                    inventoryMenu != null && inventoryMenu.isTransitioning(),
+                    dialogController == null ? 0 : dialogController.dialogCooldown(),
+                    inventoryMenu == null ? 0x80 : inventoryMenu.windowY());
                 roomSession.setEntityMusicActive(
                     musicPlayer != null && musicPlayer.isMusicPlaying());
                 roomSession.setEntityActionButtonsHeld(

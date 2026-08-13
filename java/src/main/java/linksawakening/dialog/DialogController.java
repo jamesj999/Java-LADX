@@ -8,6 +8,7 @@ public final class DialogController {
     private static final int LINK_Y_BOX_THRESHOLD = 0x48;
     private static final String DEFAULT_PLAYER_NAME = "LINK";
     private static final int NAME_LENGTH = 5;
+    private static final int DIALOG_COOLDOWN = 0x18;
     private static final char ASK_MARKER = '\u00FE';
 
     private final int lineWidth;
@@ -17,6 +18,7 @@ public final class DialogController {
     private int visibleCharactersOnPage;
     private int visibleNonSpaceCharactersOnPage;
     private int revealTicks;
+    private int dialogCooldown;
     private boolean active;
     private boolean waitingForPageAdvance;
     private boolean choicePrompt;
@@ -96,6 +98,9 @@ public final class DialogController {
     }
 
     public void tick() {
+        if (dialogCooldown > 0) {
+            dialogCooldown--;
+        }
         if (!active || waitingForPageAdvance) {
             return;
         }
@@ -129,8 +134,7 @@ public final class DialogController {
             return;
         }
         if (choicePrompt) {
-            active = false;
-            choicePrompt = false;
+            closeDialog();
             return;
         }
         if (waitingForPageAdvance) {
@@ -145,7 +149,7 @@ public final class DialogController {
         } else if (isAtChoicePromptMarker()) {
             enterChoicePrompt();
         } else {
-            active = false;
+            closeDialog();
         }
     }
 
@@ -159,6 +163,10 @@ public final class DialogController {
 
     public boolean isChoicePrompt() {
         return choicePrompt;
+    }
+
+    public int dialogCooldown() {
+        return dialogCooldown;
     }
 
     public void openForLinkY(String text, int linkY) {
@@ -270,6 +278,12 @@ public final class DialogController {
         choicePrompt = true;
         waitingForPageAdvance = false;
         soundEvents.add(SoundEvent.DIALOG_BREAK);
+    }
+
+    private void closeDialog() {
+        active = false;
+        choicePrompt = false;
+        dialogCooldown = DIALOG_COOLDOWN;
     }
 
     private int nextPageStart() {

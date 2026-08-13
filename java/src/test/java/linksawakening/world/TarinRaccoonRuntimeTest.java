@@ -153,6 +153,25 @@ final class TarinRaccoonRuntimeTest {
     }
 
     @Test
+    void appearingInventoryDefersDialog021WithoutSuppressingTheLostFlag() {
+        RoomSession session = newSession();
+        session.loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);
+        session.tickEntities(0, 0x78, 0x60, 0, 1);
+        session.setEntityTalkState(true, 0, 0x78);
+
+        session.tickEntities(1, 0x78, 0x1F, 0, 1);
+
+        assertTrue(session.shouldGetLostInMysteriousWoods());
+        assertTrue(session.consumeEntityDialogRequests().isEmpty());
+
+        session.setEntityTalkState(false, 0, 0x80);
+        session.tickEntities(2, 0x78, 0x1E, 0, 1);
+
+        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, 0x21)),
+            session.consumeEntityDialogRequests());
+    }
+
+    @Test
     void dialogCooldownDoesNotQueueDialog00d() {
         RoomSession session = actionReadySession();
         session.setEntityTalkState(false, 1, 0x80);

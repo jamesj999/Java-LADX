@@ -71,13 +71,13 @@ final class TarinRaccoonMotion {
 
         RoomEntity entity = withVariant(source, variant);
         int dialog = NO_EVENT;
-        if (state[slot] == 0 && !input.dialogActive()) {
+        if (state[slot] == 0 && !input.dialogActive() && !input.inventoryAppearing()) {
             if (linkY < 0x20 && !warningShown[slot]) {
                 warningShown[slot] = true;
                 dialog = 0x021;
             } else if (input.actionHeld() && nearbyAndFacing(entity, input)
                 && input.linkAttackStepAnimationCountdown() == 0
-                && !input.linkAirborne() && !input.inventoryAppearing()
+                && !input.linkAirborne()
                 && input.dialogCooldown() == 0 && input.windowY() == 0x80) {
                 dialog = 0x00D;
             }

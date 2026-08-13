@@ -143,6 +143,10 @@ public final class InventoryMenu {
         return windowY;
     }
 
+    public boolean isTransitioning() {
+        return inventoryAppearing;
+    }
+
     public int cursorSlot() {
         return cursorSlot;
     }
