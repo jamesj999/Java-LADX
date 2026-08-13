@@ -84,7 +84,17 @@ final class TarinRaccoonMotion {
         }
 
         return new Update(entity, state[slot], variant, shouldGetLost, dialog,
-            false, false, false, NO_EVENT, NO_EVENT, false);
+            state[slot] == 1, false, false, NO_EVENT, NO_EVENT, false);
+    }
+
+    int state(int slot) {
+        return state[slot];
+    }
+
+    void startPowderTransformation(int slot) {
+        if (state[slot] == 0) {
+            state[slot] = 1;
+        }
     }
 
     private static boolean nearbyAndFacing(RoomEntity entity, Input input) {

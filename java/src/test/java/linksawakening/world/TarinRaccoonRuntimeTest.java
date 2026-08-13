@@ -1,6 +1,8 @@
 package linksawakening.world;
 
 import linksawakening.dialog.DialogController;
+import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.gpu.GPU;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
@@ -235,6 +237,102 @@ final class TarinRaccoonRuntimeTest {
         assertTrue(session.consumeEntityDialogRequests().isEmpty());
     }
 
+    @Test
+    void realMagicPowderSprinkleStartsOnlyTheCollisionSliceOnItsRomCadence() {
+        RoomEntityRuntime runtime = raccoonRuntime(false);
+        runtime.setEnemyHealthForTest(0, 3);
+        int powderSlot = runtime.spawnMagicPowderSprinkle(0x6A, 0x40, 0, 0);
+
+        for (int frame = 0; frame < 8; frame++) {
+            tick(runtime, frame, 0x50, 0x60);
+        }
+
+        assertEquals(0x0F, powderSlot);
+        assertTrue(runtime.consumePendingLinkMotionBlockRequests().isEmpty());
+        assertEquals(0, runtime.slowTransitionCountdownForTest(0));
+        assertEquals(0, runtime.enemyFlashCountdown(0));
+
+        tick(runtime, 8, 0x50, 0x60);
+
+        assertEquals(List.of(new RoomEntityRuntime.LinkMotionBlockRequest(0)),
+            runtime.consumePendingLinkMotionBlockRequests());
+        // Powder writes $7F/$10 before Tarin's lower slot receives the
+        // runtime's one shared countdown decrement on frame $08.
+        assertEquals(0x7E, runtime.slowTransitionCountdownForTest(0));
+        assertEquals(0x0F, runtime.enemyFlashCountdown(0));
+        assertEquals(3, runtime.enemyHealth(0));
+
+        tick(runtime, 9, 0x50, 0x1F);
+
+        assertFalse(runtime.shouldGetLostInMysteriousWoods(),
+            "the collision must have changed Tarin from state zero to state one");
+        assertEquals(3, runtime.enemyHealth(0));
+    }
+
+    @Test
+    void powderWritesExactSourceCountdownsWhenTarinAlreadyRanThisFrame() {
+        RoomEntityRuntime runtime = raccoonRuntime(false, 0x0F);
+        int powderSlot = runtime.spawnMagicPowderSprinkle(0x6A, 0x40, 0, 0);
+
+        for (int frame = 0; frame < 7; frame++) {
+            tick(runtime, frame, 0x50, 0x60);
+        }
+
+        assertEquals(0x0E, powderSlot);
+        assertEquals(0, runtime.slowTransitionCountdownForTest(0x0F));
+        assertEquals(0, runtime.enemyFlashCountdown(0x0F));
+
+        tick(runtime, 7, 0x50, 0x60);
+
+        assertEquals(0x7F, runtime.slowTransitionCountdownForTest(0x0F));
+        assertEquals(0x10, runtime.enemyFlashCountdown(0x0F));
+        assertTrue(runtime.consumePendingLinkMotionBlockRequests().isEmpty());
+
+        tick(runtime, 8, 0x50, 0x60);
+
+        assertEquals(0x7E, runtime.slowTransitionCountdownForTest(0x0F));
+        assertEquals(0x0F, runtime.enemyFlashCountdown(0x0F));
+        assertEquals(List.of(new RoomEntityRuntime.LinkMotionBlockRequest(0x0F)),
+            runtime.consumePendingLinkMotionBlockRequests());
+    }
+
+    @Test
+    void powderCollisionWindowsAreStrictlyLessThanTwelveUnsignedPixels() {
+        RoomEntityRuntime xInside = raccoonRuntime(false);
+        xInside.spawnMagicPowderSprinkle(0x75, 0x40, 0, 0);
+        tickThroughFirstPowderCollision(xInside);
+        assertEquals(0x7E, xInside.slowTransitionCountdownForTest(0));
+
+        RoomEntityRuntime xBoundary = raccoonRuntime(false);
+        xBoundary.spawnMagicPowderSprinkle(0x76, 0x40, 0, 0);
+        tickThroughFirstPowderCollision(xBoundary);
+        assertEquals(0, xBoundary.slowTransitionCountdownForTest(0));
+
+        RoomEntityRuntime yInside = raccoonRuntime(false);
+        yInside.spawnMagicPowderSprinkle(0x6A, 0x4B, 0, 0);
+        tickThroughFirstPowderCollision(yInside);
+        assertEquals(0x7E, yInside.slowTransitionCountdownForTest(0));
+
+        RoomEntityRuntime yBoundary = raccoonRuntime(false);
+        yBoundary.spawnMagicPowderSprinkle(0x6A, 0x4C, 0, 0);
+        tickThroughFirstPowderCollision(yBoundary);
+        assertEquals(0, yBoundary.slowTransitionCountdownForTest(0));
+    }
+
+    @Test
+    void indoorTarinNeverTransformsFromMagicPowder() {
+        RoomEntityRuntime runtime = raccoonRuntime(true);
+        runtime.spawnMagicPowderSprinkle(0x6A, 0x40, 0, 0);
+
+        for (int frame = 0; frame <= 8; frame++) {
+            tick(runtime, frame, 0x50, 0x60);
+        }
+
+        assertTrue(runtime.consumePendingLinkMotionBlockRequests().isEmpty());
+        assertEquals(0, runtime.slowTransitionCountdownForTest(0));
+        assertEquals(0, runtime.enemyFlashCountdown(0));
+    }
+
     private static RoomSession actionReadySession() {
         RoomSession session = newSession();
         session.loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);
@@ -261,6 +359,39 @@ final class TarinRaccoonRuntimeTest {
         return new RoomSession(rom, new GPU(), new RoomLoader(rom),
             new OverworldTilesetTable(rom), new OverworldCollision(romTables),
             new TransientVfxSystem(16), null);
+    }
+
+    private static RoomEntityRuntime raccoonRuntime(boolean indoor) {
+        return raccoonRuntime(indoor, 0);
+    }
+
+    private static RoomEntityRuntime raccoonRuntime(boolean indoor, int tarinSlot) {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteDefinition definition = catalog.forEntityType(ENTITY_TARIN,
+            indoor ? EntityRoomLoader.RoomTable.INDOORS_B
+                : EntityRoomLoader.RoomTable.OVERWORLD);
+        List<RoomEntity> slots = new java.util.ArrayList<>();
+        while (slots.size() < EntityRoomLoader.MAX_ENTITIES) {
+            slots.add(RoomEntity.disabled(slots.size()));
+        }
+        slots.set(tarinSlot, new RoomEntity(tarinSlot, 0, ENTITY_TARIN, 0x78, 0x40,
+            EntityStatus.ACTIVE, definition, 0));
+        return RoomEntityRuntime.from(new RoomEntitySnapshot(slots), indoor,
+            () -> 0, catalog, new RomEnemyCombatTables(rom),
+            new ChestContentsTable(rom));
+    }
+
+    private static void tickThroughFirstPowderCollision(RoomEntityRuntime runtime) {
+        for (int frame = 0; frame <= 8; frame++) {
+            tick(runtime, frame, 0x50, 0x60);
+        }
+    }
+
+    private static void tick(RoomEntityRuntime runtime, int frame, int linkX, int linkY) {
+        runtime.tickWithProjectileEvents(frame, linkX, linkY, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(linkX, linkY, 0, 0,
+                0, false));
     }
 
     private static byte[] loadRom() {

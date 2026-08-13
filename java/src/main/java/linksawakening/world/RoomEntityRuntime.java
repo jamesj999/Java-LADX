@@ -3633,6 +3633,10 @@ public final class RoomEntityRuntime {
                 updated = tarinUpdate.entity();
                 preserveTarinPresentation = true;
                 shouldGetLostInMysteriousWoods = tarinUpdate.shouldGetLost();
+                if (tarinUpdate.linkMotionBlocked()) {
+                    pendingLinkMotionBlockRequests.add(
+                        new LinkMotionBlockRequest(entity.slot()));
+                }
                 if (tarinUpdate.dialogGlobalId() >= 0) {
                     pendingDialogRequests.add(new DialogRequest(
                         tarinUpdate.dialogGlobalId() >>> 8,
@@ -5017,6 +5021,20 @@ public final class RoomEntityRuntime {
             }
 
             RoomEntity target = slots[targetSlot];
+            if (!indoorRoom && target.loaded()
+                && target.status() == EntityStatus.ACTIVE
+                && target.type() == ENTITY_TARIN
+                && tarinRaccoonMotion.state(targetSlot) == 0
+                && unsignedByteAbs(sprinkle.x() - target.x()) < 0x0C
+                && unsignedByteAbs(sourceVisualY
+                    - ((target.y() - target.z()) & 0xFF)) < 0x0C) {
+                tarinRaccoonMotion.startPowderTransformation(targetSlot);
+                slowTransitionCountdown[targetSlot] = 0x7F;
+                slowTimerInitialized[targetSlot] = true;
+                enemyFlashCountdown[targetSlot] = 0x10;
+                collided = true;
+                continue;
+            }
             int targetPhysics = enemyPhysicsFlags[targetSlot];
             if (!target.loaded()
                 || target.status().value() < EntityStatus.ACTIVE.value()
