@@ -154,6 +154,34 @@ final class RoomTransitionCoordinatorTest {
         assertTrue(owl.spriteDefinition().supported());
     }
 
+    @Test
+    void mysteriousWoodsUpBoundaryRoutesToRoom63AndQueuesTheLostJingle()
+            throws Exception {
+        byte[] rom = loadRom();
+        RomTables romTables = RomTables.loadFromRom(rom);
+        OverworldCollision collision = new OverworldCollision(romTables);
+        RoomSession session = newSession(rom, romTables, collision);
+        session.loadInitialOverworld(0x51);
+        session.tickEntities(0, 0x78, 0x60, 0, 1);
+        session.tickEntities(1, 0x78, 0x1F, 0, 1);
+        assertTrue(session.shouldGetLostInMysteriousWoods());
+
+        ScrollController scroll = new ScrollController();
+        RoomTransitionCoordinator coordinator = new RoomTransitionCoordinator(
+            session, new RoomBoundaryController(), new TransitionController(), scroll);
+        Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
+            romTables, collision, null, new PlayerState(), new ItemRegistry());
+        link.setPixelPosition(0x78, -1);
+
+        coordinator.handleOverworldBoundary(link);
+
+        assertEquals(0x63, session.currentRoomId());
+        assertTrue(scroll.isActive());
+        assertTrue(session.consumeEntityEvents().stream().anyMatch(event ->
+            event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE
+                && event.soundId() == 0x1E));
+    }
+
     private static RoomSession newSession(byte[] rom, RomTables romTables, OverworldCollision collision) {
         return new RoomSession(
             rom,

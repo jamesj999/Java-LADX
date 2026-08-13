@@ -20,7 +20,6 @@ public final class EntityRoomLoader {
     private static final int ENTITY_DROPPABLE_SECRET_SEASHELL = 0x3D;
     private static final int ENTITY_KEY_DROP_POINT = 0x30;
     private static final int ENTITY_SWORD_SHIELD_PICKUP = 0x31;
-    private static final int ENTITY_TARIN = TarinRaccoonMotion.ENTITY_TYPE;
     private static final int ENTITY_OWL_EVENT = 0x41;
     private static final int GHINI_INITIAL_Z = 0x10;
     private static final int ROOM_INDOOR_A_ANGLERS_TUNNEL_KEY_DROP = 0x69;
@@ -160,9 +159,6 @@ public final class EntityRoomLoader {
         }
         if (type == ENTITY_OWL_EVENT) {
             return (roomStatus & 0x20) != 0;
-        }
-        if (type == ENTITY_TARIN) {
-            return (roomStatus & 0x10) != 0;
         }
         return false;
     }

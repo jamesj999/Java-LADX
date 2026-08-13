@@ -7,16 +7,35 @@ final class TarinRaccoonMotion {
 
     record Input(int frameCounter, int linkX, int linkY, int linkDirection,
                  boolean actionHeld, boolean dialogActive, boolean powderHit,
-                 int linkAttackStepAnimationCountdown) {
+                 int linkAttackStepAnimationCountdown, boolean linkAirborne,
+                 boolean inventoryAppearing, int dialogCooldown, int windowY) {
         Input(int frameCounter, int linkX, int linkY, int linkDirection,
               boolean actionHeld, boolean dialogActive, boolean powderHit) {
             this(frameCounter, linkX, linkY, linkDirection, actionHeld, dialogActive,
-                powderHit, 0);
+                powderHit, 0, false);
+        }
+
+        Input(int frameCounter, int linkX, int linkY, int linkDirection,
+              boolean actionHeld, boolean dialogActive, boolean powderHit,
+              int linkAttackStepAnimationCountdown) {
+            this(frameCounter, linkX, linkY, linkDirection, actionHeld, dialogActive,
+                powderHit, linkAttackStepAnimationCountdown, false);
+        }
+
+        Input(int frameCounter, int linkX, int linkY, int linkDirection,
+              boolean actionHeld, boolean dialogActive, boolean powderHit,
+              int linkAttackStepAnimationCountdown, boolean linkAirborne) {
+            this(frameCounter, linkX, linkY, linkDirection, actionHeld, dialogActive,
+                powderHit, linkAttackStepAnimationCountdown, linkAirborne,
+                false, 0, 0x80);
         }
 
         Input {
             if (linkDirection < 0 || linkDirection > 3) {
                 throw new IllegalArgumentException("Invalid Link direction: " + linkDirection);
+            }
+            if ((dialogCooldown & ~0xFF) != 0 || (windowY & ~0xFF) != 0) {
+                throw new IllegalArgumentException("Talk gate values must be unsigned bytes");
             }
         }
     }
@@ -57,7 +76,9 @@ final class TarinRaccoonMotion {
                 warningShown[slot] = true;
                 dialog = 0x021;
             } else if (input.actionHeld() && nearbyAndFacing(entity, input)
-                && input.linkAttackStepAnimationCountdown() == 0) {
+                && input.linkAttackStepAnimationCountdown() == 0
+                && !input.linkAirborne() && !input.inventoryAppearing()
+                && input.dialogCooldown() == 0 && input.windowY() == 0x80) {
                 dialog = 0x00D;
             }
         }

@@ -90,7 +90,14 @@ public final class RoomTransitionCoordinator {
             roomSession.boundaryState(previousX, previousY));
         if (boundary.type() == RoomBoundaryDecision.Type.OVERWORLD_SCROLL) {
             link.setRoomEntryPixelPosition(boundary.linkTargetX(), boundary.linkTargetY());
-            roomSession.startAdjacentOverworldScroll(scrollController, boundary.direction(), previousX, previousY);
+            if (boundary.direction() == ScrollController.UP
+                && roomSession.shouldGetLostInMysteriousWoods()) {
+                roomSession.startMysteriousWoodsLostScroll(
+                    scrollController, previousX, previousY);
+            } else {
+                roomSession.startAdjacentOverworldScroll(
+                    scrollController, boundary.direction(), previousX, previousY);
+            }
         } else if (boundary.type() == RoomBoundaryDecision.Type.CLAMP_LINK) {
             link.setPixelPosition(boundary.linkTargetX(), boundary.linkTargetY());
         }

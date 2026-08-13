@@ -505,6 +505,9 @@ public final class RoomEntityRuntime {
     private boolean actionButtonBHeld;
     private boolean joypadHeld;
     private boolean dialogActive;
+    private boolean inventoryAppearing;
+    private int dialogCooldown;
+    private int windowY = 0x80;
     private boolean shouldGetLostInMysteriousWoods;
     private boolean activeMusic;
     private int bowWowState;
@@ -1398,6 +1401,7 @@ public final class RoomEntityRuntime {
                       boolean handlerLinkCollisionEnabled) {
         Objects.requireNonNull(randomByteSupplier, "randomByteSupplier");
         Objects.requireNonNull(projectileLinkState, "projectileLinkState");
+        shouldGetLostInMysteriousWoods = false;
         finalizePendingBombPresentations();
         int frame = frameCounter & 0xFF;
         int romCollisionType = collisionType & 0xFF;
@@ -3587,8 +3591,9 @@ public final class RoomEntityRuntime {
                 && !indoorRoom && entity.type() == ENTITY_TARIN) {
                 TarinRaccoonMotion.Update tarinUpdate = tarinRaccoonMotion.advance(entity,
                     new TarinRaccoonMotion.Input(frame, linkEntityX, linkEntityY,
-                        romLinkDirection, actionButtonsHeld, dialogActive, false,
-                        linkAttackStepAnimationCountdown));
+                        romLinkDirection, actionButtonAHeld, dialogActive, false,
+                        linkAttackStepAnimationCountdown, linkZ != 0,
+                        inventoryAppearing, dialogCooldown, windowY));
                 updated = tarinUpdate.entity();
                 preserveTarinPresentation = true;
                 shouldGetLostInMysteriousWoods = tarinUpdate.shouldGetLost();
@@ -6567,6 +6572,14 @@ public final class RoomEntityRuntime {
         this.dialogActive = dialogActive;
     }
 
+    void setTalkState(boolean inventoryAppearing, int dialogCooldown, int windowY) {
+        validateByte(dialogCooldown, "Dialog cooldown");
+        validateByte(windowY, "Window Y");
+        this.inventoryAppearing = inventoryAppearing;
+        this.dialogCooldown = dialogCooldown;
+        this.windowY = windowY;
+    }
+
     /** Supplies the nonzero wActiveMusicIndex gate used by instrument pickup. */
     void setActiveMusic(boolean activeMusic) {
         this.activeMusic = activeMusic;
@@ -6620,10 +6633,6 @@ public final class RoomEntityRuntime {
     void setLinkAttackStepAnimationCountdown(int countdown) {
         validateByte(countdown, "Link attack-step animation countdown");
         linkAttackStepAnimationCountdown = countdown;
-    }
-
-    void setShouldGetLostInMysteriousWoods(boolean shouldGetLost) {
-        shouldGetLostInMysteriousWoods = shouldGetLost;
     }
 
     boolean shouldGetLostInMysteriousWoods() {

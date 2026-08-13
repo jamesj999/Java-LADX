@@ -69,6 +69,8 @@ public final class RoomSession {
     private static final int ROOM_STATUS_EVENT_1 = 0x10;
     private static final int ROOM_STATUS_EVENT_2 = 0x20;
     private static final int ROOM_OW_TAIL_CAVE_ENTRANCE = 0xD3;
+    private static final int ROOM_OW_MYSTERIOUS_WOODS_LOST = 0x63;
+    private static final int ENTITY_TARIN = TarinRaccoonMotion.ENTITY_TYPE;
     private static final int TAIL_CAVE_GATE_LOCATION = 0x16;
     private static final int KEYHOLE_DIALOG_TABLE = 2;
     private static final int TAIL_KEYHOLE_DIALOG_ID = 0x30;
@@ -227,6 +229,9 @@ public final class RoomSession {
     private boolean actionButtonBHeld;
     private boolean joypadHeld;
     private boolean entityDialogActive;
+    private boolean entityInventoryAppearing;
+    private int entityDialogCooldown;
+    private int entityWindowY = 0x80;
     private boolean shouldGetLostInMysteriousWoods;
     private boolean entityMusicActive;
     private int entityPressedButtonsMask;
@@ -371,6 +376,17 @@ public final class RoomSession {
         loadRoomSpecificTilesIfNeeded(nextRoomId);
         loadOverworld(nextRoomId);
         scrollController.start(direction, linkScreenX, linkScreenY, previousRoom, scrollTarget(direction));
+    }
+
+    void startMysteriousWoodsLostScroll(ScrollController scrollController,
+                                        int linkScreenX, int linkScreenY) {
+        RoomRenderSnapshot previousRoom = renderSnapshot();
+        loadRoomSpecificTilesIfNeeded(ROOM_OW_MYSTERIOUS_WOODS_LOST);
+        loadOverworld(ROOM_OW_MYSTERIOUS_WOODS_LOST);
+        scrollController.start(ScrollController.UP, linkScreenX, linkScreenY,
+            previousRoom, scrollTarget(ScrollController.UP));
+        pendingRoomEntityEvents.add(new EntityCombatEvent(
+            0, ENTITY_TARIN, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x1E));
     }
 
     public void startAdjacentIndoorScroll(ScrollController scrollController,
@@ -682,6 +698,20 @@ public final class RoomSession {
         }
     }
 
+    /** Supplies the remaining WRAM gates read by ShouldLinkTalkToEntity_05. */
+    public void setEntityTalkState(boolean inventoryAppearing, int dialogCooldown,
+                                   int windowY) {
+        if ((dialogCooldown & ~0xFF) != 0 || (windowY & ~0xFF) != 0) {
+            throw new IllegalArgumentException("Entity talk state values must be unsigned bytes");
+        }
+        entityInventoryAppearing = inventoryAppearing;
+        entityDialogCooldown = dialogCooldown;
+        entityWindowY = windowY;
+        if (entityRuntime != null) {
+            entityRuntime.setTalkState(inventoryAppearing, dialogCooldown, windowY);
+        }
+    }
+
     /** Supplies the source wActiveMusicIndex gate to entity state machines. */
     public void setEntityMusicActive(boolean active) {
         entityMusicActive = active;
@@ -816,7 +846,7 @@ public final class RoomSession {
         }
     }
 
-    /** Mirrors the persistent WRAM wShouldGetLostInMysteriousWoods flag. */
+    /** Returns wShouldGetLostInMysteriousWoods from the latest entity pass. */
     public boolean shouldGetLostInMysteriousWoods() {
         return shouldGetLostInMysteriousWoods;
     }
@@ -1386,6 +1416,7 @@ public final class RoomSession {
         followingLinkZ = linkEntityZ & 0xFF;
         followingLinkDirection = linkDirection & 0xFF;
         currentLinkMotionState = linkMotionState & 0xFF;
+        shouldGetLostInMysteriousWoods = false;
         if (activeRoom == null || entityRuntime == null) {
             return List.of();
         }
@@ -1395,6 +1426,8 @@ public final class RoomSession {
         entityRuntime.setSwitchBlockAnimationActive(
             SwitchBlockAnimation.isAnimating(switchableObjectAnimationStage));
         entityRuntime.setDialogActive(entityDialogActive);
+        entityRuntime.setTalkState(
+            entityInventoryAppearing, entityDialogCooldown, entityWindowY);
         entityRuntime.setActiveMusic(entityMusicActive);
         entityRuntime.setBowWowState(bowWowState);
         entityRuntime.setActionButtonsHeld(actionButtonAHeld, actionButtonBHeld);
@@ -1409,7 +1442,6 @@ public final class RoomSession {
             ocarinaSongFlags, selectedSongIndex, ocarinaAnimationCounter,
             ocarinaAnimationPhase);
         entityRuntime.setEntityRoomStatus(activeRoomStatusFlags());
-        entityRuntime.setShouldGetLostInMysteriousWoods(shouldGetLostInMysteriousWoods);
         entityRuntime.setGoldenLeavesCount(entityGoldenLeavesCount);
         entityRuntime.setSecretSeashellPegasusCollisionState(
             secretSeashellScreenShakeActive, secretSeashellPegasusCollisionActive,
@@ -1927,13 +1959,14 @@ public final class RoomSession {
             entityRuntime.setGroundInteractionSideScrolling(
                 activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL);
             entityRuntime.setActionButtonsHeld(actionButtonAHeld, actionButtonBHeld);
+            entityRuntime.setTalkState(
+                entityInventoryAppearing, entityDialogCooldown, entityWindowY);
             entityRuntime.setJoypadHeld(joypadHeld);
             entityRuntime.setPressedButtonsMask(entityPressedButtonsMask);
             entityRuntime.setPowerBraceletButtonHeld(powerBraceletButtonHeld);
             entityRuntime.setBombButtonHeld(bombButtonHeld);
             entityRuntime.setLiftedLinkC13B(followingEntityYOffset);
             entityRuntime.setEntityRoomStatus(activeRoomStatusFlags());
-            entityRuntime.setShouldGetLostInMysteriousWoods(shouldGetLostInMysteriousWoods);
             entityRuntime.setSecretSeashellPegasusCollisionState(
                 secretSeashellScreenShakeActive, secretSeashellPegasusCollisionActive,
                 secretSeashellPegasusCollisionX, secretSeashellPegasusCollisionY);
@@ -1991,13 +2024,14 @@ public final class RoomSession {
         entityRuntime.setGroundInteractionSideScrolling(
             activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL);
         entityRuntime.setActionButtonsHeld(actionButtonAHeld, actionButtonBHeld);
+        entityRuntime.setTalkState(
+            entityInventoryAppearing, entityDialogCooldown, entityWindowY);
         entityRuntime.setJoypadHeld(joypadHeld);
         entityRuntime.setPressedButtonsMask(entityPressedButtonsMask);
         entityRuntime.setPowerBraceletButtonHeld(powerBraceletButtonHeld);
         entityRuntime.setBombButtonHeld(bombButtonHeld);
         entityRuntime.setLiftedLinkC13B(followingEntityYOffset);
         entityRuntime.setEntityRoomStatus(activeRoomStatusFlags());
-        entityRuntime.setShouldGetLostInMysteriousWoods(shouldGetLostInMysteriousWoods);
         entityRuntime.setSecretSeashellPegasusCollisionState(
             secretSeashellScreenShakeActive, secretSeashellPegasusCollisionActive,
             secretSeashellPegasusCollisionX, secretSeashellPegasusCollisionY);
