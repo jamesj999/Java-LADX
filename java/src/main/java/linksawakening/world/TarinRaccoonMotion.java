@@ -204,7 +204,6 @@ final class TarinRaccoonMotion {
                 pushLink = !nearLinkLatch[slot];
                 if (!input.dialogActive() && !input.inventoryAppearing()
                     && input.actionHeld() && nearbyAndFacing(entity, input)
-                    && input.linkAttackStepAnimationCountdown() == 0
                     && !input.linkAirborne() && input.dialogCooldown() == 0
                     && input.windowY() == 0x80) {
                     dialog = 0x00B;

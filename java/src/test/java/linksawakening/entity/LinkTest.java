@@ -488,6 +488,36 @@ final class LinkTest {
     }
 
     @Test
+    void tarinCanClearTheLiveAttackStepCountdown() {
+        Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
+            null, null, null, null, null);
+        link.startRomMagicPowderAttackStep();
+
+        link.clearRomAttackStepAnimationCountdown();
+
+        assertEquals(0, link.romAttackStepAnimationCountdown());
+    }
+
+    @Test
+    void tarinFacingPreservesTheCurrentWalkingAnimationPhase() throws Exception {
+        Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
+            null, null, null, null, null);
+        Field walkFrame = Link.class.getDeclaredField("walkFrame");
+        walkFrame.setAccessible(true);
+        walkFrame.setInt(link, 1);
+        Field walkTickCounter = Link.class.getDeclaredField("walkTickCounter");
+        walkTickCounter.setAccessible(true);
+        walkTickCounter.setInt(link, 3);
+
+        link.faceRomDirectionPreservingWalkPhase(0);
+
+        assertEquals(Link.DIRECTION_RIGHT, link.direction());
+        assertEquals(0x0B, resolvedAnimationState(link));
+        assertEquals(1, walkFrame.getInt(link));
+        assertEquals(3, walkTickCounter.getInt(link));
+    }
+
+    @Test
     void zeroDurationBitSevenAttackStepClearsTheFullRomByte() throws Exception {
         PlayerState playerState = new PlayerState();
         ItemRegistry itemRegistry = new ItemRegistry();

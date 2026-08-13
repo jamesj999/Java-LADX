@@ -722,7 +722,12 @@ public final class RoomEntityRuntime {
         }
     }
 
-    public record LinkFacingRequest(int sourceSlot, int romDirection) {
+    public record LinkFacingRequest(int sourceSlot, int romDirection,
+                                    boolean preserveWalkingPhase) {
+        public LinkFacingRequest(int sourceSlot, int romDirection) {
+            this(sourceSlot, romDirection, false);
+        }
+
         public LinkFacingRequest {
             if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES
                 || romDirection < 0 || romDirection > 3) {
@@ -1547,7 +1552,7 @@ public final class RoomEntityRuntime {
             boolean wasInitializing = initialStatus == EntityStatus.INIT;
             boolean freezeTarinTimers = !indoorRoom && entity.type() == ENTITY_TARIN
                 && tarinRaccoonMotion.state(entity.slot()) != 0
-                && !tarinTransformationInteractive();
+                && !tarinTransformationTimersInteractive();
             boolean ignoreHitsDecrementedBeforeHandler = !freezeTarinTimers
                 && decrementEnemyCombatCountdowns(entity.slot(), !wasInitializing);
             if (!freezeTarinTimers) {
@@ -3659,7 +3664,7 @@ public final class RoomEntityRuntime {
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && !indoorRoom && entity.type() == ENTITY_TARIN
                 && (tarinRaccoonMotion.state(entity.slot()) == 0
-                    || tarinTransformationInteractive())) {
+                    || tarinTransformationHandlerInteractive())) {
                 RoomEntityBackgroundInteraction tarinBackgroundInteraction = backgroundInteraction;
                 if (tarinBackgroundInteraction == null && backgroundCollision != null) {
                     tarinBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
@@ -3694,7 +3699,7 @@ public final class RoomEntityRuntime {
                 }
                 if (tarinUpdate.linkFacingDirection() >= 0) {
                     pendingLinkFacingRequests.add(new LinkFacingRequest(
-                        entity.slot(), tarinUpdate.linkFacingDirection()));
+                        entity.slot(), tarinUpdate.linkFacingDirection(), true));
                 }
                 if (tarinUpdate.pushLink()) {
                     if (RoomEntityCombatRules.overlapsLink(
@@ -3706,6 +3711,9 @@ public final class RoomEntityRuntime {
                     pendingEntityEvents.add(new EntityCombatEvent(entity.slot(), entity.type(),
                         0, false, EntityCombatEvent.SoundChannel.JINGLE,
                         tarinUpdate.soundId()));
+                    if (tarinUpdate.soundId() == 0x23) {
+                        pendingMusicTrack = defaultMusicTrack;
+                    }
                 }
                 if (tarinUpdate.spawnBomb()) {
                     spawnTarinTransformationBomb(updated);
@@ -6281,8 +6289,12 @@ public final class RoomEntityRuntime {
             0, 0, 0, false, 0x4C);
     }
 
-    private boolean tarinTransformationInteractive() {
+    private boolean tarinTransformationHandlerInteractive() {
         return transitionSequenceCounter == 0x04 && !dialogActive && !inventoryAppearing;
+    }
+
+    private boolean tarinTransformationTimersInteractive() {
+        return tarinTransformationHandlerInteractive() && linkPlayingOcarinaCountdown == 0;
     }
 
     /** Creates the temporary type-$05 entity used by bombed bushes, grass, and pots. */
@@ -9135,6 +9147,7 @@ public final class RoomEntityRuntime {
         }
         RoomEntity entity = slots[index];
         if (!entity.loaded() || entity.type() != ENTITY_BOMB
+            || bombPrivateState4[entity.slot()] != 0
             || bombPrivateCountdown1[entity.slot()] != 0
             || !RoomEntityPickupRules.overlapsLink(entity, linkEntityX, linkEntityY)) {
             return false;

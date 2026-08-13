@@ -51,6 +51,15 @@ final class MainArchitectureTest {
     }
 
     @Test
+    void mainAppliesTarinLinkWritesAtTheEntityFrameBoundary() throws Exception {
+        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+
+        assertTrue(source.contains("consumeLinkAttackClearRequests"));
+        assertTrue(source.contains("link.clearRomAttackStepAnimationCountdown()"));
+        assertTrue(source.contains("link.faceRomDirectionPreservingWalkPhase("));
+    }
+
+    @Test
     void mainCapturesLinkFinalPositionBeforeLinkMotionForEntityPushes() throws Exception {
         String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
 

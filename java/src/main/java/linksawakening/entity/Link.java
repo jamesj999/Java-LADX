@@ -592,6 +592,11 @@ public final class Link implements RocsFeather.JumpTarget {
         romAttackStepAnimationCountdown = 0x8E;
     }
 
+    /** Mirrors TarinEntityHandler's direct clear of the item attack-step byte. */
+    public void clearRomAttackStepAnimationCountdown() {
+        romAttackStepAnimationCountdown = 0;
+    }
+
     /**
      * Mirrors the leading CheckItemsToUse gate used before an equipped item
      * spends inventory. Airborne motion remains eligible; PlaceBomb does not
@@ -792,6 +797,14 @@ public final class Link implements RocsFeather.JumpTarget {
 
     public void setRomDirection(int romDirection) {
         setDirection(javaDirectionForRomDirection(romDirection));
+    }
+
+    /**
+     * Applies Tarin's hLinkDirection write and keeps the existing walking phase used by
+     * UpdateLinkWalkingAnimation.
+     */
+    public void faceRomDirectionPreservingWalkPhase(int romDirection) {
+        direction = javaDirectionForRomDirection(romDirection);
     }
 
     public boolean isAirborne() {

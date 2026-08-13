@@ -1079,7 +1079,16 @@ public class Main {
                 }
                 for (var request : roomSession.consumeLinkFacingRequests()) {
                     if (link != null) {
-                        link.setRomDirection(request.romDirection());
+                        if (request.preserveWalkingPhase()) {
+                            link.faceRomDirectionPreservingWalkPhase(request.romDirection());
+                        } else {
+                            link.setRomDirection(request.romDirection());
+                        }
+                    }
+                }
+                for (var request : roomSession.consumeLinkAttackClearRequests()) {
+                    if (link != null) {
+                        link.clearRomAttackStepAnimationCountdown();
                     }
                 }
                 for (var request : roomSession.consumeLinkHeldItemPoseRequests()) {

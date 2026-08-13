@@ -1647,6 +1647,12 @@ public final class RoomSession {
             ? List.of() : entityRuntime.consumePendingLinkFacingRequests();
     }
 
+    public List<RoomEntityRuntime.LinkAttackClearRequest>
+            consumeLinkAttackClearRequests() {
+        return entityRuntime == null
+            ? List.of() : entityRuntime.consumePendingLinkAttackClearRequests();
+    }
+
     public List<RoomEntityRuntime.LinkHeldItemPoseRequest>
             consumeLinkHeldItemPoseRequests() {
         return entityRuntime == null

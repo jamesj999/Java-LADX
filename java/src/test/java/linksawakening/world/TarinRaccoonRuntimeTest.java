@@ -394,6 +394,7 @@ final class TarinRaccoonRuntimeTest {
     @Test
     void stateTwoLandingAndStateThreeDialogUseRuntimeTimerOrdering() {
         RoomEntityRuntime runtime = raccoonRuntime(false);
+        runtime.setWitchEnvironment(0, 0, 0x0C);
         runtime.setTarinRaccoonStateForTest(0, 2, 0, 0, 0xF0, 0, 0, false);
 
         tick(runtime, 0, 0x79, 0x40);
@@ -402,6 +403,7 @@ final class TarinRaccoonRuntimeTest {
         assertEquals(0x40, runtime.transitionCountdown(0));
         assertEquals(8, runtime.snapshot().slots().get(0).spriteVariant());
         assertEquals(0x23, runtime.consumePendingEntityEvents().get(0).soundId());
+        assertEquals(0x0C, runtime.consumePendingMusicTrack());
 
         runtime.setTransitionCountdownForTest(0, 2);
         tick(runtime, 1, 0x70, 0x60);
@@ -409,6 +411,56 @@ final class TarinRaccoonRuntimeTest {
         assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, 0x0A)),
             runtime.consumePendingDialogRequests());
         assertTrue(runtime.consumePendingLinkMotionBlockRequests().isEmpty());
+    }
+
+    @Test
+    void ocarinaFreezesTransformationTimersButNotTheTarinHandler() {
+        RoomEntityRuntime runtime = raccoonRuntime(false);
+        runtime.setTarinRaccoonStateForTest(0, 1, 0, 0, 0, 0, 0, false);
+        runtime.setSlowTransitionCountdownForTest(0, 4);
+        runtime.setOcarinaPlaybackForTest(0x20, 1, 0);
+
+        tick(runtime, 4, 0x50, 0x40);
+
+        assertEquals(4, runtime.slowTransitionCountdownForTest(0));
+        assertEquals(List.of(new RoomEntityRuntime.LinkMotionBlockRequest(0)),
+            runtime.consumePendingLinkMotionBlockRequests());
+        assertEquals(List.of(new RoomEntityRuntime.LinkAttackClearRequest(0)),
+            runtime.consumePendingLinkAttackClearRequests());
+        assertEquals(List.of(new RoomEntityRuntime.LinkFacingRequest(0, 0, true)),
+            runtime.consumePendingLinkFacingRequests());
+    }
+
+    @Test
+    void roomSessionExposesTheLiveTarinAttackClearRequest() {
+        RoomSession session = newSession();
+        session.loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);
+        RoomEntityRuntime runtime = raccoonRuntime(false);
+        runtime.setTarinRaccoonStateForTest(0, 1, 0, 0, 0, 0, 0, false);
+        session.replaceEntityRuntimeForTest(runtime);
+
+        session.tickEntities(0, 0x50, 0x60, 0, 0);
+
+        assertFalse(session.consumeLinkAttackClearRequests().isEmpty());
+    }
+
+    @Test
+    void tarinTransformationBombCannotEnterTheEquippedBombLiftPath() {
+        RoomEntityRuntime runtime = raccoonRuntime(false);
+        runtime.setTarinRaccoonStateForTest(0, 1, 0, 0, 0x12, 0, 0, false);
+        runtime.setSlowTransitionCountdownForTest(0, 1);
+        tick(runtime, 4, 0x50, 0x40);
+        RoomEntity bomb = runtime.snapshot().slots().stream()
+            .filter(entity -> entity.loaded() && entity.type() == 0x02)
+            .findFirst().orElseThrow();
+        runtime.setBombTransitionCountdownForTest(bomb.slot(), 0xA0);
+        runtime.setBombButtonHeld(true);
+
+        tick(runtime, 5, bomb.x(), bomb.y());
+
+        assertEquals(EntityStatus.ACTIVE,
+            runtime.snapshot().slots().get(bomb.slot()).status());
+        assertEquals(0x4C, runtime.bombPrivateState4ForTest(bomb.slot()));
     }
 
     @Test

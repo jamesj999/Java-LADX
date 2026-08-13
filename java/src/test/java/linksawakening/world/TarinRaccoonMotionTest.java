@@ -225,7 +225,7 @@ final class TarinRaccoonMotionTest {
 
         TarinRaccoonMotion.Update talk = motion.advance(blocked.entity(),
             new TarinRaccoonMotion.Input(0x20, 0x78, 0x50, 2, true, false,
-                false, 0, false, false, 0, 0x80, 0, 0));
+                false, 7, false, false, 0, 0x80, 0, 0));
         assertEquals(0x00B, talk.dialogGlobalId());
         assertEquals(11, talk.spriteVariant());
         assertTrue(talk.pushLink());
