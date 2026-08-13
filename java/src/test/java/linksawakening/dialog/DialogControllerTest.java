@@ -138,7 +138,7 @@ final class DialogControllerTest {
     }
 
     @Test
-    void closingStartsTheSourceDialogCooldownAndTicksItToZero() {
+    void closingStartsTheSourceDialogCooldownAndDefersItsCountdownUntilAfterEntities() {
         DialogController dialog = new DialogController(16);
         dialog.open("A");
         dialog.advance();
@@ -149,9 +149,14 @@ final class DialogControllerTest {
         assertEquals(0x18, dialog.dialogCooldown());
 
         dialog.tick();
+        assertEquals(0x18, dialog.dialogCooldown());
+
+        dialog.tickPostEntityCooldown();
         assertEquals(0x17, dialog.dialogCooldown());
 
-        tick(dialog, 0x17);
+        for (int i = 0; i < 0x17; i++) {
+            dialog.tickPostEntityCooldown();
+        }
         assertEquals(0, dialog.dialogCooldown());
     }
 

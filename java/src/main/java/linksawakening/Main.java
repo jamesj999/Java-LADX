@@ -655,6 +655,15 @@ public class Main {
         return config.debugEnabled() && key == GLFW_KEY_F1 && action == GLFW_PRESS;
     }
 
+    static boolean shouldTickRoomEntities(boolean scrollActive,
+                                          boolean transitionInputBlocked,
+                                          boolean inventoryBlocksInput,
+                                          boolean inventoryTransitioning) {
+        return !scrollActive
+            && !transitionInputBlocked
+            && (!inventoryBlocksInput || inventoryTransitioning);
+    }
+
     private static void dumpLinkSurroundings() {
         if (link == null || roomSession == null || !roomSession.hasActiveRoom()) return;
         ActiveRoom room = roomSession.activeRoom();
@@ -967,9 +976,11 @@ public class Main {
             // room-transition application. Give handlers the same current
             // position and active-room snapshot.
             if (roomSession != null
-                && !scrollController.isActive()
-                && !transitionController.isInputBlocked()
-                && !inventoryController.shouldBlockOverworldInput()) {
+                && shouldTickRoomEntities(
+                    scrollController.isActive(),
+                    transitionController.isInputBlocked(),
+                    inventoryController.shouldBlockOverworldInput(),
+                    inventoryMenu != null && inventoryMenu.isTransitioning())) {
                 roomSession.setEntityDialogActive(
                     dialogController != null && dialogController.isActive());
                 roomSession.setEntityTalkState(
@@ -1031,6 +1042,9 @@ public class Main {
                     swordBoxForEntityTick.height(),
                     link == null ? 0 : link.romSpeedX(),
                     link == null ? 0 : link.romSpeedY());
+                if (dialogController != null) {
+                    dialogController.tickPostEntityCooldown();
+                }
                 for (var request : roomSession.consumeLinkFinalPositionRequests()) {
                     if (link != null) {
                         link.restoreRomFinalPosition();

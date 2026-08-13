@@ -1,5 +1,6 @@
 package linksawakening.world;
 
+import linksawakening.dialog.DialogController;
 import linksawakening.gpu.GPU;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
@@ -179,6 +180,35 @@ final class TarinRaccoonRuntimeTest {
         session.tickEntities(1, 0x78, 0x50, 0, 1);
 
         assertTrue(session.consumeEntityDialogRequests().isEmpty());
+    }
+
+    @Test
+    void heldActionIsBlockedForExactlyTwentyFourPostCloseEntityPasses() {
+        RoomSession session = actionReadySession();
+        DialogController dialog = new DialogController(16);
+        dialog.open("A");
+        dialog.advance();
+        dialog.advance();
+
+        for (int frame = 1; frame <= 0x18; frame++) {
+            dialog.tick();
+            if (frame == 1) {
+                assertEquals(0x18, dialog.dialogCooldown());
+            }
+            session.setEntityTalkState(false, dialog.dialogCooldown(), 0x80);
+            session.tickEntities(frame, 0x78, 0x50, 0, 1);
+            assertTrue(session.consumeEntityDialogRequests().isEmpty(),
+                "held A must remain blocked on entity pass " + frame);
+            dialog.tickPostEntityCooldown();
+        }
+
+        assertEquals(0, dialog.dialogCooldown());
+        dialog.tick();
+        session.setEntityTalkState(false, dialog.dialogCooldown(), 0x80);
+        session.tickEntities(0x19, 0x78, 0x50, 0, 1);
+
+        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, 0x0D)),
+            session.consumeEntityDialogRequests());
     }
 
     @Test

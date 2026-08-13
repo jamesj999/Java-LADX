@@ -98,9 +98,6 @@ public final class DialogController {
     }
 
     public void tick() {
-        if (dialogCooldown > 0) {
-            dialogCooldown--;
-        }
         if (!active || waitingForPageAdvance) {
             return;
         }
@@ -167,6 +164,12 @@ public final class DialogController {
 
     public int dialogCooldown() {
         return dialogCooldown;
+    }
+
+    public void tickPostEntityCooldown() {
+        if (dialogCooldown > 0) {
+            dialogCooldown--;
+        }
     }
 
     public void openForLinkY(String text, int linkY) {

@@ -62,6 +62,9 @@ final class MainArchitectureTest {
         assertTrue(source.contains("inventoryMenu.isTransitioning()"));
         assertTrue(source.contains("inventoryMenu.windowY()"));
         assertTrue(source.contains("dialogController.dialogCooldown()"));
+        int cooldownTick = source.indexOf("dialogController.tickPostEntityCooldown();");
+        assertTrue(cooldownTick > entityTick,
+            "Dialog cooldown must count down after entity handlers read it");
     }
 
     @Test
