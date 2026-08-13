@@ -38,6 +38,8 @@ final class RoomSessionTest {
         completedOverworld[0xF2] = 0x30;
         session.restoreRoomStatuses(completedOverworld, new byte[0x100],
             new byte[0x100], new byte[0x20]);
+        session.setEnemyDropCountersForTest(7, 9);
+        session.setSwitchButtonPressedForTest(0x60);
         session.loadInitialOverworld(0xF2);
         assertFalse(session.activeRoom().entities().loadedEntities().stream()
             .anyMatch(entity -> entity.type() == 0x31 || entity.type() == 0x41));
@@ -45,6 +47,11 @@ final class RoomSessionTest {
         session.initializeNewGameWorldState();
         session.loadInitialOverworld(0xF2);
 
+        assertEquals(new EnemyDropResolver.CounterState(0, 0),
+            session.enemyDropCountersForTest());
+        assertEquals(0, session.switchButtonPressedForTest());
+        assertArrayEquals(new byte[DungeonItemState.ITEM_FLAG_SIZE],
+            session.currentDungeonItemFlagsSnapshot());
         assertTrue(session.activeRoom().entities().loadedEntities().stream()
             .anyMatch(entity -> entity.type() == 0x31));
         assertTrue(session.activeRoom().entities().loadedEntities().stream()

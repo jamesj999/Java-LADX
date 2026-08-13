@@ -39,6 +39,14 @@ public final class DungeonItemState {
     private final byte[] currentFlags = new byte[ITEM_FLAG_SIZE];
     private int currentMapId = -1;
 
+    /** Restores the zeroed WRAM/SRAM state used by a newly created save. */
+    public void reset() {
+        Arrays.fill(dungeonItemFlags, (byte) 0);
+        Arrays.fill(colorDungeonItemFlags, (byte) 0);
+        Arrays.fill(currentFlags, (byte) 0);
+        currentMapId = -1;
+    }
+
     /** Restores the persistent WRAM/SRAM regions without changing the current map buffer. */
     public void restore(byte[] persistentFlags, byte[] colorFlags) {
         requireLength(persistentFlags, DUNGEON_ITEM_FLAGS_SIZE, "persistentFlags");

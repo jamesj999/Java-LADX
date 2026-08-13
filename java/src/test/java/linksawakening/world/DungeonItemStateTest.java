@@ -11,6 +11,22 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 final class DungeonItemStateTest {
 
     @Test
+    void resetClearsPersistentAndCurrentDungeonState() {
+        DungeonItemState state = new DungeonItemState();
+        byte[] dungeonFlags = new byte[DungeonItemState.DUNGEON_ITEM_FLAGS_SIZE];
+        dungeonFlags[DungeonItemState.SMALL_KEYS_INDEX] = 3;
+        state.restore(dungeonFlags, new byte[DungeonItemState.COLOR_DUNGEON_ITEM_FLAGS_SIZE]);
+        state.loadForMap(0, true);
+
+        state.reset();
+
+        assertArrayEquals(new byte[DungeonItemState.DUNGEON_ITEM_FLAGS_SIZE],
+            state.dungeonItemFlagsSnapshot());
+        assertArrayEquals(new byte[DungeonItemState.ITEM_FLAG_SIZE],
+            state.currentFlagsSnapshot());
+    }
+
+    @Test
     void loadsThePersistentFiveByteEntryForAnOrdinaryDungeon() {
         DungeonItemState state = new DungeonItemState();
         byte[] dungeonFlags = new byte[DungeonItemState.DUNGEON_ITEM_FLAGS_SIZE];

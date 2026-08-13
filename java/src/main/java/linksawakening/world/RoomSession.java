@@ -496,17 +496,17 @@ public final class RoomSession {
         Arrays.fill(colorDungeonRoomStatus, (byte) 0);
         Arrays.fill(clearedEntitiesByRoom, 0);
         Arrays.fill(dungeonProgressFlags, (byte) 0);
-        dungeonItemState.restore(
-            new byte[DungeonItemState.DUNGEON_ITEM_FLAGS_SIZE],
-            new byte[DungeonItemState.COLOR_DUNGEON_ITEM_FLAGS_SIZE]);
+        dungeonItemState.reset();
         followingNpcState = FollowingNpcState.none();
         followingNpcRoomNeedsSync = true;
         followingLinkPositionHistory.fill(0x08, 0x10, 0, 0);
         hasBirdKey = false;
         bowWowState = 0;
         entityGoldenLeavesCount = 0;
+        enemyDropCounters = new EnemyDropResolver.CounterState(0, 0);
         switchBlocksState = 0;
         switchableObjectAnimationStage = 0;
+        switchButtonPressed = 0;
         currentOverworldTilesetId = W_TILESET_NO_UPDATE;
         clearTransientRoomState();
     }
@@ -566,6 +566,26 @@ public final class RoomSession {
             throw new IllegalArgumentException("Room id out of range: " + roomId);
         }
         return Byte.toUnsignedInt(indoorStatusTableForMap(mapId)[roomId]);
+    }
+
+    void setEnemyDropCountersForTest(int droppedItemCount, int droppedBombArrowCount) {
+        enemyDropCounters = new EnemyDropResolver.CounterState(
+            droppedItemCount, droppedBombArrowCount);
+    }
+
+    EnemyDropResolver.CounterState enemyDropCountersForTest() {
+        return enemyDropCounters;
+    }
+
+    void setSwitchButtonPressedForTest(int value) {
+        if ((value & ~0xFF) != 0) {
+            throw new IllegalArgumentException("Switch-button state must be an unsigned byte");
+        }
+        switchButtonPressed = value;
+    }
+
+    int switchButtonPressedForTest() {
+        return switchButtonPressed;
     }
 
     public int[][] palettes() {
