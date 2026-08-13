@@ -54,6 +54,7 @@ public final class RoomObjectParser {
     private static final int OBJECT_BOMBABLE_CAVE_DOOR = 0xBA;
     private static final int OBJECT_BOMBABLE_BLOCK = 0xA9;
     private static final int OBJECT_FLOOR_OD = 0x0D;
+    private static final int OBJECT_HIDDEN_STAIRS_DOWN = 0xBF;
     private static final int OBJECT_GROUND_STAIRS = 0xC6;
     private static final int OBJECT_DOOR_CB = 0xCB;
     private static final int OBJECT_DOOR_61 = 0x61;
@@ -79,6 +80,7 @@ public final class RoomObjectParser {
     private static final int SMALL_HOUSE_OBJECT_IDS_ADDR = 0x76FE;
 
     private static final int ROOM_STATUS_DOOR_OPEN_UP = 0x04;
+    private static final int ROOM_STATUS_EVENT_1 = 0x10;
     private static final int ROOM_STATUS_CHEST_OPEN = 0x10;
     private static final int ROOM_STATUS_EVENT_3 = 0x40;
     private static final int OW_ROOM_STATUS_OPENED = 0x04;
@@ -262,6 +264,9 @@ public final class RoomObjectParser {
                 pos += 3;
                 if (!isIndoor && type >= OBJECT_MACRO_BASE) {
                     expandMacro(type, location, firstByte);
+                } else if (isIndoor && type == OBJECT_HIDDEN_STAIRS_DOWN
+                    && (roomStatusFlags & ROOM_STATUS_EVENT_1) == 0) {
+                    // ConfigureRoomObjects returns before copying concealed stairs.
                 } else {
                     fillRoomWithConsecutiveObjects(type, location, firstByte);
                     if (isDoorObjectId(type)) {
@@ -279,6 +284,9 @@ public final class RoomObjectParser {
                     expandIndoorDoorMacro(type, location);
                 } else if (!isIndoor && type >= OBJECT_MACRO_BASE) {
                     expandMacro(type, location, 0);
+                } else if (isIndoor && type == OBJECT_HIDDEN_STAIRS_DOWN
+                    && (roomStatusFlags & ROOM_STATUS_EVENT_1) == 0) {
+                    // ConfigureRoomObjects leaves the room-template floor in place.
                 } else {
                     copyObjectToActiveRoomMap(type, location);
                     if (isDoorObjectId(type)) {

@@ -209,7 +209,9 @@ final class SpikedBeetleMotion {
     }
 
     boolean allowsCombat(int slot) {
-        return state[slot] < 3;
+        // SpikedBeetleEntityHandler calls DefaultEnemyDamageCollisionHandler
+        // before dispatching every state, including flipped states $03/$04.
+        return initialized[slot];
     }
 
     private void startDash(int slot, int linkEntityX, int linkEntityY, int entityX,

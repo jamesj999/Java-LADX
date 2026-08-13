@@ -20,6 +20,7 @@ import java.util.function.IntUnaryOperator;
  * class only advances handler-owned status and sprite-variant fields.
  */
 public final class RoomEntityRuntime {
+    private static final int ENTITY_PUSHED_BLOCK = 0x06;
     private static final int[] INSTRUMENT_MUSIC_TRACKS = {
         0x20, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E
     };
@@ -4697,6 +4698,7 @@ public final class RoomEntityRuntime {
                 soundChannel = EntityCombatEvent.SoundChannel.JINGLE;
                 soundId = 0x07;
             } else if (swordHit && entity.type() == ENTITY_SPIKED_BEETLE
+                && spikedBeetleMotion.state(entity.slot()) < 3
                 && !spikedBeetleSwordClink) {
                 // The initial static options byte reaches the Beetle-specific
                 // EnemyCollidedWithSword branch and flips the shell without
@@ -5846,6 +5848,43 @@ public final class RoomEntityRuntime {
         entityOptions1Override[freeSlot] = ENTITY_OPT1_NO_GROUND_INTERACTION
             | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
         return freeSlot;
+    }
+
+    /** Spawns bank 3's temporary entity $06 at an indoor object-cell center. */
+    int spawnPushedBlock(int x, int y) {
+        int freeSlot = findFreeEntitySlot();
+        if (freeSlot < 0) {
+            return -1;
+        }
+        EntitySpriteDefinition definition = spriteDefinitionFor(ENTITY_PUSHED_BLOCK);
+        int variant = definition.supported() ? definition.initialVariant() : -1;
+        slots[freeSlot] = new RoomEntity(freeSlot, -1, ENTITY_PUSHED_BLOCK,
+            x & 0xFF, y & 0xFF, EntityStatus.ACTIVE, definition, variant);
+        enemyPhysicsFlags[freeSlot] = 2 | ENTITY_PHYSICS_HARMLESS
+            | ENTITY_PHYSICS_PROJECTILE_NOCLIP;
+        enemyHealth[freeSlot] = 0;
+        entityOptions1Override[freeSlot] = ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
+        dynamicEntitySpawnedThisFrame[freeSlot] = true;
+        return freeSlot;
+    }
+
+    void movePushedBlock(int slot, int x, int y) {
+        if (slot < 0 || slot >= slots.length
+            || slots[slot].type() != ENTITY_PUSHED_BLOCK
+            || slots[slot].status() == EntityStatus.DISABLED) {
+            return;
+        }
+        RoomEntity entity = slots[slot];
+        slots[slot] = new RoomEntity(slot, entity.sourceLoadOrder(), entity.type(),
+            x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(),
+            entity.spriteVariant(), entity.entityFlipAttribute(), entity.spriteTileOffset(),
+            entity.z());
+    }
+
+    void removePushedBlock(int slot) {
+        if (slot >= 0 && slot < slots.length && slots[slot].type() == ENTITY_PUSHED_BLOCK) {
+            slots[slot] = RoomEntity.disabled(slot);
+        }
     }
 
     /** Creates the ROM's ordinary player-arrow entity type {@code $00}. */

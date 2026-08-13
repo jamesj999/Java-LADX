@@ -872,6 +872,9 @@ public class Main {
                     roomSession.tryUnlockIndoorKeyDoor(
                         link.pixelX(), link.pixelY(), link.direction(),
                         link.romCollisionType());
+                    roomSession.tryPushIndoorBlock(
+                        link.pixelX(), link.pixelY(), link.direction(),
+                        link.romCollisionType());
                 }
                 Link.ScreenShakeRequest pegasusShake =
                     link.consumePegasusScreenShakeRequest();

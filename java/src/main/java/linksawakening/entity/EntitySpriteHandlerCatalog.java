@@ -209,6 +209,10 @@ public final class EntitySpriteHandlerCatalog {
         if (entityType == ENTITY_CHEST_WITH_ITEM) {
             return decodePair(entityType, 0x07, 0x7B57, 0x21, 0);
         }
+        if (entityType == 0x06) {
+            // Unknown011SpriteVariants, used by the transient pushed block.
+            return decodePair(entityType, 0x03, 0x5235, 2, 1);
+        }
         if (entityType == ENTITY_INSTRUMENT_OF_THE_SIRENS) {
             return decodePair(entityType, 0x03, 0x5D83, 4,
                 mapId < 0 ? 0 : mapId & 0x03);

@@ -712,6 +712,118 @@ final class RoomSessionTest {
     }
 
     @Test
+    void tailCaveSingleBlockRequiresSixtyFourUninterruptedPushTicks() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x00, 0x04);
+        int blockIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x32;
+        assertEquals(0xA7, session.activeRoom().roomObjectsArea()[blockIndex]);
+
+        for (int tick = 0; tick < 32; tick++) {
+            assertTrue(session.tryPushIndoorBlock(
+                0x15, 0x28, Link.DIRECTION_RIGHT, 0x08));
+        }
+        assertFalse(session.tryPushIndoorBlock(
+            0x15, 0x28, Link.DIRECTION_RIGHT, 0x00));
+        for (int tick = 0; tick < 32; tick++) {
+            assertTrue(session.tryPushIndoorBlock(
+                0x15, 0x28, Link.DIRECTION_RIGHT, 0x08));
+        }
+        assertEquals(0xA7, session.activeRoom().roomObjectsArea()[blockIndex]);
+
+        for (int tick = 32; tick < 63; tick++) {
+            assertTrue(session.tryPushIndoorBlock(
+                0x15, 0x28, Link.DIRECTION_RIGHT, 0x08));
+        }
+        assertEquals(0xA7, session.activeRoom().roomObjectsArea()[blockIndex]);
+
+        assertTrue(session.tryPushIndoorBlock(
+            0x15, 0x28, Link.DIRECTION_RIGHT, 0x08));
+        assertEquals(0x0D, session.activeRoom().roomObjectsArea()[blockIndex]);
+    }
+
+    @Test
+    void settledTailCaveSingleBlockOpensTheDoorWithoutPersistingEvent22() {
+        RoomSession session = newSession();
+        List<GameplaySoundEvent> sounds = new ArrayList<>();
+        session.setColorShellSoundSink(sounds::add);
+        session.loadIndoor(0x00, 0x04);
+        int destinationIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x33;
+        int initialDestination = session.activeRoom().roomObjectsArea()[destinationIndex];
+        assertEquals(0x22, session.activeRoomEventForTest());
+        assertNotEquals(0, session.activeRoom().shutterDoorMask());
+
+        for (int tick = 0; tick < 64; tick++) {
+            assertTrue(session.tryPushIndoorBlock(
+                0x15, 0x28, Link.DIRECTION_RIGHT, 0x08));
+        }
+        session.setEntityDialogActive(true);
+        for (int frame = 0; frame < 8; frame++) {
+            session.tickEntities(frame, 0x15, 0x28);
+        }
+        RoomEntity pausedBlock = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x06)
+            .findFirst().orElseThrow();
+        assertEquals(0x28, pausedBlock.x());
+        session.setEntityDialogActive(false);
+        for (int frame = 0; frame < 32; frame++) {
+            session.tickEntities(frame, 0x15, 0x28);
+        }
+        RoomEntity movingBlock = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x06)
+            .findFirst().orElseThrow();
+        assertTrue(movingBlock.spriteDefinition().supported());
+        assertEquals(0x38, movingBlock.x());
+        assertEquals(0x40, movingBlock.y());
+        assertEquals(initialDestination,
+            session.activeRoom().roomObjectsArea()[destinationIndex]);
+        assertNotEquals(0, session.activeRoom().shutterDoorMask());
+
+        session.tickEntities(32, 0x15, 0x28);
+
+        assertEquals(0xA6, session.activeRoom().roomObjectsArea()[destinationIndex]);
+        assertEquals(0, session.activeRoom().shutterDoorMask());
+        assertEquals(0, session.activeRoomEventForTest());
+        assertEquals(0, session.indoorRoomStatusForTest(0x00, 0x04) & 0x10);
+        assertEquals(List.of(GameplaySoundEvent.PUZZLE_SOLVED,
+            GameplaySoundEvent.DOOR_UNLOCKED), sounds);
+
+        session.loadIndoor(0x00, 0x04);
+        assertNotEquals(0, session.activeRoom().shutterDoorMask());
+        assertEquals(0x22, session.activeRoomEventForTest());
+    }
+
+    @Test
+    void blockedOrUnallocatedPushedBlockLeavesItsSourceObjectIntact() {
+        RoomSession blocked = newSession();
+        blocked.loadIndoor(0x00, 0x04);
+        int sourceIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x32;
+        int destinationIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x33;
+        blocked.activeRoom().roomObjectsArea()[destinationIndex] = 0xA6;
+        for (int tick = 0; tick < 64; tick++) {
+            assertTrue(blocked.tryPushIndoorBlock(
+                0x15, 0x28, Link.DIRECTION_RIGHT, 0x08));
+        }
+        assertEquals(0xA7, blocked.activeRoom().roomObjectsArea()[sourceIndex]);
+        assertFalse(blocked.activeRoom().entities().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == 0x06));
+
+        RoomSession full = newSession();
+        full.loadIndoor(0x00, 0x04);
+        List<RoomEntity> occupiedSlots = new ArrayList<>();
+        for (int slot = 0; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
+            occupiedSlots.add(new RoomEntity(slot, -1, 0x42, 0x08, 0x10,
+                EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(0x42), -1));
+        }
+        full.replaceEntityRuntimeForTest(
+            RoomEntityRuntime.from(new RoomEntitySnapshot(occupiedSlots), true));
+        for (int tick = 0; tick < 64; tick++) {
+            assertTrue(full.tryPushIndoorBlock(
+                0x15, 0x28, Link.DIRECTION_RIGHT, 0x08));
+        }
+        assertEquals(0xA7, full.activeRoom().roomObjectsArea()[sourceIndex]);
+    }
+
+    @Test
     void tailCaveCardPuzzleRevealsAndAwardsTheStoneBeakThroughCombat() {
         RoomSession session = newSession();
         session.loadIndoor(0x00, 0x0A);

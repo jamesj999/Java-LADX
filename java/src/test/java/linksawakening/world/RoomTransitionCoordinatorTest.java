@@ -629,6 +629,86 @@ final class RoomTransitionCoordinatorTest {
         walkToAndCrossIndoorBoundary(
             coordinator, transition, scroll, collision, link, ScrollController.UP);
         assertEquals(0x04, session.currentRoomId());
+
+        int movableBlockIndex = ROOM_OBJECTS_BASE + 0x32;
+        assertEquals(0xA7, session.activeRoom().roomObjectsArea()[movableBlockIndex]);
+        for (int tick = 0; tick < 64; tick++) {
+            assertTrue(session.tryPushIndoorBlock(
+                0x15, 0x28, Link.DIRECTION_RIGHT, 0x08));
+        }
+        for (int tick = 0; tick < 33; tick++) {
+            session.tickEntities(frame++, 0x15, 0x28);
+        }
+        assertEquals(0, session.activeRoom().shutterDoorMask());
+        assertEquals(0, session.indoorRoomStatusForTest(0x00, 0x04) & 0x10);
+
+        walkToAndCrossIndoorBoundary(
+            coordinator, transition, scroll, collision, link, ScrollController.LEFT);
+        assertEquals(0x03, session.currentRoomId());
+        assertEquals(0xA1, session.activeRoomEventForTest());
+        int hiddenStairsIndex = ROOM_OBJECTS_BASE + 0x18;
+        assertEquals(0x0D, session.activeRoom().roomObjectsArea()[hiddenStairsIndex]);
+        List<RoomEntity> beetles = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x2C)
+            .toList();
+        assertEquals(2, beetles.size());
+
+        // EntityInitHandler runs before the first interactive collision pass.
+        session.tickEntitiesWithProjectileEvents(
+            frame++, 0, 0, 0, 0, Link.DIRECTION_DOWN, false);
+        beetles = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x2C)
+            .toList();
+        // EnemyCollidedWithSword flips state-$00 beetles without damage.
+        for (RoomEntity beetle : beetles) {
+            List<EntityCombatEvent> flipEvents = session.resolveEntityCombat(
+                beetle.slot() ^ 1, 0, 0, false, true, true,
+                beetle.x() + 0x08, 1, beetle.y() - beetle.z() + 0x08, 1);
+            assertTrue(flipEvents.stream().anyMatch(event -> event.slot() == beetle.slot()
+                && event.swordHit()), flipEvents.toString());
+        }
+        session.tickEntitiesWithProjectileEvents(
+            frame++, 0, 0, 0, 0, Link.DIRECTION_DOWN, false);
+        beetles = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x2C)
+            .toList();
+        for (RoomEntity beetle : beetles) {
+            List<EntityCombatEvent> damageEvents = session.resolveEntityCombat(
+                beetle.slot() ^ 1, 0, 0, false, true, true,
+                beetle.x() + 0x08, 1, beetle.y() - beetle.z() + 0x08, 1);
+            assertTrue(damageEvents.stream().anyMatch(event -> event.slot() == beetle.slot()
+                && event.swordHit() && event.enemyDamage() > 0), damageEvents.toString());
+        }
+        for (int attack = 0; attack < 3; attack++) {
+            for (int recovery = 0; recovery < 12; recovery++) {
+                session.tickEntitiesWithProjectileEvents(
+                    frame++, 0, 0, 0, 0, Link.DIRECTION_DOWN, false);
+            }
+            beetles = session.activeRoom().entities().loadedEntities().stream()
+                .filter(entity -> entity.type() == 0x2C)
+                .toList();
+            for (RoomEntity beetle : beetles) {
+                session.resolveEntityCombat(
+                    beetle.slot() ^ 1, 0, 0, false, true, true,
+                    beetle.x() + 0x08, 1, beetle.y() - beetle.z() + 0x08, 1);
+            }
+        }
+        int beetleDeadline = frame + 0x200;
+        while (session.activeRoomEventForTest() != 0 && frame < beetleDeadline) {
+            session.tickEntitiesWithProjectileEvents(
+                frame++, 0, 0, 0, 0, Link.DIRECTION_DOWN, false);
+        }
+        assertEquals(0, session.activeRoomEventForTest(),
+            session.activeRoom().entities().loadedEntities().toString());
+        assertEquals(0x0D, session.activeRoom().roomObjectsArea()[hiddenStairsIndex]);
+        for (int revealFrame = 0; revealFrame < 11; revealFrame++) {
+            session.tickEntitiesWithProjectileEvents(
+                frame++, 0, 0, 0, 0, Link.DIRECTION_DOWN, false);
+        }
+        assertEquals(0xBE, session.activeRoom().roomObjectsArea()[hiddenStairsIndex]);
+        assertEquals(0x10, session.indoorRoomStatusForTest(0x00, 0x03) & 0x10);
+        session.loadIndoor(0x00, 0x03);
+        assertEquals(0xBF, session.activeRoom().roomObjectsArea()[hiddenStairsIndex]);
     }
 
     @Test
