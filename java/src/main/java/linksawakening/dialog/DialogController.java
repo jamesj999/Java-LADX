@@ -166,7 +166,7 @@ public final class DialogController {
         return dialogCooldown;
     }
 
-    public void tickPostEntityCooldown() {
+    public void tickGameplayFrameCooldown() {
         if (dialogCooldown > 0) {
             dialogCooldown--;
         }

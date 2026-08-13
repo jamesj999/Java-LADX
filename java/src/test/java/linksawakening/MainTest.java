@@ -136,6 +136,34 @@ final class MainTest {
     }
 
     @Test
+    void gameplayFrameDecrementsDialogCooldownWhenEntityAnimationIsSkipped() {
+        DialogController dialog = closedDialogWithCooldown();
+        assertFalse(Main.shouldTickRoomEntities(false, false, true, false));
+        assertFalse(Main.shouldTickRoomEntities(true, false, false, false));
+        assertFalse(Main.shouldTickRoomEntities(false, true, false, false));
+
+        Main.completeGameplayFrame(dialog);
+
+        assertEquals(0x17, dialog.dialogCooldown());
+    }
+
+    @Test
+    void gameplayFramesExposeTheFullCooldownBeforeTwentyFourPostEntityDecrements() {
+        DialogController dialog = closedDialogWithCooldown();
+        List<Integer> valuesSeenByOptionalEntityAnimation = new ArrayList<>();
+
+        for (int frame = 0; frame < 0x18; frame++) {
+            valuesSeenByOptionalEntityAnimation.add(dialog.dialogCooldown());
+            Main.completeGameplayFrame(dialog);
+        }
+
+        assertEquals(0x18, valuesSeenByOptionalEntityAnimation.getFirst());
+        assertEquals(1, valuesSeenByOptionalEntityAnimation.getLast());
+        assertEquals(0x18, valuesSeenByOptionalEntityAnimation.size());
+        assertEquals(0, dialog.dialogCooldown());
+    }
+
+    @Test
     void enterPressSkipsActiveIntroCutsceneToTitle() {
         List<String> loadedScenes = new ArrayList<>();
         CutsceneManager manager = new CutsceneManager(new DialogController(16), loadedScenes::add);
@@ -162,5 +190,13 @@ final class MainTest {
         } catch (Exception e) {
             throw new IllegalStateException("Failed to load ROM", e);
         }
+    }
+
+    private static DialogController closedDialogWithCooldown() {
+        DialogController dialog = new DialogController(16);
+        dialog.open("A");
+        dialog.advance();
+        dialog.advance();
+        return dialog;
     }
 }

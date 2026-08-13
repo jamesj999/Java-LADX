@@ -151,11 +151,11 @@ final class DialogControllerTest {
         dialog.tick();
         assertEquals(0x18, dialog.dialogCooldown());
 
-        dialog.tickPostEntityCooldown();
+        dialog.tickGameplayFrameCooldown();
         assertEquals(0x17, dialog.dialogCooldown());
 
         for (int i = 0; i < 0x17; i++) {
-            dialog.tickPostEntityCooldown();
+            dialog.tickGameplayFrameCooldown();
         }
         assertEquals(0, dialog.dialogCooldown());
     }

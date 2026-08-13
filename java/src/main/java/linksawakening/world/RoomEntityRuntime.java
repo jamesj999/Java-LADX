@@ -1283,16 +1283,33 @@ public final class RoomEntityRuntime {
         EnemyProjectileCollision.LinkState projectileLinkState,
         boolean swordCollisionActive, int swordX, int swordWidth,
         int swordY, int swordHeight, int linkSpeedX, int linkSpeedY) {
+        return tickWithProjectileEvents(frameCounter, linkEntityX, linkEntityY,
+            collisionType, randomByteSupplier, backgroundCollision, objectCollision,
+            linkPositionHistory, linkZ, false, linkDirection, entityYOffset,
+            projectileLinkState, swordCollisionActive, swordX, swordWidth,
+            swordY, swordHeight, linkSpeedX, linkSpeedY);
+    }
+
+    List<EntityProjectileEvent> tickWithProjectileEvents(
+        int frameCounter, int linkEntityX, int linkEntityY, int collisionType,
+        IntSupplier randomByteSupplier, RoomEntityBackgroundCollision backgroundCollision,
+        RoomEntityObjectCollision objectCollision,
+        LinkPositionHistory linkPositionHistory,
+        int linkZ, boolean linkAirborne, int linkDirection, int entityYOffset,
+        EnemyProjectileCollision.LinkState projectileLinkState,
+        boolean swordCollisionActive, int swordX, int swordWidth,
+        int swordY, int swordHeight, int linkSpeedX, int linkSpeedY) {
         validateByte(linkSpeedX, "Link X speed");
         validateByte(linkSpeedY, "Link Y speed");
         currentLinkSpeedX = linkSpeedX;
         currentLinkSpeedY = linkSpeedY;
         try {
-            return tickWithProjectileEvents(frameCounter, linkEntityX, linkEntityY,
-                collisionType, randomByteSupplier, backgroundCollision, objectCollision,
-                linkPositionHistory, linkZ, linkDirection, entityYOffset,
-                projectileLinkState, swordCollisionActive, swordX, swordWidth,
-                swordY, swordHeight);
+            return tickInternal(frameCounter, linkEntityX, linkEntityY, collisionType,
+                randomByteSupplier, backgroundCollision, objectCollision,
+                linkPositionHistory, linkZ, linkAirborne, linkDirection, entityYOffset,
+                projectileLinkState, false, swordCollisionActive, swordX, swordWidth,
+                swordY, swordHeight, projectileLinkState.motionState()
+                    < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE);
         } finally {
             currentLinkSpeedX = 0;
             currentLinkSpeedY = 0;
@@ -1399,8 +1416,27 @@ public final class RoomEntityRuntime {
                       boolean swordCollisionActive, int swordX, int swordWidth,
                       int swordY, int swordHeight,
                       boolean handlerLinkCollisionEnabled) {
+        return tickInternal(frameCounter, linkEntityX, linkEntityY, collisionType,
+            randomByteSupplier, backgroundCollision, objectCollision, linkPositionHistory,
+            linkZ, false, linkDirection, entityYOffset, projectileLinkState,
+            creditsGameplay, swordCollisionActive, swordX, swordWidth, swordY, swordHeight,
+            handlerLinkCollisionEnabled);
+    }
+
+    private List<EntityProjectileEvent> tickInternal(int frameCounter, int linkEntityX,
+                      int linkEntityY, int collisionType, IntSupplier randomByteSupplier,
+                      RoomEntityBackgroundCollision backgroundCollision,
+                      RoomEntityObjectCollision objectCollision,
+                      LinkPositionHistory linkPositionHistory,
+                      int linkZ, boolean linkAirborne, int linkDirection, int entityYOffset,
+                      EnemyProjectileCollision.LinkState projectileLinkState,
+                      boolean creditsGameplay,
+                      boolean swordCollisionActive, int swordX, int swordWidth,
+                      int swordY, int swordHeight,
+                      boolean handlerLinkCollisionEnabled) {
         Objects.requireNonNull(randomByteSupplier, "randomByteSupplier");
         Objects.requireNonNull(projectileLinkState, "projectileLinkState");
+        handlerLinkCollisionEnabled = handlerLinkCollisionEnabled && !inventoryAppearing;
         shouldGetLostInMysteriousWoods = false;
         finalizePendingBombPresentations();
         int frame = frameCounter & 0xFF;
@@ -3592,7 +3628,7 @@ public final class RoomEntityRuntime {
                 TarinRaccoonMotion.Update tarinUpdate = tarinRaccoonMotion.advance(entity,
                     new TarinRaccoonMotion.Input(frame, linkEntityX, linkEntityY,
                         romLinkDirection, actionButtonAHeld, dialogActive, false,
-                        linkAttackStepAnimationCountdown, linkZ != 0,
+                        linkAttackStepAnimationCountdown, linkAirborne,
                         inventoryAppearing, dialogCooldown, windowY));
                 updated = tarinUpdate.entity();
                 preserveTarinPresentation = true;

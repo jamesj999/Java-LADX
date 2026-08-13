@@ -1352,6 +1352,13 @@ public final class RoomSession {
             linkDirection, false);
     }
 
+    public void tickEntities(int frameCounter, int linkEntityX, int linkEntityY,
+                             int linkEntityZ, boolean linkAirborne, int linkDirection) {
+        tickEntitiesWithProjectileEvents(frameCounter, linkEntityX, linkEntityY,
+            linkEntityZ, linkAirborne, EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE,
+            linkDirection, false);
+    }
+
     /**
      * Advances entities and returns the ROM projectile interactions generated
      * during this frame.  The older tick overloads route through this method
@@ -1364,6 +1371,16 @@ public final class RoomSession {
                              boolean usingShield) {
         return tickEntitiesWithProjectileEvents(frameCounter, linkEntityX, linkEntityY,
             linkEntityZ, linkMotionState, linkDirection, usingShield, 1, 0);
+    }
+
+    public List<EntityProjectileEvent> tickEntitiesWithProjectileEvents(
+                             int frameCounter, int linkEntityX, int linkEntityY,
+                             int linkEntityZ, boolean linkAirborne,
+                             int linkMotionState, int linkDirection,
+                             boolean usingShield) {
+        return tickEntitiesWithProjectileEvents(frameCounter, linkEntityX, linkEntityY,
+            linkEntityZ, linkAirborne, linkMotionState, linkDirection, 0, usingShield,
+            1, 0, false, 0, 0, 0, 0, 0, 0);
     }
 
     /** Advances entities with the additional ROM shield and invincibility fields. */
@@ -1407,6 +1424,21 @@ public final class RoomSession {
     public List<EntityProjectileEvent> tickEntitiesWithProjectileEvents(
                              int frameCounter, int linkEntityX, int linkEntityY,
                              int linkEntityZ, int linkMotionState, int linkDirection,
+                             int collisionType, boolean usingShield, int shieldLevel,
+                             int invincibilityCounter, boolean swordCollisionActive,
+                             int swordX, int swordWidth, int swordY, int swordHeight,
+                             int linkSpeedX, int linkSpeedY) {
+        return tickEntitiesWithProjectileEvents(frameCounter, linkEntityX, linkEntityY,
+            linkEntityZ, false, linkMotionState, linkDirection, collisionType, usingShield,
+            shieldLevel, invincibilityCounter, swordCollisionActive, swordX, swordWidth,
+            swordY, swordHeight, linkSpeedX, linkSpeedY);
+    }
+
+    /** Rich live path with Link's explicit airborne state. */
+    public List<EntityProjectileEvent> tickEntitiesWithProjectileEvents(
+                             int frameCounter, int linkEntityX, int linkEntityY,
+                             int linkEntityZ, boolean linkAirborne,
+                             int linkMotionState, int linkDirection,
                              int collisionType, boolean usingShield, int shieldLevel,
                              int invincibilityCounter, boolean swordCollisionActive,
                              int swordX, int swordWidth, int swordY, int swordHeight,
@@ -1460,7 +1492,7 @@ public final class RoomSession {
             frameCounter, linkEntityX, linkEntityY, collisionType & 0xFF,
             entityRandomByteSource,
             this::entityBackgroundCollision, this::pairoddProjectileObjectCollision,
-            followingLinkPositionHistory, followingLinkZ,
+            followingLinkPositionHistory, followingLinkZ, linkAirborne,
             followingLinkDirection, followingEntityYOffset,
             new EnemyProjectileCollision.LinkState(
                 linkEntityX, linkEntityY, linkEntityZ, linkMotionState,

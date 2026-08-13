@@ -132,15 +132,28 @@ final class TarinRaccoonRuntimeTest {
     }
 
     @Test
-    void airborneLinkDoesNotQueueDialog00d() {
+    void explicitAirborneLinkDoesNotQueueDialog00dWhenZIsZero() {
         RoomSession session = newSession();
         session.loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);
         session.tickEntities(0, 0x78, 0x50, 0, 1);
         session.setEntityActionButtonsHeld(true, false);
 
-        session.tickEntities(1, 0x78, 0x50, 1, 1);
+        session.tickEntities(1, 0x78, 0x50, 0, true, 1);
 
         assertTrue(session.consumeEntityDialogRequests().isEmpty());
+    }
+
+    @Test
+    void groundedLinkCanTalkWhenZIsNonzero() {
+        RoomSession session = newSession();
+        session.loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);
+        session.tickEntities(0, 0x78, 0x50, 0, 1);
+        session.setEntityActionButtonsHeld(true, false);
+
+        session.tickEntities(1, 0x78, 0x50, 1, false, 1);
+
+        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, 0x0D)),
+            session.consumeEntityDialogRequests());
     }
 
     @Test
@@ -163,6 +176,7 @@ final class TarinRaccoonRuntimeTest {
         session.tickEntities(1, 0x78, 0x1F, 0, 1);
 
         assertTrue(session.shouldGetLostInMysteriousWoods());
+        assertEquals(2, raccoon(session).spriteVariant());
         assertTrue(session.consumeEntityDialogRequests().isEmpty());
 
         session.setEntityTalkState(false, 0, 0x80);
@@ -199,7 +213,7 @@ final class TarinRaccoonRuntimeTest {
             session.tickEntities(frame, 0x78, 0x50, 0, 1);
             assertTrue(session.consumeEntityDialogRequests().isEmpty(),
                 "held A must remain blocked on entity pass " + frame);
-            dialog.tickPostEntityCooldown();
+            dialog.tickGameplayFrameCooldown();
         }
 
         assertEquals(0, dialog.dialogCooldown());

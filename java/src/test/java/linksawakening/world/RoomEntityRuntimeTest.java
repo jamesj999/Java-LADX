@@ -4373,6 +4373,27 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void inventoryTransitionMakesEntityHandlersNonInteractiveWithoutSkippingThePass() {
+        EntitySpriteDefinition definition = pairDefinition(0x9C, 5);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x9C, 64, 64, EntityStatus.INIT, definition, 0)));
+        runtime.tick(0, 120, 120, sequence(0x00));
+        runtime.setTalkState(true, 0, 0x78);
+        EnemyProjectileCollision.LinkState interactive =
+            new EnemyProjectileCollision.LinkState(120, 120, 0, 0, 0, false);
+
+        runtime.tickWithProjectileEvents(1, 120, 120, sequence(0x00), null,
+            interactive);
+        runtime.tickWithProjectileEvents(2, 120, 120, sequence(0x00), null,
+            interactive);
+
+        assertEquals(64, runtime.snapshot().slots().get(0).x());
+        assertEquals(64, runtime.snapshot().slots().get(0).y());
+        assertEquals(0x0C, runtime.starSpeedX(0));
+        assertEquals(0x0C, runtime.starSpeedY(0));
+    }
+
+    @Test
     void starUsesTheNormalEnemyCombatValuesAndShadowPhysics() {
         EntitySpriteDefinition definition = pairDefinition(0x9C, 5);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(

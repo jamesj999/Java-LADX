@@ -664,6 +664,12 @@ public class Main {
             && (!inventoryBlocksInput || inventoryTransitioning);
     }
 
+    static void completeGameplayFrame(DialogController dialog) {
+        if (dialog != null) {
+            dialog.tickGameplayFrameCooldown();
+        }
+    }
+
     private static void dumpLinkSurroundings() {
         if (link == null || roomSession == null || !roomSession.hasActiveRoom()) return;
         ActiveRoom room = roomSession.activeRoom();
@@ -789,11 +795,13 @@ public class Main {
             }
             updateNewGameMarinPresentation();
             if (tickNewGameWakeUp()) {
+                completeGameplayFrame(dialogController);
                 inputState.tickEdges();
                 overworldDialogInputConsumedThisFrame = false;
                 return;
             }
             if (tickNewGameTarinShield()) {
+                completeGameplayFrame(dialogController);
                 inputState.tickEdges();
                 overworldDialogInputConsumedThisFrame = false;
                 return;
@@ -1031,6 +1039,7 @@ public class Main {
                     link == null ? 0x08 : link.romEntityX(),
                     link == null ? 0x10 : link.romEntityY(),
                     link == null ? 0x00 : link.romEntityZ(),
+                    link != null && link.isAirborne(),
                     link == null ? 0x02 : link.romMotionState(),
                     link == null ? 0x00 : link.direction(),
                     link == null ? 0x00 : link.romCollisionType(),
@@ -1042,9 +1051,6 @@ public class Main {
                     swordBoxForEntityTick.height(),
                     link == null ? 0 : link.romSpeedX(),
                     link == null ? 0 : link.romSpeedY());
-                if (dialogController != null) {
-                    dialogController.tickPostEntityCooldown();
-                }
                 for (var request : roomSession.consumeLinkFinalPositionRequests()) {
                     if (link != null) {
                         link.restoreRomFinalPosition();
@@ -1186,6 +1192,7 @@ public class Main {
                 }
                 synchronizeLinkLiftedPresentation();
             }
+            completeGameplayFrame(dialogController);
 
             // Advance the animated BG tiles (waterfalls, weather vanes, etc.).
             // Original gates this behind wRoomTransitionState == 0 and the
