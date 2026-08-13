@@ -1474,6 +1474,8 @@ public final class RoomEntityRuntime {
         Objects.requireNonNull(randomByteSupplier, "randomByteSupplier");
         Objects.requireNonNull(projectileLinkState, "projectileLinkState");
         handlerLinkCollisionEnabled = handlerLinkCollisionEnabled && !inventoryAppearing;
+        boolean threeOfAKindInteractive = handlerLinkCollisionEnabled
+            && entityTimersInteractive();
         shouldGetLostInMysteriousWoods = false;
         finalizePendingBombPresentations();
         int frame = frameCounter & 0xFF;
@@ -1562,7 +1564,7 @@ public final class RoomEntityRuntime {
                 && tarinRaccoonMotion.state(entity.slot()) != 0
                 && !tarinTransformationTimersInteractive();
             boolean freezeThreeOfAKindTimers = entity.type() == ENTITY_THREE_OF_A_KIND
-                && !handlerLinkCollisionEnabled;
+                && !threeOfAKindInteractive;
             boolean ignoreHitsDecrementedBeforeHandler = !freezeTarinTimers
                 && !freezeThreeOfAKindTimers
                 && decrementEnemyCombatCountdowns(entity.slot(), !wasInitializing);
@@ -3201,7 +3203,7 @@ public final class RoomEntityRuntime {
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_THREE_OF_A_KIND
-                && handlerLinkCollisionEnabled) {
+                && threeOfAKindInteractive) {
                 enemyHealth[entity.slot()] = 0x20;
                 ThreeOfAKindMotion.Update cardUpdate = threeOfAKindMotion.advance(
                     entity, frame, enemyTransitionCountdown[entity.slot()],
@@ -4099,7 +4101,7 @@ public final class RoomEntityRuntime {
                     updated.spriteTileOffset(), updated.z());
             }
         }
-        if (handlerLinkCollisionEnabled) {
+        if (threeOfAKindInteractive) {
             resolveThreeOfAKindPuzzle();
         }
         updateHookshotChainOam(linkEntityX, linkEntityY, frame);

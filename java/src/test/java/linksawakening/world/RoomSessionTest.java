@@ -712,6 +712,57 @@ final class RoomSessionTest {
     }
 
     @Test
+    void tailCaveCardPuzzleRevealsAndAwardsTheStoneBeakThroughCombat() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x00, 0x0A);
+        session.tickEntitiesWithProjectileEvents(
+            1, 0, 0, 0, 0, Link.DIRECTION_DOWN, false);
+        List<RoomEntity> cards = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type()
+                == EntitySpriteHandlerCatalog.ENTITY_THREE_OF_A_KIND)
+            .toList();
+        assertEquals(3, cards.size());
+        assertEquals(0x61, session.activeRoomEventForTest());
+
+        // Resolve each sword collision on its source alternating-slot cadence
+        // without advancing the shared card face between hits.
+        for (RoomEntity card : cards) {
+            List<EntityCombatEvent> hit = session.resolveEntityCombat(
+                card.slot() ^ 1, 0, 0, false, true, true,
+                card.x() + 0x08, 1, card.y() + 0x08, 1);
+            assertTrue(hit.stream().anyMatch(event -> event.slot() == card.slot()
+                && event.swordHit()));
+        }
+
+        int frame = 2;
+        int deadline = frame + 0x100;
+        while (session.activeRoomEventForTest() != 0 && frame < deadline) {
+            session.tickEntitiesWithProjectileEvents(
+                frame++, 0, 0, 0, 0, Link.DIRECTION_DOWN, false);
+        }
+
+        assertEquals(0, session.activeRoomEventForTest(),
+            session.activeRoom().entities().loadedEntities().toString());
+        int chestIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x28;
+        int appearanceDeadline = frame + 0x20;
+        while (session.activeRoom().roomObjectsArea()[chestIndex] != 0xA0
+            && frame < appearanceDeadline) {
+            session.tickEntitiesWithProjectileEvents(
+                frame++, 0, 0, 0, 0, Link.DIRECTION_DOWN, false);
+        }
+        assertEquals(0xA0, session.activeRoom().roomObjectsArea()[chestIndex]);
+
+        RoomSession.ChestOpenResult chest = session.tryOpenChest(
+            0x78, 0x21, Link.DIRECTION_UP, true, 1);
+        assertTrue(chest.opened());
+        assertEquals(ChestContentsTable.CHEST_STONE_BEAK, chest.itemType());
+        session.tickEntitiesWithProjectileEvents(
+            frame, 0x78, 0x21, 0, 0, Link.DIRECTION_DOWN, false);
+        assertEquals(1, session.currentDungeonItemFlagsSnapshot()[
+            DungeonItemState.STONE_BEAK_INDEX]);
+    }
+
+    @Test
     void rollingBonesRoomOpensItsRomShuttersAndPersistsTheMinibossFlag() {
         RoomSession session = newSession();
         session.loadIndoor(0x00, 0x11);

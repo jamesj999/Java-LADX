@@ -92,6 +92,12 @@ final class RoomEntityRuntimeTest {
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
         assertTrue(runtime.snapshot().loadedEntities().stream()
             .allMatch(card -> card.status() == EntityStatus.ACTIVE));
+
+        runtime.setDialogActive(true);
+        runtime.tickWithProjectileEvents(2, 0, 0, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0, 0, 0, 0, 3, false));
+        assertEquals(1, runtime.transitionCountdownForTest(0));
+        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
     }
 
     @Test
