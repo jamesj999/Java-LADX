@@ -872,7 +872,7 @@ public class Main {
                     roomSession.tryUnlockIndoorKeyDoor(
                         link.pixelX(), link.pixelY(), link.direction(),
                         link.romCollisionType());
-                    roomSession.tryPushIndoorBlock(
+                    roomSession.tryInteractWithIndoorBlock(
                         link.pixelX(), link.pixelY(), link.direction(),
                         link.romCollisionType());
                 }

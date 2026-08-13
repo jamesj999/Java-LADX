@@ -3408,8 +3408,8 @@ public final class RoomEntityRuntime {
                 if (spriteHandlers != null) {
                     updated = withDefinition(updated,
                         spriteHandlers.forRollingBonesBar(
-                            0, updated.y(), updated.spriteVariant()),
-                        updated.spriteVariant());
+                            0, updated.y(), barUpdate.animationVariant()),
+                        0);
                 }
                 preserveRollingBonesPresentation = true;
                 if (barUpdate.rollingSound()) {
@@ -5887,6 +5887,11 @@ public final class RoomEntityRuntime {
         }
     }
 
+    /** Spawns DropKeyEffectHandler's ordinary dungeon key at ($28,$3C,$70). */
+    int spawnRoomEventKeyDrop() {
+        return spawnKeyDropAt(0x28, 0x3C, 0, 0x70, 0, 0);
+    }
+
     /** Creates the ROM's ordinary player-arrow entity type {@code $00}. */
     int spawnArrow(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
         return spawnArrow(linkEntityX, linkEntityY, linkEntityZ, romDirection, false);
@@ -8276,16 +8281,22 @@ public final class RoomEntityRuntime {
 
     private void spawnBossKeyDrop(RoomEntity source, int spriteVariant, int z,
                                   int speedZ, int privateCountdown1) {
+        spawnKeyDropAt(source.x(), source.y(), spriteVariant, z, speedZ,
+            privateCountdown1);
+    }
+
+    private int spawnKeyDropAt(int x, int y, int spriteVariant, int z,
+                               int speedZ, int privateCountdown1) {
         int freeSlot = findFreeEntitySlot();
         if (freeSlot < 0) {
-            return;
+            return -1;
         }
 
         EntitySpriteDefinition definition = spriteDefinitionFor(ENTITY_KEY_DROP_POINT);
         int variant = definition.supported()
             ? Math.min(spriteVariant, definition.variantCount() - 1) : -1;
         RoomEntity drop = new RoomEntity(freeSlot, -1, ENTITY_KEY_DROP_POINT,
-            source.x(), source.y(), EntityStatus.ACTIVE, definition, variant,
+            x & 0xFF, y & 0xFF, EntityStatus.ACTIVE, definition, variant,
             0, 0, z);
         slots[freeSlot] = drop;
         resetEnemyDropState(freeSlot);
@@ -8308,6 +8319,7 @@ public final class RoomEntityRuntime {
         entityOptions1Override[freeSlot] = -1;
         enemyRecoilMotion.clear(freeSlot);
         dynamicEntitySpawnedThisFrame[freeSlot] = true;
+        return freeSlot;
     }
 
     private int enemyDropHealthGroup(int entityType) {
@@ -11301,6 +11313,9 @@ public final class RoomEntityRuntime {
             fallingSpeedXAccumulator, slot);
         int y = addFallingSpeedToPosition(entity.y(), fallingSpeedY[slot],
             fallingSpeedYAccumulator, slot);
+        if (spriteHandlers != null) {
+            entity = withDefinition(entity, spriteHandlers.forFallingEntity(), phase);
+        }
         return withPositionAndVariant(entity, x, y, phase);
     }
 

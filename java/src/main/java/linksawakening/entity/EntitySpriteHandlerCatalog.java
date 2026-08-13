@@ -814,6 +814,23 @@ public final class EntitySpriteHandlerCatalog {
         return decodePair(0x00, 0x03, 0x4C44, 2, 0);
     }
 
+    /** EntityFallHandler's three single frames followed by Unknown020's pair. */
+    public EntitySpriteDefinition forFallingEntity() {
+        EntitySpriteDefinition singles = decodeSingle(0x00, 0x03, 0x4CAC, 3, 0);
+        EntitySpriteDefinition pair = decodePair(0x00, 0x03, 0x4CB2, 1, 0);
+        List<List<EntitySpriteDefinition.DynamicSprite>> variants = new ArrayList<>(4);
+        for (EntitySpriteDefinition.Variant variant : singles.variants()) {
+            variants.add(List.of(new EntitySpriteDefinition.DynamicSprite(
+                0, 0, variant.first(),
+                EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true)));
+        }
+        List<EntitySpriteDefinition.DynamicSprite> finalPair = new ArrayList<>(2);
+        appendDynamicPair(finalPair, pair.variant(0),
+            EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS);
+        variants.add(List.copyOf(finalPair));
+        return EntitySpriteDefinition.dynamic(0x00, 0x03, 0x4CAC, 0, variants);
+    }
+
     /** Decodes the bank-$03 pair shown immediately before bomb detonation. */
     public EntitySpriteDefinition forBombRightBeforeExploding() {
         return decodePair(ENTITY_BOMB, 0x03, 0x5484, 1, 0);

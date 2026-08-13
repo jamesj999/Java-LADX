@@ -8,7 +8,8 @@ final class RollingBonesMotion {
     record BossUpdate(RoomEntity entity, int transitionCountdown, int jingleId) {
     }
 
-    record BarUpdate(RoomEntity entity, boolean rollingSound, boolean strongBump,
+    record BarUpdate(RoomEntity entity, int animationVariant,
+                     boolean rollingSound, boolean strongBump,
                      int screenShakeCountdown) {
     }
 
@@ -32,6 +33,7 @@ final class RollingBonesMotion {
     private final int[] bossZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] barState = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] barSpeedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] barAnimationVariant = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] barXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] barTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private int rollingSoundCounter;
@@ -51,6 +53,7 @@ final class RollingBonesMotion {
     void initializeBar(int slot) {
         barState[slot] = BAR_STATE_RESTING;
         barSpeedX[slot] = 0;
+        barAnimationVariant[slot] = 0;
         barXAccumulator[slot] = 0;
         barTransitionCountdown[slot] = 0;
     }
@@ -159,17 +162,32 @@ final class RollingBonesMotion {
         boolean strongBump = false;
         int screenShake = 0;
         boolean wasRolling = barState[slot] == BAR_STATE_ROLLING;
+        boolean blockedWhileRolling = false;
 
         if (barState[slot] != BAR_STATE_RESTING) {
             MoveResult movement = moveX(entity, x, entity.y(), barSpeedX[slot],
                 barXAccumulator, slot, backgroundCollision);
             x = movement.position();
-            if (barState[slot] == BAR_STATE_ROLLING && movement.blocked()) {
-                barSpeedX[slot] = -(barSpeedX[slot] >> 1);
-                barState[slot] = BAR_STATE_DECELERATING;
-                strongBump = true;
-                screenShake = 0x20;
-            }
+            blockedWhileRolling = barState[slot] == BAR_STATE_ROLLING
+                && movement.blocked();
+        }
+
+        // The source updates wEntitiesSpriteVariant after movement/background
+        // collision has populated flags, but before the rolling-state rebound
+        // or deceleration handler changes speed. A stopped bar skips
+        // SetEntitySpriteVariant and therefore retains its last animation bit.
+        if (barSpeedX[slot] != 0) {
+            int absoluteSpeed = Math.abs(barSpeedX[slot]);
+            int cadenceMask = absoluteSpeed >= 8 ? 4 : absoluteSpeed >= 4 ? 8
+                : absoluteSpeed >= 2 ? 0x10 : 0x20;
+            barAnimationVariant[slot] = (frameCounter & cadenceMask) == 0 ? 0 : 1;
+        }
+
+        if (blockedWhileRolling) {
+            barSpeedX[slot] = -(barSpeedX[slot] >> 1);
+            barState[slot] = BAR_STATE_DECELERATING;
+            strongBump = true;
+            screenShake = 0x20;
         }
 
         if (wasRolling) {
@@ -188,13 +206,12 @@ final class RollingBonesMotion {
             }
         }
 
-        int absoluteSpeed = Math.abs(barSpeedX[slot]);
-        int cadenceMask = absoluteSpeed >= 8 ? 4 : absoluteSpeed >= 4 ? 8
-            : absoluteSpeed >= 2 ? 0x10 : 0x20;
-        int variant = barSpeedX[slot] == 0 ? entity.spriteVariant()
-            : (frameCounter & cadenceMask) == 0 ? 0 : 1;
-        return new BarUpdate(withPositionAndVariant(entity, x, entity.y(), entity.z(), variant),
-            rollingSound, strongBump, screenShake);
+        // The bar renderer bakes the selected ROM pair into a one-variant
+        // dynamic definition. Keep the RoomEntity's definition index at zero
+        // and carry the source animation bit separately until that definition
+        // is rebuilt by RoomEntityRuntime.
+        return new BarUpdate(withPositionAndVariant(entity, x, entity.y(), entity.z(), 0),
+            barAnimationVariant[slot], rollingSound, strongBump, screenShake);
     }
 
     void launchBar(int slot, int speedX) {

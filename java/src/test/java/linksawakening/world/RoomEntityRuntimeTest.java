@@ -688,6 +688,28 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void fallingHandlerUsesItsDedicatedRomDisplayListForTwoVariantEnemies()
+        throws Exception {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+        EntitySpriteDefinition hardhat = catalog.forEntityType(
+            0x20, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntitySnapshot initial = snapshot(
+            new RoomEntity(0, 0, 0x20, 0x40, 0x50, EntityStatus.FALLING, hardhat, 0));
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial, false, null, catalog);
+        runtime.setTransitionCountdownForTest(0, 0x31);
+
+        runtime.tick(0, 0, 0, () -> 0);
+
+        RoomEntity falling = runtime.snapshot().slots().get(0);
+        assertEquals(EntityStatus.FALLING, falling.status());
+        assertEquals(3, falling.spriteVariant());
+        assertEquals(4, falling.spriteDefinition().variantCount());
+        assertEquals(2, falling.spriteDefinition().dynamicVariant(3).size());
+        assertEquals(0x1E,
+            falling.spriteDefinition().dynamicVariant(3).get(0).oam().tile());
+    }
+
+    @Test
     void longFallingHandlerRunsOnlyItsRomPresentationHandoff() {
         EntitySpriteDefinition definition = pairDefinition(0x09, 8);
         RoomEntitySnapshot initial = snapshot(
@@ -6396,6 +6418,15 @@ final class RoomEntityRuntimeTest {
         assertTrue(runtime.snapshot().slots().get(0).x() < 0x38);
         assertEquals(EntitySpriteDefinition.Shape.DYNAMIC,
             runtime.snapshot().slots().get(0).spriteDefinition().shape());
+
+        for (int frame = 0x19; frame <= 0x1C; frame++) {
+            runtime.tick(frame, 0xC0, 0xC0, () -> 0);
+        }
+        RoomEntity animatedBar = runtime.snapshot().slots().get(0);
+        assertEquals(
+            catalog.forRollingBonesBar(0, animatedBar.y(), 1).dynamicVariant(0),
+            animatedBar.spriteDefinition().dynamicVariant(0));
+        assertEquals(0, animatedBar.spriteVariant());
     }
 
     @Test

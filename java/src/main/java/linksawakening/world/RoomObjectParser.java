@@ -53,6 +53,7 @@ public final class RoomObjectParser {
     private static final int OBJECT_CAVE_DOOR = 0xE3;
     private static final int OBJECT_BOMBABLE_CAVE_DOOR = 0xBA;
     private static final int OBJECT_BOMBABLE_BLOCK = 0xA9;
+    private static final int OBJECT_KEYHOLE_BLOCK = 0xDE;
     private static final int OBJECT_FLOOR_OD = 0x0D;
     private static final int OBJECT_STAIRS_DOWN = 0xBE;
     private static final int OBJECT_HIDDEN_STAIRS_DOWN = 0xBF;
@@ -173,6 +174,7 @@ public final class RoomObjectParser {
         parseRoomObjectStream(streamOffset, true);
         applyChestStatus();
         applyIndoorBombableBlockStatus(mapId);
+        applyIndoorKeyholeBlockStatus();
         applyIndoorBombableWallStatus();
         assignDoorPositionsToWarps();
         return new RoomObjectParseResult(
@@ -190,6 +192,21 @@ public final class RoomObjectParser {
                 int areaIndex = RoomConstants.ROOM_OBJECTS_BASE
                     + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + column;
                 if (roomObjectsArea[areaIndex] == OBJECT_BOMBABLE_BLOCK) {
+                    roomObjectsArea[areaIndex] = OBJECT_FLOOR_OD;
+                }
+            }
+        }
+    }
+
+    private void applyIndoorKeyholeBlockStatus() {
+        if ((roomStatusFlags & ROOM_STATUS_EVENT_3) == 0) {
+            return;
+        }
+        for (int row = 0; row < RoomConstants.OBJECTS_PER_COLUMN; row++) {
+            for (int column = 0; column < RoomConstants.OBJECTS_PER_ROW; column++) {
+                int areaIndex = RoomConstants.ROOM_OBJECTS_BASE
+                    + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + column;
+                if (roomObjectsArea[areaIndex] == OBJECT_KEYHOLE_BLOCK) {
                     roomObjectsArea[areaIndex] = OBJECT_FLOOR_OD;
                 }
             }

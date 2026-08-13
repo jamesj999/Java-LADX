@@ -54,15 +54,36 @@ final class RollingBonesMotionTest {
         assertEquals(-0x08, motion.barSpeedX(1));
         assertEquals(2, motion.barState(1));
 
-        RoomEntity current = rolling.entity();
+        RollingBonesMotion.BarUpdate firstDeceleration = motion.advanceBar(
+            rolling.entity(), 4, (entity, direction, nextX, nextY) -> false);
+        assertEquals(1, firstDeceleration.animationVariant());
+        assertEquals(0, firstDeceleration.entity().spriteVariant());
+
+        RoomEntity current = firstDeceleration.entity();
+        RollingBonesMotion.BarUpdate update = firstDeceleration;
         for (int frame = 8; frame <= 72; frame += 8) {
-            RollingBonesMotion.BarUpdate update = motion.advanceBar(
+            update = motion.advanceBar(
                 current, frame, (entity, direction, nextX, nextY) -> false);
             current = update.entity();
         }
         assertEquals(0, motion.barSpeedX(1));
         assertEquals(0, motion.barState(1));
         assertEquals(0x50, motion.barTransitionCountdown(1));
+
+        RollingBonesMotion persistence = new RollingBonesMotion();
+        RoomEntity persistentBar = entity(1, RollingBonesMotion.ENTITY_BAR, 0x38, 0x38);
+        persistence.initializeBar(1);
+        persistence.launchBar(1, 0x02);
+        RollingBonesMotion.BarUpdate rebound = persistence.advanceBar(
+            persistentBar, 0x20, (entity, direction, nextX, nextY) -> true);
+        RollingBonesMotion.BarUpdate stopped = persistence.advanceBar(
+            rebound.entity(), 0x28, (entity, direction, nextX, nextY) -> false);
+        RollingBonesMotion.BarUpdate resting = persistence.advanceBar(
+            stopped.entity(), 0x30, (entity, direction, nextX, nextY) -> false);
+        assertEquals(0, persistence.barSpeedX(1));
+        assertEquals(0, rebound.animationVariant());
+        assertEquals(1, stopped.animationVariant());
+        assertEquals(1, resting.animationVariant());
     }
 
     @Test

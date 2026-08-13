@@ -772,6 +772,51 @@ final class RoomSessionTest {
         assertTrue(session.tryPushIndoorBlock(
             0x15, 0x28, Link.DIRECTION_RIGHT, 0x08));
         assertEquals(0x0D, session.activeRoom().roomObjectsArea()[blockIndex]);
+
+        RoomSession liveDispatch = newSession();
+        liveDispatch.loadIndoor(0x00, 0x04);
+        for (int tick = 0; tick < 64; tick++) {
+            assertTrue(liveDispatch.tryInteractWithIndoorBlock(
+                0x15, 0x28, Link.DIRECTION_RIGHT, 0x08));
+        }
+        assertEquals(0x0D, liveDispatch.activeRoom().roomObjectsArea()[blockIndex]);
+    }
+
+    @Test
+    void tailCaveKeyholeBlockRequiresThirtyTwoContactTicksAndConsumesAKey() {
+        RoomSession noKey = newSession();
+        noKey.loadIndoor(0x00, 0x09);
+        assertTrue(noKey.tryInteractWithIndoorBlock(
+            0x20, 0x4A, Link.DIRECTION_UP, 0x01));
+        assertEquals(0x8C,
+            noKey.consumeEntityDialogRequests().getFirst().dialogLowId());
+
+        RoomSession session = newSession();
+        List<GameplaySoundEvent> sounds = new ArrayList<>();
+        session.setColorShellSoundSink(sounds::add);
+        byte[] dungeonFlags = new byte[DungeonItemState.DUNGEON_ITEM_FLAGS_SIZE];
+        dungeonFlags[DungeonItemState.SMALL_KEYS_INDEX] = 1;
+        session.restoreDungeonItemFlags(dungeonFlags,
+            new byte[DungeonItemState.COLOR_DUNGEON_ITEM_FLAGS_SIZE]);
+        session.loadIndoor(0x00, 0x09);
+        int blockIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x52;
+        assertEquals(0xDE, session.activeRoom().roomObjectsArea()[blockIndex]);
+
+        for (int tick = 0; tick < 31; tick++) {
+            assertTrue(session.tryInteractWithIndoorBlock(
+                0x20, 0x4A, Link.DIRECTION_UP, 0x01));
+        }
+        assertEquals(0xDE, session.activeRoom().roomObjectsArea()[blockIndex]);
+        assertTrue(session.tryInteractWithIndoorBlock(
+            0x20, 0x4A, Link.DIRECTION_UP, 0x01));
+
+        assertEquals(0x0D, session.activeRoom().roomObjectsArea()[blockIndex]);
+        assertEquals(0, session.currentDungeonItemFlagsSnapshot()[
+            DungeonItemState.SMALL_KEYS_INDEX]);
+        assertEquals(0x40, session.indoorRoomStatusForTest(0x00, 0x09) & 0x40);
+        assertEquals(List.of(GameplaySoundEvent.DOOR_UNLOCKED), sounds);
+        session.loadIndoor(0x00, 0x09);
+        assertEquals(0x0D, session.activeRoom().roomObjectsArea()[blockIndex]);
     }
 
     @Test
@@ -932,6 +977,30 @@ final class RoomSessionTest {
 
         session.loadIndoor(0x00, 0x11);
         assertEquals(0, session.activeRoom().shutterDoorMask());
+    }
+
+    @Test
+    void tailCaveRoom16KillAllEventDropsTheThirdSmallKey() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x00, 0x16);
+        assertEquals(0x81, session.activeRoomEventForTest());
+
+        List<RoomEntity> emptySlots = new ArrayList<>();
+        for (int slot = 0; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
+            emptySlots.add(RoomEntity.disabled(slot));
+        }
+        session.replaceEntityRuntimeForTest(
+            RoomEntityRuntime.from(new RoomEntitySnapshot(emptySlots), true));
+
+        session.tickEntities(0, 0x50, 0x50);
+
+        RoomEntity key = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x30)
+            .findFirst().orElseThrow();
+        assertEquals(0x28, key.x());
+        assertEquals(0x3C, key.y());
+        assertEquals(0x70, key.z());
+        assertEquals(0, session.activeRoomEventForTest());
     }
 
     @Test

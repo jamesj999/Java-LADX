@@ -88,11 +88,13 @@ public final class RoomSession {
     private static final int EVENT_TRIGGER_STEP_ON_BUTTON = 0x03;
     private static final int EVENT_EFFECT_OPEN_LOCKED_DOORS = 0x20;
     private static final int EVENT_EFFECT_REVEAL_CHEST = 0x60;
+    private static final int EVENT_EFFECT_DROP_KEY = 0x80;
     private static final int EVENT_EFFECT_REVEAL_STAIRWAY = 0xA0;
     private static final int EVENT_EFFECT_CLEAR_MIDBOSS = 0xC0;
     private static final int EVENT_CLEAR_MIDBOSS = 0xC1;
     private static final int OBJECT_SWITCH_BUTTON = 0xAA;
     private static final int OBJECT_PUSHABLE_BLOCK = 0xA7;
+    private static final int OBJECT_KEYHOLE_BLOCK = 0xDE;
     private static final int OBJECT_SETTLED_PUSHED_BLOCK = 0xA6;
     private static final int OBJECT_STAIRS_DOWN = 0xBE;
     private static final int STAIRCASE_NONE = 0;
@@ -100,6 +102,7 @@ public final class RoomSession {
     private static final int STAIRCASE_ACTIVE = 2;
     private static final int EVENT_STAIRWAY_LOCATION = 0x18;
     private static final int PUSH_BLOCK_CONTACT_TICKS = 0x40;
+    private static final int KEYHOLE_BLOCK_CONTACT_TICKS = 0x20;
     private static final int PUSHED_BLOCK_MOTION_FRAMES = 0x21;
     private static final int SWITCH_BUTTON_PRESS_FRAMES = 0x18;
     private static final int SWITCH_BUTTON_PRESSED = 0x60;
@@ -2691,17 +2694,22 @@ public final class RoomSession {
             return false;
         }
         int touchedLocation = -1;
+        boolean keyholeBlockContact = false;
         for (int[] point : keyDoorCollisionPoints(linkPixelX, linkPixelY, direction)) {
             int column = Math.floorDiv(point[0], 0x10);
             int row = Math.floorDiv(point[1], 0x10);
             int location = (row << 4) | column;
-            if (objectAtRoomLocation(location) == OBJECT_PUSHABLE_BLOCK) {
+            int object = objectAtRoomLocation(location);
+            if (object == OBJECT_PUSHABLE_BLOCK) {
                 touchedLocation = location;
                 break;
             }
+            keyholeBlockContact |= object == OBJECT_KEYHOLE_BLOCK;
         }
         if (touchedLocation < 0) {
-            pushBlockContactTicks = 0;
+            if (!keyholeBlockContact) {
+                pushBlockContactTicks = 0;
+            }
             return false;
         }
         pushBlockContactTicks++;
@@ -2743,6 +2751,66 @@ public final class RoomSession {
         if (entityRuntime != null) {
             activeRoom.replaceEntities(entityRuntime.snapshot());
         }
+        return true;
+    }
+
+    /** Dispatches bank 2's shared $A7/$DE interactive-block collision branch. */
+    public boolean tryInteractWithIndoorBlock(int linkPixelX, int linkPixelY,
+                                              int linkDirection, int collisionType) {
+        if (tryPushIndoorBlock(linkPixelX, linkPixelY, linkDirection, collisionType)) {
+            return true;
+        }
+        return tryUnlockIndoorKeyholeBlock(
+            linkPixelX, linkPixelY, linkDirection, collisionType);
+    }
+
+    /** Mirrors bank 2's $DE interactive-block branch and TryOpenLockedDoor. */
+    public boolean tryUnlockIndoorKeyholeBlock(int linkPixelX, int linkPixelY,
+                                               int linkDirection, int collisionType) {
+        if (activeRoom == null
+            || activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
+            || activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL) {
+            pushBlockContactTicks = 0;
+            return false;
+        }
+        int direction = keyDoorDirectionIndex(linkDirection);
+        if (direction < 0 || (collisionType & keyDoorCollisionBit(direction)) == 0) {
+            pushBlockContactTicks = 0;
+            return false;
+        }
+        int touchedLocation = -1;
+        for (int[] point : keyDoorCollisionPoints(linkPixelX, linkPixelY, direction)) {
+            int column = Math.floorDiv(point[0], 0x10);
+            int row = Math.floorDiv(point[1], 0x10);
+            int location = (row << 4) | column;
+            if (objectAtRoomLocation(location) == OBJECT_KEYHOLE_BLOCK) {
+                touchedLocation = location;
+                break;
+            }
+        }
+        if (touchedLocation < 0) {
+            pushBlockContactTicks = 0;
+            return false;
+        }
+        if (dungeonItemState.currentFlag(DungeonItemState.SMALL_KEYS_INDEX) == 0) {
+            pushBlockContactTicks = 0;
+            pendingRoomDialogRequests.add(new RoomEntityRuntime.DialogRequest(0, 0x8C));
+            return true;
+        }
+        pushBlockContactTicks++;
+        if (pushBlockContactTicks < KEYHOLE_BLOCK_CONTACT_TICKS) {
+            return true;
+        }
+        pushBlockContactTicks = 0;
+        dungeonItemState.consumeSmallKey();
+
+        writeBombPuzzleObject(touchedLocation, OBJECT_FLOOR_OD);
+        indoorStatusTableForMap(activeRoom.mapId())[activeRoom.roomId()]
+            |= (byte) INDOOR_ROOM_STATUS_EVENT_3;
+        colorShellSoundSink.play(GameplaySoundEvent.DOOR_UNLOCKED);
+        refreshActiveRoomTilemap();
+        overworldCollision.setRoom(activeRoom.roomObjectsArea());
+        overworldCollision.setGbcOverlay(null);
         return true;
     }
 
@@ -3258,6 +3326,11 @@ public final class RoomSession {
             activeRoom.openShutterDoors();
             activeRoomEvent = 0;
             colorShellSoundSink.play(GameplaySoundEvent.DOOR_UNLOCKED);
+        } else if (effect == EVENT_EFFECT_DROP_KEY) {
+            if (entityRuntime != null && entityRuntime.spawnRoomEventKeyDrop() >= 0) {
+                activeRoom.replaceEntities(entityRuntime.snapshot());
+            }
+            activeRoomEvent = 0;
         } else if (effect == EVENT_EFFECT_REVEAL_STAIRWAY) {
             markActiveRoomCompleted();
             activeRoomEvent = 0;
