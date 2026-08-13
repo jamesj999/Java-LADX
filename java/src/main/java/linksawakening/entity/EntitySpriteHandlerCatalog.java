@@ -401,6 +401,11 @@ public final class EntitySpriteHandlerCatalog {
         if (entityType == ENTITY_ROLLING_BONES_BAR) {
             return forRollingBonesBar(0, 0x38);
         }
+        if (entityType == 0xE4) {
+            // func_015_4AC9 indexes fourteen three-sprite body variants at
+            // Data_015_4A15. Its separate weapon layer is handler-generated.
+            return decodeRectangle(entityType, 0x15, 0x4A15, 14, 3, 0);
+        }
         if (entityType == ENTITY_MASKED_MIMIC_GORIYA && mapId != 0x1F) {
             return decodePair(entityType, 0x19, 0x4796, 8, 0);
         }

@@ -14,6 +14,18 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 final class EntitySpriteHandlerCatalogTest {
 
     @Test
+    void decodesMoblinKingsFourteenSourceBodyVariants() throws Exception {
+        EntitySpriteDefinition king = new EntitySpriteHandlerCatalog(loadRom())
+            .forEntityType(0xE4, EntityRoomLoader.RoomTable.INDOORS_B);
+
+        assertDefinition(king, 0x15, 0x4A15,
+            EntitySpriteDefinition.Shape.RECTANGLE, 14, 0);
+        assertEquals(3, king.rectangleVariant(0).size());
+        assertEquals(0x56, king.rectangleVariant(0).get(0).oam().tile());
+        assertEquals(0x5A, king.rectangleVariant(0).get(2).oam().tile());
+    }
+
+    @Test
     void decodesRollingBonesAndBuildsTheSixPairRollingBar() throws Exception {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
 

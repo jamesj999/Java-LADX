@@ -5720,6 +5720,121 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void kidnappedBowWowEnablesTheMoblinKingSourceIntro() {
+        RoomEntity king = new RoomEntity(0, 0, 0xE4, 0x58, 0x58,
+            EntityStatus.INIT, pairDefinition(0xE4, 14), 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(king), true, () -> 0);
+        runtime.setBowWowState(0x80);
+
+        boolean openedIntro = false;
+        for (int frame = 0; frame < 36; frame++) {
+            runtime.tick(frame, 0x30, 0x58, () -> 0);
+            openedIntro |= runtime.consumePendingDialogRequests().equals(
+                List.of(new RoomEntityRuntime.DialogRequest(1, 0x91)));
+        }
+
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
+        assertEquals(2, runtime.moblinKingState(0));
+        assertTrue(openedIntro);
+    }
+
+    @Test
+    void moblinKingStateMachineFreezesWhileDialogIsActive() {
+        RoomEntity king = new RoomEntity(0, 0, 0xE4, 0x58, 0x58,
+            EntityStatus.ACTIVE, pairDefinition(0xE4, 14), 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(king), true, () -> 0);
+        runtime.setBowWowState(0x80);
+        runtime.setMoblinKingStateForTest(0, 3, 0, 0, 0, 0, 0);
+        runtime.setDialogActive(true);
+
+        runtime.tick(0, 0x30, 0x58, () -> 0);
+
+        assertEquals(3, runtime.moblinKingState(0));
+    }
+
+    @Test
+    void moblinKingUnloadsUnlessBowWowIsKidnapped() {
+        RoomEntity king = new RoomEntity(0, 0, 0xE4, 0x58, 0x58,
+            EntityStatus.ACTIVE, pairDefinition(0xE4, 14), 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(king), true, () -> 0);
+
+        runtime.tick(0, 0x30, 0x58, () -> 0);
+
+        assertFalse(runtime.snapshot().slots().get(0).loaded());
+    }
+
+    @Test
+    void moblinKingOnlyTakesSwordDamageDuringTheWallStunState() {
+        RoomEntity king = new RoomEntity(0, 0, 0xE4, 0x58, 0x58,
+            EntityStatus.ACTIVE, pairDefinition(0xE4, 14), 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(king), true, () -> 0);
+        runtime.setBowWowState(0x80);
+        runtime.setMoblinKingStateForTest(0, 2, 0, 0, 0, 0, 0x30);
+        runtime.tick(0, 0x30, 0x58, () -> 0);
+
+        runtime.resolveCombat(1, 0x30, 0x58, false, true,
+            true, 0x58, 8, 0x58, 8);
+        assertEquals(0x08, runtime.enemyHealth(0));
+
+        runtime.setMoblinKingStateForTest(0, 5, 0, 0, 0, 0, 0x60);
+        runtime.setEnemyIgnoreHitsCountdownForTest(0, 0);
+        runtime.tick(2, 0x30, 0x58, () -> 0);
+        runtime.resolveCombat(3, 0x30, 0x58, false, true,
+            true, 0x58, 8, 0x58, 8);
+
+        assertEquals(0x07, runtime.enemyHealth(0));
+    }
+
+    @Test
+    void defeatingMoblinKingPersistsTheMinibossRoomEventThatOpensTheRescuePath() {
+        RoomEntity king = new RoomEntity(0, 0, 0xE4, 0x58, 0x58,
+            EntityStatus.ACTIVE, pairDefinition(0xE4, 14), 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(king), true, () -> 0);
+        runtime.setBowWowState(0x80);
+        runtime.setEnemyHealthForTest(0, 1);
+        runtime.setMoblinKingStateForTest(0, 5, 0, 0, 0, 0, 0x60);
+        runtime.tick(0, 0x30, 0x58, () -> 0);
+
+        runtime.resolveCombat(1, 0x30, 0x58, false, true,
+            true, 0x58, 8, 0x58, 8);
+        for (int frame = 2; frame < 0x45; frame++) {
+            runtime.tick(frame, 0x30, 0x58, () -> 0);
+        }
+
+        assertFalse(runtime.snapshot().slots().get(0).loaded());
+        assertEquals(0x20, runtime.consumePendingRoomStatusMask());
+    }
+
+    @Test
+    void touchingKidnappedBowWowInTheHideoutStartsFollowingAndItemMusic() {
+        RoomEntity bowWow = new RoomEntity(0, 0, 0x6D, 0x88, 0x40,
+            EntityStatus.ACTIVE, pairDefinition(0x6D, 7), 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(bowWow), true, () -> 0);
+        runtime.setBowWowState(0x80);
+
+        runtime.tick(0, 0x88, 0x40, () -> 0, true);
+
+        assertEquals(1, runtime.bowWowState());
+        assertEquals(0x10, runtime.consumePendingMusicTrack());
+        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(1, 0x6C)),
+            runtime.consumePendingDialogRequests());
+    }
+
+    @Test
+    void kidnappedBowWowDoesNotReleaseFromAnUnrelatedRoomCollision() {
+        RoomEntity bowWow = new RoomEntity(0, 0, 0x6D, 0x88, 0x40,
+            EntityStatus.ACTIVE, pairDefinition(0x6D, 7), 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(bowWow), true, () -> 0);
+        runtime.setBowWowState(0x80);
+
+        runtime.tick(0, 0x20, 0x20, () -> 0, true);
+
+        assertEquals(0x80, runtime.bowWowState());
+        assertEquals(-1, runtime.consumePendingMusicTrack());
+        assertTrue(runtime.consumePendingDialogRequests().isEmpty());
+    }
+
+    @Test
     void dynamicBowWowUsesTheRomEatableTableDuringTheLiveEntityTick() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);

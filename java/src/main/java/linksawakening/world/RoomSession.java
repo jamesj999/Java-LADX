@@ -1378,6 +1378,17 @@ public final class RoomSession {
                 romDirectionForProjectileCollision(linkDirection), usingShield, shieldLevel,
                 invincibilityCounter), swordCollisionActive, swordX, swordWidth,
             swordY, swordHeight, linkSpeedX, linkSpeedY);
+        int runtimeBowWowState = entityRuntime.bowWowState();
+        if (runtimeBowWowState != bowWowState) {
+            bowWowState = runtimeBowWowState;
+            followingNpcState = new FollowingNpcState(
+                followingNpcState.roosterFollowing(),
+                followingNpcState.ghostFollowingState(),
+                followingNpcState.marinFollowing(), runtimeBowWowState == 0x01,
+                followingNpcState.instrument4Flags(),
+                followingNpcState.powerBraceletLevel(), followingNpcState.db10());
+            followingNpcRoomNeedsSync = true;
+        }
         if (ocarinaPlaybackCountdown > 0) {
             ocarinaPlaybackCountdown--;
             if (ocarinaPlaybackCountdown == 0) {

@@ -226,7 +226,7 @@ public final class RoomEntityCombatRules {
                 ENTITY_OCTOROK, ENTITY_BOUNCING_BOMBITE, ENTITY_TIMER_BOMBITE,
                 ENTITY_MAD_BOMBER, ENTITY_BOMBER, ENTITY_MIMIC, ENTITY_MINI_MOLDORM,
                 ENTITY_MOLDORM,
-                ENTITY_MASKED_MIMIC_GORIYA, ENTITY_WITCH_RAT -> true;
+                ENTITY_MASKED_MIMIC_GORIYA, ENTITY_WITCH_RAT, 0xE4 -> true;
             default -> false;
         };
     }
@@ -310,6 +310,7 @@ public final class RoomEntityCombatRules {
             case ENTITY_PINCER -> PINCER_CONTACT_DAMAGE;
             case ENTITY_WITCH_RAT -> 0x04;
             case ENTITY_MOLDORM -> 0x08;
+            case 0xE4 -> 0x08;
             default -> 0;
         };
     }
@@ -361,6 +362,7 @@ public final class RoomEntityCombatRules {
             case ENTITY_CRYSTAL_SWITCH -> CRYSTAL_SWITCH_INITIAL_HEALTH;
             case ENTITY_WITCH_RAT -> 0x01;
             case ENTITY_MOLDORM -> 0x04;
+            case 0xE4 -> 0x08;
             default -> 0;
         };
     }
