@@ -2042,6 +2042,10 @@ public final class RoomSession {
     }
 
     public RoomBoundaryState boundaryState(int linkX, int linkY) {
+        return boundaryState(linkX, linkY, false);
+    }
+
+    public RoomBoundaryState boundaryState(int linkX, int linkY, boolean linkAirborne) {
         return new RoomBoundaryState(
             activeRoom.mapCategory(),
             activeRoom.roomId(),
@@ -2050,7 +2054,8 @@ public final class RoomSession {
             activeRoom.shutterDoorMask(),
             linkX,
             linkY,
-            activeRoom.mapId()
+            activeRoom.mapId(),
+            linkAirborne
         );
     }
 

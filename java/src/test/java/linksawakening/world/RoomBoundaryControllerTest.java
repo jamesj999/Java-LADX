@@ -64,6 +64,42 @@ final class RoomBoundaryControllerTest {
     }
 
     @Test
+    void airborneLinkDoesNotScrollBackUpAfterEnteringRoomDuringWallFlip() {
+        RoomBoundaryDecision decision = controller.decide(
+            new RoomBoundaryState(Warp.CATEGORY_INDOOR, 0xA0, false, true,
+                0, 40, -1, 0x00, true));
+
+        assertEquals(RoomBoundaryDecision.Type.NONE, decision.type());
+    }
+
+    @Test
+    void airborneLinkDoesNotStartTheDownwardTransitionDuringTheFlip() {
+        RoomBoundaryDecision decision = controller.decide(
+            new RoomBoundaryState(Warp.CATEGORY_INDOOR, 0xA0, false, true,
+                0, 40, ROOM_PIXEL_HEIGHT, 0x00, true));
+
+        assertEquals(RoomBoundaryDecision.Type.NONE, decision.type());
+    }
+
+    @Test
+    void airborneOverworldLinkDoesNotScrollBackUpAfterWallFlipEntry() {
+        RoomBoundaryDecision decision = controller.decide(
+            new RoomBoundaryState(Warp.CATEGORY_OVERWORLD, 0x92, false, false,
+                0, 40, -1, 0x00, true));
+
+        assertEquals(RoomBoundaryDecision.Type.NONE, decision.type());
+    }
+
+    @Test
+    void airborneOverworldLinkDoesNotStartDownwardBoundaryScrollDuringTheFlip() {
+        RoomBoundaryDecision decision = controller.decide(
+            new RoomBoundaryState(Warp.CATEGORY_OVERWORLD, 0x82, false, false,
+                0, 40, ROOM_PIXEL_HEIGHT, 0x00, true));
+
+        assertEquals(RoomBoundaryDecision.Type.NONE, decision.type());
+    }
+
+    @Test
     void sideScrollingVerticalEdgesRequestWarpZeroInsteadOfIndoorScroll() {
         RoomBoundaryDecision top = controller.decide(
             new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x19, false, true,

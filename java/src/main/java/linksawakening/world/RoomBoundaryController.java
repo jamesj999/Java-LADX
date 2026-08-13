@@ -21,6 +21,13 @@ public final class RoomBoundaryController {
         int y = state.linkY();
         int roomCol = state.roomId() % OVERWORLD_COLUMNS;
         int roomRow = state.roomId() / OVERWORLD_COLUMNS;
+        // CheckPositionForMapTransition reaches its wIsLinkInTheAir guard
+        // before initiating any ordinary top-down room transition. In
+        // particular, the bottom edge must not start a scroll in the middle
+        // of a ledge flip.
+        if (state.linkAirborne()) {
+            return RoomBoundaryDecision.none();
+        }
 
         if (x < 0 && roomCol > 0) {
             return RoomBoundaryDecision.overworldScroll(ScrollController.LEFT,
@@ -62,6 +69,12 @@ public final class RoomBoundaryController {
         }
         if (offTop && (state.shutterDoorMask() & 0x01) != 0) {
             return RoomBoundaryDecision.clamp(x, 0);
+        }
+        // Ordinary top-down rooms use the source airborne guard before room
+        // transition initiation. Side-scrolling rooms take a separate source
+        // path below and intentionally remain exempt from this guard.
+        if (state.linkAirborne() && state.mapCategory() != Warp.CATEGORY_SIDESCROLL) {
+            return RoomBoundaryDecision.none();
         }
         // Tail Cave's room $19 follows the ordinary side-view fade path in
         // CheckPositionForMapTransition. Other category-2 rooms include source

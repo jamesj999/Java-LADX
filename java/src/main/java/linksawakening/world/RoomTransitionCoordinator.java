@@ -34,7 +34,7 @@ public final class RoomTransitionCoordinator {
 
         if (room.mapCategory() != Warp.CATEGORY_OVERWORLD) {
             RoomBoundaryDecision boundary = boundaryController.decide(
-                roomSession.boundaryState(link.pixelX(), link.pixelY()));
+                roomSession.boundaryState(link.pixelX(), link.pixelY(), link.isAirborne()));
             if (boundary.type() == RoomBoundaryDecision.Type.INDOOR_FRONT_DOOR_WARP) {
                 Warp target = room.firstWarp();
                 System.out.println("Indoor front-door exit → cat=" + target.category()
@@ -101,7 +101,7 @@ public final class RoomTransitionCoordinator {
         int previousX = link.pixelX();
         int previousY = link.pixelY();
         RoomBoundaryDecision boundary = boundaryController.decide(
-            roomSession.boundaryState(previousX, previousY));
+            roomSession.boundaryState(previousX, previousY, link.isAirborne()));
         if (boundary.type() == RoomBoundaryDecision.Type.OVERWORLD_SCROLL) {
             link.setRoomEntryPixelPosition(boundary.linkTargetX(), boundary.linkTargetY());
             if (boundary.direction() == ScrollController.UP
