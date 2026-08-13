@@ -79,6 +79,17 @@ final class TarinRaccoonMotionTest {
     }
 
     @Test
+    void attackStepCountdownSuppressesDialog00d() {
+        TarinRaccoonMotion.Input attacking = new TarinRaccoonMotion.Input(
+            0, 0x78, 0x50, 2, true, false, false, 1);
+
+        TarinRaccoonMotion.Update update = new TarinRaccoonMotion().advance(
+            raccoon(), attacking);
+
+        assertEquals(-1, update.dialogGlobalId());
+    }
+
+    @Test
     void stateZeroLeavesLaterTransformationEventsInactive() {
         TarinRaccoonMotion.Update update = new TarinRaccoonMotion().advance(raccoon(),
             new TarinRaccoonMotion.Input(0, 0x50, 0x60, false, false, true));

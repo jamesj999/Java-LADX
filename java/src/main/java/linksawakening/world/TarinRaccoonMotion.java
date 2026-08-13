@@ -6,10 +6,17 @@ final class TarinRaccoonMotion {
     private static final int NO_EVENT = -1;
 
     record Input(int frameCounter, int linkX, int linkY, int linkDirection,
-                 boolean actionHeld, boolean dialogActive, boolean powderHit) {
+                 boolean actionHeld, boolean dialogActive, boolean powderHit,
+                 int linkAttackStepAnimationCountdown) {
         Input(int frameCounter, int linkX, int linkY, boolean actionHeld,
               boolean dialogActive, boolean powderHit) {
-            this(frameCounter, linkX, linkY, -1, actionHeld, dialogActive, powderHit);
+            this(frameCounter, linkX, linkY, -1, actionHeld, dialogActive, powderHit, 0);
+        }
+
+        Input(int frameCounter, int linkX, int linkY, int linkDirection,
+              boolean actionHeld, boolean dialogActive, boolean powderHit) {
+            this(frameCounter, linkX, linkY, linkDirection, actionHeld, dialogActive,
+                powderHit, 0);
         }
 
         Input {
@@ -54,7 +61,8 @@ final class TarinRaccoonMotion {
             if (linkY < 0x20 && !warningShown[slot]) {
                 warningShown[slot] = true;
                 dialog = 0x021;
-            } else if (input.actionHeld() && nearbyAndFacing(entity, input)) {
+            } else if (input.actionHeld() && nearbyAndFacing(entity, input)
+                && input.linkAttackStepAnimationCountdown() == 0) {
                 dialog = 0x00D;
             }
         }
