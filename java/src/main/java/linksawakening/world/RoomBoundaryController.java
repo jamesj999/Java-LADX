@@ -52,6 +52,10 @@ public final class RoomBoundaryController {
         boolean offTop = y < 0;
         boolean offLeft = x < 0;
         boolean offRight = x + Link.SPRITE_SIZE > ROOM_PIXEL_WIDTH;
+        boolean supportedTailCaveSideView = state.mapCategory() == Warp.CATEGORY_SIDESCROLL
+            && state.mapId() == 0x00
+            && (state.roomId() == 0x18 || state.roomId() == 0x19)
+            && state.hasWarps();
 
         if (offBottom && (state.shutterDoorMask() & 0x02) != 0) {
             return RoomBoundaryDecision.clamp(x, ROOM_PIXEL_HEIGHT - Link.SPRITE_SIZE);
@@ -63,12 +67,14 @@ public final class RoomBoundaryController {
         // CheckPositionForMapTransition. Other category-2 rooms include source
         // exceptions and remain on the existing indoor path until their state
         // (physics modifier, entities, and map-specific rules) is represented.
-        if (state.mapCategory() == Warp.CATEGORY_SIDESCROLL
-            && state.mapId() == 0x00 && state.roomId() == 0x19 && state.hasWarps()) {
+        if (supportedTailCaveSideView) {
             if (y < -0x04 || y >= 0x74) {
                 return RoomBoundaryDecision.sideScrollVerticalWarp();
             }
             if (offTop || offBottom) {
+                return RoomBoundaryDecision.none();
+            }
+            if ((offLeft && x >= -0x04) || (offRight && x < 0x94)) {
                 return RoomBoundaryDecision.none();
             }
         }

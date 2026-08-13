@@ -87,7 +87,7 @@ final class RoomBoundaryControllerTest {
     @Test
     void unsupportedSideScrollingEdgesKeepExistingIndoorBoundaryBehavior() {
         RoomBoundaryDecision otherRoom = controller.decide(
-            new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x18, false, true,
+            new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x1A, false, true,
                 0, 0x70, -5, 0x00));
         RoomBoundaryDecision otherMap = controller.decide(
             new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x19, false, true,
@@ -103,5 +103,28 @@ final class RoomBoundaryControllerTest {
         assertEquals(RoomBoundaryDecision.Type.INDOOR_SCROLL, otherMap.type());
         assertEquals(RoomBoundaryDecision.Type.INDOOR_SCROLL, noWarp.type());
         assertEquals(RoomBoundaryDecision.Type.CLAMP_LINK, shuttered.type());
+    }
+
+    @Test
+    void tailCaveSideScrollingHorizontalEdgesUseRomEntityThresholds() {
+        RoomBoundaryDecision left = controller.decide(
+            new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x19, false, true,
+                0, -5, 0x30, 0x00));
+        RoomBoundaryDecision leftMargin = controller.decide(
+            new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x19, false, true,
+                0, -4, 0x30, 0x00));
+        RoomBoundaryDecision rightMargin = controller.decide(
+            new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x18, false, true,
+                0, 0x93, 0x30, 0x00));
+        RoomBoundaryDecision right = controller.decide(
+            new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x18, false, true,
+                0, 0x94, 0x30, 0x00));
+
+        assertEquals(RoomBoundaryDecision.Type.INDOOR_SCROLL, left.type());
+        assertEquals(ScrollController.LEFT, left.direction());
+        assertEquals(RoomBoundaryDecision.Type.NONE, leftMargin.type());
+        assertEquals(RoomBoundaryDecision.Type.NONE, rightMargin.type());
+        assertEquals(RoomBoundaryDecision.Type.INDOOR_SCROLL, right.type());
+        assertEquals(ScrollController.RIGHT, right.direction());
     }
 }
