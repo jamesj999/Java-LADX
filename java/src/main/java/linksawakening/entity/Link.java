@@ -194,6 +194,7 @@ public final class Link implements RocsFeather.JumpTarget {
     private int groundStatus = GROUND_STATUS_NORMAL;
     private int motionState = LINK_MOTION_DEFAULT;
     private boolean romInteractiveMotionBlocked;
+    private boolean debugNoClip;
     private int romAnimationStateOverride = -1;
     private boolean tarinShieldPresentation;
     private int[] tarinShieldPalette;
@@ -292,6 +293,52 @@ public final class Link implements RocsFeather.JumpTarget {
     public void setPixelPosition(int pixelX, int pixelY) {
         subX = pixelX << SUB_PIXEL_SHIFT;
         subY = pixelY << SUB_PIXEL_SHIFT;
+    }
+
+    /** Enables the development movement mode; normal gameplay leaves this off. */
+    public void setDebugNoClip(boolean enabled) {
+        debugNoClip = enabled;
+        if (enabled) {
+            groundStatus = GROUND_STATUS_NORMAL;
+            fallingIntoPit = false;
+            airborne = false;
+            zSubPixels = 0;
+            zVelocity = 0;
+        }
+    }
+
+    public boolean debugNoClip() {
+        return debugNoClip;
+    }
+
+    /** Clears scripted presentation/capture state before a debug game reset. */
+    public void resetTransientStateForDebug() {
+        debugNoClip = false;
+        romInteractiveMotionBlocked = false;
+        romAnimationStateOverride = -1;
+        tarinShieldPresentation = false;
+        tarinShieldPalette = null;
+        marinWakeUpBedVariant = -1;
+        marinBedJumpMotionLocked = false;
+        directionalLedgeJumpMotionLocked = false;
+        overworldLedgeFallActive = false;
+        likeLikeCaptured = false;
+        fallingIntoPit = false;
+        carryingLiftedObjectState = 0;
+        roosterCarryActive = false;
+        airborne = false;
+        groundStatus = GROUND_STATUS_NORMAL;
+        motionState = LINK_MOTION_DEFAULT;
+        physicsModifier = 0;
+        zSubPixels = 0;
+        zVelocity = 0;
+        forcedSpeedPending = false;
+        collisionIgnoreFramesRemaining = 0;
+        romLinkPushing = 0;
+        romAttackStepAnimationCountdown = 0;
+        movingThisFrame = false;
+        walkTickCounter = 0;
+        walkFrame = 0;
     }
 
     public void setRoomEntryPixelPosition(int pixelX, int pixelY) {
@@ -885,6 +932,11 @@ public final class Link implements RocsFeather.JumpTarget {
             return;
         }
 
+        if (debugNoClip) {
+            updateDebugNoClip();
+            return;
+        }
+
         if (likeLikeCaptured) {
             subX = likeLikeCaptureSubX;
             subY = likeLikeCaptureSubY;
@@ -993,6 +1045,31 @@ public final class Link implements RocsFeather.JumpTarget {
             }
         }
 
+        if (movingThisFrame) {
+            walkTickCounter++;
+            if (walkTickCounter >= WALK_FRAME_TICKS) {
+                walkTickCounter = 0;
+                walkFrame ^= 1;
+            }
+        } else {
+            walkTickCounter = 0;
+            walkFrame = 0;
+        }
+    }
+
+    private void updateDebugNoClip() {
+        int mask = buildJoypadMask();
+        int newDirection = JOYPAD_TO_DIRECTION[mask];
+        if (newDirection != -1) {
+            direction = newDirection;
+        }
+        int speedX = (byte) romTables.linkSpeedX(mask);
+        int speedY = (byte) romTables.linkSpeedY(mask);
+        lastRomSpeedX = speedX & 0xFF;
+        lastRomSpeedY = speedY & 0xFF;
+        movingThisFrame = speedX != 0 || speedY != 0;
+        subX += speedX;
+        subY += speedY;
         if (movingThisFrame) {
             walkTickCounter++;
             if (walkTickCounter >= WALK_FRAME_TICKS) {
@@ -1275,7 +1352,8 @@ public final class Link implements RocsFeather.JumpTarget {
             moveDirection = signedSpeed > 0 ? DIRECTION_DOWN : DIRECTION_UP;
         }
 
-        if (!directionalLedgeJumpMotionLocked && collisionIgnoreFramesRemaining == 0
+        if (!debugNoClip && !directionalLedgeJumpMotionLocked
+            && collisionIgnoreFramesRemaining == 0
             && leadingEdgeBlocked(candidatePixelX, candidatePixelY, moveDirection)) {
             romCollisionType |= switch (moveDirection) {
                 case DIRECTION_UP -> COLLISION_TYPE_UP;

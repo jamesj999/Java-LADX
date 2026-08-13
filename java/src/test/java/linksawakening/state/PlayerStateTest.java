@@ -430,6 +430,28 @@ final class PlayerStateTest {
     }
 
     @Test
+    void initializeDebugStateProvidesMaxHeartsAndEveryUsableInventoryItem() {
+        PlayerState state = new PlayerState();
+
+        state.initializeDebugState();
+
+        assertEquals(PlayerState.MAX_HEARTS, state.maxHearts());
+        assertEquals(PlayerState.MAX_HEARTS * PlayerState.HP_PER_HEART, state.health());
+        assertEquals(PlayerState.MAX_RUPEES, state.rupees());
+        assertEquals(PlayerState.INVENTORY_SWORD, state.itemA());
+        assertEquals(PlayerState.INVENTORY_BOOMERANG, state.itemB());
+        for (int slot = 0; slot < PlayerState.SUBSCREEN_SLOT_COUNT; slot++) {
+            assertTrue(PlayerState.INVENTORY_EMPTY != state.subscreenItem(slot));
+        }
+        assertEquals(99, state.arrowCount());
+        assertEquals(99, state.bombCount());
+        assertEquals(99, state.magicPowderCount());
+        assertTrue(state.hasFlippers());
+        assertTrue(state.hasMedicine());
+        assertEquals(5, state.goldenLeavesCount());
+    }
+
+    @Test
     void applySavedGameReplacesPersistentFieldsAndClearsTransientRuntimeState() {
         PlayerState playerState = new PlayerState();
         playerState.setActivePowerUp(PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER);

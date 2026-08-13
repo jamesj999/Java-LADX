@@ -146,6 +146,42 @@ public final class PlayerState {
         Arrays.fill(chestItemCounts, 0);
     }
 
+    /** Loads a generous development loadout without changing ROM gameplay rules. */
+    public void initializeDebugState() {
+        setMaxHearts(MAX_HEARTS);
+        setHealth(MAX_HEARTS * HP_PER_HEART);
+        setRupees(MAX_RUPEES);
+        setSwordLevel(2);
+        setShieldLevel(2);
+        setPowerBraceletLevel(2);
+        setMaxArrows(99);
+        setArrowCount(99);
+        setMaxBombs(99);
+        setBombCount(99);
+        setMaxMagicPowder(99);
+        setMagicPowderCount(99);
+        setSubscreenItems(new int[] {
+            INVENTORY_BOMBS, INVENTORY_POWER_BRACELET, INVENTORY_SHIELD,
+            INVENTORY_BOW, INVENTORY_HOOKSHOT, INVENTORY_MAGIC_ROD,
+            INVENTORY_PEGASUS_BOOTS, INVENTORY_OCARINA, INVENTORY_ROCS_FEATHER,
+            INVENTORY_SHOVEL
+        });
+        setItemA(INVENTORY_SWORD);
+        setItemB(INVENTORY_BOOMERANG);
+        setOcarinaSongFlags(FROGS_SONG_OF_THE_SOUL_FLAG | MANBO_MAMBO_FLAG
+            | BALLAD_OF_THE_WIND_FISH_FLAG);
+        setHasFlippers(true);
+        setHasMedicine(true);
+        setMedicineCount(1);
+        setTailKeyCount(1);
+        setAnglerKeyCount(1);
+        setFaceKeyCount(1);
+        setBirdKeyCount(1);
+        setGoldenLeavesCount(5);
+        setSeashells(99);
+        setHasToadstool(true);
+    }
+
     public int rupees() {
         return rupees;
     }

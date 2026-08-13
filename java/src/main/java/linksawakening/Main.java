@@ -127,6 +127,7 @@ public class Main {
     private static RoomTransitionCoordinator roomTransitionCoordinator;
 
     private static boolean running = true;
+    private static boolean debugNoClip;
     private static int frameCounter;
     private static int currentScreen = 0;
     static final int SCREEN_TITLE = 0;
@@ -568,6 +569,19 @@ public class Main {
             running = false;
         }
 
+        if (action == GLFW_PRESS && currentAppConfig().debugEnabled()) {
+            if (key == GLFW_KEY_F2) {
+                startDebugGameplay();
+                return;
+            }
+            if (key == GLFW_KEY_F3 && link != null) {
+                debugNoClip = !debugNoClip;
+                link.setDebugNoClip(debugNoClip);
+                System.out.println("Debug no-clip: " + (debugNoClip ? "ON" : "OFF"));
+                return;
+            }
+        }
+
         if (currentScreen == SCREEN_TITLE) {
             if (shouldEnterFileSelection(currentScreen, key, action)) {
                 startFileSelection();
@@ -863,8 +877,12 @@ public class Main {
                     equipmentController.dispatchButtonEdges();
                     equipmentController.tickEquippedItems(frameCounter);
                 }
-                link.tickRomLinkPushing();
-                link.update();
+                if (debugNoClip && tryDebugScreenScroll()) {
+                    link.tickAnimation();
+                } else {
+                    link.tickRomLinkPushing();
+                    link.update();
+                }
                 if (roomSession != null && playerState != null) {
                     roomSession.tryUnlockTailCaveKeyhole(
                         link.pixelX(), link.pixelY(), link.direction(),
@@ -949,7 +967,7 @@ public class Main {
                     playerState.runningWithPegasusBoots());
                 var combatEvents = roomSession.resolveEntityCombat(
                     frameCounter, link.romEntityX(), link.romEntityY(),
-                    link.isAirborne(), link.zVelocity(), true,
+                    link.isAirborne(), link.zVelocity(), !debugNoClip,
                     swordBoxForEntityTick.active(), swordBoxForEntityTick.x(),
                     swordBoxForEntityTick.width(), swordBoxForEntityTick.y(),
                     swordBoxForEntityTick.height(), attackContext);
@@ -1580,6 +1598,61 @@ public class Main {
             currentAppConfig(), Main::startNewGame, Main::startConfiguredLocationGameplay);
     }
 
+    private static void startDebugGameplay() {
+        if (playerState == null || roomSession == null || link == null) {
+            return;
+        }
+        if (currentScreen == SCREEN_CUTSCENE && cutsceneManager != null) {
+            cutsceneManager.skipIntroToTitle();
+        }
+        fileMenuController = null;
+        fileSaveController = null;
+        newGameWakeUpMotion = null;
+        newGameTarinShieldMotion = null;
+        currentSaveSlot = -1;
+        link.resetTransientStateForDebug();
+        playerState.initializeDebugState();
+        roomSession.initializeNewGameWorldState();
+        roomSession.setBowWowState(0);
+        roomSession.setBirdKeyOwned(true);
+        roomSession.setTailKeyOwned(true);
+        currentScreen = SCREEN_OVERWORLD;
+        debugNoClip = false;
+        link.setDirection(Link.DIRECTION_DOWN);
+        gpu.loadBaseTiles(romData);
+        loadOverworldScreen();
+        System.out.println("Debug gameplay started (F3 toggles no-clip)");
+    }
+
+    private static boolean tryDebugScreenScroll() {
+        if (!inputState.isDown(GLFW_KEY_LEFT_SHIFT) && !inputState.isDown(GLFW_KEY_RIGHT_SHIFT)) {
+            return false;
+        }
+        int direction = inputState.isDown(inputConfig.leftKey()) ? ScrollController.LEFT
+            : inputState.isDown(inputConfig.rightKey()) ? ScrollController.RIGHT
+            : inputState.isDown(inputConfig.upKey()) ? ScrollController.UP
+            : inputState.isDown(inputConfig.downKey()) ? ScrollController.DOWN
+            : ScrollController.NONE;
+        if (direction == ScrollController.NONE || scrollController.isActive()
+            || transitionController.isInputBlocked() || roomSession == null
+            || !roomSession.hasActiveRoom()) {
+            return false;
+        }
+        switch (direction) {
+            case ScrollController.LEFT -> link.setPixelPosition(-1, link.pixelY());
+            case ScrollController.RIGHT -> link.setPixelPosition(ROOM_PIXEL_WIDTH, link.pixelY());
+            case ScrollController.UP -> link.setPixelPosition(link.pixelX(), -1);
+            case ScrollController.DOWN -> link.setPixelPosition(link.pixelX(), ROOM_PIXEL_HEIGHT);
+            default -> { return false; }
+        }
+        if (roomSession.activeRoom().mapCategory() == Warp.CATEGORY_OVERWORLD) {
+            roomTransitionCoordinator.handleOverworldBoundary(link);
+        } else {
+            roomTransitionCoordinator.handleWarpAndIndoorBoundaries(link);
+        }
+        return scrollController.isActive();
+    }
+
     static void dispatchConfiguredGameplay(AppConfig config, Runnable startNewGame,
                                            Runnable startConfiguredLocation) {
         if (StartupCoordinator.shouldStartNewGameGameplay(config)) {
@@ -1857,8 +1930,8 @@ public class Main {
         roomSession.loadInitialOverworld(StartupCoordinator.gameplayStartRoomId(currentAppConfig()));
         // Center of Mabe Village Square has the statue (solid). Spawn Link two
         // tiles to the left of the room center so he lands on walkable ground.
-        int startX = ROOM_PIXEL_WIDTH / 2 - Link.SPRITE_SIZE / 2 - 32;
-        int startY = ROOM_PIXEL_HEIGHT / 2 - Link.SPRITE_SIZE / 2;
+        int startX = ROOM_PIXEL_WIDTH / 2 - Link.SPRITE_SIZE / 2 - 32 + 10;
+        int startY = ROOM_PIXEL_HEIGHT / 2 - Link.SPRITE_SIZE / 2 - 10;
         link.setRoomEntryPixelPosition(startX, startY);
     }
 

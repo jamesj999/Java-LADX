@@ -63,6 +63,22 @@ final class LinkTest {
     }
 
     @Test
+    void debugResetClearsScriptedPresentationAndCaptureState() throws Exception {
+        Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
+            null, null, null, new PlayerState(), new ItemRegistry());
+
+        link.blockNextRomMotionFrame();
+        link.showMarinWakeUpBed(4);
+        link.applyLikeLikeCapture(0x40, 0x40);
+        link.resetTransientStateForDebug();
+
+        assertFalse(link.isMarinWakeUpBedVisible());
+        assertFalse(link.isLikeLikeCaptured());
+        assertEquals(0, resolvedAnimationState(link));
+        assertFalse(link.isAirborne());
+    }
+
+    @Test
     void ocarinaPlaybackUsesTheRomBodyAnimationStates() throws Exception {
         PlayerState playerState = new PlayerState();
         playerState.setItemA(PlayerState.INVENTORY_OCARINA);
