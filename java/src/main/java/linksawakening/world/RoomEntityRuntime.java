@@ -5021,13 +5021,20 @@ public final class RoomEntityRuntime {
             }
 
             RoomEntity target = slots[targetSlot];
-            if (!indoorRoom && target.loaded()
-                && target.status() == EntityStatus.ACTIVE
+            int targetPhysics = enemyPhysicsFlags[targetSlot];
+            if (!target.loaded()
+                || target.status().value() < EntityStatus.ACTIVE.value()
+                || (targetPhysics & ENTITY_PHYSICS_PROJECTILE_NOCLIP) != 0
+                || target.spriteVariant() < 0
+                || unsignedByteAbs(sprinkle.x() - target.x()) >= 0x0C
+                || unsignedByteAbs(sourceVisualY
+                    - ((target.y() - target.z()) & 0xFF)) >= 0x0C) {
+                continue;
+            }
+            if (!indoorRoom && (targetPhysics & ENTITY_PHYSICS_GRABBABLE) == 0
                 && target.type() == ENTITY_TARIN
                 && tarinRaccoonMotion.state(targetSlot) == 0
-                && unsignedByteAbs(sprinkle.x() - target.x()) < 0x0C
-                && unsignedByteAbs(sourceVisualY
-                    - ((target.y() - target.z()) & 0xFF)) < 0x0C) {
+            ) {
                 tarinRaccoonMotion.startPowderTransformation(targetSlot);
                 slowTransitionCountdown[targetSlot] = 0x7F;
                 slowTimerInitialized[targetSlot] = true;
@@ -5035,18 +5042,11 @@ public final class RoomEntityRuntime {
                 collided = true;
                 continue;
             }
-            int targetPhysics = enemyPhysicsFlags[targetSlot];
-            if (!target.loaded()
-                || target.status().value() < EntityStatus.ACTIVE.value()
-                || (targetPhysics & ENTITY_PHYSICS_GRABBABLE) != 0
+            if ((targetPhysics & ENTITY_PHYSICS_GRABBABLE) != 0
                 || !RoomEntityCombatRules.supportsEnemyCollision(target.type())
-                || (targetPhysics & ENTITY_PHYSICS_PROJECTILE_NOCLIP) != 0
                 || (enemyHitboxFlags[targetSlot] & HITFLAGS_IGNORE_HITS) != 0
                 || enemyIgnoreHitsCountdown[targetSlot] != 0
-                || target.spriteVariant() < 0
-                || unsignedByteAbs(sprinkle.x() - target.x()) >= 0x0C
-                || unsignedByteAbs(sourceVisualY
-                    - ((target.y() - target.z()) & 0xFF)) >= 0x0C) {
+            ) {
                 continue;
             }
 
@@ -10108,6 +10108,14 @@ public final class RoomEntityRuntime {
     void setPhysicsFlagsForTest(int slot, int value) {
         validateCountdownTestValue(slot, value);
         enemyPhysicsFlags[slot] = value;
+    }
+
+    void setSpriteVariantForTest(int slot, int variant) {
+        validateEntitySlot(slot);
+        if (variant < -1 || variant > 0xFF) {
+            throw new IllegalArgumentException("Invalid sprite variant: " + variant);
+        }
+        slots[slot] = withVariant(slots[slot], variant);
     }
 
     void setThrownDirection(int slot, int value) {

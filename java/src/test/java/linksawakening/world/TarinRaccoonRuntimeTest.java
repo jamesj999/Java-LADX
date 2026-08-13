@@ -333,6 +333,36 @@ final class TarinRaccoonRuntimeTest {
         assertEquals(0, runtime.enemyFlashCountdown(0));
     }
 
+    @Test
+    void powderAppliesTheRomEligibilityGuardsBeforeTheTarinSpecialCase() {
+        RoomEntityRuntime projectileNoclip = raccoonRuntime(false);
+        projectileNoclip.setPhysicsFlagsForTest(0, 0x40);
+        projectileNoclip.spawnMagicPowderSprinkle(0x6A, 0x40, 0, 0);
+        tickThroughFirstPowderCollision(projectileNoclip);
+        assertEquals(0, projectileNoclip.slowTransitionCountdownForTest(0));
+
+        RoomEntityRuntime grabbable = raccoonRuntime(false);
+        grabbable.setPhysicsFlagsForTest(0, 0x20);
+        grabbable.spawnMagicPowderSprinkle(0x6A, 0x40, 0, 0);
+        tickThroughFirstPowderCollision(grabbable);
+        assertEquals(0, grabbable.slowTransitionCountdownForTest(0));
+
+        RoomEntityRuntime hidden = raccoonRuntime(false);
+        hidden.spawnMagicPowderSprinkle(0x6A, 0x40, 0, 0);
+        for (int frame = 0; frame < 8; frame++) {
+            tick(hidden, frame, 0x50, 0x60);
+        }
+        hidden.setSpriteVariantForTest(0, -1);
+        tick(hidden, 8, 0x50, 0x60);
+        assertEquals(0, hidden.slowTransitionCountdownForTest(0));
+
+        RoomEntityRuntime aboveActive = raccoonRuntime(
+            false, 0, EntityStatus.STUNNED, 0);
+        aboveActive.spawnMagicPowderSprinkle(0x6A, 0x40, 0, 0);
+        tickThroughFirstPowderCollision(aboveActive);
+        assertEquals(0x7E, aboveActive.slowTransitionCountdownForTest(0));
+    }
+
     private static RoomSession actionReadySession() {
         RoomSession session = newSession();
         session.loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);
@@ -366,6 +396,11 @@ final class TarinRaccoonRuntimeTest {
     }
 
     private static RoomEntityRuntime raccoonRuntime(boolean indoor, int tarinSlot) {
+        return raccoonRuntime(indoor, tarinSlot, EntityStatus.ACTIVE, 0);
+    }
+
+    private static RoomEntityRuntime raccoonRuntime(boolean indoor, int tarinSlot,
+                                                     EntityStatus status, int variant) {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         EntitySpriteDefinition definition = catalog.forEntityType(ENTITY_TARIN,
@@ -376,7 +411,7 @@ final class TarinRaccoonRuntimeTest {
             slots.add(RoomEntity.disabled(slots.size()));
         }
         slots.set(tarinSlot, new RoomEntity(tarinSlot, 0, ENTITY_TARIN, 0x78, 0x40,
-            EntityStatus.ACTIVE, definition, 0));
+            status, definition, variant));
         return RoomEntityRuntime.from(new RoomEntitySnapshot(slots), indoor,
             () -> 0, catalog, new RomEnemyCombatTables(rom),
             new ChestContentsTable(rom));
