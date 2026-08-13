@@ -790,16 +790,40 @@ final class RoomTransitionCoordinatorTest {
         assertEquals(0x70, link.pixelX());
         assertEquals(0x00, link.pixelY());
 
-        link.setPixelPosition(link.pixelX(), -5);
+        link.setPixelPosition(-5, 0x30);
+        coordinator.handleWarpAndIndoorBoundaries(link);
+        assertTrue(scroll.isActive());
+        assertEquals(0x18, session.currentRoomId());
+        while (scroll.isActive()) scroll.tick(8);
+
+        link.setPixelPosition(0x20, -5);
         coordinator.handleWarpAndIndoorBoundaries(link);
         assertTrue(transition.isActive());
-        assertFalse(scroll.isActive());
         while (transition.isActive()) transition.tick();
         assertEquals(Warp.CATEGORY_INDOOR, session.mapCategory());
-        assertEquals(0x03, session.currentRoomId());
-        assertEquals(0x80, link.pixelX());
-        assertEquals(0x10, link.pixelY());
-        assertEquals(0xBF, session.activeRoom().roomObjectsArea()[hiddenStairsIndex]);
+        assertEquals(0x01, session.currentRoomId());
+        assertEquals(0x40, link.pixelX());
+        assertEquals(0x50, link.pixelY());
+
+        walkToAndCrossIndoorBoundary(
+            coordinator, transition, scroll, collision, link, ScrollController.UP);
+        assertEquals(0x1C, session.currentRoomId());
+        walkToAndCrossIndoorBoundary(
+            coordinator, transition, scroll, collision, link, ScrollController.UP);
+        assertEquals(0x1D, session.currentRoomId());
+
+        RoomSession.ChestOpenResult featherChest = session.tryOpenChest(
+            0x38, 0x21, Link.DIRECTION_UP, true, playerState.swordLevel());
+        assertTrue(featherChest.opened());
+        assertEquals(ChestContentsTable.CHEST_FEATHER, featherChest.itemType());
+        playerState.applyChestReward(featherChest.itemType());
+        boolean hasFeather = playerState.itemA() == PlayerState.INVENTORY_ROCS_FEATHER
+            || playerState.itemB() == PlayerState.INVENTORY_ROCS_FEATHER;
+        for (int slot = 0; slot < PlayerState.SUBSCREEN_SLOT_COUNT; slot++) {
+            hasFeather |= playerState.subscreenItem(slot)
+                == PlayerState.INVENTORY_ROCS_FEATHER;
+        }
+        assertTrue(hasFeather);
     }
 
     @Test
