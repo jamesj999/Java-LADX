@@ -1633,6 +1633,8 @@ public class Main {
         roomSession.restoreDungeonProgressFlags(saved.dungeonProgressFlags());
         roomSession.setBowWowState(saved.bowWowState());
         roomSession.setTarinFlag(saved.tarinFlag());
+        roomSession.setChestPlayerLevels(playerState.shieldLevel(), playerState.swordLevel(),
+            playerState.powerBraceletLevel());
         if (saved.spawnIsIndoor() != 0) {
             gpu.loadBaseTiles(romData);
             roomSession.loadIndoor(saved.spawnMapId(), saved.spawnMapRoom());

@@ -248,6 +248,8 @@ public final class RoomSession {
     private int bowWowState;
     /** WRAM wTarinFlag; persisted NPC/world progression, not player inventory state. */
     private int tarinFlag;
+    /** WRAM wShieldLevel retained for room-load-time palette selection. */
+    private int playerShieldLevel;
     private int currentLinkMotionState = EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE;
     /** WRAM wC1A2; ResetRoomVariables clears the room trigger counter. */
     private int roomTriggerCount;
@@ -428,7 +430,7 @@ public final class RoomSession {
         LoadedRoom room = roomLoader.loadIndoor(
             mapId, roomId, activeRoom == null ? null : activeRoom.palettes(), mapCategory,
             clearedEntitiesByRoom[roomId], indoorStatusTableForMap(mapId), hasBirdKey,
-            tarinFlag);
+            tarinFlag, playerShieldLevel);
         gpu.loadAnimatedTilesGroup(romData, room.animatedTilesGroup());
         setActiveRoom(room);
         indoorTorchPaletteEffect.reset(activeRoom.palettes(), countUnlitTorches());
@@ -524,6 +526,7 @@ public final class RoomSession {
         hasBirdKey = false;
         bowWowState = 0;
         tarinFlag = 0;
+        playerShieldLevel = 0;
         entityGoldenLeavesCount = 0;
         enemyDropCounters = new EnemyDropResolver.CounterState(0, 0);
         switchBlocksState = 0;
@@ -782,6 +785,11 @@ public final class RoomSession {
     /** Supplies the upgrade bytes consumed by the live chest dialog handler. */
     public void setChestPlayerLevels(int shieldLevel, int swordLevel,
                                      int powerBraceletLevel) {
+        if ((shieldLevel & ~0xFF) != 0 || (swordLevel & ~0xFF) != 0
+            || (powerBraceletLevel & ~0xFF) != 0) {
+            throw new IllegalArgumentException("Player upgrade levels must be unsigned bytes");
+        }
+        playerShieldLevel = shieldLevel;
         if (entityRuntime != null) {
             entityRuntime.setChestPlayerLevels(shieldLevel, swordLevel, powerBraceletLevel);
         }

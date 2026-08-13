@@ -220,11 +220,15 @@ final class MainFileMenuFlowTest {
         assertTrue(source.contains("roomSession.restoreDungeonItemFlags(saved.dungeonItemFlags(),"));
         assertTrue(source.contains("link.setRoomEntryRomPosition(saved.spawnPositionX(),"));
         int tarinRestore = source.indexOf("roomSession.setTarinFlag(saved.tarinFlag());");
+        int playerLevels = source.indexOf(
+            "roomSession.setChestPlayerLevels(playerState.shieldLevel(),", tarinRestore);
         int indoorLoad = source.indexOf("roomSession.loadIndoor(saved.spawnMapId()", tarinRestore);
         int overworldLoad = source.indexOf(
             "roomSession.loadInitialOverworld(saved.spawnMapRoom())", tarinRestore);
         assertTrue(tarinRestore < indoorLoad);
         assertTrue(tarinRestore < overworldLoad);
+        assertTrue(playerLevels > tarinRestore);
+        assertTrue(playerLevels < indoorLoad);
         assertFalse(branch.contains("UnsupportedOperationException"));
     }
 }

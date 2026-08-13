@@ -444,6 +444,39 @@ final class TarinRaccoonRuntimeTest {
     }
 
     @Test
+    void roomSessionRetainsShieldLevelForBothMarinHousePalettePaths() {
+        byte[] rom = loadRom();
+        RoomSession session = newSession();
+        session.setChestPlayerLevels(1, 0, 0);
+
+        session.loadIndoor(0x10, 0xA3);
+
+        RoomPaletteLoader palettes = new RoomPaletteLoader(rom);
+        assertArrayEquals(palettes.loadIndoor(0x10, 0xA3, null, 0, 1),
+            session.palettes());
+        assertArrayEquals(
+            palettes.loadIndoorObjectPalettes(0x10, 0xA3, false, 0, 1),
+            session.activeRoom().entities().spriteSelection().objectPalettes());
+    }
+
+    @Test
+    void newGameWorldInitializationRestoresTheShieldlessHousePalette() {
+        byte[] rom = loadRom();
+        RoomSession session = newSession();
+        session.setChestPlayerLevels(1, 0, 0);
+
+        session.initializeNewGameWorldState();
+        session.loadIndoor(0x10, 0xA3);
+
+        RoomPaletteLoader palettes = new RoomPaletteLoader(rom);
+        assertArrayEquals(palettes.loadIndoor(0x10, 0xA3, null, 0, 0),
+            session.palettes());
+        assertArrayEquals(
+            palettes.loadIndoorObjectPalettes(0x10, 0xA3, false, 0, 0),
+            session.activeRoom().entities().spriteSelection().objectPalettes());
+    }
+
+    @Test
     void stateTwoLandingAndStateThreeDialogUseRuntimeTimerOrdering() {
         RoomEntityRuntime runtime = raccoonRuntime(false);
         runtime.setWitchEnvironment(0, 0, 0x0C);

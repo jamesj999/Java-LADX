@@ -65,6 +65,11 @@ public final class RoomPaletteLoader {
 
     public int[][] loadIndoor(int mapId, int roomId, int[][] fallbackPalettes,
                               int tarinFlag) {
+        return loadIndoor(mapId, roomId, fallbackPalettes, tarinFlag, 0);
+    }
+
+    public int[][] loadIndoor(int mapId, int roomId, int[][] fallbackPalettes,
+                              int tarinFlag, int shieldLevel) {
         if (mapId == MAP_COLOR_DUNGEON) {
             return loadPaletteBlock(RomBank.romOffset(
                 COLOR_DUNGEON_PALETTE_BANK, COLOR_DUNGEON_PALETTE_ADDR));
@@ -72,7 +77,8 @@ public final class RoomPaletteLoader {
         if (mapId < INDOOR_PALETTE_MAPS_BASE_MAP) {
             return fallbackPalettes;
         }
-        if (mapId == 0x10 && roomId == 0xA3) {
+        if (mapId == 0x10 && roomId == 0xA3
+            && usesMarinHouseSpecialPalette(tarinFlag, shieldLevel)) {
             return loadPaletteBlock(RomBank.romOffset(INTERIOR_PALETTES_BANK,
                 marinHousePaletteAddress(tarinFlag)));
         }
@@ -114,9 +120,15 @@ public final class RoomPaletteLoader {
 
     public int[][] loadIndoorObjectPalettes(int mapId, int roomId, boolean sideScrolling,
                                             int tarinFlag) {
+        return loadIndoorObjectPalettes(mapId, roomId, sideScrolling, tarinFlag, 0);
+    }
+
+    public int[][] loadIndoorObjectPalettes(int mapId, int roomId, boolean sideScrolling,
+                                            int tarinFlag, int shieldLevel) {
         // palettes.asm also rewrites indoor room $AA according to wTunicType.
         // Preserve the ROM base row until tunic state is part of this loader's context.
-        int paletteOffset = indoorPaletteOffset(mapId, roomId, sideScrolling, tarinFlag);
+        int paletteOffset = indoorPaletteOffset(
+            mapId, roomId, sideScrolling, tarinFlag, shieldLevel);
         return paletteOffset < 0 ? loadGlobalObjectPalettes() : composeObjectPalettes(paletteOffset);
     }
 
@@ -128,11 +140,12 @@ public final class RoomPaletteLoader {
     }
 
     private int indoorPaletteOffset(int mapId, int roomId, boolean sideScrolling,
-                                    int tarinFlag) {
+                                    int tarinFlag, int shieldLevel) {
         if (mapId == MAP_COLOR_DUNGEON) {
             return RomBank.romOffset(COLOR_DUNGEON_PALETTE_BANK, COLOR_DUNGEON_PALETTE_ADDR);
         }
-        if (mapId == 0x10 && roomId == 0xA3) {
+        if (mapId == 0x10 && roomId == 0xA3
+            && usesMarinHouseSpecialPalette(tarinFlag, shieldLevel)) {
             return RomBank.romOffset(INTERIOR_PALETTES_BANK,
                 marinHousePaletteAddress(tarinFlag));
         }
@@ -168,6 +181,10 @@ public final class RoomPaletteLoader {
         return tarinFlag == 1 || tarinFlag == 2
             ? MARIN_HOUSE_TRANSFORMED_PALETTE_ADDR
             : MARIN_HOUSE_INITIAL_PALETTE_ADDR;
+    }
+
+    private static boolean usesMarinHouseSpecialPalette(int tarinFlag, int shieldLevel) {
+        return tarinFlag == 1 || tarinFlag == 2 || shieldLevel == 0;
     }
 
     private static boolean usesTurtleRockSideScrollPalette(int roomId) {

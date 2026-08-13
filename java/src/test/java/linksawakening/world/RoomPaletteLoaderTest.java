@@ -36,24 +36,41 @@ final class RoomPaletteLoaderTest {
     }
 
     @Test
-    void marinHouseSelectsTarinFlagPaletteForBackgroundAndObjectRows() {
+    void marinHouseSelectsSourcePaletteForTarinFlagAndShieldLevel() {
         byte[] rom = new byte[RomBank.romOffset(0x22, 0x4000)];
+        int houseMap = RomBank.romOffset(0x21, 0x4413 + (0x10 - 0x0A) * 2);
+        rom[houseMap] = 0x00;
+        rom[houseMap + 1] = 0x50;
+        rom[RomBank.romOffset(0x21, 0x5000 + 0xA3)] = 0x06;
+        int interiorPalette = RomBank.romOffset(0x21, 0x443F + 0x06 * 2);
+        rom[interiorPalette] = 0x00;
+        rom[interiorPalette + 1] = 0x60;
         writeColor(rom, 0x73B0, 0x001F);
         writeColor(rom, 0x73B0 + 0x40, 0x03E0);
         writeColor(rom, 0x74A0, 0x7C00);
         writeColor(rom, 0x74A0 + 0x40, 0x7FFF);
+        writeColor(rom, 0x6000, 0x4210);
+        writeColor(rom, 0x6000 + 0x40, 0x56B5);
         RoomPaletteLoader loader = new RoomPaletteLoader(rom);
 
         assertEquals(RomBank.decodeRgb555(0x001F),
-            loader.loadIndoor(0x10, 0xA3, null, 0)[0][0]);
-        assertEquals(RomBank.decodeRgb555(0x7C00),
-            loader.loadIndoor(0x10, 0xA3, null, 1)[0][0]);
-        assertEquals(RomBank.decodeRgb555(0x7C00),
-            loader.loadIndoor(0x10, 0xA3, null, 2)[0][0]);
+            loader.loadIndoor(0x10, 0xA3, null, 0, 0)[0][0]);
+        assertEquals(RomBank.decodeRgb555(0x4210),
+            loader.loadIndoor(0x10, 0xA3, null, 0, 1)[0][0]);
         assertEquals(RomBank.decodeRgb555(0x03E0),
-            loader.loadIndoorObjectPalettes(0x10, 0xA3, false, 0)[6][0]);
-        assertEquals(RomBank.decodeRgb555(0x7FFF),
-            loader.loadIndoorObjectPalettes(0x10, 0xA3, false, 1)[6][0]);
+            loader.loadIndoorObjectPalettes(0x10, 0xA3, false, 0, 0)[6][0]);
+        assertEquals(RomBank.decodeRgb555(0x56B5),
+            loader.loadIndoorObjectPalettes(0x10, 0xA3, false, 0, 1)[6][0]);
+        for (int tarinFlag : new int[] { 1, 2 }) {
+            for (int shieldLevel : new int[] { 0, 2 }) {
+                assertEquals(RomBank.decodeRgb555(0x7C00),
+                    loader.loadIndoor(
+                        0x10, 0xA3, null, tarinFlag, shieldLevel)[0][0]);
+                assertEquals(RomBank.decodeRgb555(0x7FFF),
+                    loader.loadIndoorObjectPalettes(
+                        0x10, 0xA3, false, tarinFlag, shieldLevel)[6][0]);
+            }
+        }
     }
 
     private static void writeColor(byte[] rom, int address, int color) {
