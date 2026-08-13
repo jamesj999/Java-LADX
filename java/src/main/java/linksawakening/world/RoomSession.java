@@ -1552,6 +1552,9 @@ public final class RoomSession {
             entityInventoryAppearing, entityDialogCooldown, entityWindowY);
         entityRuntime.setActiveMusic(entityMusicActive);
         entityRuntime.setBowWowState(bowWowState);
+        entityRuntime.setOwlInstrumentFlags(
+            Byte.toUnsignedInt(dungeonProgressFlags[0]),
+            Byte.toUnsignedInt(dungeonProgressFlags[1]));
         entityRuntime.setActionButtonsHeld(actionButtonAHeld, actionButtonBHeld);
         entityRuntime.setJoypadHeld(joypadHeld);
         entityRuntime.setPressedButtonsMask(entityPressedButtonsMask);
@@ -2105,6 +2108,9 @@ public final class RoomSession {
             entityRuntime.setLiftedLinkC13B(followingEntityYOffset);
             entityRuntime.setEntityRoomStatus(activeRoomStatusFlags());
             entityRuntime.setTailKeyOwned(hasTailKey);
+            entityRuntime.setOwlInstrumentFlags(
+                Byte.toUnsignedInt(dungeonProgressFlags[0]),
+                Byte.toUnsignedInt(dungeonProgressFlags[1]));
             entityRuntime.setSecretSeashellPegasusCollisionState(
                 secretSeashellScreenShakeActive, secretSeashellPegasusCollisionActive,
                 secretSeashellPegasusCollisionX, secretSeashellPegasusCollisionY);
@@ -4004,7 +4010,7 @@ public final class RoomSession {
     private record IndoorRoomDestination(int roomId, int mapPosition) {}
 
     private IndoorRoomDestination adjacentIndoorRoom(int direction) {
-        int delta = switch (direction) {
+        int layoutDelta = switch (direction) {
             case ScrollController.UP -> -8;
             case ScrollController.DOWN -> 8;
             case ScrollController.LEFT -> -1;
@@ -4020,7 +4026,7 @@ public final class RoomSession {
         int currentMapPosition = indoorMapPosition >= 0
             ? indoorMapPosition
             : findIndoorMapPosition(activeRoom.mapId(), activeRoom.roomId());
-        int adjacentPosition = currentMapPosition + delta;
+        int adjacentPosition = currentMapPosition + layoutDelta;
         int layoutOffset = indoorMapLayoutOffset(activeRoom.mapId());
         if (currentMapPosition >= 0 && adjacentPosition >= 0
             && adjacentPosition < INDOOR_MAP_LAYOUT_SIZE && layoutOffset >= 0) {
@@ -4029,10 +4035,18 @@ public final class RoomSession {
                 adjacentPosition);
         }
 
-        // Maps without a ROM layout table keep hMapRoom directly and use the
-        // same byte-grid increments.
+        // room_transition.asm:$7A0C skips the wIndoorRoom/MapLayout path for
+        // maps >= $0B. Those maps keep hMapRoom directly and fall through to
+        // OverworldRoomIncrement, whose vertical row stride is $10.
+        int directRoomDelta = switch (direction) {
+            case ScrollController.UP -> -0x10;
+            case ScrollController.DOWN -> 0x10;
+            case ScrollController.LEFT -> -1;
+            case ScrollController.RIGHT -> 1;
+            default -> 0;
+        };
         return new IndoorRoomDestination(
-            (activeRoom.roomId() + delta) & 0xFF, -1);
+            (activeRoom.roomId() + directRoomDelta) & 0xFF, -1);
     }
 
     private static int scrollTarget(int direction) {

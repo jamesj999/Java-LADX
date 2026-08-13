@@ -188,6 +188,8 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_SWORD_SHIELD_PICKUP = 0x31;
     private static final int ENTITY_OWL_EVENT = 0x41;
     private static final int ROOM_OW_TAIL_KEY_CHEST = 0x41;
+    private static final int ROOM_OW_EAST_OF_MOBLIN_HIDEOUT = 0x36;
+    private static final int ROOM_OW_WEST_OF_TAIL_CAVE = 0xD2;
     private static final int ENTITY_WITCH = WitchMotion.ENTITY_TYPE;
     private static final int ROOM_OW_BEACH_WITH_SWORD = 0xF2;
     private static final int ENTITY_BOUNCING_BOMBITE = 0x55;
@@ -588,6 +590,8 @@ public final class RoomEntityRuntime {
     private boolean playerHasToadstool;
     private int playerMagicPowderCount;
     private boolean playerHasTailKey;
+    private int instrument1Flags;
+    private int instrument2Flags;
     private final int[] owlEventState = new int[EntityRoomLoader.MAX_ENTITIES];
     /** wEntitiesPrivateCountdown1Table for the owl-event handler. */
     private final int[] owlPrivateCountdown1 =
@@ -1846,7 +1850,7 @@ public final class RoomEntityRuntime {
             }
             if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_BOW_WOW
                 && entity.sourceLoadOrder() >= 0 && bowWowState == 0x80
-                && handlerLinkCollisionEnabled
+                && handlerLinkCollisionEnabled && romCollisionType != 0
                 && withinUnsignedWindow(linkEntityX, 0x88, 0x10)
                 && withinUnsignedWindow(linkEntityY, 0x40, 0x10)) {
                 // BowWowEntityHandler's kidnapped branch checks the handler's
@@ -1913,7 +1917,8 @@ public final class RoomEntityRuntime {
                 }
             }
             if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_OWL_EVENT) {
-                advanceOwlEvent(entity, frame, linkEntityX, linkEntityY);
+                advanceOwlEvent(entity, frame, linkEntityX, linkEntityY,
+                    handlerLinkCollisionEnabled);
                 continue;
             }
             if (status == EntityStatus.LIFTED) {
@@ -3460,7 +3465,7 @@ public final class RoomEntityRuntime {
                     if (spriteHandlers != null) {
                         updated = withDefinition(updated,
                             spriteHandlers.forMoblinKingState(
-                                updated.spriteVariant(),
+                                moblinKingMotion.bodyVariant(entity.slot()),
                                 moblinKingMotion.weaponVariant(entity.slot()),
                                 updated.z() != 0), 0);
                     }
@@ -7993,7 +7998,8 @@ public final class RoomEntityRuntime {
     }
 
     private void advanceOwlEvent(RoomEntity entity, int frameCounter,
-                                 int linkEntityX, int linkEntityY) {
+                                 int linkEntityX, int linkEntityY,
+                                 boolean handlerLinkInteractive) {
         int slot = entity.slot();
         switch (owlEventState[slot]) {
             case 0 -> {
@@ -8008,6 +8014,27 @@ public final class RoomEntityRuntime {
                     }
                     owlPreviousMusicTrack[slot] =
                         owlDefaultMusicResolver.applyAsInt(entityRoomId);
+                } else if (entityRoomId == ROOM_OW_WEST_OF_TAIL_CAVE) {
+                    if (chestSwordLevel == 0 || (instrument1Flags & 0x02) == 0) {
+                        disableEntityWithoutPersistence(slot);
+                        return;
+                    }
+                    owlPreviousMusicTrack[slot] =
+                        owlDefaultMusicResolver.applyAsInt(entityRoomId);
+                    pendingMusicTrack = 0x22;
+                    owlEventState[slot] = 2;
+                    return;
+                } else if (entityRoomId == ROOM_OW_EAST_OF_MOBLIN_HIDEOUT) {
+                    if (chestSwordLevel == 0 || instrument2Flags != 0
+                        || bowWowState != 0x01) {
+                        disableEntityWithoutPersistence(slot);
+                        return;
+                    }
+                    owlPreviousMusicTrack[slot] =
+                        owlDefaultMusicResolver.applyAsInt(entityRoomId);
+                    pendingMusicTrack = 0x22;
+                    owlEventState[slot] = 2;
+                    return;
                 } else {
                     if (chestSwordLevel == 0) {
                         disableEntityWithoutPersistence(slot);
@@ -8054,6 +8081,9 @@ public final class RoomEntityRuntime {
                 slots[slot] = withZ(withPositionAndVariant(flying, x, y, 0), z);
             }
             case 2 -> {
+                if (!handlerLinkInteractive || transitionSequenceCounter != 0x04) {
+                    return;
+                }
                 blockLinkForOwl(slot);
                 slots[slot] = owlPresentation(entity, frameCounter);
                 int globalDialogId = owlDialogResolver.applyAsInt(entityRoomId);
@@ -8063,6 +8093,9 @@ public final class RoomEntityRuntime {
                 owlEventState[slot] = 3;
             }
             case 3 -> {
+                if (!handlerLinkInteractive) {
+                    return;
+                }
                 blockLinkForOwl(slot);
                 slots[slot] = owlPresentation(entity, frameCounter);
                 if (dialogActive) {
@@ -8082,7 +8115,11 @@ public final class RoomEntityRuntime {
                     owlEventState[slot] = 4;
                 }
             }
-            default -> advanceDepartingOwl(entity, slot, frameCounter);
+            default -> {
+                if (handlerLinkInteractive) {
+                    advanceDepartingOwl(entity, slot, frameCounter);
+                }
+            }
         }
     }
 
@@ -8126,6 +8163,13 @@ public final class RoomEntityRuntime {
 
     void setOwlDialogResolver(IntUnaryOperator resolver) {
         owlDialogResolver = Objects.requireNonNull(resolver, "Owl dialog resolver");
+    }
+
+    void setOwlInstrumentFlags(int instrument1Flags, int instrument2Flags) {
+        validateByte(instrument1Flags, "Instrument 1 flags");
+        validateByte(instrument2Flags, "Instrument 2 flags");
+        this.instrument1Flags = instrument1Flags;
+        this.instrument2Flags = instrument2Flags;
     }
 
     void setOwlDefaultMusicResolver(IntUnaryOperator resolver) {

@@ -237,8 +237,7 @@ final class MoblinKingMotion {
         }
 
         bodyVariant[slot] = variant;
-        return new Update(withPositionAndVariant(entity, x, y, z,
-            presentationVariant(slot, variant)),
+        return new Update(withPosition(entity, x, y, z),
             transitionCountdown & 0xFF, slowTransitionCountdown & 0xFF, arrow,
             openDialog, jingle, strongBump, screenShake, linkDamage,
             ignoreLinkCollisions);
@@ -248,9 +247,9 @@ final class MoblinKingMotion {
                                    int transitionCountdown, int slowTransitionCountdown) {
         int slot = entity.slot();
         state[slot] = 9;
+        bodyVariant[slot] = variant;
         transitionCountdown = 0x60;
-        return new Update(withPositionAndVariant(entity, x, y, z,
-            presentationVariant(slot, variant)),
+        return new Update(withPosition(entity, x, y, z),
             transitionCountdown, slowTransitionCountdown, null, false, 0x0B,
             false, 0, 0x08, 0x28);
     }
@@ -291,6 +290,13 @@ final class MoblinKingMotion {
         return weaponVisible[slot] ? (direction[slot] * 2 + weaponFrame[slot]) & 0x03 : -1;
     }
 
+    int bodyVariant(int slot) {
+        // The room loader supplies a one-variant placeholder definition. Keep
+        // the handler's 14-state body index here until RoomEntityRuntime swaps
+        // in forMoblinKingState's dynamic display list.
+        return presentationVariant(slot, bodyVariant[slot]);
+    }
+
     void setPrivateCountdownsForTest(int slot, int countdown1, int countdown2) {
         privateCountdown1[slot] = countdown1 & 0xFF;
         privateCountdown2[slot] = countdown2 & 0xFF;
@@ -329,10 +335,10 @@ final class MoblinKingMotion {
         return (fixed >>> 4) & 0xFF;
     }
 
-    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y,
-                                                     int z, int variant) {
+    private static RoomEntity withPosition(RoomEntity entity, int x, int y, int z) {
         return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(), variant,
+            x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(),
+            entity.spriteVariant(),
             entity.entityFlipAttribute(), entity.spriteTileOffset(), z & 0xFF);
     }
 

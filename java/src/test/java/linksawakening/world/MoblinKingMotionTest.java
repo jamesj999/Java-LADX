@@ -1,5 +1,6 @@
 package linksawakening.world;
 
+import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import org.junit.jupiter.api.Test;
 
@@ -9,6 +10,26 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class MoblinKingMotionTest {
+    @Test
+    void motionKeepsBodyStateSeparateFromTheLoadedDefinitionVariant() {
+        MoblinKingMotion motion = new MoblinKingMotion();
+        EntitySpriteDefinition loadedDefinition = new EntitySpriteDefinition(
+            0xE4, 0x15, 0x4A15, EntitySpriteDefinition.Shape.PAIR, 0,
+            List.of(new EntitySpriteDefinition.Variant(
+                new EntitySpriteDefinition.OamAttribute(0, 0),
+                new EntitySpriteDefinition.OamAttribute(2, 0))));
+        RoomEntity king = new RoomEntity(0, 0, 0xE4, 0x58, 0x58,
+            EntityStatus.ACTIVE, loadedDefinition, 0);
+
+        MoblinKingMotion.Update setup = motion.advance(king, 0x30, 0x58,
+            0, 0, 0, () -> 0, null, false);
+        MoblinKingMotion.Update intro = motion.advance(setup.entity(), 0x30, 0x58,
+            0, 0, 1, () -> 0, null, false);
+
+        assertEquals(0, intro.entity().spriteVariant());
+        assertEquals(1, motion.bodyVariant(0));
+    }
+
     @Test
     void sourceIntroFacesLinkThenOpensDialog191AfterTwentyFrames() {
         MoblinKingMotion motion = new MoblinKingMotion();

@@ -114,15 +114,15 @@ final class RoomSessionTest {
         session.loadInitialOverworld(0xF2);
         session.setChestPlayerLevels(0, 0, 0);
 
-        session.tickEntities(0, 0x3F, 0x44);
-        session.tickEntities(1, 0x40, 0x44);
+        tickInteractive(session, 0, 0x3F, 0x44);
+        tickInteractive(session, 1, 0x40, 0x44);
         assertEquals(0x22, session.consumePendingMusicTrack());
 
         boolean owlDialogOpened = false;
         int frame = 2;
         while ((session.overworldRoomStatusForTest(0xF2) & 0x20) == 0
             && frame < 0x300) {
-            session.tickEntities(frame++, 0x58, 0x60);
+            tickInteractive(session, frame++, 0x58, 0x60);
             owlDialogOpened |= session.consumeEntityDialogRequests().stream()
                 .anyMatch(request -> request.globalDialogId() == 0x0D9);
         }
@@ -133,7 +133,7 @@ final class RoomSessionTest {
         boolean owlMusicRestored = false;
         while (session.activeRoom().entities().loadedEntities().stream()
             .anyMatch(entity -> entity.type() == 0x41) && frame < 0x400) {
-            session.tickEntities(frame++, 0x58, 0x60);
+            tickInteractive(session, frame++, 0x58, 0x60);
             owlMusicRestored |= session.consumePendingMusicTrack() == 0x1D;
         }
         assertTrue(owlMusicRestored);
@@ -171,27 +171,27 @@ final class RoomSessionTest {
         session.loadInitialOverworld(0x80);
         session.setChestPlayerLevels(0, 1, 0);
 
-        session.tickEntities(0, 0x50, 0x50);
-        session.tickEntities(1, 0x50, 0x50);
+        tickInteractive(session, 0, 0x50, 0x50);
+        tickInteractive(session, 1, 0x50, 0x50);
         assertEquals(0x22, session.consumePendingMusicTrack());
         int frame = 2;
         boolean dialogOpened = false;
         while (!dialogOpened && frame < 0x300) {
-            session.tickEntities(frame++, 0x50, 0x50);
+            tickInteractive(session, frame++, 0x50, 0x50);
             dialogOpened |= session.consumeEntityDialogRequests().stream()
                 .anyMatch(request -> request.globalDialogId() == 0x0C0);
         }
         assertTrue(dialogOpened);
         while ((session.overworldRoomStatusForTest(0x80) & 0x20) == 0
             && frame < 0x340) {
-            session.tickEntities(frame++, 0x50, 0x50);
+            tickInteractive(session, frame++, 0x50, 0x50);
         }
         assertEquals(0x20, session.overworldRoomStatusForTest(0x80) & 0x20);
 
         boolean restoredMusic = false;
         while (session.activeRoom().entities().loadedEntities().stream()
             .anyMatch(entity -> entity.type() == 0x41) && frame < 0x500) {
-            session.tickEntities(frame++, 0x50, 0x50);
+            tickInteractive(session, frame++, 0x50, 0x50);
             restoredMusic |= session.consumePendingMusicTrack() == 0x09;
         }
         assertTrue(restoredMusic);
@@ -199,6 +199,24 @@ final class RoomSessionTest {
         session.loadInitialOverworld(0x80);
         assertFalse(session.activeRoom().entities().loadedEntities().stream()
             .anyMatch(entity -> entity.type() == 0x41));
+    }
+
+    @Test
+    void postInstrumentOwlWaitsForInteractiveLinkBeforeOpeningDialog() {
+        RoomSession session = newSession();
+        byte[] instrumentFlags = new byte[0x08];
+        instrumentFlags[0] = 0x02;
+        session.restoreDungeonProgressFlags(instrumentFlags);
+        session.setChestPlayerLevels(0, 1, 0);
+        session.loadInitialOverworld(0xD2);
+
+        session.tickEntities(0, 0x50, 0x50);
+        session.tickEntities(1, 0x50, 0x50);
+
+        assertTrue(session.consumeEntityDialogRequests().isEmpty());
+        tickInteractive(session, 2, 0x50, 0x50);
+        assertEquals(0x0C2,
+            session.consumeEntityDialogRequests().getFirst().globalDialogId());
     }
 
     @Test
@@ -296,7 +314,7 @@ final class RoomSessionTest {
         boolean restoredPowerMusic = false;
         while (session.activeRoom().entities().loadedEntities().stream()
             .anyMatch(entity -> entity.type() == 0x41) && frame < 0x500) {
-            session.tickEntities(frame++, 0x50, 0x50);
+            tickInteractive(session, frame++, 0x50, 0x50);
             restoredPowerMusic |= session.consumePendingMusicTrack() == 0x49;
             session.consumeEntityDialogRequests();
         }
@@ -1322,14 +1340,14 @@ final class RoomSessionTest {
         int frame = 1;
         boolean owlDialogOpened = false;
         while (!owlDialogOpened && frame < 0x300) {
-            session.tickEntities(frame++, 0x50, 0x50);
+            tickInteractive(session, frame++, 0x50, 0x50);
             owlDialogOpened |= session.consumeEntityDialogRequests().stream()
                 .anyMatch(request -> request.globalDialogId() == 0x0C1);
         }
         assertTrue(owlDialogOpened);
         while ((session.overworldRoomStatusForTest(0x41) & 0x20) == 0
             && frame < 0x340) {
-            session.tickEntities(frame++, 0x50, 0x50);
+            tickInteractive(session, frame++, 0x50, 0x50);
         }
         assertEquals(0x20, session.overworldRoomStatusForTest(0x41) & 0x20);
 
@@ -2869,6 +2887,12 @@ final class RoomSessionTest {
     private static void tickInteractive(RoomSession session, int frame, RoomEntity witch) {
         session.tickEntitiesWithProjectileEvents(
             frame, witch.x(), 0x56, 0, 0, 1, false);
+    }
+
+    private static void tickInteractive(RoomSession session, int frame,
+                                        int linkEntityX, int linkEntityY) {
+        session.tickEntitiesWithProjectileEvents(
+            frame, linkEntityX, linkEntityY, 0, 0, Link.DIRECTION_DOWN, false);
     }
 
     private static RoomSession newSession(RoomLoadListener roomLoadListener) {

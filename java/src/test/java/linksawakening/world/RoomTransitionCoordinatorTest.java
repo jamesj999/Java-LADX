@@ -164,7 +164,23 @@ final class RoomTransitionCoordinatorTest {
     }
 
     @Test
-    void freshGameRuntimeSequenceCompletesTailCaveInOrder()
+    void bowWowHideoutDirectRoomIdsMoveNorthByOneHexRow() throws Exception {
+        byte[] rom = loadRom();
+        RomTables romTables = RomTables.loadFromRom(rom);
+        OverworldCollision collision = new OverworldCollision(romTables);
+        RoomSession session = newSession(rom, romTables, collision);
+        session.loadIndoor(0x15, 0xF0);
+
+        ScrollController scroll = new ScrollController();
+        session.startAdjacentIndoorScroll(scroll, ScrollController.UP, 0x50, 0x00);
+
+        assertEquals(0xE0, session.currentRoomId());
+        assertEquals(4, session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x0B).count());
+    }
+
+    @Test
+    void freshGameRuntimeSequenceRescuesBowWowAfterTailCaveInOrder()
             throws Exception {
         byte[] rom = loadRom();
         RomTables romTables = RomTables.loadFromRom(rom);
@@ -233,15 +249,15 @@ final class RoomTransitionCoordinatorTest {
         session.setChestPlayerLevels(
             playerState.shieldLevel(), playerState.swordLevel(),
             playerState.powerBraceletLevel());
-        session.tickEntities(0, 0x3F, 0x44);
-        session.tickEntities(1, 0x40, 0x44);
+        tickInteractiveEntities(session, 0, 0x3F, 0x44);
+        tickInteractiveEntities(session, 1, 0x40, 0x44);
         assertEquals(0x22, session.consumePendingMusicTrack());
 
         int frame = 2;
         boolean owlDialogOpened = false;
         while ((session.overworldRoomStatusForTest(0xF2) & 0x20) == 0
             && frame < 0x300) {
-            session.tickEntities(frame++, 0x58, 0x60);
+            tickInteractiveEntities(session, frame++, 0x58, 0x60);
             owlDialogOpened |= session.consumeEntityDialogRequests().stream()
                 .anyMatch(request -> request.globalDialogId() == 0x0D9);
         }
@@ -249,7 +265,7 @@ final class RoomTransitionCoordinatorTest {
 
         while (session.activeRoom().entities().loadedEntities().stream()
             .anyMatch(entity -> entity.type() == 0x41) && frame < 0x400) {
-            session.tickEntities(frame++, 0x58, 0x60);
+            tickInteractiveEntities(session, frame++, 0x58, 0x60);
         }
         int pickupFrame = (frame & 0xFE) | ((sword.slot() ^ 1) & 1);
         EntityPickupEvent pickup = session.collectEntityIfNeeded(
@@ -297,19 +313,19 @@ final class RoomTransitionCoordinatorTest {
         assertTrue(session.activeRoom().entities().loadedEntities().stream()
             .anyMatch(entity -> entity.type() == 0x41));
 
-        session.tickEntities(frame++, 0x50, 0x50);
-        session.tickEntities(frame++, 0x50, 0x50);
+        tickInteractiveEntities(session, frame++, 0x50, 0x50);
+        tickInteractiveEntities(session, frame++, 0x50, 0x50);
         assertEquals(0x22, session.consumePendingMusicTrack());
         boolean forestOwlDialogOpened = false;
         while (!forestOwlDialogOpened && frame < pickupFrame + 0x600) {
-            session.tickEntities(frame++, 0x50, 0x50);
+            tickInteractiveEntities(session, frame++, 0x50, 0x50);
             forestOwlDialogOpened |= session.consumeEntityDialogRequests().stream()
                 .anyMatch(request -> request.globalDialogId() == 0x0C0);
         }
         assertTrue(forestOwlDialogOpened);
         while ((session.overworldRoomStatusForTest(0x80) & 0x20) == 0
             && frame < pickupFrame + 0x700) {
-            session.tickEntities(frame++, 0x50, 0x50);
+            tickInteractiveEntities(session, frame++, 0x50, 0x50);
         }
         assertEquals(0x20, session.overworldRoomStatusForTest(0x80) & 0x20);
 
@@ -508,7 +524,7 @@ final class RoomTransitionCoordinatorTest {
         boolean tailKeyOwlDialogOpened = false;
         int tailKeyOwlDeadline = frame + 0x300;
         while (!tailKeyOwlDialogOpened && frame < tailKeyOwlDeadline) {
-            session.tickEntities(frame++, 0x50, 0x50);
+            tickInteractiveEntities(session, frame++, 0x50, 0x50);
             tailKeyOwlDialogOpened |= session.consumeEntityDialogRequests().stream()
                 .anyMatch(request -> request.globalDialogId() == 0x0C1);
         }
@@ -516,7 +532,7 @@ final class RoomTransitionCoordinatorTest {
         int tailKeyOwlExitDeadline = frame + 0x100;
         while ((session.overworldRoomStatusForTest(0x41) & 0x20) == 0
             && frame < tailKeyOwlExitDeadline) {
-            session.tickEntities(frame++, 0x50, 0x50);
+            tickInteractiveEntities(session, frame++, 0x50, 0x50);
         }
         assertEquals(0x20, session.overworldRoomStatusForTest(0x41) & 0x20);
 
@@ -1202,6 +1218,229 @@ final class RoomTransitionCoordinatorTest {
         while (transition.isActive()) transition.tick();
         assertEquals(Warp.CATEGORY_OVERWORLD, session.mapCategory());
         assertEquals(0xD3, session.currentRoomId());
+
+        walkToAndCrossOverworldBoundary(
+            coordinator, scroll, collision, link, ScrollController.LEFT);
+        assertEquals(0xD2, session.currentRoomId());
+        assertTrue(session.activeRoom().entities().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == 0x41));
+        assertEquals(0x80, session.bowWowState());
+
+        boolean instrumentOwlDialogOpened = false;
+        var instrumentOwlDialogs = new java.util.ArrayList<Integer>();
+        int instrumentOwlDeadline = frame + 0x100;
+        while (!instrumentOwlDialogOpened && frame < instrumentOwlDeadline) {
+            tickInteractiveEntities(session, frame++, 0x50, 0x50);
+            instrumentOwlDialogs.addAll(session.consumeEntityDialogRequests().stream()
+                .map(RoomEntityRuntime.DialogRequest::globalDialogId).toList());
+            instrumentOwlDialogOpened |= instrumentOwlDialogs.contains(0x0C2);
+        }
+        assertTrue(instrumentOwlDialogOpened, instrumentOwlDialogs.toString());
+        int instrumentOwlExitDeadline = frame + 0x100;
+        while ((session.overworldRoomStatusForTest(0xD2) & 0x20) == 0
+            && frame < instrumentOwlExitDeadline) {
+            tickInteractiveEntities(session, frame++, 0x50, 0x50);
+        }
+        assertEquals(0x20, session.overworldRoomStatusForTest(0xD2) & 0x20);
+
+        int[] routeToKidnappingWarning = {
+            ScrollController.RIGHT, ScrollController.UP, ScrollController.DOWN,
+            ScrollController.RIGHT, ScrollController.RIGHT, ScrollController.UP,
+            ScrollController.LEFT, ScrollController.UP, ScrollController.LEFT,
+            ScrollController.UP, ScrollController.LEFT, ScrollController.LEFT,
+            ScrollController.LEFT, ScrollController.DOWN
+        };
+        int[] kidnappingWarningRooms = {
+            0xD3, 0xC3, 0xD3, 0xD4, 0xD5, 0xC5, 0xC4,
+            0xB4, 0xB3, 0xA3, 0xA2, 0xA1, 0xA0, 0xB0
+        };
+        for (int index = 0; index < routeToKidnappingWarning.length; index++) {
+            try {
+                walkToAndCrossOverworldBoundary(
+                    coordinator, scroll, collision, link, routeToKidnappingWarning[index]);
+            } catch (AssertionError error) {
+                throw new AssertionError("kidnapping route index " + index
+                    + " from room " + Integer.toHexString(session.currentRoomId()), error);
+            }
+            assertEquals(kidnappingWarningRooms[index], session.currentRoomId());
+        }
+        RoomEntity warningKid = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x71).findFirst().orElseThrow();
+        session.tickEntities(frame++, 0x10, 0x10);
+        session.tickEntities(frame++, 0x10, 0x10);
+        assertEquals(0x0E, session.consumePendingMusicTrack());
+        session.tickEntities(frame++, warningKid.x(), warningKid.y());
+        assertEquals(0x220,
+            session.consumeEntityDialogRequests().getFirst().globalDialogId());
+
+        int[] routeToMoblinHideout = {
+            ScrollController.UP, ScrollController.UP, ScrollController.UP,
+            ScrollController.UP, ScrollController.UP, ScrollController.RIGHT,
+            ScrollController.RIGHT, ScrollController.UP, ScrollController.UP,
+            ScrollController.RIGHT, ScrollController.RIGHT, ScrollController.UP,
+            ScrollController.RIGHT
+        };
+        int[] moblinHideoutRouteRooms = {
+            0xA0, 0x90, 0x80, 0x70, 0x60, 0x61, 0x62,
+            0x52, 0x42, 0x43, 0x44, 0x34, 0x35
+        };
+        for (int index = 0; index < routeToMoblinHideout.length; index++) {
+            try {
+                walkToAndCrossOverworldBoundary(
+                    coordinator, scroll, collision, link, routeToMoblinHideout[index]);
+            } catch (AssertionError error) {
+                throw new AssertionError("hideout route index " + index
+                    + " from room " + Integer.toHexString(session.currentRoomId()), error);
+            }
+            assertEquals(moblinHideoutRouteRooms[index], session.currentRoomId());
+        }
+        Warp moblinHideoutEntrance = session.activeRoom().warps().stream()
+            .filter(warp -> warp.destMap() == 0x15 && warp.destRoom() == 0xF0)
+            .findFirst().orElseThrow();
+        link.setPixelPosition(
+            (moblinHideoutEntrance.tileLocation() & 0x0F) * 16,
+            (moblinHideoutEntrance.tileLocation() >>> 4) * 16);
+        coordinator.handleWarpAndIndoorBoundaries(link);
+        while (transition.isActive()) transition.tick();
+        assertEquals(0x15, session.activeRoom().mapId());
+        assertEquals(0xF0, session.currentRoomId());
+
+        RoomEntity hideoutGuard = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x14).findFirst().orElseThrow();
+        boolean hideoutGuardDialogOpened = false;
+        int guardIntroDeadline = frame + 0x100;
+        while (!hideoutGuardDialogOpened && frame < guardIntroDeadline) {
+            session.tickEntitiesWithProjectileEvents(
+                frame++, 0x70, hideoutGuard.y(), 0, 0, Link.DIRECTION_LEFT, false);
+            hideoutGuardDialogOpened |= session.consumeEntityDialogRequests().stream()
+                .anyMatch(request -> request.globalDialogId() == 0x190);
+        }
+        assertTrue(hideoutGuardDialogOpened);
+        for (int hit = 0; hit < 2; hit++) {
+            hideoutGuard = session.activeRoom().entities().slots().get(hideoutGuard.slot());
+            int hideoutGuardSlot = hideoutGuard.slot();
+            List<EntityCombatEvent> guardHit = session.resolveEntityCombat(
+                hideoutGuardSlot ^ 1, hideoutGuard.x(), hideoutGuard.y(),
+                false, true, true, hideoutGuard.x(), 0x08,
+                hideoutGuard.y(), 0x08);
+            assertTrue(guardHit.stream().anyMatch(event ->
+                event.slot() == hideoutGuardSlot && event.enemyDamage() > 0));
+            for (int recovery = 0; recovery < 0x20; recovery++) {
+                session.tickEntitiesWithProjectileEvents(
+                    frame++, 0x20, 0x70, 0, 0, Link.DIRECTION_RIGHT, false);
+            }
+        }
+        int guardDeadline = frame + 0x100;
+        while (session.activeRoomEventForTest() != 0 && frame < guardDeadline) {
+            session.tickEntitiesWithProjectileEvents(
+                frame++, 0x20, 0x70, 0, 0, Link.DIRECTION_RIGHT, false);
+        }
+        assertEquals(0, session.activeRoomEventForTest());
+        assertEquals(0, session.activeRoom().shutterDoorMask() & 0x01);
+
+        walkToAndCrossIndoorBoundary(
+            coordinator, transition, scroll, collision, link, ScrollController.UP);
+        assertEquals(0xE0, session.currentRoomId());
+        List<Integer> hideoutMoblinSlots = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x0B).map(RoomEntity::slot).toList();
+        assertEquals(4, hideoutMoblinSlots.size());
+        session.tickEntitiesWithProjectileEvents(
+            frame++, 0x50, 0x50, 0, 0, Link.DIRECTION_RIGHT, false);
+        for (int moblinSlot : hideoutMoblinSlots) {
+            for (int hit = 0; hit < 4
+                && session.activeRoom().entities().slots().get(moblinSlot).status()
+                    == EntityStatus.ACTIVE; hit++) {
+                RoomEntity moblin = session.activeRoom().entities().slots().get(moblinSlot);
+                List<EntityCombatEvent> moblinHit = session.resolveEntityCombat(
+                    moblinSlot ^ 1, moblin.x(), moblin.y(), false, true, true,
+                    moblin.x(), 0x08, moblin.y(), 0x08);
+                assertTrue(moblinHit.stream().anyMatch(event ->
+                    event.slot() == moblinSlot && event.enemyDamage() > 0));
+                for (int recovery = 0; recovery < 0x20; recovery++) {
+                    session.tickEntitiesWithProjectileEvents(
+                        frame++, 0x50, 0x50, 0, 0, Link.DIRECTION_RIGHT, false);
+                }
+            }
+        }
+        int moblinRoomDeadline = frame + 0x200;
+        while (session.activeRoomEventForTest() != 0 && frame < moblinRoomDeadline) {
+            session.tickEntitiesWithProjectileEvents(
+                frame++, 0x50, 0x50, 0, 0, Link.DIRECTION_RIGHT, false);
+        }
+        assertEquals(0, session.activeRoomEventForTest());
+        assertEquals(0, session.activeRoom().shutterDoorMask() & 0x08);
+        walkToAndCrossIndoorBoundary(
+            coordinator, transition, scroll, collision, link, ScrollController.RIGHT);
+        assertEquals(0xE1, session.currentRoomId());
+
+        RoomEntity moblinKing = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0xE4).findFirst().orElseThrow();
+        boolean moblinKingIntroOpened = false;
+        int moblinKingHits = 0;
+        int moblinKingDeadline = frame + 0x2000;
+        while (session.activeRoom().entities().slots().get(moblinKing.slot()).loaded()
+            && frame < moblinKingDeadline) {
+            session.tickEntitiesWithProjectileEvents(
+                frame++, 0x00, 0x20, 0, 0, Link.DIRECTION_RIGHT, false);
+            moblinKingIntroOpened |= session.consumeEntityDialogRequests().stream()
+                .anyMatch(request -> request.globalDialogId() == 0x191);
+            moblinKing = session.activeRoom().entities().slots().get(moblinKing.slot());
+            if (moblinKing.status() != EntityStatus.ACTIVE) {
+                continue;
+            }
+
+            Sword liveSword = new Sword(romTables, null);
+            liveSword.onPress();
+            for (int swingFrame = 0; swingFrame < 4; swingFrame++) {
+                liveSword.tick(false);
+            }
+            link.setDirection(Link.DIRECTION_RIGHT);
+            Sword.CollisionBox initialSwordBox = liveSword.enemyCollisionBox(
+                link.romEntityX(), link.romSwordCollisionY(), link.direction());
+            link.setPixelPosition(
+                moblinKing.x() - (initialSwordBox.x() - link.pixelX()),
+                moblinKing.y() - (initialSwordBox.y() - link.pixelY()));
+            Sword.CollisionBox swordBox = liveSword.enemyCollisionBox(
+                link.romEntityX(), link.romSwordCollisionY(), link.direction());
+            int moblinKingSlot = moblinKing.slot();
+            List<EntityCombatEvent> kingHit = session.resolveEntityCombat(
+                moblinKingSlot ^ 1, link.romEntityX(), link.romEntityY(),
+                false, true, swordBox.active(), swordBox.x(), swordBox.width(),
+                swordBox.y(), swordBox.height());
+            if (kingHit.stream().anyMatch(event ->
+                    event.slot() == moblinKingSlot && event.enemyDamage() > 0)) {
+                moblinKingHits++;
+            }
+        }
+        assertTrue(moblinKingIntroOpened);
+        assertEquals(8, moblinKingHits);
+        assertFalse(session.activeRoom().entities().slots().get(moblinKing.slot()).loaded());
+        assertEquals(0x20, session.indoorRoomStatusForTest(0x15, 0xE1) & 0x20);
+
+        walkToAndCrossIndoorBoundary(
+            coordinator, transition, scroll, collision, link, ScrollController.RIGHT);
+        assertEquals(0xE2, session.currentRoomId());
+        RoomEntity kidnappedBowWow = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x6D).findFirst().orElseThrow();
+        int bowWowRescueDeadline = frame + 0x40;
+        while (session.bowWowState() != 0x01 && frame < bowWowRescueDeadline) {
+            session.tickEntitiesWithProjectileEvents(
+                frame++, kidnappedBowWow.x(), kidnappedBowWow.y(),
+                0, 0, Link.DIRECTION_RIGHT, 1, false, 1, 0,
+                false, 0, 0, 0, 0);
+        }
+        assertEquals(0x01, session.bowWowState());
+        assertEquals(0x10, session.consumePendingMusicTrack());
+        assertTrue(session.consumeEntityDialogRequests().stream()
+            .anyMatch(request -> request.globalDialogId() == 0x16C));
+
+        walkToAndCrossIndoorBoundary(
+            coordinator, transition, scroll, collision, link, ScrollController.LEFT);
+        session.tickEntitiesWithProjectileEvents(
+            frame, link.romEntityX(), link.romEntityY(),
+            0, 0, Link.DIRECTION_LEFT, false);
+        assertTrue(session.activeRoom().entities().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == 0x6D));
     }
 
     @Test
@@ -1242,6 +1481,12 @@ final class RoomTransitionCoordinatorTest {
             new TransientVfxSystem(16),
             null
         );
+    }
+
+    private static void tickInteractiveEntities(RoomSession session, int frame,
+                                                int linkEntityX, int linkEntityY) {
+        session.tickEntitiesWithProjectileEvents(
+            frame, linkEntityX, linkEntityY, 0, 0, Link.DIRECTION_DOWN, false);
     }
 
     private static void crossOverworldBoundary(RoomTransitionCoordinator coordinator,

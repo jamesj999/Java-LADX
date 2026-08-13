@@ -5968,7 +5968,8 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(bowWow), true, () -> 0);
         runtime.setBowWowState(0x80);
 
-        runtime.tick(0, 0x88, 0x40, () -> 0, true);
+        runtime.tick(0, 0x88, 0x40, 1, () -> 0,
+            null, null, 0, 0, 0);
 
         assertEquals(1, runtime.bowWowState());
         assertEquals(0x10, runtime.consumePendingMusicTrack());
@@ -5987,7 +5988,8 @@ final class RoomEntityRuntimeTest {
             snapshot(bowWow), true, () -> 0, catalog, new RomEnemyCombatTables(rom));
         runtime.setBowWowState(0x80);
 
-        runtime.tick(0, 0x88, 0x40, () -> 0, true);
+        runtime.tick(0, 0x88, 0x40, 1, () -> 0,
+            null, null, 0, 0, 0);
 
         RoomEntity rescued = runtime.snapshot().slots().get(0);
         assertEquals(0x05, rescued.spriteDefinition().bank());
@@ -6002,6 +6004,21 @@ final class RoomEntityRuntimeTest {
         runtime.setBowWowState(0x80);
 
         runtime.tick(0, 0x20, 0x20, () -> 0, true);
+
+        assertEquals(0x80, runtime.bowWowState());
+        assertEquals(-1, runtime.consumePendingMusicTrack());
+        assertTrue(runtime.consumePendingDialogRequests().isEmpty());
+    }
+
+    @Test
+    void kidnappedBowWowDoesNotReleaseWithoutTheSourceCollisionByte() {
+        RoomEntity bowWow = new RoomEntity(0, 0, 0x6D, 0x88, 0x40,
+            EntityStatus.ACTIVE, pairDefinition(0x6D, 7), 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(bowWow), true, () -> 0);
+        runtime.setBowWowState(0x80);
+
+        runtime.tick(0, 0x88, 0x40, 0, () -> 0,
+            null, null, 0, 0, 0);
 
         assertEquals(0x80, runtime.bowWowState());
         assertEquals(-1, runtime.consumePendingMusicTrack());
