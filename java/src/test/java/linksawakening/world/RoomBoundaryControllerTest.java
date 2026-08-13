@@ -62,4 +62,21 @@ final class RoomBoundaryControllerTest {
         assertEquals(0, decision.linkTargetX());
         assertEquals(40, decision.linkTargetY());
     }
+
+    @Test
+    void sideScrollingVerticalEdgesRequestWarpZeroInsteadOfIndoorScroll() {
+        RoomBoundaryDecision top = controller.decide(
+            new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x19, false, true,
+                0x70, -1));
+        RoomBoundaryDecision bottom = controller.decide(
+            new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x19, false, true,
+                0x70, ROOM_PIXEL_HEIGHT));
+        RoomBoundaryDecision inside = controller.decide(
+            new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x19, false, true,
+                0x70, 0x30));
+
+        assertEquals(RoomBoundaryDecision.Type.SIDE_SCROLL_VERTICAL_WARP, top.type());
+        assertEquals(RoomBoundaryDecision.Type.SIDE_SCROLL_VERTICAL_WARP, bottom.type());
+        assertEquals(RoomBoundaryDecision.Type.NONE, inside.type());
+    }
 }

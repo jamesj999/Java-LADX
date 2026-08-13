@@ -96,6 +96,35 @@ final class RoomTransitionCoordinatorTest {
     }
 
     @Test
+    void tailCaveSideScrollTopEdgeReturnsThroughRomWarpZero() throws Exception {
+        byte[] rom = loadRom();
+        RomTables romTables = RomTables.loadFromRom(rom);
+        OverworldCollision collision = new OverworldCollision(romTables);
+        RoomSession session = newSession(rom, romTables, collision);
+        session.loadIndoor(0x00, 0x19, Warp.CATEGORY_SIDESCROLL);
+        assertEquals(Warp.CATEGORY_INDOOR, session.activeRoom().firstWarp().category());
+        assertEquals(0x03, session.activeRoom().firstWarp().destRoom());
+
+        TransitionController transition = new TransitionController();
+        ScrollController scroll = new ScrollController();
+        RoomTransitionCoordinator coordinator = new RoomTransitionCoordinator(
+            session, new RoomBoundaryController(), transition, scroll);
+        Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
+            romTables, collision, null, new PlayerState(), new ItemRegistry());
+        link.setPixelPosition(0x70, -1);
+
+        coordinator.handleWarpAndIndoorBoundaries(link);
+
+        assertTrue(transition.isActive());
+        assertFalse(scroll.isActive());
+        while (transition.isActive()) transition.tick();
+        assertEquals(Warp.CATEGORY_INDOOR, session.mapCategory());
+        assertEquals(0x03, session.currentRoomId());
+        assertEquals(0x80, link.pixelX());
+        assertEquals(0x10, link.pixelY());
+    }
+
+    @Test
     void freshGameRuntimeSequencePersistsOpeningProgressThroughTailCaveEntry()
             throws Exception {
         byte[] rom = loadRom();

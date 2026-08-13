@@ -53,6 +53,10 @@ public final class RoomBoundaryController {
         boolean offLeft = x < 0;
         boolean offRight = x + Link.SPRITE_SIZE > ROOM_PIXEL_WIDTH;
 
+        if (state.mapCategory() == Warp.CATEGORY_SIDESCROLL && (offTop || offBottom)) {
+            return RoomBoundaryDecision.sideScrollVerticalWarp();
+        }
+
         if (offBottom && (state.shutterDoorMask() & 0x02) != 0) {
             return RoomBoundaryDecision.clamp(x, ROOM_PIXEL_HEIGHT - Link.SPRITE_SIZE);
         }

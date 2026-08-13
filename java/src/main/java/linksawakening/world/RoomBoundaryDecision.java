@@ -9,7 +9,8 @@ public record RoomBoundaryDecision(Type type,
         CLAMP_LINK,
         OVERWORLD_SCROLL,
         INDOOR_SCROLL,
-        INDOOR_FRONT_DOOR_WARP
+        INDOOR_FRONT_DOOR_WARP,
+        SIDE_SCROLL_VERTICAL_WARP
     }
 
     public static RoomBoundaryDecision none() {
@@ -30,5 +31,10 @@ public record RoomBoundaryDecision(Type type,
 
     public static RoomBoundaryDecision indoorFrontDoorWarp() {
         return new RoomBoundaryDecision(Type.INDOOR_FRONT_DOOR_WARP, ScrollController.NONE, 0, 0);
+    }
+
+    public static RoomBoundaryDecision sideScrollVerticalWarp() {
+        return new RoomBoundaryDecision(
+            Type.SIDE_SCROLL_VERTICAL_WARP, ScrollController.NONE, 0, 0);
     }
 }

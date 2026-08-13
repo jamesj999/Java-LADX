@@ -44,6 +44,12 @@ public final class RoomTransitionCoordinator {
                 transitionController.startFadeOut(() -> applyWarp(target, link));
                 return;
             }
+            if (boundary.type() == RoomBoundaryDecision.Type.SIDE_SCROLL_VERTICAL_WARP
+                && room.hasWarps()) {
+                Warp target = room.firstWarp();
+                transitionController.startFadeOut(() -> applyWarp(target, link));
+                return;
+            }
             if (boundary.type() == RoomBoundaryDecision.Type.INDOOR_SCROLL) {
                 int previousX = link.pixelX();
                 int previousY = link.pixelY();
@@ -55,6 +61,14 @@ public final class RoomTransitionCoordinator {
         }
 
         if (!room.hasWarps()) {
+            return;
+        }
+
+        Warp staircaseWarp = roomSession.pollStaircaseWarp(
+            link.romEntityX(), link.romEntityY(), link.romEntityZ(),
+            link.isCarryingLiftedObject());
+        if (staircaseWarp != null) {
+            transitionController.startFadeOut(() -> applyWarp(staircaseWarp, link));
             return;
         }
 
