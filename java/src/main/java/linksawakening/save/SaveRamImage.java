@@ -197,6 +197,14 @@ public final class SaveRamImage {
         bytes[main + SaveRamLayout.MAIN_BOW_WOW_STATE_OFFSET] = (byte) state;
     }
 
+    /** Writes wTarinFlag at DB48. */
+    public void writeTarinFlag(int slot, int flag) {
+        SaveRamLayout.checkSlot(slot);
+        requireByte(flag, "Tarin flag");
+        int main = SaveRamLayout.slotOffset(slot) + SaveRamLayout.mainOffset();
+        bytes[main + SaveRamLayout.MAIN_TARIN_FLAG_OFFSET] = (byte) flag;
+    }
+
     /** Writes the source {@code wSpawnLocationData} fields in the main block. */
     public void writeSpawnLocation(int slot, int isIndoor, int mapId, int mapRoom,
                                    int positionX, int positionY, int indoorRoom) {

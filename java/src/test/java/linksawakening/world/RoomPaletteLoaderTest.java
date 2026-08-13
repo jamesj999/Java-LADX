@@ -34,4 +34,31 @@ final class RoomPaletteLoaderTest {
 
         assertEquals(RomBank.decodeRgb555(0x001F), result[0][0]);
     }
+
+    @Test
+    void marinHouseSelectsTarinFlagPaletteForBackgroundAndObjectRows() {
+        byte[] rom = new byte[RomBank.romOffset(0x22, 0x4000)];
+        writeColor(rom, 0x73B0, 0x001F);
+        writeColor(rom, 0x73B0 + 0x40, 0x03E0);
+        writeColor(rom, 0x74A0, 0x7C00);
+        writeColor(rom, 0x74A0 + 0x40, 0x7FFF);
+        RoomPaletteLoader loader = new RoomPaletteLoader(rom);
+
+        assertEquals(RomBank.decodeRgb555(0x001F),
+            loader.loadIndoor(0x10, 0xA3, null, 0)[0][0]);
+        assertEquals(RomBank.decodeRgb555(0x7C00),
+            loader.loadIndoor(0x10, 0xA3, null, 1)[0][0]);
+        assertEquals(RomBank.decodeRgb555(0x7C00),
+            loader.loadIndoor(0x10, 0xA3, null, 2)[0][0]);
+        assertEquals(RomBank.decodeRgb555(0x03E0),
+            loader.loadIndoorObjectPalettes(0x10, 0xA3, false, 0)[6][0]);
+        assertEquals(RomBank.decodeRgb555(0x7FFF),
+            loader.loadIndoorObjectPalettes(0x10, 0xA3, false, 1)[6][0]);
+    }
+
+    private static void writeColor(byte[] rom, int address, int color) {
+        int offset = RomBank.romOffset(0x21, address);
+        rom[offset] = (byte) color;
+        rom[offset + 1] = (byte) (color >> 8);
+    }
 }

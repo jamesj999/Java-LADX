@@ -22,6 +22,7 @@ final class SaveRamStoreTest {
         store.writeDungeonItemFlags(2, pattern(0x2D, 0x20), pattern(0x05, 0xE0));
         store.writeDungeonProgressFlags(2, pattern(0x08, 0x01));
         store.writeBowWowState(2, 0x80);
+        store.writeTarinFlag(2, 1);
 
         assertEquals(1 << 2, store.saveFilesMask());
         assertArrayEquals(new int[] {9, 8, 7, 6, 5}, store.savedNames()[2]);
@@ -33,6 +34,7 @@ final class SaveRamStoreTest {
         assertArrayEquals(pattern(0x05, 0xE0), store.readSlot(2).colorDungeonItemFlags());
         assertArrayEquals(pattern(0x08, 0x01), store.readSlot(2).dungeonProgressFlags());
         assertEquals(0x80, store.readSlot(2).bowWowState());
+        assertEquals(1, store.readSlot(2).tarinFlag());
     }
 
     @Test
@@ -76,6 +78,7 @@ final class SaveRamStoreTest {
 
         store.createNewGame(0, new int[] {1, 2, 3, 4, 5});
         store.writeOcarinaState(0, 0x02, 1);
+        store.writeTarinFlag(0, 2);
         store.flush();
 
         assertEquals(SaveRamLayout.IMAGE_SIZE, Files.size(savePath));
@@ -84,6 +87,7 @@ final class SaveRamStoreTest {
         assertArrayEquals(new int[] {1, 2, 3, 4, 5}, reloaded.savedNames()[0]);
         assertEquals(0x02, reloaded.readSlot(0).ocarinaSongFlags());
         assertEquals(1, reloaded.readSlot(0).selectedSongIndex());
+        assertEquals(2, reloaded.readSlot(0).tarinFlag());
     }
 
     private static byte[] pattern(int length, int start) {

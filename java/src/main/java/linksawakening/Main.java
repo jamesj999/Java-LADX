@@ -1632,6 +1632,7 @@ public class Main {
             saved.colorDungeonItemFlags());
         roomSession.restoreDungeonProgressFlags(saved.dungeonProgressFlags());
         roomSession.setBowWowState(saved.bowWowState());
+        roomSession.setTarinFlag(saved.tarinFlag());
         if (saved.spawnIsIndoor() != 0) {
             gpu.loadBaseTiles(romData);
             roomSession.loadIndoor(saved.spawnMapId(), saved.spawnMapRoom());
@@ -1732,6 +1733,7 @@ public class Main {
             saveRamStore.writeDungeonProgressFlags(currentSaveSlot,
                 roomSession.dungeonProgressFlagsSnapshot());
             saveRamStore.writeBowWowState(currentSaveSlot, roomSession.bowWowState());
+            saveRamStore.writeTarinFlag(currentSaveSlot, roomSession.tarinFlag());
         }
         try {
             saveRamStore.flush();

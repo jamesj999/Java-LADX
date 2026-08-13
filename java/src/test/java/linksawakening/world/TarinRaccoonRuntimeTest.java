@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -389,6 +390,57 @@ final class TarinRaccoonRuntimeTest {
             runtime.consumePendingRoomStatusPersistenceRequests());
         assertEquals(0, runtime.entityRoomStatusForTest() & 0x10,
             "persistence must not truncate live states two and three");
+    }
+
+    @Test
+    void roomSessionPersistsTransformationWithoutTruncatingLiveTarinThenUnloadsOnReload() {
+        RoomSession session = newSession();
+        session.loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);
+        RoomEntityRuntime runtime = raccoonRuntime(false);
+        runtime.setTarinRaccoonStateForTest(0, 1, 0, 0, 0x12, 0, 0, false);
+        runtime.setSlowTransitionCountdownForTest(0, 1);
+        session.replaceEntityRuntimeForTest(runtime);
+
+        session.tickEntities(4, 0x50, 0x40);
+
+        assertEquals(0x10,
+            session.overworldRoomStatusForTest(ROOM_MYSTERIOUS_WOODS) & 0x10);
+        assertEquals(1, session.tarinFlag());
+        assertTrue(hasRaccoon(session),
+            "persisted room status must not be exposed to the live runtime");
+
+        session.tickEntities(5, 0x50, 0x40);
+        assertTrue(hasRaccoon(session), "live Tarin must continue through states two and three");
+
+        session.loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);
+        session.tickEntities(6, 0x50, 0x40);
+
+        assertFalse(hasRaccoon(session));
+    }
+
+    @Test
+    void newGameWorldInitializationResetsTarinFlag() {
+        RoomSession session = newSession();
+        session.setTarinFlag(2);
+
+        session.initializeNewGameWorldState();
+
+        assertEquals(0, session.tarinFlag());
+    }
+
+    @Test
+    void roomSessionThreadsTarinFlagIntoBothMarinHousePalettePaths() {
+        byte[] rom = loadRom();
+        RoomSession session = newSession();
+        session.setTarinFlag(2);
+
+        session.loadIndoor(0x10, 0xA3);
+
+        RoomPaletteLoader palettes = new RoomPaletteLoader(rom);
+        assertArrayEquals(palettes.loadIndoor(0x10, 0xA3, null, 2), session.palettes());
+        assertArrayEquals(
+            palettes.loadIndoorObjectPalettes(0x10, 0xA3, false, 2),
+            session.activeRoom().entities().spriteSelection().objectPalettes());
     }
 
     @Test

@@ -72,6 +72,7 @@ final class SaveRamImageTest {
     void eraseSlotClearsTheRomExtentAndRestoresTheJavaValidityPrefix() {
         SaveRamImage image = SaveRamImage.empty();
         image.createNewGame(1, new int[] {1, 2, 3, 4, 5});
+        assertEquals(0, image.readSlot(1).tarinFlag());
         byte[] seeded = image.bytes();
         int target = SaveRamLayout.slotOffset(1);
         seeded[target - 1] = (byte) 0x5A;
@@ -121,6 +122,25 @@ final class SaveRamImageTest {
             after[main + SaveRamLayout.MAIN_SELECTED_SONG_INDEX_OFFSET + 1]);
         assertEquals(0x07, image.readSlot(1).ocarinaSongFlags());
         assertEquals(0x02, image.readSlot(1).selectedSongIndex());
+    }
+
+    @Test
+    void writesTarinFlagAtDb48WithoutTouchingAdjacentBytes() {
+        SaveRamImage image = SaveRamImage.empty();
+        image.createNewGame(1, new int[] {1, 2, 3, 4, 5});
+        int main = SaveRamLayout.slotOffset(1) + SaveRamLayout.mainOffset();
+        byte[] before = image.bytes();
+        before[main + 0x347] = (byte) 0xA5;
+        before[main + 0x349] = (byte) 0x5A;
+        image = SaveRamImage.fromBytes(before);
+
+        image.writeTarinFlag(1, 2);
+
+        assertEquals(2, image.readSlot(1).tarinFlag());
+        assertEquals((byte) 0xA5, image.bytes()[main + 0x347]);
+        assertEquals((byte) 0x5A, image.bytes()[main + 0x349]);
+        SaveRamImage written = image;
+        assertThrows(IllegalArgumentException.class, () -> written.writeTarinFlag(1, 0x100));
     }
 
     @Test

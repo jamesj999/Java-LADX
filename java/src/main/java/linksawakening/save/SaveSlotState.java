@@ -113,6 +113,11 @@ public record SaveSlotState(
             + SaveRamLayout.MAIN_BOW_WOW_STATE_OFFSET]);
     }
 
+    public int tarinFlag() {
+        return Byte.toUnsignedInt(rawSlot[SaveRamLayout.mainOffset()
+            + SaveRamLayout.MAIN_TARIN_FLAG_OFFSET]);
+    }
+
     private byte[] roomStatus(int offset, int length) {
         return Arrays.copyOfRange(rawSlot, offset, offset + length);
     }

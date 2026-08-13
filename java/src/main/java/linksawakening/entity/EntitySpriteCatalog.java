@@ -57,6 +57,12 @@ public final class EntitySpriteCatalog {
     public EntitySpriteSelection load(EntityRoomLoader.RoomTable roomTable, int roomId,
                                       int mapId, byte[] overworldRoomStatus,
                                       boolean sideScrolling) {
+        return load(roomTable, roomId, mapId, overworldRoomStatus, sideScrolling, 0);
+    }
+
+    public EntitySpriteSelection load(EntityRoomLoader.RoomTable roomTable, int roomId,
+                                      int mapId, byte[] overworldRoomStatus,
+                                      boolean sideScrolling, int tarinFlag) {
         if (roomTable == null) {
             throw new IllegalArgumentException("Room entity table cannot be null");
         }
@@ -84,7 +90,8 @@ public final class EntitySpriteCatalog {
             case OVERWORLD -> roomPaletteLoader.loadOverworldObjectPalettes(roomId);
             case COLOR_DUNGEON -> roomPaletteLoader.loadIndoorObjectPalettes(0xFF, roomId);
             case INDOORS_A, INDOORS_B -> mapId < 0 ? loadObjectPalettes()
-                : roomPaletteLoader.loadIndoorObjectPalettes(mapId, roomId, sideScrolling);
+                : roomPaletteLoader.loadIndoorObjectPalettes(
+                    mapId, roomId, sideScrolling, tarinFlag);
         };
         EntitySpriteDefinition death = entitySpriteHandlerCatalog.forDeathEntity();
         EntitySpriteDefinition powerDeath =

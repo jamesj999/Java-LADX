@@ -45,6 +45,7 @@ final class SaveRamLayoutTest {
         assertEquals(0x343, SaveRamLayout.MAIN_POWER_BRACELET_OFFSET);
         assertEquals(0x344, SaveRamLayout.MAIN_SHIELD_OFFSET);
         assertEquals(0x345, SaveRamLayout.MAIN_ARROWS_OFFSET);
+        assertEquals(0x348, SaveRamLayout.MAIN_TARIN_FLAG_OFFSET);
         assertEquals(0x34C, SaveRamLayout.MAIN_MAGIC_POWDER_OFFSET);
         assertEquals(0x34D, SaveRamLayout.MAIN_BOMBS_OFFSET);
         assertEquals(0x34E, SaveRamLayout.MAIN_SWORD_OFFSET);

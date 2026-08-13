@@ -46,6 +46,8 @@ public final class SaveRamLayout {
     public static final int MAIN_FACE_KEY_OFFSET = 0x313;
     public static final int MAIN_BIRD_KEY_OFFSET = 0x314;
     public static final int MAIN_GOLDEN_LEAVES_OFFSET = 0x315;
+    // wTarinFlag at DB48, relative to wOverworldRoomStatus at D800.
+    public static final int MAIN_TARIN_FLAG_OFFSET = 0x348;
     // wOcarinaSongFlags/wSelectedSongIndex at DB49/DB4A, relative to
     // wOverworldRoomStatus at D800.
     public static final int MAIN_OCARINA_SONG_FLAGS_OFFSET = 0x349;

@@ -97,6 +97,10 @@ public final class SaveRamStore {
         image.writeBowWowState(slot, state);
     }
 
+    public void writeTarinFlag(int slot, int flag) {
+        image.writeTarinFlag(slot, flag);
+    }
+
     public void writeSpawnLocation(int slot, int isIndoor, int mapId, int mapRoom,
                                    int positionX, int positionY, int indoorRoom) {
         image.writeSpawnLocation(slot, isIndoor, mapId, mapRoom,

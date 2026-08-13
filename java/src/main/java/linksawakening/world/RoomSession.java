@@ -246,6 +246,8 @@ public final class RoomSession {
     private boolean pendingInstrumentTransition;
     private boolean hasBirdKey;
     private int bowWowState;
+    /** WRAM wTarinFlag; persisted NPC/world progression, not player inventory state. */
+    private int tarinFlag;
     private int currentLinkMotionState = EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE;
     /** WRAM wC1A2; ResetRoomVariables clears the room trigger counter. */
     private int roomTriggerCount;
@@ -425,7 +427,8 @@ public final class RoomSession {
         initializeSwitchBlockTiles();
         LoadedRoom room = roomLoader.loadIndoor(
             mapId, roomId, activeRoom == null ? null : activeRoom.palettes(), mapCategory,
-            clearedEntitiesByRoom[roomId], indoorStatusTableForMap(mapId), hasBirdKey);
+            clearedEntitiesByRoom[roomId], indoorStatusTableForMap(mapId), hasBirdKey,
+            tarinFlag);
         gpu.loadAnimatedTilesGroup(romData, room.animatedTilesGroup());
         setActiveRoom(room);
         indoorTorchPaletteEffect.reset(activeRoom.palettes(), countUnlitTorches());
@@ -520,6 +523,7 @@ public final class RoomSession {
         followingLinkPositionHistory.fill(0x08, 0x10, 0, 0);
         hasBirdKey = false;
         bowWowState = 0;
+        tarinFlag = 0;
         entityGoldenLeavesCount = 0;
         enemyDropCounters = new EnemyDropResolver.CounterState(0, 0);
         switchBlocksState = 0;
@@ -543,6 +547,9 @@ public final class RoomSession {
         Arrays.fill(colorDungeonRoomStatus, (byte) 0);
         System.arraycopy(colorDungeonStatus, 0, colorDungeonRoomStatus, 0,
             COLOR_DUNGEON_SAVE_STATUS_SIZE);
+        if (entityRuntime != null && activeRoom != null) {
+            entityRuntime.setEntityRoomStatus(activeRoomStatusFlags());
+        }
     }
 
     public byte[] dungeonItemFlagsSnapshot() {
@@ -683,6 +690,18 @@ public final class RoomSession {
         if (entityRuntime != null) {
             entityRuntime.setBowWowState(state);
         }
+    }
+
+    /** Mirrors the unsigned-byte world progression flag at wTarinFlag. */
+    public int tarinFlag() {
+        return tarinFlag & 0xFF;
+    }
+
+    public void setTarinFlag(int flag) {
+        if ((flag & ~0xFF) != 0) {
+            throw new IllegalArgumentException("Tarin flag must be an unsigned byte");
+        }
+        tarinFlag = flag;
     }
 
     /** Supplies the held J_A|J_B state consumed by input-driven entity handlers. */
@@ -1473,7 +1492,6 @@ public final class RoomSession {
         entityRuntime.setOcarinaPlayback(ocarinaPlaybackCountdown,
             ocarinaSongFlags, selectedSongIndex, ocarinaAnimationCounter,
             ocarinaAnimationPhase);
-        entityRuntime.setEntityRoomStatus(activeRoomStatusFlags());
         entityRuntime.setGoldenLeavesCount(entityGoldenLeavesCount);
         entityRuntime.setSecretSeashellPegasusCollisionState(
             secretSeashellScreenShakeActive, secretSeashellPegasusCollisionActive,
@@ -1539,6 +1557,13 @@ public final class RoomSession {
         harvestInstrumentCompletions();
         harvestWitchEvents();
         harvestOwlEventCompletions();
+        for (RoomEntityRuntime.RoomStatusPersistenceRequest request
+            : entityRuntime.consumePendingRoomStatusPersistenceRequests()) {
+            if (activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
+                overworldRoomStatus[activeRoom.roomId()] |= (byte) request.roomStatusMask();
+            }
+            tarinFlag = request.tarinFlag();
+        }
         if (entityRuntime.consumePendingSwitchBlockAnimationRequest()
             && switchableObjectAnimationStage == 0) {
             switchableObjectAnimationStage = 0x01;

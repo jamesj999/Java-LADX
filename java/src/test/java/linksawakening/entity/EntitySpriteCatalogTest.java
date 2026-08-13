@@ -152,6 +152,22 @@ final class EntitySpriteCatalogTest {
     }
 
     @Test
+    void marinHouseEntityPalettesUseTheSameTarinFlagSelectionAsTheRoom() {
+        byte[] rom = syntheticRom();
+        writePalette(rom, 0x21, 0x73F0, 0x001F, 0, 0, 0);
+        writePalette(rom, 0x21, 0x74E0, 0x7C00, 0, 0, 0);
+
+        EntitySpriteCatalog catalog = new EntitySpriteCatalog(rom);
+        EntitySpriteSelection initial = catalog.load(
+            EntityRoomLoader.RoomTable.INDOORS_B, 0xA3, 0x10, null, false, 0);
+        EntitySpriteSelection transformed = catalog.load(
+            EntityRoomLoader.RoomTable.INDOORS_B, 0xA3, 0x10, null, false, 2);
+
+        assertEquals(RomBank.decodeRgb555(0x001F), initial.objectPalettes()[6][0]);
+        assertEquals(RomBank.decodeRgb555(0x7C00), transformed.objectPalettes()[6][0]);
+    }
+
+    @Test
     void shippedOutdoorTarinSupportsRaccoonAndHumanTransformationVariants() throws Exception {
         EntitySpriteDefinition tarin = new EntitySpriteHandlerCatalog(loadRom())
             .forEntityType(0x3F, EntityRoomLoader.RoomTable.OVERWORLD, 0x51);
