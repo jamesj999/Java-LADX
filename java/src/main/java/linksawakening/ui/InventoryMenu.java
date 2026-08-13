@@ -225,7 +225,7 @@ public final class InventoryMenu {
     public void render(byte[] displayBuffer, GPU gpu) {
         int[] tilemap = tilemapLoader.copyBaseTilemap();
         int[] attrmap = tilemapLoader.copyAttrmap();
-        HudOverlay.apply(tilemap, playerState);
+        HudOverlay.apply(tilemap, attrmap, playerState);
         boolean cursorVisible = isFullyOpen() && (cursorFrameCounter & 0x10) == 0;
         InventorySubscreenOverlay.apply(tilemap, attrmap, playerState, cursorSlot, cursorVisible);
 

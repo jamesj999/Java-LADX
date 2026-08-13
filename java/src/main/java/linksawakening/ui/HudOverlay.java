@@ -34,6 +34,7 @@ public final class HudOverlay {
     private static final int HEART_TILE_HALF = 0xCE;
     private static final int HEART_TILE_EMPTY = 0xCD;
     private static final int HEART_TILE_BLANK = 0x7F;
+    private static final int ATTR_PALETTE_MASK = 0x07;
 
     private static final int[][] INVENTORY_ITEM_TILES = buildInventoryItemTiles();
 
@@ -41,13 +42,17 @@ public final class HudOverlay {
     }
 
     public static void apply(int[] tilemap, PlayerState player) {
-        patchItemSlot(tilemap, B_SLOT_COL, player.itemB());
-        patchItemSlot(tilemap, A_SLOT_COL, player.itemA());
+        apply(tilemap, null, player);
+    }
+
+    public static void apply(int[] tilemap, int[] attrmap, PlayerState player) {
+        patchItemSlot(tilemap, attrmap, B_SLOT_COL, player.itemB());
+        patchItemSlot(tilemap, attrmap, A_SLOT_COL, player.itemA());
         patchRupees(tilemap, player.rupees());
         patchHearts(tilemap, player.health(), player.maxHearts());
     }
 
-    private static void patchItemSlot(int[] tilemap, int col, int itemId) {
+    private static void patchItemSlot(int[] tilemap, int[] attrmap, int col, int itemId) {
         // Item icons are 1 tile wide but 2 tiles tall: top-row[0] is the upper
         // half, bottom-row[0] is the lower half (which also contains the "L"
         // glyph for leveled items, merged into the same tile).
@@ -56,6 +61,9 @@ public final class HudOverlay {
         int[] itemTiles = INVENTORY_ITEM_TILES[itemId < INVENTORY_ITEM_TILES.length ? itemId : 0];
         writeTile(tilemap, col, ITEM_SLOT_ROW_TOP,    itemTiles[0]);
         writeTile(tilemap, col, ITEM_SLOT_ROW_BOTTOM, itemTiles[3]);
+        int[] paletteIndexes = InventoryItemPalettes.forItem(itemId);
+        writePalette(attrmap, col, ITEM_SLOT_ROW_TOP, paletteIndexes[0]);
+        writePalette(attrmap, col, ITEM_SLOT_ROW_BOTTOM, paletteIndexes[1]);
 
         if (itemTiles[4] == LEVEL_DASH_TILE) {
             writeTile(tilemap, col + 1, ITEM_SLOT_ROW_BOTTOM, LEVEL_DASH_TILE);
@@ -97,6 +105,17 @@ public final class HudOverlay {
         int index = row * WIDTH + col;
         if (index >= 0 && index < tilemap.length) {
             tilemap[index] = tileId & 0xFF;
+        }
+    }
+
+    private static void writePalette(int[] attrmap, int col, int row, int paletteIndex) {
+        if (attrmap == null) {
+            return;
+        }
+        int index = row * WIDTH + col;
+        if (index >= 0 && index < attrmap.length) {
+            attrmap[index] = (attrmap[index] & ~ATTR_PALETTE_MASK)
+                | (paletteIndex & ATTR_PALETTE_MASK);
         }
     }
 

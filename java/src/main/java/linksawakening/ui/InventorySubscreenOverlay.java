@@ -44,8 +44,6 @@ public final class InventorySubscreenOverlay {
     private static final int DEFAULT_ITEM_LEVEL = 1;
 
     private static final int[][] ITEM_TILES = buildItemTiles();
-    private static final int[][] ITEM_PALETTE_INDEXES = buildItemPaletteIndexes();
-
     private InventorySubscreenOverlay() {
     }
 
@@ -74,7 +72,7 @@ public final class InventorySubscreenOverlay {
     private static void drawItem(int[] tilemap, int[] attrmap, int col, int row, int itemId) {
         int itemIndex = itemId >= 0 && itemId < ITEM_TILES.length ? itemId : 0;
         int[] tiles = ITEM_TILES[itemIndex];
-        int[] paletteIndexes = ITEM_PALETTE_INDEXES[itemIndex];
+        int[] paletteIndexes = InventoryItemPalettes.forItem(itemId);
         writeTile(tilemap, col, row,     tiles[0]); // top-left icon
         writeTile(tilemap, col, row + 1, tiles[3]); // bottom-left icon (with L-glyph)
         writeAttr(attrmap, col, row,     paletteIndexes[0]);
@@ -150,22 +148,4 @@ public final class InventorySubscreenOverlay {
         };
     }
 
-    private static int[][] buildItemPaletteIndexes() {
-        return new int[][] {
-            {0x01, 0x01}, // EMPTY
-            {0x01, 0x01}, // SWORD
-            {0x01, 0x01}, // BOMBS
-            {0x01, 0x01}, // POWER_BRACELET
-            {0x01, 0x01}, // SHIELD
-            {0x03, 0x03}, // BOW
-            {0x01, 0x02}, // HOOKSHOT
-            {0x02, 0x01}, // MAGIC_ROD
-            {0x03, 0x03}, // PEGASUS_BOOTS
-            {0x02, 0x02}, // OCARINA
-            {0x03, 0x03}, // ROCS_FEATHER
-            {0x03, 0x01}, // SHOVEL
-            {0x03, 0x03}, // MAGIC_POWDER
-            {0x02, 0x02}, // BOOMERANG
-        };
-    }
 }
