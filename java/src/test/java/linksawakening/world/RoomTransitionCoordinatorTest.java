@@ -2,6 +2,7 @@ package linksawakening.world;
 
 import java.io.IOException;
 import java.util.ArrayDeque;
+import java.util.List;
 import linksawakening.entity.Link;
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.gameplay.BeachSwordRewardConsumer;
@@ -93,7 +94,7 @@ final class RoomTransitionCoordinatorTest {
     }
 
     @Test
-    void freshGameHouseShieldAndSouthRouteCompletesTheBeachOpeningInPlayOrder()
+    void freshGameLiveRuntimeConnectsShieldSwordWitchAndRaccoonInPlayOrder()
             throws Exception {
         byte[] rom = loadRom();
         RomTables romTables = RomTables.loadFromRom(rom);
@@ -133,9 +134,7 @@ final class RoomTransitionCoordinatorTest {
             romTables, collision, null, playerState, new ItemRegistry());
         link.setPixelPosition(0x48, RoomConstants.ROOM_PIXEL_HEIGHT);
         coordinator.handleWarpAndIndoorBoundaries(link);
-        for (int frame = 0; frame < 16; frame++) {
-            transition.tick();
-        }
+        while (transition.isActive()) transition.tick();
         assertEquals(0xA2, session.currentRoomId());
 
         for (int expectedRoom = 0xB2; expectedRoom <= 0xF2; expectedRoom += 0x10) {
@@ -238,6 +237,176 @@ final class RoomTransitionCoordinatorTest {
             session.tickEntities(frame++, 0x50, 0x50);
         }
         assertEquals(0x20, session.overworldRoomStatusForTest(0x80) & 0x20);
+
+        int[] routeToToadstool = {
+            ScrollController.UP, ScrollController.UP, ScrollController.RIGHT,
+            ScrollController.RIGHT, ScrollController.UP, ScrollController.UP,
+            ScrollController.LEFT, ScrollController.LEFT, ScrollController.DOWN
+        };
+        int[] toadstoolRouteRooms = {
+            0x70, 0x60, 0x61, 0x62, 0x52, 0x42, 0x41, 0x40, 0x50
+        };
+        for (int index = 0; index < routeToToadstool.length; index++) {
+            walkToAndCrossOverworldBoundary(
+                coordinator, scroll, collision, link, routeToToadstool[index]);
+            assertEquals(toadstoolRouteRooms[index], session.currentRoomId());
+        }
+        assertEquals(0x50, session.currentRoomId());
+        RoomEntity toadstool = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x3A).findFirst().orElseThrow();
+        session.setToadstoolPlayerState(false, 0);
+        session.tickEntities(frame++, toadstool.x(), toadstool.y());
+        toadstool = session.activeRoom().entities().slots().get(toadstool.slot());
+        EntityPickupEvent toadstoolPickup = session.collectEntityIfNeeded(
+            (frame & 0xFE) | ((toadstool.slot() ^ 1) & 1),
+            toadstool.x(), toadstool.y(), false, true, Link.DIRECTION_RIGHT, 0);
+        assertNotNull(toadstoolPickup);
+        List<RoomEntityRuntime.ToadstoolRewardEvent> toadstoolRewards = List.of();
+        while (toadstoolRewards.isEmpty() && frame < pickupFrame + 0x900) {
+            session.tickEntities(frame++, toadstool.x(), toadstool.y());
+            session.consumeEntityDialogRequests();
+            toadstoolRewards = session.consumeToadstoolRewards();
+        }
+        assertEquals(List.of(new RoomEntityRuntime.ToadstoolRewardEvent(toadstool.slot())),
+            toadstoolRewards);
+        // Mirrors Main's live event consumer; RoomSession owns the entity
+        // cadence and PlayerState owns the resulting inventory mutation.
+        playerState.applyToadstoolReward();
+        assertTrue(playerState.hasToadstool());
+        assertEquals(PlayerState.INVENTORY_MAGIC_POWDER, playerState.subscreenItem(0));
+
+        int[] routeToWitchHut = {
+            ScrollController.UP, ScrollController.UP, ScrollController.DOWN,
+            ScrollController.RIGHT, ScrollController.RIGHT, ScrollController.RIGHT,
+            ScrollController.RIGHT, ScrollController.DOWN, ScrollController.DOWN,
+            ScrollController.RIGHT
+        };
+        int[] witchRouteRooms = {
+            0x40, 0x30, 0x40, 0x41, 0x42, 0x43, 0x44, 0x54, 0x64, 0x65
+        };
+        for (int index = 0; index < routeToWitchHut.length; index++) {
+            walkToAndCrossOverworldBoundary(
+                coordinator, scroll, collision, link, routeToWitchHut[index]);
+            assertEquals(witchRouteRooms[index], session.currentRoomId());
+        }
+        assertEquals(0x65, session.currentRoomId());
+        Warp witchHut = session.activeRoom().warps().stream()
+            .filter(warp -> warp.destMap() == 0x0E && warp.destRoom() == 0xA2)
+            .findFirst().orElseThrow();
+        assertEquals(0x24, witchHut.tileLocation());
+        coordinator = new RoomTransitionCoordinator(
+            session, new RoomBoundaryController(), transition, scroll);
+        link.setPixelPosition(
+            (witchHut.tileLocation() & 0x0F) * 16,
+            (witchHut.tileLocation() >>> 4) * 16);
+        coordinator.handleWarpAndIndoorBoundaries(link);
+        while (transition.isActive()) transition.tick();
+        assertEquals(0x0E, session.activeRoom().mapId());
+        assertEquals(0xA2, session.currentRoomId());
+
+        RoomEntity witch = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x40).findFirst().orElseThrow();
+        playerState.swapItemAWithSubscreen(0);
+        assertEquals(PlayerState.INVENTORY_MAGIC_POWDER, playerState.itemA());
+        session.setToadstoolPlayerState(true, 0);
+        session.setEntityInventorySlots(playerState.itemA(), playerState.itemB());
+        session.setEntityActionButtonsHeld(true, false);
+        session.tickEntitiesWithProjectileEvents(
+            frame++, witch.x(), 0x56, 0, 0, 1, false);
+        session.tickEntitiesWithProjectileEvents(
+            frame++, witch.x(), 0x56, 0, 0, 1, false);
+        List<RoomEntityRuntime.WitchExchangeEvent> exchangeEvents =
+            session.consumeWitchExchangeEvents();
+        assertEquals(1, exchangeEvents.size());
+        playerState.beginWitchToadstoolExchange(exchangeEvents.getFirst().inventorySlot());
+        assertFalse(playerState.hasToadstool());
+        assertEquals(PlayerState.INVENTORY_EMPTY, playerState.itemA());
+
+        session.setEntityActionButtonsHeld(false, false);
+        boolean brewingDialog = false;
+        while (!brewingDialog && frame < pickupFrame + 0xA00) {
+            session.tickEntitiesWithProjectileEvents(
+                frame++, witch.x(), 0x56, 0, 0, 1, false);
+            brewingDialog |= session.consumeEntityDialogRequests().stream()
+                .anyMatch(request -> request.globalDialogId() == 0x009);
+        }
+        assertTrue(brewingDialog);
+        session.setEntityDialogActive(true);
+        session.tickEntitiesWithProjectileEvents(
+            frame++, witch.x(), 0x56, 0, 0, 1, false);
+        session.setEntityDialogActive(false);
+        boolean readyDialog = false;
+        while (!readyDialog && frame < pickupFrame + 0xB00) {
+            session.tickEntitiesWithProjectileEvents(
+                frame++, witch.x(), 0x56, 0, 0, 1, false);
+            readyDialog |= session.consumeEntityDialogRequests().stream()
+                .anyMatch(request -> request.globalDialogId() == 0x0FE);
+        }
+        assertTrue(readyDialog);
+        session.setEntityDialogActive(true);
+        session.tickEntitiesWithProjectileEvents(
+            frame++, witch.x(), 0x56, 0, 0, 1, false);
+        session.setEntityDialogActive(false);
+        session.tickEntitiesWithProjectileEvents(
+            frame++, witch.x(), 0x56, 0, 0, 1, false);
+        assertEquals(1, session.consumeWitchRewardEvents().size());
+        playerState.applyWitchMagicPowderReward();
+        assertEquals(PlayerState.INVENTORY_MAGIC_POWDER, playerState.itemA());
+        assertEquals(20, playerState.magicPowderCount());
+
+        link.setPixelPosition(link.pixelX(), RoomConstants.ROOM_PIXEL_HEIGHT);
+        coordinator.handleWarpAndIndoorBoundaries(link);
+        while (transition.isActive()) transition.tick();
+        assertEquals(Warp.CATEGORY_OVERWORLD, session.mapCategory());
+        assertEquals(0x65, session.currentRoomId());
+
+        int[] routeToRaccoon = {
+            ScrollController.RIGHT, ScrollController.DOWN, ScrollController.RIGHT,
+            ScrollController.UP, ScrollController.UP, ScrollController.LEFT,
+            ScrollController.LEFT, ScrollController.LEFT, ScrollController.DOWN,
+            ScrollController.UP, ScrollController.UP, ScrollController.LEFT,
+            ScrollController.LEFT, ScrollController.LEFT, ScrollController.DOWN
+        };
+        int[] raccoonRouteRooms = {
+            0x66, 0x76, 0x77, 0x67, 0x57, 0x56, 0x55, 0x54,
+            0x64, 0x54, 0x44, 0x43, 0x42, 0x41, 0x51
+        };
+        for (int index = 0; index < routeToRaccoon.length; index++) {
+            walkToAndCrossOverworldBoundary(
+                coordinator, scroll, collision, link, routeToRaccoon[index]);
+            assertEquals(raccoonRouteRooms[index], session.currentRoomId());
+        }
+        assertEquals(0x51, session.currentRoomId());
+        assertTrue(session.activeRoom().entities().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == 0x3F));
+
+        session.setEntityInventorySlots(playerState.itemA(), playerState.itemB());
+        session.setToadstoolPlayerState(false, playerState.magicPowderCount());
+        session.tickEntitiesWithProjectileEvents(
+            frame++, 0x6A, 0x40, 0, 0, Link.DIRECTION_RIGHT, false);
+        // ROM direction zero adds $0E to Link's entity X, placing the
+        // sprinkle at Tarin's live $78 coordinate.
+        assertTrue(session.sprinkleMagicPowder(0x6A, 0x40, 0, 0));
+        boolean transformedDialogOpened = false;
+        while ((!transformedDialogOpened
+            || (session.overworldRoomStatusForTest(0x51) & 0x10) == 0)
+            && frame < pickupFrame + 0xD00) {
+            session.tickEntitiesWithProjectileEvents(
+                frame++, 0x6A, 0x40, 0, 0, Link.DIRECTION_RIGHT, false);
+            transformedDialogOpened |= session.consumeEntityDialogRequests().stream()
+                .anyMatch(request -> request.globalDialogId() == 0x00A);
+        }
+        assertEquals(0x10, session.overworldRoomStatusForTest(0x51) & 0x10);
+        assertTrue(transformedDialogOpened);
+        assertTrue(session.activeRoom().entities().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == 0x3F),
+            "the persisted flag must not truncate Tarin's live transformation");
+
+        session.loadInitialOverworld(0x51);
+        session.tickEntitiesWithProjectileEvents(
+            frame, 0x6A, 0x40, 0, 0, Link.DIRECTION_RIGHT, false);
+        assertFalse(session.activeRoom().entities().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == 0x3F));
     }
 
     @Test
@@ -301,6 +470,9 @@ final class RoomTransitionCoordinatorTest {
     private static void walkToAndCrossOverworldBoundary(
             RoomTransitionCoordinator coordinator, ScrollController scroll,
             OverworldCollision collision, Link link, int direction) {
+        // This is a collision-connectivity harness, not a keyboard-input
+        // simulation: find a source-valid pixel path to the requested edge,
+        // then exercise the real room-boundary transition from that edge.
         int[] exit = reachableBoundaryPosition(
             collision, link.pixelX(), link.pixelY(), direction);
         assertNotNull(exit, "No sword-accessible collision path from ("
