@@ -238,6 +238,34 @@ final class BeachOpeningRuntimeTest {
     }
 
     @Test
+    void swampOwlRequiresTailCaveInstrumentAndBowWowBeforeBottleGrotto()
+            throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RoomEntityRuntime missingTailInstrument = owlRuntime(catalog, rom);
+        missingTailInstrument.setEntityRoomId(0x36);
+        missingTailInstrument.setChestPlayerLevels(0, 1, 0);
+        missingTailInstrument.setBowWowState(0x01);
+        missingTailInstrument.setOwlInstrumentFlags(0x00, 0x00);
+
+        missingTailInstrument.tick(0, 0x50, 0x50, () -> 0);
+
+        assertEquals(EntityStatus.DISABLED,
+            missingTailInstrument.snapshot().slots().get(0).status());
+
+        RoomEntityRuntime ordered = owlRuntime(catalog, rom);
+        ordered.setEntityRoomId(0x36);
+        ordered.setChestPlayerLevels(0, 1, 0);
+        ordered.setBowWowState(0x01);
+        ordered.setOwlInstrumentFlags(0x02, 0x00);
+        ordered.tick(0, 0x50, 0x50, () -> 0);
+
+        assertEquals(EntityStatus.ACTIVE, ordered.snapshot().slots().get(0).status());
+        assertEquals(2, ordered.owlEventStateForTest(0));
+        assertEquals(0x22, ordered.consumePendingMusicTrack());
+    }
+
+    @Test
     void tailKeyOwlWaitsForOwnershipAndTheChestInitializedPrivateCountdown()
             throws IOException {
         byte[] rom = loadRom();

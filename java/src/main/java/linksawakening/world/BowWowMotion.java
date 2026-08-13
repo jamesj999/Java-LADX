@@ -105,7 +105,9 @@ final class BowWowMotion {
             case 1 -> {
                 if (privateCountdown1[slot] == 0) {
                     privateCountdown1[slot] = 0x20;
-                    activeState[slot] = 2;
+                    // func_005_41CF increments the state pointer, then writes
+                    // B (zero), returning to the target-selection handler.
+                    activeState[slot] = 0;
                 }
                 if (wasAboveGround) {
                     speedZ[slot] = 0x10;
@@ -116,7 +118,6 @@ final class BowWowMotion {
                 variant = movementVariant(frameCounter, slot);
             }
             case 2, 4 -> {
-                boolean resolvesTargetContact = activeState[slot] == 2 || activeState[slot] == 4;
                 if (transitionCountdown[slot] != 0) {
                     int[] moved = move(entity, x, y, slot, backgroundCollision);
                     x = correctTargetX(moved[0], x, slot);
@@ -127,17 +128,18 @@ final class BowWowMotion {
                     speedY[slot] = 0;
                     activeState[slot] = 3;
                     transitionCountdown[slot] = 0x10;
-                    if (resolvesTargetContact) {
-                        targetContact = findTargetContact(x, y, z, targetSlot[slot], entities);
-                    }
                 }
+                // func_005_41EB reaches label_005_4335 after every moving
+                // state-2/state-4 frame, not only when the timer expires.
+                targetContact = findTargetContact(x, y, z, targetSlot[slot], entities);
             }
             case 3 -> {
                 if (transitionCountdown[slot] == 0) {
-                    // func_005_420E starts a new ten-frame follower phase.
+                    // func_005_420E starts a ten-frame pause, then writes B
+                    // (zero) back to wEntitiesStateTable for a fresh scan.
                     randomByteSupplier.getAsInt();
                     transitionCountdown[slot] = 0x10;
-                    activeState[slot] = 4;
+                    activeState[slot] = 0;
                 }
             }
             default -> activeState[slot] = 0;
@@ -270,19 +272,10 @@ final class BowWowMotion {
     private int[] move(RoomEntity entity, int x, int y, int slot,
                        RoomEntityBackgroundCollision backgroundCollision) {
         int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
-        if (backgroundCollision != null && nextX != x
-            && backgroundCollision.blocks(entity, signedByte(speedX[slot]) < 0 ? 1 : 0,
-                nextX, y)) {
-            nextX = x;
-            speedX[slot] = 0;
-        }
         int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
-        if (backgroundCollision != null && nextY != y
-            && backgroundCollision.blocks(entity, signedByte(speedY[slot]) < 0 ? 2 : 3,
-                nextX, nextY)) {
-            nextY = y;
-            speedY[slot] = 0;
-        }
+        // ApplyEntityInteractionWithBackground returns before the generic wall
+        // collision path when hActiveEntityType is BowWow. Its earlier ground
+        // status/splash work remains outside this bounded motion port.
         return new int[] {nextX, nextY};
     }
 

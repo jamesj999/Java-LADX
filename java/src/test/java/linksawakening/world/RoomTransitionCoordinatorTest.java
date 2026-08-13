@@ -3,6 +3,7 @@ package linksawakening.world;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.List;
+import java.util.function.BiPredicate;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.entity.Link;
@@ -180,7 +181,7 @@ final class RoomTransitionCoordinatorTest {
     }
 
     @Test
-    void freshGameRuntimeSequenceRescuesBowWowAfterTailCaveInOrder()
+    void freshGameRuntimeSequenceEntersBottleGrottoInOrder()
             throws Exception {
         byte[] rom = loadRom();
         RomTables romTables = RomTables.loadFromRom(rom);
@@ -1441,6 +1442,155 @@ final class RoomTransitionCoordinatorTest {
             0, 0, Link.DIRECTION_LEFT, false);
         assertTrue(session.activeRoom().entities().loadedEntities().stream()
             .anyMatch(entity -> entity.type() == 0x6D));
+
+        walkToAndCrossIndoorBoundary(
+            coordinator, transition, scroll, collision, link, ScrollController.LEFT);
+        assertEquals(0xE0, session.currentRoomId());
+        session.tickEntitiesWithProjectileEvents(
+            frame++, link.romEntityX(), link.romEntityY(),
+            0, 0, Link.DIRECTION_DOWN, false);
+        assertEquals(0, session.activeRoomEventForTest());
+        assertEquals(0, session.activeRoom().shutterDoorMask() & 0x02);
+        walkToAndCrossIndoorBoundary(
+            coordinator, transition, scroll, collision, link, ScrollController.DOWN);
+        assertEquals(0xF0, session.currentRoomId());
+        Warp hideoutExit = session.activeRoom().warps().stream()
+            .filter(warp -> warp.destMap() == 0x00 && warp.destRoom() == 0x35)
+            .findFirst().orElseThrow();
+        assertEquals(hideoutExit, session.activeRoom().firstWarp());
+        assertTrue(session.activeRoom().indoorHasSouthEntrance());
+        walkToAndExitIndoorFrontDoor(
+            coordinator, transition, collision, link);
+        assertEquals(Warp.CATEGORY_OVERWORLD, session.mapCategory());
+        assertEquals(0x35, session.currentRoomId());
+
+        walkToAndCrossOverworldBoundary(
+            coordinator, scroll, collision, link, ScrollController.RIGHT);
+        assertEquals(0x36, session.currentRoomId());
+        assertTrue(session.activeRoom().entities().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == 0x41));
+        boolean swampOwlDialogOpened = false;
+        int swampOwlDeadline = frame + 0x100;
+        while (!swampOwlDialogOpened && frame < swampOwlDeadline) {
+            tickInteractiveEntities(session, frame++, 0x50, 0x50);
+            swampOwlDialogOpened |= session.consumeEntityDialogRequests().stream()
+                .anyMatch(request -> request.globalDialogId() == 0x0C3);
+        }
+        assertTrue(swampOwlDialogOpened);
+        int swampOwlExitDeadline = frame + 0x100;
+        while ((session.overworldRoomStatusForTest(0x36) & 0x20) == 0
+            && frame < swampOwlExitDeadline) {
+            tickInteractiveEntities(session, frame++, 0x50, 0x50);
+        }
+        assertEquals(0x20, session.overworldRoomStatusForTest(0x36) & 0x20);
+        int swampOwlDepartureDeadline = frame + 0x100;
+        while (session.activeRoom().entities().loadedEntities().stream()
+                .anyMatch(entity -> entity.type() == 0x41)
+            && frame < swampOwlDepartureDeadline) {
+            tickInteractiveEntities(session, frame++, 0x50, 0x50);
+        }
+        assertFalse(session.activeRoom().entities().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == 0x41));
+
+        int[] routeToGopongaSwamp = {
+            ScrollController.LEFT, ScrollController.UP, ScrollController.DOWN,
+            ScrollController.LEFT, ScrollController.LEFT
+        };
+        int[] gopongaSwampRouteRooms = {0x35, 0x25, 0x35, 0x34, 0x33};
+        for (int index = 0; index < routeToGopongaSwamp.length; index++) {
+            walkToAndCrossOverworldBoundary(
+                coordinator, scroll, collision, link, routeToGopongaSwamp[index]);
+            assertEquals(gopongaSwampRouteRooms[index], session.currentRoomId());
+        }
+        assertEquals(2, session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x7C || entity.type() == 0x7E).count());
+        frame = letBowWowEatAllGoponga(session, collision, link, frame);
+
+        walkToAndCrossOverworldBoundary(
+            coordinator, scroll, collision, link, ScrollController.UP);
+        assertEquals(0x23, session.currentRoomId());
+        assertEquals(1, session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x7C).count());
+        frame = letBowWowEatAllGoponga(session, collision, link, frame);
+
+        walkToAndCrossOverworldBoundary(
+            coordinator, scroll, collision, link, ScrollController.DOWN);
+        assertEquals(0x33, session.currentRoomId());
+        assertFalse(session.activeRoom().entities().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == 0x7C || entity.type() == 0x7E));
+        walkToAndCrossOverworldBoundary(
+            coordinator, scroll, collision, link, ScrollController.UP);
+        assertEquals(0x23, session.currentRoomId());
+        assertFalse(session.activeRoom().entities().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == 0x7C));
+
+        walkToAndCrossOverworldBoundary(
+            coordinator, scroll, collision, link, ScrollController.LEFT);
+        assertEquals(0x22, session.currentRoomId());
+        assertEquals(2, session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x7E).count());
+        frame = letBowWowEatAllGoponga(session, collision, link, frame);
+        walkToAndCrossOverworldBoundary(
+            coordinator, scroll, collision, link, ScrollController.RIGHT);
+        assertEquals(0x23, session.currentRoomId());
+        assertFalse(session.activeRoom().entities().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == 0x7C));
+        walkToAndCrossOverworldBoundary(
+            coordinator, scroll, collision, link, ScrollController.RIGHT);
+        assertEquals(0x24, session.currentRoomId());
+        assertEquals(5, session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x7E).count());
+        assertTrue(session.activeRoom().entities().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == 0x6D));
+        frame = letBowWowEatAllGoponga(session, collision, link, frame);
+
+        walkToAndCrossOverworldBoundary(
+            coordinator, scroll, collision, link, ScrollController.LEFT);
+        assertEquals(0x23, session.currentRoomId());
+        walkToAndCrossOverworldBoundary(
+            coordinator, scroll, collision, link, ScrollController.RIGHT);
+        assertEquals(0x24, session.currentRoomId());
+        assertFalse(session.activeRoom().entities().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == 0x7E));
+        assertTrue(session.activeRoom().entities().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == 0x6D));
+
+        Warp bottleGrottoEntrance = session.activeRoom().warps().stream()
+            .filter(warp -> warp.destMap() == 0x01 && warp.destRoom() == 0x36)
+            .findFirst().orElseThrow();
+        assertEquals(0x13, bottleGrottoEntrance.tileLocation());
+        List<int[]> entrancePath = reachableWarpPath(
+            collision, link.pixelX(), link.pixelY(), bottleGrottoEntrance.tileLocation());
+        assertNotNull(entrancePath, "No collision-valid path from room $24's west entry "
+            + "to Bottle Grotto warp $13\n" + collisionGrid(collision));
+        for (int[] position : entrancePath) {
+            link.setPixelPosition(position[0], position[1]);
+        }
+        assertEquals(0x13, Warp.packTileLocation(link.pixelX(), link.pixelY()));
+        coordinator.handleWarpAndIndoorBoundaries(link);
+        assertTrue(transition.isActive());
+        while (transition.isActive()) {
+            transition.tick();
+        }
+
+        assertEquals(Warp.CATEGORY_INDOOR, session.mapCategory());
+        assertEquals(0x01, session.activeRoom().mapId());
+        assertEquals(0x36, session.currentRoomId());
+        assertEquals(0x48, link.pixelX());
+        assertEquals(0x6C, link.pixelY());
+        assertEquals(0x3A, session.indoorRoomPositionForSave());
+        assertEquals(0x01, session.bowWowState());
+        assertFalse(session.activeRoom().entities().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == 0x6D));
+        assertEquals(1, session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x61).count());
+        assertEquals(4, session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x2D).count());
+        Warp bottleGrottoExit = session.activeRoom().warps().stream()
+            .filter(warp -> warp.destMap() == 0x00 && warp.destRoom() == 0x24)
+            .findFirst().orElseThrow();
+        assertEquals(0x38, bottleGrottoExit.destX());
+        assertEquals(0x22, bottleGrottoExit.destY());
     }
 
     @Test
@@ -1487,6 +1637,74 @@ final class RoomTransitionCoordinatorTest {
                                                 int linkEntityX, int linkEntityY) {
         session.tickEntitiesWithProjectileEvents(
             frame, linkEntityX, linkEntityY, 0, 0, Link.DIRECTION_DOWN, false);
+    }
+
+    private static int letBowWowEatAllGoponga(RoomSession session,
+                                              OverworldCollision collision,
+                                              Link link, int frame) {
+        int deadline = frame + 0x4000;
+        while (session.activeRoom().entities().loadedEntities().stream()
+                .anyMatch(entity -> entity.type() == 0x7C || entity.type() == 0x7E)
+            && frame < deadline) {
+            RoomEntity target = session.activeRoom().entities().loadedEntities().stream()
+                .filter(entity -> entity.type() == 0x7C || entity.type() == 0x7E)
+                .findFirst().orElseThrow();
+            RoomEntity bowWow = session.activeRoom().entities().loadedEntities().stream()
+                .filter(entity -> entity.type() == 0x6D)
+                .findFirst().orElseThrow();
+            List<int[]> leashPath = reachableFollowerLeashPath(
+                collision, link.pixelX(), link.pixelY(), bowWow);
+            assertNotNull(leashPath, "No collision-valid Link path back into BowWow's leash\n"
+                + collisionGrid(collision));
+            for (int[] position : leashPath) {
+                link.setPixelPosition(position[0], position[1]);
+            }
+            tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
+            session.consumeEntityEvents();
+            List<int[]> path = reachableEntityWindowPath(
+                collision, link.pixelX(), link.pixelY(), target);
+            assertNotNull(path, "No collision-valid Link path into BowWow's target window for "
+                + String.format("%02X@(%02X,%02X)\n", target.type(), target.x(), target.y())
+                + collisionGrid(collision));
+            for (int[] position : path) {
+                link.setPixelPosition(position[0], position[1]);
+                tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
+                session.consumeEntityEvents();
+                while (bowWowOutsideLeash(session, link) && frame < deadline) {
+                    tickInteractiveEntities(
+                        session, frame++, link.romEntityX(), link.romEntityY());
+                    session.consumeEntityEvents();
+                }
+            }
+            while (session.activeRoom().entities().loadedEntities().stream()
+                    .anyMatch(entity -> entity.slot() == target.slot()
+                        && (entity.type() == 0x7C || entity.type() == 0x7E))
+                && frame < deadline) {
+                tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
+                session.consumeEntityEvents();
+            }
+        }
+        assertFalse(session.activeRoom().entities().loadedEntities().stream()
+                .anyMatch(entity -> entity.type() == 0x7C || entity.type() == 0x7E),
+            session.activeRoom().entities().loadedEntities().stream()
+                .map(entity -> String.format("slot%d:%02X@(%02X,%02X,z=%02X,v=%d,s=%s)",
+                    entity.slot(), entity.type(), entity.x(), entity.y(), entity.z(),
+                    entity.spriteVariant(), entity.status()))
+                .toList().toString());
+        return frame;
+    }
+
+    private static int signedByteDelta(int target, int source) {
+        int delta = (target - source) & 0xFF;
+        return delta < 0x80 ? delta : delta - 0x100;
+    }
+
+    private static boolean bowWowOutsideLeash(RoomSession session, Link link) {
+        RoomEntity bowWow = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x6D)
+            .findFirst().orElseThrow();
+        return Math.abs(signedByteDelta(link.romEntityX(), bowWow.x())) > 0x18
+            || Math.abs(signedByteDelta(link.romEntityY(), bowWow.y())) > 0x18;
     }
 
     private static void crossOverworldBoundary(RoomTransitionCoordinator coordinator,
@@ -1566,6 +1784,28 @@ final class RoomTransitionCoordinatorTest {
         }
         while (scroll.isActive()) {
             scroll.tick(8);
+        }
+    }
+
+    private static void walkToAndExitIndoorFrontDoor(
+            RoomTransitionCoordinator coordinator, TransitionController transition,
+            OverworldCollision collision, Link link) {
+        List<int[]> path = reachableBoundaryPath(
+            collision, link.pixelX(), link.pixelY(), ScrollController.DOWN);
+        assertNotNull(path, "No collision path to indoor front door\n"
+            + collisionGrid(collision));
+        for (int[] position : path) {
+            link.setPixelPosition(position[0], position[1]);
+            coordinator.handleWarpAndIndoorBoundaries(link);
+            assertFalse(transition.isActive(),
+                "collision path crossed the front-door boundary early");
+        }
+        int[] exit = path.getLast();
+        link.setPixelPosition(exit[0], RoomConstants.ROOM_PIXEL_HEIGHT);
+        coordinator.handleWarpAndIndoorBoundaries(link);
+        assertTrue(transition.isActive());
+        while (transition.isActive()) {
+            transition.tick();
         }
     }
 
@@ -1810,6 +2050,79 @@ final class RoomTransitionCoordinatorTest {
                                                       int startX, int startY,
                                                       int targetDirection) {
         return reachableBoundaryPath(collision, startX, startY, targetDirection, false);
+    }
+
+    private static List<int[]> reachableEntityWindowPath(OverworldCollision collision,
+                                                          int startX, int startY,
+                                                          RoomEntity target) {
+        return reachablePositionPath(collision, startX, startY,
+            (x, y) -> Math.abs(signedByteDelta(target.x(), x + 8)) <= 0x28
+                && Math.abs(signedByteDelta(target.y(), y + 16)) <= 0x28);
+    }
+
+    private static List<int[]> reachableFollowerLeashPath(OverworldCollision collision,
+                                                           int startX, int startY,
+                                                           RoomEntity bowWow) {
+        return reachablePositionPath(collision, startX, startY,
+            (x, y) -> Math.abs(signedByteDelta(bowWow.x(), x + 8)) <= 0x10
+                && Math.abs(signedByteDelta(bowWow.y(), y + 16)) <= 0x10);
+    }
+
+    private static List<int[]> reachableWarpPath(OverworldCollision collision,
+                                                  int startX, int startY,
+                                                  int tileLocation) {
+        return reachablePositionPath(collision, startX, startY,
+            (x, y) -> Warp.packTileLocation(x, y) == tileLocation);
+    }
+
+    private static List<int[]> reachablePositionPath(OverworldCollision collision,
+                                                      int startX, int startY,
+                                                      BiPredicate<Integer, Integer> goal) {
+        int width = RoomConstants.ROOM_PIXEL_WIDTH - Link.SPRITE_SIZE + 1;
+        int height = RoomConstants.ROOM_PIXEL_HEIGHT - Link.SPRITE_SIZE + 1;
+        boolean[][] visited = new boolean[height][width];
+        int[][] parentX = new int[height][width];
+        int[][] parentY = new int[height][width];
+        int clampedX = Math.max(0, Math.min(startX, width - 1));
+        int clampedY = Math.max(0, Math.min(startY, height - 1));
+        visited[clampedY][clampedX] = true;
+        parentX[clampedY][clampedX] = clampedX;
+        parentY[clampedY][clampedX] = clampedY;
+        ArrayDeque<int[]> queue = new ArrayDeque<>();
+        queue.add(new int[] {clampedX, clampedY});
+        int[][] moves = {{0, -1, Link.DIRECTION_UP}, {0, 1, Link.DIRECTION_DOWN},
+            {-1, 0, Link.DIRECTION_LEFT}, {1, 0, Link.DIRECTION_RIGHT}};
+
+        while (!queue.isEmpty()) {
+            int[] position = queue.removeFirst();
+            if (goal.test(position[0], position[1])) {
+                ArrayDeque<int[]> reverse = new ArrayDeque<>();
+                int x = position[0];
+                int y = position[1];
+                while (parentX[y][x] != x || parentY[y][x] != y) {
+                    reverse.addFirst(new int[] {x, y});
+                    int nextX = parentX[y][x];
+                    int nextY = parentY[y][x];
+                    x = nextX;
+                    y = nextY;
+                }
+                reverse.addFirst(new int[] {x, y});
+                return List.copyOf(reverse);
+            }
+            for (int[] move : moves) {
+                int x = position[0] + move[0];
+                int y = position[1] + move[1];
+                if (x < 0 || x >= width || y < 0 || y >= height || visited[y][x]
+                    || leadingEdgeBlocked(collision, x, y, move[2], false)) {
+                    continue;
+                }
+                visited[y][x] = true;
+                parentX[y][x] = position[0];
+                parentY[y][x] = position[1];
+                queue.addLast(new int[] {x, y});
+            }
+        }
+        return null;
     }
 
     private static List<int[]> reachableBoundaryPath(OverworldCollision collision,

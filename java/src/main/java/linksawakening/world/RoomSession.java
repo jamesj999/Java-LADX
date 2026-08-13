@@ -226,7 +226,8 @@ public final class RoomSession {
     private final Set<Integer> bombedBlockTileOverrides = new HashSet<>();
     /** Bombed overworld cave doors use the dedicated GBC redraw tile order. */
     private final Set<Integer> bombedCaveDoorTileOverrides = new HashSet<>();
-    private final int[] clearedEntitiesByRoom = new int[0x100];
+    private final RecentRoomEntityClears recentRoomEntityClears =
+        new RecentRoomEntityClears();
     private int currentOverworldTilesetId = W_TILESET_NO_UPDATE;
     private FollowingNpcState followingNpcState = FollowingNpcState.none();
     private EnemyDropResolver.CounterState enemyDropCounters =
@@ -451,8 +452,9 @@ public final class RoomSession {
         indoorMapPosition = -1;
         clearTransientRoomState();
         indoorTorchPaletteEffect.clear();
+        recentRoomEntityClears.visit(roomId);
         LoadedRoom room = roomLoader.loadOverworld(
-            roomId, clearedEntitiesByRoom[roomId], overworldRoomStatus);
+            roomId, recentRoomEntityClears.mask(roomId), overworldRoomStatus);
         gpu.loadAnimatedTilesGroup(romData, room.animatedTilesGroup());
         setActiveRoom(room);
         updateWitchEnvironment();
@@ -476,13 +478,14 @@ public final class RoomSession {
     public void loadIndoor(int mapId, int roomId, int mapCategory) {
         indoorMapPosition = findIndoorMapPosition(mapId, roomId);
         clearTransientRoomState();
+        recentRoomEntityClears.visit(roomId);
         dungeonItemState.loadForMap(mapId, true);
         activeRoomEvent = dungeonRoomEventTable.eventFor(mapId, roomId);
         gpu.loadIndoorTiles(romData, mapId, roomId);
         initializeSwitchBlockTiles();
         LoadedRoom room = roomLoader.loadIndoor(
             mapId, roomId, activeRoom == null ? null : activeRoom.palettes(), mapCategory,
-            clearedEntitiesByRoom[roomId], indoorStatusTableForMap(mapId), hasBirdKey,
+            recentRoomEntityClears.mask(roomId), indoorStatusTableForMap(mapId), hasBirdKey,
             tarinFlag, playerShieldLevel);
         gpu.loadAnimatedTilesGroup(romData, room.animatedTilesGroup());
         setActiveRoom(room);
@@ -578,7 +581,7 @@ public final class RoomSession {
         Arrays.fill(indoorBRoomStatus, (byte) 0);
         Arrays.fill(colorDungeonRoomStatus, (byte) 0);
         shouldGetLostInMysteriousWoods = false;
-        Arrays.fill(clearedEntitiesByRoom, 0);
+        recentRoomEntityClears.reset();
         Arrays.fill(dungeonProgressFlags, (byte) 0);
         dungeonItemState.reset();
         followingNpcState = FollowingNpcState.none();
@@ -1652,7 +1655,7 @@ public final class RoomSession {
         }
         int clearedMask = entityRuntime.consumePendingClearedEntityMask();
         if (clearedMask != 0) {
-            clearedEntitiesByRoom[activeRoom.roomId()] |= clearedMask;
+            recentRoomEntityClears.addMask(activeRoom.roomId(), clearedMask);
         }
         int roomStatusMask = entityRuntime.consumePendingRoomStatusMask();
         if (roomStatusMask != 0 && activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD) {
@@ -1965,7 +1968,7 @@ public final class RoomSession {
         }
         int mask = entityRuntime.clearEntity(slot);
         if (mask != 0) {
-            clearedEntitiesByRoom[activeRoom.roomId()] |= mask;
+            recentRoomEntityClears.addMask(activeRoom.roomId(), mask);
         }
         activeRoom.replaceEntities(entityRuntime.snapshot());
         return mask;
@@ -2014,7 +2017,8 @@ public final class RoomSession {
             return null;
         }
         if (event.persistentClearMask() != 0) {
-            clearedEntitiesByRoom[activeRoom.roomId()] |= event.persistentClearMask();
+            recentRoomEntityClears.addMask(
+                activeRoom.roomId(), event.persistentClearMask());
         }
         if (event.type() == 0x30 && activeRoom.roomId() == 0x7C
             && activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD) {

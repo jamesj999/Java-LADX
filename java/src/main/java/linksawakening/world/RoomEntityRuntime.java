@@ -8026,7 +8026,7 @@ public final class RoomEntityRuntime {
                     return;
                 } else if (entityRoomId == ROOM_OW_EAST_OF_MOBLIN_HIDEOUT) {
                     if (chestSwordLevel == 0 || instrument2Flags != 0
-                        || bowWowState != 0x01) {
+                        || bowWowState != 0x01 || (instrument1Flags & 0x02) == 0) {
                         disableEntityWithoutPersistence(slot);
                         return;
                     }

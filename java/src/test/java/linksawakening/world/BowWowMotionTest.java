@@ -11,6 +11,7 @@ import java.util.function.IntSupplier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class BowWowMotionTest {
 
@@ -143,6 +144,121 @@ final class BowWowMotionTest {
         assertNotNull(terminal.targetContact());
         assertEquals(6, terminal.targetContact().slot());
         assertEquals(0x09, terminal.targetContact().type());
+    }
+
+    @Test
+    void movingAttackChecksTheRomTargetContactWindowEveryFrame() {
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(new byte[0x100000])
+            .forFollowerEntityType(ENTITY_BOW_WOW);
+        RoomEntity bowWow = new RoomEntity(5, -1, ENTITY_BOW_WOW, 0x40, 0x50,
+            EntityStatus.ACTIVE, definition, 0);
+        List<RoomEntity> slots = new ArrayList<>();
+        while (slots.size() < EntityRoomLoader.MAX_ENTITIES) {
+            slots.add(RoomEntity.disabled(slots.size()));
+        }
+        slots.set(5, bowWow);
+        slots.set(6, new RoomEntity(6, 0, 0x09, 0x44, 0x58,
+            EntityStatus.ACTIVE, definition, 0));
+
+        BowWowMotion motion = new BowWowMotion();
+        RoomEntity initialized = motion.advance(bowWow, 0, 0x44, 0x58, 0,
+            () -> 0, null);
+        slots.set(5, initialized);
+        BowWowMotion.Update acquired = motion.advanceWithTargetScan(initialized, 1,
+            0x44, 0x58, 0, () -> 0, null, slots, type -> type == 0x09);
+
+        BowWowMotion.Update moving = motion.advanceWithTargetScan(acquired.entity(), 2,
+            0x44, 0x58, 0, () -> 0, null, slots, type -> type == 0x09);
+
+        assertEquals(0x27, motion.transitionCountdown(5));
+        assertNotNull(moving.targetContact());
+        assertEquals(6, moving.targetContact().slot());
+    }
+
+    @Test
+    void bowWowMovementSkipsTheRomBackgroundWallCollisionPath() {
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(new byte[0x100000])
+            .forFollowerEntityType(ENTITY_BOW_WOW);
+        RoomEntity bowWow = new RoomEntity(5, -1, ENTITY_BOW_WOW, 0x20, 0x20,
+            EntityStatus.ACTIVE, definition, 0);
+        List<RoomEntity> slots = new ArrayList<>();
+        while (slots.size() < EntityRoomLoader.MAX_ENTITIES) {
+            slots.add(RoomEntity.disabled(slots.size()));
+        }
+        slots.set(5, bowWow);
+        slots.set(6, new RoomEntity(6, 0, 0x09, 0x40, 0x44,
+            EntityStatus.ACTIVE, definition, 0));
+
+        BowWowMotion motion = new BowWowMotion();
+        RoomEntity initialized = motion.advance(bowWow, 0, 0x60, 0x70, 0,
+            () -> 0, null);
+        slots.set(5, initialized);
+        BowWowMotion.Update acquired = motion.advanceWithTargetScan(initialized, 1,
+            0x40, 0x44, 0, () -> 0, null, slots, type -> type == 0x09);
+        int beforeX = acquired.entity().x();
+        int beforeY = acquired.entity().y();
+
+        BowWowMotion.Update moved = motion.advanceWithTargetScan(acquired.entity(), 2,
+            0x40, 0x44, 0, () -> 0,
+            (entity, direction, nextX, nextY) -> true,
+            slots, type -> type == 0x09);
+
+        assertTrue(moved.entity().x() != beforeX || moved.entity().y() != beforeY);
+    }
+
+    @Test
+    void completedFollowingAttackReturnsToRomTargetSelectionState() {
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(new byte[0x100000])
+            .forFollowerEntityType(ENTITY_BOW_WOW);
+        RoomEntity bowWow = new RoomEntity(5, -1, ENTITY_BOW_WOW, 0x40, 0x50,
+            EntityStatus.ACTIVE, definition, 0);
+        List<RoomEntity> slots = new ArrayList<>();
+        while (slots.size() < EntityRoomLoader.MAX_ENTITIES) {
+            slots.add(RoomEntity.disabled(slots.size()));
+        }
+        slots.set(5, bowWow);
+        slots.set(6, new RoomEntity(6, 0, 0x09, 0x44, 0x58,
+            EntityStatus.ACTIVE, definition, 0));
+
+        BowWowMotion motion = new BowWowMotion();
+        RoomEntity current = motion.advance(bowWow, 0, 0x44, 0x58, 0,
+            () -> 0, null);
+        slots.set(5, current);
+        current = motion.advanceWithTargetScan(current, 1,
+            0x44, 0x58, 0, () -> 0, null, slots, type -> type == 0x09).entity();
+        motion.setTransitionCountdownForTest(5, 1);
+        current = motion.advanceWithTargetScan(current, 2,
+            0x44, 0x58, 0, () -> 0, null, slots, type -> type == 0x09).entity();
+        slots.set(6, RoomEntity.disabled(6));
+
+        for (int frame = 3; frame < 19; frame++) {
+            current = motion.advanceWithTargetScan(current, frame,
+                0x44, 0x58, 0, () -> 0, null, slots, type -> type == 0x09).entity();
+        }
+
+        assertEquals(0, motion.activeState(5));
+        assertEquals(0x10, motion.transitionCountdown(5));
+    }
+
+    @Test
+    void completedWanderReturnsToRomTargetSelectionState() {
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(new byte[0x100000])
+            .forFollowerEntityType(ENTITY_BOW_WOW);
+        RoomEntity current = new RoomEntity(5, -1, ENTITY_BOW_WOW, 0x40, 0x50,
+            EntityStatus.ACTIVE, definition, 0);
+        BowWowMotion motion = new BowWowMotion();
+        IntSupplier random = sequence(0, 0, 0);
+
+        current = motion.advance(current, 0, 0x44, 0x58, 0, random, null);
+        current = motion.advance(current, 1, 0x44, 0x58, 0, random, null);
+        current = motion.advance(current, 2, 0x44, 0x58, 0, random, null);
+        assertEquals(1, motion.activeState(5));
+
+        for (int frame = 3; frame < 35; frame++) {
+            current = motion.advance(current, frame, 0x44, 0x58, 0, random, null);
+        }
+
+        assertEquals(0, motion.activeState(5));
     }
 
     private static IntSupplier sequence(int... values) {
