@@ -20,6 +20,7 @@ public final class GameplaySoundEffectMap {
         Objects.requireNonNull(catalog, "catalog");
         Map<GameplaySoundEvent, SoundEffect> effects = new EnumMap<>(GameplaySoundEvent.class);
         put(effects, catalog, GameplaySoundEvent.ROC_FEATHER_JUMP, SoundEffectNamespace.JINGLE, 0x0D);
+        put(effects, catalog, GameplaySoundEvent.LEDGE_FALL, SoundEffectNamespace.JINGLE, 0x08);
         put(effects, catalog, GameplaySoundEvent.PIT_FALL, SoundEffectNamespace.WAVE, 0x0C);
         put(effects, catalog, GameplaySoundEvent.WATER_SPLASH,
             SoundEffectNamespace.JINGLE, 0x0E);

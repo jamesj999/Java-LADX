@@ -171,7 +171,7 @@ final class RoomSessionTest {
     @Test
     void witchExchangeRunsThroughTheLiveIndoorRoomInSourceOrder() {
         RoomSession session = newSession();
-        session.loadIndoor(0x10, 0xA2);
+        session.loadIndoor(0x0E, 0xA2);
         RoomEntity witch = session.activeRoom().entities().loadedEntities().stream()
             .filter(entity -> entity.type() == 0x40)
             .findFirst().orElseThrow();

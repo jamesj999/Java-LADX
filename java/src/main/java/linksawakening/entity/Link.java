@@ -10,6 +10,7 @@ import linksawakening.gpu.Tile;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.physics.OverworldCollision;
+import linksawakening.physics.PhysicsFlags;
 import linksawakening.rom.RomTables;
 import linksawakening.state.PlayerState;
 
@@ -200,6 +201,14 @@ public final class Link implements RocsFeather.JumpTarget {
     private int marinWakeUpBedVariant = -1;
     /** Mirrors wC10A while Marin's scripted bed-exit jump owns Link motion. */
     private boolean marinBedJumpMotionLocked;
+    /** Mirrors wC191, the collision-probe countdown for directional ledges. */
+    private int directionalLedgeCollisionCounter;
+    /** Mirrors wC10A while a directional ledge jump owns Link's XY speed. */
+    private boolean directionalLedgeJumpMotionLocked;
+    private int directionalLedgeJumpSpeedX;
+    private int directionalLedgeJumpSpeedY;
+    /** Mirrors LINK_MOTION_UNSTUCKING after an overworld $10 ledge collision. */
+    private boolean overworldLedgeFallActive;
     private int physicsModifier;
     private int swimmingSpeedX;
     private int swimmingSpeedY;
@@ -891,6 +900,13 @@ public final class Link implements RocsFeather.JumpTarget {
             return;
         }
 
+        if (overworldLedgeFallActive) {
+            lastRomSpeedY = 0xFF;
+            subY--;
+            tickJump();
+            return;
+        }
+
         if (motionState == LINK_MOTION_SWIMMING) {
             updateSwimming();
             return;
@@ -899,6 +915,7 @@ public final class Link implements RocsFeather.JumpTarget {
         int mask = buildJoypadMask();
         int newDirection = JOYPAD_TO_DIRECTION[mask];
         if (newDirection != -1 && !marinBedJumpMotionLocked
+            && !directionalLedgeJumpMotionLocked
             && !itemsLockFacing() && !isLiftTransitionBlockingMotion()) {
             direction = newDirection;
         }
@@ -934,7 +951,10 @@ public final class Link implements RocsFeather.JumpTarget {
 
         int speedX;
         int speedY;
-        if (marinBedJumpMotionLocked) {
+        if (directionalLedgeJumpMotionLocked) {
+            speedX = directionalLedgeJumpSpeedX;
+            speedY = directionalLedgeJumpSpeedY;
+        } else if (marinBedJumpMotionLocked) {
             speedX = 0x0C;
             speedY = 0;
         } else if (playerState != null && playerState.runningWithPegasusBoots()) {
@@ -1255,7 +1275,7 @@ public final class Link implements RocsFeather.JumpTarget {
             moveDirection = signedSpeed > 0 ? DIRECTION_DOWN : DIRECTION_UP;
         }
 
-        if (collisionIgnoreFramesRemaining == 0
+        if (!directionalLedgeJumpMotionLocked && collisionIgnoreFramesRemaining == 0
             && leadingEdgeBlocked(candidatePixelX, candidatePixelY, moveDirection)) {
             romCollisionType |= switch (moveDirection) {
                 case DIRECTION_UP -> COLLISION_TYPE_UP;
@@ -1283,15 +1303,150 @@ public final class Link implements RocsFeather.JumpTarget {
     private boolean leadingEdgeBlocked(int spriteX, int spriteY, int dir) {
         int[] xs = COLLISION_POINTS_X[dir];
         int[] ys = COLLISION_POINTS_Y[dir];
+        boolean blocked = false;
         for (int i = 0; i < xs.length; i++) {
             int pointX = spriteX + xs[i];
             int pointY = spriteY + ys[i];
-            if (collision.pointBlockedForLink(pointX, pointY, playerHasFlippers())
+            int physicsFlag = collision.objectPhysicsFlagAtPoint(pointX, pointY);
+            if (physicsFlag == PhysicsFlags.CAT_LEDGE_OVERWORLD) {
+                blocked |= applyOverworldLedgeCollision(pointY);
+            } else if (isDirectionalLedgePhysics(physicsFlag)) {
+                if (directionalLedgeHalfIsPassable(physicsFlag, pointX)) {
+                    directionalLedgeCollisionCounter = 0;
+                    continue;
+                }
+                blocked |= applyDirectionalLedgeCollision(physicsFlag, dir);
+            } else if (collision.pointBlockedForLink(pointX, pointY, playerHasFlippers())
                 && !collision.pointNormalPit(pointX, pointY)) {
+                blocked = true;
+            } else {
+                // ApplyCollisionWithObject reaches label_002_7461 for an
+                // ordinary passable probe, which clears wC191.
+                directionalLedgeCollisionCounter = 0;
+            }
+        }
+        return blocked;
+    }
+
+    private boolean applyDirectionalLedgeCollision(int physicsFlag, int moveDirection) {
+        int ledgeDirection = switch (physicsFlag - PhysicsFlags.CAT_LEDGE) {
+            case 0 -> DIRECTION_RIGHT;
+            case 1 -> DIRECTION_LEFT;
+            case 2 -> DIRECTION_UP;
+            case 3 -> DIRECTION_DOWN;
+            default -> -1;
+        };
+        if (airborne || direction != ledgeDirection || moveDirection != ledgeDirection
+            || (buildJoypadMask() & joypadBitForDirection(ledgeDirection)) == 0) {
+            directionalLedgeCollisionCounter = 0;
+            return true;
+        }
+
+        boolean pegasusRunning = playerState != null && playerState.runningWithPegasusBoots();
+        directionalLedgeCollisionCounter++;
+        if (!pegasusRunning && directionalLedgeCollisionCounter < 0x0C) {
+            return true;
+        }
+
+        resetPegasusBoots();
+        directionalLedgeCollisionCounter = 0;
+        directionalLedgeJumpMotionLocked = true;
+        directionalLedgeJumpSpeedX = switch (ledgeDirection) {
+            case DIRECTION_RIGHT -> 0x10;
+            case DIRECTION_LEFT -> -0x10;
+            default -> 0;
+        };
+        directionalLedgeJumpSpeedY = switch (ledgeDirection) {
+            case DIRECTION_DOWN -> 0x10;
+            case DIRECTION_UP -> -0x10;
+            default -> 0;
+        };
+        lastRomSpeedX = directionalLedgeJumpSpeedX & 0xFF;
+        lastRomSpeedY = directionalLedgeJumpSpeedY & 0xFF;
+        airborne = true;
+        zSubPixels = 0;
+        zVelocity = 0x1C;
+        jumpAnimationCounter = 0;
+        jumpAnimationFrame = 0;
+        soundSink.play(GameplaySoundEvent.LEDGE_FALL);
+        return true;
+    }
+
+    private boolean directionalLedgeHalfIsPassable(int physicsFlag, int pointX) {
+        if (collision.usesIndoorPhysicsTable()) {
+            return false;
+        }
+        int ledgeDirection = physicsFlag - PhysicsFlags.CAT_LEDGE;
+        int xWithinTile = pointX & 0x0F;
+        return (ledgeDirection == 0 && xWithinTile < 8)
+            || (ledgeDirection == 1 && xWithinTile >= 8);
+    }
+
+    private boolean applyOverworldLedgeCollision(int pointY) {
+        directionalLedgeCollisionCounter = 0;
+        if (roosterCarryActive || overworldLedgeFallActive) {
+            return true;
+        }
+        if ((pointY & 0x0F) < 8) {
+            return false;
+        }
+
+        resetPegasusBoots();
+        subX = (romEntityX() & 0xF0) << SUB_PIXEL_SHIFT;
+        subY -= 8 << SUB_PIXEL_SHIFT;
+        motionState = 0x02;
+        physicsModifier = 0;
+        overworldLedgeFallActive = true;
+        beginOverworldLedgeUnstuckingMotion();
+        soundSink.play(GameplaySoundEvent.LEDGE_FALL);
+        return true;
+    }
+
+    /** Ports LinkMotionUnstuckingHandler's initial downward search. */
+    private void beginOverworldLedgeUnstuckingMotion() {
+        subY += 16 << SUB_PIXEL_SHIFT;
+        zSubPixels += 16 << SUB_PIXEL_SHIFT;
+        for (int step = 0; step < 16; step++) {
+            subY += 8 << SUB_PIXEL_SHIFT;
+            zSubPixels += 8 << SUB_PIXEL_SHIFT;
+            if (!ledgeUnstuckingPositionBlocked()) {
+                break;
+            }
+        }
+        physicsModifier = 1;
+        subY -= 3 << SUB_PIXEL_SHIFT;
+        airborne = true;
+        zVelocity = 0;
+        jumpAnimationCounter = 0;
+        jumpAnimationFrame = 0;
+    }
+
+    private boolean ledgeUnstuckingPositionBlocked() {
+        int spriteX = pixelX();
+        int spriteY = pixelY();
+        for (int index = 0; index < 2; index++) {
+            int pointX = spriteX + COLLISION_POINTS_X[DIRECTION_UP][index];
+            int pointY = spriteY + COLLISION_POINTS_Y[DIRECTION_UP][index];
+            if (collision.pointBlockedForLink(pointX, pointY, playerHasFlippers())) {
                 return true;
             }
         }
         return false;
+    }
+
+    private static boolean isDirectionalLedgePhysics(int physicsFlag) {
+        return physicsFlag >= PhysicsFlags.CAT_LEDGE
+            && physicsFlag <= PhysicsFlags.CAT_LEDGE + 3;
+    }
+
+    private static int joypadBitForDirection(int direction) {
+        return switch (direction) {
+            case DIRECTION_DOWN -> JOY_DOWN;
+            case DIRECTION_UP -> JOY_UP;
+            case DIRECTION_LEFT -> JOY_LEFT;
+            case DIRECTION_RIGHT -> JOY_RIGHT;
+            default -> 0;
+        };
     }
 
     private void tickJump() {
@@ -1308,6 +1463,14 @@ public final class Link implements RocsFeather.JumpTarget {
 
         airborne = false;
         marinBedJumpMotionLocked = false;
+        directionalLedgeJumpMotionLocked = false;
+        directionalLedgeJumpSpeedX = 0;
+        directionalLedgeJumpSpeedY = 0;
+        overworldLedgeFallActive = false;
+        if (motionState == 0x02) {
+            motionState = LINK_MOTION_DEFAULT;
+            physicsModifier = 0;
+        }
         zSubPixels = 0;
         zVelocity = 0;
         if (linkOverPit()) {

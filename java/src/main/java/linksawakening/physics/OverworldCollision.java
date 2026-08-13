@@ -18,7 +18,6 @@ public final class OverworldCollision {
 
     private final RomTables romTables;
     private int[] roomObjectsArea;
-    private int[] gbcOverlay;
     private int physicsTableIndex = RomTables.PHYSICS_TABLE_OVERWORLD;
     private int switchBlocksState;
     private boolean linkStandingOnSwitchBlock;
@@ -57,14 +56,13 @@ public final class OverworldCollision {
     }
 
     /**
-     * Provide the GBC overlay (80-byte, row-major, {@code row * 10 + col})
-     * that the renderer uses for tile IDs. Collision queries both the raw
-     * stream object and the overlay value and blocks if either would —
-     * matches the visual, so Link can't walk through "edge tree" cells
-     * where the stream places grass but the overlay draws a tree half.
+     * Accepts the renderer's GBC overlay during room binding. The collision
+     * path intentionally does not retain or query it: the ROM reads physics
+     * from bank-0 {@code wRoomObjects}, while the overlay occupies WRAM bank 2
+     * and is used only by {@code WriteOverworldObjectToBG}.
      */
     public void setGbcOverlay(int[] gbcOverlay) {
-        this.gbcOverlay = gbcOverlay;
+        // Rendering-only data; retained in ActiveRoom, not collision state.
     }
 
     /**
@@ -76,6 +74,11 @@ public final class OverworldCollision {
      */
     public void setPhysicsTable(int tableIndex) {
         this.physicsTableIndex = tableIndex;
+    }
+
+    /** Whether GetObjectPhysicsFlags is currently using an indoor table. */
+    public boolean usesIndoorPhysicsTable() {
+        return physicsTableIndex != RomTables.PHYSICS_TABLE_OVERWORLD;
     }
 
     /**
@@ -285,24 +288,6 @@ public final class OverworldCollision {
                 rawId, physicsFlag, switchBlocksState, linkStandingOnSwitchBlock);
         }
 
-        // Screen-edge trees: the stream often places walkable grass (e.g.
-        // $04) at a room's leftmost/rightmost column while the GBC overlay
-        // draws the right/left half of a tree from the neighbouring room
-        // (object ids $25-$2A or $82/$83). Without looking at the overlay,
-        // Link walks through the visible tree. Block only for these
-        // specifically-tree overlay ids — other overlay differences (like
-        // $FB/$FE decorative markers) are just render hints and must not
-        // affect collision.
-        if (gbcOverlay != null) {
-            int overlayIdx = cellY * OBJECTS_PER_ROW + cellX;
-            if (overlayIdx >= 0 && overlayIdx < gbcOverlay.length) {
-                int overlayId = gbcOverlay[overlayIdx];
-                if (isTreeOverlayId(overlayId)) {
-                    return true;
-                }
-            }
-        }
-
         return idBlocks(rawId);
     }
 
@@ -334,10 +319,6 @@ public final class OverworldCollision {
             : pixel / CELL_SIZE;
     }
 
-    private static boolean isTreeOverlayId(int id) {
-        return (id >= 0x25 && id <= 0x2A) || id == 0x82 || id == 0x83;
-    }
-
     /**
      * Per-object-id collision decision, with overrides for cases where the
      * raw physics-table flag doesn't reflect in-game behaviour:
@@ -346,11 +327,6 @@ public final class OverworldCollision {
      *   <li>Door / warp-trigger types ({@code $C2/$C5/$C6/$E1/$E2/$E3/
      *       $BA/$CB/$61}) are walkable so {@code maybeTriggerWarpTransition}
      *       sees Link on the tile and the warp fires.</li>
-     *   <li>Tree-over-bush variants ($82/$83), emitted by
-     *       {@code TreeMacroHandler} when a tree's bottom row overlaps a
-     *       bush cell, block despite having walkable overworld physics
-     *       flags ($02 STAIRS, $03 DOOR) — those slots are shared with
-     *       unrelated objects.</li>
      * </ul>
      */
     private boolean idBlocks(int id) {
@@ -368,9 +344,6 @@ public final class OverworldCollision {
             case 0xCB:
             case 0x61:
                 return false;
-            case 0x82:
-            case 0x83:
-                return true;
         }
         return PhysicsFlags.blocksWalking(romTables.objectPhysicsFlag(physicsTableIndex, id));
     }

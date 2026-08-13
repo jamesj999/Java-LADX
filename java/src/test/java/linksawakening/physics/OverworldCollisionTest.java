@@ -161,6 +161,26 @@ final class OverworldCollisionTest {
         assertFalse(collision.linkStandingOnSwitchBlock());
     }
 
+    @Test
+    void gbcRenderingOverlayDoesNotChangeRoomObjectCollision() {
+        byte[] rom = new byte[0x100000];
+        int physicsOffset = RomBank.romOffset(0x08, 0x4AD4);
+        rom[physicsOffset + 0x04] = PhysicsFlags.NONE;
+        rom[physicsOffset + 0x25] = PhysicsFlags.SOLID;
+        RomTables tables = RomTables.loadFromRom(rom);
+        OverworldCollision collision = new OverworldCollision(tables);
+        int[] roomObjects = emptyRoomObjectsArea();
+        roomObjects[SWITCH_BLOCK_CELL] = 0x04;
+        int[] overlay = new int[80];
+        Arrays.fill(overlay, 0x04);
+        overlay[2 * 10 + 2] = 0x25;
+        collision.setRoom(roomObjects);
+        collision.setGbcOverlay(overlay);
+
+        assertEquals(0x04, collision.objectIdAtPoint(0x20, 0x20));
+        assertFalse(collision.pointBlocked(0x20, 0x20));
+    }
+
     private static byte[] romWithSwitchBlockPhysics() {
         byte[] rom = new byte[0x100000];
         int physicsOffset = RomBank.romOffset(0x08, 0x4AD4);

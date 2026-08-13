@@ -17,6 +17,7 @@ import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.physics.OverworldCollision;
+import linksawakening.physics.PhysicsFlags;
 import linksawakening.rom.RomTables;
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
@@ -1024,6 +1025,153 @@ final class LinkTest {
             assertEquals(0, link.romCollisionType(),
                 "collision type should reset for direction " + attempt.direction());
         }
+    }
+
+    @Test
+    void matchingDirectionalLedgeStartsAfterTwelveRomCollisionProbes() throws Exception {
+        byte[] rom = loadRom();
+        RomTables romTables = RomTables.loadFromRom(rom);
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        InputState inputState = new InputState();
+        inputState.onKeyEvent(inputConfig.downKey(), GLFW_PRESS);
+        int[] roomObjects = emptyRoomObjectsArea();
+        roomObjects[ROOM_OBJECTS_BASE + 3 * ROOM_OBJECT_ROW_STRIDE + 2] = 0x21;
+        OverworldCollision collision = new OverworldCollision(romTables);
+        collision.setPhysicsTable(RomTables.PHYSICS_TABLE_INDOORS1);
+        collision.setRoom(roomObjects);
+        Link link = new Link(inputState, inputConfig, romTables, collision, null,
+            new PlayerState(), new ItemRegistry());
+        link.setPixelPosition(0x20, 0x20);
+
+        assertEquals(0xD3, collision.objectPhysicsFlagAtPoint(0x26, 0x30));
+        for (int frame = 0; frame < 5; frame++) {
+            link.update();
+            assertFalse(link.isAirborne(), "frame " + frame);
+            assertEquals(0x20, link.pixelY(), "frame " + frame);
+        }
+
+        link.update();
+
+        assertTrue(link.isAirborne());
+        assertEquals(0x1A, link.zVelocity());
+        assertEquals(0x10, link.romSpeedY());
+        assertEquals(0x20, link.pixelY());
+
+        for (int frame = 0; frame < 8; frame++) {
+            link.update();
+        }
+        assertTrue(link.pixelY() > 0x20);
+    }
+
+    @Test
+    void directionalLedgeCountdownResetsAfterAProbeInAnotherDirection() throws Exception {
+        byte[] rom = loadRom();
+        RomTables romTables = RomTables.loadFromRom(rom);
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        InputState inputState = new InputState();
+        inputState.onKeyEvent(inputConfig.downKey(), GLFW_PRESS);
+        int[] roomObjects = emptyRoomObjectsArea();
+        roomObjects[ROOM_OBJECTS_BASE + 3 * ROOM_OBJECT_ROW_STRIDE + 2] = 0x21;
+        OverworldCollision collision = new OverworldCollision(romTables);
+        collision.setPhysicsTable(RomTables.PHYSICS_TABLE_INDOORS1);
+        collision.setRoom(roomObjects);
+        Link link = new Link(inputState, inputConfig, romTables, collision, null,
+            new PlayerState(), new ItemRegistry());
+        link.setPixelPosition(0x20, 0x20);
+
+        for (int frame = 0; frame < 4; frame++) {
+            link.update();
+        }
+        inputState.onKeyEvent(inputConfig.downKey(), GLFW_RELEASE);
+        inputState.onKeyEvent(inputConfig.upKey(), GLFW_PRESS);
+        link.update();
+        inputState.onKeyEvent(inputConfig.upKey(), GLFW_RELEASE);
+        inputState.onKeyEvent(inputConfig.downKey(), GLFW_PRESS);
+        link.setPixelPosition(0x20, 0x20);
+        for (int frame = 0; frame < 5; frame++) {
+            link.update();
+        }
+
+        assertFalse(link.isAirborne());
+        link.update();
+        assertTrue(link.isAirborne());
+    }
+
+    @Test
+    void overworldLedgeUsesImmediateUnstuckingFallInsteadOfDirectionalCountdown()
+            throws Exception {
+        byte[] rom = loadRom();
+        RomTables romTables = RomTables.loadFromRom(rom);
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        InputState inputState = new InputState();
+        inputState.onKeyEvent(inputConfig.downKey(), GLFW_PRESS);
+        int[] roomObjects = emptyRoomObjectsArea();
+        roomObjects[ROOM_OBJECTS_BASE + 3 * ROOM_OBJECT_ROW_STRIDE + 2] = 0x43;
+        OverworldCollision collision = new OverworldCollision(romTables);
+        collision.setRoom(roomObjects);
+        RecordingGameplaySoundSink soundSink = new RecordingGameplaySoundSink();
+        Link link = new Link(inputState, inputConfig, romTables, collision, null,
+            new PlayerState(), new ItemRegistry(), soundSink);
+        link.setPixelPosition(0x20, 0x28);
+
+        assertEquals(PhysicsFlags.CAT_LEDGE_OVERWORLD,
+            collision.objectPhysicsFlagAtPoint(0x26, 0x38));
+        link.update();
+
+        assertTrue(link.isAirborne());
+        assertEquals(0x02, link.romMotionState());
+        assertTrue(link.pixelY() > 0x28);
+        assertEquals(List.of(GameplaySoundEvent.LEDGE_FALL), soundSink.events);
+    }
+
+    @Test
+    void outdoorHorizontalDirectionalLedgesUseTheRomHalfTileFilters() throws Exception {
+        byte[] rom = loadRom();
+        RomTables romTables = RomTables.loadFromRom(rom);
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        InputState inputState = new InputState();
+        inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
+        int[] roomObjects = emptyRoomObjectsArea();
+        roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 3] = 0xF3;
+        OverworldCollision collision = new OverworldCollision(romTables);
+        collision.setRoom(roomObjects);
+        Link link = new Link(inputState, inputConfig, romTables, collision, null,
+            new PlayerState(), new ItemRegistry());
+        link.setPixelPosition(0x24, 0x20);
+
+        assertEquals(0xD0, collision.objectPhysicsFlagAtPoint(0x30, 0x29));
+        link.update();
+
+        assertEquals(0x25, link.pixelX());
+        assertFalse(link.isAirborne());
+    }
+
+    @Test
+    void pegasusDashStartsMatchingDirectionalLedgeJumpImmediatelyAndResetsDash()
+            throws Exception {
+        byte[] rom = loadRom();
+        RomTables romTables = RomTables.loadFromRom(rom);
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        InputState inputState = new InputState();
+        inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
+        PlayerState playerState = new PlayerState();
+        playerState.setRunningWithPegasusBoots(true);
+        int[] roomObjects = emptyRoomObjectsArea();
+        roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 3] = 0x23;
+        OverworldCollision collision = new OverworldCollision(romTables);
+        collision.setPhysicsTable(RomTables.PHYSICS_TABLE_INDOORS1);
+        collision.setRoom(roomObjects);
+        Link link = new Link(inputState, inputConfig, romTables, collision, null,
+            playerState, new ItemRegistry());
+        link.setPixelPosition(0x24, 0x20);
+
+        link.update();
+
+        assertTrue(link.isAirborne());
+        assertFalse(playerState.runningWithPegasusBoots());
+        assertEquals(0x1A, link.zVelocity());
+        assertEquals(0x10, link.romSpeedX());
+        assertEquals(null, link.consumePegasusScreenShakeRequest());
     }
 
     @Test
