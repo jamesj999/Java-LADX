@@ -222,7 +222,9 @@ final class MainFileMenuFlowTest {
         int tarinRestore = source.indexOf("roomSession.setTarinFlag(saved.tarinFlag());");
         int playerLevels = source.indexOf(
             "roomSession.setChestPlayerLevels(playerState.shieldLevel(),", tarinRestore);
-        int indoorLoad = source.indexOf("roomSession.loadIndoor(saved.spawnMapId()", tarinRestore);
+        int indoorLoad = source.indexOf(
+            "roomSession.loadIndoorFromSavedPosition(", tarinRestore);
+        assertTrue(source.contains("saved.spawnIndoorRoom()"));
         int overworldLoad = source.indexOf(
             "roomSession.loadInitialOverworld(saved.spawnMapRoom())", tarinRestore);
         assertTrue(tarinRestore < indoorLoad);

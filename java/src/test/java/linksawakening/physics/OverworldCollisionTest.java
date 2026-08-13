@@ -53,6 +53,46 @@ final class OverworldCollisionTest {
     }
 
     @Test
+    void linkPointCollisionUsesTheRomFineCollisionQuadrantShape() {
+        byte[] rom = new byte[0x100000];
+        int physicsOffset = RomBank.romOffset(0x08, 0x4AD4);
+        rom[physicsOffset + 0x100 + 0xB7] = (byte) 0x8A;
+        rom[physicsOffset + 0x100 + 0xB6] = (byte) 0x8E;
+        rom[physicsOffset + 0x100 + 0xB8] = (byte) 0x8F;
+        int shapesOffset = RomBank.romOffset(0x02, 0x49CA);
+        int shapeOffset = shapesOffset + (0x8A - 0x7C) * 4;
+        rom[shapeOffset] = 1;
+        rom[shapeOffset + 1] = 0;
+        rom[shapeOffset + 2] = 1;
+        rom[shapeOffset + 3] = 0;
+        int shape8EOffset = shapesOffset + (0x8E - 0x7C) * 4;
+        rom[shape8EOffset + 3] = 1;
+        int endShapeOffset = shapesOffset + (0x8F - 0x7C) * 4;
+        rom[endShapeOffset] = 1;
+        RomTables tables = RomTables.loadFromRom(rom);
+        assertEquals(1, tables.linkFineCollisionShape(0x8A, 0));
+        assertEquals(0, tables.linkFineCollisionShape(0x8A, 1));
+        assertEquals(1, tables.linkFineCollisionShape(0x8A, 2));
+        assertEquals(0, tables.linkFineCollisionShape(0x8A, 3));
+        assertEquals(1, tables.linkFineCollisionShape(0x8F, 0));
+        OverworldCollision collision = new OverworldCollision(tables);
+        collision.setPhysicsTable(RomTables.PHYSICS_TABLE_INDOORS1);
+        int[] roomObjects = emptyRoomObjectsArea();
+        roomObjects[SWITCH_BLOCK_CELL] = 0xB7;
+        collision.setRoom(roomObjects);
+
+        assertTrue(collision.pointBlocked(0x20, 0x20));
+        assertFalse(collision.pointBlocked(0x28, 0x20));
+        assertTrue(collision.pointBlocked(0x20, 0x28));
+        assertFalse(collision.pointBlocked(0x28, 0x28));
+
+        roomObjects[SWITCH_BLOCK_CELL] = 0xB6;
+        assertTrue(collision.pointBlocked(0x28, 0x28));
+        roomObjects[SWITCH_BLOCK_CELL] = 0xB8;
+        assertTrue(collision.pointBlocked(0x20, 0x20));
+    }
+
+    @Test
     void groundInteractionPhysicsLookupUsesTheRomEntityCoordinateSample() {
         byte[] rom = new byte[0x100000];
         int physicsOffset = RomBank.romOffset(0x08, 0x4AD4);

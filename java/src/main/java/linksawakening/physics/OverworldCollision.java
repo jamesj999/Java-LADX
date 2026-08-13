@@ -103,7 +103,7 @@ public final class OverworldCollision {
         }
         int cellX = cellCoordinate(pixelX);
         int cellY = cellCoordinate(pixelY);
-        return isCellBlocking(cellX, cellY, hasFlippers);
+        return isCellBlocking(cellX, cellY, pixelX, pixelY, hasFlippers);
     }
 
     public boolean pointNormalPit(int pixelX, int pixelY) {
@@ -265,7 +265,8 @@ public final class OverworldCollision {
             objectLeft, objectTop);
     }
 
-    private boolean isCellBlocking(int cellX, int cellY, boolean hasFlippers) {
+    private boolean isCellBlocking(int cellX, int cellY, int pixelX, int pixelY,
+                                   boolean hasFlippers) {
         if (cellX < 0 || cellX >= OBJECTS_PER_ROW || cellY < 0 || cellY >= OBJECTS_PER_COLUMN) {
             // Off-room cells are the caller's problem - they trigger room scroll,
             // not a collision block. Treat as passable here.
@@ -277,6 +278,16 @@ public final class OverworldCollision {
         }
         int rawId = roomObjectsArea[areaIndex] & 0xFF;
         int physicsFlag = romTables.objectPhysicsFlag(physicsTableIndex, rawId);
+
+        // Link's source path handles $7C..$8F through Data_002_49CA: bit 3
+        // of each collision-point coordinate selects one of the object's four
+        // 8x8 quadrants, and the corresponding shape byte decides solidity.
+        // Read Link's own contiguous table because its source range includes
+        // $8E/$8F beyond the entity FineCollisionShapes label.
+        if (physicsFlag >= 0x7C && physicsFlag < 0x90) {
+            int quadrant = ((pixelX >>> 3) & 0x01) | ((pixelY >>> 2) & 0x02);
+            return romTables.linkFineCollisionShape(physicsFlag, quadrant) != 0;
+        }
 
         if (hasFlippers && physicsFlag == PhysicsFlags.DEEP_WATER) {
             return false;

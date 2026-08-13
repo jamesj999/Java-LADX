@@ -113,6 +113,7 @@ public final class RoomSession {
     private static final int INDOOR_MAP_LAYOUT_BANK = 0x14;
     private static final int INDOOR_MAP_LAYOUT_BASE_ADDR = 0x4220;
     private static final int COLOR_DUNGEON_MAP_LAYOUT_ADDR = 0x44E0;
+    private static final int EAGLES_TOWER_COLLAPSED_MAP_LAYOUT_ADDR = 0x4520;
     private static final int INDOOR_MAP_LAYOUT_SIZE = 0x40;
     static final int LINK_MOTION_FALLING_DOWN = 0x06;
     private static final int OBJECT_WELL = 0x61;
@@ -172,6 +173,8 @@ public final class RoomSession {
     private final LinkPositionHistory followingLinkPositionHistory = new LinkPositionHistory();
 
     private ActiveRoom activeRoom;
+    /** ROM wIndoorRoom: the current position in the active map's 8x8 layout. */
+    private int indoorMapPosition = -1;
     private RoomEntityRuntime entityRuntime;
     private final List<BombExplosionEvent> pendingBombExplosionEvents = new ArrayList<>();
     private final List<EntityCombatEvent> pendingRoomEntityEvents = new ArrayList<>();
@@ -413,12 +416,14 @@ public final class RoomSession {
                                           int linkScreenX,
                                           int linkScreenY) {
         RoomRenderSnapshot previousRoom = renderSnapshot();
-        int nextRoomId = adjacentIndoorRoomId(direction);
-        loadIndoor(activeRoom.mapId(), nextRoomId, activeRoom.mapCategory());
+        IndoorRoomDestination destination = adjacentIndoorRoom(direction);
+        loadIndoor(activeRoom.mapId(), destination.roomId(), activeRoom.mapCategory());
+        indoorMapPosition = destination.mapPosition();
         scrollController.start(direction, linkScreenX, linkScreenY, previousRoom, scrollTarget(direction));
     }
 
     public void loadOverworld(int roomId) {
+        indoorMapPosition = -1;
         clearTransientRoomState();
         indoorTorchPaletteEffect.clear();
         LoadedRoom room = roomLoader.loadOverworld(
@@ -436,7 +441,15 @@ public final class RoomSession {
         loadIndoor(mapId, roomId, Warp.CATEGORY_INDOOR);
     }
 
+    /** Restores hMapRoom and the independently saved source wIndoorRoom byte. */
+    public void loadIndoorFromSavedPosition(int mapId, int roomId,
+                                            int savedIndoorMapPosition) {
+        loadIndoor(mapId, roomId, Warp.CATEGORY_INDOOR);
+        indoorMapPosition = savedIndoorMapPosition & 0xFF;
+    }
+
     public void loadIndoor(int mapId, int roomId, int mapCategory) {
+        indoorMapPosition = findIndoorMapPosition(mapId, roomId);
         clearTransientRoomState();
         dungeonItemState.loadForMap(mapId, true);
         activeRoomEvent = dungeonRoomEventTable.eventFor(mapId, roomId);
@@ -508,7 +521,7 @@ public final class RoomSession {
         if (activeRoom == null || activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
             return -1;
         }
-        return indoorMapPosition(activeRoom.mapId(), activeRoom.roomId());
+        return indoorMapPosition;
     }
 
     public byte[] overworldRoomStatusSnapshot() {
@@ -2883,7 +2896,9 @@ public final class RoomSession {
     }
 
     private int adjacentIndoorRoomIdForBombWall(int wallIndex) {
-        int mapPosition = indoorMapPosition(activeRoom.mapId(), activeRoom.roomId());
+        int mapPosition = indoorMapPosition >= 0
+            ? indoorMapPosition
+            : findIndoorMapPosition(activeRoom.mapId(), activeRoom.roomId());
         int mapPositionDelta = switch (wallIndex) {
             case 0 -> -0x08;
             case 1 -> 0x08;
@@ -2909,10 +2924,16 @@ public final class RoomSession {
         return (activeRoom.roomId() + mapPositionDelta) & 0xFF;
     }
 
-    private int indoorMapPosition(int mapId, int roomId) {
+    private int findIndoorMapPosition(int mapId, int roomId) {
         int layoutOffset = indoorMapLayoutOffset(mapId);
         if (layoutOffset < 0 || layoutOffset + INDOOR_MAP_LAYOUT_SIZE > romData.length) {
             return -1;
+        }
+        if ((roomId & 0xFF) == 0) {
+            // MapLayout11 intentionally uses room $00 as both filler and the
+            // Color Dungeon boss room. External loads target the real room;
+            // subsequent transitions retain this position as wIndoorRoom.
+            return mapId == 0xFF ? 0x19 : -1;
         }
         for (int position = 0; position < INDOOR_MAP_LAYOUT_SIZE; position++) {
             if (Byte.toUnsignedInt(romData[layoutOffset + position]) == (roomId & 0xFF)) {
@@ -2928,6 +2949,12 @@ public final class RoomSession {
         }
         if (mapId < 0 || mapId >= 0x0B) {
             return -1;
+        }
+        // bank0:$192E and bank14:$58B7 select MapLayout12 once Eagle's
+        // Tower's pillar-collapse bit is set in wHasInstrument7.
+        if (mapId == 0x06 && (dungeonProgressFlags[0x06] & 0x04) != 0) {
+            return RomBank.romOffset(
+                INDOOR_MAP_LAYOUT_BANK, EAGLES_TOWER_COLLAPSED_MAP_LAYOUT_ADDR);
         }
         return RomBank.romOffset(INDOOR_MAP_LAYOUT_BANK,
             INDOOR_MAP_LAYOUT_BASE_ADDR + mapId * INDOOR_MAP_LAYOUT_SIZE);
@@ -3679,25 +3706,38 @@ public final class RoomSession {
         }
     }
 
-    private int adjacentIndoorRoomId(int direction) {
-        int nextRoomId = activeRoom.roomId();
-        switch (direction) {
-            case ScrollController.UP:
-                nextRoomId -= 8;
-                break;
-            case ScrollController.DOWN:
-                nextRoomId += 8;
-                break;
-            case ScrollController.LEFT:
-                nextRoomId -= 1;
-                break;
-            case ScrollController.RIGHT:
-                nextRoomId += 1;
-                break;
-            default:
-                break;
+    private record IndoorRoomDestination(int roomId, int mapPosition) {}
+
+    private IndoorRoomDestination adjacentIndoorRoom(int direction) {
+        int delta = switch (direction) {
+            case ScrollController.UP -> -8;
+            case ScrollController.DOWN -> 8;
+            case ScrollController.LEFT -> -1;
+            case ScrollController.RIGHT -> 1;
+            default -> 0;
+        };
+
+        // The ROM increments wIndoorRoom, which is the room's 8x8 layout
+        // position, then resolves the actual hMapRoom byte through MapLayoutN
+        // (room_transition.asm:$7A4C and bank14.asm:$5897). Room ids themselves
+        // are not spatially ordered: Tail Cave room $17 north is room $13,
+        // not $0F.
+        int currentMapPosition = indoorMapPosition >= 0
+            ? indoorMapPosition
+            : findIndoorMapPosition(activeRoom.mapId(), activeRoom.roomId());
+        int adjacentPosition = currentMapPosition + delta;
+        int layoutOffset = indoorMapLayoutOffset(activeRoom.mapId());
+        if (currentMapPosition >= 0 && adjacentPosition >= 0
+            && adjacentPosition < INDOOR_MAP_LAYOUT_SIZE && layoutOffset >= 0) {
+            return new IndoorRoomDestination(
+                Byte.toUnsignedInt(romData[layoutOffset + adjacentPosition]),
+                adjacentPosition);
         }
-        return nextRoomId & 0xFF;
+
+        // Maps without a ROM layout table keep hMapRoom directly and use the
+        // same byte-grid increments.
+        return new IndoorRoomDestination(
+            (activeRoom.roomId() + delta) & 0xFF, -1);
     }
 
     private static int scrollTarget(int direction) {

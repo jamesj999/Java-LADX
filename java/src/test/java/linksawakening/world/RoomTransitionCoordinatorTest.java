@@ -501,6 +501,37 @@ final class RoomTransitionCoordinatorTest {
         assertEquals(Warp.CATEGORY_INDOOR, session.mapCategory());
         assertEquals(0x00, session.activeRoom().mapId());
         assertEquals(0x17, session.currentRoomId());
+
+        int[] entranceExit = reachableBoundaryPosition(
+            collision, link.pixelX(), link.pixelY(), ScrollController.UP);
+        assertNotNull(entranceExit, collisionGrid(collision));
+        link.setPixelPosition(entranceExit[0], -1);
+        coordinator.handleWarpAndIndoorBoundaries(link);
+        while (scroll.isActive()) scroll.tick(8);
+        assertEquals(0x13, session.currentRoomId());
+
+        int chestIndex = ROOM_OBJECTS_BASE + 0x28;
+        assertEquals(0x63, session.activeRoomEventForTest());
+        assertFalse(session.activeRoom().roomObjectsArea()[chestIndex] == 0xA0);
+        int buttonDeadline = frame + 0x40;
+        while (session.activeRoomEventForTest() != 0 && frame < buttonDeadline) {
+            session.tickEntities(frame++, 0x58, 0x40);
+        }
+        assertEquals(0, session.activeRoomEventForTest());
+        int chestAppearanceDeadline = frame + 0x20;
+        while (session.activeRoom().roomObjectsArea()[chestIndex] != 0xA0
+            && frame < chestAppearanceDeadline) {
+            session.tickEntities(frame++, 0x40, 0x60);
+        }
+        assertEquals(0xA0, session.activeRoom().roomObjectsArea()[chestIndex]);
+
+        RoomSession.ChestOpenResult firstSmallKeyChest = session.tryOpenChest(
+            0x78, 0x21, Link.DIRECTION_UP, true, playerState.swordLevel());
+        assertTrue(firstSmallKeyChest.opened());
+        assertEquals(ChestContentsTable.CHEST_SMALL_KEY, firstSmallKeyChest.itemType());
+        session.tickEntities(frame, 0x78, 0x21);
+        assertEquals(1, session.currentDungeonItemFlagsSnapshot()[
+            DungeonItemState.SMALL_KEYS_INDEX]);
     }
 
     @Test

@@ -416,6 +416,29 @@ final class RoomSessionTest {
     }
 
     @Test
+    void colorDungeonBossRoomRetainsItsRealZeroValuedLayoutPosition() {
+        RoomSession session = newSession();
+        session.loadIndoor(0xFF, 0x00);
+        assertEquals(0x19, session.indoorRoomPositionForSave());
+
+        session.startAdjacentIndoorScroll(
+            new ScrollController(), ScrollController.DOWN, 0x40, 0x70);
+
+        assertEquals(0x04, session.currentRoomId());
+        assertEquals(0x21, session.indoorRoomPositionForSave());
+    }
+
+    @Test
+    void savedIndoorRoomPositionIsRestoredIndependentlyOfTheRoomId() {
+        RoomSession session = newSession();
+
+        session.loadIndoorFromSavedPosition(0x10, 0xA3, 0x27);
+
+        assertEquals(0xA3, session.currentRoomId());
+        assertEquals(0x27, session.indoorRoomPositionForSave());
+    }
+
+    @Test
     void notifiesListenerAfterRoomLoads() {
         List<Integer> loadedRoomIds = new ArrayList<>();
         RoomSession session = newSession(room -> loadedRoomIds.add(room.roomId()));

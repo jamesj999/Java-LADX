@@ -1641,7 +1641,8 @@ public class Main {
             playerState.powerBraceletLevel());
         if (saved.spawnIsIndoor() != 0) {
             gpu.loadBaseTiles(romData);
-            roomSession.loadIndoor(saved.spawnMapId(), saved.spawnMapRoom());
+            roomSession.loadIndoorFromSavedPosition(
+                saved.spawnMapId(), saved.spawnMapRoom(), saved.spawnIndoorRoom());
             link.setDirection(Link.DIRECTION_UP);
         } else {
             roomSession.loadInitialOverworld(saved.spawnMapRoom());
