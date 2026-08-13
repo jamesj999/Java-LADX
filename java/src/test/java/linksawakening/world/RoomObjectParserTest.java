@@ -68,13 +68,13 @@ final class RoomObjectParserTest {
         RoomObjectParseResult result = new RoomObjectParser(rom)
             .parseIndoor(0, 0x00, 0x10);
 
-        assertEquals(0x56, result.staircaseLocation());
+        assertEquals(0x34, result.staircaseLocation());
     }
 
     @Test
     void recordsTheLastStaircaseCellProducedByAnIndoorStrip() {
         byte[] rom = new byte[] {
-            (byte) 0x83, 0x21, (byte) 0xC5,
+            (byte) 0x83, 0x21, (byte) 0xCB,
             (byte) 0xFE
         };
 
@@ -96,5 +96,27 @@ final class RoomObjectParserTest {
 
         assertEquals(-1, result.staircaseLocation());
         assertEquals(0x00, result.objectAtLocation(0x18));
+    }
+
+    @Test
+    void staircaseObjectIdsAreInterpretedByMapCategory() {
+        byte[] indoorRom = new byte[] {
+            0x12, (byte) 0xC5,
+            0x34, (byte) 0xC6,
+            (byte) 0xFE
+        };
+        byte[] overworldRom = new byte[] {
+            0x12, (byte) 0xBE,
+            0x34, (byte) 0xC5,
+            0x56, (byte) 0xC6,
+            (byte) 0xFE
+        };
+
+        assertEquals(-1, new RoomObjectParser(indoorRom)
+            .parseIndoor(0, 0x00, 0)
+            .staircaseLocation());
+        assertEquals(0x56, new RoomObjectParser(overworldRom)
+            .parseOverworld(0, 0x00, 0)
+            .staircaseLocation());
     }
 }

@@ -2038,7 +2038,8 @@ public final class RoomSession {
             activeRoom.hasWarps(),
             activeRoom.shutterDoorMask(),
             linkX,
-            linkY
+            linkY,
+            activeRoom.mapId()
         );
     }
 

@@ -20,7 +20,7 @@ Room `$03` warp 0 is `E2 00 19 78 10`: category 2, map `$00`, room `$19`, landin
 
 The session exposes one transition query that accepts Link's ROM entity coordinates, Z, and carrying state. It first performs the inactive-to-active leave check and then, on later calls, returns warp 0 only when the active staircase's trigger conditions match. Loading another room clears and reconstructs the state.
 
-`RoomBoundaryController` will distinguish vertical category-2 exits from ordinary indoor scrolling with a dedicated decision. `RoomTransitionCoordinator` will apply the room's first warp for that decision. Horizontal category-2 boundaries remain ordinary room transitions because that is the generic source path; this slice only needs the vertical warp behavior used by room `$19`.
+`RoomBoundaryController` will distinguish Tail Cave map `$00`, room `$19`'s vertical category-2 exit from ordinary indoor scrolling with a dedicated decision. It uses the source's entity-coordinate bounds (`pixelY < -4` or `pixelY >= 0x74`) and suppresses the earlier sprite-bound fallback within that margin. `RoomTransitionCoordinator` will apply the room's first warp for that decision. Other category-2 rooms remain on the existing indoor path until their source exception inputs—physics modifier, live entities, and map-specific rules—are represented.
 
 ## Ordered verification
 
@@ -36,4 +36,4 @@ Focused controller/session tests will cover the state boundaries so the long ord
 
 ## Non-goals
 
-This slice does not yet implement complete side-scrolling Link gravity, ladders, every exceptional room in `CheckPositionForMapTransition`, or the next Tail Cave combat/reward room. It establishes the ROM-authored transition graph required to continue ordered playtesting.
+This slice does not yet implement complete side-scrolling Link gravity, ladders, other rooms' generic and exceptional paths in `CheckPositionForMapTransition`, or the next Tail Cave combat/reward room. It establishes the ROM-authored Tail Cave transition graph required to continue ordered playtesting without changing unsupported category-2 rooms.

@@ -274,6 +274,7 @@ public final class RoomObjectParser {
                     // ConfigureRoomObjects returns before copying concealed stairs.
                 } else {
                     fillRoomWithConsecutiveObjects(type, location, firstByte);
+                    recordStaircaseStrip(type, location, firstByte, isIndoor);
                     if (isDoorObjectId(type)) {
                         recordStripDoorPositions(location, firstByte);
                     }
@@ -294,6 +295,7 @@ public final class RoomObjectParser {
                     // ConfigureRoomObjects leaves the room-template floor in place.
                 } else {
                     copyObjectToActiveRoomMap(type, location);
+                    recordStaircaseLocation(type, location, isIndoor);
                     if (isDoorObjectId(type)) {
                         doorPositions.add(location);
                     }
@@ -350,8 +352,6 @@ public final class RoomObjectParser {
             int targetAreaIndex = baseAreaIndex + offset;
             if (isAreaIndexValid(targetAreaIndex)) {
                 roomObjectsArea[targetAreaIndex] = objectId;
-                recordStaircaseLocation(
-                    objectId, targetAreaIndex - RoomConstants.ROOM_OBJECTS_BASE);
                 if (isMacroExpansionDoorId(objectId)) {
                     doorPositions.add(targetAreaIndex - RoomConstants.ROOM_OBJECTS_BASE);
                 }
@@ -524,7 +524,6 @@ public final class RoomObjectParser {
         int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + location;
         if (isAreaIndexValid(areaIndex)) {
             roomObjectsArea[areaIndex] = objectId;
-            recordStaircaseLocation(objectId, location);
         }
     }
 
@@ -538,8 +537,6 @@ public final class RoomObjectParser {
         for (int i = 0; i < count; i++) {
             if (isAreaIndexValid(areaIndex)) {
                 roomObjectsArea[areaIndex] = objectId;
-                recordStaircaseLocation(
-                    objectId, areaIndex - RoomConstants.ROOM_OBJECTS_BASE);
             }
             areaIndex += step;
         }
@@ -549,13 +546,27 @@ public final class RoomObjectParser {
         return areaIndex >= 0 && areaIndex < roomObjectsArea.length;
     }
 
-    private void recordStaircaseLocation(int objectId, int location) {
-        if (objectId == OBJECT_STAIRS_DOWN
-            || objectId == OBJECT_HIDDEN_STAIRS_DOWN
-            || objectId == OBJECT_STAIRS_UP
-            || objectId == OBJECT_DOOR_C5
-            || objectId == OBJECT_GROUND_STAIRS) {
+    private void recordStaircaseStrip(int objectId, int location,
+                                      int objectData, boolean isIndoor) {
+        int count = objectData & 0x0F;
+        if (count == 0 || !isStaircaseObject(objectId, isIndoor)) {
+            return;
+        }
+        int step = (objectData & 0x40) != 0 ? RoomConstants.ROOM_OBJECT_ROW_STRIDE : 1;
+        recordStaircaseLocation(objectId, location + (count - 1) * step, isIndoor);
+    }
+
+    private void recordStaircaseLocation(int objectId, int location, boolean isIndoor) {
+        if (isStaircaseObject(objectId, isIndoor)) {
             staircaseLocation = location & 0xFF;
         }
+    }
+
+    private static boolean isStaircaseObject(int objectId, boolean isIndoor) {
+        return isIndoor
+            ? objectId == OBJECT_STAIRS_DOWN
+                || objectId == OBJECT_HIDDEN_STAIRS_DOWN
+                || objectId == OBJECT_STAIRS_UP
+            : objectId == OBJECT_DOOR_C5 || objectId == OBJECT_GROUND_STAIRS;
     }
 }

@@ -53,12 +53,24 @@ public final class RoomBoundaryController {
         boolean offLeft = x < 0;
         boolean offRight = x + Link.SPRITE_SIZE > ROOM_PIXEL_WIDTH;
 
-        if (state.mapCategory() == Warp.CATEGORY_SIDESCROLL && (offTop || offBottom)) {
-            return RoomBoundaryDecision.sideScrollVerticalWarp();
-        }
-
         if (offBottom && (state.shutterDoorMask() & 0x02) != 0) {
             return RoomBoundaryDecision.clamp(x, ROOM_PIXEL_HEIGHT - Link.SPRITE_SIZE);
+        }
+        if (offTop && (state.shutterDoorMask() & 0x01) != 0) {
+            return RoomBoundaryDecision.clamp(x, 0);
+        }
+        // Tail Cave's room $19 follows the ordinary side-view fade path in
+        // CheckPositionForMapTransition. Other category-2 rooms include source
+        // exceptions and remain on the existing indoor path until their state
+        // (physics modifier, entities, and map-specific rules) is represented.
+        if (state.mapCategory() == Warp.CATEGORY_SIDESCROLL
+            && state.mapId() == 0x00 && state.roomId() == 0x19 && state.hasWarps()) {
+            if (y < -0x04 || y >= 0x74) {
+                return RoomBoundaryDecision.sideScrollVerticalWarp();
+            }
+            if (offTop || offBottom) {
+                return RoomBoundaryDecision.none();
+            }
         }
         if (offBottom && state.indoorHasSouthEntrance() && state.hasWarps()) {
             return RoomBoundaryDecision.indoorFrontDoorWarp();
@@ -77,9 +89,6 @@ public final class RoomBoundaryController {
             return RoomBoundaryDecision.indoorScroll(ScrollController.RIGHT, 0, y);
         }
         if (offTop) {
-            if ((state.shutterDoorMask() & 0x01) != 0) {
-                return RoomBoundaryDecision.clamp(x, 0);
-            }
             return RoomBoundaryDecision.indoorScroll(ScrollController.UP, x,
                 ROOM_PIXEL_HEIGHT - Link.SPRITE_SIZE);
         }

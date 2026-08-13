@@ -67,16 +67,41 @@ final class RoomBoundaryControllerTest {
     void sideScrollingVerticalEdgesRequestWarpZeroInsteadOfIndoorScroll() {
         RoomBoundaryDecision top = controller.decide(
             new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x19, false, true,
-                0x70, -1));
+                0, 0x70, -5, 0x00));
         RoomBoundaryDecision bottom = controller.decide(
             new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x19, false, true,
-                0x70, ROOM_PIXEL_HEIGHT));
-        RoomBoundaryDecision inside = controller.decide(
+                0, 0x70, 0x74, 0x00));
+        RoomBoundaryDecision topInside = controller.decide(
             new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x19, false, true,
-                0x70, 0x30));
+                0, 0x70, -4, 0x00));
+        RoomBoundaryDecision bottomInside = controller.decide(
+            new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x19, false, true,
+                0, 0x70, 0x73, 0x00));
 
         assertEquals(RoomBoundaryDecision.Type.SIDE_SCROLL_VERTICAL_WARP, top.type());
         assertEquals(RoomBoundaryDecision.Type.SIDE_SCROLL_VERTICAL_WARP, bottom.type());
-        assertEquals(RoomBoundaryDecision.Type.NONE, inside.type());
+        assertEquals(RoomBoundaryDecision.Type.NONE, topInside.type());
+        assertEquals(RoomBoundaryDecision.Type.NONE, bottomInside.type());
+    }
+
+    @Test
+    void unsupportedSideScrollingEdgesKeepExistingIndoorBoundaryBehavior() {
+        RoomBoundaryDecision otherRoom = controller.decide(
+            new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x18, false, true,
+                0, 0x70, -5, 0x00));
+        RoomBoundaryDecision otherMap = controller.decide(
+            new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x19, false, true,
+                0, 0x70, -5, 0x01));
+        RoomBoundaryDecision noWarp = controller.decide(
+            new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x19, false, false,
+                0, 0x70, -5, 0x00));
+        RoomBoundaryDecision shuttered = controller.decide(
+            new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x19, false, true,
+                0x02, 0x70, 0x74, 0x00));
+
+        assertEquals(RoomBoundaryDecision.Type.INDOOR_SCROLL, otherRoom.type());
+        assertEquals(RoomBoundaryDecision.Type.INDOOR_SCROLL, otherMap.type());
+        assertEquals(RoomBoundaryDecision.Type.INDOOR_SCROLL, noWarp.type());
+        assertEquals(RoomBoundaryDecision.Type.CLAMP_LINK, shuttered.type());
     }
 }

@@ -3,11 +3,24 @@ package linksawakening.world;
 import linksawakening.rom.RomBank;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class RoomLoaderTest {
+
+    @Test
+    void loadedRoomKeepsThePreStaircaseConstructorSignature() {
+        LoadedRoom room = new LoadedRoom(
+            0, Warp.CATEGORY_INDOOR, 0, 0,
+            new int[0x100], null, null, new int[0], new int[0], null,
+            List.of(), false, 0x03, null);
+
+        assertEquals(0x03, room.shutterDoorMask());
+        assertEquals(-1, room.staircaseLocation());
+    }
 
     @Test
     void overworldLoaderReadsPointerHeaderObjectsTilemapAndPalette() {

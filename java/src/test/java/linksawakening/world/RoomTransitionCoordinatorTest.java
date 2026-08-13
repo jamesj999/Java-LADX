@@ -111,7 +111,7 @@ final class RoomTransitionCoordinatorTest {
             session, new RoomBoundaryController(), transition, scroll);
         Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
             romTables, collision, null, new PlayerState(), new ItemRegistry());
-        link.setPixelPosition(0x70, -1);
+        link.setPixelPosition(0x70, -5);
 
         coordinator.handleWarpAndIndoorBoundaries(link);
 
@@ -756,7 +756,7 @@ final class RoomTransitionCoordinatorTest {
         assertEquals(0x70, link.pixelX());
         assertEquals(0x00, link.pixelY());
 
-        link.setPixelPosition(link.pixelX(), -1);
+        link.setPixelPosition(link.pixelX(), -5);
         coordinator.handleWarpAndIndoorBoundaries(link);
         assertTrue(transition.isActive());
         assertFalse(scroll.isActive());

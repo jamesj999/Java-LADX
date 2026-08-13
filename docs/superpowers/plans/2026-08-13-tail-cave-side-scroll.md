@@ -4,7 +4,7 @@
 
 **Goal:** Make Tail Cave room `$03`'s revealed staircase enter side-scroll room `$19` and make its vertical edge return through ROM warp 0.
 
-**Architecture:** Have `RoomObjectParser` preserve the last staircase location encountered in source stream order, carry it through the loaded-room model, and keep its live state in `RoomSession`. Add a distinct side-scroll vertical-warp boundary decision, then let `RoomTransitionCoordinator` apply the first ROM warp for both mechanisms.
+**Architecture:** Have `RoomObjectParser` preserve the last category-appropriate staircase location encountered in source stream order, carry it through the loaded-room model, and keep its live state in `RoomSession`. Add an exact-bounds vertical-warp decision for Tail Cave side-scroll room `$19`, leaving unsupported source exception rooms unchanged, then let `RoomTransitionCoordinator` apply the first ROM warp for both mechanisms.
 
 **Tech Stack:** Java 17, JUnit 5, Gradle, ROM-backed room/object/warp data.
 
@@ -40,7 +40,7 @@ Also prove nonzero Z and carrying state suppress an otherwise active trigger, an
 Run:
 
 ```bash
-./gradlew test --tests linksawakening.world.RoomSessionTest
+gradle -p java test --tests linksawakening.world.RoomSessionTest
 ```
 
 Expected: compilation failure because `pollStaircaseWarp` does not exist.
@@ -94,7 +94,7 @@ Add `SIDE_SCROLL_VERTICAL_WARP` to the expected API in tests and prove category 
 - [ ] **Step 2: Run boundary tests and verify RED**
 
 ```bash
-./gradlew test --tests linksawakening.world.RoomBoundaryControllerTest
+gradle -p java test --tests linksawakening.world.RoomBoundaryControllerTest
 ```
 
 Expected: compilation failure because the new decision type/factory does not exist.
@@ -110,7 +110,7 @@ public static RoomBoundaryDecision sideScrollVerticalWarp() {
 }
 ```
 
-In `decideIndoor`, return it for category 2 when `offTop || offBottom`, before ordinary indoor scroll decisions. Leave horizontal handling unchanged.
+In `decideIndoor`, return it only for category 2, map `$00`, room `$19`, with a warp and no matching shutter, when Java top-left Y is below `-4` or at least `$74`. Return `NONE` inside the source margin where sprite bounds are outside but ROM entity Y has not crossed `< $0C`/`>= $84`. Leave unsupported category-2 and horizontal handling unchanged.
 
 - [ ] **Step 4: Add a failing coordinator test for room `$19`**
 
@@ -125,7 +125,7 @@ Before ordinary tile-warp matching, call `roomSession.pollStaircaseWarp(link.rom
 - [ ] **Step 6: Run focused tests and verify GREEN**
 
 ```bash
-./gradlew test --tests linksawakening.world.RoomBoundaryControllerTest --tests linksawakening.world.RoomTransitionCoordinatorTest
+gradle -p java test --tests linksawakening.world.RoomBoundaryControllerTest --tests linksawakening.world.RoomTransitionCoordinatorTest
 ```
 
 Expected: PASS.
@@ -149,7 +149,7 @@ After the existing room `$03` reload assertion, place Link at the staircase cent
 - [ ] **Step 2: Run the ordered test**
 
 ```bash
-./gradlew test --tests 'linksawakening.world.RoomTransitionCoordinatorTest.freshGameRuntimeSequencePersistsOpeningProgressThroughTailCaveEntry'
+gradle -p java test --tests 'linksawakening.world.RoomTransitionCoordinatorTest.freshGameRuntimeSequencePersistsOpeningProgressThroughTailCaveEntry'
 ```
 
 Expected: PASS using the production staircase and category-2 transition paths.
@@ -168,7 +168,7 @@ git commit -m "test: continue Tail Cave route through side-scroll room"
 - [ ] **Step 1: Run full verification**
 
 ```bash
-./gradlew clean test
+gradle -p java clean test
 ```
 
 Expected: `BUILD SUCCESSFUL` with all tests passing.
