@@ -859,6 +859,9 @@ public final class RoomSession {
         playerShieldLevel = shieldLevel;
         if (entityRuntime != null) {
             entityRuntime.setChestPlayerLevels(shieldLevel, swordLevel, powerBraceletLevel);
+            if (activeRoom != null) {
+                activeRoom.replaceEntities(entityRuntime.snapshot());
+            }
         }
     }
 
@@ -1739,6 +1742,13 @@ public final class RoomSession {
             ? List.of() : entityRuntime.consumePendingLinkMotionBlockRequests();
     }
 
+    /** Returns and clears explicit ROM Link fallen-pose requests. */
+    public List<RoomEntityRuntime.LinkFallenPoseRequest>
+            consumeLinkFallenPoseRequests() {
+        return entityRuntime == null
+            ? List.of() : entityRuntime.consumePendingLinkFallenPoseRequests();
+    }
+
     /** Returns and clears a motion block emitted by a world handler rather than an entity. */
     public boolean consumeWorldLinkMotionBlockRequest() {
         boolean pending = worldLinkMotionBlockPending;
@@ -1767,10 +1777,20 @@ public final class RoomSession {
         return entityRuntime != null && entityRuntime.witchGotItemPresentationActive();
     }
 
+    public boolean swordPickupSequenceActive() {
+        return entityRuntime != null && entityRuntime.swordPickupSequenceActive();
+    }
+
     public List<RoomEntityRuntime.LinkSwordSpinPoseRequest>
             consumeLinkSwordSpinPoseRequests() {
         return entityRuntime == null
             ? List.of() : entityRuntime.consumePendingLinkSwordSpinPoseRequests();
+    }
+
+    public List<RoomEntityRuntime.LinkSwordFinalPoseRequest>
+            consumeLinkSwordFinalPoseRequests() {
+        return entityRuntime == null
+            ? List.of() : entityRuntime.consumePendingLinkSwordFinalPoseRequests();
     }
 
     /** Returns and clears ROM screen-shake requests emitted by the last entity tick. */

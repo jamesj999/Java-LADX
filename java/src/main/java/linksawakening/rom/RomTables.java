@@ -83,6 +83,13 @@ public final class RomTables {
     private static final int SWORD_DIR_TABLE_ADDR = 0x461E;
     // LinkDirectionToLinkAnimationState1 (bank2.asm:806)
     private static final int SWORD_ANIM_TABLE_ADDR = 0x4636;
+    // LinkDirectionToSwordAnimationState (bank2.asm:852), indexed by
+    // base ROM direction * 8 + spin sector.
+    private static final int SWORD_SPIN_ANIM_TABLE_ADDR = 0x46C9;
+    // LinkDirectionToAbsolute (bank2.asm:865), indexed like the spin state
+    // table above.
+    private static final int SWORD_SPIN_ABSOLUTE_TABLE_ADDR = 0x46E9;
+    private static final int SWORD_SPIN_TABLE_LEN = 0x20;
     // LinkDirectionTo_wC13A — blade X offset (bank2.asm:816)
     private static final int SWORD_X_OFFSET_TABLE_ADDR = 0x464E;
     // LinkDirectionTo_wC139 — blade Y offset added to Link Y (bank2.asm:821)
@@ -140,6 +147,8 @@ public final class RomTables {
     private final byte[] swimmingEntrySpeedY;
     private final int[] swordAnimState;
     private final int[] swordDirection;
+    private final int[] swordSpinAnimationState;
+    private final int[] swordSpinAbsoluteDirection;
     private final byte[] swordXOffset;
     private final byte[] swordYOffset;
     private final byte[] swordYBase;
@@ -166,6 +175,7 @@ public final class RomTables {
                       byte[] swimmingSpeedX, byte[] swimmingSpeedY,
                       byte[] swimmingEntrySpeedX, byte[] swimmingEntrySpeedY,
                       int[] swordAnimState, int[] swordDirection,
+                      int[] swordSpinAnimationState, int[] swordSpinAbsoluteDirection,
                       byte[] swordXOffset, byte[] swordYOffset, byte[] swordYBase,
                       int[] swordCollisionNeeded, int[] swordCollisionWidth,
                       int[] swordCollisionOffset, int[] swordCollisionHeight,
@@ -189,6 +199,8 @@ public final class RomTables {
         this.swimmingEntrySpeedY = swimmingEntrySpeedY;
         this.swordAnimState = swordAnimState;
         this.swordDirection = swordDirection;
+        this.swordSpinAnimationState = swordSpinAnimationState;
+        this.swordSpinAbsoluteDirection = swordSpinAbsoluteDirection;
         this.swordXOffset = swordXOffset;
         this.swordYOffset = swordYOffset;
         this.swordYBase = swordYBase;
@@ -258,6 +270,10 @@ public final class RomTables {
 
         int[] swordAnim = loadUnsignedTable(romData, SWORD_TABLES_BANK, SWORD_ANIM_TABLE_ADDR, TABLE_LEN);
         int[] swordDir = loadUnsignedTable(romData, SWORD_TABLES_BANK, SWORD_DIR_TABLE_ADDR, TABLE_LEN);
+        int[] swordSpinAnim = loadUnsignedTable(
+            romData, SWORD_TABLES_BANK, SWORD_SPIN_ANIM_TABLE_ADDR, SWORD_SPIN_TABLE_LEN);
+        int[] swordSpinAbsolute = loadUnsignedTable(
+            romData, SWORD_TABLES_BANK, SWORD_SPIN_ABSOLUTE_TABLE_ADDR, SWORD_SPIN_TABLE_LEN);
         byte[] swordX = loadSignedTable(romData, SWORD_TABLES_BANK, SWORD_X_OFFSET_TABLE_ADDR, TABLE_LEN);
         byte[] swordY = loadSignedTable(romData, SWORD_TABLES_BANK, SWORD_Y_OFFSET_TABLE_ADDR, TABLE_LEN);
         byte[] swordYBaseBytes = loadSignedTable(romData, SWORD_TABLES_BANK, SWORD_Y_BASE_TABLE_ADDR, TABLE_LEN);
@@ -291,7 +307,7 @@ public final class RomTables {
                              collisionPointsY, fineCollisionShapes, linkFineCollisionShapes,
                              speedX, speedY, swimmingX, swimmingY,
                              swimmingEntryX, swimmingEntryY,
-                             swordAnim, swordDir,
+                             swordAnim, swordDir, swordSpinAnim, swordSpinAbsolute,
                              swordX, swordY, swordYBaseBytes,
                              swordCollisionNeeded, swordCollisionWidth,
                              swordCollisionOffset, swordCollisionHeight,
@@ -461,6 +477,16 @@ public final class RomTables {
         return index < swordDirection.length ? swordDirection[index] : 0;
     }
 
+    /** ROM {@code LinkDirectionToSwordAnimationState} for a spin sector. */
+    public int swordSpinAnimationState(int baseRomDirection, int sector) {
+        return swordSpinAnimationState[spinTableIndex(baseRomDirection, sector)];
+    }
+
+    /** ROM {@code LinkDirectionToAbsolute} for a spin sector. */
+    public int swordSpinAbsoluteDirection(int baseRomDirection, int sector) {
+        return swordSpinAbsoluteDirection[spinTableIndex(baseRomDirection, sector)];
+    }
+
     /**
      * Blade X offset from Link's world X (wC13A in the ROM). Signed.
      */
@@ -589,6 +615,10 @@ public final class RomTables {
 
     private static int swingTableIndex(int romDirection, int swordState) {
         return (romDirection & 0x3) * 6 + (swordState & 0x7);
+    }
+
+    private static int spinTableIndex(int baseRomDirection, int sector) {
+        return (baseRomDirection & 0x3) * 8 + (sector & 0x7);
     }
 
     private static int romOffset(int bank, int address) {

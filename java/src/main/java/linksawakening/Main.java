@@ -167,6 +167,7 @@ public class Main {
     private static GameplaySoundSink gameplaySoundSink = GameplaySoundSink.none();
     private static OpenAlMusicPlayer musicPlayer;
     private static GameplayMusicController gameplayMusicController;
+    private static boolean overworldIntroContinuationPending;
     private static CutsceneManager cutsceneManager;
     private static FileMenuController fileMenuController;
     private static FileSaveController fileSaveController;
@@ -723,6 +724,14 @@ public class Main {
 
         if (musicPlayer != null) {
             musicPlayer.update();
+            if (overworldIntroContinuationPending
+                && gameplayMusicController != null
+                && gameplayMusicController.currentTrackId()
+                    == MusicTrackIds.MUSIC_OVERWORLD_INTRO
+                && !musicPlayer.isMusicPlaying()) {
+                overworldIntroContinuationPending = false;
+                gameplayMusicController.playDirect(MusicTrackIds.MUSIC_OVERWORLD);
+            }
         }
 
         if (currentScreen == SCREEN_CUTSCENE) {
@@ -845,6 +854,9 @@ public class Main {
                 && !inventoryController.shouldBlockOverworldInput()
                 && !dialogBlocksGameplay
                 && (roomSession == null || !roomSession.gotItemPresentationActive());
+            boolean swordPickupSequenceActive = roomSession != null
+                && roomSession.swordPickupSequenceActive();
+            linkActive = linkActive && !swordPickupSequenceActive;
             if (linkActive && link != null) {
                 // AnimateEntities runs after Link motion and its normal NPC
                 // handlers restore hLinkFinalPosition when they push Link.
@@ -874,7 +886,9 @@ public class Main {
                     }
                 }
                 if (!keyholeSequenceActive && !link.isCarryingLiftedObject()) {
-                    equipmentController.dispatchButtonEdges();
+                    if (!swordPickupSequenceActive) {
+                        equipmentController.dispatchButtonEdges();
+                    }
                     equipmentController.tickEquippedItems(frameCounter);
                 }
                 if (debugNoClip && tryDebugScreenScroll()) {
@@ -1099,6 +1113,11 @@ public class Main {
                 if (roomSession.consumeWorldLinkMotionBlockRequest() && link != null) {
                     link.blockNextRomMotionFrame();
                 }
+                for (var request : roomSession.consumeLinkFallenPoseRequests()) {
+                    if (link != null) {
+                        link.showRomFallenPose();
+                    }
+                }
                 for (var request : roomSession.consumeLinkFacingRequests()) {
                     if (link != null) {
                         if (request.preserveWalkingPhase()) {
@@ -1123,8 +1142,29 @@ public class Main {
                     }
                 }
                 for (var request : roomSession.consumeLinkSwordSpinPoseRequests()) {
+                    int acquisitionBaseDirection = link == null ? Link.DIRECTION_DOWN
+                        : link.direction();
                     if (link != null) {
                         link.showSwordAcquisitionSpinPose(request.countdown());
+                    }
+                    Sword acquisitionSword = itemRegistry == null ? null
+                        : itemRegistry.lookup(PlayerState.INVENTORY_SWORD) instanceof Sword sword
+                            ? sword : null;
+                    if (acquisitionSword != null) {
+                        if (request.countdown() == 0x20) {
+                            acquisitionSword.startSwordAcquisitionSpin(acquisitionBaseDirection);
+                        } else if (acquisitionSword.spinAttackActive()) {
+                            acquisitionSword.tick(false, frameCounter);
+                        }
+                    }
+                }
+                for (var request : roomSession.consumeLinkSwordFinalPoseRequests()) {
+                    if (link != null) {
+                        link.showSwordAcquisitionFinalPose();
+                    }
+                    if (itemRegistry != null
+                        && itemRegistry.lookup(PlayerState.INVENTORY_SWORD) instanceof Sword sword) {
+                        sword.resetSpinAttack();
                     }
                 }
                 for (var request : roomSession.consumeScreenShakeRequests()) {
@@ -1873,6 +1913,8 @@ public class Main {
     private static void playDirectMusic(int trackId) {
         if (gameplayMusicController != null) {
             gameplayMusicController.playDirect(trackId);
+            overworldIntroContinuationPending =
+                (trackId & 0xFF) == MusicTrackIds.MUSIC_OVERWORLD_INTRO;
         }
     }
 

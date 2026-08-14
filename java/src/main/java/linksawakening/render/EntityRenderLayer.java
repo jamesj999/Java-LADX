@@ -16,6 +16,7 @@ import static linksawakening.world.RoomConstants.ROOM_PIXEL_WIDTH;
 /** Renders the ROM-backed OAM display lists for the room's loaded entities. */
 public final class EntityRenderLayer implements RenderLayer {
     private static final int ENTITY_BOMB = 0x02;
+    private static final int ENTITY_SWORD_SHIELD_PICKUP = 0x31;
     private static final int ENTITY_WINGED_OCTOROK = 0xAE;
     private static final int ENTITY_PINCER = 0xB0;
     private static final int BOMB_NORMAL_DEFINITION_BANK = 0x03;
@@ -232,7 +233,12 @@ public final class EntityRenderLayer implements RenderLayer {
                 sideScrolling);
         } else if (definition.shape() == EntitySpriteDefinition.Shape.SINGLE) {
             EntitySpriteDefinition.Variant variant = definition.variant(spriteVariant);
-            renderOamSprite(context, palettes, tiles, withTileOffset(variant.first(), entity),
+            // The ROM's sword/shield pickup display list uses tile $84/$86,
+            // which lives in the gameplay VRAM item block loaded by
+            // LoadBaseTiles, not in the four entity-sheet slots ($40-$7F).
+            EntitySpriteTileSnapshot source = entity.type() == ENTITY_SWORD_SHIELD_PICKUP
+                ? null : tiles;
+            renderOamSprite(context, palettes, source, withTileOffset(variant.first(), entity),
                 flipAttribute,
                 entityX + 4, entityY - (sideScrolling ? 4 : 0));
         } else if (definition.shape() == EntitySpriteDefinition.Shape.RECTANGLE) {
@@ -331,11 +337,12 @@ public final class EntityRenderLayer implements RenderLayer {
         }
         int attributes = oam.attributes() ^ entityFlipAttribute;
         int paletteIndex = attributes & OAM_PALETTE_MASK;
-        if (interpretPaletteFlip && (attributes & OAM_PALETTE_FLIP) != 0) {
+        if (interpretPaletteFlip && (entityFlipAttribute & OAM_PALETTE_FLIP) != 0) {
             // UpdateEntityTimers writes OAMF_PAL1 while an entity is
             // flashing; RenderActiveEntitySpritesPair converts that flag to
-            // GBC object palette 4 rather than treating it as part of the
-            // low palette index.
+            // GBC object palette 4. A raw definition attribute may contain
+            // OAMF_PAL1 as the DMG palette selector; it must not be converted
+            // to palette 4 unless hActiveEntityFlipAttribute requested it.
             paletteIndex = 4;
         }
         int[] palette = resolvePalette(palettes, paletteIndex);

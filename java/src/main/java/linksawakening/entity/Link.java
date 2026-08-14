@@ -196,6 +196,8 @@ public final class Link implements RocsFeather.JumpTarget {
     private boolean romInteractiveMotionBlocked;
     private boolean debugNoClip;
     private int romAnimationStateOverride = -1;
+    private int swordAcquisitionBaseRomDirection = -1;
+    private int swordAcquisitionAnimationState = -1;
     private boolean tarinShieldPresentation;
     private int[] tarinShieldPalette;
     private int romLinkPushing;
@@ -316,6 +318,8 @@ public final class Link implements RocsFeather.JumpTarget {
         debugNoClip = false;
         romInteractiveMotionBlocked = false;
         romAnimationStateOverride = -1;
+        swordAcquisitionBaseRomDirection = -1;
+        swordAcquisitionAnimationState = -1;
         tarinShieldPresentation = false;
         tarinShieldPalette = null;
         marinWakeUpBedVariant = -1;
@@ -472,7 +476,13 @@ public final class Link implements RocsFeather.JumpTarget {
     /** Applies the ROM's next-frame hLinkInteractiveMotionBlocked=$02 write. */
     public void blockNextRomMotionFrame() {
         romInteractiveMotionBlocked = true;
+    }
+
+    /** Applies the ROM's explicit hLinkAnimationState=$6A fallen-pose write. */
+    public void showRomFallenPose() {
+        romInteractiveMotionBlocked = true;
         romAnimationStateOverride = 0x6A;
+        movingThisFrame = false;
     }
 
     /** Applies HoldEntityAboveLink's got-item pose and interaction lock. */
@@ -515,20 +525,46 @@ public final class Link implements RocsFeather.JumpTarget {
         movingThisFrame = false;
     }
 
-    /** Applies the forced base-direction-down spin used while obtaining the beach sword. */
+    /** Applies one ROM spin sector while obtaining the beach sword. */
     public void showSwordAcquisitionSpinPose(int countdown) {
         if (countdown < 0 || countdown > 0x20) {
             throw new IllegalArgumentException("Sword-spin countdown must be between 0 and 32");
         }
+        if (romTables == null) {
+            throw new IllegalStateException("Sword acquisition spin requires ROM tables");
+        }
+        if (swordAcquisitionBaseRomDirection < 0) {
+            swordAcquisitionBaseRomDirection = romDirectionForJavaDirection(direction);
+            swordAcquisitionAnimationState = resolveAnimationState();
+        }
+        // The spin handler writes a fresh hLinkAnimationState. Do not let a
+        // preceding generic motion-block request leave its $6A butt pose in
+        // front of this ROM-driven sword pose.
+        romAnimationStateOverride = -1;
         int sector = Math.min(7, countdown >> 2);
-        int[] animationStates = {3, 4, 3, 4, 3, 2, 3, 4};
-        int[] directions = {
-            DIRECTION_DOWN, DIRECTION_LEFT, DIRECTION_LEFT, DIRECTION_UP,
-            DIRECTION_UP, DIRECTION_RIGHT, DIRECTION_RIGHT, DIRECTION_DOWN
-        };
+        int swordState = romTables.swordSpinAnimationState(
+            swordAcquisitionBaseRomDirection, sector);
+        int absoluteRomDirection = romTables.swordSpinAbsoluteDirection(
+            swordAcquisitionBaseRomDirection, sector);
+        int animationState = romTables.swordDirectionAnimState(
+            absoluteRomDirection, swordState);
+        // UpdateSpinAttackAnimation leaves hLinkAnimationState unchanged for
+        // LINK_ANIMATION_STATE_HIDDEN, so retain the previous ROM pose.
+        if (animationState != 0xFF) {
+            swordAcquisitionAnimationState = animationState;
+        }
         romInteractiveMotionBlocked = true;
-        romAnimationStateOverride = animationStates[sector];
-        direction = directions[sector];
+        direction = javaDirectionForRomDirection(absoluteRomDirection);
+        movingThisFrame = false;
+    }
+
+    /** Mirrors the sword handler's final hLinkAnimationState=$6B write. */
+    public void showSwordAcquisitionFinalPose() {
+        romInteractiveMotionBlocked = true;
+        swordAcquisitionBaseRomDirection = -1;
+        swordAcquisitionAnimationState = -1;
+        romAnimationStateOverride = 0x6B;
+        direction = DIRECTION_DOWN;
         movingThisFrame = false;
     }
 
@@ -923,6 +959,8 @@ public final class Link implements RocsFeather.JumpTarget {
         romInteractiveMotionBlocked = false;
         if (!interactiveMotionBlocked) {
             romAnimationStateOverride = -1;
+            swordAcquisitionBaseRomDirection = -1;
+            swordAcquisitionAnimationState = -1;
         }
         if (interactiveMotionBlocked) {
             zVelocity = 0;
@@ -1764,6 +1802,17 @@ public final class Link implements RocsFeather.JumpTarget {
         if (b != null && b != a) {
             b.render(displayBuffer, pixelX(), pixelY() - zPixels(), direction, offsetX, offsetY);
         }
+        if (swordAcquisitionAnimationState >= 0) {
+            // ApplyLinkMotionState draws the sword during the pickup spin
+            // before GiveInventoryItem awards it to slot A/B. Reuse the ROM
+            // sword handler from the registry, but do not draw it twice if a
+            // save already has the sword equipped.
+            EquippedItem acquisitionSword = itemRegistry.lookup(PlayerState.INVENTORY_SWORD);
+            if (acquisitionSword != null && acquisitionSword != a && acquisitionSword != b) {
+                acquisitionSword.render(displayBuffer, pixelX(), pixelY() - zPixels(),
+                    direction, offsetX, offsetY);
+            }
+        }
     }
 
     private int zPixels() {
@@ -1773,6 +1822,9 @@ public final class Link implements RocsFeather.JumpTarget {
     private int resolveAnimationState() {
         if (romAnimationStateOverride >= 0) {
             return romAnimationStateOverride;
+        }
+        if (swordAcquisitionAnimationState >= 0) {
+            return swordAcquisitionAnimationState;
         }
         if (fallingIntoPit) {
             int frame = Math.min(FALL_ANIMATION_STATE.length - 1, fallingFrameCounter / FALL_FRAME_TICKS);

@@ -472,6 +472,8 @@ public final class RoomEntityRuntime {
         new ArrayList<>();
     private final List<LinkMotionBlockRequest> pendingLinkMotionBlockRequests =
         new ArrayList<>();
+    private final List<LinkFallenPoseRequest> pendingLinkFallenPoseRequests =
+        new ArrayList<>();
     private final List<LinkFacingRequest> pendingLinkFacingRequests = new ArrayList<>();
     private final List<LinkAttackClearRequest> pendingLinkAttackClearRequests =
         new ArrayList<>();
@@ -480,6 +482,8 @@ public final class RoomEntityRuntime {
     private final List<LinkHeldItemPoseRequest> pendingLinkHeldItemPoseRequests =
         new ArrayList<>();
     private final List<LinkSwordSpinPoseRequest> pendingLinkSwordSpinPoseRequests =
+        new ArrayList<>();
+    private final List<LinkSwordFinalPoseRequest> pendingLinkSwordFinalPoseRequests =
         new ArrayList<>();
     private final List<ScreenShakeRequest> pendingScreenShakeRequests = new ArrayList<>();
     private final List<DialogRequest> pendingDialogRequests = new ArrayList<>();
@@ -735,6 +739,16 @@ public final class RoomEntityRuntime {
         }
     }
 
+    /** A ROM handler request to show Link's explicit fallen animation pose. */
+    public record LinkFallenPoseRequest(int sourceSlot) {
+        public LinkFallenPoseRequest {
+            if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
+                throw new IllegalArgumentException("Link fallen-pose source slot out of range: "
+                    + sourceSlot);
+            }
+        }
+    }
+
     public record LinkFacingRequest(int sourceSlot, int romDirection,
                                     boolean preserveWalkingPhase) {
         public LinkFacingRequest(int sourceSlot, int romDirection) {
@@ -787,6 +801,15 @@ public final class RoomEntityRuntime {
             if (countdown < 0 || countdown > 0x20) {
                 throw new IllegalArgumentException("Sword-spin countdown out of range: "
                     + countdown);
+            }
+        }
+    }
+
+    public record LinkSwordFinalPoseRequest(int sourceSlot) {
+        public LinkSwordFinalPoseRequest {
+            if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
+                throw new IllegalArgumentException("Sword-final source slot out of range: "
+                    + sourceSlot);
             }
         }
     }
@@ -1505,11 +1528,13 @@ public final class RoomEntityRuntime {
         pendingLinkFinalPositionRequests.clear();
         pendingRoosterLinkStateRequests.clear();
         pendingLinkMotionBlockRequests.clear();
+        pendingLinkFallenPoseRequests.clear();
         pendingLinkFacingRequests.clear();
         pendingLinkAttackClearRequests.clear();
         pendingRoomStatusPersistenceRequests.clear();
         pendingLinkHeldItemPoseRequests.clear();
         pendingLinkSwordSpinPoseRequests.clear();
+        pendingLinkSwordFinalPoseRequests.clear();
         pendingScreenShakeRequests.clear();
         boomerangObjectRequests.clear();
         magicRodObjectRequests.clear();
@@ -3351,6 +3376,8 @@ public final class RoomEntityRuntime {
                 if (armosKnightUpdate.linkMotionBlocked()) {
                     pendingLinkMotionBlockRequests.add(
                         new LinkMotionBlockRequest(entity.slot()));
+                    pendingLinkFallenPoseRequests.add(
+                        new LinkFallenPoseRequest(entity.slot()));
                 }
                 if (armosKnightUpdate.screenShakeRequest() != null) {
                     ArmosKnightMotion.ScreenShakeRequest shake =
@@ -7039,6 +7066,16 @@ public final class RoomEntityRuntime {
         chestSwordLevel = swordLevel;
         chestPowerBraceletLevel = powerBraceletLevel;
         chestPlayerLevelsKnown = true;
+        if (spriteHandlers != null) {
+            EntitySpriteDefinition pickupDefinition =
+                spriteHandlers.forSwordShieldPickup(swordLevel == 0);
+            for (int index = 0; index < slots.length; index++) {
+                if (slots[index].type() == ENTITY_SWORD_SHIELD_PICKUP) {
+                    slots[index] = withDefinition(slots[index], pickupDefinition,
+                        slots[index].spriteVariant());
+                }
+            }
+        }
     }
 
     void setToadstoolPlayerState(boolean hasToadstool, int magicPowderCount) {
@@ -7190,6 +7227,12 @@ public final class RoomEntityRuntime {
         return pending;
     }
 
+    List<LinkFallenPoseRequest> consumePendingLinkFallenPoseRequests() {
+        List<LinkFallenPoseRequest> pending = List.copyOf(pendingLinkFallenPoseRequests);
+        pendingLinkFallenPoseRequests.clear();
+        return pending;
+    }
+
     List<LinkFacingRequest> consumePendingLinkFacingRequests() {
         List<LinkFacingRequest> pending = List.copyOf(pendingLinkFacingRequests);
         pendingLinkFacingRequests.clear();
@@ -7224,9 +7267,24 @@ public final class RoomEntityRuntime {
         return false;
     }
 
+    boolean swordPickupSequenceActive() {
+        for (boolean active : swordPickupSequenceActive) {
+            if (active) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     List<LinkSwordSpinPoseRequest> consumePendingLinkSwordSpinPoseRequests() {
         List<LinkSwordSpinPoseRequest> pending = List.copyOf(pendingLinkSwordSpinPoseRequests);
         pendingLinkSwordSpinPoseRequests.clear();
+        return pending;
+    }
+
+    List<LinkSwordFinalPoseRequest> consumePendingLinkSwordFinalPoseRequests() {
+        List<LinkSwordFinalPoseRequest> pending = List.copyOf(pendingLinkSwordFinalPoseRequests);
+        pendingLinkSwordFinalPoseRequests.clear();
         return pending;
     }
 
@@ -7957,7 +8015,9 @@ public final class RoomEntityRuntime {
                 }
             }
             case 2 -> {
-                pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
+                // SwordShieldPickableState2Handler only advances the entity
+                // countdown and restores variant 0; Link's spin handler owns
+                // the motion lock and animation pose for these frames.
                 pendingLinkSwordSpinPoseRequests.add(new LinkSwordSpinPoseRequest(
                     slot, enemyTransitionCountdown[slot]));
                 if (enemyTransitionCountdown[slot] == 0) {
@@ -7967,6 +8027,7 @@ public final class RoomEntityRuntime {
                 }
             }
             default -> {
+                pendingLinkSwordFinalPoseRequests.add(new LinkSwordFinalPoseRequest(slot));
                 holdSwordAboveLink(entity, linkEntityX, linkEntityY, linkZ, true);
                 if (enemyTransitionCountdown[slot] == 0x1A) {
                     transientVfxRequests.add(new TransientVfxRequest(

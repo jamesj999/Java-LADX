@@ -2754,6 +2754,8 @@ final class RoomEntityRuntimeTest {
         assertEquals(0, runtime.armosKnightTransitionCountdown(0));
         assertEquals(List.of(new RoomEntityRuntime.LinkMotionBlockRequest(0)),
             runtime.consumePendingLinkMotionBlockRequests());
+        assertEquals(List.of(new RoomEntityRuntime.LinkFallenPoseRequest(0)),
+            runtime.consumePendingLinkFallenPoseRequests());
     }
 
     @Test

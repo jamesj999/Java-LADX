@@ -46,6 +46,59 @@ final class EntityRenderLayerTest {
     }
 
     @Test
+    void rendersBeachSwordFromGameplayVramInsteadOfEntitySheetSnapshot() {
+        GPU gpu = new GPU();
+        int swordColor = 0x123456;
+        int[][] palettes = {{0, swordColor, 0, 0}};
+        writeSolidTile(gpu, 0x84, 1);
+        EntitySpriteDefinition swordDefinition = new EntitySpriteDefinition(
+            0x31, 0x03, 0x5B97, EntitySpriteDefinition.Shape.SINGLE, 0,
+            List.of(new EntitySpriteDefinition.Variant(
+                new EntitySpriteDefinition.OamAttribute(0x84, 0x00), null)));
+        RoomEntity sword = new RoomEntity(0, 0, 0x31, 0x58, 0x60,
+            EntityStatus.ACTIVE, swordDefinition, 0);
+        byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
+
+        new EntityRenderLayer(snapshot(null, gpu.snapshotEntityTiles(), sword), palettes,
+            new ScrollController()).render(new RenderContext(buffer, gpu));
+
+        assertEquals(swordColor, pixelColor(buffer, 0x54, 0x50));
+    }
+
+    @Test
+    void beachSwordUsesRomPaletteSevenAndKeepsColorZeroTransparent() {
+        GPU gpu = new GPU();
+        int backgroundColor = 0x0A0B0C;
+        int paletteSevenColor = 0xA0B0C0;
+        int[][] palettes = new int[8][4];
+        palettes[7][1] = paletteSevenColor;
+        byte[] buffer = filledBuffer(0x0A, 0x0B, 0x0C);
+        writePatternTile(gpu, 0x84, new int[][] {
+            {0, 1, 1, 1, 1, 1, 1, 1},
+            {1, 1, 1, 1, 1, 1, 1, 1},
+            {1, 1, 1, 1, 1, 1, 1, 1},
+            {1, 1, 1, 1, 1, 1, 1, 1},
+            {1, 1, 1, 1, 1, 1, 1, 1},
+            {1, 1, 1, 1, 1, 1, 1, 1},
+            {1, 1, 1, 1, 1, 1, 1, 1},
+            {1, 1, 1, 1, 1, 1, 1, 1}
+        });
+        EntitySpriteDefinition swordDefinition = new EntitySpriteDefinition(
+            0x31, 0x03, 0x5B97, EntitySpriteDefinition.Shape.SINGLE, 0,
+            List.of(new EntitySpriteDefinition.Variant(
+                new EntitySpriteDefinition.OamAttribute(0x84, 0x17), null)));
+        RoomEntity sword = new RoomEntity(0, 0, 0x31, 0x58, 0x60,
+            EntityStatus.ACTIVE, swordDefinition, 0);
+
+        new EntityRenderLayer(snapshot(null, gpu.snapshotEntityTiles(), sword), palettes,
+            new ScrollController()).render(new RenderContext(buffer, gpu));
+
+        assertEquals(backgroundColor, pixelColor(buffer, 0x54, 0x50));
+        assertEquals(paletteSevenColor, pixelColor(buffer, 0x55, 0x50));
+        assertEquals(paletteSevenColor, pixelColor(buffer, 0x54, 0x51));
+    }
+
+    @Test
     void rendersPincerBodyOamFromTheEntityTileSnapshot() {
         GPU gpu = new GPU();
         int bodyColor = 0x123456;
@@ -155,7 +208,7 @@ final class EntityRenderLayerTest {
         int crawlingBodyColor = 0x112233;
         int bushOverlayColor = 0x445566;
         int[][] palettes = new int[8][4];
-        palettes[4][1] = crawlingBodyColor;
+        palettes[6][1] = crawlingBodyColor;
         palettes[2][1] = bushOverlayColor;
         for (int tile : new int[] {0xF0, 0xF2, 0xF4, 0xF6, 0x7C, 0x7E}) {
             writeSolidTile(gpu, tile, 1);

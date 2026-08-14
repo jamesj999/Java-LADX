@@ -7,6 +7,8 @@ public final class MusicTrackIds {
     public static final int MUSIC_MINIGAME = 0x02;
     public static final int MUSIC_MABE_VILLAGE = 0x04;
     public static final int MUSIC_OVERWORLD = 0x05;
+    /** One-shot extended overworld intro used by the beach sword event. */
+    public static final int MUSIC_OVERWORLD_INTRO = 0x31;
     public static final int MUSIC_TAL_TAL_RANGE = 0x06;
     public static final int MUSIC_SHOP = 0x07;
     public static final int MUSIC_RAFT_RIDE_RAPIDS = 0x08;

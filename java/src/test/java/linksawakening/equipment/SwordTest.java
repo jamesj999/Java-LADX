@@ -217,6 +217,17 @@ final class SwordTest {
     }
 
     @Test
+    void swordAcquisitionStartsTheRomForcedSpinWithoutChargeOrInput() {
+        Sword sword = new Sword(null, null);
+
+        sword.startSwordAcquisitionSpin(Link.DIRECTION_DOWN);
+
+        assertTrue(sword.spinAttackActive());
+        assertEquals(0, sword.charge());
+        assertTrue(sword.staticCollisionActive());
+    }
+
+    @Test
     void resetSpinAttackPreservesAnOrdinaryHeldSwordPose() {
         Sword sword = new Sword(null, null);
 

@@ -59,6 +59,20 @@ final class RoomSessionTest {
     }
 
     @Test
+    void swordlessBeachUsesTheSwordDisplayListBeforeTheFirstEntityTick() {
+        RoomSession session = newSession();
+        session.loadInitialOverworld(0xF2);
+        session.setChestPlayerLevels(0, 0, 0);
+
+        RoomEntity sword = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x31)
+            .findFirst()
+            .orElseThrow();
+
+        assertEquals(0x84, sword.spriteDefinition().variant(0).first().tile());
+    }
+
+    @Test
     void loadsInitialOverworldRoomIntoActiveRoomState() {
         RoomSession session = newSession();
 

@@ -14,6 +14,7 @@ import linksawakening.equipment.Sword;
 import linksawakening.equipment.Shield;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
+import linksawakening.gpu.Framebuffer;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.physics.OverworldCollision;
@@ -60,6 +61,80 @@ final class LinkTest {
         link.useRocsFeather();
 
         assertEquals(0x22, resolvedAnimationState(link));
+    }
+
+    @Test
+    void swordAcquisitionSpinUsesRomDirectionAndAnimationTables() throws Exception {
+        byte[] rom = loadRom();
+        RomTables romTables = RomTables.loadFromRom(rom);
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        for (int baseRomDirection : new int[] {0, 3}) {
+            Link link = new Link(new InputState(), inputConfig, romTables, null, null,
+                new PlayerState(), new ItemRegistry());
+            link.setDirection(javaDirectionForRomDirection(baseRomDirection));
+
+            int previousAnimationState = resolvedAnimationState(link);
+            for (int countdown = 0x20; countdown >= 0; countdown--) {
+                link.showSwordAcquisitionSpinPose(countdown);
+
+                int sector = Math.min(7, countdown >> 2);
+                int tableIndex = 0x02 * 0x4000 + (0x46C9 - 0x4000)
+                    + baseRomDirection * 8 + sector;
+                int swordState = Byte.toUnsignedInt(rom[tableIndex]);
+                int absoluteDirection = Byte.toUnsignedInt(rom[tableIndex + 0x20]);
+                int expectedAnimationState = romTables.swordDirectionAnimState(
+                    absoluteDirection, swordState);
+                if (expectedAnimationState == 0xFF) {
+                    expectedAnimationState = previousAnimationState;
+                }
+
+                assertEquals(expectedAnimationState, resolvedAnimationState(link),
+                    "base=" + baseRomDirection + ", countdown=" + countdown);
+                assertEquals(javaDirectionForRomDirection(absoluteDirection), link.direction(),
+                    "base=" + baseRomDirection + ", direction countdown=" + countdown);
+                previousAnimationState = expectedAnimationState;
+            }
+        }
+    }
+
+    @Test
+    void swordAcquisitionSpinOverridesAQueuedMotionBlockedButtPose() throws Exception {
+        RomTables romTables = RomTables.loadFromRom(loadRom());
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        Link link = new Link(new InputState(), inputConfig, romTables, null, null,
+            new PlayerState(), new ItemRegistry());
+        link.setDirection(Link.DIRECTION_RIGHT);
+
+        link.showSwordAcquisitionSpinPose(0x20);
+        int swordState = romTables.swordSpinAnimationState(0, 7);
+        int absoluteDirection = romTables.swordSpinAbsoluteDirection(0, 7);
+        int expectedAnimationState = romTables.swordDirectionAnimState(
+            absoluteDirection, swordState);
+
+        link.blockNextRomMotionFrame();
+        link.showSwordAcquisitionSpinPose(0x1F);
+
+        assertEquals(expectedAnimationState, resolvedAnimationState(link));
+    }
+
+    @Test
+    void swordAcquisitionRendersTheUnslottedSwordBeforeTheRewardIsGranted() throws Exception {
+        byte[] rom = loadRom();
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        PlayerState playerState = new PlayerState();
+        playerState.initializeNewGame(0, 0, 0);
+        ItemRegistry itemRegistry = new ItemRegistry();
+        RecordingRenderItem sword = new RecordingRenderItem();
+        itemRegistry.register(PlayerState.INVENTORY_SWORD, sword);
+        Link link = new Link(new InputState(), inputConfig, RomTables.loadFromRom(rom), null,
+            LinkSpriteSheet.loadFromRom(rom), playerState, itemRegistry,
+            GameplaySoundSink.none(), LinkTunicPalette.loadFromRom(rom));
+        link.setPixelPosition(40, 40);
+        link.showSwordAcquisitionSpinPose(0x20);
+
+        link.render(new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4], 0, 0);
+
+        assertEquals(1, sword.renderCalls);
     }
 
     @Test
@@ -590,7 +665,8 @@ final class LinkTest {
     }
 
     @Test
-    void romInteractiveMotionBlockStopsOneFrameAndUsesTheRomAnimationState() throws Exception {
+    void romInteractiveMotionBlockStopsOneFrameWithoutInventingAnAnimationState()
+            throws Exception {
         RomTables romTables = RomTables.loadFromRom(loadRom());
         InputState inputState = new InputState();
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
@@ -600,6 +676,7 @@ final class LinkTest {
         inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
         link.useRocsFeather();
         assertEquals(0x20, link.zVelocity());
+        int priorAnimationState = resolvedAnimationState(link);
 
         link.blockNextRomMotionFrame();
         link.update();
@@ -607,11 +684,26 @@ final class LinkTest {
         assertEquals(0x40, link.pixelX());
         assertEquals(0x50, link.pixelY());
         assertEquals(0, link.zVelocity());
-        assertEquals(0x6A, resolvedAnimationState(link));
+        assertEquals(priorAnimationState, resolvedAnimationState(link));
 
         inputState.onKeyEvent(inputConfig.rightKey(), GLFW_RELEASE);
         link.update();
         assertEquals(0x00, resolvedAnimationState(link));
+    }
+
+    @Test
+    void explicitRomFallenPoseUsesAnimationState6A() throws Exception {
+        RomTables romTables = RomTables.loadFromRom(loadRom());
+        Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
+            romTables, null, null, new PlayerState(), new ItemRegistry());
+        link.setPixelPosition(0x40, 0x50);
+
+        link.showRomFallenPose();
+        link.update();
+
+        assertEquals(0x40, link.pixelX());
+        assertEquals(0x50, link.pixelY());
+        assertEquals(0x6A, resolvedAnimationState(link));
     }
 
     @Test
@@ -1596,6 +1688,16 @@ final class LinkTest {
         return (Integer) method.invoke(link);
     }
 
+    private static int javaDirectionForRomDirection(int romDirection) {
+        return switch (romDirection) {
+            case 0 -> Link.DIRECTION_RIGHT;
+            case 1 -> Link.DIRECTION_LEFT;
+            case 2 -> Link.DIRECTION_UP;
+            case 3 -> Link.DIRECTION_DOWN;
+            default -> throw new AssertionError(romDirection);
+        };
+    }
+
     private static void runUntilPitFallStarts(Link link) {
         int guard = 0;
         while (!link.isFallingIntoPit() && guard++ < 128) {
@@ -1649,6 +1751,16 @@ final class LinkTest {
         @Override
         public boolean blocksMotion() {
             return true;
+        }
+    }
+
+    private static final class RecordingRenderItem implements EquippedItem {
+        private int renderCalls;
+
+        @Override
+        public void render(byte[] displayBuffer, int linkPixelX, int linkPixelY,
+                           int direction, int offsetX, int offsetY) {
+            renderCalls++;
         }
     }
 

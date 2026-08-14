@@ -327,6 +327,21 @@ public final class Sword implements EquippedItem {
         return spinFramesRemaining > 0;
     }
 
+    /** Starts the ROM's forced sword-spin state (wIsUsingSpinAttack=$20). */
+    public void startSwordAcquisitionSpin(int baseDirection) {
+        if (baseDirection < Link.DIRECTION_DOWN || baseDirection > Link.DIRECTION_RIGHT) {
+            throw new IllegalArgumentException("Invalid Link direction: " + baseDirection);
+        }
+        spinBaseDirection = baseDirection;
+        spinFramesRemaining = SPIN_ATTACK_FRAMES;
+        spinFrameCounter = 1;
+        spinSector = 7;
+        spinAttackQueued = false;
+        queuedSpinDelayFrames = 0;
+        state = STATE_NONE;
+        charge = 0;
+    }
+
     /**
      * Mirrors the ROM's ResetSpinAttack helper (bank0.asm:$0CAF).  Entity
      * collisions use it to cancel a charged or active spin before Link's next
@@ -399,11 +414,19 @@ public final class Sword implements EquippedItem {
         if (!spinAttackActive()) {
             return direction;
         }
-        return SPIN_ABSOLUTE_DIRECTION_BY_BASE_DIRECTION[toSpinDirectionIndex(spinBaseDirection)][spinSector()];
+        int baseDirection = toSpinDirectionIndex(spinBaseDirection);
+        return romTables == null
+            ? SPIN_ABSOLUTE_DIRECTION_BY_BASE_DIRECTION[baseDirection][spinSector()]
+            : fromRomDirection(romTables.swordSpinAbsoluteDirection(
+                toRomDirection(spinBaseDirection), spinSector()));
     }
 
     private int spinAnimationState() {
-        return SPIN_ANIMATION_STATE_BY_BASE_DIRECTION[toSpinDirectionIndex(spinBaseDirection)][spinSector()];
+        int baseDirection = toSpinDirectionIndex(spinBaseDirection);
+        return romTables == null
+            ? SPIN_ANIMATION_STATE_BY_BASE_DIRECTION[baseDirection][spinSector()]
+            : romTables.swordSpinAnimationState(
+                toRomDirection(spinBaseDirection), spinSector());
     }
 
     private int spinSector() {
@@ -494,6 +517,16 @@ public final class Sword implements EquippedItem {
             case Link.DIRECTION_UP:    return 2;
             case Link.DIRECTION_DOWN:  return 3;
             default: return 3;
+        }
+    }
+
+    private static int fromRomDirection(int romDirection) {
+        switch (romDirection & 0x03) {
+            case 0: return Link.DIRECTION_RIGHT;
+            case 1: return Link.DIRECTION_LEFT;
+            case 2: return Link.DIRECTION_UP;
+            case 3: return Link.DIRECTION_DOWN;
+            default: throw new AssertionError(romDirection);
         }
     }
 

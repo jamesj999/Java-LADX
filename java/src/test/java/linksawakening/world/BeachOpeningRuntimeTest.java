@@ -73,6 +73,8 @@ final class BeachOpeningRuntimeTest {
         boolean foundNormalOverworld = false;
         boolean foundSpinNoise = false;
         boolean foundSpinPose = false;
+        boolean foundFinalPose = false;
+        boolean foundSpinFrameWithoutMotionBlock = false;
         List<RoomEntityRuntime.SwordPickupRewardEvent> rewards = List.of();
         for (int frame = 3; frame < 0x240 && rewards.isEmpty(); frame++) {
             runtime.tick(frame, 0x58, 0x60, () -> 0);
@@ -84,7 +86,15 @@ final class BeachOpeningRuntimeTest {
             foundSpinNoise |= runtime.consumePendingEntityEvents().stream()
                 .anyMatch(event -> event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE
                     && event.soundId() == 0x03);
-            foundSpinPose |= !runtime.consumePendingLinkSwordSpinPoseRequests().isEmpty();
+            List<RoomEntityRuntime.LinkSwordSpinPoseRequest> spinRequests =
+                runtime.consumePendingLinkSwordSpinPoseRequests();
+            List<RoomEntityRuntime.LinkMotionBlockRequest> motionBlockRequests =
+                runtime.consumePendingLinkMotionBlockRequests();
+            foundSpinPose |= !spinRequests.isEmpty();
+            if (spinRequests.stream().anyMatch(request -> request.countdown() != 0x20)) {
+                foundSpinFrameWithoutMotionBlock |= motionBlockRequests.isEmpty();
+            }
+            foundFinalPose |= !runtime.consumePendingLinkSwordFinalPoseRequests().isEmpty();
             rewards = runtime.consumePendingSwordPickupRewards();
         }
 
@@ -96,6 +106,8 @@ final class BeachOpeningRuntimeTest {
             + runtime.swordPickupStateForTest(0) + ", slow="
             + runtime.slowTransitionCountdownForTest(0));
         assertTrue(foundSpinPose);
+        assertTrue(foundSpinFrameWithoutMotionBlock);
+        assertTrue(foundFinalPose);
         assertEquals(List.of(new RoomEntityRuntime.SwordPickupRewardEvent(0)), rewards);
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
     }
@@ -178,17 +190,20 @@ final class BeachOpeningRuntimeTest {
 
         boolean dialogOpened = false;
         boolean linkBlocked = false;
+        boolean fallenPoseRequested = false;
         int frame = 2;
         while (!dialogOpened && frame < 0x300) {
             runtime.tick(frame++, 0x58, 0x60, () -> 0);
             dialogOpened |= runtime.consumePendingDialogRequests().stream()
                 .anyMatch(request -> request.globalDialogId() == 0x0D9);
             linkBlocked |= !runtime.consumePendingLinkMotionBlockRequests().isEmpty();
+            fallenPoseRequested |= !runtime.consumePendingLinkFallenPoseRequests().isEmpty();
             assertTrue(runtime.consumePendingOwlEventCompletions().isEmpty());
         }
 
         assertTrue(dialogOpened);
         assertTrue(linkBlocked);
+        assertFalse(fallenPoseRequested);
         for (int countdown = 0x0F; countdown > 0; countdown--) {
             runtime.tick(frame++, 0x58, 0x60, () -> 0);
             assertTrue(runtime.consumePendingOwlEventCompletions().isEmpty());
