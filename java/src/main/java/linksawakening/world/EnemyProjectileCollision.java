@@ -25,6 +25,7 @@ public final class EnemyProjectileCollision {
     static final int JINGLE_ENEMY_BUMP = 0x09;
     static final int WAVE_LINK_HURT = 0x03;
     static final int LINK_IGNORE_COLLISION_COUNTDOWN = 0x0C;
+    static final int LINK_KNOCKBACK_LENGTH = 0x14;
 
     // HitboxPositions._00 at home/entities.asm:$3AAA. Pairodd's projectile
     // uses the normal hitbox flags, just like the regular Pairodd entity.
@@ -105,11 +106,8 @@ public final class EnemyProjectileCollision {
             ? COLLISION_PROJECTILE : (remove ? COLLISION_NONE : COLLISION_PROJECTILE);
         int swordPokeX = pairoddProjectile ? projectile.x() : 0;
         int swordPokeY = pairoddProjectile ? projectileVisualY : 0;
-        return Optional.of(new EntityProjectileEvent(
-            projectile.slot(), type, EntityProjectileEvent.Kind.LINK_DAMAGE,
-            collisionValue, LINK_DAMAGE,
-            EntityProjectileEvent.SoundChannel.WAVE, WAVE_LINK_HURT,
-            remove, pairoddProjectile, swordPokeX, swordPokeY));
+        return Optional.of(linkDamageEvent(projectile, type, collisionValue, remove,
+            pairoddProjectile, swordPokeX, swordPokeY, link));
     }
 
     /**
@@ -162,10 +160,30 @@ public final class EnemyProjectileCollision {
 
         // A beam that is not reflected is unloaded by the bank-$15 handler;
         // its source damage group supplies eight points of Link damage.
-        return Optional.of(new EntityProjectileEvent(
-            projectile.slot(), ENTITY_LASER_BEAM, EntityProjectileEvent.Kind.LINK_DAMAGE,
-            COLLISION_NONE, LINK_DAMAGE, EntityProjectileEvent.SoundChannel.WAVE, WAVE_LINK_HURT,
-            true, false));
+        return Optional.of(linkDamageEvent(projectile, ENTITY_LASER_BEAM, COLLISION_NONE,
+            true, false, 0, 0, link));
+    }
+
+    /** Mirrors ApplyLinkCollisionWithEnemy's generic Link response. */
+    private static EntityProjectileEvent linkDamageEvent(
+        RoomEntity projectile, int type, int collisionValue, boolean remove,
+        boolean swordPokeVfx, int swordPokeX, int swordPokeY, LinkState link) {
+        boolean collisionProtected = link.invincibilityCounter() != 0;
+        if (collisionProtected) {
+            return new EntityProjectileEvent(
+                projectile.slot(), type, EntityProjectileEvent.Kind.LINK_DAMAGE,
+                collisionValue, 0, EntityProjectileEvent.SoundChannel.NONE, -1,
+                remove, swordPokeVfx, swordPokeX, swordPokeY);
+        }
+
+        EnemyRecoilMotion.Vector vector = EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
+            projectile.x(), projectile.y(), projectile.z(), link.x(), link.y(),
+            LINK_KNOCKBACK_LENGTH);
+        return new EntityProjectileEvent(
+            projectile.slot(), type, EntityProjectileEvent.Kind.LINK_DAMAGE,
+            collisionValue, LINK_DAMAGE, EntityProjectileEvent.SoundChannel.WAVE, WAVE_LINK_HURT,
+            remove, swordPokeVfx, swordPokeX, swordPokeY,
+            vector.x() & 0xFF, vector.y() & 0xFF, 0x10);
     }
 
     /* Data_003_6BDA: expected beam direction for Link right/left/up/down. */

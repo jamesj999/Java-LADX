@@ -133,7 +133,9 @@ final class UrchinRuntimeTest {
 
         assertEquals(0, update.direction());
         assertEquals(0x12, update.physicsFlags());
-        assertFalse(update.linkCollision());
+        // The shield is not harmless from this direction, but the shared
+        // CheckLinkCollisionWithEnemy path still accepts the damaging contact.
+        assertTrue(update.linkCollision());
         assertFalse(update.pushed());
         assertEquals(0x40, update.entity().x());
         assertEquals(-1, update.jingleId());
@@ -175,6 +177,24 @@ final class UrchinRuntimeTest {
         assertEquals(1, events.size());
         assertEquals(EntityCombatEvent.SoundChannel.JINGLE, events.get(0).soundChannel());
         assertEquals(0x3E, events.get(0).soundId());
+    }
+
+    @Test
+    void runtimeRestoresLinkFinalPositionForNormalContactWithoutShieldPush() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
+            0, 0, ENTITY_URCHIN, 0x40, 0x40, EntityStatus.ACTIVE,
+            catalog.forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD), 0)),
+            false, () -> 0, catalog, new RomEnemyCombatTables(rom));
+
+        runtime.tickWithProjectileEvents(0, 0x48, 0x40, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0x48, 0x40, 0, 0, 2, false));
+
+        assertEquals(0x12, runtime.physicsFlags(0));
+        assertEquals(List.of(new RoomEntityRuntime.LinkFinalPositionRequest(0)),
+            runtime.consumePendingLinkFinalPositionRequests());
+        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
     }
 
     private static void assertUrchinSprites(EntitySpriteDefinition definition, int address,

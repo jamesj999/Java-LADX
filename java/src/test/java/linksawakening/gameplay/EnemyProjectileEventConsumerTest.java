@@ -1,14 +1,22 @@
 package linksawakening.gameplay;
 
+import linksawakening.entity.Link;
+import linksawakening.equipment.ItemRegistry;
+import linksawakening.input.InputConfig;
+import linksawakening.input.InputState;
+import linksawakening.physics.OverworldCollision;
+import linksawakening.rom.RomTables;
 import linksawakening.state.PlayerState;
 import linksawakening.world.EntityProjectileEvent;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class EnemyProjectileEventConsumerTest {
 
@@ -36,6 +44,50 @@ final class EnemyProjectileEventConsumerTest {
         EnemyProjectileEventConsumer.consume(List.of(event), player, sounds);
         assertEquals(15, player.health());
         assertEquals(List.of(GameplaySoundEvent.LINK_HURT), sounds.events);
+    }
+
+    @Test
+    void appliesAcceptedProjectileRecoilToLinkExactlyOnce() throws IOException {
+        PlayerState player = new PlayerState();
+        player.setHealth(16);
+        Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
+            loadRomTables(), null, null, player, new ItemRegistry());
+        RecordingSoundSink sounds = new RecordingSoundSink();
+        EntityProjectileEvent event = new EntityProjectileEvent(
+            0, 0x0A, EntityProjectileEvent.Kind.LINK_DAMAGE, 0xFF, 0x08,
+            EntityProjectileEvent.SoundChannel.WAVE, 0x03, false, false,
+            0, 0, 0xF0, 0x14, 0x10);
+
+        EnemyProjectileEventConsumer.consume(List.of(event), player, link, sounds);
+        link.update();
+
+        assertEquals(0xF0, link.romSpeedX());
+        assertEquals(0x14, link.romSpeedY());
+        assertEquals(8, player.subtractHealthBuffer());
+    }
+
+    @Test
+    void appliesProtectedEnemyBombMotionWithoutApplyingAnotherHit() throws IOException {
+        PlayerState player = new PlayerState();
+        player.setHealth(16);
+        RomTables romTables = loadRomTables();
+        OverworldCollision collision = new OverworldCollision(romTables);
+        collision.setRoom(emptyRoomObjectsArea());
+        Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
+            romTables, collision, null, player, new ItemRegistry());
+        RecordingSoundSink sounds = new RecordingSoundSink();
+        EntityProjectileEvent event = new EntityProjectileEvent(
+            0, 0x02, EntityProjectileEvent.Kind.LINK_DAMAGE, 0, 0,
+            EntityProjectileEvent.SoundChannel.NONE, -1, false, false,
+            0, 0, 0x20, 0xE0, 0);
+
+        EnemyProjectileEventConsumer.consume(List.of(event), player, link, sounds);
+        link.update();
+
+        assertEquals(0x20, link.romSpeedX());
+        assertEquals(0xE0, link.romSpeedY());
+        assertEquals(0, player.subtractHealthBuffer());
+        assertTrue(sounds.events.isEmpty());
     }
 
     @Test
@@ -131,5 +183,21 @@ final class EnemyProjectileEventConsumerTest {
         public void play(GameplaySoundEvent event) {
             events.add(event);
         }
+    }
+
+    private static RomTables loadRomTables() throws IOException {
+        try (var stream = EnemyProjectileEventConsumerTest.class.getClassLoader()
+            .getResourceAsStream("rom/azle.gbc")) {
+            if (stream == null) {
+                throw new IOException("Missing ROM resource: rom/azle.gbc");
+            }
+            return RomTables.loadFromRom(stream.readAllBytes());
+        }
+    }
+
+    private static int[] emptyRoomObjectsArea() {
+        int[] roomObjectsArea = new int[0x100];
+        java.util.Arrays.fill(roomObjectsArea, 0xFF);
+        return roomObjectsArea;
     }
 }

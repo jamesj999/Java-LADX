@@ -23,9 +23,21 @@ final class EnemyRecoilMotion {
     record Vector(int x, int y) {
     }
 
-    /** Mirrors GetVectorTowardsLink's signed vector result. */
+    /** Mirrors the existing shared enemy-recoil vector convention. */
     static Vector vectorTowardsLink(int entityX, int entityY, int entityZ,
                                     int linkX, int linkY, int length) {
+        return vectorTowardsLink(entityX, entityY, entityZ, linkX, linkY, length, true);
+    }
+
+    /** Mirrors GetVectorTowardsLink for a Link collision response. */
+    static Vector vectorTowardsLinkForLinkCollision(int entityX, int entityY, int entityZ,
+                                                    int linkX, int linkY, int length) {
+        return vectorTowardsLink(entityX, entityY, entityZ, linkX, linkY, length, false);
+    }
+
+    private static Vector vectorTowardsLink(int entityX, int entityY, int entityZ,
+                                            int linkX, int linkY, int length,
+                                            boolean zeroDistanceYIsNegative) {
         if (length < 0 || length > 0xFF) {
             throw new IllegalArgumentException("Vector length must be an unsigned byte");
         }
@@ -44,9 +56,10 @@ final class EnemyRecoilMotion {
         if (distanceX < 0) {
             vectorX = -vectorX;
         }
-        // GetEntityYDistanceToLink leaves the zero case on its UP branch;
-        // GetVectorTowardsLink therefore negates a zero-distance Y result.
-        if (distanceY <= 0) {
+        // The legacy enemy-recoil callers retain their established zero-axis
+        // tie convention. Link collision responses follow the ROM helper,
+        // whose nonnegative branch includes zero.
+        if (distanceY < 0 || (zeroDistanceYIsNegative && distanceY == 0)) {
             vectorY = -vectorY;
         }
         return new Vector(vectorX, vectorY);

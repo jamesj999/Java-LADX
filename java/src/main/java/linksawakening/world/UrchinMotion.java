@@ -62,10 +62,13 @@ final class UrchinMotion {
         }
 
         RoomEntity updated = withVariant(entity, (frameCounter >>> 4) & 0x03);
+        // CheckLinkCollisionWithEnemy is the shared damage gate. Urchin's
+        // handler copies hLinkFinalPosition after every accepted contact;
+        // harmless shield/sword contact only changes what happens to the
+        // urchin after that collision, it does not make normal contact cease
+        // to be a collision.
         boolean linkCollision = RoomEntityCombatRules.overlapsLink(
-            entity, linkEntityX, linkEntityY)
-            && (((nextPhysicsFlags & ENTITY_PHYSICS_HARMLESS) != 0)
-                || swordCollisionActive);
+            entity, linkEntityX, linkEntityY);
         boolean pushed = false;
         boolean appliesBackgroundInteraction = false;
         int collisionFlags = 0;

@@ -4866,7 +4866,7 @@ public final class RoomEntityRuntime {
                 EntityCombatEvent.LinkCollisionResponse.NONE;
             if (linkDamage > 0 && !swordHit
                 && RoomEntityCombatRules.usesStandardLinkContactResponse(entity.type())) {
-                EnemyRecoilMotion.Vector vector = EnemyRecoilMotion.vectorTowardsLink(
+                EnemyRecoilMotion.Vector vector = EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
                     entity.x(), entity.y(), entity.z(), linkEntityX, linkEntityY, 0x14);
                 linkCollisionResponse = new EntityCombatEvent.LinkCollisionResponse(
                     vector.x() & 0xFF, vector.y() & 0xFF, 0x10);
@@ -9315,6 +9315,8 @@ public final class RoomEntityRuntime {
         boolean collisionProtected = projectileLinkState.invincibilityCounter() != 0;
         int linkDamage = enemyCombatTables == null
             ? 0x08 : enemyCombatTables.contactDamage(ENTITY_BOMB);
+        EnemyRecoilMotion.Vector linkResponse = EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
+            bomb.x(), bomb.y(), bomb.z(), linkEntityX, linkEntityY, 0x14);
         projectileEvents.add(new EntityProjectileEvent(
             bomb.slot(), ENTITY_BOMB, EntityProjectileEvent.Kind.LINK_DAMAGE, 0,
             collisionProtected ? 0 : linkDamage,
@@ -9322,7 +9324,10 @@ public final class RoomEntityRuntime {
                 ? EntityProjectileEvent.SoundChannel.NONE
                 : EntityProjectileEvent.SoundChannel.WAVE,
             collisionProtected ? -1 : 0x03, false, false, 0, 0,
-            (currentLinkSpeedX << 1) & 0xFF, (currentLinkSpeedY << 1) & 0xFF,
+            collisionProtected
+                ? (currentLinkSpeedX << 1) & 0xFF : (linkResponse.x() << 1) & 0xFF,
+            collisionProtected
+                ? (currentLinkSpeedY << 1) & 0xFF : (linkResponse.y() << 1) & 0xFF,
             collisionProtected ? 0 : 0x10));
     }
 

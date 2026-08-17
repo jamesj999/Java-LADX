@@ -1,5 +1,6 @@
 package linksawakening.gameplay;
 
+import linksawakening.entity.Link;
 import linksawakening.state.PlayerState;
 import linksawakening.world.EntityProjectileEvent;
 
@@ -17,6 +18,14 @@ public final class EnemyProjectileEventConsumer {
 
     public static void consume(List<EntityProjectileEvent> events,
                                PlayerState playerState,
+                               GameplaySoundSink soundSink) {
+        consume(events, playerState, null, soundSink);
+    }
+
+    /** Applies projectile damage and the accepted hit's Link motion response. */
+    public static void consume(List<EntityProjectileEvent> events,
+                               PlayerState playerState,
+                               Link link,
                                GameplaySoundSink soundSink) {
         Objects.requireNonNull(events, "events");
         Objects.requireNonNull(playerState, "playerState");
@@ -42,21 +51,41 @@ public final class EnemyProjectileEventConsumer {
                 }
                 continue;
             }
-            if (event.kind() != EntityProjectileEvent.Kind.LINK_DAMAGE
-                || event.linkDamage() <= 0
-                || playerState.invincibilityCounter() != 0) {
+            if (event.kind() != EntityProjectileEvent.Kind.LINK_DAMAGE) {
+                continue;
+            }
+
+            // The enemy-bomb handler doubles the existing Link speed even
+            // when ApplyLinkCollisionWithEnemy rejects the new damage due to
+            // invincibility. It is a motion response, not another hit.
+            if (event.linkDamage() <= 0) {
+                applyLinkResponse(event, link);
+                continue;
+            }
+            if (playerState.invincibilityCounter() != 0) {
                 continue;
             }
 
             playHurtSound(event, soundSink);
-            if (event.type() == 0x02) {
-                // ApplyLinkCollisionWithEnemy begins by ResetPegasusBoots for
-                // the enemy-bomb branch, even when a guardian acorn reduces
-                // the resulting damage to zero.
-                playerState.setRunningWithPegasusBoots(false);
-            }
+            // ApplyLinkCollisionWithEnemy begins by ResetPegasusBoots for
+            // every generic damaging source, even when a guardian acorn
+            // reduces the resulting damage to zero.
+            playerState.setRunningWithPegasusBoots(false);
             playerState.applyRomEnemyDamage(event.linkDamage());
+            applyLinkResponse(event, link);
         }
+    }
+
+    private static void applyLinkResponse(EntityProjectileEvent event, Link link) {
+        if (link != null && hasLinkResponse(event)) {
+            link.applyRomSpeed(event.linkSpeedX(), event.linkSpeedY());
+            link.setCollisionIgnoreFrames(event.linkIgnoreCollisionCountdown());
+        }
+    }
+
+    private static boolean hasLinkResponse(EntityProjectileEvent event) {
+        return event.linkIgnoreCollisionCountdown() != 0
+            || event.linkSpeedX() != 0 || event.linkSpeedY() != 0;
     }
 
     private static void playShieldSound(EntityProjectileEvent event,

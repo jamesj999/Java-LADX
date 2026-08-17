@@ -1170,7 +1170,7 @@ public class Main {
                 for (var request : roomSession.consumeScreenShakeRequests()) {
                     scrollController.startScreenShake(request.countdown(), request.phase());
                 }
-                EnemyProjectileEventConsumer.consume(projectileEvents, playerState,
+                EnemyProjectileEventConsumer.consume(projectileEvents, playerState, link,
                     gameplaySoundSink);
                 EnemyCombatEventConsumer.consume(roomSession.consumeEntityEvents(),
                     gameplaySoundSink, transientVfxSystem);
@@ -1238,6 +1238,21 @@ public class Main {
                 }
                 roomTransitionCoordinator.handlePendingInstrumentTransition(link);
                 for (var event : projectileEvents) {
+                    // Accepted LINK_DAMAGE responses are applied by the
+                    // projectile consumer before PlayerState becomes
+                    // invincible. Keep this pass for shield reflection,
+                    // sword-poke, and hookshot responses only.
+                    if (event.kind() == EntityProjectileEvent.Kind.LINK_DAMAGE) {
+                        boolean hasLinkResponse = event.linkIgnoreCollisionCountdown() != 0
+                            || event.linkSpeedX() != 0 || event.linkSpeedY() != 0;
+                        if (hasLinkResponse) {
+                            Sword interruptedSword = equipmentController.activeSword();
+                            if (interruptedSword != null) {
+                                interruptedSword.resetSpinAttack();
+                            }
+                        }
+                        continue;
+                    }
                     boolean hookshotPull = event.kind() == EntityProjectileEvent.Kind.HOOKSHOT_PULL;
                     boolean hasLinkResponse = event.linkIgnoreCollisionCountdown() != 0
                         || event.linkSpeedX() != 0 || event.linkSpeedY() != 0;

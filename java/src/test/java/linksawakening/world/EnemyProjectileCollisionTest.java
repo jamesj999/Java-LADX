@@ -72,6 +72,9 @@ final class EnemyProjectileCollisionTest {
         assertEquals(0xFF, rockHit.collisionValue());
         assertEquals(EntityProjectileEvent.SoundChannel.WAVE, rockHit.soundChannel());
         assertEquals(0x03, rockHit.soundId());
+        assertEquals(0x14, rockHit.linkSpeedX());
+        assertEquals(0x14, rockHit.linkSpeedY());
+        assertEquals(0x10, rockHit.linkIgnoreCollisionCountdown());
         assertFalse(rockHit.remove());
 
         EntityProjectileEvent arrowHit = EnemyProjectileCollision.check(
