@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Extend the uninterrupted fresh-game Bottle Grotto trace from room `$36` through the ROM route to room `$20`, collect the required Small Key, clear the Boo Buddy event, and obtain and persist the Power Bracelet.
+**Goal:** Extend the uninterrupted fresh-game Bottle Grotto trace from room `$36` through the ROM route to room `$20`, clear the Boo Buddy event, and obtain and persist the Power Bracelet.
 
 **Architecture:** Keep one live `RoomSession`, `Link`, `PlayerState`, collision model, dungeon item state, and frame counter across the ordered route. Exercise existing generic boundary, key-door, enemy, room-event, chest, and reward APIs; add production code only when a watched RED test proves a shared source mismatch. Any correction must follow the disassembly rather than introduce room IDs or test-only state changes.
 
@@ -10,7 +10,7 @@
 
 ---
 
-### Task 1: Reach and validate room `$22`
+### Task 1: Return through the warp and reach room `$21`
 
 **Files:**
 - Modify: `java/src/test/java/linksawakening/world/RoomTransitionCoordinatorTest.java`
@@ -18,21 +18,21 @@
 - Reference: `LADX-Disassembly/src/data/rooms/indoors_a.asm`
 - Reference: `LADX-Disassembly/src/data/entities/indoors_a.asm`
 
-- [ ] **Step 1: Extend the existing ordered test after the room `$36` warp**
+- [x] **Step 1: Extend the existing ordered test after the room `$36` warp**
 
 Continue `freshGameRuntimeSequenceCollectsBottleGrottoFirstKeyInOrder` by using
 room `$36`'s active entity `$61` to return to `$28`, including the source
-leave-to-arm/contact/countdown flow. Then traverse `$28 -> $29 -> $26 -> $21
--> $22` using the collision-path and indoor-boundary helpers. Assert each room
+leave-to-arm/contact/countdown flow. Then traverse `$28 -> $29 -> $26 -> $21`
+using the collision-path and indoor-boundary helpers. Assert each room
 ID and retain the already-cleared miniboss/door state that makes the route
 legal. Do not attempt the solid `$2E -> $2C` north wall.
 
-- [ ] **Step 2: Assert room `$22` source state**
+- [x] **Step 2: Assert room `$21` source state**
 
-Assert event `$00`, chest `$A0` at `$27`, crystal switch `$66` at `$24`, four
-droppable hearts, and the ROM-selected `CHEST_SMALL_KEY` reward.
+Assert event `$00`, chest `$A0` at `$27`, and the ROM-selected
+`CHEST_RUPEES_20` reward.
 
-- [ ] **Step 3: Run the ordered test and verify RED or route success**
+- [x] **Step 3: Run the ordered test and verify RED or route success**
 
 Run:
 
@@ -40,42 +40,43 @@ Run:
 cd java && gradle test --tests 'linksawakening.world.RoomTransitionCoordinatorTest.freshGameRuntimeSequenceCollectsBottleGrottoFirstKeyInOrder' --rerun-tasks
 ```
 
-Expected: either PASS through room `$22`, or FAIL at the first precise
+Expected: either PASS through room `$21`, or FAIL at the first precise
 collision/room-state mismatch. Do not add production code if the route passes.
 
-- [ ] **Step 4: If RED, trace and fix only the demonstrated shared defect**
+- [x] **Step 4: If RED, trace and fix only the demonstrated shared defect**
 
 Read the complete matching source routine, add the smallest focused regression
 that fails for the same reason, implement the generic fix, and rerun both tests.
 
-- [ ] **Step 5: Commit the ordered route checkpoint**
+- [x] **Step 5: Commit the ordered route checkpoint**
 
 ```bash
 git add java/src/test/java/linksawakening/world/RoomTransitionCoordinatorTest.java
-git commit -m "test: reach Bottle Grotto room 22 in order"
+git commit -m "test: return from Bottle Grotto Hinox warp"
 ```
 
-### Task 2: Collect room `$22`'s Small Key
+Completed as commit `027709d`.
+
+### Task 2: Enter room `$20`
 
 **Files:**
 - Modify: `java/src/test/java/linksawakening/world/RoomTransitionCoordinatorTest.java`
 - Modify only for a demonstrated shared defect: `java/src/main/java/linksawakening/world/RoomSession.java`
 - Modify only for a demonstrated shared defect: `java/src/main/java/linksawakening/world/RoomEntityRuntime.java`
 - Test only for a demonstrated shared defect: `java/src/test/java/linksawakening/world/RoomSessionTest.java`
-- Reference: `LADX-Disassembly/src/code/entities/07_chest_with_item.asm`
-- Reference: `LADX-Disassembly/src/data/chests/indoors_a.asm`
+- Reference: `LADX-Disassembly/src/data/maps/layouts.asm`
+- Reference: `LADX-Disassembly/src/data/rooms/indoors_a.asm`
 
-- [ ] **Step 1: Write the ordered chest lifecycle assertions**
+- [ ] **Step 1: Cross `$21 -> $20` through collision**
 
-Find a collision-reachable upward interaction position for `$27`, call
-`tryOpenChest`, tick the real chest entity through reward and presentation,
-consume the reward through the same boundary used earlier in the ordered test,
-and assert Small Keys increment by one.
+Reach room `$21`'s left boundary through collision and use the ordinary indoor
+scroll path. Assert room `$20`; do not spend a key or interact with room `$21`'s
+optional 20-rupee chest.
 
-- [ ] **Step 2: Verify persistence and no duplicate reward**
+- [ ] **Step 2: Assert fresh room `$20` state**
 
-Leave and reload room `$22`; assert room status bit `$10`, chest object `$A1`,
-the unchanged Small Key count, and no second reward event.
+Assert event `$61`, both Boo Buddies `$50` at `$24/$45`, no interactable chest
+before the event, and the hidden `$A1` marker's floor substitution.
 
 - [ ] **Step 3: Run RED**
 
@@ -91,8 +92,6 @@ No room `$22` conditional is permitted.
 
 ```bash
 cd java && gradle test \
-  --tests 'linksawakening.world.RoomEntityRuntimeChestTest' \
-  --tests 'linksawakening.world.RoomSessionTest' \
   --tests 'linksawakening.world.RoomTransitionCoordinatorTest.freshGameRuntimeSequenceCollectsBottleGrottoFirstKeyInOrder' \
   --rerun-tasks
 ```
@@ -101,48 +100,10 @@ cd java && gradle test \
 
 ```bash
 git add java/src/test/java/linksawakening/world/RoomTransitionCoordinatorTest.java java/src/main/java/linksawakening/world/RoomSession.java java/src/main/java/linksawakening/world/RoomEntityRuntime.java java/src/test/java/linksawakening/world/RoomSessionTest.java
-git commit -m "test: collect Bottle Grotto room 22 key"
-```
-
-### Task 3: Spend the key and reach room `$20`
-
-**Files:**
-- Modify: `java/src/test/java/linksawakening/world/RoomTransitionCoordinatorTest.java`
-- Modify only for a demonstrated shared defect: `java/src/main/java/linksawakening/world/RoomSession.java`
-- Test only for a demonstrated shared defect: `java/src/test/java/linksawakening/world/RoomSessionTest.java`
-- Reference: `LADX-Disassembly/src/code/bank2.asm`
-- Reference: `LADX-Disassembly/src/data/rooms/indoors_a.asm`
-
-- [ ] **Step 1: Return `$22 -> $21` through collision**
-
-Assert the west key door pair remains `$EE` in `$21` and `$EF` in `$20` before
-unlocking, and assert the live Small Key count.
-
-- [ ] **Step 2: Unlock through the shared directional path**
-
-Reach the ROM probe position through collision, call
-`tryUnlockIndoorKeyDoor` with the correct left-facing collision bit, tick all
-eight animation/motion-block frames, and assert the Small Key decrement and
-door-status persistence.
-
-- [ ] **Step 3: Cross west into `$20` and assert fresh source state**
-
-Assert event `$61`, both Boo Buddies `$50` at `$24/$45`, no interactable chest
-before the event, and the hidden `$A1` marker's floor substitution.
-
-- [ ] **Step 4: Run RED, fix only a shared defect, and rerun GREEN**
-
-Use the exact ordered test. If synchronized key-door state or hidden-chest
-configuration fails, add a focused regression before changing production.
-
-- [ ] **Step 5: Commit**
-
-```bash
-git add java/src/test/java/linksawakening/world/RoomTransitionCoordinatorTest.java java/src/main/java/linksawakening/world/RoomSession.java java/src/test/java/linksawakening/world/RoomSessionTest.java
 git commit -m "test: reach Bottle Grotto room 20"
 ```
 
-### Task 4: Clear Boo Buddies and reveal the Bracelet chest
+### Task 3: Clear Boo Buddies and reveal the Bracelet chest
 
 **Files:**
 - Modify: `java/src/test/java/linksawakening/world/RoomTransitionCoordinatorTest.java`
@@ -188,7 +149,7 @@ git add java/src/test/java/linksawakening/world/RoomTransitionCoordinatorTest.ja
 git commit -m "feat: reveal Bottle Grotto Bracelet chest"
 ```
 
-### Task 5: Collect and persist the Power Bracelet
+### Task 4: Collect and persist the Power Bracelet
 
 **Files:**
 - Modify: `java/src/test/java/linksawakening/world/RoomTransitionCoordinatorTest.java`
@@ -231,7 +192,7 @@ git add java/src/test/java/linksawakening/world/RoomTransitionCoordinatorTest.ja
 git commit -m "feat: collect Bottle Grotto Power Bracelet"
 ```
 
-### Task 6: Review, verify, and document
+### Task 5: Review, verify, and document
 
 **Files:**
 - Modify: `docs/reconstruction-roadmap.md`

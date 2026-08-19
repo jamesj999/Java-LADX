@@ -3,8 +3,8 @@
 ## Goal
 
 Continue the uninterrupted fresh-game Bottle Grotto session from the post-Hinox
-warp destination in room `$36`, collect the required Small Key in room `$22`,
-and obtain the Power Bracelet from room `$20` through ROM-authored movement,
+warp destination in room `$36`, return through room `$21`, and obtain the Power
+Bracelet from room `$20` through ROM-authored movement,
 door, enemy, event, chest, inventory, and persistence paths.
 
 ## Source route
@@ -12,8 +12,9 @@ door, enemy, event, chest, inventory, and persistence paths.
 The cleared miniboss warp is bidirectional. From its room `$36` endpoint,
 entity `$61` selects the other `DungeonWarps` entry and returns Link to `$28`.
 `MapLayout1` then defines the ordered route as `$28 -> $29 -> $26 -> $21 ->
-$22`. After collecting the Small Key, Link returns west to `$21`, opens its
-west key door, and enters `$20`.
+$20`. The room `$21 -> $20` connection is the open left boundary. The `$EE`
+door at location `$30` in room `$21` is top-facing; it is not the west boundary
+and does not gate the Bracelet route.
 
 The route reuses already-resolved state rather than manufacturing shortcuts:
 room `$28` retains its miniboss-clear status, active warp, and open east door.
@@ -23,26 +24,21 @@ not be bypassed with Feather logic. Room `$36`'s separate overworld front-door
 macro defect is not on this forward route and remains a later dungeon-exit
 milestone.
 
-## Room `$22` Small Key
+## Room `$21` route checkpoint
 
-`IndoorsA22` contains visible chest object `$A0` at location `$27`, crystal
-switch `$66` at `$24`, and event `$00`. `RoomChestsTable[$22]` selects
-`CHEST_SMALL_KEY`. The ordered test must reach the chest through collision,
-open it through `tryOpenChest`, consume the ordinary chest reward/dialog flow,
-increase the dungeon Small Key count, persist the chest status, and confirm the
-opened room state on reload.
+`IndoorsA21` contains visible chest object `$A0` at location `$27` and event
+`$00`. `RoomChestsTable[$21]` selects `CHEST_RUPEES_20`. This chest is optional
+and is asserted as source state rather than collected during the Bracelet
+milestone.
 
-The crystal switch and hearts are not progression requirements for this slice.
-The test should assert their source presence without collecting or rewriting
-them unless collision requires an interaction.
+Room `$22` contains the Small Key and crystal switch, but the raised switch-block
+barrier prevents the direct ordinary/Feather path from `$21`. That branch is not
+a prerequisite for entering room `$20` and is deferred.
 
 ## Key door and room `$20`
 
-`IndoorsA21` places the west key door at `$30,$EE`; `IndoorsA20` places its
-synchronized east half at `$39,$EF`. The Small Key from `$22` is spent through
-the shared directional key-door API. Door animation, motion blocking, dungeon
-key decrement, room-status persistence, and the matching door state in both
-rooms must follow the existing generic implementation.
+Link enters room `$20` by crossing left from room `$21` through the current
+collision and indoor-boundary paths. No key is consumed on this boundary.
 
 `DungeonEventsTable[$20]` is `$61`: kill all enemies, then reveal a chest.
 `IndoorsA20Entities` contains two Boo Buddies `$50` at locations `$24` and
