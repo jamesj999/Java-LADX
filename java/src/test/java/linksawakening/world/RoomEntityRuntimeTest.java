@@ -298,6 +298,68 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void maskedMimicShieldedSideUsesDynamicSwordClinkOption() throws Exception {
+        byte[] rom = loadRom();
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            EntitySpriteHandlerCatalog.ENTITY_MASKED_MIMIC_GORIYA,
+            EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, EntitySpriteHandlerCatalog.ENTITY_MASKED_MIMIC_GORIYA,
+                0x40, 0x50, EntityStatus.ACTIVE, definition, 0)),
+            true, null, catalog, tables);
+
+        runtime.setPressedButtonsMask(0x01);
+        runtime.tick(0, 0x50, 0x50, () -> 0,
+            null, null, 0, 3, 0);
+        assertEquals(0x48, runtime.options1(0));
+
+        List<EntityCombatEvent> swordHit = runtime.resolveCombat(
+            1, 0x50, 0x50, false, true, true,
+            0x40, 0x10, 0x50, 0x10);
+
+        assertEquals(1, swordHit.size());
+        assertEquals(0, swordHit.get(0).enemyDamage());
+        assertEquals(0x02, runtime.enemyHealth(0));
+        assertNotNull(swordHit.get(0).swordPokeVfx());
+        assertEquals(EntityCombatEvent.SoundChannel.JINGLE,
+            swordHit.get(0).soundChannel());
+        assertEquals(0x07, swordHit.get(0).soundId());
+    }
+
+    @Test
+    void maskedMimicVulnerableSideUsesDynamicDamageOption() throws Exception {
+        byte[] rom = loadRom();
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            EntitySpriteHandlerCatalog.ENTITY_MASKED_MIMIC_GORIYA,
+            EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, EntitySpriteHandlerCatalog.ENTITY_MASKED_MIMIC_GORIYA,
+                0x40, 0x50, EntityStatus.ACTIVE, definition, 0)),
+            true, null, catalog, tables);
+
+        runtime.setPressedButtonsMask(0x08);
+        runtime.tick(0, 0x40, 0x70, () -> 0,
+            null, null, 0, 0, 0);
+        runtime.tick(1, 0x40, 0x70, () -> 0,
+            null, null, 0, 0, 0);
+        assertEquals(0x08, runtime.options1(0));
+
+        RoomEntity maskedMimic = runtime.snapshot().slots().get(0);
+        List<EntityCombatEvent> swordHit = runtime.resolveCombat(
+            2, 0x40, 0x70, false, true, true,
+            maskedMimic.x() + 0x08, 0x08, maskedMimic.y() + 0x08, 0x08);
+
+        assertEquals(1, swordHit.size());
+        assertEquals(1, swordHit.get(0).enemyDamage());
+        assertEquals(0x01, runtime.enemyHealth(0));
+        assertNull(swordHit.get(0).swordPokeVfx());
+    }
+
+    @Test
     void crystalSwitchDoesNotRequestAnotherAnimationWhileSwitchBlocksAreActive()
         throws Exception {
         byte[] rom = loadRom();

@@ -1799,6 +1799,94 @@ final class RoomTransitionCoordinatorTest {
         walkToAndCrossIndoorBoundary(
             coordinator, transition, scroll, collision, link, ScrollController.RIGHT);
         assertEquals(0x34, session.currentRoomId());
+        assertEquals(0x81, session.activeRoomEventForTest());
+        assertEquals(2, session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x8F).count());
+        assertEquals(1, session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x2E).count());
+        assertEquals(0x02, session.entitySwitchBlocksStateForTest());
+        tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
+        assertEquals(2, session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x8F).count());
+        assertEquals(1, session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x2E).count());
+
+        List<Integer> maskedMimicSlots = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x8F)
+            .map(RoomEntity::slot).toList();
+        int defeatedMaskedMimics = 0;
+        for (int maskedMimicSlot : maskedMimicSlots) {
+            for (int hit = 0; hit < 2; hit++) {
+                RoomEntity maskedMimic = session.activeRoom().entities().slots()
+                    .get(maskedMimicSlot);
+                assertEquals(EntityStatus.ACTIVE, maskedMimic.status());
+                int linkEntityX = maskedMimic.x();
+                int linkEntityY = (maskedMimic.y() + 0x20) & 0xFF;
+                // The first handler tick mirrors Link's down input. The next
+                // sees Link behind that facing and selects vulnerable options $08.
+                session.setEntityPressedButtonsMask(0x08);
+                tickInteractiveEntities(session, frame++, linkEntityX, linkEntityY);
+                tickInteractiveEntities(session, frame++, linkEntityX, linkEntityY);
+                maskedMimic = session.activeRoom().entities().slots().get(maskedMimicSlot);
+                List<EntityCombatEvent> hitEvents = session.resolveEntityCombat(
+                    frame++, linkEntityX, linkEntityY, false, true, true,
+                    maskedMimic.x() + 0x08, 0x08,
+                    maskedMimic.y() + 0x08, 0x08);
+                assertTrue(hitEvents.stream().anyMatch(event ->
+                    event.slot() == maskedMimicSlot && event.swordHit()
+                        && event.enemyDamage() == 1), hitEvents.toString());
+                session.setEntityPressedButtonsMask(0);
+                for (int recovery = 0; recovery < 0x30; recovery++) {
+                    session.tickEntitiesWithProjectileEvents(
+                        frame++, link.romEntityX(), link.romEntityY(), 0, 0,
+                        link.direction(), false);
+                }
+            }
+            int mimicDeathDeadline = frame + 0x200;
+            while (session.activeRoom().entities().slots().get(maskedMimicSlot).status()
+                    != EntityStatus.DISABLED && frame < mimicDeathDeadline) {
+                tickInteractiveEntities(
+                    session, frame++, link.romEntityX(), link.romEntityY());
+            }
+            assertEquals(EntityStatus.DISABLED,
+                session.activeRoom().entities().slots().get(maskedMimicSlot).status());
+            defeatedMaskedMimics++;
+            if (defeatedMaskedMimics == 1) {
+                assertEquals(0x81, session.activeRoomEventForTest());
+                assertEquals(0, session.activeRoom().entities().loadedEntities().stream()
+                    .filter(entity -> entity.type() == 0x30).count());
+            }
+        }
+        session.setEntityPressedButtonsMask(0);
+        int mimicEventDeadline = frame + 0x300;
+        while (session.activeRoomEventForTest() != 0 && frame < mimicEventDeadline) {
+            tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
+        }
+        assertEquals(0, session.activeRoomEventForTest());
+        assertTrue(session.activeRoom().entities().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == 0x2E));
+        RoomEntity secondBottleKey = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x30).findFirst().orElseThrow();
+        int secondKeyLandingDeadline = frame + 0x200;
+        while (secondBottleKey.z() != 0 && frame < secondKeyLandingDeadline) {
+            tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
+            secondBottleKey = session.activeRoom().entities().slots().get(secondBottleKey.slot());
+        }
+        assertEquals(0, secondBottleKey.z());
+        List<int[]> secondKeyPath = reachableEntityContactPath(
+            collision, link.pixelX(), link.pixelY(), secondBottleKey);
+        assertNotNull(secondKeyPath, collisionGrid(collision));
+        for (int[] position : secondKeyPath) {
+            link.setPixelPosition(position[0], position[1]);
+        }
+        int secondKeyPickupFrame = (secondBottleKey.slot() & 0x01) == 0
+            ? frame | 1 : frame & ~1;
+        assertNotNull(session.collectEntityIfNeeded(
+            secondKeyPickupFrame, link.romEntityX(), link.romEntityY(),
+            false, true, Link.DIRECTION_DOWN, 0));
+        assertEquals(2, session.currentDungeonItemFlagsSnapshot()[
+            DungeonItemState.SMALL_KEYS_INDEX]);
+        assertEquals(0x10, session.indoorRoomStatusForTest(0x01, 0x34) & 0x10);
     }
 
     @Test

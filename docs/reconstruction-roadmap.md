@@ -2679,5 +2679,27 @@ of scope.
   nine gameplay VBlanks complete stages `$01..$09`, toggle the global state to
   `$02`, synchronize Link collision, and make the tested `$DC` cell passable.
 - Ordered play then crosses the newly passable east route into room `$34`.
-  That room's masked-Mimic encounter and event `$81` key drop are the next
-  gameplay frontier.
+  The route now continues through that encounter as described below.
+
+## Verified Bottle Grotto Masked-Mimic key — 2026-08-19
+
+- The uninterrupted fresh-game regression enters room `$34` and verifies
+  `DungeonEventsTable[$34] == $81`, the two `$8F` Masked Mimics from
+  `IndoorsA34Entities`, the excluded `$2E` rupee, and carried crystal-switch
+  state `$02`.
+- Live bank-$19 handler ticks establish each Mimic's mirrored facing and
+  dynamic options. Combat now consumes option bit `$40`: shield-side sword
+  contact produces the source JINGLE `$07` and sword-poke response, while
+  options `$08` allow normal ROM-table damage. Both two-health enemies then
+  complete the ordinary death path without direct slot or health mutation.
+- Event `$81` clears only after both kill-all participants disappear; the
+  remaining rupee does not block it. The shared event path spawns key `$30`,
+  the test waits for its airborne motion to land, moves Link over a
+  collision-valid path, and collects Bottle Grotto's second Small Key through
+  the ordinary pickup API. The pickup also persists room `$34`'s source `$10`
+  completion bit.
+- Focused suites and the clean Java suite pass with 1,673 tests and zero
+  failures, errors, or skipped tests. Independent source-fidelity and
+  code-quality reviews report no remaining Critical or Important findings.
+- Room `$35`, whose ROM entity list contains two Spiked Beetles and whose
+  dungeon-event entry is zero, is the next accessible gameplay frontier.

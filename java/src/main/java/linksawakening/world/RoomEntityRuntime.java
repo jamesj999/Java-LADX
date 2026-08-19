@@ -4699,6 +4699,8 @@ public final class RoomEntityRuntime {
             boolean peaHatSwordClink = entity.type() == ENTITY_PEAHAT && !peaHatGrounded;
             boolean spikedBeetleSwordClink = entity.type() == ENTITY_SPIKED_BEETLE
                 && (options1(entity.slot()) & 0x40) != 0;
+            boolean maskedMimicSwordClink = entity.type() == ENTITY_MASKED_MIMIC_GORIYA
+                && (options1(entity.slot()) & 0x40) != 0;
             boolean rollingBonesBarSwordClink = entity.type() == ENTITY_ROLLING_BONES_BAR;
             boolean moblinKingSwordClink = entity.type() == ENTITY_MOBLIN_KING
                 && moblinKingMotion.state(entity.slot()) != 5;
@@ -4744,6 +4746,7 @@ public final class RoomEntityRuntime {
                 soundId = 0x09;
             } else if (swordHit && RoomEntityCombatRules.swordPokeForSwordCollision(
                 entity.type(), peaHatSwordClink || spikedBeetleSwordClink
+                    || maskedMimicSwordClink
                     || rollingBonesBarSwordClink || moblinKingSwordClink)
                 && !moldormTailSwordHit) {
                 // EnemyCollidedWithSword's ENTITY_OPT1_SWORD_CLINK_OFF path

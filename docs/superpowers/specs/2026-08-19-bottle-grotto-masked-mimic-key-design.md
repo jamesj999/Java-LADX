@@ -28,10 +28,13 @@ room-event, drop-motion, and pickup paths.
 Continue the same `RoomSession`, `Link`, `PlayerState`, collision map, and frame
 counter used by the ordered-play regression. Initialize room `$34` normally,
 drive Masked-Mimic direction/options through live entity ticks, approach their
-vulnerable side using collision-aware movement, and damage them through
-`resolveEntityCombat`. Do not clear slots, rewrite health, or complete the room
-event directly. Let the shared death/event runtime spawn the key, wait for its
-normal landing, then collect it through `collectEntityIfNeeded`.
+vulnerable side through source-shaped Link coordinates and input, and damage
+them at the combat boundary through `resolveEntityCombat`. Room geometry and
+sword hitbox construction remain independently covered by their focused tests;
+this regression owns handler-to-combat-to-event ordering. Do not clear slots,
+rewrite health, or complete the room event directly. Let the shared death/event
+runtime spawn the key, wait for its normal landing, then move Link along a
+collision-valid path and collect it through `collectEntityIfNeeded`.
 
 Any failure must be fixed in the shared handler, combat-option, room-event, or
 drop/pickup component that owns the source behavior. Do not special-case room
