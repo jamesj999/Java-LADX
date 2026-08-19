@@ -28,14 +28,15 @@ persisting a chest or key reward. `MapLayout1` then leads north to room `$2E`.
 `IndoorsA2E` contains one Hardhat Beetle, holes/trench objects, and static chest
 `$A0` at `$24`. Its indoor-A chest entry is `CHEST_STONE_BEAK`. Link must use
 collision-valid movement and the existing Roc's Feather traversal where the
-trench requires it. The Hardhat uses its generic shield/knockback and pit-death
-behavior; no direct health mutation or room-specific shortcut is allowed.
+trench requires it. The Hardhat is an optional hazard: the chest is static and
+does not require event `$21` to clear, so this slice verifies that the Hardhat
+remains live while Link crosses the trench rather than inventing a kill gate.
 
 ## Chosen scope
 
 The selected slice covers the complete Stone Beak route: key-door persistence,
-room `$30` kill-all shutter behavior, room `$2E` traversal, Hardhat interaction,
-and the full Stone Beak chest lifecycle. Stopping at the west door would not
+room `$30` kill-all shutter behavior, room `$2E` Feather traversal and live
+Hardhat hazard, and the full Stone Beak chest lifecycle. Stopping at the west door would not
 prove the key unlock leads anywhere; extending through the Hinox route would
 combine a distinct miniboss milestone with this item route.
 

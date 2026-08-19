@@ -2726,8 +2726,37 @@ of scope.
   `CHEST_COMPASS` entry, observes the reward and dialog, lets the chest entity
   complete its `$28`-tick lifecycle, and finishes with Bottle Grotto's Compass
   flag set and one Small Key remaining.
-- Room `$38`, immediately east of `$37`, contains a sword Moblin and another
-  crystal switch and is the next collision-accessible gameplay frontier.
 - The focused transition/runtime matrix and clean Java suite pass with 1,673
   tests and zero failures, errors, or skipped tests. Source-fidelity and
   code-quality reviews found no remaining Critical or Important issues.
+- Runtime collision validation disproved the apparent `$37 -> $38` adjacency:
+  room `$37` has no lateral opening. Ordered play instead returns north through
+  `$32` and west to the already-cleared torch room `$31`.
+
+## Verified Bottle Grotto Stone Beak route — 2026-08-19
+
+- The uninterrupted trace returns `$37 -> $32 -> $31` and verifies that the
+  earlier torch event persisted room `$31`'s open-right status `$01` and room
+  `$32`'s matching left status `$02`. Shared shutter reconstruction now filters
+  persisted directions individually; a two-shutter regression proves one
+  recorded direction cannot accidentally reopen all doors.
+- Link reaches the source `$30/$EE` west key door through collision, contacts
+  physics `$92`, and spends the final Small Key through the normal eight-frame
+  animation. The `$31/$32` pair becomes `$09/$0A`, with room `$31` left status
+  `$02` mirrored as room `$30` right status `$01`.
+- Room `$30` loads event `$21`, four excluded spike traps `$27`, and two Keese
+  `$19`. Both Keese are reached through collision and struck with live Sword
+  boxes; their ordinary death path opens the north shutter while all spike
+  traps remain loaded. Directional event-door persistence also now follows the
+  ROM for Tail Cave's pushed-block event `$22` instead of treating it as a
+  transient exception.
+- Collision-valid play enters room `$2E`. Its Hardhat Beetle remains an active
+  optional hazard with event `$21`; the static Stone Beak chest does not invent
+  a kill requirement. Link performs a real Roc's Feather jump across the pit
+  trench, opens chest `$A0` at `$24`, observes the ROM-selected dialog/reward
+  and full chest teardown, and finishes with the Stone Beak flag set and zero
+  Small Keys.
+- The focused 461-test subsystem matrix and clean Java suite pass with 1,674
+  tests and zero failures, errors, or skipped tests. Source-fidelity and
+  code-quality reviews report no remaining Critical or Important findings.
+- Room `$28` and its Hinox miniboss route are the next gameplay milestone.

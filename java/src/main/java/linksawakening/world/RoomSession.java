@@ -2104,8 +2104,11 @@ public final class RoomSession {
             boolean ordinaryEventPending = activeRoomEvent != 0
                 && (activeRoomStatusFlags() & ROOM_STATUS_EVENT_1) == 0;
             if (ordinaryEventPending) {
+                int closedShutterMask = activeRoom.shutterDoorMask()
+                    & ~persistedOpenShutterMask();
                 new RoomObjectParser(romData).applyIndoorShutterClosedState(
-                    activeRoom.roomObjectsArea(), activeRoom.shutterDoorMask());
+                    activeRoom.roomObjectsArea(), closedShutterMask);
+                activeRoom.retainClosedShutterDoors(closedShutterMask);
                 refreshActiveRoomTilemap();
             } else {
                 openActiveRoomShutterDoors();
@@ -3373,7 +3376,7 @@ public final class RoomSession {
                     roomEventChestTop(linkEntityX, linkEntityY) + 0x10);
             }
         } else if (effect == EVENT_EFFECT_OPEN_LOCKED_DOORS) {
-            openActiveRoomShutterDoors();
+            openActiveRoomShutterDoors(true);
             activeRoomEvent = 0;
             colorShellSoundSink.play(GameplaySoundEvent.DOOR_UNLOCKED);
         } else if (effect == EVENT_EFFECT_DROP_KEY) {
@@ -3389,7 +3392,7 @@ public final class RoomSession {
                 transientVfxSystem.spawn(TransientVfxType.STAIRS_APPEARS, 0x88, 0x20);
             }
         } else if (effect == EVENT_EFFECT_CLEAR_MIDBOSS) {
-            openActiveRoomShutterDoors();
+            openActiveRoomShutterDoors(true);
             if (activeRoomEvent == EVENT_CLEAR_MIDBOSS
                 && activeRoom.mapId() >= 0
                 && activeRoom.mapId() < dungeonProgressFlags.length) {
@@ -3668,6 +3671,10 @@ public final class RoomSession {
     }
 
     private void openActiveRoomShutterDoors() {
+        openActiveRoomShutterDoors(false);
+    }
+
+    private void openActiveRoomShutterDoors(boolean persistDirectionalStatus) {
         if (activeRoom == null) {
             return;
         }
@@ -3685,6 +3692,14 @@ public final class RoomSession {
                     parser.applyIndoorDoorMacro(
                         activeRoom.roomObjectsArea(), openDoorTypes[direction],
                         location);
+                    if (persistDirectionalStatus) {
+                        byte[] status = indoorStatusTableForMap(activeRoom.mapId());
+                        status[activeRoom.roomId()]
+                            |= (byte) KEY_DOOR_CURRENT_STATUS[direction];
+                        int adjacentRoom = adjacentIndoorRoomIdForBombWall(direction);
+                        status[adjacentRoom]
+                            |= (byte) KEY_DOOR_ADJACENT_STATUS[direction];
+                    }
                 }
             }
             refreshActiveRoomTilemap();
@@ -3692,6 +3707,20 @@ public final class RoomSession {
             overworldCollision.setGbcOverlay(null);
         }
         activeRoom.openShutterDoors();
+    }
+
+    private int persistedOpenShutterMask() {
+        int shutterMask = activeRoom.shutterDoorMask();
+        byte[] status = indoorStatusTableForMap(activeRoom.mapId());
+        int roomStatus = Byte.toUnsignedInt(status[activeRoom.roomId()]);
+        int persistedMask = 0;
+        for (int direction = 0; direction < KEY_DOOR_CURRENT_STATUS.length; direction++) {
+            if ((shutterMask & (1 << direction)) != 0
+                && (roomStatus & KEY_DOOR_CURRENT_STATUS[direction]) != 0) {
+                persistedMask |= 1 << direction;
+            }
+        }
+        return persistedMask;
     }
 
     private RoomEntityObjectSample entityObjectSample(RoomEntity entity) {

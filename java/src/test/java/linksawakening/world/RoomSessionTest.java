@@ -852,7 +852,7 @@ final class RoomSessionTest {
     }
 
     @Test
-    void settledTailCaveSingleBlockOpensTheDoorWithoutPersistingEvent22() {
+    void settledTailCaveSingleBlockPersistsTheDoorButNotEvent22() {
         RoomSession session = newSession();
         List<GameplaySoundEvent> sounds = new ArrayList<>();
         session.setColorShellSoundSink(sounds::add);
@@ -894,11 +894,13 @@ final class RoomSessionTest {
         assertEquals(0, session.activeRoom().shutterDoorMask());
         assertEquals(0, session.activeRoomEventForTest());
         assertEquals(0, session.indoorRoomStatusForTest(0x00, 0x04) & 0x10);
+        assertEquals(0x02, session.indoorRoomStatusForTest(0x00, 0x04) & 0x02);
+        assertEquals(0x01, session.indoorRoomStatusForTest(0x00, 0x03) & 0x01);
         assertEquals(List.of(GameplaySoundEvent.PUZZLE_SOLVED,
             GameplaySoundEvent.DOOR_UNLOCKED), sounds);
 
         session.loadIndoor(0x00, 0x04);
-        assertNotEquals(0, session.activeRoom().shutterDoorMask());
+        assertEquals(0, session.activeRoom().shutterDoorMask());
         assertEquals(0x22, session.activeRoomEventForTest());
     }
 
@@ -1053,6 +1055,27 @@ final class RoomSessionTest {
 
         assertEquals(0, session.activeRoom().shutterDoorMask());
         assertEquals(0, session.activeRoomEventForTest());
+    }
+
+    @Test
+    void persistedShutterStatusReopensOnlyItsRecordedDirection() {
+        RoomSession session = newSession();
+        byte[] indoorA = new byte[0x100];
+        indoorA[0x06] = 0x04;
+        session.restoreRoomStatuses(
+            new byte[0x100], indoorA, new byte[0x100], new byte[0x20]);
+
+        session.loadIndoor(0x00, 0x06);
+
+        assertEquals(0x43, session.activeRoom().roomObjectsArea()[
+            RoomConstants.ROOM_OBJECTS_BASE + 0x04]);
+        assertEquals(0x44, session.activeRoom().roomObjectsArea()[
+            RoomConstants.ROOM_OBJECTS_BASE + 0x05]);
+        assertEquals(0x37, session.activeRoom().roomObjectsArea()[
+            RoomConstants.ROOM_OBJECTS_BASE + 0x74]);
+        assertEquals(0x38, session.activeRoom().roomObjectsArea()[
+            RoomConstants.ROOM_OBJECTS_BASE + 0x75]);
+        assertEquals(0x02, session.activeRoom().shutterDoorMask());
     }
 
     @Test

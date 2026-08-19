@@ -112,6 +112,10 @@ public final class ActiveRoom {
         shutterDoorMask = 0;
     }
 
+    void retainClosedShutterDoors(int mask) {
+        shutterDoorMask &= mask;
+    }
+
     public RoomEntitySnapshot entities() {
         return entities;
     }
