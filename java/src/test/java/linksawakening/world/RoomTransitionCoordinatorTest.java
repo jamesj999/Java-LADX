@@ -1729,6 +1729,76 @@ final class RoomTransitionCoordinatorTest {
         assertEquals(1, session.currentDungeonItemFlagsSnapshot()[
             DungeonItemState.SMALL_KEYS_INDEX]);
         assertEquals(18, playerState.magicPowderCount());
+
+        // Room $33 is the first post-key Bottle Grotto room.  Enter it through
+        // the live collision/scroll path so its ROM-authored state is part of
+        // the same ordered-play trace.
+        walkToAndCrossIndoorBoundary(
+            coordinator, transition, scroll, collision, link, ScrollController.RIGHT);
+        assertEquals(0x33, session.currentRoomId());
+        assertEquals(0x00, session.entitySwitchBlocksStateForTest());
+        assertEquals(6, java.util.stream.IntStream.range(0, 6)
+            .filter(offset -> objectAt(session, 0x62 + offset) == 0xDC).count());
+        assertEquals(0xC0, objectAt(session, 0x23));
+        assertEquals(0xC0, objectAt(session, 0x26));
+        assertEquals(1, session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x66).count());
+        assertEquals(1, session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x42).count());
+        assertEquals(1, session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x16).count());
+        tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
+
+        RoomEntity crystalSwitch = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x66).findFirst().orElseThrow();
+        List<int[]> switchPath = reachableEntityContactPath(
+            collision, link.pixelX(), link.pixelY(), crystalSwitch);
+        assertNotNull(switchPath, collisionGrid(collision));
+        for (int[] position : switchPath) {
+            link.setPixelPosition(position[0], position[1]);
+        }
+        Sword liveSword = new Sword(romTables, null);
+        liveSword.onPress();
+        for (int swingFrame = 0; swingFrame < 4; swingFrame++) {
+            liveSword.tick(false);
+        }
+        link.setDirection(Link.DIRECTION_RIGHT);
+        Sword.CollisionBox initialSwordBox = liveSword.enemyCollisionBox(
+            link.romEntityX(), link.romSwordCollisionY(), link.direction());
+        link.setPixelPosition(
+            crystalSwitch.x() - (initialSwordBox.x() - link.pixelX()),
+            crystalSwitch.y() - (initialSwordBox.y() - link.pixelY()));
+        Sword.CollisionBox swordBox = liveSword.enemyCollisionBox(
+            link.romEntityX(), link.romSwordCollisionY(), link.direction());
+        assertTrue(swordBox.active());
+        assertTrue(RoomEntityCombatRules.overlapsSword(
+            crystalSwitch, swordBox.x(), swordBox.width(), swordBox.y(), swordBox.height()),
+            "sword=" + swordBox + " crystal=" + crystalSwitch);
+        List<EntityCombatEvent> switchHit = session.resolveEntityCombat(
+            frame++, link.romEntityX(), link.romEntityY(), false, true, true,
+            swordBox.x(), swordBox.width(), swordBox.y(), swordBox.height());
+        assertEquals(EntityStatus.ACTIVE, crystalSwitch.status());
+        assertTrue(switchHit.stream().anyMatch(event ->
+            event.slot() == crystalSwitch.slot() && event.type() == 0x66
+                && event.swordHit()), switchHit.toString());
+        tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
+        assertEquals(0x01, session.switchableObjectAnimationStageForTest());
+        assertTrue(session.consumeEntityEvents().stream().anyMatch(event ->
+            event.type() == 0x66
+                && event.soundChannel() == EntityCombatEvent.SoundChannel.WAVE
+                && event.soundId() == 0x0E));
+
+        assertTrue(session.linkCollisionPointBlockedForTest(0x20, 0x60));
+        for (int stage = 0; stage < 9; stage++) {
+            session.tickGameplayVBlank();
+        }
+        assertEquals(0x02, session.entitySwitchBlocksStateForTest());
+        assertEquals(0x00, session.switchableObjectAnimationStageForTest());
+        assertFalse(session.linkCollisionPointBlockedForTest(0x20, 0x60));
+
+        walkToAndCrossIndoorBoundary(
+            coordinator, transition, scroll, collision, link, ScrollController.RIGHT);
+        assertEquals(0x34, session.currentRoomId());
     }
 
     @Test

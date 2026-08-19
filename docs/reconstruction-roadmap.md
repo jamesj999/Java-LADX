@@ -2665,3 +2665,19 @@ room interaction scripts, dungeon/boss phases, and hardware-visible ordering
 details. These should continue to be implemented from the disassembly with
 focused ROM-byte and framebuffer tests; a CPU or Game Boy emulator remains out
 of scope.
+
+## Verified Bottle Grotto first crystal-switch route — 2026-08-19
+
+- The uninterrupted fresh-game regression now continues from room `$32`'s
+  first Small Key east into ROM-authored room `$33`, matching `MapLayout1`,
+  `IndoorsA33`, and `IndoorsA33Entities`.
+- The live route verifies the owl statue, counter-clockwise Spark, crystal
+  switch `$66`, six-cell `$DC` switch-block strip, and `$C0` blocks before
+  striking the switch with the ordinary sword collision path.
+- The source handler response remains generic: entity initialization, combat,
+  and the next entity tick produce animation stage `$01` and wave SFX `$0E`;
+  nine gameplay VBlanks complete stages `$01..$09`, toggle the global state to
+  `$02`, synchronize Link collision, and make the tested `$DC` cell passable.
+- Ordered play then crosses the newly passable east route into room `$34`.
+  That room's masked-Mimic encounter and event `$81` key drop are the next
+  gameplay frontier.
