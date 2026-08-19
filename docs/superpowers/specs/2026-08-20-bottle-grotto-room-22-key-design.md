@@ -16,16 +16,24 @@ uses the ordinary indoor scroll path.
 
 The live ordered session carries `wSwitchBlocksState == $00` from the earlier
 room `$38` switch solution. The state is dungeon-global and persists across
-ordinary room transitions. In state `$00`, room `$22`'s `$DB` columns are
+ordinary room transitions. In state `$00`, room `$22`'s `$DB` rows are
 lowered/passable and its `$DC` rows are raised/solid. The route must preserve
 that state rather than overwrite it for a preferred puzzle presentation.
+
+Room `$21` still blocks its west-to-east path with source liftable-pot objects
+`$20`. After obtaining the Bracelet, Link must face a reachable pot, hold the
+equipped Bracelet button, and pull away from it for the source eight-frame
+counter. The shared background-object interaction replaces the pot with the
+room's header floor object, spawns entity `$05` at the cell center, and enters
+the existing status-7 carried-object lifecycle. Removing at least the pot that
+seals the reachable corridor makes the east boundary collision-reachable.
 
 An alternate state `$02` would raise the `$DB` barrier and can require hitting
 the crystal from the opposite side, including the familiar pot-throw solution.
 That alternate solution is valid game behavior but is not required by the
-current source-authored state. Static pot lifting and thrown-object damage must
-be implemented when ordered play first requires them, not smuggled into this
-milestone by changing global state.
+current source-authored state. Thrown-object damage against the crystal remains
+separate from the background-pot lift bridge and is deferred until ordered play
+requires a thrown hit.
 
 ## Room `$22` source state
 
@@ -37,7 +45,7 @@ at `$34`, `$51..$58`, and `$63..$66`.
 
 The test must assert this source state and prove the chest approach is reachable
 through collision while switch state remains `$00`. It must not teleport across
-the barrier, clear pots, directly rewrite switch state, or invent a room event.
+the barrier, directly clear pots, rewrite switch state, or invent a room event.
 
 ## Small Key lifecycle and persistence
 
@@ -55,8 +63,10 @@ reward. Advancing gameplay ticks after reload proves event `$00` remains inert.
 
 Extend the existing ordered `RoomTransitionCoordinatorTest` session so its
 `RoomSession`, `Link`, `PlayerState`, collision model, dungeon item state, and
-frame counter remain continuous. Production changes are permitted only after a
-RED ordered or focused test demonstrates a shared source mismatch.
+frame counter remain continuous. Add the shared static-pot interaction at the
+session boundary and a runtime spawn method that hands entity `$05` to the
+existing lift state; wire `Main` from live equipped-item and directional input.
+The focused regression must fail before this production behavior is added.
 
 All searches and waits are bounded. Verify the ordered test, focused room/chest
 and transition suites, then `gradle clean test --rerun-tasks`. Obtain source
