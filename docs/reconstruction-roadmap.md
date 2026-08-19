@@ -2760,3 +2760,19 @@ of scope.
   tests and zero failures, errors, or skipped tests. Source-fidelity and
   code-quality reviews report no remaining Critical or Important findings.
 - Room `$28` and its Hinox miniboss route are the next gameplay milestone.
+
+## Hinox handler foundation — 2026-08-19
+
+- Runtime collision disproved the apparent direct `$2E -> $2C` adjacency:
+  room `$2E` has only its south exit. The post-Stone-Beak route therefore
+  remains an ordered-play investigation; room `$34`'s `$A6` partition also
+  blocks collision-only traversal from its west side.
+- Entity `$89` now has a focused six-state bank-$06 motion port. The runtime
+  dispatch preserves the ROM's health group `$14` (8 HP), physics group `$0C`,
+  big-enemy hitbox, and `IS_BOSS | NO_GROUND_INTERACTION | IS_MINI_BOSS`
+  options. Grab/throw Link writes and the countdown `$10` enemy-bomb spawn
+  cross the generic runtime event boundary.
+- `HinoxMotionTest` passes with deterministic RNG, covering cardinal wander,
+  `$30` wind-up and `$18` charge vector, grab/throw effects, `$03` flash bomb
+  entry, and `$10` bomb creation. The uninterrupted room-clear and post-clear
+  warp trace remains the next milestone.

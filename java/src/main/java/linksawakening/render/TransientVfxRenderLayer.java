@@ -45,7 +45,7 @@ public final class TransientVfxRenderLayer implements RenderLayer {
                     slot.worldX(), slot.worldY(), slot.countdown());
                 case WATER_SPLASH -> cutLeavesEffectRenderer.renderWaterSplash(
                     slot.worldX(), slot.worldY(), slot.countdown());
-                case POOF, CHEST_APPEARS, STAIRS_APPEARS -> cutLeavesEffectRenderer.renderPoof(
+                case POOF, PEGASUS_DUST, CHEST_APPEARS, STAIRS_APPEARS -> cutLeavesEffectRenderer.renderPoof(
                     slot.worldX(), slot.worldY(), slot.countdown());
                 case SWORD_POKE -> cutLeavesEffectRenderer.renderSwordPoke(
                     slot.worldX(), slot.worldY(), slot.countdown());

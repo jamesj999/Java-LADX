@@ -514,6 +514,24 @@ final class EntitySpriteHandlerCatalogTest {
     }
 
     @Test
+    void selectsHinoxMapSpecificSpriteTablesFromTheRom() throws Exception {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+
+        assertDefinition(catalog.forEntityType(
+                EntitySpriteHandlerCatalog.ENTITY_HINOX,
+                EntityRoomLoader.RoomTable.INDOORS_A, 0x05),
+            0x06, 0x51FA, EntitySpriteDefinition.Shape.RECTANGLE, 4, 0);
+        assertDefinition(catalog.forEntityType(
+                EntitySpriteHandlerCatalog.ENTITY_HINOX,
+                EntityRoomLoader.RoomTable.INDOORS_A, 0x06),
+            0x06, 0x523A, EntitySpriteDefinition.Shape.RECTANGLE, 4, 0);
+        assertDefinition(catalog.forEntityType(
+                EntitySpriteHandlerCatalog.ENTITY_HINOX,
+                EntityRoomLoader.RoomTable.INDOORS_A, 0x07),
+            0x06, 0x527A, EntitySpriteDefinition.Shape.RECTANGLE, 4, 0);
+    }
+
+    @Test
     void decodesLiftableRockIntactAndSmashDisplayListsFromTheRom() throws Exception {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
 

@@ -34,6 +34,7 @@ public final class RoomEntityCombatRules {
     private static final int ENTITY_PEAHAT = 0xA0;
     private static final int ENTITY_ARMOS_STATUE = 0x0F;
     private static final int ENTITY_ARMOS_KNIGHT = 0x88;
+    private static final int ENTITY_HINOX = 0x89;
     private static final int ENTITY_ROLLING_BONES = 0x81;
     private static final int ENTITY_ROLLING_BONES_BAR = 0x82;
     private static final int ENTITY_HIDING_GHINI = 0x10;
@@ -210,7 +211,7 @@ public final class RoomEntityCombatRules {
                 ENTITY_GOOMBA, ENTITY_SNAKE,
                 ENTITY_WIZROBE,
                 ENTITY_ARMOS_STATUE,
-                ENTITY_ARMOS_KNIGHT,
+                ENTITY_ARMOS_KNIGHT, ENTITY_HINOX,
                 ENTITY_ROLLING_BONES, ENTITY_ROLLING_BONES_BAR,
                 ENTITY_HIDING_GHINI, ENTITY_GIANT_GHINI, ENTITY_GHINI,
                 ENTITY_HARDHAT_BEETLE, ENTITY_SPIKE_TRAP, ENTITY_WATER_TEKTITE, ENTITY_FISH,
@@ -285,6 +286,7 @@ public final class RoomEntityCombatRules {
             case ENTITY_BOO_BUDDY -> BOO_BUDDY_CONTACT_DAMAGE;
             case ENTITY_ARMOS_STATUE -> 0x10;
             case ENTITY_ARMOS_KNIGHT -> 0x0C;
+            case ENTITY_HINOX -> 0x08;
             case ENTITY_ROLLING_BONES -> 0x08;
             case ENTITY_ROLLING_BONES_BAR -> 0x04;
             case ENTITY_MOBLIN, ENTITY_IRON_MASK, ENTITY_MOBLIN_SWORD, ENTITY_TEKTITE, ENTITY_LEEVER,
@@ -334,6 +336,7 @@ public final class RoomEntityCombatRules {
             case ENTITY_BOO_BUDDY -> BOO_BUDDY_INITIAL_HEALTH;
             case ENTITY_ARMOS_STATUE -> 0x04;
             case ENTITY_ARMOS_KNIGHT -> 0x0C;
+            case ENTITY_HINOX -> 0x08;
             case ENTITY_ROLLING_BONES -> 0x08;
             case ENTITY_ROLLING_BONES_BAR -> 0x01;
             case ENTITY_PAIRODD -> PAIRODD_INITIAL_HEALTH;
@@ -454,7 +457,7 @@ public final class RoomEntityCombatRules {
             case ENTITY_GEL -> SMALL_ENEMY_HITBOX_WIDTH;
             case ENTITY_GIANT_GHINI, ENTITY_GIANT_GOPONGA_FLOWER,
                 ENTITY_SPIKE_TRAP, ENTITY_ARMOS_KNIGHT, ENTITY_URCHIN,
-                ENTITY_MOLDORM ->
+                ENTITY_MOLDORM, ENTITY_HINOX ->
                 BIG_ENEMY_HITBOX_WIDTH;
             default -> HITBOX_WIDTH;
         };
@@ -480,7 +483,7 @@ public final class RoomEntityCombatRules {
             case ENTITY_GEL -> SMALL_ENEMY_HITBOX_HEIGHT;
             case ENTITY_GIANT_GHINI, ENTITY_GIANT_GOPONGA_FLOWER,
                 ENTITY_SPIKE_TRAP, ENTITY_ARMOS_KNIGHT, ENTITY_URCHIN,
-                ENTITY_MOLDORM ->
+                ENTITY_MOLDORM, ENTITY_HINOX ->
                 BIG_ENEMY_HITBOX_HEIGHT;
             default -> HITBOX_HEIGHT;
         };

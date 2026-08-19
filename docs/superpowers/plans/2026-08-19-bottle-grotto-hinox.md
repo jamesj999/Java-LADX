@@ -16,10 +16,10 @@
 - Create: `java/src/test/java/linksawakening/world/HinoxMotionTest.java`
 - Create: `java/src/main/java/linksawakening/world/HinoxMotion.java`
 
-- [ ] Add focused tests that load or construct entity `$89` and verify initial/wander cardinal motion, the `$30`-tick charge wind-up, `$18` vector toward Link, and bounce jingle `$20` cadence using deterministic RNG.
-- [ ] Add focused tests for charge proximity entering grab, motion blocking and held-Link offsets, then the countdown `$20` throw effect: X speed `$E0/$20`, Y speed `$20`, Z velocity `$10`, airborne `$02`, health damage `$08`, and jingle `$08`.
-- [ ] Add focused tests proving flash countdown `$03` enters bomb state only below grab state and that countdown `$10` spawns entity `$02` with the source offset/throw values.
-- [ ] Run `cd java && gradle test --tests linksawakening.world.HinoxMotionTest --rerun-tasks`; expect RED because the production motion/dispatch does not exist.
+- [x] Add focused tests that load or construct entity `$89` and verify initial/wander cardinal motion, the `$30`-tick charge wind-up, `$18` vector toward Link, and bounce jingle `$20` cadence using deterministic RNG.
+- [x] Add focused tests for charge proximity entering grab, motion blocking and held-Link offsets, then the countdown `$20` throw effect: X speed `$E0/$20`, Y speed `$20`, Z velocity `$10`, airborne `$02`, health damage `$08`, and jingle `$08`.
+- [x] Add focused tests proving flash countdown `$03` enters bomb state only below grab state and that countdown `$10` spawns entity `$02` with the source offset/throw values.
+- [x] Run the required RED compile/test check, then `cd java && gradle test --tests linksawakening.world.HinoxMotionTest --rerun-tasks` GREEN after implementation.
 
 ### Task 2: Implement and dispatch the shared Hinox handler
 
@@ -29,10 +29,10 @@
 - Modify as required by established catalogs: `java/src/main/java/linksawakening/world/EntitySpriteHandlerCatalog.java`
 - Test: `java/src/test/java/linksawakening/world/HinoxMotionTest.java`
 
-- [ ] Implement the six states from `06_hinox.asm` with existing countdown, RNG, collision, speed-vector, combat, event, and entity-slot conventions.
-- [ ] Dispatch type `$89` generically and preserve `IS_BOSS | NO_GROUND_INTERACTION | IS_MINI_BOSS`, big-enemy hitbox, physics group `$0C`, and health group `$14` behavior already decoded from ROM tables.
-- [ ] Reuse or minimally extend runtime events so the world layer can apply Link motion blocking, held position, throw velocities/airborne state, damage, jingles, dust, and bomb spawn without room-specific coupling.
-- [ ] Run `HinoxMotionTest` GREEN, then the focused entity runtime/combat/death suites.
+- [x] Implement the six states from `06_hinox.asm` with existing countdown, RNG, collision, speed-vector, combat, event, and entity-slot conventions.
+- [x] Dispatch type `$89` generically and preserve `IS_BOSS | NO_GROUND_INTERACTION | IS_MINI_BOSS`, big-enemy hitbox, physics group `$0C`, and health group `$14` behavior already decoded from ROM tables.
+- [x] Reuse or minimally extend runtime events so the world layer can apply Link motion blocking, held position, throw velocities/airborne state, damage, jingles, dust, and bomb spawn without room-specific coupling.
+- [x] Run `HinoxMotionTest` GREEN and the focused runtime/combat/catalog suites.
 
 ### Task 3: Add RED/GREEN ordered play through room `$28`
 

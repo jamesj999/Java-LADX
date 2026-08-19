@@ -1277,6 +1277,17 @@ public class Main {
                             request.speedX(), request.speedY(), request.romDirection());
                     }
                 }
+                for (var request : roomSession.consumeHinoxLinkEffectRequests()) {
+                    if (link != null) {
+                        link.applyHinoxGrabState(request.heldX(), request.heldY(), request.heldZ(),
+                            request.speedX(), request.speedY(), request.velocityZ(),
+                            request.airborneState(), request.motionBlocked(),
+                            request.applyHeldLinkPose());
+                    }
+                    if (request.damage() != 0 && playerState != null) {
+                        playerState.applyRomEnemyDamage(request.damage());
+                    }
+                }
                 synchronizeLinkLiftedPresentation();
             }
             completeGameplayFrame(dialogController);

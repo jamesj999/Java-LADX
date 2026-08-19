@@ -1742,6 +1742,13 @@ public final class RoomSession {
             ? List.of() : entityRuntime.consumePendingLinkMotionBlockRequests();
     }
 
+    /** Returns and clears Hinox grab/throw writes for the last entity tick. */
+    public List<RoomEntityRuntime.HinoxLinkEffectRequest>
+            consumeHinoxLinkEffectRequests() {
+        return entityRuntime == null
+            ? List.of() : entityRuntime.consumePendingHinoxLinkEffectRequests();
+    }
+
     /** Returns and clears explicit ROM Link fallen-pose requests. */
     public List<RoomEntityRuntime.LinkFallenPoseRequest>
             consumeLinkFallenPoseRequests() {

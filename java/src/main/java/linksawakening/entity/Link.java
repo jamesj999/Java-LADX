@@ -835,6 +835,43 @@ public final class Link implements RocsFeather.JumpTarget {
         applyRomSpeed(speedX, speedY);
     }
 
+    /** Applies Hinox's direct hLinkPosition/throw writes for the next motion frame. */
+    public void applyHinoxGrabState(int romPositionX, int romPositionY, int positionZ,
+                                    int speedX, int speedY, int velocityZ,
+                                    int airborneState) {
+        applyHinoxGrabState(romPositionX, romPositionY, positionZ, speedX, speedY,
+            velocityZ, airborneState, true, true);
+    }
+
+    /** Applies Hinox's held position; only the source's countdown sets blocking. */
+    public void applyHinoxGrabState(int romPositionX, int romPositionY, int positionZ,
+                                    int speedX, int speedY, int velocityZ,
+                                    int airborneState, boolean motionBlocked,
+                                    boolean applyHeldLinkPose) {
+        validateRomByte(romPositionX, "Hinox Link X");
+        validateRomByte(romPositionY, "Hinox Link Y");
+        validateRomByte(positionZ, "Hinox Link Z");
+        validateRomByte(speedX, "Hinox Link X speed");
+        validateRomByte(speedY, "Hinox Link Y speed");
+        validateRomByte(velocityZ, "Hinox Link Z velocity");
+        validateRomByte(airborneState, "Hinox Link airborne state");
+        setPixelPosition((romPositionX - 0x08) & 0xFF,
+            (romPositionY - 0x10) & 0xFF);
+        romInteractiveMotionBlocked = motionBlocked;
+        if (applyHeldLinkPose) {
+            romAnimationStateOverride = 0x6A;
+        }
+        movingThisFrame = false;
+        if (applyHeldLinkPose) {
+            zSubPixels = (positionZ & 0xFF) << SUB_PIXEL_SHIFT;
+        }
+        zVelocity = velocityZ & 0xFF;
+        airborne = airborneState != 0;
+        if (speedX != 0 || speedY != 0) {
+            applyRomSpeed(speedX, speedY);
+        }
+    }
+
     /** Applies Marin's final writes when Link jumps out of the bed. */
     public void leaveMarinWakeUpBed() {
         motionState = LINK_MOTION_DEFAULT;
@@ -1202,6 +1239,12 @@ public final class Link implements RocsFeather.JumpTarget {
     private static int signedByte(int value) {
         int normalized = value & 0xFF;
         return normalized < 0x80 ? normalized : normalized - 0x100;
+    }
+
+    private static void validateRomByte(int value, String label) {
+        if ((value & ~0xFF) != 0) {
+            throw new IllegalArgumentException(label + " must be an unsigned byte: " + value);
+        }
     }
 
     private void tickRomAttackStepAnimationCountdown() {

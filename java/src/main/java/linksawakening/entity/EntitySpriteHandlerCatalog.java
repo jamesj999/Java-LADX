@@ -29,6 +29,7 @@ public final class EntitySpriteHandlerCatalog {
     public static final int ENTITY_ROLLING_BONES_BAR = 0x82;
     public static final int ENTITY_THREE_OF_A_KIND = 0x90;
     public static final int ENTITY_MASKED_MIMIC_GORIYA = 0x8F;
+    public static final int ENTITY_HINOX = 0x89;
     public static final int ENTITY_CUCCO = 0x6C;
     public static final int ENTITY_GOPONGA_FLOWER = 0x7E;
     public static final int ENTITY_GIANT_GOPONGA_FLOWER = 0x7C;
@@ -465,6 +466,10 @@ public final class EntitySpriteHandlerCatalog {
         }
         if (entityType == ENTITY_ARMOS_KNIGHT) {
             return decodeRectangle(entityType, 0x06, 0x5523, 4, 8, 0);
+        }
+        if (entityType == ENTITY_HINOX) {
+            int address = mapId == 0x07 ? 0x527A : mapId == 0x06 ? 0x523A : 0x51FA;
+            return decodeRectangle(entityType, 0x06, address, 4, 8, 0);
         }
         if (entityType == ENTITY_HIDING_GHINI || entityType == ENTITY_GHINI) {
             return decodePair(entityType, 0x04, 0x5BFC, 2, 0);

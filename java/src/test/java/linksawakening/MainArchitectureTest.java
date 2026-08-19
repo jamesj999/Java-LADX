@@ -99,6 +99,15 @@ final class MainArchitectureTest {
     }
 
     @Test
+    void mainDoesNotSuppressHinoxThrowDamageBehindInvincibilityGate() throws Exception {
+        String normalizedSource = Files.readString(Path.of("src/main/java/linksawakening/Main.java"))
+            .replaceAll("\\s+", " ");
+
+        assertFalse(normalizedSource.contains(
+            "request.damage() != 0 && playerState != null && playerState.invincibilityCounter() == 0"));
+    }
+
+    @Test
     void mainCapturesLinkFinalPositionBeforeLinkMotionForEntityPushes() throws Exception {
         String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
 

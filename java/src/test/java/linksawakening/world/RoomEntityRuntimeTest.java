@@ -25,6 +25,128 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 final class RoomEntityRuntimeTest {
 
     @Test
+    void hinoxSkipsItsInteractiveHandlerAndTimersDuringNonInteractiveFrames() {
+        RoomEntity hinox = new RoomEntity(0, 0, HinoxMotion.ENTITY_TYPE, 0x40, 0x40,
+            EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(HinoxMotion.ENTITY_TYPE), 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(hinox));
+        runtime.setTransitionCountdownForTest(0, 0x12);
+
+        runtime.tickWithProjectileEvents(0, 0x40, 0x40, () -> 0, null, null, 0, 0, 0,
+            EnemyProjectileCollision.LinkState.nonInteractive());
+
+        assertEquals(0x12, runtime.transitionCountdown(0));
+        assertEquals(HinoxMotion.STATE_INITIAL, runtime.hinoxStateForTest(0));
+    }
+
+    @Test
+    void hinoxSkipsItsHandlerAndTimersOutsideTheRomTransitionSequence() {
+        RoomEntity hinox = new RoomEntity(0, 0, HinoxMotion.ENTITY_TYPE, 0x40, 0x40,
+            EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(HinoxMotion.ENTITY_TYPE), 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(hinox));
+        runtime.setTransitionSequenceCounterForTest(0x03);
+        runtime.setTransitionCountdownForTest(0, 0x12);
+
+        runtime.tickWithProjectileEvents(0, 0x40, 0x40, () -> 0, null, null, 0, 0, 0,
+            new EnemyProjectileCollision.LinkState(0x40, 0x40, 0, 0, 3, false));
+
+        assertEquals(0x12, runtime.transitionCountdown(0));
+        assertEquals(HinoxMotion.STATE_INITIAL, runtime.hinoxStateForTest(0));
+    }
+
+    @Test
+    void hinoxInactiveDeathUsesSharedArmosCountdownsAndRoomStatus() {
+        RoomEntity hinox = new RoomEntity(15, 0, HinoxMotion.ENTITY_TYPE, 0x40, 0x40,
+            EntityStatus.DYING, EntitySpriteDefinition.unsupported(HinoxMotion.ENTITY_TYPE), -1);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotAt(hinox), false, () -> 0);
+        runtime.setEntityMapIdForTest(0x05);
+
+        runtime.tick(0, 0x40, 0x40, () -> 0);
+        assertEquals(0xA0, runtime.transitionCountdown(15));
+        assertEquals(0xFF, runtime.enemyFlashCountdown(15));
+
+        for (int frame = 1; frame <= 0xA0; frame++) {
+            runtime.tick(frame, 0x40, 0x40, () -> 0);
+        }
+        assertEquals(0xC0, runtime.transitionCountdown(15));
+        assertEquals(0xFF, runtime.enemyFlashCountdown(15));
+
+        for (int frame = 0xA1; frame <= 0x160; frame++) {
+            runtime.tick(frame, 0x40, 0x40, () -> 0);
+        }
+
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(15).status());
+        assertEquals(0x20, runtime.consumePendingRoomStatusMask());
+        assertEquals(List.of(new EntityCombatEvent(15, HinoxMotion.ENTITY_TYPE, 0, false,
+            EntityCombatEvent.SoundChannel.NOISE, 0x1A)),
+            runtime.consumePendingEntityEvents());
+    }
+
+    @Test
+    void hinoxRunsBossIntroWhenInteractive() {
+        RoomEntity hinox = new RoomEntity(0, 0, HinoxMotion.ENTITY_TYPE, 0x40, 0x40,
+            EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(HinoxMotion.ENTITY_TYPE), 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(hinox));
+        EnemyProjectileCollision.LinkState interactive =
+            new EnemyProjectileCollision.LinkState(0x40, 0x40, 0, 0, 3, false);
+
+        for (int frame = 0; frame <= 0x20; frame++) {
+            runtime.tickWithProjectileEvents(frame, 0x40, 0x40, () -> 0, null, null, 0, 0, 0,
+                interactive);
+        }
+        assertEquals(0x50, runtime.consumePendingMusicTrack());
+    }
+
+    @Test
+    void hinoxStateFourSkipsGenericSwordAndContactCombat() {
+        RoomEntity hinox = new RoomEntity(0, 0, HinoxMotion.ENTITY_TYPE, 0x40, 0x40,
+            EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(HinoxMotion.ENTITY_TYPE), 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(hinox));
+        runtime.setHinoxStateForTest(0, HinoxMotion.STATE_GRAB);
+        runtime.setEnemyHealthForTest(0, 1);
+
+        assertTrue(runtime.resolveCombat(0, 0x40, 0x40, false, true,
+            false, 0, 0, 0, 0).isEmpty());
+        assertTrue(runtime.resolveCombat(1, 0x40, 0x40, false, true,
+            true, 0x40, 0x10, 0x40, 0x10).isEmpty());
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
+        assertEquals(1, runtime.enemyHealthForTest(0));
+    }
+
+    @Test
+    void hinoxUsesBooleanBackgroundCollisionWhenRichProbeIsAbsent() {
+        RoomEntity hinox = new RoomEntity(0, 0, HinoxMotion.ENTITY_TYPE, 0x40, 0x40,
+            EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(HinoxMotion.ENTITY_TYPE), 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(hinox));
+        runtime.setHinoxStateForTest(0, HinoxMotion.STATE_WANDER);
+        runtime.setHinoxSpeedForTest(0, 0x08, 0);
+        runtime.setTransitionCountdownForTest(0, 0x20);
+
+        runtime.tickWithProjectileEvents(0, 0x40, 0x40, () -> 0,
+            (entity, direction, nextX, nextY) -> true,
+            new EnemyProjectileCollision.LinkState(0x40, 0x40, 0, 0, 3, false));
+
+        assertEquals(0x40, runtime.snapshot().slots().get(0).x());
+    }
+
+    @Test
+    void hinoxGrowlAndBounceUseTheirRomAudioChannels() {
+        RoomEntity hinox = new RoomEntity(0, 0, HinoxMotion.ENTITY_TYPE, 0x50, 0x40,
+            EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(HinoxMotion.ENTITY_TYPE), 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(hinox));
+        runtime.setHinoxStateForTest(0, HinoxMotion.STATE_CHARGE);
+        runtime.setTransitionCountdownForTest(0, 0);
+
+        runtime.tickWithProjectileEvents(0, 0x30, 0x30, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0x30, 0x30, 0, 0, 3, false));
+
+        List<EntityCombatEvent> events = runtime.consumePendingEntityEvents();
+        assertTrue(events.contains(new EntityCombatEvent(0,
+            HinoxMotion.ENTITY_TYPE, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x20)));
+        assertTrue(events.contains(new EntityCombatEvent(0,
+            HinoxMotion.ENTITY_TYPE, 0, false, EntityCombatEvent.SoundChannel.WAVE, 0x16)));
+    }
+
+    @Test
     void matchingThreeOfAKindCardsEnterTheSourceDeathSequenceTogether() {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             threeOfAKind(0, 0x28, 0x28),

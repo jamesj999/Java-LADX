@@ -29,6 +29,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_MASTER_STALFOS = 0x5F;
     private static final int ENTITY_DESERT_LANMOLA = 0x87;
     private static final int ENTITY_ARMOS_KNIGHT = 0x88;
+    private static final int ENTITY_HINOX = HinoxMotion.ENTITY_TYPE;
     private static final int ENTITY_ROLLING_BONES =
         EntitySpriteHandlerCatalog.ENTITY_ROLLING_BONES;
     private static final int ENTITY_ROLLING_BONES_BAR =
@@ -138,6 +139,7 @@ public final class RoomEntityRuntime {
     private static final int ARMOS_INITIAL_PHYSICS_FLAGS = 0x92;
     private static final int ARMOS_KNIGHT_INITIAL_PHYSICS_FLAGS = 0x84;
     private static final int ARMOS_KNIGHT_OPTIONS1 = 0xC4;
+    private static final int HINOX_OPTIONS1 = 0x94;
     private static final int ARMOS_KNIGHT_INITIAL_HITBOX_FLAGS = 0x80;
     private static final int LIKE_LIKE_INITIAL_PHYSICS_FLAGS = 0x92;
     private static final int ENTITY_GHINI = 0x12;
@@ -354,6 +356,7 @@ public final class RoomEntityRuntime {
     private final PeaHatMotion peaHatMotion = new PeaHatMotion();
     private final ArmosMotion armosMotion = new ArmosMotion();
     private final ArmosKnightMotion armosKnightMotion = new ArmosKnightMotion();
+    private final HinoxMotion hinoxMotion = new HinoxMotion();
     private final RollingBonesMotion rollingBonesMotion = new RollingBonesMotion();
     private final ThreeOfAKindMotion threeOfAKindMotion = new ThreeOfAKindMotion();
     private final MoblinKingMotion moblinKingMotion = new MoblinKingMotion();
@@ -471,6 +474,8 @@ public final class RoomEntityRuntime {
     private final List<RoosterLinkStateRequest> pendingRoosterLinkStateRequests =
         new ArrayList<>();
     private final List<LinkMotionBlockRequest> pendingLinkMotionBlockRequests =
+        new ArrayList<>();
+    private final List<HinoxLinkEffectRequest> pendingHinoxLinkEffectRequests =
         new ArrayList<>();
     private final List<LinkFallenPoseRequest> pendingLinkFallenPoseRequests =
         new ArrayList<>();
@@ -736,6 +741,29 @@ public final class RoomEntityRuntime {
                 throw new IllegalArgumentException("Link motion-block source slot out of range: "
                     + sourceSlot);
             }
+        }
+    }
+
+    /** Link-side HRAM effects emitted by Hinox's grab/throw handler. */
+    public record HinoxLinkEffectRequest(int sourceSlot, int heldX, int heldY, int heldZ,
+                                         int speedX, int speedY, int velocityZ,
+                                         int airborneState, int damage,
+                                         boolean motionBlocked,
+                                         boolean applyHeldLinkPose) {
+        public HinoxLinkEffectRequest {
+            if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
+                throw new IllegalArgumentException("Hinox source slot out of range: " + sourceSlot);
+            }
+            for (int value : new int[] {heldX, heldY, heldZ, speedX, speedY, velocityZ,
+                                        airborneState, damage}) {
+                if ((value & ~0xFF) != 0) {
+                    throw new IllegalArgumentException("Hinox Link effect must be byte-shaped");
+                }
+            }
+        }
+
+        public boolean throwing() {
+            return speedX != 0 || speedY != 0 || velocityZ != 0 || damage != 0;
         }
     }
 
@@ -1519,6 +1547,11 @@ public final class RoomEntityRuntime {
                 backgroundInteraction.probe(entity, direction, nextX, nextY,
                     enemyIgnoreHitsCountdown[entity.slot()], frame).blocked();
         }
+        RoomEntityBackgroundInteraction hinoxBackgroundInteraction = backgroundInteraction;
+        if (hinoxBackgroundInteraction == null && backgroundCollision != null) {
+            hinoxBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
+                backgroundCollision);
+        }
         projectileLaunchRequests.clear();
         Arrays.fill(enemyProjectileSpawnedThisFrame, false);
         Arrays.fill(dynamicEntitySpawnedThisFrame, false);
@@ -1528,6 +1561,7 @@ public final class RoomEntityRuntime {
         pendingLinkFinalPositionRequests.clear();
         pendingRoosterLinkStateRequests.clear();
         pendingLinkMotionBlockRequests.clear();
+        pendingHinoxLinkEffectRequests.clear();
         pendingLinkFallenPoseRequests.clear();
         pendingLinkFacingRequests.clear();
         pendingLinkAttackClearRequests.clear();
@@ -1595,10 +1629,15 @@ public final class RoomEntityRuntime {
                 && !tarinTransformationTimersInteractive();
             boolean freezeThreeOfAKindTimers = entity.type() == ENTITY_THREE_OF_A_KIND
                 && !threeOfAKindInteractive;
+            boolean freezeHinoxTimers = entity.type() == ENTITY_HINOX
+                && initialStatus == EntityStatus.ACTIVE
+                && (creditsGameplay || !handlerLinkCollisionEnabled || !entityTimersInteractive()
+                    || transitionSequenceCounter != 0x04);
             boolean ignoreHitsDecrementedBeforeHandler = !freezeTarinTimers
                 && !freezeThreeOfAKindTimers
+                && !freezeHinoxTimers
                 && decrementEnemyCombatCountdowns(entity.slot(), !wasInitializing);
-            if (!freezeTarinTimers && !freezeThreeOfAKindTimers) {
+            if (!freezeTarinTimers && !freezeThreeOfAKindTimers && !freezeHinoxTimers) {
                 decrementEnemyStatusCountdowns(entity.slot());
             }
             if (entity.sourceLoadOrder() == -1 && isDisabledFollower(entity.type())) {
@@ -1641,6 +1680,7 @@ public final class RoomEntityRuntime {
             boolean preservePolsVoicePresentation = false;
             boolean preserveSpikedBeetlePresentation = false;
             boolean preserveArmosKnightPresentation = false;
+            boolean preserveHinoxPresentation = false;
             boolean preserveRollingBonesPresentation = false;
             boolean preserveThreeOfAKindPresentation = false;
             boolean preserveMoblinKingPresentation = false;
@@ -2014,7 +2054,7 @@ public final class RoomEntityRuntime {
                     continue;
                 }
                 if (isBossKeyDropProducer(entity.type())) {
-                    advanceBossKeyDropProducer(entity);
+                    advanceBossKeyDropProducer(entity, randomByteSupplier);
                     continue;
                 }
                 if (dyingCountdown[entity.slot()] == 0) {
@@ -2212,6 +2252,9 @@ public final class RoomEntityRuntime {
                 }
                 if (entity.type() == ENTITY_ARMOS_KNIGHT) {
                     armosKnightMotion.initialize(entity.slot());
+                }
+                if (entity.type() == ENTITY_HINOX) {
+                    hinoxMotion.initialize(entity.slot());
                 }
                 if (isGhiniType(entity.type())) {
                     ghiniMotion.initialize(entity.slot(), entity.type());
@@ -3404,6 +3447,75 @@ public final class RoomEntityRuntime {
                 }
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
+                && handlerLinkCollisionEnabled && entityTimersInteractive()
+                && transitionSequenceCounter == 0x04
+                && !creditsGameplay
+                && entity.type() == ENTITY_HINOX) {
+                int slot = entity.slot();
+                BossIntroMotion.Update bossIntro = bossIntroMotion.advance(
+                    options1(entity.slot()), entity.type(), entityMapId,
+                    transitionSequenceCounter);
+                if (bossIntro.musicTrack() >= 0) {
+                    pendingMusicTrack = bossIntro.musicTrack();
+                }
+                if (bossIntro.dialogLowId() >= 0) {
+                    pendingDialogRequests.add(new DialogRequest(
+                        bossIntro.dialogTableId(), bossIntro.dialogLowId()));
+                }
+                HinoxMotion.Update hinoxUpdate = hinoxMotion.advance(
+                    entity, enemyTransitionCountdown[slot], frame,
+                    linkEntityX, linkEntityY, linkZ, projectileLinkState.motionState(),
+                    randomByteSupplier, hinoxBackgroundInteraction,
+                    hinoxMotion.collisionFlags(slot),
+                    enemyFlashCountdown[slot]);
+                updated = hinoxUpdate.entity();
+                enemyTransitionCountdown[slot] = hinoxUpdate.transitionCountdown();
+                preserveHinoxPresentation = true;
+                if (hinoxUpdate.linkMotionBlocked()) {
+                    pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
+                    pendingLinkFallenPoseRequests.add(new LinkFallenPoseRequest(slot));
+                }
+                if (hinoxUpdate.heldLinkPositionWritten()) {
+                    pendingHinoxLinkEffectRequests.add(new HinoxLinkEffectRequest(
+                        slot, hinoxUpdate.heldLinkX(), hinoxUpdate.heldLinkY(),
+                        hinoxUpdate.heldLinkZ(), hinoxUpdate.linkSpeedX(),
+                        hinoxUpdate.linkSpeedY(), hinoxUpdate.linkVelocityZ(),
+                        hinoxUpdate.linkAirborneState(), hinoxUpdate.linkDamage(),
+                        hinoxUpdate.linkMotionBlocked(), hinoxUpdate.applyHeldLinkPose()));
+                }
+                if (hinoxUpdate.bombSpawn() != null) {
+                    HinoxMotion.BombSpawn spawn = hinoxUpdate.bombSpawn();
+                    spawnEnemyBomb(spawn.x(), spawn.y(), spawn.z(),
+                        spawn.transitionCountdown(), spawn.speedX(), spawn.speedY(),
+                        spawn.speedZ());
+                }
+                if (!hinoxUpdate.heldLinkPositionWritten()
+                    && !hinoxUpdate.linkMotionBlocked()
+                    && (hinoxUpdate.linkSpeedX() != 0 || hinoxUpdate.linkSpeedY() != 0
+                    || hinoxUpdate.linkVelocityZ() != 0 || hinoxUpdate.linkDamage() != 0)) {
+                    pendingHinoxLinkEffectRequests.add(new HinoxLinkEffectRequest(
+                        slot, hinoxUpdate.heldLinkX(), hinoxUpdate.heldLinkY(),
+                        hinoxUpdate.heldLinkZ(), hinoxUpdate.linkSpeedX(),
+                        hinoxUpdate.linkSpeedY(), hinoxUpdate.linkVelocityZ(),
+                        hinoxUpdate.linkAirborneState(), hinoxUpdate.linkDamage(),
+                        hinoxUpdate.linkMotionBlocked(), hinoxUpdate.applyHeldLinkPose()));
+                }
+                if (hinoxUpdate.dustRequested()) {
+                    transientVfxRequests.add(new TransientVfxRequest(
+                        TransientVfxType.PEGASUS_DUST, updated.x(), (updated.y() + 0x0A) & 0xFF));
+                }
+                if (hinoxUpdate.jingleId() >= 0) {
+                    pendingEntityEvents.add(new EntityCombatEvent(
+                        slot, entity.type(), 0, false,
+                        EntityCombatEvent.SoundChannel.JINGLE, hinoxUpdate.jingleId()));
+                }
+                if (hinoxUpdate.waveId() >= 0) {
+                    pendingEntityEvents.add(new EntityCombatEvent(
+                        slot, entity.type(), 0, false,
+                        EntityCombatEvent.SoundChannel.WAVE, hinoxUpdate.waveId()));
+                }
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_ROLLING_BONES) {
                 RoomEntity bar = firstLoadedEntityOfType(ENTITY_ROLLING_BONES_BAR);
                 if (bar != null) {
@@ -4073,6 +4185,7 @@ public final class RoomEntityRuntime {
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
                 || preservePolsVoicePresentation
                 || preserveSpikedBeetlePresentation || preserveArmosKnightPresentation
+                || preserveHinoxPresentation
                 || preserveRollingBonesPresentation
                 || preserveThreeOfAKindPresentation
                 || preserveMoblinKingPresentation
@@ -4110,6 +4223,7 @@ public final class RoomEntityRuntime {
                 || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
                 || preservePolsVoicePresentation
                 || preserveSpikedBeetlePresentation || preserveArmosKnightPresentation
+                || preserveHinoxPresentation
                 || preserveRollingBonesPresentation
                 || preserveThreeOfAKindPresentation
                 || preserveMoblinKingPresentation
@@ -4537,6 +4651,11 @@ public final class RoomEntityRuntime {
             RoomEntity entity = slots[index];
             if (!entity.loaded() || entity.status() != EntityStatus.ACTIVE
                 || !RoomEntityCombatRules.supportsEnemyCollision(entity.type())) {
+                continue;
+            }
+            if (entity.type() == ENTITY_HINOX
+                && hinoxMotion.state(entity.slot()) == HinoxMotion.STATE_GRAB) {
+                // HinoxState4Handler does not call DefaultEnemyDamageCollisionHandler.
                 continue;
             }
             if (entity.type() == ENTITY_THREE_OF_A_KIND
@@ -7129,6 +7248,42 @@ public final class RoomEntityRuntime {
         return enemyTransitionCountdown[slot];
     }
 
+    int hinoxStateForTest(int slot) {
+        validateEntitySlot(slot);
+        return hinoxMotion.state(slot);
+    }
+
+    int hinoxSpeedXForTest(int slot) {
+        validateEntitySlot(slot);
+        return hinoxMotion.speedX(slot);
+    }
+
+    int hinoxSpeedYForTest(int slot) {
+        validateEntitySlot(slot);
+        return hinoxMotion.speedY(slot);
+    }
+
+    void setHinoxStateForTest(int slot, int state) {
+        validateEntitySlot(slot);
+        if (slots[slot].type() != ENTITY_HINOX) {
+            throw new IllegalArgumentException("Entity slot is not Hinox: " + slot);
+        }
+        hinoxMotion.setStateForTest(slot, state, 0, 0);
+    }
+
+    void setHinoxSpeedForTest(int slot, int speedX, int speedY) {
+        validateEntitySlot(slot);
+        if (slots[slot].type() != ENTITY_HINOX) {
+            throw new IllegalArgumentException("Entity slot is not Hinox: " + slot);
+        }
+        hinoxMotion.setSpeedForTest(slot, speedX, speedY);
+    }
+
+    int enemyHealthForTest(int slot) {
+        validateEntitySlot(slot);
+        return enemyHealth[slot];
+    }
+
     void setTarinRaccoonStateForTest(int slot, int state, int speedX, int speedY,
                                      int speedZ, int privateState2, int privateState3,
                                      boolean nearLinkLatch) {
@@ -7227,6 +7382,12 @@ public final class RoomEntityRuntime {
     List<LinkMotionBlockRequest> consumePendingLinkMotionBlockRequests() {
         List<LinkMotionBlockRequest> pending = List.copyOf(pendingLinkMotionBlockRequests);
         pendingLinkMotionBlockRequests.clear();
+        return pending;
+    }
+
+    List<HinoxLinkEffectRequest> consumePendingHinoxLinkEffectRequests() {
+        List<HinoxLinkEffectRequest> pending = List.copyOf(pendingHinoxLinkEffectRequests);
+        pendingHinoxLinkEffectRequests.clear();
         return pending;
     }
 
@@ -7407,7 +7568,8 @@ public final class RoomEntityRuntime {
             || type == ENTITY_POLS_VOICE
             || type == ENTITY_ZOL || type == ENTITY_GEL
             || type == ENTITY_ROLLING_BONES
-            || type == ENTITY_LIKE_LIKE || type == ENTITY_ARMOS_KNIGHT;
+            || type == ENTITY_LIKE_LIKE || type == ENTITY_ARMOS_KNIGHT
+            || type == ENTITY_HINOX;
     }
 
     private RoomEntity firstLoadedEntityOfType(int type) {
@@ -7420,7 +7582,8 @@ public final class RoomEntityRuntime {
     }
 
     private static boolean usesSharedRecoil(int type) {
-        return type == ENTITY_LEEVER || type == ENTITY_PEAHAT
+        return type == ENTITY_HARDHAT_BEETLE
+            || type == ENTITY_LEEVER || type == ENTITY_PEAHAT
             || type == ENTITY_WATER_TEKTITE
             || type == ENTITY_STALFOS_EVASIVE
             || type == ENTITY_MOBLIN_SWORD
@@ -7482,7 +7645,7 @@ public final class RoomEntityRuntime {
 
     private static boolean isBossKeyDropProducer(int entityType) {
         return entityType == ENTITY_MASTER_STALFOS || entityType == ENTITY_DESERT_LANMOLA
-            || entityType == ENTITY_ARMOS_KNIGHT;
+            || entityType == ENTITY_ARMOS_KNIGHT || entityType == ENTITY_HINOX;
     }
 
     private boolean hasNoGroundInteractionOverride(int slot) {
@@ -8298,7 +8461,8 @@ public final class RoomEntityRuntime {
      * {@code $30}. Boss entities stay on their active handler while DYING, so
      * they must not enter the ordinary EnemyDropResolver path.
      */
-    private void advanceBossKeyDropProducer(RoomEntity source) {
+    private void advanceBossKeyDropProducer(RoomEntity source,
+                                             IntSupplier randomByteSupplier) {
         int slot = source.slot();
         if (enemyTransitionCountdown[slot] != 0) {
             return;
@@ -8332,7 +8496,7 @@ public final class RoomEntityRuntime {
             return;
         }
 
-        if (source.type() == ENTITY_ARMOS_KNIGHT) {
+        if (source.type() == ENTITY_ARMOS_KNIGHT || source.type() == ENTITY_HINOX) {
             switch (state) {
                 case 0 -> {
                     // ArmosKnightPrivateState0Handler: transition $A0 and
@@ -8351,11 +8515,24 @@ public final class RoomEntityRuntime {
                     return;
                 }
                 default -> {
-                    // ArmosKnightPrivateState2Handler calls DidKillEnemy;
-                    // its handler has already forced the dropped item to the
-                    // key drop point and the source load order to $FF.
-                    spawnEnemyDrop(source, ENTITY_KEY_DROP_POINT);
-                    disableEntityWithoutPersistence(slot);
+                    // The shared inactive handler emits the boss explosion,
+                    // then calls DidKillEnemy. Armos has pre-forced the key;
+                    // Hinox uses the ordinary drop resolver here.
+                    if (source.type() == ENTITY_ARMOS_KNIGHT) {
+                        int killIndex = killCount & 0xFF;
+                        killOrder[killIndex] = source.sourceLoadOrder() & 0xFF;
+                        killCount = (killCount + 1) & 0xFF;
+                        pendingClearedEntityMask |= persistentClearMask(source);
+                        spawnEnemyDrop(source, ENTITY_KEY_DROP_POINT);
+                        disableEntityWithoutPersistence(slot);
+                    } else {
+                        handleTerminalEnemyDeath(source, randomByteSupplier);
+                        // label_006_5355 -> label_006_6CC9 opens the Hinox
+                        // room event except in Eagle's Tower and later maps.
+                        if (entityMapId >= 0 && entityMapId < 0x06) {
+                            pendingRoomStatusMask |= 0x20;
+                        }
+                    }
                     pendingEntityEvents.add(new EntityCombatEvent(
                         slot, source.type(), 0, false,
                         EntityCombatEvent.SoundChannel.NOISE, 0x1A));
@@ -10627,6 +10804,9 @@ public final class RoomEntityRuntime {
         if (slots[slot].type() == ENTITY_ARMOS_KNIGHT) {
             return ARMOS_KNIGHT_OPTIONS1;
         }
+        if (slots[slot].type() == ENTITY_HINOX) {
+            return HINOX_OPTIONS1;
+        }
         if (slots[slot].type() == ENTITY_ROLLING_BONES) {
             return 0x84;
         }
@@ -11138,6 +11318,7 @@ public final class RoomEntityRuntime {
         return switch (type) {
             case ENTITY_ARMOS_STATUE -> ARMOS_INITIAL_PHYSICS_FLAGS;
             case ENTITY_ARMOS_KNIGHT -> ARMOS_KNIGHT_INITIAL_PHYSICS_FLAGS;
+            case ENTITY_HINOX -> 0x0C;
             case ENTITY_MOBLIN_KING -> 0x13;
             case ENTITY_ROLLING_BONES_BAR -> 0x42;
             case ENTITY_STALFOS_EVASIVE -> EVASIVE_PHYSICS_FLAGS;
@@ -11202,8 +11383,10 @@ public final class RoomEntityRuntime {
         if (type == ENTITY_MOBLIN_KING) {
             return 0x84;
         }
-        return type == ENTITY_ARMOS_KNIGHT
-            ? ARMOS_KNIGHT_INITIAL_HITBOX_FLAGS : 0;
+        if (type == ENTITY_ARMOS_KNIGHT) {
+            return ARMOS_KNIGHT_INITIAL_HITBOX_FLAGS;
+        }
+        return type == ENTITY_HINOX ? 0x08 : 0;
     }
 
     private boolean polsVoiceBalladOcarinaTrigger() {
@@ -11717,6 +11900,7 @@ public final class RoomEntityRuntime {
         if (owlPrivateCountdown1[slot] > 0 && entityTimersInteractive()) {
             owlPrivateCountdown1[slot]--;
         }
+        hinoxMotion.decrementPrivateCountdown1(slot);
         if (liftableRockSmashActive[slot] && liftableRockSmashCountdown[slot] > 0) {
             liftableRockSmashCountdown[slot]--;
         }

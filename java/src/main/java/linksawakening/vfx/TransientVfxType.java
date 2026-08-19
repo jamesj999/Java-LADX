@@ -17,6 +17,7 @@ public enum TransientVfxType {
     LASER_BEAM(0x06, 0x10),
     MOVING_SPARKLE(0x07, 0x22),
     SMOKE(0x08, 0x0F),
+    PEGASUS_DUST(0x0B, 0x0F),
     SWORD_BEAM(0x0D, 0x08);
 
     private final int id;
