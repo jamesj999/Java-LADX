@@ -2515,6 +2515,61 @@ final class RoomTransitionCoordinatorTest {
             coordinator, transition, scroll, collision, link, ScrollController.RIGHT);
         assertEquals(0x39, session.currentRoomId());
         assertEquals(0x63, session.activeRoomEventForTest());
+
+        List<int[]> room39ButtonPath = reachablePositionPath(
+            collision, link.pixelX(), link.pixelY(),
+            (x, y) -> collision.groundInteractionSample(x + 0x08, y + 0x10)
+                .objectId() == 0xAA);
+        assertNotNull(room39ButtonPath, collisionGrid(collision));
+        for (int[] position : room39ButtonPath) {
+            link.setPixelPosition(position[0], position[1]);
+            tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
+        }
+        int room39EventDeadline = frame + 0x40;
+        while (session.activeRoomEventForTest() != 0 && frame < room39EventDeadline) {
+            tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
+        }
+        assertEquals(0, session.activeRoomEventForTest());
+        int room39ChestDeadline = frame + 0x20;
+        while (objectAt(session, 0x28) != 0xA0 && frame < room39ChestDeadline) {
+            tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
+        }
+        assertEquals(0xA0, objectAt(session, 0x28));
+        List<int[]> room39ChestPath = reachablePositionPath(
+            collision, link.pixelX(), link.pixelY(),
+            (x, y) -> Math.floorDiv(x + 0x08, 0x10) == 0x08
+                && Math.floorDiv(y - 0x01, 0x10) == 0x02);
+        assertNotNull(room39ChestPath, collisionGrid(collision));
+        for (int[] position : room39ChestPath) {
+            link.setPixelPosition(position[0], position[1]);
+        }
+        link.setDirection(Link.DIRECTION_UP);
+        RoomSession.ChestOpenResult room39Chest = session.tryOpenChest(
+            link.pixelX(), link.pixelY(), Link.DIRECTION_UP, true, playerState.swordLevel());
+        assertTrue(room39Chest.opened());
+        assertEquals(ChestContentsTable.CHEST_SMALL_KEY, room39Chest.itemType());
+        int room39ChestSlot = room39Chest.entitySlot();
+        boolean room39RewardObserved = false;
+        boolean room39ChestEnded = false;
+        for (int chestTick = 0; chestTick < 0x40; chestTick++) {
+            session.tickEntities(frame++, link.romEntityX(), link.romEntityY());
+            for (RoomEntityRuntime.ChestRewardEvent reward
+                    : session.consumeChestRewardEvents()) {
+                room39RewardObserved |= reward.itemType() == ChestContentsTable.CHEST_SMALL_KEY;
+                playerState.applyChestReward(reward.itemType());
+            }
+            RoomEntity chestEntity = session.activeRoom().entities().slots()
+                .get(room39ChestSlot);
+            if (!chestEntity.loaded() || chestEntity.status() == EntityStatus.DISABLED) {
+                room39ChestEnded = true;
+                break;
+            }
+        }
+        assertTrue(room39RewardObserved);
+        assertTrue(room39ChestEnded);
+        assertEquals(2, session.currentDungeonItemFlagsSnapshot()[
+            DungeonItemState.SMALL_KEYS_INDEX]);
+
         walkToAndCrossIndoorBoundary(
             coordinator, transition, scroll, collision, link, ScrollController.LEFT);
         assertEquals(0x38, session.currentRoomId());
@@ -2524,6 +2579,7 @@ final class RoomTransitionCoordinatorTest {
             coordinator, transition, scroll, collision, link, ScrollController.RIGHT);
         assertEquals(0x39, session.currentRoomId());
         assertEquals(0x63, session.activeRoomEventForTest());
+        assertEquals(0xA1, objectAt(session, 0x28));
         walkToAndCrossIndoorBoundary(
             coordinator, transition, scroll, collision, link, ScrollController.UP);
         assertEquals(0x34, session.currentRoomId());
@@ -2536,13 +2592,13 @@ final class RoomTransitionCoordinatorTest {
         assertEquals(0, session.activeRoomEventForTest());
         assertEquals(2, session.activeRoom().entities().loadedEntities().stream()
             .filter(entity -> entity.type() == 0x2C).count());
-        assertEquals(1, session.currentDungeonItemFlagsSnapshot()[
+        assertEquals(2, session.currentDungeonItemFlagsSnapshot()[
             DungeonItemState.SMALL_KEYS_INDEX]);
 
         link.setPixelPosition(0x75, 0x05);
         assertTrue(session.tryUnlockIndoorKeyDoor(
             link.pixelX(), link.pixelY(), Link.DIRECTION_UP, 0x01));
-        assertEquals(0, session.currentDungeonItemFlagsSnapshot()[
+        assertEquals(1, session.currentDungeonItemFlagsSnapshot()[
             DungeonItemState.SMALL_KEYS_INDEX]);
         assertEquals(0x40, session.indoorRoomStatusForTest(0x01, 0x35) & 0x40);
         for (int tick = 0; tick < 8; tick++) {
@@ -2603,7 +2659,7 @@ final class RoomTransitionCoordinatorTest {
         }
         assertEquals(0xBE, objectAt(session, 0x18));
         assertEquals(0x10, session.indoorRoomStatusForTest(0x01, 0x2F) & 0x10);
-        assertEquals(0, session.currentDungeonItemFlagsSnapshot()[
+        assertEquals(1, session.currentDungeonItemFlagsSnapshot()[
             DungeonItemState.SMALL_KEYS_INDEX]);
 
         assertTrue(session.activeRoom().hasWarps());
@@ -3063,6 +3119,46 @@ final class RoomTransitionCoordinatorTest {
         assertEquals(ChestContentsTable.CHEST_RUPEES_20,
             new ChestContentsTable(rom).itemForSpawn(
                 0x01, 0x21, playerState.swordLevel(), true));
+        assertEquals(1, session.currentDungeonItemFlagsSnapshot()[
+            DungeonItemState.SMALL_KEYS_INDEX]);
+
+        List<int[]> braceletDoorPath = reachablePositionPath(
+            collision, link.pixelX(), link.pixelY(),
+            (x, y) -> collision.objectPhysicsFlagAtPoint(x + 0x03, y + 0x09) == 0x92
+                || collision.objectPhysicsFlagAtPoint(x + 0x03, y + 0x0C) == 0x92);
+        assertNotNull(braceletDoorPath, collisionGrid(collision));
+        for (int[] position : braceletDoorPath) {
+            link.setPixelPosition(position[0], position[1]);
+        }
+        link.setPixelPosition(link.pixelX() - 1, link.pixelY());
+        assertTrue(session.tryUnlockIndoorKeyDoor(
+            link.pixelX(), link.pixelY(), Link.DIRECTION_LEFT, 0x04));
+        assertEquals(0, session.currentDungeonItemFlagsSnapshot()[
+            DungeonItemState.SMALL_KEYS_INDEX]);
+        for (int tick = 0; tick < 8; tick++) {
+            session.tickEntities(frame++, link.pixelX(), link.pixelY());
+            assertTrue(session.consumeWorldLinkMotionBlockRequest());
+        }
+        session.tickEntities(frame++, link.pixelX(), link.pixelY());
+        assertFalse(session.consumeWorldLinkMotionBlockRequest());
+        assertEquals(0x02, session.indoorRoomStatusForTest(0x01, 0x21) & 0x02);
+        assertEquals(0x01, session.indoorRoomStatusForTest(0x01, 0x20) & 0x01);
+        walkToAndCrossIndoorBoundary(
+            coordinator, transition, scroll, collision, link, ScrollController.LEFT);
+        assertEquals(0x20, session.currentRoomId());
+        assertEquals(0x61, session.activeRoomEventForTest());
+        assertEquals(2, session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x50).count());
+        assertTrue(session.activeRoom().entities().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == 0x50
+                && entity.x() == 0x48 && entity.y() == 0x30));
+        assertTrue(session.activeRoom().entities().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == 0x50
+                && entity.x() == 0x58 && entity.y() == 0x50));
+        assertEquals(0x07, objectAt(session, 0x28));
+        assertEquals(ChestContentsTable.CHEST_POWER_BRACELET,
+            new ChestContentsTable(rom).itemForSpawn(
+                0x01, 0x20, playerState.swordLevel(), true));
     }
 
     @Test

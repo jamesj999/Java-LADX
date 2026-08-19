@@ -57,6 +57,18 @@ final class RoomObjectParserTest {
     }
 
     @Test
+    void hidesSourceOpenChestMarkerWithRoomFloorUntilEventStatusIsSet() {
+        byte[] rom = new byte[] {0x28, (byte) 0xA1, (byte) 0xFE};
+
+        assertEquals(0x0D, new RoomObjectParser(rom)
+            .parseIndoor(0, 0x0D, 0)
+            .objectAtLocation(0x28));
+        assertEquals(0xA1, new RoomObjectParser(rom)
+            .parseIndoor(0, 0x0D, 0x10)
+            .objectAtLocation(0x28));
+    }
+
+    @Test
     void recordsTheLastVisibleIndoorStaircaseInObjectStreamOrder() {
         byte[] rom = new byte[] {
             0x12, (byte) 0xBE,

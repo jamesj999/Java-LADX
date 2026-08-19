@@ -103,6 +103,7 @@ public final class RoomObjectParser {
     private int[] roomObjectsArea;
     private int shutterDoorMask;
     private int staircaseLocation = -1;
+    private int floorObject;
     private final List<Warp> warps = new ArrayList<>();
     private final List<Integer> doorPositions = new ArrayList<>();
     private int roomStatusFlags;
@@ -307,16 +308,16 @@ public final class RoomObjectParser {
         }
     }
 
-    /** Mirrors ConfigureRoomObjects' replacement of a collected chest object. */
+    /** Mirrors ConfigureRoomObjects' source-marker and collected-chest replacements. */
     private void applyChestStatus() {
-        if ((roomStatusFlags & ROOM_STATUS_CHEST_OPEN) == 0) {
-            return;
-        }
+        boolean chestOpened = (roomStatusFlags & ROOM_STATUS_CHEST_OPEN) != 0;
         for (int row = 0; row < RoomConstants.OBJECTS_PER_COLUMN; row++) {
             for (int column = 0; column < RoomConstants.OBJECTS_PER_ROW; column++) {
                 int areaIndex = RoomConstants.ROOM_OBJECTS_BASE
                     + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + column;
-                if (roomObjectsArea[areaIndex] == OBJECT_CHEST_CLOSED) {
+                if (!chestOpened && roomObjectsArea[areaIndex] == OBJECT_CHEST_OPEN) {
+                    roomObjectsArea[areaIndex] = floorObject;
+                } else if (chestOpened && roomObjectsArea[areaIndex] == OBJECT_CHEST_CLOSED) {
                     roomObjectsArea[areaIndex] = OBJECT_CHEST_OPEN;
                 }
             }
@@ -324,6 +325,7 @@ public final class RoomObjectParser {
     }
 
     private void reset(int floorObject) {
+        this.floorObject = floorObject;
         roomObjectsArea = new int[RoomConstants.ROOM_OBJECTS_AREA_SIZE];
         Arrays.fill(roomObjectsArea, 0xFF);
         warps.clear();
