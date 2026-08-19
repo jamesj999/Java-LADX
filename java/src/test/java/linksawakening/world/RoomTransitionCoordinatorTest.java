@@ -1887,6 +1887,223 @@ final class RoomTransitionCoordinatorTest {
         assertEquals(2, session.currentDungeonItemFlagsSnapshot()[
             DungeonItemState.SMALL_KEYS_INDEX]);
         assertEquals(0x10, session.indoorRoomStatusForTest(0x01, 0x34) & 0x10);
+
+        walkToAndCrossIndoorBoundary(
+            coordinator, transition, scroll, collision, link, ScrollController.LEFT);
+        assertEquals(0x33, session.currentRoomId());
+        tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
+        RoomEntity returnCrystalSwitch = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x66).findFirst().orElseThrow();
+        List<int[]> returnSwitchPath = reachableEntityContactPath(
+            collision, link.pixelX(), link.pixelY(), returnCrystalSwitch);
+        assertNotNull(returnSwitchPath, collisionGrid(collision));
+        for (int[] position : returnSwitchPath) {
+            link.setPixelPosition(position[0], position[1]);
+        }
+        Sword returnSwitchSword = new Sword(romTables, null);
+        returnSwitchSword.onPress();
+        for (int swingFrame = 0; swingFrame < 4; swingFrame++) {
+            returnSwitchSword.tick(false);
+        }
+        link.setDirection(Link.DIRECTION_RIGHT);
+        Sword.CollisionBox initialReturnSwordBox = returnSwitchSword.enemyCollisionBox(
+            link.romEntityX(), link.romSwordCollisionY(), link.direction());
+        link.setPixelPosition(
+            returnCrystalSwitch.x() - (initialReturnSwordBox.x() - link.pixelX()),
+            returnCrystalSwitch.y() - (initialReturnSwordBox.y() - link.pixelY()));
+        Sword.CollisionBox returnSwordBox = returnSwitchSword.enemyCollisionBox(
+            link.romEntityX(), link.romSwordCollisionY(), link.direction());
+        assertTrue(returnSwordBox.active());
+        List<EntityCombatEvent> returnSwitchHit = session.resolveEntityCombat(
+            frame++, link.romEntityX(), link.romEntityY(), false, true, true,
+            returnSwordBox.x(), returnSwordBox.width(),
+            returnSwordBox.y(), returnSwordBox.height());
+        RoomEntity currentReturnCrystalSwitch = session.activeRoom().entities().slots()
+            .get(returnCrystalSwitch.slot());
+        assertEquals(EntityStatus.ACTIVE, currentReturnCrystalSwitch.status());
+        assertTrue(returnSwitchHit.stream().anyMatch(event ->
+            event.slot() == returnCrystalSwitch.slot() && event.type() == 0x66
+                && event.swordHit()), returnSwitchHit.toString());
+        tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
+        assertEquals(0x01, session.switchableObjectAnimationStageForTest());
+        assertTrue(session.consumeEntityEvents().stream().anyMatch(event ->
+            event.type() == 0x66
+                && event.soundChannel() == EntityCombatEvent.SoundChannel.WAVE
+                && event.soundId() == 0x0E));
+        for (int stage = 0; stage < 9; stage++) {
+            session.tickGameplayVBlank();
+        }
+        assertEquals(0x00, session.entitySwitchBlocksStateForTest());
+        assertEquals(0x00, session.switchableObjectAnimationStageForTest());
+        walkToAndCrossIndoorBoundary(
+            coordinator, transition, scroll, collision, link, ScrollController.LEFT);
+        assertEquals(0x32, session.currentRoomId());
+        assertEquals(2, session.currentDungeonItemFlagsSnapshot()[
+            DungeonItemState.SMALL_KEYS_INDEX]);
+        int bottomKeyDoorLocation = -1;
+        for (int row = 0; row < RoomConstants.OBJECTS_PER_COLUMN; row++) {
+            for (int column = 0; column < RoomConstants.OBJECTS_PER_ROW - 1; column++) {
+                int location = (row << 4) | column;
+                if (objectAt(session, location) == 0x2F
+                    && objectAt(session, location + 1) == 0x30) {
+                    bottomKeyDoorLocation = location;
+                }
+            }
+        }
+        assertEquals(0x74, bottomKeyDoorLocation);
+
+        List<int[]> bottomDoorPath = reachablePositionPath(
+            collision, link.pixelX(), link.pixelY(),
+            (x, y) -> collision.objectPhysicsFlagAtPoint(x + 0x06, y + 1 + 0x0F) == 0x91
+                || collision.objectPhysicsFlagAtPoint(x + 0x09, y + 1 + 0x0F) == 0x91);
+        assertNotNull(bottomDoorPath, collisionGrid(collision));
+        for (int[] position : bottomDoorPath) {
+            link.setPixelPosition(position[0], position[1]);
+        }
+        int bottomDoorContactX = link.pixelX();
+        int bottomDoorContactY = link.pixelY();
+        link.setPixelPosition(bottomDoorContactX, bottomDoorContactY + 1);
+        assertEquals(bottomDoorContactX, link.pixelX());
+        assertEquals(bottomDoorContactY + 1, link.pixelY());
+        assertTrue(collision.objectPhysicsFlagAtPoint(
+            link.pixelX() + 0x06, link.pixelY() + 0x0F) == 0x91
+            || collision.objectPhysicsFlagAtPoint(
+                link.pixelX() + 0x09, link.pixelY() + 0x0F) == 0x91);
+        assertTrue(session.tryUnlockIndoorKeyDoor(
+            link.pixelX(), link.pixelY(), Link.DIRECTION_DOWN, 0x02));
+        assertEquals(1, session.currentDungeonItemFlagsSnapshot()[
+            DungeonItemState.SMALL_KEYS_INDEX]);
+        for (int tick = 0; tick < 8; tick++) {
+            session.tickEntities(frame++, link.pixelX(), link.pixelY());
+            assertTrue(session.consumeWorldLinkMotionBlockRequest());
+        }
+        session.tickEntities(frame++, link.pixelX(), link.pixelY());
+        assertFalse(session.consumeWorldLinkMotionBlockRequest());
+        assertEquals(0x8C, objectAt(session, bottomKeyDoorLocation));
+        assertEquals(0x08, objectAt(session, bottomKeyDoorLocation + 1));
+        assertEquals(0x08, session.indoorRoomStatusForTest(0x01, 0x32) & 0x08);
+        assertEquals(0x04, session.indoorRoomStatusForTest(0x01, 0x37) & 0x04);
+
+        walkToAndCrossIndoorBoundary(
+            coordinator, transition, scroll, collision, link, ScrollController.DOWN);
+        assertEquals(0x37, session.currentRoomId());
+        assertEquals(0x61, session.activeRoomEventForTest());
+        assertEquals(1, session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x8F).count());
+        List<Integer> room37RupeeSlots = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x2E)
+            .map(RoomEntity::slot)
+            .toList();
+        assertEquals(2, room37RupeeSlots.size());
+        tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
+
+        RoomEntity maskedMimic = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x8F).findFirst().orElseThrow();
+        int maskedMimicSlot = maskedMimic.slot();
+        for (int hit = 0; hit < 2; hit++) {
+            maskedMimic = session.activeRoom().entities().slots().get(maskedMimicSlot);
+            assertEquals(EntityStatus.ACTIVE, maskedMimic.status());
+            int linkEntityX = maskedMimic.x();
+            int linkEntityY = (maskedMimic.y() + 0x20) & 0xFF;
+            session.setEntityPressedButtonsMask(0x08);
+            tickInteractiveEntities(session, frame++, linkEntityX, linkEntityY);
+            tickInteractiveEntities(session, frame++, linkEntityX, linkEntityY);
+            maskedMimic = session.activeRoom().entities().slots().get(maskedMimicSlot);
+            List<EntityCombatEvent> hitEvents = session.resolveEntityCombat(
+                frame++, linkEntityX, linkEntityY, false, true, true,
+                maskedMimic.x() + 0x08, 0x08,
+                maskedMimic.y() + 0x08, 0x08);
+            assertTrue(hitEvents.stream().anyMatch(event ->
+                event.slot() == maskedMimicSlot && event.swordHit()
+                    && event.enemyDamage() == 1), hitEvents.toString());
+            if (hit == 1) {
+                assertEquals(0x61, session.activeRoomEventForTest());
+                assertEquals(2, session.activeRoom().entities().loadedEntities().stream()
+                    .filter(entity -> entity.type() == 0x2E).count());
+            }
+            session.setEntityPressedButtonsMask(0);
+            for (int recovery = 0; recovery < 0x30; recovery++) {
+                session.tickEntitiesWithProjectileEvents(
+                    frame++, link.romEntityX(), link.romEntityY(), 0, 0,
+                    link.direction(), false);
+            }
+        }
+        int mimicDeathDeadline = frame + 0x200;
+        while (session.activeRoom().entities().slots().get(maskedMimicSlot).status()
+                != EntityStatus.DISABLED && frame < mimicDeathDeadline) {
+            tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
+        }
+        assertEquals(EntityStatus.DISABLED,
+            session.activeRoom().entities().slots().get(maskedMimicSlot).status());
+
+        int room37EventDeadline = frame + 0x300;
+        while (session.activeRoomEventForTest() != 0 && frame < room37EventDeadline) {
+            tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
+        }
+        assertEquals(0, session.activeRoomEventForTest());
+        int compassChestIndex = ROOM_OBJECTS_BASE + 0x28;
+        int chestRevealDeadline = frame + 0x40;
+        while (session.activeRoom().roomObjectsArea()[compassChestIndex] != 0xA0
+            && frame < chestRevealDeadline) {
+            session.tickEntities(frame++, link.romEntityX(), link.romEntityY());
+        }
+        assertEquals(0xA0, session.activeRoom().roomObjectsArea()[compassChestIndex]);
+        assertEquals(2, room37RupeeSlots.stream()
+            .filter(slot -> {
+                RoomEntity entity = session.activeRoom().entities().slots().get(slot);
+                return entity.loaded() && entity.type() == 0x2E;
+            }).count());
+        assertEquals(0, session.indoorRoomStatusForTest(0x01, 0x37) & 0x10);
+        List<int[]> compassChestPath = reachablePositionPath(
+            collision, link.pixelX(), link.pixelY(),
+            (x, y) -> Math.floorDiv(x + 0x08, 0x10) == (0x28 & 0x0F)
+                && Math.floorDiv(y - 0x02, 0x10) == ((0x28 & 0xF0) >>> 4));
+        assertNotNull(compassChestPath, collisionGrid(collision));
+        for (int[] position : compassChestPath) {
+            link.setPixelPosition(position[0], position[1]);
+        }
+        int compassChestContactX = link.pixelX();
+        int compassChestContactY = link.pixelY();
+        link.setPixelPosition(compassChestContactX, compassChestContactY - 1);
+        assertEquals(compassChestContactX, link.pixelX());
+        assertEquals(compassChestContactY - 1, link.pixelY());
+        int compassChestInteractionLocation =
+            (Math.floorDiv(link.pixelY() - 0x02, 0x10) << 4)
+                | Math.floorDiv(link.pixelX() + 0x08, 0x10);
+        assertEquals(0x28, compassChestInteractionLocation);
+        RoomSession.ChestOpenResult compassChest = session.tryOpenChest(
+            link.pixelX(), link.pixelY(),
+            Link.DIRECTION_UP, true, playerState.swordLevel());
+        assertTrue(compassChest.opened());
+        assertEquals(ChestContentsTable.CHEST_COMPASS, compassChest.itemType());
+        assertEquals(0x28, compassChest.location());
+        assertEquals(0x10, session.indoorRoomStatusForTest(0x01, 0x37) & 0x10);
+        int compassChestSlot = compassChest.entitySlot();
+        boolean compassRewardObserved = false;
+        boolean compassDialogObserved = false;
+        boolean compassChestEnded = false;
+        for (int chestTick = 0; chestTick < 0x40; chestTick++) {
+            session.tickEntities(frame++, link.romEntityX(), link.romEntityY());
+            for (RoomEntityRuntime.ChestRewardEvent reward
+                    : session.consumeChestRewardEvents()) {
+                compassRewardObserved |= reward.itemType() == ChestContentsTable.CHEST_COMPASS;
+                playerState.applyChestReward(reward.itemType());
+            }
+            compassDialogObserved |= session.consumeEntityDialogRequests().stream()
+                .anyMatch(request -> request.globalDialogId() == 0x0A7);
+            RoomEntity chestEntity = session.activeRoom().entities().slots().get(compassChestSlot);
+            if (!chestEntity.loaded() || chestEntity.status() == EntityStatus.DISABLED) {
+                compassChestEnded = true;
+                break;
+            }
+        }
+        assertTrue(compassRewardObserved);
+        assertTrue(compassDialogObserved);
+        assertTrue(compassChestEnded);
+        assertEquals(1, session.currentDungeonItemFlagsSnapshot()[
+            DungeonItemState.COMPASS_INDEX]);
+        assertEquals(1, session.currentDungeonItemFlagsSnapshot()[
+            DungeonItemState.SMALL_KEYS_INDEX]);
     }
 
     @Test

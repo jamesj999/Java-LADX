@@ -2701,5 +2701,33 @@ of scope.
 - Focused suites and the clean Java suite pass with 1,673 tests and zero
   failures, errors, or skipped tests. Independent source-fidelity and
   code-quality reviews report no remaining Critical or Important findings.
-- Room `$35`, whose ROM entity list contains two Spiked Beetles and whose
-  dungeon-event entry is zero, is the next accessible gameplay frontier.
+- Runtime route validation showed that room `$34`'s `$A6` partition prevents
+  the event-key alcove from reaching room `$35` at this point. Ordered play
+  instead backtracks through `$33/$32` toward room `$37`, as verified below.
+
+## Verified Bottle Grotto Compass route — 2026-08-19
+
+- From room `$34`'s fixed key-drop alcove, uninterrupted play now walks west
+  through `$33`, reaches the live crystal switch through room collision, and
+  strikes it again. The ordinary nine-stage animation changes the global
+  switch state from `$02` back to `$00`, opening room `$32`'s `$DB` route.
+- Link then walks west into `$32`, reaches the source `$74/$ED` bottom key
+  door, and performs the one-pixel downward collision contact against physics
+  `$91`. The normal eight-frame animation consumes one Small Key, opens the
+  `$2F/$30` pair as `$8C/$08`, and synchronizes room `$32` status `$08` with
+  room `$37` status `$04`.
+- Collision-valid play crosses south into room `$37`, matching
+  `DungeonEventsTable[$37] == $61` and `IndoorsA37Entities`: one Masked Mimic
+  `$8F` plus two excluded droppable rupees `$2E`. Two live vulnerable-side
+  sword hits and the ordinary death path resolve kill-all while both rupees
+  remain loaded.
+- The shared reveal effect writes chest `$A0` at `$28`. Link reaches its
+  interaction boundary through room collision, opens the ROM-backed
+  `CHEST_COMPASS` entry, observes the reward and dialog, lets the chest entity
+  complete its `$28`-tick lifecycle, and finishes with Bottle Grotto's Compass
+  flag set and one Small Key remaining.
+- Room `$38`, immediately east of `$37`, contains a sword Moblin and another
+  crystal switch and is the next collision-accessible gameplay frontier.
+- The focused transition/runtime matrix and clean Java suite pass with 1,673
+  tests and zero failures, errors, or skipped tests. Source-fidelity and
+  code-quality reviews found no remaining Critical or Important issues.
