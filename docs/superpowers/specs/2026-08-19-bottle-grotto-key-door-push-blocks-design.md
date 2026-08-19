@@ -1,5 +1,12 @@
 # Bottle Grotto Key Door and Push-Blocks Ordered-Play Design
 
+> **Superseded before implementation:** Runtime route validation showed that
+> room `$34`'s `$A6` partition prevents Link from reaching room `$35` after
+> collecting the event key. The source-authored next route backtracks through
+> `$33/$32` and enters room `$37`; see
+> `2026-08-19-bottle-grotto-compass-route-design.md`. Room `$35/$2F` remains a
+> later gameplay slice.
+
 ## Scope
 
 Extend the uninterrupted fresh-game regression from Bottle Grotto room `$34`'s

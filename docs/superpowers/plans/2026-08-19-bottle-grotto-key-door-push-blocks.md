@@ -1,5 +1,11 @@
 # Bottle Grotto Key Door and Push-Blocks Implementation Plan
 
+> **Superseded before implementation:** Collision-valid ordered play cannot
+> proceed directly from room `$34`'s key alcove into `$35`. The next source
+> route is `$34 → $33 → $32 → $37`; use the Compass-route plan instead. The
+> `$35/$2F` work is deferred until that route becomes reachable in gameplay
+> order.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Continue ordered Bottle Grotto play through room `$35`'s north key door and solve room `$2F`'s two-block staircase event.
