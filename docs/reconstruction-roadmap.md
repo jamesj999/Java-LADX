@@ -2874,3 +2874,28 @@ of scope.
 - Focused Hinox/entity/transition suites and `gradle clean test` pass: 1,709
   tests, zero failures, errors, or skipped tests. The next frontier is the
   post-miniboss Bottle Grotto progression from room `$36`.
+
+## Verified Bottle Grotto Power Bracelet — 2026-08-20
+
+- Before the Hinox passage, the uninterrupted trace now presses room `$39`'s
+  source button, reveals and collects its Small Key chest, and carries that key
+  through the miniboss warp. After returning `$36 -> $28`, collision-valid
+  indoor movement follows `$28 -> $29 -> $26 -> $21`; Link spends the key on
+  room `$21`'s west door and enters room `$20`. The blocked room `$22` branch
+  is correctly deferred until after the Bracelet.
+- Room `$20` verifies event `$61`, hidden chest marker `$A1` at `$28`, unlit
+  torches `$AB` at `$22/$65`, and both Boo Buddies `$50` at their ROM positions.
+  Live Magic Powder turns the torches into `$AC` and drives the shared room
+  trigger count; the existing Boo handler enters its one-health vulnerable
+  flee state. Collision-reachable Sword boxes then use ordinary combat/death
+  machinery for both enemies without direct health or slot mutation.
+- The generic kill-all event reveals chest `$A0`. Link opens it from the live
+  collision route, consumes the ROM-selected `CHEST_POWER_BRACELET` reward,
+  completes the chest lifecycle, and raises Bracelet level `$00 -> $01` while
+  persisting room status `$10`.
+- Leaving and re-entering room `$20`, then advancing gameplay ticks, preserves
+  chest `$A1`, suppresses both Boos, and produces no duplicate reward. The ROM
+  event byte `$61` reloads but remains inert behind the persisted status bit.
+- Focused runtime/transition coverage and `gradle clean test --rerun-tasks`
+  pass with 1,710 tests across 215 suites and zero failures, errors, or skips.
+  The next gameplay frontier is the post-Bracelet room `$22` Small Key route.

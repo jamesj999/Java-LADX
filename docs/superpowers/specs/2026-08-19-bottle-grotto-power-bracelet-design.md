@@ -12,9 +12,11 @@ door, enemy, event, chest, inventory, and persistence paths.
 The cleared miniboss warp is bidirectional. From its room `$36` endpoint,
 entity `$61` selects the other `DungeonWarps` entry and returns Link to `$28`.
 `MapLayout1` then defines the ordered route as `$28 -> $29 -> $26 -> $21 ->
-$20`. The room `$21 -> $20` connection is the open left boundary. The `$EE`
-door at location `$30` in room `$21` is top-facing; it is not the west boundary
-and does not gate the Bracelet route.
+$20`. Before the Hinox passage, the ordered route collects room `$39`'s
+step-button chest Small Key; room `$35` consumes the preceding key, leaving
+that room `$39` key available after the warp. Room `$21`'s west key door
+consumes it through the ordinary animation before Link crosses left into
+room `$20`.
 
 The route reuses already-resolved state rather than manufacturing shortcuts:
 room `$28` retains its miniboss-clear status, active warp, and open east door.
@@ -31,20 +33,24 @@ milestone.
 and is asserted as source state rather than collected during the Bracelet
 milestone.
 
-Room `$22` contains the Small Key and crystal switch, but the raised switch-block
+Room `$22` contains a later Small Key and crystal switch, but the raised switch-block
 barrier prevents the direct ordinary/Feather path from `$21`. That branch is not
 a prerequisite for entering room `$20` and is deferred.
 
 ## Key door and room `$20`
 
-Link enters room `$20` by crossing left from room `$21` through the current
-collision and indoor-boundary paths. No key is consumed on this boundary.
+Link enters room `$20` after unlocking room `$21`'s west key door through the
+current collision, key-door animation, and indoor-boundary paths.
 
 `DungeonEventsTable[$20]` is `$61`: kill all enemies, then reveal a chest.
 `IndoorsA20Entities` contains two Boo Buddies `$50` at locations `$24` and
-`$45`. They must initialize, move, accept live sword collision, recover, and
-die through their existing handler and shared death machinery. No test may
-write enemy health, clear slots directly, or substitute generic enemy removal.
+`$45`, rendered at ROM coordinates `$48/$30` and `$58/$50`. Room objects `$AB`
+at `$22` and `$65` are unlit torches. Lighting them through the Magic Powder
+sprinkle lifecycle increments `wC1A2`/the room trigger count; the Boo handler
+then enters state 1, overrides health to one, accepts live sword collision, and
+flees from Link. Both enemies must die through that handler and shared death
+machinery. No test may write enemy health, clear slots directly, or substitute
+generic enemy removal.
 
 The room source contains `OBJECT_CHEST_OPEN` `$A1` at location `$28`.
 `ConfigureRoomObjects` replaces that marker with the room floor while status
@@ -62,7 +68,9 @@ chest must use the complete chest entity lifecycle: interaction direction,
 animation, reward event, item presentation, dialog, teardown, and room-status
 persistence. Applying the reward must give inventory item `$03` and raise the
 fresh player's Power Bracelet level from `$00` to `$01`. Reloading room `$20`
-must show the collected chest state without replaying the reward.
+must show the collected chest state without replaying the reward. The source
+event byte `$61` reloads with the room, but status bit `$10` makes it inert;
+the persisted state is not represented by rewriting the table event to `$00`.
 
 The milestone stops after the Bracelet is owned and persisted. Pot lifting,
 room `$29`'s side-view staircase, Genie, the Nightmare Key, and the dungeon boss

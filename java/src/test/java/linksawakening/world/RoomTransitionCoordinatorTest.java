@@ -3159,6 +3159,129 @@ final class RoomTransitionCoordinatorTest {
         assertEquals(ChestContentsTable.CHEST_POWER_BRACELET,
             new ChestContentsTable(rom).itemForSpawn(
                 0x01, 0x20, playerState.swordLevel(), true));
+
+        assertEquals(0xAB, objectAt(session, 0x22));
+        assertEquals(0xAB, objectAt(session, 0x65));
+        for (int torchLocation : new int[] {0x22, 0x65}) {
+            PowderApproach torchApproach = reachablePowderApproach(
+                collision, link.pixelX(), link.pixelY(), torchLocation);
+            assertNotNull(torchApproach,
+                "No collision-valid powder approach to room $20 torch $"
+                    + Integer.toHexString(torchLocation) + "\n" + collisionGrid(collision));
+            for (int[] position : torchApproach.path()) {
+                link.setPixelPosition(position[0], position[1]);
+            }
+            assertTrue(session.sprinkleMagicPowder(
+                link.romEntityX(), link.romEntityY(), 0, torchApproach.romDirection()));
+            assertTrue(playerState.consumeMagicPowder());
+            for (int tick = 0; tick < 16; tick++) {
+                tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
+            }
+            assertEquals(0xAC, objectAt(session, torchLocation));
+        }
+        assertEquals(2, session.roomTriggerCountForTest());
+
+        List<Integer> booSlots = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == BooBuddyMotion.ENTITY_TYPE)
+            .map(RoomEntity::slot).toList();
+        assertEquals(2, booSlots.size());
+        for (int booSlot : booSlots) {
+            boolean booHit = false;
+            int booDeadline = frame + 0x100;
+            while (frame < booDeadline
+                    && session.activeRoom().entities().slots().get(booSlot).status()
+                        != EntityStatus.DISABLED) {
+                RoomEntity boo = session.activeRoom().entities().slots().get(booSlot);
+                SwordApproach approach = reachableSwordContactPath(
+                    collision, link.pixelX(), link.pixelY(), boo, romTables);
+                if (approach != null) {
+                    for (int[] position : approach.path()) {
+                        link.setPixelPosition(position[0], position[1]);
+                    }
+                    link.setDirection(approach.direction());
+                    Sword booSword = new Sword(romTables, null);
+                    booSword.onPress();
+                    for (int swingFrame = 0; swingFrame < 4; swingFrame++) {
+                        booSword.tick(false);
+                    }
+                    Sword.CollisionBox box = booSword.enemyCollisionBox(
+                        link.romEntityX(), link.romSwordCollisionY(), link.direction());
+                    if (box.active() && RoomEntityCombatRules.overlapsSword(
+                            boo, box.x(), box.width(), box.y(), box.height())) {
+                        List<EntityCombatEvent> hit = session.resolveEntityCombat(
+                            frame++, link.romEntityX(), link.romEntityY(), false, true, true,
+                            box.x(), box.width(), box.y(), box.height());
+                        booHit |= hit.stream().anyMatch(event -> event.slot() == booSlot
+                            && event.swordHit() && event.enemyDamage() > 0);
+                    }
+                }
+                tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
+            }
+            assertTrue(booHit, "room $20 Boo Buddy must be defeated by live sword combat");
+            assertEquals(EntityStatus.DISABLED,
+                session.activeRoom().entities().slots().get(booSlot).status());
+        }
+
+        int braceletRevealDeadline = frame + 0x40;
+        while (objectAt(session, 0x28) != 0xA0 && frame < braceletRevealDeadline) {
+            tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
+        }
+        assertEquals(0, session.activeRoomEventForTest());
+        assertEquals(0xA0, objectAt(session, 0x28));
+
+        List<int[]> braceletChestPath = reachablePositionPath(
+            collision, link.pixelX(), link.pixelY(),
+            (x, y) -> Math.floorDiv(x + 0x08, 0x10) == 0x08
+                && Math.floorDiv(y - 0x01, 0x10) == 0x02);
+        assertNotNull(braceletChestPath, collisionGrid(collision));
+        for (int[] position : braceletChestPath) {
+            link.setPixelPosition(position[0], position[1]);
+        }
+        link.setDirection(Link.DIRECTION_UP);
+        RoomSession.ChestOpenResult braceletChest = session.tryOpenChest(
+            link.pixelX(), link.pixelY(), Link.DIRECTION_UP, true,
+            playerState.swordLevel());
+        assertTrue(braceletChest.opened());
+        assertEquals(ChestContentsTable.CHEST_POWER_BRACELET,
+            braceletChest.itemType());
+        int braceletChestSlot = braceletChest.entitySlot();
+        boolean braceletRewardObserved = false;
+        boolean braceletChestEnded = false;
+        for (int chestTick = 0; chestTick < 0x40; chestTick++) {
+            session.tickEntities(frame++, link.romEntityX(), link.romEntityY());
+            for (RoomEntityRuntime.ChestRewardEvent reward
+                    : session.consumeChestRewardEvents()) {
+                braceletRewardObserved |= reward.itemType()
+                    == ChestContentsTable.CHEST_POWER_BRACELET;
+                playerState.applyChestReward(reward.itemType());
+            }
+            RoomEntity chestEntity = session.activeRoom().entities().slots()
+                .get(braceletChestSlot);
+            if (!chestEntity.loaded() || chestEntity.status() == EntityStatus.DISABLED) {
+                braceletChestEnded = true;
+                break;
+            }
+        }
+        assertTrue(braceletRewardObserved);
+        assertTrue(braceletChestEnded);
+        assertEquals(1, playerState.powerBraceletLevel());
+        assertEquals(0x10, session.indoorRoomStatusForTest(0x01, 0x20) & 0x10);
+
+        walkToAndCrossIndoorBoundary(
+            coordinator, transition, scroll, collision, link, ScrollController.RIGHT);
+        assertEquals(0x21, session.currentRoomId());
+        walkToAndCrossIndoorBoundary(
+            coordinator, transition, scroll, collision, link, ScrollController.LEFT);
+        assertEquals(0x20, session.currentRoomId());
+        for (int reloadTick = 0; reloadTick < 0x10; reloadTick++) {
+            tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
+        }
+        assertEquals(0xA1, objectAt(session, 0x28));
+        assertEquals(0x61, session.activeRoomEventForTest(),
+            "the source event byte reloads but is inert once status bit $10 is set");
+        assertFalse(session.activeRoom().entities().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == BooBuddyMotion.ENTITY_TYPE));
+        assertTrue(session.consumeChestRewardEvents().isEmpty());
     }
 
     @Test

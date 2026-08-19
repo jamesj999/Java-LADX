@@ -67,28 +67,28 @@ Completed as commit `027709d`.
 - Reference: `LADX-Disassembly/src/data/maps/layouts.asm`
 - Reference: `LADX-Disassembly/src/data/rooms/indoors_a.asm`
 
-- [ ] **Step 1: Cross `$21 -> $20` through collision**
+- [x] **Step 1: Unlock and cross `$21 -> $20` through collision**
 
-Reach room `$21`'s left boundary through collision and use the ordinary indoor
-scroll path. Assert room `$20`; do not spend a key or interact with room `$21`'s
-optional 20-rupee chest.
+Reach room `$21`'s west key door through collision, spend the room `$39` Small
+Key through the ordinary eight-frame door animation, and use the indoor scroll
+path. Assert room `$20`; do not interact with room `$21`'s optional 20-rupee chest.
 
-- [ ] **Step 2: Assert fresh room `$20` state**
+- [x] **Step 2: Assert fresh room `$20` state**
 
 Assert event `$61`, both Boo Buddies `$50` at `$24/$45`, no interactable chest
 before the event, and the hidden `$A1` marker's floor substitution.
 
-- [ ] **Step 3: Run RED**
+- [x] **Step 3: Run RED**
 
 Run the exact ordered test with `--rerun-tasks`. Confirm any failure is caused
 by a missing lifecycle behavior, not a bad interaction coordinate or timeout.
 
-- [ ] **Step 4: Implement the minimal generic fix if required**
+- [x] **Step 4: Implement the minimal generic fix if required**
 
 Preserve `ChestContentsTable`, chest entity timing, dialog, and status ownership.
 No room `$22` conditional is permitted.
 
-- [ ] **Step 5: Run focused and ordered tests GREEN**
+- [x] **Step 5: Run focused and ordered tests GREEN**
 
 ```bash
 cd java && gradle test \
@@ -96,12 +96,15 @@ cd java && gradle test \
   --rerun-tasks
 ```
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add java/src/test/java/linksawakening/world/RoomTransitionCoordinatorTest.java java/src/main/java/linksawakening/world/RoomSession.java java/src/main/java/linksawakening/world/RoomEntityRuntime.java java/src/test/java/linksawakening/world/RoomSessionTest.java
 git commit -m "test: reach Bottle Grotto room 20"
 ```
+
+Completed with the room `$39` key route and the shared hidden-chest-marker fix
+as commit `58fb03b` (`feat: reach Bottle Grotto Bracelet room`).
 
 ### Task 3: Clear Boo Buddies and reveal the Bracelet chest
 
@@ -115,20 +118,21 @@ git commit -m "test: reach Bottle Grotto room 20"
 - Reference: `LADX-Disassembly/src/code/events.asm`
 - Reference: `LADX-Disassembly/src/code/bank0.asm`
 
-- [ ] **Step 1: Drive both Boo Buddies through live combat**
+- [x] **Step 1: Light the torches and drive both Boo Buddies through live combat**
 
-Initialize them, use collision-reachable sword contact positions, face them as
-required by `BooBuddyEntityHandler`, and call `resolveEntityCombat` with live
-Sword collision boxes. Wait through recoil/death with bounded deadlines. Do not
-write health or slots directly.
+Light room objects `$AB` at `$22/$65` through live Magic Powder sprinkles so
+the room trigger count drives both Boos into their source vulnerable/flee state.
+Then use collision-reachable sword contact positions and live Sword collision
+boxes. Wait through death with bounded deadlines. Do not write health or slots
+directly.
 
-- [ ] **Step 2: Assert event `$61` resolution**
+- [x] **Step 2: Assert event `$61` resolution**
 
 Verify the kill-all trigger fires only after both enemies are disabled, event
 state clears, room status bit `$10` persists, chest-appearance VFX/timing runs,
 and active chest `$A0` appears at `$28`.
 
-- [ ] **Step 3: Run ordered RED and focused Boo Buddy coverage**
+- [x] **Step 3: Run ordered and focused Boo Buddy coverage**
 
 ```bash
 cd java && gradle test \
@@ -137,12 +141,12 @@ cd java && gradle test \
   --rerun-tasks
 ```
 
-- [ ] **Step 4: Implement a source-backed shared correction only if RED**
+- [x] **Step 4: Implement a source-backed shared correction only if RED**
 
 Follow `BooBuddyEntityHandler`, generic enemy death, and the room-event reveal
 handler. No forced enemy clear, event assignment, or room `$20` branch.
 
-- [ ] **Step 5: Rerun GREEN and commit**
+- [x] **Step 5: Rerun GREEN**
 
 ```bash
 git add java/src/test/java/linksawakening/world/RoomTransitionCoordinatorTest.java java/src/main/java/linksawakening/world/BooBuddyMotion.java java/src/main/java/linksawakening/world/RoomEntityRuntime.java java/src/main/java/linksawakening/world/RoomSession.java java/src/test/java/linksawakening/world/BooBuddyRuntimeTest.java
@@ -158,23 +162,24 @@ git commit -m "feat: reveal Bottle Grotto Bracelet chest"
 - Modify only for a demonstrated shared defect: `java/src/main/java/linksawakening/world/RoomSession.java`
 - Test only for a demonstrated shared defect: `java/src/test/java/linksawakening/state/PlayerStateTest.java`
 
-- [ ] **Step 1: Open the revealed chest through collision**
+- [x] **Step 1: Open the revealed chest through collision**
 
 Use the ordinary upward chest interaction at `$28`, tick the chest lifecycle,
 consume `CHEST_POWER_BRACELET`, and assert the expected dialog and presentation
 events terminate.
 
-- [ ] **Step 2: Apply and verify the reward**
+- [x] **Step 2: Apply and verify the reward**
 
 Assert inventory item `$03`, Power Bracelet level `$00 -> $01`, equipped-item
 availability, zero duplicate rewards, and room `$20` status bit `$10`.
 
-- [ ] **Step 3: Reload and prove persistence**
+- [x] **Step 3: Reload and prove persistence**
 
-Leave and re-enter `$20`; assert open chest `$A1`, no live Boo Buddies, event
-`$00`, retained Bracelet state, and no replayed chest reward.
+Leave and re-enter `$20`; assert open chest `$A1`, no live Boo Buddies, inert
+source event `$61` behind status bit `$10`, retained Bracelet state, and no
+replayed chest reward.
 
-- [ ] **Step 4: Run focused and ordered tests**
+- [x] **Step 4: Run focused and ordered tests**
 
 ```bash
 cd java && gradle test \
@@ -185,7 +190,7 @@ cd java && gradle test \
   --rerun-tasks
 ```
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add java/src/test/java/linksawakening/world/RoomTransitionCoordinatorTest.java java/src/main/java/linksawakening/state/PlayerState.java java/src/main/java/linksawakening/world/ChestContentsTable.java java/src/main/java/linksawakening/world/RoomSession.java java/src/test/java/linksawakening/state/PlayerStateTest.java
@@ -198,19 +203,19 @@ git commit -m "feat: collect Bottle Grotto Power Bracelet"
 - Modify: `docs/reconstruction-roadmap.md`
 - Modify: `docs/superpowers/plans/2026-08-19-bottle-grotto-power-bracelet.md`
 
-- [ ] **Step 1: Obtain source-fidelity review**
+- [x] **Step 1: Obtain source-fidelity review**
 
 Compare the complete diff against `MapLayout1`, room/entity/chest/event tables,
 key-door code, Boo Buddy handler, chest handler, and status persistence. Fix and
 re-review every Critical or Important finding.
 
-- [ ] **Step 2: Obtain code-quality review after source approval**
+- [x] **Step 2: Obtain code-quality review after source approval**
 
 Review lifecycle ownership, bounded waits, collision authenticity, helper
 reuse, genericity, and regression coverage. Fix and re-review every Critical
 or Important finding.
 
-- [ ] **Step 3: Run clean verification**
+- [x] **Step 3: Run clean verification**
 
 ```bash
 cd java && gradle clean test
@@ -218,7 +223,7 @@ cd java && gradle clean test
 
 Count every `TEST-*.xml` suite and require zero failures, errors, and skips.
 
-- [ ] **Step 4: Inspect and validate the complete diff**
+- [x] **Step 4: Inspect and validate the complete diff**
 
 ```bash
 git diff --check
@@ -229,7 +234,7 @@ git diff --stat
 Update the roadmap with the exact route, source labels, behavior, test totals,
 and next gameplay frontier.
 
-- [ ] **Step 5: Commit the verified milestone**
+- [x] **Step 5: Commit the verified milestone**
 
 ```bash
 git add docs/reconstruction-roadmap.md docs/superpowers/plans/2026-08-19-bottle-grotto-power-bracelet.md
