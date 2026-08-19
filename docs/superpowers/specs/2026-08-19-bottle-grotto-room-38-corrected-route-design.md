@@ -1,5 +1,11 @@
 # Bottle Grotto Room `$38` Corrected Route Design
 
+> **Superseded before implementation:** Collision-valid runtime tests proved
+> both proposed approaches from room `$34` are blocked by the solid `$A6`
+> partition. The source-order route after the Stone Beak continues north from
+> `$2E` through `$2C` to Hinox room `$28`. Room `$38` is deferred until later
+> dungeon progression reaches the opposite side of `$34`.
+
 ## Goal
 
 Continue the uninterrupted Bottle Grotto trace after collecting the Stone Beak

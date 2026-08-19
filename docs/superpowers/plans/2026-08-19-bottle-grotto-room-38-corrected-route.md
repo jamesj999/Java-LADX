@@ -1,5 +1,10 @@
 # Bottle Grotto Room `$38` Corrected Route Implementation Plan
 
+> **Superseded before implementation:** Two retained collision experiments
+> disproved both `$34 -> $39` and `$34 -> $35` from the Stone Beak side. The
+> solid `$A6` partition is not controlled by `$DB/$DC`. Continue north from
+> room `$2E` through `$2C` to Hinox room `$28` instead.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Continue ordered Bottle Grotto play from the Stone Beak through the real crystal-switch route and collect room `$38`'s Small Key.
