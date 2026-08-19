@@ -2759,8 +2759,31 @@ of scope.
 - The focused 461-test subsystem matrix and clean Java suite pass with 1,674
   tests and zero failures, errors, or skipped tests. Source-fidelity and
   code-quality reviews report no remaining Critical or Important findings.
-- Room `$35/$2F` is now the next gameplay frontier; room `$28` and its Hinox
-  miniboss route remain a later milestone.
+- Room `$28` and its Hinox miniboss route remain later milestones; the
+  `$35/$2F` continuation is recorded below.
+
+## Verified Bottle Grotto room `$35/$2F` staircase route — 2026-08-19
+
+- The ordered Bottle Grotto trace now reaches room `$35` from the corrected
+  `$38 -> $39 -> $34` route with one Small Key. Link opens the ROM top key
+  door `$EC` through the live `$90` collision branch; the eight-frame motion
+  block completes with `$43/$44` door objects and directional persistence
+  `$04` in room `$35` plus `$08` in adjacent room `$2F`.
+- Room `$2F` loads event `$A7`, pushable blocks `$A7` at `$33/$36`, two Keese
+  `$19`, clockwise Spark `$17`, two droppable hearts `$2D`, and excluded Owl
+  Statue `$42`. The focused session regression proves one horizontal block
+  settlement and vertical adjacency leave trigger `$07` unresolved while the
+  second inward settlement sees a horizontal `$A6` neighbor and resolves it.
+- The shared pushed-block settlement path now implements the source
+  `PushedBlockEntityHandler` trigger-$07 check without room-specific
+  coordinates. The generic `$A0` stair effect marks room status `$10`, writes
+  active stairs `$BE` after the normal countdown, and the room's source warp
+  carries Link into side-view room `$3F`. As in the source
+  `ConfigureRoomObjects`, concealed `$BF` is omitted from the active grid
+  until completion and appears on reload.
+- Focused `RoomSessionTest` and `RoomTransitionCoordinatorTest` suites pass;
+  clean `gradle clean test` passes with 1,699 tests and zero failures, errors,
+  or skipped tests. Room `$3F` is the next gameplay frontier.
 
 ## Verified Bottle Grotto room `$38` source route — 2026-08-19
 
@@ -2785,8 +2808,8 @@ of scope.
   persistence, bounded chest teardown, and the dungeon key count `$00 -> $01`
   all complete through shared runtime APIs. Ordered play then crosses
   `$38 -> $39 -> $34 -> $35`, confirms `$34` entry east of its `$A6` partition,
-  and leaves `$35`'s north key door closed (`$2D/$2E`). Room `$35/$2F` is the
-  next gameplay frontier.
+  and leaves `$35`'s north key door closed (`$2D/$2E`). The subsequent
+  `$35/$2F` staircase continuation is recorded above.
 
 ## Hinox handler foundation — 2026-08-19
 

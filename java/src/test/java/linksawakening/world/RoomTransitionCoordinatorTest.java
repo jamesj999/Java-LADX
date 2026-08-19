@@ -2494,8 +2494,91 @@ final class RoomTransitionCoordinatorTest {
         walkToAndCrossIndoorBoundary(
             coordinator, transition, scroll, collision, link, ScrollController.RIGHT);
         assertEquals(0x35, session.currentRoomId());
-        assertEquals(0x2D, objectAt(session, 0x07));
-        assertEquals(0x2E, objectAt(session, 0x08));
+        assertEquals(0, session.activeRoomEventForTest());
+        assertEquals(2, session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x2C).count());
+        assertEquals(1, session.currentDungeonItemFlagsSnapshot()[
+            DungeonItemState.SMALL_KEYS_INDEX]);
+
+        link.setPixelPosition(0x75, 0x05);
+        assertTrue(session.tryUnlockIndoorKeyDoor(
+            link.pixelX(), link.pixelY(), Link.DIRECTION_UP, 0x01));
+        assertEquals(0, session.currentDungeonItemFlagsSnapshot()[
+            DungeonItemState.SMALL_KEYS_INDEX]);
+        assertEquals(0x40, session.indoorRoomStatusForTest(0x01, 0x35) & 0x40);
+        for (int tick = 0; tick < 8; tick++) {
+            session.tickEntities(frame++, link.pixelX(), link.pixelY());
+            assertTrue(session.consumeWorldLinkMotionBlockRequest());
+        }
+        session.tickEntities(frame++, link.pixelX(), link.pixelY());
+        assertFalse(session.consumeWorldLinkMotionBlockRequest());
+        assertEquals(0x43, objectAt(session, 0x07));
+        assertEquals(0x44, objectAt(session, 0x08));
+        assertEquals(0x04, session.indoorRoomStatusForTest(0x01, 0x35) & 0x04);
+        assertEquals(0x08, session.indoorRoomStatusForTest(0x01, 0x2F) & 0x08);
+
+        walkToAndCrossIndoorBoundary(
+            coordinator, transition, scroll, collision, link, ScrollController.UP);
+        assertEquals(0x2F, session.currentRoomId());
+        assertEquals(0xA7, session.activeRoomEventForTest());
+        assertEquals(0xA7, objectAt(session, 0x33));
+        assertEquals(0xA7, objectAt(session, 0x36));
+        assertEquals(0x0D, objectAt(session, 0x18));
+        assertEquals(2, session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x19).count());
+        assertEquals(1, session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x17).count());
+        assertEquals(2, session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x2D).count());
+        assertEquals(1, session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x42).count());
+
+        link.setPixelPosition(0x25, 0x28);
+        for (int tick = 0; tick < 64; tick++) {
+            assertTrue(session.tryInteractWithIndoorBlock(
+                link.pixelX(), link.pixelY(), Link.DIRECTION_RIGHT, 0x08));
+        }
+        assertEquals(0xA7, session.activeRoomEventForTest());
+        for (int tick = 0; tick < 33; tick++) {
+            session.tickEntities(frame++, link.romEntityX(), link.romEntityY());
+        }
+        assertEquals(0xA6, objectAt(session, 0x34));
+        assertEquals(0xA7, session.activeRoomEventForTest());
+
+        link.setPixelPosition(0x5C, 0x28);
+        for (int tick = 0; tick < 64; tick++) {
+            assertTrue(session.tryInteractWithIndoorBlock(
+                link.pixelX(), link.pixelY(), Link.DIRECTION_LEFT, 0x04));
+        }
+        assertEquals(0xA7, session.activeRoomEventForTest());
+        for (int tick = 0; tick < 33; tick++) {
+            session.tickEntities(frame++, link.romEntityX(), link.romEntityY());
+        }
+        assertEquals(0xA6, objectAt(session, 0x34));
+        assertEquals(0xA6, objectAt(session, 0x35));
+        assertEquals(0xA7, session.activeRoomEventForTest());
+        session.tickEntities(frame++, link.romEntityX(), link.romEntityY());
+        assertEquals(0, session.activeRoomEventForTest());
+        for (int tick = 0; tick < 11; tick++) {
+            session.tickEntities(frame++, link.romEntityX(), link.romEntityY());
+        }
+        assertEquals(0xBE, objectAt(session, 0x18));
+        assertEquals(0x10, session.indoorRoomStatusForTest(0x01, 0x2F) & 0x10);
+        assertEquals(0, session.currentDungeonItemFlagsSnapshot()[
+            DungeonItemState.SMALL_KEYS_INDEX]);
+
+        link.setPixelPosition(0x60, 0x10);
+        assertTrue(session.activeRoom().hasWarps());
+        coordinator.handleWarpAndIndoorBoundaries(link);
+        assertFalse(transition.isActive());
+        link.setPixelPosition(0x80, 0x10);
+        coordinator.handleWarpAndIndoorBoundaries(link);
+        assertTrue(transition.isActive());
+        while (transition.isActive()) {
+            transition.tick();
+        }
+        assertEquals(Warp.CATEGORY_SIDESCROLL, session.mapCategory());
+        assertEquals(0x3F, session.currentRoomId());
     }
 
     @Test

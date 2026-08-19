@@ -87,6 +87,7 @@ public final class RoomSession {
     private static final int EVENT_TRIGGER_PUSH_SINGLE_BLOCK = 0x02;
     private static final int EVENT_TRIGGER_STEP_ON_BUTTON = 0x03;
     private static final int EVENT_TRIGGER_LIGHT_TORCHES = 0x05;
+    private static final int EVENT_TRIGGER_PUSH_BLOCKS = 0x07;
     private static final int EVENT_EFFECT_OPEN_LOCKED_DOORS = 0x20;
     private static final int EVENT_EFFECT_REVEAL_CHEST = 0x60;
     private static final int EVENT_EFFECT_DROP_KEY = 0x80;
@@ -298,6 +299,8 @@ public final class RoomSession {
     private int pushedBlockDestinationLocation = -1;
     private int pushedBlockDirection = -1;
     private int pushedBlockEntitySlot = -1;
+    /** Defers trigger-$07's common effect until the frame after settlement. */
+    private boolean pushedBlocksTriggerEffectPending;
     private boolean worldLinkMotionBlockPending;
     private int tailCaveKeyholeCountdown;
     private boolean tailCaveFinalMotionBlockPending;
@@ -2304,6 +2307,7 @@ public final class RoomSession {
         pushedBlockDestinationLocation = -1;
         pushedBlockDirection = -1;
         pushedBlockEntitySlot = -1;
+        pushedBlocksTriggerEffectPending = false;
         worldLinkMotionBlockPending = false;
         tailCaveKeyholeCountdown = 0;
         tailCaveFinalMotionBlockPending = false;
@@ -2728,6 +2732,8 @@ public final class RoomSession {
         if (objectOffset < 0 || objectOffset > 1 || !dungeonItemState.consumeSmallKey()) {
             return false;
         }
+        indoorStatusTableForMap(activeRoom.mapId())[activeRoom.roomId()]
+            |= (byte) INDOOR_ROOM_STATUS_EVENT_3;
         indoorKeyDoorDirection = doorDirection;
         indoorKeyDoorLocation = touchedLocation
             - (objectOffset == 0 ? 0 : doorDirection < 2 ? 1 : 0x10);
@@ -3353,6 +3359,10 @@ public final class RoomSession {
         tickSwitchButton(linkEntityX, linkEntityY);
         tickRoomEventChestReveal(linkEntityX, linkEntityY);
         tickRoomEventStairReveal();
+        if (pushedBlocksTriggerEffectPending) {
+            pushedBlocksTriggerEffectPending = false;
+            return;
+        }
         if (activeRoom == null || activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
             || activeRoomEvent == 0) {
             return;
@@ -3461,7 +3471,30 @@ public final class RoomSession {
         if ((activeRoomEvent & EVENT_TRIGGER_MASK) == EVENT_TRIGGER_PUSH_SINGLE_BLOCK) {
             roomEventEffectExecuted = true;
             colorShellSoundSink.play(GameplaySoundEvent.PUZZLE_SOLVED);
+        } else if ((activeRoomEvent & EVENT_TRIGGER_MASK) == EVENT_TRIGGER_PUSH_BLOCKS
+            && pushedBlocksTriggerResolved()) {
+            roomEventEffectExecuted = true;
+            pushedBlocksTriggerEffectPending = true;
+            colorShellSoundSink.play(GameplaySoundEvent.PUZZLE_SOLVED);
         }
+    }
+
+    private boolean pushedBlocksTriggerResolved() {
+        if (activeRoom == null || pushedBlockDestinationLocation < 0) {
+            return false;
+        }
+        int neighborLocation = switch (pushedBlockDirection) {
+            // The source checks the object collided with on the block's
+            // movement-facing side; only horizontal pushes can satisfy $07.
+            case 2 -> pushedBlockDestinationLocation - 1;
+            case 3 -> pushedBlockDestinationLocation + 1;
+            default -> -1;
+        };
+        if (neighborLocation < 0) {
+            return false;
+        }
+        int neighbor = objectAtRoomLocation(neighborLocation);
+        return neighbor == OBJECT_SETTLED_PUSHED_BLOCK || neighbor == OBJECT_PUSHABLE_BLOCK;
     }
 
     private void tickIndoorKeyDoorAnimation() {

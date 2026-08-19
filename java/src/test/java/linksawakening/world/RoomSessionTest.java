@@ -815,6 +815,96 @@ final class RoomSessionTest {
     }
 
     @Test
+    void bottleGrottoTwoHorizontalBlocksRevealTheRoom2FStaircase() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x01, 0x2F);
+
+        int firstBlockIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x33;
+        int secondBlockIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x36;
+        int firstDestinationIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x34;
+        int secondDestinationIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x35;
+        int stairsIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x18;
+        assertEquals(0xA7, session.activeRoomEventForTest());
+        assertEquals(0xA7, session.activeRoom().roomObjectsArea()[firstBlockIndex]);
+        assertEquals(0xA7, session.activeRoom().roomObjectsArea()[secondBlockIndex]);
+        // ConfigureRoomObjects omits concealed $BF until room status $10 is set;
+        // the source room-template floor remains in the active grid initially.
+        assertEquals(0x0D, session.activeRoom().roomObjectsArea()[stairsIndex]);
+
+        for (int tick = 0; tick < 64; tick++) {
+            assertTrue(session.tryPushIndoorBlock(
+                0x25, 0x28, Link.DIRECTION_RIGHT, 0x08));
+        }
+        assertEquals(0xA7, session.activeRoomEventForTest());
+        for (int frame = 0; frame < 33; frame++) {
+            session.tickEntities(frame, 0x25, 0x28);
+        }
+        assertEquals(0x0D, session.activeRoom().roomObjectsArea()[firstBlockIndex]);
+        assertEquals(0xA6, session.activeRoom().roomObjectsArea()[firstDestinationIndex]);
+        assertEquals(0xA7, session.activeRoomEventForTest());
+
+        for (int tick = 0; tick < 64; tick++) {
+            assertTrue(session.tryPushIndoorBlock(
+                0x5C, 0x28, Link.DIRECTION_LEFT, 0x04));
+        }
+        assertEquals(0xA7, session.activeRoomEventForTest());
+        for (int frame = 33; frame < 66; frame++) {
+            session.tickEntities(frame, 0x5C, 0x28);
+        }
+        assertEquals(0x0D, session.activeRoom().roomObjectsArea()[secondBlockIndex]);
+        assertEquals(0xA6, session.activeRoom().roomObjectsArea()[secondDestinationIndex]);
+        assertEquals(0xA7, session.activeRoomEventForTest());
+        session.tickEntities(66, 0, 0);
+        assertEquals(0, session.activeRoomEventForTest());
+
+        for (int frame = 67; frame < 78; frame++) {
+            session.tickEntities(frame, 0, 0);
+        }
+        assertEquals(0xBE, session.activeRoom().roomObjectsArea()[stairsIndex]);
+        assertEquals(0x10, session.indoorRoomStatusForTest(0x01, 0x2F) & 0x10);
+        session.loadIndoor(0x01, 0x2F);
+        assertEquals(0xBF, session.activeRoom().roomObjectsArea()[stairsIndex]);
+    }
+
+    @Test
+    void bottleGrottoRoom2fSettlementUsesFacingSideAndRejectsVerticalPushes() {
+        RoomSession oppositeSide = newSession();
+        oppositeSide.loadIndoor(0x01, 0x2F);
+        for (int tick = 0; tick < 64; tick++) {
+            assertTrue(oppositeSide.tryPushIndoorBlock(
+                0x25, 0x28, Link.DIRECTION_RIGHT, 0x08));
+        }
+        // Arrange an opposite-side settled neighbor while the real block is
+        // in motion; the settlement branch must still inspect only its facing
+        // side through the normal push/tick path.
+        oppositeSide.activeRoom().roomObjectsArea()[
+            RoomConstants.ROOM_OBJECTS_BASE + 0x33] = 0xA6;
+        for (int frame = 0; frame < 33; frame++) {
+            oppositeSide.tickEntities(frame, 0x25, 0x28);
+        }
+        assertEquals(0xA6, oppositeSide.activeRoom().roomObjectsArea()[
+            RoomConstants.ROOM_OBJECTS_BASE + 0x34]);
+        assertEquals(0xA7, oppositeSide.activeRoomEventForTest());
+        oppositeSide.tickEntities(33, 0, 0);
+        assertEquals(0xA7, oppositeSide.activeRoomEventForTest());
+
+        RoomSession vertical = newSession();
+        vertical.loadIndoor(0x01, 0x2F);
+        for (int tick = 0; tick < 64; tick++) {
+            assertTrue(vertical.tryPushIndoorBlock(
+                0x2A, 0x38, Link.DIRECTION_UP, 0x01));
+        }
+        for (int frame = 0; frame < 33; frame++) {
+            vertical.tickEntities(frame, 0x2A, 0x38);
+        }
+        assertEquals(0xA6, vertical.activeRoom().roomObjectsArea()[
+            RoomConstants.ROOM_OBJECTS_BASE + 0x23]);
+        assertEquals(0xA7, vertical.activeRoomEventForTest());
+        vertical.tickEntities(33, 0, 0);
+        assertEquals(0xA7, vertical.activeRoomEventForTest());
+    }
+
+    @Test
     void tailCaveKeyholeBlockRequiresThirtyTwoContactTicksAndConsumesAKey() {
         RoomSession noKey = newSession();
         noKey.loadIndoor(0x00, 0x09);
@@ -1234,6 +1324,7 @@ final class RoomSessionTest {
             0x85, 0x38, Link.DIRECTION_RIGHT, 0x08));
         assertEquals(0, session.currentDungeonItemFlagsSnapshot()[
             DungeonItemState.SMALL_KEYS_INDEX]);
+        assertEquals(0x40, session.indoorRoomStatusForTest(0x00, 0x0F) & 0x40);
         assertEquals(List.of(GameplaySoundEvent.DOOR_UNLOCKED), sounds);
 
         for (int frame = 0; frame < 8; frame++) {
