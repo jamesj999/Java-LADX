@@ -9,15 +9,17 @@ switch to cross room `$34`'s partition, and collect the Small Key in room `$38`.
 ## Source and route
 
 `MapLayout1` and the loaded room boundaries make the route `$2E -> $30 -> $31
--> $32 -> $33 -> $34 -> $39 -> $38`. The apparent shortcut from `$37` is not
+-> $32 -> $33 -> $34 -> $35 -> $39 -> $38`. The apparent shortcut from `$37` is not
 usable, and Link has zero Small Keys at the Stone Beak checkpoint, so room
 `$35`'s north key door cannot be the next interaction.
 
 Room `$33` contains the live crystal switch. Its ordinary sword interaction
-must put the shared switch-block state in the configuration that makes room
-`$34`'s `$DB/$DC` partition and south boundary collision-passable. The trace
-then crosses room `$34` south into `$39` and west into `$38`; it must not warp,
-rewrite room objects, or set the switch state directly.
+must leave the shared switch-block state in the configuration that makes room
+`$34`'s `$DB/$DC` lateral channel collision-passable. The solid `$A6`
+partition is not switchable and room `$34` has no collision-valid south route.
+The trace crosses east through `$34` into `$35`, ignores `$35`'s north key door,
+then crosses south into `$39` and west into `$38`; it must not warp, rewrite
+room objects, or set the switch state directly.
 
 `IndoorsA38` contains chest `$A0` at `$43` and the switch-block arrangement.
 `IndoorsA38Entities` contains Moblin Sword `$14` at `$62` and crystal switch at

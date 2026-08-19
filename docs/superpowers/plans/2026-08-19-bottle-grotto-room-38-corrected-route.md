@@ -17,8 +17,8 @@
 
 - [ ] Continue `freshGameRuntimeSequenceCollectsBottleGrottoFirstKeyInOrder` after the Stone Beak chest teardown with the same session, Link, player state, and frame counter.
 - [ ] Cross `$2E -> $30 -> $31 -> $32 -> $33` using `walkToAndCrossIndoorBoundary`, asserting every room id and retaining zero Small Keys.
-- [ ] Reach room `$33`'s live crystal switch through collision, hit it with the ordinary sword/entity path, and tick its nine-stage animation until the shared switch state makes the required `$34` partition route passable.
-- [ ] Cross `$33 -> $34 -> $39 -> $38` using collision-aware movement; assert room `$38` has event `$00`, chest `$A0` at `$43`, Moblin Sword `$14` at `$62`, and crystal switch at `$45`.
+- [ ] Reach room `$33`'s live crystal switch through collision only if its carried state does not already make room `$34`'s `$DB/$DC` lateral channel passable; use the ordinary sword/entity path and full nine-stage animation rather than assigning state.
+- [ ] Cross `$33 -> $34 -> $35 -> $39 -> $38` using collision-aware movement, leaving `$35`'s north key door locked; assert room `$38` has event `$00`, chest `$A0` at `$43`, Moblin Sword `$14` at `$62`, and crystal switch at `$45`.
 - [ ] Run `cd java && gradle test --tests linksawakening.world.RoomTransitionCoordinatorTest.freshGameRuntimeSequenceCollectsBottleGrottoFirstKeyInOrder --rerun-tasks` and retain any source-backed RED before changing production code.
 
 ### Task 2: Complete room `$38` through shared runtime paths
