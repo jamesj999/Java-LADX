@@ -2759,13 +2759,40 @@ of scope.
 - The focused 461-test subsystem matrix and clean Java suite pass with 1,674
   tests and zero failures, errors, or skipped tests. Source-fidelity and
   code-quality reviews report no remaining Critical or Important findings.
-- Room `$28` and its Hinox miniboss route are the next gameplay milestone.
+- Room `$35/$2F` is now the next gameplay frontier; room `$28` and its Hinox
+  miniboss route remain a later milestone.
+
+## Verified Bottle Grotto room `$38` source route — 2026-08-19
+
+- The uninterrupted Stone-Beak regression backtracks `$2E -> $30 -> $31 ->
+  $32 -> $33`, preserving zero Small Keys, then reaches and strikes the ROM
+  crystal switch `$66` with a live Sword collision box. Nine gameplay VBlanks
+  prove the source `$00 -> $02` switch transition and synchronized block state.
+- Room `$38` loads event `$00`, chest `$A0` at `$43`, Moblin Sword `$14` at
+  source location `$62`, and crystal switch `$66` at source location `$45`.
+  The room's own `$DB` ring is raised in state `$02`; the test exercises its
+  live sword collision path from the reachable side of the ring, lowers it to
+  `$00`, and reaches the chest through collision before opening it with
+  `tryOpenChest`. The source Link collision path does not let a Roc's Feather
+  jump cross a mismatched `$DB` block; the focused Link regression proves that
+  the full bounded jump remains airborne during the blocked attempt, then lands
+  on its original side. The route also reloads `$38` through `$39` and verifies
+  chest object `$A1` plus room-status persistence before continuing. This is
+  required by the source state table:
+  state `$02` opens room `$33`'s south `$DC` gate but raises room `$38`'s `$DB`
+  ring, while state `$00` reverses those conditions.
+- The ROM-selected chest reward is `CHEST_SMALL_KEY`; reward, dialog, room
+  persistence, bounded chest teardown, and the dungeon key count `$00 -> $01`
+  all complete through shared runtime APIs. Ordered play then crosses
+  `$38 -> $39 -> $34 -> $35`, confirms `$34` entry east of its `$A6` partition,
+  and leaves `$35`'s north key door closed (`$2D/$2E`). Room `$35/$2F` is the
+  next gameplay frontier.
 
 ## Hinox handler foundation — 2026-08-19
 
 - Runtime collision disproved the apparent direct `$2E -> $2C` adjacency:
-  room `$2E` has only its south exit. The post-Stone-Beak route therefore
-  remains an ordered-play investigation; room `$34`'s `$A6` partition also
+  room `$2E` has only its south exit. The verified post-Stone-Beak route now
+  backtracks through `$30/$31/$32/$33`; room `$34`'s `$A6` partition still
   blocks collision-only traversal from its west side.
 - Entity `$89` now has a focused six-state bank-$06 motion port. The runtime
   dispatch preserves the ROM's health group `$14` (8 HP), physics group `$0C`,

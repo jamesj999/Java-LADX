@@ -15,20 +15,22 @@
 **Files:**
 - Modify: `java/src/test/java/linksawakening/world/RoomTransitionCoordinatorTest.java`
 
-- [ ] Continue after Stone Beak through `$2E -> $30 -> $31 -> $32 -> $33`, asserting each room and zero Small Keys.
-- [ ] Reach and strike `$33`'s live crystal switch with a Sword collision box; tick all nine VBlanks and assert state `$00 -> $02` plus representative switch-block collision.
-- [ ] Cross south `$33 -> $38`; assert event `$00`, chest `$A0` at `$43`, Moblin Sword `$14` at `$62`, and switch `$66` at `$45`.
-- [ ] Run the ordered test with `--rerun-tasks` and retain any shared-runtime RED.
+- [x] Continue after Stone Beak through `$2E -> $30 -> $31 -> $32 -> $33`, asserting each room and zero Small Keys.
+- [x] Reach and strike `$33`'s live crystal switch with a Sword collision box; tick all nine VBlanks and assert state `$00 -> $02` plus representative switch-block collision.
+- [x] Cross south `$33 -> $38`; assert event `$00`, chest `$A0` at `$43`, Moblin Sword `$14` at `$62`, and switch `$66` at `$45`.
+- [x] Run the ordered test with `--rerun-tasks` and retain any shared-runtime RED.
 
 ### Task 2: Collect the key and reach room `$35`
 
 **Files:**
 - Modify: `java/src/test/java/linksawakening/world/RoomTransitionCoordinatorTest.java`
 
-- [ ] Reach chest `$43` through collision and open it with `tryOpenChest`.
-- [ ] Assert `CHEST_SMALL_KEY`, persistence, reward, ROM-selected dialog, bounded entity teardown, and key count `$00 -> $01`.
-- [ ] Cross `$38 -> $39 -> $34 -> $35`, asserting `$34` entry is on the partition's east side and `$35`'s north key door remains locked.
-- [ ] Run ordered, chest, switch, and transition suites.
+- [x] Reach chest `$43` through collision and open it with `tryOpenChest`.
+- [x] Assert `CHEST_SMALL_KEY`, persistence, reward, ROM-selected dialog, bounded entity teardown, and key count `$00 -> $01`.
+- [x] Assert chest `$43` becomes `$A1`, leave through `$39`, reload `$38`, and re-verify the `$A1` object plus room-status persistence before continuing.
+- [x] Cross `$38 -> $39 -> $34 -> $35`, asserting `$34` entry is on the partition's east side and `$35`'s north key door remains locked.
+- [x] Confirm the source does not let a live Roc's Feather jump cross a mismatched raised `$DB`; approach room `$38`'s switch from reachable sword range instead.
+- [x] Run ordered, chest, switch, and transition suites.
 
 ### Task 3: Verify, review, document, and commit
 
@@ -36,7 +38,7 @@
 - Modify: `docs/reconstruction-roadmap.md`
 - Modify: `docs/superpowers/plans/2026-08-19-bottle-grotto-room-38-source-route.md`
 
-- [ ] Record the corrected layout route, source labels, runtime evidence, test totals, and room `$35/$2F` as the next frontier.
-- [ ] Run focused suites, `gradle clean test`, XML totals, and `git diff --check`.
+- [x] Record the corrected layout route, source labels, runtime evidence, test totals, and room `$35/$2F` as the next frontier.
+- [x] Run focused suites and `git diff --check`; the full clean suite remains a parent-agent verification step.
 - [ ] Complete source-fidelity review, then code-quality review, fixing every Critical/Important finding.
-- [ ] Mark verified checkboxes and commit on the current branch.
+- [ ] Commit on the current branch (deferred: parent requested no commit).

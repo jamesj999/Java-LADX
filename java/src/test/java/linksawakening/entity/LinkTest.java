@@ -1566,6 +1566,43 @@ final class LinkTest {
         assertEquals(0x08, link.pixelX());
     }
 
+    /**
+     * Bank-$02 ApplyCollisionWithOceanOrSwitchBlock does not consult
+     * wIsLinkInTheAir. A Roc's Feather jump therefore remains blocked by a
+     * mismatched raised switch block; only pits are explicitly jump-clearable.
+     */
+    @Test
+    void rocsFeatherCannotCrossAMismatchedRaisedSwitchBlock()
+            throws Exception {
+        byte[] rom = loadRom();
+        RomTables romTables = RomTables.loadFromRom(rom);
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        InputState inputState = new InputState();
+        inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
+        int[] roomObjects = emptyRoomObjectsArea();
+        roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 1] = 0xDC;
+        OverworldCollision collision = new OverworldCollision(romTables);
+        collision.setPhysicsTable(RomTables.PHYSICS_TABLE_INDOORS1);
+        collision.setRoom(roomObjects);
+        collision.setSwitchBlocksState(0x00);
+        Link link = new Link(inputState, inputConfig, romTables, collision, null,
+            new PlayerState(), new ItemRegistry());
+        link.setPixelPosition(0x07, 0x20);
+
+        link.useRocsFeather();
+        assertTrue(link.isAirborne());
+        int jumpFrames = 0;
+        while (link.isAirborne() && jumpFrames++ < 0x50) {
+            link.update();
+            assertEquals(0x07, link.pixelX(),
+                "airborne Link must remain on the original side of the raised block");
+        }
+
+        assertTrue(jumpFrames < 0x50, "Roc's Feather jump did not land");
+        assertFalse(link.isAirborne());
+        assertEquals(0x07, link.pixelX());
+    }
+
     @Test
     void standingOverrideLetsLinkLeaveAMismatchedSwitchBlock() throws Exception {
         byte[] rom = loadRom();
