@@ -33,8 +33,11 @@ public final class RoomTransitionCoordinator {
         ActiveRoom room = roomSession.activeRoom();
 
         if (room.mapCategory() != Warp.CATEGORY_OVERWORLD) {
+            link.initializeRoomPhysicsForRoom(roomSession.roomLoadToken(), room.mapId(),
+                room.roomId(), room.mapCategory());
             RoomBoundaryDecision boundary = boundaryController.decide(
-                roomSession.boundaryState(link.pixelX(), link.pixelY(), link.isAirborne()));
+                roomSession.boundaryState(link.pixelX(), link.pixelY(), link.isAirborne(),
+                    link.romPhysicsModifier()));
             if (boundary.type() == RoomBoundaryDecision.Type.INDOOR_FRONT_DOOR_WARP) {
                 Warp target = room.firstWarp();
                 System.out.println("Indoor front-door exit → cat=" + target.category()
@@ -145,6 +148,9 @@ public final class RoomTransitionCoordinator {
 
     private void applyWarp(Warp warp, Link link) {
         roomSession.loadWarpDestination(warp);
+        ActiveRoom destination = roomSession.activeRoom();
+        link.setRoomPhysicsForRoom(roomSession.roomLoadToken(), destination.mapId(),
+            destination.roomId(), destination.mapCategory());
         int landingX = warp.javaPixelX();
         int landingY = warp.javaPixelY();
         link.setRoomEntryPixelPosition(landingX, landingY);

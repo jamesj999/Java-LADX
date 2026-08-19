@@ -213,6 +213,10 @@ public final class Link implements RocsFeather.JumpTarget {
     /** Mirrors LINK_MOTION_UNSTUCKING after an overworld $10 ledge collision. */
     private boolean overworldLedgeFallActive;
     private int physicsModifier;
+    private long physicsRoomLoadToken = -1;
+    private int physicsRoomMapId = -1;
+    private int physicsRoomId = -1;
+    private int physicsRoomCategory = -1;
     private int swimmingSpeedX;
     private int swimmingSpeedY;
     private int swimmingFastCountdown;
@@ -334,6 +338,10 @@ public final class Link implements RocsFeather.JumpTarget {
         groundStatus = GROUND_STATUS_NORMAL;
         motionState = LINK_MOTION_DEFAULT;
         physicsModifier = 0;
+        physicsRoomLoadToken = -1;
+        physicsRoomMapId = -1;
+        physicsRoomId = -1;
+        physicsRoomCategory = -1;
         zSubPixels = 0;
         zVelocity = 0;
         forcedSpeedPending = false;
@@ -662,6 +670,46 @@ public final class Link implements RocsFeather.JumpTarget {
 
     public boolean isDiving() {
         return isSwimming() && physicsModifier != 0;
+    }
+
+    /** Mirrors hLinkPhysicsModifier for source-shaped map-transition checks. */
+    public int romPhysicsModifier() {
+        return physicsModifier & 0xFF;
+    }
+
+    /**
+     * Applies the source room-entry default once per loaded room. The load
+     * serial also distinguishes a save/new-game reload of the same room, so a
+     * prior ladder or diving modifier cannot leak across the reload.
+     */
+    public void initializeRoomPhysicsForRoom(long loadToken, int mapId, int roomId,
+                                             int mapCategory) {
+        if (physicsRoomLoadToken == loadToken
+            && physicsRoomMapId == mapId
+            && physicsRoomId == roomId
+            && physicsRoomCategory == mapCategory) {
+            return;
+        }
+        physicsModifier = mapCategory == 2 ? 0x01 : 0x00;
+        physicsRoomLoadToken = loadToken;
+        physicsRoomMapId = mapId;
+        physicsRoomId = roomId;
+        physicsRoomCategory = mapCategory;
+    }
+
+    /** Applies the room-entry physics default after a completed warp. */
+    public void setRoomPhysicsForRoom(long loadToken, int mapId, int roomId,
+                                      int mapCategory) {
+        physicsModifier = mapCategory == 2 ? 0x01 : 0x00;
+        physicsRoomLoadToken = loadToken;
+        physicsRoomMapId = mapId;
+        physicsRoomId = roomId;
+        physicsRoomCategory = mapCategory;
+    }
+
+    /** Mirrors source ladder/diving updates to hLinkPhysicsModifier. */
+    public void setRomPhysicsModifier(int modifier) {
+        physicsModifier = modifier & 0xFF;
     }
 
     /** Mirrors wLinkAttackStepAnimationCountdown after a player projectile spawn. */

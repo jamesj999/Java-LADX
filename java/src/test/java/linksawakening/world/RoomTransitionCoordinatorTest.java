@@ -39,6 +39,45 @@ final class RoomTransitionCoordinatorTest {
     private static final int OBJECT_NORMAL_PIT = 0xE8;
 
     @Test
+    void linkRoomPhysicsDefaultReinitializesAcrossRoomAndSaveLikeReloads() throws Exception {
+        byte[] rom = loadRom();
+        RomTables romTables = RomTables.loadFromRom(rom);
+        OverworldCollision collision = new OverworldCollision(romTables);
+        RoomSession session = newSession(rom, romTables, collision);
+        ScrollController scroll = new ScrollController();
+        RoomTransitionCoordinator coordinator = new RoomTransitionCoordinator(
+            session, new RoomBoundaryController(), new TransitionController(), scroll);
+        Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
+            romTables, collision, null, new PlayerState(), new ItemRegistry());
+
+        session.loadIndoor(0x00, 0x19, Warp.CATEGORY_SIDESCROLL);
+        link.setPixelPosition(0x50, 0x40);
+        coordinator.handleWarpAndIndoorBoundaries(link);
+        assertEquals(0x01, link.romPhysicsModifier());
+
+        link.setRomPhysicsModifier(0x02);
+        session.loadIndoor(0x00, 0x19, Warp.CATEGORY_INDOOR);
+        coordinator.handleWarpAndIndoorBoundaries(link);
+        assertEquals(0x00, link.romPhysicsModifier(),
+            "top-down reload resets a prior side-view modifier");
+
+        session.loadIndoor(0x00, 0x19, Warp.CATEGORY_SIDESCROLL);
+        coordinator.handleWarpAndIndoorBoundaries(link);
+        assertEquals(0x01, link.romPhysicsModifier(),
+            "same-room side-view reload restores the source entry default");
+
+        link.setRomPhysicsModifier(0x02);
+        RoomSession restoredSession = newSession(rom, romTables, collision);
+        restoredSession.loadIndoor(0x00, 0x19, Warp.CATEGORY_SIDESCROLL);
+        RoomTransitionCoordinator restoredCoordinator = new RoomTransitionCoordinator(
+            restoredSession, new RoomBoundaryController(), new TransitionController(),
+            new ScrollController());
+        restoredCoordinator.handleWarpAndIndoorBoundaries(link);
+        assertEquals(0x01, link.romPhysicsModifier(),
+            "a new session reload restores the source entry default");
+    }
+
+    @Test
     void bottleGrottoTwoTorchTriggerOpensTheRoom31EastShutter() throws Exception {
         byte[] rom = loadRom();
         RomTables romTables = RomTables.loadFromRom(rom);
@@ -2567,18 +2606,132 @@ final class RoomTransitionCoordinatorTest {
         assertEquals(0, session.currentDungeonItemFlagsSnapshot()[
             DungeonItemState.SMALL_KEYS_INDEX]);
 
-        link.setPixelPosition(0x60, 0x10);
         assertTrue(session.activeRoom().hasWarps());
-        coordinator.handleWarpAndIndoorBoundaries(link);
+        List<int[]> staircaseExitPath = reachablePositionPath(
+            collision, link.pixelX(), link.pixelY(),
+            (x, y) -> x <= 0x60 && y == 0x10);
+        assertNotNull(staircaseExitPath, collisionGrid(collision));
+        for (int[] position : staircaseExitPath) {
+            link.setPixelPosition(position[0], position[1]);
+            coordinator.handleWarpAndIndoorBoundaries(link);
+        }
         assertFalse(transition.isActive());
-        link.setPixelPosition(0x80, 0x10);
-        coordinator.handleWarpAndIndoorBoundaries(link);
+        List<int[]> staircaseEntryPath = reachablePositionPath(
+            collision, link.pixelX(), link.pixelY(),
+            (x, y) -> x == 0x80 && y == 0x10);
+        assertNotNull(staircaseEntryPath, collisionGrid(collision));
+        for (int[] position : staircaseEntryPath) {
+            link.setPixelPosition(position[0], position[1]);
+            coordinator.handleWarpAndIndoorBoundaries(link);
+            if (transition.isActive()) {
+                break;
+            }
+        }
         assertTrue(transition.isActive());
         while (transition.isActive()) {
             transition.tick();
         }
         assertEquals(Warp.CATEGORY_SIDESCROLL, session.mapCategory());
         assertEquals(0x3F, session.currentRoomId());
+        assertEquals(0x88, link.romEntityX());
+        assertEquals(0x10, link.romEntityY());
+        assertEquals(0x01, link.romPhysicsModifier(),
+            "side-view warp initializes hLinkPhysicsModifier=$01");
+
+        List<int[]> sideViewExitPath = reachablePositionPath(
+            collision, link.pixelX(), link.pixelY(),
+            (x, y) -> x == 0);
+        assertNotNull(sideViewExitPath, collisionGrid(collision));
+        for (int[] position : sideViewExitPath) {
+            link.setPixelPosition(position[0], position[1]);
+            coordinator.handleWarpAndIndoorBoundaries(link);
+            assertFalse(transition.isActive());
+            assertFalse(scroll.isActive());
+        }
+        link.setPixelPosition(-1, link.pixelY());
+        coordinator.handleWarpAndIndoorBoundaries(link);
+        assertTrue(scroll.isActive());
+        assertEquals(ScrollController.LEFT, scroll.direction());
+        while (scroll.isActive()) {
+            scroll.tick(8);
+        }
+        assertEquals(Warp.CATEGORY_SIDESCROLL, session.mapCategory());
+        assertEquals(0x3E, session.currentRoomId());
+        assertEquals(1, session.activeRoom().warps().size());
+        Warp sideViewExit = session.activeRoom().firstWarp();
+        assertEquals(Warp.CATEGORY_INDOOR, sideViewExit.category());
+        assertEquals(0x01, sideViewExit.destMap());
+        assertEquals(0x2C, sideViewExit.destRoom());
+        assertEquals(0x78, sideViewExit.destX());
+        assertEquals(0x70, sideViewExit.destY());
+        List<int[]> sideViewReturnPath = reachableBoundaryPath(
+            collision, link.pixelX(), link.pixelY(), ScrollController.RIGHT);
+        assertNotNull(sideViewReturnPath, collisionGrid(collision));
+        for (int[] position : sideViewReturnPath) {
+            link.setPixelPosition(position[0], position[1]);
+            coordinator.handleWarpAndIndoorBoundaries(link);
+            assertFalse(transition.isActive());
+            assertFalse(scroll.isActive());
+        }
+        link.setPixelPosition(RoomConstants.ROOM_PIXEL_WIDTH, link.pixelY());
+        coordinator.handleWarpAndIndoorBoundaries(link);
+        assertTrue(scroll.isActive());
+        assertEquals(ScrollController.RIGHT, scroll.direction());
+        while (scroll.isActive()) {
+            scroll.tick(8);
+        }
+        assertEquals(0x3F, session.currentRoomId());
+        walkToAndCrossIndoorBoundary(
+            coordinator, transition, scroll, collision, link, ScrollController.LEFT);
+        assertEquals(0x3E, session.currentRoomId());
+        List<int[]> sideViewWarpPath = reachableBoundaryPath(
+            collision, link.pixelX(), link.pixelY(), ScrollController.UP);
+        assertNotNull(sideViewWarpPath, collisionGrid(collision));
+        for (int[] position : sideViewWarpPath) {
+            link.setPixelPosition(position[0], position[1]);
+            coordinator.handleWarpAndIndoorBoundaries(link);
+            assertFalse(transition.isActive());
+        }
+        link.setPixelPosition(link.pixelX(), -5);
+        coordinator.handleWarpAndIndoorBoundaries(link);
+        assertTrue(transition.isActive());
+        while (transition.isActive()) {
+            transition.tick();
+        }
+        assertEquals(Warp.CATEGORY_INDOOR, session.mapCategory());
+        assertEquals(0x2C, session.currentRoomId());
+        assertEquals(0x78, link.romEntityX());
+        assertEquals(0x70, link.romEntityY());
+        assertEquals(0, session.activeRoomEventForTest());
+        RoomEntity room2CKeese = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x19).findFirst().orElseThrow();
+        assertEquals(0x28, room2CKeese.x());
+        assertEquals(0x30, room2CKeese.y());
+        RoomEntity room2CSpark = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x16).findFirst().orElseThrow();
+        assertEquals(0x18, room2CSpark.x());
+        assertEquals(0x30, room2CSpark.y());
+        RoomEntity room2CFloatingItem = session.activeRoom().entities().loadedEntities()
+            .stream().filter(entity -> entity.type() == 0xE5).findFirst().orElseThrow();
+        assertEquals(0x48, room2CFloatingItem.x());
+        assertEquals(0x50, room2CFloatingItem.y());
+
+        walkToAndCrossIndoorBoundary(
+            coordinator, transition, scroll, collision, link, ScrollController.UP);
+        assertEquals(Warp.CATEGORY_INDOOR, session.mapCategory());
+        assertEquals(0x28, session.currentRoomId());
+        assertEquals(0xC1, session.activeRoomEventForTest());
+        RoomEntity hinox = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x89).findFirst().orElseThrow();
+        assertEquals(0x58, hinox.x());
+        assertEquals(0x30, hinox.y());
+        RoomEntity unresolvedHinoxWarp = session.activeRoom().entities().loadedEntities()
+            .stream().filter(entity -> entity.type() == 0x61).findFirst().orElseThrow();
+        assertEquals(0x48, unresolvedHinoxWarp.x());
+        assertEquals(0x40, unresolvedHinoxWarp.y());
+        assertFalse(session.activeRoom().hasWarps());
+        coordinator.handleWarpAndIndoorBoundaries(link);
+        assertFalse(transition.isActive());
     }
 
     @Test

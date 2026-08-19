@@ -8,6 +8,9 @@ import static linksawakening.world.RoomConstants.ROOM_PIXEL_WIDTH;
 public final class RoomBoundaryController {
     private static final int OVERWORLD_COLUMNS = 16;
     private static final int OVERWORLD_ROWS = 16;
+    private static final int SIDE_VIEW_NO_FADE_PHYSICS_MODIFIER = 0x02;
+    private static final int SIDE_VIEW_VERTICAL_TOP = -0x04;
+    private static final int SIDE_VIEW_VERTICAL_BOTTOM = 0x74;
 
     public RoomBoundaryDecision decide(RoomBoundaryState state) {
         if (state.mapCategory() == Warp.CATEGORY_OVERWORLD) {
@@ -59,6 +62,8 @@ public final class RoomBoundaryController {
         boolean offTop = y < 0;
         boolean offLeft = x < 0;
         boolean offRight = x + Link.SPRITE_SIZE > ROOM_PIXEL_WIDTH;
+        boolean sideScrolling = state.mapCategory() == Warp.CATEGORY_SIDESCROLL;
+        boolean sideScrollingWithWarp = sideScrolling && state.hasWarps();
         boolean supportedTailCaveSideView = state.mapCategory() == Warp.CATEGORY_SIDESCROLL
             && state.mapId() == 0x00
             && (state.roomId() == 0x18 || state.roomId() == 0x19)
@@ -76,14 +81,25 @@ public final class RoomBoundaryController {
         if (state.linkAirborne() && state.mapCategory() != Warp.CATEGORY_SIDESCROLL) {
             return RoomBoundaryDecision.none();
         }
-        // Tail Cave's room $19 follows the ordinary side-view fade path in
-        // CheckPositionForMapTransition. Other category-2 rooms include source
-        // exceptions and remain on the existing indoor path until their state
-        // (physics modifier, entities, and map-specific rules) is represented.
-        if (supportedTailCaveSideView) {
-            if (y < -0x04 || y >= 0x74) {
-                return RoomBoundaryDecision.sideScrollVerticalWarp();
+        // CheckPositionForMapTransition has a small side-view margin in which
+        // Link is off the visible room but the source does not start an
+        // ordinary indoor scroll. The source's vertical path then applies
+        // room exceptions and hLinkPhysicsModifier before its generic fade.
+        if (sideScrolling) {
+            boolean inVerticalMargin = (offTop && y >= SIDE_VIEW_VERTICAL_TOP)
+                || (offBottom && y < SIDE_VIEW_VERTICAL_BOTTOM);
+            if (inVerticalMargin) {
+                return RoomBoundaryDecision.none();
             }
+            if (y < SIDE_VIEW_VERTICAL_TOP || y >= SIDE_VIEW_VERTICAL_BOTTOM) {
+                RoomBoundaryDecision sideViewDecision = sideViewVerticalDecision(state,
+                    sideScrollingWithWarp);
+                if (sideViewDecision != null) {
+                    return sideViewDecision;
+                }
+            }
+        }
+        if (supportedTailCaveSideView) {
             if (offTop || offBottom) {
                 return RoomBoundaryDecision.none();
             }
@@ -115,5 +131,36 @@ public final class RoomBoundaryController {
             return RoomBoundaryDecision.indoorScroll(ScrollController.DOWN, x, 0);
         }
         return RoomBoundaryDecision.none();
+    }
+
+    private static RoomBoundaryDecision sideViewVerticalDecision(RoomBoundaryState state,
+                                                                  boolean hasWarps) {
+        int roomId = state.roomId() & 0xFF;
+        if (roomId == 0xA3 || roomId == 0xC0 || roomId == 0xC1) {
+            // The source starts ApplyMapFadeOutTransitionWithNoise here.
+            // Its map-level destination/reload is not represented by the
+            // room boundary API, so suppress every room fallback.
+            return RoomBoundaryDecision.none();
+        }
+        if (roomId == 0xE8 || roomId == 0xF8 || roomId == 0xFD) {
+            return RoomBoundaryDecision.none();
+        }
+        // Source room $FF suppresses the fallback when Link's ROM Y is at or
+        // past $50, or when its first entity slot is active. Only an inactive
+        // upper-room $FF position continues to the generic physics path.
+        int romY = (state.linkY() + 0x10) & 0xFF;
+        if (roomId == 0xFF
+            && (romY >= 0x50 || state.sideViewEntityActive())) {
+            return RoomBoundaryDecision.none();
+        }
+        if (!hasWarps) {
+            return null;
+        }
+        if ((state.linkPhysicsModifier() & 0xFF) == SIDE_VIEW_NO_FADE_PHYSICS_MODIFIER) {
+            // Modifier $02 skips the source generic map fade, then falls
+            // through to the ordinary adjacent-room boundary path below.
+            return null;
+        }
+        return RoomBoundaryDecision.sideScrollVerticalWarp();
     }
 }

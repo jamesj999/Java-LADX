@@ -2826,3 +2826,31 @@ of scope.
   `$30` wind-up and `$18` charge vector, grab/throw effects, `$03` flash bomb
   entry, and `$10` bomb creation. The uninterrupted room-clear and post-clear
   warp trace remains the next milestone.
+
+## Verified Bottle Grotto Hinox passage — 2026-08-19
+
+- The uninterrupted ordered trace now continues from the revealed `$2F`
+  staircase through the ROM side-view warp `$E2 01 3F 88 10`, crosses the live
+  `$3F -> $3E` horizontal boundary, proves the reverse `$3E -> $3F` scroll,
+  then uses `$3E`'s collision-valid vertical boundary and generic side-view
+  warp path to select ROM warp `$E1 01 2C 78 70`. Tail Cave's horizontal edge
+  guard remains intact. The shared side-view predicate now preserves the
+  source's `-1..-4`/`$71..$73` vertical margins, `$02` physics-modifier
+  suppression, and bank-$02 room exceptions (including conditional `$FF`),
+  while `$3E`/map `$01` remains the positive generic-fade case. Side-view
+  warp entry now carries the source `$01` physics-modifier default; direct
+  map-fade rooms `$A3/$C0/$C1` suppress room scroll/warp fallback. Their
+  source map-fade destination/reload remains a future map-level milestone;
+  no fabricated room warp is used when no destination warp exists. Link's
+  modifier default is keyed to room identity plus load/session generation, so
+  same-room save-like reloads cannot retain a prior ladder modifier.
+- Room `$2C` loads event `$00`, Keese `$19` at source `$22`, counter-clockwise
+  Spark `$16` at `$21`, and floating item `$E5` at `$44`. Collision-valid north
+  traversal enters room `$28` with event `$C1`, Hinox `$89` at source `$25`,
+  and unresolved warp entity `$61` at source `$34`; no room warp is exposed
+  before the miniboss event clears.
+- The focused ordered regression verifies ROM destination coordinates
+  `hLinkPositionX=$78, hLinkPositionY=$70` and collision-valid movement at each
+  boundary. Focused and clean suites pass with 1,705 tests and zero failures,
+  errors, or skipped tests. Hinox combat, event persistence, and the post-clear
+  miniboss warp remain the next frontier.

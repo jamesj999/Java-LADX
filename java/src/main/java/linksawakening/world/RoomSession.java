@@ -25,6 +25,7 @@ import static linksawakening.world.RoomConstants.ROOM_PIXEL_HEIGHT;
 import static linksawakening.world.RoomConstants.ROOM_PIXEL_WIDTH;
 
 public final class RoomSession {
+    private static long nextRoomSessionId;
     private static final int ROOM_STATUS_TABLE_SIZE = 0x100;
     private static final int COLOR_DUNGEON_SAVE_STATUS_SIZE = 0x20;
     private static final int W_TILESET_NO_UPDATE = 0xFF;
@@ -188,7 +189,10 @@ public final class RoomSession {
         };
     private final LinkPositionHistory followingLinkPositionHistory = new LinkPositionHistory();
 
+    private final long roomSessionId = ++nextRoomSessionId;
     private ActiveRoom activeRoom;
+    /** Increments on every ROM room load, including a reload of the same room. */
+    private long roomLoadSerial;
     /** ROM wIndoorRoom: the current position in the active map's 8x8 layout. */
     private int indoorMapPosition = -1;
     private RoomEntityRuntime entityRuntime;
@@ -453,6 +457,7 @@ public final class RoomSession {
     }
 
     public void loadOverworld(int roomId) {
+        roomLoadSerial++;
         indoorMapPosition = -1;
         clearTransientRoomState();
         indoorTorchPaletteEffect.clear();
@@ -480,6 +485,7 @@ public final class RoomSession {
     }
 
     public void loadIndoor(int mapId, int roomId, int mapCategory) {
+        roomLoadSerial++;
         indoorMapPosition = findIndoorMapPosition(mapId, roomId);
         clearTransientRoomState();
         recentRoomEntityClears.visit(roomId);
@@ -504,6 +510,16 @@ public final class RoomSession {
 
     public ActiveRoom activeRoom() {
         return activeRoom;
+    }
+
+    /** Identifies the current load instance for Link room-entry state. */
+    public long roomLoadSerial() {
+        return roomLoadSerial;
+    }
+
+    /** Distinguishes same-room loads performed by different live sessions. */
+    public long roomLoadToken() {
+        return (roomSessionId << 32) ^ roomLoadSerial;
     }
 
     public boolean hasActiveRoom() {
@@ -2076,6 +2092,14 @@ public final class RoomSession {
     }
 
     public RoomBoundaryState boundaryState(int linkX, int linkY, boolean linkAirborne) {
+        return boundaryState(linkX, linkY, linkAirborne, 0);
+    }
+
+    public RoomBoundaryState boundaryState(int linkX, int linkY, boolean linkAirborne,
+                                           int linkPhysicsModifier) {
+        boolean sideViewEntityActive = activeRoom.entities() != null
+            && !activeRoom.entities().slots().isEmpty()
+            && activeRoom.entities().slots().get(0).status() != EntityStatus.DISABLED;
         return new RoomBoundaryState(
             activeRoom.mapCategory(),
             activeRoom.roomId(),
@@ -2085,7 +2109,9 @@ public final class RoomSession {
             linkX,
             linkY,
             activeRoom.mapId(),
-            linkAirborne
+            linkAirborne,
+            linkPhysicsModifier,
+            sideViewEntityActive
         );
     }
 
