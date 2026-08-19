@@ -9,16 +9,19 @@ door, enemy, event, chest, inventory, and persistence paths.
 
 ## Source route
 
-`MapLayout1` defines the ordered route as `$36 -> $31 -> $30 -> $2E -> $2C ->
-$28 -> $29 -> $26 -> $21 -> $22`. After collecting the Small Key, Link returns
-west to `$21`, opens its west key door, and enters `$20`.
+The cleared miniboss warp is bidirectional. From its room `$36` endpoint,
+entity `$61` selects the other `DungeonWarps` entry and returns Link to `$28`.
+`MapLayout1` then defines the ordered route as `$28 -> $29 -> $26 -> $21 ->
+$22`. After collecting the Small Key, Link returns west to `$21`, opens its
+west key door, and enters `$20`.
 
 The route reuses already-resolved state rather than manufacturing shortcuts:
-room `$31`'s west key door and room `$30`'s kill-all shutter are already open;
-room `$28` retains its miniboss-clear status and open east door. Every room
-boundary must be reached through current collision data. Room `$36`'s separate
-overworld front-door macro defect is not on this forward route and remains a
-later dungeon-exit milestone.
+room `$28` retains its miniboss-clear status, active warp, and open east door.
+Every room boundary after the return warp must be reached through current
+collision data. The solid north wall in room `$2E` is not traversable and must
+not be bypassed with Feather logic. Room `$36`'s separate overworld front-door
+macro defect is not on this forward route and remains a later dungeon-exit
+milestone.
 
 ## Room `$22` Small Key
 

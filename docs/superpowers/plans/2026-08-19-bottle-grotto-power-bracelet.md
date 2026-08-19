@@ -20,10 +20,12 @@
 
 - [ ] **Step 1: Extend the existing ordered test after the room `$36` warp**
 
-Continue `freshGameRuntimeSequenceCollectsBottleGrottoFirstKeyInOrder` through
-`$36 -> $31 -> $30 -> $2E -> $2C -> $28 -> $29 -> $26 -> $21 -> $22` using
-the collision-path and indoor-boundary helpers. Assert each room ID and retain
-the already-cleared door/event state that makes the route legal.
+Continue `freshGameRuntimeSequenceCollectsBottleGrottoFirstKeyInOrder` by using
+room `$36`'s active entity `$61` to return to `$28`, including the source
+leave-to-arm/contact/countdown flow. Then traverse `$28 -> $29 -> $26 -> $21
+-> $22` using the collision-path and indoor-boundary helpers. Assert each room
+ID and retain the already-cleared miniboss/door state that makes the route
+legal. Do not attempt the solid `$2E -> $2C` north wall.
 
 - [ ] **Step 2: Assert room `$22` source state**
 
