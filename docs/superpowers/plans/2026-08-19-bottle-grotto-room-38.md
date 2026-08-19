@@ -1,5 +1,9 @@
 # Bottle Grotto Room `$38` Implementation Plan
 
+> **Superseded:** The required first collision traversal produced a genuine
+> RED: room `$37` has no east path. Further reachability checks also rejected
+> `$37 -> $36` and `$34 -> $39`. Use the Stone Beak route plan instead.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Continue uninterrupted Bottle Grotto play from the room `$37` Compass through all source-authored room `$38` interactions.

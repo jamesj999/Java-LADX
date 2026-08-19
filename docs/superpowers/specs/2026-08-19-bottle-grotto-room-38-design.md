@@ -1,5 +1,11 @@
 # Bottle Grotto Room `$38` Design
 
+> **Superseded:** Runtime collision validation disproved the assumed direct
+> room `$37 -> $38` route. Room `$37` has no east or west opening, and room
+> `$34`'s settled `$A6` partition prevents reaching `$39` from the current
+> side. Ordered play instead returns to cleared room `$31`, spends its
+> remaining Small Key on the west door, and continues through `$30/$2E`.
+
 ## Goal
 
 Continue the uninterrupted fresh-game Bottle Grotto regression from the
