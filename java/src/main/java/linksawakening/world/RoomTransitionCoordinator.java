@@ -35,6 +35,11 @@ public final class RoomTransitionCoordinator {
         if (room.mapCategory() != Warp.CATEGORY_OVERWORLD) {
             link.initializeRoomPhysicsForRoom(roomSession.roomLoadToken(), room.mapId(),
                 room.roomId(), room.mapCategory());
+            Warp dungeonWarp = roomSession.consumeClearedDungeonWarp();
+            if (dungeonWarp != null) {
+                transitionController.startFadeOut(() -> applyWarp(dungeonWarp, link));
+                return;
+            }
             RoomBoundaryDecision boundary = boundaryController.decide(
                 roomSession.boundaryState(link.pixelX(), link.pixelY(), link.isAirborne(),
                     link.romPhysicsModifier()));

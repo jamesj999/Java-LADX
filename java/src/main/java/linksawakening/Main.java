@@ -987,7 +987,8 @@ public class Main {
                     swordBoxForEntityTick.height(), attackContext);
                 EnemyCombatEventConsumer.consume(combatEvents, gameplaySoundSink, transientVfxSystem);
                 for (EntityCombatEvent event : combatEvents) {
-                    if (event.linkDamage() > 0 && playerState.invincibilityCounter() == 0) {
+                    if (event.linkDamage() > 0 && playerState.invincibilityCounter() == 0
+                        && (link == null || !link.isCollisionDamageImmune())) {
                         playerState.applyRomEnemyDamage(event.linkDamage());
                         if (event.linkCollisionResponse().active()) {
                             EntityCombatEvent.LinkCollisionResponse response =
@@ -1081,7 +1082,9 @@ public class Main {
                     link == null ? 0x00 : link.romCollisionType(),
                     link != null && link.isUsingShield(),
                     playerState == null ? 1 : playerState.shieldLevel(),
-                    playerState == null ? 0 : playerState.invincibilityCounter(),
+                    playerState == null ? 0
+                        : link != null && link.isCollisionDamageImmune()
+                            ? 1 : playerState.invincibilityCounter(),
                     swordBoxForEntityTick.active(), swordBoxForEntityTick.x(),
                     swordBoxForEntityTick.width(), swordBoxForEntityTick.y(),
                     swordBoxForEntityTick.height(),
@@ -1108,6 +1111,16 @@ public class Main {
                 for (var request : roomSession.consumeLinkMotionBlockRequests()) {
                     if (link != null) {
                         link.blockNextRomMotionFrame();
+                    }
+                }
+                for (var request : roomSession.consumeWarpLinkStateRequests()) {
+                    if (link != null) {
+                        link.applyWarpState3(request.positionX(), request.visualPositionY(),
+                            request.immunityCountdown());
+                    }
+                    Sword warpSword = equipmentController.activeSword();
+                    if (warpSword != null) {
+                        warpSword.resetSpinAttack();
                     }
                 }
                 if (roomSession.consumeWorldLinkMotionBlockRequest() && link != null) {

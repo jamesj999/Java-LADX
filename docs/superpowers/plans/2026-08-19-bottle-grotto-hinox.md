@@ -41,12 +41,12 @@
 - Modify only for a demonstrated shared defect: `java/src/main/java/linksawakening/world/RoomSession.java`
 - Modify only for a demonstrated shared defect: `java/src/main/java/linksawakening/world/RoomTransitionCoordinator.java`
 
-- [ ] Continue the same post-Stone-Beak session north `$2E -> $2C -> $28` with collision-aware boundary movement; assert room `$2C`'s event/entities and room `$28`'s event `$C1`, Hinox `$89` at `$25`, and warp `$61` at `$34`.
-- [ ] Prove the warp is unavailable while Hinox remains active.
-- [ ] Initialize Hinox, attack with live Sword collision boxes, observe at least one bomb response, and complete all health/recovery/death ticks without direct health or slot mutation.
-- [ ] Assert event `$C1` clears through the ordinary miniboss path and persists the correct room status.
-- [ ] Approach the ROM warp entity through collision and complete its ordinary post-clear warp transition toward room `$36`, asserting category, destination, and Link placement from ROM-backed warp data.
-- [ ] Run the ordered test RED before any required production correction, then GREEN with bounded waits and explicit terminal assertions.
+- [x] Continue the same post-Stone-Beak session north `$2E -> $2C -> $28` with collision-aware boundary movement; assert room `$2C`'s event/entities and room `$28`'s event `$C1`, Hinox `$89` at `$25`, and warp `$61` at `$34`.
+- [x] Prove the warp is unavailable while Hinox remains active.
+- [x] Initialize Hinox, attack with live Sword collision boxes, observe at least one bomb response, and complete all health/recovery/death ticks without direct health or slot mutation.
+- [x] Assert event `$C1` clears through the ordinary miniboss path and persists the correct room status.
+- [x] Approach the ROM warp entity through collision and complete its ordinary post-clear warp transition toward room `$36`, asserting category, destination, and Link placement from ROM-backed warp data.
+- [x] Run the ordered test RED before any required production correction, then GREEN with bounded waits and explicit terminal assertions.
 
 ### Task 4: Verify, review, document, and commit
 
@@ -54,9 +54,9 @@
 - Modify: `docs/reconstruction-roadmap.md`
 - Modify: `docs/superpowers/plans/2026-08-19-bottle-grotto-hinox.md`
 
-- [ ] Record exact source labels, route correction, runtime behavior, test totals, and next gameplay frontier.
-- [ ] Run focused Hinox, entity runtime/combat/death, transition/warp, and ordered-play tests with `--rerun-tasks`.
-- [ ] Run `cd java && gradle clean test`, count JUnit XML failures/errors/skips, and run `git diff --check` plus full diff inspection.
-- [ ] Obtain independent source-fidelity review and fix every Critical or Important finding.
-- [ ] Obtain independent code-quality review only after source compliance passes and fix every Critical or Important finding.
-- [ ] Mark plan checkboxes only after fresh evidence, then commit all implementation, tests, plan, and roadmap changes on the current branch.
+- [x] Record exact source labels, route correction, runtime behavior, test totals, and next gameplay frontier.
+- [x] Run focused Hinox, entity runtime/combat/death, transition/warp, and ordered-play tests with `--rerun-tasks`.
+- [x] Run `cd java && gradle clean test`, count JUnit XML failures/errors/skips, and run `git diff --check` plus full diff inspection.
+- [x] Obtain independent source-fidelity review and fix every Critical or Important finding.
+- [x] Obtain independent code-quality review only after source compliance passes and fix every Critical or Important finding.
+- [x] Mark plan checkboxes only after fresh evidence, then commit all implementation, tests, plan, and roadmap changes on the current branch.

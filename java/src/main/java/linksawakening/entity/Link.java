@@ -194,6 +194,7 @@ public final class Link implements RocsFeather.JumpTarget {
     private int groundStatus = GROUND_STATUS_NORMAL;
     private int motionState = LINK_MOTION_DEFAULT;
     private boolean romInteractiveMotionBlocked;
+    private boolean collisionDamageImmune;
     private boolean debugNoClip;
     private int romAnimationStateOverride = -1;
     private int swordAcquisitionBaseRomDirection = -1;
@@ -321,6 +322,7 @@ public final class Link implements RocsFeather.JumpTarget {
     public void resetTransientStateForDebug() {
         debugNoClip = false;
         romInteractiveMotionBlocked = false;
+        collisionDamageImmune = false;
         romAnimationStateOverride = -1;
         swordAcquisitionBaseRomDirection = -1;
         swordAcquisitionAnimationState = -1;
@@ -695,6 +697,7 @@ public final class Link implements RocsFeather.JumpTarget {
         physicsRoomMapId = mapId;
         physicsRoomId = roomId;
         physicsRoomCategory = mapCategory;
+        collisionDamageImmune = false;
     }
 
     /** Applies the room-entry physics default after a completed warp. */
@@ -705,6 +708,7 @@ public final class Link implements RocsFeather.JumpTarget {
         physicsRoomMapId = mapId;
         physicsRoomId = roomId;
         physicsRoomCategory = mapCategory;
+        collisionDamageImmune = false;
     }
 
     /** Mirrors source ladder/diving updates to hLinkPhysicsModifier. */
@@ -918,6 +922,38 @@ public final class Link implements RocsFeather.JumpTarget {
         if (speedX != 0 || speedY != 0) {
             applyRomSpeed(speedX, speedY);
         }
+    }
+
+    /** Applies entity-$61 WarpState3Handler's direct Link writes each frame. */
+    public void applyWarpState3(int romPositionX, int visualRomPositionY,
+                                int immunityCountdown) {
+        validateRomByte(romPositionX, "Warp Link X");
+        validateRomByte(visualRomPositionY, "Warp Link visual Y");
+        validateRomByte(immunityCountdown, "Warp Link immunity");
+        setPixelPosition((romPositionX - 0x08) & 0xFF,
+            (visualRomPositionY - 0x10) & 0xFF);
+        romInteractiveMotionBlocked = true;
+        romAnimationStateOverride = -1;
+        romAttackStepAnimationCountdown = 0;
+        collisionIgnoreFramesRemaining = 0;
+        movingThisFrame = false;
+        airborne = false;
+        zSubPixels = 0;
+        zVelocity = 0;
+        fallingIntoPit = false;
+        groundStatus = GROUND_STATUS_NORMAL;
+        if (immunityCountdown != 0) {
+            collisionDamageImmune = true;
+        }
+        if (playerState != null) {
+            playerState.setInvincibilityCounter(0);
+            playerState.clearSubtractHealthBuffer();
+        }
+    }
+
+    /** Mirrors wIsLinkImmuneToCollisionDamage independently of hit flashing. */
+    public boolean isCollisionDamageImmune() {
+        return collisionDamageImmune;
     }
 
     /** Applies Marin's final writes when Link jumps out of the bed. */

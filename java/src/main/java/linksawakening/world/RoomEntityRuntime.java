@@ -401,6 +401,8 @@ public final class RoomEntityRuntime {
     private final int[] enemyFlashCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyIgnoreHitsCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyHitboxFlags = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] warpState = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] warpTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] entityGroundStatus = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] fallingTargetX = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] fallingTargetY = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -493,6 +495,8 @@ public final class RoomEntityRuntime {
     private final List<ScreenShakeRequest> pendingScreenShakeRequests = new ArrayList<>();
     private final List<DialogRequest> pendingDialogRequests = new ArrayList<>();
     private final List<EntityCombatEvent> pendingEntityEvents = new ArrayList<>();
+    private final List<DungeonWarpRequest> pendingDungeonWarpRequests = new ArrayList<>();
+    private final List<WarpLinkStateRequest> pendingWarpLinkStateRequests = new ArrayList<>();
     private final List<ChestRewardEvent> pendingChestRewardEvents = new ArrayList<>();
     private final List<KeyRewardEvent> pendingKeyRewardEvents = new ArrayList<>();
     private final List<SlimeKeyRewardEvent> pendingSlimeKeyRewardEvents = new ArrayList<>();
@@ -620,6 +624,8 @@ public final class RoomEntityRuntime {
     private boolean groundInteractionSideScrolling;
     private int entityMapId = -1;
     private int entityRoomId = -1;
+    private boolean dungeonMinibossReady;
+    private final WarpMotion warpMotion;
     private int entityRoomStatus;
     // These latches represent the HRAM values read by
     // DroppableRevealOrReturnIfNeeded's tree-shell branch. RoomSession feeds
@@ -740,6 +746,28 @@ public final class RoomEntityRuntime {
             if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
                 throw new IllegalArgumentException("Link motion-block source slot out of range: "
                     + sourceSlot);
+            }
+        }
+    }
+
+    /** A cleared entity-$61 handler request for the ROM dungeon warp table. */
+    public record DungeonWarpRequest(int sourceSlot, WarpMotion.Destination destination) {
+        public DungeonWarpRequest {
+            if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES
+                || destination == null) {
+                throw new IllegalArgumentException("Invalid dungeon warp request");
+            }
+        }
+    }
+
+    /** Link HRAM writes emitted by entity-$61's WarpState3Handler. */
+    public record WarpLinkStateRequest(int sourceSlot, int positionX, int visualPositionY,
+                                       int immunityCountdown) {
+        public WarpLinkStateRequest {
+            if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES
+                || (positionX & ~0xFF) != 0 || (visualPositionY & ~0xFF) != 0
+                || (immunityCountdown & ~0xFF) != 0) {
+                throw new IllegalArgumentException("Warp Link state must be byte-shaped");
             }
         }
     }
@@ -1008,7 +1036,8 @@ public final class RoomEntityRuntime {
                                EntitySpriteHandlerCatalog spriteHandlers,
                                RomEnemyCombatTables enemyCombatTables,
                                ChestContentsTable chestContentsTable,
-                               RomTables romTables) {
+                               RomTables romTables,
+                               byte[] romData) {
         this.slots = initial.slots().toArray(RoomEntity[]::new);
         this.spriteSelection = initial.spriteSelection();
         this.spriteTiles = initial.spriteTiles();
@@ -1021,6 +1050,7 @@ public final class RoomEntityRuntime {
         this.enemyCombatTables = enemyCombatTables;
         this.chestContentsTable = chestContentsTable;
         this.romTables = romTables;
+        this.warpMotion = romData == null ? null : new WarpMotion(romData);
         this.hookshotChainOam = initial.hookshotChainOam();
         this.pincerBodyOam = initial.pincerBodyOam();
         this.wingedOctorokOam = initial.wingedOctorokOam();
@@ -1147,7 +1177,7 @@ public final class RoomEntityRuntime {
         if (initial == null) {
             throw new IllegalArgumentException("Initial entity snapshot cannot be null");
         }
-        return new RoomEntityRuntime(initial, indoorRoom, null, null, null, null, null);
+        return new RoomEntityRuntime(initial, indoorRoom, null, null, null, null, null, null);
     }
 
     public static RoomEntityRuntime from(RoomEntitySnapshot initial, boolean indoorRoom,
@@ -1155,7 +1185,8 @@ public final class RoomEntityRuntime {
         if (initial == null) {
             throw new IllegalArgumentException("Initial entity snapshot cannot be null");
         }
-        return new RoomEntityRuntime(initial, indoorRoom, randomByteSupplier, null, null, null, null);
+        return new RoomEntityRuntime(initial, indoorRoom, randomByteSupplier, null, null, null, null,
+            null);
     }
 
     public static RoomEntityRuntime from(RoomEntitySnapshot initial, boolean indoorRoom,
@@ -1165,7 +1196,7 @@ public final class RoomEntityRuntime {
             throw new IllegalArgumentException("Initial entity snapshot cannot be null");
         }
         return new RoomEntityRuntime(initial, indoorRoom, randomByteSupplier, spriteHandlers,
-            null, null, null);
+            null, null, null, null);
     }
 
     public static RoomEntityRuntime from(RoomEntitySnapshot initial, boolean indoorRoom,
@@ -1179,7 +1210,7 @@ public final class RoomEntityRuntime {
             throw new IllegalArgumentException("ROM enemy combat tables cannot be null");
         }
         return new RoomEntityRuntime(initial, indoorRoom, randomByteSupplier, spriteHandlers,
-            enemyCombatTables, null, null);
+            enemyCombatTables, null, null, null);
     }
 
     public static RoomEntityRuntime from(RoomEntitySnapshot initial, boolean indoorRoom,
@@ -1197,7 +1228,7 @@ public final class RoomEntityRuntime {
             throw new IllegalArgumentException("ROM chest contents table cannot be null");
         }
         return new RoomEntityRuntime(initial, indoorRoom, randomByteSupplier, spriteHandlers,
-            enemyCombatTables, chestContentsTable, null);
+            enemyCombatTables, chestContentsTable, null, null);
     }
 
     /** Full room runtime construction with the ROM entity hitbox table. */
@@ -1212,7 +1243,22 @@ public final class RoomEntityRuntime {
             throw new IllegalArgumentException("ROM room runtime inputs cannot be null");
         }
         return new RoomEntityRuntime(initial, indoorRoom, randomByteSupplier, spriteHandlers,
-            enemyCombatTables, chestContentsTable, romTables);
+            enemyCombatTables, chestContentsTable, romTables, null);
+    }
+
+    /** Full room runtime construction with raw ROM data for ROM-owned handlers. */
+    public static RoomEntityRuntime from(RoomEntitySnapshot initial, boolean indoorRoom,
+                                         IntSupplier randomByteSupplier,
+                                         EntitySpriteHandlerCatalog spriteHandlers,
+                                         RomEnemyCombatTables enemyCombatTables,
+                                         ChestContentsTable chestContentsTable,
+                                         RomTables romTables, byte[] romData) {
+        if (initial == null || enemyCombatTables == null || chestContentsTable == null
+            || romTables == null || romData == null) {
+            throw new IllegalArgumentException("ROM room runtime inputs cannot be null");
+        }
+        return new RoomEntityRuntime(initial, indoorRoom, randomByteSupplier, spriteHandlers,
+            enemyCombatTables, chestContentsTable, romTables, romData);
     }
 
     /** Advances the ROM handlers that have deterministic frame-only variants. */
@@ -1575,6 +1621,7 @@ public final class RoomEntityRuntime {
         magicPowderObjectRequests.clear();
         pendingDialogRequests.clear();
         pendingEntityEvents.clear();
+        pendingWarpLinkStateRequests.clear();
         pendingChestRewardEvents.clear();
         pendingHeartContainerRewards.clear();
         pendingSwordPickupRewards.clear();
@@ -1820,6 +1867,36 @@ public final class RoomEntityRuntime {
                 }
                 slots[index] = withPositionAndVariant(entity,
                     step.state().x(), step.state().y(), entity.spriteVariant());
+                continue;
+            }
+            if (status == EntityStatus.ACTIVE && indoorRoom
+                && entity.type() == WarpMotion.ENTITY_TYPE && warpMotion != null) {
+                int slot = entity.slot();
+                WarpMotion.Update warpUpdate = warpMotion.advance(
+                    entity, warpState[slot], warpTransitionCountdown[slot], entityMapId,
+                    entityRoomId, dungeonMinibossReady, linkEntityX, linkEntityY, linkZ);
+                warpState[slot] = warpUpdate.state();
+                warpTransitionCountdown[slot] = warpUpdate.countdown();
+                if (warpUpdate.musicTrack() >= 0) {
+                    pendingMusicTrack = warpUpdate.musicTrack();
+                }
+                if (warpUpdate.jingleId() >= 0) {
+                    pendingEntityEvents.add(new EntityCombatEvent(
+                        slot, entity.type(), 0, false,
+                        EntityCombatEvent.SoundChannel.JINGLE, warpUpdate.jingleId()));
+                }
+                if (warpUpdate.motionBlocked()) {
+                    pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
+                }
+                if (warpUpdate.state() == WarpMotion.STATE_TRANSITION) {
+                    pendingWarpLinkStateRequests.add(new WarpLinkStateRequest(
+                        slot, entity.x(), entity.y(), warpUpdate.immunityCountdown()));
+                }
+                if (warpUpdate.destinationReady()) {
+                    pendingDungeonWarpRequests.add(new DungeonWarpRequest(
+                        slot, warpUpdate.destination()));
+                    disableEntityWithoutPersistence(slot);
+                }
                 continue;
             }
             if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_BOOMERANG) {
@@ -7132,6 +7209,11 @@ public final class RoomEntityRuntime {
         entityRoomStatus = roomStatus;
     }
 
+    /** Supplies the current map's wHasInstrument1 bit to entity-$61. */
+    void setDungeonMinibossReady(boolean ready) {
+        dungeonMinibossReady = ready;
+    }
+
     void setEntityRoomStatusForTest(int roomStatus) {
         setEntityRoomStatus(roomStatus);
     }
@@ -7306,6 +7388,12 @@ public final class RoomEntityRuntime {
         return entityRoomStatus & 0xFF;
     }
 
+    int warpTransitionCountdownForTest(int slot) {
+        validateEntitySlot(slot);
+        return warpTransitionCountdown[slot] & 0xFF;
+    }
+
+
     int owlEventStateForTest(int slot) {
         validateEntitySlot(slot);
         return owlEventState[slot];
@@ -7364,6 +7452,18 @@ public final class RoomEntityRuntime {
     List<EntityCombatEvent> consumePendingEntityEvents() {
         List<EntityCombatEvent> pending = List.copyOf(pendingEntityEvents);
         pendingEntityEvents.clear();
+        return pending;
+    }
+
+    List<DungeonWarpRequest> consumePendingDungeonWarpRequests() {
+        List<DungeonWarpRequest> pending = List.copyOf(pendingDungeonWarpRequests);
+        pendingDungeonWarpRequests.clear();
+        return pending;
+    }
+
+    List<WarpLinkStateRequest> consumePendingWarpLinkStateRequests() {
+        List<WarpLinkStateRequest> pending = List.copyOf(pendingWarpLinkStateRequests);
+        pendingWarpLinkStateRequests.clear();
         return pending;
     }
 

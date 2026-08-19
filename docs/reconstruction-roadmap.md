@@ -2853,4 +2853,24 @@ of scope.
   `hLinkPositionX=$78, hLinkPositionY=$70` and collision-valid movement at each
   boundary. Focused and clean suites pass with 1,705 tests and zero failures,
   errors, or skipped tests. Hinox combat, event persistence, and the post-clear
-  miniboss warp remain the next frontier.
+  miniboss warp are covered in the follow-on verification below.
+
+## Verified Bottle Grotto Hinox clear and miniboss warp — 2026-08-19
+
+- The ordered regression now completes the ROM route into room `$28` and
+  confirms event `$C1`, Hinox entity `$89` at source location `$25`, and the
+  unresolved warp entity `$61` at source location `$34`. The pre-clear room has
+  no active room warp, so the entity warp remains gated while Hinox is alive.
+- Live `Sword` collision boxes drive the ordinary `$89` combat path. The trace
+  observes the source `06_hinox.asm` flash-to-bomb response, then continues
+  through normal recovery and death ticks without writing health or replacing
+  an entity slot. The ordinary clear path removes event `$C1` and persists
+  room-status bit `$20`.
+- Entity `$61` now runs the generic four-state `WarpEntityHandler`: it remains
+  gated before the miniboss clear, requires Link to leave before arming,
+  applies the source `$50` countdown and Link immunity/snap/reset effects, and
+  emits its ROM-table destination before indoor boundary handling. The
+  `DungeonWarps` pair selects indoor map `$01`, room `$36`, Link at `$50/$48`.
+- Focused Hinox/entity/transition suites and `gradle clean test` pass: 1,709
+  tests, zero failures, errors, or skipped tests. The next frontier is the
+  post-miniboss Bottle Grotto progression from room `$36`.

@@ -62,7 +62,8 @@ public final class EnemyProjectileEventConsumer {
                 applyLinkResponse(event, link);
                 continue;
             }
-            if (playerState.invincibilityCounter() != 0) {
+            if (playerState.invincibilityCounter() != 0
+                || (link != null && link.isCollisionDamageImmune())) {
                 continue;
             }
 

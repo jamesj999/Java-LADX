@@ -261,6 +261,11 @@ public final class PlayerState {
         return subtractHealthBuffer;
     }
 
+    /** Mirrors WarpState3Handler's direct clear of wSubtractHealthBuffer. */
+    public void clearSubtractHealthBuffer() {
+        subtractHealthBuffer = 0;
+    }
+
     /** Amount of rupees still waiting in the ROM's wAddRupeeBufferLow. */
     public int addRupeeBuffer() {
         return addRupeeBuffer;

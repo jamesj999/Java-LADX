@@ -2716,8 +2716,32 @@ final class RoomTransitionCoordinatorTest {
         assertEquals(0x48, room2CFloatingItem.x());
         assertEquals(0x50, room2CFloatingItem.y());
 
-        walkToAndCrossIndoorBoundary(
-            coordinator, transition, scroll, collision, link, ScrollController.UP);
+        // Room-$28's source-authored south entry is the D2 ledge at column 7;
+        // columns 4/5 are the solid $45/$46 objects. Reach that X in the
+        // preceding room before crossing the shared north boundary.
+        List<int[]> room28EntryColumnPath = reachablePositionPath(
+            collision, link.pixelX(), link.pixelY(), (x, y) -> x == 0x70);
+        assertNotNull(room28EntryColumnPath,
+            "Room-$2C cannot reach the room-$28 entry column\n"
+                + collisionGrid(collision));
+        for (int[] position : room28EntryColumnPath) {
+            link.setPixelPosition(position[0], position[1]);
+            coordinator.handleWarpAndIndoorBoundaries(link);
+            assertFalse(transition.isActive());
+            assertFalse(scroll.isActive());
+        }
+        assertEquals(0x70, link.pixelX(), "entry-column path must end at room-$28 column 7");
+        // Cross only after reaching that aligned X; the generic helper would
+        // choose the first reachable top-edge column and lose this alignment.
+        link.setPixelPosition(link.pixelX(), -1);
+        coordinator.handleWarpAndIndoorBoundaries(link);
+        assertTrue(scroll.isActive());
+        assertEquals(ScrollController.UP, scroll.direction());
+        assertEquals(0x70, link.pixelX());
+        assertEquals(RoomConstants.ROOM_PIXEL_HEIGHT - Link.SPRITE_SIZE, link.pixelY());
+        while (scroll.isActive()) {
+            scroll.tick(8);
+        }
         assertEquals(Warp.CATEGORY_INDOOR, session.mapCategory());
         assertEquals(0x28, session.currentRoomId());
         assertEquals(0xC1, session.activeRoomEventForTest());
@@ -2732,6 +2756,225 @@ final class RoomTransitionCoordinatorTest {
         assertFalse(session.activeRoom().hasWarps());
         coordinator.handleWarpAndIndoorBoundaries(link);
         assertFalse(transition.isActive());
+
+        // The ROM's entity-$61 warp is present but inert until the Hinox's
+        // ordinary miniboss clear path records room status bit $20.
+        int hinoxSlot = hinox.slot();
+        int hinoxSourceLoadOrder = hinox.sourceLoadOrder();
+        // The source leaves Link on the south D2 ledge. Holding UP drives the
+        // real 12-contact directional ledge jump (bank2.asm:7053-7127).
+        setDirectionalInput(inputState, inputConfig, 0x04, GLFW_PRESS);
+        boolean room28LedgeJumpObserved = false;
+        boolean room28LedgeJumpLanded = false;
+        for (int ledgeFrame = 0; ledgeFrame < 0x80; ledgeFrame++) {
+            link.update();
+            room28LedgeJumpObserved |= link.isAirborne();
+            if (room28LedgeJumpObserved && !link.isAirborne()) {
+                room28LedgeJumpLanded = true;
+                break;
+            }
+            coordinator.handleWarpAndIndoorBoundaries(link);
+            assertFalse(transition.isActive());
+            assertFalse(scroll.isActive());
+        }
+        setDirectionalInput(inputState, inputConfig, 0x04, GLFW_RELEASE);
+        assertTrue(room28LedgeJumpObserved,
+            "Room-$28 entry must trigger the source D2 ledge jump at ("
+                + link.pixelX() + "," + link.pixelY() + ") object="
+                + String.format("%02X", collision.objectIdAtPoint(
+                    link.pixelX() + 6, link.pixelY() + 6)) + " physics="
+                + String.format("%02X", collision.objectPhysicsFlagAtPoint(
+                    link.pixelX() + 6, link.pixelY() + 6)));
+        assertTrue(room28LedgeJumpLanded,
+            "Room-$28 D2 ledge jump did not land");
+        assertFalse(link.isAirborne());
+        assertFalse(link.isFallingIntoPit());
+
+        List<int[]> dormantWarpPath = reachablePositionPath(
+            collision, link.pixelX(), link.pixelY(),
+            (x, y) -> Math.abs(signedByteDelta(unresolvedHinoxWarp.x(), x + 8)) <= 0x02
+                && Math.abs(signedByteDelta(unresolvedHinoxWarp.y(), y + 16)) <= 0x02);
+        assertNotNull(dormantWarpPath,
+            "pre-clear entity-$61 warp is not collision reachable");
+        for (int index = 1; index < dormantWarpPath.size(); index++) {
+            int[] position = dormantWarpPath.get(index);
+            link.setPixelPosition(position[0], position[1]);
+            tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
+            coordinator.handleWarpAndIndoorBoundaries(link);
+            assertFalse(transition.isActive());
+        }
+        for (int dormantTick = 0; dormantTick < 4; dormantTick++) {
+            tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
+            coordinator.handleWarpAndIndoorBoundaries(link);
+            assertEquals(0,
+                session.entityTransitionCountdownForTest(unresolvedHinoxWarp.slot()));
+            assertFalse(transition.isActive(),
+                "entity-$61 must remain gated before the Hinox clear");
+        }
+
+        SwordApproach hinoxContact = reachableSwordContactPath(
+            collision, link.pixelX(), link.pixelY(), hinox, romTables);
+        assertNotNull(hinoxContact,
+            "No collision-valid path from room-$28 ledge landing to Hinox\n"
+                + collisionGrid(collision));
+        for (int[] position : hinoxContact.path()) {
+            link.setPixelPosition(position[0], position[1]);
+            coordinator.handleWarpAndIndoorBoundaries(link);
+            assertFalse(transition.isActive());
+            assertFalse(scroll.isActive());
+        }
+        link.setDirection(hinoxContact.direction());
+        tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
+        hinox = session.activeRoom().entities().slots().get(hinoxSlot);
+        int[] firstSwordPosition = {link.pixelX(), link.pixelY()};
+        Sword hinoxSword = new Sword(romTables, null);
+        hinoxSword.onPress();
+        for (int swingFrame = 0; swingFrame < 4; swingFrame++) {
+            hinoxSword.tick(false);
+        }
+        Sword.CollisionBox hinoxSwordBox = hinoxSword.enemyCollisionBox(
+            link.romEntityX(), link.romSwordCollisionY(), link.direction());
+        assertTrue(hinoxSwordBox.active(), "sword must be live at the Hinox contact");
+        assertTrue(RoomEntityCombatRules.overlapsSword(
+            hinox, hinoxSwordBox.x(), hinoxSwordBox.width(),
+            hinoxSwordBox.y(), hinoxSwordBox.height()),
+            "position=" + java.util.Arrays.toString(firstSwordPosition)
+                + " sword=" + hinoxSwordBox + " hinox=" + hinox);
+        List<EntityCombatEvent> hinoxHit = session.resolveEntityCombat(
+            frame++, link.romEntityX(), link.romEntityY(), false, true, true,
+            hinoxSwordBox.x(), hinoxSwordBox.width(),
+            hinoxSwordBox.y(), hinoxSwordBox.height());
+        assertTrue(hinoxHit.stream().anyMatch(event -> event.slot() == hinoxSlot
+            && event.type() == HinoxMotion.ENTITY_TYPE
+            && event.swordHit() && event.enemyDamage() > 0), hinoxHit.toString());
+
+        boolean hinoxBombResponseObserved = false;
+        int bombDeadline = frame + 0x100;
+        while (frame < bombDeadline && !hinoxBombResponseObserved) {
+            tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
+            hinoxBombResponseObserved = session.activeRoom().entities().loadedEntities()
+                .stream().anyMatch(entity -> entity.type() == HinoxMotion.ENTITY_BOMB);
+        }
+        assertTrue(hinoxBombResponseObserved,
+            "a live sword flash must enter Hinox's bomb response");
+
+        // Continue using the ordinary sword collision/death path. The test
+        // never writes enemy health or replaces an entity slot.
+        boolean hinoxDeathStarted = false;
+        int deathDeadline = frame + 0x1000;
+        while (frame < deathDeadline) {
+            RoomEntity liveHinox = session.activeRoom().entities().slots().get(hinoxSlot);
+            if (liveHinox.status() == EntityStatus.DISABLED) {
+                break;
+            }
+            if (liveHinox.status() == EntityStatus.ACTIVE) {
+                SwordApproach approach = reachableSwordContactPath(
+                    collision, link.pixelX(), link.pixelY(), liveHinox, romTables);
+                if (approach != null) {
+                    for (int[] position : approach.path()) {
+                        link.setPixelPosition(position[0], position[1]);
+                    }
+                    link.setDirection(approach.direction());
+                    Sword swordStrike = new Sword(romTables, null);
+                    swordStrike.onPress();
+                    for (int swingFrame = 0; swingFrame < 4; swingFrame++) {
+                        swordStrike.tick(false);
+                    }
+                    Sword.CollisionBox box = swordStrike.enemyCollisionBox(
+                        link.romEntityX(), link.romSwordCollisionY(), link.direction());
+                    if (box.active() && RoomEntityCombatRules.overlapsSword(
+                            liveHinox, box.x(), box.width(), box.y(), box.height())) {
+                        List<EntityCombatEvent> hit = session.resolveEntityCombat(
+                            frame++, link.romEntityX(), link.romEntityY(), false, true, true,
+                            box.x(), box.width(), box.y(), box.height());
+                        hinoxDeathStarted |= hit.stream().anyMatch(event ->
+                            event.slot() == hinoxSlot && event.swordHit()
+                                && event.enemyDamage() > 0);
+                    }
+                }
+            }
+            tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
+        }
+        assertTrue(hinoxDeathStarted, "live sword combat must start Hinox death");
+        assertEquals(EntityStatus.DISABLED,
+            session.activeRoom().entities().slots().get(hinoxSlot).status());
+        assertEquals(0x20, session.indoorRoomStatusForTest(0x01, 0x28) & 0x20);
+        assertEquals(hinoxSourceLoadOrder, hinox.sourceLoadOrder());
+
+        int clearEventDeadline = frame + 0x100;
+        while (session.activeRoomEventForTest() != 0 && frame < clearEventDeadline) {
+            tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
+        }
+        assertEquals(0, session.activeRoomEventForTest());
+        assertEquals(0x20, session.indoorRoomStatusForTest(0x01, 0x28) & 0x20);
+
+        RoomEntity clearedWarp = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x61).findFirst().orElseThrow();
+        // The ROM handler deliberately remains in state 1 until Link leaves
+        // its contact window.  The fight ends with Link already standing on
+        // this warp, so first walk away through collision-valid positions and
+        // give the handler a tick there before approaching it again.
+        List<int[]> disengagePath = reachablePositionPath(collision, link.pixelX(), link.pixelY(),
+            (x, y) -> Math.abs(signedByteDelta(clearedWarp.x(), x + 8)) > 0x08
+                || Math.abs(signedByteDelta(clearedWarp.y(), y + 16)) > 0x08);
+        assertNotNull(disengagePath, "cleared entity-$61 warp cannot be disengaged");
+        for (int index = 1; index < disengagePath.size(); index++) {
+            int[] position = disengagePath.get(index);
+            link.setPixelPosition(position[0], position[1]);
+            tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
+            coordinator.handleWarpAndIndoorBoundaries(link);
+            assertFalse(transition.isActive());
+            assertFalse(scroll.isActive());
+        }
+        int awayX = link.romEntityX();
+        int awayY = link.romEntityY();
+        assertTrue(Math.abs(signedByteDelta(clearedWarp.x(), awayX)) > 0x08
+                || Math.abs(signedByteDelta(clearedWarp.y(), awayY)) > 0x08);
+
+        List<int[]> warpPath = reachablePositionPath(collision, link.pixelX(), link.pixelY(),
+            (x, y) -> Math.abs(signedByteDelta(clearedWarp.x(), x + 8)) <= 0x02
+                && Math.abs(signedByteDelta(clearedWarp.y(), y + 16)) <= 0x02);
+        assertNotNull(warpPath, "cleared entity-$61 warp is not collision reachable");
+        for (int index = 1; index < warpPath.size(); index++) {
+            int[] position = warpPath.get(index);
+            link.setPixelPosition(position[0], position[1]);
+            tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
+            coordinator.handleWarpAndIndoorBoundaries(link);
+            assertFalse(transition.isActive());
+            assertFalse(scroll.isActive());
+        }
+        assertTrue(Math.abs(signedByteDelta(clearedWarp.x(), link.romEntityX())) <= 0x02
+                && Math.abs(signedByteDelta(clearedWarp.y(), link.romEntityY())) <= 0x02);
+
+        // Contact can occur one or two pixels before the path's final target,
+        // so some of the exact $50 countdown may already have elapsed. Wait
+        // the remaining source countdown and require the fade only on zero.
+        int warpCountdown = session.entityTransitionCountdownForTest(clearedWarp.slot());
+        assertTrue(warpCountdown > 0 && warpCountdown <= 0x50,
+            "warp did not enter countdown at contact link="
+                + String.format("%02X/%02X entity=%02X/%02X", link.romEntityX(),
+                    link.romEntityY(), clearedWarp.x(), clearedWarp.y()));
+        for (int remaining = warpCountdown; remaining > 0; remaining--) {
+            tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
+            coordinator.handleWarpAndIndoorBoundaries(link);
+            if (remaining > 1) {
+                assertFalse(transition.isActive());
+            }
+        }
+        assertTrue(transition.isActive(), "cleared entity-$61 should start a fade: room="
+            + String.format("%02X", session.currentRoomId())
+            + " status=" + String.format("%02X", session.indoorRoomStatusForTest(0x01, 0x28))
+            + " link=" + String.format("%02X/%02X/%02X", link.romEntityX(),
+                link.romEntityY(), link.romEntityZ())
+            + " progress=" + String.format("%02X", session.dungeonProgressFlagsSnapshot()[1])
+            + " warpCountdown=" + session.entityTransitionCountdownForTest(clearedWarp.slot()));
+        while (transition.isActive()) {
+            transition.tick();
+        }
+        assertEquals(Warp.CATEGORY_INDOOR, session.mapCategory());
+        assertEquals(0x36, session.currentRoomId());
+        assertEquals(0x50, link.romEntityX());
+        assertEquals(0x48, link.romEntityY());
     }
 
     @Test
@@ -3289,6 +3532,31 @@ final class RoomTransitionCoordinatorTest {
                     return box.active() && RoomEntityCombatRules.overlapsSword(
                         entity, box.x(), box.width(), box.y(), box.height());
             });
+            if (path != null) {
+                return new SwordApproach(path, swordDirection);
+            }
+        }
+        return null;
+    }
+
+    private static SwordApproach reachableSwordContactPathWithFeather(
+            OverworldCollision collision, RomTables romTables,
+            int startX, int startY, RoomEntity entity) {
+        Sword sword = new Sword(romTables, null);
+        sword.onPress();
+        for (int swingFrame = 0; swingFrame < 4; swingFrame++) {
+            sword.tick(false);
+        }
+        for (int direction = Link.DIRECTION_DOWN;
+                direction <= Link.DIRECTION_RIGHT; direction++) {
+            int swordDirection = direction;
+            List<int[]> path = reachablePositionPathWithFeather(collision, romTables,
+                startX, startY, (x, y) -> {
+                    Sword.CollisionBox box = sword.enemyCollisionBox(
+                        x + 8, y + 16, swordDirection);
+                    return box.active() && RoomEntityCombatRules.overlapsSword(
+                        entity, box.x(), box.width(), box.y(), box.height());
+                });
             if (path != null) {
                 return new SwordApproach(path, swordDirection);
             }

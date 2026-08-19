@@ -32,6 +32,20 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 final class RoomSessionTest {
 
     @Test
+    void roomLoadClearsAnUnconsumedDungeonWarpRequest() throws Exception {
+        RoomSession session = newSession();
+        session.loadIndoor(0x01, 0x28);
+        var pendingWarp = RoomSession.class.getDeclaredField("pendingDungeonWarp");
+        pendingWarp.setAccessible(true);
+        pendingWarp.set(session, new Warp(Warp.CATEGORY_INDOOR, 0x01, 0x36,
+            0x50, 0x48, 0x34));
+
+        session.loadIndoor(0x01, 0x36);
+
+        assertNull(session.consumeClearedDungeonWarp());
+    }
+
+    @Test
     void newGameWorldInitializationRestoresTheBeachOpeningEntities() {
         RoomSession session = newSession();
         byte[] completedOverworld = new byte[0x100];

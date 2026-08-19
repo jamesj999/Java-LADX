@@ -1626,6 +1626,27 @@ final class LinkTest {
         assertTrue(collision.linkStandingOnSwitchBlock());
     }
 
+    @Test
+    void warpState3KeepsCollisionImmunitySeparateFromInvincibilityCounter() {
+        PlayerState playerState = new PlayerState();
+        Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
+            null, null, null, playerState, new ItemRegistry());
+
+        link.applyWarpState3(0x48, 0x40, 0x20);
+        assertEquals(0, playerState.invincibilityCounter());
+        assertTrue(link.isCollisionDamageImmune());
+
+        link.applyWarpState3(0x48, 0x40, 0);
+        assertEquals(0, playerState.invincibilityCounter());
+        assertTrue(link.isCollisionDamageImmune());
+
+        link.initializeRoomPhysicsForRoom(1L, 0x01, 0x36, 1);
+        assertFalse(link.isCollisionDamageImmune());
+        link.applyWarpState3(0x48, 0x40, 0x20);
+        link.resetTransientStateForDebug();
+        assertFalse(link.isCollisionDamageImmune());
+    }
+
     private static byte[] loadRom() throws IOException {
         try (InputStream in = LinkTest.class.getResourceAsStream("/rom/azle.gbc")) {
             if (in == null) {

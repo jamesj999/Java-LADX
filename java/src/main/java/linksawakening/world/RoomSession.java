@@ -198,6 +198,7 @@ public final class RoomSession {
     private RoomEntityRuntime entityRuntime;
     private final List<BombExplosionEvent> pendingBombExplosionEvents = new ArrayList<>();
     private final List<EntityCombatEvent> pendingRoomEntityEvents = new ArrayList<>();
+    private Warp pendingDungeonWarp;
     private final List<RoomEntityRuntime.ChestRewardEvent> pendingChestRewardEvents =
         new ArrayList<>();
     private final List<RoomEntityRuntime.KeyRewardEvent> pendingKeyRewardEvents =
@@ -1029,6 +1030,13 @@ public final class RoomSession {
         return activeRoom.firstWarp();
     }
 
+    /** Returns the completed entity-$61 request emitted by the ROM handler. */
+    Warp consumeClearedDungeonWarp() {
+        Warp pending = pendingDungeonWarp;
+        pendingDungeonWarp = null;
+        return pending;
+    }
+
     /** Supplies the player fields consumed by the ROM enemy-drop resolver. */
     public void setEnemyDropPlayerState(int maxHearts, int health, boolean activePowerUp) {
         if (maxHearts < 0 || maxHearts > 0xFF) {
@@ -1409,8 +1417,15 @@ public final class RoomSession {
     }
 
     int entityTransitionCountdownForTest(int slot) {
-        return entityRuntime == null ? 0 : entityRuntime.transitionCountdown(slot);
+        if (entityRuntime == null) {
+            return 0;
+        }
+        RoomEntity entity = activeRoom == null ? null : activeRoom.entities().slots().get(slot);
+        return entity != null && entity.type() == WarpMotion.ENTITY_TYPE
+            ? entityRuntime.warpTransitionCountdownForTest(slot)
+            : entityRuntime.transitionCountdown(slot);
     }
+
 
     int roomTriggerCountForTest() {
         return roomTriggerCount & 0xFF;
@@ -1617,6 +1632,12 @@ public final class RoomSession {
                 romDirectionForProjectileCollision(linkDirection), usingShield, shieldLevel,
                 invincibilityCounter), swordCollisionActive, swordX, swordWidth,
             swordY, swordHeight, linkSpeedX, linkSpeedY);
+        for (RoomEntityRuntime.DungeonWarpRequest request
+            : entityRuntime.consumePendingDungeonWarpRequests()) {
+            WarpMotion.Destination destination = request.destination();
+            pendingDungeonWarp = new Warp(Warp.CATEGORY_INDOOR, destination.mapId(),
+                destination.roomId(), destination.x(), destination.y(), 0x34);
+        }
         shouldGetLostInMysteriousWoods = entityRuntime.shouldGetLostInMysteriousWoods();
         int runtimeBowWowState = entityRuntime.bowWowState();
         if (runtimeBowWowState != bowWowState) {
@@ -1759,6 +1780,22 @@ public final class RoomSession {
             consumeLinkMotionBlockRequests() {
         return entityRuntime == null
             ? List.of() : entityRuntime.consumePendingLinkMotionBlockRequests();
+    }
+
+    /** Returns entity-$61 WarpState3 Link writes and clears supported session actions. */
+    public List<RoomEntityRuntime.WarpLinkStateRequest>
+            consumeWarpLinkStateRequests() {
+        List<RoomEntityRuntime.WarpLinkStateRequest> requests = entityRuntime == null
+            ? List.of() : entityRuntime.consumePendingWarpLinkStateRequests();
+        if (!requests.isEmpty()) {
+            ocarinaPlaybackCountdown = 0;
+            ocarinaAnimationCounter = 0;
+            ocarinaAnimationPhase = 0;
+            entityDialogActive = false;
+            entityDialogCooldown = 0;
+            entityInventoryAppearing = false;
+        }
+        return requests;
     }
 
     /** Returns and clears Hinox grab/throw writes for the last entity tick. */
@@ -2164,7 +2201,7 @@ public final class RoomSession {
         entityRuntime = entities == null ? null : RoomEntityRuntime.from(
             entities, activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD,
             entityRandomByteSource, entitySpriteHandlerCatalog, enemyCombatTables,
-            chestContentsTable, romTables);
+            chestContentsTable, romTables, romData);
         if (entityRuntime != null) {
             entityRuntime.setBooBuddyTriggerCount(roomTriggerCount);
             entityRuntime.setColorShellWorld(colorShellWorld);
@@ -2188,6 +2225,9 @@ public final class RoomSession {
             entityRuntime.setBombButtonHeld(bombButtonHeld);
             entityRuntime.setLiftedLinkC13B(followingEntityYOffset);
             entityRuntime.setEntityRoomStatus(activeRoomStatusFlags());
+            entityRuntime.setDungeonMinibossReady(activeRoom.mapId() >= 0
+                && activeRoom.mapId() < dungeonProgressFlags.length
+                && (dungeonProgressFlags[activeRoom.mapId()] & 0x01) != 0);
             entityRuntime.setTailKeyOwned(hasTailKey);
             entityRuntime.setOwlInstrumentFlags(
                 Byte.toUnsignedInt(dungeonProgressFlags[0]),
@@ -2235,11 +2275,14 @@ public final class RoomSession {
         entityRuntime = RoomEntityRuntime.from(
             result.snapshot(), activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD,
             entityRandomByteSource, entitySpriteHandlerCatalog, enemyCombatTables,
-            chestContentsTable, romTables);
+            chestContentsTable, romTables, romData);
         entityRuntime.setColorShellWorld(colorShellWorld);
         entityRuntime.setFollowingNpcState(followingNpcState);
         entityRuntime.setEntityMapId(activeRoom.mapId());
         entityRuntime.setEntityRoomId(activeRoom.roomId());
+        entityRuntime.setDungeonMinibossReady(activeRoom.mapId() >= 0
+            && activeRoom.mapId() < dungeonProgressFlags.length
+            && (dungeonProgressFlags[activeRoom.mapId()] & 0x01) != 0);
         entityRuntime.setOwlDialogResolver(owlEventDialogResolver::globalDialogId);
         entityRuntime.setOwlDefaultMusicResolver(owlEventDialogResolver::defaultMusicTrack);
         entityRuntime.setGroundInteraction(this::entityGroundInteraction);
@@ -2257,6 +2300,9 @@ public final class RoomSession {
         entityRuntime.setBombButtonHeld(bombButtonHeld);
         entityRuntime.setLiftedLinkC13B(followingEntityYOffset);
         entityRuntime.setEntityRoomStatus(activeRoomStatusFlags());
+        entityRuntime.setDungeonMinibossReady(activeRoom.mapId() >= 0
+            && activeRoom.mapId() < dungeonProgressFlags.length
+            && (dungeonProgressFlags[activeRoom.mapId()] & 0x01) != 0);
         entityRuntime.setTailKeyOwned(hasTailKey);
         entityRuntime.setSecretSeashellPegasusCollisionState(
             secretSeashellScreenShakeActive, secretSeashellPegasusCollisionActive,
@@ -2300,6 +2346,7 @@ public final class RoomSession {
         bombedBlockTileOverrides.clear();
         bombedCaveDoorTileOverrides.clear();
         pendingBombExplosionEvents.clear();
+        pendingDungeonWarp = null;
         pendingRoomEntityEvents.clear();
         pendingChestRewardEvents.clear();
         pendingKeyRewardEvents.clear();
@@ -3441,6 +3488,7 @@ public final class RoomSession {
                 && activeRoom.mapId() < dungeonProgressFlags.length) {
                 dungeonProgressFlags[activeRoom.mapId()] |= 0x01;
                 indoorStatusTableForMap(activeRoom.mapId())[activeRoom.roomId()] |= 0x20;
+                entityRuntime.setDungeonMinibossReady(true);
                 pendingRoomEntityEvents.add(new EntityCombatEvent(
                     0, 0x61, 0, false,
                     EntityCombatEvent.SoundChannel.JINGLE, 0x1B));
