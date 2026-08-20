@@ -84,6 +84,14 @@ final class RomEnemyCombatTablesTest {
         assertEquals(1, moblinArrow.healthGroup());
         assertEquals(2, moblinArrow.damageTableEntry());
         assertEquals(4, moblinArrow.rawValue());
+
+        RomEnemyCombatTables.SwordDamageResult thrownPot =
+            tables.resolveAttackDamage(0x18, 0x0B);
+        assertEquals(0x0C, thrownPot.healthGroup());
+        assertEquals(4, tables.initialHealth(0x18));
+        assertEquals(0, tables.resolveSwordDamage(
+            0x18, EnemyAttackContext.standard()).rawValue());
+        assertEquals(0x40, thrownPot.rawValue());
     }
 
     @Test

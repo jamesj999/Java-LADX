@@ -3459,21 +3459,179 @@ final class RoomTransitionCoordinatorTest {
         assertEquals(0x10, session.indoorRoomStatusForTest(0x01, 0x22) & 0x10);
         collision.refreshLinkGroundInteraction(link.pixelX(), link.pixelY());
 
-        walkToAndCrossIndoorBoundary(
-            coordinator, transition, scroll, collision, link, ScrollController.LEFT);
-        assertEquals(0x21, session.currentRoomId());
+        assertEquals(0x02, session.entitySwitchBlocksStateForTest());
+
         walkToAndCrossIndoorBoundary(
             coordinator, transition, scroll, collision, link, ScrollController.RIGHT);
-        assertEquals(0x22, session.currentRoomId());
-        for (int reloadTick = 0; reloadTick < 0x10; reloadTick++) {
+        assertEquals(0x23, session.currentRoomId());
+        assertEquals(0x00, session.activeRoomEventForTest());
+        walkToAndCrossIndoorBoundary(
+            coordinator, transition, scroll, collision, link, ScrollController.RIGHT);
+        assertEquals(0x24, session.currentRoomId());
+        assertEquals(0x00, session.activeRoomEventForTest());
+        walkToAndCrossIndoorBoundary(
+            coordinator, transition, scroll, collision, link, ScrollController.DOWN);
+        assertEquals(0x27, session.currentRoomId());
+        assertEquals(0x66, session.activeRoomEventForTest());
+
+        RoomEntity room27PolsVoice = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.sourceLoadOrder() == 0 && entity.type() == 0x18)
+            .findFirst().orElseThrow();
+        RoomEntity room27Keese = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.sourceLoadOrder() == 1 && entity.type() == 0x19)
+            .findFirst().orElseThrow();
+        RoomEntity room27Moblin = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.sourceLoadOrder() == 2 && entity.type() == 0x0B)
+            .findFirst().orElseThrow();
+        assertEquals(0x64, ((room27PolsVoice.y() - 0x10) & 0xF0)
+            | ((room27PolsVoice.x() - 0x08) >>> 4));
+        assertEquals(0x67, ((room27Keese.y() - 0x10) & 0xF0)
+            | ((room27Keese.x() - 0x08) >>> 4));
+        assertEquals(0x33, ((room27Moblin.y() - 0x10) & 0xF0)
+            | ((room27Moblin.x() - 0x08) >>> 4));
+        assertEquals(0x20, objectAt(session, 0x22));
+
+        link.setPixelPosition(0x20, 0x1B);
+        link.setDirection(Link.DIRECTION_UP);
+        for (int pullFrame = 0; pullFrame < 8; pullFrame++) {
+            assertTrue(session.tryLiftIndoorObject(
+                link.pixelX(), link.pixelY(), Link.DIRECTION_UP,
+                playerState.powerBraceletLevel() != 0, 0x08));
+        }
+        assertEquals(0x0D, objectAt(session, 0x22));
+        int room27LiftDeadline = frame + 0x40;
+        while (session.liftedEntityState().carryState() != 0x01
+                && frame < room27LiftDeadline) {
             tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
         }
-        assertEquals(0xA1, objectAt(session, 0x27));
-        assertEquals(0x00, session.activeRoomEventForTest());
-        assertEquals(0x02, session.entitySwitchBlocksStateForTest());
+        assertEquals(0x01, session.liftedEntityState().carryState());
+
+        room27PolsVoice = session.activeRoom().entities().slots().get(room27PolsVoice.slot());
+        link.setPixelPosition(room27PolsVoice.x() - 0x0B,
+            room27PolsVoice.y() - room27PolsVoice.z() - 0x02);
+        link.setDirection(Link.DIRECTION_RIGHT);
+        session.tickEntitiesWithProjectileEvents(
+            frame++, link.romEntityX(), link.romEntityY(), 0, 0,
+            Link.DIRECTION_RIGHT, false);
+        RoomEntity alignedPot = session.activeRoom().entities().slots()
+            .get(session.liftedEntityState().slot());
+        room27PolsVoice = session.activeRoom().entities().slots().get(room27PolsVoice.slot());
+        assertTrue(Math.abs(signedByteDelta(alignedPot.x(), room27PolsVoice.x())) < 0x0C
+                && Math.abs(signedByteDelta(alignedPot.y() - alignedPot.z(),
+                    room27PolsVoice.y() - room27PolsVoice.z())) < 0x0C,
+            "pot/pols alignment pot=" + String.format("%02X/%02X/%02X",
+                alignedPot.x(), alignedPot.y(), alignedPot.z()) + " pols="
+                + String.format("%02X/%02X/%02X", room27PolsVoice.x(),
+                    room27PolsVoice.y(), room27PolsVoice.z()));
+        assertTrue(session.throwLiftedEntity(Link.DIRECTION_RIGHT));
+        while (((frame ^ room27PolsVoice.slot()) & 1) != 0) {
+            frame++;
+        }
+        session.tickEntitiesWithProjectileEvents(
+            frame++, link.romEntityX(), link.romEntityY(), 0, 0,
+            Link.DIRECTION_RIGHT, false);
+        assertEquals(EntityStatus.DYING,
+            session.activeRoom().entities().slots().get(room27PolsVoice.slot()).status());
+        int polsDeathDeadline = frame + 0x80;
+        while (session.activeRoom().entities().slots().get(room27PolsVoice.slot()).loaded()
+                && frame < polsDeathDeadline) {
+            tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
+        }
+        assertFalse(session.activeRoom().entities().slots().get(room27PolsVoice.slot()).loaded());
+        assertEquals(0x66, session.activeRoomEventForTest());
+
+        for (RoomEntity orderedEnemy : new RoomEntity[] {room27Keese, room27Moblin}) {
+            int enemySlot = orderedEnemy.slot();
+            int attackDeadline = frame + 0x200;
+            while (session.activeRoom().entities().slots().get(enemySlot).status()
+                    == EntityStatus.ACTIVE && frame < attackDeadline) {
+                RoomEntity target = session.activeRoom().entities().slots().get(enemySlot);
+                session.resolveEntityCombat(
+                    frame++, 0, 0, false, true, true,
+                    target.x() - 0x08, 0x10, target.y() - 0x08, 0x10);
+                for (int cooldown = 0; cooldown < 0x0B
+                        && session.activeRoom().entities().slots().get(enemySlot).status()
+                            == EntityStatus.ACTIVE; cooldown++) {
+                    tickInteractiveEntities(session, frame++, 0, 0);
+                }
+            }
+            assertEquals(EntityStatus.DYING,
+                session.activeRoom().entities().slots().get(enemySlot).status());
+            int orderedEnemyDeathDeadline = frame + 0x80;
+            while (session.activeRoom().entities().slots().get(enemySlot).loaded()
+                    && frame < orderedEnemyDeathDeadline) {
+                tickInteractiveEntities(session, frame++, 0, 0);
+            }
+            assertFalse(session.activeRoom().entities().slots().get(enemySlot).loaded());
+        }
+
+        int room27ChestIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x28;
+        assertEquals(0, session.activeRoomEventForTest());
+        int room27ChestRevealDeadline = frame + 0x40;
+        while (session.activeRoom().roomObjectsArea()[room27ChestIndex] != 0xA0
+                && frame < room27ChestRevealDeadline) {
+            tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
+        }
+        assertEquals(0xA0, session.activeRoom().roomObjectsArea()[room27ChestIndex]);
+
+        link.setPixelPosition(0x80, 0x21);
+        link.setDirection(Link.DIRECTION_UP);
+        RoomSession.ChestOpenResult room27Chest = session.tryOpenChest(
+            link.pixelX(), link.pixelY(), Link.DIRECTION_UP, true, playerState.swordLevel());
+        assertTrue(room27Chest.opened());
+        assertEquals(ChestContentsTable.CHEST_NIGHTMARE_KEY, room27Chest.itemType());
+        assertEquals(0x28, room27Chest.location());
+        int room27ChestSlot = room27Chest.entitySlot();
+        int room27DialogId = new ChestContentsTable(rom).dialogLowIdFor(
+            ChestContentsTable.CHEST_NIGHTMARE_KEY, playerState.shieldLevel(),
+            playerState.swordLevel(), playerState.powerBraceletLevel(), 0x01, 0x27);
+        boolean nightmareKeyRewardObserved = false;
+        boolean nightmareKeyDialogObserved = false;
+        boolean room27ChestEnded = false;
+        for (int chestTick = 0; chestTick < 0x40; chestTick++) {
+            tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
+            for (RoomEntityRuntime.ChestRewardEvent reward
+                    : session.consumeChestRewardEvents()) {
+                nightmareKeyRewardObserved |= reward.itemType()
+                    == ChestContentsTable.CHEST_NIGHTMARE_KEY;
+                playerState.applyChestReward(reward.itemType());
+            }
+            nightmareKeyDialogObserved |= session.consumeEntityDialogRequests().stream()
+                .anyMatch(request -> request.globalDialogId() == room27DialogId);
+            RoomEntity chestEntity = session.activeRoom().entities().slots()
+                .get(room27ChestSlot);
+            if (!chestEntity.loaded() || chestEntity.status() == EntityStatus.DISABLED) {
+                room27ChestEnded = true;
+                break;
+            }
+        }
+        assertTrue(nightmareKeyRewardObserved);
+        assertTrue(nightmareKeyDialogObserved);
+        assertTrue(room27ChestEnded);
         assertEquals(1, session.currentDungeonItemFlagsSnapshot()[
-            DungeonItemState.SMALL_KEYS_INDEX]);
+            DungeonItemState.NIGHTMARE_KEY_INDEX]);
+        assertEquals(0xA1, objectAt(session, 0x28));
+        assertEquals(0x10, session.indoorRoomStatusForTest(0x01, 0x27) & 0x10);
+
+        collision.refreshLinkGroundInteraction(link.pixelX(), link.pixelY());
+        walkToAndCrossIndoorBoundary(
+            coordinator, transition, scroll, collision, link, ScrollController.UP);
+        assertEquals(0x24, session.currentRoomId());
+        assertEquals(1, session.currentDungeonItemFlagsSnapshot()[
+            DungeonItemState.NIGHTMARE_KEY_INDEX]);
+        walkToAndCrossIndoorBoundary(
+            coordinator, transition, scroll, collision, link, ScrollController.DOWN);
+        assertEquals(0x27, session.currentRoomId());
+        assertEquals(0xA1, objectAt(session, 0x28));
+        assertEquals(0x66, session.activeRoomEventForTest(),
+            "the source event byte reloads but status $10 keeps it inert");
+        assertFalse(session.activeRoom().entities().loadedEntities().stream()
+            .anyMatch(entity -> entity.sourceLoadOrder() >= 0
+                && entity.sourceLoadOrder() <= 2));
         assertTrue(session.consumeChestRewardEvents().isEmpty());
+        walkToAndCrossIndoorBoundary(
+            coordinator, transition, scroll, collision, link, ScrollController.UP);
+        assertEquals(0x24, session.currentRoomId());
     }
 
     @Test

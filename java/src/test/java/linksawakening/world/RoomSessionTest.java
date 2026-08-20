@@ -791,6 +791,59 @@ final class RoomSessionTest {
     }
 
     @Test
+    void bottleGrottoRoom27RevealsNightmareKeyChestForSourceKillOrder012() {
+        byte[] rom = loadRom();
+        RoomEntityRuntime runtime = runtimeWithKillOrder(rom, 0, 1, 2);
+        assertEquals(3, runtime.killCount());
+        assertEquals(0, runtime.killOrderAt(0));
+        assertEquals(1, runtime.killOrderAt(1));
+        assertEquals(2, runtime.killOrderAt(2));
+
+        TransientVfxSystem vfx = new TransientVfxSystem(16);
+        RoomSession session = newSession(vfx);
+        List<GameplaySoundEvent> sounds = new ArrayList<>();
+        session.setColorShellSoundSink(sounds::add);
+        session.loadIndoor(0x01, 0x27);
+        session.replaceEntityRuntimeForTest(runtime);
+        int chestIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x28;
+        assertEquals(0x66, session.activeRoomEventForTest());
+        assertNotEquals(0xA0, session.activeRoom().roomObjectsArea()[chestIndex]);
+
+        int frame = 0;
+        session.tickEntities(frame++, 0x50, 0x60);
+
+        assertEquals(0, session.activeRoomEventForTest());
+        assertEquals(List.of(GameplaySoundEvent.PUZZLE_SOLVED), sounds);
+        assertEquals(TransientVfxType.CHEST_APPEARS, vfx.activeSlots().getFirst().type());
+        while (session.activeRoom().roomObjectsArea()[chestIndex] != 0xA0
+                && frame < 0x200) {
+            session.tickEntities(frame++, 0x50, 0x60);
+        }
+        assertEquals(0xA0, session.activeRoom().roomObjectsArea()[chestIndex]);
+        assertEquals(ChestContentsTable.CHEST_NIGHTMARE_KEY,
+            new ChestContentsTable(rom).itemForSpawn(0x01, 0x27, 1, true));
+    }
+
+    @Test
+    void bottleGrottoRoom27RejectsTheWrongEnemyKillOrder() {
+        byte[] rom = loadRom();
+        RoomEntityRuntime runtime = runtimeWithKillOrder(rom, 1, 0, 2);
+        TransientVfxSystem vfx = new TransientVfxSystem(16);
+        RoomSession session = newSession(vfx);
+        session.loadIndoor(0x01, 0x27);
+        session.replaceEntityRuntimeForTest(runtime);
+        int chestIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x28;
+
+        for (int frame = 0; frame < 0x20; frame++) {
+            session.tickEntities(frame, 0x50, 0x60);
+        }
+
+        assertEquals(0x66, session.activeRoomEventForTest());
+        assertNotEquals(0xA0, session.activeRoom().roomObjectsArea()[chestIndex]);
+        assertTrue(vfx.activeSlots().isEmpty());
+    }
+
+    @Test
     void tailCaveSingleBlockRequiresSixtyFourUninterruptedPushTicks() {
         RoomSession session = newSession();
         session.loadIndoor(0x00, 0x04);
@@ -3158,5 +3211,41 @@ final class RoomSessionTest {
     private static RoomEntity syntheticEntity(int type) {
         return new RoomEntity(0, 0, type, 0x20, 0x30, EntityStatus.ACTIVE,
             EntitySpriteDefinition.unsupported(type), -1);
+    }
+
+    private static RoomEntityRuntime runtimeWithKillOrder(byte[] rom, int... killOrder) {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        List<RoomEntity> slots = new ArrayList<>();
+        for (int slot = 0; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
+            slots.add(RoomEntity.disabled(slot));
+        }
+        int[] entitySlots = {15, 14, 13};
+        int[] entityX = {0x20, 0x70, 0xC0};
+        for (int sourceOrder = 0; sourceOrder < entitySlots.length; sourceOrder++) {
+            int slot = entitySlots[sourceOrder];
+            slots.set(slot, new RoomEntity(slot, sourceOrder, 0x0B,
+                entityX[sourceOrder], 0x50, EntityStatus.ACTIVE,
+                catalog.forEntityType(0x0B, EntityRoomLoader.RoomTable.INDOORS_A), 0));
+        }
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+            new RoomEntitySnapshot(slots), true, () -> 0, catalog,
+            new RomEnemyCombatTables(rom));
+        runtime.setEnemyDropResolver(new EnemyDropResolver(rom));
+        int frame = 0;
+        for (int sourceOrder : killOrder) {
+            int slot = entitySlots[sourceOrder];
+            RoomEntity target = runtime.snapshot().slots().get(slot);
+            runtime.setEnemyHealthForTest(slot, 1);
+            List<EntityCombatEvent> hit = runtime.resolveCombat(
+                frame++, 0, 0, false, true, true,
+                target.x() - 8, 0x10, target.y() - 8, 0x10);
+            assertTrue(hit.stream().anyMatch(event -> event.slot() == slot && event.swordHit()));
+            int deathDeadline = frame + 0x80;
+            while (runtime.snapshot().slots().get(slot).loaded() && frame < deathDeadline) {
+                runtime.tick(frame++, 0, 0, () -> 0);
+            }
+            assertFalse(runtime.snapshot().slots().get(slot).loaded());
+        }
+        return runtime;
     }
 }

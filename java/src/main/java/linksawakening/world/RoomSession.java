@@ -88,6 +88,7 @@ public final class RoomSession {
     private static final int EVENT_TRIGGER_PUSH_SINGLE_BLOCK = 0x02;
     private static final int EVENT_TRIGGER_STEP_ON_BUTTON = 0x03;
     private static final int EVENT_TRIGGER_LIGHT_TORCHES = 0x05;
+    private static final int EVENT_TRIGGER_KILL_IN_ORDER = 0x06;
     private static final int EVENT_TRIGGER_PUSH_BLOCKS = 0x07;
     private static final int EVENT_EFFECT_OPEN_LOCKED_DOORS = 0x20;
     private static final int EVENT_EFFECT_REVEAL_CHEST = 0x60;
@@ -3535,7 +3536,12 @@ public final class RoomSession {
                 || (trigger == EVENT_TRIGGER_STEP_ON_BUTTON
                     && switchButtonPressed != 0)
                 || (trigger == EVENT_TRIGGER_LIGHT_TORCHES
-                    && roomTriggerCount == 0x02))) {
+                    && roomTriggerCount == 0x02)
+                || (trigger == EVENT_TRIGGER_KILL_IN_ORDER
+                    && entityRuntime != null
+                    && entityRuntime.killOrderAt(0) == 0
+                    && entityRuntime.killOrderAt(1) == 1
+                    && entityRuntime.killOrderAt(2) == 2))) {
             roomEventEffectExecuted = true;
             colorShellSoundSink.play(GameplaySoundEvent.PUZZLE_SOLVED);
         }

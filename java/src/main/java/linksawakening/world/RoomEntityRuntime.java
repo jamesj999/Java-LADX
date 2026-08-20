@@ -218,6 +218,7 @@ public final class RoomEntityRuntime {
     private static final int DAMAGE_TYPE_SWORD_BEAM = 0x01;
     private static final int DAMAGE_TYPE_BOMB = BombExplosionEvent.DAMAGE_TYPE_BOMB;
     private static final int DAMAGE_TYPE_BOMB_ARROW = 0x0C;
+    private static final int DAMAGE_TYPE_THROW_AT = 0x0B;
     private static final int ENTITY_HOOKSHOT_CHAIN = HookshotChainMotion.ENTITY_TYPE;
     private static final int ENTITY_HOOKSHOT_BRIDGE = HookshotBridgeMotion.ENTITY_TYPE;
     private static final int OBJECT_HOOKSHOT_BRIDGE_PULL_DOWN = 0x9E;
@@ -2096,6 +2097,7 @@ public final class RoomEntityRuntime {
                 RoomEntity thrown = advanceThrownEntity(entity, backgroundCollision,
                     groundInteractionSideScrolling, romLinkDirection);
                 slots[index] = thrown;
+                collideThrownEntityWithEntities(thrown, frame);
                 continue;
             } else if (status == EntityStatus.FALLING) {
                 if (entityMapId == MAP_COLOR_DUNGEON
@@ -4604,6 +4606,32 @@ public final class RoomEntityRuntime {
             updated = withStatus(updated, EntityStatus.STUNNED);
         }
         return updated;
+    }
+
+    /** Mirrors EntityThrownHandler's post-bounce func_003_75A2 collision pass. */
+    private void collideThrownEntityWithEntities(RoomEntity thrown, int frame) {
+        int sourceSlot = thrown.slot();
+        int sourceVisualY = (thrown.y() - thrown.z()) & 0xFF;
+        for (int targetSlot = slots.length - 1; targetSlot >= 0; targetSlot--) {
+            if (targetSlot == sourceSlot || ((frame ^ targetSlot) & 0x01) != 0) {
+                continue;
+            }
+            RoomEntity target = slots[targetSlot];
+            if (!target.loaded()
+                || target.status().value() < EntityStatus.ACTIVE.value()
+                || (enemyPhysicsFlags[targetSlot] & ENTITY_PHYSICS_PROJECTILE_NOCLIP) != 0
+                || target.spriteVariant() < 0
+                || unsignedByteAbs(thrown.x() - target.x()) >= 0x0C
+                || unsignedByteAbs(sourceVisualY
+                    - ((target.y() - target.z()) & 0xFF)) >= 0x0C
+                || (enemyHitboxFlags[targetSlot] & HITFLAGS_IGNORE_HITS) != 0
+                || enemyIgnoreHitsCountdown[targetSlot] != 0) {
+                continue;
+            }
+            applyPlayerProjectileDamage(target, DAMAGE_TYPE_THROW_AT,
+                thrownEntityMotion.speedX(sourceSlot),
+                thrownEntityMotion.speedY(sourceSlot));
+        }
     }
 
     private RoomEntity advancePlacedBombEntity(
