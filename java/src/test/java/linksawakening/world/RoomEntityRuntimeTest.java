@@ -3194,6 +3194,26 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void defeatedGeniePlaysTheGlobalBossDeathCryAfterThreeMoreTicks() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x5C, 0x50, 0x40, EntityStatus.DYING,
+                EntitySpriteDefinition.unsupported(0x5C), 0)), true);
+        runtime.setGeniePrivateState1ForTest(0, 1);
+
+        runtime.tick(0, 0x50, 0x50, () -> 0);
+        runtime.consumePendingEntityEvents();
+        runtime.tick(1, 0x50, 0x50, () -> 0);
+        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+        runtime.tick(2, 0x50, 0x50, () -> 0);
+        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+        runtime.tick(3, 0x50, 0x50, () -> 0);
+
+        assertTrue(runtime.consumePendingEntityEvents().stream().anyMatch(event ->
+            event.soundChannel() == EntityCombatEvent.SoundChannel.WAVE
+                && event.soundId() == 0x10));
+    }
+
+    @Test
     void genieDisappearanceControllerReactivatesTheOriginalJarAtCountdownEightZero() {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, 0x5C, 0x50, 0x48, EntityStatus.ACTIVE,

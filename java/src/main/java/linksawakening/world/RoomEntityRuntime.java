@@ -388,6 +388,8 @@ public final class RoomEntityRuntime {
     private int genieControllerSlot = -1;
     private int genieSharedBodySpeedX;
     private int genieSharedBodySpeedY;
+    private int bossAgonySfxCountdown;
+    private int bossAgonySourceSlot;
     private final GhiniMotion ghiniMotion = new GhiniMotion();
     private final HardHatMotion hardHatMotion = new HardHatMotion();
     private final PolsVoiceMotion polsVoiceMotion = new PolsVoiceMotion();
@@ -1738,6 +1740,14 @@ public final class RoomEntityRuntime {
         pendingToadstoolRewards.clear();
         pendingInstrumentRewards.clear();
         pendingInstrumentCompletions.clear();
+        if (bossAgonySfxCountdown > 0) {
+            bossAgonySfxCountdown--;
+            if (bossAgonySfxCountdown == 0) {
+                pendingEntityEvents.add(new EntityCombatEvent(
+                    bossAgonySourceSlot, ENTITY_GENIE, 0, false,
+                    EntityCombatEvent.SoundChannel.WAVE, 0x10));
+            }
+        }
         pendingWitchExchangeEvents.clear();
         pendingWitchRewardEvents.clear();
         pendingOwlEventCompletions.clear();
@@ -7509,6 +7519,8 @@ public final class RoomEntityRuntime {
         if (!genieDeathInitialized[slot]) {
             genieDeathInitialized[slot] = true;
             genieActiveState[slot] = 0;
+            bossAgonySfxCountdown = 0x03;
+            bossAgonySourceSlot = slot;
         }
         enemyFlashCountdown[slot] = frameCounter & 0xFF;
         switch (genieActiveState[slot]) {
@@ -7584,7 +7596,7 @@ public final class RoomEntityRuntime {
             fireball.y(), genieSpeedY[slot], genieSpeedYAccumulator, slot);
         int z = addFallingSpeedToPosition(
             fireball.z(), genieSpeedZ[slot], genieSpeedZAccumulator, slot);
-        genieSpeedZ[slot] = (genieSpeedZ[slot] - 3) & 0xFF;
+        genieSpeedZ[slot] = (genieSpeedZ[slot] - 2) & 0xFF;
         if ((z & 0x80) != 0) {
             disableEntityWithoutPersistence(slot);
             return;
