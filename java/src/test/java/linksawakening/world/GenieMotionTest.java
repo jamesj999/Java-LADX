@@ -17,7 +17,7 @@ final class GenieMotionTest {
         assertEquals(0, state.privateState1());
         assertEquals(0x06, state.health());
         assertEquals(0x91, state.physicsFlags());
-        assertEquals(0x80, state.hitboxFlags());
+        assertEquals(0x8C, state.hitboxFlags());
         assertEquals(0, motion.privateState1(3));
     }
 
@@ -60,6 +60,19 @@ final class GenieMotionTest {
         assertFalse(repeated.jarSmashed());
         assertFalse(repeated.sourceUnloaded());
         assertEquals(-1, repeated.noiseSfx());
+    }
+
+    @Test
+    void clearedSlotCanRunTheJarThresholdTransitionAgainAfterReuse() {
+        GenieMotion motion = new GenieMotion();
+        motion.advanceState0(2, 0x48, 0x30, 0, 3, true, true);
+
+        motion.clear(2);
+        GenieMotion.Update reused = motion.advanceState0(
+            2, 0x50, 0x40, 0, 3, true, true);
+
+        assertTrue(reused.jarSmashed());
+        assertEquals(0x50, reused.bodySpawn().x());
     }
 
     @Test

@@ -5,6 +5,7 @@ final class GenieMotion {
     static final int JAR_HEALTH_THRESHOLD = 0x03;
     static final int INITIAL_HEALTH = 0x06;
     static final int INITIAL_PHYSICS_FLAGS = 0x91;
+    static final int INITIAL_HITBOX_FLAGS = 0x8C;
     static final int JAR_HEALTH = 0x20;
     static final int JAR_PHYSICS_FLAGS = 0x81;
     static final int JAR_HITBOX_FLAGS = 0x80;
@@ -57,7 +58,7 @@ final class GenieMotion {
         privateState1[slot] = 0;
         health[slot] = INITIAL_HEALTH;
         physicsFlags[slot] = INITIAL_PHYSICS_FLAGS;
-        hitboxFlags[slot] = JAR_HITBOX_FLAGS;
+        hitboxFlags[slot] = INITIAL_HITBOX_FLAGS;
         transitioned[slot] = false;
         initialized[slot] = true;
         return jarState(slot);
@@ -112,6 +113,16 @@ final class GenieMotion {
     int privateState1(int slot) {
         validateSlot(slot);
         return privateState1[slot];
+    }
+
+    void clear(int slot) {
+        validateSlot(slot);
+        privateState1[slot] = 0;
+        health[slot] = 0;
+        physicsFlags[slot] = 0;
+        hitboxFlags[slot] = 0;
+        transitioned[slot] = false;
+        initialized[slot] = false;
     }
 
     private JarState jarState(int slot) {
