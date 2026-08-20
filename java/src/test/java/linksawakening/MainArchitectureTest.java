@@ -133,6 +133,22 @@ final class MainArchitectureTest {
     }
 
     @Test
+    void mainMergesSideViewPotContactWithOtherDescendingLinkWrites() throws Exception {
+        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+        String normalizedSource = source.replaceAll("\\s+", " ");
+
+        int potConsume = normalizedSource.indexOf(
+            "consumeSideViewPotLinkRequests()");
+        int finalConsume = normalizedSource.indexOf(
+            "consumeLinkFinalPositionRequests()");
+        assertTrue(potConsume >= 0 && finalConsume > potConsume);
+        assertTrue(normalizedSource.contains("link.restoreRomFinalPositionX()"));
+        assertTrue(normalizedSource.contains("link.applySideViewPotContact("));
+        assertTrue(normalizedSource.contains("potContactRequestIndex"));
+        assertTrue(normalizedSource.contains("setEntityFinalPositionX("));
+    }
+
+    @Test
     void mainAppliesHookshotPullEventsWithoutProjectileIgnoreSideEffects() throws Exception {
         String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
         String normalizedSource = source.replaceAll("\\s+", " ");

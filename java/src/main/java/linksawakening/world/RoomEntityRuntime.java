@@ -481,6 +481,8 @@ public final class RoomEntityRuntime {
         new ArrayList<>();
     private final List<SideViewPlatformLinkRequest> pendingSideViewPlatformLinkRequests =
         new ArrayList<>();
+    private final List<SideViewPotLinkRequest> pendingSideViewPotLinkRequests =
+        new ArrayList<>();
     private final List<LinkMotionBlockRequest> pendingLinkMotionBlockRequests =
         new ArrayList<>();
     private final List<HinoxLinkEffectRequest> pendingHinoxLinkEffectRequests =
@@ -549,6 +551,7 @@ public final class RoomEntityRuntime {
     private int linkPressedButtonsMask;
     private int linkItemA;
     private int linkItemB;
+    private boolean linkInventoryConfigured;
     private boolean powerBraceletButtonHeld;
     private boolean bombButtonHeld;
     private boolean runningWithPegasusBoots;
@@ -581,6 +584,8 @@ public final class RoomEntityRuntime {
     // entity snapshot.
     private int currentLinkSpeedX;
     private int currentLinkSpeedY;
+    private int currentLinkFinalPositionX;
+    private boolean currentLinkFinalPositionXConfigured;
     private int chestShieldLevel = 1;
     private int chestSwordLevel = 1;
     private boolean chestPlayerLevelsKnown;
@@ -776,6 +781,21 @@ public final class RoomEntityRuntime {
                 || (positionY & ~0xFF) != 0
                 || (speedY & ~0xFF) != 0) {
                 throw new IllegalArgumentException("Invalid side-view platform Link request");
+            }
+        }
+    }
+
+    /** Link-side writes emitted by entity-$D6's state-0 collision handler. */
+    public record SideViewPotLinkRequest(int sourceSlot, boolean resetPegasusBoots,
+                                         boolean restoreFinalPositionX,
+                                         int ignoreCollisionCountdown, int speedX,
+                                         boolean snapTop, int positionY, int speedY) {
+        public SideViewPotLinkRequest {
+            if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES
+                || ignoreCollisionCountdown < 0 || ignoreCollisionCountdown > 0xFF
+                || (speedX & ~0xFF) != 0 || (positionY & ~0xFF) != 0
+                || (speedY & ~0xFF) != 0) {
+                throw new IllegalArgumentException("Invalid side-view pot Link request");
             }
         }
     }
@@ -1619,6 +1639,10 @@ public final class RoomEntityRuntime {
         boolean threeOfAKindInteractive = handlerLinkCollisionEnabled
             && entityTimersInteractive();
         boolean sideViewPotInteractive = sideViewPotReturnIfNonInteractive(creditsGameplay);
+        boolean sideViewPotLinkCollisionInteractive = sideViewPotInteractive
+            && handlerLinkCollisionEnabled
+            && projectileLinkState.motionState()
+                < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE;
         shouldGetLostInMysteriousWoods = false;
         finalizePendingBombPresentations();
         int frame = frameCounter & 0xFF;
@@ -1649,6 +1673,7 @@ public final class RoomEntityRuntime {
         pendingRoosterLinkStateRequests.clear();
         pendingLinkMotionBlockRequests.clear();
         pendingSideViewPlatformLinkRequests.clear();
+        pendingSideViewPotLinkRequests.clear();
         pendingHinoxLinkEffectRequests.clear();
         pendingLinkFallenPoseRequests.clear();
         pendingLinkFacingRequests.clear();
@@ -1793,19 +1818,35 @@ public final class RoomEntityRuntime {
                 decrementEnemyDropCountdowns(entity);
             }
             if (status == EntityStatus.ACTIVE
-                && entity.type() == ENTITY_SIDE_VIEW_POT
-                && groundInteractionSideScrolling
-                && !sideViewPotMotion.active(entity.slot())
-                && sideViewPotInteractive
-                && (linkZ & 0xFF) == 0
-                && sideViewPotOverlapsLink(entity, linkEntityX, linkEntityY)
-                && powerBraceletButtonHeld
-                && linkAttackStepAnimationCountdown == 0
-                && withinUnsignedWindow(entity.x(), linkEntityX, 0x12)
-                && withinUnsignedWindow(entity.y(), linkEntityY, 0x12)
-                && beginLift(entity.slot(), romLinkDirection)) {
-                slots[index] = advanceLiftedEntity(slots[index],
-                    linkEntityX, linkEntityY, linkZ, romLinkDirection);
+            && entity.type() == ENTITY_SIDE_VIEW_POT
+            && !sideViewPotMotion.active(entity.slot())) {
+                SideViewPotContact.Result contact = SideViewPotContact.Result.none();
+                int effectiveLinkX = linkEntityX;
+                int effectiveLinkY = linkEntityY;
+                if (sideViewPotLinkCollisionInteractive) {
+                    contact = SideViewPotContact.resolve(
+                        entity, linkEntityX, linkEntityY, linkAirborne, currentLinkSpeedY);
+                    if (contact.collided()) {
+                        pendingLinkPotContact(entity.slot(), contact);
+                        if (contact.restoreFinalPositionX()) {
+                            effectiveLinkX = currentLinkFinalPositionXConfigured
+                                ? currentLinkFinalPositionX : linkEntityX;
+                        }
+                        if (contact.snapTop()) {
+                            effectiveLinkY = contact.positionY();
+                        }
+                    }
+                }
+                if (groundInteractionSideScrolling
+                    && sideViewPotInteractive
+                    && SideViewPotContact.liftWindow(entity, effectiveLinkX, effectiveLinkY)
+                    && sideViewPotPowerBraceletHeld()
+                    && linkAttackStepAnimationCountdown == 0
+                    && beginLift(entity.slot(), romLinkDirection)) {
+                    pendingEntityEvents.add(new EntityCombatEvent(
+                        entity.slot(), entity.type(), 0, false,
+                        EntityCombatEvent.SoundChannel.WAVE, 0x02));
+                }
                 continue;
             }
             if (status == EntityStatus.ACTIVE
@@ -2150,6 +2191,17 @@ public final class RoomEntityRuntime {
             }
             if (status == EntityStatus.LIFTED) {
                 RoomEntity lifted = renderLiftedEntity(entity, frame);
+                // Side-view pot pickup enters status LIFTED with the ROM's
+                // transition countdown set to $02. UpdateEntityTimers has
+                // already decremented it for this frame; EntityLiftedHandler
+                // does not advance the pot until that countdown reaches zero.
+                // Other lifted entities retain their established generic
+                // presentation timing here.
+                if (entity.type() == ENTITY_SIDE_VIEW_POT
+                    && enemyTransitionCountdown[entity.slot()] != 0) {
+                    slots[index] = lifted;
+                    continue;
+                }
                 int liftedRomDirection = romLinkDirection;
                 if (entity.type() == ENTITY_ROOSTER) {
                     RoosterMotion.Update roosterUpdate = RoosterMotion.advanceLifted(
@@ -7347,6 +7399,7 @@ public final class RoomEntityRuntime {
         validateByte(itemB, "Link B inventory slot");
         linkItemA = itemA;
         linkItemB = itemB;
+        linkInventoryConfigured = true;
     }
 
     void setLikeLikeLinkInventoryForTest(int itemA, int itemB) {
@@ -7365,6 +7418,13 @@ public final class RoomEntityRuntime {
     void setLinkAttackStepAnimationCountdown(int countdown) {
         validateByte(countdown, "Link attack-step animation countdown");
         linkAttackStepAnimationCountdown = countdown;
+    }
+
+    /** Supplies the captured hLinkFinalPositionX visible to entity handlers. */
+    void setLinkFinalPositionX(int positionX) {
+        validateByte(positionX, "Link final position X");
+        currentLinkFinalPositionX = positionX;
+        currentLinkFinalPositionXConfigured = true;
     }
 
     boolean shouldGetLostInMysteriousWoods() {
@@ -7743,6 +7803,12 @@ public final class RoomEntityRuntime {
         List<SideViewPlatformLinkRequest> pending =
             List.copyOf(pendingSideViewPlatformLinkRequests);
         pendingSideViewPlatformLinkRequests.clear();
+        return pending;
+    }
+
+    List<SideViewPotLinkRequest> consumePendingSideViewPotLinkRequests() {
+        List<SideViewPotLinkRequest> pending = List.copyOf(pendingSideViewPotLinkRequests);
+        pendingSideViewPotLinkRequests.clear();
         return pending;
     }
 
@@ -12321,6 +12387,25 @@ public final class RoomEntityRuntime {
             && !roomTransitionActive;
     }
 
+    private boolean sideViewPotPowerBraceletHeld() {
+        if (!linkInventoryConfigured) {
+            return powerBraceletButtonHeld;
+        }
+        // EntityGetLiftedUp checks the B slot first. An equipped bracelet in
+        // B suppresses the A-slot branch even when A also contains one.
+        if (linkItemB == 0x03) {
+            return actionButtonBHeld;
+        }
+        return linkItemA == 0x03 && actionButtonAHeld;
+    }
+
+    private void pendingLinkPotContact(int sourceSlot, SideViewPotContact.Result contact) {
+        pendingSideViewPotLinkRequests.add(new SideViewPotLinkRequest(
+            sourceSlot, contact.resetPegasusBoots(), contact.restoreFinalPositionX(),
+            contact.ignoreCollisionCountdown(), contact.speedX(), contact.snapTop(),
+            contact.positionY(), contact.speedY()));
+    }
+
     /** Mirrors UpdateEntityTimers' shared dialog/inventory/ocarina early return. */
     private boolean entityTimersInteractive() {
         return !dialogActive && !inventoryAppearing && linkPlayingOcarinaCountdown == 0;
@@ -12396,19 +12481,6 @@ public final class RoomEntityRuntime {
     private static int unsignedByteAbs(int value) {
         int difference = value & 0xFF;
         return difference < 0x80 ? difference : 0x100 - difference;
-    }
-
-    /** CheckLinkCollisionWithEnemy using HITFLAGS_HITBOX_SIDE_VIEW_POT ($3C). */
-    private static boolean sideViewPotOverlapsLink(RoomEntity entity,
-                                                   int linkEntityX,
-                                                   int linkEntityY) {
-        int xDistance = unsignedByteAbs(entity.x() + 0x08 - linkEntityX - 0x08);
-        if (xDistance >= 0x08 + 0x04) {
-            return false;
-        }
-        int yDistance = unsignedByteAbs(
-            entity.y() - entity.z() + 0x02 - linkEntityY - 0x08);
-        return yDistance < 0x08 + 0x04;
     }
 
     private static boolean sideViewPlatformOverlapsLink(RoomEntity entity,

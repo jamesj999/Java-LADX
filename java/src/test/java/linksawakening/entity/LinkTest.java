@@ -202,6 +202,33 @@ final class LinkTest {
     }
 
     @Test
+    void sideViewPotContactRestoresOnlyCapturedFinalX() {
+        Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
+            null, null, null, new PlayerState(), new ItemRegistry());
+        link.setPixelPosition(20, 30);
+        link.captureRomFinalPosition();
+        link.applyRomFinalPosition(0x10, 0x10);
+
+        link.restoreRomFinalPositionX();
+
+        assertEquals(20, link.pixelX());
+        assertEquals(31, link.pixelY());
+    }
+
+    @Test
+    void sideViewPotTopSnapPublishesStandingAndNextVerticalSpeed() {
+        Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
+            null, null, null, new PlayerState(), new ItemRegistry());
+
+        link.setPixelPosition(20, 30);
+        link.applySideViewPotContact(0x50, 0x02);
+
+        assertEquals(0x40, link.pixelY());
+        assertEquals(0x02, link.romSpeedY());
+        assertTrue(link.standingOnSideViewEntity());
+    }
+
+    @Test
     void linkPushingFlagUsesTheRomThreeFrameCountdown() {
         Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
             null, null, null, new PlayerState(), new ItemRegistry());

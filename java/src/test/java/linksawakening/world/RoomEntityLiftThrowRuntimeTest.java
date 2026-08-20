@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class RoomEntityLiftThrowRuntimeTest {
@@ -112,11 +113,36 @@ final class RoomEntityLiftThrowRuntimeTest {
             new RoomEntitySnapshot(slots).withSideScrolling(true));
         runtime.setPowerBraceletButtonHeld(true);
 
-        runtime.tick(0, 0x50, 0x60, () -> 0, null, null, 0, 3, 0);
+        runtime.tickWithProjectileEvents(0, 0x50, 0x60, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0x50, 0x60, 0, 0, 3, false));
 
         assertEquals(EntityStatus.LIFTED, runtime.snapshot().slots().get(0).status());
         assertEquals(0, runtime.liftedEntityState().slot());
+        assertEquals(0, runtime.liftedEntityState().phase());
+        assertEquals(0, runtime.liftedEntityState().carryState());
+        assertEquals(0x50, runtime.snapshot().slots().get(0).x());
+        assertEquals(0x60, runtime.snapshot().slots().get(0).y());
+        assertEquals(1, runtime.consumePendingEntityEvents().stream()
+            .filter(event -> event.soundChannel() == EntityCombatEvent.SoundChannel.WAVE
+                && event.soundId() == 0x02)
+            .count());
+        assertEquals(0x02, runtime.transitionCountdown(0));
+        runtime.tickWithProjectileEvents(1, 0x50, 0x60, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0x50, 0x60, 0, 0, 3, false));
+        assertEquals(0x50, runtime.snapshot().slots().get(0).x());
+        assertEquals(0x60, runtime.snapshot().slots().get(0).y());
+        assertEquals(0, runtime.liftedEntityState().phase());
+        assertEquals(0, runtime.liftedEntityState().carryState());
+        assertEquals(0x01, runtime.transitionCountdown(0));
+        runtime.tickWithProjectileEvents(2, 0x50, 0x60, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0x50, 0x60, 0, 0, 3, false));
+        assertEquals(0x60, runtime.snapshot().slots().get(0).x());
         assertEquals(0x37, runtime.liftedEntityState().carryState());
+        assertEquals(1, runtime.liftedEntityState().phase());
+        runtime.tick(2, 0x50, 0x60, () -> 0, null, null, 0, 3, 0);
+        assertTrue(runtime.consumePendingEntityEvents().stream()
+            .noneMatch(event -> event.soundChannel() == EntityCombatEvent.SoundChannel.WAVE
+                && event.soundId() == 0x02));
     }
 
     @Test
@@ -130,12 +156,12 @@ final class RoomEntityLiftThrowRuntimeTest {
     }
 
     @Test
-    void activeSideViewPotRequiresGroundedLinkButIgnoresLinkMotionGate() {
+    void activeSideViewPotContactRequiresInteractiveLinkButPickupDoesNot() {
         RoomEntityRuntime airborne = sideViewPotRuntime();
         airborne.setPowerBraceletButtonHeld(true);
         airborne.tickWithProjectileEvents(0, 0x50, 0x60, () -> 0, null,
             new EnemyProjectileCollision.LinkState(0x50, 0x60, 1, 0, 0, false));
-        assertEquals(EntityStatus.ACTIVE, airborne.snapshot().slots().get(0).status());
+        assertEquals(EntityStatus.LIFTED, airborne.snapshot().slots().get(0).status());
 
         RoomEntityRuntime nonInteractive = sideViewPotRuntime();
         nonInteractive.setPowerBraceletButtonHeld(true);
@@ -143,6 +169,120 @@ final class RoomEntityLiftThrowRuntimeTest {
             EnemyProjectileCollision.LinkState.nonInteractive());
         assertEquals(EntityStatus.LIFTED,
             nonInteractive.snapshot().slots().get(0).status());
+    }
+
+    @Test
+    void sideViewPotState0PublishesGroundedPushRequest() {
+        RoomEntityRuntime runtime = sideViewPotRuntime();
+        runtime.tickWithProjectileEvents(0, 0x50, 0x60, 0, () -> 0, null, null, null,
+            0, 3, 0,
+            new EnemyProjectileCollision.LinkState(0x50, 0x60, 0, 0, 3, false),
+            false, 0, 0, 0, 0, 0, 0);
+
+        RoomEntityRuntime.SideViewPotLinkRequest request =
+            runtime.consumePendingSideViewPotLinkRequests().getFirst();
+        assertTrue(request.resetPegasusBoots());
+        assertFalse(request.restoreFinalPositionX());
+        assertEquals(0x02, request.ignoreCollisionCountdown());
+        assertEquals(0x10, request.speedX());
+        assertFalse(request.snapTop());
+    }
+
+    @Test
+    void sideViewPotState0PublishesAirborneFinalXRestore() {
+        RoomEntityRuntime runtime = sideViewPotRuntime();
+        runtime.tickWithProjectileEvents(0, 0x50, 0x60, 0, () -> 0, null, null, null,
+            0, true, 3, 0,
+            new EnemyProjectileCollision.LinkState(0x50, 0x60, 0, 0, 3, false),
+            false, 0, 0, 0, 0, 0, 0);
+
+        RoomEntityRuntime.SideViewPotLinkRequest request =
+            runtime.consumePendingSideViewPotLinkRequests().getFirst();
+        assertTrue(request.restoreFinalPositionX());
+        assertTrue(request.resetPegasusBoots());
+        assertEquals(0, request.speedX());
+    }
+
+    @Test
+    void sideViewPotState0PublishesTopSnapAndStandingSpeed() {
+        RoomEntityRuntime runtime = sideViewPotRuntime();
+        runtime.tickWithProjectileEvents(0, 0x50, 0x57, 0, () -> 0, null, null, null,
+            0, 3, 0,
+            new EnemyProjectileCollision.LinkState(0x50, 0x57, 0, 0, 3, false),
+            false, 0, 0, 0, 0, 0, 0);
+
+        RoomEntityRuntime.SideViewPotLinkRequest request =
+            runtime.consumePendingSideViewPotLinkRequests().getFirst();
+        assertTrue(request.snapTop());
+        assertEquals(0x50, request.positionY());
+        assertEquals(0x02, request.speedY());
+    }
+
+    @Test
+    void sideViewPotLiftUsesTheTopSnapYWrittenEarlierInTheHandler() {
+        RoomEntityRuntime runtime = sideViewPotRuntime();
+        runtime.setPowerBraceletButtonHeld(true);
+        runtime.tickWithProjectileEvents(0, 0x50, 0x57, 0, () -> 0, null, null, null,
+            0, 3, 0,
+            new EnemyProjectileCollision.LinkState(0x50, 0x57, 0, 0, 3, false),
+            false, 0, 0, 0, 0, 0, 0);
+
+        assertEquals(EntityStatus.LIFTED, runtime.snapshot().slots().get(0).status());
+        // Pickup enters the lifted state at the end of this handler frame; the
+        // EntityLiftedHandler first advances on the following frame.
+        assertEquals(0, runtime.liftedEntityState().phase());
+        assertEquals(0x60, runtime.snapshot().slots().get(0).y());
+
+        runtime.tickWithProjectileEvents(1, 0x50, 0x50, 0, () -> 0, null, null, null,
+            0, 3, 0,
+            new EnemyProjectileCollision.LinkState(0x50, 0x50, 0, 0, 3, false),
+            false, 0, 0, 0, 0, 0, 0);
+        assertEquals(0x60, runtime.snapshot().slots().get(0).y());
+        assertEquals(0, runtime.liftedEntityState().phase());
+
+        runtime.tickWithProjectileEvents(2, 0x50, 0x50, 0, () -> 0, null, null, null,
+            0, 3, 0,
+            new EnemyProjectileCollision.LinkState(0x50, 0x50, 0, 0, 3, false),
+            false, 0, 0, 0, 0, 0, 0);
+        assertEquals(0x50, runtime.snapshot().slots().get(0).y());
+    }
+
+    @Test
+    void airbornePotLiftUsesCapturedFinalXAfterTheRestoreWrite() {
+        RoomEntityRuntime runtime = sideViewPotRuntime();
+        runtime.setPowerBraceletButtonHeld(true);
+        runtime.setLinkFinalPositionX(0x80);
+        runtime.tickWithProjectileEvents(0, 0x50, 0x60, 0, () -> 0, null, null, null,
+            0, true, 3, 0,
+            new EnemyProjectileCollision.LinkState(0x50, 0x60, 0, 0, 3, false),
+            false, 0, 0, 0, 0, 0, 0);
+
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
+    }
+
+    @Test
+    void sideViewPotState0DoesNotContactNonInteractiveLink() {
+        RoomEntityRuntime runtime = sideViewPotRuntime();
+        runtime.tickWithProjectileEvents(0, 0x50, 0x60, () -> 0, null,
+            EnemyProjectileCollision.LinkState.nonInteractive());
+
+        assertTrue(runtime.consumePendingSideViewPotLinkRequests().isEmpty());
+    }
+
+    @Test
+    void sideViewPotPickupUsesBSlotBraceletPriority() {
+        RoomEntityRuntime runtime = sideViewPotRuntime();
+        runtime.setLikeLikeLinkInventoryForTest(0x03, 0x03);
+        runtime.setActionButtonsHeld(true, false);
+        runtime.setPowerBraceletButtonHeld(true);
+        runtime.tickWithProjectileEvents(0, 0x50, 0x60, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0x50, 0x60, 0, 0, 3, false));
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
+
+        runtime.setActionButtonsHeld(false, true);
+        runtime.tickWithProjectileEvents(1, 0x50, 0x60, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0x50, 0x60, 0, 0, 3, false));
+        assertEquals(EntityStatus.LIFTED, runtime.snapshot().slots().get(0).status());
     }
 
     @Test

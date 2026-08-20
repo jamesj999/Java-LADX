@@ -181,6 +181,7 @@ public final class Link implements RocsFeather.JumpTarget {
     private int collisionIgnoreFramesRemaining;
     private int romCollisionType;
     private boolean forcedSpeedPending;
+    private boolean forcedSpeedXOnly;
     private int forcedSpeedX;
     private int forcedSpeedY;
     private int pegasusBootsChargeMeter;
@@ -353,6 +354,7 @@ public final class Link implements RocsFeather.JumpTarget {
         zSubPixels = 0;
         zVelocity = 0;
         forcedSpeedPending = false;
+        forcedSpeedXOnly = false;
         collisionIgnoreFramesRemaining = 0;
         romLinkPushing = 0;
         romAttackStepAnimationCountdown = 0;
@@ -431,6 +433,17 @@ public final class Link implements RocsFeather.JumpTarget {
         }
         forcedSpeedX = (byte) speedX;
         forcedSpeedY = (byte) speedY;
+        forcedSpeedXOnly = false;
+        forcedSpeedPending = true;
+    }
+
+    /** Applies only the hLinkSpeedX write emitted by a side-view pot push. */
+    public void applyRomSpeedX(int speedX) {
+        validateRomByte(speedX, "Link X speed");
+        forcedSpeedX = (byte) speedX;
+        // The pot handler leaves hLinkSpeedY untouched; Link computes its
+        // ordinary Y input on the next motion update.
+        forcedSpeedXOnly = true;
         forcedSpeedPending = true;
     }
 
@@ -507,11 +520,30 @@ public final class Link implements RocsFeather.JumpTarget {
         subY = romFinalSubY;
     }
 
+    /** Copies only hLinkFinalPositionX back over a side-view pot push. */
+    public void restoreRomFinalPositionX() {
+        if (hasRomFinalPosition) {
+            subX = romFinalSubX;
+        }
+    }
+
+    /** Applies state-0 pot's top snap and hLinkSpeedY/wC147 writes. */
+    public void applySideViewPotContact(int romPositionY, int romSpeedY) {
+        validateRomByte(romPositionY, "Side-view pot Link Y");
+        validateRomByte(romSpeedY, "Side-view pot Link Y speed");
+        int nextTopLeftY = (romPositionY - 0x10) & 0xFF;
+        subY = (nextTopLeftY << SUB_PIXEL_SHIFT) | (subY & 0x0F);
+        standingOnSideViewEntity = true;
+        lastRomSpeedY = romSpeedY;
+        sideViewPlatformVerticalSpeedPending = romSpeedY;
+    }
+
     /** Mirrors ClearLinkPositionIncrement for handlers that clear HRAM speed bytes. */
     public void clearRomPositionIncrement() {
         forcedSpeedX = 0;
         forcedSpeedY = 0;
         forcedSpeedPending = false;
+        forcedSpeedXOnly = false;
         sideViewPlatformVerticalSpeedPending = -1;
         lastRomSpeedX = 0;
         lastRomSpeedY = 0;
@@ -660,6 +692,12 @@ public final class Link implements RocsFeather.JumpTarget {
         return pixelX() + 0x08;
     }
 
+    /** ROM hLinkFinalPositionX captured before the current Link update. */
+    public int romFinalPositionX() {
+        return hasRomFinalPosition ? (romFinalSubX >> SUB_PIXEL_SHIFT) + 0x08
+            : romEntityX();
+    }
+
     /** ROM hLinkPositionY before the separate vertical Z offset is applied. */
     public int romEntityY() {
         return pixelY() + 0x10;
@@ -696,6 +734,7 @@ public final class Link implements RocsFeather.JumpTarget {
         lastRomSpeedX = 0;
         lastRomSpeedY = 0;
         forcedSpeedPending = false;
+        forcedSpeedXOnly = false;
     }
 
     /** Releases Link when the swallowed Like Like handler accepts A or B. */
@@ -1025,6 +1064,7 @@ public final class Link implements RocsFeather.JumpTarget {
         lastRomSpeedX = 0x0C;
         lastRomSpeedY = 0;
         forcedSpeedPending = false;
+        forcedSpeedXOnly = false;
     }
 
     /** Ends Rooster's custom airborne carry state when it is thrown or cleared. */
@@ -1038,6 +1078,7 @@ public final class Link implements RocsFeather.JumpTarget {
         motionState = LINK_MOTION_DEFAULT;
         physicsModifier = 0;
         forcedSpeedPending = false;
+        forcedSpeedXOnly = false;
     }
 
     public boolean isRoosterCarryActive() {
@@ -1239,8 +1280,10 @@ public final class Link implements RocsFeather.JumpTarget {
             speedY = pegasusRunningSpeedY();
         } else if (forcedSpeedPending) {
             speedX = forcedSpeedX;
-            speedY = forcedSpeedY;
+            speedY = forcedSpeedXOnly
+                ? (byte) romTables.linkSpeedY(mask) : forcedSpeedY;
             forcedSpeedPending = false;
+            forcedSpeedXOnly = false;
         } else {
             speedX = (byte) romTables.linkSpeedX(mask);
             speedY = (byte) romTables.linkSpeedY(mask);
@@ -1339,6 +1382,7 @@ public final class Link implements RocsFeather.JumpTarget {
             if (pegasusBootsChargeMeter == PEGASUS_BOOTS_MAX_CHARGE) {
                 playerState.setRunningWithPegasusBoots(true);
                 forcedSpeedPending = false;
+                forcedSpeedXOnly = false;
                 break;
             }
         }
@@ -1508,6 +1552,7 @@ public final class Link implements RocsFeather.JumpTarget {
             swimmingSpeedX = forcedSpeedX;
             swimmingSpeedY = forcedSpeedY;
             forcedSpeedPending = false;
+            forcedSpeedXOnly = false;
         } else if ((frameCounter & 0x01) == 0) {
             boolean fast = swimmingFastCountdown >= 0x10;
             int targetX = romTables.swimmingSpeedX(mask, fast);

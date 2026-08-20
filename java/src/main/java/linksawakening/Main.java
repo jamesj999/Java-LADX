@@ -1064,6 +1064,8 @@ public class Main {
                 roomSession.setEntityBombButtonHeld(isBombButtonHeld());
                 roomSession.setEntityAttackStepAnimationCountdown(
                     link == null ? 0 : link.romAttackStepAnimationCountdown());
+                roomSession.setEntityFinalPositionX(
+                    link == null ? 0 : link.romFinalPositionX());
                 roomSession.setBirdKeyOwned(playerState != null && playerState.birdKeyCount() != 0);
                 roomSession.setTailKeyOwned(playerState != null && playerState.tailKeyCount() != 0);
                 roomSession.setEntityInventorySlots(
@@ -1104,19 +1106,35 @@ public class Main {
                     link.clearStandingOnSideViewEntity();
                 }
                 var platformRequests = roomSession.consumeSideViewPlatformLinkRequests();
+                var potContactRequests = roomSession.consumeSideViewPotLinkRequests();
                 var finalPositionRequests = roomSession.consumeLinkFinalPositionRequests();
                 int platformRequestIndex = 0;
+                int potContactRequestIndex = 0;
                 int finalPositionRequestIndex = 0;
                 // AnimateEntities processes slots in descending order. Merge
-                // these two position-writing request streams to preserve that
-                // source order (equal slots cannot emit both in the A5 path).
+                // all Link-position writers to preserve source order.
                 while (platformRequestIndex < platformRequests.size()
+                    || potContactRequestIndex < potContactRequests.size()
                     || finalPositionRequestIndex < finalPositionRequests.size()) {
-                    boolean applyPlatform = finalPositionRequestIndex >= finalPositionRequests.size()
-                        || (platformRequestIndex < platformRequests.size()
-                            && platformRequests.get(platformRequestIndex).sourceSlot()
-                                > finalPositionRequests.get(finalPositionRequestIndex).sourceSlot());
-                    if (applyPlatform) {
+                    int nextStream = -1;
+                    int nextSlot = -1;
+                    if (platformRequestIndex < platformRequests.size()
+                        && platformRequests.get(platformRequestIndex).sourceSlot() > nextSlot) {
+                        nextStream = 0;
+                        nextSlot = platformRequests.get(platformRequestIndex).sourceSlot();
+                    }
+                    if (finalPositionRequestIndex < finalPositionRequests.size()
+                        && finalPositionRequests.get(finalPositionRequestIndex).sourceSlot() > nextSlot) {
+                        nextStream = 1;
+                        nextSlot = finalPositionRequests.get(finalPositionRequestIndex).sourceSlot();
+                    }
+                    if (potContactRequestIndex < potContactRequests.size()
+                        && potContactRequests.get(potContactRequestIndex).sourceSlot() >= nextSlot) {
+                        // Equal-slot emission is not expected; keep D6's
+                        // explicit writes as the most specific one.
+                        nextStream = 2;
+                    }
+                    if (nextStream == 0) {
                         var request = platformRequests.get(platformRequestIndex++);
                         if (link != null && request.standing()) {
                             link.applySideViewPlatformContact(request.horizontalDelta(),
@@ -1128,7 +1146,7 @@ public class Main {
                                 link.clearSideViewPlatformState();
                             }
                         }
-                    } else {
+                    } else if (nextStream == 1) {
                         var request = finalPositionRequests.get(finalPositionRequestIndex++);
                         if (link != null) {
                             link.restoreRomFinalPosition();
@@ -1144,6 +1162,26 @@ public class Main {
                                 link.resetPegasusBoots();
                             } else if (playerState != null) {
                                 playerState.setRunningWithPegasusBoots(false);
+                            }
+                        }
+                    } else {
+                        var request = potContactRequests.get(potContactRequestIndex++);
+                        if (link != null) {
+                            if (request.restoreFinalPositionX()) {
+                                link.restoreRomFinalPositionX();
+                            }
+                            if (request.resetPegasusBoots()) {
+                                link.resetPegasusBoots();
+                            }
+                            if (request.speedX() != 0) {
+                                link.applyRomSpeedX(request.speedX());
+                            }
+                            if (request.ignoreCollisionCountdown() != 0) {
+                                link.setCollisionIgnoreFrames(
+                                    request.ignoreCollisionCountdown());
+                            }
+                            if (request.snapTop()) {
+                                link.applySideViewPotContact(request.positionY(), request.speedY());
                             }
                         }
                     }

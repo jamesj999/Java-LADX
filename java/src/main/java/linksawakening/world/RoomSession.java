@@ -968,6 +968,17 @@ public final class RoomSession {
         }
     }
 
+    /** Supplies hLinkFinalPositionX captured before the current Link update. */
+    public void setEntityFinalPositionX(int positionX) {
+        if ((positionX & ~0xFF) != 0) {
+            throw new IllegalArgumentException("Entity final Link X must be an unsigned byte: "
+                + positionX);
+        }
+        if (entityRuntime != null) {
+            entityRuntime.setLinkFinalPositionX(positionX);
+        }
+    }
+
     /** Returns wShouldGetLostInMysteriousWoods from the latest entity pass. */
     public boolean shouldGetLostInMysteriousWoods() {
         return shouldGetLostInMysteriousWoods;
@@ -1792,6 +1803,13 @@ public final class RoomSession {
             consumeSideViewPlatformLinkRequests() {
         return entityRuntime == null
             ? List.of() : entityRuntime.consumePendingSideViewPlatformLinkRequests();
+    }
+
+    /** Returns state-0 side-view pot Link writes from the last entity tick. */
+    public List<RoomEntityRuntime.SideViewPotLinkRequest>
+            consumeSideViewPotLinkRequests() {
+        return entityRuntime == null
+            ? List.of() : entityRuntime.consumePendingSideViewPotLinkRequests();
     }
 
     /** Returns entity-$61 WarpState3 Link writes and clears supported session actions. */
