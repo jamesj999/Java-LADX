@@ -12,7 +12,8 @@ Follow the authored passage from the existing room `$25` return point: re-enter
 `$3B`, traverse horizontally into side-view room `$3A`, take `$3A`'s E1 exit to
 room `$2D`, then use the already-earned Nightmare Key on the north boss door to
 enter `$2B`. Room `$27` must retain its opened Nightmare Key chest, status bit
-`$10`, and one Nightmare Key until that door consumes it.
+`$10`, and one Nightmare Key; unlike small keys, the boss key remains owned
+after the door opens.
 
 Room `$2A` is the post-boss instrument room. It must not be used as a pre-boss
 shortcut: its instrument entity, event `$21`, shutters, and E0 overworld warp

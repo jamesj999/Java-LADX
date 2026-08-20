@@ -3923,6 +3923,103 @@ final class RoomTransitionCoordinatorTest {
         assertEquals(0x25, session.currentRoomId());
         assertEquals(0x88, link.romEntityX());
         assertEquals(0x20, link.romEntityY());
+
+        // The authored return path re-enters side-view room $3B, crosses left
+        // into $3A, then uses $3A's E1 warp to room $2D. This bypasses room
+        // $2A's instrument/shutter path and preserves the Nightmare Key until
+        // the north boss door in $2D is opened.
+        assertEquals(1, session.currentDungeonItemFlagsSnapshot()[
+            DungeonItemState.NIGHTMARE_KEY_INDEX]);
+        Warp room25SideViewEntry = session.activeRoom().warps().stream()
+            .filter(warp -> warp.destMap() == 0x01 && warp.destRoom() == 0x3B
+                && warp.destX() == 0x88 && warp.destY() == 0x10)
+            .findFirst().orElseThrow();
+        assertEquals(-1, room25SideViewEntry.tileLocation());
+        link.setPixelPosition(0x80, 0x10);
+        coordinator.handleWarpAndIndoorBoundaries(link);
+        assertFalse(transition.isActive());
+        link.setPixelPosition(0x90, 0x10);
+        coordinator.handleWarpAndIndoorBoundaries(link);
+        assertFalse(transition.isActive());
+        link.setPixelPosition(0x80, 0x10);
+        coordinator.handleWarpAndIndoorBoundaries(link);
+        assertTrue(transition.isActive());
+        while (transition.isActive()) {
+            transition.tick();
+        }
+        assertEquals(Warp.CATEGORY_SIDESCROLL, session.mapCategory());
+        assertEquals(0x3B, session.currentRoomId());
+        assertEquals(0x88, link.romEntityX());
+        assertEquals(0x10, link.romEntityY());
+
+        tickLiveRoom3B(session, link, coordinator, transition, scroll, frame++);
+        link.setPixelPosition(-5, 0x30);
+        coordinator.handleWarpAndIndoorBoundaries(link);
+        assertTrue(scroll.isActive());
+        assertEquals(0x3A, session.currentRoomId());
+        while (scroll.isActive()) {
+            scroll.tick(8);
+        }
+        assertEquals(Warp.CATEGORY_SIDESCROLL, session.mapCategory());
+        assertEquals(0x3A, session.currentRoomId());
+        assertTrue(session.currentRoomId() != 0x2A);
+
+        Warp room3AWarpTo2D = session.activeRoom().warps().stream()
+            .filter(warp -> warp.destMap() == 0x01 && warp.destRoom() == 0x2D
+                && warp.destX() == 0x88 && warp.destY() == 0x20)
+            .findFirst().orElseThrow();
+        assertEquals(-1, room3AWarpTo2D.tileLocation());
+        link.setPixelPosition(0x80, -5);
+        coordinator.handleWarpAndIndoorBoundaries(link);
+        assertTrue(transition.isActive());
+        while (transition.isActive()) {
+            transition.tick();
+        }
+        assertEquals(Warp.CATEGORY_INDOOR, session.mapCategory());
+        assertEquals(0x2D, session.currentRoomId());
+        assertEquals(0x88, link.romEntityX());
+        assertEquals(0x20, link.romEntityY());
+        assertTrue(session.currentRoomId() != 0x2A);
+        assertEquals(1, session.currentDungeonItemFlagsSnapshot()[
+            DungeonItemState.NIGHTMARE_KEY_INDEX]);
+
+        // Source-shaped north boss-door contact: the C4/$14 and C4/$15
+        // records expand to the top-facing A4/A5 pair at room cells $14/$15.
+        // Link's leading-edge probes therefore use the corresponding Java
+        // top-left position (x=$3A, y=$FA/-6), with the upward collision bit
+        // set; the leading-edge probes then land on x=$40/$43,y=$00.
+        link.setPixelPosition(0x3A, -6);
+        link.setDirection(Link.DIRECTION_UP);
+        assertEquals(0x3A, link.pixelX());
+        assertEquals(-6, link.pixelY());
+        assertTrue(session.tryUnlockIndoorKeyDoor(
+            link.pixelX(), link.pixelY(), Link.DIRECTION_UP, 0x01),
+            "room2D boss-door leading-edge probes did not contact A4/A5");
+        // Source bank2 checks wHasDungeonBossKey but does not decrement it
+        // (only the $90-$93 small-key branch consumes a key).
+        assertEquals(1, session.currentDungeonItemFlagsSnapshot()[
+            DungeonItemState.NIGHTMARE_KEY_INDEX]);
+        for (int tick = 0; tick < 8; tick++) {
+            session.tickEntities(frame++, link.pixelX(), link.pixelY());
+            assertTrue(session.consumeWorldLinkMotionBlockRequest());
+        }
+        session.tickEntities(frame++, link.pixelX(), link.pixelY());
+        assertFalse(session.consumeWorldLinkMotionBlockRequest());
+        assertEquals(0x43, objectAt(session, 0x04));
+        assertEquals(0x44, objectAt(session, 0x05));
+        assertEquals(0x04, session.indoorRoomStatusForTest(0x01, 0x2D) & 0x04);
+
+        walkToAndCrossIndoorBoundary(
+            coordinator, transition, scroll, collision, link, ScrollController.UP);
+        assertEquals(0x2B, session.currentRoomId());
+        assertTrue(session.currentRoomId() != 0x2A);
+        List<RoomEntity> genieEntities = session.activeRoom().entities().loadedEntities()
+            .stream().filter(entity -> entity.type() == 0x5C).toList();
+        assertEquals(1, genieEntities.size());
+        RoomEntity genie = genieEntities.getFirst();
+        assertEquals(0x48, genie.x());
+        assertEquals(0x30, genie.y());
+        assertTrue((romTables.entityOptions1(0x5C) & 0x80) != 0);
     }
 
     @Test
