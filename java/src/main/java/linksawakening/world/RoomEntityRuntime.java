@@ -368,8 +368,12 @@ public final class RoomEntityRuntime {
     private final MoblinKingMotion moblinKingMotion = new MoblinKingMotion();
     private final BossIntroMotion bossIntroMotion = new BossIntroMotion();
     private final GenieMotion genieMotion = new GenieMotion();
+    private final int[] genieActiveState = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] geniePrivateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] geniePrivateState3 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] geniePrivateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] genieImpactRegisteredThisFrame =
+        new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final GhiniMotion ghiniMotion = new GhiniMotion();
     private final HardHatMotion hardHatMotion = new HardHatMotion();
     private final PolsVoiceMotion polsVoiceMotion = new PolsVoiceMotion();
@@ -1134,7 +1138,9 @@ public final class RoomEntityRuntime {
                 ? initialHitboxFlags(entity.type()) : 0;
             if (entity.loaded() && entity.type() == ENTITY_GENIE) {
                 GenieMotion.JarState jar = genieMotion.initialize(entity.slot());
+                genieActiveState[entity.slot()] = 0;
                 geniePrivateState1[entity.slot()] = jar.privateState1();
+                geniePrivateState3[entity.slot()] = 0;
                 enemyHealth[entity.slot()] = jar.health();
                 enemyPhysicsFlags[entity.slot()] = jar.physicsFlags();
                 enemyHitboxFlags[entity.slot()] = jar.hitboxFlags();
@@ -1679,6 +1685,7 @@ public final class RoomEntityRuntime {
         projectileLaunchRequests.clear();
         Arrays.fill(enemyProjectileSpawnedThisFrame, false);
         Arrays.fill(dynamicEntitySpawnedThisFrame, false);
+        Arrays.fill(genieImpactRegisteredThisFrame, false);
         Arrays.fill(wingedSwordAttackThisFrame, false);
         Arrays.fill(wingedStateTwoThisFrame, false);
         transientVfxRequests.clear();
@@ -2246,7 +2253,9 @@ public final class RoomEntityRuntime {
                 RoomEntity thrown = advanceThrownEntity(entity, backgroundCollision,
                     groundInteractionSideScrolling, romLinkDirection);
                 slots[index] = thrown;
-                collideThrownEntityWithEntities(thrown, frame);
+                if (thrown.status() == EntityStatus.THROWN) {
+                    collideThrownEntityWithEntities(thrown, frame);
+                }
                 continue;
             } else if (status == EntityStatus.FALLING) {
                 if (entityMapId == MAP_COLOR_DUNGEON
@@ -3675,8 +3684,10 @@ public final class RoomEntityRuntime {
                     pendingDialogRequests.add(new DialogRequest(
                         bossIntro.dialogTableId(), bossIntro.dialogLowId()));
                 }
+                boolean genieThresholdReached = geniePrivateState4[entity.slot()]
+                    >= GenieMotion.JAR_HEALTH_THRESHOLD;
                 if (geniePrivateState1[entity.slot()] == 0
-                    && genieState0Interactive(creditsGameplay)) {
+                    && (genieThresholdReached || genieState0Interactive(creditsGameplay))) {
                     advanceGenieJar(entity);
                     if (!slots[entity.slot()].loaded()) {
                         continue;
@@ -4832,6 +4843,12 @@ public final class RoomEntityRuntime {
         ThrownEntityMotion.Update update = thrownEntityMotion.advance(
             entity, sideScrolling, backgroundCollision);
         RoomEntity updated = update.entity();
+        if (entity.type() == ENTITY_GENIE && (update.blockedX() || update.blockedY())) {
+            updated = registerGenieJarImpact(updated);
+            if (updated.status() == EntityStatus.ACTIVE) {
+                return updated;
+            }
+        }
         if (thrownEntityMotion.speedX(slot) == 0 && thrownEntityMotion.speedY(slot) == 0) {
             thrownEntityMotion.clear(slot);
             thrownMotionInitialized[slot] = false;
@@ -4839,6 +4856,28 @@ public final class RoomEntityRuntime {
             updated = withStatus(updated, EntityStatus.STUNNED);
         }
         return updated;
+    }
+
+    private RoomEntity registerGenieJarImpact(RoomEntity jar) {
+        int slot = jar.slot();
+        if (genieImpactRegisteredThisFrame[slot]) {
+            return jar;
+        }
+        genieImpactRegisteredThisFrame[slot] = true;
+        geniePrivateState4[slot] = (geniePrivateState4[slot] + 1) & 0xFF;
+        enemyFlashCountdown[slot] = 0x20;
+        pendingEntityEvents.add(new EntityCombatEvent(
+            slot, ENTITY_GENIE, 0, false,
+            EntityCombatEvent.SoundChannel.WAVE, 0x07));
+        if (geniePrivateState4[slot] != GenieMotion.JAR_HEALTH_THRESHOLD) {
+            return jar;
+        }
+        genieActiveState[slot] = 1;
+        geniePrivateState3[slot] = 0;
+        enemyTransitionCountdown[slot] = 0x80;
+        thrownEntityMotion.clear(slot);
+        thrownMotionInitialized[slot] = false;
+        return withStatus(jar, EntityStatus.ACTIVE);
     }
 
     /** Applies the two source-ordered probes made by ApplyEntityInteractionWithBackground. */
@@ -6182,7 +6221,9 @@ public final class RoomEntityRuntime {
         resetEnemyDropState(slot);
         sideViewPlatformMotion.clear(slot);
         sideViewPotMotion.clear(slot);
+        genieActiveState[slot] = 0;
         geniePrivateState1[slot] = 0;
+        geniePrivateState3[slot] = 0;
         geniePrivateState4[slot] = 0;
         RoomEntity entity = slots[slot];
         bombFinalPresentationPending[slot] = false;
@@ -11266,6 +11307,16 @@ public final class RoomEntityRuntime {
         return geniePrivateState1[slot] & 0xFF;
     }
 
+    int genieActiveStateForTest(int slot) {
+        validateEntitySlot(slot);
+        return genieActiveState[slot] & 0xFF;
+    }
+
+    int geniePrivateState3ForTest(int slot) {
+        validateEntitySlot(slot);
+        return geniePrivateState3[slot] & 0xFF;
+    }
+
     void setGeniePrivateState4ForTest(int slot, int value) {
         validateCountdownTestValue(slot, value);
         geniePrivateState4[slot] = value;
@@ -12280,7 +12331,9 @@ public final class RoomEntityRuntime {
         resetEnemyDropState(slot);
         sideViewPlatformMotion.clear(slot);
         sideViewPotMotion.clear(slot);
+        genieActiveState[slot] = 0;
         geniePrivateState1[slot] = 0;
+        geniePrivateState3[slot] = 0;
         geniePrivateState4[slot] = 0;
         secretSeashellMotion.clear(slot);
         slowTransitionCountdown[slot] = 0;

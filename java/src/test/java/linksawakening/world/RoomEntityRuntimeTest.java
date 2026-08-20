@@ -2931,6 +2931,62 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void thrownGenieJarCollisionCountsAnImpactAndEmitsBossHurtWave() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x5C, 0x50, 0x68, EntityStatus.THROWN,
+                EntitySpriteDefinition.unsupported(0x5C), 0)), true);
+
+        runtime.tick(0, 0, 0, () -> 0, (entity, direction, nextX, nextY) -> true);
+
+        assertEquals(1, runtime.geniePrivateState4ForTest(0));
+        assertEquals(0x20, runtime.enemyFlashCountdown(0));
+        assertEquals(EntityStatus.THROWN, runtime.snapshot().slots().get(0).status());
+        assertTrue(runtime.consumePendingEntityEvents().stream().anyMatch(event ->
+            event.soundChannel() == EntityCombatEvent.SoundChannel.WAVE
+                && event.soundId() == 0x07));
+    }
+
+    @Test
+    void thirdThrownGenieJarCollisionRestoresActiveThresholdState() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x5C, 0x50, 0x68, EntityStatus.THROWN,
+                EntitySpriteDefinition.unsupported(0x5C), 0)), true);
+        runtime.setGeniePrivateState4ForTest(0, 2);
+
+        runtime.tick(0, 0, 0, () -> 0, (entity, direction, nextX, nextY) -> true);
+
+        assertEquals(3, runtime.geniePrivateState4ForTest(0));
+        assertEquals(1, runtime.genieActiveStateForTest(0));
+        assertEquals(0, runtime.geniePrivateState3ForTest(0));
+        assertEquals(0x80, runtime.transitionCountdown(0));
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
+
+        runtime.setDialogActive(true);
+        runtime.tick(1, 0, 0, () -> 0);
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
+        assertTrue(runtime.snapshot().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == 0x5C));
+        assertTrue(runtime.snapshot().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == 0x05));
+    }
+
+    @Test
+    void thrownGenieJarTargetOverlapDoesNotCountBeforeTheBackgroundCollisionCheck() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x5C, 0x50, 0x68, EntityStatus.THROWN,
+                EntitySpriteDefinition.unsupported(0x5C), 0),
+            new RoomEntity(1, 1, 0x88, 0x50, 0x68, EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0x88), 0)), true);
+        runtime.setGeniePrivateState4ForTest(0, 2);
+        runtime.setHitboxFlagsForTest(1, 0x80);
+
+        runtime.tick(0, 0, 0, () -> 0, (entity, direction, nextX, nextY) -> false);
+
+        assertEquals(2, runtime.geniePrivateState4ForTest(0));
+        assertEquals(EntityStatus.THROWN, runtime.snapshot().slots().get(0).status());
+    }
+
+    @Test
     void armosKnightRequestsCopyingLinksFinalPositionOnActiveCollision() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
