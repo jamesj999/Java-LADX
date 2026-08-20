@@ -12,16 +12,20 @@ initial jar-break transition without implementing the full boss fight.
 
 ### Task 2: Port Genie intro and jar state
 
-- [ ] Add failing `GenieMotionTest` and runtime integration tests.
-- [ ] Reuse `BossIntroMotion` for map `$01` music `$19` and dialog `$B4`.
-- [ ] Implement private state 0, jar threshold `$03`, body spawn, smash, and
+- [x] Add failing `GenieMotionTest` and runtime integration tests.
+- [x] Reuse `BossIntroMotion` for map `$01` music `$19` and dialog `$B4`.
+- [x] Implement private state 0's threshold boundary, jar threshold `$03`, body spawn, smash, and
       noise `$29` from `04_genie.asm`.
-- [ ] Exclude Genie from generic enemy teardown while this custom lifecycle is
+- [x] Exclude Genie from generic enemy teardown while this custom lifecycle is
       active.
+
+The active jar substates that make the threshold reachable through lifting and
+throwing are intentionally deferred with the later Genie fight states. Runtime
+integration tests inject private state 4 at the threshold boundary.
 
 ### Task 3: Review and verify
 
-- [ ] Run focused route/Genie tests.
-- [ ] Compare all state transitions and spawn fields against the disassembly.
-- [ ] Run `gradle cleanTest test` and `git diff --check`.
+- [x] Run focused route/Genie tests.
+- [x] Compare all implemented state transitions and spawn fields against the disassembly.
+- [x] Run `gradle cleanTest test` and `git diff --check`.
 - [ ] Commit the bounded milestone; leave later Genie states explicitly pending.

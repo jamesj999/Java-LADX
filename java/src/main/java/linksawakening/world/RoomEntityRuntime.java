@@ -27,6 +27,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_CHEST_WITH_ITEM = 0x07;
     private static final int ENTITY_KEY_DROP_POINT = 0x30;
     private static final int ENTITY_MASTER_STALFOS = 0x5F;
+    private static final int ENTITY_GENIE = 0x5C;
     private static final int ENTITY_DESERT_LANMOLA = 0x87;
     private static final int ENTITY_ARMOS_KNIGHT = 0x88;
     private static final int ENTITY_HINOX = HinoxMotion.ENTITY_TYPE;
@@ -102,6 +103,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_OPT1_SPLASH_IN_WATER = 0x08;
     private static final int ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL = 0x02;
     private static final int ENTITY_OPT1_ALLOW_OUT_OF_BOUNDS = 0x20;
+    private static final int GENIE_OPTIONS1 = 0xD0;
     private static final int WIZROBE_PROJECTILE_OPTIONS1 =
         ENTITY_OPT1_NO_GROUND_INTERACTION | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
     private static final int ENTITY_PHYSICS_HARMLESS = 0x80;
@@ -365,6 +367,9 @@ public final class RoomEntityRuntime {
     private final ThreeOfAKindMotion threeOfAKindMotion = new ThreeOfAKindMotion();
     private final MoblinKingMotion moblinKingMotion = new MoblinKingMotion();
     private final BossIntroMotion bossIntroMotion = new BossIntroMotion();
+    private final GenieMotion genieMotion = new GenieMotion();
+    private final int[] geniePrivateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] geniePrivateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final GhiniMotion ghiniMotion = new GhiniMotion();
     private final HardHatMotion hardHatMotion = new HardHatMotion();
     private final PolsVoiceMotion polsVoiceMotion = new PolsVoiceMotion();
@@ -1127,6 +1132,14 @@ public final class RoomEntityRuntime {
                 ? initialPhysicsFlags(entity.type()) : 0;
             enemyHitboxFlags[entity.slot()] = entity.loaded()
                 ? initialHitboxFlags(entity.type()) : 0;
+            if (entity.loaded() && entity.type() == ENTITY_GENIE) {
+                GenieMotion.JarState jar = genieMotion.initialize(entity.slot());
+                geniePrivateState1[entity.slot()] = jar.privateState1();
+                enemyHealth[entity.slot()] = jar.health();
+                enemyPhysicsFlags[entity.slot()] = jar.physicsFlags();
+                enemyHitboxFlags[entity.slot()] = jar.hitboxFlags();
+                entityOptions1Override[entity.slot()] = GENIE_OPTIONS1;
+            }
             if (entity.loaded() && entity.type() == ENTITY_CHEST_WITH_ITEM) {
                 chestItemBySlot[entity.slot()] = entity.spriteVariant();
             }
@@ -3650,6 +3663,27 @@ public final class RoomEntityRuntime {
                 }
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == ENTITY_GENIE) {
+                BossIntroMotion.Update bossIntro = bossIntroMotion.advance(
+                    options1(entity.slot()), entity.type(), entityMapId,
+                    transitionSequenceCounter);
+                if (bossIntro.musicTrack() >= 0) {
+                    pendingMusicTrack = bossIntro.musicTrack();
+                }
+                if (bossIntro.dialogLowId() >= 0) {
+                    pendingDialogRequests.add(new DialogRequest(
+                        bossIntro.dialogTableId(), bossIntro.dialogLowId()));
+                }
+                if (geniePrivateState1[entity.slot()] == 0
+                    && genieState0Interactive(creditsGameplay)) {
+                    advanceGenieJar(entity);
+                    if (!slots[entity.slot()].loaded()) {
+                        continue;
+                    }
+                    updated = slots[entity.slot()];
+                }
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_ARMOS_KNIGHT) {
                 BossIntroMotion.Update bossIntro = bossIntroMotion.advance(
                     options1(entity.slot()), entity.type(), entityMapId,
@@ -4401,6 +4435,7 @@ public final class RoomEntityRuntime {
                 EntityLinkCollisionRules.genericPolicyFor(updated.type());
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && handlerLinkCollisionEnabled
+                && updated.type() != ENTITY_GENIE
                 && genericLinkPushPolicy.restoreFinalPosition()
                 && RoomEntityCombatRules.overlapsLink(updated, linkEntityX, linkEntityY)) {
                 // The shared PushLinkOutOfEntity_* helpers run after their
@@ -6146,6 +6181,8 @@ public final class RoomEntityRuntime {
         resetEnemyDropState(slot);
         sideViewPlatformMotion.clear(slot);
         sideViewPotMotion.clear(slot);
+        geniePrivateState1[slot] = 0;
+        geniePrivateState4[slot] = 0;
         RoomEntity entity = slots[slot];
         bombFinalPresentationPending[slot] = false;
         enemyHitboxFlags[slot] = 0;
@@ -6934,6 +6971,17 @@ public final class RoomEntityRuntime {
         return tarinTransformationHandlerInteractive() && linkPlayingOcarinaCountdown == 0;
     }
 
+    /** Mirrors the state-$00 return gate reached after Genie's BossIntro call. */
+    private boolean genieState0Interactive(boolean creditsGameplay) {
+        return !creditsGameplay
+            && gameplayWorld
+            && transitionSequenceCounter == 0x04
+            && !dialogActive
+            && !inventoryAppearing
+            && !witchGotItemPresentationActive()
+            && !roomTransitionActive;
+    }
+
     /** Creates the temporary type-$05 entity used by bombed bushes, grass, and pots. */
     int spawnLiftableRockSmash(int entityX, int entityY, int sourceSpriteVariant) {
         if (sourceSpriteVariant != LIFTABLE_ROCK_SMASH_MODE_ROCK
@@ -6951,6 +6999,67 @@ public final class RoomEntityRuntime {
     int spawnLiftableRockRubble(int entityX, int entityY) {
         return spawnLiftableRockAnimation(entityX, entityY, LIFTABLE_ROCK_SMASH_MODE_ROCK,
             0x0F, LIFTABLE_ROCK_RUBBLE_PHYSICS_FLAGS, -1);
+    }
+
+    private void advanceGenieJar(RoomEntity jarEntity) {
+        int slot = jarEntity.slot();
+        int freeSlots = 0;
+        for (RoomEntity candidate : slots) {
+            if (!candidate.loaded()) {
+                freeSlots++;
+            }
+        }
+        boolean bodySpawnSucceeded = freeSlots >= 1;
+        boolean rockSpawnSucceeded = freeSlots >= 2;
+        GenieMotion.Update update = genieMotion.advanceState0(
+            slot, jarEntity.x(), jarEntity.y(), jarEntity.z(), geniePrivateState4[slot],
+            bodySpawnSucceeded, rockSpawnSucceeded);
+        GenieMotion.JarState jar = update.jar();
+        geniePrivateState1[slot] = jar.privateState1();
+        enemyHealth[slot] = jar.health();
+        enemyPhysicsFlags[slot] = jar.physicsFlags();
+        enemyHitboxFlags[slot] = jar.hitboxFlags();
+
+        if (update.bodySpawn() != null) {
+            spawnGenieBody(update.bodySpawn());
+        }
+        if (update.rockSpawn() != null && update.rockSpawnSucceeded()) {
+            GenieMotion.RockSpawnRequest rock = update.rockSpawn();
+            spawnLiftableRockAnimation(rock.x(), rock.y(), rock.spriteVariant(),
+                rock.privateCountdown1(), rock.physicsFlags(), -1);
+        }
+        if (update.noiseSfx() >= 0) {
+            pendingEntityEvents.add(new EntityCombatEvent(
+                slot, ENTITY_GENIE, 0, false,
+                EntityCombatEvent.SoundChannel.NOISE, update.noiseSfx()));
+        }
+        if (update.sourceUnloaded()) {
+            disableEntityWithoutPersistence(slot);
+        }
+    }
+
+    private int spawnGenieBody(GenieMotion.BodySpawnRequest request) {
+        int freeSlot = findFreeEntitySlot();
+        if (freeSlot < 0) {
+            return -1;
+        }
+        EntitySpriteDefinition definition = spriteDefinitionFor(ENTITY_GENIE);
+        int variant = definition.supported() ? definition.initialVariant() : -1;
+        slots[freeSlot] = new RoomEntity(freeSlot, -1, ENTITY_GENIE,
+            request.x(), request.y(), EntityStatus.ACTIVE, definition, variant,
+            0, 0, 0);
+        geniePrivateState1[freeSlot] = request.privateState1();
+        geniePrivateState4[freeSlot] = 0;
+        enemyTransitionCountdown[freeSlot] = request.transitionCountdown();
+        enemyHealth[freeSlot] = request.health();
+        enemyPhysicsFlags[freeSlot] = GenieMotion.INITIAL_PHYSICS_FLAGS;
+        enemyHitboxFlags[freeSlot] = GenieMotion.JAR_HITBOX_FLAGS;
+        enemyStunnedCountdown[freeSlot] = 0;
+        enemyFlashCountdown[freeSlot] = 0;
+        enemyIgnoreHitsCountdown[freeSlot] = 0;
+        entityOptions1Override[freeSlot] = GENIE_OPTIONS1;
+        dynamicEntitySpawnedThisFrame[freeSlot] = true;
+        return freeSlot;
     }
 
     private int spawnLiftableRockAnimation(int entityX, int entityY, int sourceSpriteVariant,
@@ -11151,6 +11260,21 @@ public final class RoomEntityRuntime {
         enemyHealth[slot] = value;
     }
 
+    int geniePrivateState1ForTest(int slot) {
+        validateEntitySlot(slot);
+        return geniePrivateState1[slot] & 0xFF;
+    }
+
+    void setGeniePrivateState4ForTest(int slot, int value) {
+        validateCountdownTestValue(slot, value);
+        geniePrivateState4[slot] = value;
+    }
+
+    int geniePrivateState4ForTest(int slot) {
+        validateEntitySlot(slot);
+        return geniePrivateState4[slot] & 0xFF;
+    }
+
     int rollingBonesBarStateForTest(int slot) {
         validateEntitySlot(slot);
         return rollingBonesMotion.barState(slot);
@@ -11776,6 +11900,7 @@ public final class RoomEntityRuntime {
 
     private static int initialPhysicsFlags(int type) {
         return switch (type) {
+            case ENTITY_GENIE -> GenieMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_ARMOS_STATUE -> ARMOS_INITIAL_PHYSICS_FLAGS;
             case ENTITY_ARMOS_KNIGHT -> ARMOS_KNIGHT_INITIAL_PHYSICS_FLAGS;
             case ENTITY_HINOX -> 0x0C;
@@ -11837,6 +11962,9 @@ public final class RoomEntityRuntime {
     }
 
     private static int initialHitboxFlags(int type) {
+        if (type == ENTITY_GENIE) {
+            return GenieMotion.JAR_HITBOX_FLAGS;
+        }
         if (type == ENTITY_SIDE_VIEW_POT) {
             // HITFLAGS_COLLISION_BOX_SMALL | HITFLAGS_HITBOX_SIDE_VIEW_POT
             // | HITFLAGS_IGNORE_HITS (bank $0D hitbox table, entry $D6).
@@ -12151,6 +12279,8 @@ public final class RoomEntityRuntime {
         resetEnemyDropState(slot);
         sideViewPlatformMotion.clear(slot);
         sideViewPotMotion.clear(slot);
+        geniePrivateState1[slot] = 0;
+        geniePrivateState4[slot] = 0;
         secretSeashellMotion.clear(slot);
         slowTransitionCountdown[slot] = 0;
         slowTimerInitialized[slot] = false;

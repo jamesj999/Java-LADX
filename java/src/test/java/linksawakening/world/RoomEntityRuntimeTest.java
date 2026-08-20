@@ -2801,6 +2801,108 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void genieInitializesTheSourceJarCombatFields() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x5C, 0x50, 0x68, EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0x5C), 0)), true);
+
+        assertEquals(0x06, runtime.enemyHealth(0));
+        assertEquals(0x91, runtime.physicsFlags(0));
+        assertEquals(0x80, runtime.hitboxFlagsForTest(0));
+        assertEquals(0, runtime.geniePrivateState1ForTest(0));
+
+        runtime.tick(0, 0x50, 0x70, () -> 0);
+
+        assertEquals(0x20, runtime.enemyHealth(0));
+        assertEquals(0x81, runtime.physicsFlags(0));
+        assertEquals(0x80, runtime.hitboxFlagsForTest(0));
+    }
+
+    @Test
+    void genieStateZeroHonorsTheSourceInteractiveGateAndSkipsGenericFallthrough() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x5C, 0x50, 0x68, EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0x5C), 0)), true);
+        AtomicInteger groundCalls = new AtomicInteger();
+        runtime.setGroundInteraction((entity, frame, previousStatus, speedZ, sideScrolling) -> {
+            groundCalls.incrementAndGet();
+            return RoomEntityGroundInteraction.Result.unloaded(entity, previousStatus, true);
+        });
+        runtime.setDialogActive(true);
+
+        runtime.tick(0, 0x50, 0x68, () -> 0);
+
+        assertEquals(0x06, runtime.enemyHealth(0));
+        assertEquals(0, groundCalls.get());
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
+        assertEquals(List.of(), runtime.consumePendingLinkFinalPositionRequests());
+
+        runtime.setDialogActive(false);
+        runtime.tick(1, 0x50, 0x68, () -> 0);
+        assertEquals(0x20, runtime.enemyHealth(0));
+        assertEquals(0, groundCalls.get());
+
+        runtime.setGeniePrivateState4ForTest(0, 2);
+        runtime.clearEntity(0);
+        assertEquals(0, runtime.geniePrivateState1ForTest(0));
+        assertEquals(0, runtime.geniePrivateState4ForTest(0));
+    }
+
+    @Test
+    void genieStartsBossMusicAndMapOneDialogAfterTheIntroDelay() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x5C, 0x50, 0x68, EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0x5C), 0)), true);
+        runtime.setEntityMapIdForTest(0x01);
+        runtime.setTransitionSequenceCounterForTest(0x04);
+
+        for (int frame = 0; frame < 0x20; frame++) {
+            runtime.tick(frame, 0x50, 0x70, () -> 0);
+            assertEquals(-1, runtime.consumePendingMusicTrack());
+            assertEquals(List.of(), runtime.consumePendingDialogRequests());
+        }
+
+        runtime.tick(0x20, 0x50, 0x70, () -> 0);
+        assertEquals(0x19, runtime.consumePendingMusicTrack());
+        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, 0xB4)),
+            runtime.consumePendingDialogRequests());
+
+        runtime.tick(0x21, 0x50, 0x70, () -> 0);
+        assertEquals(-1, runtime.consumePendingMusicTrack());
+        assertEquals(List.of(), runtime.consumePendingDialogRequests());
+    }
+
+    @Test
+    void genieJarThresholdSpawnsBodyAndRockThenUnloadsTheJar() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x5C, 0x50, 0x68, EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0x5C), 0)), true);
+        runtime.setGeniePrivateState4ForTest(0, 0x03);
+
+        runtime.tick(0, 0x50, 0x70, () -> 0);
+
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
+        RoomEntity body = runtime.snapshot().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x5C)
+            .findFirst().orElseThrow();
+        assertEquals(0x50, body.x());
+        assertEquals(0x50, body.y());
+        assertEquals(0x02, runtime.geniePrivateState1ForTest(body.slot()));
+        assertEquals(0x27, runtime.transitionCountdown(body.slot()));
+        assertEquals(0x08, runtime.enemyHealth(body.slot()));
+
+        RoomEntity rock = runtime.snapshot().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x05)
+            .findFirst().orElseThrow();
+        assertEquals(0x50, rock.x());
+        assertEquals(0x68, rock.y());
+        assertEquals(0xC4, runtime.physicsFlags(rock.slot()));
+        assertTrue(runtime.consumePendingEntityEvents().stream().anyMatch(event ->
+            event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE
+                && event.soundId() == 0x29));
+    }
+
+    @Test
     void armosKnightRequestsCopyingLinksFinalPositionOnActiveCollision() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
