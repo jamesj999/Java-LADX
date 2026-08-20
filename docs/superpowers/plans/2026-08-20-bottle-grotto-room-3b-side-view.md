@@ -53,7 +53,7 @@ git commit -m "feat: port side-view platform motion"
 - Modify: `java/src/main/java/linksawakening/Main.java`
 - Create: `java/src/test/java/linksawakening/world/SideViewPlatformRuntimeTest.java`
 
-- [ ] **Step 1: Write the runtime RED**
+- [x] **Step 1: Write the runtime RED**
 
 Assert contact requires an interactive frame, nonnegative Link Y speed, the
 ROM `$2C` platform hitbox, and Link above the platform. Assert room `$3B`
@@ -61,19 +61,19 @@ activates without a carried entity, another room does not, and the emitted
 request contains `positionY=platformY-$10`, platform X delta, `speedY=$02`,
 and standing=true.
 
-- [ ] **Step 2: Run RED**
+- [x] **Step 2: Run RED**
 
 ```bash
 cd java && gradle test --tests linksawakening.world.SideViewPlatformRuntimeTest
 ```
 
-- [ ] **Step 3: Wire runtime, session, and Main**
+- [x] **Step 3: Wire runtime, session, and Main**
 
 Add `SideViewPlatformLinkRequest`, clear/consume it with the other per-frame
 requests, forward it from `RoomSession`, and apply the snap/carry/speed writes
 to live Link before transition checks.
 
-- [ ] **Step 4: Run GREEN and commit**
+- [x] **Step 4: Run GREEN and commit**
 
 ```bash
 cd java && gradle test --tests linksawakening.world.SideViewPlatformRuntimeTest --tests linksawakening.world.RoomSessionTest --tests linksawakening.LinkTest

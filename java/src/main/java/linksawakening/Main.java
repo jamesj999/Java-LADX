@@ -809,6 +809,10 @@ public class Main {
         // matching the disassembly's gating on wLinkMotionState ==
         // LINK_MOTION_MAP_FADE_OUT (bank0.asm:888-899).
         transitionController.tick();
+        if (link != null && (scrollController.isActive()
+            || transitionController.isInputBlocked())) {
+            link.clearSideViewPlatformState();
+        }
 
         if (currentScreen == SCREEN_OVERWORLD) {
             scrollController.tickScreenShake();
@@ -955,6 +959,9 @@ public class Main {
                 // indoor-exit trigger needs to see Link at y > 112 to fire.
                 // If we clamp first, Link never crosses the threshold and
                 // the south-edge warp never fires.
+                // The source performs this ordinary Link check before
+                // AnimateEntities; a standing platform handler performs its
+                // own explicit check again after moving Link below.
                 roomTransitionCoordinator.handleWarpAndIndoorBoundaries(link);
                 roomTransitionCoordinator.handleOverworldBoundary(link);
             } else if (scrollController.isActive() && link != null) {
@@ -1096,21 +1103,51 @@ public class Main {
                     swordBoxForEntityTick.height(),
                     link == null ? 0 : link.romSpeedX(),
                     link == null ? 0 : link.romSpeedY());
-                for (var request : roomSession.consumeLinkFinalPositionRequests()) {
-                    if (link != null) {
-                        link.restoreRomFinalPosition();
-                        if (request.clearLinkPositionIncrement()) {
-                            link.clearRomPositionIncrement();
+                if (link != null) {
+                    link.clearStandingOnSideViewEntity();
+                }
+                var platformRequests = roomSession.consumeSideViewPlatformLinkRequests();
+                var finalPositionRequests = roomSession.consumeLinkFinalPositionRequests();
+                int platformRequestIndex = 0;
+                int finalPositionRequestIndex = 0;
+                // AnimateEntities processes slots in descending order. Merge
+                // these two position-writing request streams to preserve that
+                // source order (equal slots cannot emit both in the A5 path).
+                while (platformRequestIndex < platformRequests.size()
+                    || finalPositionRequestIndex < finalPositionRequests.size()) {
+                    boolean applyPlatform = finalPositionRequestIndex >= finalPositionRequests.size()
+                        || (platformRequestIndex < platformRequests.size()
+                            && platformRequests.get(platformRequestIndex).sourceSlot()
+                                > finalPositionRequests.get(finalPositionRequestIndex).sourceSlot());
+                    if (applyPlatform) {
+                        var request = platformRequests.get(platformRequestIndex++);
+                        if (link != null && request.standing()) {
+                            link.applySideViewPlatformContact(request.horizontalDelta(),
+                                request.positionY(), request.speedY(), request.standing());
+                            roomTransitionCoordinator.handleWarpAndIndoorBoundaries(link);
+                            roomTransitionCoordinator.handleOverworldBoundary(link);
+                            if (scrollController.isActive()
+                                || transitionController.isInputBlocked()) {
+                                link.clearSideViewPlatformState();
+                            }
                         }
-                        if (request.markLinkPushing()) {
-                            link.markRomLinkPushing(0x03);
-                        }
-                    }
-                    if (request.resetPegasusBoots()) {
+                    } else {
+                        var request = finalPositionRequests.get(finalPositionRequestIndex++);
                         if (link != null) {
-                            link.resetPegasusBoots();
-                        } else if (playerState != null) {
-                            playerState.setRunningWithPegasusBoots(false);
+                            link.restoreRomFinalPosition();
+                            if (request.clearLinkPositionIncrement()) {
+                                link.clearRomPositionIncrement();
+                            }
+                            if (request.markLinkPushing()) {
+                                link.markRomLinkPushing(0x03);
+                            }
+                        }
+                        if (request.resetPegasusBoots()) {
+                            if (link != null) {
+                                link.resetPegasusBoots();
+                            } else if (playerState != null) {
+                                playerState.setRunningWithPegasusBoots(false);
+                            }
                         }
                     }
                 }

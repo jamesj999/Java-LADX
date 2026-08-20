@@ -1787,6 +1787,13 @@ public final class RoomSession {
             ? List.of() : entityRuntime.consumePendingLinkMotionBlockRequests();
     }
 
+    /** Returns and clears side-view platform Link writes from the last entity tick. */
+    public List<RoomEntityRuntime.SideViewPlatformLinkRequest>
+            consumeSideViewPlatformLinkRequests() {
+        return entityRuntime == null
+            ? List.of() : entityRuntime.consumePendingSideViewPlatformLinkRequests();
+    }
+
     /** Returns entity-$61 WarpState3 Link writes and clears supported session actions. */
     public List<RoomEntityRuntime.WarpLinkStateRequest>
             consumeWarpLinkStateRequests() {

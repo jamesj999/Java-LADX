@@ -729,6 +729,130 @@ final class LinkTest {
     }
 
     @Test
+    void sideViewPlatformContactPreservesFractionsWithoutForcingReleasedInput()
+        throws Exception {
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        RomTables romTables = RomTables.loadFromRom(loadRom());
+        InputState inputState = new InputState();
+        inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
+        OverworldCollision collision = new OverworldCollision(romTables);
+        collision.setRoom(emptyRoomObjectsArea());
+        Link link = new Link(inputState, inputConfig, romTables, collision, null,
+            new PlayerState(), new ItemRegistry());
+        link.update();
+        int currentRomSpeedX = link.romSpeedX();
+        link.setPixelPosition(0x40, 0x20);
+        link.useRocsFeather();
+
+        // Establish non-zero low subpixel nibbles through the source-shaped
+        // final-position path, then let the contact snap only the ROM bytes.
+        link.applyRomFinalPosition(1, 0);
+        link.applyRomFinalPosition(0, 0x0F);
+        link.applySideViewPlatformContact(1, 0x50, 0x02, true);
+
+        assertEquals(0x41, link.pixelX());
+        assertEquals(0x40, link.pixelY());
+        assertEquals(currentRomSpeedX, link.romSpeedX());
+        assertEquals(0x02, link.romSpeedY());
+        assertTrue(link.standingOnSideViewEntity());
+
+        // The preserved X fraction carries when 15 more subpixels arrive.
+        link.applyRomFinalPosition(15, 0);
+        assertEquals(0x42, link.pixelX());
+        assertEquals(0x40, link.pixelY());
+
+        // A platform contact must not queue the old horizontal speed as a
+        // forced movement after the player releases the direction.
+        inputState.onKeyEvent(inputConfig.rightKey(), GLFW_RELEASE);
+        link.update();
+        assertEquals(0x41, link.pixelY());
+        assertEquals(0x42, link.pixelX());
+        assertEquals(0x02, link.romSpeedY());
+        assertFalse(link.isAirborne());
+        assertEquals(0, link.zVelocity());
+
+        link.clearStandingOnSideViewEntity();
+        assertFalse(link.standingOnSideViewEntity());
+    }
+
+    @Test
+    void sideViewPlatformContactUsesSignedDeltaAndByteWrap() {
+        Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
+            null, null, null, new PlayerState(), new ItemRegistry());
+        link.setPixelPosition(0, 0);
+
+        link.applySideViewPlatformContact(-1, 0x10, 0x02, true);
+
+        assertEquals(0xFF, link.pixelX());
+        assertEquals(0x00, link.pixelY());
+    }
+
+    @Test
+    void sideViewPlatformContactValidatesSignedDeltaAndRomBytes() {
+        Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
+            null, null, null, new PlayerState(), new ItemRegistry());
+
+        assertThrows(IllegalArgumentException.class,
+            () -> link.applySideViewPlatformContact(-0x81, 0x10, 0x02, true));
+        assertThrows(IllegalArgumentException.class,
+            () -> link.applySideViewPlatformContact(0, 0x100, 0x02, true));
+        assertThrows(IllegalArgumentException.class,
+            () -> link.applySideViewPlatformContact(0, 0x10, 0x100, true));
+    }
+
+    @Test
+    void roomEntryClearsSideViewPlatformStateBeforeNextMotion() throws Exception {
+        Link link = linkWithEmptyRoom(new InputState());
+        link.setPixelPosition(0x40, 0x20);
+        link.applySideViewPlatformContact(0, 0x50, 0x02, true);
+
+        link.setRoomEntryPixelPosition(0x20, 0x30);
+        assertFalse(link.standingOnSideViewEntity());
+
+        link.update();
+        assertEquals(0x30, link.pixelY());
+        assertEquals(0, link.romSpeedY());
+    }
+
+    @Test
+    void blockedMotionConsumesButDoesNotLeakPendingPlatformVerticalSpeed() throws Exception {
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        InputState inputState = new InputState();
+        PlayerState playerState = new PlayerState();
+        ItemRegistry itemRegistry = new ItemRegistry();
+        itemRegistry.register(playerState.itemA(), new BlockingItem());
+        RomTables romTables = RomTables.loadFromRom(loadRom());
+        OverworldCollision collision = new OverworldCollision(romTables);
+        collision.setRoom(emptyRoomObjectsArea());
+        Link link = new Link(inputState, inputConfig, romTables, collision, null,
+            playerState, itemRegistry);
+        link.setPixelPosition(0x40, 0x20);
+        link.applySideViewPlatformContact(0, 0x50, 0x02, true);
+
+        link.update();
+        playerState.setItemA(PlayerState.INVENTORY_EMPTY);
+        link.update();
+
+        assertEquals(0x40, link.pixelX());
+        assertEquals(0x40, link.pixelY());
+        assertEquals(0, link.romSpeedY());
+    }
+
+    @Test
+    void clearingRomPositionIncrementCancelsPendingPlatformVerticalSpeed() throws Exception {
+        Link link = linkWithEmptyRoom(new InputState());
+        link.setPixelPosition(0x40, 0x20);
+        link.applyRomFinalPosition(0, 0x0F);
+        link.applySideViewPlatformContact(0, 0x50, 0x02, true);
+
+        link.clearRomPositionIncrement();
+        link.update();
+
+        assertEquals(0x40, link.pixelY());
+        assertEquals(0, link.romSpeedY());
+    }
+
+    @Test
     void savedLoadsCanRestoreFacingAndRejectInvalidDirections() {
         Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
             null, null, null, new PlayerState(), new ItemRegistry());
@@ -1664,6 +1788,15 @@ final class LinkTest {
 
     private static Link linkInRoom(InputConfig inputConfig, RomTables romTables, int[] roomObjectsArea) {
         return linkInRoom(inputConfig, romTables, roomObjectsArea, new PlayerState(), RomTables.PHYSICS_TABLE_OVERWORLD);
+    }
+
+    private static Link linkWithEmptyRoom(InputState inputState) throws IOException {
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        RomTables romTables = RomTables.loadFromRom(loadRom());
+        OverworldCollision collision = new OverworldCollision(romTables);
+        collision.setRoom(emptyRoomObjectsArea());
+        return new Link(inputState, inputConfig, romTables, collision, null,
+            new PlayerState(), new ItemRegistry());
     }
 
     private static Link pitLink(InputConfig inputConfig) throws Exception {

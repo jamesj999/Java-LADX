@@ -102,6 +102,33 @@ final class RoomSessionTest {
     }
 
     @Test
+    void forwardsSideViewPlatformLinkRequestsAndConsumesThemOnce() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x03, 0x7C, Warp.CATEGORY_SIDESCROLL);
+
+        List<RoomEntity> slots = new ArrayList<>();
+        slots.add(new RoomEntity(0, 0, SideViewPlatformMotion.ENTITY_TYPE, 0x40, 0x50,
+            EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(
+                SideViewPlatformMotion.ENTITY_TYPE), 0));
+        for (int slot = 1; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
+            slots.add(RoomEntity.disabled(slot));
+        }
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(slots));
+        runtime.setGroundInteractionSideScrolling(true);
+        runtime.setEntityRoomIdForTest(0x3B);
+        runtime.setTransitionSequenceCounterForTest(0x04);
+        session.replaceEntityRuntimeForTest(runtime);
+
+        session.tickEntitiesWithProjectileEvents(0, 0x48, 0x40, 0x00, false, 0,
+            Link.DIRECTION_DOWN, false);
+
+        assertEquals(List.of(new RoomEntityRuntime.SideViewPlatformLinkRequest(
+            0, 0, 0x40, 0x02, true, true)),
+            session.consumeSideViewPlatformLinkRequests());
+        assertTrue(session.consumeSideViewPlatformLinkRequests().isEmpty());
+    }
+
+    @Test
     void indoorStaircaseArmsAfterLinkLeavesAndThenReturnsWarpZero() {
         RoomSession session = newSession();
         byte[] indoorA = new byte[0x100];

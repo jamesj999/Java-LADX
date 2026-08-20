@@ -194,6 +194,10 @@ public final class Link implements RocsFeather.JumpTarget {
     private int groundStatus = GROUND_STATUS_NORMAL;
     private int motionState = LINK_MOTION_DEFAULT;
     private boolean romInteractiveMotionBlocked;
+    /** Mirrors wC147: Link was standing on a side-view moving entity this frame. */
+    private boolean standingOnSideViewEntity;
+    /** One-frame hLinkSpeedY write supplied by the side-view platform handler. */
+    private int sideViewPlatformVerticalSpeedPending = -1;
     private boolean collisionDamageImmune;
     private boolean debugNoClip;
     private int romAnimationStateOverride = -1;
@@ -322,6 +326,8 @@ public final class Link implements RocsFeather.JumpTarget {
     public void resetTransientStateForDebug() {
         debugNoClip = false;
         romInteractiveMotionBlocked = false;
+        standingOnSideViewEntity = false;
+        sideViewPlatformVerticalSpeedPending = -1;
         collisionDamageImmune = false;
         romAnimationStateOverride = -1;
         swordAcquisitionBaseRomDirection = -1;
@@ -356,6 +362,7 @@ public final class Link implements RocsFeather.JumpTarget {
     }
 
     public void setRoomEntryPixelPosition(int pixelX, int pixelY) {
+        clearSideViewPlatformState();
         setPixelPosition(pixelX, pixelY);
         markRoomEntryPosition();
     }
@@ -439,6 +446,51 @@ public final class Link implements RocsFeather.JumpTarget {
         subX += (byte) speedX;
     }
 
+    /** Applies the side-view platform handler's Link position and speed writes. */
+    public void applySideViewPlatformContact(int horizontalDelta, int romPositionY,
+                                              int romSpeedY, boolean standing) {
+        if (horizontalDelta < -0x80 || horizontalDelta > 0x7F) {
+            throw new IllegalArgumentException("Side-view platform X delta must be a signed byte");
+        }
+        validateRomByte(romPositionY, "Side-view platform Link Y");
+        validateRomByte(romSpeedY, "Side-view platform Link Y speed");
+
+        int currentRomX = romEntityX() & 0xFF;
+        int nextRomX = (currentRomX + horizontalDelta) & 0xFF;
+        int nextTopLeftX = (nextRomX - 0x08) & 0xFF;
+        int nextTopLeftY = (romPositionY - 0x10) & 0xFF;
+        subX = (nextTopLeftX << SUB_PIXEL_SHIFT) | (subX & 0x0F);
+        subY = (nextTopLeftY << SUB_PIXEL_SHIFT) | (subY & 0x0F);
+        standingOnSideViewEntity = standing;
+        // The platform handler writes hLinkSpeedY as an HRAM observation for
+        // this frame and for one subsequent vertical movement attempt. It
+        // never queues horizontal movement.
+        lastRomSpeedY = romSpeedY & 0xFF;
+        sideViewPlatformVerticalSpeedPending = standing ? romSpeedY & 0xFF : -1;
+    }
+
+    /** Applies a standing platform contact (the common side-view case). */
+    public void applySideViewPlatformContact(int horizontalDelta, int romPositionY,
+                                              int romSpeedY) {
+        applySideViewPlatformContact(horizontalDelta, romPositionY, romSpeedY, true);
+    }
+
+    /** Returns whether Link stood on a side-view entity during the current frame. */
+    public boolean standingOnSideViewEntity() {
+        return standingOnSideViewEntity;
+    }
+
+    /** Clears all transient side-view platform state during a room transition. */
+    public void clearSideViewPlatformState() {
+        standingOnSideViewEntity = false;
+        sideViewPlatformVerticalSpeedPending = -1;
+    }
+
+    /** Clears only the per-frame side-view standing flag before entity processing. */
+    public void clearStandingOnSideViewEntity() {
+        standingOnSideViewEntity = false;
+    }
+
     /** Captures hLinkPositionX/Y into the ROM's per-frame final-position shadow. */
     public void captureRomFinalPosition() {
         romFinalSubX = subX;
@@ -460,6 +512,7 @@ public final class Link implements RocsFeather.JumpTarget {
         forcedSpeedX = 0;
         forcedSpeedY = 0;
         forcedSpeedPending = false;
+        sideViewPlatformVerticalSpeedPending = -1;
         lastRomSpeedX = 0;
         lastRomSpeedY = 0;
     }
@@ -1072,6 +1125,8 @@ public final class Link implements RocsFeather.JumpTarget {
         romCollisionType = 0;
         lastRomSpeedX = 0;
         lastRomSpeedY = 0;
+        int platformVerticalSpeedForThisUpdate = sideViewPlatformVerticalSpeedPending;
+        sideViewPlatformVerticalSpeedPending = -1;
         if (playerState != null) {
             playerState.tickInvincibility();
         }
@@ -1089,6 +1144,17 @@ public final class Link implements RocsFeather.JumpTarget {
             walkTickCounter = 0;
             walkFrame = 0;
             return;
+        }
+
+        // 6A94's side-view landing branch clears Link's airborne presentation
+        // before the next normal motion update. Main keeps wC147 set through
+        // this update and clears it only before the following entity tick.
+        if (standingOnSideViewEntity) {
+            airborne = false;
+            zSubPixels = 0;
+            zVelocity = 0;
+            fallingIntoPit = false;
+            groundStatus = GROUND_STATUS_NORMAL;
         }
 
         if (debugNoClip) {
@@ -1178,6 +1244,9 @@ public final class Link implements RocsFeather.JumpTarget {
         } else {
             speedX = (byte) romTables.linkSpeedX(mask);
             speedY = (byte) romTables.linkSpeedY(mask);
+        }
+        if (platformVerticalSpeedForThisUpdate >= 0) {
+            speedY = (byte) platformVerticalSpeedForThisUpdate;
         }
         lastRomSpeedX = speedX & 0xFF;
         lastRomSpeedY = speedY & 0xFF;
