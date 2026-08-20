@@ -90,25 +90,25 @@ git commit -m "feat: carry Link on side-view platforms"
 - Modify: `java/src/test/java/linksawakening/world/RoomEntityLiftThrowRuntimeTest.java`
 - Reference: `LADX-Disassembly/src/code/entities/19_side_view_pot.asm`
 
-- [ ] **Step 1: Write failing motion/runtime tests**
+- [x] **Step 1: Write failing motion/runtime tests**
 
 Assert Y speed increases by `$02` toward `$40`, signed fixed-point X/Y motion
 matches ROM bytes, any background collision emits smash behavior and unloads,
 and the already-ported pickup gates still hold.
 
-- [ ] **Step 2: Run RED**
+- [x] **Step 2: Run RED**
 
 ```bash
 cd java && gradle test --tests linksawakening.world.SideViewPotMotionTest --tests linksawakening.world.RoomEntityLiftThrowRuntimeTest
 ```
 
-- [ ] **Step 3: Implement and dispatch dedicated states 1/2**
+- [x] **Step 3: Implement and dispatch dedicated states 1/2**
 
 Route `$D6` thrown/dropped states to `SideViewPotMotion`; do not call
 `ThrownEntityMotion` for this type. Reuse runtime smash presentation and slot
 teardown semantics.
 
-- [ ] **Step 4: Run GREEN and commit**
+- [x] **Step 4: Run GREEN and commit**
 
 ```bash
 cd java && gradle test --tests linksawakening.world.SideViewPotMotionTest --tests linksawakening.world.RoomEntityLiftThrowRuntimeTest

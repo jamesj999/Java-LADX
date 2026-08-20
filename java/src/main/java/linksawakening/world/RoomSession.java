@@ -1842,6 +1842,13 @@ public final class RoomSession {
             ? List.of() : entityRuntime.consumePendingLinkAttackClearRequests();
     }
 
+    /** Returns lifted-throw attack-step writes for Main's post-entity phase. */
+    public List<RoomEntityRuntime.LinkAttackStepRequest>
+            consumeLinkAttackStepRequests() {
+        return entityRuntime == null
+            ? List.of() : entityRuntime.consumePendingLinkAttackStepRequests();
+    }
+
     public List<RoomEntityRuntime.LinkHeldItemPoseRequest>
             consumeLinkHeldItemPoseRequests() {
         return entityRuntime == null

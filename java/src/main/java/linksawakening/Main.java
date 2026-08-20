@@ -883,10 +883,7 @@ public class Main {
                     boolean liftedThrowButtonHeld = bombBeingThrown
                         ? bombButtonHeld : powerBraceletButtonHeld;
                     if (liftedThrowButtonHeld && liftedState.carryState() == 0x01) {
-                        boolean thrown = roomSession.throwLiftedEntity(link.direction());
-                        if (thrown && bombBeingThrown) {
-                            link.startRomItemAttackStep();
-                        }
+                        roomSession.throwLiftedEntity(link.direction());
                     }
                 }
                 if (!keyholeSequenceActive && !link.isCarryingLiftedObject()) {
@@ -1183,9 +1180,28 @@ public class Main {
                         }
                     }
                 }
-                for (var request : roomSession.consumeLinkAttackClearRequests()) {
-                    if (link != null) {
-                        link.clearRomAttackStepAnimationCountdown();
+                var linkAttackClearRequests = roomSession.consumeLinkAttackClearRequests();
+                var linkAttackStepRequests = roomSession.consumeLinkAttackStepRequests();
+                int linkAttackClearIndex = 0;
+                int linkAttackStepIndex = 0;
+                // A slot cannot emit both writes in one handler pass. If a
+                // future bridge does produce a tie, the throw write wins.
+                while (linkAttackClearIndex < linkAttackClearRequests.size()
+                    || linkAttackStepIndex < linkAttackStepRequests.size()) {
+                    boolean applyClear = linkAttackStepIndex >= linkAttackStepRequests.size()
+                        || (linkAttackClearIndex < linkAttackClearRequests.size()
+                            && linkAttackClearRequests.get(linkAttackClearIndex).sourceSlot()
+                                > linkAttackStepRequests.get(linkAttackStepIndex).sourceSlot());
+                    if (applyClear) {
+                        linkAttackClearIndex++;
+                        if (link != null) {
+                            link.clearRomAttackStepAnimationCountdown();
+                        }
+                    } else {
+                        linkAttackStepIndex++;
+                        if (link != null) {
+                            link.startRomItemAttackStep();
+                        }
                     }
                 }
                 for (var request : roomSession.consumeLinkHeldItemPoseRequests()) {

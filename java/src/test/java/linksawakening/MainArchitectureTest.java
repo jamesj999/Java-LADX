@@ -99,6 +99,19 @@ final class MainArchitectureTest {
     }
 
     @Test
+    void mainMergesLinkAttackWritesInDescendingEntitySlotOrder() throws Exception {
+        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+        String normalizedSource = source.replaceAll("\\s+", " ");
+
+        assertTrue(normalizedSource.contains("int linkAttackClearIndex = 0;"));
+        assertTrue(normalizedSource.contains("int linkAttackStepIndex = 0;"));
+        assertTrue(normalizedSource.contains("consumeLinkAttackClearRequests()"));
+        assertTrue(normalizedSource.contains("consumeLinkAttackStepRequests()"));
+        assertTrue(normalizedSource.contains("sourceSlot()"));
+        assertTrue(normalizedSource.contains("while (linkAttackClearIndex <"));
+    }
+
+    @Test
     void mainDoesNotSuppressHinoxThrowDamageBehindInvincibilityGate() throws Exception {
         String normalizedSource = Files.readString(Path.of("src/main/java/linksawakening/Main.java"))
             .replaceAll("\\s+", " ");
@@ -160,9 +173,15 @@ final class MainArchitectureTest {
         assertTrue(normalizedSource.contains(
             "boolean bombBeingThrown = liftedState.type() == 0x02;"));
         assertTrue(normalizedSource.contains(
-            "boolean thrown = roomSession.throwLiftedEntity(link.direction());"));
+            "roomSession.throwLiftedEntity(link.direction());"));
         assertTrue(normalizedSource.contains(
-            "if (thrown && bombBeingThrown) { link.startRomItemAttackStep(); }"));
+            "var linkAttackStepRequests = roomSession.consumeLinkAttackStepRequests();"));
+        int entityTick = source.indexOf("roomSession.tickEntitiesWithProjectileEvents(");
+        int deferredAttackStep = source.indexOf("consumeLinkAttackStepRequests");
+        assertTrue(entityTick >= 0 && deferredAttackStep > entityTick,
+            "Lifted-throw attack-step writes must be deferred until after entity animation");
+        assertFalse(normalizedSource.contains(
+            "if (thrown) { link.startRomItemAttackStep(); }"));
     }
 
     @Test

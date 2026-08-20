@@ -211,6 +211,7 @@ public final class RoomEntityRuntime {
     private static final int BOMBER_INITIAL_PHYSICS_FLAGS = 0x13;
     private static final int BOMBER_OPTIONS1 = ENTITY_OPT1_NO_WALL_COLLISION;
     private static final int BOMBER_THROW_JINGLE_ID = 0x08;
+    private static final int LIFTED_THROW_JINGLE_ID = 0x08;
     private static final int DAMAGE_TYPE_ARROW = 0x05;
     private static final int DAMAGE_TYPE_BOOMERANG = 0x08;
     private static final int DAMAGE_TYPE_MAGIC_ROD = 0x0A;
@@ -295,6 +296,7 @@ public final class RoomEntityRuntime {
     private int linkAttackStepAnimationCountdown;
     private final ButterflyMotion butterflyMotion = new ButterflyMotion();
     private final SideViewPlatformMotion sideViewPlatformMotion = new SideViewPlatformMotion();
+    private final SideViewPotMotion sideViewPotMotion = new SideViewPotMotion();
     private final KeeseMotion keeseMotion = new KeeseMotion();
     private final RoamingEnemyMotion roamingEnemyMotion = new RoamingEnemyMotion();
     private final UnmaskedIronMaskMotion unmaskedIronMaskMotion =
@@ -486,6 +488,10 @@ public final class RoomEntityRuntime {
     private final List<LinkFallenPoseRequest> pendingLinkFallenPoseRequests =
         new ArrayList<>();
     private final List<LinkFacingRequest> pendingLinkFacingRequests = new ArrayList<>();
+    private final List<LinkAttackStepRequest> pendingLinkAttackStepRequests =
+        new ArrayList<>();
+    private final List<LinkAttackStepRequest> pendingPreTickLinkAttackStepRequests =
+        new ArrayList<>();
     private final List<LinkAttackClearRequest> pendingLinkAttackClearRequests =
         new ArrayList<>();
     private final List<RoomStatusPersistenceRequest> pendingRoomStatusPersistenceRequests =
@@ -499,6 +505,7 @@ public final class RoomEntityRuntime {
     private final List<ScreenShakeRequest> pendingScreenShakeRequests = new ArrayList<>();
     private final List<DialogRequest> pendingDialogRequests = new ArrayList<>();
     private final List<EntityCombatEvent> pendingEntityEvents = new ArrayList<>();
+    private final List<EntityCombatEvent> pendingPreTickEntityEvents = new ArrayList<>();
     private final List<DungeonWarpRequest> pendingDungeonWarpRequests = new ArrayList<>();
     private final List<WarpLinkStateRequest> pendingWarpLinkStateRequests = new ArrayList<>();
     private final List<ChestRewardEvent> pendingChestRewardEvents = new ArrayList<>();
@@ -557,6 +564,11 @@ public final class RoomEntityRuntime {
     // the active room is ready for interaction. Entity ticks are gated during
     // the host transition, so this is the source value visible to gameplay.
     private int transitionSequenceCounter = 0x04;
+    // ReturnIfNonInteractive_19's gameplay selector and room-transition flag.
+    // Live room sessions default to the ordinary active world path; tests can
+    // select the world-map/transition branches explicitly.
+    private boolean gameplayWorld = true;
+    private boolean roomTransitionActive;
     private int swordMoblinAlertingSoundCounter;
     private int bombArrowCooldown;
     private int latestDroppedBombEntityIndex = -1;
@@ -833,6 +845,16 @@ public final class RoomEntityRuntime {
             if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES
                 || romDirection < 0 || romDirection > 3) {
                 throw new IllegalArgumentException("Invalid Link-facing request");
+            }
+        }
+    }
+
+    /** A lifted-throw request applied after AnimateEntities, like the ROM HRAM write. */
+    public record LinkAttackStepRequest(int sourceSlot) {
+        public LinkAttackStepRequest {
+            if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
+                throw new IllegalArgumentException(
+                    "Link attack-step source slot out of range: " + sourceSlot);
             }
         }
     }
@@ -1596,6 +1618,7 @@ public final class RoomEntityRuntime {
         handlerLinkCollisionEnabled = handlerLinkCollisionEnabled && !inventoryAppearing;
         boolean threeOfAKindInteractive = handlerLinkCollisionEnabled
             && entityTimersInteractive();
+        boolean sideViewPotInteractive = sideViewPotReturnIfNonInteractive(creditsGameplay);
         shouldGetLostInMysteriousWoods = false;
         finalizePendingBombPresentations();
         int frame = frameCounter & 0xFF;
@@ -1629,6 +1652,9 @@ public final class RoomEntityRuntime {
         pendingHinoxLinkEffectRequests.clear();
         pendingLinkFallenPoseRequests.clear();
         pendingLinkFacingRequests.clear();
+        pendingLinkAttackStepRequests.clear();
+        pendingLinkAttackStepRequests.addAll(pendingPreTickLinkAttackStepRequests);
+        pendingPreTickLinkAttackStepRequests.clear();
         pendingLinkAttackClearRequests.clear();
         pendingRoomStatusPersistenceRequests.clear();
         pendingLinkHeldItemPoseRequests.clear();
@@ -1640,6 +1666,8 @@ public final class RoomEntityRuntime {
         magicPowderObjectRequests.clear();
         pendingDialogRequests.clear();
         pendingEntityEvents.clear();
+        pendingEntityEvents.addAll(pendingPreTickEntityEvents);
+        pendingPreTickEntityEvents.clear();
         pendingWarpLinkStateRequests.clear();
         pendingChestRewardEvents.clear();
         pendingHeartContainerRewards.clear();
@@ -1767,7 +1795,8 @@ public final class RoomEntityRuntime {
             if (status == EntityStatus.ACTIVE
                 && entity.type() == ENTITY_SIDE_VIEW_POT
                 && groundInteractionSideScrolling
-                && handlerLinkCollisionEnabled
+                && !sideViewPotMotion.active(entity.slot())
+                && sideViewPotInteractive
                 && (linkZ & 0xFF) == 0
                 && sideViewPotOverlapsLink(entity, linkEntityX, linkEntityY)
                 && powerBraceletButtonHeld
@@ -1777,6 +1806,27 @@ public final class RoomEntityRuntime {
                 && beginLift(entity.slot(), romLinkDirection)) {
                 slots[index] = advanceLiftedEntity(slots[index],
                     linkEntityX, linkEntityY, linkZ, romLinkDirection);
+                continue;
+            }
+            if (status == EntityStatus.ACTIVE
+                && entity.type() == ENTITY_SIDE_VIEW_POT
+                && sideViewPotMotion.active(entity.slot())) {
+                if (sideViewPotInteractive) {
+                    SideViewPotMotion.Update potUpdate = sideViewPotMotion.advance(entity);
+                    RoomEntity movedPot = potUpdate.entity();
+                    boolean collision = sideViewPotBackgroundCollision(entity, movedPot,
+                        backgroundCollision, frame);
+                    if (collision) {
+                        spawnLiftableRockSmash(movedPot.x(),
+                            (movedPot.y() - movedPot.z()) & 0xFF,
+                            LIFTABLE_ROCK_SMASH_MODE_ROCK);
+                        clearEntity(entity.slot());
+                    } else {
+                        slots[index] = movedPot;
+                    }
+                }
+                // ReturnIfNonInteractive_19 leaves the rendered pot and all
+                // dedicated motion state untouched while Link is gated.
                 continue;
             }
             if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_DOG) {
@@ -4607,6 +4657,23 @@ public final class RoomEntityRuntime {
 
         int slot = state.slot();
         RoomEntity entity = slots[slot];
+        pendingPreTickLinkAttackStepRequests.add(new LinkAttackStepRequest(slot));
+        pendingPreTickEntityEvents.add(new EntityCombatEvent(slot, entity.type(), 0, false,
+            EntityCombatEvent.SoundChannel.JINGLE, LIFTED_THROW_JINGLE_ID));
+        if (entity.type() == ENTITY_SIDE_VIEW_POT) {
+            thrownDirection[slot] = romDirection;
+            sideViewPotMotion.start(slot, romDirection);
+            thrownEntityMotion.clear(slot);
+            thrownMotionInitialized[slot] = false;
+            liftedStateInitialized[slot] = false;
+            liftedPhase[slot] = 0;
+            liftedCarryState = 0;
+            liftedEffectiveDirection = 0;
+            liftedEntitySlot = -1;
+            enemyTransitionCountdown[slot] = 0;
+            slots[slot] = withStatus(entity, EntityStatus.ACTIVE);
+            return true;
+        }
         thrownDirection[slot] = romDirection;
         thrownEntityMotion.start(slot, romDirection, entity.type(),
             groundInteractionSideScrolling);
@@ -4684,6 +4751,37 @@ public final class RoomEntityRuntime {
             updated = withStatus(updated, EntityStatus.STUNNED);
         }
         return updated;
+    }
+
+    /** Applies the two source-ordered probes made by ApplyEntityInteractionWithBackground. */
+    private boolean sideViewPotBackgroundCollision(RoomEntity original, RoomEntity moved,
+                                                   RoomEntityBackgroundCollision fallback,
+                                                   int frame) {
+        int slot = original.slot();
+        boolean blocked = false;
+        if (sideViewPotMotion.speedX(slot) != 0) {
+            int direction = (sideViewPotMotion.speedX(slot) & 0x80) != 0
+                ? EntityBackgroundCollisionResult.LEFT
+                : EntityBackgroundCollisionResult.RIGHT;
+            if (backgroundInteraction != null) {
+                blocked |= backgroundInteraction.probe(original, direction, moved.x(),
+                    original.y(), enemyIgnoreHitsCountdown[slot], frame).blocked();
+            } else if (fallback != null) {
+                blocked |= fallback.blocks(original, direction, moved.x(), original.y());
+            }
+        }
+        if (sideViewPotMotion.speedY(slot) != 0) {
+            int direction = (sideViewPotMotion.speedY(slot) & 0x80) != 0
+                ? EntityBackgroundCollisionResult.UP
+                : EntityBackgroundCollisionResult.DOWN;
+            if (backgroundInteraction != null) {
+                blocked |= backgroundInteraction.probe(original, direction, moved.x(), moved.y(),
+                    enemyIgnoreHitsCountdown[slot], frame).blocked();
+            } else if (fallback != null) {
+                blocked |= fallback.blocks(original, direction, moved.x(), moved.y());
+            }
+        }
+        return blocked;
     }
 
     /** Mirrors EntityThrownHandler's post-bounce func_003_75A2 collision pass. */
@@ -5995,6 +6093,7 @@ public final class RoomEntityRuntime {
         }
         resetEnemyDropState(slot);
         sideViewPlatformMotion.clear(slot);
+        sideViewPotMotion.clear(slot);
         RoomEntity entity = slots[slot];
         bombFinalPresentationPending[slot] = false;
         enemyHitboxFlags[slot] = 0;
@@ -7548,6 +7647,23 @@ public final class RoomEntityRuntime {
         transitionSequenceCounter = counter;
     }
 
+    void setGameplayWorldForTest(boolean gameplayWorld) {
+        this.gameplayWorld = gameplayWorld;
+    }
+
+    void setRoomTransitionStateForTest(boolean active) {
+        roomTransitionActive = active;
+    }
+
+    void setWitchGotItemPresentationActiveForTest(boolean active) {
+        Arrays.fill(witchGotItemCountdown, active ? 1 : 0);
+    }
+
+    void setSideViewPotSpeedForTest(int slot, int speedX, int speedY) {
+        sideViewPotMotion.setSpeedX(slot, speedX);
+        sideViewPotMotion.setSpeedY(slot, speedY);
+    }
+
     void setFollowingNpcState(FollowingNpcState state) {
         if (state == null) {
             throw new IllegalArgumentException("Follower state cannot be null");
@@ -7586,9 +7702,11 @@ public final class RoomEntityRuntime {
     }
 
     List<EntityCombatEvent> consumePendingEntityEvents() {
-        List<EntityCombatEvent> pending = List.copyOf(pendingEntityEvents);
+        List<EntityCombatEvent> pending = new ArrayList<>(pendingPreTickEntityEvents);
+        pending.addAll(pendingEntityEvents);
+        pendingPreTickEntityEvents.clear();
         pendingEntityEvents.clear();
-        return pending;
+        return List.copyOf(pending);
     }
 
     List<DungeonWarpRequest> consumePendingDungeonWarpRequests() {
@@ -7674,6 +7792,15 @@ public final class RoomEntityRuntime {
         List<LinkAttackClearRequest> pending = List.copyOf(pendingLinkAttackClearRequests);
         pendingLinkAttackClearRequests.clear();
         return pending;
+    }
+
+    List<LinkAttackStepRequest> consumePendingLinkAttackStepRequests() {
+        List<LinkAttackStepRequest> pending = new ArrayList<>(
+            pendingPreTickLinkAttackStepRequests);
+        pending.addAll(pendingLinkAttackStepRequests);
+        pendingPreTickLinkAttackStepRequests.clear();
+        pendingLinkAttackStepRequests.clear();
+        return List.copyOf(pending);
     }
 
     List<RoomStatusPersistenceRequest> consumePendingRoomStatusPersistenceRequests() {
@@ -11644,6 +11771,11 @@ public final class RoomEntityRuntime {
     }
 
     private static int initialHitboxFlags(int type) {
+        if (type == ENTITY_SIDE_VIEW_POT) {
+            // HITFLAGS_COLLISION_BOX_SMALL | HITFLAGS_HITBOX_SIDE_VIEW_POT
+            // | HITFLAGS_IGNORE_HITS (bank $0D hitbox table, entry $D6).
+            return 0xBD;
+        }
         if (type == ENTITY_MOLDORM) {
             return MoldormMotion.INITIAL_HITBOX_FLAGS;
         }
@@ -11952,6 +12084,7 @@ public final class RoomEntityRuntime {
     private void disableEntityWithoutPersistence(int slot) {
         resetEnemyDropState(slot);
         sideViewPlatformMotion.clear(slot);
+        sideViewPotMotion.clear(slot);
         secretSeashellMotion.clear(slot);
         slowTransitionCountdown[slot] = 0;
         slowTimerInitialized[slot] = false;
@@ -12174,6 +12307,18 @@ public final class RoomEntityRuntime {
         }
         blooperMotion.decrementPrivateCountdown3(slot);
         wingedOctorokMotion.decrementPrivateCountdown2(slot);
+    }
+
+    /** Mirrors ReturnIfNonInteractive_19 for the side-view pot handler. */
+    private boolean sideViewPotReturnIfNonInteractive(boolean creditsGameplay) {
+        if (!creditsGameplay
+            && (!gameplayWorld || transitionSequenceCounter != 0x04)) {
+            return false;
+        }
+        return !dialogActive
+            && !inventoryAppearing
+            && !witchGotItemPresentationActive()
+            && !roomTransitionActive;
     }
 
     /** Mirrors UpdateEntityTimers' shared dialog/inventory/ocarina early return. */

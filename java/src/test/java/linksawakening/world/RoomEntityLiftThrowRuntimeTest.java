@@ -1,6 +1,11 @@
 package linksawakening.world;
 
 import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.entity.Link;
+import linksawakening.equipment.ItemRegistry;
+import linksawakening.input.InputConfig;
+import linksawakening.input.InputState;
+import linksawakening.state.PlayerState;
 
 import org.junit.jupiter.api.Test;
 
@@ -125,7 +130,7 @@ final class RoomEntityLiftThrowRuntimeTest {
     }
 
     @Test
-    void activeSideViewPotCannotBeLiftedWhileLinkIsAirborneOrNonInteractive() {
+    void activeSideViewPotRequiresGroundedLinkButIgnoresLinkMotionGate() {
         RoomEntityRuntime airborne = sideViewPotRuntime();
         airborne.setPowerBraceletButtonHeld(true);
         airborne.tickWithProjectileEvents(0, 0x50, 0x60, () -> 0, null,
@@ -136,8 +141,283 @@ final class RoomEntityLiftThrowRuntimeTest {
         nonInteractive.setPowerBraceletButtonHeld(true);
         nonInteractive.tickWithProjectileEvents(0, 0x50, 0x60, () -> 0, null,
             EnemyProjectileCollision.LinkState.nonInteractive());
-        assertEquals(EntityStatus.ACTIVE,
+        assertEquals(EntityStatus.LIFTED,
             nonInteractive.snapshot().slots().get(0).status());
+    }
+
+    @Test
+    void fullyHeldSideViewPotEntersDedicatedActiveMotionOnThrow() {
+        RoomEntityRuntime runtime = sideViewPotRuntime();
+        assertTrue(runtime.beginLift(0, ThrownEntityMotion.ROM_DIRECTION_RIGHT));
+        int frame = 0;
+        while (runtime.liftedEntityState().carryState() != 0x01 && frame < 64) {
+            runtime.tick(frame++, 0x50, 0x60, () -> 0, null, null, 0, 3, 0);
+        }
+        assertEquals(0x01, runtime.liftedEntityState().carryState());
+
+        assertTrue(runtime.throwLiftedEntity(ThrownEntityMotion.ROM_DIRECTION_RIGHT));
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
+        assertEquals(ThrownEntityMotion.ROM_DIRECTION_RIGHT, runtime.thrownDirection(0));
+        assertTrue(runtime.consumePendingEntityEvents().stream()
+            .anyMatch(event -> event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE
+                && event.soundId() == 0x08));
+        RoomEntity beforeMotion = runtime.snapshot().slots().get(0);
+
+        runtime.tick(frame, 0, 0, () -> 0);
+        RoomEntity moved = runtime.snapshot().slots().get(0);
+        assertEquals((beforeMotion.x() + 3) & 0xFF, moved.x());
+        assertEquals((beforeMotion.y() - 1) & 0xFF, moved.y());
+        assertEquals(EntityStatus.ACTIVE, moved.status());
+    }
+
+    @Test
+    void liftedThrowJingleSurvivesTheFollowingEntityTick() {
+        RoomEntityRuntime runtime = thrownSideViewPotRuntime();
+        runtime.tick(0, 0, 0, () -> 0);
+
+        assertTrue(runtime.consumePendingEntityEvents().stream()
+            .anyMatch(event -> event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE
+                && event.soundId() == 0x08));
+    }
+
+    @Test
+    void liftedThrowAttackStepIsAppliedAfterTheThrowFrame() {
+        RoomEntityRuntime runtime = thrownSideViewPotRuntime();
+        Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
+            null, null, null, new PlayerState(), new ItemRegistry());
+        assertEquals(0, link.romAttackStepAnimationCountdown());
+
+        runtime.tick(0, 0, 0, () -> 0);
+        for (RoomEntityRuntime.LinkAttackStepRequest request
+                : runtime.consumePendingLinkAttackStepRequests()) {
+            link.startRomItemAttackStep();
+        }
+
+        assertEquals(0x0C, link.romAttackStepAnimationCountdown());
+    }
+
+    @Test
+    void linkAttackRequestsMergeByDescendingEntitySlot() {
+        assertEquals(0,
+            attackCountdownAfterOrderedRequests(15, 0));
+        assertEquals(0x0C,
+            attackCountdownAfterOrderedRequests(0, 15));
+    }
+
+    private static int attackCountdownAfterOrderedRequests(int potSlot, int tarinSlot) {
+        RoomEntityRuntime runtime = sideViewPotAndTarinRuntime(potSlot, tarinSlot);
+        assertTrue(runtime.beginLift(potSlot, ThrownEntityMotion.ROM_DIRECTION_RIGHT));
+        int frame = 0;
+        while (runtime.liftedEntityState().carryState() != 0x01 && frame < 64) {
+            runtime.tick(frame++, 0x50, 0x60, () -> 0, null, null, 0, 3, 0);
+        }
+        assertTrue(runtime.throwLiftedEntity(ThrownEntityMotion.ROM_DIRECTION_RIGHT));
+        runtime.setTarinRaccoonStateForTest(tarinSlot, 1, 0, 0, 0, 0, 0, false);
+        runtime.tick(frame, 0, 0, () -> 0);
+
+        Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
+            null, null, null, new PlayerState(), new ItemRegistry());
+        List<RoomEntityRuntime.LinkAttackClearRequest> clears =
+            runtime.consumePendingLinkAttackClearRequests();
+        List<RoomEntityRuntime.LinkAttackStepRequest> steps =
+            runtime.consumePendingLinkAttackStepRequests();
+        int clearIndex = 0;
+        int stepIndex = 0;
+        while (clearIndex < clears.size() || stepIndex < steps.size()) {
+            boolean applyClear = stepIndex >= steps.size()
+                || (clearIndex < clears.size()
+                    && clears.get(clearIndex).sourceSlot() > steps.get(stepIndex).sourceSlot());
+            if (applyClear) {
+                clearIndex++;
+                link.clearRomAttackStepAnimationCountdown();
+            } else {
+                stepIndex++;
+                link.startRomItemAttackStep();
+            }
+        }
+        return link.romAttackStepAnimationCountdown();
+    }
+
+    private static RoomEntityRuntime sideViewPotAndTarinRuntime(int potSlot, int tarinSlot) {
+        EntitySpriteDefinition potDefinition = definition(0xD6);
+        EntitySpriteDefinition tarinDefinition = EntitySpriteDefinition.unsupported(0x3F);
+        List<RoomEntity> slots = new ArrayList<>();
+        for (int slot = 0; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
+            slots.add(RoomEntity.disabled(slot));
+        }
+        slots.set(potSlot, new RoomEntity(potSlot, 0, 0xD6, 0x50, 0x60,
+            EntityStatus.ACTIVE, potDefinition, 0));
+        slots.set(tarinSlot, new RoomEntity(tarinSlot, 1, 0x3F, 0x20, 0x40,
+            EntityStatus.ACTIVE, tarinDefinition, -1));
+        return RoomEntityRuntime.from(
+            new RoomEntitySnapshot(slots).withSideScrolling(true));
+    }
+
+    @Test
+    void sideViewPotCollisionSpawnsRockSmashAndClearsPot() {
+        RoomEntityRuntime runtime = sideViewPotRuntime();
+        assertTrue(runtime.beginLift(0, ThrownEntityMotion.ROM_DIRECTION_RIGHT));
+        int frame = 0;
+        while (runtime.liftedEntityState().carryState() != 0x01 && frame < 64) {
+            runtime.tick(frame++, 0x50, 0x60, () -> 0, null, null, 0, 3, 0);
+        }
+        assertTrue(runtime.throwLiftedEntity(ThrownEntityMotion.ROM_DIRECTION_RIGHT));
+
+        runtime.tick(frame, 0, 0, () -> 0,
+            (entity, direction, nextX, nextY) -> true);
+
+        assertTrue(runtime.snapshot().slots().get(0).status() == EntityStatus.DISABLED
+            || runtime.snapshot().slots().get(0).type() == 0x05);
+        assertTrue(runtime.snapshot().slots().stream()
+            .anyMatch(entity -> entity.loaded() && entity.type() == 0x05));
+        assertTrue(runtime.consumePendingEntityEvents().stream()
+            .anyMatch(event -> event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE
+                && event.soundId() == 0x09));
+    }
+
+    @Test
+    void sideViewPotProbesNonzeroSpeedsWithoutWholePixelMovement() {
+        RoomEntityRuntime runtime = thrownSideViewPotRuntime();
+        runtime.setSideViewPotSpeedForTest(0, 0x01, 0x01);
+        List<Integer> probeDirections = new ArrayList<>();
+        runtime.setBackgroundInteraction((entity, direction, nextX, nextY) -> {
+            probeDirections.add(direction);
+            return EntityBackgroundCollisionResult.blocked(direction, 0x20, 0x01,
+                nextX, nextY);
+        });
+
+        runtime.tick(0, 0, 0, () -> 0);
+
+        assertEquals(List.of(EntityBackgroundCollisionResult.RIGHT,
+            EntityBackgroundCollisionResult.DOWN), probeDirections);
+        assertTrue(runtime.snapshot().slots().stream()
+            .anyMatch(entity -> entity.loaded() && entity.type() == 0x05));
+    }
+
+    @Test
+    void sideViewPotSmashUsesTheMovedEntityCoordinates() {
+        RoomEntityRuntime runtime = sideViewPotRuntime();
+        assertTrue(runtime.beginLift(0, ThrownEntityMotion.ROM_DIRECTION_RIGHT));
+        int frame = 0;
+        while (runtime.liftedEntityState().carryState() != 0x01 && frame < 64) {
+            runtime.tick(frame++, 0x50, 0x60, () -> 0, null, null, 0, 3, 0);
+        }
+        assertTrue(runtime.throwLiftedEntity(ThrownEntityMotion.ROM_DIRECTION_RIGHT));
+        RoomEntity beforeMotion = runtime.snapshot().slots().get(0);
+        runtime.setBackgroundInteraction((entity, direction, nextX, nextY) ->
+            EntityBackgroundCollisionResult.blocked(direction, 0x20, 0x01, 0x53, 0x52));
+        runtime.tick(frame, 0, 0, () -> 0);
+
+        RoomEntity smash = runtime.snapshot().slots().stream()
+            .filter(entity -> entity.loaded() && entity.type() == 0x05)
+            .findFirst().orElseThrow();
+        // SpawnNewEntity repopulates hMultiPurpose0/1/3 from the moved source
+        // entity immediately before SmashRock reads them.
+        assertEquals((beforeMotion.x() + 3) & 0xFF, smash.x());
+        assertEquals((beforeMotion.y() - 1) & 0xFF, smash.y());
+    }
+
+    @Test
+    void sideViewPotDoesNotEnterGenericThrownDamagePass() {
+        RoomEntityRuntime runtime = sideViewPotWithTargetRuntime();
+        int initialHealth = runtime.enemyHealth(1);
+        assertTrue(runtime.beginLift(0, ThrownEntityMotion.ROM_DIRECTION_RIGHT));
+        int frame = 0;
+        while (runtime.liftedEntityState().carryState() != 0x01 && frame < 64) {
+            runtime.tick(frame++, 0x50, 0x60, () -> 0, null, null, 0, 3, 0);
+        }
+        assertTrue(runtime.throwLiftedEntity(ThrownEntityMotion.ROM_DIRECTION_RIGHT));
+
+        runtime.tick(frame, 0, 0, () -> 0);
+
+        assertEquals(initialHealth, runtime.enemyHealth(1));
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
+    }
+
+    @Test
+    void sideViewPotMotionContinuesWhenLinkIsNonInteractive() {
+        RoomEntityRuntime runtime = sideViewPotRuntime();
+        assertTrue(runtime.beginLift(0, ThrownEntityMotion.ROM_DIRECTION_RIGHT));
+        int frame = 0;
+        while (runtime.liftedEntityState().carryState() != 0x01 && frame < 64) {
+            runtime.tick(frame++, 0x50, 0x60, () -> 0, null, null, 0, 3, 0);
+        }
+        assertTrue(runtime.throwLiftedEntity(ThrownEntityMotion.ROM_DIRECTION_RIGHT));
+        RoomEntity before = runtime.snapshot().slots().get(0);
+
+        runtime.tickWithProjectileEvents(frame, 0, 0, () -> 0, null,
+            EnemyProjectileCollision.LinkState.nonInteractive());
+
+        assertEquals((before.x() + 3) & 0xFF,
+            runtime.snapshot().slots().get(0).x());
+        assertEquals((before.y() - 1) & 0xFF,
+            runtime.snapshot().slots().get(0).y());
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
+    }
+
+    @Test
+    void sideViewPotMotionUsesTheExactReturnIfNonInteractiveGate() {
+        RoomEntityRuntime dialog = thrownSideViewPotRuntime();
+        dialog.setDialogActive(true);
+        RoomEntity dialogBefore = dialog.snapshot().slots().get(0);
+        dialog.tick(0, 0, 0, () -> 0);
+        assertEquals(dialogBefore.x(), dialog.snapshot().slots().get(0).x());
+
+        RoomEntityRuntime inventory = thrownSideViewPotRuntime();
+        inventory.setTalkState(true, 0, 0x80);
+        RoomEntity inventoryBefore = inventory.snapshot().slots().get(0);
+        inventory.tick(0, 0, 0, () -> 0);
+        assertEquals(inventoryBefore.x(), inventory.snapshot().slots().get(0).x());
+
+        RoomEntityRuntime gotItem = thrownSideViewPotRuntime();
+        gotItem.setWitchGotItemPresentationActiveForTest(true);
+        RoomEntity gotItemBefore = gotItem.snapshot().slots().get(0);
+        gotItem.tick(0, 0, 0, () -> 0);
+        assertEquals(gotItemBefore.x(), gotItem.snapshot().slots().get(0).x());
+
+        RoomEntityRuntime roomTransition = thrownSideViewPotRuntime();
+        roomTransition.setRoomTransitionStateForTest(true);
+        RoomEntity roomTransitionBefore = roomTransition.snapshot().slots().get(0);
+        roomTransition.tick(0, 0, 0, () -> 0);
+        assertEquals(roomTransitionBefore.x(),
+            roomTransition.snapshot().slots().get(0).x());
+
+        RoomEntityRuntime worldMap = thrownSideViewPotRuntime();
+        worldMap.setGameplayWorldForTest(false);
+        RoomEntity worldMapBefore = worldMap.snapshot().slots().get(0);
+        worldMap.tick(0, 0, 0, () -> 0);
+        assertEquals(worldMapBefore.x(), worldMap.snapshot().slots().get(0).x());
+
+        RoomEntityRuntime ocarina = thrownSideViewPotRuntime();
+        ocarina.setOcarinaPlaybackForTest(0x01, 0, 0);
+        RoomEntity ocarinaBefore = ocarina.snapshot().slots().get(0);
+        ocarina.tick(0, 0, 0, () -> 0);
+        assertEquals((ocarinaBefore.x() + 3) & 0xFF,
+            ocarina.snapshot().slots().get(0).x());
+
+        RoomEntityRuntime transition = thrownSideViewPotRuntime();
+        transition.setTransitionSequenceCounterForTest(0x03);
+        RoomEntity transitionBefore = transition.snapshot().slots().get(0);
+        transition.tick(0, 0, 0, () -> 0);
+        assertEquals(transitionBefore.x(), transition.snapshot().slots().get(0).x());
+
+        RoomEntityRuntime credits = thrownSideViewPotRuntime();
+        credits.setTransitionSequenceCounterForTest(0x03);
+        RoomEntity creditsBefore = credits.snapshot().slots().get(0);
+        credits.tick(0, 0, 0, () -> 0, true);
+        assertEquals((creditsBefore.x() + 3) & 0xFF,
+            credits.snapshot().slots().get(0).x());
+    }
+
+    private static RoomEntityRuntime thrownSideViewPotRuntime() {
+        RoomEntityRuntime runtime = sideViewPotRuntime();
+        assertTrue(runtime.beginLift(0, ThrownEntityMotion.ROM_DIRECTION_RIGHT));
+        int frame = 0;
+        while (runtime.liftedEntityState().carryState() != 0x01 && frame < 64) {
+            runtime.tick(frame++, 0x50, 0x60, () -> 0, null, null, 0, 3, 0);
+        }
+        assertTrue(runtime.throwLiftedEntity(ThrownEntityMotion.ROM_DIRECTION_RIGHT));
+        return runtime;
     }
 
     private static RoomEntityRuntime sideViewPotRuntime() {
@@ -146,6 +426,21 @@ final class RoomEntityLiftThrowRuntimeTest {
         slots.add(new RoomEntity(0, 0, 0xD6, 0x50, 0x60,
             EntityStatus.ACTIVE, definition, 0));
         for (int slot = 1; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
+            slots.add(RoomEntity.disabled(slot));
+        }
+        return RoomEntityRuntime.from(
+            new RoomEntitySnapshot(slots).withSideScrolling(true));
+    }
+
+    private static RoomEntityRuntime sideViewPotWithTargetRuntime() {
+        EntitySpriteDefinition potDefinition = definition(0xD6);
+        EntitySpriteDefinition targetDefinition = definition(0x18);
+        List<RoomEntity> slots = new ArrayList<>();
+        slots.add(new RoomEntity(0, 0, 0xD6, 0x50, 0x60,
+            EntityStatus.ACTIVE, potDefinition, 0));
+        slots.add(new RoomEntity(1, 1, 0x18, 0x50, 0x52,
+            EntityStatus.ACTIVE, targetDefinition, 0));
+        for (int slot = 2; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             slots.add(RoomEntity.disabled(slot));
         }
         return RoomEntityRuntime.from(
