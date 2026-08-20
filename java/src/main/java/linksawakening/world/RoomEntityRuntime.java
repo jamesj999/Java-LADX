@@ -370,8 +370,12 @@ public final class RoomEntityRuntime {
     private final GenieMotion genieMotion = new GenieMotion();
     private final int[] genieActiveState = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] geniePrivateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] geniePrivateState2 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] geniePrivateState3 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] geniePrivateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] geniePrivateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] geniePrivateCountdown2 = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] genieDirection = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] genieSpeedX = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] genieSpeedY = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] genieSpeedZ = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -381,6 +385,8 @@ public final class RoomEntityRuntime {
     private final boolean[] genieImpactRegisteredThisFrame =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
     private int genieControllerSlot = -1;
+    private int genieSharedBodySpeedX;
+    private int genieSharedBodySpeedY;
     private final GhiniMotion ghiniMotion = new GhiniMotion();
     private final HardHatMotion hardHatMotion = new HardHatMotion();
     private final PolsVoiceMotion polsVoiceMotion = new PolsVoiceMotion();
@@ -1794,6 +1800,14 @@ public final class RoomEntityRuntime {
             if (!freezeTarinTimers && !freezeThreeOfAKindTimers && !freezeHinoxTimers
                 && !freezeGenieTimers) {
                 decrementEnemyStatusCountdowns(entity.slot());
+                if (entity.type() == ENTITY_GENIE
+                    && geniePrivateCountdown1[entity.slot()] > 0) {
+                    geniePrivateCountdown1[entity.slot()]--;
+                }
+                if (entity.type() == ENTITY_GENIE
+                    && geniePrivateCountdown2[entity.slot()] > 0) {
+                    geniePrivateCountdown2[entity.slot()]--;
+                }
             }
             if (entity.sourceLoadOrder() == -1 && isDisabledFollower(entity.type())) {
                 clearEntity(entity.slot());
@@ -3715,6 +3729,42 @@ public final class RoomEntityRuntime {
                 if (geniePrivateState1[entity.slot()] == 2
                     && genieState0Interactive(creditsGameplay)) {
                     advanceGenieAppearance(entity);
+                    if (!slots[entity.slot()].loaded()) {
+                        continue;
+                    }
+                    updated = slots[entity.slot()];
+                }
+                if (geniePrivateState1[entity.slot()] == 3
+                    && genieState0Interactive(creditsGameplay)) {
+                    advanceGenieSideProjectile(entity, frameCounter);
+                    if (!slots[entity.slot()].loaded()) {
+                        continue;
+                    }
+                    updated = slots[entity.slot()];
+                }
+                if (geniePrivateState1[entity.slot()] == 4
+                    && genieState0Interactive(creditsGameplay)) {
+                    if (handlerLinkCollisionEnabled
+                        && RoomEntityCombatRules.overlapsLink(entity, linkEntityX, linkEntityY)) {
+                        requestLinkPush(entity, EntityLinkCollisionRules.STANDARD_PUSH);
+                    }
+                    advanceGenieFireball(entity, frameCounter);
+                    if (!slots[entity.slot()].loaded()) {
+                        continue;
+                    }
+                    updated = slots[entity.slot()];
+                }
+                if (geniePrivateState1[entity.slot()] == 1
+                    && genieState0Interactive(creditsGameplay)) {
+                    genieSharedBodySpeedX = genieSpeedX[entity.slot()] & 0xFF;
+                    genieSharedBodySpeedY = genieSpeedY[entity.slot()] & 0xFF;
+                    if (genieActiveState[entity.slot()] != 5
+                        && handlerLinkCollisionEnabled
+                        && RoomEntityCombatRules.overlapsLink(entity,
+                            linkEntityX, linkEntityY)) {
+                        requestLinkPush(entity, EntityLinkCollisionRules.STANDARD_PUSH);
+                    }
+                    advanceGenieBody(entity, frameCounter, linkEntityX, linkEntityY);
                     if (!slots[entity.slot()].loaded()) {
                         continue;
                     }
@@ -6253,8 +6303,12 @@ public final class RoomEntityRuntime {
         }
         genieActiveState[slot] = 0;
         geniePrivateState1[slot] = 0;
+        geniePrivateState2[slot] = 0;
         geniePrivateState3[slot] = 0;
         geniePrivateState4[slot] = 0;
+        geniePrivateCountdown1[slot] = 0;
+        geniePrivateCountdown2[slot] = 0;
+        genieDirection[slot] = 0;
         genieSpeedX[slot] = 0;
         genieSpeedY[slot] = 0;
         genieSpeedZ[slot] = 0;
@@ -7170,7 +7224,7 @@ public final class RoomEntityRuntime {
     private RoomEntity advanceGenieJarAttract(RoomEntity jar) {
         int slot = jar.slot();
         if (geniePrivateState3[slot] == 0) {
-            EnemyRecoilMotion.Vector towardCenter = EnemyRecoilMotion.vectorTowardsLink(
+            EnemyRecoilMotion.Vector towardCenter = EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
                 jar.x(), jar.y(), jar.z(), 0x50, 0x48, 0x08);
             genieSpeedX[slot] = towardCenter.x() & 0xFF;
             genieSpeedY[slot] = towardCenter.y() & 0xFF;
@@ -7210,6 +7264,190 @@ public final class RoomEntityRuntime {
         }
     }
 
+    private void advanceGenieBody(RoomEntity body, int frameCounter,
+                                  int linkEntityX, int linkEntityY) {
+        int slot = body.slot();
+        if (genieActiveState[slot] == 0) {
+            if (enemyTransitionCountdown[slot] != 0) {
+                return;
+            }
+            genieActiveState[slot] = 1;
+            geniePrivateCountdown1[slot] = 0xFF;
+            boolean jarExists = genieControllerSlot >= 0
+                && genieControllerSlot < slots.length
+                && slots[genieControllerSlot].loaded()
+                && slots[genieControllerSlot].type() == ENTITY_GENIE;
+            if (jarExists) {
+                pendingDialogRequests.add(new DialogRequest(0, 0x52));
+                return;
+            }
+            genieActiveState[slot] = 4;
+            enemyHealth[slot] = 0x08;
+            pendingDialogRequests.add(new DialogRequest(0, 0x53));
+            return;
+        }
+        if (genieActiveState[slot] == 2) {
+            if (genieControllerSlot < 0 || genieControllerSlot >= slots.length
+                || !slots[genieControllerSlot].loaded()) {
+                return;
+            }
+            RoomEntity jar = slots[genieControllerSlot];
+            int targetY = (jar.y() - 0x20) & 0xFF;
+            EnemyRecoilMotion.Vector towardJar = EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
+                body.x(), body.y(), body.z(), jar.x(), targetY, 0x10);
+            genieSpeedX[slot] = towardJar.x() & 0xFF;
+            genieSpeedY[slot] = towardJar.y() & 0xFF;
+            int x = addFallingSpeedToPosition(
+                body.x(), genieSpeedX[slot], genieSpeedXAccumulator, slot);
+            int y = addFallingSpeedToPosition(
+                body.y(), genieSpeedY[slot], genieSpeedYAccumulator, slot);
+            RoomEntity moved = withPositionAndVariant(body, x, y, body.spriteVariant());
+            slots[slot] = moved;
+            int visualY = (moved.y() - moved.z()) & 0xFF;
+            if ((((moved.x() - jar.x() + 3) & 0xFF) < 6)
+                && (((visualY - targetY + 3) & 0xFF) < 6)) {
+                enemyTransitionCountdown[slot] = 0x10;
+                genieActiveState[slot] = 3;
+            }
+            return;
+        }
+        if (genieActiveState[slot] == 3) {
+            int countdown = enemyTransitionCountdown[slot];
+            if (countdown == 0) {
+                disableEntityWithoutPersistence(slot);
+                return;
+            }
+            if (countdown == 0x04) {
+                spawnGenieEntity(body.x(), body.y(), 2, 0xC7,
+                    GenieMotion.INITIAL_HEALTH, GenieMotion.INITIAL_PHYSICS_FLAGS,
+                    GenieMotion.INITIAL_HITBOX_FLAGS);
+                pendingEntityEvents.add(new EntityCombatEvent(
+                    slot, ENTITY_GENIE, 0, false,
+                    EntityCombatEvent.SoundChannel.JINGLE, 0x1F));
+            }
+            return;
+        }
+        if (genieActiveState[slot] != 1) {
+            return;
+        }
+        RoomEntity moved = withPositionAndVariant(body,
+            addFallingSpeedToPosition(body.x(), genieSpeedX[slot],
+                genieSpeedXAccumulator, slot),
+            addFallingSpeedToPosition(body.y(), genieSpeedY[slot],
+                genieSpeedYAccumulator, slot),
+            (frameCounter >>> 4) & 1);
+        slots[slot] = moved;
+
+        int direction = genieDirection[slot] & 1;
+        if ((frameCounter & 0x07) == 0) {
+            int target = direction == 0 ? 0x08 : 0xF8;
+            if (genieSpeedX[slot] != target) {
+                genieSpeedX[slot] = (genieSpeedX[slot] + (direction == 0 ? 1 : -1)) & 0xFF;
+            }
+        }
+        int boundary = direction == 0 ? 0x60 : 0x40;
+        if (moved.x() == boundary) {
+            genieDirection[slot] ^= 1;
+        }
+        if ((frameCounter & 1) == 0) {
+            int verticalDirection = geniePrivateState2[slot] & 1;
+            int target = verticalDirection == 0 ? 0x08 : 0xF8;
+            genieSpeedY[slot] = (genieSpeedY[slot]
+                + (verticalDirection == 0 ? 1 : -1)) & 0xFF;
+            if (genieSpeedY[slot] == target) {
+                geniePrivateState2[slot] ^= 1;
+            }
+        }
+
+        if (enemyTransitionCountdown[slot] == 0) {
+            int inertia = entityInertia[slot] & 0xFF;
+            if (inertia >= 0x08) {
+                genieActiveState[slot] = 2;
+                enemyTransitionCountdown[slot] = 0x30;
+                return;
+            }
+            int[] delays = {0x10, 0x14, 0x18, 0x20, 0x28, 0x30, 0x38, 0x40};
+            enemyTransitionCountdown[slot] = delays[inertia];
+            int projectileSlot = spawnGenieEntity(moved.x() - 0x0C, moved.y() - 0x14,
+                3, 0, GenieMotion.INITIAL_HEALTH, 0x42,
+                GenieMotion.INITIAL_HITBOX_FLAGS);
+            if (projectileSlot >= 0) {
+                genieSpeedZ[projectileSlot] = 0x20;
+                genieSpeedX[projectileSlot] = 0x0C;
+            }
+        }
+
+        if (geniePrivateCountdown1[slot] == 0) {
+            geniePrivateCountdown1[slot] = 0x30;
+            int xOffset = (entityInertia[slot] & 1) == 0 ? -0x0C : 0x0C;
+            int fireballSlot = spawnGenieEntity(moved.x() + xOffset, moved.y(),
+                4, 0, GenieMotion.INITIAL_HEALTH, 0x12,
+                GenieMotion.INITIAL_HITBOX_FLAGS);
+            if (fireballSlot >= 0) {
+                entityInertia[slot] = (entityInertia[slot] + 1) & 0xFF;
+                genieSpeedZ[fireballSlot] = 0x24;
+                EnemyRecoilMotion.Vector towardLink = EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
+                    moved.x() + xOffset, moved.y(), 0, linkEntityX, linkEntityY, 0x1F);
+                genieSpeedX[fireballSlot] = towardLink.x() & 0xFF;
+                genieSpeedY[fireballSlot] = towardLink.y() & 0xFF;
+                geniePrivateCountdown2[slot] = 0x10;
+                pendingEntityEvents.add(new EntityCombatEvent(
+                    slot, ENTITY_GENIE, 0, false,
+                    EntityCombatEvent.SoundChannel.NOISE, 0x28));
+            }
+        }
+        if (geniePrivateCountdown2[slot] != 0) {
+            slots[slot] = withPositionAndVariant(slots[slot], slots[slot].x(),
+                slots[slot].y(), 2 + (entityInertia[slot] & 1));
+        }
+    }
+
+    private void advanceGenieSideProjectile(RoomEntity projectile, int frameCounter) {
+        int slot = projectile.slot();
+        int combinedSpeedX = (genieSpeedX[slot] + genieSharedBodySpeedX) & 0xFF;
+        int combinedSpeedY = (genieSpeedY[slot] + genieSharedBodySpeedY) & 0xFF;
+        int x = addFallingSpeedToPosition(
+            projectile.x(), combinedSpeedX, genieSpeedXAccumulator, slot);
+        int y = addFallingSpeedToPosition(
+            projectile.y(), combinedSpeedY, genieSpeedYAccumulator, slot);
+        RoomEntity moved = withPositionAndVariant(projectile, x, y,
+            (frameCounter >>> 3) & 1);
+        if (genieActiveState[slot] == 0) {
+            int z = addFallingSpeedToPosition(
+                moved.z(), genieSpeedZ[slot], genieSpeedZAccumulator, slot);
+            genieSpeedZ[slot] = (genieSpeedZ[slot] - 2) & 0xFF;
+            if ((z & 0x80) != 0) {
+                z = 0;
+                genieActiveState[slot] = 1;
+                enemyTransitionCountdown[slot] = 0x08;
+                genieSpeedX[slot] = 0xE0;
+            }
+            slots[slot] = withZ(moved, z);
+            return;
+        }
+        slots[slot] = moved;
+        if (enemyTransitionCountdown[slot] == 0) {
+            disableEntityWithoutPersistence(slot);
+        }
+    }
+
+    private void advanceGenieFireball(RoomEntity fireball, int frameCounter) {
+        int slot = fireball.slot();
+        int x = addFallingSpeedToPosition(
+            fireball.x(), genieSpeedX[slot], genieSpeedXAccumulator, slot);
+        int y = addFallingSpeedToPosition(
+            fireball.y(), genieSpeedY[slot], genieSpeedYAccumulator, slot);
+        int z = addFallingSpeedToPosition(
+            fireball.z(), genieSpeedZ[slot], genieSpeedZAccumulator, slot);
+        genieSpeedZ[slot] = (genieSpeedZ[slot] - 3) & 0xFF;
+        if ((z & 0x80) != 0) {
+            disableEntityWithoutPersistence(slot);
+            return;
+        }
+        slots[slot] = withZ(withPositionAndVariant(fireball, x, y,
+            (frameCounter >>> 3) & 1), z);
+    }
+
     private int spawnGenieBody(GenieMotion.BodySpawnRequest request) {
         return spawnGenieEntity(request.x(), request.y(), request.privateState1(),
             request.transitionCountdown(), request.health(),
@@ -7230,8 +7468,12 @@ public final class RoomEntityRuntime {
             0, 0, 0);
         genieActiveState[freeSlot] = 0;
         geniePrivateState1[freeSlot] = privateState1 & 0xFF;
+        geniePrivateState2[freeSlot] = 0;
         geniePrivateState3[freeSlot] = 0;
         geniePrivateState4[freeSlot] = 0;
+        geniePrivateCountdown1[freeSlot] = 0;
+        geniePrivateCountdown2[freeSlot] = 0;
+        genieDirection[freeSlot] = 0;
         genieSpeedX[freeSlot] = 0;
         genieSpeedY[freeSlot] = 0;
         genieSpeedZ[freeSlot] = 0;
@@ -7469,6 +7711,11 @@ public final class RoomEntityRuntime {
     int entityInertia(int slot) {
         validateEntitySlot(slot);
         return entityInertia[slot];
+    }
+
+    void setEntityInertiaForTest(int slot, int value) {
+        validateCountdownTestValue(slot, value);
+        entityInertia[slot] = value;
     }
 
     int pokeyPrivateState1(int slot) {
@@ -11474,6 +11721,31 @@ public final class RoomEntityRuntime {
         return geniePrivateState3[slot] & 0xFF;
     }
 
+    int geniePrivateCountdown1ForTest(int slot) {
+        validateEntitySlot(slot);
+        return geniePrivateCountdown1[slot] & 0xFF;
+    }
+
+    void setGeniePrivateCountdown1ForTest(int slot, int value) {
+        validateCountdownTestValue(slot, value);
+        geniePrivateCountdown1[slot] = value;
+    }
+
+    int geniePrivateCountdown2ForTest(int slot) {
+        validateEntitySlot(slot);
+        return geniePrivateCountdown2[slot] & 0xFF;
+    }
+
+    int genieSpeedXForTest(int slot) {
+        validateEntitySlot(slot);
+        return genieSpeedX[slot] & 0xFF;
+    }
+
+    int genieSpeedZForTest(int slot) {
+        validateEntitySlot(slot);
+        return genieSpeedZ[slot] & 0xFF;
+    }
+
     void setGeniePrivateState4ForTest(int slot, int value) {
         validateCountdownTestValue(slot, value);
         geniePrivateState4[slot] = value;
@@ -12494,8 +12766,12 @@ public final class RoomEntityRuntime {
         }
         genieActiveState[slot] = 0;
         geniePrivateState1[slot] = 0;
+        geniePrivateState2[slot] = 0;
         geniePrivateState3[slot] = 0;
         geniePrivateState4[slot] = 0;
+        geniePrivateCountdown1[slot] = 0;
+        geniePrivateCountdown2[slot] = 0;
+        genieDirection[slot] = 0;
         genieSpeedX[slot] = 0;
         genieSpeedY[slot] = 0;
         genieSpeedZ[slot] = 0;

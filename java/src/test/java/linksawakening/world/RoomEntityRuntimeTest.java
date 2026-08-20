@@ -2909,6 +2909,179 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void firstGenieBodyOpensJarCycleDialogWhenTheOriginalJarStillExists() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x5C, 0x50, 0x48, EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0x5C), 0),
+            new RoomEntity(1, 1, 0x5C, 0x50, 0x22, EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0x5C), 0)), true);
+        runtime.setGeniePrivateState1ForTest(1, 1);
+        runtime.setTransitionCountdownForTest(1, 2);
+
+        runtime.tick(0, 0x50, 0x70, () -> 0);
+        runtime.tick(1, 0x50, 0x70, () -> 0);
+
+        assertEquals(1, runtime.genieActiveStateForTest(1));
+        assertEquals(0xFF, runtime.geniePrivateCountdown1ForTest(1));
+        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, 0x52)),
+            runtime.consumePendingDialogRequests());
+    }
+
+    @Test
+    void firstGenieBodyEntersFinalFightWhenTheJarNoLongerExists() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x5C, 0x50, 0x22, EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0x5C), 0)), true);
+        runtime.setGeniePrivateState1ForTest(0, 1);
+        runtime.setTransitionCountdownForTest(0, 1);
+
+        runtime.tick(0, 0x50, 0x70, () -> 0);
+
+        assertEquals(4, runtime.genieActiveStateForTest(0));
+        assertEquals(0x08, runtime.enemyHealth(0));
+        assertEquals(0xFF, runtime.geniePrivateCountdown1ForTest(0));
+        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, 0x53)),
+            runtime.consumePendingDialogRequests());
+    }
+
+    @Test
+    void genieBodyStateOneSpawnsTheSourceSideProjectileAtItsNextDelay() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x5C, 0x50, 0x40, EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0x5C), 0)), true);
+        runtime.setGeniePrivateState1ForTest(0, 1);
+        runtime.setGenieActiveStateForTest(0, 1);
+        runtime.setTransitionCountdownForTest(0, 1);
+        runtime.setGeniePrivateCountdown1ForTest(0, 0xFF);
+
+        runtime.tick(0, 0x30, 0x70, () -> 0);
+
+        assertEquals(0x10, runtime.transitionCountdown(0));
+        RoomEntity projectile = runtime.snapshot().loadedEntities().stream()
+            .filter(entity -> entity.slot() != 0 && entity.type() == 0x5C)
+            .findFirst().orElseThrow();
+        assertEquals(3, runtime.geniePrivateState1ForTest(projectile.slot()));
+        assertEquals(0x44, projectile.x());
+        assertEquals(0x2C, projectile.y());
+        assertEquals(0x20, runtime.genieSpeedZForTest(projectile.slot()));
+        assertEquals(0x0C, runtime.genieSpeedXForTest(projectile.slot()));
+        assertEquals(0x42, runtime.physicsFlags(projectile.slot()));
+
+        runtime.clearEntity(0);
+        for (int frame = 1; frame <= 80; frame++) {
+            runtime.tick(frame, 0x30, 0x70, () -> 0);
+        }
+        assertEquals(EntityStatus.DISABLED,
+            runtime.snapshot().slots().get(projectile.slot()).status());
+    }
+
+    @Test
+    void genieBodyPrivateCountdownSpawnsAimedFireballAndAdvancesInertia() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x5C, 0x50, 0x40, EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0x5C), 0)), true);
+        runtime.setGeniePrivateState1ForTest(0, 1);
+        runtime.setGenieActiveStateForTest(0, 1);
+        runtime.setTransitionCountdownForTest(0, 0x20);
+        runtime.setGeniePrivateCountdown1ForTest(0, 1);
+
+        runtime.tick(0, 0x30, 0x70, () -> 0);
+
+        assertEquals(1, runtime.entityInertia(0));
+        assertEquals(0x30, runtime.geniePrivateCountdown1ForTest(0));
+        assertEquals(0x10, runtime.geniePrivateCountdown2ForTest(0));
+        RoomEntity fireball = runtime.snapshot().loadedEntities().stream()
+            .filter(entity -> entity.slot() != 0 && entity.type() == 0x5C)
+            .findFirst().orElseThrow();
+        assertEquals(4, runtime.geniePrivateState1ForTest(fireball.slot()));
+        assertEquals(0x44, fireball.x());
+        assertEquals(0x40, fireball.y());
+        assertEquals(0x24, runtime.genieSpeedZForTest(fireball.slot()));
+        assertEquals(0x12, runtime.physicsFlags(fireball.slot()));
+        assertTrue(runtime.consumePendingEntityEvents().stream().anyMatch(event ->
+            event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE
+                && event.soundId() == 0x28));
+
+        runtime.clearEntity(0);
+        for (int frame = 1; frame <= 80; frame++) {
+            runtime.tick(frame, 0x30, 0x70, () -> 0);
+        }
+        assertEquals(EntityStatus.DISABLED,
+            runtime.snapshot().slots().get(fireball.slot()).status());
+    }
+
+    @Test
+    void genieFireballRunsItsSourceLinkCollisionBeforeMovement() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x5C, 0x50, 0x50, EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0x5C), 0)), true);
+        runtime.setGeniePrivateState1ForTest(0, 4);
+
+        runtime.tick(0, 0x50, 0x50, () -> 0);
+
+        assertFalse(runtime.consumePendingLinkFinalPositionRequests().isEmpty());
+    }
+
+    @Test
+    void genieBodyFinishesEightAttackCyclesAndStartsReturningToTheJar() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x5C, 0x50, 0x40, EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0x5C), 0)), true);
+        runtime.setGeniePrivateState1ForTest(0, 1);
+        runtime.setGenieActiveStateForTest(0, 1);
+        runtime.setTransitionCountdownForTest(0, 1);
+        runtime.setGeniePrivateCountdown1ForTest(0, 0x20);
+        runtime.setEntityInertiaForTest(0, 8);
+
+        runtime.tick(0, 0x30, 0x70, () -> 0);
+
+        assertEquals(2, runtime.genieActiveStateForTest(0));
+        assertEquals(0x30, runtime.transitionCountdown(0));
+        assertEquals(1, runtime.snapshot().loadedEntities().size());
+    }
+
+    @Test
+    void returningGenieBodyHomesToTheJarAndStartsItsDisappearDelay() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x5C, 0x50, 0x48, EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0x5C), 0),
+            new RoomEntity(1, 1, 0x5C, 0x50, 0x28, EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0x5C), 0)), true);
+        runtime.setGeniePrivateState1ForTest(1, 1);
+        runtime.setTransitionCountdownForTest(1, 0x20);
+        runtime.tick(0, 0x30, 0x70, () -> 0);
+        runtime.setGenieActiveStateForTest(1, 2);
+
+        runtime.tick(1, 0x30, 0x70, () -> 0);
+
+        assertEquals(3, runtime.genieActiveStateForTest(1));
+        assertEquals(0x10, runtime.transitionCountdown(1));
+    }
+
+    @Test
+    void disappearingGenieBodySpawnsTheHighBitJarControllerAtCountdownFour() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x5C, 0x50, 0x28, EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0x5C), 0)), true);
+        runtime.setGeniePrivateState1ForTest(0, 1);
+        runtime.setGenieActiveStateForTest(0, 3);
+        runtime.setTransitionCountdownForTest(0, 5);
+
+        runtime.tick(0, 0x30, 0x70, () -> 0);
+
+        RoomEntity controller = runtime.snapshot().loadedEntities().stream()
+            .filter(entity -> entity.slot() != 0 && entity.type() == 0x5C)
+            .findFirst().orElseThrow();
+        assertEquals(2, runtime.geniePrivateState1ForTest(controller.slot()));
+        assertEquals(0xC7, runtime.transitionCountdown(controller.slot()));
+        assertEquals(0x50, controller.x());
+        assertEquals(0x28, controller.y());
+        assertTrue(runtime.consumePendingEntityEvents().stream().anyMatch(event ->
+            event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE
+                && event.soundId() == 0x1F));
+    }
+
+    @Test
     void genieDisappearanceControllerReactivatesTheOriginalJarAtCountdownEightZero() {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, 0x5C, 0x50, 0x48, EntityStatus.ACTIVE,
