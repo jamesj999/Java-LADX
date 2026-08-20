@@ -1638,6 +1638,8 @@ final class RoomSessionTest {
             session.tickTailCaveKeyholeSequence();
         }
         assertEquals(0xE3, session.activeRoom().roomObjectsArea()[gateIndex]);
+        assertEquals(0x82, session.activeRoom().gbcOverlay()[0x10]);
+        assertEquals(0x82, session.activeRoom().renderValues()[gateIndex]);
         assertEquals(List.of(GameplaySoundEvent.DOOR_UNLOCKED,
             GameplaySoundEvent.OPEN_KEY_CAVERN,
             GameplaySoundEvent.DUNGEON_OPENED), sounds);
@@ -1650,8 +1652,8 @@ final class RoomSessionTest {
 
         session.loadInitialOverworld(0xD3);
         assertEquals(0xE3, session.activeRoom().roomObjectsArea()[gateIndex]);
-        assertEquals(0xE3, session.activeRoom().gbcOverlay()[0x10]);
-        assertEquals(0xE3, session.activeRoom().renderValues()[gateIndex]);
+        assertEquals(0x82, session.activeRoom().gbcOverlay()[0x10]);
+        assertEquals(0x82, session.activeRoom().renderValues()[gateIndex]);
         assertArrayEquals(openedGateTiles, new int[] {
             session.activeRoom().tileIds()[gateTopLeft],
             session.activeRoom().tileIds()[gateTopLeft + 1],
@@ -1664,6 +1666,50 @@ final class RoomSessionTest {
             .orElseThrow();
         assertEquals(0x00, tailCaveWarp.destMap());
         assertEquals(0x17, tailCaveWarp.destRoom());
+    }
+
+    @Test
+    void keyCavernKeyholeRequiresTheSlimeKeyAndRunsTheSharedRumbleSequence() {
+        RoomSession session = newSession();
+        List<GameplaySoundEvent> sounds = new ArrayList<>();
+        session.setColorShellSoundSink(sounds::add);
+        session.loadInitialOverworld(0xB5);
+        int gateIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x16;
+
+        assertEquals(0xC2, session.activeRoom().roomObjectsArea()[gateIndex]);
+        assertTrue(session.tryUnlockKeyCavernKeyhole(
+            0x5A, 0x4A, Link.DIRECTION_UP, 0x01, 5));
+        assertEquals(0x231,
+            session.consumeEntityDialogRequests().getFirst().globalDialogId());
+        assertEquals(0, session.overworldRoomStatusForTest(0xB5) & 0x10);
+
+        assertTrue(session.tryUnlockKeyCavernKeyhole(
+            0x5A, 0x4A, Link.DIRECTION_UP, 0x01, 6));
+        assertEquals(0x10, session.overworldRoomStatusForTest(0xB5) & 0x10);
+        assertEquals(0xDF, session.tailCaveKeyholeCountdownForTest());
+        int gateTopLeft = 2 * RoomConstants.ROOM_TILE_WIDTH + 12;
+        while (session.tailCaveKeyholeCountdownForTest() > 0xD8) {
+            session.tickTailCaveKeyholeSequence();
+        }
+        assertEquals(0x0C, session.activeRoom().tileIds()[gateTopLeft]);
+        while (session.tailCaveKeyholeCountdownForTest() > 0xC8) {
+            session.tickTailCaveKeyholeSequence();
+        }
+        assertEquals(0x0C, session.activeRoom().tileIds()[gateTopLeft]);
+        while (session.tailCaveKeyholeSequenceActive()) {
+            session.tickTailCaveKeyholeSequence();
+        }
+
+        assertEquals(0xE3, session.activeRoom().roomObjectsArea()[gateIndex]);
+        assertEquals(List.of(GameplaySoundEvent.DOOR_UNLOCKED,
+            GameplaySoundEvent.OPEN_KEY_CAVERN,
+            GameplaySoundEvent.DUNGEON_OPENED), sounds);
+        Warp entrance = session.activeRoom().warps().stream()
+            .filter(warp -> warp.destMap() == 0x02 && warp.destRoom() == 0x52)
+            .findFirst().orElseThrow();
+        assertEquals(0x16, entrance.tileLocation());
+        assertEquals(0x02, entrance.destMap());
+        assertEquals(0x52, entrance.destRoom());
     }
 
     @Test

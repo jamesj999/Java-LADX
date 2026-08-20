@@ -906,6 +906,9 @@ public class Main {
                     roomSession.tryUnlockTailCaveKeyhole(
                         link.pixelX(), link.pixelY(), link.direction(),
                         link.romCollisionType(), playerState.tailKeyCount() != 0);
+                    roomSession.tryUnlockKeyCavernKeyhole(
+                        link.pixelX(), link.pixelY(), link.direction(),
+                        link.romCollisionType(), playerState.goldenLeavesCount());
                     roomSession.tryUnlockIndoorKeyDoor(
                         link.pixelX(), link.pixelY(), link.direction(),
                         link.romCollisionType());

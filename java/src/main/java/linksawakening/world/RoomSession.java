@@ -72,12 +72,14 @@ public final class RoomSession {
     private static final int ROOM_STATUS_DISCOVERED = 0x40;
     private static final int ROOM_OW_TAIL_KEY_CHEST = 0x41;
     private static final int ROOM_OW_TAIL_CAVE_ENTRANCE = 0xD3;
+    private static final int ROOM_OW_KEY_CAVERN_ENTRANCE = 0xB5;
     private static final int ROOM_OW_MYSTERIOUS_WOODS_LOST = 0x63;
     private static final int ENTITY_TARIN = TarinRaccoonMotion.ENTITY_TYPE;
     private static final int ENTITY_OWL_EVENT = 0x41;
     private static final int TAIL_CAVE_GATE_LOCATION = 0x16;
     private static final int KEYHOLE_DIALOG_TABLE = 2;
     private static final int TAIL_KEYHOLE_DIALOG_ID = 0x30;
+    private static final int SLIME_KEYHOLE_DIALOG_ID = 0x31;
     private static final int LINK_COLLISION_TYPE_UP = 0x01;
     private static final int TAIL_CAVE_RUMBLE_INITIAL_COUNTDOWN = 0xDF;
     private static final int TAIL_CAVE_RUMBLE_GATE_FRAME = 0x08;
@@ -319,6 +321,7 @@ public final class RoomSession {
     private boolean pushedBlocksTriggerEffectPending;
     private boolean worldLinkMotionBlockPending;
     private int tailCaveKeyholeCountdown;
+    private int keyholeRumbleSourceX;
     private boolean tailCaveFinalMotionBlockPending;
     private int nextWorldMusicTrackCountdown;
     private int tailCaveResumeMusicTrack = 0x05;
@@ -2475,6 +2478,7 @@ public final class RoomSession {
         pushedBlocksTriggerEffectPending = false;
         worldLinkMotionBlockPending = false;
         tailCaveKeyholeCountdown = 0;
+        keyholeRumbleSourceX = 0;
         tailCaveFinalMotionBlockPending = false;
         nextWorldMusicTrackCountdown = 0;
         pendingRoomMusicTrack = -1;
@@ -3161,13 +3165,30 @@ public final class RoomSession {
     public boolean tryUnlockTailCaveKeyhole(int linkPixelX, int linkPixelY,
                                             int linkDirection, int collisionType,
                                             boolean hasTailKey) {
+        return tryUnlockOverworldDungeonKeyhole(
+            linkPixelX, linkPixelY, linkDirection, collisionType,
+            ROOM_OW_TAIL_CAVE_ENTRANCE, hasTailKey, TAIL_KEYHOLE_DIALOG_ID);
+    }
+
+    /** Mirrors bank 2's room-$B5 Slime Key branch of the shared keyhole handler. */
+    public boolean tryUnlockKeyCavernKeyhole(int linkPixelX, int linkPixelY,
+                                              int linkDirection, int collisionType,
+                                              int goldenLeavesCount) {
+        return tryUnlockOverworldDungeonKeyhole(
+            linkPixelX, linkPixelY, linkDirection, collisionType,
+            ROOM_OW_KEY_CAVERN_ENTRANCE, (goldenLeavesCount & 0xFF) == 0x06,
+            SLIME_KEYHOLE_DIALOG_ID);
+    }
+
+    private boolean tryUnlockOverworldDungeonKeyhole(
+            int linkPixelX, int linkPixelY, int linkDirection, int collisionType,
+            int roomId, boolean hasKey, int dialogLowId) {
         if (activeRoom == null
             || activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD
-            || activeRoom.roomId() != ROOM_OW_TAIL_CAVE_ENTRANCE
+            || activeRoom.roomId() != roomId
             || linkDirection != Link.DIRECTION_UP
             || (collisionType & LINK_COLLISION_TYPE_UP) == 0
-            || (overworldRoomStatus[ROOM_OW_TAIL_CAVE_ENTRANCE]
-                & ROOM_STATUS_EVENT_1) != 0) {
+            || (overworldRoomStatus[roomId] & ROOM_STATUS_EVENT_1) != 0) {
             return false;
         }
 
@@ -3179,14 +3200,15 @@ public final class RoomSession {
         if (!leftProbeIsKeyhole && !rightProbeIsKeyhole) {
             return false;
         }
-        if (!hasTailKey) {
+        if (!hasKey) {
             pendingRoomDialogRequests.add(new RoomEntityRuntime.DialogRequest(
-                KEYHOLE_DIALOG_TABLE, TAIL_KEYHOLE_DIALOG_ID));
+                KEYHOLE_DIALOG_TABLE, dialogLowId));
             return true;
         }
 
-        overworldRoomStatus[ROOM_OW_TAIL_CAVE_ENTRANCE] |= (byte) ROOM_STATUS_EVENT_1;
+        overworldRoomStatus[roomId] |= (byte) ROOM_STATUS_EVENT_1;
         tailCaveKeyholeCountdown = TAIL_CAVE_RUMBLE_INITIAL_COUNTDOWN;
+        keyholeRumbleSourceX = linkPixelX & 0xFF;
         tailCaveResumeMusicTrack = entityDefaultMusicTrack;
         pendingRoomMusicTrack = 0x00;
         return true;
@@ -3215,6 +3237,13 @@ public final class RoomSession {
             if (activeRoom != null
                 && activeRoom.roomObjectsArea()[gateIndex] == OBJECT_CLOSED_GATE) {
                 writeBombPuzzleObject(TAIL_CAVE_GATE_LOCATION, OBJECT_CAVE_DOOR);
+                int overlayIndex = 0x10;
+                activeRoom.gbcOverlay()[overlayIndex] = 0x82;
+                activeRoom.renderValues()[gateIndex] = 0x82;
+                overworldBushInteraction.refreshRoomObjectCell(
+                    activeRoom.roomId(), TAIL_CAVE_GATE_LOCATION,
+                    activeRoom.roomObjectsArea(), activeRoom.renderValues(),
+                    activeRoom.gbcOverlay(), activeRoom.tileIds(), activeRoom.tileAttrs());
                 refreshOverworldCollisionAfterObjectMutation();
             }
             colorShellSoundSink.play(GameplaySoundEvent.DUNGEON_OPENED);
@@ -3244,10 +3273,12 @@ public final class RoomSession {
     }
 
     private void writeTailCaveGateAnimationFrame(int countdown) {
-        if (activeRoom == null || activeRoom.roomId() != ROOM_OW_TAIL_CAVE_ENTRANCE) {
+        if (activeRoom == null
+            || activeRoom.roomId() != ROOM_OW_TAIL_CAVE_ENTRANCE
+                && activeRoom.roomId() != ROOM_OW_KEY_CAVERN_ENTRANCE) {
             return;
         }
-        int frameIndex = (countdown >>> 3) & 0x02;
+        int frameIndex = (keyholeRumbleSourceX >>> 3) & 0x02;
         int topTile = frameIndex == 0 ? 0x7E : 0x0C;
         int bottomTile = 0x1F;
         int tileX = (TAIL_CAVE_GATE_LOCATION & 0x0F) * 2;
