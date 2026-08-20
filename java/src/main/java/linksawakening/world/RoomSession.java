@@ -3486,6 +3486,8 @@ public final class RoomSession {
             pendingInstrumentTransition = true;
             if (completion.mapId() == 0x00) {
                 bowWowState = 0x80;
+            } else if (completion.mapId() == 0x01) {
+                tarinFlag = 0x02;
             }
         }
     }

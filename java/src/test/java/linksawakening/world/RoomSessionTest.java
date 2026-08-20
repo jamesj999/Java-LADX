@@ -1400,6 +1400,100 @@ final class RoomSessionTest {
     }
 
     @Test
+    void bottleGrottoBossClearOpensTheInstrumentRoomAndAwardsTheConchHorn() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x01, 0x2B);
+        assertEquals(0x21, session.activeRoomEventForTest());
+        assertNotEquals(0, session.activeRoom().shutterDoorMask());
+
+        List<RoomEntity> emptySlots = new ArrayList<>();
+        for (int slot = 0; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
+            emptySlots.add(RoomEntity.disabled(slot));
+        }
+        session.replaceEntityRuntimeForTest(
+            RoomEntityRuntime.from(new RoomEntitySnapshot(emptySlots), true));
+        session.tickEntities(0, 0x50, 0x50);
+
+        assertEquals(0, session.activeRoomEventForTest());
+        assertEquals(0, session.activeRoom().shutterDoorMask());
+
+        session.loadIndoor(0x01, 0x2A);
+        assertEquals(0x21, session.activeRoomEventForTest());
+        RoomEntity instrument = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type()
+                == EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS)
+            .findFirst().orElseThrow();
+        Warp exit = session.activeRoom().firstWarp();
+        assertEquals(Warp.CATEGORY_OVERWORLD, exit.category());
+        assertEquals(0x00, exit.destMap());
+        assertEquals(0x24, exit.destRoom());
+        assertEquals(0x38, exit.destX());
+        assertEquals(0x22, exit.destY());
+
+        session.tickEntities(1, instrument.x(), instrument.y());
+        assertNotNull(session.collectEntityIfNeeded(
+            (instrument.slot() ^ 1) & 1, instrument.x(), instrument.y(), false, true));
+        assertEquals(0x1B, session.consumePendingMusicTrack());
+        for (int frame = 2; frame <= 88; frame++) {
+            session.tickEntities(frame, 0x50, 0x60);
+        }
+        session.tickEntities(89, 0x50, 0x60);
+
+        assertTrue(session.hasDungeonInstrumentForTest(0x01));
+        assertEquals(0x10, session.indoorRoomStatusForTest(0x01, 0x2A) & 0x10);
+        assertEquals(0x101,
+            session.consumeEntityDialogRequests().getFirst().globalDialogId());
+        session.tickEntities(90, 0x50, 0x60);
+        assertEquals(0x28, session.consumePendingMusicTrack());
+
+        Warp completedExit = null;
+        for (int frame = 91; frame <= 900 && completedExit == null; frame++) {
+            session.tickEntities(frame, 0x50, 0x60);
+            completedExit = session.consumeInstrumentTransitionRequest();
+        }
+        assertEquals(exit, completedExit);
+        assertEquals(0x02, session.tarinFlag());
+    }
+
+    @Test
+    void bottleGrottoGenieDeathHeartPickupPersistsBossRoomCompletion() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x01, 0x2B);
+        List<RoomEntity> dyingBossSlots = new ArrayList<>();
+        dyingBossSlots.add(new RoomEntity(0, 0, 0x5C, 0x50, 0x40,
+            EntityStatus.DYING, EntitySpriteDefinition.unsupported(0x5C), 0));
+        for (int slot = 1; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
+            dyingBossSlots.add(RoomEntity.disabled(slot));
+        }
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+            new RoomEntitySnapshot(dyingBossSlots), true);
+        runtime.setGeniePrivateState1ForTest(0, 1);
+        session.replaceEntityRuntimeForTest(runtime);
+
+        session.tickEntities(0, 0x50, 0x50);
+        runtime.setTransitionCountdownForTest(0, 1);
+        session.tickEntities(1, 0x50, 0x50);
+        runtime.setTransitionCountdownForTest(0, 1);
+        session.tickEntities(2, 0x50, 0x50);
+
+        RoomEntity heart = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x36)
+            .findFirst().orElseThrow();
+        EntityPickupEvent pickup = session.collectEntityIfNeeded(
+            (heart.slot() ^ 1) & 1, heart.x(), heart.y(), false, true);
+        assertNotNull(pickup);
+        assertEquals(0x36, pickup.type());
+
+        for (int frame = 3; frame < 0x80; frame++) {
+            session.tickEntities(frame, 0x50, 0x50);
+        }
+
+        assertEquals(0x20, session.indoorRoomStatusForTest(0x01, 0x2B) & 0x20);
+        assertEquals(List.of(new RoomEntityRuntime.HeartContainerRewardEvent(heart.slot())),
+            session.consumeHeartContainerRewards());
+    }
+
+    @Test
     void tailCaveFirstKeyDoorConsumesTheKeyAndSynchronizesBothRooms() {
         RoomSession session = newSession();
         List<GameplaySoundEvent> sounds = new ArrayList<>();

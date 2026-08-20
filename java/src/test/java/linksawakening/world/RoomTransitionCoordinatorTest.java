@@ -2,6 +2,7 @@ package linksawakening.world;
 
 import java.io.IOException;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiPredicate;
 import linksawakening.entity.EntitySpriteDefinition;
@@ -4020,6 +4021,24 @@ final class RoomTransitionCoordinatorTest {
         assertEquals(0x48, genie.x());
         assertEquals(0x30, genie.y());
         assertTrue((romTables.entityOptions1(0x5C) & 0x80) != 0);
+
+        // Once Genie is gone, room $2B's event $21 opens the west shutter.
+        // Crossing that authored boundary reaches the instrument room $2A;
+        // it is never a pre-boss shortcut.
+        List<RoomEntity> clearedBossSlots = new ArrayList<>();
+        for (int slot = 0; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
+            clearedBossSlots.add(RoomEntity.disabled(slot));
+        }
+        session.replaceEntityRuntimeForTest(RoomEntityRuntime.from(
+            new RoomEntitySnapshot(clearedBossSlots), true));
+        session.tickEntities(frame++, link.pixelX(), link.pixelY());
+        assertEquals(0, session.activeRoomEventForTest());
+        link.setPixelPosition(0x50, 0x50);
+        walkToAndCrossIndoorBoundary(
+            coordinator, transition, scroll, collision, link, ScrollController.LEFT);
+        assertEquals(0x2A, session.currentRoomId());
+        assertTrue(session.activeRoom().entities().loadedEntities().stream().anyMatch(entity ->
+            entity.type() == EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS));
     }
 
     @Test
