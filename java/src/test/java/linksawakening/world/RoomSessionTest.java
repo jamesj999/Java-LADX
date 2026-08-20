@@ -3187,12 +3187,104 @@ final class RoomSessionTest {
         assertEquals(0x5B56, madam.spriteDefinition().address());
         assertEquals(8, madam.spriteDefinition().variantCount());
 
-        session.tickEntities(0, madam.x(), madam.y());
+        int linkY = madam.y() + 0x10;
+        session.tickEntities(0, madam.x(), linkY, 0, Link.DIRECTION_UP);
         session.setEntityActionButtonsHeld(true);
-        session.tickEntities(1, madam.x(), madam.y());
+        session.tickEntities(1, madam.x(), linkY, 0, Link.DIRECTION_UP);
 
         assertEquals(0x131,
             session.consumeEntityDialogRequests().getFirst().globalDialogId());
+    }
+
+    @Test
+    void conchHornOwnerReturnsFollowingBowWowToMadamAndReceivesDelayedFullHeal() {
+        RoomSession session = newSession();
+        byte[] progress = new byte[0x08];
+        progress[1] = 0x02;
+        session.restoreDungeonProgressFlags(progress);
+        session.setBowWowState(0x01);
+        session.setFollowingNpcState(
+            new FollowingNpcState(false, 0, false, true, 0, 0, false),
+            0x50, 0x50, 0, 0, Link.DIRECTION_DOWN);
+        session.loadIndoor(0x10, 0xA7);
+        RoomEntity madam = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x79).findFirst().orElseThrow();
+
+        int linkY = madam.y() + 0x10;
+        session.tickEntities(0, madam.x(), linkY, 0, Link.DIRECTION_UP);
+        session.setEntityActionButtonsHeld(true);
+        session.tickEntities(1, madam.x(), linkY, 0, Link.DIRECTION_UP);
+
+        assertEquals(0x12F,
+            session.consumeEntityDialogRequests().getFirst().globalDialogId());
+        assertEquals(0, session.bowWowState());
+        assertFalse(session.followingNpcState().bowWowFollowing());
+        assertEquals(0x10, session.entityTransitionCountdownForTest(madam.slot()));
+        assertTrue(session.consumeMadamMeowMeowFullHealRequests().isEmpty());
+
+        session.setEntityActionButtonsHeld(false);
+        for (int frame = 2; frame <= 16; frame++) {
+            session.tickEntities(frame, madam.x(), linkY, 0, Link.DIRECTION_UP);
+        }
+
+        assertEquals(List.of(new RoomEntityRuntime.MadamMeowMeowFullHealRequest(madam.slot())),
+            session.consumeMadamMeowMeowFullHealRequests());
+        assertEquals(0, session.entityTransitionCountdownForTest(madam.slot()));
+    }
+
+    @Test
+    void followingBowWowStaysWithLinkUntilTheConchHornIsOwned() {
+        RoomSession session = newSession();
+        session.setBowWowState(0x01);
+        session.setFollowingNpcState(
+            new FollowingNpcState(false, 0, false, true, 0, 0, false),
+            0x50, 0x50, 0, 0, Link.DIRECTION_DOWN);
+        session.loadIndoor(0x10, 0xA7);
+        RoomEntity madam = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x79).findFirst().orElseThrow();
+
+        int linkY = madam.y() + 0x10;
+        session.tickEntities(0, madam.x(), linkY, 0, Link.DIRECTION_UP);
+        session.setEntityActionButtonsHeld(true);
+        session.tickEntities(1, madam.x(), linkY, 0, Link.DIRECTION_UP);
+
+        assertEquals(0x132,
+            session.consumeEntityDialogRequests().getFirst().globalDialogId());
+        assertEquals(1, session.bowWowState());
+        assertTrue(session.followingNpcState().bowWowFollowing());
+        assertEquals(0, session.entityTransitionCountdownForTest(madam.slot()));
+        assertTrue(session.consumeMadamMeowMeowFullHealRequests().isEmpty());
+    }
+
+    @Test
+    void madamMeowMeowRejectsWrongFacingWrongButtonAndTalkStateGates() {
+        RoomSession session = newSession();
+        session.setBowWowState(0x80);
+        session.loadIndoor(0x10, 0xA7);
+        RoomEntity madam = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x79).findFirst().orElseThrow();
+        int linkY = madam.y() + 0x10;
+
+        session.setEntityActionButtonsHeld(true, false);
+        session.tickEntities(0, madam.x(), linkY, 0, Link.DIRECTION_DOWN);
+        assertTrue(session.consumeEntityDialogRequests().isEmpty());
+
+        session.setEntityActionButtonsHeld(false, true);
+        session.tickEntities(1, madam.x(), linkY, 0, Link.DIRECTION_UP);
+        assertTrue(session.consumeEntityDialogRequests().isEmpty());
+
+        session.setEntityActionButtonsHeld(true, false);
+        session.setEntityTalkState(false, 1, 0x80);
+        session.tickEntities(2, madam.x(), linkY, 0, Link.DIRECTION_UP);
+        assertTrue(session.consumeEntityDialogRequests().isEmpty());
+
+        session.setEntityTalkState(false, 0, 0x70);
+        session.tickEntities(3, madam.x(), linkY, 0, Link.DIRECTION_UP);
+        assertTrue(session.consumeEntityDialogRequests().isEmpty());
+
+        session.setEntityTalkState(false, 0, 0x80);
+        session.tickEntities(4, madam.x(), linkY, 0, true, Link.DIRECTION_UP);
+        assertTrue(session.consumeEntityDialogRequests().isEmpty());
     }
 
     @Test

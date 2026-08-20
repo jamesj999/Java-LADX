@@ -1305,6 +1305,11 @@ public class Main {
                     }
                     playDirectMusic(0x18);
                 }
+                for (var request : roomSession.consumeMadamMeowMeowFullHealRequests()) {
+                    if (playerState != null) {
+                        playerState.requestFullHeal();
+                    }
+                }
                 BeachSwordRewardConsumer.consume(roomSession, playerState);
                 for (var reward : roomSession.consumeToadstoolRewards()) {
                     if (playerState != null) {

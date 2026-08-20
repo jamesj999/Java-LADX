@@ -172,6 +172,17 @@ final class PlayerStateTest {
     }
 
     @Test
+    void madamMeowMeowKissQueuesAFullHealWithoutChangingMaximumHearts() {
+        PlayerState playerState = new PlayerState();
+        int maxHearts = playerState.maxHearts();
+
+        playerState.requestFullHeal();
+
+        assertEquals(maxHearts, playerState.maxHearts());
+        assertEquals(0xFF, playerState.addHealthBuffer());
+    }
+
+    @Test
     void beachSwordRewardGrantsTheInventorySwordAndLevelOne() {
         PlayerState playerState = new PlayerState();
         playerState.initializeNewGame(0x30, 0x30, 0x20);

@@ -211,6 +211,8 @@ public final class RoomSession {
         new ArrayList<>();
     private final List<RoomEntityRuntime.HeartContainerRewardEvent>
         pendingHeartContainerRewards = new ArrayList<>();
+    private final List<RoomEntityRuntime.MadamMeowMeowFullHealRequest>
+        pendingMadamMeowMeowFullHealRequests = new ArrayList<>();
     private final List<RoomEntityRuntime.SwordPickupRewardEvent>
         pendingSwordPickupRewards = new ArrayList<>();
     private final List<RoomEntityRuntime.ToadstoolRewardEvent>
@@ -1688,6 +1690,8 @@ public final class RoomSession {
         harvestKeyRewardEvents();
         harvestSlimeKeyRewardEvents();
         harvestHeartContainerRewards();
+        pendingMadamMeowMeowFullHealRequests.addAll(
+            entityRuntime.consumePendingMadamMeowMeowFullHealRequests());
         harvestSwordPickupRewards();
         harvestToadstoolRewards();
         harvestInstrumentRewards();
@@ -1928,6 +1932,14 @@ public final class RoomSession {
             List.copyOf(pendingHeartContainerRewards);
         pendingHeartContainerRewards.clear();
         return rewards;
+    }
+
+    public List<RoomEntityRuntime.MadamMeowMeowFullHealRequest>
+            consumeMadamMeowMeowFullHealRequests() {
+        List<RoomEntityRuntime.MadamMeowMeowFullHealRequest> requests =
+            List.copyOf(pendingMadamMeowMeowFullHealRequests);
+        pendingMadamMeowMeowFullHealRequests.clear();
+        return requests;
     }
 
     public List<RoomEntityRuntime.SwordPickupRewardEvent> consumeSwordPickupRewards() {
@@ -2389,6 +2401,7 @@ public final class RoomSession {
         pendingKeyRewardEvents.clear();
         pendingSlimeKeyRewardEvents.clear();
         pendingHeartContainerRewards.clear();
+        pendingMadamMeowMeowFullHealRequests.clear();
         pendingSwordPickupRewards.clear();
         pendingToadstoolRewards.clear();
         pendingWitchExchangeEvents.clear();

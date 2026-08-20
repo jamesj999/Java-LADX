@@ -314,6 +314,11 @@ public final class PlayerState {
         addHealthBuffer = 0xFF;
     }
 
+    /** Mirrors Madam MeowMeow's delayed wAddHealthBuffer=$FF kiss reward. */
+    public void requestFullHeal() {
+        addHealthBuffer = 0xFF;
+    }
+
     /** Applies the delayed reward at the end of the beach-sword cutscene. */
     public void applyBeachSwordReward() {
         giveInventoryItem(INVENTORY_SWORD);

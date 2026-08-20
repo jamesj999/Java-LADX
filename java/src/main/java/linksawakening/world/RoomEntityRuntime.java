@@ -490,6 +490,8 @@ public final class RoomEntityRuntime {
     private final List<TransientVfxRequest> transientVfxRequests = new ArrayList<>();
     private final List<HeartContainerRewardEvent> pendingHeartContainerRewards =
         new ArrayList<>();
+    private final List<MadamMeowMeowFullHealRequest> pendingMadamMeowMeowFullHealRequests =
+        new ArrayList<>();
     private final List<SwordPickupRewardEvent> pendingSwordPickupRewards =
         new ArrayList<>();
     private final List<ToadstoolRewardEvent> pendingToadstoolRewards =
@@ -722,6 +724,9 @@ public final class RoomEntityRuntime {
     }
 
     public record HeartContainerRewardEvent(int slot) {
+    }
+
+    public record MadamMeowMeowFullHealRequest(int slot) {
     }
 
     public record SwordPickupRewardEvent(int slot) {
@@ -1736,6 +1741,7 @@ public final class RoomEntityRuntime {
         pendingWarpLinkStateRequests.clear();
         pendingChestRewardEvents.clear();
         pendingHeartContainerRewards.clear();
+        pendingMadamMeowMeowFullHealRequests.clear();
         pendingSwordPickupRewards.clear();
         pendingToadstoolRewards.clear();
         pendingInstrumentRewards.clear();
@@ -2173,7 +2179,7 @@ public final class RoomEntityRuntime {
             }
             if (status == EntityStatus.ACTIVE
                 && entity.type() == ENTITY_MADAM_MEOWMEOW) {
-                advanceMadamMeowMeow(entity, frame, linkEntityX, linkEntityY);
+                advanceMadamMeowMeow(entity, frame, linkEntityX, linkEntityY, linkAirborne);
                 continue;
             }
             if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_BOW_WOW
@@ -9131,15 +9137,32 @@ public final class RoomEntityRuntime {
     }
 
     private void advanceMadamMeowMeow(RoomEntity entity, int frameCounter,
-                                      int linkEntityX, int linkEntityY) {
+                                      int linkEntityX, int linkEntityY,
+                                      boolean linkAirborne) {
+        int slot = entity.slot();
+        if (enemyTransitionCountdown[slot] == 1) {
+            enemyTransitionCountdown[slot] = 0;
+            pendingMadamMeowMeowFullHealRequests.add(
+                new MadamMeowMeowFullHealRequest(slot));
+        }
         int xDistance = signedByte((linkEntityX - entity.x()) & 0xFF);
         int yDistance = signedByte((linkEntityY - entity.y()) & 0xFF);
         int direction = Math.abs(xDistance) >= Math.abs(yDistance)
             ? (xDistance < 0 ? 1 : 0) : (yDistance < 0 ? 2 : 3);
         int variant = direction * 2 + ((frameCounter >>> 4) & 0x01);
         slots[entity.slot()] = withVariant(entity, variant);
-        if (actionButtonsHeld && !dialogActive
-            && Math.abs(xDistance) < 0x18 && Math.abs(yDistance) < 0x18) {
+        boolean linkFacingMadam = (lastRomLinkDirection ^ 0x01) == direction;
+        boolean interactionWindow = ((yDistance + 0x14) & 0xFF) < 0x28
+            && ((xDistance + 0x10) & 0xFF) < 0x20;
+        if (actionButtonAHeld && interactionWindow && linkFacingMadam
+            && !dialogActive && !inventoryAppearing && !linkAirborne
+            && dialogCooldown == 0 && windowY == 0x80) {
+            if ((instrument2Flags & 0x02) != 0 && bowWowState == 0x01) {
+                bowWowState = 0;
+                enemyTransitionCountdown[slot] = 0x10;
+                pendingDialogRequests.add(new DialogRequest(1, 0x2F));
+                return;
+            }
             int dialogLowId = switch (bowWowState) {
                 case 0 -> 0x30;
                 case 1 -> 0x32;
@@ -11093,6 +11116,13 @@ public final class RoomEntityRuntime {
         List<HeartContainerRewardEvent> rewards = List.copyOf(pendingHeartContainerRewards);
         pendingHeartContainerRewards.clear();
         return rewards;
+    }
+
+    List<MadamMeowMeowFullHealRequest> consumePendingMadamMeowMeowFullHealRequests() {
+        List<MadamMeowMeowFullHealRequest> requests =
+            List.copyOf(pendingMadamMeowMeowFullHealRequests);
+        pendingMadamMeowMeowFullHealRequests.clear();
+        return requests;
     }
 
     List<SwordPickupRewardEvent> consumePendingSwordPickupRewards() {
