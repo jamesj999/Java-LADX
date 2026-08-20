@@ -2873,6 +2873,34 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void genieBossIntroDelayPausesForInventoryAndRoomTransitions() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x5C, 0x50, 0x68, EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0x5C), 0)), true);
+        runtime.setEntityMapIdForTest(0x01);
+        runtime.setTransitionSequenceCounterForTest(0x04);
+        runtime.setTalkState(true, 0, 0);
+
+        for (int frame = 0; frame < 0x20; frame++) {
+            runtime.tick(frame, 0x50, 0x70, () -> 0);
+        }
+        runtime.setTalkState(false, 0, 0);
+        runtime.setRoomTransitionStateForTest(true);
+        for (int frame = 0x20; frame < 0x40; frame++) {
+            runtime.tick(frame, 0x50, 0x70, () -> 0);
+        }
+        assertEquals(-1, runtime.consumePendingMusicTrack());
+
+        runtime.setRoomTransitionStateForTest(false);
+        for (int frame = 0x40; frame < 0x60; frame++) {
+            runtime.tick(frame, 0x50, 0x70, () -> 0);
+            assertEquals(-1, runtime.consumePendingMusicTrack());
+        }
+        runtime.tick(0x60, 0x50, 0x70, () -> 0);
+        assertEquals(0x19, runtime.consumePendingMusicTrack());
+    }
+
+    @Test
     void genieJarThresholdSpawnsBodyAndRockThenUnloadsTheJar() {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, 0x5C, 0x50, 0x68, EntityStatus.ACTIVE,

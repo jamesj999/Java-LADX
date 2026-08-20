@@ -3664,9 +3664,10 @@ public final class RoomEntityRuntime {
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_GENIE) {
-                BossIntroMotion.Update bossIntro = bossIntroMotion.advance(
-                    options1(entity.slot()), entity.type(), entityMapId,
-                    transitionSequenceCounter);
+                BossIntroMotion.Update bossIntro = !inventoryAppearing && !roomTransitionActive
+                    ? bossIntroMotion.advance(options1(entity.slot()), entity.type(), entityMapId,
+                        transitionSequenceCounter)
+                    : BossIntroMotion.Update.none();
                 if (bossIntro.musicTrack() >= 0) {
                     pendingMusicTrack = bossIntro.musicTrack();
                 }
