@@ -540,6 +540,8 @@ public final class RoomEntityRuntime {
     private final List<DialogRequest> pendingDialogRequests = new ArrayList<>();
     private final List<EntityCombatEvent> pendingEntityEvents = new ArrayList<>();
     private final List<EntityCombatEvent> pendingPreTickEntityEvents = new ArrayList<>();
+    private final List<ThrownBackgroundCollisionEvent> pendingThrownBackgroundCollisions =
+        new ArrayList<>();
     private final List<DungeonWarpRequest> pendingDungeonWarpRequests = new ArrayList<>();
     private final List<WarpLinkStateRequest> pendingWarpLinkStateRequests = new ArrayList<>();
     private final List<ChestRewardEvent> pendingChestRewardEvents = new ArrayList<>();
@@ -724,6 +726,11 @@ public final class RoomEntityRuntime {
         public boolean active() {
             return slot >= 0;
         }
+    }
+
+    /** Collision payload consumed by EntityCheckThrowAtTriggers in bank $03. */
+    public record ThrownBackgroundCollisionEvent(int slot, int entityType,
+                                                  int direction, int objectId) {
     }
 
     /** A ROM transient-VFX creation requested by an entity handler this frame. */
@@ -1714,8 +1721,18 @@ public final class RoomEntityRuntime {
         }
         if (backgroundInteraction != null) {
             backgroundCollision = (entity, direction, nextX, nextY) ->
-                backgroundInteraction.probe(entity, direction, nextX, nextY,
-                    enemyIgnoreHitsCountdown[entity.slot()], frame).blocked();
+            {
+                EntityBackgroundCollisionResult result = backgroundInteraction.probe(
+                    entity, direction, nextX, nextY,
+                    enemyIgnoreHitsCountdown[entity.slot()], frame);
+                if (result.blocked() && entity.status() == EntityStatus.THROWN
+                    && checksThrownRoomEventTriggers(entity.type())) {
+                    pendingThrownBackgroundCollisions.add(
+                        new ThrownBackgroundCollisionEvent(entity.slot(), entity.type(),
+                            direction, result.objectId()));
+                }
+                return result.blocked();
+            };
         }
         RoomEntityBackgroundInteraction hinoxBackgroundInteraction = backgroundInteraction;
         if (hinoxBackgroundInteraction == null && backgroundCollision != null) {
@@ -1751,6 +1768,7 @@ public final class RoomEntityRuntime {
         magicPowderObjectRequests.clear();
         pendingDialogRequests.clear();
         pendingEntityEvents.clear();
+        pendingThrownBackgroundCollisions.clear();
         pendingEntityEvents.addAll(pendingPreTickEntityEvents);
         pendingPreTickEntityEvents.clear();
         pendingWarpLinkStateRequests.clear();
@@ -5126,6 +5144,10 @@ public final class RoomEntityRuntime {
                 ENTITY_CUCCO, ENTITY_HORSE_PIECE -> true;
             default -> false;
         };
+    }
+
+    private static boolean checksThrownRoomEventTriggers(int entityType) {
+        return entityType != ENTITY_SIDE_VIEW_POT;
     }
 
     /** Mirrors CuccoEntityHandler's B-slot-first Power Bracelet check. */
@@ -8538,6 +8560,13 @@ public final class RoomEntityRuntime {
         pendingPreTickEntityEvents.clear();
         pendingEntityEvents.clear();
         return List.copyOf(pending);
+    }
+
+    List<ThrownBackgroundCollisionEvent> consumePendingThrownBackgroundCollisions() {
+        List<ThrownBackgroundCollisionEvent> pending =
+            List.copyOf(pendingThrownBackgroundCollisions);
+        pendingThrownBackgroundCollisions.clear();
+        return pending;
     }
 
     List<DungeonWarpRequest> consumePendingDungeonWarpRequests() {

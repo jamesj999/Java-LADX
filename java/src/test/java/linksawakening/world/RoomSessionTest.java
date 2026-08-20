@@ -3555,6 +3555,46 @@ final class RoomSessionTest {
         assertEquals(0x0D, session.activeRoom().roomObjectsArea()[potIndex]);
     }
 
+    @Test
+    void keyCavernEntranceRoomOpensNorthShutterWhenThrownPotHitsIt() {
+        RoomSession session = newSession();
+        List<GameplaySoundEvent> sounds = new ArrayList<>();
+        session.setColorShellSoundSink(sounds::add);
+        session.loadInitialOverworld(0xB5);
+        session.loadIndoor(0x02, 0x52);
+
+        int northDoorIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x04;
+        assertEquals(0x2B, session.activeRoomEventForTest());
+        assertTrue(session.activeRoom().roomObjectsArea()[northDoorIndex] >= 0x35);
+        assertTrue(session.activeRoom().roomObjectsArea()[northDoorIndex] < 0x3D);
+
+        // Lift the authored pot at location $52, then throw it north at the shutter.
+        for (int frame = 0; frame < 8; frame++) {
+            assertTrue(session.tryLiftIndoorObject(
+                0x18, 0x4B, Link.DIRECTION_UP, true, 0x08));
+        }
+        int frame = 8;
+        while (session.liftedEntityState().carryState() != 0x01 && frame < 0x40) {
+            session.tickEntities(frame++, 0x18, 0x4B, 0, Link.DIRECTION_UP);
+        }
+        assertEquals(0x01, session.liftedEntityState().carryState());
+        session.tickEntities(frame++, 0x48, 0x28, 0, Link.DIRECTION_UP);
+        assertTrue(session.throwLiftedEntity(Link.DIRECTION_UP));
+        while (session.activeRoomEventForTest() != 0 && frame < 0x100) {
+            session.tickEntities(frame++, 0x48, 0x28, 0, Link.DIRECTION_UP);
+        }
+
+        assertEquals(0, session.activeRoomEventForTest());
+        assertFalse(session.activeRoom().roomObjectsArea()[northDoorIndex] >= 0x35
+            && session.activeRoom().roomObjectsArea()[northDoorIndex] < 0x3D);
+        assertTrue(sounds.contains(GameplaySoundEvent.PUZZLE_SOLVED));
+        assertTrue(sounds.contains(GameplaySoundEvent.DOOR_UNLOCKED));
+
+        session.loadIndoor(0x02, 0x52);
+        assertFalse(session.activeRoom().roomObjectsArea()[northDoorIndex] >= 0x35
+            && session.activeRoom().roomObjectsArea()[northDoorIndex] < 0x3D);
+    }
+
     private static RoomSession newSession() {
         return newSession(room -> {
         });

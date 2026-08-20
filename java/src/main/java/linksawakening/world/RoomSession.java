@@ -92,6 +92,7 @@ public final class RoomSession {
     private static final int EVENT_TRIGGER_LIGHT_TORCHES = 0x05;
     private static final int EVENT_TRIGGER_KILL_IN_ORDER = 0x06;
     private static final int EVENT_TRIGGER_PUSH_BLOCKS = 0x07;
+    private static final int EVENT_TRIGGER_THROW_AT_DOOR = 0x0B;
     private static final int EVENT_EFFECT_OPEN_LOCKED_DOORS = 0x20;
     private static final int EVENT_EFFECT_REVEAL_CHEST = 0x60;
     private static final int EVENT_EFFECT_DROP_KEY = 0x80;
@@ -298,6 +299,7 @@ public final class RoomSession {
     /** wHasInstrument1..: bit 0 records each dungeon miniboss defeat. */
     private final byte[] dungeonProgressFlags = new byte[0x1A];
     private boolean roomEventEffectExecuted;
+    private boolean thrownAtDoorTriggerResolved;
     private int roomEventChestRevealCountdown;
     private int roomEventStairRevealCountdown;
     private int staircaseState;
@@ -1719,6 +1721,7 @@ public final class RoomSession {
         harvestKeyQuicksandEvents();
         harvestKeyRewardEvents();
         harvestSlimeKeyRewardEvents();
+        harvestThrownRoomEventCollisions();
         harvestHeartContainerRewards();
         pendingMadamMeowMeowFullHealRequests.addAll(
             entityRuntime.consumePendingMadamMeowMeowFullHealRequests());
@@ -2458,6 +2461,7 @@ public final class RoomSession {
         roomTriggerCount = 0;
         activeRoomEvent = 0;
         roomEventEffectExecuted = false;
+        thrownAtDoorTriggerResolved = false;
         roomEventChestRevealCountdown = 0;
         roomEventStairRevealCountdown = 0;
         staircaseState = STAIRCASE_NONE;
@@ -3648,6 +3652,21 @@ public final class RoomSession {
         status[activeRoom.roomId()] |= (byte) ROOM_STATUS_EVENT_1;
     }
 
+    /** Mirrors EntityCheckThrowAtTriggers' $35..$3C shutter-object test. */
+    private void harvestThrownRoomEventCollisions() {
+        if (entityRuntime == null) {
+            return;
+        }
+        for (RoomEntityRuntime.ThrownBackgroundCollisionEvent collision
+                : entityRuntime.consumePendingThrownBackgroundCollisions()) {
+            int objectId = collision.objectId();
+            if ((activeRoomEvent & EVENT_TRIGGER_MASK) == EVENT_TRIGGER_THROW_AT_DOOR
+                && objectId >= 0x35 && objectId < 0x3D) {
+                thrownAtDoorTriggerResolved = true;
+            }
+        }
+    }
+
     /** Executes the source's first common dungeon-event path used by Tail Cave. */
     private void tickRoomEvent(int linkEntityX, int linkEntityY) {
         tickIndoorKeyDoorAnimation();
@@ -3673,6 +3692,8 @@ public final class RoomSession {
                     && switchButtonPressed != 0)
                 || (trigger == EVENT_TRIGGER_LIGHT_TORCHES
                     && roomTriggerCount == 0x02)
+                || (trigger == EVENT_TRIGGER_THROW_AT_DOOR
+                    && thrownAtDoorTriggerResolved)
                 || (trigger == EVENT_TRIGGER_KILL_IN_ORDER
                     && entityRuntime != null
                     && entityRuntime.killOrderAt(0) == 0

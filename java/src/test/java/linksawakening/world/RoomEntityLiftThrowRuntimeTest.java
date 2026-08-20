@@ -59,6 +59,39 @@ final class RoomEntityLiftThrowRuntimeTest {
     }
 
     @Test
+    void thrownEntityPublishesTheRichObjectIdFromABlockedBackgroundProbe() {
+        RoomEntityRuntime runtime = runtimeWithEntity(EntityStatus.THROWN);
+        runtime.setBackgroundInteraction((entity, direction, nextX, nextY) ->
+            EntityBackgroundCollisionResult.blocked(
+                direction, 0x35, 0x03, nextX, nextY));
+
+        runtime.tick(0, 0, 0, () -> 0);
+
+        assertEquals(List.of(new RoomEntityRuntime.ThrownBackgroundCollisionEvent(
+                0, 0x05, ThrownEntityMotion.ROM_DIRECTION_DOWN, 0x35)),
+            runtime.consumePendingThrownBackgroundCollisions());
+    }
+
+    @Test
+    void thrownBombAlsoPublishesDoorCollisionLikeTheGenericRomThrownHandler() {
+        RoomEntityRuntime runtime = runtimeWithEntity(EntityStatus.ACTIVE, 0x02);
+        assertTrue(runtime.beginLift(0, ThrownEntityMotion.ROM_DIRECTION_DOWN));
+        int frame = 0;
+        while (runtime.liftedEntityState().carryState() != 0x01 && frame < 0x40) {
+            runtime.tick(frame++, 0x20, 0x30, () -> 0, null, null, 0, 0, 0);
+        }
+        assertTrue(runtime.throwLiftedEntity(ThrownEntityMotion.ROM_DIRECTION_DOWN));
+        runtime.setBackgroundInteraction((entity, direction, nextX, nextY) ->
+            EntityBackgroundCollisionResult.blocked(
+                direction, 0x3C, 0x03, nextX, nextY));
+
+        runtime.tick(frame, 0, 0, () -> 0);
+
+        assertTrue(runtime.consumePendingThrownBackgroundCollisions().stream()
+            .anyMatch(event -> event.entityType() == 0x02 && event.objectId() == 0x3C));
+    }
+
+    @Test
     void thrownEntityDamagesOverlappingEnemyAfterBounceMotion() {
         EntitySpriteDefinition potDefinition = definition(0x05);
         EntitySpriteDefinition polsVoiceDefinition = definition(0x18);
@@ -588,9 +621,13 @@ final class RoomEntityLiftThrowRuntimeTest {
     }
 
     private static RoomEntityRuntime runtimeWithEntity(EntityStatus status) {
-        EntitySpriteDefinition definition = definition(0x05);
+        return runtimeWithEntity(status, 0x05);
+    }
+
+    private static RoomEntityRuntime runtimeWithEntity(EntityStatus status, int type) {
+        EntitySpriteDefinition definition = definition(type);
         List<RoomEntity> slots = new ArrayList<>();
-        slots.add(new RoomEntity(0, 0, 0x05, 0x20, 0x30, status, definition, 0));
+        slots.add(new RoomEntity(0, 0, type, 0x20, 0x30, status, definition, 0));
         for (int slot = 1; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             slots.add(RoomEntity.disabled(slot));
         }
