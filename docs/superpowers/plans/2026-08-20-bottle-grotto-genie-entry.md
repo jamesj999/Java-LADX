@@ -5,9 +5,9 @@ initial jar-break transition without implementing the full boss fight.
 
 ### Task 1: Extend the physical route to room `$2B`
 
-- [ ] Add failing ordered-route assertions for `$25 → $24 → $27 → $2A → $2B`.
-- [ ] Preserve the room `$27` Nightmare Key chest/status/inventory state.
-- [ ] Verify room `$2A` event/shutters without forcing the instrument E0 warp.
+- [ ] Add failing ordered-route assertions for `$25 → $3B → $3A → $2D → $2B`.
+- [ ] Preserve room `$27`'s Nightmare Key state until the `$2D` boss door.
+- [ ] Assert room `$2A` is not used as a pre-boss instrument shortcut.
 - [ ] Assert Genie `$5C` at ROM `$48/$30` in room `$2B`.
 
 ### Task 2: Port Genie intro and jar state

@@ -8,15 +8,15 @@ state. The full Genie fight remains a separate milestone.
 
 ## Route
 
-Follow `MapLayout1` physically: `$25` west to `$24`, south to `$27`, south to
-`$2A`, then east to `$2B`. Room `$27` must retain its opened Nightmare Key
-chest, status bit `$10`, and one Nightmare Key. The optional `$27 ↔ $3D`
-staircase is already represented by source warps but is not required to reach
-the boss after the key has been collected.
+Follow the authored passage from the existing room `$25` return point: re-enter
+`$3B`, traverse horizontally into side-view room `$3A`, take `$3A`'s E1 exit to
+room `$2D`, then use the already-earned Nightmare Key on the north boss door to
+enter `$2B`. Room `$27` must retain its opened Nightmare Key chest, status bit
+`$10`, and one Nightmare Key until that door consumes it.
 
-Room `$2A` contains the instrument entity used by event `$21`. Entry traversal
-must preserve the source event/shutter behavior; it must not rely on an
-instrument-reward shortcut that marks the room complete or forces the E0 warp.
+Room `$2A` is the post-boss instrument room. It must not be used as a pre-boss
+shortcut: its instrument entity, event `$21`, shutters, and E0 overworld warp
+belong to dungeon completion after Genie.
 
 ## Genie Boundary
 
@@ -42,7 +42,7 @@ this milestone.
 
 ## Verification
 
-Extend the ordered route test through room `$2B`; add focused Genie motion and
+Extend the ordered route through `$3B → $3A → $2D → $2B`; add focused Genie motion and
 runtime tests for intro one-shot behavior, jar threshold, body spawn fields,
 smash/noise, slot exhaustion, and state cleanup. Full suite and source review
 must pass before commit.
