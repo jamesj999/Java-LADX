@@ -25,6 +25,160 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 final class RoomEntityRuntimeTest {
 
     @Test
+    void kanaletKnightAndMadBomberUseNonPersistentGoldenLeafDrops() {
+        RoomEntityRuntime knightRuntime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 3, 0x51, 0x40, 0x50, EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0x51), 0)), true);
+        knightRuntime.setEntityMapIdForTest(0x14);
+        knightRuntime.tick(0, 0, 0, () -> 0);
+        assertEquals(0xFF, knightRuntime.snapshot().slots().get(0).sourceLoadOrder());
+        assertEquals(0x3C, knightRuntime.droppedItemForTest(0));
+
+        RoomEntityRuntime bomberRuntime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 2, 0x93, 0x40, 0x50, EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0x93), 0)), false);
+        bomberRuntime.tick(0, 0, 0, () -> 0);
+        assertEquals(0xFF, bomberRuntime.snapshot().slots().get(0).sourceLoadOrder());
+        assertEquals(0x3C, bomberRuntime.droppedItemForTest(0));
+    }
+
+    @Test
+    void kanaletRoomEventDropsGoldenLeafInsteadOfDungeonKey() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(), true);
+        runtime.setEntityMapIdForTest(0x14);
+
+        int slot = runtime.spawnRoomEventKeyDrop();
+
+        RoomEntity leaf = runtime.snapshot().slots().get(slot);
+        assertEquals(0x3C, leaf.type());
+        assertEquals(0x28, leaf.x());
+        assertEquals(0x3C, leaf.y());
+        assertEquals(0x70, leaf.z());
+        assertEquals(-1, leaf.sourceLoadOrder());
+    }
+
+    @Test
+    void ordinaryDungeonRoomEventStillDropsAKeyBelowMapCaveB() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(), true);
+        runtime.setEntityMapIdForTest(0x05);
+
+        int slot = runtime.spawnRoomEventKeyDrop();
+
+        assertEquals(0x30, runtime.snapshot().slots().get(slot).type());
+    }
+
+    @Test
+    void kanaletKnightTerminalDeathActuallySpawnsTheGoldenLeaf() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RoomEntity knight = new RoomEntity(15, 3, 0x51, 0x44, 0x58,
+            EntityStatus.DYING, catalog.forEntityType(
+                0x51, EntityRoomLoader.RoomTable.INDOORS_B, -1), 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotAt(knight),
+            true, () -> 0, catalog, tables);
+        runtime.setEnemyDropResolver(new EnemyDropResolver(rom));
+        runtime.setEntityMapIdForTest(0x14);
+
+        runtime.tick(0, 0, 0, () -> 0);
+
+        RoomEntity leaf = runtime.snapshot().slots().stream()
+            .filter(entity -> entity.loaded() && entity.type() == 0x3C)
+            .findFirst().orElseThrow();
+        assertEquals(0x44, leaf.x());
+        assertEquals(0x58, leaf.y());
+        assertEquals(0, runtime.consumePendingClearedEntityMask());
+    }
+
+    @Test
+    void bothKanaletBombableWallsSpawnSwordMoblinsCarryingGoldenLeaves() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x94, 0x28, 0x40, EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0x94), -1),
+            new RoomEntity(1, 1, 0x94, 0x78, 0x40, EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0x94), -1)), true);
+        runtime.setEntityMapIdForTest(0x14);
+        runtime.setEnemyIgnoreHitsCountdownForTest(0, 0x0A);
+        runtime.setEnemyIgnoreHitsCountdownForTest(1, 0x0A);
+
+        runtime.tick(0, 0, 0, () -> 0);
+
+        List<RoomEntity> moblins = runtime.snapshot().slots().stream()
+            .filter(entity -> entity.loaded() && entity.type() == 0x14)
+            .toList();
+        assertEquals(2, moblins.size());
+        assertTrue(moblins.stream().anyMatch(entity -> entity.x() == 0x28 && entity.y() == 0x48));
+        assertTrue(moblins.stream().anyMatch(entity -> entity.x() == 0x78 && entity.y() == 0x48));
+        for (RoomEntity moblin : moblins) {
+            assertEquals(0xFF, moblin.sourceLoadOrder());
+            assertEquals(0x3C, runtime.droppedItemForTest(moblin.slot()));
+        }
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(1).status());
+    }
+
+    @Test
+    void completedKanaletWallRoomUnloadsWallsWithoutSpawningMoblins() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x94, 0x28, 0x40, EntityStatus.ACTIVE,
+                EntitySpriteDefinition.unsupported(0x94), -1)), true);
+        runtime.setEntityMapIdForTest(0x14);
+        runtime.setEntityRoomStatusForTest(0x10);
+        runtime.setEnemyIgnoreHitsCountdownForTest(0, 0x0A);
+
+        runtime.tick(0, 0, 0, () -> 0);
+
+        assertFalse(runtime.snapshot().slots().stream()
+            .anyMatch(entity -> entity.loaded() && entity.type() == 0x14));
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
+    }
+
+    @Test
+    void kanaletWallWaitsForAFreeSlotBeforeBreaking() {
+        List<RoomEntity> entities = new ArrayList<>();
+        entities.add(new RoomEntity(0, 0, 0x94, 0x28, 0x40, EntityStatus.ACTIVE,
+            EntitySpriteDefinition.unsupported(0x94), -1));
+        for (int slot = 1; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
+            entities.add(new RoomEntity(slot, slot, 0xFF, 0x20, 0x20,
+                EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(0xFF), -1));
+        }
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+            new RoomEntitySnapshot(entities), true);
+        runtime.setEntityMapIdForTest(0x14);
+        runtime.setEnemyIgnoreHitsCountdownForTest(0, 0x0A);
+
+        runtime.tick(0, 0, 0, () -> 0);
+
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
+        assertFalse(runtime.snapshot().slots().stream()
+            .anyMatch(entity -> entity.loaded() && entity.type() == 0x14));
+    }
+
+    @Test
+    void bombExplosionTriggersTheKanaletWallMoblinHandler() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RoomEntity wall = new RoomEntity(0, 0, 0x94, 0x48, 0x4F,
+            EntityStatus.ACTIVE, catalog.forEntityType(
+                0x94, EntityRoomLoader.RoomTable.INDOORS_B, 0x14), -1);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(wall),
+            true, () -> 0, catalog, tables);
+        runtime.setEntityMapIdForTest(0x14);
+        int bombSlot = runtime.spawnBomb(0x40, 0x50, 0, 0);
+        runtime.setBombTransitionCountdownForTest(bombSlot, 0x13);
+
+        runtime.tick(0, 0, 0, () -> 0);
+
+        RoomEntity moblin = runtime.snapshot().slots().stream()
+            .filter(entity -> entity.loaded() && entity.type() == 0x14)
+            .findFirst().orElseThrow();
+        assertEquals(0x48, moblin.x());
+        assertEquals(0x57, moblin.y());
+        assertEquals(0x3C, runtime.droppedItemForTest(moblin.slot()));
+    }
+
+    @Test
     void hinoxSkipsItsInteractiveHandlerAndTimersDuringNonInteractiveFrames() {
         RoomEntity hinox = new RoomEntity(0, 0, HinoxMotion.ENTITY_TYPE, 0x40, 0x40,
             EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(HinoxMotion.ENTITY_TYPE), 0);

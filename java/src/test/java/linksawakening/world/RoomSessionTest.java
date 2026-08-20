@@ -458,6 +458,35 @@ final class RoomSessionTest {
     }
 
     @Test
+    void fifthKanaletLeafPublishesFinalLeafDialogAndCompletesItsSourceRoom() {
+        RoomSession session = newSession();
+        session.loadOverworld(0x58);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(List.of(
+            new RoomEntity(0, 0xFF, 0x3C, 0x40, 0x50, EntityStatus.INIT,
+                EntitySpriteDefinition.unsupported(0x3C), -1),
+            RoomEntity.disabled(1), RoomEntity.disabled(2), RoomEntity.disabled(3),
+            RoomEntity.disabled(4), RoomEntity.disabled(5), RoomEntity.disabled(6),
+            RoomEntity.disabled(7), RoomEntity.disabled(8), RoomEntity.disabled(9),
+            RoomEntity.disabled(10), RoomEntity.disabled(11), RoomEntity.disabled(12),
+            RoomEntity.disabled(13), RoomEntity.disabled(14), RoomEntity.disabled(15))));
+        runtime.setEntityRoomIdForTest(0x58);
+        runtime.setObjectQuery(entity -> new RoomEntityObjectSample(0xCC, 0, 0x40, 0x50));
+        session.replaceEntityRuntimeForTest(runtime);
+        session.setEntityGoldenLeavesCount(4);
+
+        session.tickEntities(0, 0x20, 0x30);
+        session.tickEntities(1, 0x40, 0x50);
+        runtime.setHidingSlimeKeyTransitionCountdownForTest(0, 0x11);
+        session.tickEntities(2, 0x40, 0x50);
+
+        assertEquals(List.of(new RoomEntityRuntime.SlimeKeyRewardEvent(0, 5, 0xE9)),
+            session.consumeSlimeKeyRewardEvents());
+        assertEquals(0x10, session.overworldRoomStatusSnapshot()[0x58] & 0x10);
+        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, 0xE9)),
+            session.consumeEntityDialogRequests());
+    }
+
+    @Test
     void keyDropPointQuicksandFallPropagatesBothRomRoomStatusWrites() {
         RoomSession session = newSession();
         session.loadOverworld(0xCE);

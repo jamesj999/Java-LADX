@@ -77,6 +77,8 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_WATER_TEKTITE = 0x99;
     private static final int ENTITY_FISH = FishMotion.ENTITY_TYPE;
     private static final int ENTITY_CROW = CrowMotion.ENTITY_TYPE;
+    private static final int ENTITY_KNIGHT = 0x51;
+    private static final int ENTITY_KANALET_BOMBABLE_WALL = 0x94;
     private static final int ENTITY_BOO_BUDDY = BooBuddyMotion.ENTITY_TYPE;
     private static final int ENTITY_DROPPABLE_FAIRY = FairyMotion.ENTITY_TYPE;
     private static final int ENTITY_DROPPABLE_HEART = 0x2D;
@@ -1799,6 +1801,38 @@ public final class RoomEntityRuntime {
                 || dynamicEntitySpawnedThisFrame[entity.slot()]) {
                 continue;
             }
+            if (entity.type() == ENTITY_KANALET_BOMBABLE_WALL) {
+                if ((entityRoomStatus & 0x10) != 0) {
+                    disableEntityWithoutPersistence(entity.slot());
+                    continue;
+                }
+                droppedItemBySlot[entity.slot()] = ENTITY_HIDING_SLIME_KEY;
+                if (enemyIgnoreHitsCountdown[entity.slot()] != 0) {
+                    if (spawnKanaletWallMoblin(entity)) {
+                        disableEntityWithoutPersistence(entity.slot());
+                        continue;
+                    }
+                }
+            }
+            boolean kanaletLeafProducer =
+                entity.type() == ENTITY_CROW && !indoorRoom && entityRoomId == 0x58
+                || entity.type() == ENTITY_MAD_BOMBER
+                || entity.type() == ENTITY_KNIGHT && entityMapId >= 0x14;
+            if (kanaletLeafProducer) {
+                if (entity.type() == ENTITY_CROW
+                    && enemyIgnoreHitsCountdown[entity.slot()] >= 0x10) {
+                    enemyIgnoreHitsCountdown[entity.slot()] >>>= 2;
+                }
+                if ((entityRoomStatus & 0x10) != 0) {
+                    disableEntityWithoutPersistence(entity.slot());
+                    continue;
+                }
+                droppedItemBySlot[entity.slot()] = ENTITY_HIDING_SLIME_KEY;
+                if (entity.sourceLoadOrder() != 0xFF) {
+                    entity = withSourceLoadOrder(entity, 0xFF);
+                    slots[index] = entity;
+                }
+            }
             if (!indoorRoom && entity.type() == ENTITY_TARIN
                 && (entityRoomStatus & 0x10) != 0) {
                 disableEntityWithoutPersistence(entity.slot());
@@ -3509,7 +3543,8 @@ public final class RoomEntityRuntime {
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_CROW) {
                 CrowMotion.Update crowUpdate = crowMotion.advance(entity,
-                    enemyTransitionCountdown[entity.slot()], frame, linkEntityX, linkEntityY);
+                    enemyTransitionCountdown[entity.slot()], frame, linkEntityX, linkEntityY,
+                    entityRoomId != 0x58, kanaletCrowTakeoffTriggered(entity));
                 updated = crowUpdate.entity();
                 enemyTransitionCountdown[entity.slot()] = crowUpdate.transitionCountdown();
                 enemyPhysicsFlags[entity.slot()] = crowUpdate.physicsFlags();
@@ -6618,7 +6653,9 @@ public final class RoomEntityRuntime {
 
     /** Spawns DropKeyEffectHandler's ordinary dungeon key at ($28,$3C,$70). */
     int spawnRoomEventKeyDrop() {
-        return spawnKeyDropAt(0x28, 0x3C, 0, 0x70, 0, 0);
+        int itemType = entityMapId >= 0x0A && entityMapId != 0xFF
+            ? ENTITY_HIDING_SLIME_KEY : ENTITY_KEY_DROP_POINT;
+        return spawnKeyDropAt(itemType, 0x28, 0x3C, 0, 0x70, 0, 0);
     }
 
     /** Creates the ROM's ordinary player-arrow entity type {@code $00}. */
@@ -9903,21 +9940,21 @@ public final class RoomEntityRuntime {
 
     private void spawnBossKeyDrop(RoomEntity source, int spriteVariant, int z,
                                   int speedZ, int privateCountdown1) {
-        spawnKeyDropAt(source.x(), source.y(), spriteVariant, z, speedZ,
+        spawnKeyDropAt(ENTITY_KEY_DROP_POINT, source.x(), source.y(), spriteVariant, z, speedZ,
             privateCountdown1);
     }
 
-    private int spawnKeyDropAt(int x, int y, int spriteVariant, int z,
+    private int spawnKeyDropAt(int itemType, int x, int y, int spriteVariant, int z,
                                int speedZ, int privateCountdown1) {
         int freeSlot = findFreeEntitySlot();
         if (freeSlot < 0) {
             return -1;
         }
 
-        EntitySpriteDefinition definition = spriteDefinitionFor(ENTITY_KEY_DROP_POINT);
+        EntitySpriteDefinition definition = spriteDefinitionFor(itemType);
         int variant = definition.supported()
             ? Math.min(spriteVariant, definition.variantCount() - 1) : -1;
-        RoomEntity drop = new RoomEntity(freeSlot, -1, ENTITY_KEY_DROP_POINT,
+        RoomEntity drop = new RoomEntity(freeSlot, -1, itemType,
             x & 0xFF, y & 0xFF, EntityStatus.ACTIVE, definition, variant,
             0, 0, z);
         slots[freeSlot] = drop;
@@ -9932,8 +9969,8 @@ public final class RoomEntityRuntime {
         enemyStunnedCountdown[freeSlot] = 0;
         dyingCountdown[freeSlot] = 0;
         powerRecoilDeath[freeSlot] = false;
-        enemyPhysicsFlags[freeSlot] = initialPhysicsFlags(ENTITY_KEY_DROP_POINT);
-        enemyHealth[freeSlot] = initialHealth(ENTITY_KEY_DROP_POINT);
+        enemyPhysicsFlags[freeSlot] = initialPhysicsFlags(itemType);
+        enemyHealth[freeSlot] = initialHealth(itemType);
         enemyFlashCountdown[freeSlot] = 0;
         enemyIgnoreHitsCountdown[freeSlot] = 1;
         entityGroundStatus[freeSlot] = 0;
@@ -9990,6 +10027,61 @@ public final class RoomEntityRuntime {
             enemyDropActive[freeSlot] = true;
         }
         dynamicEntitySpawnedThisFrame[freeSlot] = true;
+    }
+
+    private boolean spawnKanaletWallMoblin(RoomEntity wall) {
+        int freeSlot = findFreeEntitySlot();
+        if (freeSlot < 0) {
+            return false;
+        }
+        EntitySpriteDefinition definition = spriteDefinitionFor(ENTITY_MOBLIN_SWORD);
+        int variant = definition.supported() ? definition.initialVariant() : -1;
+        slots[freeSlot] = new RoomEntity(freeSlot, 0xFF, ENTITY_MOBLIN_SWORD,
+            wall.x(), (wall.y() + 0x08) & 0xFF, EntityStatus.INIT,
+            definition, variant, 0, 0, wall.z());
+        resetEnemyDropState(freeSlot);
+        droppedItemBySlot[freeSlot] = ENTITY_HIDING_SLIME_KEY;
+        enemyPhysicsFlags[freeSlot] = initialPhysicsFlags(ENTITY_MOBLIN_SWORD);
+        enemyHealth[freeSlot] = initialHealth(ENTITY_MOBLIN_SWORD);
+        enemyIgnoreHitsCountdown[freeSlot] = 1;
+        entityOptions1Override[freeSlot] = -1;
+        dynamicEntitySpawnedThisFrame[freeSlot] = true;
+        return true;
+    }
+
+    private boolean kanaletCrowTakeoffTriggered(RoomEntity crow) {
+        for (RoomEntity candidate : slots) {
+            if (!candidate.loaded()) {
+                continue;
+            }
+            if (candidate.type() == ENTITY_LIFTABLE_ROCK
+                && liftableRockSmashActive[candidate.slot()]
+                && liftableRockSmashSourceVariant[candidate.slot()]
+                    == LIFTABLE_ROCK_SMASH_MODE_ROCK) {
+                int distanceX = Math.abs(signedByte((crow.x() - candidate.x()) & 0xFF));
+                int distanceY = signedByte(
+                    ((crow.y() - crow.z()) - candidate.y()) & 0xFF);
+                if (distanceX < 0x10 && distanceY >= -0x28 && distanceY < 0x28) {
+                    return true;
+                }
+                continue;
+            }
+            if (candidate.type() != ENTITY_BOMB) {
+                continue;
+            }
+            int countdown = enemyTransitionCountdown[candidate.slot()] & 0xFF;
+            if (enemyFlashCountdown[candidate.slot()] == 0
+                || countdown >= 0x22) {
+                continue;
+            }
+            int distanceX = Math.abs(signedByte((crow.x() - candidate.x()) & 0xFF));
+            int distanceY = Math.abs(signedByte(
+                ((crow.y() - crow.z()) - candidate.y()) & 0xFF));
+            if (distanceX < 0x20 && distanceY < 0x20) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -13100,6 +13192,13 @@ public final class RoomEntityRuntime {
         return preserveDeathMetadata(entity, new RoomEntity(
             entity.slot(), entity.sourceLoadOrder(), entity.type(),
             x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(), variant,
+            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z()));
+    }
+
+    private static RoomEntity withSourceLoadOrder(RoomEntity entity, int sourceLoadOrder) {
+        return preserveDeathMetadata(entity, new RoomEntity(
+            entity.slot(), sourceLoadOrder, entity.type(), entity.x(), entity.y(),
+            entity.status(), entity.spriteDefinition(), entity.spriteVariant(),
             entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z()));
     }
 

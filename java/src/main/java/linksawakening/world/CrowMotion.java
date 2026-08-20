@@ -15,6 +15,7 @@ final class CrowMotion {
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] physicsFlags = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] perchPositionAdjusted = new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     /** Entity $7A uses EntityInitNoop; the handler owns all of these fields. */
@@ -28,6 +29,7 @@ final class CrowMotion {
         speedYAccumulator[slot] = 0;
         speedZAccumulator[slot] = 0;
         physicsFlags[slot] = INITIAL_PHYSICS_FLAGS;
+        perchPositionAdjusted[slot] = false;
         initialized[slot] = true;
     }
 
@@ -42,6 +44,13 @@ final class CrowMotion {
 
     Update advance(RoomEntity entity, int transitionCountdown, int frameCounter,
                    int linkEntityX, int linkEntityY) {
+        return advance(entity, transitionCountdown, frameCounter,
+            linkEntityX, linkEntityY, true, false);
+    }
+
+    Update advance(RoomEntity entity, int transitionCountdown, int frameCounter,
+                   int linkEntityX, int linkEntityY,
+                   boolean allowLinkProximityTrigger, boolean externalTakeoffTrigger) {
         if (entity == null || (entity.type() & 0xFF) != ENTITY_TYPE) {
             throw new IllegalArgumentException("Unsupported Crow motion entity");
         }
@@ -69,11 +78,16 @@ final class CrowMotion {
             case 0 -> {
                 // The first handler pass lifts the visual origin by four
                 // pixels and advances the state before checking proximity.
-                y = (y - 4) & 0xFF;
+                if (!perchPositionAdjusted[slot]) {
+                    y = (y - 4) & 0xFF;
+                    perchPositionAdjusted[slot] = true;
+                }
                 direction[slot] = signedByte((linkEntityX - x) & 0xFF) < 0 ? 1 : 0;
                 int distanceX = signedByte((linkEntityX - x) & 0xFF);
                 int distanceY = signedByte((linkEntityY - y) & 0xFF);
-                if (distanceX >= -0x18 && distanceX < 0x18
+                if (externalTakeoffTrigger
+                    || allowLinkProximityTrigger
+                    && distanceX >= -0x18 && distanceX < 0x18
                     && distanceY >= -0x30 && distanceY < 0x30) {
                     physicsFlags[slot] = ACTIVE_PHYSICS_FLAGS;
                     countdown = 0x22;
