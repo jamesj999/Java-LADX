@@ -123,19 +123,19 @@ git commit -m "feat: port side-view pot motion"
 - Reference: `LADX-Disassembly/src/data/rooms/indoors_a.asm`
 - Reference: `LADX-Disassembly/src/data/entities/indoors_a.asm`
 
-- [ ] **Step 1: Extend the ordered test**
+- [x] **Step 1: Extend the ordered test**
 
 From the existing room `$3B` entry, use live entity ticks and Link requests to
 activate and ride `$A5`, interact with `$D6`, reach the vertical warp, and
 assert return to map `$01`, room `$25`, at ROM coordinates `$88/$20`.
 
-- [ ] **Step 2: Run focused GREEN**
+- [x] **Step 2: Run focused GREEN**
 
 ```bash
 cd java && gradle test --tests linksawakening.world.RoomTransitionCoordinatorTest.completeGameplayRouteUsesPhysicalTraversalAndRealRoomMechanics
 ```
 
-- [ ] **Step 3: Review and full verification**
+- [x] **Step 3: Review and full verification**
 
 Compare behavior against both source handlers and the room/warp tables. Then
 run `gradle cleanTest test`, require zero failures/errors/skips, run

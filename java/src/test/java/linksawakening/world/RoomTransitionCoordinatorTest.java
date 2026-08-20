@@ -256,7 +256,7 @@ final class RoomTransitionCoordinatorTest {
     }
 
     @Test
-    void freshGameRuntimeSequenceCollectsBottleGrottoFirstKeyInOrder()
+    void completeGameplayRouteUsesPhysicalTraversalAndRealRoomMechanics()
             throws Exception {
         byte[] rom = loadRom();
         RomTables romTables = RomTables.loadFromRom(rom);
@@ -3811,6 +3811,118 @@ final class RoomTransitionCoordinatorTest {
             .filter(entity -> entity.type() == 0xA5).count());
         assertEquals(2, session.activeRoom().entities().loadedEntities().stream()
             .filter(entity -> entity.type() == 0xD6).count());
+
+        RoomEntity room3BPlatform = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0xA5).findFirst().orElseThrow();
+        List<RoomEntity> room3BPots = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0xD6)
+            .sorted(java.util.Comparator.comparingInt(RoomEntity::sourceLoadOrder))
+            .toList();
+        assertEquals(0x38, room3BPlatform.x());
+        assertEquals(0x50, room3BPlatform.y());
+        assertEquals(0x68, room3BPots.getFirst().x());
+        assertEquals(0x70, room3BPots.getFirst().y());
+        // The entity macro is (vertical, horizontal); the authored second
+        // record is (6,7), hence ROM position $78/$70.
+        assertEquals(0x78, room3BPots.get(1).x());
+        assertEquals(0x70, room3BPots.get(1).y());
+
+        session.setEntityInventorySlots(0x00, 0x03);
+        session.setEntityPowerBraceletButtonHeld(true);
+        session.setEntityActionButtonsHeld(false, true);
+        session.setEntityAttackStepAnimationCountdown(0);
+
+        // Main's live ordering: Link moves first, AnimateEntities consumes the
+        // captured final X, then typed Link writes are applied before the next
+        // Link update. Start at the authored A5 contact window.
+        tickLiveRoom3B(session, link, coordinator, transition, scroll, frame++);
+        link.setPixelPosition(room3BPlatform.x(), room3BPlatform.y() - 0x20);
+        List<EntityCombatEvent> room3BPlatformEvents = tickLiveRoom3B(
+            session, link, coordinator, transition, scroll, frame++);
+        assertTrue(link.standingOnSideViewEntity());
+        assertFalse(transition.isActive());
+        assertFalse(scroll.isActive());
+        assertTrue(room3BPlatformEvents.stream().noneMatch(event -> event.slot()
+            == room3BPlatform.slot() && event.linkDamage() != 0));
+        int firstPlatformY = session.activeRoom().entities().slots()
+            .get(room3BPlatform.slot()).y();
+        for (int rideFrame = 0; rideFrame < 16; rideFrame++) {
+            tickLiveRoom3B(session, link, coordinator, transition, scroll, frame++);
+        }
+        int riddenPlatformY = session.activeRoom().entities().slots()
+            .get(room3BPlatform.slot()).y();
+        assertTrue(riddenPlatformY > firstPlatformY,
+            "A5 platform did not move while Link was standing on it");
+
+        // Contact the first authored D6 through the same request/update path,
+        // then let its countdown settle before throwing it rightward.
+        RoomEntity firstPot = session.activeRoom().entities().slots()
+            .get(room3BPots.getFirst().slot());
+        link.clearSideViewPlatformState();
+        // The preceding live Link ticks may have left the attack-step timer
+        // nonzero; ReturnIfNonInteractive_19's pickup path requires zero.
+        link.clearRomAttackStepAnimationCountdown();
+        session.setEntityAttackStepAnimationCountdown(0);
+        // Keep the first pot in its raw -$12..+$11 lift window while placing
+        // Link just outside the second pot's descending-slot window.
+        link.setPixelPosition(firstPot.x() - 0x0B, firstPot.y() - 0x10);
+        // EntityGetLiftedUp prioritizes the B inventory slot. A held alone
+        // must not lift when B contains the bracelet but is not held.
+        session.setEntityActionButtonsHeld(true, false);
+        link.clearRomAttackStepAnimationCountdown();
+        session.setEntityAttackStepAnimationCountdown(0);
+        tickLiveRoom3B(session, link, coordinator, transition, scroll, frame++);
+        assertEquals(EntityStatus.ACTIVE,
+            session.activeRoom().entities().slots().get(firstPot.slot()).status());
+
+        // The same contact with B held is the successful exact-priority path.
+        session.setEntityActionButtonsHeld(false, true);
+        link.setPixelPosition(firstPot.x() - 0x0B, firstPot.y() - 0x10);
+        List<EntityCombatEvent> potPickupEvents = tickLiveRoom3B(
+            session, link, coordinator, transition, scroll, frame++);
+        assertEquals(EntityStatus.LIFTED,
+            session.activeRoom().entities().slots().get(firstPot.slot()).status(),
+            String.format("pot=%02X/%02X link=%02X/%02X",
+                firstPot.x(), firstPot.y(), link.romEntityX(), link.romEntityY()));
+        assertTrue(session.liftedEntityState().active());
+        assertTrue(potPickupEvents.stream().anyMatch(event ->
+            event.soundChannel() == EntityCombatEvent.SoundChannel.WAVE
+                && event.soundId() == 0x02));
+
+        for (int liftFrame = 0; liftFrame < 0x20
+                && session.liftedEntityState().carryState() != 0x01; liftFrame++) {
+            tickLiveRoom3B(session, link, coordinator, transition, scroll, frame++);
+        }
+        assertEquals(0x01, session.liftedEntityState().carryState());
+        assertTrue(session.throwLiftedEntity(Link.DIRECTION_RIGHT));
+        assertEquals(EntityStatus.ACTIVE,
+            session.activeRoom().entities().slots().get(firstPot.slot()).status());
+        List<EntityCombatEvent> throwEvents = tickLiveRoom3B(
+            session, link, coordinator, transition, scroll, frame++);
+        RoomEntity thrownPot = session.activeRoom().entities().slots().get(firstPot.slot());
+        assertEquals(EntityStatus.ACTIVE, thrownPot.status());
+        assertTrue(thrownPot.x() != firstPot.x() || thrownPot.y() != firstPot.y());
+        assertTrue(throwEvents.stream().anyMatch(event ->
+            event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE
+                && event.soundId() == 0x08));
+        assertEquals(0x0C, link.romAttackStepAnimationCountdown());
+
+        Warp room3BExit = session.activeRoom().warps().stream()
+            .filter(warp -> warp.destMap() == 0x01 && warp.destRoom() == 0x25
+                && warp.destX() == 0x88 && warp.destY() == 0x20)
+            .findFirst().orElseThrow();
+        assertEquals(-1, room3BExit.tileLocation());
+        link.setPixelPosition(0x80, -5);
+        coordinator.handleWarpAndIndoorBoundaries(link);
+        assertTrue(transition.isActive());
+        while (transition.isActive()) {
+            transition.tick();
+        }
+        assertEquals(Warp.CATEGORY_INDOOR, session.mapCategory());
+        assertEquals(0x01, session.activeRoom().mapId());
+        assertEquals(0x25, session.currentRoomId());
+        assertEquals(0x88, link.romEntityX());
+        assertEquals(0x20, link.romEntityY());
     }
 
     @Test
@@ -3857,6 +3969,155 @@ final class RoomTransitionCoordinatorTest {
                                                 int linkEntityX, int linkEntityY) {
         session.tickEntitiesWithProjectileEvents(
             frame, linkEntityX, linkEntityY, 0, 0, Link.DIRECTION_DOWN, false);
+    }
+
+    /**
+     * Focused Main-order harness for the room-$3B A5/D6 mechanics slice.
+     * Link moves first, RoomSession runs the entity pass, then only the
+     * route-relevant typed Link writes are applied before the next update.
+     */
+    private static List<EntityCombatEvent> tickLiveRoom3B(RoomSession session,
+                                                           Link link,
+                                                           RoomTransitionCoordinator coordinator,
+                                                           TransitionController transition,
+                                                           ScrollController scroll,
+                                                           int frame) {
+        link.captureRomFinalPosition();
+        link.update();
+        session.setEntityAttackStepAnimationCountdown(
+            link.romAttackStepAnimationCountdown());
+        session.setEntityFinalPositionX(link.romFinalPositionX());
+        session.tickEntitiesWithProjectileEvents(
+            frame, link.romEntityX(), link.romEntityY(), link.romEntityZ(),
+            link.isAirborne(), link.romMotionState(), link.direction(),
+            link.romCollisionType(), link.isUsingShield(), 1,
+            0, false, 0, 0, 0, 0, link.romSpeedX(), link.romSpeedY());
+        // Main clears this per-frame flag after AnimateEntities and before
+        // applying the current descending-slot platform requests.
+        link.clearStandingOnSideViewEntity();
+
+        List<RoomEntityRuntime.SideViewPlatformLinkRequest> platforms =
+            session.consumeSideViewPlatformLinkRequests();
+        List<RoomEntityRuntime.SideViewPotLinkRequest> pots =
+            session.consumeSideViewPotLinkRequests();
+        List<RoomEntityRuntime.LinkFinalPositionRequest> finalPositions =
+            session.consumeLinkFinalPositionRequests();
+        int platformIndex = 0;
+        int potIndex = 0;
+        int finalPositionIndex = 0;
+        while (platformIndex < platforms.size()
+                || potIndex < pots.size()
+                || finalPositionIndex < finalPositions.size()) {
+            int stream = -1;
+            int nextSlot = -1;
+            if (platformIndex < platforms.size()
+                    && platforms.get(platformIndex).sourceSlot() > nextSlot) {
+                stream = 0;
+                nextSlot = platforms.get(platformIndex).sourceSlot();
+            }
+            if (finalPositionIndex < finalPositions.size()
+                    && finalPositions.get(finalPositionIndex).sourceSlot() > nextSlot) {
+                stream = 1;
+                nextSlot = finalPositions.get(finalPositionIndex).sourceSlot();
+            }
+            if (potIndex < pots.size()
+                    && pots.get(potIndex).sourceSlot() >= nextSlot) {
+                stream = 2;
+            }
+            if (stream == 0) {
+                RoomEntityRuntime.SideViewPlatformLinkRequest request =
+                    platforms.get(platformIndex++);
+                if (request.standing()) {
+                    link.applySideViewPlatformContact(request.horizontalDelta(),
+                        request.positionY(), request.speedY(), true);
+                    coordinator.handleWarpAndIndoorBoundaries(link);
+                    coordinator.handleOverworldBoundary(link);
+                    if (scroll.isActive() || transition.isInputBlocked()) {
+                        link.clearSideViewPlatformState();
+                    }
+                }
+            } else if (stream == 1) {
+                RoomEntityRuntime.LinkFinalPositionRequest request =
+                    finalPositions.get(finalPositionIndex++);
+                link.restoreRomFinalPosition();
+                if (request.clearLinkPositionIncrement()) {
+                    link.clearRomPositionIncrement();
+                }
+                if (request.markLinkPushing()) {
+                    link.markRomLinkPushing(0x03);
+                }
+                if (request.resetPegasusBoots()) {
+                    link.resetPegasusBoots();
+                }
+            } else {
+                RoomEntityRuntime.SideViewPotLinkRequest request = pots.get(potIndex++);
+                if (request.restoreFinalPositionX()) {
+                    link.restoreRomFinalPositionX();
+                }
+                if (request.resetPegasusBoots()) {
+                    link.resetPegasusBoots();
+                }
+                if (request.speedX() != 0) {
+                    link.applyRomSpeedX(request.speedX());
+                }
+                if (request.ignoreCollisionCountdown() != 0) {
+                    link.setCollisionIgnoreFrames(request.ignoreCollisionCountdown());
+                }
+                if (request.snapTop()) {
+                    link.applySideViewPotContact(request.positionY(), request.speedY());
+                }
+            }
+        }
+        for (RoomEntityRuntime.LinkMotionBlockRequest request
+                : session.consumeLinkMotionBlockRequests()) {
+            link.blockNextRomMotionFrame();
+        }
+        // These Main streams are not emitted by the authored A5/D6 route;
+        // fail loudly rather than silently dropping a new request type.
+        assertTrue(session.consumeWarpLinkStateRequests().isEmpty());
+        assertFalse(session.consumeWorldLinkMotionBlockRequest());
+        assertTrue(session.consumeLinkFallenPoseRequests().isEmpty());
+        assertTrue(session.consumeLinkFacingRequests().isEmpty());
+        List<RoomEntityRuntime.LinkAttackClearRequest> attackClears =
+            session.consumeLinkAttackClearRequests();
+        List<RoomEntityRuntime.LinkAttackStepRequest> attackSteps =
+            session.consumeLinkAttackStepRequests();
+        int attackClearIndex = 0;
+        int attackStepIndex = 0;
+        while (attackClearIndex < attackClears.size()
+                || attackStepIndex < attackSteps.size()) {
+            boolean applyClear = attackStepIndex >= attackSteps.size()
+                || (attackClearIndex < attackClears.size()
+                    && attackClears.get(attackClearIndex).sourceSlot()
+                        > attackSteps.get(attackStepIndex).sourceSlot());
+            if (applyClear) {
+                attackClearIndex++;
+                link.clearRomAttackStepAnimationCountdown();
+            } else {
+                // A same-slot tie is not emitted by the current handlers;
+                // preserve Main's throw-step-wins ordering if one appears.
+                attackStepIndex++;
+                link.startRomItemAttackStep();
+            }
+        }
+        assertTrue(session.consumeLinkHeldItemPoseRequests().isEmpty());
+        assertTrue(session.consumeLinkSwordSpinPoseRequests().isEmpty());
+        assertTrue(session.consumeLinkSwordFinalPoseRequests().isEmpty());
+        RoomEntityRuntime.LiftedEntityState lifted = session.liftedEntityState();
+        if (lifted.active()) {
+            link.setCarryingLiftedObjectState(lifted.carryState(),
+                lifted.effectiveRomDirection());
+        } else {
+            link.setCarryingLiftedObjectState(0,
+                switch (link.direction()) {
+                    case Link.DIRECTION_RIGHT -> 0;
+                    case Link.DIRECTION_LEFT -> 1;
+                    case Link.DIRECTION_UP -> 2;
+                    case Link.DIRECTION_DOWN -> 3;
+                    default -> throw new AssertionError(link.direction());
+                });
+        }
+        return session.consumeEntityEvents();
     }
 
     private static int letBowWowEatAllGoponga(RoomSession session,
