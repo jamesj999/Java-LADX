@@ -3021,6 +3021,70 @@ final class RoomSessionTest {
             session.consumeEntityDialogRequests().getFirst().globalDialogId());
     }
 
+    @Test
+    void indoorPowerBraceletPullLiftsSourcePotOnEighthFrame() {
+        RoomSession session = newSession();
+        session.loadInitialOverworld(0x00);
+        session.loadIndoor(0x01, 0x21);
+        int potLocation = 0x23;
+        int potIndex = RoomConstants.ROOM_OBJECTS_BASE + potLocation;
+        assertEquals(0x20, session.activeRoom().roomObjectsArea()[potIndex]);
+
+        for (int frame = 0; frame < 8; frame++) {
+            assertFalse(session.tryLiftIndoorObject(
+                0x30, 0x1B, Link.DIRECTION_UP, false, 0x08));
+        }
+        assertEquals(0x20, session.activeRoom().roomObjectsArea()[potIndex]);
+
+        for (int frame = 0; frame < 7; frame++) {
+            assertTrue(session.tryLiftIndoorObject(
+                0x30, 0x1B, Link.DIRECTION_UP, true, 0x08));
+        }
+        assertFalse(session.tryLiftIndoorObject(
+            0x30, 0x1B, Link.DIRECTION_UP, true, 0x00));
+        for (int frame = 0; frame < 7; frame++) {
+            assertTrue(session.tryLiftIndoorObject(
+                0x30, 0x1B, Link.DIRECTION_UP, true, 0x08));
+        }
+        assertEquals(0x20, session.activeRoom().roomObjectsArea()[potIndex]);
+
+        assertTrue(session.tryLiftIndoorObject(
+            0x30, 0x1B, Link.DIRECTION_UP, true, 0x08));
+        assertEquals(0x0D, session.activeRoom().roomObjectsArea()[potIndex]);
+        RoomEntity liftedPot = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x05
+                && entity.status() == EntityStatus.LIFTED)
+            .findFirst().orElseThrow();
+        assertEquals(0x38, liftedPot.x());
+        assertEquals(0x2B, liftedPot.y());
+        assertEquals(0, liftedPot.spriteVariant());
+        assertEquals(liftedPot.slot(), session.liftedEntityState().slot());
+        assertEquals(0xD2, session.entityPhysicsFlagsForTest(liftedPot.slot()));
+
+        int secondPotIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x24;
+        assertEquals(0x20, session.activeRoom().roomObjectsArea()[secondPotIndex]);
+        assertFalse(session.tryLiftIndoorObject(
+            0x40, 0x1B, Link.DIRECTION_UP, true, 0x08));
+        assertEquals(0x20, session.activeRoom().roomObjectsArea()[secondPotIndex]);
+    }
+
+    @Test
+    void pieceOfPowerShortensIndoorPotPullToThreeFrames() {
+        RoomSession session = newSession();
+        session.loadInitialOverworld(0x00);
+        session.loadIndoor(0x01, 0x21);
+        int potIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x23;
+
+        for (int frame = 0; frame < 2; frame++) {
+            assertTrue(session.tryLiftIndoorObject(
+                0x30, 0x1B, Link.DIRECTION_UP, true, 0x08, true));
+            assertEquals(0x20, session.activeRoom().roomObjectsArea()[potIndex]);
+        }
+        assertTrue(session.tryLiftIndoorObject(
+            0x30, 0x1B, Link.DIRECTION_UP, true, 0x08, true));
+        assertEquals(0x0D, session.activeRoom().roomObjectsArea()[potIndex]);
+    }
+
     private static RoomSession newSession() {
         return newSession(room -> {
         });

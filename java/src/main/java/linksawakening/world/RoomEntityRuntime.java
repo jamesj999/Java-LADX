@@ -6099,6 +6099,35 @@ public final class RoomEntityRuntime {
         return freeSlot;
     }
 
+    /** Spawns bank 0's temporary type-$05 entity already entering lifted status. */
+    int spawnLiftedRoomObject(int x, int y, int romDirection, int spriteVariant) {
+        int freeSlot = findFreeEntitySlot();
+        if (freeSlot < 0) {
+            return -1;
+        }
+        EntitySpriteDefinition definition = spriteDefinitionFor(ENTITY_LIFTABLE_ROCK);
+        int variant = definition.supported() ? spriteVariant : -1;
+        slots[freeSlot] = new RoomEntity(freeSlot, -1, ENTITY_LIFTABLE_ROCK,
+            x & 0xFF, y & 0xFF, EntityStatus.ACTIVE, definition, variant);
+        enemyPhysicsFlags[freeSlot] = 0x02 | ENTITY_PHYSICS_HARMLESS
+            | ENTITY_PHYSICS_PROJECTILE_NOCLIP | ENTITY_PHYSICS_SHADOW;
+        enemyHealth[freeSlot] = initialHealth(ENTITY_LIFTABLE_ROCK);
+        enemyTransitionCountdown[freeSlot] = 0;
+        enemyStunnedCountdown[freeSlot] = 0;
+        enemyFlashCountdown[freeSlot] = 0;
+        enemyIgnoreHitsCountdown[freeSlot] = 0;
+        enemyRecoilMotion.clear(freeSlot);
+        dynamicEntitySpawnedThisFrame[freeSlot] = true;
+        if (!beginLift(freeSlot, romDirection)) {
+            slots[freeSlot] = RoomEntity.disabled(freeSlot);
+            return -1;
+        }
+        pendingEntityEvents.add(new EntityCombatEvent(
+            freeSlot, ENTITY_LIFTABLE_ROCK, 0, false,
+            EntityCombatEvent.SoundChannel.WAVE, 0x02));
+        return freeSlot;
+    }
+
     void movePushedBlock(int slot, int x, int y) {
         if (slot < 0 || slot >= slots.length
             || slots[slot].type() != ENTITY_PUSHED_BLOCK

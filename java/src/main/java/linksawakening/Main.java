@@ -907,6 +907,12 @@ public class Main {
                     roomSession.tryInteractWithIndoorBlock(
                         link.pixelX(), link.pixelY(), link.direction(),
                         link.romCollisionType());
+                    roomSession.tryLiftIndoorObject(
+                        link.pixelX(), link.pixelY(), link.direction(),
+                        powerBraceletButtonHeld,
+                        link.romPressedButtonsMask(),
+                        playerState.activePowerUp()
+                            == PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER);
                 }
                 Link.ScreenShakeRequest pegasusShake =
                     link.consumePegasusScreenShakeRequest();

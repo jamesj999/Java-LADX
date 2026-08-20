@@ -23,7 +23,7 @@
 - Reference: `LADX-Disassembly/src/code/bank0.asm:$20CF-$21A7`
 - Reference: `LADX-Disassembly/src/code/bank14.asm:$5526-$557D`
 
-- [ ] **Step 1: Write the focused failing session test**
+- [x] **Step 1: Write the focused failing session test**
 
 Load map `$01`, room `$21`; position Link against a reachable object `$20`.
 Call the background-lift interaction for seven valid pull frames and assert the
@@ -32,7 +32,7 @@ entity `$05` appears in status 7 at the object center, and the session exposes
 an active lifted state. Also prove releasing the pull direction resets the
 counter and that no lift occurs without the Bracelet button.
 
-- [ ] **Step 2: Run RED**
+- [x] **Step 2: Run RED**
 
 ```bash
 cd java && gradle test --tests 'linksawakening.world.RoomSessionTest.indoorPowerBraceletPullLiftsSourcePotOnEighthFrame' --rerun-tasks
@@ -40,9 +40,8 @@ cd java && gradle test --tests 'linksawakening.world.RoomSessionTest.indoorPower
 
 Expected: compilation failure because the shared session API does not exist.
 
-- [ ] **Step 3: Implement the minimal source bridge**
+- [x] **Step 3: Implement the minimal source bridge**
 
-Carry each room header's floor object through `LoadedRoom` and `ActiveRoom`.
 Add `RoomEntityRuntime.spawnLiftedRoomObject` to create entity `$05` with pot
 variant `$00` and enter `beginLift`. Add `RoomSession.tryLiftIndoorObject` to
 validate indoor state, collision direction, Bracelet button, opposite pull
@@ -50,7 +49,7 @@ direction, object `$20/$8E`, and the eight-frame counter; reveal `$0D` or `$AA`,
 refresh tile/collision state, and spawn the lifted entity at the source cell.
 Wire `Main` with the actual equipped Bracelet and ROM pressed-direction mask.
 
-- [ ] **Step 4: Run focused GREEN**
+- [x] **Step 4: Run focused GREEN**
 
 ```bash
 cd java && gradle test \
@@ -74,20 +73,20 @@ git commit -m "feat: lift indoor pots with Power Bracelet"
 - Reference: `LADX-Disassembly/src/data/rooms/indoors_a.asm`
 - Reference: `LADX-Disassembly/src/data/entities/indoors_a.asm`
 
-- [ ] **Step 1: Write the ordered route assertion**
+- [x] **Step 1: Write the ordered route assertion**
 
 After room `$20` reload persistence, cross right to `$21`, then right to `$22`
 using `walkToAndCrossIndoorBoundary`. Assert room IDs at both boundaries and
 that `entitySwitchBlocksStateForTest()` remains `$00`.
 
-- [ ] **Step 2: Assert room `$22` ROM state**
+- [x] **Step 2: Assert room `$22` ROM state**
 
 Assert event `$00`, chest `$A0` at `$27`, crystal entity `$66` at ROM position
 `$48/$30`, four heart entities at source locations `$53..$56`, four pot objects
 `$20` at `$53..$56`, representative `$DB/$DC` objects, and ROM-selected
 `CHEST_SMALL_KEY`.
 
-- [ ] **Step 3: Run the ordered test**
+- [x] **Step 3: Run the ordered test**
 
 ```bash
 cd java && gradle test --tests 'linksawakening.world.RoomTransitionCoordinatorTest.freshGameRuntimeSequenceCollectsBottleGrottoFirstKeyInOrder' --rerun-tasks
@@ -113,26 +112,27 @@ git commit -m "test: reach Bottle Grotto room 22"
 - Reference: `LADX-Disassembly/src/data/chests/indoors_a.asm`
 - Reference: `LADX-Disassembly/src/code/entities/bank3.asm`
 
-- [ ] **Step 1: Reach and open chest `$27` through collision**
+- [x] **Step 1: Reach and open chest `$27` through collision**
 
-Use `reachablePositionPath` to reach the upward chest interaction tile without
-crossing blocked `$DC` cells. Call `tryOpenChest` facing up and assert
+Use the northeast room `$21` exit, hit room `$22`'s crystal with the live Sword,
+preserve raised-block footing, and reach the upward chest interaction tile.
+Call `tryOpenChest` facing up and assert
 `CHEST_SMALL_KEY`, room `$22`, and location `$27`.
 
-- [ ] **Step 2: Complete the chest lifecycle**
+- [x] **Step 2: Complete the chest lifecycle**
 
 Tick with a bounded `$40`-frame loop, consume each `ChestRewardEvent`, apply it
 through `PlayerState.applyChestReward`, observe the ROM-selected dialog, and
 assert chest teardown. Verify Small Keys `$00 -> $01`, object `$A1`, and room
 status bit `$10`.
 
-- [ ] **Step 3: Reload and prove persistence**
+- [x] **Step 3: Reload and prove persistence**
 
 Cross west to `$21`, return east to `$22`, advance `$10` interactive gameplay
-ticks, and assert chest `$A1`, event `$00`, switch state `$00`, Small Keys `$01`,
+ticks, and assert chest `$A1`, event `$00`, switch state `$02`, Small Keys `$01`,
 and an empty reward queue.
 
-- [ ] **Step 4: Run ordered and focused GREEN verification**
+- [x] **Step 4: Run ordered and focused GREEN verification**
 
 ```bash
 cd java && gradle test \
@@ -155,18 +155,18 @@ git commit -m "feat: collect Bottle Grotto room 22 key"
 - Modify: `docs/reconstruction-roadmap.md`
 - Modify: `docs/superpowers/plans/2026-08-20-bottle-grotto-room-22-key.md`
 
-- [ ] **Step 1: Obtain source-fidelity review**
+- [x] **Step 1: Obtain source-fidelity review**
 
 Compare the diff with `MapLayout1`, `IndoorsA21`, `IndoorsA22`, their entity and
 chest tables, global switch-state ownership, and chest persistence. Fix and
 re-review every Critical or Important finding.
 
-- [ ] **Step 2: Obtain code-quality review**
+- [x] **Step 2: Obtain code-quality review**
 
 Review collision authenticity, bounded waits, lifecycle ownership, diagnostics,
 and regression scope. Fix and re-review every Critical or Important finding.
 
-- [ ] **Step 3: Run clean verification and count XML results**
+- [x] **Step 3: Run clean verification and count XML results**
 
 ```bash
 cd java && gradle clean test --rerun-tasks

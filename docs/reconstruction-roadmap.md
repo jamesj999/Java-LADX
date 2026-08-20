@@ -2899,3 +2899,27 @@ of scope.
 - Focused runtime/transition coverage and `gradle clean test --rerun-tasks`
   pass with 1,710 tests across 215 suites and zero failures, errors, or skips.
   The next gameplay frontier is the post-Bracelet room `$22` Small Key route.
+
+## Verified Bottle Grotto room `$22` Small Key — 2026-08-20
+
+- The uninterrupted fresh-game trace returns `$20 -> $21`, then lifts the five
+  ROM-authored pots `$26/$16/$17/$18/$28` that seal room `$21`'s northeast
+  passage. Later `$C8/$03` cells overwrite the apparent `$F7` door macro, so
+  the upper passable edge is used rather than treating `$39` as an open door.
+- Indoor object `$20` now uses the Power Bracelet's sustained eight-frame pull,
+  or the Piece of Power's three-frame variant, and selects the target through
+  the ROM sword-area cell. It becomes `$0D` before the temporary entity spawn;
+  type `$05` starts at Link's projectile coordinates with physics `$D2` and
+  enters the existing lifted-object lifecycle. `$8E` retains its `$AA` reveal.
+  A second lift is rejected while another lifted object is active; no invented
+  cross-room carry restoration or thrown-crystal behavior is part of this slice.
+- Room `$22` is verified against its chest, switch-block, pot, heart, and crystal
+  source data. Link hits the live crystal with the Sword, changes the global
+  switch state `$00 -> $02`, and preserves the ROM standing-on-switch-block
+  collision exception while leaving the newly raised `$DB` platform.
+- The room `$22` chest yields `CHEST_SMALL_KEY`, completes reward/dialog/entity
+  teardown, raises Bottle Grotto's Small Key count `$00 -> $01`, and persists
+  open object `$A1` plus status bit `$10`. A `$22 -> $21 -> $22` reload retains
+  switch state `$02`, the key, and suppresses duplicate rewards.
+- `gradle clean test --rerun-tasks` passes with 1,712 tests across 215 suites
+  and no failures, errors, or skips.

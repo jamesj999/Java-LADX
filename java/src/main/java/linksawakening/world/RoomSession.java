@@ -96,6 +96,9 @@ public final class RoomSession {
     private static final int EVENT_EFFECT_CLEAR_MIDBOSS = 0xC0;
     private static final int EVENT_CLEAR_MIDBOSS = 0xC1;
     private static final int OBJECT_SWITCH_BUTTON = 0xAA;
+    private static final int OBJECT_LIFTABLE_POT = 0x20;
+    private static final int OBJECT_POT_WITH_SWITCH = 0x8E;
+    private static final int INDOOR_POT_PULL_FRAMES = 0x08;
     private static final int OBJECT_PUSHABLE_BLOCK = 0xA7;
     private static final int OBJECT_KEYHOLE_BLOCK = 0xDE;
     private static final int OBJECT_SETTLED_PUSHED_BLOCK = 0xA6;
@@ -299,6 +302,7 @@ public final class RoomSession {
     private boolean indoorBossDoorOpening;
     /** wC191 for OBJECT_PUSHABLE_BLOCK's sustained collision branch. */
     private int pushBlockContactTicks;
+    private int indoorPotPullFrames;
     private int pushedBlockMotionFrames;
     private int pushedBlockSourceLocation = -1;
     private int pushedBlockDestinationLocation = -1;
@@ -2375,6 +2379,7 @@ public final class RoomSession {
         indoorKeyDoorLocation = -1;
         indoorBossDoorOpening = false;
         pushBlockContactTicks = 0;
+        indoorPotPullFrames = 0;
         pushedBlockMotionFrames = 0;
         pushedBlockSourceLocation = -1;
         pushedBlockDestinationLocation = -1;
@@ -2889,6 +2894,86 @@ public final class RoomSession {
             activeRoom.replaceEntities(entityRuntime.snapshot());
         }
         return true;
+    }
+
+    /** Mirrors bank 0's sustained Power Bracelet pull on indoor object $20/$8E. */
+    public boolean tryLiftIndoorObject(int linkPixelX, int linkPixelY,
+                                       int linkDirection,
+                                       boolean braceletButtonHeld,
+                                       int pressedButtonsMask) {
+        return tryLiftIndoorObject(linkPixelX, linkPixelY, linkDirection,
+            braceletButtonHeld, pressedButtonsMask, false);
+    }
+
+    /** Includes the source's shortened pull while Piece of Power is active. */
+    public boolean tryLiftIndoorObject(int linkPixelX, int linkPixelY,
+                                       int linkDirection,
+                                       boolean braceletButtonHeld,
+                                       int pressedButtonsMask,
+                                       boolean pieceOfPowerActive) {
+        if (activeRoom == null || entityRuntime == null
+            || activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
+            || activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL
+            || !braceletButtonHeld || entityRuntime.liftedEntityState().active()) {
+            indoorPotPullFrames = 0;
+            return false;
+        }
+        int oppositeButton = switch (linkDirection) {
+            case Link.DIRECTION_UP -> 0x08;
+            case Link.DIRECTION_DOWN -> 0x04;
+            case Link.DIRECTION_LEFT -> 0x01;
+            case Link.DIRECTION_RIGHT -> 0x02;
+            default -> 0;
+        };
+        if (oppositeButton == 0 || (pressedButtonsMask & oppositeButton) == 0) {
+            indoorPotPullFrames = 0;
+            return false;
+        }
+
+        int swordAreaX = switch (linkDirection) {
+            case Link.DIRECTION_RIGHT -> 0x0C;
+            case Link.DIRECTION_LEFT -> 0x03;
+            case Link.DIRECTION_UP, Link.DIRECTION_DOWN -> 0x08;
+            default -> 0;
+        };
+        int swordAreaY = switch (linkDirection) {
+            case Link.DIRECTION_RIGHT, Link.DIRECTION_LEFT -> 0x0A;
+            case Link.DIRECTION_UP -> 0x05;
+            case Link.DIRECTION_DOWN -> 0x10;
+            default -> 0;
+        };
+        int objectLeft = (linkPixelX + swordAreaX) & 0xF0;
+        int objectTop = (linkPixelY + swordAreaY) & 0xF0;
+        int touchedLocation = objectTop | (objectLeft >>> 4);
+        int touchedObject = objectAtRoomLocation(touchedLocation);
+        if (touchedObject != OBJECT_LIFTABLE_POT
+            && touchedObject != OBJECT_POT_WITH_SWITCH) {
+            indoorPotPullFrames = 0;
+            return false;
+        }
+        indoorPotPullFrames++;
+        int pullFrames = pieceOfPowerActive ? 0x03 : INDOOR_POT_PULL_FRAMES;
+        if (indoorPotPullFrames < pullFrames) {
+            return true;
+        }
+        indoorPotPullFrames = 0;
+
+        activeRoom.roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + touchedLocation] =
+            touchedObject == OBJECT_POT_WITH_SWITCH
+                ? OBJECT_SWITCH_BUTTON : 0x0D;
+        refreshActiveRoomTilemap();
+        overworldCollision.setRoom(activeRoom.roomObjectsArea());
+        overworldCollision.setGbcOverlay(null);
+        int x = linkPixelX + 0x08;
+        int y = linkPixelY + 0x10;
+        entityRuntime.spawnLiftedRoomObject(
+            x, y, romDirectionForProjectileCollision(linkDirection), 0);
+        activeRoom.replaceEntities(entityRuntime.snapshot());
+        return true;
+    }
+
+    int entityPhysicsFlagsForTest(int slot) {
+        return entityRuntime == null ? 0 : entityRuntime.physicsFlags(slot);
     }
 
     /** Dispatches bank 2's shared $A7/$DE interactive-block collision branch. */
