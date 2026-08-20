@@ -294,6 +294,7 @@ public final class RoomEntityRuntime {
     private int followingEntityYOffset;
     private int linkAttackStepAnimationCountdown;
     private final ButterflyMotion butterflyMotion = new ButterflyMotion();
+    private final SideViewPlatformMotion sideViewPlatformMotion = new SideViewPlatformMotion();
     private final KeeseMotion keeseMotion = new KeeseMotion();
     private final RoamingEnemyMotion roamingEnemyMotion = new RoamingEnemyMotion();
     private final UnmaskedIronMaskMotion unmaskedIronMaskMotion =
@@ -475,6 +476,8 @@ public final class RoomEntityRuntime {
     private final List<LinkFinalPositionRequest> pendingLinkFinalPositionRequests =
         new ArrayList<>();
     private final List<RoosterLinkStateRequest> pendingRoosterLinkStateRequests =
+        new ArrayList<>();
+    private final List<SideViewPlatformLinkRequest> pendingSideViewPlatformLinkRequests =
         new ArrayList<>();
     private final List<LinkMotionBlockRequest> pendingLinkMotionBlockRequests =
         new ArrayList<>();
@@ -747,6 +750,20 @@ public final class RoomEntityRuntime {
             if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
                 throw new IllegalArgumentException("Link motion-block source slot out of range: "
                     + sourceSlot);
+            }
+        }
+    }
+
+    /** Link-side position/speed writes emitted by the side-view platform handler. */
+    public record SideViewPlatformLinkRequest(int sourceSlot, int horizontalDelta,
+                                              int positionY, int speedY, boolean standing,
+                                              boolean activate) {
+        public SideViewPlatformLinkRequest {
+            if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES
+                || horizontalDelta < -0x80 || horizontalDelta > 0x7F
+                || (positionY & ~0xFF) != 0
+                || (speedY & ~0xFF) != 0) {
+                throw new IllegalArgumentException("Invalid side-view platform Link request");
             }
         }
     }
@@ -1608,6 +1625,7 @@ public final class RoomEntityRuntime {
         pendingLinkFinalPositionRequests.clear();
         pendingRoosterLinkStateRequests.clear();
         pendingLinkMotionBlockRequests.clear();
+        pendingSideViewPlatformLinkRequests.clear();
         pendingHinoxLinkEffectRequests.clear();
         pendingLinkFallenPoseRequests.clear();
         pendingLinkFacingRequests.clear();
@@ -1648,6 +1666,7 @@ public final class RoomEntityRuntime {
         followingLinkZ = linkZ & 0xFF;
         followingLinkDirection = linkDirection & 0xFF;
         followingEntityYOffset = entityYOffset & 0xFF;
+        boolean carryingEntity = liftedEntityState().carryState() != 0;
         int romLinkDirection = romDirectionForJavaDirection(linkDirection);
         lastRomLinkDirection = romLinkDirection;
         for (int index = slots.length - 1; index >= 0; index--) {
@@ -2394,6 +2413,50 @@ public final class RoomEntityRuntime {
                 }
             }
             RoomEntity updated = entity;
+            if (status == EntityStatus.ACTIVE && !wasInitializing
+                && entity.type() == SideViewPlatformMotion.ENTITY_TYPE
+                && handlerLinkCollisionEnabled && entityTimersInteractive()
+                && !creditsGameplay && transitionSequenceCounter == 0x04) {
+                SideViewPlatformMotion.Frame platformFrame =
+                    sideViewPlatformMotion.beginFrame(entity);
+                RoomEntity movedPlatform = platformFrame.entity();
+                if (platformFrame.horizontalDelta() != 0 && backgroundCollision != null
+                    && backgroundCollision.blocks(entity,
+                        platformFrame.horizontalDelta() < 0 ? 1 : 0,
+                        movedPlatform.x(), movedPlatform.y())) {
+                    platformFrame = sideViewPlatformMotion.restoreHorizontalPosition(entity,
+                        platformFrame);
+                    movedPlatform = platformFrame.entity();
+                }
+                if (platformFrame.verticalDelta() != 0 && backgroundCollision != null) {
+                    int direction = platformFrame.verticalDelta() < 0 ? 2 : 3;
+                    if (backgroundCollision.blocks(entity, direction, movedPlatform.x(),
+                        movedPlatform.y())) {
+                        platformFrame = sideViewPlatformMotion.restoreVerticalPosition(entity,
+                            platformFrame);
+                        movedPlatform = platformFrame.entity();
+                    }
+                }
+                boolean standing = groundInteractionSideScrolling
+                    && (linkZ & 0xFF) == 0
+                    && (currentLinkSpeedY & 0x80) == 0
+                    && sideViewPlatformOverlapsLink(movedPlatform, linkEntityX, linkEntityY)
+                    && (((linkEntityY - movedPlatform.y() + 0x08) & 0x80) != 0);
+                boolean activationAllowed = entityRoomId == 0x3B || carryingEntity;
+                if (standing) {
+                    pendingSideViewPlatformLinkRequests.add(new SideViewPlatformLinkRequest(
+                        entity.slot(), platformFrame.horizontalDelta(),
+                        (movedPlatform.y() - 0x10) & 0xFF, 0x02, true, activationAllowed));
+                }
+                SideViewPlatformMotion.Update platformUpdate = sideViewPlatformMotion.finishFrame(
+                    movedPlatform, platformFrame, frame, standing, activationAllowed);
+                updated = platformUpdate.entity();
+                if (platformUpdate.rumble()) {
+                    pendingEntityEvents.add(new EntityCombatEvent(
+                        entity.slot(), entity.type(), 0, false,
+                        EntityCombatEvent.SoundChannel.NOISE, 0x11));
+                }
+            }
             if (wasInitializing && entity.type() == ENTITY_CHEST_WITH_ITEM) {
                 initializeChestEntity(entity);
                 updated = withPositionAndVariant(entity, entity.x(),
@@ -5931,6 +5994,7 @@ public final class RoomEntityRuntime {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
         resetEnemyDropState(slot);
+        sideViewPlatformMotion.clear(slot);
         RoomEntity entity = slots[slot];
         bombFinalPresentationPending[slot] = false;
         enemyHitboxFlags[slot] = 0;
@@ -7555,6 +7619,37 @@ public final class RoomEntityRuntime {
         List<LinkMotionBlockRequest> pending = List.copyOf(pendingLinkMotionBlockRequests);
         pendingLinkMotionBlockRequests.clear();
         return pending;
+    }
+
+    List<SideViewPlatformLinkRequest> consumePendingSideViewPlatformLinkRequests() {
+        List<SideViewPlatformLinkRequest> pending =
+            List.copyOf(pendingSideViewPlatformLinkRequests);
+        pendingSideViewPlatformLinkRequests.clear();
+        return pending;
+    }
+
+    int sideViewPlatformSpeedYForTest(int slot) {
+        return sideViewPlatformMotion.speedY(slot);
+    }
+
+    int sideViewPlatformSpeedXForTest(int slot) {
+        return sideViewPlatformMotion.speedX(slot);
+    }
+
+    void setSideViewPlatformSpeedYForTest(int slot, int speed) {
+        sideViewPlatformMotion.setSpeedY(slot, speed);
+    }
+
+    void setSideViewPlatformSpeedXForTest(int slot, int speed) {
+        sideViewPlatformMotion.setSpeedX(slot, speed);
+    }
+
+    int sideViewPlatformPrivateState2ForTest(int slot) {
+        return sideViewPlatformMotion.privateState2(slot);
+    }
+
+    int sideViewPlatformPrivateState4ForTest(int slot) {
+        return sideViewPlatformMotion.privateState4(slot);
     }
 
     List<HinoxLinkEffectRequest> consumePendingHinoxLinkEffectRequests() {
@@ -11856,6 +11951,7 @@ public final class RoomEntityRuntime {
 
     private void disableEntityWithoutPersistence(int slot) {
         resetEnemyDropState(slot);
+        sideViewPlatformMotion.clear(slot);
         secretSeashellMotion.clear(slot);
         slowTransitionCountdown[slot] = 0;
         slowTimerInitialized[slot] = false;
@@ -12168,6 +12264,17 @@ public final class RoomEntityRuntime {
         int yDistance = unsignedByteAbs(
             entity.y() - entity.z() + 0x02 - linkEntityY - 0x08);
         return yDistance < 0x08 + 0x04;
+    }
+
+    private static boolean sideViewPlatformOverlapsLink(RoomEntity entity,
+                                                         int linkEntityX, int linkEntityY) {
+        int xDistance = unsignedByteAbs(entity.x() + 0x10 - linkEntityX - 0x08);
+        if (xDistance >= 0x10 + 0x04) {
+            return false;
+        }
+        int yDistance = unsignedByteAbs(entity.y() - entity.z() + 0x0C
+            - linkEntityY - 0x08);
+        return yDistance < 0x12 + 0x04;
     }
 
     private static int signedByte(int value) {

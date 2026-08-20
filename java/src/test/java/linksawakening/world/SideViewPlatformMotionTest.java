@@ -110,6 +110,17 @@ final class SideViewPlatformMotionTest {
     }
 
     @Test
+    void beginFrameMovesHorizontalSpeedAndReportsDelta() {
+        SideViewPlatformMotion motion = new SideViewPlatformMotion();
+        motion.setSpeedX(0, 0x10);
+
+        SideViewPlatformMotion.Frame frame = motion.beginFrame(entity(0x40, 0x50));
+
+        assertEquals(0x41, frame.entity().x());
+        assertEquals(1, frame.horizontalDelta());
+    }
+
+    @Test
     void movementUsesOldSpeedBeforeQuarterFrameAcceleration() {
         SideViewPlatformMotion motion = new SideViewPlatformMotion();
         motion.setSpeedY(0, 0xE0);
