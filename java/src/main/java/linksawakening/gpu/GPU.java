@@ -174,6 +174,11 @@ public class GPU {
             0x47A0, 0x02, 0x0E0);
     }
 
+    /** Mirrors REPLACE_TILES_GOLDEN_LEAF ($09) at bank0:$1EA1. */
+    public void replaceSlimeKeyTilesByGoldenLeaf(byte[] romData) {
+        loadTilesFromROM(romData, 0x0C | 0x20, 0x68E0, 0x02, 0x0CA);
+    }
+
     /**
      * Load the base and file-menu tile sheets using the destinations in
      * LoadMenuTiles (bank0.asm:$2C03).

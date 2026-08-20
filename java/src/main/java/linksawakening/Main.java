@@ -92,6 +92,7 @@ import linksawakening.world.OverworldBushInteraction;
 import linksawakening.world.OverworldTilesetTable;
 import linksawakening.world.RoomBoundaryController;
 import linksawakening.world.RoomLoader;
+import linksawakening.world.RoomEntityRuntime;
 import linksawakening.world.RoomSession;
 import linksawakening.world.RoomTransitionCoordinator;
 import linksawakening.world.ScrollController;
@@ -724,6 +725,9 @@ public class Main {
 
         if (musicPlayer != null) {
             musicPlayer.update();
+            if (gameplayMusicController != null) {
+                gameplayMusicController.tickFadeOut();
+            }
             if (overworldIntroContinuationPending
                 && gameplayMusicController != null
                 && gameplayMusicController.currentTrackId()
@@ -1041,6 +1045,8 @@ public class Main {
                     inventoryMenu != null && inventoryMenu.isTransitioning(),
                     dialogController == null ? 0 : dialogController.dialogCooldown(),
                     inventoryMenu == null ? 0x80 : inventoryMenu.windowY());
+                roomSession.setEntityDialogAskSelectionIndex(
+                    dialogController == null ? 0 : dialogController.choiceSelectionIndex());
                 roomSession.setEntityMusicActive(
                     musicPlayer != null && musicPlayer.isMusicPlaying());
                 roomSession.setEntityActionButtonsHeld(
@@ -1284,6 +1290,11 @@ public class Main {
                     gameplaySoundSink);
                 EnemyCombatEventConsumer.consume(roomSession.consumeEntityEvents(),
                     gameplaySoundSink, transientVfxSystem);
+                int musicFadeOutCountdown =
+                    roomSession.consumePendingMusicFadeOutCountdown();
+                if (musicFadeOutCountdown != 0 && gameplayMusicController != null) {
+                    gameplayMusicController.requestFadeOut(musicFadeOutCountdown);
+                }
                 for (var reward : roomSession.consumeChestRewardEvents()) {
                     if (playerState != null) {
                         playerState.applyChestReward(reward.itemType());
@@ -1308,6 +1319,16 @@ public class Main {
                 for (var request : roomSession.consumeMadamMeowMeowFullHealRequests()) {
                     if (playerState != null) {
                         playerState.requestFullHeal();
+                    }
+                }
+                for (var event : roomSession.consumeRichardProgressEvents()) {
+                    if (playerState != null
+                        && event.kind()
+                            == RoomEntityRuntime.RichardProgressEvent.Kind.RETURN_ALL_LEAVES) {
+                        playerState.setGoldenLeavesCount(event.goldenLeavesCount());
+                        if (gpu != null && romData != null) {
+                            gpu.replaceSlimeKeyTilesByGoldenLeaf(romData);
+                        }
                     }
                 }
                 BeachSwordRewardConsumer.consume(roomSession, playerState);
@@ -1894,6 +1915,7 @@ public class Main {
         roomSession.restoreDungeonProgressFlags(saved.dungeonProgressFlags());
         roomSession.setBowWowState(saved.bowWowState());
         roomSession.setTarinFlag(saved.tarinFlag());
+        roomSession.setRichardSpokenFlag(saved.richardSpokenFlag());
         roomSession.setChestPlayerLevels(playerState.shieldLevel(), playerState.swordLevel(),
             playerState.powerBraceletLevel());
         if (saved.spawnIsIndoor() != 0) {
@@ -1998,6 +2020,8 @@ public class Main {
                 roomSession.dungeonProgressFlagsSnapshot());
             saveRamStore.writeBowWowState(currentSaveSlot, roomSession.bowWowState());
             saveRamStore.writeTarinFlag(currentSaveSlot, roomSession.tarinFlag());
+            saveRamStore.writeRichardSpokenFlag(
+                currentSaveSlot, roomSession.richardSpokenFlag());
         }
         try {
             saveRamStore.flush();

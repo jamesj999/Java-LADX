@@ -38,6 +38,21 @@ final class GameplayDialogIntegrationTest {
     }
 
     @Test
+    void directionalInputChangesAnActiveDialogChoiceWithoutClosingIt() {
+        InputConfig inputConfig = new InputConfig(
+            GLFW_KEY_ENTER, 1, 2, 3, 4, GLFW_KEY_Z, GLFW_KEY_X);
+        DialogController dialog = new DialogController(16);
+        dialog.openPreformatted("Choose?<ask>");
+        dialog.advance();
+        dialog.advance();
+
+        assertTrue(GameplayDialogInput.handleOverworldKeyPress(
+            inputConfig.downKey(), GLFW_PRESS, inputConfig, dialog));
+        assertEquals(1, dialog.choiceSelectionIndex());
+        assertTrue(dialog.isActive());
+    }
+
+    @Test
     void activeDialogBlocksLinkMovementAndActions() {
         DialogController dialog = new DialogController(16);
 

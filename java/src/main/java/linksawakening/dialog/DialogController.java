@@ -22,6 +22,7 @@ public final class DialogController {
     private boolean active;
     private boolean waitingForPageAdvance;
     private boolean choicePrompt;
+    private int choiceSelectionIndex;
     private BoxPosition boxPosition = BoxPosition.BOTTOM;
     private final List<SoundEvent> soundEvents = new ArrayList<>();
 
@@ -87,6 +88,7 @@ public final class DialogController {
         ParsedText parsedText = parse(text == null ? "" : text);
         this.text = preformatted ? formatPreformatted(parsedText.text()) : wrap(parsedText.text());
         this.choicePrompt = false;
+        this.choiceSelectionIndex = 0;
         this.boxPosition = boxPosition == null ? BoxPosition.BOTTOM : boxPosition;
         pageStart = 0;
         visibleCharactersOnPage = 0;
@@ -160,6 +162,18 @@ public final class DialogController {
 
     public boolean isChoicePrompt() {
         return choicePrompt;
+    }
+
+    public int choiceSelectionIndex() {
+        return choiceSelectionIndex;
+    }
+
+    public void moveChoiceSelection(int delta) {
+        if (!choicePrompt || delta == 0) {
+            return;
+        }
+        choiceSelectionIndex ^= 0x01;
+        soundEvents.add(SoundEvent.MOVE_SELECTION);
     }
 
     public int dialogCooldown() {

@@ -9,6 +9,7 @@ public final class GameplayMusicController {
 
     private int currentTrackId = MusicTrackIds.MUSIC_NONE;
     private boolean continueMusicAfterWarp;
+    private int fadeOutCountdown;
 
     public GameplayMusicController(AreaMusicResolver resolver, MusicCatalog catalog, MusicTrackPlayer player) {
         this.resolver = Objects.requireNonNull(resolver, "resolver");
@@ -18,6 +19,7 @@ public final class GameplayMusicController {
 
     public void selectAfterTransition(RoomMusicContext context) {
         Objects.requireNonNull(context, "context");
+        fadeOutCountdown = 0;
         if (continueMusicAfterWarp) {
             continueMusicAfterWarp = false;
             return;
@@ -38,6 +40,7 @@ public final class GameplayMusicController {
 
     public void playDirect(int trackId) {
         continueMusicAfterWarp = false;
+        fadeOutCountdown = 0;
         int nextTrackId = trackId & 0xFF;
         if (nextTrackId == currentTrackId) {
             return;
@@ -57,5 +60,27 @@ public final class GameplayMusicController {
 
     public int currentTrackId() {
         return currentTrackId;
+    }
+
+    public void requestFadeOut(int countdown) {
+        if (countdown < 0 || countdown > 0xFF) {
+            throw new IllegalArgumentException("Music fade countdown must be an unsigned byte");
+        }
+        fadeOutCountdown = countdown;
+    }
+
+    public void tickFadeOut() {
+        if (fadeOutCountdown == 0) {
+            return;
+        }
+        fadeOutCountdown--;
+        if (fadeOutCountdown == 0) {
+            player.stop();
+            currentTrackId = MusicTrackIds.MUSIC_NONE;
+        }
+    }
+
+    public int fadeOutCountdown() {
+        return fadeOutCountdown;
     }
 }

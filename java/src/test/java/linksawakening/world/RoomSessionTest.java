@@ -3288,6 +3288,135 @@ final class RoomSessionTest {
     }
 
     @Test
+    void richardStartsGoldenLeafQuestAndPersistsHisHouseEvent() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x10, 0xC7);
+        RoomEntity richard = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x95).findFirst().orElseThrow();
+        int linkX = richard.x() + 0x0F;
+
+        session.tickEntities(0, linkX, richard.y(), 0, Link.DIRECTION_LEFT);
+        session.tickEntities(1, linkX, richard.y(), 0, Link.DIRECTION_LEFT);
+        assertEquals(0x40, session.consumePendingMusicTrack());
+        session.setEntityActionButtonsHeld(true, false);
+        session.tickEntities(2, linkX, richard.y(), 0, Link.DIRECTION_LEFT);
+
+        assertEquals(0x13A,
+            session.consumeEntityDialogRequests().getFirst().globalDialogId());
+        assertEquals(List.of(new RoomEntityRuntime.RichardProgressEvent(
+                richard.slot(), RoomEntityRuntime.RichardProgressEvent.Kind.START_QUEST, 0)),
+            session.consumeRichardProgressEvents());
+        assertEquals(0x10, session.indoorBRoomStatusSnapshot()[0xC7] & 0x10);
+        assertEquals(2, session.richardSpokenFlag());
+    }
+
+    @Test
+    void richardRejectsBowWowAndDoesNotStartTheGoldenLeafQuest() {
+        RoomSession session = newSession();
+        session.setBowWowState(1);
+        session.loadIndoor(0x10, 0xC7);
+        RoomEntity richard = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x95).findFirst().orElseThrow();
+        int linkX = richard.x() + 0x0F;
+
+        session.tickEntities(0, linkX, richard.y(), 0, Link.DIRECTION_LEFT);
+        session.tickEntities(1, linkX, richard.y(), 0, Link.DIRECTION_LEFT);
+        session.setEntityActionButtonsHeld(true, false);
+        session.tickEntities(2, linkX, richard.y(), 0, Link.DIRECTION_LEFT);
+
+        assertEquals(0x12D,
+            session.consumeEntityDialogRequests().getFirst().globalDialogId());
+        assertTrue(session.consumeRichardProgressEvents().isEmpty());
+        assertEquals(0, session.indoorBRoomStatusSnapshot()[0xC7] & 0x10);
+    }
+
+    @Test
+    void richardInteractionRecomputesDirectionInsteadOfUsingHisPeriodicFacing() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x10, 0xC7);
+        RoomEntity richard = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x95).findFirst().orElseThrow();
+
+        session.tickEntities(0, richard.x() + 0x0F, richard.y(), 0, Link.DIRECTION_LEFT);
+        session.tickEntities(1, richard.x() + 0x0F, richard.y(), 0, Link.DIRECTION_LEFT);
+        session.setEntityActionButtonsHeld(true, false);
+        session.tickEntities(2, richard.x() - 0x10, richard.y(), 0, Link.DIRECTION_RIGHT);
+
+        assertEquals(0x13A,
+            session.consumeEntityDialogRequests().getFirst().globalDialogId());
+    }
+
+    @Test
+    void richardUsesTheDialogChoiceIndexForHisQuestAnswer() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x10, 0xC7);
+        RoomEntity richard = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x95).findFirst().orElseThrow();
+        int linkX = richard.x() + 0x0F;
+
+        session.tickEntities(0, linkX, richard.y(), 0, Link.DIRECTION_LEFT);
+        session.tickEntities(1, linkX, richard.y(), 0, Link.DIRECTION_LEFT);
+        session.setEntityActionButtonsHeld(true, false);
+        session.tickEntities(2, linkX, richard.y(), 0, Link.DIRECTION_LEFT);
+        session.consumeEntityDialogRequests();
+
+        session.setEntityActionButtonsHeld(false, false);
+        session.setEntityDialogActive(true);
+        session.tickEntities(3, linkX, richard.y(), 0, Link.DIRECTION_LEFT);
+        session.setEntityDialogAskSelectionIndex(1);
+        session.setEntityDialogActive(false);
+        session.tickEntities(4, linkX, richard.y(), 0, Link.DIRECTION_LEFT);
+
+        assertEquals(0x13C,
+            session.consumeEntityDialogRequests().getFirst().globalDialogId());
+    }
+
+    @Test
+    void richardAcceptsFiveLeavesMovesAsideAndOpensThePotholeFieldPassage() {
+        RoomSession session = newSession();
+        byte[] indoorB = new byte[0x100];
+        indoorB[0xC7] = 0x10;
+        session.restoreRoomStatuses(new byte[0x100], new byte[0x100], indoorB,
+            new byte[0x20]);
+        session.setEntityGoldenLeavesCount(5);
+        session.loadIndoor(0x10, 0xC7);
+        RoomEntity richard = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x95).findFirst().orElseThrow();
+        int linkX = richard.x() + 0x0F;
+
+        session.tickEntities(0, linkX, richard.y(), 0, Link.DIRECTION_LEFT);
+        session.tickEntities(1, linkX, richard.y(), 0, Link.DIRECTION_LEFT);
+        session.setEntityActionButtonsHeld(true, false);
+        session.tickEntities(2, linkX, richard.y(), 0, Link.DIRECTION_LEFT);
+
+        assertEquals(0x13D,
+            session.consumeEntityDialogRequests().getFirst().globalDialogId());
+        assertEquals(List.of(new RoomEntityRuntime.RichardProgressEvent(
+                richard.slot(), RoomEntityRuntime.RichardProgressEvent.Kind.RETURN_ALL_LEAVES,
+                0xFF)), session.consumeRichardProgressEvents());
+
+        session.setEntityActionButtonsHeld(false, false);
+        for (int frame = 3; frame <= 34; frame++) {
+            session.tickEntities(frame, 0x20, 0x70, 0, Link.DIRECTION_DOWN);
+        }
+        RoomEntity movedRichard = session.activeRoom().entities().slots().get(richard.slot());
+        assertEquals(0x58, movedRichard.x());
+
+        session.tickEntities(35, 0x78, 0x20, 0, Link.DIRECTION_DOWN);
+        Warp warp = session.consumeClearedDungeonWarp();
+        assertEquals(Warp.CATEGORY_INDOOR, warp.category());
+        assertEquals(0x11, warp.destMap());
+        assertEquals(0xD8, warp.destRoom());
+        assertEquals(0x88, warp.destX());
+        assertEquals(0x70, warp.destY());
+        assertEquals(0x30, session.consumePendingMusicFadeOutCountdown());
+        assertEquals(List.of(new EntityCombatEvent(
+                richard.slot(), 0x95, 0, false,
+                EntityCombatEvent.SoundChannel.NOISE, 0x06)),
+            session.consumeEntityEvents());
+    }
+
+    @Test
     void indoorPowerBraceletPullLiftsSourcePotOnEighthFrame() {
         RoomSession session = newSession();
         session.loadInitialOverworld(0x00);

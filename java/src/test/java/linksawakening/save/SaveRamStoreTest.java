@@ -79,6 +79,7 @@ final class SaveRamStoreTest {
         store.createNewGame(0, new int[] {1, 2, 3, 4, 5});
         store.writeOcarinaState(0, 0x02, 1);
         store.writeTarinFlag(0, 2);
+        store.writeRichardSpokenFlag(0, 2);
         store.flush();
 
         assertEquals(SaveRamLayout.IMAGE_SIZE, Files.size(savePath));
@@ -88,6 +89,7 @@ final class SaveRamStoreTest {
         assertEquals(0x02, reloaded.readSlot(0).ocarinaSongFlags());
         assertEquals(1, reloaded.readSlot(0).selectedSongIndex());
         assertEquals(2, reloaded.readSlot(0).tarinFlag());
+        assertEquals(2, reloaded.readSlot(0).richardSpokenFlag());
     }
 
     private static byte[] pattern(int length, int start) {

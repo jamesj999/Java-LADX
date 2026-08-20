@@ -337,6 +337,27 @@ final class DialogControllerTest {
         assertEquals(List.of(), dialog.consumeSoundEvents());
     }
 
+    @Test
+    void choicePromptTracksTheTwoSourceSelectionIndicesAndResetsOnOpen() {
+        DialogController dialog = new DialogController(16);
+        dialog.openPreformatted("Choose?<ask>");
+        dialog.advance();
+        dialog.advance();
+
+        assertTrue(dialog.isChoicePrompt());
+        assertEquals(0, dialog.choiceSelectionIndex());
+        dialog.consumeSoundEvents();
+        dialog.moveChoiceSelection(1);
+        assertEquals(1, dialog.choiceSelectionIndex());
+        assertEquals(List.of(DialogController.SoundEvent.MOVE_SELECTION),
+            dialog.consumeSoundEvents());
+        dialog.moveChoiceSelection(-1);
+        assertEquals(0, dialog.choiceSelectionIndex());
+
+        dialog.openPreformatted("Again?<ask>");
+        assertEquals(0, dialog.choiceSelectionIndex());
+    }
+
     private static void tick(DialogController dialog, int ticks) {
         for (int i = 0; i < ticks; i++) {
             dialog.tick();

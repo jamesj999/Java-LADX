@@ -205,6 +205,16 @@ public final class SaveRamImage {
         bytes[main + SaveRamLayout.MAIN_TARIN_FLAG_OFFSET] = (byte) flag;
     }
 
+    /** Writes wRichardSpokenFlag at DB55. */
+    public void writeRichardSpokenFlag(int slot, int flag) {
+        SaveRamLayout.checkSlot(slot);
+        if ((flag & ~0xFF) != 0) {
+            throw new IllegalArgumentException("Richard spoken flag must be an unsigned byte");
+        }
+        int main = SaveRamLayout.slotOffset(slot) + SaveRamLayout.mainOffset();
+        bytes[main + SaveRamLayout.MAIN_RICHARD_SPOKEN_FLAG_OFFSET] = (byte) flag;
+    }
+
     /** Writes the source {@code wSpawnLocationData} fields in the main block. */
     public void writeSpawnLocation(int slot, int isIndoor, int mapId, int mapRoom,
                                    int positionX, int positionY, int indoorRoom) {

@@ -95,6 +95,28 @@ final class GameplayMusicControllerTest {
         assertEquals(MusicTrackIds.MUSIC_NONE, controller.currentTrackId());
     }
 
+    @Test
+    void sourceFadeTimerStopsTheCurrentTrackWhenItsCountdownExpires() {
+        MusicCatalog catalog = MusicCatalog.fromRom(loadRom());
+        RecordingMusicTrackPlayer player = new RecordingMusicTrackPlayer();
+        GameplayMusicController controller = new GameplayMusicController(
+            AreaMusicResolver.fromRom(loadRom()), catalog, player);
+        controller.playDirect(MusicTrackIds.MUSIC_INSIDE_BUILDING);
+
+        controller.requestFadeOut(0x30);
+        for (int frame = 0; frame < 0x2F; frame++) {
+            controller.tickFadeOut();
+        }
+        assertEquals(1, controller.fadeOutCountdown());
+        assertEquals(0, player.stopCount);
+
+        controller.tickFadeOut();
+
+        assertEquals(0, controller.fadeOutCountdown());
+        assertEquals(1, player.stopCount);
+        assertEquals(MusicTrackIds.MUSIC_NONE, controller.currentTrackId());
+    }
+
     private static byte[] loadRom() {
         try (var stream = GameplayMusicControllerTest.class.getClassLoader().getResourceAsStream("rom/azle.gbc")) {
             if (stream == null) {

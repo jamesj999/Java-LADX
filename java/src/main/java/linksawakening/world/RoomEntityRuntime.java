@@ -86,6 +86,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_DROPPABLE_MAGIC_POWDER = 0x3B;
     private static final int ENTITY_SLEEPY_TOADSTOOL = 0x3A;
     private static final int ENTITY_HIDING_SLIME_KEY = 0x3C;
+    private static final int ENTITY_RICHARD = 0x95;
     private static final int ROOM_OW_POTHOLE_FIELD_SLIME_KEY = 0xC6;
     private static final int GOLDEN_LEAVES_FINAL_COUNT = 0x06;
     private static final int GOLDEN_LEAVES_FIVE_COUNT = 0x05;
@@ -500,6 +501,8 @@ public final class RoomEntityRuntime {
         new ArrayList<>();
     private final List<InstrumentCompletionEvent> pendingInstrumentCompletions =
         new ArrayList<>();
+    private final List<RichardProgressEvent> pendingRichardProgressEvents =
+        new ArrayList<>();
     private final List<OwlEventCompletion> pendingOwlEventCompletions =
         new ArrayList<>();
     private final List<LinkFinalPositionRequest> pendingLinkFinalPositionRequests =
@@ -572,6 +575,7 @@ public final class RoomEntityRuntime {
     private boolean inventoryAppearing;
     private int dialogCooldown;
     private int windowY = 0x80;
+    private int dialogAskSelectionIndex;
     private boolean shouldGetLostInMysteriousWoods;
     private boolean activeMusic;
     private int bowWowState;
@@ -619,6 +623,7 @@ public final class RoomEntityRuntime {
     private int chestPowerBraceletLevel = 1;
     private int entityGoldenLeavesCount;
     private int pendingMusicTrack = -1;
+    private int pendingMusicFadeOutCountdown;
     private final int[] swordPickupState = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] swordPickupSequenceActive =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
@@ -648,6 +653,10 @@ public final class RoomEntityRuntime {
     private final int[] kidKidnapDelay = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] kidSpeedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] kidSpeedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] richardState = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] richardDirection = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] richardXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] richardInertia = new int[EntityRoomLoader.MAX_ENTITIES];
     private boolean playerHasToadstool;
     private int playerMagicPowderCount;
     private boolean playerHasTailKey;
@@ -739,6 +748,10 @@ public final class RoomEntityRuntime {
     }
 
     public record InstrumentCompletionEvent(int slot, int mapId) {
+    }
+
+    public record RichardProgressEvent(int slot, Kind kind, int goldenLeavesCount) {
+        public enum Kind { START_QUEST, RETURN_ALL_LEAVES }
     }
 
     public record WitchExchangeEvent(int slot, int inventorySlot) {
@@ -1746,6 +1759,7 @@ public final class RoomEntityRuntime {
         pendingToadstoolRewards.clear();
         pendingInstrumentRewards.clear();
         pendingInstrumentCompletions.clear();
+        pendingRichardProgressEvents.clear();
         if (bossAgonySfxCountdown > 0) {
             bossAgonySfxCountdown--;
             if (bossAgonySfxCountdown == 0) {
@@ -2180,6 +2194,10 @@ public final class RoomEntityRuntime {
             if (status == EntityStatus.ACTIVE
                 && entity.type() == ENTITY_MADAM_MEOWMEOW) {
                 advanceMadamMeowMeow(entity, frame, linkEntityX, linkEntityY, linkAirborne);
+                continue;
+            }
+            if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_RICHARD) {
+                advanceRichard(entity, frame, linkEntityX, linkEntityY, linkAirborne);
                 continue;
             }
             if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_BOW_WOW
@@ -8073,6 +8091,13 @@ public final class RoomEntityRuntime {
         this.windowY = windowY;
     }
 
+    void setDialogAskSelectionIndex(int selectionIndex) {
+        if (selectionIndex < 0 || selectionIndex > 1) {
+            throw new IllegalArgumentException("Dialog selection must be 0 or 1");
+        }
+        dialogAskSelectionIndex = selectionIndex;
+    }
+
     /** Supplies the nonzero wActiveMusicIndex gate used by instrument pickup. */
     void setActiveMusic(boolean activeMusic) {
         this.activeMusic = activeMusic;
@@ -8657,6 +8682,12 @@ public final class RoomEntityRuntime {
         return pending;
     }
 
+    int consumePendingMusicFadeOutCountdown() {
+        int pending = pendingMusicFadeOutCountdown;
+        pendingMusicFadeOutCountdown = 0;
+        return pending;
+    }
+
     List<LikeLikeEvent> consumePendingLikeLikeEvents() {
         List<LikeLikeEvent> pending = List.copyOf(pendingLikeLikeEvents);
         pendingLikeLikeEvents.clear();
@@ -9170,6 +9201,126 @@ public final class RoomEntityRuntime {
             };
             pendingDialogRequests.add(new DialogRequest(1, dialogLowId));
         }
+    }
+
+    private void advanceRichard(RoomEntity entity, int frameCounter,
+                                int linkEntityX, int linkEntityY,
+                                boolean linkAirborne) {
+        int slot = entity.slot();
+        if (!gameplayWorld || transitionSequenceCounter != 0x04
+            || dialogActive || inventoryAppearing || roomTransitionActive
+            || witchGotItemPresentationActive()) {
+            return;
+        }
+        if (richardState[slot] == 0 && entityGoldenLeavesCount >= 0x06) {
+            entity = withPositionAndVariant(entity, 0x58, entity.y(), entity.spriteVariant());
+            richardDirection[slot] = 3;
+        }
+        int xDistance = signedByte((linkEntityX - entity.x()) & 0xFF);
+        int yDistance = signedByte((linkEntityY - entity.y()) & 0xFF);
+        if ((frameCounter & 0x1F) == 0) {
+            richardDirection[slot] = Math.abs(xDistance) >= Math.abs(yDistance)
+                ? (xDistance < 0 ? 1 : 0) : (yDistance < 0 ? 2 : 3);
+        }
+        int[] baseVariant = {6, 4, 2, 0};
+        int variant = baseVariant[richardDirection[slot]]
+            + ((richardInertia[slot]++ >>> 4) & 0x01);
+        RoomEntity updated = withVariant(entity, variant);
+        if (richardState[slot] < 3
+            && RoomEntityCombatRules.overlapsLink(updated, linkEntityX, linkEntityY)) {
+            requestLinkPush(updated, EntityLinkCollisionRules.STANDARD_PUSH);
+        }
+
+        switch (richardState[slot]) {
+            case 0 -> {
+                if (chestSwordLevel != 0) {
+                    pendingMusicTrack = 0x40;
+                }
+                richardState[slot] = entityGoldenLeavesCount >= 0x06 ? 4 : 1;
+                if (richardState[slot] == 4) {
+                    updated = withPositionAndVariant(updated, 0x58, updated.y(), variant);
+                }
+            }
+            case 1 -> {
+                if (!sourceNpcInteractionAllowed(xDistance, yDistance, linkAirborne,
+                    directionToLink(xDistance, yDistance))) {
+                    slots[slot] = updated;
+                    return;
+                }
+                if (bowWowState != 0) {
+                    pendingDialogRequests.add(new DialogRequest(1, 0x2D));
+                } else if ((entityRoomStatus & 0x10) == 0 || entityGoldenLeavesCount == 0) {
+                    pendingDialogRequests.add(new DialogRequest(1, 0x3A));
+                    pendingRichardProgressEvents.add(new RichardProgressEvent(
+                        slot, RichardProgressEvent.Kind.START_QUEST,
+                        entityGoldenLeavesCount));
+                    entityRoomStatus |= 0x10;
+                    richardState[slot] = 2;
+                } else if (entityGoldenLeavesCount < 5) {
+                    pendingDialogRequests.add(new DialogRequest(1, 0x3F));
+                } else {
+                    pendingDialogRequests.add(new DialogRequest(1, 0x3D));
+                    entityGoldenLeavesCount = 0xFF;
+                    pendingRichardProgressEvents.add(new RichardProgressEvent(
+                        slot, RichardProgressEvent.Kind.RETURN_ALL_LEAVES, 0xFF));
+                    richardState[slot] = 3;
+                    enemyTransitionCountdown[slot] = 0x20;
+                }
+            }
+            case 2 -> {
+                if (dialogActive || inventoryAppearing) {
+                    slots[slot] = updated;
+                    return;
+                }
+                pendingDialogRequests.add(new DialogRequest(
+                    1, dialogAskSelectionIndex == 0 ? 0x3B : 0x3C));
+                richardState[slot] = 1;
+            }
+            case 3 -> {
+                if (enemyTransitionCountdown[slot] == 0) {
+                    richardState[slot] = 4;
+                }
+                int x = addFallingSpeedToPosition(
+                    updated.x(), 0xF8, richardXAccumulator, slot);
+                updated = withPositionAndVariant(updated, x, updated.y(), variant);
+            }
+            case 4 -> {
+                if (sourceNpcInteractionAllowed(xDistance, yDistance, linkAirborne,
+                    directionToLink(xDistance, yDistance))) {
+                    int dialog = entityGoldenLeavesCount == 0x06 ? 0x3E : 0x3D;
+                    pendingDialogRequests.add(new DialogRequest(1, dialog));
+                }
+                if (((linkEntityX - 0x78 + 0x02) & 0xFF) < 0x04
+                    && ((linkEntityY - 0x20 + 0x05) & 0xFF) < 0x0A) {
+                    pendingDungeonWarpRequests.add(new DungeonWarpRequest(
+                        slot, new WarpMotion.Destination(0x11, 0xD8, 0x88, 0x70)));
+                    pendingMusicFadeOutCountdown = 0x30;
+                    pendingEntityEvents.add(new EntityCombatEvent(
+                        slot, ENTITY_RICHARD, 0, false,
+                        EntityCombatEvent.SoundChannel.NOISE, 0x06));
+                    disableEntityWithoutPersistence(slot);
+                    return;
+                }
+            }
+            default -> throw new IllegalStateException("Invalid Richard state");
+        }
+        slots[slot] = updated;
+    }
+
+    private boolean sourceNpcInteractionAllowed(int xDistance, int yDistance,
+                                                boolean linkAirborne,
+                                                int entityDirection) {
+        return actionButtonAHeld
+            && ((yDistance + 0x14) & 0xFF) < 0x28
+            && ((xDistance + 0x10) & 0xFF) < 0x20
+            && (lastRomLinkDirection ^ 0x01) == entityDirection
+            && !dialogActive && !inventoryAppearing && !linkAirborne
+            && dialogCooldown == 0 && windowY == 0x80;
+    }
+
+    private static int directionToLink(int xDistance, int yDistance) {
+        return Math.abs(xDistance) >= Math.abs(yDistance)
+            ? (xDistance < 0 ? 1 : 0) : (yDistance < 0 ? 2 : 3);
     }
 
     private void advanceInstrumentPickup(RoomEntity entity, int frameCounter,
@@ -11148,6 +11299,12 @@ public final class RoomEntityRuntime {
             List.copyOf(pendingInstrumentCompletions);
         pendingInstrumentCompletions.clear();
         return completions;
+    }
+
+    List<RichardProgressEvent> consumePendingRichardProgressEvents() {
+        List<RichardProgressEvent> events = List.copyOf(pendingRichardProgressEvents);
+        pendingRichardProgressEvents.clear();
+        return events;
     }
 
     List<WitchExchangeEvent> consumePendingWitchExchangeEvents() {

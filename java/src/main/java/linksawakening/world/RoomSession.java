@@ -213,6 +213,8 @@ public final class RoomSession {
         pendingHeartContainerRewards = new ArrayList<>();
     private final List<RoomEntityRuntime.MadamMeowMeowFullHealRequest>
         pendingMadamMeowMeowFullHealRequests = new ArrayList<>();
+    private final List<RoomEntityRuntime.RichardProgressEvent>
+        pendingRichardProgressEvents = new ArrayList<>();
     private final List<RoomEntityRuntime.SwordPickupRewardEvent>
         pendingSwordPickupRewards = new ArrayList<>();
     private final List<RoomEntityRuntime.ToadstoolRewardEvent>
@@ -266,6 +268,7 @@ public final class RoomSession {
     private boolean entityInventoryAppearing;
     private int entityDialogCooldown;
     private int entityWindowY = 0x80;
+    private int entityDialogAskSelectionIndex;
     private boolean shouldGetLostInMysteriousWoods;
     private boolean entityMusicActive;
     private int entityPressedButtonsMask;
@@ -281,6 +284,7 @@ public final class RoomSession {
     private boolean hasBirdKey;
     private boolean hasTailKey;
     private int bowWowState;
+    private int richardSpokenFlag;
     /** WRAM wTarinFlag; persisted NPC/world progression, not player inventory state. */
     private int tarinFlag;
     /** WRAM wShieldLevel retained for room-load-time palette selection. */
@@ -618,6 +622,7 @@ public final class RoomSession {
         hasBirdKey = false;
         hasTailKey = false;
         bowWowState = 0;
+        richardSpokenFlag = 0;
         tarinFlag = 0;
         playerShieldLevel = 0;
         entityGoldenLeavesCount = 0;
@@ -789,6 +794,17 @@ public final class RoomSession {
         }
     }
 
+    public int richardSpokenFlag() {
+        return richardSpokenFlag & 0xFF;
+    }
+
+    public void setRichardSpokenFlag(int flag) {
+        if ((flag & ~0xFF) != 0) {
+            throw new IllegalArgumentException("Richard spoken flag must be an unsigned byte");
+        }
+        richardSpokenFlag = flag;
+    }
+
     /** Mirrors the unsigned-byte world progression flag at wTarinFlag. */
     public int tarinFlag() {
         return tarinFlag & 0xFF;
@@ -825,6 +841,16 @@ public final class RoomSession {
         entityWindowY = windowY;
         if (entityRuntime != null) {
             entityRuntime.setTalkState(inventoryAppearing, dialogCooldown, windowY);
+        }
+    }
+
+    public void setEntityDialogAskSelectionIndex(int selectionIndex) {
+        if (selectionIndex < 0 || selectionIndex > 1) {
+            throw new IllegalArgumentException("Dialog selection must be 0 or 1");
+        }
+        entityDialogAskSelectionIndex = selectionIndex;
+        if (entityRuntime != null) {
+            entityRuntime.setDialogAskSelectionIndex(selectionIndex);
         }
     }
 
@@ -1609,6 +1635,7 @@ public final class RoomSession {
         entityRuntime.setDialogActive(entityDialogActive);
         entityRuntime.setTalkState(
             entityInventoryAppearing, entityDialogCooldown, entityWindowY);
+        entityRuntime.setDialogAskSelectionIndex(entityDialogAskSelectionIndex);
         entityRuntime.setActiveMusic(entityMusicActive);
         entityRuntime.setBowWowState(bowWowState);
         entityRuntime.setOwlInstrumentFlags(
@@ -1696,6 +1723,7 @@ public final class RoomSession {
         harvestToadstoolRewards();
         harvestInstrumentRewards();
         harvestInstrumentCompletions();
+        harvestRichardProgressEvents();
         harvestWitchEvents();
         harvestOwlEventCompletions();
         for (RoomEntityRuntime.RoomStatusPersistenceRequest request
@@ -1942,6 +1970,13 @@ public final class RoomSession {
         return requests;
     }
 
+    public List<RoomEntityRuntime.RichardProgressEvent> consumeRichardProgressEvents() {
+        List<RoomEntityRuntime.RichardProgressEvent> events =
+            List.copyOf(pendingRichardProgressEvents);
+        pendingRichardProgressEvents.clear();
+        return events;
+    }
+
     public List<RoomEntityRuntime.SwordPickupRewardEvent> consumeSwordPickupRewards() {
         List<RoomEntityRuntime.SwordPickupRewardEvent> rewards =
             List.copyOf(pendingSwordPickupRewards);
@@ -1978,6 +2013,11 @@ public final class RoomSession {
             return pending;
         }
         return entityRuntime == null ? -1 : entityRuntime.consumePendingMusicTrack();
+    }
+
+    public int consumePendingMusicFadeOutCountdown() {
+        return entityRuntime == null ? 0
+            : entityRuntime.consumePendingMusicFadeOutCountdown();
     }
 
     /** Returns and clears Like Like capture/release requests from the last tick. */
@@ -2402,6 +2442,7 @@ public final class RoomSession {
         pendingSlimeKeyRewardEvents.clear();
         pendingHeartContainerRewards.clear();
         pendingMadamMeowMeowFullHealRequests.clear();
+        pendingRichardProgressEvents.clear();
         pendingSwordPickupRewards.clear();
         pendingToadstoolRewards.clear();
         pendingWitchExchangeEvents.clear();
@@ -3503,6 +3544,23 @@ public final class RoomSession {
                 tarinFlag = 0x02;
             }
         }
+    }
+
+    private void harvestRichardProgressEvents() {
+        if (entityRuntime == null) {
+            return;
+        }
+        List<RoomEntityRuntime.RichardProgressEvent> events =
+            entityRuntime.consumePendingRichardProgressEvents();
+        for (RoomEntityRuntime.RichardProgressEvent event : events) {
+            if (event.kind() == RoomEntityRuntime.RichardProgressEvent.Kind.START_QUEST) {
+                indoorBRoomStatus[0xC7] |= (byte) ROOM_STATUS_EVENT_1;
+                richardSpokenFlag = Math.max(richardSpokenFlag, 0x02);
+            } else {
+                entityGoldenLeavesCount = event.goldenLeavesCount();
+            }
+        }
+        pendingRichardProgressEvents.addAll(events);
     }
 
     private void harvestWitchEvents() {

@@ -91,6 +91,11 @@ public record SaveSlotState(
             SaveRamLayout.DX2_COLOR_DUNGEON_ROOM_STATUS_SIZE);
     }
 
+    public int richardSpokenFlag() {
+        return Byte.toUnsignedInt(rawSlot[SaveRamLayout.mainOffset()
+            + SaveRamLayout.MAIN_RICHARD_SPOKEN_FLAG_OFFSET]);
+    }
+
     public byte[] dungeonItemFlags() {
         return roomStatus(SaveRamLayout.mainOffset()
             + SaveRamLayout.MAIN_DUNGEON_ITEM_FLAGS_OFFSET,

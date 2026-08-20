@@ -216,7 +216,10 @@ final class MainFileMenuFlowTest {
         assertTrue(source.contains("roomSession.restoreRoomStatuses(saved.overworldRoomStatus(),"));
         assertTrue(source.contains("roomSession.setTarinFlag(saved.tarinFlag());"));
         assertTrue(source.contains(
+            "roomSession.setRichardSpokenFlag(saved.richardSpokenFlag());"));
+        assertTrue(source.contains(
             "saveRamStore.writeTarinFlag(currentSaveSlot, roomSession.tarinFlag());"));
+        assertTrue(source.contains("saveRamStore.writeRichardSpokenFlag("));
         assertTrue(source.contains("roomSession.restoreDungeonItemFlags(saved.dungeonItemFlags(),"));
         assertTrue(source.contains("link.setRoomEntryRomPosition(saved.spawnPositionX(),"));
         int tarinRestore = source.indexOf("roomSession.setTarinFlag(saved.tarinFlag());");

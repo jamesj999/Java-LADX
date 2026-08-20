@@ -101,6 +101,10 @@ public final class SaveRamStore {
         image.writeTarinFlag(slot, flag);
     }
 
+    public void writeRichardSpokenFlag(int slot, int flag) {
+        image.writeRichardSpokenFlag(slot, flag);
+    }
+
     public void writeSpawnLocation(int slot, int isIndoor, int mapId, int mapRoom,
                                    int positionX, int positionY, int indoorRoom) {
         image.writeSpawnLocation(slot, isIndoor, mapId, mapRoom,

@@ -144,6 +144,26 @@ final class SaveRamImageTest {
     }
 
     @Test
+    void writesRichardSpokenFlagAtDb55WithoutTouchingAdjacentBytes() {
+        SaveRamImage image = SaveRamImage.empty();
+        image.createNewGame(1, new int[] {1, 2, 3, 4, 5});
+        int main = SaveRamLayout.slotOffset(1) + SaveRamLayout.mainOffset();
+        byte[] before = image.bytes();
+        before[main + 0x354] = (byte) 0xA5;
+        before[main + 0x356] = (byte) 0x5A;
+        image = SaveRamImage.fromBytes(before);
+
+        image.writeRichardSpokenFlag(1, 2);
+
+        assertEquals(2, image.readSlot(1).richardSpokenFlag());
+        assertEquals((byte) 0xA5, image.bytes()[main + 0x354]);
+        assertEquals((byte) 0x5A, image.bytes()[main + 0x356]);
+        SaveRamImage written = image;
+        assertThrows(IllegalArgumentException.class,
+            () -> written.writeRichardSpokenFlag(1, 0x100));
+    }
+
+    @Test
     void writesTheRomSpawnLocationFieldsWithoutTouchingAdjacentProgress() {
         SaveRamImage image = SaveRamImage.empty();
         image.createNewGame(1, new int[] {1, 2, 3, 4, 5});
