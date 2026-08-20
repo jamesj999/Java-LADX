@@ -94,6 +94,64 @@ final class RoomEntityLiftThrowRuntimeTest {
         assertEquals(0x37, runtime.liftedEntityState().carryState());
     }
 
+    @Test
+    void activeSideViewPotUsesItsBraceletPickupHandler() {
+        EntitySpriteDefinition definition = definition(0xD6);
+        List<RoomEntity> slots = new ArrayList<>();
+        slots.add(new RoomEntity(0, 0, 0xD6, 0x50, 0x60,
+            EntityStatus.ACTIVE, definition, 0));
+        for (int slot = 1; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
+            slots.add(RoomEntity.disabled(slot));
+        }
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+            new RoomEntitySnapshot(slots).withSideScrolling(true));
+        runtime.setPowerBraceletButtonHeld(true);
+
+        runtime.tick(0, 0x50, 0x60, () -> 0, null, null, 0, 3, 0);
+
+        assertEquals(EntityStatus.LIFTED, runtime.snapshot().slots().get(0).status());
+        assertEquals(0, runtime.liftedEntityState().slot());
+        assertEquals(0x37, runtime.liftedEntityState().carryState());
+    }
+
+    @Test
+    void activeSideViewPotCannotBeLiftedWithoutTheInitialCollision() {
+        RoomEntityRuntime runtime = sideViewPotRuntime();
+        runtime.setPowerBraceletButtonHeld(true);
+
+        runtime.tick(0, 0x62, 0x60, () -> 0, null, null, 0, 3, 0);
+
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
+    }
+
+    @Test
+    void activeSideViewPotCannotBeLiftedWhileLinkIsAirborneOrNonInteractive() {
+        RoomEntityRuntime airborne = sideViewPotRuntime();
+        airborne.setPowerBraceletButtonHeld(true);
+        airborne.tickWithProjectileEvents(0, 0x50, 0x60, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0x50, 0x60, 1, 0, 0, false));
+        assertEquals(EntityStatus.ACTIVE, airborne.snapshot().slots().get(0).status());
+
+        RoomEntityRuntime nonInteractive = sideViewPotRuntime();
+        nonInteractive.setPowerBraceletButtonHeld(true);
+        nonInteractive.tickWithProjectileEvents(0, 0x50, 0x60, () -> 0, null,
+            EnemyProjectileCollision.LinkState.nonInteractive());
+        assertEquals(EntityStatus.ACTIVE,
+            nonInteractive.snapshot().slots().get(0).status());
+    }
+
+    private static RoomEntityRuntime sideViewPotRuntime() {
+        EntitySpriteDefinition definition = definition(0xD6);
+        List<RoomEntity> slots = new ArrayList<>();
+        slots.add(new RoomEntity(0, 0, 0xD6, 0x50, 0x60,
+            EntityStatus.ACTIVE, definition, 0));
+        for (int slot = 1; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
+            slots.add(RoomEntity.disabled(slot));
+        }
+        return RoomEntityRuntime.from(
+            new RoomEntitySnapshot(slots).withSideScrolling(true));
+    }
+
     private static RoomEntityRuntime runtimeWithEntity(EntityStatus status) {
         EntitySpriteDefinition definition = definition(0x05);
         List<RoomEntity> slots = new ArrayList<>();

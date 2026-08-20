@@ -3632,6 +3632,185 @@ final class RoomTransitionCoordinatorTest {
         walkToAndCrossIndoorBoundary(
             coordinator, transition, scroll, collision, link, ScrollController.UP);
         assertEquals(0x24, session.currentRoomId());
+
+        assertEquals(1, session.currentDungeonItemFlagsSnapshot()[
+            DungeonItemState.SMALL_KEYS_INDEX]);
+        tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
+        RoomEntity room24CrystalSwitch = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x66).findFirst().orElseThrow();
+        SwordApproach room24SwitchApproach = reachableSwordContactPathWithFeather(
+            collision, romTables, link.pixelX(), link.pixelY(), room24CrystalSwitch);
+        assertNotNull(room24SwitchApproach, collisionGrid(collision));
+        for (int[] position : room24SwitchApproach.path()) {
+            link.setPixelPosition(position[0], position[1]);
+        }
+        link.setDirection(room24SwitchApproach.direction());
+        Sword room24Sword = new Sword(romTables, null);
+        room24Sword.onPress();
+        for (int swingFrame = 0; swingFrame < 4; swingFrame++) {
+            room24Sword.tick(false);
+        }
+        Sword.CollisionBox initialRoom24SwordBox = room24Sword.enemyCollisionBox(
+            link.romEntityX(), link.romSwordCollisionY(), link.direction());
+        link.setPixelPosition(
+            room24CrystalSwitch.x() - (initialRoom24SwordBox.x() - link.pixelX()),
+            room24CrystalSwitch.y() - (initialRoom24SwordBox.y() - link.pixelY()));
+        Sword.CollisionBox room24SwordBox = room24Sword.enemyCollisionBox(
+            link.romEntityX(), link.romSwordCollisionY(), link.direction());
+        List<EntityCombatEvent> room24SwitchHit = java.util.List.of();
+        for (int contactFrame = 0; contactFrame < 2
+                && room24SwitchHit.stream().noneMatch(event ->
+                    event.slot() == room24CrystalSwitch.slot() && event.swordHit());
+                contactFrame++) {
+            room24SwitchHit = session.resolveEntityCombat(
+                frame++, link.romEntityX(), link.romEntityY(), false, true, true,
+                room24SwordBox.x(), room24SwordBox.width(),
+                room24SwordBox.y(), room24SwordBox.height());
+        }
+        assertTrue(room24SwitchHit.stream().anyMatch(event ->
+            event.slot() == room24CrystalSwitch.slot() && event.swordHit()));
+        tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
+        while (session.switchableObjectAnimationStageForTest() != 0) {
+            session.tickGameplayVBlank();
+        }
+        assertEquals(0x00, session.entitySwitchBlocksStateForTest());
+        int[] room24SwitchReachablePosition = room24SwitchApproach.path().getLast();
+        link.setPixelPosition(
+            room24SwitchReachablePosition[0], room24SwitchReachablePosition[1]);
+        collision.refreshLinkGroundInteraction(link.pixelX(), link.pixelY());
+
+        link.setPixelPosition(0x85, 0x30);
+        assertTrue(collision.objectPhysicsFlagAtPoint(
+                link.pixelX() + 0x0B, link.pixelY() + 0x09) == 0x93
+            || collision.objectPhysicsFlagAtPoint(
+                link.pixelX() + 0x0B, link.pixelY() + 0x0C) == 0x93);
+        assertTrue(session.tryUnlockIndoorKeyDoor(
+            link.pixelX(), link.pixelY(), Link.DIRECTION_RIGHT, 0x08));
+        assertEquals(0, session.currentDungeonItemFlagsSnapshot()[
+            DungeonItemState.SMALL_KEYS_INDEX]);
+        for (int tick = 0; tick < 8; tick++) {
+            session.tickEntities(frame++, link.pixelX(), link.pixelY());
+            assertTrue(session.consumeWorldLinkMotionBlockRequest());
+        }
+        session.tickEntities(frame++, link.pixelX(), link.pixelY());
+        assertFalse(session.consumeWorldLinkMotionBlockRequest());
+        assertEquals(0x01, session.indoorRoomStatusForTest(0x01, 0x24) & 0x01);
+        assertEquals(0x02, session.indoorRoomStatusForTest(0x01, 0x25) & 0x02);
+
+        walkToAndCrossIndoorBoundary(
+            coordinator, transition, scroll, collision, link, ScrollController.RIGHT);
+        assertEquals(0x25, session.currentRoomId());
+        assertEquals(0xA1, session.activeRoomEventForTest());
+        assertEquals(2, session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x18).count());
+        assertEquals(1, session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x1B).count());
+        assertEquals(0x0D, objectAt(session, 0x18));
+        tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
+
+        List<RoomEntity> room25PolsVoices = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x18)
+            .sorted(java.util.Comparator.comparingInt(RoomEntity::sourceLoadOrder))
+            .toList();
+        int[] room25PotLocations = {0x11, 0x12};
+        int[] room25PotLinkX = {0x10, 0x20};
+        for (int polsIndex = 0; polsIndex < room25PolsVoices.size(); polsIndex++) {
+            RoomEntity polsVoice = room25PolsVoices.get(polsIndex);
+            int potLocation = room25PotLocations[polsIndex];
+            assertEquals(0x20, objectAt(session, potLocation));
+            link.setPixelPosition(room25PotLinkX[polsIndex], 0x0B);
+            link.setDirection(Link.DIRECTION_UP);
+            for (int pullFrame = 0; pullFrame < 8; pullFrame++) {
+                assertTrue(session.tryLiftIndoorObject(
+                    link.pixelX(), link.pixelY(), Link.DIRECTION_UP,
+                    playerState.powerBraceletLevel() != 0, 0x08));
+            }
+            assertEquals(0x0D, objectAt(session, potLocation));
+            int liftDeadline = frame + 0x40;
+            while (session.liftedEntityState().carryState() != 0x01
+                    && frame < liftDeadline) {
+                tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
+            }
+            assertEquals(0x01, session.liftedEntityState().carryState());
+
+            polsVoice = session.activeRoom().entities().slots().get(polsVoice.slot());
+            link.setPixelPosition(polsVoice.x() - 0x0B,
+                polsVoice.y() - polsVoice.z() - 0x02);
+            link.setDirection(Link.DIRECTION_RIGHT);
+            session.tickEntitiesWithProjectileEvents(
+                frame++, link.romEntityX(), link.romEntityY(), 0, 0,
+                Link.DIRECTION_RIGHT, false);
+            polsVoice = session.activeRoom().entities().slots().get(polsVoice.slot());
+            assertTrue(session.throwLiftedEntity(Link.DIRECTION_RIGHT));
+            while (((frame ^ polsVoice.slot()) & 1) != 0) {
+                frame++;
+            }
+            session.tickEntitiesWithProjectileEvents(
+                frame++, link.romEntityX(), link.romEntityY(), 0, 0,
+                Link.DIRECTION_RIGHT, false);
+            assertEquals(EntityStatus.DYING,
+                session.activeRoom().entities().slots().get(polsVoice.slot()).status());
+            int room25PolsDeathDeadline = frame + 0x80;
+            while (session.activeRoom().entities().slots().get(polsVoice.slot()).loaded()
+                    && frame < room25PolsDeathDeadline) {
+                tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
+            }
+            assertFalse(session.activeRoom().entities().slots().get(polsVoice.slot()).loaded());
+            assertEquals(0xA1, session.activeRoomEventForTest());
+        }
+
+        RoomEntity room25Zol = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x1B).findFirst().orElseThrow();
+        int room25ZolDeadline = frame + 0x200;
+        while (session.activeRoom().entities().slots().get(room25Zol.slot()).status()
+                == EntityStatus.ACTIVE && frame < room25ZolDeadline) {
+            RoomEntity target = session.activeRoom().entities().slots().get(room25Zol.slot());
+            session.resolveEntityCombat(
+                frame++, 0, 0, false, true, true,
+                target.x() - 0x08, 0x10, target.y() - 0x08, 0x10);
+            for (int cooldown = 0; cooldown < 0x0B
+                    && session.activeRoom().entities().slots().get(room25Zol.slot()).status()
+                        == EntityStatus.ACTIVE; cooldown++) {
+                tickInteractiveEntities(session, frame++, 0, 0);
+            }
+        }
+        assertEquals(EntityStatus.DYING,
+            session.activeRoom().entities().slots().get(room25Zol.slot()).status());
+        int room25ZolDeathDeadline = frame + 0x80;
+        while (session.activeRoom().entities().slots().get(room25Zol.slot()).loaded()
+                && frame < room25ZolDeathDeadline) {
+            tickInteractiveEntities(session, frame++, 0, 0);
+        }
+        assertFalse(session.activeRoom().entities().slots().get(room25Zol.slot()).loaded());
+
+        int room25StairRevealDeadline = frame + 0x40;
+        while (session.activeRoomEventForTest() != 0 && frame < room25StairRevealDeadline) {
+            tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
+        }
+        assertEquals(0, session.activeRoomEventForTest());
+        while (objectAt(session, 0x18) != 0xBE && frame < room25StairRevealDeadline) {
+            tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
+        }
+        assertEquals(0xBE, objectAt(session, 0x18));
+        assertEquals(0x10, session.indoorRoomStatusForTest(0x01, 0x25) & 0x10);
+
+        coordinator.handleWarpAndIndoorBoundaries(link);
+        assertFalse(transition.isActive());
+        link.setPixelPosition(0x80, 0x10);
+        coordinator.handleWarpAndIndoorBoundaries(link);
+        assertTrue(transition.isActive());
+        while (transition.isActive()) {
+            transition.tick();
+        }
+        assertEquals(Warp.CATEGORY_SIDESCROLL, session.mapCategory());
+        assertEquals(0x01, session.activeRoom().mapId());
+        assertEquals(0x3B, session.currentRoomId());
+        assertEquals(0x88, link.romEntityX());
+        assertEquals(0x10, link.romEntityY());
+        assertEquals(1, session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0xA5).count());
+        assertEquals(2, session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0xD6).count());
     }
 
     @Test

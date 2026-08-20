@@ -1745,6 +1745,21 @@ public final class RoomEntityRuntime {
             if (status == EntityStatus.ACTIVE) {
                 decrementEnemyDropCountdowns(entity);
             }
+            if (status == EntityStatus.ACTIVE
+                && entity.type() == ENTITY_SIDE_VIEW_POT
+                && groundInteractionSideScrolling
+                && handlerLinkCollisionEnabled
+                && (linkZ & 0xFF) == 0
+                && sideViewPotOverlapsLink(entity, linkEntityX, linkEntityY)
+                && powerBraceletButtonHeld
+                && linkAttackStepAnimationCountdown == 0
+                && withinUnsignedWindow(entity.x(), linkEntityX, 0x12)
+                && withinUnsignedWindow(entity.y(), linkEntityY, 0x12)
+                && beginLift(entity.slot(), romLinkDirection)) {
+                slots[index] = advanceLiftedEntity(slots[index],
+                    linkEntityX, linkEntityY, linkZ, romLinkDirection);
+                continue;
+            }
             if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_DOG) {
                 // DogEntityHandler writes this before ReturnIfNonInteractive_19.
                 enemyHealth[entity.slot()] = DogMotion.HANDLER_HEALTH;
@@ -12140,6 +12155,19 @@ public final class RoomEntityRuntime {
     private static int unsignedByteAbs(int value) {
         int difference = value & 0xFF;
         return difference < 0x80 ? difference : 0x100 - difference;
+    }
+
+    /** CheckLinkCollisionWithEnemy using HITFLAGS_HITBOX_SIDE_VIEW_POT ($3C). */
+    private static boolean sideViewPotOverlapsLink(RoomEntity entity,
+                                                   int linkEntityX,
+                                                   int linkEntityY) {
+        int xDistance = unsignedByteAbs(entity.x() + 0x08 - linkEntityX - 0x08);
+        if (xDistance >= 0x08 + 0x04) {
+            return false;
+        }
+        int yDistance = unsignedByteAbs(
+            entity.y() - entity.z() + 0x02 - linkEntityY - 0x08);
+        return yDistance < 0x08 + 0x04;
     }
 
     private static int signedByte(int value) {
