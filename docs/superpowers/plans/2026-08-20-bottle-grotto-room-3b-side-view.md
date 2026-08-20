@@ -17,13 +17,13 @@
 - Create: `java/src/test/java/linksawakening/world/SideViewPlatformMotionTest.java`
 - Reference: `LADX-Disassembly/src/code/entities/07_sideviewplatform.asm`
 
-- [ ] **Step 1: Write failing tests**
+- [x] **Step 1: Write failing tests**
 
 Test fixed-point Y motion, frame-`&3` acceleration toward `$04`, activation
 ramp to private state 4 `$04`, one-shot rumble, and immediate reset when Link
 is no longer standing.
 
-- [ ] **Step 2: Run RED**
+- [x] **Step 2: Run RED**
 
 ```bash
 cd java && gradle test --tests linksawakening.world.SideViewPlatformMotionTest
@@ -31,13 +31,13 @@ cd java && gradle test --tests linksawakening.world.SideViewPlatformMotionTest
 
 Expected: compilation failure because `SideViewPlatformMotion` is absent.
 
-- [ ] **Step 3: Implement the minimal component**
+- [x] **Step 3: Implement the minimal component**
 
 Provide `advance(RoomEntity, frame, standing, activationAllowed)` returning the
 updated entity, speed Y, private states 2/4, vertical delta, and rumble edge.
 Use signed ROM speed bytes with an 8-bit fractional accumulator.
 
-- [ ] **Step 4: Run GREEN and commit**
+- [x] **Step 4: Run GREEN and commit**
 
 ```bash
 cd java && gradle test --tests linksawakening.world.SideViewPlatformMotionTest
