@@ -166,7 +166,13 @@ public final class OpenAlPcmSoundOutput implements PcmSoundOutput {
                 source = 0;
             }
         } catch (RuntimeException | LinkageError ignored) {
-            bufferQueue.buffersToDeleteOnClose();
+            for (int buffer : bufferQueue.buffersToDeleteOnClose()) {
+                try {
+                    AL10.alDeleteBuffers(buffer);
+                } catch (RuntimeException | LinkageError suppressed) {
+                    // best effort: keep deleting the remaining buffers
+                }
+            }
         } finally {
             if (context != MemoryUtil.NULL) {
                 ALC10.alcDestroyContext(context);

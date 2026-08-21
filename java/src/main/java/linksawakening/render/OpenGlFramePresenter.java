@@ -21,6 +21,7 @@ public final class OpenGlFramePresenter {
     private final int vbo;
     private final Shader shader;
     private final int texture;
+    private final ByteBuffer textureUploadBuffer;
 
     private OpenGlFramePresenter(long window, int vao, int vbo, Shader shader, int texture) {
         this.window = window;
@@ -28,6 +29,7 @@ public final class OpenGlFramePresenter {
         this.vbo = vbo;
         this.shader = shader;
         this.texture = texture;
+        this.textureUploadBuffer = BufferUtils.createByteBuffer(Framebuffer.WIDTH * Framebuffer.HEIGHT * 4);
     }
 
     public static OpenGlFramePresenter initialize(long window) {
@@ -98,13 +100,13 @@ public final class OpenGlFramePresenter {
     private void uploadTexture(byte[] indexedDisplayBuffer) {
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, texture);
 
-        ByteBuffer texBuf = ByteBuffer.allocateDirect(indexedDisplayBuffer.length);
-        texBuf.put(indexedDisplayBuffer).flip();
+        textureUploadBuffer.clear();
+        textureUploadBuffer.put(indexedDisplayBuffer).flip();
 
         GL11.glTexImage2D(
             GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA,
             Framebuffer.WIDTH, Framebuffer.HEIGHT,
-            0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, texBuf
+            0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, textureUploadBuffer
         );
     }
 }

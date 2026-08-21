@@ -107,7 +107,7 @@ public class GPU {
 
     private static final int LINK_CHARACTER_TILES_BANK = 0x0C;
     private static final int LINK_CHARACTER_TILES_ADDR = 0x4000;
-    private static final int LINK_CHARACTER_TILES_COUNT = 0x10;
+    private static final int LINK_CHARACTER_TILES_COUNT = 0x40;
 
     // NpcTilesBankTable in bank0.asm:$2E6F, adjusted for the GBC banks used
     // by the shipped color ROM. The two high bits of a sheet selector index
@@ -160,14 +160,14 @@ public class GPU {
             INVENTORY_EQUIPMENT_ITEMS_TILES_ADDR, 0x100, 0x080);
         // Link character tiles to vTiles0
         loadTilesFromROM(romData, LINK_CHARACTER_TILES_BANK | 0x20,
-            LINK_CHARACTER_TILES_ADDR, 0x40, 0x000);
+            LINK_CHARACTER_TILES_ADDR, LINK_CHARACTER_TILES_COUNT, 0x000);
     }
 
     /** Mirrors LoadBaseTiles (bank0.asm:$2BCF), used before entering an indoor room. */
     public void loadBaseTiles(byte[] romData) {
         currentMapId = 0;
         loadTilesFromROM(romData, LINK_CHARACTER_TILES_BANK | 0x20,
-            LINK_CHARACTER_TILES_ADDR, 0x40, 0x000);
+            LINK_CHARACTER_TILES_ADDR, LINK_CHARACTER_TILES_COUNT, 0x000);
         loadTilesFromROM(romData, INVENTORY_EQUIPMENT_ITEMS_TILES_BANK | 0x20,
             INVENTORY_EQUIPMENT_ITEMS_TILES_ADDR, 0x100, 0x080);
         loadTilesFromROM(romData, INVENTORY_EQUIPMENT_ITEMS_TILES_BANK | 0x20,

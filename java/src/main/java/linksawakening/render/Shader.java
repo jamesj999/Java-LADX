@@ -33,32 +33,37 @@ public class Shader {
         int vertexShader = GL20.glCreateShader(GL20.GL_VERTEX_SHADER);
         GL20.glShaderSource(vertexShader, vertexSource);
         GL20.glCompileShader(vertexShader);
-        
+
         if (GL20.glGetShaderi(vertexShader, GL20.GL_COMPILE_STATUS) == GL20.GL_FALSE) {
-            System.err.println("Vertex shader error: " + GL20.glGetShaderInfoLog(vertexShader));
+            String log = GL20.glGetShaderInfoLog(vertexShader);
+            GL20.glDeleteShader(vertexShader);
+            throw new IllegalStateException("Vertex shader compile error: " + log);
         }
-        
+
         int fragmentShader = GL20.glCreateShader(GL20.GL_FRAGMENT_SHADER);
         GL20.glShaderSource(fragmentShader, fragmentSource);
         GL20.glCompileShader(fragmentShader);
-        
+
         if (GL20.glGetShaderi(fragmentShader, GL20.GL_COMPILE_STATUS) == GL20.GL_FALSE) {
-            System.err.println("Fragment shader error: " + GL20.glGetShaderInfoLog(fragmentShader));
+            String log = GL20.glGetShaderInfoLog(fragmentShader);
+            GL20.glDeleteShader(vertexShader);
+            GL20.glDeleteShader(fragmentShader);
+            throw new IllegalStateException("Fragment shader compile error: " + log);
         }
-        
+
         program = GL20.glCreateProgram();
         GL20.glAttachShader(program, vertexShader);
         GL20.glAttachShader(program, fragmentShader);
         GL20.glLinkProgram(program);
-        
-        if (GL20.glGetProgrami(program, GL20.GL_LINK_STATUS) == GL20.GL_FALSE) {
-            System.err.println("Program link error: " + GL20.glGetProgramInfoLog(program));
-        }
-        
+
         GL20.glDeleteShader(vertexShader);
         GL20.glDeleteShader(fragmentShader);
-        
-        System.out.println("Shader compiled successfully");
+
+        if (GL20.glGetProgrami(program, GL20.GL_LINK_STATUS) == GL20.GL_FALSE) {
+            String log = GL20.glGetProgramInfoLog(program);
+            cleanup();
+            throw new IllegalStateException("Shader program link error: " + log);
+        }
     }
     
     public void use() {

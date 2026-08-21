@@ -116,6 +116,8 @@ public class Main {
     private static long window;
     private static GPU gpu;
     private static OpenGlFramePresenter framePresenter;
+    private static GLFWErrorCallback errorCallback;
+    private static GLFWKeyCallback keyCallback;
     private static final GameFrameSceneBuilder frameSceneBuilder = new GameFrameSceneBuilder();
     private static byte[] romData;
     private static int[] currentTilemap;
@@ -2146,7 +2148,7 @@ public class Main {
     }
 
     private static void initGLFW() {
-        GLFWErrorCallback.createPrint(System.err).set();
+        errorCallback = GLFWErrorCallback.createPrint(System.err).set();
 
         if (!glfwInit()) {
             throw new IllegalStateException("Failed to initialize GLFW");
@@ -2179,14 +2181,16 @@ public class Main {
         try {
             Thread.sleep(200);
         } catch (InterruptedException ignored) {
+            Thread.currentThread().interrupt();
         }
 
-        glfwSetKeyCallback(window, new GLFWKeyCallback() {
+        keyCallback = new GLFWKeyCallback() {
             @Override
             public void invoke(long handle, int key, int scancode, int action, int mods) {
                 onKeyEvent(key, action);
             }
-        });
+        };
+        glfwSetKeyCallback(window, keyCallback);
     }
 
     private static void initOpenGL() {
@@ -2246,7 +2250,13 @@ public class Main {
         if (musicPlayer != null) {
             musicPlayer.close();
         }
+        if (keyCallback != null) {
+            keyCallback.free();
+        }
         glfwDestroyWindow(window);
         glfwTerminate();
+        if (errorCallback != null) {
+            errorCallback.free();
+        }
     }
 }
