@@ -1,6 +1,6 @@
 {
-  "showTitleScreen": false,
-  "playIntroStory": false,
+  "showTitleScreen": true,
+  "playIntroStory": true,
   "debugEnabled": true,
   "startMode": "CONFIGURED_LOCATION",
   "startLocation": {
