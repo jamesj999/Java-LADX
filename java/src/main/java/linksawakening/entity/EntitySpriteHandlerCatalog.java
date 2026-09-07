@@ -207,6 +207,18 @@ public final class EntitySpriteHandlerCatalog {
         if (entityType == 0x41) {
             return forOwlEvent(false);
         }
+        if (entityType == 0x42 && mapId != 0x16) {
+            // Ordinary owl: hActiveEntityVisualPosY + 1, not a world-position change.
+            // South Face Shrine instead uses the separate four-sprite mural handler.
+            EntitySpriteDefinition.Variant pair =
+                decodePair(entityType, 0x18, 0x5DF7, 1, 0).variant(0);
+            return EntitySpriteDefinition.dynamic(entityType, 0x18, 0x5DF7, 0,
+                List.of(List.of(
+                    new EntitySpriteDefinition.DynamicSprite(1, 0, pair.first(),
+                        EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true),
+                    new EntitySpriteDefinition.DynamicSprite(1, 8, pair.second(),
+                        EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true))));
+        }
         if (entityType == ENTITY_CHEST_WITH_ITEM) {
             return decodePair(entityType, 0x07, 0x7B57, 0x21, 0);
         }

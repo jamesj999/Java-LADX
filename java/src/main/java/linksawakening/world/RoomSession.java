@@ -151,6 +151,7 @@ public final class RoomSession {
     private final OverworldTilesetTable overworldTilesetTable;
     private final ManboWarpResolver manboWarpResolver;
     private final OwlEventDialogResolver owlEventDialogResolver;
+    private final OwlStatueDialogResolver owlStatueDialogResolver;
     private final OverworldCollision overworldCollision;
     private final TransientVfxSystem transientVfxSystem;
     private final DroppableRupeeSystem droppableRupeeSystem;
@@ -392,6 +393,7 @@ public final class RoomSession {
         this.overworldTilesetTable = overworldTilesetTable;
         this.manboWarpResolver = new ManboWarpResolver(romData);
         this.owlEventDialogResolver = new OwlEventDialogResolver(romData);
+        this.owlStatueDialogResolver = new OwlStatueDialogResolver(romData);
         this.overworldCollision = overworldCollision;
         this.transientVfxSystem = transientVfxSystem;
         this.droppableRupeeSystem = droppableRupeeSystem;
@@ -1647,6 +1649,13 @@ public final class RoomSession {
             Byte.toUnsignedInt(dungeonProgressFlags[0]),
             Byte.toUnsignedInt(dungeonProgressFlags[1]));
         entityRuntime.setActionButtonsHeld(actionButtonAHeld, actionButtonBHeld);
+        int statueMapId = activeRoom.mapId();
+        entityRuntime.setOwlStatueDialogId(
+            activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD
+                && (statueMapId < 8 || statueMapId == 0xFF)
+                ? owlStatueDialogResolver.globalDialogId(statueMapId, activeRoom.roomId(),
+                    dungeonItemState.currentFlag(DungeonItemState.STONE_BEAK_INDEX) != 0)
+                : -1);
         entityRuntime.setJoypadHeld(joypadHeld);
         entityRuntime.setPressedButtonsMask(entityPressedButtonsMask);
         entityRuntime.setPowerBraceletButtonHeld(powerBraceletButtonHeld);

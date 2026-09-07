@@ -14,6 +14,27 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 final class EntitySpriteHandlerCatalogTest {
 
     @Test
+    void owlStatueUsesRomPairAndOnePixelVisualYOffset() throws Exception {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+        EntitySpriteDefinition statue = catalog.forEntityType(
+            0x42, EntityRoomLoader.RoomTable.INDOORS_A, 2);
+        assertDefinition(statue, 0x18, 0x5DF7,
+            EntitySpriteDefinition.Shape.DYNAMIC, 1, 0);
+        var pair = statue.dynamicVariant(0);
+        assertEquals(2, pair.size());
+        assertEquals(1, pair.get(0).yOffset());
+        assertEquals(1, pair.get(1).yOffset());
+        assertEquals(0, pair.get(0).xOffset());
+        assertEquals(8, pair.get(1).xOffset());
+        assertEquals(0x5E, pair.get(0).oam().tile());
+        assertEquals(0x5E, pair.get(1).oam().tile());
+        assertEquals(0x01, pair.get(0).oam().attributes());
+        assertEquals(0x21, pair.get(1).oam().attributes());
+        assertFalse(catalog.forEntityType(
+            0x42, EntityRoomLoader.RoomTable.INDOORS_B, 0x16).supported());
+    }
+
+    @Test
     void decodesMoblinKingsFourteenSourceBodyVariants() throws Exception {
         EntitySpriteDefinition king = new EntitySpriteHandlerCatalog(loadRom())
             .forEntityType(0xE4, EntityRoomLoader.RoomTable.INDOORS_B);

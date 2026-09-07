@@ -32,6 +32,91 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 final class RoomSessionTest {
 
     @Test
+    void keyCavernOwlStatueUsesCurrentDungeonsStoneBeakAndKeepsWorldPosition() {
+        for (boolean hasBeak : new boolean[]{false, true}) {
+            RoomSession session = newSession();
+            byte[] flags = new byte[DungeonItemState.DUNGEON_ITEM_FLAGS_SIZE];
+            flags[2 * DungeonItemState.ITEM_FLAG_SIZE + DungeonItemState.STONE_BEAK_INDEX]
+                = (byte) (hasBeak ? 1 : 0);
+            session.restoreDungeonItemFlags(flags, new byte[5]);
+            session.loadIndoor(2, 0x54);
+            RoomEntity statue = session.activeRoom().entities().loadedEntities().stream()
+                .filter(entity -> entity.type() == 0x42).findFirst().orElseThrow();
+            session.tickEntities(0, statue.x(), statue.y() + 0x13, 0, Link.DIRECTION_UP);
+            session.setEntityActionButtonsHeld(true, false);
+            session.tickEntities(1, statue.x(), statue.y() + 0x13, 0, Link.DIRECTION_UP);
+            assertEquals(List.of(new RoomEntityRuntime.DialogRequest(
+                hasBeak ? 2 : 1, hasBeak ? 0x82 : 0x10)),
+                session.consumeEntityDialogRequests());
+            RoomEntity updated = session.activeRoom().entities().loadedEntities().stream()
+                .filter(entity -> entity.type() == 0x42).findFirst().orElseThrow();
+            assertEquals(statue.x(), updated.x());
+            assertEquals(statue.y(), updated.y());
+            assertEquals(EntitySpriteDefinition.Shape.DYNAMIC, updated.spriteDefinition().shape());
+        }
+    }
+
+    @Test
+    void owlStatueRequiresAButtonFacingRangeAndInteractiveTalkState() {
+        RoomSession session = newSession();
+        session.loadIndoor(2, 0x54);
+        int x = 0x38;
+        int y = 0x40;
+        session.tickEntities(0, x, y + 0x13, 0, Link.DIRECTION_UP);
+        session.setEntityActionButtonsHeld(false, true);
+        session.tickEntities(1, x, y + 0x13, 0, Link.DIRECTION_UP);
+        assertTrue(session.consumeEntityDialogRequests().isEmpty());
+        session.setEntityActionButtonsHeld(true, false);
+        session.tickEntities(2, x, y + 0x13, 0, Link.DIRECTION_DOWN);
+        assertTrue(session.consumeEntityDialogRequests().isEmpty());
+        session.tickEntities(3, x, y + 0x14, 0, Link.DIRECTION_UP);
+        assertTrue(session.consumeEntityDialogRequests().isEmpty());
+        session.setEntityTalkState(false, 1, 0x80);
+        session.tickEntities(4, x, y + 0x13, 0, Link.DIRECTION_UP);
+        assertTrue(session.consumeEntityDialogRequests().isEmpty());
+        session.setEntityTalkState(true, 0, 0x80);
+        session.tickEntities(5, x, y + 0x13, 0, Link.DIRECTION_UP);
+        assertTrue(session.consumeEntityDialogRequests().isEmpty());
+        session.setEntityTalkState(false, 0, 0x70);
+        session.tickEntities(6, x, y + 0x13, 0, Link.DIRECTION_UP);
+        assertTrue(session.consumeEntityDialogRequests().isEmpty());
+        session.setEntityTalkState(false, 0, 0x80);
+        session.setEntityDialogActive(true);
+        session.tickEntities(7, x, y + 0x13, 0, Link.DIRECTION_UP);
+        assertTrue(session.consumeEntityDialogRequests().isEmpty());
+        session.setEntityDialogActive(false);
+        session.tickEntities(8, x, y + 0x13, 0, true, Link.DIRECTION_UP);
+        assertTrue(session.consumeEntityDialogRequests().isEmpty());
+        session.tickEntities(9, x + 0x10, y, 0, Link.DIRECTION_LEFT);
+        assertTrue(session.consumeEntityDialogRequests().isEmpty());
+        session.tickEntities(10, x, y + 0x13, 0, Link.DIRECTION_UP);
+        assertEquals(0x110, session.consumeEntityDialogRequests().getFirst().globalDialogId());
+    }
+
+    @Test
+    void owlStatuePushUsesVisualOffsetBeforeDialogGateButSkipsAirborneLink() {
+        RoomSession session = newSession();
+        session.loadIndoor(2, 0x54);
+        session.tickEntities(0, 0x38, 0x53, 0, Link.DIRECTION_UP);
+        session.setEntityDialogActive(true);
+        session.tickEntitiesWithProjectileEvents(1, 0x38, 0x4A, 0, 0,
+            Link.DIRECTION_UP, false);
+        var pushes = session.consumeLinkFinalPositionRequests();
+        assertEquals(1, pushes.size());
+        assertTrue(pushes.getFirst().resetPegasusBoots());
+        assertTrue(pushes.getFirst().resetHookshotChain());
+        session.tickEntitiesWithProjectileEvents(2, 0x38, 0x4B, 0, 0,
+            Link.DIRECTION_UP, false);
+        assertTrue(session.consumeLinkFinalPositionRequests().isEmpty());
+        session.tickEntitiesWithProjectileEvents(3, 0x38, 0x4A, 1, 0,
+            Link.DIRECTION_UP, false);
+        assertTrue(session.consumeLinkFinalPositionRequests().isEmpty());
+        session.tickEntitiesWithProjectileEvents(4, 0x38, 0x4A, 0, 2,
+            Link.DIRECTION_UP, false);
+        assertTrue(session.consumeLinkFinalPositionRequests().isEmpty());
+    }
+
+    @Test
     void roomLoadClearsAnUnconsumedDungeonWarpRequest() throws Exception {
         RoomSession session = newSession();
         session.loadIndoor(0x01, 0x28);

@@ -681,6 +681,7 @@ public final class RoomEntityRuntime {
     private final boolean[] owlCompletionEmitted =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
     private IntUnaryOperator owlDialogResolver = roomId -> 0x0D9;
+    private int owlStatueDialogId = -1;
     private IntUnaryOperator owlDefaultMusicResolver = roomId -> 0x05;
     private boolean groundInteractionSideScrolling;
     private int entityMapId = -1;
@@ -2250,6 +2251,12 @@ public final class RoomEntityRuntime {
             }
             if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_RICHARD) {
                 advanceRichard(entity, frame, linkEntityX, linkEntityY, linkAirborne);
+                continue;
+            }
+            if (status == EntityStatus.ACTIVE && entity.type() == 0x42
+                && indoorRoom && entityMapId != 0x16) {
+                advanceOwlStatue(entity, linkEntityX, linkEntityY, linkZ,
+                    projectileLinkState.motionState(), linkAirborne);
                 continue;
             }
             if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_BOW_WOW
@@ -9267,6 +9274,32 @@ public final class RoomEntityRuntime {
             };
             pendingDialogRequests.add(new DialogRequest(1, dialogLowId));
         }
+    }
+
+    private void advanceOwlStatue(RoomEntity entity, int linkEntityX, int linkEntityY,
+                                   int linkZ, int linkMotionState, boolean linkAirborne) {
+        // The shipped handler pushes before ReturnIfNonInteractive_18.
+        // CheckLinkCollisionWithEnemy uses the already incremented visual Y;
+        // translating the Link probe keeps the statue's world position unchanged.
+        if (linkZ == 0 && linkMotionState < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE
+            && RoomEntityCombatRules.overlapsLink(entity, linkEntityX, linkEntityY - 1)) {
+            requestLinkPush(entity, EntityLinkCollisionRules.STANDARD_PUSH);
+        }
+        if (!gameplayWorld || transitionSequenceCounter != 0x04
+            || dialogActive || inventoryAppearing || roomTransitionActive
+            || witchGotItemPresentationActive() || owlStatueDialogId < 0) {
+            return;
+        }
+        int dx = signedByte((linkEntityX - entity.x()) & 0xFF);
+        int dy = signedByte((linkEntityY - entity.y()) & 0xFF);
+        if (sourceNpcInteractionAllowed(dx, dy, linkAirborne, directionToLink(dx, dy))) {
+            pendingDialogRequests.add(new DialogRequest(
+                owlStatueDialogId >>> 8, owlStatueDialogId & 0xFF));
+        }
+    }
+
+    void setOwlStatueDialogId(int globalDialogId) {
+        owlStatueDialogId = globalDialogId;
     }
 
     private void advanceRichard(RoomEntity entity, int frameCounter,
