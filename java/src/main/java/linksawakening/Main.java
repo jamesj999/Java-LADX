@@ -905,17 +905,19 @@ public class Main {
                     link.update();
                 }
                 if (roomSession != null && playerState != null) {
+                    int collisionProbeX = link.romCollisionProbePixelX();
+                    int collisionProbeY = link.romCollisionProbePixelY();
                     roomSession.tryUnlockTailCaveKeyhole(
-                        link.pixelX(), link.pixelY(), link.direction(),
+                        collisionProbeX, collisionProbeY, link.direction(),
                         link.romCollisionType(), playerState.tailKeyCount() != 0);
                     roomSession.tryUnlockKeyCavernKeyhole(
-                        link.pixelX(), link.pixelY(), link.direction(),
+                        collisionProbeX, collisionProbeY, link.direction(),
                         link.romCollisionType(), playerState.goldenLeavesCount());
                     roomSession.tryUnlockIndoorKeyDoor(
-                        link.pixelX(), link.pixelY(), link.direction(),
+                        collisionProbeX, collisionProbeY, link.direction(),
                         link.romCollisionType());
                     roomSession.tryInteractWithIndoorBlock(
-                        link.pixelX(), link.pixelY(), link.direction(),
+                        collisionProbeX, collisionProbeY, link.direction(),
                         link.romCollisionType());
                     roomSession.tryLiftIndoorObject(
                         link.pixelX(), link.pixelY(), link.direction(),

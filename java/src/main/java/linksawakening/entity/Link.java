@@ -180,6 +180,8 @@ public final class Link implements RocsFeather.JumpTarget {
     private int groundMotionCounter;
     private int collisionIgnoreFramesRemaining;
     private int romCollisionType;
+    private final int[] collisionProbePixelX = new int[4];
+    private final int[] collisionProbePixelY = new int[4];
     private boolean forcedSpeedPending;
     private boolean forcedSpeedXOnly;
     private int forcedSpeedX;
@@ -848,6 +850,30 @@ public final class Link implements RocsFeather.JumpTarget {
     /** Mirrors the unsigned {@code wCollisionType} byte written by Link motion. */
     public int romCollisionType() {
         return romCollisionType & 0xFF;
+    }
+
+    /**
+     * Position used by the facing-direction collision probe before movement was
+     * rejected. Bank 2 dispatches interactive objects during that probe; callers
+     * running after update must not re-probe Link's restored, passable position.
+     */
+    public int romCollisionProbePixelX() {
+        return hasFacingCollision() ? collisionProbePixelX[direction] : pixelX();
+    }
+
+    public int romCollisionProbePixelY() {
+        return hasFacingCollision() ? collisionProbePixelY[direction] : pixelY();
+    }
+
+    private boolean hasFacingCollision() {
+        int flag = switch (direction) {
+            case DIRECTION_UP -> COLLISION_TYPE_UP;
+            case DIRECTION_DOWN -> COLLISION_TYPE_DOWN;
+            case DIRECTION_LEFT -> COLLISION_TYPE_LEFT;
+            case DIRECTION_RIGHT -> COLLISION_TYPE_RIGHT;
+            default -> 0;
+        };
+        return (romCollisionType & flag) != 0;
     }
 
     /** ROM hLinkSpeedX written by the current Link motion update. */
@@ -1634,6 +1660,8 @@ public final class Link implements RocsFeather.JumpTarget {
         if (!debugNoClip && !directionalLedgeJumpMotionLocked
             && collisionIgnoreFramesRemaining == 0
             && leadingEdgeBlocked(candidatePixelX, candidatePixelY, moveDirection)) {
+            collisionProbePixelX[moveDirection] = candidatePixelX;
+            collisionProbePixelY[moveDirection] = candidatePixelY;
             romCollisionType |= switch (moveDirection) {
                 case DIRECTION_UP -> COLLISION_TYPE_UP;
                 case DIRECTION_DOWN -> COLLISION_TYPE_DOWN;
