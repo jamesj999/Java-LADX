@@ -10,8 +10,6 @@ package linksawakening.world;
 final class EnemyDropMotion {
     private static final int TOP_DOWN_GRAVITY = 0x02;
     private static final int SHALLOW_WATER_GROUND_STATUS = 0x02;
-    private static final int[] SIDE_SCROLL_GRAVITY = {0x02, 0x01, 0x02, 0x02};
-    private static final int[] SIDE_SCROLL_SPEED_CAP = {0x40, 0x08, 0x40, 0x40};
 
     private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -91,21 +89,21 @@ final class EnemyDropMotion {
                        boolean sideScrolling) {
         int slot = entity.slot();
         validateSlot(slot);
+        // BouncingEntityPhysics updates both planar positions before applying
+        // top-view Z gravity or side-view Y gravity ($60B3 -> $6B7B).
+        int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
+        int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
         if (sideScrolling) {
-            int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
-            int status = groundStatusIndex(previousGroundStatus);
-            speedY[slot] = (speedY[slot] + SIDE_SCROLL_GRAVITY[status]) & 0xFF;
-            int cap = SIDE_SCROLL_SPEED_CAP[status];
-            if (((speedY[slot] - cap) & 0x80) == 0) {
-                speedY[slot] = cap;
-            }
-            return withY(entity, y);
+            EntitySideViewGravity.Speeds speeds = EntitySideViewGravity.advance(
+                speedX[slot], speedY[slot], frameCounter, previousGroundStatus);
+            speedX[slot] = speeds.x();
+            speedY[slot] = speeds.y();
+            return withPosition(entity, x, y, entity.z());
         }
 
-        int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int z = addSpeedToPosition(entity.z(), speedZ[slot], speedZAccumulator, slot);
         speedZ[slot] = (speedZ[slot] - TOP_DOWN_GRAVITY) & 0xFF;
-        return withXZ(entity, x, z);
+        return withPosition(entity, x, y, z);
     }
 
     RoomEntity bounce(RoomEntity entity, int groundStatus, boolean sideScrolling,
@@ -119,7 +117,13 @@ final class EnemyDropMotion {
 
             int y = ((entity.y() & 0xF0) + 0x05) & 0xFF;
             int bouncedSpeed = complementAfterArithmeticShift(speedY[slot]);
-            speedY[slot] = bouncedSpeed < 0xF8 ? bouncedSpeed : 0;
+            if (bouncedSpeed < 0xF8) {
+                speedY[slot] = bouncedSpeed;
+                speedX[slot] = halvePlanarSpeed(speedX[slot]);
+            } else {
+                speedX[slot] = 0;
+                speedY[slot] = 0;
+            }
             return withY(entity, y);
         }
 
@@ -128,15 +132,18 @@ final class EnemyDropMotion {
         }
 
         RoomEntity landed = withZ(entity, 0);
-        if (groundStatusIndex(groundStatus) == SHALLOW_WATER_GROUND_STATUS) {
+        int bouncedSpeed = complementAfterArithmeticShift(speedZ[slot]);
+        if (EntitySideViewGravity.groundStatusIndex(groundStatus) == SHALLOW_WATER_GROUND_STATUS
+            || bouncedSpeed < 0x07) {
+            speedX[slot] = 0;
             speedY[slot] = 0;
             speedZ[slot] = 0;
             return landed;
         }
 
-        int bouncedSpeed = complementAfterArithmeticShift(speedZ[slot]);
-        speedZ[slot] = bouncedSpeed >= 0x07 ? bouncedSpeed : 0;
-        speedY[slot] = 0;
+        speedZ[slot] = bouncedSpeed;
+        speedX[slot] = halvePlanarSpeed(speedX[slot]);
+        speedY[slot] = halvePlanarSpeed(speedY[slot]);
         return landed;
     }
 
@@ -186,12 +193,10 @@ final class EnemyDropMotion {
         return (~shifted) & 0xFF;
     }
 
-    private static int groundStatusIndex(int groundStatus) {
-        int status = groundStatus & 0xFF;
-        if (status >= SIDE_SCROLL_GRAVITY.length) {
-            throw new IllegalArgumentException("Entity ground status out of range: " + status);
-        }
-        return status;
+    /** $6137/$6149 clear the signed-shift result $FF so tiny drifts stop. */
+    private static int halvePlanarSpeed(int speed) {
+        int halved = (signedByte(speed) >> 1) & 0xFF;
+        return halved == 0xFF ? 0 : halved;
     }
 
     private static RoomEntity withY(RoomEntity entity, int y) {
@@ -201,9 +206,9 @@ final class EnemyDropMotion {
             entity.z());
     }
 
-    private static RoomEntity withXZ(RoomEntity entity, int x, int z) {
+    private static RoomEntity withPosition(RoomEntity entity, int x, int y, int z) {
         return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x & 0xFF, entity.y(), entity.status(), entity.spriteDefinition(),
+            x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(),
             entity.spriteVariant(), entity.entityFlipAttribute(), entity.spriteTileOffset(),
             z & 0xFF);
     }

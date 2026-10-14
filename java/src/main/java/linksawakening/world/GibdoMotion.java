@@ -12,6 +12,8 @@ final class GibdoMotion {
     private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] animationCounter = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] selectedVariant = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     /** Mirrors EntityInitHandlersTable._1F -> IncrementEntityState. */
@@ -21,6 +23,8 @@ final class GibdoMotion {
         speedY[slot] = 0;
         speedXAccumulator[slot] = 0;
         speedYAccumulator[slot] = 0;
+        animationCounter[slot] = 0;
+        selectedVariant[slot] = 0;
         initialized[slot] = true;
     }
 
@@ -33,21 +37,30 @@ final class GibdoMotion {
 
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
+        int renderedVariant = selectedVariant[slot];
 
         // ApplyEntityInteractionWithBackground writes directional collision
         // flags. The room model exposes those flags as a directional blocking
         // query, so reverse only the axis whose proposed movement is blocked.
+        boolean collidedX = false;
+        boolean collidedY = false;
         if (backgroundCollision != null) {
-            if (x != entity.x() && backgroundCollision.blocks(entity,
-                directionForHorizontalSpeed(speedX[slot]), x, entity.y())) {
+            if (speedX[slot] != 0 && backgroundCollision.blocks(entity,
+                directionForHorizontalSpeed(speedX[slot]), x, y)) {
                 x = entity.x();
-                speedX[slot] ^= 0xF0;
+                collidedX = true;
             }
-            if (y != entity.y() && backgroundCollision.blocks(entity,
+            if (speedY[slot] != 0 && backgroundCollision.blocks(entity,
                 directionForVerticalSpeed(speedY[slot]), x, y)) {
                 y = entity.y();
-                speedY[slot] ^= 0xF0;
+                collidedY = true;
             }
+        }
+        // LikeLikeGibdoWalk gives horizontal collision flags precedence.
+        if (collidedX) {
+            speedX[slot] ^= 0xF0;
+        } else if (collidedY) {
+            speedY[slot] ^= 0xF0;
         }
 
         // State 1 is written by the ROM init handler and forces an immediate
@@ -56,9 +69,10 @@ final class GibdoMotion {
         if (state[slot] != 0 || (randomByteSupplier.getAsInt() & 0x3F) == 0) {
             chooseDirection(slot, randomByteSupplier);
         }
+        advanceAnimation(slot);
 
         return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
-            entity.status(), entity.spriteDefinition(), entity.spriteVariant(),
+            entity.status(), entity.spriteDefinition(), renderedVariant,
             entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z());
     }
 
@@ -77,6 +91,16 @@ final class GibdoMotion {
 
     int speedY(int slot) {
         return speedY[slot];
+    }
+
+    int spriteVariant(int slot) {
+        return selectedVariant[slot];
+    }
+
+    /** $7F05 is reached once by walking, twice while a Like Like holds Link. */
+    void advanceAnimation(int slot) {
+        selectedVariant[slot] = (animationCounter[slot] >>> 4) & 0x01;
+        animationCounter[slot] = (animationCounter[slot] + 1) & 0xFF;
     }
 
     private void chooseDirection(int slot, IntSupplier randomByteSupplier) {

@@ -13,11 +13,13 @@ final class MagicRodFireballMotion {
     static final int ENTITY_TYPE = 0x04;
     static final int FIRE_TRANSITION_COUNTDOWN = 0x30;
 
-    private static final int[] OFFSET_X = {0x00, 0x00, 0x00, 0x00};
-    private static final int[] OFFSET_Y = {0x00, 0x00, 0x00, 0x00};
-    private static final int[] SPEED_X = {0x20, 0xE0, 0x00, 0x00};
-    private static final int[] SPEED_Y = {0x00, 0x00, 0xE0, 0x20};
+    // label_002_538B overrides the generic SpawnPlayerProjectile position,
+    // clears the sprite variant, then jumps to label_140F for final speeds.
+    private static final int[] OFFSET_X = {0x04, 0xFC, 0xFC, 0x04};
+    private static final int[] OFFSET_Y = {0x04, 0x04, 0xFC, 0x04};
 
+    private final int[] selectedVariant = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] collision = new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -29,21 +31,50 @@ final class MagicRodFireballMotion {
     record SpawnData(int offsetX, int offsetY, int speedX, int speedY, int initialVariant) {}
 
     static SpawnData spawnData(int projectileDirection) {
+        return spawnData(projectileDirection, false);
+    }
+
+    static SpawnData spawnData(int projectileDirection, boolean pieceOfPower) {
         int direction = checkedDirection(projectileDirection);
         return new SpawnData(OFFSET_X[direction], OFFSET_Y[direction],
-            SPEED_X[direction], SPEED_Y[direction], direction);
+            PlayerProjectileLaunchSpeed.x(direction, pieceOfPower),
+            PlayerProjectileLaunchSpeed.y(direction, pieceOfPower), 0);
     }
 
     static int frameVariant(int frameCounter) {
         return (frameCounter >>> 3) & 0x01;
     }
 
+    int advanceSpriteVariant(int slot, int frameCounter) {
+        validateSlot(slot);
+        int displayed = selectedVariant[slot];
+        // $69C9 writes WRAM only, leaving hActiveEntitySpriteVariant unchanged.
+        selectedVariant[slot] = frameVariant(frameCounter);
+        return displayed;
+    }
+
+    boolean collided(int slot) {
+        validateSlot(slot);
+        return collision[slot];
+    }
+
+    void setCollision(int slot, boolean collided) {
+        validateSlot(slot);
+        collision[slot] = collided;
+    }
+
     void initializeSpawn(int slot, int projectileDirection) {
+        initializeSpawn(slot, projectileDirection, false);
+    }
+
+    void initializeSpawn(int slot, int projectileDirection, boolean pieceOfPower) {
         validateSlot(slot);
         int direction = checkedDirection(projectileDirection);
         this.direction[slot] = direction;
-        speedX[slot] = SPEED_X[direction];
-        speedY[slot] = SPEED_Y[direction];
+        speedX[slot] = PlayerProjectileLaunchSpeed.x(direction, pieceOfPower);
+        speedY[slot] = PlayerProjectileLaunchSpeed.y(direction, pieceOfPower);
+        selectedVariant[slot] = 0;
+        collision[slot] = false;
         privateCountdown1[slot] = 0;
         speedXAccumulator[slot] = 0;
         speedYAccumulator[slot] = 0;
@@ -66,17 +97,26 @@ final class MagicRodFireballMotion {
         if (!initialized[slot]) {
             initializeSpawn(slot, direction[slot]);
         }
+        collision[slot] = true;
         privateCountdown1[slot] = FIRE_TRANSITION_COUNTDOWN;
     }
 
     /** Decrements the ROM private countdown and reports the exact unload tick. */
     boolean tickFireTransition(int slot) {
+        return tickFireTransition(slot, true);
+    }
+
+    boolean tickFireTransition(int slot, boolean timersInteractive) {
         validateSlot(slot);
         if (privateCountdown1[slot] == 0) {
             return true;
         }
-        privateCountdown1[slot] = (privateCountdown1[slot] - 1) & 0xFF;
-        return privateCountdown1[slot] == 0;
+        if (timersInteractive) {
+            privateCountdown1[slot] = (privateCountdown1[slot] - 1) & 0xFF;
+        }
+        // $69CF decrements A only for comparison: a stored countdown of one
+        // unloads before drawing fire. The host owns the preceding timer tick.
+        return privateCountdown1[slot] <= 1;
     }
 
     int direction(int slot) {
@@ -104,6 +144,8 @@ final class MagicRodFireballMotion {
         direction[slot] = 0;
         speedX[slot] = 0;
         speedY[slot] = 0;
+        selectedVariant[slot] = 0;
+        collision[slot] = false;
         privateCountdown1[slot] = 0;
         speedXAccumulator[slot] = 0;
         speedYAccumulator[slot] = 0;

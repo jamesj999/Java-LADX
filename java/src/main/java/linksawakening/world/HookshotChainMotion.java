@@ -144,6 +144,19 @@ public final class HookshotChainMotion {
      * hookshotable-object pull state for the shared collision increment.</p>
      */
     public static Step advance(State state, int linkX, int linkY, boolean blocked) {
+        return advance(state, linkX, linkY, blocked, true);
+    }
+
+    static State decrementTransitionCountdown(State state) {
+        requireState(state);
+        return copy(state, state.x(), state.y(), state.z(), state.direction(),
+            state.speedX(), state.speedY(), Math.max(0, state.transitionCountdown() - 1),
+            state.speedXAccumulator(), state.speedYAccumulator(), state.entityState(),
+            state.wallCollisionPending());
+    }
+
+    static Step advance(State state, int linkX, int linkY, boolean blocked,
+                        boolean tickCountdown) {
         if (state == null) {
             throw new IllegalArgumentException("Hookshot state cannot be null");
         }
@@ -155,8 +168,8 @@ public final class HookshotChainMotion {
 
         SpeedStep nextX = addSpeed(state.x(), state.speedX(), state.speedXAccumulator());
         SpeedStep nextY = addSpeed(state.y(), state.speedY(), state.speedYAccumulator());
-        int nextCountdown = state.transitionCountdown() == 0
-            ? 0 : state.transitionCountdown() - 1;
+        int nextCountdown = tickCountdown ? Math.max(0, state.transitionCountdown() - 1)
+            : state.transitionCountdown();
         boolean returning = nextCountdown == 0;
         int nextSpeedX = state.speedX();
         int nextSpeedY = state.speedY();
@@ -173,7 +186,7 @@ public final class HookshotChainMotion {
         // that overlap as the unload condition after the transition countdown
         // has switched the entity to its return path; otherwise the outbound
         // launch would immediately collide with its owner.
-        return new Step(next, false, returning && overlapsLink(next, linkX, linkY), returning);
+        return new Step(next, false, returning && overlapsLink(state, linkX, linkY), returning);
     }
 
     /**
@@ -184,9 +197,6 @@ public final class HookshotChainMotion {
         requireState(state);
         validateByte(linkX, "linkX");
         validateByte(linkY, "linkY");
-        if (state.x() == linkX && state.y() == linkY) {
-            return new PullSpeed(0, 0);
-        }
         Vector vector = vectorTowardsLink(state.x(), state.y(), state.z(),
             linkX, linkY, HOOKSHOT_SPEED);
         return new PullSpeed((-vector.x()) & 0xFF, (-vector.y()) & 0xFF);
@@ -259,9 +269,6 @@ public final class HookshotChainMotion {
         int distanceY = signedByte(linkY - entityY + entityZ);
         int absoluteX = Math.abs(distanceX);
         int absoluteY = Math.abs(distanceY);
-        if (absoluteX == 0 && absoluteY == 0) {
-            return new Vector(0, 0);
-        }
         boolean swapped = absoluteX < absoluteY;
         int smaller = Math.min(absoluteX, absoluteY);
         int larger = Math.max(absoluteX, absoluteY);

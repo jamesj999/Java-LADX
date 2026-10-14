@@ -11,12 +11,6 @@ final class PlayerArrowMotion {
     private static final int[] OFFSET_Y = {0x00, 0x00, 0x00, 0x00};
     private static final int[] SPEED_X = {0x20, 0xE0, 0x00, 0x00};
     private static final int[] SPEED_Y = {0x00, 0x00, 0xE0, 0x20};
-    /* data_13AD/data_13B5, selected by label_140F after spawning. */
-    private static final int[] FINAL_SPEED_X = {0x40, 0xC0, 0x00, 0x00};
-    private static final int[] FINAL_SPEED_Y = {0x00, 0x00, 0xC0, 0x40};
-    private static final int[] POWER_FINAL_SPEED_X = {0x30, 0xD0, 0x00, 0x00};
-    private static final int[] POWER_FINAL_SPEED_Y = {0x00, 0x00, 0xD0, 0x30};
-
     /* ArrowSpinningSpriteVariantFrames: right, down, left, up. */
     private static final int[] SPIN_VARIANTS = {0, 3, 1, 2};
 
@@ -25,11 +19,13 @@ final class PlayerArrowMotion {
     private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] zPosition = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] selectedVariant = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] collision = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     static SpawnData spawnData(int projectileDirection) {
         int direction = checkedDirection(projectileDirection);
@@ -44,11 +40,13 @@ final class PlayerArrowMotion {
     void initializeSpawn(int slot, int projectileDirection, boolean pieceOfPower) {
         validateSlot(slot);
         direction[slot] = projectileDirection & 0x03;
-        speedX[slot] = (pieceOfPower ? POWER_FINAL_SPEED_X : FINAL_SPEED_X)[direction[slot]];
-        speedY[slot] = (pieceOfPower ? POWER_FINAL_SPEED_Y : FINAL_SPEED_Y)[direction[slot]];
+        speedX[slot] = PlayerProjectileLaunchSpeed.x(direction[slot], pieceOfPower);
+        speedY[slot] = PlayerProjectileLaunchSpeed.y(direction[slot], pieceOfPower);
         speedZ[slot] = 0;
         zPosition[slot] = 0;
+        selectedVariant[slot] = direction[slot];
         transitionCountdown[slot] = 0;
+        collision[slot] = false;
         speedXAccumulator[slot] = 0;
         speedYAccumulator[slot] = 0;
         speedZAccumulator[slot] = 0;
@@ -56,6 +54,18 @@ final class PlayerArrowMotion {
     }
 
     Update advance(RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision) {
+        return advance(entity, backgroundCollision, 0, 0, false);
+    }
+
+    Update advance(RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision,
+                   int frameCounter, int groundStatus, boolean sideScrolling) {
+        return advance(entity, backgroundCollision, frameCounter, groundStatus,
+            sideScrolling, true, true);
+    }
+
+    Update advance(RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision,
+                   int frameCounter, int groundStatus, boolean sideScrolling,
+                   boolean handlerInteractive, boolean timersInteractive) {
         validateSlot(entity.slot());
         int slot = entity.slot();
         if (!initialized[slot]) {
@@ -67,22 +77,27 @@ final class PlayerArrowMotion {
         // the normal path.
         if (transitionCountdown[slot] == 0) {
             zPosition[slot] = entity.z();
+            selectedVariant[slot] = entity.spriteVariant();
         }
 
-        if (transitionCountdown[slot] > 0) {
+        if (timersInteractive && transitionCountdown[slot] > 0) {
             transitionCountdown[slot]--;
-            if (transitionCountdown[slot] == 1) {
-                // ArrowRockAfterHittingWall unloads at exactly one, before
-                // applying another position or gravity step.
-                return new Update(entity, false, true);
-            }
-            if (transitionCountdown[slot] != 0) {
-                return advanceWallTransition(entity);
-            }
+        }
+        // $6AD7 renders before ReturnIfNonInteractive_03. A paused handler
+        // must not move, choose another spin frame, or unload at countdown 1.
+        if (!handlerInteractive) {
+            return new Update(withPositionAndVariant(entity, entity.x(), entity.y(),
+                entity.z(), selectedVariant[slot]), false, false);
+        }
+        if (transitionCountdown[slot] == 1) {
+            return new Update(entity, false, true);
+        }
+        if (transitionCountdown[slot] != 0) {
+            return advanceWallTransition(entity, frameCounter, groundStatus, sideScrolling);
         }
 
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
-        boolean collidedWithWall = false;
+        boolean collidedWithWall = collision[slot];
         if (backgroundCollision != null && x != entity.x()
             && backgroundCollision.blocks(entity, horizontalDirection(speedX[slot]),
                 x, entity.y())) {
@@ -98,6 +113,7 @@ final class PlayerArrowMotion {
         }
 
         if (collidedWithWall) {
+            collision[slot] = true;
             transitionCountdown[slot] = 0x18;
             speedZ[slot] = 0x10;
             speedY[slot] = bounceSpeed(speedY[slot]);
@@ -106,6 +122,16 @@ final class PlayerArrowMotion {
 
         return new Update(withPositionAndVariant(entity, x, y, entity.z(),
             entity.spriteVariant()), collidedWithWall, false);
+    }
+
+    void markCollision(int slot) {
+        validateSlot(slot);
+        collision[slot] = true;
+    }
+
+    boolean collided(int slot) {
+        validateSlot(slot);
+        return collision[slot];
     }
 
     int direction(int slot) {
@@ -140,11 +166,13 @@ final class PlayerArrowMotion {
         speedY[slot] = 0;
         speedZ[slot] = 0;
         zPosition[slot] = 0;
+        selectedVariant[slot] = 0;
         transitionCountdown[slot] = 0;
         speedXAccumulator[slot] = 0;
         speedYAccumulator[slot] = 0;
         speedZAccumulator[slot] = 0;
         initialized[slot] = false;
+        collision[slot] = false;
     }
 
     void setSpeedForTest(int slot, int newSpeedX, int newSpeedY, int newSpeedZ) {
@@ -167,14 +195,26 @@ final class PlayerArrowMotion {
         initialized[slot] = true;
     }
 
-    private Update advanceWallTransition(RoomEntity entity) {
+    private Update advanceWallTransition(RoomEntity entity, int frameCounter,
+                                         int groundStatus, boolean sideScrolling) {
         int slot = entity.slot();
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
-        int z = addSpeedToPosition(zPosition[slot], speedZ[slot], speedZAccumulator, slot);
-        zPosition[slot] = z;
-        speedZ[slot] = (speedZ[slot] - 0x02) & 0xFF;
-        int variant = SPIN_VARIANTS[(transitionCountdown[slot] >>> 3) & 0x03];
+        int z = zPosition[slot];
+        if (sideScrolling) {
+            EntitySideViewGravity.Speeds speeds = EntitySideViewGravity.advance(
+                speedX[slot], speedY[slot], frameCounter, groundStatus);
+            speedX[slot] = speeds.x();
+            speedY[slot] = speeds.y();
+        } else {
+            z = addSpeedToPosition(z, speedZ[slot], speedZAccumulator, slot);
+            zPosition[slot] = z;
+            speedZ[slot] = (speedZ[slot] - 0x02) & 0xFF;
+        }
+        // ArrowRenderAndMove draws before ArrowRockAfterHittingWall stores
+        // the next spin frame ($6AD7 precedes $6B6B).
+        int variant = selectedVariant[slot];
+        selectedVariant[slot] = SPIN_VARIANTS[(transitionCountdown[slot] >>> 3) & 0x03];
         return new Update(withPositionAndVariant(entity, x, y, z, variant), false, false);
     }
 

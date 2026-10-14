@@ -41,10 +41,12 @@ final class EnemyProjectileMotion {
     private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] zPosition = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] selectedVariant = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] pendingLinkCollision = new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     static SpawnData spawnData(int projectileType, int projectileDirection) {
@@ -68,6 +70,8 @@ final class EnemyProjectileMotion {
         speedY[slot] = data.speedY();
         speedZ[slot] = 0;
         zPosition[slot] = 0;
+        selectedVariant[slot] = data.initialVariant();
+        pendingLinkCollision[slot] = false;
         transitionCountdown[slot] = 0;
         speedXAccumulator[slot] = 0;
         speedYAccumulator[slot] = 0;
@@ -87,6 +91,19 @@ final class EnemyProjectileMotion {
      */
     Update advance(RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision,
                    boolean preexistingCollision) {
+        return advance(entity, backgroundCollision, preexistingCollision, 0, 0, false);
+    }
+
+    Update advance(RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision,
+                   boolean preexistingCollision, int frameCounter, int groundStatus,
+                   boolean sideScrolling) {
+        return advance(entity, backgroundCollision, preexistingCollision, frameCounter,
+            groundStatus, sideScrolling, true, true);
+    }
+
+    Update advance(RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision,
+                   boolean preexistingCollision, int frameCounter, int groundStatus,
+                   boolean sideScrolling, boolean handlerInteractive, boolean timersInteractive) {
         int slot = entity.slot();
         if (!initialized[slot]) {
             initializeSpawn(slot, entity.type(), 0);
@@ -97,20 +114,28 @@ final class EnemyProjectileMotion {
         // advancing independently until the entity is unloaded.
         if (transitionCountdown[slot] == 0) {
             zPosition[slot] = entity.z();
+            selectedVariant[slot] = entity.spriteVariant();
         }
 
-        if (transitionCountdown[slot] > 0) {
+        if (timersInteractive && transitionCountdown[slot] > 0) {
             transitionCountdown[slot]--;
-            if (transitionCountdown[slot] == 1) {
-                // ArrowRockAfterHittingWall unloads at exactly one, before
-                // taking another movement/gravity step.
-                return new Update(entity, false, true);
-            }
-            if (transitionCountdown[slot] != 0) {
-                return advanceWallTransition(entity);
-            }
+        }
+        // $6AD7 renders before ReturnIfNonInteractive_03. A paused handler
+        // must not move, choose another spin frame, or unload at countdown 1.
+        if (!handlerInteractive) {
+            pendingLinkCollision[slot] |= preexistingCollision;
+            return new Update(withPositionAndVariant(entity, entity.x(), entity.y(),
+                entity.z(), selectedVariant[slot]), false, false);
+        }
+        if (transitionCountdown[slot] == 1) {
+            return new Update(entity, false, true);
+        }
+        if (transitionCountdown[slot] != 0) {
+            return advanceWallTransition(entity, frameCounter, groundStatus, sideScrolling);
         }
 
+        preexistingCollision |= pendingLinkCollision[slot];
+        pendingLinkCollision[slot] = false;
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         boolean collidedWithWall = preexistingCollision;
         if (!preexistingCollision && backgroundCollision != null && x != entity.x()
@@ -144,6 +169,10 @@ final class EnemyProjectileMotion {
             entity.spriteVariant()), collidedWithWall, false);
     }
 
+    boolean pendingLinkCollision(int slot) {
+        return pendingLinkCollision[slot];
+    }
+
     int speedX(int slot) {
         return speedX[slot];
     }
@@ -170,6 +199,8 @@ final class EnemyProjectileMotion {
         speedY[slot] = 0;
         speedZ[slot] = 0;
         zPosition[slot] = 0;
+        selectedVariant[slot] = 0;
+        pendingLinkCollision[slot] = false;
         transitionCountdown[slot] = 0;
         speedXAccumulator[slot] = 0;
         speedYAccumulator[slot] = 0;
@@ -197,17 +228,28 @@ final class EnemyProjectileMotion {
         initialized[slot] = true;
     }
 
-    private Update advanceWallTransition(RoomEntity entity) {
+    private Update advanceWallTransition(RoomEntity entity, int frameCounter,
+                                         int groundStatus, boolean sideScrolling) {
         int slot = entity.slot();
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
-        int z = addSpeedToPosition(zPosition[slot], speedZ[slot], speedZAccumulator, slot);
-        zPosition[slot] = z;
-        speedZ[slot] = (speedZ[slot] - 0x02) & 0xFF;
+        int z = zPosition[slot];
+        if (sideScrolling) {
+            EntitySideViewGravity.Speeds speeds = EntitySideViewGravity.advance(
+                speedX[slot], speedY[slot], frameCounter, groundStatus);
+            speedX[slot] = speeds.x();
+            speedY[slot] = speeds.y();
+        } else {
+            z = addSpeedToPosition(z, speedZ[slot], speedZAccumulator, slot);
+            zPosition[slot] = z;
+            speedZ[slot] = (speedZ[slot] - 0x02) & 0xFF;
+        }
 
-        int variant = entity.spriteVariant();
+        // The shared handler renders before writing the next spin frame.
+        int variant = selectedVariant[slot];
         if ((entity.type() & 0xFF) == ENTITY_MOBLIN_ARROW) {
-            variant = ARROW_SPIN_VARIANTS[(transitionCountdown[slot] >>> 3) & 0x03];
+            selectedVariant[slot] = ARROW_SPIN_VARIANTS[
+                (transitionCountdown[slot] >>> 3) & 0x03];
         }
         return new Update(withPositionAndVariant(entity, x, y, z, variant), false, false);
     }

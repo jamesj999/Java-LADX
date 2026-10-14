@@ -2,6 +2,8 @@ package linksawakening.world;
 
 import linksawakening.entity.EntitySpriteDefinition;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.util.List;
 
@@ -57,7 +59,9 @@ final class CrowMotionTest {
         motion.setSpeedForTest(0, 0x20, 0, 0);
         RoomEntity outwardStart = new RoomEntity(0, 0, CrowMotion.ENTITY_TYPE,
             0xA6, 0x50, EntityStatus.ACTIVE, definition(), 0);
-        CrowMotion.Update unloaded = motion.advance(outwardStart, 0, 0x40, 0x50);
+        CrowMotion.Update crossing = motion.advance(outwardStart, 0, 0x40, 0x50);
+        assertFalse(crossing.unloaded());
+        CrowMotion.Update unloaded = motion.advance(crossing.entity(), 0, 0x40, 0x50);
         assertTrue(unloaded.unloaded());
     }
 
@@ -74,6 +78,88 @@ final class CrowMotionTest {
         assertEquals(1, motion.speedY(0));
         assertEquals(0x40, update.entity().x());
         assertEquals(0x50, update.entity().y());
+    }
+
+    @ParameterizedTest
+    @CsvSource({"2, 1, 1", "3, 255, 255"})
+    void airbornePursuitAndRetreatSteerFromVisualHeight(int state, int speedX, int speedY) {
+        CrowMotion motion = new CrowMotion();
+        motion.setStateForTest(0, state);
+        RoomEntity airborne = new RoomEntity(0, 0, CrowMotion.ENTITY_TYPE,
+            0x40, 0x50, EntityStatus.ACTIVE, definition(), 0, 0, 0, 0x10);
+
+        // Link is below the crow's visual Y ($40), but above its ground Y ($50).
+        // Both flight states call bank $03 GetVectorTowardsLink via $3BB5.
+        motion.advance(airborne, 2, 4, 0x60, 0x48);
+
+        assertEquals(speedX, motion.speedX(0));
+        assertEquals(speedY, motion.speedY(0));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "167, 80, 16, 16, 0, false", "168, 80, 16, 240, 0, true",
+        "0, 80, 16, 240, 0, false", "255, 80, 16, 16, 0, true",
+        "64, 151, 16, 0, 16, false", "64, 152, 16, 0, 240, true",
+        "64, 16, 16, 0, 240, false", "64, 15, 16, 0, 16, true"
+    })
+    void escapeBoundsUseTheHandlerEntryPosition(int x, int y, int z,
+                                               int speedX, int speedY, boolean unload) {
+        CrowMotion motion = new CrowMotion();
+        motion.setStateForTest(0, 3);
+        motion.setSpeedForTest(0, speedX, speedY, 0);
+        RoomEntity crow = new RoomEntity(0, 0, CrowMotion.ENTITY_TYPE, x, y,
+            EntityStatus.ACTIVE, definition(), 0, 0, 0, z);
+
+        // Frame 1 skips steering. Each speed moves one pixel across a boundary.
+        // $5E54 reads cached hActiveEntityPosX / hActiveEntityVisualPosY.
+        CrowMotion.Update update = motion.advance(crow, 0, 1, 0x40, 0x50);
+
+        assertEquals((x + (byte) speedX / 16) & 0xFF, update.entity().x());
+        assertEquals((y + (byte) speedY / 16) & 0xFF, update.entity().y());
+        assertEquals(unload, update.unloaded());
+    }
+
+    @Test
+    void perchedFacingDoesNotPersistTheTemporaryMirroredVariant() {
+        CrowMotion motion = new CrowMotion();
+        CrowMotion.Update first = motion.advance(entity(0x40, 0x50, 0), 0, 0, 0xE0);
+        assertEquals(2, first.entity().spriteVariant());
+        CrowMotion.Update second = motion.advance(first.entity(), 0, 0, 0xE0);
+        assertEquals(0, second.entity().spriteVariant());
+        assertEquals(0, motion.state(0));
+    }
+
+    @Test
+    void climbSelectsNextWingFrameFromAltitudeAfterMovement() {
+        CrowMotion motion = new CrowMotion();
+        motion.setStateForTest(0, 1);
+        RoomEntity crow = new RoomEntity(0, 0, CrowMotion.ENTITY_TYPE, 0x40, 0x50,
+            EntityStatus.ACTIVE, definition(), 0, 0, 0, 7);
+
+        CrowMotion.Update first = motion.advance(crow, 0x20, 0x40, 0x50);
+        assertEquals(7, first.entity().z());
+        assertEquals(2, first.entity().spriteVariant());
+        CrowMotion.Update second = motion.advance(first.entity(), 0x1F, 0x40, 0x50);
+        assertEquals(8, second.entity().z());
+        assertEquals(2, second.entity().spriteVariant());
+        CrowMotion.Update third = motion.advance(second.entity(), 0x1E, 0x40, 0x50);
+        assertEquals(3, third.entity().spriteVariant());
+    }
+
+    @ParameterizedTest
+    @CsvSource({"2, 16, 3", "3, 16, 3", "2, 0, 2", "3, 0, 2"})
+    void flightSelectsNextWingFrameFromTheMovementHelpersFinalByte(
+        int state, int speedY, int nextVariant) {
+        CrowMotion motion = new CrowMotion();
+        motion.setStateForTest(0, state);
+        motion.setSpeedForTest(0, 0, speedY, 0);
+        // When Y moves, HL points at updated Y ($49). A zero Y speed returns
+        // early with HL still at the speed byte (zero). Neither is the timer.
+        CrowMotion.Update first = motion.advance(entity(0x40, 0x48, 0), 3, 1, 0, 0);
+        assertEquals(2, first.entity().spriteVariant());
+        CrowMotion.Update second = motion.advance(first.entity(), 3, 1, 0, 0);
+        assertEquals(nextVariant, second.entity().spriteVariant());
     }
 
     private static RoomEntity entity(int x, int y, int variant) {

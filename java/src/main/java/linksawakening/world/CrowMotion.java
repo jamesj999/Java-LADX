@@ -15,6 +15,7 @@ final class CrowMotion {
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] physicsFlags = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] selectedVariant = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] perchPositionAdjusted = new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
@@ -29,6 +30,7 @@ final class CrowMotion {
         speedYAccumulator[slot] = 0;
         speedZAccumulator[slot] = 0;
         physicsFlags[slot] = INITIAL_PHYSICS_FLAGS;
+        selectedVariant[slot] = 0;
         perchPositionAdjusted[slot] = false;
         initialized[slot] = true;
     }
@@ -63,15 +65,15 @@ final class CrowMotion {
         int x = entity.x() & 0xFF;
         int y = entity.y() & 0xFF;
         int z = entity.z() & 0xFF;
-        int variant = entity.spriteVariant();
+        int variant = selectedVariant[slot];
         boolean boomerangSound = false;
         boolean unloaded = false;
 
-        // CrowEntityHandler selects the mirrored pair before dispatching its
-        // state. The state handlers that animate flight then overwrite this
-        // byte with countdown bit 3, so keep the two operations separate.
+        // $5CBE mirrors only the active display variant, then renders it.
+        // SetEntitySpriteVariant later writes the stored frame for the next
+        // handler pass, without changing this frame's displayed facing.
         if (direction[slot] == 0) {
-            variant = ((variant & 0x01) + 2) & 0x03;
+            variant += 2;
         }
 
         switch (state[slot]) {
@@ -104,7 +106,8 @@ final class CrowMotion {
                     speedZ[slot] = 0x08;
                     z = addSpeedToPosition(z, speedZ[slot], speedZAccumulator, slot);
                     boomerangSound = true;
-                    variant = (countdown >>> 3) & 0x01;
+                    // AddEntityZSpeedToPos_06 leaves HL at the updated Z byte.
+                    selectedVariant[slot] = (z >>> 3) & 0x01;
                 }
             }
             case 2 -> {
@@ -112,7 +115,7 @@ final class CrowMotion {
                     state[slot] = 3;
                 } else {
                     if ((countdown & 0x01) == 0) {
-                        Vector vector = vectorTowardsLink(x, y, linkEntityX, linkEntityY,
+                        Vector vector = vectorTowardsLink(x, y, z, linkEntityX, linkEntityY,
                             0x20);
                         speedY[slot] = approach(speedY[slot], vector.y());
                         speedX[slot] = approach(speedX[slot], vector.x());
@@ -121,12 +124,12 @@ final class CrowMotion {
                     x = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
                     y = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
                     boomerangSound = true;
-                    variant = (countdown >>> 3) & 0x01;
+                    selectedVariant[slot] = flightVariant(y, speedY[slot]);
                 }
             }
             case 3 -> {
                 if ((frameCounter & 0x03) == 0) {
-                    Vector vector = vectorTowardsLink(x, y, linkEntityX, linkEntityY,
+                    Vector vector = vectorTowardsLink(x, y, z, linkEntityX, linkEntityY,
                         0x20);
                     speedY[slot] = approach(speedY[slot], negate(vector.y()));
                     speedX[slot] = approach(speedX[slot], negate(vector.x()));
@@ -135,8 +138,11 @@ final class CrowMotion {
                 x = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
                 y = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
                 boomerangSound = true;
-                variant = (countdown >>> 3) & 0x01;
-                unloaded = ((y - z) & 0xFF) >= 0x88 || x >= 0xA8;
+                selectedVariant[slot] = flightVariant(y, speedY[slot]);
+                // $5E54 reads the cached active position. The movement helpers
+                // update WRAM positions without refreshing those HRAM bytes.
+                unloaded = ((entity.y() - entity.z()) & 0xFF) >= 0x88
+                    || entity.x() >= 0xA8;
             }
             default -> throw new IllegalStateException("Invalid Crow state: " + state[slot]);
         }
@@ -195,6 +201,13 @@ final class CrowMotion {
         }
     }
 
+    private static int flightVariant(int movedY, int speedY) {
+        // At $5E0B, HL is left by UpdateEntityPosWithSpeed_06: either the
+        // updated Y position, or the zero Y-speed byte on its early return.
+        // Both PlayBoomerangSfx calls preserve HL.
+        return speedY == 0 ? 0 : (movedY >>> 3) & 0x01;
+    }
+
     /** Mirrors AddEntitySpeedToPos_06's signed high-nibble fixed point step. */
     private static int addSpeedToPosition(int position, int speed, int[] accumulator,
                                           int slot) {
@@ -212,10 +225,12 @@ final class CrowMotion {
     }
 
     /** Port of GetVectorTowardsLink with the requested infinity norm. */
-    private static Vector vectorTowardsLink(int entityX, int entityY,
+    private static Vector vectorTowardsLink(int entityX, int entityY, int entityZ,
                                             int linkX, int linkY, int length) {
         int distanceX = signedByte((linkX - entityX) & 0xFF);
-        int distanceY = signedByte((linkY - entityY) & 0xFF);
+        // The flight trampoline uses bank $03's height-aware distance helper,
+        // unlike the bank $06 helper used for the perched proximity check.
+        int distanceY = signedByte((linkY - entityY + entityZ) & 0xFF);
         boolean xNegative = distanceX < 0;
         boolean yNegative = distanceY < 0;
         int absoluteX = Math.abs(distanceX);

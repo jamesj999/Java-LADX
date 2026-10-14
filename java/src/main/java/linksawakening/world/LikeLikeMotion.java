@@ -10,7 +10,6 @@ final class LikeLikeMotion {
 
     private final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] privateState3 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final GibdoMotion walkMotion = new GibdoMotion();
@@ -22,7 +21,6 @@ final class LikeLikeMotion {
     void initialize(int slot) {
         privateState1[slot] = 0;
         privateState3[slot] = 0;
-        privateState4[slot] = 0;
         inertia[slot] = 0;
         initialized[slot] = true;
         walkMotion.initialize(slot);
@@ -31,7 +29,6 @@ final class LikeLikeMotion {
     void clear(int slot) {
         privateState1[slot] = 0;
         privateState3[slot] = 0;
-        privateState4[slot] = 0;
         inertia[slot] = 0;
         initialized[slot] = false;
         walkMotion.clear(slot);
@@ -46,6 +43,7 @@ final class LikeLikeMotion {
         if (!initialized[slot]) {
             initialize(slot);
         }
+        int renderedVariant = walkMotion.spriteVariant(slot);
 
         if (privateState3[slot] == 0) {
             if (slowTransitionCountdown == 0
@@ -69,7 +67,7 @@ final class LikeLikeMotion {
                 return new Update(entity, slowTransitionCountdown,
                     new RoomEntityRuntime.LikeLikeEvent(
                         slot, RoomEntityRuntime.LikeLikeEvent.Kind.RELEASE,
-                        entity.x(), entity.y(), -1, 0), -1);
+                        entity.x(), entity.y(), -1, 0), renderedVariant);
             }
         }
 
@@ -89,25 +87,26 @@ final class LikeLikeMotion {
             }
         }
 
-        // The handler writes HIDDEN before this check. There is no Link event
-        // to emit until the source accepts the current motion state.
+        // $7E27-$7E55 hides Link and removes the shield before checking his
+        // motion state. Only the position writes and animation calls are gated.
         if (linkMotionState != LINK_MOTION_DEFAULT) {
-            return new Update(entity, slowTransitionCountdown, null, -1);
+            return new Update(entity, slowTransitionCountdown,
+                new RoomEntityRuntime.LikeLikeEvent(
+                    slot, RoomEntityRuntime.LikeLikeEvent.Kind.CAPTURE,
+                    entity.x(), entity.y(), stolenInventorySlot, stolenShieldLevel, false),
+                renderedVariant);
         }
 
-        // The source calls func_006_7F05 twice. Four RRA instructions select
-        // bit four of the pre-increment privateState4 value; the second call
-        // is the final variant written to the entity slot.
-        privateState4[slot] = (privateState4[slot] + 1) & 0xFF;
-        int secondAnimationCounter = privateState4[slot];
-        privateState4[slot] = (privateState4[slot] + 1) & 0xFF;
-        int spriteVariant = (secondAnimationCounter >>> 4) & 0x01;
+        // Both $7F05 calls use the same privateState4 counter as walking.
+        // The handler rendered before these writes, so present the old frame.
+        walkMotion.advanceAnimation(slot);
+        walkMotion.advanceAnimation(slot);
 
         return new Update(entity, slowTransitionCountdown,
             new RoomEntityRuntime.LikeLikeEvent(
                 slot, RoomEntityRuntime.LikeLikeEvent.Kind.CAPTURE,
                 entity.x(), entity.y(), stolenInventorySlot, stolenShieldLevel),
-            spriteVariant);
+            renderedVariant);
     }
 
     int state(int slot) {

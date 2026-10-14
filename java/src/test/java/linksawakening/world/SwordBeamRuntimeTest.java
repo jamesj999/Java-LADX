@@ -3,6 +3,8 @@ package linksawakening.world;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.vfx.TransientVfxType;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -43,15 +45,15 @@ final class SwordBeamRuntimeTest {
         assertEquals(0x44, second.x());
         assertEquals(0, second.spriteVariant());
 
+        RoomEntity beforeTrail = runtime.snapshot().slots().get(slot);
         tick(runtime, 3, 0x40, 0x40, 3);
         assertEquals(List.of(TransientVfxType.SWORD_BEAM),
             runtime.transientVfxRequests().stream()
                 .map(RoomEntityRuntime.TransientVfxRequest::type).toList());
         RoomEntityRuntime.TransientVfxRequest request = runtime.transientVfxRequests().getFirst();
-        RoomEntity current = runtime.snapshot().slots().get(slot);
         assertEquals(0, request.variant());
-        assertEquals(current.x(), request.worldX());
-        assertEquals((current.y() - current.z()) & 0xFF, request.worldY());
+        assertEquals(beforeTrail.x(), request.worldX());
+        assertEquals((beforeTrail.y() - beforeTrail.z()) & 0xFF, request.worldY());
     }
 
     @Test
@@ -77,6 +79,52 @@ final class SwordBeamRuntimeTest {
         assertTrue(first >= 0);
         assertEquals(-1, runtime.spawnSwordBeam(0x40, 0x40, 0, 0));
         assertEquals(1, runtime.activeProjectileCount());
+    }
+
+    @Test
+    void swordBeamStopsAtOppositeDirectionalBarrierAfterItsCrossingCounterExpires()
+            throws IOException {
+        RoomEntityRuntime runtime = runtime();
+        int slot = runtime.spawnSwordBeam(0x40, 0x40, 0, 0);
+        runtime.setObjectIntersectionQuery(entity ->
+            new RoomEntityObjectSample(1, 0xD1, 0x40, 0x40));
+        tick(runtime, 0, 0x40, 0x40, 0);
+        tick(runtime, 1, 0x40, 0x40, 0);
+        assertTrue(runtime.snapshot().slots().get(slot).loaded());
+        tick(runtime, 2, 0x40, 0x40, 0);
+        assertFalse(runtime.snapshot().slots().get(slot).loaded());
+    }
+
+    @ParameterizedTest
+    @CsvSource({"0", "1", "2", "3"})
+    void blockedBeamEmitsItsPokeAtThePreMovementVisualPosition(int direction)
+            throws IOException {
+        RoomEntityRuntime runtime = runtime();
+        int slot = runtime.spawnSwordBeam(0x40, 0x50, 7, direction);
+        tick(runtime, 0, 0x40, 0x50, direction);
+        RoomEntity before = runtime.snapshot().slots().get(slot);
+        runtime.setObjectIntersectionQuery(entity ->
+            new RoomEntityObjectSample(1, 1, 0x40, 0x40));
+        tick(runtime, 3, 0x40, 0x50, direction);
+
+        assertFalse(runtime.snapshot().slots().get(slot).loaded());
+        assertEquals(1, runtime.transientVfxRequests().size());
+        RoomEntityRuntime.TransientVfxRequest impact = runtime.transientVfxRequests().getFirst();
+        assertEquals(TransientVfxType.SWORD_POKE, impact.type());
+        assertEquals(before.x(), impact.worldX());
+        assertEquals((before.y() - before.z() + 3) & 0xFF, impact.worldY());
+    }
+
+    @Test
+    void physicsFFRemovesTheBeamWithoutTheOrdinaryImpactSpark() throws IOException {
+        RoomEntityRuntime runtime = runtime();
+        int slot = runtime.spawnSwordBeam(0x40, 0x50, 0, 0);
+        tick(runtime, 0, 0x40, 0x50, 0);
+        runtime.setObjectIntersectionQuery(entity ->
+            new RoomEntityObjectSample(1, 0xFF, 0x40, 0x40));
+        tick(runtime, 3, 0x40, 0x50, 0);
+        assertFalse(runtime.snapshot().slots().get(slot).loaded());
+        assertTrue(runtime.transientVfxRequests().isEmpty());
     }
 
     private static RoomEntityRuntime runtime() throws IOException {

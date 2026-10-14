@@ -353,12 +353,14 @@ public class Main {
 
                 @Override
                 public boolean fireMagicRodFireball() {
-                    if (link == null || roomSession == null) {
+                    if (link == null || roomSession == null || playerState == null) {
                         return false;
                     }
                     int romDirection = link.applyRomItemDirectionFromInput();
                     boolean spawned = roomSession.fireMagicRodFireball(
-                        link.romEntityX(), link.romEntityY(), link.romEntityZ(), romDirection);
+                        link.romEntityX(), link.romEntityY(), link.romEntityZ(), romDirection,
+                        playerState.activePowerUp()
+                            == PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER);
                     return spawned;
                 }
 
@@ -827,6 +829,12 @@ public class Main {
         }
 
         if (currentScreen == SCREEN_OVERWORLD) {
+            if (roomSession != null) {
+                // $00:0F22 runs before world transitions and dialog gates.
+                // The separate inventory gameplay handler does not run it.
+                roomSession.advanceBoomerangSoundClock(
+                    inventoryMenu == null || inventoryMenu.isFullyClosed());
+            }
             scrollController.tickScreenShake();
             if (dialogController != null) {
                 dialogController.tick();
@@ -1375,7 +1383,8 @@ public class Main {
                             playerState.setItemA(PlayerState.INVENTORY_EMPTY);
                         }
                         if (link != null) {
-                            link.applyLikeLikeCapture(event.entityX(), event.entityY());
+                            link.applyLikeLikeCapture(event.entityX(), event.entityY(),
+                                event.pinLinkPosition());
                         }
                     } else if (link != null) {
                         link.releaseLikeLikeCapture();

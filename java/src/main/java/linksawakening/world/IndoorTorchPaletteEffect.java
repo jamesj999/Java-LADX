@@ -1,32 +1,37 @@
 package linksawakening.world;
 
+import linksawakening.rom.RomBank;
+
 /**
  * GBC indoor torch palette state from {@code palettes.asm:func_021_53F3} and
  * the transition handler at {@code bank14.asm:$4CB2}.
  */
 final class IndoorTorchPaletteEffect {
     private static final int TRANSITION_COUNTDOWN = 0x0B;
-    private static final int[] EFFECT_TWO_FACTORS =
-        {0x0B, 0x0D, 0x0D, 0x0D, 0x0B, 0x0B, 0x0B, 0x0B};
-    private static final int[] DEFAULT_EFFECT_FACTORS =
-        {0x07, 0x09, 0x09, 0x09, 0x07, 0x07, 0x07, 0x07};
-    private static final int[] EFFECT_EIGHT_FACTORS =
-        {0x04, 0x05, 0x05, 0x05, 0x04, 0x04, 0x04, 0x04};
+    private final byte[] romData;
 
     private int[][] basePalettes = new int[0][0];
     private int[][] palettes = new int[0][0];
+    private int[][] pendingPalettes = new int[0][0];
     private int effectAddress;
     private int targetAddress;
     private int transitionCountdown;
+    private int transitionEffect;
     private int paletteDataFlags;
+
+    IndoorTorchPaletteEffect(byte[] romData) {
+        this.romData = romData;
+    }
 
     void reset(int[][] roomPalettes, int unlitTorchCount) {
         basePalettes = copy(roomPalettes);
         targetAddress = unlitTorchCount * 4 & 0xFF;
         effectAddress = targetAddress;
         transitionCountdown = 0;
+        transitionEffect = 0;
         paletteDataFlags = 0;
         rebuildPalettes();
+        palettes = copy(pendingPalettes);
     }
 
     void clear() {
@@ -42,26 +47,57 @@ final class IndoorTorchPaletteEffect {
     }
 
     void extinguishTorch() {
+        extinguishTorch(true);
+    }
+
+    void extinguishTorch(boolean allowPaletteTransition) {
+        // $18:7A8C caps the target before checking the GBC motion gate.
+        if (targetAddress >= 0x0C) {
+            return;
+        }
         targetAddress = targetAddress + 4 & 0xFF;
-        startTransition(0x80);
+        if (allowPaletteTransition) {
+            startTransition(0x80);
+        }
     }
 
     void tick(boolean dialogActive, boolean transitionGraphicsActive) {
+        tick(dialogActive, transitionGraphicsActive, 0, 0);
+    }
+
+    void tick(boolean dialogActive, boolean transitionGraphicsActive,
+              int linkMotionState, int mapId) {
         paletteDataFlags = 0;
-        if (transitionCountdown == 0 || dialogActive || transitionGraphicsActive) {
+        if ((effectAddress == targetAddress && transitionEffect == 0)
+            || dialogActive || transitionGraphicsActive || linkMotionState != 0) {
             return;
         }
 
-        transitionCountdown--;
-        if (transitionCountdown == 1 || transitionCountdown == 0) {
-            stepTowardTarget();
+        transitionCountdown = (transitionCountdown - 1) & 0xFF;
+        if (transitionCountdown != 1 && transitionCountdown != 0) {
+            return;
+        }
+        if (transitionCountdown == 1) {
+            stepEffect();
             rebuildPalettes();
+        } else if (effectAddress == targetAddress) {
+            transitionEffect = 0;
+        }
+        // $14:4D4A uploads 16 colors per pass: BG palettes 0-3 at one,
+        // then palettes 4-7 at zero, from the same prepared palette buffer.
+        int first = transitionCountdown == 1 ? 0 : 4;
+        for (int palette = first; palette < Math.min(first + 4, palettes.length); palette++) {
+            palettes[palette] = pendingPalettes[palette].clone();
         }
         paletteDataFlags = 0x81;
 
-        if (transitionCountdown == 0 && effectAddress != targetAddress) {
-            transitionCountdown = TRANSITION_COUNTDOWN;
+        if (transitionCountdown == 0) {
+            transitionCountdown = mapId == 0x07 ? 0x0A : TRANSITION_COUNTDOWN;
         }
+    }
+
+    boolean transitionActive() {
+        return transitionEffect != 0;
     }
 
     int effectAddress() {
@@ -85,22 +121,18 @@ final class IndoorTorchPaletteEffect {
     }
 
     private void startTransition(int direction) {
-        if (effectAddress == targetAddress) {
-            return;
-        }
-        // wBGPaletteTransitionEffect records the direction in bit 6/7. The
-        // host only needs its non-zero lifetime; direction follows the target.
         if (direction != 0x40 && direction != 0x80) {
             throw new IllegalArgumentException("Unsupported palette transition direction");
         }
+        transitionEffect = direction;
         transitionCountdown = TRANSITION_COUNTDOWN;
     }
 
-    private void stepTowardTarget() {
-        if (effectAddress > targetAddress) {
+    private void stepEffect() {
+        if ((transitionEffect & 0x80) == 0) {
             effectAddress = (effectAddress & 0x06) != 0
                 ? effectAddress - 2 : effectAddress - 4;
-        } else if (effectAddress < targetAddress) {
+        } else {
             effectAddress = (effectAddress & 0x04) == 0
                 ? effectAddress + 2 : effectAddress + 4;
         }
@@ -108,17 +140,18 @@ final class IndoorTorchPaletteEffect {
     }
 
     private void rebuildPalettes() {
-        palettes = copy(basePalettes);
-        if (effectAddress == 0) {
+        pendingPalettes = copy(basePalettes);
+        if ((effectAddress & 0x0E) == 0) {
             return;
         }
-        int[] factors = effectAddress == 0x02 ? EFFECT_TWO_FACTORS
-            : effectAddress == 0x08 ? EFFECT_EIGHT_FACTORS
-            : DEFAULT_EFFECT_FACTORS;
-        for (int palette = 0; palette < palettes.length; palette++) {
-            int factor = factors[Math.min(palette, factors.length - 1)];
-            for (int color = 0; color < palettes[palette].length; color++) {
-                palettes[palette][color] = scaleRgb555(palettes[palette][color], factor);
+        // func_021_5432 selects one of the three eight-byte ROM tables.
+        int factorsAddress = effectAddress == 0x02 ? 0x53DB
+            : effectAddress == 0x08 ? 0x53EB : 0x53E3;
+        int factorsOffset = RomBank.romOffset(0x21, factorsAddress);
+        for (int palette = 0; palette < pendingPalettes.length; palette++) {
+            int factor = Byte.toUnsignedInt(romData[factorsOffset + palette]);
+            for (int color = 0; color < pendingPalettes[palette].length; color++) {
+                pendingPalettes[palette][color] = scaleRgb555(pendingPalettes[palette][color], factor);
             }
         }
     }

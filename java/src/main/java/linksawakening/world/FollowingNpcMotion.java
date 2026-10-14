@@ -72,6 +72,8 @@ final class FollowingNpcMotion {
     private RoomEntity advanceGhost(RoomEntity entity, int frameCounter,
                                     int linkEntityX, int linkEntityY,
                                     RoomEntityBackgroundCollision backgroundCollision) {
+        // GhostEntityHandler writes the current bob height before aiming ($19:5E56).
+        int z = GHOST_Z[(frameCounter >>> 3) & 0x07];
         int variant = ghostVariant(entity.x(), entity.y(), linkEntityX, linkEntityY,
             frameCounter);
         boolean outsideFollowWindow = !withinGhostWindow(
@@ -83,7 +85,7 @@ final class FollowingNpcMotion {
                 // The handler temporarily adds $0C only for its proximity
                 // check, restores hLinkPositionY, then aims at the original
                 // Link coordinate.
-                Vector vector = vectorTowardsLink(x, y, linkEntityX, linkEntityY, 0x08);
+                Vector vector = vectorTowardsLink(x, y, z, linkEntityX, linkEntityY, 0x08);
                 speedX[entity.slot()] = vector.x() & 0xFF;
                 speedY[entity.slot()] = vector.y() & 0xFF;
             }
@@ -91,7 +93,6 @@ final class FollowingNpcMotion {
             x = position[0];
             y = position[1];
         }
-        int z = GHOST_Z[(frameCounter >>> 3) & 0x07];
         return withPositionAndVariant(entity, x, y, z, variant);
     }
 
@@ -106,7 +107,8 @@ final class FollowingNpcMotion {
         int y = entity.y();
         if (outsideFollowWindow) {
             if ((frameCounter & 0x07) == 0) {
-                Vector vector = vectorTowardsLink(x, y, linkEntityX, linkEntityY, 0x0C);
+                // The rooster temporarily clears its Z for this call ($19:5A77).
+                Vector vector = vectorTowardsLink(x, y, 0, linkEntityX, linkEntityY, 0x0C);
                 speedX[entity.slot()] = vector.x() & 0xFF;
                 speedY[entity.slot()] = vector.y() & 0xFF;
             }
@@ -229,10 +231,10 @@ final class FollowingNpcMotion {
         return distanceX < 0 ? 1 : 0;
     }
 
-    private static Vector vectorTowardsLink(int entityX, int entityY,
+    private static Vector vectorTowardsLink(int entityX, int entityY, int entityZ,
                                              int linkX, int linkY, int length) {
         int distanceX = signedByte((linkX - entityX) & 0xFF);
-        int distanceY = signedByte((linkY - entityY) & 0xFF);
+        int distanceY = signedByte((linkY - entityY + entityZ) & 0xFF);
         int absoluteX = Math.abs(distanceX);
         int absoluteY = Math.abs(distanceY);
         int result = divideComponent(Math.min(absoluteX, absoluteY),
@@ -249,9 +251,6 @@ final class FollowingNpcMotion {
     }
 
     private static int divideComponent(int smaller, int larger, int length) {
-        if (larger == 0) {
-            return 0;
-        }
         int result = 0;
         int remainder = 0;
         // GetVectorTowardsLink's divide loop runs exactly `length` iterations,

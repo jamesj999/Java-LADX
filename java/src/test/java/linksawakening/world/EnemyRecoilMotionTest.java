@@ -2,6 +2,8 @@ package linksawakening.world;
 
 import linksawakening.entity.EntitySpriteDefinition;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -49,7 +51,40 @@ final class EnemyRecoilMotionTest {
         motion.configure(0, 64, 64, 0, 64, 64, 0x30);
 
         assertEquals(0xD0, motion.recoilSpeedX(0));
-        assertEquals(0x30, motion.recoilSpeedY(0));
+        assertEquals(0xD0, motion.recoilSpeedY(0));
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {0, 8, 0xF8})
+    void overlappingVisualPositionRecoilsUpAndLeftForEveryEntityHeight(int z) {
+        EnemyRecoilMotion motion = new EnemyRecoilMotion();
+        int linkY = (0x50 - z) & 0xFF;
+        motion.configure(0, 0x40, 0x50, z, 0x40, linkY, 0x30);
+        RoomEntity result = motion.advance(entity(0, 0x40, 0x50, z), null).entity();
+        assertEquals(0x3D, result.x());
+        assertEquals(0x4D, result.y());
+        assertEquals(new EnemyRecoilMotion.Vector(0x30, 0x30),
+            EnemyRecoilMotion.vectorTowardsLink(0x40, 0x50, z, 0x40, linkY, 0x30));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"sword", "projectile", "bomb"})
+    void assigningAnotherRecoilVelocityPreservesBothFractionalCoordinates(String source) {
+        EnemyRecoilMotion motion = new EnemyRecoilMotion();
+        motion.configureFromSpeed(0, 8, 0xF8);
+        RoomEntity first = motion.advance(entity(0, 0x40, 0x50, 0), null).entity();
+        assertEquals(0x40, first.x());
+        assertEquals(0x4F, first.y());
+        switch (source) {
+            case "sword" -> motion.configure(0, first.x(), first.y(), 0,
+                first.x() - 0x10, first.y() + 0x10, 8);
+            case "projectile" -> motion.configureFromSpeed(0, 8, 0xF8);
+            case "bomb" -> motion.configureFromSource(0, 0x20, 0x60, 0, 0x30, 0x50, 8);
+            default -> throw new AssertionError(source);
+        }
+        RoomEntity second = motion.advance(first, null).entity();
+        assertEquals(0x41, second.x());
+        assertEquals(0x4F, second.y());
     }
 
     @Test

@@ -235,6 +235,7 @@ public final class Link implements RocsFeather.JumpTarget {
     private int zSubPixels;
     private int zVelocity;
     private boolean likeLikeCaptured;
+    private boolean likeLikeCapturePinsPosition;
     private int likeLikeCaptureSubX;
     private int likeLikeCaptureSubY;
     private boolean fallingIntoPit;
@@ -342,6 +343,7 @@ public final class Link implements RocsFeather.JumpTarget {
         directionalLedgeJumpMotionLocked = false;
         overworldLedgeFallActive = false;
         likeLikeCaptured = false;
+        likeLikeCapturePinsPosition = false;
         fallingIntoPit = false;
         carryingLiftedObjectState = 0;
         roosterCarryActive = false;
@@ -712,12 +714,21 @@ public final class Link implements RocsFeather.JumpTarget {
 
     /** Applies Like Like's hLinkPositionX/Y and hidden animation state. */
     public void applyLikeLikeCapture(int romEntityX, int romEntityY) {
+        applyLikeLikeCapture(romEntityX, romEntityY, true);
+    }
+
+    /** Hiding and shield theft precede the ROM's default-motion position gate. */
+    public void applyLikeLikeCapture(int romEntityX, int romEntityY, boolean pinPosition) {
         if ((romEntityX & ~0xFF) != 0 || (romEntityY & ~0xFF) != 0) {
             throw new IllegalArgumentException("Like Like capture coordinates must be bytes");
         }
+        likeLikeCaptured = true;
+        likeLikeCapturePinsPosition = pinPosition;
+        if (!pinPosition) {
+            return;
+        }
         likeLikeCaptureSubX = ((romEntityX - 0x08) & 0xFF) << SUB_PIXEL_SHIFT;
         likeLikeCaptureSubY = ((romEntityY - 0x10) & 0xFF) << SUB_PIXEL_SHIFT;
-        likeLikeCaptured = true;
         subX = likeLikeCaptureSubX;
         subY = likeLikeCaptureSubY;
         airborne = false;
@@ -742,6 +753,7 @@ public final class Link implements RocsFeather.JumpTarget {
     /** Releases Link when the swallowed Like Like handler accepts A or B. */
     public void releaseLikeLikeCapture() {
         likeLikeCaptured = false;
+        likeLikeCapturePinsPosition = false;
     }
 
     public boolean isLikeLikeCaptured() {
@@ -1229,7 +1241,7 @@ public final class Link implements RocsFeather.JumpTarget {
             return;
         }
 
-        if (likeLikeCaptured) {
+        if (likeLikeCaptured && likeLikeCapturePinsPosition) {
             subX = likeLikeCaptureSubX;
             subY = likeLikeCaptureSubY;
             airborne = false;

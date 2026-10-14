@@ -2,6 +2,8 @@ package linksawakening.world;
 
 import linksawakening.entity.EntitySpriteDefinition;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -76,7 +78,8 @@ final class EnemyProjectileMotionTest {
         assertEquals(0x0F, arrowMotion.transitionCountdown(0));
         assertEquals(0x01, arrowUpdate.entity().z());
         assertEquals(0x0E, arrowMotion.speedZ(0));
-        assertEquals(0x03, arrowUpdate.entity().spriteVariant());
+        assertEquals(0, arrowUpdate.entity().spriteVariant());
+        assertEquals(3, arrowMotion.advance(arrowUpdate.entity(), null).entity().spriteVariant());
 
         EnemyProjectileMotion rockMotion = new EnemyProjectileMotion();
         RoomEntity rock = entity(0x0A, 0x10, 0x20, 0);
@@ -99,6 +102,72 @@ final class EnemyProjectileMotionTest {
         assertTrue(update.unloaded());
         assertEquals(0x01, motion.transitionCountdown(0));
         assertEquals(entity, update.entity());
+    }
+
+    @ParameterizedTest
+    @CsvSource({"0x0A", "0x0C"})
+    void sideViewReboundFallsOnYAndPreservesHeight(int type) {
+        EnemyProjectileMotion motion = new EnemyProjectileMotion();
+        RoomEntity entity = entity(type, 0x40, 0x50, 7);
+        motion.setSpeedForTest(0, 0xF0, 0, 0x10);
+        motion.setTransitionForTest(0, 0x18, 7, 0x10);
+
+        for (int frame = 1; frame <= 9; frame++) {
+            EnemyProjectileMotion.Update update = motion.advance(entity, null, false, frame, 0, true);
+            assertFalse(update.unloaded());
+            entity = update.entity();
+            assertEquals(7, entity.z());
+            assertEquals(0x10, motion.speedZ(0));
+        }
+
+        // Movement uses the old Y speed: sum(0, 2, ..., 16) / 16 = 4 pixels.
+        assertEquals(0x37, entity.x());
+        assertEquals(0x54, entity.y());
+        assertEquals(18, motion.speedY(0));
+        assertEquals(0x0F, motion.transitionCountdown(0));
+    }
+
+    @ParameterizedTest
+    @CsvSource({"0, 0x0C, 0x0C, 0x40", "1, 0x0C, 0x0B, 8",
+        "1, 0xF4, 0xF5, 8", "2, 0x0C, 0x0B, 0x40", "3, 0xF4, 0xF5, 0x40"})
+    void sideViewReboundUsesGroundSpeedLimitAndEightFrameDrag(
+        int groundStatus, int initialX, int expectedX, int expectedY) {
+        EnemyProjectileMotion motion = new EnemyProjectileMotion();
+        RoomEntity entity = entity(0x0C, 0x40, 0x50, 7);
+        motion.setSpeedForTest(0, initialX, expectedY - 1, 0x10);
+        motion.setTransitionForTest(0, 0x18, 7, 0x10);
+
+        EnemyProjectileMotion.Update first = motion.advance(entity, null, false, 7, groundStatus, true);
+        assertEquals(initialX, motion.speedX(0));
+        assertEquals(expectedY, motion.speedY(0));
+        motion.advance(first.entity(), null, false, 8, groundStatus, true);
+        assertEquals(expectedX, motion.speedX(0));
+        assertEquals(expectedY, motion.speedY(0));
+    }
+
+    @Test
+    void reboundSpinDisplaysTheStoredFrameBeforeSelectingTheNextOne() {
+        EnemyProjectileMotion motion = new EnemyProjectileMotion();
+        RoomEntity entity = entity(0x0C, 0x40, 0x50, 0);
+        motion.initializeSpawn(0, 0x0C, 0);
+        entity = motion.advance(entity,
+            (candidate, direction, nextX, nextY) -> direction == 0).entity();
+
+        // After impact: direction 0 once, then left for eight frames,
+        // down for eight, and right until the countdown-1 unload pass.
+        for (int frame = 1; frame <= 22; frame++) {
+            EnemyProjectileMotion.Update update = motion.advance(entity, null);
+            assertFalse(update.unloaded());
+            int expected = frame == 1 ? 0 : frame <= 9 ? 1 : frame <= 17 ? 3 : 0;
+            assertEquals(expected, update.entity().spriteVariant(), "frame " + frame);
+            entity = update.entity();
+        }
+        assertTrue(motion.advance(entity, null).unloaded());
+
+        motion.clear(0);
+        motion.initializeSpawn(0, 0x0C, 2);
+        motion.setTransitionForTest(0, 0x18, 0, 0x10);
+        assertEquals(2, motion.advance(entity, null).entity().spriteVariant());
     }
 
     private static void assertSpawnData(int type, int direction, int offsetX, int offsetY,

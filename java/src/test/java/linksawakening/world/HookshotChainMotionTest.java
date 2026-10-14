@@ -1,6 +1,8 @@
 package linksawakening.world;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -118,7 +120,7 @@ final class HookshotChainMotionTest {
     }
 
     @Test
-    void pullSpeedIsZeroWhenTheRomPatchFindsTheChainAtLinkPosition() {
+    void shippedRomKeepsTheZAwarePullWhenRawCoordinatesMatch() {
         HookshotChainMotion.State state = new HookshotChainMotion.State(
             0x40, 0x50, 0x08, 0, 0, 0, 0, 0, 0,
             HookshotChainMotion.PULLING_STATE, false);
@@ -127,7 +129,29 @@ final class HookshotChainMotionTest {
             state, 0x40, 0x50);
 
         assertEquals(0, speed.speedX());
-        assertEquals(0, speed.speedY());
+        // The shipped $18:7C1C bytes omit the optional __PATCH_0__ guard.
+        assertEquals(0xD0, speed.speedY());
+    }
+
+    @ParameterizedTest
+    @CsvSource({"-8, true", "9, false"})
+    void returnCatchUsesTheCachedPositionBeforeMovement(int linkOffsetX, boolean caught) {
+        HookshotChainMotion.State state = new HookshotChainMotion.State(
+            0x40, 0x51, 1, 0, 0x30, 0, 1, 0, 0);
+        HookshotChainMotion.Step step = HookshotChainMotion.advance(
+            state, 0x40 + linkOffsetX, 0x50, false);
+        assertEquals(0x43, step.state().x());
+        assertEquals(caught, step.reachedLink());
+    }
+
+    @Test
+    void zeroVectorDistanceFollowsTheRomsDivisionLoop() {
+        HookshotChainMotion.State state = new HookshotChainMotion.State(
+            0x40, 0x51, 1, 0, 0, 0, 0, 0, 0);
+        HookshotChainMotion.PullSpeed speed = HookshotChainMotion.pullLinkSpeed(
+            state, 0x40, 0x50);
+        assertEquals(0xD0, speed.speedX());
+        assertEquals(0xD0, speed.speedY());
     }
 
     @Test

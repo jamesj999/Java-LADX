@@ -24,6 +24,7 @@ final class ZombieMotion {
     private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] selectedVariant = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     record SpawnRequest(int x, int y) {
@@ -94,13 +95,16 @@ final class ZombieMotion {
                 spawnRequest, false, appliesBackgroundInteraction);
         }
 
-        int variant = entity.spriteVariant();
+        // $640F renders before any state handler writes the next stored frame.
+        int renderedVariant = selectedVariant[slot];
+        int variant = renderedVariant;
         switch (state[slot]) {
             case 0 -> {
                 countdown = 0x30;
                 state[slot] = 1;
             }
             case 1 -> {
+                int animationSelector = countdown;
                 if (countdown == 0) {
                     countdown = (randomByteSupplier.getAsInt() & 0x3F) + 0x70;
                     int vectorLength = (randomByteSupplier.getAsInt() & 0x07) + 0x05;
@@ -111,8 +115,12 @@ final class ZombieMotion {
                     nextSpeedX = speedX[slot];
                     nextSpeedY = speedY[slot];
                     state[slot] = 2;
+                    // ApplyVectorTowardsLink returns A = X speed, and both
+                    // ReloadSavedBank and IncrementEntityState preserve A.
+                    // The fall-through comparison at $6447 reads that byte.
+                    animationSelector = speedX[slot];
                 }
-                variant = countdown >= 0x18 ? 1 : 2;
+                variant = animationSelector >= 0x18 ? 1 : 2;
             }
             case 2 -> {
                 appliesBackgroundInteraction = true;
@@ -145,7 +153,8 @@ final class ZombieMotion {
             default -> throw new IllegalStateException("Invalid Zombie state: " + state[slot]);
         }
 
-        updated = withVariant(updated, variant);
+        selectedVariant[slot] = variant;
+        updated = withVariant(updated, renderedVariant);
         return update(updated, countdown, nextPhysicsFlags, nextSpeedX, nextSpeedY,
             null, unloadRequested, appliesBackgroundInteraction);
     }
@@ -197,18 +206,20 @@ final class ZombieMotion {
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
         int collisionMask = 0;
 
-        if (x != entity.x()) {
+        // ApplyEntityInteractionWithBackground probes nonzero speeds even
+        // when fixed-point movement has not advanced a complete pixel.
+        if (speedX[slot] != 0) {
             int direction = speedX[slot] < 0x80
                 ? EntityBackgroundCollisionResult.RIGHT
                 : EntityBackgroundCollisionResult.LEFT;
             EntityBackgroundCollisionResult result = interaction.probe(entity, direction,
-                x, entity.y(), ignoreHitsCountdown, frameCounter);
+                x, y, ignoreHitsCountdown, frameCounter);
             if (result.blocked()) {
                 collisionMask |= result.collisionFlag();
                 x = entity.x();
             }
         }
-        if (y != entity.y()) {
+        if (speedY[slot] != 0) {
             int direction = speedY[slot] < 0x80
                 ? EntityBackgroundCollisionResult.DOWN
                 : EntityBackgroundCollisionResult.UP;
@@ -299,6 +310,7 @@ final class ZombieMotion {
         speedY[slot] = 0;
         speedXAccumulator[slot] = 0;
         speedYAccumulator[slot] = 0;
+        selectedVariant[slot] = 0;
     }
 
     private static void checkType(RoomEntity entity) {

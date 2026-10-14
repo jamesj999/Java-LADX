@@ -168,8 +168,7 @@ public final class RoomSession {
     private final EntityCollisionPointProbe entityCollisionPointProbe;
     private final EntityBackgroundCollisionResolver entityBackgroundCollisionResolver;
     private final OverworldBushInteraction overworldBushInteraction;
-    private final IndoorTorchPaletteEffect indoorTorchPaletteEffect =
-        new IndoorTorchPaletteEffect();
+    private final IndoorTorchPaletteEffect indoorTorchPaletteEffect;
     private final RoomEntityBackgroundInteraction entityBackgroundInteraction =
         new RoomEntityBackgroundInteraction() {
             @Override
@@ -245,12 +244,16 @@ public final class RoomSession {
     private final Set<Integer> bombedBlockTileOverrides = new HashSet<>();
     /** Bombed overworld cave doors use the dedicated GBC redraw tile order. */
     private final Set<Integer> bombedCaveDoorTileOverrides = new HashSet<>();
+    // A torch handler may change WRAM but return before emitting its BG draw command.
+    private final Map<Integer, int[]> retainedTorchTiles = new HashMap<>();
     private final RecentRoomEntityClears recentRoomEntityClears =
         new RecentRoomEntityClears();
     private int currentOverworldTilesetId = W_TILESET_NO_UPDATE;
     private FollowingNpcState followingNpcState = FollowingNpcState.none();
     private EnemyDropResolver.CounterState enemyDropCounters =
         new EnemyDropResolver.CounterState(0, 0);
+    private int boomerangSoundCounter;
+    private boolean boomerangSoundClockProvided;
     private int enemyDropMaxHearts = 3;
     private int enemyDropHealth = 6;
     private boolean enemyDropActivePowerUp;
@@ -388,6 +391,7 @@ public final class RoomSession {
                        DroppableRupeeSystem droppableRupeeSystem,
                        RoomLoadListener roomLoadListener) {
         this.romData = romData;
+        this.indoorTorchPaletteEffect = new IndoorTorchPaletteEffect(romData);
         this.gpu = gpu;
         this.roomLoader = roomLoader;
         this.overworldTilesetTable = overworldTilesetTable;
@@ -634,6 +638,8 @@ public final class RoomSession {
         playerShieldLevel = 0;
         entityGoldenLeavesCount = 0;
         enemyDropCounters = new EnemyDropResolver.CounterState(0, 0);
+        boomerangSoundCounter = 0;
+        boomerangSoundClockProvided = false;
         switchBlocksState = 0;
         switchableObjectAnimationStage = 0;
         switchButtonPressed = 0;
@@ -1174,11 +1180,16 @@ public final class RoomSession {
     /** Mirrors the delayed UseMagicRod player-projectile spawn bridge. */
     public boolean fireMagicRodFireball(int linkEntityX, int linkEntityY, int linkEntityZ,
                                         int romDirection) {
+        return fireMagicRodFireball(linkEntityX, linkEntityY, linkEntityZ, romDirection, false);
+    }
+
+    public boolean fireMagicRodFireball(int linkEntityX, int linkEntityY, int linkEntityZ,
+                                        int romDirection, boolean pieceOfPower) {
         if (activeRoom == null || entityRuntime == null) {
             return false;
         }
         int slot = entityRuntime.spawnMagicRodFireball(linkEntityX, linkEntityY, linkEntityZ,
-            romDirection);
+            romDirection, pieceOfPower);
         if (slot < 0) {
             return false;
         }
@@ -1518,6 +1529,17 @@ public final class RoomSession {
         entityRuntime = runtime;
     }
 
+    /** WorldHandler's shared sound clock persists across entity and room loads. */
+    public void advanceBoomerangSoundClock(boolean worldGameplay) {
+        if (worldGameplay) {
+            boomerangSoundCounter = (boomerangSoundCounter + 1)
+                % RoomEntityRuntime.BOOMERANG_SFX_COUNTER_PERIOD;
+        }
+        // Main may run several world frames without an entity pass during a
+        // transition. The next pass must use that clock without ticking twice.
+        boomerangSoundClockProvided = true;
+    }
+
     public void tickEntities(int frameCounter) {
         tickEntities(frameCounter, 0, 0);
     }
@@ -1634,7 +1656,15 @@ public final class RoomSession {
         if (activeRoom == null || entityRuntime == null) {
             return List.of();
         }
-        indoorTorchPaletteEffect.tick(entityDialogActive, false);
+        if (!boomerangSoundClockProvided) {
+            advanceBoomerangSoundClock(true);
+        }
+        entityRuntime.setBoomerangSoundCounterForFrame(boomerangSoundCounter);
+        boomerangSoundClockProvided = false;
+        indoorTorchPaletteEffect.tick(entityDialogActive, false,
+            currentLinkMotionState, activeRoom.mapId());
+        entityRuntime.setTorchPaletteTransitionState(indoorTorchPaletteEffect.targetAddress(),
+            indoorTorchPaletteEffect.transitionActive());
         copyIndoorTorchPalettesToActiveRoom();
         tickOcarinaAnimationHandler();
         entityRuntime.setSwitchBlockAnimationActive(
@@ -2449,6 +2479,7 @@ public final class RoomSession {
         bombedWallTileOverrides.clear();
         bombedBlockTileOverrides.clear();
         bombedCaveDoorTileOverrides.clear();
+        retainedTorchTiles.clear();
         pendingBombExplosionEvents.clear();
         pendingDungeonWarp = null;
         pendingRoomEntityEvents.clear();
@@ -2647,9 +2678,12 @@ public final class RoomSession {
                         activeRoom.gbcOverlay(), activeRoom.tileIds(), activeRoom.tileAttrs())
                         .changed();
                 case IGNITE_TORCH -> writeMagicPowderTorchObject(
-                    request.location(), 0xAB, 0xAC);
+                    request.location(), 0xAB, 0xAC, true);
                 case EXTINGUISH_TORCH -> writeMagicPowderTorchObject(
-                    request.location(), 0xAC, 0xAB);
+                    request.location(), -1, 0xAB,
+                    activeRoom.roomId() != 0x74
+                        && (indoorTorchPaletteEffect.targetAddress() >= 0x0C
+                            || currentLinkMotionState != 0x05));
             };
 
             if (!changed) {
@@ -2662,7 +2696,7 @@ public final class RoomSession {
                 == RoomEntityRuntime.MagicPowderObjectAction.EXTINGUISH_TORCH
                 && activeRoom.roomId() != 0x74) {
                 roomTriggerCount = (roomTriggerCount - 1) & 0xFF;
-                indoorTorchPaletteEffect.extinguishTorch();
+                indoorTorchPaletteEffect.extinguishTorch(currentLinkMotionState != 0x05);
             }
             if (activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
                 refreshOverworldCollisionAfterObjectMutation();
@@ -2674,8 +2708,9 @@ public final class RoomSession {
     }
 
     private boolean writeMagicPowderTorchObject(int location, int expectedObject,
-                                                 int replacementObject) {
-        if (objectAtRoomLocation(location) != expectedObject) {
+                                                 int replacementObject, boolean redraw) {
+        // Expiration writes $AB through the saved object pointer unconditionally.
+        if (expectedObject >= 0 && objectAtRoomLocation(location) != expectedObject) {
             return false;
         }
         int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0)
@@ -2684,13 +2719,49 @@ public final class RoomSession {
         if (areaIndex < 0 || areaIndex >= objects.length) {
             return false;
         }
+        if (redraw) {
+            retainedTorchTiles.remove(areaIndex);
+        } else {
+            retainTorchTiles(areaIndex);
+        }
         objects[areaIndex] = replacementObject & 0xFF;
-        if (activeRoom.renderValues() != null
+        if (redraw && activeRoom.renderValues() != null
             && areaIndex < activeRoom.renderValues().length) {
             activeRoom.renderValues()[areaIndex] = replacementObject & 0xFF;
         }
-        refreshActiveRoomTilemap();
+        if (redraw) {
+            refreshActiveRoomTilemap();
+        }
         return true;
+    }
+
+    private void retainTorchTiles(int areaIndex) {
+        int location = areaIndex - RoomConstants.ROOM_OBJECTS_BASE;
+        int topLeft = (location >>> 4) * 2 * RoomConstants.ROOM_TILE_WIDTH
+            + (location & 0x0F) * 2;
+        int[] saved = new int[8];
+        for (int tile = 0; tile < 4; tile++) {
+            int index = topLeft + (tile / 2) * RoomConstants.ROOM_TILE_WIDTH + tile % 2;
+            saved[tile] = activeRoom.tileIds()[index];
+            saved[tile + 4] = activeRoom.tileAttrs()[index];
+        }
+        retainedTorchTiles.putIfAbsent(areaIndex, saved);
+    }
+
+    private void applyRetainedTorchTiles() {
+        retainedTorchTiles.keySet().removeIf(
+            areaIndex -> activeRoom.roomObjectsArea()[areaIndex] != 0xAB);
+        for (Map.Entry<Integer, int[]> entry : retainedTorchTiles.entrySet()) {
+            int location = entry.getKey() - RoomConstants.ROOM_OBJECTS_BASE;
+            int topLeft = (location >>> 4) * 2 * RoomConstants.ROOM_TILE_WIDTH
+                + (location & 0x0F) * 2;
+            int[] saved = entry.getValue();
+            for (int tile = 0; tile < 4; tile++) {
+                int index = topLeft + (tile / 2) * RoomConstants.ROOM_TILE_WIDTH + tile % 2;
+                activeRoom.tileIds()[index] = saved[tile];
+                activeRoom.tileAttrs()[index] = saved[tile + 4];
+            }
+        }
     }
 
     private int countUnlitTorches() {
@@ -4039,6 +4110,7 @@ public final class RoomSession {
         applyBombedWallTileOverrides();
         applyBombedBlockTileOverrides();
         applyBombedCaveDoorTileOverrides();
+        applyRetainedTorchTiles();
     }
 
     private void openActiveRoomShutterDoors() {

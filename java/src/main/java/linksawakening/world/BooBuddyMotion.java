@@ -9,6 +9,7 @@ final class BooBuddyMotion {
     static final int OPTIONS1 = 0x20 | 0x08;
 
     private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] selectedVariant = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -20,6 +21,7 @@ final class BooBuddyMotion {
     /** Entity $50 uses the ordinary no-op initialization path. */
     void initialize(int slot) {
         state[slot] = 0;
+        selectedVariant[slot] = 0;
         speedX[slot] = 0;
         speedY[slot] = 0;
         speedXAccumulator[slot] = 0;
@@ -37,6 +39,31 @@ final class BooBuddyMotion {
     Update advance(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY,
                    int transitionCountdown, int roomTriggerCount, boolean swordMiddle,
                    IntSupplier randomByteSupplier) {
+        tickTimers(entity.slot());
+        return advanceAfterTimers(entity, frameCounter, linkEntityX, linkEntityY,
+            transitionCountdown, roomTriggerCount, swordMiddle, randomByteSupplier);
+    }
+
+    void tickTimers(int slot) {
+        ensureInitialized(slot);
+        if (privateCountdown1[slot] > 0) {
+            privateCountdown1[slot]--;
+        }
+    }
+
+    RoomEntity advanceRecoil(RoomEntity entity, int recoilX, int recoilY) {
+        int slot = entity.slot();
+        ensureInitialized(slot);
+        // ApplyRecoilIfNeeded_06 temporarily replaces speeds, so recoil
+        // shares the ordinary position fractions and leaves drift speeds intact.
+        int x = addSpeedToPosition(entity.x(), recoilX, speedXAccumulator, slot);
+        int y = addSpeedToPosition(entity.y(), recoilY, speedYAccumulator, slot);
+        return withPosition(entity, x, y, selectedVariant[slot]);
+    }
+
+    Update advanceAfterTimers(RoomEntity entity, int frameCounter,
+                   int linkEntityX, int linkEntityY, int transitionCountdown,
+                   int roomTriggerCount, boolean swordMiddle, IntSupplier randomByteSupplier) {
         if (entity == null || (entity.type() & 0xFF) != ENTITY_TYPE) {
             throw new IllegalArgumentException("Unsupported Boo Buddy motion entity");
         }
@@ -47,15 +74,15 @@ final class BooBuddyMotion {
         if (!initialized[slot]) {
             initialize(slot);
         }
-        if (privateCountdown1[slot] > 0) {
-            privateCountdown1[slot]--;
-        }
-
         int countdown = transitionCountdown & 0xFF;
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
-        int variant = entity.spriteVariant();
-        boolean unloaded = ((y - entity.z()) & 0xFF) >= 0x88 || x >= 0xA8;
+        // $06:79AC renders before the state handlers write the next variant.
+        int renderedVariant = selectedVariant[slot];
+        int variant = renderedVariant;
+        // func_006_5E54 reads the active coordinates cached before movement.
+        boolean unloaded = ((entity.y() - entity.z()) & 0xFF) >= 0x88
+            || entity.x() >= 0xA8;
         int healthOverride = -1;
 
         // func_006_5E54 runs before the state dispatch. ClearEntityStatus_06
@@ -72,23 +99,34 @@ final class BooBuddyMotion {
                     state[slot] = 1;
                     break;
                 }
+                if (swordMiddle && countdown == 0 && privateCountdown1[slot] == 0) {
+                    if (!withinSwordTriggerWindow(x, y, linkEntityX, linkEntityY)) {
+                        // Both distant-swing branches jump straight to animation.
+                        variant = directionVariant(x, linkEntityX, frameCounter);
+                        break;
+                    }
+                    countdown = 0x20;
+                }
                 if (countdown != 0) {
                     speedX[slot] = 0;
                     speedY[slot] = 0;
-                    variant = animateTransition(frameCounter, x, linkEntityX, slot);
+                    variant = animateTransition(frameCounter, x, linkEntityX, slot, countdown);
+                    if (privateState1[slot] != 0) {
+                        // func_006_7AB0 sets this flag at countdown one, then
+                        // func_006_7A8C reflects the position around ($50,$48).
+                        privateCountdown1[slot] = 0x20;
+                        privateState1[slot] = 0;
+                        x = (0xA0 - x) & 0xFF;
+                        y = (0x90 - y) & 0xFF;
+                        variant = animateTransition(frameCounter, x, linkEntityX, slot,
+                            countdown);
+                    }
                     break;
                 }
                 if (privateCountdown1[slot] != 0) {
                     speedX[slot] = 0;
                     speedY[slot] = 0;
-                    variant = animateTransition(frameCounter, x, linkEntityX, slot);
-                    break;
-                }
-                if (swordMiddle && withinSwordTriggerWindow(x, y, linkEntityX, linkEntityY)) {
-                    countdown = 0x20;
-                    speedX[slot] = 0;
-                    speedY[slot] = 0;
-                    variant = animateTransition(frameCounter, x, linkEntityX, slot);
+                    variant = animateTransition(frameCounter, x, linkEntityX, slot, countdown);
                     break;
                 }
 
@@ -113,7 +151,8 @@ final class BooBuddyMotion {
                 + state[slot]);
         }
 
-        return new Update(withPosition(entity, x, y, variant), countdown,
+        selectedVariant[slot] = variant;
+        return new Update(withPosition(entity, x, y, renderedVariant), countdown,
             false, healthOverride);
     }
 
@@ -124,6 +163,11 @@ final class BooBuddyMotion {
 
     int state(int slot) {
         return state[slot];
+    }
+
+    int selectedVariant(int slot) {
+        ensureInitialized(slot);
+        return selectedVariant[slot];
     }
 
     int speedX(int slot) {
@@ -177,7 +221,8 @@ final class BooBuddyMotion {
         }
     }
 
-    private int animateTransition(int frameCounter, int x, int linkEntityX, int slot) {
+    private int animateTransition(int frameCounter, int x, int linkEntityX, int slot,
+                                  int countdown) {
         int variant;
         if (((frameCounter >>> 2) & 0x01) == 0) {
             variant = -1;
@@ -185,7 +230,7 @@ final class BooBuddyMotion {
             int direction = signedByte((linkEntityX - x) & 0xFF) < 0 ? 1 : 0;
             variant = direction == 0 ? 0x06 : 0x07;
         }
-        privateState1[slot] = 0;
+        privateState1[slot] = countdown == 1 ? 1 : 0;
         return variant;
     }
 
@@ -253,9 +298,6 @@ final class BooBuddyMotion {
     }
 
     private static int divideComponent(int smallerDistance, int largerDistance, int length) {
-        if (largerDistance == 0) {
-            return 0;
-        }
         int result = 0;
         int remainder = 0;
         for (int count = 0; count < length; count++) {

@@ -3,6 +3,8 @@ package linksawakening.world;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -109,7 +111,7 @@ final class ZombieRuntimeTest {
             0x70, 0x50, () -> 0, null, null, 0);
         assertEquals(1, visible.state());
         assertEquals(0x30, visible.transitionCountdown());
-        assertEquals(1, visible.entity().spriteVariant());
+        assertEquals(0, visible.entity().spriteVariant());
         assertFalse(motion.allowsEnemyCollision(1));
         assertFalse(visible.appliesBackgroundInteraction());
 
@@ -126,6 +128,7 @@ final class ZombieRuntimeTest {
         ZombieMotion.Update movingFrame = motion.advance(moving.entity(), 0, 0x70, 0x12,
             0x70, 0x50, () -> 0, null, null, 0);
         assertTrue(movingFrame.appliesBackgroundInteraction());
+        assertEquals(2, movingFrame.entity().spriteVariant());
     }
 
     @Test
@@ -150,13 +153,68 @@ final class ZombieRuntimeTest {
         assertEquals(3, state2.state());
         assertEquals(0x30, state2.transitionCountdown());
         assertEquals(0x52, state2.physicsFlags());
-        assertTrue(state2.entity().spriteVariant() == 3 || state2.entity().spriteVariant() == 4);
+        assertEquals(2, state2.entity().spriteVariant());
         assertTrue(state2.appliesBackgroundInteraction());
 
         ZombieMotion.Update cleared = motion.advance(state2.entity(), 0, 0, 0x52,
             0x70, 0x50, () -> 0, null, null, 0);
         assertTrue(cleared.unloadRequested());
         assertFalse(cleared.appliesBackgroundInteraction());
+    }
+
+    @ParameterizedTest
+    @CsvSource({"112, 64, 0, 2", "16, 64, 1, 1",
+        "64, 16, 2, 2", "64, 112, 3, 2"})
+    void newlyWalkingZombieProbesWallsBeforeAccumulatingAFullPixel(
+        int linkX, int linkY, int blockedDirection, int emergenceVariant) throws IOException {
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
+            .forEntityType(ENTITY_ZOMBIE, EntityRoomLoader.RoomTable.OVERWORLD);
+        ZombieMotion motion = new ZombieMotion();
+        motion.initializeChild(0);
+        RoomEntity child = new RoomEntity(0, -1, ENTITY_ZOMBIE, 0x40, 0x40,
+            EntityStatus.ACTIVE, definition, 0);
+        ZombieMotion.Update rising = motion.advance(child, 0, 0, 0x12,
+            linkX, linkY, () -> 0, null, null, 0);
+        ZombieMotion.Update walking = motion.advance(rising.entity(), 0, 0, 0x12,
+            linkX, linkY, () -> 0, null, null, 0);
+        List<Integer> probes = new ArrayList<>();
+
+        ZombieMotion.Update blocked = motion.advance(walking.entity(), 0, 0x70, 0x12,
+            linkX, linkY, () -> 0, null, (entity, direction, x, y) -> {
+                probes.add(direction);
+                return EntityBackgroundCollisionResult.blocked(direction, 1, 1, x, y);
+            }, 0);
+
+        assertEquals(List.of(blockedDirection), probes);
+        assertEquals(3, blocked.state());
+        assertEquals(0x30, blocked.transitionCountdown());
+        assertEquals(0x52, blocked.physicsFlags());
+        assertEquals(0x40, blocked.entity().x());
+        assertEquals(0x40, blocked.entity().y());
+        // At $6447 the transition branch compares the X-speed byte returned
+        // by ApplyVectorTowardsLink, not the new $70 countdown. That selected
+        // frame is drawn by the first walking pass, before frame 3 is stored.
+        assertEquals(emergenceVariant, blocked.entity().spriteVariant());
+    }
+
+    @Test
+    void emergenceWalkingAndBurrowingPresentThePreviouslySelectedRomFrame() throws IOException {
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
+            .forEntityType(ENTITY_ZOMBIE, EntityRoomLoader.RoomTable.OVERWORLD);
+        ZombieMotion motion = new ZombieMotion();
+        motion.initializeChild(0);
+        RoomEntity child = new RoomEntity(0, -1, ENTITY_ZOMBIE, 0x40, 0x40,
+            EntityStatus.ACTIVE, definition, 0);
+        int[] countdowns = {0, 0x30, 0x18, 0x17, 0, 0x70, 0x6F, 0,
+            0x30, 0x18, 0x17, 1};
+        int[] frames = {0, 1, 2, 3, 4, 0, 16, 17, 18, 19, 20, 21};
+        int[] variants = {0, 0, 1, 1, 2, 2, 3, 4, 4, 2, 2, 1};
+        for (int i = 0; i < countdowns.length; i++) {
+            ZombieMotion.Update update = motion.advance(child, frames[i], countdowns[i], 0x12,
+                0x70, 0x50, () -> 0, null, null, 0);
+            child = update.entity();
+            assertEquals(variants[i], child.spriteVariant(), "Handler pass " + i);
+        }
     }
 
     @Test
@@ -184,6 +242,12 @@ final class ZombieRuntimeTest {
         assertEquals(0x12, runtime.physicsFlags(5));
         assertEquals(0x01, runtime.enemyIgnoreHitsCountdown(5));
         assertFalse(runtime.snapshot().slots().get(0).spriteVariant() >= 0);
+
+        runtime.tick(1, 0x70, 0x50, () -> 0);
+        runtime.tick(2, 0x70, 0x50, () -> 0);
+        assertEquals(0, runtime.snapshot().slots().get(5).spriteVariant());
+        runtime.tick(3, 0x70, 0x50, () -> 0);
+        assertEquals(1, runtime.snapshot().slots().get(5).spriteVariant());
     }
 
     @Test

@@ -14,6 +14,27 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 final class BooBuddyRuntimeTest {
 
     @Test
+    void sharedTimerReachingOneRunsTheRomDisappearanceReposition() throws IOException {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+        EntitySpriteDefinition definition = catalog.forEntityType(
+            BooBuddyMotion.ENTITY_TYPE, EntityRoomLoader.RoomTable.INDOORS_A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, BooBuddyMotion.ENTITY_TYPE, 0x30, 0x40,
+                EntityStatus.ACTIVE, definition, 0)), true, null, catalog);
+        runtime.setTransitionCountdownForTest(0, 2);
+
+        runtime.tick(4, 0x50, 0x40, () -> 0);
+
+        assertEquals(1, runtime.booBuddyTransitionCountdown(0));
+        assertEquals(0x70, runtime.snapshot().slots().get(0).x());
+        assertEquals(0x50, runtime.snapshot().slots().get(0).y());
+        runtime.tick(5, 0x50, 0x40, () -> 0);
+        assertEquals(0x70, runtime.snapshot().slots().get(0).x());
+        assertEquals(0x50, runtime.snapshot().slots().get(0).y());
+        assertEquals(0, runtime.booBuddySpeedX(0));
+    }
+
+    @Test
     void routesBooBuddyThroughItsRomDisplayAndTriggerStates() throws IOException {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
         EntitySpriteDefinition definition = catalog.forEntityType(

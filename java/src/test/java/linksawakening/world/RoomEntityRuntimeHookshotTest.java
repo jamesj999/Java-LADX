@@ -2,6 +2,8 @@ package linksawakening.world;
 
 import linksawakening.entity.EntitySpriteDefinition;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -98,6 +100,10 @@ final class RoomEntityRuntimeHookshotTest {
 
         assertEquals(0, runtime.hookshotTransitionCountdown(slot));
         assertFalse(runtime.hookshotWallCollisionPending(slot));
+        // On the next pass the source moves before checking the latched
+        // collision, then emits the poke at the cached pre-movement position.
+        assertEquals(0x43, runtime.snapshot().slots().get(slot).x());
+        assertEquals(0x40, runtime.transientVfxRequests().getFirst().worldX());
         List<EntityCombatEvent> events = runtime.consumePendingEntityEvents();
         assertEquals(EntityCombatEvent.SoundChannel.JINGLE, events.getFirst().soundChannel());
         assertEquals(0x07, events.getFirst().soundId());
@@ -173,6 +179,58 @@ final class RoomEntityRuntimeHookshotTest {
         EntityCombatEvent event = runtime.consumePendingEntityEvents().getFirst();
         assertEquals(EntityCombatEvent.SoundChannel.NOISE, event.soundChannel());
         assertEquals(0x0B, event.soundId());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"dialog", "inventory", "transition", "gameplay", "sequence", "got_item"})
+    void pauseGatesStopHookshotMovementSoundAndObjectProbes(String gate) {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(emptySnapshot());
+        int slot = runtime.spawnHookshotChain(0x40, 0x50, 0, 0);
+        setGate(runtime, gate, true);
+        runtime.tick(0, 0x20, 0x20, () -> 0, (entity, direction, x, y) -> {
+            throw new AssertionError("Paused hookshot reached background collision");
+        });
+        assertEquals(0x40, runtime.snapshot().slots().get(slot).x());
+        assertEquals(gate.equals("got_item") ? 0x29 : 0x2A,
+            runtime.hookshotTransitionCountdown(slot));
+        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+        setGate(runtime, gate, false);
+        runtime.tick(1, 0x20, 0x20, () -> 0);
+        assertEquals(0x43, runtime.snapshot().slots().get(slot).x());
+    }
+
+    @Test
+    void creditsTickTheTimerButSkipTheBankEighteenHandler() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(emptySnapshot());
+        int slot = runtime.spawnHookshotChain(0x40, 0x50, 0, 0);
+        runtime.tick(0, 0x20, 0x20, () -> 0, true);
+        assertEquals(0x29, runtime.hookshotTransitionCountdown(slot));
+        assertEquals(0x40, runtime.snapshot().slots().get(slot).x());
+        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void ocarinaCancelsTheChainEvenDuringADialog(boolean dialog) {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(emptySnapshot());
+        runtime.spawnHookshotChain(0x40, 0x50, 0, 0);
+        runtime.setDialogActive(dialog);
+        runtime.setOcarinaPlaybackForTest(1, 0, 0);
+        runtime.tick(0, 0, 0, () -> 0);
+        assertFalse(runtime.hookshotActive());
+        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+    }
+
+    private static void setGate(RoomEntityRuntime runtime, String gate, boolean active) {
+        switch (gate) {
+            case "dialog" -> runtime.setDialogActive(active);
+            case "inventory" -> runtime.setTalkState(active, 0, 0x80);
+            case "transition" -> runtime.setRoomTransitionStateForTest(active);
+            case "gameplay" -> runtime.setGameplayWorldForTest(!active);
+            case "sequence" -> runtime.setTransitionSequenceCounterForTest(active ? 3 : 4);
+            case "got_item" -> runtime.setWitchGotItemPresentationActiveForTest(active);
+            default -> throw new IllegalArgumentException(gate);
+        }
     }
 
     private static RoomEntitySnapshot emptySnapshot() {

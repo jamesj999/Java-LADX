@@ -85,9 +85,15 @@ final class ThrownEntityMotion {
         active[slot] = true;
     }
 
-    /** Applies UpdateEntityPosWithSpeed_03 and the generic top-view gravity. */
+    /** Applies bank-$03 BouncingEntityPhysics and BombEntityHandler.BounceOffWalls. */
     Update advance(RoomEntity entity, boolean sideScrolling,
                    RoomEntityBackgroundCollision backgroundCollision) {
+        return advance(entity, sideScrolling, backgroundCollision, 0, 0);
+    }
+
+    Update advance(RoomEntity entity, boolean sideScrolling,
+                   RoomEntityBackgroundCollision backgroundCollision,
+                   int frameCounter, int groundStatus) {
         int slot = entity.slot();
         validateSlot(slot);
         if (!active[slot]) {
@@ -96,30 +102,66 @@ final class ThrownEntityMotion {
 
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
+        int z = entity.z();
+        if (sideScrolling) {
+            EntitySideViewGravity.Speeds speeds = EntitySideViewGravity.advance(
+                speedX[slot], speedY[slot], frameCounter, groundStatus);
+            speedX[slot] = speeds.x();
+            speedY[slot] = speeds.y();
+        } else {
+            z = addSpeedToPosition(z, speedZ[slot], speedZAccumulator, slot);
+            speedZ[slot] = (speedZ[slot] - 0x02) & 0xFF;
+        }
+
         boolean blockedX = false;
         boolean blockedY = false;
-
+        boolean floorCollision = false;
         if (backgroundCollision != null) {
-            if (x != entity.x()
+            if (speedX[slot] != 0
                 && backgroundCollision.blocks(entity, horizontalDirection(speedX[slot]),
                     x, entity.y())) {
                 x = entity.x();
-                speedX[slot] = bounceSpeed(speedX[slot]);
                 blockedX = true;
             }
-            if (y != entity.y()
+            if (speedY[slot] != 0
                 && backgroundCollision.blocks(entity, verticalDirection(speedY[slot]),
                     x, y)) {
+                floorCollision = (speedY[slot] & 0x80) == 0;
                 y = entity.y();
-                speedY[slot] = bounceSpeed(speedY[slot]);
                 blockedY = true;
             }
         }
 
-        int z = entity.z();
-        if (!sideScrolling) {
-            z = addSpeedToPosition(z, speedZ[slot], speedZAccumulator, slot);
-            speedZ[slot] = (speedZ[slot] - 0x02) & 0xFF;
+        // BouncingEntityPhysics ($60B3): landing precedes wall rebound.
+        if (sideScrolling && floorCollision) {
+            y = ((y & 0xF0) + 0x05) & 0xFF;
+            int rebound = (signedByte((~speedY[slot]) & 0xFF) >> 1) & 0xFF;
+            if (rebound < 0xF8) {
+                speedY[slot] = rebound;
+                speedX[slot] = halvePlanarSpeed(speedX[slot]);
+            } else {
+                speedX[slot] = 0;
+                speedY[slot] = 0;
+            }
+        } else if (!sideScrolling && (z & 0x80) != 0) {
+            z = 0;
+            int rebound = (~(signedByte(speedZ[slot]) >> 1)) & 0xFF;
+            if (groundStatus == 0x02 || rebound < 0x07) {
+                speedX[slot] = 0;
+                speedY[slot] = 0;
+                speedZ[slot] = 0;
+            } else {
+                speedZ[slot] = rebound;
+                speedX[slot] = halvePlanarSpeed(speedX[slot]);
+                speedY[slot] = halvePlanarSpeed(speedY[slot]);
+            }
+        }
+        if (blockedX) {
+            speedX[slot] = bounceSpeed(speedX[slot]);
+        }
+        // BombEntityHandler.BounceOffWalls skips Y reversal in side view.
+        if (blockedY && !sideScrolling) {
+            speedY[slot] = bounceSpeed(speedY[slot]);
         }
 
         return new Update(withPosition(entity, x, y, z), blockedX, blockedY);
@@ -167,8 +209,13 @@ final class ThrownEntityMotion {
         return (position + delta) & 0xFF;
     }
 
+    private static int halvePlanarSpeed(int speed) {
+        int halved = (signedByte(speed) >> 1) & 0xFF;
+        return halved == 0xFF ? 0 : halved;
+    }
+
     private static int bounceSpeed(int speed) {
-        return ((-signedByte(speed)) >> 3) & 0xFF;
+        return (signedByte((-speed) & 0xFF) >> 3) & 0xFF;
     }
 
     private static int horizontalDirection(int speed) {

@@ -18,6 +18,26 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 final class BombLiftThrowRuntimeTest {
 
     @Test
+    void placedBombSettlesOnTheFloorInsteadOfWrappingItsHeight() throws IOException {
+        RoomEntityRuntime runtime = bombRuntime();
+        int slot = runtime.spawnBomb(0x40, 0x50, 0, 0);
+        RoomEntity settled = null;
+        for (int frame = 0; frame < 32; frame++) {
+            runtime.tick(frame, 0x10, 0x20, () -> 0);
+            RoomEntity bomb = runtime.snapshot().slots().get(slot);
+            assertTrue(bomb.z() < 0x80, "Bomb fell through floor on frame " + frame);
+            if (frame == 16) {
+                settled = bomb;
+            }
+        }
+        RoomEntity bomb = runtime.snapshot().slots().get(slot);
+        assertEquals(0, bomb.z());
+        assertEquals(settled.x(), bomb.x());
+        assertEquals(settled.y(), bomb.y());
+        assertTrue(runtime.bombActive());
+    }
+
+    @Test
     void liftingRestoresTheNormalRomBombAfterAWarningSnapshot() throws IOException {
         RoomEntityRuntime runtime = bombRuntime();
         int slot = runtime.spawnBomb(0x40, 0x50, 0, 0);
@@ -286,7 +306,7 @@ final class BombLiftThrowRuntimeTest {
     }
 
     @Test
-    void placedBombAppliesTheSourceConversionOffsetsAndStaysStatic() throws IOException {
+    void placedBombAppliesConversionOffsetsAndFallsWithoutHorizontalDrift() throws IOException {
         RoomEntityRuntime runtime = bombRuntime();
         int slot = runtime.spawnBomb(0x40, 0x50, 0, ThrownEntityMotion.ROM_DIRECTION_RIGHT);
         AtomicInteger wallQueries = new AtomicInteger();
@@ -311,7 +331,7 @@ final class BombLiftThrowRuntimeTest {
         RoomEntity afterSecondFrame = runtime.snapshot().slots().get(slot);
         assertEquals(0x48, afterSecondFrame.x());
         assertEquals(0x50, afterSecondFrame.y());
-        assertEquals(0x01, afterSecondFrame.z());
+        assertEquals(0x00, afterSecondFrame.z());
         assertEquals(EntityStatus.ACTIVE, afterSecondFrame.status());
     }
 

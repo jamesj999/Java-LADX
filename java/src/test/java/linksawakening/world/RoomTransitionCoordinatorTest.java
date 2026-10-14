@@ -4435,6 +4435,18 @@ final class RoomTransitionCoordinatorTest {
                 .findFirst().orElseThrow();
             List<int[]> leashPath = reachableFollowerLeashPath(
                 collision, link.pixelX(), link.pixelY(), bowWow);
+            // BowWow can temporarily be outside Link's reachable approach
+            // window. Run the real follower handler until Link can approach;
+            // an immediate path depends on earlier movement and RNG timing.
+            while (leashPath == null && frame < deadline) {
+                tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
+                session.consumeEntityEvents();
+                bowWow = session.activeRoom().entities().loadedEntities().stream()
+                    .filter(entity -> entity.type() == 0x6D)
+                    .findFirst().orElseThrow();
+                leashPath = reachableFollowerLeashPath(
+                    collision, link.pixelX(), link.pixelY(), bowWow);
+            }
             assertNotNull(leashPath, "No collision-valid Link path back into BowWow's leash\n"
                 + collisionGrid(collision));
             for (int[] position : leashPath) {

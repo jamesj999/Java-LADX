@@ -50,12 +50,13 @@ final class FairyMotion {
         int nextTransitionCountdown = transitionCountdown;
 
         // GetEntityXDistanceToLink_03 and GetEntityYDistanceToLink_03 return
-        // signed byte distances. The source's raw `cp $20` checks therefore
-        // enter the close branch only for non-negative distances below $20.
+        // signed byte distances. The raw `cp $20` checks accept only unsigned
+        // distances below $20. At $618E, X branches directly to random hover;
+        // Y is tested only if X failed, so either axis can select that branch.
         int distanceX = (linkEntityX - x) & 0xFF;
         int distanceY = (linkEntityY - y + z) & 0xFF;
         boolean closeToLink = distanceX < LINK_DISTANCE_LIMIT
-            && distanceY < LINK_DISTANCE_LIMIT;
+            || distanceY < LINK_DISTANCE_LIMIT;
         if (closeToLink) {
             if (nextTransitionCountdown == 0) {
                 nextTransitionCountdown = RANDOM_HOVER_COUNTDOWN;
@@ -63,7 +64,7 @@ final class FairyMotion {
                 speedY[slot] = randomHoverSpeed(randomByteSupplier.getAsInt());
             }
         } else {
-            Vector vector = vectorTowardsLink(x, y, linkEntityX, linkEntityY,
+            Vector vector = vectorTowardsLink(x, y, z, linkEntityX, linkEntityY,
                 LINK_VECTOR_LENGTH);
             // ApplyVectorTowardsLink writes Y first, then X.
             speedY[slot] = vector.y() & 0xFF;
@@ -122,10 +123,11 @@ final class FairyMotion {
         return (z - 1) & 0xFF;
     }
 
-    private static Vector vectorTowardsLink(int entityX, int entityY,
+    private static Vector vectorTowardsLink(int entityX, int entityY, int entityZ,
                                             int linkX, int linkY, int length) {
         int distanceX = signedByte((linkX - entityX) & 0xFF);
-        int distanceY = signedByte((linkY - entityY) & 0xFF);
+        // GetVectorTowardsLink uses the same height-adjusted Y helper ($7EE9).
+        int distanceY = signedByte((linkY - entityY + entityZ) & 0xFF);
         int absoluteX = Math.abs(distanceX);
         int absoluteY = Math.abs(distanceY);
         int result = divideComponent(Math.min(absoluteX, absoluteY),

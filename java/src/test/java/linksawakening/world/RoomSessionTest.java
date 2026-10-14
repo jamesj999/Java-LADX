@@ -436,7 +436,8 @@ final class RoomSessionTest {
 
         session.setRoomTriggerCountForTest(1);
         session.igniteIndoorTorchPaletteForTest();
-        for (int tick = 0; tick < 13; tick++) {
+        // Two eleven-frame cycles, then a frame without a palette upload.
+        for (int tick = 0; tick < 24; tick++) {
             tickInteractive(session, frame++, witch);
         }
         assertTrue(session.consumeEntityDialogRequests().stream()
@@ -1949,6 +1950,25 @@ final class RoomSessionTest {
     }
 
     @Test
+    void magicRodLaunchThroughTheRoomSessionPreservesThePowerSpeedSelection() {
+        for (boolean power : new boolean[] {false, true}) {
+            RoomSession session = newSession();
+            session.loadInitialOverworld(0x92);
+            assertTrue(session.fireMagicRodFireball(0x50, 0x58, 0, 0, power));
+            RoomEntity spawn = session.activeRoom().entities().loadedEntities().stream()
+                .filter(entity -> entity.type() == 0x04).findFirst().orElseThrow();
+            assertEquals(0x54, spawn.x());
+            assertEquals(0x5C, spawn.y());
+
+            session.tickEntitiesWithProjectileEvents(0, 0x50, 0x58, 0, 0, 0, false);
+            RoomEntity moved = session.activeRoom().entities().loadedEntities().stream()
+                .filter(entity -> entity.type() == 0x04).findFirst().orElseThrow();
+            assertEquals(power ? 0x58 : 0x57, moved.x());
+            assertEquals(0x5C, moved.y());
+        }
+    }
+
+    @Test
     void magicRodBurnsAnOverworldBushThroughTheLiveRoomBoundary() {
         TransientVfxSystem vfx = new TransientVfxSystem(16);
         RoomSession session = newSession(vfx);
@@ -2021,6 +2041,31 @@ final class RoomSessionTest {
     }
 
     @Test
+    void magicPowderSamplesTheCorrectBushAtExactCellBoundaries() {
+        int[][] powderPositions = {{0x60, 0x59}, {0x51, 0x68}, {0x60, 0x68}};
+        for (int[] position : powderPositions) {
+            RoomSession session = newSession();
+            session.loadInitialOverworld(0x92);
+            int[] objects = session.activeRoom().roomObjectsArea();
+            int[] renderValues = session.activeRoom().renderValues();
+            for (int location : new int[]{0x55, 0x56, 0x65, 0x66}) {
+                int index = RoomConstants.ROOM_OBJECTS_BASE + location;
+                objects[index] = location == 0x55 ? 0x5C : 0x04;
+                renderValues[index] = objects[index];
+            }
+            assertTrue(session.sprinkleMagicPowder(position[0] - 0x0E,
+                position[1], 0, 0));
+            for (int frame = 0; frame < 16; frame++) {
+                session.tickEntities(frame, 0x20, 0x20);
+            }
+            assertEquals(0x04, objects[RoomConstants.ROOM_OBJECTS_BASE + 0x55],
+                "Powder at " + Arrays.toString(position));
+            assertTrue(session.consumeEntityEvents().stream().anyMatch(event ->
+                event.type() == 8 && event.soundId() == 0x2F));
+        }
+    }
+
+    @Test
     void magicPowderIgnitesAnIndoorTorchThroughTheLiveRoomBoundary() {
         RoomSession session = newSession();
         session.loadIndoor(0x00, 0x00);
@@ -2042,6 +2087,107 @@ final class RoomSessionTest {
             .anyMatch(event -> event.type() == 0x08
                 && event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE
                 && event.soundId() == 0x12));
+    }
+
+    @Test
+    void liveTorchPaletteFadeWaitsForDefaultLinkMotion() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x0E, 0xA2);
+        session.igniteIndoorTorchPaletteForTest();
+        for (int frame = 0; frame < 32; frame++) {
+            session.tickEntitiesWithProjectileEvents(frame, 0x20, 0x20,
+                0, 1, 0, false);
+        }
+        assertEquals(4, session.indoorTorchPaletteEffectAddressForTest());
+        for (int frame = 32; frame < 42; frame++) {
+            session.tickEntitiesWithProjectileEvents(frame, 0x20, 0x20,
+                0, 0, 0, false);
+        }
+        assertEquals(2, session.indoorTorchPaletteEffectAddressForTest());
+    }
+
+    @Test
+    void revolvingDoorTorchExpiryStillChangesTheObjectAndRoomTrigger() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x00, 0x00);
+        int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x22;
+        session.activeRoom().roomObjectsArea()[areaIndex] = 0xAB;
+        assertTrue(session.sprinkleMagicPowder(0x13, 0x29, 0, 0));
+        for (int frame = 0; frame < 16; frame++) {
+            session.tickEntitiesWithProjectileEvents(frame, 0x20, 0x20,
+                0, 0, 0, false);
+        }
+        assertEquals(1, session.roomTriggerCountForTest());
+        int[] litTiles = torchTiles(session, 0x22);
+        int initialEffect = session.indoorTorchPaletteEffectAddressForTest();
+        for (int frame = 16; frame < 1024; frame++) {
+            session.tickEntitiesWithProjectileEvents(frame, 0x20, 0x20,
+                0, 5, 0, false);
+        }
+        assertEquals(0xAB, session.activeRoom().roomObjectsArea()[areaIndex]);
+        assertEquals(0, session.roomTriggerCountForTest());
+        assertEquals(initialEffect, session.indoorTorchPaletteEffectAddressForTest());
+        assertArrayEquals(litTiles, torchTiles(session, 0x22));
+    }
+
+    @Test
+    void room74TorchExpiryKeepsItsDrawnTilesEvenWhenAnotherTorchRefreshesTheRoom() {
+        RoomSession session = newSession();
+        session.loadIndoor(0, 0x74);
+        int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x22;
+        session.activeRoom().roomObjectsArea()[areaIndex] = 0xAB;
+        assertTrue(session.sprinkleMagicPowder(0x13, 0x29, 0, 0));
+        for (int frame = 0; frame < 16; frame++) {
+            session.tickEntitiesWithProjectileEvents(frame, 0x20, 0x20, 0, 0, 0, false);
+        }
+        // The skipped draw must retain VRAM, including attributes changed
+        // since ignition, rather than rebuild graphics from the old object ID.
+        int topLeft = 4 * RoomConstants.ROOM_TILE_WIDTH + 4;
+        session.activeRoom().tileIds()[topLeft] = 0x61;
+        session.activeRoom().tileAttrs()[topLeft] = 0x25;
+        int[] litTiles = torchTiles(session, 0x22);
+        for (int frame = 16; frame < 1024; frame++) {
+            session.tickEntitiesWithProjectileEvents(frame, 0x20, 0x20, 0, 0, 0, false);
+        }
+        assertEquals(0xAB, session.activeRoom().roomObjectsArea()[areaIndex]);
+        assertEquals(1, session.roomTriggerCountForTest());
+        assertArrayEquals(litTiles, torchTiles(session, 0x22));
+
+        session.activeRoom().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + 0x33] = 0xAB;
+        assertTrue(session.sprinkleMagicPowder(0x23, 0x39, 0, 0));
+        for (int frame = 1024; frame < 1040; frame++) {
+            session.tickEntitiesWithProjectileEvents(frame, 0x20, 0x20, 0, 0, 0, false);
+        }
+        assertEquals(0xAC, session.activeRoom().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + 0x33]);
+        assertArrayEquals(litTiles, torchTiles(session, 0x22));
+    }
+
+    @Test
+    void torchExpiryWritesItsSavedObjectLocationEvenIfTheObjectHasChanged() {
+        RoomSession session = newSession();
+        session.loadIndoor(0, 0);
+        int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x22;
+        session.activeRoom().roomObjectsArea()[areaIndex] = 0xAB;
+        assertTrue(session.sprinkleMagicPowder(0x13, 0x29, 0, 0));
+        for (int frame = 0; frame < 16; frame++) {
+            session.tickEntitiesWithProjectileEvents(frame, 0x20, 0x20, 0, 0, 0, false);
+        }
+        session.activeRoom().roomObjectsArea()[areaIndex] = 0x0D;
+        for (int frame = 16; frame < 1024; frame++) {
+            session.tickEntitiesWithProjectileEvents(frame, 0x20, 0x20, 0, 0, 0, false);
+        }
+        assertEquals(0xAB, session.activeRoom().roomObjectsArea()[areaIndex]);
+        assertEquals(0, session.roomTriggerCountForTest());
+    }
+
+    private static int[] torchTiles(RoomSession session, int location) {
+        int index = (location >>> 4) * 2 * RoomConstants.ROOM_TILE_WIDTH
+            + (location & 0x0F) * 2;
+        int[] tiles = session.activeRoom().tileIds();
+        int[] attributes = session.activeRoom().tileAttrs();
+        int lower = index + RoomConstants.ROOM_TILE_WIDTH;
+        return new int[] {tiles[index], tiles[index + 1], tiles[lower], tiles[lower + 1],
+            attributes[index], attributes[index + 1], attributes[lower], attributes[lower + 1]};
     }
 
     @Test
@@ -2250,7 +2396,7 @@ final class RoomSessionTest {
 
         assertTrue(destroyed);
         int[][] expectedPositions = {
-            {0x48, 0x4F}, {0x58, 0x4F}, {0x48, 0x5F}, {0x58, 0x5F}
+            {0x48, 0x50}, {0x58, 0x50}, {0x48, 0x60}, {0x58, 0x60}
         };
         List<RoomEntity> rubble = session.activeRoom().entities().loadedEntities().stream()
             .filter(entity -> entity.type() == 0x05)
@@ -3678,6 +3824,35 @@ final class RoomSessionTest {
         session.loadIndoor(0x02, 0x52);
         assertFalse(session.activeRoom().roomObjectsArea()[northDoorIndex] >= 0x35
             && session.activeRoom().roomObjectsArea()[northDoorIndex] < 0x3D);
+    }
+
+    @Test
+    void boomerangSoundClockSurvivesRoomChangesAndWorldFramesWithoutEntityUpdates() {
+        RoomSession session = newSession();
+        session.loadOverworld(0x00);
+        for (int frame = 0; frame < 12; frame++) {
+            session.advanceBoomerangSoundClock(true);
+            session.tickEntities(frame, 0, 0);
+        }
+        session.loadOverworld(0x01);
+        // Scrolling/fades keep WorldHandler's clock running without entities.
+        for (int frame = 12; frame < 25; frame++) {
+            session.advanceBoomerangSoundClock(true);
+        }
+        // The inventory gameplay handler leaves the world clock alone.
+        for (int frame = 0; frame < 8; frame++) {
+            session.advanceBoomerangSoundClock(false);
+        }
+        assertTrue(session.fireBoomerang(0x40, 0x50, 0, 0, 0));
+        session.consumeEntityEvents();
+        session.advanceBoomerangSoundClock(true);
+        session.tickEntities(0, 0, 0);
+        assertTrue(session.consumeEntityEvents().stream().anyMatch(event ->
+            event.type() == 1 && event.soundId() == 0x2D));
+        session.advanceBoomerangSoundClock(true);
+        session.tickEntities(1, 0, 0);
+        assertFalse(session.consumeEntityEvents().stream().anyMatch(event ->
+            event.type() == 1 && event.soundId() == 0x2D));
     }
 
     private static RoomSession newSession() {

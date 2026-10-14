@@ -2507,6 +2507,21 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void swordHitAtLinksExactPositionRecoilsUpAndLeftThroughTheLiveRuntime() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x20, 64, 64, EntityStatus.ACTIVE,
+                pairDefinition(0x20, 2), 0)));
+        List<EntityCombatEvent> events = runtime.resolveCombat(
+            0, 64, 64, false, false, true, 72, 1, 72, 1);
+        assertEquals(1, events.size());
+        assertEquals(0xD0, runtime.enemyRecoilSpeedX(0));
+        assertEquals(0xD0, runtime.enemyRecoilSpeedY(0));
+        runtime.tick(1, 64, 64, sequence(0));
+        assertEquals(61, runtime.snapshot().slots().getFirst().x());
+        assertEquals(61, runtime.snapshot().slots().getFirst().y());
+    }
+
+    @Test
     void hardHatSwordHitConfiguresAndAppliesTheRomSharedRecoil() {
         EntitySpriteDefinition definition = pairDefinition(0x20, 2);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
@@ -4374,6 +4389,27 @@ final class RoomEntityRuntimeTest {
             levelTwo.consumePendingLikeLikeEvents().getFirst();
         assertEquals(-1, protectedShield.stolenInventorySlot());
         assertEquals(0, levelTwo.likeLikePrivateState1(0));
+    }
+
+    @Test
+    void likeLikeDeliversShieldTheftWhileLinksMotionStatePreventsPositionWrites() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x23, 64, 64, EntityStatus.INIT,
+                pairDefinition(0x23, 2), 0)));
+        runtime.setLikeLikeLinkInventoryForTest(0x00, 0x04);
+        runtime.tick(0, 64, 64, sequence(0xFF));
+        runtime.tickWithProjectileEvents(1, 64, 64, sequence(0x00), null,
+            new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0));
+        runtime.consumePendingLikeLikeEvents();
+
+        runtime.tickWithProjectileEvents(2, 80, 80, sequence(0x00), null,
+            new EnemyProjectileCollision.LinkState(80, 80, 0, 1, 0, false, 1, 0));
+        var events = runtime.consumePendingLikeLikeEvents();
+        assertEquals(1, events.size());
+        assertEquals(RoomEntityRuntime.LikeLikeEvent.Kind.CAPTURE, events.getFirst().kind());
+        assertFalse(events.getFirst().pinLinkPosition());
+        assertEquals(0, events.getFirst().stolenInventorySlot());
+        assertEquals(1, runtime.likeLikePrivateState1(0));
     }
 
     @Test
@@ -6480,6 +6516,58 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void enemyArrowAndRockPlayThePokeJingleOnceWhenHittingAWall() {
+        for (int type : new int[] {0x0A, 0x0C}) {
+            RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+                new RoomEntity(0, -1, type, 0x40, 0x50, EntityStatus.ACTIVE,
+                    pairDefinition(type, 4), 0)));
+            RoomEntityBackgroundCollision wall =
+                (entity, direction, nextX, nextY) -> direction == 0;
+            runtime.tick(0, 0, 0, () -> 0, wall);
+            assertEquals(List.of(new EntityCombatEvent(0, type, 0, false,
+                EntityCombatEvent.SoundChannel.JINGLE, 0x07)),
+                runtime.consumePendingEntityEvents());
+
+            runtime.tick(1, 0, 0, () -> 0, wall);
+            assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+        }
+    }
+
+    @Test
+    void shieldBlockedEnemyArrowAndRockKeepTheTingWithoutAddingAPokeJingle() {
+        for (int type : new int[] {0x0A, 0x0C}) {
+            RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+                new RoomEntity(0, -1, type, 0x40, 0x50, EntityStatus.ACTIVE,
+                    pairDefinition(type, 4), 0)));
+            List<EntityProjectileEvent> events = runtime.tickWithProjectileEvents(
+                0, 0x40, 0x50, () -> 0, null,
+                new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0, 1, true));
+
+            assertEquals(1, events.size());
+            assertEquals(EntityProjectileEvent.Kind.SHIELD_BLOCK, events.get(0).kind());
+            assertEquals(0x16, events.get(0).soundId());
+            assertEquals(0x18, runtime.enemyProjectileTransitionCountdown(0));
+            assertEquals(4, runtime.swordMoblinAlertingSoundCounter());
+            assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+        }
+    }
+
+    @Test
+    void rockHittingLinkAlsoSuppressesTheWallPokeJingle() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, -1, 0x0A, 0x40, 0x50, EntityStatus.ACTIVE,
+                pairDefinition(0x0A, 1), 0)));
+        List<EntityProjectileEvent> events = runtime.tickWithProjectileEvents(
+            0, 0x40, 0x50, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0, 1, false));
+
+        assertEquals(1, events.size());
+        assertEquals(EntityProjectileEvent.Kind.LINK_DAMAGE, events.get(0).kind());
+        assertEquals(0x18, runtime.enemyProjectileTransitionCountdown(0));
+        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+    }
+
+    @Test
     void runtimePublishesArrowTransitionVariantsButLeavesRockVariantUnspun() {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
         EntitySpriteDefinition arrowDefinition = catalog.forEntityType(
@@ -6493,11 +6581,13 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x18, arrowRuntime.enemyProjectileTransitionCountdown(0));
         arrowRuntime.tick(1, 0, 0, () -> 0, wall);
         assertEquals(0x17, arrowRuntime.enemyProjectileTransitionCountdown(0));
-        assertEquals(1, arrowRuntime.snapshot().slots().get(0).spriteVariant());
+        assertEquals(0, arrowRuntime.snapshot().slots().get(0).spriteVariant());
         for (int frame = 2; frame <= 9; frame++) {
             arrowRuntime.tick(frame, 0, 0, () -> 0, wall);
         }
         assertEquals(0x0F, arrowRuntime.enemyProjectileTransitionCountdown(0));
+        assertEquals(1, arrowRuntime.snapshot().slots().get(0).spriteVariant());
+        arrowRuntime.tick(10, 0, 0, () -> 0, wall);
         assertEquals(3, arrowRuntime.snapshot().slots().get(0).spriteVariant());
 
         EntitySpriteDefinition rockDefinition = catalog.forEntityType(
@@ -7564,6 +7654,17 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x0C, runtime.dropSpeedY(0));
         assertEquals(0x1E, runtime.dropSpeedZ(0));
         assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
+
+        for (int frame = 2; frame <= 34; frame++) {
+            runtime.tick(frame, 0x20, 0x30, () -> 0);
+        }
+        RoomEntity bounced = runtime.snapshot().slots().get(0);
+        assertEquals(0x59, bounced.x());
+        assertEquals(0x69, bounced.y());
+        assertEquals(0, bounced.z());
+        assertEquals(0x11, runtime.dropSpeedZ(0));
+        assertEquals(6, runtime.dropSpeedX(0));
+        assertEquals(6, runtime.dropSpeedY(0));
     }
 
     @Test
@@ -8052,13 +8153,13 @@ final class RoomEntityRuntimeTest {
         assertEquals(1, runtime.enemyIgnoreHitsCountdown(slot));
         // ShootArrow calls label_140F after SpawnPlayerProjectile. The
         // initial $20 movement table is replaced by data_13AD/data_13B5.
-        assertEquals(0x40, runtime.playerArrowSpeedY(slot));
+        assertEquals(0x30, runtime.playerArrowSpeedY(slot));
         assertEquals(3, runtime.playerArrowDirection(slot));
         assertEquals(1, runtime.activePlayerArrowCount());
 
         runtime.tick(0, 0, 0, () -> 0);
 
-        assertEquals(0x54, runtime.snapshot().slots().get(slot).y());
+        assertEquals(0x53, runtime.snapshot().slots().get(slot).y());
     }
 
     @Test
@@ -8067,7 +8168,7 @@ final class RoomEntityRuntimeTest {
 
         int slot = runtime.spawnArrow(0x40, 0x50, 0, 3, true);
 
-        assertEquals(0x30, runtime.playerArrowSpeedY(slot));
+        assertEquals(0x40, runtime.playerArrowSpeedY(slot));
         assertEquals(0x00, runtime.playerArrowSpeedX(slot));
     }
 
@@ -8100,7 +8201,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(arrowSlot).status());
         // func_003_77A7 copies the active arrow's speed directly into the
         // target recoil velocity, even on a lethal hit.
-        assertEquals(0x40, runtime.enemyRecoilSpeedXForTest(15));
+        assertEquals(0x30, runtime.enemyRecoilSpeedXForTest(15));
         assertEquals(0x00, runtime.enemyRecoilSpeedYForTest(15));
     }
 
@@ -8208,6 +8309,29 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void reboundingPlayerArrowDoesNotRunTheEnemyDamagePass() throws IOException {
+        RoomEntity target = new RoomEntity(15, 15, 0x09, 0x40, 0x50,
+            EntityStatus.ACTIVE, pairDefinition(0x09, 8), 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotWithSlots(target),
+            false, () -> 0, null, new RomEnemyCombatTables(loadRom()));
+        int arrowSlot = runtime.spawnArrow(0x40, 0x50, 0, 0);
+
+        // Target slot 15 is skipped by the even-frame damage cadence. The
+        // arrow hits a wall instead, then overlaps the target on frame 1.
+        runtime.tick(0, 0, 0, () -> 0,
+            (entity, direction, x, y) -> entity.type() == 0 && direction == 0);
+        assertEquals(0x18, runtime.playerArrowTransitionCountdown(arrowSlot));
+        runtime.consumePendingEntityEvents();
+        runtime.tick(1, 0, 0, () -> 0);
+
+        assertEquals(1, runtime.enemyHealth(15));
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(15).status());
+        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(arrowSlot).status());
+        assertEquals(0x17, runtime.playerArrowTransitionCountdown(arrowSlot));
+        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+    }
+
+    @Test
     void playerArrowWallImpactStartsTheSharedMoblinAlertTimer() {
         byte[] rom = syntheticRom();
         write(rom, 0x03, 0x6BC6,
@@ -8225,7 +8349,67 @@ final class RoomEntityRuntimeTest {
 
         assertEquals(0x04, runtime.swordMoblinAlertingSoundCounter());
         assertEquals(0x18, runtime.playerArrowTransitionCountdown(slot));
-        assertEquals(0xF0, runtime.playerArrowSpeedX(slot));
+        assertEquals(0xF4, runtime.playerArrowSpeedX(slot));
+        assertEquals(List.of(new EntityCombatEvent(slot, 0x00, 0, false,
+            EntityCombatEvent.SoundChannel.JINGLE, 0x07)), runtime.consumePendingEntityEvents());
+    }
+
+    @Test
+    void playerArrowRuntimeDisplaysThePreviousReboundSpinFrame() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot());
+        int slot = runtime.spawnArrow(0x40, 0x50, 0, 0);
+        runtime.tick(0, 0, 0, () -> 0,
+            (entity, direction, nextX, nextY) -> direction == 0);
+
+        for (int frame = 1; frame <= 10; frame++) {
+            runtime.tick(frame, 0, 0, () -> 0);
+            int expected = frame == 1 ? 0 : frame <= 9 ? 1 : 3;
+            assertEquals(expected, runtime.snapshot().slots().get(slot).spriteVariant(),
+                "frame " + frame);
+        }
+    }
+
+    @Test
+    void playerArrowReboundUsesTheSideViewRoomGravity() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot().withSideScrolling(true));
+        int slot = runtime.spawnArrow(0x40, 0x50, 0, 0);
+        runtime.tick(0, 0, 0, () -> 0,
+            (entity, direction, nextX, nextY) -> direction == 0);
+        int startingZ = runtime.snapshot().slots().get(slot).z();
+        int startingY = runtime.snapshot().slots().get(slot).y();
+
+        for (int frame = 1; frame <= 9; frame++) {
+            runtime.tick(frame, 0, 0, () -> 0);
+        }
+
+        RoomEntity arrow = runtime.snapshot().slots().get(slot);
+        assertEquals(EntityStatus.ACTIVE, arrow.status());
+        assertEquals(startingZ, arrow.z());
+        assertEquals(startingY + 4, arrow.y());
+        assertEquals(18, runtime.playerArrowSpeedY(slot));
+    }
+
+    @Test
+    void enemyProjectileReboundUsesTheSideViewRoomGravity() {
+        RoomEntity projectile = new RoomEntity(0, -1, 0x0C, 0x40, 0x50,
+            EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(0x0C), 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+            snapshot(projectile).withSideScrolling(true));
+        runtime.tickWithProjectileEvents(0, 0, 0, () -> 0,
+            (entity, direction, nextX, nextY) -> direction == 0,
+            EnemyProjectileCollision.LinkState.nonInteractive());
+        assertEquals(0x18, runtime.enemyProjectileTransitionCountdown(0));
+
+        for (int frame = 1; frame <= 9; frame++) {
+            runtime.tickWithProjectileEvents(frame, 0, 0, () -> 0, null,
+                EnemyProjectileCollision.LinkState.nonInteractive());
+        }
+
+        RoomEntity arrow = runtime.snapshot().slots().get(0);
+        assertEquals(EntityStatus.ACTIVE, arrow.status());
+        assertEquals(0, arrow.z());
+        assertEquals(0x54, arrow.y());
+        assertEquals(18, runtime.enemyProjectileSpeedY(0));
     }
 
     @Test

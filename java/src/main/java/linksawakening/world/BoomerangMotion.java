@@ -20,6 +20,7 @@ final class BoomerangMotion {
     private static final int[] DIAGONAL_SPEED_X = {0x00, 0x18, 0xE8, 0x00};
     private static final int[] DIAGONAL_SPEED_Y = {0x00, 0xE8, 0x18, 0x00};
 
+    private final int[] selectedVariant = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -41,6 +42,7 @@ final class BoomerangMotion {
         validateSlot(slot);
         int direction = checkedDirection(projectileDirection);
         this.direction[slot] = direction;
+        selectedVariant[slot] = direction;
         speedX[slot] = SPEED_X[direction];
         speedY[slot] = SPEED_Y[direction];
         transitionCountdown[slot] = INITIAL_COUNTDOWN;
@@ -63,6 +65,16 @@ final class BoomerangMotion {
         initializeSpawn(slot, projectileDirection, 0);
     }
 
+    int advanceSpriteVariant(int slot, int frameCounter, boolean interactive) {
+        validateSlot(slot);
+        // $4469 renders the active variant before $4480 updates WRAM.
+        int displayed = selectedVariant[slot];
+        if (interactive && (frameCounter & 0x03) == 0) {
+            selectedVariant[slot] = (selectedVariant[slot] + 1) & 0x03;
+        }
+        return displayed;
+    }
+
     RoomEntity advancePosition(RoomEntity entity) {
         validateSlot(entity.slot());
         int slot = entity.slot();
@@ -82,7 +94,7 @@ final class BoomerangMotion {
     }
 
     void setVectorTowardsLink(int slot, RoomEntity entity, int linkX, int linkY,
-                              int linkZ, int vectorLength) {
+                              int vectorLength) {
         validateSlot(slot);
         if (!initialized[slot]) {
             initializeSpawn(slot, direction[slot]);
@@ -95,7 +107,7 @@ final class BoomerangMotion {
         }
 
         int dx = signedByte((linkX & 0xFF) - (entity.x() & 0xFF));
-        int dy = signedByte((linkY & 0xFF) - (entity.y() & 0xFF) + (linkZ & 0xFF));
+        int dy = signedByte((linkY & 0xFF) - (entity.y() & 0xFF) + (entity.z() & 0xFF));
         int absoluteX = Math.abs(dx);
         int absoluteY = Math.abs(dy);
         boolean swapped = absoluteX < absoluteY;
@@ -115,8 +127,8 @@ final class BoomerangMotion {
         int resultY = swapped ? length : smallerResult;
         speedX[slot] = signedResult(resultX, dx < 0);
         speedY[slot] = signedResult(resultY, dy < 0);
-        speedXAccumulator[slot] = 0;
-        speedYAccumulator[slot] = 0;
+        // ApplyVectorTowardsLink ($03:7EC7) changes only the speed tables;
+        // steering preserves the fractions left by UpdateEntityPosWithSpeed.
     }
 
     int direction(int slot) {
@@ -179,6 +191,7 @@ final class BoomerangMotion {
     void clear(int slot) {
         validateSlot(slot);
         direction[slot] = 0;
+        selectedVariant[slot] = 0;
         speedX[slot] = 0;
         speedY[slot] = 0;
         transitionCountdown[slot] = 0;
@@ -195,6 +208,9 @@ final class BoomerangMotion {
      */
     static boolean objectPhysicsCollides(int physicsFlag) {
         int value = physicsFlag & 0xFF;
+        if (value >= 0xD0 && value <= 0xD3) {
+            return true;
+        }
         if (value == 0 || value == 0x50 || value == 0x51
             || (value >= 0x7C && value < 0x90)
             || (value >= 0xA0 && value != 0xFF)) {
@@ -202,7 +218,6 @@ final class BoomerangMotion {
         }
         return value == 0x01 || (value >= 0x10 && value < 0x7C)
             || (value >= 0x90 && value < 0xA0)
-            || (value >= 0xD0 && value <= 0xD3)
             || value == 0xFF;
     }
 

@@ -298,7 +298,7 @@ final class TarinRaccoonRuntimeTest {
     }
 
     @Test
-    void powderCollisionWindowsAreStrictlyLessThanTwelveUnsignedPixels() {
+    void powderCollisionWindowsUseTheRomsAsymmetricByteComparisons() {
         RoomEntityRuntime xInside = raccoonRuntime(false);
         xInside.spawnMagicPowderSprinkle(0x75, 0x40, 0, 0);
         tickThroughFirstPowderCollision(xInside);
@@ -309,6 +309,11 @@ final class TarinRaccoonRuntimeTest {
         tickThroughFirstPowderCollision(xBoundary);
         assertEquals(0, xBoundary.slowTransitionCountdownForTest(0));
 
+        RoomEntityRuntime xNegativeBoundary = raccoonRuntime(false);
+        xNegativeBoundary.spawnMagicPowderSprinkle(0x5E, 0x40, 0, 0);
+        tickThroughFirstPowderCollision(xNegativeBoundary);
+        assertEquals(0x7E, xNegativeBoundary.slowTransitionCountdownForTest(0));
+
         RoomEntityRuntime yInside = raccoonRuntime(false);
         yInside.spawnMagicPowderSprinkle(0x6A, 0x4B, 0, 0);
         tickThroughFirstPowderCollision(yInside);
@@ -317,7 +322,14 @@ final class TarinRaccoonRuntimeTest {
         RoomEntityRuntime yBoundary = raccoonRuntime(false);
         yBoundary.spawnMagicPowderSprinkle(0x6A, 0x4C, 0, 0);
         tickThroughFirstPowderCollision(yBoundary);
-        assertEquals(0, yBoundary.slowTransitionCountdownForTest(0));
+        // Y uses targetVisualY - powderVisualY + $0C, reversing the
+        // subtraction used for X. The positive twelve-pixel edge is inside.
+        assertEquals(0x7E, yBoundary.slowTransitionCountdownForTest(0));
+
+        RoomEntityRuntime yOutside = raccoonRuntime(false);
+        yOutside.spawnMagicPowderSprinkle(0x6A, 0x4D, 0, 0);
+        tickThroughFirstPowderCollision(yOutside);
+        assertEquals(0, yOutside.slowTransitionCountdownForTest(0));
     }
 
     @Test

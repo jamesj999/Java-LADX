@@ -49,10 +49,40 @@ final class CrowRuntimeTest {
             true, false, 0, 0, 0, 0).getFirst().linkDamage());
 
         runtime.tick(3, 0x44, 0x50, () -> 0);
+        assertFalse(runtime.consumePendingEntityEvents().stream()
+            .anyMatch(event -> event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE
+                && event.soundId() == 0x2D));
+        // Crow calls the same read-only sound routine as the boomerang.
+        runtime.setBoomerangSoundCounterForFrame(0);
+        runtime.tick(4, 0x44, 0x50, () -> 0);
         assertTrue(runtime.consumePendingEntityEvents().stream()
             .anyMatch(event -> event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE
                 && event.soundId() == 0x2D));
         assertFalse(runtime.snapshot().slots().get(0).status() == EntityStatus.DISABLED);
+    }
+
+    @Test
+    void takeoffKeepsFacingAndPresentsThePreviousAltitudeWingFrame() throws IOException {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, CrowMotion.ENTITY_TYPE, 0x40, 0x50,
+                EntityStatus.INIT, catalog.forEntityType(
+                    CrowMotion.ENTITY_TYPE, EntityRoomLoader.RoomTable.OVERWORLD), 0)),
+            false, null, catalog);
+
+        runtime.tick(0, 0x3C, 0x50, () -> 0);
+        runtime.tick(1, 0x3C, 0x50, () -> 0);
+        assertEquals(1, runtime.crowState(0));
+        assertEquals(2, runtime.snapshot().slots().get(0).spriteVariant());
+
+        for (int frame = 2; frame <= 17; frame++) {
+            runtime.tick(frame, 0x3C, 0x50, () -> 0);
+            assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant(),
+                "The unmirrored wing frame stays zero until the Z=$08 write is presented");
+        }
+        assertEquals(8, runtime.snapshot().slots().get(0).z());
+        runtime.tick(18, 0x3C, 0x50, () -> 0);
+        assertEquals(1, runtime.snapshot().slots().get(0).spriteVariant());
     }
 
     @Test

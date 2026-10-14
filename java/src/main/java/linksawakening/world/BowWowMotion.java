@@ -19,6 +19,7 @@ final class BowWowMotion {
         0x0C, 0x08, 0xFC, 0xF8};
 
     private final int[] activeState = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] selectedVariant = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] privateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -54,16 +55,32 @@ final class BowWowMotion {
                                  RoomEntityBackgroundCollision backgroundCollision,
                                  List<RoomEntity> entities,
                                  IntPredicate canEatEntity) {
+        tickTimers(entity.slot());
+        return advanceAfterTimers(entity, frameCounter, linkEntityX, linkEntityY, linkEntityZ,
+            randomByteSupplier, backgroundCollision, entities, canEatEntity);
+    }
+
+    Update advanceAfterTimers(RoomEntity entity, int frameCounter, int linkEntityX,
+                                 int linkEntityY, int linkEntityZ,
+                                 IntSupplier randomByteSupplier,
+                                 RoomEntityBackgroundCollision backgroundCollision,
+                                 List<RoomEntity> entities,
+                                 IntPredicate canEatEntity) {
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot);
+        }
+        int variant = selectedVariant[slot];
+        // $05:4060 draws the saved variant; $44CB then selects the next one
+        // from the existing speeds, before gravity and state dispatch.
+        if ((speedX[slot] | speedY[slot]) != 0) {
+            selectedVariant[slot] = movementVariant(frameCounter, slot);
         }
 
         if (privateState4[slot] == 0) {
             return new Update(setup(entity), targetSlot[slot], null);
         }
 
-        decrementTimers(slot);
         targetX[slot] = byteValue(linkEntityX);
         // Bow-Wow follows hLinkPositionZModified, which the original builds
         // as hLinkPositionY - hLinkPositionZ before entering this handler.
@@ -73,7 +90,6 @@ final class BowWowMotion {
         int x = entity.x();
         int y = entity.y();
         int z = updatedZ[slot];
-        int variant = entity.spriteVariant();
         TargetContact targetContact = null;
 
         switch (activeState[slot]) {
@@ -85,7 +101,7 @@ final class BowWowMotion {
                     if (selectedTarget >= 0) {
                         RoomEntity target = entities.get(selectedTarget);
                         targetSlot[slot] = selectedTarget;
-                        Vector vector = vectorTowardsTarget(entity, target, 0x30);
+                        Vector vector = vectorTowardsTarget(entity, target, z, 0x30);
                         speedX[slot] = vector.x();
                         speedY[slot] = vector.y();
                         speedZ[slot] = 0x10;
@@ -115,15 +131,19 @@ final class BowWowMotion {
                 int[] moved = move(entity, x, y, slot, backgroundCollision);
                 x = correctTargetX(moved[0], x, slot);
                 y = correctTargetY(moved[1], y, slot);
-                variant = movementVariant(frameCounter, slot);
             }
             case 2, 4 -> {
+                boolean stopLunge = transitionCountdown[slot] == 0;
                 if (transitionCountdown[slot] != 0) {
                     int[] moved = move(entity, x, y, slot, backgroundCollision);
                     x = correctTargetX(moved[0], x, slot);
                     y = correctTargetY(moved[1], y, slot);
-                    variant = movementVariant(frameCounter, slot);
-                } else {
+                    // func_005_4228 returns E>1 when either axis is restored;
+                    // $41F6 then enters the same pause as an expired lunge.
+                    stopLunge = !inSignedWindow(signedByte(targetX[slot] - moved[0]), 0x20)
+                        || !inSignedWindow(signedByte(targetY[slot] - moved[1]), 0x20);
+                }
+                if (stopLunge) {
                     speedX[slot] = 0;
                     speedY[slot] = 0;
                     activeState[slot] = 3;
@@ -131,7 +151,8 @@ final class BowWowMotion {
                 }
                 // func_005_41EB reaches label_005_4335 after every moving
                 // state-2/state-4 frame, not only when the timer expires.
-                targetContact = findTargetContact(x, y, z, targetSlot[slot], entities);
+                targetContact = findTargetContact(entity.x(), entity.y(), entity.z(),
+                    targetSlot[slot], entities);
             }
             case 3 -> {
                 if (transitionCountdown[slot] == 0) {
@@ -151,6 +172,7 @@ final class BowWowMotion {
 
     void clear(int slot) {
         activeState[slot] = 0;
+        selectedVariant[slot] = 0;
         privateState4[slot] = 0;
         transitionCountdown[slot] = 0;
         privateCountdown1[slot] = 0;
@@ -170,6 +192,10 @@ final class BowWowMotion {
 
     int activeState(int slot) {
         return activeState[slot];
+    }
+
+    int selectedVariant(int slot) {
+        return selectedVariant[slot];
     }
 
     int privateState4(int slot) {
@@ -244,7 +270,10 @@ final class BowWowMotion {
         return withPositionAndVariant(entity, x, y, entity.z(), entity.spriteVariant());
     }
 
-    private void decrementTimers(int slot) {
+    void tickTimers(int slot) {
+        if (!initialized[slot]) {
+            initialize(slot);
+        }
         if (transitionCountdown[slot] > 0) {
             transitionCountdown[slot]--;
         }
@@ -305,9 +334,9 @@ final class BowWowMotion {
         boolean descending = (randomByteSupplier.getAsInt() & 0x01) == 0;
         int step = descending ? -1 : 1;
         int candidate = descending ? EntityRoomLoader.MAX_ENTITIES - 1 : 0;
-        int end = source.slot();
+        int end = descending ? -1 : EntityRoomLoader.MAX_ENTITIES;
         while (candidate != end) {
-            if (candidate >= 0 && candidate < entities.size()) {
+            if (candidate != source.slot() && candidate >= 0 && candidate < entities.size()) {
                 RoomEntity target = entities.get(candidate);
                 if (target.loaded()
                     && target.status() != EntityStatus.DYING
@@ -323,9 +352,11 @@ final class BowWowMotion {
         return -1;
     }
 
-    private static Vector vectorTowardsTarget(RoomEntity source, RoomEntity target, int length) {
+    private static Vector vectorTowardsTarget(RoomEntity source, RoomEntity target,
+                                              int sourceZ, int length) {
         int distanceX = signedByte(target.x() - source.x());
-        int distanceY = signedByte(target.y() - source.y() + source.z());
+        // The shared vector helper reads Z after this handler's gravity update.
+        int distanceY = signedByte(target.y() - source.y() + sourceZ);
         int absoluteX = Math.abs(distanceX);
         int absoluteY = Math.abs(distanceY);
         boolean swapped = absoluteX < absoluteY;

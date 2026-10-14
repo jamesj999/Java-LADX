@@ -341,6 +341,33 @@ final class LinkTest {
     }
 
     @Test
+    void likeLikeCanHideLinkWithoutReplacingHisPositionOrAirborneMotion() throws IOException {
+        Link link = linkWithEmptyRoom(new InputState());
+        link.setPixelPosition(0x20, 0x20);
+        link.useRocsFeather();
+        link.update();
+        int beforeZ = link.romEntityZ();
+        assertTrue(beforeZ > 0);
+
+        link.applyLikeLikeCapture(0x40, 0x50, false);
+        assertTrue(link.isLikeLikeCaptured());
+        assertEquals(0x20, link.pixelX());
+        assertEquals(0x20, link.pixelY());
+        assertEquals(beforeZ, link.romEntityZ());
+        // Hidden Link returns before touching the absent sprite sheet/buffer.
+        link.render(null, 0, 0);
+        link.update();
+        assertTrue(link.romEntityZ() > beforeZ);
+
+        link.applyLikeLikeCapture(0x40, 0x50, true);
+        assertEquals(0x38, link.pixelX());
+        assertEquals(0x40, link.pixelY());
+        assertEquals(0, link.romEntityZ());
+        link.releaseLikeLikeCapture();
+        assertFalse(link.isLikeLikeCaptured());
+    }
+
+    @Test
     void keepsRoomEntryCoordinatesInBothHostAndRomConventions() {
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         Link link = new Link(new InputState(), inputConfig, null, null, null,

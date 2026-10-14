@@ -8,11 +8,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 final class MagicRodMotionTest {
 
     @Test
-    void spawnUsesTheSharedPlayerProjectileSpeedTables() {
-        assertSpawnData(0, 0x20, 0x00);
-        assertSpawnData(1, 0xE0, 0x00);
-        assertSpawnData(2, 0x00, 0xE0);
-        assertSpawnData(3, 0x00, 0x20);
+    void spawnIncludesThePostSpawnOffsetsAndFinalSpeed() {
+        assertSpawnData(0, 4, 4, 0x30, 0x00);
+        assertSpawnData(1, 0xFC, 4, 0xD0, 0x00);
+        assertSpawnData(2, 0xFC, 0xFC, 0x00, 0xD0);
+        assertSpawnData(3, 4, 4, 0x00, 0x30);
     }
 
     @Test
@@ -24,8 +24,8 @@ final class MagicRodMotionTest {
         RoomEntity first = motion.advancePosition(entity);
         RoomEntity second = motion.advancePosition(first);
 
-        assertEquals(0x12, first.x());
-        assertEquals(0x14, second.x());
+        assertEquals(0x13, first.x());
+        assertEquals(0x16, second.x());
         assertEquals(0x20, first.y());
     }
 
@@ -43,21 +43,21 @@ final class MagicRodMotionTest {
         assertEquals(false, motion.tickFireTransition(0));
         assertEquals(0x2F, motion.privateCountdown1(0));
 
-        for (int tick = 0; tick < 0x2E; tick++) {
-            motion.tickFireTransition(0);
+        for (int tick = 0; tick < 0x2D; tick++) {
+            assertEquals(false, motion.tickFireTransition(0));
         }
-        assertEquals(0x01, motion.privateCountdown1(0));
+        assertEquals(0x02, motion.privateCountdown1(0));
         assertEquals(true, motion.tickFireTransition(0));
-        assertEquals(0, motion.privateCountdown1(0));
+        assertEquals(1, motion.privateCountdown1(0));
     }
 
-    private static void assertSpawnData(int direction, int speedX, int speedY) {
+    private static void assertSpawnData(int direction, int offsetX, int offsetY, int speedX, int speedY) {
         MagicRodFireballMotion.SpawnData actual = MagicRodFireballMotion.spawnData(direction);
-        assertEquals(0, actual.offsetX());
-        assertEquals(0, actual.offsetY());
+        assertEquals(offsetX, actual.offsetX());
+        assertEquals(offsetY, actual.offsetY());
         assertEquals(speedX, actual.speedX());
         assertEquals(speedY, actual.speedY());
-        assertEquals(direction, actual.initialVariant());
+        assertEquals(0, actual.initialVariant());
     }
 
     private static RoomEntity entity(int x, int y) {

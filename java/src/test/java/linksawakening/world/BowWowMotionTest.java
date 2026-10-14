@@ -3,6 +3,8 @@ package linksawakening.world;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,11 +13,111 @@ import java.util.function.IntSupplier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class BowWowMotionTest {
 
     private static final int ENTITY_BOW_WOW = 0x6D;
+
+    @ParameterizedTest
+    @CsvSource({"0, 15, 0", "1, 0, 15"})
+    void targetScanSkipsItsOwnSlotAndContinuesToTheEnd(int random, int bowWowSlot, int targetSlot) {
+        BowWowMotion motion = new BowWowMotion();
+        RoomEntity bowWow = bowWowEntity(bowWowSlot, 0x40, 0x50, 0);
+        RoomEntity current = motion.advance(bowWow, 0, 0x44, 0x58, 0, () -> random, null);
+        List<RoomEntity> slots = emptySlots();
+        slots.set(bowWowSlot, current);
+        slots.set(targetSlot, targetEntity(targetSlot, 0x54, 0x58));
+        BowWowMotion.Update update = motion.advanceWithTargetScan(current, 1,
+            0x44, 0x58, 0, () -> random, null, slots, type -> true);
+        assertEquals(targetSlot, update.targetSlot());
+        assertEquals(4, motion.activeState(bowWowSlot));
+    }
+
+    @ParameterizedTest
+    @CsvSource({"48, 0, -30, 0", "-48, 0, 29, 0", "0, 32, 0, -30", "0, -32, 0, 29"})
+    void leashRestorationEndsTheLungeImmediately(
+        int targetDx, int targetDy, int linkDx, int linkDy) {
+        BowWowMotion motion = new BowWowMotion();
+        List<RoomEntity> slots = emptySlots();
+        RoomEntity current = acquireTarget(motion, slots, 0x44 + targetDx, 0x58 + targetDy);
+        BowWowMotion.Update update = motion.advanceWithTargetScan(current, 2,
+            0x44 + linkDx, 0x58 + linkDy, 0, () -> 0, null, slots, type -> true);
+        assertEquals(3, motion.activeState(5));
+        assertEquals(0x10, motion.transitionCountdown(5));
+        assertEquals(0, motion.speedX(5));
+        assertEquals(0, motion.speedY(5));
+        assertEquals(0x44, update.entity().x());
+        assertEquals(0x58, update.entity().y());
+    }
+
+    @ParameterizedTest
+    @CsvSource({"15, 0, false", "-11, 0, true", "0, 16, true"})
+    void biteWindowUsesPositionAndHeightCachedBeforeMovement(int targetDx, int targetDy, boolean bite) {
+        BowWowMotion motion = new BowWowMotion();
+        List<RoomEntity> slots = emptySlots();
+        RoomEntity current = acquireTarget(motion, slots, 0x74, 0x58);
+        slots.set(6, targetEntity(6, 0x44 + targetDx, 0x58 + targetDy));
+        BowWowMotion.Update update = motion.advanceWithTargetScan(current, 2,
+            0x44, 0x58, 0, () -> 0, null, slots, type -> true);
+        assertEquals(0x47, update.entity().x());
+        assertEquals(1, update.entity().z());
+        if (bite) {
+            assertNotNull(update.targetContact());
+        } else {
+            assertNull(update.targetContact());
+        }
+    }
+
+    @Test
+    void acquiredLungeUsesTheHeightAfterGravityHasRun() {
+        BowWowMotion motion = new BowWowMotion();
+        List<RoomEntity> slots = emptySlots();
+        RoomEntity current = motion.advance(bowWowEntity(5, 0x40, 0x50, 8), 0,
+            0x64, 0x58, 0, () -> 0, null);
+        current = motion.advanceWithTargetScan(current, 1,
+            0x64, 0x58, 0, () -> 0, null, slots, type -> true).entity();
+        assertEquals(8, current.z());
+        motion.setTransitionCountdown(5, 1);
+        slots.set(5, current);
+        slots.set(6, targetEntity(6, 0x64, 0x58));
+        BowWowMotion.Update acquired = motion.advanceWithTargetScan(current, 2,
+            0x64, 0x58, 0, () -> 0, null, slots, type -> true);
+        assertEquals(7, acquired.entity().z());
+        assertEquals(0x30, motion.speedX(5));
+        assertEquals(0x0A, motion.speedY(5));
+    }
+
+    private static RoomEntity acquireTarget(BowWowMotion motion, List<RoomEntity> slots,
+                                             int targetX, int targetY) {
+        RoomEntity current = motion.advance(bowWowEntity(5, 0x40, 0x50, 0), 0,
+            targetX, targetY, 0, () -> 0, null);
+        slots.set(5, current);
+        slots.set(6, targetEntity(6, targetX, targetY));
+        BowWowMotion.Update acquired = motion.advanceWithTargetScan(current, 1,
+            targetX, targetY, 0, () -> 0, null, slots, type -> true);
+        assertEquals(4, motion.activeState(5));
+        return acquired.entity();
+    }
+
+    private static List<RoomEntity> emptySlots() {
+        List<RoomEntity> slots = new ArrayList<>();
+        for (int slot = 0; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
+            slots.add(RoomEntity.disabled(slot));
+        }
+        return slots;
+    }
+
+    private static RoomEntity bowWowEntity(int slot, int x, int y, int z) {
+        return new RoomEntity(slot, -1, ENTITY_BOW_WOW, x, y, EntityStatus.ACTIVE,
+            EntitySpriteDefinition.unsupported(ENTITY_BOW_WOW), 0, 0, 0, z);
+    }
+
+    private static RoomEntity targetEntity(int slot, int x, int y) {
+        return new RoomEntity(slot, 0, 0x09, x, y, EntityStatus.ACTIVE,
+            EntitySpriteDefinition.unsupported(0x09), 0);
+    }
 
     @Test
     void setupUsesTheRomPrivateStateOffsetsAndSeedsBothTargets() {

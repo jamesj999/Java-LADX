@@ -23,21 +23,9 @@ final class EnemyRecoilMotion {
     record Vector(int x, int y) {
     }
 
-    /** Mirrors the existing shared enemy-recoil vector convention. */
+    /** Mirrors GetVectorTowardsLink ($03:7E45), including coincident positions. */
     static Vector vectorTowardsLink(int entityX, int entityY, int entityZ,
                                     int linkX, int linkY, int length) {
-        return vectorTowardsLink(entityX, entityY, entityZ, linkX, linkY, length, true);
-    }
-
-    /** Mirrors GetVectorTowardsLink for a Link collision response. */
-    static Vector vectorTowardsLinkForLinkCollision(int entityX, int entityY, int entityZ,
-                                                    int linkX, int linkY, int length) {
-        return vectorTowardsLink(entityX, entityY, entityZ, linkX, linkY, length, false);
-    }
-
-    private static Vector vectorTowardsLink(int entityX, int entityY, int entityZ,
-                                            int linkX, int linkY, int length,
-                                            boolean zeroDistanceYIsNegative) {
         if (length < 0 || length > 0xFF) {
             throw new IllegalArgumentException("Vector length must be an unsigned byte");
         }
@@ -56,13 +44,16 @@ final class EnemyRecoilMotion {
         if (distanceX < 0) {
             vectorX = -vectorX;
         }
-        // The legacy enemy-recoil callers retain their established zero-axis
-        // tie convention. Link collision responses follow the ROM helper,
-        // whose nonnegative branch includes zero.
-        if (distanceY < 0 || (zeroDistanceYIsNegative && distanceY == 0)) {
+        // GetEntityYDistanceToLink_03 takes its DOWN branch for zero too.
+        if (distanceY < 0) {
             vectorY = -vectorY;
         }
         return new Vector(vectorX, vectorY);
+    }
+
+    static Vector vectorTowardsLinkForLinkCollision(int entityX, int entityY, int entityZ,
+                                                    int linkX, int linkY, int length) {
+        return vectorTowardsLink(entityX, entityY, entityZ, linkX, linkY, length);
     }
 
     /** Mirrors ConfigureEntityRecoil after GetVectorTowardsLink returns. */
@@ -78,8 +69,7 @@ final class EnemyRecoilMotion {
         // ConfigureEntityRecoil stores the negated vector: away from Link.
         recoilSpeedX[slot] = (-vector.x()) & 0xFF;
         recoilSpeedY[slot] = (-vector.y()) & 0xFF;
-        speedXAccumulator[slot] = 0;
-        speedYAccumulator[slot] = 0;
+        // Recoil setup writes velocity tables only; position fractions persist.
         active[slot] = true;
     }
 
@@ -88,8 +78,7 @@ final class EnemyRecoilMotion {
         validateSlot(slot);
         recoilSpeedX[slot] = speedX & 0xFF;
         recoilSpeedY[slot] = speedY & 0xFF;
-        speedXAccumulator[slot] = 0;
-        speedYAccumulator[slot] = 0;
+        // Recoil setup writes velocity tables only; position fractions persist.
         active[slot] = true;
     }
 
@@ -105,30 +94,10 @@ final class EnemyRecoilMotion {
             throw new IllegalArgumentException("Recoil length must be an unsigned byte");
         }
 
-        int distanceX = signedByte((targetX - sourceX) & 0xFF);
-        int distanceY = signedByte((targetY - sourceY + sourceZ) & 0xFF);
-        int absoluteX = Math.abs(distanceX);
-        int absoluteY = Math.abs(distanceY);
-        boolean xIsDominant = absoluteX >= absoluteY;
-        int smallerDistance = Math.min(absoluteX, absoluteY);
-        int largerDistance = Math.max(absoluteX, absoluteY);
-        int smallerComponent = romDivide(length, smallerDistance, largerDistance);
-
-        int vectorX = xIsDominant ? length : smallerComponent;
-        int vectorY = xIsDominant ? smallerComponent : length;
-        if (distanceX < 0) {
-            vectorX = -vectorX;
-        }
-        // GetEntityYDistanceToLink starts on the UP branch for a negative
-        // distance, but treats zero as the nonnegative/DOWN branch.
-        if (distanceY < 0) {
-            vectorY = -vectorY;
-        }
-
-        recoilSpeedX[slot] = vectorX & 0xFF;
-        recoilSpeedY[slot] = vectorY & 0xFF;
-        speedXAccumulator[slot] = 0;
-        speedYAccumulator[slot] = 0;
+        Vector vector = vectorTowardsLink(sourceX, sourceY, sourceZ, targetX, targetY, length);
+        recoilSpeedX[slot] = vector.x() & 0xFF;
+        recoilSpeedY[slot] = vector.y() & 0xFF;
+        // Recoil setup writes velocity tables only; position fractions persist.
         active[slot] = true;
     }
 

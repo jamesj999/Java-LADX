@@ -41,7 +41,26 @@ final class FollowingNpcMotionTest {
         assertEquals(0, frame0.spriteVariant());
         assertEquals(1, frame16.spriteVariant());
         assertEquals(0x10, frame0.x());
-        assertEquals(0x18, frame16.x());
+        // The bob height makes Y the major axis; X advances at $06, not $08.
+        assertEquals(0x16, frame16.x());
+    }
+
+    @Test
+    void ghostSteersUsingTheCurrentBobHeightBeforeMovement() {
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
+            .forFollowerEntityType(ENTITY_GHOST);
+        RoomEntity current = new RoomEntity(0, -1, ENTITY_GHOST, 0x40, 0x50,
+            EntityStatus.ACTIVE, definition, 0);
+        FollowingNpcMotion motion = new FollowingNpcMotion();
+        motion.initialize(0, ENTITY_GHOST);
+
+        // Frame zero sets Z=$0C before calculating (dx=$30, dy=$0C).
+        // The resulting ($08,$02) speed reaches one Y pixel after eight ticks.
+        for (int frame = 0; frame < 8; frame++) {
+            current = motion.advance(current, frame, 0x70, 0x50, null);
+        }
+        assertEquals(0x44, current.x());
+        assertEquals(0x51, current.y());
     }
 
     @Test

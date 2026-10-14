@@ -28,16 +28,20 @@ final class HardHatMotion {
 
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
+        boolean collidedX = false;
+        boolean collidedY = false;
         if (backgroundCollision != null) {
-            if (x != entity.x() && backgroundCollision.blocks(entity,
+            // The background helper tests every nonzero speed, even when the
+            // fractional accumulator has not moved a whole pixel yet.
+            if (speedX[slot] != 0 && backgroundCollision.blocks(entity,
                 horizontalDirection(speedX[slot]), x, y)) {
                 x = entity.x();
-                speedX[slot] = 0;
+                collidedX = true;
             }
-            if (y != entity.y() && backgroundCollision.blocks(entity,
+            if (speedY[slot] != 0 && backgroundCollision.blocks(entity,
                 verticalDirection(speedY[slot]), x, y)) {
                 y = entity.y();
-                speedY[slot] = 0;
+                collidedY = true;
             }
         }
 
@@ -45,7 +49,15 @@ final class HardHatMotion {
             int length = (((randomByteSupplier.getAsInt() & 0xFF) ^ slot) & 0x07) + 0x04;
             Vector target = vectorTowardsLink(x, y, linkEntityX, linkEntityY, length);
             speedY[slot] = approachTarget(speedY[slot], target.y());
+            // $4F7E and $4F94 clear blocked axes only on this steering tick,
+            // after applying the target vector to each speed byte.
+            if (collidedY) {
+                speedY[slot] = 0;
+            }
             speedX[slot] = approachTarget(speedX[slot], target.x());
+            if (collidedX) {
+                speedX[slot] = 0;
+            }
         }
 
         return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
