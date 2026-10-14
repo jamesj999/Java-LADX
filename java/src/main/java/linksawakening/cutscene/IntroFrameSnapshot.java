@@ -17,8 +17,18 @@ public record IntroFrameSnapshot(
     int[][] bgPalettes,
     int[][] objPalettes,
     List<IntroSprite> sprites,
-    int titleRevealRows
+    int titleRevealRows,
+    int[] lineScrollY,
+    byte[] animatedTiles,
+    int animatedTilesDestination
 ) {
+    public IntroFrameSnapshot(String sceneId, String substate, int frameCounter, int scrollX,
+            int scrollY, int[] lineScrollX, int verticalWaveOffset, int[] tilemap, int[] attrmap,
+            int[][] bgPalettes, int[][] objPalettes, List<IntroSprite> sprites, int titleRevealRows) {
+        this(sceneId, substate, frameCounter, scrollX, scrollY, lineScrollX, verticalWaveOffset,
+            tilemap, attrmap, bgPalettes, objPalettes, sprites, titleRevealRows, null, null, 0);
+    }
+
     public IntroFrameSnapshot {
         sceneId = Objects.requireNonNull(sceneId, "sceneId");
         substate = Objects.requireNonNull(substate, "substate");
@@ -28,12 +38,20 @@ public record IntroFrameSnapshot(
         objPalettes = copyPalettes(objPalettes);
         lineScrollX = lineScrollX == null ? null : lineScrollX.clone();
         sprites = List.copyOf(sprites);
+        lineScrollY = lineScrollY == null ? null : lineScrollY.clone();
+        animatedTiles = animatedTiles == null ? null : animatedTiles.clone();
     }
 
     @Override
     public int[] lineScrollX() {
         return lineScrollX == null ? null : lineScrollX.clone();
     }
+
+    @Override
+    public int[] lineScrollY() { return lineScrollY == null ? null : lineScrollY.clone(); }
+
+    @Override
+    public byte[] animatedTiles() { return animatedTiles == null ? null : animatedTiles.clone(); }
 
     @Override
     public int[] tilemap() {

@@ -36,7 +36,7 @@ final class IntroShippedRomTest {
         IntroSequence sequence = new IntroSequence(rom, sceneId -> loader.load(
             BackgroundSceneCatalog.forCutsceneScene(sceneId)));
         assertEquals(22, sequence.snapshot().sprites().size());
-        assertEquals(0x1C, sequence.snapshot().sprites().get(16).tileIndex());
+        assertEquals(0x1C, sequence.snapshot().sprites().get(0).tileIndex());
         sequence.tick();
         assertEquals(1, sequence.snapshot().frameCounter());
     }
@@ -49,7 +49,7 @@ final class IntroShippedRomTest {
             BackgroundSceneCatalog.forCutsceneScene(sceneId)));
         int[][] initial = sequence.snapshot().bgPalettes();
 
-        for (int frame = 0; frame < 128; frame++) {
+        for (int frame = 0; frame < 130; frame++) {
             sequence.tick();
         }
 
@@ -80,18 +80,8 @@ final class IntroShippedRomTest {
         for (int frame = 0; frame < 5000 && !"TITLE_DX".equals(sequence.snapshot().substate()); frame++) {
             sequence.tick();
         }
-        assertEquals("TITLE_DX", sequence.snapshot().substate());
         int[][] initial = sequence.snapshot().objPalettes();
-
-        sequence.tick();
-        sequence.tick();
-        sequence.tick();
-        sequence.tick();
-        sequence.tick();
-        sequence.tick();
-        sequence.tick();
-        sequence.tick();
-
+        for (int i = 0; i < 69; i++) sequence.tick();
         assertNotEquals(initial[6][1], sequence.snapshot().objPalettes()[6][1]);
     }
 

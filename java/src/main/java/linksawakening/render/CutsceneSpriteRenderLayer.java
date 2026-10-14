@@ -13,7 +13,11 @@ public final class CutsceneSpriteRenderLayer implements RenderLayer {
 
     @Override
     public void render(RenderContext context) {
-        for (IntroSprite sprite : sprites) {
+        // Earlier OAM entries win when object pixels overlap.
+        java.util.List<IntroSprite> ordered = new java.util.ArrayList<>();
+        sprites.forEach(ordered::add);
+        for (int index = ordered.size() - 1; index >= 0; index--) {
+            IntroSprite sprite = ordered.get(index);
             int paletteIndex = Math.min(sprite.paletteIndex(), palettes.length - 1);
             if (sprite.height() == 16) {
                 IndexedRenderer.drawSpriteTile8x16(context.buffer(), context.gpu(), sprite.tileIndex(),

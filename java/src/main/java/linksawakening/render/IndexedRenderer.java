@@ -96,10 +96,17 @@ public final class IndexedRenderer {
                                                   int[][] palettes, int mapWidth, int mapHeight,
                                                   int viewportWidth, int viewportHeight,
                                                   int[] lineScrollX, int scrollY) {
+        renderBackgroundLineScroll(buffer, gpu, tilemap, attrmap, palettes, mapWidth, mapHeight,
+            viewportWidth, viewportHeight, lineScrollX, scrollY, null);
+    }
+
+    public static void renderBackgroundLineScroll(byte[] buffer, GPU gpu, int[] tilemap, int[] attrmap,
+            int[][] palettes, int mapWidth, int mapHeight, int viewportWidth, int viewportHeight,
+            int[] lineScrollX, int scrollY, int[] lineScrollY) {
         int viewportPixelWidth = viewportWidth * 8;
         int viewportPixelHeight = viewportHeight * 8;
         for (int py = 0; py < viewportPixelHeight; py++) {
-            int sourceY = Math.floorMod(scrollY + py, mapHeight * 8);
+            int sourceY = Math.floorMod((lineScrollY == null ? scrollY : lineScrollY[py]) + py, mapHeight * 8);
             int mapY = sourceY / 8;
             int tileY = sourceY & 0x07;
             int scrollX = lineScrollX[Math.min(py, lineScrollX.length - 1)];

@@ -37,7 +37,7 @@ public final class CutsceneManager implements CutsceneContext {
     }
 
     public void tick() {
-        if (introSequence != null && introSequence.isActive()) {
+        if (introSequence != null) {
             String previousScene = introSequence.sceneId();
             introSequence.tick();
             frameSnapshot = introSequence.snapshot();

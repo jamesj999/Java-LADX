@@ -44,3 +44,15 @@ tasks.register('runAudioBrowser', JavaExec) {
 test {
     useJUnitPlatform()
 }
+
+// Offline framebuffer capture used by tools/intro/compare.py.
+tasks.register('captureIntro', JavaExec) {
+    group = 'verification'
+    description = 'Capture the production intro framebuffer for emulator comparison'
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'linksawakening.render.IntroEmulatorCapture'
+    jvmArgs '-Djava.awt.headless=true'
+    args providers.gradleProperty('introOutput').getOrElse(layout.buildDirectory.dir('intro-comparison/ours').get().asFile.absolutePath),
+        providers.gradleProperty('introFrames').getOrElse('3800')
+}

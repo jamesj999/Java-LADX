@@ -46,6 +46,8 @@ final class IntroSequenceTest {
 
         tick(intro, 1);
         assertEquals(1, intro.snapshot().scrollX());
+        assertEquals(0xB8, spriteX(intro.snapshot(), 0x1C)); // OAM is built before movement, then transferred on VBlank
+        tick(intro, 2);
         assertEquals(0xB7, spriteX(intro.snapshot(), 0x1C));
         assertEquals(22, intro.snapshot().sprites().size());
     }
@@ -58,32 +60,29 @@ final class IntroSequenceTest {
         assertEquals(IntroCutsceneScript.SCENE_LINK_FACE, intro.sceneId());
         assertEquals("LINK_FACE", intro.snapshot().substate());
 
-        tick(intro, 127);
+        tick(intro, 3 + 127);
         assertEquals("LINK_FACE", intro.snapshot().substate());
         tick(intro, 1);
         assertEquals("LINK_FACE_SCREAM", intro.snapshot().substate());
         tick(intro, 16);
         assertEquals("LINK_FACE_LIGHTNING", intro.snapshot().substate());
-        assertTrue(intro.snapshot().sprites().stream().anyMatch(sprite -> sprite.tileIndex() == 0x34));
+        assertFalse(intro.snapshot().sprites().stream().anyMatch(sprite -> sprite.tileIndex() == 0x34));
 
         tick(intro, 16);
         assertEquals(IntroCutsceneScript.SCENE_SEA, intro.sceneId());
         assertEquals("SEA_FADE", intro.snapshot().substate());
 
-        tick(intro, IntroSequence.SEA_FADE_FRAMES);
-        assertEquals(IntroCutsceneScript.SCENE_BEACH, intro.sceneId());
-        assertEquals("BEACH_FADE", intro.snapshot().substate());
+        tick(intro, 1 + IntroSequence.SEA_FADE_FRAMES);
+        assertEquals(IntroCutsceneScript.SCENE_SEA, intro.sceneId()); // final sea frame before the LCD-off load
+        assertEquals("BEACH_LOAD", intro.snapshot().substate());
     }
 
     @Test
     void beachPublishesLineScrollAndTitleRowsInRomPointerOrder() {
         IntroSequence intro = newIntro();
-        tick(intro, IntroSequence.SEA_SCROLL_FRAMES
-            + IntroSequence.LINK_FACE_FRAMES
-            + IntroSequence.SEA_FADE_FRAMES);
-
-        assertEquals(IntroCutsceneScript.SCENE_BEACH, intro.sceneId());
-        tick(intro, IntroSequence.BEACH_FADE_FRAMES);
+        tick(intro, 1148); // emulator frame 1236 minus first sea-state frame 88
+        assertEquals("BEACH_LOAD", intro.snapshot().substate());
+        tick(intro, 4 + 2 + IntroSequence.BEACH_FADE_FRAMES);
         assertEquals("MARIN_STATE_0", intro.snapshot().substate());
         assertNotNull(intro.snapshot().lineScrollX());
 
@@ -91,9 +90,9 @@ final class IntroSequenceTest {
         assertEquals("TITLE_REVEAL", intro.snapshot().substate());
         assertEquals(0, intro.titleRevealRows());
 
-        tick(intro, 1);
+        tick(intro, 2); // queued row becomes visible on the next VBlank
         IntroRomData.TitleRow firstRow = new IntroRomData(loadRom()).titleRows().get(0);
-        assertEquals(1, intro.titleRevealRows());
+        assertEquals(2, intro.titleRevealRows());
         assertArrayEquals(firstRow.tileBytes(), rowBytes(intro.snapshot().tilemap(),
             firstRow.tileTargetAddress()));
         assertArrayEquals(firstRow.attributeBytes(), rowBytes(intro.snapshot().attrmap(),
@@ -160,7 +159,9 @@ final class IntroSequenceTest {
 
     private static int[] rowBytes(int[] map, int targetAddress) {
         int index = targetAddress - 0x9800;
-        return Arrays.copyOfRange(map, index, index + 16);
+        int[] row = new int[16];
+        for (int i = 0; i < row.length; i++) row[i] = map[(index & 0x3E0) | ((index + i) & 31)];
+        return row;
     }
 
     private static void tickUntil(IntroSequence intro, String sceneId, int maxFrames) {

@@ -87,7 +87,7 @@ final class IntroRomDataTest {
     @Test
     void decodesRgb555PaletteRowsFromRom() {
         byte[] rom = syntheticRom();
-        int palette = RomBank.romOffset(BANK, 0x79A0);
+        int palette = RomBank.romOffset(BANK, 0x78A0);
         writeWordAtOffset(rom, palette, 0x001F);
         writeWordAtOffset(rom, palette + 2, 0x03E0);
         writeWordAtOffset(rom, palette + 4, 0x7C00);

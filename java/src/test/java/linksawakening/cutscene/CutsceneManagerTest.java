@@ -17,6 +17,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 final class CutsceneManagerTest {
 
     @Test
+    void completedIntroContinuesTitleAnimationAfterScreenHandoff() {
+        CutsceneManager manager = new CutsceneManager(new DialogController(16), id -> { });
+        manager.startIntro();
+        for (int i = 0; i < 4000 && manager.isActive(); i++) manager.tick();
+        assertFalse(manager.isActive());
+        assertTrue(manager.isShowingTitleScene());
+        int frame = manager.frameSnapshot().frameCounter();
+        for (int i = 0; i < 16; i++) manager.tick();
+        assertEquals(frame + 16, manager.frameSnapshot().frameCounter());
+        assertFalse(manager.frameSnapshot().sprites().isEmpty());
+    }
+
+    @Test
     void ownsIntroLifecycleSceneLoadingAndDialogContext() {
         DialogController dialog = new DialogController(16);
         List<String> loadedScenes = new ArrayList<>();

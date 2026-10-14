@@ -79,7 +79,7 @@ public final class GameFrameSceneBuilder {
             ? snapshot.scrollX()
             : state.cutsceneManager() != null ? state.cutsceneManager().scrollX() : 0;
         int scrollY = fileMenu != null ? 0 : snapshot != null
-            ? snapshot.scrollY() + snapshot.verticalWaveOffset()
+            ? snapshot.scrollY()
             : state.cutsceneManager() != null ? state.cutsceneManager().scrollY() : 0;
         int[] tilemap = fileMenu != null
             ? fileMenu.tilemap()
@@ -96,7 +96,20 @@ public final class GameFrameSceneBuilder {
                 ? state.cutsceneManager().lineScrollX(Framebuffer.HEIGHT)
                 : null;
 
-        if (lineScrollX != null) {
+        if (fileMenu == null && snapshot != null && snapshot.animatedTiles() != null) {
+            byte[] data = snapshot.animatedTiles();
+            layers.add(context -> {
+                for (int i = 0; i < data.length; i++) {
+                    context.gpu().writeVRAM(snapshot.animatedTilesDestination() + i, data[i]);
+                }
+            });
+        }
+        if (fileMenu == null && snapshot != null && snapshot.lineScrollY() != null) {
+            int[] lineY = snapshot.lineScrollY();
+            layers.add(context -> IndexedRenderer.renderBackgroundLineScroll(context.buffer(),
+                context.gpu(), tilemap, attrmap, palettes, BG_MAP_WIDTH, BG_MAP_HEIGHT,
+                VIEWPORT_TILE_WIDTH, VIEWPORT_TILE_HEIGHT, lineScrollX, scrollY, lineY));
+        } else if (lineScrollX != null) {
             layers.add(BackgroundRenderLayer.lineScrolled(tilemap, attrmap, palettes,
                 BG_MAP_WIDTH, BG_MAP_HEIGHT, VIEWPORT_TILE_WIDTH, VIEWPORT_TILE_HEIGHT,
                 lineScrollX, scrollY));

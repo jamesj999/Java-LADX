@@ -30,7 +30,7 @@ public final class IntroRomData {
     public static final int INTRO_VERTICAL_OFFSETS_ADDRESS = 0x7CF9;
     public static final int INTRO_COLOR_MODIFIER_BANK = 0x20;
     public static final int INTRO_COLOR_MODIFIER_ADDRESS = 0x6B9C;
-    public static final int DX_FADE_IN_PALETTE_ADDRESS = 0x79A0;
+    public static final int DX_FADE_IN_PALETTE_ADDRESS = 0x78A0;
     public static final int INERT_LINK_VARIANTS_ADDRESS = 0x7A27;
     public static final int TITLE_POST_BEACH_TILEMAP_ADDRESS = 0x7AE4;
 
@@ -44,6 +44,53 @@ public final class IntroRomData {
 
     public IntroRomData(byte[] romData) {
         this.romData = Objects.requireNonNull(romData, "romData").clone();
+    }
+
+    /** ROM draw commands used by the scream and the beach mountain wrap correction. */
+    public void applyDrawCommands(int[] map, int address) {
+        int offset = checkedOffset("Intro draw commands", INTRO_BANK, address, 1);
+        while ((romData[offset] & 255) != 0) {
+            int target = ((romData[offset++] & 255) << 8) | (romData[offset++] & 255);
+            int command = romData[offset++] & 255;
+            int count = (command & 0x3f) + 1;
+            int stride = (command & 0x80) == 0 ? 1 : 32;
+            for (int i = 0; i < count; i++) {
+                // Horizontal draw commands wrap within the same 32-tile row.
+                int index = stride == 1
+                    ? ((target - 0x9800) & 0x3E0) | ((target + i) & 31)
+                    : (target - 0x9800 + i * stride) & 1023;
+                map[index] = romData[offset] & 255;
+                if ((command & 0x40) == 0) offset++;
+            }
+            if ((command & 0x40) != 0) offset++;
+        }
+    }
+
+    public byte[] tileBytes(int address, int count) {
+        int offset = checkedOffset("Intro animated tiles", 0x30, address, count);
+        return java.util.Arrays.copyOfRange(romData, offset, offset + count);
+    }
+
+    public int animationFrameAddress(boolean beach, int frameCounter) {
+        int index = readUnsignedBytes("Wave phases", 0x7CF1, 8)[(frameCounter >>> 4) & 7];
+        return readUnsignedWord(checkedOffset("Wave pointers", 1, beach ? 0x7CE9 : 0x7CE1, 8) + index);
+    }
+
+    public List<OamEntry> dxTiles(boolean fullyVisible) {
+        return readOamEntries("DX sprites", fullyVisible ? 0x7870 : 0x7850, fullyVisible ? 10 : 18);
+    }
+
+    public int[] titleLineScroll(int phase, int baseY) {
+        int[] lines = new int[144];
+        java.util.Arrays.fill(lines, baseY);
+        if (phase >= 16) return lines;
+        int pointer = readUnsignedWord(checkedOffset("Title distortion pointers", 0x20, 0x5224, 34) + phase * 2);
+        int limit = romData[checkedOffset("Title distortion limits", 0x20, 0x5246, 17) + phase] & 255;
+        int offset = checkedOffset("Title distortion", 0x20, pointer, 64);
+        for (int y = 17; y < Math.max(73, 17 + limit); y++) {
+            lines[y] = (baseY + (y >= 16 + limit ? -56 : romData[offset + y - 17])) & 255;
+        }
+        return lines;
     }
 
     public List<OamEntry> shipTiles() {

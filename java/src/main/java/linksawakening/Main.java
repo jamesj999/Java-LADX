@@ -740,6 +740,12 @@ public class Main {
             }
         }
 
+        if (currentScreen == SCREEN_TITLE) {
+            if (cutsceneManager != null) cutsceneManager.tick();
+            inputState.tickEdges();
+            return;
+        }
+
         if (currentScreen == SCREEN_CUTSCENE) {
             if (dialogController != null) {
                 dialogController.tick();
