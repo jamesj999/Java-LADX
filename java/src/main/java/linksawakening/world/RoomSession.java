@@ -515,13 +515,13 @@ public final class RoomSession {
         dungeonItemState.loadForMap(mapId, true);
         activeRoomEvent = dungeonRoomEventTable.eventFor(mapId, roomId);
         gpu.loadIndoorTiles(romData, mapId, roomId);
-        initializeSwitchBlockTiles();
         LoadedRoom room = roomLoader.loadIndoor(
             mapId, roomId, activeRoom == null ? null : activeRoom.palettes(), mapCategory,
             recentRoomEntityClears.mask(roomId), indoorStatusTableForMap(mapId), hasBirdKey,
             tarinFlag, playerShieldLevel);
         gpu.loadAnimatedTilesGroup(romData, room.animatedTilesGroup());
         setActiveRoom(room);
+        initializeSwitchBlockTiles();
         indoorTorchPaletteEffect.reset(activeRoom.palettes(), countUnlitTorches());
         copyIndoorTorchPalettesToActiveRoom();
         updateWitchEnvironment();
@@ -556,6 +556,16 @@ public final class RoomSession {
         }
         activeRoom.replaceEntities(entityRuntime.snapshot());
         return true;
+    }
+
+    /** Tarin's indoor handler updates his facing every 32 frames, even during the bed scene. */
+    public void updateHouseTarinPresentation(int frameCounter, int linkX, int linkY) {
+        if (activeRoom != null && activeRoom.mapId() == 0x10 && activeRoom.roomId() == 0xA3
+            && tarinFlag != 1 && tarinFlag != 2
+            && entityRuntime != null && (frameCounter & 0x1F) == 0) {
+            entityRuntime.updateHouseTarinPresentation(linkX, linkY);
+            activeRoom.replaceEntities(entityRuntime.snapshot());
+        }
     }
 
     /** Supplies the patched EntityInitKeyDropPoint inventory byte. */
@@ -2379,6 +2389,17 @@ public final class RoomSession {
     }
 
     private void initializeSwitchBlockTiles() {
+        // LoadRoom configures wRoomSwitchableObject only for $DB/$DC.
+        // These VRAM slots hold furniture in houses and must stay intact there.
+        boolean hasBlocks = false;
+        for (int row = 0; row < RoomConstants.OBJECTS_PER_COLUMN; row++) {
+            for (int col = 0; col < RoomConstants.OBJECTS_PER_ROW; col++) {
+                int object = activeRoom.roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE
+                    + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + col];
+                hasBlocks |= object == 0xDB || object == 0xDC;
+            }
+        }
+        if (!hasBlocks) return;
         for (SwitchBlockAnimation.TileCopy copy
             : SwitchBlockAnimation.initialCopies(switchBlocksState)) {
             gpu.copySwitchBlockTiles(romData, copy.sourceOffset(), copy.destinationTile());

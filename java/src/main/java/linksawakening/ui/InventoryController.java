@@ -54,6 +54,10 @@ public final class InventoryController {
         return menu.shouldBlockOverworldInput();
     }
 
+    public void render(byte[] displayBuffer, GPU gpu, int[][] roomPalettes) {
+        menu.render(displayBuffer, gpu, roomPalettes);
+    }
+
     public void render(byte[] displayBuffer, GPU gpu) {
         menu.render(displayBuffer, gpu);
     }

@@ -36,7 +36,7 @@ public final class MarinWakeUpBedRenderLayer implements RenderLayer {
         int originX = 0x38 - 0x08 - scrollController.screenShakeHorizontal();
         int originY = 0x34 - 0x10;
         IndexedRenderer.drawSpriteTile8x16(context.buffer(), tiles, 0x4E,
-            originX, originY + 8, true, false, palettes[6]);
+            originX + 8, originY, true, false, palettes[6]);
         IndexedRenderer.drawSpriteTile8x16(context.buffer(), tiles, 0x4E,
             originX, originY, false, false, palettes[6]);
         boolean flipX = variant == 1;

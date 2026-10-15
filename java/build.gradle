@@ -56,3 +56,14 @@ tasks.register('captureIntro', JavaExec) {
     args providers.gradleProperty('introOutput').getOrElse(layout.buildDirectory.dir('intro-comparison/ours').get().asFile.absolutePath),
         providers.gradleProperty('introFrames').getOrElse('3800')
 }
+
+// Reference frames come from tools/house/compare.py --capture.
+tasks.register('captureHouse', JavaExec) {
+    group = 'verification'
+    description = 'Capture the opening Marin/Tarin house scene for emulator comparison'
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'linksawakening.render.HouseEmulatorCapture'
+    jvmArgs '-Djava.awt.headless=true'
+    args layout.buildDirectory.dir('house-comparison').get().asFile.absolutePath
+}

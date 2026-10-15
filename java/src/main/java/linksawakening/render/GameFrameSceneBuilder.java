@@ -68,7 +68,7 @@ public final class GameFrameSceneBuilder {
             layers.add(new DroppableRupeeRenderLayer(state.droppableRupeeSystem(), state.scrollController()));
         }
         if (state.inventoryController() != null) {
-            layers.add(new InventoryRenderLayer(state.inventoryController()));
+            layers.add(new InventoryRenderLayer(state.inventoryController(), state.room().palettes()));
         }
     }
 

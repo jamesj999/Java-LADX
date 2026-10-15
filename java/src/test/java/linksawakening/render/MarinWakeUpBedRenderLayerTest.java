@@ -21,8 +21,6 @@ final class MarinWakeUpBedRenderLayerTest {
         for (int index = 0; index < tiles.length; index++) tiles[index] = new Tile();
         fill(tiles[0x48 - 0x40], 2);
         fill(tiles[0x49 - 0x40], 2);
-        fill(tiles[0x4A - 0x40], 2);
-        fill(tiles[0x4B - 0x40], 2);
         fill(tiles[0x4E - 0x40], 1);
         fill(tiles[0x4F - 0x40], 1);
         int[][] palettes = new int[8][4];
@@ -38,8 +36,8 @@ final class MarinWakeUpBedRenderLayerTest {
             new ScrollController()).render(new RenderContext(buffer, new GPU()));
 
         assertEquals(0x00CC1122, pixel(buffer, 0x30, 0x24));
-        assertEquals(0x0033AA44, pixel(buffer, 0x30, 0x34));
-        assertEquals(0, pixel(buffer, 0x30, 0x3C));
+        assertEquals(0x0033AA44, pixel(buffer, 0x38, 0x24));
+        assertEquals(0, pixel(buffer, 0x30, 0x34));
     }
 
     private static void fill(Tile tile, int color) {

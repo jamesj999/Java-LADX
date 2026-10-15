@@ -1682,6 +1682,9 @@ public class Main {
     }
 
     private static void updateNewGameMarinPresentation() {
+        if (roomSession != null && link != null) {
+            roomSession.updateHouseTarinPresentation(frameCounter, link.romEntityX(), link.romEntityY());
+        }
         if (newGameWakeUpMotion == null || roomSession == null
             || !roomSession.hasActiveRoom() || link == null
             || roomSession.activeRoom().mapId() != 0x10

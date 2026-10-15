@@ -223,6 +223,10 @@ public final class InventoryMenu {
     }
 
     public void render(byte[] displayBuffer, GPU gpu) {
+        render(displayBuffer, gpu, null);
+    }
+
+    public void render(byte[] displayBuffer, GPU gpu, int[][] roomPalettes) {
         int[] tilemap = tilemapLoader.copyBaseTilemap();
         int[] attrmap = tilemapLoader.copyAttrmap();
         HudOverlay.apply(tilemap, attrmap, playerState);
@@ -239,7 +243,7 @@ public final class InventoryMenu {
             gpu,
             tilemap,
             attrmap,
-            tilemapLoader.palettes(),
+            isFullyClosed() && roomPalettes != null ? roomPalettes : tilemapLoader.palettes(),
             InventoryTilemapLoader.WIDTH,
             InventoryTilemapLoader.HEIGHT,
             0,

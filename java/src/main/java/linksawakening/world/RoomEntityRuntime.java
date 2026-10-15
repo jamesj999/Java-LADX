@@ -8230,6 +8230,18 @@ public final class RoomEntityRuntime {
         return false;
     }
 
+    void updateHouseTarinPresentation(int linkX, int linkY) {
+        for (int slot = 0; slot < slots.length; slot++) {
+            RoomEntity entity = slots[slot];
+            if (entity.loaded() && entity.type() == ENTITY_TARIN) {
+                int dx = (byte) (linkX - entity.x());
+                int dy = (byte) (linkY - entity.y());
+                int direction = Math.abs(dy) >= Math.abs(dx) ? (dy < 0 ? 2 : 3) : (dx < 0 ? 1 : 0);
+                slots[slot] = withVariant(entity, direction);
+            }
+        }
+    }
+
     private void updateHookshotChainOam(int linkEntityX, int linkEntityY, int frameCounter) {
         int slot = hookshotSlot();
         if (slot < 0 || !slots[slot].loaded()) {
