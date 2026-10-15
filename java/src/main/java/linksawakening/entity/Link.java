@@ -1879,12 +1879,16 @@ public final class Link implements RocsFeather.JumpTarget {
     }
 
     private void tickJumpAnimation() {
-        jumpAnimationCounter++;
-        if (jumpAnimationCounter >= JUMP_FRAME_TICKS) {
-            jumpAnimationCounter = 0;
-            if (jumpAnimationFrame < 2) {
-                jumpAnimationFrame++;
-            }
+        // UpdateLinkAnimation ($02:47BC) writes the current pose BEFORE
+        // incrementing wC153/wC152. Each pose is displayed for eight full
+        // updates; phase 3 stops overriding the normal walking animation.
+        // The unstucking handler does not refresh walking animation, so it
+        // retains the final flip pose until landing ($02:49AA-$49C7).
+        if (jumpAnimationCounter < 3 * JUMP_FRAME_TICKS) {
+            jumpAnimationFrame = jumpAnimationCounter / JUMP_FRAME_TICKS;
+            jumpAnimationCounter++;
+        } else if (!overworldLedgeFallActive) {
+            jumpAnimationFrame = 3;
         }
     }
 
@@ -2124,7 +2128,10 @@ public final class Link implements RocsFeather.JumpTarget {
         if (carryingLiftedObjectState >= 2) {
             return carryingLiftedObjectState;
         }
-        int baseState = ANIMATION_STATE[direction][walkFrame];
+        // ApplyLinkGroundMotion ($02:4503) sets the step counter to $FF
+        // while airborne, selecting the alternate normal pose after the flip.
+        int normalFrame = airborne ? 1 : walkFrame;
+        int baseState = ANIMATION_STATE[direction][normalFrame];
         if (carryingLiftedObjectState == 1) {
             return LIFTING_ANIMATION_STATE[direction][walkFrame];
         }
@@ -2136,13 +2143,13 @@ public final class Link implements RocsFeather.JumpTarget {
         if (override >= 0) {
             return override;
         }
-        if (airborne) {
+        if (airborne && jumpAnimationFrame < 3) {
             return JUMP_ANIMATION_STATE[direction][jumpAnimationFrame];
         }
         if (isUsingShield() && playerState != null && playerState.shieldLevel() > 0) {
             int[][] shieldTable = playerState.shieldLevel() >= 2
                 ? MIRROR_SHIELD_USE_ANIMATION_STATE : SHIELD_USE_ANIMATION_STATE;
-            return shieldTable[direction][walkFrame];
+            return shieldTable[direction][normalFrame];
         }
         return baseState;
     }

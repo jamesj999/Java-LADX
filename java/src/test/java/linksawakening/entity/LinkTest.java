@@ -1343,9 +1343,16 @@ final class LinkTest {
         assertEquals(0x10, link.romSpeedY());
         assertEquals(0x20, link.pixelY());
 
-        for (int frame = 0; frame < 8; frame++) {
+        // $02:47CC writes each pose before incrementing its eight-frame
+        // timer. The directional ledge jump lasts longer than the flip.
+        for (int frame = 1; frame <= 24; frame++) {
+            assertTrue(link.isAirborne(), "frame " + frame);
+            assertEquals(0x64 + (frame - 1) / 8, resolvedAnimationState(link),
+                "frame " + frame);
             link.update();
         }
+        assertTrue(link.isAirborne());
+        assertEquals(0x01, resolvedAnimationState(link));
         assertTrue(link.pixelY() > 0x20);
     }
 
@@ -1408,6 +1415,17 @@ final class LinkTest {
         assertEquals(0x02, link.romMotionState());
         assertTrue(link.pixelY() > 0x28);
         assertEquals(List.of(GameplaySoundEvent.LEDGE_FALL), soundSink.events);
+        // Unlike LinkMotionDefault, LinkMotionUnstuckingHandler does not
+        // call UpdateLinkWalkingAnimation while descending.
+        int frame = 1;
+        while (link.isAirborne()) {
+            assertEquals(0x64 + Math.min(2, (frame - 1) / 8),
+                resolvedAnimationState(link), "frame " + frame);
+            assertTrue(frame < 64, "cliff fall must land");
+            link.update();
+            frame++;
+        }
+        assertEquals(Link.LINK_MOTION_DEFAULT, link.romMotionState());
     }
 
     @Test
@@ -1884,20 +1902,16 @@ final class LinkTest {
         link.useRocsFeather();
 
         assertEquals(frame0, resolvedAnimationState(link));
-        for (int i = 0; i < 7; i++) {
+        int[] poses = {frame0, frame1, frame2};
+        for (int frame = 0; frame < 24; frame++) {
             link.update();
+            assertTrue(link.isAirborne(), "frame " + frame);
+            assertEquals(poses[frame / 8], resolvedAnimationState(link), "frame " + frame);
         }
-        assertEquals(frame0, resolvedAnimationState(link));
         link.update();
-        assertEquals(frame1, resolvedAnimationState(link));
-        for (int i = 0; i < 8; i++) {
-            link.update();
-        }
-        assertEquals(frame2, resolvedAnimationState(link));
-        for (int i = 0; i < 16; i++) {
-            link.update();
-        }
-        assertEquals(frame2, resolvedAnimationState(link));
+        assertTrue(link.isAirborne());
+        assertEquals(new int[]{0x01, 0x05, 0x07, 0x0B}[direction],
+            resolvedAnimationState(link));
     }
 
     private static Link linkFacing(int direction) {
