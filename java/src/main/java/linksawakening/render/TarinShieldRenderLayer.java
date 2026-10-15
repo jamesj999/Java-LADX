@@ -19,7 +19,9 @@ public final class TarinShieldRenderLayer implements RenderLayer {
 
     @Override
     public void render(RenderContext context) {
-        int screenX = link.pixelX() - scrollController.screenShakeHorizontal();
+        // RenderActiveEntitySprite ($3CA4) centres a single 8px OAM column
+        // within the 16px entity pose by adding four pixels to its X origin.
+        int screenX = link.pixelX() + 4 - scrollController.screenShakeHorizontal();
         int screenY = link.pixelY() - 0x0C;
         IndexedRenderer.drawSpriteTile8x16(context.buffer(), context.gpu(), SHIELD_TILE,
             screenX, screenY, false, false, link.tarinShieldPalette());

@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class TarinShieldRenderLayerTest {
     @Test
-    void rendersRomShieldTileTwelvePixelsAboveLink() {
+    void centersEightPixelShieldAboveLinksSixteenPixelPose() {
         GPU gpu = new GPU();
         fill(gpu.getTile(0x86), 2);
         fill(gpu.getTile(0x87), 2);
@@ -31,8 +31,13 @@ final class TarinShieldRenderLayerTest {
         new TarinShieldRenderLayer(link, new ScrollController())
             .render(new RenderContext(buffer, gpu));
 
-        assertEquals(0x00CC7722, pixel(buffer, 0x30, 0x44));
-        assertEquals(0, pixel(buffer, 0x30, 0x54));
+        // Four clear pixels on either side centre the shield between Link's hands.
+        for (int x = 0x30; x < 0x40; x++) {
+            int expected = x >= 0x34 && x < 0x3C ? 0x00CC7722 : 0;
+            assertEquals(expected, pixel(buffer, x, 0x44));
+            assertEquals(expected, pixel(buffer, x, 0x53));
+            assertEquals(0, pixel(buffer, x, 0x54));
+        }
     }
 
     private static void fill(Tile tile, int color) {
