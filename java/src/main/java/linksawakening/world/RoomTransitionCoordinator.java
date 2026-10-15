@@ -63,6 +63,8 @@ public final class RoomTransitionCoordinator {
                 int previousY = link.pixelY();
                 link.setRoomEntryPixelPosition(boundary.linkTargetX(), boundary.linkTargetY());
                 roomSession.startAdjacentIndoorScroll(scrollController, boundary.direction(), previousX, previousY);
+                scrollController.onCompletion(() -> link.finishRoomScroll(
+                    boundary.direction() == ScrollController.DOWN));
                 suppressedWarpTile = Warp.packTileLocation(boundary.linkTargetX(), boundary.linkTargetY());
                 return;
             }
@@ -120,6 +122,8 @@ public final class RoomTransitionCoordinator {
                 roomSession.startAdjacentOverworldScroll(
                     scrollController, boundary.direction(), previousX, previousY);
             }
+            scrollController.onCompletion(() -> link.finishRoomScroll(
+                boundary.direction() == ScrollController.DOWN));
         } else if (boundary.type() == RoomBoundaryDecision.Type.CLAMP_LINK) {
             link.setPixelPosition(boundary.linkTargetX(), boundary.linkTargetY());
         }

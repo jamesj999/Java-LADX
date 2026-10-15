@@ -7,6 +7,7 @@ public final class ScrollController {
     public static final int LEFT = 3;
     public static final int RIGHT = 4;
 
+    private Runnable completion;
     private int direction = NONE;
     private int offset;
     private int target;
@@ -19,12 +20,18 @@ public final class ScrollController {
 
     public void start(int direction, int linkScreenX, int linkScreenY,
                       RoomRenderSnapshot previousRoom, int target) {
+        this.completion = null;
         this.direction = direction;
         this.linkScreenX = linkScreenX;
         this.linkScreenY = linkScreenY;
         this.previousRoom = previousRoom;
         this.target = target;
         this.offset = 0;
+    }
+
+    /** Runs once after the destination has finished scrolling into view. */
+    public void onCompletion(Runnable completion) {
+        this.completion = completion;
     }
 
     public boolean tick(int speed) {
@@ -39,6 +46,11 @@ public final class ScrollController {
         direction = NONE;
         target = 0;
         previousRoom = null;
+        Runnable finished = completion;
+        completion = null;
+        if (finished != null) {
+            finished.run();
+        }
         return true;
     }
 

@@ -373,6 +373,37 @@ public final class Link implements RocsFeather.JumpTarget {
         markRoomEntryPosition();
     }
 
+    /** ApplyRoomTransition's completion path ($02:793D-$7977). */
+    public void finishRoomScroll(boolean downward) {
+        lastRomSpeedX = 0;
+        lastRomSpeedY = 0;
+        zVelocity = 0;
+        if (!downward || debugNoClip || collision == null) {
+            return;
+        }
+        // Run the ordinary downward collision handler, including its ledge
+        // half-tile filters, before applying the source's fallback.
+        int probeX = pixelX();
+        int probeY = pixelY();
+        lastRomSpeedY = 0x01;
+        boolean blocked = leadingEdgeBlocked(probeX, probeY, DIRECTION_DOWN);
+        int object = collision.objectIdAtPoint(
+            probeX + COLLISION_POINTS_X[DIRECTION_DOWN][1],
+            probeY + COLLISION_POINTS_Y[DIRECTION_DOWN][1]);
+        // Switch blocks $DB/$DC are exempt from fallback unstucking.
+        if (object != 0xDB && object != 0xDC && !overworldLedgeFallActive
+            && (object == 0xE1 || blocked)) {
+            // func_002_6EAD aligns X and enters LINK_MOTION_UNSTUCKING.
+            // This transition fallback does not play the ledge jingle.
+            subX = (romEntityX() & 0xF0) << SUB_PIXEL_SHIFT;
+            subY -= 8 << SUB_PIXEL_SHIFT;
+            motionState = 0x02;
+            physicsModifier = 0;
+            overworldLedgeFallActive = true;
+            beginOverworldLedgeUnstuckingMotion();
+        }
+    }
+
     public void markRoomEntryPosition() {
         roomEntrySubX = subX;
         roomEntrySubY = subY;

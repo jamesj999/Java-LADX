@@ -40,6 +40,58 @@ final class RoomTransitionCoordinatorTest {
     private static final int OBJECT_NORMAL_PIT = 0xE8;
 
     @Test
+    void downwardScrollAfterFlipAutomaticallyDropsClearOfDestinationWall() throws Exception {
+        byte[] rom = loadRom();
+        RomTables tables = RomTables.loadFromRom(rom);
+        OverworldCollision collision = new OverworldCollision(tables);
+        RoomSession session = newSession(rom, tables, collision);
+        session.loadInitialOverworld(0x82);
+        ScrollController scroll = new ScrollController();
+        RoomTransitionCoordinator coordinator = new RoomTransitionCoordinator(
+            session, new RoomBoundaryController(), new TransitionController(), scroll);
+        Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
+            tables, collision, null, new PlayerState(), new ItemRegistry());
+        // Finish a flip over the south boundary; the scroll waits for landing.
+        int[] floor = new int[0x100];
+        java.util.Arrays.fill(floor, 0x09);
+        collision.setRoom(floor);
+        link.setPixelPosition(0x40, 0x71);
+        link.useRocsFeather();
+        coordinator.handleOverworldBoundary(link);
+        assertFalse(scroll.isActive());
+        for (int frame = 0; frame < 64 && !scroll.isActive(); frame++) {
+            link.update();
+            coordinator.handleOverworldBoundary(link);
+        }
+        assertTrue(scroll.isActive());
+        assertEquals(0x92, session.currentRoomId());
+        // Model a continuous cliff at the destination's north edge using
+        // the ROM's full-solid object physics, then open ground below it.
+        int solidObject = 0x00;
+        assertEquals(0x01, tables.objectPhysicsFlag(
+            RomTables.PHYSICS_TABLE_OVERWORLD, solidObject));
+        int[] destination = floor.clone();
+        for (int row = 0; row < 3; row++) {
+            for (int column = 0; column < 10; column++) {
+                destination[ROOM_OBJECTS_BASE + row * ROOM_OBJECT_ROW_STRIDE + column] = solidObject;
+            }
+        }
+        collision.setRoom(destination);
+        assertFalse(link.isAirborne(), "recovery must wait for scroll completion");
+        while (scroll.isActive()) scroll.tick(4);
+        assertTrue(link.isAirborne());
+        assertEquals(0x02, link.romMotionState());
+        assertEquals(0, link.roomEntryPixelY(), "retain the recorded entry before recovery");
+        for (int frame = 0; frame < 64 && link.isAirborne(); frame++) link.update();
+        assertFalse(link.isAirborne());
+        assertEquals(Link.LINK_MOTION_DEFAULT, link.romMotionState());
+        assertTrue(link.pixelY() >= 0x28, "must clear the cliff without directional input");
+        assertFalse(collision.pointBlocked(link.pixelX() + 6, link.pixelY() + 16));
+        coordinator.handleOverworldBoundary(link);
+        assertFalse(scroll.isActive(), "must not scroll back into the previous room");
+    }
+
+    @Test
     void blockedDoorMovementPreservesProbePositionInEveryDirectionForOnlyThatFrame() throws Exception {
         byte[] rom = loadRom();
         RomTables tables = RomTables.loadFromRom(rom);
@@ -496,6 +548,10 @@ final class RoomTransitionCoordinatorTest {
             while (scroll.isActive()) {
                 scroll.tick(8);
             }
+            // A north-edge cliff now runs the source's post-scroll drop.
+            // Let it land before teleporting to the next boundary.
+            for (int frame = 0; frame < 64 && link.isAirborne(); frame++) link.update();
+            assertFalse(link.isAirborne());
         }
 
         RoomEntity sword = session.activeRoom().entities().loadedEntities().stream()
