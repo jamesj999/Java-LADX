@@ -93,7 +93,7 @@ final class NoiseChannel {
     }
 
     double render() {
-        if (!active || volume == 0) {
+        if (!active) {
             return 0.0;
         }
 

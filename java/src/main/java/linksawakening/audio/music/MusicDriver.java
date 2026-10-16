@@ -4,6 +4,8 @@ import linksawakening.audio.apu.GameBoyApu;
 import linksawakening.rom.RomBank;
 
 import java.util.Objects;
+import java.util.HashSet;
+import java.util.Set;
 
 public final class MusicDriver {
     private static final int CHANNEL_COUNT = 4;
@@ -168,8 +170,18 @@ public final class MusicDriver {
         return channels[channel - 1].active;
     }
 
+    private record ParsePosition(int stream, int program, int loopStart, int remaining) { }
+
     private void parseUntilTimeConsumed(MusicChannelState state) {
+        Set<ParsePosition> visited = new HashSet<>();
         while (state.active) {
+            ParsePosition position = new ParsePosition(state.streamPointer,
+                state.programCounter, state.loopStart, state.loopRemaining);
+            if (!visited.add(position)) {
+                throw new IllegalStateException("Music channel loop consumed no time: channel "
+                    + state.channel + " bank " + hex(trackBank)
+                    + " address " + hex(state.programCounter));
+            }
             int opcodeAddress = state.programCounter;
             int opcode = readByte(trackBank, state.programCounter);
             state.programCounter++;

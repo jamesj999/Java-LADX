@@ -4,6 +4,10 @@ import linksawakening.state.PlayerState;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.Path;
 import java.util.Objects;
 
@@ -120,10 +124,29 @@ public final class SaveRamStore {
             return;
         }
         Path absolutePath = path.toAbsolutePath();
+        // Retain the former Files.write behavior for save paths linked elsewhere.
+        if (Files.isSymbolicLink(absolutePath)) {
+            absolutePath = absolutePath.toRealPath();
+        }
         Path parent = absolutePath.getParent();
         if (parent != null) {
             Files.createDirectories(parent);
         }
-        Files.write(path, image.bytes());
+        // Write a complete sibling image before replacing the old directory entry.
+        // A failed write or move leaves the previous save intact.
+        Path temporary = Files.createTempFile(parent, ".azle-save-", ".tmp");
+        try {
+            try (FileChannel channel = FileChannel.open(temporary, StandardOpenOption.WRITE)) {
+                ByteBuffer data = ByteBuffer.wrap(image.bytes());
+                while (data.hasRemaining()) {
+                    channel.write(data);
+                }
+                channel.force(true);
+            }
+            Files.move(temporary, absolutePath, StandardCopyOption.ATOMIC_MOVE,
+                StandardCopyOption.REPLACE_EXISTING);
+        } finally {
+            Files.deleteIfExists(temporary);
+        }
     }
 }

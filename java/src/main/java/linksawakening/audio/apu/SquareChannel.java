@@ -116,16 +116,15 @@ final class SquareChannel {
             return;
         }
 
-        if (sweepShift() == 0) {
-            return;
-        }
-
         int newFrequency = calculateSweepFrequency();
         if (newFrequency > 0x7FF) {
             active = false;
             return;
         }
 
+        if (sweepShift() == 0) {
+            return;
+        }
         sweepShadowFrequency = newFrequency;
         writeFrequency(newFrequency);
         if (calculateSweepFrequency() > 0x7FF) {
@@ -155,7 +154,7 @@ final class SquareChannel {
     }
 
     double render() {
-        if (!active || volume == 0) {
+        if (!active) {
             return 0.0;
         }
 
@@ -175,7 +174,8 @@ final class SquareChannel {
         sweepNegateUsed = false;
         active = (envelopeRegister & 0xF8) != 0;
         volume = (envelopeRegister >>> 4) & 0x0F;
-        phase = 0.0;
+        // Trigger reloads the period timer, but does not reset the duty step.
+        phase = Math.floor(phase);
         sweepShadowFrequency = frequencyRegister();
         sweepTimer = sweepPeriodReload();
         sweepEnabled = sweepPeriod() != 0 || sweepShift() != 0;

@@ -3,7 +3,10 @@ package linksawakening.save;
 import java.util.Arrays;
 import java.util.Objects;
 
-/** Immutable view of the currently modeled fields in one raw SRAM slot. */
+/**
+ * Immutable view of the currently modeled fields in one raw SRAM slot.
+ * Counts and capacities are decimal integers; rawSlot retains their packed BCD bytes.
+ */
 public record SaveSlotState(
     int slot,
     int[] nameBytes,

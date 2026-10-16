@@ -91,8 +91,9 @@ final class WaveChannel {
         }
 
         int sample = sampleAt((int) position & 0x1F);
-        double centered = (sample - 7.5) / 7.5;
-        double scaled = centered * outputScale();
+        int level = (outputLevelRegister >>> 5) & 0x03;
+        // NR32 shifts the four-bit sample before DAC conversion, including truncation.
+        double scaled = level == 0 ? 0.0 : ((sample >>> (level - 1)) - 7.5) / 7.5;
 
         position += frequencyHertz() * 32.0 / sampleRate;
         position %= 32.0;
@@ -112,16 +113,6 @@ final class WaveChannel {
             return (value >>> 4) & 0x0F;
         }
         return value & 0x0F;
-    }
-
-    private double outputScale() {
-        return switch ((outputLevelRegister >>> 5) & 0x03) {
-            case 0 -> 0.0;
-            case 1 -> 1.0;
-            case 2 -> 0.5;
-            case 3 -> 0.25;
-            default -> throw new IllegalStateException("Unexpected wave output level");
-        };
     }
 
     private double frequencyHertz() {

@@ -8,6 +8,8 @@ import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class SaveRamStoreTest {
 
@@ -90,6 +92,55 @@ final class SaveRamStoreTest {
         assertEquals(1, reloaded.readSlot(0).selectedSongIndex());
         assertEquals(2, reloaded.readSlot(0).tarinFlag());
         assertEquals(2, reloaded.readSlot(0).richardSpokenFlag());
+    }
+
+    @Test
+    void flushReplacesCompleteImageWithoutOverwritingExistingReaders(@TempDir Path tempDir)
+        throws Exception {
+        Path path = tempDir.resolve("azle.sav");
+        SaveRamStore store = SaveRamStore.open(path);
+        store.createNewGame(0, new int[] {1, 2, 3, 4, 5});
+        store.flush();
+        byte[] previous = Files.readAllBytes(path);
+        Path oldImage = tempDir.resolve("previous.sav");
+        Files.createLink(oldImage, path);
+        store.eraseSlot(0);
+        store.flush();
+        assertArrayEquals(previous, Files.readAllBytes(oldImage));
+        assertArrayEquals(store.image().bytes(), Files.readAllBytes(path));
+        try (var files = Files.list(tempDir)) {
+            assertEquals(2, files.count());
+        }
+    }
+
+    @Test
+    void failedReplacementKeepsDestinationAndRemovesTemporaryImage(@TempDir Path tempDir)
+        throws Exception {
+        Path path = tempDir.resolve("azle.sav");
+        SaveRamStore store = SaveRamStore.open(path);
+        Files.createDirectory(path);
+        Path marker = path.resolve("keep.txt");
+        Files.writeString(marker, "unchanged");
+        assertThrows(java.io.IOException.class, store::flush);
+        assertEquals("unchanged", Files.readString(marker));
+        try (var files = Files.list(tempDir)) {
+            assertEquals(1, files.count());
+        }
+    }
+
+    @Test
+    void atomicFlushPreservesSymlinkAndUpdatesItsTarget(@TempDir Path tempDir)
+        throws Exception {
+        Path target = tempDir.resolve("real.sav");
+        SaveRamStore original = SaveRamStore.open(target);
+        original.flush();
+        Path linked = tempDir.resolve("linked.sav");
+        Files.createSymbolicLink(linked, target.getFileName());
+        SaveRamStore store = SaveRamStore.open(linked);
+        store.createNewGame(0, new int[] {1, 2, 3, 4, 5});
+        store.flush();
+        assertTrue(Files.isSymbolicLink(linked));
+        assertArrayEquals(store.image().bytes(), Files.readAllBytes(target));
     }
 
     private static byte[] pattern(int length, int start) {

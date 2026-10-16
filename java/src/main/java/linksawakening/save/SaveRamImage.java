@@ -260,7 +260,7 @@ public final class SaveRamImage {
             = (byte) (playerState.hasMedicine() ? 1 : 0);
         bytes[main + SaveRamLayout.MAIN_TRADE_SEQUENCE_ITEM_OFFSET]
             = (byte) playerState.tradeSequenceItem();
-        bytes[main + SaveRamLayout.MAIN_SEASHELLS_OFFSET] = (byte) playerState.seashells();
+        bytes[main + SaveRamLayout.MAIN_SEASHELLS_OFFSET] = (byte) encodeBcd(playerState.seashells());
         bytes[main + SaveRamLayout.MAIN_MEDICINE_COUNT_OFFSET]
             = (byte) playerState.medicineCount();
         bytes[main + SaveRamLayout.MAIN_TAIL_KEY_OFFSET] = (byte) playerState.tailKeyCount();
@@ -273,21 +273,21 @@ public final class SaveRamImage {
         bytes[main + SaveRamLayout.MAIN_POWER_BRACELET_OFFSET]
             = (byte) playerState.powerBraceletLevel();
         bytes[main + SaveRamLayout.MAIN_SHIELD_OFFSET] = (byte) playerState.shieldLevel();
-        bytes[main + SaveRamLayout.MAIN_ARROWS_OFFSET] = (byte) playerState.arrowCount();
+        bytes[main + SaveRamLayout.MAIN_ARROWS_OFFSET] = (byte) encodeBcd(playerState.arrowCount());
         bytes[main + SaveRamLayout.MAIN_MAGIC_POWDER_OFFSET]
-            = (byte) playerState.magicPowderCount();
+            = (byte) encodeBcd(playerState.magicPowderCount());
         bytes[main + SaveRamLayout.MAIN_HAS_TOADSTOOL_OFFSET]
             = (byte) (playerState.hasToadstool() ? 1 : 0);
-        bytes[main + SaveRamLayout.MAIN_BOMBS_OFFSET] = (byte) playerState.bombCount();
+        bytes[main + SaveRamLayout.MAIN_BOMBS_OFFSET] = (byte) encodeBcd(playerState.bombCount());
         bytes[main + SaveRamLayout.MAIN_SWORD_OFFSET] = (byte) playerState.swordLevel();
         bytes[main + SaveRamLayout.MAIN_HEALTH_OFFSET] = (byte) savedHealth(playerState);
         bytes[main + SaveRamLayout.MAIN_MAX_HEARTS_OFFSET] = (byte) playerState.maxHearts();
         bytes[main + SaveRamLayout.MAIN_HEART_PIECES_OFFSET] = (byte) playerState.heartPieces();
         writeRupees(main, playerState.rupees());
         bytes[main + SaveRamLayout.MAIN_MAX_MAGIC_POWDER_OFFSET]
-            = (byte) playerState.maxMagicPowder();
-        bytes[main + SaveRamLayout.MAIN_MAX_BOMBS_OFFSET] = (byte) playerState.maxBombs();
-        bytes[main + SaveRamLayout.MAIN_MAX_ARROWS_OFFSET] = (byte) playerState.maxArrows();
+            = (byte) encodeBcd(playerState.maxMagicPowder());
+        bytes[main + SaveRamLayout.MAIN_MAX_BOMBS_OFFSET] = (byte) encodeBcd(playerState.maxBombs());
+        bytes[main + SaveRamLayout.MAIN_MAX_ARROWS_OFFSET] = (byte) encodeBcd(playerState.maxArrows());
         writeOcarinaState(slot, playerState.ocarinaSongFlags(), playerState.selectedSongIndex());
         bytes[slotOffset + SaveRamLayout.dx3Offset() + SaveRamLayout.DX3_TUNIC_OFFSET]
             = (byte) playerState.tunicType();
@@ -317,7 +317,7 @@ public final class SaveRamImage {
             unsigned(bytes[main + SaveRamLayout.MAIN_ITEM_A_OFFSET]),
             unsigned(bytes[main + SaveRamLayout.MAIN_ITEM_B_OFFSET]),
             subscreen,
-            unsigned(bytes[main + SaveRamLayout.MAIN_SEASHELLS_OFFSET]),
+            decodeBcd(bytes[main + SaveRamLayout.MAIN_SEASHELLS_OFFSET]),
             unsigned(bytes[main + SaveRamLayout.MAIN_FLIPPERS_OFFSET]),
             unsigned(bytes[main + SaveRamLayout.MAIN_MEDICINE_OFFSET]),
             unsigned(bytes[main + SaveRamLayout.MAIN_TRADE_SEQUENCE_ITEM_OFFSET]),
@@ -330,12 +330,12 @@ public final class SaveRamImage {
             unsigned(bytes[main + SaveRamLayout.MAIN_POWER_BRACELET_OFFSET]),
             unsigned(bytes[main + SaveRamLayout.MAIN_SHIELD_OFFSET]),
             unsigned(bytes[main + SaveRamLayout.MAIN_SWORD_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_ARROWS_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_MAX_ARROWS_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_BOMBS_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_MAX_BOMBS_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_MAGIC_POWDER_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_MAX_MAGIC_POWDER_OFFSET]),
+            decodeBcd(bytes[main + SaveRamLayout.MAIN_ARROWS_OFFSET]),
+            decodeBcd(bytes[main + SaveRamLayout.MAIN_MAX_ARROWS_OFFSET]),
+            decodeBcd(bytes[main + SaveRamLayout.MAIN_BOMBS_OFFSET]),
+            decodeBcd(bytes[main + SaveRamLayout.MAIN_MAX_BOMBS_OFFSET]),
+            decodeBcd(bytes[main + SaveRamLayout.MAIN_MAGIC_POWDER_OFFSET]),
+            decodeBcd(bytes[main + SaveRamLayout.MAIN_MAX_MAGIC_POWDER_OFFSET]),
             unsigned(bytes[main + SaveRamLayout.MAIN_OCARINA_SONG_FLAGS_OFFSET]),
             unsigned(bytes[main + SaveRamLayout.MAIN_SELECTED_SONG_INDEX_OFFSET]),
             unsigned(bytes[main + SaveRamLayout.MAIN_HAS_TOADSTOOL_OFFSET]),
@@ -369,6 +369,15 @@ public final class SaveRamImage {
             }
         }
         return false;
+    }
+
+    // SRAM stores these counters as packed decimal; PlayerState uses decimal ints.
+    private static int decodeBcd(byte value) {
+        return (unsigned(value) >>> 4) * 10 + (unsigned(value) & 0x0F);
+    }
+
+    private static int encodeBcd(int value) {
+        return ((value / 10) << 4) | (value % 10);
     }
 
     private static int decodeRupees(byte high, byte low) {

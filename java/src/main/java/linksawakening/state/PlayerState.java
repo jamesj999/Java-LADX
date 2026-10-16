@@ -739,12 +739,14 @@ public final class PlayerState {
         setItemA(saved.itemA());
         setItemB(saved.itemB());
         setSubscreenItems(saved.subscreen());
+        // Source pickups may exceed normal capacity (floating arrows / witch powder).
+        // A load copies those saved counts; it must not apply pickup-capacity clamps.
         setMaxArrows(saved.maxArrows());
-        setArrowCount(saved.arrowCount());
+        arrowCount = clamp(saved.arrowCount(), 0, 99);
         setMaxBombs(saved.maxBombs());
-        setBombCount(saved.bombCount());
+        bombCount = clamp(saved.bombCount(), 0, 99);
         setMaxMagicPowder(saved.maxMagicPowder());
-        setMagicPowderCount(saved.magicPowderCount());
+        magicPowderCount = clamp(saved.magicPowderCount(), 0, 99);
         setHasToadstool(saved.hasToadstool() != 0);
         setOcarinaSongFlags(saved.ocarinaSongFlags());
         setSelectedSongIndex(saved.selectedSongIndex());

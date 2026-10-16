@@ -365,7 +365,7 @@ final class SaveRamImageTest {
         for (int slot = 0; slot < PlayerState.SUBSCREEN_SLOT_COUNT; slot++) {
             put(bytes, main, SaveRamLayout.MAIN_SUBSCREEN_OFFSET + slot, 0x20 + slot);
         }
-        put(bytes, main, SaveRamLayout.MAIN_SEASHELLS_OFFSET, 17);
+        put(bytes, main, SaveRamLayout.MAIN_SEASHELLS_OFFSET, 0x17);
         put(bytes, main, SaveRamLayout.MAIN_FLIPPERS_OFFSET, 1);
         put(bytes, main, SaveRamLayout.MAIN_MEDICINE_OFFSET, 1);
         put(bytes, main, SaveRamLayout.MAIN_TRADE_SEQUENCE_ITEM_OFFSET, 0x0E);
@@ -378,7 +378,7 @@ final class SaveRamImageTest {
         put(bytes, main, SaveRamLayout.MAIN_SHIELD_OFFSET, 2);
         put(bytes, main, SaveRamLayout.MAIN_ARROWS_OFFSET, 7);
         put(bytes, main, SaveRamLayout.MAIN_MAGIC_POWDER_OFFSET, 9);
-        put(bytes, main, SaveRamLayout.MAIN_BOMBS_OFFSET, 11);
+        put(bytes, main, SaveRamLayout.MAIN_BOMBS_OFFSET, 0x11);
         put(bytes, main, SaveRamLayout.MAIN_SWORD_OFFSET, 2);
         put(bytes, main, SaveRamLayout.MAIN_HEALTH_OFFSET, 31);
         put(bytes, main, SaveRamLayout.MAIN_MAX_HEARTS_OFFSET, 5);
@@ -434,9 +434,9 @@ final class SaveRamImageTest {
         assertEquals(0x52, state.spawnPositionX());
         assertEquals(0x63, state.spawnPositionY());
         assertEquals(0xA3, state.spawnIndoorRoom());
-        assertEquals(0x20, state.maxMagicPowder());
-        assertEquals(0x30, state.maxBombs());
-        assertEquals(0x30, state.maxArrows());
+        assertEquals(20, state.maxMagicPowder());
+        assertEquals(30, state.maxBombs());
+        assertEquals(30, state.maxArrows());
         assertEquals(0x05, state.ocarinaSongFlags());
         assertEquals(0x02, state.selectedSongIndex());
         assertEquals(2, state.tunicType());

@@ -415,6 +415,31 @@ final class MusicDriverTest {
         assertEquals(0, apu.readRegister(GameBoyApu.NR12));
     }
 
+    @Test
+    void emptyDefinitionCycleFailsInsteadOfHangingTheGameUpdate() {
+        byte[] rom = syntheticRomWithOneChannel(new byte[] {0});
+        writeWord(rom, RomBank.romOffset(0x1B, 0x5202), 0xFFFF);
+        writeWord(rom, RomBank.romOffset(0x1B, 0x5204), 0x5200);
+        MusicDriver driver = new MusicDriver(rom, new GameBoyApu(48_000));
+        driver.start(new MusicTrack(1, "EMPTY_LOOP", 0x1B, 0x4077,
+            0x5000, RomBank.romOffset(0x1B, 0x5000)));
+        IllegalStateException error = assertThrows(IllegalStateException.class, driver::tick60Hz);
+        assertTrue(error.getMessage().contains("consumed no time"));
+        assertTrue(error.getMessage().contains("channel 1"));
+    }
+
+    @Test
+    void finiteControlOnlyLoopCanStillReachANote() {
+        byte[] rom = syntheticRomWithOneChannel(new byte[] {
+            (byte) 0x9B, (byte) 0xFF, (byte) 0x94, (byte) 0x9C, 0x4A, 0
+        });
+        MusicDriver driver = new MusicDriver(rom, new GameBoyApu(48_000));
+        driver.start(new MusicTrack(1, "FINITE_LOOP", 0x1B, 0x4077,
+            0x5000, RomBank.romOffset(0x1B, 0x5000)));
+        driver.tick60Hz();
+        assertTrue(driver.isChannelActive(1));
+    }
+
     private static byte[] syntheticRomWithOneChannel(byte[] definition) {
         return syntheticRomWithOneChannelInBank(0x1B, definition);
     }

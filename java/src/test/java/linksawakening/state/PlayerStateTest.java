@@ -483,7 +483,7 @@ final class PlayerStateTest {
         bytes[main + SaveRamLayout.MAIN_HEALTH_OFFSET] = 17;
         bytes[main + SaveRamLayout.MAIN_MAX_HEARTS_OFFSET] = 5;
         bytes[main + SaveRamLayout.MAIN_HEART_PIECES_OFFSET] = 2;
-        bytes[main + SaveRamLayout.MAIN_SEASHELLS_OFFSET] = 19;
+        bytes[main + SaveRamLayout.MAIN_SEASHELLS_OFFSET] = 0x19;
         bytes[main + SaveRamLayout.MAIN_FLIPPERS_OFFSET] = 1;
         bytes[main + SaveRamLayout.MAIN_POWER_BRACELET_OFFSET] = 2;
         bytes[main + SaveRamLayout.MAIN_MEDICINE_OFFSET] = 1;
@@ -497,11 +497,11 @@ final class PlayerStateTest {
         bytes[main + SaveRamLayout.MAIN_SHIELD_OFFSET] = 2;
         bytes[main + SaveRamLayout.MAIN_SWORD_OFFSET] = 2;
         bytes[main + SaveRamLayout.MAIN_ARROWS_OFFSET] = 4;
-        bytes[main + SaveRamLayout.MAIN_MAX_ARROWS_OFFSET] = 12;
+        bytes[main + SaveRamLayout.MAIN_MAX_ARROWS_OFFSET] = 0x12;
         bytes[main + SaveRamLayout.MAIN_BOMBS_OFFSET] = 5;
-        bytes[main + SaveRamLayout.MAIN_MAX_BOMBS_OFFSET] = 10;
+        bytes[main + SaveRamLayout.MAIN_MAX_BOMBS_OFFSET] = 0x10;
         bytes[main + SaveRamLayout.MAIN_MAGIC_POWDER_OFFSET] = 6;
-        bytes[main + SaveRamLayout.MAIN_MAX_MAGIC_POWDER_OFFSET] = 20;
+        bytes[main + SaveRamLayout.MAIN_MAX_MAGIC_POWDER_OFFSET] = 0x20;
         bytes[main + SaveRamLayout.MAIN_RUPEE_HIGH_OFFSET] = 0x05;
         bytes[main + SaveRamLayout.MAIN_RUPEE_LOW_OFFSET] = 0x09;
         bytes[main + SaveRamLayout.MAIN_OCARINA_SONG_FLAGS_OFFSET] = 0x05;

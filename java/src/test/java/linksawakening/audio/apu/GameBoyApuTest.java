@@ -190,7 +190,7 @@ final class GameBoyApuTest {
     }
 
     @Test
-    void channel1SweepWithZeroShiftDoesNotMuteChannel() {
+    void channel1SweepWithZeroShiftKeepsChannelActiveWhenCalculationDoesNotOverflow() {
         GameBoyApu apu = new GameBoyApu(48_000);
         apu.writeRegister(GameBoyApu.NR52, 0x80);
         apu.writeRegister(GameBoyApu.NR50, 0x77);
@@ -198,8 +198,8 @@ final class GameBoyApuTest {
         apu.writeRegister(GameBoyApu.NR10, 0x70);
         apu.writeRegister(GameBoyApu.NR11, 0x80);
         apu.writeRegister(GameBoyApu.NR12, 0xF0);
-        apu.writeRegister(GameBoyApu.NR13, 0xF0);
-        apu.writeRegister(GameBoyApu.NR14, 0x87);
+        apu.writeRegister(GameBoyApu.NR13, 0x00);
+        apu.writeRegister(GameBoyApu.NR14, 0x83);
 
         short[] pcm = apu.render(8192);
 

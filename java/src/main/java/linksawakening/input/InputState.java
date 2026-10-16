@@ -18,16 +18,19 @@ public final class InputState {
     private static final int MAX_KEYS = 512;
 
     private final boolean[] down = new boolean[MAX_KEYS];
-    private final boolean[] prevDown = new boolean[MAX_KEYS];
+    private final boolean[] pressed = new boolean[MAX_KEYS];
+    private final boolean[] released = new boolean[MAX_KEYS];
 
     public void onKeyEvent(int key, int action) {
         if (key < 0 || key >= MAX_KEYS) {
             return;
         }
-        if (action == GLFW_PRESS) {
+        if (action == GLFW_PRESS && !down[key]) {
             down[key] = true;
-        } else if (action == GLFW_RELEASE) {
+            pressed[key] = true;
+        } else if (action == GLFW_RELEASE && down[key]) {
             down[key] = false;
+            released[key] = true;
         }
     }
 
@@ -42,18 +45,19 @@ public final class InputState {
         if (key < 0 || key >= MAX_KEYS) {
             return false;
         }
-        return down[key] && !prevDown[key];
+        return pressed[key];
     }
 
     public boolean wasReleased(int key) {
         if (key < 0 || key >= MAX_KEYS) {
             return false;
         }
-        return !down[key] && prevDown[key];
+        return released[key];
     }
 
-    /** Snapshot the current frame's key state for next-frame edge detection. */
+    /** Clear consumed edges while retaining held state for the next frame. */
     public void tickEdges() {
-        System.arraycopy(down, 0, prevDown, 0, MAX_KEYS);
+        java.util.Arrays.fill(pressed, false);
+        java.util.Arrays.fill(released, false);
     }
 }
