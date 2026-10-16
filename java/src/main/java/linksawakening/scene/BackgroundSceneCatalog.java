@@ -19,18 +19,20 @@ public final class BackgroundSceneCatalog {
         new BackgroundSceneSpec(0x08, 0x6D80, 0x24, 0x5D69, 0x21, 0x7536);
     public static final BackgroundSceneSpec INTRO_BEACH =
         new BackgroundSceneSpec(0x08, 0x6F8B, 0x24, 0x7BA7, 0x21, 0x7DEE);
+    // Bank $20 holds pointers; the command streams themselves live in bank $08.
+    // File menus use Data_021_75B6 (the intro uses Data_021_7536).
     public static final BackgroundSceneSpec FILE_SELECTION =
-        new BackgroundSceneSpec(0x20, 0x6336, 0x24, 0x5F80, 0x21, 0x7536);
+        new BackgroundSceneSpec(0x08, 0x6336, 0x24, 0x5F80, 0x21, 0x75B6);
     public static final BackgroundSceneSpec FILE_SELECTION_COMMANDS =
-        new BackgroundSceneSpec(0x20, 0x6328, 0x24, 0x5F74, 0x21, 0x7536);
+        new BackgroundSceneSpec(0x08, 0x6328, 0x24, 0x5F74, 0x21, 0x75B6);
     public static final BackgroundSceneSpec FILE_CREATION =
-        new BackgroundSceneSpec(0x20, 0x644D, 0x24, 0x6045, 0x21, 0x7536);
+        new BackgroundSceneSpec(0x08, 0x644D, 0x24, 0x6045, 0x21, 0x75B6);
     public static final BackgroundSceneSpec FILE_ERASE =
-        new BackgroundSceneSpec(0x20, 0x6589, 0x24, 0x6115, 0x21, 0x7536);
+        new BackgroundSceneSpec(0x08, 0x6589, 0x24, 0x6115, 0x21, 0x75B6);
     public static final BackgroundSceneSpec FILE_COPY =
-        new BackgroundSceneSpec(0x20, 0x6660, 0x24, 0x617D, 0x21, 0x7536);
+        new BackgroundSceneSpec(0x08, 0x6660, 0x24, 0x617D, 0x21, 0x75B6);
     public static final BackgroundSceneSpec FILE_SAVE =
-        new BackgroundSceneSpec(0x20, 0x6A6D, 0x24, 0x6262, 0x21, 0x7536);
+        new BackgroundSceneSpec(0x08, 0x6A6D, 0x24, 0x6262, 0x21, 0x75B6);
     private BackgroundSceneCatalog() {
     }
 

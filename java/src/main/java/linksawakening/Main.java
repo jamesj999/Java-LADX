@@ -2001,7 +2001,11 @@ public class Main {
             new FileMenuRomData(romData),
             Main::loadFileMenuBackgroundScene,
             saveRamStore.saveFilesMask(),
-            saveRamStore.savedNames());
+            saveRamStore.savedNames(),
+            new int[]{saveRamStore.readSlot(0).maxHearts(), saveRamStore.readSlot(1).maxHearts(),
+                saveRamStore.readSlot(2).maxHearts()},
+            new int[]{saveRamStore.readSlot(0).deathCountBcd(), saveRamStore.readSlot(1).deathCountBcd(),
+                saveRamStore.readSlot(2).deathCountBcd()});
         playDirectMusic(fileSelectionMusicTrack());
         // The Enter event that leaves the title must not also activate the
         // first empty file. Its edge belongs to the title screen.

@@ -31,17 +31,17 @@ final class BackgroundSceneLoaderTest {
 
     @Test
     void fileMenuSceneSpecsPointAtDisassemblyBackgrounds() {
-        assertEquals(new BackgroundSceneSpec(0x20, 0x6336, 0x24, 0x5F80, 0x21, 0x7536),
+        assertEquals(new BackgroundSceneSpec(0x08, 0x6336, 0x24, 0x5F80, 0x21, 0x75B6),
             BackgroundSceneCatalog.forFileMenuScene("selection"));
-        assertEquals(new BackgroundSceneSpec(0x20, 0x6328, 0x24, 0x5F74, 0x21, 0x7536),
+        assertEquals(new BackgroundSceneSpec(0x08, 0x6328, 0x24, 0x5F74, 0x21, 0x75B6),
             BackgroundSceneCatalog.forFileMenuScene("selection_commands"));
-        assertEquals(new BackgroundSceneSpec(0x20, 0x644D, 0x24, 0x6045, 0x21, 0x7536),
+        assertEquals(new BackgroundSceneSpec(0x08, 0x644D, 0x24, 0x6045, 0x21, 0x75B6),
             BackgroundSceneCatalog.forFileMenuScene("creation"));
-        assertEquals(new BackgroundSceneSpec(0x20, 0x6589, 0x24, 0x6115, 0x21, 0x7536),
+        assertEquals(new BackgroundSceneSpec(0x08, 0x6589, 0x24, 0x6115, 0x21, 0x75B6),
             BackgroundSceneCatalog.forFileMenuScene("erase"));
-        assertEquals(new BackgroundSceneSpec(0x20, 0x6660, 0x24, 0x617D, 0x21, 0x7536),
+        assertEquals(new BackgroundSceneSpec(0x08, 0x6660, 0x24, 0x617D, 0x21, 0x75B6),
             BackgroundSceneCatalog.forFileMenuScene("copy"));
-        assertEquals(new BackgroundSceneSpec(0x20, 0x6A6D, 0x24, 0x6262, 0x21, 0x7536),
+        assertEquals(new BackgroundSceneSpec(0x08, 0x6A6D, 0x24, 0x6262, 0x21, 0x75B6),
             BackgroundSceneCatalog.forFileMenuScene("save"));
     }
 
@@ -91,6 +91,17 @@ final class BackgroundSceneLoaderTest {
             assertEquals(32 * 32, scene.attrmap().length);
             assertEquals(8, scene.palettes().length);
             assertEquals(8, scene.objectPalettes().length);
+        }
+    }
+
+    @Test
+    void partialFileMenuAttrmapsPreserveSelectionHeartAndBorderColors() {
+        var loader = new BackgroundSceneLoader(loadRom());
+        // Observed in original CGB VRAM after navigating selection -> erase/copy.
+        for (var spec : new BackgroundSceneSpec[]{BackgroundSceneCatalog.FILE_ERASE, BackgroundSceneCatalog.FILE_COPY}) {
+            var scene = loader.load(spec);
+            assertEquals(2, scene.attrmap()[0xCB]);
+            assertEquals(3, scene.attrmap()[0x1D1]);
         }
     }
 

@@ -33,6 +33,14 @@ public final class FileMenuRomData {
         this.romData = Objects.requireNonNull(romData, "romData").clone();
     }
 
+    public int[] deathDigitTiles() {
+        return readUnsignedBytes("Data_001_4F3B", 1, 0x4F3B, 10);
+    }
+
+    public int[] quitOkTiles() {
+        return readUnsignedBytes("FileMenuQuitOkTilemap.data", 1, 0x4E46, 14);
+    }
+
     public int[] selectionCursorYPositions() {
         return readUnsignedBytes("Data_001_48E4", FILE_MENU_BANK,
             SELECTION_CURSOR_Y_ADDRESS, SELECTION_CURSOR_Y_COUNT);

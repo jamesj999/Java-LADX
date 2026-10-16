@@ -33,7 +33,6 @@ public final class FileMenuController {
     private static final int BG_MAP_BASE = 0x9800;
     private static final int FILE_NEW_SAVE_SLOT_INDEX_OFFSET = 0x9849 - BG_MAP_BASE;
     private static final int FILE_NEW_NAME_OFFSET = 0x984A - BG_MAP_BASE;
-    private static final int FILE_NEW_SPACING_OFFSET = 0x982A - BG_MAP_BASE;
     private static final int[] SAVE_NAME_OFFSETS = {
         0x98C5 - BG_MAP_BASE,
         0x9925 - BG_MAP_BASE,
@@ -42,10 +41,6 @@ public final class FileMenuController {
     private static final int[] COPY_SOURCE_NAME_OFFSETS = {0xC4, 0x124, 0x184};
     private static final int[] COPY_TARGET_NAME_OFFSETS = {0xCD, 0x12D, 0x18D};
     private static final int QUIT_OK_OFFSET = 0x99E4 - BG_MAP_BASE;
-    private static final int[] QUIT_OK_TILES = {
-        0x7E, 0x7E, 0x10, 0x14, 0x08, 0x13, 0x7E,
-        0x7E, 0x7E, 0x7E, 0x0E, 0x0A, 0x7E, 0x7E
-    };
     private static final int FILE_NEW_SAVE_SLOT_1_TILE = 0xAB;
     private static final int DARK_BACKGROUND_TILE = 0x7E;
 
@@ -59,6 +54,10 @@ public final class FileMenuController {
     private final int[] codepointToTileMap;
     private final int saveFilesMask;
     private final int[][] savedNames;
+    private final int[] maxHearts;
+    private final int[] deathCountsBcd;
+    private final int[] deathDigitTiles;
+    private final int[] quitOkTiles;
 
     private int selectedSlot;
     private boolean commandRowArrowShifted;
@@ -76,7 +75,21 @@ public final class FileMenuController {
                               Function<String, BackgroundScene> sceneProvider,
                               int saveFilesMask,
                               int[][] savedNames) {
+        this(romData, sceneProvider, saveFilesMask, savedNames, new int[3], new int[3]);
+    }
+
+    public FileMenuController(FileMenuRomData romData,
+                              Function<String, BackgroundScene> sceneProvider,
+                              int saveFilesMask, int[][] savedNames,
+                              int[] maxHearts, int[] deathCountsBcd) {
         Objects.requireNonNull(romData, "romData");
+        if (maxHearts.length != 3 || deathCountsBcd.length != 3) {
+            throw new IllegalArgumentException("File summaries must contain three slots");
+        }
+        this.maxHearts = maxHearts.clone();
+        this.deathCountsBcd = deathCountsBcd.clone();
+        this.deathDigitTiles = romData.deathDigitTiles();
+        this.quitOkTiles = romData.quitOkTiles();
         this.sceneProvider = Objects.requireNonNull(sceneProvider, "sceneProvider");
         this.selectionCursorYPositions = romData.selectionCursorYPositions();
         this.nameEntryCharacterTable = romData.nameEntryCharacterTable();
@@ -326,12 +339,31 @@ public final class FileMenuController {
             for (int slot = 0; slot < 3; slot++) {
                 if ((saveFilesMask & (1 << slot)) != 0) {
                     drawSaveSlotName(tilemap, SAVE_NAME_OFFSETS[slot], savedNames[slot]);
+                    // BuildSaveSlotHeartsDrawCommand draws full containers, even at low health.
+                    for (int heart = 0; heart < Math.min(14, maxHearts[slot]); heart++) {
+                        writeTile(tilemap, 0xCB + slot * 0x60 + (heart / 7) * 0x20 + heart % 7, 0xAE);
+                    }
+                    for (int digit = 0; digit < 3; digit++) {
+                        int value = (deathCountsBcd[slot] >> ((2 - digit) * 4)) & 15;
+                        writeTile(tilemap, 0xE7 + slot * 0x60 + digit, deathDigitTiles[Math.min(9, value)]);
+                    }
                 }
             }
         }
         if (mode == Mode.ERASE_CONFIRM || mode == Mode.COPY_CONFIRM) {
-            for (int index = 0; index < QUIT_OK_TILES.length; index++) {
-                writeTile(tilemap, QUIT_OK_OFFSET + index, QUIT_OK_TILES[index]);
+            for (int index = 0; index < quitOkTiles.length; index++) {
+                writeTile(tilemap, QUIT_OK_OFFSET + index, quitOkTiles[index]);
+            }
+        }
+
+        // FileDeletionState11Handler / func_001_512C blink the selected names.
+        if (mode == Mode.ERASE_CONFIRM && (frameCounter & 0x10) == 0) {
+            drawSaveSlotName(tilemap, SAVE_NAME_OFFSETS[sourceSlot], new int[5]);
+        }
+        if ((mode == Mode.COPY_TARGET || mode == Mode.COPY_CONFIRM) && (frameCounter & 0x10) != 0) {
+            drawSaveSlotName(tilemap, COPY_SOURCE_NAME_OFFSETS[sourceSlot], new int[5]);
+            if (mode == Mode.COPY_CONFIRM) {
+                drawSaveSlotName(tilemap, COPY_TARGET_NAME_OFFSETS[targetSlot], new int[5]);
             }
         }
 
@@ -368,14 +400,19 @@ public final class FileMenuController {
             sprites.add(spriteFromOam(0xBE, oamX, 0x88, false));
         }
 
-        if (mode == Mode.SELECT || mode == Mode.ERASE_PICK || mode == Mode.COPY_SOURCE
-            || mode == Mode.ERASE_CONFIRM) {
+        if (mode == Mode.SELECT || mode == Mode.ERASE_PICK || mode == Mode.ERASE_CONFIRM) {
             addCursorPair(sprites, selectedSlot, 0x18, 0x20);
+        } else if (mode == Mode.COPY_SOURCE) {
+            addCursorPair(sprites, selectedSlot, 0x10, 0x18);
         } else {
             sprites.add(spriteFromOam(0xBE, 0x14,
                 selectionCursorYPositions[sourceSlot] + 5, false));
-            addCursorPair(sprites, mode == Mode.COPY_TARGET ? selectedSlot : targetSlot,
-                0x58, 0x60);
+            if (mode == Mode.COPY_CONFIRM) {
+                sprites.add(spriteFromOam(0xBE, 0x5C, selectionCursorYPositions[targetSlot] + 5, false));
+            } else {
+                addCursorPair(sprites, selectedSlot, selectedSlot == 3 ? 0x10 : 0x58,
+                    selectedSlot == 3 ? 0x18 : 0x60);
+            }
         }
         if ((mode == Mode.ERASE_CONFIRM || mode == Mode.COPY_CONFIRM)
             && (frameCounter & 0x10) == 0) {
@@ -392,7 +429,7 @@ public final class FileMenuController {
     }
 
     private static IntroSprite spriteFromOam(int tile, int oamX, int oamY, boolean flipX) {
-        return new IntroSprite(tile, oamX - 8, oamY - 8, 0, flipX, false);
+        return new IntroSprite(tile, oamX - 8, oamY - 16, 0, flipX, false, 16);
     }
 
     private void drawSaveSlotName(int[] tilemap, int targetOffset, int[] name) {
@@ -400,8 +437,6 @@ public final class FileMenuController {
             writeTile(tilemap, targetOffset + index, tileForStoredName(name[index]));
             writeTile(tilemap, targetOffset - 0x20 + index, DARK_BACKGROUND_TILE);
         }
-        writeTile(tilemap, targetOffset + NAME_LENGTH, DARK_BACKGROUND_TILE);
-        writeTile(tilemap, targetOffset - 0x20 + NAME_LENGTH, DARK_BACKGROUND_TILE);
     }
 
     private int tileForStoredName(int storedCodepoint) {

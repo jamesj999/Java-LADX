@@ -53,12 +53,18 @@ public final class RomBank {
     }
 
     public static int[] decodeBackgroundMap(byte[] romData, int bank, int address, int filler) {
-        int offset = romOffset(bank, address);
         int[] bgMap = new int[BG_MAP_ROW_WIDTH * BG_MAP_ROW_WIDTH];
         for (int i = 0; i < bgMap.length; i++) {
             bgMap[i] = filler & 0xFF;
         }
 
+        return decodeBackgroundMap(romData, bank, address, bgMap);
+    }
+
+    /** Apply a ROM draw-command stream while preserving untouched VRAM cells. */
+    public static int[] decodeBackgroundMap(byte[] romData, int bank, int address, int[] initialMap) {
+        int[] bgMap = initialMap.clone();
+        int offset = romOffset(bank, address);
         while (offset < romData.length) {
             int high = Byte.toUnsignedInt(romData[offset]);
             if (high == 0) {

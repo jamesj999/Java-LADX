@@ -68,6 +68,12 @@ public record SaveSlotState(
         return rawSlot.clone();
     }
 
+    /** Packed BCD, low byte first in the original SRAM. */
+    public int deathCountBcd() {
+        int offset = SaveRamLayout.mainOffset() + SaveRamLayout.MAIN_DEATH_COUNT_OFFSET;
+        return Byte.toUnsignedInt(rawSlot[offset]) | (Byte.toUnsignedInt(rawSlot[offset + 1]) << 8);
+    }
+
     public byte[] overworldRoomStatus() {
         return roomStatus(SaveRamLayout.mainOffset()
             + SaveRamLayout.MAIN_OVERWORLD_ROOM_STATUS_OFFSET,

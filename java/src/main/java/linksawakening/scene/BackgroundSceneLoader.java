@@ -20,6 +20,12 @@ public final class BackgroundSceneLoader {
     public BackgroundScene load(BackgroundSceneSpec spec) {
         int[] tilemap = RomBank.decodeBackgroundMap(romData, spec.tilemapBank(), spec.tilemapAddr(), 0x7E);
         int[] attrmap = RomBank.decodeBackgroundMap(romData, spec.attrmapBank(), spec.attrmapAddr(), 0x00);
+        // Erase/copy attrmaps are partial writes over the selection screen's VRAM.
+        if (spec.equals(BackgroundSceneCatalog.FILE_ERASE) || spec.equals(BackgroundSceneCatalog.FILE_COPY)) {
+            var selection = BackgroundSceneCatalog.FILE_SELECTION_COMMANDS;
+            int[] initial = RomBank.decodeBackgroundMap(romData, selection.attrmapBank(), selection.attrmapAddr(), 0);
+            attrmap = RomBank.decodeBackgroundMap(romData, spec.attrmapBank(), spec.attrmapAddr(), initial);
+        }
         return new BackgroundScene(
             tilemap,
             attrmap,

@@ -127,7 +127,7 @@ final class FileMenuControllerTest {
         press(controller, GLFW_KEY_A);
         assertEquals(FileMenuController.Mode.COPY_TARGET, controller.mode());
         press(controller, GLFW_KEY_DOWN);
-        assertEquals(0x53 - 8, controller.snapshot().sprites().get(1).y());
+        assertEquals(0x53 - 16, controller.snapshot().sprites().get(1).y());
         press(controller, GLFW_KEY_A);
         assertEquals(FileMenuController.Mode.COPY_CONFIRM, controller.mode());
         press(controller, GLFW_KEY_RIGHT);
@@ -257,7 +257,8 @@ final class FileMenuControllerTest {
         assertEquals(0xA0, tilemap[0xC5]);
         assertEquals(0xA1, tilemap[0xC6]);
         assertEquals(0x7E, tilemap[0xC7]);
-        assertEquals(0x3B - 8, controller.snapshot().sprites().get(0).y());
+        assertEquals(0x3B - 16, controller.snapshot().sprites().get(0).y());
+        assertEquals(16, controller.snapshot().sprites().get(0).height());
         assertEquals(0x10, controller.snapshot().sprites().get(0).x());
         assertEquals(0x02, controller.snapshot().sprites().get(0).tileIndex());
         assertTrue(controller.snapshot().sprites().get(0).flipX());
@@ -277,6 +278,22 @@ final class FileMenuControllerTest {
         assertEquals(0, controller.snapshot().nameBytes()[0]);
         assertNotSame(map, first.tilemap());
         assertNotSame(name, first.nameBytes());
+    }
+
+    @Test
+    void savedFileSummaryWrapsHeartsAfterSevenAndDrawsThreeBcdDigits() {
+        byte[] rom = syntheticRom();
+        writeBytes(rom, 1, 0x4F3B, sequence(10, 0xB0));
+        var menu = new FileMenuController(new FileMenuRomData(rom),
+            id -> new BackgroundScene(backgroundMap(), new int[1024],
+                new int[][]{{0,0,0,0}}, new int[][]{{0,0,0,0}}),
+            2, new int[][]{new int[5], {1,2,3,4,5}, new int[5]},
+            new int[]{0,10,0}, new int[]{0,0x123,0});
+        int[] map = menu.snapshot().tilemap();
+        for (int x = 0; x < 7; x++) assertEquals(0xAE, map[0x12B + x]);
+        for (int x = 0; x < 3; x++) assertEquals(0xAE, map[0x14B + x]);
+        assertEquals(0, map[0x14E]);
+        assertArrayEquals(new int[]{0xB1,0xB2,0xB3}, Arrays.copyOfRange(map, 0x147, 0x14A));
     }
 
     private static FileMenuController newController(int saveMask, int[][] names) {

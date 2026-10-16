@@ -12,6 +12,16 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 final class SaveRamImageTest {
 
     @Test
+    void slotSummaryReadsDeathCountAsLittleEndianPackedBcd() {
+        byte[] bytes = SaveRamImage.empty().bytes();
+        int offset = SaveRamLayout.slotOffset(1) + SaveRamLayout.mainOffset() + SaveRamLayout.MAIN_DEATH_COUNT_OFFSET;
+        bytes[offset] = 0x23;
+        bytes[offset + 1] = 0x01;
+        bytes[offset + 2] = 0x7F; // Original third byte is unused.
+        assertEquals(0x123, SaveRamImage.fromBytes(bytes).readSlot(1).deathCountBcd());
+    }
+
+    @Test
     void emptyImageHasValidPrefixesButNoInitializedNames() {
         SaveRamImage image = SaveRamImage.empty();
 
