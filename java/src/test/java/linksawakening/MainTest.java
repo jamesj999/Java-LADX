@@ -88,10 +88,10 @@ final class MainTest {
     }
 
     @Test
-    void checkedInConfigStartsCanonicalNewGameGameplayForPlaytesting() {
+    void checkedInConfigStartsIntroBeforeNewGameGameplay() {
         AppConfig config = AppConfig.loadFromResources();
 
-        assertFalse(StartupCoordinator.shouldStartIntroCutscene(config));
+        assertTrue(StartupCoordinator.shouldStartIntroCutscene(config));
         assertTrue(StartupCoordinator.shouldStartNewGameGameplay(config));
     }
 

@@ -25,11 +25,11 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_Z;
 final class AppConfigTest {
 
     @Test
-    void checkedInConfigStartsCanonicalNewGameWithDebugControlsAvailable() {
+    void checkedInConfigPlaysIntroWithNewGameAndDebugControlsAvailable() {
         AppConfig config = AppConfig.loadFromResources();
 
-        assertFalse(config.showTitleScreen());
-        assertFalse(config.playIntroStory());
+        assertTrue(config.showTitleScreen());
+        assertTrue(config.playIntroStory());
         assertTrue(config.debugEnabled());
         assertEquals(AppConfig.ItemProfile.NEW_GAME, config.itemProfile());
 

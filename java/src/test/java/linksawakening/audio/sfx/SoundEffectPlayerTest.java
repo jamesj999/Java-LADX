@@ -215,6 +215,7 @@ final class SoundEffectPlayerTest {
     @Test
     void stopDoesNotWriteChannelOffRegistersOverPotentialMusicState() {
         GameBoyApu apu = new GameBoyApu(48_000);
+        apu.writeRegister(GameBoyApu.NR52, 0x80);
         apu.writeRegister(GameBoyApu.NR30, 0x80);
         apu.writeRegister(GameBoyApu.NR42, 0x55);
         SoundEffectPlayer player = new SoundEffectPlayer(apu);

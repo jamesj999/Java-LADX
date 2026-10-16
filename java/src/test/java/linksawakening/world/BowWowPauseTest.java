@@ -28,6 +28,10 @@ final class BowWowPauseTest {
         setGate(runtime, gate, false);
         runtime.tick(17, 0x44, 0x58, () -> 0);
         assertEquals(2, runtime.enemyIgnoreHitsCountdown(0));
+        // Speeds use four fractional bits; one tick need not cross a pixel.
+        for (int frame = 18; frame < 22; frame++) {
+            runtime.tick(frame, 0x44, 0x58, () -> 0);
+        }
         assertNotEquals(before.y(), runtime.snapshot().slots().getFirst().y());
     }
 
@@ -41,6 +45,10 @@ final class BowWowPauseTest {
         runtime.tick(16, 0x44, 0x58, () -> 0);
         assertEquals(8, runtime.bowWowTransitionCountdown(0));
         assertEquals(2, runtime.enemyIgnoreHitsCountdown(0));
+        // Speeds use four fractional bits; one tick need not cross a pixel.
+        for (int frame = 17; frame < 21; frame++) {
+            runtime.tick(frame, 0x44, 0x58, () -> 0);
+        }
         assertNotEquals(before.y(), runtime.snapshot().slots().getFirst().y());
     }
 

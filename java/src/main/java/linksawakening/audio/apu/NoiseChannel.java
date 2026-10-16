@@ -2,13 +2,11 @@ package linksawakening.audio.apu;
 
 final class NoiseChannel {
     private static final double GAME_BOY_CLOCK_HZ = 4_194_304.0;
-    private static final int[] DIVIDING_RATIOS = { 4, 8, 16, 24, 32, 40, 48, 56 };
-    private static final double LENGTH_CLOCK_HZ = 256.0;
+    private static final int[] DIVIDING_RATIOS = { 8, 16, 32, 48, 64, 80, 96, 112 };
     private static final double ENVELOPE_CLOCK_HZ = 64.0;
 
     private final int sampleRate;
-    private int lengthRegister;
-    private int lengthCounter;
+    private final LengthCounter length;
     private int envelopeRegister;
     private int polynomialRegister;
     private int controlRegister;
@@ -16,7 +14,6 @@ final class NoiseChannel {
     private int volume;
     private int lfsr;
     private double lfsrStepAccumulator;
-    private double lengthClockAccumulator;
     private double envelopeClockAccumulator;
 
     NoiseChannel(int sampleRate) {
@@ -24,12 +21,12 @@ final class NoiseChannel {
             throw new IllegalArgumentException("sampleRate must be positive");
         }
         this.sampleRate = sampleRate;
+        length = new LengthCounter(64, sampleRate);
         reset();
     }
 
     void reset() {
-        lengthRegister = 0;
-        lengthCounter = 0;
+        length.reset();
         envelopeRegister = 0;
         polynomialRegister = 0;
         controlRegister = 0;
@@ -37,12 +34,11 @@ final class NoiseChannel {
         volume = 0;
         lfsr = 0x7FFF;
         lfsrStepAccumulator = 0.0;
-        lengthClockAccumulator = 0.0;
         envelopeClockAccumulator = 0.0;
     }
 
     void writeLength(int value) {
-        lengthRegister = value & 0xFF;
+        length.load(value);
     }
 
     void writeEnvelope(int value) {
@@ -69,11 +65,9 @@ final class NoiseChannel {
     }
 
     void tick() {
-        if (!active) {
-            return;
+        if (length.tick((controlRegister & 0x40) != 0)) {
+            active = false;
         }
-
-        tickLength();
         if (!active) {
             return;
         }
@@ -111,29 +105,10 @@ final class NoiseChannel {
     private void trigger() {
         active = (envelopeRegister & 0xF8) != 0;
         volume = (envelopeRegister >>> 4) & 0x0F;
-        lengthCounter = 64 - (lengthRegister & 0x3F);
-        if (lengthCounter == 0) {
-            lengthCounter = 64;
-        }
+        length.trigger();
         lfsr = 0x7FFF;
         lfsrStepAccumulator = 0.0;
-        lengthClockAccumulator = 0.0;
         envelopeClockAccumulator = 0.0;
-    }
-
-    private void tickLength() {
-        if ((controlRegister & 0x40) == 0 || lengthCounter == 0) {
-            return;
-        }
-
-        lengthClockAccumulator += LENGTH_CLOCK_HZ / sampleRate;
-        while (lengthClockAccumulator >= 1.0 && lengthCounter > 0) {
-            lengthClockAccumulator -= 1.0;
-            lengthCounter--;
-            if (lengthCounter == 0) {
-                active = false;
-            }
-        }
     }
 
     private void advanceForOneOutputSample() {
@@ -156,6 +131,9 @@ final class NoiseChannel {
         int divisorCode = polynomialRegister & 0x07;
         int ratio = DIVIDING_RATIOS[divisorCode];
         int shift = (polynomialRegister >>> 4) & 0x0F;
+        if (shift >= 14) {
+            return 0.0;
+        }
         double lfsrClockHz = GAME_BOY_CLOCK_HZ / ratio / (1 << shift);
         return lfsrClockHz / sampleRate;
     }

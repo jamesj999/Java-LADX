@@ -2,6 +2,7 @@ package linksawakening.audio.apu;
 
 final class WaveChannel {
     private final int sampleRate;
+    private final LengthCounter length;
     private final int[] waveRam = new int[16];
     private int dacRegister;
     private int outputLevelRegister;
@@ -12,6 +13,7 @@ final class WaveChannel {
 
     WaveChannel(int sampleRate) {
         this.sampleRate = sampleRate;
+        length = new LengthCounter(256, sampleRate);
         reset();
     }
 
@@ -19,12 +21,22 @@ final class WaveChannel {
         for (int i = 0; i < waveRam.length; i++) {
             waveRam[i] = 0;
         }
+        powerOff();
+    }
+
+    // NR52 power-off resets the channel but leaves wave RAM intact.
+    void powerOff() {
+        length.reset();
         dacRegister = 0;
         outputLevelRegister = 0;
         frequencyLow = 0;
         frequencyHigh = 0;
         active = false;
         position = 0.0;
+    }
+
+    void writeLength(int value) {
+        length.load(value);
     }
 
     void writeDac(int value) {
@@ -68,6 +80,9 @@ final class WaveChannel {
     }
 
     void tick() {
+        if (length.tick((frequencyHigh & 0x40) != 0)) {
+            active = false;
+        }
     }
 
     double render() {
@@ -86,6 +101,7 @@ final class WaveChannel {
     }
 
     private void trigger() {
+        length.trigger();
         active = (dacRegister & 0x80) != 0;
         position = 0.0;
     }

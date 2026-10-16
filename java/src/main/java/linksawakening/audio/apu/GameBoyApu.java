@@ -62,6 +62,22 @@ public final class GameBoyApu {
     public void writeRegister(int register, int value) {
         validateRegister(register);
         int unsignedValue = value & 0xFF;
+        if (register == NR52) {
+            if ((unsignedValue & 0x80) == 0) {
+                java.util.Arrays.fill(registers, 0);
+                channel1.reset();
+                channel2.reset();
+                channel3.powerOff();
+                channel4.reset();
+            } else {
+                registers[NR52] = 0x80;
+            }
+            return;
+        }
+        // CGB ignores all sound-register writes while powered off.
+        if (!masterEnabled()) {
+            return;
+        }
         registers[register] = unsignedValue;
 
         switch (register) {
@@ -74,6 +90,7 @@ public final class GameBoyApu {
             case NR22 -> channel2.writeEnvelope(unsignedValue);
             case NR23 -> channel2.writeFrequencyLow(unsignedValue);
             case NR24 -> channel2.writeFrequencyHigh(unsignedValue);
+            case NR31 -> channel3.writeLength(unsignedValue);
             case NR30 -> channel3.writeDac(unsignedValue);
             case NR32 -> channel3.writeOutputLevel(unsignedValue);
             case NR33 -> channel3.writeFrequencyLow(unsignedValue);
@@ -84,13 +101,6 @@ public final class GameBoyApu {
             case NR44 -> channel4.writeControl(unsignedValue);
             default -> {
             }
-        }
-
-        if (register == NR52 && (unsignedValue & 0x80) == 0) {
-            channel1.reset();
-            channel2.reset();
-            channel3.reset();
-            channel4.reset();
         }
     }
 
@@ -193,11 +203,11 @@ public final class GameBoyApu {
     }
 
     private double rightVolume() {
-        return (registers[NR50] & 0x07) / 7.0;
+        return ((registers[NR50] & 0x07) + 1) / 8.0;
     }
 
     private double leftVolume() {
-        return ((registers[NR50] >>> 4) & 0x07) / 7.0;
+        return (((registers[NR50] >>> 4) & 0x07) + 1) / 8.0;
     }
 
     private static short toPcm(double sample, double volume) {

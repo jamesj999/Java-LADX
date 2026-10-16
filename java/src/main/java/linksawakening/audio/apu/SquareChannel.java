@@ -11,6 +11,8 @@ final class SquareChannel {
     };
 
     private final int sampleRate;
+    private final LengthCounter length;
+    private boolean sweepNegateUsed;
     private int sweepRegister;
     private int dutyRegister;
     private int envelopeRegister;
@@ -27,10 +29,13 @@ final class SquareChannel {
 
     SquareChannel(int sampleRate) {
         this.sampleRate = sampleRate;
+        length = new LengthCounter(64, sampleRate);
         reset();
     }
 
     void reset() {
+        length.reset();
+        sweepNegateUsed = false;
         sweepRegister = 0;
         dutyRegister = 0;
         envelopeRegister = 0;
@@ -47,11 +52,15 @@ final class SquareChannel {
     }
 
     void writeSweep(int value) {
+        if (sweepNegateUsed && (sweepRegister & 0x08) != 0 && (value & 0x08) == 0) {
+            active = false;
+        }
         sweepRegister = value & 0xFF;
     }
 
     void writeDuty(int value) {
         dutyRegister = value & 0xFF;
+        length.load(value);
     }
 
     void writeEnvelope(int value) {
@@ -78,6 +87,9 @@ final class SquareChannel {
     }
 
     void tick() {
+        if (length.tick((frequencyHigh & 0x40) != 0)) {
+            active = false;
+        }
         if (!active) {
             return;
         }
@@ -159,6 +171,8 @@ final class SquareChannel {
     }
 
     private void trigger() {
+        length.trigger();
+        sweepNegateUsed = false;
         active = (envelopeRegister & 0xF8) != 0;
         volume = (envelopeRegister >>> 4) & 0x0F;
         phase = 0.0;
@@ -193,6 +207,7 @@ final class SquareChannel {
     private int calculateSweepFrequency() {
         int delta = sweepShadowFrequency >>> sweepShift();
         if ((sweepRegister & 0x08) != 0) {
+            sweepNegateUsed = true;
             return sweepShadowFrequency - delta;
         }
         return sweepShadowFrequency + delta;
