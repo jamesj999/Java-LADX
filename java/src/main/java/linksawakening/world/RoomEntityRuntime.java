@@ -643,6 +643,9 @@ public final class RoomEntityRuntime {
         new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final int[] instrumentPickupState =
         new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] instrumentWarpFadeStep = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] instrumentHintCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] instrumentHintOpened = new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] instrumentPickupSparklesPending =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final int[] instrumentParticleKind =
@@ -9594,6 +9597,9 @@ public final class RoomEntityRuntime {
     private void startInstrumentPickup(int slot) {
         instrumentPickupSequenceActive[slot] = true;
         instrumentPickupState[slot] = 0;
+        instrumentWarpFadeStep[slot] = 0;
+        instrumentHintCountdown[slot] = 0;
+        instrumentHintOpened[slot] = false;
         instrumentPickupSparklesPending[slot] = true;
         enemyTransitionCountdown[slot] = 0x68;
         pendingMusicTrack = 0x1B;
@@ -9873,8 +9879,26 @@ public final class RoomEntityRuntime {
                     instrumentParticleSpawnCounter[slot] & 0x01,
                     randomByteSupplier.getAsInt() & 0x01);
             }
-        } else if (instrumentPickupState[slot] == 3) {
+        } else if (instrumentPickupState[slot] == 3 && !dialogActive
+            && !inventoryAppearing && !roomTransitionActive) {
             decrementSlowTransitionCountdown(slot, frameCounter);
+            // $03:5E29: the warp controller advances its fade every eight
+            // frames, then starts the fullscreen hint controller ($07:6523).
+            if (instrumentHintCountdown[slot] > 0) {
+                if (--instrumentHintCountdown[slot] == 0 && !instrumentHintOpened[slot]) {
+                    instrumentHintOpened[slot] = true;
+                    pendingDialogRequests.add(new DialogRequest(1, 0x50 + (entityMapId & 0xFF)));
+                }
+            }
+            if (slowTransitionCountdown[slot] < 0x50
+                && instrumentWarpFadeStep[slot] < 0x19 && (frameCounter & 7) == 0) {
+                int step = instrumentWarpFadeStep[slot]++;
+                if (step == 0) {
+                    pendingEntityEvents.add(new EntityCombatEvent(slot, entity.type(), 0, false,
+                        EntityCombatEvent.SoundChannel.NOISE, 0x2C));
+                }
+                if (step == 0x18) instrumentHintCountdown[slot] = 0x60;
+            }
             if (slowTransitionCountdown[slot] == 0) {
                 instrumentPickupState[slot] = 4;
                 instrumentPickupSequenceActive[slot] = false;

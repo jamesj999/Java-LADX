@@ -1617,13 +1617,26 @@ final class RoomSessionTest {
         assertEquals(EntityStatus.ACTIVE,
             session.activeRoom().entities().slots().get(instrument.slot()).status());
 
-        for (int frame = 345; frame <= 852; frame++) {
+        for (int frame = 345; frame < 832; frame++) {
             session.tickEntities(frame, 0x50, 0x60);
+            assertTrue(session.consumeEntityDialogRequests().isEmpty());
+        }
+        session.tickEntities(832, 0x50, 0x60);
+        assertEquals(0x150, session.consumeEntityDialogRequests().getFirst().globalDialogId());
+        session.setEntityDialogActive(true);
+        for (int frame = 833; frame <= 932; frame++) {
+            session.tickEntities(frame, 0x50, 0x60);
+            assertNull(session.consumeInstrumentTransitionRequest());
+            assertTrue(session.consumeEntityDialogRequests().isEmpty());
         }
         assertEquals(EntityStatus.ACTIVE,
             session.activeRoom().entities().slots().get(instrument.slot()).status());
-
-        session.tickEntities(856, 0x50, 0x60);
+        session.setEntityDialogActive(false);
+        for (int frame = 933; frame < 956; frame++) {
+            session.tickEntities(frame, 0x50, 0x60);
+            assertNull(session.consumeInstrumentTransitionRequest());
+        }
+        session.tickEntities(956, 0x50, 0x60);
 
         assertFalse(session.activeRoom().entities().slots().get(instrument.slot()).loaded());
         assertTrue(session.consumeLinkMotionBlockRequests().isEmpty());
