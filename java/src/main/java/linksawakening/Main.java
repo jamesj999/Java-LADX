@@ -362,7 +362,8 @@ public class Main {
         link = new Link(inputState, inputConfig, romTables, overworldCollision,
                         linkSpriteSheet, playerState, itemRegistry, gameplaySoundSink,
                         linkTunicPalette);
-        link.setShieldInputAllowed(() -> !GameplayDialogInput.blocksGameplay(dialogController));
+        link.setShieldInputAllowed(() -> !GameplayDialogInput.blocksGameplay(dialogController)
+            && (roomSession == null || !roomSession.powerUpPickupSequenceActive()));
         itemRegistry.register(PlayerState.INVENTORY_OCARINA, new Ocarina(
             playerState, gameplaySoundSink, new Ocarina.PlaybackTarget() {
                 @Override
@@ -972,6 +973,15 @@ public class Main {
                 // The ROM seeds that shadow from hLinkPosition before the
                 // frame's motion work (bank0.asm:$0F97), so capture it before
                 // any Link movement can change the position.
+                if (roomSession != null) {
+                    int room = roomSession.currentRoomId();
+                    // $02:6CB6's manual exits precede the normal recoil gate.
+                    boolean sideViewManualExit = roomSession.mapCategory() == Warp.CATEGORY_SIDESCROLL
+                        && room != 0xE8 && room != 0xF8;
+                    boolean caveManualExit = roomSession.mapId() == 0x1F
+                        && (room == 0xF2 || room == 0xF5);
+                    link.setNormalRecoilRoomBoundaries(!sideViewManualExit && !caveManualExit);
+                }
                 link.setGelClinging(roomSession != null && roomSession.gelClingingToLink(), frameCounter);
                 link.captureRomFinalPosition();
                 boolean keyholeSequenceActive = roomSession != null
@@ -996,7 +1006,9 @@ public class Main {
                     if (roomSession != null && roomSession.gelClingingToLink()) {
                         equipmentController.tickEquippedItemsWithoutInput(frameCounter);
                     } else {
-                        if (!swordPickupSequenceActive) equipmentController.dispatchButtonEdges();
+                        if (!swordPickupSequenceActive
+                            && (roomSession == null || !roomSession.powerUpPickupSequenceActive()))
+                            equipmentController.dispatchButtonEdges();
                         equipmentController.tickEquippedItems(frameCounter);
                     }
                 }
@@ -1359,7 +1371,8 @@ public class Main {
                 }
                 for (var request : roomSession.consumeLinkHeldItemPoseRequests()) {
                     if (link != null) {
-                        link.showHeldItemPose();
+                        if (request.powerUp()) link.showPowerUpPickupPose();
+                        else link.showHeldItemPose();
                     }
                     Sword heldPoseSword = equipmentController.activeSword();
                     if (heldPoseSword != null) {

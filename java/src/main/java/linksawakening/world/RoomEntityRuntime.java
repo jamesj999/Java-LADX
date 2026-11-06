@@ -635,6 +635,7 @@ public final class RoomEntityRuntime {
     private final int[] swordPickupState = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] swordPickupSequenceActive =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] powerUpPickupCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] toadstoolPickupSequenceActive =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] instrumentPickupSequenceActive =
@@ -961,7 +962,8 @@ public final class RoomEntityRuntime {
         }
     }
 
-    public record LinkHeldItemPoseRequest(int sourceSlot) {
+    public record LinkHeldItemPoseRequest(int sourceSlot, boolean powerUp) {
+        public LinkHeldItemPoseRequest(int sourceSlot) { this(sourceSlot, false); }
         public LinkHeldItemPoseRequest {
             if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
                 throw new IllegalArgumentException("Held-item source slot out of range: "
@@ -2424,6 +2426,10 @@ public final class RoomEntityRuntime {
                     advanceSwordPickup(entity, frame, linkEntityX, linkEntityY, linkZ);
                     continue;
                 }
+            }
+            if (status == EntityStatus.ACTIVE && powerUpPickupCountdown[entity.slot()] != 0) {
+                advancePowerUpPickup(entity, frame, linkEntityX, linkEntityY, linkZ);
+                continue;
             }
             if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_SLEEPY_TOADSTOOL) {
                 if (!toadstoolPickupSequenceActive[entity.slot()]
@@ -4956,6 +4962,7 @@ public final class RoomEntityRuntime {
             if (!entity.loaded() || entity.status() != EntityStatus.ACTIVE
                 || !RoomEntityPickupRules.isPickable(entity.type())
                 || (floatingType && !floating)
+                || powerUpPickupCountdown[entity.slot()] != 0
                 || dropPrivateCountdown1[entity.slot()] > 0
                 || (entity.type() == ENTITY_HEART_CONTAINER
                     && enemyTransitionCountdown[entity.slot()] != 0)
@@ -4998,6 +5005,10 @@ public final class RoomEntityRuntime {
             } else if (entity.type()
                 == EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS) {
                 startInstrumentPickup(entity.slot());
+            } else if (entity.type() == 0x33 || entity.type() == 0x34) {
+                powerUpPickupCountdown[entity.slot()] = 0x30;
+                entityInteractionCountdown = 0x30;
+                pendingMusicTrack = 0x27;
             } else if (requiresHeldPickupTransition(entity.type())) {
                 beginLift(entity.slot(), romDirection);
             } else {
@@ -8953,6 +8964,11 @@ public final class RoomEntityRuntime {
         return false;
     }
 
+    boolean powerUpPickupSequenceActive() {
+        for (int countdown : powerUpPickupCountdown) if (countdown != 0) return true;
+        return false;
+    }
+
     boolean swordPickupSequenceActive() {
         for (boolean active : swordPickupSequenceActive) {
             if (active) {
@@ -9803,6 +9819,41 @@ public final class RoomEntityRuntime {
     private void presentWitchGotItem(int slot) {
         pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
         pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
+    }
+
+    /** ProcessPowerUp ($03:6400) and ApplyGotItem ($00:1033). */
+    private void advancePowerUpPickup(RoomEntity entity, int frame,
+                                      int linkX, int linkY, int linkZ) {
+        int slot = entity.slot();
+        if (powerUpPickupCountdown[slot] == 0x30) {
+            int[] xOffsets = {-0x1C, 0x14, -0x1C, 0x14};
+            int[] yOffsets = {-0x2C, -0x2C, 0x04, 0x04};
+            for (int variant = 3; variant >= 0; variant--) {
+                transientVfxRequests.add(new TransientVfxRequest(TransientVfxType.MOVING_SPARKLE,
+                    (linkX + xOffsets[variant]) & 0xFF,
+                    (linkY + yOffsets[variant]) & 0xFF, variant));
+            }
+        }
+        if (!dialogActive) {
+            int countdown = --powerUpPickupCountdown[slot];
+            if (countdown == 0x2E) {
+                pendingEntityEvents.add(new EntityCombatEvent(slot, entity.type(), 0, false,
+                    EntityCombatEvent.SoundChannel.JINGLE, 0x17));
+            }
+            if (countdown == 2) {
+                powerUpPickupCountdown[slot] = 1;
+                pendingDialogRequests.add(new DialogRequest(0, entity.type() == 0x33 ? 0x08 : 0xEC));
+            } else if (countdown == 0) {
+                pendingMusicTrack = 0x49;
+                clearEntity(slot);
+                return;
+            }
+        }
+        pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
+        pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot, true));
+        RoomEntity held = withPositionAndVariant(entity, linkX, (linkY - 0x10) & 0xFF,
+            entity.type() == 0x33 ? (frame >>> 4) & 1 : entity.spriteVariant());
+        slots[slot] = withZ(held, linkZ & 0xFF);
     }
 
     private void advanceToadstoolPickup(RoomEntity entity,
@@ -13269,7 +13320,7 @@ public final class RoomEntityRuntime {
 
     private static boolean requiresHeldPickupTransition(int type) {
         return switch (type) {
-            case 0x30, 0x31, 0x33, 0x34, 0x35, 0x36, 0x3C -> true;
+            case 0x30, 0x31, 0x35, 0x36, 0x3C -> true;
             default -> false;
         };
     }

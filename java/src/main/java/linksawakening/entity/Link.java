@@ -180,6 +180,9 @@ public final class Link implements RocsFeather.JumpTarget {
     private boolean movingThisFrame;
     private int groundMotionCounter;
     private int collisionIgnoreFramesRemaining;
+    private int recoilSpeedX;
+    private int recoilSpeedY;
+    private boolean normalRecoilRoomBoundaries = true;
     private int romCollisionType;
     private final int[] collisionProbePixelX = new int[4];
     private final int[] collisionProbePixelY = new int[4];
@@ -446,15 +449,19 @@ public final class Link implements RocsFeather.JumpTarget {
         setRoomEntryPixelPosition(romPositionX - 0x08, romPositionY - 0x10);
     }
 
+    /** Manual warp exits bypass the ordinary room-edge recoil gate. */
+    public void setNormalRecoilRoomBoundaries(boolean normalBoundaries) {
+        normalRecoilRoomBoundaries = normalBoundaries;
+    }
+
     /**
-     * Ignore collision on Link's next {@code frames} movement updates. Used
-     * after a warp so that Link can walk off his entrance tile even though
-     * the door/stairs object beneath him is flagged SOLID — the LADX
-     * disassembly uses {@code wIgnoreLinkCollisionsCountdown} for this
-     * (bank2.asm:589).
+     * Sets wIgnoreLinkCollisionsCountdown: preserve recoil speed instead of
+     * reading movement input. Background collisions still run ($02:44C2).
      */
     public void setCollisionIgnoreFrames(int frames) {
         collisionIgnoreFramesRemaining = Math.max(0, frames);
+        recoilSpeedX = forcedSpeedPending ? forcedSpeedX : (byte) lastRomSpeedX;
+        recoilSpeedY = forcedSpeedPending && !forcedSpeedXOnly ? forcedSpeedY : (byte) lastRomSpeedY;
     }
 
     /**
@@ -623,6 +630,16 @@ public final class Link implements RocsFeather.JumpTarget {
         romInteractiveMotionBlocked = true;
         romAnimationStateOverride = 0x6C;
         direction = DIRECTION_DOWN;
+        romAttackStepAnimationCountdown = 0;
+        movingThisFrame = false;
+    }
+
+    /** HandleGotItemB's power-up pose, distinct from lifting a physical object. */
+    public void showPowerUpPickupPose() {
+        romInteractiveMotionBlocked = true;
+        romAnimationStateOverride = 0x6B;
+        collisionIgnoreFramesRemaining = 0;
+        forcedSpeedPending = false;
         romAttackStepAnimationCountdown = 0;
         movingThisFrame = false;
     }
@@ -1322,6 +1339,41 @@ public final class Link implements RocsFeather.JumpTarget {
             return;
         }
 
+        // $02:44C2 precedes the interactive-motion gate. The countdown
+        // preserves hLinkSpeed across frames; it never disables wall probes.
+        if (collisionIgnoreFramesRemaining > 0) {
+            collisionIgnoreFramesRemaining--;
+            int speedX = forcedSpeedPending ? forcedSpeedX : recoilSpeedX;
+            int speedY = forcedSpeedPending && !forcedSpeedXOnly
+                ? forcedSpeedY : recoilSpeedY;
+            forcedSpeedPending = false;
+            forcedSpeedXOnly = false;
+            int beforeRecoilX = subX;
+            int beforeRecoilY = subY;
+            if (speedX != 0) tryMoveAxis(speedX, true);
+            if (speedY != 0) tryMoveAxis(speedY, false);
+            // CheckPositionForMapTransition restores the previous position
+            // at a normal room edge, then $02:6D94 rejects active recoil.
+            if (normalRecoilRoomBoundaries && collisionIgnoreFramesRemaining > 0
+                && (romEntityX() < 0x04 || romEntityX() >= 0x9C
+                    || romEntityY() < 0x0C || romEntityY() >= 0x84)) {
+                subX = beforeRecoilX;
+                subY = beforeRecoilY;
+                collisionIgnoreFramesRemaining = 0;
+                speedX = 0;
+                speedY = 0;
+            }
+            if ((romCollisionType & (COLLISION_TYPE_LEFT | COLLISION_TYPE_RIGHT)) != 0) speedX = 0;
+            if ((romCollisionType & (COLLISION_TYPE_UP | COLLISION_TYPE_DOWN)) != 0) speedY = 0;
+            recoilSpeedX = speedX;
+            recoilSpeedY = speedY;
+            lastRomSpeedX = speedX & 0xFF;
+            lastRomSpeedY = speedY & 0xFF;
+            movingThisFrame = speedX != 0 || speedY != 0;
+            tickJump();
+            return;
+        }
+
         int mask = buildJoypadMask();
         int newDirection = JOYPAD_TO_DIRECTION[mask];
         if (newDirection != -1 && !marinBedJumpMotionLocked
@@ -1735,8 +1787,7 @@ public final class Link implements RocsFeather.JumpTarget {
             moveDirection = signedSpeed > 0 ? DIRECTION_DOWN : DIRECTION_UP;
         }
 
-        int probeMask = !debugNoClip && !directionalLedgeJumpMotionLocked
-            && collisionIgnoreFramesRemaining == 0
+        int probeMask = collision != null && !debugNoClip && !directionalLedgeJumpMotionLocked
             ? leadingEdgeCollisionMask(candidatePixelX, candidatePixelY, moveDirection) : 0;
         if (probeMask != 0) {
             // BackgroundCollisionHandler $02:6EC6 / $02:6F01 restores the

@@ -7324,18 +7324,34 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
-    void transitionPickupsRemainInTheHeldStateAfterCollection() {
-        EntitySpriteDefinition definition = pairDefinition(0x33, 2);
-        RoomEntitySnapshot initial = snapshot(
-            new RoomEntity(0, 0, 0x33, 24, 32, EntityStatus.ACTIVE, definition, 0));
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+    void powerUpPickupUsesAFinitePresentationRatherThanTheCarryState() {
+        for (int type : new int[] {0x33, 0x34}) {
+            EntitySpriteDefinition definition = pairDefinition(type, 2);
+            RoomEntitySnapshot initial = snapshot(
+                new RoomEntity(0, 0, type, 24, 32, EntityStatus.ACTIVE, definition, 0));
+            RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
-        EntityPickupEvent pickup = runtime.collectIfNeeded(1, 24, 34, false, true);
+            EntityPickupEvent pickup = runtime.collectIfNeeded(1, 24, 34, false, true);
 
-        assertNotNull(pickup);
-        assertEquals(1, pickup.persistentClearMask());
-        assertEquals(EntityStatus.LIFTED, runtime.snapshot().slots().get(0).status());
-        assertNull(runtime.collectIfNeeded(1, 24, 34, false, true));
+            assertNotNull(pickup);
+            assertEquals(1, pickup.persistentClearMask());
+            assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
+            assertFalse(runtime.liftedEntityState().active());
+            assertNull(runtime.collectIfNeeded(1, 24, 34, false, true));
+            for (int frame = 0; frame < 46; frame++) runtime.tick(frame);
+            assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, type == 0x33 ? 0x08 : 0xEC)),
+                runtime.consumePendingDialogRequests());
+            runtime.setDialogActive(true);
+            for (int frame = 46; frame < 246; frame++) runtime.tick(frame);
+            assertTrue(runtime.powerUpPickupSequenceActive());
+            assertFalse(runtime.liftedEntityState().active());
+            assertEquals(List.of(new RoomEntityRuntime.LinkHeldItemPoseRequest(0, true)),
+                runtime.consumePendingLinkHeldItemPoseRequests());
+            runtime.setDialogActive(false);
+            runtime.tick(246);
+            assertFalse(runtime.powerUpPickupSequenceActive());
+            assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
+        }
     }
 
     @Test

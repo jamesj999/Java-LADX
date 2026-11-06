@@ -3464,3 +3464,13 @@ of scope.
 - Added focused contact, orbit, motion and equipment regression coverage; extended Main integration through the second key. All 2,331 tests pass.
 - Evidence: validation/tail-cave-switch-2026-11-06.html; capture manifests and full-frame metrics in java/src/test/resources/opening/tail-cave-switch. Final capture differs by 314 RGB555 pixels; full visual/combat parity remains unproven. Explicit ROM combat timing variants are retained in the route.
 - Next: the remaining Tail Cave rooms, equipment, boss and instrument. The full game is not yet production-ready.
+
+
+### Recoil and power-up pickup regression — 2026-11-06
+
+- Corrected wIgnoreLinkCollisionsCountdown: retain recoil speed, preserve background collision, stop the blocked axis and reject ordinary room transitions during recoil. Manual source warp exits retain their bypass. Source: $02:44C2, $02:6D5C/$6D94 and BackgroundCollisionHandler. Tests cover duration, opposing input, solid walls and normal room edges.
+- The replay exposed Piece of Power entering permanent LIFTED state and disabling the sword. Piece of Power and Guardian Acorn now use the $30 pickup countdown, $6B Link pose, four moving sparkles, acquisition jingle/music and source dialogue IDs, then unload and resume gameplay. Both pickups are tested across 200 paused dialogue frames and final release. Matched acquisition-frame visual parity remains unverified.
+- The fresh-game normal-input replay now completes 345 checkpoints in Java and PyBoy, retaining the Compass and both Small Keys. The Java integration verifies a completed power-up dialogue and subsequent dungeon progression. Combat inputs changed explicitly to handle recoil and clear enemies before the Compass dialogue.
+- All 2,333 tests pass.
+- Evidence: validation/tail-cave-recoil-2026-11-06.html and java/src/test/resources/opening/tail-cave-recoil. Final health differs (Java 4, ROM 24); no combat or pixel-parity claim. Faster loading remains accepted.
+- Next: room $14 Map encounter, remaining Tail Cave equipment/boss/instrument, then the rest of the quest. The full game remains unverified and is not production-ready.

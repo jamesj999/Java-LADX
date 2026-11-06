@@ -42,6 +42,47 @@ final class LinkTest {
     private static final int OBJECT_INDOOR_PIT_WARP = 0x1C;
 
     @Test
+    void activeRecoilCannotKnockLinkAcrossANormalRoomBoundary() throws Exception {
+        Link link = linkWithEmptyRoom(new InputState());
+        link.setPixelPosition(80, 115); // ROM y=$83, just inside the south edge.
+        link.applyRomSpeed(0, 0x20);
+        link.setCollisionIgnoreFrames(16);
+        link.update();
+        assertEquals(115, link.pixelY());
+        assertEquals(0, link.romSpeedY());
+        link.update();
+        assertEquals(115, link.pixelY());
+    }
+
+    @Test
+    void enemyRecoilPreservesSpeedForCountdownAndStillStopsAtWalls() throws Exception {
+        InputState input = new InputState();
+        Link link = linkWithEmptyRoom(input);
+        link.setPixelPosition(40, 40);
+        input.onKeyEvent(4, GLFW_PRESS); // Opposing input cannot replace recoil.
+        link.applyRomSpeed(0x20, 0);
+        link.setCollisionIgnoreFrames(4);
+        for (int i = 1; i <= 4; i++) {
+            link.update();
+            assertEquals(40 + 2 * i, link.pixelX());
+        }
+
+        RomTables tables = RomTables.loadFromRom(loadRom());
+        int[] room = emptyRoomObjectsArea();
+        for (int row = 0; row < 8; row++)
+            room[ROOM_OBJECTS_BASE + row * ROOM_OBJECT_ROW_STRIDE + 4] = OBJECT_TREE_TOP_LEFT;
+        OverworldCollision collision = new OverworldCollision(tables);
+        collision.setRoom(room);
+        Link atWall = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
+            tables, collision, null, new PlayerState(), new ItemRegistry());
+        atWall.setPixelPosition(48, 40);
+        atWall.applyRomSpeed(0x20, 0);
+        atWall.setCollisionIgnoreFrames(16);
+        for (int i = 0; i < 16; i++) atWall.update();
+        assertTrue(atWall.pixelX() < 64 - 8, "Recoil must not cross the solid column");
+    }
+
+    @Test
     void airborneJumpAnimationStartsByDirectionAndAdvancesEveryEightFrames() throws Exception {
         assertJumpAnimation(Link.DIRECTION_RIGHT, 0x61, 0x62, 0x63);
         assertJumpAnimation(Link.DIRECTION_LEFT, 0x5E, 0x5F, 0x60);

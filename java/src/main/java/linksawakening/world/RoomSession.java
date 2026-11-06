@@ -2002,6 +2002,10 @@ public final class RoomSession {
         return entityRuntime != null && entityRuntime.witchGotItemPresentationActive();
     }
 
+    public boolean powerUpPickupSequenceActive() {
+        return entityRuntime != null && entityRuntime.powerUpPickupSequenceActive();
+    }
+
     public boolean swordPickupSequenceActive() {
         return entityRuntime != null && entityRuntime.swordPickupSequenceActive();
     }

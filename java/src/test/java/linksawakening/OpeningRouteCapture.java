@@ -25,7 +25,7 @@ public final class OpeningRouteCapture {
                 Main.headlessButton(fields[0].replace("*", ""), true);
                 int ticks = 0;
                 while (!reached(fields[0], fields[1], Main.headlessState())) {
-                    if (++ticks > 2000) throw new IllegalStateException("Route blocked: " + line + " " + Main.headlessState());
+                    if (++ticks > 2000) throw new IllegalStateException("Route blocked: " + line + " " + Main.headlessState() + " entities " + Main.headlessEntityPositions());
                     pulseButtons(fields[0], ticks - 1);
                     rgba = Main.headlessFrame();
                     appendTrace(trace, frame++);
