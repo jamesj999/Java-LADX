@@ -666,6 +666,8 @@ public final class RoomEntityRuntime {
     private boolean playerHasTailKey;
     private int instrument1Flags;
     private int instrument2Flags;
+    /** AnimateEntities copies wC111 to wC1A8 before decrementing it. */
+    private int entityInteractionCountdown;
     private final int[] owlEventState = new int[EntityRoomLoader.MAX_ENTITIES];
     /** wEntitiesPrivateCountdown1Table for the owl-event handler. */
     private final int[] owlPrivateCountdown1 =
@@ -1712,7 +1714,10 @@ public final class RoomEntityRuntime {
                       boolean handlerLinkCollisionEnabled) {
         Objects.requireNonNull(randomByteSupplier, "randomByteSupplier");
         Objects.requireNonNull(projectileLinkState, "projectileLinkState");
-        handlerLinkCollisionEnabled = handlerLinkCollisionEnabled && !inventoryAppearing;
+        boolean countdownBlocksInteraction = entityInteractionCountdown != 0;
+        if (!dialogActive && entityInteractionCountdown > 0) entityInteractionCountdown--;
+        handlerLinkCollisionEnabled = handlerLinkCollisionEnabled && !inventoryAppearing
+            && !countdownBlocksInteraction;
         boolean threeOfAKindInteractive = handlerLinkCollisionEnabled
             && entityTimersInteractive();
         boolean handlerInteractive = entityHandlerInteractive(creditsGameplay);
@@ -4886,29 +4891,29 @@ public final class RoomEntityRuntime {
      * persistence bit is ready for the room session to record.
      */
     public EntityPickupEvent collectIfNeeded(int frameCounter,
-                                             int linkPixelX,
-                                             int linkPixelY,
+                                             int linkEntityX,
+                                             int linkEntityY,
                                              boolean linkAirborne,
                                              boolean linkInteractive) {
-        return collectIfNeeded(frameCounter, linkPixelX, linkPixelY, linkAirborne,
+        return collectIfNeeded(frameCounter, linkEntityX, linkEntityY, linkAirborne,
             linkInteractive, 0, 0);
     }
 
     /** Pickup collision with Link's Java direction available for held items. */
     public EntityPickupEvent collectIfNeeded(int frameCounter,
-                                             int linkPixelX,
-                                             int linkPixelY,
+                                             int linkEntityX,
+                                             int linkEntityY,
                                              boolean linkAirborne,
                                              boolean linkInteractive,
                                              int linkDirection) {
-        return collectIfNeeded(frameCounter, linkPixelX, linkPixelY, linkAirborne,
+        return collectIfNeeded(frameCounter, linkEntityX, linkEntityY, linkAirborne,
             linkInteractive, linkDirection, 0);
     }
 
     /** Pickup collision with Link's ROM-facing Z available for floating items. */
     public EntityPickupEvent collectIfNeeded(int frameCounter,
-                                             int linkPixelX,
-                                             int linkPixelY,
+                                             int linkEntityX,
+                                             int linkEntityY,
                                              boolean linkAirborne,
                                              boolean linkInteractive,
                                              int linkDirection,
@@ -4944,8 +4949,8 @@ public final class RoomEntityRuntime {
                 || (floating && !FloatingItemMotion.linkZAllowsCollection(
                     groundInteractionSideScrolling, linkZ))
                 || !(floating
-                    ? RoomEntityPickupRules.overlapsFloatingItem(entity, linkPixelX, linkPixelY)
-                    : RoomEntityPickupRules.overlapsLink(entity, linkPixelX, linkPixelY))) {
+                    ? RoomEntityPickupRules.overlapsFloatingItem(entity, linkEntityX, linkEntityY)
+                    : RoomEntityPickupRules.overlapsLink(entity, linkEntityX, linkEntityY))) {
                 continue;
             }
 
@@ -9940,6 +9945,7 @@ public final class RoomEntityRuntime {
                 owlEventState[slot] = 1;
             }
             case 1 -> {
+                entityInteractionCountdown = 5; // OwlState1Handler, $06:693B.
                 blockLinkForOwl(slot);
                 pendingLinkFacingRequests.add(new LinkFacingRequest(slot,
                     directionFromLinkToEntity(entity, linkEntityX, linkEntityY)));
@@ -9955,23 +9961,27 @@ public final class RoomEntityRuntime {
                     flying.x(), owlSpeedX[slot], owlXAccumulator, slot);
                 int y = addFallingSpeedToPosition(
                     flying.y(), owlSpeedY[slot], owlYAccumulator, slot);
+                if (flying.z() == 0) {
+                    owlEventState[slot] = 2;
+                    slots[slot] = withPositionAndVariant(flying, x, y, 0);
+                    return;
+                }
                 int z = addFallingSpeedToPosition(
                     flying.z(), owlSpeedZ[slot], owlZAccumulator, slot);
                 if ((frameCounter & 0x03) == 0) {
                     owlSpeedX[slot] = approachSignedByteZero(owlSpeedX[slot]);
                     owlSpeedY[slot] = approachSignedByteZero(owlSpeedY[slot]);
                 }
-                if (signedByte(z) <= 0) {
-                    z = 0;
-                    owlEventState[slot] = 2;
-                }
+                if (signedByte(z) <= 0) z = 0;
                 slots[slot] = withZ(withPositionAndVariant(flying, x, y, 0), z);
             }
             case 2 -> {
                 if (!handlerLinkInteractive || transitionSequenceCounter != 0x04) {
                     return;
                 }
-                blockLinkForOwl(slot);
+                if (RoomEntityCombatRules.overlapsLink(entity, linkEntityX, linkEntityY)) {
+                    requestLinkPush(entity, EntityLinkCollisionRules.STANDARD_PUSH);
+                }
                 slots[slot] = owlPresentation(entity, frameCounter);
                 int globalDialogId = owlDialogResolver.applyAsInt(entityRoomId);
                 pendingDialogRequests.add(new DialogRequest(

@@ -1019,7 +1019,7 @@ public class Main {
                     roomSession.setToadstoolPlayerState(
                         playerState.hasToadstool(), playerState.magicPowderCount());
                     EntityPickupEvent pickup = roomSession.collectEntityIfNeeded(
-                        frameCounter, link.pixelX(), link.pixelY(), link.isAirborne(), true,
+                        frameCounter, link.romEntityX(), link.romEntityY(), link.isAirborne(), true,
                         link.direction(), link.romEntityZ());
                     if (pickup != null) {
                         if (pickup.type() == 0x36) {

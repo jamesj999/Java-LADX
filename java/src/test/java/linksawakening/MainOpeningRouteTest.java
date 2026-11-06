@@ -9,10 +9,10 @@ import static org.junit.jupiter.api.Assertions.*;
 /** Real game-loop integration, with buttons only after the new-game bootstrap. */
 final class MainOpeningRouteTest {
     @Test
-    void newGameCanWakeTalkReceiveShieldAndLeaveHouseWithoutStateInjection() throws Exception {
+    void newGameCanReachBeachAndCollectSwordThroughRealInputWithoutStateInjection() throws Exception {
         Main.initializeHeadlessNewGame();
         var checkpoints = new ArrayList<Main.HeadlessState>();
-        for (String line : Files.readAllLines(Path.of("../tools/opening/beach-route.tsv"))) {
+        for (String line : Files.readAllLines(Path.of("../tools/opening/sword-route.tsv"))) {
             if (line.isBlank() || line.startsWith("#")) continue;
             String[] fields = line.split("\\s+");
             int idle = Integer.parseInt(fields[2]);
@@ -54,11 +54,27 @@ final class MainOpeningRouteTest {
         assertEquals(88, exit.x());
         assertEquals(82, exit.y());
         assertEquals(1, exit.shield());
-        var beach = checkpoints.getLast();
+        var beach = checkpoints.get(44);
         assertEquals(0xF1, beach.room());
         assertEquals(0, beach.map());
         assertEquals(1, beach.shield());
         assertTrue(beach.health() > 0, "Route must reach the beach alive");
         assertFalse(beach.loading());
+        var owlDialog = checkpoints.get(53);
+        assertEquals(74, owlDialog.y(), "Landing countdown must allow five walking frames before dialogue");
+        assertTrue(owlDialog.dialog());
+        assertTrue(owlDialog.text().contains("Hoot!"));
+        var pickup = checkpoints.get(65);
+        assertTrue(pickup.dialog());
+        assertTrue(pickup.text().contains("Sword!"));
+        assertTrue(pickup.y() >= 80 && pickup.y() <= 82,
+            "Source pickup hitbox/cadence; sprite-top-left coordinates collect a full tile too low");
+        var sword = checkpoints.getLast();
+        assertEquals(0xF2, sword.room());
+        assertEquals(1, sword.sword());
+        assertEquals(1, sword.shield());
+        assertFalse(sword.dialog());
+        assertFalse(sword.loading());
+        assertTrue(sword.health() > 0);
     }
 }

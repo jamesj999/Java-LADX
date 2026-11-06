@@ -2207,28 +2207,29 @@ public final class RoomSession {
      * Item-specific effects are returned to the gameplay layer so room state
      * and persistent entity state stay separate.
      */
+    /** Link coordinates use ROM entity origins, not sprite top-left; direction uses Link constants. */
     public EntityPickupEvent collectEntityIfNeeded(int frameCounter,
-                                                   int linkPixelX,
-                                                   int linkPixelY,
+                                                   int linkEntityX,
+                                                   int linkEntityY,
                                                    boolean linkAirborne,
                                                    boolean linkInteractive) {
-        return collectEntityIfNeeded(frameCounter, linkPixelX, linkPixelY, linkAirborne,
+        return collectEntityIfNeeded(frameCounter, linkEntityX, linkEntityY, linkAirborne,
             linkInteractive, followingLinkDirection, followingLinkZ);
     }
 
     public EntityPickupEvent collectEntityIfNeeded(int frameCounter,
-                                                   int linkPixelX,
-                                                   int linkPixelY,
+                                                   int linkEntityX,
+                                                   int linkEntityY,
                                                    boolean linkAirborne,
                                                    boolean linkInteractive,
                                                    int linkDirection) {
-        return collectEntityIfNeeded(frameCounter, linkPixelX, linkPixelY, linkAirborne,
+        return collectEntityIfNeeded(frameCounter, linkEntityX, linkEntityY, linkAirborne,
             linkInteractive, linkDirection, followingLinkZ);
     }
 
     public EntityPickupEvent collectEntityIfNeeded(int frameCounter,
-                                                   int linkPixelX,
-                                                   int linkPixelY,
+                                                   int linkEntityX,
+                                                   int linkEntityY,
                                                    boolean linkAirborne,
                                                    boolean linkInteractive,
                                                    int linkDirection,
@@ -2239,7 +2240,7 @@ public final class RoomSession {
         followingLinkZ = linkZ & 0xFF;
         followingLinkDirection = linkDirection & 0xFF;
         EntityPickupEvent event = entityRuntime.collectIfNeeded(
-            frameCounter, linkPixelX, linkPixelY, linkAirborne, linkInteractive,
+            frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive,
             linkDirection, linkZ);
         if (event == null) {
             return null;

@@ -70,8 +70,8 @@ public final class RoomEntityPickupRules {
      * computes unsigned-byte absolute differences, so the wraparound helper
      * is intentional even though ordinary room coordinates do not wrap.
      */
-    public static boolean overlapsLink(RoomEntity entity, int linkPixelX, int linkPixelY) {
-        return overlapsAtY(entity, linkPixelX, linkPixelY, entity.y());
+    public static boolean overlapsLink(RoomEntity entity, int linkEntityX, int linkEntityY) {
+        return overlapsAtY(entity, linkEntityX, linkEntityY, entity.y());
     }
 
     /**
@@ -80,21 +80,21 @@ public final class RoomEntityPickupRules {
      * static pickables intentionally continue using {@link #overlapsLink}.
      */
     public static boolean overlapsFloatingItem(RoomEntity entity,
-                                                int linkPixelX,
-                                                int linkPixelY) {
-        return overlapsAtY(entity, linkPixelX, linkPixelY, entity.y() - entity.z());
+                                                int linkEntityX,
+                                                int linkEntityY) {
+        return overlapsAtY(entity, linkEntityX, linkEntityY, entity.y() - entity.z());
     }
 
-    private static boolean overlapsAtY(RoomEntity entity, int linkPixelX,
-                                       int linkPixelY, int entityY) {
+    private static boolean overlapsAtY(RoomEntity entity, int linkEntityX,
+                                       int linkEntityY, int entityY) {
         int xDistance = unsignedByteAbs(
-            entity.x() + HITBOX_X - linkPixelX - 0x08);
+            entity.x() + HITBOX_X - linkEntityX - 0x08);
         if (xDistance >= HITBOX_WIDTH + 0x04) {
             return false;
         }
 
         int yDistance = unsignedByteAbs(
-            entityY + HITBOX_Y - linkPixelY - 0x08);
+            entityY + HITBOX_Y - linkEntityY - 0x08);
         return yDistance < HITBOX_HEIGHT + 0x04;
     }
 

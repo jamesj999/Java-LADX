@@ -43,15 +43,17 @@ try:
             trace.append([frame, p.memory[0xfff7], p.memory[0xfff6], p.memory[0xff98],
                           p.memory[0xff99], p.memory[0xc19f] != 0, p.memory[0xdb44], p.memory[0xc124],
                           p.memory[0xc125], p.memory[0xffe7], p.memory[0xff96], p.memory[0xff97],
-                          p.memory[0xdb5a], p.memory[0xdb4e]])
+                          p.memory[0xdb5a], p.memory[0xdb4e],
+                          p.memory[0xffa1], p.memory[0xff9b], p.memory[0xc111]])
             frame += 1
         if '=' in held:
             field, target = held.split('=')
             target = int(target, 0)
-            address = {'room': 0xfff6, 'x': 0xff98, 'y': 0xff99}[field]
+            address = {'room': 0xfff6, 'x': 0xff98, 'y': 0xff99, 'dialog': 0xc19f, 'sword': 0xdb4e}[field]
             def reached():
                 value = p.memory[address]
-                if field == 'room': return value == target
+                if field == 'dialog': return (value != 0) == bool(target)
+                if field not in ('x', 'y'): return value == target
                 return value <= target if button.split('+')[0] in ('left', 'up') else value >= target
             press()
             for _ in range(2000):

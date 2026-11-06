@@ -3100,3 +3100,38 @@ of scope.
   scripts use the existing PyBoy/Pillow/numpy environment.
 - Remaining opening work includes F2 access/sword acquisition, source scroll
   entry positions, and visual differences; later full-game work remains pending.
+
+## Continuous sword acquisition and opening integration fixes — 2026-11-06
+
+- Extended the normal-input route through F1 to F2, using the shield, completing
+  all eleven owl dialogue pages, picking up the sword, completing its dialogue
+  and spin/fanfare, and returning to gameplay with sword and shield equipped.
+  Both the original ROM and actual Java Main loop complete all 69 checkpoints.
+  No game-state injection follows bootstrap; faster loading remains intentional.
+- Corrected the owl's source interaction countdown: AnimateEntities samples
+  `wC111` before decrementing, and the flying owl writes five each frame. Its
+  landed state stops writing the motion block and waits for that countdown,
+  permitting five held-direction movement frames before opening dialogue.
+  The continuous route now opens the top box with Link at ROM Y=74 in both
+  engines, instead of Java opening a bottom box at Y=69. Landing also checks
+  the pre-update Z as in OwlState1Handler, and state 2 applies the source push.
+- Corrected Main's pickup-collision coordinate contract: the runtime expects
+  ROM entity origins, but Main supplied the sprite top-left. The sword was
+  therefore collected a sprite-height too low. Pickup API parameter names and
+  documentation now state the convention; direction remains the Java Link enum
+  because the runtime performs that conversion itself.
+- Added a five-frame owl landing regression and extended the actual Main-loop
+  test through sword ownership, active gameplay and the source pickup window.
+  All 2,307 tests pass. Independent original checkpoint metadata is retained
+  under `java/src/test/resources/opening/sword/`.
+- Visual checks remain diagnostic: 8/69 checkpoint frames match exactly; the
+  maximum difference is 4,597 pixels, including unsynchronized tide/actor phases.
+  The original finishes with 24 HP and Java with 20 HP; the pickup Y differs
+  by one pixel under their different global-frame/collision phases. The final
+  urchin presence also differs and needs investigation. Evidence:
+  `docs/validation/continuous-sword-acquisition-2026-11-06.html`. This does not
+  establish whole-route visual or combat parity or production readiness.
+- Reproduce using the previous capture commands with `sword-route.tsv` and
+  output `java/build/sword-route` (Gradle output `build/sword-route`). Remaining
+  work includes combat/visual differences and continuation to Mysterious Woods,
+  Tail Cave and the full subsequent quest.

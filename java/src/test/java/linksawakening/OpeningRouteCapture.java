@@ -54,11 +54,13 @@ public final class OpeningRouteCapture {
         int target = Integer.decode(parts[1]);
         int value = switch (parts[0]) {
             case "room" -> s.room();
+            case "dialog" -> s.dialog() ? 1 : 0;
+            case "sword" -> s.sword();
             case "x" -> s.x();
             case "y" -> s.y();
             default -> throw new IllegalArgumentException(condition);
         };
-        if (parts[0].equals("room")) return value == target;
+        if (!parts[0].equals("x") && !parts[0].equals("y")) return value == target;
         return button.startsWith("left") || button.startsWith("up") ? value <= target : value >= target;
     }
 

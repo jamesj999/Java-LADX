@@ -214,6 +214,33 @@ final class BeachOpeningRuntimeTest {
     }
 
     @Test
+    void landedOwlReleasesLinkForTheFiveSourceInteractionCountdownFrames() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
+            0, 0, ENTITY_OWL_EVENT, 0x08, 0x10, EntityStatus.ACTIVE,
+            catalog.forOwlEvent(false), 0)), false, () -> 0, catalog,
+            new RomEnemyCombatTables(rom));
+        runtime.setEntityRoomId(BEACH_ROOM);
+        int frame = 0;
+        runtime.tick(frame++, 0x58, 0x44, () -> 0);
+        while (runtime.owlEventStateForTest(0) != 2 && frame < 200) {
+            runtime.tick(frame++, 0x58, 0x45, () -> 0);
+            runtime.consumePendingLinkMotionBlockRequests();
+        }
+        assertEquals(2, runtime.owlEventStateForTest(0));
+        // Captured ROM: C111 counts 5..1 while C1A8 retains the pre-decrement
+        // value. No motion-block write occurs in these state-2 frames.
+        for (int delay = 0; delay < 5; delay++) {
+            runtime.tick(frame++, 0x58, 0x45 + delay, () -> 0);
+            assertTrue(runtime.consumePendingLinkMotionBlockRequests().isEmpty());
+            assertTrue(runtime.consumePendingDialogRequests().isEmpty());
+        }
+        runtime.tick(frame, 0x58, 0x4A, () -> 0);
+        assertEquals(1, runtime.consumePendingDialogRequests().size());
+    }
+
+    @Test
     void forestOwlRequiresTheSwordAndStartsItsFlightIntoTheRoom() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);

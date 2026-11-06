@@ -36,7 +36,9 @@ article{display:flex;gap:16px;flex-wrap:wrap}figure{margin:0}img{width:240px;ima
         'requirement. Sprite, collision, input and display differences remain to investigate. '
         'No masks or screenshot alignment are applied.</p>']
 samples = [(0, 'Marin opening'), (16, 'Shield received'), (21, 'House exit')]
-if checkpoint_count > 22: samples.append((checkpoint_count - 1, 'Beach approach'))
+if checkpoint_count >= 69:
+    samples = [(16, 'Shield received'), (53, 'Owl conversation'), (65, 'Sword pickup'), (68, 'Sword equipped')]
+elif checkpoint_count > 22: samples.append((checkpoint_count - 1, 'Beach approach'))
 for i, label in samples:
     html.append(f'<section><p>{label}: {rows[i]["pixels"]} differing pixels</p><article>')
     for folder, title in [('original', 'Original ROM'), ('ours', 'Java Main loop')]:
