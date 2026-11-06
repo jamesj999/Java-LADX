@@ -9981,7 +9981,9 @@ public final class RoomEntityRuntime {
 
     public InstrumentWarpVisual instrumentWarpVisual() {
         for (int slot = 0; slot < instrumentPickupState.length; slot++) {
-            if (instrumentPickupSequenceActive[slot] && instrumentPickupState[slot] == 3) {
+            // The ROM leaves the white BG/palettes in VRAM after the controller
+            // finishes. Keep them until the destination room replaces this runtime.
+            if (instrumentPickupState[slot] == 3 || instrumentPickupState[slot] == 4) {
                 return new InstrumentWarpVisual(instrumentBackgroundFade[slot],
                     instrumentObjectFade[slot], instrumentHintBatches[slot],
                     instrumentHintTiles, instrumentHintAttributes,

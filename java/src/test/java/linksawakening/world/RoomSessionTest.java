@@ -1675,6 +1675,9 @@ final class RoomSessionTest {
         assertEquals(session.activeRoom().firstWarp(),
             session.consumeInstrumentTransitionRequest());
         assertEquals(0x80, session.bowWowState());
+        assertEquals(9, session.renderSnapshot().instrumentWarp().commandBatches());
+        session.loadOverworld(0xD3);
+        assertNull(session.renderSnapshot().instrumentWarp());
     }
 
     @Test
