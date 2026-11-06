@@ -3027,6 +3027,32 @@ public final class RoomEntityRuntime {
                     EntityCombatEvent.SoundChannel.NOISE, 0x13));
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
+                && (entity.type() == ENTITY_ROLLING_BONES
+                    || entity.type() == ENTITY_ROLLING_BONES_BAR)) {
+                // BossIntro runs before ReturnIfNonInteractive_06.
+                if (entity.type() == ENTITY_ROLLING_BONES
+                    && !roomTransitionActive && !inventoryAppearing) {
+                    BossIntroMotion.Update intro = bossIntroMotion.advance(
+                        options1(entity.slot()), entity.type(), entityMapId,
+                        transitionSequenceCounter);
+                    if (intro.musicTrack() >= 0) pendingMusicTrack = intro.musicTrack();
+                }
+                // The bar's room-clear check precedes its interaction guard.
+                if (entity.type() == ENTITY_ROLLING_BONES_BAR && (entityRoomStatus & 0x20) != 0) {
+                    disableEntityWithoutPersistence(entity.slot());
+                    continue;
+                }
+                // ReturnIfNonInteractive_06 reads the pre-decrement wC1A8.
+                if (!handlerInteractive || countdownBlocksInteraction) continue;
+                if (entity.type() == ENTITY_ROLLING_BONES
+                    && enemyIgnoreHitsCountdown[entity.slot()] != 0) {
+                    // ApplyRecoilIfNeeded_06 pops the handler return address:
+                    // no jump physics or AI movement occurs during recoil.
+                    slots[index] = applyEnemyRecoilIfNeeded(entity, backgroundCollision).entity();
+                    continue;
+                }
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing
                 && (usesSharedRecoil(entity.type())
                     || (entity.type() == ENTITY_POKEY
                         && pokeyMotion.isSegment(entity.slot())
@@ -4163,12 +4189,6 @@ public final class RoomEntityRuntime {
                 && entity.type() == ENTITY_ROLLING_BONES) {
                 RoomEntity bar = firstLoadedEntityOfType(ENTITY_ROLLING_BONES_BAR);
                 if (bar != null) {
-                    BossIntroMotion.Update bossIntro = bossIntroMotion.advance(
-                        options1(entity.slot()), entity.type(), entityMapId,
-                        transitionSequenceCounter);
-                    if (bossIntro.musicTrack() >= 0) {
-                        pendingMusicTrack = bossIntro.musicTrack();
-                    }
                     RollingBonesMotion.BossUpdate bossUpdate = rollingBonesMotion.advanceBoss(
                         entity, bar, enemyTransitionCountdown[entity.slot()],
                         enemyHealth[entity.slot()], backgroundCollision);

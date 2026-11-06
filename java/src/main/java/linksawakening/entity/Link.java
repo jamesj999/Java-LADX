@@ -1442,7 +1442,8 @@ public final class Link implements RocsFeather.JumpTarget {
         // set by UpdateLinkAnimation while wSwordAnimationState != NONE. The
         // ROM still refreshes hLinkDirection from held single-axis input before
         // this early-out path, so direction update must happen above.
-        if (itemsBlockMotion()) {
+        // $02:43C3 bypasses the item motion gate while Link is above ground.
+        if (itemsBlockMotion() && !airborne) {
             movingThisFrame = false;
             walkTickCounter = 0;
             walkFrame = 0;

@@ -1172,19 +1172,45 @@ final class LinkTest {
     }
 
     @Test
-    void blockedMotionStillTicksJumpGravity() {
+    void blockedMotionStillTicksJumpGravity() throws Exception {
         InputState inputState = new InputState();
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         PlayerState playerState = new PlayerState();
         ItemRegistry itemRegistry = new ItemRegistry();
         itemRegistry.register(playerState.itemA(), new BlockingItem());
-        Link link = new Link(inputState, inputConfig, null, null, null, playerState, itemRegistry);
+        Link link = new Link(inputState, inputConfig, RomTables.loadFromRom(loadRom()), null, null, playerState, itemRegistry);
 
         link.useRocsFeather();
         link.update();
 
         assertTrue(link.isAirborne());
         assertEquals(0x1E, link.zVelocity());
+    }
+
+    @Test
+    void swordSwingBlocksWalkingButDoesNotStopAFeatherJump() throws Exception {
+        InputState input = new InputState();
+        InputConfig config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        PlayerState player = new PlayerState();
+        ItemRegistry registry = new ItemRegistry();
+        Sword sword = new Sword(null, null);
+        registry.register(player.itemA(), sword);
+        RomTables tables = RomTables.loadFromRom(loadRom());
+        OverworldCollision collision = new OverworldCollision(tables);
+        collision.setRoom(emptyRoomObjectsArea());
+        Link link = new Link(input, config, tables, collision, null, player, registry);
+        link.setPixelPosition(40, 40);
+        input.onKeyEvent(config.rightKey(), GLFW_PRESS);
+        sword.onPress();
+        link.update();
+        assertEquals(40, link.pixelX());
+        link.useRocsFeather();
+        link.update();
+        assertEquals(41, link.pixelX());
+        assertTrue(link.isAirborne());
+        assertTrue(sword.blocksMotion());
+        link.update();
+        assertEquals(42, link.pixelX());
     }
 
     @Test
@@ -2054,7 +2080,7 @@ final class LinkTest {
             resolvedAnimationState(link));
     }
 
-    private static Link linkFacing(int direction) {
+    private static Link linkFacing(int direction) throws Exception {
         InputState inputState = new InputState();
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         PlayerState playerState = new PlayerState();
@@ -2076,7 +2102,7 @@ final class LinkTest {
             default:
                 throw new IllegalArgumentException("direction " + direction);
         }
-        Link link = new Link(inputState, inputConfig, null, null, null, playerState, itemRegistry);
+        Link link = new Link(inputState, inputConfig, RomTables.loadFromRom(loadRom()), null, null, playerState, itemRegistry);
         link.update();
         return link;
     }

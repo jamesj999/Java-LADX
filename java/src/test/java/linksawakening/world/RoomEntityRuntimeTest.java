@@ -7589,11 +7589,11 @@ final class RoomEntityRuntimeTest {
             snapshotWithSlots(bar, boss), true, () -> 0, catalog,
             new RomEnemyCombatTables(rom));
 
-        runtime.tick(0, 0xC0, 0xC0, () -> 0);
+        runtime.tick(0, 0x50, 0x48, () -> 0);
         assertEquals(0x18, runtime.transitionCountdown(1));
 
         for (int frame = 1; frame <= 0x18; frame++) {
-            runtime.tick(frame, 0xC0, 0xC0, () -> 0);
+            runtime.tick(frame, 0x50, 0x48, () -> 0);
         }
 
         assertEquals(1, runtime.rollingBonesBarStateForTest(0));
@@ -7603,13 +7603,32 @@ final class RoomEntityRuntimeTest {
             runtime.snapshot().slots().get(0).spriteDefinition().shape());
 
         for (int frame = 0x19; frame <= 0x1C; frame++) {
-            runtime.tick(frame, 0xC0, 0xC0, () -> 0);
+            runtime.tick(frame, 0x50, 0x48, () -> 0);
         }
         RoomEntity animatedBar = runtime.snapshot().slots().get(0);
         assertEquals(
             catalog.forRollingBonesBar(0, animatedBar.y(), 1).dynamicVariant(0),
             animatedBar.spriteDefinition().dynamicVariant(0));
         assertEquals(0, animatedBar.spriteVariant());
+    }
+
+    @Test
+    void rollingBonesRecoilSkipsItsApproachAndJumpPhysics() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RoomEntity bar = new RoomEntity(0, 1, 0x82, 56, 64, EntityStatus.ACTIVE,
+            catalog.forEntityType(0x82, EntityRoomLoader.RoomTable.INDOORS_A, -1), 0);
+        RoomEntity boss = new RoomEntity(1, 0, 0x81, 71, 64, EntityStatus.ACTIVE,
+            catalog.forEntityType(0x81, EntityRoomLoader.RoomTable.INDOORS_A, -1), 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotWithSlots(bar, boss),
+            true, () -> 0, catalog, new RomEnemyCombatTables(rom));
+        runtime.configureEnemyRecoilForTest(1, 87, 64, 0x30);
+        runtime.setEnemyIgnoreHitsCountdownForTest(1, 10);
+        runtime.tick(0, 80, 72, () -> 0);
+        assertEquals(68, runtime.snapshot().slots().get(1).x());
+        assertEquals(0, runtime.transitionCountdown(1),
+            "Recoil must not also enter the prepare-roll state");
+        assertEquals(9, runtime.enemyIgnoreHitsCountdown(1));
     }
 
     @Test

@@ -1352,7 +1352,7 @@ final class RoomTransitionCoordinatorTest {
                 == EntitySpriteHandlerCatalog.ENTITY_ROLLING_BONES)
             .findFirst().orElseThrow();
         session.tickEntitiesWithProjectileEvents(
-            frame++, 0, 0, 0, 0, Link.DIRECTION_DOWN, false);
+            frame++, 80, 72, 0, 0, Link.DIRECTION_DOWN, false);
         rollingBones = session.activeRoom().entities().slots().get(rollingBones.slot());
         for (int hit = 0; hit < 16
             && session.activeRoom().entities().slots().get(rollingBones.slot()).status()
@@ -1368,7 +1368,7 @@ final class RoomTransitionCoordinatorTest {
                 "hit " + hit + ": " + hitEvents);
             for (int recovery = 0; recovery < 0x80; recovery++) {
                 session.tickEntitiesWithProjectileEvents(
-                    frame++, 0, 0, 0, 0, Link.DIRECTION_DOWN, false);
+                    frame++, 80, 72, 0, 0, Link.DIRECTION_DOWN, false);
             }
         }
         assertEquals(EntityStatus.DYING,

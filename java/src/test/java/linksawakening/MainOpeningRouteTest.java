@@ -282,6 +282,18 @@ final class MainOpeningRouteTest {
         assertTrue(checkpoints.getLast().health() > 0);
         assertTrue(entityCheckpoints.getLast().contains("81:ACTIVE"));
         assertTrue(entityCheckpoints.getLast().contains("82:ACTIVE"));
+        int entryHealth = Main.headlessState().health();
+        Main.headlessButton("right+a+b", true);
+        for (int tick = 0; tick < 24; tick++) {
+            OpeningRouteCapture.pulseButtons("right+a*+b*", tick);
+            advanceAlive();
+        }
+        Main.headlessButton("right+a+b", false);
+        assertEquals(41, Main.headlessState().x(),
+            "A sword swing must not halt the first Feather approach to Rolling Bones");
+        assertEquals(72, Main.headlessState().y());
+        assertEquals(entryHealth, Main.headlessState().health());
+
 
 
 
