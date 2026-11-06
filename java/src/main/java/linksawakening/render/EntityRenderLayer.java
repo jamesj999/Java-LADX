@@ -17,7 +17,6 @@ import static linksawakening.world.RoomConstants.ROOM_PIXEL_WIDTH;
 /** Renders the ROM-backed OAM display lists for the room's loaded entities. */
 public final class EntityRenderLayer implements RenderLayer {
     private static final int ENTITY_BOMB = 0x02;
-    private static final int ENTITY_SWORD_SHIELD_PICKUP = 0x31;
     private static final int ENTITY_WINGED_OCTOROK = 0xAE;
     private static final int ENTITY_PINCER = 0xB0;
     private static final int BOMB_NORMAL_DEFINITION_BANK = 0x03;
@@ -242,12 +241,7 @@ public final class EntityRenderLayer implements RenderLayer {
                 sideScrolling);
         } else if (definition.shape() == EntitySpriteDefinition.Shape.SINGLE) {
             EntitySpriteDefinition.Variant variant = definition.variant(spriteVariant);
-            // The ROM's sword/shield pickup display list uses tile $84/$86,
-            // which lives in the gameplay VRAM item block loaded by
-            // LoadBaseTiles, not in the four entity-sheet slots ($40-$7F).
-            EntitySpriteTileSnapshot source = entity.type() == ENTITY_SWORD_SHIELD_PICKUP
-                ? null : tiles;
-            renderOamSprite(context, palettes, source, withTileOffset(variant.first(), entity),
+            renderOamSprite(context, palettes, tiles, withTileOffset(variant.first(), entity),
                 flipAttribute,
                 entityX + 4, entityY - (sideScrolling ? 4 : 0));
         } else if (definition.shape() == EntitySpriteDefinition.Shape.RECTANGLE) {
@@ -355,7 +349,12 @@ public final class EntityRenderLayer implements RenderLayer {
             paletteIndex = 4;
         }
         int[] palette = resolvePalette(palettes, paletteIndex);
-        if (tiles == null) {
+        // Room snapshots own only the four replaceable entity sheets,
+        // $40-$7F. Common item graphics (heart pieces, rupees, etc.) and
+        // Link's shared tiles remain in gameplay VRAM outside that range.
+        int base = EntitySpriteTileSnapshot.BASE_TILE_INDEX;
+        if (tiles == null || oam.tile() < base
+            || oam.tile() >= base + EntitySpriteTileSnapshot.TILE_COUNT) {
             IndexedRenderer.drawSpriteTile8x16(context.buffer(), context.gpu(), oam.tile(),
                 screenX, screenY, (attributes & OAM_XFLIP) != 0,
                 (attributes & OAM_YFLIP) != 0, palette);

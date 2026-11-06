@@ -76,6 +76,10 @@ public final class DialogEmulatorCapture {
             new OverworldTilesetTable(rom), collision, null, null);
         var profile = NewGameStartProfile.romDefaults();
         session.loadIndoor(profile.mapId(), profile.roomId());
+        // Enter the normal entity init pass before synchronizing NPC clocks.
+        // Hidden pot drops must get their source init state; they cannot rely
+        // on missing shared-item graphics to stay invisible in this fixture.
+        session.tickEntities(0, linkX, linkY);
         var player = new PlayerState();
         profile.initializePlayerState(player);
         var input = new InputState();

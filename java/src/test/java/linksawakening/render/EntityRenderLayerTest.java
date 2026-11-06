@@ -27,6 +27,29 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 final class EntityRenderLayerTest {
 
     @Test
+    void sharedItemTilesUseGameplayVramWhileRoomTilesKeepTheirSnapshot() {
+        GPU gpu = new GPU();
+        writeSolidTile(gpu, 0x40, 1);
+        writeSolidTile(gpu, 0x41, 1);
+        EntitySpriteTileSnapshot tiles = gpu.snapshotEntityTiles();
+        writeSolidTile(gpu, 0x40, 3);
+        writeSolidTile(gpu, 0x41, 3);
+        writeSolidTile(gpu, 0xAC, 2); // Heart-piece graphics, outside the sheet snapshot.
+        writeSolidTile(gpu, 0xAD, 2);
+        var definition = pairDefinition(new EntitySpriteDefinition.OamAttribute(0xAC, 0),
+            new EntitySpriteDefinition.OamAttribute(0x40, 0));
+        var entity = new RoomEntity(0, 0, 0x35, 56, 64, EntityStatus.ACTIVE, definition, 0);
+        byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
+        int[][] palettes = {{0, 0x112233, 0x445566, 0x778899}};
+        new EntityRenderLayer(snapshot(null, tiles, entity), palettes, new ScrollController())
+            .render(new RenderContext(buffer, gpu));
+        assertEquals(0x445566, pixelColor(buffer, 48, 48));
+        assertEquals(0x445566, pixelColor(buffer, 48, 56));
+        assertEquals(0x112233, pixelColor(buffer, 56, 48));
+        assertEquals(0x112233, pixelColor(buffer, 56, 56));
+    }
+
+    @Test
     void dialogHidesWholeSpritesAtTheRomOamThresholds() {
         GPU gpu = new GPU();
         writeSolidTile(gpu, 0x40, 1);

@@ -3234,3 +3234,28 @@ of scope.
   and output `java/build/mushroom-route` (Gradle `build/mushroom-route`). Next:
   resolve cave visual discrepancies and verify the return, witch exchange,
   raccoon and Tail Key sequence before Tail Cave.
+
+## Shared item sprite tile sources — 2026-11-06
+
+- Traced the missing cave heart piece to rendering, not entity loading: entity
+  35 was active at (56,64), but its $AC display-list tile was queried from the
+  room sprite snapshot, which contains only $40–$7F. Shared graphics outside
+  that range now use gameplay VRAM for all OAM shapes; replaceable room sheets
+  continue using the captured room tiles. Removed the narrower sword-only
+  single-sprite workaround in favor of this address-based selection.
+- Added a regression proving a mixed display list reads the shared $AC tile
+  from live VRAM while still reading $40 from the snapshot after VRAM changes.
+  The isolated dialogue capture fixture now executes the entity init pass
+  before synchronizing NPC clocks, so hidden pot drops receive their proper
+  hidden state. Previously they were accidentally invisible due to the same
+  missing shared graphics. The original reference hashes are unchanged and
+  all dialogue parity checks pass.
+- All 2,312 tests pass. The continuous mushroom route remains traversable;
+  the post-push cave frame now differs by 21 pixels rather than 176, and the
+  heart piece is visible. Evidence:
+  `docs/validation/shared-item-sprites-2026-11-06.html`.
+- Whole-route exact count is 7/129 (previously 8/129), maximum 4,597 differing
+  pixels. Making shared drops visible also exposes remaining loot/phase
+  differences; do not interpret an exact-count reduction as permission to
+  hide them again. Heart-piece collection itself is still unverified, as are
+  the witch/raccoon progression and the remainder of the game.
