@@ -25,6 +25,27 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 final class EntityRenderLayerTest {
+    @Test
+    void kingRectangleLayersUseTheDeathFlashPalette() {
+        GPU gpu = new GPU();
+        writeSolidTile(gpu, 0x40, 1);
+        writeSolidTile(gpu, 0x41, 1);
+        var definition = EntitySpriteDefinition.dynamic(0xE4, 0x15, 0x4A15, 0,
+            List.of(List.of(new EntitySpriteDefinition.DynamicSprite(0, 0,
+                new EntitySpriteDefinition.OamAttribute(0x40, 2),
+                EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, false))));
+        int[][] palettes = new int[8][4];
+        palettes[2][1] = 0x123456;
+        palettes[4][1] = 0xABCDEF;
+        for (int flash : new int[] {0, 0x10}) {
+            var entity = new RoomEntity(0, 0, 0xE4, 56, 64, EntityStatus.DYING,
+                definition, 0, flash, 0, 0);
+            byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
+            new EntityRenderLayer(snapshot(null, gpu.snapshotEntityTiles(), entity), palettes,
+                new ScrollController()).render(new RenderContext(buffer, gpu));
+            assertEquals(flash == 0 ? 0x123456 : 0xABCDEF, pixelColor(buffer, 48, 48));
+        }
+    }
 
     @Test
     void sharedItemTilesUseGameplayVramWhileRoomTilesKeepTheirSnapshot() {

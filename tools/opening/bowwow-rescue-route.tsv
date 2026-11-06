@@ -814,3 +814,47 @@ up y=80 0
 none kingstate=5 0
 down+a* y=96 0
 a* 72 0
+b* kingstate=3 0
+up y=64 0 down y=96 0
+none kingstate=5 0
+down+a* y=82 0 up+a* y=68 0
+a* 72 0
+up+b* y=48 0 none 0 0
+right+b* x=104 0 none 0 0
+down+b* y=112 0 none 0 0
+up+b* y=64 0 none 0 0
+b* kingstate=3 0
+down y=96 0 up y=48 0
+none kingstate=5 0
+up+a* y=76 0 down+a* y=90 0
+a* 72 0
+left+b* x=64 0 none 0 0
+down+b* y=112 0 none 0 0
+b* kingstate=3 0
+up y=80 0 up y=72 0
+none kingstate=5 0
+down+a* y=92 0 down+a* y=90 0
+right+a* 96 0
+none 0 0 none 80 0
+left+b* x=52 20
+up+b* y=48 0 none 0 0
+down+b* y=88 0 none 0 0
+b* kingstate=3 0
+up+b y=56 0 up y=56 0
+none kingstate=5 0
+down+a* y=72 0 down+a* y=76 0
+a* 96 0
+none 360 0
+up y=64 0
+right room=0xE2 20
+right x=120 0
+up y=64 0
+right bowwow=1 120
+a* dialog=0 20
+left room=0xE1 20
+left room=0xE0 20
+left x=24 0
+down room=0xF0 20
+down y=64 0
+right x=80 0
+down room=0x35 60

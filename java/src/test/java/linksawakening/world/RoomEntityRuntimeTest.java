@@ -7160,10 +7160,17 @@ final class RoomEntityRuntimeTest {
 
         runtime.resolveCombat(1, 0x30, 0x58, false, true,
             true, 0x58, 8, 0x58, 8);
-        for (int frame = 2; frame < 0x45; frame++) {
+        runtime.tick(2, 0x30, 0x58, () -> 0);
+        assertEquals(0xA0, runtime.transitionCountdownForTest(0));
+        for (int frame = 3; frame <= 162; frame++) runtime.tick(frame, 0x30, 0x58, () -> 0);
+        assertEquals(0xC0, runtime.transitionCountdownForTest(0));
+        assertTrue(runtime.snapshot().slots().get(0).loaded());
+        assertEquals(0, runtime.consumePendingRoomStatusMask());
+        for (int frame = 163; frame < 354; frame++) {
             runtime.tick(frame, 0x30, 0x58, () -> 0);
         }
-
+        assertTrue(runtime.snapshot().slots().get(0).loaded());
+        runtime.tick(354, 0x30, 0x58, () -> 0);
         assertFalse(runtime.snapshot().slots().get(0).loaded());
         assertEquals(0x20, runtime.consumePendingRoomStatusMask());
     }

@@ -1,0 +1,17 @@
+{
+  "checkpoints": 843,
+  "rescue_checkpoint": 835,
+  "bowwow_state": 1,
+  "final_map": 0,
+  "final_room": 53,
+  "final_link_position": [
+    104,
+    80
+  ],
+  "final_health": 32,
+  "king_lethal_hit_to_unload_frames": {
+    "java": 353,
+    "rom": 353
+  },
+  "remaining": "Earlier combat/power-up and entry-motion differences; follower position/animation phase; Goponga Swamp and remainder of game"
+}

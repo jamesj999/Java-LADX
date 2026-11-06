@@ -66,7 +66,8 @@ public final class OpeningRouteCapture {
         String routeHash = java.util.HexFormat.of().formatHex(
             java.security.MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(route)));
         Files.writeString(out.resolve("java.json"),
-            "{\"route_sha256\":\"" + routeHash + "\",\"checkpoints\":" + segment + "}");
+            "{\"route_sha256\":\"" + routeHash + "\",\"checkpoints\":" + segment
+                + ",\"bowwow_state\":" + Main.headlessBowWowState() + "}");
     }
     static void pulseButtons(String buttons, int tick) {
         for (String button : buttons.split("\\+")) {
@@ -81,6 +82,7 @@ public final class OpeningRouteCapture {
         String[] parts = condition.split("=");
         int target = Integer.decode(parts[1]);
         int value = switch (parts[0]) {
+            case "bowwow" -> Main.headlessBowWowState();
             case "kingstate" -> Integer.parseInt(Main.headlessMoblinKingTrace().split(",")[0]);
             case "instrumentstate" -> Integer.parseInt(Main.headlessInstrumentTrace().split(";")[1].split(",")[1]);
             case "room" -> s.room();

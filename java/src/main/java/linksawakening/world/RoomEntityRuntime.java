@@ -435,6 +435,7 @@ public final class RoomEntityRuntime {
     private final int[] ironMasksMaskSourceHookshotSlot =
         new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] rollingBonesSwordHitFrame = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] moblinKingLethalHitFrame = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyFlashCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyIgnoreHitsCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyHitboxFlags = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -2628,6 +2629,10 @@ public final class RoomEntityRuntime {
                     falling.z());
                 continue;
             } else if (status == EntityStatus.DYING) {
+                if (entity.type() == ENTITY_MOBLIN_KING) {
+                    advanceMoblinKingDestruction(entity, frame, randomByteSupplier);
+                    continue;
+                }
                 if (entity.type() == ENTITY_GENIE
                     && geniePrivateState1[entity.slot()] == 1) {
                     advanceGenieDestruction(entity, frame, randomByteSupplier);
@@ -5860,6 +5865,10 @@ public final class RoomEntityRuntime {
                 } else if (swordDamage > 0 && enemyHealth[entity.slot()] == 0) {
                     dyingCountdown[entity.slot()] = entity.type() == ENTITY_MOLDORM
                         ? 0 : (attackContext.powerRecoil() ? 0x40 : 0x2F);
+                    if (entity.type() == ENTITY_MOBLIN_KING) {
+                        bossDeathProducerState[entity.slot()] = 0;
+                        moblinKingLethalHitFrame[entity.slot()] = (frameCounter & 255) + 1;
+                    }
                     if (entity.type() == ENTITY_MOLDORM) {
                         bossDeathProducerState[entity.slot()] = 0;
                         moldormDestructionTailState[entity.slot()] = 0;
@@ -9525,6 +9534,43 @@ public final class RoomEntityRuntime {
             transientVfxRequests.add(new TransientVfxRequest(TransientVfxType.POOF, x, y));
             pendingEntityEvents.add(new EntityCombatEvent(
                 slot, entity.type(), 0, false,
+                EntityCombatEvent.SoundChannel.NOISE, 0x13));
+        }
+    }
+
+    /** Bank $15:7C37..7CA5: two death waits, then DidKillEnemy. */
+    private void advanceMoblinKingDestruction(RoomEntity source, int frame, IntSupplier random) {
+        int slot = source.slot();
+        // Main resolves sword damage before dispatch; the ROM dispatches the
+        // dying branch on the following frame, after this hit's active handler.
+        boolean hitThisFrame = moblinKingLethalHitFrame[slot] == frame + 1;
+        moblinKingLethalHitFrame[slot] = 0;
+        if (hitThisFrame) return;
+        if (spriteHandlers != null) source = withDefinition(source,
+            spriteHandlers.forMoblinKingState(12, -1, source.z() != 0), 0);
+        slots[slot] = withFlipAttribute(source, baseEntityFlipAttribute[slot]
+            ^ ((enemyFlashCountdown[slot] << 2) & 0x10));
+        if (bossDeathProducerState[slot] == 0) {
+            enemyTransitionCountdown[slot] = 0xA0;
+            enemyFlashCountdown[slot] = 0xFF;
+            bossDeathProducerState[slot] = 1;
+        } else if (bossDeathProducerState[slot] == 1) {
+            if (enemyTransitionCountdown[slot] == 0) {
+                enemyTransitionCountdown[slot] = 0xC0;
+                enemyFlashCountdown[slot] = 0xFF;
+                bossDeathProducerState[slot] = 2;
+            }
+        } else if (enemyTransitionCountdown[slot] == 0) {
+            pendingEntityEvents.add(new EntityCombatEvent(slot, source.type(), 0, false,
+                EntityCombatEvent.SoundChannel.NOISE, 0x0C));
+            swordMoblinAlertingSoundCounter = 4;
+            handleTerminalEnemyDeath(source, random);
+        } else if ((enemyTransitionCountdown[slot] & 7) == 0
+            && entityHandlerInteractive(false)) {
+            int x = (source.x() + (random.getAsInt() & 0x1F) - 0x10) & 255;
+            int y = (source.y() - source.z() + (random.getAsInt() & 0x1F) - 0x14) & 255;
+            transientVfxRequests.add(new TransientVfxRequest(TransientVfxType.POOF, x, y));
+            pendingEntityEvents.add(new EntityCombatEvent(slot, source.type(), 0, false,
                 EntityCombatEvent.SoundChannel.NOISE, 0x13));
         }
     }

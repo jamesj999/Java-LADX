@@ -92,7 +92,7 @@ try:
         if '=' in held:
             field, target = held.split('=')
             target = int(target, 0)
-            address = {'room': 0xfff6, 'x': 0xff98, 'y': 0xff99, 'dialog': 0xc19f, 'sword': 0xdb4e, 'inventorytick': 0xde06, 'bgtick': 0xffa6, 'smallkeys': 0xdbd0, 'nightmarekey': 0xdbcf, 'instrumentstate': 0xc290, 'kingstate': 0xc290}[field]
+            address = {'room': 0xfff6, 'x': 0xff98, 'y': 0xff99, 'dialog': 0xc19f, 'sword': 0xdb4e, 'inventorytick': 0xde06, 'bgtick': 0xffa6, 'smallkeys': 0xdbd0, 'nightmarekey': 0xdbcf, 'instrumentstate': 0xc290, 'kingstate': 0xc290, 'bowwow': 0xdb56}[field]
             def reached():
                 value = p.memory[address]
                 if field == 'kingstate':
@@ -134,6 +134,7 @@ try:
         'rom_sha256': hashlib.sha256(ROOT.joinpath('java/src/main/resources/rom/azle.gbc').read_bytes()).hexdigest(),
         'route_sha256': hashlib.sha256(args.route.read_bytes()).hexdigest(),
         'checkpoints': len(checkpoints),
+        'bowwow_state': p.memory[0xdb56],
         'rom_button_overrides': sum(len(line.split()) >= 4 for line in args.route.read_text().splitlines() if line and not line.startswith('#')),
         'memory_injection': False, 'save': 'fresh in-memory RAM, never saved',
     }, indent=2))

@@ -273,8 +273,11 @@ public final class EntityRenderLayer implements RenderLayer {
         for (int index = sprites.size() - 1; index >= 0; index--) {
             EntitySpriteDefinition.DynamicSprite sprite = sprites.get(index);
             int xOffset = sprite.xOffset();
+            // The king's generated list combines ROM rectangle calls, which
+            // inherit the hit/death palette flash without swapping pair origins.
+            boolean rectangleFlash = entity.type() == 0xE4;
             int entityFlipAttribute = sprite.appliesEntityFlipAttribute()
-                ? entity.entityFlipAttribute() : 0;
+                ? entity.entityFlipAttribute() : rectangleFlash ? entity.entityFlipAttribute() & 0x10 : 0;
             if (sprite.appliesEntityFlipAttribute()
                 && (entityFlipAttribute & OAM_XFLIP) != 0) {
                 // RenderActiveEntitySpritesPair swaps the two eight-pixel
@@ -286,7 +289,7 @@ public final class EntityRenderLayer implements RenderLayer {
                 ? tiles : null;
             renderOamSprite(context, palettes, source, sprite.oam(), entityFlipAttribute,
                 entityX + xOffset, entityY + sprite.yOffset(),
-                sprite.appliesEntityFlipAttribute());
+                sprite.appliesEntityFlipAttribute() || rectangleFlash);
         }
     }
 
