@@ -103,7 +103,7 @@ final class MainOpeningRouteTest {
         var mushroom = checkpoints.get(128);
         assertEquals(0, mushroom.map());
         assertEquals(0x50, mushroom.room());
-        assertEquals(49, mushroom.x());
+        assertEquals(50, mushroom.x());
         assertEquals(64, mushroom.y());
         assertTrue(mushroom.toadstool());
         assertTrue(mushroom.health() > 0);
@@ -152,7 +152,7 @@ final class MainOpeningRouteTest {
         assertEquals(0x41, end.room());
         assertEquals(1, end.tailKey());
         assertFalse(end.dialog());
-        var entrance = checkpoints.get(287);
+        var entrance = checkpoints.get(288);
         assertEquals(0, entrance.map());
         assertEquals(0x17, entrance.room());
         assertTrue(entrance.dialog());

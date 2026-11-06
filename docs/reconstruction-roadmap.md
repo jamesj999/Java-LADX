@@ -3428,3 +3428,11 @@ of scope.
   metrics: `java/src/test/resources/opening/tail-cave-entry/`. Next: carried
   Link/shield sprite discrepancy, then Tail Cave enemies, puzzles and boss.
   Full quest, death flow, optional content and release verification remain.
+
+
+### Dialogue shield and ordinary enemy death — 2026-11-06
+
+- Shield use now consults the active gameplay dialogue gate, including render-time checks. Carrying poses use the ROM’s five walking tables ($02:4910), including the mirror shield.
+- Ordinary lethal hits start the source $2F countdown; powered hits retain $40. EntityDeathHandler now advances recoil and switches to $1F when ignore-hits expires, emitting the destruction sound. Boss-specific death handlers remain separate.
+- Added dialogue pose and normal/powered death regression coverage. Verified normal-input dialogue captures against PyBoy: Link stays unchanged across B press/release, with zero RGB555 Link differences from the ROM.
+- Updated the opening replay to fight on the return path, avoid the electric enemy, and realign after forest recoil. Both engines complete 291 checkpoints alive through Tail Cave. See validation/dialogue-and-death-2026-11-06.html and test/resources/opening/dialogue-and-death metadata. Full-frame parity remains incomplete; the game is not yet production-ready.

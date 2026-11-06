@@ -2527,10 +2527,23 @@ public final class RoomEntityRuntime {
                 if (dyingCountdown[entity.slot()] == 0) {
                     handleTerminalEnemyDeath(entity, randomByteSupplier);
                 } else {
-                    RoomEntity updated = refreshColorShellDisplay(entity, status);
+                    int slot = entity.slot();
+                    int presentationCountdown = dyingCountdown[slot];
+                    // EntityDeathHandler ($03:557D): the initial counter is a
+                    // ceiling, not a fixed wait. Begin destruction once the
+                    // hit recoil has expired; bosses use their handlers above.
+                    if (presentationCountdown >= 0x20 && enemyIgnoreHitsCountdown[slot] == 0) {
+                        dyingCountdown[slot] = 0x1F;
+                        pendingEntityEvents.add(new EntityCombatEvent(
+                            slot, entity.type(), 0, false,
+                            EntityCombatEvent.SoundChannel.NOISE, 0x13));
+                    }
+                    RoomEntity updated = enemyIgnoreHitsCountdown[slot] > 0
+                        ? applyEnemyRecoilIfNeeded(entity, backgroundCollision).entity() : entity;
+                    updated = refreshColorShellDisplay(updated, status);
                     slots[index] = withDeathPresentation(updated,
-                        deathSpriteVariantForCountdown(dyingCountdown[entity.slot()]),
-                        powerRecoilDeath[entity.slot()]);
+                        deathSpriteVariantForCountdown(presentationCountdown),
+                        powerRecoilDeath[slot]);
                 }
                 continue;
             } else if (status == EntityStatus.BURNING) {
@@ -5642,7 +5655,7 @@ public final class RoomEntityRuntime {
                     slots[entity.slot()] = withStatus(entity, EntityStatus.STUNNED);
                 } else if (swordDamage > 0 && enemyHealth[entity.slot()] == 0) {
                     dyingCountdown[entity.slot()] = entity.type() == ENTITY_MOLDORM
-                        ? 0 : 0x40;
+                        ? 0 : (attackContext.powerRecoil() ? 0x40 : 0x2F);
                     if (entity.type() == ENTITY_MOLDORM) {
                         bossDeathProducerState[entity.slot()] = 0;
                         moldormDestructionTailState[entity.slot()] = 0;
@@ -6551,7 +6564,7 @@ public final class RoomEntityRuntime {
         } else {
             enemyHealth[targetSlot] = Math.max(0, enemyHealth[targetSlot] - enemyDamage);
             if (enemyHealth[targetSlot] == 0) {
-                dyingCountdown[targetSlot] = 0x40;
+                dyingCountdown[targetSlot] = 0x2F;
                 powerRecoilDeath[targetSlot] = false;
                 slots[targetSlot] = withDeathPresentation(
                     withStatus(target, EntityStatus.DYING), -1, false);

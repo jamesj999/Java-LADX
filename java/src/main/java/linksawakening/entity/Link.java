@@ -15,6 +15,7 @@ import linksawakening.rom.RomTables;
 import linksawakening.state.PlayerState;
 
 import java.util.Objects;
+import java.util.function.BooleanSupplier;
 
 /**
  * Link's state and per-frame update, ported from the LADX disassembly's
@@ -972,11 +973,18 @@ public final class Link implements RocsFeather.JumpTarget {
         }
     }
 
-    /**
-     * Mirrors wIsUsingShield: merely owning the shield is insufficient; the
-     * button bound to the slot containing it must be held this frame.
-     */
+    private BooleanSupplier shieldInputAllowed = () -> true;
+
+    /** Live input gate, also consulted when rendering a paused dialogue frame. */
+    public void setShieldInputAllowed(BooleanSupplier allowed) {
+        shieldInputAllowed = Objects.requireNonNull(allowed);
+    }
+
+    /** Mirrors wIsUsingShield: equipped, held, and permitted by gameplay input. */
     public boolean isUsingShield() {
+        if (!shieldInputAllowed.getAsBoolean()) {
+            return false;
+        }
         if (inputState == null || inputConfig == null || playerState == null) {
             return false;
         }
@@ -2206,6 +2214,14 @@ public final class Link implements RocsFeather.JumpTarget {
         }
         if (airborne && jumpAnimationFrame < 3) {
             return JUMP_ANIMATION_STATE[direction][jumpAnimationFrame];
+        }
+        if (spriteSheet != null) {
+            int carriedShield = playerState != null
+                && (playerState.itemA() == PlayerState.INVENTORY_SHIELD
+                    || playerState.itemB() == PlayerState.INVENTORY_SHIELD)
+                        ? playerState.shieldLevel() : 0;
+            return spriteSheet.walkingAnimationState(romDirectionForJavaDirection(direction),
+                normalFrame, carriedShield, isUsingShield());
         }
         if (isUsingShield() && playerState != null && playerState.shieldLevel() > 0) {
             int[][] shieldTable = playerState.shieldLevel() >= 2

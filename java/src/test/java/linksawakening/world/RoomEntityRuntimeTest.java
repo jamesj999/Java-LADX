@@ -710,8 +710,8 @@ final class RoomEntityRuntimeTest {
 
         RoomEntity rebuilt = runtime.snapshot().slots().get(0);
         assertEquals(EntityStatus.DYING, rebuilt.status());
-        assertEquals(0x10, runtime.dyingCountdown(0));
-        assertEquals(2, rebuilt.deathSpriteVariant());
+        assertEquals(0x0F, runtime.dyingCountdown(0));
+        assertEquals(1, rebuilt.deathSpriteVariant());
         assertTrue(rebuilt.powerRecoilDeath());
         assertEquals(EntitySpriteDefinition.Shape.RECTANGLE,
             rebuilt.spriteDefinition().shape());
@@ -1220,7 +1220,7 @@ final class RoomEntityRuntimeTest {
         IntSupplier randomBytes = sequence(0x00, 0x01, 0x01);
 
         runtime.tick(0, 72, 64, randomBytes);
-        for (int frame = 1; frame <= 10; frame++) {
+        for (int frame = 1; frame <= 11; frame++) {
             runtime.tick(frame, 72, 64, randomBytes);
         }
 
@@ -1288,24 +1288,24 @@ final class RoomEntityRuntimeTest {
         assertTrue(events.get(0).swordHit());
         assertEquals(0, events.get(0).linkDamage());
         assertEquals(EntityStatus.DYING, runtime.snapshot().slots().get(0).status());
-        assertEquals(0x40, runtime.dyingCountdown(0));
+        assertEquals(0x2F, runtime.dyingCountdown(0));
         assertEquals(-1, runtime.snapshot().slots().get(0).deathSpriteVariant());
         assertFalse(runtime.snapshot().slots().get(0).powerRecoilDeath());
 
-        for (int frame = 1; frame <= 0x20; frame++) {
+        for (int frame = 1; frame <= 11; frame++) {
             runtime.tick(frame, 120, 120, sequence(0x00));
         }
-        assertEquals(0x20, runtime.dyingCountdown(0));
-        assertEquals(-1, runtime.snapshot().slots().get(0).deathSpriteVariant());
-        runtime.tick(0x21, 120, 120, sequence(0x00));
         assertEquals(0x1F, runtime.dyingCountdown(0));
+        assertEquals(-1, runtime.snapshot().slots().get(0).deathSpriteVariant());
+        runtime.tick(12, 120, 120, sequence(0x00));
+        assertEquals(0x1E, runtime.dyingCountdown(0));
         assertEquals(3, runtime.snapshot().slots().get(0).deathSpriteVariant());
 
-        for (int frame = 0x22; frame < 0x40; frame++) {
+        for (int frame = 13; frame < 42; frame++) {
             runtime.tick(frame, 120, 120, sequence(0x00));
         }
         assertTrue(runtime.snapshot().slots().get(0).loaded());
-        runtime.tick(0x40, 120, 120, sequence(0x00));
+        runtime.tick(42, 120, 120, sequence(0x00));
         assertFalse(runtime.snapshot().slots().get(0).loaded());
     }
 
@@ -1324,6 +1324,12 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x40, runtime.dyingCountdown(0));
         assertEquals(-1, runtime.snapshot().slots().get(0).deathSpriteVariant());
         assertTrue(runtime.snapshot().slots().get(0).powerRecoilDeath());
+        for (int frame = 1; frame <= 11; frame++) {
+            runtime.tick(frame, 120, 120, sequence(0x00));
+        }
+        assertEquals(0x40 - 11, runtime.dyingCountdown(0));
+        assertEquals(-1, runtime.snapshot().slots().get(0).deathSpriteVariant());
+        assertTrue(runtime.enemyIgnoreHitsCountdown(0) > 0);
     }
 
     @Test
@@ -8361,7 +8367,7 @@ final class RoomEntityRuntimeTest {
         runtime.tick(0, 0, 0, () -> 0,
             (entity, direction, nextX, nextY) -> direction == 0);
 
-        for (int frame = 1; frame <= 10; frame++) {
+        for (int frame = 1; frame <= 11; frame++) {
             runtime.tick(frame, 0, 0, () -> 0);
             int expected = frame == 1 ? 0 : frame <= 9 ? 1 : 3;
             assertEquals(expected, runtime.snapshot().slots().get(slot).spriteVariant(),
@@ -8685,7 +8691,9 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x00, runtime.enemyRecoilSpeedYForTest(14));
         assertEquals(List.of(new EntityCombatEvent(14, 0x09, 0, false,
             1, -1, EntityCombatEvent.SoundChannel.JINGLE, 0x03,
-            EntityCombatEvent.SoundChannel.NONE, -1, null)),
+            EntityCombatEvent.SoundChannel.NONE, -1, null),
+            new EntityCombatEvent(14, 0x09, 0, false,
+                EntityCombatEvent.SoundChannel.NOISE, 0x13)),
             runtime.consumePendingEntityEvents());
 
         assertEquals(List.of(14), runtime.consumeBombExplosionEvents().stream()

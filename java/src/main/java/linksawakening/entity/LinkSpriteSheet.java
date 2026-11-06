@@ -31,11 +31,13 @@ public final class LinkSpriteSheet {
     // $75/$76 Ocarina poses written by LinkPlayingOcarinaHandler.
     private static final int STATE_TABLE_LENGTH = 120; // entries, 2 bytes each
 
+    private final int[] walkingStates;
     private final Tile[] tiles;
     private final int[] stateTable;  // 2 bytes per entry: topPair, bottomPair
     private final int[] attrsTable;  // 2 bytes per entry: leftHalfAttrs, rightHalfAttrs
 
-    private LinkSpriteSheet(Tile[] tiles, int[] stateTable, int[] attrsTable) {
+    private LinkSpriteSheet(Tile[] tiles, int[] stateTable, int[] attrsTable, int[] walkingStates) {
+        this.walkingStates = walkingStates;
         this.tiles = tiles;
         this.stateTable = stateTable;
         this.attrsTable = attrsTable;
@@ -60,7 +62,16 @@ public final class LinkSpriteSheet {
             attrsTable[i] = Byte.toUnsignedInt(romData[attrsOffset + i]);
         }
 
-        return new LinkSpriteSheet(tiles, stateTable, attrsTable);
+        int[] walkingStates = new int[5 * 8];
+        int walkingOffset = romOffset(0x02, 0x4910);
+        for (int i = 0; i < walkingStates.length; i++) walkingStates[i] = romData[walkingOffset + i] & 0xFF;
+        return new LinkSpriteSheet(tiles, stateTable, attrsTable, walkingStates);
+    }
+
+    /** Five source lists: no shield, carrying/using default, carrying/using mirror. */
+    public int walkingAnimationState(int romDirection, int frame, int shieldLevel, boolean usingShield) {
+        int list = shieldLevel <= 0 ? 0 : (shieldLevel >= 2 ? 3 : 1) + (usingShield ? 1 : 0);
+        return walkingStates[list * 8 + romDirection * 2 + (frame & 1)];
     }
 
     /**

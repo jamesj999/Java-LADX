@@ -973,6 +973,53 @@ final class LinkTest {
     }
 
     @Test
+    void dialogueBlocksShieldUseAndRaisedPoseUntilGameplayResumes() throws Exception {
+        InputState input = new InputState();
+        InputConfig config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        PlayerState player = new PlayerState();
+        player.setShieldLevel(1);
+        player.setItemB(PlayerState.INVENTORY_SHIELD);
+        Link link = new Link(input, config, null, null, LinkSpriteSheet.loadFromRom(loadRom()),
+            player, new ItemRegistry());
+        java.util.concurrent.atomic.AtomicBoolean dialogue = new java.util.concurrent.atomic.AtomicBoolean(true);
+        link.setShieldInputAllowed(() -> !dialogue.get());
+        int carryingPose = resolvedAnimationState(link);
+        input.onKeyEvent(config.bKey(), GLFW_PRESS);
+        assertFalse(link.isUsingShield());
+        assertEquals(carryingPose, resolvedAnimationState(link));
+        dialogue.set(false);
+        assertTrue(link.isUsingShield());
+        assertTrue(carryingPose != resolvedAnimationState(link));
+    }
+
+    @Test
+    void equippedShieldSelectsRomCarryingPoseWithoutAButtonPress() throws Exception {
+        byte[] rom = loadRom();
+        InputState input = new InputState();
+        InputConfig config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        PlayerState player = new PlayerState();
+        player.setItemA(PlayerState.INVENTORY_SWORD);
+        player.setItemB(PlayerState.INVENTORY_SHIELD);
+        Link link = new Link(input, config, null, null, LinkSpriteSheet.loadFromRom(rom),
+            player, new ItemRegistry());
+        for (int level : new int[]{1, 2}) {
+            player.setShieldLevel(level);
+            for (int direction = 0; direction < 4; direction++) {
+                link.setRomDirection(direction);
+                int table = level == 1 ? 0x4918 : 0x4928;
+                int offset = 2 * 0x4000 + table - 0x4000 + direction * 2;
+                assertEquals(rom[offset] & 0xFF, resolvedAnimationState(link));
+                input.onKeyEvent(config.bKey(), GLFW_PRESS);
+                assertEquals(rom[offset + 8] & 0xFF, resolvedAnimationState(link));
+                input.onKeyEvent(config.bKey(), GLFW_RELEASE);
+            }
+        }
+        player.setItemB(PlayerState.INVENTORY_MAGIC_POWDER);
+        link.setRomDirection(2);
+        assertEquals(rom[2 * 0x4000 + 0x0914] & 0xFF, resolvedAnimationState(link));
+    }
+
+    @Test
     void shieldUseSelectsTheRomDefaultAndMirrorBodyAnimationTables() throws Exception {
         InputState inputState = new InputState();
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);

@@ -360,6 +360,7 @@ public class Main {
         link = new Link(inputState, inputConfig, romTables, overworldCollision,
                         linkSpriteSheet, playerState, itemRegistry, gameplaySoundSink,
                         linkTunicPalette);
+        link.setShieldInputAllowed(() -> !GameplayDialogInput.blocksGameplay(dialogController));
         itemRegistry.register(PlayerState.INVENTORY_OCARINA, new Ocarina(
             playerState, gameplaySoundSink, new Ocarina.PlaybackTarget() {
                 @Override
