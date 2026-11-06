@@ -3396,3 +3396,35 @@ of scope.
 - Evidence: `docs/validation/tail-key-2026-11-06.html`; manifests and metrics
   in `java/src/test/resources/opening/tail-key/`. Next: normal-input return to
   Tail Cave and its dungeon; the full remaining-game objective is unchanged.
+
+### Tail Cave entrance, palettes and title (2026-11-06)
+
+- A 290-checkpoint normal-input route now travels from a fresh game through
+  the Tail Key, around the southern forest pits, unlocks the gate and enters
+  Tail Cave. Both Java and PyBoy remain alive; Main integration covers the
+  dungeon-title dialogue and subsequent interactive entrance room.
+- Fixed three gate-rendering mistakes: $82 passed to BackupObjectInRAM2 is
+  a forced-copy/bank-return argument, not a replacement object ID; the copied
+  value is $E3. Animation uses the countdown and ROM $02:5642, and changes
+  gate tiles only at countdown $18/$08. Live attributes stay unchanged;
+  persisted GBC overlays also use $E3. The opened gate now matches the ROM.
+- Dungeon BG loading previously retained overworld palettes. It now shares
+  the ROM dungeon A/B table selection used by OBJ loading, including Turtle
+  Rock's side-view exceptions. Added the 45-record room/direction selector
+  ($21:523A), palette-pointer table ($21:51F6), adjacent-room retention, and
+  separate BG versus OBJ 6/7 updates. Live-room tests cover the entrance
+  override and retention across a real adjacent room load.
+- Added the source $30-frame dungeon-title countdown for overworld entry,
+  paused by dialogue/inventory, with motion/free-movement gates at expiry.
+- Added a read-only `bgtick` replay checkpoint. Source dungeon/lava ping-pong
+  animation does not write $FFA7; corrected Java's carried linear offset
+  and tested the subsequent tide frame directly against ROM VRAM bytes.
+- All 2,325 tests pass. Final matched-animation-clock capture: 33 differing
+  pixels (13 rupee digits; 20 beside Link still under investigation); room
+  and torch graphics match. Whole route: 7/290 exact, worst 4670
+  pixels. No masking, image alignment or RAM injection; faster loading is
+  intentional. Explicit combat variants still mean this is diagnostic.
+- Evidence: `docs/validation/tail-cave-entry-2026-11-06.html`; manifests and
+  metrics: `java/src/test/resources/opening/tail-cave-entry/`. Next: carried
+  Link/shield sprite discrepancy, then Tail Cave enemies, puzzles and boss.
+  Full quest, death flow, optional content and release verification remain.

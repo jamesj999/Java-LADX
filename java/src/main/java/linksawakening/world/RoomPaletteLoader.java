@@ -70,40 +70,51 @@ public final class RoomPaletteLoader {
 
     public int[][] loadIndoor(int mapId, int roomId, int[][] fallbackPalettes,
                               int tarinFlag, int shieldLevel) {
-        if (mapId == MAP_COLOR_DUNGEON) {
-            return loadPaletteBlock(RomBank.romOffset(
-                COLOR_DUNGEON_PALETTE_BANK, COLOR_DUNGEON_PALETTE_ADDR));
-        }
-        if (mapId < INDOOR_PALETTE_MAPS_BASE_MAP) {
-            return fallbackPalettes;
-        }
-        if (mapId == 0x10 && roomId == 0xA3
-            && usesMarinHouseSpecialPalette(tarinFlag, shieldLevel)) {
-            return loadPaletteBlock(RomBank.romOffset(INTERIOR_PALETTES_BANK,
-                marinHousePaletteAddress(tarinFlag)));
-        }
+        return loadIndoor(mapId, roomId, fallbackPalettes, tarinFlag, shieldLevel, false);
+    }
 
-        int mapsEntryOffset = RomBank.romOffset(INDOOR_PALETTE_MAPS_BANK,
-            INDOOR_PALETTE_MAPS_ADDR + (mapId - INDOOR_PALETTE_MAPS_BASE_MAP) * 2);
-        int mapPtrLo = Byte.toUnsignedInt(romData[mapsEntryOffset]);
-        int mapPtrHi = Byte.toUnsignedInt(romData[mapsEntryOffset + 1]);
-        int mapPtr = (mapPtrHi << 8) | mapPtrLo;
-        if (mapPtr == 0) {
-            return fallbackPalettes;
+    public int[][] loadIndoor(int mapId, int roomId, int[][] fallbackPalettes,
+                              int tarinFlag, int shieldLevel, boolean sideScrolling) {
+        int offset = indoorPaletteOffset(mapId, roomId, sideScrolling, tarinFlag, shieldLevel);
+        return offset < 0 ? fallbackPalettes : loadPaletteBlock(offset);
+    }
+
+    public record TransitionPalettes(int[][] background, int[][] objects) {}
+
+    /** $21:5185 and $21:425E: room/direction selectors update BG or OBJ 6/7. */
+    public TransitionPalettes indoorTransition(int mapId, int roomId, int direction,
+                                               int[][] baseBackground, int[][] baseObjects,
+                                               int[][] previousBackground, int[][] previousObjects) {
+        boolean entering = direction == 4;
+        int[][] background = copyPalettes(entering || previousBackground == null
+            ? baseBackground : previousBackground);
+        int[][] objects = copyPalettes(entering || previousObjects == null
+            ? baseObjects : previousObjects);
+        int records = RomBank.romOffset(0x21, 0x523A);
+        for (int i = 0; i < 0x2D; i++) {
+            int record = records + i * 4;
+            if ((romData[record] & 0xFF) != mapId
+                || (romData[record + 1] & 0xFF) != roomId
+                || (romData[record + 2] & 0xFF) != direction) continue;
+            int selector = romData[record + 3] & 0xFF;
+            if ((selector & 0x80) == 0) break;
+            int pointer = readPointer(RomBank.romOffset(0x21, 0x51F6 + (selector & 0x3F) * 2));
+            int offset = RomBank.romOffset(0x21, pointer);
+            if (entering || (selector & 0x40) == 0) background = loadPaletteBlock(offset);
+            if (entering || (selector & 0x40) != 0) {
+                objects[6] = loadPalette(offset + 0x40);
+                objects[7] = loadPalette(offset + 0x48);
+            }
+            break;
         }
+        return new TransitionPalettes(background, objects);
+    }
 
-        int palIdxOffset = RomBank.romOffset(INDOOR_PALETTE_MAPS_BANK, mapPtr + roomId);
-        int palIdx = Byte.toUnsignedInt(romData[palIdxOffset]);
-
-        int interiorPtrOffset = RomBank.romOffset(INTERIOR_PALETTES_BANK, INTERIOR_PALETTES_ADDR + palIdx * 2);
-        int interiorPtrLo = Byte.toUnsignedInt(romData[interiorPtrOffset]);
-        int interiorPtrHi = Byte.toUnsignedInt(romData[interiorPtrOffset + 1]);
-        int interiorPtr = (interiorPtrHi << 8) | interiorPtrLo;
-        if (interiorPtr == 0) {
-            return fallbackPalettes;
-        }
-
-        return loadPaletteBlock(RomBank.romOffset(INTERIOR_PALETTES_BANK, interiorPtr));
+    private static int[][] copyPalettes(int[][] source) {
+        if (source == null) return null;
+        int[][] result = new int[source.length][];
+        for (int i = 0; i < source.length; i++) result[i] = source[i].clone();
+        return result;
     }
 
     public static boolean isIndoorMapB(int mapId) {

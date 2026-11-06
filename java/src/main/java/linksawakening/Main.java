@@ -295,11 +295,11 @@ public class Main {
             playerState.shieldLevel(), playerState.health(), playerState.swordLevel(), (int) roomSession.activeRoom().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0xC5 && entity.status() == linksawakening.world.EntityStatus.ACTIVE).count(), playerState.hasToadstool(), playerState.magicPowderCount(), inventoryMenu.instrumentPaletteTick(), tarin == null ? -1 : tarin.x(), tarin == null ? -1 : tarin.y(),
                 (roomSession.overworldRoomStatusSnapshot()[0x51] & 0x10) != 0,
-                playerState.tailKeyCount(), scrollController.isActive() || transitionController.isInputBlocked());
+                playerState.tailKeyCount(), gpu.animatedTilesFrameCount(), scrollController.isActive() || transitionController.isInputBlocked());
     }
 
     record HeadlessState(int frame, int map, int room, int x, int y,
-                         boolean dialog, boolean pageWait, String text, int shield, int health, int sword, int urchins, boolean toadstool, int powder, int inventoryTick, int tarinX, int tarinY, boolean forestCleared, int tailKey, boolean loading) {}
+                         boolean dialog, boolean pageWait, String text, int shield, int health, int sword, int urchins, boolean toadstool, int powder, int inventoryTick, int tarinX, int tarinY, boolean forestCleared, int tailKey, int bgTick, boolean loading) {}
 
     private static void loadROM() {
         try (InputStream is = Main.class.getClassLoader().getResourceAsStream("rom/azle.gbc")) {
@@ -907,6 +907,17 @@ public class Main {
                     inventoryMenu == null || inventoryMenu.isFullyClosed());
             }
             scrollController.tickScreenShake();
+            if (roomSession != null && link != null && dialogController != null
+                && !transitionController.isInputBlocked()) {
+                int dungeonTitle = roomSession.tickDungeonTitleMessage(
+                    dialogController.isActive(), inventoryMenu.isFullyClosed(),
+                    link.romMotionState(), debugNoClip);
+                if (dungeonTitle >= 0) {
+                    dialogController.openPreformattedForLinkY(
+                        dialogTextLoader.load(new SignpostDialogRef(0, dungeonTitle)),
+                        LinkDialogPosition.dialogYFromTopLeft(link.pixelY()));
+                }
+            }
             if (dialogController != null) {
                 dialogController.tick();
                 routeDialogSounds();

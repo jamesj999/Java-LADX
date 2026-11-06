@@ -1723,6 +1723,49 @@ final class RoomSessionTest {
     }
 
     @Test
+    void tailCaveEntryAppliesAndRetainsTheLiveEntrancePalette() {
+        RoomSession session = newSession();
+        session.loadInitialOverworld(0xD3);
+        session.loadWarpDestination(session.activeRoom().warps().stream()
+            .filter(warp -> warp.destRoom() == 0x17).findFirst().orElseThrow());
+        byte[] rom = loadRom();
+        int offset = RomBank.romOffset(0x21, 0x60B0);
+        for (int room : new int[]{0x17, 0x16}) {
+            if (room == 0x16) session.startAdjacentIndoorScroll(new ScrollController(),
+                ScrollController.LEFT, 0, 64);
+            assertEquals(room, session.currentRoomId());
+            for (int c = 0; c < 4; c++) assertEquals(RomBank.decodeRgb555(
+                (rom[offset + c * 2] & 0xFF) | ((rom[offset + c * 2 + 1] & 0xFF) << 8)),
+                session.activeRoom().palettes()[6][c]);
+        }
+    }
+
+    @Test
+    void dungeonTitleCountsOnlyInteractiveClosedInventoryFramesAfterOverworldEntry() {
+        RoomSession session = newSession();
+        session.loadInitialOverworld(0xD3);
+        Warp entrance = session.activeRoom().warps().stream()
+            .filter(warp -> warp.destRoom() == 0x17).findFirst().orElseThrow();
+        session.loadWarpDestination(entrance);
+        for (int i = 0; i < 80; i++) {
+            assertEquals(-1, session.tickDungeonTitleMessage(true, true, 0, false));
+            assertEquals(-1, session.tickDungeonTitleMessage(false, false, 0, false));
+        }
+        for (int i = 0; i < 47; i++)
+            assertEquals(-1, session.tickDungeonTitleMessage(false, true, 0, false));
+        assertEquals(0x56, session.tickDungeonTitleMessage(false, true, 0, false));
+        assertEquals(-1, session.tickDungeonTitleMessage(false, true, 0, false));
+        session.loadWarpDestination(new Warp(Warp.CATEGORY_INDOOR, 0, 0x13, 80, 112, 0));
+        for (int i = 0; i < 60; i++)
+            assertEquals(-1, session.tickDungeonTitleMessage(false, true, 0, false));
+        session.loadInitialOverworld(0xD3);
+        session.loadWarpDestination(entrance);
+        for (int i = 0; i < 48; i++)
+            assertEquals(-1, session.tickDungeonTitleMessage(false, true, 6, false));
+        assertEquals(-1, session.tickDungeonTitleMessage(false, true, 0, false));
+    }
+
+    @Test
     void tailCaveKeyholeFollowsTheRomLockedAndUnlockedPaths() {
         RoomSession session = newSession();
         List<GameplaySoundEvent> sounds = new ArrayList<>();
@@ -1759,8 +1802,8 @@ final class RoomSessionTest {
             session.tickTailCaveKeyholeSequence();
         }
         assertEquals(0xE3, session.activeRoom().roomObjectsArea()[gateIndex]);
-        assertEquals(0x82, session.activeRoom().gbcOverlay()[0x10]);
-        assertEquals(0x82, session.activeRoom().renderValues()[gateIndex]);
+        assertEquals(0xE3, session.activeRoom().gbcOverlay()[0x10]);
+        assertEquals(0xE3, session.activeRoom().renderValues()[gateIndex]);
         assertEquals(List.of(GameplaySoundEvent.DOOR_UNLOCKED,
             GameplaySoundEvent.OPEN_KEY_CAVERN,
             GameplaySoundEvent.DUNGEON_OPENED), sounds);
@@ -1771,10 +1814,11 @@ final class RoomSessionTest {
             session.activeRoom().tileIds()[gateTopLeft + RoomConstants.ROOM_TILE_WIDTH + 1]
         };
 
+        assertArrayEquals(new int[]{0x7E, 0x7E, 0x1F, 0x1F}, openedGateTiles);
         session.loadInitialOverworld(0xD3);
         assertEquals(0xE3, session.activeRoom().roomObjectsArea()[gateIndex]);
-        assertEquals(0x82, session.activeRoom().gbcOverlay()[0x10]);
-        assertEquals(0x82, session.activeRoom().renderValues()[gateIndex]);
+        assertEquals(0xE3, session.activeRoom().gbcOverlay()[0x10]);
+        assertEquals(0xE3, session.activeRoom().renderValues()[gateIndex]);
         assertArrayEquals(openedGateTiles, new int[] {
             session.activeRoom().tileIds()[gateTopLeft],
             session.activeRoom().tileIds()[gateTopLeft + 1],
@@ -1813,6 +1857,7 @@ final class RoomSessionTest {
             session.tickTailCaveKeyholeSequence();
         }
         assertEquals(0x0C, session.activeRoom().tileIds()[gateTopLeft]);
+        assertEquals(0x1C, session.activeRoom().tileIds()[gateTopLeft + RoomConstants.ROOM_TILE_WIDTH]);
         while (session.tailCaveKeyholeCountdownForTest() > 0xC8) {
             session.tickTailCaveKeyholeSequence();
         }

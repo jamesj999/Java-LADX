@@ -64,6 +64,12 @@ if checkpoint_count >= 232:
 if checkpoint_count >= 243:
     samples = [(234, 'Tail Key clearing'), (238, 'Chest interaction boundary'),
                (239, 'Tail Key received'), (241, 'Owl directions'), (242, 'Opened chest persists')]
+if checkpoint_count >= 289:
+    samples = [(281, 'Tail Cave approach'), (283, 'Gate opened'),
+               (287, 'Dungeon title'), (288, 'Tail Cave entry settled')]
+if checkpoint_count >= 290:
+    samples = [(281, 'Tail Cave approach'), (283, 'Gate opened'),
+               (287, 'Dungeon title'), (289, 'Entry at matching background-animation clock')]
 for i, label in samples:
     html.append(f'<section><p>{label}: {rows[i]["pixels"]} differing pixels</p><article>')
     for folder, title in [('original', 'Original ROM'), ('ours', 'Java Main loop')]:

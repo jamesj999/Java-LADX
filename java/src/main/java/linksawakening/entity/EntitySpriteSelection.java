@@ -139,6 +139,12 @@ public final class EntitySpriteSelection {
         return powerRecoilDeathSpriteDefinition;
     }
 
+    public EntitySpriteSelection withObjectPalettes(int[][] palettes) {
+        return new EntitySpriteSelection(roomTable, roomId, groupIndex, sheetValues,
+            standardSheets, palettes, spriteOverrides, spriteOverlays, burningSpriteDefinition,
+            deathSpriteDefinition, powerRecoilDeathSpriteDefinition);
+    }
+
     public EntitySpriteSelection withBurningSpriteDefinition(EntitySpriteDefinition definition) {
         if (definition != null && !definition.supported()) {
             throw new IllegalArgumentException("Burning sprite definition must be supported");

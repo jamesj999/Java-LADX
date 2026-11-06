@@ -76,7 +76,7 @@ try:
         if '=' in held:
             field, target = held.split('=')
             target = int(target, 0)
-            address = {'room': 0xfff6, 'x': 0xff98, 'y': 0xff99, 'dialog': 0xc19f, 'sword': 0xdb4e, 'inventorytick': 0xde06}[field]
+            address = {'room': 0xfff6, 'x': 0xff98, 'y': 0xff99, 'dialog': 0xc19f, 'sword': 0xdb4e, 'inventorytick': 0xde06, 'bgtick': 0xffa6}[field]
             def reached():
                 value = p.memory[address]
                 if field == 'inventorytick':

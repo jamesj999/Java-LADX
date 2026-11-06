@@ -32,7 +32,6 @@ public final class RoomTilemapBuilder {
     private static final int OBJECT_ROCKY_CAVE_DOOR = 0xE1;
     private static final int OBJECT_CLOSED_GATE = 0xC2;
     private static final int OBJECT_CAVE_DOOR = 0xE3;
-    private static final int OPENED_GATE_GBC_OVERLAY = 0x82;
 
     private static final int GBC_OVERLAY_BANK_A = 0x26;
     private static final int GBC_OVERLAY_ADDR_A = 0x4000;
@@ -207,9 +206,7 @@ public final class RoomTilemapBuilder {
                             && renderValue == OBJECT_CLOSED_GATE
                         || objectId == 0xA1 && renderValue == 0xA0;
                     if (persistentReplacement) {
-                        renderValue = objectId == OBJECT_CAVE_DOOR
-                            && renderValue == OBJECT_CLOSED_GATE
-                                ? OPENED_GATE_GBC_OVERLAY : objectId;
+                        renderValue = objectId;
                         gbcOverlay[overlayIndex] = renderValue;
                     }
                 }

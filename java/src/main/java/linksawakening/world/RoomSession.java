@@ -148,6 +148,7 @@ public final class RoomSession {
     private final byte[] romData;
     private final GPU gpu;
     private final RoomLoader roomLoader;
+    private final RoomPaletteLoader roomPaletteLoader;
     private final OverworldTilesetTable overworldTilesetTable;
     private final ManboWarpResolver manboWarpResolver;
     private final OwlEventDialogResolver owlEventDialogResolver;
@@ -326,8 +327,8 @@ public final class RoomSession {
     /** Defers trigger-$07's common effect until the frame after settlement. */
     private boolean pushedBlocksTriggerEffectPending;
     private boolean worldLinkMotionBlockPending;
+    private int dungeonTitleMessageCountdown;
     private int tailCaveKeyholeCountdown;
-    private int keyholeRumbleSourceX;
     private boolean tailCaveFinalMotionBlockPending;
     private int nextWorldMusicTrackCountdown;
     private int tailCaveResumeMusicTrack = 0x05;
@@ -394,6 +395,7 @@ public final class RoomSession {
         this.indoorTorchPaletteEffect = new IndoorTorchPaletteEffect(romData);
         this.gpu = gpu;
         this.roomLoader = roomLoader;
+        this.roomPaletteLoader = new RoomPaletteLoader(romData);
         this.overworldTilesetTable = overworldTilesetTable;
         this.manboWarpResolver = new ManboWarpResolver(romData);
         this.owlEventDialogResolver = new OwlEventDialogResolver(romData);
@@ -423,6 +425,7 @@ public final class RoomSession {
 
     public void loadWarpDestination(Warp warp) {
         boolean wasIndoor = activeRoom != null && activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD;
+        dungeonTitleMessageCountdown = 0;
         if (warp.category() == Warp.CATEGORY_OVERWORLD) {
             if (wasIndoor) {
                 gpu.loadBaseOverworldTiles(romData);
@@ -432,7 +435,17 @@ public final class RoomSession {
             loadRoomSpecificTilesIfNeeded(warp.destRoom());
         } else {
             loadIndoor(warp.destMap(), warp.destRoom(), warp.category());
+            // $00:194C-1965: old wIsIndoor is hFreeWarpDataAddress.
+            if (!wasIndoor && warp.destMap() < 0x0A) dungeonTitleMessageCountdown = 0x30;
         }
+    }
+
+    /** $00:0F53 countdown and $01:61EE dungeon-title dialog gates. */
+    public int tickDungeonTitleMessage(boolean dialogActive, boolean inventoryClosed,
+                                        int linkMotionState, boolean freeMovement) {
+        if (dungeonTitleMessageCountdown == 0 || dialogActive || !inventoryClosed) return -1;
+        if (--dungeonTitleMessageCountdown != 0 || linkMotionState != 0 || freeMovement) return -1;
+        return 0x56 + activeRoom.mapId();
     }
 
     public void startAdjacentOverworldScroll(ScrollController scrollController,
@@ -474,7 +487,14 @@ public final class RoomSession {
                                           int linkScreenY) {
         RoomRenderSnapshot previousRoom = renderSnapshot();
         IndoorRoomDestination destination = adjacentIndoorRoom(direction);
-        loadIndoor(activeRoom.mapId(), destination.roomId(), activeRoom.mapCategory());
+        loadIndoor(activeRoom.mapId(), destination.roomId(), activeRoom.mapCategory(),
+            switch (direction) {
+                case ScrollController.RIGHT -> 0;
+                case ScrollController.LEFT -> 1;
+                case ScrollController.UP -> 2;
+                case ScrollController.DOWN -> 3;
+                default -> throw new IllegalArgumentException("Indoor scroll direction " + direction);
+            });
         indoorMapPosition = destination.mapPosition();
         scrollController.start(direction, linkScreenX, linkScreenY, previousRoom, scrollTarget(direction));
     }
@@ -508,6 +528,10 @@ public final class RoomSession {
     }
 
     public void loadIndoor(int mapId, int roomId, int mapCategory) {
+        loadIndoor(mapId, roomId, mapCategory, 4);
+    }
+
+    private void loadIndoor(int mapId, int roomId, int mapCategory, int transitionDirection) {
         roomLoadSerial++;
         indoorMapPosition = findIndoorMapPosition(mapId, roomId);
         clearTransientRoomState();
@@ -520,7 +544,15 @@ public final class RoomSession {
             recentRoomEntityClears.mask(roomId), indoorStatusTableForMap(mapId), hasBirdKey,
             tarinFlag, playerShieldLevel);
         gpu.loadAnimatedTilesGroup(romData, room.animatedTilesGroup());
-        setActiveRoom(room);
+        var oldSelection = activeRoom == null || activeRoom.entities() == null
+            ? null : activeRoom.entities().spriteSelection();
+        var palettes = roomPaletteLoader.indoorTransition(mapId, roomId, transitionDirection,
+            room.palettes(), room.entities().spriteSelection().objectPalettes(),
+            activeRoom == null ? null : activeRoom.palettes(),
+            oldSelection == null ? null : oldSelection.objectPalettes());
+        setActiveRoom(room, palettes.objects());
+        for (int row = 0; row < 8; row++)
+            System.arraycopy(palettes.background()[row], 0, activeRoom.palettes()[row], 0, 4);
         initializeSwitchBlockTiles();
         indoorTorchPaletteEffect.reset(activeRoom.palettes(), countUnlitTorches());
         copyIndoorTorchPalettesToActiveRoom();
@@ -650,6 +682,7 @@ public final class RoomSession {
         enemyDropCounters = new EnemyDropResolver.CounterState(0, 0);
         boomerangSoundCounter = 0;
         boomerangSoundClockProvided = false;
+        dungeonTitleMessageCountdown = 0;
         switchBlocksState = 0;
         switchableObjectAnimationStage = 0;
         switchButtonPressed = 0;
@@ -2298,11 +2331,18 @@ public final class RoomSession {
     }
 
     private void setActiveRoom(LoadedRoom room) {
+        setActiveRoom(room, null);
+    }
+
+    private void setActiveRoom(LoadedRoom room, int[][] objectPalettes) {
         secretSeashellScreenShakeActive = false;
         secretSeashellPegasusCollisionActive = false;
         secretSeashellPegasusCollisionX = 0;
         secretSeashellPegasusCollisionY = 0;
         RoomEntitySnapshot entities = room.entities();
+        if (objectPalettes != null && entities != null && entities.spriteSelection() != null) {
+            entities = entities.withSpriteSelection(entities.spriteSelection().withObjectPalettes(objectPalettes));
+        }
         if (entities != null && entities.spriteSelection() != null) {
             var selection = entities.spriteSelection();
             if (selection.hasStandardSheets()) {
@@ -2544,7 +2584,6 @@ public final class RoomSession {
         pushedBlocksTriggerEffectPending = false;
         worldLinkMotionBlockPending = false;
         tailCaveKeyholeCountdown = 0;
-        keyholeRumbleSourceX = 0;
         tailCaveFinalMotionBlockPending = false;
         nextWorldMusicTrackCountdown = 0;
         pendingRoomMusicTrack = -1;
@@ -3317,7 +3356,6 @@ public final class RoomSession {
 
         overworldRoomStatus[roomId] |= (byte) ROOM_STATUS_EVENT_1;
         tailCaveKeyholeCountdown = TAIL_CAVE_RUMBLE_INITIAL_COUNTDOWN;
-        keyholeRumbleSourceX = linkPixelX & 0xFF;
         tailCaveResumeMusicTrack = entityDefaultMusicTrack;
         pendingRoomMusicTrack = 0x00;
         return true;
@@ -3338,21 +3376,20 @@ public final class RoomSession {
         if (countdown == 0xA0) {
             colorShellSoundSink.play(GameplaySoundEvent.OPEN_KEY_CAVERN);
         }
-        if ((countdown & 0x0F) == 0x08) {
+        if (countdown < 0x20 && (countdown & 0x0F) == 0x08) {
             writeTailCaveGateAnimationFrame(countdown);
         }
         if (countdown == TAIL_CAVE_RUMBLE_GATE_FRAME) {
             int gateIndex = RoomConstants.ROOM_OBJECTS_BASE + TAIL_CAVE_GATE_LOCATION;
             if (activeRoom != null
                 && activeRoom.roomObjectsArea()[gateIndex] == OBJECT_CLOSED_GATE) {
-                writeBombPuzzleObject(TAIL_CAVE_GATE_LOCATION, OBJECT_CAVE_DOOR);
+                activeRoom.roomObjectsArea()[gateIndex] = OBJECT_CAVE_DOOR;
+                // BackupObjectInRAM2($82): force-copy [hl], then return to bank 2.
+                // $82 is a control argument, not the replacement object value.
                 int overlayIndex = 0x10;
-                activeRoom.gbcOverlay()[overlayIndex] = 0x82;
-                activeRoom.renderValues()[gateIndex] = 0x82;
-                overworldBushInteraction.refreshRoomObjectCell(
-                    activeRoom.roomId(), TAIL_CAVE_GATE_LOCATION,
-                    activeRoom.roomObjectsArea(), activeRoom.renderValues(),
-                    activeRoom.gbcOverlay(), activeRoom.tileIds(), activeRoom.tileAttrs());
+                activeRoom.gbcOverlay()[overlayIndex] = OBJECT_CAVE_DOOR;
+                activeRoom.renderValues()[gateIndex] = OBJECT_CAVE_DOOR;
+                // The source's draw command changes tile IDs only; keep attrs.
                 refreshOverworldCollisionAfterObjectMutation();
             }
             colorShellSoundSink.play(GameplaySoundEvent.DUNGEON_OPENED);
@@ -3387,9 +3424,10 @@ public final class RoomSession {
                 && activeRoom.roomId() != ROOM_OW_KEY_CAVERN_ENTRANCE) {
             return;
         }
-        int frameIndex = (keyholeRumbleSourceX >>> 3) & 0x02;
-        int topTile = frameIndex == 0 ? 0x7E : 0x0C;
-        int bottomTile = 0x1F;
+        int frameIndex = (countdown >>> 3) & 0x02;
+        int frameOffset = RomBank.romOffset(0x02, 0x5642) + frameIndex;
+        int topTile = romData[frameOffset] & 0xFF;
+        int bottomTile = romData[frameOffset + 1] & 0xFF;
         int tileX = (TAIL_CAVE_GATE_LOCATION & 0x0F) * 2;
         int tileY = (TAIL_CAVE_GATE_LOCATION >>> 4) * 2;
         int topLeft = tileY * RoomConstants.ROOM_TILE_WIDTH + tileX;

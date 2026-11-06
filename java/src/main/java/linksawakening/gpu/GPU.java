@@ -454,6 +454,10 @@ public class GPU {
         return bank * BANK_SIZE + (address - BANK_SIZE);
     }
 
+    public int animatedTilesFrameCount() {
+        return animatedTilesFrameCount;
+    }
+
     public void loadAnimatedTilesGroup(byte[] romData, int animatedTilesGroup) {
         currentAnimatedTilesGroup = animatedTilesGroup;
         // Keep animatedTilesDataOffset across rooms, matching the original
@@ -488,8 +492,12 @@ public class GPU {
         if (newOffset < 0) {
             return;
         }
-        animatedTilesDataOffset = newOffset;
-        copyAnimatedTilesFrame(romData, animatedTilesDataOffset);
+        // Dungeon-1/lava index the ping-pong table directly; unlike the
+        // linear groups they never write hAnimatedTilesDataOffset ($FFA7).
+        if (currentAnimatedTilesGroup != 0x04 && currentAnimatedTilesGroup != 0x06) {
+            animatedTilesDataOffset = newOffset;
+        }
+        copyAnimatedTilesFrame(romData, newOffset);
     }
 
     private void copyAnimatedScrollingTiles(int destinationTile) {
