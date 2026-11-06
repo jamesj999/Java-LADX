@@ -1,0 +1,20 @@
+{
+  "checkpoints": 799,
+  "king_trace_columns": [
+    "state",
+    "x",
+    "y",
+    "z",
+    "health",
+    "transition",
+    "slow_transition",
+    "active_power_up"
+  ],
+  "windup_frames": 48,
+  "wall_stun_countdown": 96,
+  "java_first_hit_health": 7,
+  "rom_first_hit_health": 6,
+  "java_power_up": 0,
+  "rom_power_up": 1,
+  "remaining": "Finish king fight and rescue; earlier power-up/health divergence, entry timing and animation phase"
+}

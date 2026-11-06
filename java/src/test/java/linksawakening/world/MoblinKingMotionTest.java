@@ -11,6 +11,22 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class MoblinKingMotionTest {
     @Test
+    void hopUsesCurrentLinkSideAndRomDominantAxisSpeed() {
+        MoblinKingMotion motion = new MoblinKingMotion();
+        motion.setStateForTest(0, 2, 0, 0, 0, -3);
+        motion.setPrivateCountdownsForTest(0, 0, 0x20);
+        var hop = motion.advance(entity(88, 96), 24, 64, 0, 0x30, 0,
+            () -> 0, null, false);
+        assertEquals(0xFA, motion.speedX(0)); // target (72,64): dx=-16, dy=-32.
+        var next = motion.advance(hop.entity(), 24, 64, 0, 0x30, 1,
+            () -> 0, null, false);
+        var following = motion.advance(next.entity(), 24, 64, 0, 0x30, 2,
+            () -> 0, null, false);
+        assertEquals(87, following.entity().x());
+        assertEquals(94, following.entity().y());
+    }
+
+    @Test
     void motionKeepsBodyStateSeparateFromTheLoadedDefinitionVariant() {
         MoblinKingMotion motion = new MoblinKingMotion();
         EntitySpriteDefinition loadedDefinition = new EntitySpriteDefinition(

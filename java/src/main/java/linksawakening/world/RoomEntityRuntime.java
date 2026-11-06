@@ -4335,6 +4335,13 @@ public final class RoomEntityRuntime {
                 if (!handlerInteractive) {
                     preserveMoblinKingPresentation = true;
                 } else {
+                    // ApplyRecoilIfNeeded_15 pops the handler return address:
+                    // movement/Z physics and AI wait until the recoil ends.
+                    if (enemyRecoilMotion.isActive(entity.slot())
+                        && enemyIgnoreHitsCountdown[entity.slot()] != 0) {
+                        slots[index] = applyEnemyRecoilIfNeeded(entity, backgroundCollision).entity();
+                        continue;
+                    }
                     MoblinKingMotion.Update kingUpdate = moblinKingMotion.advance(
                         entity, linkEntityX, linkEntityY,
                         enemyTransitionCountdown[entity.slot()],
@@ -5802,7 +5809,7 @@ public final class RoomEntityRuntime {
                 boolean swordResultApplied = swordResult == null
                     ? swordDamage > 0
                     : !swordResult.ignored();
-                if (usesSharedRecoil(entity.type())) {
+                if (usesSharedRecoil(entity.type()) || entity.type() == ENTITY_MOBLIN_KING) {
                     // EnemyCollidedWithSword applies the default `$30` recoil
                     // before ApplySwordDamagesToEnemy changes health.
                     enemyRecoilMotion.configure(
@@ -10041,6 +10048,16 @@ public final class RoomEntityRuntime {
             }
         }
         return trace.toString();
+    }
+
+    public String moblinKingTrace() {
+        for (RoomEntity entity : slots) if (entity.loaded() && entity.type() == ENTITY_MOBLIN_KING) {
+            int slot = entity.slot();
+            return "%d,%d,%d,%d,%d,%d,%d".formatted(moblinKingMotion.state(slot),
+                entity.x(), entity.y(), entity.z(), enemyHealth[slot],
+                enemyTransitionCountdown[slot], slowTransitionCountdown[slot]);
+        }
+        return "-1";
     }
 
     public InstrumentWarpVisual instrumentWarpVisual() {

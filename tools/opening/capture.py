@@ -23,6 +23,7 @@ trace = []
 checkpoints = []
 combat_trace = []
 instrument_trace = []
+king_trace = []
 try:
     p.tick(3800)
     p.button('start', 8)
@@ -82,13 +83,21 @@ try:
             if p.memory[0xfff7] == 0 and p.memory[0xfff6] == 2:
                 entries = [[i, p.memory[0xc290+i], p.memory[0xc2e0+i], p.memory[0xc450+i]] for i in range(16) if p.memory[0xc280+i] and p.memory[0xc3a0+i] == 0x39 and p.memory[0xc2b0+i] != 1]
                 instrument_trace.append(str(frame)+'\t'+str(p.memory[0xd369])+';'+ ';'.join(','.join(map(str,row)) for row in entries)+'\n')
+            if p.memory[0xfff7] == 0x15 and p.memory[0xfff6] == 0xE1:
+                slot = next((i for i in range(16) if p.memory[0xc280+i] and p.memory[0xc3a0+i] == 0xE4), None)
+                values = [-1] if slot is None else [p.memory[base+slot] for base in [0xc290,0xc200,0xc210,0xc310,0xc360,0xc2e0,0xc450]]
+                values.append(p.memory[0xd47c])
+                king_trace.append(str(frame)+'\t'+','.join(map(str,values))+'\n')
             frame += 1
         if '=' in held:
             field, target = held.split('=')
             target = int(target, 0)
-            address = {'room': 0xfff6, 'x': 0xff98, 'y': 0xff99, 'dialog': 0xc19f, 'sword': 0xdb4e, 'inventorytick': 0xde06, 'bgtick': 0xffa6, 'smallkeys': 0xdbd0, 'nightmarekey': 0xdbcf, 'instrumentstate': 0xc290}[field]
+            address = {'room': 0xfff6, 'x': 0xff98, 'y': 0xff99, 'dialog': 0xc19f, 'sword': 0xdb4e, 'inventorytick': 0xde06, 'bgtick': 0xffa6, 'smallkeys': 0xdbd0, 'nightmarekey': 0xdbcf, 'instrumentstate': 0xc290, 'kingstate': 0xc290}[field]
             def reached():
                 value = p.memory[address]
+                if field == 'kingstate':
+                    slot = next((i for i in range(16) if p.memory[0xc280+i] and p.memory[0xc3a0+i] == 0xE4), None)
+                    value = -1 if slot is None else p.memory[0xc290+slot]
                 if field == 'inventorytick':
                     value += (p.memory[0xde07] // 4) * 8
                 if field == 'dialog': return (value != 0) == bool(target)
@@ -132,4 +141,5 @@ try:
     OUT.joinpath('emulator-combat.tsv').write_text(''.join(combat_trace))
     OUT.joinpath('emulator-trace.tsv').write_text(''.join('\t'.join(map(str, r))+'\n' for r in trace))
 finally:
+    OUT.joinpath('emulator-king.tsv').write_text(''.join(king_trace))
     p.stop(save=False)

@@ -7103,6 +7103,12 @@ final class RoomEntityRuntimeTest {
             true, 0x58, 8, 0x58, 8);
 
         assertEquals(0x07, runtime.enemyHealth(0));
+        int beforeX = runtime.snapshot().slots().get(0).x();
+        int beforeZ = runtime.snapshot().slots().get(0).z();
+        runtime.tick(4, 0x30, 0x58, () -> 0);
+        assertTrue(runtime.snapshot().slots().get(0).x() > beforeX);
+        assertEquals(beforeZ, runtime.snapshot().slots().get(0).z());
+        assertEquals(5, runtime.moblinKingState(0));
     }
 
     @Test

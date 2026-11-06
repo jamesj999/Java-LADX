@@ -818,6 +818,7 @@ public final class RoomSession {
     }
 
     public String instrumentTrace() { return entityRuntime == null ? "" : entityRuntime.instrumentTrace(); }
+    public String moblinKingTrace() { return entityRuntime == null ? "-1" : entityRuntime.moblinKingTrace(); }
 
     public RoomRenderSnapshot renderSnapshot() {
         if (activeRoom == null) return null;

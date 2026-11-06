@@ -292,6 +292,10 @@ public class Main {
         return roomSession == null ? "" : roomSession.instrumentTrace();
     }
 
+    static String headlessMoblinKingTrace() {
+        return roomSession == null ? "-1" : roomSession.moblinKingTrace() + "," + playerState.activePowerUp();
+    }
+
     static String headlessCombatTrace() {
         Sword sword = equipmentController.activeSword();
         Sword.CollisionBox box = sword == null ? Sword.CollisionBox.inactive()

@@ -9,6 +9,7 @@ import javax.imageio.ImageIO;
 public final class OpeningRouteCapture {
     private static int lastHealth = 24;
     private static final StringBuilder instrumentTrace = new StringBuilder();
+    private static final StringBuilder kingTrace = new StringBuilder();
     private static final StringBuilder combatTrace = new StringBuilder();
     public static void main(String[] args) throws Exception {
         Path route = Path.of(args[0]);
@@ -16,6 +17,7 @@ public final class OpeningRouteCapture {
         Files.createDirectories(out.resolve("ours"));
         Files.deleteIfExists(out.resolve("java.json"));
         combatTrace.setLength(0);
+        kingTrace.setLength(0);
         instrumentTrace.setLength(0);
         Main.initializeHeadlessNewGame();
         StringBuilder trace = new StringBuilder();
@@ -54,6 +56,7 @@ public final class OpeningRouteCapture {
             for (int p = 0; p < 160 * 144; p++) image.setRGB(p % 160, p / 160,
                 ((rgba[p*4]&255)<<16)|((rgba[p*4+1]&255)<<8)|(rgba[p*4+2]&255));
             ImageIO.write(image, "png", out.resolve("ours/%02d.png".formatted(segment++)).toFile());
+            Files.writeString(out.resolve("java-king.tsv"), kingTrace);
             System.out.println(segment + " " + Main.headlessState()
                 + " entities " + Main.headlessEntityPositions());
         }
@@ -78,6 +81,7 @@ public final class OpeningRouteCapture {
         String[] parts = condition.split("=");
         int target = Integer.decode(parts[1]);
         int value = switch (parts[0]) {
+            case "kingstate" -> Integer.parseInt(Main.headlessMoblinKingTrace().split(",")[0]);
             case "instrumentstate" -> Integer.parseInt(Main.headlessInstrumentTrace().split(";")[1].split(",")[1]);
             case "room" -> s.room();
             case "dialog" -> s.dialog() ? 1 : 0;
@@ -96,6 +100,7 @@ public final class OpeningRouteCapture {
 
     private static void appendTrace(StringBuilder trace, int frame) {
         var s = Main.headlessState();
+        if (s.map() == 0x15 && s.room() == 0xE1) kingTrace.append(frame).append('\t').append(Main.headlessMoblinKingTrace()).append('\n');
         if (s.map() == 0 && s.room() == 2) instrumentTrace.append(frame).append('\t').append(Main.headlessInstrumentTrace()).append('\n');
         if (s.map() == 0 && (s.room() == 0x11 || s.room() == 0x06)) combatTrace.append(frame).append('\t').append(Main.headlessCombatTrace()).append('\n');
         if (s.health() < lastHealth) System.out.println("Damage at " + frame + " " + s + " entities " + Main.headlessEntityPositions());

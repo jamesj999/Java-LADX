@@ -126,7 +126,7 @@ final class MoblinKingMotion {
                 } else {
                     if (landed) {
                         Vector vector = vectorTowardsOffsetLink(x, y, linkX, linkY,
-                            direction[slot], 0x0C);
+                            directionToLink(x, linkX), 0x0C);
                         speedX[slot] = vector.x();
                         speedY[slot] = vector.y();
                         speedZ[slot] = 0x10;
@@ -324,8 +324,11 @@ final class MoblinKingMotion {
         int targetX = (linkX + (direction == 0 ? -0x30 : 0x30)) & 0xFF;
         int dx = signedByte((targetX - x) & 0xFF);
         int dy = signedByte((linkY - y) & 0xFF);
-        int total = Math.max(1, Math.abs(dx) + Math.abs(dy));
-        return new Vector(dx * length / total, dy * length / total);
+        // GetVectorTowardsLink ($03:7E45) keeps the dominant component at
+        // the requested speed and divides only the smaller component.
+        int dominant = Math.max(Math.abs(dx), Math.abs(dy));
+        if (dominant == 0) return new Vector(length, length);
+        return new Vector(dx * length / dominant, dy * length / dominant);
     }
 
     private static int addSpeed(int position, int speed, int[] accumulator, int slot) {
