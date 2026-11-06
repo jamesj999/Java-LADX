@@ -280,16 +280,26 @@ public class Main {
         return indexedDisplayBuffer.clone();
     }
 
+    static String headlessEntityPositions() {
+        return roomSession.activeRoom().entities().loadedEntities().stream()
+            .map(e -> "%02X:%s@%d,%d".formatted(e.type(), e.status(), e.x(), e.y()))
+            .collect(java.util.stream.Collectors.joining(" "));
+    }
+
     static HeadlessState headlessState() {
+        var tarin = roomSession.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x3F).findFirst().orElse(null);
         return new HeadlessState(frameCounter, roomSession.mapId(), roomSession.currentRoomId(),
             link.romEntityX(), link.romEntityY(), dialogController.isActive(),
             dialogController.isWaitingForPageAdvance(), dialogController.visibleText(),
             playerState.shieldLevel(), playerState.health(), playerState.swordLevel(), (int) roomSession.activeRoom().entities().loadedEntities().stream()
-                .filter(entity -> entity.type() == 0xC5 && entity.status() == linksawakening.world.EntityStatus.ACTIVE).count(), playerState.hasToadstool(), playerState.magicPowderCount(), inventoryMenu.instrumentPaletteTick(), scrollController.isActive() || transitionController.isInputBlocked());
+                .filter(entity -> entity.type() == 0xC5 && entity.status() == linksawakening.world.EntityStatus.ACTIVE).count(), playerState.hasToadstool(), playerState.magicPowderCount(), inventoryMenu.instrumentPaletteTick(), tarin == null ? -1 : tarin.x(), tarin == null ? -1 : tarin.y(),
+                (roomSession.overworldRoomStatusSnapshot()[0x51] & 0x10) != 0,
+                playerState.tailKeyCount(), scrollController.isActive() || transitionController.isInputBlocked());
     }
 
     record HeadlessState(int frame, int map, int room, int x, int y,
-                         boolean dialog, boolean pageWait, String text, int shield, int health, int sword, int urchins, boolean toadstool, int powder, int inventoryTick, boolean loading) {}
+                         boolean dialog, boolean pageWait, String text, int shield, int health, int sword, int urchins, boolean toadstool, int powder, int inventoryTick, int tarinX, int tarinY, boolean forestCleared, int tailKey, boolean loading) {}
 
     private static void loadROM() {
         try (InputStream is = Main.class.getClassLoader().getResourceAsStream("rom/azle.gbc")) {

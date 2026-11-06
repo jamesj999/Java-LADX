@@ -9,10 +9,10 @@ import static org.junit.jupiter.api.Assertions.*;
 /** Real game-loop integration, with buttons only after the new-game bootstrap. */
 final class MainOpeningRouteTest {
     @Test
-    void newGameCanExchangeMushroomForPowderThroughRealInputWithoutStateInjection() throws Exception {
+    void newGameCanTransformRaccoonThroughRealInputWithoutStateInjection() throws Exception {
         Main.initializeHeadlessNewGame();
         var checkpoints = new ArrayList<Main.HeadlessState>();
-        for (String line : Files.readAllLines(Path.of("../tools/opening/witch-route.tsv"))) {
+        for (String line : Files.readAllLines(Path.of("../tools/opening/raccoon-route.tsv"))) {
             if (line.isBlank() || line.startsWith("#")) continue;
             String[] fields = line.split("\\s+");
             int idle = Integer.parseInt(fields[2]);
@@ -109,23 +109,40 @@ final class MainOpeningRouteTest {
         assertTrue(mushroom.health() > 0);
         assertFalse(mushroom.dialog());
         assertFalse(mushroom.loading());
-        var witch = checkpoints.get(171);
+        var witch = checkpoints.get(173);
         assertEquals(0x0E, witch.map());
         assertEquals(0xA2, witch.room());
         assertTrue(witch.toadstool());
         assertEquals(0, witch.powder());
-        for (int index : new int[]{176, 177}) {
+        for (int index : new int[]{178, 179}) {
             assertTrue(checkpoints.get(index).dialog());
             assertFalse(checkpoints.get(index).toadstool());
             assertEquals(0, checkpoints.get(index).powder(), "Reward must follow the ready dialogue");
         }
-        assertTrue(checkpoints.get(178).dialog());
-        assertEquals(20, checkpoints.get(178).powder());
-        var reward = checkpoints.getLast();
+        assertTrue(checkpoints.get(180).dialog());
+        assertEquals(20, checkpoints.get(180).powder());
+        var reward = checkpoints.get(181);
         assertFalse(reward.dialog());
         assertFalse(reward.toadstool());
         assertEquals(20, reward.powder());
         assertFalse(reward.loading());
+        var tutorial = checkpoints.get(185);
+        assertTrue(tutorial.dialog());
+        assertTrue(tutorial.text().startsWith("Good job!"));
+        assertEquals(19, tutorial.powder(), "Lighting the brazier consumes exactly one use");
+        var complete = checkpoints.get(186);
+        assertFalse(complete.dialog());
+        assertEquals(19, complete.powder());
+        assertEquals(104, complete.x());
+        assertEquals(106, complete.y());
+        var transformed = checkpoints.getLast();
+        assertFalse(transformed.dialog());
+        assertTrue(transformed.forestCleared());
+        assertEquals(18, transformed.powder());
+        assertEquals(0x51, transformed.room());
+        assertTrue(transformed.tarinX() >= 0 && transformed.tarinX() < 160);
+        assertTrue(transformed.tarinY() >= 0 && transformed.tarinY() < 144);
+        assertTrue(transformed.health() > 0);
     }
 
     private static void advanceAlive() {

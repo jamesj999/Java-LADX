@@ -1,5 +1,5 @@
-# Witch route through the inventory, followed by a state-aligned palette sample.
-# Optional fourth column preserves the explicit original-ROM combat variants.
+# Optional columns 4/5/6: original-ROM buttons and fixed held/idle-frame counts.
+# Both runs use normal input and stay alive; differing combat timing is diagnostic, not parity.
 - 0 620
 a 8 122
 a 8 122
@@ -144,7 +144,8 @@ down+a* y=64 4
 right+a* x=72 4
 down+a* room=0xBD 4
 down y=28 4
-left x=24 4
+a* 120 4 none 0 0
+left+a*+b x=24 4 left
 down+a*+b y=112 4 down+a
 right x=80 4
 down room=0x62 120
@@ -154,6 +155,7 @@ up+a*+b room=0x52 4 up+b
 up+a*+b y=64 4 up+b
 right+a*+b x=88 4 right+b
 up+a*+b room=0x42 4 up+b
+a*+b 120 4 none 0 0
 up+a*+b y=88 4 up+b
 right+a*+b x=120 4 right+b
 up+a*+b y=56 4 up+b
@@ -165,7 +167,7 @@ right+b room=0x44 4
 down y=112 4
 right x=40 4
 down room=0x54 4
-right x=120 4
+right x=104 4
 down room=0x64 4
 down y=56 4
 right room=0x65 4

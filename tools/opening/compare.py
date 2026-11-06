@@ -51,13 +51,16 @@ if checkpoint_count >= 111:
     samples = [(16, 'Shield received'), (99, 'Forest owl'), (108, 'Cave approach'), (110, 'Mushroom cave entrance')]
 if checkpoint_count >= 129:
     samples = [(110, 'Cave entrance'), (117, 'Rock puzzle'), (124, 'Doorway approach'), (125, 'Cave exit'), (127, 'Mushroom pickup'), (128, 'Mushroom collected')]
-if checkpoint_count >= 180:
-    samples = [(128, 'Mushroom collected'), (171, 'Witch house'), (172, 'Inventory'),
-               (176, 'Brewing dialogue'), (177, 'Powder ready'), (178, 'Powder received'), (179, 'Exchange complete')]
+if checkpoint_count >= 182:
+    samples = [(128, 'Mushroom collected'), (173, 'Witch house'), (174, 'Inventory'),
+               (178, 'Brewing dialogue'), (179, 'Powder ready'), (180, 'Powder received'), (181, 'Exchange complete')]
     html.append('<p>The forest return has explicit ROM combat-button overrides at '
                 + str(original_run.get('rom_button_overrides', 0))
                 + ' segments because enemy phases differ on arrival. Waypoint targets '
                 'are shared. Both runs remain alive throughout; this does not prove combat parity.</p>')
+if checkpoint_count >= 232:
+    samples = [(181, 'Powder collected'), (185, 'Brazier tutorial'), (186, 'Tutorial complete'),
+               (229, 'Raccoon approach'), (230, 'Transformation dialogue'), (231, 'Forest cleared')]
 for i, label in samples:
     html.append(f'<section><p>{label}: {rows[i]["pixels"]} differing pixels</p><article>')
     for folder, title in [('original', 'Original ROM'), ('ours', 'Java Main loop')]:

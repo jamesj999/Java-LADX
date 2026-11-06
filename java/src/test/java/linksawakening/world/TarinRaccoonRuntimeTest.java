@@ -431,6 +431,26 @@ final class TarinRaccoonRuntimeTest {
     }
 
     @Test
+    void powderTransformationStaysInsideTheLoadedRoomAndLeavesTarinVisible() {
+        RoomSession session = newSession();
+        session.loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);
+        session.tickEntities(0, 120, 86, 0, 1);
+        assertTrue(session.sprinkleMagicPowder(120, 86, 0, 2));
+        boolean finished = false;
+        for (int frame = 1; frame < 1000 && !finished; frame++) {
+            session.tickEntities(frame, 120, 86, 0, 1);
+            RoomEntity tarin = raccoon(session);
+            assertTrue(tarin.x() < 160 && tarin.y() < 144,
+                "Tarin escaped the room at frame " + frame + ": " + tarin.x() + "," + tarin.y());
+            finished = session.consumeEntityDialogRequests().stream()
+                .anyMatch(dialog -> dialog.globalDialogId() == 0x00A);
+        }
+        assertTrue(finished, "Transformation must reach Tarin's recovery dialogue");
+        assertEquals(0x10, session.overworldRoomStatusForTest(ROOM_MYSTERIOUS_WOODS) & 0x10);
+        assertTrue(hasRaccoon(session), "Live Tarin remains until the room reloads");
+    }
+
+    @Test
     void newGameWorldInitializationResetsTarinFlag() {
         RoomSession session = newSession();
         session.setTarinFlag(2);

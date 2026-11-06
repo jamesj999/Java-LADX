@@ -3355,3 +3355,23 @@ of scope.
   quest-item displays and collected-instrument gameplay remain unverified.
   Death flow and the rest of the quest remain production blockers. Next:
   witch powder tutorial, forest return, raccoon transformation and Tail Key.
+
+### Raccoon progression and padded border (2026-11-06)
+
+- Completed a 232-checkpoint normal-input route from a fresh game through the
+  witch brazier tutorial and raccoon transformation in Java and headless PyBoy.
+  Powder progresses 20 → 19 → 18; forest status bit $10 persists. Both stay alive.
+- Corrected off-room entity terrain sampling to read the ROM physics for padded
+  room object $FF, matching the source collision buffer. Previously Tarin could
+  finish his transformation at Y=207. A live-room regression fails on that old
+  behavior and now keeps him visible through the transformation dialogue.
+- The continuous Main integration test now covers this full route. All 2,319
+  tests pass. Added optional original held/idle durations for explicit combat
+  differences; no state injection. Dialog checkpoints replace assumed delays.
+- Visual comparison remains diagnostic: 7/232 exact frames, worst 4,769 pixels;
+  final frame 483 differing pixels. Tarin's resting position, health, rupees
+  and animation phases differ. Faster loading remains intentional.
+- Evidence: `docs/validation/raccoon-transformation-2026-11-06.html`; capture
+  manifests and unmasked metrics: `java/src/test/resources/opening/raccoon/`.
+  Next: Tail Key/Tail Cave, transformation trajectory parity; death flow and
+  remaining quest/dungeons/ending are still production blockers.

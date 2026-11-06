@@ -117,7 +117,7 @@ public final class OverworldCollision {
 
     /**
      * Returns the ROM physics byte for the cell sampled at a background
-     * collision point. Invalid/off-room points have no entity terrain flag.
+     * collision point. The padded room-object border contains object $FF.
      */
     public int objectPhysicsFlagAtPoint(int pixelX, int pixelY) {
         if (roomObjectsArea == null) {
@@ -127,7 +127,7 @@ public final class OverworldCollision {
         int cellY = cellCoordinate(pixelY);
         if (cellX < 0 || cellX >= OBJECTS_PER_ROW
             || cellY < 0 || cellY >= OBJECTS_PER_COLUMN) {
-            return PhysicsFlags.NONE;
+            return romTables.objectPhysicsFlag(physicsTableIndex, 0xFF);
         }
         int objectId = objectIdAtCell(cellX, cellY);
         return romTables.objectPhysicsFlag(physicsTableIndex, objectId);

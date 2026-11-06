@@ -34,11 +34,15 @@ try:
         if not line or line.startswith('#'): continue
         fields = line.split()
         button, held, idle = fields[:3]
-        if len(fields) == 4:
+        if len(fields) in (4, 5, 6):
             button = fields[3]  # Explicit ROM combat input; checkpoint target is unchanged.
         elif len(fields) != 3:
-            raise ValueError('Expected buttons, target, idle, and optional ROM buttons: ' + line)
-        idle = int(idle)
+            raise ValueError('Expected buttons, target, idle, optional ROM buttons, held frames and idle frames: ' + line)
+        if len(fields) >= 5:
+            if '=' in held or not fields[4].isdigit():
+                raise ValueError('ROM held-frame override requires a fixed-duration step: ' + line)
+            held = fields[4]
+        idle = int(fields[5] if len(fields) == 6 else idle)
         pulse_ticks = 0
         pulse_active = False
         def press():
@@ -67,7 +71,7 @@ try:
                           p.memory[0xc125], p.memory[0xffe7], p.memory[0xff96], p.memory[0xff97],
                           p.memory[0xdb5a], p.memory[0xdb4e],
                           p.memory[0xffa1], p.memory[0xff9b], p.memory[0xc111],
-                          p.memory[0xdb00], p.memory[0xdb01], p.memory[0xdb4b], p.memory[0xdb4c]])
+                          p.memory[0xdb00], p.memory[0xdb01], p.memory[0xdb4b], p.memory[0xdb4c], p.memory[0xd851], p.memory[0xdb11]])
             frame += 1
         if '=' in held:
             field, target = held.split('=')
@@ -108,7 +112,7 @@ try:
         'rom_sha256': hashlib.sha256(ROOT.joinpath('java/src/main/resources/rom/azle.gbc').read_bytes()).hexdigest(),
         'route_sha256': hashlib.sha256(args.route.read_bytes()).hexdigest(),
         'checkpoints': len(checkpoints),
-        'rom_button_overrides': sum(len(line.split()) == 4 for line in args.route.read_text().splitlines() if line and not line.startswith('#')),
+        'rom_button_overrides': sum(len(line.split()) >= 4 for line in args.route.read_text().splitlines() if line and not line.startswith('#')),
         'memory_injection': False, 'save': 'fresh in-memory RAM, never saved',
     }, indent=2))
     OUT.joinpath('emulator-trace.tsv').write_text(''.join('\t'.join(map(str, r))+'\n' for r in trace))

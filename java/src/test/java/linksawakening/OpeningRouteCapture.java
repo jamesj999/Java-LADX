@@ -7,6 +7,7 @@ import javax.imageio.ImageIO;
 
 /** Exercises Main, without scene injection, using the shared button route. */
 public final class OpeningRouteCapture {
+    private static int lastHealth = 24;
     public static void main(String[] args) throws Exception {
         Path route = Path.of(args[0]);
         Path out = Path.of(args[1]);
@@ -83,6 +84,8 @@ public final class OpeningRouteCapture {
 
     private static void appendTrace(StringBuilder trace, int frame) {
         var s = Main.headlessState();
+        if (s.health() < lastHealth) System.out.println("Damage at " + frame + " " + s + " entities " + Main.headlessEntityPositions());
+        lastHealth = s.health();
         if (s.health() <= 0) throw new IllegalStateException("Link died at frame " + frame + ": " + s);
         trace.append(frame).append('\t').append(s.map()).append('\t').append(s.room())
             .append('\t').append(s.x()).append('\t').append(s.y()).append('\t')
