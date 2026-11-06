@@ -3075,8 +3075,8 @@ final class RoomTransitionCoordinatorTest {
         assertEquals(0x30, hinox.y());
         RoomEntity unresolvedHinoxWarp = session.activeRoom().entities().loadedEntities()
             .stream().filter(entity -> entity.type() == 0x61).findFirst().orElseThrow();
-        assertEquals(0x48, unresolvedHinoxWarp.x());
-        assertEquals(0x40, unresolvedHinoxWarp.y());
+        assertEquals(0x50, unresolvedHinoxWarp.x());
+        assertEquals(0x48, unresolvedHinoxWarp.y());
         assertFalse(session.activeRoom().hasWarps());
         coordinator.handleWarpAndIndoorBoundaries(link);
         assertFalse(transition.isActive());
@@ -3307,8 +3307,8 @@ final class RoomTransitionCoordinatorTest {
         // source handler arm, then approach it again through live collision.
         RoomEntity room36Warp = session.activeRoom().entities().loadedEntities().stream()
             .filter(entity -> entity.type() == 0x61).findFirst().orElseThrow();
-        assertEquals(0x48, room36Warp.x());
-        assertEquals(0x40, room36Warp.y());
+        assertEquals(0x50, room36Warp.x());
+        assertEquals(0x48, room36Warp.y());
         int room36WarpSlot = room36Warp.slot();
         tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
         List<int[]> room36WarpDisengagePath = reachablePositionPath(

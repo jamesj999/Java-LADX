@@ -1,0 +1,33 @@
+{
+  "checkpoint": 587,
+  "java_warp_position": [
+    80,
+    72
+  ],
+  "rom_warp_position": [
+    80,
+    72
+  ],
+  "java_link_position": [
+    8,
+    72
+  ],
+  "rom_link_position": [
+    17,
+    72
+  ],
+  "java_boss_position": [
+    119,
+    64
+  ],
+  "rom_boss_position": [
+    122,
+    64
+  ],
+  "tests_passed": 2351,
+  "limitations": [
+    "Entry and shutter timing still differ.",
+    "Rolling Bones combat is not yet verified end to end.",
+    "Jump-launch behavior is source-backed and regression-tested; no frame-by-frame ROM combat parity claim."
+  ]
+}

@@ -129,6 +129,20 @@ final class EntityRoomLoaderTest {
     }
 
     @Test
+    void centersRoomLoadedWarpMarkersOnlyIndoors() {
+        byte[] rom = syntheticRom();
+        for (EntityRoomLoader.RoomTable table : EntityRoomLoader.RoomTable.values()) {
+            writePointer(rom, table, 0, 0x5170);
+            writeStream(rom, 0x5170, 0x34, 0x61, 0xFF);
+            RoomEntity warp = new EntityRoomLoader(rom).load(table, 0)
+                .loadedEntities().get(0);
+            boolean indoor = table != EntityRoomLoader.RoomTable.OVERWORLD;
+            assertEquals(indoor ? 0x50 : 0x48, warp.x());
+            assertEquals(indoor ? 0x48 : 0x40, warp.y());
+        }
+    }
+
+    @Test
     void initializesOctorokWithTheHandlerTileOffset() {
         byte[] rom = syntheticRom();
         writePointer(rom, EntityRoomLoader.RoomTable.OVERWORLD, 0, 0x5170);

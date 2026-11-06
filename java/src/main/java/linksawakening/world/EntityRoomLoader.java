@@ -201,6 +201,11 @@ public final class EntityRoomLoader {
             x += 8;
             y += 8;
         }
+        // EntityInitWarp ($03:4F70) shifts only indoor warp markers.
+        if (table != RoomTable.OVERWORLD && type == WarpMotion.ENTITY_TYPE) {
+            x += 8;
+            y += 8;
+        }
         if (type == 0x39) {
             x += 8;
         }

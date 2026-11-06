@@ -122,10 +122,13 @@ final class RollingBonesMotion {
                     int length = health < 5 ? 0x14 : 0x10;
                     bossSpeedZ[slot] = health < 5 ? 0x16 : 0x19;
                     bossSpeedX[slot] = bossDirection[slot] == 0 ? -length : length;
-                    bossSpeedY[slot] = y < 0x50 ? length : -length;
+                    bossSpeedY[slot] = ((entity.y() - entity.z()) & 0xFF) < 0x50
+                        ? length : -length;
                 } else if (transitionCountdown == 0 && landed) {
                     transitionCountdown = 0x10;
-                } else if (transitionCountdown == 0) {
+                }
+                // $06:6DD4 falls through to $6E04 on the launch frame.
+                if (transitionCountdown == 1 || (transitionCountdown == 0 && !landed)) {
                     MoveResult xMove = moveX(entity, x, y, bossSpeedX[slot],
                         bossXAccumulator, slot, backgroundCollision);
                     x = xMove.position();

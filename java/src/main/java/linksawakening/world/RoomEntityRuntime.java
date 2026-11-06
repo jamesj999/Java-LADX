@@ -1198,6 +1198,11 @@ public final class RoomEntityRuntime {
                 ? initialPhysicsFlags(entity.type()) : 0;
             enemyHitboxFlags[entity.slot()] = entity.loaded()
                 ? initialHitboxFlags(entity.type()) : 0;
+            // Room-loaded indoor warps start at state 1 ($03:4F75).
+            // State 0 is reserved for dynamically spawned warps.
+            if (entity.loaded() && indoorRoom && entity.type() == WarpMotion.ENTITY_TYPE) {
+                warpState[entity.slot()] = WarpMotion.STATE_APPROACH;
+            }
             if (entity.loaded() && entity.type() == ENTITY_GENIE) {
                 GenieMotion.JarState jar = genieMotion.initialize(entity.slot());
                 genieActiveState[entity.slot()] = 0;

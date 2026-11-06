@@ -41,6 +41,29 @@ final class RollingBonesMotionTest {
     }
 
     @Test
+    void jumpLaunchMovesImmediatelyAndChecksTheWallOnThatFrame() {
+        for (boolean wall : new boolean[]{false, true}) {
+            RollingBonesMotion motion = new RollingBonesMotion();
+            RoomEntity boss = entity(0, RollingBonesMotion.ENTITY_BOSS, 0x77, 0x40);
+            RoomEntity bar = entity(1, RollingBonesMotion.ENTITY_BAR, 0x68, 0x40);
+            motion.initializeBoss(0);
+            motion.initializeBar(1);
+            // Approach, release the bar, then enter the jump state.
+            for (int step = 0; step < 3; step++) {
+                boss = motion.advanceBoss(boss, bar, 0, 8, null).entity();
+            }
+            assertEquals(3, motion.bossState(0));
+            RollingBonesMotion.BossUpdate launch = motion.advanceBoss(
+                boss, bar, 1, 8,
+                (entity, direction, nextX, nextY) -> wall && direction == 1);
+            assertEquals(wall ? 0x77 : 0x76, launch.entity().x());
+            assertEquals(0x41, launch.entity().y());
+            assertEquals(wall ? 0 : 3, motion.bossState(0));
+            assertEquals(wall ? 8 : 1, launch.transitionCountdown());
+        }
+    }
+
+    @Test
     void rollingBarReboundsAtHalfSpeedThenDeceleratesToRest() {
         RollingBonesMotion motion = new RollingBonesMotion();
         RoomEntity bar = entity(1, RollingBonesMotion.ENTITY_BAR, 0x38, 0x38);
