@@ -1,6 +1,7 @@
 package linksawakening.render;
 
 import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.dialog.DialogController;
 import linksawakening.gpu.EntitySpriteTileSnapshot;
 import linksawakening.world.HookshotChainOam;
 import linksawakening.world.PincerBodyOam;
@@ -35,6 +36,7 @@ public final class EntityRenderLayer implements RenderLayer {
     private final int[][] objectPalettes;
     private final ScrollController scrollController;
     private final int frameCounter;
+    private final DialogController.BoxPosition dialogPosition;
 
     public EntityRenderLayer(RoomEntitySnapshot snapshot, int[][] objectPalettes,
                              ScrollController scrollController) {
@@ -43,6 +45,12 @@ public final class EntityRenderLayer implements RenderLayer {
 
     public EntityRenderLayer(RoomEntitySnapshot snapshot, int[][] objectPalettes,
                              ScrollController scrollController, int frameCounter) {
+        this(snapshot, objectPalettes, scrollController, frameCounter, null);
+    }
+
+    public EntityRenderLayer(RoomEntitySnapshot snapshot, int[][] objectPalettes,
+                             ScrollController scrollController, int frameCounter,
+                             DialogController.BoxPosition dialogPosition) {
         if (snapshot == null || objectPalettes == null || scrollController == null) {
             throw new IllegalArgumentException("Entity render inputs cannot be null");
         }
@@ -58,6 +66,7 @@ public final class EntityRenderLayer implements RenderLayer {
         this.objectPalettes = clonePalettes(objectPalettes);
         this.scrollController = scrollController;
         this.frameCounter = frameCounter & 0xFF;
+        this.dialogPosition = dialogPosition;
     }
 
     @Override
@@ -176,7 +185,7 @@ public final class EntityRenderLayer implements RenderLayer {
     private void renderHookshotChainOam(RenderContext context, RoomEntitySnapshot entities,
                                         int[][] palettes, int offsetX, int offsetY) {
         for (HookshotChainOam.Entry entry : entities.hookshotChainOam()) {
-            if (!entry.visible()) {
+            if (!entry.visible() || hiddenUnderDialog(entry.rawY() + offsetY - OAM_Y_SCREEN_ORIGIN)) {
                 continue;
             }
             int attributes = entry.attributes();
@@ -332,7 +341,7 @@ public final class EntityRenderLayer implements RenderLayer {
                                  boolean interpretPaletteFlip) {
         // Pair rendering treats any tile whose low nibble is $F as the ROM's
         // hidden-sprite sentinel after applying hActiveEntityTilesOffset.
-        if ((oam.tile() & 0x0F) == 0x0F) {
+        if ((oam.tile() & 0x0F) == 0x0F || hiddenUnderDialog(screenY)) {
             return;
         }
         int attributes = oam.attributes() ^ entityFlipAttribute;
@@ -355,6 +364,13 @@ public final class EntityRenderLayer implements RenderLayer {
                 screenX, screenY, (attributes & OAM_XFLIP) != 0,
                 (attributes & OAM_YFLIP) != 0, palette);
         }
+    }
+
+    /** HideSpritesUnderDialog ($01:5F6A) removes whole OAM entries, not pixels. */
+    private boolean hiddenUnderDialog(int screenY) {
+        int rawY = (screenY + OAM_Y_SCREEN_ORIGIN) & 0xFF;
+        return dialogPosition == DialogController.BoxPosition.TOP && rawY < 0x3E
+            || dialogPosition == DialogController.BoxPosition.BOTTOM && rawY >= 0x58;
     }
 
     private static int[] resolvePalette(int[][] palettes, int paletteIndex) {

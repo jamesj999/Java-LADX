@@ -1,6 +1,7 @@
 package linksawakening.render;
 
 import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.dialog.DialogController;
 import linksawakening.entity.EntitySpriteSelection;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.gpu.Framebuffer;
@@ -24,6 +25,33 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 final class EntityRenderLayerTest {
+
+    @Test
+    void dialogHidesWholeSpritesAtTheRomOamThresholds() {
+        GPU gpu = new GPU();
+        writeSolidTile(gpu, 0x40, 1);
+        writeSolidTile(gpu, 0x41, 1);
+        var definition = pairDefinition(new EntitySpriteDefinition.OamAttribute(0x40, 0),
+            new EntitySpriteDefinition.OamAttribute(0x40, 0));
+        // Raw OAM Y: top hides below $3E; bottom hides from $58 onward.
+        for (var position : DialogController.BoxPosition.values()) {
+            int threshold = position == DialogController.BoxPosition.TOP ? 0x3E : 0x58;
+            for (int rawY = threshold - 1; rawY <= threshold; rawY++) {
+                var entity = new RoomEntity(0, 0, 0x7A, 40, rawY,
+                    EntityStatus.ACTIVE, definition, 0);
+                byte[] buffer = filledBuffer(0x11, 0x22, 0x33);
+                new EntityRenderLayer(snapshot(entity), new int[][] {{0, 0xABCDEF, 0, 0}},
+                    new ScrollController(), 0, position).render(new RenderContext(buffer, gpu));
+                boolean hidden = position == DialogController.BoxPosition.TOP
+                    ? rawY < threshold : rawY >= threshold;
+                // Check the whole 16px sprite, including pixels outside the text box.
+                for (int y = rawY - 16; y < rawY; y++) {
+                    assertEquals(hidden ? 0x112233 : 0xABCDEF, pixelColor(buffer, 32, y),
+                        position + " raw OAM Y=" + rawY);
+                }
+            }
+        }
+    }
 
     @Test
     void rendersVisibleHookshotChainOamFromTheLiveLinkTileLoad() {

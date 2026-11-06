@@ -38,7 +38,7 @@ final class DialogRendererTest {
         assertRgb(buffer, BOX_X + BOX_WIDTH, 8, SENTINEL);
         assertRgb(buffer, BOX_X, 8 - 1, SENTINEL);
         assertRgb(buffer, BOX_X, 8 + BOX_HEIGHT, SENTINEL);
-        assertRgb(buffer, BOX_X, 96, SENTINEL);
+        assertRgb(buffer, BOX_X, 80, SENTINEL);
     }
 
     @Test
@@ -50,12 +50,12 @@ final class DialogRendererTest {
 
         DialogRenderer.render(buffer, dialog);
 
-        assertRgb(buffer, BOX_X, 96, BLACK);
-        assertRgb(buffer, BOX_X + BOX_WIDTH - 1, 96 + BOX_HEIGHT - 1, BLACK);
-        assertRgb(buffer, BOX_X - 1, 96, SENTINEL);
-        assertRgb(buffer, BOX_X + BOX_WIDTH, 96, SENTINEL);
-        assertRgb(buffer, BOX_X, 96 - 1, SENTINEL);
-        assertRgb(buffer, BOX_X, 96 + BOX_HEIGHT, SENTINEL);
+        assertRgb(buffer, BOX_X, 80, BLACK);
+        assertRgb(buffer, BOX_X + BOX_WIDTH - 1, 80 + BOX_HEIGHT - 1, BLACK);
+        assertRgb(buffer, BOX_X - 1, 80, SENTINEL);
+        assertRgb(buffer, BOX_X + BOX_WIDTH, 80, SENTINEL);
+        assertRgb(buffer, BOX_X, 80 - 1, SENTINEL);
+        assertRgb(buffer, BOX_X, 80 + BOX_HEIGHT, SENTINEL);
         assertRgb(buffer, BOX_X, 8, SENTINEL);
     }
 

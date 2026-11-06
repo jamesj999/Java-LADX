@@ -2923,3 +2923,47 @@ of scope.
   switch state `$02`, the key, and suppresses duplicate rewards.
 - `gradle clean test --rerun-tasks` passes with 1,712 tests across 215 suites
   and no failures, errors, or skips.
+
+## Emulator-verified opening conversations and shield presentation — 2026-11-06
+
+- Re-ran the shipped CGB ROM in headless PyBoy 2.8.1 from the intro onward.
+  The intro passes all 3,712 compared frames outside the existing explicit
+  random-rain mask (2,584 completely exact). The 22 file-menu scenarios pass
+  all 704 frames, and the settled opening house passes all 400 frames.
+- Added normal-input reference captures through Marin's six wake-up pages,
+  getting out of bed, walking to Tarin, his six offer pages, the held-shield
+  pose, and the three shield reward pages. Fresh save RAM stays in memory;
+  no emulator game-memory injection or save writes occur in these new captures.
+- Fixed bottom dialogue placement: `DialogOpenAnimationEnd`'s ROM row table
+  writes BG rows `$0A..$0E`, so the box begins at pixel 80, not 96. The old
+  position overwrote the HUD. Dialogue now uses the room's ROM-loaded BG
+  palette 1, preserving the actual glyph color indices instead of fixed white.
+- Added the ordinary continuation arrow from `DrawDialogArrow` (`$17:7D7C`):
+  gameplay tile `$A2`, OBJ palette 2, Y flip, OAM X `$97`, OAM Y `$37/$7F`,
+  and frame-counter bit-4 blink. The final page has no continuation arrow.
+- Ordinary entity OAM entries now follow `HideSpritesUnderDialog`
+  (`$01:5F6A`): top dialogue hides raw Y below `$3E`, bottom dialogue hides
+  raw Y at/above `$58`. The entire 8x16 sprite is suppressed, including pixels
+  protruding outside the box; this fixes Marin's feet under Tarin's top box.
+  Link and the dialogue arrow remain on their separate rendering paths.
+- All 512 new full-frame comparisons match at RGB555 precision: 192 Marin,
+  192 Tarin offer, 32 held shield, and 96 shield reward. No image registration
+  or pixel masks are used. Emulator-derived frame hashes are committed as
+  test fixtures; Java regression tests do not require an emulator install.
+- These are **settled scene/pose comparisons**, not continuous Java input
+  replay. Java scene setup uses existing production components, one initial
+  NPC clock synchronization, and a fixed two-frame OAM display offset.
+  Dialogue opening/closing, letter timing, scrolling, the bed-exit jump,
+  handoff transition timing, audio and desktop presentation remain outside
+  these pixel assertions. The broader OAM hiding path (including the Piece
+  of Heart dialogue exemption and separate transient-effect layers) is not
+  claimed complete here.
+- `tools/verify_opening.py` now reproduces the existing and new comparisons
+  in game order and stops on any failure. Setup and individual scenario
+  commands are in its docstring and `tools/dialog/compare.py`.
+- `gradle -p java test --rerun-tasks` passes 2,298 tests with zero failures,
+  errors or skips. Visual evidence is in
+  `docs/validation/opening-dialogue-emulator-fixes-2026-11-06.html`.
+  The next visual frontier is dialogue transitions and leaving the house
+  toward the beach; later dungeon gameplay remains tracked above, not
+  newly claimed visually verified by this work.

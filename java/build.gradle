@@ -78,3 +78,15 @@ tasks.register('captureHouse', JavaExec) {
     jvmArgs '-Djava.awt.headless=true'
     args layout.buildDirectory.dir('house-comparison').get().asFile.absolutePath
 }
+
+// Reference pages are reached through normal input by tools/dialog/compare.py --capture.
+tasks.register('captureDialog', JavaExec) {
+    group = 'verification'
+    description = 'Capture all settled pages of the opening Marin conversation'
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'linksawakening.render.DialogEmulatorCapture'
+    jvmArgs '-Djava.awt.headless=true'
+    args layout.buildDirectory.dir('dialog-comparison').get().asFile.absolutePath,
+        providers.gradleProperty('dialogScenario').getOrElse('marin')
+}

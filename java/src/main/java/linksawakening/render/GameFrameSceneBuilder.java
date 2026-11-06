@@ -27,7 +27,12 @@ public final class GameFrameSceneBuilder {
         }
 
         if (state.dialogController() != null) {
-            layers.add(new DialogRenderLayer(state.dialogController()));
+            int[] dialogPalette = state.room() == null ? null : state.room().palettes()[1];
+            int[][] dialogObjectPalettes = state.room() == null || state.room().entities() == null
+                || state.room().entities().spriteSelection() == null ? null
+                : state.room().entities().spriteSelection().objectPalettes();
+            layers.add(new DialogRenderLayer(state.dialogController(), dialogPalette,
+                dialogObjectPalettes, state.frameCounter()));
         }
         return FrameScene.of(layers);
     }
@@ -57,7 +62,9 @@ public final class GameFrameSceneBuilder {
             && state.room().entities().spriteSelection() != null) {
             layers.add(new EntityRenderLayer(state.room().entities(),
                 state.room().entities().spriteSelection().objectPalettes(),
-                state.scrollController(), state.frameCounter()));
+                state.scrollController(), state.frameCounter(),
+                state.dialogController() != null && state.dialogController().isActive()
+                    ? state.dialogController().boxPosition() : null));
         }
         if (state.transientVfxSystem() != null && state.cutLeavesEffectRenderer() != null) {
             layers.add(new TransientVfxRenderLayer(state.transientVfxSystem(),

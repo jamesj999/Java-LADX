@@ -44,7 +44,8 @@ public final class DialogController {
 
     public enum BoxPosition {
         TOP(8),
-        BOTTOM(96);
+        // DialogOpenAnimationEnd writes rows $0A..$0E, above the HUD.
+        BOTTOM(80);
 
         private final int y;
 

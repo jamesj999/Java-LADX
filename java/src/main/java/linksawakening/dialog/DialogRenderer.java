@@ -21,16 +21,21 @@ public final class DialogRenderer {
     }
 
     public static void render(byte[] buffer, DialogController dialog) {
+        render(buffer, dialog, new int[] { TEXT_COLOR, BOX_COLOR, BOX_COLOR, BOX_COLOR });
+    }
+
+    public static void render(byte[] buffer, DialogController dialog, int[] palette) {
         if (buffer == null || dialog == null || !dialog.isActive()) {
             return;
         }
 
         int boxY = dialog.boxY();
-        fillRect(buffer, BOX_X, boxY, BOX_WIDTH, BOX_HEIGHT, BOX_COLOR);
-        drawText(buffer, dialog.visibleText(), TEXT_X, boxY + TEXT_Y_OFFSET);
+        // DialogOpenAnimationEnd assigns CGB BG palette 1 to the whole box.
+        fillRect(buffer, BOX_X, boxY, BOX_WIDTH, BOX_HEIGHT, palette[3]);
+        drawText(buffer, dialog.visibleText(), TEXT_X, boxY + TEXT_Y_OFFSET, palette);
     }
 
-    private static void drawText(byte[] buffer, String text, int x, int y) {
+    private static void drawText(byte[] buffer, String text, int x, int y, int[] palette) {
         int column = 0;
         int row = 0;
         for (int i = 0; i < text.length() && row < VISIBLE_LINES; i++) {
@@ -48,22 +53,20 @@ public final class DialogRenderer {
                 }
             }
             if (codepoint != ' ') {
-                drawGlyph(buffer, FONT.tileFor(codepoint), x + column * CELL_SIZE, y + row * LINE_HEIGHT);
+                drawGlyph(buffer, FONT.tileFor(codepoint), x + column * CELL_SIZE, y + row * LINE_HEIGHT, palette);
             }
             column++;
         }
     }
 
-    private static void drawGlyph(byte[] buffer, byte[] tile, int x, int y) {
+    private static void drawGlyph(byte[] buffer, byte[] tile, int x, int y, int[] palette) {
         for (int row = 0; row < CELL_SIZE; row++) {
             int low = Byte.toUnsignedInt(tile[row * 2]);
             int high = Byte.toUnsignedInt(tile[row * 2 + 1]);
             for (int col = 0; col < CELL_SIZE; col++) {
                 int bit = 7 - col;
                 int color = ((high >> bit) & 1) << 1 | ((low >> bit) & 1);
-                if (color == 0) {
-                    putPixel(buffer, x + col, y + row, TEXT_COLOR);
-                }
+                putPixel(buffer, x + col, y + row, palette[color]);
             }
         }
     }

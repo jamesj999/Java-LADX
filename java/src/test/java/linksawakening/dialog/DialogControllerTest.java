@@ -187,7 +187,7 @@ final class DialogControllerTest {
         dialog.openForLinkY("Hi", 0x47);
 
         assertEquals(DialogController.BoxPosition.BOTTOM, dialog.boxPosition());
-        assertEquals(96, dialog.boxY());
+        assertEquals(80, dialog.boxY());
     }
 
     @Test
