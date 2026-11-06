@@ -424,6 +424,10 @@ public final class RoomSession {
     }
 
     public void loadWarpDestination(Warp warp) {
+        // GameplayWorldLoadRoomHandler ($01:442B) clears $C000..$D2FF,
+        // including the recent-room ring and transient entity-clear masks.
+        // Scrolling between adjacent rooms does not take this path.
+        recentRoomEntityClears.reset();
         boolean wasIndoor = activeRoom != null && activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD;
         dungeonTitleMessageCountdown = 0;
         if (warp.category() == Warp.CATEGORY_OVERWORLD) {

@@ -3428,6 +3428,22 @@ final class RoomSessionTest {
     }
 
     @Test
+    void staircaseWarpResetsTransientEnemyClearsBeforeReturning() {
+        RoomSession session = newSession();
+        session.loadIndoor(0, 0x19, Warp.CATEGORY_SIDESCROLL);
+        session.clearEntity(0);
+        session.clearEntity(1);
+        session.loadIndoor(0, 0x19, Warp.CATEGORY_SIDESCROLL);
+        assertEquals(0, session.activeRoom().entities().loadedEntities().size());
+
+        session.loadWarpDestination(new Warp(Warp.CATEGORY_INDOOR, 0, 0x01, 40, 16, 0));
+        session.loadWarpDestination(new Warp(Warp.CATEGORY_SIDESCROLL, 0, 0x18, 40, 16, 0));
+        session.loadIndoor(0, 0x19, Warp.CATEGORY_SIDESCROLL);
+        assertEquals(2, session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x9F).count());
+    }
+
+    @Test
     void collectsAStaticPickupThroughTheActiveRoomSessionAndPersistsIt() {
         RoomSession session = newSession();
         session.loadInitialOverworld(0xA4);

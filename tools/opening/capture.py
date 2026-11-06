@@ -38,7 +38,8 @@ try:
             button = fields[3]  # Explicit ROM combat input; checkpoint target is unchanged.
         elif len(fields) != 3:
             raise ValueError('Expected buttons, target, idle, optional ROM buttons, held frames and idle frames: ' + line)
-        if len(fields) >= 5:
+        # '-' keeps the shared target, allowing only the ROM idle to differ.
+        if len(fields) >= 5 and fields[4] != '-':
             if '=' in held or not fields[4].isdigit():
                 raise ValueError('ROM held-frame override requires a fixed-duration step: ' + line)
             held = fields[4]

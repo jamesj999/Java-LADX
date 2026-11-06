@@ -1,4 +1,4 @@
-# Optional columns 4/5/6: original-ROM buttons and fixed held/idle-frame counts.
+# Optional columns 4/5/6: ROM buttons, held-frame override (- preserves target), idle frames.
 # Both runs use normal input and stay alive; differing combat timing is diagnostic, not parity.
 - 0 620
 a 8 122
@@ -141,10 +141,10 @@ up y=64 4
 right x=120 4
 up y=48 4
 right room=0xAC 4
-# Wait in the cleared cave after the source-faithful moving-block interaction.
+# Let the cave settle after the moving-block return; staircase warps respawn its enemies.
 none 197 0 none 0 0
 right+a* x=56 4
-down+a* y=64 4
+down+a* y=64 24 down+a* - 4
 right+a* x=72 4
 down+a* room=0xBD 4
 down y=28 4
@@ -172,7 +172,7 @@ down y=112 4
 right x=40 4
 down room=0x54 4
 right x=128 4
-down+b room=0x64 4
+down+a*+b room=0x64 4 down+b
 down y=56 4
 right room=0x65 4
 down y=96 4
@@ -204,7 +204,7 @@ left+b room=0x64 4
 left+b x=128 4
 up+b room=0x54 4
 right+b x=140 4
-up+b room=0x44 4
+up+a*+b room=0x44 4 up+b
 left x=40 4
 up y=112 4
 left x=8 4
