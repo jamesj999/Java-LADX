@@ -6,13 +6,14 @@ Install tools/intro/requirements.txt in a virtual environment, then run:
     gradle -p java captureDialog
     python tools/dialog/compare.py
 
-For later checkpoints add --scenario tarin-offer, shield-pose, or tarin-shield
+For later checkpoints add --scenario bed-exit, tarin-offer, shield-pose, or tarin-shield
 and pass -PdialogScenario=<scenario> to Gradle. Or run tools/verify_opening.py.
 
 The emulator receives normal buttons and fresh, in-memory save RAM. No game
 memory is injected. Java receives initial animation clocks and capture times,
-never emulator pixels, tiles, palettes or OAM. This is settled-page verification,
-not a claim of opening/closing, text reveal, scroll or input timing parity.
+never emulator pixels, tiles, palettes or OAM. Dialogue scenarios verify settled
+pages; bed-exit verifies 64 consecutive frames of the hop and landing. Neither
+claims dialogue opening/closing, text reveal or scrolling timing parity.
 """
 import argparse
 import base64
@@ -70,59 +71,72 @@ def capture(scenario):
         if scenario != 'marin':
             finish_dialog()
             player.tick(30)
-            player.button('right', 1)
-            player.tick(62)
-            for button, duration in [('down', 20), ('right', 35)]:
-                player.button(button, duration)
-                player.tick(duration + 1)
-            assert (player.memory[0xff98], player.memory[0xff99]) == (105, 72)
-            player.button('a', 8)
-            player.tick(16)
-            assert player.memory[0xc173] == 0x54
-            if scenario in ('shield-pose', 'tarin-shield'):
-                finish_dialog()
-                if scenario == 'shield-pose':
-                    player.tick(8)
-                    assert player.memory[0xff9d] == 0x6c
-                else:
-                    for _ in range(200):
-                        if player.memory[0xc173] == 0x91:
-                            break
-                        player.tick()
+            if scenario != 'bed-exit':
+                player.button('right', 1)
+                player.tick(62)
+                for button, duration in [('down', 20), ('right', 35)]:
+                    player.button(button, duration)
+                    player.tick(duration + 1)
+                assert (player.memory[0xff98], player.memory[0xff99]) == (105, 72)
+                player.button('a', 8)
+                player.tick(16)
+                assert player.memory[0xc173] == 0x54
+                if scenario in ('shield-pose', 'tarin-shield'):
+                    finish_dialog()
+                    if scenario == 'shield-pose':
+                        player.tick(8)
+                        assert player.memory[0xff9d] == 0x6c
                     else:
-                        raise RuntimeError('Tarin did not grant the shield')
-                    assert player.memory[0xdb44] == 1
+                        for _ in range(200):
+                            if player.memory[0xc173] == 0x91:
+                                break
+                            player.tick()
+                        else:
+                            raise RuntimeError('Tarin did not grant the shield')
+                        assert player.memory[0xdb44] == 1
         initial = [player.memory[0xffe7], player.memory[0xc3d0]]
-        for page in range(20):
-            for _ in range(1500):
-                state = player.memory[0xc19f] & 0x7f
-                if scenario == 'shield-pose' or state == 12 or (state == 9 and player.memory[0xc1cc] == 1):
-                    break
+        if scenario == 'bed-exit':
+            assert player.memory[0xc19f] == 0
+            player.button('right', 1)
+            trace = []
+            for frame in range(64):
+                player.screen.image.save(folder / f'00-{frame:02}.png')
+                rows.append([0, frame, frame, player.memory[0xffe7], 0])
+                trace.append([frame] + [player.memory[a] for a in
+                    (0xff98, 0xff99, 0xffa2, 0xffa3, 0xff9d, 0xc290)])
                 player.tick()
-                elapsed += 1
-            else:
-                raise RuntimeError('Opening dialogue did not reach its next input wait')
-            # Let the final BG command and OAM DMA reach the displayed framebuffer.
-            player.tick(4)
-            elapsed += 4
-            state = player.memory[0xc19f] & 0x7f
-            if scenario != 'shield-pose':
-                assert state in (9, 12)
-            for frame in range(32):
-                player.screen.image.save(folder / f'{page:02}-{frame:02}.png')
-                rows.append([page, frame, elapsed, player.memory[0xffe7],
-                             player.memory[0xc170]])
-                player.tick()
-                elapsed += 1
-            if state == 12 or scenario == 'shield-pose':
-                if scenario == 'marin':
-                    assert page == 5, 'Expected all six pages of Dialog001'
-                break
-            player.button('a', 8)
-            player.tick(16)
-            elapsed += 16
+            (OUT / 'motion.tsv').write_text(''.join('\t'.join(map(str, r)) + '\n' for r in trace))
         else:
-            raise RuntimeError('Opening dialogue did not finish')
+            for page in range(20):
+                for _ in range(1500):
+                    state = player.memory[0xc19f] & 0x7f
+                    if scenario == 'shield-pose' or state == 12 or (state == 9 and player.memory[0xc1cc] == 1):
+                        break
+                    player.tick()
+                    elapsed += 1
+                else:
+                    raise RuntimeError('Opening dialogue did not reach its next input wait')
+                # Let the final BG command and OAM DMA reach the displayed framebuffer.
+                player.tick(4)
+                elapsed += 4
+                state = player.memory[0xc19f] & 0x7f
+                if scenario != 'shield-pose':
+                    assert state in (9, 12)
+                for frame in range(32):
+                    player.screen.image.save(folder / f'{page:02}-{frame:02}.png')
+                    rows.append([page, frame, elapsed, player.memory[0xffe7],
+                                 player.memory[0xc170]])
+                    player.tick()
+                    elapsed += 1
+                if state == 12 or scenario == 'shield-pose':
+                    if scenario == 'marin':
+                        assert page == 5, 'Expected all six pages of Dialog001'
+                    break
+                player.button('a', 8)
+                player.tick(16)
+                elapsed += 16
+            else:
+                raise RuntimeError('Opening dialogue did not finish')
         (OUT / 'initial.tsv').write_text('\t'.join(map(str, initial)) + '\n')
         (OUT / 'frames.tsv').write_text(''.join('\t'.join(map(str, row)) + '\n' for row in rows))
         (OUT / 'emulator.json').write_text(json.dumps({
@@ -163,21 +177,27 @@ article{display:flex;gap:16px;flex-wrap:wrap}figure{margin:0}img{width:240px;ima
 section{margin:16px 0}code{overflow-wrap:anywhere}</style>''',
         f'<p><strong>{result["exact"]}/{len(rows)} full frames match at RGB555 precision.</strong> '
         f'Worst difference: {result["max_pixels"]}/23040 pixels. No masks or image alignment.</p>',
-        f'<p>Scenario: {html.escape(scenario)}. Settled pages/pose, including each complete 32-frame '
-        'arrow/NPC animation cycle. Production Java room, bed, NPC, HUD and dialogue rendering. '
+        f'<p>Scenario: {html.escape(scenario)}. '
+        'Production Java room, bed, Link, NPC, HUD and dialogue rendering. '
         'One initial NPC clock synchronization and a fixed two-frame OAM display offset. '
         'Java scene/pose setup is checkpoint-based, not a continuous input replay. '
         'Opening/closing, letter reveal, scrolling, audio and desktop presentation are outside this comparison.</p>',
         f'<p>{html.escape(info["emulator"])} CGB; fresh in-memory save; normal button input. '
         f'ROM SHA256: <code>{info["rom_sha256"]}</code>.</p>']
-    for page in sorted({row['page'] for row in rows}):
-        worst = max((r for r in rows if r['page'] == page), key=lambda r: r['pixels'])
-        name = f'{page:02}-{worst["frame"]:02}.png'
-        report.append(f'<section><strong>Page {page + 1}</strong><article>')
-        for folder, label in [('original', 'Original ROM'), ('ours', 'Java reconstruction')]:
+    if scenario == 'bed-exit':
+        samples = [(0, frame, f'Jump frame {frame}') for frame in (0, 4, 10, 16, 23, 63)]
+    else:
+        samples = []
+        for page in sorted({row['page'] for row in rows}):
+            worst = max((r for r in rows if r['page'] == page), key=lambda r: r['pixels'])
+            samples.append((page, worst['frame'], f'Page {page + 1}'))
+    for page, frame, label in samples:
+        name = f'{page:02}-{frame:02}.png'
+        report.append(f'<section><strong>{label}</strong><article>')
+        for folder, source in [('original', 'Original ROM'), ('ours', 'Java reconstruction')]:
             data = base64.b64encode((OUT / folder / name).read_bytes()).decode()
-            report.append(f'<figure><figcaption>{label}</figcaption>'
-                          f'<img alt="{label}, page {page + 1}" src="data:image/png;base64,{data}"></figure>')
+            report.append(f'<figure><figcaption>{source}</figcaption>'
+                          f'<img alt="{source}, {label}" src="data:image/png;base64,{data}"></figure>')
         report.append('</article></section>')
     report.append('<p>Reproduce: install tools/intro/requirements.txt; run '
                   f'python tools/dialog/compare.py --capture --scenario {scenario}; '
@@ -191,7 +211,7 @@ section{margin:16px 0}code{overflow-wrap:anywhere}</style>''',
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--capture', action='store_true')
-    parser.add_argument('--scenario', choices=['marin', 'tarin-offer', 'shield-pose', 'tarin-shield'], default='marin')
+    parser.add_argument('--scenario', choices=['marin', 'bed-exit', 'tarin-offer', 'shield-pose', 'tarin-shield'], default='marin')
     args = parser.parse_args()
     if args.scenario != 'marin':
         OUT = OUT / args.scenario

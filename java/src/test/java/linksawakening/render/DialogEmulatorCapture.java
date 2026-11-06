@@ -57,7 +57,8 @@ public final class DialogEmulatorCapture {
 
     static void capture(String scenario, String initialClocks, List<String> frames,
                         BiConsumer<String, byte[]> consumer) throws Exception {
-        boolean inBed = "marin".equals(scenario);
+        boolean bedExit = "bed-exit".equals(scenario);
+        boolean inBed = "marin".equals(scenario) || bedExit;
         boolean heldShield = "shield-pose".equals(scenario);
         boolean receivedShield = "tarin-shield".equals(scenario);
         int linkX = inBed ? 0x38 : 105;
@@ -102,7 +103,7 @@ public final class DialogEmulatorCapture {
         }
         var dialog = new DialogController(16);
         dialog.setPlayerName("A");
-        if (!heldShield) dialog.openPreformattedForLinkY(DialogTextLoader.loadFromRom(rom)
+        if (!heldShield && !bedExit) dialog.openPreformattedForLinkY(DialogTextLoader.loadFromRom(rom)
             .load(new SignpostDialogRef(0, inBed ? 1 : receivedShield ? 0x91 : 0x54)), linkY);
         int page = -1;
         int elapsed = 0;
@@ -129,7 +130,13 @@ public final class DialogEmulatorCapture {
             }
             session.applyMarinWakeUpPresentation(marin.romX(), marin.romY(), marin.spriteVariant());
             session.updateHouseTarinPresentation(frame, linkX, linkY);
-            if (inBed) link.showMarinWakeUpBed(3);
+            if (bedExit) {
+                if (targetElapsed < 4) link.showMarinWakeUpBed(3);
+                else {
+                    if (targetElapsed == 4) link.leaveMarinWakeUpBed();
+                    link.update();
+                }
+            } else if (inBed) link.showMarinWakeUpBed(3);
             byte[] pixels = new byte[160 * 144 * 4];
             new GameFrameSceneBuilder().build(GameFrameState.empty().withScreen(RenderScreen.OVERWORLD)
                 .withRoom(session.renderSnapshot(), new ScrollController(), new TransitionController())

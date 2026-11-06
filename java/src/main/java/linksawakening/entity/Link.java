@@ -212,6 +212,7 @@ public final class Link implements RocsFeather.JumpTarget {
     private int marinWakeUpBedVariant = -1;
     /** Mirrors wC10A while Marin's scripted bed-exit jump owns Link motion. */
     private boolean marinBedJumpMotionLocked;
+    private int bedJumpRenderZ = -1;
     /** Mirrors wC191, the collision-probe countdown for directional ledges. */
     private int directionalLedgeCollisionCounter;
     /** Mirrors wC10A while a directional ledge jump owns Link's XY speed. */
@@ -340,6 +341,7 @@ public final class Link implements RocsFeather.JumpTarget {
         tarinShieldPalette = null;
         marinWakeUpBedVariant = -1;
         marinBedJumpMotionLocked = false;
+        bedJumpRenderZ = -1;
         directionalLedgeJumpMotionLocked = false;
         overworldLedgeFallActive = false;
         likeLikeCaptured = false;
@@ -1122,8 +1124,11 @@ public final class Link implements RocsFeather.JumpTarget {
         motionState = LINK_MOTION_DEFAULT;
         romInteractiveMotionBlocked = false;
         romAnimationStateOverride = -1;
-        marinWakeUpBedVariant = -1;
+        // The entity handler has already drawn the bed on the launch frame.
+        // Ordinary Link rendering takes over at the next physics update.
+        marinWakeUpBedVariant = 3;
         marinBedJumpMotionLocked = true;
+        movingThisFrame = false;
         airborne = true;
         zSubPixels = 1 << SUB_PIXEL_SHIFT;
         zVelocity = 0x12;
@@ -1227,6 +1232,7 @@ public final class Link implements RocsFeather.JumpTarget {
     }
 
     public void update() {
+        bedJumpRenderZ = -1;
         frameCounter = (frameCounter + 1) & 0xFF;
         if (pegasusBootsCollisionCountdown > 0) {
             pegasusBootsCollisionCountdown--;
@@ -1360,15 +1366,26 @@ public final class Link implements RocsFeather.JumpTarget {
         if (platformVerticalSpeedForThisUpdate >= 0) {
             speedY = (byte) platformVerticalSpeedForThisUpdate;
         }
+        boolean bedJumpFrame = marinBedJumpMotionLocked;
+        if (bedJumpFrame) {
+            marinWakeUpBedVariant = -1;
+            // Marin sets wIsLinkInTheAir=2, so UpdateLinkAnimation skips
+            // the feather/ledge flip. Walking animation precedes gravity:
+            // first pose $0A, then $0B, including the landing frame.
+            romAnimationStateOverride = ANIMATION_STATE[direction][movingThisFrame ? 1 : 0];
+            // ApplyGotItem caches wC145 before this frame changes Z.
+            bedJumpRenderZ = zPixels();
+            tickJump();
+        }
         lastRomSpeedX = speedX & 0xFF;
         lastRomSpeedY = speedY & 0xFF;
         movingThisFrame = (speedX != 0 || speedY != 0);
         boolean applyGroundMotion = airborne || shouldApplyGroundMotion();
 
-        if (applyGroundMotion && speedX != 0) {
+        if (applyGroundMotion && speedX != 0 && (!bedJumpFrame || airborne)) {
             tryMoveAxis(speedX, true);
         }
-        if (applyGroundMotion && speedY != 0) {
+        if (applyGroundMotion && speedY != 0 && (!bedJumpFrame || airborne)) {
             tryMoveAxis(speedY, false);
         }
 
@@ -1376,7 +1393,7 @@ public final class Link implements RocsFeather.JumpTarget {
             collisionIgnoreFramesRemaining--;
         }
 
-        tickJump();
+        if (!bedJumpFrame) tickJump();
         handlePegasusBootsCollision();
 
         if (!airborne) {
@@ -1882,7 +1899,7 @@ public final class Link implements RocsFeather.JumpTarget {
             return;
         }
 
-        tickJumpAnimation();
+        if (!marinBedJumpMotionLocked) tickJumpAnimation();
         zSubPixels += zVelocity;
         zVelocity -= 2;
         if (zSubPixels > 0 || zVelocity > 0) {
@@ -2072,7 +2089,7 @@ public final class Link implements RocsFeather.JumpTarget {
         boolean rightFlipY = spriteSheet.rightHalfFlipY(animationState);
 
         int originX = pixelX() + offsetX;
-        int renderY = pixelY() - zPixels();
+        int renderY = pixelY() - (bedJumpRenderZ >= 0 ? bedJumpRenderZ : zPixels());
         int originY = renderY + offsetY;
         int[] palette = playerState != null
             && (playerState.invincibilityCounter() & 0x04) != 0

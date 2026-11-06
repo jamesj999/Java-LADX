@@ -33,6 +33,11 @@ final class DialogEmulatorParityTest {
         verifyScenario("tarin-shield", 96);
     }
 
+    @Test
+    void bedExitMatchesEveryFrameOfHopLandingAndNpcOverlap() throws Exception {
+        verifyScenario("bed-exit", 64);
+    }
+
     private void verifyScenario(String scenario, int expectedFrames) throws Exception {
         String prefix = "marin".equals(scenario) ? "" : scenario + "/";
         Map<String, String> hashes = new HashMap<>();

@@ -44,7 +44,7 @@ def main():
     gradle('captureHouse')
     python('tools/house/compare.py')
     results = {}
-    for scenario in ('marin', 'tarin-offer', 'shield-pose', 'tarin-shield'):
+    for scenario in ('marin', 'bed-exit', 'tarin-offer', 'shield-pose', 'tarin-shield'):
         python('tools/dialog/compare.py', '--capture', '--scenario', scenario)
         gradle('captureDialog', '-PdialogScenario=' + scenario)
         python('tools/dialog/compare.py', '--scenario', scenario)

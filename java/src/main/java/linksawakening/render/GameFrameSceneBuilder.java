@@ -39,6 +39,14 @@ public final class GameFrameSceneBuilder {
 
     private static void addOverworldLayers(List<RenderLayer> layers, GameFrameState state) {
         layers.add(new RoomRenderLayer(state.room(), state.scrollController(), state.transitionController()));
+        if (state.room().entities() != null
+            && state.room().entities().spriteSelection() != null) {
+            layers.add(new EntityRenderLayer(state.room().entities(),
+                state.room().entities().spriteSelection().objectPalettes(),
+                state.scrollController(), state.frameCounter(),
+                state.dialogController() != null && state.dialogController().isActive()
+                    ? state.dialogController().boxPosition() : null));
+        }
         if (state.link() != null) {
             if (state.link().isMarinWakeUpBedVisible()) {
                 if (state.room().entities() != null
@@ -51,20 +59,19 @@ public final class GameFrameSceneBuilder {
                 }
             } else {
                 layers.add(new LinkRenderLayer(state.link(), state.scrollController()));
+                if (state.room().entities() != null
+                    && state.room().entities().spriteSelection() != null
+                    && !state.room().entities().sideScrolling()) {
+                    layers.add(new LinkShadowRenderLayer(state.link(),
+                        state.room().entities().spriteSelection().objectPalettes()[0],
+                        state.scrollController(), state.frameCounter()));
+                }
                 if (state.link().isTarinShieldPresentationVisible()
                     && state.room().entities() != null
                     && state.room().entities().spriteSelection() != null) {
                     layers.add(new TarinShieldRenderLayer(state.link(), state.scrollController()));
                 }
             }
-        }
-        if (state.room().entities() != null
-            && state.room().entities().spriteSelection() != null) {
-            layers.add(new EntityRenderLayer(state.room().entities(),
-                state.room().entities().spriteSelection().objectPalettes(),
-                state.scrollController(), state.frameCounter(),
-                state.dialogController() != null && state.dialogController().isActive()
-                    ? state.dialogController().boxPosition() : null));
         }
         if (state.transientVfxSystem() != null && state.cutLeavesEffectRenderer() != null) {
             layers.add(new TransientVfxRenderLayer(state.transientVfxSystem(),

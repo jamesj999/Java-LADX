@@ -2967,3 +2967,29 @@ of scope.
   The next visual frontier is dialogue transitions and leaving the house
   toward the beach; later dungeon gameplay remains tracked above, not
   newly claimed visually verified by this work.
+
+## Emulator-verified bed-exit hop — 2026-11-06
+
+- Extended normal-input reference capture through all 64 consecutive frames
+  around the first bed exit, including the landing and subsequent NPC overlap.
+  All 64 full frames match at RGB555 precision with no masks or image alignment.
+- Marin's source airborne state is `$02`, so the hop no longer runs the
+  feather/ledge flip animation (`UpdateLinkAnimation`, `$02:47A3`). The launch
+  frame retains the bed OAM already emitted by Marin; the next Link update
+  switches to ordinary OAM. The walking pose starts at `$0A`, then uses `$0B`
+  through landing. Rendering preserves the pre-gravity Z cached in `wC145`.
+- The bed hop applies gravity before horizontal motion and stops movement on
+  its landing frame, producing the ROM's 14-pixel displacement rather than 15.
+- Added the ROM airborne shadow (`$02:7590`), using gameplay tile `$26`, OBJ
+  palette 0, the source X/Y offsets, even-frame cadence and bottom-screen gate.
+  Link's ordinary OAM now draws above room entities, fixing the overlapping
+  pixels beside Marin in accordance with CGB OAM slot priority.
+- Added independent emulator hashes for the entire sequence plus a landing
+  displacement regression. Full Java suite: 2,299 tests, zero failures/errors/
+  skips. `tools/verify_opening.py` includes this checkpoint between Marin's
+  conversation and Tarin's offer. Visual evidence:
+  `docs/validation/bed-exit-emulator-fixes-2026-11-06.html`.
+- This extends the verified animation frontier; dialogue transitions and the
+  continuous house-to-beach input route remain pending. Java capture still
+  starts at the documented post-dialogue checkpoint with one initial NPC
+  clock synchronization; it does not replay the intro/menu/dialogue input path.

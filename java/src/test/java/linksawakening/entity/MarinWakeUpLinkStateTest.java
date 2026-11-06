@@ -27,7 +27,9 @@ final class MarinWakeUpLinkStateTest {
         assertEquals(4, link.marinWakeUpBedVariant());
         link.leaveMarinWakeUpBed();
 
-        assertFalse(link.isMarinWakeUpBedVisible());
+        // Marin has already emitted bed OAM on the launch frame.
+        assertTrue(link.isMarinWakeUpBedVisible());
+        assertEquals(3, link.marinWakeUpBedVariant());
         assertEquals(Link.DIRECTION_RIGHT, link.direction());
         assertTrue(link.isAirborne());
         assertEquals(0x12, link.zVelocity());
@@ -63,6 +65,8 @@ final class MarinWakeUpLinkStateTest {
 
         assertTrue(airborneFrames > 1);
         assertFalse(link.isAirborne());
+        assertFalse(link.isMarinWakeUpBedVisible());
+        assertEquals(0x40 + 14, link.pixelX(), "No horizontal movement on the landing frame");
         link.update();
         assertEquals(Link.DIRECTION_LEFT, link.direction());
         assertEquals(0xF0, link.romSpeedX());
