@@ -30,14 +30,6 @@ public class GPU {
     public static final int TILE_COUNT = 384;
     public static final int TILE_DATA_SIZE = 16;
 
-    private static final int OVERWORLD_TILES_BANK = 0x0C;
-    private static final int OVERWORLD_TILES_ADDR = 0x4020;
-    private static final int OVERWORLD_TILES_COUNT = 0x30;
-
-    private static final int OVERWORLD_LANDSCAPE_TILES_BANK = 0x2C;
-    private static final int OVERWORLD_LANDSCAPE_TILES_ADDR = 0x5400;
-    private static final int OVERWORLD_LANDSCAPE_TILES_COUNT = 0x60;
-
     private static final int ANIMATED_TILES_BANK = 0x2C;
     private static final int ANIMATED_TILES_BASE_ADDR = 0x6A00;
     private static final int ANIMATED_TILES_FRAME_COUNT = 0x04;
@@ -73,14 +65,6 @@ public class GPU {
     private static final int OVERWORLD2_TILES_BANK = 0x0F;
     private static final int OVERWORLD2_TILES_ADDR = 0x4000;
     private static final int OVERWORLD2_TILES_COUNT = 0x100;
-
-    private static final int MABE_VILLAGE_TILES_BANK = 0x0C;
-    private static final int MABE_VILLAGE_TILES_ADDR = 0x6A00;
-    private static final int MABE_VILLAGE_TILES_COUNT = 0x100;
-
-    private static final int INVENTORY_TILES_BANK = 0x0C;
-    private static final int INVENTORY_TILES_ADDR = 0x4C00;
-    private static final int INVENTORY_TILES_COUNT = 0x40;
 
     private static final int INVENTORY_OVERWORLD_ITEMS_TILES_BANK = 0x0C;
     private static final int INVENTORY_OVERWORLD_ITEMS_TILES_ADDR = 0x4C00;
@@ -594,22 +578,6 @@ public class GPU {
                     : -1;
             default -> -1;
         };
-    }
-
-    public void loadOverworldTiles(byte[] romData) {
-        loadTilesFromROM(romData, OVERWORLD_TILES_BANK, OVERWORLD_TILES_ADDR, OVERWORLD_TILES_COUNT, 0x00);
-    }
-
-    public void loadOverworldLandscapeTiles(byte[] romData) {
-        loadTilesFromROM(romData, OVERWORLD_LANDSCAPE_TILES_BANK, OVERWORLD_LANDSCAPE_TILES_ADDR, OVERWORLD_LANDSCAPE_TILES_COUNT, 0x80);
-    }
-
-    public void loadMabeVillageTiles(byte[] romData) {
-        loadTilesFromROM(romData, MABE_VILLAGE_TILES_BANK, MABE_VILLAGE_TILES_ADDR, MABE_VILLAGE_TILES_COUNT, 0x00);
-    }
-
-    public void loadInventoryTiles(byte[] romData) {
-        loadTilesFromROM(romData, INVENTORY_TILES_BANK, INVENTORY_TILES_ADDR, INVENTORY_TILES_COUNT, 0x00);
     }
 
     /** Copies the three Ocarina popup chunks to vTiles0+$200/$240/$260. */
