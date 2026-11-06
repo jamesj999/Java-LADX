@@ -307,11 +307,11 @@ public class Main {
                 roomSession.currentDungeonItemFlagsSnapshot()[4] & 0xFF,
                 roomSession.currentDungeonItemFlagsSnapshot()[1] & 0xFF,
                 roomSession.currentDungeonItemFlagsSnapshot()[0] & 0xFF,
-                roomSession.currentDungeonItemFlagsSnapshot()[3] & 0xFF, link.romEntityZ(), link.zVelocity(), link.romSpeedX(), link.romSpeedY(), scrollController.isActive() || transitionController.isInputBlocked());
+                roomSession.currentDungeonItemFlagsSnapshot()[3] & 0xFF, equipmentController.activeSword() == null ? 0 : equipmentController.activeSword().state(), link.romEntityZ(), link.zVelocity(), link.romSpeedX(), link.romSpeedY(), scrollController.isActive() || transitionController.isInputBlocked());
     }
 
     record HeadlessState(int frame, int map, int room, int x, int y,
-                         boolean dialog, boolean pageWait, String text, int shield, int health, int sword, int urchins, boolean toadstool, int powder, int inventoryTick, int tarinX, int tarinY, boolean forestCleared, int tailKey, int bgTick, int smallKeys, int compass, int dungeonMap, int nightmareKey, int z, int velocityZ, int speedX, int speedY, boolean loading) {}
+                         boolean dialog, boolean pageWait, String text, int shield, int health, int sword, int urchins, boolean toadstool, int powder, int inventoryTick, int tarinX, int tarinY, boolean forestCleared, int tailKey, int bgTick, int smallKeys, int compass, int dungeonMap, int nightmareKey, int swordAnimation, int z, int velocityZ, int speedX, int speedY, boolean loading) {}
 
     private static void loadROM() {
         try (InputStream is = Main.class.getClassLoader().getResourceAsStream("rom/azle.gbc")) {

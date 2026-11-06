@@ -106,7 +106,7 @@ final class MainOpeningRouteTest {
         var mushroom = checkpoints.get(130);
         assertEquals(0, mushroom.map());
         assertEquals(0x50, mushroom.room());
-        assertEquals(50, mushroom.x());
+        assertEquals(49, mushroom.x(), "Sword launch frame moves before locking the pickup approach");
         assertEquals(64, mushroom.y());
         assertTrue(mushroom.toadstool());
         assertTrue(mushroom.health() > 0);
@@ -223,10 +223,10 @@ final class MainOpeningRouteTest {
         assertEquals(1, beetleRoom.dungeonMap());
         assertEquals(1, beetleRoom.compass());
         assertTrue(beetleRoom.health() > 0);
-        var clearedBeetles = checkpoints.get(469);
+        var clearedBeetles = checkpoints.get(470);
         assertEquals(0x03, clearedBeetles.room());
         assertTrue(clearedBeetles.health() > 0);
-        assertFalse(entityCheckpoints.get(469).contains("2C:"),
+        assertFalse(entityCheckpoints.get(470).contains("2C:"),
             "Both Spiked Beetles must be defeated before entering the passage");
         var passage = checkpoints.get(473);
         assertEquals(0x19, passage.room());

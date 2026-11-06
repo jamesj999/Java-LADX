@@ -1428,7 +1428,7 @@ public final class Link implements RocsFeather.JumpTarget {
         int newDirection = JOYPAD_TO_DIRECTION[mask];
         if (newDirection != -1 && !marinBedJumpMotionLocked
             && !directionalLedgeJumpMotionLocked
-            && !itemsLockFacing() && !isLiftTransitionBlockingMotion()) {
+            && !itemsLockFacing(true) && !isLiftTransitionBlockingMotion()) {
             direction = newDirection;
         }
         updatePegasusBootsUse();
@@ -1451,7 +1451,7 @@ public final class Link implements RocsFeather.JumpTarget {
         // ROM still refreshes hLinkDirection from held single-axis input before
         // this early-out path, so direction update must happen above.
         // $02:43C3 bypasses the item motion gate while Link is above ground.
-        if (itemsBlockMotion() && !airborne) {
+        if (itemsBlockMotion(true) && !airborne) {
             movingThisFrame = false;
             walkTickCounter = 0;
             walkFrame = 0;
@@ -1692,6 +1692,10 @@ public final class Link implements RocsFeather.JumpTarget {
     }
 
     private boolean itemsBlockMotion() {
+        return itemsBlockMotion(false);
+    }
+
+    private boolean itemsBlockMotion(boolean beforeTopDownAnimation) {
         if (isLiftTransitionBlockingMotion()) {
             return true;
         }
@@ -1699,23 +1703,37 @@ public final class Link implements RocsFeather.JumpTarget {
             return false;
         }
         EquippedItem a = itemRegistry.lookup(playerState.itemA());
-        if (a != null && a.blocksMotion()) {
+        if (a != null && itemBlocksMotion(a, beforeTopDownAnimation)) {
             return true;
         }
         EquippedItem b = itemRegistry.lookup(playerState.itemB());
-        return b != null && b.blocksMotion();
+        return b != null && itemBlocksMotion(b, beforeTopDownAnimation);
+    }
+
+    private static boolean itemBlocksMotion(EquippedItem item, boolean beforeTopDownAnimation) {
+        return beforeTopDownAnimation && item instanceof linksawakening.equipment.Sword sword
+            ? sword.blocksTopDownMotion() : item.blocksMotion();
     }
 
     private boolean itemsLockFacing() {
+        return itemsLockFacing(false);
+    }
+
+    private boolean itemsLockFacing(boolean beforeTopDownAnimation) {
         if (itemRegistry == null || playerState == null) {
             return false;
         }
         EquippedItem a = itemRegistry.lookup(playerState.itemA());
-        if (a != null && a.locksFacing()) {
+        if (a != null && itemLocksFacing(a, beforeTopDownAnimation)) {
             return true;
         }
         EquippedItem b = itemRegistry.lookup(playerState.itemB());
-        return b != null && b.locksFacing();
+        return b != null && itemLocksFacing(b, beforeTopDownAnimation);
+    }
+
+    private static boolean itemLocksFacing(EquippedItem item, boolean beforeTopDownAnimation) {
+        return beforeTopDownAnimation && item instanceof linksawakening.equipment.Sword sword
+            ? sword.locksTopDownFacing() : item.locksFacing();
     }
 
     private boolean shouldApplyGroundMotion() {

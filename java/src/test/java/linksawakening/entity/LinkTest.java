@@ -1202,15 +1202,19 @@ final class LinkTest {
         link.setPixelPosition(40, 40);
         input.onKeyEvent(config.rightKey(), GLFW_PRESS);
         sword.onPress();
+        sword.tick(true);
         link.update();
-        assertEquals(40, link.pixelX());
-        link.useRocsFeather();
+        assertEquals(41, link.pixelX(), "Launch-frame XY precedes sword animation");
+        sword.tick(true);
         link.update();
         assertEquals(41, link.pixelX());
+        link.useRocsFeather();
+        link.update();
+        assertEquals(42, link.pixelX());
         assertTrue(link.isAirborne());
         assertTrue(sword.blocksMotion());
         link.update();
-        assertEquals(42, link.pixelX());
+        assertEquals(43, link.pixelX());
     }
 
     @Test

@@ -1,0 +1,9 @@
+{
+  "emulator": "PyBoy 2.8.1",
+  "rom_sha256": "c95dd3d9cb798e86c28e3269554e458d434bf3277b96cadf5bc81cfacfb5ee60",
+  "route_sha256": "05dc5ed2cbef2faa424bacbd3bc45479585aca1f8bbc7811f5323980a44b8e7c",
+  "checkpoints": 70,
+  "rom_button_overrides": 0,
+  "memory_injection": false,
+  "save": "fresh in-memory RAM, never saved"
+}

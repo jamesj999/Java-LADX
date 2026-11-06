@@ -1,6 +1,6 @@
-# Diagnostic combat extension: original ROM defeats Rolling Bones; Java combat parity remains incomplete.
-# Optional columns 4/5/6: ROM buttons, held-frame override (- preserves target), idle frames.
-# Both runs use normal input and stay alive; differing combat timing is diagnostic, not parity.
+# Diagnostic combat: ROM defeats Rolling Bones; Java survives but has not yet defeated it.
+# ROM columns preserve its verified input route while Java approaches account for changed combat phases.
+# Optional ROM columns: buttons, frame count/target (- keeps Java target), idle frames.
 - 0 620
 a 8 122
 a 8 122
@@ -108,7 +108,7 @@ up+a*+b y=88 4
 a*+b 180 4
 up+a*+b room=0x60 4
 up+a* y=32 4
-right+a* room=0x61 4
+right+b room=0x61 4 right+a* room=0x61 4
 right+a* x=88 4
 down+a* y=88 4
 right+a* room=0x62 4
@@ -119,7 +119,7 @@ left+a* x=24 4
 up+a* y=28 4
 right+a* x=72 4
 up room=0xAC 4
-up+a* y=64 4
+up+a* y=64 24 up+a* y=64 4
 left+a* room=0xAB 4
 left x=136 4
 down y=80 4
@@ -142,7 +142,6 @@ up y=64 4
 right x=120 4
 up y=48 4
 right room=0xAC 4
-# Let the cave settle after the moving-block return; staircase warps respawn its enemies.
 none 197 0 none 0 0
 right+a* x=56 4
 down+a* y=64 24 down+a* - 4
@@ -297,7 +296,6 @@ right x=104 4
 up room=0x17 120
 a* dialog=0 120
 none bgtick=8 0
-# Tail Cave west room: approach below the entry statues.
 up y=96 4
 left x=24 4
 up y=80 4
@@ -357,7 +355,7 @@ right+a*+b x=88 4
 a+b 80 0
 none 1 60
 down+a*+b y=80 4
-a*+b 240 4
+left+a*+b x=40 4 a*+b 240 4
 right+a*+b x=120 4
 up+a*+b y=40 4
 right+a*+b x=136 4
@@ -386,7 +384,6 @@ right+a*+b x=136 4
 down+a*+b y=112 4
 right+b 1 0
 a*+b 240 4
-# Finish the remaining Stalfos after the shutter timing correction.
 left x=80 0 none 0 0
 up y=96 0 none 0 0
 up+a* y=32 4 none 0 0
@@ -457,7 +454,7 @@ b 12 0
 b 12 0
 b 12 0
 b 12 0
-none 0 0 up 12 0
+down+b y=64 0 up 12 0
 left x=75 0
 left+a* x=40 0
 a* 48 0
@@ -468,14 +465,13 @@ b 120 0
 up y=54 0
 up+a* y=40 0
 a* 48 0
-down y=64 0
-# Face the remaining Beetle, flip it with the shield, then strike.
-right x=93 0 none 0 0
-up+b 1 0 none 0 0
+down+b y=64 0 down y=64 0
+left+b x=94 0 none 0 0
+down+b 1 0 none 0 0
 b 120 0 none 0 0
-up+a* y=40 0 none 0 0
+down+a* y=96 0 none 0 0
 a* 48 0 none 0 0
-down y=64 0 none 0 0
+up+b y=64 0 none 0 0
 right x=136 0
 up room=0x19 4
 none 64 0
@@ -519,7 +515,6 @@ down y=112 0
 right+a* x=120 0
 up room=0x03 4
 none 64 0
-# Return across the block room with Feather and head for the Nightmare Key.
 down+a* y=56 0
 right+a* room=0x04 4
 right x=24 0
@@ -531,7 +526,7 @@ right x=80 0
 down room=0x07 4
 none 64 0
 down y=40 0
-left x=64 0
+down y=48 0 left x=64 0
 down+b 40 0
 right+a* x=80 0
 down+a* room=0x0D 4
@@ -544,7 +539,7 @@ down+a* y=112 0
 right+a* x=104 0
 up+a* y=64 0
 right+a* x=136 0
-up+b y=48 0 up
+up y=48 0 up y=48 0
 right room=0x0F 4
 right x=40 0
 up y=32 0
@@ -566,7 +561,6 @@ a 8 122
 a 8 122
 a* dialog=0 32
 none nightmarekey=1 0
-# Return through the upper passage, then approach the miniboss.
 right room=0x09 4
 right x=40 0
 down y=112 0
@@ -584,19 +578,17 @@ down y=80 0
 right+a* room=0x0F 4
 right+a* x=120 0
 up+a* y=64 0
-# Holding into the door outside its alignment window must not spend the key.
 right+a* 120 0
 down y=72 0
 right+a* room=0x10 4
 none 32 0
 right+a* x=32 0
 down+a* y=112 0
-right+a* x=136 0
+right+a*+b* x=136 16 right+a* x=136 0
 up+b 32 0
 up y=72 0
 right room=0x11 4
 none 32 0
-
 right+a*+b* 24 0
 right+a*+b* 24 0
 right+a*+b* 24 0

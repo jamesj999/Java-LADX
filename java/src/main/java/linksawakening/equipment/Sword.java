@@ -90,6 +90,10 @@ public final class Sword implements EquippedItem {
 
     private int state = STATE_NONE;
     private int timer;
+    private boolean animationMotionBlocked;
+    private boolean motionBlockedBeforeAnimation;
+    private int facingLockCountdown;
+    private boolean facingLockedBeforeAnimation;
     private int charge;
     private int frameCounter;
     private int spinFramesRemaining;
@@ -200,6 +204,13 @@ public final class Sword implements EquippedItem {
     @Override
     public void tick(boolean buttonHeld, int frameCounter) {
         this.frameCounter = frameCounter & 0xFF;
+        // XY movement ($02:43C8) consumes the previous animation's flag.
+        // UpdateLinkAnimation sets it before advancing even the final swing state.
+        facingLockedBeforeAnimation = facingLockCountdown != 0;
+        if (facingLockCountdown > 0) facingLockCountdown--;
+        if (state != STATE_NONE) facingLockCountdown = 4; // wC16E, $02:47F3
+        motionBlockedBeforeAnimation = animationMotionBlocked;
+        animationMotionBlocked = blocksMotion();
         if (spinAttackQueued) {
             if (queuedSpinDelayFrames > 0) {
                 queuedSpinDelayFrames--;
@@ -262,6 +273,15 @@ public final class Sword implements EquippedItem {
     @Override
     public boolean blocksMotion() {
         return spinAttackActive() || (state != STATE_NONE && state != STATE_HOLDING);
+    }
+
+    public boolean locksTopDownFacing() {
+        return spinAttackQueued || spinAttackActive() || facingLockedBeforeAnimation;
+    }
+
+    /** Movement phase preceding this tick's UpdateLinkAnimation. */
+    public boolean blocksTopDownMotion() {
+        return spinAttackActive() || motionBlockedBeforeAnimation;
     }
 
     @Override

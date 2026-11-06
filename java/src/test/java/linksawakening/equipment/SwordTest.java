@@ -23,6 +23,20 @@ final class SwordTest {
     private static final int STATE_DRAW = 1; // SWORD_ANIMATION_STATE_DRAW in the ROM
 
     @Test
+    void movementLockUsesPreviousAnimationIncludingTheFinalSwingFrame() {
+        Sword sword = new Sword(null, null);
+        sword.onPress();
+        for (int frame = 1; frame <= 20; frame++) {
+            sword.tick(false);
+            assertEquals(frame >= 2 && frame <= 16, sword.blocksTopDownMotion(),
+                "movement frame " + frame);
+            assertEquals(frame >= 2 && frame <= 19, sword.locksTopDownFacing(),
+                "facing frame " + frame);
+            if (frame >= 15) assertEquals(Sword.STATE_NONE, sword.state());
+        }
+    }
+
+    @Test
     void startingSlashPlaysOneOfTheRomSwordSwingNoiseEffects() {
         RecordingGameplaySoundSink soundSink = new RecordingGameplaySoundSink();
         SequenceIntSupplier randomBytes = new SequenceIntSupplier(0, 1, 2, 3);
