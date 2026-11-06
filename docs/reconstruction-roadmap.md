@@ -2993,3 +2993,25 @@ of scope.
   continuous house-to-beach input route remain pending. Java capture still
   starts at the documented post-dialogue checkpoint with one initial NPC
   clock synchronization; it does not replay the intro/menu/dialogue input path.
+
+## Emulator-verified dialogue opening and first-page printing — 2026-11-06
+
+- Added 100 consecutive original-ROM screenshots from the moment Marin opens
+  Dialog001 through the complete first-page print and wait. All 100 frames
+  match at RGB555 precision, without masks or image alignment.
+- Gameplay now constructs `DialogController.forGameplay()`. Its initial BG
+  setup delay, five center-out row writes and first-letter delay follow the
+  observed source pipeline. The row order is loaded from `$1C:4A18`; it is
+  not drawn as an immediately filled rectangle. Printing then advances at
+  one character every two frames. Buttons during opening do not skip text.
+- Text sound cadence in this gameplay mode uses the source character index,
+  including spaces in parity while keeping spaces silent. The generic text
+  controller remains available for non-gameplay callers and convenience tests.
+- All visual capture scenarios now instantiate the gameplay controller.
+  The settled-page harness waits for presentation to finish; the new timing
+  scenario advances exactly one gameplay tick per captured frame.
+- Added independent emulator hashes for all 100 frames and a sound/input
+  regression. Full suite passes 2,301 tests with no failures, errors or skips.
+  Evidence: `docs/validation/dialog-opening-emulator-fixes-2026-11-06.html`.
+- Dialogue page scrolling, closing and action handling during letter reveal
+  remain the next source-timing work; this milestone does not claim those paths.

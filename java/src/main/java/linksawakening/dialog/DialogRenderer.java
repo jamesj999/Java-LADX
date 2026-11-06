@@ -31,7 +31,11 @@ public final class DialogRenderer {
 
         int boxY = dialog.boxY();
         // DialogOpenAnimationEnd assigns CGB BG palette 1 to the whole box.
-        fillRect(buffer, BOX_X, boxY, BOX_WIDTH, BOX_HEIGHT, palette[3]);
+        for (int row = 0; row < BOX_HEIGHT / CELL_SIZE; row++) {
+            if (dialog.isBoxRowVisible(row)) {
+                fillRect(buffer, BOX_X, boxY + row * CELL_SIZE, BOX_WIDTH, CELL_SIZE, palette[3]);
+            }
+        }
         drawText(buffer, dialog.visibleText(), TEXT_X, boxY + TEXT_Y_OFFSET, palette);
     }
 

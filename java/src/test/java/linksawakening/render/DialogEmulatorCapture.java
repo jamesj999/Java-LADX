@@ -57,8 +57,9 @@ public final class DialogEmulatorCapture {
 
     static void capture(String scenario, String initialClocks, List<String> frames,
                         BiConsumer<String, byte[]> consumer) throws Exception {
+        boolean timedDialog = "marin-timing".equals(scenario);
         boolean bedExit = "bed-exit".equals(scenario);
-        boolean inBed = "marin".equals(scenario) || bedExit;
+        boolean inBed = "marin".equals(scenario) || bedExit || timedDialog;
         boolean heldShield = "shield-pose".equals(scenario);
         boolean receivedShield = "tarin-shield".equals(scenario);
         int linkX = inBed ? 0x38 : 105;
@@ -101,7 +102,7 @@ public final class DialogEmulatorCapture {
             marin = motion.tickMarinPresentation((firstFrame - i + 1) & 255,
                 marinSource.x(), marinSource.y(), linkX, linkY);
         }
-        var dialog = new DialogController(16);
+        var dialog = DialogController.forGameplay();
         dialog.setPlayerName("A");
         if (!heldShield && !bedExit) dialog.openPreformattedForLinkY(DialogTextLoader.loadFromRom(rom)
             .load(new SignpostDialogRef(0, inBed ? 1 : receivedShield ? 0x91 : 0x54)), linkY);
@@ -117,9 +118,10 @@ public final class DialogEmulatorCapture {
             int targetElapsed = Integer.parseInt(fields[2]);
             int frame = (firstFrame + targetElapsed) & 255;
             // Match settled pages, not their opening/typewriter/scroll timing.
-            if (nextPage != page) {
+            if (timedDialog && targetElapsed > 0) dialog.tick();
+            if (!timedDialog && nextPage != page) {
                 if (page >= 0) dialog.advance();
-                for (int i = 0; i < 64; i++) dialog.tick();
+                for (int i = 0; i < 128; i++) dialog.tick();
                 page = nextPage;
             }
             while (elapsed < targetElapsed) {
@@ -141,7 +143,7 @@ public final class DialogEmulatorCapture {
             new GameFrameSceneBuilder().build(GameFrameState.empty().withScreen(RenderScreen.OVERWORLD)
                 .withRoom(session.renderSnapshot(), new ScrollController(), new TransitionController())
                 .withLink(link).withInventoryController(inventory).withDialogController(dialog).withFrameCounter((frame - 2) & 255)).drawTo(pixels, gpu);
-            consumer.accept(String.format("%02d-%02d.png", page, f), pixels);
+            consumer.accept(String.format("%02d-%02d.png", nextPage, f), pixels);
         }
     }
 }

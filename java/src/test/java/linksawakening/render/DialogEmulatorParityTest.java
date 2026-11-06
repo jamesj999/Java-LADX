@@ -38,6 +38,11 @@ final class DialogEmulatorParityTest {
         verifyScenario("bed-exit", 64);
     }
 
+    @Test
+    void openingRowsAndEveryPrintedCharacterMatchTheEmulator() throws Exception {
+        verifyScenario("marin-timing", 100);
+    }
+
     private void verifyScenario(String scenario, int expectedFrames) throws Exception {
         String prefix = "marin".equals(scenario) ? "" : scenario + "/";
         Map<String, String> hashes = new HashMap<>();

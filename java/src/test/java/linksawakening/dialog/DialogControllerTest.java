@@ -11,6 +11,28 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 final class DialogControllerTest {
 
     @Test
+    void gameplayWaitsForBoxOpeningAndUsesSourceCharacterIndexForTextSound() {
+        DialogController dialog = DialogController.forGameplay();
+        dialog.openPreformatted("AB CD");
+        for (int frame = 0; frame < 10; frame++) {
+            dialog.advance(); // Buttons during opening must not reveal or skip text.
+            assertEquals("", dialog.visibleText());
+            dialog.tick();
+        }
+        revealNextCharacter(dialog);
+        assertEquals("A", dialog.visibleText());
+        assertEquals(List.of(DialogController.SoundEvent.TEXT_PRINT), dialog.consumeSoundEvents());
+        revealNextCharacter(dialog); // B: odd source index
+        assertEquals(List.of(), dialog.consumeSoundEvents());
+        revealNextCharacter(dialog); // space: even index but silent
+        assertEquals(List.of(), dialog.consumeSoundEvents());
+        revealNextCharacter(dialog); // C: odd index, unlike a non-space counter
+        assertEquals(List.of(), dialog.consumeSoundEvents());
+        revealNextCharacter(dialog);
+        assertEquals(List.of(DialogController.SoundEvent.TEXT_PRINT), dialog.consumeSoundEvents());
+    }
+
+    @Test
     void revealsOneVisibleCharacterEveryTwoTicks() {
         DialogController dialog = new DialogController(16);
 

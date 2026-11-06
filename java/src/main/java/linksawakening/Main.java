@@ -268,7 +268,7 @@ public class Main {
         InventoryTilemapLoader tilemapLoader = InventoryTilemapLoader.loadFromRom(romData);
         inventoryMenu = new InventoryMenu(tilemapLoader, playerState, gameplaySoundSink, romData);
         inventoryController = new InventoryController(inputState, inputConfig, inventoryMenu);
-        dialogController = new DialogController(16);
+        dialogController = DialogController.forGameplay();
         dialogTextLoader = DialogTextLoader.loadFromRom(romData);
         overworldDialogInteraction = new OverworldDialogInteraction(
             SignpostDialogTable.loadFromRom(romData), dialogTextLoader);

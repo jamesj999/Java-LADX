@@ -12,6 +12,8 @@ public final class DialogController {
     private static final char ASK_MARKER = '\u00FE';
 
     private final int lineWidth;
+    private boolean romTimed;
+    private int openingAge;
     private String text = "";
     private String playerName = DEFAULT_PLAYER_NAME;
     private int pageStart;
@@ -65,6 +67,18 @@ public final class DialogController {
         this.lineWidth = lineWidth;
     }
 
+    /** Gameplay timing includes the source BG save/setup and five row writes. */
+    public static DialogController forGameplay() {
+        DialogController dialog = new DialogController(16);
+        dialog.romTimed = true;
+        return dialog;
+    }
+
+    public boolean isBoxRowVisible(int row) {
+        if (!romTimed) return true;
+        return openingAge >= DialogRomLayout.openingFrameForRow(row);
+    }
+
     public void open(String text) {
         open(text, BoxPosition.BOTTOM, false);
     }
@@ -91,6 +105,7 @@ public final class DialogController {
         this.choicePrompt = false;
         this.choiceSelectionIndex = 0;
         this.boxPosition = boxPosition == null ? BoxPosition.BOTTOM : boxPosition;
+        openingAge = 0;
         pageStart = 0;
         visibleCharactersOnPage = 0;
         visibleNonSpaceCharactersOnPage = 0;
@@ -101,6 +116,10 @@ public final class DialogController {
     }
 
     public void tick() {
+        if (active && romTimed && openingAge < 10) {
+            openingAge++;
+            return;
+        }
         if (!active || waitingForPageAdvance) {
             return;
         }
@@ -122,7 +141,8 @@ public final class DialogController {
         visibleCharactersOnPage++;
         if (!Character.isWhitespace(revealed)) {
             visibleNonSpaceCharactersOnPage++;
-            if ((visibleNonSpaceCharactersOnPage & 0x01) == 1) {
+            int soundClock = romTimed ? visibleCharactersOnPage : visibleNonSpaceCharactersOnPage;
+            if ((soundClock & 0x01) == 1) {
                 soundEvents.add(SoundEvent.TEXT_PRINT);
             }
         }
@@ -130,6 +150,7 @@ public final class DialogController {
     }
 
     public void advance() {
+        if (romTimed && openingAge < 10) return;
         if (!active) {
             return;
         }
