@@ -538,7 +538,7 @@ public final class RoomSession {
         recentRoomEntityClears.visit(roomId);
         dungeonItemState.loadForMap(mapId, true);
         activeRoomEvent = dungeonRoomEventTable.eventFor(mapId, roomId);
-        gpu.loadIndoorTiles(romData, mapId, roomId);
+        gpu.loadIndoorTiles(romData, mapId, roomId, mapCategory == Warp.CATEGORY_SIDESCROLL);
         LoadedRoom room = roomLoader.loadIndoor(
             mapId, roomId, activeRoom == null ? null : activeRoom.palettes(), mapCategory,
             recentRoomEntityClears.mask(roomId), indoorStatusTableForMap(mapId), hasBirdKey,

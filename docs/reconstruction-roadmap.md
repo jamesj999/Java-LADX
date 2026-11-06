@@ -3530,3 +3530,12 @@ of scope.
 - Both fresh-game normal-input runs complete 462 checkpoints, clear room `$03`, reveal the stairs and enter side-view room `$19` at Link `(120,16)`. Java health is 12; ROM health is 4. Inputs differ explicitly where needed for enemy positions; no timing, drop or full-frame parity claim.
 - The cleared-room frame differs by 360 RGB555 pixels; the revealed stair itself matches. **New visual blocker:** room `$19` has incorrect Java background graphics (9,992 differing pixels in its full frame). Side-view rendering is not verified; fix its ROM tileset path next, then continue to Roc’s Feather and the rest of Tail Cave.
 - Evidence: `tools/opening/tail-cave-beetle-route.tsv`, `java/src/test/resources/opening/tail-cave-beetle/`, and `docs/validation/tail-cave-beetle-2026-11-06.html`. The real Main-loop regression now traverses all 462 checkpoints.
+
+
+## Side-view ROM graphics and Feather chest — 2026-11-06
+
+- Fixed the missing side-view branch of `LoadRoomSpecificTiles` (`$00:2F24–2F4A`): load the full 128-tile sheet from GBC bank `$2D` into VRAM `$9000–$97FF`, then return before top-view room patches. The source selects `$7800` for Tail Cave, `$7000` for Eagle’s Tower / ordinary cave side-view rooms, and `$7800` for the cave room `$E9` exception. RoomSession now passes the actual side-view category into the GPU.
+- Shipped-ROM tests cover the entire 2 KiB copy and all source selection branches. Both fresh-game normal-input replays complete 481 checkpoints, cross rooms `$19/$18`, exit to `$01`, reach `$1D`, acquire Roc’s Feather, and close its dialogue alive. The Main-loop regression also asserts inventory ownership.
+- Side-view entry full-frame RGB555 difference improves from 9,992 to 444 pixels; the Feather’s 8×16 region matches exactly. Its full frame differs by 259 pixels. Java health is 8 and ROM health is 4; enemy timing, HUD and other presentation differences remain.
+- **Newly exposed physics defect:** at checkpoint 466 Java reaches `(40,64)` across room `$18`’s gap, while the ROM falls and reaches `(39,112)`. This normal-input route is not proof of faithful side-view physics. Implement/verify the real side-view Link movement before further platforming or jumping claims.
+- Evidence: `tools/opening/tail-cave-feather-route.tsv`, `java/src/test/resources/opening/tail-cave-feather/`, and `docs/validation/tail-cave-feather-2026-11-06.html`. Next: side-view gravity/ladder/jump behavior, then the remaining Tail Cave key, boss and instrument and the rest of the quest.

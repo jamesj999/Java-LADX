@@ -280,6 +280,14 @@ public class Main {
         return indexedDisplayBuffer.clone();
     }
 
+    static boolean headlessHasInventoryItem(int item) {
+        if (playerState.itemA() == item || playerState.itemB() == item) return true;
+        for (int slot = 0; slot < PlayerState.SUBSCREEN_SLOT_COUNT; slot++) {
+            if (playerState.subscreenItem(slot) == item) return true;
+        }
+        return false;
+    }
+
     static String headlessEntityPositions() {
         return roomSession.activeRoom().entities().loadedEntities().stream()
             .map(e -> "%02X:%s@%d,%d".formatted(e.type(), e.status(), e.x(), e.y()))

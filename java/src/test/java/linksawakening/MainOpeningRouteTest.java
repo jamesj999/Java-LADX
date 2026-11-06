@@ -9,10 +9,10 @@ import static org.junit.jupiter.api.Assertions.*;
 /** Real game-loop integration, with buttons only after the new-game bootstrap. */
 final class MainOpeningRouteTest {
     @Test
-    void newGameCanCollectTailCavesKeysCompassAndMap() throws Exception {
+    void newGameCanCollectTailCavesKeysCompassMapAndFeather() throws Exception {
         Main.initializeHeadlessNewGame();
         var checkpoints = new ArrayList<Main.HeadlessState>();
-        for (String line : Files.readAllLines(Path.of("../tools/opening/tail-cave-beetle-route.tsv"))) {
+        for (String line : Files.readAllLines(Path.of("../tools/opening/tail-cave-feather-route.tsv"))) {
             if (line.isBlank() || line.startsWith("#")) continue;
             String[] fields = line.split("\\s+");
             int idle = Integer.parseInt(fields[2]);
@@ -182,7 +182,7 @@ final class MainOpeningRouteTest {
         assertFalse(powerUpFinished.dialog());
         assertTrue(powerUpFinished.text().contains("energy flowing"));
         var switchKey = checkpoints.get(345);
-        assertEquals(462, checkpoints.size());
+        assertEquals(481, checkpoints.size());
         assertEquals(0x13, switchKey.room());
         assertEquals(2, switchKey.smallKeys());
         assertEquals(1, switchKey.compass());
@@ -226,13 +226,24 @@ final class MainOpeningRouteTest {
         assertEquals(0x03, clearedBeetles.room());
         assertTrue(clearedBeetles.health() >= beetleRoom.health(),
             "Shield flips and sword follow-up must clear the room without damage");
-        var passage = checkpoints.getLast();
+        var passage = checkpoints.get(461);
         assertEquals(0x19, passage.room());
         assertEquals(0, passage.map());
         assertEquals(2, passage.smallKeys());
         assertTrue(passage.health() > 0);
         assertFalse(passage.loading());
         assertFalse(Main.headlessEntityPositions().contains("2C:"));
+        assertEquals(0x18, checkpoints.get(465).room());
+        assertEquals(0x01, checkpoints.get(468).room());
+        var feather = checkpoints.get(476);
+        assertEquals(0x1D, feather.room());
+        assertTrue(feather.dialog());
+        assertTrue(feather.text().contains("Roc's Feather"));
+        assertTrue(Main.headlessHasInventoryItem(
+            linksawakening.state.PlayerState.INVENTORY_ROCS_FEATHER));
+        assertFalse(checkpoints.getLast().dialog());
+        assertTrue(checkpoints.getLast().health() > 0);
+
 
 
 

@@ -331,6 +331,10 @@ public class GPU {
      * tiles (unchanged from overworld) and toadstool/golden-leaf dynamic swaps.
      */
     public void loadIndoorTiles(byte[] romData, int mapId, int roomId) {
+        loadIndoorTiles(romData, mapId, roomId, false);
+    }
+
+    public void loadIndoorTiles(byte[] romData, int mapId, int roomId, boolean sideScrolling) {
         currentMapId = mapId;
         stageAnimatedScrollingTiles(romData, mapId, roomId);
         if (mapId == MAP_COLOR_DUNGEON) {
@@ -384,6 +388,16 @@ public class GPU {
                 loadTilesFromROM(romData, INVENTORY_INDOOR_ITEMS_TILES_BANK | 0x20,
                     INVENTORY_INDOOR_ITEMS_TILES_ADDR, 0x30, 0x0C0);
             }
+        }
+
+        // LoadRoomSpecificTiles $00:2F24-$2F4A replaces the entire BG-only
+        // region for side-view rooms, then returns before the top-view patch.
+        if (sideScrolling) {
+            int source = mapId == 0x06 || (mapId >= 0x0A && roomId != 0xE9)
+                ? 0x7000 : 0x7800;
+            loadTilesFromROM(romData, DUNGEONS_TILES_BANK | 0x20,
+                source, 0x80, 0x100);
+            return;
         }
 
         // Per-room indoor tileset at VRAM tile 0x100 (vTiles2 base).

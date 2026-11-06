@@ -140,6 +140,23 @@ final class GPUColorDungeonTilesTest {
         }
     }
 
+    @Test
+    void sideViewLoadsTheFullAdjustedRomSheetAndHonorsMapExceptions() throws Exception {
+        byte[] rom = loadRom();
+        for (int[] sample : new int[][] {
+            {0x00, 0x19, 0x7800}, {0x06, 0x10, 0x7000},
+            {0x0A, 0x01, 0x7000}, {0x0A, 0xE9, 0x7800}
+        }) {
+            GPU gpu = new GPU();
+            gpu.loadIndoorTiles(rom, sample[0], sample[1], true);
+            int source = RomBank.romOffset(0x2D, sample[2]);
+            for (int i = 0; i < 0x800; i++) {
+                assertEquals(rom[source + i], gpu.readVRAM(0x1000 + i),
+                    "Side-view VRAM byte " + i + " for map " + sample[0]);
+            }
+        }
+    }
+
     private static byte[] syntheticRom() {
         return new byte[RomBank.romOffset(0x36, 0x4000)];
     }
