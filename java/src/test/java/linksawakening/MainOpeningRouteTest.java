@@ -9,11 +9,11 @@ import static org.junit.jupiter.api.Assertions.*;
 /** Real game-loop integration, with buttons only after the new-game bootstrap. */
 final class MainOpeningRouteTest {
     @Test
-    void newGameCanCollectTailCavesKeysCompassMapFeatherAndNightmareKey() throws Exception {
+    void newGameCanReachRollingBonesWithFeatherAndNightmareKey() throws Exception {
         Main.initializeHeadlessNewGame();
         var checkpoints = new ArrayList<Main.HeadlessState>();
         var entityCheckpoints = new ArrayList<String>();
-        for (String line : Files.readAllLines(Path.of("../tools/opening/tail-cave-nightmare-route.tsv"))) {
+        for (String line : Files.readAllLines(Path.of("../tools/opening/tail-cave-boss-route.tsv"))) {
             if (line.isBlank() || line.startsWith("#")) continue;
             String[] fields = line.split("\\s+");
             int idle = Integer.parseInt(fields[2]);
@@ -184,7 +184,7 @@ final class MainOpeningRouteTest {
         // longer guarantees a Piece of Power. It must remain interactive.
         assertFalse(checkpoints.get(334).dialog());
         var switchKey = checkpoints.get(345);
-        assertEquals(560, checkpoints.size());
+        assertEquals(588, checkpoints.size());
         assertEquals(0x13, switchKey.room());
         assertEquals(2, switchKey.smallKeys());
         assertEquals(1, switchKey.compass());
@@ -265,11 +265,22 @@ final class MainOpeningRouteTest {
         assertTrue(nightmareReward.dialog());
         assertTrue(nightmareReward.text().contains("Nightmare"));
         assertEquals(1, nightmareReward.nightmareKey());
-        assertEquals(0x08, checkpoints.getLast().room());
+        assertEquals(0x08, checkpoints.get(559).room());
+        assertEquals(1, checkpoints.get(559).nightmareKey());
+        assertEquals(1, checkpoints.get(559).smallKeys());
+        assertFalse(checkpoints.get(559).dialog());
+        assertTrue(checkpoints.get(559).health() > 0);
+        var misalignedDoor = checkpoints.get(577);
+        assertEquals(0x0F, misalignedDoor.room());
+        assertEquals(1, misalignedDoor.smallKeys(), "Off-center contact must not spend a key");
+        assertEquals(0x10, checkpoints.get(579).room());
+        assertEquals(0, checkpoints.get(579).smallKeys());
+        assertEquals(0x11, checkpoints.getLast().room());
         assertEquals(1, checkpoints.getLast().nightmareKey());
-        assertEquals(1, checkpoints.getLast().smallKeys());
-        assertFalse(checkpoints.getLast().dialog());
         assertTrue(checkpoints.getLast().health() > 0);
+        assertTrue(entityCheckpoints.getLast().contains("81:ACTIVE"));
+        assertTrue(entityCheckpoints.getLast().contains("82:ACTIVE"));
+
 
 
 

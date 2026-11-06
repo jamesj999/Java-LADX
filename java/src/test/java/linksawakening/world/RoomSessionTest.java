@@ -1727,6 +1727,37 @@ final class RoomSessionTest {
     }
 
     @Test
+    void verticalKeyDoorRequiresTheRomEightPixelAlignmentWindow() {
+        for (int romY : new int[]{67, 68, 75, 76}) {
+            RoomSession session = newSession();
+            byte[] flags = new byte[DungeonItemState.DUNGEON_ITEM_FLAGS_SIZE];
+            flags[DungeonItemState.SMALL_KEYS_INDEX] = 1;
+            session.restoreDungeonItemFlags(flags,
+                new byte[DungeonItemState.COLOR_DUNGEON_ITEM_FLAGS_SIZE]);
+            session.loadIndoor(0, 0x0F);
+            boolean aligned = romY >= 68 && romY <= 75;
+            assertEquals(aligned, session.tryUnlockIndoorKeyDoor(
+                0x85, romY - 16, Link.DIRECTION_RIGHT, 8), "ROM Y=" + romY);
+            assertEquals(aligned ? 0 : 1,
+                session.currentDungeonItemFlagsSnapshot()[DungeonItemState.SMALL_KEYS_INDEX]);
+            assertEquals(aligned ? 0x40 : 0,
+                session.indoorRoomStatusForTest(0, 0x0F) & 0x40);
+        }
+    }
+
+    @Test
+    void bossDoorRequiresAlignmentBeforeRequestingItsMissingKeyDialogue() {
+        for (int romX : new int[]{75, 76, 83, 84}) {
+            RoomSession session = newSession();
+            session.loadIndoor(0, 0x0B);
+            boolean aligned = romX >= 76 && romX <= 83;
+            assertEquals(aligned, session.tryUnlockIndoorKeyDoor(
+                romX - 8, 0, Link.DIRECTION_UP, 1), "ROM X=" + romX);
+            assertEquals(aligned ? 1 : 0, session.consumeEntityDialogRequests().size());
+        }
+    }
+
+    @Test
     void tailCaveFirstKeyDoorConsumesTheKeyAndSynchronizesBothRooms() {
         RoomSession session = newSession();
         List<GameplaySoundEvent> sounds = new ArrayList<>();

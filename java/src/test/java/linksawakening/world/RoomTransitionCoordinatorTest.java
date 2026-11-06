@@ -249,7 +249,7 @@ final class RoomTransitionCoordinatorTest {
         assertEquals(0x56, session.currentRoomId());
         assertEquals(1, session.currentDungeonItemFlagsSnapshot()[DungeonItemState.SMALL_KEYS_INDEX]);
         List<int[]> keyDoorPath = reachablePositionPath(collision, link.pixelX(), link.pixelY(),
-            (x, y) -> x == 0x40 && y == 0x0A);
+            (x, y) -> x == 0x48 && y == 0x0A);
         assertNotNull(keyDoorPath, collisionGrid(collision));
         for (int[] position : keyDoorPath) link.setPixelPosition(position[0], position[1]);
         input.onKeyEvent(inputConfig.upKey(), GLFW_PRESS);
@@ -2249,8 +2249,9 @@ final class RoomTransitionCoordinatorTest {
 
         List<int[]> bottomDoorPath = reachablePositionPath(
             collision, link.pixelX(), link.pixelY(),
-            (x, y) -> collision.objectPhysicsFlagAtPoint(x + 0x06, y + 1 + 0x0F) == 0x91
-                || collision.objectPhysicsFlagAtPoint(x + 0x09, y + 1 + 0x0F) == 0x91);
+            (x, y) -> x == 0x48
+                && (collision.objectPhysicsFlagAtPoint(x + 0x06, y + 1 + 0x0F) == 0x91
+                    || collision.objectPhysicsFlagAtPoint(x + 0x09, y + 1 + 0x0F) == 0x91));
         assertNotNull(bottomDoorPath, collisionGrid(collision));
         for (int[] position : bottomDoorPath) {
             link.setPixelPosition(position[0], position[1]);
@@ -2420,8 +2421,9 @@ final class RoomTransitionCoordinatorTest {
         assertEquals(0x32, objectAt(session, 0x40));
         List<int[]> westDoorPath = reachablePositionPath(
             collision, link.pixelX(), link.pixelY(),
-            (x, y) -> collision.objectPhysicsFlagAtPoint(x + 0x03, y + 0x09) == 0x92
-                || collision.objectPhysicsFlagAtPoint(x + 0x03, y + 0x0C) == 0x92);
+            (x, y) -> y == 0x38
+                && (collision.objectPhysicsFlagAtPoint(x + 0x03, y + 0x09) == 0x92
+                    || collision.objectPhysicsFlagAtPoint(x + 0x03, y + 0x0C) == 0x92));
         assertNotNull(westDoorPath, collisionGrid(collision));
         for (int[] position : westDoorPath) {
             link.setPixelPosition(position[0], position[1]);
@@ -3390,8 +3392,9 @@ final class RoomTransitionCoordinatorTest {
 
         List<int[]> braceletDoorPath = reachablePositionPath(
             collision, link.pixelX(), link.pixelY(),
-            (x, y) -> collision.objectPhysicsFlagAtPoint(x + 0x03, y + 0x09) == 0x92
-                || collision.objectPhysicsFlagAtPoint(x + 0x03, y + 0x0C) == 0x92);
+            (x, y) -> y == 0x38
+                && (collision.objectPhysicsFlagAtPoint(x + 0x03, y + 0x09) == 0x92
+                    || collision.objectPhysicsFlagAtPoint(x + 0x03, y + 0x0C) == 0x92));
         assertNotNull(braceletDoorPath, collisionGrid(collision));
         for (int[] position : braceletDoorPath) {
             link.setPixelPosition(position[0], position[1]);
@@ -3945,7 +3948,7 @@ final class RoomTransitionCoordinatorTest {
             room24SwitchReachablePosition[0], room24SwitchReachablePosition[1]);
         collision.refreshLinkGroundInteraction(link.pixelX(), link.pixelY());
 
-        link.setPixelPosition(0x85, 0x30);
+        link.setPixelPosition(0x85, 0x38);
         assertTrue(collision.objectPhysicsFlagAtPoint(
                 link.pixelX() + 0x0B, link.pixelY() + 0x09) == 0x93
             || collision.objectPhysicsFlagAtPoint(
@@ -4252,11 +4255,11 @@ final class RoomTransitionCoordinatorTest {
         // Source-shaped north boss-door contact: the C4/$14 and C4/$15
         // records expand to the top-facing A4/A5 pair at room cells $14/$15.
         // Link's leading-edge probes therefore use the corresponding Java
-        // top-left position (x=$3A, y=$FA/-6), with the upward collision bit
-        // set; the leading-edge probes then land on x=$40/$43,y=$00.
-        link.setPixelPosition(0x3A, -6);
+        // top-left position (x=$48, y=$FA/-6), aligned with the door's
+        // eight-pixel opening window; probes land on x=$4E/$51,y=$00.
+        link.setPixelPosition(0x48, -6);
         link.setDirection(Link.DIRECTION_UP);
-        assertEquals(0x3A, link.pixelX());
+        assertEquals(0x48, link.pixelX());
         assertEquals(-6, link.pixelY());
         assertTrue(session.tryUnlockIndoorKeyDoor(
             link.pixelX(), link.pixelY(), Link.DIRECTION_UP, 0x01),

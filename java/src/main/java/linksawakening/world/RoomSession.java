@@ -3066,7 +3066,9 @@ public final class RoomSession {
         int touchedObject = objectAtRoomLocation(touchedLocation);
         if (bossDoor) {
             int objectOffset = touchedObject - 0xA4;
-            if (objectOffset < 0 || objectOffset > 1) {
+            if (objectOffset < 0 || objectOffset > 1
+                || !alignedWithIndoorKeyDoor(touchedLocation - objectOffset,
+                    0, linkPixelX, linkPixelY)) {
                 return false;
             }
             if (dungeonItemState.currentFlag(DungeonItemState.NIGHTMARE_KEY_INDEX) == 0) {
@@ -3081,17 +3083,27 @@ public final class RoomSession {
             return true;
         }
         int objectOffset = touchedObject - KEY_DOOR_CLOSED_OBJECTS[doorDirection];
-        if (objectOffset < 0 || objectOffset > 1 || !dungeonItemState.consumeSmallKey()) {
-            return false;
-        }
+        if (objectOffset < 0 || objectOffset > 1) return false;
+        int doorLocation = touchedLocation
+            - (objectOffset == 0 ? 0 : doorDirection < 2 ? 1 : 0x10);
+        if (!alignedWithIndoorKeyDoor(doorLocation, doorDirection, linkPixelX, linkPixelY)
+            || !dungeonItemState.consumeSmallKey()) return false;
         indoorStatusTableForMap(activeRoom.mapId())[activeRoom.roomId()]
             |= (byte) INDOOR_ROOM_STATUS_EVENT_3;
         indoorKeyDoorDirection = doorDirection;
-        indoorKeyDoorLocation = touchedLocation
-            - (objectOffset == 0 ? 0 : doorDirection < 2 ? 1 : 0x10);
+        indoorKeyDoorLocation = doorLocation;
         indoorKeyDoorAnimationCountdown = KEY_DOOR_ANIMATION_FRAMES;
         colorShellSoundSink.play(GameplaySoundEvent.DOOR_UNLOCKED);
         return true;
+    }
+
+    /** $02:70F2-$710F checks ROM Link coordinates against the authored door origin. */
+    private static boolean alignedWithIndoorKeyDoor(int location, int direction,
+                                                    int linkPixelX, int linkPixelY) {
+        int offset = direction < 2
+            ? linkPixelX + 8 - ((location & 15) << 4) - 0x0C
+            : linkPixelY + 16 - (location & 0xF0) - 0x14;
+        return (offset & 0xFF) < 8;
     }
 
     /** Mirrors bank 2's $A7 collision counter and entity-$06 spawn branch. */
