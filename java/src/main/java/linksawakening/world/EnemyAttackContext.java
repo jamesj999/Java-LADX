@@ -25,9 +25,8 @@ public record EnemyAttackContext(int swordLevel,
 
     /** Mirrors ApplySwordDamagesToEnemy's wAttackDamageType calculation. */
     public int effectiveDamageType() {
-        if (swordLevel == 0) {
-            return -1;
-        }
+        // ApplySwordDamagesToEnemy increments for spin before subtracting one.
+        // This makes the swordless acquisition spin a normal level-one hit.
         int effectiveLevel = swordLevel;
         if (redTunic || pieceOfPower || spinAttack || pegasusBoots) {
             effectiveLevel = Math.min(3, effectiveLevel + 1);

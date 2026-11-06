@@ -5,7 +5,7 @@ import linksawakening.input.InputState;
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_A;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_B;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_DOWN;
@@ -67,6 +67,24 @@ final class EquipmentControllerTest {
         controller.tickEquippedItems(0xA5);
 
         assertEquals(0xA5, sword.frameCounter);
+    }
+
+    @Test
+    void forcedAcquisitionSpinIsAvailableBeforeTheSwordIsEquipped() {
+        PlayerState player = new PlayerState();
+        player.setItemA(PlayerState.INVENTORY_EMPTY);
+        player.setItemB(PlayerState.INVENTORY_SHIELD);
+        player.setSwordLevel(0);
+        ItemRegistry registry = new ItemRegistry();
+        Sword sword = new Sword(null, null);
+        registry.register(PlayerState.INVENTORY_SWORD, sword);
+        EquipmentController controller = new EquipmentController(new InputState(),
+            new InputConfig(1, 2, 3, 4, 5, 6, 7), player, registry);
+        assertNull(controller.activeSword());
+        sword.startSwordAcquisitionSpin(linksawakening.entity.Link.DIRECTION_DOWN);
+        assertSame(sword, controller.activeSword());
+        sword.resetSpinAttack();
+        assertNull(controller.activeSword());
     }
 
     private static final class RecordingItem implements EquippedItem {

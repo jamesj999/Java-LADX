@@ -72,6 +72,7 @@ final class MainOpeningRouteTest {
         var sword = checkpoints.getLast();
         assertEquals(0xF2, sword.room());
         assertEquals(1, sword.sword());
+        assertEquals(0, sword.urchins(), "The acquisition spin must hit the nearby urchin before sword ownership");
         assertEquals(1, sword.shield());
         assertFalse(sword.dialog());
         assertFalse(sword.loading());

@@ -283,11 +283,12 @@ public class Main {
         return new HeadlessState(frameCounter, roomSession.mapId(), roomSession.currentRoomId(),
             link.romEntityX(), link.romEntityY(), dialogController.isActive(),
             dialogController.isWaitingForPageAdvance(), dialogController.visibleText(),
-            playerState.shieldLevel(), playerState.health(), playerState.swordLevel(), scrollController.isActive() || transitionController.isInputBlocked());
+            playerState.shieldLevel(), playerState.health(), playerState.swordLevel(), (int) roomSession.activeRoom().entities().loadedEntities().stream()
+                .filter(entity -> entity.type() == 0xC5 && entity.status() == linksawakening.world.EntityStatus.ACTIVE).count(), scrollController.isActive() || transitionController.isInputBlocked());
     }
 
     record HeadlessState(int frame, int map, int room, int x, int y,
-                         boolean dialog, boolean pageWait, String text, int shield, int health, int sword, boolean loading) {}
+                         boolean dialog, boolean pageWait, String text, int shield, int health, int sword, int urchins, boolean loading) {}
 
     private static void loadROM() {
         try (InputStream is = Main.class.getClassLoader().getResourceAsStream("rom/azle.gbc")) {

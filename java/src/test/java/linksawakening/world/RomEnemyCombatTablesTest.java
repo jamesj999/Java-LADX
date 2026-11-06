@@ -122,6 +122,17 @@ final class RomEnemyCombatTablesTest {
         assertTrue(result.ignored());
     }
 
+    @Test
+    void acquisitionSpinUsesNormalSwordDamageBeforeOwnershipIsGranted() throws IOException {
+        var tables = new RomEnemyCombatTables(loadRom());
+        var acquisition = tables.resolveSwordDamage(0xC5,
+            new EnemyAttackContext(0, false, false, true, false));
+        var equipped = tables.resolveSwordDamage(0xC5, EnemyAttackContext.standard());
+        assertEquals(0, acquisition.effectiveDamageType());
+        assertEquals(equipped.rawValue(), acquisition.rawValue());
+        assertTrue(acquisition.numericDamage() > 0);
+    }
+
     private static byte[] loadRom() throws IOException {
         try (var stream = RomEnemyCombatTablesTest.class.getClassLoader()
             .getResourceAsStream("rom/azle.gbc")) {

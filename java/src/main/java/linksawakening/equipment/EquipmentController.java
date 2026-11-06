@@ -51,6 +51,9 @@ public final class EquipmentController {
         if (b instanceof Sword sword) {
             return sword;
         }
+        // The acquisition sequence spins the sword before it enters inventory.
+        EquippedItem registered = itemRegistry.lookup(PlayerState.INVENTORY_SWORD);
+        if (registered instanceof Sword sword && sword.spinAttackActive()) return sword;
         return null;
     }
 

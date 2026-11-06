@@ -3135,3 +3135,17 @@ of scope.
   output `java/build/sword-route` (Gradle output `build/sword-route`). Remaining
   work includes combat/visual differences and continuation to Mysterious Woods,
   Tail Cave and the full subsequent quest.
+
+## Acquisition spin combat before sword ownership — 2026-11-06
+
+- Fixed the remaining urchin after the forced sword-acquisition spin. The combat
+  lookup now exposes an actively spinning registered sword before it is equipped.
+  ApplySwordDamagesToEnemy increments sword level for the spin before subtracting
+  one, so sword level zero plus spin resolves to damage type zero, not no attack.
+- The actual Main-loop sword route now defeats the nearby urchin before granting
+  sword ownership, matching the original-ROM endpoint. Added equipment and ROM
+  damage-table regressions and asserted zero active urchins at the route endpoint.
+  All 2,309 tests pass. Evidence:
+  `docs/validation/acquisition-spin-combat-2026-11-06.html`.
+- The earlier health/animation-phase/pickup-position differences remain; this
+  resolves the missing combat behavior, not full-frame or full-game parity.
