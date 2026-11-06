@@ -1856,7 +1856,7 @@ public final class RoomSession {
         applyMagicRodObjectInteractions(entityRuntime.magicRodObjectRequests());
         applyMagicPowderObjectInteractions(entityRuntime.magicPowderObjectRequests());
         activeRoom.replaceEntities(entityRuntime.snapshot());
-        tickPushedBlockMotion();
+        tickPushedBlockMotion(linkEntityX, linkEntityY);
         tickRoomEvent(linkEntityX, linkEntityY);
         return events;
     }
@@ -3902,7 +3902,7 @@ public final class RoomSession {
         }
     }
 
-    private void tickPushedBlockMotion() {
+    private void tickPushedBlockMotion(int linkEntityX, int linkEntityY) {
         if (pushedBlockMotionFrames == 0 || activeRoom == null) {
             return;
         }
@@ -3928,6 +3928,9 @@ public final class RoomSession {
         }
         if (entityRuntime != null) {
             entityRuntime.movePushedBlock(pushedBlockEntitySlot, x, y);
+            if (currentLinkMotionState < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE) {
+                entityRuntime.resolvePushedBlockLinkContact(pushedBlockEntitySlot, linkEntityX, linkEntityY);
+            }
             activeRoom.replaceEntities(entityRuntime.snapshot());
         }
         if (pushedBlockMotionFrames != 0) {

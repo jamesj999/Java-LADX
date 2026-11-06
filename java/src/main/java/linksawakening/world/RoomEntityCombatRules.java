@@ -455,7 +455,7 @@ public final class RoomEntityCombatRules {
         }
         return switch (type & 0xFF) {
             case ENTITY_GEL -> SMALL_ENEMY_HITBOX_WIDTH;
-            case ENTITY_GIANT_GHINI, ENTITY_GIANT_GOPONGA_FLOWER,
+            case ENTITY_PUSHED_BLOCK, ENTITY_GIANT_GHINI, ENTITY_GIANT_GOPONGA_FLOWER,
                 ENTITY_SPIKE_TRAP, ENTITY_ARMOS_KNIGHT, ENTITY_URCHIN,
                 ENTITY_MOLDORM, ENTITY_HINOX ->
                 BIG_ENEMY_HITBOX_WIDTH;
@@ -481,7 +481,7 @@ public final class RoomEntityCombatRules {
         }
         return switch (type & 0xFF) {
             case ENTITY_GEL -> SMALL_ENEMY_HITBOX_HEIGHT;
-            case ENTITY_GIANT_GHINI, ENTITY_GIANT_GOPONGA_FLOWER,
+            case ENTITY_PUSHED_BLOCK, ENTITY_GIANT_GHINI, ENTITY_GIANT_GOPONGA_FLOWER,
                 ENTITY_SPIKE_TRAP, ENTITY_ARMOS_KNIGHT, ENTITY_URCHIN,
                 ENTITY_MOLDORM, ENTITY_HINOX ->
                 BIG_ENEMY_HITBOX_HEIGHT;

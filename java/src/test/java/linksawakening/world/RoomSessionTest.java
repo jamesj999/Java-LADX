@@ -1186,6 +1186,30 @@ final class RoomSessionTest {
     }
 
     @Test
+    void movingBlockRestoresContactingLinkEvenInAirButNotDuringDialogue() {
+        RoomSession session = newSession();
+        session.loadIndoor(0, 4);
+        for (int tick = 0; tick < 64; tick++) {
+            session.tryPushIndoorBlock(0x15, 0x28, Link.DIRECTION_RIGHT, 0x08);
+        }
+        session.tickEntitiesWithProjectileEvents(0, 0x1B, 0x40, 12, 0,
+            Link.DIRECTION_RIGHT, false);
+        var requests = session.consumeLinkFinalPositionRequests();
+        assertEquals(1, requests.size());
+        assertTrue(requests.getFirst().markLinkPushing());
+        assertFalse(requests.getFirst().clearLinkPositionIncrement());
+        assertFalse(requests.getFirst().resetPegasusBoots());
+        session.setEntityDialogActive(true);
+        session.tickEntitiesWithProjectileEvents(1, 0x28, 0x40, 0, 0,
+            Link.DIRECTION_RIGHT, false);
+        assertTrue(session.consumeLinkFinalPositionRequests().isEmpty());
+        session.setEntityDialogActive(false);
+        session.tickEntitiesWithProjectileEvents(2, 0x80, 0x70, 0, 0,
+            Link.DIRECTION_RIGHT, false);
+        assertTrue(session.consumeLinkFinalPositionRequests().isEmpty());
+    }
+
+    @Test
     void settledTailCaveSingleBlockPersistsTheDoorButNotEvent22() {
         RoomSession session = newSession();
         List<GameplaySoundEvent> sounds = new ArrayList<>();

@@ -3509,3 +3509,13 @@ of scope.
 - Declared opening-route TSV files as Gradle test inputs: changing a replay now reruns tests instead of incorrectly treating the previous run as up to date. All 2,335 tests pass.
 - Evidence: validation/tail-cave-third-key-2026-11-06.html and java/src/test/resources/opening/tail-cave-third-key.
 - Next: room $0D traversal, locked north door in $07, movable-block puzzle and Feather passage. The full game remains under verification.
+
+
+### Moving-block contact and Tail Cave puzzle route — 2026-11-06
+
+- Fixed Link walking through sliding blocks and becoming trapped on their far side. After moving entity $06, the session now applies the $03:5269 contact restore and pushing flag, including airborne contact. Corrected its hitbox from the small enemy box to HITFLAGS_HITBOX_BLOCK ($00:3AAE). Dialogue pauses the operation and noninteractive Link does not receive contact effects.
+- Added regression coverage at the larger contact-box boundary, airborne contact, dialogue pause and separated positions. Main integration follows the entire fresh-game route through the block puzzle into beetle room $03 and asserts Link stayed behind the block.
+- Both Java and PyBoy complete 436 normal-input checkpoints, retaining Map, Compass and two keys after opening the north locked door. Both have 4 health units. A wait in the cleared forest cave accommodates corrected block collision timing; the trap encounter has an explicit ROM timing override.
+- All 2,336 tests pass. The post-push frame differs by 760 RGB555 pixels (Link X=42 in Java, 44 in ROM); the final beetle-room frame differs by 693. No full visual, combat or timing parity claim.
+- Evidence: validation/tail-cave-block-2026-11-06.html and java/src/test/resources/opening/tail-cave-block. Source interaction also depends on contact-counter cadence; exact push timing remains to verify.
+- Next: defeat the two Spiked Beetles, reveal the staircase, cross the side-view passage and obtain Roc’s Feather, then complete the remaining Tail Cave and full quest verification.

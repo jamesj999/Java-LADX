@@ -6924,6 +6924,15 @@ public final class RoomEntityRuntime {
             entity.z());
     }
 
+    /** $03:5269: after block movement, restore Link even during a jump. */
+    void resolvePushedBlockLinkContact(int slot, int linkEntityX, int linkEntityY) {
+        if (slot >= 0 && slot < slots.length && slots[slot].type() == ENTITY_PUSHED_BLOCK
+            && slots[slot].status() == EntityStatus.ACTIVE
+            && RoomEntityCombatRules.overlapsLink(slots[slot], linkEntityX, linkEntityY)) {
+            requestLinkPush(slots[slot], EntityLinkCollisionRules.PUSHED_BLOCK);
+        }
+    }
+
     void removePushedBlock(int slot) {
         if (slot >= 0 && slot < slots.length && slots[slot].type() == ENTITY_PUSHED_BLOCK) {
             slots[slot] = RoomEntity.disabled(slot);

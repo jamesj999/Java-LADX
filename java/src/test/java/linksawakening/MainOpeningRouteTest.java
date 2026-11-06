@@ -12,7 +12,7 @@ final class MainOpeningRouteTest {
     void newGameCanCollectTailCavesKeysCompassAndMap() throws Exception {
         Main.initializeHeadlessNewGame();
         var checkpoints = new ArrayList<Main.HeadlessState>();
-        for (String line : Files.readAllLines(Path.of("../tools/opening/tail-cave-third-key-route.tsv"))) {
+        for (String line : Files.readAllLines(Path.of("../tools/opening/tail-cave-block-route.tsv"))) {
             if (line.isBlank() || line.startsWith("#")) continue;
             String[] fields = line.split("\\s+");
             int idle = Integer.parseInt(fields[2]);
@@ -104,39 +104,39 @@ final class MainOpeningRouteTest {
         var mushroom = checkpoints.get(130);
         assertEquals(0, mushroom.map());
         assertEquals(0x50, mushroom.room());
-        assertEquals(49, mushroom.x());
+        assertEquals(50, mushroom.x());
         assertEquals(64, mushroom.y());
         assertTrue(mushroom.toadstool());
         assertTrue(mushroom.health() > 0);
         assertFalse(mushroom.dialog());
         assertFalse(mushroom.loading());
-        var witch = checkpoints.get(175);
+        var witch = checkpoints.get(176);
         assertEquals(0x0E, witch.map());
         assertEquals(0xA2, witch.room());
         assertTrue(witch.toadstool());
         assertEquals(0, witch.powder());
-        for (int index : new int[]{180, 181}) {
+        for (int index : new int[]{181, 182}) {
             assertTrue(checkpoints.get(index).dialog());
             assertFalse(checkpoints.get(index).toadstool());
             assertEquals(0, checkpoints.get(index).powder(), "Reward must follow the ready dialogue");
         }
-        assertTrue(checkpoints.get(182).dialog());
-        assertEquals(20, checkpoints.get(182).powder());
-        var reward = checkpoints.get(183);
+        assertTrue(checkpoints.get(183).dialog());
+        assertEquals(20, checkpoints.get(183).powder());
+        var reward = checkpoints.get(184);
         assertFalse(reward.dialog());
         assertFalse(reward.toadstool());
         assertEquals(20, reward.powder());
         assertFalse(reward.loading());
-        var tutorial = checkpoints.get(187);
+        var tutorial = checkpoints.get(188);
         assertTrue(tutorial.dialog());
         assertTrue(tutorial.text().startsWith("Good job!"));
         assertEquals(19, tutorial.powder(), "Lighting the brazier consumes exactly one use");
-        var complete = checkpoints.get(188);
+        var complete = checkpoints.get(189);
         assertFalse(complete.dialog());
         assertEquals(19, complete.powder());
         assertEquals(104, complete.x());
         assertEquals(106, complete.y());
-        var transformed = checkpoints.get(234);
+        var transformed = checkpoints.get(235);
         assertFalse(transformed.dialog());
         assertTrue(transformed.forestCleared());
         assertEquals(18, transformed.powder());
@@ -144,45 +144,45 @@ final class MainOpeningRouteTest {
         assertTrue(transformed.tarinX() >= 0 && transformed.tarinX() < 160);
         assertTrue(transformed.tarinY() >= 0 && transformed.tarinY() < 144);
         assertTrue(transformed.health() > 0);
-        var key = checkpoints.get(242);
+        var key = checkpoints.get(243);
         assertEquals(1, key.tailKey());
         assertTrue(key.dialog());
         assertTrue(key.text().contains("Tail Key"));
-        assertTrue(checkpoints.get(244).text().startsWith("Hoot!"));
-        var end = checkpoints.get(245);
+        assertTrue(checkpoints.get(245).text().startsWith("Hoot!"));
+        var end = checkpoints.get(246);
         assertEquals(0x41, end.room());
         assertEquals(1, end.tailKey());
         assertFalse(end.dialog());
-        var entrance = checkpoints.get(291);
+        var entrance = checkpoints.get(292);
         assertEquals(0, entrance.map());
         assertEquals(0x17, entrance.room());
         assertTrue(entrance.dialog());
         assertTrue(entrance.text().contains("Level 1"));
-        var dungeon = checkpoints.get(293);
+        var dungeon = checkpoints.get(294);
         assertFalse(dungeon.dialog());
         assertEquals(0x17, dungeon.room());
         assertEquals(1, dungeon.tailKey());
         assertEquals(1, dungeon.sword());
         assertTrue(dungeon.health() > 0);
-        var firstSmallKey = checkpoints.get(303);
+        var firstSmallKey = checkpoints.get(304);
         assertEquals(0x16, firstSmallKey.room());
         assertEquals(1, firstSmallKey.smallKeys());
         assertEquals(dungeon.health(), firstSmallKey.health(), "Clear beetles without damage");
-        var compassDialogue = checkpoints.get(314);
+        var compassDialogue = checkpoints.get(315);
         assertTrue(compassDialogue.dialog());
         assertTrue(compassDialogue.text().contains("Compass"));
         assertEquals(1, compassDialogue.compass());
-        var afterCompass = checkpoints.get(328);
+        var afterCompass = checkpoints.get(329);
         assertEquals(0x13, afterCompass.room(), "Exit the compass room and return through the entrance");
         assertEquals(1, afterCompass.compass());
         assertEquals(1, afterCompass.smallKeys());
         assertFalse(afterCompass.dialog());
         assertTrue(afterCompass.health() > 0);
-        var powerUpFinished = checkpoints.get(333);
+        var powerUpFinished = checkpoints.get(334);
         assertFalse(powerUpFinished.dialog());
         assertTrue(powerUpFinished.text().contains("energy flowing"));
-        var switchKey = checkpoints.get(344);
-        assertEquals(405, checkpoints.size());
+        var switchKey = checkpoints.get(345);
+        assertEquals(436, checkpoints.size());
         assertEquals(0x13, switchKey.room());
         assertEquals(2, switchKey.smallKeys());
         assertEquals(1, switchKey.compass());
@@ -190,7 +190,7 @@ final class MainOpeningRouteTest {
         assertTrue(switchKey.text().contains("Small"));
         assertEquals(afterCompass.health(), switchKey.health(),
             "Clear Gels and the switch room without contact damage");
-        var mapReward = checkpoints.get(383);
+        var mapReward = checkpoints.get(384);
         assertEquals(0x14, mapReward.room());
         assertTrue(mapReward.dialog());
         assertTrue(mapReward.text().contains("a Map!"));
@@ -198,14 +198,14 @@ final class MainOpeningRouteTest {
         assertEquals(1, mapReward.compass());
         assertEquals(2, mapReward.smallKeys());
         assertTrue(mapReward.health() > 0);
-        var afterDoor = checkpoints.get(398);
+        var afterDoor = checkpoints.get(399);
         assertEquals(0x0F, afterDoor.room());
         assertEquals(80, afterDoor.y());
         assertEquals(2, afterDoor.smallKeys());
         assertEquals(1, afterDoor.dungeonMap());
         assertFalse(afterDoor.dialog());
         assertTrue(afterDoor.health() > 0);
-        var thirdKey = checkpoints.getLast();
+        var thirdKey = checkpoints.get(405);
         assertEquals(0x0E, thirdKey.room());
         assertEquals(3, thirdKey.smallKeys());
         assertEquals(1, thirdKey.dungeonMap());
@@ -213,6 +213,16 @@ final class MainOpeningRouteTest {
         assertTrue(thirdKey.dialog());
         assertTrue(thirdKey.text().contains("Small"));
         assertTrue(thirdKey.health() > 0);
+        var pushedBlock = checkpoints.get(434);
+        assertEquals(0x04, pushedBlock.room());
+        assertTrue(pushedBlock.x() <= 44, "Link must stay behind the moving block");
+        var beetleRoom = checkpoints.getLast();
+        assertEquals(0x03, beetleRoom.room());
+        assertEquals(2, beetleRoom.smallKeys());
+        assertEquals(1, beetleRoom.dungeonMap());
+        assertEquals(1, beetleRoom.compass());
+        assertTrue(beetleRoom.health() > 0);
+
 
 
     }
