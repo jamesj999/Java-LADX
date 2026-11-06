@@ -213,6 +213,7 @@ public final class Link implements RocsFeather.JumpTarget {
     private int sideViewSpeedX;
     private int sideViewSpeedY;
     private boolean sideViewGrounded;
+    private boolean sideViewFeatherPending;
 
     /** Warp entry sets hLinkPhysicsModifier=1 at $00:18F0. */
     public void setSideScrolling(boolean enabled) {
@@ -221,6 +222,7 @@ public final class Link implements RocsFeather.JumpTarget {
         sideViewModifier = enabled ? 1 : 0;
         sideViewSpeedX = sideViewSpeedY = 0;
         sideViewGrounded = false;
+        sideViewFeatherPending = false;
         airborne = false;
         zSubPixels = zVelocity = 0;
     }
@@ -1259,18 +1261,19 @@ public final class Link implements RocsFeather.JumpTarget {
 
     @Override
     public void useRocsFeather() {
-        if (airborne || groundStatus == GROUND_STATUS_PIT || fallingIntoPit || isSwimming()) {
+        if (airborne || sideViewFeatherPending || groundStatus == GROUND_STATUS_PIT
+            || fallingIntoPit || isSwimming()) {
+            return;
+        }
+        if (sideScrolling) {
+            // The ROM runs $02:68B7 before UseRocsFeather ($00:14E6).
+            // Defer its extra XY step until normal side-view motion finishes.
+            sideViewFeatherPending = true;
             return;
         }
         airborne = true;
         zSubPixels = 0;
         zVelocity = 0x20;
-        if (sideScrolling) {
-            sideViewSpeedY = (buildJoypadMask() & 3) == 0 ? -22 : -24;
-            sideViewGrounded = false;
-            zVelocity = 0;
-            moveSideViewAndCollide(sideViewSpeedX, sideViewSpeedY, buildJoypadMask());
-        }
         jumpAnimationCounter = 0;
         jumpAnimationFrame = 0;
         soundSink.play(GameplaySoundEvent.ROC_FEATHER_JUMP);
@@ -1895,6 +1898,15 @@ public final class Link implements RocsFeather.JumpTarget {
                         : inputState.isDown(inputConfig.aKey()));
                 if (sideViewSpeedY >= 0 || !featherHeld) sideViewSpeedY++;
             }
+        }
+        if (sideViewFeatherPending) {
+            sideViewFeatherPending = false;
+            airborne = true;
+            sideViewSpeedY = (mask & 3) == 0 ? -22 : -24;
+            sideViewGrounded = false;
+            moveSideViewAndCollide(sideViewSpeedX, sideViewSpeedY, mask);
+            jumpAnimationCounter = jumpAnimationFrame = 0;
+            soundSink.play(GameplaySoundEvent.ROC_FEATHER_JUMP);
         }
         zSubPixels = zVelocity = 0;
         lastRomSpeedX = sideViewSpeedX & 255;

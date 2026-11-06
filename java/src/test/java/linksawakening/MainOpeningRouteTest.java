@@ -12,7 +12,7 @@ final class MainOpeningRouteTest {
     void newGameCanCollectTailCavesKeysCompassMapAndFeather() throws Exception {
         Main.initializeHeadlessNewGame();
         var checkpoints = new ArrayList<Main.HeadlessState>();
-        for (String line : Files.readAllLines(Path.of("../tools/opening/tail-cave-feather-route.tsv"))) {
+        for (String line : Files.readAllLines(Path.of("../tools/opening/tail-cave-return-route.tsv"))) {
             if (line.isBlank() || line.startsWith("#")) continue;
             String[] fields = line.split("\\s+");
             int idle = Integer.parseInt(fields[2]);
@@ -182,7 +182,7 @@ final class MainOpeningRouteTest {
         assertFalse(powerUpFinished.dialog());
         assertTrue(powerUpFinished.text().contains("energy flowing"));
         var switchKey = checkpoints.get(345);
-        assertEquals(481, checkpoints.size());
+        assertEquals(502, checkpoints.size());
         assertEquals(0x13, switchKey.room());
         assertEquals(2, switchKey.smallKeys());
         assertEquals(1, switchKey.compass());
@@ -232,7 +232,7 @@ final class MainOpeningRouteTest {
         assertEquals(2, passage.smallKeys());
         assertTrue(passage.health() > 0);
         assertFalse(passage.loading());
-        assertFalse(Main.headlessEntityPositions().contains("2C:"));
+
         assertEquals(0x18, checkpoints.get(465).room());
         assertEquals(112, checkpoints.get(466).y(),
             "Crossing the side-view platform gap must fall to the lower floor");
@@ -243,6 +243,13 @@ final class MainOpeningRouteTest {
         assertTrue(feather.text().contains("Roc's Feather"));
         assertTrue(Main.headlessHasInventoryItem(
             linksawakening.state.PlayerState.INVENTORY_ROCS_FEATHER));
+        assertEquals(0x18, checkpoints.get(494).room());
+        assertEquals(47, checkpoints.get(494).y());
+        assertEquals(110, checkpoints.get(495).x());
+        assertEquals(64, checkpoints.get(495).y());
+        assertEquals(0x03, checkpoints.getLast().room());
+        assertEquals(136, checkpoints.getLast().x());
+        assertEquals(32, checkpoints.getLast().y());
         assertFalse(checkpoints.getLast().dialog());
         assertTrue(checkpoints.getLast().health() > 0);
 

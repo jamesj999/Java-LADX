@@ -69,12 +69,31 @@ final class LinkSideViewMotionTest {
     }
 
     @Test
+    void featherAppliesItsExtraStepAfterGroundMotionChoosesHorizontalSpeed() throws Exception {
+        Link link = room(floor(), 80, 112);
+        link.update(); link.update();
+        input.onKeyEvent(config.rightKey(), GLFW_PRESS);
+        input.onKeyEvent(config.bKey(), GLFW_PRESS);
+        player.setItemB(PlayerState.INVENTORY_ROCS_FEATHER);
+        link.useRocsFeather();
+        assertEquals(80, link.romEntityX(), "Item dispatch precedes the movement phase in Main");
+        link.update();
+        assertEquals(82, link.romEntityX(), "Normal movement plus UseRocsFeather's extra step");
+        assertEquals(110, link.romEntityY());
+        assertEquals(0xE8, link.romSpeedY());
+        link.update();
+        assertEquals(83, link.romEntityX());
+        assertEquals(0xE9, link.romSpeedY(), "Held Feather adds one gravity unit while rising");
+    }
+
+    @Test
     void featherMovesScreenYAndReturnsToTheFloor() throws Exception {
         player.setItemA(PlayerState.INVENTORY_ROCS_FEATHER);
         Link link = room(floor(), 80, 112);
         link.update(); link.update();
         int startY = link.romEntityY();
         link.useRocsFeather();
+        link.update();
         assertTrue(link.romEntityY() < startY);
         assertEquals(0, link.romEntityZ());
         input.onKeyEvent(config.aKey(), GLFW_PRESS);
