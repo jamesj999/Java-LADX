@@ -673,6 +673,9 @@ public final class RoomEntityRuntime {
     private int instrument2Flags;
     /** AnimateEntities copies wC111 to wC1A8 before decrementing it. */
     private int entityInteractionCountdown;
+    private boolean freeMovementMode;
+
+    void setFreeMovementMode(boolean enabled) { freeMovementMode = enabled; }
     private final int[] owlEventState = new int[EntityRoomLoader.MAX_ENTITIES];
     /** wEntitiesPrivateCountdown1Table for the owl-event handler. */
     private final int[] owlPrivateCountdown1 =
@@ -825,7 +828,8 @@ public final class RoomEntityRuntime {
     }
 
     /** A ROM handler request to block Link's next interactive motion frame. */
-    public record LinkMotionBlockRequest(int sourceSlot) {
+    public record LinkMotionBlockRequest(int sourceSlot, int positionDeltaX, int positionDeltaY) {
+        public LinkMotionBlockRequest(int sourceSlot) { this(sourceSlot, 0, 0); }
         public LinkMotionBlockRequest {
             if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
                 throw new IllegalArgumentException("Link motion-block source slot out of range: "
@@ -1985,6 +1989,27 @@ public final class RoomEntityRuntime {
             if (entity.sourceLoadOrder() == -1 && isDisabledFollower(entity.type())) {
                 clearEntity(entity.slot());
                 continue;
+            }
+
+            // label_394D -> $14:54AC runs before these bosses' interaction
+            // guards, including during their death handlers. It directly
+            // nudges Link into the arena, then blocks his next input frame.
+            if (!wasInitializing && !roomTransitionActive && !freeMovementMode
+                && (entity.type() == ENTITY_ROLLING_BONES || entity.type() == ENTITY_MOLDORM)) {
+                int dx = 0;
+                int dy = 0;
+                if (((linkEntityX - 0x11) & 0xFF) >= 0x7E) {
+                    dx = linkEntityX < 0x50 ? 1 : -1;
+                } else if (((linkEntityY - 0x16) & 0xFF) >= 0x5E) {
+                    dy = -1;
+                }
+                if (dx != 0 || dy != 0) {
+                    pendingLinkMotionBlockRequests.add(
+                        new LinkMotionBlockRequest(entity.slot(), dx, dy));
+                    linkEntityX = (linkEntityX + dx) & 0xFF;
+                    linkEntityY = (linkEntityY + dy) & 0xFF;
+                    entityInteractionCountdown = 2;
+                }
             }
 
             EntityStatus status = entity.status();

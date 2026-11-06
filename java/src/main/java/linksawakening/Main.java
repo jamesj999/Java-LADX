@@ -1231,6 +1231,7 @@ public class Main {
                 roomSession.setEnemyDropPlayerState(
                     playerState.maxHearts(), playerState.health(),
                     playerState.activePowerUp() != PlayerState.ACTIVE_POWER_UP_NONE);
+                roomSession.setFreeMovementMode(link != null && link.debugNoClip());
                 var projectileEvents = roomSession.tickEntitiesWithProjectileEvents(
                     frameCounter,
                     link == null ? 0x08 : link.romEntityX(),
@@ -1336,6 +1337,8 @@ public class Main {
                 }
                 for (var request : roomSession.consumeLinkMotionBlockRequests()) {
                     if (link != null) {
+                        link.applyRomFinalPosition((request.positionDeltaX() * 16) & 0xFF,
+                            (request.positionDeltaY() * 16) & 0xFF);
                         link.blockNextRomMotionFrame();
                     }
                 }

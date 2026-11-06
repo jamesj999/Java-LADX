@@ -276,6 +276,8 @@ final class MainOpeningRouteTest {
         assertEquals(0x10, checkpoints.get(579).room());
         assertEquals(0, checkpoints.get(579).smallKeys());
         assertEquals(0x11, checkpoints.getLast().room());
+        assertEquals(17, checkpoints.getLast().x(), "The boss handler pushes Link clear of the doorway");
+        assertEquals(72, checkpoints.getLast().y());
         assertEquals(1, checkpoints.getLast().nightmareKey());
         assertTrue(checkpoints.getLast().health() > 0);
         assertTrue(entityCheckpoints.getLast().contains("81:ACTIVE"));

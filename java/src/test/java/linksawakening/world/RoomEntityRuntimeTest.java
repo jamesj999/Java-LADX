@@ -25,6 +25,36 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 final class RoomEntityRuntimeTest {
 
     @Test
+    void tailCaveBossesPushLinkInsideTheArenaBeforeBlockingInput() {
+        int[][] cases = {{8,72,1,0}, {16,72,1,0}, {17,72,0,0},
+            {142,72,0,0}, {143,72,-1,0}, {80,116,0,-1},
+            {80,115,0,0}, {80,21,0,-1}, {80,22,0,0}, {8,116,1,0}};
+        for (int type : new int[]{0x81, EntitySpriteHandlerCatalog.ENTITY_MOLDORM}) {
+            for (int[] point : cases) {
+                RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+                    new RoomEntity(0, 0, type, 0x70, 0x40, EntityStatus.ACTIVE,
+                        EntitySpriteDefinition.unsupported(type), 0)), true);
+                runtime.tick(0, point[0], point[1], () -> 0);
+                var requests = runtime.consumePendingLinkMotionBlockRequests();
+                if (point[2] == 0 && point[3] == 0) {
+                    assertTrue(requests.isEmpty());
+                } else {
+                    assertEquals(1, requests.size());
+                    assertEquals(point[2], requests.get(0).positionDeltaX());
+                    assertEquals(point[3], requests.get(0).positionDeltaY());
+                }
+                runtime.setFreeMovementMode(true);
+                runtime.tick(1, 8, 72, () -> 0);
+                assertTrue(runtime.consumePendingLinkMotionBlockRequests().isEmpty());
+                runtime.setFreeMovementMode(false);
+                runtime.setRoomTransitionStateForTest(true);
+                runtime.tick(2, 8, 72, () -> 0);
+                assertTrue(runtime.consumePendingLinkMotionBlockRequests().isEmpty());
+            }
+        }
+    }
+
+    @Test
     void kanaletKnightAndMadBomberUseNonPersistentGoldenLeafDrops() {
         RoomEntityRuntime knightRuntime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 3, 0x51, 0x40, 0x50, EntityStatus.ACTIVE,

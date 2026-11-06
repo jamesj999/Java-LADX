@@ -1993,6 +1993,10 @@ public final class RoomSession {
     }
 
     /** Returns and clears a motion block emitted by a world handler rather than an entity. */
+    public void setFreeMovementMode(boolean enabled) {
+        if (entityRuntime != null) entityRuntime.setFreeMovementMode(enabled);
+    }
+
     public boolean consumeWorldLinkMotionBlockRequest() {
         boolean pending = worldLinkMotionBlockPending;
         worldLinkMotionBlockPending = false;
