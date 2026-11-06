@@ -9,11 +9,11 @@ import static org.junit.jupiter.api.Assertions.*;
 /** Real game-loop integration, with buttons only after the new-game bootstrap. */
 final class MainOpeningRouteTest {
     @Test
-    void newGameCanCollectTailCavesKeysCompassMapAndFeather() throws Exception {
+    void newGameCanCollectTailCavesKeysCompassMapFeatherAndNightmareKey() throws Exception {
         Main.initializeHeadlessNewGame();
         var checkpoints = new ArrayList<Main.HeadlessState>();
         var entityCheckpoints = new ArrayList<String>();
-        for (String line : Files.readAllLines(Path.of("../tools/opening/tail-cave-return-route.tsv"))) {
+        for (String line : Files.readAllLines(Path.of("../tools/opening/tail-cave-nightmare-route.tsv"))) {
             if (line.isBlank() || line.startsWith("#")) continue;
             String[] fields = line.split("\\s+");
             int idle = Integer.parseInt(fields[2]);
@@ -184,7 +184,7 @@ final class MainOpeningRouteTest {
         // longer guarantees a Piece of Power. It must remain interactive.
         assertFalse(checkpoints.get(334).dialog());
         var switchKey = checkpoints.get(345);
-        assertEquals(514, checkpoints.size());
+        assertEquals(560, checkpoints.size());
         assertEquals(0x13, switchKey.room());
         assertEquals(2, switchKey.smallKeys());
         assertEquals(1, switchKey.compass());
@@ -251,13 +251,26 @@ final class MainOpeningRouteTest {
         assertEquals(64, checkpoints.get(507).y());
         assertEquals(2, entityCheckpoints.get(508).split("9F:", -1).length - 1,
             "Goombas respawn after the Feather staircase trip");
-        assertEquals(2, entityCheckpoints.getLast().split("2C:", -1).length - 1,
+        assertEquals(2, entityCheckpoints.get(513).split("2C:", -1).length - 1,
             "Spiked Beetles respawn after returning upstairs");
-        assertEquals(0x03, checkpoints.getLast().room());
-        assertEquals(136, checkpoints.getLast().x());
-        assertEquals(32, checkpoints.getLast().y());
+        assertEquals(0x03, checkpoints.get(513).room());
+        assertEquals(136, checkpoints.get(513).x());
+        assertEquals(32, checkpoints.get(513).y());
+        assertFalse(checkpoints.get(513).dialog());
+        assertTrue(checkpoints.get(513).health() > 0);
+        assertEquals(0x09, checkpoints.get(549).room());
+        assertEquals(1, checkpoints.get(549).smallKeys(), "The keyhole block spends one key");
+        assertEquals(0x08, checkpoints.get(551).room());
+        var nightmareReward = checkpoints.get(555);
+        assertTrue(nightmareReward.dialog());
+        assertTrue(nightmareReward.text().contains("Nightmare"));
+        assertEquals(1, nightmareReward.nightmareKey());
+        assertEquals(0x08, checkpoints.getLast().room());
+        assertEquals(1, checkpoints.getLast().nightmareKey());
+        assertEquals(1, checkpoints.getLast().smallKeys());
         assertFalse(checkpoints.getLast().dialog());
         assertTrue(checkpoints.getLast().health() > 0);
+
 
 
 

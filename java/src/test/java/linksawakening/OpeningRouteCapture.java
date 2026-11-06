@@ -78,6 +78,7 @@ public final class OpeningRouteCapture {
             case "inventorytick" -> s.inventoryTick();
             case "bgtick" -> s.bgTick();
             case "smallkeys" -> s.smallKeys();
+            case "nightmarekey" -> s.nightmareKey();
             case "x" -> s.x();
             case "y" -> s.y();
             default -> throw new IllegalArgumentException(condition);
@@ -95,7 +96,7 @@ public final class OpeningRouteCapture {
             .append('\t').append(s.x()).append('\t').append(s.y()).append('\t')
             .append(s.dialog()).append('\t').append(s.shield())
             .append('\t').append(s.smallKeys()).append('\t').append(s.compass()).append('\t')
-            .append(s.dungeonMap()).append('\n');
+            .append(s.dungeonMap()).append('\t').append(s.nightmareKey()).append('\n');
     }
 
 }
