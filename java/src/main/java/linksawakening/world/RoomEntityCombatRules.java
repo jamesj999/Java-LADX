@@ -260,7 +260,7 @@ public final class RoomEntityCombatRules {
     static boolean usesStandardLinkContactResponse(int type) {
         return switch (type & 0xFF) {
             case ENTITY_GEL, ENTITY_STAR, ENTITY_ANTI_FAIRY,
-                ENTITY_BOUNCING_BOMBITE, ENTITY_SPIKED_BEETLE -> false;
+                ENTITY_BOUNCING_BOMBITE -> false;
             default -> true;
         };
     }

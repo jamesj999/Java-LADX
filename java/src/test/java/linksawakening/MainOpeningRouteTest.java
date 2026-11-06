@@ -12,7 +12,7 @@ final class MainOpeningRouteTest {
     void newGameCanCollectTailCavesKeysCompassAndMap() throws Exception {
         Main.initializeHeadlessNewGame();
         var checkpoints = new ArrayList<Main.HeadlessState>();
-        for (String line : Files.readAllLines(Path.of("../tools/opening/tail-cave-block-route.tsv"))) {
+        for (String line : Files.readAllLines(Path.of("../tools/opening/tail-cave-beetle-route.tsv"))) {
             if (line.isBlank() || line.startsWith("#")) continue;
             String[] fields = line.split("\\s+");
             int idle = Integer.parseInt(fields[2]);
@@ -182,7 +182,7 @@ final class MainOpeningRouteTest {
         assertFalse(powerUpFinished.dialog());
         assertTrue(powerUpFinished.text().contains("energy flowing"));
         var switchKey = checkpoints.get(345);
-        assertEquals(436, checkpoints.size());
+        assertEquals(462, checkpoints.size());
         assertEquals(0x13, switchKey.room());
         assertEquals(2, switchKey.smallKeys());
         assertEquals(1, switchKey.compass());
@@ -216,12 +216,24 @@ final class MainOpeningRouteTest {
         var pushedBlock = checkpoints.get(434);
         assertEquals(0x04, pushedBlock.room());
         assertTrue(pushedBlock.x() <= 44, "Link must stay behind the moving block");
-        var beetleRoom = checkpoints.getLast();
+        var beetleRoom = checkpoints.get(435);
         assertEquals(0x03, beetleRoom.room());
         assertEquals(2, beetleRoom.smallKeys());
         assertEquals(1, beetleRoom.dungeonMap());
         assertEquals(1, beetleRoom.compass());
         assertTrue(beetleRoom.health() > 0);
+        var clearedBeetles = checkpoints.get(457);
+        assertEquals(0x03, clearedBeetles.room());
+        assertTrue(clearedBeetles.health() >= beetleRoom.health(),
+            "Shield flips and sword follow-up must clear the room without damage");
+        var passage = checkpoints.getLast();
+        assertEquals(0x19, passage.room());
+        assertEquals(0, passage.map());
+        assertEquals(2, passage.smallKeys());
+        assertTrue(passage.health() > 0);
+        assertFalse(passage.loading());
+        assertFalse(Main.headlessEntityPositions().contains("2C:"));
+
 
 
 

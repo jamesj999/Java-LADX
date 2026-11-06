@@ -1115,7 +1115,8 @@ public class Main {
                     playerState.tunicType() == PlayerState.TUNIC_RED,
                     playerState.activePowerUp() == PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER,
                     sword != null && sword.spinAttackActive(),
-                    playerState.runningWithPegasusBoots());
+                    playerState.runningWithPegasusBoots(), link.isUsingShield(),
+                    romDirectionForLink(link.direction()), link.romEntityZ());
                 var combatEvents = roomSession.resolveEntityCombat(
                     frameCounter, link.romEntityX(), link.romEntityY(),
                     link.isAirborne(), link.zVelocity(), !debugNoClip,
@@ -1142,6 +1143,12 @@ public class Main {
                             // before the shared Link response helper.
                             gameplaySoundSink.play(GameplaySoundEvent.LINK_HURT);
                         }
+                    }
+                    if (event.linkDamage() == 0 && event.linkCollisionResponse().active()) {
+                        var response = event.linkCollisionResponse();
+                        link.applyRomSpeed(response.speedX(), response.speedY());
+                        link.setCollisionIgnoreFrames(response.ignoreCollisionCountdown());
+                        playerState.setRunningWithPegasusBoots(false);
                     }
                     if (event.linkAction()
                         == EntityCombatEvent.LinkAction.GOOMBA_BOUNCE_TOP_DOWN) {

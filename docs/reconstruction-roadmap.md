@@ -1745,6 +1745,8 @@ runtime collision callback.
 
 ## Verified ROM Spiked Beetle entity runtime — 2026-08-07
 
+**Correction (2026-11-06):** The sword-flip claim below was incorrect: `$03:6F2A` is the shield path, bypassed by sword collisions at `$03:6EA5`. See the normal-input verification milestone below. The original recovery-state and shake-direction implementation was also corrected.
+
 - Entity `$2C` now decodes the normal-room and Angler's Tunnel sprite lists
   from bank `$07:$7784` and `$07:$7794`, respectively, using the exact shipped
   ROM bytes. Its physics `$12`, contact damage `$04`, health group `$02`, and
@@ -3519,3 +3521,12 @@ of scope.
 - All 2,336 tests pass. The post-push frame differs by 760 RGB555 pixels (Link X=42 in Java, 44 in ROM); the final beetle-room frame differs by 693. No full visual, combat or timing parity claim.
 - Evidence: validation/tail-cave-block-2026-11-06.html and java/src/test/resources/opening/tail-cave-block. Source interaction also depends on contact-counter cadence; exact push timing remains to verify.
 - Next: defeat the two Spiked Beetles, reveal the staircase, cross the side-view passage and obtain Roc’s Feather, then complete the remaining Tail Cave and full quest verification.
+
+
+## Tail Cave shield flips and staircase — 2026-11-06
+
+- Fixed Spiked Beetles responding to the wrong weapon: the raised shield uses the source directional rectangle and flips the shell; the sword clinks against normal shells and damages flipped shells. Shield bumps now apply Link recoil without damage. Ordinary Beetle contact retains normal enemy damage/recoil.
+- Corrected the flipped countdown expiry to restore resting state (the source writes zero, not state 4) and corrected the warning shake direction. Recovery-frame options remain flipped until the following handler pass.
+- Both fresh-game normal-input runs complete 462 checkpoints, clear room `$03`, reveal the stairs and enter side-view room `$19` at Link `(120,16)`. Java health is 12; ROM health is 4. Inputs differ explicitly where needed for enemy positions; no timing, drop or full-frame parity claim.
+- The cleared-room frame differs by 360 RGB555 pixels; the revealed stair itself matches. **New visual blocker:** room `$19` has incorrect Java background graphics (9,992 differing pixels in its full frame). Side-view rendering is not verified; fix its ROM tileset path next, then continue to Roc’s Feather and the rest of Tail Cave.
+- Evidence: `tools/opening/tail-cave-beetle-route.tsv`, `java/src/test/resources/opening/tail-cave-beetle/`, and `docs/validation/tail-cave-beetle-2026-11-06.html`. The real Main-loop regression now traverses all 462 checkpoints.

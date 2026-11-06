@@ -5514,6 +5514,38 @@ public final class RoomEntityRuntime {
                 && hidingZolSwordCollision
                 && moldormOrHeadOverlapsSword(
                     entity, swordX, swordWidth, swordY, swordHeight);
+            // $20:4B4A supplies the shield rectangle to the same collision
+            // pass as the sword, but $03:6EA5 dispatches it separately.
+            if (entity.type() == ENTITY_SPIKED_BEETLE && linkInteractive
+                && attackContext.usingShield() && !swordCollisionActive
+                && enemyIgnoreHitsCountdown[entity.slot()] == 0
+                && (enemyFlashCountdown[entity.slot()] == 0
+                    || enemyFlashCountdown[entity.slot()] >= 0x18)) {
+                int direction = attackContext.romDirection();
+                int shieldX = attackContext.shieldX(linkEntityX);
+                int shieldY = attackContext.shieldY(linkEntityY);
+                if (shieldX != 0 && RoomEntityCombatRules.overlapsSword(entity,
+                    shieldX, attackContext.shieldWidth(),
+                    shieldY, attackContext.shieldHeight())) {
+                    if (spikedBeetleMotion.state(entity.slot()) != 3) {
+                        spikedBeetleMotion.flipFromShield(entity.slot(), direction);
+                        enemyTransitionCountdown[entity.slot()] = 0xFF;
+                    }
+                    // func_003_6F5C clears the ignore-hits countdown after
+                    // the shared shield bump; it does not damage the shell.
+                    enemyIgnoreHitsCountdown[entity.slot()] = 0;
+                    enemyRecoilMotion.clear(entity.slot());
+                    EnemyRecoilMotion.Vector vector =
+                        EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
+                            entity.x(), entity.y(), entity.z(), linkEntityX, linkEntityY, 0x12);
+                    events.add(new EntityCombatEvent(entity.slot(), entity.type(), 0,
+                        false, 0, -1, EntityCombatEvent.SoundChannel.JINGLE, 0x09,
+                        EntityCombatEvent.SoundChannel.NONE, -1, null,
+                        new EntityCombatEvent.LinkCollisionResponse(
+                            vector.x() & 0xFF, vector.y() & 0xFF, 0x0C)));
+                    continue;
+                }
+            }
             boolean moldormTailSwordHit = swordHit && entity.type() == ENTITY_MOLDORM
                 && !RoomEntityCombatRules.overlapsSword(
                     entity, swordX, swordWidth, swordY, swordHeight);
@@ -5579,19 +5611,6 @@ public final class RoomEntityRuntime {
                     linkEntityX, linkEntityY, 0x10);
                 soundChannel = EntityCombatEvent.SoundChannel.JINGLE;
                 soundId = 0x07;
-            } else if (swordHit && entity.type() == ENTITY_SPIKED_BEETLE
-                && spikedBeetleMotion.state(entity.slot()) < 3
-                && !spikedBeetleSwordClink) {
-                // The initial static options byte reaches the Beetle-specific
-                // EnemyCollidedWithSword branch and flips the shell without
-                // applying damage. Later normal handler passes write the
-                // sword-clink-off bit, which takes the shared poke path below.
-                spikedBeetleMotion.flipFromSword(entity.slot(), lastRomLinkDirection);
-                enemyTransitionCountdown[entity.slot()] = 0xFF;
-                enemyIgnoreHitsCountdown[entity.slot()] = 0;
-                enemyRecoilMotion.clear(entity.slot());
-                soundChannel = EntityCombatEvent.SoundChannel.JINGLE;
-                soundId = 0x09;
             } else if (swordHit && RoomEntityCombatRules.swordPokeForSwordCollision(
                 entity.type(), peaHatSwordClink || spikedBeetleSwordClink
                     || maskedMimicSwordClink

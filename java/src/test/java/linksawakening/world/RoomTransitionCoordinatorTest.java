@@ -1125,13 +1125,14 @@ final class RoomTransitionCoordinatorTest {
         beetles = session.activeRoom().entities().loadedEntities().stream()
             .filter(entity -> entity.type() == 0x2C)
             .toList();
-        // EnemyCollidedWithSword flips state-$00 beetles without damage.
+        // The raised shield flips beetles; the sword then damages the underside.
         for (RoomEntity beetle : beetles) {
             List<EntityCombatEvent> flipEvents = session.resolveEntityCombat(
-                beetle.slot() ^ 1, 0, 0, false, true, true,
-                beetle.x() + 0x08, 1, beetle.y() - beetle.z() + 0x08, 1);
+                beetle.slot() ^ 1, beetle.x() - 8, beetle.y(), false, 0,
+                true, false, 0, 0, 0, 0,
+                new EnemyAttackContext(1, false, false, false, false, true, 0, 0));
             assertTrue(flipEvents.stream().anyMatch(event -> event.slot() == beetle.slot()
-                && event.swordHit()), flipEvents.toString());
+                && !event.swordHit() && event.soundId() == 0x09), flipEvents.toString());
         }
         session.tickEntitiesWithProjectileEvents(
             frame++, 0, 0, 0, 0, Link.DIRECTION_DOWN, false);

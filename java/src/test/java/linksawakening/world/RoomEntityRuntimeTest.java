@@ -461,7 +461,8 @@ final class RoomEntityRuntimeTest {
     @Test
     void specialEnemyHandlersDoNotReceiveTheGenericLinkRecoilResponse() {
         assertFalse(RoomEntityCombatRules.usesStandardLinkContactResponse(0x1C));
-        assertFalse(RoomEntityCombatRules.usesStandardLinkContactResponse(0x2C));
+        // Beetles only use the special branch for shield contact ($03:6F2A).
+        assertTrue(RoomEntityCombatRules.usesStandardLinkContactResponse(0x2C));
         assertFalse(RoomEntityCombatRules.usesStandardLinkContactResponse(0x55));
         assertFalse(RoomEntityCombatRules.usesStandardLinkContactResponse(0x9C));
     }
@@ -4745,7 +4746,7 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
-    void spikedBeetleFlipsOnTheInitialRomSwordPassAndDoesNotTakeDamage()
+    void spikedBeetleFlipsOnShieldContactAndDoesNotTakeDamage()
             throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
@@ -4756,11 +4757,17 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x2C, 64, 64, EntityStatus.ACTIVE, definition, 0)),
             true, null, catalog, tables);
 
+        runtime.tick(0, 120, 120, sequence(0x00));
+        assertEquals(0x48, runtime.options1(0));
+
         List<EntityCombatEvent> events = runtime.resolveCombat(
-            0, 120, 120, false, true, true, 72, 1, 72, 1);
+            0, 56, 64, false, 0, true, false, 0, 0, 0, 0,
+            new EnemyAttackContext(1, false, false, false, false, true, 0, 0));
 
         assertEquals(1, events.size());
-        assertTrue(events.get(0).swordHit());
+        assertFalse(events.get(0).swordHit());
+        assertEquals(0, events.get(0).linkDamage());
+        assertEquals(0x0C, events.get(0).linkCollisionResponse().ignoreCollisionCountdown());
         assertEquals(0, events.get(0).enemyDamage());
         assertEquals(EntityCombatEvent.SoundChannel.JINGLE, events.get(0).soundChannel());
         assertEquals(0x09, events.get(0).soundId());
@@ -4773,6 +4780,38 @@ final class RoomEntityRuntimeTest {
         runtime.tick(1, 120, 120, sequence(0x00));
         assertEquals(0x08, runtime.options1(0));
         assertEquals(0x00, runtime.hitboxFlagsForTest(0));
+    }
+
+    @Test
+    void spikedBeetleShieldChecksAllFourDirections() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        int[] linkX = {56, 72, 64, 64};
+        int[] linkY = {64, 64, 72, 59};
+        int[] flipX = {0x10, 0xF0, 0, 0};
+        int[] flipY = {0, 0, 0xF0, 0x10};
+        for (int direction = 0; direction < 4; direction++) {
+            RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+                new RoomEntity(0, 0, 0x2C, 64, 64, EntityStatus.ACTIVE,
+                    catalog.forEntityType(0x2C, EntityRoomLoader.RoomTable.INDOORS_A, 0), 0)),
+                true, null, catalog, tables);
+            runtime.tick(0, 120, 120, sequence(0));
+            var away = new EnemyAttackContext(1, false, false, false, false,
+                true, direction ^ 1, 0);
+            var misses = runtime.resolveCombat(1, linkX[direction], linkY[direction],
+                false, 0, true, false, 0, 0, 0, 0, away);
+            assertFalse(misses.stream().anyMatch(e -> e.soundId() == 0x09));
+            assertNotEquals(3, runtime.spikedBeetleState(0));
+            var shield = new EnemyAttackContext(1, false, false, false, false,
+                true, direction, 0);
+            var hits = runtime.resolveCombat(1, linkX[direction], linkY[direction],
+                false, 0, true, false, 0, 0, 0, 0, shield);
+            assertTrue(hits.stream().anyMatch(e -> e.soundId() == 0x09));
+            assertEquals(3, runtime.spikedBeetleState(0));
+            assertEquals(flipX[direction], runtime.spikedBeetleSpeedX(0));
+            assertEquals(flipY[direction], runtime.spikedBeetleSpeedY(0));
+        }
     }
 
     @Test

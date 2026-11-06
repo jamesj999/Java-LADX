@@ -85,13 +85,11 @@ final class SpikedBeetleMotion {
         }
 
         int renderedVariant = animationVariant[slot];
-        boolean collided = false;
-        if (state[slot] != 4) {
-            Position moved = move(entity, x, y, backgroundCollision);
-            x = moved.x();
-            y = moved.y();
-            collided = moved.collided();
-        }
+        Position moved = move(entity, x, y, backgroundCollision);
+        x = moved.x();
+        y = moved.y();
+        boolean collided = moved.collided();
+        boolean flippedHandler = state[slot] == 3;
 
         boolean walkAnimationRequested = false;
         boolean flippedAnimationRequested = false;
@@ -136,16 +134,14 @@ final class SpikedBeetleMotion {
             case 3 -> {
                 flippedAnimationRequested = true;
                 if (countdown == 0) {
-                    state[slot] = 4;
+                    // $07:790A increments the state, then writes B (zero)
+                    // through the returned state-table pointer.
+                    state[slot] = 0;
                     speedZ[slot] = 0x18;
                     speedX[slot] = 0;
                 } else if (countdown < 0x60) {
-                    speedX[slot] = (countdown & 0x04) == 0 ? 0x08 : 0xF8;
+                    speedX[slot] = (countdown & 0x04) == 0 ? 0xF8 : 0x08;
                 }
-            }
-            case 4 -> {
-                // The source handler returns immediately after the one-frame
-                // state-$04 handoff. Keep the final flipped presentation.
             }
             default -> throw new IllegalStateException("Invalid Spiked Beetle state: "
                 + state[slot]);
@@ -161,13 +157,13 @@ final class SpikedBeetleMotion {
         RoomEntity updated = new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
             x, y, entity.status(), entity.spriteDefinition(), renderedVariant,
             entity.entityFlipAttribute(), entity.spriteTileOffset(), z);
-        return new Update(updated, countdown, state[slot] >= 3
+        return new Update(updated, countdown, flippedHandler
             ? FLIPPED_OPTIONS1 : NORMAL_OPTIONS1,
-            state[slot] >= 3 ? FLIPPED_HITBOX_FLAGS : NORMAL_HITBOX_FLAGS);
+            flippedHandler ? FLIPPED_HITBOX_FLAGS : NORMAL_HITBOX_FLAGS);
     }
 
-    /** Mirrors EnemyCollidedWithSword's ENTITY_SPIKED_BEETLE branch. */
-    void flipFromSword(int slot, int romLinkDirection) {
+    /** Mirrors the shield-contact branch at $03:6F2A. */
+    void flipFromShield(int slot, int romLinkDirection) {
         if (romLinkDirection < 0 || romLinkDirection > 3) {
             throw new IllegalArgumentException("ROM Link direction must be 0..3: "
                 + romLinkDirection);
@@ -175,7 +171,7 @@ final class SpikedBeetleMotion {
         if (!initialized[slot]) {
             initialize(slot);
         }
-        if (state[slot] == 3 || state[slot] == 4) {
+        if (state[slot] == 3) {
             return;
         }
         state[slot] = 3;
@@ -210,7 +206,7 @@ final class SpikedBeetleMotion {
 
     boolean allowsCombat(int slot) {
         // SpikedBeetleEntityHandler calls DefaultEnemyDamageCollisionHandler
-        // before dispatching every state, including flipped states $03/$04.
+        // before dispatching every state, including flipped state $03.
         return initialized[slot];
     }
 
