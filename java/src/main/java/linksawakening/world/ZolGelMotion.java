@@ -110,9 +110,10 @@ final class ZolGelMotion {
 
         int x = entity.x();
         int y = entity.y();
-        if (type == ENTITY_GEL && state[slot] == 4 && transitionCountdown[slot] != 0) {
+        boolean clinging = type == ENTITY_GEL && state[slot] == 4 && transitionCountdown[slot] != 0;
+        if (clinging) {
             int xOffset = ((transitionCountdown[slot] >>> 1) & 0x07) - 4;
-            int yOffset = ((transitionCountdown[slot] >>> 3) & 0x07) - 4;
+            int yOffset = ((transitionCountdown[slot] >>> 2) & 0x07) - 4;
             x = (linkEntityX - xOffset) & 0xFF;
             y = (linkEntityY - yOffset) & 0xFF;
             z = linkEntityZ & 0xFF;
@@ -196,7 +197,7 @@ final class ZolGelMotion {
         RoomEntity updated = new RoomEntity(entity.slot(), entity.sourceLoadOrder(), type, x, y,
             entity.status(), entity.spriteDefinition(), spriteVariant[slot], entity.entityFlipAttribute(),
             entity.spriteTileOffset(), z);
-        return new Update(updated, split);
+        return new Update(updated, split, clinging);
     }
 
     /** Initializes a SpawnNewEntity Gel without consuming its init random byte. */
@@ -408,7 +409,7 @@ final class ZolGelMotion {
         return value < 0x80 ? value : value - 0x100;
     }
 
-    record Update(RoomEntity entity, Split split) {
+    record Update(RoomEntity entity, Split split, boolean clinging) {
     }
 
     record Split(int originalX, int originalY, int originalZ) {

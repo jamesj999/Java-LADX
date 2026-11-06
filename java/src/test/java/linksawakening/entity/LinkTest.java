@@ -993,6 +993,24 @@ final class LinkTest {
     }
 
     @Test
+    void clingingGelAllowsMovementOnlyOnEveryFourthWorldFrame() throws Exception {
+        InputState input = new InputState();
+        InputConfig config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        Link link = linkWithEmptyRoom(input);
+        link.setPixelPosition(40, 40);
+        input.onKeyEvent(config.rightKey(), GLFW_PRESS);
+        for (int frame = 0; frame < 8; frame++) {
+            int before = link.pixelX();
+            link.setGelClinging(true, frame);
+            link.update();
+            assertEquals(before + ((frame & 3) == 0 ? 1 : 0), link.pixelX());
+        }
+        link.setGelClinging(false, 8);
+        link.update();
+        assertEquals(43, link.pixelX());
+    }
+
+    @Test
     void equippedShieldSelectsRomCarryingPoseWithoutAButtonPress() throws Exception {
         byte[] rom = loadRom();
         InputState input = new InputState();

@@ -423,6 +423,10 @@ public final class RoomEntityRuntime {
     private final int[] moldormDestructionTailState =
         new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyStunnedCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private boolean gelClingingToLink;
+
+    public boolean gelClingingToLink() { return gelClingingToLink; }
+
     private final int[] dyingCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] powerRecoilDeath = new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyPhysicsFlags = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -1714,6 +1718,7 @@ public final class RoomEntityRuntime {
                       boolean handlerLinkCollisionEnabled) {
         Objects.requireNonNull(randomByteSupplier, "randomByteSupplier");
         Objects.requireNonNull(projectileLinkState, "projectileLinkState");
+        gelClingingToLink = false; // AnimateEntities clears wIsGelClingingToLink each pass.
         boolean countdownBlocksInteraction = entityInteractionCountdown != 0;
         if (!dialogActive && entityInteractionCountdown > 0) entityInteractionCountdown--;
         handlerLinkCollisionEnabled = handlerLinkCollisionEnabled && !inventoryAppearing
@@ -3310,7 +3315,8 @@ public final class RoomEntityRuntime {
             if (status == EntityStatus.ACTIVE && !wasInitializing && isSparkType(entity.type())) {
                 updated = sparkMotion.advance(entity, frame, backgroundCollision);
             }
-            if (status == EntityStatus.ACTIVE && !wasInitializing && isZolGelType(entity.type())) {
+            if (status == EntityStatus.ACTIVE && !wasInitializing && handlerInteractive
+                && isZolGelType(entity.type())) {
                 RoomEntityBackgroundInteraction zolGelBackgroundInteraction = backgroundInteraction;
                 if (zolGelBackgroundInteraction == null && backgroundCollision != null) {
                     zolGelBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
@@ -3321,6 +3327,7 @@ public final class RoomEntityRuntime {
                     frame, enemyIgnoreHitsCountdown[entity.slot()],
                     joypadHeld || actionButtonsHeld);
                 updated = zolGelUpdate.entity();
+                gelClingingToLink |= zolGelUpdate.clinging();
                 if (zolGelUpdate.split() != null) {
                     updated = applyZolSplit(entity, updated, zolGelUpdate.split());
                 }
@@ -5686,7 +5693,10 @@ public final class RoomEntityRuntime {
             if (linkCollision && entity.type() == ENTITY_GEL) {
                 zolGelMotion.onLinkCollision(entity.slot());
             }
-            int linkDamage = linkCollision ? contactDamage(entity.type()) : 0;
+            // ApplyLinkCollisionWithEnemy's Gel branch ($03:6D3D) returns
+            // immediately after starting the cling, before damage/recoil.
+            int linkDamage = linkCollision && entity.type() != ENTITY_GEL
+                ? contactDamage(entity.type()) : 0;
             if ((enemyPhysicsFlags[entity.slot()] & ENTITY_PHYSICS_HARMLESS) != 0) {
                 // func_003_6CC0 keeps CheckLinkCollisionWithEnemy's carry
                 // result for harmless entities but suppresses Link damage.

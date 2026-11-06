@@ -5671,10 +5671,30 @@ final class RoomEntityRuntimeTest {
         List<EntityCombatEvent> contact = runtime.resolveCombat(
             1, 68, 64, false, true, false, 0, 0, 0, 0);
         assertEquals(1, contact.size());
-        assertEquals(4, contact.get(0).linkDamage());
+        assertEquals(0, contact.get(0).linkDamage());
+        assertFalse(contact.get(0).linkCollisionResponse().active());
         assertEquals(4, runtime.zolState(0));
         assertTrue(runtime.resolveCombat(1, 68, 64, false, true,
             false, 0, 0, 0, 0).isEmpty());
+    }
+
+    @Test
+    void gelExportsClingFlagOnlyWhileItsInteractiveHandlerIsAttached() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x1C, 64, 64, EntityStatus.ACTIVE, pairDefinition(0x1C, 2), 0)));
+        runtime.resolveCombat(1, 68, 64, false, true, false, 0, 0, 0, 0);
+        assertFalse(runtime.gelClingingToLink());
+        runtime.setJoypadHeld(true);
+        for (int frame = 0; frame < 43; frame++) {
+            runtime.tick(frame, 68, 64, () -> 0);
+            assertTrue(runtime.gelClingingToLink());
+            if (frame == 2) {
+                assertEquals(67, runtime.snapshot().slots().get(0).x());
+                assertEquals(62, runtime.snapshot().slots().get(0).y());
+            }
+        }
+        runtime.tick(43, 68, 64, () -> 0);
+        assertFalse(runtime.gelClingingToLink());
     }
 
     @Test

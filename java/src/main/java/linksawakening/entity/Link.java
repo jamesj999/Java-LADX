@@ -973,6 +973,15 @@ public final class Link implements RocsFeather.JumpTarget {
         }
     }
 
+    private boolean gelClinging;
+    private int gelMotionFrame;
+
+    /** Previous entity pass's wIsGelClingingToLink and current hFrameCounter. */
+    public void setGelClinging(boolean clinging, int worldFrame) {
+        gelClinging = clinging;
+        gelMotionFrame = worldFrame & 0xFF;
+    }
+
     private BooleanSupplier shieldInputAllowed = () -> true;
 
     /** Live input gate, also consulted when rendering a paused dialogue frame. */
@@ -982,7 +991,7 @@ public final class Link implements RocsFeather.JumpTarget {
 
     /** Mirrors wIsUsingShield: equipped, held, and permitted by gameplay input. */
     public boolean isUsingShield() {
-        if (!shieldInputAllowed.getAsBoolean()) {
+        if (gelClinging || !shieldInputAllowed.getAsBoolean()) {
             return false;
         }
         if (inputState == null || inputConfig == null || playerState == null) {
@@ -1388,7 +1397,8 @@ public final class Link implements RocsFeather.JumpTarget {
         lastRomSpeedX = speedX & 0xFF;
         lastRomSpeedY = speedY & 0xFF;
         movingThisFrame = (speedX != 0 || speedY != 0);
-        boolean applyGroundMotion = airborne || shouldApplyGroundMotion();
+        boolean applyGroundMotion = gelClinging
+            ? (gelMotionFrame & 3) == 0 : airborne || shouldApplyGroundMotion();
 
         if (applyGroundMotion && speedX != 0 && (!bedJumpFrame || airborne)) {
             tryMoveAxis(speedX, true);
@@ -2216,7 +2226,7 @@ public final class Link implements RocsFeather.JumpTarget {
             return JUMP_ANIMATION_STATE[direction][jumpAnimationFrame];
         }
         if (spriteSheet != null) {
-            int carriedShield = playerState != null
+            int carriedShield = !gelClinging && playerState != null
                 && (playerState.itemA() == PlayerState.INVENTORY_SHIELD
                     || playerState.itemB() == PlayerState.INVENTORY_SHIELD)
                         ? playerState.shieldLevel() : 0;

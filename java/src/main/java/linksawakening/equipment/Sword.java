@@ -184,6 +184,14 @@ public final class Sword implements EquippedItem {
         }
     }
 
+    /** CheckItemsToUse cannot renew a held sword while a Gel is attached. */
+    public void releaseHoldWithoutSpin() {
+        if (state == STATE_HOLDING) {
+            state = STATE_NONE;
+            charge = 0;
+        }
+    }
+
     @Override
     public void tick(boolean buttonHeld) {
         tick(buttonHeld, (frameCounter + 1) & 0xFF);

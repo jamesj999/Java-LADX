@@ -87,6 +87,27 @@ final class EquipmentControllerTest {
         assertNull(controller.activeSword());
     }
 
+    @Test
+    void blockedItemInputLetsASwingFinishWithoutHoldingOrStartingASpin() {
+        PlayerState player = new PlayerState();
+        player.setItemA(PlayerState.INVENTORY_SWORD);
+        ItemRegistry registry = new ItemRegistry();
+        Sword sword = new Sword(null, null);
+        registry.register(PlayerState.INVENTORY_SWORD, sword);
+        EquipmentController controller = new EquipmentController(new InputState(),
+            new InputConfig(1, 2, 3, 4, 5, 6, 7), player, registry);
+        sword.onPress();
+        for (int frame = 0; frame < 32; frame++) controller.tickEquippedItemsWithoutInput(frame);
+        assertEquals(Sword.STATE_NONE, sword.state());
+        sword.onPress();
+        for (int frame = 0; frame < 80; frame++) sword.tick(true, frame);
+        assertEquals(Sword.STATE_HOLDING, sword.state());
+        controller.tickEquippedItemsWithoutInput(80);
+        assertEquals(Sword.STATE_NONE, sword.state());
+        assertEquals(0, sword.charge());
+        assertFalse(sword.spinAttackActive());
+    }
+
     private static final class RecordingItem implements EquippedItem {
         private int presses;
         private int releases;

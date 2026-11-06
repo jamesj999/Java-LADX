@@ -878,6 +878,11 @@ public final class RoomSession {
         setEntityActionButtonsHeld(actionButtonsHeld, actionButtonsHeld);
     }
 
+    /** The cling flag produced by the previous entity-handler pass. */
+    public boolean gelClingingToLink() {
+        return entityRuntime != null && entityRuntime.gelClingingToLink();
+    }
+
     /** Supplies wDialogState's active gate to the room entity handlers. */
     public void setEntityDialogActive(boolean active) {
         entityDialogActive = active;

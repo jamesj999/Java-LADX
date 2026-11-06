@@ -12,7 +12,7 @@ final class MainOpeningRouteTest {
     void newGameCanCollectTailCavesKeyAndCompassAndLeaveTheChestRoom() throws Exception {
         Main.initializeHeadlessNewGame();
         var checkpoints = new ArrayList<Main.HeadlessState>();
-        for (String line : Files.readAllLines(Path.of("../tools/opening/tail-cave-chests-route.tsv"))) {
+        for (String line : Files.readAllLines(Path.of("../tools/opening/tail-cave-switch-route.tsv"))) {
             if (line.isBlank() || line.startsWith("#")) continue;
             String[] fields = line.split("\\s+");
             int idle = Integer.parseInt(fields[2]);
@@ -172,12 +172,21 @@ final class MainOpeningRouteTest {
         assertTrue(compassDialogue.dialog());
         assertTrue(compassDialogue.text().contains("Compass"));
         assertEquals(1, compassDialogue.compass());
-        var afterCompass = checkpoints.getLast();
+        var afterCompass = checkpoints.get(322);
         assertEquals(0x13, afterCompass.room(), "Exit the compass room and return through the entrance");
         assertEquals(1, afterCompass.compass());
         assertEquals(1, afterCompass.smallKeys());
         assertFalse(afterCompass.dialog());
         assertTrue(afterCompass.health() > 0);
+        var switchKey = checkpoints.getLast();
+        assertEquals(339, checkpoints.size());
+        assertEquals(0x13, switchKey.room());
+        assertEquals(2, switchKey.smallKeys());
+        assertEquals(1, switchKey.compass());
+        assertTrue(switchKey.dialog());
+        assertTrue(switchKey.text().contains("Small"));
+        assertEquals(afterCompass.health(), switchKey.health(),
+            "Clear Gels and the switch room without contact damage");
     }
 
     private static void advanceAlive() {

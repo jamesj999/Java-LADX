@@ -3455,3 +3455,12 @@ of scope.
 - Fixed zero-idle replay steps retaining held buttons in the Java integration/capture drivers and PyBoy driver. Added read-only Compass observations.
 - All 2,328 tests pass. See validation/tail-cave-compass-2026-11-06.html and java/src/test/resources/opening/tail-cave-compass for evidence. Final health remains different (Java 8, ROM 4); no full combat or visual parity claim.
 - Next: room $13’s Gel encounter and narrow horizontal walkway to the switch and second Small Key. The exploratory extension is not a passing replay; the committed route ends at its entrance.
+
+
+### Tail Cave switch key and Gel cling — 2026-11-06
+
+- Both fresh-game normal-input replays complete 339 checkpoints through the room $13 switch and second Small Key, retaining the Compass. Neither loses health in this room.
+- Fixed Gel contact incorrectly dealing damage: the original special branch attaches and returns before damage/recoil. Exported the per-pass cling flag, corrected its Y orbit, applied quarter-speed movement and blocked new item input while allowing an existing sword animation to finish.
+- Added focused contact, orbit, motion and equipment regression coverage; extended Main integration through the second key. All 2,331 tests pass.
+- Evidence: validation/tail-cave-switch-2026-11-06.html; capture manifests and full-frame metrics in java/src/test/resources/opening/tail-cave-switch. Final capture differs by 314 RGB555 pixels; full visual/combat parity remains unproven. Explicit ROM combat timing variants are retained in the route.
+- Next: the remaining Tail Cave rooms, equipment, boss and instrument. The full game is not yet production-ready.

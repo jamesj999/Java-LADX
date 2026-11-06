@@ -972,6 +972,7 @@ public class Main {
                 // The ROM seeds that shadow from hLinkPosition before the
                 // frame's motion work (bank0.asm:$0F97), so capture it before
                 // any Link movement can change the position.
+                link.setGelClinging(roomSession != null && roomSession.gelClingingToLink(), frameCounter);
                 link.captureRomFinalPosition();
                 boolean keyholeSequenceActive = roomSession != null
                     && roomSession.tailCaveKeyholeSequenceActive();
@@ -992,10 +993,12 @@ public class Main {
                     }
                 }
                 if (!keyholeSequenceActive && !link.isCarryingLiftedObject()) {
-                    if (!swordPickupSequenceActive) {
-                        equipmentController.dispatchButtonEdges();
+                    if (roomSession != null && roomSession.gelClingingToLink()) {
+                        equipmentController.tickEquippedItemsWithoutInput(frameCounter);
+                    } else {
+                        if (!swordPickupSequenceActive) equipmentController.dispatchButtonEdges();
+                        equipmentController.tickEquippedItems(frameCounter);
                     }
-                    equipmentController.tickEquippedItems(frameCounter);
                 }
                 if (debugNoClip && tryDebugScreenScroll()) {
                     link.tickAnimation();
