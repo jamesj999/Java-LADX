@@ -98,6 +98,18 @@ final class MoblinSwordMotionTest {
         assertEquals(1, motion.privateState3(0));
     }
 
+    @Test
+    void hideoutGuardAlertsImmediatelyEvenWhenLinkIsOutsideDetectionRange() {
+        MoblinSwordMotion motion = new MoblinSwordMotion();
+        RoomEntity source = entity(0, 104, 64);
+        var update = motion.advance(source, 80, 124, null, 0, 0, 0x15, 4, 0);
+        assertTrue(update.dialogRequested());
+        assertEquals(source.x(), update.entity().x());
+        assertEquals(source.y(), update.entity().y());
+        assertEquals(2, motion.state(0));
+        assertEquals(0x10, motion.privateCountdown1(0));
+    }
+
     private static RoomEntity entity(int slot, int x, int y) {
         return new RoomEntity(slot, 0, 0x14, x, y, EntityStatus.ACTIVE,
             EntitySpriteDefinition.unsupported(0x14), -1);

@@ -3430,6 +3430,8 @@ public final class RoomEntityRuntime {
                 preserveIronMaskPresentation = true;
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
+                && !dialogActive && !inventoryAppearing && !roomTransitionActive
+                && gameplayWorld && transitionSequenceCounter == 0x04 && !witchGotItemPresentationActive()
                 && entity.type() == ENTITY_MOBLIN_SWORD) {
                 RoomEntityBackgroundInteraction swordBackgroundInteraction = backgroundInteraction;
                 if (swordBackgroundInteraction == null && backgroundCollision != null) {

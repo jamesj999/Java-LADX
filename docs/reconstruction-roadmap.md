@@ -3717,3 +3717,9 @@ Both engines complete the 769-checkpoint `bowwow-rescue-route.tsv` from a fresh 
 This verifies pickup progression and the meter region, not whole-scene parity. The first hideout Moblin is positioned differently between engines; investigate its initialization/dialogue movement before continuing combat. Rescue is not yet complete; previous instrument animation and other global visual differences remain open.
 
 Validation: all 2,371 tests pass, including ROM-byte checks of meter loading and equipment/trading-item restoration.
+
+### Hideout sword Moblin interaction guards (2026-11-06)
+
+Mirrored the unconditional hideout alert at $07:7955 and ReturnIfNonInteractive_07 at $07:7D96. Previously the guard patrolled before noticing Link and then moved throughout the introduction dialogue. It now alerts at once and freezes its motion/timers during dialogue, transitions and other noninteractive gameplay states. Updated the dialogue regression to assert the immediate request and added far-distance alert and pause/resume coverage. All 2,373 tests pass.
+
+The full 769-checkpoint replay completes again in `/tmp/ladx-bowwow-guard`, with matching route hashes; persistent Heart Piece manifests were refreshed after the route description change. Both guards stay at (104,64) during the introduction. Sword presentation still differs and requires a ROM/OAM comparison; combat and BowWow rescue are next. Java health is 20 versus ROM 24, so the replay does not establish identical combat outcomes.

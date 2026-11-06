@@ -1,7 +1,7 @@
 {
   "emulator": "PyBoy 2.8.1",
   "rom_sha256": "c95dd3d9cb798e86c28e3269554e458d434bf3277b96cadf5bc81cfacfb5ee60",
-  "route_sha256": "5328f54b6e476bd50017cf6a2a85bead049d38780219a116decd71f37ba83a59",
+  "route_sha256": "8eaf7e433d5693224975590802053aa61bc36173fb386d936f3f5d0a7505f46d",
   "checkpoints": 769,
   "rom_button_overrides": 79,
   "memory_injection": false,

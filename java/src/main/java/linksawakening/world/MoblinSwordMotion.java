@@ -71,7 +71,7 @@ final class MoblinSwordMotion {
             privateCountdown1[slot]--;
         }
 
-        if (ignoreHitsCountdown > 0 || alertingSoundCounter > 0) {
+        if (mapId == MAP_BOWWOW_HIDEOUT || ignoreHitsCountdown > 0 || alertingSoundCounter > 0) {
             enterAlertState(slot);
         }
 

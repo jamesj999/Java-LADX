@@ -1624,6 +1624,20 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void swordMoblinPausesMotionAndTimersDuringDialogue() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x14, 0x50, 64, EntityStatus.ACTIVE, pairDefinition(0x14, 8), 6)));
+        runtime.tick(0, 0xC0, 64, () -> 0);
+        runtime.setDialogActive(true);
+        for (int frame = 1; frame <= 180; frame++) runtime.tick(frame, 0xC0, 64, () -> 0);
+        assertEquals(0x50, runtime.snapshot().slots().get(0).x());
+        assertEquals(0x80, runtime.moblinSwordTransitionCountdown(0));
+        runtime.setDialogActive(false);
+        for (int frame = 181; frame <= 184; frame++) runtime.tick(frame, 0xC0, 64, () -> 0);
+        assertTrue(runtime.snapshot().slots().get(0).x() > 0x50);
+    }
+
+    @Test
     void moblinSwordUsesTheRomHealthContactAndSwordDamageFamily() {
         EntitySpriteDefinition definition = pairDefinition(0x14, 8);
         RoomEntitySnapshot initial = snapshot(
@@ -1673,9 +1687,6 @@ final class RoomEntityRuntimeTest {
         runtime.setTransitionSequenceCounterForTest(0x04);
 
         runtime.tick(0, 0xC0, 0x40, () -> 0);
-        runtime.tick(1, 0x70, 0x40, () -> 0);
-        runtime.tick(2, 0x70, 0x40, () -> 0);
-
         assertEquals(List.of(new RoomEntityRuntime.DialogRequest(1, 0x90)),
             runtime.consumePendingDialogRequests());
         assertEquals(1, runtime.moblinSwordPrivateState3(0));

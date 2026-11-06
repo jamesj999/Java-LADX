@@ -14,5 +14,9 @@
     80,
     124
   ],
-  "remaining": "Moblin movement/phase differences, hideout combat and rescue; remainder of game and previously recorded visual differences"
+  "remaining": "Guard sword rendering; hideout combat and rescue; remainder of game and previously recorded visual differences",
+  "hideout_guard_position": [
+    104,
+    64
+  ]
 }
