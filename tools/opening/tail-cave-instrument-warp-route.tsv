@@ -671,7 +671,9 @@ up 100 80
 # Approach the instrument and let its reward presentation begin.
 up 60 240
 none 20 240 up 20 240
-a 8 240
+a 8 0
+# Synchronize to performance state, not wall-clock pickup time.
+none instrumentstate=2 0
 none 32 0
 none 32 0
 none 32 0

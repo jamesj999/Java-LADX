@@ -1577,6 +1577,27 @@ final class RoomSessionTest {
     }
 
     @Test
+    void instrumentCyclesOnlyTheTwoRomObjectPaletteColours() {
+        RoomSession session = newSession();
+        session.loadIndoor(0, 2);
+        byte[] rom = loadRom();
+        int[][] before = session.renderSnapshot().entities().spriteSelection().objectPalettes();
+        session.tickEntities(0, 0x50, 0x70); // Initialize the room entity first.
+        for (int frame : new int[]{8, 16, 64, 120}) {
+            session.tickEntities(frame, 0x50, 0x70);
+            int[][] after = session.renderSnapshot().entities().spriteSelection().objectPalettes();
+            int offset = 0x36 * 0x4000 + 0x3096 + ((frame >> 1) & 0x3C);
+            for (int c = 0; c < 2; c++) {
+                int word = (rom[offset + c * 2] & 255) | ((rom[offset + c * 2 + 1] & 255) << 8);
+                assertEquals(linksawakening.rom.RomUtil.decodeRgb555(word), after[1][c + 2]);
+            }
+            assertEquals(before[1][0], after[1][0]);
+            assertEquals(before[1][1], after[1][1]);
+            assertEquals(before[2][2], after[2][2]);
+        }
+    }
+
+    @Test
     void tailCaveInstrumentRunsThePerformanceAndWarpCountdownsBeforeReleasingLink() {
         RoomSession session = newSession();
         session.loadIndoor(0x00, 0x02);

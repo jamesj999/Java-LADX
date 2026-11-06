@@ -803,6 +803,8 @@ public final class RoomSession {
         return activeRoom == null ? null : activeRoom.palettes();
     }
 
+    public String instrumentTrace() { return entityRuntime == null ? "" : entityRuntime.instrumentTrace(); }
+
     public RoomRenderSnapshot renderSnapshot() {
         if (activeRoom == null) return null;
         RoomRenderSnapshot snapshot = activeRoom.renderSnapshot();

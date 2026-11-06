@@ -288,6 +288,10 @@ public class Main {
         return false;
     }
 
+    static String headlessInstrumentTrace() {
+        return roomSession == null ? "" : roomSession.instrumentTrace();
+    }
+
     static String headlessCombatTrace() {
         Sword sword = equipmentController.activeSword();
         Sword.CollisionBox box = sword == null ? Sword.CollisionBox.inactive()

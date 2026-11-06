@@ -22,6 +22,7 @@ p.set_emulation_speed(0)
 trace = []
 checkpoints = []
 combat_trace = []
+instrument_trace = []
 try:
     p.tick(3800)
     p.button('start', 8)
@@ -78,11 +79,14 @@ try:
                 box = [int(p.memory[0xc5b0] != 0)] + list(p.memory[0xc140:0xc144])
                 entities = [[p.memory[0xc3a0+i], p.memory[0xc200+i], p.memory[0xc210+i], p.memory[0xc310+i], p.memory[0xc360+i], p.memory[0xc280+i]] for i in range(16) if p.memory[0xc280+i] and p.memory[0xc3a0+i] in (0x81,0x82,0x59)]
                 combat_trace.append(str(frame)+'\t'+';'.join(','.join(map(str,row)) for row in [box]+entities)+'\n')
+            if p.memory[0xfff7] == 0 and p.memory[0xfff6] == 2:
+                entries = [[i, p.memory[0xc290+i], p.memory[0xc2e0+i], p.memory[0xc450+i]] for i in range(16) if p.memory[0xc280+i] and p.memory[0xc3a0+i] == 0x39 and p.memory[0xc2b0+i] != 1]
+                instrument_trace.append(str(frame)+'\t'+str(p.memory[0xd369])+';'+ ';'.join(','.join(map(str,row)) for row in entries)+'\n')
             frame += 1
         if '=' in held:
             field, target = held.split('=')
             target = int(target, 0)
-            address = {'room': 0xfff6, 'x': 0xff98, 'y': 0xff99, 'dialog': 0xc19f, 'sword': 0xdb4e, 'inventorytick': 0xde06, 'bgtick': 0xffa6, 'smallkeys': 0xdbd0, 'nightmarekey': 0xdbcf}[field]
+            address = {'room': 0xfff6, 'x': 0xff98, 'y': 0xff99, 'dialog': 0xc19f, 'sword': 0xdb4e, 'inventorytick': 0xde06, 'bgtick': 0xffa6, 'smallkeys': 0xdbd0, 'nightmarekey': 0xdbcf, 'instrumentstate': 0xc290}[field]
             def reached():
                 value = p.memory[address]
                 if field == 'inventorytick':
@@ -124,6 +128,7 @@ try:
         'rom_button_overrides': sum(len(line.split()) >= 4 for line in args.route.read_text().splitlines() if line and not line.startswith('#')),
         'memory_injection': False, 'save': 'fresh in-memory RAM, never saved',
     }, indent=2))
+    OUT.joinpath('emulator-instrument.tsv').write_text(''.join(instrument_trace))
     OUT.joinpath('emulator-combat.tsv').write_text(''.join(combat_trace))
     OUT.joinpath('emulator-trace.tsv').write_text(''.join('\t'.join(map(str, r))+'\n' for r in trace))
 finally:

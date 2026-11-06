@@ -648,6 +648,7 @@ public final class RoomEntityRuntime {
     private final int[] instrumentHintBatches = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] instrumentWarpX = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] instrumentWarpY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] instrumentPaletteCycle = new int[32];
     private final int[] instrumentWarpSprites = new int[256];
     private final int[] instrumentHintTiles = new int[20 * 18];
     private final int[] instrumentHintAttributes = new int[20 * 18];
@@ -1198,6 +1199,11 @@ public final class RoomEntityRuntime {
         this.chestContentsTable = chestContentsTable;
         this.romTables = romTables;
         if (romData != null) {
+            for (int i = 0; i < instrumentPaletteCycle.length; i++) {
+                int offset = 0x36 * 0x4000 + 0x3096 + i * 2;
+                int rgb555 = (romData[offset] & 255) | ((romData[offset + 1] & 255) << 8);
+                instrumentPaletteCycle[i] = linksawakening.rom.RomUtil.decodeRgb555(rgb555);
+            }
             for (int i = 0; i < instrumentWarpSprites.length; i++) {
                 instrumentWarpSprites[i] = romData[6 * 0x4000 + 0x373C + i] & 255;
             }
@@ -2476,6 +2482,16 @@ public final class RoomEntityRuntime {
                 && bowWowState == 0x80) {
                 advanceKidnapWarningKid(entity, frame, linkEntityX, linkEntityY);
                 continue;
+            }
+            if (status == EntityStatus.ACTIVE && entity.type() == 0x39
+                && instrumentParticleKind[entity.slot()] == 0
+                && instrumentPickupState[entity.slot()] < 3
+                && transitionSequenceCounter == 4 && spriteSelection != null) {
+                int[][] palettes = spriteSelection.objectPalettes();
+                int offset = ((frame >> 1) & 0x3C) / 2;
+                palettes[1][2] = instrumentPaletteCycle[offset];
+                palettes[1][3] = instrumentPaletteCycle[offset + 1];
+                spriteSelection = spriteSelection.withObjectPalettes(palettes);
             }
             if (status == EntityStatus.ACTIVE
                 && entity.type() == EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS
@@ -9948,6 +9964,19 @@ public final class RoomEntityRuntime {
         RoomEntity held = withPositionAndVariant(entity, linkEntityX,
             (linkEntityY - 0x0C) & 0xFF, entity.spriteVariant());
         slots[slot] = withZ(held, linkZ & 0xFF);
+    }
+
+    public String instrumentTrace() {
+        StringBuilder trace = new StringBuilder().append(activeMusic ? 1 : 0);
+        for (RoomEntity entity : slots) {
+            if (entity.loaded() && entity.type() == 0x39 && instrumentParticleKind[entity.slot()] == 0) {
+                int slot = entity.slot();
+                trace.append(';').append(slot).append(',').append(instrumentPickupState[slot])
+                    .append(',').append(enemyTransitionCountdown[slot])
+                    .append(',').append(slowTransitionCountdown[slot]);
+            }
+        }
+        return trace.toString();
     }
 
     public InstrumentWarpVisual instrumentWarpVisual() {
