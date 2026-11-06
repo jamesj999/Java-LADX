@@ -33,18 +33,31 @@ try:
         if not line or line.startswith('#'): continue
         button, held, idle = line.split()
         idle = int(idle)
+        pulse_ticks = 0
+        pulse_active = False
         def press():
-            for key in button.split('+'): p.button_press(key)
+            global pulse_active
+            pulse_active = True
+            for key in button.split('+'): p.button_press(key.rstrip('*'))
         def release():
-            for key in button.split('+'): p.button_release(key)
+            global pulse_active
+            pulse_active = False
+            for key in button.split('+'): p.button_release(key.rstrip('*'))
         def tick_frame():
-            global frame
+            global frame, pulse_ticks
+            if pulse_active:
+                for key in button.split('+'):
+                    if key.endswith('*'):
+                        if pulse_ticks % 24 == 8: p.button_release(key[:-1])
+                        elif pulse_ticks > 0 and pulse_ticks % 24 == 0: p.button_press(key[:-1])
+                pulse_ticks += 1
             p.tick()
             trace.append([frame, p.memory[0xfff7], p.memory[0xfff6], p.memory[0xff98],
                           p.memory[0xff99], p.memory[0xc19f] != 0, p.memory[0xdb44], p.memory[0xc124],
                           p.memory[0xc125], p.memory[0xffe7], p.memory[0xff96], p.memory[0xff97],
                           p.memory[0xdb5a], p.memory[0xdb4e],
-                          p.memory[0xffa1], p.memory[0xff9b], p.memory[0xc111]])
+                          p.memory[0xffa1], p.memory[0xff9b], p.memory[0xc111],
+                          p.memory[0xdb00], p.memory[0xdb01]])
             frame += 1
         if '=' in held:
             field, target = held.split('=')

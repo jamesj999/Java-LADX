@@ -9,30 +9,32 @@ import static org.junit.jupiter.api.Assertions.*;
 /** Real game-loop integration, with buttons only after the new-game bootstrap. */
 final class MainOpeningRouteTest {
     @Test
-    void newGameCanReachBeachAndCollectSwordThroughRealInputWithoutStateInjection() throws Exception {
+    void newGameCanCollectSwordAndReachForestThroughRealInputWithoutStateInjection() throws Exception {
         Main.initializeHeadlessNewGame();
         var checkpoints = new ArrayList<Main.HeadlessState>();
-        for (String line : Files.readAllLines(Path.of("../tools/opening/sword-route.tsv"))) {
+        for (String line : Files.readAllLines(Path.of("../tools/opening/forest-route.tsv"))) {
             if (line.isBlank() || line.startsWith("#")) continue;
             String[] fields = line.split("\\s+");
             int idle = Integer.parseInt(fields[2]);
             if (fields[1].contains("=")) {
-                Main.headlessButton(fields[0], true);
+                Main.headlessButton(fields[0].replace("*", ""), true);
                 int ticks = 0;
                 while (!OpeningRouteCapture.reached(fields[0], fields[1], Main.headlessState())) {
                     assertTrue(++ticks < 2000, "Route blocked: " + line + " " + Main.headlessState());
+                    OpeningRouteCapture.pulseButtons(fields[0], ticks - 1);
                     Main.headlessFrame();
                 }
-                Main.headlessButton(fields[0], false);
+                Main.headlessButton(fields[0].replace("*", ""), false);
                 do {
                     assertTrue(++ticks < 2500, "Transition stuck: " + line);
                     Main.headlessFrame();
                 } while (Main.headlessState().loading());
             }
             int held = fields[1].contains("=") ? 0 : Integer.parseInt(fields[1]);
-            if (held > 0) Main.headlessButton(fields[0], true);
+            if (held > 0) Main.headlessButton(fields[0].replace("*", ""), true);
             for (int tick = 0; tick < held + idle; tick++) {
-                if (tick == held && held > 0) Main.headlessButton(fields[0], false);
+                if (tick == held && held > 0) Main.headlessButton(fields[0].replace("*", ""), false);
+                if (tick < held) OpeningRouteCapture.pulseButtons(fields[0], tick);
                 Main.headlessFrame();
             }
             checkpoints.add(Main.headlessState());
@@ -69,7 +71,7 @@ final class MainOpeningRouteTest {
         assertTrue(pickup.text().contains("Sword!"));
         assertTrue(pickup.y() >= 80 && pickup.y() <= 82,
             "Source pickup hitbox/cadence; sprite-top-left coordinates collect a full tile too low");
-        var sword = checkpoints.getLast();
+        var sword = checkpoints.get(68);
         assertEquals(0xF2, sword.room());
         assertEquals(1, sword.sword());
         assertEquals(0, sword.urchins(), "The acquisition spin must hit the nearby urchin before sword ownership");
@@ -77,5 +79,14 @@ final class MainOpeningRouteTest {
         assertFalse(sword.dialog());
         assertFalse(sword.loading());
         assertTrue(sword.health() > 0);
+        var forest = checkpoints.getLast();
+        assertEquals(0, forest.map());
+        assertEquals(0x80, forest.room());
+        assertEquals(1, forest.sword());
+        assertEquals(1, forest.shield());
+        assertTrue(forest.health() > 0, "Return route must reach the forest alive");
+        assertTrue(forest.dialog());
+        assertTrue(forest.text().startsWith("Hoot!"));
+        assertFalse(forest.loading());
     }
 }

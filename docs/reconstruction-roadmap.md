@@ -3149,3 +3149,32 @@ of scope.
   `docs/validation/acquisition-spin-combat-2026-11-06.html`.
 - The earlier health/animation-phase/pickup-position differences remain; this
   resolves the missing combat behavior, not full-frame or full-game parity.
+
+## Continuous return to the forest entrance — 2026-11-06
+
+- Extended the shared normal-input replay to 100 checkpoints: sword acquisition,
+  return stairways via D0/D1/C1, bush cutting, village return, and the forest owl
+  in room 80. Both the original ROM and the actual Java Main loop reach the owl
+  alive with sword and shield. No post-bootstrap scene or RAM injection is used.
+- Added repeat-button syntax (`a*`: eight frames pressed, sixteen released) to
+  both capture runners and the Main integration test. The original inventory
+  slots are now observed in the trace: DB00/B = shield (4), DB01/A = sword (1).
+  The return uses shield pulses and sword pulses separately; simultaneous held
+  shield and repeated sword input is not used to clear bushes.
+- The northbound route uses stairways and goes around one-way ledges; reversing
+  the southbound coordinates is not a traversable route. Faster Java loading
+  remains accepted and checkpoint conditions wait for each transition to finish.
+- All 2,309 tests pass, including the expanded real-input Main integration.
+  Original checkpoint metadata is in `java/src/test/resources/opening/forest/`.
+  Visual evidence: `docs/validation/continuous-forest-entrance-2026-11-06.html`.
+  Eight of 100 full-frame checkpoints match exactly, with 4,597 pixels maximum
+  difference; this remains diagnostic evidence, not a visual-parity pass.
+- The forest endpoint has 16 HP in the original and 12 HP in Java, and Y=127
+  versus 128. Owl animation/text phase also differs. Combat, transition origins,
+  and phase-aware comparisons remain open. The forest quest itself, Tail Cave,
+  and the rest of the game still require continuous verification.
+- Reproduce with `tools/opening/capture.py --route tools/opening/forest-route.tsv
+  --output java/build/forest-route`, then `gradle -p java captureOpeningRoute
+  -PopeningRoute=../tools/opening/forest-route.tsv -PopeningOutput=build/forest-route`,
+  and `tools/opening/compare.py --output java/build/forest-route` in the configured
+  PyBoy/Pillow/NumPy environment. The comparison exits nonzero for pixel differences.

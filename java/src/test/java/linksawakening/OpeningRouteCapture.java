@@ -20,14 +20,15 @@ public final class OpeningRouteCapture {
             String[] fields = line.split("\\s+");
             int idle = Integer.parseInt(fields[2]);
             if (fields[1].contains("=")) {
-                Main.headlessButton(fields[0], true);
+                Main.headlessButton(fields[0].replace("*", ""), true);
                 int ticks = 0;
                 while (!reached(fields[0], fields[1], Main.headlessState())) {
                     if (++ticks > 2000) throw new IllegalStateException("Route blocked: " + line + " " + Main.headlessState());
+                    pulseButtons(fields[0], ticks - 1);
                     rgba = Main.headlessFrame();
                     appendTrace(trace, frame++);
                 }
-                Main.headlessButton(fields[0], false);
+                Main.headlessButton(fields[0].replace("*", ""), false);
                 do {
                     if (++ticks > 2500) throw new IllegalStateException("Transition did not finish: " + line);
                     rgba = Main.headlessFrame();
@@ -35,9 +36,10 @@ public final class OpeningRouteCapture {
                 } while (Main.headlessState().loading());
             }
             int held = fields[1].contains("=") ? 0 : Integer.parseInt(fields[1]);
-            if (held > 0) Main.headlessButton(fields[0], true);
+            if (held > 0) Main.headlessButton(fields[0].replace("*", ""), true);
             for (int tick = 0; tick < held + idle; tick++) {
-                if (tick == held && held > 0) Main.headlessButton(fields[0], false);
+                if (tick == held && held > 0) Main.headlessButton(fields[0].replace("*", ""), false);
+                if (tick < held) pulseButtons(fields[0], tick);
                 rgba = Main.headlessFrame();
                 appendTrace(trace, frame++);
             }
@@ -49,6 +51,15 @@ public final class OpeningRouteCapture {
         }
         Files.writeString(out.resolve("java-trace.tsv"), trace);
     }
+    static void pulseButtons(String buttons, int tick) {
+        for (String button : buttons.split("\\+")) {
+            if (!button.endsWith("*")) continue;
+            String key = button.substring(0, button.length() - 1);
+            if (tick % 24 == 8) Main.headlessButton(key, false);
+            else if (tick > 0 && tick % 24 == 0) Main.headlessButton(key, true);
+        }
+    }
+
     static boolean reached(String button, String condition, Main.HeadlessState s) {
         String[] parts = condition.split("=");
         int target = Integer.decode(parts[1]);
