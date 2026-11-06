@@ -3323,3 +3323,35 @@ of scope.
   progress snapshot. Preserve the distinction between dungeon minimaps and
   the instrument panel (bank2:$6183-$619E), and account for inventory palette
   cycling. Death flow, raccoon/Tail Key, and all later progression remain open.
+
+## Inventory instrument panel and state-aligned visual capture — 2026-11-06
+
+- Implemented LoadInstrumentsBG from ROM position/number/tile tables at
+  $01:6BCF/$6BD7/$6BDF. Bit 1 of each existing dungeon progress flag selects
+  the four-tile instrument picture; other flags retain the numbered placeholder.
+  Main supplies the active room and persistent dungeon progress each frame.
+  Dungeons 0–7 and Color Dungeon retain the separate minimap path; the Egg,
+  caves, houses, and outdoors show instruments, as at $02:6183-$619E.
+- Inventory rendering uses its own ROM-loaded tile snapshot for instruments
+  and menu OAM, preserving gameplay's shared tiles. Added the 16-phase,
+  eight-tick instrument palette cycle ($20:5E75/$5EB5) and the blinking
+  PUSH SELECT prompt/arrows ($20:62DE) from $35:4000 menu sprites.
+- Corrected inventory OBJ palette offset from $80 to $40: the source contains
+  eight BG palettes followed immediately by eight OBJ palettes. The old offset
+  read trading-item data as object colors. Tests check the red navigation
+  color as well as ROM-driven positions, ownership changes, cycle cadence,
+  and exclusion from dungeon minimap areas. All 2,318 tests pass.
+- Added `inventorytick` replay checkpoints and a no-button wait. The new
+  `tools/opening/inventory-route.tsv` ends at matching palette tick 9 in both
+  games (target tick 8 plus the normal release frame), after the same 173
+  progression checkpoints. No engine delay or state injection is introduced.
+- Fresh headless original/Java captures have 16 full-frame differing pixels,
+  confined to x97–102/y9–14: original rupees 4 versus Java 1. The entire
+  instrument panel, arrows, cursor and mushroom match in this sample.
+  Metadata: `java/src/test/resources/opening/inventory/`; evidence:
+  `docs/validation/inventory-instrument-panel-2026-11-06.html`.
+- Full progression replay still uses nine explicit ROM combat variants; it
+  is not combat parity. Select status behavior, dungeon minimaps, non-empty
+  quest-item displays and collected-instrument gameplay remain unverified.
+  Death flow and the rest of the quest remain production blockers. Next:
+  witch powder tutorial, forest return, raccoon transformation and Tail Key.

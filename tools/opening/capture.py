@@ -44,11 +44,13 @@ try:
         def press():
             global pulse_active
             pulse_active = True
-            for key in button.split('+'): p.button_press(key.rstrip('*'))
+            for key in button.split('+'):
+                if key != 'none': p.button_press(key.rstrip('*'))
         def release():
             global pulse_active
             pulse_active = False
-            for key in button.split('+'): p.button_release(key.rstrip('*'))
+            for key in button.split('+'):
+                if key != 'none': p.button_release(key.rstrip('*'))
         def tick_frame():
             global frame, pulse_ticks
             if pulse_active:
@@ -70,9 +72,11 @@ try:
         if '=' in held:
             field, target = held.split('=')
             target = int(target, 0)
-            address = {'room': 0xfff6, 'x': 0xff98, 'y': 0xff99, 'dialog': 0xc19f, 'sword': 0xdb4e}[field]
+            address = {'room': 0xfff6, 'x': 0xff98, 'y': 0xff99, 'dialog': 0xc19f, 'sword': 0xdb4e, 'inventorytick': 0xde06}[field]
             def reached():
                 value = p.memory[address]
+                if field == 'inventorytick':
+                    value += (p.memory[0xde07] // 4) * 8
                 if field == 'dialog': return (value != 0) == bool(target)
                 if field not in ('x', 'y'): return value == target
                 return value <= target if button.split('+')[0] in ('left', 'up') else value >= target

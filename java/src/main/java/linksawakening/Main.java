@@ -255,6 +255,7 @@ public class Main {
     }
 
     static void headlessButton(String button, boolean pressed) {
+        if (button.equals("none")) return;
         if (button.contains("+")) {
             for (String part : button.split("\\+")) headlessButton(part, pressed);
             return;
@@ -284,11 +285,11 @@ public class Main {
             link.romEntityX(), link.romEntityY(), dialogController.isActive(),
             dialogController.isWaitingForPageAdvance(), dialogController.visibleText(),
             playerState.shieldLevel(), playerState.health(), playerState.swordLevel(), (int) roomSession.activeRoom().entities().loadedEntities().stream()
-                .filter(entity -> entity.type() == 0xC5 && entity.status() == linksawakening.world.EntityStatus.ACTIVE).count(), playerState.hasToadstool(), playerState.magicPowderCount(), scrollController.isActive() || transitionController.isInputBlocked());
+                .filter(entity -> entity.type() == 0xC5 && entity.status() == linksawakening.world.EntityStatus.ACTIVE).count(), playerState.hasToadstool(), playerState.magicPowderCount(), inventoryMenu.instrumentPaletteTick(), scrollController.isActive() || transitionController.isInputBlocked());
     }
 
     record HeadlessState(int frame, int map, int room, int x, int y,
-                         boolean dialog, boolean pageWait, String text, int shield, int health, int sword, int urchins, boolean toadstool, int powder, boolean loading) {}
+                         boolean dialog, boolean pageWait, String text, int shield, int health, int sword, int urchins, boolean toadstool, int powder, int inventoryTick, boolean loading) {}
 
     private static void loadROM() {
         try (InputStream is = Main.class.getClassLoader().getResourceAsStream("rom/azle.gbc")) {
@@ -2282,6 +2283,10 @@ public class Main {
     }
 
     private static void composeFrameBuffer() {
+        if (inventoryMenu != null && roomSession != null && roomSession.activeRoom() != null) {
+            inventoryMenu.setWorldContext(roomSession.activeRoom().mapCategory() != Warp.CATEGORY_OVERWORLD,
+                roomSession.activeRoom().mapId(), roomSession.dungeonProgressFlagsSnapshot());
+        }
         frameSceneBuilder.build(currentGameFrameState()).drawTo(indexedDisplayBuffer, gpu);
     }
 

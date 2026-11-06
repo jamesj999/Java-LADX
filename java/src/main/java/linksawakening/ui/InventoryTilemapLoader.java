@@ -14,7 +14,7 @@ public final class InventoryTilemapLoader {
     private static final int INVENTORY_PALETTES_BANK = 0x20;
     private static final int INVENTORY_PALETTES_ADDR = 0x5D61;
     private static final int INVENTORY_BG_PALETTE_COUNT = 8;
-    private static final int INVENTORY_OBJECT_PALETTE_OFFSET = 0x80;
+    private static final int INVENTORY_OBJECT_PALETTE_OFFSET = 0x40;
     private static final int INVENTORY_OBJECT_PALETTE_COUNT = 8;
     private static final int OCARINA_POPUP_BANK = 0x20;
     private static final int OCARINA_POPUP_ADDR = 0x604B;

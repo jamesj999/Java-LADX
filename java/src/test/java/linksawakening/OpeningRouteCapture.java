@@ -72,6 +72,7 @@ public final class OpeningRouteCapture {
             case "room" -> s.room();
             case "dialog" -> s.dialog() ? 1 : 0;
             case "sword" -> s.sword();
+            case "inventorytick" -> s.inventoryTick();
             case "x" -> s.x();
             case "y" -> s.y();
             default -> throw new IllegalArgumentException(condition);

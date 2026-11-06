@@ -41,6 +41,10 @@ public final class InventoryMenu {
     private final OcarinaPopupRenderer ocarinaPopupRenderer;
     private final byte[] romData;
     private boolean ocarinaTilesLoaded;
+    private final InventoryInstrumentPanel instrumentPanel;
+    private byte[] instrumentFlags = new byte[8];
+    private boolean showInstruments = true;
+    private int instrumentPaletteFrame;
 
     private int windowY = WINDOW_Y_CLOSED;
     private int subscreenScrollIncrement = CLOSED_INCREMENT;
@@ -73,6 +77,7 @@ public final class InventoryMenu {
         this.ocarinaSongMenu = new OcarinaSongMenu(playerState, this.soundSink);
         this.ocarinaPopupRenderer = new OcarinaPopupRenderer(tilemapLoader.ocarinaPopupOam());
         this.romData = romData;
+        instrumentPanel = romData == null ? null : new InventoryInstrumentPanel(romData);
     }
 
     /**
@@ -98,6 +103,7 @@ public final class InventoryMenu {
             return;
         }
         boolean opening = isFullyClosed();
+        if (opening) instrumentPaletteFrame = 0;
         subscreenScrollIncrement = -subscreenScrollIncrement;
         inventoryAppearing = true;
         soundSink.play(opening ? GameplaySoundEvent.INVENTORY_OPEN : GameplaySoundEvent.INVENTORY_CLOSE);
@@ -123,6 +129,7 @@ public final class InventoryMenu {
             }
         }
         if (isFullyOpen()) {
+            instrumentPaletteFrame = (instrumentPaletteFrame + 1) & 127;
             cursorFrameCounter = (cursorFrameCounter + 1) & 0xFF;
         }
     }
@@ -222,6 +229,17 @@ public final class InventoryMenu {
         }
     }
 
+    public int instrumentPaletteTick() {
+        return instrumentPaletteFrame;
+    }
+
+    public void setWorldContext(boolean indoor, int mapId, byte[] dungeonProgress) {
+        if (dungeonProgress.length != 8) throw new IllegalArgumentException("Eight instrument flags required");
+        // $02:6183-$619E: dungeons 0..7 and Color Dungeon use a minimap.
+        showInstruments = !indoor || (mapId >= 8 && mapId != 0xFF);
+        instrumentFlags = dungeonProgress.clone();
+    }
+
     public void render(byte[] displayBuffer, GPU gpu) {
         render(displayBuffer, gpu, null);
     }
@@ -239,17 +257,29 @@ public final class InventoryMenu {
             return;
         }
 
+        int[][] inventoryPalettes = tilemapLoader.palettes();
+        if (instrumentPanel != null && showInstruments && !isFullyClosed()) {
+            inventoryPalettes = instrumentPanel.palettes(inventoryPalettes, instrumentPaletteFrame);
+        }
         TilemapRenderer.render(
             displayBuffer,
             gpu,
             tilemap,
             attrmap,
-            isFullyClosed() && roomPalettes != null ? roomPalettes : tilemapLoader.palettes(),
+            isFullyClosed() && roomPalettes != null ? roomPalettes : inventoryPalettes,
             InventoryTilemapLoader.WIDTH,
             InventoryTilemapLoader.HEIGHT,
             0,
             offsetY
         );
+
+        if (instrumentPanel != null && showInstruments && !isFullyClosed()) {
+            instrumentPanel.render(displayBuffer, attrmap, inventoryPalettes, instrumentFlags, offsetY);
+        }
+
+        if (instrumentPanel != null && isFullyOpen()) {
+            instrumentPanel.renderNavigation(displayBuffer, tilemapLoader.objectPalettes(), instrumentPaletteFrame);
+        }
 
         if (ocarinaSongMenu.isVisible()) {
             if (romData != null && !ocarinaTilesLoaded) {
