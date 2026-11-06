@@ -1623,6 +1623,12 @@ final class RoomSessionTest {
         }
         session.tickEntities(832, 0x50, 0x60);
         assertEquals(0x150, session.consumeEntityDialogRequests().getFirst().globalDialogId());
+        InstrumentWarpVisual visual = session.renderSnapshot().instrumentWarp();
+        assertEquals(31, visual.backgroundFade());
+        assertEquals(31, visual.objectFade());
+        assertEquals(9, visual.commandBatches());
+        assertEquals(0x7F, visual.tiles()[359]);
+        assertEquals(1, visual.attributes()[359]); // Shipped ROM uses palette 1.
         session.setEntityDialogActive(true);
         for (int frame = 833; frame <= 932; frame++) {
             session.tickEntities(frame, 0x50, 0x60);

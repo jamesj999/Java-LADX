@@ -643,6 +643,11 @@ public final class RoomEntityRuntime {
         new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final int[] instrumentPickupState =
         new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] instrumentBackgroundFade = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] instrumentObjectFade = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] instrumentHintBatches = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] instrumentHintTiles = new int[20 * 18];
+    private final int[] instrumentHintAttributes = new int[20 * 18];
     private final int[] instrumentWarpFadeStep = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] instrumentHintCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] instrumentHintOpened = new boolean[EntityRoomLoader.MAX_ENTITIES];
@@ -1189,6 +1194,16 @@ public final class RoomEntityRuntime {
         this.enemyCombatTables = enemyCombatTables;
         this.chestContentsTable = chestContentsTable;
         this.romTables = romTables;
+        if (romData != null) {
+            // Eighteen fixed repeat commands, two rows per controller frame.
+            // Shipped ROM symbols: Data_007_6493=$6493, Data_007_64F6=$64DB.
+            for (int row = 0; row < 18; row++) {
+                int tile = romData[7 * 0x4000 + 0x2493 + row * 4 + 3] & 255;
+                int attr = romData[7 * 0x4000 + 0x24DB + row * 4 + 3] & 255;
+                java.util.Arrays.fill(instrumentHintTiles, row * 20, (row + 1) * 20, tile);
+                java.util.Arrays.fill(instrumentHintAttributes, row * 20, (row + 1) * 20, attr);
+            }
+        }
         this.warpMotion = romData == null ? null : new WarpMotion(romData);
         this.hookshotChainOam = initial.hookshotChainOam();
         this.pincerBodyOam = initial.pincerBodyOam();
@@ -9598,6 +9613,7 @@ public final class RoomEntityRuntime {
         instrumentPickupSequenceActive[slot] = true;
         instrumentPickupState[slot] = 0;
         instrumentWarpFadeStep[slot] = 0;
+        instrumentBackgroundFade[slot] = instrumentObjectFade[slot] = instrumentHintBatches[slot] = 0;
         instrumentHintCountdown[slot] = 0;
         instrumentHintOpened[slot] = false;
         instrumentPickupSparklesPending[slot] = true;
@@ -9885,6 +9901,7 @@ public final class RoomEntityRuntime {
             // $03:5E29: the warp controller advances its fade every eight
             // frames, then starts the fullscreen hint controller ($07:6523).
             if (instrumentHintCountdown[slot] > 0) {
+                instrumentHintBatches[slot] = Math.min(9, instrumentHintBatches[slot] + 1);
                 if (--instrumentHintCountdown[slot] == 0 && !instrumentHintOpened[slot]) {
                     instrumentHintOpened[slot] = true;
                     pendingDialogRequests.add(new DialogRequest(1, 0x50 + (entityMapId & 0xFF)));
@@ -9898,6 +9915,16 @@ public final class RoomEntityRuntime {
                         EntityCombatEvent.SoundChannel.NOISE, 0x2C));
                 }
                 if (step == 0x18) instrumentHintCountdown[slot] = 0x60;
+            }
+            // func_020_6D0E raises RGB555 channels by one on even frames.
+            // BG starts at private state 5; OBJ starts at state 15.
+            int fadeStep = instrumentWarpFadeStep[slot];
+            if (slowTransitionCountdown[slot] < 0x50 && fadeStep <= 0x19
+                && (frameCounter & 1) == 0) {
+                if (fadeStep >= 5) instrumentBackgroundFade[slot] =
+                    Math.min(31, instrumentBackgroundFade[slot] + 1);
+                if (fadeStep >= 15) instrumentObjectFade[slot] =
+                    Math.min(31, instrumentObjectFade[slot] + 1);
             }
             if (slowTransitionCountdown[slot] == 0) {
                 instrumentPickupState[slot] = 4;
@@ -9913,6 +9940,17 @@ public final class RoomEntityRuntime {
         RoomEntity held = withPositionAndVariant(entity, linkEntityX,
             (linkEntityY - 0x0C) & 0xFF, entity.spriteVariant());
         slots[slot] = withZ(held, linkZ & 0xFF);
+    }
+
+    public InstrumentWarpVisual instrumentWarpVisual() {
+        for (int slot = 0; slot < instrumentPickupState.length; slot++) {
+            if (instrumentPickupSequenceActive[slot] && instrumentPickupState[slot] == 3) {
+                return new InstrumentWarpVisual(instrumentBackgroundFade[slot],
+                    instrumentObjectFade[slot], instrumentHintBatches[slot],
+                    instrumentHintTiles, instrumentHintAttributes);
+            }
+        }
+        return null;
     }
 
     private void spawnInstrumentParticle(RoomEntity source, int offsetIndex, int variant) {

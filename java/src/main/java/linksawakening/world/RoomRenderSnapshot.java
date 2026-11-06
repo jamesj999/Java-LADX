@@ -1,7 +1,11 @@
 package linksawakening.world;
 
 public record RoomRenderSnapshot(int[] tileIds, int[] tileAttrs, int[][] palettes,
-                                 RoomEntitySnapshot entities) {
+                                 RoomEntitySnapshot entities, InstrumentWarpVisual instrumentWarp) {
+
+    public RoomRenderSnapshot(int[] tiles, int[] attrs, int[][] palettes, RoomEntitySnapshot entities) {
+        this(tiles, attrs, palettes, entities, null);
+    }
 
     public RoomRenderSnapshot(int[] tileIds, int[] tileAttrs, int[][] palettes) {
         this(tileIds, tileAttrs, palettes, null);

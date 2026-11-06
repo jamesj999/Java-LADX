@@ -804,7 +804,10 @@ public final class RoomSession {
     }
 
     public RoomRenderSnapshot renderSnapshot() {
-        return activeRoom == null ? null : activeRoom.renderSnapshot();
+        if (activeRoom == null) return null;
+        RoomRenderSnapshot snapshot = activeRoom.renderSnapshot();
+        return new RoomRenderSnapshot(snapshot.tileIds(), snapshot.tileAttrs(), snapshot.palettes(),
+            snapshot.entities(), entityRuntime == null ? null : entityRuntime.instrumentWarpVisual());
     }
 
     /**
