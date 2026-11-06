@@ -326,6 +326,7 @@ final class RoomTransitionCoordinatorTest {
         assertEquals(0xAB, objectAt(session, 0x34));
         assertEquals(0xAB, objectAt(session, 0x35));
         assertEquals(0x08, session.activeRoom().shutterDoorMask() & 0x08);
+        for (int tick = 0; tick < 9; tick++) tickInteractiveEntities(session, tick, 0x40, 0x50);
         int closedEastDoorObject = objectAt(session, 0x39);
         int[] closedEastDoorTiles = roomObjectTiles(session, 0x39);
         assertEquals(0x3B, closedEastDoorObject);
@@ -1777,6 +1778,11 @@ final class RoomTransitionCoordinatorTest {
             .filter(warp -> warp.destMap() == 0x00 && warp.destRoom() == 0x35)
             .findFirst().orElseThrow();
         assertEquals(hideoutExit, session.activeRoom().firstWarp());
+        // A room load reconstructs shutters; the ordinary frame resolves its
+        // kill-all event before Link can leave through the south entrance.
+        session.tickEntitiesWithProjectileEvents(frame++, link.romEntityX(), link.romEntityY(),
+            0, 0, Link.DIRECTION_DOWN, false);
+        assertEquals(0, session.activeRoom().shutterDoorMask(), session.activeRoom().entities().loadedEntities().toString());
         assertTrue(session.activeRoom().indoorHasSouthEntrance());
         walkToAndExitIndoorFrontDoor(
             coordinator, transition, collision, link);
@@ -2402,12 +2408,11 @@ final class RoomTransitionCoordinatorTest {
         walkToAndCrossIndoorBoundary(
             coordinator, transition, scroll, collision, link, ScrollController.LEFT);
         assertEquals(0x31, session.currentRoomId());
-        // The right shutter was opened by room $31's torch event. Reloading
-        // must preserve both the source room's right-door bit and room $32's
-        // adjacent left-door bit, as ConfigureRoomObjects does in the ROM.
+        // The doorway stays open on entry; its shutter closes only once
+        // Link is inside, independently of the minimap's directional bits.
         assertEquals(0x01, session.indoorRoomStatusForTest(0x01, 0x31) & 0x01);
         assertEquals(0x02, session.indoorRoomStatusForTest(0x01, 0x32) & 0x02);
-        assertEquals(0x00, session.activeRoom().shutterDoorMask());
+        assertEquals(0x08, session.activeRoom().shutterDoorMask());
         assertEquals(0x0B, objectAt(session, 0x39));
         assertEquals(0x0C, objectAt(session, 0x49));
         // Room $31's west key door is the last Small Key gate in this route.
@@ -2585,6 +2590,25 @@ final class RoomTransitionCoordinatorTest {
             DungeonItemState.STONE_BEAK_INDEX]);
         assertEquals(0, session.currentDungeonItemFlagsSnapshot()[
             DungeonItemState.SMALL_KEYS_INDEX]);
+
+        // The chest does not solve room $2E's kill-all trigger. Knock its
+        // surviving Beetle into the trench before using the south shutter.
+        for (int hit = 0; hit < 64 && session.activeRoomEventForTest() != 0; hit++) {
+            RoomEntity beetle = session.activeRoom().entities().slots().get(hardhat.slot());
+            int attackY = beetle.y() - 0x20;
+            if (beetle.status() == EntityStatus.ACTIVE) {
+                var beetleHits = session.resolveEntityCombat(beetle.slot() ^ 1,
+                    beetle.x(), attackY, false, true, true,
+                    beetle.x(), 0x10, beetle.y(), 0x10);
+                assertTrue(beetleHits.stream().anyMatch(event -> event.swordHit()),
+                    "Beetle hit " + hit + ": " + beetle + " " + beetleHits);
+            }
+            for (int recoil = 0; recoil < 0x0C; recoil++) {
+                tickInteractiveEntities(session, frame++, beetle.x(), attackY);
+            }
+        }
+        assertEquals(0, session.activeRoomEventForTest(),
+            session.activeRoom().entities().loadedEntities().toString());
 
         // The post-Stone-Beak route backtracks south through room $30, then
         // east across the cleared $31/$32 shutters to the live switch in $33.
@@ -4670,6 +4694,9 @@ final class RoomTransitionCoordinatorTest {
     private static void walkToAndExitIndoorFrontDoor(
             RoomTransitionCoordinator coordinator, TransitionController transition,
             OverworldCollision collision, Link link) {
+        // A downward scroll can leave Link completing the source landing hop.
+        for (int frame = 0; frame < 64 && link.isAirborne(); frame++) link.update();
+        assertFalse(link.isAirborne());
         List<int[]> path = reachableBoundaryPath(
             collision, link.pixelX(), link.pixelY(), ScrollController.DOWN);
         assertNotNull(path, "No collision path to indoor front door\n"

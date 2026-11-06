@@ -2346,6 +2346,8 @@ public class Main {
         if (inventoryMenu != null && roomSession != null && roomSession.activeRoom() != null) {
             inventoryMenu.setWorldContext(roomSession.activeRoom().mapCategory() != Warp.CATEGORY_OVERWORLD,
                 roomSession.activeRoom().mapId(), roomSession.dungeonProgressFlagsSnapshot());
+            inventoryMenu.setDungeonContext(roomSession.currentDungeonItemFlagsSnapshot(),
+                roomSession.dungeonMinimapRoomStatusSnapshot(), roomSession.indoorRoomPositionForSave(), frameCounter);
         }
         frameSceneBuilder.build(currentGameFrameState()).drawTo(indexedDisplayBuffer, gpu);
     }

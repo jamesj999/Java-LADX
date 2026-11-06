@@ -182,6 +182,10 @@ public final class RoomObjectParser {
             roomObjectsArea, warps, shutterDoorMask, staircaseLocation);
     }
 
+    int updatedRoomStatus() {
+        return roomStatusFlags;
+    }
+
     /** Applies one source indoor-door macro to an already decoded room buffer. */
     void applyIndoorDoorMacro(int[] targetRoomObjectsArea, int type, int location) {
         if (targetRoomObjectsArea == null || targetRoomObjectsArea.length < 0x100
@@ -421,6 +425,18 @@ public final class RoomObjectParser {
             // wC18A/wC18B use top, bottom, left, right in bits 0..3.
             shutterDoorMask |= 1 << (idx - 4);
         }
+        // Closed shutters also call the open-door loaders ($00:365B..371E).
+        // Those loaders persist the directional minimap bits through $00:36C4.
+        if (idx >= 4 && idx <= 11) {
+            roomStatusFlags |= switch (idx & 3) {
+                case 0 -> 4;
+                case 1 -> 8;
+                case 2 -> 2;
+                default -> 1;
+            };
+        }
+        if (idx == 16) roomStatusFlags |= 8; // Dungeon entrance, $00:37A2.
+        if (idx == 17) roomStatusFlags |= 1; // Indoor entrance, $00:37CF.
         int[] table = INDOOR_DOOR_MACRO_TABLES[idx];
         applyMacroTable(location, INDOOR_DOOR_MACRO_BANK, table[0],
             INDOOR_DOOR_MACRO_BANK, table[1]);

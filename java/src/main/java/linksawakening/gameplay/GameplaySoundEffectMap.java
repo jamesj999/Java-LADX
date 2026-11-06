@@ -78,6 +78,7 @@ public final class GameplaySoundEffectMap {
             SoundEffectNamespace.NOISE, 0x0C);
         put(effects, catalog, GameplaySoundEvent.WRONG_ANSWER, SoundEffectNamespace.JINGLE, 0x1D);
         put(effects, catalog, GameplaySoundEvent.REVOLVING_DOOR, SoundEffectNamespace.JINGLE, 0x0C);
+        put(effects, catalog, GameplaySoundEvent.DOOR_CLOSED, SoundEffectNamespace.NOISE, 0x10);
         put(effects, catalog, GameplaySoundEvent.DOOR_UNLOCKED, SoundEffectNamespace.NOISE, 0x04);
         put(effects, catalog, GameplaySoundEvent.OPEN_KEY_CAVERN,
             SoundEffectNamespace.NOISE, 0x2A);

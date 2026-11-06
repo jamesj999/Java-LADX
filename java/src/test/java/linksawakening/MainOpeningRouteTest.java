@@ -184,14 +184,14 @@ final class MainOpeningRouteTest {
         // longer guarantees a Piece of Power. It must remain interactive.
         assertFalse(checkpoints.get(334).dialog());
         var switchKey = checkpoints.get(345);
-        assertEquals(502, checkpoints.size());
+        assertEquals(514, checkpoints.size());
         assertEquals(0x13, switchKey.room());
         assertEquals(2, switchKey.smallKeys());
         assertEquals(1, switchKey.compass());
         assertTrue(switchKey.dialog());
         assertTrue(switchKey.text().contains("Small"));
         assertTrue(switchKey.health() > 0);
-        var mapReward = checkpoints.get(384);
+        var mapReward = checkpoints.get(390);
         assertEquals(0x14, mapReward.room());
         assertTrue(mapReward.dialog());
         assertTrue(mapReward.text().contains("a Map!"));
@@ -199,14 +199,14 @@ final class MainOpeningRouteTest {
         assertEquals(1, mapReward.compass());
         assertEquals(2, mapReward.smallKeys());
         assertTrue(mapReward.health() > 0);
-        var afterDoor = checkpoints.get(399);
+        var afterDoor = checkpoints.get(405);
         assertEquals(0x0F, afterDoor.room());
         assertEquals(80, afterDoor.y());
         assertEquals(2, afterDoor.smallKeys());
         assertEquals(1, afterDoor.dungeonMap());
         assertFalse(afterDoor.dialog());
         assertTrue(afterDoor.health() > 0);
-        var thirdKey = checkpoints.get(405);
+        var thirdKey = checkpoints.get(411);
         assertEquals(0x0E, thirdKey.room());
         assertEquals(3, thirdKey.smallKeys());
         assertEquals(1, thirdKey.dungeonMap());
@@ -214,42 +214,42 @@ final class MainOpeningRouteTest {
         assertTrue(thirdKey.dialog());
         assertTrue(thirdKey.text().contains("Small"));
         assertTrue(thirdKey.health() > 0);
-        var pushedBlock = checkpoints.get(434);
+        var pushedBlock = checkpoints.get(440);
         assertEquals(0x04, pushedBlock.room());
         assertTrue(pushedBlock.x() <= 44, "Link must stay behind the moving block");
-        var beetleRoom = checkpoints.get(435);
+        var beetleRoom = checkpoints.get(441);
         assertEquals(0x03, beetleRoom.room());
         assertEquals(2, beetleRoom.smallKeys());
         assertEquals(1, beetleRoom.dungeonMap());
         assertEquals(1, beetleRoom.compass());
         assertTrue(beetleRoom.health() > 0);
-        var clearedBeetles = checkpoints.get(457);
+        var clearedBeetles = checkpoints.get(469);
         assertEquals(0x03, clearedBeetles.room());
         assertTrue(clearedBeetles.health() > 0);
-        assertFalse(entityCheckpoints.get(457).contains("2C:"),
+        assertFalse(entityCheckpoints.get(469).contains("2C:"),
             "Both Spiked Beetles must be defeated before entering the passage");
-        var passage = checkpoints.get(461);
+        var passage = checkpoints.get(473);
         assertEquals(0x19, passage.room());
         assertEquals(0, passage.map());
         assertEquals(2, passage.smallKeys());
         assertTrue(passage.health() > 0);
         assertFalse(passage.loading());
 
-        assertEquals(0x18, checkpoints.get(465).room());
-        assertEquals(112, checkpoints.get(466).y(),
+        assertEquals(0x18, checkpoints.get(477).room());
+        assertEquals(112, checkpoints.get(478).y(),
             "Crossing the side-view platform gap must fall to the lower floor");
-        assertEquals(0x01, checkpoints.get(468).room());
-        var feather = checkpoints.get(476);
+        assertEquals(0x01, checkpoints.get(480).room());
+        var feather = checkpoints.get(488);
         assertEquals(0x1D, feather.room());
         assertTrue(feather.dialog());
         assertTrue(feather.text().contains("Roc's Feather"));
         assertTrue(Main.headlessHasInventoryItem(
             linksawakening.state.PlayerState.INVENTORY_ROCS_FEATHER));
-        assertEquals(0x18, checkpoints.get(494).room());
-        assertEquals(47, checkpoints.get(494).y());
-        assertEquals(110, checkpoints.get(495).x());
-        assertEquals(64, checkpoints.get(495).y());
-        assertEquals(2, entityCheckpoints.get(496).split("9F:", -1).length - 1,
+        assertEquals(0x18, checkpoints.get(506).room());
+        assertEquals(47, checkpoints.get(506).y());
+        assertEquals(110, checkpoints.get(507).x());
+        assertEquals(64, checkpoints.get(507).y());
+        assertEquals(2, entityCheckpoints.get(508).split("9F:", -1).length - 1,
             "Goombas respawn after the Feather staircase trip");
         assertEquals(2, entityCheckpoints.getLast().split("2C:", -1).length - 1,
             "Spiked Beetles respawn after returning upstairs");

@@ -42,6 +42,10 @@ public final class InventoryMenu {
     private final byte[] romData;
     private boolean ocarinaTilesLoaded;
     private final InventoryInstrumentPanel instrumentPanel;
+    private final InventoryDungeonPanel dungeonPanel;
+    private int dungeonMapId, dungeonPosition = -1, dungeonFrame;
+    private boolean dungeonCollapsed;
+    private byte[] dungeonItems = new byte[5], dungeonRooms = new byte[64];
     private byte[] instrumentFlags = new byte[8];
     private boolean showInstruments = true;
     private int instrumentPaletteFrame;
@@ -78,6 +82,7 @@ public final class InventoryMenu {
         this.ocarinaPopupRenderer = new OcarinaPopupRenderer(tilemapLoader.ocarinaPopupOam());
         this.romData = romData;
         instrumentPanel = romData == null ? null : new InventoryInstrumentPanel(romData);
+        dungeonPanel = romData == null ? null : new InventoryDungeonPanel(romData);
     }
 
     /**
@@ -238,6 +243,15 @@ public final class InventoryMenu {
         // $02:6183-$619E: dungeons 0..7 and Color Dungeon use a minimap.
         showInstruments = !indoor || (mapId >= 8 && mapId != 0xFF);
         instrumentFlags = dungeonProgress.clone();
+        dungeonMapId = mapId;
+        dungeonCollapsed = (dungeonProgress[6] & 4) != 0;
+    }
+
+    public void setDungeonContext(byte[] items, byte[] rooms, int position, int frame) {
+        dungeonItems = items.clone();
+        dungeonRooms = rooms.clone();
+        dungeonPosition = position;
+        dungeonFrame = frame;
     }
 
     public void render(byte[] displayBuffer, GPU gpu) {
@@ -252,6 +266,8 @@ public final class InventoryMenu {
         boolean cursorVisible = isFullyOpen() && (cursorFrameCounter & 0x10) == 0;
         InventorySubscreenOverlay.apply(tilemap, attrmap, playerState, cursorSlot, cursorVisible);
 
+        if (dungeonPanel != null && !showInstruments && !isFullyClosed())
+            dungeonPanel.apply(tilemap, attrmap, dungeonMapId, dungeonCollapsed, dungeonItems, dungeonRooms);
         int offsetY = windowY;
         if (offsetY >= Framebuffer.HEIGHT) {
             return;
@@ -276,6 +292,10 @@ public final class InventoryMenu {
         if (instrumentPanel != null && showInstruments && !isFullyClosed()) {
             instrumentPanel.render(displayBuffer, attrmap, inventoryPalettes, instrumentFlags, offsetY);
         }
+
+        if (dungeonPanel != null && !showInstruments && !isFullyClosed())
+            dungeonPanel.render(displayBuffer, tilemap, attrmap, inventoryPalettes, offsetY,
+                dungeonMapId, dungeonPosition, dungeonFrame, tilemapLoader.objectPalettes());
 
         if (instrumentPanel != null && isFullyOpen()) {
             instrumentPanel.renderNavigation(displayBuffer, tilemapLoader.objectPalettes(), instrumentPaletteFrame);

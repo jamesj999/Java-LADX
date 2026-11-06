@@ -327,6 +327,10 @@ public final class RoomSession {
     /** Defers trigger-$07's common effect until the frame after settlement. */
     private boolean pushedBlocksTriggerEffectPending;
     private boolean worldLinkMotionBlockPending;
+    private int pendingShutterCloseMask, closedShutterMask;
+    private int shutterCloseDirection = -1, shutterCloseTicks, shutterCloseLocation = -1;
+    private boolean shutterCloseStarted;
+    private final java.util.Map<Integer, Integer> shutterTileOverrides = new java.util.HashMap<>();
     private int dungeonTitleMessageCountdown;
     private int tailCaveKeyholeCountdown;
     private boolean tailCaveFinalMotionBlockPending;
@@ -541,6 +545,9 @@ public final class RoomSession {
         clearTransientRoomState();
         recentRoomEntityClears.visit(roomId);
         dungeonItemState.loadForMap(mapId, true);
+        // LoadRoom $00:3162: side-view passages do not mark the map visited.
+        if (mapCategory != Warp.CATEGORY_SIDESCROLL)
+            indoorStatusTableForMap(mapId)[roomId] |= (byte) 0x80;
         activeRoomEvent = dungeonRoomEventTable.eventFor(mapId, roomId);
         gpu.loadIndoorTiles(romData, mapId, roomId, mapCategory == Warp.CATEGORY_SIDESCROLL);
         LoadedRoom room = roomLoader.loadIndoor(
@@ -639,6 +646,20 @@ public final class RoomSession {
             return -1;
         }
         return indoorMapPosition;
+    }
+
+    /** Room-status bytes in the active dungeon's 8x8 ROM map order. */
+    public byte[] dungeonMinimapRoomStatusSnapshot() {
+        byte[] result = new byte[64];
+        if (activeRoom == null) return result;
+        int offset = indoorMapLayoutOffset(activeRoom.mapId());
+        if (offset < 0) return result;
+        byte[] status = indoorStatusTableForMap(activeRoom.mapId());
+        for (int i = 0; i < result.length; i++) {
+            int room = Byte.toUnsignedInt(romData[offset + i]);
+            if (room < status.length) result[i] = status[room];
+        }
+        return result;
     }
 
     public byte[] overworldRoomStatusSnapshot() {
@@ -2333,7 +2354,7 @@ public final class RoomSession {
             activeRoom.roomId(),
             activeRoom.indoorHasSouthEntrance(),
             activeRoom.hasWarps(),
-            activeRoom.shutterDoorMask(),
+            closedShutterMask,
             linkX,
             linkY,
             activeRoom.mapId(),
@@ -2376,12 +2397,8 @@ public final class RoomSession {
                 && ((activeRoomEvent & EVENT_EFFECT_MASK) == EVENT_EFFECT_OPEN_LOCKED_DOORS
                     || (activeRoomStatusFlags() & ROOM_STATUS_EVENT_1) == 0);
             if (ordinaryEventPending) {
-                int closedShutterMask = activeRoom.shutterDoorMask()
-                    & ~persistedOpenShutterMask();
-                new RoomObjectParser(romData).applyIndoorShutterClosedState(
-                    activeRoom.roomObjectsArea(), closedShutterMask);
-                activeRoom.retainClosedShutterDoors(closedShutterMask);
-                refreshActiveRoomTilemap();
+                // $02:5E7B keeps entry doors open until Link is inside the room.
+                pendingShutterCloseMask = activeRoom.shutterDoorMask();
             } else {
                 openActiveRoomShutterDoors();
             }
@@ -2545,6 +2562,10 @@ public final class RoomSession {
     }
 
     private void clearTransientRoomState() {
+        pendingShutterCloseMask = closedShutterMask = shutterCloseTicks = 0;
+        shutterCloseDirection = shutterCloseLocation = -1;
+        shutterCloseStarted = false;
+        shutterTileOverrides.clear();
         if (transientVfxSystem != null) {
             transientVfxSystem.clear();
         }
@@ -3827,6 +3848,7 @@ public final class RoomSession {
     /** Executes the source's first common dungeon-event path used by Tail Cave. */
     private void tickRoomEvent(int linkEntityX, int linkEntityY) {
         tickIndoorKeyDoorAnimation();
+        if (tickShutterClosing()) return;
         tickSwitchButton(linkEntityX, linkEntityY);
         tickRoomEventChestReveal(linkEntityX, linkEntityY);
         tickRoomEventStairReveal();
@@ -3865,6 +3887,14 @@ public final class RoomSession {
             colorShellSoundSink.play(GameplaySoundEvent.PUZZLE_SOLVED);
         }
         if (!roomEventEffectExecuted) {
+            if ((effect == EVENT_EFFECT_OPEN_LOCKED_DOORS || effect == EVENT_EFFECT_CLEAR_MIDBOSS)
+                && !shutterCloseStarted && pendingShutterCloseMask != 0
+                && ((linkEntityX - 0x11) & 255) < 0x7E
+                && ((linkEntityY - 0x16) & 255) < 0x5E) {
+                shutterCloseStarted = true;
+                colorShellSoundSink.play(GameplaySoundEvent.DOOR_CLOSED);
+                tickShutterClosing();
+            }
             return;
         }
         if (effect == EVENT_EFFECT_REVEAL_CHEST) {
@@ -4195,6 +4225,54 @@ public final class RoomSession {
         applyBombedBlockTileOverrides();
         applyBombedCaveDoorTileOverrides();
         applyRetainedTorchTiles();
+        shutterTileOverrides.forEach((index, tile) -> activeRoom.tileIds()[index] = tile);
+    }
+
+    /** $02:599D selects each shutter; $02:5C04 closes it over eight frames. */
+    private boolean tickShutterClosing() {
+        if (!shutterCloseStarted || activeRoom == null) return false;
+        if (shutterCloseDirection < 0) {
+            if (pendingShutterCloseMask == 0) return false;
+            shutterCloseDirection = Integer.numberOfTrailingZeros(pendingShutterCloseMask);
+            pendingShutterCloseMask &= ~(1 << shutterCloseDirection);
+            shutterCloseLocation = new RoomObjectParser(romData).indoorShutterLocation(
+                activeRoom.roomObjectsArea(), shutterCloseDirection);
+            shutterCloseTicks = 0;
+            return true;
+        }
+        worldLinkMotionBlockPending = true;
+        if (shutterCloseLocation >= 0) {
+            int direction = shutterCloseDirection;
+            int left = (shutterCloseLocation & 15) * 16
+                + Byte.toUnsignedInt(romData[RomBank.romOffset(2, 0x5BE0 + direction + 4)]);
+            int top = (shutterCloseLocation >>> 4) * 16;
+            int source = RomBank.romOffset(2, 0x5BC4 + direction * 4);
+            int rowOffset = RomBank.romOffset(2, 0x5BE8 + direction + 4);
+            for (int row = 0; row < 2; row++) {
+                int y = top + Byte.toUnsignedInt(romData[rowOffset + row * 4]);
+                int index = (y / 8) * RoomConstants.ROOM_TILE_WIDTH + left / 8;
+                for (int col = 0; col < 2; col++) {
+                    int tile = Byte.toUnsignedInt(romData[source + row * 2 + col]);
+                    if (index + col < activeRoom.tileIds().length) {
+                        activeRoom.tileIds()[index + col] = tile;
+                        shutterTileOverrides.put(index + col, tile);
+                    }
+                }
+            }
+        }
+        if (++shutterCloseTicks < 8) return true;
+        int direction = shutterCloseDirection;
+        shutterTileOverrides.clear();
+        new RoomObjectParser(romData).applyIndoorShutterClosedState(
+            activeRoom.roomObjectsArea(), 1 << direction);
+        closedShutterMask |= 1 << direction;
+        // $02:5D21 uses indoor A even for indoor B (the original's bank selection).
+        byte[] status = activeRoom.mapId() == 0xFF ? colorDungeonRoomStatus : indoorARoomStatus;
+        status[activeRoom.roomId()] &= (byte) ~KEY_DOOR_CURRENT_STATUS[direction];
+        shutterCloseDirection = shutterCloseLocation = -1;
+        refreshActiveRoomTilemap();
+        overworldCollision.setRoom(activeRoom.roomObjectsArea());
+        return true;
     }
 
     private void openActiveRoomShutterDoors() {
@@ -4202,6 +4280,9 @@ public final class RoomSession {
     }
 
     private void openActiveRoomShutterDoors(boolean persistDirectionalStatus) {
+        pendingShutterCloseMask = closedShutterMask = 0;
+        shutterCloseDirection = shutterCloseLocation = -1;
+        shutterTileOverrides.clear();
         if (activeRoom == null) {
             return;
         }
@@ -4236,19 +4317,6 @@ public final class RoomSession {
         activeRoom.openShutterDoors();
     }
 
-    private int persistedOpenShutterMask() {
-        int shutterMask = activeRoom.shutterDoorMask();
-        byte[] status = indoorStatusTableForMap(activeRoom.mapId());
-        int roomStatus = Byte.toUnsignedInt(status[activeRoom.roomId()]);
-        int persistedMask = 0;
-        for (int direction = 0; direction < KEY_DOOR_CURRENT_STATUS.length; direction++) {
-            if ((shutterMask & (1 << direction)) != 0
-                && (roomStatus & KEY_DOOR_CURRENT_STATUS[direction]) != 0) {
-                persistedMask |= 1 << direction;
-            }
-        }
-        return persistedMask;
-    }
 
     private RoomEntityObjectSample entityObjectSample(RoomEntity entity) {
         OverworldCollision.GroundInteractionSample sample =

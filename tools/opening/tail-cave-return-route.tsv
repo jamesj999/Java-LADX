@@ -309,7 +309,7 @@ a*+b 120 4
 none smallkeys=1 0
 down y=72 4
 left+a*+b room=0x15 4
-left+a*+b x=88 4
+left+a*+b x=88 10 left+a*+b - 4
 a*+b 360 4
 down+a*+b y=96 4
 left+a*+b x=56 4
@@ -385,6 +385,13 @@ right+a*+b x=136 4
 down+a*+b y=112 4
 right+b 1 0
 a*+b 240 4
+# Finish the remaining Stalfos after the shutter timing correction.
+left x=80 0 none 0 0
+up y=96 0 none 0 0
+up+a* y=32 4 none 0 0
+a* 240 4 none 0 0
+down y=112 4 none 0 0
+right+a* x=137 4 none 0 0
 up+a*+b y=64 4
 up+a*+b dialog=1 120
 a 8 122
@@ -461,6 +468,13 @@ up y=54 0
 up+a* y=40 0
 a* 48 0
 down y=64 0
+# Face the remaining Beetle, flip it with the shield, then strike.
+right x=93 0 none 0 0
+up+b 1 0 none 0 0
+b 120 0 none 0 0
+up+a* y=40 0 none 0 0
+a* 48 0 none 0 0
+down y=64 0 none 0 0
 right x=136 0
 up room=0x19 4
 none 64 0

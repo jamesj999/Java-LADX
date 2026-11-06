@@ -35,13 +35,13 @@ try:
         fields = line.split()
         button, held, idle = fields[:3]
         if len(fields) in (4, 5, 6):
-            button = fields[3]  # Explicit ROM combat input; checkpoint target is unchanged.
+            button = fields[3]  # Explicit ROM input; an optional duration can replace the target.
         elif len(fields) != 3:
             raise ValueError('Expected buttons, target, idle, optional ROM buttons, held frames and idle frames: ' + line)
         # '-' keeps the shared target, allowing only the ROM idle to differ.
         if len(fields) >= 5 and fields[4] != '-':
-            if '=' in held or not fields[4].isdigit():
-                raise ValueError('ROM held-frame override requires a fixed-duration step: ' + line)
+            if not fields[4].isdigit():
+                raise ValueError('ROM held-frame override must be a non-negative integer: ' + line)
             held = fields[4]
         idle = int(fields[5] if len(fields) == 6 else idle)
         pulse_ticks = 0

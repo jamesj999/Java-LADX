@@ -1210,7 +1210,7 @@ final class RoomSessionTest {
     }
 
     @Test
-    void settledTailCaveSingleBlockPersistsTheDoorButNotEvent22() {
+    void settledTailCaveSingleBlockOpensDoorUntilTheRoomReloads() {
         RoomSession session = newSession();
         List<GameplaySoundEvent> sounds = new ArrayList<>();
         session.setColorShellSoundSink(sounds::add);
@@ -1254,11 +1254,11 @@ final class RoomSessionTest {
         assertEquals(0, session.indoorRoomStatusForTest(0x00, 0x04) & 0x10);
         assertEquals(0x02, session.indoorRoomStatusForTest(0x00, 0x04) & 0x02);
         assertEquals(0x01, session.indoorRoomStatusForTest(0x00, 0x03) & 0x01);
-        assertEquals(List.of(GameplaySoundEvent.PUZZLE_SOLVED,
+        assertEquals(List.of(GameplaySoundEvent.DOOR_CLOSED, GameplaySoundEvent.PUZZLE_SOLVED,
             GameplaySoundEvent.DOOR_UNLOCKED), sounds);
 
         session.loadIndoor(0x00, 0x04);
-        assertEquals(0, session.activeRoom().shutterDoorMask());
+        assertNotEquals(0, session.activeRoom().shutterDoorMask());
         assertEquals(0x22, session.activeRoomEventForTest());
     }
 
@@ -1439,7 +1439,42 @@ final class RoomSessionTest {
     }
 
     @Test
-    void persistedShutterStatusReopensOnlyItsRecordedDirection() {
+    void shuttersWaitForLinkToEnterThenCloseEachDoorOverEightFrames() {
+        RoomSession session = newSession();
+        List<GameplaySoundEvent> sounds = new ArrayList<>();
+        session.setColorShellSoundSink(sounds::add);
+        session.loadIndoor(0, 6);
+        int north = RoomConstants.ROOM_OBJECTS_BASE + 0x04;
+        int south = RoomConstants.ROOM_OBJECTS_BASE + 0x74;
+        int openNorth = session.activeRoom().roomObjectsArea()[north];
+        int openSouth = session.activeRoom().roomObjectsArea()[south];
+        for (int frame = 0; frame < 20; frame++) session.tickEntities(frame, 80, 0x15);
+        assertEquals(openNorth, session.activeRoom().roomObjectsArea()[north]);
+        assertTrue(sounds.isEmpty());
+        session.tickEntities(20, 80, 0x16); // Select north shutter at the entry boundary.
+        assertEquals(List.of(GameplaySoundEvent.DOOR_CLOSED), sounds);
+        for (int frame = 21; frame < 28; frame++) {
+            session.tickEntities(frame, 80, 64);
+            assertTrue(session.consumeWorldLinkMotionBlockRequest());
+            assertEquals(openNorth, session.activeRoom().roomObjectsArea()[north]);
+        }
+        session.tickEntities(28, 80, 64);
+        assertEquals(0x35, session.activeRoom().roomObjectsArea()[north]);
+        assertEquals(openSouth, session.activeRoom().roomObjectsArea()[south]);
+        assertEquals(0, session.indoorRoomStatusForTest(0, 6) & 4);
+        session.tickEntities(29, 80, 64); // Select south shutter on a separate frame.
+        for (int frame = 30; frame < 37; frame++) {
+            session.tickEntities(frame, 80, 64);
+            assertEquals(openSouth, session.activeRoom().roomObjectsArea()[south]);
+        }
+        session.tickEntities(37, 80, 64);
+        assertEquals(0x37, session.activeRoom().roomObjectsArea()[south]);
+        assertEquals(0, session.indoorRoomStatusForTest(0, 6) & 8);
+        assertEquals(List.of(GameplaySoundEvent.DOOR_CLOSED), sounds);
+    }
+
+    @Test
+    void minimapExitBitsDoNotBypassAnUnsolvedShutterPuzzle() {
         RoomSession session = newSession();
         byte[] indoorA = new byte[0x100];
         indoorA[0x06] = 0x04;
@@ -1447,16 +1482,17 @@ final class RoomSessionTest {
             new byte[0x100], indoorA, new byte[0x100], new byte[0x20]);
 
         session.loadIndoor(0x00, 0x06);
+        for (int frame = 0; frame < 18; frame++) session.tickEntities(frame, 80, 64);
 
-        assertEquals(0x43, session.activeRoom().roomObjectsArea()[
+        assertEquals(0x35, session.activeRoom().roomObjectsArea()[
             RoomConstants.ROOM_OBJECTS_BASE + 0x04]);
-        assertEquals(0x44, session.activeRoom().roomObjectsArea()[
+        assertEquals(0x36, session.activeRoom().roomObjectsArea()[
             RoomConstants.ROOM_OBJECTS_BASE + 0x05]);
         assertEquals(0x37, session.activeRoom().roomObjectsArea()[
             RoomConstants.ROOM_OBJECTS_BASE + 0x74]);
         assertEquals(0x38, session.activeRoom().roomObjectsArea()[
             RoomConstants.ROOM_OBJECTS_BASE + 0x75]);
-        assertEquals(0x02, session.activeRoom().shutterDoorMask());
+        assertEquals(0x03, session.activeRoom().shutterDoorMask());
     }
 
     @Test
@@ -2610,7 +2646,7 @@ final class RoomSessionTest {
         }
 
         assertEquals(0x3D, session.activeRoom().roomObjectsArea()[areaIndex]);
-        assertEquals(0x04, session.indoorRoomStatusForTest(0x06, 0x18));
+        assertEquals(0x04, session.indoorRoomStatusForTest(0x06, 0x18) & 0x04);
         assertEquals(0x08, session.indoorRoomStatusForTest(0x06, 0x14));
         List<EntityCombatEvent> events = session.consumeEntityEvents();
         assertEquals(1, events.size());
@@ -2649,7 +2685,7 @@ final class RoomSessionTest {
         }
 
         assertEquals(0x3E, session.activeRoom().roomObjectsArea()[areaIndex]);
-        assertEquals(0x02, session.indoorRoomStatusForTest(0x00, 0x0D));
+        assertEquals(0x02, session.indoorRoomStatusForTest(0x00, 0x0D) & 0x02);
         assertEquals(0x01, session.indoorRoomStatusForTest(0x00, 0x0C));
 
         int tileIndex = 3 * 2 * RoomConstants.ROOM_TILE_WIDTH;
@@ -2676,7 +2712,7 @@ final class RoomSessionTest {
         }
 
         assertEquals(0x0D, session.activeRoom().roomObjectsArea()[areaIndex]);
-        assertEquals(0x40, session.indoorRoomStatusForTest(0x0A, 0x45));
+        assertEquals(0x40, session.indoorRoomStatusForTest(0x0A, 0x45) & 0x40);
 
         int tileIndex = 4 * RoomConstants.ROOM_TILE_WIDTH + 4;
         int[] tileIds = session.activeRoom().tileIds();
@@ -3938,6 +3974,7 @@ final class RoomSessionTest {
         session.loadIndoor(0x02, 0x52);
 
         int northDoorIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x04;
+        for (int frame = 0; frame < 9; frame++) session.tickEntities(frame, 80, 64);
         assertEquals(0x2B, session.activeRoomEventForTest());
         assertTrue(session.activeRoom().roomObjectsArea()[northDoorIndex] >= 0x35);
         assertTrue(session.activeRoom().roomObjectsArea()[northDoorIndex] < 0x3D);
@@ -3965,7 +4002,8 @@ final class RoomSessionTest {
         assertTrue(sounds.contains(GameplaySoundEvent.DOOR_UNLOCKED));
 
         session.loadIndoor(0x02, 0x52);
-        assertFalse(session.activeRoom().roomObjectsArea()[northDoorIndex] >= 0x35
+        for (int tick = 0; tick < 9; tick++) session.tickEntities(frame++, 80, 64);
+        assertTrue(session.activeRoom().roomObjectsArea()[northDoorIndex] >= 0x35
             && session.activeRoom().roomObjectsArea()[northDoorIndex] < 0x3D);
     }
 

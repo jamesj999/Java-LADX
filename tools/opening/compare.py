@@ -56,8 +56,8 @@ if checkpoint_count >= 182:
                (178, 'Brewing dialogue'), (179, 'Powder ready'), (180, 'Powder received'), (181, 'Exchange complete')]
     html.append('<p>The forest return has explicit ROM combat-button overrides at '
                 + str(original_run.get('rom_button_overrides', 0))
-                + ' segments because enemy phases differ on arrival. Waypoint targets '
-                'are shared. Both runs remain alive throughout; this does not prove combat parity.</p>')
+                + ' segments because enemy phases differ on arrival. Overrides can include '
+                'extra combat in either runtime. Both runs remain alive throughout; this does not prove combat parity.</p>')
 if checkpoint_count >= 232:
     samples = [(181, 'Powder collected'), (185, 'Brazier tutorial'), (186, 'Tutorial complete'),
                (229, 'Raccoon approach'), (230, 'Transformation dialogue'), (231, 'Forest cleared')]

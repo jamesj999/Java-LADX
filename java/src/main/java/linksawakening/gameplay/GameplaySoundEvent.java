@@ -43,6 +43,7 @@ public enum GameplaySoundEvent {
     BOMB_EXPLOSION,
     WRONG_ANSWER,
     DOOR_UNLOCKED,
+    DOOR_CLOSED,
     REVOLVING_DOOR,
     OPEN_KEY_CAVERN,
     DUNGEON_OPENED,
