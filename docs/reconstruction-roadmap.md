@@ -3474,3 +3474,11 @@ of scope.
 - All 2,333 tests pass.
 - Evidence: validation/tail-cave-recoil-2026-11-06.html and java/src/test/resources/opening/tail-cave-recoil. Final health differs (Java 4, ROM 24); no combat or pixel-parity claim. Faster loading remains accepted.
 - Next: room $14 Map encounter, remaining Tail Cave equipment/boss/instrument, then the rest of the quest. The full game remains unverified and is not production-ready.
+
+
+### Chest reward sprite corruption — 2026-11-06
+
+- User spotted the corrupted Small Key in the prior validation capture; it had been missed in review. The shared chest table was decoded with four-byte pair entries instead of the source RenderActiveEntitySprite two-byte entries ($07:7C5B). Fixed the normal list and both alternate list entries.
+- Added explicit ROM-backed expectations for Small Key $CA/$17, Map $C0/$14, Compass $C2/$15, bracelet and shield alternates.
+- Replayed all 345 checkpoints in Java and PyBoy. The Small Key’s 8×16 region now has zero RGB555 differences (previously 97), and the surrounding 16×24 chest region also matches exactly (previously 178). Full frame still differs by 198 pixels. Evidence: validation/chest-sprite-fix-2026-11-06.html; manifests and metrics: java/src/test/resources/opening/chest-sprite-fix.
+- This corrects a visible rendering defect; the broader game and chest rewards beyond the exercised route are not claimed fully verified. Continue Tail Cave’s Map encounter.

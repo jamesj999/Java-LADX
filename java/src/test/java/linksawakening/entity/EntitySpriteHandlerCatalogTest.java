@@ -145,22 +145,27 @@ final class EntitySpriteHandlerCatalogTest {
             EntitySpriteHandlerCatalog.ENTITY_CHEST_WITH_ITEM,
             EntityRoomLoader.RoomTable.INDOORS_A);
         assertDefinition(ordinary, 0x07, 0x7B57,
-            EntitySpriteDefinition.Shape.PAIR, 0x21, 0);
-        assertPairPrefixBytes(ordinary, new int[][] {
-            {0x82, 0x15, 0x86, 0x15},
-            {0x88, 0x10, 0x8A, 0x10},
-            {0x8C, 0x14, 0x98, 0x16}
-        });
+            EntitySpriteDefinition.Shape.SINGLE, 0x21, 0);
+        // RenderActiveEntitySprite ($07:7C5B): one tile/attribute pair per item.
+        assertEquals(0xCA, ordinary.variant(0x1A).first().tile());
+        assertEquals(0x17, ordinary.variant(0x1A).first().attributes());
+        assertNull(ordinary.variant(0x1A).second());
+        assertEquals(0xC0, ordinary.variant(0x16).first().tile());
+        assertEquals(0x14, ordinary.variant(0x16).first().attributes());
+        assertEquals(0xC2, ordinary.variant(0x17).first().tile());
+        assertEquals(0x15, ordinary.variant(0x17).first().attributes());
 
         EntitySpriteDefinition braceletAlternate = catalog.forChestState(0x05, 0xCE, 0x00);
         assertDefinition(braceletAlternate, 0x07, 0x7B53,
-            EntitySpriteDefinition.Shape.PAIR, 1, 0);
-        assertPairBytes(braceletAlternate, new int[][] {{0x82, 0x17, 0x86, 0x14}});
+            EntitySpriteDefinition.Shape.SINGLE, 2, 0);
+        assertEquals(0x82, braceletAlternate.variant(0).first().tile());
+        assertEquals(0x17, braceletAlternate.variant(0).first().attributes());
 
         EntitySpriteDefinition shieldAlternate = catalog.forChestState(0x06, 0x1A, 0x01);
         assertDefinition(shieldAlternate, 0x07, 0x7B53,
-            EntitySpriteDefinition.Shape.PAIR, 1, 0);
-        assertPairBytes(shieldAlternate, new int[][] {{0x82, 0x17, 0x86, 0x14}});
+            EntitySpriteDefinition.Shape.SINGLE, 2, 0);
+        assertEquals(0x86, shieldAlternate.variant(1).first().tile());
+        assertEquals(0x14, shieldAlternate.variant(1).first().attributes());
     }
 
     @Test

@@ -220,7 +220,7 @@ public final class EntitySpriteHandlerCatalog {
                         EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true))));
         }
         if (entityType == ENTITY_CHEST_WITH_ITEM) {
-            return decodePair(entityType, 0x07, 0x7B57, 0x21, 0);
+            return decodeSingle(entityType, 0x07, 0x7B57, 0x21, 0);
         }
         if (entityType == 0x06) {
             // Unknown011SpriteVariants, used by the transient pushed block.
@@ -580,7 +580,7 @@ public final class EntitySpriteHandlerCatalog {
 
     /**
      * Returns the chest display list selected by the source's two GBC room
-     * exceptions.  The alternate list is still ROM-backed and has one pair;
+     * exceptions. The alternate list contains two single-sprite entries;
      * every other room uses the normal 33-item list.
      */
     public EntitySpriteDefinition forChestState(int mapId, int roomId, int itemVariant) {
@@ -593,9 +593,9 @@ public final class EntitySpriteHandlerCatalog {
         }
         if ((mapId == 0x05 && roomId == 0xCE && itemVariant == 0x00)
             || (mapId == 0x06 && roomId == 0x1A && itemVariant == 0x01)) {
-            return decodePair(ENTITY_CHEST_WITH_ITEM, 0x07, 0x7B53, 1, 0);
+            return decodeSingle(ENTITY_CHEST_WITH_ITEM, 0x07, 0x7B53, 2, 0);
         }
-        return decodePair(ENTITY_CHEST_WITH_ITEM, 0x07, 0x7B57, 0x21, 0);
+        return decodeSingle(ENTITY_CHEST_WITH_ITEM, 0x07, 0x7B57, 0x21, 0);
     }
 
     /** Selects Pokey's bank-$15 body list for its current detached-segment count. */
