@@ -42,6 +42,8 @@ tasks.register('runAudioBrowser', JavaExec) {
 }
 
 test {
+    // MainOpeningRouteTest reads button replay fixtures outside the Java project.
+    inputs.files(fileTree('../tools/opening') { include '*-route.tsv' })
     useJUnitPlatform()
 }
 

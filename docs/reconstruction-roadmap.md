@@ -3500,3 +3500,12 @@ of scope.
 - Both fresh-game normal-input runs complete 399 checkpoints and can move into room $0F, retaining Map, Compass and two Small Keys. One extra ROM input frame explicitly aligns the doorway animation start. All eight doorway samples (389–396, x64–95/y0–23) match at RGB555 precision. Whole-frame/HUD/combat parity remains unproven.
 - All 2,335 tests pass, including sequence duration/input lock and the Main integration through the doorway. Evidence: validation/tail-cave-revolving-door-2026-11-06.html and java/src/test/resources/opening/tail-cave-revolving-door.
 - The separate tail-cave-equipment-route.tsv remains exploratory and is not a passing regression; westward room $0F traversal needs a waypoint around its blocks. Next: third Small Key, Feather, remaining Tail Cave rewards, boss and instrument, then the rest of the quest.
+
+
+### Tail Cave third Small Key — 2026-11-06
+
+- Both fresh-game normal-input runs complete 405 checkpoints through room $0E’s third Small Key chest, retaining the Map and Compass. Main integration asserts three Small Keys and continued survival.
+- Verified the unobstructed key sprite against the ROM: zero differing RGB555 pixels at x68–75/y20–35. A normal 32-frame pause before opening moves the original Spark clear of the reward. Whole-frame difference is 509 pixels; health and enemy phases differ (Java health 8, ROM 16). No full combat/visual parity claim.
+- Declared opening-route TSV files as Gradle test inputs: changing a replay now reruns tests instead of incorrectly treating the previous run as up to date. All 2,335 tests pass.
+- Evidence: validation/tail-cave-third-key-2026-11-06.html and java/src/test/resources/opening/tail-cave-third-key.
+- Next: room $0D traversal, locked north door in $07, movable-block puzzle and Feather passage. The full game remains under verification.

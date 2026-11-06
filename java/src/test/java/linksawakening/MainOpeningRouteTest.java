@@ -12,7 +12,7 @@ final class MainOpeningRouteTest {
     void newGameCanCollectTailCavesKeysCompassAndMap() throws Exception {
         Main.initializeHeadlessNewGame();
         var checkpoints = new ArrayList<Main.HeadlessState>();
-        for (String line : Files.readAllLines(Path.of("../tools/opening/tail-cave-revolving-door-route.tsv"))) {
+        for (String line : Files.readAllLines(Path.of("../tools/opening/tail-cave-third-key-route.tsv"))) {
             if (line.isBlank() || line.startsWith("#")) continue;
             String[] fields = line.split("\\s+");
             int idle = Integer.parseInt(fields[2]);
@@ -182,7 +182,7 @@ final class MainOpeningRouteTest {
         assertFalse(powerUpFinished.dialog());
         assertTrue(powerUpFinished.text().contains("energy flowing"));
         var switchKey = checkpoints.get(344);
-        assertEquals(399, checkpoints.size());
+        assertEquals(405, checkpoints.size());
         assertEquals(0x13, switchKey.room());
         assertEquals(2, switchKey.smallKeys());
         assertEquals(1, switchKey.compass());
@@ -198,13 +198,22 @@ final class MainOpeningRouteTest {
         assertEquals(1, mapReward.compass());
         assertEquals(2, mapReward.smallKeys());
         assertTrue(mapReward.health() > 0);
-        var afterDoor = checkpoints.getLast();
+        var afterDoor = checkpoints.get(398);
         assertEquals(0x0F, afterDoor.room());
         assertEquals(80, afterDoor.y());
         assertEquals(2, afterDoor.smallKeys());
         assertEquals(1, afterDoor.dungeonMap());
         assertFalse(afterDoor.dialog());
         assertTrue(afterDoor.health() > 0);
+        var thirdKey = checkpoints.getLast();
+        assertEquals(0x0E, thirdKey.room());
+        assertEquals(3, thirdKey.smallKeys());
+        assertEquals(1, thirdKey.dungeonMap());
+        assertEquals(1, thirdKey.compass());
+        assertTrue(thirdKey.dialog());
+        assertTrue(thirdKey.text().contains("Small"));
+        assertTrue(thirdKey.health() > 0);
+
 
     }
 
