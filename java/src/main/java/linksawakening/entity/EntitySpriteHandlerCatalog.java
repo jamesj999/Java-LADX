@@ -959,17 +959,14 @@ public final class EntitySpriteHandlerCatalog {
         int tileAddress = 0x4A93 + tileSelector * 2;
         int attributeAddress = 0x4AA3 + tileSelector * 2;
         int firstTile = readByte(0x20, tileAddress);
-        if (firstTile == 0xFF) {
-            // func_020_4AB3 turns the $FF tile sentinel into the ROM's $F0
-            // tile before committing the OAM entry.
-            firstTile = 0xF0;
-        }
         int secondTile = readByte(0x20, tileAddress + 1);
         int firstAttributes = readByte(0x20, attributeAddress);
         int secondAttributes = readByte(0x20, attributeAddress + 1);
         EntitySpriteDefinition.DynamicSprite.TileSource source =
             EntitySpriteDefinition.DynamicSprite.TileSource.GPU;
-        sprites.add(new EntitySpriteDefinition.DynamicSprite(signedByte(yOffset),
+        // $20:4ACF rewinds BC to the OAM X byte and writes $F0 there,
+        // hiding this sprite offscreen. It does not replace its tile number.
+        if (firstTile != 0xFF) sprites.add(new EntitySpriteDefinition.DynamicSprite(signedByte(yOffset),
             signedByte(xOffset), new EntitySpriteDefinition.OamAttribute(
                 firstTile, firstAttributes), source, false));
         sprites.add(new EntitySpriteDefinition.DynamicSprite(signedByte(yOffset),

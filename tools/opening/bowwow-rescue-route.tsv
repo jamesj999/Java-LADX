@@ -784,3 +784,12 @@ right x=40 4
 down y=112 4
 right x=104 4
 up room=0xF0 120
+a* dialog=0 0
+up+a* y=96 0
+right+a* x=104 0
+up+a* y=88 0
+a* 240 0
+left+a* x=80 0
+left+a* x=24 0
+up+a* y=16 0
+up+a* room=0xE0 20
