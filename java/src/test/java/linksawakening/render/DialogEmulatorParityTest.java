@@ -43,6 +43,11 @@ final class DialogEmulatorParityTest {
         verifyScenario("marin-timing", 100);
     }
 
+    @Test
+    void pageScrollAndBothNewLinesMatchEveryEmulatorFrame() throws Exception {
+        verifyScenario("marin-scroll", 220);
+    }
+
     private void verifyScenario(String scenario, int expectedFrames) throws Exception {
         String prefix = "marin".equals(scenario) ? "" : scenario + "/";
         Map<String, String> hashes = new HashMap<>();

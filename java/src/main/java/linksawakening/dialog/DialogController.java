@@ -14,6 +14,11 @@ public final class DialogController {
     private final int lineWidth;
     private boolean romTimed;
     private int openingAge;
+    private int scrollAge = -1;
+    private int scrollBase;
+    private String scrollPrevious = "";
+    private String retainedLine = "";
+    private boolean shiftedPage;
     private String text = "";
     private String playerName = DEFAULT_PLAYER_NAME;
     private int pageStart;
@@ -23,6 +28,7 @@ public final class DialogController {
     private int dialogCooldown;
     private boolean active;
     private boolean waitingForPageAdvance;
+    private int pageWaitAge;
     private boolean choicePrompt;
     private int choiceSelectionIndex;
     private BoxPosition boxPosition = BoxPosition.BOTTOM;
@@ -106,6 +112,10 @@ public final class DialogController {
         this.choiceSelectionIndex = 0;
         this.boxPosition = boxPosition == null ? BoxPosition.BOTTOM : boxPosition;
         openingAge = 0;
+        scrollAge = -1;
+        scrollBase = 0;
+        shiftedPage = false;
+        retainedLine = "";
         pageStart = 0;
         visibleCharactersOnPage = 0;
         visibleNonSpaceCharactersOnPage = 0;
@@ -120,6 +130,13 @@ public final class DialogController {
             openingAge++;
             return;
         }
+        // DialogBeginScrolling shifts eight pixels; DialogFinishScrolling
+        // waits eight frames, then shifts the remaining eight pixels.
+        if (active && scrollAge >= 0) {
+            if (++scrollAge >= 10) scrollAge = -1;
+            return;
+        }
+        if (active && waitingForPageAdvance) pageWaitAge++;
         if (!active || waitingForPageAdvance) {
             return;
         }
@@ -146,11 +163,28 @@ public final class DialogController {
                 soundEvents.add(SoundEvent.TEXT_PRINT);
             }
         }
+        // The ROM also scrolls a full odd final line before checking its terminator.
+        if (romTimed && shiftedPage && visibleCharactersOnPage == lineWidth
+                && currentPageLength() >= lineWidth) {
+            beginScroll(visibleText());
+            scrollBase = lineWidth;
+        }
         enterPageWaitIfNeeded();
     }
 
+    private void beginScroll(String previous) {
+        scrollPrevious = previous;
+        retainedLine = previous.substring(previous.lastIndexOf('\n') + 1);
+        scrollAge = 0;
+        revealTicks = 0;
+    }
+
+    public int textScrollOffset() {
+        return scrollAge > 0 ? 8 : 0;
+    }
+
     public void advance() {
-        if (romTimed && openingAge < 10) return;
+        if (romTimed && (openingAge < 10 || scrollAge >= 0)) return;
         if (!active) {
             return;
         }
@@ -159,12 +193,18 @@ public final class DialogController {
             return;
         }
         if (waitingForPageAdvance) {
+            if (romTimed) {
+                beginScroll(visibleText());
+                shiftedPage = true;
+                scrollBase = 0;
+            }
             pageStart = nextPageStart();
             visibleCharactersOnPage = 0;
             visibleNonSpaceCharactersOnPage = 0;
             revealTicks = 0;
             waitingForPageAdvance = false;
         } else if (visibleCharactersOnPage < currentPageLength()) {
+            if (romTimed) return;
             visibleCharactersOnPage = currentPageLength();
             enterPageWaitIfNeeded();
         } else if (isAtChoicePromptMarker()) {
@@ -179,7 +219,7 @@ public final class DialogController {
     }
 
     public boolean isWaitingForPageAdvance() {
-        return waitingForPageAdvance;
+        return waitingForPageAdvance && (!romTimed || pageWaitAge > 0);
     }
 
     public boolean isChoicePrompt() {
@@ -231,7 +271,12 @@ public final class DialogController {
     }
 
     public String visibleText() {
+        if (scrollAge >= 0) return scrollAge == 0 ? scrollPrevious : retainedLine;
         int end = visibleEnd();
+        if (romTimed && shiftedPage) {
+            String revealed = text.substring(pageStart, end).replace("\n", "");
+            return retainedLine + "\n" + revealed.substring(Math.min(scrollBase, revealed.length()));
+        }
         if (pageStart >= end) {
             return "";
         }
@@ -241,6 +286,7 @@ public final class DialogController {
     private void enterPageWaitIfNeeded() {
         if (!choicePrompt && visibleCharactersOnPage >= currentPageLength() && hasNextPage()) {
             waitingForPageAdvance = true;
+            pageWaitAge = 0;
             soundEvents.add(SoundEvent.DIALOG_BREAK);
         }
     }

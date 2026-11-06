@@ -36,7 +36,7 @@ public final class DialogRenderer {
                 fillRect(buffer, BOX_X, boxY + row * CELL_SIZE, BOX_WIDTH, CELL_SIZE, palette[3]);
             }
         }
-        drawText(buffer, dialog.visibleText(), TEXT_X, boxY + TEXT_Y_OFFSET, palette);
+        drawText(buffer, dialog.visibleText(), TEXT_X, boxY + TEXT_Y_OFFSET + dialog.textScrollOffset(), palette);
     }
 
     private static void drawText(byte[] buffer, String text, int x, int y, int[] palette) {

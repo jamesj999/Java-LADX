@@ -57,7 +57,7 @@ public final class DialogEmulatorCapture {
 
     static void capture(String scenario, String initialClocks, List<String> frames,
                         BiConsumer<String, byte[]> consumer) throws Exception {
-        boolean timedDialog = "marin-timing".equals(scenario);
+        boolean timedDialog = "marin-timing".equals(scenario) || "marin-scroll".equals(scenario);
         boolean bedExit = "bed-exit".equals(scenario);
         boolean inBed = "marin".equals(scenario) || bedExit || timedDialog;
         boolean heldShield = "shield-pose".equals(scenario);
@@ -119,6 +119,7 @@ public final class DialogEmulatorCapture {
             int frame = (firstFrame + targetElapsed) & 255;
             // Match settled pages, not their opening/typewriter/scroll timing.
             if (timedDialog && targetElapsed > 0) dialog.tick();
+            if ("marin-scroll".equals(scenario) && targetElapsed == 102) dialog.advance();
             if (!timedDialog && nextPage != page) {
                 if (page >= 0) dialog.advance();
                 for (int i = 0; i < 128; i++) dialog.tick();

@@ -6,15 +6,15 @@ Install tools/intro/requirements.txt in a virtual environment, then run:
     gradle -p java captureDialog
     python tools/dialog/compare.py
 
-For later checkpoints add --scenario marin-timing, bed-exit, tarin-offer,
+For later checkpoints add --scenario marin-timing, marin-scroll, bed-exit, tarin-offer,
 shield-pose, or tarin-shield
 and pass -PdialogScenario=<scenario> to Gradle. Or run tools/verify_opening.py.
 
 The emulator receives normal buttons and fresh, in-memory save RAM. No game
 memory is injected. Java receives initial animation clocks and capture times,
 never emulator pixels, tiles, palettes or OAM. Dialogue scenarios verify settled
-pages; bed-exit verifies 64 consecutive frames of the hop and landing. Neither
-claims dialogue opening/closing, text reveal or scrolling timing parity.
+pages; marin-timing covers opening/printing, marin-scroll adds a page advance,
+and bed-exit covers the hop and landing. Closing is not yet verified.
 """
 import argparse
 import base64
@@ -69,7 +69,7 @@ def capture(scenario):
                     return
             raise RuntimeError('Dialogue did not end')
 
-        if scenario not in ('marin', 'marin-timing'):
+        if scenario not in ('marin', 'marin-timing', 'marin-scroll'):
             finish_dialog()
             player.tick(30)
             if scenario != 'bed-exit':
@@ -95,18 +95,20 @@ def capture(scenario):
                         else:
                             raise RuntimeError('Tarin did not grant the shield')
                         assert player.memory[0xdb44] == 1
-        if scenario == 'marin-timing':
+        if scenario in ('marin-timing', 'marin-scroll'):
             for _ in range(1000):
                 if player.memory[0xc19f] != 0: break
                 player.tick()
             else: raise RuntimeError('Wake dialog did not open')
         initial = [player.memory[0xffe7], player.memory[0xc3d0]]
-        if scenario in ('bed-exit', 'marin-timing'):
+        if scenario in ('bed-exit', 'marin-timing', 'marin-scroll'):
             if scenario == 'bed-exit':
                 assert player.memory[0xc19f] == 0
                 player.button('right', 1)
             trace = []
-            for frame in range(100 if scenario == 'marin-timing' else 64):
+            for frame in range(220 if scenario == 'marin-scroll' else 100 if scenario == 'marin-timing' else 64):
+                if scenario == 'marin-scroll' and frame == 100:
+                    player.button('a', 8)
                 player.screen.image.save(folder / f'00-{frame:02}.png')
                 rows.append([0, frame, frame, player.memory[0xffe7], 0])
                 trace.append([frame] + [player.memory[a] for a in
@@ -188,12 +190,15 @@ section{margin:16px 0}code{overflow-wrap:anywhere}</style>''',
         'Production Java room, bed, Link, NPC, HUD and dialogue rendering. '
         'One initial NPC clock synchronization and a fixed two-frame OAM display offset. '
         'Java scene/pose setup is checkpoint-based, not a continuous input replay. '
-        'The marin-timing scenario covers box opening and first-page letter reveal; other dialogue '
-        'scenarios cover settled pages. Scrolling, closing, audio and desktop presentation remain '
+        'The marin-timing scenario covers box opening and first-page letter reveal; marin-scroll adds '
+        'one player page advance, both scroll steps and the next two printed lines. Other dialogue '
+        'scenarios cover settled pages. Closing, audio and desktop presentation remain '
         'outside these comparisons.</p>',
         f'<p>{html.escape(info["emulator"])} CGB; fresh in-memory save; normal button input. '
         f'ROM SHA256: <code>{info["rom_sha256"]}</code>.</p>']
-    if scenario == 'marin-timing':
+    if scenario == 'marin-scroll':
+        samples = [(0, frame, f'Scroll frame {frame}') for frame in (102, 103, 112, 144, 154, 190)]
+    elif scenario == 'marin-timing':
         samples = [(0, frame, f'Opening frame {frame}') for frame in (0, 5, 7, 9, 12, 74)]
     elif scenario == 'bed-exit':
         samples = [(0, frame, f'Jump frame {frame}') for frame in (0, 4, 10, 16, 23, 63)]
@@ -222,7 +227,7 @@ section{margin:16px 0}code{overflow-wrap:anywhere}</style>''',
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--capture', action='store_true')
-    parser.add_argument('--scenario', choices=['marin', 'marin-timing', 'bed-exit', 'tarin-offer', 'shield-pose', 'tarin-shield'], default='marin')
+    parser.add_argument('--scenario', choices=['marin', 'marin-scroll', 'marin-timing', 'bed-exit', 'tarin-offer', 'shield-pose', 'tarin-shield'], default='marin')
     args = parser.parse_args()
     if args.scenario != 'marin':
         OUT = OUT / args.scenario

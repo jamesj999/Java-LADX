@@ -3015,3 +3015,20 @@ of scope.
   Evidence: `docs/validation/dialog-opening-emulator-fixes-2026-11-06.html`.
 - Dialogue page scrolling, closing and action handling during letter reveal
   remain the next source-timing work; this milestone does not claim those paths.
+
+## Emulator-verified dialogue page scrolling — 2026-11-06
+
+- Added a fresh-save original-ROM capture with a normal A press on frame 100.
+  All 220 consecutive frames match Java at RGB555 precision, including box
+  opening, first-page printing, both eight-pixel scroll steps, both new lines,
+  and the next arrow wait. No pixel masks or image alignment are used.
+- Gameplay now retains the previous bottom line while the next line prints,
+  waits the source scrolling interval, and automatically scrolls at the odd
+  line boundary. Full odd final lines reproduce the ROM's extra scroll.
+  Action presses during printing no longer instantly fill the page.
+- Added independent emulator hashes and this scenario to the opening runner.
+  All 2,302 tests pass. Evidence:
+  `docs/validation/dialog-scrolling-emulator-fixes-2026-11-06.html`.
+- These remain checkpoint-based production-renderer comparisons. Closing,
+  continuous opening input replay, later gameplay, and production readiness
+  remain outstanding; this milestone does not claim full-game parity.
