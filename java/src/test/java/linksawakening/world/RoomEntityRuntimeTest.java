@@ -7211,6 +7211,27 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void kidnappedBowWowUsesFollowingTilesBeforeRescueEvenDuringDialog() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RoomEntity bowWow = new RoomEntity(0, 0, 0x6D, 0x88, 0x40,
+            EntityStatus.ACTIVE,
+            catalog.forEntityType(0x6D, EntityRoomLoader.RoomTable.INDOORS_B), 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(
+            snapshot(bowWow), true, () -> 0, catalog, new RomEnemyCombatTables(rom));
+        runtime.setBowWowState(0x80);
+        runtime.setDialogActive(true);
+        runtime.tick(0, 0x20, 0x40, () -> 0);
+        assertEquals(0x80, runtime.bowWowState());
+        assertEquals(0x401C, runtime.snapshot().slots().get(0).spriteDefinition().address());
+        assertTrue(runtime.consumePendingDialogRequests().isEmpty());
+
+        runtime.setBowWowState(0);
+        runtime.tick(1, 0x20, 0x40, () -> 0);
+        assertEquals(0x4000, runtime.snapshot().slots().get(0).spriteDefinition().address());
+    }
+
+    @Test
     void kidnappedBowWowDoesNotReleaseFromAnUnrelatedRoomCollision() {
         RoomEntity bowWow = new RoomEntity(0, 0, 0x6D, 0x88, 0x40,
             EntityStatus.ACTIVE, pairDefinition(0x6D, 7), 0);

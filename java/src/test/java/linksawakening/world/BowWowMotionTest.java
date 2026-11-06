@@ -20,6 +20,24 @@ final class BowWowMotionTest {
 
     private static final int ENTITY_BOW_WOW = 0x6D;
 
+    @Test
+    void kidnappedBowWowKeepsHisPenAnchorAndSkipsTheTargetScan() {
+        BowWowMotion motion = new BowWowMotion();
+        RoomEntity initial = bowWowEntity(0, 0x78, 0x40, 0);
+        RoomEntity setup = motion.advanceAfterTimers(initial, 0, 0x10, 0x20, 0,
+            () -> { throw new AssertionError("Setup must not sample RNG"); },
+            null, List.of(initial), type -> true, 0x80).entity();
+        assertEquals(0x7C, setup.x());
+        assertEquals(0x48, setup.y());
+        motion.advanceAfterTimers(setup, 1, 0x10, 0x20, 0,
+            () -> { throw new AssertionError("Kidnapped BowWow must not scan targets"); },
+            null, List.of(setup), type -> true, 0x80);
+        assertEquals(0x7C, motion.targetX(0));
+        assertEquals(0x48, motion.targetY(0));
+        assertEquals(0x10, motion.transitionCountdown(0));
+        assertEquals(-1, motion.targetSlot(0));
+    }
+
     @ParameterizedTest
     @CsvSource({"0, 15, 0", "1, 0, 15"})
     void targetScanSkipsItsOwnSlotAndContinuesToTheEnd(int random, int bowWowSlot, int targetSlot) {

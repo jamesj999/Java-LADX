@@ -1834,7 +1834,10 @@ public final class RoomSession {
                 followingNpcState.marinFollowing(), runtimeBowWowState == 0x01,
                 followingNpcState.instrument4Flags(),
                 followingNpcState.powerBraceletLevel(), followingNpcState.db10());
-            followingNpcRoomNeedsSync = true;
+            // The rescue/return handler changes the existing entity in place.
+            // CreateFollowingNpcEntity runs on room entry, not on this quest
+            // flag write: respawning here teleports BowWow onto Link and
+            // reconstructs every other entity's runtime state.
         }
         if (ocarinaPlaybackCountdown > 0) {
             ocarinaPlaybackCountdown--;

@@ -3771,6 +3771,27 @@ final class RoomSessionTest {
     }
 
     @Test
+    void rescuingBowWowPreservesHisEntitySlotAndPositionDuringDialog() {
+        RoomSession session = newSession();
+        session.setBowWowState(0x80);
+        session.loadIndoor(0x15, 0xE2);
+        session.tickEntities(0, 0x20, 0x40, 0, Link.DIRECTION_RIGHT);
+        RoomEntity before = session.activeRoom().entities().loadedEntities().stream()
+            .filter(entity -> entity.type() == 0x6D).findFirst().orElseThrow();
+        session.tickEntitiesWithProjectileEvents(1, 0x80, 0x40, 0, 0,
+            Link.DIRECTION_RIGHT, 1, false, 1, 0, false, 0, 0, 0, 0, 0, 0);
+        assertEquals(1, session.bowWowState());
+        RoomEntity rescued = session.activeRoom().entities().slots().get(before.slot());
+        session.setEntityDialogActive(true);
+        session.tickEntities(2, 0x80, 0x40, 0, Link.DIRECTION_RIGHT);
+        RoomEntity after = session.activeRoom().entities().slots().get(before.slot());
+        assertEquals(0x6D, after.type());
+        assertEquals(before.sourceLoadOrder(), after.sourceLoadOrder());
+        assertEquals(rescued.x(), after.x());
+        assertEquals(rescued.y(), after.y());
+    }
+
+    @Test
     void kidnappedBowWowSelectsMadamMeowMeowsSourceQuestDialog() {
         RoomSession session = newSession();
         session.setBowWowState(0x80);

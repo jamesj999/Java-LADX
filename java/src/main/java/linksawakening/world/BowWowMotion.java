@@ -66,6 +66,16 @@ final class BowWowMotion {
                                  RoomEntityBackgroundCollision backgroundCollision,
                                  List<RoomEntity> entities,
                                  IntPredicate canEatEntity) {
+        return advanceAfterTimers(entity, frameCounter, linkEntityX, linkEntityY, linkEntityZ,
+            randomByteSupplier, backgroundCollision, entities, canEatEntity, 1);
+    }
+
+    Update advanceAfterTimers(RoomEntity entity, int frameCounter, int linkEntityX,
+                              int linkEntityY, int linkEntityZ,
+                              IntSupplier randomByteSupplier,
+                              RoomEntityBackgroundCollision backgroundCollision,
+                              List<RoomEntity> entities, IntPredicate canEatEntity,
+                              int bowWowState) {
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot);
@@ -81,10 +91,12 @@ final class BowWowMotion {
             return new Update(setup(entity), targetSlot[slot], null);
         }
 
-        targetX[slot] = byteValue(linkEntityX);
-        // Bow-Wow follows hLinkPositionZModified, which the original builds
-        // as hLinkPositionY - hLinkPositionZ before entering this handler.
-        targetY[slot] = byteValue(linkEntityY - linkEntityZ);
+        if (bowWowState != 0x80) {
+            targetX[slot] = byteValue(linkEntityX);
+            // Kidnapped BowWow retains the pen anchor written by setup.
+            // Following BowWow uses hLinkPositionZModified ($05:40E6).
+            targetY[slot] = byteValue(linkEntityY - linkEntityZ);
+        }
 
         boolean wasAboveGround = updateZ(entity.z(), slot);
         int x = entity.x();
@@ -96,8 +108,11 @@ final class BowWowMotion {
             case 0 -> {
                 if (transitionCountdown[slot] == 0) {
                     transitionCountdown[slot] = 0x28;
-                    int selectedTarget = findTarget(entity, linkEntityX, linkEntityY,
-                        randomByteSupplier, entities, canEatEntity);
+                    // $05:4297 skips both target scanning and its RNG read
+                    // while BowWow is chained inside the hideout.
+                    int selectedTarget = bowWowState == 0x80 ? -1
+                        : findTarget(entity, linkEntityX, linkEntityY,
+                            randomByteSupplier, entities, canEatEntity);
                     if (selectedTarget >= 0) {
                         RoomEntity target = entities.get(selectedTarget);
                         targetSlot[slot] = selectedTarget;

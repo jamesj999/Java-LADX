@@ -2029,6 +2029,18 @@ public final class RoomEntityRuntime {
                 if (projectileTimersInteractive) {
                     bowWowMotion.tickTimers(slot);
                 }
+                // $05:4054 selects the following tiles for every nonzero
+                // quest state, including kidnapped ($80), before any gates.
+                int spriteAddress = bowWowState != 0 ? 0x401C : 0x4000;
+                if (spriteHandlers != null
+                    && (entity.spriteDefinition().bank() != 0x05
+                        || entity.spriteDefinition().address() != spriteAddress)) {
+                    entity = withDefinition(entity, bowWowState != 0
+                        ? spriteHandlers.forFollowerEntityType(ENTITY_BOW_WOW)
+                        : spriteHandlers.forEntityType(ENTITY_BOW_WOW,
+                            EntityRoomLoader.RoomTable.OVERWORLD),
+                        entity.spriteVariant());
+                }
                 entity = withVariant(entity, bowWowMotion.selectedVariant(slot));
                 slots[index] = entity;
                 if (!bowWowHandlerInteractive) {
@@ -4807,13 +4819,14 @@ public final class RoomEntityRuntime {
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && (isDynamicFollowingNpc(entity)
-                    || (entity.type() == ENTITY_BOW_WOW && bowWowState == 0x01))) {
+                    || (entity.type() == ENTITY_BOW_WOW && bowWowState != 0))) {
                 if (entity.type() == ENTITY_BOW_WOW) {
                     BowWowMotion.Update bowWowUpdate = bowWowMotion.advanceAfterTimers(
                         entity, frame, linkEntityX, linkEntityY, followingLinkZ,
                         randomByteSupplier, backgroundCollision, Arrays.asList(slots),
                         enemyCombatTables == null
-                            ? type -> false : enemyCombatTables::canBowWowEatEntity);
+                            ? type -> false : enemyCombatTables::canBowWowEatEntity,
+                        bowWowState);
                     updated = bowWowUpdate.entity();
                     if (bowWowUpdate.targetContact() != null) {
                         handleBowWowTargetContact(entity, bowWowUpdate.targetContact(),

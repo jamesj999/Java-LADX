@@ -839,9 +839,9 @@ none 0 0 none 80 0
 left+b* x=52 20
 up+b* y=48 0 none 0 0
 down+b* y=88 0 none 0 0
-b* kingstate=3 0
+none 0 0 b* kingstate=3 0
 up+b y=56 0 up y=56 0
-none kingstate=5 0
+none 0 0 none kingstate=5 0
 down+a* y=72 0 down+a* y=76 0
 a* 96 0
 none 360 0
