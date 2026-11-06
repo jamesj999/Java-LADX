@@ -19,6 +19,41 @@ final class MoldormRuntimeTest {
     private static final int ENTITY_MOLDORM = 0x59;
 
     @Test
+    void introWaitsThroughTransitionsAndInventoryThenFreezesMoldormForDialogue() throws Exception {
+        byte[] rom = loadRom();
+        var catalog = new EntitySpriteHandlerCatalog(rom);
+        var boss = new RoomEntity(0, 0, ENTITY_MOLDORM, 64, 64, EntityStatus.ACTIVE,
+            catalog.forEntityType(ENTITY_MOLDORM, EntityRoomLoader.RoomTable.INDOORS_A), 0);
+        var runtime = RoomEntityRuntime.from(snapshot(boss), true,
+            () -> 0, catalog, new RomEnemyCombatTables(rom), new ChestContentsTable(rom),
+            linksawakening.rom.RomTables.loadFromRom(rom), rom);
+        runtime.setEntityMapIdForTest(0);
+        runtime.setEntityRoomId(6);
+        runtime.setRoomTransitionStateForTest(true);
+        for (int frame = 0; frame < 40; frame++) runtime.tick(frame, 80, 80, () -> 0);
+        assertTrue(runtime.consumePendingDialogRequests().isEmpty());
+        assertEquals(64, runtime.snapshot().slots().getFirst().x());
+        runtime.setRoomTransitionStateForTest(false);
+        runtime.setTalkState(true, 0, 144);
+        for (int frame = 40; frame < 80; frame++) runtime.tick(frame, 80, 80, () -> 0);
+        assertTrue(runtime.consumePendingDialogRequests().isEmpty());
+        runtime.setTalkState(false, 0, 144);
+        for (int frame = 80; frame < 112; frame++) runtime.tick(frame, 80, 80, () -> 0);
+        assertTrue(runtime.consumePendingDialogRequests().isEmpty());
+        var before = runtime.snapshot().slots().getFirst();
+        runtime.tick(112, 80, 80, () -> 0);
+        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, 0xB0)),
+            runtime.consumePendingDialogRequests());
+        assertEquals(before.x(), runtime.snapshot().slots().getFirst().x());
+        assertEquals(before.y(), runtime.snapshot().slots().getFirst().y());
+        runtime.setDialogActive(true);
+        for (int frame = 113; frame < 160; frame++) runtime.tick(frame, 80, 80, () -> 0);
+        assertEquals(before.x(), runtime.snapshot().slots().getFirst().x());
+        assertEquals(before.y(), runtime.snapshot().slots().getFirst().y());
+        assertTrue(runtime.consumePendingDialogRequests().isEmpty());
+    }
+
+    @Test
     void decodesMoldormRectangleAndTailFromRom() throws IOException {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
             .forEntityType(ENTITY_MOLDORM, EntityRoomLoader.RoomTable.INDOORS_A);

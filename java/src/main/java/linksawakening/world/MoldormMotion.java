@@ -89,6 +89,13 @@ public final class MoldormMotion {
         initialized[slot] = true;
     }
 
+    /** EntityInitMoldorm resets only its tail history and movement-noise cadence. */
+    void resetHistory(int slot) {
+        Arrays.fill(historyX[slot], 0);
+        Arrays.fill(historyY[slot], 0);
+        noiseCadence[slot] = 0;
+    }
+
     void clear(int slot) {
         if (slot < 0 || slot >= initialized.length) {
             return;

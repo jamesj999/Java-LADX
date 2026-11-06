@@ -1857,6 +1857,7 @@ public final class RoomEntityRuntime {
         lastRomLinkDirection = romLinkDirection;
         for (int index = slots.length - 1; index >= 0; index--) {
             RoomEntity entity = slots[index];
+            boolean moldormIntroOpenedThisFrame = false;
             boolean rollingBonesHitThisFrame = entity.type() == ENTITY_ROLLING_BONES
                 && rollingBonesSwordHitFrame[index] == frame + 1;
             rollingBonesSwordHitFrame[index] = 0;
@@ -2015,6 +2016,18 @@ public final class RoomEntityRuntime {
                     linkEntityX = (linkEntityX + dx) & 0xFF;
                     linkEntityY = (linkEntityY + dy) & 0xFF;
                     entityInteractionCountdown = 2;
+                }
+            }
+
+            // Moldorm calls BossIntro before dispatching active/death states ($04:56C0).
+            if (!wasInitializing && entity.type() == ENTITY_MOLDORM
+                && !roomTransitionActive && !inventoryAppearing) {
+                BossIntroMotion.Update intro = bossIntroMotion.advance(
+                    options1(entity.slot()), entity.type(), entityMapId, transitionSequenceCounter);
+                if (intro.musicTrack() >= 0) pendingMusicTrack = intro.musicTrack();
+                if (intro.dialogLowId() >= 0) {
+                    pendingDialogRequests.add(new DialogRequest(intro.dialogTableId(), intro.dialogLowId()));
+                    moldormIntroOpenedThisFrame = true;
                 }
             }
 
@@ -3125,6 +3138,16 @@ public final class RoomEntityRuntime {
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_MOLDORM) {
                 int slot = entity.slot();
+                if (!handlerInteractive || countdownBlocksInteraction || moldormIntroOpenedThisFrame) {
+                    if (spriteHandlers != null) {
+                        slots[index] = withDefinition(entity, spriteHandlers.forMoldormState(
+                            moldormMotion.headSpriteVariant(slot), entity.x(),
+                            (entity.y() - entity.z()) & 0xFF,
+                            moldormMotion.currentTailSegments(slot), 0, frame), 0);
+                    }
+                    if (roomTransitionActive) moldormMotion.resetHistory(slot);
+                    continue;
+                }
                 RoomEntityBackgroundInteraction moldormBackgroundInteraction =
                     backgroundInteraction;
                 if (moldormBackgroundInteraction == null && backgroundCollision != null) {
