@@ -9,10 +9,10 @@ import static org.junit.jupiter.api.Assertions.*;
 /** Real game-loop integration, with buttons only after the new-game bootstrap. */
 final class MainOpeningRouteTest {
     @Test
-    void newGameCanCollectSwordAndMushroomThroughRealInputWithoutStateInjection() throws Exception {
+    void newGameCanExchangeMushroomForPowderThroughRealInputWithoutStateInjection() throws Exception {
         Main.initializeHeadlessNewGame();
         var checkpoints = new ArrayList<Main.HeadlessState>();
-        for (String line : Files.readAllLines(Path.of("../tools/opening/mushroom-route.tsv"))) {
+        for (String line : Files.readAllLines(Path.of("../tools/opening/witch-route.tsv"))) {
             if (line.isBlank() || line.startsWith("#")) continue;
             String[] fields = line.split("\\s+");
             int idle = Integer.parseInt(fields[2]);
@@ -22,12 +22,12 @@ final class MainOpeningRouteTest {
                 while (!OpeningRouteCapture.reached(fields[0], fields[1], Main.headlessState())) {
                     assertTrue(++ticks < 2000, "Route blocked: " + line + " " + Main.headlessState());
                     OpeningRouteCapture.pulseButtons(fields[0], ticks - 1);
-                    Main.headlessFrame();
+                    advanceAlive();
                 }
                 Main.headlessButton(fields[0].replace("*", ""), false);
                 do {
                     assertTrue(++ticks < 2500, "Transition stuck: " + line);
-                    Main.headlessFrame();
+                    advanceAlive();
                 } while (Main.headlessState().loading());
             }
             int held = fields[1].contains("=") ? 0 : Integer.parseInt(fields[1]);
@@ -35,7 +35,7 @@ final class MainOpeningRouteTest {
             for (int tick = 0; tick < held + idle; tick++) {
                 if (tick == held && held > 0) Main.headlessButton(fields[0].replace("*", ""), false);
                 if (tick < held) OpeningRouteCapture.pulseButtons(fields[0], tick);
-                Main.headlessFrame();
+                advanceAlive();
             }
             checkpoints.add(Main.headlessState());
         }
@@ -100,7 +100,7 @@ final class MainOpeningRouteTest {
         assertFalse(cave.loading());
         assertTrue(checkpoints.get(127).dialog());
         assertFalse(checkpoints.get(127).toadstool(), "Reward follows the pickup dialogue");
-        var mushroom = checkpoints.getLast();
+        var mushroom = checkpoints.get(128);
         assertEquals(0, mushroom.map());
         assertEquals(0x50, mushroom.room());
         assertEquals(49, mushroom.x());
@@ -109,5 +109,28 @@ final class MainOpeningRouteTest {
         assertTrue(mushroom.health() > 0);
         assertFalse(mushroom.dialog());
         assertFalse(mushroom.loading());
+        var witch = checkpoints.get(171);
+        assertEquals(0x0E, witch.map());
+        assertEquals(0xA2, witch.room());
+        assertTrue(witch.toadstool());
+        assertEquals(0, witch.powder());
+        for (int index : new int[]{176, 177}) {
+            assertTrue(checkpoints.get(index).dialog());
+            assertFalse(checkpoints.get(index).toadstool());
+            assertEquals(0, checkpoints.get(index).powder(), "Reward must follow the ready dialogue");
+        }
+        assertTrue(checkpoints.get(178).dialog());
+        assertEquals(20, checkpoints.get(178).powder());
+        var reward = checkpoints.getLast();
+        assertFalse(reward.dialog());
+        assertFalse(reward.toadstool());
+        assertEquals(20, reward.powder());
+        assertFalse(reward.loading());
+    }
+
+    private static void advanceAlive() {
+        Main.headlessFrame();
+        assertTrue(Main.headlessState().health() > 0,
+            () -> "Route must remain alive throughout: " + Main.headlessState());
     }
 }

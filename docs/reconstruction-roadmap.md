@@ -3259,3 +3259,40 @@ of scope.
   differences; do not interpret an exact-count reduction as permission to
   hide them again. Heart-piece collection itself is still unverified, as are
   the witch/raccoon progression and the remainder of the game.
+
+## Continuous witch exchange and brewing timer — 2026-11-06
+
+- Extended the normal-input replay to 180 checkpoints, returning through the
+  mushroom cave, crossing the northeast forest, equipping the mushroom, and
+  receiving 20 uses of magic powder. Both Main and the original ROM finish
+  alive at (80,86) in indoor map 0E / room A2. Every replay frame now rejects
+  zero health; the Main integration test covers the entire route and the
+  three exchange dialogues and checks that the reward follows the ready text.
+- Fixed the witch's transition timer advancing during dialogue. The source
+  UpdateEntityTimers ($14:4D73) pauses for dialogue, inventory, room transitions,
+  ocarina, and non-world gameplay. The regression failed before the change:
+  holding the first dialogue open for 300 ticks consumed the brew. It now
+  requires all 192 interactive ticks after closing that dialogue.
+- The route has nine explicit original-ROM combat-button overrides. Enemy
+  phases differ on arrival, and identical return-route inputs did not survive
+  in both engines. Targets and checkpoint order remain shared; neither run
+  injects player state or health. This is progression/visual evidence, not
+  combat parity. Faster loading is accepted; artificial stalls are not added.
+- Both capture runners invalidate their completion manifest before starting.
+  Comparison requires matching route hashes and checkpoint counts, preventing
+  a failed replay from silently reusing a previous run's completed metadata.
+- All 2,312 tests pass. Original metadata is in
+  `java/src/test/resources/opening/witch/`; visual evidence is in
+  `docs/validation/continuous-witch-exchange-2026-11-06.html`. Full-frame
+  comparison: 7/180 exact, worst 4,597 pixels; witch entrance 37, inventory
+  1,902, brewing 210, ready 505, powder receipt 630, exchange complete 458.
+- Open production blockers: Java previously allowed continued play at zero
+  health (the replay now rejects this, but gameplay death flow still needs
+  implementation); inventory lacks the right-hand quest/instrument display,
+  mushroom tile replacement, and powder quantity; loot and enemy phases still
+  differ. Next resolve the inventory presentation, then verify powder use,
+  raccoon transformation, Tail Key, and Tail Cave. The rest of the game remains
+  unverified and this milestone does not establish production readiness.
+- Reproduce captures with `tools/opening/witch-route.tsv` and output
+  `java/build/witch-route` (Gradle `build/witch-route`) using the established
+  Python capture, Gradle captureOpeningRoute, and Python compare commands.

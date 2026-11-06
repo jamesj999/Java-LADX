@@ -11,8 +11,14 @@ ROOT = Path(__file__).resolve().parents[2]
 parser = argparse.ArgumentParser()
 parser.add_argument('--output', type=Path, default=ROOT / 'java/build/opening-route')
 OUT = parser.parse_args().output
+original_run = json.loads(OUT.joinpath('emulator.json').read_text())
+java_run = json.loads(OUT.joinpath('java.json').read_text())
+if original_run['route_sha256'] != java_run['route_sha256']:
+    raise ValueError('Captures use different route revisions; rerun both captures')
 rows = []
 checkpoint_count = len(OUT.joinpath('emulator-checkpoints.tsv').read_text().splitlines())
+if checkpoint_count != java_run['checkpoints']:
+    raise ValueError('Capture checkpoint counts differ')
 for index in range(checkpoint_count):
     source = OUT / 'original' / f'{index:02}.png'
     original = np.array(Image.open(source).convert('RGB')) >> 3
@@ -45,6 +51,13 @@ if checkpoint_count >= 111:
     samples = [(16, 'Shield received'), (99, 'Forest owl'), (108, 'Cave approach'), (110, 'Mushroom cave entrance')]
 if checkpoint_count >= 129:
     samples = [(110, 'Cave entrance'), (117, 'Rock puzzle'), (124, 'Doorway approach'), (125, 'Cave exit'), (127, 'Mushroom pickup'), (128, 'Mushroom collected')]
+if checkpoint_count >= 180:
+    samples = [(128, 'Mushroom collected'), (171, 'Witch house'), (172, 'Inventory'),
+               (176, 'Brewing dialogue'), (177, 'Powder ready'), (178, 'Powder received'), (179, 'Exchange complete')]
+    html.append('<p>The forest return has explicit ROM combat-button overrides at '
+                + str(original_run.get('rom_button_overrides', 0))
+                + ' segments because enemy phases differ on arrival. Waypoint targets '
+                'are shared. Both runs remain alive throughout; this does not prove combat parity.</p>')
 for i, label in samples:
     html.append(f'<section><p>{label}: {rows[i]["pixels"]} differing pixels</p><article>')
     for folder, title in [('original', 'Original ROM'), ('ours', 'Java Main loop')]:

@@ -15,6 +15,7 @@ args.add_argument('--output', type=Path, default=ROOT / 'java/build/opening-rout
 args = args.parse_args()
 OUT = args.output
 OUT.joinpath('original').mkdir(parents=True, exist_ok=True)
+OUT.joinpath('emulator.json').unlink(missing_ok=True)
 p = PyBoy(str(ROOT / 'java/src/main/resources/rom/azle.gbc'), window='null',
           sound_emulated=False, cgb=True, ram_file=io.BytesIO(bytes(0x8000)))
 p.set_emulation_speed(0)
@@ -31,7 +32,12 @@ try:
     frame = segment = 0
     for line in args.route.read_text().splitlines():
         if not line or line.startswith('#'): continue
-        button, held, idle = line.split()
+        fields = line.split()
+        button, held, idle = fields[:3]
+        if len(fields) == 4:
+            button = fields[3]  # Explicit ROM combat input; checkpoint target is unchanged.
+        elif len(fields) != 3:
+            raise ValueError('Expected buttons, target, idle, and optional ROM buttons: ' + line)
         idle = int(idle)
         pulse_ticks = 0
         pulse_active = False
@@ -52,12 +58,14 @@ try:
                         elif pulse_ticks > 0 and pulse_ticks % 24 == 0: p.button_press(key[:-1])
                 pulse_ticks += 1
             p.tick()
+            if p.memory[0xdb5a] == 0:
+                raise RuntimeError(f'Link died at frame {frame}, segment {segment}: {line}')
             trace.append([frame, p.memory[0xfff7], p.memory[0xfff6], p.memory[0xff98],
                           p.memory[0xff99], p.memory[0xc19f] != 0, p.memory[0xdb44], p.memory[0xc124],
                           p.memory[0xc125], p.memory[0xffe7], p.memory[0xff96], p.memory[0xff97],
                           p.memory[0xdb5a], p.memory[0xdb4e],
                           p.memory[0xffa1], p.memory[0xff9b], p.memory[0xc111],
-                          p.memory[0xdb00], p.memory[0xdb01], p.memory[0xdb4b]])
+                          p.memory[0xdb00], p.memory[0xdb01], p.memory[0xdb4b], p.memory[0xdb4c]])
             frame += 1
         if '=' in held:
             field, target = held.split('=')
@@ -95,6 +103,8 @@ try:
         'emulator': 'PyBoy ' + importlib.metadata.version('pyboy'),
         'rom_sha256': hashlib.sha256(ROOT.joinpath('java/src/main/resources/rom/azle.gbc').read_bytes()).hexdigest(),
         'route_sha256': hashlib.sha256(args.route.read_bytes()).hexdigest(),
+        'checkpoints': len(checkpoints),
+        'rom_button_overrides': sum(len(line.split()) == 4 for line in args.route.read_text().splitlines() if line and not line.startswith('#')),
         'memory_injection': False, 'save': 'fresh in-memory RAM, never saved',
     }, indent=2))
     OUT.joinpath('emulator-trace.tsv').write_text(''.join('\t'.join(map(str, r))+'\n' for r in trace))

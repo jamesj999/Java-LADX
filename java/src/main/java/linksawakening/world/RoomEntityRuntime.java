@@ -1903,6 +1903,8 @@ public final class RoomEntityRuntime {
             boolean freezeGenieTimers = entity.type() == ENTITY_GENIE
                 && (!gameplayEntityTimersInteractive(creditsGameplay)
                     || witchGotItemPresentationActive());
+            boolean freezeWitchTimers = entity.type() == ENTITY_WITCH
+                && !projectileTimersInteractive;
             boolean freezePowderTimers = entity.type() == ENTITY_MAGIC_POWDER_SPRINKLE
                 && !projectileTimersInteractive;
             boolean freezeBooBuddyTimers = entity.type() == ENTITY_BOO_BUDDY
@@ -1913,6 +1915,7 @@ public final class RoomEntityRuntime {
                 && !freezeThreeOfAKindTimers
                 && !freezeHinoxTimers
                 && !freezeGenieTimers
+                && !freezeWitchTimers
                 && !freezePowderTimers
                 && !freezeBooBuddyTimers
                 && !freezeBowWowTimers
@@ -1920,7 +1923,7 @@ public final class RoomEntityRuntime {
                     && entity.type() != ENTITY_BOO_BUDDY && entity.type() != ENTITY_BOW_WOW);
             if (!freezeTarinTimers && !freezeThreeOfAKindTimers && !freezeHinoxTimers
                 && !freezeGenieTimers && !freezePowderTimers && !freezeBooBuddyTimers
-                && !freezeBowWowTimers) {
+                && !freezeBowWowTimers && !freezeWitchTimers) {
                 decrementEnemyStatusCountdowns(entity.slot());
                 if (entity.type() == ENTITY_GENIE
                     && geniePrivateCountdown1[entity.slot()] > 0) {

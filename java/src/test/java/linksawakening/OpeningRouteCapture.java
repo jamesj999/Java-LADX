@@ -11,6 +11,7 @@ public final class OpeningRouteCapture {
         Path route = Path.of(args[0]);
         Path out = Path.of(args[1]);
         Files.createDirectories(out.resolve("ours"));
+        Files.deleteIfExists(out.resolve("java.json"));
         Main.initializeHeadlessNewGame();
         StringBuilder trace = new StringBuilder();
         int frame = 0, segment = 0;
@@ -50,6 +51,10 @@ public final class OpeningRouteCapture {
             System.out.println(segment + " " + Main.headlessState());
         }
         Files.writeString(out.resolve("java-trace.tsv"), trace);
+        String routeHash = java.util.HexFormat.of().formatHex(
+            java.security.MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(route)));
+        Files.writeString(out.resolve("java.json"),
+            "{\"route_sha256\":\"" + routeHash + "\",\"checkpoints\":" + segment + "}");
     }
     static void pulseButtons(String buttons, int tick) {
         for (String button : buttons.split("\\+")) {
@@ -77,6 +82,7 @@ public final class OpeningRouteCapture {
 
     private static void appendTrace(StringBuilder trace, int frame) {
         var s = Main.headlessState();
+        if (s.health() <= 0) throw new IllegalStateException("Link died at frame " + frame + ": " + s);
         trace.append(frame).append('\t').append(s.map()).append('\t').append(s.room())
             .append('\t').append(s.x()).append('\t').append(s.y()).append('\t')
             .append(s.dialog()).append('\t').append(s.shield()).append('\n');

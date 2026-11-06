@@ -393,15 +393,22 @@ final class RoomSessionTest {
         assertTrue(brewingDialog);
 
         session.setEntityDialogActive(true);
-        tickInteractive(session, frame++, witch);
-        session.setEntityDialogActive(false);
-        boolean readyDialog = false;
-        while (!readyDialog && frame < 0x180) {
+        // A reader may leave this dialogue open longer than the entire brew.
+        for (int tick = 0; tick < 300; tick++) {
             tickInteractive(session, frame++, witch);
-            readyDialog |= session.consumeEntityDialogRequests().stream()
-                .anyMatch(request -> request.globalDialogId() == 0x0FE);
+            assertTrue(session.consumeEntityDialogRequests().isEmpty());
+            assertTrue(session.consumeWitchRewardEvents().isEmpty());
         }
-        assertTrue(readyDialog);
+        session.setEntityDialogActive(false);
+        for (int tick = 1; tick <= 0xC0; tick++) {
+            tickInteractive(session, frame++, witch);
+            var dialogs = session.consumeEntityDialogRequests();
+            if (tick < 0xC0) {
+                assertTrue(dialogs.isEmpty(), "Brewing must wait for 192 interactive frames");
+            } else {
+                assertTrue(dialogs.stream().anyMatch(request -> request.globalDialogId() == 0x0FE));
+            }
+        }
         assertEquals(0x0C, session.consumePendingMusicTrack());
 
         session.setEntityDialogActive(true);
@@ -418,7 +425,7 @@ final class RoomSessionTest {
         boolean powderDialog = false;
         boolean powderHeldPose = false;
         boolean powderMotionBlocked = false;
-        while (!powderDialog && frame < 0x220) {
+        while (!powderDialog && frame < 0x420) {
             tickInteractive(session, frame++, witch);
             powderHeldPose |= !session.consumeLinkHeldItemPoseRequests().isEmpty();
             powderMotionBlocked |= !session.consumeLinkMotionBlockRequests().isEmpty();
