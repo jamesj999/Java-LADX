@@ -227,6 +227,7 @@ public final class InventoryMenu {
     }
 
     public void render(byte[] displayBuffer, GPU gpu, int[][] roomPalettes) {
+        if (romData != null) gpu.updatePowderInventoryTiles(romData, playerState.hasToadstool());
         int[] tilemap = tilemapLoader.copyBaseTilemap();
         int[] attrmap = tilemapLoader.copyAttrmap();
         HudOverlay.apply(tilemap, attrmap, playerState);

@@ -39,9 +39,6 @@ public final class InventorySubscreenOverlay {
     // Column offset from the icon's column to where the closing bracket sits,
     // leaving room for the 2-tile "L-N" level indicator when present.
     private static final int BRACKET_RIGHT_OFFSET = 3;
-    private static final int LEVEL_DASH_TILE = 0xBA;
-    private static final int DIGIT_TILE_BASE = 0xB0;
-    private static final int DEFAULT_ITEM_LEVEL = 1;
 
     private static final int[][] ITEM_TILES = buildItemTiles();
     private InventorySubscreenOverlay() {
@@ -52,7 +49,7 @@ public final class InventorySubscreenOverlay {
         for (int slot = 0; slot < PlayerState.SUBSCREEN_SLOT_COUNT; slot++) {
             int col = slotColumn(slot);
             int row = slotRow(slot);
-            drawItem(tilemap, attrmap, col, row, player.subscreenItem(slot));
+            drawItem(tilemap, attrmap, col, row, player.subscreenItem(slot), player);
         }
         if (cursorVisible) {
             int col = slotColumn(cursorSlot);
@@ -69,18 +66,17 @@ public final class InventorySubscreenOverlay {
         return FIRST_ROW + (slot / 2) * ROW_STRIDE;
     }
 
-    private static void drawItem(int[] tilemap, int[] attrmap, int col, int row, int itemId) {
+    private static void drawItem(int[] tilemap, int[] attrmap, int col, int row, int itemId, PlayerState player) {
         int itemIndex = itemId >= 0 && itemId < ITEM_TILES.length ? itemId : 0;
         int[] tiles = ITEM_TILES[itemIndex];
-        int[] paletteIndexes = InventoryItemPalettes.forItem(itemId);
+        int[] paletteIndexes = InventoryItemPalettes.forItem(itemId, player);
         writeTile(tilemap, col, row,     tiles[0]); // top-left icon
         writeTile(tilemap, col, row + 1, tiles[3]); // bottom-left icon (with L-glyph)
         writeAttr(attrmap, col, row,     paletteIndexes[0]);
         writeAttr(attrmap, col, row + 1, paletteIndexes[1]);
-        if (tiles[4] == LEVEL_DASH_TILE) {
-            writeTile(tilemap, col + 1, row + 1, LEVEL_DASH_TILE);
-            writeTile(tilemap, col + 2, row + 1, DIGIT_TILE_BASE + DEFAULT_ITEM_LEVEL);
-        }
+        int[] numbers = InventoryItemNumbers.tiles(itemId, player);
+        writeTile(tilemap, col + 1, row + 1, numbers[0]);
+        writeTile(tilemap, col + 2, row + 1, numbers[1]);
     }
 
     private static void drawCursor(int[] tilemap, int[] attrmap, int col, int row) {

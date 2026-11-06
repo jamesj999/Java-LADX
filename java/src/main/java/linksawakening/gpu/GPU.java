@@ -151,7 +151,10 @@ public class GPU {
         loadTilesFromROM(romData, INTRO_1_TILES_BANK, INTRO_1_TILES_ADDR, INTRO_1_TILES_COUNT, 0x80);
     }
 
+    private boolean powderIconIsToadstool;
+
     public void loadBaseOverworldTiles(byte[] romData) {
+        powderIconIsToadstool = false;
         currentMapId = 0;
         // Match the game's LoadBaseTiles: copy 0x100 tiles from InventoryEquipmentItemsTiles
         // to vTiles1 (VRAM tile 0x080). This single bulk copy covers equipment items,
@@ -165,6 +168,7 @@ public class GPU {
 
     /** Mirrors LoadBaseTiles (bank0.asm:$2BCF), used before entering an indoor room. */
     public void loadBaseTiles(byte[] romData) {
+        powderIconIsToadstool = false;
         currentMapId = 0;
         loadTilesFromROM(romData, LINK_CHARACTER_TILES_BANK | 0x20,
             LINK_CHARACTER_TILES_ADDR, LINK_CHARACTER_TILES_COUNT, 0x000);
@@ -172,6 +176,13 @@ public class GPU {
             INVENTORY_EQUIPMENT_ITEMS_TILES_ADDR, 0x100, 0x080);
         loadTilesFromROM(romData, INVENTORY_EQUIPMENT_ITEMS_TILES_BANK | 0x20,
             0x47A0, 0x02, 0x0E0);
+    }
+
+    /** ROM $00:1E2B/$1E8D: the mushroom and powder share VRAM $88E0-$88FF. */
+    public void updatePowderInventoryTiles(byte[] romData, boolean hasToadstool) {
+        if (powderIconIsToadstool == hasToadstool) return;
+        loadTilesFromROM(romData, 0x2C, hasToadstool ? 0x68C0 : 0x48E0, 2, 0x08E);
+        powderIconIsToadstool = hasToadstool;
     }
 
     /** Mirrors REPLACE_TILES_GOLDEN_LEAF ($09) at bank0:$1EA1. */

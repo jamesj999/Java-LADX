@@ -3296,3 +3296,30 @@ of scope.
 - Reproduce captures with `tools/opening/witch-route.tsv` and output
   `java/build/witch-route` (Gradle `build/witch-route`) using the established
   Python capture, Gradle captureOpeningRoute, and Python compare commands.
+
+## Mushroom/powder inventory presentation — 2026-11-06
+
+- Added the missing ROM-backed replacement of VRAM $88E0-$88FF: mushroom
+  graphics from $2C:68C0 while owned, powder from $2C:48E0 after exchange.
+  Base tile reloads invalidate the cached replacement so ownership remains
+  visible across indoor/overworld transitions. Mushroom palette selection
+  now follows $20:5BFD (cap palette 2, stem palette 3).
+- HUD and subscreen share the bank-$20 item-number rules: decimal quantities
+  for bombs/arrows/powder, no quantity for the mushroom, actual equipment
+  levels, and selected ocarina song. Level-2 bracelet palettes also follow
+  the source's palette-2 override. Runtime state is no longer shown as a
+  blanket level 1 or omitted powder count.
+- Added regressions for mushroom/base-reload/powder VRAM transitions and
+  HUD/subscreen quantity and upgraded-level agreement. All 2,315 tests pass.
+  Replayed all 180 checkpoints successfully and visually inspected the
+  mushroom icon and the 20-use reward HUD against the unchanged ROM captures.
+  Evidence: `docs/validation/inventory-mushroom-powder-2026-11-06.html`.
+- Remaining full-frame differences at those checkpoints are 1,808 (inventory)
+  and 583 (powder receipt); final exchange is 411. The instrument panel and
+  navigation arrows are still missing, and cursor/enemy phases and loot
+  differ. The entire route remains 7/180 exact, worst 4,597 pixels.
+- Next inventory work is the ROM instrument table at $01:6BCF-$6BE7 and
+  LoadInstrumentsBG; collected flags already live in RoomSession's dungeon
+  progress snapshot. Preserve the distinction between dungeon minimaps and
+  the instrument panel (bank2:$6183-$619E), and account for inventory palette
+  cycling. Death flow, raccoon/Tail Key, and all later progression remain open.

@@ -1,5 +1,7 @@
 package linksawakening.ui;
 
+import linksawakening.state.PlayerState;
+
 /** Palette indexes from the ROM's {@code InventoryItemPaletteIndexes} table. */
 final class InventoryItemPalettes {
 
@@ -19,6 +21,16 @@ final class InventoryItemPalettes {
         {0x03, 0x03}, // MAGIC_POWDER
         {0x02, 0x02}, // BOOMERANG
     };
+
+    static int[] forItem(int itemId, PlayerState player) {
+        if (itemId == PlayerState.INVENTORY_MAGIC_POWDER && player.hasToadstool()) {
+            return new int[]{2, 3}; // $20:5BFD: red cap, brown stem.
+        }
+        if (itemId == PlayerState.INVENTORY_POWER_BRACELET && player.powerBraceletLevel() == 2) {
+            return new int[]{2, 2};
+        }
+        return forItem(itemId);
+    }
 
     private InventoryItemPalettes() {
     }

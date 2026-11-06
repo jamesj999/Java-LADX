@@ -16,8 +16,6 @@ public final class HudOverlay {
     // Tile $BA is the "-" glyph: its presence in bottom-row[1] of the
     // disassembly's InventoryItemTiles table is how leveled items (sword,
     // shield, bracelet) are identified.
-    private static final int LEVEL_DASH_TILE = 0xBA;
-    private static final int DEFAULT_ITEM_LEVEL = 1;
     private static final int ITEM_SLOT_ROW_TOP = 0;
     private static final int ITEM_SLOT_ROW_BOTTOM = 1;
 
@@ -46,13 +44,13 @@ public final class HudOverlay {
     }
 
     public static void apply(int[] tilemap, int[] attrmap, PlayerState player) {
-        patchItemSlot(tilemap, attrmap, B_SLOT_COL, player.itemB());
-        patchItemSlot(tilemap, attrmap, A_SLOT_COL, player.itemA());
+        patchItemSlot(tilemap, attrmap, B_SLOT_COL, player.itemB(), player);
+        patchItemSlot(tilemap, attrmap, A_SLOT_COL, player.itemA(), player);
         patchRupees(tilemap, player.rupees());
         patchHearts(tilemap, player.health(), player.maxHearts());
     }
 
-    private static void patchItemSlot(int[] tilemap, int[] attrmap, int col, int itemId) {
+    private static void patchItemSlot(int[] tilemap, int[] attrmap, int col, int itemId, PlayerState player) {
         // Item icons are 1 tile wide but 2 tiles tall: top-row[0] is the upper
         // half, bottom-row[0] is the lower half (which also contains the "L"
         // glyph for leveled items, merged into the same tile).
@@ -61,14 +59,13 @@ public final class HudOverlay {
         int[] itemTiles = INVENTORY_ITEM_TILES[itemId < INVENTORY_ITEM_TILES.length ? itemId : 0];
         writeTile(tilemap, col, ITEM_SLOT_ROW_TOP,    itemTiles[0]);
         writeTile(tilemap, col, ITEM_SLOT_ROW_BOTTOM, itemTiles[3]);
-        int[] paletteIndexes = InventoryItemPalettes.forItem(itemId);
+        int[] paletteIndexes = InventoryItemPalettes.forItem(itemId, player);
         writePalette(attrmap, col, ITEM_SLOT_ROW_TOP, paletteIndexes[0]);
         writePalette(attrmap, col, ITEM_SLOT_ROW_BOTTOM, paletteIndexes[1]);
 
-        if (itemTiles[4] == LEVEL_DASH_TILE) {
-            writeTile(tilemap, col + 1, ITEM_SLOT_ROW_BOTTOM, LEVEL_DASH_TILE);
-            writeTile(tilemap, col + 2, ITEM_SLOT_ROW_BOTTOM, RUPEE_DIGIT_TILE_BASE + DEFAULT_ITEM_LEVEL);
-        }
+        int[] numbers = InventoryItemNumbers.tiles(itemId, player);
+        writeTile(tilemap, col + 1, ITEM_SLOT_ROW_BOTTOM, numbers[0]);
+        writeTile(tilemap, col + 2, ITEM_SLOT_ROW_BOTTOM, numbers[1]);
     }
 
     private static void patchRupees(int[] tilemap, int rupees) {
