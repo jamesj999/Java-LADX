@@ -234,6 +234,8 @@ final class MainOpeningRouteTest {
         assertFalse(passage.loading());
         assertFalse(Main.headlessEntityPositions().contains("2C:"));
         assertEquals(0x18, checkpoints.get(465).room());
+        assertEquals(112, checkpoints.get(466).y(),
+            "Crossing the side-view platform gap must fall to the lower floor");
         assertEquals(0x01, checkpoints.get(468).room());
         var feather = checkpoints.get(476);
         assertEquals(0x1D, feather.room());

@@ -984,6 +984,7 @@ public class Main {
                 // any Link movement can change the position.
                 if (roomSession != null) {
                     int room = roomSession.currentRoomId();
+                    link.setSideScrolling(roomSession.mapCategory() == Warp.CATEGORY_SIDESCROLL);
                     // $02:6CB6's manual exits precede the normal recoil gate.
                     boolean sideViewManualExit = roomSession.mapCategory() == Warp.CATEGORY_SIDESCROLL
                         && room != 0xE8 && room != 0xF8;
@@ -1127,7 +1128,9 @@ public class Main {
                     romDirectionForLink(link.direction()), link.romEntityZ());
                 var combatEvents = roomSession.resolveEntityCombat(
                     frameCounter, link.romEntityX(), link.romEntityY(),
-                    link.isAirborne(), link.zVelocity(), !debugNoClip,
+                    link.isAirborne(),
+                    roomSession.mapCategory() == Warp.CATEGORY_SIDESCROLL
+                        ? link.romSpeedY() : link.zVelocity(), !debugNoClip,
                     swordBoxForEntityTick.active(), swordBoxForEntityTick.x(),
                     swordBoxForEntityTick.width(), swordBoxForEntityTick.y(),
                     swordBoxForEntityTick.height(), attackContext);

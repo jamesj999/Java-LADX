@@ -208,6 +208,23 @@ public final class Link implements RocsFeather.JumpTarget {
     private boolean standingOnSideViewEntity;
     /** One-frame hLinkSpeedY write supplied by the side-view platform handler. */
     private int sideViewPlatformVerticalSpeedPending = -1;
+    private boolean sideScrolling;
+    private int sideViewModifier;
+    private int sideViewSpeedX;
+    private int sideViewSpeedY;
+    private boolean sideViewGrounded;
+
+    /** Warp entry sets hLinkPhysicsModifier=1 at $00:18F0. */
+    public void setSideScrolling(boolean enabled) {
+        if (sideScrolling == enabled) return;
+        sideScrolling = enabled;
+        sideViewModifier = enabled ? 1 : 0;
+        sideViewSpeedX = sideViewSpeedY = 0;
+        sideViewGrounded = false;
+        airborne = false;
+        zSubPixels = zVelocity = 0;
+    }
+
     private boolean collisionDamageImmune;
     private boolean debugNoClip;
     private int romAnimationStateOverride = -1;
@@ -1248,6 +1265,12 @@ public final class Link implements RocsFeather.JumpTarget {
         airborne = true;
         zSubPixels = 0;
         zVelocity = 0x20;
+        if (sideScrolling) {
+            sideViewSpeedY = (buildJoypadMask() & 3) == 0 ? -22 : -24;
+            sideViewGrounded = false;
+            zVelocity = 0;
+            moveSideViewAndCollide(sideViewSpeedX, sideViewSpeedY, buildJoypadMask());
+        }
         jumpAnimationCounter = 0;
         jumpAnimationFrame = 0;
         soundSink.play(GameplaySoundEvent.ROC_FEATHER_JUMP);
@@ -1294,7 +1317,7 @@ public final class Link implements RocsFeather.JumpTarget {
             swordAcquisitionBaseRomDirection = -1;
             swordAcquisitionAnimationState = -1;
         }
-        if (interactiveMotionBlocked) {
+        if (interactiveMotionBlocked && !(sideScrolling && airborne)) {
             zVelocity = 0;
             movingThisFrame = false;
             walkTickCounter = 0;
@@ -1305,7 +1328,7 @@ public final class Link implements RocsFeather.JumpTarget {
         // 6A94's side-view landing branch clears Link's airborne presentation
         // before the next normal motion update. Main keeps wC147 set through
         // this update and clears it only before the following entity tick.
-        if (standingOnSideViewEntity) {
+        if (standingOnSideViewEntity && !sideScrolling) {
             airborne = false;
             zSubPixels = 0;
             zVelocity = 0;
@@ -1315,6 +1338,11 @@ public final class Link implements RocsFeather.JumpTarget {
 
         if (debugNoClip) {
             updateDebugNoClip();
+            return;
+        }
+
+        if (sideScrolling) {
+            updateSideViewMotion(platformVerticalSpeedForThisUpdate);
             return;
         }
 
@@ -1809,6 +1837,108 @@ public final class Link implements RocsFeather.JumpTarget {
         divingCountdown = 0;
         walkTickCounter = 0;
         walkFrame = 0;
+    }
+
+    /** $02:68B7–6C74: side-view speeds and single-point collision probes. */
+    private void updateSideViewMotion(int platformSpeedY) {
+        int mask = buildJoypadMask();
+        if (!airborne && itemsBlockMotion()) return;
+        boolean recoiling = collisionIgnoreFramesRemaining > 0;
+        boolean ladderFrame = sideViewModifier == 1;
+        if (forcedSpeedPending) {
+            sideViewSpeedX = forcedSpeedX;
+            if (!forcedSpeedXOnly) sideViewSpeedY = forcedSpeedY;
+            forcedSpeedPending = forcedSpeedXOnly = false;
+        }
+        if (recoiling) {
+            collisionIgnoreFramesRemaining--;
+        } else if (sideViewModifier == 1) {
+            airborne = false;
+            sideViewSpeedX = (mask & 3) == 1 ? 8 : (mask & 3) == 2 ? -8 : 0;
+            sideViewSpeedY = (mask & 12) == 4 ? -16 : (mask & 12) == 8 ? 16 : 0;
+            direction = DIRECTION_UP;
+        } else {
+            int targetX = (mask & 3) == 1 ? 16 : (mask & 3) == 2 ? -16 : 0;
+            if (sideViewGrounded || standingOnSideViewEntity) {
+                if (airborne) {
+                    soundSink.play(GameplaySoundEvent.LINK_FOOTSTEP);
+                    if (playerState != null) playerState.setRunningWithPegasusBoots(false);
+                }
+                airborne = false;
+                sideViewSpeedX = targetX;
+            } else {
+                airborne = true;
+                if ((mask & 3) != 0) sideViewSpeedX += Integer.compare(targetX, sideViewSpeedX);
+            }
+            if ((mask & 3) != 0 && !itemsLockFacing())
+                direction = (mask & 1) != 0 ? DIRECTION_RIGHT : DIRECTION_LEFT;
+            if ((mask & 15) == 4) direction = DIRECTION_UP;
+            if ((mask & 15) == 8) direction = DIRECTION_DOWN;
+        }
+        if (platformSpeedY >= 0) sideViewSpeedY = (byte) platformSpeedY;
+        int oldX = subX, oldY = subY;
+        moveSideViewAndCollide(sideViewSpeedX, sideViewSpeedY, mask);
+        int centerPhysics = collision == null ? 0
+            : collision.objectPhysicsFlagAtPoint(romEntityX(), romEntityY() - 5);
+        if (!recoiling) {
+            if (sideViewModifier == 1 && centerPhysics != 0xB1) sideViewModifier = 0;
+            else if (sideViewModifier == 0 && centerPhysics == 0xB1 && (mask & 12) != 0)
+                sideViewModifier = 1;
+        }
+        if (!ladderFrame || recoiling) {
+            if (recoiling) sideViewSpeedY = (byte) (sideViewSpeedY + 3);
+            else if (sideViewSpeedY < 0x40) {
+                sideViewSpeedY++;
+                boolean featherHeld = playerState != null && inputState != null
+                    && (playerState.itemB() == PlayerState.INVENTORY_ROCS_FEATHER
+                        ? inputState.isDown(inputConfig.bKey())
+                        : inputState.isDown(inputConfig.aKey()));
+                if (sideViewSpeedY >= 0 || !featherHeld) sideViewSpeedY++;
+            }
+        }
+        zSubPixels = zVelocity = 0;
+        lastRomSpeedX = sideViewSpeedX & 255;
+        lastRomSpeedY = sideViewSpeedY & 255;
+        movingThisFrame = subX != oldX || subY != oldY;
+        if (movingThisFrame) tickAnimation();
+        else walkTickCounter = walkFrame = 0;
+        // Side-view falling uses the normal airborne pose, not a Z-axis flip.
+        jumpAnimationFrame = 3;
+    }
+
+    private void moveSideViewAndCollide(int speedX, int speedY, int mask) {
+        int oldX = subX, oldY = subY;
+        subX += speedX;
+        subY += speedY;
+        sideViewGrounded = standingOnSideViewEntity;
+        if (collision == null || romEntityX() < 4 || romEntityX() >= 156
+            || romEntityY() < 12 || romEntityY() >= 128) return;
+        int x = romEntityX(), y = romEntityY();
+        if (speedX != 0 && (sideViewSolidAt(x + (speedX > 0 ? 3 : -3), y - 8)
+            || collision.objectIdAtPoint(x + (speedX > 0 ? 3 : -3), y - 8) == 0xFF)) {
+            subX = oldX;
+            romCollisionType |= speedX > 0 ? 1 : 2;
+        }
+        int sampleY = y + (speedY < 0 ? -12 : 0);
+        int object = collision.objectIdAtPoint(x, sampleY);
+        boolean ladderTop = speedY >= 0 && (mask & 8) == 0 && (sampleY & 15) < 3
+            && (object == 0x62 || object == 0x64 || object == 0x66);
+        if (sideViewSolidAt(x, sampleY) || ladderTop) {
+            if (speedY >= 0) {
+                subY = (((y & ~15) - 16) << SUB_PIXEL_SHIFT) | (subY & 15);
+                sideViewSpeedY = 0;
+                sideViewGrounded = true;
+                romCollisionType |= 8;
+            } else {
+                subY = oldY;
+                romCollisionType |= 4;
+            }
+        }
+    }
+
+    private boolean sideViewSolidAt(int x, int y) {
+        int physics = collision.objectPhysicsFlagAtPoint(x, y);
+        return physics == 0x60 || physics == 0x01;
     }
 
     private void tryMoveAxis(int signedSpeed, boolean isXAxis) {
