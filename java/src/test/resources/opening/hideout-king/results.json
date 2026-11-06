@@ -1,0 +1,13 @@
+{
+  "checkpoints": 791,
+  "map": 21,
+  "room": 225,
+  "king_position": [
+    88,
+    96
+  ],
+  "dialog": 401,
+  "java_health": 4,
+  "rom_health": 28,
+  "remaining": "King face graphics and side-door presentation; boss combat/BowWow rescue; combat phase/health differences and remaining game"
+}

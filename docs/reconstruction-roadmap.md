@@ -3729,3 +3729,13 @@ The full 769-checkpoint replay completes again in `/tmp/ladx-bowwow-guard`, with
 Fixed the generated sword display list: at $20:4ACF the ROM decrements the OAM pointer from tile to X and writes $F0, hiding the $FF sentinel sprite offscreen. The catalog incorrectly replaced the tile with $F0 and rendered unrelated artwork. It now omits that invisible entry while preserving the remaining sword/body order. The guard region x90..121/y46..79 at checkpoint 769 has zero RGB555 pixel differences against PyBoy, with the shared sword tiles independently matched to ROM bank $2C from emulator VRAM. All 2,373 tests pass; the existing display-list test now checks the actual visible entries.
 
 Extended `bowwow-rescue-route.tsv` to 778 checkpoints. Both engines defeat the sword guard and enter room $E0, containing four spear Moblins. The exit is at x24 on the north wall; the central statues are not a doorway. Normal controls only. Captures: `/tmp/ladx-hideout-combat3`; persistent manifests and ROM checkpoints: `java/src/test/resources/opening/hideout-guard`; visual evidence: `docs/validation/hideout-guard-2026-11-06.html`. Whole-scene phase differences and unequal health remain; the four-Moblin fight, king and rescue are not yet verified.
+
+### Four-Moblin room and king introduction (2026-11-06)
+
+Extended the fresh-game replay to 791 checkpoints: both engines clear all four spear Moblins in $E0 and enter the king's room $E1 with entity $E4 at (88,96). Normal button input only. The movement route stops jumping near the top-wall torches; repeated airborne movement into that wall stalls in both engines.
+
+The source audit found two missing king rules. ReturnIfNonInteractive_15 ($15:7B0D) now gates its state machine during transitions and other noninteractive states, with a pause/resume regression. At $15:475C the king explicitly clears the dialogue bottom bit: DialogRequest now carries that override, and Main opens Dialog191 at the top independently of Link's position. Existing two-argument requests retain their automatic placement.
+
+Captures: `/tmp/ladx-hideout-four3`; persistent manifests/checkpoints/results: `java/src/test/resources/opening/hideout-king`. Java reaches the boss with health 4 versus ROM 28; differing enemy movement phases and heart-drop collection remain open. The boss fight and BowWow rescue are next, not completed.
+
+Validation: all 2,374 tests pass. The corrected introduction is shown in `docs/validation/hideout-king-2026-11-06.html`. Visual inspection still exposes a black region in the Java king's face and missing side-door presentation relative to the ROM; trace those ROM sprite/room paths before claiming king-scene fidelity.

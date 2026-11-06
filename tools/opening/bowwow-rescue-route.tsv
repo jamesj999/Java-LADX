@@ -793,3 +793,16 @@ left+a* x=80 0
 left+a* x=24 0
 up+a* y=16 0
 up+a* room=0xE0 20
+up+a*+b* y=48 0
+right+a*+b* x=136 0
+down+a*+b* y=88 0
+left+a*+b* x=40 20
+right+a* x=56 0
+up+a* y=72 0
+right+a* x=136 0
+up+a* y=56 0
+left+a* x=48 0
+a* 144 0
+right+a* x=136 0
+down+a* y=64 0
+right+a* room=0xE1 120

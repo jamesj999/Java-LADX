@@ -1793,6 +1793,11 @@ public class Main {
         for (var request : roomSession.consumeEntityDialogRequests()) {
             SignpostDialogRef dialogRef = new SignpostDialogRef(
                 request.tableId(), request.dialogLowId());
+            if (request.forceTop()) {
+                dialogController.openPreformatted(dialogTextLoader.load(dialogRef),
+                    DialogController.BoxPosition.TOP);
+                return;
+            }
             dialogController.openPreformattedForLinkY(
                 dialogTextLoader.load(dialogRef),
                 LinkDialogPosition.dialogYFromTopLeft(link.pixelY()));

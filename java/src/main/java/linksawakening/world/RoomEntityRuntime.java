@@ -1085,7 +1085,8 @@ public final class RoomEntityRuntime {
     }
 
     /** A ROM dialog-table entry requested by an entity handler this frame. */
-    public record DialogRequest(int tableId, int dialogLowId) {
+    public record DialogRequest(int tableId, int dialogLowId, boolean forceTop) {
+        public DialogRequest(int tableId, int dialogLowId) { this(tableId, dialogLowId, false); }
         public DialogRequest {
             if (tableId < 0 || tableId > 2) {
                 throw new IllegalArgumentException("Dialog table id must be 0, 1, or 2");
@@ -4328,7 +4329,7 @@ public final class RoomEntityRuntime {
                     disableEntityWithoutPersistence(entity.slot());
                     continue;
                 }
-                if (dialogActive) {
+                if (!handlerInteractive) {
                     preserveMoblinKingPresentation = true;
                 } else {
                     MoblinKingMotion.Update kingUpdate = moblinKingMotion.advance(
@@ -4363,7 +4364,8 @@ public final class RoomEntityRuntime {
                     }
                     preserveMoblinKingPresentation = true;
                     if (kingUpdate.openIntroDialog()) {
-                        pendingDialogRequests.add(new DialogRequest(1, 0x91));
+                        // $15:475C clears DIALOG_BOX_BOTTOM_BIT after opening Dialog191.
+                        pendingDialogRequests.add(new DialogRequest(1, 0x91, true));
                     }
                     if (kingUpdate.arrowRequest() != null) {
                         projectileLaunchRequests.add(new RoamingEnemyMotion.LaunchRequest(

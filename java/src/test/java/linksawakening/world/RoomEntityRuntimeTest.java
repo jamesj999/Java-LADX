@@ -7031,7 +7031,7 @@ final class RoomEntityRuntimeTest {
         for (int frame = 0; frame < 36; frame++) {
             runtime.tick(frame, 0x30, 0x58, () -> 0);
             openedIntro |= runtime.consumePendingDialogRequests().equals(
-                List.of(new RoomEntityRuntime.DialogRequest(1, 0x91)));
+                List.of(new RoomEntityRuntime.DialogRequest(1, 0x91, true)));
         }
 
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
@@ -7051,6 +7051,22 @@ final class RoomEntityRuntimeTest {
         runtime.tick(0, 0x30, 0x58, () -> 0);
 
         assertEquals(3, runtime.moblinKingState(0));
+    }
+
+    @Test
+    void moblinKingWaitsForRoomTransitionBeforeStartingCharge() {
+        RoomEntity king = new RoomEntity(0, 0, 0xE4, 0x58, 0x58,
+            EntityStatus.ACTIVE, pairDefinition(0xE4, 14), 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(king), true, () -> 0);
+        runtime.setBowWowState(0x80);
+        runtime.setMoblinKingStateForTest(0, 3, 0, 0, 0, 0, 0);
+        runtime.setRoomTransitionStateForTest(true);
+        for (int frame = 0; frame < 60; frame++) runtime.tick(frame, 0x30, 0x58, () -> 0);
+        assertEquals(3, runtime.moblinKingState(0));
+        assertEquals(0x58, runtime.snapshot().slots().get(0).x());
+        runtime.setRoomTransitionStateForTest(false);
+        runtime.tick(60, 0x30, 0x58, () -> 0);
+        assertEquals(4, runtime.moblinKingState(0));
     }
 
     @Test
