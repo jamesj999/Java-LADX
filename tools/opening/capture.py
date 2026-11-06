@@ -21,6 +21,7 @@ p = PyBoy(str(ROOT / 'java/src/main/resources/rom/azle.gbc'), window='null',
 p.set_emulation_speed(0)
 trace = []
 checkpoints = []
+combat_trace = []
 try:
     p.tick(3800)
     p.button('start', 8)
@@ -73,6 +74,10 @@ try:
                           p.memory[0xdb5a], p.memory[0xdb4e],
                           p.memory[0xffa1], p.memory[0xff9b], p.memory[0xc111],
                           p.memory[0xdb00], p.memory[0xdb01], p.memory[0xdb4b], p.memory[0xdb4c], p.memory[0xd851], p.memory[0xdb11], p.memory[0xdbd0], p.memory[0xdbcd], p.memory[0xdbcc], p.memory[0xdbcf], p.memory[0xff9d], p.memory[0xff9e], p.memory[0xc137], p.memory[0xffa2], p.memory[0xffa3], p.memory[0xff9a], p.memory[0xff9b]])
+            if p.memory[0xfff7] == 0 and p.memory[0xfff6] == 0x11:
+                box = [int(p.memory[0xc5b0] != 0)] + list(p.memory[0xc140:0xc144])
+                entities = [[p.memory[0xc3a0+i], p.memory[0xc200+i], p.memory[0xc210+i], p.memory[0xc310+i], p.memory[0xc360+i], p.memory[0xc280+i]] for i in range(16) if p.memory[0xc280+i] and p.memory[0xc3a0+i] in (0x81,0x82)]
+                combat_trace.append(str(frame)+'\t'+';'.join(','.join(map(str,row)) for row in [box]+entities)+'\n')
             frame += 1
         if '=' in held:
             field, target = held.split('=')
@@ -119,6 +124,7 @@ try:
         'rom_button_overrides': sum(len(line.split()) >= 4 for line in args.route.read_text().splitlines() if line and not line.startswith('#')),
         'memory_injection': False, 'save': 'fresh in-memory RAM, never saved',
     }, indent=2))
+    OUT.joinpath('emulator-combat.tsv').write_text(''.join(combat_trace))
     OUT.joinpath('emulator-trace.tsv').write_text(''.join('\t'.join(map(str, r))+'\n' for r in trace))
 finally:
     p.stop(save=False)

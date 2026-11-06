@@ -288,6 +288,18 @@ public class Main {
         return false;
     }
 
+    static String headlessCombatTrace() {
+        Sword sword = equipmentController.activeSword();
+        Sword.CollisionBox box = sword == null ? Sword.CollisionBox.inactive()
+            : sword.enemyCollisionBox(link.romEntityX(), link.romSwordCollisionY(), link.direction());
+        return "%d,%d,%d,%d,%d;%s".formatted(box.active() ? 1 : 0, box.x(), box.width(), box.y(), box.height(),
+            roomSession.activeRoom().entities().loadedEntities().stream()
+                .filter(e -> e.type() == 0x81 || e.type() == 0x82)
+                .map(e -> "%d,%d,%d,%d,%d,%d".formatted(e.type(), e.x(), e.y(), e.z(),
+                    roomSession.entityHealth(e.slot()), e.status() == linksawakening.world.EntityStatus.ACTIVE ? 5 : 1))
+                .collect(java.util.stream.Collectors.joining(";")));
+    }
+
     static String headlessEntityPositions() {
         return roomSession.activeRoom().entities().loadedEntities().stream()
             .map(e -> "%02X:%s@%d,%d".formatted(e.type(), e.status(), e.x(), e.y()))

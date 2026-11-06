@@ -9,11 +9,11 @@ import static org.junit.jupiter.api.Assertions.*;
 /** Real game-loop integration, with buttons only after the new-game bootstrap. */
 final class MainOpeningRouteTest {
     @Test
-    void newGameCanReachRollingBonesWithFeatherAndNightmareKey() throws Exception {
+    void newGameCanDefeatRollingBonesWithFeatherAndNightmareKey() throws Exception {
         Main.initializeHeadlessNewGame();
         var checkpoints = new ArrayList<Main.HeadlessState>();
         var entityCheckpoints = new ArrayList<String>();
-        for (String line : Files.readAllLines(Path.of("../tools/opening/tail-cave-boss-route.tsv"))) {
+        for (String line : Files.readAllLines(Path.of("../tools/opening/tail-cave-bones-combat-route.tsv"))) {
             if (line.isBlank() || line.startsWith("#")) continue;
             String[] fields = line.split("\\s+");
             int idle = Integer.parseInt(fields[2]);
@@ -184,7 +184,7 @@ final class MainOpeningRouteTest {
         // longer guarantees a Piece of Power. It must remain interactive.
         assertFalse(checkpoints.get(334).dialog());
         var switchKey = checkpoints.get(345);
-        assertEquals(588, checkpoints.size());
+        assertEquals(602, checkpoints.size());
         assertEquals(0x13, switchKey.room());
         assertEquals(2, switchKey.smallKeys());
         assertEquals(1, switchKey.compass());
@@ -275,31 +275,23 @@ final class MainOpeningRouteTest {
         assertEquals(1, misalignedDoor.smallKeys(), "Off-center contact must not spend a key");
         assertEquals(0x10, checkpoints.get(579).room());
         assertEquals(0, checkpoints.get(579).smallKeys());
+        var entry = checkpoints.get(587);
+        assertEquals(0x11, entry.room());
+        assertEquals(17, entry.x(), "The boss handler pushes Link clear of the doorway");
+        assertEquals(72, entry.y());
+        assertEquals(1, entry.nightmareKey());
+        assertTrue(entityCheckpoints.get(587).contains("81:ACTIVE"));
+        assertTrue(entityCheckpoints.get(587).contains("82:ACTIVE"));
+        var approach = checkpoints.get(588);
+        assertEquals(41, approach.x(), "Sword swings must not halt Feather approaches");
+        assertEquals(72, approach.y());
+        assertEquals(entry.health(), approach.health());
+        assertEquals(602, checkpoints.size());
         assertEquals(0x11, checkpoints.getLast().room());
-        assertEquals(17, checkpoints.getLast().x(), "The boss handler pushes Link clear of the doorway");
-        assertEquals(72, checkpoints.getLast().y());
-        assertEquals(1, checkpoints.getLast().nightmareKey());
         assertTrue(checkpoints.getLast().health() > 0);
-        assertTrue(entityCheckpoints.getLast().contains("81:ACTIVE"));
-        assertTrue(entityCheckpoints.getLast().contains("82:ACTIVE"));
-        int entryHealth = Main.headlessState().health();
-        Main.headlessButton("right+a+b", true);
-        for (int tick = 0; tick < 24; tick++) {
-            OpeningRouteCapture.pulseButtons("right+a*+b*", tick);
-            advanceAlive();
-        }
-        Main.headlessButton("right+a+b", false);
-        assertEquals(41, Main.headlessState().x(),
-            "A sword swing must not halt the first Feather approach to Rolling Bones");
-        assertEquals(72, Main.headlessState().y());
-        assertEquals(entryHealth, Main.headlessState().health());
-
-
-
-
-
-
-
+        assertFalse(entityCheckpoints.getLast().contains("81:"), "Rolling Bones must finish dying");
+        assertFalse(entityCheckpoints.getLast().contains("82:"), "The defeated boss removes its bar");
+        assertTrue(entityCheckpoints.getLast().contains("61:ACTIVE"), "The miniboss warp remains");
 
     }
 

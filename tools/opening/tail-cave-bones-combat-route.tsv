@@ -1,5 +1,5 @@
-# Diagnostic combat: ROM defeats Rolling Bones; Java survives but has not yet defeated it.
-# ROM columns preserve its verified input route while Java approaches account for changed combat phases.
+# Fresh-game combat route: both Java and the original ROM defeat Rolling Bones.
+# ROM columns preserve its verified route; Java uses a stationary jump for the final hit.
 # Optional ROM columns: buttons, frame count/target (- keeps Java target), idle frames.
 - 0 620
 a 8 122
@@ -599,5 +599,7 @@ a*+b* 24 0
 a*+b* 24 0
 up+a*+b* 24 0
 right+a*+b* 24 0
-left+a* 24 0
+left+a 6 0
+a+b 2 0 left+a 2 0
+b 16 0 left 16 0
 none 300 0

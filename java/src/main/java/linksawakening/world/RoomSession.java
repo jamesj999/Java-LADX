@@ -574,6 +574,9 @@ public final class RoomSession {
         synchronizeSwitchBlockCollisionState();
     }
 
+    /** Current ROM health byte for diagnostic captures. */
+    public int entityHealth(int slot) { return entityRuntime.enemyHealth(slot); }
+
     public ActiveRoom activeRoom() {
         return activeRoom;
     }

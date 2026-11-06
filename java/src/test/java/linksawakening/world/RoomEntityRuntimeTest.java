@@ -7632,6 +7632,36 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void rollingBonesNewSwordHitStartsRecoilOnTheFollowingHandlerFrame() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RoomEntity bar = new RoomEntity(0, 1, 0x82, 56, 64, EntityStatus.ACTIVE,
+            catalog.forEntityType(0x82, EntityRoomLoader.RoomTable.INDOORS_A, -1), 0);
+        RoomEntity boss = new RoomEntity(1, 0, 0x81, 71, 64, EntityStatus.ACTIVE,
+            catalog.forEntityType(0x81, EntityRoomLoader.RoomTable.INDOORS_A, -1), 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotWithSlots(bar, boss),
+            true, () -> 0, catalog, new RomEnemyCombatTables(rom));
+        runtime.resolveCombat(0, 87, 64, false, true, true, 71, 8, 64, 8);
+        assertEquals(7, runtime.enemyHealth(1));
+        runtime.tick(0, 80, 72, () -> 0);
+        assertEquals(71, runtime.snapshot().slots().get(1).x());
+        assertEquals(10, runtime.enemyIgnoreHitsCountdown(1));
+        assertEquals(0x18, runtime.enemyFlashCountdown(1));
+        assertEquals(0x18, runtime.transitionCountdown(1),
+            "The hit frame still executes the ordinary approach handler");
+        runtime.tick(1, 80, 72, () -> 0);
+        assertEquals(68, runtime.snapshot().slots().get(1).x());
+        assertEquals(9, runtime.enemyIgnoreHitsCountdown(1));
+        for (int frame = 2; frame < 24; frame++) runtime.tick(frame, 80, 72, () -> 0);
+        RoomEntity recovered = runtime.snapshot().slots().get(1);
+        assertEquals(1, runtime.enemyFlashCountdown(1));
+        runtime.resolveCombat(24, 87, 64, false, true, true,
+            recovered.x(), 8, recovered.y(), 8);
+        assertEquals(6, runtime.enemyHealth(1),
+            "The collision phase sees the flash timer decremented for this frame");
+    }
+
+    @Test
     void rollingBonesDeathSetsTailCaveMinibossEventAndRemovesTheBar() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);

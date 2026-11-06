@@ -8,11 +8,13 @@ import javax.imageio.ImageIO;
 /** Exercises Main, without scene injection, using the shared button route. */
 public final class OpeningRouteCapture {
     private static int lastHealth = 24;
+    private static final StringBuilder combatTrace = new StringBuilder();
     public static void main(String[] args) throws Exception {
         Path route = Path.of(args[0]);
         Path out = Path.of(args[1]);
         Files.createDirectories(out.resolve("ours"));
         Files.deleteIfExists(out.resolve("java.json"));
+        combatTrace.setLength(0);
         Main.initializeHeadlessNewGame();
         StringBuilder trace = new StringBuilder();
         int frame = 0, segment = 0;
@@ -54,6 +56,7 @@ public final class OpeningRouteCapture {
                 + " entities " + Main.headlessEntityPositions());
         }
         Files.writeString(out.resolve("java-trace.tsv"), trace);
+        Files.writeString(out.resolve("java-combat.tsv"), combatTrace);
         String routeHash = java.util.HexFormat.of().formatHex(
             java.security.MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(route)));
         Files.writeString(out.resolve("java.json"),
@@ -89,6 +92,7 @@ public final class OpeningRouteCapture {
 
     private static void appendTrace(StringBuilder trace, int frame) {
         var s = Main.headlessState();
+        if (s.map() == 0 && s.room() == 0x11) combatTrace.append(frame).append('\t').append(Main.headlessCombatTrace()).append('\n');
         if (s.health() < lastHealth) System.out.println("Damage at " + frame + " " + s + " entities " + Main.headlessEntityPositions());
         lastHealth = s.health();
         if (s.health() <= 0) throw new IllegalStateException("Link died at frame " + frame + ": " + s);

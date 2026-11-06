@@ -434,6 +434,7 @@ public final class RoomEntityRuntime {
     private final int[] ironMaskPrivateState2 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] ironMasksMaskSourceHookshotSlot =
         new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] rollingBonesSwordHitFrame = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyFlashCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyIgnoreHitsCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] enemyHitboxFlags = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -1855,6 +1856,9 @@ public final class RoomEntityRuntime {
         lastRomLinkDirection = romLinkDirection;
         for (int index = slots.length - 1; index >= 0; index--) {
             RoomEntity entity = slots[index];
+            boolean rollingBonesHitThisFrame = entity.type() == ENTITY_ROLLING_BONES
+                && rollingBonesSwordHitFrame[index] == frame + 1;
+            rollingBonesSwordHitFrame[index] = 0;
             if (!entity.loaded()) {
                 continue;
             }
@@ -1935,6 +1939,7 @@ public final class RoomEntityRuntime {
                 && !freezePowderTimers
                 && !freezeBooBuddyTimers
                 && !freezeBowWowTimers
+                && !rollingBonesHitThisFrame
                 && decrementEnemyCombatCountdowns(entity.slot(), !wasInitializing
                     && entity.type() != ENTITY_BOO_BUDDY && entity.type() != ENTITY_BOW_WOW);
             if (!freezeTarinTimers && !freezeThreeOfAKindTimers && !freezeHinoxTimers
@@ -3045,7 +3050,7 @@ public final class RoomEntityRuntime {
                 // ReturnIfNonInteractive_06 reads the pre-decrement wC1A8.
                 if (!handlerInteractive || countdownBlocksInteraction) continue;
                 if (entity.type() == ENTITY_ROLLING_BONES
-                    && enemyIgnoreHitsCountdown[entity.slot()] != 0) {
+                    && !rollingBonesHitThisFrame && enemyIgnoreHitsCountdown[entity.slot()] != 0) {
                     // ApplyRecoilIfNeeded_06 pops the handler return address:
                     // no jump physics or AI movement occurs during recoil.
                     slots[index] = applyEnemyRecoilIfNeeded(entity, backgroundCollision).entity();
@@ -3057,6 +3062,7 @@ public final class RoomEntityRuntime {
                     || (entity.type() == ENTITY_POKEY
                         && pokeyMotion.isSegment(entity.slot())
                         && handlerLinkCollisionEnabled))
+                && entity.type() != ENTITY_ROLLING_BONES
                 && entity.type() != ENTITY_MINI_MOLDORM
                 && entity.type() != ENTITY_BOO_BUDDY
                 && (entity.type() != ENTITY_MASKED_MIMIC_GORIYA || entityMapId != 0x1F)
@@ -5535,7 +5541,11 @@ public final class RoomEntityRuntime {
             if (!hidingZolSwordCollision && !hidingZolLinkCollision) {
                 continue;
             }
-            if ((enemyFlashCountdown[entity.slot()] > 0
+            // AnimateEntities decrements flash before dispatching Rolling Bones.
+            // Main's combat pass precedes tick(), so read that impending value.
+            int collisionFlashCountdown = Math.max(0, enemyFlashCountdown[entity.slot()]
+                - (entity.type() == ENTITY_ROLLING_BONES ? 1 : 0));
+            if ((collisionFlashCountdown > 0
                     && entity.type() != ENTITY_MOLDORM)
                 || enemyIgnoreHitsCountdown[entity.slot()] > 0) {
                 continue;
@@ -5711,6 +5721,10 @@ public final class RoomEntityRuntime {
                 enemyIgnoreHitsCountdown[entity.slot()] = attackContext.powerRecoil()
                     ? 0x20 : 0x0A;
                 if (swordDamage > 0) {
+                    // $06:6CEB checks existing recoil before $6CEE applies a new hit.
+                    // Main resolves combat before ticking handlers, so preserve that phase.
+                    if (entity.type() == ENTITY_ROLLING_BONES)
+                        rollingBonesSwordHitFrame[entity.slot()] = (frameCounter & 0xFF) + 1;
                     enemyHealth[entity.slot()] = Math.max(0,
                         enemyHealth[entity.slot()] - swordDamage);
                     if (entity.type() == ENTITY_MOLDORM) {
