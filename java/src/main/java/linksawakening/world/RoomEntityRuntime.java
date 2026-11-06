@@ -1974,6 +1974,8 @@ public final class RoomEntityRuntime {
                 && !projectileTimersInteractive;
             boolean freezeBowWowTimers = entity.type() == ENTITY_BOW_WOW
                 && !projectileTimersInteractive;
+            boolean freezeMoblinKingTimers = entity.type() == ENTITY_MOBLIN_KING
+                && !projectileTimersInteractive;
             boolean ignoreHitsDecrementedBeforeHandler = !freezeTarinTimers
                 && !freezeThreeOfAKindTimers
                 && !freezeHinoxTimers
@@ -1982,12 +1984,13 @@ public final class RoomEntityRuntime {
                 && !freezePowderTimers
                 && !freezeBooBuddyTimers
                 && !freezeBowWowTimers
+                && !freezeMoblinKingTimers
                 && !rollingBonesHitThisFrame
                 && decrementEnemyCombatCountdowns(entity.slot(), !wasInitializing
                     && entity.type() != ENTITY_BOO_BUDDY && entity.type() != ENTITY_BOW_WOW);
             if (!freezeTarinTimers && !freezeThreeOfAKindTimers && !freezeHinoxTimers
                 && !freezeGenieTimers && !freezePowderTimers && !freezeBooBuddyTimers
-                && !freezeBowWowTimers && !freezeWitchTimers) {
+                && !freezeBowWowTimers && !freezeWitchTimers && !freezeMoblinKingTimers) {
                 decrementEnemyStatusCountdowns(entity.slot());
                 if (entity.type() == ENTITY_GENIE
                     && geniePrivateCountdown1[entity.slot()] > 0) {
@@ -2887,7 +2890,7 @@ public final class RoomEntityRuntime {
                     colorShellMotion.initialize(entity.slot());
                 }
             } else if (status == EntityStatus.ACTIVE) {
-                if (!freezeTarinTimers) {
+                if (!freezeTarinTimers && !freezeMoblinKingTimers) {
                     decrementSlowTransitionCountdown(entity.slot(), frame);
                 }
                 if (shouldDisappear(entity)) {

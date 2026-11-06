@@ -3739,3 +3739,11 @@ The source audit found two missing king rules. ReturnIfNonInteractive_15 ($15:7B
 Captures: `/tmp/ladx-hideout-four3`; persistent manifests/checkpoints/results: `java/src/test/resources/opening/hideout-king`. Java reaches the boss with health 4 versus ROM 28; differing enemy movement phases and heart-drop collection remain open. The boss fight and BowWow rescue are next, not completed.
 
 Validation: all 2,374 tests pass. The corrected introduction is shown in `docs/validation/hideout-king-2026-11-06.html`. Visual inspection still exposes a black region in the Java king's face and missing side-door presentation relative to the ROM; trace those ROM sprite/room paths before claiming king-scene fidelity.
+
+### King sprite priority and paused attack countdowns (2026-11-06)
+
+Corrected `func_015_4AC9`'s OAM allocation order: the upper/weapon layer precedes the body, giving it priority where the sprites overlap. Drawing the body first in the generated list had covered the face with black pixels. The corrected king region (x72..107, y65..99) differs by zero RGB555 pixels from the ROM introduction. Updated the display-list regression and visual artifact.
+
+The extended fight exposed another missing pause: the king's slow countdown expired during Dialog191 even though its state machine was paused. Its combat/status/slow timers now honor UpdateEntityTimers ($14:4D73), including dialogue, inventory, room transition and ocarina gates. The regression keeps dialogue open for 300 frames and checks both countdowns are unchanged. All 2,374 tests pass.
+
+The side-door art is present after Link moves inside at x24 (`/tmp/ladx-king-timers/ours/792.png` versus `/tmp/ladx-king-fight/original/792.png`). At the introduction Java is still at x8 while ROM has advanced to x17, so those screenshots show different shutter states. Entry motion/timing remains open. The corrected king now performs its opening movement/arrow phase rather than charging immediately. A stationary 160-frame wait kills Java Link, who arrives with only 4 health; that exploratory route is not a completed boss replay. Continue with normal dodging/combat and investigate earlier movement/drop phase differences. The canonical 791-checkpoint route still ends at the introduction.

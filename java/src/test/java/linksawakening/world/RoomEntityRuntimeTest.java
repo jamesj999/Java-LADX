@@ -7045,12 +7045,15 @@ final class RoomEntityRuntimeTest {
             EntityStatus.ACTIVE, pairDefinition(0xE4, 14), 0);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(king), true, () -> 0);
         runtime.setBowWowState(0x80);
-        runtime.setMoblinKingStateForTest(0, 3, 0, 0, 0, 0, 0);
+        runtime.setMoblinKingStateForTest(0, 3, 0, 0, 0, 0, 0x20);
+        runtime.setSlowTransitionCountdownForTest(0, 0x30);
         runtime.setDialogActive(true);
 
-        runtime.tick(0, 0x30, 0x58, () -> 0);
+        for (int frame = 0; frame < 300; frame++) runtime.tick(frame, 0x30, 0x58, () -> 0);
 
         assertEquals(3, runtime.moblinKingState(0));
+        assertEquals(0x20, runtime.transitionCountdownForTest(0));
+        assertEquals(0x30, runtime.slowTransitionCountdownForTest(0));
     }
 
     @Test

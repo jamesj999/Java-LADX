@@ -1037,10 +1037,11 @@ public final class EntitySpriteHandlerCatalog {
         EntitySpriteDefinition weapon = decodeRectangle(0xE4, 0x15, 0x49E5, 4, 3, 0);
         EntitySpriteDefinition shadow = decodeRectangle(0xE4, 0x15, 0x4ABD, 1, 3, 0);
         List<EntitySpriteDefinition.DynamicSprite> sprites = new ArrayList<>(9);
-        appendRectangleSprites(sprites, body.rectangleVariant(bodyVariant));
         if (weaponVariant >= 0) {
             appendRectangleSprites(sprites, weapon.rectangleVariant(weaponVariant));
         }
+        // func_015_4AC9 allocates weapon OAM first, so it wins overlaps with the body.
+        appendRectangleSprites(sprites, body.rectangleVariant(bodyVariant));
         if (airborne) {
             appendRectangleSprites(sprites, shadow.rectangleVariant(0));
         }
