@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Report unmasked checkpoints from the shared Main/emulator opening route."""
+import argparse
 import base64
 import json
 from pathlib import Path
@@ -7,9 +8,13 @@ import numpy as np
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[2]
-OUT = ROOT / 'java/build/opening-route'
+parser = argparse.ArgumentParser()
+parser.add_argument('--output', type=Path, default=ROOT / 'java/build/opening-route')
+OUT = parser.parse_args().output
 rows = []
-for source in sorted((OUT / 'original').glob('*.png')):
+checkpoint_count = len(OUT.joinpath('emulator-checkpoints.tsv').read_text().splitlines())
+for index in range(checkpoint_count):
+    source = OUT / 'original' / f'{index:02}.png'
     original = np.array(Image.open(source).convert('RGB')) >> 3
     ours = np.array(Image.open(OUT / 'ours' / source.name).convert('RGB')) >> 3
     rows.append(dict(checkpoint=int(source.stem), pixels=int(np.any(original != ours, axis=2).sum())))
@@ -21,21 +26,27 @@ article{display:flex;gap:16px;flex-wrap:wrap}figure{margin:0}img{width:240px;ima
 </style>''', f'<p><strong>Continuous opening route: {result["exact"]}/{len(rows)} checkpoints match.</strong> '
         f'Worst difference: {result["worst_pixels"]}/23040 pixels at RGB555 precision.</p>',
         '<p>Both games wake Link, finish Marin’s conversation, hop out of bed, walk to Tarin, '
-        'receive the shield, and exit into room A2 using the same button durations. Java runs '
+        'receive the shield, and exit into room A2. Extended routes use coordinate and room '
+        'goals, releasing held input before waiting for transitions to finish. Java runs '
         'the desktop Main input, update and renderer; no scene or state injections follow bootstrap. '
         'The original is reached by normal file-menu input with fresh in-memory RAM.</p>',
         '<p>This is a diagnostic baseline, not a pixel-parity pass. Java starts at its new-game '
         'bootstrap; the emulator starts at the settled house after file-menu entry. Initial clocks '
-        'are not synchronized. Animation/input/display phase differences remain, including a '
-        'one-pixel walking endpoint difference. No masks or screenshot alignment are applied.</p>']
-for i, label in [(0, 'Marin opening'), (9, 'Walk to Tarin'), (16, 'Shield received'), (21, 'House exit')]:
+        'are not synchronized. Faster loading is intentional; loading duration is not a parity '
+        'requirement. Sprite, collision, input and display differences remain to investigate. '
+        'No masks or screenshot alignment are applied.</p>']
+samples = [(0, 'Marin opening'), (16, 'Shield received'), (21, 'House exit')]
+if checkpoint_count > 22: samples.append((checkpoint_count - 1, 'Beach approach'))
+for i, label in samples:
     html.append(f'<section><p>{label}: {rows[i]["pixels"]} differing pixels</p><article>')
     for folder, title in [('original', 'Original ROM'), ('ours', 'Java Main loop')]:
         encoded = base64.b64encode(OUT.joinpath(folder, f'{i:02}.png').read_bytes()).decode()
         html.append(f'<figure><figcaption>{title}</figcaption><img src="data:image/png;base64,{encoded}"></figure>')
     html.append('</article></section>')
-html.append('<p>Reproduce: python tools/opening/capture.py; gradle -p java captureOpeningRoute; '
-            'python tools/opening/compare.py. Python dependencies: tools/intro/requirements.txt.</p></html>')
+html.append('<p>Reproduce with tools/opening/capture.py, Gradle captureOpeningRoute and '
+            'tools/opening/compare.py. Select the same route/output for both runtimes; '
+            'see docs/reconstruction-roadmap.md for the exact beach commands. '
+            'Python dependencies: tools/intro/requirements.txt.</p></html>')
 OUT.joinpath('report.html').write_text('\n'.join(html))
 print({k:v for k,v in result.items() if k != 'differences'})
 raise SystemExit(result['exact'] != len(rows))

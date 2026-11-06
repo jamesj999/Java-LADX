@@ -98,6 +98,6 @@ tasks.register('captureOpeningRoute', JavaExec) {
     classpath = sourceSets.test.runtimeClasspath
     mainClass = 'linksawakening.OpeningRouteCapture'
     jvmArgs '-Djava.awt.headless=true'
-    args file('../tools/opening/house-route.tsv').absolutePath,
-        layout.buildDirectory.dir('opening-route').get().asFile.absolutePath
+    args providers.gradleProperty('openingRoute').getOrElse(file('../tools/opening/house-route.tsv').absolutePath),
+        providers.gradleProperty('openingOutput').getOrElse(layout.buildDirectory.dir('opening-route').get().asFile.absolutePath)
 }

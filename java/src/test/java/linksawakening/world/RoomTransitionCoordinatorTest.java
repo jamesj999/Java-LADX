@@ -55,7 +55,7 @@ final class RoomTransitionCoordinatorTest {
         int[] floor = new int[0x100];
         java.util.Arrays.fill(floor, 0x09);
         collision.setRoom(floor);
-        link.setPixelPosition(0x40, 0x71);
+        link.setPixelPosition(0x40, 0x74);
         link.useRocsFeather();
         coordinator.handleOverworldBoundary(link);
         assertFalse(scroll.isActive());
@@ -4298,7 +4298,7 @@ final class RoomTransitionCoordinatorTest {
             session, new RoomBoundaryController(), new TransitionController(), scroll);
         Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
             romTables, collision, null, new PlayerState(), new ItemRegistry());
-        link.setPixelPosition(0x78, -1);
+        link.setPixelPosition(0x78, -5);
 
         coordinator.handleOverworldBoundary(link);
 
@@ -4590,10 +4590,10 @@ final class RoomTransitionCoordinatorTest {
                                                 ScrollController scroll, Link link,
                                                 int direction) {
         switch (direction) {
-            case ScrollController.UP -> link.setPixelPosition(link.pixelX(), -1);
+            case ScrollController.UP -> link.setPixelPosition(link.pixelX(), -5);
             case ScrollController.DOWN ->
                 link.setPixelPosition(link.pixelX(), RoomConstants.ROOM_PIXEL_HEIGHT);
-            case ScrollController.LEFT -> link.setPixelPosition(-1, link.pixelY());
+            case ScrollController.LEFT -> link.setPixelPosition(-5, link.pixelY());
             case ScrollController.RIGHT ->
                 link.setPixelPosition(RoomConstants.ROOM_PIXEL_WIDTH, link.pixelY());
             default -> throw new IllegalArgumentException("Unknown scroll direction: " + direction);
@@ -4638,10 +4638,10 @@ final class RoomTransitionCoordinatorTest {
         int[] exit = path.getLast();
         link.setPixelPosition(exit[0], exit[1]);
         switch (direction) {
-            case ScrollController.UP -> link.setPixelPosition(link.pixelX(), -1);
+            case ScrollController.UP -> link.setPixelPosition(link.pixelX(), -5);
             case ScrollController.DOWN ->
                 link.setPixelPosition(link.pixelX(), RoomConstants.ROOM_PIXEL_HEIGHT);
-            case ScrollController.LEFT -> link.setPixelPosition(-1, link.pixelY());
+            case ScrollController.LEFT -> link.setPixelPosition(-5, link.pixelY());
             case ScrollController.RIGHT ->
                 link.setPixelPosition(RoomConstants.ROOM_PIXEL_WIDTH, link.pixelY());
             default -> throw new IllegalArgumentException(
@@ -4705,10 +4705,10 @@ final class RoomTransitionCoordinatorTest {
         int[] exit = path.getLast();
         link.setPixelPosition(exit[0], exit[1]);
         switch (direction) {
-            case ScrollController.UP -> link.setPixelPosition(link.pixelX(), -1);
+            case ScrollController.UP -> link.setPixelPosition(link.pixelX(), -5);
             case ScrollController.DOWN ->
                 link.setPixelPosition(link.pixelX(), RoomConstants.ROOM_PIXEL_HEIGHT);
-            case ScrollController.LEFT -> link.setPixelPosition(-1, link.pixelY());
+            case ScrollController.LEFT -> link.setPixelPosition(-5, link.pixelY());
             case ScrollController.RIGHT ->
                 link.setPixelPosition(RoomConstants.ROOM_PIXEL_WIDTH, link.pixelY());
             default -> throw new IllegalArgumentException(

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Run the shared opening button route against the original ROM, without RAM writes."""
 import io
+import argparse
 import hashlib
 import importlib.metadata
 import json
@@ -8,7 +9,11 @@ from pathlib import Path
 from pyboy import PyBoy
 
 ROOT = Path(__file__).resolve().parents[2]
-OUT = ROOT / 'java/build/opening-route'
+args = argparse.ArgumentParser()
+args.add_argument('--route', type=Path, default=ROOT / 'tools/opening/house-route.tsv')
+args.add_argument('--output', type=Path, default=ROOT / 'java/build/opening-route')
+args = args.parse_args()
+OUT = args.output
 OUT.joinpath('original').mkdir(parents=True, exist_ok=True)
 p = PyBoy(str(ROOT / 'java/src/main/resources/rom/azle.gbc'), window='null',
           sound_emulated=False, cgb=True, ram_file=io.BytesIO(bytes(0x8000)))
@@ -24,17 +29,48 @@ try:
         p.tick(100)
     assert p.memory[0xdb95] == 0x0b and p.memory[0xfff6] == 0xa3
     frame = segment = 0
-    for line in ROOT.joinpath('tools/opening/house-route.tsv').read_text().splitlines():
+    for line in args.route.read_text().splitlines():
         if not line or line.startswith('#'): continue
         button, held, idle = line.split()
-        held, idle = int(held), int(idle)
-        if held: p.button_press(button)
-        for tick in range(held + idle):
-            if tick == held and held: p.button_release(button)
+        idle = int(idle)
+        def press():
+            for key in button.split('+'): p.button_press(key)
+        def release():
+            for key in button.split('+'): p.button_release(key)
+        def tick_frame():
+            global frame
             p.tick()
             trace.append([frame, p.memory[0xfff7], p.memory[0xfff6], p.memory[0xff98],
-                          p.memory[0xff99], p.memory[0xc19f] != 0, p.memory[0xdb44]])
+                          p.memory[0xff99], p.memory[0xc19f] != 0, p.memory[0xdb44], p.memory[0xc124],
+                          p.memory[0xc125], p.memory[0xffe7], p.memory[0xff96], p.memory[0xff97],
+                          p.memory[0xdb5a], p.memory[0xdb4e]])
             frame += 1
+        if '=' in held:
+            field, target = held.split('=')
+            target = int(target, 0)
+            address = {'room': 0xfff6, 'x': 0xff98, 'y': 0xff99}[field]
+            def reached():
+                value = p.memory[address]
+                if field == 'room': return value == target
+                return value <= target if button.split('+')[0] in ('left', 'up') else value >= target
+            press()
+            for _ in range(2000):
+                if reached(): break
+                tick_frame()
+            else: raise RuntimeError('Route blocked: ' + line + ' ' + str(trace[-1]))
+            release()
+            tick_frame()
+            for _ in range(500):
+                if p.memory[0xc124] == 0: break
+                tick_frame()
+            else: raise RuntimeError('Transition did not finish: ' + line)
+            held = 0
+        else:
+            held = int(held)
+        if held: press()
+        for tick in range(held + idle):
+            if tick == held and held: release()
+            tick_frame()
         p.screen.image.save(OUT / 'original' / f'{segment:02}.png')
         checkpoints.append([segment] + trace[-1])
         print(segment + 1, trace[-1])
@@ -43,7 +79,7 @@ try:
     OUT.joinpath('emulator.json').write_text(json.dumps({
         'emulator': 'PyBoy ' + importlib.metadata.version('pyboy'),
         'rom_sha256': hashlib.sha256(ROOT.joinpath('java/src/main/resources/rom/azle.gbc').read_bytes()).hexdigest(),
-        'route_sha256': hashlib.sha256(ROOT.joinpath('tools/opening/house-route.tsv').read_bytes()).hexdigest(),
+        'route_sha256': hashlib.sha256(args.route.read_bytes()).hexdigest(),
         'memory_injection': False, 'save': 'fresh in-memory RAM, never saved',
     }, indent=2))
     OUT.joinpath('emulator-trace.tsv').write_text(''.join('\t'.join(map(str, r))+'\n' for r in trace))

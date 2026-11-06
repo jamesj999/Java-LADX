@@ -255,6 +255,10 @@ public class Main {
     }
 
     static void headlessButton(String button, boolean pressed) {
+        if (button.contains("+")) {
+            for (String part : button.split("\\+")) headlessButton(part, pressed);
+            return;
+        }
         int key = switch (button) {
             case "up" -> inputConfig.upKey();
             case "down" -> inputConfig.downKey();
@@ -279,11 +283,11 @@ public class Main {
         return new HeadlessState(frameCounter, roomSession.mapId(), roomSession.currentRoomId(),
             link.romEntityX(), link.romEntityY(), dialogController.isActive(),
             dialogController.isWaitingForPageAdvance(), dialogController.visibleText(),
-            playerState.shieldLevel());
+            playerState.shieldLevel(), playerState.health(), playerState.swordLevel(), scrollController.isActive() || transitionController.isInputBlocked());
     }
 
     record HeadlessState(int frame, int map, int room, int x, int y,
-                         boolean dialog, boolean pageWait, String text, int shield) {}
+                         boolean dialog, boolean pageWait, String text, int shield, int health, int sword, boolean loading) {}
 
     private static void loadROM() {
         try (InputStream is = Main.class.getClassLoader().getResourceAsStream("rom/azle.gbc")) {

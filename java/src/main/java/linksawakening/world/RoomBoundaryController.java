@@ -32,23 +32,31 @@ public final class RoomBoundaryController {
             return RoomBoundaryDecision.none();
         }
 
-        if (x < 0 && roomCol > 0) {
-            return RoomBoundaryDecision.overworldScroll(ScrollController.LEFT,
-                ROOM_PIXEL_WIDTH - Link.SPRITE_SIZE, y);
-        }
-        if (x + Link.SPRITE_SIZE > ROOM_PIXEL_WIDTH && roomCol < OVERWORLD_COLUMNS - 1) {
-            return RoomBoundaryDecision.overworldScroll(ScrollController.RIGHT, 0, y);
-        }
-        if (y < 0 && roomRow > 0) {
+        // CheckPositionForMapTransition ($02:6C99) tests ROM entity coordinates,
+        // with vertical edges taking priority. Java stores the sprite top-left.
+        int romX = x + 8;
+        int romY = y + 16;
+        if (romY < 0x0C && roomRow > 0) {
             return RoomBoundaryDecision.overworldScroll(ScrollController.UP, x,
                 ROOM_PIXEL_HEIGHT - Link.SPRITE_SIZE);
         }
-        if (y + Link.SPRITE_SIZE > ROOM_PIXEL_HEIGHT && roomRow < OVERWORLD_ROWS - 1) {
+        if (romY >= 0x84 && roomRow < OVERWORLD_ROWS - 1) {
             return RoomBoundaryDecision.overworldScroll(ScrollController.DOWN, x, 0);
         }
+        if (romX < 0x04 && roomCol > 0) {
+            return RoomBoundaryDecision.overworldScroll(ScrollController.LEFT,
+                ROOM_PIXEL_WIDTH - Link.SPRITE_SIZE, y);
+        }
+        if (romX >= 0x9C && roomCol < OVERWORLD_COLUMNS - 1) {
+            return RoomBoundaryDecision.overworldScroll(ScrollController.RIGHT, 0, y);
+        }
 
-        int clampedX = Math.max(0, Math.min(x, ROOM_PIXEL_WIDTH - Link.SPRITE_SIZE));
-        int clampedY = Math.max(0, Math.min(y, ROOM_PIXEL_HEIGHT - Link.SPRITE_SIZE));
+        // Interior rooms must allow the off-screen margin required above.
+        // Only the outer world border clamps movement without a destination.
+        int clampedX = roomCol == 0 ? Math.max(0, x) : x;
+        if (roomCol == OVERWORLD_COLUMNS - 1) clampedX = Math.min(clampedX, ROOM_PIXEL_WIDTH - Link.SPRITE_SIZE);
+        int clampedY = roomRow == 0 ? Math.max(0, y) : y;
+        if (roomRow == OVERWORLD_ROWS - 1) clampedY = Math.min(clampedY, ROOM_PIXEL_HEIGHT - Link.SPRITE_SIZE);
         if (clampedX != x || clampedY != y) {
             return RoomBoundaryDecision.clamp(clampedX, clampedY);
         }

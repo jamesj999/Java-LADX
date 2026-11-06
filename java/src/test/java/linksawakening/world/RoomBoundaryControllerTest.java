@@ -14,12 +14,30 @@ final class RoomBoundaryControllerTest {
     @Test
     void overworldLeftEdgeScrollsToPreviousRoomWhenRoomExists() {
         RoomBoundaryDecision decision = controller.decide(
-            new RoomBoundaryState(Warp.CATEGORY_OVERWORLD, 0x92, false, false, -1, 40));
+            new RoomBoundaryState(Warp.CATEGORY_OVERWORLD, 0x92, false, false, -5, 40));
 
         assertEquals(RoomBoundaryDecision.Type.OVERWORLD_SCROLL, decision.type());
         assertEquals(ScrollController.LEFT, decision.direction());
         assertEquals(ROOM_PIXEL_WIDTH - Link.SPRITE_SIZE, decision.linkTargetX());
         assertEquals(40, decision.linkTargetY());
+    }
+
+    @Test
+    void overworldEdgesUseSourceEntityCoordinateThresholdsAndVerticalPriority() {
+        int[][] inside = {{-4, 40}, {147, 40}, {40, -4}, {40, 115}};
+        int[][] outside = {{-5, 40}, {148, 40}, {40, -5}, {40, 116}};
+        int[] directions = {ScrollController.LEFT, ScrollController.RIGHT,
+            ScrollController.UP, ScrollController.DOWN};
+        for (int i = 0; i < inside.length; i++) {
+            assertEquals(RoomBoundaryDecision.Type.NONE, controller.decide(
+                new RoomBoundaryState(Warp.CATEGORY_OVERWORLD, 0x92, false, false,
+                    inside[i][0], inside[i][1])).type());
+            assertEquals(directions[i], controller.decide(
+                new RoomBoundaryState(Warp.CATEGORY_OVERWORLD, 0x92, false, false,
+                    outside[i][0], outside[i][1])).direction());
+        }
+        assertEquals(ScrollController.UP, controller.decide(
+            new RoomBoundaryState(Warp.CATEGORY_OVERWORLD, 0x92, false, false, -5, -5)).direction());
     }
 
     @Test

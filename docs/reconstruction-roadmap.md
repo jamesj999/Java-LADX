@@ -3069,3 +3069,34 @@ of scope.
   `docs/validation/continuous-opening-baseline-2026-11-06.html`.
 - Next work is extending this real-loop route toward the beach and correcting
   integration/visual discrepancies, then continuing the full-game roadmap.
+
+## Faster loading and transition-aware beach approach — 2026-11-06
+
+- User clarification: faster loading is desirable; reproducing original hardware
+  loading stalls is not required. Keep source-faithful gameplay, collision and
+  visible rendering, while comparing equivalent states across loading boundaries.
+- Corrected overworld boundary checks to `$02:6C99`: ROM Y < `$0C` or >= `$84`,
+  then X < `$04` or >= `$9C`, with vertical priority. Interior rooms now permit
+  the off-screen margin needed to reach those thresholds. Regression fixtures
+  that previously injected positions at the old thresholds were corrected.
+- Extended the headless route grammar with coordinate/room goals and simultaneous
+  buttons. Each goal releases input before waiting for loading to finish; both
+  engines use their own frame count. No artificial loading delay was added.
+- The shared normal-input route now reaches F1 from the new-game bootstrap via
+  A2, A1, A0, B0, C0, D0, E0 and F0, with shield level 1 and full 24/24 health
+  in both engines. The actual Main-loop regression checks this progression.
+  All 2,306 tests pass. Original checkpoint metadata is retained under
+  `java/src/test/resources/opening/beach/`.
+- Visual diagnostic: 8/45 full checkpoint frames match, worst difference
+  2,739 pixels; the F1 endpoint differs by 144 pixels, including Link's
+  three-pixel horizontal entry-position difference. Background animation and
+  actor phases are unsynchronized. Evidence:
+  `docs/validation/transition-aware-beach-baseline-2026-11-06.html`. This is
+  not a pixel-parity pass or a completed sword-acquisition route.
+- Reproduce with `tools/opening/capture.py --route tools/opening/beach-route.tsv
+  --output java/build/beach-route`, `gradle -p java captureOpeningRoute
+  -PopeningRoute=../tools/opening/beach-route.tsv -PopeningOutput=build/beach-route`,
+  then `tools/opening/compare.py --output java/build/beach-route`. The Python
+  scripts use the existing PyBoy/Pillow/numpy environment.
+- Remaining opening work includes F2 access/sword acquisition, source scroll
+  entry positions, and visual differences; later full-game work remains pending.
