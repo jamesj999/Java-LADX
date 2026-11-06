@@ -9,10 +9,10 @@ import static org.junit.jupiter.api.Assertions.*;
 /** Real game-loop integration, with buttons only after the new-game bootstrap. */
 final class MainOpeningRouteTest {
     @Test
-    void newGameCanCollectSwordAndReachForestThroughRealInputWithoutStateInjection() throws Exception {
+    void newGameCanCollectSwordAndEnterForestCaveThroughRealInputWithoutStateInjection() throws Exception {
         Main.initializeHeadlessNewGame();
         var checkpoints = new ArrayList<Main.HeadlessState>();
-        for (String line : Files.readAllLines(Path.of("../tools/opening/forest-route.tsv"))) {
+        for (String line : Files.readAllLines(Path.of("../tools/opening/cave-route.tsv"))) {
             if (line.isBlank() || line.startsWith("#")) continue;
             String[] fields = line.split("\\s+");
             int idle = Integer.parseInt(fields[2]);
@@ -79,7 +79,7 @@ final class MainOpeningRouteTest {
         assertFalse(sword.dialog());
         assertFalse(sword.loading());
         assertTrue(sword.health() > 0);
-        var forest = checkpoints.getLast();
+        var forest = checkpoints.get(99);
         assertEquals(0, forest.map());
         assertEquals(0x80, forest.room());
         assertEquals(1, forest.sword());
@@ -88,5 +88,15 @@ final class MainOpeningRouteTest {
         assertTrue(forest.dialog());
         assertTrue(forest.text().startsWith("Hoot!"));
         assertFalse(forest.loading());
+        var cave = checkpoints.getLast();
+        assertEquals(0x0A, cave.map());
+        assertEquals(0xBD, cave.room());
+        assertEquals(80, cave.x());
+        assertEquals(124, cave.y());
+        assertEquals(1, cave.sword());
+        assertEquals(1, cave.shield());
+        assertTrue(cave.health() > 0);
+        assertFalse(cave.dialog());
+        assertFalse(cave.loading());
     }
 }

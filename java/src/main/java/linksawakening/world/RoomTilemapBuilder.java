@@ -8,8 +8,6 @@ public final class RoomTilemapBuilder {
     private static final int MAP_COLOR_DUNGEON = 0xFF;
     private static final int MAP_HOUSE = 0x10;
     private static final int ROOM_CAMERA_SHOP = 0xB5;
-    private static final int MAP_INDOORS_B_START = 0x06;
-    private static final int MAP_INDOORS_B_END = 0x1A;
 
     private static final int INDOOR_OBJECT_TILEMAP_BANK = 0x08;
     private static final int INDOOR_OBJECT_TILEMAP_ADDR = 0x43B0;
@@ -128,18 +126,30 @@ public final class RoomTilemapBuilder {
     }
 
     private int indoorObjectAttrOffset(int mapId, int roomId) {
-        if (mapId == MAP_HOUSE && roomId == ROOM_CAMERA_SHOP) {
-            int pointer = RomBank.romOffset(BG_ATTR_PTRS_INDOORS_A_BANK,
-                BG_ATTR_PTRS_INDOORS_B_ADDR + CAMERA_SHOP_ATTR_POINTER_OFFSET);
-            return RomBank.romOffset(INDOORS_B_ATTRMAPS_BANK, readPointer(pointer));
+        // GetBGAttributesAddressForObject ($1A:65B2) replaces the room
+        // index with hMapId * 2 for indoor attribute groups. Room IDs only
+        // select the explicit exceptions below; these are not room tables.
+        int groupOffset = mapId * 2;
+        boolean useB = mapId > 0x08;
+        int attrmapsBank = useB ? INDOORS_B_ATTRMAPS_BANK : INDOORS_A_ATTRMAPS_BANK;
+        if ((mapId == 0x0A && roomId == 0xFD)
+            || (mapId == 0x11 && (roomId == 0xC0 || roomId == 0xC1))) {
+            groupOffset = 0x1E;
+        } else if (mapId == 0x0F && roomId == 0xA0) {
+            groupOffset = 0;
+        } else if (mapId == 0x1F && (roomId == 0xEB || roomId == 0xEC)) {
+            groupOffset = 0x28;
+        } else if (mapId == MAP_HOUSE && roomId == 0xE9) {
+            groupOffset = 0x26;
+        } else if (mapId == MAP_HOUSE && roomId == ROOM_CAMERA_SHOP) {
+            groupOffset = CAMERA_SHOP_ATTR_POINTER_OFFSET;
+        } else if (mapId == 0x16 && (roomId == 0x6F || roomId == 0x7F || roomId == 0x8F)) {
+            // South Face Shrine keeps bank $23 but uses the indoors B pointer.
+            attrmapsBank = INDOORS_A_ATTRMAPS_BANK;
         }
-        boolean isIndoorsB = mapId >= MAP_INDOORS_B_START && mapId < MAP_INDOORS_B_END;
-        int attrPtrsAddr = isIndoorsB ? BG_ATTR_PTRS_INDOORS_B_ADDR : BG_ATTR_PTRS_INDOORS_A_ADDR;
-        int attrmapsBank = isIndoorsB ? INDOORS_B_ATTRMAPS_BANK : INDOORS_A_ATTRMAPS_BANK;
-        int indoorAttrPtrsOffset = RomBank.romOffset(BG_ATTR_PTRS_INDOORS_A_BANK, attrPtrsAddr + roomId * 2);
-        int attrPtrLo = Byte.toUnsignedInt(romData[indoorAttrPtrsOffset]);
-        int attrPtrHi = Byte.toUnsignedInt(romData[indoorAttrPtrsOffset + 1]);
-        int attrTableAddr = (attrPtrHi << 8) | attrPtrLo;
+        int attrPtrsAddr = useB ? BG_ATTR_PTRS_INDOORS_B_ADDR : BG_ATTR_PTRS_INDOORS_A_ADDR;
+        int pointer = RomBank.romOffset(BG_ATTR_PTRS_INDOORS_A_BANK, attrPtrsAddr + groupOffset);
+        int attrTableAddr = readPointer(pointer);
         if (attrTableAddr == 0) {
             return -1;
         }

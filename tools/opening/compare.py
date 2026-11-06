@@ -41,6 +41,8 @@ if checkpoint_count >= 69:
 elif checkpoint_count > 22: samples.append((checkpoint_count - 1, 'Beach approach'))
 if checkpoint_count >= 100:
     samples += [(81, 'Return stairway'), (85, 'Bush cutting'), (93, 'Village return'), (99, 'Forest owl')]
+if checkpoint_count >= 111:
+    samples = [(16, 'Shield received'), (99, 'Forest owl'), (108, 'Cave approach'), (110, 'Mushroom cave entrance')]
 for i, label in samples:
     html.append(f'<section><p>{label}: {rows[i]["pixels"]} differing pixels</p><article>')
     for folder, title in [('original', 'Original ROM'), ('ours', 'Java Main loop')]:

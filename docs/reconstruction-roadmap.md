@@ -3178,3 +3178,30 @@ of scope.
   -PopeningRoute=../tools/opening/forest-route.tsv -PopeningOutput=build/forest-route`,
   and `tools/opening/compare.py --output java/build/forest-route` in the configured
   PyBoy/Pillow/NumPy environment. The comparison exits nonzero for pixel differences.
+
+## Forest cave entry and indoor attribute groups — 2026-11-06
+
+- Extended the normal-input replay through the forest owl conversation, Moblin
+  rooms 70/60/61, and the overworld 62 entrance into cave map 0A, room BD.
+  Both runtimes enter at (80,124) with sword, shield, and 12 HP. This verifies
+  the entrance, not the cave puzzle or mushroom collection yet.
+- The first interior screenshot exposed purple cave walls/crystals. Corrected
+  `RoomTilemapBuilder` to follow `GetBGAttributesAddressForObject` ($1A:65B2):
+  indoor attribute group pointers are indexed by map ID, not room ID. Maps
+  00–08 use the indoors A pointer table/bank, even maps 06–08 whose room data
+  lives in indoors B. Later maps use indoors B, with the source's explicit
+  Manbo, cave C, Trendy Game, water cave, Seashell Mansion, camera shop and
+  South Face Shrine exceptions. South Face Shrine's three exception rooms
+  select the B pointer table while keeping attribute bank 23.
+- Added full ordinary-object attribute coverage across 18 map/room cases and
+  extended the actual Main integration test through the cave warp. All 2,310
+  tests pass. Original metadata is in `java/src/test/resources/opening/cave/`.
+- The corrected cave-entry full frame differs by only 20/23,040 pixels at
+  RGB555 precision, localized to Link's sprite phase; no masks or alignment.
+  Across the whole route, 8/111 checkpoints match exactly and the maximum is
+  still 4,597 differing pixels. Earlier combat/phase/position differences remain.
+  Evidence: `docs/validation/forest-cave-attributes-2026-11-06.html`.
+- Reproduce with the same commands as the forest entrance, substituting
+  `tools/opening/cave-route.tsv` for the route. This capture used output
+  `java/build/mushroom-route` (Gradle `build/mushroom-route`). Continue through
+  the cave and mushroom/witch/raccoon sequence before Tail Cave.
