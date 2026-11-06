@@ -38,12 +38,18 @@ public final class GameFrameSceneBuilder {
     }
 
     private static void addOverworldLayers(List<RenderLayer> layers, GameFrameState state) {
-        layers.add(new RoomRenderLayer(state.room(), state.scrollController(), state.transitionController()));
+        var warp = state.room().instrumentWarp();
+        int[][] backgroundPalettes = warp == null ? state.room().palettes()
+            : warp.backgroundPalettes(state.room().palettes());
+        var room = new linksawakening.world.RoomRenderSnapshot(state.room().tileIds(),
+            state.room().tileAttrs(), backgroundPalettes, state.room().entities());
+        layers.add(new RoomRenderLayer(room, state.scrollController(), state.transitionController()));
         List<RenderLayer> sprites = new ArrayList<>();
         if (state.room().entities() != null
             && state.room().entities().spriteSelection() != null) {
-            sprites.add(new EntityRenderLayer(state.room().entities(),
-                state.room().entities().spriteSelection().objectPalettes(),
+            int[][] objectPalettes = state.room().entities().spriteSelection().objectPalettes();
+            layers.add(new EntityRenderLayer(state.room().entities(),
+                warp == null ? objectPalettes : warp.objectPalettes(objectPalettes),
                 state.scrollController(), state.frameCounter(),
                 state.dialogController() != null && state.dialogController().isActive()
                     ? state.dialogController().boxPosition() : null));
@@ -82,18 +88,17 @@ public final class GameFrameSceneBuilder {
         if (state.droppableRupeeSystem() != null) {
             sprites.add(new DroppableRupeeRenderLayer(state.droppableRupeeSystem(), state.scrollController()));
         }
-        var warp = state.room().instrumentWarp();
         if (warp == null) {
             layers.addAll(sprites);
         } else {
-            RenderLayer roomLayer = layers.remove(layers.size() - 1);
-            layers.add(new InstrumentWarpRenderLayer(List.of(roomLayer), warp.backgroundFade()));
             layers.add(new InstrumentWarpRenderLayer(sprites, warp.objectFade()));
         }
         if (state.inventoryController() != null && (warp == null || warp.commandBatches() == 0)) {
-            RenderLayer inventory = new InventoryRenderLayer(state.inventoryController(), state.room().palettes());
-            layers.add(warp == null ? inventory : new InstrumentWarpRenderLayer(
-                List.of(inventory), warp.backgroundFade()));
+            layers.add(new InventoryRenderLayer(state.inventoryController(), backgroundPalettes));
+        }
+        if (warp != null && state.room().entities() != null
+            && state.room().entities().spriteSelection() != null) {
+            layers.add(InstrumentWarpRenderLayer.swirl(warp, state.room().entities(), state.frameCounter()));
         }
         if (warp != null && warp.commandBatches() > 0) {
             layers.add(InstrumentWarpRenderLayer.fullscreen(warp, state.room().palettes()));

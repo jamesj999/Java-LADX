@@ -25,6 +25,19 @@ final class InstrumentWarpRenderLayerTest {
         for (int i = 4; i < 8; i++) assertEquals(64, buffer[i] & 255);
     }
 
+    @Test void shippedRomLatePassAffectsUpperBackgroundAndLowerObjectPalettesOnly() {
+        int[][] original = new int[8][4];
+        for (int[] palette : original) Arrays.fill(palette, 0x101010);
+        InstrumentWarpVisual visual = new InstrumentWarpVisual(3, 5, 0, new int[360], new int[360]);
+        int[][] background = visual.backgroundPalettes(original);
+        int[][] objects = visual.objectPalettes(original);
+        assertEquals(0x282828, background[3][1]);
+        assertEquals(0x505050, background[4][1]);
+        assertEquals(0x383838, objects[3][1]);
+        assertEquals(0x101010, objects[4][1]);
+        assertEquals(0x101010, original[4][1]);
+    }
+
     @Test void fullscreenCommandsReplaceOnlyTwoRowsPerBatchIncludingHudRows() {
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
         Arrays.fill(buffer, (byte) 32);

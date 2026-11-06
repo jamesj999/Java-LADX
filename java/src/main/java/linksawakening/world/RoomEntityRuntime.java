@@ -646,6 +646,9 @@ public final class RoomEntityRuntime {
     private final int[] instrumentBackgroundFade = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] instrumentObjectFade = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] instrumentHintBatches = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] instrumentWarpX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] instrumentWarpY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] instrumentWarpSprites = new int[256];
     private final int[] instrumentHintTiles = new int[20 * 18];
     private final int[] instrumentHintAttributes = new int[20 * 18];
     private final int[] instrumentWarpFadeStep = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -1195,6 +1198,9 @@ public final class RoomEntityRuntime {
         this.chestContentsTable = chestContentsTable;
         this.romTables = romTables;
         if (romData != null) {
+            for (int i = 0; i < instrumentWarpSprites.length; i++) {
+                instrumentWarpSprites[i] = romData[6 * 0x4000 + 0x373C + i] & 255;
+            }
             // Eighteen fixed repeat commands, two rows per controller frame.
             // Shipped ROM symbols: Data_007_6493=$6493, Data_007_64F6=$64DB.
             for (int row = 0; row < 18; row++) {
@@ -9879,6 +9885,8 @@ public final class RoomEntityRuntime {
         } else if (instrumentPickupState[slot] == 2
             && enemyTransitionCountdown[slot] == 0) {
             instrumentPickupState[slot] = 3;
+            instrumentWarpX[slot] = (entity.x() - 1) & 255; // $03:5F43
+            instrumentWarpY[slot] = entity.y();
             slowTransitionCountdown[slot] = 0x80;
             slowTimerInitialized[slot] = true;
             pendingEntityEvents.add(new EntityCombatEvent(
@@ -9947,7 +9955,8 @@ public final class RoomEntityRuntime {
             if (instrumentPickupSequenceActive[slot] && instrumentPickupState[slot] == 3) {
                 return new InstrumentWarpVisual(instrumentBackgroundFade[slot],
                     instrumentObjectFade[slot], instrumentHintBatches[slot],
-                    instrumentHintTiles, instrumentHintAttributes);
+                    instrumentHintTiles, instrumentHintAttributes,
+                    instrumentWarpX[slot], instrumentWarpY[slot], instrumentWarpSprites);
             }
         }
         return null;

@@ -29,17 +29,28 @@ final class InstrumentWarpRenderLayer implements RenderLayer {
         }
     }
 
-    static RenderLayer fullscreen(InstrumentWarpVisual visual, int[][] palettes) {
-        int[][] faded = new int[palettes.length][4];
-        for (int p = 0; p < palettes.length; p++) {
-            for (int c = 0; c < 4; c++) {
-                int rgb = palettes[p][c];
-                for (int shift : new int[]{16, 8, 0}) {
-                    int value = Math.min(31, ((rgb >> shift) & 255) / 8 + visual.backgroundFade());
-                    faded[p][c] |= (value << 3) << shift;
-                }
+    static RenderLayer swirl(InstrumentWarpVisual visual,
+                             linksawakening.world.RoomEntitySnapshot entities, int frame) {
+        int[] commands = visual.swirl();
+        int[][] palettes = visual.objectPalettes(entities.spriteSelection().objectPalettes());
+        return context -> {
+            if (commands.length != 256 || entities.spriteTiles() == null) return;
+            int start = ((frame >> 3) & 3) * 64;
+            for (int i = 15; i >= 0; i--) {
+                int at = start + i * 4;
+                int tile = commands[at + 2];
+                if (tile == 255) continue;
+                int attr = commands[at + 3];
+                IndexedRenderer.drawSpriteTile8x16(context.buffer(), entities.spriteTiles(), tile,
+                    visual.centerX() + (byte) commands[at + 1] - 8,
+                    visual.centerY() + (byte) commands[at] - 16,
+                    (attr & 32) != 0, (attr & 64) != 0, palettes[attr & 7]);
             }
-        }
+        };
+    }
+
+    static RenderLayer fullscreen(InstrumentWarpVisual visual, int[][] palettes) {
+        int[][] faded = visual.backgroundPalettes(palettes);
         return context -> {
             byte[] plane = new byte[context.buffer().length];
             IndexedRenderer.renderBackground(plane, context.gpu(), visual.tiles(), visual.attributes(),

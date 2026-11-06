@@ -1627,6 +1627,11 @@ final class RoomSessionTest {
         assertEquals(31, visual.backgroundFade());
         assertEquals(31, visual.objectFade());
         assertEquals(9, visual.commandBatches());
+        assertEquals(0x4F, visual.centerX());
+        assertEquals(0x54, visual.centerY());
+        assertEquals(256, visual.swirl().length);
+        assertEquals(0x60, visual.swirl()[2]);
+        assertEquals(0xD8, visual.swirl()[1]);
         assertEquals(0x7F, visual.tiles()[359]);
         assertEquals(1, visual.attributes()[359]); // Shipped ROM uses palette 1.
         session.setEntityDialogActive(true);
