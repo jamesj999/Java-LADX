@@ -3491,3 +3491,12 @@ of scope.
 - All 2,334 tests pass. The Map sprite matches the ROM at RGB555 precision; the full final frame differs by 309 pixels. Health, rupees and Link position remain different. No full combat or visual parity claim.
 - Evidence: validation/tail-cave-map-2026-11-06.html and java/src/test/resources/opening/tail-cave-map. Read-only emulator entity observations helped locate the final sleeping Keese.
 - Next: remaining Tail Cave equipment, boss and instrument, followed by the rest of the quest. The full game is not yet production-ready.
+
+
+### Tail Cave revolving doorway — 2026-11-06
+
+- Fixed missing revolving-door motion that left Link outside room $0F behind its bottom closure. Physics $7C/$7D on objects $B1/$B2 now starts source motion $05, its 72-frame animation, ROM palette changes, jingle $0C, equipment lock and forced north transition. The special scroll retains its 116-pixel displacement rather than teleporting Link to the bottom edge.
+- ROM-backed animation and palette data come from $02:4E66 and $02:4E1C. Collision source is $02:716B/$7468; motion is $02:4E6D; scrolling is $02:790B.
+- Both fresh-game normal-input runs complete 399 checkpoints and can move into room $0F, retaining Map, Compass and two Small Keys. One extra ROM input frame explicitly aligns the doorway animation start. All eight doorway samples (389–396, x64–95/y0–23) match at RGB555 precision. Whole-frame/HUD/combat parity remains unproven.
+- All 2,335 tests pass, including sequence duration/input lock and the Main integration through the doorway. Evidence: validation/tail-cave-revolving-door-2026-11-06.html and java/src/test/resources/opening/tail-cave-revolving-door.
+- The separate tail-cave-equipment-route.tsv remains exploratory and is not a passing regression; westward room $0F traversal needs a waypoint around its blocks. Next: third Small Key, Feather, remaining Tail Cave rewards, boss and instrument, then the rest of the quest.

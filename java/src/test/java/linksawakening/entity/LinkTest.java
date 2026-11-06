@@ -42,6 +42,40 @@ final class LinkTest {
     private static final int OBJECT_INDOOR_PIT_WARP = 0x1C;
 
     @Test
+    void revolvingDoorPinsLinkThenRequestsTransitionAfterSeventyTwoFrames() throws Exception {
+        RomTables tables = RomTables.loadFromRom(loadRom());
+        InputConfig config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        InputState input = new InputState();
+        input.onKeyEvent(config.upKey(), GLFW_PRESS);
+        int[] objects = emptyRoomObjectsArea();
+        objects[ROOM_OBJECTS_BASE + 4] = 0xB1;
+        objects[ROOM_OBJECTS_BASE + 5] = 0xB2;
+        OverworldCollision collision = new OverworldCollision(tables);
+        collision.setPhysicsTable(RomTables.PHYSICS_TABLE_INDOORS1);
+        collision.setRoom(objects);
+        PlayerState player = new PlayerState();
+        Link link = new Link(input, config, tables, collision, null, player, new ItemRegistry());
+        link.setPixelPosition(72, 1);
+        for (int tick = 0; tick < 20 && link.romMotionState() != 5; tick++) link.update();
+        assertEquals(5, link.romMotionState());
+        assertFalse(link.canUseItems());
+        input.onKeyEvent(config.upKey(), GLFW_RELEASE);
+        input.onKeyEvent(config.rightKey(), GLFW_PRESS);
+        for (int frame = 1; frame <= 72; frame++) {
+            link.update();
+            assertEquals(80, link.romEntityX());
+            assertEquals(frame < 56 ? 16 : -5, link.romEntityY());
+            if (frame < 72) {
+                assertEquals(5, link.romMotionState());
+                assertFalse(link.consumeRevolvingDoorTransition());
+            }
+        }
+        assertEquals(0, link.romMotionState());
+        assertTrue(link.consumeRevolvingDoorTransition());
+        assertFalse(link.consumeRevolvingDoorTransition());
+    }
+
+    @Test
     void activeRecoilCannotKnockLinkAcrossANormalRoomBoundary() throws Exception {
         Link link = linkWithEmptyRoom(new InputState());
         link.setPixelPosition(80, 115); // ROM y=$83, just inside the south edge.

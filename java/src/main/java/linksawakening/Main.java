@@ -1004,7 +1004,8 @@ public class Main {
                     }
                 }
                 if (!keyholeSequenceActive && !link.isCarryingLiftedObject()) {
-                    if (roomSession != null && roomSession.gelClingingToLink()) {
+                    if (link.romMotionState() == 0x05
+                        || (roomSession != null && roomSession.gelClingingToLink())) {
                         equipmentController.tickEquippedItemsWithoutInput(frameCounter);
                     } else {
                         if (!swordPickupSequenceActive

@@ -40,6 +40,17 @@ public final class RoomTransitionCoordinator {
                 transitionController.startFadeOut(() -> applyWarp(dungeonWarp, link));
                 return;
             }
+            if (link.romMotionState() == 0x05) return;
+            if (link.consumeRevolvingDoorTransition()) {
+                int previousX = link.pixelX();
+                int previousY = link.pixelY();
+                // $02:790B: 32 scroll steps * $3A / 16 = 116 pixels.
+                link.setRoomEntryPixelPosition(previousX, previousY + 116);
+                roomSession.startAdjacentIndoorScroll(scrollController, ScrollController.UP,
+                    previousX, previousY);
+                scrollController.onCompletion(() -> link.finishRoomScroll(false));
+                return;
+            }
             RoomBoundaryDecision boundary = boundaryController.decide(
                 roomSession.boundaryState(link.pixelX(), link.pixelY(), link.isAirborne(),
                     link.romPhysicsModifier()));

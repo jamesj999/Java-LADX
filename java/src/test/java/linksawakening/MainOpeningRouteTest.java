@@ -12,7 +12,7 @@ final class MainOpeningRouteTest {
     void newGameCanCollectTailCavesKeysCompassAndMap() throws Exception {
         Main.initializeHeadlessNewGame();
         var checkpoints = new ArrayList<Main.HeadlessState>();
-        for (String line : Files.readAllLines(Path.of("../tools/opening/tail-cave-map-route.tsv"))) {
+        for (String line : Files.readAllLines(Path.of("../tools/opening/tail-cave-revolving-door-route.tsv"))) {
             if (line.isBlank() || line.startsWith("#")) continue;
             String[] fields = line.split("\\s+");
             int idle = Integer.parseInt(fields[2]);
@@ -182,7 +182,7 @@ final class MainOpeningRouteTest {
         assertFalse(powerUpFinished.dialog());
         assertTrue(powerUpFinished.text().contains("energy flowing"));
         var switchKey = checkpoints.get(344);
-        assertEquals(384, checkpoints.size());
+        assertEquals(399, checkpoints.size());
         assertEquals(0x13, switchKey.room());
         assertEquals(2, switchKey.smallKeys());
         assertEquals(1, switchKey.compass());
@@ -190,7 +190,7 @@ final class MainOpeningRouteTest {
         assertTrue(switchKey.text().contains("Small"));
         assertEquals(afterCompass.health(), switchKey.health(),
             "Clear Gels and the switch room without contact damage");
-        var mapReward = checkpoints.getLast();
+        var mapReward = checkpoints.get(383);
         assertEquals(0x14, mapReward.room());
         assertTrue(mapReward.dialog());
         assertTrue(mapReward.text().contains("a Map!"));
@@ -198,6 +198,14 @@ final class MainOpeningRouteTest {
         assertEquals(1, mapReward.compass());
         assertEquals(2, mapReward.smallKeys());
         assertTrue(mapReward.health() > 0);
+        var afterDoor = checkpoints.getLast();
+        assertEquals(0x0F, afterDoor.room());
+        assertEquals(80, afterDoor.y());
+        assertEquals(2, afterDoor.smallKeys());
+        assertEquals(1, afterDoor.dungeonMap());
+        assertFalse(afterDoor.dialog());
+        assertTrue(afterDoor.health() > 0);
+
     }
 
     private static void advanceAlive() {

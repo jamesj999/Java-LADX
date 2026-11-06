@@ -200,6 +200,9 @@ public final class Link implements RocsFeather.JumpTarget {
     private int lastRomSpeedY;
     private int groundStatus = GROUND_STATUS_NORMAL;
     private int motionState = LINK_MOTION_DEFAULT;
+    private int revolvingDoorFrame;
+    private boolean revolvingDoorTransitionPending;
+    private int revolvingDoorPaletteVariant = -1;
     private boolean romInteractiveMotionBlocked;
     /** Mirrors wC147: Link was standing on a side-view moving entity this frame. */
     private boolean standingOnSideViewEntity;
@@ -356,6 +359,9 @@ public final class Link implements RocsFeather.JumpTarget {
         airborne = false;
         groundStatus = GROUND_STATUS_NORMAL;
         motionState = LINK_MOTION_DEFAULT;
+        revolvingDoorFrame = 0;
+        revolvingDoorTransitionPending = false;
+        revolvingDoorPaletteVariant = -1;
         physicsModifier = 0;
         physicsRoomLoadToken = -1;
         physicsRoomMapId = -1;
@@ -1334,6 +1340,11 @@ public final class Link implements RocsFeather.JumpTarget {
             return;
         }
 
+        if (motionState == 0x05) {
+            tickRevolvingDoor();
+            return;
+        }
+
         if (motionState == LINK_MOTION_SWIMMING) {
             updateSwimming();
             return;
@@ -1482,6 +1493,33 @@ public final class Link implements RocsFeather.JumpTarget {
             walkTickCounter = 0;
             walkFrame = 0;
         }
+    }
+
+    private void tickRevolvingDoor() {
+        subX = (0x50 - 8) << SUB_PIXEL_SHIFT;
+        subY = 0;
+        movingThisFrame = false;
+        if (revolvingDoorFrame == 0 || revolvingDoorFrame == 0x28) revolvingDoorPaletteVariant = 0;
+        if (revolvingDoorFrame == 0x18) revolvingDoorPaletteVariant = 1;
+        if (revolvingDoorFrame < 0x38) {
+            romAnimationStateOverride = romTables.revolvingDoorAnimation(revolvingDoorFrame);
+        }
+        if (++revolvingDoorFrame >= 0x38) {
+            subY = (-5 - 16) << SUB_PIXEL_SHIFT;
+            direction = DIRECTION_UP;
+            romAnimationStateOverride = 0x04;
+        }
+        if (revolvingDoorFrame == 0x48) {
+            motionState = LINK_MOTION_DEFAULT;
+            revolvingDoorPaletteVariant = -1;
+            revolvingDoorTransitionPending = true;
+        }
+    }
+
+    public boolean consumeRevolvingDoorTransition() {
+        boolean pending = revolvingDoorTransitionPending;
+        revolvingDoorTransitionPending = false;
+        return pending;
     }
 
     private void updateDebugNoClip() {
@@ -1834,6 +1872,23 @@ public final class Link implements RocsFeather.JumpTarget {
             int pointX = spriteX + xs[i];
             int pointY = spriteY + ys[i];
             int physicsFlag = collision.objectPhysicsFlagAtPoint(pointX, pointY);
+            int objectId = collision.objectIdAtPoint(pointX, pointY);
+            // $02:716B/$7468: the top six pixels of the revolving doorway.
+            if (collision.usesIndoorPhysicsTable() && (physicsFlag == 0x7C || physicsFlag == 0x7D)
+                && (objectId == 0xB1 || objectId == 0xB2) && (pointY & 15) < 6
+                && motionState != 0x05) {
+                motionState = 0x05;
+                revolvingDoorFrame = 0;
+                revolvingDoorTransitionPending = false;
+                revolvingDoorPaletteVariant = -1;
+                zSubPixels = zVelocity = 0;
+                airborne = false;
+                collisionIgnoreFramesRemaining = 0;
+                if (playerState != null) playerState.setInvincibilityCounter(0);
+                if (itemRegistry != null && itemRegistry.lookup(PlayerState.INVENTORY_SWORD)
+                    instanceof linksawakening.equipment.Sword sword) sword.resetSpinAttack();
+                soundSink.play(GameplaySoundEvent.REVOLVING_DOOR);
+            }
             if (physicsFlag == PhysicsFlags.CAT_LEDGE_OVERWORLD) {
                 blocked |= applyOverworldLedgeCollision(pointY);
             } else if (isDirectionalLedgePhysics(physicsFlag)) {
@@ -2180,6 +2235,10 @@ public final class Link implements RocsFeather.JumpTarget {
             ? tunicPalette.forObjectPalette(4)
             : tunicPalette.forTunic(
                 playerState == null ? PlayerState.TUNIC_GREEN : playerState.tunicType());
+
+        if (revolvingDoorPaletteVariant >= 0 && revolvingDoorFrame < 0x38) {
+            palette = romTables.revolvingDoorPalette(revolvingDoorPaletteVariant);
+        }
 
         // Column-major tile layout: [0]=UL, [1]=LL, [2]=UR, [3]=LR.
         // GB 8x16 flipY swaps the two stacked tiles inside a column and flips

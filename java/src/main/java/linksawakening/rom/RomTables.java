@@ -165,6 +165,8 @@ public final class RomTables {
     private final int[] shovelAnimationStates;
     private final byte[] staticSwordCollisionX;
     private final byte[] staticSwordCollisionY;
+    private final int[] revolvingDoorAnimation;
+    private final int[][] revolvingDoorPalettes;
 
     private RomTables(int[][] physicsFlags, int[] entityOptions1,
                       int[] entityHitboxFlags, byte[] entityCollisionPointsX,
@@ -183,7 +185,8 @@ public final class RomTables {
                       byte[] magicRodXOffset, byte[] magicRodYOffset,
                       int[] magicRodTiles, int[] magicRodAttributes,
                       int[] shovelAnimationStates,
-                      byte[] staticSwordCollisionX, byte[] staticSwordCollisionY) {
+                      byte[] staticSwordCollisionX, byte[] staticSwordCollisionY,
+                      int[] revolvingDoorAnimation, int[][] revolvingDoorPalettes) {
         this.physicsFlags = physicsFlags;
         this.entityOptions1 = entityOptions1;
         this.entityHitboxFlags = entityHitboxFlags;
@@ -217,6 +220,8 @@ public final class RomTables {
         this.shovelAnimationStates = shovelAnimationStates;
         this.staticSwordCollisionX = staticSwordCollisionX;
         this.staticSwordCollisionY = staticSwordCollisionY;
+        this.revolvingDoorAnimation = revolvingDoorAnimation;
+        this.revolvingDoorPalettes = revolvingDoorPalettes;
     }
 
     public static RomTables loadFromRom(byte[] romData) {
@@ -314,7 +319,32 @@ public final class RomTables {
                              swordTiles, swordAttrs,
                              magicRodX, magicRodY, magicRodTiles, magicRodAttrs,
                              shovelAnimationStates,
-                             staticSwordCollisionX, staticSwordCollisionY);
+                             staticSwordCollisionX, staticSwordCollisionY,
+                             loadUnsignedTable(romData, 2, 0x4E66, 7),
+                             loadRevolvingDoorPalettes(romData));
+    }
+
+    /** LinkMotionRevolvingDoorHandler and Data_002_4E1C. */
+    public int revolvingDoorAnimation(int frame) {
+        return revolvingDoorAnimation[(frame >> 3) % 7];
+    }
+
+    public int[] revolvingDoorPalette(int variant) {
+        return revolvingDoorPalettes[variant].clone();
+    }
+
+    private static int[][] loadRevolvingDoorPalettes(byte[] rom) {
+        int[][] palettes = new int[2][4];
+        int base = romOffset(2, 0x4E1C);
+        for (int row = 0; row < 2; row++) {
+            for (int color = 0; color < 4; color++) {
+                int offset = base + row * 8 + color * 2;
+                int value = (rom[offset] & 255) | ((rom[offset + 1] & 255) << 8);
+                palettes[row][color] = ((value & 31) << 19)
+                    | (((value >> 5) & 31) << 11) | (((value >> 10) & 31) << 3);
+            }
+        }
+        return palettes;
     }
 
     private static int[] loadUnsignedTable(byte[] romData, int bank, int addr, int len) {
