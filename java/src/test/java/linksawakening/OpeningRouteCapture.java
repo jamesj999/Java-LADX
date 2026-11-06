@@ -92,7 +92,7 @@ public final class OpeningRouteCapture {
 
     private static void appendTrace(StringBuilder trace, int frame) {
         var s = Main.headlessState();
-        if (s.map() == 0 && s.room() == 0x11) combatTrace.append(frame).append('\t').append(Main.headlessCombatTrace()).append('\n');
+        if (s.map() == 0 && (s.room() == 0x11 || s.room() == 0x06)) combatTrace.append(frame).append('\t').append(Main.headlessCombatTrace()).append('\n');
         if (s.health() < lastHealth) System.out.println("Damage at " + frame + " " + s + " entities " + Main.headlessEntityPositions());
         lastHealth = s.health();
         if (s.health() <= 0) throw new IllegalStateException("Link died at frame " + frame + ": " + s);
@@ -103,7 +103,8 @@ public final class OpeningRouteCapture {
             .append(s.dungeonMap()).append('\t').append(s.nightmareKey())
             .append('\t').append(s.animation()).append('\t').append(s.direction()).append('\t').append(s.swordAnimation())
             .append('\t').append(s.z()).append('\t').append(s.velocityZ())
-            .append('\t').append(s.speedX()).append('\t').append(s.speedY()).append('\n');
+            .append('\t').append(s.speedX()).append('\t').append(s.speedY())
+            .append('\t').append(s.maxHearts()).append('\t').append(s.instrument1Flags()).append('\n');
     }
 
 }

@@ -294,7 +294,7 @@ public class Main {
             : sword.enemyCollisionBox(link.romEntityX(), link.romSwordCollisionY(), link.direction());
         return "%d,%d,%d,%d,%d;%s".formatted(box.active() ? 1 : 0, box.x(), box.width(), box.y(), box.height(),
             roomSession.activeRoom().entities().loadedEntities().stream()
-                .filter(e -> e.type() == 0x81 || e.type() == 0x82)
+                .filter(e -> e.type() == 0x81 || e.type() == 0x82 || e.type() == 0x59)
                 .map(e -> "%d,%d,%d,%d,%d,%d".formatted(e.type(), e.x(), e.y(), e.z(),
                     roomSession.entityHealth(e.slot()), e.status() == linksawakening.world.EntityStatus.ACTIVE ? 5 : 1))
                 .collect(java.util.stream.Collectors.joining(";")));
@@ -319,11 +319,11 @@ public class Main {
                 roomSession.currentDungeonItemFlagsSnapshot()[4] & 0xFF,
                 roomSession.currentDungeonItemFlagsSnapshot()[1] & 0xFF,
                 roomSession.currentDungeonItemFlagsSnapshot()[0] & 0xFF,
-                roomSession.currentDungeonItemFlagsSnapshot()[3] & 0xFF, link.romAnimationState(), 3 - link.direction(), equipmentController.activeSword() == null ? 0 : equipmentController.activeSword().state(), link.romEntityZ(), link.zVelocity(), link.romSpeedX(), link.romSpeedY(), scrollController.isActive() || transitionController.isInputBlocked());
+                roomSession.currentDungeonItemFlagsSnapshot()[3] & 0xFF, link.romAnimationState(), 3 - link.direction(), equipmentController.activeSword() == null ? 0 : equipmentController.activeSword().state(), link.romEntityZ(), link.zVelocity(), link.romSpeedX(), link.romSpeedY(), scrollController.isActive() || transitionController.isInputBlocked(), playerState.maxHearts(), roomSession.dungeonProgressFlagsSnapshot()[0] & 0xFF);
     }
 
     record HeadlessState(int frame, int map, int room, int x, int y,
-                         boolean dialog, boolean pageWait, String text, int shield, int health, int sword, int urchins, boolean toadstool, int powder, int inventoryTick, int tarinX, int tarinY, boolean forestCleared, int tailKey, int bgTick, int smallKeys, int compass, int dungeonMap, int nightmareKey, int animation, int direction, int swordAnimation, int z, int velocityZ, int speedX, int speedY, boolean loading) {}
+                         boolean dialog, boolean pageWait, String text, int shield, int health, int sword, int urchins, boolean toadstool, int powder, int inventoryTick, int tarinX, int tarinY, boolean forestCleared, int tailKey, int bgTick, int smallKeys, int compass, int dungeonMap, int nightmareKey, int animation, int direction, int swordAnimation, int z, int velocityZ, int speedX, int speedY, boolean loading, int maxHearts, int instrument1Flags) {}
 
     private static void loadROM() {
         try (InputStream is = Main.class.getClassLoader().getResourceAsStream("rom/azle.gbc")) {

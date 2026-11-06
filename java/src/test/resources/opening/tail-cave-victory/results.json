@@ -1,0 +1,72 @@
+{
+  "cello_full_frame_rgb555_differences": 358,
+  "boss_health_changes": {
+    "java": [
+      {
+        "frame": 65313,
+        "health": 4,
+        "x": 56,
+        "y": 48
+      },
+      {
+        "frame": 65545,
+        "health": 3,
+        "x": 101,
+        "y": 48
+      },
+      {
+        "frame": 65618,
+        "health": 2,
+        "x": 68,
+        "y": 43
+      },
+      {
+        "frame": 65714,
+        "health": 1,
+        "x": 109,
+        "y": 50
+      },
+      {
+        "frame": 65954,
+        "health": 0,
+        "x": 105,
+        "y": 56
+      }
+    ],
+    "emulator": [
+      {
+        "frame": 62055,
+        "health": 4,
+        "x": 56,
+        "y": 176
+      },
+      {
+        "frame": 62285,
+        "health": 3,
+        "x": 52,
+        "y": 98
+      },
+      {
+        "frame": 62549,
+        "health": 2,
+        "x": 90,
+        "y": 47
+      },
+      {
+        "frame": 62649,
+        "health": 1,
+        "x": 58,
+        "y": 78
+      },
+      {
+        "frame": 62790,
+        "health": 0,
+        "x": 62,
+        "y": 111
+      }
+    ]
+  },
+  "max_hearts": 4,
+  "instrument1_flags": 3,
+  "known_failure": "Java exits before the ROM\u2019s post-instrument SWAMP hint."
+}

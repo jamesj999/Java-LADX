@@ -73,10 +73,10 @@ try:
                           p.memory[0xc125], p.memory[0xffe7], p.memory[0xff96], p.memory[0xff97],
                           p.memory[0xdb5a], p.memory[0xdb4e],
                           p.memory[0xffa1], p.memory[0xff9b], p.memory[0xc111],
-                          p.memory[0xdb00], p.memory[0xdb01], p.memory[0xdb4b], p.memory[0xdb4c], p.memory[0xd851], p.memory[0xdb11], p.memory[0xdbd0], p.memory[0xdbcd], p.memory[0xdbcc], p.memory[0xdbcf], p.memory[0xff9d], p.memory[0xff9e], p.memory[0xc137], p.memory[0xffa2], p.memory[0xffa3], p.memory[0xff9a], p.memory[0xff9b]])
-            if p.memory[0xfff7] == 0 and p.memory[0xfff6] == 0x11:
+                          p.memory[0xdb00], p.memory[0xdb01], p.memory[0xdb4b], p.memory[0xdb4c], p.memory[0xd851], p.memory[0xdb11], p.memory[0xdbd0], p.memory[0xdbcd], p.memory[0xdbcc], p.memory[0xdbcf], p.memory[0xff9d], p.memory[0xff9e], p.memory[0xc137], p.memory[0xffa2], p.memory[0xffa3], p.memory[0xff9a], p.memory[0xff9b], p.memory[0xdb5b], p.memory[0xdb65]])
+            if p.memory[0xfff7] == 0 and p.memory[0xfff6] in (0x11,0x06):
                 box = [int(p.memory[0xc5b0] != 0)] + list(p.memory[0xc140:0xc144])
-                entities = [[p.memory[0xc3a0+i], p.memory[0xc200+i], p.memory[0xc210+i], p.memory[0xc310+i], p.memory[0xc360+i], p.memory[0xc280+i]] for i in range(16) if p.memory[0xc280+i] and p.memory[0xc3a0+i] in (0x81,0x82)]
+                entities = [[p.memory[0xc3a0+i], p.memory[0xc200+i], p.memory[0xc210+i], p.memory[0xc310+i], p.memory[0xc360+i], p.memory[0xc280+i]] for i in range(16) if p.memory[0xc280+i] and p.memory[0xc3a0+i] in (0x81,0x82,0x59)]
                 combat_trace.append(str(frame)+'\t'+';'.join(','.join(map(str,row)) for row in [box]+entities)+'\n')
             frame += 1
         if '=' in held:
