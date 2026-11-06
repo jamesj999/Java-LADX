@@ -287,6 +287,8 @@ public final class PlayerState {
     public void applyEntityPickup(int entityType) {
         switch (entityType & 0xFF) {
             case 0x2D -> addHealthBuffer = Math.min(0xFF, addHealthBuffer + HP_PER_HEART);
+            // PickDroppableFairy ($03:64C6) adds six hearts to the byte buffer.
+            case 0x2F -> addHealthBuffer = (addHealthBuffer + 0x30) & 0xFF;
             case 0x2E -> addRupeeBuffer = Math.min(0xFF, addRupeeBuffer + 1);
             case 0x33 -> setActivePowerUp(ACTIVE_POWER_UP_PIECE_OF_POWER);
             case 0x34 -> setActivePowerUp(ACTIVE_POWER_UP_GUARDIAN_ACORN);

@@ -9400,6 +9400,17 @@ public final class RoomEntityRuntime {
         int countdown = enemyTransitionCountdown[slot];
         enemyFlashCountdown[slot] = countdown;
         if (countdown == 0) {
+            // $06:6CC1 calls DidKillEnemy, including SpawnEnemyDrop. The
+            // ROM health-group tables select the miniboss healing fairy.
+            if (enemyDropResolver != null) {
+                EnemyDropResolver.Result drop = enemyDropResolver.resolve(
+                    new EnemyDropResolver.Context(entity.type(), enemyDropHealthGroup(entity.type()),
+                        droppedItemBySlot[slot], enemyDropMaxHearts, enemyDropHealth,
+                        enemyDropBossBattle, enemyDropActivePowerUp, groundInteractionSideScrolling,
+                        enemyDropCounters, randomByteSupplier));
+                enemyDropCounters = drop.counters();
+                if (drop.dropped()) spawnEnemyDrop(entity, drop.itemType());
+            }
             int killIndex = killCount & 0xFF;
             killOrder[killIndex] = entity.sourceLoadOrder() & 0xFF;
             killCount = (killCount + 1) & 0xFF;

@@ -289,6 +289,7 @@ final class MainOpeningRouteTest {
         assertEquals(613, checkpoints.size());
         assertEquals(0x11, checkpoints.get(601).room());
         assertEquals(0x17, checkpoints.getLast().room(), "The miniboss warp returns to the entrance");
+        assertEquals(24, checkpoints.getLast().health(), "Collecting the miniboss fairy heals Link");
         assertEquals(80, checkpoints.getLast().x());
         assertEquals(72, checkpoints.getLast().y());
         assertTrue(checkpoints.getLast().health() > 0);

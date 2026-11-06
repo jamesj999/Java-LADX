@@ -12,6 +12,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class PlayerStateTest {
     @Test
+    void fairyPickupHealsSixHeartsThroughTheResourceBuffer() {
+        PlayerState playerState = new PlayerState();
+        playerState.setMaxHearts(10);
+        playerState.setHealth(8);
+        playerState.applyEntityPickup(0x2F);
+        assertEquals(8, playerState.health());
+        assertEquals(0x30, playerState.addHealthBuffer());
+        for (int frame = 0; frame < 96; frame++) playerState.tickResourceBuffers(frame);
+        assertEquals(56, playerState.health());
+        assertEquals(0, playerState.addHealthBuffer());
+    }
+
+    @Test
     void toadstoolRewardSetsItsFlagAndPlacesPowderInInventoryWithoutAddingPowder() {
         PlayerState state = new PlayerState();
         state.initializeNewGame(30, 30, 20);

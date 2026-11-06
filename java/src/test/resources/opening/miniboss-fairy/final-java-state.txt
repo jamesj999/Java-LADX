@@ -1,0 +1,2 @@
+613 HeadlessState[frame=213, map=0, room=23, x=80, y=72, dialog=false, pageWait=false, text=Nightmare's     
+Lair!, shield=1, health=24, sword=1, urchins=0, toadstool=false, powder=18, inventoryTick=100, tarinX=-1, tarinY=-1, forestCleared=true, tailKey=1, bgTick=37, smallKeys=0, compass=1, dungeonMap=1, nightmareKey=1, animation=0, direction=3, swordAnimation=0, z=0, velocityZ=0, speedX=0, speedY=0, loading=false] entities 61:ACTIVE@80,72

@@ -7696,6 +7696,9 @@ final class RoomEntityRuntimeTest {
             snapshotWithSlots(bar, boss), true, sequence(0x00, 0x1F), catalog,
             new RomEnemyCombatTables(rom));
         runtime.setEntityMapIdForTest(0x00);
+        runtime.setEnemyDropResolver(new EnemyDropResolver(rom));
+        runtime.setEnemyDropPlayerState(3, 4, false);
+        runtime.setEnemyDropBossBattle(true);
 
         runtime.tick(0, 0, 0, sequence(0x00, 0x1F));
         assertEquals(0xFF, runtime.transitionCountdown(15));
@@ -7708,6 +7711,10 @@ final class RoomEntityRuntimeTest {
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(15).status());
         assertEquals(0x20, runtime.consumePendingRoomStatusMask());
         assertEquals(1, runtime.consumePendingClearedEntityMask());
+        var fairy = runtime.snapshot().loadedEntities().stream()
+            .filter(e -> e.type() == 0x2F).findFirst().orElseThrow();
+        assertEquals(boss.x(), fairy.x());
+        assertEquals(boss.y(), fairy.y());
 
         runtime.setEntityRoomStatusForTest(0x20);
         runtime.tick(0x100, 0, 0, () -> 0);
