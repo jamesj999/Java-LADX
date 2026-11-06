@@ -90,3 +90,14 @@ tasks.register('captureDialog', JavaExec) {
     args layout.buildDirectory.dir('dialog-comparison').get().asFile.absolutePath,
         providers.gradleProperty('dialogScenario').getOrElse('marin')
 }
+
+// Shared normal-button route through the actual Main update/input/render loop.
+tasks.register('captureOpeningRoute', JavaExec) {
+    group = 'verification'
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'linksawakening.OpeningRouteCapture'
+    jvmArgs '-Djava.awt.headless=true'
+    args file('../tools/opening/house-route.tsv').absolutePath,
+        layout.buildDirectory.dir('opening-route').get().asFile.absolutePath
+}

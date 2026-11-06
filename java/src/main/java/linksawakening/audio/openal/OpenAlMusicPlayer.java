@@ -3,7 +3,7 @@ package linksawakening.audio.openal;
 import linksawakening.audio.apu.GameBoyApu;
 import linksawakening.audio.music.MusicDriver;
 import linksawakening.audio.music.MusicTrack;
-import linksawakening.audio.music.MusicTrackPlayer;
+import linksawakening.audio.music.FrameMusicPlayer;
 import linksawakening.audio.sfx.SoundEffect;
 import linksawakening.audio.sfx.SoundEffectPcmRenderer;
 import linksawakening.audio.sfx.SoundEffectPlayer;
@@ -21,7 +21,7 @@ import java.nio.ShortBuffer;
 import java.util.ArrayDeque;
 import java.util.Objects;
 
-public final class OpenAlMusicPlayer implements AutoCloseable, MusicTrackPlayer {
+public final class OpenAlMusicPlayer implements FrameMusicPlayer {
     private static final int BUFFER_COUNT = 4;
     private static final int BUFFER_FRAMES = 1024;
 

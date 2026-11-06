@@ -27,6 +27,8 @@ import linksawakening.audio.music.AreaMusicResolver;
 import linksawakening.audio.music.GameplayMusicController;
 import linksawakening.audio.music.MusicCatalog;
 import linksawakening.audio.music.MusicDriver;
+import linksawakening.audio.music.FrameMusicPlayer;
+import linksawakening.audio.music.HeadlessMusicPlayer;
 import linksawakening.audio.music.MusicTrackIds;
 import linksawakening.audio.music.RoomMusicContext;
 import linksawakening.audio.openal.OpenAlMusicPlayer;
@@ -168,7 +170,7 @@ public class Main {
     private static DialogSoundSink dialogSoundSink;
     private static PcmSoundOutput dialogSoundOutput;
     private static GameplaySoundSink gameplaySoundSink = GameplaySoundSink.none();
-    private static OpenAlMusicPlayer musicPlayer;
+    private static FrameMusicPlayer musicPlayer;
     private static GameplayMusicController gameplayMusicController;
     private static boolean overworldIntroContinuationPending;
     private static CutsceneManager cutsceneManager;
@@ -239,6 +241,50 @@ public class Main {
         cleanup();
     }
 
+    /** One headless session per JVM; uses the desktop update, input and render paths. */
+    static void initializeHeadlessNewGame() {
+        if (inputState != null) throw new IllegalStateException("Game already initialized");
+        gpu = new GPU();
+        loadROM();
+        transitionController.setRomData(romData);
+        appConfig = AppConfig.parse("{\"itemProfile\":\"NEW_GAME\",\"debugEnabled\":false}");
+        loadGraphicsData();
+        initMenuSystem(true);
+        dialogController.setPlayerName("A");
+        startNewGame();
+    }
+
+    static void headlessButton(String button, boolean pressed) {
+        int key = switch (button) {
+            case "up" -> inputConfig.upKey();
+            case "down" -> inputConfig.downKey();
+            case "left" -> inputConfig.leftKey();
+            case "right" -> inputConfig.rightKey();
+            case "a" -> inputConfig.aKey();
+            case "b" -> inputConfig.bKey();
+            case "start" -> inputConfig.menuOpenKey();
+            case "select" -> inputConfig.selectKey();
+            default -> throw new IllegalArgumentException("Unknown button: " + button);
+        };
+        onKeyEvent(key, pressed ? GLFW_PRESS : GLFW_RELEASE);
+    }
+
+    static byte[] headlessFrame() {
+        update();
+        composeFrameBuffer();
+        return indexedDisplayBuffer.clone();
+    }
+
+    static HeadlessState headlessState() {
+        return new HeadlessState(frameCounter, roomSession.mapId(), roomSession.currentRoomId(),
+            link.romEntityX(), link.romEntityY(), dialogController.isActive(),
+            dialogController.isWaitingForPageAdvance(), dialogController.visibleText(),
+            playerState.shieldLevel());
+    }
+
+    record HeadlessState(int frame, int map, int room, int x, int y,
+                         boolean dialog, boolean pageWait, String text, int shield) {}
+
     private static void loadROM() {
         try (InputStream is = Main.class.getClassLoader().getResourceAsStream("rom/azle.gbc")) {
             if (is == null) {
@@ -253,16 +299,20 @@ public class Main {
     }
 
     private static void initMenuSystem() {
+        initMenuSystem(false);
+    }
+
+    private static void initMenuSystem(boolean headless) {
         try {
-            saveRamStore = SaveRamStore.open(SaveRamStore.defaultPath());
+            saveRamStore = headless ? SaveRamStore.inMemory() : SaveRamStore.open(SaveRamStore.defaultPath());
         } catch (IOException exception) {
             throw new IllegalStateException("Failed to open save image", exception);
         }
         inputConfig = currentAppConfig().inputConfig();
         inputState = new InputState();
         playerState = new PlayerState();
-        initMusicSystem();
-        dialogSoundOutput = new OpenAlPcmSoundOutput();
+        initMusicSystem(headless);
+        dialogSoundOutput = headless ? (pcm, rate) -> {} : new OpenAlPcmSoundOutput();
         dialogSoundSink = new SfxDialogSoundSink(dialogSoundOutput);
         gameplaySoundSink = new SfxGameplaySoundSink(romData, dialogSoundOutput);
         InventoryTilemapLoader tilemapLoader = InventoryTilemapLoader.loadFromRom(romData);
@@ -536,14 +586,19 @@ public class Main {
             roomSession, new RoomBoundaryController(), transitionController, scrollController);
     }
 
-    private static void initMusicSystem() {
-        GameBoyApu musicApu = new GameBoyApu(48_000);
+    private static void initMusicSystem(boolean headless) {
         MusicCatalog musicCatalog = MusicCatalog.fromRom(romData);
-        musicPlayer = new OpenAlMusicPlayer(new MusicDriver(romData, musicApu), musicApu);
+        if (headless) {
+            musicPlayer = new HeadlessMusicPlayer(romData);
+        } else {
+            GameBoyApu musicApu = new GameBoyApu(48_000);
+            var output = new OpenAlMusicPlayer(new MusicDriver(romData, musicApu), musicApu);
+            output.setLoopEnabled(false);
+            musicPlayer = output;
+        }
         // ROM background tracks contain their own loop commands. Host-level
         // restarting would also loop finite fanfares such as $1B forever,
         // preventing wActiveMusicIndex-gated acquisition handlers advancing.
-        musicPlayer.setLoopEnabled(false);
         gameplayMusicController = new GameplayMusicController(
             AreaMusicResolver.fromRom(romData), musicCatalog, musicPlayer);
     }

@@ -3046,3 +3046,26 @@ of scope.
   `docs/validation/dialog-closing-emulator-fixes-2026-11-06.html`.
 - The continuous house-to-beach route and subsequent progression remain
   outstanding. This verifies the closing checkpoint, not full-game completion.
+
+## Continuous Main-loop opening route — 2026-11-06
+
+- Added headless initialization of the production Main input/update/render loop,
+  using in-memory saves and silent PCM output. Music still executes ROM commands
+  on the gameplay clock so finite fanfares can release gameplay gates without an
+  audio device. Desktop OpenAL playback remains the normal application path.
+- A shared 2,959-frame button route now wakes Link, completes Marin's dialogue,
+  hops out of bed, walks to Tarin, receives the shield, completes its dialogue,
+  and exits to overworld A2 at ROM position (88,82) in both runtimes. No Java
+  scene or gameplay-state injection occurs after the new-game bootstrap.
+- Added actual Main-loop integration coverage and a finite-fanfare transport
+  check. All 2,305 tests pass. Run `gradle -p java captureOpeningRoute`; capture
+  the original with `tools/opening/capture.py` and compare with
+  `tools/opening/compare.py` using the existing PyBoy virtual environment.
+- This is a diagnostic baseline, not visual-parity completion: 8/22 checkpoint
+  screenshots match exactly, worst difference 391/23,040 pixels. Initial clocks
+  are unsynchronized (Java bootstrap versus ROM settled house), and remaining
+  sprite/input/display phase differences include a one-pixel walk endpoint.
+  The comparison exits nonzero while any pixel difference remains. Evidence:
+  `docs/validation/continuous-opening-baseline-2026-11-06.html`.
+- Next work is extending this real-loop route toward the beach and correcting
+  integration/visual discrepancies, then continuing the full-game roadmap.
