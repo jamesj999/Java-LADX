@@ -1207,6 +1207,7 @@ public final class RoomEntityRuntime {
             // State 0 is reserved for dynamically spawned warps.
             if (entity.loaded() && indoorRoom && entity.type() == WarpMotion.ENTITY_TYPE) {
                 warpState[entity.slot()] = WarpMotion.STATE_APPROACH;
+                slots[entity.slot()] = withPositionAndVariant(entity, entity.x(), entity.y(), -1);
             }
             if (entity.loaded() && entity.type() == ENTITY_GENIE) {
                 GenieMotion.JarState jar = genieMotion.initialize(entity.slot());
@@ -2268,6 +2269,8 @@ public final class RoomEntityRuntime {
             if (status == EntityStatus.ACTIVE && indoorRoom
                 && entity.type() == WarpMotion.ENTITY_TYPE && warpMotion != null) {
                 int slot = entity.slot();
+                slots[index] = withPositionAndVariant(entity, entity.x(), entity.y(),
+                    dungeonMinibossReady ? (frame >> 3) & 7 : -1);
                 WarpMotion.Update warpUpdate = warpMotion.advance(
                     entity, warpState[slot], warpTransitionCountdown[slot], entityMapId,
                     entityRoomId, dungeonMinibossReady, linkEntityX, linkEntityY, linkZ);

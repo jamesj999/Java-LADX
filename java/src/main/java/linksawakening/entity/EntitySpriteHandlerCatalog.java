@@ -226,6 +226,9 @@ public final class EntitySpriteHandlerCatalog {
             // Unknown011SpriteVariants, used by the transient pushed block.
             return decodePair(entityType, 0x03, 0x5235, 2, 1);
         }
+        if (entityType == 0x61 && isIndoorRoomTable(roomTable)) {
+            return decodeDungeonWarp();
+        }
         if (entityType == ENTITY_INSTRUMENT_OF_THE_SIRENS) {
             return decodePair(entityType, 0x03, 0x5D83, 4,
                 mapId < 0 ? 0 : mapId & 0x03);
@@ -1294,6 +1297,28 @@ public final class EntitySpriteHandlerCatalog {
     private static boolean isIndoorRoomTable(EntityRoomLoader.RoomTable roomTable) {
         return roomTable == EntityRoomLoader.RoomTable.INDOORS_A
             || roomTable == EntityRoomLoader.RoomTable.INDOORS_B;
+    }
+
+    /** Bank $19:43A9: center pair followed by four orbiting single sprites. */
+    private EntitySpriteDefinition decodeDungeonWarp() {
+        EntitySpriteDefinition center = decodePair(0x61, 0x19, 0x4393, 2, 0);
+        EntitySpriteDefinition dots = decodeSingle(0x61, 0x19, 0x43A5, 2, 0);
+        List<List<EntitySpriteDefinition.DynamicSprite>> variants = new ArrayList<>(8);
+        for (int phase = 0; phase < 8; phase++) {
+            List<EntitySpriteDefinition.DynamicSprite> sprites = new ArrayList<>(6);
+            appendDynamicPair(sprites, center.variant(phase & 1),
+                EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS);
+            for (int orbit = 0; orbit < 8; orbit += 2) {
+                int index = (phase + orbit) & 7;
+                sprites.add(new EntitySpriteDefinition.DynamicSprite(
+                    signedByte(readByte(0x19, 0x439B + index)),
+                    signedByte(readByte(0x19, 0x439D + index)) + 4,
+                    dots.variant(phase & 1).first(),
+                    EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, false));
+            }
+            variants.add(List.copyOf(sprites));
+        }
+        return EntitySpriteDefinition.dynamic(0x61, 0x19, 0x4393, 0, variants);
     }
 
     private static void appendDynamicPair(

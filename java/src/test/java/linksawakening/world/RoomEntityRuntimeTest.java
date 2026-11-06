@@ -25,6 +25,27 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 final class RoomEntityRuntimeTest {
 
     @Test
+    void dungeonWarpStaysHiddenUntilMinibossDefeatThenCyclesAllEightPhases() throws IOException {
+        byte[] rom = loadRom();
+        var catalog = new EntitySpriteHandlerCatalog(rom);
+        var warp = new RoomEntity(0, 0, 0x61, 80, 72, EntityStatus.ACTIVE,
+            catalog.forEntityType(0x61, EntityRoomLoader.RoomTable.INDOORS_A, 0), 0);
+        var runtime = RoomEntityRuntime.from(snapshot(warp), true, () -> 0,
+            catalog, new RomEnemyCombatTables(rom), new ChestContentsTable(rom),
+            linksawakening.rom.RomTables.loadFromRom(rom), rom);
+        runtime.setEntityMapIdForTest(0);
+        runtime.setEntityRoomId(0x11);
+        assertEquals(-1, runtime.snapshot().slots().get(0).spriteVariant());
+        runtime.tick(0, 120, 32, () -> 0);
+        assertEquals(-1, runtime.snapshot().slots().get(0).spriteVariant());
+        runtime.setDungeonMinibossReady(true);
+        for (int phase = 0; phase < 8; phase++) {
+            runtime.tick(phase * 8, 120, 32, () -> 0);
+            assertEquals(phase, runtime.snapshot().slots().get(0).spriteVariant());
+        }
+    }
+
+    @Test
     void tailCaveBossesPushLinkInsideTheArenaBeforeBlockingInput() {
         int[][] cases = {{8,72,1,0}, {16,72,1,0}, {17,72,0,0},
             {142,72,0,0}, {143,72,-1,0}, {80,116,0,-1},

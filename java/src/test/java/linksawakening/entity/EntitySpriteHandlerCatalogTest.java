@@ -14,6 +14,29 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 final class EntitySpriteHandlerCatalogTest {
 
     @Test
+    void dungeonWarpDecodesCenterAndFourOrbitingSprites() throws Exception {
+        var catalog = new EntitySpriteHandlerCatalog(loadRom());
+        var warp = catalog.forEntityType(0x61, EntityRoomLoader.RoomTable.INDOORS_A, 0);
+        assertDefinition(warp, 0x19, 0x4393, EntitySpriteDefinition.Shape.DYNAMIC, 8, 0);
+        var sprites = warp.dynamicVariant(0);
+        assertEquals(6, sprites.size());
+        assertEquals(0x1E, sprites.get(0).oam().tile());
+        assertEquals(0x02, sprites.get(0).oam().attributes());
+        assertEquals(0x62, sprites.get(1).oam().attributes());
+        int[] x = {4, 12, 4, -4};
+        int[] y = {-8, 0, 8, 0};
+        for (int i = 0; i < 4; i++) {
+            assertEquals(x[i], sprites.get(i + 2).xOffset());
+            assertEquals(y[i], sprites.get(i + 2).yOffset());
+            assertEquals(0x24, sprites.get(i + 2).oam().tile());
+            assertEquals(1, sprites.get(i + 2).oam().attributes());
+        }
+        assertEquals(0x42, warp.dynamicVariant(1).get(0).oam().attributes());
+        assertEquals(0x22, warp.dynamicVariant(1).get(1).oam().attributes());
+        assertFalse(catalog.forEntityType(0x61, EntityRoomLoader.RoomTable.OVERWORLD).supported());
+    }
+
+    @Test
     void owlStatueUsesRomPairAndOnePixelVisualYOffset() throws Exception {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
         EntitySpriteDefinition statue = catalog.forEntityType(

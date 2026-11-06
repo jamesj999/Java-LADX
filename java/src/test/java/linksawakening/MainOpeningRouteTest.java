@@ -9,11 +9,11 @@ import static org.junit.jupiter.api.Assertions.*;
 /** Real game-loop integration, with buttons only after the new-game bootstrap. */
 final class MainOpeningRouteTest {
     @Test
-    void newGameCanDefeatRollingBonesWithFeatherAndNightmareKey() throws Exception {
+    void newGameCanDefeatRollingBonesAndWarpBackToTheEntrance() throws Exception {
         Main.initializeHeadlessNewGame();
         var checkpoints = new ArrayList<Main.HeadlessState>();
         var entityCheckpoints = new ArrayList<String>();
-        for (String line : Files.readAllLines(Path.of("../tools/opening/tail-cave-bones-combat-route.tsv"))) {
+        for (String line : Files.readAllLines(Path.of("../tools/opening/tail-cave-warp-route.tsv"))) {
             if (line.isBlank() || line.startsWith("#")) continue;
             String[] fields = line.split("\\s+");
             int idle = Integer.parseInt(fields[2]);
@@ -184,7 +184,7 @@ final class MainOpeningRouteTest {
         // longer guarantees a Piece of Power. It must remain interactive.
         assertFalse(checkpoints.get(334).dialog());
         var switchKey = checkpoints.get(345);
-        assertEquals(602, checkpoints.size());
+        assertEquals(613, checkpoints.size());
         assertEquals(0x13, switchKey.room());
         assertEquals(2, switchKey.smallKeys());
         assertEquals(1, switchKey.compass());
@@ -286,8 +286,11 @@ final class MainOpeningRouteTest {
         assertEquals(41, approach.x(), "Sword swings must not halt Feather approaches");
         assertEquals(72, approach.y());
         assertEquals(entry.health(), approach.health());
-        assertEquals(602, checkpoints.size());
-        assertEquals(0x11, checkpoints.getLast().room());
+        assertEquals(613, checkpoints.size());
+        assertEquals(0x11, checkpoints.get(601).room());
+        assertEquals(0x17, checkpoints.getLast().room(), "The miniboss warp returns to the entrance");
+        assertEquals(80, checkpoints.getLast().x());
+        assertEquals(72, checkpoints.getLast().y());
         assertTrue(checkpoints.getLast().health() > 0);
         assertFalse(entityCheckpoints.getLast().contains("81:"), "Rolling Bones must finish dying");
         assertFalse(entityCheckpoints.getLast().contains("82:"), "The defeated boss removes its bar");
