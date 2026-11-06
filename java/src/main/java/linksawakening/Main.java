@@ -295,11 +295,12 @@ public class Main {
             playerState.shieldLevel(), playerState.health(), playerState.swordLevel(), (int) roomSession.activeRoom().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0xC5 && entity.status() == linksawakening.world.EntityStatus.ACTIVE).count(), playerState.hasToadstool(), playerState.magicPowderCount(), inventoryMenu.instrumentPaletteTick(), tarin == null ? -1 : tarin.x(), tarin == null ? -1 : tarin.y(),
                 (roomSession.overworldRoomStatusSnapshot()[0x51] & 0x10) != 0,
-                playerState.tailKeyCount(), gpu.animatedTilesFrameCount(), scrollController.isActive() || transitionController.isInputBlocked());
+                playerState.tailKeyCount(), gpu.animatedTilesFrameCount(),
+                roomSession.currentDungeonItemFlagsSnapshot()[4] & 0xFF, scrollController.isActive() || transitionController.isInputBlocked());
     }
 
     record HeadlessState(int frame, int map, int room, int x, int y,
-                         boolean dialog, boolean pageWait, String text, int shield, int health, int sword, int urchins, boolean toadstool, int powder, int inventoryTick, int tarinX, int tarinY, boolean forestCleared, int tailKey, int bgTick, boolean loading) {}
+                         boolean dialog, boolean pageWait, String text, int shield, int health, int sword, int urchins, boolean toadstool, int powder, int inventoryTick, int tarinX, int tarinY, boolean forestCleared, int tailKey, int bgTick, int smallKeys, boolean loading) {}
 
     private static void loadROM() {
         try (InputStream is = Main.class.getClassLoader().getResourceAsStream("rom/azle.gbc")) {

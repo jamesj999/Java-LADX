@@ -3436,3 +3436,12 @@ of scope.
 - Ordinary lethal hits start the source $2F countdown; powered hits retain $40. EntityDeathHandler now advances recoil and switches to $1F when ignore-hits expires, emitting the destruction sound. Boss-specific death handlers remain separate.
 - Added dialogue pose and normal/powered death regression coverage. Verified normal-input dialogue captures against PyBoy: Link stays unchanged across B press/release, with zero RGB555 Link differences from the ROM.
 - Updated the opening replay to fight on the return path, avoid the electric enemy, and realign after forest recoil. Both engines complete 291 checkpoints alive through Tail Cave. See validation/dialogue-and-death-2026-11-06.html and test/resources/opening/dialogue-and-death metadata. Full-frame parity remains incomplete; the game is not yet production-ready.
+
+
+### Tail Cave first Small Key — 2026-11-06
+
+- Extended the fresh-game normal-input replay to 301 checkpoints: room $16’s two Hardhat Beetles fall into pits and Link collects the dropped Small Key in both Java and PyBoy. No damage is taken in that room.
+- The Main integration test now asserts the key, cleared beetles and unchanged dungeon-entry health. All 2,327 tests pass.
+- Added read-only current-dungeon key observations and a `smallkeys=` replay condition; checkpoint logs now include loaded entities.
+- Visual evidence: validation/tail-cave-first-key-2026-11-06.html. Matching route hashes and original observations are retained in java/src/test/resources/opening/tail-cave-first-key.
+- Next: the adjacent room $15 chest encounter. The initial route attempt died in both engines and is not retained as a verified replay. The whole game is still not production-ready.

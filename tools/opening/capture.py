@@ -71,12 +71,12 @@ try:
                           p.memory[0xc125], p.memory[0xffe7], p.memory[0xff96], p.memory[0xff97],
                           p.memory[0xdb5a], p.memory[0xdb4e],
                           p.memory[0xffa1], p.memory[0xff9b], p.memory[0xc111],
-                          p.memory[0xdb00], p.memory[0xdb01], p.memory[0xdb4b], p.memory[0xdb4c], p.memory[0xd851], p.memory[0xdb11]])
+                          p.memory[0xdb00], p.memory[0xdb01], p.memory[0xdb4b], p.memory[0xdb4c], p.memory[0xd851], p.memory[0xdb11], p.memory[0xdbd0]])
             frame += 1
         if '=' in held:
             field, target = held.split('=')
             target = int(target, 0)
-            address = {'room': 0xfff6, 'x': 0xff98, 'y': 0xff99, 'dialog': 0xc19f, 'sword': 0xdb4e, 'inventorytick': 0xde06, 'bgtick': 0xffa6}[field]
+            address = {'room': 0xfff6, 'x': 0xff98, 'y': 0xff99, 'dialog': 0xc19f, 'sword': 0xdb4e, 'inventorytick': 0xde06, 'bgtick': 0xffa6, 'smallkeys': 0xdbd0}[field]
             def reached():
                 value = p.memory[address]
                 if field == 'inventorytick':

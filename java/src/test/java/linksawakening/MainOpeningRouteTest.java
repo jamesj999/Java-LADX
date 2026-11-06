@@ -9,10 +9,10 @@ import static org.junit.jupiter.api.Assertions.*;
 /** Real game-loop integration, with buttons only after the new-game bootstrap. */
 final class MainOpeningRouteTest {
     @Test
-    void newGameCanEnterTailCaveThroughRealInputWithoutStateInjection() throws Exception {
+    void newGameCanCollectTailCavesFirstSmallKeyThroughRealInputWithoutStateInjection() throws Exception {
         Main.initializeHeadlessNewGame();
         var checkpoints = new ArrayList<Main.HeadlessState>();
-        for (String line : Files.readAllLines(Path.of("../tools/opening/tail-cave-route.tsv"))) {
+        for (String line : Files.readAllLines(Path.of("../tools/opening/tail-cave-dungeon-route.tsv"))) {
             if (line.isBlank() || line.startsWith("#")) continue;
             String[] fields = line.split("\\s+");
             int idle = Integer.parseInt(fields[2]);
@@ -157,12 +157,17 @@ final class MainOpeningRouteTest {
         assertEquals(0x17, entrance.room());
         assertTrue(entrance.dialog());
         assertTrue(entrance.text().contains("Level 1"));
-        var dungeon = checkpoints.getLast();
+        var dungeon = checkpoints.get(290);
         assertFalse(dungeon.dialog());
         assertEquals(0x17, dungeon.room());
         assertEquals(1, dungeon.tailKey());
         assertEquals(1, dungeon.sword());
         assertTrue(dungeon.health() > 0);
+        var firstSmallKey = checkpoints.getLast();
+        assertEquals(0x16, firstSmallKey.room());
+        assertEquals(1, firstSmallKey.smallKeys());
+        assertEquals(dungeon.health(), firstSmallKey.health(), "Clear beetles without damage");
+        assertFalse(Main.headlessEntityPositions().contains("20:ACTIVE"));
     }
 
     private static void advanceAlive() {

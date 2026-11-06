@@ -49,7 +49,8 @@ public final class OpeningRouteCapture {
             for (int p = 0; p < 160 * 144; p++) image.setRGB(p % 160, p / 160,
                 ((rgba[p*4]&255)<<16)|((rgba[p*4+1]&255)<<8)|(rgba[p*4+2]&255));
             ImageIO.write(image, "png", out.resolve("ours/%02d.png".formatted(segment++)).toFile());
-            System.out.println(segment + " " + Main.headlessState());
+            System.out.println(segment + " " + Main.headlessState()
+                + " entities " + Main.headlessEntityPositions());
         }
         Files.writeString(out.resolve("java-trace.tsv"), trace);
         String routeHash = java.util.HexFormat.of().formatHex(
@@ -75,6 +76,7 @@ public final class OpeningRouteCapture {
             case "sword" -> s.sword();
             case "inventorytick" -> s.inventoryTick();
             case "bgtick" -> s.bgTick();
+            case "smallkeys" -> s.smallKeys();
             case "x" -> s.x();
             case "y" -> s.y();
             default -> throw new IllegalArgumentException(condition);
@@ -90,7 +92,8 @@ public final class OpeningRouteCapture {
         if (s.health() <= 0) throw new IllegalStateException("Link died at frame " + frame + ": " + s);
         trace.append(frame).append('\t').append(s.map()).append('\t').append(s.room())
             .append('\t').append(s.x()).append('\t').append(s.y()).append('\t')
-            .append(s.dialog()).append('\t').append(s.shield()).append('\n');
+            .append(s.dialog()).append('\t').append(s.shield())
+            .append('\t').append(s.smallKeys()).append('\n');
     }
 
 }
