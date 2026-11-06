@@ -94,7 +94,8 @@ public final class OpeningRouteCapture {
         trace.append(frame).append('\t').append(s.map()).append('\t').append(s.room())
             .append('\t').append(s.x()).append('\t').append(s.y()).append('\t')
             .append(s.dialog()).append('\t').append(s.shield())
-            .append('\t').append(s.smallKeys()).append('\t').append(s.compass()).append('\n');
+            .append('\t').append(s.smallKeys()).append('\t').append(s.compass()).append('\t')
+            .append(s.dungeonMap()).append('\n');
     }
 
 }

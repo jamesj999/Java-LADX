@@ -235,10 +235,6 @@ final class StalfosEvasiveMotion {
         speedY[slot] = newSpeedY & 0xFF;
     }
 
-    boolean isAirborne(int slot) {
-        return inertia[slot] != 0;
-    }
-
     private void chooseRandomDirection(int slot, IntSupplier randomByteSupplier) {
         speedY[slot] = 0;
         speedX[slot] = RANDOM_DIRECTION_SPEEDS[randomByteSupplier.getAsInt() & 0x03];

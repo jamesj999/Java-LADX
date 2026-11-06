@@ -5443,8 +5443,11 @@ public final class RoomEntityRuntime {
                 && !armosMotion.isActive(entity.slot())) {
                 continue;
             }
+            // $15:4EFA skips DefaultEnemyDamageCollisionHandler only for
+            // the jump's initial $08 transition countdown, not all airtime.
             if (entity.type() == ENTITY_STALFOS_EVASIVE
-                && stalfosEvasiveMotion.isAirborne(entity.slot())) {
+                && stalfosEvasiveMotion.privateState1(entity.slot()) == 0
+                && enemyTransitionCountdown[entity.slot()] != 0) {
                 continue;
             }
             if (entity.type() == ENTITY_LEEVER && !leeverMotion.isChasing(entity.slot())) {

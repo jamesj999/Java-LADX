@@ -297,11 +297,12 @@ public class Main {
                 (roomSession.overworldRoomStatusSnapshot()[0x51] & 0x10) != 0,
                 playerState.tailKeyCount(), gpu.animatedTilesFrameCount(),
                 roomSession.currentDungeonItemFlagsSnapshot()[4] & 0xFF,
-                roomSession.currentDungeonItemFlagsSnapshot()[1] & 0xFF, scrollController.isActive() || transitionController.isInputBlocked());
+                roomSession.currentDungeonItemFlagsSnapshot()[1] & 0xFF,
+                roomSession.currentDungeonItemFlagsSnapshot()[0] & 0xFF, scrollController.isActive() || transitionController.isInputBlocked());
     }
 
     record HeadlessState(int frame, int map, int room, int x, int y,
-                         boolean dialog, boolean pageWait, String text, int shield, int health, int sword, int urchins, boolean toadstool, int powder, int inventoryTick, int tarinX, int tarinY, boolean forestCleared, int tailKey, int bgTick, int smallKeys, int compass, boolean loading) {}
+                         boolean dialog, boolean pageWait, String text, int shield, int health, int sword, int urchins, boolean toadstool, int powder, int inventoryTick, int tarinX, int tarinY, boolean forestCleared, int tailKey, int bgTick, int smallKeys, int compass, int dungeonMap, boolean loading) {}
 
     private static void loadROM() {
         try (InputStream is = Main.class.getClassLoader().getResourceAsStream("rom/azle.gbc")) {

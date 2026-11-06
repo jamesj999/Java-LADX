@@ -5152,6 +5152,30 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void evasiveStalfosCanBeHitInMidairAfterItsEightFrameJumpGracePeriod() {
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
+            new RoomEntity(0, 0, 0x1E, 64, 64, EntityStatus.ACTIVE,
+                pairDefinition(0x1E, 3), 0)));
+        runtime.setActionButtonsHeld(true);
+        runtime.tick(0, 80, 64, sequence(0));
+        runtime.setActionButtonsHeld(false);
+        for (int frame = 0; frame < 8; frame++) {
+            if (frame != 0) runtime.tick(frame, 80, 64, sequence(0));
+            RoomEntity entity = runtime.snapshot().slots().get(0);
+            assertTrue(runtime.resolveCombat(frame, 0, 0, false, 0, true,
+                true, entity.x() - 8, 16, entity.y() - entity.z() - 8, 16).isEmpty());
+        }
+        runtime.tick(8, 80, 64, sequence(0));
+        RoomEntity airborne = runtime.snapshot().slots().get(0);
+        assertTrue(airborne.z() > 0);
+        assertEquals(1, runtime.evasiveInertia(0));
+        assertEquals(0, runtime.transitionCountdown(0));
+        var hits = runtime.resolveCombat(8, 0, 0, false, 0, true,
+            true, airborne.x() - 8, 16, airborne.y() - airborne.z() - 8, 16);
+        assertTrue(hits.stream().anyMatch(hit -> hit.swordHit() && hit.enemyDamage() > 0));
+    }
+
+    @Test
     void evasiveStalfosClonesInAnglersTunnelWithRomAttributesAndVector() {
         EntitySpriteDefinition definition = pairDefinition(0x1E, 3);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(

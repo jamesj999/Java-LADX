@@ -3482,3 +3482,12 @@ of scope.
 - Added explicit ROM-backed expectations for Small Key $CA/$17, Map $C0/$14, Compass $C2/$15, bracelet and shield alternates.
 - Replayed all 345 checkpoints in Java and PyBoy. The Small Key’s 8×16 region now has zero RGB555 differences (previously 97), and the surrounding 16×24 chest region also matches exactly (previously 178). Full frame still differs by 198 pixels. Evidence: validation/chest-sprite-fix-2026-11-06.html; manifests and metrics: java/src/test/resources/opening/chest-sprite-fix.
 - This corrects a visible rendering defect; the broader game and chest rewards beyond the exercised route are not claimed fully verified. Continue Tail Cave’s Map encounter.
+
+
+### Tail Cave Map and evasive Stalfos — 2026-11-06
+
+- Both fresh-game normal-input replays complete 384 checkpoints, collecting the Map, Compass and two Small Keys. The integration test now asserts this inventory and continued survival.
+- Corrected evasive Stalfos damage immunity to the initial eight-frame jump countdown ($15:4EFA), rather than all airtime. Added a regression proving the midair hit after the grace period.
+- All 2,334 tests pass. The Map sprite matches the ROM at RGB555 precision; the full final frame differs by 309 pixels. Health, rupees and Link position remain different. No full combat or visual parity claim.
+- Evidence: validation/tail-cave-map-2026-11-06.html and java/src/test/resources/opening/tail-cave-map. Read-only emulator entity observations helped locate the final sleeping Keese.
+- Next: remaining Tail Cave equipment, boss and instrument, followed by the rest of the quest. The full game is not yet production-ready.

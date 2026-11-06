@@ -71,7 +71,7 @@ try:
                           p.memory[0xc125], p.memory[0xffe7], p.memory[0xff96], p.memory[0xff97],
                           p.memory[0xdb5a], p.memory[0xdb4e],
                           p.memory[0xffa1], p.memory[0xff9b], p.memory[0xc111],
-                          p.memory[0xdb00], p.memory[0xdb01], p.memory[0xdb4b], p.memory[0xdb4c], p.memory[0xd851], p.memory[0xdb11], p.memory[0xdbd0], p.memory[0xdbcd]])
+                          p.memory[0xdb00], p.memory[0xdb01], p.memory[0xdb4b], p.memory[0xdb4c], p.memory[0xd851], p.memory[0xdb11], p.memory[0xdbd0], p.memory[0xdbcd], p.memory[0xdbcc]])
             frame += 1
         if '=' in held:
             field, target = held.split('=')
@@ -105,7 +105,9 @@ try:
         if held and idle == 0: release()
         p.screen.image.save(OUT / 'original' / f'{segment:02}.png')
         checkpoints.append([segment] + trace[-1])
-        print(segment + 1, trace[-1])
+        entities = [f'{p.memory[0xc3a0+i]:02X}:{p.memory[0xc280+i]}@{p.memory[0xc200+i]},{p.memory[0xc210+i]}'
+                    for i in range(16) if p.memory[0xc280+i] != 0]
+        print(segment + 1, trace[-1], 'entities', ' '.join(entities))
         segment += 1
     OUT.joinpath('emulator-checkpoints.tsv').write_text(''.join('\t'.join(map(str, r))+'\n' for r in checkpoints))
     OUT.joinpath('emulator.json').write_text(json.dumps({

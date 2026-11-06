@@ -9,10 +9,10 @@ import static org.junit.jupiter.api.Assertions.*;
 /** Real game-loop integration, with buttons only after the new-game bootstrap. */
 final class MainOpeningRouteTest {
     @Test
-    void newGameCanCollectTailCavesKeyAndCompassAndLeaveTheChestRoom() throws Exception {
+    void newGameCanCollectTailCavesKeysCompassAndMap() throws Exception {
         Main.initializeHeadlessNewGame();
         var checkpoints = new ArrayList<Main.HeadlessState>();
-        for (String line : Files.readAllLines(Path.of("../tools/opening/tail-cave-recoil-route.tsv"))) {
+        for (String line : Files.readAllLines(Path.of("../tools/opening/tail-cave-map-route.tsv"))) {
             if (line.isBlank() || line.startsWith("#")) continue;
             String[] fields = line.split("\\s+");
             int idle = Integer.parseInt(fields[2]);
@@ -181,8 +181,8 @@ final class MainOpeningRouteTest {
         var powerUpFinished = checkpoints.get(333);
         assertFalse(powerUpFinished.dialog());
         assertTrue(powerUpFinished.text().contains("energy flowing"));
-        var switchKey = checkpoints.getLast();
-        assertEquals(345, checkpoints.size());
+        var switchKey = checkpoints.get(344);
+        assertEquals(384, checkpoints.size());
         assertEquals(0x13, switchKey.room());
         assertEquals(2, switchKey.smallKeys());
         assertEquals(1, switchKey.compass());
@@ -190,6 +190,14 @@ final class MainOpeningRouteTest {
         assertTrue(switchKey.text().contains("Small"));
         assertEquals(afterCompass.health(), switchKey.health(),
             "Clear Gels and the switch room without contact damage");
+        var mapReward = checkpoints.getLast();
+        assertEquals(0x14, mapReward.room());
+        assertTrue(mapReward.dialog());
+        assertTrue(mapReward.text().contains("a Map!"));
+        assertEquals(1, mapReward.dungeonMap());
+        assertEquals(1, mapReward.compass());
+        assertEquals(2, mapReward.smallKeys());
+        assertTrue(mapReward.health() > 0);
     }
 
     private static void advanceAlive() {
