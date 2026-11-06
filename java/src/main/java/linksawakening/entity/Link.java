@@ -1426,7 +1426,10 @@ public final class Link implements RocsFeather.JumpTarget {
 
         int mask = buildJoypadMask();
         int newDirection = JOYPAD_TO_DIRECTION[mask];
-        if (newDirection != -1 && !marinBedJumpMotionLocked
+        // $02:4406 skips facing selection while airborne; the Feather
+        // launch still follows this frame's ordinary ground movement.
+        if (newDirection != -1 && (!airborne || featherLaunchFrame)
+            && !marinBedJumpMotionLocked
             && !directionalLedgeJumpMotionLocked
             && !itemsLockFacing(true) && !isLiftTransitionBlockingMotion()) {
             direction = newDirection;
@@ -2210,7 +2213,7 @@ public final class Link implements RocsFeather.JumpTarget {
             return;
         }
 
-        if (!marinBedJumpMotionLocked) tickJumpAnimation();
+        if (!marinBedJumpMotionLocked && !swordSuppressesJumpAnimation()) tickJumpAnimation();
         zSubPixels += zVelocity;
         zVelocity -= 2;
         // $02:4523–4561 changes only axes with held input. With no
@@ -2255,6 +2258,13 @@ public final class Link implements RocsFeather.JumpTarget {
     private static int steerAirSpeed(int speedByte, int target) {
         int speed = (byte) speedByte;
         return (speed + Integer.compare(target, speed)) & 0xFF;
+    }
+
+    private boolean swordSuppressesJumpAnimation() {
+        if (itemRegistry == null) return false;
+        EquippedItem item = itemRegistry.lookup(PlayerState.INVENTORY_SWORD);
+        return item instanceof linksawakening.equipment.Sword sword
+            && sword.suppressesJumpAnimation();
     }
 
     private void tickJumpAnimation() {
@@ -2487,6 +2497,10 @@ public final class Link implements RocsFeather.JumpTarget {
         return Math.max(0, zSubPixels >> SUB_PIXEL_SHIFT);
     }
 
+    public int romAnimationState() {
+        return resolveAnimationState();
+    }
+
     private int resolveAnimationState() {
         if (romAnimationStateOverride >= 0) {
             return romAnimationStateOverride;
@@ -2526,7 +2540,7 @@ public final class Link implements RocsFeather.JumpTarget {
         if (override >= 0) {
             return override;
         }
-        if (airborne && jumpAnimationFrame < 3) {
+        if (airborne && jumpAnimationFrame < 3 && !swordSuppressesJumpAnimation()) {
             return JUMP_ANIMATION_STATE[direction][jumpAnimationFrame];
         }
         if (spriteSheet != null) {

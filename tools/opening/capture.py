@@ -72,7 +72,7 @@ try:
                           p.memory[0xc125], p.memory[0xffe7], p.memory[0xff96], p.memory[0xff97],
                           p.memory[0xdb5a], p.memory[0xdb4e],
                           p.memory[0xffa1], p.memory[0xff9b], p.memory[0xc111],
-                          p.memory[0xdb00], p.memory[0xdb01], p.memory[0xdb4b], p.memory[0xdb4c], p.memory[0xd851], p.memory[0xdb11], p.memory[0xdbd0], p.memory[0xdbcd], p.memory[0xdbcc], p.memory[0xdbcf], p.memory[0xc137], p.memory[0xffa2], p.memory[0xffa3], p.memory[0xff9a], p.memory[0xff9b]])
+                          p.memory[0xdb00], p.memory[0xdb01], p.memory[0xdb4b], p.memory[0xdb4c], p.memory[0xd851], p.memory[0xdb11], p.memory[0xdbd0], p.memory[0xdbcd], p.memory[0xdbcc], p.memory[0xdbcf], p.memory[0xff9d], p.memory[0xff9e], p.memory[0xc137], p.memory[0xffa2], p.memory[0xffa3], p.memory[0xff9a], p.memory[0xff9b]])
             frame += 1
         if '=' in held:
             field, target = held.split('=')

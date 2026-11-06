@@ -125,6 +125,29 @@ final class LinkTest {
     }
 
     @Test
+    void swordSwingPausesJumpFlipCounterUntilAfterItsFinalAnimationFrame() throws Exception {
+        RomTables tables = RomTables.loadFromRom(loadRom());
+        InputConfig config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        PlayerState player = new PlayerState();
+        ItemRegistry registry = new ItemRegistry();
+        Sword sword = new Sword(tables, null);
+        registry.register(PlayerState.INVENTORY_SWORD, sword);
+        player.setItemA(PlayerState.INVENTORY_SWORD);
+        Link link = new Link(new InputState(), config, tables, null, null, player, registry);
+        link.setDirection(Link.DIRECTION_RIGHT);
+        link.useRocsFeather();
+        sword.onPress();
+        for (int frame = 1; frame <= 24; frame++) {
+            sword.tick(false);
+            link.update();
+            if (frame == 15) assertEquals(0x0B, resolvedAnimationState(link),
+                "The final swing frame skips the flip even though the sword becomes NONE");
+            if (frame >= 16 && frame <= 23) assertEquals(0x61, resolvedAnimationState(link));
+        }
+        assertEquals(0x62, resolvedAnimationState(link));
+    }
+
+    @Test
     void itemAnimationOverrideTakesPrecedenceOverJumpAnimation() throws Exception {
         InputState inputState = new InputState();
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
@@ -1670,6 +1693,8 @@ final class LinkTest {
         assertEquals(40, link.pixelY());
         assertEquals(0x0F, link.romSpeedX());
         assertEquals(0xFF, link.romSpeedY());
+        assertEquals(Link.DIRECTION_RIGHT, link.direction(),
+            "Airborne steering must preserve the takeoff facing direction");
         link.update();
         assertEquals(0x0E, link.romSpeedX());
         assertEquals(0xFE, link.romSpeedY());

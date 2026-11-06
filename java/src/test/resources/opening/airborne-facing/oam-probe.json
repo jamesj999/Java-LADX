@@ -1,0 +1,74 @@
+{
+  "source": "Read-only PyBoy probe during the same fresh-game route, segment 588 (zero based). No RAM edits.",
+  "frames": [
+    {
+      "combatFrame": 23,
+      "animation": 97,
+      "cachedSwordY": 57,
+      "oam": [
+        83,
+        44,
+        38,
+        0,
+        244,
+        0,
+        0,
+        0,
+        57,
+        40,
+        0,
+        32,
+        57,
+        48,
+        2,
+        32,
+        244,
+        50,
+        8,
+        35,
+        244,
+        58,
+        6,
+        35
+      ],
+      "matchingVramPoseIds": [
+        96,
+        97
+      ]
+    },
+    {
+      "combatFrame": 24,
+      "animation": 98,
+      "cachedSwordY": 58,
+      "oam": [
+        244,
+        44,
+        38,
+        0,
+        244,
+        0,
+        0,
+        0,
+        58,
+        41,
+        0,
+        32,
+        58,
+        49,
+        2,
+        32,
+        244,
+        50,
+        8,
+        35,
+        244,
+        58,
+        6,
+        35
+      ],
+      "matchingVramPoseIds": [
+        98
+      ]
+    }
+  ]
+}

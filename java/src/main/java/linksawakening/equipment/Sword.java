@@ -94,6 +94,7 @@ public final class Sword implements EquippedItem {
     private boolean motionBlockedBeforeAnimation;
     private int facingLockCountdown;
     private boolean facingLockedBeforeAnimation;
+    private boolean suppressesJumpAnimation;
     private int charge;
     private int frameCounter;
     private int spinFramesRemaining;
@@ -206,6 +207,7 @@ public final class Sword implements EquippedItem {
         this.frameCounter = frameCounter & 0xFF;
         // XY movement ($02:43C8) consumes the previous animation's flag.
         // UpdateLinkAnimation sets it before advancing even the final swing state.
+        suppressesJumpAnimation = state != STATE_NONE;
         facingLockedBeforeAnimation = facingLockCountdown != 0;
         if (facingLockCountdown > 0) facingLockCountdown--;
         if (state != STATE_NONE) facingLockCountdown = 4; // wC16E, $02:47F3
@@ -273,6 +275,11 @@ public final class Sword implements EquippedItem {
     @Override
     public boolean blocksMotion() {
         return spinAttackActive() || (state != STATE_NONE && state != STATE_HOLDING);
+    }
+
+    /** $02:47AD checks the sword state before advancing its animation. */
+    public boolean suppressesJumpAnimation() {
+        return suppressesJumpAnimation;
     }
 
     public boolean locksTopDownFacing() {
