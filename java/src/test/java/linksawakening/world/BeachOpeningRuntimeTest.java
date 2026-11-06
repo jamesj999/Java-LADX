@@ -140,8 +140,19 @@ final class BeachOpeningRuntimeTest {
             runtime.tick(frame, 0x48, 0x50, () -> 0);
             heldAboveLink |= !runtime.consumePendingLinkHeldItemPoseRequests().isEmpty();
             linkBlocked |= !runtime.consumePendingLinkMotionBlockRequests().isEmpty();
-            dialogOpened |= runtime.consumePendingDialogRequests().stream()
+            boolean opened = runtime.consumePendingDialogRequests().stream()
                 .anyMatch(request -> request.globalDialogId() == 0x00F);
+            dialogOpened |= opened;
+            if (opened) {
+                runtime.setDialogActive(true);
+                for (int wait = 0; wait < 360; wait++) {
+                    runtime.tick(frame + wait, 0x48, 0x50, () -> 0);
+                    assertTrue(runtime.consumePendingToadstoolRewards().isEmpty(),
+                        "Reading the dialogue must not grant or hide the held mushroom");
+                    assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
+                }
+                runtime.setDialogActive(false);
+            }
             rewards = runtime.consumePendingToadstoolRewards();
         }
 

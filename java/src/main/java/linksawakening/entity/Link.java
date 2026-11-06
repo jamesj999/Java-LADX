@@ -1717,9 +1717,16 @@ public final class Link implements RocsFeather.JumpTarget {
             moveDirection = signedSpeed > 0 ? DIRECTION_DOWN : DIRECTION_UP;
         }
 
-        if (!debugNoClip && !directionalLedgeJumpMotionLocked
+        int probeMask = !debugNoClip && !directionalLedgeJumpMotionLocked
             && collisionIgnoreFramesRemaining == 0
-            && leadingEdgeBlocked(candidatePixelX, candidatePixelY, moveDirection)) {
+            ? leadingEdgeCollisionMask(candidatePixelX, candidatePixelY, moveDirection) : 0;
+        if (probeMask != 0) {
+            // BackgroundCollisionHandler $02:6EC6 / $02:6F01 restores the
+            // blocked axis, then Data_002_6E39 shifts the other axis by
+            // [0, +1, -1, 0] according to the two leading-edge probes.
+            int adjustment = probeMask == 1 ? 1 : probeMask == 2 ? -1 : 0;
+            if (isXAxis) subY += adjustment << SUB_PIXEL_SHIFT;
+            else subX += adjustment << SUB_PIXEL_SHIFT;
             collisionProbePixelX[moveDirection] = candidatePixelX;
             collisionProbePixelY[moveDirection] = candidatePixelY;
             romCollisionType |= switch (moveDirection) {
@@ -1746,10 +1753,15 @@ public final class Link implements RocsFeather.JumpTarget {
      * above even while his feet still overlap the tree cells below.
      */
     private boolean leadingEdgeBlocked(int spriteX, int spriteY, int dir) {
+        return leadingEdgeCollisionMask(spriteX, spriteY, dir) != 0;
+    }
+
+    private int leadingEdgeCollisionMask(int spriteX, int spriteY, int dir) {
         int[] xs = COLLISION_POINTS_X[dir];
         int[] ys = COLLISION_POINTS_Y[dir];
-        boolean blocked = false;
+        int blockedMask = 0;
         for (int i = 0; i < xs.length; i++) {
+            boolean blocked = false;
             int pointX = spriteX + xs[i];
             int pointY = spriteY + ys[i];
             int physicsFlag = collision.objectPhysicsFlagAtPoint(pointX, pointY);
@@ -1769,8 +1781,9 @@ public final class Link implements RocsFeather.JumpTarget {
                 // ordinary passable probe, which clears wC191.
                 directionalLedgeCollisionCounter = 0;
             }
+            if (blocked) blockedMask |= 1 << i;
         }
-        return blocked;
+        return blockedMask;
     }
 
     private boolean applyDirectionalLedgeCollision(int physicsFlag, int moveDirection) {

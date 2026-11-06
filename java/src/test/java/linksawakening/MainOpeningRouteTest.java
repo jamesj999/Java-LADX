@@ -9,10 +9,10 @@ import static org.junit.jupiter.api.Assertions.*;
 /** Real game-loop integration, with buttons only after the new-game bootstrap. */
 final class MainOpeningRouteTest {
     @Test
-    void newGameCanCollectSwordAndEnterForestCaveThroughRealInputWithoutStateInjection() throws Exception {
+    void newGameCanCollectSwordAndMushroomThroughRealInputWithoutStateInjection() throws Exception {
         Main.initializeHeadlessNewGame();
         var checkpoints = new ArrayList<Main.HeadlessState>();
-        for (String line : Files.readAllLines(Path.of("../tools/opening/cave-route.tsv"))) {
+        for (String line : Files.readAllLines(Path.of("../tools/opening/mushroom-route.tsv"))) {
             if (line.isBlank() || line.startsWith("#")) continue;
             String[] fields = line.split("\\s+");
             int idle = Integer.parseInt(fields[2]);
@@ -88,7 +88,7 @@ final class MainOpeningRouteTest {
         assertTrue(forest.dialog());
         assertTrue(forest.text().startsWith("Hoot!"));
         assertFalse(forest.loading());
-        var cave = checkpoints.getLast();
+        var cave = checkpoints.get(110);
         assertEquals(0x0A, cave.map());
         assertEquals(0xBD, cave.room());
         assertEquals(80, cave.x());
@@ -98,5 +98,16 @@ final class MainOpeningRouteTest {
         assertTrue(cave.health() > 0);
         assertFalse(cave.dialog());
         assertFalse(cave.loading());
+        assertTrue(checkpoints.get(127).dialog());
+        assertFalse(checkpoints.get(127).toadstool(), "Reward follows the pickup dialogue");
+        var mushroom = checkpoints.getLast();
+        assertEquals(0, mushroom.map());
+        assertEquals(0x50, mushroom.room());
+        assertEquals(49, mushroom.x());
+        assertEquals(64, mushroom.y());
+        assertTrue(mushroom.toadstool());
+        assertTrue(mushroom.health() > 0);
+        assertFalse(mushroom.dialog());
+        assertFalse(mushroom.loading());
     }
 }

@@ -9783,7 +9783,11 @@ public final class RoomEntityRuntime {
                                         int linkEntityX, int linkEntityY, int linkZ) {
         int slot = entity.slot();
         int countdown = enemyTransitionCountdown[slot];
-        if (countdown == 0x10) {
+        if (dialogActive) {
+            // UpdateEntityTimers is paused while a dialogue is open in the
+            // ROM. Undo this runtime's generic tick before holding the item.
+            if (countdown > 0) enemyTransitionCountdown[slot]++;
+        } else if (countdown == 0x10) {
             enemyTransitionCountdown[slot] = 0x0F;
             pendingDialogRequests.add(new DialogRequest(0, 0x0F));
         } else if (countdown == 1) {

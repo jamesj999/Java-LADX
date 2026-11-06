@@ -3205,3 +3205,32 @@ of scope.
   `tools/opening/cave-route.tsv` for the route. This capture used output
   `java/build/mushroom-route` (Gradle `build/mushroom-route`). Continue through
   the cave and mushroom/witch/raccoon sequence before Tail Cave.
+
+## Continuous cave puzzle and mushroom pickup — 2026-11-06
+
+- Extended `tools/opening/mushroom-route.tsv` to 129 normal-input checkpoints:
+  the left/top path around BD's pits, room AC, the two downward rock pushes
+  in AB, the south exit, and mushroom pickup in overworld 50. Both engines
+  finish at (49,64) with 12 HP and mushroom ownership after the dialogue.
+- Fixed the doorway-edge softlock exposed by that route. Link now retains
+  the two leading-probe collision results and applies the ROM's corner slide
+  ($02:6EC6/$02:6F01, Data_002_6E39): one blocked probe shifts the perpendicular
+  coordinate by one pixel; two blocked probes leave it unchanged. Added
+  mirrored checks for all four directions and both-probe wall cases.
+- Fixed the mushroom reward arriving during its dialogue: its pickup timer
+  now pauses while dialogue is active, retaining the held-item pose. The
+  regression holds the dialogue open for 360 ticks, and the actual Main route
+  checks ownership remains false at pickup dialogue and true afterward.
+  The original trace now observes wHasToadstool (DB4B) as well.
+- All 2,311 tests pass. Original checkpoint metadata is retained under
+  `java/src/test/resources/opening/mushroom/`; visual report:
+  `docs/validation/continuous-mushroom-pickup-2026-11-06.html`.
+- Full-frame comparison remains diagnostic: 8/129 exact, worst 4,597 pixels;
+  cave exit 83, pickup dialogue 184, final mushroom checkpoint 267 differing
+  pixels. Remaining evidence includes the missing heart-piece sprite in AB,
+  rupees 2 in the original versus 0 in Java, and sprite/animation/dialogue
+  phase differences. These must still be resolved; this is not full parity.
+- Reproduce with the established capture commands using `mushroom-route.tsv`
+  and output `java/build/mushroom-route` (Gradle `build/mushroom-route`). Next:
+  resolve cave visual discrepancies and verify the return, witch exchange,
+  raccoon and Tail Key sequence before Tail Cave.

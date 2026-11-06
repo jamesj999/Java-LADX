@@ -57,7 +57,7 @@ try:
                           p.memory[0xc125], p.memory[0xffe7], p.memory[0xff96], p.memory[0xff97],
                           p.memory[0xdb5a], p.memory[0xdb4e],
                           p.memory[0xffa1], p.memory[0xff9b], p.memory[0xc111],
-                          p.memory[0xdb00], p.memory[0xdb01]])
+                          p.memory[0xdb00], p.memory[0xdb01], p.memory[0xdb4b]])
             frame += 1
         if '=' in held:
             field, target = held.split('=')

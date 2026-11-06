@@ -1996,6 +1996,45 @@ final class LinkTest {
         link.setRoomEntryPixelPosition(pixelX, pixelY);
     }
 
+    @Test
+    void singleProbeCollisionSlidesAlongCornersOnBothAxes() throws Exception {
+        RomTables tables = RomTables.loadFromRom(loadRom());
+        // direction, start X/Y, expected X/Y. One solid tile at (32,32).
+        int[][] cases = {
+            {Link.DIRECTION_DOWN, 25, 16, 24, 16},
+            {Link.DIRECTION_DOWN, 41, 16, 42, 16},
+            {Link.DIRECTION_UP, 25, 42, 24, 42},
+            {Link.DIRECTION_UP, 41, 42, 42, 42},
+            {Link.DIRECTION_RIGHT, 20, 20, 20, 19},
+            {Link.DIRECTION_RIGHT, 20, 38, 20, 39},
+            {Link.DIRECTION_LEFT, 44, 20, 44, 19},
+            {Link.DIRECTION_LEFT, 44, 38, 44, 39},
+            {Link.DIRECTION_DOWN, 32, 16, 32, 16}, // Both probes: no slide.
+            {Link.DIRECTION_RIGHT, 20, 32, 20, 32},
+        };
+        for (int[] c : cases) {
+            InputConfig config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+            InputState input = new InputState();
+            int key = switch (c[0]) {
+                case Link.DIRECTION_DOWN -> config.downKey();
+                case Link.DIRECTION_UP -> config.upKey();
+                case Link.DIRECTION_LEFT -> config.leftKey();
+                default -> config.rightKey();
+            };
+            input.onKeyEvent(key, GLFW_PRESS);
+            int[] objects = emptyRoomObjectsArea();
+            objects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 2] = 0x21;
+            OverworldCollision collision = new OverworldCollision(tables);
+            collision.setRoom(objects);
+            Link link = new Link(input, config, tables, collision, null,
+                new PlayerState(), new ItemRegistry());
+            link.setPixelPosition(c[1], c[2]);
+            link.update();
+            assertEquals(c[3], link.pixelX(), java.util.Arrays.toString(c));
+            assertEquals(c[4], link.pixelY(), java.util.Arrays.toString(c));
+        }
+    }
+
     private static int[] emptyRoomObjectsArea() {
         int[] roomObjectsArea = new int[0x100];
         java.util.Arrays.fill(roomObjectsArea, 0xFF);
