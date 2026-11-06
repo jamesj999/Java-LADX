@@ -141,6 +141,8 @@ public final class RomTables {
     private final int[] linkFineCollisionShapes;
     private final byte[] linkSpeedX;
     private final byte[] linkSpeedY;
+    private final byte[] airSpeedX;
+    private final byte[] airSpeedY;
     private final byte[] swimmingSpeedX;
     private final byte[] swimmingSpeedY;
     private final byte[] swimmingEntrySpeedX;
@@ -173,7 +175,7 @@ public final class RomTables {
                       byte[] entityCollisionPointsY,
                       int[] entityFineCollisionShapes,
                       int[] linkFineCollisionShapes,
-                      byte[] linkSpeedX, byte[] linkSpeedY,
+                      byte[] linkSpeedX, byte[] linkSpeedY, byte[] airSpeedX, byte[] airSpeedY,
                       byte[] swimmingSpeedX, byte[] swimmingSpeedY,
                       byte[] swimmingEntrySpeedX, byte[] swimmingEntrySpeedY,
                       int[] swordAnimState, int[] swordDirection,
@@ -194,6 +196,8 @@ public final class RomTables {
         this.entityCollisionPointsY = entityCollisionPointsY;
         this.entityFineCollisionShapes = entityFineCollisionShapes;
         this.linkFineCollisionShapes = linkFineCollisionShapes;
+        this.airSpeedX = airSpeedX;
+        this.airSpeedY = airSpeedY;
         this.linkSpeedX = linkSpeedX;
         this.linkSpeedY = linkSpeedY;
         this.swimmingSpeedX = swimmingSpeedX;
@@ -310,7 +314,8 @@ public final class RomTables {
 
         return new RomTables(flags, options1, hitboxFlags, collisionPointsX,
                              collisionPointsY, fineCollisionShapes, linkFineCollisionShapes,
-                             speedX, speedY, swimmingX, swimmingY,
+                             speedX, speedY, loadSignedTable(romData, 2, 0x68B1, 4),
+                             loadSignedTable(romData, 2, 0x44E7, 4), swimmingX, swimmingY,
                              swimmingEntryX, swimmingEntryY,
                              swordAnim, swordDir, swordSpinAnim, swordSpinAbsolute,
                              swordX, swordY, swordYBaseBytes,
@@ -457,6 +462,10 @@ public final class RomTables {
     public int linkSpeedX(int joypadMask) {
         return linkSpeedX[joypadMask & 0x0F];
     }
+
+    /** ApplyLinkGroundMotion's per-axis targets, including opposite-button inputs. */
+    public int airSpeedX(int axisMask) { return airSpeedX[axisMask & 3]; }
+    public int airSpeedY(int axisMask) { return airSpeedY[axisMask & 3]; }
 
     public int linkSpeedY(int joypadMask) {
         return linkSpeedY[joypadMask & 0x0F];

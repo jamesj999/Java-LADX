@@ -96,7 +96,9 @@ public final class OpeningRouteCapture {
             .append('\t').append(s.x()).append('\t').append(s.y()).append('\t')
             .append(s.dialog()).append('\t').append(s.shield())
             .append('\t').append(s.smallKeys()).append('\t').append(s.compass()).append('\t')
-            .append(s.dungeonMap()).append('\t').append(s.nightmareKey()).append('\n');
+            .append(s.dungeonMap()).append('\t').append(s.nightmareKey())
+            .append('\t').append(s.z()).append('\t').append(s.velocityZ())
+            .append('\t').append(s.speedX()).append('\t').append(s.speedY()).append('\n');
     }
 
 }

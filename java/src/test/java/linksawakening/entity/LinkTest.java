@@ -1645,6 +1645,38 @@ final class LinkTest {
     }
 
     @Test
+    void airborneSteeringRetainsMomentumAndChangesSpeedAfterMovement() throws Exception {
+        InputState input = new InputState();
+        InputConfig config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        Link link = linkWithEmptyRoom(input);
+        link.setPixelPosition(40, 40);
+        input.onKeyEvent(config.rightKey(), GLFW_PRESS);
+        link.useRocsFeather();
+        link.update();
+        assertEquals(41, link.pixelX());
+        assertEquals(0x10, link.romSpeedX());
+        input.onKeyEvent(config.rightKey(), GLFW_RELEASE);
+        link.update();
+        assertEquals(42, link.pixelX(), "Releasing input must not stop airborne momentum");
+        assertEquals(0x10, link.romSpeedX());
+        input.onKeyEvent(config.leftKey(), GLFW_PRESS);
+        input.onKeyEvent(config.upKey(), GLFW_PRESS);
+        link.update();
+        assertEquals(43, link.pixelX(), "XY movement precedes the steering adjustment");
+        assertEquals(40, link.pixelY());
+        assertEquals(0x0F, link.romSpeedX());
+        assertEquals(0xFF, link.romSpeedY());
+        link.update();
+        assertEquals(0x0E, link.romSpeedX());
+        assertEquals(0xFE, link.romSpeedY());
+        input.onKeyEvent(config.leftKey(), GLFW_RELEASE);
+        input.onKeyEvent(config.upKey(), GLFW_RELEASE);
+        link.update();
+        assertEquals(0x0E, link.romSpeedX());
+        assertEquals(0xFE, link.romSpeedY());
+    }
+
+    @Test
     void rocsFeatherJumpCanClearPit() throws Exception {
         byte[] rom = loadRom();
         RomTables romTables = RomTables.loadFromRom(rom);
@@ -1824,7 +1856,8 @@ final class LinkTest {
         RomTables romTables = RomTables.loadFromRom(rom);
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         int[] roomObjects = emptyRoomObjectsArea();
-        roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 3] = OBJECT_PIT;
+        // Releasing direction preserves airborne momentum: land in column 4.
+        roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 4] = OBJECT_PIT;
         InputState inputState = new InputState();
         inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
         OverworldCollision collision = new OverworldCollision(romTables);
@@ -1856,7 +1889,8 @@ final class LinkTest {
         RomTables romTables = RomTables.loadFromRom(rom);
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         int[] roomObjects = emptyRoomObjectsArea();
-        roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 3] = OBJECT_PIT;
+        // Releasing direction preserves airborne momentum: land in column 4.
+        roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 4] = OBJECT_PIT;
         InputState inputState = new InputState();
         inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
         OverworldCollision collision = new OverworldCollision(romTables);

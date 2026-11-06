@@ -4808,7 +4808,7 @@ final class RoomTransitionCoordinatorTest {
                 // The planner models integer pixels; Link retains subpixel
                 // inertia during the real jump and can land one pixel beyond
                 // that modelled point without changing the collision cell.
-                assertTrue(Math.abs(step[0] - link.pixelX()) <= 1);
+                assertTrue(Math.abs(step[0] - link.pixelX()) <= 1, "jump " + firstMask + "/" + secondMask + "/" + thirdMask + " from " + jumpStartX + "," + jumpStartY + " expected " + step[0] + "," + step[1] + " actual " + link.pixelX() + "," + link.pixelY());
                 assertTrue(Math.abs(step[1] - link.pixelY()) <= 1);
                 link.update();
                 assertFalse(link.isFallingIntoPit());
@@ -4918,11 +4918,12 @@ final class RoomTransitionCoordinatorTest {
                 int subX = position[0] << Link.SUB_PIXEL_SHIFT;
                 int subY = position[1] << Link.SUB_PIXEL_SHIFT;
                 boolean crossedPit = false;
+                boolean blockedJump = false;
+                int speedX = (byte) romTables.linkSpeedX(firstMask);
+                int speedY = (byte) romTables.linkSpeedY(firstMask);
                 for (int frame = 0; frame < 33; frame++) {
                     int joypadMask = frame < 11 ? firstMask
                         : frame < 22 ? secondMask : thirdMask;
-                    int speedX = (byte) romTables.linkSpeedX(joypadMask);
-                    int speedY = (byte) romTables.linkSpeedY(joypadMask);
                     if (speedX != 0) {
                         int candidateSubX = subX + speedX;
                         int nextX = candidateSubX >> Link.SUB_PIXEL_SHIFT;
@@ -4933,6 +4934,9 @@ final class RoomTransitionCoordinatorTest {
                             && !leadingEdgeBlocked(
                                 collision, nextX, y, moveDirection, false)) {
                             subX = candidateSubX;
+                        } else {
+                            blockedJump = true;
+                            break;
                         }
                     }
                     if (speedY != 0) {
@@ -4945,15 +4949,25 @@ final class RoomTransitionCoordinatorTest {
                             && !leadingEdgeBlocked(
                                 collision, x, nextY, moveDirection, false)) {
                             subY = candidateSubY;
+                        } else {
+                            blockedJump = true;
+                            break;
                         }
                     }
                     int x = subX >> Link.SUB_PIXEL_SHIFT;
                     int y = subY >> Link.SUB_PIXEL_SHIFT;
                     crossedPit |= collision.linkOnNormalPit(x, y);
+                    // ApplyLinkGroundMotion steers after XY; released axes coast.
+                    if ((joypadMask & 3) != 0) {
+                        speedX += Integer.compare(romTables.airSpeedX(joypadMask & 3), speedX);
+                    }
+                    if ((joypadMask & 12) != 0) {
+                        speedY += Integer.compare(romTables.airSpeedY((joypadMask >>> 2) & 3), speedY);
+                    }
                 }
                 int x = subX >> Link.SUB_PIXEL_SHIFT;
                 int y = subY >> Link.SUB_PIXEL_SHIFT;
-                if (!crossedPit || collision.linkOnNormalPit(x, y) || visited[y][x]) {
+                if (blockedJump || !crossedPit || collision.linkOnNormalPit(x, y) || visited[y][x]) {
                     continue;
                 }
                 visited[y][x] = true;

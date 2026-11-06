@@ -214,6 +214,7 @@ public final class Link implements RocsFeather.JumpTarget {
     private int sideViewSpeedY;
     private boolean sideViewGrounded;
     private boolean sideViewFeatherPending;
+    private boolean topDownFeatherStarted;
 
     /** Warp entry sets hLinkPhysicsModifier=1 at $00:18F0. */
     public void setSideScrolling(boolean enabled) {
@@ -223,6 +224,7 @@ public final class Link implements RocsFeather.JumpTarget {
         sideViewSpeedX = sideViewSpeedY = 0;
         sideViewGrounded = false;
         sideViewFeatherPending = false;
+        topDownFeatherStarted = false;
         airborne = false;
         zSubPixels = zVelocity = 0;
     }
@@ -374,6 +376,7 @@ public final class Link implements RocsFeather.JumpTarget {
         likeLikeCapturePinsPosition = false;
         fallingIntoPit = false;
         carryingLiftedObjectState = 0;
+        topDownFeatherStarted = false;
         roosterCarryActive = false;
         airborne = false;
         groundStatus = GROUND_STATUS_NORMAL;
@@ -1271,6 +1274,7 @@ public final class Link implements RocsFeather.JumpTarget {
             sideViewFeatherPending = true;
             return;
         }
+        topDownFeatherStarted = true;
         airborne = true;
         zSubPixels = 0;
         zVelocity = 0x20;
@@ -1304,6 +1308,10 @@ public final class Link implements RocsFeather.JumpTarget {
             pegasusBootsCollisionCountdown--;
         }
         tickRomAttackStepAnimationCountdown();
+        int carriedSpeedX = (byte) lastRomSpeedX;
+        int carriedSpeedY = (byte) lastRomSpeedY;
+        boolean featherLaunchFrame = topDownFeatherStarted;
+        topDownFeatherStarted = false;
         romCollisionType = 0;
         lastRomSpeedX = 0;
         lastRomSpeedY = 0;
@@ -1471,6 +1479,11 @@ public final class Link implements RocsFeather.JumpTarget {
                 ? (byte) romTables.linkSpeedY(mask) : forcedSpeedY;
             forcedSpeedPending = false;
             forcedSpeedXOnly = false;
+        } else if (airborne && !featherLaunchFrame) {
+            // $02:4402 skips the ground speed lookup while airborne.
+            // ApplyLinkGroundMotion steers these retained speeds after XY.
+            speedX = carriedSpeedX;
+            speedY = carriedSpeedY;
         } else {
             speedX = (byte) romTables.linkSpeedX(mask);
             speedY = (byte) romTables.linkSpeedY(mask);
@@ -2182,6 +2195,21 @@ public final class Link implements RocsFeather.JumpTarget {
         if (!marinBedJumpMotionLocked) tickJumpAnimation();
         zSubPixels += zVelocity;
         zVelocity -= 2;
+        // $02:4523–4561 changes only axes with held input. With no
+        // input, momentum is retained; reversing takes 32 speed steps.
+        if (!sideScrolling && !marinBedJumpMotionLocked
+            && !directionalLedgeJumpMotionLocked && !overworldLedgeFallActive
+            && (playerState == null || !playerState.runningWithPegasusBoots())) {
+            int mask = buildJoypadMask();
+            if ((mask & (JOY_RIGHT | JOY_LEFT)) != 0) {
+                int target = romTables.airSpeedX(mask & 3);
+                lastRomSpeedX = steerAirSpeed(lastRomSpeedX, target);
+            }
+            if ((mask & (JOY_UP | JOY_DOWN)) != 0) {
+                int target = romTables.airSpeedY((mask >>> 2) & 3);
+                lastRomSpeedY = steerAirSpeed(lastRomSpeedY, target);
+            }
+        }
         if (zSubPixels > 0 || zVelocity > 0) {
             return;
         }
@@ -2204,6 +2232,11 @@ public final class Link implements RocsFeather.JumpTarget {
             groundStatus = GROUND_STATUS_NORMAL;
             fallingIntoPit = false;
         }
+    }
+
+    private static int steerAirSpeed(int speedByte, int target) {
+        int speed = (byte) speedByte;
+        return (speed + Integer.compare(target, speed)) & 0xFF;
     }
 
     private void tickJumpAnimation() {
