@@ -4,9 +4,10 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import linksawakening.rom.RomBank;
 
-/** Background row order in DialogOpenAnimationEnd ($1C:4A18). */
+/** ROM row orders for opening ($1C:4A18) and closing ($1C:4A8A). */
 final class DialogRomLayout {
-    private static final int[] OPENING_ROW_FRAME = loadOpeningRows();
+    private static final int[] OPENING_ROW_FRAME = loadRows(0x4A18, 5);
+    private static final int[] CLOSING_ROW_FRAME = loadRows(0x4A8A, 2);
 
     private DialogRomLayout() {}
 
@@ -14,20 +15,24 @@ final class DialogRomLayout {
         return OPENING_ROW_FRAME[row];
     }
 
-    private static int[] loadOpeningRows() {
+    static int closingFrameForRow(int row) {
+        return CLOSING_ROW_FRAME[row];
+    }
+
+    private static int[] loadRows(int address, int firstFrame) {
         try (var input = DialogRomLayout.class.getResourceAsStream("/rom/azle.gbc")) {
             if (input == null) throw new IllegalStateException("Missing classpath ROM");
             byte[] rom = input.readAllBytes();
-            int start = RomBank.romOffset(0x1C, 0x4A18);
+            int start = RomBank.romOffset(0x1C, address);
             int[] frames = new int[5];
             for (int i = 0; i < frames.length; i++) {
                 int row = ((rom[start + i] & 255) >>> 5) - 1;
                 if (row < 0 || row >= frames.length || frames[row] != 0) {
-                    throw new IllegalArgumentException("Invalid ROM dialogue opening row table");
+                    throw new IllegalArgumentException("Invalid ROM dialogue row table");
                 }
-                // BG save/setup plus the draw-command display pipeline precede
-                // the first row; then one ROM-selected row appears per frame.
-                frames[row] = 5 + i;
+                // The draw-command pipeline precedes the first row; opening
+                // additionally saves the background before writing its rows.
+                frames[row] = firstFrame + i;
             }
             return frames;
         } catch (IOException e) {

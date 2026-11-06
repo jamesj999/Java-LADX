@@ -3032,3 +3032,17 @@ of scope.
 - These remain checkpoint-based production-renderer comparisons. Closing,
   continuous opening input replay, later gameplay, and production readiness
   remain outstanding; this milestone does not claim full-game parity.
+
+## Emulator-verified dialogue closing — 2026-11-06
+
+- Captured 32 consecutive frames around the final Marin page's closing A press
+  in a fresh-save headless original-ROM session. Every full frame matches at
+  RGB555 precision, including background row restoration and NPC reappearance.
+- Gameplay restores the five box rows in ROM table `$1C:4A8A` order. Glyphs
+  disappear with their restored rows, and the controller remains active until
+  the source closing interval ends before applying the dialogue cooldown.
+- Added independent hashes and the closing scenario to the opening verification
+  runner. All 2,303 tests pass with no failures, errors or skips. Evidence:
+  `docs/validation/dialog-closing-emulator-fixes-2026-11-06.html`.
+- The continuous house-to-beach route and subsequent progression remain
+  outstanding. This verifies the closing checkpoint, not full-game completion.

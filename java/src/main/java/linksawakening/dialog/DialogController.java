@@ -14,6 +14,7 @@ public final class DialogController {
     private final int lineWidth;
     private boolean romTimed;
     private int openingAge;
+    private int closingAge = -1;
     private int scrollAge = -1;
     private int scrollBase;
     private String scrollPrevious = "";
@@ -82,6 +83,7 @@ public final class DialogController {
 
     public boolean isBoxRowVisible(int row) {
         if (!romTimed) return true;
+        if (closingAge >= 0 && closingAge >= DialogRomLayout.closingFrameForRow(row)) return false;
         return openingAge >= DialogRomLayout.openingFrameForRow(row);
     }
 
@@ -112,6 +114,7 @@ public final class DialogController {
         this.choiceSelectionIndex = 0;
         this.boxPosition = boxPosition == null ? BoxPosition.BOTTOM : boxPosition;
         openingAge = 0;
+        closingAge = -1;
         scrollAge = -1;
         scrollBase = 0;
         shiftedPage = false;
@@ -126,6 +129,10 @@ public final class DialogController {
     }
 
     public void tick() {
+        if (active && closingAge >= 0) {
+            if (++closingAge >= 8) finishClosing();
+            return;
+        }
         if (active && romTimed && openingAge < 10) {
             openingAge++;
             return;
@@ -184,7 +191,7 @@ public final class DialogController {
     }
 
     public void advance() {
-        if (romTimed && (openingAge < 10 || scrollAge >= 0)) return;
+        if (romTimed && (openingAge < 10 || scrollAge >= 0 || closingAge >= 0)) return;
         if (!active) {
             return;
         }
@@ -366,6 +373,14 @@ public final class DialogController {
     }
 
     private void closeDialog() {
+        if (romTimed) {
+            closingAge = 0;
+            return;
+        }
+        finishClosing();
+    }
+
+    private void finishClosing() {
         active = false;
         choicePrompt = false;
         dialogCooldown = DIALOG_COOLDOWN;

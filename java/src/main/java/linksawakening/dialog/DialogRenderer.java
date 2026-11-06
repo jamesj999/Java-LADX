@@ -36,10 +36,10 @@ public final class DialogRenderer {
                 fillRect(buffer, BOX_X, boxY + row * CELL_SIZE, BOX_WIDTH, CELL_SIZE, palette[3]);
             }
         }
-        drawText(buffer, dialog.visibleText(), TEXT_X, boxY + TEXT_Y_OFFSET + dialog.textScrollOffset(), palette);
+        drawText(buffer, dialog.visibleText(), TEXT_X, boxY + TEXT_Y_OFFSET + dialog.textScrollOffset(), palette, dialog);
     }
 
-    private static void drawText(byte[] buffer, String text, int x, int y, int[] palette) {
+    private static void drawText(byte[] buffer, String text, int x, int y, int[] palette, DialogController dialog) {
         int column = 0;
         int row = 0;
         for (int i = 0; i < text.length() && row < VISIBLE_LINES; i++) {
@@ -56,7 +56,8 @@ public final class DialogRenderer {
                     break;
                 }
             }
-            if (codepoint != ' ') {
+            int boxRow = (y + row * LINE_HEIGHT - dialog.boxY()) / CELL_SIZE;
+            if (codepoint != ' ' && dialog.isBoxRowVisible(boxRow)) {
                 drawGlyph(buffer, FONT.tileFor(codepoint), x + column * CELL_SIZE, y + row * LINE_HEIGHT, palette);
             }
             column++;

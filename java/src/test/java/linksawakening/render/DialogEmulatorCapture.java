@@ -57,7 +57,7 @@ public final class DialogEmulatorCapture {
 
     static void capture(String scenario, String initialClocks, List<String> frames,
                         BiConsumer<String, byte[]> consumer) throws Exception {
-        boolean timedDialog = "marin-timing".equals(scenario) || "marin-scroll".equals(scenario);
+        boolean timedDialog = "marin-timing".equals(scenario) || "marin-scroll".equals(scenario) || "marin-close".equals(scenario);
         boolean bedExit = "bed-exit".equals(scenario);
         boolean inBed = "marin".equals(scenario) || bedExit || timedDialog;
         boolean heldShield = "shield-pose".equals(scenario);
@@ -106,6 +106,12 @@ public final class DialogEmulatorCapture {
         dialog.setPlayerName("A");
         if (!heldShield && !bedExit) dialog.openPreformattedForLinkY(DialogTextLoader.loadFromRom(rom)
             .load(new SignpostDialogRef(0, inBed ? 1 : receivedShield ? 0x91 : 0x54)), linkY);
+        if ("marin-close".equals(scenario)) {
+            for (int i = 0; i < 6; i++) {
+                if (i > 0) dialog.advance();
+                for (int tick = 0; tick < 128; tick++) dialog.tick();
+            }
+        }
         int page = -1;
         int elapsed = 0;
         session.updateHouseTarinPresentation(0, linkX, linkY);
@@ -120,6 +126,7 @@ public final class DialogEmulatorCapture {
             // Match settled pages, not their opening/typewriter/scroll timing.
             if (timedDialog && targetElapsed > 0) dialog.tick();
             if ("marin-scroll".equals(scenario) && targetElapsed == 102) dialog.advance();
+            if ("marin-close".equals(scenario) && targetElapsed == 10) dialog.advance();
             if (!timedDialog && nextPage != page) {
                 if (page >= 0) dialog.advance();
                 for (int i = 0; i < 128; i++) dialog.tick();
