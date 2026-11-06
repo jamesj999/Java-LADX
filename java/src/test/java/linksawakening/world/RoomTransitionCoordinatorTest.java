@@ -196,7 +196,7 @@ final class RoomTransitionCoordinatorTest {
             session.activeRoom().entities().loadedEntities().toString());
         assertEquals(0xA0, objectAt(session, 0x28));
         List<int[]> chestPath = reachablePositionPath(collision, link.pixelX(), link.pixelY(),
-            (x, y) -> (x + 8) / 16 == 8 && (y - 1) / 16 == 2);
+            (x, y) -> (x + 8) / 16 == 8 && (y + 5) / 16 == 2);
         assertNotNull(chestPath, collisionGrid(collision));
         for (int[] position : chestPath) link.setPixelPosition(position[0], position[1]);
         RoomSession.ChestOpenResult chest = session.tryOpenChest(
@@ -1314,7 +1314,7 @@ final class RoomTransitionCoordinatorTest {
             coordinator, transition, scroll, collision, link, ScrollController.LEFT);
         assertEquals(0x08, session.currentRoomId());
 
-        link.setPixelPosition(0x38, 0x1B);
+        link.setPixelPosition(0x38, 0x1A);
         RoomSession.ChestOpenResult nightmareKeyChest = session.tryOpenChest(
             link.pixelX(), link.pixelY(), Link.DIRECTION_UP, true,
             playerState.swordLevel());
@@ -2345,7 +2345,7 @@ final class RoomTransitionCoordinatorTest {
         List<int[]> compassChestPath = reachablePositionPath(
             collision, link.pixelX(), link.pixelY(),
             (x, y) -> Math.floorDiv(x + 0x08, 0x10) == (0x28 & 0x0F)
-                && Math.floorDiv(y - 0x02, 0x10) == ((0x28 & 0xF0) >>> 4));
+                && Math.floorDiv(y + 0x05, 0x10) == ((0x28 & 0xF0) >>> 4));
         assertNotNull(compassChestPath, collisionGrid(collision));
         for (int[] position : compassChestPath) {
             link.setPixelPosition(position[0], position[1]);
@@ -2356,7 +2356,7 @@ final class RoomTransitionCoordinatorTest {
         assertEquals(compassChestContactX, link.pixelX());
         assertEquals(compassChestContactY - 1, link.pixelY());
         int compassChestInteractionLocation =
-            (Math.floorDiv(link.pixelY() - 0x02, 0x10) << 4)
+            (Math.floorDiv(link.pixelY() + 0x05, 0x10) << 4)
                 | Math.floorDiv(link.pixelX() + 0x08, 0x10);
         assertEquals(0x28, compassChestInteractionLocation);
         RoomSession.ChestOpenResult compassChest = session.tryOpenChest(
@@ -2534,7 +2534,7 @@ final class RoomTransitionCoordinatorTest {
         List<int[]> stoneBeakFeatherPath = reachablePositionPathWithFeather(
             collision, romTables, link.pixelX(), link.pixelY(),
             (x, y) -> Math.floorDiv(x + 0x08, 0x10) == (0x24 & 0x0F)
-                && Math.floorDiv(y - 0x02, 0x10) == ((0x24 & 0xF0) >>> 4));
+                && Math.floorDiv(y + 0x05, 0x10) == ((0x24 & 0xF0) >>> 4));
         assertNotNull(stoneBeakFeatherPath,
             "No Feather-valid path across room $2E's trench\n" + collisionGrid(collision));
         assertTrue(walkCollisionPathWithFeather(
@@ -2545,7 +2545,7 @@ final class RoomTransitionCoordinatorTest {
         int stoneBeakChestContactY = link.pixelY();
         link.setPixelPosition(stoneBeakChestContactX, stoneBeakChestContactY - 1);
         int stoneBeakChestInteractionLocation =
-            (Math.floorDiv(link.pixelY() - 0x02, 0x10) << 4)
+            (Math.floorDiv(link.pixelY() + 0x05, 0x10) << 4)
                 | Math.floorDiv(link.pixelX() + 0x08, 0x10);
         assertEquals(0x24, stoneBeakChestInteractionLocation);
         RoomSession.ChestOpenResult stoneBeakChest = session.tryOpenChest(
@@ -2710,7 +2710,7 @@ final class RoomTransitionCoordinatorTest {
         List<int[]> room38ChestPath = reachablePositionPath(
             collision, link.pixelX(), link.pixelY(),
             (x, y) -> Math.floorDiv(x + 0x08, 0x10) == (0x43 & 0x0F)
-                && Math.floorDiv(y - 0x01, 0x10) == ((0x43 & 0xF0) >>> 4));
+                && Math.floorDiv(y + 0x05, 0x10) == ((0x43 & 0xF0) >>> 4));
         assertNotNull(room38ChestPath, collisionGrid(collision));
         for (int[] position : room38ChestPath) {
             link.setPixelPosition(position[0], position[1]);
@@ -2779,7 +2779,7 @@ final class RoomTransitionCoordinatorTest {
         List<int[]> room39ChestPath = reachablePositionPath(
             collision, link.pixelX(), link.pixelY(),
             (x, y) -> Math.floorDiv(x + 0x08, 0x10) == 0x08
-                && Math.floorDiv(y - 0x01, 0x10) == 0x02);
+                && Math.floorDiv(y + 0x05, 0x10) == 0x02);
         assertNotNull(room39ChestPath, collisionGrid(collision));
         for (int[] position : room39ChestPath) {
             link.setPixelPosition(position[0], position[1]);
@@ -3473,7 +3473,7 @@ final class RoomTransitionCoordinatorTest {
         List<int[]> braceletChestPath = reachablePositionPath(
             collision, link.pixelX(), link.pixelY(),
             (x, y) -> Math.floorDiv(x + 0x08, 0x10) == 0x08
-                && Math.floorDiv(y - 0x01, 0x10) == 0x02);
+                && Math.floorDiv(y + 0x05, 0x10) == 0x02);
         assertNotNull(braceletChestPath, collisionGrid(collision));
         for (int[] position : braceletChestPath) {
             link.setPixelPosition(position[0], position[1]);
@@ -3657,7 +3657,7 @@ final class RoomTransitionCoordinatorTest {
         List<int[]> room22ChestPath = reachablePositionPathWithFeather(
             collision, romTables, link.pixelX(), link.pixelY(),
             (x, y) -> Math.floorDiv(x + 0x08, 0x10) == 0x07
-                && Math.floorDiv(y - 0x01, 0x10) == 0x02);
+                && Math.floorDiv(y + 0x05, 0x10) == 0x02);
         assertNotNull(room22ChestPath, collisionGrid(collision));
         for (int[] position : room22ChestPath) {
             link.setPixelPosition(position[0], position[1]);

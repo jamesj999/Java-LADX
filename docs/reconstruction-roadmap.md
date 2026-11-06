@@ -3375,3 +3375,24 @@ of scope.
   manifests and unmasked metrics: `java/src/test/resources/opening/raccoon/`.
   Next: Tail Key/Tail Cave, transformation trajectory parity; death flow and
   remaining quest/dungeons/ending are still production blockers.
+
+### Tail Key interaction and opened-chest graphics (2026-11-06)
+
+- Extended the fresh-game normal-input replay to 243 checkpoints through the
+  Tail Key chest and owl follow-up. Both Java and PyBoy finish alive with one
+  Tail Key; Main integration asserts acquisition and completed dialogue.
+- Found a six-pixel chest-reach error: the source samples sprite-top Y + 5
+  from SwordAreaYForDirection, while Java used Y - 1. The interaction now
+  reads the ROM upward X/Y entries ($00:1F4B/$1F4F). Regression rejects entity
+  Y=80 and Y=75, accepts Y=74 at the real Tail Key chest. Old helper tests were
+  corrected to approach the same source interaction range.
+- Opening a chest rebuilt the overworld tilemap from the original overlay,
+  restoring the closed graphic. Keep the live cell update, and apply persisted
+  $A0 → $A1 replacements when loading the GBC overlay. Tests compare all four
+  open-chest tiles against $03:5053 both immediately and after leaving/reloading.
+- All 2,320 tests pass. Headless comparison: 7/243 exact, worst 4,769 pixels;
+  final clearing 137 differing pixels. Health/rupees and animation differences
+  remain; no masks, alignment or state injection. Faster loading is accepted.
+- Evidence: `docs/validation/tail-key-2026-11-06.html`; manifests and metrics
+  in `java/src/test/resources/opening/tail-key/`. Next: normal-input return to
+  Tail Cave and its dungeon; the full remaining-game objective is unchanged.

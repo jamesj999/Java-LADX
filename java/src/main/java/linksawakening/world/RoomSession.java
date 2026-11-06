@@ -2912,9 +2912,8 @@ public final class RoomSession {
 
     /**
      * Mirrors the closed-$A0 branch in the source object interaction path.
-     * Link's front-cell calculation intentionally follows the existing
-     * overworld-dialog bridge so both interaction paths address the same
-     * padded room-object buffer.
+     * The source at $00:1F80 samples SwordAreaX/YForDirection relative to
+     * Link's sprite top-left (ROM entity coordinates minus 8/16).
      */
     public ChestOpenResult tryOpenChest(int linkPixelX, int linkPixelY, int linkDirection,
                                         boolean actionPressed, int swordLevel) {
@@ -2926,8 +2925,8 @@ public final class RoomSession {
             || linkPixelX >= ROOM_PIXEL_WIDTH || linkPixelY >= ROOM_PIXEL_HEIGHT) {
             return new ChestOpenResult(false, -1, -1, -1);
         }
-        int column = Math.floorDiv(linkPixelX + 0x08, 0x10);
-        int row = Math.floorDiv(linkPixelY - 0x01, 0x10);
+        int column = Math.floorDiv(linkPixelX + (romData[0x1F4B] & 0xFF), 0x10);
+        int row = Math.floorDiv(linkPixelY + (romData[0x1F4F] & 0xFF), 0x10);
         if (column < 0 || column >= RoomConstants.OBJECTS_PER_ROW
             || row < 0 || row >= RoomConstants.OBJECTS_PER_COLUMN) {
             return new ChestOpenResult(false, -1, -1, -1);
@@ -2948,7 +2947,11 @@ public final class RoomSession {
         byte[] status = activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
             ? overworldRoomStatus : indoorStatusTableForMap(activeRoom.mapId());
         status[activeRoom.roomId()] |= (byte) ROOM_STATUS_CHEST_OPEN;
-        refreshActiveRoomTilemap();
+        // writeBombPuzzleObject already updates the live GBC cell. Rebuilding
+        // from the ROM overlay would discard other live mutations (cut bushes).
+        if (activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD) {
+            refreshActiveRoomTilemap();
+        }
         overworldCollision.setRoom(activeRoom.roomObjectsArea());
         overworldCollision.setGbcOverlay(activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
             ? activeRoom.gbcOverlay() : null);

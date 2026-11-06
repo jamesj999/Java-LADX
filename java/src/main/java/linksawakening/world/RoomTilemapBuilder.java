@@ -204,7 +204,8 @@ public final class RoomTilemapBuilder {
                         objectId == OBJECT_ROCKY_CAVE_DOOR
                             && renderValue == OBJECT_BOMBABLE_CAVE_DOOR
                         || objectId == OBJECT_CAVE_DOOR
-                            && renderValue == OBJECT_CLOSED_GATE;
+                            && renderValue == OBJECT_CLOSED_GATE
+                        || objectId == 0xA1 && renderValue == 0xA0;
                     if (persistentReplacement) {
                         renderValue = objectId == OBJECT_CAVE_DOOR
                             && renderValue == OBJECT_CLOSED_GATE

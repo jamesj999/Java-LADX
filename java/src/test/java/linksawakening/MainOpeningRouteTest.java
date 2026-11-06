@@ -9,10 +9,10 @@ import static org.junit.jupiter.api.Assertions.*;
 /** Real game-loop integration, with buttons only after the new-game bootstrap. */
 final class MainOpeningRouteTest {
     @Test
-    void newGameCanTransformRaccoonThroughRealInputWithoutStateInjection() throws Exception {
+    void newGameCanCollectTailKeyThroughRealInputWithoutStateInjection() throws Exception {
         Main.initializeHeadlessNewGame();
         var checkpoints = new ArrayList<Main.HeadlessState>();
-        for (String line : Files.readAllLines(Path.of("../tools/opening/raccoon-route.tsv"))) {
+        for (String line : Files.readAllLines(Path.of("../tools/opening/tail-key-route.tsv"))) {
             if (line.isBlank() || line.startsWith("#")) continue;
             String[] fields = line.split("\\s+");
             int idle = Integer.parseInt(fields[2]);
@@ -135,7 +135,7 @@ final class MainOpeningRouteTest {
         assertEquals(19, complete.powder());
         assertEquals(104, complete.x());
         assertEquals(106, complete.y());
-        var transformed = checkpoints.getLast();
+        var transformed = checkpoints.get(231);
         assertFalse(transformed.dialog());
         assertTrue(transformed.forestCleared());
         assertEquals(18, transformed.powder());
@@ -143,6 +143,15 @@ final class MainOpeningRouteTest {
         assertTrue(transformed.tarinX() >= 0 && transformed.tarinX() < 160);
         assertTrue(transformed.tarinY() >= 0 && transformed.tarinY() < 144);
         assertTrue(transformed.health() > 0);
+        var key = checkpoints.get(239);
+        assertEquals(1, key.tailKey());
+        assertTrue(key.dialog());
+        assertTrue(key.text().contains("Tail Key"));
+        assertTrue(checkpoints.get(241).text().startsWith("Hoot!"));
+        var end = checkpoints.getLast();
+        assertEquals(0x41, end.room());
+        assertEquals(1, end.tailKey());
+        assertFalse(end.dialog());
     }
 
     private static void advanceAlive() {

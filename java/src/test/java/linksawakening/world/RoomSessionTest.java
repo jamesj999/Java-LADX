@@ -874,6 +874,34 @@ final class RoomSessionTest {
     }
 
     @Test
+    void tailKeyChestUsesTheRomUpwardInteractionReach() {
+        RoomSession session = newSession();
+        session.loadInitialOverworld(0x41);
+        // Real replay: entity (72,80), then approach to the source boundary (72,74).
+        assertFalse(session.tryOpenChest(64, 64, Link.DIRECTION_UP, true, 1).opened());
+        assertFalse(session.tryOpenChest(64, 59, Link.DIRECTION_UP, true, 1).opened());
+        var opened = session.tryOpenChest(64, 58, Link.DIRECTION_UP, true, 1);
+        assertTrue(opened.opened());
+        assertEquals(ChestContentsTable.CHEST_TAIL_KEY, opened.itemType());
+        assertEquals(0x34, opened.location());
+        int tileIndex = 6 * RoomConstants.ROOM_TILE_WIDTH + 8;
+        // $03:5053 is the CGB open-chest draw command, column-major.
+        byte[] rom = loadRom();
+        int source = RomBank.romOffset(3, 0x5053);
+        int[] positions = {tileIndex, tileIndex + RoomConstants.ROOM_TILE_WIDTH,
+            tileIndex + 1, tileIndex + RoomConstants.ROOM_TILE_WIDTH + 1};
+        for (int i = 0; i < 4; i++) {
+            assertEquals(rom[source + i] & 0xFF, session.activeRoom().tileIds()[positions[i]]);
+        }
+        session.loadInitialOverworld(0x51);
+        session.loadInitialOverworld(0x41);
+        assertFalse(session.tryOpenChest(64, 58, Link.DIRECTION_UP, true, 1).opened());
+        for (int i = 0; i < 4; i++) {
+            assertEquals(rom[source + i] & 0xFF, session.activeRoom().tileIds()[positions[i]]);
+        }
+    }
+
+    @Test
     void openingAClosedChestMutatesTheRoomAndSpawnsTheRomChestEntity() {
         RoomSession session = newSession();
         session.loadIndoor(0x00, 0x20);

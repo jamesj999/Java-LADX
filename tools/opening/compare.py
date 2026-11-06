@@ -61,6 +61,9 @@ if checkpoint_count >= 182:
 if checkpoint_count >= 232:
     samples = [(181, 'Powder collected'), (185, 'Brazier tutorial'), (186, 'Tutorial complete'),
                (229, 'Raccoon approach'), (230, 'Transformation dialogue'), (231, 'Forest cleared')]
+if checkpoint_count >= 243:
+    samples = [(234, 'Tail Key clearing'), (238, 'Chest interaction boundary'),
+               (239, 'Tail Key received'), (241, 'Owl directions'), (242, 'Opened chest persists')]
 for i, label in samples:
     html.append(f'<section><p>{label}: {rows[i]["pixels"]} differing pixels</p><article>')
     for folder, title in [('original', 'Original ROM'), ('ours', 'Java Main loop')]:
