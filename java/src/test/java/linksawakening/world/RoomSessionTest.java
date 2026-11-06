@@ -1577,6 +1577,37 @@ final class RoomSessionTest {
     }
 
     @Test
+    void heartPieceFinishesItsRewardWithoutBecomingACarriedObjectAndPersists() {
+        RoomSession session = newSession();
+        session.loadOverworld(0x44);
+        session.tickEntities(0, 72, 80);
+        RoomEntity piece = session.activeRoom().entities().loadedEntities().stream()
+            .filter(e -> e.type() == 0x35).findFirst().orElseThrow();
+        assertNotNull(session.collectEntityIfNeeded((piece.slot() ^ 1) & 1, 72, 80, false, true));
+        int pieces = 0;
+        boolean completed = false, dialogOpened = false;
+        for (int frame = 1; frame < 220 && !completed; frame++) {
+            session.setHeartPiecesCount(pieces);
+            session.tickEntities(frame, 72, 80);
+            assertFalse(session.liftedEntityState().active());
+            for (var update : session.consumeHeartPieceUpdates()) {
+                if (update.dialogId() == 0x4F) { dialogOpened = true; session.setEntityDialogActive(true); }
+                if (update.incrementPiece()) pieces++;
+                if (dialogOpened && !update.interactionLocked()) session.setEntityDialogActive(false);
+                completed |= update.complete();
+            }
+        }
+        assertTrue(completed);
+        assertTrue(dialogOpened);
+        assertEquals(1, pieces);
+        assertFalse(session.heartPiecePickupActive());
+        session.loadOverworld(0x43);
+        session.loadOverworld(0x44);
+        session.tickEntities(240, 72, 80);
+        assertTrue(session.activeRoom().entities().loadedEntities().stream().noneMatch(e -> e.type() == 0x35));
+    }
+
+    @Test
     void instrumentCyclesOnlyTheTwoRomObjectPaletteColours() {
         RoomSession session = newSession();
         session.loadIndoor(0, 2);

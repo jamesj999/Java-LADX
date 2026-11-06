@@ -389,7 +389,7 @@ public class Main {
                         linkSpriteSheet, playerState, itemRegistry, gameplaySoundSink,
                         linkTunicPalette);
         link.setShieldInputAllowed(() -> !GameplayDialogInput.blocksGameplay(dialogController)
-            && (roomSession == null || !roomSession.powerUpPickupSequenceActive()));
+            && (roomSession == null || (!roomSession.powerUpPickupSequenceActive() && !roomSession.heartPiecePickupActive())));
         itemRegistry.register(PlayerState.INVENTORY_OCARINA, new Ocarina(
             playerState, gameplaySoundSink, new Ocarina.PlaybackTarget() {
                 @Override
@@ -1035,7 +1035,7 @@ public class Main {
                         equipmentController.tickEquippedItemsWithoutInput(frameCounter);
                     } else {
                         if (!swordPickupSequenceActive
-                            && (roomSession == null || !roomSession.powerUpPickupSequenceActive()))
+                            && (roomSession == null || (!roomSession.powerUpPickupSequenceActive() && !roomSession.heartPiecePickupActive())))
                             equipmentController.dispatchButtonEdges();
                         equipmentController.tickEquippedItems(frameCounter);
                     }
@@ -1205,6 +1205,7 @@ public class Main {
                     inventoryMenu == null ? 0x80 : inventoryMenu.windowY());
                 roomSession.setEntityDialogAskSelectionIndex(
                     dialogController == null ? 0 : dialogController.choiceSelectionIndex());
+                roomSession.setHeartPiecesCount(playerState.heartPieces());
                 roomSession.setEntityMusicActive(
                     musicPlayer != null && musicPlayer.isMusicPlaying());
                 roomSession.setEntityActionButtonsHeld(
@@ -1471,6 +1472,13 @@ public class Main {
                     if (playerState != null) {
                         playerState.setGoldenLeavesCount(reward.goldenLeavesCount());
                     }
+                }
+                for (var update : roomSession.consumeHeartPieceUpdates()) {
+                    dialogController.setInteractionLocked(update.interactionLocked());
+                    if (update.incrementPiece()) playerState.setHeartPieces(playerState.heartPieces() + 1);
+                    if (update.newContainer()) playerState.completeHeartPieceContainer();
+                    if (update.tilesCommand() != 0) gpu.updateHeartPieceMeterTiles(romData, update.tilesCommand());
+                    if (update.complete()) gpu.updateTradingItemTiles(romData, playerState.tradeSequenceItem());
                 }
                 for (var reward : roomSession.consumeHeartContainerRewards()) {
                     if (playerState != null) {

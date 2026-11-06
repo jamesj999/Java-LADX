@@ -3707,3 +3707,13 @@ Preserved the instrument white-screen snapshot after controller completion until
 The new 715-checkpoint `post-tail-cave-mabe-route.tsv` completes the fresh-game Tail Cave victory, both hint pages, exit to overworld D3 at (104,34), the owl guidance in D2, the northbound C2 pit jump, and the BowWow kidnapping warning in B0. Both captures complete with four-heart capacity and instrument flags 3. At the warning Java has 32 health versus ROM 28, and Link/NPC positions differ by one or more pixels; this is progression evidence, not whole-scene parity. The northbound route must jump from x72/y104 and fight the Octorok beyond the pit; blindly holding up can die in either engine.
 
 Evidence: `/tmp/ladx-post-tail-warning`, manifests/checkpoints/results under `java/src/test/resources/opening/post-tail-cave`, and `docs/validation/post-tail-cave-2026-11-06.html`. Next continue the warning and BowWow rescue. Intermediate instrument animation phase/fade parity remains explicitly open.
+
+### Heart Piece pickup and Moblin Hideout approach (2026-11-06)
+
+The fresh-game route exposed a deadlock in overworld $44: Heart Pieces used the generic carried-item state, never awarded a piece or released Link. Implemented states 1–8 from $03:5A6D: staged meter tile loading, Dialog04F, the 168-frame interaction lock with award at frame 56, optional fourth-piece Dialog050/max-heart increase/$40 healing buffer, tile restoration and completed-room persistence. The meter uses the ROM pairs at $03:5B17 and GBC tiles at $2C:6900. Cleanup also restores the current trading item ($00:1E01). Shield and equipment inputs stay blocked through the pickup.
+
+Both engines complete the 769-checkpoint `bowwow-rescue-route.tsv` from a fresh game through Tail Cave, the kidnapping warning, the Heart Piece and the Moblin Hideout introduction (map $15, room $F0, Link 80,124). The checkpoint-753 meter region (x134..149, y19..34) has zero RGB555 pixel differences. Evidence: `/tmp/ladx-bowwow-hideout2`, persistent manifests/checkpoints/results in `java/src/test/resources/opening/heart-piece`, and `docs/validation/heart-piece-2026-11-06.html`. Tests cover the timed award, interaction lock, fourth-piece reward, tile restoration, release and room re-entry persistence.
+
+This verifies pickup progression and the meter region, not whole-scene parity. The first hideout Moblin is positioned differently between engines; investigate its initialization/dialogue movement before continuing combat. Rescue is not yet complete; previous instrument animation and other global visual differences remain open.
+
+Validation: all 2,371 tests pass, including ROM-byte checks of meter loading and equipment/trading-item restoration.

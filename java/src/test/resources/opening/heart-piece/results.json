@@ -1,0 +1,18 @@
+{
+  "checkpoints": 769,
+  "heart_piece_checkpoint": 753,
+  "meter_roi": [
+    134,
+    19,
+    150,
+    35
+  ],
+  "meter_rgb555_pixel_differences": 0,
+  "final_map": 21,
+  "final_room": 240,
+  "final_position": [
+    80,
+    124
+  ],
+  "remaining": "Moblin movement/phase differences, hideout combat and rescue; remainder of game and previously recorded visual differences"
+}

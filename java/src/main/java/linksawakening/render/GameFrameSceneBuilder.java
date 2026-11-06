@@ -34,6 +34,23 @@ public final class GameFrameSceneBuilder {
             layers.add(new DialogRenderLayer(state.dialogController(), dialogPalette,
                 dialogObjectPalettes, state.frameCounter()));
         }
+        if (state.room() != null && state.room().heartPiece() != null
+            && state.dialogController() != null && state.dialogController().isActive()
+            && state.dialogController().characterIndex() < 0x21) {
+            var visual = state.room().heartPiece();
+            int[] pairs = visual.spritePairs();
+            int offset = Math.min(4, visual.pieces()) * 4;
+            int y = state.dialogController().boxPosition() == linksawakening.dialog.DialogController.BoxPosition.BOTTOM
+                ? 0x6B - 16 : 0x23 - 16;
+            int[][] palettes = state.room().entities().spriteSelection().objectPalettes();
+            layers.add(context -> {
+                for (int half = 0; half < 2; half++) {
+                    int attr = pairs[offset + half * 2 + 1];
+                    IndexedRenderer.drawSpriteTile8x16(context.buffer(), context.gpu(), pairs[offset + half * 2],
+                        0x8E - 8 + half * 8, y, (attr & 32) != 0, (attr & 64) != 0, palettes[attr & 7]);
+                }
+            });
+        }
         return FrameScene.of(layers);
     }
 

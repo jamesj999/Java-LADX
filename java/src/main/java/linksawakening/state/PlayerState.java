@@ -310,6 +310,12 @@ public final class PlayerState {
         }
     }
 
+    public void completeHeartPieceContainer() {
+        heartPieces = 0;
+        setMaxHearts(maxHearts + 1);
+        addHealthBuffer = 0x40;
+    }
+
     /** Applies HeartContainerEntityHandler's delayed health reward. */
     public void applyHeartContainerReward() {
         setMaxHearts(maxHearts + 1);
@@ -630,7 +636,7 @@ public final class PlayerState {
     }
 
     public void setHeartPieces(int value) {
-        heartPieces = clamp(value, 0, 3);
+        heartPieces = clamp(value, 0, 4);
     }
 
     public int seashells() {

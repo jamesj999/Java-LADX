@@ -803,13 +803,28 @@ public final class RoomSession {
         return activeRoom == null ? null : activeRoom.palettes();
     }
 
+    public boolean heartPiecePickupActive() {
+        return entityRuntime != null && entityRuntime.heartPiecePickupActive();
+    }
+
+    public void setHeartPiecesCount(int count) {
+        if (entityRuntime != null) entityRuntime.setHeartPiecesCount(count);
+    }
+    public List<HeartPiecePickupMotion.Update> consumeHeartPieceUpdates() {
+        if (entityRuntime == null) return List.of();
+        var updates = entityRuntime.consumeHeartPieceUpdates();
+        if (updates.stream().anyMatch(HeartPiecePickupMotion.Update::complete)) markActiveRoomCompleted();
+        return updates;
+    }
+
     public String instrumentTrace() { return entityRuntime == null ? "" : entityRuntime.instrumentTrace(); }
 
     public RoomRenderSnapshot renderSnapshot() {
         if (activeRoom == null) return null;
         RoomRenderSnapshot snapshot = activeRoom.renderSnapshot();
         return new RoomRenderSnapshot(snapshot.tileIds(), snapshot.tileAttrs(), snapshot.palettes(),
-            snapshot.entities(), entityRuntime == null ? null : entityRuntime.instrumentWarpVisual());
+            snapshot.entities(), entityRuntime == null ? null : entityRuntime.instrumentWarpVisual(),
+            entityRuntime == null ? null : entityRuntime.heartPieceVisual());
     }
 
     /**

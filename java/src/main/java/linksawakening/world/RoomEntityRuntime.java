@@ -648,6 +648,10 @@ public final class RoomEntityRuntime {
     private final int[] instrumentHintBatches = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] instrumentWarpX = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] instrumentWarpY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final HeartPiecePickupMotion[] heartPiecePickup = new HeartPiecePickupMotion[EntityRoomLoader.MAX_ENTITIES];
+    private final List<HeartPiecePickupMotion.Update> heartPieceUpdates = new ArrayList<>();
+    private int heartPiecesCount;
+    private final int[] heartPieceMeterPairs = new int[20];
     private final int[] instrumentPaletteCycle = new int[32];
     private final int[] instrumentWarpSprites = new int[256];
     private final int[] instrumentHintTiles = new int[20 * 18];
@@ -1199,6 +1203,8 @@ public final class RoomEntityRuntime {
         this.chestContentsTable = chestContentsTable;
         this.romTables = romTables;
         if (romData != null) {
+            for (int i = 0; i < heartPieceMeterPairs.length; i++) heartPieceMeterPairs[i] =
+                romData[3 * 0x4000 + 0x1B17 + i] & 255;
             for (int i = 0; i < instrumentPaletteCycle.length; i++) {
                 int offset = 0x36 * 0x4000 + 0x3096 + i * 2;
                 int rgb555 = (romData[offset] & 255) | ((romData[offset + 1] & 255) << 8);
@@ -1894,6 +1900,10 @@ public final class RoomEntityRuntime {
             if (!entity.loaded()) {
                 continue;
             }
+            if (entity.type() == 0x35 && (entityRoomStatus & 0x10) != 0) {
+                disableEntityWithoutPersistence(entity.slot());
+                continue;
+            }
             if (enemyProjectileSpawnedThisFrame[entity.slot()]
                 || dynamicEntitySpawnedThisFrame[entity.slot()]) {
                 continue;
@@ -2481,6 +2491,11 @@ public final class RoomEntityRuntime {
                 && (entity.type() == ENTITY_KID_71 || entity.type() == ENTITY_KID_72)
                 && bowWowState == 0x80) {
                 advanceKidnapWarningKid(entity, frame, linkEntityX, linkEntityY);
+                continue;
+            }
+            if (status == EntityStatus.ACTIVE && entity.type() == 0x35
+                && heartPiecePickup[entity.slot()] != null) {
+                advanceHeartPiecePickup(entity, linkEntityX, linkEntityY, linkZ);
                 continue;
             }
             if (status == EntityStatus.ACTIVE && entity.type() == 0x39
@@ -5084,6 +5099,7 @@ public final class RoomEntityRuntime {
             if (!entity.loaded() || entity.status() != EntityStatus.ACTIVE
                 || !RoomEntityPickupRules.isPickable(entity.type())
                 || (floatingType && !floating)
+                || (entity.type() == 0x35 && heartPiecePickup[entity.slot()] != null)
                 || powerUpPickupCountdown[entity.slot()] != 0
                 || dropPrivateCountdown1[entity.slot()] > 0
                 || (entity.type() == ENTITY_HEART_CONTAINER
@@ -5117,6 +5133,10 @@ public final class RoomEntityRuntime {
                         entity.slot(), ChestContentsTable.CHEST_SMALL_KEY));
                     clearEntity(entity.slot());
                 }
+            } else if (entity.type() == 0x35) {
+                heartPiecePickup[entity.slot()] = new HeartPiecePickupMotion();
+                enemyTransitionCountdown[entity.slot()] = 5;
+                pendingMusicTrack = 0x10;
             } else if (entity.type() == ENTITY_HEART_CONTAINER) {
                 enemyTransitionCountdown[entity.slot()] = 0x70;
             } else if (entity.type() == ENTITY_SWORD_SHIELD_PICKUP
@@ -9966,6 +9986,43 @@ public final class RoomEntityRuntime {
         slots[slot] = withZ(held, linkZ & 0xFF);
     }
 
+    public boolean heartPiecePickupActive() {
+        for (var motion : heartPiecePickup) if (motion != null && motion.active()) return true;
+        return false;
+    }
+
+    public HeartPieceVisual heartPieceVisual() {
+        for (var motion : heartPiecePickup) if (motion != null && motion.showMeter())
+            return new HeartPieceVisual(heartPiecesCount, heartPieceMeterPairs);
+        return null;
+    }
+
+    public void setHeartPiecesCount(int count) { heartPiecesCount = count; }
+
+    public List<HeartPiecePickupMotion.Update> consumeHeartPieceUpdates() {
+        var result = List.copyOf(heartPieceUpdates);
+        heartPieceUpdates.clear();
+        return result;
+    }
+
+    private void advanceHeartPiecePickup(RoomEntity entity, int x, int y, int z) {
+        int slot = entity.slot();
+        var update = heartPiecePickup[slot].advance(enemyTransitionCountdown[slot], dialogActive, heartPiecesCount);
+        heartPieceUpdates.add(update);
+        if (update.incrementPiece()) heartPiecesCount++;
+        if (update.newContainer()) heartPiecesCount = 0;
+        if (update.dialogId() >= 0) pendingDialogRequests.add(new DialogRequest(0, update.dialogId()));
+        if (update.newContainer()) pendingEntityEvents.add(new EntityCombatEvent(slot, entity.type(), 0, false,
+            EntityCombatEvent.SoundChannel.JINGLE, 0x19));
+        if (update.complete()) {
+            disableEntityWithoutPersistence(slot);
+            return;
+        }
+        pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
+        pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
+        slots[slot] = withZ(withPositionAndVariant(entity, x, (y - 12) & 255, entity.spriteVariant()), z);
+    }
+
     public String instrumentTrace() {
         StringBuilder trace = new StringBuilder().append(activeMusic ? 1 : 0);
         for (RoomEntity entity : slots) {
@@ -13554,7 +13611,7 @@ public final class RoomEntityRuntime {
 
     private static boolean requiresHeldPickupTransition(int type) {
         return switch (type) {
-            case 0x30, 0x31, 0x35, 0x36, 0x3C -> true;
+            case 0x30, 0x31, 0x36, 0x3C -> true;
             default -> false;
         };
     }

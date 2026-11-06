@@ -580,6 +580,24 @@ public class GPU {
         };
     }
 
+    /** Executes the two meter uploads and two equipment-tile restorations from ROM. */
+    public void updateHeartPieceMeterTiles(byte[] rom, int command) {
+        int source, destination;
+        switch (command) {
+            case 3 -> { source = 0x6900; destination = 0x9A; }
+            case 4 -> { source = 0x6930; destination = 0x9D; }
+            case 5 -> { source = 0x49D0; destination = 0x9D; }
+            case 6 -> { source = 0x49A0; destination = 0x9A; }
+            default -> throw new IllegalArgumentException("Heart meter command: " + command);
+        }
+        loadTilesFromROM(rom, 0x2C, source, 3, destination);
+    }
+
+    /** ReplaceTradingItemTiles ($00:1E01), also restores tiles overwritten by the heart meter. */
+    public void updateTradingItemTiles(byte[] rom, int item) {
+        if (item >= 2) loadTilesFromROM(rom, 0x2C, 0x4400 + (item - 2) * 0x40, 4, 0x9A);
+    }
+
     /** Copies the three Ocarina popup chunks to vTiles0+$200/$240/$260. */
     public void loadOcarinaSymbolsTiles(byte[] romData) {
         loadTilesFromROM(romData, OCARINA_SYMBOLS_TILES_BANK,

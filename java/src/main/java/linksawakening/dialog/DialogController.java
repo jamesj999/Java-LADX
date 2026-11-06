@@ -28,6 +28,7 @@ public final class DialogController {
     private int revealTicks;
     private int dialogCooldown;
     private boolean active;
+    private boolean interactionLocked;
     private boolean waitingForPageAdvance;
     private int pageWaitAge;
     private boolean choicePrompt;
@@ -190,7 +191,12 @@ public final class DialogController {
         return scrollAge > 0 ? 8 : 0;
     }
 
+    public int characterIndex() { return pageStart + visibleCharactersOnPage; }
+
+    public void setInteractionLocked(boolean locked) { interactionLocked = locked; }
+
     public void advance() {
+        if (interactionLocked) return;
         if (romTimed && (openingAge < 10 || scrollAge >= 0 || closingAge >= 0)) return;
         if (!active) {
             return;

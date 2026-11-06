@@ -174,6 +174,19 @@ final class PlayerStateTest {
     }
 
     @Test
+    void fourthHeartPieceRemainsVisibleUntilDialogThenQueuesEightHeartUnits() {
+        PlayerState player = new PlayerState();
+        player.setHeartPieces(4);
+        assertEquals(4, player.heartPieces());
+        player.setHealth(1);
+        player.completeHeartPieceContainer();
+        assertEquals(0, player.heartPieces());
+        assertEquals(4, player.maxHearts());
+        assertEquals(0x40, player.addHealthBuffer());
+        assertEquals(1, player.health());
+    }
+
+    @Test
     void heartContainerRewardRaisesMaximumAndQueuesAFullHeal() {
         PlayerState playerState = new PlayerState();
         playerState.setHealth(1);
