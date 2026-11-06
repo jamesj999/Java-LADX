@@ -3445,3 +3445,13 @@ of scope.
 - Added read-only current-dungeon key observations and a `smallkeys=` replay condition; checkpoint logs now include loaded entities.
 - Visual evidence: validation/tail-cave-first-key-2026-11-06.html. Matching route hashes and original observations are retained in java/src/test/resources/opening/tail-cave-first-key.
 - Next: the adjacent room $15 chest encounter. The initial route attempt died in both engines and is not retained as a verified replay. The whole game is still not production-ready.
+
+
+### Tail Cave Compass, chest dialogue and shutters — 2026-11-06
+
+- Fresh-game normal-input replay now completes 323 checkpoints in both Java and PyBoy: first Small Key, Compass chest, room $15 Zols and shutter exit, then entrance to room $13. Both inventory observations retain one Small Key and one Compass.
+- Fixed chest items advancing/unloading through open dialogue. Source: ChestWithItemEntityHandler $07:7C5E. Regression holds the same entity for 240 dialogue frames and verifies normal removal afterward.
+- Fixed chest bit $10 cancelling shutter events. OpenLockedDoorsEffectHandler bypasses EventEffectGuard; pending doors now remain closed on re-entry with the chest opened, then open after enemies are cleared. Regression covers that ordering.
+- Fixed zero-idle replay steps retaining held buttons in the Java integration/capture drivers and PyBoy driver. Added read-only Compass observations.
+- All 2,328 tests pass. See validation/tail-cave-compass-2026-11-06.html and java/src/test/resources/opening/tail-cave-compass for evidence. Final health remains different (Java 8, ROM 4); no full combat or visual parity claim.
+- Next: room $13’s Gel encounter and narrow horizontal walkway to the switch and second Small Key. The exploratory extension is not a passing replay; the committed route ends at its entrance.

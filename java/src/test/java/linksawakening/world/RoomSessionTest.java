@@ -1348,6 +1348,29 @@ final class RoomSessionTest {
     }
 
     @Test
+    void openingCompassChestDoesNotCancelTheKillAllShutterEvent() {
+        RoomSession session = newSession();
+        session.loadIndoor(0, 0x15);
+        assertEquals(0x21, session.activeRoomEventForTest());
+        assertTrue(session.tryOpenChest(48, 58, Link.DIRECTION_UP, true, 1).opened());
+        assertEquals(0x10, session.indoorRoomStatusForTest(0, 0x15) & 0x10);
+        session.tickEntities(0, 56, 74);
+        assertNotEquals(0, session.activeRoom().shutterDoorMask());
+        // Reloading the opened chest must not bypass the still-live enemies.
+        session.loadIndoor(0, 0x15);
+        assertNotEquals(0, session.activeRoom().shutterDoorMask());
+        var hazardsOnly = session.activeRoom().entities().slots().stream()
+            .map(entity -> entity.type() == 0x9B ? RoomEntity.disabled(entity.slot()) : entity)
+            .toList();
+        session.replaceEntityRuntimeForTest(RoomEntityRuntime.from(
+            new RoomEntitySnapshot(hazardsOnly), true));
+        session.tickEntities(1, 56, 74);
+        assertEquals(0, session.activeRoomEventForTest());
+        assertEquals(0, session.activeRoom().shutterDoorMask());
+        assertEquals(0x10, session.indoorRoomStatusForTest(0, 0x15) & 0x10);
+    }
+
+    @Test
     void tailCaveRoom16KillAllEventDropsTheThirdSmallKey() {
         RoomSession session = newSession();
         session.loadIndoor(0x00, 0x16);

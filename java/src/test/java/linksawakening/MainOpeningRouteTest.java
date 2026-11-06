@@ -9,10 +9,10 @@ import static org.junit.jupiter.api.Assertions.*;
 /** Real game-loop integration, with buttons only after the new-game bootstrap. */
 final class MainOpeningRouteTest {
     @Test
-    void newGameCanCollectTailCavesFirstSmallKeyThroughRealInputWithoutStateInjection() throws Exception {
+    void newGameCanCollectTailCavesKeyAndCompassAndLeaveTheChestRoom() throws Exception {
         Main.initializeHeadlessNewGame();
         var checkpoints = new ArrayList<Main.HeadlessState>();
-        for (String line : Files.readAllLines(Path.of("../tools/opening/tail-cave-dungeon-route.tsv"))) {
+        for (String line : Files.readAllLines(Path.of("../tools/opening/tail-cave-chests-route.tsv"))) {
             if (line.isBlank() || line.startsWith("#")) continue;
             String[] fields = line.split("\\s+");
             int idle = Integer.parseInt(fields[2]);
@@ -37,6 +37,7 @@ final class MainOpeningRouteTest {
                 if (tick < held) OpeningRouteCapture.pulseButtons(fields[0], tick);
                 advanceAlive();
             }
+            if (held > 0 && idle == 0) Main.headlessButton(fields[0].replace("*", ""), false);
             checkpoints.add(Main.headlessState());
         }
         assertTrue(checkpoints.get(0).dialog());
@@ -163,11 +164,20 @@ final class MainOpeningRouteTest {
         assertEquals(1, dungeon.tailKey());
         assertEquals(1, dungeon.sword());
         assertTrue(dungeon.health() > 0);
-        var firstSmallKey = checkpoints.getLast();
+        var firstSmallKey = checkpoints.get(300);
         assertEquals(0x16, firstSmallKey.room());
         assertEquals(1, firstSmallKey.smallKeys());
         assertEquals(dungeon.health(), firstSmallKey.health(), "Clear beetles without damage");
-        assertFalse(Main.headlessEntityPositions().contains("20:ACTIVE"));
+        var compassDialogue = checkpoints.get(308);
+        assertTrue(compassDialogue.dialog());
+        assertTrue(compassDialogue.text().contains("Compass"));
+        assertEquals(1, compassDialogue.compass());
+        var afterCompass = checkpoints.getLast();
+        assertEquals(0x13, afterCompass.room(), "Exit the compass room and return through the entrance");
+        assertEquals(1, afterCompass.compass());
+        assertEquals(1, afterCompass.smallKeys());
+        assertFalse(afterCompass.dialog());
+        assertTrue(afterCompass.health() > 0);
     }
 
     private static void advanceAlive() {

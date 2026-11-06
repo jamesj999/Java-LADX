@@ -2360,7 +2360,8 @@ public final class RoomSession {
         if (activeRoom.shutterDoorMask() != 0
             && activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD) {
             boolean ordinaryEventPending = activeRoomEvent != 0
-                && (activeRoomStatusFlags() & ROOM_STATUS_EVENT_1) == 0;
+                && ((activeRoomEvent & EVENT_EFFECT_MASK) == EVENT_EFFECT_OPEN_LOCKED_DOORS
+                    || (activeRoomStatusFlags() & ROOM_STATUS_EVENT_1) == 0);
             if (ordinaryEventPending) {
                 int closedShutterMask = activeRoom.shutterDoorMask()
                     & ~persistedOpenShutterMask();
@@ -3824,7 +3825,12 @@ public final class RoomSession {
             || activeRoomEvent == 0) {
             return;
         }
-        if ((activeRoomStatusFlags() & ROOM_STATUS_EVENT_1) != 0) {
+        int effect = activeRoomEvent & EVENT_EFFECT_MASK;
+        // OpenLockedDoorsEffectHandler does not call EventEffectGuard:
+        // opening a chest sets bit $10 too, but must not cancel the shutters.
+        if (effect != EVENT_EFFECT_OPEN_LOCKED_DOORS
+            && effect != EVENT_EFFECT_CLEAR_MIDBOSS
+            && (activeRoomStatusFlags() & ROOM_STATUS_EVENT_1) != 0) {
             return;
         }
         int trigger = activeRoomEvent & EVENT_TRIGGER_MASK;
@@ -3848,7 +3854,6 @@ public final class RoomSession {
         if (!roomEventEffectExecuted) {
             return;
         }
-        int effect = activeRoomEvent & EVENT_EFFECT_MASK;
         if (effect == EVENT_EFFECT_REVEAL_CHEST) {
             activeRoomEvent = 0;
             roomEventChestRevealCountdown = ROOM_EVENT_CHEST_REVEAL_COUNTDOWN;

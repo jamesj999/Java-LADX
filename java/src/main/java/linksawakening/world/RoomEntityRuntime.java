@@ -11032,6 +11032,12 @@ public final class RoomEntityRuntime {
             return true;
         }
 
+        // ChestWithItemEntityHandler ($07:7C5E) renders before this gate,
+        // but does not move, advance inertia, or unload while text is open.
+        if (dialogActive) {
+            return false;
+        }
+
         int y = addFallingSpeedToPosition(entity.y(), chestSpeedY[slot],
             chestSpeedYAccumulator, slot);
         int inertia = (chestInertia[slot] + 1) & 0xFF;

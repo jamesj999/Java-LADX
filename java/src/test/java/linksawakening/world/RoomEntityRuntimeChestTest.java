@@ -65,6 +65,14 @@ final class RoomEntityRuntimeChestTest {
             runtime.consumePendingDialogRequests());
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(slot).status());
 
+        RoomEntity displayedItem = runtime.snapshot().slots().get(slot);
+        runtime.setDialogActive(true);
+        for (int frame = 0; frame < 240; frame++) {
+            runtime.tick(frame, 0, 0, () -> 0);
+            assertEquals(displayedItem, runtime.snapshot().slots().get(slot));
+        }
+        assertTrue(runtime.consumePendingDialogRequests().isEmpty());
+        runtime.setDialogActive(false);
         runtime.tick(0x27, 0, 0, () -> 0);
         assertTrue(runtime.consumePendingDialogRequests().isEmpty());
         runtime.tick(0x28, 0, 0, () -> 0);

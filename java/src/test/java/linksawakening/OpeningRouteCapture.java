@@ -45,6 +45,7 @@ public final class OpeningRouteCapture {
                 rgba = Main.headlessFrame();
                 appendTrace(trace, frame++);
             }
+            if (held > 0 && idle == 0) Main.headlessButton(fields[0].replace("*", ""), false);
             BufferedImage image = new BufferedImage(160, 144, BufferedImage.TYPE_INT_RGB);
             for (int p = 0; p < 160 * 144; p++) image.setRGB(p % 160, p / 160,
                 ((rgba[p*4]&255)<<16)|((rgba[p*4+1]&255)<<8)|(rgba[p*4+2]&255));
@@ -93,7 +94,7 @@ public final class OpeningRouteCapture {
         trace.append(frame).append('\t').append(s.map()).append('\t').append(s.room())
             .append('\t').append(s.x()).append('\t').append(s.y()).append('\t')
             .append(s.dialog()).append('\t').append(s.shield())
-            .append('\t').append(s.smallKeys()).append('\n');
+            .append('\t').append(s.smallKeys()).append('\t').append(s.compass()).append('\n');
     }
 
 }
