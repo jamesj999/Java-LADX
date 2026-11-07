@@ -31,3 +31,25 @@ interface. It advances music and SFX once per `update()` (60 Hz), renders an
 integer number of samples with a carried remainder, and routes dialog PCM to
 the same output. The caller owns the output lifetime. The legacy OpenAL browser
 transport remains available with its existing sample-driven buffering behavior.
+
+## Room data migration checkpoint
+
+OverworldTilesetTable uses typed Rom reads; IndoorRoomPointerTables uses
+RomSymbols. Seven literal location constants removed. The guard currently covers
+these two files with an empty non-ROM allow-list. Remaining owned files still
+require migration; this checkpoint does not claim a completed package audit.
+
+Verified against azle.sym: OverworldTilesetsTable = 20:6E73,
+OverworldPaletteMap = 21:42EF, OverworldPalettes = 21:42B1; indoor pointers
+are 0A:4000, 0B:4000 and 0A:7B77. No discrepancies in these locations.
+
+Remaining literal location declarations by package (not a complete ROM-access
+audit; includes other owners and genuine non-ROM constants):
+
+- entity: 6 declarations in 2 files: EntitySpriteCatalog, LinkSpriteSheet.
+- equipment: 1 declarations in 1 files: SwordSpriteSheet.
+- gameplay: 6 declarations in 2 files: SignpostDialogTable, DialogTextLoader.
+- gpu: 13 declarations in 3 files: AnimatedTiles, EntitySheetTileLoader, RoomTileLoader.
+- render: 1 declarations in 1 files: EntityRenderLayer.
+- vfx: 3 declarations in 1 files: TransientVfxSpriteSheet.
+- world: 86 declarations in 14 files: WarpMotion, RoomObjectParser, EntityRoomLoader, RoomSession, EnemyDropResolver, RomEnemyCombatTables, ChestContentsTable, DungeonRoomEventTable, ManboTransitionWave, RoomLoader, RoomPaletteLoader, ManboWarpResolver, OverworldBushInteraction, RoomTilemapBuilder.

@@ -108,3 +108,11 @@ AnimatedTiles
 CharacterVfxTiles
 TitleDXTilesCGB
 TitleDXOAMTiles
+
+OverworldTilesetsTable
+
+IndoorsARoomPointers
+
+IndoorsBRoomPointers
+
+ColorDungeonRoomPointers

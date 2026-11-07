@@ -108,4 +108,8 @@ public final class RomSymbols {
     public static final RomAddress CharacterVfxTiles = new RomAddress(0x0C, 0x4200);
     public static final RomAddress TitleDXTilesCGB = new RomAddress(0x38, 0x5800);
     public static final RomAddress TitleDXOAMTiles = new RomAddress(0x38, 0x6500);
+    public static final RomAddress OverworldTilesetsTable = new RomAddress(0x20, 0x6E73);
+    public static final RomAddress IndoorsARoomPointers = new RomAddress(0x0A, 0x4000);
+    public static final RomAddress IndoorsBRoomPointers = new RomAddress(0x0B, 0x4000);
+    public static final RomAddress ColorDungeonRoomPointers = new RomAddress(0x0A, 0x7B77);
 }
