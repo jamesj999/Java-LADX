@@ -46,8 +46,9 @@ final class MainArchitectureTest {
     }
     @Test
     void mainAppliesTarinLinkWritesAtTheEntityFrameBoundary() throws Exception {
-        check("EntityPhase", "tick", "consumeLinkAttackClearRequests", "clearRomAttackStepAnimationCountdown");
-        assertTrue(CompiledCode.code(P + "EntityPhase").contains("faceRomDirectionPreservingWalkPhase"));
+        check("EntityPhase", "tick", "consumeLinkAttackClearRequests", "LinkCommandAdapter.from", "Link.apply");
+        assertTrue(CompiledCode.code("linksawakening.entity.LinkCommand$Facing").contains("faceRomDirectionPreservingWalkPhase"));
+        assertTrue(CompiledCode.code("linksawakening.entity.LinkCommand$Action").contains("clearRomAttackStepAnimationCountdown"));
     }
     @Test
     void mainMergesLinkAttackWritesInDescendingEntitySlotOrder() throws Exception {
@@ -68,13 +69,16 @@ final class MainArchitectureTest {
     @Test
     void mainMergesSideViewPotContactWithOtherDescendingLinkWrites() throws Exception {
         check("EntityPhase", "tick", "consumeSideViewPotLinkRequests", "consumeLinkFinalPositionRequests");
-        assertTrue(CompiledCode.code(P + "EntityPhase").contains("applySideViewPotContact"));
+        assertTrue(CompiledCode.code(P + "EntityPhase").contains("LinkCommandAdapter.from"));
+        assertTrue(CompiledCode.code("linksawakening.entity.LinkCommand$PotContact").contains("applySideViewPotContact"));
         assertTrue(CompiledCode.code(P + "EntityPhase").contains("setEntityFinalPositionX"));
     }
     @Test
     void mainAppliesHookshotPullEventsWithoutProjectileIgnoreSideEffects() throws Exception {
         assertTrue(CompiledCode.code(P + "EntityPhase").contains("HOOKSHOT_PULL"));
-        check("EntityPhase", "tick", "applyRomFinalPosition", "applyRomSpeed");
+        check("EntityPhase", "tick", "HOOKSHOT_PULL", "LinkCommandAdapter.from", "Link.apply");
+        CompiledCode.calls("linksawakening.entity.LinkCommand$ProjectileResponse", "applyTo",
+            "applyRomFinalPosition", "applyRomSpeed", "setCollisionIgnoreFrames");
     }
     @Test
     void mainRegistersBombWithLinkRomPlacementState() throws Exception {
