@@ -59,13 +59,13 @@ final class HardwareFrameTest {
             }
         }
     }
-    @Test void cgbLowerOamSlotWinsRegardlessOfXAndSubmissionOrder() {
+    @Test void laterPainterSubmissionWinsRegardlessOfXOrUnusedSlotMetadata() {
         HardwareFrame frame = new HardwareFrame(true);
-        frame.appendInSlot(5, solid(1), 0, 0, false, false, PALETTE, false);
-        frame.appendInSlot(2, solid(2), 4, 0, false, false, PALETTE, false);
+        frame.appendInSlot(2, solid(1), 0, 0, false, false, PALETTE, false);
+        frame.appendInSlot(5, solid(2), 4, 0, false, false, PALETTE, false);
         assertEquals(33, pixel(frame, 4, 0));
     }
-    @Test void shadowSlotZeroWinsOverLinksBodySlots() {
+    @Test void shadowSubmittedAfterLinkCoversLink() {
         HardwareFrame frame = new HardwareFrame(true);
         frame.appendInSlot(2, solid(2), 0, 0, false, false, PALETTE, false);
         frame.appendInSlot(3, solid(3), 8, 0, false, false, PALETTE, false);

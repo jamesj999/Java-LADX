@@ -21,7 +21,10 @@ public final class SpriteListRenderLayer implements HardwareRenderLayer {
     }
 
     @Override public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
-        for (Sprite sprite : sprites) {
+        var ordered = new java.util.ArrayList<Sprite>();
+        sprites.forEach(ordered::add);
+        for (int i = ordered.size() - 1; i >= 0; i--) {
+            Sprite sprite = ordered.get(i);
             int[] palette = palettes[Math.min(sprite.paletteIndex(), palettes.length - 1)];
             if (sprite.height() == 16) {
                 int base = sprite.tileIndex() & 0xFE;

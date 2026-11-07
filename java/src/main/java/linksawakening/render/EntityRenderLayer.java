@@ -90,8 +90,8 @@ public final class EntityRenderLayer implements HardwareRenderLayer {
         OamSink sink = (tile, x, y, fx, fy, palette, behind) ->
             commands.add(target -> target.append(tile, x, y, fx, fy, palette, behind));
         render(new RenderContext(new byte[0], gpu, sink));
-        // Preserve the existing entity painter order as explicit OAM priority.
-        for (int i = commands.size() - 1; i >= 0; i--) commands.get(i).accept(frame);
+        // Preserve the existing entity painter submission order.
+        for (var command : commands) command.accept(frame);
     }
 
     private void renderSnapshot(RenderContext context, RoomEntitySnapshot entities,

@@ -74,6 +74,6 @@ public final class TransientVfxRenderLayer implements HardwareRenderLayer {
         OamSink sink = (tile, x, y, fx, fy, palette, behind) ->
             commands.add(target -> target.append(tile, x, y, fx, fy, palette, behind));
         render(new RenderContext(new byte[0], gpu, sink));
-        for (int i = commands.size() - 1; i >= 0; i--) commands.get(i).accept(frame);
+        for (var command : commands) command.accept(frame);
     }
 }

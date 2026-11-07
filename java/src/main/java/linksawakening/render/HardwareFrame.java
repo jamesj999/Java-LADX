@@ -82,7 +82,7 @@ public final class HardwareFrame implements RenderLayer, OamSink {
     }
 
     public String hudEvidence(int pixel) {
-        return String.format("tile=$%02X attr=$%02X index=%d objSlot=%d bgRGB=$%06X objRGB=$%06X",
+        return String.format("tile=$%02X attr=$%02X index=%d objSubmission=%d bgRGB=$%06X objRGB=$%06X",
             hudTiles[pixel], hudAttributes[pixel], backgroundIndex[pixel], objectOrder[pixel],
             backgroundPalettes[pixel] == null ? 0 : backgroundPalettes[pixel][backgroundIndex[pixel]], objects[pixel]);
     }
@@ -109,16 +109,18 @@ public final class HardwareFrame implements RenderLayer, OamSink {
     private final java.util.List<ObjectTile> oam = new java.util.ArrayList<>();
     @Override public void append(Tile tile, int x, int y, boolean flipX, boolean flipY,
                                  int[] palette, boolean behindBackground) {
-        oam.add(new ObjectTile(tile, x, y, flipX, flipY, palette, Integer.MAX_VALUE - 1, behindBackground, submittingLayer));
+        oam.add(new ObjectTile(tile, x, y, flipX, flipY, palette, oam.size(), behindBackground, submittingLayer));
     }
     @Override public void appendInSlot(int slot, Tile tile, int x, int y, boolean fx, boolean fy,
                                        int[] palette, boolean behind) {
-        objectTile(tile, x, y, fx, fy, palette, slot, behind);
+        append(tile, x, y, fx, fy, palette, behind);
     }
+    /** Compatibility adapter: slot metadata is unused until RomOamAllocator exists. */
+    @Deprecated
     public void objectTile(Tile tile, int x, int y, boolean flipX, boolean flipY,
                            int[] palette, int oamIndex, boolean behindBackground) {
         if (oamIndex < 0 || oamIndex == Integer.MAX_VALUE) throw new IllegalArgumentException("OAM index");
-        oam.add(new ObjectTile(tile, x, y, flipX, flipY, palette, oamIndex, behindBackground, submittingLayer));
+        oam.add(new ObjectTile(tile, x, y, flipX, flipY, palette, oam.size(), behindBackground, submittingLayer));
     }
 
     @Override public void render(RenderContext context) {
@@ -129,7 +131,7 @@ public final class HardwareFrame implements RenderLayer, OamSink {
         Arrays.fill(objectOrder, Integer.MAX_VALUE);
         for (ObjectTile entry : oam) {
             stamp(entry.tile(), entry.x(), entry.y(), entry.flipX(), entry.flipY(), (pixel, index) -> {
-                if (index == 0 || entry.order() >= objectOrder[pixel]) return;
+                if (index == 0) return;
                 objects[pixel] = entry.palette()[index];
                 objSources[pixel] = entry.source();
                 objFlags[pixel] = (entry.flipX() ? 32 : 0) | (entry.flipY() ? 64 : 0) | (entry.behind() ? 128 : 0);

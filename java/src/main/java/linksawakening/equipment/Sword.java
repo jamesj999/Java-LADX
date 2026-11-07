@@ -342,7 +342,6 @@ public final class Sword implements EquippedItem {
         }
     }
 
-    // bank2.asm $5344/$5347 selects wLinkOAMBuffer+$10/+$14: OAM slots 4/5.
     public void submitOam(linksawakening.render.OamSink sink, int linkPixelX, int linkPixelY,
                        int direction, int offsetX, int offsetY) {
         if (state == STATE_NONE && !spinAttackActive()) {
@@ -365,17 +364,17 @@ public final class Sword implements EquippedItem {
         int attr0 = romTables.swordSpriteAttr(swordDir, 0);
         int attr1 = romTables.swordSpriteAttr(swordDir, 1);
         if (tile0 != 0xFF) {
-            submit8x16(sink, 4, tile0, bladeX, bladeY, attr0, palette);
+            submit8x16(sink, tile0, bladeX, bladeY, attr0, palette);
         }
         if (tile1 != 0xFF) {
-            submit8x16(sink, 5, tile1, bladeX + 8, bladeY, attr1, palette);
+            submit8x16(sink, tile1, bladeX + 8, bladeY, attr1, palette);
         }
     }
-    private void submit8x16(linksawakening.render.OamSink sink, int slot, int tile, int x, int y,
+    private void submit8x16(linksawakening.render.OamSink sink, int tile, int x, int y,
                             int attrs, int[] palette) {
         boolean fx = (attrs & 32) != 0, fy = (attrs & 64) != 0;
-        sink.appendInSlot(slot, spriteSheet.tile(fy ? tile + 1 : tile), x, y, fx, fy, palette, false);
-        sink.appendInSlot(slot, spriteSheet.tile(fy ? tile : tile + 1), x, y + 8, fx, fy, palette, false);
+        sink.append( spriteSheet.tile(fy ? tile + 1 : tile), x, y, fx, fy, palette, false);
+        sink.append( spriteSheet.tile(fy ? tile : tile + 1), x, y + 8, fx, fy, palette, false);
     }
 
 

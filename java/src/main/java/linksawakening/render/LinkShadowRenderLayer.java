@@ -31,10 +31,10 @@ public final class LinkShadowRenderLayer implements HardwareRenderLayer {
         if (link.romEntityZ() == 0 || (this.frame & 1) != 0 || scroll.isActive()
             || link.romEntityY() + 0x0B >= 0x88) return;
         // bank2.asm $759B-$75AF writes wLinkOAMBuffer ($C000), OAM slot 0.
-        frame.appendInSlot(0, gpu.getTile(0x26),
+        frame.append( gpu.getTile(0x26),
             link.pixelX() + 4 - scroll.screenShakeHorizontal(), link.pixelY() + 0x0B,
             false, false, palette, false);
-        frame.appendInSlot(0, gpu.getTile(0x27),
+        frame.append( gpu.getTile(0x27),
             link.pixelX() + 4 - scroll.screenShakeHorizontal(), link.pixelY() + 0x13,
             false, false, palette, false);
     }

@@ -31,3 +31,11 @@ interface. It advances music and SFX once per `update()` (60 Hz), renders an
 integer number of samples with a carried remainder, and routes dialog PCM to
 the same output. The caller owns the output lifetime. The legacy OpenAL browser
 transport remains available with its existing sample-driven buffering behavior.
+
+Rendering TODO: implement a future `RomOamAllocator` that follows the ROM's
+per-frame OAM allocation, including direction/state-dependent Link and sword
+ordering. Actual CGB hardware resolves OBJ overlap by lower OAM index (not X).
+Until that allocator exists, production composition preserves the emulator-validated
+legacy painter order: later opaque OBJ submissions win. Static slot assignments
+are not a substitute for dynamic allocation. OBJ-vs-BG/window uses CGB color-zero,
+BG/OBJ priority flags, and LCDC bit 0 independently of this temporary OBJ ordering.

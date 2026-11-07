@@ -25,7 +25,7 @@ public final class DroppableRupeeRenderLayer implements HardwareRenderLayer {
         int tile = droppableRupeeSystem.spriteTileIndex();
         int[] palette = droppableRupeeSystem.spritePalette();
         var slots = droppableRupeeSystem.activeSlots();
-        for (int i = slots.size() - 1; i >= 0; i--) {
+        for (int i = 0; i < slots.size(); i++) {
             var slot = slots.get(i);
             if (!slot.visible()) continue;
             int x = slot.worldX() - 4 - scrollController.screenShakeHorizontal();

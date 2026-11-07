@@ -7,7 +7,7 @@ import linksawakening.gpu.Tile;
 public interface OamSink {
     void append(Tile tile, int x, int y, boolean flipX, boolean flipY,
                 int[] palette, boolean behindBackground);
-    /** Explicit CGB OAM slot; adapters without slot metadata retain submission order. */
+    /** Compatibility metadata only; production uses painter order until RomOamAllocator exists. */
     default void appendInSlot(int slot, Tile tile, int x, int y, boolean flipX, boolean flipY,
                               int[] palette, boolean behindBackground) {
         append(tile, x, y, flipX, flipY, palette, behindBackground);
