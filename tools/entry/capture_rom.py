@@ -21,6 +21,14 @@ print('outside',[p.memory[a] for a in [0xfff7,0xfff6,0xff98,0xff99,0xc124,0xdb95
 state=io.BytesIO();p.save_state(state)
 out=Path('/tmp/ladx-entry-controlled');out.mkdir(exist_ok=True)
 allrows={}
+ground_gates=[]
+integrations=[]
+def ground_gate(_):
+ ground_gates.append([p.memory[a] for a in [0xffe7,0xc11f,0xff98,0xff99,0xff9a,0xff9b]])
+p.hook_register(2,0x44a9,ground_gate,None)
+def integrate(_):
+ integrations.append([p.memory[a] for a in [0xffe7,0xc11f,0xff98,0xff99,0xff9a,0xff9b]])
+p.hook_register(2,0x44b2,integrate,None)
 for button,x,y in [('right',156,96),('left',3,96),('up',80,11),('down',80,132)]:
  state.seek(0);p.load_state(state)
  for b in ['right','left','up','down']:p.button_release(b)
@@ -31,11 +39,17 @@ for button,x,y in [('right',156,96),('left',3,96),('up',80,11),('down',80,132)]:
  rows=[];started=False
  for f in range(100):
   p.tick();phase=p.memory[0xc124]
-  rows.append([f,*[p.memory[a] for a in [0xfff7,0xfff6,0xc124,0xc125,0xff98,0xff99,0xc11a,0xc11b,0xff9a,0xff9b,0xff96,0xff97,0xdbb1,0xdbb2,0xffcb,0xffb2]]])
+  rows.append([f,*[p.memory[a] for a in [0xfff7,0xfff6,0xc124,0xc125,0xff98,0xff99,0xc11a,0xc11b,0xff9a,0xff9b,0xff96,0xff97,0xdbb1,0xdbb2,0xffcb,0xffb2,0xffe7,0xc11f,0xc133,0xffaf,0xff9f,0xffa0]]])
   if phase and not started:
    started=True;p.screen.image.save(out/f'rom-{button}-start.png')
   if started and not phase:
    p.screen.image.save(out/f'rom-{button}-complete.png');break
  allrows[button]=rows
  print(button,'start',rows[0],'complete',rows[-1])
+ if button == 'right':
+  for post in range(4):
+   p.tick()
+   print('right post',*[p.memory[a] for a in [0xffe7,0xff98,0xff99,0xff9a,0xff9b,0xc133,0xc11f]])
+  print('right slow-ground gates',ground_gates[-5:])
+  print('right normal-motion integrations',integrations[-4:])
 (out/'rom-trace.json').write_text(json.dumps(allrows,indent=2));p.stop(save=False)

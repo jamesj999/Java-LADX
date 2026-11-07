@@ -1281,6 +1281,30 @@ final class LinkTest {
     }
 
     @Test
+    void tallGrassUsesWorldFramePhaseAfterPausedLinkUpdates() throws Exception {
+        RomTables tables = RomTables.loadFromRom(loadRom());
+        InputConfig config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        int[] objects = emptyRoomObjectsArea();
+        objects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 2] = OBJECT_TALL_GRASS;
+        Link link = linkInRoom(config, tables, objects);
+        link.setPixelPosition(0x20, 0x20);
+        // Link's motion has not ticked through the intervening room scroll.
+        // The global clock, rather than the number of Link updates, gates grass.
+        link.setGelClinging(false, 211);
+        link.update();
+        assertEquals(0x21, link.pixelX());
+        link.setGelClinging(false, 212);
+        link.update();
+        assertEquals(0x21, link.pixelX());
+        link.setGelClinging(false, 219);
+        link.update();
+        assertEquals(0x22, link.pixelX());
+        link.setGelClinging(false, 220);
+        link.update();
+        assertEquals(0x22, link.pixelX());
+    }
+
+    @Test
     void tallGrassSlowsLinkMovement() throws Exception {
         byte[] rom = loadRom();
         RomTables romTables = RomTables.loadFromRom(rom);

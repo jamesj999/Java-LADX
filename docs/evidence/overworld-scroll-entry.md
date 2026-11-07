@@ -52,7 +52,7 @@ Java performs 40/40/32/32 scroll frames without the ROM preparation phases.
 Completion resumes motion: left/up/down current ROM coordinates also match
 Java (147,96 / 80,126 / 80,17). On the right, saved entry markers match, but
 current X is ROM12/Java11, with right speed16 in both. This additional
-post-entry collision discrepancy remains open. The screenshots also show
+post-entry discrepancy was investigated separately below. The screenshots also show
 background animation/scroll phase differences. These are not pixel-identical
 scene comparisons or proof of global fidelity.
 
@@ -84,3 +84,53 @@ Python environment with `tools/requirements.txt`. For Java, compile
 then run `EntryProbe after` from the repository root with that classpath plus
 `java/build/test-rom` and the compiled probe directory. Run Gradle `testClasses`
 and `testRomResources` first. Outputs go to `/tmp/ladx-entry-controlled`.
+
+
+## Follow-up: rightward completion slowdown phase
+
+The extra pixel was a slow-ground timing error, not a collision. A3's tall
+grass sets source ground status3. The engine used a counter advanced only by
+Link motion calls, so scrolling/dialog pauses shifted its slowdown phase.
+Source `$02:44A9` reads global `hFrameCounter` and skips position integration
+when its low two bits are zero. Production already supplies the global frame
+alongside Gel state; slow ground now uses that supplied frame as well. Isolated
+Link callers without a session clock retain their previous local-counter behavior.
+
+The probe now records source world frame, ground status, collision type,
+object under Link and final position as well as the original entry fields.
+PyBoy CPU hooks at bank2:`$44A9` and `$44B2` also record the actual counter
+used at the gate and at normal-motion integration. This distinguishes CPU motion phase from the screen-boundary snapshot:
+the latter observes the next value of `hFrameCounter`. Therefore Java completion
+frame210 matches the ROM screen-boundary frame211, followed by Java211..214
+matching ROM screen212..215. Aligning the raw snapshot counters directly was
+one frame early and did not establish matching motion phase.
+
+At completion the saved entry remains11,96, fractional nibbles remain10/5,
+and both versions report horizontal speed16 and collision0. The ROM sees ground
+status0 before completion movement, then3 afterward. Subsequent CPU gate hooks
+read frames211,212,213,214 with ground status3 and speed16; the frame212 gate
+skips integration. The integration hook directly records frames210,211,213,214;
+frame212 does not reach the position integration call.
+
+| CPU motion frame | ROM screen frame | ROM X | Old Java X | Corrected Java X |
+| --- | --- | --- | --- | --- |
+| 210 | 211 | 12 | 11 | 12 |
+| 211 | 212 | 13 | 12 | 13 |
+| 212 | 213 | 13 | 13 | 13 |
+| 213 | 214 | 14 | 14 | 14 |
+| 214 | 215 | 15 | 14 | 15 |
+
+All five Y observations are96; collision remains0. Input is held right throughout.
+This closes the one-pixel rightward discrepancy for the matched experiment.
+It does not establish every slow-ground entry/status transition or background
+phase. The four original saved-entry markers remain unchanged.
+
+Updated local screenshots:
+`/tmp/ladx-entry-controlled/java-phase-before-right-complete.png`,
+`java-phase-after-right-complete.png`, `rom-right-complete.png`.
+The before capture uses the committed `8ed89ed` Link class in a temporary
+classpath. Java `EntryProbe phase-after 210` reproduces the matched phase;
+`capture_rom.py` prints the source CPU gate trace and post-completion positions.
+No image assets are committed. Focused grass/Gel tests and existing entry
+regressions pass, including a new test with skipped Link updates that checks
+the global phases211/212/219/220.

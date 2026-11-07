@@ -26,13 +26,23 @@ public class EntryProbe {
    s.headlessButton(b,true);
    var c=new RoomTransitionCoordinator(d.roomSession(),new RoomBoundaryController(),d.transitionController(),d.scrollController());c.handleOverworldBoundary(l);
    System.out.println(b+" entry "+l.romEntityX()+","+l.romEntityY()+" room="+d.roomSession().currentRoomId());
+   if(args.length > 1) {
+    // Match global motion phase independently of transition preparation time.
+    var frame=GameSession.class.getDeclaredField("frameCounter"); frame.setAccessible(true);
+    frame.setInt(s,(Integer.parseInt(args[1])-(b.equals("left")||b.equals("right")?40:32))&255);
+   }
    byte[] rgba=null;int count=0;while(d.scrollController().isActive()&&count++<100)rgba=s.headlessFrame();
    for(String n:new String[]{"subX","subY"}) {
     var f=m.getClass().getDeclaredField(n); f.setAccessible(true);
     System.out.println(b+" "+n+" fraction="+(f.getInt(m)&15));
    }
-   System.out.println(b+" complete "+l.romEntityX()+","+l.romEntityY()+" speed="+l.romSpeedX()+","+l.romSpeedY()+" frames="+count);
+   System.out.println(b+" complete "+l.romEntityX()+","+l.romEntityY()+" speed="+l.romSpeedX()+","+l.romSpeedY()+" frames="+count+" worldFrame="+s.diagnostics().frameCounter()+" collision="+l.romCollisionType());
    png(rgba,Path.of("/tmp/ladx-entry-controlled/java-"+args[0]+"-"+b+"-complete.png"));
+   if(args.length > 1 && b.equals("right")) for(int post=0;post<4;post++) {
+    s.headlessFrame();
+    System.out.println("right post worldFrame="+s.diagnostics().frameCounter()+" x="+l.romEntityX()
+        +" y="+l.romEntityY()+" speed="+l.romSpeedX()+","+l.romSpeedY()+" collision="+l.romCollisionType());
+   }
   }
  }
 }

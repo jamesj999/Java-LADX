@@ -73,6 +73,7 @@ public final class Link implements RocsFeather.JumpTarget {
     int walkFrame;
     boolean movingThisFrame;
     private int groundMotionCounter;
+    private int worldMotionFrame = -1;
     boolean topDownFeatherStarted;
 
     int romLinkPushing;
@@ -286,10 +287,11 @@ public final class Link implements RocsFeather.JumpTarget {
     public record ScreenShakeRequest(int countdown, int phase) {
     }
 
-    /** Previous entity pass's wIsGelClingingToLink and current hFrameCounter. */
+    /** Previous entity pass's Gel state and current world frame for motion gates. */
     public void setGelClinging(boolean clinging, int worldFrame) {
         linkStateMachine.gelClinging = clinging;
         linkStateMachine.gelMotionFrame = worldFrame & 0xFF;
+        worldMotionFrame = worldFrame & 0xFF;
     }
 
     /** ROM wC145: the Y origin used by sword collision while linkAirborne.airborne. */
@@ -421,8 +423,11 @@ public final class Link implements RocsFeather.JumpTarget {
             return true;
         }
         // GROUND_STATUS_SLOW ($03) uses the same frame-counter mask in the
-        // original: skip the final position update when linkStateMachine.frameCounter & 3 == 0.
-        return (groundMotionCounter & 0x03) != 0;
+        // original: $02:44A9 skips the final position update when the global
+        // hFrameCounter & 3 == 0, including after dialogs and room scrolling.
+        // Isolated Link callers without a session clock retain their local tick.
+        int frame = worldMotionFrame >= 0 ? worldMotionFrame : groundMotionCounter;
+        return (frame & 0x03) != 0;
     }
 
     boolean buttonWasPressed(int key) {
