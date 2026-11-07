@@ -37,13 +37,13 @@ final class EntityEnemySpawns {
     int spawnEnemyBomb(int entityX, int entityY, int entityZ,
                                int transitionCountdown, int speedX, int speedY,
                                int speedZ, boolean initializeMotion, int privateState4) {
-        runtime.validateByte(entityX, "Enemy bomb X");
-        runtime.validateByte(entityY, "Enemy bomb Y");
-        runtime.validateByte(entityZ, "Enemy bomb Z");
-        runtime.validateByte(transitionCountdown, "Enemy bomb transition countdown");
-        runtime.validateByte(speedX, "Enemy bomb X speed");
-        runtime.validateByte(speedY, "Enemy bomb Y speed");
-        runtime.validateByte(speedZ, "Enemy bomb Z speed");
+        EntitySlotValidation.validateByte(entityX, "Enemy bomb X");
+        EntitySlotValidation.validateByte(entityY, "Enemy bomb Y");
+        EntitySlotValidation.validateByte(entityZ, "Enemy bomb Z");
+        EntitySlotValidation.validateByte(transitionCountdown, "Enemy bomb transition countdown");
+        EntitySlotValidation.validateByte(speedX, "Enemy bomb X speed");
+        EntitySlotValidation.validateByte(speedY, "Enemy bomb Y speed");
+        EntitySlotValidation.validateByte(speedZ, "Enemy bomb Z speed");
         int freeSlot = runtime.findFreeEntitySlot();
         if (freeSlot < 0) {
             return -1;

@@ -234,7 +234,7 @@ final class EntityLiftThrowController {
         boolean swampLeaves = !runtime.indoorRoom && runtime.spriteSelection != null
             && runtime.spriteSelection.roomTable() == EntityRoomLoader.RoomTable.OVERWORLD
             && runtime.spriteSelection.roomId() == 0x32;
-        int variant = runtime.liftableRockSmashVariant(sourceVariant, swampLeaves, countdown);
+        int variant = EntityMotionMath.liftableRockSmashVariant(sourceVariant, swampLeaves, countdown);
         if (sourceVariant == runtime.LIFTABLE_ROCK_SMASH_MODE_GRASS
             && ((frameCounter ^ slot) & 0x01) != 0) {
             // The $FF tall-grass path in func_019_7C50 only emits OAM on

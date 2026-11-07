@@ -23,7 +23,7 @@ final class EntityDebugConfiguration {
     EntityDebugConfiguration(RoomEntityRuntime runtime) { this.runtime = runtime; }
 
     void setMagicPowderTransitionCountdownForTest(int slot, int value) {
-        runtime.validateCountdownTestValue(slot, value);
+        EntitySlotValidation.validateCountdownTestValue(slot, value);
         if (!runtime.roomInspection.isLoadedEntityOfType(slot, runtime.ENTITY_MAGIC_POWDER_SPRINKLE)) {
             throw new IllegalArgumentException("Entity slot does not contain Magic Powder: "
                 + slot);
@@ -32,7 +32,7 @@ final class EntityDebugConfiguration {
     }
 
     void setMagicPowderSlowTransitionCountdownForTest(int slot, int value) {
-        runtime.validateCountdownTestValue(slot, value);
+        EntitySlotValidation.validateCountdownTestValue(slot, value);
         if (!runtime.roomInspection.isLoadedEntityOfType(slot, runtime.ENTITY_MAGIC_POWDER_SPRINKLE)) {
             throw new IllegalArgumentException("Entity slot does not contain Magic Powder: "
                 + slot);
@@ -42,7 +42,7 @@ final class EntityDebugConfiguration {
     }
 
     void setBombTransitionCountdownForTest(int slot, int value) {
-        runtime.validateCountdownTestValue(slot, value);
+        EntitySlotValidation.validateCountdownTestValue(slot, value);
         if (!runtime.slots[slot].loaded() || runtime.slots[slot].type() != runtime.ENTITY_BOMB) {
             throw new IllegalArgumentException("Entity slot does not contain a bomb: " + slot);
         }
@@ -50,7 +50,7 @@ final class EntityDebugConfiguration {
     }
 
     void setBowWowTransitionCountdownForTest(int slot, int value) {
-        runtime.validateCountdownTestValue(slot, value);
+        EntitySlotValidation.validateCountdownTestValue(slot, value);
         if (!runtime.roomInspection.isLoadedEntityOfType(slot, runtime.ENTITY_BOW_WOW)) {
             throw new IllegalArgumentException("Entity slot does not contain Bow-Wow: " + slot);
         }
@@ -58,20 +58,20 @@ final class EntityDebugConfiguration {
     }
 
     void setEntityInertiaForTest(int slot, int value) {
-        runtime.validateCountdownTestValue(slot, value);
+        EntitySlotValidation.validateCountdownTestValue(slot, value);
         runtime.entityInertia[slot] = value;
     }
 
     void setMoblinKingStateForTest(int slot, int state, int direction,
                                    int speedX, int speedY, int speedZ,
                                    int transitionCountdown) {
-        runtime.validateCountdownTestValue(slot, transitionCountdown);
+        EntitySlotValidation.validateCountdownTestValue(slot, transitionCountdown);
         runtime.moblinKingMotion.setStateForTest(slot, state, direction, speedX, speedY, speedZ);
         runtime.enemyTransitionCountdown[slot] = transitionCountdown;
     }
 
     void setEntityPrivateState4ForTest(int slot, int value) {
-        runtime.validateCountdownTestValue(slot, value);
+        EntitySlotValidation.validateCountdownTestValue(slot, value);
         runtime.entityPrivateState4[slot] = value;
     }
 
@@ -80,8 +80,8 @@ final class EntityDebugConfiguration {
     }
 
     void setDroppedItemForTest(int slot, int itemType) {
-        runtime.validateEntitySlot(slot);
-        runtime.validateEnemyDropByte(itemType, "Dropped item");
+        EntitySlotValidation.validateEntitySlot(slot);
+        EntitySlotValidation.validateEnemyDropByte(itemType, "Dropped item");
         runtime.droppedItemBySlot[slot] = itemType;
     }
 
@@ -112,8 +112,8 @@ final class EntityDebugConfiguration {
     }
 
     void setDroppableRevealedForTest(int slot, int slowCountdown) {
-        runtime.validateCountdownTestValue(slot, slowCountdown);
-        runtime.validateEntitySlot(slot);
+        EntitySlotValidation.validateCountdownTestValue(slot, slowCountdown);
+        EntitySlotValidation.validateEntitySlot(slot);
         int type = runtime.slots[slot].type();
         if (!isCommonDroppableType(type)) {
             throw new IllegalArgumentException("Entity slot is not an ordinary droppable: "
@@ -129,24 +129,24 @@ final class EntityDebugConfiguration {
     }
 
     void setSlowTransitionCountdownForTest(int slot, int countdown) {
-        runtime.validateCountdownTestValue(slot, countdown);
+        EntitySlotValidation.validateCountdownTestValue(slot, countdown);
         runtime.slowTransitionCountdown[slot] = countdown;
         runtime.slowTimerInitialized[slot] = true;
     }
 
     void setTransitionCountdownForTest(int slot, int countdown) {
-        runtime.validateCountdownTestValue(slot, countdown);
+        EntitySlotValidation.validateCountdownTestValue(slot, countdown);
         runtime.enemyTransitionCountdown[slot] = countdown;
     }
 
     void setThreeOfAKindSettledForTest(int slot, int face) {
-        runtime.validateEntitySlot(slot);
+        EntitySlotValidation.validateEntitySlot(slot);
         runtime.threeOfAKindMotion.setSettledForTest(slot, face);
         runtime.enemyTransitionCountdown[slot] = 0;
     }
 
     void setHinoxStateForTest(int slot, int state) {
-        runtime.validateEntitySlot(slot);
+        EntitySlotValidation.validateEntitySlot(slot);
         if (runtime.slots[slot].type() != runtime.ENTITY_HINOX) {
             throw new IllegalArgumentException("Entity slot is not Hinox: " + slot);
         }
@@ -154,7 +154,7 @@ final class EntityDebugConfiguration {
     }
 
     void setHinoxSpeedForTest(int slot, int speedX, int speedY) {
-        runtime.validateEntitySlot(slot);
+        EntitySlotValidation.validateEntitySlot(slot);
         if (runtime.slots[slot].type() != runtime.ENTITY_HINOX) {
             throw new IllegalArgumentException("Entity slot is not Hinox: " + slot);
         }
@@ -164,7 +164,7 @@ final class EntityDebugConfiguration {
     void setTarinRaccoonStateForTest(int slot, int state, int speedX, int speedY,
                                      int speedZ, int privateState2, int privateState3,
                                      boolean nearLinkLatch) {
-        runtime.validateEntitySlot(slot);
+        EntitySlotValidation.validateEntitySlot(slot);
         runtime.tarinRaccoonMotion.setStateForTest(slot, state, speedX, speedY, speedZ,
             privateState2, privateState3, nearLinkLatch);
     }
@@ -219,7 +219,7 @@ final class EntityDebugConfiguration {
     }
 
     void setZolPrivateCountdown1ForTest(int slot, int value) {
-        runtime.validateByte(value, "Zol/Gel private countdown 1");
+        EntitySlotValidation.validateByte(value, "Zol/Gel private countdown 1");
         runtime.zolGelMotion.setPrivateCountdown1ForTest(slot, value);
     }
 
@@ -233,8 +233,8 @@ final class EntityDebugConfiguration {
 
     void setWizrobeStateForTest(int slot, int state, int transitionCountdown,
                                 int privateState1, int privateCountdown1, int direction) {
-        runtime.validateEntitySlot(slot);
-        runtime.validateCountdownTestValue(slot, transitionCountdown);
+        EntitySlotValidation.validateEntitySlot(slot);
+        EntitySlotValidation.validateCountdownTestValue(slot, transitionCountdown);
         runtime.wizrobeMotion.setForTest(slot, state, transitionCountdown, privateState1,
             privateCountdown1, direction, runtime.slots[slot].spriteVariant());
         runtime.enemyTransitionCountdown[slot] = transitionCountdown;
@@ -247,7 +247,7 @@ final class EntityDebugConfiguration {
     }
 
     void setEnemyIgnoreHitsCountdownForTest(int slot, int value) {
-        runtime.validateCountdownTestValue(slot, value);
+        EntitySlotValidation.validateCountdownTestValue(slot, value);
         runtime.enemyIgnoreHitsCountdown[slot] = value;
     }
 
@@ -256,7 +256,7 @@ final class EntityDebugConfiguration {
     }
 
     void setOcarinaAnimationForTest(int animationCounter, int animationPhase) {
-        runtime.validateByte(animationCounter, "Ocarina animation counter");
+        EntitySlotValidation.validateByte(animationCounter, "Ocarina animation counter");
         if (animationPhase < 0 || animationPhase > 1) {
             throw new IllegalArgumentException("Ocarina animation phase must be 0 or 1");
         }
@@ -265,52 +265,52 @@ final class EntityDebugConfiguration {
     }
 
     void setHitboxFlagsForTest(int slot, int value) {
-        runtime.validateCountdownTestValue(slot, value);
+        EntitySlotValidation.validateCountdownTestValue(slot, value);
         runtime.enemyHitboxFlags[slot] = value;
     }
 
     void setEnemyFlashCountdownForTest(int slot, int value) {
-        runtime.validateCountdownTestValue(slot, value);
+        EntitySlotValidation.validateCountdownTestValue(slot, value);
         runtime.enemyFlashCountdown[slot] = value;
     }
 
     void setEnemyHealthForTest(int slot, int value) {
-        runtime.validateCountdownTestValue(slot, value);
+        EntitySlotValidation.validateCountdownTestValue(slot, value);
         runtime.enemyHealth[slot] = value;
     }
 
     void setGeniePrivateState1ForTest(int slot, int value) {
-        runtime.validateCountdownTestValue(slot, value);
+        EntitySlotValidation.validateCountdownTestValue(slot, value);
         runtime.geniePrivateState1[slot] = value;
     }
 
     void setGenieActiveStateForTest(int slot, int value) {
-        runtime.validateCountdownTestValue(slot, value);
+        EntitySlotValidation.validateCountdownTestValue(slot, value);
         runtime.genieActiveState[slot] = value;
     }
 
     void setGeniePrivateState3ForTest(int slot, int value) {
-        runtime.validateCountdownTestValue(slot, value);
+        EntitySlotValidation.validateCountdownTestValue(slot, value);
         runtime.geniePrivateState3[slot] = value;
     }
 
     void setGeniePrivateCountdown1ForTest(int slot, int value) {
-        runtime.validateCountdownTestValue(slot, value);
+        EntitySlotValidation.validateCountdownTestValue(slot, value);
         runtime.geniePrivateCountdown1[slot] = value;
     }
 
     void setGeniePrivateState4ForTest(int slot, int value) {
-        runtime.validateCountdownTestValue(slot, value);
+        EntitySlotValidation.validateCountdownTestValue(slot, value);
         runtime.geniePrivateState4[slot] = value;
     }
 
     void setPhysicsFlagsForTest(int slot, int value) {
-        runtime.validateCountdownTestValue(slot, value);
+        EntitySlotValidation.validateCountdownTestValue(slot, value);
         runtime.enemyPhysicsFlags[slot] = value;
     }
 
     void setSpriteVariantForTest(int slot, int variant) {
-        runtime.validateEntitySlot(slot);
+        EntitySlotValidation.validateEntitySlot(slot);
         if (variant < -1 || variant > 0xFF) {
             throw new IllegalArgumentException("Invalid sprite variant: " + variant);
         }
@@ -326,7 +326,7 @@ final class EntityDebugConfiguration {
     }
 
     void setKeyDropTransitionCountdownForTest(int slot, int value) {
-        runtime.validateCountdownTestValue(slot, value);
+        EntitySlotValidation.validateCountdownTestValue(slot, value);
         if (!runtime.roomInspection.isLoadedEntityOfType(slot, runtime.ENTITY_KEY_DROP_POINT)) {
             throw new IllegalArgumentException("Entity slot does not contain a key drop point: "
                 + slot);
@@ -335,7 +335,7 @@ final class EntityDebugConfiguration {
     }
 
     void setHidingSlimeKeyTransitionCountdownForTest(int slot, int value) {
-        runtime.validateCountdownTestValue(slot, value);
+        EntitySlotValidation.validateCountdownTestValue(slot, value);
         if (!runtime.roomInspection.isLoadedEntityOfType(slot, runtime.ENTITY_HIDING_SLIME_KEY)) {
             throw new IllegalArgumentException("Entity slot does not contain a Hiding Slime Key: "
                 + slot);
@@ -358,7 +358,7 @@ final class EntityDebugConfiguration {
     }
 
     void configureEnemyRecoilForTest(int slot, int linkEntityX, int linkEntityY, int length) {
-        runtime.validateEntitySlot(slot);
+        EntitySlotValidation.validateEntitySlot(slot);
         RoomEntity entity = runtime.slots[slot];
         if (!entity.loaded()) {
             throw new IllegalArgumentException("Entity slot is not loaded: " + slot);

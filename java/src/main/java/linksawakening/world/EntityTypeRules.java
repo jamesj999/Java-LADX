@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import static linksawakening.world.RoomEntityRuntime.*;
+
 import static linksawakening.world.RoomEntityRuntime.ARMOS_INITIAL_PHYSICS_FLAGS;
 import static linksawakening.world.RoomEntityRuntime.ARMOS_KNIGHT_INITIAL_HITBOX_FLAGS;
 import static linksawakening.world.RoomEntityRuntime.ARMOS_KNIGHT_INITIAL_PHYSICS_FLAGS;
@@ -330,5 +332,23 @@ final class EntityTypeRules {
             || type == ENTITY_DROPPABLE_BOMBS
             || type == ENTITY_DROPPABLE_MAGIC_POWDER
             || type == ENTITY_HIDING_SLIME_KEY;
+    }
+
+    static int variantFor(RoomEntity entity, int frameCounter) {
+        if (!entity.spriteDefinition().supported() || entity.spriteDefinition().variantCount() < 2) {
+            return entity.spriteVariant();
+        }
+        return switch (entity.type()) {
+            case ENTITY_PIECE_OF_POWER -> (frameCounter >>> 3) & 0x01;
+            case ENTITY_BOMBER -> (frameCounter >>> 2) & 0x03;
+            case ENTITY_BUTTERFLY -> ((frameCounter + entity.slot() * 8) >>> 3) & 0x01;
+            case ENTITY_ARMOS_STATUE -> (frameCounter >>> 4) & 0x01;
+            case ENTITY_GHINI -> ((frameCounter >>> 4) ^ entity.slot()) & 0x01;
+            case ENTITY_HARDHAT_BEETLE -> (frameCounter >>> 3) & 0x01;
+            case ENTITY_SPARK_COUNTER_CLOCKWISE, ENTITY_SPARK_CLOCKWISE ->
+                (frameCounter >>> 1) & 0x01;
+            case 0x70, 0x73 -> (frameCounter >>> 4) & 0x01;
+            default -> entity.spriteVariant();
+        };
     }
 }

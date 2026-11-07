@@ -147,7 +147,7 @@ final class EntityPlayerSpawns {
 
     int spawnArrow(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection,
                    boolean pieceOfPower) {
-        runtime.validateRomDirection(romDirection);
+        EntitySlotValidation.validateRomDirection(romDirection);
         runtime.lastArrowShotPlayedWhoosh = false;
         if (runtime.activeProjectileCount() >= 0x02) {
             return -1;
@@ -198,7 +198,7 @@ final class EntityPlayerSpawns {
 
     int spawnBoomerang(int linkEntityX, int linkEntityY, int linkEntityZ,
                        int romDirection, int pressedButtonsMask) {
-        runtime.validateRomDirection(romDirection);
+        EntitySlotValidation.validateRomDirection(romDirection);
         if (runtime.activeProjectileCount() != 0) {
             return -1;
         }
@@ -232,7 +232,7 @@ final class EntityPlayerSpawns {
 
     int spawnSwordBeam(int linkEntityX, int linkEntityY, int linkEntityZ,
                        int romDirection) {
-        runtime.validateRomDirection(romDirection);
+        EntitySlotValidation.validateRomDirection(romDirection);
         if (runtime.activeProjectileCount() != 0) {
             return -1;
         }
@@ -273,7 +273,7 @@ final class EntityPlayerSpawns {
 
     int spawnMagicRodFireball(int linkEntityX, int linkEntityY, int linkEntityZ,
                               int romDirection, boolean pieceOfPower) {
-        runtime.validateRomDirection(romDirection);
+        EntitySlotValidation.validateRomDirection(romDirection);
         if (runtime.activeProjectileCount() >= 0x02) {
             return -1;
         }
@@ -312,7 +312,7 @@ final class EntityPlayerSpawns {
 
     int spawnMagicPowderSprinkle(int linkEntityX, int linkEntityY, int linkEntityZ,
                                  int romDirection) {
-        runtime.validateRomDirection(romDirection);
+        EntitySlotValidation.validateRomDirection(romDirection);
         int freeSlot = runtime.findFreeEntitySlot();
         if (freeSlot < 0) {
             return -1;
@@ -378,7 +378,7 @@ final class EntityPlayerSpawns {
     }
 
     int spawnBomb(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
-        runtime.validateRomDirection(romDirection);
+        EntitySlotValidation.validateRomDirection(romDirection);
         runtime.lastBombPlacementPlayedBump = false;
         runtime.bombInteractions.finalizePendingBombPresentations();
         if (runtime.bombActive()) {
@@ -456,7 +456,7 @@ final class EntityPlayerSpawns {
             && runtime.spriteSelection.roomTable() == EntityRoomLoader.RoomTable.OVERWORLD
             && runtime.spriteSelection.roomId() == 0x32;
         int variant = definition.supported()
-            ? runtime.liftableRockSmashVariant(sourceSpriteVariant, swampLeaves, initialCountdown) : -1;
+            ? EntityMotionMath.liftableRockSmashVariant(sourceSpriteVariant, swampLeaves, initialCountdown) : -1;
         RoomEntity smash = new RoomEntity(freeSlot, -1, runtime.ENTITY_LIFTABLE_ROCK,
             entityX & 0xFF, entityY & 0xFF, EntityStatus.ACTIVE,
             definition, variant, 0, 0, 0, -1, false);
@@ -598,8 +598,8 @@ final class EntityPlayerSpawns {
         if (runtime.chestContentsTable == null) {
             throw new IllegalStateException("ROM chest contents table is not configured");
         }
-        runtime.validateByte(objectLeft, "Chest object left");
-        runtime.validateByte(objectTop, "Chest object top");
+        EntitySlotValidation.validateByte(objectLeft, "Chest object left");
+        EntitySlotValidation.validateByte(objectTop, "Chest object top");
         if (itemType < 0 || itemType > ChestContentsTable.CHEST_ZOL) {
             throw new IllegalArgumentException("Chest item variant out of range: " + itemType);
         }

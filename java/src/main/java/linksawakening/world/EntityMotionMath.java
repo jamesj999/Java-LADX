@@ -1,7 +1,8 @@
 package linksawakening.world;
 
 import linksawakening.entity.EntitySpriteDefinition;
-import static linksawakening.world.EntityMotionMath.*;
+import linksawakening.entity.EntitySpriteHandlerCatalog;
+import static linksawakening.world.RoomEntityRuntime.LIFTABLE_ROCK_SMASH_MODE_ROCK;
 
 /** Shared ROM byte arithmetic and collision geometry. */
 final class EntityMotionMath {
@@ -196,5 +197,33 @@ final class EntityMotionMath {
     }
 
     record FallingVector(int x, int y) {
+    }
+
+    static int magicPowderObjectLeft(RoomEntity entity) {
+        return (((entity.x() + 0x07 - 0x08) & 0xFF) & 0xF0);
+    }
+
+    static int magicPowderObjectTop(RoomEntity entity) {
+        return (((entity.y() + 0x07 - 0x10) & 0xFF) & 0xF0);
+    }
+
+    static int liftableRockSmashVariant(int sourceVariant, boolean swampLeaves,
+                                                int countdown) {
+        if (sourceVariant == LIFTABLE_ROCK_SMASH_MODE_ROCK) {
+            int frame = (countdown & 0x0C) >>> 2;
+            return EntitySpriteHandlerCatalog.LIFTABLE_ROCK_SMASHED_ROCK_VARIANT_BASE + frame;
+        }
+        int frame = (((countdown & 0x1C) ^ 0x1C) >>> 2);
+        int base = swampLeaves
+            ? EntitySpriteHandlerCatalog.LIFTABLE_ROCK_CUT_LEAVES_SWAMP_VARIANT_BASE
+            : EntitySpriteHandlerCatalog.LIFTABLE_ROCK_CUT_LEAVES_VARIANT_BASE;
+        return base + frame;
+    }
+
+    static int deathSpriteVariantForCountdown(int countdown) {
+        if (countdown >= 0x20 || countdown <= 0) {
+            return -1;
+        }
+        return ((countdown << 1) & 0x30) >>> 4;
     }
 }

@@ -31,7 +31,7 @@ final class EntityRuntimeConfiguration {
     }
 
     void setTorchPaletteTransitionState(int targetAddress, boolean active) {
-        runtime.validateByte(targetAddress, "Torch palette target");
+        EntitySlotValidation.validateByte(targetAddress, "Torch palette target");
         runtime.torchPaletteTargetAddress = targetAddress;
         runtime.torchPaletteTransitionActive = active;
     }
@@ -78,7 +78,7 @@ final class EntityRuntimeConfiguration {
     }
 
     void setPressedButtonsMask(int pressedButtonsMask) {
-        runtime.validateByte(pressedButtonsMask, "Pressed buttons mask");
+        EntitySlotValidation.validateByte(pressedButtonsMask, "Pressed buttons mask");
         runtime.linkPressedButtonsMask = pressedButtonsMask;
     }
 
@@ -87,8 +87,8 @@ final class EntityRuntimeConfiguration {
     }
 
     void setTalkState(boolean inventoryAppearing, int dialogCooldown, int windowY) {
-        runtime.validateByte(dialogCooldown, "Dialog cooldown");
-        runtime.validateByte(windowY, "Window Y");
+        EntitySlotValidation.validateByte(dialogCooldown, "Dialog cooldown");
+        EntitySlotValidation.validateByte(windowY, "Window Y");
         runtime.inventoryAppearing = inventoryAppearing;
         runtime.dialogCooldown = dialogCooldown;
         runtime.windowY = windowY;
@@ -110,8 +110,8 @@ final class EntityRuntimeConfiguration {
     }
 
     void setLikeLikeLinkInventory(int itemA, int itemB) {
-        runtime.validateByte(itemA, "Link A inventory slot");
-        runtime.validateByte(itemB, "Link B inventory slot");
+        EntitySlotValidation.validateByte(itemA, "Link A inventory slot");
+        EntitySlotValidation.validateByte(itemB, "Link B inventory slot");
         runtime.linkItemA = itemA;
         runtime.linkItemB = itemB;
         runtime.linkInventoryConfigured = true;
@@ -126,12 +126,12 @@ final class EntityRuntimeConfiguration {
     }
 
     void setLinkAttackStepAnimationCountdown(int countdown) {
-        runtime.validateByte(countdown, "Link attack-step animation countdown");
+        EntitySlotValidation.validateByte(countdown, "Link attack-step animation countdown");
         runtime.linkAttackStepAnimationCountdown = countdown;
     }
 
     void setLinkFinalPositionX(int positionX) {
-        runtime.validateByte(positionX, "Link final position X");
+        EntitySlotValidation.validateByte(positionX, "Link final position X");
         runtime.currentLinkFinalPositionX = positionX;
         runtime.currentLinkFinalPositionXConfigured = true;
     }
@@ -157,8 +157,8 @@ final class EntityRuntimeConfiguration {
     }
 
     void setEnemyDropPlayerState(int maxHearts, int health, boolean activePowerUp) {
-        runtime.validateEnemyDropByte(maxHearts, "Maximum hearts");
-        runtime.validateEnemyDropByte(health, "Health");
+        EntitySlotValidation.validateEnemyDropByte(maxHearts, "Maximum hearts");
+        EntitySlotValidation.validateEnemyDropByte(health, "Health");
         runtime.enemyDropMaxHearts = maxHearts;
         runtime.enemyDropHealth = health;
         runtime.enemyDropActivePowerUp = activePowerUp;
@@ -177,7 +177,7 @@ final class EntityRuntimeConfiguration {
     }
 
     void setEntityRoomId(int roomId) {
-        runtime.validateByte(roomId, "Entity room id");
+        EntitySlotValidation.validateByte(roomId, "Entity room id");
         runtime.entityRoomId = roomId;
         for (RoomEntity entity : runtime.slots) {
             if (entity.loaded() && entity.type() == runtime.ENTITY_DROPPABLE_SECRET_SEASHELL) {
@@ -191,7 +191,7 @@ final class EntityRuntimeConfiguration {
     }
 
     void setEntityRoomStatus(int roomStatus) {
-        runtime.validateByte(roomStatus, "Entity room status");
+        EntitySlotValidation.validateByte(roomStatus, "Entity room status");
         runtime.entityRoomStatus = roomStatus;
     }
 
@@ -202,8 +202,8 @@ final class EntityRuntimeConfiguration {
     void setSecretSeashellPegasusCollisionState(boolean screenShakeActive,
                                                  boolean collisionActive,
                                                  int collisionX, int collisionY) {
-        runtime.validateByte(collisionX, "Pegasus collision X");
-        runtime.validateByte(collisionY, "Pegasus collision Y");
+        EntitySlotValidation.validateByte(collisionX, "Pegasus collision X");
+        EntitySlotValidation.validateByte(collisionY, "Pegasus collision Y");
         runtime.secretSeashellScreenShakeActive = screenShakeActive;
         runtime.secretSeashellPegasusCollisionActive = collisionActive;
         runtime.secretSeashellPegasusCollisionCoordinatesKnown = true;
@@ -212,9 +212,9 @@ final class EntityRuntimeConfiguration {
     }
 
     void setChestPlayerLevels(int shieldLevel, int swordLevel, int powerBraceletLevel) {
-        runtime.validateByte(shieldLevel, "Shield level");
-        runtime.validateByte(swordLevel, "Sword level");
-        runtime.validateByte(powerBraceletLevel, "Power Bracelet level");
+        EntitySlotValidation.validateByte(shieldLevel, "Shield level");
+        EntitySlotValidation.validateByte(swordLevel, "Sword level");
+        EntitySlotValidation.validateByte(powerBraceletLevel, "Power Bracelet level");
         runtime.chestShieldLevel = shieldLevel;
         runtime.chestSwordLevel = swordLevel;
         runtime.chestPowerBraceletLevel = powerBraceletLevel;
@@ -232,7 +232,7 @@ final class EntityRuntimeConfiguration {
     }
 
     void setToadstoolPlayerState(boolean hasToadstool, int magicPowderCount) {
-        runtime.validateByte(magicPowderCount, "Magic Powder count");
+        EntitySlotValidation.validateByte(magicPowderCount, "Magic Powder count");
         runtime.playerHasToadstool = hasToadstool;
         runtime.playerMagicPowderCount = magicPowderCount;
     }
@@ -266,8 +266,8 @@ final class EntityRuntimeConfiguration {
     }
 
     void setOwlInstrumentFlags(int instrument1Flags, int instrument2Flags) {
-        runtime.validateByte(instrument1Flags, "Instrument 1 flags");
-        runtime.validateByte(instrument2Flags, "Instrument 2 flags");
+        EntitySlotValidation.validateByte(instrument1Flags, "Instrument 1 flags");
+        EntitySlotValidation.validateByte(instrument2Flags, "Instrument 2 flags");
         runtime.instrument1Flags = instrument1Flags;
         runtime.instrument2Flags = instrument2Flags;
     }
@@ -283,10 +283,10 @@ final class EntityRuntimeConfiguration {
 
     void setOcarinaPlayback(int countdown, int songFlags, int selectedSong,
                             int animationCounter, int animationPhase) {
-        runtime.validateByte(countdown, "Ocarina playback countdown");
-        runtime.validateByte(songFlags, "Ocarina song flags");
-        runtime.validateByte(selectedSong, "Selected Ocarina song");
-        runtime.validateByte(animationCounter, "Ocarina animation counter");
+        EntitySlotValidation.validateByte(countdown, "Ocarina playback countdown");
+        EntitySlotValidation.validateByte(songFlags, "Ocarina song flags");
+        EntitySlotValidation.validateByte(selectedSong, "Selected Ocarina song");
+        EntitySlotValidation.validateByte(animationCounter, "Ocarina animation counter");
         if (animationPhase < 0 || animationPhase > 1) {
             throw new IllegalArgumentException("Ocarina animation phase must be 0 or 1");
         }
@@ -298,30 +298,30 @@ final class EntityRuntimeConfiguration {
     }
 
     void setThrownDirection(int slot, int value) {
-        runtime.validateCountdownTestValue(slot, value);
+        EntitySlotValidation.validateCountdownTestValue(slot, value);
         runtime.thrownDirection[slot] = value;
     }
 
     void setLedgeTransitionTimer(int slot, int value) {
-        runtime.validateCountdownTestValue(slot, value);
+        EntitySlotValidation.validateCountdownTestValue(slot, value);
         runtime.ledgeTransitionTimer[slot] = value;
     }
 
     void setGoldenLeavesCount(int value) {
-        runtime.validateByte(value, "Golden leaves count");
+        EntitySlotValidation.validateByte(value, "Golden leaves count");
         runtime.entityGoldenLeavesCount = value;
     }
 
     void setBooBuddyTriggerCount(int value) {
-        runtime.validateByte(value, "Boo Buddy trigger count");
+        EntitySlotValidation.validateByte(value, "Boo Buddy trigger count");
         runtime.booBuddyTriggerCount = value;
     }
 
     void setWitchEnvironment(int bgPaletteEffectAddress, int paletteDataFlags,
                              int defaultMusicTrack) {
-        runtime.validateByte(bgPaletteEffectAddress, "BG palette effect address");
-        runtime.validateByte(paletteDataFlags, "Palette data flags");
-        runtime.validateByte(defaultMusicTrack, "Default music track");
+        EntitySlotValidation.validateByte(bgPaletteEffectAddress, "BG palette effect address");
+        EntitySlotValidation.validateByte(paletteDataFlags, "Palette data flags");
+        EntitySlotValidation.validateByte(defaultMusicTrack, "Default music track");
         runtime.bgPaletteEffectAddress = bgPaletteEffectAddress;
         runtime.paletteDataFlags = paletteDataFlags;
         runtime.defaultMusicTrack = defaultMusicTrack;

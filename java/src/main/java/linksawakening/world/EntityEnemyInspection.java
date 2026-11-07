@@ -83,7 +83,7 @@ final class EntityEnemyInspection {
     }
 
     int ironMaskPrivateState2(int slot) {
-        runtime.validateEntitySlot(slot);
+        EntitySlotValidation.validateEntitySlot(slot);
         return runtime.ironMaskPrivateState2[slot];
     }
 
@@ -698,7 +698,7 @@ final class EntityEnemyInspection {
     }
 
     int dogState(int slot) {
-        runtime.validateEntitySlot(slot);
+        EntitySlotValidation.validateEntitySlot(slot);
         if (!runtime.roomInspection.isLoadedEntityOfType(slot, runtime.ENTITY_DOG)) {
             throw new IllegalArgumentException("Entity slot does not contain a dog: " + slot);
         }
@@ -706,7 +706,7 @@ final class EntityEnemyInspection {
     }
 
     int witchRatState(int slot) {
-        runtime.validateEntitySlot(slot);
+        EntitySlotValidation.validateEntitySlot(slot);
         if (!runtime.roomInspection.isLoadedEntityOfType(slot, runtime.ENTITY_WITCH_RAT)) {
             throw new IllegalArgumentException("Entity slot does not contain a Witch Rat: " + slot);
         }
@@ -714,7 +714,7 @@ final class EntityEnemyInspection {
     }
 
     int witchRatTransitionCountdown(int slot) {
-        runtime.validateEntitySlot(slot);
+        EntitySlotValidation.validateEntitySlot(slot);
         if (!runtime.roomInspection.isLoadedEntityOfType(slot, runtime.ENTITY_WITCH_RAT)) {
             throw new IllegalArgumentException("Entity slot does not contain a Witch Rat: " + slot);
         }
@@ -722,7 +722,7 @@ final class EntityEnemyInspection {
     }
 
     int witchRatSpeedZ(int slot) {
-        runtime.validateEntitySlot(slot);
+        EntitySlotValidation.validateEntitySlot(slot);
         if (!runtime.roomInspection.isLoadedEntityOfType(slot, runtime.ENTITY_WITCH_RAT)) {
             throw new IllegalArgumentException("Entity slot does not contain a Witch Rat: " + slot);
         }
@@ -772,17 +772,17 @@ final class EntityEnemyInspection {
     }
 
     int enemyRecoilSpeedXForTest(int slot) {
-        runtime.validateEntitySlot(slot);
+        EntitySlotValidation.validateEntitySlot(slot);
         return runtime.enemyRecoilMotion.recoilSpeedX(slot);
     }
 
     int enemyRecoilSpeedYForTest(int slot) {
-        runtime.validateEntitySlot(slot);
+        EntitySlotValidation.validateEntitySlot(slot);
         return runtime.enemyRecoilMotion.recoilSpeedY(slot);
     }
 
     int ledgeTransitionTimer(int slot) {
-        runtime.validateEntitySlot(slot);
+        EntitySlotValidation.validateEntitySlot(slot);
         return runtime.ledgeTransitionTimer[slot] & 0xFF;
     }
 
@@ -808,67 +808,67 @@ final class EntityEnemyInspection {
     }
 
     int musicalNoteInertiaForTest(int slot) {
-        runtime.validateEntitySlot(slot);
+        EntitySlotValidation.validateEntitySlot(slot);
         return runtime.musicalNoteInertia[slot];
     }
 
     int hitboxFlagsForTest(int slot) {
-        runtime.validateEntitySlot(slot);
+        EntitySlotValidation.validateEntitySlot(slot);
         return runtime.enemyHitboxFlags[slot];
     }
 
     int geniePrivateState1ForTest(int slot) {
-        runtime.validateEntitySlot(slot);
+        EntitySlotValidation.validateEntitySlot(slot);
         return runtime.geniePrivateState1[slot] & 0xFF;
     }
 
     int genieActiveStateForTest(int slot) {
-        runtime.validateEntitySlot(slot);
+        EntitySlotValidation.validateEntitySlot(slot);
         return runtime.genieActiveState[slot] & 0xFF;
     }
 
     int geniePrivateState3ForTest(int slot) {
-        runtime.validateEntitySlot(slot);
+        EntitySlotValidation.validateEntitySlot(slot);
         return runtime.geniePrivateState3[slot] & 0xFF;
     }
 
     int geniePrivateCountdown1ForTest(int slot) {
-        runtime.validateEntitySlot(slot);
+        EntitySlotValidation.validateEntitySlot(slot);
         return runtime.geniePrivateCountdown1[slot] & 0xFF;
     }
 
     int geniePrivateCountdown2ForTest(int slot) {
-        runtime.validateEntitySlot(slot);
+        EntitySlotValidation.validateEntitySlot(slot);
         return runtime.geniePrivateCountdown2[slot] & 0xFF;
     }
 
     int genieSpeedXForTest(int slot) {
-        runtime.validateEntitySlot(slot);
+        EntitySlotValidation.validateEntitySlot(slot);
         return runtime.genieSpeedX[slot] & 0xFF;
     }
 
     int genieSpeedZForTest(int slot) {
-        runtime.validateEntitySlot(slot);
+        EntitySlotValidation.validateEntitySlot(slot);
         return runtime.genieSpeedZ[slot] & 0xFF;
     }
 
     int geniePrivateState4ForTest(int slot) {
-        runtime.validateEntitySlot(slot);
+        EntitySlotValidation.validateEntitySlot(slot);
         return runtime.geniePrivateState4[slot] & 0xFF;
     }
 
     int rollingBonesBarStateForTest(int slot) {
-        runtime.validateEntitySlot(slot);
+        EntitySlotValidation.validateEntitySlot(slot);
         return runtime.rollingBonesMotion.barState(slot);
     }
 
     int rollingBonesBarSpeedXForTest(int slot) {
-        runtime.validateEntitySlot(slot);
+        EntitySlotValidation.validateEntitySlot(slot);
         return runtime.rollingBonesMotion.barSpeedX(slot);
     }
 
     int keyDropTransitionCountdown(int slot) {
-        runtime.validateEntitySlot(slot);
+        EntitySlotValidation.validateEntitySlot(slot);
         return runtime.enemyTransitionCountdown[slot];
     }
 
@@ -881,27 +881,27 @@ final class EntityEnemyInspection {
     }
 
     int moldormHeadSpriteVariant(int slot) {
-        runtime.validateEntitySlot(slot);
+        EntitySlotValidation.validateEntitySlot(slot);
         return runtime.moldormMotion.headSpriteVariant(slot);
     }
 
     int moldormTransitionCountdown(int slot) {
-        runtime.validateEntitySlot(slot);
+        EntitySlotValidation.validateEntitySlot(slot);
         return runtime.enemyTransitionCountdown[slot];
     }
 
     int moldormPrivateCountdown2(int slot) {
-        runtime.validateEntitySlot(slot);
+        EntitySlotValidation.validateEntitySlot(slot);
         return runtime.moldormMotion.privateCountdown2(slot);
     }
 
     int moldormDestructionState(int slot) {
-        runtime.validateEntitySlot(slot);
+        EntitySlotValidation.validateEntitySlot(slot);
         return runtime.bossDeathProducerState[slot];
     }
 
     int moldormInertia(int slot) {
-        runtime.validateEntitySlot(slot);
+        EntitySlotValidation.validateEntitySlot(slot);
         return runtime.moldormMotion.inertia(slot);
     }
 
@@ -962,7 +962,7 @@ final class EntityEnemyInspection {
     }
 
     int fishTransitionCountdown(int slot) {
-        runtime.validateEntitySlot(slot);
+        EntitySlotValidation.validateEntitySlot(slot);
         return runtime.enemyTransitionCountdown[slot];
     }
 
@@ -983,7 +983,7 @@ final class EntityEnemyInspection {
     }
 
     int crowTransitionCountdown(int slot) {
-        runtime.validateEntitySlot(slot);
+        EntitySlotValidation.validateEntitySlot(slot);
         return runtime.enemyTransitionCountdown[slot];
     }
 
@@ -1000,7 +1000,7 @@ final class EntityEnemyInspection {
     }
 
     int booBuddyTransitionCountdown(int slot) {
-        runtime.validateEntitySlot(slot);
+        EntitySlotValidation.validateEntitySlot(slot);
         return runtime.enemyTransitionCountdown[slot];
     }
 

@@ -31,7 +31,6 @@ public record EnemyAttackContext(int swordLevel,
         this(swordLevel, redTunic, pieceOfPower, spinAttack, pegasusBoots, false, 0, 0);
     }
 
-
     public EnemyAttackContext {
         if (romDirection < 0 || romDirection > 3 || linkZ < 0 || linkZ > 255) {
             throw new IllegalArgumentException("Invalid shield direction or Link height");

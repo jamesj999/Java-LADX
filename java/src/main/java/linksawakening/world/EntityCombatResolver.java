@@ -34,7 +34,7 @@ final class EntityCombatResolver {
                                                  int swordY,
                                                  int swordHeight,
                                                  EnemyAttackContext attackContext) {
-        runtime.validateByte(linkVerticalVelocity, "Link vertical velocity");
+        EntitySlotValidation.validateByte(linkVerticalVelocity, "Link vertical velocity");
         if (attackContext == null) {
             throw new IllegalArgumentException("Enemy attack context cannot be null");
         }

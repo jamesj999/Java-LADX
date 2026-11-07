@@ -308,8 +308,8 @@ final class EntityProjectileController {
             ? null : intersectionQuery.sample(withPositionAndVariant(entity,
                 (entity.x() - 1) & 0xFF, (entity.y() - 1) & 0xFF,
                 entity.spriteVariant()));
-        int objectLeft = runtime.magicPowderObjectLeft(entity);
-        int objectTop = runtime.magicPowderObjectTop(entity);
+        int objectLeft = EntityMotionMath.magicPowderObjectLeft(entity);
+        int objectTop = EntityMotionMath.magicPowderObjectTop(entity);
         int location = (objectTop | (objectLeft >>> 4)) & 0xFF;
         int objectId = object == null ? 0xFF : object.objectId() & 0xFF;
 

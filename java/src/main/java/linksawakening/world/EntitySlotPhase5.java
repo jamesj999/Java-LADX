@@ -165,7 +165,7 @@ final class EntitySlotPhase5 {
                 || state.preserveDroppablePresentation
                 || state.preserveTarinPresentation
             ? state.updated.spriteVariant()
-            : state.runtime.variantFor(state.updated, state.frame);
+            : EntityTypeRules.variantFor(state.updated, state.frame);
     if (state.status == EntityStatus.ACTIVE
         && state.runtime.lifecycle.shouldDisappear(state.entity)) {
       state.variant =

@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import static linksawakening.world.EntitySlotValidation.*;
+
 import static linksawakening.world.EntityMotionMath.*;
 
 import static linksawakening.world.EntitySnapshots.*;
@@ -944,14 +946,6 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     void setTorchPaletteTransitionState(int targetAddress, boolean active) { this.entityRuntimeConfiguration.setTorchPaletteTransitionState(targetAddress, active); }
 
-    static int magicPowderObjectLeft(RoomEntity entity) {
-        return (((entity.x() + 0x07 - 0x08) & 0xFF) & 0xF0);
-    }
-
-    static int magicPowderObjectTop(RoomEntity entity) {
-        return (((entity.y() + 0x07 - 0x10) & 0xFF) & 0xF0);
-    }
-
     /** Shared result path of ApplySwordIntersectionWithObjects ($7CAB). */
 
     enum ProjectileObjectCollision {
@@ -1502,19 +1496,6 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     /** Returns true when the source handler unloaded the chest this frame. */
 
-    static int liftableRockSmashVariant(int sourceVariant, boolean swampLeaves,
-                                                int countdown) {
-        if (sourceVariant == LIFTABLE_ROCK_SMASH_MODE_ROCK) {
-            int frame = (countdown & 0x0C) >>> 2;
-            return EntitySpriteHandlerCatalog.LIFTABLE_ROCK_SMASHED_ROCK_VARIANT_BASE + frame;
-        }
-        int frame = (((countdown & 0x1C) ^ 0x1C) >>> 2);
-        int base = swampLeaves
-            ? EntitySpriteHandlerCatalog.LIFTABLE_ROCK_CUT_LEAVES_SWAMP_VARIANT_BASE
-            : EntitySpriteHandlerCatalog.LIFTABLE_ROCK_CUT_LEAVES_VARIANT_BASE;
-        return base + frame;
-    }
-
     /** Mirrors BombExplosionHandler's separate privateState4 enemy-bomb path. */
 
     /**
@@ -1991,15 +1972,6 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     void setLedgeTransitionTimerForTest(int slot, int value) { this.entityDebugConfiguration.setLedgeTransitionTimerForTest(slot, value); }
 
-    static void validateCountdownTestValue(int slot, int value) {
-        if (slot < 0 || slot >= EntityRoomLoader.MAX_ENTITIES) {
-            throw new IllegalArgumentException("Entity slot out of range: " + slot);
-        }
-        if (value < 0 || value > 0xFF) {
-            throw new IllegalArgumentException("Countdown must be an unsigned byte: " + value);
-        }
-    }
-
     int keyDropTransitionCountdown(int slot) { return this.enemyInspection.keyDropTransitionCountdown(slot); }
 
     void setKeyDropTransitionCountdownForTest(int slot, int value) { this.entityDebugConfiguration.setKeyDropTransitionCountdownForTest(slot, value); }
@@ -2080,24 +2052,6 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     boolean enemyRecoilActive(int slot) { return this.enemyInspection.enemyRecoilActive(slot); }
 
-    static int variantFor(RoomEntity entity, int frameCounter) {
-        if (!entity.spriteDefinition().supported() || entity.spriteDefinition().variantCount() < 2) {
-            return entity.spriteVariant();
-        }
-        return switch (entity.type()) {
-            case ENTITY_PIECE_OF_POWER -> (frameCounter >>> 3) & 0x01;
-            case ENTITY_BOMBER -> (frameCounter >>> 2) & 0x03;
-            case ENTITY_BUTTERFLY -> ((frameCounter + entity.slot() * 8) >>> 3) & 0x01;
-            case ENTITY_ARMOS_STATUE -> (frameCounter >>> 4) & 0x01;
-            case ENTITY_GHINI -> ((frameCounter >>> 4) ^ entity.slot()) & 0x01;
-            case ENTITY_HARDHAT_BEETLE -> (frameCounter >>> 3) & 0x01;
-            case ENTITY_SPARK_COUNTER_CLOCKWISE, ENTITY_SPARK_CLOCKWISE ->
-                (frameCounter >>> 1) & 0x01;
-            case 0x70, 0x73 -> (frameCounter >>> 4) & 0x01;
-            default -> entity.spriteVariant();
-        };
-    }
-
     record CommonDroppableUpdate(RoomEntity entity, boolean hidden) {
     }
 
@@ -2112,42 +2066,10 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
      * a separate bank-$36 path and remains intentionally deferred.
      */
 
-    static int deathSpriteVariantForCountdown(int countdown) {
-        if (countdown >= 0x20 || countdown <= 0) {
-            return -1;
-        }
-        return ((countdown << 1) & 0x30) >>> 4;
-    }
-
     /** Port of bank-$03 EntityFallHandler's pre-impact falling branch. */
 
     /** Shared gameplay gates in ReturnIfNonInteractive_03 and _19. */
 
     /** Mirrors UpdateEntityTimers' shared dialog/inventory/ocarina early return. */
-
-    static void validateEntitySlot(int slot) {
-        if (slot < 0 || slot >= EntityRoomLoader.MAX_ENTITIES) {
-            throw new IllegalArgumentException("Entity slot out of range: " + slot);
-        }
-    }
-
-    static void validateEnemyDropByte(int value, String label) {
-        if (value < 0 || value > 0xFF) {
-            throw new IllegalArgumentException(label + " must be an unsigned byte: " + value);
-        }
-    }
-
-    static void validateByte(int value, String label) {
-        if (value < 0 || value > 0xFF) {
-            throw new IllegalArgumentException(label + " must be an unsigned byte: " + value);
-        }
-    }
-
-    static void validateRomDirection(int direction) {
-        if (direction < LiftedEntityMotion.ROM_DIRECTION_RIGHT
-            || direction > LiftedEntityMotion.ROM_DIRECTION_DOWN) {
-            throw new IllegalArgumentException("ROM direction must be between 0 and 3");
-        }
-    }
 
 }

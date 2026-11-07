@@ -23,8 +23,8 @@ final class EntityPlayerCommands {
     EntityPlayerCommands(RoomEntityRuntime runtime) { this.runtime = runtime; }
 
     boolean beginLift(int slot, int romDirection) {
-        runtime.validateEntitySlot(slot);
-        runtime.validateRomDirection(romDirection);
+        EntitySlotValidation.validateEntitySlot(slot);
+        EntitySlotValidation.validateRomDirection(romDirection);
         RoomEntity entity = runtime.slots[slot];
         if (!entity.loaded()) {
             return false;
@@ -58,7 +58,7 @@ final class EntityPlayerCommands {
     }
 
     boolean throwLiftedEntity(int romDirection) {
-        runtime.validateRomDirection(romDirection);
+        EntitySlotValidation.validateRomDirection(romDirection);
         LiftedEntityState state = runtime.liftedEntityState();
         if (!state.active() || state.carryState() != 0x01) {
             return false;

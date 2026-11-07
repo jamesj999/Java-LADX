@@ -110,7 +110,7 @@ final class EntitySlotPhase2 {
         state.runtime.slots[state.index] =
             withDeathPresentation(
                 updated,
-                state.runtime.deathSpriteVariantForCountdown(presentationCountdown),
+                EntityMotionMath.deathSpriteVariantForCountdown(presentationCountdown),
                 state.runtime.powerRecoilDeath[slot]);
       }
       return false;
