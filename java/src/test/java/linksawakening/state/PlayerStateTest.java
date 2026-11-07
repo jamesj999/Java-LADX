@@ -12,6 +12,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class PlayerStateTest {
     @Test
+    void rupeeBufferUsesSixteenBitsAndAccelerates() {
+        PlayerState state = new PlayerState();
+        for (int i = 0; i < 300; i++) state.applyEntityPickup(0x2E);
+        assertEquals(300, state.addRupeeBuffer());
+        state.tickResourceBuffers(0);
+        assertEquals(9, state.rupees());
+        assertEquals(291, state.addRupeeBuffer());
+        assertEquals(linksawakening.gameplay.GameplaySoundEvent.RUPEE, state.takeResourceSound());
+    }
+
+    @Test
     void lethalHealthTickConsumesMedicineAndQueuesRevival() {
         PlayerState state = new PlayerState();
         state.setHealth(1);

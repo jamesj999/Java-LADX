@@ -102,6 +102,7 @@ public final class GameplaySoundEffectMap {
             SoundEffectNamespace.WAVE, 0x15);
         put(effects, catalog, GameplaySoundEvent.MANBO_WARP,
             SoundEffectNamespace.JINGLE, 0x2C);
+        put(effects, catalog, GameplaySoundEvent.RUPEE, SoundEffectNamespace.WAVE, 0x05);
         return new GameplaySoundEffectMap(effects);
     }
 

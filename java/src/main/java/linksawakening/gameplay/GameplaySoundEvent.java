@@ -1,6 +1,7 @@
 package linksawakening.gameplay;
 
 public enum GameplaySoundEvent {
+    RUPEE,
     ROC_FEATHER_JUMP,
     LINK_FOOTSTEP,
     LEDGE_FALL,
