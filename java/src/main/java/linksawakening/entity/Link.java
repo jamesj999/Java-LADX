@@ -30,6 +30,8 @@ import java.util.function.BooleanSupplier;
  */
 public final class Link implements RocsFeather.JumpTarget {
 
+    final LinkDamage linkDamage = new LinkDamage(this);
+
     final LinkMotion linkMotion = new LinkMotion(this);
 
     public static final int DIRECTION_DOWN = 0;
@@ -139,12 +141,8 @@ public final class Link implements RocsFeather.JumpTarget {
     int direction = DIRECTION_DOWN;
     private int walkTickCounter;
     private int walkFrame;
-    private boolean movingThisFrame;
+    boolean movingThisFrame;
     private int groundMotionCounter;
-    int collisionIgnoreFramesRemaining;
-    private int recoilSpeedX;
-    private int recoilSpeedY;
-    private boolean normalRecoilRoomBoundaries = true;
     private int pegasusBootsChargeMeter;
     private int pegasusBootsCollisionCountdown;
     private int pegasusBootsCollisionPosX;
@@ -182,7 +180,6 @@ public final class Link implements RocsFeather.JumpTarget {
         zSubPixels = zVelocity = 0;
     }
 
-    private boolean collisionDamageImmune;
     boolean debugNoClip;
     private int romAnimationStateOverride = -1;
     private int swordAcquisitionBaseRomDirection = -1;
@@ -314,7 +311,7 @@ public final class Link implements RocsFeather.JumpTarget {
         romInteractiveMotionBlocked = false;
         standingOnSideViewEntity = false;
         sideViewPlatformVerticalSpeedPending = -1;
-        collisionDamageImmune = false;
+        linkDamage.collisionDamageImmune = false;
         romAnimationStateOverride = -1;
         swordAcquisitionBaseRomDirection = -1;
         swordAcquisitionAnimationState = -1;
@@ -346,7 +343,7 @@ public final class Link implements RocsFeather.JumpTarget {
         zVelocity = 0;
         linkMotion.forcedSpeedPending = false;
         linkMotion.forcedSpeedXOnly = false;
-        collisionIgnoreFramesRemaining = 0;
+        linkDamage.collisionIgnoreFramesRemaining = 0;
         romLinkPushing = 0;
         romAttackStepAnimationCountdown = 0;
         movingThisFrame = false;
@@ -431,19 +428,19 @@ public final class Link implements RocsFeather.JumpTarget {
     }
 
     /** Manual warp exits bypass the ordinary room-edge recoil gate. */
+    public void setCollisionIgnoreFrames(int frames) {
+        linkDamage.setCollisionIgnoreFrames(frames);
+    }
+
     public void setNormalRecoilRoomBoundaries(boolean normalBoundaries) {
-        normalRecoilRoomBoundaries = normalBoundaries;
+        linkDamage.normalRecoilRoomBoundaries = normalBoundaries;
     }
 
     /**
      * Sets wIgnoreLinkCollisionsCountdown: preserve recoil speed instead of
      * reading movement input. Background collisions still run ($02:44C2).
      */
-    public void setCollisionIgnoreFrames(int frames) {
-        collisionIgnoreFramesRemaining = Math.max(0, frames);
-        recoilSpeedX = linkMotion.forcedSpeedPending ? linkMotion.forcedSpeedX : (byte) linkMotion.lastRomSpeedX;
-        recoilSpeedY = linkMotion.forcedSpeedPending && !linkMotion.forcedSpeedXOnly ? linkMotion.forcedSpeedY : (byte) linkMotion.lastRomSpeedY;
-    }
+
 
     /**
      * Applies the next-frame hLinkSpeedX/hLinkSpeedY values written by an
@@ -619,7 +616,7 @@ public final class Link implements RocsFeather.JumpTarget {
     public void showPowerUpPickupPose() {
         romInteractiveMotionBlocked = true;
         romAnimationStateOverride = 0x6B;
-        collisionIgnoreFramesRemaining = 0;
+        linkDamage.collisionIgnoreFramesRemaining = 0;
         linkMotion.forcedSpeedPending = false;
         romAttackStepAnimationCountdown = 0;
         movingThisFrame = false;
@@ -835,7 +832,7 @@ public final class Link implements RocsFeather.JumpTarget {
         physicsRoomMapId = mapId;
         physicsRoomId = roomId;
         physicsRoomCategory = mapCategory;
-        collisionDamageImmune = false;
+        linkDamage.collisionDamageImmune = false;
     }
 
     /** Applies the room-entry physics default after a completed warp. */
@@ -846,7 +843,7 @@ public final class Link implements RocsFeather.JumpTarget {
         physicsRoomMapId = mapId;
         physicsRoomId = roomId;
         physicsRoomCategory = mapCategory;
-        collisionDamageImmune = false;
+        linkDamage.collisionDamageImmune = false;
     }
 
     /** Mirrors source ladder/diving updates to hLinkPhysicsModifier. */
@@ -1113,7 +1110,7 @@ public final class Link implements RocsFeather.JumpTarget {
         romInteractiveMotionBlocked = true;
         romAnimationStateOverride = -1;
         romAttackStepAnimationCountdown = 0;
-        collisionIgnoreFramesRemaining = 0;
+        linkDamage.collisionIgnoreFramesRemaining = 0;
         movingThisFrame = false;
         airborne = false;
         zSubPixels = 0;
@@ -1121,7 +1118,7 @@ public final class Link implements RocsFeather.JumpTarget {
         fallingIntoPit = false;
         groundStatus = GROUND_STATUS_NORMAL;
         if (immunityCountdown != 0) {
-            collisionDamageImmune = true;
+            linkDamage.collisionDamageImmune = true;
         }
         if (playerState != null) {
             playerState.setInvincibilityCounter(0);
@@ -1131,7 +1128,7 @@ public final class Link implements RocsFeather.JumpTarget {
 
     /** Mirrors wIsLinkImmuneToCollisionDamage independently of hit flashing. */
     public boolean isCollisionDamageImmune() {
-        return collisionDamageImmune;
+        return linkDamage.collisionDamageImmune;
     }
 
     /** Applies Marin's final writes when Link jumps out of the bed. */
@@ -1254,6 +1251,8 @@ public final class Link implements RocsFeather.JumpTarget {
         }
     }
 
+
+
     public void update() {
         bedJumpRenderZ = -1;
         frameCounter = (frameCounter + 1) & 0xFF;
@@ -1270,9 +1269,7 @@ public final class Link implements RocsFeather.JumpTarget {
         linkMotion.lastRomSpeedY = 0;
         int platformVerticalSpeedForThisUpdate = sideViewPlatformVerticalSpeedPending;
         sideViewPlatformVerticalSpeedPending = -1;
-        if (playerState != null) {
-            playerState.tickInvincibility();
-        }
+        linkDamage.tickInvincibility();
 
         boolean interactiveMotionBlocked = romInteractiveMotionBlocked;
         romInteractiveMotionBlocked = false;
@@ -1342,37 +1339,8 @@ public final class Link implements RocsFeather.JumpTarget {
             return;
         }
 
-        // $02:44C2 precedes the interactive-motion gate. The countdown
-        // preserves hLinkSpeed across frames; it never disables wall probes.
-        if (collisionIgnoreFramesRemaining > 0) {
-            collisionIgnoreFramesRemaining--;
-            int speedX = linkMotion.forcedSpeedPending ? linkMotion.forcedSpeedX : recoilSpeedX;
-            int speedY = linkMotion.forcedSpeedPending && !linkMotion.forcedSpeedXOnly
-                ? linkMotion.forcedSpeedY : recoilSpeedY;
-            linkMotion.forcedSpeedPending = false;
-            linkMotion.forcedSpeedXOnly = false;
-            int beforeRecoilX = linkMotion.subX;
-            int beforeRecoilY = linkMotion.subY;
-            if (speedX != 0) linkMotion.tryMoveAxis(speedX, true);
-            if (speedY != 0) linkMotion.tryMoveAxis(speedY, false);
-            // CheckPositionForMapTransition restores the previous position
-            // at a normal room edge, then $02:6D94 rejects active recoil.
-            if (normalRecoilRoomBoundaries && collisionIgnoreFramesRemaining > 0
-                && (romEntityX() < 0x04 || romEntityX() >= 0x9C
-                    || romEntityY() < 0x0C || romEntityY() >= 0x84)) {
-                linkMotion.subX = beforeRecoilX;
-                linkMotion.subY = beforeRecoilY;
-                collisionIgnoreFramesRemaining = 0;
-                speedX = 0;
-                speedY = 0;
-            }
-            if ((linkMotion.romCollisionType & (COLLISION_TYPE_LEFT | COLLISION_TYPE_RIGHT)) != 0) speedX = 0;
-            if ((linkMotion.romCollisionType & (COLLISION_TYPE_UP | COLLISION_TYPE_DOWN)) != 0) speedY = 0;
-            recoilSpeedX = speedX;
-            recoilSpeedY = speedY;
-            linkMotion.lastRomSpeedX = speedX & 0xFF;
-            linkMotion.lastRomSpeedY = speedY & 0xFF;
-            movingThisFrame = speedX != 0 || speedY != 0;
+        if (linkDamage.hasRecoil()) {
+            linkDamage.tickRecoil();
             tickJump();
             return;
         }
@@ -1411,8 +1379,8 @@ public final class Link implements RocsFeather.JumpTarget {
             movingThisFrame = false;
             walkTickCounter = 0;
             walkFrame = 0;
-            if (collisionIgnoreFramesRemaining > 0) {
-                collisionIgnoreFramesRemaining--;
+            if (linkDamage.collisionIgnoreFramesRemaining > 0) {
+                linkDamage.collisionIgnoreFramesRemaining--;
             }
             tickJump();
             return;
@@ -1471,8 +1439,8 @@ public final class Link implements RocsFeather.JumpTarget {
             linkMotion.tryMoveAxis(speedY, false);
         }
 
-        if (collisionIgnoreFramesRemaining > 0) {
-            collisionIgnoreFramesRemaining--;
+        if (linkDamage.collisionIgnoreFramesRemaining > 0) {
+            linkDamage.collisionIgnoreFramesRemaining--;
         }
 
         if (!bedJumpFrame) tickJump();
@@ -1834,7 +1802,7 @@ public final class Link implements RocsFeather.JumpTarget {
     private void updateSideViewMotion(int platformSpeedY) {
         int mask = buildJoypadMask();
         if (!airborne && itemsBlockMotion()) return;
-        boolean recoiling = collisionIgnoreFramesRemaining > 0;
+        boolean recoiling = linkDamage.collisionIgnoreFramesRemaining > 0;
         boolean ladderFrame = sideViewModifier == 1;
         if (linkMotion.forcedSpeedPending) {
             sideViewSpeedX = linkMotion.forcedSpeedX;
@@ -1842,7 +1810,7 @@ public final class Link implements RocsFeather.JumpTarget {
             linkMotion.forcedSpeedPending = linkMotion.forcedSpeedXOnly = false;
         }
         if (recoiling) {
-            collisionIgnoreFramesRemaining--;
+            linkDamage.collisionIgnoreFramesRemaining--;
         } else if (sideViewModifier == 1) {
             airborne = false;
             sideViewSpeedX = (mask & 3) == 1 ? 8 : (mask & 3) == 2 ? -8 : 0;
@@ -2131,8 +2099,7 @@ public final class Link implements RocsFeather.JumpTarget {
         pitSlippingCounter = 0;
         fallingFrameCounter = 0;
         if (playerState != null) {
-            playerState.damage(PIT_DAMAGE);
-            playerState.setInvincibilityCounter(PIT_RECOVERY_INVINCIBILITY_FRAMES);
+            linkDamage.applyPitDamage();
         }
         if (hasRoomEntryPosition) {
             linkMotion.subX = roomEntrySubX;

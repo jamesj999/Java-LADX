@@ -1,21 +1,8 @@
 package linksawakening.entity;
 
-import linksawakening.equipment.EquippedItem;
-import linksawakening.equipment.ItemRegistry;
-import linksawakening.equipment.RocsFeather;
 import linksawakening.gameplay.GameplaySoundEvent;
-import linksawakening.gameplay.GameplaySoundSink;
-import linksawakening.gpu.Framebuffer;
-import linksawakening.gpu.Tile;
-import linksawakening.input.InputConfig;
-import linksawakening.input.InputState;
-import linksawakening.physics.OverworldCollision;
 import linksawakening.physics.PhysicsFlags;
-import linksawakening.rom.RomTables;
 import linksawakening.state.PlayerState;
-import java.util.Objects;
-import java.util.function.BooleanSupplier;
-import static linksawakening.entity.Link.*;
 
 /** ROM-faithful motion collaborator for Link. */
 final class LinkMotion {
@@ -97,7 +84,7 @@ final class LinkMotion {
                 link.revolvingDoorPaletteVariant = -1;
                 link.zSubPixels = link.zVelocity = 0;
                 link.airborne = false;
-                link.collisionIgnoreFramesRemaining = 0;
+                link.linkDamage.collisionIgnoreFramesRemaining = 0;
                 if (link.playerState != null) link.playerState.setInvincibilityCounter(0);
                 if (link.itemRegistry != null && link.itemRegistry.lookup(PlayerState.INVENTORY_SWORD)
                     instanceof linksawakening.equipment.Sword sword) sword.resetSpinAttack();
