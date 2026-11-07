@@ -30,6 +30,8 @@ import java.util.function.BooleanSupplier;
  */
 public final class Link implements RocsFeather.JumpTarget {
 
+    final LinkSwimming linkSwimming = new LinkSwimming(this);
+
     final LinkStateMachine linkStateMachine = new LinkStateMachine(this);
 
     final LinkSideView linkSideView = new LinkSideView(this);
@@ -184,10 +186,6 @@ public final class Link implements RocsFeather.JumpTarget {
     private int physicsRoomMapId = -1;
     private int physicsRoomId = -1;
     private int physicsRoomCategory = -1;
-    private int swimmingSpeedX;
-    private int swimmingSpeedY;
-    private int swimmingFastCountdown;
-    private int divingCountdown;
     int frameCounter;
     private int romAttackStepAnimationCountdown;
     boolean airborne;
@@ -751,10 +749,10 @@ public final class Link implements RocsFeather.JumpTarget {
         groundStatus = GROUND_STATUS_NORMAL;
         linkStateMachine.motionState = LINK_MOTION_DEFAULT;
         linkStateMachine.physicsModifier = 0;
-        swimmingSpeedX = 0;
-        swimmingSpeedY = 0;
-        swimmingFastCountdown = 0;
-        divingCountdown = 0;
+        linkSwimming.swimmingSpeedX = 0;
+        linkSwimming.swimmingSpeedY = 0;
+        linkSwimming.swimmingFastCountdown = 0;
+        linkSwimming.divingCountdown = 0;
         movingThisFrame = false;
         linkMotion.romCollisionType = 0;
         linkMotion.lastRomSpeedX = 0;
@@ -1223,7 +1221,7 @@ public final class Link implements RocsFeather.JumpTarget {
         zVelocity = 0x10;
         fallingIntoPit = false;
         groundStatus = GROUND_STATUS_NORMAL;
-        leaveSwimming();
+        linkSwimming.leaveSwimming();
     }
 
     /** Advance the walking-cycle timer without processing input or collision. */
@@ -1337,106 +1335,11 @@ public final class Link implements RocsFeather.JumpTarget {
         return (groundMotionCounter & 0x03) != 0;
     }
 
-    boolean enterSwimmingIfNeeded() {
-        if (!playerHasFlippers() || romTables == null || collision == null
-            || !collision.linkOnDeepWater(pixelX(), pixelY())) {
-            return false;
-        }
 
-        linkStateMachine.motionState = LINK_MOTION_SWIMMING;
-        linkStateMachine.physicsModifier = 0;
-        swimmingFastCountdown = 0;
-        divingCountdown = 0;
-        airborne = false;
-        zSubPixels = 0;
-        zVelocity = 0;
-        swimmingSpeedX = romTables.swimmingEntrySpeedX(romDirectionForJavaDirection(direction));
-        swimmingSpeedY = romTables.swimmingEntrySpeedY(romDirectionForJavaDirection(direction));
-        linkMotion.lastRomSpeedX = swimmingSpeedX & 0xFF;
-        linkMotion.lastRomSpeedY = swimmingSpeedY & 0xFF;
-        return true;
-    }
 
-    void updateSwimming() {
-        if (collision == null || !collision.linkOnDeepWater(pixelX(), pixelY())) {
-            leaveSwimming();
-            return;
-        }
 
-        int mask = buildJoypadMask();
-        int newDirection = JOYPAD_TO_DIRECTION[mask];
-        if (newDirection != -1) {
-            direction = newDirection;
-        }
 
-        if (swimmingFastCountdown > 0) {
-            swimmingFastCountdown--;
-        }
-        if (divingCountdown > 0) {
-            divingCountdown--;
-            if (divingCountdown == 0) {
-                linkStateMachine.physicsModifier = 0;
-            }
-        }
-
-        if (buttonWasPressed(inputConfig == null ? -1 : inputConfig.bKey())) {
-            linkStateMachine.physicsModifier ^= 1;
-            divingCountdown = linkStateMachine.physicsModifier == 0 ? 0 : 0xA0;
-        }
-        if (buttonWasPressed(inputConfig == null ? -1 : inputConfig.aKey())) {
-            swimmingFastCountdown = 0x20;
-        }
-
-        if (itemsBlockMotion()) {
-            movingThisFrame = false;
-            walkTickCounter = 0;
-            walkFrame = 0;
-            linkMotion.lastRomSpeedX = 0;
-            linkMotion.lastRomSpeedY = 0;
-            return;
-        }
-
-        if (linkMotion.forcedSpeedPending) {
-            swimmingSpeedX = linkMotion.forcedSpeedX;
-            swimmingSpeedY = linkMotion.forcedSpeedY;
-            linkMotion.forcedSpeedPending = false;
-            linkMotion.forcedSpeedXOnly = false;
-        } else if ((frameCounter & 0x01) == 0) {
-            boolean fast = swimmingFastCountdown >= 0x10;
-            int targetX = romTables.swimmingSpeedX(mask, fast);
-            int targetY = romTables.swimmingSpeedY(mask, fast);
-            swimmingSpeedX = approachSignedSpeed(swimmingSpeedX, targetX);
-            swimmingSpeedY = approachSignedSpeed(swimmingSpeedY, targetY);
-        }
-
-        linkMotion.lastRomSpeedX = swimmingSpeedX & 0xFF;
-        linkMotion.lastRomSpeedY = swimmingSpeedY & 0xFF;
-        movingThisFrame = swimmingSpeedX != 0 || swimmingSpeedY != 0;
-        if (swimmingSpeedX != 0) {
-            linkMotion.tryMoveAxis(swimmingSpeedX, true);
-        }
-        if (swimmingSpeedY != 0) {
-            linkMotion.tryMoveAxis(swimmingSpeedY, false);
-        }
-
-        if (!collision.linkOnDeepWater(pixelX(), pixelY())) {
-            leaveSwimming();
-            return;
-        }
-
-        if (movingThisFrame) {
-            walkTickCounter++;
-            if (walkTickCounter >= WALK_FRAME_TICKS) {
-                walkTickCounter = 0;
-                walkFrame ^= 1;
-            }
-        } else {
-            walkTickCounter = 0;
-            walkFrame = 0;
-        }
-    }
-
-    private boolean buttonWasPressed(int key) {
+    boolean buttonWasPressed(int key) {
         return inputState != null && key >= 0 && inputState.wasPressed(key);
     }
 
@@ -1444,26 +1347,9 @@ public final class Link implements RocsFeather.JumpTarget {
         return playerState != null && playerState.hasFlippers();
     }
 
-    private static int approachSignedSpeed(int current, int target) {
-        current = (byte) current;
-        target = (byte) target;
-        int difference = target - current;
-        if (difference == 0) {
-            return current;
-        }
-        return (byte) (current + (difference < 0 ? -1 : 1));
-    }
 
-    private void leaveSwimming() {
-        linkStateMachine.motionState = LINK_MOTION_DEFAULT;
-        linkStateMachine.physicsModifier = 0;
-        swimmingSpeedX = 0;
-        swimmingSpeedY = 0;
-        swimmingFastCountdown = 0;
-        divingCountdown = 0;
-        walkTickCounter = 0;
-        walkFrame = 0;
-    }
+
+
 
     /** $02:68B7–6C74: side-view speeds and single-point collision probes. */
 

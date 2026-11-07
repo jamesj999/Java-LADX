@@ -96,7 +96,7 @@ final class LinkStateMachine {
         }
 
         if (motionState == Link.LINK_MOTION_SWIMMING) {
-            link.updateSwimming();
+            link.linkSwimming.updateSwimming();
             return;
         }
 
@@ -208,7 +208,7 @@ final class LinkStateMachine {
         handlePegasusBootsCollision();
 
         if (!link.airborne) {
-            if (!link.enterSwimmingIfNeeded()) {
+            if (!link.linkSwimming.enterSwimmingIfNeeded()) {
                 link.updateLastSafePositionIfPossible();
             }
         }
