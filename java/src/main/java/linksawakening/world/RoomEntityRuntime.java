@@ -28,6 +28,7 @@ import java.util.function.IntUnaryOperator;
 public final class RoomEntityRuntime {
     private final EntityHandlerRegistry entityHandlers = createEntityHandlers();
     private final EntityRewardController rewards = new EntityRewardController(this);
+    private final EntityStoryController story = new EntityStoryController(this);
     private final EntityOutbox outbox = new EntityOutbox();
     private static final int ENTITY_PUSHED_BLOCK = 0x06;
     static final int[] INSTRUMENT_MUSIC_TRACKS = {
@@ -49,7 +50,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_PIECE_OF_POWER = 0x33;
     private static final int ENTITY_CRYSTAL_SWITCH = 0x66;
     private static final int ENTITY_BUTTERFLY = 0x6E;
-    private static final int ENTITY_KID_71 = 0x71;
+    static final int ENTITY_KID_71 = 0x71;
     private static final int ENTITY_KID_72 = 0x72;
     private static final int ENTITY_MADAM_MEOWMEOW = 0x79;
     static final int ENTITY_MOBLIN_KING = 0xE4;
@@ -97,7 +98,7 @@ public final class RoomEntityRuntime {
     static final int ENTITY_DROPPABLE_MAGIC_POWDER = 0x3B;
     private static final int ENTITY_SLEEPY_TOADSTOOL = 0x3A;
     static final int ENTITY_HIDING_SLIME_KEY = 0x3C;
-    private static final int ENTITY_RICHARD = 0x95;
+    static final int ENTITY_RICHARD = 0x95;
     private static final int ROOM_OW_POTHOLE_FIELD_SLIME_KEY = 0xC6;
     private static final int GOLDEN_LEAVES_FINAL_COUNT = 0x06;
     private static final int GOLDEN_LEAVES_FIVE_COUNT = 0x05;
@@ -203,11 +204,11 @@ public final class RoomEntityRuntime {
     static final int ENTITY_BOMB = 0x02;
     static final int ENTITY_SWORD_SHIELD_PICKUP = 0x31;
     private static final int ENTITY_OWL_EVENT = 0x41;
-    private static final int ROOM_OW_TAIL_KEY_CHEST = 0x41;
-    private static final int ROOM_OW_EAST_OF_MOBLIN_HIDEOUT = 0x36;
-    private static final int ROOM_OW_WEST_OF_TAIL_CAVE = 0xD2;
+    static final int ROOM_OW_TAIL_KEY_CHEST = 0x41;
+    static final int ROOM_OW_EAST_OF_MOBLIN_HIDEOUT = 0x36;
+    static final int ROOM_OW_WEST_OF_TAIL_CAVE = 0xD2;
     private static final int ENTITY_WITCH = WitchMotion.ENTITY_TYPE;
-    private static final int ROOM_OW_BEACH_WITH_SWORD = 0xF2;
+    static final int ROOM_OW_BEACH_WITH_SWORD = 0xF2;
     static final int ENTITY_BOUNCING_BOMBITE = 0x55;
     static final int ENTITY_TIMER_BOMBITE = 0x56;
     static final int ENTITY_MAD_BOMBER = 0x93;
@@ -305,7 +306,7 @@ public final class RoomEntityRuntime {
     private LinkPositionHistory followingLinkPositionHistory = new LinkPositionHistory();
     private int followingLinkZ;
     private int followingLinkDirection;
-    private int lastRomLinkDirection;
+    int lastRomLinkDirection;
     private int followingEntityYOffset;
     private int linkAttackStepAnimationCountdown;
     private final ButterflyMotion butterflyMotion = new ButterflyMotion();
@@ -350,7 +351,7 @@ public final class RoomEntityRuntime {
     private final UrchinMotion urchinMotion = new UrchinMotion();
     private final WitchRatMotion witchRatMotion = new WitchRatMotion();
     private final WitchMotion witchMotion = new WitchMotion();
-    private final int[] witchGotItemCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] witchGotItemCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final TarinRaccoonMotion tarinRaccoonMotion = new TarinRaccoonMotion();
     private final SpikeTrapMotion spikeTrapMotion = new SpikeTrapMotion();
     private final PairoddMotion pairoddMotion = new PairoddMotion();
@@ -507,13 +508,13 @@ public final class RoomEntityRuntime {
         new ArrayList<>();
     final List<TransientVfxRequest> transientVfxRequests = outbox.channel(TransientVfxRequest.class, "transientVfxRequests");
     private final List<HeartContainerRewardEvent> pendingHeartContainerRewards = outbox.channel(HeartContainerRewardEvent.class, "pendingHeartContainerRewards");
-    private final List<MadamMeowMeowFullHealRequest> pendingMadamMeowMeowFullHealRequests = outbox.channel(MadamMeowMeowFullHealRequest.class, "pendingMadamMeowMeowFullHealRequests");
+    final List<MadamMeowMeowFullHealRequest> pendingMadamMeowMeowFullHealRequests = outbox.channel(MadamMeowMeowFullHealRequest.class, "pendingMadamMeowMeowFullHealRequests");
     final List<SwordPickupRewardEvent> pendingSwordPickupRewards = outbox.channel(SwordPickupRewardEvent.class, "pendingSwordPickupRewards");
     final List<ToadstoolRewardEvent> pendingToadstoolRewards = outbox.channel(ToadstoolRewardEvent.class, "pendingToadstoolRewards");
     final List<InstrumentRewardEvent> pendingInstrumentRewards = outbox.channel(InstrumentRewardEvent.class, "pendingInstrumentRewards");
     final List<InstrumentCompletionEvent> pendingInstrumentCompletions = outbox.channel(InstrumentCompletionEvent.class, "pendingInstrumentCompletions");
-    private final List<RichardProgressEvent> pendingRichardProgressEvents = outbox.channel(RichardProgressEvent.class, "pendingRichardProgressEvents");
-    private final List<OwlEventCompletion> pendingOwlEventCompletions = outbox.channel(OwlEventCompletion.class, "pendingOwlEventCompletions");
+    final List<RichardProgressEvent> pendingRichardProgressEvents = outbox.channel(RichardProgressEvent.class, "pendingRichardProgressEvents");
+    final List<OwlEventCompletion> pendingOwlEventCompletions = outbox.channel(OwlEventCompletion.class, "pendingOwlEventCompletions");
     private final List<LinkFinalPositionRequest> pendingLinkFinalPositionRequests = outbox.channel(LinkFinalPositionRequest.class, "pendingLinkFinalPositionRequests");
     private final List<RoosterLinkStateRequest> pendingRoosterLinkStateRequests = outbox.channel(RoosterLinkStateRequest.class, "pendingRoosterLinkStateRequests");
     private final List<SideViewPlatformLinkRequest> pendingSideViewPlatformLinkRequests = outbox.channel(SideViewPlatformLinkRequest.class, "pendingSideViewPlatformLinkRequests");
@@ -521,7 +522,7 @@ public final class RoomEntityRuntime {
     final List<LinkMotionBlockRequest> pendingLinkMotionBlockRequests = outbox.channel(LinkMotionBlockRequest.class, "pendingLinkMotionBlockRequests");
     private final List<HinoxLinkEffectRequest> pendingHinoxLinkEffectRequests = outbox.channel(HinoxLinkEffectRequest.class, "pendingHinoxLinkEffectRequests");
     private final List<LinkFallenPoseRequest> pendingLinkFallenPoseRequests = outbox.channel(LinkFallenPoseRequest.class, "pendingLinkFallenPoseRequests");
-    private final List<LinkFacingRequest> pendingLinkFacingRequests = outbox.channel(LinkFacingRequest.class, "pendingLinkFacingRequests");
+    final List<LinkFacingRequest> pendingLinkFacingRequests = outbox.channel(LinkFacingRequest.class, "pendingLinkFacingRequests");
     private final List<LinkAttackStepRequest> pendingLinkAttackStepRequests = outbox.channel(LinkAttackStepRequest.class, "pendingLinkAttackStepRequests");
     private final List<LinkAttackStepRequest> pendingPreTickLinkAttackStepRequests = outbox.channel(LinkAttackStepRequest.class, "pendingPreTickLinkAttackStepRequests");
     private final List<LinkAttackClearRequest> pendingLinkAttackClearRequests = outbox.channel(LinkAttackClearRequest.class, "pendingLinkAttackClearRequests");
@@ -534,7 +535,7 @@ public final class RoomEntityRuntime {
     final List<EntityCombatEvent> pendingEntityEvents = outbox.channel(EntityCombatEvent.class, "pendingEntityEvents");
     private final List<EntityCombatEvent> pendingPreTickEntityEvents = outbox.channel(EntityCombatEvent.class, "pendingPreTickEntityEvents");
     private final List<ThrownBackgroundCollisionEvent> pendingThrownBackgroundCollisions = outbox.channel(ThrownBackgroundCollisionEvent.class, "pendingThrownBackgroundCollisions");
-    private final List<DungeonWarpRequest> pendingDungeonWarpRequests = outbox.channel(DungeonWarpRequest.class, "pendingDungeonWarpRequests");
+    final List<DungeonWarpRequest> pendingDungeonWarpRequests = outbox.channel(DungeonWarpRequest.class, "pendingDungeonWarpRequests");
     private final List<WarpLinkStateRequest> pendingWarpLinkStateRequests = outbox.channel(WarpLinkStateRequest.class, "pendingWarpLinkStateRequests");
     private final List<ChestRewardEvent> pendingChestRewardEvents = outbox.channel(ChestRewardEvent.class, "pendingChestRewardEvents");
     private final List<KeyRewardEvent> pendingKeyRewardEvents = outbox.channel(KeyRewardEvent.class, "pendingKeyRewardEvents");
@@ -555,7 +556,7 @@ public final class RoomEntityRuntime {
         new EnemyDropResolver.CounterState(0, 0);
     private int enemyDropMaxHearts = 3;
     private int enemyDropHealth = 6;
-    private boolean enemyDropActivePowerUp;
+    boolean enemyDropActivePowerUp;
     private boolean enemyDropBossBattle;
     private int killCount;
     private int booBuddyTriggerCount;
@@ -563,18 +564,18 @@ public final class RoomEntityRuntime {
     private int paletteDataFlags;
     private int defaultMusicTrack = 0x05;
     private final int[] killOrder = new int[0x100];
-    private boolean actionButtonsHeld;
-    private boolean actionButtonAHeld;
+    boolean actionButtonsHeld;
+    boolean actionButtonAHeld;
     private boolean actionButtonBHeld;
     private boolean joypadHeld;
     boolean dialogActive;
     boolean inventoryAppearing;
-    private int dialogCooldown;
-    private int windowY = 0x80;
-    private int dialogAskSelectionIndex;
+    int dialogCooldown;
+    int windowY = 0x80;
+    int dialogAskSelectionIndex;
     private boolean shouldGetLostInMysteriousWoods;
     boolean activeMusic;
-    private int bowWowState;
+    int bowWowState;
     private int linkPressedButtonsMask;
     private int linkItemA;
     private int linkItemB;
@@ -593,11 +594,11 @@ public final class RoomEntityRuntime {
     // LinkMotionMapFadeInHandler leaves wTransitionSequenceCounter at $04 once
     // the active room is ready for interaction. Entity ticks are gated during
     // the host transition, so this is the source value visible to gameplay.
-    private int transitionSequenceCounter = 0x04;
+    int transitionSequenceCounter = 0x04;
     // ReturnIfNonInteractive_19's gameplay selector and room-transition flag.
     // Live room sessions default to the ordinary active world path; tests can
     // select the world-map/transition branches explicitly.
-    private boolean gameplayWorld = true;
+    boolean gameplayWorld = true;
     boolean roomTransitionActive;
     private int swordMoblinAlertingSoundCounter;
     private int bombArrowCooldown;
@@ -616,12 +617,12 @@ public final class RoomEntityRuntime {
     private int currentLinkFinalPositionX;
     private boolean currentLinkFinalPositionXConfigured;
     private int chestShieldLevel = 1;
-    private int chestSwordLevel = 1;
+    int chestSwordLevel = 1;
     private boolean chestPlayerLevelsKnown;
     private int chestPowerBraceletLevel = 1;
-    private int entityGoldenLeavesCount;
+    int entityGoldenLeavesCount;
     int pendingMusicTrack = -1;
-    private int pendingMusicFadeOutCountdown;
+    int pendingMusicFadeOutCountdown;
     final int[] swordPickupState = new int[EntityRoomLoader.MAX_ENTITIES];
     final boolean[] swordPickupSequenceActive =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
@@ -664,47 +665,47 @@ public final class RoomEntityRuntime {
         new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] instrumentParticleYAccumulator =
         new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] kidKidnapState = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] kidKidnapDelay = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] kidSpeedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] kidSpeedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] richardState = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] richardDirection = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] richardXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] richardInertia = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] kidKidnapState = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] kidKidnapDelay = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] kidSpeedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] kidSpeedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] richardState = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] richardDirection = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] richardXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] richardInertia = new int[EntityRoomLoader.MAX_ENTITIES];
     private boolean playerHasToadstool;
     private int playerMagicPowderCount;
-    private boolean playerHasTailKey;
-    private int instrument1Flags;
-    private int instrument2Flags;
+    boolean playerHasTailKey;
+    int instrument1Flags;
+    int instrument2Flags;
     /** AnimateEntities copies wC111 to wC1A8 before decrementing it. */
-    private int entityInteractionCountdown;
+    int entityInteractionCountdown;
     private boolean freeMovementMode;
 
     void setFreeMovementMode(boolean enabled) { freeMovementMode = enabled; }
-    private final int[] owlEventState = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] owlEventState = new int[EntityRoomLoader.MAX_ENTITIES];
     /** wEntitiesPrivateCountdown1Table for the owl-event handler. */
-    private final int[] owlPrivateCountdown1 =
+    final int[] owlPrivateCountdown1 =
         new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] owlSpeedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] owlSpeedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] owlSpeedZ = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] owlXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] owlYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] owlZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] owlBoomerangSfxCounter = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] owlPreviousMusicTrack = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final boolean[] owlCompletionEmitted =
+    final int[] owlSpeedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] owlSpeedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] owlSpeedZ = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] owlXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] owlYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] owlZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] owlBoomerangSfxCounter = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] owlPreviousMusicTrack = new int[EntityRoomLoader.MAX_ENTITIES];
+    final boolean[] owlCompletionEmitted =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
-    private IntUnaryOperator owlDialogResolver = roomId -> 0x0D9;
-    private int owlStatueDialogId = -1;
+    IntUnaryOperator owlDialogResolver = roomId -> 0x0D9;
+    int owlStatueDialogId = -1;
     IntUnaryOperator owlDefaultMusicResolver = roomId -> 0x05;
     private boolean groundInteractionSideScrolling;
     int entityMapId = -1;
     int entityRoomId = -1;
     private boolean dungeonMinibossReady;
     private final WarpMotion warpMotion;
-    private int entityRoomStatus;
+    int entityRoomStatus;
     // These latches represent the HRAM values read by
     // DroppableRevealOrReturnIfNeeded's tree-shell branch. RoomSession feeds
     // them from Link's live Pegasus-Boots collision record before dispatch.
@@ -9537,217 +9538,19 @@ public final class RoomEntityRuntime {
 
     private void startInstrumentPickup(int slot) { rewards.startInstrumentPickup(slot); }
 
-    private void advanceKidnapWarningKid(RoomEntity entity, int frameCounter,
-                                         int linkEntityX, int linkEntityY) {
-        int slot = entity.slot();
-        int yDistance = signedByte((linkEntityY - entity.y()) & 0xFF);
-        int facingVariant = ((yDistance < 0 ? 0 : 2) ^ 2)
-            + ((frameCounter >>> 3) & 0x01);
-        slots[slot] = withVariant(entity, facingVariant);
-        switch (kidKidnapState[slot]) {
-            case 0 -> {
-                kidKidnapDelay[slot] = 0x30;
-                pendingMusicTrack = 0x0E;
-                kidKidnapState[slot] = 1;
-            }
-            case 1 -> {
-                if (yDistance >= -0x20 && yDistance < 0x20
-                    && transitionSequenceCounter == 0x04) {
-                    if (entity.type() == ENTITY_KID_71) {
-                        pendingDialogRequests.add(new DialogRequest(2, 0x20));
-                    }
-                    kidKidnapState[slot] = 2;
-                } else if (kidKidnapDelay[slot] > 0) {
-                    kidKidnapDelay[slot]--;
-                } else {
-                    EnemyRecoilMotion.Vector vector = EnemyRecoilMotion.vectorTowardsLink(
-                        entity.x(), entity.y(), entity.z(), linkEntityX, linkEntityY, 0x08);
-                    slots[slot] = withPositionAndVariant(entity,
-                        addFallingSpeedToPosition(entity.x(), vector.x() & 0xFF,
-                            kidSpeedXAccumulator, slot),
-                        addFallingSpeedToPosition(entity.y(), vector.y() & 0xFF,
-                            kidSpeedYAccumulator, slot),
-                        facingVariant);
-                    pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
-                }
-            }
-            default -> {
-                int xDistance = Math.abs(signedByte((linkEntityX - entity.x()) & 0xFF));
-                if (actionButtonsHeld && !dialogActive
-                    && xDistance < 0x18 && Math.abs(yDistance) < 0x18) {
-                    pendingDialogRequests.add(new DialogRequest(2, 0x20));
-                }
-            }
-        }
-    }
+    private void advanceKidnapWarningKid(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY) { story.advanceKidnapWarningKid(entity, frameCounter, linkEntityX, linkEntityY); }
 
-    private void advanceMadamMeowMeow(RoomEntity entity, int frameCounter,
-                                      int linkEntityX, int linkEntityY,
-                                      boolean linkAirborne) {
-        int slot = entity.slot();
-        if (enemyTransitionCountdown[slot] == 1) {
-            enemyTransitionCountdown[slot] = 0;
-            pendingMadamMeowMeowFullHealRequests.add(
-                new MadamMeowMeowFullHealRequest(slot));
-        }
-        int xDistance = signedByte((linkEntityX - entity.x()) & 0xFF);
-        int yDistance = signedByte((linkEntityY - entity.y()) & 0xFF);
-        int direction = Math.abs(xDistance) >= Math.abs(yDistance)
-            ? (xDistance < 0 ? 1 : 0) : (yDistance < 0 ? 2 : 3);
-        int variant = direction * 2 + ((frameCounter >>> 4) & 0x01);
-        slots[entity.slot()] = withVariant(entity, variant);
-        boolean linkFacingMadam = (lastRomLinkDirection ^ 0x01) == direction;
-        boolean interactionWindow = ((yDistance + 0x14) & 0xFF) < 0x28
-            && ((xDistance + 0x10) & 0xFF) < 0x20;
-        if (actionButtonAHeld && interactionWindow && linkFacingMadam
-            && !dialogActive && !inventoryAppearing && !linkAirborne
-            && dialogCooldown == 0 && windowY == 0x80) {
-            if ((instrument2Flags & 0x02) != 0 && bowWowState == 0x01) {
-                bowWowState = 0;
-                enemyTransitionCountdown[slot] = 0x10;
-                pendingDialogRequests.add(new DialogRequest(1, 0x2F));
-                return;
-            }
-            int dialogLowId = switch (bowWowState) {
-                case 0 -> 0x30;
-                case 1 -> 0x32;
-                default -> 0x31;
-            };
-            pendingDialogRequests.add(new DialogRequest(1, dialogLowId));
-        }
-    }
+    private void advanceMadamMeowMeow(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne) { story.advanceMadamMeowMeow(entity, frameCounter, linkEntityX, linkEntityY, linkAirborne); }
 
-    private void advanceOwlStatue(RoomEntity entity, int linkEntityX, int linkEntityY,
-                                   int linkZ, int linkMotionState, boolean linkAirborne) {
-        // The shipped handler pushes before ReturnIfNonInteractive_18.
-        // CheckLinkCollisionWithEnemy uses the already incremented visual Y;
-        // translating the Link probe keeps the statue's world position unchanged.
-        if (linkZ == 0 && linkMotionState < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE
-            && RoomEntityCombatRules.overlapsLink(entity, linkEntityX, linkEntityY - 1)) {
-            requestLinkPush(entity, EntityLinkCollisionRules.STANDARD_PUSH);
-        }
-        if (!gameplayWorld || transitionSequenceCounter != 0x04
-            || dialogActive || inventoryAppearing || roomTransitionActive
-            || witchGotItemPresentationActive() || owlStatueDialogId < 0) {
-            return;
-        }
-        int dx = signedByte((linkEntityX - entity.x()) & 0xFF);
-        int dy = signedByte((linkEntityY - entity.y()) & 0xFF);
-        if (sourceNpcInteractionAllowed(dx, dy, linkAirborne, directionToLink(dx, dy))) {
-            pendingDialogRequests.add(new DialogRequest(
-                owlStatueDialogId >>> 8, owlStatueDialogId & 0xFF));
-        }
-    }
+    private void advanceOwlStatue(RoomEntity entity, int linkEntityX, int linkEntityY, int linkZ, int linkMotionState, boolean linkAirborne) { story.advanceOwlStatue(entity, linkEntityX, linkEntityY, linkZ, linkMotionState, linkAirborne); }
 
     void setOwlStatueDialogId(int globalDialogId) {
         owlStatueDialogId = globalDialogId;
     }
 
-    private void advanceRichard(RoomEntity entity, int frameCounter,
-                                int linkEntityX, int linkEntityY,
-                                boolean linkAirborne) {
-        int slot = entity.slot();
-        if (!gameplayWorld || transitionSequenceCounter != 0x04
-            || dialogActive || inventoryAppearing || roomTransitionActive
-            || witchGotItemPresentationActive()) {
-            return;
-        }
-        if (richardState[slot] == 0 && entityGoldenLeavesCount >= 0x06) {
-            entity = withPositionAndVariant(entity, 0x58, entity.y(), entity.spriteVariant());
-            richardDirection[slot] = 3;
-        }
-        int xDistance = signedByte((linkEntityX - entity.x()) & 0xFF);
-        int yDistance = signedByte((linkEntityY - entity.y()) & 0xFF);
-        if ((frameCounter & 0x1F) == 0) {
-            richardDirection[slot] = Math.abs(xDistance) >= Math.abs(yDistance)
-                ? (xDistance < 0 ? 1 : 0) : (yDistance < 0 ? 2 : 3);
-        }
-        int[] baseVariant = {6, 4, 2, 0};
-        int variant = baseVariant[richardDirection[slot]]
-            + ((richardInertia[slot]++ >>> 4) & 0x01);
-        RoomEntity updated = withVariant(entity, variant);
-        if (richardState[slot] < 3
-            && RoomEntityCombatRules.overlapsLink(updated, linkEntityX, linkEntityY)) {
-            requestLinkPush(updated, EntityLinkCollisionRules.STANDARD_PUSH);
-        }
+    private void advanceRichard(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne) { story.advanceRichard(entity, frameCounter, linkEntityX, linkEntityY, linkAirborne); }
 
-        switch (richardState[slot]) {
-            case 0 -> {
-                if (chestSwordLevel != 0) {
-                    pendingMusicTrack = 0x40;
-                }
-                richardState[slot] = entityGoldenLeavesCount >= 0x06 ? 4 : 1;
-                if (richardState[slot] == 4) {
-                    updated = withPositionAndVariant(updated, 0x58, updated.y(), variant);
-                }
-            }
-            case 1 -> {
-                if (!sourceNpcInteractionAllowed(xDistance, yDistance, linkAirborne,
-                    directionToLink(xDistance, yDistance))) {
-                    slots[slot] = updated;
-                    return;
-                }
-                if (bowWowState != 0) {
-                    pendingDialogRequests.add(new DialogRequest(1, 0x2D));
-                } else if ((entityRoomStatus & 0x10) == 0 || entityGoldenLeavesCount == 0) {
-                    pendingDialogRequests.add(new DialogRequest(1, 0x3A));
-                    pendingRichardProgressEvents.add(new RichardProgressEvent(
-                        slot, RichardProgressEvent.Kind.START_QUEST,
-                        entityGoldenLeavesCount));
-                    entityRoomStatus |= 0x10;
-                    richardState[slot] = 2;
-                } else if (entityGoldenLeavesCount < 5) {
-                    pendingDialogRequests.add(new DialogRequest(1, 0x3F));
-                } else {
-                    pendingDialogRequests.add(new DialogRequest(1, 0x3D));
-                    entityGoldenLeavesCount = 0xFF;
-                    pendingRichardProgressEvents.add(new RichardProgressEvent(
-                        slot, RichardProgressEvent.Kind.RETURN_ALL_LEAVES, 0xFF));
-                    richardState[slot] = 3;
-                    enemyTransitionCountdown[slot] = 0x20;
-                }
-            }
-            case 2 -> {
-                if (dialogActive || inventoryAppearing) {
-                    slots[slot] = updated;
-                    return;
-                }
-                pendingDialogRequests.add(new DialogRequest(
-                    1, dialogAskSelectionIndex == 0 ? 0x3B : 0x3C));
-                richardState[slot] = 1;
-            }
-            case 3 -> {
-                if (enemyTransitionCountdown[slot] == 0) {
-                    richardState[slot] = 4;
-                }
-                int x = addFallingSpeedToPosition(
-                    updated.x(), 0xF8, richardXAccumulator, slot);
-                updated = withPositionAndVariant(updated, x, updated.y(), variant);
-            }
-            case 4 -> {
-                if (sourceNpcInteractionAllowed(xDistance, yDistance, linkAirborne,
-                    directionToLink(xDistance, yDistance))) {
-                    int dialog = entityGoldenLeavesCount == 0x06 ? 0x3E : 0x3D;
-                    pendingDialogRequests.add(new DialogRequest(1, dialog));
-                }
-                if (((linkEntityX - 0x78 + 0x02) & 0xFF) < 0x04
-                    && ((linkEntityY - 0x20 + 0x05) & 0xFF) < 0x0A) {
-                    pendingDungeonWarpRequests.add(new DungeonWarpRequest(
-                        slot, new WarpMotion.Destination(0x11, 0xD8, 0x88, 0x70)));
-                    pendingMusicFadeOutCountdown = 0x30;
-                    pendingEntityEvents.add(new EntityCombatEvent(
-                        slot, ENTITY_RICHARD, 0, false,
-                        EntityCombatEvent.SoundChannel.NOISE, 0x06));
-                    disableEntityWithoutPersistence(slot);
-                    return;
-                }
-            }
-            default -> throw new IllegalStateException("Invalid Richard state");
-        }
-        slots[slot] = updated;
-    }
-
-    private boolean sourceNpcInteractionAllowed(int xDistance, int yDistance,
+    boolean sourceNpcInteractionAllowed(int xDistance, int yDistance,
                                                 boolean linkAirborne,
                                                 int entityDirection) {
         return actionButtonAHeld
@@ -9840,23 +9643,9 @@ public final class RoomEntityRuntime {
 
     private void advanceInstrumentParticle(RoomEntity entity) { rewards.advanceInstrumentParticle(entity); }
 
-    private void advanceWitchGotItemPresentation(int slot) {
-        int countdown = witchGotItemCountdown[slot];
-        if (countdown == 0) {
-            return;
-        }
-        presentWitchGotItem(slot);
-        if (dialogActive) {
-            return;
-        }
-        countdown--;
-        witchGotItemCountdown[slot] = countdown;
-        if (countdown == 0x02) {
-            pendingDialogRequests.add(new DialogRequest(0, 0x99));
-        }
-    }
+    private void advanceWitchGotItemPresentation(int slot) { story.advanceWitchGotItemPresentation(slot); }
 
-    private void presentWitchGotItem(int slot) {
+    void presentWitchGotItem(int slot) {
         pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
         pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
     }
@@ -9879,159 +9668,11 @@ public final class RoomEntityRuntime {
         slots[slot] = withZ(held, linkZ & 0xFF);
     }
 
-    private void advanceOwlEvent(RoomEntity entity, int frameCounter,
-                                 int linkEntityX, int linkEntityY,
-                                 boolean handlerLinkInteractive) {
-        int slot = entity.slot();
-        switch (owlEventState[slot]) {
-            case 0 -> {
-                if (entityRoomId == ROOM_OW_BEACH_WITH_SWORD) {
-                    if (linkEntityY < 0x44 || linkEntityX < 0x40 || linkEntityX >= 0x70) {
-                        return;
-                    }
-                    owlPreviousMusicTrack[slot] = 0x1D;
-                } else if (entityRoomId == ROOM_OW_TAIL_KEY_CHEST) {
-                    if (!playerHasTailKey || owlPrivateCountdown1[slot] != 0) {
-                        return;
-                    }
-                    owlPreviousMusicTrack[slot] =
-                        owlDefaultMusicResolver.applyAsInt(entityRoomId);
-                } else if (entityRoomId == ROOM_OW_WEST_OF_TAIL_CAVE) {
-                    if (chestSwordLevel == 0 || (instrument1Flags & 0x02) == 0) {
-                        disableEntityWithoutPersistence(slot);
-                        return;
-                    }
-                    owlPreviousMusicTrack[slot] =
-                        owlDefaultMusicResolver.applyAsInt(entityRoomId);
-                    pendingMusicTrack = 0x22;
-                    owlEventState[slot] = 2;
-                    return;
-                } else if (entityRoomId == ROOM_OW_EAST_OF_MOBLIN_HIDEOUT) {
-                    if (chestSwordLevel == 0 || instrument2Flags != 0
-                        || bowWowState != 0x01 || (instrument1Flags & 0x02) == 0) {
-                        disableEntityWithoutPersistence(slot);
-                        return;
-                    }
-                    owlPreviousMusicTrack[slot] =
-                        owlDefaultMusicResolver.applyAsInt(entityRoomId);
-                    pendingMusicTrack = 0x22;
-                    owlEventState[slot] = 2;
-                    return;
-                } else {
-                    if (chestSwordLevel == 0) {
-                        disableEntityWithoutPersistence(slot);
-                        return;
-                    }
-                    if (entityRoomId != 0x80) {
-                        return;
-                    }
-                    owlPreviousMusicTrack[slot] = owlDefaultMusicResolver.applyAsInt(entityRoomId);
-                }
-                pendingMusicTrack = 0x22;
-                owlSpeedX[slot] = 0x18;
-                owlSpeedY[slot] = 0x10;
-                owlSpeedZ[slot] = 0xFC;
-                slots[slot] = withZ(entity, 0x20);
-                owlEventState[slot] = 1;
-            }
-            case 1 -> {
-                entityInteractionCountdown = 5; // OwlState1Handler, $06:693B.
-                blockLinkForOwl(slot);
-                pendingLinkFacingRequests.add(new LinkFacingRequest(slot,
-                    directionFromLinkToEntity(entity, linkEntityX, linkEntityY)));
-                if (owlBoomerangSfxCounter[slot] == 0) {
-                    pendingEntityEvents.add(new EntityCombatEvent(slot, entity.type(), 0, false,
-                        EntityCombatEvent.SoundChannel.NOISE, 0x2D));
-                    owlBoomerangSfxCounter[slot] = 0x1A;
-                } else {
-                    owlBoomerangSfxCounter[slot]--;
-                }
-                RoomEntity flying = owlPresentation(entity, frameCounter);
-                int x = addFallingSpeedToPosition(
-                    flying.x(), owlSpeedX[slot], owlXAccumulator, slot);
-                int y = addFallingSpeedToPosition(
-                    flying.y(), owlSpeedY[slot], owlYAccumulator, slot);
-                if (flying.z() == 0) {
-                    owlEventState[slot] = 2;
-                    slots[slot] = withPositionAndVariant(flying, x, y, 0);
-                    return;
-                }
-                int z = addFallingSpeedToPosition(
-                    flying.z(), owlSpeedZ[slot], owlZAccumulator, slot);
-                if ((frameCounter & 0x03) == 0) {
-                    owlSpeedX[slot] = approachSignedByteZero(owlSpeedX[slot]);
-                    owlSpeedY[slot] = approachSignedByteZero(owlSpeedY[slot]);
-                }
-                if (signedByte(z) <= 0) z = 0;
-                slots[slot] = withZ(withPositionAndVariant(flying, x, y, 0), z);
-            }
-            case 2 -> {
-                if (!handlerLinkInteractive || transitionSequenceCounter != 0x04) {
-                    return;
-                }
-                if (RoomEntityCombatRules.overlapsLink(entity, linkEntityX, linkEntityY)) {
-                    requestLinkPush(entity, EntityLinkCollisionRules.STANDARD_PUSH);
-                }
-                slots[slot] = owlPresentation(entity, frameCounter);
-                int globalDialogId = owlDialogResolver.applyAsInt(entityRoomId);
-                pendingDialogRequests.add(new DialogRequest(
-                    (globalDialogId >>> 8) & 0xFF, globalDialogId & 0xFF));
-                enemyTransitionCountdown[slot] = 0x10;
-                owlEventState[slot] = 3;
-            }
-            case 3 -> {
-                if (!handlerLinkInteractive) {
-                    return;
-                }
-                blockLinkForOwl(slot);
-                slots[slot] = owlPresentation(entity, frameCounter);
-                if (dialogActive) {
-                    if (enemyTransitionCountdown[slot] > 0) {
-                        enemyTransitionCountdown[slot]++;
-                    }
-                    return;
-                }
-                if (enemyTransitionCountdown[slot] == 0) {
-                    if (!owlCompletionEmitted[slot]) {
-                        pendingOwlEventCompletions.add(new OwlEventCompletion(slot));
-                        owlCompletionEmitted[slot] = true;
-                    }
-                    owlSpeedX[slot] = linkEntityX < entity.x() ? 0x20 : 0xE0;
-                    owlSpeedY[slot] = linkEntityY < entity.y() ? 0x20 : 0xE0;
-                    owlSpeedZ[slot] = 0x04;
-                    owlEventState[slot] = 4;
-                }
-            }
-            default -> {
-                if (handlerLinkInteractive) {
-                    advanceDepartingOwl(entity, slot, frameCounter);
-                }
-            }
-        }
-    }
+    private void advanceOwlEvent(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY, boolean handlerLinkInteractive) { story.advanceOwlEvent(entity, frameCounter, linkEntityX, linkEntityY, handlerLinkInteractive); }
 
-    private void advanceDepartingOwl(RoomEntity entity, int slot, int frameCounter) {
-        blockLinkForOwl(slot);
-        RoomEntity flying = owlPresentation(entity, frameCounter);
-        int x = addFallingSpeedToPosition(
-            flying.x(), owlSpeedX[slot], owlXAccumulator, slot);
-        int y = addFallingSpeedToPosition(
-            flying.y(), owlSpeedY[slot], owlYAccumulator, slot);
-        int z = addFallingSpeedToPosition(
-            flying.z(), owlSpeedZ[slot], owlZAccumulator, slot);
-        slots[slot] = withZ(withPositionAndVariant(flying, x, y, 0), z);
-        if ((frameCounter & 0x07) == 0) {
-            pendingEntityEvents.add(new EntityCombatEvent(
-                slot, entity.type(), 0, false,
-                EntityCombatEvent.SoundChannel.NOISE, 0x05));
-        }
-        if (x < 0x08 || x > 0x98 || y < 0x10 || y > 0x88 || z >= 0x40) {
-            pendingMusicTrack = enemyDropActivePowerUp ? 0x49 : owlPreviousMusicTrack[slot];
-            disableEntityWithoutPersistence(slot);
-        }
-    }
+    private void advanceDepartingOwl(RoomEntity entity, int slot, int frameCounter) { story.advanceDepartingOwl(entity, slot, frameCounter); }
 
-    private RoomEntity owlPresentation(RoomEntity entity, int frameCounter) {
+    RoomEntity owlPresentation(RoomEntity entity, int frameCounter) {
         if (spriteHandlers == null) {
             return entity;
         }
@@ -10057,7 +9698,7 @@ public final class RoomEntityRuntime {
             "Owl default music resolver");
     }
 
-    private void blockLinkForOwl(int slot) {
+    void blockLinkForOwl(int slot) {
         pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
     }
 
@@ -13528,7 +13169,7 @@ public final class RoomEntityRuntime {
         requestLinkPush(entity, EntityLinkCollisionRules.STANDARD_PUSH);
     }
 
-    private void requestLinkPush(RoomEntity entity,
+    void requestLinkPush(RoomEntity entity,
                                  EntityLinkCollisionRules.LinkPushPolicy policy) {
         if (entity == null || policy == null || !policy.restoreFinalPosition()) {
             return;
