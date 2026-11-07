@@ -20,10 +20,18 @@ public final class DroppableRupeeRenderLayer implements HardwareRenderLayer {
                 -scrollController.screenShakeHorizontal());
         }
     }
-    @Override public boolean supportsHardware() {
-        return scrollController.isActive() || droppableRupeeSystem.activeCount() == 0;
-    }
     @Override public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
-        if (!supportsHardware()) throw new IllegalStateException("Rupee palette API not exposed");
+        if (scrollController.isActive()) return;
+        int tile = droppableRupeeSystem.spriteTileIndex();
+        int[] palette = droppableRupeeSystem.spritePalette();
+        var slots = droppableRupeeSystem.activeSlots();
+        for (int i = slots.size() - 1; i >= 0; i--) {
+            var slot = slots.get(i);
+            if (!slot.visible()) continue;
+            int x = slot.worldX() - 4 - scrollController.screenShakeHorizontal();
+            int y = slot.worldY() - (slot.posZSubpixels() >> 4) - 16;
+            frame.append(gpu.getTile(tile), x, y, false, false, palette, false);
+            frame.append(gpu.getTile(tile + 1), x, y + 8, false, false, palette, false);
+        }
     }
 }
