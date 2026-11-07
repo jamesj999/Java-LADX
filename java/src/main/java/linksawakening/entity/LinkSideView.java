@@ -68,7 +68,7 @@ final class LinkSideView {
         int oldX = link.linkMotion.subX, oldY = link.linkMotion.subY;
         moveSideViewAndCollide(sideViewSpeedX, sideViewSpeedY, mask);
         int centerPhysics = link.collision == null ? 0
-            : link.collision.objectPhysicsFlagAtPoint(link.romEntityX(), link.romEntityY() - 5);
+            : link.collision.objectPhysicsFlagAtPoint(link.linkMotion.romEntityX(), link.linkMotion.romEntityY() - 5);
         if (!recoiling) {
             if (sideViewModifier == 1 && centerPhysics != 0xB1) sideViewModifier = 0;
             else if (sideViewModifier == 0 && centerPhysics == 0xB1 && (mask & 12) != 0)
@@ -109,9 +109,9 @@ final class LinkSideView {
         link.linkMotion.subX += speedX;
         link.linkMotion.subY += speedY;
         sideViewGrounded = standingOnSideViewEntity;
-        if (link.collision == null || link.romEntityX() < 4 || link.romEntityX() >= 156
-            || link.romEntityY() < 12 || link.romEntityY() >= 128) return;
-        int x = link.romEntityX(), y = link.romEntityY();
+        if (link.collision == null || link.linkMotion.romEntityX() < 4 || link.linkMotion.romEntityX() >= 156
+            || link.linkMotion.romEntityY() < 12 || link.linkMotion.romEntityY() >= 128) return;
+        int x = link.linkMotion.romEntityX(), y = link.linkMotion.romEntityY();
         if (speedX != 0 && (sideViewSolidAt(x + (speedX > 0 ? 3 : -3), y - 8)
             || link.collision.objectIdAtPoint(x + (speedX > 0 ? 3 : -3), y - 8) == 0xFF)) {
             link.linkMotion.subX = oldX;

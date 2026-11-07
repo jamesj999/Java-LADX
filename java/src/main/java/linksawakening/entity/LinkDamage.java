@@ -27,8 +27,8 @@ final class LinkDamage {
         // CheckPositionForMapTransition restores the previous position
         // at a normal room edge, then $02:6D94 rejects active recoil.
         if (normalRecoilRoomBoundaries && collisionIgnoreFramesRemaining > 0
-            && (link.romEntityX() < 0x04 || link.romEntityX() >= 0x9C
-                || link.romEntityY() < 0x0C || link.romEntityY() >= 0x84)) {
+            && (link.linkMotion.romEntityX() < 0x04 || link.linkMotion.romEntityX() >= 0x9C
+                || link.linkMotion.romEntityY() < 0x0C || link.linkMotion.romEntityY() >= 0x84)) {
             link.linkMotion.subX = beforeRecoilX;
             link.linkMotion.subY = beforeRecoilY;
             collisionIgnoreFramesRemaining = 0;

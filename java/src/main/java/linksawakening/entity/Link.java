@@ -30,6 +30,8 @@ import java.util.function.BooleanSupplier;
  */
 public final class Link implements RocsFeather.JumpTarget {
 
+    final LinkMotion linkMotion = new LinkMotion(this);
+
     final LinkAirborne linkAirborne = new LinkAirborne(this);
 
     final LinkSwimming linkSwimming = new LinkSwimming(this);
@@ -39,8 +41,6 @@ public final class Link implements RocsFeather.JumpTarget {
     final LinkSideView linkSideView = new LinkSideView(this);
 
     final LinkDamage linkDamage = new LinkDamage(this);
-
-    final LinkMotion linkMotion = new LinkMotion(this);
 
     public static final int DIRECTION_DOWN = 0;
     public static final int DIRECTION_UP = 1;
@@ -115,7 +115,6 @@ public final class Link implements RocsFeather.JumpTarget {
     static final int PEGASUS_BOOTS_COLLISION_SHAKE = 0x20;
     static final int PEGASUS_BOOTS_COLLISION_VELOCITY_Z = 0x18;
 
-
     final InputState inputState;
     final InputConfig inputConfig;
     final RomTables romTables;
@@ -163,7 +162,6 @@ public final class Link implements RocsFeather.JumpTarget {
 
     /** Warp entry sets hLinkPhysicsModifier=1 at $00:18F0. */
 
-
     boolean debugNoClip;
     int romAnimationStateOverride = -1;
     int swordAcquisitionBaseRomDirection = -1;
@@ -193,15 +191,6 @@ public final class Link implements RocsFeather.JumpTarget {
     private int carryingLiftedObjectState;
     private int carryingLiftedObjectRomDirection = 3;
     boolean roosterCarryActive;
-    int lastSafeSubX;
-    int lastSafeSubY;
-    boolean hasLastSafePosition;
-    private int romFinalSubX;
-    private int romFinalSubY;
-    private boolean hasRomFinalPosition;
-    int roomEntrySubX;
-    int roomEntrySubY;
-    boolean hasRoomEntryPosition;
     final GameplaySoundSink soundSink;
     private final Tile[] composedTiles = new Tile[4];
 
@@ -250,11 +239,6 @@ public final class Link implements RocsFeather.JumpTarget {
 
     public void setSideScrolling(boolean enabled) {
         linkSideView.setSideScrolling(enabled);
-    }
-
-    public void setPixelPosition(int pixelX, int pixelY) {
-        linkMotion.subX = pixelX << SUB_PIXEL_SHIFT;
-        linkMotion.subY = pixelY << SUB_PIXEL_SHIFT;
     }
 
     /** Enables the development movement mode; normal gameplay leaves this off. */
@@ -319,12 +303,6 @@ public final class Link implements RocsFeather.JumpTarget {
         walkFrame = 0;
     }
 
-    public void setRoomEntryPixelPosition(int pixelX, int pixelY) {
-        clearSideViewPlatformState();
-        setPixelPosition(pixelX, pixelY);
-        markRoomEntryPosition();
-    }
-
     /** ApplyRoomTransition's completion path ($02:793D-$7977). */
     public void finishRoomScroll(boolean downward) {
         linkMotion.lastRomSpeedX = 0;
@@ -335,8 +313,8 @@ public final class Link implements RocsFeather.JumpTarget {
         }
         // Run the ordinary downward collision handler, including its ledge
         // half-tile filters, before applying the source's fallback.
-        int probeX = pixelX();
-        int probeY = pixelY();
+        int probeX = linkMotion.pixelX();
+        int probeY = linkMotion.pixelY();
         linkMotion.lastRomSpeedY = 0x01;
         boolean blocked = linkMotion.leadingEdgeBlocked(probeX, probeY, DIRECTION_DOWN);
         int object = collision.objectIdAtPoint(
@@ -347,52 +325,13 @@ public final class Link implements RocsFeather.JumpTarget {
             && (object == 0xE1 || blocked)) {
             // func_002_6EAD aligns X and enters LINK_MOTION_UNSTUCKING.
             // This transition fallback does not play the ledge jingle.
-            linkMotion.subX = (romEntityX() & 0xF0) << SUB_PIXEL_SHIFT;
+            linkMotion.subX = (linkMotion.romEntityX() & 0xF0) << SUB_PIXEL_SHIFT;
             linkMotion.subY -= 8 << SUB_PIXEL_SHIFT;
             linkStateMachine.motionState = 0x02;
             linkStateMachine.physicsModifier = 0;
             linkAirborne.overworldLedgeFallActive = true;
             linkMotion.beginOverworldLedgeUnstuckingMotion();
         }
-    }
-
-    public void markRoomEntryPosition() {
-        roomEntrySubX = linkMotion.subX;
-        roomEntrySubY = linkMotion.subY;
-        hasRoomEntryPosition = true;
-    }
-
-    /** Returns the Java top-left X coordinate recorded for the current room entry. */
-    public int roomEntryPixelX() {
-        return hasRoomEntryPosition ? roomEntrySubX >> SUB_PIXEL_SHIFT : pixelX();
-    }
-
-    /** Returns the Java top-left Y coordinate recorded for the current room entry. */
-    public int roomEntryPixelY() {
-        return hasRoomEntryPosition ? roomEntrySubY >> SUB_PIXEL_SHIFT : pixelY();
-    }
-
-    /**
-     * Returns the source {@code hLinkPositionX} value for the recorded entry.
-     * The Game Boy stores Link's OAM origin, which is eight pixels to the right
-     * of this host model's top-left sprite coordinate.
-     */
-    public int roomEntryRomPositionX() {
-        return roomEntryPixelX() + 0x08;
-    }
-
-    /**
-     * Returns the source {@code hLinkPositionY} value for the recorded entry.
-     * The Game Boy stores the lower OAM origin, sixteen pixels below this host
-     * model's top-left sprite coordinate.
-     */
-    public int roomEntryRomPositionY() {
-        return roomEntryPixelY() + 0x10;
-    }
-
-    /** Applies a source warp/save position (OAM origin) to the host model. */
-    public void setRoomEntryRomPosition(int romPositionX, int romPositionY) {
-        setRoomEntryPixelPosition(romPositionX - 0x08, romPositionY - 0x10);
     }
 
     /** Manual warp exits bypass the ordinary room-edge recoil gate. */
@@ -409,47 +348,6 @@ public final class Link implements RocsFeather.JumpTarget {
      * reading movement input. Background collisions still run ($02:44C2).
      */
 
-
-    /**
-     * Applies the next-frame hLinkSpeedX/hLinkSpeedY values written by an
-     * entity handler such as the mirror-shield laser reflection path.
-     *
-     * <p>The ROM stores these as signed bytes in HRAM.  They are consumed by
-     * the following Link motion update, after AnimateEntities has finished
-     * writing them for the current frame.</p>
-     */
-    public void applyRomSpeed(int speedX, int speedY) {
-        if ((speedX & ~0xFF) != 0 || (speedY & ~0xFF) != 0) {
-            throw new IllegalArgumentException("Link response speeds must be unsigned bytes");
-        }
-        linkMotion.forcedSpeedX = (byte) speedX;
-        linkMotion.forcedSpeedY = (byte) speedY;
-        linkMotion.forcedSpeedXOnly = false;
-        linkMotion.forcedSpeedPending = true;
-    }
-
-    /** Applies only the hLinkSpeedX write emitted by a side-view pot push. */
-    public void applyRomSpeedX(int speedX) {
-        validateRomByte(speedX, "Link X speed");
-        linkMotion.forcedSpeedX = (byte) speedX;
-        // The pot handler leaves hLinkSpeedY untouched; Link computes its
-        // ordinary Y input on the next motion update.
-        linkMotion.forcedSpeedXOnly = true;
-        linkMotion.forcedSpeedPending = true;
-    }
-
-    /**
-     * Applies the speed bytes written by a handler that immediately calls
-     * {@code UpdateFinalLinkPosition}, bypassing input and collision probes.
-     */
-    public void applyRomFinalPosition(int speedX, int speedY) {
-        if ((speedX & ~0xFF) != 0 || (speedY & ~0xFF) != 0) {
-            throw new IllegalArgumentException("Link final-position speeds must be unsigned bytes");
-        }
-        linkMotion.subY += (byte) speedY;
-        linkMotion.subX += (byte) speedX;
-    }
-
     /** Applies the side-view platform handler's Link position and speed writes. */
     public void applySideViewPlatformContact(int horizontalDelta, int romPositionY,
                                               int romSpeedY, boolean standing) {
@@ -459,7 +357,7 @@ public final class Link implements RocsFeather.JumpTarget {
         validateRomByte(romPositionY, "Side-view platform Link Y");
         validateRomByte(romSpeedY, "Side-view platform Link Y speed");
 
-        int currentRomX = romEntityX() & 0xFF;
+        int currentRomX = linkMotion.romEntityX() & 0xFF;
         int nextRomX = (currentRomX + horizontalDelta) & 0xFF;
         int nextTopLeftX = (nextRomX - 0x08) & 0xFF;
         int nextTopLeftY = (romPositionY - 0x10) & 0xFF;
@@ -495,29 +393,6 @@ public final class Link implements RocsFeather.JumpTarget {
         linkSideView.standingOnSideViewEntity = false;
     }
 
-    /** Captures hLinkPositionX/Y into the ROM's per-frame final-position shadow. */
-    public void captureRomFinalPosition() {
-        romFinalSubX = linkMotion.subX;
-        romFinalSubY = linkMotion.subY;
-        hasRomFinalPosition = true;
-    }
-
-    /** Copies the captured ROM final position back over an entity push. */
-    public void restoreRomFinalPosition() {
-        if (!hasRomFinalPosition) {
-            return;
-        }
-        linkMotion.subX = romFinalSubX;
-        linkMotion.subY = romFinalSubY;
-    }
-
-    /** Copies only hLinkFinalPositionX back over a side-view pot push. */
-    public void restoreRomFinalPositionX() {
-        if (hasRomFinalPosition) {
-            linkMotion.subX = romFinalSubX;
-        }
-    }
-
     /** Applies state-0 pot's top snap and hLinkSpeedY/wC147 writes. */
     public void applySideViewPotContact(int romPositionY, int romSpeedY) {
         validateRomByte(romPositionY, "Side-view pot Link Y");
@@ -527,17 +402,6 @@ public final class Link implements RocsFeather.JumpTarget {
         linkSideView.standingOnSideViewEntity = true;
         linkMotion.lastRomSpeedY = romSpeedY;
         linkSideView.sideViewPlatformVerticalSpeedPending = romSpeedY;
-    }
-
-    /** Mirrors ClearLinkPositionIncrement for handlers that clear HRAM speed bytes. */
-    public void clearRomPositionIncrement() {
-        linkMotion.forcedSpeedX = 0;
-        linkMotion.forcedSpeedY = 0;
-        linkMotion.forcedSpeedPending = false;
-        linkMotion.forcedSpeedXOnly = false;
-        linkSideView.sideViewPlatformVerticalSpeedPending = -1;
-        linkMotion.lastRomSpeedX = 0;
-        linkMotion.lastRomSpeedY = 0;
     }
 
     /** Mirrors the transient wIsLinkPushing value consumed by item handlers. */
@@ -678,30 +542,6 @@ public final class Link implements RocsFeather.JumpTarget {
 
     public int marinWakeUpBedVariant() {
         return marinWakeUpBedVariant;
-    }
-
-    public int pixelX() {
-        return linkMotion.subX >> SUB_PIXEL_SHIFT;
-    }
-
-    public int pixelY() {
-        return linkMotion.subY >> SUB_PIXEL_SHIFT;
-    }
-
-    /** ROM hLinkPositionX: the first 8x16 OAM column's X origin. */
-    public int romEntityX() {
-        return pixelX() + 0x08;
-    }
-
-    /** ROM hLinkFinalPositionX captured before the current Link update. */
-    public int romFinalPositionX() {
-        return hasRomFinalPosition ? (romFinalSubX >> SUB_PIXEL_SHIFT) + 0x08
-            : romEntityX();
-    }
-
-    /** ROM hLinkPositionY before the separate vertical Z offset is applied. */
-    public int romEntityY() {
-        return pixelY() + 0x10;
     }
 
     /** ROM hLinkPositionZ used by follower position history and OAM Z state. */
@@ -867,11 +707,11 @@ public final class Link implements RocsFeather.JumpTarget {
      * running after update must not re-probe Link's restored, passable position.
      */
     public int romCollisionProbePixelX() {
-        return hasFacingCollision() ? linkMotion.collisionProbePixelX[direction] : pixelX();
+        return hasFacingCollision() ? linkMotion.collisionProbePixelX[direction] : linkMotion.pixelX();
     }
 
     public int romCollisionProbePixelY() {
-        return hasFacingCollision() ? linkMotion.collisionProbePixelY[direction] : pixelY();
+        return hasFacingCollision() ? linkMotion.collisionProbePixelY[direction] : linkMotion.pixelY();
     }
 
     private boolean hasFacingCollision() {
@@ -969,7 +809,7 @@ public final class Link implements RocsFeather.JumpTarget {
 
     /** ROM wC145: the Y origin used by sword collision while linkAirborne.airborne. */
     public int romSwordCollisionY() {
-        return romEntityY() - zPixels();
+        return linkMotion.romEntityY() - zPixels();
     }
 
     public int direction() {
@@ -1027,7 +867,7 @@ public final class Link implements RocsFeather.JumpTarget {
         linkStateMachine.physicsModifier = 0;
         roosterCarryActive = true;
         direction = javaDirectionForRomDirection(romDirection);
-        applyRomSpeed(speedX, speedY);
+        linkMotion.applyRomSpeed(speedX, speedY);
     }
 
     /** Applies Hinox's direct hLinkPosition/throw writes for the next motion frame. */
@@ -1050,7 +890,7 @@ public final class Link implements RocsFeather.JumpTarget {
         validateRomByte(speedY, "Hinox Link Y speed");
         validateRomByte(velocityZ, "Hinox Link Z velocity");
         validateRomByte(airborneState, "Hinox Link linkAirborne.airborne state");
-        setPixelPosition((romPositionX - 0x08) & 0xFF,
+        linkMotion.setPixelPosition((romPositionX - 0x08) & 0xFF,
             (romPositionY - 0x10) & 0xFF);
         linkStateMachine.romInteractiveMotionBlocked = motionBlocked;
         if (applyHeldLinkPose) {
@@ -1063,7 +903,7 @@ public final class Link implements RocsFeather.JumpTarget {
         linkAirborne.zVelocity = velocityZ & 0xFF;
         linkAirborne.airborne = airborneState != 0;
         if (speedX != 0 || speedY != 0) {
-            applyRomSpeed(speedX, speedY);
+            linkMotion.applyRomSpeed(speedX, speedY);
         }
     }
 
@@ -1073,7 +913,7 @@ public final class Link implements RocsFeather.JumpTarget {
         validateRomByte(romPositionX, "Warp Link X");
         validateRomByte(visualRomPositionY, "Warp Link visual Y");
         validateRomByte(immunityCountdown, "Warp Link immunity");
-        setPixelPosition((romPositionX - 0x08) & 0xFF,
+        linkMotion.setPixelPosition((romPositionX - 0x08) & 0xFF,
             (visualRomPositionY - 0x10) & 0xFF);
         linkStateMachine.romInteractiveMotionBlocked = true;
         romAnimationStateOverride = -1;
@@ -1227,36 +1067,22 @@ public final class Link implements RocsFeather.JumpTarget {
         }
     }
 
-
-
-
-
-
-
     public boolean consumeRevolvingDoorTransition() {
         boolean pending = linkStateMachine.revolvingDoorTransitionPending;
         linkStateMachine.revolvingDoorTransitionPending = false;
         return pending;
     }
 
-
-
     /** Mirrors CheckItemsToUse's two Pegasus-Boots slot branches and UsePegasusBoots. */
 
-
-
-
-
-
     /** Mirrors bank2.asm:74AD's dash collision response and func_020_49BA. */
-
 
     static int signedByte(int value) {
         int normalized = value & 0xFF;
         return normalized < 0x80 ? normalized : normalized - 0x100;
     }
 
-    private static void validateRomByte(int value, String label) {
+    static void validateRomByte(int value, String label) {
         if ((value & ~0xFF) != 0) {
             throw new IllegalArgumentException(label + " must be an unsigned byte: " + value);
         }
@@ -1317,17 +1143,13 @@ public final class Link implements RocsFeather.JumpTarget {
 
     boolean shouldApplyGroundMotion() {
         groundMotionCounter++;
-        if (collision == null || !collision.linkOnSlowGround(pixelX(), pixelY())) {
+        if (collision == null || !collision.linkOnSlowGround(linkMotion.pixelX(), linkMotion.pixelY())) {
             return true;
         }
         // GROUND_STATUS_SLOW ($03) uses the same frame-counter mask in the
         // original: skip the final position update when frameCounter & 3 == 0.
         return (groundMotionCounter & 0x03) != 0;
     }
-
-
-
-
 
     boolean buttonWasPressed(int key) {
         return inputState != null && key >= 0 && inputState.wasPressed(key);
@@ -1337,18 +1159,7 @@ public final class Link implements RocsFeather.JumpTarget {
         return playerState != null && playerState.hasFlippers();
     }
 
-
-
-
-
     /** $02:68B7–6C74: side-view speeds and single-point collision probes. */
-
-
-
-
-
-
-
 
     /**
      * Point-based collision check on the leading edge of movement,
@@ -1360,45 +1171,7 @@ public final class Link implements RocsFeather.JumpTarget {
      * above even while his feet still overlap the tree cells below.
      */
 
-
-
-
-
-
-
-
-
-
     /** Ports LinkMotionUnstuckingHandler's initial downward search. */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     int buildJoypadMask() {
         int mask = 0;
@@ -1440,8 +1213,8 @@ public final class Link implements RocsFeather.JumpTarget {
         boolean rightFlipX = spriteSheet.rightHalfFlipX(animationState);
         boolean rightFlipY = spriteSheet.rightHalfFlipY(animationState);
 
-        int originX = pixelX() + offsetX;
-        int renderY = pixelY() - (bedJumpRenderZ >= 0 ? bedJumpRenderZ : zPixels());
+        int originX = linkMotion.pixelX() + offsetX;
+        int renderY = linkMotion.pixelY() - (bedJumpRenderZ >= 0 ? bedJumpRenderZ : zPixels());
         int originY = renderY + offsetY;
         int[] palette = playerState != null
             && (playerState.invincibilityCounter() & 0x04) != 0
@@ -1485,11 +1258,11 @@ public final class Link implements RocsFeather.JumpTarget {
         }
         EquipmentItem a = itemRegistry.lookup(playerState.itemA());
         if (a != null) {
-            a.render(displayBuffer, pixelX(), pixelY() - zPixels(), direction, offsetX, offsetY);
+            a.render(displayBuffer, linkMotion.pixelX(), linkMotion.pixelY() - zPixels(), direction, offsetX, offsetY);
         }
         EquipmentItem b = itemRegistry.lookup(playerState.itemB());
         if (b != null && b != a) {
-            b.render(displayBuffer, pixelX(), pixelY() - zPixels(), direction, offsetX, offsetY);
+            b.render(displayBuffer, linkMotion.pixelX(), linkMotion.pixelY() - zPixels(), direction, offsetX, offsetY);
         }
         if (swordAcquisitionAnimationState >= 0) {
             // ApplyLinkMotionState draws the sword during the pickup spin
@@ -1498,7 +1271,7 @@ public final class Link implements RocsFeather.JumpTarget {
             // save already has the sword equipped.
             EquipmentItem acquisitionSword = itemRegistry.lookup(PlayerState.INVENTORY_SWORD);
             if (acquisitionSword != null && acquisitionSword != a && acquisitionSword != b) {
-                acquisitionSword.render(displayBuffer, pixelX(), pixelY() - zPixels(),
+                acquisitionSword.render(displayBuffer, linkMotion.pixelX(), linkMotion.pixelY() - zPixels(),
                     direction, offsetX, offsetY);
             }
         }
@@ -1632,4 +1405,24 @@ public final class Link implements RocsFeather.JumpTarget {
             }
         }
     }
+    public void setPixelPosition(int pixelX, int pixelY) { linkMotion.setPixelPosition(pixelX, pixelY); }
+    public void setRoomEntryPixelPosition(int pixelX, int pixelY) { linkMotion.setRoomEntryPixelPosition(pixelX, pixelY); }
+    public void markRoomEntryPosition() { linkMotion.markRoomEntryPosition(); }
+    public int roomEntryPixelX() { return linkMotion.roomEntryPixelX(); }
+    public int roomEntryPixelY() { return linkMotion.roomEntryPixelY(); }
+    public int roomEntryRomPositionX() { return linkMotion.roomEntryRomPositionX(); }
+    public int roomEntryRomPositionY() { return linkMotion.roomEntryRomPositionY(); }
+    public void setRoomEntryRomPosition(int romPositionX, int romPositionY) { linkMotion.setRoomEntryRomPosition(romPositionX, romPositionY); }
+    public void applyRomSpeed(int speedX, int speedY) { linkMotion.applyRomSpeed(speedX, speedY); }
+    public void applyRomSpeedX(int speedX) { linkMotion.applyRomSpeedX(speedX); }
+    public void applyRomFinalPosition(int speedX, int speedY) { linkMotion.applyRomFinalPosition(speedX, speedY); }
+    public void captureRomFinalPosition() { linkMotion.captureRomFinalPosition(); }
+    public void restoreRomFinalPosition() { linkMotion.restoreRomFinalPosition(); }
+    public void restoreRomFinalPositionX() { linkMotion.restoreRomFinalPositionX(); }
+    public void clearRomPositionIncrement() { linkMotion.clearRomPositionIncrement(); }
+    public int pixelX() { return linkMotion.pixelX(); }
+    public int pixelY() { return linkMotion.pixelY(); }
+    public int romEntityX() { return linkMotion.romEntityX(); }
+    public int romFinalPositionX() { return linkMotion.romFinalPositionX(); }
+    public int romEntityY() { return linkMotion.romEntityY(); }
 }

@@ -342,8 +342,8 @@ final class LinkStateMachine {
         int romDirection = link.romDirectionForJavaDirection(link.direction);
         int[] xOffsets = {0x10, 0xF0, 0x08, 0x08};
         int[] yOffsets = {0x0C, 0x0C, 0xF0, 0x10};
-        link.pegasusBootsCollisionPosX = (link.romEntityX() + xOffsets[romDirection]) & 0xFF;
-        link.pegasusBootsCollisionPosY = (link.romEntityY() + yOffsets[romDirection]) & 0xFF;
+        link.pegasusBootsCollisionPosX = (link.linkMotion.romEntityX() + xOffsets[romDirection]) & 0xFF;
+        link.pegasusBootsCollisionPosY = (link.linkMotion.romEntityY() + yOffsets[romDirection]) & 0xFF;
         link.pegasusBootsCollisionCountdown = Link.PEGASUS_BOOTS_COLLISION_COUNTDOWN;
         link.pendingPegasusScreenShakeCountdown = Link.PEGASUS_BOOTS_COLLISION_SHAKE;
         link.pendingPegasusScreenShakePhase = (romDirection & 0x02) << 1;

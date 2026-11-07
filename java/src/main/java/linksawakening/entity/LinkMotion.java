@@ -1,10 +1,22 @@
 package linksawakening.entity;
 
+import java.util.Objects;
+import java.util.function.BooleanSupplier;
+import linksawakening.equipment.EquipmentItem;
+import linksawakening.equipment.ItemRegistry;
+import linksawakening.equipment.RocsFeather;
 import linksawakening.gameplay.GameplaySoundEvent;
+import linksawakening.gameplay.GameplaySoundSink;
+import linksawakening.gpu.Framebuffer;
+import linksawakening.gpu.Tile;
+import linksawakening.input.InputConfig;
+import linksawakening.input.InputState;
+import linksawakening.physics.OverworldCollision;
 import linksawakening.physics.PhysicsFlags;
+import linksawakening.rom.RomTables;
 import linksawakening.state.PlayerState;
+import static linksawakening.entity.Link.*;
 
-/** ROM-faithful motion collaborator for Link. */
 final class LinkMotion {
     private final Link link;
     int subX;
@@ -229,5 +241,163 @@ final class LinkMotion {
             case Link.DIRECTION_RIGHT -> Link.JOY_RIGHT;
             default -> 0;
         };
+    }
+
+    int lastSafeSubX;
+    int lastSafeSubY;
+    boolean hasLastSafePosition;
+    int romFinalSubX;
+    int romFinalSubY;
+    boolean hasRomFinalPosition;
+    int roomEntrySubX;
+    int roomEntrySubY;
+    boolean hasRoomEntryPosition;
+
+    void setPixelPosition(int pixelX, int pixelY) {
+        subX = pixelX << Link.SUB_PIXEL_SHIFT;
+        subY = pixelY << Link.SUB_PIXEL_SHIFT;
+    }
+
+    void setRoomEntryPixelPosition(int pixelX, int pixelY) {
+        link.clearSideViewPlatformState();
+        setPixelPosition(pixelX, pixelY);
+        markRoomEntryPosition();
+    }
+
+    void markRoomEntryPosition() {
+        roomEntrySubX = subX;
+        roomEntrySubY = subY;
+        hasRoomEntryPosition = true;
+    }
+
+    /** Returns the Java top-left X coordinate recorded for the current room entry. */
+    int roomEntryPixelX() {
+        return hasRoomEntryPosition ? roomEntrySubX >> Link.SUB_PIXEL_SHIFT : pixelX();
+    }
+
+    /** Returns the Java top-left Y coordinate recorded for the current room entry. */
+    int roomEntryPixelY() {
+        return hasRoomEntryPosition ? roomEntrySubY >> Link.SUB_PIXEL_SHIFT : pixelY();
+    }
+
+    /**
+     * Returns the source {@code hLinkPositionX} value for the recorded entry.
+     * The Game Boy stores Link's OAM origin, which is eight pixels to the right
+     * of this host model's top-left sprite coordinate.
+     */
+    int roomEntryRomPositionX() {
+        return roomEntryPixelX() + 0x08;
+    }
+
+    /**
+     * Returns the source {@code hLinkPositionY} value for the recorded entry.
+     * The Game Boy stores the lower OAM origin, sixteen pixels below this host
+     * model's top-left sprite coordinate.
+     */
+    int roomEntryRomPositionY() {
+        return roomEntryPixelY() + 0x10;
+    }
+
+    /** Applies a source warp/save position (OAM origin) to the host model. */
+    void setRoomEntryRomPosition(int romPositionX, int romPositionY) {
+        setRoomEntryPixelPosition(romPositionX - 0x08, romPositionY - 0x10);
+    }
+
+    /**
+     * Applies the next-frame hLinkSpeedX/hLinkSpeedY values written by an
+     * entity handler such as the mirror-shield laser reflection path.
+     *
+     * <p>The ROM stores these as signed bytes in HRAM.  They are consumed by
+     * the following Link motion update, after AnimateEntities has finished
+     * writing them for the current frame.</p>
+     */
+    void applyRomSpeed(int speedX, int speedY) {
+        if ((speedX & ~0xFF) != 0 || (speedY & ~0xFF) != 0) {
+            throw new IllegalArgumentException("Link response speeds must be unsigned bytes");
+        }
+        forcedSpeedX = (byte) speedX;
+        forcedSpeedY = (byte) speedY;
+        forcedSpeedXOnly = false;
+        forcedSpeedPending = true;
+    }
+
+    /** Applies only the hLinkSpeedX write emitted by a side-view pot push. */
+    void applyRomSpeedX(int speedX) {
+        link.validateRomByte(speedX, "Link X speed");
+        forcedSpeedX = (byte) speedX;
+        // The pot handler leaves hLinkSpeedY untouched; Link computes its
+        // ordinary Y input on the next motion link.update.
+        forcedSpeedXOnly = true;
+        forcedSpeedPending = true;
+    }
+
+    /**
+     * Applies the speed bytes written by a handler that immediately calls
+     * {@code UpdateFinalLinkPosition}, bypassing input and collision probes.
+     */
+    void applyRomFinalPosition(int speedX, int speedY) {
+        if ((speedX & ~0xFF) != 0 || (speedY & ~0xFF) != 0) {
+            throw new IllegalArgumentException("Link final-position speeds must be unsigned bytes");
+        }
+        subY += (byte) speedY;
+        subX += (byte) speedX;
+    }
+
+    /** Captures hLinkPositionX/Y into the ROM's per-frame final-position shadow. */
+    void captureRomFinalPosition() {
+        romFinalSubX = subX;
+        romFinalSubY = subY;
+        hasRomFinalPosition = true;
+    }
+
+    /** Copies the captured ROM final position back over an entity push. */
+    void restoreRomFinalPosition() {
+        if (!hasRomFinalPosition) {
+            return;
+        }
+        subX = romFinalSubX;
+        subY = romFinalSubY;
+    }
+
+    /** Copies only hLinkFinalPositionX back over a side-view pot push. */
+    void restoreRomFinalPositionX() {
+        if (hasRomFinalPosition) {
+            subX = romFinalSubX;
+        }
+    }
+
+    int pixelX() {
+        return subX >> Link.SUB_PIXEL_SHIFT;
+    }
+
+    int pixelY() {
+        return subY >> Link.SUB_PIXEL_SHIFT;
+    }
+
+    /** ROM hLinkPositionX: the first 8x16 OAM column's X origin. */
+    int romEntityX() {
+        return pixelX() + 0x08;
+    }
+
+    /** ROM hLinkPositionY before the separate vertical Z offset is applied. */
+    int romEntityY() {
+        return pixelY() + 0x10;
+    }
+
+    /** ROM hLinkFinalPositionX captured before the current Link update. */
+    int romFinalPositionX() {
+        return hasRomFinalPosition ? (romFinalSubX >> Link.SUB_PIXEL_SHIFT) + 0x08
+            : romEntityX();
+    }
+
+    /** Mirrors ClearLinkPositionIncrement for handlers that clear HRAM speed bytes. */
+    void clearRomPositionIncrement() {
+        forcedSpeedX = 0;
+        forcedSpeedY = 0;
+        forcedSpeedPending = false;
+        forcedSpeedXOnly = false;
+        link.linkSideView.sideViewPlatformVerticalSpeedPending = -1;
+        lastRomSpeedX = 0;
+        lastRomSpeedY = 0;
     }
 }

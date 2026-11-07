@@ -1,6 +1,5 @@
 package linksawakening.entity;
 
-
 /** ROM-faithful swimming collaborator for Link. */
 final class LinkSwimming {
     private final Link link;
@@ -13,7 +12,7 @@ final class LinkSwimming {
 
     boolean enterSwimmingIfNeeded() {
         if (!link.playerHasFlippers() || link.romTables == null || link.collision == null
-            || !link.collision.linkOnDeepWater(link.pixelX(), link.pixelY())) {
+            || !link.collision.linkOnDeepWater(link.linkMotion.pixelX(), link.linkMotion.pixelY())) {
             return false;
         }
 
@@ -32,7 +31,7 @@ final class LinkSwimming {
     }
 
     void updateSwimming() {
-        if (link.collision == null || !link.collision.linkOnDeepWater(link.pixelX(), link.pixelY())) {
+        if (link.collision == null || !link.collision.linkOnDeepWater(link.linkMotion.pixelX(), link.linkMotion.pixelY())) {
             leaveSwimming();
             return;
         }
@@ -93,7 +92,7 @@ final class LinkSwimming {
             link.linkMotion.tryMoveAxis(swimmingSpeedY, false);
         }
 
-        if (!link.collision.linkOnDeepWater(link.pixelX(), link.pixelY())) {
+        if (!link.collision.linkOnDeepWater(link.linkMotion.pixelX(), link.linkMotion.pixelY())) {
             leaveSwimming();
             return;
         }

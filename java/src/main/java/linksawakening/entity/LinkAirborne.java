@@ -101,12 +101,12 @@ final class LinkAirborne {
     }
 
     boolean linkOverPit() {
-        return link.collision != null && link.collision.linkOnNormalPit(link.pixelX(), link.pixelY());
+        return link.collision != null && link.collision.linkOnNormalPit(link.linkMotion.pixelX(), link.linkMotion.pixelY());
     }
 
     void refreshGroundStatus() {
         if (link.collision != null) {
-            link.collision.refreshLinkGroundInteraction(link.pixelX(), link.pixelY());
+            link.collision.refreshLinkGroundInteraction(link.linkMotion.pixelX(), link.linkMotion.pixelY());
         }
         if (linkOverPit()) {
             enterPitGroundState();
@@ -119,7 +119,7 @@ final class LinkAirborne {
     void enterPitGroundState() {
         if (groundStatus != Link.GROUND_STATUS_PIT) {
             pitSlippingCounter = 0;
-            OverworldCollision.PitCell pit = link.collision == null ? null : link.collision.normalPitUnderLink(link.pixelX(), link.pixelY());
+            OverworldCollision.PitCell pit = link.collision == null ? null : link.collision.normalPitUnderLink(link.linkMotion.pixelX(), link.linkMotion.pixelY());
             if (pit != null) {
                 pitSlipTargetTopLeftX = pit.targetTopLeftX();
                 pitSlipTargetTopLeftY = pit.targetTopLeftY();
@@ -141,8 +141,8 @@ final class LinkAirborne {
             return;
         }
 
-        int x = link.pixelX();
-        int y = link.pixelY();
+        int x = link.linkMotion.pixelX();
+        int y = link.linkMotion.pixelY();
         if (x < pitSlipTargetTopLeftX) {
             link.linkMotion.subX += 1 << Link.SUB_PIXEL_SHIFT;
         } else if (x > pitSlipTargetTopLeftX) {
@@ -154,8 +154,8 @@ final class LinkAirborne {
             link.linkMotion.subY -= 1 << Link.SUB_PIXEL_SHIFT;
         }
 
-        if (Math.abs(link.pixelX() - pitSlipTargetTopLeftX) <= 1
-            && Math.abs(link.pixelY() - pitSlipTargetTopLeftY) <= 1) {
+        if (Math.abs(link.linkMotion.pixelX() - pitSlipTargetTopLeftX) <= 1
+            && Math.abs(link.linkMotion.pixelY() - pitSlipTargetTopLeftY) <= 1) {
             startPitFall();
         }
     }
@@ -189,12 +189,12 @@ final class LinkAirborne {
         if (link.playerState != null) {
             link.linkDamage.applyPitDamage();
         }
-        if (link.hasRoomEntryPosition) {
-            link.linkMotion.subX = link.roomEntrySubX;
-            link.linkMotion.subY = link.roomEntrySubY;
-        } else if (link.hasLastSafePosition) {
-            link.linkMotion.subX = link.lastSafeSubX;
-            link.linkMotion.subY = link.lastSafeSubY;
+        if (link.linkMotion.hasRoomEntryPosition) {
+            link.linkMotion.subX = link.linkMotion.roomEntrySubX;
+            link.linkMotion.subY = link.linkMotion.roomEntrySubY;
+        } else if (link.linkMotion.hasLastSafePosition) {
+            link.linkMotion.subX = link.linkMotion.lastSafeSubX;
+            link.linkMotion.subY = link.linkMotion.lastSafeSubY;
         }
     }
 
@@ -202,8 +202,8 @@ final class LinkAirborne {
         if (airborne || fallingIntoPit || groundStatus == Link.GROUND_STATUS_PIT || linkOverPit()) {
             return;
         }
-        link.lastSafeSubX = link.linkMotion.subX;
-        link.lastSafeSubY = link.linkMotion.subY;
-        link.hasLastSafePosition = true;
+        link.linkMotion.lastSafeSubX = link.linkMotion.subX;
+        link.linkMotion.lastSafeSubY = link.linkMotion.subY;
+        link.linkMotion.hasLastSafePosition = true;
     }
 }
