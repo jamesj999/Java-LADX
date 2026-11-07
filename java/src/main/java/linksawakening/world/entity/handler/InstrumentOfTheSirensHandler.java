@@ -17,7 +17,7 @@ final class InstrumentOfTheSirensHandler {
             state -> {
               if (state.status == EntityStatus.ACTIVE
 
-                  && state.runtime.instrumentParticleKind[state.entity.slot()] == 1) {
+                  && state.rewards().instrumentParticleKind(state.entity.slot()) == 1) {
                 state.rewards().advanceInstrumentParticle(state.entity);
                 return false;
               }
@@ -33,7 +33,7 @@ final class InstrumentOfTheSirensHandler {
             state -> {
               if (state.status == EntityStatus.ACTIVE
 
-                  && state.runtime.instrumentPickupSequenceActive[state.entity.slot()]) {
+                  && state.rewards().instrumentPickupSequenceActive(state.entity.slot())) {
                 state.rewards().advanceInstrumentPickup(
                     state.entity,
                     state.frame,

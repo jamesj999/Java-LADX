@@ -1,8 +1,10 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_TARIN;
+
+
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.RoomEntityCombatRules;
@@ -21,7 +23,7 @@ import linksawakening.world.entity.event.RoomStatusPersistenceRequest;
 final class TarinHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_TARIN,
+        ENTITY_TARIN,
         EntityTickStage.PHASE_1_TARIN,
         state -> {
           if (!state.roomInspection().indoorRoom() && (state.roomInspection().entityRoomStatus() & 0x10) != 0) {
@@ -31,7 +33,7 @@ final class TarinHandler {
           return true;
         });
     for (int type = 0; type < 256; type++) {
-      if ((type == RoomEntityRuntime.ENTITY_TARIN)) {
+      if ((type == ENTITY_TARIN)) {
         registry.registerTick(
             type,
             EntityTickStage.PHASE_4_TARIN,
@@ -71,7 +73,7 @@ final class TarinHandler {
                 state.slot().setSlowTransitionCountdown(state.entity.slot(), tarinUpdate.slowTransitionCountdown());
                 state.slot().setTransitionCountdown(state.entity.slot(), tarinUpdate.transitionCountdown());
                 state.preserveTarinPresentation = true;
-                state.runtime.shouldGetLostInMysteriousWoods = tarinUpdate.shouldGetLost();
+                state.story().setShouldGetLostInMysteriousWoods(tarinUpdate.shouldGetLost());
                 if (tarinUpdate.linkMotionBlocked()) {
                   state.emit(
                       new LinkMotionBlockRequest(state.entity.slot()));

@@ -1,7 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_WITCH;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -17,7 +19,7 @@ import linksawakening.world.entity.event.WitchRewardEvent;
 final class WitchHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_WITCH,
+        ENTITY_WITCH,
         EntityTickStage.PHASE_4_WITCH,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
@@ -27,7 +29,7 @@ final class WitchHandler {
                     state.updated,
                     state.slot().transitionCountdown(state.entity.slot()),
                     new WitchMotion.Input(
-                        state.runtime.playerHasToadstool,
+                        state.story().playerHasToadstool(),
                         state.link().linkItemB(),
                         state.link().linkItemA(),
                         state.link().actionButtonAHeld(),
@@ -38,9 +40,9 @@ final class WitchHandler {
                         state.linkEntityY,
                         state.romLinkDirection,
                         state.lifecycle().transitionSequenceCounter(),
-                        state.runtime.booBuddyTriggerCount,
-                        state.runtime.bgPaletteEffectAddress,
-                        state.runtime.paletteDataFlags,
+                        state.story().booBuddyTriggerCount(),
+                        state.story().bgPaletteEffectAddress(),
+                        state.story().paletteDataFlags(),
                         state.roomInspection().defaultMusicTrack()));
             state.updated = witchUpdate.entity();
             state.slot().setTransitionCountdown(state.entity.slot(), witchUpdate.transitionCountdown());
@@ -71,11 +73,11 @@ final class WitchHandler {
               int inventorySlot = witchUpdate.clearedSlot() == WitchMotion.InventorySlot.B ? 0 : 1;
               state.emit(
                   new WitchExchangeEvent(state.entity.slot(), inventorySlot));
-              state.runtime.playerHasToadstool = false;
+              state.story().consumeToadstool();
             }
             if (witchUpdate.grantMagicPowder()) {
               state.emit(new WitchRewardEvent(state.entity.slot()));
-              state.runtime.witchGotItemCountdown[state.entity.slot()] = 0x2A;
+              state.story().startWitchGotItemCountdown(state.entity.slot());
               state.story().presentWitchGotItem(state.entity.slot());
             }
           }

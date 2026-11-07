@@ -1,9 +1,11 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_ARMOS_STATUE;
+
+
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.EnemyProjectileCollision;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityLinkCollisionRules;
@@ -14,7 +16,7 @@ import linksawakening.world.entity.motion.ArmosMotion;
 final class ArmosStatueHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_ARMOS_STATUE,
+        ENTITY_ARMOS_STATUE,
         EntityTickStage.PHASE_3_ARMOS_STATUE,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {

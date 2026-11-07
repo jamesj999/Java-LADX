@@ -385,4 +385,6 @@ public final class EntityPickupController {
         runtime.dynamicEntitySpawnedThisFrame[freeSlot] = true;
         return freeSlot;
         }
+  public boolean hasHeartPiecePickup(int slot) { return runtime.heartPiecePickup[slot] != null; }
+
 }

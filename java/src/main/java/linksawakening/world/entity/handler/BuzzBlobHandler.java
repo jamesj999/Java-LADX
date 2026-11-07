@@ -1,8 +1,10 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_BUZZ_BLOB;
+
+
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
@@ -12,7 +14,7 @@ import linksawakening.world.entity.motion.BuzzBlobMotion;
 final class BuzzBlobHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_BUZZ_BLOB,
+        ENTITY_BUZZ_BLOB,
         EntityTickStage.PHASE_4_BUZZ_BLOB,
         state -> {
           if (state.status == EntityStatus.ACTIVE

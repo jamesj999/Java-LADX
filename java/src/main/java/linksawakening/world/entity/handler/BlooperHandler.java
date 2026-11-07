@@ -1,9 +1,11 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_BLOOPER;
+
+
 import linksawakening.world.entity.RoomEntityGroundInteraction;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
@@ -15,7 +17,7 @@ import java.util.Objects;
 final class BlooperHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_BLOOPER,
+        ENTITY_BLOOPER,
         EntityTickStage.PHASE_3_BLOOPER,
         state -> {
           if (state.status == EntityStatus.ACTIVE

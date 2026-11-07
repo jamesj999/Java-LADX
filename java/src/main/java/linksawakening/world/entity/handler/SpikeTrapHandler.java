@@ -1,7 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_SPIKE_TRAP;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -12,7 +14,7 @@ import linksawakening.world.entity.motion.SpikeTrapMotion;
 final class SpikeTrapHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_SPIKE_TRAP,
+        ENTITY_SPIKE_TRAP,
         EntityTickStage.PHASE_3_SPIKE_TRAP,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {

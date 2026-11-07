@@ -1,8 +1,10 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_MINI_MOLDORM;
+
+
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
@@ -16,7 +18,7 @@ import static linksawakening.world.entity.EntitySnapshots.withVariant;
 final class MiniMoldormHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_MINI_MOLDORM,
+        ENTITY_MINI_MOLDORM,
         EntityTickStage.PHASE_2_MINI_MOLDORM,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
@@ -77,7 +79,7 @@ final class MiniMoldormHandler {
           return true;
         });
     for (int type = 0; type < 256; type++) {
-      if (((type == RoomEntityRuntime.ENTITY_MINI_MOLDORM))) {
+      if (((type == ENTITY_MINI_MOLDORM))) {
         registry.registerTick(
             type,
             EntityTickStage.PHASE_2_MINI_MOLDORM_2,

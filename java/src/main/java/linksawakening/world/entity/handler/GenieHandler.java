@@ -1,7 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_GENIE;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.RoomEntityCombatRules;
@@ -16,7 +18,7 @@ import linksawakening.world.entity.event.DialogRequest;
 final class GenieHandler {
   static void install(EntityHandlerRegistration registry) {
     for (int type = 0; type < 256; type++) {
-      if ((type == RoomEntityRuntime.ENTITY_GENIE)) {
+      if ((type == ENTITY_GENIE)) {
         registry.registerTick(
             type,
             EntityTickStage.PHASE_1_GENIE,
@@ -29,7 +31,7 @@ final class GenieHandler {
       }
     }
     for (int type = 0; type < 256; type++) {
-      if ((type == RoomEntityRuntime.ENTITY_GENIE)) {
+      if ((type == ENTITY_GENIE)) {
         registry.registerTick(
             type,
             EntityTickStage.PHASE_1_GENIE_2,
@@ -42,7 +44,7 @@ final class GenieHandler {
       }
     }
     for (int type = 0; type < 256; type++) {
-      if ((type == RoomEntityRuntime.ENTITY_GENIE)) {
+      if ((type == ENTITY_GENIE)) {
         registry.registerTick(
             type,
             EntityTickStage.PHASE_2_GENIE,
@@ -57,7 +59,7 @@ final class GenieHandler {
       }
     }
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_GENIE,
+        ENTITY_GENIE,
         EntityTickStage.PHASE_4_GENIE,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {

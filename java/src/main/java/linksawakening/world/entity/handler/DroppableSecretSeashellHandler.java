@@ -1,11 +1,13 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_DROPPABLE_SECRET_SEASHELL;
+
+
 import static linksawakening.world.entity.EntityRomConstants.SECRET_SEASHELL_HIDDEN_OPTIONS1;
 import static linksawakening.world.entity.EntityRomConstants.SECRET_SEASHELL_REVEALED_OPTIONS1;
 
 
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.RoomEntityObjectSample;
@@ -16,7 +18,7 @@ import linksawakening.world.entity.motion.SecretSeashellMotion;
 final class DroppableSecretSeashellHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_DROPPABLE_SECRET_SEASHELL,
+        ENTITY_DROPPABLE_SECRET_SEASHELL,
         EntityTickStage.PHASE_2_DROPPABLE_SECRET_SEASHELL,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
@@ -40,11 +42,11 @@ final class DroppableSecretSeashellHandler {
                     state.roomInspection().entityRoomId(),
                     state.frame,
                     false,
-                    state.runtime.secretSeashellScreenShakeActive,
-                    state.runtime.secretSeashellPegasusCollisionActive,
-                    state.runtime.secretSeashellPegasusCollisionCoordinatesKnown,
-                    state.runtime.secretSeashellPegasusCollisionX,
-                    state.runtime.secretSeashellPegasusCollisionY,
+                    state.rewards().secretSeashellScreenShakeActive(),
+                    state.rewards().secretSeashellPegasusCollisionActive(),
+                    state.rewards().secretSeashellPegasusCollisionCoordinatesKnown(),
+                    state.rewards().secretSeashellPegasusCollisionX(),
+                    state.rewards().secretSeashellPegasusCollisionY(),
                     state.linkEntityX,
                     state.linkEntityY,
                     objectUnderEntity);

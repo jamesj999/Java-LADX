@@ -1,11 +1,13 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_MOBLIN_SWORD;
+
+
 import static linksawakening.world.entity.EntityRomConstants.DIALOG_MOBLIN;
 
 
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
@@ -17,7 +19,7 @@ import linksawakening.world.entity.event.DialogRequest;
 final class MoblinSwordHandler {
   static void install(EntityHandlerRegistration registry) {
     for (int type = 0; type < 256; type++) {
-      if (((type == RoomEntityRuntime.ENTITY_MOBLIN_SWORD))) {
+      if (((type == ENTITY_MOBLIN_SWORD))) {
         registry.registerTick(
             type,
             EntityTickStage.PHASE_2_MOBLIN_SWORD,
@@ -30,7 +32,7 @@ final class MoblinSwordHandler {
       }
     }
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_MOBLIN_SWORD,
+        ENTITY_MOBLIN_SWORD,
         EntityTickStage.PHASE_3_MOBLIN_SWORD,
         state -> {
           if (state.status == EntityStatus.ACTIVE

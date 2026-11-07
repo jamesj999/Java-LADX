@@ -1,7 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_IRON_MASK;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
@@ -11,7 +13,7 @@ import static linksawakening.world.entity.EntitySnapshots.withDefinition;
 final class IronMaskHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_IRON_MASK,
+        ENTITY_IRON_MASK,
         EntityTickStage.PHASE_3_IRON_MASK,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {

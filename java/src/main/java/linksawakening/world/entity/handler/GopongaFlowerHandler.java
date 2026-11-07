@@ -1,7 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_GOPONGA_FLOWER;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityLinkCollisionRules;
@@ -14,7 +16,7 @@ import static linksawakening.world.entity.EntitySnapshots.withVariant;
 final class GopongaFlowerHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_GOPONGA_FLOWER,
+        ENTITY_GOPONGA_FLOWER,
         EntityTickStage.PHASE_4_GOPONGA_FLOWER,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {

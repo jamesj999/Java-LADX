@@ -1,11 +1,13 @@
 package linksawakening.world.entity.handler;
 
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_ARROW;
+
+
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_ARROW;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_BOMB;
 
 
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -16,7 +18,7 @@ import linksawakening.world.entity.motion.PlayerArrowMotion;
 final class ArrowHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_ARROW,
+        ENTITY_ARROW,
         EntityTickStage.PHASE_1_ARROW,
         state -> {
           if (state.status == EntityStatus.ACTIVE) {

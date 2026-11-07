@@ -1,17 +1,19 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_KANALET_BOMBABLE_WALL;
+
+
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_HIDING_SLIME_KEY;
 
 
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
 /** ROM handler stages for KanaletBombableWall. */
 final class KanaletBombableWallHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_KANALET_BOMBABLE_WALL,
+        ENTITY_KANALET_BOMBABLE_WALL,
         EntityTickStage.PHASE_1_KANALET_BOMBABLE_WALL,
         state -> {
           {

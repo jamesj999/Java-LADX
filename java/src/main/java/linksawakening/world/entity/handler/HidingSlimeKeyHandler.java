@@ -1,5 +1,8 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_HIDING_SLIME_KEY;
+
+
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
@@ -13,7 +16,7 @@ import linksawakening.world.entity.event.DialogRequest;
 final class HidingSlimeKeyHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_HIDING_SLIME_KEY,
+        ENTITY_HIDING_SLIME_KEY,
         EntityTickStage.PHASE_2_HIDING_SLIME_KEY,
         state -> {
           if (state.status == EntityStatus.ACTIVE
@@ -29,7 +32,7 @@ final class HidingSlimeKeyHandler {
           return true;
         });
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_HIDING_SLIME_KEY,
+        ENTITY_HIDING_SLIME_KEY,
         EntityTickStage.PHASE_2_HIDING_SLIME_KEY_2,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
@@ -53,7 +56,7 @@ final class HidingSlimeKeyHandler {
           return true;
         });
     for (int type = 0; type < 256; type++) {
-      if ((type == RoomEntityRuntime.ENTITY_HIDING_SLIME_KEY)) {
+      if ((type == ENTITY_HIDING_SLIME_KEY)) {
         registry.registerTick(
             type,
             EntityTickStage.PHASE_2_HIDING_SLIME_KEY_3,

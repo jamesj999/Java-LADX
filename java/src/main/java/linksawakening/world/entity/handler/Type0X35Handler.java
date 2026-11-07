@@ -29,7 +29,7 @@ final class Type0X35Handler {
             state -> {
               if (state.status == EntityStatus.ACTIVE
 
-                  && state.runtime.heartPiecePickup[state.entity.slot()] != null) {
+                  && state.pickups().hasHeartPiecePickup(state.entity.slot())) {
                 state.pickups().advanceHeartPiecePickup(
                     state.entity, state.linkEntityX, state.linkEntityY, state.linkZ);
                 return false;

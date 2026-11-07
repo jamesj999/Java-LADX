@@ -1,7 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_STALFOS_EVASIVE;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -17,7 +19,7 @@ import static linksawakening.world.entity.EntitySnapshots.withDefinition;
 final class StalfosEvasiveHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_STALFOS_EVASIVE,
+        ENTITY_STALFOS_EVASIVE,
         EntityTickStage.PHASE_3_STALFOS_EVASIVE,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {

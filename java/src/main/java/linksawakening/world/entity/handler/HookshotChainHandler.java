@@ -1,5 +1,8 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_HOOKSHOT_CHAIN;
+
+
 import static linksawakening.world.entity.EntityRomConstants.OBJECT_HOOKSHOT_BRIDGE_PULL_DOWN;
 import static linksawakening.world.entity.EntityRomConstants.OBJECT_HOOKSHOT_BRIDGE_PULL_UP;
 
@@ -7,7 +10,6 @@ import static linksawakening.world.entity.EntityRomConstants.OBJECT_HOOKSHOT_BRI
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.RoomEntityObjectSample;
@@ -25,7 +27,7 @@ import static linksawakening.world.entity.EntitySnapshots.withPositionAndVariant
 final class HookshotChainHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_HOOKSHOT_CHAIN,
+        ENTITY_HOOKSHOT_CHAIN,
         EntityTickStage.PHASE_1_HOOKSHOT_CHAIN,
         state -> {
           if (state.status == EntityStatus.ACTIVE) {

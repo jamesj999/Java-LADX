@@ -95,7 +95,7 @@ abstract class EntityRuntimeState extends EntityRomConstants {
     final EntityLinkState linkState = new EntityLinkState();
     final EntityLinkView linkView = new EntityLinkView(linkState);
 
-    public EntitySpriteSelection spriteSelection;
+    EntitySpriteSelection spriteSelection;
 
     RoomEntityGroundInteraction groundInteraction =
         (entity, frameCounter, previousGroundStatus, speedZ, sideScrolling) ->
@@ -103,7 +103,7 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     RoomEntityBackgroundInteraction backgroundInteraction;
 
-    public FollowingNpcState followingNpcState = FollowingNpcState.none();
+    FollowingNpcState followingNpcState = FollowingNpcState.none();
 
     LinkPositionHistory followingLinkPositionHistory = new LinkPositionHistory();
 
@@ -189,7 +189,7 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     final WitchMotion witchMotion = new WitchMotion();
 
-    public final int[] witchGotItemCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] witchGotItemCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
 
     final TarinRaccoonMotion tarinRaccoonMotion = new TarinRaccoonMotion();
 
@@ -326,7 +326,7 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     final int[] dropPrivateCountdown3 = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public final int[] droppablePrivateState3 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] droppablePrivateState3 = new int[EntityRoomLoader.MAX_ENTITIES];
 
     final int[] droppablePrivateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
 
@@ -493,21 +493,21 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     int killCount;
 
-    public int booBuddyTriggerCount;
+    int booBuddyTriggerCount;
 
-    public int bgPaletteEffectAddress;
+    int bgPaletteEffectAddress;
 
-    public int paletteDataFlags;
+    int paletteDataFlags;
 
     int defaultMusicTrack = 0x05;
 
     final int[] killOrder = new int[0x100];
 
-    public boolean shouldGetLostInMysteriousWoods;
+    boolean shouldGetLostInMysteriousWoods;
 
     boolean activeMusic;
 
-    public int bowWowState;
+    int bowWowState;
 
     // The three WRAM values read by PolsVoiceEntityHandler's Ocarina preamble.
     // RoomSession supplies these from the active Ocarina item state once per
@@ -560,18 +560,18 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     final int[] swordPickupState = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public final boolean[] swordPickupSequenceActive =
+    final boolean[] swordPickupSequenceActive =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     final int[] powerUpPickupCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public final boolean[] toadstoolPickupSequenceActive =
+    final boolean[] toadstoolPickupSequenceActive =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
 
-    public final boolean[] instrumentPickupSequenceActive =
+    final boolean[] instrumentPickupSequenceActive =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
 
-    public final int[] instrumentPickupState =
+    final int[] instrumentPickupState =
         new int[EntityRoomLoader.MAX_ENTITIES];
 
     final int[] instrumentBackgroundFade = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -584,13 +584,13 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     final int[] instrumentWarpY = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public final HeartPiecePickupMotion[] heartPiecePickup = new HeartPiecePickupMotion[EntityRoomLoader.MAX_ENTITIES];
+    final HeartPiecePickupMotion[] heartPiecePickup = new HeartPiecePickupMotion[EntityRoomLoader.MAX_ENTITIES];
 
     int heartPiecesCount;
 
     final int[] heartPieceMeterPairs = new int[20];
 
-    public final int[] instrumentPaletteCycle = new int[32];
+    final int[] instrumentPaletteCycle = new int[32];
 
     final int[] instrumentWarpSprites = new int[256];
 
@@ -607,7 +607,7 @@ abstract class EntityRuntimeState extends EntityRomConstants {
     final boolean[] instrumentPickupSparklesPending =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
 
-    public final int[] instrumentParticleKind =
+    final int[] instrumentParticleKind =
         new int[EntityRoomLoader.MAX_ENTITIES];
 
     final int[] instrumentParticleSpawnCountdown =
@@ -644,9 +644,9 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     final int[] richardInertia = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public boolean playerHasToadstool;
+    boolean playerHasToadstool;
 
-    public int playerMagicPowderCount;
+    int playerMagicPowderCount;
 
     boolean playerHasTailKey;
 
@@ -703,15 +703,15 @@ abstract class EntityRuntimeState extends EntityRomConstants {
     // These latches represent the HRAM values read by
     // DroppableRevealOrReturnIfNeeded's tree-shell branch. RoomSession feeds
     // them from Link's live Pegasus-Boots collision record before dispatch.
-    public boolean secretSeashellScreenShakeActive;
+    boolean secretSeashellScreenShakeActive;
 
-    public boolean secretSeashellPegasusCollisionActive;
+    boolean secretSeashellPegasusCollisionActive;
 
-    public boolean secretSeashellPegasusCollisionCoordinatesKnown;
+    boolean secretSeashellPegasusCollisionCoordinatesKnown;
 
-    public int secretSeashellPegasusCollisionX;
+    int secretSeashellPegasusCollisionX;
 
-    public int secretSeashellPegasusCollisionY;
+    int secretSeashellPegasusCollisionY;
 
     int liftedEntitySlot = -1;
 

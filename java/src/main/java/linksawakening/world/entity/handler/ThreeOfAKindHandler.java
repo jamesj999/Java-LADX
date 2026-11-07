@@ -1,7 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_THREE_OF_A_KIND;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
@@ -11,7 +13,7 @@ import linksawakening.world.entity.motion.ThreeOfAKindMotion;
 final class ThreeOfAKindHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_THREE_OF_A_KIND,
+        ENTITY_THREE_OF_A_KIND,
         EntityTickStage.PHASE_3_THREE_OF_A_KIND,
         state -> {
           if (state.status == EntityStatus.ACTIVE

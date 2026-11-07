@@ -635,4 +635,5 @@ public final class EntitySlotLifecycle {
   public void setWarpState(int slot, int value) { runtime.warpState[slot] = value; }
   public int warpTransitionCountdown(int slot) { return runtime.warpTransitionCountdown[slot]; }
   public void setWarpTransitionCountdown(int slot, int value) { runtime.warpTransitionCountdown[slot] = value; }
+  public int droppablePrivateState3(int slot) { return runtime.droppablePrivateState3[slot]; }
 }

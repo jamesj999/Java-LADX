@@ -1,10 +1,12 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_ARMOS_KNIGHT;
+
+
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_LIFTABLE_ROCK;
 
 
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -23,7 +25,7 @@ import linksawakening.world.entity.event.TransientVfxRequest;
 final class ArmosKnightHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_ARMOS_KNIGHT,
+        ENTITY_ARMOS_KNIGHT,
         EntityTickStage.PHASE_4_ARMOS_KNIGHT,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {

@@ -3,8 +3,10 @@ package linksawakening.world.entity.handler;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_BUSH_CRAWLER;
 
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_BUSH_CRAWLER;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.RoomEntityCombatRules;
@@ -17,7 +19,7 @@ import static linksawakening.world.entity.EntitySnapshots.withDefinition;
 final class BushCrawlerHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_BUSH_CRAWLER,
+        ENTITY_BUSH_CRAWLER,
         EntityTickStage.PHASE_3_BUSH_CRAWLER,
         state -> {
           if (state.status == EntityStatus.ACTIVE

@@ -1,5 +1,8 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_BOMBER;
+
+
 import static linksawakening.world.entity.EntityRomConstants.BOMBER_THROW_JINGLE_ID;
 
 
@@ -7,7 +10,6 @@ import static linksawakening.world.entity.EntityRomConstants.ENTITY_BOMB;
 
 
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -18,7 +20,7 @@ import linksawakening.world.entity.motion.BomberMotion;
 final class BomberHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_BOMBER,
+        ENTITY_BOMBER,
         EntityTickStage.PHASE_2_BOMBER,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {

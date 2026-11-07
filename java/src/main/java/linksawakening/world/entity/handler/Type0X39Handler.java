@@ -13,19 +13,7 @@ final class Type0X39Handler {
             type,
             EntityTickStage.PHASE_1_TYPE_0X39,
             state -> {
-              if (state.status == EntityStatus.ACTIVE
-
-                  && state.runtime.instrumentParticleKind[state.entity.slot()] == 0
-                  && state.runtime.instrumentPickupState[state.entity.slot()] < 3
-                  && state.lifecycle().transitionSequenceCounter() == 4
-                  && state.runtime.spriteSelection != null) {
-                int[][] palettes = state.runtime.spriteSelection.objectPalettes();
-                int offset = ((state.frame >> 1) & 0x3C) / 2;
-                palettes[1][2] = state.runtime.instrumentPaletteCycle[offset];
-                palettes[1][3] = state.runtime.instrumentPaletteCycle[offset + 1];
-                state.runtime.spriteSelection =
-                    state.runtime.spriteSelection.withObjectPalettes(palettes);
-              }
+              state.rewards().refreshInstrumentPalette(state.status, state.entity.slot(), state.frame);
               return true;
             });
       }

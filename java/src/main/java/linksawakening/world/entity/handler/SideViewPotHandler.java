@@ -1,11 +1,13 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_SIDE_VIEW_POT;
+
+
 import static linksawakening.world.entity.EntityRomConstants.LIFTABLE_ROCK_SMASH_MODE_ROCK;
 
 
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntity;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -17,7 +19,7 @@ import linksawakening.world.entity.motion.SideViewPotMotion;
 final class SideViewPotHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_SIDE_VIEW_POT,
+        ENTITY_SIDE_VIEW_POT,
         EntityTickStage.PHASE_1_SIDE_VIEW_POT,
         state -> {
           if (state.status == EntityStatus.ACTIVE
@@ -67,7 +69,7 @@ final class SideViewPotHandler {
           return true;
         });
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_SIDE_VIEW_POT,
+        ENTITY_SIDE_VIEW_POT,
         EntityTickStage.PHASE_1_SIDE_VIEW_POT_2,
         state -> {
           if (state.status == EntityStatus.ACTIVE
@@ -97,7 +99,7 @@ final class SideViewPotHandler {
           return true;
         });
     for (int type = 0; type < 256; type++) {
-      if ((type == RoomEntityRuntime.ENTITY_SIDE_VIEW_POT)) {
+      if ((type == ENTITY_SIDE_VIEW_POT)) {
         registry.registerTick(
             type,
             EntityTickStage.PHASE_2_SIDE_VIEW_POT,

@@ -1,7 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_POLS_VOICE;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -14,7 +16,7 @@ import static linksawakening.world.entity.EntitySnapshots.withStatus;
 final class PolsVoiceHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_POLS_VOICE,
+        ENTITY_POLS_VOICE,
         EntityTickStage.PHASE_2_POLS_VOICE,
         state -> {
           if (state.status == EntityStatus.ACTIVE
@@ -40,7 +42,7 @@ final class PolsVoiceHandler {
           return true;
         });
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_POLS_VOICE,
+        ENTITY_POLS_VOICE,
         EntityTickStage.PHASE_4_POLS_VOICE,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {

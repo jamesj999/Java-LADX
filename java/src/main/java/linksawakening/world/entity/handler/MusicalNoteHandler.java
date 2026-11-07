@@ -1,8 +1,10 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_MUSICAL_NOTE;
+
+
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntity;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
@@ -10,7 +12,7 @@ import linksawakening.world.entity.EntityHandlerRegistration;
 final class MusicalNoteHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_MUSICAL_NOTE,
+        ENTITY_MUSICAL_NOTE,
         EntityTickStage.PHASE_1_MUSICAL_NOTE,
         state -> {
           if (state.status == EntityStatus.ACTIVE) {

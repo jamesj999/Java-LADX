@@ -1,7 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_WIZROBE;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
@@ -13,7 +15,7 @@ import static linksawakening.world.entity.EntitySnapshots.withVariant;
 final class WizrobeHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_WIZROBE,
+        ENTITY_WIZROBE,
         EntityTickStage.PHASE_2_WIZROBE,
         state -> {
           if (state.wasInitializing) {
@@ -24,7 +26,7 @@ final class WizrobeHandler {
           return true;
         });
     for (int type = 0; type < 256; type++) {
-      if (((type == RoomEntityRuntime.ENTITY_WIZROBE))) {
+      if (((type == ENTITY_WIZROBE))) {
         registry.registerTick(
             type,
             EntityTickStage.PHASE_2_WIZROBE_2,
@@ -40,7 +42,7 @@ final class WizrobeHandler {
       }
     }
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_WIZROBE,
+        ENTITY_WIZROBE,
         EntityTickStage.PHASE_3_WIZROBE,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {

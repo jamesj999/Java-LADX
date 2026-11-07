@@ -1,7 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_ZORA;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.RoomEntityCombatRules;
@@ -17,7 +19,7 @@ import linksawakening.world.entity.event.TransientVfxRequest;
 final class ZoraHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_ZORA,
+        ENTITY_ZORA,
         EntityTickStage.PHASE_4_ZORA,
         state -> {
           if (state.status == EntityStatus.ACTIVE

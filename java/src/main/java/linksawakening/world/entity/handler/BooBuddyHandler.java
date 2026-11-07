@@ -1,7 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_BOO_BUDDY;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
@@ -13,7 +15,7 @@ import static linksawakening.world.entity.EntitySnapshots.withVariant;
 final class BooBuddyHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_BOO_BUDDY,
+        ENTITY_BOO_BUDDY,
         EntityTickStage.PHASE_1_BOO_BUDDY,
         state -> {
           if (state.initialStatus == EntityStatus.ACTIVE) {
@@ -43,7 +45,7 @@ final class BooBuddyHandler {
           return true;
         });
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_BOO_BUDDY,
+        ENTITY_BOO_BUDDY,
         EntityTickStage.PHASE_3_BOO_BUDDY,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
@@ -54,7 +56,7 @@ final class BooBuddyHandler {
                     state.linkEntityX,
                     state.linkEntityY,
                     state.slot().transitionCountdown(state.entity.slot()),
-                    state.runtime.booBuddyTriggerCount,
+                    state.story().booBuddyTriggerCount(),
                     state.swordCollisionActive,
                     state.randomByteSupplier);
             state.updated = booBuddyUpdate.entity();

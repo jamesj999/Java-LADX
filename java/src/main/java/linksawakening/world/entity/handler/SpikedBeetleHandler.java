@@ -1,7 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_SPIKED_BEETLE;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
@@ -11,7 +13,7 @@ import linksawakening.world.entity.motion.SpikedBeetleMotion;
 final class SpikedBeetleHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_SPIKED_BEETLE,
+        ENTITY_SPIKED_BEETLE,
         EntityTickStage.PHASE_4_SPIKED_BEETLE,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {

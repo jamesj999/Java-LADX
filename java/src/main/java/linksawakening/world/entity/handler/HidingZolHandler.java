@@ -1,8 +1,10 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_HIDING_ZOL;
+
+
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -13,7 +15,7 @@ import linksawakening.world.entity.motion.HidingZolMotion;
 final class HidingZolHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_HIDING_ZOL,
+        ENTITY_HIDING_ZOL,
         EntityTickStage.PHASE_3_HIDING_ZOL,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {

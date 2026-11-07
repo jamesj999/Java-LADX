@@ -1,7 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_LIKE_LIKE;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
@@ -14,7 +16,7 @@ import static linksawakening.world.entity.EntitySnapshots.withVariant;
 final class LikeLikeHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_LIKE_LIKE,
+        ENTITY_LIKE_LIKE,
         EntityTickStage.PHASE_3_LIKE_LIKE,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {

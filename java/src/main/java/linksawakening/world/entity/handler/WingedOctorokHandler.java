@@ -1,7 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_WINGED_OCTOROK;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -12,7 +14,7 @@ import linksawakening.world.entity.motion.WingedOctorokMotion;
 final class WingedOctorokHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_WINGED_OCTOROK,
+        ENTITY_WINGED_OCTOROK,
         EntityTickStage.PHASE_3_WINGED_OCTOROK,
         state -> {
           if (state.status == EntityStatus.ACTIVE

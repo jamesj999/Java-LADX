@@ -1,8 +1,10 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_PAIRODD_PROJECTILE;
+
+
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.EnemyProjectileCollision;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityProjectileEvent;
@@ -14,7 +16,7 @@ import linksawakening.world.entity.event.TransientVfxRequest;
 final class PairoddProjectileHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_PAIRODD_PROJECTILE,
+        ENTITY_PAIRODD_PROJECTILE,
         EntityTickStage.PHASE_3_PAIRODD_PROJECTILE,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {

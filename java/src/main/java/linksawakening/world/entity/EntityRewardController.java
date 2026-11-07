@@ -312,4 +312,29 @@ public final class EntityRewardController {
             entity.type() == 0x33 ? (frame >>> 4) & 1 : entity.spriteVariant());
         runtime.slots[slot] = withZ(held, linkZ & 0xFF);
         }
+  public void refreshInstrumentPalette(EntityStatus status, int slot, int frame) {
+              if (status == EntityStatus.ACTIVE
+
+                  && runtime.instrumentParticleKind[slot] == 0
+                  && runtime.instrumentPickupState[slot] < 3
+                  && runtime.transitionSequenceCounter == 4
+                  && runtime.spriteSelection != null) {
+                int[][] palettes = runtime.spriteSelection.objectPalettes();
+                int offset = ((frame >> 1) & 0x3C) / 2;
+                palettes[1][2] = runtime.instrumentPaletteCycle[offset];
+                palettes[1][3] = runtime.instrumentPaletteCycle[offset + 1];
+                runtime.spriteSelection =
+                    runtime.spriteSelection.withObjectPalettes(palettes);
+              }
+  }
+
+  public int instrumentParticleKind(int slot) { return runtime.instrumentParticleKind[slot]; }
+  public boolean instrumentPickupSequenceActive(int slot) { return runtime.instrumentPickupSequenceActive[slot]; }
+  public boolean swordPickupSequenceActive(int slot) { return runtime.swordPickupSequenceActive[slot]; }
+  public boolean toadstoolPickupSequenceActive(int slot) { return runtime.toadstoolPickupSequenceActive[slot]; }
+  public boolean secretSeashellScreenShakeActive() { return runtime.secretSeashellScreenShakeActive; }
+  public boolean secretSeashellPegasusCollisionActive() { return runtime.secretSeashellPegasusCollisionActive; }
+  public boolean secretSeashellPegasusCollisionCoordinatesKnown() { return runtime.secretSeashellPegasusCollisionCoordinatesKnown; }
+  public int secretSeashellPegasusCollisionX() { return runtime.secretSeashellPegasusCollisionX; }
+  public int secretSeashellPegasusCollisionY() { return runtime.secretSeashellPegasusCollisionY; }
 }

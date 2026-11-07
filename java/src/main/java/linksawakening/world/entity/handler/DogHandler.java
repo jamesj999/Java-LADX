@@ -1,8 +1,10 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_DOG;
+
+
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
@@ -14,7 +16,7 @@ import linksawakening.world.entity.event.DialogRequest;
 final class DogHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_DOG,
+        ENTITY_DOG,
         EntityTickStage.PHASE_1_DOG,
         state -> {
           if (state.status == EntityStatus.ACTIVE) {
@@ -24,7 +26,7 @@ final class DogHandler {
           return true;
         });
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_DOG,
+        ENTITY_DOG,
         EntityTickStage.PHASE_4_DOG,
         state -> {
           if (state.status == EntityStatus.ACTIVE

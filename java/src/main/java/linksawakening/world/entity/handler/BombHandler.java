@@ -1,7 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_BOMB;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
@@ -11,7 +13,7 @@ import linksawakening.world.entity.motion.BombMotion;
 final class BombHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_BOMB,
+        ENTITY_BOMB,
         EntityTickStage.PHASE_1_BOMB,
         state -> {
           if (state.status == EntityStatus.ACTIVE) {
@@ -43,7 +45,7 @@ final class BombHandler {
           return true;
         });
     for (int type = 0; type < 256; type++) {
-      if (((type == RoomEntityRuntime.ENTITY_BOMB))) {
+      if (((type == ENTITY_BOMB))) {
         registry.registerTick(
             type,
             EntityTickStage.PHASE_2_BOMB,
@@ -67,7 +69,7 @@ final class BombHandler {
       }
     }
     for (int type = 0; type < 256; type++) {
-      if (((type == RoomEntityRuntime.ENTITY_BOMB))) {
+      if (((type == ENTITY_BOMB))) {
         registry.registerTick(
             type,
             EntityTickStage.PHASE_2_BOMB_2,

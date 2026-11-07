@@ -1,11 +1,13 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_KEY_DROP_POINT;
+
+
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_HOOKSHOT_CHAIN;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_KEY_DROP_POINT;
 
 
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -24,7 +26,7 @@ import static linksawakening.world.entity.EntitySnapshots.withZ;
 final class KeyDropPointHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_KEY_DROP_POINT,
+        ENTITY_KEY_DROP_POINT,
         EntityTickStage.PHASE_2_KEY_DROP_POINT,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {

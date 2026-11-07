@@ -4,8 +4,11 @@ import static linksawakening.world.entity.EntityRomConstants.ENTITY_ROLLING_BONE
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_ROLLING_BONES_BAR;
 
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_ROLLING_BONES;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_ROLLING_BONES_BAR;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -20,8 +23,8 @@ import static linksawakening.world.entity.EntitySnapshots.withDefinition;
 final class RollingBonesBarHandler {
   static void install(EntityHandlerRegistration registry) {
     for (int type = 0; type < 256; type++) {
-      if (((type == RoomEntityRuntime.ENTITY_ROLLING_BONES
-          || type == RoomEntityRuntime.ENTITY_ROLLING_BONES_BAR))) {
+      if (((type == ENTITY_ROLLING_BONES
+          || type == ENTITY_ROLLING_BONES_BAR))) {
         registry.registerTick(
             type,
             EntityTickStage.PHASE_2_ROLLING_BONES_BAR,
@@ -63,7 +66,7 @@ final class RollingBonesBarHandler {
       }
     }
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_ROLLING_BONES_BAR,
+        ENTITY_ROLLING_BONES_BAR,
         EntityTickStage.PHASE_4_ROLLING_BONES_BAR,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {

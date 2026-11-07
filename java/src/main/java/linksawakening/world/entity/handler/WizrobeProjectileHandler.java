@@ -1,8 +1,10 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_WIZROBE_PROJECTILE;
+
+
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.EnemyProjectileCollision;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityProjectileEvent;
@@ -13,7 +15,7 @@ import static linksawakening.world.entity.EntitySnapshots.withFlipAttribute;
 final class WizrobeProjectileHandler {
   static void install(EntityHandlerRegistration registry) {
     for (int type = 0; type < 256; type++) {
-      if (((type == RoomEntityRuntime.ENTITY_WIZROBE_PROJECTILE))) {
+      if (((type == ENTITY_WIZROBE_PROJECTILE))) {
         registry.registerTick(
             type,
             EntityTickStage.PHASE_2_WIZROBE_PROJECTILE,
@@ -28,7 +30,7 @@ final class WizrobeProjectileHandler {
       }
     }
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_WIZROBE_PROJECTILE,
+        ENTITY_WIZROBE_PROJECTILE,
         EntityTickStage.PHASE_3_WIZROBE_PROJECTILE,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {

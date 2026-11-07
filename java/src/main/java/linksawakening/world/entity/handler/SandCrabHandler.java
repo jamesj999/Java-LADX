@@ -1,8 +1,10 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_SAND_CRAB;
+
+
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
@@ -12,7 +14,7 @@ import linksawakening.world.entity.motion.SandCrabMotion;
 final class SandCrabHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_SAND_CRAB,
+        ENTITY_SAND_CRAB,
         EntityTickStage.PHASE_4_SAND_CRAB,
         state -> {
           if (state.status == EntityStatus.ACTIVE

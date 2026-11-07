@@ -1,7 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_SWORD_BEAM;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
@@ -9,7 +11,7 @@ import linksawakening.world.entity.EntityHandlerRegistration;
 final class SwordBeamHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_SWORD_BEAM,
+        ENTITY_SWORD_BEAM,
         EntityTickStage.PHASE_1_SWORD_BEAM,
         state -> {
           if (state.status == EntityStatus.ACTIVE) {

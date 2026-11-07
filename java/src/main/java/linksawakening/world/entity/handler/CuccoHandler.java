@@ -1,7 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_CUCCO;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -14,7 +16,7 @@ import linksawakening.world.entity.event.DialogRequest;
 final class CuccoHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_CUCCO,
+        ENTITY_CUCCO,
         EntityTickStage.PHASE_3_CUCCO,
         state -> {
           if (state.status == EntityStatus.ACTIVE
@@ -36,7 +38,7 @@ final class CuccoHandler {
                     state.randomByteSupplier,
                     state.backgroundCollision,
                     state.roomInspection().indoorRoom(),
-                    state.runtime.followingNpcState.marinFollowing(),
+                    state.story().followingNpcState().marinFollowing(),
                     state.lifecycle().transitionSequenceCounter());
             state.updated = cuccoUpdate.entity();
             state.slot().setTransitionCountdown(state.entity.slot(), cuccoUpdate.transitionCountdown());

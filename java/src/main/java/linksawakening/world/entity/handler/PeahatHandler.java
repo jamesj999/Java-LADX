@@ -1,7 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_PEAHAT;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
@@ -9,7 +11,7 @@ import linksawakening.world.entity.EntityHandlerRegistration;
 final class PeahatHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_PEAHAT,
+        ENTITY_PEAHAT,
         EntityTickStage.PHASE_3_PEAHAT,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {

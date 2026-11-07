@@ -1,8 +1,11 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_MOLDORM;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_ROLLING_BONES;
+
+
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -18,7 +21,7 @@ import static linksawakening.world.entity.EntitySnapshots.withDefinition;
 final class MoldormHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_MOLDORM,
+        ENTITY_MOLDORM,
         EntityTickStage.PHASE_1_MOLDORM,
         state -> {
           if (!state.wasInitializing
@@ -41,8 +44,8 @@ final class MoldormHandler {
           return true;
         });
     for (int type = 0; type < 256; type++) {
-      if (((type == RoomEntityRuntime.ENTITY_ROLLING_BONES
-          || type == RoomEntityRuntime.ENTITY_MOLDORM))) {
+      if (((type == ENTITY_ROLLING_BONES
+          || type == ENTITY_MOLDORM))) {
         registry.registerTick(
             type,
             EntityTickStage.PHASE_1_MOLDORM_2,
@@ -71,7 +74,7 @@ final class MoldormHandler {
       }
     }
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_MOLDORM,
+        ENTITY_MOLDORM,
         EntityTickStage.PHASE_2_MOLDORM,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
@@ -151,7 +154,7 @@ final class MoldormHandler {
           return true;
         });
     for (int type = 0; type < 256; type++) {
-      if (((type == RoomEntityRuntime.ENTITY_MOLDORM))) {
+      if (((type == ENTITY_MOLDORM))) {
         registry.registerTick(
             type,
             EntityTickStage.PHASE_2_MOLDORM_2,
@@ -164,7 +167,7 @@ final class MoldormHandler {
       }
     }
     for (int type = 0; type < 256; type++) {
-      if (((type == RoomEntityRuntime.ENTITY_MOLDORM))) {
+      if (((type == ENTITY_MOLDORM))) {
         registry.registerTick(
             type,
             EntityTickStage.PHASE_2_MOLDORM_3,

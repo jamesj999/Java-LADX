@@ -1,11 +1,13 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_MOBLIN_KING;
+
+
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_MOBLIN_ARROW;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_PHYSICS_HARMLESS;
 
 
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.RoomEntityCombatRules;
@@ -22,7 +24,7 @@ import static linksawakening.world.entity.EntitySnapshots.withDefinition;
 final class MoblinKingHandler {
   static void install(EntityHandlerRegistration registry) {
     for (int type = 0; type < 256; type++) {
-      if (((type == RoomEntityRuntime.ENTITY_MOBLIN_KING))) {
+      if (((type == ENTITY_MOBLIN_KING))) {
         registry.registerTick(
             type,
             EntityTickStage.PHASE_2_MOBLIN_KING,
@@ -36,11 +38,11 @@ final class MoblinKingHandler {
       }
     }
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_MOBLIN_KING,
+        ENTITY_MOBLIN_KING,
         EntityTickStage.PHASE_4_MOBLIN_KING,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
-            if (state.runtime.bowWowState != 0x80) {
+            if (state.story().bowWowState() != 0x80) {
               state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
               return false;
             }

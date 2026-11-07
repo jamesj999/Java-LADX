@@ -51,7 +51,7 @@ import java.util.function.IntSupplier;
 
 /** Mutable execution locals for one immutable entity frame input. */
 public final class EntityFrameExecution {
-  public final RoomEntityRuntime runtime;
+  final RoomEntityRuntime runtime;
   public RoomEntity lifted;
   public int liftedRomDirection;
   public int frameCounter;

@@ -1,8 +1,10 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_STAR;
+
+
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
@@ -10,7 +12,7 @@ import linksawakening.world.entity.EntityHandlerRegistration;
 final class StarHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_STAR,
+        ENTITY_STAR,
         EntityTickStage.PHASE_3_STAR,
         state -> {
           if (state.status == EntityStatus.ACTIVE

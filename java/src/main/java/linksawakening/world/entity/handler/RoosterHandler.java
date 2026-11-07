@@ -1,7 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_ROOSTER;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.RoomEntityCombatRules;
@@ -16,7 +18,7 @@ import static linksawakening.world.entity.EntitySnapshots.withVariant;
 final class RoosterHandler {
   static void install(EntityHandlerRegistration registry) {
     for (int type = 0; type < 256; type++) {
-      if (((type == RoomEntityRuntime.ENTITY_ROOSTER))) {
+      if (((type == ENTITY_ROOSTER))) {
         registry.registerTick(
             type,
             EntityTickStage.PHASE_2_ROOSTER,
@@ -49,7 +51,7 @@ final class RoosterHandler {
       }
     }
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_ROOSTER,
+        ENTITY_ROOSTER,
         EntityTickStage.PHASE_5_ROOSTER,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {

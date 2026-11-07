@@ -1,7 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_SNAKE;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
@@ -11,7 +13,7 @@ import linksawakening.world.entity.motion.SnakeMotion;
 final class SnakeHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_SNAKE,
+        ENTITY_SNAKE,
         EntityTickStage.PHASE_3_SNAKE,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {

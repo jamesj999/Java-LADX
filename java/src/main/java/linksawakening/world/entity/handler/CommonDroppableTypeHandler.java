@@ -21,7 +21,7 @@ final class CommonDroppableTypeHandler {
             state -> {
               if (state.wasInitializing
 
-                  && state.runtime.droppablePrivateState3[state.entity.slot()] != 0) {
+                  && state.lifecycle().droppablePrivateState3(state.entity.slot()) != 0) {
                 // The init handler has already set the hidden options. The
                 // corresponding active handler will be entered on the next
                 // entity tick, so suppress this first display-list pass too.

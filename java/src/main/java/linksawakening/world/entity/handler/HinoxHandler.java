@@ -1,7 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_HINOX;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -20,7 +22,7 @@ import linksawakening.world.entity.event.TransientVfxRequest;
 final class HinoxHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_HINOX,
+        ENTITY_HINOX,
         EntityTickStage.PHASE_4_HINOX,
         state -> {
           if (state.status == EntityStatus.ACTIVE
