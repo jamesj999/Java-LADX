@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 /** Real game-loop integration, with buttons only after the new-game bootstrap. */
+@linksawakening.testing.RequiresRom
 final class MainOpeningRouteTest {
     private static final HeadlessGameDriver game = new HeadlessGameDriver();
     @Test

@@ -14,6 +14,7 @@ import java.io.InputStream;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
+@linksawakening.testing.RequiresRom
 final class IntroFrameRegressionTest {
 
     @Test
@@ -48,8 +49,7 @@ final class IntroFrameRegressionTest {
     }
 
     private static byte[] loadRom() {
-        try (InputStream stream = IntroFrameRegressionTest.class.getClassLoader()
-            .getResourceAsStream("rom/azle.gbc")) {
+        try (InputStream stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IllegalStateException("ROM resource missing");
             }

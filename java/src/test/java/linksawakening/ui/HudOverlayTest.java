@@ -9,6 +9,7 @@ import java.io.InputStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@linksawakening.testing.RequiresRom
 final class HudOverlayTest {
 
     @Test
@@ -67,8 +68,7 @@ final class HudOverlayTest {
     }
 
     private static byte[] loadRom() throws Exception {
-        try (InputStream stream = HudOverlayTest.class.getClassLoader()
-                .getResourceAsStream("rom/azle.gbc")) {
+        try (InputStream stream = linksawakening.testing.TestRom.open()) {
             return stream.readAllBytes();
         }
     }

@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@linksawakening.testing.RequiresRom
 final class RoomEntityRuntimeTest {
 
     @Test
@@ -9458,8 +9459,7 @@ final class RoomEntityRuntimeTest {
     }
 
     private static byte[] loadRom() throws IOException {
-        try (var stream = RoomEntityRuntimeTest.class.getClassLoader()
-            .getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IOException("Missing ROM resource: rom/azle.gbc");
             }

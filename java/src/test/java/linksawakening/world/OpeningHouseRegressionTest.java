@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@linksawakening.testing.RequiresRom
 final class OpeningHouseRegressionTest {
     @Test
     void houseLoadPreservesFurnitureInTheSwitchBlockVramSlots() throws Exception {
@@ -66,7 +67,7 @@ final class OpeningHouseRegressionTest {
     }
 
     private static byte[] rom() throws Exception {
-        try (var in = OpeningHouseRegressionTest.class.getResourceAsStream("/rom/azle.gbc")) {
+        try (var in = linksawakening.testing.TestRom.open()) {
             return in.readAllBytes();
         }
     }

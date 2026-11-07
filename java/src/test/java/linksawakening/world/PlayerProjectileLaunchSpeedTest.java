@@ -8,6 +8,7 @@ import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@linksawakening.testing.RequiresRom
 final class PlayerProjectileLaunchSpeedTest {
     @ParameterizedTest
     @CsvSource({"0, false", "1, false", "2, false", "3, false",
@@ -15,7 +16,7 @@ final class PlayerProjectileLaunchSpeedTest {
     void arrowAndFireballUseTheShippedRomsFinalSpeedBytes(int direction, boolean power)
             throws IOException {
         byte[] rom;
-        try (var stream = getClass().getClassLoader().getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IOException("Missing shipped ROM");
             }

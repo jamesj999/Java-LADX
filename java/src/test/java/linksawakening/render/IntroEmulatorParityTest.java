@@ -16,12 +16,13 @@ import java.util.TreeMap;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /** Golden pixels recorded by running the shipped ROM, independently of the Java renderer. */
+@linksawakening.testing.RequiresRom
 final class IntroEmulatorParityTest {
     @Test
     void matchesEmulatorAcrossFadesBeachPanTitleAndFrameBoundaries() throws Exception {
         byte[] rom;
         Map<Integer, String> golden = new TreeMap<>();
-        try (var input = getClass().getResourceAsStream("/rom/azle.gbc")) {
+        try (var input = linksawakening.testing.TestRom.open()) {
             rom = input.readAllBytes();
         }
         try (var input = getClass().getResourceAsStream("/intro/emulator-rgb555-sha256.csv")) {

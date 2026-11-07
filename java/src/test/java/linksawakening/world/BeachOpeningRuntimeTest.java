@@ -13,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@linksawakening.testing.RequiresRom
 final class BeachOpeningRuntimeTest {
     private static final int BEACH_ROOM = 0xF2;
     private static final int ENTITY_SWORD_SHIELD_PICKUP = 0x31;
@@ -405,8 +406,7 @@ final class BeachOpeningRuntimeTest {
     }
 
     private static byte[] loadRom() throws IOException {
-        try (var stream = BeachOpeningRuntimeTest.class.getClassLoader()
-            .getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IOException("Missing ROM resource: rom/azle.gbc");
             }

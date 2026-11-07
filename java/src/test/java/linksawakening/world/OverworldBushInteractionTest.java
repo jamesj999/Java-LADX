@@ -15,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@linksawakening.testing.RequiresRom
 final class OverworldBushInteractionTest {
 
     private static final int ROOM_OBJECTS_BASE = 0x11;
@@ -388,7 +389,7 @@ final class OverworldBushInteractionTest {
     }
 
     private static byte[] loadRom() {
-        try (InputStream in = OverworldBushInteractionTest.class.getClassLoader().getResourceAsStream("rom/azle.gbc")) {
+        try (InputStream in = linksawakening.testing.TestRom.open()) {
             if (in == null) {
                 throw new IllegalStateException("Missing ROM resource: rom/azle.gbc");
             }

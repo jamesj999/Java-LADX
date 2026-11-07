@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@linksawakening.testing.RequiresRom
 final class GPUEntityTilesTest {
 
     @Test
@@ -92,8 +93,7 @@ final class GPUEntityTilesTest {
     }
 
     private static byte[] loadRom() throws Exception {
-        try (var stream = GPUEntityTilesTest.class.getClassLoader()
-            .getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IllegalStateException("ROM resource missing");
             }

@@ -4,7 +4,10 @@ permissions:
   contents: read
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     defaults:
       run:
         working-directory: java
@@ -16,3 +19,10 @@ jobs:
           java-version: '21'
       - uses: gradle/actions/setup-gradle@v4
       - run: ./gradlew classes romFreeTest distZip -PallPlatforms
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: test-reports-${{ matrix.os }}
+          path: |
+            java/build/reports/tests/
+            java/build/test-results/

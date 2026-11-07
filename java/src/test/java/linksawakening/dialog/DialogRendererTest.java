@@ -7,6 +7,7 @@ import java.io.InputStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@linksawakening.testing.RequiresRom
 final class DialogRendererTest {
 
     private static final int SCREEN_WIDTH = 160;
@@ -124,7 +125,7 @@ final class DialogRendererTest {
     }
 
     private static byte[] classpathRom() {
-        try (InputStream stream = DialogRendererTest.class.getResourceAsStream("/rom/azle.gbc")) {
+        try (InputStream stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IllegalStateException("Missing classpath ROM resource /rom/azle.gbc");
             }

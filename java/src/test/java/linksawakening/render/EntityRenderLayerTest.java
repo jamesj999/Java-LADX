@@ -24,6 +24,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+@linksawakening.testing.RequiresRom
 final class EntityRenderLayerTest {
     @Test
     void kingRectangleLayersUseTheDeathFlashPalette() {
@@ -1280,8 +1281,7 @@ final class EntityRenderLayerTest {
     }
 
     private static byte[] loadRom() throws Exception {
-        try (var stream = EntityRenderLayerTest.class.getClassLoader()
-            .getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IllegalStateException("ROM resource missing");
             }

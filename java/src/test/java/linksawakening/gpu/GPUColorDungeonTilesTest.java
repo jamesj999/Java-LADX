@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@linksawakening.testing.RequiresRom
 final class GPUColorDungeonTilesTest {
 
     private static final int TABLE_BANK = 0x20;
@@ -169,8 +170,7 @@ final class GPUColorDungeonTilesTest {
     }
 
     private static byte[] loadRom() throws Exception {
-        try (var stream = GPUColorDungeonTilesTest.class.getClassLoader()
-            .getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IllegalStateException("ROM resource missing");
             }

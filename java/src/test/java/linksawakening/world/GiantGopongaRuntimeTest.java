@@ -13,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@linksawakening.testing.RequiresRom
 final class GiantGopongaRuntimeTest {
     private static final int ENTITY_GIANT_GOPONGA_FLOWER = 0x7C;
     private static final int ENTITY_GOPONGA_FLOWER_PROJECTILE = 0x7D;
@@ -206,8 +207,7 @@ final class GiantGopongaRuntimeTest {
     }
 
     private static byte[] loadRom() throws IOException {
-        try (var stream = GiantGopongaRuntimeTest.class.getClassLoader()
-            .getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IOException("Missing ROM resource: rom/azle.gbc");
             }

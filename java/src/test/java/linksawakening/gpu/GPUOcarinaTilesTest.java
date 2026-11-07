@@ -7,6 +7,7 @@ import java.io.InputStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@linksawakening.testing.RequiresRom
 final class GPUOcarinaTilesTest {
 
     private static final int ROM_BANK = 0x2C;
@@ -46,8 +47,7 @@ final class GPUOcarinaTilesTest {
     }
 
     private static byte[] loadRom() throws Exception {
-        try (InputStream stream = GPUOcarinaTilesTest.class.getClassLoader()
-                .getResourceAsStream("rom/azle.gbc")) {
+        try (InputStream stream = linksawakening.testing.TestRom.open()) {
             return stream.readAllBytes();
         }
     }

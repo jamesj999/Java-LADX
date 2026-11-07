@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+@linksawakening.testing.RequiresRom
 final class OwlStatueDialogResolverTest {
     @Test
     void resolvesKeyCavernHintsAndBeakGate() throws Exception {
@@ -44,8 +45,7 @@ final class OwlStatueDialogResolverTest {
     }
 
     private static byte[] loadRom() throws Exception {
-        try (var stream = OwlStatueDialogResolverTest.class.getClassLoader()
-            .getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) throw new IllegalStateException("Missing ROM");
             return stream.readAllBytes();
         }

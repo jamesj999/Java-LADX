@@ -6,6 +6,7 @@ import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@linksawakening.testing.RequiresRom
 final class DungeonRoomEventTableTest {
 
     @Test
@@ -17,8 +18,7 @@ final class DungeonRoomEventTableTest {
     }
 
     private static byte[] loadRom() throws IOException {
-        try (var stream = DungeonRoomEventTableTest.class.getClassLoader()
-            .getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IOException("ROM resource missing");
             }

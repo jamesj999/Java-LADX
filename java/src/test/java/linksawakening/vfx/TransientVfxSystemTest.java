@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@linksawakening.testing.RequiresRom
 final class TransientVfxSystemTest {
 
     @Test
@@ -221,9 +222,7 @@ final class TransientVfxSystemTest {
     }
 
     private static byte[] loadRom() throws IOException {
-        try (InputStream input = TransientVfxSystemTest.class
-            .getClassLoader()
-            .getResourceAsStream("rom/azle.gbc")) {
+        try (InputStream input = linksawakening.testing.TestRom.open()) {
             if (input == null) {
                 throw new IOException("ROM resource not found: rom/azle.gbc");
             }
