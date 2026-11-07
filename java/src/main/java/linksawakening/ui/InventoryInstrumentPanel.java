@@ -1,5 +1,7 @@
 package linksawakening.ui;
 
+import linksawakening.rom.RomSymbols;
+
 import linksawakening.gpu.GPU;
 import linksawakening.rom.RomUtil;
 import linksawakening.render.IndexedRenderer;
@@ -13,24 +15,25 @@ final class InventoryInstrumentPanel {
     private final GPU tiles = new GPU();
 
     InventoryInstrumentPanel(byte[] rom) {
+        var data = new linksawakening.rom.Rom(rom);
         for (int i = 0; i < 8; i++) {
-            positions[i] = 0x100 + Byte.toUnsignedInt(rom[RomUtil.romOffset(1, 0x6BCF) + i]);
-            numbers[i] = Byte.toUnsignedInt(rom[RomUtil.romOffset(1, 0x6BD7) + i]);
-            instruments[i] = Byte.toUnsignedInt(rom[RomUtil.romOffset(1, 0x6BDF) + i]);
+            positions[i] = 0x100 + data.u8(linksawakening.rom.RomAddress.fromOffset(RomSymbols.Data_001_6BCF.offset() + i));
+            numbers[i] = data.u8(linksawakening.rom.RomAddress.fromOffset(RomSymbols.Data_001_6BD7.offset() + i));
+            instruments[i] = data.u8(linksawakening.rom.RomAddress.fromOffset(RomSymbols.Data_001_6BDF.offset() + i));
         }
         for (int i = 0; i < 32; i++) {
-            int offset = RomUtil.romOffset(0x20, 0x5E75) + i * 2;
+            int offset = RomSymbols.InventoryInstrumentCyclingColors.offset() + i * 2;
             cycleColors[i / 2][i % 2] = RomUtil.decodeRgb555(
-                Byte.toUnsignedInt(rom[offset]) | Byte.toUnsignedInt(rom[offset + 1]) << 8);
+                data.u8(linksawakening.rom.RomAddress.fromOffset(offset)) | data.u8(linksawakening.rom.RomAddress.fromOffset(offset + 1)) << 8);
         }
         // Keep the inventory's ROM-loaded tiles separate from gameplay VRAM:
         // the menu must not overwrite the shared effects beneath its window.
         tiles.loadBaseTiles(rom);
         // CopySirenInstrumentTiles uses bank $0C without the CGB adjustment.
-        int npcSource = RomUtil.romOffset(0x35, 0x4000);
-        for (int i = 0; i < 0x400; i++) tiles.writeVRAM(0x400 + i, rom[npcSource + i]);
-        int source = RomUtil.romOffset(0x0C, 0x4D00);
-        for (int i = 0; i < 0x200; i++) tiles.writeVRAM(0xD00 + i, rom[source + i]);
+        int npcSource = RomSymbols.ColorDungeonNpcTiles.offset();
+        for (int i = 0; i < 0x400; i++) tiles.writeVRAM(0x400 + i, (byte) data.u8(linksawakening.rom.RomAddress.fromOffset(npcSource + i)));
+        int source = RomSymbols.SirenInstrumentsTiles.offset();
+        for (int i = 0; i < 0x200; i++) tiles.writeVRAM(0xD00 + i, (byte) data.u8(linksawakening.rom.RomAddress.fromOffset(source + i)));
     }
 
     int[] tilemapForInstrument(int index, int flags) {

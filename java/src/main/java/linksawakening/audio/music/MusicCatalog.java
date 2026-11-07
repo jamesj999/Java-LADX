@@ -1,5 +1,11 @@
 package linksawakening.audio.music;
 
+import linksawakening.rom.RomSymbols;
+
+import linksawakening.rom.RomAddress;
+
+import linksawakening.rom.Rom;
+
 import linksawakening.rom.RomBank;
 
 import java.util.ArrayList;
@@ -11,11 +17,11 @@ import java.util.Objects;
 import java.util.Optional;
 
 public final class MusicCatalog {
-    private static final int BANK_1B = 0x1B;
-    private static final int BANK_1B_TABLE = linksawakening.rom.RomSymbols.MusicDataPointerTable_1B.address();
+    private static final int BANK_1B = RomSymbols.MusicDataPointerTable_1B.bank();
+    private static final int BANK_1B_TABLE = RomSymbols.MusicDataPointerTable_1B.address();
     private static final int BANK_1B_ENTRIES = 0x30;
-    private static final int BANK_1E = 0x1E;
-    private static final int BANK_1E_TABLE = linksawakening.rom.RomSymbols.MusicDataPointerTable_1E.address();
+    private static final int BANK_1E = RomSymbols.MusicDataPointerTable_1E.bank();
+    private static final int BANK_1E_TABLE = RomSymbols.MusicDataPointerTable_1E.address();
     private static final int BANK_1E_ENTRIES = 0x40;
 
     private static final String[] TRACK_NAMES = {
@@ -205,7 +211,7 @@ public final class MusicCatalog {
     }
 
     private static int readLittleEndianWord(byte[] romData, int offset) {
-        return Byte.toUnsignedInt(romData[offset]) | (Byte.toUnsignedInt(romData[offset + 1]) << 8);
+        return new Rom(romData).u8(RomAddress.fromOffset(offset)) | (new Rom(romData).u8(RomAddress.fromOffset(offset + 1)) << 8);
     }
 
     private static void requireReadableWord(byte[] romData, int offset, int bank, int address) {

@@ -21,3 +21,13 @@ For world, gpu, render, and entity migration, first match the exact label and
 bank against the local symbol file, retain any intentional offset, then replace
 the numeric pair. Report mismatches before changing behavior. Do not substitute
 an address merely because another label has a similar name.
+
+`RomAddress.fromOffset` bridges existing file-offset cursors to typed reads;
+`plus` advances in file order and `withGbcBank()` explicitly mirrors the original
+GBC bank adjustment. Retain range checks at format boundaries for useful errors.
+
+Audio clients can use `FrameAudioPlayer` with the existing `PcmSoundOutput`
+interface. It advances music and SFX once per `update()` (60 Hz), renders an
+integer number of samples with a carried remainder, and routes dialog PCM to
+the same output. The caller owns the output lifetime. The legacy OpenAL browser
+transport remains available with its existing sample-driven buffering behavior.

@@ -1,5 +1,11 @@
 package linksawakening.cutscene;
 
+import linksawakening.rom.RomSymbols;
+
+import linksawakening.rom.RomAddress;
+
+import linksawakening.rom.Rom;
+
 import linksawakening.rom.RomBank;
 
 import java.util.ArrayList;
@@ -14,25 +20,25 @@ import java.util.Objects;
  * interpret a signed OAM offset as an unsigned tile value.</p>
  */
 public final class IntroRomData {
-    public static final int INTRO_BANK = 0x01;
-    public static final int INTRO_SHIP_TILES_ADDRESS = linksawakening.rom.RomSymbols.IntroShipTiles.address();
-    public static final int INTRO_SHIP_EXTRA_TILES_ADDRESS = linksawakening.rom.RomSymbols.Data_001_7550.address();
-    public static final int SHIP_HEAVE_TABLE_ADDRESS = linksawakening.rom.RomSymbols.ShipHeaveTable.address();
-    public static final int INTRO_LIGHTNING_TILES_ADDRESS = linksawakening.rom.RomSymbols.IntroLightningTiles.address();
-    public static final int LIGHTNING_ENTITY_POSITIONS_ADDRESS = linksawakening.rom.RomSymbols.Data_001_707B.address();
-    public static final int LIGHTNING_ENTITY_STATUSES_ADDRESS = linksawakening.rom.RomSymbols.Data_001_7081.address();
-    public static final int INTRO_MARIN_VARIANTS_ADDRESS = linksawakening.rom.RomSymbols.IntroMarinSpriteVariants.address();
-    public static final int TITLE_TILE_MAP_POINTERS_ADDRESS = linksawakening.rom.RomSymbols.TitleTileMap.address();
-    public static final int TITLE_ATTRIBUTE_MAP_POINTERS_ADDRESS = linksawakening.rom.RomSymbols.TitleAttrMap.address();
-    public static final int INTRO_SPARKLE_VARIANTS_ADDRESS = linksawakening.rom.RomSymbols.IntroSparkleSpriteVariants.address();
-    public static final int TITLE_SPARKLE_X_POSITIONS_ADDRESS = linksawakening.rom.RomSymbols.Data_001_73C0.address();
-    public static final int TITLE_SPARKLE_Y_POSITIONS_ADDRESS = linksawakening.rom.RomSymbols.Data_001_73C8.address();
-    public static final int INTRO_VERTICAL_OFFSETS_ADDRESS = linksawakening.rom.RomSymbols.IntroBGVerticalOffsetTable.address();
-    public static final int INTRO_COLOR_MODIFIER_BANK = 0x20;
-    public static final int INTRO_COLOR_MODIFIER_ADDRESS = linksawakening.rom.RomSymbols.IntroColorModifierTable.address();
-    public static final int DX_FADE_IN_PALETTE_ADDRESS = linksawakening.rom.RomSymbols.DXFadeInPalette.address();
-    public static final int INERT_LINK_VARIANTS_ADDRESS = linksawakening.rom.RomSymbols.InertLinkSpriteVariants.address();
-    public static final int TITLE_POST_BEACH_TILEMAP_ADDRESS = linksawakening.rom.RomSymbols.TitleScreenPostBeachTilemap.address();
+    public static final int INTRO_BANK = RomSymbols.IntroSparkleSpriteVariants.bank();
+    public static final int INTRO_SHIP_TILES_ADDRESS = RomSymbols.IntroShipTiles.address();
+    public static final int INTRO_SHIP_EXTRA_TILES_ADDRESS = RomSymbols.Data_001_7550.address();
+    public static final int SHIP_HEAVE_TABLE_ADDRESS = RomSymbols.ShipHeaveTable.address();
+    public static final int INTRO_LIGHTNING_TILES_ADDRESS = RomSymbols.IntroLightningTiles.address();
+    public static final int LIGHTNING_ENTITY_POSITIONS_ADDRESS = RomSymbols.Data_001_707B.address();
+    public static final int LIGHTNING_ENTITY_STATUSES_ADDRESS = RomSymbols.Data_001_7081.address();
+    public static final int INTRO_MARIN_VARIANTS_ADDRESS = RomSymbols.IntroMarinSpriteVariants.address();
+    public static final int TITLE_TILE_MAP_POINTERS_ADDRESS = RomSymbols.TitleTileMap.address();
+    public static final int TITLE_ATTRIBUTE_MAP_POINTERS_ADDRESS = RomSymbols.TitleAttrMap.address();
+    public static final int INTRO_SPARKLE_VARIANTS_ADDRESS = RomSymbols.IntroSparkleSpriteVariants.address();
+    public static final int TITLE_SPARKLE_X_POSITIONS_ADDRESS = RomSymbols.Data_001_73C0.address();
+    public static final int TITLE_SPARKLE_Y_POSITIONS_ADDRESS = RomSymbols.Data_001_73C8.address();
+    public static final int INTRO_VERTICAL_OFFSETS_ADDRESS = RomSymbols.IntroBGVerticalOffsetTable.address();
+    public static final int INTRO_COLOR_MODIFIER_BANK = RomSymbols.IntroColorModifierTable.bank();
+    public static final int INTRO_COLOR_MODIFIER_ADDRESS = RomSymbols.IntroColorModifierTable.address();
+    public static final int DX_FADE_IN_PALETTE_ADDRESS = RomSymbols.DXFadeInPalette.address();
+    public static final int INERT_LINK_VARIANTS_ADDRESS = RomSymbols.InertLinkSpriteVariants.address();
+    public static final int TITLE_POST_BEACH_TILEMAP_ADDRESS = RomSymbols.TitleScreenPostBeachTilemap.address();
 
     private static final int OAM_ENTRY_SIZE = 4;
     private static final int TITLE_ROW_COUNT = 7;
@@ -41,17 +47,19 @@ public final class IntroRomData {
     private static final int DX_FADE_PALETTE_ROW_COUNT = 16;
 
     private final byte[] romData;
+    private final Rom romView;
 
     public IntroRomData(byte[] romData) {
         this.romData = Objects.requireNonNull(romData, "romData").clone();
+        this.romView = new Rom(this.romData);
     }
 
     /** ROM draw commands used by the scream and the beach mountain wrap correction. */
     public void applyDrawCommands(int[] map, int address) {
         int offset = checkedOffset("Intro draw commands", INTRO_BANK, address, 1);
-        while ((romData[offset] & 255) != 0) {
-            int target = ((romData[offset++] & 255) << 8) | (romData[offset++] & 255);
-            int command = romData[offset++] & 255;
+        while (((byte) romView.u8(RomAddress.fromOffset(offset)) & 255) != 0) {
+            int target = (((byte) romView.u8(RomAddress.fromOffset(offset++)) & 255) << 8) | ((byte) romView.u8(RomAddress.fromOffset(offset++)) & 255);
+            int command = (byte) romView.u8(RomAddress.fromOffset(offset++)) & 255;
             int count = (command & 0x3f) + 1;
             int stride = (command & 0x80) == 0 ? 1 : 32;
             for (int i = 0; i < count; i++) {
@@ -59,7 +67,7 @@ public final class IntroRomData {
                 int index = stride == 1
                     ? ((target - 0x9800) & 0x3E0) | ((target + i) & 31)
                     : (target - 0x9800 + i * stride) & 1023;
-                map[index] = romData[offset] & 255;
+                map[index] = (byte) romView.u8(RomAddress.fromOffset(offset)) & 255;
                 if ((command & 0x40) == 0) offset++;
             }
             if ((command & 0x40) != 0) offset++;
@@ -85,10 +93,10 @@ public final class IntroRomData {
         java.util.Arrays.fill(lines, baseY);
         if (phase >= 16) return lines;
         int pointer = readUnsignedWord(checkedOffset("Title distortion pointers", 0x20, 0x5224, 34) + phase * 2);
-        int limit = romData[checkedOffset("Title distortion limits", 0x20, 0x5246, 17) + phase] & 255;
+        int limit = (byte) romView.u8(RomAddress.fromOffset(checkedOffset("Title distortion limits", 0x20, 0x5246, 17) + phase)) & 255;
         int offset = checkedOffset("Title distortion", 0x20, pointer, 64);
         for (int y = 17; y < Math.max(73, 17 + limit); y++) {
-            lines[y] = (baseY + (y >= 16 + limit ? -56 : romData[offset + y - 17])) & 255;
+            lines[y] = (baseY + (y >= 16 + limit ? -56 : (byte) romView.u8(RomAddress.fromOffset(offset + y - 17)))) & 255;
         }
         return lines;
     }
@@ -198,10 +206,10 @@ public final class IntroRomData {
         for (int index = 0; index < count; index++) {
             int entryOffset = offset + index * OAM_ENTRY_SIZE;
             entries.add(new OamEntry(
-                signedByte(romData[entryOffset]),
-                signedByte(romData[entryOffset + 1]),
-                Byte.toUnsignedInt(romData[entryOffset + 2]),
-                Byte.toUnsignedInt(romData[entryOffset + 3])));
+                signedByte((byte) romView.u8(RomAddress.fromOffset(entryOffset))),
+                signedByte((byte) romView.u8(RomAddress.fromOffset(entryOffset + 1))),
+                romView.u8(RomAddress.fromOffset(entryOffset + 2)),
+                romView.u8(RomAddress.fromOffset(entryOffset + 3))));
         }
         return List.copyOf(entries);
     }
@@ -212,10 +220,10 @@ public final class IntroRomData {
         for (int index = 0; index < count; index++) {
             int entryOffset = offset + index * 4;
             pairs.add(new SpritePair(
-                Byte.toUnsignedInt(romData[entryOffset]),
-                Byte.toUnsignedInt(romData[entryOffset + 1]),
-                Byte.toUnsignedInt(romData[entryOffset + 2]),
-                Byte.toUnsignedInt(romData[entryOffset + 3])));
+                romView.u8(RomAddress.fromOffset(entryOffset)),
+                romView.u8(RomAddress.fromOffset(entryOffset + 1)),
+                romView.u8(RomAddress.fromOffset(entryOffset + 2)),
+                romView.u8(RomAddress.fromOffset(entryOffset + 3))));
         }
         return List.copyOf(pairs);
     }
@@ -228,7 +236,7 @@ public final class IntroRomData {
     private int[] readUnsignedBytesAt(int offset, int length) {
         int[] bytes = new int[length];
         for (int index = 0; index < length; index++) {
-            bytes[index] = Byte.toUnsignedInt(romData[offset + index]);
+            bytes[index] = romView.u8(RomAddress.fromOffset(offset + index));
         }
         return bytes;
     }
@@ -244,13 +252,13 @@ public final class IntroRomData {
     }
 
     private int readUnsignedWord(int offset) {
-        return Byte.toUnsignedInt(romData[offset])
-            | (Byte.toUnsignedInt(romData[offset + 1]) << 8);
+        return romView.u8(RomAddress.fromOffset(offset))
+            | (romView.u8(RomAddress.fromOffset(offset + 1)) << 8);
     }
 
     private int readBigEndianAddress(int offset) {
-        return (Byte.toUnsignedInt(romData[offset]) << 8)
-            | Byte.toUnsignedInt(romData[offset + 1]);
+        return (romView.u8(RomAddress.fromOffset(offset)) << 8)
+            | romView.u8(RomAddress.fromOffset(offset + 1));
     }
 
     private static int signedByte(byte value) {

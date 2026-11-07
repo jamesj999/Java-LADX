@@ -1,5 +1,11 @@
 package linksawakening.audio.sfx;
 
+import linksawakening.rom.RomSymbols;
+
+import linksawakening.rom.RomAddress;
+
+import linksawakening.rom.Rom;
+
 import linksawakening.audio.apu.GameBoyApu;
 import linksawakening.rom.RomBank;
 
@@ -7,9 +13,9 @@ import java.util.Arrays;
 import java.util.Objects;
 
 final class RomSoundEffectEngine {
-    private static final int PLAY_ACTIVE_JINGLE = linksawakening.rom.RomSymbols.PlayActiveJingle.address();
-    private static final int PLAY_ACTIVE_WAVE = linksawakening.rom.RomSymbols.PlayActiveWaveSfx.address();
-    private static final int PLAY_ACTIVE_NOISE = linksawakening.rom.RomSymbols.PlayActiveNoiseSfx.address();
+    private static final int PLAY_ACTIVE_JINGLE = RomSymbols.PlayActiveJingle.address();
+    private static final int PLAY_ACTIVE_WAVE = RomSymbols.PlayActiveWaveSfx.address();
+    private static final int PLAY_ACTIVE_NOISE = RomSymbols.PlayActiveNoiseSfx.address();
 
     private static final int W_ACTIVE_JINGLE = 0xD360;
     private static final int W_ACTIVE_WAVE = 0xD370;
@@ -19,6 +25,7 @@ final class RomSoundEffectEngine {
     private static final int MAX_INSTRUCTIONS_PER_TICK = 20_000;
 
     private final byte[] romData;
+    private final Rom romView;
     private final GameBoyApu apu;
     private final int[] memory = new int[0x10000];
     private final RomSoundEffectTables tables;
@@ -27,6 +34,7 @@ final class RomSoundEffectEngine {
 
     RomSoundEffectEngine(byte[] romData, GameBoyApu apu) {
         this.romData = Objects.requireNonNull(romData, "romData");
+        this.romView = new Rom(this.romData);
         this.apu = Objects.requireNonNull(apu, "apu");
         tables = new RomSoundEffectTables(romData);
     }
@@ -125,7 +133,7 @@ final class RomSoundEffectEngine {
                 throw new IllegalStateException("SFX ROM read outside bank 0x1F at 0x"
                         + hex16(address));
             }
-            return Byte.toUnsignedInt(romData[offset]);
+            return romView.u8(RomAddress.fromOffset(offset));
         }
         if (address >= 0xFF10 && address <= 0xFF26) {
             return apu.readRegister(address & 0xFF);

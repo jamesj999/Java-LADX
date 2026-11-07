@@ -7,7 +7,7 @@ import linksawakening.rom.RomSymbols;
 import java.util.Objects;
 
 public final class RomSoundEffectTables {
-    static final int SFX_BANK = 0x1F;
+    static final int SFX_BANK = RomSymbols.SfxPointersTable1.bank();
     static final int JINGLE_BEGIN_TABLE = RomSymbols.SfxPointersTable1.address();
     static final int JINGLE_CONTINUE_TABLE = RomSymbols.SfxPointersTable2.address();
     static final int WAVE_BEGIN_TABLE = RomSymbols.WaveSfxHandlersTable1.address();
