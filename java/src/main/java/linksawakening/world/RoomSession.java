@@ -65,6 +65,8 @@ import static linksawakening.world.RoomConstants.ROOM_PIXEL_HEIGHT;
 import static linksawakening.world.RoomConstants.ROOM_PIXEL_WIDTH;
 
 public final class RoomSession {
+    final RoomTransientState roomTransientState = new RoomTransientState(this);
+    final RoomEntityRewards roomEntityRewards = new RoomEntityRewards(this);
     final RoomTileRedraw roomTileRedraw = new RoomTileRedraw(this);
     final RoomCollisionQueries roomCollisionQueries = new RoomCollisionQueries(this);
     final RoomPlayerItemActions roomPlayerItemActions = new RoomPlayerItemActions(this);
@@ -1141,68 +1143,7 @@ public final class RoomSession {
 
     boolean roomHasBossBattle() { return roomLoadCoordinator.roomHasBossBattle(); }
 
-    void clearTransientRoomState() {
-        pendingShutterCloseMask = closedShutterMask = shutterCloseTicks = 0;
-        shutterCloseDirection = shutterCloseLocation = -1;
-        shutterCloseStarted = false;
-        shutterTileOverrides.clear();
-        if (transientVfxSystem != null) {
-            transientVfxSystem.clear();
-        }
-        if (droppableRupeeSystem != null) {
-            droppableRupeeSystem.clear();
-        }
-        hookshotBridgeTileOverrides.clear();
-        bombedWallTileOverrides.clear();
-        bombedBlockTileOverrides.clear();
-        bombedCaveDoorTileOverrides.clear();
-        retainedTorchTiles.clear();
-        entityBridge.pendingBombExplosionEvents.clear();
-        pendingDungeonWarp = null;
-        entityBridge.pendingRoomEntityEvents.clear();
-        entityBridge.pendingChestRewardEvents.clear();
-        entityBridge.pendingKeyRewardEvents.clear();
-        entityBridge.pendingSlimeKeyRewardEvents.clear();
-        entityBridge.pendingHeartContainerRewards.clear();
-        entityBridge.pendingMadamMeowMeowFullHealRequests.clear();
-        entityBridge.pendingRichardProgressEvents.clear();
-        entityBridge.pendingSwordPickupRewards.clear();
-        entityBridge.pendingToadstoolRewards.clear();
-        entityBridge.pendingWitchExchangeEvents.clear();
-        entityBridge.pendingWitchRewardEvents.clear();
-        entityBridge.pendingRoomDialogRequests.clear();
-        pendingManboTransition = false;
-        pendingInstrumentTransition = false;
-        pendingShovelDrop = null;
-        shovelUseState = 0;
-        roomTriggerCount = 0;
-        activeRoomEvent = 0;
-        roomEventEffectExecuted = false;
-        thrownAtDoorTriggerResolved = false;
-        roomEventChestRevealCountdown = 0;
-        roomEventStairRevealCountdown = 0;
-        staircaseState = STAIRCASE_NONE;
-        staircaseX = 0;
-        staircaseY = 0;
-        switchButtonPressCounter = 0;
-        indoorKeyDoorAnimationCountdown = 0;
-        indoorKeyDoorDirection = -1;
-        indoorKeyDoorLocation = -1;
-        indoorBossDoorOpening = false;
-        pushBlockContactTicks = 0;
-        indoorPotPullFrames = 0;
-        pushedBlockMotionFrames = 0;
-        pushedBlockSourceLocation = -1;
-        pushedBlockDestinationLocation = -1;
-        pushedBlockDirection = -1;
-        pushedBlockEntitySlot = -1;
-        pushedBlocksTriggerEffectPending = false;
-        worldLinkMotionBlockPending = false;
-        tailCaveKeyholeCountdown = 0;
-        tailCaveFinalMotionBlockPending = false;
-        nextWorldMusicTrackCountdown = 0;
-        entityBridge.pendingRoomMusicTrack = -1;
-    }
+    void clearTransientRoomState() { roomTransientState.clearTransientRoomState(); }
 
     void applyBombObjectInteractions(List<BombExplosionEvent> events) { roomObjectMutations.applyBombObjectInteractions(events); }
 
@@ -1367,142 +1308,29 @@ public final class RoomSession {
 
     int activeRoomStatusFlags() { return roomState.activeRoomStatusFlags(activeRoom); }
 
-    void harvestKeyQuicksandEvents() {
-        if (entityBridge.entityRuntime == null
-            || entityBridge.entityRuntime.consumePendingKeyQuicksandEvents().isEmpty()) {
-            return;
-        }
-        roomState.overworldRoomStatus[0xCE] |= (byte) OW_ROOM_STATUS_FLAG_CHANGED;
-        roomState.indoorARoomStatus[0xF8] |= (byte) 0x20;
-    }
+    void harvestKeyQuicksandEvents() { roomEntityRewards.harvestKeyQuicksandEvents(); }
 
-    void harvestKeyRewardEvents() {
-        if (entityBridge.entityRuntime == null) {
-            return;
-        }
-        List<KeyRewardEvent> rewards =
-            entityBridge.entityRuntime.consumePendingKeyRewardEvents();
-        for (KeyRewardEvent reward : rewards) {
-            if (reward.itemType() >= ChestContentsTable.CHEST_MAP
-                && reward.itemType() <= ChestContentsTable.CHEST_SMALL_KEY) {
-                roomState.dungeonItemState.incrementCurrentFlag(reward.itemType());
-            }
-            markActiveRoomCompleted();
-        }
-        entityBridge.pendingKeyRewardEvents.addAll(rewards);
-    }
+    void harvestKeyRewardEvents() { roomEntityRewards.harvestKeyRewardEvents(); }
 
-    void harvestHeartContainerRewards() {
-        if (entityBridge.entityRuntime == null) {
-            return;
-        }
-        List<HeartContainerRewardEvent> rewards =
-            entityBridge.entityRuntime.consumePendingHeartContainerRewards();
-        if (rewards.isEmpty()) {
-            return;
-        }
-        markHeartContainerCollected();
-        entityBridge.pendingHeartContainerRewards.addAll(rewards);
-    }
+    void harvestHeartContainerRewards() { roomEntityRewards.harvestHeartContainerRewards(); }
 
-    void harvestSwordPickupRewards() {
-        if (entityBridge.entityRuntime == null) {
-            return;
-        }
-        List<SwordPickupRewardEvent> rewards =
-            entityBridge.entityRuntime.consumePendingSwordPickupRewards();
-        if (rewards.isEmpty()) {
-            return;
-        }
-        markActiveRoomCompleted();
-        entityBridge.pendingSwordPickupRewards.addAll(rewards);
-    }
+    void harvestSwordPickupRewards() { roomEntityRewards.harvestSwordPickupRewards(); }
 
-    void harvestToadstoolRewards() {
-        if (entityBridge.entityRuntime != null) {
-            entityBridge.pendingToadstoolRewards.addAll(entityBridge.entityRuntime.consumePendingToadstoolRewards());
-        }
-    }
+    void harvestToadstoolRewards() { roomEntityRewards.harvestToadstoolRewards(); }
 
-    void harvestInstrumentRewards() {
-        if (entityBridge.entityRuntime == null || activeRoom == null
-            || entityBridge.entityRuntime.consumePendingInstrumentRewards().isEmpty()
-            || activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
-            return;
-        }
-        indoorStatusTableForMap(activeRoom.mapId())[activeRoom.roomId()]
-            |= (byte) ROOM_STATUS_EVENT_1;
-        if (activeRoom.mapId() >= 0 && activeRoom.mapId() < roomState.dungeonProgressFlags.length) {
-            roomState.dungeonProgressFlags[activeRoom.mapId()] |= 0x02;
-        }
-        entityBridge.entityRuntime.setEntityRoomStatus(activeRoomStatusFlags());
-    }
+    void harvestInstrumentRewards() { roomEntityRewards.harvestInstrumentRewards(); }
 
-    void harvestInstrumentCompletions() {
-        if (entityBridge.entityRuntime == null) {
-            return;
-        }
-        for (InstrumentCompletionEvent completion
-            : entityBridge.entityRuntime.consumePendingInstrumentCompletions()) {
-            pendingInstrumentTransition = true;
-            if (completion.mapId() == 0x00) {
-                bowWowState = 0x80;
-            } else if (completion.mapId() == 0x01) {
-                tarinFlag = 0x02;
-            }
-        }
-    }
+    void harvestInstrumentCompletions() { roomEntityRewards.harvestInstrumentCompletions(); }
 
-    void harvestRichardProgressEvents() {
-        if (entityBridge.entityRuntime == null) {
-            return;
-        }
-        List<RichardProgressEvent> events =
-            entityBridge.entityRuntime.consumePendingRichardProgressEvents();
-        for (RichardProgressEvent event : events) {
-            if (event.kind() == RichardProgressEvent.Kind.START_QUEST) {
-                roomState.indoorBRoomStatus[0xC7] |= (byte) ROOM_STATUS_EVENT_1;
-                richardSpokenFlag = Math.max(richardSpokenFlag, 0x02);
-            } else {
-                entityInputs.entityGoldenLeavesCount = event.goldenLeavesCount();
-            }
-        }
-        entityBridge.pendingRichardProgressEvents.addAll(events);
-    }
+    void harvestRichardProgressEvents() { roomEntityRewards.harvestRichardProgressEvents(); }
 
-    void harvestWitchEvents() {
-        if (entityBridge.entityRuntime != null) {
-            entityBridge.pendingWitchExchangeEvents.addAll(
-                entityBridge.entityRuntime.consumePendingWitchExchangeEvents());
-            entityBridge.pendingWitchRewardEvents.addAll(
-                entityBridge.entityRuntime.consumePendingWitchRewardEvents());
-        }
-    }
+    void harvestWitchEvents() { roomEntityRewards.harvestWitchEvents(); }
 
-    void harvestOwlEventCompletions() {
-        if (entityBridge.entityRuntime == null || activeRoom == null) {
-            return;
-        }
-        if (entityBridge.entityRuntime.consumePendingOwlEventCompletions().isEmpty()) {
-            return;
-        }
-        roomState.overworldRoomStatus[activeRoom.roomId()] |= (byte) ROOM_STATUS_EVENT_2;
-    }
+    void harvestOwlEventCompletions() { roomEntityRewards.harvestOwlEventCompletions(); }
 
     void markHeartContainerCollected() { roomStoryState.markHeartContainerCollected(); }
 
-    void harvestSlimeKeyRewardEvents() {
-        if (entityBridge.entityRuntime == null) {
-            return;
-        }
-        List<SlimeKeyRewardEvent> rewards =
-            entityBridge.entityRuntime.consumePendingSlimeKeyRewardEvents();
-        for (SlimeKeyRewardEvent reward : rewards) {
-            entityInputs.entityGoldenLeavesCount = reward.goldenLeavesCount();
-            markActiveRoomCompleted();
-        }
-        entityBridge.pendingSlimeKeyRewardEvents.addAll(rewards);
-    }
+    void harvestSlimeKeyRewardEvents() { roomEntityRewards.harvestSlimeKeyRewardEvents(); }
 
     void markActiveRoomCompleted() { roomStoryState.markActiveRoomCompleted(); }
 
