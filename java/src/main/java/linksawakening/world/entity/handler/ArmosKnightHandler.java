@@ -40,7 +40,7 @@ final class ArmosKnightHandler {
               state.emit(
                   new DialogRequest(bossIntro.dialogTableId(), bossIntro.dialogLowId()));
             }
-            state.runtime.backgroundMechanics.requestArmosLinkPush(
+            state.background().requestArmosLinkPush(
                 state.entity,
                 state.linkEntityX,
                 state.linkEntityY,

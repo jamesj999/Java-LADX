@@ -19,7 +19,7 @@ final class ArmosStatueHandler {
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             RoomEntityBackgroundInteraction armosBackgroundInteraction =
-                state.runtime.backgroundInteraction;
+                state.background().interaction();
             if (armosBackgroundInteraction == null && state.backgroundCollision != null) {
               armosBackgroundInteraction =
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
@@ -38,7 +38,7 @@ final class ArmosStatueHandler {
             if (armosUpdate.linkFinalPositionCopyRequested()
                 && state.projectileLinkState.motionState()
                     < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE) {
-              state.runtime.backgroundMechanics.requestLinkPush(
+              state.background().requestLinkPush(
                   state.entity, EntityLinkCollisionRules.RESTORE_ONLY);
             }
             if (armosUpdate.woke()) {

@@ -114,7 +114,7 @@ final class GenieHandler {
               if (state.handlerLinkCollisionEnabled
                   && RoomEntityCombatRules.overlapsLink(
                       state.entity, state.linkEntityX, state.linkEntityY)) {
-                state.runtime.backgroundMechanics.requestLinkPush(
+                state.background().requestLinkPush(
                     state.entity, EntityLinkCollisionRules.STANDARD_PUSH);
               }
               state.runtime.genie.advanceGenieFireball(state.entity, state.frameCounter);
@@ -133,7 +133,7 @@ final class GenieHandler {
                   && state.handlerLinkCollisionEnabled
                   && RoomEntityCombatRules.overlapsLink(
                       state.entity, state.linkEntityX, state.linkEntityY)) {
-                state.runtime.backgroundMechanics.requestLinkPush(
+                state.background().requestLinkPush(
                     state.entity, EntityLinkCollisionRules.STANDARD_PUSH);
               }
               state.runtime.genie.advanceGenieBody(

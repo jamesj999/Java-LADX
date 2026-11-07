@@ -18,7 +18,7 @@ final class MimicHandler {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             int slot = state.entity.slot();
             RoomEntityBackgroundInteraction mimicBackgroundInteraction =
-                state.runtime.backgroundInteraction;
+                state.background().interaction();
             if (mimicBackgroundInteraction == null && state.backgroundCollision != null) {
               mimicBackgroundInteraction =
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);

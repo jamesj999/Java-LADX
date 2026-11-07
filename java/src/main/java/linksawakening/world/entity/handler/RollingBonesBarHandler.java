@@ -52,9 +52,7 @@ final class RollingBonesBarHandler {
                     && state.slot().ignoreHits(state.entity.slot()) != 0) {
                   // ApplyRecoilIfNeeded_06 pops the handler return address:
                   // no jump physics or AI movement occurs during recoil.
-                  state.replaceEntity(state
-                          .runtime
-                          .backgroundMechanics
+                  state.replaceEntity(state.background()
                           .applyEnemyRecoilIfNeeded(state.entity, state.backgroundCollision)
                           .entity());
                   return false;

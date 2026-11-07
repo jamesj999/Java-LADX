@@ -71,7 +71,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     private void disableEntityWithoutPersistence(int slot) { lifecycle.disableEntityWithoutPersistence(slot); }
     final EntityRoomInitialization roomInitialization = new EntityRoomInitialization(this);
     public final EntitySlotProperties slotProperties = new EntitySlotProperties(this);
-    public final EntityBackgroundMechanics backgroundMechanics = new EntityBackgroundMechanics(this);
+    final EntityBackgroundMechanics backgroundMechanics = new EntityBackgroundMechanics(this);
     public final EntityBombInteractions bombInteractions = new EntityBombInteractions(this);
     final EntitySlotLifecycle lifecycle = new EntitySlotLifecycle(this);
     final EntityEnemySpawns entityEnemySpawns = new EntityEnemySpawns(this);

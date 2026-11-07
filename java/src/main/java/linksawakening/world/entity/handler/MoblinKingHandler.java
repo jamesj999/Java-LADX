@@ -51,9 +51,7 @@ final class MoblinKingHandler {
               // movement/Z physics and AI wait until the recoil ends.
               if (state.runtime.enemyRecoilMotion.isActive(state.entity.slot())
                   && state.slot().ignoreHits(state.entity.slot()) != 0) {
-                state.replaceEntity(state
-                        .runtime
-                        .backgroundMechanics
+                state.replaceEntity(state.background()
                         .applyEnemyRecoilIfNeeded(state.entity, state.backgroundCollision)
                         .entity());
                 return false;

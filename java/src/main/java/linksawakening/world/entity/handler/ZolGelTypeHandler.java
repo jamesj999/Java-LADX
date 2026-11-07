@@ -37,7 +37,7 @@ final class ZolGelTypeHandler {
                   && state.handlerInteractive
                  ) {
                 RoomEntityBackgroundInteraction zolGelBackgroundInteraction =
-                    state.runtime.backgroundInteraction;
+                    state.background().interaction();
                 if (zolGelBackgroundInteraction == null && state.backgroundCollision != null) {
                   zolGelBackgroundInteraction =
                       RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);

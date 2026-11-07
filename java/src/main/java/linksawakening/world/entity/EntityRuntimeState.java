@@ -101,7 +101,7 @@ abstract class EntityRuntimeState extends EntityRomConstants {
         (entity, frameCounter, previousGroundStatus, speedZ, sideScrolling) ->
             RoomEntityGroundInteraction.Result.unchanged(entity, 0);
 
-    public RoomEntityBackgroundInteraction backgroundInteraction;
+    RoomEntityBackgroundInteraction backgroundInteraction;
 
     public FollowingNpcState followingNpcState = FollowingNpcState.none();
 

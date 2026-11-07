@@ -21,7 +21,7 @@ final class WitchRatHandler {
               && state.handlerLinkCollisionEnabled) {
             int slot = state.entity.slot();
             RoomEntityBackgroundInteraction witchRatBackgroundInteraction =
-                state.runtime.backgroundInteraction;
+                state.background().interaction();
             if (witchRatBackgroundInteraction == null && state.backgroundCollision != null) {
               witchRatBackgroundInteraction =
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);

@@ -18,7 +18,7 @@ final class StarHandler {
 
               && state.handlerLinkCollisionEnabled) {
             RoomEntityBackgroundInteraction starBackgroundInteraction =
-                state.runtime.backgroundInteraction;
+                state.background().interaction();
             if (starBackgroundInteraction == null && state.backgroundCollision != null) {
               starBackgroundInteraction =
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);

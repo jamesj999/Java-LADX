@@ -29,7 +29,7 @@ final class RoamingEnemyTypeHandler {
                           state.entity,
                           state.frame,
                           state.randomByteSupplier,
-                          state.runtime.backgroundInteraction,
+                          state.background().interaction(),
                           state.backgroundCollision,
                           state.slot().ignoreHits(state.entity.slot()),
                           state.frame);
@@ -37,7 +37,7 @@ final class RoamingEnemyTypeHandler {
                   state.slot().setTransitionCountdown(state.entity.slot(), unmaskedUpdate.transitionCountdown());
                 } else {
                   RoamingEnemyMotion.Update roamingUpdate =
-                      state.runtime.backgroundInteraction == null
+                      state.background().interaction() == null
                           ? state.runtime.roamingEnemyMotion.advance(
                               state.entity,
                               state.linkEntityX,
@@ -50,7 +50,7 @@ final class RoamingEnemyTypeHandler {
                               state.linkEntityX,
                               state.linkEntityY,
                               state.randomByteSupplier,
-                              state.runtime.backgroundInteraction,
+                              state.background().interaction(),
                               state.slot().ignoreHits(state.entity.slot()),
                               state.frame,
                               state.creditsGameplay);

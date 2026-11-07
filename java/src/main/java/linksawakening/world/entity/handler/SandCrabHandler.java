@@ -22,7 +22,7 @@ final class SandCrabHandler {
               && state.handlerLinkCollisionEnabled) {
             int slot = state.entity.slot();
             RoomEntityBackgroundInteraction sandCrabBackgroundInteraction =
-                state.runtime.backgroundInteraction;
+                state.background().interaction();
             if (sandCrabBackgroundInteraction == null && state.backgroundCollision != null) {
               sandCrabBackgroundInteraction =
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);

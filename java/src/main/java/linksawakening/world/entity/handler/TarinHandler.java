@@ -43,7 +43,7 @@ final class TarinHandler {
                   && (state.runtime.tarinRaccoonMotion.state(state.entity.slot()) == 0
                       || state.runtime.roomInspection.tarinTransformationHandlerInteractive())) {
                 RoomEntityBackgroundInteraction tarinBackgroundInteraction =
-                    state.runtime.backgroundInteraction;
+                    state.background().interaction();
                 if (tarinBackgroundInteraction == null && state.backgroundCollision != null) {
                   tarinBackgroundInteraction =
                       RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
@@ -94,7 +94,7 @@ final class TarinHandler {
                 if (tarinUpdate.pushLink()) {
                   if (RoomEntityCombatRules.overlapsLink(
                       state.updated, state.linkEntityX, state.linkEntityY)) {
-                    state.runtime.backgroundMechanics.requestLinkPush(
+                    state.background().requestLinkPush(
                         state.updated, EntityLinkCollisionRules.STANDARD_PUSH);
                   }
                 }

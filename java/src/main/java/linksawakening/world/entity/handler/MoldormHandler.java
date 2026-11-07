@@ -96,7 +96,7 @@ final class MoldormHandler {
               return false;
             }
             RoomEntityBackgroundInteraction moldormBackgroundInteraction =
-                state.runtime.backgroundInteraction;
+                state.background().interaction();
             if (moldormBackgroundInteraction == null && state.backgroundCollision != null) {
               moldormBackgroundInteraction =
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);

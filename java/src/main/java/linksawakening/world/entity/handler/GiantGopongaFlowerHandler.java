@@ -21,7 +21,7 @@ final class GiantGopongaFlowerHandler {
                 state.linkEntityX,
                 state.linkEntityY,
                 state.handlerLinkCollisionEnabled)) {
-              state.runtime.backgroundMechanics.requestLinkPush(
+              state.background().requestLinkPush(
                   state.entity, EntityLinkCollisionRules.STANDARD_PUSH);
             }
             GiantGopongaMotion.Update giantUpdate =

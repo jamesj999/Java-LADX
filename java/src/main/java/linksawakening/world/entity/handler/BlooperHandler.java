@@ -23,7 +23,7 @@ final class BlooperHandler {
 
               && state.handlerLinkCollisionEnabled) {
             RoomEntityBackgroundInteraction blooperBackgroundInteraction =
-                state.runtime.backgroundInteraction;
+                state.background().interaction();
             if (blooperBackgroundInteraction == null && state.backgroundCollision != null) {
               blooperBackgroundInteraction =
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
@@ -40,7 +40,7 @@ final class BlooperHandler {
                         movement.entity(),
                         state.frame,
                         state.runtime.entityGroundStatus[state.entity.slot()],
-                        state.runtime.backgroundMechanics.verticalSpeedZ(movement.entity()),
+                        state.background().verticalSpeedZ(movement.entity()),
                         state.runtime.groundInteractionSideScrolling),
                     "Room entity ground interaction returned null");
             BlooperMotion.Update blooperUpdate =

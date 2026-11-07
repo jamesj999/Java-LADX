@@ -32,7 +32,7 @@ final class ZoraHandler {
               // this collision check, then copies hLinkFinalPosition
               // and calls ResetPegasusBoots. It does not use the common
               // hookshot-chain reset helper.
-              state.runtime.backgroundMechanics.requestLinkPush(
+              state.background().requestLinkPush(
                   state.entity, EntityLinkCollisionRules.ZORA);
             }
             ZoraMotion.Update zoraUpdate =

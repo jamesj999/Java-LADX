@@ -36,7 +36,7 @@ final class ZombieHandler {
               && state.handlerLinkCollisionEnabled) {
             int slot = state.entity.slot();
             RoomEntityBackgroundInteraction zombieBackgroundInteraction =
-                state.runtime.backgroundInteraction;
+                state.background().interaction();
             if (zombieBackgroundInteraction == null && state.backgroundCollision != null) {
               zombieBackgroundInteraction =
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);

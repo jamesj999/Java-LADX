@@ -163,6 +163,8 @@ public final class EntityFrameExecution {
 
   public linksawakening.entity.EntitySpriteHandlerCatalog sprites() { return runtime.spriteHandlers; }
 
+  public EntityBackgroundMechanics background() { return runtime.backgroundMechanics; }
+
   public EntityLinkView link() { return runtime.linkView; }
 
   public EntitySlotView slot() { return runtime.slotView; }

@@ -130,9 +130,9 @@ final class HookshotChainHandler {
             }
             EntityBackgroundCollisionResult collisionResult = null;
             boolean blocked;
-            if (state.runtime.backgroundInteraction != null) {
+            if (state.background().interaction() != null) {
               collisionResult =
-                  state.runtime.backgroundInteraction.probe(
+                  state.background().interaction().probe(
                       state.entity,
                       hookshotState.direction(),
                       nextPosition.x(),

@@ -13,7 +13,7 @@ final class HookshotBridgeHandler {
         EntityTickStage.PHASE_1_HOOKSHOT_BRIDGE,
         state -> {
           if (state.status == EntityStatus.ACTIVE) {
-            state.runtime.backgroundMechanics.advanceHookshotBridgeEntity(
+            state.background().advanceHookshotBridgeEntity(
                 state.index, state.entity);
             return false;
           }

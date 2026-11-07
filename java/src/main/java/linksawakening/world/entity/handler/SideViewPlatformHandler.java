@@ -24,7 +24,7 @@ final class SideViewPlatformHandler {
                   && !state.wasInitializing
 
                   && state.handlerLinkCollisionEnabled
-                  && state.runtime.backgroundMechanics.entityTimersInteractive()
+                  && state.background().entityTimersInteractive()
                   && !state.creditsGameplay
                   && state.runtime.transitionSequenceCounter == 0x04) {
                 SideViewPlatformMotion.Frame platformFrame =

@@ -40,7 +40,7 @@ final class MoblinSwordHandler {
               && !state.runtime.inspection().witchGotItemPresentationActive()
              ) {
             RoomEntityBackgroundInteraction swordBackgroundInteraction =
-                state.runtime.backgroundInteraction;
+                state.background().interaction();
             if (swordBackgroundInteraction == null && state.backgroundCollision != null) {
               swordBackgroundInteraction =
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);

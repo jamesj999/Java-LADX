@@ -26,7 +26,7 @@ final class HinoxHandler {
           if (state.status == EntityStatus.ACTIVE
               && !state.wasInitializing
               && state.handlerLinkCollisionEnabled
-              && state.runtime.backgroundMechanics.entityTimersInteractive()
+              && state.background().entityTimersInteractive()
               && state.runtime.transitionSequenceCounter == 0x04
               && !state.creditsGameplay
              ) {

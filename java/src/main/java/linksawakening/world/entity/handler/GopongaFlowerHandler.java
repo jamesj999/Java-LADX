@@ -23,7 +23,7 @@ final class GopongaFlowerHandler {
                 state.linkEntityX,
                 state.linkEntityY,
                 state.handlerLinkCollisionEnabled)) {
-              state.runtime.backgroundMechanics.requestLinkPush(
+              state.background().requestLinkPush(
                   state.entity, EntityLinkCollisionRules.STANDARD_PUSH);
             }
             state.updated =

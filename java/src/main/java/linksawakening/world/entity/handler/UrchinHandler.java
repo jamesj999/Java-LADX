@@ -26,7 +26,7 @@ final class UrchinHandler {
               && state.handlerLinkCollisionEnabled) {
             int slot = state.entity.slot();
             RoomEntityBackgroundInteraction urchinBackgroundInteraction =
-                state.runtime.backgroundInteraction;
+                state.background().interaction();
             if (urchinBackgroundInteraction == null && state.backgroundCollision != null) {
               urchinBackgroundInteraction =
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
@@ -52,7 +52,7 @@ final class UrchinHandler {
             }
             state.applyGenericGroundInteraction = urchinUpdate.appliesBackgroundInteraction();
             if (urchinUpdate.linkCollision()) {
-              state.runtime.backgroundMechanics.requestLinkPush(
+              state.background().requestLinkPush(
                   state.updated, EntityLinkCollisionRules.URCHIN);
             }
             if (urchinUpdate.jingleId() >= 0) {

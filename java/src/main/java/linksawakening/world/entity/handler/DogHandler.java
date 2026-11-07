@@ -34,7 +34,7 @@ final class DogHandler {
               && state.handlerLinkCollisionEnabled) {
             int slot = state.entity.slot();
             RoomEntityBackgroundInteraction dogBackgroundInteraction =
-                state.runtime.backgroundInteraction;
+                state.background().interaction();
             if (dogBackgroundInteraction == null && state.backgroundCollision != null) {
               dogBackgroundInteraction =
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);

@@ -18,7 +18,7 @@ final class HidingZolHandler {
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             RoomEntityBackgroundInteraction hidingZolBackgroundInteraction =
-                state.runtime.backgroundInteraction;
+                state.background().interaction();
             if (hidingZolBackgroundInteraction == null && state.backgroundCollision != null) {
               hidingZolBackgroundInteraction =
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);

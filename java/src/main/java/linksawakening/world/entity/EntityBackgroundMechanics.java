@@ -22,6 +22,8 @@ public final class EntityBackgroundMechanics {
     private final RoomEntityRuntime runtime;
     EntityBackgroundMechanics(RoomEntityRuntime runtime) { this.runtime = runtime; }
 
+    public RoomEntityBackgroundInteraction interaction() { return runtime.backgroundInteraction; }
+
     boolean moldormOrHeadOverlapsSword(RoomEntity entity,
                                                 int swordX, int swordWidth,
                                                 int swordY, int swordHeight) {

@@ -22,7 +22,7 @@ final class BuzzBlobHandler {
               && state.handlerLinkCollisionEnabled) {
             int slot = state.entity.slot();
             RoomEntityBackgroundInteraction buzzBlobBackgroundInteraction =
-                state.runtime.backgroundInteraction;
+                state.background().interaction();
             if (buzzBlobBackgroundInteraction == null && state.backgroundCollision != null) {
               buzzBlobBackgroundInteraction =
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);

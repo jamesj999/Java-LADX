@@ -21,7 +21,7 @@ final class MaskedMimicGoriyaHandler {
               && state.runtime.entityMapId != 0x1F) {
             int slot = state.entity.slot();
             RoomEntityBackgroundInteraction maskedMimicBackgroundInteraction =
-                state.runtime.backgroundInteraction;
+                state.background().interaction();
             if (maskedMimicBackgroundInteraction == null && state.backgroundCollision != null) {
               maskedMimicBackgroundInteraction =
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);

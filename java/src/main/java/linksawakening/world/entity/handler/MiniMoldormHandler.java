@@ -26,12 +26,12 @@ final class MiniMoldormHandler {
             state.runtime.miniMoldormMotion.beginFrame(
                 state.entity, state.slot().ignoreHits(slot) != 0);
             EnemyRecoilMotion.Update recoil =
-                state.runtime.backgroundMechanics.applyEnemyRecoilIfNeeded(
+                state.background().applyEnemyRecoilIfNeeded(
                     state.entity, state.backgroundCollision);
             state.entity = recoil.entity();
             state.updated = state.entity;
             RoomEntityBackgroundInteraction miniBackgroundInteraction =
-                state.runtime.backgroundInteraction;
+                state.background().interaction();
             if (miniBackgroundInteraction == null && state.backgroundCollision != null) {
               miniBackgroundInteraction =
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
