@@ -40,14 +40,7 @@ public final class FrameScene {
 
     public void drawTo(byte[] buffer, GPU gpu, RenderPipeline pipeline) {
         if (pipeline == RenderPipeline.HARDWARE) {
-            // Reject incomplete migrations before any layer can mutate the GPU or output.
-            for (RenderLayer layer : layers) {
-                if (!(layer instanceof HardwareRenderLayer hardware) || !hardware.supportsHardware()) {
-                    throw new IllegalStateException("Layer not migrated: " + layer.getClass().getName());
-                }
-            }
-            HardwareFrame frame = new HardwareFrame(true);
-            for (RenderLayer layer : layers) ((HardwareRenderLayer) layer).submit(frame, gpu);
+            HardwareFrame frame = hardwareFrame(gpu);
             frame.compose(buffer);
             return;
         }
@@ -58,6 +51,16 @@ public final class FrameScene {
         }
         DrawObserver observer = DRAW_OBSERVER.get();
         if (observer != null) observer.drawn(this, buffer, gpu);
+    }
+
+    HardwareFrame hardwareFrame(GPU gpu) {
+        for (RenderLayer layer : layers) {
+            if (!(layer instanceof HardwareRenderLayer hardware) || !hardware.supportsHardware())
+                throw new IllegalStateException("Layer not migrated: " + layer.getClass().getName());
+        }
+        HardwareFrame frame = new HardwareFrame(true);
+        for (RenderLayer layer : layers) ((HardwareRenderLayer) layer).submit(frame, gpu);
+        return frame;
     }
 
     public int layerCount() {

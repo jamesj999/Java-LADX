@@ -14,6 +14,8 @@ public final class HardwareFrame implements RenderLayer, OamSink {
     private final int[] objects = new int[WIDTH * HEIGHT];
     private final int[] objectOrder = new int[WIDTH * HEIGHT];
     private final boolean[] objectBehind = new boolean[WIDTH * HEIGHT];
+    private final boolean[] approvedHudEvidence = new boolean[WIDTH * HEIGHT];
+    private final int[] hudTiles = new int[WIDTH * HEIGHT], hudAttributes = new int[WIDTH * HEIGHT];
     private final boolean backgroundPriorityEnabled;
 
     public HardwareFrame(boolean backgroundPriorityEnabled) {
@@ -25,6 +27,7 @@ public final class HardwareFrame implements RenderLayer, OamSink {
     public void backgroundTile(Tile tile, int x, int y, boolean flipX, boolean flipY,
                                int[] palette, boolean priority) {
         stamp(tile, x, y, flipX, flipY, (pixel, index) -> {
+            approvedHudEvidence[pixel] = false;
             backgroundPalettes[pixel] = palette;
             backgroundIndex[pixel] = (byte) index;
             backgroundPriority[pixel] = priority;
@@ -34,9 +37,43 @@ public final class HardwareFrame implements RenderLayer, OamSink {
     public void backgroundPixel(int x, int y, int index, int[] palette, boolean priority) {
         if (x < 0 || y < 0 || x >= WIDTH || y >= HEIGHT) return;
         int pixel = y * WIDTH + x;
+        approvedHudEvidence[pixel] = false;
         backgroundIndex[pixel] = (byte) index;
         backgroundPalettes[pixel] = palette;
         backgroundPriority[pixel] = priority;
+    }
+
+    /** Retains provenance for the specifically approved closed-HUD fidelity correction. */
+    public void closedHudTile(Tile tile, int tileId, int attributes, int x, int y, int[] palette) {
+        backgroundTile(tile, x, y, (attributes & 32) != 0, (attributes & 64) != 0,
+            palette, (attributes & 128) != 0);
+        if (tile == null) return;
+        stamp(tile, x, y, (attributes & 32) != 0, (attributes & 64) != 0, (pixel, index) -> {
+            hudTiles[pixel] = tileId;
+            hudAttributes[pixel] = attributes;
+            approvedHudEvidence[pixel] = pixel / WIDTH >= 128 && index == 0;
+        });
+    }
+
+    public String hudEvidence(int pixel) {
+        return String.format("tile=$%02X attr=$%02X index=%d objSlot=%d bgRGB=$%06X objRGB=$%06X",
+            hudTiles[pixel], hudAttributes[pixel], backgroundIndex[pixel], objectOrder[pixel],
+            backgroundPalettes[pixel] == null ? 0 : backgroundPalettes[pixel][backgroundIndex[pixel]], objects[pixel]);
+    }
+
+    /** Call after compose. Requires the legacy RGB to equal the resolved zero-index HUD color. */
+    public boolean explainsHudColorZero(byte[] legacy, byte[] hardware, int pixel) {
+        if (!approvedHudEvidence[pixel] || backgroundIndex[pixel] != 0
+            || objectOrder[pixel] == Integer.MAX_VALUE || backgroundPalettes[pixel] == null) return false;
+        int offset = pixel * 4;
+        int bg = backgroundPalettes[pixel][0];
+        int obj = objects[pixel];
+        for (int channel = 0; channel < 3; channel++) {
+            int shift = 16 - channel * 8;
+            if ((legacy[offset + channel] & 255) != ((bg >> shift) & 255)
+                || (hardware[offset + channel] & 255) != ((obj >> shift) & 255)) return false;
+        }
+        return legacy[offset + 3] == (byte) 255 && hardware[offset + 3] == (byte) 255;
     }
 
     private record ObjectTile(Tile tile, int x, int y, boolean flipX, boolean flipY,

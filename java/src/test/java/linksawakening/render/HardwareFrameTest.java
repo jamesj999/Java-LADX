@@ -83,4 +83,22 @@ final class HardwareFrameTest {
         frame.appendInSlot(2, solid(2), 64, 128, false, false, PALETTE, true);
         assertEquals(33, pixel(frame, 71, 128));
     }
+    @Test void fidelityClassifierRequiresHudZeroObjectAndExactLegacyBgColor() {
+        HardwareFrame frame = new HardwareFrame(true);
+        frame.closedHudTile(solid(0), 0x7F, 1, 64, 128, PALETTE);
+        frame.appendInSlot(2, solid(2), 64, 128, false, false, PALETTE, false);
+        byte[] hardware = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
+        frame.compose(hardware);
+        int pixel = 128 * Framebuffer.WIDTH + 71, at = pixel * 4;
+        byte[] legacy = hardware.clone();
+        legacy[at + 2] = 11;
+        org.junit.jupiter.api.Assertions.assertTrue(frame.explainsHudColorZero(legacy, hardware, pixel));
+        legacy[at] = 1;
+        org.junit.jupiter.api.Assertions.assertFalse(frame.explainsHudColorZero(legacy, hardware, pixel));
+        legacy[at] = 0;
+        frame.closedHudTile(solid(3), 0xA9, 2, 64, 128, PALETTE);
+        frame.compose(hardware);
+        legacy[at + 2] = 44;
+        org.junit.jupiter.api.Assertions.assertFalse(frame.explainsHudColorZero(legacy, hardware, pixel));
+    }
 }
