@@ -1,5 +1,9 @@
 package linksawakening.world;
 
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
+import linksawakening.rom.RomSymbols;
+
 import linksawakening.entity.Link;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.rom.RomTables;
@@ -14,6 +18,10 @@ import linksawakening.rom.RomTables;
  * that single cell.
  */
 public final class OverworldBushInteraction {
+    private int readRomByte(int offset) {
+        return new Rom(romData).u8(RomAddress.fromOffset(offset));
+    }
+
 
     private static final int BANK_SIZE = 0x4000;
 
@@ -31,12 +39,12 @@ public final class OverworldBushInteraction {
     private static final int OBJECT_GROUND_STAIRS = 0xC6;
     private static final int OBJECT_PIT = 0xE8;
 
-    private static final int OVERWORLD_TILEMAP_BANK = 0x1A;
-    private static final int OVERWORLD_TILEMAP_ADDR = 0x6B1D;
-    private static final int OVERWORLD_OBJ_ATTR_BANKS_BANK = 0x1A;
-    private static final int OVERWORLD_OBJ_ATTR_BANKS_ADDR = 0x6476;
-    private static final int OVERWORLD_OBJ_ATTR_PTRS_BANK = 0x1A;
-    private static final int OVERWORLD_OBJ_ATTR_PTRS_ADDR = 0x5E76;
+    private static final int OVERWORLD_TILEMAP_BANK = RomSymbols.OverworldObjectsTilemapCGB.bank();
+    private static final int OVERWORLD_TILEMAP_ADDR = RomSymbols.OverworldObjectsTilemapCGB.address();
+    private static final int OVERWORLD_OBJ_ATTR_BANKS_BANK = RomSymbols.OverworldBGAttributesBanks.bank();
+    private static final int OVERWORLD_OBJ_ATTR_BANKS_ADDR = RomSymbols.OverworldBGAttributesBanks.address();
+    private static final int OVERWORLD_OBJ_ATTR_PTRS_BANK = RomSymbols.BGAttributesPointers_Overworld.bank();
+    private static final int OVERWORLD_OBJ_ATTR_PTRS_ADDR = RomSymbols.BGAttributesPointers_Overworld.address();
 
     private final byte[] romData;
     private final RomTables romTables;
@@ -254,10 +262,10 @@ public final class OverworldBushInteraction {
         int tileTableOffset = objectTilemapOffset + (renderValue & 0xFF) * 4;
 
         int attrBankOffset = romOffset(OVERWORLD_OBJ_ATTR_BANKS_BANK, OVERWORLD_OBJ_ATTR_BANKS_ADDR + roomId);
-        int attrBank = Byte.toUnsignedInt(romData[attrBankOffset]) | 0x20;
+        int attrBank = readRomByte(attrBankOffset) | 0x20;
         int attrPtrsOffset = romOffset(OVERWORLD_OBJ_ATTR_PTRS_BANK, OVERWORLD_OBJ_ATTR_PTRS_ADDR + roomId * 2);
-        int attrPtrLo = Byte.toUnsignedInt(romData[attrPtrsOffset]);
-        int attrPtrHi = Byte.toUnsignedInt(romData[attrPtrsOffset + 1]);
+        int attrPtrLo = readRomByte(attrPtrsOffset);
+        int attrPtrHi = readRomByte(attrPtrsOffset + 1);
         int attrTableOffset = romOffset(attrBank, (attrPtrHi << 8) | attrPtrLo) + (renderValue & 0xFF) * 4;
 
         for (int ty = 0; ty < 2; ty++) {
@@ -266,8 +274,8 @@ public final class OverworldBushInteraction {
                 int mapX = cellX * 2 + tx;
                 int mapY = cellY * 2 + ty;
                 int mapIndex = mapY * ROOM_TILE_WIDTH + mapX;
-                roomTileIds[mapIndex] = Byte.toUnsignedInt(romData[tileTableOffset + tileByteIndex]);
-                roomTileAttrs[mapIndex] = Byte.toUnsignedInt(romData[attrTableOffset + tileByteIndex]);
+                roomTileIds[mapIndex] = readRomByte(tileTableOffset + tileByteIndex);
+                roomTileAttrs[mapIndex] = readRomByte(attrTableOffset + tileByteIndex);
             }
         }
     }

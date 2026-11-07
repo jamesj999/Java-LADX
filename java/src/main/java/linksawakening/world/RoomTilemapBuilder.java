@@ -1,42 +1,50 @@
 package linksawakening.world;
 
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
+import linksawakening.rom.RomSymbols;
+
 import linksawakening.rom.RomBank;
 
 import java.util.Arrays;
 
 public final class RoomTilemapBuilder {
+    private int readRomByte(int offset) {
+        return new Rom(romData).u8(RomAddress.fromOffset(offset));
+    }
+
     private static final int MAP_COLOR_DUNGEON = 0xFF;
     private static final int MAP_HOUSE = 0x10;
     private static final int ROOM_CAMERA_SHOP = 0xB5;
 
-    private static final int INDOOR_OBJECT_TILEMAP_BANK = 0x08;
-    private static final int INDOOR_OBJECT_TILEMAP_ADDR = 0x43B0;
-    private static final int COLOR_DUNGEON_OBJECT_TILEMAP_BANK = 0x08;
-    private static final int COLOR_DUNGEON_OBJECT_TILEMAP_ADDR = 0x4760;
-    private static final int COLOR_DUNGEON_OBJECT_ATTR_BANK = 0x23;
-    private static final int COLOR_DUNGEON_OBJECT_ATTR_ADDR = 0x6000;
-    private static final int BG_ATTR_PTRS_INDOORS_A_BANK = 0x1A;
-    private static final int BG_ATTR_PTRS_INDOORS_A_ADDR = 0x6076;
-    private static final int BG_ATTR_PTRS_INDOORS_B_ADDR = 0x6276;
+    private static final int INDOOR_OBJECT_TILEMAP_BANK = RomSymbols.IndoorObjectsTilemapCGB.bank();
+    private static final int INDOOR_OBJECT_TILEMAP_ADDR = RomSymbols.IndoorObjectsTilemapCGB.address();
+    private static final int COLOR_DUNGEON_OBJECT_TILEMAP_BANK = RomSymbols.ColorDungeonObjectsTilemap.bank();
+    private static final int COLOR_DUNGEON_OBJECT_TILEMAP_ADDR = RomSymbols.ColorDungeonObjectsTilemap.address();
+    private static final int COLOR_DUNGEON_OBJECT_ATTR_BANK = RomSymbols.ColorDungeonBGAttributes.bank();
+    private static final int COLOR_DUNGEON_OBJECT_ATTR_ADDR = RomSymbols.ColorDungeonBGAttributes.address();
+    private static final int BG_ATTR_PTRS_INDOORS_A_BANK = RomSymbols.BGAttributesPointers_IndoorsA.bank();
+    private static final int BG_ATTR_PTRS_INDOORS_A_ADDR = RomSymbols.BGAttributesPointers_IndoorsA.address();
+    private static final int BG_ATTR_PTRS_INDOORS_B_ADDR = RomSymbols.BGAttributesPointers_IndoorsB.address();
     private static final int CAMERA_SHOP_ATTR_POINTER_OFFSET = 0x1FE;
-    private static final int INDOORS_A_ATTRMAPS_BANK = 0x23;
-    private static final int INDOORS_B_ATTRMAPS_BANK = 0x24;
+    private static final int INDOORS_A_ATTRMAPS_BANK = RomSymbols.IndoorsAObjectsAttrmaps.bank();
+    private static final int INDOORS_B_ATTRMAPS_BANK = RomSymbols.IndoorsBObjectsAttrmaps.bank();
 
-    private static final int OVERWORLD_TILEMAP_BANK = 0x1A;
-    private static final int OVERWORLD_TILEMAP_ADDR = 0x6B1D;
-    private static final int OVERWORLD_OBJ_ATTR_BANKS_BANK = 0x1A;
-    private static final int OVERWORLD_OBJ_ATTR_BANKS_ADDR = 0x6476;
-    private static final int OVERWORLD_OBJ_ATTR_PTRS_BANK = 0x1A;
-    private static final int OVERWORLD_OBJ_ATTR_PTRS_ADDR = 0x5E76;
+    private static final int OVERWORLD_TILEMAP_BANK = RomSymbols.OverworldObjectsTilemapCGB.bank();
+    private static final int OVERWORLD_TILEMAP_ADDR = RomSymbols.OverworldObjectsTilemapCGB.address();
+    private static final int OVERWORLD_OBJ_ATTR_BANKS_BANK = RomSymbols.OverworldBGAttributesBanks.bank();
+    private static final int OVERWORLD_OBJ_ATTR_BANKS_ADDR = RomSymbols.OverworldBGAttributesBanks.address();
+    private static final int OVERWORLD_OBJ_ATTR_PTRS_BANK = RomSymbols.BGAttributesPointers_Overworld.bank();
+    private static final int OVERWORLD_OBJ_ATTR_PTRS_ADDR = RomSymbols.BGAttributesPointers_Overworld.address();
     private static final int OBJECT_BOMBABLE_CAVE_DOOR = 0xBA;
     private static final int OBJECT_ROCKY_CAVE_DOOR = 0xE1;
     private static final int OBJECT_CLOSED_GATE = 0xC2;
     private static final int OBJECT_CAVE_DOOR = 0xE3;
 
-    private static final int GBC_OVERLAY_BANK_A = 0x26;
-    private static final int GBC_OVERLAY_ADDR_A = 0x4000;
-    private static final int GBC_OVERLAY_BANK_B = 0x27;
-    private static final int GBC_OVERLAY_ADDR_B = 0x4000;
+    private static final int GBC_OVERLAY_BANK_A = RomSymbols.RoomGBCOverlaysA.bank();
+    private static final int GBC_OVERLAY_ADDR_A = RomSymbols.RoomGBCOverlaysA.address();
+    private static final int GBC_OVERLAY_BANK_B = RomSymbols.RoomGBCOverlaysB.bank();
+    private static final int GBC_OVERLAY_ADDR_B = RomSymbols.RoomGBCOverlaysB.address();
     private static final int GBC_OVERLAY_ROOM_SIZE = 0x50;
     private static final int GBC_OVERLAY_BANK_B_START_ROOM = 0xCC;
 
@@ -95,10 +103,10 @@ public final class RoomTilemapBuilder {
                 for (int ty = 0; ty < 2; ty++) {
                     for (int tx = 0; tx < 2; tx++) {
                         int tileByteIndex = ty * 2 + tx;
-                        int tileId = Byte.toUnsignedInt(romData[tileTableOffset + tileByteIndex]);
+                        int tileId = readRomByte(tileTableOffset + tileByteIndex);
                         int attrByte = 0;
                         if (attrTableOffset >= 0 && attrTableOffset + tileByteIndex < romData.length) {
-                            attrByte = Byte.toUnsignedInt(romData[attrTableOffset + tileByteIndex]);
+                            attrByte = readRomByte(attrTableOffset + tileByteIndex);
                         }
 
                         int mapX = ox * 2 + tx;
@@ -116,12 +124,12 @@ public final class RoomTilemapBuilder {
 
     private int overworldObjectAttrOffset(int roomId) {
         int attrBankOffset = RomBank.romOffset(OVERWORLD_OBJ_ATTR_BANKS_BANK, OVERWORLD_OBJ_ATTR_BANKS_ADDR + roomId);
-        int attrBank = Byte.toUnsignedInt(romData[attrBankOffset]);
+        int attrBank = readRomByte(attrBankOffset);
         int attrPtrsOffset = RomBank.romOffset(OVERWORLD_OBJ_ATTR_PTRS_BANK, OVERWORLD_OBJ_ATTR_PTRS_ADDR + roomId * 2);
-        int attrPtrLo = Byte.toUnsignedInt(romData[attrPtrsOffset]);
-        int attrPtrHi = Byte.toUnsignedInt(romData[attrPtrsOffset + 1]);
+        int attrPtrLo = readRomByte(attrPtrsOffset);
+        int attrPtrHi = readRomByte(attrPtrsOffset + 1);
         int attrTableAddr = (attrPtrHi << 8) | attrPtrLo;
-        return RomBank.romOffset(attrBank | 0x20, attrTableAddr);
+        return RomBank.romOffset((attrBank | 0x20), attrTableAddr);
     }
 
     private int indoorObjectAttrOffset(int mapId, int roomId) {
@@ -156,8 +164,8 @@ public final class RoomTilemapBuilder {
     }
 
     private int readPointer(int offset) {
-        return Byte.toUnsignedInt(romData[offset])
-            | (Byte.toUnsignedInt(romData[offset + 1]) << 8);
+        return readRomByte(offset)
+            | (readRomByte(offset + 1) << 8);
     }
 
     private int[] loadGbcOverlay(int roomId) {
@@ -177,7 +185,7 @@ public final class RoomTilemapBuilder {
         int overlayOffset = RomBank.romOffset(bank, baseAddr + overlayRoomIndex * GBC_OVERLAY_ROOM_SIZE);
         int[] overlay = new int[GBC_OVERLAY_ROOM_SIZE];
         for (int i = 0; i < GBC_OVERLAY_ROOM_SIZE; i++) {
-            overlay[i] = Byte.toUnsignedInt(romData[overlayOffset + i]);
+            overlay[i] = readRomByte(overlayOffset + i);
         }
         return overlay;
     }
