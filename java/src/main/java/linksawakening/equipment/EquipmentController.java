@@ -34,9 +34,7 @@ public final class EquipmentController {
 
     /** Finish existing animations without activating or holding equipment. */
     public void tickEquippedItemsWithoutInput(int frameCounter) {
-        Sword sword = activeSword();
-        if (sword != null) sword.releaseHoldWithoutSpin();
-        itemRegistry.tickAll(false, false, playerState.itemA(), playerState.itemB(), frameCounter);
+        itemRegistry.tickWithoutInput(playerState, frameCounter);
     }
 
     private void tickEquippedItems(Integer frameCounter) {

@@ -38,7 +38,8 @@ public final class Sword implements EquipmentItem {
     }
 
     /** The ROM's wC140..wC143 rectangle for enemy collision. */
-    public record CollisionBox(boolean active, int x, int width, int y, int height) {
+    public record CollisionBox(boolean active, int x, int width, int y, int height)
+            implements EquipmentItem.CollisionBox {
         public static CollisionBox inactive() {
             return new CollisionBox(false, 0, 0, 0, 0);
         }

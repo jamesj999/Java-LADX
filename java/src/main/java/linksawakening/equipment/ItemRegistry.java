@@ -38,6 +38,13 @@ public final class ItemRegistry {
         return null;
     }
 
+    /** Finish item animation without starting a release-triggered spin. */
+    public void tickWithoutInput(PlayerState playerState, int frameCounter) {
+        Sword sword = activeSword(playerState);
+        if (sword != null) sword.releaseHoldWithoutSpin();
+        tickAll(false, false, playerState.itemA(), playerState.itemB(), frameCounter);
+    }
+
     /** Advance every registered item's state machine once. Called once per frame. */
     public void tickAll(boolean aHeld, boolean bHeld, int itemAId, int itemBId) {
         tickAll(aHeld, bHeld, itemAId, itemBId, null);
