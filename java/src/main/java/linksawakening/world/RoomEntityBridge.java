@@ -1,35 +1,13 @@
 package linksawakening.world;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.entity.Link;
-import linksawakening.gameplay.GameplaySoundEvent;
-import linksawakening.gameplay.GameplaySoundSink;
-import linksawakening.gpu.GPU;
-import linksawakening.physics.OverworldCollision;
-import linksawakening.physics.PhysicsFlags;
-import linksawakening.rom.Rom;
-import linksawakening.rom.RomAddress;
-import linksawakening.rom.RomBank;
-import linksawakening.rom.RomSymbols;
-import linksawakening.rom.RomTables;
-import linksawakening.vfx.TransientVfxSystem;
-import linksawakening.vfx.TransientVfxType;
-import linksawakening.world.entity.event.BoomerangObjectRequest;
 import linksawakening.world.entity.event.ChestRewardEvent;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.DungeonWarpRequest;
 import linksawakening.world.entity.event.HeartContainerRewardEvent;
 import linksawakening.world.entity.event.HinoxLinkEffectRequest;
-import linksawakening.world.entity.event.HookshotBridgeUpdate;
-import linksawakening.world.entity.event.InstrumentCompletionEvent;
 import linksawakening.world.entity.event.KeyRewardEvent;
 import linksawakening.world.entity.event.LikeLikeEvent;
 import linksawakening.world.entity.event.LinkAttackClearRequest;
@@ -42,8 +20,6 @@ import linksawakening.world.entity.event.LinkMotionBlockRequest;
 import linksawakening.world.entity.event.LinkSwordFinalPoseRequest;
 import linksawakening.world.entity.event.LinkSwordSpinPoseRequest;
 import linksawakening.world.entity.event.MadamMeowMeowFullHealRequest;
-import linksawakening.world.entity.event.MagicPowderObjectRequest;
-import linksawakening.world.entity.event.MagicRodObjectRequest;
 import linksawakening.world.entity.event.RichardProgressEvent;
 import linksawakening.world.entity.event.RoomStatusPersistenceRequest;
 import linksawakening.world.entity.event.RoosterLinkStateRequest;
@@ -52,7 +28,6 @@ import linksawakening.world.entity.event.SideViewPlatformLinkRequest;
 import linksawakening.world.entity.event.SideViewPotLinkRequest;
 import linksawakening.world.entity.event.SlimeKeyRewardEvent;
 import linksawakening.world.entity.event.SwordPickupRewardEvent;
-import linksawakening.world.entity.event.ThrownBackgroundCollisionEvent;
 import linksawakening.world.entity.event.ToadstoolRewardEvent;
 import linksawakening.world.entity.event.TransientVfxRequest;
 import linksawakening.world.entity.event.WarpDestination;
@@ -62,8 +37,6 @@ import linksawakening.world.entity.event.WitchRewardEvent;
 import static linksawakening.world.RoomConstants.ROOM_PIXEL_HEIGHT;
 import static linksawakening.world.RoomConstants.ROOM_PIXEL_WIDTH;
 import static linksawakening.world.RoomSession.*;
-
-
 
 /** Owns room-level entity output queues and their consumption boundary. */
 final class RoomEntityBridge {
