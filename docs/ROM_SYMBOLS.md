@@ -72,3 +72,10 @@ Verified 09:4000 OverworldRoomPointers and 1A:4000 OverworldRoomsSecondHalf.
 No discrepancies; pointer/page selection unchanged. Guard expanded.
 Remaining original-metric world declarations: 79 (BANK_SECOND_HALF was never
 included in that metric). This turn has migrated 16 location declarations.
+
+RoomObjectParser migrated 23 named declarations plus inline table locations,
+verified at 54 exact azle.sym labels. Template, door, macro and shutter data
+retain identical addresses; no discrepancies. All byte reads are typed.
+Guard covers the parser and all physics sources; both suites pass.
+Remaining original-metric world declarations: 56; this turn removed 39 named
+location declarations (including ADDRESS and BANK_SECOND_HALF variants).

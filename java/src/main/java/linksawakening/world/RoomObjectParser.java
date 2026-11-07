@@ -1,48 +1,55 @@
 package linksawakening.world;
 
 import linksawakening.rom.RomBank;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
+import linksawakening.rom.RomSymbols;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public final class RoomObjectParser {
-    private static final int ROOM_TEMPLATE_BANK = 0x14;
+    private int readRomByte(int offset) {
+        return new Rom(romData).u8(RomAddress.fromOffset(offset));
+    }
+
+    private static final int ROOM_TEMPLATE_BANK = RomSymbols.RoomTemplateTopRightBottomLeftOffsets.bank();
     private static final int[][] ROOM_TEMPLATE_TABLES = {
-        {0x4917, 0x4938},
-        {0x4958, 0x4971},
-        {0x4989, 0x49A4},
-        {0x49BE, 0x49D7},
-        {0x49EF, 0x4A0A},
-        {0x4A24, 0x4A36},
-        {0x4A47, 0x4A59},
-        {0x4A6A, 0x4A7C},
-        {0x4A8D, 0x4A9F},
+        {RomSymbols.RoomTemplateTopRightBottomLeftOffsets.address(), RomSymbols.RoomTemplateTopRightBottomLeftIds.address()},
+        {RomSymbols.RoomTemplateRightBottomLeftOffsets.address(), RomSymbols.RoomTemplateRightBottomLeftIds.address()},
+        {RomSymbols.RoomTemplateTopLeftBottomOffsets.address(), RomSymbols.RoomTemplateTopLeftBottomIds.address()},
+        {RomSymbols.RoomTemplateLeftTopRightOffsets.address(), RomSymbols.RoomTemplateLeftTopRightIds.address()},
+        {RomSymbols.RoomTemplateTopRightBottomOffsets.address(), RomSymbols.RoomTemplateTopRightBottomIds.address()},
+        {RomSymbols.RoomTemplateBottomLeftOffsets.address(), RomSymbols.RoomTemplateBottomLeftIds.address()},
+        {RomSymbols.RoomTemplateBottomRightOffsets.address(), RomSymbols.RoomTemplateBottomRightIds.address()},
+        {RomSymbols.RoomTemplateTopRightOffsets.address(), RomSymbols.RoomTemplateTopRightIds.address()},
+        {RomSymbols.RoomTemplateTopLeftOffsets.address(), RomSymbols.RoomTemplateTopLeftIds.address()},
     };
 
-    private static final int INDOOR_DOOR_MACRO_BANK = 0x00;
-    private static final int HORIZONTAL_OFFSETS_ADDR = 0x37E1;
-    private static final int VERTICAL_OFFSETS_ADDR = 0x37E4;
-    private static final int DUNGEON_ENTRANCE_OFFSETS_ADDR = 0x3789;
+    private static final int INDOOR_DOOR_MACRO_BANK = RomSymbols.HorizontalObjectOffsets.bank();
+    private static final int HORIZONTAL_OFFSETS_ADDR = RomSymbols.HorizontalObjectOffsets.address();
+    private static final int VERTICAL_OFFSETS_ADDR = RomSymbols.VerticalObjectOffsets.address();
+    private static final int DUNGEON_ENTRANCE_OFFSETS_ADDR = RomSymbols.DungeonEntranceObjectOffsets.address();
     private static final int[][] INDOOR_DOOR_MACRO_TABLES = {
-        {HORIZONTAL_OFFSETS_ADDR, 0x35F8},
-        {HORIZONTAL_OFFSETS_ADDR, 0x3613},
-        {VERTICAL_OFFSETS_ADDR,   0x362E},
-        {VERTICAL_OFFSETS_ADDR,   0x3649},
-        {HORIZONTAL_OFFSETS_ADDR, 0x36B0},
-        {HORIZONTAL_OFFSETS_ADDR, 0x36E8},
-        {VERTICAL_OFFSETS_ADDR,   0x36FC},
-        {VERTICAL_OFFSETS_ADDR,   0x3710},
-        {HORIZONTAL_OFFSETS_ADDR, 0x36B0},
-        {HORIZONTAL_OFFSETS_ADDR, 0x36E8},
-        {VERTICAL_OFFSETS_ADDR,   0x36FC},
-        {VERTICAL_OFFSETS_ADDR,   0x3710},
-        {HORIZONTAL_OFFSETS_ADDR, 0x3724},
-        {VERTICAL_OFFSETS_ADDR,   0x375C},
-        {HORIZONTAL_OFFSETS_ADDR, 0x376B},
-        {HORIZONTAL_OFFSETS_ADDR, 0x377A},
-        {DUNGEON_ENTRANCE_OFFSETS_ADDR, 0x3796},
-        {HORIZONTAL_OFFSETS_ADDR, 0x37B4},
+        {HORIZONTAL_OFFSETS_ADDR, RomSymbols.KeyDoorTopObjectIds.address()},
+        {HORIZONTAL_OFFSETS_ADDR, RomSymbols.KeyDoorBottomObjectIds.address()},
+        {VERTICAL_OFFSETS_ADDR,   RomSymbols.KeyDoorLeftObjectIds.address()},
+        {VERTICAL_OFFSETS_ADDR,   RomSymbols.KeyDoorRightObjectIds.address()},
+        {HORIZONTAL_OFFSETS_ADDR, RomSymbols.OpenDoorTopObjectIds.address()},
+        {HORIZONTAL_OFFSETS_ADDR, RomSymbols.OpenDoorBottomObjectIds.address()},
+        {VERTICAL_OFFSETS_ADDR,   RomSymbols.OpenDoorLeftObjectIds.address()},
+        {VERTICAL_OFFSETS_ADDR,   RomSymbols.OpenDoorRightObjectIds.address()},
+        {HORIZONTAL_OFFSETS_ADDR, RomSymbols.OpenDoorTopObjectIds.address()},
+        {HORIZONTAL_OFFSETS_ADDR, RomSymbols.OpenDoorBottomObjectIds.address()},
+        {VERTICAL_OFFSETS_ADDR,   RomSymbols.OpenDoorLeftObjectIds.address()},
+        {VERTICAL_OFFSETS_ADDR,   RomSymbols.OpenDoorRightObjectIds.address()},
+        {HORIZONTAL_OFFSETS_ADDR, RomSymbols.BossDoorObjectIds.address()},
+        {VERTICAL_OFFSETS_ADDR,   RomSymbols.StairsDoorObjectIds.address()},
+        {HORIZONTAL_OFFSETS_ADDR, RomSymbols.RevolvingDoorObjectIds.address()},
+        {HORIZONTAL_OFFSETS_ADDR, RomSymbols.OneWayArrowObjectIds.address()},
+        {DUNGEON_ENTRANCE_OFFSETS_ADDR, RomSymbols.DungeonEntranceObjectIds.address()},
+        {HORIZONTAL_OFFSETS_ADDR, RomSymbols.EntranceObjectIds.address()},
     };
     private static final int INDOOR_DOOR_MACRO_BASE = 0xEC;
     private static final int INDOOR_DOOR_MACRO_LAST = 0xFD;
@@ -63,24 +70,24 @@ public final class RoomObjectParser {
     private static final int OBJECT_DOOR_61 = 0x61;
     private static final int OBJECT_DOOR_C5 = 0xC5;
 
-    private static final int OVERWORLD_MACROS_BANK = 0x24;
-    private static final int CATFISH_MAW_OBJECT_OFFSETS_ADDR = 0x760B;
-    private static final int CATFISH_MAW_OBJECT_IDS_ADDR = 0x7612;
-    private static final int TWO_DOORS_HOUSE_OBJECT_OFFSETS_ADDR = 0x762E;
-    private static final int TWO_DOORS_HOUSE_OBJECT_IDS_ADDR = 0x763E;
-    private static final int LARGE_HOUSE_OBJECT_OFFSETS_ADDR = 0x765A;
-    private static final int LARGE_HOUSE_OBJECT_IDS_ADDR = 0x7664;
-    private static final int PALACE_DOOR_OBJECT_OFFSETS_ADDR = 0x767A;
-    private static final int PALACE_DOOR_OBJECT_IDS_ADDR = 0x7681;
-    private static final int STONE_PIG_HEAD_OBJECT_OFFSETS_ADDR = 0x7694;
-    private static final int STONE_PIG_HEAD_OBJECT_IDS_INTACT_ADDR = 0x7699;
-    private static final int STONE_PIG_HEAD_OBJECT_IDS_BLASTED_ADDR = 0x769D;
-    private static final int PALM_TREE_OBJECT_OFFSETS_ADDR = 0x76B7;
-    private static final int PALM_TREE_OBJECT_IDS_ADDR = 0x76BC;
-    private static final int WALLED_PIT_OBJECT_OFFSETS_ADDR = 0x76CD;
-    private static final int WALLED_PIT_OBJECT_IDS_ADDR = 0x76DC;
-    private static final int SMALL_HOUSE_OBJECT_OFFSETS_ADDR = 0x76F7;
-    private static final int SMALL_HOUSE_OBJECT_IDS_ADDR = 0x76FE;
+    private static final int OVERWORLD_MACROS_BANK = RomSymbols.CatfishMawObjectOffsets.bank();
+    private static final int CATFISH_MAW_OBJECT_OFFSETS_ADDR = RomSymbols.CatfishMawObjectOffsets.address();
+    private static final int CATFISH_MAW_OBJECT_IDS_ADDR = RomSymbols.CatfishMawObjectIds.address();
+    private static final int TWO_DOORS_HOUSE_OBJECT_OFFSETS_ADDR = RomSymbols.TwoDoorsHouseObjectOffsets.address();
+    private static final int TWO_DOORS_HOUSE_OBJECT_IDS_ADDR = RomSymbols.TwoDoorsHouseObjectIds.address();
+    private static final int LARGE_HOUSE_OBJECT_OFFSETS_ADDR = RomSymbols.LargeHouseObjectOffsets.address();
+    private static final int LARGE_HOUSE_OBJECT_IDS_ADDR = RomSymbols.LargeHouseObjectIds.address();
+    private static final int PALACE_DOOR_OBJECT_OFFSETS_ADDR = RomSymbols.PalaceDoorObjectOffsets.address();
+    private static final int PALACE_DOOR_OBJECT_IDS_ADDR = RomSymbols.PalaceDoorObjectIds.address();
+    private static final int STONE_PIG_HEAD_OBJECT_OFFSETS_ADDR = RomSymbols.StonePigHeadObjectOffsets.address();
+    private static final int STONE_PIG_HEAD_OBJECT_IDS_INTACT_ADDR = RomSymbols.StonePigHeadObjectIds_Intact.address();
+    private static final int STONE_PIG_HEAD_OBJECT_IDS_BLASTED_ADDR = RomSymbols.StonePigHeadObjectIds_Blasted.address();
+    private static final int PALM_TREE_OBJECT_OFFSETS_ADDR = RomSymbols.PalmTreeObjectOffsets.address();
+    private static final int PALM_TREE_OBJECT_IDS_ADDR = RomSymbols.PalmTreeObjectIds.address();
+    private static final int WALLED_PIT_OBJECT_OFFSETS_ADDR = RomSymbols.WalledPitObjectOffsets.address();
+    private static final int WALLED_PIT_OBJECT_IDS_ADDR = RomSymbols.WalledPitObjectIds.address();
+    private static final int SMALL_HOUSE_OBJECT_OFFSETS_ADDR = RomSymbols.SmallHouseObjectOffsets.address();
+    private static final int SMALL_HOUSE_OBJECT_IDS_ADDR = RomSymbols.SmallHouseObjectIds.address();
 
     private static final int ROOM_STATUS_DOOR_OPEN_UP = 0x04;
     private static final int ROOM_STATUS_EVENT_1 = 0x10;
@@ -204,8 +211,8 @@ public final class RoomObjectParser {
         if (targetRoomObjectsArea == null || targetRoomObjectsArea.length < 0x100) {
             throw new IllegalArgumentException("Invalid indoor shutter target");
         }
-        int offsetsOffset = RomBank.romOffset(0x02, 0x5BF4);
-        int idsOffset = RomBank.romOffset(0x02, 0x5BFC);
+        int offsetsOffset = RomSymbols.Data_002_5BF4.offset();
+        int idsOffset = RomSymbols.Data_002_5BFC.offset();
         for (int direction = 0; direction < 4; direction++) {
             if ((shutterMask & (1 << direction)) == 0) {
                 continue;
@@ -218,8 +225,8 @@ public final class RoomObjectParser {
                 + (location & 0xF0) + (location & 0x0F);
             for (int half = 0; half < 2; half++) {
                 int tableIndex = direction + half * 4;
-                int targetIndex = baseIndex + (romData[offsetsOffset + tableIndex] & 0xFF);
-                targetRoomObjectsArea[targetIndex] = romData[idsOffset + tableIndex] & 0xFF;
+                int targetIndex = baseIndex + (readRomByte(offsetsOffset + tableIndex));
+                targetRoomObjectsArea[targetIndex] = readRomByte(idsOffset + tableIndex);
             }
         }
     }
@@ -230,13 +237,13 @@ public final class RoomObjectParser {
             || direction < 0 || direction >= 4) {
             throw new IllegalArgumentException("Invalid indoor shutter lookup");
         }
-        int[] openIdsAddresses = {0x36B0, 0x36E8, 0x36FC, 0x3710};
-        int openIdsOffset = RomBank.romOffset(0x00, openIdsAddresses[direction]);
-        int closedIdsOffset = RomBank.romOffset(0x02, 0x5BFC);
-        int openFirst = romData[openIdsOffset] & 0xFF;
-        int openSecond = romData[openIdsOffset + 1] & 0xFF;
-        int closedFirst = romData[closedIdsOffset + direction] & 0xFF;
-        int closedSecond = romData[closedIdsOffset + direction + 4] & 0xFF;
+        int[] openIdsAddresses = {RomSymbols.OpenDoorTopObjectIds.address(), RomSymbols.OpenDoorBottomObjectIds.address(), RomSymbols.OpenDoorLeftObjectIds.address(), RomSymbols.OpenDoorRightObjectIds.address()};
+        int openIdsOffset = RomBank.romOffset(INDOOR_DOOR_MACRO_BANK, openIdsAddresses[direction]);
+        int closedIdsOffset = RomSymbols.Data_002_5BFC.offset();
+        int openFirst = readRomByte(openIdsOffset);
+        int openSecond = readRomByte(openIdsOffset + 1);
+        int closedFirst = readRomByte(closedIdsOffset + direction);
+        int closedSecond = readRomByte(closedIdsOffset + direction + 4);
         int pairOffset = direction < 2 ? 1 : RoomConstants.ROOM_OBJECT_ROW_STRIDE;
         for (int row = 0; row < RoomConstants.OBJECTS_PER_COLUMN; row++) {
             for (int column = 0; column < RoomConstants.OBJECTS_PER_ROW; column++) {
@@ -341,7 +348,7 @@ public final class RoomObjectParser {
 
     private void parseRoomObjectStream(int pos, boolean isIndoor) {
         while (pos < romData.length - 1) {
-            int firstByte = Byte.toUnsignedInt(romData[pos]);
+            int firstByte = readRomByte(pos);
             if (firstByte == RoomConstants.ROOM_END) {
                 break;
             }
@@ -358,8 +365,8 @@ public final class RoomObjectParser {
                 if (pos + 2 >= romData.length) {
                     break;
                 }
-                location = Byte.toUnsignedInt(romData[pos + 1]);
-                type = Byte.toUnsignedInt(romData[pos + 2]);
+                location = readRomByte(pos + 1);
+                type = readRomByte(pos + 2);
                 pos += 3;
                 if (!isIndoor && type >= OBJECT_MACRO_BASE) {
                     expandMacro(type, location, firstByte);
@@ -378,7 +385,7 @@ public final class RoomObjectParser {
                     break;
                 }
                 location = firstByte;
-                type = Byte.toUnsignedInt(romData[pos + 1]);
+                type = readRomByte(pos + 1);
                 pos += 2;
                 if (isIndoor && type >= INDOOR_DOOR_MACRO_BASE && type <= INDOOR_DOOR_MACRO_LAST) {
                     expandIndoorDoorMacro(type, location);
@@ -450,11 +457,11 @@ public final class RoomObjectParser {
         int idsOffset = RomBank.romOffset(idsBank, idsAddr);
 
         while (offsetsOffset < romData.length && idsOffset < romData.length) {
-            int offset = Byte.toUnsignedInt(romData[offsetsOffset++]);
+            int offset = readRomByte(offsetsOffset++);
             if (offset == 0xFF) {
                 break;
             }
-            int objectId = Byte.toUnsignedInt(romData[idsOffset++]);
+            int objectId = readRomByte(idsOffset++);
             int targetAreaIndex = baseAreaIndex + offset;
             if (isAreaIndexValid(targetAreaIndex)) {
                 roomObjectsArea[targetAreaIndex] = objectId;
@@ -469,11 +476,11 @@ public final class RoomObjectParser {
         if (pos + 4 >= romData.length) {
             return;
         }
-        int category = Byte.toUnsignedInt(romData[pos]) & 0x03;
-        int destMap = Byte.toUnsignedInt(romData[pos + 1]);
-        int destRoom = Byte.toUnsignedInt(romData[pos + 2]);
-        int destX = Byte.toUnsignedInt(romData[pos + 3]);
-        int destY = Byte.toUnsignedInt(romData[pos + 4]);
+        int category = readRomByte(pos) & 0x03;
+        int destMap = readRomByte(pos + 1);
+        int destRoom = readRomByte(pos + 2);
+        int destX = readRomByte(pos + 3);
+        int destY = readRomByte(pos + 4);
         warps.add(new Warp(category, destMap, destRoom, destX, destY, -1));
     }
 
@@ -601,11 +608,11 @@ public final class RoomObjectParser {
         int idsOffset = RomBank.romOffset(OVERWORLD_MACROS_BANK, idsAddr);
 
         while (offsetsOffset < romData.length && idsOffset < romData.length) {
-            int offset = Byte.toUnsignedInt(romData[offsetsOffset++]);
+            int offset = readRomByte(offsetsOffset++);
             if (offset == 0xFF) {
                 break;
             }
-            int objectId = Byte.toUnsignedInt(romData[idsOffset++]);
+            int objectId = readRomByte(idsOffset++);
             int targetAreaIndex = baseAreaIndex + offset;
             if (isAreaIndexValid(targetAreaIndex)) {
                 roomObjectsArea[targetAreaIndex] = objectId;
