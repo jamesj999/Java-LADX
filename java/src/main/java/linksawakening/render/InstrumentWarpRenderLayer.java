@@ -15,18 +15,7 @@ final class InstrumentWarpRenderLayer implements RenderLayer {
     }
 
     @Override public void render(RenderContext context) {
-        byte[] plane = new byte[context.buffer().length];
-        RenderContext target = new RenderContext(plane, context.gpu());
-        for (RenderLayer layer : layers) layer.render(target);
-        for (int pixel = 0; pixel < plane.length; pixel += 4) {
-            if (plane[pixel + 3] == 0) continue;
-            for (int channel = 0; channel < 3; channel++) {
-                int value = plane[pixel + channel] & 255;
-                context.buffer()[pixel + channel] = (byte) (increment == 0 ? value
-                    : Math.min(31, (value >> 3) + increment) << 3);
-            }
-            context.buffer()[pixel + 3] = plane[pixel + 3];
-        }
+        new PaletteOverlayRenderLayer(layers, increment).render(context);
     }
 
     static RenderLayer swirl(InstrumentWarpVisual visual,
