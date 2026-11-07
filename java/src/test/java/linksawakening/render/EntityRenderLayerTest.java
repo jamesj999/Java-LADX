@@ -29,6 +29,22 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @linksawakening.testing.RequiresRom
 final class EntityRenderLayerTest {
     @Test
+    void newlyLoadedEntitiesDoNotRenderBeforeInitialization() {
+        GPU gpu = new GPU();
+        writeSolidTile(gpu, 0x40, 1);
+        writeSolidTile(gpu, 0x41, 1);
+        var definition = pairDefinition(new EntitySpriteDefinition.OamAttribute(0x40, 0),
+            new EntitySpriteDefinition.OamAttribute(0x40, 0));
+        var entity = new RoomEntity(0, 0, 0x35, 56, 64, EntityStatus.INIT,
+            definition, 0, 0, 0, 0, -1, false);
+        byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
+        new EntityRenderLayer(snapshot(null, gpu.snapshotEntityTiles(), entity),
+            new int[][] {{0, 0x112233, 0, 0}}, new ScrollController())
+            .render(new RenderContext(buffer, gpu));
+        for (byte value : buffer) assertEquals(0, value);
+    }
+
+    @Test
     void kingRectangleLayersUseTheDeathFlashPalette() {
         GPU gpu = new GPU();
         writeSolidTile(gpu, 0x40, 1);
