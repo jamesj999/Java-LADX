@@ -1,6 +1,6 @@
 package linksawakening.entity;
 
-import linksawakening.equipment.EquippedItem;
+import linksawakening.equipment.EquipmentItem;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.state.PlayerState;
@@ -81,7 +81,7 @@ final class LinkAirborne {
 
     boolean swordSuppressesJumpAnimation() {
         if (link.itemRegistry == null) return false;
-        EquippedItem item = link.itemRegistry.lookup(PlayerState.INVENTORY_SWORD);
+        EquipmentItem item = link.itemRegistry.lookup(PlayerState.INVENTORY_SWORD);
         return item instanceof linksawakening.equipment.Sword sword
             && sword.suppressesJumpAnimation();
     }

@@ -50,22 +50,11 @@ public final class EquipmentController {
     }
 
     public Sword activeSword() {
-        EquippedItem a = itemRegistry.lookup(playerState.itemA());
-        if (a instanceof Sword sword) {
-            return sword;
-        }
-        EquippedItem b = itemRegistry.lookup(playerState.itemB());
-        if (b instanceof Sword sword) {
-            return sword;
-        }
-        // The acquisition sequence spins the sword before it enters inventory.
-        EquippedItem registered = itemRegistry.lookup(PlayerState.INVENTORY_SWORD);
-        if (registered instanceof Sword sword && sword.spinAttackActive()) return sword;
-        return null;
+        return itemRegistry.activeSword(playerState);
     }
 
     private void dispatchButtonEdges(int glfwKey, int inventoryId) {
-        EquippedItem item = itemRegistry.lookup(inventoryId);
+        EquipmentItem item = itemRegistry.lookup(inventoryId);
         if (item == null) {
             return;
         }

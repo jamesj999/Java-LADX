@@ -7,7 +7,7 @@ import java.util.Objects;
  * (bank0.asm:$14CB): item use is edge-triggered by the equipment controller,
  * and the item asks Link to start the jump if his current ground state allows it.
  */
-public final class RocsFeather implements EquippedItem {
+public final class RocsFeather implements EquipmentItem {
 
     public interface JumpTarget {
         void useRocsFeather();

@@ -1,6 +1,6 @@
 package linksawakening.entity;
 
-import linksawakening.equipment.EquippedItem;
+import linksawakening.equipment.EquipmentItem;
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.equipment.RocsFeather;
 import linksawakening.gameplay.GameplaySoundEvent;
@@ -1277,15 +1277,15 @@ public final class Link implements RocsFeather.JumpTarget {
         if (itemRegistry == null || playerState == null) {
             return false;
         }
-        EquippedItem a = itemRegistry.lookup(playerState.itemA());
+        EquipmentItem a = itemRegistry.lookup(playerState.itemA());
         if (a != null && itemBlocksMotion(a, beforeTopDownAnimation)) {
             return true;
         }
-        EquippedItem b = itemRegistry.lookup(playerState.itemB());
+        EquipmentItem b = itemRegistry.lookup(playerState.itemB());
         return b != null && itemBlocksMotion(b, beforeTopDownAnimation);
     }
 
-    private static boolean itemBlocksMotion(EquippedItem item, boolean beforeTopDownAnimation) {
+    private static boolean itemBlocksMotion(EquipmentItem item, boolean beforeTopDownAnimation) {
         return beforeTopDownAnimation && item instanceof linksawakening.equipment.Sword sword
             ? sword.blocksTopDownMotion() : item.blocksMotion();
     }
@@ -1298,15 +1298,15 @@ public final class Link implements RocsFeather.JumpTarget {
         if (itemRegistry == null || playerState == null) {
             return false;
         }
-        EquippedItem a = itemRegistry.lookup(playerState.itemA());
+        EquipmentItem a = itemRegistry.lookup(playerState.itemA());
         if (a != null && itemLocksFacing(a, beforeTopDownAnimation)) {
             return true;
         }
-        EquippedItem b = itemRegistry.lookup(playerState.itemB());
+        EquipmentItem b = itemRegistry.lookup(playerState.itemB());
         return b != null && itemLocksFacing(b, beforeTopDownAnimation);
     }
 
-    private static boolean itemLocksFacing(EquippedItem item, boolean beforeTopDownAnimation) {
+    private static boolean itemLocksFacing(EquipmentItem item, boolean beforeTopDownAnimation) {
         return beforeTopDownAnimation && item instanceof linksawakening.equipment.Sword sword
             ? sword.locksTopDownFacing() : item.locksFacing();
     }
@@ -1479,11 +1479,11 @@ public final class Link implements RocsFeather.JumpTarget {
         if (itemRegistry == null || playerState == null) {
             return;
         }
-        EquippedItem a = itemRegistry.lookup(playerState.itemA());
+        EquipmentItem a = itemRegistry.lookup(playerState.itemA());
         if (a != null) {
             a.render(displayBuffer, pixelX(), pixelY() - zPixels(), direction, offsetX, offsetY);
         }
-        EquippedItem b = itemRegistry.lookup(playerState.itemB());
+        EquipmentItem b = itemRegistry.lookup(playerState.itemB());
         if (b != null && b != a) {
             b.render(displayBuffer, pixelX(), pixelY() - zPixels(), direction, offsetX, offsetY);
         }
@@ -1492,7 +1492,7 @@ public final class Link implements RocsFeather.JumpTarget {
             // before GiveInventoryItem awards it to slot A/B. Reuse the ROM
             // sword handler from the registry, but do not draw it twice if a
             // save already has the sword equipped.
-            EquippedItem acquisitionSword = itemRegistry.lookup(PlayerState.INVENTORY_SWORD);
+            EquipmentItem acquisitionSword = itemRegistry.lookup(PlayerState.INVENTORY_SWORD);
             if (acquisitionSword != null && acquisitionSword != a && acquisitionSword != b) {
                 acquisitionSword.render(displayBuffer, pixelX(), pixelY() - zPixels(),
                     direction, offsetX, offsetY);
@@ -1580,21 +1580,21 @@ public final class Link implements RocsFeather.JumpTarget {
         };
     }
 
-    private EquippedItem itemInSlotA() {
+    private EquipmentItem itemInSlotA() {
         if (itemRegistry == null || playerState == null) {
             return null;
         }
         return itemRegistry.lookup(playerState.itemA());
     }
 
-    private EquippedItem itemInSlotB() {
+    private EquipmentItem itemInSlotB() {
         if (itemRegistry == null || playerState == null) {
             return null;
         }
         return itemRegistry.lookup(playerState.itemB());
     }
 
-    private int queryOverride(EquippedItem item) {
+    private int queryOverride(EquipmentItem item) {
         if (item == null) {
             return -1;
         }

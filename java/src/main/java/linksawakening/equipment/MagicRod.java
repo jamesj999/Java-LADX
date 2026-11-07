@@ -13,7 +13,7 @@ import java.util.Objects;
 import java.util.function.BooleanSupplier;
 
 /** Port of {@code UseMagicRod} and {@code label_002_5310}. */
-public final class MagicRod implements EquippedItem {
+public final class MagicRod implements EquipmentItem {
     public static final int ATTACK_STEP_MAGIC_ROD = 0x8E;
 
     private static final int ATTACK_STEP_DURATION_MASK = 0x7F;
