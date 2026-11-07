@@ -35,6 +35,8 @@ public final class RoomEntityRuntime {
     private final EntityLiftThrowController liftThrow = new EntityLiftThrowController(this);
     private final EntityCombatResolver combat = new EntityCombatResolver(this);
     private final EntityBossRewards bossRewards = new EntityBossRewards(this);
+    private final EntityRoomInspection roomInspection = new EntityRoomInspection(this);
+    private final EntityEnemyInspection enemyInspection = new EntityEnemyInspection(this);
     private final EntityOutbox outbox = new EntityOutbox();
     private static final int ENTITY_PUSHED_BLOCK = 0x06;
     static final int[] INSTRUMENT_MUSIC_TRACKS = {
@@ -296,7 +298,7 @@ public final class RoomEntityRuntime {
 
     final RoomEntity[] slots;
     EntitySpriteSelection spriteSelection;
-    private final EntitySpriteTileSnapshot spriteTiles;
+    final EntitySpriteTileSnapshot spriteTiles;
     final boolean indoorRoom;
     private final RomTables romTables;
     private final IntSupplier defaultRandomByteSupplier;
@@ -315,10 +317,10 @@ public final class RoomEntityRuntime {
     int lastRomLinkDirection;
     int followingEntityYOffset;
     int linkAttackStepAnimationCountdown;
-    private final ButterflyMotion butterflyMotion = new ButterflyMotion();
+    final ButterflyMotion butterflyMotion = new ButterflyMotion();
     final SideViewPlatformMotion sideViewPlatformMotion = new SideViewPlatformMotion();
     final SideViewPotMotion sideViewPotMotion = new SideViewPotMotion();
-    private final KeeseMotion keeseMotion = new KeeseMotion();
+    final KeeseMotion keeseMotion = new KeeseMotion();
     final RoamingEnemyMotion roamingEnemyMotion = new RoamingEnemyMotion();
     final UnmaskedIronMaskMotion unmaskedIronMaskMotion =
         new UnmaskedIronMaskMotion();
@@ -328,9 +330,9 @@ public final class RoomEntityRuntime {
     final HookshotChainMotion hookshotChainMotion = new HookshotChainMotion();
     private final HookshotBridgeMotion hookshotBridgeMotion = new HookshotBridgeMotion();
     final LaserMotion laserMotion = new LaserMotion();
-    private final TektiteMotion tektiteMotion = new TektiteMotion();
+    final TektiteMotion tektiteMotion = new TektiteMotion();
     final LeeverMotion leeverMotion = new LeeverMotion();
-    private final AntiFairyMotion antiFairyMotion = new AntiFairyMotion();
+    final AntiFairyMotion antiFairyMotion = new AntiFairyMotion();
     final SparkMotion sparkMotion = new SparkMotion();
     final ZolGelMotion zolGelMotion = new ZolGelMotion();
     final HidingZolMotion hidingZolMotion = new HidingZolMotion();
@@ -371,7 +373,7 @@ public final class RoomEntityRuntime {
     final StalfosAggressiveMotion stalfosAggressiveMotion =
         new StalfosAggressiveMotion();
     final StalfosEvasiveMotion stalfosEvasiveMotion = new StalfosEvasiveMotion();
-    private final GibdoMotion gibdoMotion = new GibdoMotion();
+    final GibdoMotion gibdoMotion = new GibdoMotion();
     final LikeLikeMotion likeLikeMotion = new LikeLikeMotion();
     final GoombaMotion goombaMotion = new GoombaMotion();
     final SnakeMotion snakeMotion = new SnakeMotion();
@@ -471,9 +473,9 @@ public final class RoomEntityRuntime {
         new boolean[EntityRoomLoader.MAX_ENTITIES];
     final boolean[] dynamicEntitySpawnedThisFrame =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
-    private List<HookshotChainOam.Entry> hookshotChainOam = List.of();
-    private List<PincerBodyOam.Entry> pincerBodyOam = List.of();
-    private List<WingedOctorokOam.Entry> wingedOctorokOam = List.of();
+    List<HookshotChainOam.Entry> hookshotChainOam = List.of();
+    List<PincerBodyOam.Entry> pincerBodyOam = List.of();
+    List<WingedOctorokOam.Entry> wingedOctorokOam = List.of();
     final boolean[] wingedSwordAttackThisFrame =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
     final boolean[] wingedStateTwoThisFrame =
@@ -492,7 +494,7 @@ public final class RoomEntityRuntime {
         new int[EntityRoomLoader.MAX_ENTITIES];
     final boolean[] liftableRockSmashActive =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
-    private final boolean[] bombFinalPresentationPending =
+    final boolean[] bombFinalPresentationPending =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
     final int[] bombPrivateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] magicPowderPrivateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -504,7 +506,7 @@ public final class RoomEntityRuntime {
     final boolean[] enemyBombMotionInitialized =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
     final int[] thrownDirection = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] ledgeTransitionTimer = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] ledgeTransitionTimer = new int[EntityRoomLoader.MAX_ENTITIES];
     final boolean[] thrownMotionInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
     final int[] chestSpeedY = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] chestSpeedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -593,8 +595,8 @@ public final class RoomEntityRuntime {
     // RoomSession supplies these from the active Ocarina item state once per
     // entity tick; the zero values preserve the ordinary no-song path.
     int linkPlayingOcarinaCountdown;
-    private int ocarinaSongFlags;
-    private int selectedSongIndex;
+    int ocarinaSongFlags;
+    int selectedSongIndex;
     int ocarinaAnimationCounter;
     int ocarinaAnimationPhase;
     // LinkMotionMapFadeInHandler leaves wTransitionSequenceCounter at $04 once
@@ -610,14 +612,14 @@ public final class RoomEntityRuntime {
     int bombArrowCooldown;
     private int latestDroppedBombEntityIndex = -1;
     private int latestShotArrowEntityIndex = -1;
-    private boolean lastArrowShotPlayedWhoosh;
-    private boolean lastBombPlacementPlayedBump;
+    boolean lastArrowShotPlayedWhoosh;
+    boolean lastBombPlacementPlayedBump;
     // hLinkSpeedX/Y are written by Link before AnimateEntities. These are set
     // only around the live projectile tick so the enemy-bomb branch can mirror
     // its post-collision SLA writes without making Link state part of the
     // entity snapshot.
     private int currentLinkVelocityZ;
-    private List<BowWowChain.Entry> bowWowChainOam = List.of();
+    List<BowWowChain.Entry> bowWowChainOam = List.of();
     int currentLinkSpeedX;
     int currentLinkSpeedY;
     int currentLinkFinalPositionX;
@@ -647,11 +649,11 @@ public final class RoomEntityRuntime {
     final HeartPiecePickupMotion[] heartPiecePickup = new HeartPiecePickupMotion[EntityRoomLoader.MAX_ENTITIES];
     final List<HeartPiecePickupMotion.Update> heartPieceUpdates = new ArrayList<>();
     int heartPiecesCount;
-    private final int[] heartPieceMeterPairs = new int[20];
+    final int[] heartPieceMeterPairs = new int[20];
     final int[] instrumentPaletteCycle = new int[32];
-    private final int[] instrumentWarpSprites = new int[256];
-    private final int[] instrumentHintTiles = new int[20 * 18];
-    private final int[] instrumentHintAttributes = new int[20 * 18];
+    final int[] instrumentWarpSprites = new int[256];
+    final int[] instrumentHintTiles = new int[20 * 18];
+    final int[] instrumentHintAttributes = new int[20 * 18];
     final int[] instrumentWarpFadeStep = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] instrumentHintCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     final boolean[] instrumentHintOpened = new boolean[EntityRoomLoader.MAX_ENTITIES];
@@ -720,7 +722,7 @@ public final class RoomEntityRuntime {
     boolean secretSeashellPegasusCollisionCoordinatesKnown;
     int secretSeashellPegasusCollisionX;
     int secretSeashellPegasusCollisionY;
-    private int liftedEntitySlot = -1;
+    int liftedEntitySlot = -1;
     int liftedCarryState;
     int liftedEffectiveDirection;
     int liftedLinkC13B;
@@ -736,7 +738,7 @@ public final class RoomEntityRuntime {
     int torchPaletteTargetAddress;
     boolean torchPaletteTransitionActive;
     final List<MagicPowderObjectRequest> magicPowderObjectRequests = outbox.channel(MagicPowderObjectRequest.class, "magicPowderObjectRequests");
-    private final int[] musicalNoteInertia = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] musicalNoteInertia = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] musicalNoteSpeedX = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] musicalNoteSpeedY = new int[EntityRoomLoader.MAX_ENTITIES];
     int boomerangSfxCounter;
@@ -1741,9 +1743,7 @@ public final class RoomEntityRuntime {
 
     private List<EntityProjectileEvent> advanceFrame(EntityFrameContext context) { return new EntityFrameExecution(this, context).advance(); }
 
-    List<RoamingEnemyMotion.LaunchRequest> projectileLaunchRequests() {
-        return List.copyOf(projectileLaunchRequests);
-    }
+    List<RoamingEnemyMotion.LaunchRequest> projectileLaunchRequests() { return this.roomInspection.projectileLaunchRequests(); }
 
     void resolveThreeOfAKindPuzzle() {
         ThreeOfAKindMotion.PuzzleResult result = threeOfAKindMotion.resolvePuzzle(
@@ -1976,19 +1976,7 @@ public final class RoomEntityRuntime {
         return true;
     }
 
-    LiftedEntityState liftedEntityState() {
-        if (liftedEntitySlot < 0 || liftedEntitySlot >= slots.length) {
-            return LiftedEntityState.none();
-        }
-        RoomEntity entity = slots[liftedEntitySlot];
-        if (!entity.loaded() || entity.status() != EntityStatus.LIFTED) {
-            return LiftedEntityState.none();
-        }
-        return new LiftedEntityState(liftedEntitySlot, entity.type(),
-            liftedPhase[liftedEntitySlot], enemyTransitionCountdown[liftedEntitySlot],
-            liftedCarryState, liftedSourceDirection[liftedEntitySlot],
-            liftedEffectiveDirection);
-    }
+    LiftedEntityState liftedEntityState() { return this.roomInspection.liftedEntityState(); }
 
     RoomEntity advanceLiftedEntity(RoomEntity entity, int linkEntityX, int linkEntityY, int linkZ, int romLinkDirection) { return liftThrow.advanceLiftedEntity(entity, linkEntityX, linkEntityY, linkZ, romLinkDirection); }
 
@@ -2213,17 +2201,9 @@ public final class RoomEntityRuntime {
 
     void applyPlayerProjectileDamage(RoomEntity target, int damageType, int speedX, int speedY) { projectiles.applyPlayerProjectileDamage(target, damageType, speedX, speedY); }
 
-    int initialHealth(int type) {
-        return enemyCombatTables == null
-            ? RoomEntityCombatRules.initialHealth(type)
-            : enemyCombatTables.initialHealth(type);
-    }
+    int initialHealth(int type) { return this.roomInspection.initialHealth(type); }
 
-    int contactDamage(int type) {
-        return enemyCombatTables == null
-            ? RoomEntityCombatRules.contactDamage(type)
-            : enemyCombatTables.contactDamage(type);
-    }
+    int contactDamage(int type) { return this.roomInspection.contactDamage(type); }
 
     void advanceHookshotBridgeEntity(int index, RoomEntity entity) {
         HookshotBridgeMotion.State bridgeState = hookshotBridgeMotion.state(entity.slot());
@@ -2809,92 +2789,34 @@ public final class RoomEntityRuntime {
         return withPositionAndVariant(entity, x, y, entity.spriteVariant());
     }
 
-    int activePlayerArrowCount() {
-        int count = 0;
-        for (RoomEntity entity : slots) {
-            if (entity.loaded() && entity.type() == ENTITY_ARROW) {
-                count++;
-            }
-        }
-        return count;
-    }
+    int activePlayerArrowCount() { return this.roomInspection.activePlayerArrowCount(); }
 
     /** Mirrors the player projectile handlers that feed wActiveProjectileCount. */
-    int activeProjectileCount() {
-        int count = 0;
-        for (RoomEntity entity : slots) {
-            if (!entity.loaded()) {
-                continue;
-            }
-            int type = entity.type() & 0xFF;
-            if (type == ENTITY_ARROW || type == ENTITY_BOOMERANG
-                || type == ENTITY_MAGIC_ROD_FIREBALL || type == ENTITY_SWORD_BEAM) {
-                count++;
-            }
-        }
-        return count;
-    }
+    int activeProjectileCount() { return this.roomInspection.activeProjectileCount(); }
 
-    boolean boomerangActive() {
-        for (RoomEntity entity : slots) {
-            if (entity.loaded() && entity.type() == ENTITY_BOOMERANG) {
-                return true;
-            }
-        }
-        return false;
-    }
+    boolean boomerangActive() { return this.roomInspection.boomerangActive(); }
 
-    int activeBoomerangSlot() {
-        for (RoomEntity entity : slots) {
-            if (entity.loaded() && entity.type() == ENTITY_BOOMERANG) {
-                return entity.slot();
-            }
-        }
-        return -1;
-    }
+    int activeBoomerangSlot() { return this.roomInspection.activeBoomerangSlot(); }
 
-    int boomerangDirection(int slot) {
-        return boomerangMotion.direction(slot);
-    }
+    int boomerangDirection(int slot) { return this.roomInspection.boomerangDirection(slot); }
 
-    int boomerangSpeedX(int slot) {
-        return boomerangMotion.speedX(slot);
-    }
+    int boomerangSpeedX(int slot) { return this.roomInspection.boomerangSpeedX(slot); }
 
-    int boomerangSpeedY(int slot) {
-        return boomerangMotion.speedY(slot);
-    }
+    int boomerangSpeedY(int slot) { return this.roomInspection.boomerangSpeedY(slot); }
 
-    int boomerangTransitionCountdown(int slot) {
-        return boomerangMotion.transitionCountdown(slot);
-    }
+    int boomerangTransitionCountdown(int slot) { return this.roomInspection.boomerangTransitionCountdown(slot); }
 
-    int boomerangState(int slot) {
-        return boomerangMotion.state(slot);
-    }
+    int boomerangState(int slot) { return this.roomInspection.boomerangState(slot); }
 
-    int swordBeamState(int slot) {
-        return swordBeamMotion.state(slot);
-    }
+    int swordBeamState(int slot) { return this.roomInspection.swordBeamState(slot); }
 
-    int magicRodFireballPrivateCountdown1(int slot) {
-        return magicRodFireballMotion.privateCountdown1(slot);
-    }
+    int magicRodFireballPrivateCountdown1(int slot) { return this.roomInspection.magicRodFireballPrivateCountdown1(slot); }
 
-    int magicPowderTransitionCountdown(int slot) {
-        validateEntitySlot(slot);
-        return enemyTransitionCountdown[slot];
-    }
+    int magicPowderTransitionCountdown(int slot) { return this.roomInspection.magicPowderTransitionCountdown(slot); }
 
-    int magicPowderState(int slot) {
-        validateEntitySlot(slot);
-        return magicPowderState[slot];
-    }
+    int magicPowderState(int slot) { return this.roomInspection.magicPowderState(slot); }
 
-    int magicPowderSlowTransitionCountdown(int slot) {
-        validateEntitySlot(slot);
-        return slowTransitionCountdown[slot];
-    }
+    int magicPowderSlowTransitionCountdown(int slot) { return this.roomInspection.magicPowderSlowTransitionCountdown(slot); }
 
     void setMagicPowderTransitionCountdownForTest(int slot, int value) {
         validateCountdownTestValue(slot, value);
@@ -2915,46 +2837,25 @@ public final class RoomEntityRuntime {
         slowTimerInitialized[slot] = true;
     }
 
-    int swordBeamSpeedX(int slot) {
-        return swordBeamMotion.speedX(slot);
-    }
+    int swordBeamSpeedX(int slot) { return this.roomInspection.swordBeamSpeedX(slot); }
 
-    int swordBeamSpeedY(int slot) {
-        return swordBeamMotion.speedY(slot);
-    }
+    int swordBeamSpeedY(int slot) { return this.roomInspection.swordBeamSpeedY(slot); }
 
-    int playerArrowDirection(int slot) {
-        return playerArrowMotion.direction(slot);
-    }
+    int playerArrowDirection(int slot) { return this.roomInspection.playerArrowDirection(slot); }
 
-    int playerArrowSpeedX(int slot) {
-        return playerArrowMotion.speedX(slot);
-    }
+    int playerArrowSpeedX(int slot) { return this.roomInspection.playerArrowSpeedX(slot); }
 
-    int playerArrowSpeedY(int slot) {
-        return playerArrowMotion.speedY(slot);
-    }
+    int playerArrowSpeedY(int slot) { return this.roomInspection.playerArrowSpeedY(slot); }
 
-    int playerArrowTransitionCountdown(int slot) {
-        return playerArrowMotion.transitionCountdown(slot);
-    }
+    int playerArrowTransitionCountdown(int slot) { return this.roomInspection.playerArrowTransitionCountdown(slot); }
 
-    int bombArrowCooldownForTest() {
-        return bombArrowCooldown;
-    }
+    int bombArrowCooldownForTest() { return this.roomInspection.bombArrowCooldownForTest(); }
 
-    boolean isBombArrowForTest(int slot) {
-        validateEntitySlot(slot);
-        return playerArrowBombArrow[slot];
-    }
+    boolean isBombArrowForTest(int slot) { return this.roomInspection.isBombArrowForTest(slot); }
 
-    boolean lastArrowShotPlayedWhoosh() {
-        return lastArrowShotPlayedWhoosh;
-    }
+    boolean lastArrowShotPlayedWhoosh() { return this.roomInspection.lastArrowShotPlayedWhoosh(); }
 
-    boolean lastBombPlacementPlayedBump() {
-        return lastBombPlacementPlayedBump;
-    }
+    boolean lastBombPlacementPlayedBump() { return this.roomInspection.lastBombPlacementPlayedBump(); }
 
     /** Creates the ROM's ordinary player bomb entity type {@code $02}. */
     int spawnBomb(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
@@ -3074,31 +2975,15 @@ public final class RoomEntityRuntime {
             0, 0, 0, false, 0x4C);
     }
 
-    boolean tarinTransformationHandlerInteractive() {
-        return transitionSequenceCounter == 0x04 && !dialogActive && !inventoryAppearing;
-    }
+    boolean tarinTransformationHandlerInteractive() { return this.roomInspection.tarinTransformationHandlerInteractive(); }
 
-    boolean tarinTransformationTimersInteractive() {
-        return tarinTransformationHandlerInteractive() && linkPlayingOcarinaCountdown == 0;
-    }
+    boolean tarinTransformationTimersInteractive() { return this.roomInspection.tarinTransformationTimersInteractive(); }
 
     /** Mirrors the state-$00 return gate reached after Genie's BossIntro call. */
-    boolean genieState0Interactive(boolean creditsGameplay) {
-        return !creditsGameplay
-            && gameplayWorld
-            && transitionSequenceCounter == 0x04
-            && !dialogActive
-            && !inventoryAppearing
-            && !witchGotItemPresentationActive()
-            && !roomTransitionActive;
-    }
+    boolean genieState0Interactive(boolean creditsGameplay) { return this.roomInspection.genieState0Interactive(creditsGameplay); }
 
     /** Mirrors UpdateEntityTimers' gameplay and presentation gates. */
-    boolean gameplayEntityTimersInteractive(boolean creditsGameplay) {
-        return (creditsGameplay || (gameplayWorld && transitionSequenceCounter == 0x04))
-            && !roomTransitionActive
-            && entityTimersInteractive();
-    }
+    boolean gameplayEntityTimersInteractive(boolean creditsGameplay) { return this.roomInspection.gameplayEntityTimersInteractive(creditsGameplay); }
 
     /** Creates the temporary type-$05 entity used by bombed bushes, grass, and pots. */
     int spawnLiftableRockSmash(int entityX, int entityY, int sourceSpriteVariant) {
@@ -3242,30 +3127,13 @@ public final class RoomEntityRuntime {
 
 
 
-    private boolean isLoadedEntityOfType(int slot, int type) {
-        return slot >= 0 && slot < slots.length && slots[slot].loaded()
-            && slots[slot].type() == type;
-    }
+    boolean isLoadedEntityOfType(int slot, int type) { return this.roomInspection.isLoadedEntityOfType(slot, type); }
 
-    boolean bombActive() {
-        for (RoomEntity entity : slots) {
-            if (entity.loaded() && entity.type() == ENTITY_BOMB
-                && !bombFinalPresentationPending[entity.slot()]) {
-                return true;
-            }
-        }
-        return false;
-    }
+    boolean bombActive() { return this.roomInspection.bombActive(); }
 
-    int bombDirection(int slot) {
-        validateEntitySlot(slot);
-        return bombDirection[slot] & 0xFF;
-    }
+    int bombDirection(int slot) { return this.roomInspection.bombDirection(slot); }
 
-    int bombPrivateCountdown1ForTest(int slot) {
-        validateEntitySlot(slot);
-        return bombPrivateCountdown1[slot] & 0xFF;
-    }
+    int bombPrivateCountdown1ForTest(int slot) { return this.roomInspection.bombPrivateCountdown1ForTest(slot); }
 
     void setBombTransitionCountdownForTest(int slot, int value) {
         validateCountdownTestValue(slot, value);
@@ -3305,34 +3173,17 @@ public final class RoomEntityRuntime {
         return true;
     }
 
-    boolean hookshotActive() {
-        return hookshotSlot() >= 0;
-    }
+    boolean hookshotActive() { return this.roomInspection.hookshotActive(); }
 
-    int hookshotSlot() {
-        for (int slot = 0; slot < slots.length; slot++) {
-            if (hookshotChainMotion.active(slot)) {
-                return slot;
-            }
-        }
-        return -1;
-    }
+    int hookshotSlot() { return this.roomInspection.hookshotSlot(); }
 
-    int hookshotTransitionCountdown(int slot) {
-        return hookshotChainMotion.transitionCountdown(slot);
-    }
+    int hookshotTransitionCountdown(int slot) { return this.roomInspection.hookshotTransitionCountdown(slot); }
 
-    int bowWowTargetSlot(int slot) {
-        return bowWowMotion.targetSlot(slot);
-    }
+    int bowWowTargetSlot(int slot) { return this.roomInspection.bowWowTargetSlot(slot); }
 
-    int bowWowPrivateCountdown2(int slot) {
-        return bowWowMotion.privateCountdown2(slot);
-    }
+    int bowWowPrivateCountdown2(int slot) { return this.roomInspection.bowWowPrivateCountdown2(slot); }
 
-    int bowWowTransitionCountdown(int slot) {
-        return bowWowMotion.transitionCountdown(slot);
-    }
+    int bowWowTransitionCountdown(int slot) { return this.roomInspection.bowWowTransitionCountdown(slot); }
 
     void setBowWowTransitionCountdownForTest(int slot, int value) {
         validateCountdownTestValue(slot, value);
@@ -3342,52 +3193,26 @@ public final class RoomEntityRuntime {
         bowWowMotion.setTransitionCountdownForTest(slot, value);
     }
 
-    int entityInertia(int slot) {
-        validateEntitySlot(slot);
-        return entityInertia[slot];
-    }
+    int entityInertia(int slot) { return this.roomInspection.entityInertia(slot); }
 
     void setEntityInertiaForTest(int slot, int value) {
         validateCountdownTestValue(slot, value);
         entityInertia[slot] = value;
     }
 
-    int pokeyPrivateState1(int slot) {
-        validateEntitySlot(slot);
-        return pokeyMotion.privateState1(slot);
-    }
+    int pokeyPrivateState1(int slot) { return this.roomInspection.pokeyPrivateState1(slot); }
 
-    int pokeySpeedX(int slot) {
-        validateEntitySlot(slot);
-        return pokeyMotion.speedX(slot);
-    }
+    int pokeySpeedX(int slot) { return this.roomInspection.pokeySpeedX(slot); }
 
-    int pokeySpeedY(int slot) {
-        validateEntitySlot(slot);
-        return pokeyMotion.speedY(slot);
-    }
+    int pokeySpeedY(int slot) { return this.roomInspection.pokeySpeedY(slot); }
 
-    int pokeyTransitionCountdown(int slot) {
-        validateEntitySlot(slot);
-        return enemyTransitionCountdown[slot];
-    }
+    int pokeyTransitionCountdown(int slot) { return this.roomInspection.pokeyTransitionCountdown(slot); }
 
-    int hookshotEntityState(int slot) {
-        HookshotChainMotion.State state = hookshotChainMotion.state(slot);
-        return state == null ? 0 : state.entityState();
-    }
+    int hookshotEntityState(int slot) { return this.roomInspection.hookshotEntityState(slot); }
 
-    boolean hookshotWallCollisionPending(int slot) {
-        HookshotChainMotion.State state = hookshotChainMotion.state(slot);
-        return state != null && state.wallCollisionPending();
-    }
+    boolean hookshotWallCollisionPending(int slot) { return this.roomInspection.hookshotWallCollisionPending(slot); }
 
-    public RoomEntitySnapshot snapshot() {
-        return new RoomEntitySnapshot(Arrays.asList(slots), spriteSelection, spriteTiles,
-            groundInteractionSideScrolling, hookshotChainOam, pincerBodyOam,
-            wingedOctorokOam,
-            fallingVisualYOffset, bowWowChainOam);
-    }
+    public RoomEntitySnapshot snapshot() { return this.roomInspection.snapshot(); }
 
     /** Applies the position and variant writes made by MarinEntityHandler_Indoor. */
     public boolean applyMarinWakeUpPresentation(int x, int y, int spriteVariant) {
@@ -3476,45 +3301,25 @@ public final class RoomEntityRuntime {
         wingedOctorokOam = List.copyOf(entries);
     }
 
-    List<WingedOctorokOam.Entry> wingedOctorokOam() {
-        return wingedOctorokOam;
-    }
+    List<WingedOctorokOam.Entry> wingedOctorokOam() { return this.roomInspection.wingedOctorokOam(); }
 
-    int wingedOctorokState(int slot) {
-        return wingedOctorokMotion.state(slot);
-    }
+    int wingedOctorokState(int slot) { return this.roomInspection.wingedOctorokState(slot); }
 
-    int wingedOctorokSpeedX(int slot) {
-        return wingedOctorokMotion.speedX(slot);
-    }
+    int wingedOctorokSpeedX(int slot) { return this.roomInspection.wingedOctorokSpeedX(slot); }
 
-    int wingedOctorokSpeedY(int slot) {
-        return wingedOctorokMotion.speedY(slot);
-    }
+    int wingedOctorokSpeedY(int slot) { return this.roomInspection.wingedOctorokSpeedY(slot); }
 
-    int wingedOctorokSpeedZ(int slot) {
-        return wingedOctorokMotion.speedZ(slot);
-    }
+    int wingedOctorokSpeedZ(int slot) { return this.roomInspection.wingedOctorokSpeedZ(slot); }
 
-    int bushCrawlerState(int slot) {
-        return bushCrawlerMotion.state(slot);
-    }
+    int bushCrawlerState(int slot) { return this.roomInspection.bushCrawlerState(slot); }
 
-    int bushCrawlerPrivateState1(int slot) {
-        return bushCrawlerMotion.privateState1(slot);
-    }
+    int bushCrawlerPrivateState1(int slot) { return this.roomInspection.bushCrawlerPrivateState1(slot); }
 
-    int bushCrawlerPrivateState4(int slot) {
-        return bushCrawlerMotion.privateState4(slot);
-    }
+    int bushCrawlerPrivateState4(int slot) { return this.roomInspection.bushCrawlerPrivateState4(slot); }
 
-    int bushCrawlerSpeedX(int slot) {
-        return bushCrawlerMotion.speedX(slot);
-    }
+    int bushCrawlerSpeedX(int slot) { return this.roomInspection.bushCrawlerSpeedX(slot); }
 
-    int bushCrawlerSpeedY(int slot) {
-        return bushCrawlerMotion.speedY(slot);
-    }
+    int bushCrawlerSpeedY(int slot) { return this.roomInspection.bushCrawlerSpeedY(slot); }
 
     void setSpriteSelection(EntitySpriteSelection selection) {
         spriteSelection = selection;
@@ -3539,12 +3344,7 @@ public final class RoomEntityRuntime {
         this.objectIntersectionQuery = objectIntersectionQuery;
     }
 
-    int groundStatus(int slot) {
-        if (slot < 0 || slot >= entityGroundStatus.length) {
-            throw new IllegalArgumentException("Entity slot out of range: " + slot);
-        }
-        return entityGroundStatus[slot];
-    }
+    int groundStatus(int slot) { return this.roomInspection.groundStatus(slot); }
 
     void setActionButtonsHeld(boolean actionButtonsHeld) {
         setActionButtonsHeld(actionButtonsHeld, actionButtonsHeld);
@@ -3594,13 +3394,9 @@ public final class RoomEntityRuntime {
         this.bowWowState = bowWowState & 0xFF;
     }
 
-    int bowWowState() {
-        return bowWowState & 0xFF;
-    }
+    int bowWowState() { return this.roomInspection.bowWowState(); }
 
-    int moblinKingState(int slot) {
-        return moblinKingMotion.state(slot);
-    }
+    int moblinKingState(int slot) { return this.roomInspection.moblinKingState(slot); }
 
     void setMoblinKingStateForTest(int slot, int state, int direction,
                                    int speedX, int speedY, int speedZ,
@@ -3648,9 +3444,7 @@ public final class RoomEntityRuntime {
         currentLinkFinalPositionXConfigured = true;
     }
 
-    boolean shouldGetLostInMysteriousWoods() {
-        return shouldGetLostInMysteriousWoods;
-    }
+    boolean shouldGetLostInMysteriousWoods() { return this.roomInspection.shouldGetLostInMysteriousWoods(); }
 
     void setLiftedLinkC13B(int linkC13B) {
         if ((linkC13B & ~0xFF) != 0) {
@@ -3809,15 +3603,9 @@ public final class RoomEntityRuntime {
         playerHasTailKey = owned;
     }
 
-    int swordPickupStateForTest(int slot) {
-        validateEntitySlot(slot);
-        return swordPickupState[slot];
-    }
+    int swordPickupStateForTest(int slot) { return this.roomInspection.swordPickupStateForTest(slot); }
 
-    int slowTransitionCountdownForTest(int slot) {
-        validateEntitySlot(slot);
-        return slowTransitionCountdown[slot];
-    }
+    int slowTransitionCountdownForTest(int slot) { return this.roomInspection.slowTransitionCountdownForTest(slot); }
 
     void setSlowTransitionCountdownForTest(int slot, int countdown) {
         validateCountdownTestValue(slot, countdown);
@@ -3836,30 +3624,15 @@ public final class RoomEntityRuntime {
         enemyTransitionCountdown[slot] = 0;
     }
 
-    int threeOfAKindStateForTest(int slot) {
-        validateEntitySlot(slot);
-        return threeOfAKindMotion.state(slot);
-    }
+    int threeOfAKindStateForTest(int slot) { return this.roomInspection.threeOfAKindStateForTest(slot); }
 
-    int transitionCountdownForTest(int slot) {
-        validateEntitySlot(slot);
-        return enemyTransitionCountdown[slot];
-    }
+    int transitionCountdownForTest(int slot) { return this.roomInspection.transitionCountdownForTest(slot); }
 
-    int hinoxStateForTest(int slot) {
-        validateEntitySlot(slot);
-        return hinoxMotion.state(slot);
-    }
+    int hinoxStateForTest(int slot) { return this.roomInspection.hinoxStateForTest(slot); }
 
-    int hinoxSpeedXForTest(int slot) {
-        validateEntitySlot(slot);
-        return hinoxMotion.speedX(slot);
-    }
+    int hinoxSpeedXForTest(int slot) { return this.roomInspection.hinoxSpeedXForTest(slot); }
 
-    int hinoxSpeedYForTest(int slot) {
-        validateEntitySlot(slot);
-        return hinoxMotion.speedY(slot);
-    }
+    int hinoxSpeedYForTest(int slot) { return this.roomInspection.hinoxSpeedYForTest(slot); }
 
     void setHinoxStateForTest(int slot, int state) {
         validateEntitySlot(slot);
@@ -3877,10 +3650,7 @@ public final class RoomEntityRuntime {
         hinoxMotion.setSpeedForTest(slot, speedX, speedY);
     }
 
-    int enemyHealthForTest(int slot) {
-        validateEntitySlot(slot);
-        return enemyHealth[slot];
-    }
+    int enemyHealthForTest(int slot) { return this.roomInspection.enemyHealthForTest(slot); }
 
     void setTarinRaccoonStateForTest(int slot, int state, int speedX, int speedY,
                                      int speedZ, int privateState2, int privateState3,
@@ -3890,35 +3660,18 @@ public final class RoomEntityRuntime {
             privateState2, privateState3, nearLinkLatch);
     }
 
-    int tarinRaccoonStateForTest(int slot) {
-        validateEntitySlot(slot);
-        return tarinRaccoonMotion.state(slot);
-    }
+    int tarinRaccoonStateForTest(int slot) { return this.roomInspection.tarinRaccoonStateForTest(slot); }
 
-    int bombPrivateState4ForTest(int slot) {
-        validateEntitySlot(slot);
-        return bombPrivateState4[slot] & 0xFF;
-    }
+    int bombPrivateState4ForTest(int slot) { return this.roomInspection.bombPrivateState4ForTest(slot); }
 
-    int entityRoomStatusForTest() {
-        return entityRoomStatus & 0xFF;
-    }
+    int entityRoomStatusForTest() { return this.roomInspection.entityRoomStatusForTest(); }
 
-    int warpTransitionCountdownForTest(int slot) {
-        validateEntitySlot(slot);
-        return warpTransitionCountdown[slot] & 0xFF;
-    }
+    int warpTransitionCountdownForTest(int slot) { return this.roomInspection.warpTransitionCountdownForTest(slot); }
 
 
-    int owlEventStateForTest(int slot) {
-        validateEntitySlot(slot);
-        return owlEventState[slot];
-    }
+    int owlEventStateForTest(int slot) { return this.roomInspection.owlEventStateForTest(slot); }
 
-    int owlPrivateCountdown1ForTest(int slot) {
-        validateEntitySlot(slot);
-        return owlPrivateCountdown1[slot];
-    }
+    int owlPrivateCountdown1ForTest(int slot) { return this.roomInspection.owlPrivateCountdown1ForTest(slot); }
 
     void setTransitionSequenceCounterForTest(int counter) {
         if (counter < 0 || counter > 0xFF) {
@@ -4041,13 +3794,9 @@ public final class RoomEntityRuntime {
         return pending;
     }
 
-    int sideViewPlatformSpeedYForTest(int slot) {
-        return sideViewPlatformMotion.speedY(slot);
-    }
+    int sideViewPlatformSpeedYForTest(int slot) { return this.roomInspection.sideViewPlatformSpeedYForTest(slot); }
 
-    int sideViewPlatformSpeedXForTest(int slot) {
-        return sideViewPlatformMotion.speedX(slot);
-    }
+    int sideViewPlatformSpeedXForTest(int slot) { return this.roomInspection.sideViewPlatformSpeedXForTest(slot); }
 
     void setSideViewPlatformSpeedYForTest(int slot, int speed) {
         sideViewPlatformMotion.setSpeedY(slot, speed);
@@ -4057,13 +3806,9 @@ public final class RoomEntityRuntime {
         sideViewPlatformMotion.setSpeedX(slot, speed);
     }
 
-    int sideViewPlatformPrivateState2ForTest(int slot) {
-        return sideViewPlatformMotion.privateState2(slot);
-    }
+    int sideViewPlatformPrivateState2ForTest(int slot) { return this.roomInspection.sideViewPlatformPrivateState2ForTest(slot); }
 
-    int sideViewPlatformPrivateState4ForTest(int slot) {
-        return sideViewPlatformMotion.privateState4(slot);
-    }
+    int sideViewPlatformPrivateState4ForTest(int slot) { return this.roomInspection.sideViewPlatformPrivateState4ForTest(slot); }
 
     List<HinoxLinkEffectRequest> consumePendingHinoxLinkEffectRequests() {
         List<HinoxLinkEffectRequest> pending = List.copyOf(pendingHinoxLinkEffectRequests);
@@ -4111,28 +3856,11 @@ public final class RoomEntityRuntime {
         return pending;
     }
 
-    boolean witchGotItemPresentationActive() {
-        for (int countdown : witchGotItemCountdown) {
-            if (countdown != 0) {
-                return true;
-            }
-        }
-        return false;
-    }
+    boolean witchGotItemPresentationActive() { return this.roomInspection.witchGotItemPresentationActive(); }
 
-    boolean powerUpPickupSequenceActive() {
-        for (int countdown : powerUpPickupCountdown) if (countdown != 0) return true;
-        return false;
-    }
+    boolean powerUpPickupSequenceActive() { return this.roomInspection.powerUpPickupSequenceActive(); }
 
-    boolean swordPickupSequenceActive() {
-        for (boolean active : swordPickupSequenceActive) {
-            if (active) {
-                return true;
-            }
-        }
-        return false;
-    }
+    boolean swordPickupSequenceActive() { return this.roomInspection.swordPickupSequenceActive(); }
 
     List<LinkSwordSpinPoseRequest> consumePendingLinkSwordSpinPoseRequests() {
         List<LinkSwordSpinPoseRequest> pending = List.copyOf(pendingLinkSwordSpinPoseRequests);
@@ -4194,25 +3922,15 @@ public final class RoomEntityRuntime {
         return pending;
     }
 
-    int likeLikeState(int slot) {
-        return likeLikeMotion.state(slot);
-    }
+    int likeLikeState(int slot) { return this.roomInspection.likeLikeState(slot); }
 
-    int likeLikePrivateState1(int slot) {
-        return likeLikeMotion.privateState1(slot);
-    }
+    int likeLikePrivateState1(int slot) { return this.roomInspection.likeLikePrivateState1(slot); }
 
-    int likeLikeInertia(int slot) {
-        return likeLikeMotion.inertia(slot);
-    }
+    int likeLikeInertia(int slot) { return this.roomInspection.likeLikeInertia(slot); }
 
-    int likeLikeWalkState(int slot) {
-        return likeLikeMotion.walkState(slot);
-    }
+    int likeLikeWalkState(int slot) { return this.roomInspection.likeLikeWalkState(slot); }
 
-    int likeLikeWalkSpeedY(int slot) {
-        return likeLikeMotion.walkSpeedY(slot);
-    }
+    int likeLikeWalkSpeedY(int slot) { return this.roomInspection.likeLikeWalkSpeedY(slot); }
 
     List<DialogRequest> consumePendingDialogRequests() {
         List<DialogRequest> pending = List.copyOf(pendingDialogRequests);
@@ -4226,9 +3944,7 @@ public final class RoomEntityRuntime {
         return pending;
     }
 
-    List<HookshotBridgeUpdate> hookshotBridgeUpdates() {
-        return List.copyOf(hookshotBridgeUpdates);
-    }
+    List<HookshotBridgeUpdate> hookshotBridgeUpdates() { return this.roomInspection.hookshotBridgeUpdates(); }
 
 
 
@@ -4244,34 +3960,12 @@ public final class RoomEntityRuntime {
 
 
 
-    RoomEntity firstLoadedEntityOfType(int type) {
-        for (RoomEntity candidate : slots) {
-            if (candidate.loaded() && candidate.type() == type) {
-                return candidate;
-            }
-        }
-        return null;
-    }
+    RoomEntity firstLoadedEntityOfType(int type) { return this.roomInspection.firstLoadedEntityOfType(type); }
 
 
 
     /** Mirrors bank-$03 ApplyLinkCollisionWithEnemy's Goomba stomp branch. */
-    boolean canGoombaStomp(RoomEntity entity, int linkEntityX, int linkEntityY,
-                                   boolean linkAirborne, int linkVerticalVelocity,
-                                   boolean linkInteractive, int frameCounter) {
-        if (entity.type() != ENTITY_GOOMBA || !linkAirborne || !linkInteractive
-            || !RoomEntityCombatRules.collisionCadenceMatches(frameCounter, entity.slot())
-            || !RoomEntityCombatRules.overlapsLink(entity, linkEntityX, linkEntityY)) {
-            return false;
-        }
-
-        // Top-down hLinkVelocityZ is negative while descending. The side-view
-        // branch instead tests hLinkSpeedY, where a non-negative value means
-        // Link is moving downward onto the Goomba.
-        return groundInteractionSideScrolling
-            ? (linkVerticalVelocity & 0x80) == 0
-            : (linkVerticalVelocity & 0x80) != 0;
-    }
+    boolean canGoombaStomp(RoomEntity entity, int linkEntityX, int linkEntityY, boolean linkAirborne, int linkVerticalVelocity, boolean linkInteractive, int frameCounter) { return this.roomInspection.canGoombaStomp(entity, linkEntityX, linkEntityY, linkAirborne, linkVerticalVelocity, linkInteractive, frameCounter); }
 
 
 
@@ -4283,22 +3977,9 @@ public final class RoomEntityRuntime {
 
 
 
-    private boolean hasNoGroundInteractionOverride(int slot) {
-        return entityOptions1Override[slot] >= 0
-            && (entityOptions1Override[slot] & ENTITY_OPT1_NO_GROUND_INTERACTION) != 0;
-    }
+    private boolean hasNoGroundInteractionOverride(int slot) { return this.roomInspection.hasNoGroundInteractionOverride(slot); }
 
-    boolean hasNoGroundInteraction(RoomEntity entity) {
-        return isGhiniType(entity.type()) || entity.type() == ENTITY_MAD_BOMBER
-            || entity.type() == ENTITY_WIZROBE_PROJECTILE
-            || entity.type() == ENTITY_GIANT_GOPONGA_FLOWER
-            || entity.type() == ENTITY_GOPONGA_FLOWER_PROJECTILE
-            || entity.type() == ENTITY_BOO_BUDDY
-            || entity.type() == ENTITY_DROPPABLE_FAIRY
-            || entity.type() == ENTITY_PINCER
-            || entity.type() == ENTITY_MOLDORM
-            || hasNoGroundInteractionOverride(entity.slot());
-    }
+    boolean hasNoGroundInteraction(RoomEntity entity) { return this.roomInspection.hasNoGroundInteraction(entity); }
 
     RoomEntity applyZolSplit(RoomEntity original, RoomEntity updated,
                                       ZolGelMotion.Split split) {
@@ -4386,31 +4067,15 @@ public final class RoomEntityRuntime {
 
     void advanceRichard(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne) { story.advanceRichard(entity, frameCounter, linkEntityX, linkEntityY, linkAirborne); }
 
-    boolean sourceNpcInteractionAllowed(int xDistance, int yDistance,
-                                                boolean linkAirborne,
-                                                int entityDirection) {
-        return actionButtonAHeld
-            && ((yDistance + 0x14) & 0xFF) < 0x28
-            && ((xDistance + 0x10) & 0xFF) < 0x20
-            && (lastRomLinkDirection ^ 0x01) == entityDirection
-            && !dialogActive && !inventoryAppearing && !linkAirborne
-            && dialogCooldown == 0 && windowY == 0x80;
-    }
+    boolean sourceNpcInteractionAllowed(int xDistance, int yDistance, boolean linkAirborne, int entityDirection) { return this.roomInspection.sourceNpcInteractionAllowed(xDistance, yDistance, linkAirborne, entityDirection); }
 
 
 
     void advanceInstrumentPickup(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY, int linkZ, IntSupplier randomByteSupplier) { rewards.advanceInstrumentPickup(entity, frameCounter, linkEntityX, linkEntityY, linkZ, randomByteSupplier); }
 
-    public boolean heartPiecePickupActive() {
-        for (var motion : heartPiecePickup) if (motion != null && motion.active()) return true;
-        return false;
-    }
+    public boolean heartPiecePickupActive() { return this.roomInspection.heartPiecePickupActive(); }
 
-    public HeartPieceVisual heartPieceVisual() {
-        for (var motion : heartPiecePickup) if (motion != null && motion.showMeter())
-            return new HeartPieceVisual(heartPiecesCount, heartPieceMeterPairs);
-        return null;
-    }
+    public HeartPieceVisual heartPieceVisual() { return this.roomInspection.heartPieceVisual(); }
 
     public void setHeartPiecesCount(int count) { heartPiecesCount = count; }
 
@@ -4422,42 +4087,11 @@ public final class RoomEntityRuntime {
 
     void advanceHeartPiecePickup(RoomEntity entity, int x, int y, int z) { pickups.advanceHeartPiecePickup(entity, x, y, z); }
 
-    public String instrumentTrace() {
-        StringBuilder trace = new StringBuilder().append(activeMusic ? 1 : 0);
-        for (RoomEntity entity : slots) {
-            if (entity.loaded() && entity.type() == 0x39 && instrumentParticleKind[entity.slot()] == 0) {
-                int slot = entity.slot();
-                trace.append(';').append(slot).append(',').append(instrumentPickupState[slot])
-                    .append(',').append(enemyTransitionCountdown[slot])
-                    .append(',').append(slowTransitionCountdown[slot]);
-            }
-        }
-        return trace.toString();
-    }
+    public String instrumentTrace() { return this.roomInspection.instrumentTrace(); }
 
-    public String moblinKingTrace() {
-        for (RoomEntity entity : slots) if (entity.loaded() && entity.type() == ENTITY_MOBLIN_KING) {
-            int slot = entity.slot();
-            return "%d,%d,%d,%d,%d,%d,%d".formatted(moblinKingMotion.state(slot),
-                entity.x(), entity.y(), entity.z(), enemyHealth[slot],
-                enemyTransitionCountdown[slot], slowTransitionCountdown[slot]);
-        }
-        return "-1";
-    }
+    public String moblinKingTrace() { return this.roomInspection.moblinKingTrace(); }
 
-    public InstrumentWarpVisual instrumentWarpVisual() {
-        for (int slot = 0; slot < instrumentPickupState.length; slot++) {
-            // The ROM leaves the white BG/palettes in VRAM after the controller
-            // finishes. Keep them until the destination room replaces this runtime.
-            if (instrumentPickupState[slot] == 3 || instrumentPickupState[slot] == 4) {
-                return new InstrumentWarpVisual(instrumentBackgroundFade[slot],
-                    instrumentObjectFade[slot], instrumentHintBatches[slot],
-                    instrumentHintTiles, instrumentHintAttributes,
-                    instrumentWarpX[slot], instrumentWarpY[slot], instrumentWarpSprites);
-            }
-        }
-        return null;
-    }
+    public InstrumentWarpVisual instrumentWarpVisual() { return this.roomInspection.instrumentWarpVisual(); }
 
     private void spawnInstrumentParticle(RoomEntity source, int offsetIndex, int variant) { rewards.spawnInstrumentParticle(source, offsetIndex, variant); }
 
@@ -4492,13 +4126,7 @@ public final class RoomEntityRuntime {
 
     private void advanceDepartingOwl(RoomEntity entity, int slot, int frameCounter) { story.advanceDepartingOwl(entity, slot, frameCounter); }
 
-    RoomEntity owlPresentation(RoomEntity entity, int frameCounter) {
-        if (spriteHandlers == null) {
-            return entity;
-        }
-        boolean flying = ((frameCounter >>> 2) & 0x02) != 0;
-        return withDefinition(entity, spriteHandlers.forOwlEvent(flying), 0);
-    }
+    RoomEntity owlPresentation(RoomEntity entity, int frameCounter) { return this.roomInspection.owlPresentation(entity, frameCounter); }
 
 
 
@@ -4573,13 +4201,7 @@ public final class RoomEntityRuntime {
 
     private int spawnKeyDropAt(int itemType, int x, int y, int spriteVariant, int z, int speedZ, int privateCountdown1) { return pickups.spawnKeyDropAt(itemType, x, y, spriteVariant, z, speedZ, privateCountdown1); }
 
-    int enemyDropHealthGroup(int entityType) {
-        if (enemyCombatTables == null) {
-            throw new IllegalStateException(
-                "ROM enemy combat tables are required for enemy drop resolution");
-        }
-        return enemyCombatTables.healthGroup(entityType);
-    }
+    int enemyDropHealthGroup(int entityType) { return this.roomInspection.enemyDropHealthGroup(entityType); }
 
     void spawnEnemyDrop(RoomEntity source, int itemType) { pickups.spawnEnemyDrop(source, itemType); }
 
@@ -5133,44 +4755,15 @@ public final class RoomEntityRuntime {
         return true;
     }
 
-    EntitySpriteDefinition spriteDefinitionFor(int entityType) {
-        if (spriteHandlers == null) {
-            return EntitySpriteDefinition.unsupported(entityType);
-        }
-        EntityRoomLoader.RoomTable table = spriteSelection == null
-            ? (indoorRoom ? EntityRoomLoader.RoomTable.INDOORS_A
-                : EntityRoomLoader.RoomTable.OVERWORLD)
-            : spriteSelection.roomTable();
-        int mapId = spriteSelection == null ? -1 : spriteSelection.roomId();
-        return spriteHandlers.forEntityType(entityType, table, mapId);
-    }
+    EntitySpriteDefinition spriteDefinitionFor(int entityType) { return this.roomInspection.spriteDefinitionFor(entityType); }
 
-    EntitySpriteDefinition spriteDefinitionForBushCrawlerState(int privateState1) {
-        if (spriteHandlers == null) {
-            return EntitySpriteDefinition.unsupported(ENTITY_BUSH_CRAWLER);
-        }
-        return spriteHandlers.forBushCrawlerState(privateState1, spriteRoomTable());
-    }
+    EntitySpriteDefinition spriteDefinitionForBushCrawlerState(int privateState1) { return this.roomInspection.spriteDefinitionForBushCrawlerState(privateState1); }
 
-    private EntitySpriteDefinition spriteDefinitionForPokeySegment() {
-        return spriteHandlers == null
-            ? EntitySpriteDefinition.unsupported(ENTITY_POKEY)
-            : spriteHandlers.forPokeySegment();
-    }
+    private EntitySpriteDefinition spriteDefinitionForPokeySegment() { return this.roomInspection.spriteDefinitionForPokeySegment(); }
 
-    EntitySpriteDefinition spriteDefinitionForBushCrawlerCrawlState(int privateState4) {
-        if (spriteHandlers == null) {
-            return EntitySpriteDefinition.unsupported(ENTITY_BUSH_CRAWLER);
-        }
-        return spriteHandlers.forBushCrawlerCrawlState(spriteRoomTable(), privateState4);
-    }
+    EntitySpriteDefinition spriteDefinitionForBushCrawlerCrawlState(int privateState4) { return this.roomInspection.spriteDefinitionForBushCrawlerCrawlState(privateState4); }
 
-    private EntityRoomLoader.RoomTable spriteRoomTable() {
-        return spriteSelection == null
-            ? (indoorRoom ? EntityRoomLoader.RoomTable.INDOORS_A
-                : EntityRoomLoader.RoomTable.OVERWORLD)
-            : spriteSelection.roomTable();
-    }
+    private EntityRoomLoader.RoomTable spriteRoomTable() { return this.roomInspection.spriteRoomTable(); }
 
     private EntitySpriteDefinition spriteDefinitionForChest(int itemType) {
         if (itemType == ChestContentsTable.CHEST_ZOL) {
@@ -5434,22 +5027,9 @@ public final class RoomEntityRuntime {
         return withStatus(moved, stunned.status());
     }
 
-    private EntitySpriteDefinition spriteDefinitionForEvasiveState(
-            EntitySpriteDefinition fallback, int privateState1) {
-        if (spriteHandlers == null) {
-            return fallback;
-        }
-        return spriteHandlers.forStalfosEvasiveState(privateState1);
-    }
+    private EntitySpriteDefinition spriteDefinitionForEvasiveState( EntitySpriteDefinition fallback, int privateState1) { return this.roomInspection.spriteDefinitionForEvasiveState(fallback, privateState1); }
 
-    RoomEntity refreshColorShellDisplay(RoomEntity entity, EntityStatus status) {
-        if (!ColorShellMotion.isColorShellType(entity.type()) || spriteHandlers == null) {
-            return entity;
-        }
-        EntitySpriteDefinition definition = spriteHandlers.forColorShellState(
-            entity.type(), colorShellMotion.state(entity.slot()), status);
-        return withDefinition(entity, definition, colorShellMotion.spriteVariant(entity.slot()));
-    }
+    RoomEntity refreshColorShellDisplay(RoomEntity entity, EntityStatus status) { return this.roomInspection.refreshColorShellDisplay(entity, status); }
 
     void finishBurning(RoomEntity entity) {
         int slot = entity.slot();
@@ -5480,238 +5060,113 @@ public final class RoomEntityRuntime {
             EntityCombatEvent.SoundChannel.NOISE, 0x13));
     }
 
-    int slowTransitionCountdown(int slot) {
-        if (slot < 0 || slot >= slots.length) {
-            throw new IllegalArgumentException("Entity slot out of range: " + slot);
-        }
-        return slowTransitionCountdown[slot];
-    }
+    int slowTransitionCountdown(int slot) { return this.roomInspection.slowTransitionCountdown(slot); }
 
-    int droppedItemForTest(int slot) {
-        validateEntitySlot(slot);
-        return droppedItemBySlot[slot];
-    }
+    int droppedItemForTest(int slot) { return this.roomInspection.droppedItemForTest(slot); }
 
-    int killCount() {
-        return killCount;
-    }
+    int killCount() { return this.roomInspection.killCount(); }
 
-    int killOrderAt(int index) {
-        if (index < 0 || index >= killOrder.length) {
-            throw new IllegalArgumentException("Kill-order index out of range: " + index);
-        }
-        return killOrder[index];
-    }
+    int killOrderAt(int index) { return this.roomInspection.killOrderAt(index); }
 
-    EnemyDropResolver.CounterState enemyDropCounters() {
-        return enemyDropCounters;
-    }
+    EnemyDropResolver.CounterState enemyDropCounters() { return this.roomInspection.enemyDropCounters(); }
 
-    int dropPrivateCountdown1(int slot) {
-        validateEntitySlot(slot);
-        return dropPrivateCountdown1[slot];
-    }
+    int dropPrivateCountdown1(int slot) { return this.roomInspection.dropPrivateCountdown1(slot); }
 
-    int dropPrivateCountdown3(int slot) {
-        validateEntitySlot(slot);
-        return dropPrivateCountdown3[slot];
-    }
+    int dropPrivateCountdown3(int slot) { return this.roomInspection.dropPrivateCountdown3(slot); }
 
-    int droppablePrivateState3(int slot) {
-        validateEntitySlot(slot);
-        return droppablePrivateState3[slot];
-    }
+    int droppablePrivateState3(int slot) { return this.roomInspection.droppablePrivateState3(slot); }
 
-    int droppablePrivateState4(int slot) {
-        validateEntitySlot(slot);
-        return droppablePrivateState4[slot];
-    }
+    int droppablePrivateState4(int slot) { return this.roomInspection.droppablePrivateState4(slot); }
 
-    int dropSpeedY(int slot) {
-        validateEntitySlot(slot);
-        return enemyDropMotion.speedY(slot);
-    }
+    int dropSpeedY(int slot) { return this.roomInspection.dropSpeedY(slot); }
 
-    int dropSpeedX(int slot) {
-        validateEntitySlot(slot);
-        return enemyDropMotion.speedX(slot);
-    }
+    int dropSpeedX(int slot) { return this.roomInspection.dropSpeedX(slot); }
 
-    int dropSpeedZ(int slot) {
-        validateEntitySlot(slot);
-        return enemyDropMotion.speedZ(slot);
-    }
+    int dropSpeedZ(int slot) { return this.roomInspection.dropSpeedZ(slot); }
 
-    int fairySpeedX(int slot) {
-        validateEntitySlot(slot);
-        return fairyMotion.speedX(slot);
-    }
+    int fairySpeedX(int slot) { return this.roomInspection.fairySpeedX(slot); }
 
-    int fairySpeedY(int slot) {
-        validateEntitySlot(slot);
-        return fairyMotion.speedY(slot);
-    }
+    int fairySpeedY(int slot) { return this.roomInspection.fairySpeedY(slot); }
 
-    int keeseState(int slot) {
-        return keeseMotion.state(slot);
-    }
+    int keeseState(int slot) { return this.enemyInspection.keeseState(slot); }
 
-    int keeseTransitionCountdown(int slot) {
-        return keeseMotion.transitionCountdown(slot);
-    }
+    int keeseTransitionCountdown(int slot) { return this.enemyInspection.keeseTransitionCountdown(slot); }
 
-    int keeseAngle(int slot) {
-        return keeseMotion.angle(slot);
-    }
+    int keeseAngle(int slot) { return this.enemyInspection.keeseAngle(slot); }
 
-    int keeseSpeedX(int slot) {
-        return keeseMotion.speedX(slot);
-    }
+    int keeseSpeedX(int slot) { return this.enemyInspection.keeseSpeedX(slot); }
 
-    int keeseSpeedY(int slot) {
-        return keeseMotion.speedY(slot);
-    }
+    int keeseSpeedY(int slot) { return this.enemyInspection.keeseSpeedY(slot); }
 
-    int octorokState(int slot) {
-        return roamingEnemyMotion.state(slot);
-    }
+    int octorokState(int slot) { return this.enemyInspection.octorokState(slot); }
 
-    int octorokTransitionCountdown(int slot) {
-        return roamingEnemyMotion.transitionCountdown(slot);
-    }
+    int octorokTransitionCountdown(int slot) { return this.enemyInspection.octorokTransitionCountdown(slot); }
 
-    int octorokDirection(int slot) {
-        return roamingEnemyMotion.direction(slot);
-    }
+    int octorokDirection(int slot) { return this.enemyInspection.octorokDirection(slot); }
 
-    int octorokSpeedX(int slot) {
-        return roamingEnemyMotion.speedX(slot);
-    }
+    int octorokSpeedX(int slot) { return this.enemyInspection.octorokSpeedX(slot); }
 
-    int octorokSpeedY(int slot) {
-        return roamingEnemyMotion.speedY(slot);
-    }
+    int octorokSpeedY(int slot) { return this.enemyInspection.octorokSpeedY(slot); }
 
-    int ironMaskState(int slot) {
-        return roamingEnemyMotion.state(slot);
-    }
+    int ironMaskState(int slot) { return this.enemyInspection.ironMaskState(slot); }
 
-    int ironMaskTransitionCountdown(int slot) {
-        return roamingEnemyMotion.transitionCountdown(slot);
-    }
+    int ironMaskTransitionCountdown(int slot) { return this.enemyInspection.ironMaskTransitionCountdown(slot); }
 
-    int ironMaskDirection(int slot) {
-        return roamingEnemyMotion.direction(slot);
-    }
+    int ironMaskDirection(int slot) { return this.enemyInspection.ironMaskDirection(slot); }
 
-    int ironMaskSpeedX(int slot) {
-        return roamingEnemyMotion.speedX(slot);
-    }
+    int ironMaskSpeedX(int slot) { return this.enemyInspection.ironMaskSpeedX(slot); }
 
-    int ironMaskSpeedY(int slot) {
-        return roamingEnemyMotion.speedY(slot);
-    }
+    int ironMaskSpeedY(int slot) { return this.enemyInspection.ironMaskSpeedY(slot); }
 
-    int ironMaskPrivateState2(int slot) {
-        validateEntitySlot(slot);
-        return ironMaskPrivateState2[slot];
-    }
+    int ironMaskPrivateState2(int slot) { return this.enemyInspection.ironMaskPrivateState2(slot); }
 
-    int moblinSwordState(int slot) {
-        return moblinSwordMotion.state(slot);
-    }
+    int moblinSwordState(int slot) { return this.enemyInspection.moblinSwordState(slot); }
 
-    int moblinSwordTransitionCountdown(int slot) {
-        return moblinSwordMotion.transitionCountdown(slot);
-    }
+    int moblinSwordTransitionCountdown(int slot) { return this.enemyInspection.moblinSwordTransitionCountdown(slot); }
 
-    int moblinSwordPrivateCountdown1(int slot) {
-        return moblinSwordMotion.privateCountdown1(slot);
-    }
+    int moblinSwordPrivateCountdown1(int slot) { return this.enemyInspection.moblinSwordPrivateCountdown1(slot); }
 
-    int moblinSwordPrivateState3(int slot) {
-        return moblinSwordMotion.privateState3(slot);
-    }
+    int moblinSwordPrivateState3(int slot) { return this.enemyInspection.moblinSwordPrivateState3(slot); }
 
-    int moblinSwordDirection(int slot) {
-        return moblinSwordMotion.direction(slot);
-    }
+    int moblinSwordDirection(int slot) { return this.enemyInspection.moblinSwordDirection(slot); }
 
-    int moblinSwordSpeedX(int slot) {
-        return moblinSwordMotion.speedX(slot);
-    }
+    int moblinSwordSpeedX(int slot) { return this.enemyInspection.moblinSwordSpeedX(slot); }
 
-    int swordMoblinAlertingSoundCounter() {
-        return swordMoblinAlertingSoundCounter;
-    }
+    int swordMoblinAlertingSoundCounter() { return this.enemyInspection.swordMoblinAlertingSoundCounter(); }
 
-    int tektiteState(int slot) {
-        return tektiteMotion.state(slot);
-    }
+    int tektiteState(int slot) { return this.enemyInspection.tektiteState(slot); }
 
-    int tektiteTransitionCountdown(int slot) {
-        return tektiteMotion.transitionCountdown(slot);
-    }
+    int tektiteTransitionCountdown(int slot) { return this.enemyInspection.tektiteTransitionCountdown(slot); }
 
-    int tektiteSpeedX(int slot) {
-        return tektiteMotion.speedX(slot);
-    }
+    int tektiteSpeedX(int slot) { return this.enemyInspection.tektiteSpeedX(slot); }
 
-    int tektiteSpeedY(int slot) {
-        return tektiteMotion.speedY(slot);
-    }
+    int tektiteSpeedY(int slot) { return this.enemyInspection.tektiteSpeedY(slot); }
 
-    int pairoddState(int slot) {
-        return pairoddMotion.state(slot);
-    }
+    int pairoddState(int slot) { return this.enemyInspection.pairoddState(slot); }
 
-    int pairoddTransitionCountdown(int slot) {
-        return pairoddMotion.transitionCountdown(slot);
-    }
+    int pairoddTransitionCountdown(int slot) { return this.enemyInspection.pairoddTransitionCountdown(slot); }
 
-    int pairoddDirection(int slot) {
-        return pairoddMotion.direction(slot);
-    }
+    int pairoddDirection(int slot) { return this.enemyInspection.pairoddDirection(slot); }
 
-    int pairoddProjectileSpeedX(int slot) {
-        return pairoddProjectileMotion.speedX(slot);
-    }
+    int pairoddProjectileSpeedX(int slot) { return this.enemyInspection.pairoddProjectileSpeedX(slot); }
 
-    int pairoddProjectileSpeedY(int slot) {
-        return pairoddProjectileMotion.speedY(slot);
-    }
+    int pairoddProjectileSpeedY(int slot) { return this.enemyInspection.pairoddProjectileSpeedY(slot); }
 
-    int pairoddProjectileDirection(int slot) {
-        return pairoddProjectileMotion.direction(slot);
-    }
+    int pairoddProjectileDirection(int slot) { return this.enemyInspection.pairoddProjectileDirection(slot); }
 
-    int enemyProjectileSpeedX(int slot) {
-        return enemyProjectileMotion.speedX(slot);
-    }
+    int enemyProjectileSpeedX(int slot) { return this.enemyInspection.enemyProjectileSpeedX(slot); }
 
-    int enemyProjectileSpeedY(int slot) {
-        return enemyProjectileMotion.speedY(slot);
-    }
+    int enemyProjectileSpeedY(int slot) { return this.enemyInspection.enemyProjectileSpeedY(slot); }
 
-    int enemyProjectileTransitionCountdown(int slot) {
-        return enemyProjectileMotion.transitionCountdown(slot);
-    }
+    int enemyProjectileTransitionCountdown(int slot) { return this.enemyInspection.enemyProjectileTransitionCountdown(slot); }
 
-    int laserDirection(int slot) {
-        return laserMotion.direction(slot);
-    }
+    int laserDirection(int slot) { return this.enemyInspection.laserDirection(slot); }
 
-    int laserParentTransitionCountdown(int slot) {
-        return laserMotion.parentTransitionCountdown(slot);
-    }
+    int laserParentTransitionCountdown(int slot) { return this.enemyInspection.laserParentTransitionCountdown(slot); }
 
-    int laserSpeedX(int slot) {
-        return laserMotion.speedX(slot);
-    }
+    int laserSpeedX(int slot) { return this.enemyInspection.laserSpeedX(slot); }
 
-    int laserSpeedY(int slot) {
-        return laserMotion.speedY(slot);
-    }
+    int laserSpeedY(int slot) { return this.enemyInspection.laserSpeedY(slot); }
 
     void setLaserParentForTest(int slot, int countdown, int newSpeedX, int newSpeedY) {
         laserMotion.setParentForTest(slot, countdown, newSpeedX, newSpeedY);
@@ -5725,9 +5180,7 @@ public final class RoomEntityRuntime {
         laserMotion.setBeamForTest(slot, newSpeedX, newSpeedY, direction);
     }
 
-    List<TransientVfxRequest> transientVfxRequests() {
-        return List.copyOf(transientVfxRequests);
-    }
+    List<TransientVfxRequest> transientVfxRequests() { return this.enemyInspection.transientVfxRequests(); }
 
     List<HeartContainerRewardEvent> consumePendingHeartContainerRewards() {
         List<HeartContainerRewardEvent> rewards = List.copyOf(pendingHeartContainerRewards);
@@ -5791,281 +5244,144 @@ public final class RoomEntityRuntime {
         return completions;
     }
 
-    List<BoomerangObjectRequest> boomerangObjectRequests() {
-        return List.copyOf(boomerangObjectRequests);
-    }
+    List<BoomerangObjectRequest> boomerangObjectRequests() { return this.enemyInspection.boomerangObjectRequests(); }
 
-    List<MagicRodObjectRequest> magicRodObjectRequests() {
-        return List.copyOf(magicRodObjectRequests);
-    }
+    List<MagicRodObjectRequest> magicRodObjectRequests() { return this.enemyInspection.magicRodObjectRequests(); }
 
-    List<MagicPowderObjectRequest> magicPowderObjectRequests() {
-        return List.copyOf(magicPowderObjectRequests);
-    }
+    List<MagicPowderObjectRequest> magicPowderObjectRequests() { return this.enemyInspection.magicPowderObjectRequests(); }
 
-    int physicsFlags(int slot) {
-        if (slot < 0 || slot >= slots.length) {
-            throw new IllegalArgumentException("Entity slot out of range: " + slot);
-        }
-        return enemyPhysicsFlags[slot];
-    }
+    int physicsFlags(int slot) { return this.enemyInspection.physicsFlags(slot); }
 
-    int tektiteSpeedZ(int slot) {
-        return tektiteMotion.speedZ(slot);
-    }
+    int tektiteSpeedZ(int slot) { return this.enemyInspection.tektiteSpeedZ(slot); }
 
-    int leeverState(int slot) {
-        return leeverMotion.state(slot);
-    }
+    int leeverState(int slot) { return this.enemyInspection.leeverState(slot); }
 
-    int leeverTransitionCountdown(int slot) {
-        return leeverMotion.transitionCountdown(slot);
-    }
+    int leeverTransitionCountdown(int slot) { return this.enemyInspection.leeverTransitionCountdown(slot); }
 
-    int leeverSpeedX(int slot) {
-        return leeverMotion.speedX(slot);
-    }
+    int leeverSpeedX(int slot) { return this.enemyInspection.leeverSpeedX(slot); }
 
-    int leeverSpeedY(int slot) {
-        return leeverMotion.speedY(slot);
-    }
+    int leeverSpeedY(int slot) { return this.enemyInspection.leeverSpeedY(slot); }
 
-    int antiFairySpeedX(int slot) {
-        return antiFairyMotion.speedX(slot);
-    }
+    int antiFairySpeedX(int slot) { return this.enemyInspection.antiFairySpeedX(slot); }
 
-    int antiFairySpeedY(int slot) {
-        return antiFairyMotion.speedY(slot);
-    }
+    int antiFairySpeedY(int slot) { return this.enemyInspection.antiFairySpeedY(slot); }
 
-    int starSpeedX(int slot) {
-        return starMotion.speedX(slot);
-    }
+    int starSpeedX(int slot) { return this.enemyInspection.starSpeedX(slot); }
 
-    int starSpeedY(int slot) {
-        return starMotion.speedY(slot);
-    }
+    int starSpeedY(int slot) { return this.enemyInspection.starSpeedY(slot); }
 
-    int blooperState(int slot) {
-        return blooperMotion.state(slot);
-    }
+    int blooperState(int slot) { return this.enemyInspection.blooperState(slot); }
 
-    int blooperTransitionCountdown(int slot) {
-        return blooperMotion.transitionCountdown(slot);
-    }
+    int blooperTransitionCountdown(int slot) { return this.enemyInspection.blooperTransitionCountdown(slot); }
 
-    int blooperDirection(int slot) {
-        return blooperMotion.direction(slot);
-    }
+    int blooperDirection(int slot) { return this.enemyInspection.blooperDirection(slot); }
 
-    int blooperSpeedX(int slot) {
-        return blooperMotion.speedX(slot);
-    }
+    int blooperSpeedX(int slot) { return this.enemyInspection.blooperSpeedX(slot); }
 
-    int blooperSpeedY(int slot) {
-        return blooperMotion.speedY(slot);
-    }
+    int blooperSpeedY(int slot) { return this.enemyInspection.blooperSpeedY(slot); }
 
-    int blooperPrivateCountdown3(int slot) {
-        return blooperMotion.privateCountdown3(slot);
-    }
+    int blooperPrivateCountdown3(int slot) { return this.enemyInspection.blooperPrivateCountdown3(slot); }
 
-    int pincerState(int slot) {
-        return pincerMotion.state(slot);
-    }
+    int pincerState(int slot) { return this.enemyInspection.pincerState(slot); }
 
-    int pincerHoleX(int slot) {
-        return pincerMotion.holeX(slot);
-    }
+    int pincerHoleX(int slot) { return this.enemyInspection.pincerHoleX(slot); }
 
-    int pincerHoleY(int slot) {
-        return pincerMotion.holeY(slot);
-    }
+    int pincerHoleY(int slot) { return this.enemyInspection.pincerHoleY(slot); }
 
-    int pincerLungeVariant(int slot) {
-        return pincerMotion.lungeVariant(slot);
-    }
+    int pincerLungeVariant(int slot) { return this.enemyInspection.pincerLungeVariant(slot); }
 
-    int pincerSpeedX(int slot) {
-        return pincerMotion.speedX(slot);
-    }
+    int pincerSpeedX(int slot) { return this.enemyInspection.pincerSpeedX(slot); }
 
-    int pincerSpeedY(int slot) {
-        return pincerMotion.speedY(slot);
-    }
+    int pincerSpeedY(int slot) { return this.enemyInspection.pincerSpeedY(slot); }
 
-    List<PincerBodyOam.Entry> pincerBodyOam() {
-        return List.copyOf(pincerBodyOam);
-    }
+    List<PincerBodyOam.Entry> pincerBodyOam() { return this.enemyInspection.pincerBodyOam(); }
 
-    int sparkPrivateState1(int slot) {
-        return sparkMotion.privateState1(slot);
-    }
+    int sparkPrivateState1(int slot) { return this.enemyInspection.sparkPrivateState1(slot); }
 
-    int sparkPrivateState2(int slot) {
-        return sparkMotion.privateState2(slot);
-    }
+    int sparkPrivateState2(int slot) { return this.enemyInspection.sparkPrivateState2(slot); }
 
-    int sparkTransitionCountdown(int slot) {
-        return sparkMotion.transitionCountdown(slot);
-    }
+    int sparkTransitionCountdown(int slot) { return this.enemyInspection.sparkTransitionCountdown(slot); }
 
-    int sparkSpeedX(int slot) {
-        return sparkMotion.speedX(slot);
-    }
+    int sparkSpeedX(int slot) { return this.enemyInspection.sparkSpeedX(slot); }
 
-    int sparkSpeedY(int slot) {
-        return sparkMotion.speedY(slot);
-    }
+    int sparkSpeedY(int slot) { return this.enemyInspection.sparkSpeedY(slot); }
 
-    int zolState(int slot) {
-        return zolGelMotion.state(slot);
-    }
+    int zolState(int slot) { return this.enemyInspection.zolState(slot); }
 
-    int zolTransitionCountdown(int slot) {
-        return zolGelMotion.transitionCountdown(slot);
-    }
+    int zolTransitionCountdown(int slot) { return this.enemyInspection.zolTransitionCountdown(slot); }
 
-    int zolSpeedX(int slot) {
-        return zolGelMotion.speedX(slot);
-    }
+    int zolSpeedX(int slot) { return this.enemyInspection.zolSpeedX(slot); }
 
-    int zolSpeedY(int slot) {
-        return zolGelMotion.speedY(slot);
-    }
+    int zolSpeedY(int slot) { return this.enemyInspection.zolSpeedY(slot); }
 
-    int zolSpeedZ(int slot) {
-        return zolGelMotion.speedZ(slot);
-    }
+    int zolSpeedZ(int slot) { return this.enemyInspection.zolSpeedZ(slot); }
 
-    int zolPrivateCountdown1(int slot) {
-        return zolGelMotion.privateCountdown1(slot);
-    }
+    int zolPrivateCountdown1(int slot) { return this.enemyInspection.zolPrivateCountdown1(slot); }
 
     void setZolPrivateCountdown1ForTest(int slot, int value) {
         validateByte(value, "Zol/Gel private countdown 1");
         zolGelMotion.setPrivateCountdown1ForTest(slot, value);
     }
 
-    int hidingZolState(int slot) {
-        return hidingZolMotion.state(slot);
-    }
+    int hidingZolState(int slot) { return this.enemyInspection.hidingZolState(slot); }
 
-    int hidingZolTransitionCountdown(int slot) {
-        return hidingZolMotion.transitionCountdown(slot);
-    }
+    int hidingZolTransitionCountdown(int slot) { return this.enemyInspection.hidingZolTransitionCountdown(slot); }
 
-    int hidingZolPrivateState1(int slot) {
-        return hidingZolMotion.privateState1(slot);
-    }
+    int hidingZolPrivateState1(int slot) { return this.enemyInspection.hidingZolPrivateState1(slot); }
 
-    int hidingZolSpeedX(int slot) {
-        return hidingZolMotion.speedX(slot);
-    }
+    int hidingZolSpeedX(int slot) { return this.enemyInspection.hidingZolSpeedX(slot); }
 
-    int hidingZolSpeedY(int slot) {
-        return hidingZolMotion.speedY(slot);
-    }
+    int hidingZolSpeedY(int slot) { return this.enemyInspection.hidingZolSpeedY(slot); }
 
-    int hidingZolSpeedZ(int slot) {
-        return hidingZolMotion.speedZ(slot);
-    }
+    int hidingZolSpeedZ(int slot) { return this.enemyInspection.hidingZolSpeedZ(slot); }
 
-    int spikeTrapState(int slot) {
-        return spikeTrapMotion.state(slot);
-    }
+    int spikeTrapState(int slot) { return this.enemyInspection.spikeTrapState(slot); }
 
-    int spikeTrapTransitionCountdown(int slot) {
-        return spikeTrapMotion.transitionCountdown(slot);
-    }
+    int spikeTrapTransitionCountdown(int slot) { return this.enemyInspection.spikeTrapTransitionCountdown(slot); }
 
-    int spikeTrapDirection(int slot) {
-        return spikeTrapMotion.direction(slot);
-    }
+    int spikeTrapDirection(int slot) { return this.enemyInspection.spikeTrapDirection(slot); }
 
-    int spikeTrapSpeedX(int slot) {
-        return spikeTrapMotion.speedX(slot);
-    }
+    int spikeTrapSpeedX(int slot) { return this.enemyInspection.spikeTrapSpeedX(slot); }
 
-    int spikeTrapSpeedY(int slot) {
-        return spikeTrapMotion.speedY(slot);
-    }
+    int spikeTrapSpeedY(int slot) { return this.enemyInspection.spikeTrapSpeedY(slot); }
 
-    int spikeTrapPrivateState1(int slot) {
-        return spikeTrapMotion.privateState1(slot);
-    }
+    int spikeTrapPrivateState1(int slot) { return this.enemyInspection.spikeTrapPrivateState1(slot); }
 
-    int spikeTrapPrivateState2(int slot) {
-        return spikeTrapMotion.privateState2(slot);
-    }
+    int spikeTrapPrivateState2(int slot) { return this.enemyInspection.spikeTrapPrivateState2(slot); }
 
-    int waterTektiteState(int slot) {
-        return waterTektiteMotion.state(slot);
-    }
+    int waterTektiteState(int slot) { return this.enemyInspection.waterTektiteState(slot); }
 
-    int waterTektiteTransitionCountdown(int slot) {
-        return waterTektiteMotion.transitionCountdown(slot);
-    }
+    int waterTektiteTransitionCountdown(int slot) { return this.enemyInspection.waterTektiteTransitionCountdown(slot); }
 
-    int waterTektiteSpeedX(int slot) {
-        return waterTektiteMotion.speedX(slot);
-    }
+    int waterTektiteSpeedX(int slot) { return this.enemyInspection.waterTektiteSpeedX(slot); }
 
-    int waterTektiteSpeedY(int slot) {
-        return waterTektiteMotion.speedY(slot);
-    }
+    int waterTektiteSpeedY(int slot) { return this.enemyInspection.waterTektiteSpeedY(slot); }
 
-    int waterTektitePrivateState1(int slot) {
-        return waterTektiteMotion.privateState1(slot);
-    }
+    int waterTektitePrivateState1(int slot) { return this.enemyInspection.waterTektitePrivateState1(slot); }
 
-    int waterTektitePrivateState2(int slot) {
-        return waterTektiteMotion.privateState2(slot);
-    }
+    int waterTektitePrivateState2(int slot) { return this.enemyInspection.waterTektitePrivateState2(slot); }
 
-    int stalfosState(int slot) {
-        return stalfosAggressiveMotion.state(slot);
-    }
+    int stalfosState(int slot) { return this.enemyInspection.stalfosState(slot); }
 
-    int stalfosTransitionCountdown(int slot) {
-        return stalfosAggressiveMotion.transitionCountdown(slot);
-    }
+    int stalfosTransitionCountdown(int slot) { return this.enemyInspection.stalfosTransitionCountdown(slot); }
 
-    int stalfosSpeedX(int slot) {
-        return stalfosAggressiveMotion.speedX(slot);
-    }
+    int stalfosSpeedX(int slot) { return this.enemyInspection.stalfosSpeedX(slot); }
 
-    int stalfosSpeedY(int slot) {
-        return stalfosAggressiveMotion.speedY(slot);
-    }
+    int stalfosSpeedY(int slot) { return this.enemyInspection.stalfosSpeedY(slot); }
 
-    int stalfosSpeedZ(int slot) {
-        return stalfosAggressiveMotion.speedZ(slot);
-    }
+    int stalfosSpeedZ(int slot) { return this.enemyInspection.stalfosSpeedZ(slot); }
 
-    int evasivePrivateState1(int slot) {
-        return stalfosEvasiveMotion.privateState1(slot);
-    }
+    int evasivePrivateState1(int slot) { return this.enemyInspection.evasivePrivateState1(slot); }
 
-    int evasivePrivateCountdown1(int slot) {
-        return stalfosEvasiveMotion.privateCountdown1(slot);
-    }
+    int evasivePrivateCountdown1(int slot) { return this.enemyInspection.evasivePrivateCountdown1(slot); }
 
-    int evasiveInertia(int slot) {
-        return stalfosEvasiveMotion.inertia(slot);
-    }
+    int evasiveInertia(int slot) { return this.enemyInspection.evasiveInertia(slot); }
 
-    int evasiveSpeedX(int slot) {
-        return stalfosEvasiveMotion.speedX(slot);
-    }
+    int evasiveSpeedX(int slot) { return this.enemyInspection.evasiveSpeedX(slot); }
 
-    int evasiveSpeedY(int slot) {
-        return stalfosEvasiveMotion.speedY(slot);
-    }
+    int evasiveSpeedY(int slot) { return this.enemyInspection.evasiveSpeedY(slot); }
 
-    int evasiveSpeedZ(int slot) {
-        return stalfosEvasiveMotion.speedZ(slot);
-    }
+    int evasiveSpeedZ(int slot) { return this.enemyInspection.evasiveSpeedZ(slot); }
 
     void setEvasivePrivateCountdown1ForTest(int slot, int value) {
         stalfosEvasiveMotion.setPrivateCountdown1ForTest(slot, value);
@@ -6075,109 +5391,57 @@ public final class RoomEntityRuntime {
         stalfosEvasiveMotion.setFleeingForTest(slot, newSpeedX, newSpeedY);
     }
 
-    int gibdoState(int slot) {
-        return gibdoMotion.state(slot);
-    }
+    int gibdoState(int slot) { return this.enemyInspection.gibdoState(slot); }
 
-    int gibdoSpeedX(int slot) {
-        return gibdoMotion.speedX(slot);
-    }
+    int gibdoSpeedX(int slot) { return this.enemyInspection.gibdoSpeedX(slot); }
 
-    int gibdoSpeedY(int slot) {
-        return gibdoMotion.speedY(slot);
-    }
+    int gibdoSpeedY(int slot) { return this.enemyInspection.gibdoSpeedY(slot); }
 
-    int goombaState(int slot) {
-        return goombaMotion.state(slot);
-    }
+    int goombaState(int slot) { return this.enemyInspection.goombaState(slot); }
 
-    int goombaTransitionCountdown(int slot) {
-        return enemyTransitionCountdown[slot];
-    }
+    int goombaTransitionCountdown(int slot) { return this.enemyInspection.goombaTransitionCountdown(slot); }
 
-    int goombaSpeedX(int slot) {
-        return goombaMotion.speedX(slot);
-    }
+    int goombaSpeedX(int slot) { return this.enemyInspection.goombaSpeedX(slot); }
 
-    int goombaSpeedY(int slot) {
-        return goombaMotion.speedY(slot);
-    }
+    int goombaSpeedY(int slot) { return this.enemyInspection.goombaSpeedY(slot); }
 
-    int snakeState(int slot) {
-        return snakeMotion.state(slot);
-    }
+    int snakeState(int slot) { return this.enemyInspection.snakeState(slot); }
 
-    int snakeTransitionCountdown(int slot) {
-        return enemyTransitionCountdown[slot];
-    }
+    int snakeTransitionCountdown(int slot) { return this.enemyInspection.snakeTransitionCountdown(slot); }
 
-    int snakePrivateCountdown1(int slot) {
-        return snakeMotion.privateCountdown1(slot);
-    }
+    int snakePrivateCountdown1(int slot) { return this.enemyInspection.snakePrivateCountdown1(slot); }
 
-    int snakeSpeedX(int slot) {
-        return snakeMotion.speedX(slot);
-    }
+    int snakeSpeedX(int slot) { return this.enemyInspection.snakeSpeedX(slot); }
 
-    int snakeSpeedY(int slot) {
-        return snakeMotion.speedY(slot);
-    }
+    int snakeSpeedY(int slot) { return this.enemyInspection.snakeSpeedY(slot); }
 
-    int polsVoiceState(int slot) {
-        return polsVoiceMotion.state(slot);
-    }
+    int polsVoiceState(int slot) { return this.enemyInspection.polsVoiceState(slot); }
 
-    int polsVoiceTransitionCountdown(int slot) {
-        return enemyTransitionCountdown[slot];
-    }
+    int polsVoiceTransitionCountdown(int slot) { return this.enemyInspection.polsVoiceTransitionCountdown(slot); }
 
-    int polsVoiceSpeedX(int slot) {
-        return polsVoiceMotion.speedX(slot);
-    }
+    int polsVoiceSpeedX(int slot) { return this.enemyInspection.polsVoiceSpeedX(slot); }
 
-    int polsVoiceSpeedY(int slot) {
-        return polsVoiceMotion.speedY(slot);
-    }
+    int polsVoiceSpeedY(int slot) { return this.enemyInspection.polsVoiceSpeedY(slot); }
 
-    int polsVoiceSpeedZ(int slot) {
-        return polsVoiceMotion.speedZ(slot);
-    }
+    int polsVoiceSpeedZ(int slot) { return this.enemyInspection.polsVoiceSpeedZ(slot); }
 
-    int spikedBeetleState(int slot) {
-        return spikedBeetleMotion.state(slot);
-    }
+    int spikedBeetleState(int slot) { return this.enemyInspection.spikedBeetleState(slot); }
 
-    int spikedBeetleTransitionCountdown(int slot) {
-        return enemyTransitionCountdown[slot];
-    }
+    int spikedBeetleTransitionCountdown(int slot) { return this.enemyInspection.spikedBeetleTransitionCountdown(slot); }
 
-    int spikedBeetleSpeedX(int slot) {
-        return spikedBeetleMotion.speedX(slot);
-    }
+    int spikedBeetleSpeedX(int slot) { return this.enemyInspection.spikedBeetleSpeedX(slot); }
 
-    int spikedBeetleSpeedY(int slot) {
-        return spikedBeetleMotion.speedY(slot);
-    }
+    int spikedBeetleSpeedY(int slot) { return this.enemyInspection.spikedBeetleSpeedY(slot); }
 
-    int wizrobeState(int slot) {
-        return wizrobeMotion.state(slot);
-    }
+    int wizrobeState(int slot) { return this.enemyInspection.wizrobeState(slot); }
 
-    int wizrobeDirection(int slot) {
-        return wizrobeMotion.direction(slot);
-    }
+    int wizrobeDirection(int slot) { return this.enemyInspection.wizrobeDirection(slot); }
 
-    int wizrobePrivateState1(int slot) {
-        return wizrobeMotion.privateState1(slot);
-    }
+    int wizrobePrivateState1(int slot) { return this.enemyInspection.wizrobePrivateState1(slot); }
 
-    int wizrobePrivateCountdown1(int slot) {
-        return wizrobeMotion.privateCountdown1(slot);
-    }
+    int wizrobePrivateCountdown1(int slot) { return this.enemyInspection.wizrobePrivateCountdown1(slot); }
 
-    int wizrobeNextSpriteVariant(int slot) {
-        return wizrobeMotion.nextSpriteVariant(slot);
-    }
+    int wizrobeNextSpriteVariant(int slot) { return this.enemyInspection.wizrobeNextSpriteVariant(slot); }
 
     void setWizrobeStateForTest(int slot, int state, int transitionCountdown,
                                 int privateState1, int privateCountdown1, int direction) {
@@ -6189,260 +5453,113 @@ public final class RoomEntityRuntime {
         enemyPhysicsFlags[slot] = 0x42;
     }
 
-    int wizrobeProjectileSpeedX(int slot) {
-        return wizrobeProjectileMotion.speedX(slot);
-    }
+    int wizrobeProjectileSpeedX(int slot) { return this.enemyInspection.wizrobeProjectileSpeedX(slot); }
 
-    int wizrobeProjectileSpeedY(int slot) {
-        return wizrobeProjectileMotion.speedY(slot);
-    }
+    int wizrobeProjectileSpeedY(int slot) { return this.enemyInspection.wizrobeProjectileSpeedY(slot); }
 
-    int wizrobeProjectileDirection(int slot) {
-        return wizrobeProjectileMotion.direction(slot);
-    }
+    int wizrobeProjectileDirection(int slot) { return this.enemyInspection.wizrobeProjectileDirection(slot); }
 
     void setWizrobeProjectileForTest(int slot, int newSpeedX, int newSpeedY,
                                      int direction) {
         wizrobeProjectileMotion.setForTest(slot, newSpeedX, newSpeedY, direction);
     }
 
-    int peaHatState(int slot) {
-        return peaHatMotion.state(slot);
-    }
+    int peaHatState(int slot) { return this.enemyInspection.peaHatState(slot); }
 
-    int peaHatSlowTransitionCountdown(int slot) {
-        return peaHatMotion.slowTransitionCountdown(slot);
-    }
+    int peaHatSlowTransitionCountdown(int slot) { return this.enemyInspection.peaHatSlowTransitionCountdown(slot); }
 
-    int peaHatPrivateState1(int slot) {
-        return peaHatMotion.privateState1(slot);
-    }
+    int peaHatPrivateState1(int slot) { return this.enemyInspection.peaHatPrivateState1(slot); }
 
-    int peaHatPrivateState2(int slot) {
-        return peaHatMotion.privateState2(slot);
-    }
+    int peaHatPrivateState2(int slot) { return this.enemyInspection.peaHatPrivateState2(slot); }
 
-    int peaHatPrivateState3(int slot) {
-        return peaHatMotion.privateState3(slot);
-    }
+    int peaHatPrivateState3(int slot) { return this.enemyInspection.peaHatPrivateState3(slot); }
 
-    int peaHatPrivateState4(int slot) {
-        return peaHatMotion.privateState4(slot);
-    }
+    int peaHatPrivateState4(int slot) { return this.enemyInspection.peaHatPrivateState4(slot); }
 
-    int peaHatSpeedX(int slot) {
-        return peaHatMotion.speedX(slot);
-    }
+    int peaHatSpeedX(int slot) { return this.enemyInspection.peaHatSpeedX(slot); }
 
-    int peaHatSpeedY(int slot) {
-        return peaHatMotion.speedY(slot);
-    }
+    int peaHatSpeedY(int slot) { return this.enemyInspection.peaHatSpeedY(slot); }
 
-    int armosState(int slot) {
-        return armosMotion.state(slot);
-    }
+    int armosState(int slot) { return this.enemyInspection.armosState(slot); }
 
-    int armosTransitionCountdown(int slot) {
-        return armosMotion.transitionCountdown(slot);
-    }
+    int armosTransitionCountdown(int slot) { return this.enemyInspection.armosTransitionCountdown(slot); }
 
-    int armosSpeedX(int slot) {
-        return armosMotion.speedX(slot);
-    }
+    int armosSpeedX(int slot) { return this.enemyInspection.armosSpeedX(slot); }
 
-    int armosSpeedY(int slot) {
-        return armosMotion.speedY(slot);
-    }
+    int armosSpeedY(int slot) { return this.enemyInspection.armosSpeedY(slot); }
 
-    int armosKnightState(int slot) {
-        return armosKnightMotion.state(slot);
-    }
+    int armosKnightState(int slot) { return this.enemyInspection.armosKnightState(slot); }
 
-    int armosKnightTransitionCountdown(int slot) {
-        return transitionCountdown(slot);
-    }
+    int armosKnightTransitionCountdown(int slot) { return this.enemyInspection.armosKnightTransitionCountdown(slot); }
 
-    int armosKnightSpeedX(int slot) {
-        return armosKnightMotion.speedX(slot);
-    }
+    int armosKnightSpeedX(int slot) { return this.enemyInspection.armosKnightSpeedX(slot); }
 
-    int armosKnightSpeedY(int slot) {
-        return armosKnightMotion.speedY(slot);
-    }
+    int armosKnightSpeedY(int slot) { return this.enemyInspection.armosKnightSpeedY(slot); }
 
-    int armosKnightSpeedZ(int slot) {
-        return armosKnightMotion.speedZ(slot);
-    }
+    int armosKnightSpeedZ(int slot) { return this.enemyInspection.armosKnightSpeedZ(slot); }
 
-    int armosKnightPrivateCountdown1(int slot) {
-        return armosKnightMotion.privateCountdown1(slot);
-    }
+    int armosKnightPrivateCountdown1(int slot) { return this.enemyInspection.armosKnightPrivateCountdown1(slot); }
 
-    int armosKnightInertia(int slot) {
-        return armosKnightMotion.inertia(slot);
-    }
+    int armosKnightInertia(int slot) { return this.enemyInspection.armosKnightInertia(slot); }
 
-    int ghiniTransitionCountdown(int slot) {
-        return ghiniMotion.transitionCountdown(slot);
-    }
+    int ghiniTransitionCountdown(int slot) { return this.enemyInspection.ghiniTransitionCountdown(slot); }
 
-    int ghiniPrivateCountdown1(int slot) {
-        return ghiniMotion.privateCountdown1(slot);
-    }
+    int ghiniPrivateCountdown1(int slot) { return this.enemyInspection.ghiniPrivateCountdown1(slot); }
 
-    int ghiniTargetXDirection(int slot) {
-        return ghiniMotion.targetXDirection(slot);
-    }
+    int ghiniTargetXDirection(int slot) { return this.enemyInspection.ghiniTargetXDirection(slot); }
 
-    int ghiniTargetYDirection(int slot) {
-        return ghiniMotion.targetYDirection(slot);
-    }
+    int ghiniTargetYDirection(int slot) { return this.enemyInspection.ghiniTargetYDirection(slot); }
 
-    int ghiniSpeedX(int slot) {
-        return ghiniMotion.speedX(slot);
-    }
+    int ghiniSpeedX(int slot) { return this.enemyInspection.ghiniSpeedX(slot); }
 
-    int ghiniSpeedY(int slot) {
-        return ghiniMotion.speedY(slot);
-    }
+    int ghiniSpeedY(int slot) { return this.enemyInspection.ghiniSpeedY(slot); }
 
-    int hardHatSpeedX(int slot) {
-        return hardHatMotion.speedX(slot);
-    }
+    int hardHatSpeedX(int slot) { return this.enemyInspection.hardHatSpeedX(slot); }
 
-    int hardHatSpeedY(int slot) {
-        return hardHatMotion.speedY(slot);
-    }
+    int hardHatSpeedY(int slot) { return this.enemyInspection.hardHatSpeedY(slot); }
 
-    int butterflyPrivateStateX(int slot) {
-        return butterflyMotion.privateStateX(slot);
-    }
+    int butterflyPrivateStateX(int slot) { return this.enemyInspection.butterflyPrivateStateX(slot); }
 
-    int butterflyPrivateStateY(int slot) {
-        return butterflyMotion.privateStateY(slot);
-    }
+    int butterflyPrivateStateY(int slot) { return this.enemyInspection.butterflyPrivateStateY(slot); }
 
-    int transitionCountdown(int slot) {
-        if (slot < 0 || slot >= slots.length) {
-            throw new IllegalArgumentException("Entity slot out of range: " + slot);
-        }
-        return enemyTransitionCountdown[slot];
-    }
+    int transitionCountdown(int slot) { return this.enemyInspection.transitionCountdown(slot); }
 
-    int dogState(int slot) {
-        validateEntitySlot(slot);
-        if (!isLoadedEntityOfType(slot, ENTITY_DOG)) {
-            throw new IllegalArgumentException("Entity slot does not contain a dog: " + slot);
-        }
-        return dogMotion.state(slot);
-    }
+    int dogState(int slot) { return this.enemyInspection.dogState(slot); }
 
-    int witchRatState(int slot) {
-        validateEntitySlot(slot);
-        if (!isLoadedEntityOfType(slot, ENTITY_WITCH_RAT)) {
-            throw new IllegalArgumentException("Entity slot does not contain a Witch Rat: " + slot);
-        }
-        return witchRatMotion.state(slot);
-    }
+    int witchRatState(int slot) { return this.enemyInspection.witchRatState(slot); }
 
-    int witchRatTransitionCountdown(int slot) {
-        validateEntitySlot(slot);
-        if (!isLoadedEntityOfType(slot, ENTITY_WITCH_RAT)) {
-            throw new IllegalArgumentException("Entity slot does not contain a Witch Rat: " + slot);
-        }
-        return enemyTransitionCountdown[slot];
-    }
+    int witchRatTransitionCountdown(int slot) { return this.enemyInspection.witchRatTransitionCountdown(slot); }
 
-    int witchRatSpeedZ(int slot) {
-        validateEntitySlot(slot);
-        if (!isLoadedEntityOfType(slot, ENTITY_WITCH_RAT)) {
-            throw new IllegalArgumentException("Entity slot does not contain a Witch Rat: " + slot);
-        }
-        return witchRatMotion.speedZ(slot);
-    }
+    int witchRatSpeedZ(int slot) { return this.enemyInspection.witchRatSpeedZ(slot); }
 
-    int stunnedCountdown(int slot) {
-        if (slot < 0 || slot >= slots.length) {
-            throw new IllegalArgumentException("Entity slot out of range: " + slot);
-        }
-        return enemyStunnedCountdown[slot];
-    }
+    int stunnedCountdown(int slot) { return this.enemyInspection.stunnedCountdown(slot); }
 
-    int dyingCountdown(int slot) {
-        if (slot < 0 || slot >= slots.length) {
-            throw new IllegalArgumentException("Entity slot out of range: " + slot);
-        }
-        return dyingCountdown[slot];
-    }
+    int dyingCountdown(int slot) { return this.enemyInspection.dyingCountdown(slot); }
 
-    boolean powerRecoilDeath(int slot) {
-        if (slot < 0 || slot >= slots.length) {
-            throw new IllegalArgumentException("Entity slot out of range: " + slot);
-        }
-        return powerRecoilDeath[slot];
-    }
+    boolean powerRecoilDeath(int slot) { return this.enemyInspection.powerRecoilDeath(slot); }
 
-    int enemyHealth(int slot) {
-        if (slot < 0 || slot >= slots.length) {
-            throw new IllegalArgumentException("Entity slot out of range: " + slot);
-        }
-        return enemyHealth[slot];
-    }
+    int enemyHealth(int slot) { return this.enemyInspection.enemyHealth(slot); }
 
-    int enemyFlashCountdown(int slot) {
-        if (slot < 0 || slot >= slots.length) {
-            throw new IllegalArgumentException("Entity slot out of range: " + slot);
-        }
-        return enemyFlashCountdown[slot];
-    }
+    int enemyFlashCountdown(int slot) { return this.enemyInspection.enemyFlashCountdown(slot); }
 
-    int enemyIgnoreHitsCountdown(int slot) {
-        if (slot < 0 || slot >= slots.length) {
-            throw new IllegalArgumentException("Entity slot out of range: " + slot);
-        }
-        return enemyIgnoreHitsCountdown[slot];
-    }
+    int enemyIgnoreHitsCountdown(int slot) { return this.enemyInspection.enemyIgnoreHitsCountdown(slot); }
 
-    int enemyRecoilSpeedXForTest(int slot) {
-        validateEntitySlot(slot);
-        return enemyRecoilMotion.recoilSpeedX(slot);
-    }
+    int enemyRecoilSpeedXForTest(int slot) { return this.enemyInspection.enemyRecoilSpeedXForTest(slot); }
 
-    int enemyRecoilSpeedYForTest(int slot) {
-        validateEntitySlot(slot);
-        return enemyRecoilMotion.recoilSpeedY(slot);
-    }
+    int enemyRecoilSpeedYForTest(int slot) { return this.enemyInspection.enemyRecoilSpeedYForTest(slot); }
 
     int thrownDirection(int slot) {
         validateEntitySlot(slot);
         return thrownDirection[slot] & 0xFF;
     }
 
-    int ledgeTransitionTimer(int slot) {
-        validateEntitySlot(slot);
-        return ledgeTransitionTimer[slot] & 0xFF;
-    }
+    int ledgeTransitionTimer(int slot) { return this.enemyInspection.ledgeTransitionTimer(slot); }
 
-    int fallingTargetX(int slot) {
-        if (slot < 0 || slot >= slots.length) {
-            throw new IllegalArgumentException("Entity slot out of range: " + slot);
-        }
-        return fallingTargetX[slot];
-    }
+    int fallingTargetX(int slot) { return this.enemyInspection.fallingTargetX(slot); }
 
-    int fallingTargetY(int slot) {
-        if (slot < 0 || slot >= slots.length) {
-            throw new IllegalArgumentException("Entity slot out of range: " + slot);
-        }
-        return fallingTargetY[slot];
-    }
+    int fallingTargetY(int slot) { return this.enemyInspection.fallingTargetY(slot); }
 
-    int fallingVisualYOffset(int slot) {
-        if (slot < 0 || slot >= slots.length) {
-            throw new IllegalArgumentException("Entity slot out of range: " + slot);
-        }
-        return fallingVisualYOffset[slot];
-    }
+    int fallingVisualYOffset(int slot) { return this.enemyInspection.fallingVisualYOffset(slot); }
 
     void setEnemyIgnoreHitsCountdownForTest(int slot, int value) {
         validateCountdownTestValue(slot, value);
@@ -6482,20 +5599,14 @@ public final class RoomEntityRuntime {
         ocarinaAnimationPhase = animationPhase;
     }
 
-    int musicalNoteInertiaForTest(int slot) {
-        validateEntitySlot(slot);
-        return musicalNoteInertia[slot];
-    }
+    int musicalNoteInertiaForTest(int slot) { return this.enemyInspection.musicalNoteInertiaForTest(slot); }
 
     void setHitboxFlagsForTest(int slot, int value) {
         validateCountdownTestValue(slot, value);
         enemyHitboxFlags[slot] = value;
     }
 
-    int hitboxFlagsForTest(int slot) {
-        validateEntitySlot(slot);
-        return enemyHitboxFlags[slot];
-    }
+    int hitboxFlagsForTest(int slot) { return this.enemyInspection.hitboxFlagsForTest(slot); }
 
     void setEnemyFlashCountdownForTest(int slot, int value) {
         validateCountdownTestValue(slot, value);
@@ -6507,80 +5618,50 @@ public final class RoomEntityRuntime {
         enemyHealth[slot] = value;
     }
 
-    int geniePrivateState1ForTest(int slot) {
-        validateEntitySlot(slot);
-        return geniePrivateState1[slot] & 0xFF;
-    }
+    int geniePrivateState1ForTest(int slot) { return this.enemyInspection.geniePrivateState1ForTest(slot); }
 
     void setGeniePrivateState1ForTest(int slot, int value) {
         validateCountdownTestValue(slot, value);
         geniePrivateState1[slot] = value;
     }
 
-    int genieActiveStateForTest(int slot) {
-        validateEntitySlot(slot);
-        return genieActiveState[slot] & 0xFF;
-    }
+    int genieActiveStateForTest(int slot) { return this.enemyInspection.genieActiveStateForTest(slot); }
 
     void setGenieActiveStateForTest(int slot, int value) {
         validateCountdownTestValue(slot, value);
         genieActiveState[slot] = value;
     }
 
-    int geniePrivateState3ForTest(int slot) {
-        validateEntitySlot(slot);
-        return geniePrivateState3[slot] & 0xFF;
-    }
+    int geniePrivateState3ForTest(int slot) { return this.enemyInspection.geniePrivateState3ForTest(slot); }
 
     void setGeniePrivateState3ForTest(int slot, int value) {
         validateCountdownTestValue(slot, value);
         geniePrivateState3[slot] = value;
     }
 
-    int geniePrivateCountdown1ForTest(int slot) {
-        validateEntitySlot(slot);
-        return geniePrivateCountdown1[slot] & 0xFF;
-    }
+    int geniePrivateCountdown1ForTest(int slot) { return this.enemyInspection.geniePrivateCountdown1ForTest(slot); }
 
     void setGeniePrivateCountdown1ForTest(int slot, int value) {
         validateCountdownTestValue(slot, value);
         geniePrivateCountdown1[slot] = value;
     }
 
-    int geniePrivateCountdown2ForTest(int slot) {
-        validateEntitySlot(slot);
-        return geniePrivateCountdown2[slot] & 0xFF;
-    }
+    int geniePrivateCountdown2ForTest(int slot) { return this.enemyInspection.geniePrivateCountdown2ForTest(slot); }
 
-    int genieSpeedXForTest(int slot) {
-        validateEntitySlot(slot);
-        return genieSpeedX[slot] & 0xFF;
-    }
+    int genieSpeedXForTest(int slot) { return this.enemyInspection.genieSpeedXForTest(slot); }
 
-    int genieSpeedZForTest(int slot) {
-        validateEntitySlot(slot);
-        return genieSpeedZ[slot] & 0xFF;
-    }
+    int genieSpeedZForTest(int slot) { return this.enemyInspection.genieSpeedZForTest(slot); }
 
     void setGeniePrivateState4ForTest(int slot, int value) {
         validateCountdownTestValue(slot, value);
         geniePrivateState4[slot] = value;
     }
 
-    int geniePrivateState4ForTest(int slot) {
-        validateEntitySlot(slot);
-        return geniePrivateState4[slot] & 0xFF;
-    }
+    int geniePrivateState4ForTest(int slot) { return this.enemyInspection.geniePrivateState4ForTest(slot); }
 
-    int rollingBonesBarStateForTest(int slot) {
-        validateEntitySlot(slot);
-        return rollingBonesMotion.barState(slot);
-    }
+    int rollingBonesBarStateForTest(int slot) { return this.enemyInspection.rollingBonesBarStateForTest(slot); }
 
-    int rollingBonesBarSpeedXForTest(int slot) {
-        validateEntitySlot(slot);
-        return rollingBonesMotion.barSpeedX(slot);
-    }
+    int rollingBonesBarSpeedXForTest(int slot) { return this.enemyInspection.rollingBonesBarSpeedXForTest(slot); }
 
     void setPhysicsFlagsForTest(int slot, int value) {
         validateCountdownTestValue(slot, value);
@@ -6622,10 +5703,7 @@ public final class RoomEntityRuntime {
         }
     }
 
-    int keyDropTransitionCountdown(int slot) {
-        validateEntitySlot(slot);
-        return enemyTransitionCountdown[slot];
-    }
+    int keyDropTransitionCountdown(int slot) { return this.enemyInspection.keyDropTransitionCountdown(slot); }
 
     void setKeyDropTransitionCountdownForTest(int slot, int value) {
         validateCountdownTestValue(slot, value);
@@ -6770,141 +5848,69 @@ public final class RoomEntityRuntime {
             ? ENTITY_OPT1_SPLASH_IN_WATER : 0;
     }
 
-    int colorShellState(int slot) {
-        return colorShellMotion.state(slot);
-    }
+    int colorShellState(int slot) { return this.enemyInspection.colorShellState(slot); }
 
-    int bombiteState(int slot) {
-        return bombiteMotion.state(slot);
-    }
+    int bombiteState(int slot) { return this.enemyInspection.bombiteState(slot); }
 
-    int moldormHeadSpriteVariant(int slot) {
-        validateEntitySlot(slot);
-        return moldormMotion.headSpriteVariant(slot);
-    }
+    int moldormHeadSpriteVariant(int slot) { return this.enemyInspection.moldormHeadSpriteVariant(slot); }
 
-    int moldormTransitionCountdown(int slot) {
-        validateEntitySlot(slot);
-        return enemyTransitionCountdown[slot];
-    }
+    int moldormTransitionCountdown(int slot) { return this.enemyInspection.moldormTransitionCountdown(slot); }
 
-    int moldormPrivateCountdown2(int slot) {
-        validateEntitySlot(slot);
-        return moldormMotion.privateCountdown2(slot);
-    }
+    int moldormPrivateCountdown2(int slot) { return this.enemyInspection.moldormPrivateCountdown2(slot); }
 
-    int moldormDestructionState(int slot) {
-        validateEntitySlot(slot);
-        return bossDeathProducerState[slot];
-    }
+    int moldormDestructionState(int slot) { return this.enemyInspection.moldormDestructionState(slot); }
 
-    int moldormInertia(int slot) {
-        validateEntitySlot(slot);
-        return moldormMotion.inertia(slot);
-    }
+    int moldormInertia(int slot) { return this.enemyInspection.moldormInertia(slot); }
 
-    int bombitePrivateCountdown1(int slot) {
-        return bombPrivateCountdown1[slot];
-    }
+    int bombitePrivateCountdown1(int slot) { return this.enemyInspection.bombitePrivateCountdown1(slot); }
 
-    int bombiteSpeedX(int slot) {
-        return bombiteMotion.speedX(slot);
-    }
+    int bombiteSpeedX(int slot) { return this.enemyInspection.bombiteSpeedX(slot); }
 
-    int bombiteSpeedY(int slot) {
-        return bombiteMotion.speedY(slot);
-    }
+    int bombiteSpeedY(int slot) { return this.enemyInspection.bombiteSpeedY(slot); }
 
-    int colorShellPhysicsFlags(int slot) {
-        return colorShellMotion.physicsFlags(slot);
-    }
+    int colorShellPhysicsFlags(int slot) { return this.enemyInspection.colorShellPhysicsFlags(slot); }
 
-    int secretSeashellPrivateState3(int slot) {
-        return secretSeashellMotion.privateState3(slot);
-    }
+    int secretSeashellPrivateState3(int slot) { return this.enemyInspection.secretSeashellPrivateState3(slot); }
 
-    int secretSeashellPrivateState4(int slot) {
-        return secretSeashellMotion.privateState4(slot);
-    }
+    int secretSeashellPrivateState4(int slot) { return this.enemyInspection.secretSeashellPrivateState4(slot); }
 
-    int secretSeashellPrivateCountdown1(int slot) {
-        return secretSeashellMotion.privateCountdown1(slot);
-    }
+    int secretSeashellPrivateCountdown1(int slot) { return this.enemyInspection.secretSeashellPrivateCountdown1(slot); }
 
-    int secretSeashellSlowTransitionCountdown(int slot) {
-        return secretSeashellMotion.slowTransitionCountdown(slot);
-    }
+    int secretSeashellSlowTransitionCountdown(int slot) { return this.enemyInspection.secretSeashellSlowTransitionCountdown(slot); }
 
-    int secretSeashellSpeedX(int slot) {
-        return secretSeashellMotion.speedX(slot);
-    }
+    int secretSeashellSpeedX(int slot) { return this.enemyInspection.secretSeashellSpeedX(slot); }
 
-    int secretSeashellSpeedY(int slot) {
-        return secretSeashellMotion.speedY(slot);
-    }
+    int secretSeashellSpeedY(int slot) { return this.enemyInspection.secretSeashellSpeedY(slot); }
 
-    int secretSeashellSpeedZ(int slot) {
-        return secretSeashellMotion.speedZ(slot);
-    }
+    int secretSeashellSpeedZ(int slot) { return this.enemyInspection.secretSeashellSpeedZ(slot); }
 
-    int fishState(int slot) {
-        return fishMotion.state(slot);
-    }
+    int fishState(int slot) { return this.enemyInspection.fishState(slot); }
 
-    int fishSpeedX(int slot) {
-        return fishMotion.speedX(slot);
-    }
+    int fishSpeedX(int slot) { return this.enemyInspection.fishSpeedX(slot); }
 
-    int fishSpeedZ(int slot) {
-        return fishMotion.speedZ(slot);
-    }
+    int fishSpeedZ(int slot) { return this.enemyInspection.fishSpeedZ(slot); }
 
-    int fishTransitionCountdown(int slot) {
-        validateEntitySlot(slot);
-        return enemyTransitionCountdown[slot];
-    }
+    int fishTransitionCountdown(int slot) { return this.enemyInspection.fishTransitionCountdown(slot); }
 
-    int crowState(int slot) {
-        return crowMotion.state(slot);
-    }
+    int crowState(int slot) { return this.enemyInspection.crowState(slot); }
 
-    int crowSpeedX(int slot) {
-        return crowMotion.speedX(slot);
-    }
+    int crowSpeedX(int slot) { return this.enemyInspection.crowSpeedX(slot); }
 
-    int crowSpeedY(int slot) {
-        return crowMotion.speedY(slot);
-    }
+    int crowSpeedY(int slot) { return this.enemyInspection.crowSpeedY(slot); }
 
-    int crowSpeedZ(int slot) {
-        return crowMotion.speedZ(slot);
-    }
+    int crowSpeedZ(int slot) { return this.enemyInspection.crowSpeedZ(slot); }
 
-    int crowTransitionCountdown(int slot) {
-        validateEntitySlot(slot);
-        return enemyTransitionCountdown[slot];
-    }
+    int crowTransitionCountdown(int slot) { return this.enemyInspection.crowTransitionCountdown(slot); }
 
-    int booBuddyState(int slot) {
-        return booBuddyMotion.state(slot);
-    }
+    int booBuddyState(int slot) { return this.enemyInspection.booBuddyState(slot); }
 
-    int booBuddySpeedX(int slot) {
-        return booBuddyMotion.speedX(slot);
-    }
+    int booBuddySpeedX(int slot) { return this.enemyInspection.booBuddySpeedX(slot); }
 
-    int booBuddySpeedY(int slot) {
-        return booBuddyMotion.speedY(slot);
-    }
+    int booBuddySpeedY(int slot) { return this.enemyInspection.booBuddySpeedY(slot); }
 
-    int booBuddyTransitionCountdown(int slot) {
-        validateEntitySlot(slot);
-        return enemyTransitionCountdown[slot];
-    }
+    int booBuddyTransitionCountdown(int slot) { return this.enemyInspection.booBuddyTransitionCountdown(slot); }
 
-    int booBuddyTriggerCount() {
-        return booBuddyTriggerCount;
-    }
+    int booBuddyTriggerCount() { return this.enemyInspection.booBuddyTriggerCount(); }
 
     void setBooBuddyTriggerCount(int value) {
         validateByte(value, "Boo Buddy trigger count");
@@ -6931,13 +5937,9 @@ public final class RoomEntityRuntime {
             direction, speedX, speedY);
     }
 
-    int enemyRecoilSpeedX(int slot) {
-        return enemyRecoilMotion.recoilSpeedX(slot);
-    }
+    int enemyRecoilSpeedX(int slot) { return this.enemyInspection.enemyRecoilSpeedX(slot); }
 
-    int enemyRecoilSpeedY(int slot) {
-        return enemyRecoilMotion.recoilSpeedY(slot);
-    }
+    int enemyRecoilSpeedY(int slot) { return this.enemyInspection.enemyRecoilSpeedY(slot); }
 
     void configureEnemyRecoilForTest(int slot, int linkEntityX, int linkEntityY, int length) {
         validateEntitySlot(slot);
@@ -6949,9 +5951,7 @@ public final class RoomEntityRuntime {
             linkEntityX, linkEntityY, length);
     }
 
-    boolean enemyRecoilActive(int slot) {
-        return enemyRecoilMotion.isActive(slot);
-    }
+    boolean enemyRecoilActive(int slot) { return this.enemyInspection.enemyRecoilActive(slot); }
 
     static int variantFor(RoomEntity entity, int frameCounter) {
         if (!entity.spriteDefinition().supported() || entity.spriteDefinition().variantCount() < 2) {
@@ -7007,11 +6007,7 @@ public final class RoomEntityRuntime {
 
 
 
-    boolean polsVoiceBalladOcarinaTrigger() {
-        return linkPlayingOcarinaCountdown == 0x01
-            && (ocarinaSongFlags & 0x04) != 0
-            && selectedSongIndex == 0;
-    }
+    boolean polsVoiceBalladOcarinaTrigger() { return this.enemyInspection.polsVoiceBalladOcarinaTrigger(); }
 
     void decrementSlowTransitionCountdown(int slot, int frameCounter) {
         if ((frameCounter & 0x03) == 0 && slowTimerInitialized[slot]
@@ -7020,16 +6016,7 @@ public final class RoomEntityRuntime {
         }
     }
 
-    boolean shouldDisappear(RoomEntity entity) {
-        return slowTimerInitialized[entity.slot()]
-            && isCommonDroppableType(entity.type())
-            && entity.type() != ENTITY_HIDING_SLIME_KEY
-            // DroppableDisappearIfNeeded is after the hidden-state helper in
-            // every shared drop handler. A hidden item therefore must not be
-            // unloaded merely because its global fade timer reached zero.
-            && droppablePrivateState3[entity.slot()] == 0
-            && slowTransitionCountdown[entity.slot()] < 0x1C;
-    }
+    boolean shouldDisappear(RoomEntity entity) { return this.enemyInspection.shouldDisappear(entity); }
 
 
 
@@ -7044,18 +6031,7 @@ public final class RoomEntityRuntime {
 
 
 
-    boolean isDisabledFollower(int type) {
-        return switch (type) {
-            case FollowingNpcEntitySpawner.ENTITY_ROOSTER -> !followingNpcState.roosterFollowing();
-            case FollowingNpcEntitySpawner.ENTITY_GHOST ->
-                followingNpcState.ghostFollowingState() != 1;
-            case FollowingNpcEntitySpawner.ENTITY_MARIN_AT_THE_SHORE ->
-                !followingNpcState.marinFollowing();
-            case FollowingNpcEntitySpawner.ENTITY_BOW_WOW ->
-                !followingNpcState.bowWowFollowing();
-            default -> false;
-        };
-    }
+    boolean isDisabledFollower(int type) { return this.enemyInspection.isDisabledFollower(type); }
 
 
 
@@ -7425,25 +6401,14 @@ public final class RoomEntityRuntime {
     }
 
     /** Shared gameplay gates in ReturnIfNonInteractive_03 and _19. */
-    boolean entityHandlerInteractive(boolean creditsGameplay) {
-        if (!creditsGameplay
-            && (!gameplayWorld || transitionSequenceCounter != 0x04)) {
-            return false;
-        }
-        return !dialogActive
-            && !inventoryAppearing
-            && !witchGotItemPresentationActive()
-            && !roomTransitionActive;
-    }
+    boolean entityHandlerInteractive(boolean creditsGameplay) { return this.enemyInspection.entityHandlerInteractive(creditsGameplay); }
 
     boolean sideViewPotPowerBraceletHeld() { return liftThrow.sideViewPotPowerBraceletHeld(); }
 
     void pendingLinkPotContact(int sourceSlot, SideViewPotContact.Result contact) { liftThrow.pendingLinkPotContact(sourceSlot, contact); }
 
     /** Mirrors UpdateEntityTimers' shared dialog/inventory/ocarina early return. */
-    boolean entityTimersInteractive() {
-        return !dialogActive && !inventoryAppearing && linkPlayingOcarinaCountdown == 0;
-    }
+    boolean entityTimersInteractive() { return this.enemyInspection.entityTimersInteractive(); }
 
     void requestArmosLinkPush(RoomEntity entity, int linkEntityX, int linkEntityY,
                                       int linkMotionState) {
@@ -7518,7 +6483,7 @@ public final class RoomEntityRuntime {
 
 
 
-    private static void validateEntitySlot(int slot) {
+    static void validateEntitySlot(int slot) {
         if (slot < 0 || slot >= EntityRoomLoader.MAX_ENTITIES) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
