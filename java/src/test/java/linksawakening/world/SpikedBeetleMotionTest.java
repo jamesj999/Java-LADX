@@ -10,7 +10,7 @@ final class SpikedBeetleMotionTest {
     void flippedBeetleShakesThenRecoversAndResumesWalking() {
         SpikedBeetleMotion motion = new SpikedBeetleMotion();
         RoomEntity entity = new RoomEntity(0, 0, 0x2C, 64, 64,
-            EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(0x2C), 0);
+            EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(0x2C), 0, 0, 0, 0, -1, false);
         motion.flipFromShield(0, 0);
         var leftShake = motion.advance(entity, 0, 120, 120, () -> 0, null, 0x58, 0);
         assertEquals(0xF8, motion.speedX(0)); // $07:791A-$792A

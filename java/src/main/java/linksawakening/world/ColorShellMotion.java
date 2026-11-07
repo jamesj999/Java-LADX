@@ -112,7 +112,7 @@ final class ColorShellMotion {
         RoomEntity updated = new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
             positionX[slot], positionY[slot], entity.status(), entity.spriteDefinition(),
             spriteVariant[slot], entity.entityFlipAttribute(), entity.spriteTileOffset(),
-            positionZ[slot]);
+            positionZ[slot], -1, false);
         return new Update(updated, nextIgnoreHitsCountdown, unloadRequested);
     }
 

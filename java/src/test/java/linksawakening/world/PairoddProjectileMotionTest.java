@@ -62,7 +62,7 @@ final class PairoddProjectileMotionTest {
 
     private static RoomEntity entity(int x, int y) {
         return new RoomEntity(0, -1, 0x58, x, y, EntityStatus.ACTIVE,
-            projectileDefinition(), 0);
+            projectileDefinition(), 0, 0, 0, 0, -1, false);
     }
 
     private static EntitySpriteDefinition projectileDefinition() {

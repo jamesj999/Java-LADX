@@ -44,7 +44,7 @@ final class PincerRuntimeTest {
         EntitySpriteDefinition definition = catalog.forEntityType(0xB0,
             EntityRoomLoader.RoomTable.INDOORS_A);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0xB0, 64, 64, EntityStatus.ACTIVE, definition, 0)),
+            new RoomEntity(0, 0, 0xB0, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
             true, () -> 0, catalog, tables);
 
         runtime.tickWithProjectileEvents(0, 48, 40, () -> 0, null,
@@ -69,7 +69,7 @@ final class PincerRuntimeTest {
         EntitySpriteDefinition definition = catalog.forEntityType(0xB0,
             EntityRoomLoader.RoomTable.INDOORS_A);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0xB0, 64, 64, EntityStatus.ACTIVE, definition, 0)),
+            new RoomEntity(0, 0, 0xB0, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
             true, () -> 0, catalog, tables);
 
         runtime.tick(0, 64, 64, () -> 0);

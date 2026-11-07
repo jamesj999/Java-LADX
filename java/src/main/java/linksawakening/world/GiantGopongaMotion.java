@@ -90,7 +90,7 @@ final class GiantGopongaMotion {
     private static RoomEntity withVariant(RoomEntity entity, int variant) {
         return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
             entity.x(), entity.y(), entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z());
+            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false);
     }
 
     private static void checkType(RoomEntity entity) {

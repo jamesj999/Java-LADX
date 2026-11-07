@@ -42,6 +42,6 @@ final class ArmosKnightMotionTest {
 
     private static RoomEntity entity(int x, int y, int z) {
         return new RoomEntity(0, 0, 0x88, x, y, EntityStatus.ACTIVE,
-            EntitySpriteDefinition.unsupported(0x88), 0, 0, 0, z);
+            EntitySpriteDefinition.unsupported(0x88), 0, 0, 0, z, -1, false);
     }
 }

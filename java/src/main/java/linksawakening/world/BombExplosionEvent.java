@@ -2,7 +2,7 @@ package linksawakening.world;
 
 /** A source-shaped bomb-explosion interaction request that has not been applied to room state. */
 public record BombExplosionEvent(int bombSlot, int targetSlot, int bombX, int bombVisualY,
-                                 int countdown, int damageType) {
+                                 int countdown, int damageType) implements EntityEvent {
     public static final int OBJECT_TARGET = -1;
     public static final int DAMAGE_TYPE_BOMB = 0x07;
 

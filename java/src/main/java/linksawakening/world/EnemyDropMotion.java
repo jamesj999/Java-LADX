@@ -203,21 +203,21 @@ final class EnemyDropMotion {
         return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
             entity.x(), y & 0xFF, entity.status(), entity.spriteDefinition(),
             entity.spriteVariant(), entity.entityFlipAttribute(), entity.spriteTileOffset(),
-            entity.z());
+            entity.z(), -1, false);
     }
 
     private static RoomEntity withPosition(RoomEntity entity, int x, int y, int z) {
         return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
             x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(),
             entity.spriteVariant(), entity.entityFlipAttribute(), entity.spriteTileOffset(),
-            z & 0xFF);
+            z & 0xFF, -1, false);
     }
 
     private static RoomEntity withZ(RoomEntity entity, int z) {
         return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
             entity.x(), entity.y(), entity.status(), entity.spriteDefinition(),
             entity.spriteVariant(), entity.entityFlipAttribute(), entity.spriteTileOffset(),
-            z & 0xFF);
+            z & 0xFF, -1, false);
     }
 
     private static int signedByte(int value) {

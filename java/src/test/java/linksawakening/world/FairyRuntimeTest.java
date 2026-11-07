@@ -37,7 +37,7 @@ final class FairyRuntimeTest {
         var definition = catalog.forEntityType(0x2F, EntityRoomLoader.RoomTable.OVERWORLD);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, 0x2F, 0x40, 0x40, EntityStatus.ACTIVE,
-                definition, 0, 0, 0, 0x10)), false, () -> 0, catalog);
+                definition, 0, 0, 0, 0x10, -1, false)), false, () -> 0, catalog);
 
         runtime.tick(0, 0x50, 0x40, sequence(0x0F, 0x00));
 
@@ -57,7 +57,7 @@ final class FairyRuntimeTest {
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
         RoomEntity source = new RoomEntity(15, 0, 0x09, 0x44, 0x58,
             EntityStatus.DYING, catalog.forEntityType(
-                0x09, EntityRoomLoader.RoomTable.OVERWORLD, -1), 0, 0, 0, 0x10);
+                0x09, EntityRoomLoader.RoomTable.OVERWORLD, -1), 0, 0, 0, 0x10, -1, false);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(source), false,
             () -> 0, catalog, tables);
         runtime.setEnemyDropResolver(new EnemyDropResolver(rom));

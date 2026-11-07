@@ -21,7 +21,7 @@ final class FishRuntimeTest {
             FishMotion.ENTITY_TYPE, EntityRoomLoader.RoomTable.OVERWORLD);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, FishMotion.ENTITY_TYPE, 0x40, 0x50,
-                EntityStatus.INIT, definition, 0)), false, null, catalog);
+                EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)), false, null, catalog);
 
         runtime.tick(0, 0, 0, () -> 0);
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());

@@ -16,7 +16,7 @@ final class FollowingNpcMotionTest {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
             .forFollowerEntityType(ENTITY_GHOST);
         RoomEntity entity = new RoomEntity(0, -1, ENTITY_GHOST, 0x10, 0x10,
-            EntityStatus.ACTIVE, definition, 0);
+            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
         FollowingNpcMotion motion = new FollowingNpcMotion();
         motion.initialize(entity.slot(), entity.type());
 
@@ -50,7 +50,7 @@ final class FollowingNpcMotionTest {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
             .forFollowerEntityType(ENTITY_GHOST);
         RoomEntity current = new RoomEntity(0, -1, ENTITY_GHOST, 0x40, 0x50,
-            EntityStatus.ACTIVE, definition, 0);
+            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
         FollowingNpcMotion motion = new FollowingNpcMotion();
         motion.initialize(0, ENTITY_GHOST);
 
@@ -68,7 +68,7 @@ final class FollowingNpcMotionTest {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
             .forFollowerEntityType(ENTITY_GHOST);
         RoomEntity entity = new RoomEntity(0, -1, ENTITY_GHOST, 0x40, 0x40,
-            EntityStatus.ACTIVE, definition, 0);
+            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
         FollowingNpcMotion motion = new FollowingNpcMotion();
         motion.initialize(entity.slot(), entity.type());
 
@@ -84,7 +84,7 @@ final class FollowingNpcMotionTest {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
             .forFollowerEntityType(ENTITY_ROOSTER);
         RoomEntity entity = new RoomEntity(0, -1, ENTITY_ROOSTER, 0x10, 0x40,
-            EntityStatus.ACTIVE, definition, 0);
+            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
         FollowingNpcMotion motion = new FollowingNpcMotion();
         motion.initialize(entity.slot(), entity.type());
 
@@ -116,7 +116,7 @@ final class FollowingNpcMotionTest {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
             .forFollowerEntityType(0xC1);
         RoomEntity entity = new RoomEntity(0, -1, 0xC1, 0x10, 0x20,
-            EntityStatus.ACTIVE, definition, 0);
+            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
         LinkPositionHistory history = new LinkPositionHistory();
         history.fill(0x10, 0x20, 0x01, 0x02);
         history.write(1, 0x30, 0x40, 0x03, 0x01);
@@ -141,7 +141,7 @@ final class FollowingNpcMotionTest {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
             .forFollowerEntityType(0xC1);
         RoomEntity entity = new RoomEntity(0, -1, 0xC1, 0x10, 0x20,
-            EntityStatus.ACTIVE, definition, 0);
+            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
         LinkPositionHistory history = new LinkPositionHistory();
         history.fill(0x10, 0x20, 0x00, 0x03);
         history.write(1, 0x30, 0x40, 0x01, 0x00);

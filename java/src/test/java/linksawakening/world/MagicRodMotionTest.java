@@ -63,6 +63,6 @@ final class MagicRodMotionTest {
     private static RoomEntity entity(int x, int y) {
         return new RoomEntity(0, -1, MagicRodFireballMotion.ENTITY_TYPE, x, y,
             EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(
-                MagicRodFireballMotion.ENTITY_TYPE), 0);
+                MagicRodFireballMotion.ENTITY_TYPE), 0, 0, 0, 0, -1, false);
     }
 }

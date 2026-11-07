@@ -138,6 +138,6 @@ final class SideViewPlatformMotionTest {
 
     private static RoomEntity entity(int x, int y, int type) {
         return new RoomEntity(0, 0, type, x, y, EntityStatus.ACTIVE,
-            EntitySpriteDefinition.unsupported(type), -1);
+            EntitySpriteDefinition.unsupported(type), -1, 0, 0, 0, -1, false);
     }
 }

@@ -146,12 +146,12 @@ final class BowWowMotionTest {
 
     private static RoomEntity bowWowEntity(int slot, int x, int y, int z) {
         return new RoomEntity(slot, -1, ENTITY_BOW_WOW, x, y, EntityStatus.ACTIVE,
-            EntitySpriteDefinition.unsupported(ENTITY_BOW_WOW), 0, 0, 0, z);
+            EntitySpriteDefinition.unsupported(ENTITY_BOW_WOW), 0, 0, 0, z, -1, false);
     }
 
     private static RoomEntity targetEntity(int slot, int x, int y) {
         return new RoomEntity(slot, 0, 0x09, x, y, EntityStatus.ACTIVE,
-            EntitySpriteDefinition.unsupported(0x09), 0);
+            EntitySpriteDefinition.unsupported(0x09), 0, 0, 0, 0, -1, false);
     }
 
     @Test
@@ -159,7 +159,7 @@ final class BowWowMotionTest {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(new byte[0x100000])
             .forFollowerEntityType(ENTITY_BOW_WOW);
         RoomEntity entity = new RoomEntity(0, -1, ENTITY_BOW_WOW, 0x40, 0x50,
-            EntityStatus.ACTIVE, definition, 0);
+            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
         BowWowMotion motion = new BowWowMotion();
 
         RoomEntity result = motion.advance(entity, 0, 0x60, 0x70, 0x00,
@@ -178,7 +178,7 @@ final class BowWowMotionTest {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(new byte[0x100000])
             .forFollowerEntityType(ENTITY_BOW_WOW);
         RoomEntity entity = new RoomEntity(0, -1, ENTITY_BOW_WOW, 0x40, 0x50,
-            EntityStatus.ACTIVE, definition, 0);
+            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
         BowWowMotion motion = new BowWowMotion();
         IntSupplier random = sequence(0x00, 0x00, 0x00);
 
@@ -198,7 +198,7 @@ final class BowWowMotionTest {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(new byte[0x100000])
             .forFollowerEntityType(ENTITY_BOW_WOW);
         RoomEntity entity = new RoomEntity(0, -1, ENTITY_BOW_WOW, 0x40, 0x50,
-            EntityStatus.ACTIVE, definition, 0);
+            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
         BowWowMotion motion = new BowWowMotion();
         IntSupplier random = sequence(0x00, 0x00, 0x00);
 
@@ -222,20 +222,20 @@ final class BowWowMotionTest {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(new byte[0x100000])
             .forFollowerEntityType(ENTITY_BOW_WOW);
         RoomEntity bowWow = new RoomEntity(5, -1, ENTITY_BOW_WOW, 0x20, 0x20,
-            EntityStatus.ACTIVE, definition, 0);
+            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
         List<RoomEntity> slots = new ArrayList<>();
         while (slots.size() < EntityRoomLoader.MAX_ENTITIES) {
             slots.add(RoomEntity.disabled(slots.size()));
         }
         slots.set(5, bowWow);
         slots.set(6, new RoomEntity(6, -1, 0x09, 0x50, 0x60,
-            EntityStatus.ACTIVE, definition, 1));
+            EntityStatus.ACTIVE, definition, 1, 0, 0, 0, -1, false));
         slots.set(7, new RoomEntity(7, -1, 0x09, 0x50, 0x60,
-            EntityStatus.DYING, definition, 0));
+            EntityStatus.DYING, definition, 0, 0, 0, 0, -1, false));
         slots.set(8, new RoomEntity(8, -1, 0x0B, 0x54, 0x68,
-            EntityStatus.ACTIVE, definition, 0));
+            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         slots.set(10, new RoomEntity(10, -1, 0x09, 0x54, 0x68,
-            EntityStatus.ACTIVE, definition, 0));
+            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
 
         BowWowMotion motion = new BowWowMotion();
         RoomEntity initialized = motion.advance(bowWow, 0, 0x00, 0x00, 0x00,
@@ -258,14 +258,14 @@ final class BowWowMotionTest {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(new byte[0x100000])
             .forFollowerEntityType(ENTITY_BOW_WOW);
         RoomEntity bowWow = new RoomEntity(5, -1, ENTITY_BOW_WOW, 0x40, 0x50,
-            EntityStatus.ACTIVE, definition, 0);
+            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
         List<RoomEntity> slots = new ArrayList<>();
         while (slots.size() < EntityRoomLoader.MAX_ENTITIES) {
             slots.add(RoomEntity.disabled(slots.size()));
         }
         slots.set(5, bowWow);
         slots.set(6, new RoomEntity(6, 0, 0x09, 0x44, 0x58,
-            EntityStatus.ACTIVE, definition, 0));
+            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
 
         BowWowMotion motion = new BowWowMotion();
         RoomEntity initialized = motion.advance(bowWow, 0, 0x44, 0x58, 0x00,
@@ -288,14 +288,14 @@ final class BowWowMotionTest {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(new byte[0x100000])
             .forFollowerEntityType(ENTITY_BOW_WOW);
         RoomEntity bowWow = new RoomEntity(5, -1, ENTITY_BOW_WOW, 0x40, 0x50,
-            EntityStatus.ACTIVE, definition, 0);
+            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
         List<RoomEntity> slots = new ArrayList<>();
         while (slots.size() < EntityRoomLoader.MAX_ENTITIES) {
             slots.add(RoomEntity.disabled(slots.size()));
         }
         slots.set(5, bowWow);
         slots.set(6, new RoomEntity(6, 0, 0x09, 0x44, 0x58,
-            EntityStatus.ACTIVE, definition, 0));
+            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
 
         BowWowMotion motion = new BowWowMotion();
         RoomEntity initialized = motion.advance(bowWow, 0, 0x44, 0x58, 0,
@@ -317,14 +317,14 @@ final class BowWowMotionTest {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(new byte[0x100000])
             .forFollowerEntityType(ENTITY_BOW_WOW);
         RoomEntity bowWow = new RoomEntity(5, -1, ENTITY_BOW_WOW, 0x20, 0x20,
-            EntityStatus.ACTIVE, definition, 0);
+            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
         List<RoomEntity> slots = new ArrayList<>();
         while (slots.size() < EntityRoomLoader.MAX_ENTITIES) {
             slots.add(RoomEntity.disabled(slots.size()));
         }
         slots.set(5, bowWow);
         slots.set(6, new RoomEntity(6, 0, 0x09, 0x40, 0x44,
-            EntityStatus.ACTIVE, definition, 0));
+            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
 
         BowWowMotion motion = new BowWowMotion();
         RoomEntity initialized = motion.advance(bowWow, 0, 0x60, 0x70, 0,
@@ -348,14 +348,14 @@ final class BowWowMotionTest {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(new byte[0x100000])
             .forFollowerEntityType(ENTITY_BOW_WOW);
         RoomEntity bowWow = new RoomEntity(5, -1, ENTITY_BOW_WOW, 0x40, 0x50,
-            EntityStatus.ACTIVE, definition, 0);
+            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
         List<RoomEntity> slots = new ArrayList<>();
         while (slots.size() < EntityRoomLoader.MAX_ENTITIES) {
             slots.add(RoomEntity.disabled(slots.size()));
         }
         slots.set(5, bowWow);
         slots.set(6, new RoomEntity(6, 0, 0x09, 0x44, 0x58,
-            EntityStatus.ACTIVE, definition, 0));
+            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
 
         BowWowMotion motion = new BowWowMotion();
         RoomEntity current = motion.advance(bowWow, 0, 0x44, 0x58, 0,
@@ -382,7 +382,7 @@ final class BowWowMotionTest {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(new byte[0x100000])
             .forFollowerEntityType(ENTITY_BOW_WOW);
         RoomEntity current = new RoomEntity(5, -1, ENTITY_BOW_WOW, 0x40, 0x50,
-            EntityStatus.ACTIVE, definition, 0);
+            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
         BowWowMotion motion = new BowWowMotion();
         IntSupplier random = sequence(0, 0, 0);
 

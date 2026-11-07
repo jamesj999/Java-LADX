@@ -136,7 +136,7 @@ public final class EntityRoomLoader {
                     loadedSlot, sourceLoadOrder, type, initializedPosition[0], initializedPosition[1],
                     EntityStatus.INIT,
                     spriteDefinition,
-                    spriteVariant, 0, initialSpriteTileOffset(type), initialZ));
+                    spriteVariant, 0, initialSpriteTileOffset(type), initialZ, -1, false));
                 loadedSlot++;
             }
             sourceLoadOrder++;

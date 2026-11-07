@@ -183,6 +183,6 @@ final class EnemyProjectileMotionTest {
 
     private static RoomEntity entity(int type, int x, int y, int z) {
         return new RoomEntity(0, -1, type, x, y, EntityStatus.ACTIVE,
-            EntitySpriteDefinition.unsupported(type), 0, 0, 0, z);
+            EntitySpriteDefinition.unsupported(type), 0, 0, 0, z, -1, false);
     }
 }

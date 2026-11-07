@@ -112,7 +112,7 @@ final class TektiteMotion {
 
         return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
             entity.status(), entity.spriteDefinition(), variant, entity.entityFlipAttribute(),
-            entity.spriteTileOffset(), z);
+            entity.spriteTileOffset(), z, -1, false);
     }
 
     void clear(int slot) {

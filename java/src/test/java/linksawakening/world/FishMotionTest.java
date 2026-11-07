@@ -74,7 +74,7 @@ final class FishMotionTest {
 
     private static RoomEntity entity(int x, int y, int variant) {
         return new RoomEntity(0, 0, FishMotion.ENTITY_TYPE, x, y,
-            EntityStatus.ACTIVE, definition(), variant);
+            EntityStatus.ACTIVE, definition(), variant, 0, 0, 0, -1, false);
     }
 
     private static EntitySpriteDefinition definition() {

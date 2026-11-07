@@ -169,7 +169,7 @@ final class HidingZolMotion {
 
         RoomEntity updated = new RoomEntity(entity.slot(), entity.sourceLoadOrder(),
             entity.type(), x, y, entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), z);
+            entity.entityFlipAttribute(), entity.spriteTileOffset(), z, -1, false);
         return new Update(updated, hitGround, clearsIgnoreHitsCountdown, jumpJingle,
             physicsFlags);
     }

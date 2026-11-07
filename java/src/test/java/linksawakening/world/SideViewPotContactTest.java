@@ -90,6 +90,6 @@ final class SideViewPotContactTest {
                 new EntitySpriteDefinition.OamAttribute(0x14, 0x02),
                 new EntitySpriteDefinition.OamAttribute(0x14, 0x22))));
         return new RoomEntity(0, 0, 0xD6, x, y,
-            EntityStatus.ACTIVE, definition, 0);
+            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
     }
 }

@@ -177,7 +177,7 @@ final class PairoddMotionTest {
 
     private static RoomEntity entity(int x, int y) {
         return new RoomEntity(0, 0, 0x57, x, y, EntityStatus.ACTIVE,
-            pairDefinition(), 0);
+            pairDefinition(), 0, 0, 0, 0, -1, false);
     }
 
     private static EntitySpriteDefinition pairDefinition() {

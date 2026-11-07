@@ -117,7 +117,7 @@ final class ArmosMotion {
 
         RoomEntity updated = new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
             x, y, entity.status(), entity.spriteDefinition(), entity.spriteVariant(),
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z());
+            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false);
         return new Update(updated, previousState == 0 && state[slot] == 1,
             previousState == 1 && state[slot] == 2, linkFinalPositionCopyRequested);
     }

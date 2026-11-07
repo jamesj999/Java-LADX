@@ -38,7 +38,7 @@ final class CuccoRuntimeTest {
             EntitySpriteHandlerCatalog.ENTITY_CUCCO, EntityRoomLoader.RoomTable.OVERWORLD);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, EntitySpriteHandlerCatalog.ENTITY_CUCCO,
-                0x40, 0x50, EntityStatus.ACTIVE, definition, 0)), false,
+                0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)), false,
             () -> 0, catalog, new RomEnemyCombatTables(rom));
 
         assertEquals(0x92, runtime.physicsFlags(0));
@@ -60,7 +60,7 @@ final class CuccoRuntimeTest {
             EntitySpriteHandlerCatalog.ENTITY_CUCCO, EntityRoomLoader.RoomTable.OVERWORLD);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, EntitySpriteHandlerCatalog.ENTITY_CUCCO,
-                0x40, 0x50, EntityStatus.ACTIVE, definition, 0)), false,
+                0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)), false,
             () -> 0, catalog, new RomEnemyCombatTables(rom));
 
         runtime.tick(0, 0x00, 0x00, () -> 0);

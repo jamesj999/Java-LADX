@@ -164,7 +164,7 @@ final class WingedOctorokMotion {
 
         RoomEntity updated = new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
             x, y, entity.status(), entity.spriteDefinition(), renderedVariant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), z);
+            entity.entityFlipAttribute(), entity.spriteTileOffset(), z, -1, false);
         return new Update(updated, state[slot], countdown, rockSpawn, jumped,
             stateTwoHandler || jumped);
     }

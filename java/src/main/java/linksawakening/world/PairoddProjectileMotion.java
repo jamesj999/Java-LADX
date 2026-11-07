@@ -45,7 +45,7 @@ final class PairoddProjectileMotion {
         int variant = (frameCounter >>> 3) & 0x01;
         return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
             entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z());
+            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false);
     }
 
     void clear(int slot) {

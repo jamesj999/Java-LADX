@@ -6,7 +6,7 @@ public record EntityCombatEvent(int slot, int type, int linkDamage, boolean swor
                                 SoundChannel soundChannel, int soundId,
                                 SoundChannel secondarySoundChannel, int secondarySoundId,
                                 SwordPokeVfx swordPokeVfx, LinkAction linkAction,
-                                LinkCollisionResponse linkCollisionResponse) {
+                                LinkCollisionResponse linkCollisionResponse) implements EntityEvent {
 
     public EntityCombatEvent(int slot, int type, int linkDamage, boolean swordHit,
                              int enemyDamage, int enemySpecialAction,

@@ -481,7 +481,7 @@ final class BowWowMotion {
                                                        int z, int variant) {
         return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
             entity.status(), entity.spriteDefinition(), variant, entity.entityFlipAttribute(),
-            entity.spriteTileOffset(), z);
+            entity.spriteTileOffset(), z, -1, false);
     }
 
     record Update(RoomEntity entity, int targetSlot, TargetContact targetContact) {

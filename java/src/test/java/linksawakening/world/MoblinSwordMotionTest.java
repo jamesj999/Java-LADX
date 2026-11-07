@@ -112,6 +112,6 @@ final class MoblinSwordMotionTest {
 
     private static RoomEntity entity(int slot, int x, int y) {
         return new RoomEntity(slot, 0, 0x14, x, y, EntityStatus.ACTIVE,
-            EntitySpriteDefinition.unsupported(0x14), -1);
+            EntitySpriteDefinition.unsupported(0x14), -1, 0, 0, 0, -1, false);
     }
 }

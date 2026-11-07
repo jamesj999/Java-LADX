@@ -58,7 +58,7 @@ final class CrowMotionTest {
         motion.setStateForTest(0, 3);
         motion.setSpeedForTest(0, 0x20, 0, 0);
         RoomEntity outwardStart = new RoomEntity(0, 0, CrowMotion.ENTITY_TYPE,
-            0xA6, 0x50, EntityStatus.ACTIVE, definition(), 0);
+            0xA6, 0x50, EntityStatus.ACTIVE, definition(), 0, 0, 0, 0, -1, false);
         CrowMotion.Update crossing = motion.advance(outwardStart, 0, 0x40, 0x50);
         assertFalse(crossing.unloaded());
         CrowMotion.Update unloaded = motion.advance(crossing.entity(), 0, 0x40, 0x50);
@@ -86,7 +86,7 @@ final class CrowMotionTest {
         CrowMotion motion = new CrowMotion();
         motion.setStateForTest(0, state);
         RoomEntity airborne = new RoomEntity(0, 0, CrowMotion.ENTITY_TYPE,
-            0x40, 0x50, EntityStatus.ACTIVE, definition(), 0, 0, 0, 0x10);
+            0x40, 0x50, EntityStatus.ACTIVE, definition(), 0, 0, 0, 0x10, -1, false);
 
         // Link is below the crow's visual Y ($40), but above its ground Y ($50).
         // Both flight states call bank $03 GetVectorTowardsLink via $3BB5.
@@ -109,7 +109,7 @@ final class CrowMotionTest {
         motion.setStateForTest(0, 3);
         motion.setSpeedForTest(0, speedX, speedY, 0);
         RoomEntity crow = new RoomEntity(0, 0, CrowMotion.ENTITY_TYPE, x, y,
-            EntityStatus.ACTIVE, definition(), 0, 0, 0, z);
+            EntityStatus.ACTIVE, definition(), 0, 0, 0, z, -1, false);
 
         // Frame 1 skips steering. Each speed moves one pixel across a boundary.
         // $5E54 reads cached hActiveEntityPosX / hActiveEntityVisualPosY.
@@ -135,7 +135,7 @@ final class CrowMotionTest {
         CrowMotion motion = new CrowMotion();
         motion.setStateForTest(0, 1);
         RoomEntity crow = new RoomEntity(0, 0, CrowMotion.ENTITY_TYPE, 0x40, 0x50,
-            EntityStatus.ACTIVE, definition(), 0, 0, 0, 7);
+            EntityStatus.ACTIVE, definition(), 0, 0, 0, 7, -1, false);
 
         CrowMotion.Update first = motion.advance(crow, 0x20, 0x40, 0x50);
         assertEquals(7, first.entity().z());
@@ -164,7 +164,7 @@ final class CrowMotionTest {
 
     private static RoomEntity entity(int x, int y, int variant) {
         return new RoomEntity(0, 0, CrowMotion.ENTITY_TYPE, x, y,
-            EntityStatus.ACTIVE, definition(), variant);
+            EntityStatus.ACTIVE, definition(), variant, 0, 0, 0, -1, false);
     }
 
     private static EntitySpriteDefinition definition() {

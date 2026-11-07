@@ -156,6 +156,6 @@ final class PlayerArrowMotionTest {
 
     private static RoomEntity entity(int x, int y, int z, int variant) {
         return new RoomEntity(0, -1, 0x00, x, y, EntityStatus.ACTIVE,
-            EntitySpriteDefinition.unsupported(0x00), variant, 0, 0, z);
+            EntitySpriteDefinition.unsupported(0x00), variant, 0, 0, z, -1, false);
     }
 }

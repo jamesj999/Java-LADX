@@ -90,7 +90,7 @@ final class PairoddMotion {
 
         RoomEntity updated = new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
             x, y, entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z());
+            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false);
         return new Update(updated, spawnProjectile, teleportJingle);
     }
 
