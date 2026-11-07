@@ -64,123 +64,10 @@ import java.util.Set;
 import static linksawakening.world.RoomConstants.ROOM_PIXEL_HEIGHT;
 import static linksawakening.world.RoomConstants.ROOM_PIXEL_WIDTH;
 
-public final class RoomSession {
+public final class RoomSession extends RoomSessionRules {
     final RoomSessionContext context;
 
     static long nextRoomSessionId;
-    static final int ROOM_STATUS_TABLE_SIZE = 0x100;
-    static final int COLOR_DUNGEON_SAVE_STATUS_SIZE = 0x20;
-    static final int W_TILESET_NO_UPDATE = 0xFF;
-    static final int ENTITY_OPT1_NO_GROUND_INTERACTION = 0x10;
-    static final int ENTITY_OPT1_SPLASH_IN_WATER = 0x08;
-    static final int ENTITY_FISH = 0xCC;
-    static final int ENTITY_PEAHAT = 0xA0;
-    static final int ENTITY_ROOSTER = 0xD5;
-    static final int ENTITY_BOW_WOW = 0x6D;
-    static final int ENTITY_MARIN_AT_THE_SHORE = 0xC1;
-    static final int ENTITY_HEART_CONTAINER = 0x36;
-    static final int ENTITY_DROPPABLE_SECRET_SEASHELL = 0x3D;
-    static final int OBJECT_ROCKY_GROUND = 0x09;
-    static final int OBJECT_ROCKY_CAVE_DOOR = 0xE1;
-    static final int OBJECT_CLOSED_GATE = 0xC2;
-    static final int OBJECT_CAVE_DOOR = 0xE3;
-    static final int OBJECT_BOMBABLE_CAVE_DOOR = 0xBA;
-    static final int OBJECT_GIANT_SKULL_TOP_LEFT = 0xBB;
-    static final int OBJECT_GIANT_SKULL_BOTTOM_RIGHT = 0xBE;
-    static final int OBJECT_BOMBABLE_BLOCK = 0xA9;
-    static final int OBJECT_FLOOR_OD = 0x0D;
-    static final int OBJECT_SHOVEL_HOLE = 0xCC;
-    static final int OBJECT_SHOVEL_INDOOR_DIGGABLE = 0x05;
-    static final int OBJECT_SHOVEL_BLOCKER_A = 0x0C;
-    static final int OBJECT_SHOVEL_BLOCKER_B = 0x0D;
-    static final int OBJECT_SHOVEL_BLOCKER_C = 0xB9;
-    static final int SHOVEL_STATE_ACTIVE = 0x01;
-    static final int SHOVEL_STATE_DUG = 0x02;
-    static final int SHOVEL_DIG_TIMER = 0x10;
-    static final int SHOVEL_FINISH_TIMER = 0x18;
-    static final int SHOVEL_DIALOG_TABLE = 0;
-    static final int SHOVEL_DIALOG_ID = 0x79;
-    static final int OCARINA_NO_SONG_DIALOG_TABLE = 0;
-    static final int OCARINA_NO_SONG_DIALOG_ID = 0x8E;
-    static final int OCARINA_MARIN_DIALOG_TABLE = 2;
-    static final int OCARINA_MARIN_DIALOG_ID = 0x77;
-    static final int[] SHOVEL_TARGET_X = {0x14, 0xFC, 0x08, 0x08};
-    static final int[] SHOVEL_TARGET_Y = {0x0A, 0x0A, 0xFC, 0x14};
-    static final int OW_ROOM_STATUS_OPENED = 0x04;
-    static final int OW_ROOM_STATUS_FLAG_CHANGED = 0x04;
-    static final int ROOM_STATUS_CHEST_OPEN = 0x10;
-    static final int ROOM_STATUS_EVENT_1 = 0x10;
-    static final int ROOM_STATUS_EVENT_2 = 0x20;
-    static final int ROOM_STATUS_DISCOVERED = 0x40;
-    static final int ROOM_OW_TAIL_KEY_CHEST = 0x41;
-    static final int ROOM_OW_TAIL_CAVE_ENTRANCE = 0xD3;
-    static final int ROOM_OW_KEY_CAVERN_ENTRANCE = 0xB5;
-    static final int ROOM_OW_MYSTERIOUS_WOODS_LOST = 0x63;
-    static final int ENTITY_TARIN = TarinRaccoonMotion.ENTITY_TYPE;
-    static final int ENTITY_OWL_EVENT = 0x41;
-    static final int TAIL_CAVE_GATE_LOCATION = 0x16;
-    static final int KEYHOLE_DIALOG_TABLE = 2;
-    static final int TAIL_KEYHOLE_DIALOG_ID = 0x30;
-    static final int SLIME_KEYHOLE_DIALOG_ID = 0x31;
-    static final int LINK_COLLISION_TYPE_UP = 0x01;
-    static final int TAIL_CAVE_RUMBLE_INITIAL_COUNTDOWN = 0xDF;
-    static final int TAIL_CAVE_RUMBLE_GATE_FRAME = 0x08;
-    static final int INDOOR_ROOM_STATUS_EVENT_3 = 0x40;
-    static final int EVENT_TRIGGER_MASK = 0x1F;
-    static final int EVENT_EFFECT_MASK = 0xE0;
-    static final int EVENT_TRIGGER_KILL_ALL_ENEMIES = 0x01;
-    static final int EVENT_TRIGGER_PUSH_SINGLE_BLOCK = 0x02;
-    static final int EVENT_TRIGGER_STEP_ON_BUTTON = 0x03;
-    static final int EVENT_TRIGGER_LIGHT_TORCHES = 0x05;
-    static final int EVENT_TRIGGER_KILL_IN_ORDER = 0x06;
-    static final int EVENT_TRIGGER_PUSH_BLOCKS = 0x07;
-    static final int EVENT_TRIGGER_THROW_AT_DOOR = 0x0B;
-    static final int EVENT_EFFECT_OPEN_LOCKED_DOORS = 0x20;
-    static final int EVENT_EFFECT_REVEAL_CHEST = 0x60;
-    static final int EVENT_EFFECT_DROP_KEY = 0x80;
-    static final int EVENT_EFFECT_REVEAL_STAIRWAY = 0xA0;
-    static final int EVENT_EFFECT_CLEAR_MIDBOSS = 0xC0;
-    static final int EVENT_CLEAR_MIDBOSS = 0xC1;
-    static final int OBJECT_SWITCH_BUTTON = 0xAA;
-    static final int OBJECT_LIFTABLE_POT = 0x20;
-    static final int OBJECT_POT_WITH_SWITCH = 0x8E;
-    static final int INDOOR_POT_PULL_FRAMES = 0x08;
-    static final int OBJECT_PUSHABLE_BLOCK = 0xA7;
-    static final int OBJECT_KEYHOLE_BLOCK = 0xDE;
-    static final int OBJECT_SETTLED_PUSHED_BLOCK = 0xA6;
-    static final int OBJECT_STAIRS_DOWN = 0xBE;
-    static final int STAIRCASE_NONE = 0;
-    static final int STAIRCASE_INACTIVE = 1;
-    static final int STAIRCASE_ACTIVE = 2;
-    static final int EVENT_STAIRWAY_LOCATION = 0x18;
-    static final int PUSH_BLOCK_CONTACT_TICKS = 0x40;
-    static final int KEYHOLE_BLOCK_CONTACT_TICKS = 0x20;
-    static final int PUSHED_BLOCK_MOTION_FRAMES = 0x21;
-    static final int SWITCH_BUTTON_PRESS_FRAMES = 0x18;
-    static final int SWITCH_BUTTON_PRESSED = 0x60;
-    static final int ENTITY_OPTION_EXCLUDED_FROM_KILL_ALL = 0x02;
-    static final int ROOM_EVENT_CHEST_REVEAL_COUNTDOWN = 0x0F;
-    static final int ROOM_EVENT_CHEST_WRITE_COUNTDOWN = 0x04;
-    static final int KEY_DOOR_PHYSICS_BASE = 0x90;
-    static final int KEY_DOOR_ANIMATION_FRAMES = 0x08;
-    static final int[] KEY_DOOR_CLOSED_OBJECTS = {
-        0x2D, 0x2F, 0x31, 0x33
-    };
-    static final int[][] KEY_DOOR_OPEN_OBJECTS = {
-        {0x43, 0x44}, {0x8C, 0x08}, {0x09, 0x0A}, {0x0B, 0x0C}
-    };
-    static final int[] KEY_DOOR_CURRENT_STATUS = {0x04, 0x08, 0x02, 0x01};
-    static final int[] KEY_DOOR_ADJACENT_STATUS = {0x08, 0x04, 0x01, 0x02};
-    static final int OBJECT_BOMBED_PASSAGE_VERTICAL = 0x3D;
-    static final int OBJECT_BOMBED_PASSAGE_HORIZONTAL = 0x3E;
-    static final int BOMBABLE_WALL_PHYSICS_BASE = 0x99;
-    static final int INDOOR_MAP_LAYOUT_SIZE = 0x40;
-    static final int LINK_MOTION_FALLING_DOWN = 0x06;
-    static final int OBJECT_WELL = 0x61;
-    static final int OBJECT_WATER_LADDER_SIDESCROLL = 0x67;
-    static final int[] ENTITY_CONVEYOR_MOVEMENT_X = {0, 0, -1, 1, 1, -1, 1, -1};
-    static final int[] ENTITY_CONVEYOR_MOVEMENT_Y = {1, -1, 0, 0, 1, 1, -1, -1};
-
     public RoomSession(byte[] romData,
                        GPU gpu,
                        RoomLoader roomLoader,
@@ -860,18 +747,7 @@ public final class RoomSession {
     public void tickGameplayVBlank() { context.entityBridge.tickGameplayVBlank(); }
 
     /** Link uses Java's down/up/left/right order; projectile ROM tables use right/left/up/down. */
-    static int romDirectionForProjectileCollision(int linkDirection) {
-        if (linkDirection < 0 || linkDirection > 3) {
-            throw new IllegalArgumentException("Link direction out of range: " + linkDirection);
-        }
-        return switch (linkDirection) {
-            case 0 -> 3; // Java down -> ROM down
-            case 1 -> 2; // Java up -> ROM up
-            case 2 -> 1; // Java left -> ROM left
-            case 3 -> 0; // Java right -> ROM right
-            default -> throw new AssertionError(linkDirection);
-        };
-    }
+    static int romDirectionForProjectileCollision(int linkDirection) { return RoomInteractionGeometry.romDirectionForProjectileCollision(linkDirection); }
 
     /** Applies the active room's ROM enemy/sword collision pass. */
     public List<EntityCombatEvent> resolveEntityCombat(int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne, boolean linkInteractive, boolean swordCollisionActive, int swordX, int swordWidth, int swordY, int swordHeight) { return context.entityBridge.resolveEntityCombat(frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive, swordCollisionActive, swordX, swordWidth, swordY, swordHeight); }
@@ -977,13 +853,7 @@ public final class RoomSession {
     public boolean tryUnlockIndoorKeyDoor(int linkPixelX, int linkPixelY, int linkDirection, int collisionType) { return context.roomDoorInteractions.tryUnlockIndoorKeyDoor(linkPixelX, linkPixelY, linkDirection, collisionType); }
 
     /** $02:70F2-$710F checks ROM Link coordinates against the authored door origin. */
-    static boolean alignedWithIndoorKeyDoor(int location, int direction,
-                                                    int linkPixelX, int linkPixelY) {
-        int offset = direction < 2
-            ? linkPixelX + 8 - ((location & 15) << 4) - 0x0C
-            : linkPixelY + 16 - (location & 0xF0) - 0x14;
-        return (offset & 0xFF) < 8;
-    }
+    static boolean alignedWithIndoorKeyDoor(int location, int direction, int linkPixelX, int linkPixelY) { return RoomInteractionGeometry.alignedWithIndoorKeyDoor(location, direction, linkPixelX, linkPixelY); }
 
     /** Mirrors bank 2's $A7 collision counter and entity-$06 spawn branch. */
     public boolean tryPushIndoorBlock(int linkPixelX, int linkPixelY, int linkDirection, int collisionType) { return context.roomDoorInteractions.tryPushIndoorBlock(linkPixelX, linkPixelY, linkDirection, collisionType); }
@@ -1004,35 +874,11 @@ public final class RoomSession {
     /** Mirrors bank 2's $DE interactive-block branch and TryOpenLockedDoor. */
     public boolean tryUnlockIndoorKeyholeBlock(int linkPixelX, int linkPixelY, int linkDirection, int collisionType) { return context.roomDoorInteractions.tryUnlockIndoorKeyholeBlock(linkPixelX, linkPixelY, linkDirection, collisionType); }
 
-    static int keyDoorDirectionIndex(int linkDirection) {
-        return switch (linkDirection) {
-            case Link.DIRECTION_UP -> 0;
-            case Link.DIRECTION_DOWN -> 1;
-            case Link.DIRECTION_LEFT -> 2;
-            case Link.DIRECTION_RIGHT -> 3;
-            default -> -1;
-        };
-    }
+    static int keyDoorDirectionIndex(int linkDirection) { return RoomInteractionGeometry.keyDoorDirectionIndex(linkDirection); }
 
-    static int keyDoorCollisionBit(int direction) {
-        return switch (direction) {
-            case 0 -> 0x01;
-            case 1 -> 0x02;
-            case 2 -> 0x04;
-            case 3 -> 0x08;
-            default -> 0;
-        };
-    }
+    static int keyDoorCollisionBit(int direction) { return RoomInteractionGeometry.keyDoorCollisionBit(direction); }
 
-    static int[][] keyDoorCollisionPoints(int x, int y, int direction) {
-        return switch (direction) {
-            case 0 -> new int[][] {{x + 0x06, y + 0x06}, {x + 0x09, y + 0x06}};
-            case 1 -> new int[][] {{x + 0x06, y + 0x0F}, {x + 0x09, y + 0x0F}};
-            case 2 -> new int[][] {{x + 0x04, y + 0x09}, {x + 0x04, y + 0x0C}};
-            case 3 -> new int[][] {{x + 0x0B, y + 0x09}, {x + 0x0B, y + 0x0C}};
-            default -> new int[0][0];
-        };
-    }
+    static int[][] keyDoorCollisionPoints(int x, int y, int direction) { return RoomInteractionGeometry.keyDoorCollisionPoints(x, y, direction); }
 
     /**
      * Mirrors bank 2's Tail Key branch in ApplyCollisionWithObject. The
@@ -1135,26 +981,11 @@ public final class RoomSession {
 
     void configureStaircase(int location) { context.roomTransitionController.configureStaircase(location); }
 
-    static boolean withinUnsignedByteRange(int value, int center,
-                                                   int bias, int size) {
-        return ((value - center + bias) & 0xFF) < size;
-    }
+    static boolean withinUnsignedByteRange(int value, int center, int bias, int size) { return RoomInteractionGeometry.withinUnsignedByteRange(value, center, bias, size); }
 
-    static int roomEventChestTop(int linkEntityX, int linkEntityY) {
-        boolean linkNearUpperChest = ((linkEntityY - 0x30 + 0x08) & 0xFF) < 0x10
-            && ((linkEntityX - 0x88 + 0x10) & 0xFF) < 0x20;
-        return linkNearUpperChest ? 0x30 : 0x20;
-    }
+    static int roomEventChestTop(int linkEntityX, int linkEntityY) { return RoomInteractionGeometry.roomEventChestTop(linkEntityX, linkEntityY); }
 
-    static void requireLength(byte[] values, int expectedLength, String label) {
-        if (values == null) {
-            throw new NullPointerException(label);
-        }
-        if (values.length != expectedLength) {
-            throw new IllegalArgumentException(label + " must contain " + expectedLength
-                + " bytes, got " + values.length);
-        }
-    }
+    static void requireLength(byte[] values, int expectedLength, String label) { RoomInteractionGeometry.requireLength(values, expectedLength, label); }
 
     int colorShellObjectAt(RoomEntity entity, int relativeOffset) { return context.roomObjectMutations.colorShellObjectAt(entity, relativeOffset); }
 
@@ -1183,16 +1014,9 @@ public final class RoomSession {
 
     void applyBombedCaveDoorTileOverrides() { context.roomTileRedraw.applyBombedCaveDoorTileOverrides(); }
 
-    static int hookshotObjectAreaIndex(int objectLeft, int objectTop) {
-        return RoomConstants.ROOM_OBJECTS_BASE + (objectTop & 0xF0)
-            + ((objectLeft & 0xF0) >>> 4);
-    }
+    static int hookshotObjectAreaIndex(int objectLeft, int objectTop) { return RoomInteractionGeometry.hookshotObjectAreaIndex(objectLeft, objectTop); }
 
-    static int colorShellObjectIndex(RoomEntity entity) {
-        int x = (entity.x() - 0x01) & 0xFF;
-        int y = (entity.y() - 0x07) & 0xFF;
-        return RoomConstants.ROOM_OBJECTS_BASE + (y & 0xF0) + ((x & 0xF0) >>> 4);
-    }
+    static int colorShellObjectIndex(RoomEntity entity) { return RoomInteractionGeometry.colorShellObjectIndex(entity); }
 
     /**
      * Mirrors the entity collision point selected by bank $03's
@@ -1219,71 +1043,13 @@ public final class RoomSession {
      */
     RoomEntityGroundInteraction.Result entityGroundInteraction( RoomEntity entity, int frameCounter, int previousGroundStatus, int speedZ, boolean sideScrolling) { return context.roomCollisionQueries.entityGroundInteraction(entity, frameCounter, previousGroundStatus, speedZ, sideScrolling); }
 
-    static RoomEntityGroundInteraction.PitTransition pitTransitionFor(
-            RoomEntity entity, OverworldCollision.GroundInteractionSample sample,
-            int linkMotionState) {
-        boolean pit = sample.objectId() == OBJECT_WELL
-            || sample.physicsFlag() == PhysicsFlags.NORMAL_PIT
-            || sample.physicsFlag() == PhysicsFlags.PIT_WARP;
-        if (!pit || entity.type() == ENTITY_BOW_WOW || entity.type() == ENTITY_ROOSTER
-            || entity.type() == ENTITY_HEART_CONTAINER) {
-            return null;
-        }
-        if (entity.type() == ENTITY_MARIN_AT_THE_SHORE
-            && (linkMotionState != LINK_MOTION_FALLING_DOWN
-                || sample.objectId() != OBJECT_WELL)) {
-            return null;
-        }
-        return new RoomEntityGroundInteraction.PitTransition(
-            sample.objectLeft() + 0x08, sample.objectTop() + 0x10);
-    }
+    static RoomEntityGroundInteraction.PitTransition pitTransitionFor( RoomEntity entity, OverworldCollision.GroundInteractionSample sample, int linkMotionState) { return RoomInteractionGeometry.pitTransitionFor(entity, sample, linkMotionState); }
 
-    static int groundStatusFor(OverworldCollision.GroundInteractionSample sample) {
-        int physicsFlag = sample.physicsFlag();
-        if (physicsFlag == PhysicsFlags.DEEP_WATER || physicsFlag == PhysicsFlags.LAVA) {
-            return 0x02;
-        }
-        if (sample.objectId() == OBJECT_WATER_LADDER_SIDESCROLL
-            || physicsFlag == PhysicsFlags.WATER_SIDESCROLL) {
-            return 0x01;
-        }
-        if (physicsFlag == PhysicsFlags.NONE) {
-            return 0x00;
-        }
-        if (physicsFlag == PhysicsFlags.SHALLOW_WATER) {
-            return 0x02;
-        }
-        if (physicsFlag == PhysicsFlags.GRASS) {
-            return 0x03;
-        }
-        return 0x01;
-    }
+    static int groundStatusFor(OverworldCollision.GroundInteractionSample sample) { return RoomInteractionGeometry.groundStatusFor(sample); }
 
-    static boolean splashAllowed(int options, int previousGroundStatus,
-                                         int currentGroundStatus, int speedZ,
-                                         boolean sideScrolling) {
-        if ((options & ENTITY_OPT1_SPLASH_IN_WATER) == 0
-            || previousGroundStatus == currentGroundStatus
-            || previousGroundStatus == 0x03
-            || currentGroundStatus == 0x03) {
-            return false;
-        }
-        if (sideScrolling) {
-            // The side-scroll branch uses shared speed-X/Y tables, which are
-            // not yet part of the Java entity snapshot. Keep this path
-            // source-safe until that table is ported.
-            return false;
-        }
-        int unsignedSpeedZ = speedZ & 0xFF;
-        return (unsignedSpeedZ & 0x80) != 0 && unsignedSpeedZ < 0xE7;
-    }
+    static boolean splashAllowed(int options, int previousGroundStatus, int currentGroundStatus, int speedZ, boolean sideScrolling) { return RoomInteractionGeometry.splashAllowed(options, previousGroundStatus, currentGroundStatus, speedZ, sideScrolling); }
 
-    static RoomEntity withEntityPosition(RoomEntity entity, int x, int y) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(),
-            entity.spriteVariant(), entity.entityFlipAttribute(), entity.spriteTileOffset(),
-            entity.z(), -1, false);
-    }
+    static RoomEntity withEntityPosition(RoomEntity entity, int x, int y) { return RoomInteractionGeometry.withEntityPosition(entity, x, y); }
 
     boolean pairoddProjectileObjectCollision(RoomEntity entity) { return context.roomCollisionQueries.pairoddProjectileObjectCollision(entity); }
 
@@ -1293,5 +1059,5 @@ public final class RoomSession {
 
     RoomScrollNavigation.IndoorRoomDestination adjacentIndoorRoom(int direction) { return context.roomTransitionController.adjacentIndoorRoom(direction); }
 
-    static int scrollTarget(int direction) { return RoomScrollNavigation.scrollTarget(direction); }
+    static int scrollTarget(int direction) { return RoomInteractionGeometry.scrollTarget(direction); }
 }
