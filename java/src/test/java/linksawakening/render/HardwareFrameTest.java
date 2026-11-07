@@ -73,4 +73,14 @@ final class HardwareFrameTest {
         assertEquals(22, pixel(frame, 4, 0));
         assertEquals(22, pixel(frame, 8, 0));
     }
+    @Test void hudColorZeroCannotHideAnObjectEvenWithBgPrioritySet() {
+        // User-supplied ROM: InventoryTilemap row 0 col 8 is $7F,
+        // InventoryAttrmap is $01, shared CGB tile slot $17F pixel (7,0) is index 0.
+        // home/animated_tiles.asm $1D57-$1D59 rejects OAM Y >= $88,
+        // but that is an entry guard, not a per-pixel HUD clip.
+        HardwareFrame frame = new HardwareFrame(true);
+        frame.backgroundTile(solid(0), 64, 128, false, false, PALETTE, true);
+        frame.appendInSlot(2, solid(2), 64, 128, false, false, PALETTE, true);
+        assertEquals(33, pixel(frame, 71, 128));
+    }
 }
