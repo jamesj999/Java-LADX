@@ -26,6 +26,7 @@ import java.util.function.IntUnaryOperator;
  * class only advances handler-owned status and sprite-variant fields.
  */
 public final class RoomEntityRuntime extends EntityRuntimeState {
+    private final EntityEffectConsumption effects = new EntityEffectConsumption(this);
     private final EntityRuntimeConfiguration entityRuntimeConfiguration = new EntityRuntimeConfiguration(this);
     private final EntityDebugConfiguration entityDebugConfiguration = new EntityDebugConfiguration(this);
     final EntityHandlerRegistry entityHandlers = createEntityHandlers();
@@ -2761,81 +2762,29 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     void setSwitchBlockAnimationActiveForTest(boolean active) { this.entityDebugConfiguration.setSwitchBlockAnimationActiveForTest(active); }
 
-    boolean consumePendingSwitchBlockAnimationRequest() {
-        boolean pending = pendingSwitchBlockAnimationRequest;
-        pendingSwitchBlockAnimationRequest = false;
-        return pending;
-    }
+    boolean consumePendingSwitchBlockAnimationRequest() { return this.effects.consumePendingSwitchBlockAnimationRequest(); }
 
-    int consumePendingClearedEntityMask() {
-        int pending = pendingClearedEntityMask;
-        pendingClearedEntityMask = 0;
-        return pending;
-    }
+    int consumePendingClearedEntityMask() { return this.effects.consumePendingClearedEntityMask(); }
 
-    int consumePendingRoomStatusMask() {
-        int pending = pendingRoomStatusMask;
-        pendingRoomStatusMask = 0;
-        return pending;
-    }
+    int consumePendingRoomStatusMask() { return this.effects.consumePendingRoomStatusMask(); }
 
-    List<EntityCombatEvent> consumePendingEntityEvents() {
-        List<EntityCombatEvent> pending = new ArrayList<>(pendingPreTickEntityEvents);
-        pending.addAll(pendingEntityEvents);
-        pendingPreTickEntityEvents.clear();
-        pendingEntityEvents.clear();
-        return List.copyOf(pending);
-    }
+    List<EntityCombatEvent> consumePendingEntityEvents() { return this.effects.consumePendingEntityEvents(); }
 
-    List<ThrownBackgroundCollisionEvent> consumePendingThrownBackgroundCollisions() {
-        List<ThrownBackgroundCollisionEvent> pending =
-            List.copyOf(pendingThrownBackgroundCollisions);
-        pendingThrownBackgroundCollisions.clear();
-        return pending;
-    }
+    List<ThrownBackgroundCollisionEvent> consumePendingThrownBackgroundCollisions() { return this.effects.consumePendingThrownBackgroundCollisions(); }
 
-    List<DungeonWarpRequest> consumePendingDungeonWarpRequests() {
-        List<DungeonWarpRequest> pending = List.copyOf(pendingDungeonWarpRequests);
-        pendingDungeonWarpRequests.clear();
-        return pending;
-    }
+    List<DungeonWarpRequest> consumePendingDungeonWarpRequests() { return this.effects.consumePendingDungeonWarpRequests(); }
 
-    List<WarpLinkStateRequest> consumePendingWarpLinkStateRequests() {
-        List<WarpLinkStateRequest> pending = List.copyOf(pendingWarpLinkStateRequests);
-        pendingWarpLinkStateRequests.clear();
-        return pending;
-    }
+    List<WarpLinkStateRequest> consumePendingWarpLinkStateRequests() { return this.effects.consumePendingWarpLinkStateRequests(); }
 
-    List<LinkFinalPositionRequest> consumePendingLinkFinalPositionRequests() {
-        List<LinkFinalPositionRequest> pending = List.copyOf(pendingLinkFinalPositionRequests);
-        pendingLinkFinalPositionRequests.clear();
-        return pending;
-    }
+    List<LinkFinalPositionRequest> consumePendingLinkFinalPositionRequests() { return this.effects.consumePendingLinkFinalPositionRequests(); }
 
-    List<RoosterLinkStateRequest> consumePendingRoosterLinkStateRequests() {
-        List<RoosterLinkStateRequest> pending = List.copyOf(pendingRoosterLinkStateRequests);
-        pendingRoosterLinkStateRequests.clear();
-        return pending;
-    }
+    List<RoosterLinkStateRequest> consumePendingRoosterLinkStateRequests() { return this.effects.consumePendingRoosterLinkStateRequests(); }
 
-    List<LinkMotionBlockRequest> consumePendingLinkMotionBlockRequests() {
-        List<LinkMotionBlockRequest> pending = List.copyOf(pendingLinkMotionBlockRequests);
-        pendingLinkMotionBlockRequests.clear();
-        return pending;
-    }
+    List<LinkMotionBlockRequest> consumePendingLinkMotionBlockRequests() { return this.effects.consumePendingLinkMotionBlockRequests(); }
 
-    List<SideViewPlatformLinkRequest> consumePendingSideViewPlatformLinkRequests() {
-        List<SideViewPlatformLinkRequest> pending =
-            List.copyOf(pendingSideViewPlatformLinkRequests);
-        pendingSideViewPlatformLinkRequests.clear();
-        return pending;
-    }
+    List<SideViewPlatformLinkRequest> consumePendingSideViewPlatformLinkRequests() { return this.effects.consumePendingSideViewPlatformLinkRequests(); }
 
-    List<SideViewPotLinkRequest> consumePendingSideViewPotLinkRequests() {
-        List<SideViewPotLinkRequest> pending = List.copyOf(pendingSideViewPotLinkRequests);
-        pendingSideViewPotLinkRequests.clear();
-        return pending;
-    }
+    List<SideViewPotLinkRequest> consumePendingSideViewPotLinkRequests() { return this.effects.consumePendingSideViewPotLinkRequests(); }
 
     int sideViewPlatformSpeedYForTest(int slot) { return this.roomInspection.sideViewPlatformSpeedYForTest(slot); }
 
@@ -2849,51 +2798,19 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     int sideViewPlatformPrivateState4ForTest(int slot) { return this.roomInspection.sideViewPlatformPrivateState4ForTest(slot); }
 
-    List<HinoxLinkEffectRequest> consumePendingHinoxLinkEffectRequests() {
-        List<HinoxLinkEffectRequest> pending = List.copyOf(pendingHinoxLinkEffectRequests);
-        pendingHinoxLinkEffectRequests.clear();
-        return pending;
-    }
+    List<HinoxLinkEffectRequest> consumePendingHinoxLinkEffectRequests() { return this.effects.consumePendingHinoxLinkEffectRequests(); }
 
-    List<LinkFallenPoseRequest> consumePendingLinkFallenPoseRequests() {
-        List<LinkFallenPoseRequest> pending = List.copyOf(pendingLinkFallenPoseRequests);
-        pendingLinkFallenPoseRequests.clear();
-        return pending;
-    }
+    List<LinkFallenPoseRequest> consumePendingLinkFallenPoseRequests() { return this.effects.consumePendingLinkFallenPoseRequests(); }
 
-    List<LinkFacingRequest> consumePendingLinkFacingRequests() {
-        List<LinkFacingRequest> pending = List.copyOf(pendingLinkFacingRequests);
-        pendingLinkFacingRequests.clear();
-        return pending;
-    }
+    List<LinkFacingRequest> consumePendingLinkFacingRequests() { return this.effects.consumePendingLinkFacingRequests(); }
 
-    List<LinkAttackClearRequest> consumePendingLinkAttackClearRequests() {
-        List<LinkAttackClearRequest> pending = List.copyOf(pendingLinkAttackClearRequests);
-        pendingLinkAttackClearRequests.clear();
-        return pending;
-    }
+    List<LinkAttackClearRequest> consumePendingLinkAttackClearRequests() { return this.effects.consumePendingLinkAttackClearRequests(); }
 
-    List<LinkAttackStepRequest> consumePendingLinkAttackStepRequests() {
-        List<LinkAttackStepRequest> pending = new ArrayList<>(
-            pendingPreTickLinkAttackStepRequests);
-        pending.addAll(pendingLinkAttackStepRequests);
-        pendingPreTickLinkAttackStepRequests.clear();
-        pendingLinkAttackStepRequests.clear();
-        return List.copyOf(pending);
-    }
+    List<LinkAttackStepRequest> consumePendingLinkAttackStepRequests() { return this.effects.consumePendingLinkAttackStepRequests(); }
 
-    List<RoomStatusPersistenceRequest> consumePendingRoomStatusPersistenceRequests() {
-        List<RoomStatusPersistenceRequest> pending =
-            List.copyOf(pendingRoomStatusPersistenceRequests);
-        pendingRoomStatusPersistenceRequests.clear();
-        return pending;
-    }
+    List<RoomStatusPersistenceRequest> consumePendingRoomStatusPersistenceRequests() { return this.effects.consumePendingRoomStatusPersistenceRequests(); }
 
-    List<LinkHeldItemPoseRequest> consumePendingLinkHeldItemPoseRequests() {
-        List<LinkHeldItemPoseRequest> pending = List.copyOf(pendingLinkHeldItemPoseRequests);
-        pendingLinkHeldItemPoseRequests.clear();
-        return pending;
-    }
+    List<LinkHeldItemPoseRequest> consumePendingLinkHeldItemPoseRequests() { return this.effects.consumePendingLinkHeldItemPoseRequests(); }
 
     boolean witchGotItemPresentationActive() { return this.roomInspection.witchGotItemPresentationActive(); }
 
@@ -2901,65 +2818,25 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     boolean swordPickupSequenceActive() { return this.roomInspection.swordPickupSequenceActive(); }
 
-    List<LinkSwordSpinPoseRequest> consumePendingLinkSwordSpinPoseRequests() {
-        List<LinkSwordSpinPoseRequest> pending = List.copyOf(pendingLinkSwordSpinPoseRequests);
-        pendingLinkSwordSpinPoseRequests.clear();
-        return pending;
-    }
+    List<LinkSwordSpinPoseRequest> consumePendingLinkSwordSpinPoseRequests() { return this.effects.consumePendingLinkSwordSpinPoseRequests(); }
 
-    List<LinkSwordFinalPoseRequest> consumePendingLinkSwordFinalPoseRequests() {
-        List<LinkSwordFinalPoseRequest> pending = List.copyOf(pendingLinkSwordFinalPoseRequests);
-        pendingLinkSwordFinalPoseRequests.clear();
-        return pending;
-    }
+    List<LinkSwordFinalPoseRequest> consumePendingLinkSwordFinalPoseRequests() { return this.effects.consumePendingLinkSwordFinalPoseRequests(); }
 
-    List<ScreenShakeRequest> consumePendingScreenShakeRequests() {
-        List<ScreenShakeRequest> pending = List.copyOf(pendingScreenShakeRequests);
-        pendingScreenShakeRequests.clear();
-        return pending;
-    }
+    List<ScreenShakeRequest> consumePendingScreenShakeRequests() { return this.effects.consumePendingScreenShakeRequests(); }
 
-    List<ChestRewardEvent> consumePendingChestRewardEvents() {
-        List<ChestRewardEvent> pending = List.copyOf(pendingChestRewardEvents);
-        pendingChestRewardEvents.clear();
-        return pending;
-    }
+    List<ChestRewardEvent> consumePendingChestRewardEvents() { return this.effects.consumePendingChestRewardEvents(); }
 
-    List<KeyRewardEvent> consumePendingKeyRewardEvents() {
-        List<KeyRewardEvent> pending = List.copyOf(pendingKeyRewardEvents);
-        pendingKeyRewardEvents.clear();
-        return pending;
-    }
+    List<KeyRewardEvent> consumePendingKeyRewardEvents() { return this.effects.consumePendingKeyRewardEvents(); }
 
-    List<SlimeKeyRewardEvent> consumePendingSlimeKeyRewardEvents() {
-        List<SlimeKeyRewardEvent> pending = List.copyOf(pendingSlimeKeyRewardEvents);
-        pendingSlimeKeyRewardEvents.clear();
-        return pending;
-    }
+    List<SlimeKeyRewardEvent> consumePendingSlimeKeyRewardEvents() { return this.effects.consumePendingSlimeKeyRewardEvents(); }
 
-    List<KeyQuicksandEvent> consumePendingKeyQuicksandEvents() {
-        List<KeyQuicksandEvent> pending = List.copyOf(pendingKeyQuicksandEvents);
-        pendingKeyQuicksandEvents.clear();
-        return pending;
-    }
+    List<KeyQuicksandEvent> consumePendingKeyQuicksandEvents() { return this.effects.consumePendingKeyQuicksandEvents(); }
 
-    int consumePendingMusicTrack() {
-        int pending = pendingMusicTrack;
-        pendingMusicTrack = -1;
-        return pending;
-    }
+    int consumePendingMusicTrack() { return this.effects.consumePendingMusicTrack(); }
 
-    int consumePendingMusicFadeOutCountdown() {
-        int pending = pendingMusicFadeOutCountdown;
-        pendingMusicFadeOutCountdown = 0;
-        return pending;
-    }
+    int consumePendingMusicFadeOutCountdown() { return this.effects.consumePendingMusicFadeOutCountdown(); }
 
-    List<LikeLikeEvent> consumePendingLikeLikeEvents() {
-        List<LikeLikeEvent> pending = List.copyOf(pendingLikeLikeEvents);
-        pendingLikeLikeEvents.clear();
-        return pending;
-    }
+    List<LikeLikeEvent> consumePendingLikeLikeEvents() { return this.effects.consumePendingLikeLikeEvents(); }
 
     int likeLikeState(int slot) { return this.roomInspection.likeLikeState(slot); }
 
@@ -2971,17 +2848,9 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     int likeLikeWalkSpeedY(int slot) { return this.roomInspection.likeLikeWalkSpeedY(slot); }
 
-    List<DialogRequest> consumePendingDialogRequests() {
-        List<DialogRequest> pending = List.copyOf(pendingDialogRequests);
-        pendingDialogRequests.clear();
-        return pending;
-    }
+    List<DialogRequest> consumePendingDialogRequests() { return this.effects.consumePendingDialogRequests(); }
 
-    List<BombExplosionEvent> consumeBombExplosionEvents() {
-        List<BombExplosionEvent> pending = List.copyOf(pendingBombExplosionEvents);
-        pendingBombExplosionEvents.clear();
-        return pending;
-    }
+    List<BombExplosionEvent> consumeBombExplosionEvents() { return this.effects.consumeBombExplosionEvents(); }
 
     List<HookshotBridgeUpdate> hookshotBridgeUpdates() { return this.roomInspection.hookshotBridgeUpdates(); }
 
@@ -3088,11 +2957,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     public void setHeartPiecesCount(int count) { heartPiecesCount = count; }
 
-    public List<HeartPiecePickupMotion.Update> consumeHeartPieceUpdates() {
-        var result = List.copyOf(heartPieceUpdates);
-        heartPieceUpdates.clear();
-        return result;
-    }
+    public List<HeartPiecePickupMotion.Update> consumeHeartPieceUpdates() { return this.effects.consumeHeartPieceUpdates(); }
 
     void advanceHeartPiecePickup(RoomEntity entity, int x, int y, int z) { pickups.advanceHeartPiecePickup(entity, x, y, z); }
 
@@ -4169,67 +4034,25 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     List<TransientVfxRequest> transientVfxRequests() { return this.enemyInspection.transientVfxRequests(); }
 
-    List<HeartContainerRewardEvent> consumePendingHeartContainerRewards() {
-        List<HeartContainerRewardEvent> rewards = List.copyOf(pendingHeartContainerRewards);
-        pendingHeartContainerRewards.clear();
-        return rewards;
-    }
+    List<HeartContainerRewardEvent> consumePendingHeartContainerRewards() { return this.effects.consumePendingHeartContainerRewards(); }
 
-    List<MadamMeowMeowFullHealRequest> consumePendingMadamMeowMeowFullHealRequests() {
-        List<MadamMeowMeowFullHealRequest> requests =
-            List.copyOf(pendingMadamMeowMeowFullHealRequests);
-        pendingMadamMeowMeowFullHealRequests.clear();
-        return requests;
-    }
+    List<MadamMeowMeowFullHealRequest> consumePendingMadamMeowMeowFullHealRequests() { return this.effects.consumePendingMadamMeowMeowFullHealRequests(); }
 
-    List<SwordPickupRewardEvent> consumePendingSwordPickupRewards() {
-        List<SwordPickupRewardEvent> rewards = List.copyOf(pendingSwordPickupRewards);
-        pendingSwordPickupRewards.clear();
-        return rewards;
-    }
+    List<SwordPickupRewardEvent> consumePendingSwordPickupRewards() { return this.effects.consumePendingSwordPickupRewards(); }
 
-    List<ToadstoolRewardEvent> consumePendingToadstoolRewards() {
-        List<ToadstoolRewardEvent> rewards = List.copyOf(pendingToadstoolRewards);
-        pendingToadstoolRewards.clear();
-        return rewards;
-    }
+    List<ToadstoolRewardEvent> consumePendingToadstoolRewards() { return this.effects.consumePendingToadstoolRewards(); }
 
-    List<InstrumentRewardEvent> consumePendingInstrumentRewards() {
-        List<InstrumentRewardEvent> rewards = List.copyOf(pendingInstrumentRewards);
-        pendingInstrumentRewards.clear();
-        return rewards;
-    }
+    List<InstrumentRewardEvent> consumePendingInstrumentRewards() { return this.effects.consumePendingInstrumentRewards(); }
 
-    List<InstrumentCompletionEvent> consumePendingInstrumentCompletions() {
-        List<InstrumentCompletionEvent> completions =
-            List.copyOf(pendingInstrumentCompletions);
-        pendingInstrumentCompletions.clear();
-        return completions;
-    }
+    List<InstrumentCompletionEvent> consumePendingInstrumentCompletions() { return this.effects.consumePendingInstrumentCompletions(); }
 
-    List<RichardProgressEvent> consumePendingRichardProgressEvents() {
-        List<RichardProgressEvent> events = List.copyOf(pendingRichardProgressEvents);
-        pendingRichardProgressEvents.clear();
-        return events;
-    }
+    List<RichardProgressEvent> consumePendingRichardProgressEvents() { return this.effects.consumePendingRichardProgressEvents(); }
 
-    List<WitchExchangeEvent> consumePendingWitchExchangeEvents() {
-        List<WitchExchangeEvent> events = List.copyOf(pendingWitchExchangeEvents);
-        pendingWitchExchangeEvents.clear();
-        return events;
-    }
+    List<WitchExchangeEvent> consumePendingWitchExchangeEvents() { return this.effects.consumePendingWitchExchangeEvents(); }
 
-    List<WitchRewardEvent> consumePendingWitchRewardEvents() {
-        List<WitchRewardEvent> events = List.copyOf(pendingWitchRewardEvents);
-        pendingWitchRewardEvents.clear();
-        return events;
-    }
+    List<WitchRewardEvent> consumePendingWitchRewardEvents() { return this.effects.consumePendingWitchRewardEvents(); }
 
-    List<OwlEventCompletion> consumePendingOwlEventCompletions() {
-        List<OwlEventCompletion> completions = List.copyOf(pendingOwlEventCompletions);
-        pendingOwlEventCompletions.clear();
-        return completions;
-    }
+    List<OwlEventCompletion> consumePendingOwlEventCompletions() { return this.effects.consumePendingOwlEventCompletions(); }
 
     List<BoomerangObjectRequest> boomerangObjectRequests() { return this.enemyInspection.boomerangObjectRequests(); }
 

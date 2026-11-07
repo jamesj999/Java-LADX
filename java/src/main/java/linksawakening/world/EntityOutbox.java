@@ -10,6 +10,13 @@ final class EntityOutbox {
     private record Entry(String channel, EntityEvent event) {}
     private final List<Entry> entries = new ArrayList<>();
 
+    <T extends EntityEvent> List<T> drain(Class<T> type, String channel) {
+        List<T> events = channel(type, channel);
+        List<T> snapshot = List.copyOf(events);
+        events.clear();
+        return snapshot;
+    }
+
     /** Separate channels preserve pre-tick staging even for the same payload type. */
     <T extends EntityEvent> List<T> channel(Class<T> type, String channel) {
         return new AbstractList<>() {
