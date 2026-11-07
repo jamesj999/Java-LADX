@@ -23,13 +23,13 @@ final class MainFileMenuFlowTest {
 
     @Test
     void titleEnterIsTheFileMenuBoundary() {
-        assertTrue(game.shouldEnterFileSelection(game.SCREEN_TITLE, GLFW_KEY_ENTER, GLFW_PRESS));
-        assertFalse(game.shouldEnterFileSelection(game.SCREEN_OVERWORLD, GLFW_KEY_ENTER, GLFW_PRESS));
+        assertTrue(game.shouldEnterFileSelection(new TitleScreen(() -> {}, (key, action) -> {}), GLFW_KEY_ENTER, GLFW_PRESS));
+        assertFalse(game.shouldEnterFileSelection(new GameplayScreen(() -> {}, (key, action) -> {}), GLFW_KEY_ENTER, GLFW_PRESS));
     }
 
     @Test
     void fileMenuHasItsOwnRenderScreenAndDisassemblyMusicTrack() {
-        assertEquals(RenderScreen.FILE_MENU, game.renderScreenFor(game.SCREEN_FILE_MENU));
+        assertEquals(RenderScreen.FILE_MENU, game.renderScreenFor(new FileMenuScreen(() -> {}, (key, action) -> {})));
         assertEquals(MusicTrackIds.MUSIC_FILE_SELECT, game.fileSelectionMusicTrack());
     }
 
