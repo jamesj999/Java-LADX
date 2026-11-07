@@ -33,7 +33,7 @@ final class HinoxHandler {
             int slot = state.entity.slot();
             BossIntroMotion.Update bossIntro =
                 state.runtime.bossIntroMotion.advance(
-                    state.runtime.options1(state.entity.slot()),
+                    state.slotProperties().options1(state.entity.slot()),
                     state.entity.type(),
                     state.runtime.entityMapId,
                     state.lifecycle().transitionSequenceCounter());

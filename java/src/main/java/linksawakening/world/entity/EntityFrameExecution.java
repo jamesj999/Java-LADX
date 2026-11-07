@@ -222,4 +222,14 @@ public final class EntityFrameExecution {
   public EntityEnemySpawns enemySpawns() { return runtime.entityEnemySpawns; }
 
   public EntityPlayerSpawns playerSpawns() { return runtime.entityPlayerSpawns; }
+  public EntityProjectileController projectiles() { return runtime.projectiles; }
+  public EntitySlotProperties slotProperties() { return runtime.slotProperties; }
+  public EntityBombInteractions bombInteractions() { return runtime.bombInteractions; }
+  public EntityRewardController rewards() { return runtime.rewards; }
+  public EntityStoryController story() { return runtime.story; }
+  public GenieEntityController genie() { return runtime.genie; }
+  public EntityPickupController pickups() { return runtime.pickups; }
+  public EntityBossRewards bossRewards() { return runtime.bossRewards; }
+  public EntityRoomInspection roomInspection() { return runtime.roomInspection; }
+  public EntityEnemyInspection enemyInspection() { return runtime.enemyInspection; }
 }

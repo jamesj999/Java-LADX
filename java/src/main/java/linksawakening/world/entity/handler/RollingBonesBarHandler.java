@@ -33,7 +33,7 @@ final class RollingBonesBarHandler {
                     && !state.link().inventoryAppearing()) {
                   BossIntroMotion.Update intro =
                       state.runtime.bossIntroMotion.advance(
-                          state.runtime.options1(state.entity.slot()),
+                          state.slotProperties().options1(state.entity.slot()),
                           state.entity.type(),
                           state.runtime.entityMapId,
                           state.lifecycle().transitionSequenceCounter());

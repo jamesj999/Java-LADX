@@ -13,7 +13,7 @@ final class SwordBeamHandler {
         EntityTickStage.PHASE_1_SWORD_BEAM,
         state -> {
           if (state.status == EntityStatus.ACTIVE) {
-            state.runtime.projectiles.advanceSwordBeamEntity(
+            state.projectiles().advanceSwordBeamEntity(
                 state.index,
                 state.entity,
                 state.frame,

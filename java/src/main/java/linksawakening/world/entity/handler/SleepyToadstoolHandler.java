@@ -20,7 +20,7 @@ final class SleepyToadstoolHandler {
               return false;
             }
             if (state.runtime.toadstoolPickupSequenceActive[state.entity.slot()]) {
-              state.runtime.rewards.advanceToadstoolPickup(
+              state.rewards().advanceToadstoolPickup(
                   state.entity, state.linkEntityX, state.linkEntityY, state.linkZ);
               return false;
             }

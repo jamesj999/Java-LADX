@@ -27,7 +27,7 @@ final class MoldormHandler {
               && !state.link().inventoryAppearing()) {
             BossIntroMotion.Update intro =
                 state.runtime.bossIntroMotion.advance(
-                    state.runtime.options1(state.entity.slot()),
+                    state.slotProperties().options1(state.entity.slot()),
                     state.entity.type(),
                     state.runtime.entityMapId,
                     state.lifecycle().transitionSequenceCounter());
@@ -157,7 +157,7 @@ final class MoldormHandler {
             EntityTickStage.PHASE_2_MOLDORM_2,
             state -> {
               {
-                state.runtime.bossRewards.advanceMoldormDestruction(state.entity, state.frame);
+                state.bossRewards().advanceMoldormDestruction(state.entity, state.frame);
                 return false;
               }
             });

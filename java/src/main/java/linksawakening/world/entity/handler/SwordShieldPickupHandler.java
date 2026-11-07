@@ -24,7 +24,7 @@ final class SwordShieldPickupHandler {
               state.replaceEntity(state.entity);
             }
             if (state.runtime.swordPickupSequenceActive[state.entity.slot()]) {
-              state.runtime.rewards.advanceSwordPickup(
+              state.rewards().advanceSwordPickup(
                   state.entity, state.frame, state.linkEntityX, state.linkEntityY, state.linkZ);
               return false;
             }

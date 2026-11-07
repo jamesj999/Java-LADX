@@ -29,7 +29,7 @@ final class ArmosKnightHandler {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             BossIntroMotion.Update bossIntro =
                 state.runtime.bossIntroMotion.advance(
-                    state.runtime.options1(state.entity.slot()),
+                    state.slotProperties().options1(state.entity.slot()),
                     state.entity.type(),
                     state.runtime.entityMapId,
                     state.lifecycle().transitionSequenceCounter());
@@ -54,7 +54,7 @@ final class ArmosKnightHandler {
                     state.slot().transitionCountdown(state.entity.slot()),
                     state.slot().physicsFlags(state.entity.slot()),
                     state.slot().hitboxFlags(state.entity.slot()),
-                    state.runtime.options1(state.entity.slot()),
+                    state.slotProperties().options1(state.entity.slot()),
                     state.slot().health(state.entity.slot()));
             state.updated = armosKnightUpdate.entity();
             state.slot().setTransitionCountdown(state.entity.slot(), armosKnightUpdate.transitionCountdown());

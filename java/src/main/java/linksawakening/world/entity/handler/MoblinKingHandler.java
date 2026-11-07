@@ -28,7 +28,7 @@ final class MoblinKingHandler {
             EntityTickStage.PHASE_2_MOBLIN_KING,
             state -> {
               {
-                state.runtime.bossRewards.advanceMoblinKingDestruction(
+                state.bossRewards().advanceMoblinKingDestruction(
                     state.entity, state.frame, state.randomByteSupplier);
                 return false;
               }

@@ -17,7 +17,7 @@ final class KidHandler {
               if (state.status == EntityStatus.ACTIVE
 
                   && state.runtime.bowWowState == 0x80) {
-                state.runtime.story.advanceKidnapWarningKid(
+                state.story().advanceKidnapWarningKid(
                     state.entity, state.frame, state.linkEntityX, state.linkEntityY);
                 return false;
               }

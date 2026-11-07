@@ -48,7 +48,7 @@ final class GenieHandler {
             EntityTickStage.PHASE_2_GENIE,
             state -> {
               if (state.runtime.geniePrivateState1[state.entity.slot()] == 1) {
-                state.runtime.genie.advanceGenieDestruction(
+                state.genie().advanceGenieDestruction(
                     state.entity, state.frame, state.randomByteSupplier);
                 return false;
               }
@@ -64,7 +64,7 @@ final class GenieHandler {
             BossIntroMotion.Update bossIntro =
                 !state.link().inventoryAppearing() && !state.runtime.roomTransitionActive
                     ? state.runtime.bossIntroMotion.advance(
-                        state.runtime.options1(state.entity.slot()),
+                        state.slotProperties().options1(state.entity.slot()),
                         state.entity.type(),
                         state.runtime.entityMapId,
                         state.lifecycle().transitionSequenceCounter())
@@ -85,46 +85,46 @@ final class GenieHandler {
             }
             if (state.runtime.geniePrivateState1[state.entity.slot()] == 0
                 && (genieThresholdReached
-                    || state.runtime.roomInspection.genieState0Interactive(
+                    || state.roomInspection().genieState0Interactive(
                         state.creditsGameplay))) {
-              state.runtime.genie.advanceGenieJar(state.entity, state.linkEntityY);
+              state.genie().advanceGenieJar(state.entity, state.linkEntityY);
               if (!state.entityAt(state.entity.slot()).loaded()) {
                 return false;
               }
               state.updated = state.entityAt(state.entity.slot());
             }
             if (state.runtime.geniePrivateState1[state.entity.slot()] == 2
-                && state.runtime.roomInspection.genieState0Interactive(state.creditsGameplay)) {
-              state.runtime.genie.advanceGenieAppearance(state.entity);
+                && state.roomInspection().genieState0Interactive(state.creditsGameplay)) {
+              state.genie().advanceGenieAppearance(state.entity);
               if (!state.entityAt(state.entity.slot()).loaded()) {
                 return false;
               }
               state.updated = state.entityAt(state.entity.slot());
             }
             if (state.runtime.geniePrivateState1[state.entity.slot()] == 3
-                && state.runtime.roomInspection.genieState0Interactive(state.creditsGameplay)) {
-              state.runtime.genie.advanceGenieSideProjectile(state.entity, state.frameCounter);
+                && state.roomInspection().genieState0Interactive(state.creditsGameplay)) {
+              state.genie().advanceGenieSideProjectile(state.entity, state.frameCounter);
               if (!state.entityAt(state.entity.slot()).loaded()) {
                 return false;
               }
               state.updated = state.entityAt(state.entity.slot());
             }
             if (state.runtime.geniePrivateState1[state.entity.slot()] == 4
-                && state.runtime.roomInspection.genieState0Interactive(state.creditsGameplay)) {
+                && state.roomInspection().genieState0Interactive(state.creditsGameplay)) {
               if (state.handlerLinkCollisionEnabled
                   && RoomEntityCombatRules.overlapsLink(
                       state.entity, state.linkEntityX, state.linkEntityY)) {
                 state.background().requestLinkPush(
                     state.entity, EntityLinkCollisionRules.STANDARD_PUSH);
               }
-              state.runtime.genie.advanceGenieFireball(state.entity, state.frameCounter);
+              state.genie().advanceGenieFireball(state.entity, state.frameCounter);
               if (!state.entityAt(state.entity.slot()).loaded()) {
                 return false;
               }
               state.updated = state.entityAt(state.entity.slot());
             }
             if (state.runtime.geniePrivateState1[state.entity.slot()] == 1
-                && state.runtime.roomInspection.genieState0Interactive(state.creditsGameplay)) {
+                && state.roomInspection().genieState0Interactive(state.creditsGameplay)) {
               state.runtime.genieSharedBodySpeedX =
                   state.runtime.genieSpeedX[state.entity.slot()] & 0xFF;
               state.runtime.genieSharedBodySpeedY =
@@ -136,7 +136,7 @@ final class GenieHandler {
                 state.background().requestLinkPush(
                     state.entity, EntityLinkCollisionRules.STANDARD_PUSH);
               }
-              state.runtime.genie.advanceGenieBody(
+              state.genie().advanceGenieBody(
                   state.entity,
                   state.frameCounter,
                   state.linkEntityX,

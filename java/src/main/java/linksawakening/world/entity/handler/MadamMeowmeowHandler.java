@@ -13,7 +13,7 @@ final class MadamMeowmeowHandler {
         EntityTickStage.PHASE_1_MADAM_MEOWMEOW,
         state -> {
           if (state.status == EntityStatus.ACTIVE) {
-            state.runtime.story.advanceMadamMeowMeow(
+            state.story().advanceMadamMeowMeow(
                 state.entity,
                 state.frame,
                 state.linkEntityX,

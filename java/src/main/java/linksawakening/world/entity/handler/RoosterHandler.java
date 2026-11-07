@@ -43,7 +43,7 @@ final class RoosterHandler {
                         roosterUpdate.speedX(),
                         roosterUpdate.speedY(),
                         roosterUpdate.romDirection()));
-                state.runtime.projectiles.playBoomerangSoundIfDue(state.entity);
+                state.projectiles().playBoomerangSoundIfDue(state.entity);
               }
               return true;
             });

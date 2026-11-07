@@ -20,7 +20,7 @@ final class PolsVoiceHandler {
           if (state.status == EntityStatus.ACTIVE
               && !state.wasInitializing
 
-              && state.runtime.enemyInspection.polsVoiceBalladOcarinaTrigger()) {
+              && state.enemyInspection().polsVoiceBalladOcarinaTrigger()) {
             // The handler checks this before rendering, recoil, movement,
             // or the ordinary collision path. Its private countdown $1F
             // is the shared EntityDeathHandler's visible death timer.

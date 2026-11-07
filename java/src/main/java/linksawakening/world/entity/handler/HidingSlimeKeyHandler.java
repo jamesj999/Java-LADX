@@ -35,7 +35,7 @@ final class HidingSlimeKeyHandler {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             int slot = state.entity.slot();
             SlimeKeyTransitionUpdate keyUpdate =
-                state.runtime.pickups.advanceHidingSlimeKey(
+                state.pickups().advanceHidingSlimeKey(
                     state.updated, slot, state.linkEntityX, state.linkEntityY, state.linkZ);
             state.slot().setTransitionCountdown(slot, keyUpdate.nextTransitionCountdown());
             if (keyUpdate.reward() != null) {

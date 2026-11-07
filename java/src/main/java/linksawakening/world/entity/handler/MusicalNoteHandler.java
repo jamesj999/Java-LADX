@@ -14,7 +14,7 @@ final class MusicalNoteHandler {
         EntityTickStage.PHASE_1_MUSICAL_NOTE,
         state -> {
           if (state.status == EntityStatus.ACTIVE) {
-            RoomEntity note = state.runtime.slotProperties.advanceMusicalNoteEntity(state.entity);
+            RoomEntity note = state.slotProperties().advanceMusicalNoteEntity(state.entity);
             if (note == null) {
               return false;
             }

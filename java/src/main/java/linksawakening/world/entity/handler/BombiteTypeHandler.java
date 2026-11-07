@@ -70,7 +70,7 @@ final class BombiteTypeHandler {
                 boolean entityCollisionExplosion =
                     state.entity.type() == ENTITY_BOUNCING_BOMBITE
                         && state.runtime.bombiteMotion.state(state.entity.slot()) == 2
-                        && state.runtime.projectiles.collideBouncingBombiteWithEntities(
+                        && state.projectiles().collideBouncingBombiteWithEntities(
                             state.updated, state.frame);
                 if (bombiteUpdate.explode() || entityCollisionExplosion) {
                   // BombiteExplode writes the already-positioned source

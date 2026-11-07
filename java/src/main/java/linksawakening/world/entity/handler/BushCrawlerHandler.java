@@ -46,20 +46,20 @@ final class BushCrawlerHandler {
               state.updated =
                   withDefinition(
                       state.updated,
-                      state.runtime.slotProperties.spriteDefinitionForBushCrawlerState(0x02),
+                      state.slotProperties().spriteDefinitionForBushCrawlerState(0x02),
                       state.updated.spriteVariant());
             } else if (bushUpdate.crawlOverlayRendered()) {
               state.updated =
                   withDefinition(
                       state.updated,
-                      state.runtime.slotProperties.spriteDefinitionForBushCrawlerCrawlState(
+                      state.slotProperties().spriteDefinitionForBushCrawlerCrawlState(
                           bushUpdate.privateState4()),
                       state.updated.spriteVariant());
             } else {
               state.updated =
                   withDefinition(
                       state.updated,
-                      state.runtime.slotProperties.spriteDefinitionFor(
+                      state.slotProperties().spriteDefinitionFor(
                           ENTITY_BUSH_CRAWLER),
                       state.updated.spriteVariant());
             }

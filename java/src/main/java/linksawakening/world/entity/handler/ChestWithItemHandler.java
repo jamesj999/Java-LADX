@@ -15,7 +15,7 @@ final class ChestWithItemHandler {
         EntityTickStage.PHASE_2_CHEST_WITH_ITEM,
         state -> {
           if (state.wasInitializing) {
-            state.runtime.pickups.initializeChestEntity(state.entity);
+            state.pickups().initializeChestEntity(state.entity);
             state.updated =
                 withPositionAndVariant(
                     state.entity,
@@ -30,7 +30,7 @@ final class ChestWithItemHandler {
         EntityTickStage.PHASE_2_CHEST_WITH_ITEM_2,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
-            if (state.runtime.pickups.advanceChestEntity(state.index, state.entity)) {
+            if (state.pickups().advanceChestEntity(state.index, state.entity)) {
               return false;
             }
             state.updated = state.entityAt(state.index);

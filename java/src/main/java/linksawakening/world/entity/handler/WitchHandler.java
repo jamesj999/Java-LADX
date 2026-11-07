@@ -21,7 +21,7 @@ final class WitchHandler {
         EntityTickStage.PHASE_4_WITCH,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
-            state.runtime.story.advanceWitchGotItemPresentation(state.entity.slot());
+            state.story().advanceWitchGotItemPresentation(state.entity.slot());
             WitchMotion.Update witchUpdate =
                 state.runtime.witchMotion.advance(
                     state.updated,

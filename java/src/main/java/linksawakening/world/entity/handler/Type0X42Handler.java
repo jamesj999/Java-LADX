@@ -17,7 +17,7 @@ final class Type0X42Handler {
 
                   && state.runtime.indoorRoom
                   && state.runtime.entityMapId != 0x16) {
-                state.runtime.story.advanceOwlStatue(
+                state.story().advanceOwlStatue(
                     state.entity,
                     state.linkEntityX,
                     state.linkEntityY,

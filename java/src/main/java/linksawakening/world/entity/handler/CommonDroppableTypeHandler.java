@@ -40,7 +40,7 @@ final class CommonDroppableTypeHandler {
             state -> {
               if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
                 CommonDroppableUpdate droppableUpdate =
-                    state.runtime.pickups.advanceCommonDroppable(
+                    state.pickups().advanceCommonDroppable(
                         state.entity,
                         state.linkEntityX,
                         state.linkEntityY,

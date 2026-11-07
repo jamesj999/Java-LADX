@@ -13,7 +13,7 @@ final class MagicPowderSprinkleHandler {
         EntityTickStage.PHASE_1_MAGIC_POWDER_SPRINKLE,
         state -> {
           if (state.status == EntityStatus.ACTIVE) {
-            state.runtime.projectiles.advanceMagicPowderSprinkleEntity(
+            state.projectiles().advanceMagicPowderSprinkleEntity(
                 state.index,
                 state.entity,
                 state.frame,

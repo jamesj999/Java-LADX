@@ -13,7 +13,7 @@ final class BoomerangHandler {
         EntityTickStage.PHASE_1_BOOMERANG,
         state -> {
           if (state.status == EntityStatus.ACTIVE) {
-            state.runtime.projectiles.advanceBoomerangEntity(
+            state.projectiles().advanceBoomerangEntity(
                 state.index,
                 state.entity,
                 state.frame,

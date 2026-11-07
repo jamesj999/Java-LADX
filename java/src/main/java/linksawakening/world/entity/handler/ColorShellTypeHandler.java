@@ -22,7 +22,7 @@ final class ColorShellTypeHandler {
               if (state.runtime.entityMapId == state.runtime.MAP_COLOR_DUNGEON) {
                 state.runtime.colorShellMotion.enterState6(state.entity);
                 RoomEntity activeShell =
-                    state.runtime.slotProperties.refreshColorShellDisplay(
+                    state.slotProperties().refreshColorShellDisplay(
                         withStatus(state.entity, EntityStatus.ACTIVE), EntityStatus.ACTIVE);
                 state.replaceEntity(activeShell);
                 return false;

@@ -22,7 +22,7 @@ final class RollingBonesHandler {
             EntityTickStage.PHASE_2_ROLLING_BONES,
             state -> {
               {
-                state.runtime.bossRewards.advanceRollingBonesDestruction(
+                state.bossRewards().advanceRollingBonesDestruction(
                     state.entity, state.randomByteSupplier);
                 return false;
               }
@@ -35,7 +35,7 @@ final class RollingBonesHandler {
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             RoomEntity bar =
-                state.runtime.roomInspection.firstLoadedEntityOfType(
+                state.roomInspection().firstLoadedEntityOfType(
                     ENTITY_ROLLING_BONES_BAR);
             if (bar != null) {
               RollingBonesMotion.BossUpdate bossUpdate =

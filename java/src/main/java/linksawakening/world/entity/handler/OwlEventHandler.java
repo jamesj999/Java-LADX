@@ -13,7 +13,7 @@ final class OwlEventHandler {
         EntityTickStage.PHASE_1_OWL_EVENT,
         state -> {
           if (state.status == EntityStatus.ACTIVE) {
-            state.runtime.story.advanceOwlEvent(
+            state.story().advanceOwlEvent(
                 state.entity,
                 state.frame,
                 state.linkEntityX,

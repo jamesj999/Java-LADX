@@ -13,7 +13,7 @@ final class RichardHandler {
         EntityTickStage.PHASE_1_RICHARD,
         state -> {
           if (state.status == EntityStatus.ACTIVE) {
-            state.runtime.story.advanceRichard(
+            state.story().advanceRichard(
                 state.entity,
                 state.frame,
                 state.linkEntityX,

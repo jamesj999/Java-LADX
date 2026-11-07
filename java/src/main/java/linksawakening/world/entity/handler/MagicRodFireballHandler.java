@@ -13,7 +13,7 @@ final class MagicRodFireballHandler {
         EntityTickStage.PHASE_1_MAGIC_ROD_FIREBALL,
         state -> {
           if (state.status == EntityStatus.ACTIVE) {
-            state.runtime.projectiles.advanceMagicRodFireballEntity(
+            state.projectiles().advanceMagicRodFireballEntity(
                 state.index,
                 state.entity,
                 state.frame,

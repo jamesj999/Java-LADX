@@ -32,7 +32,7 @@ final class KeyDropPointHandler {
             // shared transition-byte decrement before bank-$03's handler
             // reads it.
             int slot = state.entity.slot();
-            if (state.runtime.pickups.checkForKeyDropQuicksandHole(state.updated)) {
+            if (state.pickups().checkForKeyDropQuicksandHole(state.updated)) {
               state.emit(new KeyQuicksandEvent(slot));
               state.replaceEntity(withStatus(state.updated, EntityStatus.FALLING));
               state.slot().setTransitionCountdown(slot, 0x2F);
@@ -58,7 +58,7 @@ final class KeyDropPointHandler {
               state.updated =
                   withDefinition(
                       state.updated,
-                      state.runtime.slotProperties.spriteDefinitionFor(
+                      state.slotProperties().spriteDefinitionFor(
                           ENTITY_HOOKSHOT_CHAIN),
                       0);
             }

@@ -82,7 +82,7 @@ final class CuccoHandler {
                       CuccoMotion.CUCCO_HURT_WAVE_SFX));
             }
             if (cuccoUpdate.boomerangSound()) {
-              state.runtime.projectiles.playBoomerangSoundIfDue(state.updated);
+              state.projectiles().playBoomerangSoundIfDue(state.updated);
             }
           }
           return true;

@@ -41,7 +41,7 @@ final class ArrowHandler {
             // while its transition countdown is nonzero ($6A3D-$6A40).
             boolean hitEntity =
                 state.runtime.playerArrowMotion.transitionCountdown(state.entity.slot()) == 0
-                    && state.runtime.projectiles.collidePlayerArrowWithEntities(
+                    && state.projectiles().collidePlayerArrowWithEntities(
                         state.entity, state.frame);
             if (hitEntity && !state.runtime.playerArrowBombArrow[state.entity.slot()]) {
               // func_003_75A2 reaches jr_003_7737 after an ordinary

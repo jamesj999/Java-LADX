@@ -16,7 +16,7 @@ final class BombHandler {
         state -> {
           if (state.status == EntityStatus.ACTIVE) {
             BombMotion.Decision bombDecision =
-                state.runtime.bombInteractions.advanceBombEntity(
+                state.bombInteractions().advanceBombEntity(
                     state.index,
                     state.entity,
                     state.projectileEvents,
@@ -50,7 +50,7 @@ final class BombHandler {
             state -> {
               {
                 BombMotion.Decision bombDecision =
-                    state.runtime.bombInteractions.advanceBombEntity(
+                    state.bombInteractions().advanceBombEntity(
                         state.index,
                         state.entity,
                         state.projectileEvents,
@@ -74,7 +74,7 @@ final class BombHandler {
             state -> {
               {
                 BombMotion.Decision bombDecision =
-                    state.runtime.bombInteractions.advanceBombEntity(
+                    state.bombInteractions().advanceBombEntity(
                         state.index,
                         state.entity,
                         state.projectileEvents,
@@ -86,7 +86,7 @@ final class BombHandler {
                   return false;
                 }
                 state.entity =
-                    state.runtime.bombInteractions.applyBombStunnedPostActiveWork(
+                    state.bombInteractions().applyBombStunnedPostActiveWork(
                         state.entity, state.backgroundCollision, state.frame);
                 state.replaceEntity(state.entity);
               }

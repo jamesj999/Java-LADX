@@ -41,7 +41,7 @@ final class TarinHandler {
                   && !state.runtime.indoorRoom
 
                   && (state.runtime.tarinRaccoonMotion.state(state.entity.slot()) == 0
-                      || state.runtime.roomInspection.tarinTransformationHandlerInteractive())) {
+                      || state.roomInspection().tarinTransformationHandlerInteractive())) {
                 RoomEntityBackgroundInteraction tarinBackgroundInteraction =
                     state.background().interaction();
                 if (tarinBackgroundInteraction == null && state.backgroundCollision != null) {

@@ -36,12 +36,12 @@ final class CrowHandler {
                     state.linkEntityX,
                     state.linkEntityY,
                     state.runtime.entityRoomId != 0x58,
-                    state.runtime.slotProperties.kanaletCrowTakeoffTriggered(state.entity));
+                    state.slotProperties().kanaletCrowTakeoffTriggered(state.entity));
             state.updated = crowUpdate.entity();
             state.slot().setTransitionCountdown(state.entity.slot(), crowUpdate.transitionCountdown());
             state.slot().setPhysicsFlags(state.entity.slot(), crowUpdate.physicsFlags());
             if (crowUpdate.boomerangSound()) {
-              state.runtime.projectiles.playBoomerangSoundIfDue(state.updated);
+              state.projectiles().playBoomerangSoundIfDue(state.updated);
             }
             if (crowUpdate.unloaded()) {
               state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());

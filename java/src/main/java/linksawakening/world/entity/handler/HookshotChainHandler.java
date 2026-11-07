@@ -95,7 +95,7 @@ final class HookshotChainHandler {
             // collision pass may clear the timer, but this pass still
             // follows the already-selected outgoing handler branch.
             boolean unmasked =
-                state.runtime.projectiles.collideHookshotWithEntities(
+                state.projectiles().collideHookshotWithEntities(
                     state.entity, step.state(), state.frame);
             if (unmasked) {
               step =
