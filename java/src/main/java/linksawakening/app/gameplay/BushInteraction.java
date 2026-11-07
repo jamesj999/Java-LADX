@@ -1,6 +1,5 @@
 package linksawakening.app.gameplay;
 
-
 import linksawakening.entity.Link;
 import linksawakening.equipment.EquipmentController;
 import linksawakening.equipment.Sword;
@@ -13,15 +12,17 @@ import linksawakening.world.OverworldBushInteraction;
 import linksawakening.world.RoomSession;
 import linksawakening.world.Warp;
 
-
 import static linksawakening.world.RoomConstants.*;
-import static org.lwjgl.glfw.GLFW.*;
-
-
-import java.util.function.*;
 
 /** Focused frame interactions using the current session collaborators. */
-public record BushInteraction(RoomSession roomSession, OverworldBushInteraction overworldBushInteraction, Link link, EquipmentController equipmentController, GameplaySoundSink gameplaySoundSink, TransientVfxSystem transientVfxSystem, DroppableRupeeSystem droppableRupeeSystem) {
+public record BushInteraction(
+        RoomSession roomSession,
+        OverworldBushInteraction overworldBushInteraction,
+        Link link,
+        EquipmentController equipmentController,
+        GameplaySoundSink gameplaySoundSink,
+        TransientVfxSystem transientVfxSystem,
+        DroppableRupeeSystem droppableRupeeSystem) {
     private static final int OBJECT_GROUND_STAIRS = 0xC6;
     public void maybeCutBushWithSword() {
         if (roomSession == null

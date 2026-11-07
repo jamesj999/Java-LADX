@@ -1,6 +1,5 @@
 package linksawakening.app;
 
-
 import linksawakening.audio.music.GameplayMusicController;
 import linksawakening.audio.music.FrameMusicPlayer;
 import linksawakening.audio.music.MusicTrackIds;
@@ -9,10 +8,7 @@ import linksawakening.state.PlayerState;
 import linksawakening.world.ActiveRoom;
 import linksawakening.world.RoomSession;
 
-
 import static linksawakening.world.RoomConstants.*;
-import static org.lwjgl.glfw.GLFW.*;
-
 
 /** Session-local track selection and finite intro continuation. */
 public final class MusicDirector {

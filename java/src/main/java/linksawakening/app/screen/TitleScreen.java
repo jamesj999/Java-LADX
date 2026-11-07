@@ -6,10 +6,13 @@ import linksawakening.render.RenderScreen;
 import static linksawakening.world.RoomConstants.*;
 import static org.lwjgl.glfw.GLFW.*;
 
-import java.util.function.*;
+import java.util.function.Supplier;
 
 public final class TitleScreen implements Screen {
-    public record Dependencies(Supplier<CutsceneManager> cutsceneManager, Supplier<InputState> inputState, Runnable startFileSelection) {}
+    public record Dependencies(
+        Supplier<CutsceneManager> cutsceneManager,
+        Supplier<InputState> inputState,
+        Runnable startFileSelection) {}
     private final Dependencies dependencies;
     public TitleScreen(Dependencies dependencies) { this.dependencies = dependencies; }
     @Override public void tick() {

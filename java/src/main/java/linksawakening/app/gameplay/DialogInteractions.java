@@ -1,6 +1,5 @@
 package linksawakening.app.gameplay;
 
-
 import linksawakening.dialog.DialogController;
 import linksawakening.entity.Link;
 import linksawakening.gameplay.DialogTextLoader;
@@ -14,15 +13,20 @@ import linksawakening.state.PlayerState;
 import linksawakening.world.ActiveRoom;
 import linksawakening.world.RoomSession;
 
-
 import static linksawakening.world.RoomConstants.*;
-import static org.lwjgl.glfw.GLFW.*;
 
-
-import java.util.function.*;
+import java.util.function.Supplier;
 
 /** Focused frame interactions using the current session collaborators. */
-public record DialogInteractions(InputConfig inputConfig, OverworldDialogInteraction overworldDialogInteraction, RoomSession roomSession, Link link, PlayerState playerState, DialogController dialogController, DialogTextLoader dialogTextLoader, Supplier<OverworldDialogBlockers> blockers) {
+public record DialogInteractions(
+        InputConfig inputConfig,
+        OverworldDialogInteraction overworldDialogInteraction,
+        RoomSession roomSession,
+        Link link,
+        PlayerState playerState,
+        DialogController dialogController,
+        DialogTextLoader dialogTextLoader,
+        Supplier<OverworldDialogBlockers> blockers) {
     public boolean tryOpenOverworldDialog(int key) {
         if (!GameplayDialogInput.isActionButtonKey(key, inputConfig)
             || overworldDialogInteraction == null

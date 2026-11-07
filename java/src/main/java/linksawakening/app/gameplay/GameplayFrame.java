@@ -1,4 +1,4 @@
-package linksawakening;
+package linksawakening.app.gameplay;
 
 import java.util.List;
 

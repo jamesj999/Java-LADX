@@ -2,7 +2,6 @@ package linksawakening.app.story;
 
 import linksawakening.save.SaveSlotState;
 
-
 import linksawakening.dialog.DialogController;
 import linksawakening.entity.Link;
 import linksawakening.audio.music.MusicTrackIds;
@@ -18,14 +17,30 @@ import linksawakening.startup.TarinShieldMotion;
 import linksawakening.world.ActiveRoom;
 import linksawakening.world.RoomSession;
 
-
 import static linksawakening.world.RoomConstants.*;
-import static org.lwjgl.glfw.GLFW.*;
 
+import java.util.function.Supplier;
+import java.util.function.Consumer;
+import java.util.function.IntConsumer;
+import java.util.function.IntSupplier;
+import java.util.function.IntUnaryOperator;
 
-import java.util.function.*;
-
-public record OpeningStory(int frameCounter, MarinWakeUpMotion newGameWakeUpMotion, TarinShieldMotion newGameTarinShieldMotion, int[] newGameTarinShieldPalette, InputState inputState, InputConfig inputConfig, DialogController dialogController, DialogTextLoader dialogTextLoader, RoomSession roomSession, Link link, PlayerState playerState, Supplier<OverworldDialogBlockers> blockers, IntConsumer music, IntSupplier houseMusic, IntUnaryOperator romDirection) {
+public record OpeningStory(
+        int frameCounter,
+        MarinWakeUpMotion newGameWakeUpMotion,
+        TarinShieldMotion newGameTarinShieldMotion,
+        int[] newGameTarinShieldPalette,
+        InputState inputState,
+        InputConfig inputConfig,
+        DialogController dialogController,
+        DialogTextLoader dialogTextLoader,
+        RoomSession roomSession,
+        Link link,
+        PlayerState playerState,
+        Supplier<OverworldDialogBlockers> blockers,
+        IntConsumer music,
+        IntSupplier houseMusic,
+        IntUnaryOperator romDirection) {
     public boolean tickNewGameWakeUp() {
         if (newGameWakeUpMotion == null || newGameWakeUpMotion.complete()) {
             return false;

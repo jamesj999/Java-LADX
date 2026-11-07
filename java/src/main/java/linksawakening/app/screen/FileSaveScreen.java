@@ -7,12 +7,18 @@ import linksawakening.ui.FileSaveAction;
 import linksawakening.ui.FileSaveController;
 
 import static linksawakening.world.RoomConstants.*;
-import static org.lwjgl.glfw.GLFW.*;
 
-import java.util.function.*;
+import java.util.function.Supplier;
 
 public final class FileSaveScreen implements Screen {
-    public record Dependencies(Supplier<FileSaveController> fileSaveController, Supplier<InputState> inputState, Supplier<InputConfig> inputConfig, Runnable returnToGame, Runnable saveCurrentPlayerState, Runnable startFileSelection, Runnable completeInput) {}
+    public record Dependencies(
+        Supplier<FileSaveController> fileSaveController,
+        Supplier<InputState> inputState,
+        Supplier<InputConfig> inputConfig,
+        Runnable returnToGame,
+        Runnable saveCurrentPlayerState,
+        Runnable startFileSelection,
+        Runnable completeInput) {}
     private final Dependencies dependencies;
     public FileSaveScreen(Dependencies dependencies) { this.dependencies = dependencies; }
     @Override public void tick() {

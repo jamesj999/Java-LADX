@@ -1,19 +1,11 @@
 package linksawakening.app.gameplay;
 
-import linksawakening.app.gameplay.*;
-
 import linksawakening.entity.Link;
 import linksawakening.state.PlayerState;
 import linksawakening.world.EntityPickupEvent;
 import linksawakening.world.Warp;
 
-
 import static linksawakening.world.RoomConstants.*;
-import static org.lwjgl.glfw.GLFW.*;
-
-
-import java.util.function.*;
-
 
 import static linksawakening.app.gameplay.GameplaySimulation.*;
 
@@ -194,7 +186,6 @@ final class LinkEquipmentPhase {
                 scrollController.setScriptedScreenShakeHorizontal(
                     roomSession.tailCaveKeyholeSequenceActive(), rumbleHorizontal);
             }
-
 
     }
 }

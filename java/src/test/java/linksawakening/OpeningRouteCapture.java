@@ -1,5 +1,9 @@
 package linksawakening;
 
+import linksawakening.app.*;
+import linksawakening.app.gameplay.*;
+import linksawakening.app.host.*;
+
 import java.awt.image.BufferedImage;
 import java.nio.file.Files;
 import java.nio.file.Path;

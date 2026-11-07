@@ -1,7 +1,5 @@
 package linksawakening.app.gameplay;
 
-import linksawakening.app.gameplay.*;
-
 import linksawakening.entity.Link;
 import linksawakening.equipment.Sword;
 import linksawakening.gameplay.EnemyCombatEventConsumer;
@@ -11,13 +9,7 @@ import linksawakening.world.EnemyAttackContext;
 import linksawakening.world.EntityCombatEvent;
 import linksawakening.world.Warp;
 
-
 import static linksawakening.world.RoomConstants.*;
-import static org.lwjgl.glfw.GLFW.*;
-
-
-import java.util.function.*;
-
 
 import static linksawakening.app.gameplay.GameplaySimulation.*;
 
@@ -97,7 +89,6 @@ final class CombatPhase {
                     }
                 }
             }
-
 
         return swordBoxForEntityTick;
     }

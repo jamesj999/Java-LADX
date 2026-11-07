@@ -8,10 +8,17 @@ import linksawakening.render.RenderScreen;
 import static linksawakening.world.RoomConstants.*;
 import static org.lwjgl.glfw.GLFW.*;
 
-import java.util.function.*;
+import java.util.function.Supplier;
 
 public final class CutsceneScreen implements Screen {
-    public record Dependencies(Supplier<CutsceneManager> cutsceneManager, Supplier<InputState> inputState, Supplier<DialogController> dialogController, Supplier<InputConfig> inputConfig, Runnable routeDialogSounds, Runnable showTitle, Runnable skipToTitle) {}
+    public record Dependencies(
+        Supplier<CutsceneManager> cutsceneManager,
+        Supplier<InputState> inputState,
+        Supplier<DialogController> dialogController,
+        Supplier<InputConfig> inputConfig,
+        Runnable routeDialogSounds,
+        Runnable showTitle,
+        Runnable skipToTitle) {}
     private final Dependencies dependencies;
     public CutsceneScreen(Dependencies dependencies) { this.dependencies = dependencies; }
     @Override public void tick() {

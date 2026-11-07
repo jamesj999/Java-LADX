@@ -1,6 +1,5 @@
 package linksawakening.app.gameplay;
 
-import linksawakening.app.gameplay.*;
 import linksawakening.app.MusicDirector;
 import linksawakening.app.story.OpeningStory;
 
@@ -11,15 +10,9 @@ import linksawakening.equipment.ItemRegistry;
 import linksawakening.equipment.Sword;
 import linksawakening.audio.music.GameplayMusicController;
 import linksawakening.audio.music.FrameMusicPlayer;
-import linksawakening.gameplay.BeachSwordRewardConsumer;
 import linksawakening.gameplay.DialogTextLoader;
-import linksawakening.gameplay.EnemyCombatEventConsumer;
-import linksawakening.gameplay.EnemyProjectileEventConsumer;
 import linksawakening.gameplay.GameplaySoundSink;
-import linksawakening.gameplay.GameplaySoundEvent;
-import linksawakening.gameplay.LinkDialogPosition;
 import linksawakening.gameplay.OverworldDialogBlockers;
-import linksawakening.gameplay.SignpostDialogRef;
 import linksawakening.gpu.GPU;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
@@ -28,26 +21,52 @@ import linksawakening.ui.InventoryMenu;
 import linksawakening.ui.InventoryController;
 import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.world.DroppableRupeeSystem;
-import linksawakening.world.EnemyAttackContext;
-import linksawakening.world.EntityCombatEvent;
-import linksawakening.world.EntityPickupEvent;
-import linksawakening.world.EntityProjectileEvent;
-import linksawakening.world.RoomEntityRuntime;
 import linksawakening.world.RoomSession;
 import linksawakening.world.RoomTransitionCoordinator;
 import linksawakening.world.ScrollController;
 import linksawakening.world.TransitionController;
-import linksawakening.world.Warp;
-
 
 import static linksawakening.world.RoomConstants.*;
-import static org.lwjgl.glfw.GLFW.*;
 
-
-import java.util.function.*;
+import java.util.function.Supplier;
+import java.util.function.IntUnaryOperator;
+import java.util.function.BooleanSupplier;
 
 /** ROM-ordered simulation between transition advancement and input completion. */
-public record GameplaySimulation(GPU gpu, byte[] romData, RoomSession roomSession, TransitionController transitionController, RoomTransitionCoordinator roomTransitionCoordinator, boolean debugNoClip, int frameCounter, int ROOM_PIXEL_HEIGHT, ScrollController scrollController, InputConfig inputConfig, InputState inputState, PlayerState playerState, InventoryMenu inventoryMenu, InventoryController inventoryController, DialogController dialogController, DialogTextLoader dialogTextLoader, GameplaySoundSink gameplaySoundSink, FrameMusicPlayer musicPlayer, GameplayMusicController gameplayMusicController, MusicDirector musicDirector, TransientVfxSystem transientVfxSystem, DroppableRupeeSystem droppableRupeeSystem, ItemRegistry itemRegistry, EquipmentController equipmentController, Link link, OpeningStory story, LiftInteraction lift, BushInteraction bush, DialogInteractions dialogInteractions, Supplier<OverworldDialogBlockers> dialogBlockers, BooleanSupplier debugScroll, IntUnaryOperator direction, Runnable dialogSounds) {
+public record GameplaySimulation(
+        GPU gpu,
+        byte[] romData,
+        RoomSession roomSession,
+        TransitionController transitionController,
+        RoomTransitionCoordinator roomTransitionCoordinator,
+        boolean debugNoClip,
+        int frameCounter,
+        int ROOM_PIXEL_HEIGHT,
+        ScrollController scrollController,
+        InputConfig inputConfig,
+        InputState inputState,
+        PlayerState playerState,
+        InventoryMenu inventoryMenu,
+        InventoryController inventoryController,
+        DialogController dialogController,
+        DialogTextLoader dialogTextLoader,
+        GameplaySoundSink gameplaySoundSink,
+        FrameMusicPlayer musicPlayer,
+        GameplayMusicController gameplayMusicController,
+        MusicDirector musicDirector,
+        TransientVfxSystem transientVfxSystem,
+        DroppableRupeeSystem droppableRupeeSystem,
+        ItemRegistry itemRegistry,
+        EquipmentController equipmentController,
+        Link link,
+        OpeningStory story,
+        LiftInteraction lift,
+        BushInteraction bush,
+        DialogInteractions dialogInteractions,
+        Supplier<OverworldDialogBlockers> dialogBlockers,
+        BooleanSupplier debugScroll,
+        IntUnaryOperator direction,
+        Runnable dialogSounds) {
     /** The simulation's strict per-frame order, including opening-story gates. */
     public void tick() {
         if (!new DialogStoryPhase().tick(this)) return;

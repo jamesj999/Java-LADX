@@ -1,21 +1,23 @@
 package linksawakening.app.gameplay;
 
-
 import linksawakening.entity.Link;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.state.PlayerState;
 import linksawakening.world.RoomSession;
 
-
 import static linksawakening.world.RoomConstants.*;
-import static org.lwjgl.glfw.GLFW.*;
 
-
-import java.util.function.*;
+import java.util.function.IntUnaryOperator;
 
 /** Focused frame interactions using the current session collaborators. */
-public record LiftInteraction(InputState inputState, InputConfig inputConfig, PlayerState playerState, Link link, RoomSession roomSession, IntUnaryOperator direction) {
+public record LiftInteraction(
+        InputState inputState,
+        InputConfig inputConfig,
+        PlayerState playerState,
+        Link link,
+        RoomSession roomSession,
+        IntUnaryOperator direction) {
     public boolean isPowerBraceletButtonHeld() {
         if (inputState == null || inputConfig == null || playerState == null) {
             return false;

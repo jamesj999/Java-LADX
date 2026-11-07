@@ -1,5 +1,9 @@
 package linksawakening;
 
+import linksawakening.app.*;
+import linksawakening.app.gameplay.*;
+import linksawakening.app.host.*;
+
 import linksawakening.app.screen.*;
 
 import linksawakening.config.AppConfig;
@@ -65,7 +69,7 @@ final class MainTest {
         playerState.setItemA(PlayerState.INVENTORY_BOW);
         playerState.setItemB(PlayerState.INVENTORY_HOOKSHOT);
 
-        game.applyConfiguredItemProfile(AppConfig.parse("""
+        ScreenRouter.applyConfiguredItemProfile(AppConfig.parse("""
             { "itemProfile": "NEW_GAME" }
             """), playerState);
 
@@ -123,10 +127,10 @@ final class MainTest {
         AppConfig enabled = AppConfig.parse("{ \"debugEnabled\": true }");
         AppConfig disabled = AppConfig.parse("{ \"debugEnabled\": false }");
 
-        assertTrue(game.shouldRunDebugDump(enabled, GLFW_KEY_F1, GLFW_PRESS));
-        assertFalse(game.shouldRunDebugDump(disabled, GLFW_KEY_F1, GLFW_PRESS));
-        assertFalse(game.shouldRunDebugDump(enabled, GLFW_KEY_F2, GLFW_PRESS));
-        assertFalse(game.shouldRunDebugDump(enabled, GLFW_KEY_F1, GLFW_RELEASE));
+        assertTrue(InputRouter.shouldRunDebugDump(enabled, GLFW_KEY_F1, GLFW_PRESS));
+        assertFalse(InputRouter.shouldRunDebugDump(disabled, GLFW_KEY_F1, GLFW_PRESS));
+        assertFalse(InputRouter.shouldRunDebugDump(enabled, GLFW_KEY_F2, GLFW_PRESS));
+        assertFalse(InputRouter.shouldRunDebugDump(enabled, GLFW_KEY_F1, GLFW_RELEASE));
     }
 
     @Test
@@ -172,7 +176,7 @@ final class MainTest {
         CutsceneManager manager = new CutsceneManager(new DialogController(16), loadedScenes::add);
         manager.startIntro();
 
-        assertTrue(game.skipIntroCutsceneIfRequested(GLFW_KEY_ENTER, GLFW_PRESS, manager));
+        assertTrue(InputRouter.skipIntroCutsceneIfRequested(GLFW_KEY_ENTER, GLFW_PRESS, manager));
         assertFalse(manager.isActive());
         assertTrue(manager.isShowingTitleScene());
     }

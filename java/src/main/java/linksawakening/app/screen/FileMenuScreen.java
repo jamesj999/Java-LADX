@@ -11,12 +11,22 @@ import linksawakening.ui.FileMenuController;
 import java.io.IOException;
 
 import static linksawakening.world.RoomConstants.*;
-import static org.lwjgl.glfw.GLFW.*;
 
-import java.util.function.*;
+import java.util.function.Supplier;
+import java.util.function.Consumer;
+import java.util.function.IntConsumer;
 
 public final class FileMenuScreen implements Screen {
-    public record Dependencies(Supplier<FileMenuController> fileMenuController, Supplier<InputState> inputState, Supplier<InputConfig> inputConfig, Supplier<SaveRamStore> saveRamStore, IntConsumer selectSlot, Runnable startNewGame, Consumer<SaveSlotState> startSavedGame, Consumer<Runnable> persistFileMenuMutation, Runnable completeInput) {}
+    public record Dependencies(
+        Supplier<FileMenuController> fileMenuController,
+        Supplier<InputState> inputState,
+        Supplier<InputConfig> inputConfig,
+        Supplier<SaveRamStore> saveRamStore,
+        IntConsumer selectSlot,
+        Runnable startNewGame,
+        Consumer<SaveSlotState> startSavedGame,
+        Consumer<Runnable> persistFileMenuMutation,
+        Runnable completeInput) {}
     private final Dependencies dependencies;
     public FileMenuScreen(Dependencies dependencies) { this.dependencies = dependencies; }
     @Override public void tick() {

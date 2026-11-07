@@ -1,6 +1,5 @@
 package linksawakening.app;
 
-
 import linksawakening.entity.Link;
 import linksawakening.gpu.GPU;
 import linksawakening.input.InputState;
@@ -17,13 +16,31 @@ import linksawakening.world.Warp;
 import java.io.IOException;
 
 import static linksawakening.world.RoomConstants.*;
-import static org.lwjgl.glfw.GLFW.*;
 
-
-import java.util.function.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /** Persistence and room-entry orchestration, using the current session snapshot. */
-public record SaveCoordinator(PlayerState playerState, RoomSession roomSession, Link link, GPU gpu, byte[] romData, SaveRamStore saveRamStore, int currentSaveSlot, InputState inputState, Runnable enterGameplay, Runnable clearOpening, Runnable initializeOpening, Runnable playHouseMusic, Runnable refreshOpening, Consumer<SaveSlotState> restoreOpening, Runnable startFileSelection, Runnable enterFileSave, Consumer<FileSaveController> showFileSave, Function<String, BackgroundScene> fileMenuBackground) {
+public record SaveCoordinator(
+        PlayerState playerState,
+        RoomSession roomSession,
+        Link link,
+        GPU gpu,
+        byte[] romData,
+        SaveRamStore saveRamStore,
+        int currentSaveSlot,
+        InputState inputState,
+        Runnable enterGameplay,
+        Runnable clearOpening,
+        Runnable initializeOpening,
+        Runnable playHouseMusic,
+        Runnable refreshOpening,
+        Consumer<SaveSlotState> restoreOpening,
+        Runnable startFileSelection,
+        Runnable enterFileSave,
+        Consumer<FileSaveController> showFileSave,
+        Function<String,
+        BackgroundScene> fileMenuBackground) {
     public void startNewGame() {
         enterGameplay.run();
 

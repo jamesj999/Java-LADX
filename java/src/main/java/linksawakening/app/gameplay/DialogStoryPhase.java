@@ -1,17 +1,9 @@
 package linksawakening.app.gameplay;
 
-import linksawakening.app.gameplay.*;
-
 import linksawakening.gameplay.LinkDialogPosition;
 import linksawakening.gameplay.SignpostDialogRef;
 
-
 import static linksawakening.world.RoomConstants.*;
-import static org.lwjgl.glfw.GLFW.*;
-
-
-import java.util.function.*;
-
 
 import static linksawakening.app.gameplay.GameplaySimulation.*;
 

@@ -1,6 +1,5 @@
 package linksawakening.app;
 
-
 import linksawakening.config.AppConfig;
 import linksawakening.cutscene.CutsceneManager;
 import linksawakening.dialog.DialogController;
@@ -22,15 +21,10 @@ import linksawakening.equipment.Shield;
 import linksawakening.equipment.Sword;
 import linksawakening.equipment.SwordPalette;
 import linksawakening.equipment.SwordSpriteSheet;
-import linksawakening.audio.apu.GameBoyApu;
 import linksawakening.audio.music.AreaMusicResolver;
 import linksawakening.audio.music.GameplayMusicController;
 import linksawakening.audio.music.MusicCatalog;
-import linksawakening.audio.music.MusicDriver;
 import linksawakening.audio.music.FrameMusicPlayer;
-import linksawakening.audio.music.HeadlessMusicPlayer;
-import linksawakening.audio.openal.OpenAlMusicPlayer;
-import linksawakening.audio.openal.OpenAlPcmSoundOutput;
 import linksawakening.gameplay.DialogTextLoader;
 import linksawakening.gameplay.DialogSoundSink;
 import linksawakening.gameplay.GameplaySoundSink;
@@ -74,8 +68,6 @@ import java.io.InputStream;
 import linksawakening.world.RomRandomByteSource;
 
 import static linksawakening.world.RoomConstants.*;
-import static org.lwjgl.glfw.GLFW.*;
-
 
 import java.util.function.Consumer;
 import java.util.function.IntUnaryOperator;
@@ -84,7 +76,45 @@ import java.util.function.IntUnaryOperator;
 public final class SessionBootstrap {
     public record Callbacks(Consumer<String> cutsceneScene, Consumer<ActiveRoom> roomMusic,
                             IntUnaryOperator romDirection) {}
-    public record Collaborators(int[][] bgPalettes, int[][] objPalettes, AppConfig appConfig, GPU gpu, byte[] romData, int[] currentTilemap, int[] currentAttrmap, byte[] indexedDisplayBuffer, RoomSession roomSession, RoomTransitionCoordinator roomTransitionCoordinator, InputConfig inputConfig, InputState inputState, PlayerState playerState, BackgroundSceneLoader backgroundSceneLoader, InventoryMenu inventoryMenu, InventoryController inventoryController, DialogController dialogController, DialogTextLoader dialogTextLoader, OverworldDialogInteraction overworldDialogInteraction, DialogSoundSink dialogSoundSink, PcmSoundOutput dialogSoundOutput, GameplaySoundSink gameplaySoundSink, FrameMusicPlayer musicPlayer, GameplayMusicController gameplayMusicController, CutsceneManager cutsceneManager, SaveRamStore saveRamStore, RomTables romTables, OverworldCollision overworldCollision, OverworldBushInteraction overworldBushInteraction, LinkSpriteSheet linkSpriteSheet, TransientVfxSystem transientVfxSystem, DroppableRupeeSystem droppableRupeeSystem, CutLeavesEffectRenderer cutLeavesEffectRenderer, ItemRegistry itemRegistry, EquipmentController equipmentController, Link link, int[] newGameTarinShieldPalette) {}
+    public record Collaborators(
+        int[][] bgPalettes,
+        int[][] objPalettes,
+        AppConfig appConfig,
+        GPU gpu,
+        byte[] romData,
+        int[] currentTilemap,
+        int[] currentAttrmap,
+        byte[] indexedDisplayBuffer,
+        RoomSession roomSession,
+        RoomTransitionCoordinator roomTransitionCoordinator,
+        InputConfig inputConfig,
+        InputState inputState,
+        PlayerState playerState,
+        BackgroundSceneLoader backgroundSceneLoader,
+        InventoryMenu inventoryMenu,
+        InventoryController inventoryController,
+        DialogController dialogController,
+        DialogTextLoader dialogTextLoader,
+        OverworldDialogInteraction overworldDialogInteraction,
+        DialogSoundSink dialogSoundSink,
+        PcmSoundOutput dialogSoundOutput,
+        GameplaySoundSink gameplaySoundSink,
+        FrameMusicPlayer musicPlayer,
+        GameplayMusicController gameplayMusicController,
+        CutsceneManager cutsceneManager,
+        SaveRamStore saveRamStore,
+        RomTables romTables,
+        OverworldCollision overworldCollision,
+        OverworldBushInteraction overworldBushInteraction,
+        LinkSpriteSheet linkSpriteSheet,
+        TransientVfxSystem transientVfxSystem,
+        DroppableRupeeSystem droppableRupeeSystem,
+        CutLeavesEffectRenderer cutLeavesEffectRenderer,
+        ItemRegistry itemRegistry,
+        EquipmentController equipmentController,
+        Link link,
+        int[] newGameTarinShieldPalette) {}
+    private final linksawakening.app.host.Host host;
     private final Callbacks callbacks;
     private final RomRandomByteSource random;
     private final GPU gpu;
@@ -129,7 +159,8 @@ public final class SessionBootstrap {
     private int[] newGameTarinShieldPalette;
     public SessionBootstrap(RomRandomByteSource random, GPU gpu,
                             TransitionController transition, ScrollController scroll,
-                            Callbacks callbacks) {
+                            Callbacks callbacks, linksawakening.app.host.Host host) {
+        this.host = host;
         this.random = random;
         this.gpu = gpu;
         this.transitionController = transition;
@@ -174,7 +205,7 @@ public final class SessionBootstrap {
         inputState = new InputState();
         playerState = new PlayerState();
         initMusicSystem(headless);
-        dialogSoundOutput = headless ? (pcm, rate) -> {} : new OpenAlPcmSoundOutput();
+        dialogSoundOutput = host.createPcmOutput();
         dialogSoundSink = new SfxDialogSoundSink(dialogSoundOutput);
         gameplaySoundSink = new SfxGameplaySoundSink(romData, dialogSoundOutput);
         InventoryTilemapLoader tilemapLoader = InventoryTilemapLoader.loadFromRom(romData);
@@ -452,14 +483,7 @@ public final class SessionBootstrap {
 
     private void initMusicSystem(boolean headless) {
         MusicCatalog musicCatalog = MusicCatalog.fromRom(romData);
-        if (headless) {
-            musicPlayer = new HeadlessMusicPlayer(romData);
-        } else {
-            GameBoyApu musicApu = new GameBoyApu(48_000);
-            var output = new OpenAlMusicPlayer(new MusicDriver(romData, musicApu), musicApu);
-            output.setLoopEnabled(false);
-            musicPlayer = output;
-        }
+        musicPlayer = host.createMusic(romData);
         // ROM background tracks contain their own loop commands. Host-level
         // restarting would also loop finite fanfares such as $1B forever,
         // preventing wActiveMusicIndex-gated acquisition handlers advancing.
