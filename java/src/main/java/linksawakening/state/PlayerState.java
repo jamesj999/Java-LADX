@@ -86,11 +86,20 @@ public final class PlayerState implements LinkPlayerState {
     private int subtractHealthBuffer;
     private int addRupeeBuffer;
     private int rupeeUpdateDelay;
-    private linksawakening.gameplay.GameplaySoundEvent resourceSound;
+    private final java.util.List<linksawakening.gameplay.GameplaySoundEvent> resourceSounds = new java.util.ArrayList<>();
+    // ThresholdLowHealthTable ($02:6308), including the overlapping code bytes at 0–2.
+    private static final int[] LOW_HEALTH_THRESHOLDS = {
+        0x00, 0x22, 0xC9, 5, 5, 5, 9, 9, 9, 17, 17, 17, 25, 25, 25
+    };
+    private boolean onLowHealth;
+    private int timeToNextLowHealthSound;
 
+    public boolean isOnLowHealth() { return onLowHealth; }
+
+    /** Resolves queued writes to hWaveSfx: the last ROM write wins. */
     public linksawakening.gameplay.GameplaySoundEvent takeResourceSound() {
-        var sound = resourceSound;
-        resourceSound = null;
+        var sound = resourceSounds.isEmpty() ? null : resourceSounds.get(resourceSounds.size() - 1);
+        resourceSounds.clear();
         return sound;
     }
     private int powerUpHits;
@@ -152,6 +161,9 @@ public final class PlayerState implements LinkPlayerState {
         subtractHealthBuffer = 0;
         addRupeeBuffer = 0;
         rupeeUpdateDelay = 0;
+        resourceSounds.clear();
+        onLowHealth = false;
+        timeToNextLowHealthSound = 0;
         powerUpHits = 0;
         Arrays.fill(chestItemCounts, 0);
     }
@@ -198,6 +210,9 @@ public final class PlayerState implements LinkPlayerState {
         subtractHealthBuffer = 0;
         addRupeeBuffer = 0;
         rupeeUpdateDelay = 0;
+        resourceSounds.clear();
+        onLowHealth = false;
+        timeToNextLowHealthSound = 0;
     }
 
     public int rupees() {
@@ -296,9 +311,16 @@ public final class PlayerState implements LinkPlayerState {
     public void tickResourceBuffers(int frameCounter) {
         if ((frameCounter & 0x01) == 0) {
             tickRupeeBuffer();
-        } else {
-            tickHealthBuffer();
         }
+        onLowHealth = health < LOW_HEALTH_THRESHOLDS[maxHearts];
+        if (onLowHealth) {
+            timeToNextLowHealthSound = (timeToNextLowHealthSound - 1) & 0xFF;
+            if (timeToNextLowHealthSound == 0xFF) {
+                resourceSounds.add(linksawakening.gameplay.GameplaySoundEvent.LOW_HEARTS);
+                timeToNextLowHealthSound = 0x30;
+            }
+        }
+        if ((frameCounter & 1) != 0) tickHealthBuffer();
     }
 
     /** Applies the immediate state portion of a bank3 pickable handler. */
@@ -787,6 +809,9 @@ public final class PlayerState implements LinkPlayerState {
         subtractHealthBuffer = 0;
         addRupeeBuffer = 0;
         rupeeUpdateDelay = 0;
+        resourceSounds.clear();
+        onLowHealth = false;
+        timeToNextLowHealthSound = 0;
         powerUpHits = 0;
         Arrays.fill(chestItemCounts, 0);
     }
@@ -816,6 +841,9 @@ public final class PlayerState implements LinkPlayerState {
                 addHealthBuffer = 0;
             } else {
                 health++;
+                if ((health & 7) == 6) {
+                    resourceSounds.add(linksawakening.gameplay.GameplaySoundEvent.HEART_PICKED_UP);
+                }
                 addHealthBuffer--;
                 return;
             }
@@ -845,7 +873,7 @@ public final class PlayerState implements LinkPlayerState {
         if (addRupeeBuffer == 0) {
             return;
         }
-        resourceSound = linksawakening.gameplay.GameplaySoundEvent.RUPEE;
+        resourceSounds.add(linksawakening.gameplay.GameplaySoundEvent.RUPEE);
         int step = Math.min(9, (addRupeeBuffer >> 5) + 1);
         addRupeeBuffer -= step;
         rupees = Math.min(MAX_RUPEES, rupees + step);

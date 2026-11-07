@@ -12,6 +12,38 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class PlayerStateTest {
     @Test
+    void lowHealthBeepRunsOnEvenFramesAndReloadsAfterUnderflow() {
+        PlayerState state = new PlayerState();
+        state.setHealth(4);
+        state.applyEntityPickup(0x2E);
+        state.tickResourceBuffers(0);
+        assertTrue(state.isOnLowHealth());
+        assertEquals(linksawakening.gameplay.GameplaySoundEvent.LOW_HEARTS, state.takeResourceSound());
+        for (int frame = 1; frame <= 48; frame++) {
+            state.tickResourceBuffers(frame);
+            assertEquals(null, state.takeResourceSound());
+        }
+        state.tickResourceBuffers(49);
+        assertEquals(linksawakening.gameplay.GameplaySoundEvent.LOW_HEARTS, state.takeResourceSound());
+        state.setHealth(5);
+        state.tickResourceBuffers(50);
+        assertFalse(state.isOnLowHealth());
+    }
+
+    @Test
+    void refillChimeWinsOverLowHealthBeepInTheSameFrame() {
+        PlayerState state = new PlayerState();
+        state.setMaxHearts(6);
+        state.setHealth(5);
+        state.applyEntityPickup(0x2D);
+        state.tickResourceBuffers(1);
+        assertEquals(6, state.health());
+        assertEquals(linksawakening.gameplay.GameplaySoundEvent.HEART_PICKED_UP, state.takeResourceSound());
+        state.tickResourceBuffers(3);
+        assertEquals(null, state.takeResourceSound());
+    }
+
+    @Test
     void rupeeBufferUsesSixteenBitsAndAccelerates() {
         PlayerState state = new PlayerState();
         for (int i = 0; i < 300; i++) state.applyEntityPickup(0x2E);
