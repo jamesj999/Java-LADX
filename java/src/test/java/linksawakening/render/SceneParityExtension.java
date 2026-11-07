@@ -60,7 +60,7 @@ public final class SceneParityExtension implements BeforeEachCallback, AfterEach
                 return;
             }
             if (expectedPixels > 0) rows.add(id + "\tEXPECTED_FIDELITY_FIX\tpixels=" + expectedPixels
-                + "; CGB priority: OBJ wins when BG index=0 or both priority flags clear; PyBoy beach-route 56 overlap frames LCDC=$E7 WY=128 WX=7; HUD " + evidence + "; reference HUD tile=$7F attr=$01 index=0; animated_tiles.asm:$1D57-$1D59; dialog attr=$01 dialog_letters.asm:$4A84; Link excluded from hide loop bank1.asm:$5F7F-$5F81");
+                + "; CGB priority: OBJ wins when BG index=0 or both priority flags clear; PyBoy beach-route 56 overlap frames LCDC=$E7 WY=128 WX=7; HUD " + evidence + "; reference HUD tile=$7F attr=$01 index=0; animated_tiles.asm:$1D57-$1D59; dialog attr=$01 verified in 804 original-ROM prompt-arrow overlap frames (not Link/NPC geometry), LCDC=$E7; dialog_letters.asm:$4A84; Link excluded from hide loop bank1.asm:$5F7F-$5F81");
             else rows.add(id + "\tIDENTICAL\t" + scene.layerCount() + " layers");
         });
     }
