@@ -14,7 +14,7 @@ final class BooBuddyHandler {
             // Rendering precedes ReturnIfNonInteractive_06 and recoil.
             state.entity =
                 withVariant(state.entity, state.runtime.booBuddyMotion.selectedVariant(slot));
-            state.runtime.slots[state.index] = state.entity;
+            state.replaceEntity(state.entity);
             if (state.projectileTimersInteractive) {
               state.runtime.booBuddyMotion.tickTimers(slot);
             }
@@ -26,11 +26,10 @@ final class BooBuddyHandler {
               // speeds, and pops the handler return address. OPTIONS1
               // bit $20 skips background collision for Boo Buddy.
               state.runtime.enemyIgnoreHitsCountdown[slot]--;
-              state.runtime.slots[state.index] =
-                  state.runtime.booBuddyMotion.advanceRecoil(
+              state.replaceEntity(state.runtime.booBuddyMotion.advanceRecoil(
                       state.entity,
                       state.runtime.enemyRecoilMotion.recoilSpeedX(slot),
-                      state.runtime.enemyRecoilMotion.recoilSpeedY(slot));
+                      state.runtime.enemyRecoilMotion.recoilSpeedY(slot)));
               return false;
             }
           }
@@ -61,7 +60,7 @@ final class BooBuddyHandler {
               state.runtime.enemyHealth[state.entity.slot()] = booBuddyUpdate.healthOverride();
             }
             if (booBuddyUpdate.unloaded()) {
-              state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
+              state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
               return false;
             }
           }

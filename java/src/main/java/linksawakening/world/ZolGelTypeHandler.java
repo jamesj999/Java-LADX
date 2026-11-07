@@ -53,7 +53,7 @@ final class ZolGelTypeHandler {
                 state.runtime.gelClingingToLink |= zolGelUpdate.clinging();
                 if (zolGelUpdate.split() != null) {
                   state.updated =
-                      state.runtime.lifecycle.applyZolSplit(
+                      state.lifecycle().applyZolSplit(
                           state.entity, state.updated, zolGelUpdate.split());
                 }
               }

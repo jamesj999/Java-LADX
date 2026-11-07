@@ -18,14 +18,13 @@ final class BombHandler {
                     state.linkEntityX,
                     state.linkEntityY,
                     state.projectileLinkState);
-            state.entity = state.runtime.slots[state.index];
+            state.entity = state.entityAt(state.index);
             if (bombDecision.phase() == BombMotion.Phase.NORMAL) {
-              state.runtime.slots[state.index] =
-                  state.runtime.bombPrivateState4[state.entity.slot()] != 0
+              state.replaceEntity(state.runtime.bombPrivateState4[state.entity.slot()] != 0
                       ? state.runtime.liftThrow.advanceEnemyBombEntity(
                           state.entity, state.backgroundCollision, state.frame)
                       : state.runtime.liftThrow.advancePlacedBombEntity(
-                          state.entity, state.backgroundCollision, state.frame);
+                          state.entity, state.backgroundCollision, state.frame));
             }
             state.runtime.liftThrow.tryLiftBombIfRequested(
                 state.index,
@@ -56,7 +55,7 @@ final class BombHandler {
                         state.linkEntityX,
                         state.linkEntityY,
                         state.projectileLinkState);
-                state.entity = state.runtime.slots[state.index];
+                state.entity = state.entityAt(state.index);
                 if (bombDecision.unloadAfterPresentation()) {
                   return false;
                 }
@@ -83,14 +82,14 @@ final class BombHandler {
                         state.linkEntityX,
                         state.linkEntityY,
                         state.projectileLinkState);
-                state.entity = state.runtime.slots[state.index];
+                state.entity = state.entityAt(state.index);
                 if (bombDecision.unloadAfterPresentation()) {
                   return false;
                 }
                 state.entity =
                     state.runtime.bombInteractions.applyBombStunnedPostActiveWork(
                         state.entity, state.backgroundCollision, state.frame);
-                state.runtime.slots[state.index] = state.entity;
+                state.replaceEntity(state.entity);
               }
               return true;
             });

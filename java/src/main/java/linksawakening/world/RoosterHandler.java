@@ -26,7 +26,7 @@ final class RoosterHandler {
                 state.runtime.liftedSourceDirection[state.entity.slot()] =
                     roosterUpdate.romDirection();
                 state.liftedRomDirection = roosterUpdate.romDirection();
-                state.runtime.pendingRoosterLinkStateRequests.add(
+                state.emit(
                     new RoosterLinkStateRequest(
                         state.entity.slot(),
                         roosterUpdate.positionZ(),
@@ -56,7 +56,7 @@ final class RoosterHandler {
                 && RoomEntityCombatRules.overlapsLink(
                     state.entity, state.linkEntityX, state.linkEntityY)
                 && state.runtime.beginLift(state.entity.slot(), state.romLinkDirection)) {
-              state.runtime.pendingRoosterLinkStateRequests.add(
+              state.emit(
                   new RoosterLinkStateRequest(
                       state.entity.slot(),
                       0x02,
@@ -64,7 +64,7 @@ final class RoosterHandler {
                       state.runtime.currentLinkSpeedX,
                       state.runtime.currentLinkSpeedY,
                       state.romLinkDirection));
-              state.runtime.pendingEntityEvents.add(
+              state.emit(
                   new EntityCombatEvent(
                       state.entity.slot(),
                       state.entity.type(),

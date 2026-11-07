@@ -13,7 +13,7 @@ final class SleepyToadstoolHandler {
             if (!state.runtime.toadstoolPickupSequenceActive[state.entity.slot()]
                 && (state.runtime.playerHasToadstool
                     || state.runtime.playerMagicPowderCount != 0)) {
-              state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
+              state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
               return false;
             }
             if (state.runtime.toadstoolPickupSequenceActive[state.entity.slot()]) {

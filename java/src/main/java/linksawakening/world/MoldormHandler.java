@@ -23,7 +23,7 @@ final class MoldormHandler {
                     state.runtime.transitionSequenceCounter);
             if (intro.musicTrack() >= 0) state.runtime.pendingMusicTrack = intro.musicTrack();
             if (intro.dialogLowId() >= 0) {
-              state.runtime.pendingDialogRequests.add(
+              state.emit(
                   new DialogRequest(intro.dialogTableId(), intro.dialogLowId()));
               state.moldormIntroOpenedThisFrame = true;
             }
@@ -52,7 +52,7 @@ final class MoldormHandler {
                   dy = -1;
                 }
                 if (dx != 0 || dy != 0) {
-                  state.runtime.pendingLinkMotionBlockRequests.add(
+                  state.emit(
                       new LinkMotionBlockRequest(state.entity.slot(), dx, dy));
                   state.linkEntityX = (state.linkEntityX + dx) & 0xFF;
                   state.linkEntityY = (state.linkEntityY + dy) & 0xFF;
@@ -76,8 +76,7 @@ final class MoldormHandler {
                 || state.countdownBlocksInteraction
                 || state.moldormIntroOpenedThisFrame) {
               if (state.runtime.spriteHandlers != null) {
-                state.runtime.slots[state.index] =
-                    withDefinition(
+                state.replaceEntity(withDefinition(
                         state.entity,
                         state.runtime.spriteHandlers.forMoldormState(
                             state.runtime.moldormMotion.headSpriteVariant(slot),
@@ -86,7 +85,7 @@ final class MoldormHandler {
                             state.runtime.moldormMotion.currentTailSegments(slot),
                             0,
                             state.frame),
-                        0);
+                        0));
               }
               if (state.runtime.roomTransitionActive)
                 state.runtime.moldormMotion.resetHistory(slot);
@@ -117,7 +116,7 @@ final class MoldormHandler {
             state.updated = moldormUpdate.entity();
             state.runtime.enemyTransitionCountdown[slot] = moldormUpdate.transitionCountdown();
             if (moldormUpdate.noiseRequested()) {
-              state.runtime.pendingEntityEvents.add(
+              state.emit(
                   new EntityCombatEvent(
                       slot,
                       state.entity.type(),

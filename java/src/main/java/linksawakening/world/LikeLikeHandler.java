@@ -30,7 +30,7 @@ final class LikeLikeHandler {
             state.runtime.slowTransitionCountdown[state.entity.slot()] =
                 likeLikeUpdate.slowTransitionCountdown();
             if (likeLikeUpdate.event() != null) {
-              state.runtime.pendingLikeLikeEvents.add(likeLikeUpdate.event());
+              state.emit(likeLikeUpdate.event());
               if (likeLikeUpdate.event().kind() == LikeLikeEvent.Kind.RELEASE) {
                 state.runtime.slowTimerInitialized[state.entity.slot()] = true;
               }

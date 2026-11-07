@@ -15,7 +15,7 @@ final class SpikeTrapHandler {
                     state.entity, state.linkEntityX, state.linkEntityY, state.backgroundCollision);
             state.updated = spikeTrapUpdate.entity();
             if (spikeTrapUpdate.soundChannel() != EntityCombatEvent.SoundChannel.NONE) {
-              state.runtime.pendingEntityEvents.add(
+              state.emit(
                   new EntityCombatEvent(
                       state.entity.slot(),
                       state.entity.type(),

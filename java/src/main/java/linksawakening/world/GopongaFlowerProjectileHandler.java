@@ -24,7 +24,7 @@ final class GopongaFlowerProjectileHandler {
             state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()] =
                 projectileUpdate.ignoreHitsCountdown();
             if (projectileUpdate.unloadRequested()) {
-              state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
+              state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
               return false;
             }
             state.updated = projectileUpdate.entity();

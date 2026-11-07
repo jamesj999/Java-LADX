@@ -51,8 +51,7 @@ final class CommonDroppableTypeHandler {
                   // DroppableRevealOrReturnIfNeeded returns past the caller's
                   // remaining handler. In particular, no rendering, pickup,
                   // movement, or background interaction may run while hidden.
-                  state.runtime.slots[state.index] =
-                      withStatus(withVariant(state.updated, -1), state.status);
+                  state.replaceEntity(withStatus(withVariant(state.updated, -1), state.status));
                   return false;
                 }
               }

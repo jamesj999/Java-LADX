@@ -13,9 +13,9 @@ final class ArrowHandler {
             if (state.runtime.playerArrowBombArrow[state.entity.slot()]
                 && state.runtime.playerArrowMotion.transitionCountdown(state.entity.slot()) != 0) {
               int explosionSlot =
-                  state.runtime.entityPlayerSpawns.spawnBombFromBombArrow(state.entity);
+                  state.playerSpawns().spawnBombFromBombArrow(state.entity);
               if (explosionSlot >= 0) {
-                state.runtime.pendingEntityEvents.add(
+                state.emit(
                     new EntityCombatEvent(
                         explosionSlot,
                         state.runtime.ENTITY_BOMB,
@@ -24,7 +24,7 @@ final class ArrowHandler {
                         EntityCombatEvent.SoundChannel.NOISE,
                         0x0C));
               }
-              state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
+              state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
               return false;
             }
             // ArrowEntityHandler jumps straight to rendering/rebound
@@ -37,7 +37,7 @@ final class ArrowHandler {
               // func_003_75A2 reaches jr_003_7737 after an ordinary
               // arrow target hit. With no wall-collision byte set on
               // the active arrow, the state-0 arrow unloads there.
-              state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
+              state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
               return false;
             }
             PlayerArrowMotion.Update arrowUpdate =
@@ -50,11 +50,11 @@ final class ArrowHandler {
                     state.handlerInteractive,
                     state.projectileTimersInteractive);
             if (arrowUpdate.unloaded()) {
-              state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
+              state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
               return false;
             }
             if (arrowUpdate.collidedWithWall()) {
-              state.runtime.pendingEntityEvents.add(
+              state.emit(
                   new EntityCombatEvent(
                       state.entity.slot(),
                       state.runtime.ENTITY_ARROW,
@@ -66,7 +66,7 @@ final class ArrowHandler {
               // projectiles, and bomb explosions.
               state.runtime.swordMoblinAlertingSoundCounter = 0x04;
             }
-            state.runtime.slots[state.index] = arrowUpdate.entity();
+            state.replaceEntity(arrowUpdate.entity());
             return false;
           }
           return true;

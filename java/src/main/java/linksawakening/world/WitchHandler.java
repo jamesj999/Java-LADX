@@ -39,11 +39,11 @@ final class WitchHandler {
                 witchUpdate.transitionCountdown();
             state.preserveWitchPresentation = true;
             if (witchUpdate.blockLink()) {
-              state.runtime.pendingLinkMotionBlockRequests.add(
+              state.emit(
                   new LinkMotionBlockRequest(state.entity.slot()));
             }
             if (witchUpdate.dialogGlobalId() >= 0) {
-              state.runtime.pendingDialogRequests.add(
+              state.emit(
                   new DialogRequest(
                       witchUpdate.dialogGlobalId() >>> 8, witchUpdate.dialogGlobalId() & 0xFF));
             }
@@ -51,7 +51,7 @@ final class WitchHandler {
               state.runtime.pendingMusicTrack = witchUpdate.musicTrack();
             }
             if (witchUpdate.jingleId() >= 0) {
-              state.runtime.pendingEntityEvents.add(
+              state.emit(
                   new EntityCombatEvent(
                       state.entity.slot(),
                       state.entity.type(),
@@ -62,12 +62,12 @@ final class WitchHandler {
             }
             if (witchUpdate.exchangeStarted()) {
               int inventorySlot = witchUpdate.clearedSlot() == WitchMotion.InventorySlot.B ? 0 : 1;
-              state.runtime.pendingWitchExchangeEvents.add(
+              state.emit(
                   new WitchExchangeEvent(state.entity.slot(), inventorySlot));
               state.runtime.playerHasToadstool = false;
             }
             if (witchUpdate.grantMagicPowder()) {
-              state.runtime.pendingWitchRewardEvents.add(new WitchRewardEvent(state.entity.slot()));
+              state.emit(new WitchRewardEvent(state.entity.slot()));
               state.runtime.witchGotItemCountdown[state.entity.slot()] = 0x2A;
               state.runtime.presentWitchGotItem(state.entity.slot());
             }

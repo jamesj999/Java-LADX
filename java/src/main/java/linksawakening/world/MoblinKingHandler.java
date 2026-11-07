@@ -30,7 +30,7 @@ final class MoblinKingHandler {
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             if (state.runtime.bowWowState != 0x80) {
-              state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
+              state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
               return false;
             }
             if (!state.handlerInteractive) {
@@ -40,12 +40,11 @@ final class MoblinKingHandler {
               // movement/Z physics and AI wait until the recoil ends.
               if (state.runtime.enemyRecoilMotion.isActive(state.entity.slot())
                   && state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()] != 0) {
-                state.runtime.slots[state.index] =
-                    state
+                state.replaceEntity(state
                         .runtime
                         .backgroundMechanics
                         .applyEnemyRecoilIfNeeded(state.entity, state.backgroundCollision)
-                        .entity();
+                        .entity());
                 return false;
               }
               MoblinKingMotion.Update kingUpdate =
@@ -95,7 +94,7 @@ final class MoblinKingHandler {
               state.preserveMoblinKingPresentation = true;
               if (kingUpdate.openIntroDialog()) {
                 // $15:475C clears DIALOG_BOX_BOTTOM_BIT after opening Dialog191.
-                state.runtime.pendingDialogRequests.add(new DialogRequest(1, 0x91, true));
+                state.emit(new DialogRequest(1, 0x91, true));
               }
               if (kingUpdate.arrowRequest() != null) {
                 state.runtime.projectileLaunchRequests.add(
@@ -103,7 +102,7 @@ final class MoblinKingHandler {
                         state.entity.slot(),
                         state.entity.type(),
                         state.runtime.ENTITY_MOBLIN_ARROW));
-                state.runtime.entityEnemySpawns.spawnEnemyProjectile(
+                state.enemySpawns().spawnEnemyProjectile(
                     state.entity,
                     new RoamingEnemyMotion.LaunchRequest(
                         state.entity.slot(),
@@ -112,7 +111,7 @@ final class MoblinKingHandler {
                     kingUpdate.arrowRequest().direction());
               }
               if (kingUpdate.jingleId() >= 0) {
-                state.runtime.pendingEntityEvents.add(
+                state.emit(
                     new EntityCombatEvent(
                         state.entity.slot(),
                         state.entity.type(),
@@ -122,7 +121,7 @@ final class MoblinKingHandler {
                         kingUpdate.jingleId()));
               }
               if (kingUpdate.screenShakeCountdown() != 0) {
-                state.runtime.pendingScreenShakeRequests.add(
+                state.emit(
                     new ScreenShakeRequest(
                         state.entity.slot(), kingUpdate.screenShakeCountdown(), 0));
               }

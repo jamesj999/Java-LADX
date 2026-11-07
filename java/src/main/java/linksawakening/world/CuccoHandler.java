@@ -37,16 +37,16 @@ final class CuccoHandler {
             state.runtime.enemyHealth[state.entity.slot()] = CuccoMotion.HEALTH_OVERRIDE;
             state.preserveCuccoPresentation = true;
             if (cuccoUpdate.dialogLowId() >= 0) {
-              state.runtime.pendingDialogRequests.add(
+              state.emit(
                   new DialogRequest(cuccoUpdate.dialogTableId(), cuccoUpdate.dialogLowId()));
             }
             if (cuccoUpdate.unloaded()) {
-              state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
+              state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
               return false;
             }
             if (cuccoUpdate.liftRequested()
                 && state.runtime.beginLift(state.entity.slot(), state.romLinkDirection)) {
-              state.runtime.pendingEntityEvents.add(
+              state.emit(
                   new EntityCombatEvent(
                       state.entity.slot(),
                       state.entity.type(),
@@ -54,19 +54,18 @@ final class CuccoHandler {
                       false,
                       EntityCombatEvent.SoundChannel.WAVE,
                       CuccoMotion.LIFT_WAVE_SFX));
-              state.runtime.slots[state.index] =
-                  state.runtime.liftThrow.advanceLiftedEntity(
+              state.replaceEntity(state.runtime.liftThrow.advanceLiftedEntity(
                       state.runtime.liftThrow.renderLiftedEntity(
-                          state.runtime.slots[state.index], state.frame),
+                          state.entityAt(state.index), state.frame),
                       state.linkEntityX,
                       state.linkEntityY,
                       state.linkZ,
-                      state.romLinkDirection);
+                      state.romLinkDirection));
               return false;
             }
             if (cuccoUpdate.spawnRequest() != null
-                && state.runtime.entityEnemySpawns.spawnCuccoAngry(cuccoUpdate.spawnRequest())) {
-              state.runtime.pendingEntityEvents.add(
+                && state.enemySpawns().spawnCuccoAngry(cuccoUpdate.spawnRequest())) {
+              state.emit(
                   new EntityCombatEvent(
                       state.entity.slot(),
                       state.entity.type(),

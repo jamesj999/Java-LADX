@@ -14,7 +14,7 @@ final class MusicalNoteHandler {
             if (note == null) {
               return false;
             }
-            state.runtime.slots[state.index] = note;
+            state.replaceEntity(note);
             return false;
           }
           return true;

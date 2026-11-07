@@ -18,7 +18,7 @@ final class HidingSlimeKeyHandler {
             // HidingSlimeKeyEntityHandler checks ROOM_STATUS_EVENT_1 before
             // calling the shared reveal helper and unloads without touching
             // the source persistence mask.
-            state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
+            state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
             return false;
           }
           return true;
@@ -37,12 +37,12 @@ final class HidingSlimeKeyHandler {
                     state.updated, slot, state.linkEntityX, state.linkEntityY, state.linkZ);
             state.runtime.enemyTransitionCountdown[slot] = keyUpdate.nextTransitionCountdown();
             if (keyUpdate.reward() != null) {
-              state.runtime.pendingSlimeKeyRewardEvents.add(keyUpdate.reward());
-              state.runtime.pendingDialogRequests.add(
+              state.emit(keyUpdate.reward());
+              state.emit(
                   new DialogRequest(0, keyUpdate.reward().dialogLowId()));
             }
             if (keyUpdate.unload()) {
-              state.runtime.lifecycle.disableEntityWithoutPersistence(slot);
+              state.lifecycle().disableEntityWithoutPersistence(slot);
               return false;
             }
             state.keyDropTransitionActive = keyUpdate.holdAboveLink();
@@ -62,7 +62,7 @@ final class HidingSlimeKeyHandler {
               if ((state.runtime.entityRoomStatus & 0x10) != 0) {
                 // The handler's first instruction is the completed-room
                 // gate, including the INIT dispatch path.
-                state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
+                state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
                 return false;
               }
               return true;

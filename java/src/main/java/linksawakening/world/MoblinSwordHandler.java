@@ -53,7 +53,7 @@ final class MoblinSwordHandler {
                     state.frame);
             state.updated = moblinSwordUpdate.entity();
             if (moblinSwordUpdate.dialogRequested()) {
-              state.runtime.pendingDialogRequests.add(
+              state.emit(
                   new DialogRequest(1, state.runtime.DIALOG_MOBLIN));
             }
           }

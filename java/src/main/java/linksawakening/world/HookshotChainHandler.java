@@ -34,7 +34,7 @@ final class HookshotChainHandler {
             }
 
             if ((state.frame & 0x03) == 0) {
-              state.runtime.pendingEntityEvents.add(
+              state.emit(
                   new EntityCombatEvent(
                       state.entity.slot(),
                       state.entity.type(),
@@ -57,7 +57,7 @@ final class HookshotChainHandler {
               state.projectileEvents.add(
                   EntityProjectileEvent.hookshotPull(
                       state.entity.slot(), pullSpeed.speedX(), pullSpeed.speedY()));
-              state.runtime.slots[state.index] = state.entity;
+              state.replaceEntity(state.entity);
               return false;
             }
 
@@ -71,12 +71,11 @@ final class HookshotChainHandler {
               if (state.handlerLinkCollisionEnabled && step.reachedLink()) {
                 state.runtime.clearEntity(state.entity.slot());
               } else {
-                state.runtime.slots[state.index] =
-                    withPositionAndVariant(
+                state.replaceEntity(withPositionAndVariant(
                         state.entity,
                         step.state().x(),
                         step.state().y(),
-                        state.entity.spriteVariant());
+                        state.entity.spriteVariant()));
               }
               return false;
             }
@@ -97,7 +96,7 @@ final class HookshotChainHandler {
             if (hookshotState.wallCollisionPending()) {
               state.runtime.hookshotChainMotion.setState(
                   state.entity.slot(), HookshotChainMotion.completeWallPoke(step.state()));
-              state.runtime.pendingEntityEvents.add(
+              state.emit(
                   new EntityCombatEvent(
                       state.entity.slot(),
                       state.entity.type(),
@@ -105,17 +104,16 @@ final class HookshotChainHandler {
                       false,
                       EntityCombatEvent.SoundChannel.JINGLE,
                       0x07));
-              state.runtime.transientVfxRequests.add(
+              state.emit(
                   new TransientVfxRequest(
                       TransientVfxType.SWORD_POKE,
                       state.entity.x(),
                       (state.entity.y() - state.entity.z()) & 0xFF));
-              state.runtime.slots[state.index] =
-                  withPositionAndVariant(
+              state.replaceEntity(withPositionAndVariant(
                       state.entity,
                       step.state().x(),
                       step.state().y(),
-                      state.entity.spriteVariant());
+                      state.entity.spriteVariant()));
               return false;
             }
             EntityBackgroundCollisionResult collisionResult = null;
@@ -155,7 +153,7 @@ final class HookshotChainHandler {
                 state.runtime.hookshotChainMotion.setState(
                     state.entity.slot(), HookshotChainMotion.deferWallPoke(stopped));
               }
-              state.runtime.slots[state.index] = state.entity;
+              state.replaceEntity(state.entity);
               return false;
             }
 
@@ -175,7 +173,7 @@ final class HookshotChainHandler {
                         ? state.runtime.OBJECT_HOOKSHOT_BRIDGE_PULL_DOWN
                         : state.runtime.OBJECT_HOOKSHOT_BRIDGE_PULL_UP;
                 if (object.objectId() == bridgeObject
-                    && state.runtime.entityPlayerSpawns.spawnHookshotBridge(
+                    && state.playerSpawns().spawnHookshotBridge(
                         object.objectLeft() + 0x08,
                         object.objectTop() + 0x10,
                         bridgeObject == state.runtime.OBJECT_HOOKSHOT_BRIDGE_PULL_DOWN ? 0 : 1,
@@ -190,9 +188,8 @@ final class HookshotChainHandler {
             }
 
             state.runtime.hookshotChainMotion.setState(state.entity.slot(), step.state());
-            state.runtime.slots[state.index] =
-                withPositionAndVariant(
-                    state.entity, step.state().x(), step.state().y(), state.entity.spriteVariant());
+            state.replaceEntity(withPositionAndVariant(
+                    state.entity, step.state().x(), step.state().y(), state.entity.spriteVariant()));
             return false;
           }
           return true;

@@ -46,7 +46,7 @@ final class UrchinHandler {
                   state.updated, EntityLinkCollisionRules.URCHIN);
             }
             if (urchinUpdate.jingleId() >= 0) {
-              state.runtime.pendingEntityEvents.add(
+              state.emit(
                   new EntityCombatEvent(
                       slot,
                       state.entity.type(),

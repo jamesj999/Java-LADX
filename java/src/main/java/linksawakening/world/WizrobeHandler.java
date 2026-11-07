@@ -57,7 +57,7 @@ final class WizrobeHandler {
             state.runtime.enemyPhysicsFlags[state.entity.slot()] = wizrobeUpdate.physicsFlags();
             state.preserveWizrobePresentation = true;
             if (wizrobeUpdate.projectileSpawn() != null) {
-              state.runtime.entityEnemySpawns.spawnWizrobeProjectile(
+              state.enemySpawns().spawnWizrobeProjectile(
                   state.updated, wizrobeUpdate.projectileSpawn());
             }
           }

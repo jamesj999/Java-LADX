@@ -18,7 +18,7 @@ final class ColorShellTypeHandler {
                 RoomEntity activeShell =
                     state.runtime.slotProperties.refreshColorShellDisplay(
                         withStatus(state.entity, EntityStatus.ACTIVE), EntityStatus.ACTIVE);
-                state.runtime.slots[state.index] = activeShell;
+                state.replaceEntity(activeShell);
                 return false;
               }
               return true;
@@ -67,7 +67,7 @@ final class ColorShellTypeHandler {
                     shellUpdate.nextIgnoreHitsCountdown();
                 if (shellUpdate.unloadRequested()) {
                   state.runtime.pendingClearedEntityMask |= persistentClearMask(state.entity);
-                  state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
+                  state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
                   return false;
                 }
               }

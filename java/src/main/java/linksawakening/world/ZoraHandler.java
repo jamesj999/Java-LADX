@@ -38,15 +38,15 @@ final class ZoraHandler {
             state.runtime.enemyTransitionCountdown[slot] = zoraUpdate.transitionCountdown();
             state.runtime.enemyPhysicsFlags[slot] = zoraUpdate.physicsFlags();
             if (zoraUpdate.projectileSpawn() != null) {
-              state.runtime.entityEnemySpawns.spawnZoraProjectile(zoraUpdate.projectileSpawn());
+              state.enemySpawns().spawnZoraProjectile(zoraUpdate.projectileSpawn());
             }
             if (zoraUpdate.splash()) {
-              state.runtime.transientVfxRequests.add(
+              state.emit(
                   new TransientVfxRequest(
                       TransientVfxType.WATER_SPLASH,
                       state.updated.x(),
                       (state.updated.y() - state.updated.z()) & 0xFF));
-              state.runtime.pendingEntityEvents.add(
+              state.emit(
                   new EntityCombatEvent(
                       slot,
                       state.entity.type(),

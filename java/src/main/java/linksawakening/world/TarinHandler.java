@@ -14,7 +14,7 @@ final class TarinHandler {
         EntityTickStage.PHASE_1_TARIN,
         state -> {
           if (!state.runtime.indoorRoom && (state.runtime.entityRoomStatus & 0x10) != 0) {
-            state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
+            state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
             return false;
           }
           return true;
@@ -67,20 +67,20 @@ final class TarinHandler {
                 state.preserveTarinPresentation = true;
                 state.runtime.shouldGetLostInMysteriousWoods = tarinUpdate.shouldGetLost();
                 if (tarinUpdate.linkMotionBlocked()) {
-                  state.runtime.pendingLinkMotionBlockRequests.add(
+                  state.emit(
                       new LinkMotionBlockRequest(state.entity.slot()));
                 }
                 if (tarinUpdate.dialogGlobalId() >= 0) {
-                  state.runtime.pendingDialogRequests.add(
+                  state.emit(
                       new DialogRequest(
                           tarinUpdate.dialogGlobalId() >>> 8, tarinUpdate.dialogGlobalId() & 0xFF));
                 }
                 if (tarinUpdate.clearLinkAttack()) {
-                  state.runtime.pendingLinkAttackClearRequests.add(
+                  state.emit(
                       new LinkAttackClearRequest(state.entity.slot()));
                 }
                 if (tarinUpdate.linkFacingDirection() >= 0) {
-                  state.runtime.pendingLinkFacingRequests.add(
+                  state.emit(
                       new LinkFacingRequest(
                           state.entity.slot(), tarinUpdate.linkFacingDirection(), true));
                 }
@@ -92,7 +92,7 @@ final class TarinHandler {
                   }
                 }
                 if (tarinUpdate.soundId() >= 0) {
-                  state.runtime.pendingEntityEvents.add(
+                  state.emit(
                       new EntityCombatEvent(
                           state.entity.slot(),
                           state.entity.type(),
@@ -105,10 +105,10 @@ final class TarinHandler {
                   }
                 }
                 if (tarinUpdate.spawnBomb()) {
-                  state.runtime.entityEnemySpawns.spawnTarinTransformationBomb(state.updated);
+                  state.enemySpawns().spawnTarinTransformationBomb(state.updated);
                 }
                 if (tarinUpdate.roomChanged() || tarinUpdate.tarinFlag()) {
-                  state.runtime.pendingRoomStatusPersistenceRequests.add(
+                  state.emit(
                       new RoomStatusPersistenceRequest(state.entity.slot(), 0x10, 1));
                 }
               }

@@ -31,7 +31,7 @@ final class HidingZolHandler {
               state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()] = 0;
             }
             if (hidingZolUpdate.jumpJingle()) {
-              state.runtime.pendingEntityEvents.add(
+              state.emit(
                   new EntityCombatEvent(
                       state.entity.slot(),
                       state.entity.type(),

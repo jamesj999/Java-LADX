@@ -20,11 +20,11 @@ final class PairoddHandler {
                     state.runtime.enemyFlashCountdown[state.entity.slot()] > 0);
             state.updated = pairoddUpdate.entity();
             if (pairoddUpdate.spawnProjectile()) {
-              state.runtime.entityEnemySpawns.spawnPairoddProjectile(
+              state.enemySpawns().spawnPairoddProjectile(
                   state.entity, state.linkEntityX, state.linkEntityY);
             }
             if (pairoddUpdate.teleportJingle()) {
-              state.runtime.pendingEntityEvents.add(
+              state.emit(
                   new EntityCombatEvent(
                       state.entity.slot(),
                       state.entity.type(),

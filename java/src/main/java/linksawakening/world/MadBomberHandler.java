@@ -37,7 +37,7 @@ final class MadBomberHandler {
                       spawn.speedY(),
                       spawn.speedZ());
               if (bombSlot >= 0 && madBomberUpdate.playJingle()) {
-                state.runtime.pendingEntityEvents.add(
+                state.emit(
                     new EntityCombatEvent(
                         bombSlot,
                         state.runtime.ENTITY_BOMB,

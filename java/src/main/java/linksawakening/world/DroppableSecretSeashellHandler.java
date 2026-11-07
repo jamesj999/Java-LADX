@@ -17,7 +17,7 @@ final class DroppableSecretSeashellHandler {
               // DroppableSeashellEntityHandler uses UnloadEntityAndReturn
               // for these gates, which deliberately does not mark the
               // source load-order bit as completed.
-              state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
+              state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
               return false;
             }
             RoomEntityObjectSample objectUnderEntity =

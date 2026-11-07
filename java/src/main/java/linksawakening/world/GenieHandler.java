@@ -72,7 +72,7 @@ final class GenieHandler {
               state.runtime.pendingMusicTrack = bossIntro.musicTrack();
             }
             if (bossIntro.dialogLowId() >= 0) {
-              state.runtime.pendingDialogRequests.add(
+              state.emit(
                   new DialogRequest(bossIntro.dialogTableId(), bossIntro.dialogLowId()));
             }
             boolean genieThresholdReached =

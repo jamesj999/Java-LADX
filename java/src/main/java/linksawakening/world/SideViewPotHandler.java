@@ -42,7 +42,7 @@ final class SideViewPotHandler {
                 && state.runtime.liftThrow.sideViewPotPowerBraceletHeld()
                 && state.runtime.linkAttackStepAnimationCountdown == 0
                 && state.runtime.beginLift(state.entity.slot(), state.romLinkDirection)) {
-              state.runtime.pendingEntityEvents.add(
+              state.emit(
                   new EntityCombatEvent(
                       state.entity.slot(),
                       state.entity.type(),
@@ -79,7 +79,7 @@ final class SideViewPotHandler {
                     state.runtime.LIFTABLE_ROCK_SMASH_MODE_ROCK);
                 state.runtime.clearEntity(state.entity.slot());
               } else {
-                state.runtime.slots[state.index] = movedPot;
+                state.replaceEntity(movedPot);
               }
             }
             // ReturnIfNonInteractive_19 leaves the rendered pot and all
@@ -98,7 +98,7 @@ final class SideViewPotHandler {
             EntityTickStage.PHASE_2_SIDE_VIEW_POT,
             state -> {
               if (state.runtime.enemyTransitionCountdown[state.entity.slot()] != 0) {
-                state.runtime.slots[state.index] = state.lifted;
+                state.replaceEntity(state.lifted);
                 return false;
               }
               return true;

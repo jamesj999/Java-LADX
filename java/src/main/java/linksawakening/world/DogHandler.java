@@ -52,7 +52,7 @@ final class DogHandler {
             state.runtime.enemyPhysicsFlags[slot] = dogUpdate.physicsFlags();
             state.applyGenericGroundInteraction = dogUpdate.appliesBackgroundInteraction();
             if (dogUpdate.dialogRequested()) {
-              state.runtime.pendingDialogRequests.add(
+              state.emit(
                   new DialogRequest(0, dogUpdate.dialogLowId()));
             }
             state.preserveDogPresentation = true;

@@ -43,7 +43,7 @@ final class RollingBonesHandler {
                   bossUpdate.transitionCountdown();
               state.preserveRollingBonesPresentation = true;
               if (bossUpdate.jingleId() >= 0) {
-                state.runtime.pendingEntityEvents.add(
+                state.emit(
                     new EntityCombatEvent(
                         state.entity.slot(),
                         state.entity.type(),

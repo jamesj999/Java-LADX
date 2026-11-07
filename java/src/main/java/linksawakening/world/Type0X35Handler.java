@@ -12,7 +12,7 @@ final class Type0X35Handler {
             EntityTickStage.PHASE_1_TYPE_0X35,
             state -> {
               if ((state.runtime.entityRoomStatus & 0x10) != 0) {
-                state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
+                state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
                 return false;
               }
               return true;

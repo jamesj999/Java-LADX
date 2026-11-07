@@ -26,7 +26,7 @@ final class PairoddProjectileHandler {
               EntityProjectileEvent event = collisionEvent.orElseThrow();
               state.projectileEvents.add(event);
               if (event.swordPokeVfx()) {
-                state.runtime.transientVfxRequests.add(
+                state.emit(
                     new TransientVfxRequest(
                         TransientVfxType.SWORD_POKE, event.swordPokeX(), event.swordPokeY()));
                 swordPokeVfxQueued = true;
@@ -47,7 +47,7 @@ final class PairoddProjectileHandler {
               EntityProjectileEvent event = swordCollisionEvent.orElseThrow();
               state.projectileEvents.add(event);
               if (event.swordPokeVfx() && !swordPokeVfxQueued) {
-                state.runtime.transientVfxRequests.add(
+                state.emit(
                     new TransientVfxRequest(
                         TransientVfxType.SWORD_POKE, event.swordPokeX(), event.swordPokeY()));
                 swordPokeVfxQueued = true;
@@ -56,7 +56,7 @@ final class PairoddProjectileHandler {
             }
             if (objectCollisionHit) {
               if (!swordPokeVfxQueued) {
-                state.runtime.transientVfxRequests.add(
+                state.emit(
                     new TransientVfxRequest(
                         TransientVfxType.SWORD_POKE,
                         state.updated.x(),
@@ -65,7 +65,7 @@ final class PairoddProjectileHandler {
               removePairoddProjectile = true;
             }
             if (removePairoddProjectile) {
-              state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
+              state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
               return false;
             }
           }

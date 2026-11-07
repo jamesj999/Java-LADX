@@ -32,7 +32,7 @@ final class HinoxHandler {
               state.runtime.pendingMusicTrack = bossIntro.musicTrack();
             }
             if (bossIntro.dialogLowId() >= 0) {
-              state.runtime.pendingDialogRequests.add(
+              state.emit(
                   new DialogRequest(bossIntro.dialogTableId(), bossIntro.dialogLowId()));
             }
             HinoxMotion.Update hinoxUpdate =
@@ -52,11 +52,11 @@ final class HinoxHandler {
             state.runtime.enemyTransitionCountdown[slot] = hinoxUpdate.transitionCountdown();
             state.preserveHinoxPresentation = true;
             if (hinoxUpdate.linkMotionBlocked()) {
-              state.runtime.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
-              state.runtime.pendingLinkFallenPoseRequests.add(new LinkFallenPoseRequest(slot));
+              state.emit(new LinkMotionBlockRequest(slot));
+              state.emit(new LinkFallenPoseRequest(slot));
             }
             if (hinoxUpdate.heldLinkPositionWritten()) {
-              state.runtime.pendingHinoxLinkEffectRequests.add(
+              state.emit(
                   new HinoxLinkEffectRequest(
                       slot,
                       hinoxUpdate.heldLinkX(),
@@ -87,7 +87,7 @@ final class HinoxHandler {
                     || hinoxUpdate.linkSpeedY() != 0
                     || hinoxUpdate.linkVelocityZ() != 0
                     || hinoxUpdate.linkDamage() != 0)) {
-              state.runtime.pendingHinoxLinkEffectRequests.add(
+              state.emit(
                   new HinoxLinkEffectRequest(
                       slot,
                       hinoxUpdate.heldLinkX(),
@@ -102,14 +102,14 @@ final class HinoxHandler {
                       hinoxUpdate.applyHeldLinkPose()));
             }
             if (hinoxUpdate.dustRequested()) {
-              state.runtime.transientVfxRequests.add(
+              state.emit(
                   new TransientVfxRequest(
                       TransientVfxType.PEGASUS_DUST,
                       state.updated.x(),
                       (state.updated.y() + 0x0A) & 0xFF));
             }
             if (hinoxUpdate.jingleId() >= 0) {
-              state.runtime.pendingEntityEvents.add(
+              state.emit(
                   new EntityCombatEvent(
                       slot,
                       state.entity.type(),
@@ -119,7 +119,7 @@ final class HinoxHandler {
                       hinoxUpdate.jingleId()));
             }
             if (hinoxUpdate.waveId() >= 0) {
-              state.runtime.pendingEntityEvents.add(
+              state.emit(
                   new EntityCombatEvent(
                       slot,
                       state.entity.type(),

@@ -48,7 +48,7 @@ final class RoamingEnemyTypeHandler {
                   state.updated = roamingUpdate.entity();
                   if (roamingUpdate.launchRequest() != null) {
                     state.runtime.projectileLaunchRequests.add(roamingUpdate.launchRequest());
-                    state.runtime.entityEnemySpawns.spawnEnemyProjectile(
+                    state.enemySpawns().spawnEnemyProjectile(
                         state.entity, roamingUpdate.launchRequest());
                   }
                 }

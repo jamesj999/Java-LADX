@@ -21,8 +21,8 @@ final class KeyDropPointHandler {
             // reads it.
             int slot = state.entity.slot();
             if (state.runtime.pickups.checkForKeyDropQuicksandHole(state.updated)) {
-              state.runtime.pendingKeyQuicksandEvents.add(new KeyQuicksandEvent(slot));
-              state.runtime.slots[state.index] = withStatus(state.updated, EntityStatus.FALLING);
+              state.emit(new KeyQuicksandEvent(slot));
+              state.replaceEntity(withStatus(state.updated, EntityStatus.FALLING));
               state.runtime.enemyTransitionCountdown[slot] = 0x2F;
               state.runtime.fallingTargetX[slot] = 0x50;
               state.runtime.fallingTargetY[slot] = 0x48;
@@ -31,7 +31,7 @@ final class KeyDropPointHandler {
               state.runtime.fallingSpeedXAccumulator[slot] = 0;
               state.runtime.fallingSpeedYAccumulator[slot] = 0;
               state.runtime.fallingVisualYOffset[slot] = 0;
-              state.runtime.pendingEntityEvents.add(
+              state.emit(
                   new EntityCombatEvent(
                       slot,
                       state.runtime.ENTITY_KEY_DROP_POINT,
@@ -57,11 +57,11 @@ final class KeyDropPointHandler {
                     hookshotRoom);
             state.runtime.enemyTransitionCountdown[slot] = keyUpdate.nextTransitionCountdown();
             if (keyUpdate.dialogLowId() >= 0) {
-              state.runtime.pendingDialogRequests.add(
+              state.emit(
                   new DialogRequest(KeyDropPointMotion.DIALOG_TABLE, keyUpdate.dialogLowId()));
             }
             if (keyUpdate.rewardItemType() >= 0) {
-              state.runtime.pendingKeyRewardEvents.add(
+              state.emit(
                   new KeyRewardEvent(slot, keyUpdate.rewardItemType()));
             }
             state.keyDropTransitionActive = keyUpdate.holdAboveLink();

@@ -29,11 +29,11 @@ final class StalfosEvasiveHandler {
             state.runtime.enemyTransitionCountdown[state.entity.slot()] =
                 evasiveUpdate.transitionCountdown();
             if (evasiveUpdate.cloneRequest() != null) {
-              state.runtime.entityEnemySpawns.spawnEvasiveClone(
+              state.enemySpawns().spawnEvasiveClone(
                   state.entity, evasiveUpdate.cloneRequest());
             }
             if (evasiveUpdate.swordPokeRequested()) {
-              state.runtime.pendingEntityEvents.add(
+              state.emit(
                   new EntityCombatEvent(
                       state.entity.slot(),
                       state.entity.type(),
@@ -41,14 +41,14 @@ final class StalfosEvasiveHandler {
                       false,
                       EntityCombatEvent.SoundChannel.JINGLE,
                       0x07));
-              state.runtime.transientVfxRequests.add(
+              state.emit(
                   new TransientVfxRequest(
                       TransientVfxType.SWORD_POKE,
                       state.updated.x(),
                       (state.updated.y() - state.updated.z()) & 0xFF));
             }
             if (evasiveUpdate.unloadRequested()) {
-              state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
+              state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
               return false;
             }
             if (state.runtime.spriteHandlers != null) {

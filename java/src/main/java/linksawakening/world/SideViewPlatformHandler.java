@@ -54,7 +54,7 @@ final class SideViewPlatformHandler {
                 boolean activationAllowed =
                     state.runtime.entityRoomId == 0x3B || state.carryingEntity;
                 if (standing) {
-                  state.runtime.pendingSideViewPlatformLinkRequests.add(
+                  state.emit(
                       new SideViewPlatformLinkRequest(
                           state.entity.slot(),
                           platformFrame.horizontalDelta(),
@@ -68,7 +68,7 @@ final class SideViewPlatformHandler {
                         movedPlatform, platformFrame, state.frame, standing, activationAllowed);
                 state.updated = platformUpdate.entity();
                 if (platformUpdate.rumble()) {
-                  state.runtime.pendingEntityEvents.add(
+                  state.emit(
                       new EntityCombatEvent(
                           state.entity.slot(),
                           state.entity.type(),

@@ -20,7 +20,7 @@ final class PolsVoiceHandler {
             state.runtime.enemyPhysicsFlags[state.entity.slot()] = 0x04;
             state.status = EntityStatus.DYING;
             state.updated = withStatus(state.entity, EntityStatus.DYING);
-            state.runtime.pendingEntityEvents.add(
+            state.emit(
                 new EntityCombatEvent(
                     state.entity.slot(),
                     state.entity.type(),

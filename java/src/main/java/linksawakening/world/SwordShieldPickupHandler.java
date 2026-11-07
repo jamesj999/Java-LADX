@@ -16,7 +16,7 @@ final class SwordShieldPickupHandler {
                       state.entity,
                       state.runtime.spriteHandlers.forSwordShieldPickup(true),
                       state.entity.spriteVariant());
-              state.runtime.slots[state.index] = state.entity;
+              state.replaceEntity(state.entity);
             }
             if (state.runtime.swordPickupSequenceActive[state.entity.slot()]) {
               state.runtime.rewards.advanceSwordPickup(

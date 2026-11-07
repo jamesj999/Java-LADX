@@ -27,7 +27,7 @@ final class EnemyProjectileTypeHandler {
                     EntityProjectileEvent event = collisionEvent.orElseThrow();
                     state.projectileEvents.add(event);
                     if (event.remove()) {
-                      state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
+                      state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
                       return false;
                     }
                     preexistingCollision |= event.startsWallTransition();
@@ -44,14 +44,14 @@ final class EnemyProjectileTypeHandler {
                         state.handlerInteractive,
                         state.projectileTimersInteractive);
                 if (projectileUpdate.unloaded()) {
-                  state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
+                  state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
                   return false;
                 }
                 if (projectileUpdate.collidedWithWall()) {
                   // $6B0C skips the poke jingle when Link collision supplied
                   // $FF (including shield blocks, which already play a ting).
                   if (!preexistingCollision) {
-                    state.runtime.pendingEntityEvents.add(
+                    state.emit(
                         new EntityCombatEvent(
                             state.entity.slot(),
                             state.entity.type(),

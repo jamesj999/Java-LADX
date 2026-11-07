@@ -53,7 +53,7 @@ final class ZombieHandler {
             state.runtime.enemyPhysicsFlags[slot] = zombieUpdate.physicsFlags();
             state.applyGenericGroundInteraction = zombieUpdate.appliesBackgroundInteraction();
             if (zombieUpdate.spawnRequest() != null) {
-              state.runtime.entityEnemySpawns.spawnZombieChild(zombieUpdate.spawnRequest());
+              state.enemySpawns().spawnZombieChild(zombieUpdate.spawnRequest());
             }
             if (zombieUpdate.unloadRequested()) {
               state.runtime.clearEntity(slot);

@@ -31,7 +31,7 @@ final class ChestWithItemHandler {
             if (state.runtime.pickups.advanceChestEntity(state.index, state.entity)) {
               return false;
             }
-            state.updated = state.runtime.slots[state.index];
+            state.updated = state.entityAt(state.index);
           }
           return true;
         });

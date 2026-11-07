@@ -13,7 +13,7 @@ final class MarinIndoorHandler {
 
               && state.runtime.chestPlayerLevelsKnown
               && state.runtime.chestSwordLevel != 0) {
-            state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
+            state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
             return false;
           }
           return true;

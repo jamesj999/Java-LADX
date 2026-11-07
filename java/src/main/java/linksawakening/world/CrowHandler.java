@@ -43,7 +43,7 @@ final class CrowHandler {
               state.runtime.projectiles.playBoomerangSoundIfDue(state.updated);
             }
             if (crowUpdate.unloaded()) {
-              state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
+              state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
               return false;
             }
           }

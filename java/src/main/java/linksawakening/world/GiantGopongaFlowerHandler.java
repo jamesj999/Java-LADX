@@ -29,7 +29,7 @@ final class GiantGopongaFlowerHandler {
             state.runtime.enemyTransitionCountdown[state.entity.slot()] =
                 giantUpdate.transitionCountdown();
             if (giantUpdate.projectileSpawn() != null) {
-              state.runtime.entityEnemySpawns.spawnGopongaProjectile(
+              state.enemySpawns().spawnGopongaProjectile(
                   state.entity, giantUpdate.projectileSpawn());
             }
             state.preserveGiantGopongaPresentation = true;

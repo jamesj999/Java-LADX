@@ -27,12 +27,12 @@ final class PokeyHandler {
               state.runtime.entityInertia[slot] = segmentUpdate.inertia();
               state.runtime.enemyTransitionCountdown[slot] = segmentUpdate.transitionCountdown();
               if (segmentUpdate.unloadRequested()) {
-                state.runtime.transientVfxRequests.add(
+                state.emit(
                     new TransientVfxRequest(
                         TransientVfxType.POOF,
                         state.updated.x(),
                         (state.updated.y() - state.updated.z()) & 0xFF));
-                state.runtime.pendingEntityEvents.add(
+                state.emit(
                     new EntityCombatEvent(
                         slot,
                         state.entity.type(),
@@ -40,11 +40,11 @@ final class PokeyHandler {
                         false,
                         EntityCombatEvent.SoundChannel.JINGLE,
                         0x2F));
-                state.runtime.lifecycle.disableEntityWithoutPersistence(slot);
+                state.lifecycle().disableEntityWithoutPersistence(slot);
                 return false;
               }
               if (segmentUpdate.bumpJingle()) {
-                state.runtime.pendingEntityEvents.add(
+                state.emit(
                     new EntityCombatEvent(
                         slot,
                         state.entity.type(),
@@ -76,7 +76,7 @@ final class PokeyHandler {
               state.runtime.enemyTransitionCountdown[slot] = pokeyUpdate.transitionCountdown();
               state.runtime.enemyFlashCountdown[slot] = pokeyUpdate.flashCountdown();
               if (pokeyUpdate.segmentSpawn() != null) {
-                state.runtime.entityEnemySpawns.spawnPokeySegment(pokeyUpdate.segmentSpawn());
+                state.enemySpawns().spawnPokeySegment(pokeyUpdate.segmentSpawn());
               }
               if (state.runtime.spriteHandlers != null) {
                 state.updated =

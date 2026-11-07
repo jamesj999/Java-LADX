@@ -1,5 +1,43 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.WitchRewardEvent;
+
+import linksawakening.world.entity.event.WitchExchangeEvent;
+
+import linksawakening.world.entity.event.WarpLinkStateRequest;
+
+import linksawakening.world.entity.event.TransientVfxRequest;
+
+import linksawakening.world.entity.event.SlimeKeyRewardEvent;
+
+import linksawakening.world.entity.event.SideViewPlatformLinkRequest;
+
+import linksawakening.world.entity.event.ScreenShakeRequest;
+
+import linksawakening.world.entity.event.RoosterLinkStateRequest;
+
+import linksawakening.world.entity.event.RoomStatusPersistenceRequest;
+
+import linksawakening.world.entity.event.LinkMotionBlockRequest;
+
+import linksawakening.world.entity.event.LinkFallenPoseRequest;
+
+import linksawakening.world.entity.event.LinkFacingRequest;
+
+import linksawakening.world.entity.event.LinkAttackClearRequest;
+
+import linksawakening.world.entity.event.LikeLikeEvent;
+
+import linksawakening.world.entity.event.KeyRewardEvent;
+
+import linksawakening.world.entity.event.KeyQuicksandEvent;
+
+import linksawakening.world.entity.event.HinoxLinkEffectRequest;
+
+import linksawakening.world.entity.event.DungeonWarpRequest;
+
+import linksawakening.world.entity.event.DialogRequest;
+
 import linksawakening.world.entity.event.ThrownBackgroundCollisionEvent;
 
 import static linksawakening.world.EntityMotionMath.*;
@@ -320,4 +358,54 @@ final class EntityFrameExecution {
     state.runtime.slotProperties.updateBowWowChain(state.frame);
     return state.runtime.outbox.drain(EntityProjectileEvent.class, "projectileEvents");
   }
+
+  void replaceEntity(RoomEntity replacement) { runtime.slots[index] = replacement; }
+
+  RoomEntity entityAt(int slotIndex) { return runtime.slots[slotIndex]; }
+
+  void emit(DialogRequest event) { runtime.pendingDialogRequests.add(event); }
+
+  void emit(DungeonWarpRequest event) { runtime.pendingDungeonWarpRequests.add(event); }
+
+  void emit(EntityCombatEvent event) { runtime.pendingEntityEvents.add(event); }
+
+  void emit(HinoxLinkEffectRequest event) { runtime.pendingHinoxLinkEffectRequests.add(event); }
+
+  void emit(KeyQuicksandEvent event) { runtime.pendingKeyQuicksandEvents.add(event); }
+
+  void emit(KeyRewardEvent event) { runtime.pendingKeyRewardEvents.add(event); }
+
+  void emit(LikeLikeEvent event) { runtime.pendingLikeLikeEvents.add(event); }
+
+  void emit(LinkAttackClearRequest event) { runtime.pendingLinkAttackClearRequests.add(event); }
+
+  void emit(LinkFacingRequest event) { runtime.pendingLinkFacingRequests.add(event); }
+
+  void emit(LinkFallenPoseRequest event) { runtime.pendingLinkFallenPoseRequests.add(event); }
+
+  void emit(LinkMotionBlockRequest event) { runtime.pendingLinkMotionBlockRequests.add(event); }
+
+  void emit(RoomStatusPersistenceRequest event) { runtime.pendingRoomStatusPersistenceRequests.add(event); }
+
+  void emit(RoosterLinkStateRequest event) { runtime.pendingRoosterLinkStateRequests.add(event); }
+
+  void emit(ScreenShakeRequest event) { runtime.pendingScreenShakeRequests.add(event); }
+
+  void emit(SideViewPlatformLinkRequest event) { runtime.pendingSideViewPlatformLinkRequests.add(event); }
+
+  void emit(SlimeKeyRewardEvent event) { runtime.pendingSlimeKeyRewardEvents.add(event); }
+
+  void emit(WarpLinkStateRequest event) { runtime.pendingWarpLinkStateRequests.add(event); }
+
+  void emit(WitchExchangeEvent event) { runtime.pendingWitchExchangeEvents.add(event); }
+
+  void emit(WitchRewardEvent event) { runtime.pendingWitchRewardEvents.add(event); }
+
+  void emit(TransientVfxRequest event) { runtime.transientVfxRequests.add(event); }
+
+  EntitySlotLifecycle lifecycle() { return runtime.lifecycle; }
+
+  EntityEnemySpawns enemySpawns() { return runtime.entityEnemySpawns; }
+
+  EntityPlayerSpawns playerSpawns() { return runtime.entityPlayerSpawns; }
 }

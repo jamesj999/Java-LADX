@@ -11,14 +11,14 @@ final class KanaletBombableWallHandler {
         state -> {
           {
             if ((state.runtime.entityRoomStatus & 0x10) != 0) {
-              state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
+              state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
               return false;
             }
             state.runtime.droppedItemBySlot[state.entity.slot()] =
                 state.runtime.ENTITY_HIDING_SLIME_KEY;
             if (state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()] != 0) {
-              if (state.runtime.entityEnemySpawns.spawnKanaletWallMoblin(state.entity)) {
-                state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
+              if (state.enemySpawns().spawnKanaletWallMoblin(state.entity)) {
+                state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
                 return false;
               }
             }

@@ -46,7 +46,7 @@ final class WizrobeProjectileHandler {
                 state.objectCollision != null && state.objectCollision.collides(state.updated);
             if (objectCollisionHit
                 || collisionEvent.map(EntityProjectileEvent::remove).orElse(false)) {
-              state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
+              state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
               return false;
             }
           }

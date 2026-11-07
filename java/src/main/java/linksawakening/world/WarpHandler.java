@@ -19,12 +19,11 @@ final class WarpHandler {
 
                   && state.runtime.warpMotion != null) {
                 int slot = state.entity.slot();
-                state.runtime.slots[state.index] =
-                    withPositionAndVariant(
+                state.replaceEntity(withPositionAndVariant(
                         state.entity,
                         state.entity.x(),
                         state.entity.y(),
-                        state.runtime.dungeonMinibossReady ? (state.frame >> 3) & 7 : -1);
+                        state.runtime.dungeonMinibossReady ? (state.frame >> 3) & 7 : -1));
                 WarpMotion.Update warpUpdate =
                     state.runtime.warpMotion.advance(
                         state.entity,
@@ -42,7 +41,7 @@ final class WarpHandler {
                   state.runtime.pendingMusicTrack = warpUpdate.musicTrack();
                 }
                 if (warpUpdate.jingleId() >= 0) {
-                  state.runtime.pendingEntityEvents.add(
+                  state.emit(
                       new EntityCombatEvent(
                           slot,
                           state.entity.type(),
@@ -52,11 +51,11 @@ final class WarpHandler {
                           warpUpdate.jingleId()));
                 }
                 if (warpUpdate.motionBlocked()) {
-                  state.runtime.pendingLinkMotionBlockRequests.add(
+                  state.emit(
                       new LinkMotionBlockRequest(slot));
                 }
                 if (warpUpdate.state() == WarpMotion.STATE_TRANSITION) {
-                  state.runtime.pendingWarpLinkStateRequests.add(
+                  state.emit(
                       new WarpLinkStateRequest(
                           slot,
                           state.entity.x(),
@@ -64,9 +63,9 @@ final class WarpHandler {
                           warpUpdate.immunityCountdown()));
                 }
                 if (warpUpdate.destinationReady()) {
-                  state.runtime.pendingDungeonWarpRequests.add(
+                  state.emit(
                       new DungeonWarpRequest(slot, warpUpdate.destination()));
-                  state.runtime.lifecycle.disableEntityWithoutPersistence(slot);
+                  state.lifecycle().disableEntityWithoutPersistence(slot);
                 }
                 return false;
               }

@@ -29,7 +29,7 @@ final class RollingBonesBarHandler {
                 // The bar's room-clear check precedes its interaction guard.
                 if (state.entity.type() == state.runtime.ENTITY_ROLLING_BONES_BAR
                     && (state.runtime.entityRoomStatus & 0x20) != 0) {
-                  state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
+                  state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
                   return false;
                 }
                 // ReturnIfNonInteractive_06 reads the pre-decrement wC1A8.
@@ -39,12 +39,11 @@ final class RollingBonesBarHandler {
                     && state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()] != 0) {
                   // ApplyRecoilIfNeeded_06 pops the handler return address:
                   // no jump physics or AI movement occurs during recoil.
-                  state.runtime.slots[state.index] =
-                      state
+                  state.replaceEntity(state
                           .runtime
                           .backgroundMechanics
                           .applyEnemyRecoilIfNeeded(state.entity, state.backgroundCollision)
-                          .entity();
+                          .entity());
                   return false;
                 }
               }
@@ -61,7 +60,7 @@ final class RollingBonesBarHandler {
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             if ((state.runtime.entityRoomStatus & 0x20) != 0) {
-              state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
+              state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
               return false;
             }
             RollingBonesMotion.BarUpdate barUpdate =
@@ -78,7 +77,7 @@ final class RollingBonesBarHandler {
             }
             state.preserveRollingBonesPresentation = true;
             if (barUpdate.rollingSound()) {
-              state.runtime.pendingEntityEvents.add(
+              state.emit(
                   new EntityCombatEvent(
                       state.entity.slot(),
                       state.entity.type(),
@@ -88,7 +87,7 @@ final class RollingBonesBarHandler {
                       0x1A));
             }
             if (barUpdate.strongBump()) {
-              state.runtime.pendingEntityEvents.add(
+              state.emit(
                   new EntityCombatEvent(
                       state.entity.slot(),
                       state.entity.type(),
@@ -96,7 +95,7 @@ final class RollingBonesBarHandler {
                       false,
                       EntityCombatEvent.SoundChannel.JINGLE,
                       0x0B));
-              state.runtime.pendingScreenShakeRequests.add(
+              state.emit(
                   new ScreenShakeRequest(state.entity.slot(), barUpdate.screenShakeCountdown(), 0));
             }
           }

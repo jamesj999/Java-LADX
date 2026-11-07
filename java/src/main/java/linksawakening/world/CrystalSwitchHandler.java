@@ -20,7 +20,7 @@ final class CrystalSwitchHandler {
               if (!state.runtime.switchBlockAnimationActive) {
                 state.runtime.enemyTransitionCountdown[state.entity.slot()] = 0x18;
                 state.runtime.pendingSwitchBlockAnimationRequest = true;
-                state.runtime.pendingEntityEvents.add(
+                state.emit(
                     new EntityCombatEvent(
                         state.entity.slot(),
                         state.entity.type(),

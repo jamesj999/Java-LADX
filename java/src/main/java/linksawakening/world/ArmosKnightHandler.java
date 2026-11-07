@@ -25,7 +25,7 @@ final class ArmosKnightHandler {
               state.runtime.pendingMusicTrack = bossIntro.musicTrack();
             }
             if (bossIntro.dialogLowId() >= 0) {
-              state.runtime.pendingDialogRequests.add(
+              state.emit(
                   new DialogRequest(bossIntro.dialogTableId(), bossIntro.dialogLowId()));
             }
             state.runtime.backgroundMechanics.requestArmosLinkPush(
@@ -53,23 +53,23 @@ final class ArmosKnightHandler {
                 armosKnightUpdate.options1();
             state.preserveArmosKnightPresentation = true;
             if (armosKnightUpdate.linkMotionBlocked()) {
-              state.runtime.pendingLinkMotionBlockRequests.add(
+              state.emit(
                   new LinkMotionBlockRequest(state.entity.slot()));
-              state.runtime.pendingLinkFallenPoseRequests.add(
+              state.emit(
                   new LinkFallenPoseRequest(state.entity.slot()));
             }
             if (armosKnightUpdate.screenShakeRequest() != null) {
               ArmosKnightMotion.ScreenShakeRequest shake = armosKnightUpdate.screenShakeRequest();
-              state.runtime.pendingScreenShakeRequests.add(
+              state.emit(
                   new ScreenShakeRequest(state.entity.slot(), shake.countdown(), shake.phase()));
             }
             if (armosKnightUpdate.rubbleRequest() != null) {
               ArmosKnightMotion.RubbleRequest rubble = armosKnightUpdate.rubbleRequest();
               int rubbleSlot = state.runtime.spawnLiftableRockRubble(rubble.x(), rubble.y());
               if (rubbleSlot >= 0) {
-                state.runtime.transientVfxRequests.add(
+                state.emit(
                     new TransientVfxRequest(TransientVfxType.POOF, rubble.x(), rubble.y()));
-                state.runtime.pendingEntityEvents.add(
+                state.emit(
                     new EntityCombatEvent(
                         rubbleSlot,
                         state.runtime.ENTITY_LIFTABLE_ROCK,
@@ -80,7 +80,7 @@ final class ArmosKnightHandler {
               }
             }
             if (armosKnightUpdate.jingleId() >= 0) {
-              state.runtime.pendingEntityEvents.add(
+              state.emit(
                   new EntityCombatEvent(
                       state.entity.slot(),
                       state.entity.type(),

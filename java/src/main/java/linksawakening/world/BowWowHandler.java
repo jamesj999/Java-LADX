@@ -35,7 +35,7 @@ final class BowWowHandler {
             }
             state.entity =
                 withVariant(state.entity, state.runtime.bowWowMotion.selectedVariant(slot));
-            state.runtime.slots[state.index] = state.entity;
+            state.replaceEntity(state.entity);
             if (!state.bowWowHandlerInteractive) {
               return false;
             }
@@ -70,7 +70,7 @@ final class BowWowHandler {
                       state.runtime.spriteHandlers.forFollowerEntityType(
                           state.runtime.ENTITY_BOW_WOW),
                       state.entity.spriteVariant());
-              state.runtime.slots[state.index] = state.entity;
+              state.replaceEntity(state.entity);
             }
             state.runtime.followingNpcState =
                 new FollowingNpcState(
@@ -82,8 +82,8 @@ final class BowWowHandler {
                     state.runtime.followingNpcState.powerBraceletLevel(),
                     state.runtime.followingNpcState.db10());
             state.runtime.pendingMusicTrack = 0x10;
-            state.runtime.pendingDialogRequests.add(new DialogRequest(1, 0x6C));
-            state.runtime.pendingEntityEvents.add(
+            state.emit(new DialogRequest(1, 0x6C));
+            state.emit(
                 new EntityCombatEvent(
                     state.entity.slot(),
                     state.entity.type(),
