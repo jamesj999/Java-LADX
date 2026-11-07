@@ -32,24 +32,24 @@ final class MoldormRuntimeTest {
         runtime.setEntityMapIdForTest(0);
         runtime.setEntityRoomId(6);
         runtime.setRoomTransitionStateForTest(true);
-        for (int frame = 0; frame < 40; frame++) runtime.tick(frame, 80, 80, () -> 0);
+        for (int frame = 0; frame < 40; frame++) runtime.tick(EntityTestFrames.frame(runtime, frame, 80, 80, () -> 0));
         assertTrue(runtime.consumePendingDialogRequests().isEmpty());
         assertEquals(64, runtime.snapshot().slots().getFirst().x());
         runtime.setRoomTransitionStateForTest(false);
         runtime.setTalkState(true, 0, 144);
-        for (int frame = 40; frame < 80; frame++) runtime.tick(frame, 80, 80, () -> 0);
+        for (int frame = 40; frame < 80; frame++) runtime.tick(EntityTestFrames.frame(runtime, frame, 80, 80, () -> 0));
         assertTrue(runtime.consumePendingDialogRequests().isEmpty());
         runtime.setTalkState(false, 0, 144);
-        for (int frame = 80; frame < 112; frame++) runtime.tick(frame, 80, 80, () -> 0);
+        for (int frame = 80; frame < 112; frame++) runtime.tick(EntityTestFrames.frame(runtime, frame, 80, 80, () -> 0));
         assertTrue(runtime.consumePendingDialogRequests().isEmpty());
         var before = runtime.snapshot().slots().getFirst();
-        runtime.tick(112, 80, 80, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 112, 80, 80, () -> 0));
         assertEquals(List.of(new DialogRequest(0, 0xB0)),
             runtime.consumePendingDialogRequests());
         assertEquals(before.x(), runtime.snapshot().slots().getFirst().x());
         assertEquals(before.y(), runtime.snapshot().slots().getFirst().y());
         runtime.setDialogActive(true);
-        for (int frame = 113; frame < 160; frame++) runtime.tick(frame, 80, 80, () -> 0);
+        for (int frame = 113; frame < 160; frame++) runtime.tick(EntityTestFrames.frame(runtime, frame, 80, 80, () -> 0));
         assertEquals(before.x(), runtime.snapshot().slots().getFirst().x());
         assertEquals(before.y(), runtime.snapshot().slots().getFirst().y());
         assertTrue(runtime.consumePendingDialogRequests().isEmpty());
@@ -238,8 +238,8 @@ final class MoldormRuntimeTest {
             catalog.forEntityType(ENTITY_MOLDORM, EntityRoomLoader.RoomTable.INDOORS_A), 0, 0, 0, 0, -1, false)),
             true, () -> 0, catalog, new RomEnemyCombatTables(rom));
 
-        runtime.tickWithProjectileEvents(0, 0x20, 0x20, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0x20, 0x20, 0, 0, 0, false));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x20, 0x20, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0x20, 0x20, 0, 0, 0, false)));
 
         assertEquals(0x06, runtime.moldormHeadSpriteVariant(0));
         assertEquals(0x10, runtime.moldormTransitionCountdown(0));
@@ -251,8 +251,8 @@ final class MoldormRuntimeTest {
             .dynamicVariant(0).get(2).oam().tile());
         assertEquals(0x02, runtime.physicsFlags(0));
 
-        runtime.tickWithProjectileEvents(1, 0x20, 0x20, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0x20, 0x20, 0, 0, 0, false));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 1, 0x20, 0x20, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0x20, 0x20, 0, 0, 0, false)));
 
         RoomEntity rendered = runtime.snapshot().slots().get(0);
         assertEquals(0x41, rendered.x());
@@ -270,8 +270,8 @@ final class MoldormRuntimeTest {
             0, 0, ENTITY_MOLDORM, 0x40, 0x40, EntityStatus.ACTIVE,
             catalog.forEntityType(ENTITY_MOLDORM, EntityRoomLoader.RoomTable.INDOORS_A), 0, 0, 0, 0, -1, false)),
             true, () -> 0, catalog, new RomEnemyCombatTables(rom));
-        runtime.tickWithProjectileEvents(0, 0x20, 0x20, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0x20, 0x20, 0, 0, 0, false));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x20, 0x20, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0x20, 0x20, 0, 0, 0, false)));
 
         List<EntityCombatEvent> headClink = runtime.resolveCombat(1,
             0x20, 0x20, false, true, true, 0x40, 8, 0x40, 8);
@@ -312,8 +312,8 @@ final class MoldormRuntimeTest {
             0, 0, ENTITY_MOLDORM, 0x05, 0x90, EntityStatus.ACTIVE,
             catalog.forEntityType(ENTITY_MOLDORM, EntityRoomLoader.RoomTable.INDOORS_A), 0, 0, 0, 0, -1, false)),
             true, () -> 0, catalog, new RomEnemyCombatTables(rom));
-        runtime.tickWithProjectileEvents(0, 0x20, 0x20, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0x20, 0x20, 0, 0, 0, false));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x20, 0x20, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0x20, 0x20, 0, 0, 0, false)));
         runtime.setEnemyHealthForTest(0, 1);
 
         List<EntityCombatEvent> lethalHit = runtime.resolveCombat(1,
@@ -330,8 +330,8 @@ final class MoldormRuntimeTest {
         boolean sawInitialDestructionFlash = false;
         boolean sawVisibleDestructionFlash = false;
         while (runtime.snapshot().slots().getFirst().loaded() && frame < 700) {
-            runtime.tickWithProjectileEvents(frame++, 0x20, 0x20, () -> 0, null,
-                new EnemyProjectileCollision.LinkState(0x20, 0x20, 0, 0, 0, false));
+            runtime.tick(EntityTestFrames.projectileFrame(runtime, frame++, 0x20, 0x20, () -> 0, null,
+                new EnemyProjectileCollision.LinkState(0x20, 0x20, 0, 0, 0, false)));
             poofCount += runtime.transientVfxRequests().stream()
                 .filter(request -> request.type() == TransientVfxType.POOF)
                 .count();
@@ -379,9 +379,9 @@ final class MoldormRuntimeTest {
         boolean completed = false;
         boolean sawHeldItemPose = false;
         for (int pickupFrame = 0; pickupFrame < 0x70; pickupFrame++) {
-            runtime.tickWithProjectileEvents(pickupFrame, heart.x(), heart.y(), () -> 0, null,
+            runtime.tick(EntityTestFrames.projectileFrame(runtime, pickupFrame, heart.x(), heart.y(), () -> 0, null,
                 new EnemyProjectileCollision.LinkState(
-                    heart.x(), heart.y(), 0, 0, 0, false));
+                    heart.x(), heart.y(), 0, 0, 0, false)));
             if (!runtime.consumePendingLinkHeldItemPoseRequests().isEmpty()) {
                 sawHeldItemPose = true;
             }
@@ -405,9 +405,9 @@ final class MoldormRuntimeTest {
             catalog.forEntityType(ENTITY_MOLDORM, EntityRoomLoader.RoomTable.INDOORS_A), 0, 0, 0, 0, -1, false)),
             true, () -> 0, catalog, new RomEnemyCombatTables(rom));
 
-        runtime.tickWithProjectileEvents(0, 0x20, 0x20, () -> 0, null,
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x20, 0x20, () -> 0, null,
             new EnemyProjectileCollision.LinkState(0x20, 0x20, 0, 0,
-                EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE, false));
+                EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE, false)));
 
         assertEquals(1, runtime.moldormInertia(0));
     }

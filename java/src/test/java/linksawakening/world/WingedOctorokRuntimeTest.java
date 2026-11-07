@@ -45,7 +45,7 @@ final class WingedOctorokRuntimeTest {
             new RoomEntity(0, 0, 0xAE, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
             false, () -> 0, catalog, tables);
 
-        runtime.tick(0, 0x20, 0x40, () -> 0x02);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x40, () -> 0x02));
 
         assertEquals(1, runtime.wingedOctorokState(0));
         assertEquals(0x12, runtime.transitionCountdown(0));
@@ -67,7 +67,7 @@ final class WingedOctorokRuntimeTest {
             false, () -> 0, catalog, tables);
 
         for (int frame = 0; frame <= 6; frame++) {
-            runtime.tick(frame, 0x60, 0x40, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x60, 0x40, () -> 0));
         }
 
         RoomEntity rock = runtime.snapshot().loadedEntities().stream()

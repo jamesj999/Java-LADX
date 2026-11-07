@@ -152,9 +152,9 @@ final class BuzzBlobRuntimeTest {
             return RoomEntityGroundInteraction.Result.unchanged(entity, previousStatus);
         });
 
-        runtime.tickWithProjectileEvents(0, 0x40, 0x40, () -> 0, null,
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x40, 0x40, () -> 0, null,
             new EnemyProjectileCollision.LinkState(0x40, 0x40, 0,
-                EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE, 0, false));
+                EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE, 0, false)));
 
         assertEquals(0, groundCalls.get());
     }
@@ -170,9 +170,9 @@ final class BuzzBlobRuntimeTest {
         runtime.configureEnemyRecoilForTest(0, 0x40, 0x40, 0x10);
         runtime.setEnemyIgnoreHitsCountdownForTest(0, 0x0A);
 
-        runtime.tickWithProjectileEvents(0, 0x40, 0x40, () -> 0, null,
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x40, 0x40, () -> 0, null,
             new EnemyProjectileCollision.LinkState(0x40, 0x40, 0,
-                EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE, 0, false));
+                EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE, 0, false)));
 
         RoomEntity after = runtime.snapshot().slots().get(0);
         assertEquals(0x40, after.x());

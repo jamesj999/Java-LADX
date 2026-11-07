@@ -39,7 +39,7 @@ final class FairyRuntimeTest {
             new RoomEntity(0, 0, 0x2F, 0x40, 0x40, EntityStatus.ACTIVE,
                 definition, 0, 0, 0, 0x10, -1, false)), false, () -> 0, catalog);
 
-        runtime.tick(0, 0x50, 0x40, sequence(0x0F, 0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x40, sequence(0x0F, 0x00)));
 
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
         assertEquals(0xB1, runtime.physicsFlags(0));
@@ -63,10 +63,10 @@ final class FairyRuntimeTest {
         runtime.setEnemyDropResolver(new EnemyDropResolver(rom));
         runtime.setDroppedItemForTest(15, 0x2F);
 
-        runtime.tick(0, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
         assertEquals(0x2F, runtime.snapshot().slots().get(14).type());
 
-        runtime.tick(1, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0, 0, () -> 0));
 
         RoomEntity fairy = runtime.snapshot().slots().get(14);
         assertEquals(0x10, fairy.z());

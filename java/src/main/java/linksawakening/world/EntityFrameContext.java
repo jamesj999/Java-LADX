@@ -98,4 +98,11 @@ record EntityFrameContext(
         creditsGameplay,
         handlerLinkCollisionEnabled);
   }
+  EntityFrameContext withLinkSpeeds(int speedX, int speedY) {
+    return new EntityFrameContext(frameCounter, linkEntityX, linkEntityY, collisionType,
+        randomByteSupplier, backgroundCollision, objectCollision, linkPositionHistory,
+        linkZ, linkAirborne, linkDirection, entityYOffset, projectileLinkState,
+        swordCollisionActive, swordX, swordWidth, swordY, swordHeight, speedX, speedY,
+        creditsGameplay, handlerLinkCollisionEnabled);
+  }
 }

@@ -23,7 +23,7 @@ final class BombLiftThrowRuntimeTest {
         int slot = runtime.spawnBomb(0x40, 0x50, 0, 0);
         RoomEntity settled = null;
         for (int frame = 0; frame < 32; frame++) {
-            runtime.tick(frame, 0x10, 0x20, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x10, 0x20, () -> 0));
             RoomEntity bomb = runtime.snapshot().slots().get(slot);
             assertTrue(bomb.z() < 0x80, "Bomb fell through floor on frame " + frame);
             if (frame == 16) {
@@ -42,7 +42,7 @@ final class BombLiftThrowRuntimeTest {
         RoomEntityRuntime runtime = bombRuntime();
         int slot = runtime.spawnBomb(0x40, 0x50, 0, 0);
         runtime.setBombTransitionCountdownForTest(slot, 0x19);
-        runtime.tick(0, 0x40, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0));
 
         RoomEntity warning = runtime.snapshot().slots().get(slot);
         assertEquals(0x5484, warning.spriteDefinition().address());
@@ -64,11 +64,11 @@ final class BombLiftThrowRuntimeTest {
         RoomEntityRuntime runtime = bombRuntime();
         int slot = runtime.spawnBomb(0x40, 0x50, 0, 0);
         runtime.setBombTransitionCountdownForTest(slot, 0x19);
-        runtime.tick(0, 0x40, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0));
         assertTrue(runtime.beginLift(slot, ThrownEntityMotion.ROM_DIRECTION_RIGHT));
 
         for (int frame = 1; frame < 8; frame++) {
-            runtime.tick(frame, 0x40, 0x50, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x40, 0x50, () -> 0));
             RoomEntity lifted = runtime.snapshot().slots().get(slot);
             assertEquals(EntityStatus.LIFTED, lifted.status());
             assertNormalBombDefinition(lifted);
@@ -83,7 +83,7 @@ final class BombLiftThrowRuntimeTest {
         int slot = runtime.spawnBomb(0x40, 0x50, 0, 0);
         runtime.setBombButtonHeld(true);
 
-        runtime.tick(0, 0x40, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0));
 
         RoomEntity active = runtime.snapshot().slots().get(slot);
         assertEquals(EntityStatus.ACTIVE, active.status());
@@ -98,7 +98,7 @@ final class BombLiftThrowRuntimeTest {
         int warningSlot = warningRuntime.spawnBomb(0x40, 0x50, 0, 0);
         warningRuntime.setBombTransitionCountdownForTest(warningSlot, 0x22);
         warningRuntime.setBombButtonHeld(true);
-        warningRuntime.tick(0, 0x40, 0x50, () -> 0);
+        warningRuntime.tick(EntityTestFrames.frame(warningRuntime, 0, 0x40, 0x50, () -> 0));
         assertEquals(EntityStatus.ACTIVE,
             warningRuntime.snapshot().slots().get(warningSlot).status());
         assertEquals(0x5484,
@@ -108,7 +108,7 @@ final class BombLiftThrowRuntimeTest {
         int explosionSlot = explosionRuntime.spawnBomb(0x40, 0x50, 0, 0);
         explosionRuntime.setBombTransitionCountdownForTest(explosionSlot, 0x18);
         explosionRuntime.setBombButtonHeld(true);
-        explosionRuntime.tick(0, 0x40, 0x50, () -> 0);
+        explosionRuntime.tick(EntityTestFrames.frame(explosionRuntime, 0, 0x40, 0x50, () -> 0));
         assertEquals(EntityStatus.ACTIVE,
             explosionRuntime.snapshot().slots().get(explosionSlot).status());
         assertEquals(0x6530,
@@ -123,11 +123,11 @@ final class BombLiftThrowRuntimeTest {
         runtime.setBombTransitionCountdownForTest(slot, 0x22);
         AtomicInteger wallQueries = new AtomicInteger();
 
-        runtime.tick(0, 0x40, 0x50, () -> 0,
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0,
             (entity, direction, nextX, nextY) -> {
                 wallQueries.incrementAndGet();
                 return false;
-            });
+            }));
 
         RoomEntity warning = runtime.snapshot().slots().get(slot);
         assertEquals(EntityStatus.ACTIVE, warning.status());
@@ -144,7 +144,7 @@ final class BombLiftThrowRuntimeTest {
         int slot = runtime.spawnBomb(0x40, 0x50, 0, 0);
         runtime.setBombTransitionCountdownForTest(slot, 0x01);
         RoomEntity beforeExplosion = runtime.snapshot().slots().get(slot);
-        runtime.tick(0, 0x40, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0));
 
         assertFalse(runtime.beginLift(slot, ThrownEntityMotion.ROM_DIRECTION_RIGHT));
         RoomEntity afterExplosion = runtime.snapshot().slots().get(slot);
@@ -172,7 +172,7 @@ final class BombLiftThrowRuntimeTest {
 
         int xBeforeMotion = thrown.x();
         int zBeforeMotion = thrown.z();
-        runtime.tick(100, thrown.x(), thrown.y(), () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 100, thrown.x(), thrown.y(), () -> 0));
         RoomEntity afterMotion = runtime.snapshot().slots().get(slot);
         assertEquals(EntityStatus.THROWN, afterMotion.status());
         assertEquals((xBeforeMotion + 1) & 0xFF, afterMotion.x());
@@ -189,7 +189,7 @@ final class BombLiftThrowRuntimeTest {
 
         RoomEntity thrown = runtime.snapshot().slots().get(slot);
         runtime.setBombButtonHeld(true);
-        runtime.tick(100, thrown.x(), thrown.y(), () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 100, thrown.x(), thrown.y(), () -> 0));
 
         RoomEntity afterMotion = runtime.snapshot().slots().get(slot);
         assertEquals(slot, afterMotion.slot());
@@ -212,13 +212,13 @@ final class BombLiftThrowRuntimeTest {
         int frame = 0;
         while (runtime.snapshot().slots().get(slot).status() != EntityStatus.STUNNED
             && frame < 12) {
-            runtime.tick(frame++, 0, 0, () -> 0, alwaysBlocked);
+            runtime.tick(EntityTestFrames.frame(runtime, frame++, 0, 0, () -> 0, alwaysBlocked));
         }
         assertEquals(EntityStatus.STUNNED, runtime.snapshot().slots().get(slot).status());
 
         RoomEntity stunned = runtime.snapshot().slots().get(slot);
         runtime.setBombButtonHeld(true);
-        runtime.tick(frame, stunned.x(), stunned.y(), () -> 0, alwaysBlocked);
+        runtime.tick(EntityTestFrames.frame(runtime, frame, stunned.x(), stunned.y(), () -> 0, alwaysBlocked));
 
         RoomEntity afterButton = runtime.snapshot().slots().get(slot);
         assertEquals(slot, afterButton.slot());
@@ -239,7 +239,7 @@ final class BombLiftThrowRuntimeTest {
         int frame = 0;
         while (runtime.snapshot().slots().get(slot).status() != EntityStatus.STUNNED
             && frame < 12) {
-            runtime.tick(frame++, 0, 0, () -> 0, alwaysBlocked);
+            runtime.tick(EntityTestFrames.frame(runtime, frame++, 0, 0, () -> 0, alwaysBlocked));
         }
         assertEquals(EntityStatus.STUNNED, runtime.snapshot().slots().get(slot).status());
 
@@ -249,13 +249,13 @@ final class BombLiftThrowRuntimeTest {
         AtomicInteger wallQueries = new AtomicInteger();
         List<EntityStatus> observedStatuses = new ArrayList<>();
         runtime.setPowerBraceletButtonHeld(true);
-        runtime.tick(frame, stunned.x(), stunned.y(), () -> 0,
+        runtime.tick(EntityTestFrames.frame(runtime, frame, stunned.x(), stunned.y(), () -> 0,
             (entity, direction, nextX, nextY) -> {
                 wallQueries.incrementAndGet();
                 observedStatuses.add(entity.status());
                 return true;
             },
-            null, 0, 3, 0);
+            null, 0, 3, 0));
 
         RoomEntity lifted = runtime.snapshot().slots().get(slot);
         // The thrown motion is already stopped when EntityBecomeStunned runs, so the
@@ -285,16 +285,16 @@ final class BombLiftThrowRuntimeTest {
         int frame = 0;
         while (runtime.snapshot().slots().get(slot).status() != EntityStatus.STUNNED
             && frame < 12) {
-            runtime.tick(frame++, 0, 0, () -> 0, alwaysBlocked);
+            runtime.tick(EntityTestFrames.frame(runtime, frame++, 0, 0, () -> 0, alwaysBlocked));
         }
         assertEquals(EntityStatus.STUNNED, runtime.snapshot().slots().get(slot).status());
 
         RoomEntity stunned = runtime.snapshot().slots().get(slot);
         runtime.configureEnemyRecoilForTest(slot, stunned.x() + 0x10, stunned.y(), 0x10);
         runtime.setEnemyIgnoreHitsCountdownForTest(slot, 0x02);
-        runtime.tick(frame, stunned.x(), stunned.y(), () -> 0,
+        runtime.tick(EntityTestFrames.frame(runtime, frame, stunned.x(), stunned.y(), () -> 0,
             (entity, direction, nextX, nextY) -> false,
-            null, 0, 3, 0);
+            null, 0, 3, 0));
 
         RoomEntity recoiled = runtime.snapshot().slots().get(slot);
         assertEquals((stunned.x() - 1) & 0xFF, recoiled.x());
@@ -311,12 +311,12 @@ final class BombLiftThrowRuntimeTest {
         int slot = runtime.spawnBomb(0x40, 0x50, 0, ThrownEntityMotion.ROM_DIRECTION_RIGHT);
         AtomicInteger wallQueries = new AtomicInteger();
 
-        runtime.tick(0, 0x40, 0x50, () -> 0,
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0,
             (entity, direction, nextX, nextY) -> {
                 wallQueries.incrementAndGet();
                 assertEquals(ThrownEntityMotion.ROM_DIRECTION_RIGHT, direction);
                 return true;
-            });
+            }));
 
         RoomEntity afterPlacement = runtime.snapshot().slots().get(slot);
         assertEquals(0, wallQueries.get());
@@ -325,8 +325,8 @@ final class BombLiftThrowRuntimeTest {
         assertEquals(0x01, afterPlacement.z());
         assertEquals(EntityStatus.ACTIVE, afterPlacement.status());
 
-        runtime.tick(1, 0x40, 0x50, () -> 0,
-            (entity, direction, nextX, nextY) -> false);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x40, 0x50, () -> 0,
+            (entity, direction, nextX, nextY) -> false));
 
         RoomEntity afterSecondFrame = runtime.snapshot().slots().get(slot);
         assertEquals(0x48, afterSecondFrame.x());
@@ -346,7 +346,7 @@ final class BombLiftThrowRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(slots));
         runtime.setBombTransitionCountdownForTest(0, 0xA0);
 
-        assertDoesNotThrow(() -> runtime.tick(0, 0x40, 0x50, () -> 0));
+        assertDoesNotThrow(() -> runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0)));
 
         RoomEntity staticBomb = runtime.snapshot().slots().get(0);
         assertEquals(EntityStatus.ACTIVE, staticBomb.status());
@@ -363,7 +363,7 @@ final class BombLiftThrowRuntimeTest {
         runtime.setBombTransitionCountdownForTest(slot, 0x19);
 
         RoomEntityBackgroundCollision alwaysBlocked = (entity, direction, nextX, nextY) -> true;
-        runtime.tick(0, 0x40, 0x50, () -> 0, alwaysBlocked);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0, alwaysBlocked));
         RoomEntity warningWhileThrown = runtime.snapshot().slots().get(slot);
         assertEquals(EntityStatus.THROWN, warningWhileThrown.status());
         assertEquals(0x5484, warningWhileThrown.spriteDefinition().address());
@@ -371,7 +371,7 @@ final class BombLiftThrowRuntimeTest {
         int stunnedFrame = 1;
         while (runtime.snapshot().slots().get(slot).status() != EntityStatus.STUNNED
             && stunnedFrame < 12) {
-            runtime.tick(stunnedFrame++, 0x40, 0x50, () -> 0, alwaysBlocked);
+            runtime.tick(EntityTestFrames.frame(runtime, stunnedFrame++, 0x40, 0x50, () -> 0, alwaysBlocked));
         }
         RoomEntity explosionWhileStunned = runtime.snapshot().slots().get(slot);
         assertEquals(EntityStatus.STUNNED, explosionWhileStunned.status());
@@ -379,7 +379,7 @@ final class BombLiftThrowRuntimeTest {
         assertEquals(3, explosionWhileStunned.spriteVariant());
 
         for (int frame = 2; frame < 40 && runtime.snapshot().slots().get(slot).loaded(); frame++) {
-            runtime.tick(frame, 0x40, 0x50, () -> 0, alwaysBlocked);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x40, 0x50, () -> 0, alwaysBlocked));
         }
 
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(slot).status());
@@ -402,7 +402,7 @@ final class BombLiftThrowRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(slots));
         runtime.setPowerBraceletButtonHeld(true);
 
-        runtime.tick(0, 0x20, 0x30, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x30, () -> 0));
 
         assertEquals(EntityStatus.LIFTED, runtime.snapshot().slots().get(0).status());
     }
@@ -411,7 +411,7 @@ final class BombLiftThrowRuntimeTest {
         assertTrue(runtime.beginLift(slot, ThrownEntityMotion.ROM_DIRECTION_RIGHT));
         int frame = 0;
         while (runtime.liftedEntityState().carryState() != 0x01 && frame < 64) {
-            runtime.tick(frame++, 0x40, 0x50, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame++, 0x40, 0x50, () -> 0));
         }
         assertEquals(0x01, runtime.liftedEntityState().carryState());
     }

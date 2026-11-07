@@ -128,8 +128,8 @@ final class GiantGopongaRuntimeTest {
                     EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
             false, () -> 0, catalog, new RomEnemyCombatTables(rom));
 
-        runtime.tickWithProjectileEvents(0, 0x40, 0x40, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0x40, 0x40, 0x10, 0, 0, false));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x40, 0x40, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0x40, 0x40, 0x10, 0, 0, false)));
 
         assertEquals(List.of(new LinkFinalPositionRequest(0, true, true, false)),
             runtime.consumePendingLinkFinalPositionRequests());
@@ -147,7 +147,7 @@ final class GiantGopongaRuntimeTest {
             false, () -> 0, catalog, new RomEnemyCombatTables(rom));
 
         for (int frame = 0; frame < 0xC8; frame++) {
-            runtime.tick(frame, 0x70, 0x50, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x70, 0x50, () -> 0));
         }
 
         RoomEntity projectile = runtime.snapshot().slots().stream()

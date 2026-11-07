@@ -47,9 +47,9 @@ final class PincerRuntimeTest {
             new RoomEntity(0, 0, 0xB0, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
             true, () -> 0, catalog, tables);
 
-        runtime.tickWithProjectileEvents(0, 48, 40, () -> 0, null,
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 48, 40, () -> 0, null,
             new EnemyProjectileCollision.LinkState(48, 40, 0,
-                EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE, 0, false));
+                EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE, 0, false)));
 
         assertEquals(0, runtime.pincerState(0));
         assertEquals(0, runtime.transitionCountdown(0));
@@ -72,10 +72,10 @@ final class PincerRuntimeTest {
             new RoomEntity(0, 0, 0xB0, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
             true, () -> 0, catalog, tables);
 
-        runtime.tick(0, 64, 64, () -> 0);
-        runtime.tick(1, 64, 64, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 64, 64, () -> 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 64, 64, () -> 0));
         for (int frame = 2; frame < 50; frame++) {
-            runtime.tick(frame, 96, 64, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 96, 64, () -> 0));
         }
 
         assertEquals(3, runtime.pincerState(0));

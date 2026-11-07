@@ -167,8 +167,8 @@ final class UrchinRuntimeTest {
             catalog.forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
             false, () -> 0, catalog, new RomEnemyCombatTables(rom));
 
-        runtime.tickWithProjectileEvents(0, 0x48, 0x40, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0x48, 0x40, 0, 0, 2, true));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x48, 0x40, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0x48, 0x40, 0, 0, 2, true)));
 
         assertEquals(0x3F, runtime.snapshot().slots().get(0).x());
         assertEquals(0x92, runtime.physicsFlags(0));
@@ -190,8 +190,8 @@ final class UrchinRuntimeTest {
             catalog.forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
             false, () -> 0, catalog, new RomEnemyCombatTables(rom));
 
-        runtime.tickWithProjectileEvents(0, 0x48, 0x40, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0x48, 0x40, 0, 0, 2, false));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x48, 0x40, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0x48, 0x40, 0, 0, 2, false)));
 
         assertEquals(0x12, runtime.physicsFlags(0));
         assertEquals(List.of(new LinkFinalPositionRequest(0)),

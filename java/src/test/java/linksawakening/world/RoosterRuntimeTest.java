@@ -23,8 +23,8 @@ final class RoosterRuntimeTest {
         runtime.setPowerBraceletButtonHeld(true);
         runtime.setLinkAttackStepAnimationCountdown(0);
 
-        runtime.tickWithProjectileEvents(0, 0x40, 0x50, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0, 3, false));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x40, 0x50, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0, 3, false)));
 
         RoomEntity rooster = runtime.snapshot().slots().get(0);
         assertEquals(EntityStatus.LIFTED, rooster.status());

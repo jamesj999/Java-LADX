@@ -4281,7 +4281,7 @@ final class RoomSessionTest {
             assertTrue(hit.stream().anyMatch(event -> event.slot() == slot && event.swordHit()));
             int deathDeadline = frame + 0x80;
             while (runtime.snapshot().slots().get(slot).loaded() && frame < deathDeadline) {
-                runtime.tick(frame++, 0, 0, () -> 0);
+                runtime.tick(EntityTestFrames.frame(runtime, frame++, 0, 0, () -> 0));
             }
             assertFalse(runtime.snapshot().slots().get(slot).loaded());
         }

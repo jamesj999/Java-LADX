@@ -25,18 +25,18 @@ final class FishRuntimeTest {
             new RoomEntity(0, 0, FishMotion.ENTITY_TYPE, 0x40, 0x50,
                 EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)), false, null, catalog);
 
-        runtime.tick(0, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
         assertEquals(0, runtime.fishState(0));
         assertEquals(0x52, runtime.physicsFlags(0));
 
-        runtime.tick(1, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0, 0, () -> 0));
         assertEquals(1, runtime.fishState(0));
         assertEquals(0x08, runtime.fishSpeedX(0));
         assertEquals(0x40, runtime.fishTransitionCountdown(0));
 
         for (int frame = 2; frame < 0x90; frame++) {
-            runtime.tick(frame, 0, 0, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0));
             List<EntityCombatEvent> events = runtime.consumePendingEntityEvents();
             if (!events.isEmpty()) {
                 assertEquals(2, runtime.fishState(0));

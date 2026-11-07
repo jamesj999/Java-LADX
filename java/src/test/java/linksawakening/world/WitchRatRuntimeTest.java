@@ -151,8 +151,8 @@ final class WitchRatRuntimeTest {
             catalog.forEntityType(ENTITY_WITCH_RAT, EntityRoomLoader.RoomTable.INDOORS_B), 0, 0, 0, 0, -1, false)),
             true, () -> 0, catalog, new RomEnemyCombatTables(rom));
 
-        runtime.tickWithProjectileEvents(0, 0x20, 0x20, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0x20, 0x20, 0, 0, 0, false));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x20, 0x20, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0x20, 0x20, 0, 0, 0, false)));
 
         assertEquals(1, runtime.witchRatState(0));
         assertEquals(0x30, runtime.witchRatTransitionCountdown(0));

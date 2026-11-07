@@ -20,7 +20,7 @@ final class HookshotBridgeRuntimeTest {
         runtime.spawnHookshotChain(0x40, 0x40, 0, 2);
         runtime.setObjectQuery(entity -> new RoomEntityObjectSample(0x9E, 0, 0x20, 0x20));
 
-        runtime.tick(0, 0x40, 0x40, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x40, () -> 0));
 
         RoomEntity bridge = runtime.snapshot().loadedEntities().stream()
             .filter(entity -> entity.type() == HookshotBridgeMotion.ENTITY_TYPE)
@@ -43,7 +43,7 @@ final class HookshotBridgeRuntimeTest {
         runtime.setBackgroundInteraction((entity, direction, nextX, nextY) ->
             EntityBackgroundCollisionResult.blocked(direction, 0x01, 0, nextX, nextY));
 
-        runtime.tick(0, 0x40, 0x40, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x40, () -> 0));
 
         assertTrue(runtime.hookshotBridgeUpdates().isEmpty());
         assertFalse(runtime.snapshot().loadedEntities().stream()
@@ -57,7 +57,7 @@ final class HookshotBridgeRuntimeTest {
         runtime.spawnHookshotChain(0x40, 0x40, 0, 3);
         runtime.setObjectQuery(entity -> new RoomEntityObjectSample(0x9F, 0, 0x20, 0x20));
 
-        runtime.tick(0, 0x40, 0x40, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x40, () -> 0));
 
         HookshotBridgeUpdate update = runtime.hookshotBridgeUpdates().get(0);
         assertEquals(1, update.direction());
@@ -82,15 +82,15 @@ final class HookshotBridgeRuntimeTest {
             return new RoomEntityObjectSample(0x9D, 0, 0x20, 0x20);
         });
 
-        runtime.tick(0, 0x40, 0x40, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x40, () -> 0));
         RoomEntity firstBridge = findBridge(runtime);
-        runtime.tick(1, 0x40, 0x40, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x40, 0x40, () -> 0));
         RoomEntity movedBridge = findBridge(runtime);
         assertEquals((firstBridge.y() + 0x03) & 0xFF, movedBridge.y());
         assertEquals(1, runtime.hookshotBridgeUpdates().size());
 
         runtime.setObjectQuery(entity -> new RoomEntityObjectSample(0x00, 0, 0x20, 0x20));
-        runtime.tick(2, 0x40, 0x40, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 0x40, 0x40, () -> 0));
         assertFalse(runtime.snapshot().loadedEntities().stream()
             .anyMatch(entity -> entity.type() == HookshotBridgeMotion.ENTITY_TYPE));
     }

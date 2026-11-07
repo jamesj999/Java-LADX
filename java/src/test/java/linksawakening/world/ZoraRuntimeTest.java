@@ -175,7 +175,7 @@ final class ZoraRuntimeTest {
         runtime.setObjectQuery(entity -> new RoomEntityObjectSample(0x00, 0x07, 0x40, 0x40));
 
         for (int frame = 0; frame <= 0xD0; frame++) {
-            runtime.tick(frame, 0x70, 0x50, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x70, 0x50, () -> 0));
         }
 
         RoomEntity projectile = runtime.snapshot().slots().stream()
@@ -187,7 +187,7 @@ final class ZoraRuntimeTest {
         assertEquals(0x42, runtime.physicsFlags(projectile.slot()));
         assertEquals(0x30, runtime.enemyHealth(projectile.slot()));
 
-        runtime.tick(0xD4, 0x70, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0xD4, 0x70, 0x50, () -> 0));
         RoomEntity flashedProjectile = runtime.snapshot().slots().stream()
             .filter(entity -> entity.type() == ENTITY_GOPONGA_FLOWER_PROJECTILE)
             .findFirst().orElseThrow();

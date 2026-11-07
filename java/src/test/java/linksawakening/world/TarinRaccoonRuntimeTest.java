@@ -668,9 +668,9 @@ final class TarinRaccoonRuntimeTest {
     }
 
     private static void tick(RoomEntityRuntime runtime, int frame, int linkX, int linkY) {
-        runtime.tickWithProjectileEvents(frame, linkX, linkY, () -> 0, null,
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, frame, linkX, linkY, () -> 0, null,
             new EnemyProjectileCollision.LinkState(linkX, linkY, 0, 0,
-                0, false));
+                0, false)));
     }
 
     private static byte[] loadRom() {

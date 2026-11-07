@@ -138,9 +138,9 @@ final class SwordBeamRuntimeTest {
 
     private static void tick(RoomEntityRuntime runtime, int frame, int linkX, int linkY,
                              int linkDirection) {
-        runtime.tickWithProjectileEvents(frame, linkX, linkY, () -> 0, null,
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, frame, linkX, linkY, () -> 0, null,
             new EnemyProjectileCollision.LinkState(linkX, linkY, 0, 0,
-                linkDirection, false));
+                linkDirection, false)));
     }
 
     private static RoomEntitySnapshot emptySnapshot() {

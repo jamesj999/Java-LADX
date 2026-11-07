@@ -74,17 +74,17 @@ final class BushCrawlerRuntimeTest {
             new RoomEntity(0, 0, 0xBB, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
             false, () -> 0, catalog, new RomEnemyCombatTables(rom));
 
-        runtime.tick(0, 0x40, 0x47, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x47, () -> 0));
         assertEquals(1, runtime.bushCrawlerState(0));
         assertEquals(0x30, runtime.transitionCountdown(0));
         assertEquals(0x10, runtime.bushCrawlerSpeedY(0));
         assertEquals(0, runtime.snapshot().visualYOffset(0));
 
-        runtime.tick(1, 0x00, 0x00, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x00, 0x00, () -> 0));
         assertEquals(0x41, runtime.snapshot().slots().get(0).y());
         assertEquals(0, runtime.snapshot().visualYOffset(0));
 
-        runtime.tick(8, 0x00, 0x00, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 8, 0x00, 0x00, () -> 0));
         RoomEntity crawling = runtime.snapshot().slots().get(0);
         assertEquals(EntitySpriteDefinition.Shape.DYNAMIC, crawling.spriteDefinition().shape());
         assertEquals(4, crawling.spriteDefinition().dynamicVariant(0).size());
@@ -104,7 +104,7 @@ final class BushCrawlerRuntimeTest {
         runtime.setActionButtonsHeld(true, false);
         runtime.setLikeLikeLinkInventory(0x03, 0x00);
 
-        runtime.tick(0, 0x40, 0x38, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x38, () -> 0));
 
         RoomEntity carried = runtime.snapshot().slots().get(0);
         RoomEntity replacement = runtime.snapshot().loadedEntities().stream()
