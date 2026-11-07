@@ -11,6 +11,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@linksawakening.testing.RequiresRom
 final class InventoryMenuSoundTest {
     @Test
     void openingAndClosingInventoryPlayDisassemblyJingles() throws Exception {
@@ -65,8 +66,7 @@ final class InventoryMenuSoundTest {
     }
 
     private static InventoryTilemapLoader loadTilemap() throws Exception {
-        try (InputStream stream = InventoryMenuSoundTest.class.getClassLoader()
-                .getResourceAsStream("rom/azle.gbc")) {
+        try (InputStream stream = linksawakening.testing.TestRom.open()) {
             return InventoryTilemapLoader.loadFromRom(stream.readAllBytes());
         }
     }

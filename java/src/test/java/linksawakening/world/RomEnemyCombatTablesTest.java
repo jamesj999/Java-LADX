@@ -7,6 +7,7 @@ import java.io.IOException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@linksawakening.testing.RequiresRom
 final class RomEnemyCombatTablesTest {
 
     @Test
@@ -134,8 +135,7 @@ final class RomEnemyCombatTablesTest {
     }
 
     private static byte[] loadRom() throws IOException {
-        try (var stream = RomEnemyCombatTablesTest.class.getClassLoader()
-            .getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IOException("Missing ROM resource: rom/azle.gbc");
             }

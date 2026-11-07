@@ -11,6 +11,7 @@ import java.io.InputStream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@linksawakening.testing.RequiresRom
 final class SoundEffectBrowserModelTest {
     @Test
     void filtersSoundEffectsByNameNamespaceOrHexId() throws IOException {
@@ -42,8 +43,7 @@ final class SoundEffectBrowserModelTest {
     }
 
     private static byte[] loadRom() throws IOException {
-        try (InputStream stream = SoundEffectBrowserModelTest.class.getClassLoader()
-                .getResourceAsStream("rom/azle.gbc")) {
+        try (InputStream stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IOException("Missing ROM resource: rom/azle.gbc");
             }

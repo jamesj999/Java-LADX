@@ -8,6 +8,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@linksawakening.testing.RequiresRom
 final class GameplayMusicControllerTest {
 
     @Test
@@ -118,7 +119,7 @@ final class GameplayMusicControllerTest {
     }
 
     private static byte[] loadRom() {
-        try (var stream = GameplayMusicControllerTest.class.getClassLoader().getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IllegalStateException("ROM resource missing");
             }

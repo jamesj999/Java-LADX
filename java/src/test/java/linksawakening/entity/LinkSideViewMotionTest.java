@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.lwjgl.glfw.GLFW.*;
 
+@linksawakening.testing.RequiresRom
 final class LinkSideViewMotionTest {
     private final InputConfig config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
     private final InputState input = new InputState();
@@ -18,7 +19,7 @@ final class LinkSideViewMotionTest {
 
     private Link room(int[] objects, int x, int y) throws Exception {
         byte[] rom;
-        try (var stream = getClass().getClassLoader().getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             rom = stream.readAllBytes();
         }
         var tables = RomTables.loadFromRom(rom);

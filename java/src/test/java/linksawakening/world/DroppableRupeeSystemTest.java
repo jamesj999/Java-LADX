@@ -13,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@linksawakening.testing.RequiresRom
 final class DroppableRupeeSystemTest {
 
     private static final int OBJECT_BUSH = 0x5C;
@@ -164,7 +165,7 @@ final class DroppableRupeeSystemTest {
     }
 
     private static byte[] loadRom() {
-        try (InputStream in = DroppableRupeeSystemTest.class.getClassLoader().getResourceAsStream("rom/azle.gbc")) {
+        try (InputStream in = linksawakening.testing.TestRom.open()) {
             if (in == null) {
                 throw new IllegalStateException("Missing ROM resource: rom/azle.gbc");
             }

@@ -18,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@linksawakening.testing.RequiresRom
 final class SwordTest {
 
     private static final int STATE_DRAW = 1; // SWORD_ANIMATION_STATE_DRAW in the ROM
@@ -489,7 +490,7 @@ final class SwordTest {
     }
 
     private static byte[] loadRom() throws IOException {
-        try (InputStream in = SwordTest.class.getResourceAsStream("/rom/azle.gbc")) {
+        try (InputStream in = linksawakening.testing.TestRom.open()) {
             if (in == null) {
                 throw new IOException("Missing ROM resource /rom/azle.gbc");
             }

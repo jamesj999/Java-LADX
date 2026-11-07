@@ -6,6 +6,7 @@ import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+@linksawakening.testing.RequiresRom
 final class InventoryInstrumentPanelTest {
     @Test
     void romPositionsNumbersAndCollectionBitProduceTheTwoByTwoInstrumentLayout() throws Exception {
@@ -67,7 +68,7 @@ final class InventoryInstrumentPanelTest {
     }
 
     private static byte[] rom() throws Exception {
-        try (var in = InventoryInstrumentPanelTest.class.getResourceAsStream("/rom/azle.gbc")) {
+        try (var in = linksawakening.testing.TestRom.open()) {
             return in.readAllBytes();
         }
     }

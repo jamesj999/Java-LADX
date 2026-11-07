@@ -13,6 +13,7 @@ import java.util.function.IntSupplier;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@linksawakening.testing.RequiresRom
 final class SandCrabRuntimeTest {
     private static final int ENTITY_SAND_CRAB = 0xC6;
 
@@ -138,8 +139,7 @@ final class SandCrabRuntimeTest {
     }
 
     private static byte[] loadRom() throws IOException {
-        try (var stream = SandCrabRuntimeTest.class.getClassLoader()
-            .getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IOException("Missing ROM resource: rom/azle.gbc");
             }
