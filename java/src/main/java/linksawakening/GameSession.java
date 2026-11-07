@@ -843,20 +843,13 @@ public class GameSession {
     }
 
     private void tickGameplayScreen() {
-        if (scrollController.isActive()) {
-            scrollController.tick(SCROLL_SPEED);
-        }
+        new GameplayFrame(
+            new TransitionPhase(scrollController, transitionController, link, SCROLL_SPEED),
+            this::simulateGameplay,
+            this::completeInputFrame).tick();
+    }
 
-        // Tick the warp-transition state machine. When it's not IDLE we
-        // disable Link movement, edge-scrolling, and animated-tile updates,
-        // matching the disassembly's gating on wLinkMotionState ==
-        // LINK_MOTION_MAP_FADE_OUT (bank0.asm:888-899).
-        transitionController.tick();
-        if (link != null && (scrollController.isActive()
-            || transitionController.isInputBlocked())) {
-            link.clearSideViewPlatformState();
-        }
-
+    private void simulateGameplay() {
         {
             if (roomSession != null) {
                 // $00:0F22 runs before world transitions and dialog gates.
@@ -883,14 +876,10 @@ public class GameSession {
             updateNewGameMarinPresentation();
             if (tickNewGameWakeUp()) {
                 completeGameplayFrame(dialogController);
-                inputState.tickEdges();
-                overworldDialogInputConsumedThisFrame = false;
                 return;
             }
             if (tickNewGameTarinShield()) {
                 completeGameplayFrame(dialogController);
-                inputState.tickEdges();
-                overworldDialogInputConsumedThisFrame = false;
                 return;
             }
             OverworldDialogBlockers blockers = currentOverworldDialogBlockers();
@@ -1543,9 +1532,10 @@ public class GameSession {
             }
         }
 
-        // Snapshot input for next-frame edge detection. Run last so every
-        // consumer this frame (item dispatch, menu toggle) still sees the
-        // correct "just pressed" state.
+    }
+
+    private void completeInputFrame() {
+        // Run last so all consumers observe this frame's input edges.
         inputState.tickEdges();
         overworldDialogInputConsumedThisFrame = false;
     }
