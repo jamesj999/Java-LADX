@@ -28,7 +28,7 @@ final class SandCrabHandler {
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
             }
             SandCrabMotion.Update sandCrabUpdate =
-                state.runtime.sandCrabMotion.advance(
+                state.sandCrabMotion().advance(
                     state.updated,
                     state.frame,
                     state.slot().transitionCountdown(slot),

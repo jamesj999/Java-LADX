@@ -22,7 +22,7 @@ final class CuccoHandler {
 
               && state.handlerLinkCollisionEnabled) {
             CuccoMotion.Update cuccoUpdate =
-                state.runtime.cuccoMotion.advance(
+                state.cuccoMotion().advance(
                     state.entity,
                     state.frame,
                     state.slot().transitionCountdown(state.entity.slot()),

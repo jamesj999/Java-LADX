@@ -19,7 +19,7 @@ final class LikeLikeHandler {
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             LikeLikeMotion.Update likeLikeUpdate =
-                state.runtime.likeLikeMotion.advance(
+                state.likeLikeMotion().advance(
                     state.entity,
                     state.frame,
                     state.linkEntityX,

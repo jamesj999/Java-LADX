@@ -40,7 +40,7 @@ final class TarinHandler {
                   && !state.wasInitializing
                   && !state.runtime.indoorRoom
 
-                  && (state.runtime.tarinRaccoonMotion.state(state.entity.slot()) == 0
+                  && (state.tarinRaccoonMotion().state(state.entity.slot()) == 0
                       || state.roomInspection().tarinTransformationHandlerInteractive())) {
                 RoomEntityBackgroundInteraction tarinBackgroundInteraction =
                     state.background().interaction();
@@ -49,7 +49,7 @@ final class TarinHandler {
                       RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
                 }
                 TarinRaccoonMotion.Update tarinUpdate =
-                    state.runtime.tarinRaccoonMotion.advance(
+                    state.tarinRaccoonMotion().advance(
                         state.updated,
                         new TarinRaccoonMotion.Input(
                             state.frame,

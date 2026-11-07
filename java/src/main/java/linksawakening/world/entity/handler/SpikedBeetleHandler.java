@@ -16,7 +16,7 @@ final class SpikedBeetleHandler {
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             SpikedBeetleMotion.Update spikedBeetleUpdate =
-                state.runtime.spikedBeetleMotion.advance(
+                state.spikedBeetleMotion().advance(
                     state.entity,
                     state.frame,
                     state.linkEntityX,

@@ -24,7 +24,7 @@ final class StarHandler {
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
             }
             state.updated =
-                state.runtime.starMotion.advance(
+                state.starMotion().advance(
                     state.entity,
                     state.frame,
                     state.randomByteSupplier,

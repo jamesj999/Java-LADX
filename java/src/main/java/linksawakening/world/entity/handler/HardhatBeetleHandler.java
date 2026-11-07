@@ -14,7 +14,7 @@ final class HardhatBeetleHandler {
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             state.updated =
-                state.runtime.hardHatMotion.advance(
+                state.hardHatMotion().advance(
                     state.entity,
                     state.frame,
                     state.linkEntityX,

@@ -49,7 +49,7 @@ final class MoblinKingHandler {
             } else {
               // ApplyRecoilIfNeeded_15 pops the handler return address:
               // movement/Z physics and AI wait until the recoil ends.
-              if (state.runtime.enemyRecoilMotion.isActive(state.entity.slot())
+              if (state.enemyRecoilMotion().isActive(state.entity.slot())
                   && state.slot().ignoreHits(state.entity.slot()) != 0) {
                 state.replaceEntity(state.background()
                         .applyEnemyRecoilIfNeeded(state.entity, state.backgroundCollision)
@@ -57,7 +57,7 @@ final class MoblinKingHandler {
                 return false;
               }
               MoblinKingMotion.Update kingUpdate =
-                  state.runtime.moblinKingMotion.advance(
+                  state.moblinKingMotion().advance(
                       state.entity,
                       state.linkEntityX,
                       state.linkEntityY,
@@ -75,12 +75,12 @@ final class MoblinKingHandler {
               state.slot().setTransitionCountdown(state.entity.slot(), kingUpdate.transitionCountdown());
               state.slot().setSlowTransitionCountdown(state.entity.slot(), kingUpdate.slowTransitionCountdown());
               state.slot().setSlowTimerInitialized(state.entity.slot(), true);
-              state.slot().setOptions1Override(state.entity.slot(), state.runtime.moblinKingMotion.state(state.entity.slot()) == 5
+              state.slot().setOptions1Override(state.entity.slot(), state.moblinKingMotion().state(state.entity.slot()) == 5
                       ? 0x84
-                      : state.runtime.moblinKingMotion.state(state.entity.slot()) >= 2
+                      : state.moblinKingMotion().state(state.entity.slot()) >= 2
                           ? 0xC4
                           : 0x40);
-              if (state.runtime.moblinKingMotion.state(state.entity.slot()) == 5) {
+              if (state.moblinKingMotion().state(state.entity.slot()) == 5) {
                 state.slot().orPhysicsFlags(state.entity.slot(), ENTITY_PHYSICS_HARMLESS);
               } else {
                 state.slot().andPhysicsFlags(state.entity.slot(), ~ENTITY_PHYSICS_HARMLESS);
@@ -90,8 +90,8 @@ final class MoblinKingHandler {
                     withDefinition(
                         state.updated,
                         state.sprites().forMoblinKingState(
-                            state.runtime.moblinKingMotion.bodyVariant(state.entity.slot()),
-                            state.runtime.moblinKingMotion.weaponVariant(state.entity.slot()),
+                            state.moblinKingMotion().bodyVariant(state.entity.slot()),
+                            state.moblinKingMotion().weaponVariant(state.entity.slot()),
                             state.updated.z() != 0),
                         0);
               }

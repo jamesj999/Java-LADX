@@ -23,7 +23,7 @@ final class WitchHandler {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             state.story().advanceWitchGotItemPresentation(state.entity.slot());
             WitchMotion.Update witchUpdate =
-                state.runtime.witchMotion.advance(
+                state.witchMotion().advance(
                     state.updated,
                     state.slot().transitionCountdown(state.entity.slot()),
                     new WitchMotion.Input(

@@ -20,7 +20,7 @@ final class MoblinSwordHandler {
             EntityTickStage.PHASE_2_MOBLIN_SWORD,
             state -> {
               {
-                state.runtime.moblinSwordMotion.initialize(state.entity.slot(), state.entity.x());
+                state.moblinSwordMotion().initialize(state.entity.slot(), state.entity.x());
               }
               return true;
             });
@@ -46,7 +46,7 @@ final class MoblinSwordHandler {
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
             }
             MoblinSwordMotion.Update moblinSwordUpdate =
-                state.runtime.moblinSwordMotion.advance(
+                state.moblinSwordMotion().advance(
                     state.entity,
                     state.linkEntityX,
                     state.linkEntityY,

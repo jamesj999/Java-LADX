@@ -14,7 +14,7 @@ final class StalfosAggressiveHandler {
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             state.updated =
-                state.runtime.stalfosAggressiveMotion.advance(
+                state.stalfosAggressiveMotion().advance(
                     state.entity,
                     state.frame,
                     state.linkEntityX,

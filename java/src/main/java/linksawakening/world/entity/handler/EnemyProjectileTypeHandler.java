@@ -22,15 +22,15 @@ final class EnemyProjectileTypeHandler {
             state -> {
               if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
                 boolean preexistingCollision =
-                    state.runtime.enemyProjectileMotion.pendingLinkCollision(state.entity.slot());
+                    state.enemyProjectileMotion().pendingLinkCollision(state.entity.slot());
                 boolean hasLinkCollision =
-                    state.runtime.enemyProjectileMotion.transitionCountdown(state.entity.slot())
+                    state.enemyProjectileMotion().transitionCountdown(state.entity.slot())
                         == 0;
                 if (hasLinkCollision) {
                   var collisionEvent =
                       EnemyProjectileCollision.check(
                           state.entity,
-                          state.runtime.enemyProjectileMotion.direction(state.entity.slot()),
+                          state.enemyProjectileMotion().direction(state.entity.slot()),
                           state.projectileLinkState);
                   if (collisionEvent.isPresent()) {
                     EntityProjectileEvent event = collisionEvent.orElseThrow();
@@ -43,7 +43,7 @@ final class EnemyProjectileTypeHandler {
                   }
                 }
                 EnemyProjectileMotion.Update projectileUpdate =
-                    state.runtime.enemyProjectileMotion.advance(
+                    state.enemyProjectileMotion().advance(
                         state.entity,
                         state.backgroundCollision,
                         preexistingCollision,

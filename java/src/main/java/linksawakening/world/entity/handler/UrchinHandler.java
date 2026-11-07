@@ -32,7 +32,7 @@ final class UrchinHandler {
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
             }
             UrchinMotion.Update urchinUpdate =
-                state.runtime.urchinMotion.advance(
+                state.urchinMotion().advance(
                     state.updated,
                     state.frame,
                     state.slot().physicsFlags(slot),

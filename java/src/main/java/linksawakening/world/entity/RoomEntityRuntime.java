@@ -113,7 +113,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     public void setFreeMovementMode(boolean enabled) { freeMovementMode = enabled; }
 
-    public final WarpMotion warpMotion;
+    final WarpMotion warpMotion;
 
     /** The ROM-facing state needed by Link's carry animation and throw input. */
 

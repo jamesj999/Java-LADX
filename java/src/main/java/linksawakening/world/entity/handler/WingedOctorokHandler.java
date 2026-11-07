@@ -20,7 +20,7 @@ final class WingedOctorokHandler {
 
               && state.handlerLinkCollisionEnabled) {
             WingedOctorokMotion.Update wingedUpdate =
-                state.runtime.wingedOctorokMotion.advance(
+                state.wingedOctorokMotion().advance(
                     state.entity,
                     state.frame,
                     state.linkEntityX,

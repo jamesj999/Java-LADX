@@ -26,7 +26,7 @@ final class MoldormHandler {
               && !state.runtime.roomTransitionActive
               && !state.link().inventoryAppearing()) {
             BossIntroMotion.Update intro =
-                state.runtime.bossIntroMotion.advance(
+                state.bossIntroMotion().advance(
                     state.slotProperties().options1(state.entity.slot()),
                     state.entity.type(),
                     state.runtime.entityMapId,
@@ -83,16 +83,16 @@ final class MoldormHandler {
                 state.replaceEntity(withDefinition(
                         state.entity,
                         state.sprites().forMoldormState(
-                            state.runtime.moldormMotion.headSpriteVariant(slot),
+                            state.moldormMotion().headSpriteVariant(slot),
                             state.entity.x(),
                             (state.entity.y() - state.entity.z()) & 0xFF,
-                            state.runtime.moldormMotion.currentTailSegments(slot),
+                            state.moldormMotion().currentTailSegments(slot),
                             0,
                             state.frame),
                         0));
               }
               if (state.runtime.roomTransitionActive)
-                state.runtime.moldormMotion.resetHistory(slot);
+                state.moldormMotion().resetHistory(slot);
               return false;
             }
             RoomEntityBackgroundInteraction moldormBackgroundInteraction =
@@ -108,7 +108,7 @@ final class MoldormHandler {
               transitionForMotion = (transitionForMotion + 1) & 0xFF;
             }
             MoldormMotion.Update moldormUpdate =
-                state.runtime.moldormMotion.advance(
+                state.moldormMotion().advance(
                     state.entity,
                     state.frame,
                     transitionForMotion,
@@ -170,7 +170,7 @@ final class MoldormHandler {
             EntityTickStage.PHASE_2_MOLDORM_3,
             state -> {
               {
-                state.runtime.moldormMotion.initialize(state.entity);
+                state.moldormMotion().initialize(state.entity);
               }
               return true;
             });

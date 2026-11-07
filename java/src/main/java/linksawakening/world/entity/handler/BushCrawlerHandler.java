@@ -25,7 +25,7 @@ final class BushCrawlerHandler {
 
               && state.handlerLinkCollisionEnabled) {
             BushCrawlerMotion.Update bushUpdate =
-                state.runtime.bushCrawlerMotion.advance(
+                state.bushCrawlerMotion().advance(
                     state.entity,
                     state.frame,
                     state.linkEntityX,

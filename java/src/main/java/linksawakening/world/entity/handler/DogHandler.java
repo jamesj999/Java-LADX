@@ -40,7 +40,7 @@ final class DogHandler {
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
             }
             DogMotion.Update dogUpdate =
-                state.runtime.dogMotion.advance(
+                state.dogMotion().advance(
                     state.updated,
                     state.frame,
                     state.slot().transitionCountdown(slot),

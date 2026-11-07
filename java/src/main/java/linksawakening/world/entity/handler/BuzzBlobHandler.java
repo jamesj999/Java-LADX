@@ -28,7 +28,7 @@ final class BuzzBlobHandler {
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
             }
             BuzzBlobMotion.Update buzzBlobUpdate =
-                state.runtime.buzzBlobMotion.advance(
+                state.buzzBlobMotion().advance(
                     state.updated,
                     state.frame,
                     state.slot().transitionCountdown(slot),

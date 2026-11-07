@@ -42,7 +42,7 @@ final class ZombieHandler {
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
             }
             ZombieMotion.Update zombieUpdate =
-                state.runtime.zombieMotion.advance(
+                state.zombieMotion().advance(
                     state.updated,
                     state.frame,
                     state.slot().transitionCountdown(slot),

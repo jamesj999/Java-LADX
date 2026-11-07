@@ -36,7 +36,7 @@ final class ZoraHandler {
                   state.entity, EntityLinkCollisionRules.ZORA);
             }
             ZoraMotion.Update zoraUpdate =
-                state.runtime.zoraMotion.advance(
+                state.zoraMotion().advance(
                     state.updated,
                     state.slot().transitionCountdown(slot),
                     state.slot().physicsFlags(slot),

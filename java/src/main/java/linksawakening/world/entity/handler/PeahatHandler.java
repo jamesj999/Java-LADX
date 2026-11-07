@@ -14,7 +14,7 @@ final class PeahatHandler {
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             state.updated =
-                state.runtime.peaHatMotion.advance(
+                state.peaHatMotion().advance(
                     state.entity, state.frame, state.randomByteSupplier, state.backgroundCollision);
           }
           return true;

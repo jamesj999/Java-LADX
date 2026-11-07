@@ -19,7 +19,7 @@ final class SideViewPotHandler {
         state -> {
           if (state.status == EntityStatus.ACTIVE
 
-              && !state.runtime.sideViewPotMotion.active(state.entity.slot())) {
+              && !state.sideViewPotMotion().active(state.entity.slot())) {
             SideViewPotContact.Result contact = SideViewPotContact.Result.none();
             int effectiveLinkX = state.linkEntityX;
             int effectiveLinkY = state.linkEntityY;
@@ -69,10 +69,10 @@ final class SideViewPotHandler {
         state -> {
           if (state.status == EntityStatus.ACTIVE
 
-              && state.runtime.sideViewPotMotion.active(state.entity.slot())) {
+              && state.sideViewPotMotion().active(state.entity.slot())) {
             if (state.sideViewPotInteractive) {
               SideViewPotMotion.Update potUpdate =
-                  state.runtime.sideViewPotMotion.advance(state.entity);
+                  state.sideViewPotMotion().advance(state.entity);
               RoomEntity movedPot = potUpdate.entity();
               boolean collision =
                   state.liftThrow().sideViewPotBackgroundCollision(

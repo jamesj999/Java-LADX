@@ -32,7 +32,7 @@ final class RollingBonesBarHandler {
                     && !state.runtime.roomTransitionActive
                     && !state.link().inventoryAppearing()) {
                   BossIntroMotion.Update intro =
-                      state.runtime.bossIntroMotion.advance(
+                      state.bossIntroMotion().advance(
                           state.slotProperties().options1(state.entity.slot()),
                           state.entity.type(),
                           state.runtime.entityMapId,
@@ -72,7 +72,7 @@ final class RollingBonesBarHandler {
               return false;
             }
             RollingBonesMotion.BarUpdate barUpdate =
-                state.runtime.rollingBonesMotion.advanceBar(
+                state.rollingBonesMotion().advanceBar(
                     state.entity, state.frame, state.backgroundCollision);
             state.updated = barUpdate.entity();
             if (state.sprites() != null) {

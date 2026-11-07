@@ -22,7 +22,7 @@ final class PincerHandler {
             // rendering and does not call the generic background helper.
             state.runtime.entityGroundStatus[state.entity.slot()] = 0;
             PincerMotion.Update pincerUpdate =
-                state.runtime.pincerMotion.advance(
+                state.pincerMotion().advance(
                     state.entity,
                     state.slot().transitionCountdown(state.entity.slot()),
                     state.slot().physicsFlags(state.entity.slot()),

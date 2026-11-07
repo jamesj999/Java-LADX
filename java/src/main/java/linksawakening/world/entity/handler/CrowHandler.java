@@ -29,7 +29,7 @@ final class CrowHandler {
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             CrowMotion.Update crowUpdate =
-                state.runtime.crowMotion.advance(
+                state.crowMotion().advance(
                     state.entity,
                     state.slot().transitionCountdown(state.entity.slot()),
                     state.frame,

@@ -20,7 +20,7 @@ final class FishHandler {
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             FishMotion.Update fishUpdate =
-                state.runtime.fishMotion.advance(
+                state.fishMotion().advance(
                     state.entity,
                     state.slot().transitionCountdown(state.entity.slot()),
                     state.randomByteSupplier,

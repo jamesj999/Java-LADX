@@ -25,7 +25,7 @@ final class GiantGopongaFlowerHandler {
                   state.entity, EntityLinkCollisionRules.STANDARD_PUSH);
             }
             GiantGopongaMotion.Update giantUpdate =
-                state.runtime.giantGopongaMotion.advance(
+                state.giantGopongaMotion().advance(
                     state.entity,
                     state.frame,
                     state.slot().transitionCountdown(state.entity.slot()),

@@ -19,9 +19,9 @@ final class FollowingNpcTypeHandler {
             state -> {
               {
                 if (state.entity.type() == ENTITY_BOW_WOW) {
-                  state.runtime.bowWowMotion.initialize(state.entity.slot());
+                  state.bowWowMotion().initialize(state.entity.slot());
                 } else {
-                  state.runtime.followingNpcMotion.initialize(
+                  state.followingNpcMotion().initialize(
                       state.entity.slot(), state.entity.type());
                 }
               }

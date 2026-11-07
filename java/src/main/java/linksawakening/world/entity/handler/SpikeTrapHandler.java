@@ -17,7 +17,7 @@ final class SpikeTrapHandler {
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             SpikeTrapMotion.Update spikeTrapUpdate =
-                state.runtime.spikeTrapMotion.advance(
+                state.spikeTrapMotion().advance(
                     state.entity, state.linkEntityX, state.linkEntityY, state.backgroundCollision);
             state.updated = spikeTrapUpdate.entity();
             if (spikeTrapUpdate.soundChannel() != EntityCombatEvent.SoundChannel.NONE) {

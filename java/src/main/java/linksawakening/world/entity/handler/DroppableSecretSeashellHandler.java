@@ -31,7 +31,7 @@ final class DroppableSecretSeashellHandler {
                     ? null
                     : state.runtime.objectQuery.sample(state.entity);
             SecretSeashellMotion.Update shellUpdate =
-                state.runtime.secretSeashellMotion.advance(
+                state.secretSeashellMotion().advance(
                     state.entity,
                     state.runtime.entityRoomId,
                     state.frame,
@@ -45,7 +45,7 @@ final class DroppableSecretSeashellHandler {
                     state.linkEntityY,
                     objectUnderEntity);
             state.updated = shellUpdate.entity();
-            state.slot().setOptions1Override(state.entity.slot(), state.runtime.secretSeashellMotion.privateState3(state.entity.slot()) != 0
+            state.slot().setOptions1Override(state.entity.slot(), state.secretSeashellMotion().privateState3(state.entity.slot()) != 0
                     ? state.runtime.SECRET_SEASHELL_HIDDEN_OPTIONS1
                     : state.runtime.SECRET_SEASHELL_REVEALED_OPTIONS1);
             state.preserveSecretSeashellPresentation = true;

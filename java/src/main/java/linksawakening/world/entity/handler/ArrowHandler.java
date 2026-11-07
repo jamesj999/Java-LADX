@@ -21,7 +21,7 @@ final class ArrowHandler {
         state -> {
           if (state.status == EntityStatus.ACTIVE) {
             if (state.runtime.playerArrowBombArrow[state.entity.slot()]
-                && state.runtime.playerArrowMotion.transitionCountdown(state.entity.slot()) != 0) {
+                && state.playerArrowMotion().transitionCountdown(state.entity.slot()) != 0) {
               int explosionSlot =
                   state.playerSpawns().spawnBombFromBombArrow(state.entity);
               if (explosionSlot >= 0) {
@@ -40,7 +40,7 @@ final class ArrowHandler {
             // ArrowEntityHandler jumps straight to rendering/rebound
             // while its transition countdown is nonzero ($6A3D-$6A40).
             boolean hitEntity =
-                state.runtime.playerArrowMotion.transitionCountdown(state.entity.slot()) == 0
+                state.playerArrowMotion().transitionCountdown(state.entity.slot()) == 0
                     && state.projectiles().collidePlayerArrowWithEntities(
                         state.entity, state.frame);
             if (hitEntity && !state.runtime.playerArrowBombArrow[state.entity.slot()]) {
@@ -51,7 +51,7 @@ final class ArrowHandler {
               return false;
             }
             PlayerArrowMotion.Update arrowUpdate =
-                state.runtime.playerArrowMotion.advance(
+                state.playerArrowMotion().advance(
                     state.entity,
                     state.backgroundCollision,
                     state.frame,

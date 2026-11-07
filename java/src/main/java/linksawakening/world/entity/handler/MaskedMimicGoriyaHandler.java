@@ -27,7 +27,7 @@ final class MaskedMimicGoriyaHandler {
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
             }
             MaskedMimicMotion.Update maskedMimicUpdate =
-                state.runtime.maskedMimicMotion.advance(
+                state.maskedMimicMotion().advance(
                     state.entity,
                     state.linkEntityX,
                     state.linkEntityY,

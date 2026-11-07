@@ -30,7 +30,7 @@ final class WizrobeHandler {
             EntityTickStage.PHASE_2_WIZROBE_2,
             state -> {
               {
-                state.runtime.wizrobeMotion.initializeFromRoom(
+                state.wizrobeMotion().initializeFromRoom(
                     state.entity.slot(), state.entity.spriteVariant());
                 state.slot().setTransitionCountdown(state.entity.slot(), 0x80);
                 state.preserveWizrobePresentation = true;
@@ -45,7 +45,7 @@ final class WizrobeHandler {
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             WizrobeMotion.Update wizrobeUpdate =
-                state.runtime.wizrobeMotion.advance(
+                state.wizrobeMotion().advance(
                     state.entity,
                     state.linkEntityX,
                     state.linkEntityY,

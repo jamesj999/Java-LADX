@@ -20,7 +20,7 @@ final class ThreeOfAKindHandler {
               && state.threeOfAKindInteractive) {
             state.slot().setHealth(state.entity.slot(), 0x20);
             ThreeOfAKindMotion.Update cardUpdate =
-                state.runtime.threeOfAKindMotion.advance(
+                state.threeOfAKindMotion().advance(
                     state.entity,
                     state.frame,
                     state.slot().transitionCountdown(state.entity.slot()),

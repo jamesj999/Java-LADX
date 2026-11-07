@@ -39,7 +39,7 @@ final class RollingBonesHandler {
                     ENTITY_ROLLING_BONES_BAR);
             if (bar != null) {
               RollingBonesMotion.BossUpdate bossUpdate =
-                  state.runtime.rollingBonesMotion.advanceBoss(
+                  state.rollingBonesMotion().advanceBoss(
                       state.entity,
                       bar,
                       state.slot().transitionCountdown(state.entity.slot()),

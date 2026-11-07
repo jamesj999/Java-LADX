@@ -25,7 +25,7 @@ final class MadBomberHandler {
             // byte on every interactive pass before its state dispatch.
             state.runtime.droppedItemBySlot[state.entity.slot()] = 0x3C;
             MadBomberMotion.Update madBomberUpdate =
-                state.runtime.madBomberMotion.advance(
+                state.madBomberMotion().advance(
                     state.entity,
                     state.slot().transitionCountdown(state.entity.slot()),
                     state.linkEntityX,

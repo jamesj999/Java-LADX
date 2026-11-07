@@ -16,7 +16,7 @@ final class SnakeHandler {
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             SnakeMotion.Update snakeUpdate =
-                state.runtime.snakeMotion.advance(
+                state.snakeMotion().advance(
                     state.entity,
                     state.frame,
                     state.linkEntityX,

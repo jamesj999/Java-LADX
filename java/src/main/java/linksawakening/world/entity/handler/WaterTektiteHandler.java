@@ -14,7 +14,7 @@ final class WaterTektiteHandler {
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             state.updated =
-                state.runtime.waterTektiteMotion.advance(
+                state.waterTektiteMotion().advance(
                     state.entity, state.frame, state.randomByteSupplier, state.backgroundCollision);
           }
           return true;

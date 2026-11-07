@@ -24,7 +24,7 @@ final class WarpHandler {
               if (state.status == EntityStatus.ACTIVE
                   && state.runtime.indoorRoom
 
-                  && state.runtime.warpMotion != null) {
+                  && state.warpMotion() != null) {
                 int slot = state.entity.slot();
                 state.replaceEntity(withPositionAndVariant(
                         state.entity,
@@ -32,7 +32,7 @@ final class WarpHandler {
                         state.entity.y(),
                         state.runtime.dungeonMinibossReady ? (state.frame >> 3) & 7 : -1));
                 WarpMotion.Update warpUpdate =
-                    state.runtime.warpMotion.advance(
+                    state.warpMotion().advance(
                         state.entity,
                         state.runtime.warpState[slot],
                         state.runtime.warpTransitionCountdown[slot],

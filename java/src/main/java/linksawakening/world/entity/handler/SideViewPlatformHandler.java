@@ -28,7 +28,7 @@ final class SideViewPlatformHandler {
                   && !state.creditsGameplay
                   && state.lifecycle().transitionSequenceCounter() == 0x04) {
                 SideViewPlatformMotion.Frame platformFrame =
-                    state.runtime.sideViewPlatformMotion.beginFrame(state.entity);
+                    state.sideViewPlatformMotion().beginFrame(state.entity);
                 RoomEntity movedPlatform = platformFrame.entity();
                 if (platformFrame.horizontalDelta() != 0
                     && state.backgroundCollision != null
@@ -38,7 +38,7 @@ final class SideViewPlatformHandler {
                         movedPlatform.x(),
                         movedPlatform.y())) {
                   platformFrame =
-                      state.runtime.sideViewPlatformMotion.restoreHorizontalPosition(
+                      state.sideViewPlatformMotion().restoreHorizontalPosition(
                           state.entity, platformFrame);
                   movedPlatform = platformFrame.entity();
                 }
@@ -47,7 +47,7 @@ final class SideViewPlatformHandler {
                   if (state.backgroundCollision.blocks(
                       state.entity, direction, movedPlatform.x(), movedPlatform.y())) {
                     platformFrame =
-                        state.runtime.sideViewPlatformMotion.restoreVerticalPosition(
+                        state.sideViewPlatformMotion().restoreVerticalPosition(
                             state.entity, platformFrame);
                     movedPlatform = platformFrame.entity();
                   }
@@ -72,7 +72,7 @@ final class SideViewPlatformHandler {
                           activationAllowed));
                 }
                 SideViewPlatformMotion.Update platformUpdate =
-                    state.runtime.sideViewPlatformMotion.finishFrame(
+                    state.sideViewPlatformMotion().finishFrame(
                         movedPlatform, platformFrame, state.frame, standing, activationAllowed);
                 state.updated = platformUpdate.entity();
                 if (platformUpdate.rumble()) {

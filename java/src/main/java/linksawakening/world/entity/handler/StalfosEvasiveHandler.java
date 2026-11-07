@@ -22,7 +22,7 @@ final class StalfosEvasiveHandler {
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             StalfosEvasiveMotion.Update evasiveUpdate =
-                state.runtime.stalfosEvasiveMotion.advance(
+                state.stalfosEvasiveMotion().advance(
                     state.entity,
                     state.frame,
                     state.linkEntityX,
@@ -61,7 +61,7 @@ final class StalfosEvasiveHandler {
             if (state.sprites() != null) {
               EntitySpriteDefinition evasiveDefinition =
                   state.sprites().forStalfosEvasiveState(
-                      state.runtime.stalfosEvasiveMotion.privateState1(state.entity.slot()));
+                      state.stalfosEvasiveMotion().privateState1(state.entity.slot()));
               state.updated =
                   withDefinition(state.updated, evasiveDefinition, state.updated.spriteVariant());
             }

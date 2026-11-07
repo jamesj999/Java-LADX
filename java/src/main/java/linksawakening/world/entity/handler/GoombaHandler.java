@@ -16,7 +16,7 @@ final class GoombaHandler {
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             GoombaMotion.Update goombaUpdate =
-                state.runtime.goombaMotion.advance(
+                state.goombaMotion().advance(
                     state.entity,
                     state.frame,
                     state.linkEntityX,

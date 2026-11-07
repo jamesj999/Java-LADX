@@ -24,7 +24,7 @@ final class MimicHandler {
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
             }
             MimicMotion.Update mimicUpdate =
-                state.runtime.mimicMotion.advance(
+                state.mimicMotion().advance(
                     state.entity,
                     state.frame,
                     state.link().linkPressedButtonsMask(),

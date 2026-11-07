@@ -29,7 +29,7 @@ final class BlooperHandler {
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
             }
             BlooperMotion.Movement movement =
-                state.runtime.blooperMotion.move(
+                state.blooperMotion().move(
                     state.entity,
                     state.frame,
                     blooperBackgroundInteraction,
@@ -44,7 +44,7 @@ final class BlooperHandler {
                         state.runtime.groundInteractionSideScrolling),
                     "Room entity ground interaction returned null");
             BlooperMotion.Update blooperUpdate =
-                state.runtime.blooperMotion.finish(
+                state.blooperMotion().finish(
                     movement, groundResult, state.frame, state.linkEntityX, state.linkEntityY);
             state.updated = blooperUpdate.entity();
             state.preAppliedGroundResult = blooperUpdate.groundResult();

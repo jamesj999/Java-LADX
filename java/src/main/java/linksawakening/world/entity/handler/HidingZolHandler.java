@@ -24,7 +24,7 @@ final class HidingZolHandler {
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
             }
             HidingZolMotion.Update hidingZolUpdate =
-                state.runtime.hidingZolMotion.advance(
+                state.hidingZolMotion().advance(
                     state.entity,
                     state.linkEntityX,
                     state.linkEntityY,

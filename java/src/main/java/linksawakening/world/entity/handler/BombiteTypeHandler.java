@@ -24,7 +24,7 @@ final class BombiteTypeHandler {
             EntityTickStage.PHASE_2_BOMBITE_TYPE,
             state -> {
               {
-                state.runtime.bombiteMotion.initialize(state.entity.slot());
+                state.bombiteMotion().initialize(state.entity.slot());
                 state.slot().setSlowTimerInitialized(state.entity.slot(), true);
               }
               return true;
@@ -39,7 +39,7 @@ final class BombiteTypeHandler {
             state -> {
               if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
                 BombiteMotion.Update bombiteUpdate =
-                    state.runtime.bombiteMotion.advance(
+                    state.bombiteMotion().advance(
                         state.entity,
                         state.frame,
                         state.linkEntityX,
@@ -69,7 +69,7 @@ final class BombiteTypeHandler {
                 }
                 boolean entityCollisionExplosion =
                     state.entity.type() == ENTITY_BOUNCING_BOMBITE
-                        && state.runtime.bombiteMotion.state(state.entity.slot()) == 2
+                        && state.bombiteMotion().state(state.entity.slot()) == 2
                         && state.projectiles().collideBouncingBombiteWithEntities(
                             state.updated, state.frame);
                 if (bombiteUpdate.explode() || entityCollisionExplosion) {

@@ -20,7 +20,7 @@ final class BomberHandler {
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             BomberMotion.Update bomberUpdate =
-                state.runtime.bomberMotion.advance(
+                state.bomberMotion().advance(
                     state.entity,
                     state.slot().transitionCountdown(state.entity.slot()),
                     state.linkEntityX,

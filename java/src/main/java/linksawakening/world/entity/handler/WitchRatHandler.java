@@ -27,7 +27,7 @@ final class WitchRatHandler {
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
             }
             WitchRatMotion.Update witchRatUpdate =
-                state.runtime.witchRatMotion.advance(
+                state.witchRatMotion().advance(
                     state.updated,
                     state.frame,
                     state.slot().transitionCountdown(slot),

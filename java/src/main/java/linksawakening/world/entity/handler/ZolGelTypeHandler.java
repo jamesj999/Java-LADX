@@ -19,7 +19,7 @@ final class ZolGelTypeHandler {
             EntityTickStage.PHASE_2_ZOL_GEL_TYPE,
             state -> {
               {
-                state.runtime.zolGelMotion.initialize(
+                state.zolGelMotion().initialize(
                     state.entity.slot(), state.entity.type(), state.randomByteSupplier);
               }
               return true;
@@ -43,7 +43,7 @@ final class ZolGelTypeHandler {
                       RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
                 }
                 ZolGelMotion.Update zolGelUpdate =
-                    state.runtime.zolGelMotion.advance(
+                    state.zolGelMotion().advance(
                         state.entity,
                         state.linkEntityX,
                         state.linkEntityY,

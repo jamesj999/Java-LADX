@@ -16,7 +16,7 @@ final class DroppableFairyHandler {
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             FairyMotion.Update fairyUpdate =
-                state.runtime.fairyMotion.advance(
+                state.fairyMotion().advance(
                     state.entity,
                     state.frame,
                     state.linkEntityX,

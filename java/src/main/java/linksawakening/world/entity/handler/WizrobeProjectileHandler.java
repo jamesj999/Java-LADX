@@ -19,7 +19,7 @@ final class WizrobeProjectileHandler {
             EntityTickStage.PHASE_2_WIZROBE_PROJECTILE,
             state -> {
               {
-                state.runtime.wizrobeProjectileMotion.initialize(
+                state.wizrobeProjectileMotion().initialize(
                     state.entity.slot(), state.randomByteSupplier);
                 state.preserveWizrobeProjectilePresentation = true;
               }
@@ -35,16 +35,16 @@ final class WizrobeProjectileHandler {
             var collisionEvent =
                 EnemyProjectileCollision.check(
                     state.entity,
-                    state.runtime.wizrobeProjectileMotion.direction(state.entity.slot()),
+                    state.wizrobeProjectileMotion().direction(state.entity.slot()),
                     state.projectileLinkState);
             if (collisionEvent.isPresent()) {
               state.projectileEvents.add(collisionEvent.orElseThrow());
             }
-            state.updated = state.runtime.wizrobeProjectileMotion.advance(state.entity);
+            state.updated = state.wizrobeProjectileMotion().advance(state.entity);
             state.updated =
                 withFlipAttribute(
                     state.updated,
-                    state.runtime.wizrobeProjectileMotion.flipAttribute(state.frame));
+                    state.wizrobeProjectileMotion().flipAttribute(state.frame));
             state.preserveWizrobeProjectilePresentation = true;
             boolean objectCollisionHit =
                 state.objectCollision != null && state.objectCollision.collides(state.updated);

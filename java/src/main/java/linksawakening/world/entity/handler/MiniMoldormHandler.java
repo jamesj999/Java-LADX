@@ -23,7 +23,7 @@ final class MiniMoldormHandler {
             int slot = state.entity.slot();
             // RenderMiniMoldorm records the history before the bank-$04
             // recoil helper runs, so keep this ordering explicit.
-            state.runtime.miniMoldormMotion.beginFrame(
+            state.miniMoldormMotion().beginFrame(
                 state.entity, state.slot().ignoreHits(slot) != 0);
             EnemyRecoilMotion.Update recoil =
                 state.background().applyEnemyRecoilIfNeeded(
@@ -44,7 +44,7 @@ final class MiniMoldormHandler {
               transitionForMotion = (transitionForMotion + 1) & 0xFF;
             }
             MiniMoldormMotion.Update miniUpdate =
-                state.runtime.miniMoldormMotion.advanceAfterHistory(
+                state.miniMoldormMotion().advanceAfterHistory(
                     state.entity,
                     transitionForMotion,
                     state.slot().ignoreHits(slot),
@@ -83,7 +83,7 @@ final class MiniMoldormHandler {
             EntityTickStage.PHASE_2_MINI_MOLDORM_2,
             state -> {
               {
-                state.runtime.miniMoldormMotion.initialize(state.entity);
+                state.miniMoldormMotion().initialize(state.entity);
               }
               return true;
             });

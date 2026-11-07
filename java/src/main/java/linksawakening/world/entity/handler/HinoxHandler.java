@@ -32,7 +32,7 @@ final class HinoxHandler {
              ) {
             int slot = state.entity.slot();
             BossIntroMotion.Update bossIntro =
-                state.runtime.bossIntroMotion.advance(
+                state.bossIntroMotion().advance(
                     state.slotProperties().options1(state.entity.slot()),
                     state.entity.type(),
                     state.runtime.entityMapId,
@@ -45,7 +45,7 @@ final class HinoxHandler {
                   new DialogRequest(bossIntro.dialogTableId(), bossIntro.dialogLowId()));
             }
             HinoxMotion.Update hinoxUpdate =
-                state.runtime.hinoxMotion.advance(
+                state.hinoxMotion().advance(
                     state.entity,
                     state.slot().transitionCountdown(slot),
                     state.frame,
@@ -55,7 +55,7 @@ final class HinoxHandler {
                     state.projectileLinkState.motionState(),
                     state.randomByteSupplier,
                     state.hinoxBackgroundInteraction,
-                    state.runtime.hinoxMotion.collisionFlags(slot),
+                    state.hinoxMotion().collisionFlags(slot),
                     state.slot().flashCountdown(slot));
             state.updated = hinoxUpdate.entity();
             state.slot().setTransitionCountdown(slot, hinoxUpdate.transitionCountdown());

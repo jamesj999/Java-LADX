@@ -28,7 +28,7 @@ final class ArmosKnightHandler {
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             BossIntroMotion.Update bossIntro =
-                state.runtime.bossIntroMotion.advance(
+                state.bossIntroMotion().advance(
                     state.slotProperties().options1(state.entity.slot()),
                     state.entity.type(),
                     state.runtime.entityMapId,
@@ -46,7 +46,7 @@ final class ArmosKnightHandler {
                 state.linkEntityY,
                 state.projectileLinkState.motionState());
             ArmosKnightMotion.Update armosKnightUpdate =
-                state.runtime.armosKnightMotion.advance(
+                state.armosKnightMotion().advance(
                     state.entity,
                     state.linkEntityX,
                     state.linkEntityY,

@@ -16,7 +16,7 @@ final class GopongaFlowerProjectileHandler {
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             GopongaProjectileMotion.Update projectileUpdate =
-                state.runtime.gopongaProjectileMotion.advance(
+                state.gopongaProjectileMotion().advance(
                     state.entity,
                     state.frame,
                     state.slot().transitionCountdown(state.entity.slot()),

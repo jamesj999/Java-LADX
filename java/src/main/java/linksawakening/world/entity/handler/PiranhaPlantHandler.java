@@ -22,7 +22,7 @@ final class PiranhaPlantHandler {
               && state.handlerLinkCollisionEnabled) {
             int slot = state.entity.slot();
             PiranhaMotion.Update piranhaUpdate =
-                state.runtime.piranhaMotion.advance(
+                state.piranhaMotion().advance(
                     state.updated,
                     state.slot().transitionCountdown(slot),
                     state.linkEntityX,

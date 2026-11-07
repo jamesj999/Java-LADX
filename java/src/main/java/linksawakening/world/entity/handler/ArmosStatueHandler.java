@@ -25,7 +25,7 @@ final class ArmosStatueHandler {
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
             }
             ArmosMotion.Update armosUpdate =
-                state.runtime.armosMotion.advance(
+                state.armosMotion().advance(
                     state.entity,
                     state.frame,
                     state.linkEntityX,

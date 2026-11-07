@@ -52,7 +52,7 @@ final class PolsVoiceHandler {
             state.slot().setIgnoreHits(state.entity.slot(), 0x01);
             try {
               PolsVoiceMotion.Update polsVoiceUpdate =
-                  state.runtime.polsVoiceMotion.advance(
+                  state.polsVoiceMotion().advance(
                       state.entity,
                       state.linkEntityX,
                       state.linkEntityY,

@@ -17,7 +17,7 @@ final class PairoddHandler {
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             PairoddMotion.Update pairoddUpdate =
-                state.runtime.pairoddMotion.advance(
+                state.pairoddMotion().advance(
                     state.entity,
                     state.frame,
                     state.linkEntityX,

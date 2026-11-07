@@ -109,24 +109,24 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     final ButterflyMotion butterflyMotion = new ButterflyMotion();
 
-    public final SideViewPlatformMotion sideViewPlatformMotion = new SideViewPlatformMotion();
+    final SideViewPlatformMotion sideViewPlatformMotion = new SideViewPlatformMotion();
 
-    public final SideViewPotMotion sideViewPotMotion = new SideViewPotMotion();
+    final SideViewPotMotion sideViewPotMotion = new SideViewPotMotion();
 
     final KeeseMotion keeseMotion = new KeeseMotion();
 
-    public final RoamingEnemyMotion roamingEnemyMotion = new RoamingEnemyMotion();
+    final RoamingEnemyMotion roamingEnemyMotion = new RoamingEnemyMotion();
 
-    public final UnmaskedIronMaskMotion unmaskedIronMaskMotion =
+    final UnmaskedIronMaskMotion unmaskedIronMaskMotion =
         new UnmaskedIronMaskMotion();
 
-    public final MoblinSwordMotion moblinSwordMotion = new MoblinSwordMotion();
+    final MoblinSwordMotion moblinSwordMotion = new MoblinSwordMotion();
 
-    public final PlayerArrowMotion playerArrowMotion = new PlayerArrowMotion();
+    final PlayerArrowMotion playerArrowMotion = new PlayerArrowMotion();
 
-    public final EnemyProjectileMotion enemyProjectileMotion = new EnemyProjectileMotion();
+    final EnemyProjectileMotion enemyProjectileMotion = new EnemyProjectileMotion();
 
-    public final HookshotChainMotion hookshotChainMotion = new HookshotChainMotion();
+    final HookshotChainMotion hookshotChainMotion = new HookshotChainMotion();
 
     final HookshotBridgeMotion hookshotBridgeMotion = new HookshotBridgeMotion();
 
@@ -138,111 +138,111 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     final AntiFairyMotion antiFairyMotion = new AntiFairyMotion();
 
-    public final SparkMotion sparkMotion = new SparkMotion();
+    final SparkMotion sparkMotion = new SparkMotion();
 
-    public final ZolGelMotion zolGelMotion = new ZolGelMotion();
+    final ZolGelMotion zolGelMotion = new ZolGelMotion();
 
-    public final HidingZolMotion hidingZolMotion = new HidingZolMotion();
+    final HidingZolMotion hidingZolMotion = new HidingZolMotion();
 
-    public final StarMotion starMotion = new StarMotion();
+    final StarMotion starMotion = new StarMotion();
 
-    public final BlooperMotion blooperMotion = new BlooperMotion();
+    final BlooperMotion blooperMotion = new BlooperMotion();
 
-    public final WingedOctorokMotion wingedOctorokMotion = new WingedOctorokMotion();
+    final WingedOctorokMotion wingedOctorokMotion = new WingedOctorokMotion();
 
-    public final PincerMotion pincerMotion = new PincerMotion();
+    final PincerMotion pincerMotion = new PincerMotion();
 
-    public final BushCrawlerMotion bushCrawlerMotion = new BushCrawlerMotion();
+    final BushCrawlerMotion bushCrawlerMotion = new BushCrawlerMotion();
 
-    public final MimicMotion mimicMotion = new MimicMotion();
+    final MimicMotion mimicMotion = new MimicMotion();
 
-    public final MaskedMimicMotion maskedMimicMotion = new MaskedMimicMotion();
+    final MaskedMimicMotion maskedMimicMotion = new MaskedMimicMotion();
 
-    public final MiniMoldormMotion miniMoldormMotion = new MiniMoldormMotion();
+    final MiniMoldormMotion miniMoldormMotion = new MiniMoldormMotion();
 
-    public final MoldormMotion moldormMotion = new MoldormMotion();
+    final MoldormMotion moldormMotion = new MoldormMotion();
 
-    public final CuccoMotion cuccoMotion = new CuccoMotion();
+    final CuccoMotion cuccoMotion = new CuccoMotion();
 
-    public final GiantGopongaMotion giantGopongaMotion = new GiantGopongaMotion();
+    final GiantGopongaMotion giantGopongaMotion = new GiantGopongaMotion();
 
-    public final GopongaProjectileMotion gopongaProjectileMotion =
+    final GopongaProjectileMotion gopongaProjectileMotion =
         new GopongaProjectileMotion();
 
-    public final PokeyMotion pokeyMotion = new PokeyMotion();
+    final PokeyMotion pokeyMotion = new PokeyMotion();
 
-    public final PiranhaMotion piranhaMotion = new PiranhaMotion();
+    final PiranhaMotion piranhaMotion = new PiranhaMotion();
 
-    public final ZoraMotion zoraMotion = new ZoraMotion();
+    final ZoraMotion zoraMotion = new ZoraMotion();
 
-    public final ZombieMotion zombieMotion = new ZombieMotion();
+    final ZombieMotion zombieMotion = new ZombieMotion();
 
-    public final BuzzBlobMotion buzzBlobMotion = new BuzzBlobMotion();
+    final BuzzBlobMotion buzzBlobMotion = new BuzzBlobMotion();
 
-    public final SandCrabMotion sandCrabMotion = new SandCrabMotion();
+    final SandCrabMotion sandCrabMotion = new SandCrabMotion();
 
-    public final DogMotion dogMotion = new DogMotion();
+    final DogMotion dogMotion = new DogMotion();
 
-    public final UrchinMotion urchinMotion = new UrchinMotion();
+    final UrchinMotion urchinMotion = new UrchinMotion();
 
-    public final WitchRatMotion witchRatMotion = new WitchRatMotion();
+    final WitchRatMotion witchRatMotion = new WitchRatMotion();
 
-    public final WitchMotion witchMotion = new WitchMotion();
+    final WitchMotion witchMotion = new WitchMotion();
 
     public final int[] witchGotItemCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public final TarinRaccoonMotion tarinRaccoonMotion = new TarinRaccoonMotion();
+    final TarinRaccoonMotion tarinRaccoonMotion = new TarinRaccoonMotion();
 
-    public final SpikeTrapMotion spikeTrapMotion = new SpikeTrapMotion();
+    final SpikeTrapMotion spikeTrapMotion = new SpikeTrapMotion();
 
-    public final PairoddMotion pairoddMotion = new PairoddMotion();
+    final PairoddMotion pairoddMotion = new PairoddMotion();
 
-    public final PairoddProjectileMotion pairoddProjectileMotion =
+    final PairoddProjectileMotion pairoddProjectileMotion =
         new PairoddProjectileMotion();
 
-    public final WaterTektiteMotion waterTektiteMotion = new WaterTektiteMotion();
+    final WaterTektiteMotion waterTektiteMotion = new WaterTektiteMotion();
 
-    public final FishMotion fishMotion = new FishMotion();
+    final FishMotion fishMotion = new FishMotion();
 
-    public final CrowMotion crowMotion = new CrowMotion();
+    final CrowMotion crowMotion = new CrowMotion();
 
-    public final BooBuddyMotion booBuddyMotion = new BooBuddyMotion();
+    final BooBuddyMotion booBuddyMotion = new BooBuddyMotion();
 
-    public final FairyMotion fairyMotion = new FairyMotion();
+    final FairyMotion fairyMotion = new FairyMotion();
 
-    public final StalfosAggressiveMotion stalfosAggressiveMotion =
+    final StalfosAggressiveMotion stalfosAggressiveMotion =
         new StalfosAggressiveMotion();
 
-    public final StalfosEvasiveMotion stalfosEvasiveMotion = new StalfosEvasiveMotion();
+    final StalfosEvasiveMotion stalfosEvasiveMotion = new StalfosEvasiveMotion();
 
     final GibdoMotion gibdoMotion = new GibdoMotion();
 
-    public final LikeLikeMotion likeLikeMotion = new LikeLikeMotion();
+    final LikeLikeMotion likeLikeMotion = new LikeLikeMotion();
 
-    public final GoombaMotion goombaMotion = new GoombaMotion();
+    final GoombaMotion goombaMotion = new GoombaMotion();
 
-    public final SnakeMotion snakeMotion = new SnakeMotion();
+    final SnakeMotion snakeMotion = new SnakeMotion();
 
-    public final WizrobeMotion wizrobeMotion = new WizrobeMotion();
+    final WizrobeMotion wizrobeMotion = new WizrobeMotion();
 
-    public final WizrobeProjectileMotion wizrobeProjectileMotion =
+    final WizrobeProjectileMotion wizrobeProjectileMotion =
         new WizrobeProjectileMotion();
 
-    public final PeaHatMotion peaHatMotion = new PeaHatMotion();
+    final PeaHatMotion peaHatMotion = new PeaHatMotion();
 
-    public final ArmosMotion armosMotion = new ArmosMotion();
+    final ArmosMotion armosMotion = new ArmosMotion();
 
-    public final ArmosKnightMotion armosKnightMotion = new ArmosKnightMotion();
+    final ArmosKnightMotion armosKnightMotion = new ArmosKnightMotion();
 
-    public final HinoxMotion hinoxMotion = new HinoxMotion();
+    final HinoxMotion hinoxMotion = new HinoxMotion();
 
-    public final RollingBonesMotion rollingBonesMotion = new RollingBonesMotion();
+    final RollingBonesMotion rollingBonesMotion = new RollingBonesMotion();
 
-    public final ThreeOfAKindMotion threeOfAKindMotion = new ThreeOfAKindMotion();
+    final ThreeOfAKindMotion threeOfAKindMotion = new ThreeOfAKindMotion();
 
-    public final MoblinKingMotion moblinKingMotion = new MoblinKingMotion();
+    final MoblinKingMotion moblinKingMotion = new MoblinKingMotion();
 
-    public final BossIntroMotion bossIntroMotion = new BossIntroMotion();
+    final BossIntroMotion bossIntroMotion = new BossIntroMotion();
 
     final GenieMotion genieMotion = new GenieMotion();
 
@@ -289,29 +289,29 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     int bossAgonySourceSlot;
 
-    public final GhiniMotion ghiniMotion = new GhiniMotion();
+    final GhiniMotion ghiniMotion = new GhiniMotion();
 
-    public final HardHatMotion hardHatMotion = new HardHatMotion();
+    final HardHatMotion hardHatMotion = new HardHatMotion();
 
-    public final PolsVoiceMotion polsVoiceMotion = new PolsVoiceMotion();
+    final PolsVoiceMotion polsVoiceMotion = new PolsVoiceMotion();
 
-    public final SpikedBeetleMotion spikedBeetleMotion = new SpikedBeetleMotion();
+    final SpikedBeetleMotion spikedBeetleMotion = new SpikedBeetleMotion();
 
-    public final MadBomberMotion madBomberMotion = new MadBomberMotion();
+    final MadBomberMotion madBomberMotion = new MadBomberMotion();
 
-    public final BomberMotion bomberMotion = new BomberMotion();
+    final BomberMotion bomberMotion = new BomberMotion();
 
-    public final BombiteMotion bombiteMotion = new BombiteMotion();
+    final BombiteMotion bombiteMotion = new BombiteMotion();
 
-    public final EnemyRecoilMotion enemyRecoilMotion = new EnemyRecoilMotion();
+    final EnemyRecoilMotion enemyRecoilMotion = new EnemyRecoilMotion();
 
-    public final FollowingNpcMotion followingNpcMotion = new FollowingNpcMotion();
+    final FollowingNpcMotion followingNpcMotion = new FollowingNpcMotion();
 
-    public final BowWowMotion bowWowMotion = new BowWowMotion();
+    final BowWowMotion bowWowMotion = new BowWowMotion();
 
-    public final ColorShellMotion colorShellMotion = new ColorShellMotion();
+    final ColorShellMotion colorShellMotion = new ColorShellMotion();
 
-    public final SecretSeashellMotion secretSeashellMotion =
+    final SecretSeashellMotion secretSeashellMotion =
         new SecretSeashellMotion();
 
     final ThrownEntityMotion thrownEntityMotion = new ThrownEntityMotion();

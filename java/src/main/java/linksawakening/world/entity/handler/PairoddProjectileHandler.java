@@ -19,7 +19,7 @@ final class PairoddProjectileHandler {
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             state.updated =
-                state.runtime.pairoddProjectileMotion.advance(state.entity, state.frame);
+                state.pairoddProjectileMotion().advance(state.entity, state.frame);
             boolean objectCollisionHit =
                 state.objectCollision != null && state.objectCollision.collides(state.updated);
             boolean removePairoddProjectile = false;
@@ -27,7 +27,7 @@ final class PairoddProjectileHandler {
             var collisionEvent =
                 EnemyProjectileCollision.check(
                     state.updated,
-                    state.runtime.pairoddProjectileMotion.direction(state.entity.slot()),
+                    state.pairoddProjectileMotion().direction(state.entity.slot()),
                     state.projectileLinkState);
             if (collisionEvent.isPresent()) {
               EntityProjectileEvent event = collisionEvent.orElseThrow();

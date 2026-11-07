@@ -14,7 +14,7 @@ final class MoblinHandler {
             EntityTickStage.PHASE_2_MOBLIN,
             state -> {
               {
-                state.runtime.roamingEnemyMotion.initialize(state.entity.slot());
+                state.roamingEnemyMotion().initialize(state.entity.slot());
               }
               return true;
             });

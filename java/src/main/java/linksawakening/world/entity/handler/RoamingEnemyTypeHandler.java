@@ -25,7 +25,7 @@ final class RoamingEnemyTypeHandler {
                 if (state.entity.type() == ENTITY_IRON_MASK
                     && state.runtime.ironMaskPrivateState2[state.entity.slot()] != 0) {
                   UnmaskedIronMaskMotion.Update unmaskedUpdate =
-                      state.runtime.unmaskedIronMaskMotion.advance(
+                      state.unmaskedIronMaskMotion().advance(
                           state.entity,
                           state.frame,
                           state.randomByteSupplier,
@@ -38,14 +38,14 @@ final class RoamingEnemyTypeHandler {
                 } else {
                   RoamingEnemyMotion.Update roamingUpdate =
                       state.background().interaction() == null
-                          ? state.runtime.roamingEnemyMotion.advance(
+                          ? state.roamingEnemyMotion().advance(
                               state.entity,
                               state.linkEntityX,
                               state.linkEntityY,
                               state.randomByteSupplier,
                               state.backgroundCollision,
                               state.creditsGameplay)
-                          : state.runtime.roamingEnemyMotion.advanceWithInteraction(
+                          : state.roamingEnemyMotion().advanceWithInteraction(
                               state.entity,
                               state.linkEntityX,
                               state.linkEntityY,

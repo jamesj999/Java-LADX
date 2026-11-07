@@ -24,9 +24,9 @@ final class PokeyHandler {
             if (!state.handlerLinkCollisionEnabled) {
               // Both Pokey branches return immediately after their
               // pre-handler display pass when Link is non-interactive.
-            } else if (state.runtime.pokeyMotion.isSegment(slot)) {
+            } else if (state.pokeyMotion().isSegment(slot)) {
               PokeyMotion.Update segmentUpdate =
-                  state.runtime.pokeyMotion.advanceSegment(
+                  state.pokeyMotion().advanceSegment(
                       state.updated,
                       state.slot().pokeyInertia(slot),
                       state.slot().transitionCountdown(slot),
@@ -69,7 +69,7 @@ final class PokeyHandler {
                 state.slot().setHealth(slot, 0x02);
               }
               PokeyMotion.Update pokeyUpdate =
-                  state.runtime.pokeyMotion.advanceMain(
+                  state.pokeyMotion().advanceMain(
                       state.updated,
                       state.frame,
                       state.slot().pokeyInertia(slot),
