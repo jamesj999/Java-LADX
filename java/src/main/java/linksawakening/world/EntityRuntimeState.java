@@ -891,7 +891,7 @@ abstract class EntityRuntimeState {
     final int[] chestItemBySlot = new int[EntityRoomLoader.MAX_ENTITIES];
 
     final List<RoamingEnemyMotion.LaunchRequest> projectileLaunchRequests =
-        new ArrayList<>();
+        outbox.channel(RoamingEnemyMotion.LaunchRequest.class, "projectileLaunchRequests");
 
     final List<TransientVfxRequest> transientVfxRequests = outbox.channel(TransientVfxRequest.class, "transientVfxRequests");
 
@@ -1141,7 +1141,8 @@ abstract class EntityRuntimeState {
 
     final HeartPiecePickupMotion[] heartPiecePickup = new HeartPiecePickupMotion[EntityRoomLoader.MAX_ENTITIES];
 
-    final List<HeartPiecePickupMotion.Update> heartPieceUpdates = new ArrayList<>();
+    final List<HeartPiecePickupMotion.Update> heartPieceUpdates =
+        outbox.channel(HeartPiecePickupMotion.Update.class, "heartPieceUpdates");
 
     int heartPiecesCount;
 

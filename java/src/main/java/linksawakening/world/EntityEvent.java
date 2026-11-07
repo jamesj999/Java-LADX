@@ -42,5 +42,8 @@ sealed interface EntityEvent permits
     RoomEntityRuntime.LikeLikeEvent,
     RoomEntityRuntime.HookshotBridgeUpdate,
     EntityCombatEvent,
-    BombExplosionEvent {
+    BombExplosionEvent,
+    EntityProjectileEvent,
+    RoamingEnemyMotion.LaunchRequest,
+    HeartPiecePickupMotion.Update {
 }

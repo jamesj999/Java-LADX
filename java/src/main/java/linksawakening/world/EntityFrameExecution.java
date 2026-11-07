@@ -262,7 +262,8 @@ final class EntityFrameExecution {
         if (state.runtime.linkPlayingOcarinaCountdown >= 0x10 && state.runtime.ocarinaAnimationCounter == 0x14) {
             state.runtime.entityPlayerSpawns.spawnMusicalNote(state.linkEntityX, state.linkEntityY, state.runtime.ocarinaAnimationPhase);
         }
-        state.projectileEvents = new ArrayList<>();
+        state.projectileEvents = state.runtime.outbox.channel(EntityProjectileEvent.class, "projectileEvents");
+        state.projectileEvents.clear();
         if (state.linkPositionHistory != null) {
             state.runtime.followingLinkPositionHistory = state.linkPositionHistory;
         }
@@ -286,7 +287,7 @@ final class EntityFrameExecution {
         state.runtime.slotProperties.updatePincerBodyOam();
         state.runtime.slotProperties.updateWingedOctorokOam();
         state.runtime.slotProperties.updateBowWowChain(state.frame);
-        return List.copyOf(state.projectileEvents);
+        return state.runtime.outbox.drain(EntityProjectileEvent.class, "projectileEvents");
     
     }
 }

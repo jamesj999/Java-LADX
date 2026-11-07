@@ -321,6 +321,6 @@ final class RoamingEnemyMotion {
     record Update(RoomEntity entity, LaunchRequest launchRequest) {
     }
 
-    record LaunchRequest(int sourceSlot, int sourceType, int projectileType) {
+    record LaunchRequest(int sourceSlot, int sourceType, int projectileType) implements EntityEvent {
     }
 }
