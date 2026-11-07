@@ -141,6 +141,7 @@ final class LinkEquipmentPhase {
                         pegasusShake.countdown(), pegasusShake.phase());
                 }
                 if (roomSession != null) {
+                    roomSession.setEntityScreenShakeCountdown(scrollController.screenShakeCountdown());
                     roomSession.setSecretSeashellPegasusCollisionState(
                         scrollController.screenShakeCountdown() != 0,
                         link.pegasusBootsCollisionCountdown() != 0,

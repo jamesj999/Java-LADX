@@ -39,7 +39,7 @@ final class CombatPhase {
                 swordBoxForEntityTick = sword == null
                     ? Sword.CollisionBox.inactive()
                     : sword.enemyCollisionBox(link.romEntityX(), link.romSwordCollisionY(),
-                        link.direction());
+                        link.direction(), playerState.runningWithPegasusBoots());
                 EnemyAttackContext attackContext = new EnemyAttackContext(
                     playerState.swordLevel(),
                     playerState.tunicType() == PlayerState.TUNIC_RED,

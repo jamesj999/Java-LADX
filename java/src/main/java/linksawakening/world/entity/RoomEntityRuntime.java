@@ -82,6 +82,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     final EntityHandlerRegistry entityHandlers = roomInitialization.createEntityHandlers();
     final EntityRewardController rewards = new EntityRewardController(this);
     final EntityStoryController story = new EntityStoryController(this);
+    final SlimeEyeController slimeEye = new SlimeEyeController(this);
     final GenieEntityController genie = new GenieEntityController(this);
     final EntityProjectileController projectiles = new EntityProjectileController(this);
     final EntityPickupController pickups = new EntityPickupController(this);
@@ -153,6 +154,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
         this.enemyCombatTables = enemyCombatTables;
         this.chestContentsTable = chestContentsTable;
         this.romTables = romTables;
+        slimeEye.loadRom(romData);
         roomInitialization.initializeRomPresentation(romData);
         this.warpMotion = romData == null ? null : new WarpMotion(romData);
         roomInitialization.initializeRoomSlots(initial);

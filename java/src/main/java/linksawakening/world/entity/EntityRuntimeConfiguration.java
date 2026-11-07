@@ -191,6 +191,8 @@ public final class EntityRuntimeConfiguration {
         runtime.dungeonMinibossReady = ready;
     }
 
+    public void setScreenShakeCountdown(int countdown) { runtime.slimeEye.setScreenShakeCountdown(countdown); }
+
     public void setSecretSeashellPegasusCollisionState(boolean screenShakeActive,
                                                  boolean collisionActive,
                                                  int collisionX, int collisionY) {

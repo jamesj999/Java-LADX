@@ -2,6 +2,7 @@ package linksawakening.world.entity;
 
 /** Source-ordered dispatch sites; these are engine phases, not ROM entity IDs. */
 public enum EntityTickStage {
+  PHASE_2_SLIME_EYE,
   PHASE_1_KANALET_BOMBABLE_WALL,
   PHASE_1_TARIN,
   PHASE_1_MARIN_INDOOR,

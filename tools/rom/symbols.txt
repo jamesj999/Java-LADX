@@ -405,3 +405,16 @@ data_020_5407
 RoomSpritesheetGroupsTable
 IndoorEntitySpritesheetsTable
 OverworldEntitySpritesheetsTable
+
+# Slime Eye bank-04 encounter tables
+Data_004_496B
+Data_004_496D
+Data_004_4B12
+Data_004_4B5C
+Data_004_4B6C
+Data_004_4BDD
+Data_004_4D9D
+Data_004_4E94
+Data_004_4E9C
+Data_004_4FAE
+Data_004_4FEE

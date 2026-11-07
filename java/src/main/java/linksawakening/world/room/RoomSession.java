@@ -219,7 +219,12 @@ public final class RoomSession extends RoomSessionRules {
     void updateWitchEnvironment() { context.roomStoryState.updateWitchEnvironment(); }
     /** Supplies wGoldenLeavesCount to the live Hiding Slime Key handler. */
     public void setEntityGoldenLeavesCount(int goldenLeavesCount) { context.entityInputs.setEntityGoldenLeavesCount(goldenLeavesCount); }
-    /** Supplies the live HRAM shake/collision values used by tree shells. */
+    /** Supplies wScreenShakeCountdown to ceiling-triggered entity handlers. */
+    public void setEntityScreenShakeCountdown(int countdown) {
+        if (context.entityBridge.entityRuntime != null) context.entityBridge.entityRuntime.configuration().setScreenShakeCountdown(countdown);
+    }
+
+    /** Supplies the live shake/collision values used by tree shells. */
     public void setSecretSeashellPegasusCollisionState(boolean screenShakeActive,
                                                         boolean collisionActive,
                                                         int collisionX, int collisionY) { context.entityInputs.setSecretSeashellPegasusCollisionState(screenShakeActive, collisionActive, collisionX, collisionY); }

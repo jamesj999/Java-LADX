@@ -280,4 +280,15 @@ public final class RomSymbols {
     public static final RomAddress RoomSpritesheetGroupsTable = new RomAddress(0x20, 0x70D3);
     public static final RomAddress IndoorEntitySpritesheetsTable = new RomAddress(0x20, 0x763B);
     public static final RomAddress OverworldEntitySpritesheetsTable = new RomAddress(0x20, 0x73F3);
+    public static final RomAddress Data_004_496B = new RomAddress(0x04, 0x496B);
+    public static final RomAddress Data_004_496D = new RomAddress(0x04, 0x496D);
+    public static final RomAddress Data_004_4B12 = new RomAddress(0x04, 0x4B12);
+    public static final RomAddress Data_004_4B5C = new RomAddress(0x04, 0x4B5C);
+    public static final RomAddress Data_004_4B6C = new RomAddress(0x04, 0x4B6C);
+    public static final RomAddress Data_004_4BDD = new RomAddress(0x04, 0x4BDD);
+    public static final RomAddress Data_004_4D9D = new RomAddress(0x04, 0x4D9D);
+    public static final RomAddress Data_004_4E94 = new RomAddress(0x04, 0x4E94);
+    public static final RomAddress Data_004_4E9C = new RomAddress(0x04, 0x4E9C);
+    public static final RomAddress Data_004_4FAE = new RomAddress(0x04, 0x4FAE);
+    public static final RomAddress Data_004_4FEE = new RomAddress(0x04, 0x4FEE);
 }

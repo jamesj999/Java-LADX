@@ -227,6 +227,7 @@ public final class EntityFrameExecution {
   public EntityBombInteractions bombInteractions() { return runtime.bombInteractions; }
   public EntityRewardController rewards() { return runtime.rewards; }
   public EntityStoryController story() { return runtime.story; }
+  public SlimeEyeController slimeEye() { return runtime.slimeEye; }
   public GenieEntityController genie() { return runtime.genie; }
   public EntityPickupController pickups() { return runtime.pickups; }
   public EntityBossRewards bossRewards() { return runtime.bossRewards; }

@@ -11,6 +11,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 final class EnemyCombatEventConsumerTest {
 
     @Test
+    void routesSlimeEyeJumpLandingBounceAndTerminalExplosion() {
+        RecordingSoundSink sounds = new RecordingSoundSink();
+        EnemyCombatEventConsumer.consume(List.of(
+            new EntityCombatEvent(0, 0x5B, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x24),
+            new EntityCombatEvent(0, 0x5B, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x0B),
+            new EntityCombatEvent(0, 0x5B, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x20),
+            new EntityCombatEvent(0, 0x5B, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x1A)), sounds);
+        assertEquals(List.of(GameplaySoundEvent.ENEMY_JUMP, GameplaySoundEvent.STRONG_BUMP,
+            GameplaySoundEvent.ENEMY_BOUNCE, GameplaySoundEvent.BOSS_EXPLOSION), sounds.events);
+    }
+
+    @Test
     void mapsRomBumpAndEnemyHitJinglesToGameplaySounds() {
         RecordingSoundSink sounds = new RecordingSoundSink();
         List<EntityCombatEvent> events = List.of(

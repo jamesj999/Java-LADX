@@ -227,7 +227,7 @@ public final class RoomEntityCombatRules {
                 ENTITY_CRYSTAL_SWITCH,
                 ENTITY_OCTOROK, ENTITY_BOUNCING_BOMBITE, ENTITY_TIMER_BOMBITE,
                 ENTITY_MAD_BOMBER, ENTITY_BOMBER, ENTITY_MIMIC, ENTITY_MINI_MOLDORM,
-                ENTITY_MOLDORM,
+                ENTITY_MOLDORM, 0x5B,
                 ENTITY_MASKED_MIMIC_GORIYA, ENTITY_THREE_OF_A_KIND,
                 ENTITY_WITCH_RAT, 0xE4 -> true;
             default -> false;

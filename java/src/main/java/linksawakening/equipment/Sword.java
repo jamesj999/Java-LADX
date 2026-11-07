@@ -382,8 +382,15 @@ public final class Sword implements EquipmentItem {
      * bounds and is therefore kept as a separate ROM-table lookup.
      */
     public CollisionBox enemyCollisionBox(int linkEntityX, int linkEntityY, int linkDirection) {
+        return enemyCollisionBox(linkEntityX, linkEntityY, linkDirection, false);
+    }
+
+    /** Bank 02:42F4 keeps the held blade collision active while running with Pegasus Boots. */
+    public CollisionBox enemyCollisionBox(int linkEntityX, int linkEntityY, int linkDirection,
+                                          boolean runningWithPegasusBoots) {
         lastKnownDirection = linkDirection;
-        if (!staticCollisionActive() || romTables == null) {
+        if ((!staticCollisionActive() && !(runningWithPegasusBoots && state == STATE_HOLDING))
+            || romTables == null) {
             return CollisionBox.inactive();
         }
         if (spinAttackActive()) {

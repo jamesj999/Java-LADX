@@ -234,6 +234,7 @@ public final class EntitySpriteHandlerCatalog {
             return decodePair(entityType, 0x03, 0x5D83, 4,
                 mapId < 0 ? 0 : mapId & 0x03);
         }
+        if (entityType == 0x5B) return forSlimeEyeState(false, 0, 0);
         if (entityType == ENTITY_ARROW) {
             return decodePair(entityType, 0x03, 0x6BC6, 4, 0);
         }
@@ -777,6 +778,33 @@ public final class EntitySpriteHandlerCatalog {
         }
         return EntitySpriteDefinition.dynamic(ENTITY_MOLDORM, 0x04,
             0x57F2, 0, List.of(List.copyOf(sprites)));
+    }
+
+    /** Slime Eye bank-04 display lists followed by the ground shadow. */
+    public EntitySpriteDefinition forSlimeEyeState(boolean half, int variant, int z) {
+        var bodyAddress = half ? linksawakening.rom.RomSymbols.Data_004_4FAE
+            : linksawakening.rom.RomSymbols.Data_004_4BDD;
+        var shadowAddress = half ? linksawakening.rom.RomSymbols.Data_004_4FEE
+            : linksawakening.rom.RomSymbols.Data_004_4D9D;
+        int variants = half ? 2 : 7;
+        if (variant < 0 || variant >= variants) return EntitySpriteDefinition.unsupported(0x5B);
+        var body = decodeRectangle(0x5B, bodyAddress.bank(), bodyAddress.address(),
+            variants, half ? 8 : 16, variant);
+        List<EntitySpriteDefinition.DynamicSprite> sprites = new ArrayList<>();
+        for (var sprite : body.rectangleVariant(variant)) {
+            if (sprite.oam().tile() == 0xFF) continue;
+            sprites.add(new EntitySpriteDefinition.DynamicSprite(sprite.yOffset(), sprite.xOffset(),
+                sprite.oam(), EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true));
+        }
+        if (z != 0) {
+            var shadow = decodeRectangle(0x5B, shadowAddress.bank(), shadowAddress.address(), 1,
+                half ? 4 : 6, 0);
+            for (var sprite : shadow.rectangleVariant(0)) sprites.add(
+                new EntitySpriteDefinition.DynamicSprite(signedByte(sprite.yOffset() + z - (half ? 2 : 8)),
+                    sprite.xOffset(), sprite.oam(), EntitySpriteDefinition.DynamicSprite.TileSource.GPU, true));
+        }
+        return EntitySpriteDefinition.dynamic(0x5B, bodyAddress.bank(), bodyAddress.address(), 0,
+            List.of(List.copyOf(sprites)));
     }
 
     /** Builds the repeated vertical bar pairs emitted by {@code func_006_6FEA}. */

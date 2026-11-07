@@ -11,6 +11,7 @@ public final class EntityHandlerFamilies {
     BooBuddyHandler.install(registry);
     BowWowHandler.install(registry);
     MoldormHandler.install(registry);
+    SlimeEyeHandler.install(registry);
     SideViewPotHandler.install(registry);
     DogHandler.install(registry);
     HookshotBridgeHandler.install(registry);

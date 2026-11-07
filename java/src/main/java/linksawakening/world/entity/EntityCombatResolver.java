@@ -37,6 +37,12 @@ final class EntityCombatResolver {
         events.clear();
         for (int index = runtime.slots.length - 1; index >= 0; index--) {
             RoomEntity entity = runtime.slots[index];
+            if (entity.loaded() && entity.type() == 0x5B) {
+                runtime.slimeEye.resolveCombat(entity, frameCounter, linkEntityX, linkEntityY,
+                    linkAirborne, linkInteractive, swordCollisionActive, swordX, swordWidth,
+                    swordY, swordHeight, attackContext, events);
+                continue;
+            }
             if (!entity.loaded() || entity.status() != EntityStatus.ACTIVE
                 || !RoomEntityCombatRules.supportsEnemyCollision(entity.type())) {
                 continue;

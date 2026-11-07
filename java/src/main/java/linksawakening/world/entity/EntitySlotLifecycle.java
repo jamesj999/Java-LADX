@@ -136,6 +136,7 @@ public final class EntitySlotLifecycle {
         if (slot < 0 || slot >= runtime.slots.length) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
+        runtime.slimeEye.clear(slot);
         runtime.pickups.resetEnemyDropState(slot);
         runtime.sideViewPlatformMotion.clear(slot);
         runtime.sideViewPotMotion.clear(slot);
@@ -435,6 +436,7 @@ public final class EntitySlotLifecycle {
     boolean shouldDisappear(RoomEntity entity) { return runtime.enemyInspection.shouldDisappear(entity); }
 
     public void disableEntityWithoutPersistence(int slot) {
+        runtime.slimeEye.clear(slot);
         runtime.pickups.resetEnemyDropState(slot);
         runtime.sideViewPlatformMotion.clear(slot);
         runtime.sideViewPotMotion.clear(slot);

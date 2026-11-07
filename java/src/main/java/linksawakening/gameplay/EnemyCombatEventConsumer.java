@@ -67,6 +67,9 @@ public final class EnemyCombatEventConsumer {
         }
         if (channel == EntityCombatEvent.SoundChannel.JINGLE) {
             switch (id) {
+                case 0x0B -> soundSink.play(GameplaySoundEvent.STRONG_BUMP);
+                case 0x20 -> soundSink.play(GameplaySoundEvent.ENEMY_BOUNCE);
+                case 0x24 -> soundSink.play(GameplaySoundEvent.ENEMY_JUMP);
                 case JINGLE_BUMP_ID -> soundSink.play(GameplaySoundEvent.ENEMY_BUMP);
                 case JINGLE_TREASURE_FOUND_ID -> soundSink.play(GameplaySoundEvent.TREASURE_FOUND);
                 case JINGLE_PUZZLE_SOLVED_ID -> soundSink.play(GameplaySoundEvent.PUZZLE_SOLVED);
@@ -88,6 +91,7 @@ public final class EnemyCombatEventConsumer {
             }
         } else if (channel == EntityCombatEvent.SoundChannel.NOISE) {
             switch (id) {
+                case 0x1A -> soundSink.play(GameplaySoundEvent.BOSS_EXPLOSION);
                 case NOISE_ENEMY_BURNING_ID -> soundSink.play(GameplaySoundEvent.ENEMY_BURNING);
                 case NOISE_ENEMY_DESTROYED_ID -> soundSink.play(GameplaySoundEvent.ENEMY_DESTROYED);
                 case NOISE_BEAMOS_LASER_ID -> soundSink.play(GameplaySoundEvent.BEAMOS_LASER);

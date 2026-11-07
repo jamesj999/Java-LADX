@@ -15,6 +15,7 @@ import linksawakening.rom.RomTables;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -350,6 +351,20 @@ final class SwordTest {
         drawExpectedSwordPose(expected, romTables, spriteSheet, 40, 48, Link.DIRECTION_RIGHT, Sword.STATE_HOLDING);
 
         assertEquals(Arrays.toString(alphaMask(expected)), Arrays.toString(alphaMask(actual)));
+    }
+
+    @Test
+    void heldSwordRetainsEnemyCollisionWhileRunningWithPegasusBoots() throws Exception {
+        var tables = RomTables.loadFromRom(loadRom());
+        Sword sword = new Sword(tables, null);
+        sword.onPress();
+        for (int i = 0; i < 32 && sword.state() != Sword.STATE_HOLDING; i++) sword.tick(true);
+        assertEquals(Sword.STATE_HOLDING, sword.state());
+        assertFalse(sword.enemyCollisionBox(80, 96, Link.DIRECTION_UP).active());
+        var box = sword.enemyCollisionBox(80, 96, Link.DIRECTION_UP, true);
+        assertTrue(box.active());
+        assertEquals(80 + tables.swordCollisionXOriginOffset(2, Sword.STATE_HOLDING), box.x());
+        assertEquals(96 + tables.swordCollisionYOriginOffset(2, Sword.STATE_HOLDING), box.y());
     }
 
     @Test

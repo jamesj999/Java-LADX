@@ -12,6 +12,7 @@ import static linksawakening.world.entity.RoomEntityRuntime.*;
 /** Ordered slot dispatch phase 2; false preserves the ROM handler early return. */
 final class EntitySlotPhase2 {
   static boolean run(EntityFrameExecution state) {
+    if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_SLIME_EYE, state)) return false;
 
     if (state.status == EntityStatus.LIFTED) {
       state.lifted = state.runtime.liftThrow.renderLiftedEntity(state.entity, state.frame);
