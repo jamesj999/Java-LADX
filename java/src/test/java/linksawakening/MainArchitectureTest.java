@@ -12,34 +12,25 @@ final class MainArchitectureTest {
     private static final GameSession game = new GameSession();
 
     @Test
-    void mainDoesNotOwnRenderingBackendOrLayerAssembly() throws Exception {
-        String source = Files.readString(Path.of("src/main/java/linksawakening/GameSession.java"));
-
-        assertFalse(source.contains("GL11."));
-        assertFalse(source.contains("GL12."));
-        assertFalse(source.contains("GL15."));
-        assertFalse(source.contains("GL20."));
-        assertFalse(source.contains("GL30."));
-        assertFalse(source.contains("addBackgroundSceneLayers"));
-        assertFalse(source.contains("addOverworldLayers"));
-        assertFalse(source.contains("uploadTexture"));
+    void entryPointOwnsNoGameStateOrBackend() {
+        assertTrue(Main.class.getDeclaredFields().length == 0);
+        assertTrue(java.util.Arrays.stream(Main.class.getDeclaredMethods())
+            .allMatch(method -> method.getName().equals("main")));
     }
 
     @Test
-    void mainDoesNotOwnRoomLoadingOrEdgeScrolling() throws Exception {
-        String source = Files.readString(Path.of("src/main/java/linksawakening/GameSession.java"));
-
-        assertFalse(source.contains("private static void loadOverworldRoom"));
-        assertFalse(source.contains("private static void loadIndoorRoom"));
-        assertFalse(source.contains("private static void startScroll"));
-        assertFalse(source.contains("private static void startIndoorScroll"));
-        assertFalse(source.contains("private static void maybeTriggerEdgeScroll"));
-        assertFalse(source.contains("private static void beginScrollWithLink"));
-        assertFalse(source.contains("private static void maybeTriggerWarpTransition"));
-        assertFalse(source.contains("private static void applyWarp"));
-        assertFalse(source.contains("private static void handleRoomBoundaryAfterWarpChecks"));
-        assertFalse(source.contains("private static int currentRoomId"));
-        assertFalse(source.contains("private static int[] roomObjectsArea"));
+    void sessionStateIsNeverStaticAndScreensImplementLifecycle() {
+        assertFalse(java.util.Arrays.stream(GameSession.class.getDeclaredFields())
+            .anyMatch(field -> java.lang.reflect.Modifier.isStatic(field.getModifiers())
+                && !field.isSynthetic()));
+        for (Class<?> screen : java.util.List.of(TitleScreen.class, CutsceneScreen.class,
+                FileMenuScreen.class, FileSaveScreen.class, GameplayScreen.class)) {
+            assertTrue(Screen.class.isAssignableFrom(screen));
+        }
+        org.junit.jupiter.api.Assertions.assertEquals(
+            java.util.List.of(GameplayFrame.Phase.TRANSITIONS,
+                GameplayFrame.Phase.SIMULATION, GameplayFrame.Phase.INPUT_COMPLETION),
+            GameplayFrame.phaseOrder());
     }
 
     @Test
