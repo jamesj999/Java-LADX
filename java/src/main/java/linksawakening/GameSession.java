@@ -316,10 +316,10 @@ public class GameSession {
             .collect(java.util.stream.Collectors.joining(" "));
     }
 
-    HeadlessState headlessState() {
+    HeadlessGameDriver.State headlessState() {
         var tarin = roomSession.activeRoom().entities().loadedEntities().stream()
             .filter(entity -> entity.type() == 0x3F).findFirst().orElse(null);
-        return new HeadlessState(frameCounter, roomSession.mapId(), roomSession.currentRoomId(),
+        return new HeadlessGameDriver.State(frameCounter, roomSession.mapId(), roomSession.currentRoomId(),
             link.romEntityX(), link.romEntityY(), dialogController.isActive(),
             dialogController.isWaitingForPageAdvance(), dialogController.visibleText(),
             playerState.shieldLevel(), playerState.health(), playerState.swordLevel(), (int) roomSession.activeRoom().entities().loadedEntities().stream()
@@ -332,8 +332,7 @@ public class GameSession {
                 roomSession.currentDungeonItemFlagsSnapshot()[3] & 0xFF, link.romAnimationState(), 3 - link.direction(), equipmentController.activeSword() == null ? 0 : equipmentController.activeSword().state(), link.romEntityZ(), link.zVelocity(), link.romSpeedX(), link.romSpeedY(), scrollController.isActive() || transitionController.isInputBlocked(), playerState.maxHearts(), roomSession.dungeonProgressFlagsSnapshot()[0] & 0xFF);
     }
 
-    record HeadlessState(int frame, int map, int room, int x, int y,
-                         boolean dialog, boolean pageWait, String text, int shield, int health, int sword, int urchins, boolean toadstool, int powder, int inventoryTick, int tarinX, int tarinY, boolean forestCleared, int tailKey, int bgTick, int smallKeys, int compass, int dungeonMap, int nightmareKey, int animation, int direction, int swordAnimation, int z, int velocityZ, int speedX, int speedY, boolean loading, int maxHearts, int instrument1Flags) {}
+
 
     private void loadROM() {
         try (InputStream is = GameSession.class.getClassLoader().getResourceAsStream("rom/azle.gbc")) {

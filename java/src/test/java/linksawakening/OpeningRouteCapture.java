@@ -7,7 +7,7 @@ import javax.imageio.ImageIO;
 
 /** Exercises Main, without scene injection, using the shared button route. */
 public final class OpeningRouteCapture {
-    private static final GameSession game = new GameSession();
+    private static final HeadlessGameDriver game = new HeadlessGameDriver();
     private static int lastHealth = 24;
     private static final StringBuilder instrumentTrace = new StringBuilder();
     private static final StringBuilder kingTrace = new StringBuilder();
@@ -70,7 +70,7 @@ public final class OpeningRouteCapture {
             "{\"route_sha256\":\"" + routeHash + "\",\"checkpoints\":" + segment
                 + ",\"bowwow_state\":" + game.headlessBowWowState() + "}");
     }
-    static void pulseButtons(GameSession game, String buttons, int tick) {
+    static void pulseButtons(HeadlessGameDriver game, String buttons, int tick) {
         for (String button : buttons.split("\\+")) {
             if (!button.endsWith("*")) continue;
             String key = button.substring(0, button.length() - 1);
@@ -79,7 +79,7 @@ public final class OpeningRouteCapture {
         }
     }
 
-    static boolean reached(GameSession game, String button, String condition, GameSession.HeadlessState s) {
+    static boolean reached(HeadlessGameDriver game, String button, String condition, HeadlessGameDriver.State s) {
         String[] parts = condition.split("=");
         int target = Integer.decode(parts[1]);
         int value = switch (parts[0]) {

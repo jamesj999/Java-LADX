@@ -8,11 +8,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /** Real game-loop integration, with buttons only after the new-game bootstrap. */
 final class MainOpeningRouteTest {
-    private static final GameSession game = new GameSession();
+    private static final HeadlessGameDriver game = new HeadlessGameDriver();
     @Test
     void newGameCanDefeatRollingBonesAndWarpBackToTheEntrance() throws Exception {
         game.initializeHeadlessNewGame();
-        var checkpoints = new ArrayList<GameSession.HeadlessState>();
+        var checkpoints = new ArrayList<HeadlessGameDriver.State>();
         var entityCheckpoints = new ArrayList<String>();
         for (String line : Files.readAllLines(Path.of("../tools/opening/tail-cave-warp-route.tsv"))) {
             if (line.isBlank() || line.startsWith("#")) continue;
