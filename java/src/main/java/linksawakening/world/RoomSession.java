@@ -1813,7 +1813,7 @@ public final class RoomSession {
                 drop.objectLeft(), drop.objectTop(), drop.linkEntityX(), drop.linkEntityY(),
                 drop.allowDrop());
         }
-        List<EntityProjectileEvent> events = entityRuntime.tickWithProjectileEvents(
+        List<EntityProjectileEvent> events = entityRuntime.tick(new EntityFrameContext(
             frameCounter, linkEntityX, linkEntityY, collisionType & 0xFF,
             entityRandomByteSource,
             this::entityBackgroundCollision, this::pairoddProjectileObjectCollision,
@@ -1823,7 +1823,7 @@ public final class RoomSession {
                 linkEntityX, linkEntityY, linkEntityZ, linkMotionState,
                 romDirectionForProjectileCollision(linkDirection), usingShield, shieldLevel,
                 invincibilityCounter), swordCollisionActive, swordX, swordWidth,
-            swordY, swordHeight, linkSpeedX, linkSpeedY);
+            swordY, swordHeight, linkSpeedX, linkSpeedY));
         for (RoomEntityRuntime.DungeonWarpRequest request
             : entityRuntime.consumePendingDungeonWarpRequests()) {
             WarpMotion.Destination destination = request.destination();

@@ -1634,16 +1634,21 @@ public final class RoomEntityRuntime {
         EnemyProjectileCollision.LinkState projectileLinkState,
         boolean swordCollisionActive, int swordX, int swordWidth,
         int swordY, int swordHeight, int linkSpeedX, int linkSpeedY) {
-        validateByte(linkSpeedX, "Link X speed");
-        validateByte(linkSpeedY, "Link Y speed");
-        currentLinkSpeedX = linkSpeedX;
-        currentLinkSpeedY = linkSpeedY;
+        return tick(new EntityFrameContext(frameCounter, linkEntityX, linkEntityY, collisionType, randomByteSupplier, backgroundCollision, objectCollision, linkPositionHistory, linkZ, linkAirborne, linkDirection, entityYOffset, projectileLinkState, swordCollisionActive, swordX, swordWidth, swordY, swordHeight, linkSpeedX, linkSpeedY));
+    }
+
+    /** Advances one live frame; compatibility overloads delegate here. */
+    List<EntityProjectileEvent> tick(EntityFrameContext context) {
+        validateByte(context.linkSpeedX(), "Link X speed");
+        validateByte(context.linkSpeedY(), "Link Y speed");
+        currentLinkSpeedX = context.linkSpeedX();
+        currentLinkSpeedY = context.linkSpeedY();
         try {
-            return tickInternal(frameCounter, linkEntityX, linkEntityY, collisionType,
-                randomByteSupplier, backgroundCollision, objectCollision,
-                linkPositionHistory, linkZ, linkAirborne, linkDirection, entityYOffset,
-                projectileLinkState, false, swordCollisionActive, swordX, swordWidth,
-                swordY, swordHeight, projectileLinkState.motionState()
+            return tickInternal(context.frameCounter(), context.linkEntityX(), context.linkEntityY(), context.collisionType(),
+                context.randomByteSupplier(), context.backgroundCollision(), context.objectCollision(),
+                context.linkPositionHistory(), context.linkZ(), context.linkAirborne(), context.linkDirection(), context.entityYOffset(),
+                context.projectileLinkState(), false, context.swordCollisionActive(), context.swordX(), context.swordWidth(),
+                context.swordY(), context.swordHeight(), context.projectileLinkState().motionState()
                     < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE);
         } finally {
             currentLinkSpeedX = 0;
