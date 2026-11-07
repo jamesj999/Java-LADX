@@ -43,7 +43,7 @@ final class NoiseChannel {
 
     void writeEnvelope(int value) {
         envelopeRegister = value & 0xFF;
-        volume = (envelopeRegister >>> 4) & 0x0F;
+        // NR42 stores the initial volume; NR44 trigger reloads the live envelope.
         if ((envelopeRegister & 0xF8) == 0) {
             active = false;
         }

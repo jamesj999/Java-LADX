@@ -141,3 +141,69 @@ at a sample-driven 64 Hz and resets its envelope accumulator on trigger;
 this has not been compared against the emulator's shared hardware frame
 sequencer phase. No amplitude correction or hardware-phase equivalence is
 claimed by the matching register-command trace.
+
+## Isolated noise initial-volume fix
+
+A controlled CH4 experiment found and corrected a separate synthesis error:
+`NoiseChannel.writeEnvelope` immediately replaced live volume from NR42's
+initial-volume field. Initial volume now reloads on NR44 trigger. DAC-off
+writes still disable the channel immediately. The test deliberately keeps
+both old and new envelope pace at zero and direction decreasing; model-specific
+CGB live-write envelope glitches remain outside this fix.
+
+Hardware reference: [Pan Docs audio registers](https://raw.githubusercontent.com/gbdev/pandocs/master/src/Audio_Registers.md),
+NR44 trigger reloads the volume from NR42. Emulator reference: the locally
+installed PyBoy 2.8.1 `core/sound.py`, `NoiseChannel.setreg`, `trigger`,
+`nrx2_glitch` and `Sound.sample`; its source hash is recorded in
+[isolation evidence](evidence/noise-envelope-isolation-2026-11-07.json).
+For the unchanged pace/direction used here, PyBoy's live-write glitch handler
+does not change volume. Register writes alone must therefore preserve the
+current volume until retriggering.
+
+The full PyBoy CPU boots for 100 ticks, then executes caller-injected
+`DI; JR -2` in RAM at C000. Interrupts are off and the game cannot issue more
+sound commands. Power-cycle NR52, set NR50=77 and NR51=88, leave other DACs
+and channels disabled, then issue this synthetic sequence in both engines:
+
+| Update | Write | Reference relative peak-to-peak | Engine before | Engine after |
+|---|---|---:|---:|---:|
+| 0 | NR42=F0, NR43=03, NR44=80 | 1.0 | 1.0 | 1.0 |
+| 8 | NR42=30, no trigger | 1.0 | 0.199951 | 1.0 |
+| 16 | NR44=80 | 0.2 | 0.199951 | 0.199951 |
+| 20 | NR42=00, DAC off | 0 | 0 | 0 |
+
+Measured levels exclude the first update of each phase. Engine rounding
+maps 3/15 amplitude to ±819 versus ±4096 at volume 15, explaining the small
+ratio quantization difference. Reference PCM16 levels are 0/3840, then
+0/768 after retrigger. Engine levels are ±4096, then ±819. The comparison
+uses **within-source** peak-to-peak ratios; no arbitrary gain was fitted.
+Reference emits 19287 sample frames versus engine 19200 across 24 updates;
+this experiment does not align sample/LFSR/frame-sequencer phase.
+
+PyBoy `Sound.sample` mixes **unipolar digital channel sums** directly into its
+sound buffer, without the hardware bipolar DAC conversion or high-pass filter.
+Its WAV amplitudes therefore cannot calibrate hardware analog output gain.
+[Pan Docs audio details](https://raw.githubusercontent.com/gbdev/pandocs/master/src/Audio_details.md)
+describes the separate digital generator, negative-slope DAC and HPF stages.
+The engine currently uses centered channel waveforms with no analog HPF;
+its DAC DC-offset behavior is also incomplete. The earlier soundtrack RMS
+and correlation are descriptive buffer metrics, not proof that an amplitude
+ratio should be corrected. Full DAC/mixer/phase fidelity remains open.
+
+Reproduction with JDK 21 and the same Python environment:
+
+```sh
+java/gradlew -p java -I ../tools/audio/capture.gradle captureIsolatedNoise
+python tools/audio/compare_isolated_noise.py
+```
+
+The optional `--before-wav /path/noise-engine-before.wav` includes a local
+pre-fix capture; the recorded before WAV was generated at 3dc177b with the
+same capture harness before changing `NoiseChannel`. Local artifacts are
+`/tmp/ladx-intro-audio/noise-{engine-before,engine,emulator}.wav` and
+`noise-isolation.json`. The focused `NoiseEnvelopeWriteTest` and existing
+`GameBoyApuTest` passed (13 tests total). A new 3000-update production intro
+capture retained the exact prior WAV SHA256
+`128718830db7210023c4448173d2465a3d7b061c01d4f11f50a9c79123c86fe9`:
+this fixes the isolated write-without-trigger behavior, and does not claim
+an audible improvement in the currently captured intro command sequence.

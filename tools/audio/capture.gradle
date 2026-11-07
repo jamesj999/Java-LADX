@@ -11,3 +11,13 @@ allprojects {
         }
     }
 }
+allprojects {
+    afterEvaluate {
+        tasks.register('captureIsolatedNoise', JavaExec) {
+            dependsOn testClasses
+            classpath = sourceSets.test.runtimeClasspath
+            mainClass = 'linksawakening.audio.IsolatedNoiseCapture'
+            args providers.gradleProperty('noiseWav').getOrElse('/tmp/ladx-intro-audio/noise-engine.wav')
+        }
+    }
+}

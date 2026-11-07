@@ -1,0 +1,124 @@
+{
+  "emulator_version": "PyBoy 2.8.1",
+  "rom_sha256": "c95dd3d9cb798e86c28e3269554e458d434bf3277b96cadf5bc81cfacfb5ee60",
+  "setup": "CGB after 100 boot ticks, CPU parked at C000 DI/JR-2; NR52 off/on, NR50=77, NR51=88; only noise DAC enabled",
+  "commands": [
+    {
+      "frame": 0,
+      "NR42": "F0",
+      "NR43": "03",
+      "NR44": "80"
+    },
+    {
+      "frame": 8,
+      "NR42": "30"
+    },
+    {
+      "frame": 16,
+      "NR44": "80"
+    },
+    {
+      "frame": 20,
+      "NR42": "00"
+    }
+  ],
+  "pyboy_sound_source_sha256": "62ce6f9427f87e36520647b73d355d233ebb348d10b6a8f85953e6089e69140d",
+  "sample_rate": 48000,
+  "emulator_samples": 19287,
+  "emulator": [
+    {
+      "phase": "initial_volume_15",
+      "minimum": 0,
+      "maximum": 3840,
+      "peak_to_peak": 3840,
+      "relative_peak_to_peak": 1.0
+    },
+    {
+      "phase": "write_initial_3_without_trigger",
+      "minimum": 0,
+      "maximum": 3840,
+      "peak_to_peak": 3840,
+      "relative_peak_to_peak": 1.0
+    },
+    {
+      "phase": "trigger_initial_3",
+      "minimum": 0,
+      "maximum": 768,
+      "peak_to_peak": 768,
+      "relative_peak_to_peak": 0.2
+    },
+    {
+      "phase": "dac_off",
+      "minimum": 0,
+      "maximum": 0,
+      "peak_to_peak": 0,
+      "relative_peak_to_peak": 0.0
+    }
+  ],
+  "engine_before": [
+    {
+      "phase": "initial_volume_15",
+      "minimum": -4096,
+      "maximum": 4096,
+      "peak_to_peak": 8192,
+      "relative_peak_to_peak": 1.0
+    },
+    {
+      "phase": "write_initial_3_without_trigger",
+      "minimum": -819,
+      "maximum": 819,
+      "peak_to_peak": 1638,
+      "relative_peak_to_peak": 0.199951171875
+    },
+    {
+      "phase": "trigger_initial_3",
+      "minimum": -819,
+      "maximum": 819,
+      "peak_to_peak": 1638,
+      "relative_peak_to_peak": 0.199951171875
+    },
+    {
+      "phase": "dac_off",
+      "minimum": 0,
+      "maximum": 0,
+      "peak_to_peak": 0,
+      "relative_peak_to_peak": 0.0
+    }
+  ],
+  "engine_after": [
+    {
+      "phase": "initial_volume_15",
+      "minimum": -4096,
+      "maximum": 4096,
+      "peak_to_peak": 8192,
+      "relative_peak_to_peak": 1.0
+    },
+    {
+      "phase": "write_initial_3_without_trigger",
+      "minimum": -4096,
+      "maximum": 4096,
+      "peak_to_peak": 8192,
+      "relative_peak_to_peak": 1.0
+    },
+    {
+      "phase": "trigger_initial_3",
+      "minimum": -819,
+      "maximum": 819,
+      "peak_to_peak": 1638,
+      "relative_peak_to_peak": 0.199951171875
+    },
+    {
+      "phase": "dac_off",
+      "minimum": 0,
+      "maximum": 0,
+      "peak_to_peak": 0,
+      "relative_peak_to_peak": 0.0
+    }
+  ],
+  "limits": [
+    "Compare per-source amplitude ratios, not raw PCM gain or DC: PyBoy emits unsigned digital channel sums; engine emits centered bipolar PCM.",
+    "Frame origins, LFSR phase and DIV-APU phase are not synchronized.",
+    "Both envelope periods are zero and directions decrease, avoiding CGB live-write zombie transitions.",
+    "This synthetic write-without-trigger scenario is not a claim that the captured intro executes it."
+  ]
+}
