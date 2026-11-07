@@ -330,31 +330,10 @@ public final class OverworldCollision {
             : pixel / CELL_SIZE;
     }
 
-    /**
-     * Per-object-id collision decision, with overrides for cases where the
-     * raw physics-table flag doesn't reflect in-game behaviour:
-     *
-     * <ul>
-     *   <li>Door / warp-trigger types ({@code $C2/$C5/$C6/$E1/$E2/$E3/
-     *       $BA/$CB/$61}) are walkable so {@code maybeTriggerWarpTransition}
-     *       sees Link on the tile and the warp fires.</li>
-     * </ul>
-     */
+    /** Uses the active ROM physics table; object IDs have different meanings indoors. */
     private boolean idBlocks(int id) {
         if (id < 0 || id > 0xFF) {
             return false;
-        }
-        switch (id) {
-            case 0xC2:
-            case 0xC5:
-            case 0xC6:
-            case 0xE1:
-            case 0xE2:
-            case 0xE3:
-            case 0xBA:
-            case 0xCB:
-            case 0x61:
-                return false;
         }
         return PhysicsFlags.blocksWalking(romTables.objectPhysicsFlag(physicsTableIndex, id));
     }

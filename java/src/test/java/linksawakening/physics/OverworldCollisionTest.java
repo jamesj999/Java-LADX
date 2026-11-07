@@ -18,6 +18,28 @@ final class OverworldCollisionTest {
         + 2 * ROOM_OBJECT_ROW_STRIDE + 2;
 
     @Test
+    void objectIdsNeverOverrideTheSelectedRomPhysicsTable() {
+        byte[] rom = new byte[0x100000];
+        int physicsOffset = RomBank.romOffset(0x08, 0x4AD4);
+        int[] formerlyOverridden = {0x61, 0xBA, 0xC2, 0xC5, 0xC6, 0xCB, 0xE1, 0xE2, 0xE3};
+        for (int table = 0; table < 3; table++) {
+            for (int id : formerlyOverridden) {
+                rom[physicsOffset + table * 256 + id] = 1;
+            }
+        }
+        OverworldCollision collision = new OverworldCollision(RomTables.loadFromRom(rom));
+        int[] objects = new int[256];
+        collision.setRoom(objects);
+        for (int table = 0; table < 3; table++) {
+            collision.setPhysicsTable(table);
+            for (int id : formerlyOverridden) {
+                objects[ROOM_OBJECTS_BASE] = id;
+                assertTrue(collision.pointBlocked(8, 8), "table=" + table + " object=" + id);
+            }
+        }
+    }
+
+    @Test
     void objectPhysicsLookupUsesThePaddedRoomCoordinateSample() {
         byte[] rom = new byte[0x100000];
         int physicsOffset = RomBank.romOffset(0x08, 0x4AD4);
