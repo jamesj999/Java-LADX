@@ -65,6 +65,7 @@ import static linksawakening.world.RoomConstants.ROOM_PIXEL_HEIGHT;
 import static linksawakening.world.RoomConstants.ROOM_PIXEL_WIDTH;
 
 public final class RoomSession {
+    final RoomPlayerItemActions roomPlayerItemActions = new RoomPlayerItemActions(this);
     final RoomPuzzleController roomPuzzleController = new RoomPuzzleController(this);
     final RoomStoryState roomStoryState = new RoomStoryState(this);
     final RoomDoorInteractions roomDoorInteractions = new RoomDoorInteractions(this);
@@ -728,101 +729,27 @@ public final class RoomSession {
     }
 
     /** Throws the currently held object using Link's Java direction order. */
-    public boolean throwLiftedEntity(int linkDirection) {
-        if (entityBridge.entityRuntime == null) {
-            return false;
-        }
-        boolean thrown = entityBridge.entityRuntime.throwLiftedEntity(
-            romDirectionForProjectileCollision(linkDirection));
-        if (thrown) {
-            activeRoom.replaceEntities(entityBridge.entityRuntime.snapshot());
-        }
-        return thrown;
-    }
+    public boolean throwLiftedEntity(int linkDirection) { return roomPlayerItemActions.throwLiftedEntity(linkDirection); }
 
     /**
      * Mirrors {@code FireHookshot}: the item path supplies Link's current ROM
      * coordinates and the room owns the player-projectile entity slot.
      */
-    public boolean fireHookshot(int linkEntityX, int linkEntityY, int linkEntityZ,
-                                int romDirection, boolean linkAirborne,
-                                boolean linkPushing) {
-        if (linkAirborne || linkPushing || activeRoom == null || entityBridge.entityRuntime == null) {
-            return false;
-        }
-        int slot = entityBridge.entityRuntime.spawnHookshotChain(linkEntityX, linkEntityY, linkEntityZ,
-            romDirection);
-        if (slot < 0) {
-            return false;
-        }
-        activeRoom.replaceEntities(entityBridge.entityRuntime.snapshot());
-        return true;
-    }
+    public boolean fireHookshot(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, boolean linkAirborne, boolean linkPushing) { return roomPlayerItemActions.fireHookshot(linkEntityX, linkEntityY, linkEntityZ, romDirection, linkAirborne, linkPushing); }
 
     /** Mirrors UseBoomerang's player-projectile spawn bridge. */
-    public boolean fireBoomerang(int linkEntityX, int linkEntityY, int linkEntityZ,
-                                 int romDirection, int pressedButtonsMask) {
-        if (activeRoom == null || entityBridge.entityRuntime == null) {
-            return false;
-        }
-        int slot = entityBridge.entityRuntime.spawnBoomerang(linkEntityX, linkEntityY, linkEntityZ,
-            romDirection, pressedButtonsMask);
-        if (slot < 0) {
-            return false;
-        }
-        activeRoom.replaceEntities(entityBridge.entityRuntime.snapshot());
-        return true;
-    }
+    public boolean fireBoomerang(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, int pressedButtonsMask) { return roomPlayerItemActions.fireBoomerang(linkEntityX, linkEntityY, linkEntityZ, romDirection, pressedButtonsMask); }
 
     /** Mirrors the level-two branch of UseSword's player-projectile spawn. */
-    public boolean fireSwordBeam(int linkEntityX, int linkEntityY, int linkEntityZ,
-                                 int romDirection) {
-        if (activeRoom == null || entityBridge.entityRuntime == null) {
-            return false;
-        }
-        int slot = entityBridge.entityRuntime.spawnSwordBeam(linkEntityX, linkEntityY, linkEntityZ,
-            romDirection);
-        if (slot < 0) {
-            return false;
-        }
-        activeRoom.replaceEntities(entityBridge.entityRuntime.snapshot());
-        return true;
-    }
+    public boolean fireSwordBeam(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) { return roomPlayerItemActions.fireSwordBeam(linkEntityX, linkEntityY, linkEntityZ, romDirection); }
 
     /** Mirrors the delayed UseMagicRod player-projectile spawn bridge. */
-    public boolean fireMagicRodFireball(int linkEntityX, int linkEntityY, int linkEntityZ,
-                                        int romDirection) {
-        return fireMagicRodFireball(linkEntityX, linkEntityY, linkEntityZ, romDirection, false);
-    }
+    public boolean fireMagicRodFireball(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) { return roomPlayerItemActions.fireMagicRodFireball(linkEntityX, linkEntityY, linkEntityZ, romDirection); }
 
-    public boolean fireMagicRodFireball(int linkEntityX, int linkEntityY, int linkEntityZ,
-                                        int romDirection, boolean pieceOfPower) {
-        if (activeRoom == null || entityBridge.entityRuntime == null) {
-            return false;
-        }
-        int slot = entityBridge.entityRuntime.spawnMagicRodFireball(linkEntityX, linkEntityY, linkEntityZ,
-            romDirection, pieceOfPower);
-        if (slot < 0) {
-            return false;
-        }
-        activeRoom.replaceEntities(entityBridge.entityRuntime.snapshot());
-        return true;
-    }
+    public boolean fireMagicRodFireball(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, boolean pieceOfPower) { return roomPlayerItemActions.fireMagicRodFireball(linkEntityX, linkEntityY, linkEntityZ, romDirection, pieceOfPower); }
 
     /** Mirrors the delayed UseMagicPowder sprinkle-entity spawn bridge. */
-    public boolean sprinkleMagicPowder(int linkEntityX, int linkEntityY, int linkEntityZ,
-                                       int romDirection) {
-        if (activeRoom == null || entityBridge.entityRuntime == null) {
-            return false;
-        }
-        int slot = entityBridge.entityRuntime.spawnMagicPowderSprinkle(
-            linkEntityX, linkEntityY, linkEntityZ, romDirection);
-        if (slot < 0) {
-            return false;
-        }
-        activeRoom.replaceEntities(entityBridge.entityRuntime.snapshot());
-        return true;
-    }
+    public boolean sprinkleMagicPowder(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) { return roomPlayerItemActions.sprinkleMagicPowder(linkEntityX, linkEntityY, linkEntityZ, romDirection); }
 
     /**
      * Mirrors {@code UseShovel}: the item always enters its 24-frame pose
@@ -832,189 +759,55 @@ public final class RoomSession {
      * <p>The coordinates are the ROM's {@code hLinkPositionX/Y} values. The
      * caller supplies ROM direction order: RIGHT, LEFT, UP, DOWN.</p>
      */
-    public ShovelStartResult startShovel(int linkEntityX, int linkEntityY,
-                                         int romDirection, boolean linkAirborne) {
-        if (romDirection < 0 || romDirection > 3) {
-            throw new IllegalArgumentException("ROM shovel direction out of range: "
-                + romDirection);
-        }
-        if (activeRoom == null || linkAirborne || shovelUseState != 0) {
-            return new ShovelStartResult(false, true, -1);
-        }
-        ShovelProbe probe = probeShovel(linkEntityX, linkEntityY, romDirection);
-        shovelUseState = SHOVEL_STATE_ACTIVE;
-        return new ShovelStartResult(true, !probe.valid(), probe.location());
-    }
+    public ShovelStartResult startShovel(int linkEntityX, int linkEntityY, int romDirection, boolean linkAirborne) { return roomPlayerItemActions.startShovel(linkEntityX, linkEntityY, romDirection, linkAirborne); }
 
     /** Applies the ROM shovel timer's delayed room mutation and finish path. */
-    public void advanceShovel(int linkEntityX, int linkEntityY, int romDirection, int timer) {
-        if (activeRoom == null || shovelUseState == 0) {
-            return;
-        }
-        int normalizedTimer = timer & 0xFF;
-        if (normalizedTimer == SHOVEL_DIG_TIMER) {
-            ShovelProbe probe = probeShovel(linkEntityX, linkEntityY, romDirection);
-            if (!probe.valid()) {
-                return;
-            }
-            shovelUseState = SHOVEL_STATE_DUG;
-            writeShovelHole(probe);
-            pendingShovelDrop = new PendingShovelDrop(
-                probe.objectLeft(), probe.objectTop(), linkEntityX, linkEntityY,
-                activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD
-                    || activeRoom.roomId() != 0x0E);
-        } else if (normalizedTimer == SHOVEL_FINISH_TIMER) {
-            if (shovelUseState == SHOVEL_STATE_DUG && followingNpcState.marinFollowing()) {
-                entityBridge.pendingRoomDialogRequests.add(new DialogRequest(
-                    SHOVEL_DIALOG_TABLE, SHOVEL_DIALOG_ID));
-            }
-            shovelUseState = 0;
-        }
-    }
+    public void advanceShovel(int linkEntityX, int linkEntityY, int romDirection, int timer) { roomPlayerItemActions.advanceShovel(linkEntityX, linkEntityY, romDirection, timer); }
 
     /** Resolves the ROM shovel animation table through Java's Link direction order. */
-    public int shovelAnimationState(int javaDirection, int timer) {
-        return romTables.shovelAnimationState(timer,
-            romDirectionForProjectileCollision(javaDirection));
-    }
+    public int shovelAnimationState(int javaDirection, int timer) { return roomPlayerItemActions.shovelAnimationState(javaDirection, timer); }
 
-    ShovelProbe probeShovel(int linkEntityX, int linkEntityY, int romDirection) {
-        if (activeRoom == null || activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL) {
-            return ShovelProbe.invalid();
-        }
+    ShovelProbe probeShovel(int linkEntityX, int linkEntityY, int romDirection) { return roomPlayerItemActions.probeShovel(linkEntityX, linkEntityY, romDirection); }
 
-        // func_002_4D20 subtracts Link's sprite-center/bottom origin before
-        // masking to the room-object grid. These are hLinkPositionX/Y, not
-        // Java's top-left pixel coordinates.
-        int objectLeft = (linkEntityX + SHOVEL_TARGET_X[romDirection] - 0x08) & 0xF0;
-        int objectTop = (linkEntityY + SHOVEL_TARGET_Y[romDirection] - 0x10) & 0xF0;
-        int cellX = objectLeft >>> 4;
-        int cellY = objectTop >>> 4;
-        if (cellX < 0 || cellX >= RoomConstants.OBJECTS_PER_ROW
-            || cellY < 0 || cellY >= RoomConstants.OBJECTS_PER_COLUMN) {
-            return ShovelProbe.invalid();
-        }
-
-        int location = objectTop | cellX;
-        int objectId = objectAtRoomLocation(location);
-        int physicsTable = activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
-            ? RomTables.PHYSICS_TABLE_OVERWORLD
-            : activeRoom.mapId() == 0xFF
-                ? RomTables.PHYSICS_TABLE_INDOORS2
-                : RomTables.PHYSICS_TABLE_INDOORS1;
-        boolean valid = romTables.objectPhysicsFlag(physicsTable, objectId) == 0;
-        if (activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
-            valid &= objectId != OBJECT_SHOVEL_BLOCKER_A
-                && objectId != OBJECT_SHOVEL_BLOCKER_B
-                && objectId != OBJECT_SHOVEL_BLOCKER_C;
-        } else {
-            valid &= objectId == OBJECT_SHOVEL_INDOOR_DIGGABLE;
-        }
-        return new ShovelProbe(valid, location, objectLeft, objectTop);
-    }
-
-    void writeShovelHole(ShovelProbe probe) {
-        int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + probe.location();
-        int[] objects = activeRoom.roomObjectsArea();
-        if (areaIndex < 0 || areaIndex >= objects.length) {
-            return;
-        }
-        objects[areaIndex] = OBJECT_SHOVEL_HOLE;
-        if (activeRoom.renderValues() != null && areaIndex < activeRoom.renderValues().length) {
-            activeRoom.renderValues()[areaIndex] = OBJECT_SHOVEL_HOLE;
-        }
-        if (activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
-            // On GBC the mutable WRAM2 overlay is the render source for both
-            // tile ids and attributes; rebuilding from the immutable ROM
-            // overlay here would immediately undo the hole.
-            overworldBushInteraction.refreshRoomObjectCell(
-                activeRoom.roomId(), probe.location(), objects, activeRoom.renderValues(),
-                activeRoom.gbcOverlay(), activeRoom.tileIds(), activeRoom.tileAttrs());
-            refreshOverworldCollisionAfterObjectMutation();
-        } else {
-            refreshActiveRoomTilemap();
-            overworldCollision.setRoom(activeRoom.roomObjectsArea());
-        }
-    }
+    void writeShovelHole(ShovelProbe probe) { roomPlayerItemActions.writeShovelHole(probe); }
 
     /**
      * Mirrors the ordinary player-bomb placement bridge. The item has already
      * applied PlaceBomb's inventory ordering; this method owns the room/runtime
      * allocation and immutable snapshot refresh.
      */
-    public boolean placeBomb(int linkEntityX, int linkEntityY, int linkEntityZ,
-                             int romDirection) {
-        if (activeRoom == null || entityBridge.entityRuntime == null) {
-            return false;
-        }
-        int slot = entityBridge.entityRuntime.spawnBomb(linkEntityX, linkEntityY, linkEntityZ, romDirection);
-        if (slot < 0) {
-            return false;
-        }
-        activeRoom.replaceEntities(entityBridge.entityRuntime.snapshot());
-        return true;
-    }
+    public boolean placeBomb(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) { return roomPlayerItemActions.placeBomb(linkEntityX, linkEntityY, linkEntityZ, romDirection); }
 
     /** Returns whether the last successful bomb placement queued the top-view bump jingle. */
-    public boolean lastBombPlacementPlayedBump() {
-        return entityBridge.entityRuntime != null && entityBridge.entityRuntime.lastBombPlacementPlayedBump();
-    }
+    public boolean lastBombPlacementPlayedBump() { return roomPlayerItemActions.lastBombPlacementPlayedBump(); }
 
     /** Result of the ROM ShootArrow bridge, including its conditional whoosh. */
     public record ArrowShotResult(boolean spawned, boolean playWhoosh) {
     }
 
     /** Mirrors ShootArrow's player-projectile bridge and refreshes the room snapshot. */
-    public boolean shootArrow(int linkEntityX, int linkEntityY, int linkEntityZ,
-                              int romDirection) {
-        return shootArrowResult(linkEntityX, linkEntityY, linkEntityZ, romDirection, false)
-            .spawned();
-    }
+    public boolean shootArrow(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) { return roomPlayerItemActions.shootArrow(linkEntityX, linkEntityY, linkEntityZ, romDirection); }
 
-    public ArrowShotResult shootArrowResult(int linkEntityX, int linkEntityY, int linkEntityZ,
-                                            int romDirection) {
-        return shootArrowResult(linkEntityX, linkEntityY, linkEntityZ, romDirection, false);
-    }
+    public ArrowShotResult shootArrowResult(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) { return roomPlayerItemActions.shootArrowResult(linkEntityX, linkEntityY, linkEntityZ, romDirection); }
 
     /** ShootArrow's label_140F speed-table selector for Piece of Power. */
-    public ArrowShotResult shootArrowResult(int linkEntityX, int linkEntityY, int linkEntityZ,
-                                            int romDirection, boolean pieceOfPower) {
-        if (activeRoom == null || entityBridge.entityRuntime == null) {
-            return new ArrowShotResult(false, false);
-        }
-        int slot = entityBridge.entityRuntime.spawnArrow(linkEntityX, linkEntityY, linkEntityZ, romDirection,
-            pieceOfPower);
-        if (slot < 0) {
-            return new ArrowShotResult(false, false);
-        }
-        boolean playWhoosh = entityBridge.entityRuntime.lastArrowShotPlayedWhoosh();
-        activeRoom.replaceEntities(entityBridge.entityRuntime.snapshot());
-        return new ArrowShotResult(true, playWhoosh);
-    }
+    public ArrowShotResult shootArrowResult(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, boolean pieceOfPower) { return roomPlayerItemActions.shootArrowResult(linkEntityX, linkEntityY, linkEntityZ, romDirection, pieceOfPower); }
 
     /** Returns the modeled player-projectile count used by the item gates. */
-    public int activeProjectileCount() {
-        return entityBridge.entityRuntime == null ? 0 : entityBridge.entityRuntime.activeProjectileCount();
-    }
+    public int activeProjectileCount() { return roomPlayerItemActions.activeProjectileCount(); }
 
     /** Returns whether the live room currently owns an ordinary bomb entity. */
-    public boolean bombActive() {
-        return entityBridge.entityRuntime != null && entityBridge.entityRuntime.bombActive();
-    }
+    public boolean bombActive() { return roomPlayerItemActions.bombActive(); }
 
     int bombDirectionForTest(int slot) {
         return entityBridge.entityRuntime == null ? 0xFF : entityBridge.entityRuntime.bombDirection(slot);
     }
 
     /** Returns whether the live room currently owns entity {@code $03}. */
-    public boolean hookshotActive() {
-        return entityBridge.entityRuntime != null && entityBridge.entityRuntime.hookshotActive();
-    }
+    public boolean hookshotActive() { return roomPlayerItemActions.hookshotActive(); }
 
     /** Returns whether the live room currently owns the boomerang entity. */
-    public boolean boomerangActive() {
-        return entityBridge.entityRuntime != null && entityBridge.entityRuntime.boomerangActive();
-    }
+    public boolean boomerangActive() { return roomPlayerItemActions.boomerangActive(); }
 
     public void setColorShellSoundSink(GameplaySoundSink soundSink) {
         colorShellSoundSink = soundSink == null ? GameplaySoundSink.none() : soundSink;
