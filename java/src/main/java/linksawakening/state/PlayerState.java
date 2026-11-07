@@ -814,6 +814,14 @@ public final class PlayerState implements LinkPlayerState {
         if (health > 0) {
             health--;
         }
+        // UpdateHealth.noHealth ($02:63A3): consume medicine on a lethal tick.
+        if (health == 0 && hasMedicine) {
+            medicineCount = Math.max(0, medicineCount - 1);
+            hasMedicine = medicineCount != 0;
+            health = HP_PER_HEART;
+            addHealthBuffer = (addHealthBuffer + 0x80) & 0xFF;
+            invincibilityCounter = 0xA0;
+        }
     }
 
     private void tickRupeeBuffer() {

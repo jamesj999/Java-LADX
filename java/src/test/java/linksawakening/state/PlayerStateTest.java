@@ -12,6 +12,27 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class PlayerStateTest {
     @Test
+    void lethalHealthTickConsumesMedicineAndQueuesRevival() {
+        PlayerState state = new PlayerState();
+        state.setHealth(1);
+        state.setHasMedicine(true);
+        state.setMedicineCount(1);
+        state.applyRomEnemyDamage(2);
+        state.tickResourceBuffers(0);
+        assertEquals(1, state.health());
+        assertEquals(1, state.medicineCount());
+        state.tickResourceBuffers(1);
+        assertEquals(8, state.health());
+        assertEquals(0x80, state.addHealthBuffer());
+        assertEquals(0xA0, state.invincibilityCounter());
+        assertEquals(0, state.medicineCount());
+        assertFalse(state.hasMedicine());
+        assertEquals(1, state.subtractHealthBuffer());
+        state.tickResourceBuffers(3);
+        assertEquals(9, state.health());
+    }
+
+    @Test
     void fairyPickupHealsSixHeartsThroughTheResourceBuffer() {
         PlayerState playerState = new PlayerState();
         playerState.setMaxHearts(10);
