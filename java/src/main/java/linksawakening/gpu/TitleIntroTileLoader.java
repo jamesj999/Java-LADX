@@ -1,0 +1,55 @@
+package linksawakening.gpu;
+
+import linksawakening.rom.RomSymbols;
+
+final class TitleIntroTileLoader {
+    private final RomTileLoader target;
+    TitleIntroTileLoader(RomTileLoader target) { this.target = target; }
+    private static final int INTRO_3_TILES_BANK = GbcBanks.adjust(RomSymbols.Intro3Tiles.bank());
+    private static final int INTRO_3_TILES_ADDR = RomSymbols.Intro3Tiles.address();
+    private static final int INTRO_3_TILES_COUNT = 0x60;
+    private static final int INTRO_1_TILES_BANK = GbcBanks.adjust(RomSymbols.Intro1Tiles.bank());
+    private static final int INTRO_1_TILES_ADDR = RomSymbols.Intro1Tiles.address();
+    private static final int INTRO_1_TILES_COUNT = 0x100;
+    private static final int INTRO_RAIN_TILES_BANK = RomSymbols.IntroRainTiles.bank();
+    private static final int INTRO_RAIN_TILES_ADDR = RomSymbols.IntroRainTiles.address();
+    private static final int INTRO_RAIN_TILES_COUNT = 0x08;
+    private static final int TITLE_LOGO_TILES_BANK = GbcBanks.adjust(RomSymbols.TitleLogoTiles.bank());
+    private static final int TITLE_LOGO_TILES_ADDR = RomSymbols.TitleLogoTiles.address();
+    private static final int TITLE_LOGO_TILES_COUNT = 0x70;
+    private static final int TITLE_DX_TILES_BANK = 0x38;
+    private static final int TITLE_DX_TILES_CGB_ADDR = 0x5800;
+    private static final int TITLE_DX_TILES_COUNT = 0x40;
+    private static final int TITLE_DX_OAM_TILES_ADDR = 0x6500;
+    private static final int TITLE_DX_OAM_TILES_COUNT = 0x10;
+    private static final int SAVE_MENU_TILES_BANK = RomSymbols.SaveMenuTiles.bank();
+    private static final int SAVE_MENU_TILES_ADDR = RomSymbols.SaveMenuTiles.address();
+    private static final int SAVE_MENU_TILES_COUNT = 0x50;
+    public void loadTitleScreenTiles(byte[] romData) {
+        target.loadTilesFromROM(romData, TITLE_LOGO_TILES_BANK, TITLE_LOGO_TILES_ADDR, TITLE_LOGO_TILES_COUNT, 0x80);
+        target.loadTilesFromROM(romData, TITLE_DX_TILES_BANK, TITLE_DX_TILES_CGB_ADDR, TITLE_DX_TILES_COUNT, 0x40);
+        target.loadTilesFromROM(romData, TITLE_DX_TILES_BANK, TITLE_DX_OAM_TILES_ADDR, TITLE_DX_OAM_TILES_COUNT, 0x20);
+    }
+
+    public void loadIntroSequenceTiles(byte[] romData) {
+        target.loadTilesFromROM(romData, INTRO_RAIN_TILES_BANK, INTRO_RAIN_TILES_ADDR, INTRO_RAIN_TILES_COUNT, 0x70);
+        target.loadTilesFromROM(romData, INTRO_3_TILES_BANK, INTRO_3_TILES_ADDR, INTRO_3_TILES_COUNT, 0x00);
+        target.loadTilesFromROM(romData, INTRO_1_TILES_BANK, INTRO_1_TILES_ADDR, INTRO_1_TILES_COUNT, 0x80);
+    }
+
+    public void loadMenuTiles(byte[] romData) {
+        target.loadBaseTiles(romData);
+        target.loadTilesFromROM(romData, GbcBanks.adjust(0x0F), 0x4000, 0x40, 0x080);
+        target.loadTilesFromROM(romData, GbcBanks.adjust(0x0F), 0x5000, 0x80, 0x100);
+        target.loadTilesFromROM(romData, GbcBanks.adjust(0x0C), 0x47A0, 0x02, 0x0E0);
+    }
+
+    public void loadSaveMenuTiles(byte[] romData) {
+        target.loadTilesFromROM(romData, SAVE_MENU_TILES_BANK, SAVE_MENU_TILES_ADDR,
+            SAVE_MENU_TILES_COUNT, 0x080);
+    }
+    private static int bankAddrToRomOffset(int bank, int address) {
+        return bank == 0 ? address : bank * 0x4000 + address - 0x4000;
+    }
+    private static int romOffset(int bank, int address) { return bankAddrToRomOffset(bank, address); }
+}
