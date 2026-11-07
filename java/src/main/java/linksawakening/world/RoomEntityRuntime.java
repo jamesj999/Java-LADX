@@ -26,6 +26,7 @@ import java.util.function.IntUnaryOperator;
  * class only advances handler-owned status and sprite-variant fields.
  */
 public final class RoomEntityRuntime extends EntityRuntimeState {
+    private final EntitySlotLifecycle lifecycle = new EntitySlotLifecycle(this);
     private final EntityEnemySpawns entityEnemySpawns = new EntityEnemySpawns(this);
     private final EntityPlayerSpawns entityPlayerSpawns = new EntityPlayerSpawns(this);
     private final EntityEffectConsumption effects = new EntityEffectConsumption(this);
@@ -41,7 +42,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     private final EntityCombatResolver combat = new EntityCombatResolver(this);
     private final EntityBossRewards bossRewards = new EntityBossRewards(this);
     private final EntityRoomInspection roomInspection = new EntityRoomInspection(this);
-    private final EntityEnemyInspection enemyInspection = new EntityEnemyInspection(this);
+    final EntityEnemyInspection enemyInspection = new EntityEnemyInspection(this);
 
     final RoomEntity[] slots;
     
@@ -1124,111 +1125,13 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
      * event means the entity completed its pickup collision and its first-eight
      * persistence bit is ready for the room session to record.
      */
-    public EntityPickupEvent collectIfNeeded(int frameCounter,
-                                             int linkEntityX,
-                                             int linkEntityY,
-                                             boolean linkAirborne,
-                                             boolean linkInteractive) {
-        return collectIfNeeded(frameCounter, linkEntityX, linkEntityY, linkAirborne,
-            linkInteractive, 0, 0);
-    }
+    public EntityPickupEvent collectIfNeeded(int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne, boolean linkInteractive) { return this.lifecycle.collectIfNeeded(frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive); }
 
     /** Pickup collision with Link's Java direction available for held items. */
-    public EntityPickupEvent collectIfNeeded(int frameCounter,
-                                             int linkEntityX,
-                                             int linkEntityY,
-                                             boolean linkAirborne,
-                                             boolean linkInteractive,
-                                             int linkDirection) {
-        return collectIfNeeded(frameCounter, linkEntityX, linkEntityY, linkAirborne,
-            linkInteractive, linkDirection, 0);
-    }
+    public EntityPickupEvent collectIfNeeded(int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne, boolean linkInteractive, int linkDirection) { return this.lifecycle.collectIfNeeded(frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive, linkDirection); }
 
     /** Pickup collision with Link's ROM-facing Z available for floating items. */
-    public EntityPickupEvent collectIfNeeded(int frameCounter,
-                                             int linkEntityX,
-                                             int linkEntityY,
-                                             boolean linkAirborne,
-                                             boolean linkInteractive,
-                                             int linkDirection,
-                                             int linkZ) {
-        if (!linkInteractive) {
-            return null;
-        }
-        int romDirection = romDirectionForJavaDirection(linkDirection);
-
-        for (int index = slots.length - 1; index >= 0; index--) {
-            RoomEntity entity = slots[index];
-            if (entity.type() == ENTITY_DROPPABLE_SECRET_SEASHELL) {
-                secretSeashellMotion.ensureInitialized(entity.slot(), entityRoomId);
-            }
-            boolean floatingType = FloatingItemMotion.isFloatingItem(entity.type());
-            boolean floating = isRuntimeFloatingItem(entity);
-            if (!entity.loaded() || entity.status() != EntityStatus.ACTIVE
-                || !RoomEntityPickupRules.isPickable(entity.type())
-                || (floatingType && !floating)
-                || (entity.type() == 0x35 && heartPiecePickup[entity.slot()] != null)
-                || powerUpPickupCountdown[entity.slot()] != 0
-                || dropPrivateCountdown1[entity.slot()] > 0
-                || (entity.type() == ENTITY_HEART_CONTAINER
-                    && enemyTransitionCountdown[entity.slot()] != 0)
-                || (entity.type() == ENTITY_SLEEPY_TOADSTOOL
-                    && toadstoolPickupSequenceActive[entity.slot()])
-                || (isCommonDroppableType(entity.type())
-                    && droppablePrivateState3[entity.slot()] != 0)
-                || (entity.type() == ENTITY_DROPPABLE_SECRET_SEASHELL
-                    && (secretSeashellMotion.privateState3(entity.slot()) != 0
-                        || secretSeashellMotion.privateCountdown1(entity.slot()) != 0))
-                || (!floating && !RoomEntityPickupRules.collisionCadenceMatches(
-                    frameCounter, entity.slot()))
-                || (!floating && linkAirborne)
-                || (floating && !FloatingItemMotion.linkZAllowsCollection(
-                    groundInteractionSideScrolling, linkZ))
-                || !(floating
-                    ? RoomEntityPickupRules.overlapsFloatingItem(entity, linkEntityX, linkEntityY)
-                    : RoomEntityPickupRules.overlapsLink(entity, linkEntityX, linkEntityY))) {
-                continue;
-            }
-
-            int persistentClearMask = entity.type() == ENTITY_SWORD_SHIELD_PICKUP
-                && chestSwordLevel == 0 ? 0 : persistentClearMask(entity);
-            if (entity.type() == ENTITY_KEY_DROP_POINT) {
-                if (entityRoomId == 0x80 || entity.spriteVariant() != 0) {
-                    enemyTransitionCountdown[entity.slot()] =
-                        KeyDropPointMotion.TRANSITION_COUNTDOWN;
-                } else {
-                    pendingKeyRewardEvents.add(new KeyRewardEvent(
-                        entity.slot(), ChestContentsTable.CHEST_SMALL_KEY));
-                    clearEntity(entity.slot());
-                }
-            } else if (entity.type() == 0x35) {
-                heartPiecePickup[entity.slot()] = new HeartPiecePickupMotion();
-                enemyTransitionCountdown[entity.slot()] = 5;
-                pendingMusicTrack = 0x10;
-            } else if (entity.type() == ENTITY_HEART_CONTAINER) {
-                enemyTransitionCountdown[entity.slot()] = 0x70;
-            } else if (entity.type() == ENTITY_SWORD_SHIELD_PICKUP
-                && chestSwordLevel == 0) {
-                startSwordPickup(entity.slot());
-            } else if (entity.type() == ENTITY_SLEEPY_TOADSTOOL) {
-                startToadstoolPickup(entity.slot());
-            } else if (entity.type()
-                == EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS) {
-                startInstrumentPickup(entity.slot());
-            } else if (entity.type() == 0x33 || entity.type() == 0x34) {
-                powerUpPickupCountdown[entity.slot()] = 0x30;
-                entityInteractionCountdown = 0x30;
-                pendingMusicTrack = 0x27;
-            } else if (requiresHeldPickupTransition(entity.type())) {
-                beginLift(entity.slot(), romDirection);
-            } else {
-                clearEntity(entity.slot());
-            }
-            return new EntityPickupEvent(entity.slot(), entity.type(), persistentClearMask,
-                floating ? entity.spriteVariant() : -1);
-        }
-        return null;
-    }
+    public EntityPickupEvent collectIfNeeded(int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne, boolean linkInteractive, int linkDirection, int linkZ) { return this.lifecycle.collectIfNeeded(frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive, linkDirection, linkZ); }
 
     /**
      * Starts EntityGetLiftedUp's shared state transition. Directions are the
@@ -1516,192 +1419,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     }
 
     /** Unloads a slot and returns the persistent first-eight load-order bit. */
-    public int clearEntity(int slot) {
-        if (slot < 0 || slot >= slots.length) {
-            throw new IllegalArgumentException("Entity slot out of range: " + slot);
-        }
-        resetEnemyDropState(slot);
-        sideViewPlatformMotion.clear(slot);
-        sideViewPotMotion.clear(slot);
-        genieMotion.clear(slot);
-        if (genieControllerSlot == slot) {
-            genieControllerSlot = -1;
-        }
-        genieActiveState[slot] = 0;
-        geniePrivateState1[slot] = 0;
-        geniePrivateState2[slot] = 0;
-        geniePrivateState3[slot] = 0;
-        geniePrivateState4[slot] = 0;
-        geniePrivateCountdown1[slot] = 0;
-        geniePrivateCountdown2[slot] = 0;
-        genieDirection[slot] = 0;
-        genieDeathInitialized[slot] = false;
-        genieSpeedX[slot] = 0;
-        genieSpeedY[slot] = 0;
-        genieSpeedZ[slot] = 0;
-        genieSpeedXAccumulator[slot] = 0;
-        genieSpeedYAccumulator[slot] = 0;
-        genieSpeedZAccumulator[slot] = 0;
-        RoomEntity entity = slots[slot];
-        bombFinalPresentationPending[slot] = false;
-        enemyHitboxFlags[slot] = 0;
-        playerArrowBombArrow[slot] = false;
-        bombPrivateCountdown1[slot] = 0;
-        bombPrivateCountdown3[slot] = 0;
-        magicPowderState[slot] = 0;
-        magicPowderPrivateState4[slot] = 0;
-        secretSeashellMotion.clear(slot);
-        entityPrivateState4[slot] = 0;
-        entityInertia[slot] = 0;
-        musicalNoteInertia[slot] = 0;
-        musicalNoteSpeedX[slot] = 0;
-        musicalNoteSpeedY[slot] = 0;
-        entityUnknownJ[slot] = 0;
-        ironMaskPrivateState2[slot] = 0;
-        ironMasksMaskSourceHookshotSlot[slot] = 0;
-        liftableRockSmashCountdown[slot] = 0;
-        liftableRockSmashSourceVariant[slot] = 0;
-        liftableRockSmashActive[slot] = false;
-        if (latestDroppedBombEntityIndex == slot) {
-            latestDroppedBombEntityIndex = -1;
-        }
-        if (latestShotArrowEntityIndex == slot) {
-            latestShotArrowEntityIndex = -1;
-        }
-        bombiteMotion.clear(slot);
-        blooperMotion.clear(slot);
-        pincerMotion.clear(slot);
-        bushCrawlerMotion.clear(slot);
-        pokeyMotion.clear(slot);
-        zoraMotion.clear(slot);
-        zombieMotion.clear(slot);
-        buzzBlobMotion.clear(slot);
-        sandCrabMotion.clear(slot);
-        dogMotion.clear(slot);
-        urchinMotion.clear(slot);
-        witchRatMotion.clear(slot);
-        mimicMotion.clear(slot);
-        maskedMimicMotion.clear(slot);
-        miniMoldormMotion.clear(slot);
-        moldormMotion.clear(slot);
-        if (!entity.loaded()) {
-            return 0;
-        }
-        slowTransitionCountdown[slot] = 0;
-        slowTimerInitialized[slot] = false;
-        enemyTransitionCountdown[slot] = 0;
-        enemyStunnedCountdown[slot] = 0;
-        dyingCountdown[slot] = 0;
-        powerRecoilDeath[slot] = false;
-        enemyPhysicsFlags[slot] = 0;
-        enemyHealth[slot] = 0;
-        enemyFlashCountdown[slot] = 0;
-        enemyIgnoreHitsCountdown[slot] = 0;
-        chestSpeedY[slot] = 0;
-        chestSpeedYAccumulator[slot] = 0;
-        chestInertia[slot] = 0;
-        chestItemBySlot[slot] = 0;
-        owlPrivateCountdown1[slot] = 0;
-        entityGroundStatus[slot] = 0;
-        fallingTargetX[slot] = 0;
-        fallingTargetY[slot] = 0;
-        fallingSpeedX[slot] = 0;
-        fallingSpeedY[slot] = 0;
-        fallingSpeedXAccumulator[slot] = 0;
-        fallingSpeedYAccumulator[slot] = 0;
-        fallingVisualYOffset[slot] = 0;
-        liftedPhase[slot] = 0;
-        liftedSourceDirection[slot] = 0;
-        liftedStateInitialized[slot] = false;
-        thrownDirection[slot] = 0xFF;
-        bombDirection[slot] = 0xFF;
-        bombPrivateState4[slot] = 0;
-        magicPowderState[slot] = 0;
-        magicPowderPrivateState4[slot] = 0;
-        bombPrivateCountdown1[slot] = 0;
-        bombPrivateCountdown3[slot] = 0;
-        placedBombMotionInitialized[slot] = false;
-        ledgeTransitionTimer[slot] = 0;
-        thrownMotionInitialized[slot] = false;
-        hookshotChainMotion.clear(slot);
-        hookshotBridgeMotion.clear(slot);
-        boomerangMotion.clear(slot);
-        magicRodFireballMotion.clear(slot);
-        swordBeamMotion.clear(slot);
-        if (entity.type() == ENTITY_HOOKSHOT_CHAIN) {
-            hookshotChainOam = List.of();
-        }
-        baseEntityFlipAttribute[slot] = 0;
-        entityOptions1Override[slot] = -1;
-        enemyRecoilMotion.clear(slot);
-        colorShellMotion.clear(slot);
-        butterflyMotion.clear(slot);
-        keeseMotion.clear(slot);
-        roamingEnemyMotion.clear(slot);
-        unmaskedIronMaskMotion.clear(slot);
-        moblinSwordMotion.clear(slot);
-        playerArrowMotion.clear(slot);
-        tektiteMotion.clear(slot);
-        leeverMotion.clear(slot);
-        antiFairyMotion.clear(slot);
-        sparkMotion.clear(slot);
-        zolGelMotion.clear(slot);
-        pokeyMotion.clear(slot);
-        hidingZolMotion.clear(slot);
-        starMotion.clear(slot);
-        blooperMotion.clear(slot);
-        pincerMotion.clear(slot);
-        spikeTrapMotion.clear(slot);
-        pairoddMotion.clear(slot);
-        pairoddProjectileMotion.clear(slot);
-        enemyProjectileMotion.clear(slot);
-        wingedOctorokMotion.clear(slot);
-        bushCrawlerMotion.clear(slot);
-        cuccoMotion.clear(slot);
-        giantGopongaMotion.clear(slot);
-        gopongaProjectileMotion.clear(slot);
-        zoraMotion.clear(slot);
-        zombieMotion.clear(slot);
-        buzzBlobMotion.clear(slot);
-        sandCrabMotion.clear(slot);
-        dogMotion.clear(slot);
-        urchinMotion.clear(slot);
-        witchRatMotion.clear(slot);
-        wingedSwordAttackThisFrame[slot] = false;
-        wingedStateTwoThisFrame[slot] = false;
-        laserMotion.clear(slot);
-        waterTektiteMotion.clear(slot);
-        fishMotion.clear(slot);
-        crowMotion.clear(slot);
-        booBuddyMotion.clear(slot);
-        stalfosAggressiveMotion.clear(slot);
-        stalfosEvasiveMotion.clear(slot);
-        threeOfAKindMotion.clear(slot);
-        gibdoMotion.clear(slot);
-        likeLikeMotion.clear(slot);
-        goombaMotion.clear(slot);
-        snakeMotion.clear(slot);
-        wizrobeMotion.clear(slot);
-        wizrobeProjectileMotion.clear(slot);
-        peaHatMotion.clear(slot);
-        armosMotion.clear(slot);
-        ghiniMotion.clear(slot);
-        hardHatMotion.clear(slot);
-        madBomberMotion.clear(slot);
-        followingNpcMotion.clear(slot);
-        bowWowMotion.clear(slot);
-        moblinKingMotion.clear(slot);
-        thrownEntityMotion.clear(slot);
-        if (liftedEntitySlot == slot) {
-            liftedEntitySlot = -1;
-            liftedCarryState = 0;
-            liftedEffectiveDirection = 0;
-        }
-        slots[slot] = RoomEntity.disabled(slot);
-        updatePincerBodyOam();
-        return entity.sourceLoadOrder() >= 0 && entity.sourceLoadOrder() < 8
-            ? 1 << entity.sourceLoadOrder() : 0;
-    }
+    public int clearEntity(int slot) { return this.lifecycle.clearEntity(slot); }
 
     /** Creates the ROM's player-projectile entity type {@code $03}. */
     int spawnHookshotChain(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) { return this.entityPlayerSpawns.spawnHookshotChain(linkEntityX, linkEntityY, linkEntityZ, romDirection); }
@@ -2323,45 +2041,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     boolean hasNoGroundInteraction(RoomEntity entity) { return this.roomInspection.hasNoGroundInteraction(entity); }
 
-    RoomEntity applyZolSplit(RoomEntity original, RoomEntity updated,
-                                      ZolGelMotion.Split split) {
-        EntitySpriteDefinition gelDefinition = spriteDefinitionFor(ENTITY_GEL);
-        int gelVariant = gelDefinition.supported() ? 0 : -1;
-        int slot = original.slot();
-        RoomEntity gel = new RoomEntity(slot, original.sourceLoadOrder(), ENTITY_GEL,
-            (split.originalX() - 4) & 0xFF, split.originalY(), EntityStatus.ACTIVE,
-            gelDefinition, gelVariant, original.entityFlipAttribute(), original.spriteTileOffset(),
-            split.originalZ(), -1, false);
-        enemyTransitionCountdown[slot] = 0;
-        enemyStunnedCountdown[slot] = 0;
-        enemyHealth[slot] = initialHealth(ENTITY_GEL);
-        enemyFlashCountdown[slot] = 0;
-        enemyIgnoreHitsCountdown[slot] = 0;
-        dyingCountdown[slot] = 0;
-        powerRecoilDeath[slot] = false;
-        enemyRecoilMotion.clear(slot);
-
-        int freeSlot = findFreeEntitySlot();
-        if (freeSlot >= 0) {
-            baseEntityFlipAttribute[freeSlot] = baseEntityFlipAttribute[original.slot()];
-            RoomEntity spawnedGel = new RoomEntity(freeSlot, original.sourceLoadOrder(), ENTITY_GEL,
-                (split.originalX() + 8) & 0xFF, split.originalY(), EntityStatus.ACTIVE,
-                gelDefinition, gelVariant, original.entityFlipAttribute(), original.spriteTileOffset(),
-                split.originalZ(), -1, false);
-            slots[freeSlot] = spawnedGel;
-            enemyTransitionCountdown[freeSlot] = 0;
-            enemyStunnedCountdown[freeSlot] = 0;
-            dyingCountdown[freeSlot] = 0;
-            powerRecoilDeath[freeSlot] = false;
-            enemyHealth[freeSlot] = initialHealth(ENTITY_GEL);
-            enemyFlashCountdown[freeSlot] = 0;
-            // SpawnNewEntity sets the new entity's ignore-hits countdown to 1.
-            enemyIgnoreHitsCountdown[freeSlot] = 1;
-            enemyRecoilMotion.clear(freeSlot);
-            zolGelMotion.prepareSpawnedGel(freeSlot);
-        }
-        return gel;
-    }
+    RoomEntity applyZolSplit(RoomEntity original, RoomEntity updated, ZolGelMotion.Split split) { return this.lifecycle.applyZolSplit(original, updated, split); }
 
     void handleTerminalEnemyDeath(RoomEntity entity, IntSupplier randomByteSupplier) { this.bossRewards.handleTerminalEnemyDeath(entity, randomByteSupplier); }
 
@@ -2381,7 +2061,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     void advanceCollectedHeartContainer(RoomEntity entity, int linkEntityX, int linkEntityY, int linkZ) { this.bossRewards.advanceCollectedHeartContainer(entity, linkEntityX, linkEntityY, linkZ); }
 
-    private void startSwordPickup(int slot) {
+    void startSwordPickup(int slot) {
         swordPickupSequenceActive[slot] = true;
         swordPickupState[slot] = 0;
         enemyTransitionCountdown[slot] = 0xA0;
@@ -2389,13 +2069,13 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
         pendingMusicTrack = 0x0F;
     }
 
-    private void startToadstoolPickup(int slot) {
+    void startToadstoolPickup(int slot) {
         toadstoolPickupSequenceActive[slot] = true;
         enemyTransitionCountdown[slot] = 0x68;
         pendingMusicTrack = 0x10;
     }
 
-    private void startInstrumentPickup(int slot) { rewards.startInstrumentPickup(slot); }
+    void startInstrumentPickup(int slot) { rewards.startInstrumentPickup(slot); }
 
     void advanceKidnapWarningKid(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY) { story.advanceKidnapWarningKid(entity, frameCounter, linkEntityX, linkEntityY); }
 
@@ -2473,42 +2153,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     }
 
     /** Mirrors Bow-Wow's label_005_4335 target-resolution branches. */
-    void handleBowWowTargetContact(RoomEntity source,
-                                           BowWowMotion.TargetContact contact,
-                                           IntSupplier randomByteSupplier) {
-        int targetSlot = contact.slot();
-        if (targetSlot < 0 || targetSlot >= slots.length) {
-            return;
-        }
-        RoomEntity target = slots[targetSlot];
-        if (!target.loaded()) {
-            return;
-        }
-
-        if (target.type() == ENTITY_DROPPABLE_SECRET_SEASHELL) {
-            if (entityPrivateState4[targetSlot] == 0 || dialogActive
-                || bowWowMotion.privateCountdown2(source.slot()) != 0) {
-                return;
-            }
-            bowWowMotion.setTransitionCountdown(source.slot(), 0);
-            bowWowMotion.setPrivateCountdown2(source.slot(), 0x80);
-            pendingDialogRequests.add(new DialogRequest(1, DIALOG_BOW_WOW));
-            return;
-        }
-
-        if (enemyFlashCountdown[targetSlot] != 0) {
-            return;
-        }
-        pendingEntityEvents.add(new EntityCombatEvent(
-            source.slot(), source.type(), 0, false,
-            EntityCombatEvent.SoundChannel.JINGLE, 0x03));
-        if (target.type() == ENTITY_KIKI_THE_MONKEY) {
-            enemyFlashCountdown[targetSlot] = 0x18;
-            entityInertia[targetSlot] = (entityInertia[targetSlot] + 1) & 0xFF;
-            return;
-        }
-        handleTerminalEnemyDeath(target, randomByteSupplier);
-    }
+    void handleBowWowTargetContact(RoomEntity source, BowWowMotion.TargetContact contact, IntSupplier randomByteSupplier) { this.lifecycle.handleBowWowTargetContact(source, contact, randomByteSupplier); }
 
     /**
      * Ports the boss-specific death handlers that eventually create entity
@@ -2910,34 +2555,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     RoomEntity refreshColorShellDisplay(RoomEntity entity, EntityStatus status) { return this.roomInspection.refreshColorShellDisplay(entity, status); }
 
-    void finishBurning(RoomEntity entity) {
-        int slot = entity.slot();
-        enemyTransitionCountdown[slot] = 0;
-        if (entity.type() == ENTITY_GIBDO) {
-            EntitySpriteDefinition definition = spriteDefinitionFor(ENTITY_STALFOS_EVASIVE);
-            RoomEntity stalfos = withType(entity, ENTITY_STALFOS_EVASIVE, definition);
-            slots[slot] = withStatus(stalfos, EntityStatus.ACTIVE);
-            enemyHealth[slot] = initialHealth(ENTITY_STALFOS_EVASIVE);
-            enemyFlashCountdown[slot] = 0;
-            enemyIgnoreHitsCountdown[slot] = 0;
-            entityOptions1Override[slot] = -1;
-            enemyPhysicsFlags[slot] = EVASIVE_PHYSICS_FLAGS;
-            dyingCountdown[slot] = 0;
-            powerRecoilDeath[slot] = false;
-            enemyRecoilMotion.clear(slot);
-            stalfosEvasiveMotion.clear(slot);
-            return;
-        }
-
-        enemyPhysicsFlags[slot] = 0x04;
-        dyingCountdown[slot] = 0x1F;
-        powerRecoilDeath[slot] = false;
-        slots[slot] = withDeathPresentation(
-            withStatus(entity, EntityStatus.DYING), 3, false);
-        pendingEntityEvents.add(new EntityCombatEvent(
-            slot, entity.type(), 0, false,
-            EntityCombatEvent.SoundChannel.NOISE, 0x13));
-    }
+    void finishBurning(RoomEntity entity) { this.lifecycle.finishBurning(entity); }
 
     int slowTransitionCountdown(int slot) { return this.roomInspection.slowTransitionCountdown(slot); }
 
@@ -3695,14 +3313,9 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     boolean polsVoiceBalladOcarinaTrigger() { return this.enemyInspection.polsVoiceBalladOcarinaTrigger(); }
 
-    void decrementSlowTransitionCountdown(int slot, int frameCounter) {
-        if ((frameCounter & 0x03) == 0 && slowTimerInitialized[slot]
-            && slowTransitionCountdown[slot] > 0) {
-            slowTransitionCountdown[slot]--;
-        }
-    }
+    void decrementSlowTransitionCountdown(int slot, int frameCounter) { this.lifecycle.decrementSlowTransitionCountdown(slot, frameCounter); }
 
-    boolean shouldDisappear(RoomEntity entity) { return this.enemyInspection.shouldDisappear(entity); }
+    boolean shouldDisappear(RoomEntity entity) { return this.lifecycle.shouldDisappear(entity); }
 
     /**
      * The standard bank-$06 floating handler is available only where its
@@ -3804,157 +3417,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
         return withPositionAndVariant(entity, x, y, phase);
     }
 
-    void disableEntityWithoutPersistence(int slot) {
-        resetEnemyDropState(slot);
-        sideViewPlatformMotion.clear(slot);
-        sideViewPotMotion.clear(slot);
-        genieMotion.clear(slot);
-        if (genieControllerSlot == slot) {
-            genieControllerSlot = -1;
-        }
-        genieActiveState[slot] = 0;
-        geniePrivateState1[slot] = 0;
-        geniePrivateState2[slot] = 0;
-        geniePrivateState3[slot] = 0;
-        geniePrivateState4[slot] = 0;
-        geniePrivateCountdown1[slot] = 0;
-        geniePrivateCountdown2[slot] = 0;
-        genieDirection[slot] = 0;
-        genieDeathInitialized[slot] = false;
-        genieSpeedX[slot] = 0;
-        genieSpeedY[slot] = 0;
-        genieSpeedZ[slot] = 0;
-        genieSpeedXAccumulator[slot] = 0;
-        genieSpeedYAccumulator[slot] = 0;
-        genieSpeedZAccumulator[slot] = 0;
-        secretSeashellMotion.clear(slot);
-        slowTransitionCountdown[slot] = 0;
-        slowTimerInitialized[slot] = false;
-        enemyTransitionCountdown[slot] = 0;
-        bossDeathProducerState[slot] = 0;
-        moldormDestructionTailState[slot] = 0;
-        enemyStunnedCountdown[slot] = 0;
-        dyingCountdown[slot] = 0;
-        powerRecoilDeath[slot] = false;
-        enemyPhysicsFlags[slot] = 0;
-        enemyHealth[slot] = 0;
-        enemyFlashCountdown[slot] = 0;
-        enemyIgnoreHitsCountdown[slot] = 0;
-        chestSpeedY[slot] = 0;
-        chestSpeedYAccumulator[slot] = 0;
-        chestInertia[slot] = 0;
-        chestItemBySlot[slot] = 0;
-        enemyHitboxFlags[slot] = 0;
-        instrumentParticleKind[slot] = 0;
-        instrumentParticleSpeedX[slot] = 0;
-        instrumentParticleSpeedY[slot] = 0;
-        instrumentParticleXAccumulator[slot] = 0;
-        instrumentParticleYAccumulator[slot] = 0;
-        armosKnightMotion.clear(slot);
-        entityGroundStatus[slot] = 0;
-        fallingTargetX[slot] = 0;
-        fallingTargetY[slot] = 0;
-        fallingSpeedX[slot] = 0;
-        fallingSpeedY[slot] = 0;
-        fallingSpeedXAccumulator[slot] = 0;
-        fallingSpeedYAccumulator[slot] = 0;
-        fallingVisualYOffset[slot] = 0;
-        liftedPhase[slot] = 0;
-        liftedSourceDirection[slot] = 0;
-        liftedStateInitialized[slot] = false;
-        thrownDirection[slot] = 0xFF;
-        bombDirection[slot] = 0xFF;
-        bombPrivateState4[slot] = 0;
-        magicPowderState[slot] = 0;
-        magicPowderPrivateState4[slot] = 0;
-        bombPrivateCountdown1[slot] = 0;
-        bombPrivateCountdown3[slot] = 0;
-        ironMaskPrivateState2[slot] = 0;
-        ironMasksMaskSourceHookshotSlot[slot] = 0;
-        liftableRockSmashCountdown[slot] = 0;
-        liftableRockSmashSourceVariant[slot] = 0;
-        liftableRockSmashActive[slot] = false;
-        bombFinalPresentationPending[slot] = false;
-        placedBombMotionInitialized[slot] = false;
-        enemyBombMotionInitialized[slot] = false;
-        ledgeTransitionTimer[slot] = 0;
-        thrownMotionInitialized[slot] = false;
-        baseEntityFlipAttribute[slot] = 0;
-        entityOptions1Override[slot] = -1;
-        enemyRecoilMotion.clear(slot);
-        bomberMotion.clear(slot);
-        madBomberMotion.clear(slot);
-        bombiteMotion.clear(slot);
-        colorShellMotion.clear(slot);
-        butterflyMotion.clear(slot);
-        keeseMotion.clear(slot);
-        roamingEnemyMotion.clear(slot);
-        unmaskedIronMaskMotion.clear(slot);
-        moblinSwordMotion.clear(slot);
-        tektiteMotion.clear(slot);
-        leeverMotion.clear(slot);
-        antiFairyMotion.clear(slot);
-        sparkMotion.clear(slot);
-        zolGelMotion.clear(slot);
-        hidingZolMotion.clear(slot);
-        starMotion.clear(slot);
-        blooperMotion.clear(slot);
-        pincerMotion.clear(slot);
-        bushCrawlerMotion.clear(slot);
-        pokeyMotion.clear(slot);
-        piranhaMotion.clear(slot);
-        zoraMotion.clear(slot);
-        zombieMotion.clear(slot);
-        buzzBlobMotion.clear(slot);
-        sandCrabMotion.clear(slot);
-        dogMotion.clear(slot);
-        mimicMotion.clear(slot);
-        maskedMimicMotion.clear(slot);
-        miniMoldormMotion.clear(slot);
-        moldormMotion.clear(slot);
-        cuccoMotion.clear(slot);
-        spikeTrapMotion.clear(slot);
-        pairoddMotion.clear(slot);
-        pairoddProjectileMotion.clear(slot);
-        playerArrowMotion.clear(slot);
-        magicRodFireballMotion.clear(slot);
-        playerArrowBombArrow[slot] = false;
-        if (latestDroppedBombEntityIndex == slot) {
-            latestDroppedBombEntityIndex = -1;
-        }
-        if (latestShotArrowEntityIndex == slot) {
-            latestShotArrowEntityIndex = -1;
-        }
-        enemyProjectileMotion.clear(slot);
-        laserMotion.clear(slot);
-        waterTektiteMotion.clear(slot);
-        fishMotion.clear(slot);
-        crowMotion.clear(slot);
-        booBuddyMotion.clear(slot);
-        stalfosAggressiveMotion.clear(slot);
-        stalfosEvasiveMotion.clear(slot);
-        gibdoMotion.clear(slot);
-        goombaMotion.clear(slot);
-        snakeMotion.clear(slot);
-        wizrobeMotion.clear(slot);
-        wizrobeProjectileMotion.clear(slot);
-        peaHatMotion.clear(slot);
-        armosMotion.clear(slot);
-        followingNpcMotion.clear(slot);
-        ghiniMotion.clear(slot);
-        hardHatMotion.clear(slot);
-        polsVoiceMotion.clear(slot);
-        spikedBeetleMotion.clear(slot);
-        bowWowMotion.clear(slot);
-        moblinKingMotion.clear(slot);
-        thrownEntityMotion.clear(slot);
-        if (liftedEntitySlot == slot) {
-            liftedEntitySlot = -1;
-            liftedCarryState = 0;
-            liftedEffectiveDirection = 0;
-        }
-        slots[slot] = RoomEntity.disabled(slot);
-    }
+    void disableEntityWithoutPersistence(int slot) { this.lifecycle.disableEntityWithoutPersistence(slot); }
 
     int verticalSpeedZ(RoomEntity entity) {
         int slot = entity.slot();
@@ -4012,44 +3475,9 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
         return 0;
     }
 
-    boolean decrementEnemyCombatCountdowns(int slot, boolean decrementIgnoreHits) {
-        if (enemyFlashCountdown[slot] > 0) {
-            enemyFlashCountdown[slot]--;
-        }
-        if (decrementIgnoreHits && !enemyRecoilMotion.isActive(slot)
-            && enemyIgnoreHitsCountdown[slot] > 0) {
-            enemyIgnoreHitsCountdown[slot]--;
-            return true;
-        }
-        return false;
-    }
+    boolean decrementEnemyCombatCountdowns(int slot, boolean decrementIgnoreHits) { return this.lifecycle.decrementEnemyCombatCountdowns(slot, decrementIgnoreHits); }
 
-    void decrementEnemyStatusCountdowns(int slot) {
-        if (enemyTransitionCountdown[slot] > 0) {
-            enemyTransitionCountdown[slot]--;
-        }
-        if (enemyStunnedCountdown[slot] > 0) {
-            enemyStunnedCountdown[slot]--;
-        }
-        if (dyingCountdown[slot] > 0) {
-            dyingCountdown[slot]--;
-        }
-        if (bombPrivateCountdown1[slot] > 0) {
-            bombPrivateCountdown1[slot]--;
-        }
-        if (bombPrivateCountdown3[slot] > 0) {
-            bombPrivateCountdown3[slot]--;
-        }
-        if (owlPrivateCountdown1[slot] > 0 && entityTimersInteractive()) {
-            owlPrivateCountdown1[slot]--;
-        }
-        hinoxMotion.decrementPrivateCountdown1(slot);
-        if (liftableRockSmashActive[slot] && liftableRockSmashCountdown[slot] > 0) {
-            liftableRockSmashCountdown[slot]--;
-        }
-        blooperMotion.decrementPrivateCountdown3(slot);
-        wingedOctorokMotion.decrementPrivateCountdown2(slot);
-    }
+    void decrementEnemyStatusCountdowns(int slot) { this.lifecycle.decrementEnemyStatusCountdowns(slot); }
 
     /** Shared gameplay gates in ReturnIfNonInteractive_03 and _19. */
     boolean entityHandlerInteractive(boolean creditsGameplay) { return this.enemyInspection.entityHandlerInteractive(creditsGameplay); }
