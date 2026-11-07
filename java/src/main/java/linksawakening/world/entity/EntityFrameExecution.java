@@ -173,6 +173,8 @@ public final class EntityFrameExecution {
 
   public void replaceEntity(RoomEntity replacement) { runtime.slots[index] = replacement; }
 
+  public List<RoomEntity> entities() { return runtime.slotEntities; }
+
   public RoomEntity entityAt(int slotIndex) { return runtime.slots[slotIndex]; }
 
   public void emit(DialogRequest event) { runtime.events.pendingDialogRequests.add(event); }

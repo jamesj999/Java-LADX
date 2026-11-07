@@ -94,7 +94,8 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     final EntityPickupInspection pickupInspection = new EntityPickupInspection(this);
     public final EntityEnemyInspection enemyInspection = new EntityEnemyInspection(this);
 
-    public final RoomEntity[] slots;
+    final RoomEntity[] slots;
+    final java.util.List<RoomEntity> slotEntities;
     
     final EntitySpriteTileSnapshot spriteTiles;
     public final boolean indoorRoom;
@@ -140,6 +141,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
                                RomTables romTables,
                                byte[] romData) {
         this.slots = initial.slots().toArray(RoomEntity[]::new);
+        this.slotEntities = java.util.Arrays.asList(slots);
         this.spriteSelection = initial.spriteSelection();
         this.spriteTiles = initial.spriteTiles();
         this.groundInteractionSideScrolling = initial.sideScrolling();

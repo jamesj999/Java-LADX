@@ -88,26 +88,26 @@ final class GenieHandler {
                     || state.runtime.roomInspection.genieState0Interactive(
                         state.creditsGameplay))) {
               state.runtime.genie.advanceGenieJar(state.entity, state.linkEntityY);
-              if (!state.runtime.slots[state.entity.slot()].loaded()) {
+              if (!state.entityAt(state.entity.slot()).loaded()) {
                 return false;
               }
-              state.updated = state.runtime.slots[state.entity.slot()];
+              state.updated = state.entityAt(state.entity.slot());
             }
             if (state.runtime.geniePrivateState1[state.entity.slot()] == 2
                 && state.runtime.roomInspection.genieState0Interactive(state.creditsGameplay)) {
               state.runtime.genie.advanceGenieAppearance(state.entity);
-              if (!state.runtime.slots[state.entity.slot()].loaded()) {
+              if (!state.entityAt(state.entity.slot()).loaded()) {
                 return false;
               }
-              state.updated = state.runtime.slots[state.entity.slot()];
+              state.updated = state.entityAt(state.entity.slot());
             }
             if (state.runtime.geniePrivateState1[state.entity.slot()] == 3
                 && state.runtime.roomInspection.genieState0Interactive(state.creditsGameplay)) {
               state.runtime.genie.advanceGenieSideProjectile(state.entity, state.frameCounter);
-              if (!state.runtime.slots[state.entity.slot()].loaded()) {
+              if (!state.entityAt(state.entity.slot()).loaded()) {
                 return false;
               }
-              state.updated = state.runtime.slots[state.entity.slot()];
+              state.updated = state.entityAt(state.entity.slot());
             }
             if (state.runtime.geniePrivateState1[state.entity.slot()] == 4
                 && state.runtime.roomInspection.genieState0Interactive(state.creditsGameplay)) {
@@ -118,10 +118,10 @@ final class GenieHandler {
                     state.entity, EntityLinkCollisionRules.STANDARD_PUSH);
               }
               state.runtime.genie.advanceGenieFireball(state.entity, state.frameCounter);
-              if (!state.runtime.slots[state.entity.slot()].loaded()) {
+              if (!state.entityAt(state.entity.slot()).loaded()) {
                 return false;
               }
-              state.updated = state.runtime.slots[state.entity.slot()];
+              state.updated = state.entityAt(state.entity.slot());
             }
             if (state.runtime.geniePrivateState1[state.entity.slot()] == 1
                 && state.runtime.roomInspection.genieState0Interactive(state.creditsGameplay)) {
@@ -142,10 +142,10 @@ final class GenieHandler {
                   state.linkEntityX,
                   state.linkEntityY,
                   state.randomByteSupplier);
-              if (!state.runtime.slots[state.entity.slot()].loaded()) {
+              if (!state.entityAt(state.entity.slot()).loaded()) {
                 return false;
               }
-              state.updated = state.runtime.slots[state.entity.slot()];
+              state.updated = state.entityAt(state.entity.slot());
             }
           }
           return true;
