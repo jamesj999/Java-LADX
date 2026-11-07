@@ -242,6 +242,7 @@ public final class RoomSession {
     /** ROM wIndoorRoom: the current position in the active map's 8x8 layout. */
     private int indoorMapPosition = -1;
     private final RoomWorldState roomState;
+    private final RoomScrollNavigation scrollNavigation;
     private final RoomEntityBridge entityBridge = new RoomEntityBridge();
     private final RoomEntityInputs entityInputs =
         new RoomEntityInputs(() -> entityBridge.entityRuntime);
@@ -398,6 +399,7 @@ public final class RoomSession {
                        RoomLoadListener roomLoadListener) {
         this.romData = romData;
         this.roomState = new RoomWorldState(romData);
+        this.scrollNavigation = new RoomScrollNavigation(romData, roomState);
         this.indoorTorchPaletteEffect = new IndoorTorchPaletteEffect(romData);
         this.gpu = gpu;
         this.roomLoader = roomLoader;
@@ -496,7 +498,7 @@ public final class RoomSession {
                                           int linkScreenX,
                                           int linkScreenY) {
         RoomRenderSnapshot previousRoom = renderSnapshot();
-        IndoorRoomDestination destination = adjacentIndoorRoom(direction);
+        RoomScrollNavigation.IndoorRoomDestination destination = adjacentIndoorRoom(direction);
         loadIndoor(activeRoom.mapId(), destination.roomId(), activeRoom.mapCategory(),
             switch (direction) {
                 case ScrollController.RIGHT -> 0;
@@ -3343,34 +3345,7 @@ public final class RoomSession {
         return true;
     }
 
-    private int adjacentIndoorRoomIdForBombWall(int wallIndex) {
-        int mapPosition = indoorMapPosition >= 0
-            ? indoorMapPosition
-            : findIndoorMapPosition(activeRoom.mapId(), activeRoom.roomId());
-        int mapPositionDelta = switch (wallIndex) {
-            case 0 -> -0x08;
-            case 1 -> 0x08;
-            case 2 -> -0x01;
-            case 3 -> 0x01;
-            default -> throw new AssertionError(wallIndex);
-        };
-        if (mapPosition >= 0) {
-            int adjacentPosition = mapPosition + mapPositionDelta;
-            if (adjacentPosition >= 0 && adjacentPosition < INDOOR_MAP_LAYOUT_SIZE) {
-                int layoutOffset = indoorMapLayoutOffset(activeRoom.mapId());
-                if (layoutOffset >= 0 && layoutOffset + adjacentPosition < romData.length) {
-                    int roomId = Byte.toUnsignedInt(romData[layoutOffset + adjacentPosition]);
-                    if (roomId != 0) {
-                        return roomId;
-                    }
-                }
-            }
-        }
-
-        // Some small cave/house maps have no spatial layout table. Preserve the
-        // source's byte-grid fallback for those rooms.
-        return (activeRoom.roomId() + mapPositionDelta) & 0xFF;
-    }
+    private int adjacentIndoorRoomIdForBombWall(int wallIndex) { return scrollNavigation.adjacentIndoorRoomIdForBombWall(activeRoom, indoorMapPosition, wallIndex); }
 
     private int findIndoorMapPosition(int mapId, int roomId) { return roomState.findIndoorMapPosition(mapId, roomId); }
 
@@ -4392,67 +4367,9 @@ public final class RoomSession {
         }
     }
 
-    private int adjacentOverworldRoomId(int direction) {
-        int nextRoomId = activeRoom.roomId();
-        switch (direction) {
-            case ScrollController.UP:
-                return nextRoomId - 16;
-            case ScrollController.DOWN:
-                return nextRoomId + 16;
-            case ScrollController.LEFT:
-                return nextRoomId - 1;
-            case ScrollController.RIGHT:
-                return nextRoomId + 1;
-            default:
-                return nextRoomId;
-        }
-    }
+    private int adjacentOverworldRoomId(int direction) { return scrollNavigation.adjacentOverworldRoomId(activeRoom, direction); }
 
-    private record IndoorRoomDestination(int roomId, int mapPosition) {}
+    private RoomScrollNavigation.IndoorRoomDestination adjacentIndoorRoom(int direction) { return scrollNavigation.adjacentIndoorRoom(activeRoom, indoorMapPosition, direction); }
 
-    private IndoorRoomDestination adjacentIndoorRoom(int direction) {
-        int layoutDelta = switch (direction) {
-            case ScrollController.UP -> -8;
-            case ScrollController.DOWN -> 8;
-            case ScrollController.LEFT -> -1;
-            case ScrollController.RIGHT -> 1;
-            default -> 0;
-        };
-
-        // The ROM increments wIndoorRoom, which is the room's 8x8 layout
-        // position, then resolves the actual hMapRoom byte through MapLayoutN
-        // (room_transition.asm:$7A4C and bank14.asm:$5897). Room ids themselves
-        // are not spatially ordered: Tail Cave room $17 north is room $13,
-        // not $0F.
-        int currentMapPosition = indoorMapPosition >= 0
-            ? indoorMapPosition
-            : findIndoorMapPosition(activeRoom.mapId(), activeRoom.roomId());
-        int adjacentPosition = currentMapPosition + layoutDelta;
-        int layoutOffset = indoorMapLayoutOffset(activeRoom.mapId());
-        if (currentMapPosition >= 0 && adjacentPosition >= 0
-            && adjacentPosition < INDOOR_MAP_LAYOUT_SIZE && layoutOffset >= 0) {
-            return new IndoorRoomDestination(
-                Byte.toUnsignedInt(romData[layoutOffset + adjacentPosition]),
-                adjacentPosition);
-        }
-
-        // room_transition.asm:$7A0C skips the wIndoorRoom/MapLayout path for
-        // maps >= $0B. Those maps keep hMapRoom directly and fall through to
-        // OverworldRoomIncrement, whose vertical row stride is $10.
-        int directRoomDelta = switch (direction) {
-            case ScrollController.UP -> -0x10;
-            case ScrollController.DOWN -> 0x10;
-            case ScrollController.LEFT -> -1;
-            case ScrollController.RIGHT -> 1;
-            default -> 0;
-        };
-        return new IndoorRoomDestination(
-            (activeRoom.roomId() + directRoomDelta) & 0xFF, -1);
-    }
-
-    private static int scrollTarget(int direction) {
-        return (direction == ScrollController.LEFT || direction == ScrollController.RIGHT)
-            ? ROOM_PIXEL_WIDTH
-            : ROOM_PIXEL_HEIGHT;
-    }
+    private static int scrollTarget(int direction) { return RoomScrollNavigation.scrollTarget(direction); }
 }
