@@ -84,3 +84,55 @@ session through thunder and first beach wave into the supplied output.
 This bounded evidence establishes intro
 request ordering and measured PCM differences; it does not establish full
 sound, cutscene, or game parity.
+
+## Exact noise write follow-up
+
+`tools/audio/trace_noise_writes.py` resolves the two apparent held-register
+mismatches using actual instruction hooks, not another post-frame snapshot.
+It derives E0/E2 write sites from annotated audio disassembly and verifies
+instruction bytes against the user ROM before installing hooks. Each noise
+write records the instruction address, A/C register values, PyBoy CPU-cycle
+counter and ordinal of the ROM `PlayActiveNoiseSfx` call (1F:64EC). The bounded
+1600-frame run verifies 61 hook sites; it records 102 NR42/43/44 writes after
+the first thunder. All 102 values and their order match the production trace.
+Within each requested effect, every write also has exactly the same elapsed
+number of noise-driver calls as engine updates (minimum/maximum delta both 0).
+[Exact-write evidence](evidence/intro-noise-writes-2026-11-07.json).
+
+The previous mismatch at engine 1065 is NR43=6E followed by NR44=00.
+Emulator executes these at relative frame 1067, CPU cycles 157258520 and
+157258556, via 1F:7A92. Previous NR43=6D occurred at audio call 1074;
+6E occurs at 1081: exactly seven driver calls, matching engine 1058→1065.
+The emulator frame labels span eight ticks (1059→1067), so aligning every
+write by one constant displayed-frame offset was insufficient.
+
+The engine 1393 NR42=67/NR43=03/NR44=80 group executes in the emulator at
+relative 1395, cycles 202987116/202987152/202987188, through the same writer.
+The preceding NR42=60 group is audio call 1363 and this group is 1411:
+48 calls, matching engine 1345→1393. The displayed labels span 49 ticks.
+These LCD-transition/display-tick boundaries explain the two snapshot
+mismatches. There is no demonstrated SFX sequencing or envelope-command bug
+to compensate in production. CPU-cycle values describe the diagnostic emulator
+clock; the engine does not model instruction-level execution time.
+
+Reproduce after the ordinary engine capture:
+
+```sh
+python tools/audio/trace_noise_writes.py --frames 1600
+```
+
+It writes local `noise-writes.jsonl` and `noise-writes.summary.json` alongside
+the WAVs. The hooks cover annotated E0/E2 instructions in the audio sources,
+not arbitrary writes from every bank or a full memory-bus trace.
+
+The next actionable PCM investigation is channel-isolated synthesis against
+matched register commands and trigger times. NR50 is 77 and NR51 is FF in
+both bounded captures, so a routing-volume difference is not established.
+The measured mixed RMS ratio (engine/reference ≈1.261) cannot justify a
+universal gain correction: the 60 Hz versus hardware clock difference,
+noise/envelope phase, signed channel DAC behavior, and music-channel mixing
+must first be separated. In particular, `NoiseChannel` advances its envelope
+at a sample-driven 64 Hz and resets its envelope accumulator on trigger;
+this has not been compared against the emulator's shared hardware frame
+sequencer phase. No amplitude correction or hardware-phase equivalence is
+claimed by the matching register-command trace.
