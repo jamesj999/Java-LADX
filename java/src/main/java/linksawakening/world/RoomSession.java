@@ -245,7 +245,7 @@ public final class RoomSession {
     int indoorMapPosition = -1;
     final RoomWorldState roomState;
     final RoomScrollNavigation scrollNavigation;
-    final RoomEntityBridge entityBridge = new RoomEntityBridge();
+    final RoomEntityBridge entityBridge = new RoomEntityBridge(this);
     final RoomEntityInputs entityInputs =
         new RoomEntityInputs(() -> entityBridge.entityRuntime);
 
@@ -719,19 +719,7 @@ public final class RoomSession {
     Warp consumeClearedDungeonWarp() { return roomTransitionController.consumeClearedDungeonWarp(); }
 
     /** Supplies the player fields consumed by the ROM enemy-drop resolver. */
-    public void setEnemyDropPlayerState(int maxHearts, int health, boolean activePowerUp) {
-        if (maxHearts < 0 || maxHearts > 0xFF) {
-            throw new IllegalArgumentException("Maximum hearts must be an unsigned byte: "
-                + maxHearts);
-        }
-        if (health < 0 || health > 0xFF) {
-            throw new IllegalArgumentException("Health must be an unsigned byte: " + health);
-        }
-        enemyDropMaxHearts = maxHearts;
-        enemyDropHealth = health;
-        enemyDropActivePowerUp = activePowerUp;
-        configureEnemyDropRuntime();
-    }
+    public void setEnemyDropPlayerState(int maxHearts, int health, boolean activePowerUp) { entityBridge.setEnemyDropPlayerState(maxHearts, health, activePowerUp); }
 
     public RoomEntityRuntime.LiftedEntityState liftedEntityState() {
         return entityBridge.entityRuntime == null
@@ -1153,38 +1141,15 @@ public final class RoomSession {
     }
 
     /** WorldHandler's shared sound clock persists across entity and room loads. */
-    public void advanceBoomerangSoundClock(boolean worldGameplay) {
-        if (worldGameplay) {
-            boomerangSoundCounter = (boomerangSoundCounter + 1)
-                % RoomEntityRuntime.BOOMERANG_SFX_COUNTER_PERIOD;
-        }
-        // Main may run several world frames without an entity pass during a
-        // transition. The next pass must use that clock without ticking twice.
-        boomerangSoundClockProvided = true;
-    }
+    public void advanceBoomerangSoundClock(boolean worldGameplay) { entityBridge.advanceBoomerangSoundClock(worldGameplay); }
 
-    public void tickEntities(int frameCounter) {
-        tickEntities(frameCounter, 0, 0);
-    }
+    public void tickEntities(int frameCounter) { entityBridge.tickEntities(frameCounter); }
 
-    public void tickEntities(int frameCounter, int linkEntityX, int linkEntityY) {
-        tickEntities(frameCounter, linkEntityX, linkEntityY,
-            followingLinkZ, followingLinkDirection);
-    }
+    public void tickEntities(int frameCounter, int linkEntityX, int linkEntityY) { entityBridge.tickEntities(frameCounter, linkEntityX, linkEntityY); }
 
-    public void tickEntities(int frameCounter, int linkEntityX, int linkEntityY,
-                             int linkEntityZ, int linkDirection) {
-        tickEntitiesWithProjectileEvents(frameCounter, linkEntityX, linkEntityY,
-            linkEntityZ, EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE,
-            linkDirection, false);
-    }
+    public void tickEntities(int frameCounter, int linkEntityX, int linkEntityY, int linkEntityZ, int linkDirection) { entityBridge.tickEntities(frameCounter, linkEntityX, linkEntityY, linkEntityZ, linkDirection); }
 
-    public void tickEntities(int frameCounter, int linkEntityX, int linkEntityY,
-                             int linkEntityZ, boolean linkAirborne, int linkDirection) {
-        tickEntitiesWithProjectileEvents(frameCounter, linkEntityX, linkEntityY,
-            linkEntityZ, linkAirborne, EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE,
-            linkDirection, false);
-    }
+    public void tickEntities(int frameCounter, int linkEntityX, int linkEntityY, int linkEntityZ, boolean linkAirborne, int linkDirection) { entityBridge.tickEntities(frameCounter, linkEntityX, linkEntityY, linkEntityZ, linkAirborne, linkDirection); }
 
     /**
      * Advances entities and returns the ROM projectile interactions generated
@@ -1192,253 +1157,24 @@ public final class RoomSession {
      * with a non-interactive Link state, so callers that do not provide player
      * interaction state retain their previous behavior.
      */
-    public List<EntityProjectileEvent> tickEntitiesWithProjectileEvents(
-                             int frameCounter, int linkEntityX, int linkEntityY,
-                             int linkEntityZ, int linkMotionState, int linkDirection,
-                             boolean usingShield) {
-        return tickEntitiesWithProjectileEvents(frameCounter, linkEntityX, linkEntityY,
-            linkEntityZ, linkMotionState, linkDirection, usingShield, 1, 0);
-    }
+    public List<EntityProjectileEvent> tickEntitiesWithProjectileEvents( int frameCounter, int linkEntityX, int linkEntityY, int linkEntityZ, int linkMotionState, int linkDirection, boolean usingShield) { return entityBridge.tickEntitiesWithProjectileEvents(frameCounter, linkEntityX, linkEntityY, linkEntityZ, linkMotionState, linkDirection, usingShield); }
 
-    public List<EntityProjectileEvent> tickEntitiesWithProjectileEvents(
-                             int frameCounter, int linkEntityX, int linkEntityY,
-                             int linkEntityZ, boolean linkAirborne,
-                             int linkMotionState, int linkDirection,
-                             boolean usingShield) {
-        return tickEntitiesWithProjectileEvents(frameCounter, linkEntityX, linkEntityY,
-            linkEntityZ, linkAirborne, linkMotionState, linkDirection, 0, usingShield,
-            1, 0, false, 0, 0, 0, 0, 0, 0);
-    }
+    public List<EntityProjectileEvent> tickEntitiesWithProjectileEvents( int frameCounter, int linkEntityX, int linkEntityY, int linkEntityZ, boolean linkAirborne, int linkMotionState, int linkDirection, boolean usingShield) { return entityBridge.tickEntitiesWithProjectileEvents(frameCounter, linkEntityX, linkEntityY, linkEntityZ, linkAirborne, linkMotionState, linkDirection, usingShield); }
 
     /** Advances entities with the additional ROM shield and invincibility fields. */
-    public List<EntityProjectileEvent> tickEntitiesWithProjectileEvents(
-                             int frameCounter, int linkEntityX, int linkEntityY,
-                             int linkEntityZ, int linkMotionState, int linkDirection,
-                             boolean usingShield, int shieldLevel,
-                             int invincibilityCounter) {
-        return tickEntitiesWithProjectileEvents(frameCounter, linkEntityX, linkEntityY,
-            linkEntityZ, linkMotionState, linkDirection, usingShield, shieldLevel,
-            invincibilityCounter, false, 0, 0, 0, 0);
-    }
+    public List<EntityProjectileEvent> tickEntitiesWithProjectileEvents( int frameCounter, int linkEntityX, int linkEntityY, int linkEntityZ, int linkMotionState, int linkDirection, boolean usingShield, int shieldLevel, int invincibilityCounter) { return entityBridge.tickEntitiesWithProjectileEvents(frameCounter, linkEntityX, linkEntityY, linkEntityZ, linkMotionState, linkDirection, usingShield, shieldLevel, invincibilityCounter); }
 
     /** Advances entities with Link's optional current sword collision rectangle. */
-    public List<EntityProjectileEvent> tickEntitiesWithProjectileEvents(
-                             int frameCounter, int linkEntityX, int linkEntityY,
-                             int linkEntityZ, int linkMotionState, int linkDirection,
-                             boolean usingShield, int shieldLevel,
-                             int invincibilityCounter, boolean swordCollisionActive,
-                             int swordX, int swordWidth, int swordY, int swordHeight) {
-        return tickEntitiesWithProjectileEvents(frameCounter, linkEntityX, linkEntityY,
-            linkEntityZ, linkMotionState, linkDirection, 0, usingShield, shieldLevel,
-            invincibilityCounter, swordCollisionActive, swordX, swordWidth, swordY,
-            swordHeight);
-    }
+    public List<EntityProjectileEvent> tickEntitiesWithProjectileEvents( int frameCounter, int linkEntityX, int linkEntityY, int linkEntityZ, int linkMotionState, int linkDirection, boolean usingShield, int shieldLevel, int invincibilityCounter, boolean swordCollisionActive, int swordX, int swordWidth, int swordY, int swordHeight) { return entityBridge.tickEntitiesWithProjectileEvents(frameCounter, linkEntityX, linkEntityY, linkEntityZ, linkMotionState, linkDirection, usingShield, shieldLevel, invincibilityCounter, swordCollisionActive, swordX, swordWidth, swordY, swordHeight); }
 
     /** Advances entities with Link's current ROM collision byte. */
-    public List<EntityProjectileEvent> tickEntitiesWithProjectileEvents(
-                             int frameCounter, int linkEntityX, int linkEntityY,
-                             int linkEntityZ, int linkMotionState, int linkDirection,
-                             int collisionType, boolean usingShield, int shieldLevel,
-                             int invincibilityCounter, boolean swordCollisionActive,
-                             int swordX, int swordWidth, int swordY, int swordHeight) {
-        return tickEntitiesWithProjectileEvents(frameCounter, linkEntityX, linkEntityY,
-            linkEntityZ, linkMotionState, linkDirection, collisionType, usingShield,
-            shieldLevel, invincibilityCounter, swordCollisionActive, swordX, swordWidth,
-            swordY, swordHeight, 0, 0);
-    }
+    public List<EntityProjectileEvent> tickEntitiesWithProjectileEvents( int frameCounter, int linkEntityX, int linkEntityY, int linkEntityZ, int linkMotionState, int linkDirection, int collisionType, boolean usingShield, int shieldLevel, int invincibilityCounter, boolean swordCollisionActive, int swordX, int swordWidth, int swordY, int swordHeight) { return entityBridge.tickEntitiesWithProjectileEvents(frameCounter, linkEntityX, linkEntityY, linkEntityZ, linkMotionState, linkDirection, collisionType, usingShield, shieldLevel, invincibilityCounter, swordCollisionActive, swordX, swordWidth, swordY, swordHeight); }
 
     /** Advances entities with the current Link speed bytes for enemy-bomb recoil. */
-    public List<EntityProjectileEvent> tickEntitiesWithProjectileEvents(
-                             int frameCounter, int linkEntityX, int linkEntityY,
-                             int linkEntityZ, int linkMotionState, int linkDirection,
-                             int collisionType, boolean usingShield, int shieldLevel,
-                             int invincibilityCounter, boolean swordCollisionActive,
-                             int swordX, int swordWidth, int swordY, int swordHeight,
-                             int linkSpeedX, int linkSpeedY) {
-        return tickEntitiesWithProjectileEvents(frameCounter, linkEntityX, linkEntityY,
-            linkEntityZ, false, linkMotionState, linkDirection, collisionType, usingShield,
-            shieldLevel, invincibilityCounter, swordCollisionActive, swordX, swordWidth,
-            swordY, swordHeight, linkSpeedX, linkSpeedY);
-    }
+    public List<EntityProjectileEvent> tickEntitiesWithProjectileEvents( int frameCounter, int linkEntityX, int linkEntityY, int linkEntityZ, int linkMotionState, int linkDirection, int collisionType, boolean usingShield, int shieldLevel, int invincibilityCounter, boolean swordCollisionActive, int swordX, int swordWidth, int swordY, int swordHeight, int linkSpeedX, int linkSpeedY) { return entityBridge.tickEntitiesWithProjectileEvents(frameCounter, linkEntityX, linkEntityY, linkEntityZ, linkMotionState, linkDirection, collisionType, usingShield, shieldLevel, invincibilityCounter, swordCollisionActive, swordX, swordWidth, swordY, swordHeight, linkSpeedX, linkSpeedY); }
 
     /** Rich live path with Link's explicit airborne state. */
-    public List<EntityProjectileEvent> tickEntitiesWithProjectileEvents(
-                             int frameCounter, int linkEntityX, int linkEntityY,
-                             int linkEntityZ, boolean linkAirborne,
-                             int linkMotionState, int linkDirection,
-                             int collisionType, boolean usingShield, int shieldLevel,
-                             int invincibilityCounter, boolean swordCollisionActive,
-                             int swordX, int swordWidth, int swordY, int swordHeight,
-                             int linkSpeedX, int linkSpeedY) {
-        followingLinkX = linkEntityX & 0xFF;
-        followingLinkY = linkEntityY & 0xFF;
-        followingLinkZ = linkEntityZ & 0xFF;
-        followingLinkDirection = linkDirection & 0xFF;
-        currentLinkMotionState = linkMotionState & 0xFF;
-        shouldGetLostInMysteriousWoods = false;
-        if (activeRoom == null || entityBridge.entityRuntime == null) {
-            return List.of();
-        }
-        if (!boomerangSoundClockProvided) {
-            advanceBoomerangSoundClock(true);
-        }
-        entityBridge.entityRuntime.setBoomerangSoundCounterForFrame(boomerangSoundCounter);
-        boomerangSoundClockProvided = false;
-        indoorTorchPaletteEffect.tick(entityInputs.entityDialogActive, false,
-            currentLinkMotionState, activeRoom.mapId());
-        entityBridge.entityRuntime.setTorchPaletteTransitionState(indoorTorchPaletteEffect.targetAddress(),
-            indoorTorchPaletteEffect.transitionActive());
-        copyIndoorTorchPalettesToActiveRoom();
-        tickOcarinaAnimationHandler();
-        entityBridge.entityRuntime.setSwitchBlockAnimationActive(
-            SwitchBlockAnimation.isAnimating(switchableObjectAnimationStage));
-        entityBridge.entityRuntime.setDialogActive(entityInputs.entityDialogActive);
-        entityBridge.entityRuntime.setTalkState(
-            entityInputs.entityInventoryAppearing, entityInputs.entityDialogCooldown, entityInputs.entityWindowY);
-        entityBridge.entityRuntime.setDialogAskSelectionIndex(entityInputs.entityDialogAskSelectionIndex);
-        entityBridge.entityRuntime.setActiveMusic(entityInputs.entityMusicActive);
-        entityBridge.entityRuntime.setBowWowState(bowWowState);
-        entityBridge.entityRuntime.setLinkVelocityZ(entityInputs.entityLinkVelocityZ);
-        entityBridge.entityRuntime.setOwlInstrumentFlags(
-            Byte.toUnsignedInt(roomState.dungeonProgressFlags[0]),
-            Byte.toUnsignedInt(roomState.dungeonProgressFlags[1]));
-        entityBridge.entityRuntime.setActionButtonsHeld(entityInputs.actionButtonAHeld, entityInputs.actionButtonBHeld);
-        int statueMapId = activeRoom.mapId();
-        entityBridge.entityRuntime.setOwlStatueDialogId(
-            activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD
-                && (statueMapId < 8 || statueMapId == 0xFF)
-                ? owlStatueDialogResolver.globalDialogId(statueMapId, activeRoom.roomId(),
-                    roomState.dungeonItemState.currentFlag(DungeonItemState.STONE_BEAK_INDEX) != 0)
-                : -1);
-        entityBridge.entityRuntime.setJoypadHeld(entityInputs.joypadHeld);
-        entityBridge.entityRuntime.setPressedButtonsMask(entityInputs.entityPressedButtonsMask);
-        entityBridge.entityRuntime.setPowerBraceletButtonHeld(entityInputs.powerBraceletButtonHeld);
-        entityBridge.entityRuntime.setBombButtonHeld(entityInputs.bombButtonHeld);
-        entityBridge.entityRuntime.setLiftedLinkC13B(followingEntityYOffset);
-        entityBridge.entityRuntime.setBooBuddyTriggerCount(roomTriggerCount);
-        updateWitchEnvironment();
-        entityBridge.entityRuntime.setOcarinaPlayback(ocarinaPlaybackCountdown,
-            ocarinaSongFlags, selectedSongIndex, ocarinaAnimationCounter,
-            ocarinaAnimationPhase);
-        entityBridge.entityRuntime.setGoldenLeavesCount(entityInputs.entityGoldenLeavesCount);
-        entityBridge.entityRuntime.setSecretSeashellPegasusCollisionState(
-            entityInputs.secretSeashellScreenShakeActive, entityInputs.secretSeashellPegasusCollisionActive,
-            entityInputs.secretSeashellPegasusCollisionX, entityInputs.secretSeashellPegasusCollisionY);
-        // rLY is not a meaningful value in the host renderer. Keep the
-        // non-emulator policy explicit while preserving the ROM seed update.
-        entityRandomByteSource.beginFrame(frameCounter & 0xFF, 0);
-        if (pendingShovelDrop != null) {
-            PendingShovelDrop drop = pendingShovelDrop;
-            pendingShovelDrop = null;
-            entityBridge.entityRuntime.spawnShovelDrop(
-                drop.objectLeft(), drop.objectTop(), drop.linkEntityX(), drop.linkEntityY(),
-                drop.allowDrop());
-        }
-        List<EntityProjectileEvent> events = entityBridge.entityRuntime.tick(new EntityFrameContext(
-            frameCounter, linkEntityX, linkEntityY, collisionType & 0xFF,
-            entityRandomByteSource,
-            this::entityBackgroundCollision, this::pairoddProjectileObjectCollision,
-            followingLinkPositionHistory, followingLinkZ, linkAirborne,
-            followingLinkDirection, followingEntityYOffset,
-            new EnemyProjectileCollision.LinkState(
-                linkEntityX, linkEntityY, linkEntityZ, linkMotionState,
-                romDirectionForProjectileCollision(linkDirection), usingShield, shieldLevel,
-                invincibilityCounter), swordCollisionActive, swordX, swordWidth,
-            swordY, swordHeight, linkSpeedX, linkSpeedY));
-        for (DungeonWarpRequest request
-            : entityBridge.entityRuntime.consumePendingDungeonWarpRequests()) {
-            linksawakening.world.entity.event.WarpDestination destination = request.destination();
-            pendingDungeonWarp = new Warp(Warp.CATEGORY_INDOOR, destination.mapId(),
-                destination.roomId(), destination.x(), destination.y(), 0x34);
-        }
-        shouldGetLostInMysteriousWoods = entityBridge.entityRuntime.shouldGetLostInMysteriousWoods();
-        int runtimeBowWowState = entityBridge.entityRuntime.bowWowState();
-        if (runtimeBowWowState != bowWowState) {
-            bowWowState = runtimeBowWowState;
-            followingNpcState = new FollowingNpcState(
-                followingNpcState.roosterFollowing(),
-                followingNpcState.ghostFollowingState(),
-                followingNpcState.marinFollowing(), runtimeBowWowState == 0x01,
-                followingNpcState.instrument4Flags(),
-                followingNpcState.powerBraceletLevel(), followingNpcState.db10());
-            // The rescue/return handler changes the existing entity in place.
-            // CreateFollowingNpcEntity runs on room entry, not on this quest
-            // flag write: respawning here teleports BowWow onto Link and
-            // reconstructs every other entity's runtime state.
-        }
-        if (ocarinaPlaybackCountdown > 0) {
-            ocarinaPlaybackCountdown--;
-            if (ocarinaPlaybackCountdown == 0) {
-                finishOcarinaPlayback();
-            }
-        }
-        List<BombExplosionEvent> bombExplosionEvents = entityBridge.entityRuntime.consumeBombExplosionEvents();
-        entityBridge.pendingBombExplosionEvents.clear();
-        entityBridge.pendingBombExplosionEvents.addAll(bombExplosionEvents);
-        List<ChestRewardEvent> chestRewards =
-            entityBridge.entityRuntime.consumePendingChestRewardEvents();
-        for (ChestRewardEvent reward : chestRewards) {
-            if (reward.itemType() >= ChestContentsTable.CHEST_MAP
-                && reward.itemType() <= ChestContentsTable.CHEST_SMALL_KEY) {
-                roomState.dungeonItemState.incrementCurrentFlag(reward.itemType());
-            }
-        }
-        entityBridge.pendingChestRewardEvents.addAll(chestRewards);
-        harvestKeyQuicksandEvents();
-        harvestKeyRewardEvents();
-        harvestSlimeKeyRewardEvents();
-        harvestThrownRoomEventCollisions();
-        harvestHeartContainerRewards();
-        entityBridge.pendingMadamMeowMeowFullHealRequests.addAll(
-            entityBridge.entityRuntime.consumePendingMadamMeowMeowFullHealRequests());
-        harvestSwordPickupRewards();
-        harvestToadstoolRewards();
-        harvestInstrumentRewards();
-        harvestInstrumentCompletions();
-        harvestRichardProgressEvents();
-        harvestWitchEvents();
-        harvestOwlEventCompletions();
-        for (RoomStatusPersistenceRequest request
-            : entityBridge.entityRuntime.consumePendingRoomStatusPersistenceRequests()) {
-            if (activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
-                roomState.overworldRoomStatus[activeRoom.roomId()] |= (byte) request.roomStatusMask();
-            }
-            tarinFlag = request.tarinFlag();
-        }
-        if (entityBridge.entityRuntime.consumePendingSwitchBlockAnimationRequest()
-            && switchableObjectAnimationStage == 0) {
-            switchableObjectAnimationStage = 0x01;
-        }
-        enemyDropCounters = entityBridge.entityRuntime.enemyDropCounters();
-        if (transientVfxSystem != null) {
-            for (TransientVfxRequest request
-                : entityBridge.entityRuntime.transientVfxRequests()) {
-                transientVfxSystem.spawn(request.type(), request.worldX(), request.worldY(),
-                    request.variant());
-            }
-        }
-        int clearedMask = entityBridge.entityRuntime.consumePendingClearedEntityMask();
-        if (clearedMask != 0) {
-            recentRoomEntityClears.addMask(activeRoom.roomId(), clearedMask);
-        }
-        int roomStatusMask = entityBridge.entityRuntime.consumePendingRoomStatusMask();
-        if (roomStatusMask != 0 && activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD) {
-            byte[] status = indoorStatusTableForMap(activeRoom.mapId());
-            status[activeRoom.roomId()] |= (byte) roomStatusMask;
-            entityBridge.entityRuntime.setEntityRoomStatus(
-                Byte.toUnsignedInt(status[activeRoom.roomId()]));
-        }
-        applyHookshotBridgeUpdates(entityBridge.entityRuntime.hookshotBridgeUpdates());
-        activeRoom.replaceEntities(entityBridge.entityRuntime.snapshot());
-        applyBombObjectInteractions(bombExplosionEvents);
-        applyBoomerangObjectInteractions(entityBridge.entityRuntime.boomerangObjectRequests());
-        applyMagicRodObjectInteractions(entityBridge.entityRuntime.magicRodObjectRequests());
-        applyMagicPowderObjectInteractions(entityBridge.entityRuntime.magicPowderObjectRequests());
-        activeRoom.replaceEntities(entityBridge.entityRuntime.snapshot());
-        tickPushedBlockMotion(linkEntityX, linkEntityY);
-        tickRoomEvent(linkEntityX, linkEntityY);
-        return events;
-    }
+    public List<EntityProjectileEvent> tickEntitiesWithProjectileEvents( int frameCounter, int linkEntityX, int linkEntityY, int linkEntityZ, boolean linkAirborne, int linkMotionState, int linkDirection, int collisionType, boolean usingShield, int shieldLevel, int invincibilityCounter, boolean swordCollisionActive, int swordX, int swordWidth, int swordY, int swordHeight, int linkSpeedX, int linkSpeedY) { return entityBridge.tickEntitiesWithProjectileEvents(frameCounter, linkEntityX, linkEntityY, linkEntityZ, linkAirborne, linkMotionState, linkDirection, collisionType, usingShield, shieldLevel, invincibilityCounter, swordCollisionActive, swordX, swordWidth, swordY, swordHeight, linkSpeedX, linkSpeedY); }
 
     /** Mirrors the countdown-zero branches of LinkPlayingOcarinaHandler. */
     void finishOcarinaPlayback() { roomTransitionController.finishOcarinaPlayback(); }
@@ -1470,19 +1206,7 @@ public final class RoomSession {
 
     /** Returns entity-$61 WarpState3 Link writes and clears supported session actions. */
     public List<WarpLinkStateRequest>
-            consumeWarpLinkStateRequests() {
-        List<WarpLinkStateRequest> requests = entityBridge.entityRuntime == null
-            ? List.of() : entityBridge.entityRuntime.consumePendingWarpLinkStateRequests();
-        if (!requests.isEmpty()) {
-            ocarinaPlaybackCountdown = 0;
-            ocarinaAnimationCounter = 0;
-            ocarinaAnimationPhase = 0;
-            entityInputs.entityDialogActive = false;
-            entityInputs.entityDialogCooldown = 0;
-            entityInputs.entityInventoryAppearing = false;
-        }
-        return requests;
-    }
+    consumeWarpLinkStateRequests() { return entityBridge.consumeWarpLinkStateRequests(); }
 
     /** Returns and clears Hinox grab/throw writes for the last entity tick. */
     public List<HinoxLinkEffectRequest>
@@ -1495,11 +1219,7 @@ public final class RoomSession {
     /** Returns and clears a motion block emitted by a world handler rather than an entity. */
     public void setFreeMovementMode(boolean enabled) { entityBridge.setFreeMovementMode(enabled); }
 
-    public boolean consumeWorldLinkMotionBlockRequest() {
-        boolean pending = worldLinkMotionBlockPending;
-        worldLinkMotionBlockPending = false;
-        return pending;
-    }
+    public boolean consumeWorldLinkMotionBlockRequest() { return entityBridge.consumeWorldLinkMotionBlockRequest(); }
 
     public List<LinkFacingRequest> consumeLinkFacingRequests() { return entityBridge.consumeLinkFacingRequests(); }
 
@@ -1569,24 +1289,7 @@ public final class RoomSession {
     public List<BombExplosionEvent> consumeBombExplosionEvents() { return entityBridge.consumeBombExplosionEvents(); }
 
     /** Advances the ROM's VBlank tile path, including switch blocks. */
-    public void tickGameplayVBlank() {
-        if (SwitchBlockAnimation.isAnimating(switchableObjectAnimationStage)) {
-            SwitchBlockAnimation.Step step = SwitchBlockAnimation.advance(
-                switchableObjectAnimationStage, switchBlocksState);
-            switchBlocksState = step.switchBlocksState();
-            switchableObjectAnimationStage = step.nextStage();
-            synchronizeSwitchBlockCollisionState();
-            if (step.tileCopy() != null) {
-                gpu.copySwitchBlockTiles(romData,
-                    step.tileCopy().sourceOffset(), step.tileCopy().destinationTile());
-            }
-            // AnimateTiles returns after UpdateSwitchBlockTiles while the
-            // switch animation is active, so ordinary animated BG tiles wait
-            // until the next idle VBlank.
-            return;
-        }
-        gpu.tickAnimatedTiles(romData);
-    }
+    public void tickGameplayVBlank() { entityBridge.tickGameplayVBlank(); }
 
     /** Link uses Java's down/up/left/right order; projectile ROM tables use right/left/up/down. */
     static int romDirectionForProjectileCollision(int linkDirection) {
@@ -1603,71 +1306,13 @@ public final class RoomSession {
     }
 
     /** Applies the active room's ROM enemy/sword collision pass. */
-    public List<EntityCombatEvent> resolveEntityCombat(int frameCounter,
-                                                       int linkEntityX,
-                                                       int linkEntityY,
-                                                       boolean linkAirborne,
-                                                       boolean linkInteractive,
-                                                       boolean swordCollisionActive,
-                                                       int swordX,
-                                                       int swordWidth,
-                                                       int swordY,
-                                                       int swordHeight) {
-        return resolveEntityCombat(frameCounter, linkEntityX, linkEntityY, linkAirborne,
-            0, linkInteractive, swordCollisionActive, swordX, swordWidth, swordY, swordHeight,
-            EnemyAttackContext.standard());
-    }
+    public List<EntityCombatEvent> resolveEntityCombat(int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne, boolean linkInteractive, boolean swordCollisionActive, int swordX, int swordWidth, int swordY, int swordHeight) { return entityBridge.resolveEntityCombat(frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive, swordCollisionActive, swordX, swordWidth, swordY, swordHeight); }
 
-    public List<EntityCombatEvent> resolveEntityCombat(int frameCounter,
-                                                       int linkEntityX,
-                                                       int linkEntityY,
-                                                       boolean linkAirborne,
-                                                       boolean linkInteractive,
-                                                       boolean swordCollisionActive,
-                                                       int swordX,
-                                                       int swordWidth,
-                                                       int swordY,
-                                                       int swordHeight,
-                                                       EnemyAttackContext attackContext) {
-        return resolveEntityCombat(frameCounter, linkEntityX, linkEntityY, linkAirborne,
-            0, linkInteractive, swordCollisionActive, swordX, swordWidth, swordY, swordHeight,
-            attackContext);
-    }
+    public List<EntityCombatEvent> resolveEntityCombat(int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne, boolean linkInteractive, boolean swordCollisionActive, int swordX, int swordWidth, int swordY, int swordHeight, EnemyAttackContext attackContext) { return entityBridge.resolveEntityCombat(frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive, swordCollisionActive, swordX, swordWidth, swordY, swordHeight, attackContext); }
 
-    public List<EntityCombatEvent> resolveEntityCombat(int frameCounter,
-                                                       int linkEntityX,
-                                                       int linkEntityY,
-                                                       boolean linkAirborne,
-                                                       int linkVerticalVelocity,
-                                                       boolean linkInteractive,
-                                                       boolean swordCollisionActive,
-                                                       int swordX,
-                                                       int swordWidth,
-                                                       int swordY,
-                                                       int swordHeight,
-                                                       EnemyAttackContext attackContext) {
-        if (activeRoom == null || entityBridge.entityRuntime == null) {
-            return List.of();
-        }
-        List<EntityCombatEvent> events = entityBridge.entityRuntime.resolveCombat(
-            frameCounter, linkEntityX, linkEntityY, linkAirborne, linkVerticalVelocity,
-            linkInteractive, swordCollisionActive, swordX, swordWidth, swordY, swordHeight,
-            attackContext);
-        activeRoom.replaceEntities(entityBridge.entityRuntime.snapshot());
-        return events;
-    }
+    public List<EntityCombatEvent> resolveEntityCombat(int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne, int linkVerticalVelocity, boolean linkInteractive, boolean swordCollisionActive, int swordX, int swordWidth, int swordY, int swordHeight, EnemyAttackContext attackContext) { return entityBridge.resolveEntityCombat(frameCounter, linkEntityX, linkEntityY, linkAirborne, linkVerticalVelocity, linkInteractive, swordCollisionActive, swordX, swordWidth, swordY, swordHeight, attackContext); }
 
-    public int clearEntity(int slot) {
-        if (activeRoom == null || entityBridge.entityRuntime == null) {
-            return 0;
-        }
-        int mask = entityBridge.entityRuntime.clearEntity(slot);
-        if (mask != 0) {
-            recentRoomEntityClears.addMask(activeRoom.roomId(), mask);
-        }
-        activeRoom.replaceEntities(entityBridge.entityRuntime.snapshot());
-        return mask;
-    }
+    public int clearEntity(int slot) { return entityBridge.clearEntity(slot); }
 
     /**
      * Applies the ROM pickup collision cadence to the active room entities.
@@ -1675,66 +1320,11 @@ public final class RoomSession {
      * and persistent entity state stay separate.
      */
     /** Link coordinates use ROM entity origins, not sprite top-left; direction uses Link constants. */
-    public EntityPickupEvent collectEntityIfNeeded(int frameCounter,
-                                                   int linkEntityX,
-                                                   int linkEntityY,
-                                                   boolean linkAirborne,
-                                                   boolean linkInteractive) {
-        return collectEntityIfNeeded(frameCounter, linkEntityX, linkEntityY, linkAirborne,
-            linkInteractive, followingLinkDirection, followingLinkZ);
-    }
+    public EntityPickupEvent collectEntityIfNeeded(int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne, boolean linkInteractive) { return entityBridge.collectEntityIfNeeded(frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive); }
 
-    public EntityPickupEvent collectEntityIfNeeded(int frameCounter,
-                                                   int linkEntityX,
-                                                   int linkEntityY,
-                                                   boolean linkAirborne,
-                                                   boolean linkInteractive,
-                                                   int linkDirection) {
-        return collectEntityIfNeeded(frameCounter, linkEntityX, linkEntityY, linkAirborne,
-            linkInteractive, linkDirection, followingLinkZ);
-    }
+    public EntityPickupEvent collectEntityIfNeeded(int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne, boolean linkInteractive, int linkDirection) { return entityBridge.collectEntityIfNeeded(frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive, linkDirection); }
 
-    public EntityPickupEvent collectEntityIfNeeded(int frameCounter,
-                                                   int linkEntityX,
-                                                   int linkEntityY,
-                                                   boolean linkAirborne,
-                                                   boolean linkInteractive,
-                                                   int linkDirection,
-                                                   int linkZ) {
-        if (activeRoom == null || entityBridge.entityRuntime == null) {
-            return null;
-        }
-        followingLinkZ = linkZ & 0xFF;
-        followingLinkDirection = linkDirection & 0xFF;
-        EntityPickupEvent event = entityBridge.entityRuntime.collectIfNeeded(
-            frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive,
-            linkDirection, linkZ);
-        if (event == null) {
-            return null;
-        }
-        if (event.persistentClearMask() != 0) {
-            recentRoomEntityClears.addMask(
-                activeRoom.roomId(), event.persistentClearMask());
-        }
-        if (event.type() == 0x30 && activeRoom.roomId() == 0x7C
-            && activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD) {
-            // PickDroppableKey sets the Angler's Tunnel source room flag before
-            // it starts the held-item transition.
-            roomState.indoorARoomStatus[0x69] |= 0x10;
-        }
-        if (event.type() == ENTITY_DROPPABLE_SECRET_SEASHELL) {
-            // PickSecretSeashell opens Dialog0EF and completes the room after
-            // the shared pickup collision has cleared the source entity.
-            markActiveRoomCompleted();
-            entityBridge.pendingRoomDialogRequests.add(new DialogRequest(0, 0xEF));
-            entityBridge.pendingRoomEntityEvents.add(new EntityCombatEvent(
-                event.slot(), event.type(), 0, false,
-                EntityCombatEvent.SoundChannel.WAVE, 0x01));
-        }
-        harvestKeyRewardEvents();
-        activeRoom.replaceEntities(entityBridge.entityRuntime.snapshot());
-        return event;
-    }
+    public EntityPickupEvent collectEntityIfNeeded(int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne, boolean linkInteractive, int linkDirection, int linkZ) { return entityBridge.collectEntityIfNeeded(frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive, linkDirection, linkZ); }
 
     public RoomBoundaryState boundaryState(int linkX, int linkY) {
         return boundaryState(linkX, linkY, false);
