@@ -108,3 +108,8 @@ AnimatedTiles
 CharacterVfxTiles
 TitleDXTilesCGB
 TitleDXOAMTiles
+
+# Color Dungeon GPU uploads.
+ColorDungeonWallsTilesPointers
+data_020_45EA
+ColorDungeonTiles
