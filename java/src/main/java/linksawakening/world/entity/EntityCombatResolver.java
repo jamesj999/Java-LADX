@@ -449,7 +449,12 @@ final class EntityCombatResolver {
             }
             EntityCombatEvent.LinkCollisionResponse linkCollisionResponse =
                 EntityCombatEvent.LinkCollisionResponse.NONE;
-            if (linkDamage > 0 && !swordHit
+            // AnimateRoamingEnemy calls the body collision before the sword
+            // pass ($03:585B/$6E28). Hitting a plain roaming enemy does not
+            // cancel the recoil that its body contact already wrote.
+            boolean bodyRecoilBeforeSword = entity.type() == runtime.ENTITY_OCTOROK
+                || entity.type() == runtime.ENTITY_MOBLIN;
+            if (linkDamage > 0 && (!swordHit || bodyRecoilBeforeSword)
                 && RoomEntityCombatRules.usesStandardLinkContactResponse(entity.type())) {
                 EnemyRecoilMotion.Vector vector = EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
                     entity.x(), entity.y(), entity.z(), linkEntityX, linkEntityY, 0x14);
