@@ -40,3 +40,5 @@ See [status](docs/reconstruction-roadmap.md) for verified scope and open work.
 Keep commits small and clear. Follow the user’s branch and commit instructions;
 do not push or merge unless authorized. Preserve unrelated concurrent work.
 Do not turn historical plans into current implementation requirements.
+
+See [architecture](docs/ARCHITECTURE.md) for package boundaries and frame lifecycle.
