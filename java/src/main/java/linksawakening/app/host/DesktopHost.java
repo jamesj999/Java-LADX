@@ -9,13 +9,6 @@ import static org.lwjgl.glfw.GLFW.*;
 
 /** Owns native window, key callback and presentation resources. */
 public final class DesktopHost implements Host {
-    @Override public linksawakening.audio.music.FrameMusicPlayer createMusic(byte[] rom) {
-        var apu = new linksawakening.audio.apu.GameBoyApu(48_000);
-        var output = new linksawakening.audio.openal.OpenAlMusicPlayer(
-            new linksawakening.audio.music.MusicDriver(rom, apu), apu);
-        output.setLoopEnabled(false);
-        return output;
-    }
     @Override public linksawakening.gameplay.PcmSoundOutput createPcmOutput() {
         return new linksawakening.audio.openal.OpenAlPcmSoundOutput();
     }

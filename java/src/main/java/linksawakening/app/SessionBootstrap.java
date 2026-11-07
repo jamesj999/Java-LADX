@@ -204,10 +204,15 @@ public final class SessionBootstrap {
         inputConfig = config.inputConfig();
         inputState = new InputState();
         playerState = new PlayerState();
-        initMusicSystem(headless);
         dialogSoundOutput = host.createPcmOutput();
-        dialogSoundSink = new SfxDialogSoundSink(dialogSoundOutput);
-        gameplaySoundSink = new SfxGameplaySoundSink(romData, dialogSoundOutput);
+        initMusicSystem(headless);
+        var audio = (linksawakening.audio.music.FrameAudioPlayer) musicPlayer;
+        var catalog = new linksawakening.audio.sfx.SoundEffectPlayer(
+            new linksawakening.audio.apu.GameBoyApu(48_000), romData).catalog();
+        var dialogEffects = linksawakening.gameplay.DialogSoundEffectMap.fromCatalog(catalog);
+        var gameplayEffects = linksawakening.gameplay.GameplaySoundEffectMap.fromCatalog(catalog);
+        dialogSoundSink = event -> dialogEffects.resolve(event).ifPresent(audio::playSoundEffect);
+        gameplaySoundSink = event -> gameplayEffects.resolve(event).ifPresent(audio::playSoundEffect);
         InventoryTilemapLoader tilemapLoader = InventoryTilemapLoader.loadFromRom(romData);
         inventoryMenu = new InventoryMenu(tilemapLoader, playerState, gameplaySoundSink, romData);
         inventoryController = new InventoryController(inputState, inputConfig, inventoryMenu);
@@ -483,7 +488,7 @@ public final class SessionBootstrap {
 
     private void initMusicSystem(boolean headless) {
         MusicCatalog musicCatalog = MusicCatalog.fromRom(romData);
-        musicPlayer = host.createMusic(romData);
+        musicPlayer = new linksawakening.audio.music.FrameAudioPlayer(romData, 48_000, dialogSoundOutput);
         // ROM background tracks contain their own loop commands. Host-level
         // restarting would also loop finite fanfares such as $1B forever,
         // preventing wActiveMusicIndex-gated acquisition handlers advancing.
