@@ -176,7 +176,12 @@ public final class GameFrameSceneBuilder {
                     ? state.cutsceneManager().sprites()
                     : List.of();
             if (fileMenu != null || snapshot != null || state.cutsceneManager() != null) {
-                layers.add(new CutsceneSpriteRenderLayer(sprites, objectPalettes));
+                var entries = new java.util.ArrayList<SpriteListRenderLayer.Sprite>();
+                for (IntroSprite sprite : sprites) {
+                    entries.add(new SpriteListRenderLayer.Sprite(sprite.tileIndex(), sprite.x(), sprite.y(),
+                        sprite.paletteIndex(), sprite.flipX(), sprite.flipY(), sprite.height()));
+                }
+                layers.add(new SpriteListRenderLayer(entries, objectPalettes));
             }
         }
     }

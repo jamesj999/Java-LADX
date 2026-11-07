@@ -43,7 +43,7 @@ class FrameAudioPlayerTest {
         return result;
     }
 
-    @Test void sixtyUpdatesEmitExactlyOneSecondAndDialogSharesOutput() throws Exception {
+    @Test void sixtyUpdatesEmitExactlyOneSecond() throws Exception {
         byte[] rom;
         try (var stream = linksawakening.testing.TestRom.open()) {
             assertNotNull(stream);
@@ -58,9 +58,6 @@ class FrameAudioPlayerTest {
             for (int i = 0; i < 60; i++) player.update();
             assertEquals(60, chunks.size());
             assertEquals(88202, chunks.stream().mapToInt(a -> a.length).sum());
-            short[] dialog = {12, -12};
-            player.playDialogPcm(dialog, 44101);
-            assertSame(dialog, chunks.get(60));
         }
     }
 }

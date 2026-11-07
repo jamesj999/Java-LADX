@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.function.BooleanSupplier;
 
 /** Port of {@code UseShovel} and the Link-side shovel timer in bank $02. */
-public final class Shovel implements EquippedItem {
+public final class Shovel implements EquipmentItem {
 
     public static final int ACTIVE_TIMER_END = 0x18;
 

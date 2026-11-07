@@ -343,7 +343,7 @@ final class LinkAnimator {
             return;
         }
         Tile[] composedTiles = new Tile[4];
-        int animationState = link.resolveAnimationState();
+        int animationState = resolveAnimationState();
         link.spriteSheet.resolveTiles(animationState, composedTiles);
 
         boolean leftFlipX = link.spriteSheet.leftHalfFlipX(animationState);

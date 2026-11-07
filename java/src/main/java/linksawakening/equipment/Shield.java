@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.function.BooleanSupplier;
 
 /** Port of the pressed-button {@code UseShield} sound boundary. */
-public final class Shield implements EquippedItem {
+public final class Shield implements EquipmentItem {
     private final GameplaySoundSink soundSink;
     private final BooleanSupplier itemUseAllowed;
 

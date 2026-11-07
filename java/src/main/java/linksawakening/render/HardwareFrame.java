@@ -230,14 +230,6 @@ public final class HardwareFrame implements RenderLayer, OamSink {
                                        int[] palette, boolean behind) {
         append(tile, x, y, fx, fy, palette, behind);
     }
-    /** Compatibility adapter: slot metadata is unused until RomOamAllocator exists. */
-    @Deprecated
-    public void objectTile(Tile tile, int x, int y, boolean flipX, boolean flipY,
-                           int[] palette, int oamIndex, boolean behindBackground) {
-        if (oamIndex < 0 || oamIndex == Integer.MAX_VALUE) throw new IllegalArgumentException("OAM index");
-        oam.add(new ObjectTile(tile, x, y, flipX, flipY, palette, oam.size(), behindBackground, submittingLayer, y, paletteTransform));
-    }
-
     @Override public void render(RenderContext context) {
         compose(context.buffer());
     }

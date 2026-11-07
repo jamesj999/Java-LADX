@@ -23,7 +23,7 @@ final class HardwareFrameTest {
             for (boolean behind : new boolean[]{false, true}) for (int index : new int[]{0, 1}) {
                 HardwareFrame frame = new HardwareFrame(enabled);
                 frame.backgroundTile(solid(index), 0, 0, false, false, PALETTE, bgPriority);
-                frame.objectTile(solid(2), 0, 0, false, false, PALETTE, 0, behind);
+                frame.append(solid(2), 0, 0, false, false, PALETTE, behind);
                 assertEquals(enabled && index != 0 && (bgPriority || behind) ? PALETTE[index] : 33,
                     pixel(frame, 0, 0));
             }
@@ -31,10 +31,10 @@ final class HardwareFrameTest {
     @Test void transparentObjectDoesNotClaimPriorityButHiddenObjectDoes() {
         HardwareFrame frame = new HardwareFrame(true);
         frame.backgroundTile(solid(1), 0, 0, false, false, PALETTE, false);
-        frame.objectTile(solid(2), 0, 0, false, false, PALETTE, 2, false);
-        frame.objectTile(solid(0), 0, 0, false, false, PALETTE, 0, false);
+        frame.append(solid(2), 0, 0, false, false, PALETTE, false);
+        frame.append(solid(0), 0, 0, false, false, PALETTE, false);
         assertEquals(33, pixel(frame, 0, 0));
-        frame.objectTile(solid(3), 0, 0, false, false, PALETTE, 1, true);
+        frame.append(solid(3), 0, 0, false, false, PALETTE, true);
         assertEquals(22, pixel(frame, 0, 0));
     }
     @Test void windowColorZeroReplacesBackgroundAndClearsItsPriority() {
@@ -42,7 +42,7 @@ final class HardwareFrameTest {
         frame.backgroundTile(solid(1), 0, 0, false, false, PALETTE, true);
         frame.backgroundTile(solid(0), 0, 0, false, false, PALETTE, false);
         assertEquals(11, pixel(frame, 0, 0));
-        frame.objectTile(solid(2), 0, 0, false, false, PALETTE, 0, true);
+        frame.append(solid(2), 0, 0, false, false, PALETTE, true);
         assertEquals(33, pixel(frame, 0, 0));
     }
     @Test void flipsAndClipsAtAllFourEdges() {
@@ -50,7 +50,7 @@ final class HardwareFrameTest {
             Tile tile = solid(0);
             tile.setPixel(flipX ? 7 : 0, flipY ? 7 : 0, 3);
             HardwareFrame frame = new HardwareFrame(true);
-            frame.objectTile(tile, 0, 0, flipX, flipY, PALETTE, 0, false);
+            frame.append(tile, 0, 0, flipX, flipY, PALETTE, false);
             assertEquals(44, pixel(frame, 0, 0));
             for (int[] origin : new int[][]{{-7,-7},{159,143}}) {
                 frame = new HardwareFrame(true);

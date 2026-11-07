@@ -3,10 +3,9 @@ package linksawakening.entity;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import linksawakening.equipment.EquippedItem;
+import linksawakening.equipment.EquipmentItem;
 import linksawakening.equipment.Hookshot;
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.equipment.Ocarina;
@@ -2172,9 +2171,7 @@ final class LinkTest {
     }
 
     private static int resolvedAnimationState(Link link) throws Exception {
-        Method method = Link.class.getDeclaredMethod("resolveAnimationState");
-        method.setAccessible(true);
-        return (Integer) method.invoke(link);
+        return link.romAnimationState();
     }
 
     private static int javaDirectionForRomDirection(int romDirection) {
@@ -2275,14 +2272,14 @@ final class LinkTest {
                                     int blockRow, int blockColumn, int probeX, int probeY) {
     }
 
-    private static final class BlockingItem implements EquippedItem {
+    private static final class BlockingItem implements EquipmentItem {
         @Override
         public boolean blocksMotion() {
             return true;
         }
     }
 
-    private static final class RecordingRenderItem implements EquippedItem {
+    private static final class RecordingRenderItem implements EquipmentItem {
         private int renderCalls;
 
         @Override
@@ -2306,7 +2303,7 @@ final class LinkTest {
         }
     }
 
-    private static final class AnimationOverrideItem implements EquippedItem {
+    private static final class AnimationOverrideItem implements EquipmentItem {
         private final int animationState;
 
         private AnimationOverrideItem(int animationState) {
