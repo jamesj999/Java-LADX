@@ -16,17 +16,22 @@ class WorldRomConstantGuardTest {
     // No genuine non-ROM _BANK/_ADDR literals in these files currently need exemption.
     private static final Set<String> NON_ROM_ALLOW_LIST = Set.of();
     private static final Pattern LITERAL = Pattern.compile(
-        "\\bint\\s+(\\w*(?:_BANK|_ADDR|_ADDRESS))\\s*=\\s*(?:0[xX][0-9a-fA-F]+|[0-9]+)\\s*;");
+        "\\bint\\s+(\\w*(?:_BANK(?:_[AB])?|_ADDR(?:_[AB])?|_ADDRESS))\\s*=\\s*(?:0[xX][0-9a-fA-F]+|[0-9]+)\\s*;");
 
     @Test
-    void physicsDoesNotIntroduceLiteralRomLocations() throws Exception {
-        try (var paths = Files.walk(Path.of("src/main/java/linksawakening/physics"))) {
-            for (Path path : paths.filter(p -> p.toString().endsWith(".java")).toList()) {
-                var matcher = LITERAL.matcher(Files.readString(path));
-                while (matcher.find()) {
-                    assertFalse(!NON_ROM_ALLOW_LIST.contains(
-                        path.getFileName() + "." + matcher.group(1)),
-                        path + ": use RomSymbols for " + matcher.group(1));
+    void ownedPackagesDoNotIntroduceLiteralRomLocations() throws Exception {
+        for (String pkg : List.of("physics", "save", "state", "scene", "startup", "config")) {
+            try (var paths = Files.walk(Path.of("src/main/java/linksawakening", pkg))) {
+                for (Path path : paths.filter(p -> p.toString().endsWith(".java")
+                        && !p.getFileName().toString().equals("PlayerState.java")).toList()) {
+                    assertFalse(Files.readString(path).matches("(?s).*new BackgroundSceneSpec\\(\\s*(?:0[xX]|[0-9]).*"),
+                        path + ": scene ROM locations must use RomSymbols");
+                    var matcher = LITERAL.matcher(Files.readString(path));
+                    while (matcher.find()) {
+                        assertFalse(!NON_ROM_ALLOW_LIST.contains(
+                            path.getFileName() + "." + matcher.group(1)),
+                            path + ": use RomSymbols for " + matcher.group(1));
+                    }
                 }
             }
         }

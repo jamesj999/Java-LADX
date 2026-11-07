@@ -116,3 +116,30 @@ Integration constraint: GbcBanks.adjust is package-private in another owner's
 gpu package. Existing OR-$20 attribute-bank adjustment remains unchanged here:
 a RomAddress-based replacement rejected zero-pointer synthetic fixtures before
 file-offset translation. Typed reads preserve the prior offset semantics.
+
+BackgroundSceneCatalog now uses symbols for all 30 location pairs across ten
+scene specifications (23 distinct exact azle.sym labels; no discrepancies).
+The guard scans physics, save, state excluding PlayerState, scene, startup and
+config, including a check against literal BackgroundSceneSpec constructors.
+These packages have zero remaining literal ROM locations from this audit.
+
+### Deferred declarations for assignment
+
+These are the 15 original-metric declarations, at current source lines; paired
+constants with other suffixes and inline reads also need auditing by their owners.
+
+- WarpMotion.java:19 — DUNGEON_WARPS_BANK.
+- EntityRoomLoader.java:15 — ENTITY_POINTER_BANK.
+- RoomSession.java:135 — BOMBED_CAVE_DOOR_TILES_BANK.
+- RoomSession.java:136 — BOMBED_CAVE_DOOR_TILES_GBC_ADDR.
+- RoomSession.java:137 — INDOOR_MAP_LAYOUT_BANK.
+- RoomSession.java:138 — INDOOR_MAP_LAYOUT_BASE_ADDR.
+- RoomSession.java:139 — COLOR_DUNGEON_MAP_LAYOUT_ADDR.
+- RoomSession.java:140 — EAGLES_TOWER_COLLAPSED_MAP_LAYOUT_ADDR.
+- EnemyDropResolver.java:12 — DESTROYED_HEALTH_GROUP_OFFSETS_BANK.
+- EnemyDropResolver.java:18 — DROP_TABLE_BY_INDEX_BANK.
+- EnemyDropResolver.java:22 — RANDOM_DROP_CHANCE_TABLE_BANK.
+- EnemyDropResolver.java:26 — RANDOM_DROP_CHANCE_TABLE_LOW_HEALTH_BANK.
+- EnemyDropResolver.java:30 — DROP_TABLE_RANDOM_BANK.
+- EnemyDropResolver.java:34 — THRESHOLD_LOW_HEALTH_TABLE_BANK.
+- RomEnemyCombatTables.java:10 — BOW_WOW_EATABLE_BANK.

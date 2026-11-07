@@ -203,4 +203,27 @@ public final class RomSymbols {
     public static final RomAddress IndoorsBObjectsAttrmaps = new RomAddress(0x24, 0x4000);
     public static final RomAddress RoomGBCOverlaysA = new RomAddress(0x26, 0x4000);
     public static final RomAddress RoomGBCOverlaysB = new RomAddress(0x27, 0x4000);
+    public static final RomAddress TitleTilemap = new RomAddress(0x08, 0x710A);
+    public static final RomAddress TitleAttrmap = new RomAddress(0x24, 0x7BF0);
+    public static final RomAddress Title_BG_Palettes = new RomAddress(0x21, 0x7DEE);
+    public static final RomAddress IntroSeaCGBTilemap = new RomAddress(0x08, 0x6C37);
+    public static final RomAddress IntroSeaCGBAttrmap = new RomAddress(0x24, 0x5D18);
+    public static final RomAddress Data_021_7536 = new RomAddress(0x21, 0x7536);
+    public static final RomAddress IntroLinkFaceTilemap = new RomAddress(0x08, 0x6D80);
+    public static final RomAddress IntroLinkFaceAttrmap = new RomAddress(0x24, 0x5D69);
+    public static final RomAddress IntroBeachTilemap = new RomAddress(0x08, 0x6F8B);
+    public static final RomAddress IntroBeachAttrmap = new RomAddress(0x24, 0x7BA7);
+    public static final RomAddress MenuFileSelectionTilemap = new RomAddress(0x08, 0x6336);
+    public static final RomAddress MenuFileSelectionAttrmap = new RomAddress(0x24, 0x5F80);
+    public static final RomAddress Data_021_75B6 = new RomAddress(0x21, 0x75B6);
+    public static final RomAddress MenuFileSelectionCommandsTilemap = new RomAddress(0x08, 0x6328);
+    public static final RomAddress MenuFileSelectionCommandsAttrmap = new RomAddress(0x24, 0x5F74);
+    public static final RomAddress MenuFileCreationTilemap = new RomAddress(0x08, 0x644D);
+    public static final RomAddress MenuFileCreationAttrmap = new RomAddress(0x24, 0x6045);
+    public static final RomAddress MenuFileEraseTilemap = new RomAddress(0x08, 0x6589);
+    public static final RomAddress MenuFileEraseAttrmap = new RomAddress(0x24, 0x6115);
+    public static final RomAddress MenuFileCopyTilemap = new RomAddress(0x08, 0x6660);
+    public static final RomAddress MenuFileCopyAttrmap = new RomAddress(0x24, 0x617D);
+    public static final RomAddress MenuFileSaveTilemap = new RomAddress(0x08, 0x6A6D);
+    public static final RomAddress MenuFileSaveAttrmap = new RomAddress(0x24, 0x6262);
 }
