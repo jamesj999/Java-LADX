@@ -77,11 +77,11 @@ final class LinkMotion {
             // $02:716B/$7468: the top six pixels of the revolving doorway.
             if (link.collision.usesIndoorPhysicsTable() && (physicsFlag == 0x7C || physicsFlag == 0x7D)
                 && (objectId == 0xB1 || objectId == 0xB2) && (pointY & 15) < 6
-                && link.motionState != 0x05) {
-                link.motionState = 0x05;
-                link.revolvingDoorFrame = 0;
-                link.revolvingDoorTransitionPending = false;
-                link.revolvingDoorPaletteVariant = -1;
+                && link.linkStateMachine.motionState != 0x05) {
+                link.linkStateMachine.motionState = 0x05;
+                link.linkStateMachine.revolvingDoorFrame = 0;
+                link.linkStateMachine.revolvingDoorTransitionPending = false;
+                link.linkStateMachine.revolvingDoorPaletteVariant = -1;
                 link.zSubPixels = link.zVelocity = 0;
                 link.airborne = false;
                 link.linkDamage.collisionIgnoreFramesRemaining = 0;
@@ -177,8 +177,8 @@ final class LinkMotion {
         link.resetPegasusBoots();
         subX = (link.romEntityX() & 0xF0) << Link.SUB_PIXEL_SHIFT;
         subY -= 8 << Link.SUB_PIXEL_SHIFT;
-        link.motionState = 0x02;
-        link.physicsModifier = 0;
+        link.linkStateMachine.motionState = 0x02;
+        link.linkStateMachine.physicsModifier = 0;
         link.overworldLedgeFallActive = true;
         beginOverworldLedgeUnstuckingMotion();
         link.soundSink.play(GameplaySoundEvent.LEDGE_FALL);
@@ -195,7 +195,7 @@ final class LinkMotion {
                 break;
             }
         }
-        link.physicsModifier = 1;
+        link.linkStateMachine.physicsModifier = 1;
         subY -= 3 << Link.SUB_PIXEL_SHIFT;
         link.airborne = true;
         link.zVelocity = 0;
