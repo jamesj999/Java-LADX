@@ -30,7 +30,7 @@ final class MadBomberHandler {
                     state.slot().transitionCountdown(state.entity.slot()),
                     state.linkEntityX,
                     state.linkEntityY,
-                    state.runtime.enemyFlashCountdown[state.entity.slot()],
+                    state.slot().flashCountdown(state.entity.slot()),
                     state.randomByteSupplier);
             state.updated = withVariant(madBomberUpdate.entity(), madBomberUpdate.spriteVariant());
             state.preserveMadBomberPresentation = true;

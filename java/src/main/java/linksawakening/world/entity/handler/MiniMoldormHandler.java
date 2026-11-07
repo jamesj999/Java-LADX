@@ -48,7 +48,7 @@ final class MiniMoldormHandler {
                     state.entity,
                     transitionForMotion,
                     state.slot().ignoreHits(slot),
-                    state.runtime.enemyFlashCountdown[slot],
+                    state.slot().flashCountdown(slot),
                     miniBackgroundInteraction,
                     state.randomByteSupplier,
                     state.frame);

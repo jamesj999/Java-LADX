@@ -18,4 +18,6 @@ public final class EntitySlotView {
   public void setPhysicsFlags(int slot, int value) { state.enemyPhysicsFlags[slot] = value; }
   public void andPhysicsFlags(int slot, int mask) { state.enemyPhysicsFlags[slot] &= mask; }
   public void orPhysicsFlags(int slot, int mask) { state.enemyPhysicsFlags[slot] |= mask; }
+  public int flashCountdown(int slot) { return state.enemyFlashCountdown[slot]; }
+  public void setFlashCountdown(int slot, int value) { state.enemyFlashCountdown[slot] = value; }
 }

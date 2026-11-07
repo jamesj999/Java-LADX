@@ -74,7 +74,7 @@ final class PokeyHandler {
                       state.frame,
                       state.runtime.entityInertia[slot],
                       state.slot().transitionCountdown(slot),
-                      state.runtime.enemyFlashCountdown[slot],
+                      state.slot().flashCountdown(slot),
                       state.linkEntityX,
                       state.linkEntityY,
                       state.randomByteSupplier,
@@ -82,7 +82,7 @@ final class PokeyHandler {
               state.updated = pokeyUpdate.entity();
               state.runtime.entityInertia[slot] = pokeyUpdate.inertia();
               state.slot().setTransitionCountdown(slot, pokeyUpdate.transitionCountdown());
-              state.runtime.enemyFlashCountdown[slot] = pokeyUpdate.flashCountdown();
+              state.slot().setFlashCountdown(slot, pokeyUpdate.flashCountdown());
               if (pokeyUpdate.segmentSpawn() != null) {
                 state.enemySpawns().spawnPokeySegment(pokeyUpdate.segmentSpawn());
               }

@@ -26,7 +26,7 @@ final class CuccoHandler {
                     state.entity,
                     state.frame,
                     state.slot().transitionCountdown(state.entity.slot()),
-                    state.runtime.enemyFlashCountdown[state.entity.slot()],
+                    state.slot().flashCountdown(state.entity.slot()),
                     state.linkEntityX,
                     state.linkEntityY,
                     state.linkZ,
@@ -40,7 +40,7 @@ final class CuccoHandler {
                     state.lifecycle().transitionSequenceCounter());
             state.updated = cuccoUpdate.entity();
             state.slot().setTransitionCountdown(state.entity.slot(), cuccoUpdate.transitionCountdown());
-            state.runtime.enemyFlashCountdown[state.entity.slot()] = cuccoUpdate.flashCountdown();
+            state.slot().setFlashCountdown(state.entity.slot(), cuccoUpdate.flashCountdown());
             state.runtime.enemyHealth[state.entity.slot()] = CuccoMotion.HEALTH_OVERRIDE;
             state.preserveCuccoPresentation = true;
             if (cuccoUpdate.dialogLowId() >= 0) {

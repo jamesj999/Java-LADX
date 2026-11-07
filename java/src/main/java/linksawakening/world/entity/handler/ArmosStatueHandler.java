@@ -44,7 +44,7 @@ final class ArmosStatueHandler {
             if (armosUpdate.woke()) {
               // ArmosStatueEntityHandler's wake branch starts the same
               // $18 visible flash used by the ROM's enemy hit handlers.
-              state.runtime.enemyFlashCountdown[state.entity.slot()] = 0x18;
+              state.slot().setFlashCountdown(state.entity.slot(), 0x18);
             }
             if (armosUpdate.activated()) {
               // State 1 clears the harmless physics bit and enables the

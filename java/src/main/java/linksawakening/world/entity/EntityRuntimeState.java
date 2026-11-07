@@ -366,7 +366,7 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     final int[] moblinKingLethalHitFrame = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public final int[] enemyFlashCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] enemyFlashCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
 
     final int[] enemyIgnoreHitsCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
 

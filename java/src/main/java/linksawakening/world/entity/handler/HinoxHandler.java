@@ -56,7 +56,7 @@ final class HinoxHandler {
                     state.randomByteSupplier,
                     state.hinoxBackgroundInteraction,
                     state.runtime.hinoxMotion.collisionFlags(slot),
-                    state.runtime.enemyFlashCountdown[slot]);
+                    state.slot().flashCountdown(slot));
             state.updated = hinoxUpdate.entity();
             state.slot().setTransitionCountdown(slot, hinoxUpdate.transitionCountdown());
             state.preserveHinoxPresentation = true;
