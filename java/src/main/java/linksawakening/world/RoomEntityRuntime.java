@@ -90,6 +90,9 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     private final EntityCombatResolver combat = new EntityCombatResolver(this);
     final EntityBossRewards bossRewards = new EntityBossRewards(this);
     final EntityRoomInspection roomInspection = new EntityRoomInspection(this);
+    final EntityBossInspection bossInspection = new EntityBossInspection(this);
+    final EntityFlyingEnemyInspection flyingEnemyInspection = new EntityFlyingEnemyInspection(this);
+    final EntityPickupInspection pickupInspection = new EntityPickupInspection(this);
     final EntityEnemyInspection enemyInspection = new EntityEnemyInspection(this);
 
     final RoomEntity[] slots;
@@ -964,15 +967,15 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     int fairySpeedY(int slot) { return this.roomInspection.fairySpeedY(slot); }
 
-    int keeseState(int slot) { return this.enemyInspection.keeseState(slot); }
+    int keeseState(int slot) { return this.flyingEnemyInspection.keeseState(slot); }
 
-    int keeseTransitionCountdown(int slot) { return this.enemyInspection.keeseTransitionCountdown(slot); }
+    int keeseTransitionCountdown(int slot) { return this.flyingEnemyInspection.keeseTransitionCountdown(slot); }
 
-    int keeseAngle(int slot) { return this.enemyInspection.keeseAngle(slot); }
+    int keeseAngle(int slot) { return this.flyingEnemyInspection.keeseAngle(slot); }
 
-    int keeseSpeedX(int slot) { return this.enemyInspection.keeseSpeedX(slot); }
+    int keeseSpeedX(int slot) { return this.flyingEnemyInspection.keeseSpeedX(slot); }
 
-    int keeseSpeedY(int slot) { return this.enemyInspection.keeseSpeedY(slot); }
+    int keeseSpeedY(int slot) { return this.flyingEnemyInspection.keeseSpeedY(slot); }
 
     int octorokState(int slot) { return this.enemyInspection.octorokState(slot); }
 
@@ -1014,17 +1017,17 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     int tektiteSpeedY(int slot) { return this.enemyInspection.tektiteSpeedY(slot); }
 
-    int pairoddState(int slot) { return this.enemyInspection.pairoddState(slot); }
+    int pairoddState(int slot) { return this.flyingEnemyInspection.pairoddState(slot); }
 
-    int pairoddTransitionCountdown(int slot) { return this.enemyInspection.pairoddTransitionCountdown(slot); }
+    int pairoddTransitionCountdown(int slot) { return this.flyingEnemyInspection.pairoddTransitionCountdown(slot); }
 
-    int pairoddDirection(int slot) { return this.enemyInspection.pairoddDirection(slot); }
+    int pairoddDirection(int slot) { return this.flyingEnemyInspection.pairoddDirection(slot); }
 
-    int pairoddProjectileSpeedX(int slot) { return this.enemyInspection.pairoddProjectileSpeedX(slot); }
+    int pairoddProjectileSpeedX(int slot) { return this.flyingEnemyInspection.pairoddProjectileSpeedX(slot); }
 
-    int pairoddProjectileSpeedY(int slot) { return this.enemyInspection.pairoddProjectileSpeedY(slot); }
+    int pairoddProjectileSpeedY(int slot) { return this.flyingEnemyInspection.pairoddProjectileSpeedY(slot); }
 
-    int pairoddProjectileDirection(int slot) { return this.enemyInspection.pairoddProjectileDirection(slot); }
+    int pairoddProjectileDirection(int slot) { return this.flyingEnemyInspection.pairoddProjectileDirection(slot); }
 
     int enemyProjectileSpeedX(int slot) { return this.enemyInspection.enemyProjectileSpeedX(slot); }
 
@@ -1270,15 +1273,15 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     int armosSpeedY(int slot) { return this.enemyInspection.armosSpeedY(slot); }
 
-    int armosKnightState(int slot) { return this.enemyInspection.armosKnightState(slot); }
+    int armosKnightState(int slot) { return this.bossInspection.armosKnightState(slot); }
 
-    int armosKnightTransitionCountdown(int slot) { return this.enemyInspection.armosKnightTransitionCountdown(slot); }
+    int armosKnightTransitionCountdown(int slot) { return this.bossInspection.armosKnightTransitionCountdown(slot); }
 
-    int armosKnightSpeedZ(int slot) { return this.enemyInspection.armosKnightSpeedZ(slot); }
+    int armosKnightSpeedZ(int slot) { return this.bossInspection.armosKnightSpeedZ(slot); }
 
-    int armosKnightPrivateCountdown1(int slot) { return this.enemyInspection.armosKnightPrivateCountdown1(slot); }
+    int armosKnightPrivateCountdown1(int slot) { return this.bossInspection.armosKnightPrivateCountdown1(slot); }
 
-    int armosKnightInertia(int slot) { return this.enemyInspection.armosKnightInertia(slot); }
+    int armosKnightInertia(int slot) { return this.bossInspection.armosKnightInertia(slot); }
 
     int ghiniTransitionCountdown(int slot) { return this.enemyInspection.ghiniTransitionCountdown(slot); }
 
@@ -1359,35 +1362,35 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     void setEnemyHealthForTest(int slot, int value) { this.entityDebugConfiguration.setEnemyHealthForTest(slot, value); }
 
-    int geniePrivateState1ForTest(int slot) { return this.enemyInspection.geniePrivateState1ForTest(slot); }
+    int geniePrivateState1ForTest(int slot) { return this.bossInspection.geniePrivateState1ForTest(slot); }
 
     void setGeniePrivateState1ForTest(int slot, int value) { this.entityDebugConfiguration.setGeniePrivateState1ForTest(slot, value); }
 
-    int genieActiveStateForTest(int slot) { return this.enemyInspection.genieActiveStateForTest(slot); }
+    int genieActiveStateForTest(int slot) { return this.bossInspection.genieActiveStateForTest(slot); }
 
     void setGenieActiveStateForTest(int slot, int value) { this.entityDebugConfiguration.setGenieActiveStateForTest(slot, value); }
 
-    int geniePrivateState3ForTest(int slot) { return this.enemyInspection.geniePrivateState3ForTest(slot); }
+    int geniePrivateState3ForTest(int slot) { return this.bossInspection.geniePrivateState3ForTest(slot); }
 
     void setGeniePrivateState3ForTest(int slot, int value) { this.entityDebugConfiguration.setGeniePrivateState3ForTest(slot, value); }
 
-    int geniePrivateCountdown1ForTest(int slot) { return this.enemyInspection.geniePrivateCountdown1ForTest(slot); }
+    int geniePrivateCountdown1ForTest(int slot) { return this.bossInspection.geniePrivateCountdown1ForTest(slot); }
 
     void setGeniePrivateCountdown1ForTest(int slot, int value) { this.entityDebugConfiguration.setGeniePrivateCountdown1ForTest(slot, value); }
 
-    int geniePrivateCountdown2ForTest(int slot) { return this.enemyInspection.geniePrivateCountdown2ForTest(slot); }
+    int geniePrivateCountdown2ForTest(int slot) { return this.bossInspection.geniePrivateCountdown2ForTest(slot); }
 
-    int genieSpeedXForTest(int slot) { return this.enemyInspection.genieSpeedXForTest(slot); }
+    int genieSpeedXForTest(int slot) { return this.bossInspection.genieSpeedXForTest(slot); }
 
-    int genieSpeedZForTest(int slot) { return this.enemyInspection.genieSpeedZForTest(slot); }
+    int genieSpeedZForTest(int slot) { return this.bossInspection.genieSpeedZForTest(slot); }
 
     void setGeniePrivateState4ForTest(int slot, int value) { this.entityDebugConfiguration.setGeniePrivateState4ForTest(slot, value); }
 
-    int geniePrivateState4ForTest(int slot) { return this.enemyInspection.geniePrivateState4ForTest(slot); }
+    int geniePrivateState4ForTest(int slot) { return this.bossInspection.geniePrivateState4ForTest(slot); }
 
-    int rollingBonesBarStateForTest(int slot) { return this.enemyInspection.rollingBonesBarStateForTest(slot); }
+    int rollingBonesBarStateForTest(int slot) { return this.bossInspection.rollingBonesBarStateForTest(slot); }
 
-    int rollingBonesBarSpeedXForTest(int slot) { return this.enemyInspection.rollingBonesBarSpeedXForTest(slot); }
+    int rollingBonesBarSpeedXForTest(int slot) { return this.bossInspection.rollingBonesBarSpeedXForTest(slot); }
 
     void setPhysicsFlagsForTest(int slot, int value) { this.entityDebugConfiguration.setPhysicsFlagsForTest(slot, value); }
 
@@ -1401,7 +1404,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     void setLedgeTransitionTimerForTest(int slot, int value) { this.entityDebugConfiguration.setLedgeTransitionTimerForTest(slot, value); }
 
-    int keyDropTransitionCountdown(int slot) { return this.enemyInspection.keyDropTransitionCountdown(slot); }
+    int keyDropTransitionCountdown(int slot) { return this.pickupInspection.keyDropTransitionCountdown(slot); }
 
     void setKeyDropTransitionCountdownForTest(int slot, int value) { this.entityDebugConfiguration.setKeyDropTransitionCountdownForTest(slot, value); }
 
@@ -1413,57 +1416,57 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     int options1(int slot) { return this.slotProperties.options1(slot); }
 
-    int colorShellState(int slot) { return this.enemyInspection.colorShellState(slot); }
+    int colorShellState(int slot) { return this.pickupInspection.colorShellState(slot); }
 
-    int bombiteState(int slot) { return this.enemyInspection.bombiteState(slot); }
+    int bombiteState(int slot) { return this.pickupInspection.bombiteState(slot); }
 
-    int moldormHeadSpriteVariant(int slot) { return this.enemyInspection.moldormHeadSpriteVariant(slot); }
+    int moldormHeadSpriteVariant(int slot) { return this.bossInspection.moldormHeadSpriteVariant(slot); }
 
-    int moldormTransitionCountdown(int slot) { return this.enemyInspection.moldormTransitionCountdown(slot); }
+    int moldormTransitionCountdown(int slot) { return this.bossInspection.moldormTransitionCountdown(slot); }
 
-    int moldormPrivateCountdown2(int slot) { return this.enemyInspection.moldormPrivateCountdown2(slot); }
+    int moldormPrivateCountdown2(int slot) { return this.bossInspection.moldormPrivateCountdown2(slot); }
 
-    int moldormDestructionState(int slot) { return this.enemyInspection.moldormDestructionState(slot); }
+    int moldormDestructionState(int slot) { return this.bossInspection.moldormDestructionState(slot); }
 
-    int moldormInertia(int slot) { return this.enemyInspection.moldormInertia(slot); }
+    int moldormInertia(int slot) { return this.bossInspection.moldormInertia(slot); }
 
-    int bombitePrivateCountdown1(int slot) { return this.enemyInspection.bombitePrivateCountdown1(slot); }
+    int bombitePrivateCountdown1(int slot) { return this.pickupInspection.bombitePrivateCountdown1(slot); }
 
-    int bombiteSpeedX(int slot) { return this.enemyInspection.bombiteSpeedX(slot); }
+    int bombiteSpeedX(int slot) { return this.pickupInspection.bombiteSpeedX(slot); }
 
-    int bombiteSpeedY(int slot) { return this.enemyInspection.bombiteSpeedY(slot); }
+    int bombiteSpeedY(int slot) { return this.pickupInspection.bombiteSpeedY(slot); }
 
-    int colorShellPhysicsFlags(int slot) { return this.enemyInspection.colorShellPhysicsFlags(slot); }
+    int colorShellPhysicsFlags(int slot) { return this.pickupInspection.colorShellPhysicsFlags(slot); }
 
-    int secretSeashellPrivateState3(int slot) { return this.enemyInspection.secretSeashellPrivateState3(slot); }
+    int secretSeashellPrivateState3(int slot) { return this.pickupInspection.secretSeashellPrivateState3(slot); }
 
-    int secretSeashellPrivateState4(int slot) { return this.enemyInspection.secretSeashellPrivateState4(slot); }
+    int secretSeashellPrivateState4(int slot) { return this.pickupInspection.secretSeashellPrivateState4(slot); }
 
-    int secretSeashellPrivateCountdown1(int slot) { return this.enemyInspection.secretSeashellPrivateCountdown1(slot); }
+    int secretSeashellPrivateCountdown1(int slot) { return this.pickupInspection.secretSeashellPrivateCountdown1(slot); }
 
-    int secretSeashellSlowTransitionCountdown(int slot) { return this.enemyInspection.secretSeashellSlowTransitionCountdown(slot); }
+    int secretSeashellSlowTransitionCountdown(int slot) { return this.pickupInspection.secretSeashellSlowTransitionCountdown(slot); }
 
-    int secretSeashellSpeedX(int slot) { return this.enemyInspection.secretSeashellSpeedX(slot); }
+    int secretSeashellSpeedX(int slot) { return this.pickupInspection.secretSeashellSpeedX(slot); }
 
-    int secretSeashellSpeedY(int slot) { return this.enemyInspection.secretSeashellSpeedY(slot); }
+    int secretSeashellSpeedY(int slot) { return this.pickupInspection.secretSeashellSpeedY(slot); }
 
-    int secretSeashellSpeedZ(int slot) { return this.enemyInspection.secretSeashellSpeedZ(slot); }
+    int secretSeashellSpeedZ(int slot) { return this.pickupInspection.secretSeashellSpeedZ(slot); }
 
-    int fishState(int slot) { return this.enemyInspection.fishState(slot); }
+    int fishState(int slot) { return this.flyingEnemyInspection.fishState(slot); }
 
-    int fishSpeedX(int slot) { return this.enemyInspection.fishSpeedX(slot); }
+    int fishSpeedX(int slot) { return this.flyingEnemyInspection.fishSpeedX(slot); }
 
-    int fishTransitionCountdown(int slot) { return this.enemyInspection.fishTransitionCountdown(slot); }
+    int fishTransitionCountdown(int slot) { return this.flyingEnemyInspection.fishTransitionCountdown(slot); }
 
-    int crowState(int slot) { return this.enemyInspection.crowState(slot); }
+    int crowState(int slot) { return this.flyingEnemyInspection.crowState(slot); }
 
-    int crowTransitionCountdown(int slot) { return this.enemyInspection.crowTransitionCountdown(slot); }
+    int crowTransitionCountdown(int slot) { return this.flyingEnemyInspection.crowTransitionCountdown(slot); }
 
-    int booBuddyState(int slot) { return this.enemyInspection.booBuddyState(slot); }
+    int booBuddyState(int slot) { return this.flyingEnemyInspection.booBuddyState(slot); }
 
-    int booBuddySpeedX(int slot) { return this.enemyInspection.booBuddySpeedX(slot); }
+    int booBuddySpeedX(int slot) { return this.flyingEnemyInspection.booBuddySpeedX(slot); }
 
-    int booBuddyTransitionCountdown(int slot) { return this.enemyInspection.booBuddyTransitionCountdown(slot); }
+    int booBuddyTransitionCountdown(int slot) { return this.flyingEnemyInspection.booBuddyTransitionCountdown(slot); }
 
     void setBooBuddyTriggerCount(int value) { this.entityRuntimeConfiguration.setBooBuddyTriggerCount(value); }
 
