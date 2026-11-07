@@ -14,7 +14,7 @@ final class EntityPhase5Handlers {
         RoomEntityRuntime.ENTITY_ROOSTER,
         EntityTickStage.PHASE_5_ROOSTER,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             state.preserveRoosterPresentation = true;
             if (state.projectileLinkState.motionState() == 0
                 && (state.linkZ & 0xFF) == 0
@@ -50,7 +50,7 @@ final class EntityPhase5Handlers {
             type,
             EntityTickStage.PHASE_5_COLOR_SHELL_TYPE,
             state -> {
-              if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+              if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
                 ColorShellMotion.Update shellUpdate =
                     state.runtime.colorShellMotion.advance(
                         state.entity,

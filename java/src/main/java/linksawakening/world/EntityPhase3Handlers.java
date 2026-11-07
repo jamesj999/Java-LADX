@@ -16,7 +16,7 @@ final class EntityPhase3Handlers {
         RoomEntityRuntime.ENTITY_IRON_MASK,
         EntityTickStage.PHASE_3_IRON_MASK,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             int privateState2 = state.runtime.ironMaskPrivateState2[state.entity.slot()];
             int variant =
                 privateState2 == 0 ? state.updated.spriteVariant() : ((state.frame >>> 4) & 0x01);
@@ -43,7 +43,7 @@ final class EntityPhase3Handlers {
               && state.runtime.gameplayWorld
               && state.runtime.transitionSequenceCounter == 0x04
               && !state.runtime.witchGotItemPresentationActive()
-              && true) {
+             ) {
             RoomEntityBackgroundInteraction swordBackgroundInteraction =
                 state.runtime.backgroundInteraction;
             if (swordBackgroundInteraction == null && state.backgroundCollision != null) {
@@ -73,7 +73,7 @@ final class EntityPhase3Handlers {
         RoomEntityRuntime.ENTITY_HIDING_ZOL,
         EntityTickStage.PHASE_3_HIDING_ZOL,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             RoomEntityBackgroundInteraction hidingZolBackgroundInteraction =
                 state.runtime.backgroundInteraction;
             if (hidingZolBackgroundInteraction == null && state.backgroundCollision != null) {
@@ -114,7 +114,7 @@ final class EntityPhase3Handlers {
         RoomEntityRuntime.ENTITY_SPIKE_TRAP,
         EntityTickStage.PHASE_3_SPIKE_TRAP,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             SpikeTrapMotion.Update spikeTrapUpdate =
                 state.runtime.spikeTrapMotion.advance(
                     state.entity, state.linkEntityX, state.linkEntityY, state.backgroundCollision);
@@ -136,7 +136,7 @@ final class EntityPhase3Handlers {
         RoomEntityRuntime.ENTITY_PAIRODD,
         EntityTickStage.PHASE_3_PAIRODD,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             PairoddMotion.Update pairoddUpdate =
                 state.runtime.pairoddMotion.advance(
                     state.entity,
@@ -169,7 +169,7 @@ final class EntityPhase3Handlers {
         state -> {
           if (state.status == EntityStatus.ACTIVE
               && !state.wasInitializing
-              && true
+             
               && state.handlerLinkCollisionEnabled) {
             RoomEntityBackgroundInteraction starBackgroundInteraction =
                 state.runtime.backgroundInteraction;
@@ -194,7 +194,7 @@ final class EntityPhase3Handlers {
         state -> {
           if (state.status == EntityStatus.ACTIVE
               && !state.wasInitializing
-              && true
+             
               && state.handlerLinkCollisionEnabled) {
             RoomEntityBackgroundInteraction blooperBackgroundInteraction =
                 state.runtime.backgroundInteraction;
@@ -232,7 +232,7 @@ final class EntityPhase3Handlers {
         state -> {
           if (state.status == EntityStatus.ACTIVE
               && !state.wasInitializing
-              && true
+             
               && state.handlerLinkCollisionEnabled) {
             // PincerEntityHandler clears its stale ground status before
             // rendering and does not call the generic background helper.
@@ -258,7 +258,7 @@ final class EntityPhase3Handlers {
         state -> {
           if (state.status == EntityStatus.ACTIVE
               && !state.wasInitializing
-              && true
+             
               && state.handlerLinkCollisionEnabled) {
             WingedOctorokMotion.Update wingedUpdate =
                 state.runtime.wingedOctorokMotion.advance(
@@ -304,7 +304,7 @@ final class EntityPhase3Handlers {
         state -> {
           if (state.status == EntityStatus.ACTIVE
               && !state.wasInitializing
-              && true
+             
               && state.handlerLinkCollisionEnabled) {
             BushCrawlerMotion.Update bushUpdate =
                 state.runtime.bushCrawlerMotion.advance(
@@ -368,7 +368,7 @@ final class EntityPhase3Handlers {
         RoomEntityRuntime.ENTITY_PAIRODD_PROJECTILE,
         EntityTickStage.PHASE_3_PAIRODD_PROJECTILE,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             state.updated =
                 state.runtime.pairoddProjectileMotion.advance(state.entity, state.frame);
             boolean objectCollisionHit =
@@ -433,7 +433,7 @@ final class EntityPhase3Handlers {
         RoomEntityRuntime.ENTITY_WIZROBE_PROJECTILE,
         EntityTickStage.PHASE_3_WIZROBE_PROJECTILE,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             var collisionEvent =
                 EnemyProjectileCollision.check(
                     state.entity,
@@ -462,7 +462,7 @@ final class EntityPhase3Handlers {
         RoomEntityRuntime.ENTITY_GOPONGA_FLOWER_PROJECTILE,
         EntityTickStage.PHASE_3_GOPONGA_FLOWER_PROJECTILE,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             GopongaProjectileMotion.Update projectileUpdate =
                 state.runtime.gopongaProjectileMotion.advance(
                     state.entity,
@@ -489,7 +489,7 @@ final class EntityPhase3Handlers {
         RoomEntityRuntime.ENTITY_WATER_TEKTITE,
         EntityTickStage.PHASE_3_WATER_TEKTITE,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             state.updated =
                 state.runtime.waterTektiteMotion.advance(
                     state.entity, state.frame, state.randomByteSupplier, state.backgroundCollision);
@@ -500,7 +500,7 @@ final class EntityPhase3Handlers {
         RoomEntityRuntime.ENTITY_FISH,
         EntityTickStage.PHASE_3_FISH,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             FishMotion.Update fishUpdate =
                 state.runtime.fishMotion.advance(
                     state.entity,
@@ -531,7 +531,7 @@ final class EntityPhase3Handlers {
         RoomEntityRuntime.ENTITY_CROW,
         EntityTickStage.PHASE_3_CROW,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             CrowMotion.Update crowUpdate =
                 state.runtime.crowMotion.advance(
                     state.entity,
@@ -561,7 +561,7 @@ final class EntityPhase3Handlers {
         state -> {
           if (state.status == EntityStatus.ACTIVE
               && !state.wasInitializing
-              && true
+             
               && state.handlerLinkCollisionEnabled) {
             CuccoMotion.Update cuccoUpdate =
                 state.runtime.cuccoMotion.advance(
@@ -635,7 +635,7 @@ final class EntityPhase3Handlers {
         RoomEntityRuntime.ENTITY_BOO_BUDDY,
         EntityTickStage.PHASE_3_BOO_BUDDY,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             BooBuddyMotion.Update booBuddyUpdate =
                 state.runtime.booBuddyMotion.advanceAfterTimers(
                     state.entity,
@@ -663,7 +663,7 @@ final class EntityPhase3Handlers {
         RoomEntityRuntime.ENTITY_DROPPABLE_FAIRY,
         EntityTickStage.PHASE_3_DROPPABLE_FAIRY,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             FairyMotion.Update fairyUpdate =
                 state.runtime.fairyMotion.advance(
                     state.entity,
@@ -682,7 +682,7 @@ final class EntityPhase3Handlers {
         RoomEntityRuntime.ENTITY_STALFOS_AGGRESSIVE,
         EntityTickStage.PHASE_3_STALFOS_AGGRESSIVE,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             state.updated =
                 state.runtime.stalfosAggressiveMotion.advance(
                     state.entity,
@@ -698,7 +698,7 @@ final class EntityPhase3Handlers {
         RoomEntityRuntime.ENTITY_STALFOS_EVASIVE,
         EntityTickStage.PHASE_3_STALFOS_EVASIVE,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             StalfosEvasiveMotion.Update evasiveUpdate =
                 state.runtime.stalfosEvasiveMotion.advance(
                     state.entity,
@@ -753,7 +753,7 @@ final class EntityPhase3Handlers {
         state -> {
           if (state.status == EntityStatus.ACTIVE
               && !state.wasInitializing
-              && true
+             
               && state.threeOfAKindInteractive) {
             state.runtime.enemyHealth[state.entity.slot()] = 0x20;
             ThreeOfAKindMotion.Update cardUpdate =
@@ -775,7 +775,7 @@ final class EntityPhase3Handlers {
         RoomEntityRuntime.ENTITY_LIKE_LIKE,
         EntityTickStage.PHASE_3_LIKE_LIKE,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             LikeLikeMotion.Update likeLikeUpdate =
                 state.runtime.likeLikeMotion.advance(
                     state.entity,
@@ -810,7 +810,7 @@ final class EntityPhase3Handlers {
         RoomEntityRuntime.ENTITY_GOOMBA,
         EntityTickStage.PHASE_3_GOOMBA,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             GoombaMotion.Update goombaUpdate =
                 state.runtime.goombaMotion.advance(
                     state.entity,
@@ -843,7 +843,7 @@ final class EntityPhase3Handlers {
         RoomEntityRuntime.ENTITY_SNAKE,
         EntityTickStage.PHASE_3_SNAKE,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             SnakeMotion.Update snakeUpdate =
                 state.runtime.snakeMotion.advance(
                     state.entity,
@@ -864,7 +864,7 @@ final class EntityPhase3Handlers {
         RoomEntityRuntime.ENTITY_WIZROBE,
         EntityTickStage.PHASE_3_WIZROBE,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             WizrobeMotion.Update wizrobeUpdate =
                 state.runtime.wizrobeMotion.advance(
                     state.entity,
@@ -889,7 +889,7 @@ final class EntityPhase3Handlers {
         RoomEntityRuntime.ENTITY_PEAHAT,
         EntityTickStage.PHASE_3_PEAHAT,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             state.updated =
                 state.runtime.peaHatMotion.advance(
                     state.entity, state.frame, state.randomByteSupplier, state.backgroundCollision);
@@ -900,7 +900,7 @@ final class EntityPhase3Handlers {
         RoomEntityRuntime.ENTITY_ARMOS_STATUE,
         EntityTickStage.PHASE_3_ARMOS_STATUE,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             RoomEntityBackgroundInteraction armosBackgroundInteraction =
                 state.runtime.backgroundInteraction;
             if (armosBackgroundInteraction == null && state.backgroundCollision != null) {
@@ -944,7 +944,7 @@ final class EntityPhase3Handlers {
             type,
             EntityTickStage.PHASE_3_BOMBITE_TYPE,
             state -> {
-              if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+              if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
                 BombiteMotion.Update bombiteUpdate =
                     state.runtime.bombiteMotion.advance(
                         state.entity,
@@ -1016,7 +1016,7 @@ final class EntityPhase3Handlers {
             type,
             EntityTickStage.PHASE_3_ROAMING_ENEMY_TYPE,
             state -> {
-              if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+              if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
                 if (state.entity.type() == state.runtime.ENTITY_IRON_MASK
                     && state.runtime.ironMaskPrivateState2[state.entity.slot()] != 0) {
                   UnmaskedIronMaskMotion.Update unmaskedUpdate =
@@ -1068,7 +1068,7 @@ final class EntityPhase3Handlers {
             type,
             EntityTickStage.PHASE_3_SPARK_TYPE,
             state -> {
-              if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+              if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
                 state.updated =
                     state.runtime.sparkMotion.advance(
                         state.entity, state.frame, state.backgroundCollision);
@@ -1086,7 +1086,7 @@ final class EntityPhase3Handlers {
               if (state.status == EntityStatus.ACTIVE
                   && !state.wasInitializing
                   && state.handlerInteractive
-                  && true) {
+                 ) {
                 RoomEntityBackgroundInteraction zolGelBackgroundInteraction =
                     state.runtime.backgroundInteraction;
                 if (zolGelBackgroundInteraction == null && state.backgroundCollision != null) {
@@ -1122,7 +1122,7 @@ final class EntityPhase3Handlers {
             type,
             EntityTickStage.PHASE_3_ENEMY_PROJECTILE_TYPE,
             state -> {
-              if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+              if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
                 boolean preexistingCollision =
                     state.runtime.enemyProjectileMotion.pendingLinkCollision(state.entity.slot());
                 boolean hasLinkCollision =

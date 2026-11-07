@@ -15,7 +15,7 @@ final class EntityPhase4Handlers {
         RoomEntityRuntime.ENTITY_GENIE,
         EntityTickStage.PHASE_4_GENIE,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             BossIntroMotion.Update bossIntro =
                 !state.runtime.inventoryAppearing && !state.runtime.roomTransitionActive
                     ? state.runtime.bossIntroMotion.advance(
@@ -109,7 +109,7 @@ final class EntityPhase4Handlers {
         RoomEntityRuntime.ENTITY_ARMOS_KNIGHT,
         EntityTickStage.PHASE_4_ARMOS_KNIGHT,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             BossIntroMotion.Update bossIntro =
                 state.runtime.bossIntroMotion.advance(
                     state.runtime.options1(state.entity.slot()),
@@ -197,7 +197,7 @@ final class EntityPhase4Handlers {
               && state.runtime.backgroundMechanics.entityTimersInteractive()
               && state.runtime.transitionSequenceCounter == 0x04
               && !state.creditsGameplay
-              && true) {
+             ) {
             int slot = state.entity.slot();
             BossIntroMotion.Update bossIntro =
                 state.runtime.bossIntroMotion.advance(
@@ -312,7 +312,7 @@ final class EntityPhase4Handlers {
         RoomEntityRuntime.ENTITY_ROLLING_BONES,
         EntityTickStage.PHASE_4_ROLLING_BONES,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             RoomEntity bar =
                 state.runtime.roomInspection.firstLoadedEntityOfType(
                     state.runtime.ENTITY_ROLLING_BONES_BAR);
@@ -346,7 +346,7 @@ final class EntityPhase4Handlers {
         RoomEntityRuntime.ENTITY_ROLLING_BONES_BAR,
         EntityTickStage.PHASE_4_ROLLING_BONES_BAR,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             if ((state.runtime.entityRoomStatus & 0x20) != 0) {
               state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
               return false;
@@ -393,7 +393,7 @@ final class EntityPhase4Handlers {
         RoomEntityRuntime.ENTITY_MOBLIN_KING,
         EntityTickStage.PHASE_4_MOBLIN_KING,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             if (state.runtime.bowWowState != 0x80) {
               state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
               return false;
@@ -499,7 +499,7 @@ final class EntityPhase4Handlers {
         RoomEntityRuntime.ENTITY_GOPONGA_FLOWER,
         EntityTickStage.PHASE_4_GOPONGA_FLOWER,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             if (GopongaFlowerMotion.overlapsInteractiveLink(
                 state.entity,
                 state.linkEntityX,
@@ -518,7 +518,7 @@ final class EntityPhase4Handlers {
         RoomEntityRuntime.ENTITY_GIANT_GOPONGA_FLOWER,
         EntityTickStage.PHASE_4_GIANT_GOPONGA_FLOWER,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             if (GiantGopongaMotion.overlapsInteractiveLink(
                 state.entity,
                 state.linkEntityX,
@@ -549,7 +549,7 @@ final class EntityPhase4Handlers {
         RoomEntityRuntime.ENTITY_POKEY,
         EntityTickStage.PHASE_4_POKEY,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             int slot = state.entity.slot();
             if (!state.handlerLinkCollisionEnabled) {
               // Both Pokey branches return immediately after their
@@ -634,7 +634,7 @@ final class EntityPhase4Handlers {
         state -> {
           if (state.status == EntityStatus.ACTIVE
               && !state.wasInitializing
-              && true
+             
               && !state.creditsGameplay
               && state.runtime.transitionSequenceCounter == 0x04
               && state.handlerLinkCollisionEnabled) {
@@ -657,7 +657,7 @@ final class EntityPhase4Handlers {
         state -> {
           if (state.status == EntityStatus.ACTIVE
               && !state.wasInitializing
-              && true
+             
               && !state.creditsGameplay
               && state.handlerLinkCollisionEnabled) {
             int slot = state.entity.slot();
@@ -710,7 +710,7 @@ final class EntityPhase4Handlers {
         state -> {
           if (state.status == EntityStatus.ACTIVE
               && !state.wasInitializing
-              && true
+             
               && !state.creditsGameplay
               && state.handlerLinkCollisionEnabled) {
             int slot = state.entity.slot();
@@ -753,7 +753,7 @@ final class EntityPhase4Handlers {
         state -> {
           if (state.status == EntityStatus.ACTIVE
               && !state.wasInitializing
-              && true
+             
               && !state.creditsGameplay
               && state.handlerLinkCollisionEnabled) {
             int slot = state.entity.slot();
@@ -783,7 +783,7 @@ final class EntityPhase4Handlers {
         state -> {
           if (state.status == EntityStatus.ACTIVE
               && !state.wasInitializing
-              && true
+             
               && !state.creditsGameplay
               && state.handlerLinkCollisionEnabled) {
             int slot = state.entity.slot();
@@ -813,7 +813,7 @@ final class EntityPhase4Handlers {
         state -> {
           if (state.status == EntityStatus.ACTIVE
               && !state.wasInitializing
-              && true
+             
               && !state.creditsGameplay
               && state.handlerLinkCollisionEnabled) {
             int slot = state.entity.slot();
@@ -852,7 +852,7 @@ final class EntityPhase4Handlers {
         RoomEntityRuntime.ENTITY_WITCH,
         EntityTickStage.PHASE_4_WITCH,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             state.runtime.story.advanceWitchGotItemPresentation(state.entity.slot());
             WitchMotion.Update witchUpdate =
                 state.runtime.witchMotion.advance(
@@ -920,7 +920,7 @@ final class EntityPhase4Handlers {
         state -> {
           if (state.status == EntityStatus.ACTIVE
               && !state.wasInitializing
-              && true
+             
               && state.handlerLinkCollisionEnabled) {
             int slot = state.entity.slot();
             RoomEntityBackgroundInteraction urchinBackgroundInteraction =
@@ -979,7 +979,7 @@ final class EntityPhase4Handlers {
         state -> {
           if (state.status == EntityStatus.ACTIVE
               && !state.wasInitializing
-              && true
+             
               && state.handlerLinkCollisionEnabled) {
             int slot = state.entity.slot();
             RoomEntityBackgroundInteraction witchRatBackgroundInteraction =
@@ -1006,7 +1006,7 @@ final class EntityPhase4Handlers {
         RoomEntityRuntime.ENTITY_HARDHAT_BEETLE,
         EntityTickStage.PHASE_4_HARDHAT_BEETLE,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             state.updated =
                 state.runtime.hardHatMotion.advance(
                     state.entity,
@@ -1022,7 +1022,7 @@ final class EntityPhase4Handlers {
         RoomEntityRuntime.ENTITY_POLS_VOICE,
         EntityTickStage.PHASE_4_POLS_VOICE,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             // PolsVoiceEntityHandler deliberately writes the temporary
             // ignore-hits byte after moving, so the background helper sees
             // $01, then clears it with B (zero) before the default enemy
@@ -1052,7 +1052,7 @@ final class EntityPhase4Handlers {
         RoomEntityRuntime.ENTITY_SPIKED_BEETLE,
         EntityTickStage.PHASE_4_SPIKED_BEETLE,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             SpikedBeetleMotion.Update spikedBeetleUpdate =
                 state.runtime.spikedBeetleMotion.advance(
                     state.entity,
@@ -1082,7 +1082,7 @@ final class EntityPhase4Handlers {
               if (state.status == EntityStatus.ACTIVE
                   && !state.wasInitializing
                   && !state.runtime.indoorRoom
-                  && true
+                 
                   && (state.runtime.tarinRaccoonMotion.state(state.entity.slot()) == 0
                       || state.runtime.roomInspection.tarinTransformationHandlerInteractive())) {
                 RoomEntityBackgroundInteraction tarinBackgroundInteraction =
@@ -1173,7 +1173,7 @@ final class EntityPhase4Handlers {
             type,
             EntityTickStage.PHASE_4_GHINI_TYPE,
             state -> {
-              if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+              if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
                 state.updated =
                     state.runtime.ghiniMotion.advance(
                         state.entity,

@@ -15,7 +15,7 @@ final class EntityPhase1Handlers {
         RoomEntityRuntime.ENTITY_KANALET_BOMBABLE_WALL,
         EntityTickStage.PHASE_1_KANALET_BOMBABLE_WALL,
         state -> {
-          if (true) {
+          {
             if ((state.runtime.entityRoomStatus & 0x10) != 0) {
               state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
               return false;
@@ -35,7 +35,7 @@ final class EntityPhase1Handlers {
         RoomEntityRuntime.ENTITY_TARIN,
         EntityTickStage.PHASE_1_TARIN,
         state -> {
-          if (!state.runtime.indoorRoom && true && (state.runtime.entityRoomStatus & 0x10) != 0) {
+          if (!state.runtime.indoorRoom && (state.runtime.entityRoomStatus & 0x10) != 0) {
             state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
             return false;
           }
@@ -46,7 +46,7 @@ final class EntityPhase1Handlers {
         EntityTickStage.PHASE_1_MARIN_INDOOR,
         state -> {
           if (state.runtime.indoorRoom
-              && true
+             
               && state.runtime.chestPlayerLevelsKnown
               && state.runtime.chestSwordLevel != 0) {
             state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
@@ -58,7 +58,7 @@ final class EntityPhase1Handlers {
         RoomEntityRuntime.ENTITY_BOO_BUDDY,
         EntityTickStage.PHASE_1_BOO_BUDDY,
         state -> {
-          if (true && state.initialStatus == EntityStatus.ACTIVE) {
+          if (state.initialStatus == EntityStatus.ACTIVE) {
             int slot = state.entity.slot();
             // Rendering precedes ReturnIfNonInteractive_06 and recoil.
             state.entity =
@@ -89,7 +89,7 @@ final class EntityPhase1Handlers {
         RoomEntityRuntime.ENTITY_BOW_WOW,
         EntityTickStage.PHASE_1_BOW_WOW,
         state -> {
-          if (true && state.initialStatus == EntityStatus.ACTIVE) {
+          if (state.initialStatus == EntityStatus.ACTIVE) {
             int slot = state.entity.slot();
             if (state.projectileTimersInteractive) {
               state.runtime.bowWowMotion.tickTimers(slot);
@@ -127,7 +127,7 @@ final class EntityPhase1Handlers {
         EntityTickStage.PHASE_1_MOLDORM,
         state -> {
           if (!state.wasInitializing
-              && true
+             
               && !state.runtime.roomTransitionActive
               && !state.runtime.inventoryAppearing) {
             BossIntroMotion.Update intro =
@@ -150,7 +150,7 @@ final class EntityPhase1Handlers {
         EntityTickStage.PHASE_1_SIDE_VIEW_POT,
         state -> {
           if (state.status == EntityStatus.ACTIVE
-              && true
+             
               && !state.runtime.sideViewPotMotion.active(state.entity.slot())) {
             SideViewPotContact.Result contact = SideViewPotContact.Result.none();
             int effectiveLinkX = state.linkEntityX;
@@ -200,7 +200,7 @@ final class EntityPhase1Handlers {
         EntityTickStage.PHASE_1_SIDE_VIEW_POT_2,
         state -> {
           if (state.status == EntityStatus.ACTIVE
-              && true
+             
               && state.runtime.sideViewPotMotion.active(state.entity.slot())) {
             if (state.sideViewPotInteractive) {
               SideViewPotMotion.Update potUpdate =
@@ -229,7 +229,7 @@ final class EntityPhase1Handlers {
         RoomEntityRuntime.ENTITY_DOG,
         EntityTickStage.PHASE_1_DOG,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && true) {
+          if (state.status == EntityStatus.ACTIVE) {
             // DogEntityHandler writes this before ReturnIfNonInteractive_19.
             state.runtime.enemyHealth[state.entity.slot()] = DogMotion.HANDLER_HEALTH;
           }
@@ -239,7 +239,7 @@ final class EntityPhase1Handlers {
         RoomEntityRuntime.ENTITY_HOOKSHOT_BRIDGE,
         EntityTickStage.PHASE_1_HOOKSHOT_BRIDGE,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && true) {
+          if (state.status == EntityStatus.ACTIVE) {
             state.runtime.backgroundMechanics.advanceHookshotBridgeEntity(
                 state.index, state.entity);
             return false;
@@ -250,7 +250,7 @@ final class EntityPhase1Handlers {
         RoomEntityRuntime.ENTITY_HOOKSHOT_CHAIN,
         EntityTickStage.PHASE_1_HOOKSHOT_CHAIN,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && true) {
+          if (state.status == EntityStatus.ACTIVE) {
             HookshotChainMotion.State hookshotState =
                 state.runtime.hookshotChainMotion.state(state.entity.slot());
             if (hookshotState == null) {
@@ -439,7 +439,7 @@ final class EntityPhase1Handlers {
         RoomEntityRuntime.ENTITY_BOOMERANG,
         EntityTickStage.PHASE_1_BOOMERANG,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && true) {
+          if (state.status == EntityStatus.ACTIVE) {
             state.runtime.projectiles.advanceBoomerangEntity(
                 state.index,
                 state.entity,
@@ -458,7 +458,7 @@ final class EntityPhase1Handlers {
         RoomEntityRuntime.ENTITY_SWORD_BEAM,
         EntityTickStage.PHASE_1_SWORD_BEAM,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && true) {
+          if (state.status == EntityStatus.ACTIVE) {
             state.runtime.projectiles.advanceSwordBeamEntity(
                 state.index,
                 state.entity,
@@ -475,7 +475,7 @@ final class EntityPhase1Handlers {
         RoomEntityRuntime.ENTITY_MAGIC_ROD_FIREBALL,
         EntityTickStage.PHASE_1_MAGIC_ROD_FIREBALL,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && true) {
+          if (state.status == EntityStatus.ACTIVE) {
             state.runtime.projectiles.advanceMagicRodFireballEntity(
                 state.index,
                 state.entity,
@@ -490,7 +490,7 @@ final class EntityPhase1Handlers {
         RoomEntityRuntime.ENTITY_MAGIC_POWDER_SPRINKLE,
         EntityTickStage.PHASE_1_MAGIC_POWDER_SPRINKLE,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && true) {
+          if (state.status == EntityStatus.ACTIVE) {
             state.runtime.projectiles.advanceMagicPowderSprinkleEntity(
                 state.index,
                 state.entity,
@@ -506,7 +506,7 @@ final class EntityPhase1Handlers {
         RoomEntityRuntime.ENTITY_MUSICAL_NOTE,
         EntityTickStage.PHASE_1_MUSICAL_NOTE,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && true) {
+          if (state.status == EntityStatus.ACTIVE) {
             RoomEntity note = state.runtime.slotProperties.advanceMusicalNoteEntity(state.entity);
             if (note == null) {
               return false;
@@ -520,7 +520,7 @@ final class EntityPhase1Handlers {
         RoomEntityRuntime.ENTITY_BOMB,
         EntityTickStage.PHASE_1_BOMB,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && true) {
+          if (state.status == EntityStatus.ACTIVE) {
             BombMotion.Decision bombDecision =
                 state.runtime.bombInteractions.advanceBombEntity(
                     state.index,
@@ -553,7 +553,7 @@ final class EntityPhase1Handlers {
         RoomEntityRuntime.ENTITY_ARROW,
         EntityTickStage.PHASE_1_ARROW,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && true) {
+          if (state.status == EntityStatus.ACTIVE) {
             if (state.runtime.playerArrowBombArrow[state.entity.slot()]
                 && state.runtime.playerArrowMotion.transitionCountdown(state.entity.slot()) != 0) {
               int explosionSlot =
@@ -620,7 +620,7 @@ final class EntityPhase1Handlers {
         EntityTickStage.PHASE_1_LIFTABLE_ROCK,
         state -> {
           if (state.status == EntityStatus.ACTIVE
-              && true
+             
               && state.runtime.liftableRockSmashActive[state.entity.slot()]) {
             state.runtime.liftThrow.advanceLiftableRockSmash(
                 state.index, state.entity, state.frame);
@@ -633,7 +633,7 @@ final class EntityPhase1Handlers {
         EntityTickStage.PHASE_1_HEART_CONTAINER,
         state -> {
           if (state.status == EntityStatus.ACTIVE
-              && true
+             
               && state.runtime.enemyTransitionCountdown[state.entity.slot()] != 0) {
             state.runtime.bossRewards.advanceCollectedHeartContainer(
                 state.entity, state.linkEntityX, state.linkEntityY, state.linkZ);
@@ -645,7 +645,7 @@ final class EntityPhase1Handlers {
         RoomEntityRuntime.ENTITY_MADAM_MEOWMEOW,
         EntityTickStage.PHASE_1_MADAM_MEOWMEOW,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && true) {
+          if (state.status == EntityStatus.ACTIVE) {
             state.runtime.story.advanceMadamMeowMeow(
                 state.entity,
                 state.frame,
@@ -660,7 +660,7 @@ final class EntityPhase1Handlers {
         RoomEntityRuntime.ENTITY_RICHARD,
         EntityTickStage.PHASE_1_RICHARD,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && true) {
+          if (state.status == EntityStatus.ACTIVE) {
             state.runtime.story.advanceRichard(
                 state.entity,
                 state.frame,
@@ -676,7 +676,7 @@ final class EntityPhase1Handlers {
         EntityTickStage.PHASE_1_BOW_WOW_2,
         state -> {
           if (state.status == EntityStatus.ACTIVE
-              && true
+             
               && state.entity.sourceLoadOrder() >= 0
               && state.runtime.bowWowState == 0x80
               && state.handlerLinkCollisionEnabled
@@ -721,7 +721,7 @@ final class EntityPhase1Handlers {
         RoomEntityRuntime.ENTITY_SWORD_SHIELD_PICKUP,
         EntityTickStage.PHASE_1_SWORD_SHIELD_PICKUP,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && true) {
+          if (state.status == EntityStatus.ACTIVE) {
             if (state.runtime.chestSwordLevel == 0 && state.runtime.spriteHandlers != null) {
               state.entity =
                   withDefinition(
@@ -742,7 +742,7 @@ final class EntityPhase1Handlers {
         RoomEntityRuntime.ENTITY_SLEEPY_TOADSTOOL,
         EntityTickStage.PHASE_1_SLEEPY_TOADSTOOL,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && true) {
+          if (state.status == EntityStatus.ACTIVE) {
             if (!state.runtime.toadstoolPickupSequenceActive[state.entity.slot()]
                 && (state.runtime.playerHasToadstool
                     || state.runtime.playerMagicPowderCount != 0)) {
@@ -761,7 +761,7 @@ final class EntityPhase1Handlers {
         RoomEntityRuntime.ENTITY_OWL_EVENT,
         EntityTickStage.PHASE_1_OWL_EVENT,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && true) {
+          if (state.status == EntityStatus.ACTIVE) {
             state.runtime.story.advanceOwlEvent(
                 state.entity,
                 state.frame,
@@ -778,7 +778,7 @@ final class EntityPhase1Handlers {
             type,
             EntityTickStage.PHASE_1_TYPE_0X35,
             state -> {
-              if (true && (state.runtime.entityRoomStatus & 0x10) != 0) {
+              if ((state.runtime.entityRoomStatus & 0x10) != 0) {
                 state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
                 return false;
               }
@@ -792,7 +792,7 @@ final class EntityPhase1Handlers {
             type,
             EntityTickStage.PHASE_1_CROW,
             state -> {
-              if (true && state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()] >= 0x10) {
+              if (state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()] >= 0x10) {
                 state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()] >>>= 2;
               }
               return true;
@@ -805,7 +805,7 @@ final class EntityPhase1Handlers {
             type,
             EntityTickStage.PHASE_1_GENIE,
             state -> {
-              if (true && state.runtime.geniePrivateCountdown1[state.entity.slot()] > 0) {
+              if (state.runtime.geniePrivateCountdown1[state.entity.slot()] > 0) {
                 state.runtime.geniePrivateCountdown1[state.entity.slot()]--;
               }
               return true;
@@ -818,7 +818,7 @@ final class EntityPhase1Handlers {
             type,
             EntityTickStage.PHASE_1_GENIE_2,
             state -> {
-              if (true && state.runtime.geniePrivateCountdown2[state.entity.slot()] > 0) {
+              if (state.runtime.geniePrivateCountdown2[state.entity.slot()] > 0) {
                 state.runtime.geniePrivateCountdown2[state.entity.slot()]--;
               }
               return true;
@@ -835,7 +835,7 @@ final class EntityPhase1Handlers {
               if (!state.wasInitializing
                   && !state.runtime.roomTransitionActive
                   && !state.runtime.freeMovementMode
-                  && true) {
+                 ) {
                 int dx = 0;
                 int dy = 0;
                 if (((state.linkEntityX - 0x11) & 0xFF) >= 0x7E) {
@@ -863,7 +863,7 @@ final class EntityPhase1Handlers {
             state -> {
               if (state.status == EntityStatus.ACTIVE
                   && state.runtime.indoorRoom
-                  && true
+                 
                   && state.runtime.warpMotion != null) {
                 int slot = state.entity.slot();
                 state.runtime.slots[state.index] =
@@ -928,7 +928,7 @@ final class EntityPhase1Handlers {
             EntityTickStage.PHASE_1_TYPE_0X42,
             state -> {
               if (state.status == EntityStatus.ACTIVE
-                  && true
+                 
                   && state.runtime.indoorRoom
                   && state.runtime.entityMapId != 0x16) {
                 state.runtime.story.advanceOwlStatue(
@@ -951,7 +951,7 @@ final class EntityPhase1Handlers {
             EntityTickStage.PHASE_1_KID_72,
             state -> {
               if (state.status == EntityStatus.ACTIVE
-                  && true
+                 
                   && state.runtime.bowWowState == 0x80) {
                 state.runtime.story.advanceKidnapWarningKid(
                     state.entity, state.frame, state.linkEntityX, state.linkEntityY);
@@ -968,7 +968,7 @@ final class EntityPhase1Handlers {
             EntityTickStage.PHASE_1_TYPE_0X35_2,
             state -> {
               if (state.status == EntityStatus.ACTIVE
-                  && true
+                 
                   && state.runtime.heartPiecePickup[state.entity.slot()] != null) {
                 state.runtime.pickups.advanceHeartPiecePickup(
                     state.entity, state.linkEntityX, state.linkEntityY, state.linkZ);
@@ -985,7 +985,7 @@ final class EntityPhase1Handlers {
             EntityTickStage.PHASE_1_TYPE_0X39,
             state -> {
               if (state.status == EntityStatus.ACTIVE
-                  && true
+                 
                   && state.runtime.instrumentParticleKind[state.entity.slot()] == 0
                   && state.runtime.instrumentPickupState[state.entity.slot()] < 3
                   && state.runtime.transitionSequenceCounter == 4
@@ -1008,7 +1008,7 @@ final class EntityPhase1Handlers {
             EntityTickStage.PHASE_1_INSTRUMENT_OF_THE_SIRENS,
             state -> {
               if (state.status == EntityStatus.ACTIVE
-                  && true
+                 
                   && state.runtime.instrumentParticleKind[state.entity.slot()] == 1) {
                 state.runtime.rewards.advanceInstrumentParticle(state.entity);
                 return false;
@@ -1024,7 +1024,7 @@ final class EntityPhase1Handlers {
             EntityTickStage.PHASE_1_INSTRUMENT_OF_THE_SIRENS_2,
             state -> {
               if (state.status == EntityStatus.ACTIVE
-                  && true
+                 
                   && state.runtime.instrumentPickupSequenceActive[state.entity.slot()]) {
                 state.runtime.rewards.advanceInstrumentPickup(
                     state.entity,

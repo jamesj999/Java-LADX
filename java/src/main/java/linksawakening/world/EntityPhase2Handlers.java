@@ -12,7 +12,7 @@ final class EntityPhase2Handlers {
         RoomEntityRuntime.ENTITY_CHEST_WITH_ITEM,
         EntityTickStage.PHASE_2_CHEST_WITH_ITEM,
         state -> {
-          if (state.wasInitializing && true) {
+          if (state.wasInitializing) {
             state.runtime.pickups.initializeChestEntity(state.entity);
             state.updated =
                 withPositionAndVariant(
@@ -27,7 +27,7 @@ final class EntityPhase2Handlers {
         RoomEntityRuntime.ENTITY_ZOMBIE,
         EntityTickStage.PHASE_2_ZOMBIE,
         state -> {
-          if (state.wasInitializing && true) {
+          if (state.wasInitializing) {
             // The room-loaded Zombie is only a hidden spawn marker; its
             // bank-$18 handler never renders the parent entity.
             state.updated = withVariant(state.entity, -1);
@@ -39,7 +39,7 @@ final class EntityPhase2Handlers {
         RoomEntityRuntime.ENTITY_CHEST_WITH_ITEM,
         EntityTickStage.PHASE_2_CHEST_WITH_ITEM_2,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             if (state.runtime.pickups.advanceChestEntity(state.index, state.entity)) {
               return false;
             }
@@ -51,7 +51,7 @@ final class EntityPhase2Handlers {
         RoomEntityRuntime.ENTITY_DROPPABLE_SECRET_SEASHELL,
         EntityTickStage.PHASE_2_DROPPABLE_SECRET_SEASHELL,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             if (state.runtime.chestSwordLevel >= 0x02
                 || (state.runtime.entityRoomStatus & 0x10) != 0
                 || (state.runtime.entityRoomId == 0xE3
@@ -95,7 +95,7 @@ final class EntityPhase2Handlers {
         state -> {
           if (state.status == EntityStatus.ACTIVE
               && !state.wasInitializing
-              && true
+             
               && (state.runtime.entityRoomStatus & 0x10) != 0) {
             // HidingSlimeKeyEntityHandler checks ROOM_STATUS_EVENT_1 before
             // calling the shared reveal helper and unloads without touching
@@ -109,7 +109,7 @@ final class EntityPhase2Handlers {
         RoomEntityRuntime.ENTITY_HIDING_SLIME_KEY,
         EntityTickStage.PHASE_2_HIDING_SLIME_KEY_2,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             int slot = state.entity.slot();
             SlimeKeyTransitionUpdate keyUpdate =
                 state.runtime.pickups.advanceHidingSlimeKey(
@@ -133,7 +133,7 @@ final class EntityPhase2Handlers {
         RoomEntityRuntime.ENTITY_KEY_DROP_POINT,
         EntityTickStage.PHASE_2_KEY_DROP_POINT,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             // decrementEnemyStatusCountdowns mirrors UpdateEntityTimers'
             // shared transition-byte decrement before bank-$03's handler
             // reads it.
@@ -199,7 +199,7 @@ final class EntityPhase2Handlers {
         RoomEntityRuntime.ENTITY_WIZROBE,
         EntityTickStage.PHASE_2_WIZROBE,
         state -> {
-          if (state.wasInitializing && true) {
+          if (state.wasInitializing) {
             // EntityInitWizrobe decrements the initial display-list variant
             // before the first active handler dispatch.
             state.updated = withVariant(state.entity, -1);
@@ -212,7 +212,7 @@ final class EntityPhase2Handlers {
         state -> {
           if (state.status == EntityStatus.ACTIVE
               && !state.wasInitializing
-              && true
+             
               && state.runtime.enemyInspection.polsVoiceBalladOcarinaTrigger()) {
             // The handler checks this before rendering, recoil, movement,
             // or the ordinary collision path. Its private countdown $1F
@@ -236,7 +236,7 @@ final class EntityPhase2Handlers {
         RoomEntityRuntime.ENTITY_MINI_MOLDORM,
         EntityTickStage.PHASE_2_MINI_MOLDORM,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             int slot = state.entity.slot();
             // RenderMiniMoldorm records the history before the bank-$04
             // recoil helper runs, so keep this ordering explicit.
@@ -297,7 +297,7 @@ final class EntityPhase2Handlers {
         RoomEntityRuntime.ENTITY_MOLDORM,
         EntityTickStage.PHASE_2_MOLDORM,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             int slot = state.entity.slot();
             if (!state.handlerInteractive
                 || state.countdownBlocksInteraction
@@ -378,7 +378,7 @@ final class EntityPhase2Handlers {
         RoomEntityRuntime.ENTITY_MIMIC,
         EntityTickStage.PHASE_2_MIMIC,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             int slot = state.entity.slot();
             RoomEntityBackgroundInteraction mimicBackgroundInteraction =
                 state.runtime.backgroundInteraction;
@@ -406,7 +406,7 @@ final class EntityPhase2Handlers {
         state -> {
           if (state.status == EntityStatus.ACTIVE
               && !state.wasInitializing
-              && true
+             
               && state.runtime.entityMapId != 0x1F) {
             int slot = state.entity.slot();
             RoomEntityBackgroundInteraction maskedMimicBackgroundInteraction =
@@ -436,7 +436,7 @@ final class EntityPhase2Handlers {
         RoomEntityRuntime.ENTITY_CRYSTAL_SWITCH,
         EntityTickStage.PHASE_2_CRYSTAL_SWITCH,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             // CrystalSwitchEntityHandler writes $FF before dispatching
             // its normal collision helper, so sword damage can never
             // turn this entity into a dying state.
@@ -464,7 +464,7 @@ final class EntityPhase2Handlers {
         RoomEntityRuntime.ENTITY_LEEVER,
         EntityTickStage.PHASE_2_LEEVER,
         state -> {
-          if (state.wasInitializing && true) {
+          if (state.wasInitializing) {
             // EntityInitLeever calls SetEntitySpriteVariant($FF) before
             // the first active handler dispatch.
             state.updated = withVariant(state.entity, -1);
@@ -475,7 +475,7 @@ final class EntityPhase2Handlers {
         RoomEntityRuntime.ENTITY_BOMBER,
         EntityTickStage.PHASE_2_BOMBER,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             BomberMotion.Update bomberUpdate =
                 state.runtime.bomberMotion.advance(
                     state.entity,
@@ -518,7 +518,7 @@ final class EntityPhase2Handlers {
         RoomEntityRuntime.ENTITY_MAD_BOMBER,
         EntityTickStage.PHASE_2_MAD_BOMBER,
         state -> {
-          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+          if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             // MadBomberEntityHandler rewrites this handler-owned drop
             // byte on every interactive pass before its state dispatch.
             state.runtime.droppedItemBySlot[state.entity.slot()] = 0x3C;
@@ -565,7 +565,7 @@ final class EntityPhase2Handlers {
             type,
             EntityTickStage.PHASE_2_SIDE_VIEW_POT,
             state -> {
-              if (true && state.runtime.enemyTransitionCountdown[state.entity.slot()] != 0) {
+              if (state.runtime.enemyTransitionCountdown[state.entity.slot()] != 0) {
                 state.runtime.slots[state.index] = state.lifted;
                 return false;
               }
@@ -579,7 +579,7 @@ final class EntityPhase2Handlers {
             type,
             EntityTickStage.PHASE_2_ROOSTER,
             state -> {
-              if (true) {
+              {
                 RoosterMotion.Update roosterUpdate =
                     RoosterMotion.advanceLifted(
                         state.frame,
@@ -613,7 +613,7 @@ final class EntityPhase2Handlers {
             type,
             EntityTickStage.PHASE_2_BOMB,
             state -> {
-              if (true) {
+              {
                 BombMotion.Decision bombDecision =
                     state.runtime.bombInteractions.advanceBombEntity(
                         state.index,
@@ -637,7 +637,7 @@ final class EntityPhase2Handlers {
             type,
             EntityTickStage.PHASE_2_COLOR_SHELL_TYPE,
             state -> {
-              if (state.runtime.entityMapId == state.runtime.MAP_COLOR_DUNGEON && true) {
+              if (state.runtime.entityMapId == state.runtime.MAP_COLOR_DUNGEON) {
                 state.runtime.colorShellMotion.enterState6(state.entity);
                 RoomEntity activeShell =
                     state.runtime.slotProperties.refreshColorShellDisplay(
@@ -655,12 +655,11 @@ final class EntityPhase2Handlers {
             type,
             EntityTickStage.PHASE_2_MOBLIN_KING,
             state -> {
-              if (true) {
+              {
                 state.runtime.bossRewards.advanceMoblinKingDestruction(
                     state.entity, state.frame, state.randomByteSupplier);
                 return false;
               }
-              return true;
             });
       }
     }
@@ -670,7 +669,7 @@ final class EntityPhase2Handlers {
             type,
             EntityTickStage.PHASE_2_GENIE,
             state -> {
-              if (true && state.runtime.geniePrivateState1[state.entity.slot()] == 1) {
+              if (state.runtime.geniePrivateState1[state.entity.slot()] == 1) {
                 state.runtime.genie.advanceGenieDestruction(
                     state.entity, state.frame, state.randomByteSupplier);
                 return false;
@@ -685,12 +684,11 @@ final class EntityPhase2Handlers {
             type,
             EntityTickStage.PHASE_2_ROLLING_BONES,
             state -> {
-              if (true) {
+              {
                 state.runtime.bossRewards.advanceRollingBonesDestruction(
                     state.entity, state.randomByteSupplier);
                 return false;
               }
-              return true;
             });
       }
     }
@@ -700,11 +698,10 @@ final class EntityPhase2Handlers {
             type,
             EntityTickStage.PHASE_2_MOLDORM_2,
             state -> {
-              if (true) {
+              {
                 state.runtime.bossRewards.advanceMoldormDestruction(state.entity, state.frame);
                 return false;
               }
-              return true;
             });
       }
     }
@@ -714,7 +711,7 @@ final class EntityPhase2Handlers {
             type,
             EntityTickStage.PHASE_2_BOMB_2,
             state -> {
-              if (true) {
+              {
                 BombMotion.Decision bombDecision =
                     state.runtime.bombInteractions.advanceBombEntity(
                         state.index,
@@ -742,7 +739,7 @@ final class EntityPhase2Handlers {
             type,
             EntityTickStage.PHASE_2_HIDING_SLIME_KEY_3,
             state -> {
-              if (true && (state.runtime.entityRoomStatus & 0x10) != 0) {
+              if ((state.runtime.entityRoomStatus & 0x10) != 0) {
                 // The handler's first instruction is the completed-room
                 // gate, including the INIT dispatch path.
                 state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
@@ -758,7 +755,7 @@ final class EntityPhase2Handlers {
             type,
             EntityTickStage.PHASE_2_MOBLIN,
             state -> {
-              if (true) {
+              {
                 state.runtime.roamingEnemyMotion.initialize(state.entity.slot());
               }
               return true;
@@ -771,7 +768,7 @@ final class EntityPhase2Handlers {
             type,
             EntityTickStage.PHASE_2_MOBLIN_SWORD,
             state -> {
-              if (true) {
+              {
                 state.runtime.moblinSwordMotion.initialize(state.entity.slot(), state.entity.x());
               }
               return true;
@@ -784,7 +781,7 @@ final class EntityPhase2Handlers {
             type,
             EntityTickStage.PHASE_2_SPARK_TYPE,
             state -> {
-              if (true) {
+              {
                 state.runtime.sparkMotion.initialize(state.entity.slot(), state.entity.type());
               }
               return true;
@@ -797,7 +794,7 @@ final class EntityPhase2Handlers {
             type,
             EntityTickStage.PHASE_2_ZOL_GEL_TYPE,
             state -> {
-              if (true) {
+              {
                 state.runtime.zolGelMotion.initialize(
                     state.entity.slot(), state.entity.type(), state.randomByteSupplier);
               }
@@ -811,7 +808,7 @@ final class EntityPhase2Handlers {
             type,
             EntityTickStage.PHASE_2_MINI_MOLDORM_2,
             state -> {
-              if (true) {
+              {
                 state.runtime.miniMoldormMotion.initialize(state.entity);
               }
               return true;
@@ -824,7 +821,7 @@ final class EntityPhase2Handlers {
             type,
             EntityTickStage.PHASE_2_MOLDORM_3,
             state -> {
-              if (true) {
+              {
                 state.runtime.moldormMotion.initialize(state.entity);
               }
               return true;
@@ -837,7 +834,7 @@ final class EntityPhase2Handlers {
             type,
             EntityTickStage.PHASE_2_WIZROBE_2,
             state -> {
-              if (true) {
+              {
                 state.runtime.wizrobeMotion.initializeFromRoom(
                     state.entity.slot(), state.entity.spriteVariant());
                 state.runtime.enemyTransitionCountdown[state.entity.slot()] = 0x80;
@@ -853,7 +850,7 @@ final class EntityPhase2Handlers {
             type,
             EntityTickStage.PHASE_2_WIZROBE_PROJECTILE,
             state -> {
-              if (true) {
+              {
                 state.runtime.wizrobeProjectileMotion.initialize(
                     state.entity.slot(), state.randomByteSupplier);
                 state.preserveWizrobeProjectilePresentation = true;
@@ -868,7 +865,7 @@ final class EntityPhase2Handlers {
             type,
             EntityTickStage.PHASE_2_GHINI_TYPE,
             state -> {
-              if (true) {
+              {
                 state.runtime.ghiniMotion.initialize(state.entity.slot(), state.entity.type());
                 if (isHidingGhiniType(state.entity.type())) {
                   state.preserveGhiniPresentation = true;
@@ -884,7 +881,7 @@ final class EntityPhase2Handlers {
             type,
             EntityTickStage.PHASE_2_BOMBITE_TYPE,
             state -> {
-              if (true) {
+              {
                 state.runtime.bombiteMotion.initialize(state.entity.slot());
                 state.runtime.slowTimerInitialized[state.entity.slot()] = true;
               }
@@ -898,7 +895,7 @@ final class EntityPhase2Handlers {
             type,
             EntityTickStage.PHASE_2_FOLLOWING_NPC_TYPE,
             state -> {
-              if (true) {
+              {
                 if (state.entity.type() == state.runtime.ENTITY_BOW_WOW) {
                   state.runtime.bowWowMotion.initialize(state.entity.slot());
                 } else {
@@ -916,7 +913,7 @@ final class EntityPhase2Handlers {
             type,
             EntityTickStage.PHASE_2_COLOR_SHELL_TYPE_2,
             state -> {
-              if (true) {
+              {
                 state.runtime.colorShellMotion.initialize(state.entity.slot());
               }
               return true;
@@ -931,7 +928,7 @@ final class EntityPhase2Handlers {
             state -> {
               if (state.status == EntityStatus.ACTIVE
                   && !state.wasInitializing
-                  && true
+                 
                   && state.handlerLinkCollisionEnabled
                   && state.runtime.backgroundMechanics.entityTimersInteractive()
                   && !state.creditsGameplay
@@ -1006,7 +1003,7 @@ final class EntityPhase2Handlers {
             EntityTickStage.PHASE_2_COMMON_DROPPABLE_TYPE,
             state -> {
               if (state.wasInitializing
-                  && true
+                 
                   && state.runtime.droppablePrivateState3[state.entity.slot()] != 0) {
                 // The init handler has already set the hidden options. The
                 // corresponding active handler will be entered on the next
@@ -1024,7 +1021,7 @@ final class EntityPhase2Handlers {
             type,
             EntityTickStage.PHASE_2_COMMON_DROPPABLE_TYPE_2,
             state -> {
-              if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+              if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
                 CommonDroppableUpdate droppableUpdate =
                     state.runtime.pickups.advanceCommonDroppable(
                         state.entity,
@@ -1054,7 +1051,7 @@ final class EntityPhase2Handlers {
             type,
             EntityTickStage.PHASE_2_ROLLING_BONES_BAR,
             state -> {
-              if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+              if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
                 // BossIntro runs before ReturnIfNonInteractive_06.
                 if (state.entity.type() == state.runtime.ENTITY_ROLLING_BONES
                     && !state.runtime.roomTransitionActive
@@ -1099,7 +1096,7 @@ final class EntityPhase2Handlers {
             type,
             EntityTickStage.PHASE_2_SPARK_TYPE_2,
             state -> {
-              if (state.wasInitializing && true) {
+              if (state.wasInitializing) {
                 state.updated = state.runtime.sparkMotion.applyInitializationOffset(state.entity);
               }
               return true;
