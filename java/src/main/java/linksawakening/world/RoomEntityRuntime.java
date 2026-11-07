@@ -26,6 +26,8 @@ import java.util.function.IntUnaryOperator;
  * class only advances handler-owned status and sprite-variant fields.
  */
 public final class RoomEntityRuntime extends EntityRuntimeState {
+    private final EntityRuntimeConfiguration entityRuntimeConfiguration = new EntityRuntimeConfiguration(this);
+    private final EntityDebugConfiguration entityDebugConfiguration = new EntityDebugConfiguration(this);
     final EntityHandlerRegistry entityHandlers = createEntityHandlers();
     private final EntityRewardController rewards = new EntityRewardController(this);
     private final EntityStoryController story = new EntityStoryController(this);
@@ -1404,13 +1406,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     }
 
     /** Supplies the persistent world clock before this frame's entity pass. */
-    void setBoomerangSoundCounterForFrame(int counter) {
-        if (counter < 0 || counter >= BOOMERANG_SFX_COUNTER_PERIOD) {
-            throw new IllegalArgumentException("Boomerang sound counter out of range: " + counter);
-        }
-        boomerangSfxCounter = counter;
-        boomerangSoundClockProvided = true;
-    }
+    void setBoomerangSoundCounterForFrame(int counter) { this.entityRuntimeConfiguration.setBoomerangSoundCounterForFrame(counter); }
 
     void playBoomerangSoundIfDue(RoomEntity entity) { projectiles.playBoomerangSoundIfDue(entity); }
 
@@ -1428,11 +1424,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     /** Advances entity {@code $08} through MagicPowderSprinkleEntityHandler. */
     void advanceMagicPowderSprinkleEntity(int index, RoomEntity entity, int frame, int linkMotionState, boolean handlerInteractive, boolean timersInteractive) { projectiles.advanceMagicPowderSprinkleEntity(index, entity, frame, linkMotionState, handlerInteractive, timersInteractive); }
 
-    void setTorchPaletteTransitionState(int targetAddress, boolean active) {
-        validateByte(targetAddress, "Torch palette target");
-        torchPaletteTargetAddress = targetAddress;
-        torchPaletteTransitionActive = active;
-    }
+    void setTorchPaletteTransitionState(int targetAddress, boolean active) { this.entityRuntimeConfiguration.setTorchPaletteTransitionState(targetAddress, active); }
 
     static int magicPowderObjectLeft(RoomEntity entity) {
         return (((entity.x() + 0x07 - 0x08) & 0xFF) & 0xF0);
@@ -2145,24 +2137,9 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     int magicPowderSlowTransitionCountdown(int slot) { return this.roomInspection.magicPowderSlowTransitionCountdown(slot); }
 
-    void setMagicPowderTransitionCountdownForTest(int slot, int value) {
-        validateCountdownTestValue(slot, value);
-        if (!isLoadedEntityOfType(slot, ENTITY_MAGIC_POWDER_SPRINKLE)) {
-            throw new IllegalArgumentException("Entity slot does not contain Magic Powder: "
-                + slot);
-        }
-        enemyTransitionCountdown[slot] = value;
-    }
+    void setMagicPowderTransitionCountdownForTest(int slot, int value) { this.entityDebugConfiguration.setMagicPowderTransitionCountdownForTest(slot, value); }
 
-    void setMagicPowderSlowTransitionCountdownForTest(int slot, int value) {
-        validateCountdownTestValue(slot, value);
-        if (!isLoadedEntityOfType(slot, ENTITY_MAGIC_POWDER_SPRINKLE)) {
-            throw new IllegalArgumentException("Entity slot does not contain Magic Powder: "
-                + slot);
-        }
-        slowTransitionCountdown[slot] = value;
-        slowTimerInitialized[slot] = true;
-    }
+    void setMagicPowderSlowTransitionCountdownForTest(int slot, int value) { this.entityDebugConfiguration.setMagicPowderSlowTransitionCountdownForTest(slot, value); }
 
     int swordBeamSpeedX(int slot) { return this.roomInspection.swordBeamSpeedX(slot); }
 
@@ -2456,13 +2433,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     int bombPrivateCountdown1ForTest(int slot) { return this.roomInspection.bombPrivateCountdown1ForTest(slot); }
 
-    void setBombTransitionCountdownForTest(int slot, int value) {
-        validateCountdownTestValue(slot, value);
-        if (!slots[slot].loaded() || slots[slot].type() != ENTITY_BOMB) {
-            throw new IllegalArgumentException("Entity slot does not contain a bomb: " + slot);
-        }
-        enemyTransitionCountdown[slot] = value;
-    }
+    void setBombTransitionCountdownForTest(int slot, int value) { this.entityDebugConfiguration.setBombTransitionCountdownForTest(slot, value); }
 
     boolean spawnHookshotBridge(int bridgeX, int bridgeY, int direction,
                                         int transitionCountdown) {
@@ -2506,20 +2477,11 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     int bowWowTransitionCountdown(int slot) { return this.roomInspection.bowWowTransitionCountdown(slot); }
 
-    void setBowWowTransitionCountdownForTest(int slot, int value) {
-        validateCountdownTestValue(slot, value);
-        if (!isLoadedEntityOfType(slot, ENTITY_BOW_WOW)) {
-            throw new IllegalArgumentException("Entity slot does not contain Bow-Wow: " + slot);
-        }
-        bowWowMotion.setTransitionCountdownForTest(slot, value);
-    }
+    void setBowWowTransitionCountdownForTest(int slot, int value) { this.entityDebugConfiguration.setBowWowTransitionCountdownForTest(slot, value); }
 
     int entityInertia(int slot) { return this.roomInspection.entityInertia(slot); }
 
-    void setEntityInertiaForTest(int slot, int value) {
-        validateCountdownTestValue(slot, value);
-        entityInertia[slot] = value;
-    }
+    void setEntityInertiaForTest(int slot, int value) { this.entityDebugConfiguration.setEntityInertiaForTest(slot, value); }
 
     int pokeyPrivateState1(int slot) { return this.roomInspection.pokeyPrivateState1(slot); }
 
@@ -2573,9 +2535,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
             chain.x(), chain.y(), linkEntityX, linkEntityY, frameCounter);
     }
 
-    void setLinkVelocityZ(int velocity) {
-        currentLinkVelocityZ = velocity & 0xFF;
-    }
+    void setLinkVelocityZ(int velocity) { this.entityRuntimeConfiguration.setLinkVelocityZ(velocity); }
 
     void updateBowWowChain(int frame) {
         List<BowWowChain.Entry> entries = new ArrayList<>();
@@ -2642,308 +2602,116 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     int bushCrawlerSpeedY(int slot) { return this.roomInspection.bushCrawlerSpeedY(slot); }
 
-    void setSpriteSelection(EntitySpriteSelection selection) {
-        spriteSelection = selection;
-    }
+    void setSpriteSelection(EntitySpriteSelection selection) { this.entityRuntimeConfiguration.setSpriteSelection(selection); }
 
-    void setGroundInteraction(RoomEntityGroundInteraction groundInteraction) {
-        this.groundInteraction = groundInteraction == null
-            ? (entity, frameCounter, previousGroundStatus, speedZ, sideScrolling) ->
-                RoomEntityGroundInteraction.Result.unchanged(entity, 0)
-            : groundInteraction;
-    }
+    void setGroundInteraction(RoomEntityGroundInteraction groundInteraction) { this.entityRuntimeConfiguration.setGroundInteraction(groundInteraction); }
 
-    void setBackgroundInteraction(RoomEntityBackgroundInteraction backgroundInteraction) {
-        this.backgroundInteraction = backgroundInteraction;
-    }
+    void setBackgroundInteraction(RoomEntityBackgroundInteraction backgroundInteraction) { this.entityRuntimeConfiguration.setBackgroundInteraction(backgroundInteraction); }
 
-    void setObjectQuery(RoomEntityObjectQuery objectQuery) {
-        this.objectQuery = objectQuery;
-    }
+    void setObjectQuery(RoomEntityObjectQuery objectQuery) { this.entityRuntimeConfiguration.setObjectQuery(objectQuery); }
 
-    void setObjectIntersectionQuery(RoomEntityObjectQuery objectIntersectionQuery) {
-        this.objectIntersectionQuery = objectIntersectionQuery;
-    }
+    void setObjectIntersectionQuery(RoomEntityObjectQuery objectIntersectionQuery) { this.entityRuntimeConfiguration.setObjectIntersectionQuery(objectIntersectionQuery); }
 
     int groundStatus(int slot) { return this.roomInspection.groundStatus(slot); }
 
-    void setActionButtonsHeld(boolean actionButtonsHeld) {
-        setActionButtonsHeld(actionButtonsHeld, actionButtonsHeld);
-    }
+    void setActionButtonsHeld(boolean actionButtonsHeld) { this.entityRuntimeConfiguration.setActionButtonsHeld(actionButtonsHeld); }
 
-    void setActionButtonsHeld(boolean actionButtonAHeld, boolean actionButtonBHeld) {
-        this.actionButtonAHeld = actionButtonAHeld;
-        this.actionButtonBHeld = actionButtonBHeld;
-        this.actionButtonsHeld = actionButtonAHeld || actionButtonBHeld;
-    }
+    void setActionButtonsHeld(boolean actionButtonAHeld, boolean actionButtonBHeld) { this.entityRuntimeConfiguration.setActionButtonsHeld(actionButtonAHeld, actionButtonBHeld); }
 
-    void setJoypadHeld(boolean joypadHeld) {
-        this.joypadHeld = joypadHeld;
-    }
+    void setJoypadHeld(boolean joypadHeld) { this.entityRuntimeConfiguration.setJoypadHeld(joypadHeld); }
 
-    void setPressedButtonsMask(int pressedButtonsMask) {
-        validateByte(pressedButtonsMask, "Pressed buttons mask");
-        this.linkPressedButtonsMask = pressedButtonsMask;
-    }
+    void setPressedButtonsMask(int pressedButtonsMask) { this.entityRuntimeConfiguration.setPressedButtonsMask(pressedButtonsMask); }
 
     /** Supplies wDialogState's nonzero gate to handlers with dialog branches. */
-    void setDialogActive(boolean dialogActive) {
-        this.dialogActive = dialogActive;
-    }
+    void setDialogActive(boolean dialogActive) { this.entityRuntimeConfiguration.setDialogActive(dialogActive); }
 
-    void setTalkState(boolean inventoryAppearing, int dialogCooldown, int windowY) {
-        validateByte(dialogCooldown, "Dialog cooldown");
-        validateByte(windowY, "Window Y");
-        this.inventoryAppearing = inventoryAppearing;
-        this.dialogCooldown = dialogCooldown;
-        this.windowY = windowY;
-    }
+    void setTalkState(boolean inventoryAppearing, int dialogCooldown, int windowY) { this.entityRuntimeConfiguration.setTalkState(inventoryAppearing, dialogCooldown, windowY); }
 
-    void setDialogAskSelectionIndex(int selectionIndex) {
-        if (selectionIndex < 0 || selectionIndex > 1) {
-            throw new IllegalArgumentException("Dialog selection must be 0 or 1");
-        }
-        dialogAskSelectionIndex = selectionIndex;
-    }
+    void setDialogAskSelectionIndex(int selectionIndex) { this.entityRuntimeConfiguration.setDialogAskSelectionIndex(selectionIndex); }
 
     /** Supplies the nonzero wActiveMusicIndex gate used by instrument pickup. */
-    void setActiveMusic(boolean activeMusic) {
-        this.activeMusic = activeMusic;
-    }
+    void setActiveMusic(boolean activeMusic) { this.entityRuntimeConfiguration.setActiveMusic(activeMusic); }
 
-    void setBowWowState(int bowWowState) {
-        this.bowWowState = bowWowState & 0xFF;
-    }
+    void setBowWowState(int bowWowState) { this.entityRuntimeConfiguration.setBowWowState(bowWowState); }
 
     int bowWowState() { return this.roomInspection.bowWowState(); }
 
     int moblinKingState(int slot) { return this.roomInspection.moblinKingState(slot); }
 
-    void setMoblinKingStateForTest(int slot, int state, int direction,
-                                   int speedX, int speedY, int speedZ,
-                                   int transitionCountdown) {
-        validateCountdownTestValue(slot, transitionCountdown);
-        moblinKingMotion.setStateForTest(slot, state, direction, speedX, speedY, speedZ);
-        enemyTransitionCountdown[slot] = transitionCountdown;
-    }
+    void setMoblinKingStateForTest(int slot, int state, int direction, int speedX, int speedY, int speedZ, int transitionCountdown) { this.entityDebugConfiguration.setMoblinKingStateForTest(slot, state, direction, speedX, speedY, speedZ, transitionCountdown); }
 
-    void setEntityPrivateState4ForTest(int slot, int value) {
-        validateCountdownTestValue(slot, value);
-        entityPrivateState4[slot] = value;
-    }
+    void setEntityPrivateState4ForTest(int slot, int value) { this.entityDebugConfiguration.setEntityPrivateState4ForTest(slot, value); }
 
-    void setLikeLikeLinkInventory(int itemA, int itemB) {
-        validateByte(itemA, "Link A inventory slot");
-        validateByte(itemB, "Link B inventory slot");
-        linkItemA = itemA;
-        linkItemB = itemB;
-        linkInventoryConfigured = true;
-    }
+    void setLikeLikeLinkInventory(int itemA, int itemB) { this.entityRuntimeConfiguration.setLikeLikeLinkInventory(itemA, itemB); }
 
-    void setLikeLikeLinkInventoryForTest(int itemA, int itemB) {
-        setLikeLikeLinkInventory(itemA, itemB);
-    }
+    void setLikeLikeLinkInventoryForTest(int itemA, int itemB) { this.entityDebugConfiguration.setLikeLikeLinkInventoryForTest(itemA, itemB); }
 
-    void setPowerBraceletButtonHeld(boolean powerBraceletButtonHeld) {
-        this.powerBraceletButtonHeld = powerBraceletButtonHeld;
-    }
+    void setPowerBraceletButtonHeld(boolean powerBraceletButtonHeld) { this.entityRuntimeConfiguration.setPowerBraceletButtonHeld(powerBraceletButtonHeld); }
 
     /** Supplies the source-prioritized held A/B button for an equipped bomb. */
-    void setBombButtonHeld(boolean bombButtonHeld) {
-        this.bombButtonHeld = bombButtonHeld;
-    }
+    void setBombButtonHeld(boolean bombButtonHeld) { this.entityRuntimeConfiguration.setBombButtonHeld(bombButtonHeld); }
 
-    void setLinkAttackStepAnimationCountdown(int countdown) {
-        validateByte(countdown, "Link attack-step animation countdown");
-        linkAttackStepAnimationCountdown = countdown;
-    }
+    void setLinkAttackStepAnimationCountdown(int countdown) { this.entityRuntimeConfiguration.setLinkAttackStepAnimationCountdown(countdown); }
 
     /** Supplies the captured hLinkFinalPositionX visible to entity handlers. */
-    void setLinkFinalPositionX(int positionX) {
-        validateByte(positionX, "Link final position X");
-        currentLinkFinalPositionX = positionX;
-        currentLinkFinalPositionXConfigured = true;
-    }
+    void setLinkFinalPositionX(int positionX) { this.entityRuntimeConfiguration.setLinkFinalPositionX(positionX); }
 
     boolean shouldGetLostInMysteriousWoods() { return this.roomInspection.shouldGetLostInMysteriousWoods(); }
 
-    void setLiftedLinkC13B(int linkC13B) {
-        if ((linkC13B & ~0xFF) != 0) {
-            throw new IllegalArgumentException("Lifted Link C13B must be an unsigned byte: "
-                + linkC13B);
-        }
-        this.liftedLinkC13B = linkC13B;
-    }
+    void setLiftedLinkC13B(int linkC13B) { this.entityRuntimeConfiguration.setLiftedLinkC13B(linkC13B); }
 
-    void setGroundInteractionSideScrolling(boolean sideScrolling) {
-        groundInteractionSideScrolling = sideScrolling;
-    }
+    void setGroundInteractionSideScrolling(boolean sideScrolling) { this.entityRuntimeConfiguration.setGroundInteractionSideScrolling(sideScrolling); }
 
-    void setEnemyDropResolver(EnemyDropResolver resolver) {
-        enemyDropResolver = resolver;
-    }
+    void setEnemyDropResolver(EnemyDropResolver resolver) { this.entityRuntimeConfiguration.setEnemyDropResolver(resolver); }
 
-    void setEnemyDropCounters(EnemyDropResolver.CounterState counters) {
-        enemyDropCounters = Objects.requireNonNull(counters, "Drop counters cannot be null");
-    }
+    void setEnemyDropCounters(EnemyDropResolver.CounterState counters) { this.entityRuntimeConfiguration.setEnemyDropCounters(counters); }
 
-    void setEnemyDropPlayerState(int maxHearts, int health, boolean activePowerUp) {
-        validateEnemyDropByte(maxHearts, "Maximum hearts");
-        validateEnemyDropByte(health, "Health");
-        enemyDropMaxHearts = maxHearts;
-        enemyDropHealth = health;
-        enemyDropActivePowerUp = activePowerUp;
-    }
+    void setEnemyDropPlayerState(int maxHearts, int health, boolean activePowerUp) { this.entityRuntimeConfiguration.setEnemyDropPlayerState(maxHearts, health, activePowerUp); }
 
-    void setEnemyDropBossBattle(boolean bossBattle) {
-        enemyDropBossBattle = bossBattle;
-    }
+    void setEnemyDropBossBattle(boolean bossBattle) { this.entityRuntimeConfiguration.setEnemyDropBossBattle(bossBattle); }
 
-    void setDroppedItemForTest(int slot, int itemType) {
-        validateEntitySlot(slot);
-        validateEnemyDropByte(itemType, "Dropped item");
-        droppedItemBySlot[slot] = itemType;
-    }
+    void setDroppedItemForTest(int slot, int itemType) { this.entityDebugConfiguration.setDroppedItemForTest(slot, itemType); }
 
-    void setEntityMapId(int mapId) {
-        if (mapId < -1 || mapId > 0xFF) {
-            throw new IllegalArgumentException("Entity map id must be -1 or an unsigned byte: "
-                + mapId);
-        }
-        entityMapId = mapId;
-    }
+    void setEntityMapId(int mapId) { this.entityRuntimeConfiguration.setEntityMapId(mapId); }
 
-    void setEntityMapIdForTest(int mapId) {
-        setEntityMapId(mapId);
-    }
+    void setEntityMapIdForTest(int mapId) { this.entityDebugConfiguration.setEntityMapIdForTest(mapId); }
 
-    void setEntityRoomId(int roomId) {
-        validateByte(roomId, "Entity room id");
-        entityRoomId = roomId;
-        for (RoomEntity entity : slots) {
-            if (entity.loaded() && entity.type() == ENTITY_DROPPABLE_SECRET_SEASHELL) {
-                secretSeashellMotion.ensureInitialized(entity.slot(), roomId);
-                entityOptions1Override[entity.slot()] =
-                    secretSeashellMotion.privateState3(entity.slot()) != 0
-                        ? SECRET_SEASHELL_HIDDEN_OPTIONS1
-                        : SECRET_SEASHELL_REVEALED_OPTIONS1;
-            }
-        }
-    }
+    void setEntityRoomId(int roomId) { this.entityRuntimeConfiguration.setEntityRoomId(roomId); }
 
-    void setEntityRoomIdForTest(int roomId) {
-        setEntityRoomId(roomId);
-    }
+    void setEntityRoomIdForTest(int roomId) { this.entityDebugConfiguration.setEntityRoomIdForTest(roomId); }
 
-    void setEntityRoomStatus(int roomStatus) {
-        validateByte(roomStatus, "Entity room status");
-        entityRoomStatus = roomStatus;
-    }
+    void setEntityRoomStatus(int roomStatus) { this.entityRuntimeConfiguration.setEntityRoomStatus(roomStatus); }
 
     /** Supplies the current map's wHasInstrument1 bit to entity-$61. */
-    void setDungeonMinibossReady(boolean ready) {
-        dungeonMinibossReady = ready;
-    }
+    void setDungeonMinibossReady(boolean ready) { this.entityRuntimeConfiguration.setDungeonMinibossReady(ready); }
 
-    void setEntityRoomStatusForTest(int roomStatus) {
-        setEntityRoomStatus(roomStatus);
-    }
+    void setEntityRoomStatusForTest(int roomStatus) { this.entityDebugConfiguration.setEntityRoomStatusForTest(roomStatus); }
 
-    void setSecretSeashellPegasusCollisionForTest(boolean screenShakeActive,
-                                                   boolean collisionActive,
-                                                   int collisionX, int collisionY) {
-        setSecretSeashellPegasusCollisionState(screenShakeActive, collisionActive,
-            collisionX, collisionY);
-    }
+    void setSecretSeashellPegasusCollisionForTest(boolean screenShakeActive, boolean collisionActive, int collisionX, int collisionY) { this.entityDebugConfiguration.setSecretSeashellPegasusCollisionForTest(screenShakeActive, collisionActive, collisionX, collisionY); }
 
-    void setDroppablePegasusCollisionForTest(boolean screenShakeActive,
-                                             boolean collisionActive,
-                                             int collisionX, int collisionY) {
-        setSecretSeashellPegasusCollisionState(screenShakeActive, collisionActive,
-            collisionX, collisionY);
-    }
+    void setDroppablePegasusCollisionForTest(boolean screenShakeActive, boolean collisionActive, int collisionX, int collisionY) { this.entityDebugConfiguration.setDroppablePegasusCollisionForTest(screenShakeActive, collisionActive, collisionX, collisionY); }
 
-    void setDroppableRevealedForTest(int slot, int slowCountdown) {
-        validateCountdownTestValue(slot, slowCountdown);
-        validateEntitySlot(slot);
-        int type = slots[slot].type();
-        if (!isCommonDroppableType(type)) {
-            throw new IllegalArgumentException("Entity slot is not an ordinary droppable: "
-                + slot);
-        }
-        droppablePrivateState3[slot] = 0;
-        droppablePrivateState4[slot] = 0;
-        entityOptions1Override[slot] = DROPPABLE_REVEALED_OPTIONS1;
-        slowTransitionCountdown[slot] = slowCountdown;
-        slowTimerInitialized[slot] = true;
-        enemyDropActive[slot] = false;
-        enemyDropMotion.clear(slot);
-    }
+    void setDroppableRevealedForTest(int slot, int slowCountdown) { this.entityDebugConfiguration.setDroppableRevealedForTest(slot, slowCountdown); }
 
-    void setSecretSeashellPegasusCollisionState(boolean screenShakeActive,
-                                                 boolean collisionActive,
-                                                 int collisionX, int collisionY) {
-        validateByte(collisionX, "Pegasus collision X");
-        validateByte(collisionY, "Pegasus collision Y");
-        secretSeashellScreenShakeActive = screenShakeActive;
-        secretSeashellPegasusCollisionActive = collisionActive;
-        secretSeashellPegasusCollisionCoordinatesKnown = true;
-        secretSeashellPegasusCollisionX = collisionX;
-        secretSeashellPegasusCollisionY = collisionY;
-    }
+    void setSecretSeashellPegasusCollisionState(boolean screenShakeActive, boolean collisionActive, int collisionX, int collisionY) { this.entityRuntimeConfiguration.setSecretSeashellPegasusCollisionState(screenShakeActive, collisionActive, collisionX, collisionY); }
 
     /** Supplies the three player upgrade bytes read by ChestWithItemEntityHandler. */
-    void setChestPlayerLevels(int shieldLevel, int swordLevel, int powerBraceletLevel) {
-        validateByte(shieldLevel, "Shield level");
-        validateByte(swordLevel, "Sword level");
-        validateByte(powerBraceletLevel, "Power Bracelet level");
-        chestShieldLevel = shieldLevel;
-        chestSwordLevel = swordLevel;
-        chestPowerBraceletLevel = powerBraceletLevel;
-        chestPlayerLevelsKnown = true;
-        if (spriteHandlers != null) {
-            EntitySpriteDefinition pickupDefinition =
-                spriteHandlers.forSwordShieldPickup(swordLevel == 0);
-            for (int index = 0; index < slots.length; index++) {
-                if (slots[index].type() == ENTITY_SWORD_SHIELD_PICKUP) {
-                    slots[index] = withDefinition(slots[index], pickupDefinition,
-                        slots[index].spriteVariant());
-                }
-            }
-        }
-    }
+    void setChestPlayerLevels(int shieldLevel, int swordLevel, int powerBraceletLevel) { this.entityRuntimeConfiguration.setChestPlayerLevels(shieldLevel, swordLevel, powerBraceletLevel); }
 
-    void setToadstoolPlayerState(boolean hasToadstool, int magicPowderCount) {
-        validateByte(magicPowderCount, "Magic Powder count");
-        playerHasToadstool = hasToadstool;
-        playerMagicPowderCount = magicPowderCount;
-    }
+    void setToadstoolPlayerState(boolean hasToadstool, int magicPowderCount) { this.entityRuntimeConfiguration.setToadstoolPlayerState(hasToadstool, magicPowderCount); }
 
     /** Supplies wHasTailKey to OwlEventEntityHandler. */
-    void setTailKeyOwned(boolean owned) {
-        playerHasTailKey = owned;
-    }
+    void setTailKeyOwned(boolean owned) { this.entityRuntimeConfiguration.setTailKeyOwned(owned); }
 
     int swordPickupStateForTest(int slot) { return this.roomInspection.swordPickupStateForTest(slot); }
 
     int slowTransitionCountdownForTest(int slot) { return this.roomInspection.slowTransitionCountdownForTest(slot); }
 
-    void setSlowTransitionCountdownForTest(int slot, int countdown) {
-        validateCountdownTestValue(slot, countdown);
-        slowTransitionCountdown[slot] = countdown;
-        slowTimerInitialized[slot] = true;
-    }
+    void setSlowTransitionCountdownForTest(int slot, int countdown) { this.entityDebugConfiguration.setSlowTransitionCountdownForTest(slot, countdown); }
 
-    void setTransitionCountdownForTest(int slot, int countdown) {
-        validateCountdownTestValue(slot, countdown);
-        enemyTransitionCountdown[slot] = countdown;
-    }
+    void setTransitionCountdownForTest(int slot, int countdown) { this.entityDebugConfiguration.setTransitionCountdownForTest(slot, countdown); }
 
-    void setThreeOfAKindSettledForTest(int slot, int face) {
-        validateEntitySlot(slot);
-        threeOfAKindMotion.setSettledForTest(slot, face);
-        enemyTransitionCountdown[slot] = 0;
-    }
+    void setThreeOfAKindSettledForTest(int slot, int face) { this.entityDebugConfiguration.setThreeOfAKindSettledForTest(slot, face); }
 
     int threeOfAKindStateForTest(int slot) { return this.roomInspection.threeOfAKindStateForTest(slot); }
 
@@ -2955,31 +2723,13 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     int hinoxSpeedYForTest(int slot) { return this.roomInspection.hinoxSpeedYForTest(slot); }
 
-    void setHinoxStateForTest(int slot, int state) {
-        validateEntitySlot(slot);
-        if (slots[slot].type() != ENTITY_HINOX) {
-            throw new IllegalArgumentException("Entity slot is not Hinox: " + slot);
-        }
-        hinoxMotion.setStateForTest(slot, state, 0, 0);
-    }
+    void setHinoxStateForTest(int slot, int state) { this.entityDebugConfiguration.setHinoxStateForTest(slot, state); }
 
-    void setHinoxSpeedForTest(int slot, int speedX, int speedY) {
-        validateEntitySlot(slot);
-        if (slots[slot].type() != ENTITY_HINOX) {
-            throw new IllegalArgumentException("Entity slot is not Hinox: " + slot);
-        }
-        hinoxMotion.setSpeedForTest(slot, speedX, speedY);
-    }
+    void setHinoxSpeedForTest(int slot, int speedX, int speedY) { this.entityDebugConfiguration.setHinoxSpeedForTest(slot, speedX, speedY); }
 
     int enemyHealthForTest(int slot) { return this.roomInspection.enemyHealthForTest(slot); }
 
-    void setTarinRaccoonStateForTest(int slot, int state, int speedX, int speedY,
-                                     int speedZ, int privateState2, int privateState3,
-                                     boolean nearLinkLatch) {
-        validateEntitySlot(slot);
-        tarinRaccoonMotion.setStateForTest(slot, state, speedX, speedY, speedZ,
-            privateState2, privateState3, nearLinkLatch);
-    }
+    void setTarinRaccoonStateForTest(int slot, int state, int speedX, int speedY, int speedZ, int privateState2, int privateState3, boolean nearLinkLatch) { this.entityDebugConfiguration.setTarinRaccoonStateForTest(slot, state, speedX, speedY, speedZ, privateState2, privateState3, nearLinkLatch); }
 
     int tarinRaccoonStateForTest(int slot) { return this.roomInspection.tarinRaccoonStateForTest(slot); }
 
@@ -2993,50 +2743,23 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     int owlPrivateCountdown1ForTest(int slot) { return this.roomInspection.owlPrivateCountdown1ForTest(slot); }
 
-    void setTransitionSequenceCounterForTest(int counter) {
-        if (counter < 0 || counter > 0xFF) {
-            throw new IllegalArgumentException(
-                "Transition sequence counter must be an unsigned byte: " + counter);
-        }
-        transitionSequenceCounter = counter;
-    }
+    void setTransitionSequenceCounterForTest(int counter) { this.entityDebugConfiguration.setTransitionSequenceCounterForTest(counter); }
 
-    void setGameplayWorldForTest(boolean gameplayWorld) {
-        this.gameplayWorld = gameplayWorld;
-    }
+    void setGameplayWorldForTest(boolean gameplayWorld) { this.entityDebugConfiguration.setGameplayWorldForTest(gameplayWorld); }
 
-    void setRoomTransitionStateForTest(boolean active) {
-        roomTransitionActive = active;
-    }
+    void setRoomTransitionStateForTest(boolean active) { this.entityDebugConfiguration.setRoomTransitionStateForTest(active); }
 
-    void setWitchGotItemPresentationActiveForTest(boolean active) {
-        Arrays.fill(witchGotItemCountdown, active ? 1 : 0);
-    }
+    void setWitchGotItemPresentationActiveForTest(boolean active) { this.entityDebugConfiguration.setWitchGotItemPresentationActiveForTest(active); }
 
-    void setSideViewPotSpeedForTest(int slot, int speedX, int speedY) {
-        sideViewPotMotion.setSpeedX(slot, speedX);
-        sideViewPotMotion.setSpeedY(slot, speedY);
-    }
+    void setSideViewPotSpeedForTest(int slot, int speedX, int speedY) { this.entityDebugConfiguration.setSideViewPotSpeedForTest(slot, speedX, speedY); }
 
-    void setFollowingNpcState(FollowingNpcState state) {
-        if (state == null) {
-            throw new IllegalArgumentException("Follower state cannot be null");
-        }
-        followingNpcState = state;
-        if (state.bowWowFollowing()) bowWowState = 1;
-    }
+    void setFollowingNpcState(FollowingNpcState state) { this.entityRuntimeConfiguration.setFollowingNpcState(state); }
 
-    void setColorShellWorld(ColorShellWorld world) {
-        colorShellWorld = world == null ? ColorShellWorld.none() : world;
-    }
+    void setColorShellWorld(ColorShellWorld world) { this.entityRuntimeConfiguration.setColorShellWorld(world); }
 
-    void setSwitchBlockAnimationActive(boolean active) {
-        switchBlockAnimationActive = active;
-    }
+    void setSwitchBlockAnimationActive(boolean active) { this.entityRuntimeConfiguration.setSwitchBlockAnimationActive(active); }
 
-    void setSwitchBlockAnimationActiveForTest(boolean active) {
-        setSwitchBlockAnimationActive(active);
-    }
+    void setSwitchBlockAnimationActiveForTest(boolean active) { this.entityDebugConfiguration.setSwitchBlockAnimationActiveForTest(active); }
 
     boolean consumePendingSwitchBlockAnimationRequest() {
         boolean pending = pendingSwitchBlockAnimationRequest;
@@ -3118,13 +2841,9 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     int sideViewPlatformSpeedXForTest(int slot) { return this.roomInspection.sideViewPlatformSpeedXForTest(slot); }
 
-    void setSideViewPlatformSpeedYForTest(int slot, int speed) {
-        sideViewPlatformMotion.setSpeedY(slot, speed);
-    }
+    void setSideViewPlatformSpeedYForTest(int slot, int speed) { this.entityDebugConfiguration.setSideViewPlatformSpeedYForTest(slot, speed); }
 
-    void setSideViewPlatformSpeedXForTest(int slot, int speed) {
-        sideViewPlatformMotion.setSpeedX(slot, speed);
-    }
+    void setSideViewPlatformSpeedXForTest(int slot, int speed) { this.entityDebugConfiguration.setSideViewPlatformSpeedXForTest(slot, speed); }
 
     int sideViewPlatformPrivateState2ForTest(int slot) { return this.roomInspection.sideViewPlatformPrivateState2ForTest(slot); }
 
@@ -3355,9 +3074,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     void advanceOwlStatue(RoomEntity entity, int linkEntityX, int linkEntityY, int linkZ, int linkMotionState, boolean linkAirborne) { story.advanceOwlStatue(entity, linkEntityX, linkEntityY, linkZ, linkMotionState, linkAirborne); }
 
-    void setOwlStatueDialogId(int globalDialogId) {
-        owlStatueDialogId = globalDialogId;
-    }
+    void setOwlStatueDialogId(int globalDialogId) { this.entityRuntimeConfiguration.setOwlStatueDialogId(globalDialogId); }
 
     void advanceRichard(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne) { story.advanceRichard(entity, frameCounter, linkEntityX, linkEntityY, linkAirborne); }
 
@@ -3420,21 +3137,11 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     RoomEntity owlPresentation(RoomEntity entity, int frameCounter) { return this.roomInspection.owlPresentation(entity, frameCounter); }
 
-    void setOwlDialogResolver(IntUnaryOperator resolver) {
-        owlDialogResolver = Objects.requireNonNull(resolver, "Owl dialog resolver");
-    }
+    void setOwlDialogResolver(IntUnaryOperator resolver) { this.entityRuntimeConfiguration.setOwlDialogResolver(resolver); }
 
-    void setOwlInstrumentFlags(int instrument1Flags, int instrument2Flags) {
-        validateByte(instrument1Flags, "Instrument 1 flags");
-        validateByte(instrument2Flags, "Instrument 2 flags");
-        this.instrument1Flags = instrument1Flags;
-        this.instrument2Flags = instrument2Flags;
-    }
+    void setOwlInstrumentFlags(int instrument1Flags, int instrument2Flags) { this.entityRuntimeConfiguration.setOwlInstrumentFlags(instrument1Flags, instrument2Flags); }
 
-    void setOwlDefaultMusicResolver(IntUnaryOperator resolver) {
-        owlDefaultMusicResolver = Objects.requireNonNull(resolver,
-            "Owl default music resolver");
-    }
+    void setOwlDefaultMusicResolver(IntUnaryOperator resolver) { this.entityRuntimeConfiguration.setOwlDefaultMusicResolver(resolver); }
 
     void blockLinkForOwl(int slot) {
         pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
@@ -4454,17 +4161,11 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     int laserSpeedY(int slot) { return this.enemyInspection.laserSpeedY(slot); }
 
-    void setLaserParentForTest(int slot, int countdown, int newSpeedX, int newSpeedY) {
-        laserMotion.setParentForTest(slot, countdown, newSpeedX, newSpeedY);
-    }
+    void setLaserParentForTest(int slot, int countdown, int newSpeedX, int newSpeedY) { this.entityDebugConfiguration.setLaserParentForTest(slot, countdown, newSpeedX, newSpeedY); }
 
-    void setPairoddProjectileForTest(int slot, int newSpeedX, int newSpeedY, int direction) {
-        pairoddProjectileMotion.setForTest(slot, newSpeedX, newSpeedY, direction);
-    }
+    void setPairoddProjectileForTest(int slot, int newSpeedX, int newSpeedY, int direction) { this.entityDebugConfiguration.setPairoddProjectileForTest(slot, newSpeedX, newSpeedY, direction); }
 
-    void setLaserBeamForTest(int slot, int newSpeedX, int newSpeedY, int direction) {
-        laserMotion.setBeamForTest(slot, newSpeedX, newSpeedY, direction);
-    }
+    void setLaserBeamForTest(int slot, int newSpeedX, int newSpeedY, int direction) { this.entityDebugConfiguration.setLaserBeamForTest(slot, newSpeedX, newSpeedY, direction); }
 
     List<TransientVfxRequest> transientVfxRequests() { return this.enemyInspection.transientVfxRequests(); }
 
@@ -4604,10 +4305,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     int zolPrivateCountdown1(int slot) { return this.enemyInspection.zolPrivateCountdown1(slot); }
 
-    void setZolPrivateCountdown1ForTest(int slot, int value) {
-        validateByte(value, "Zol/Gel private countdown 1");
-        zolGelMotion.setPrivateCountdown1ForTest(slot, value);
-    }
+    void setZolPrivateCountdown1ForTest(int slot, int value) { this.entityDebugConfiguration.setZolPrivateCountdown1ForTest(slot, value); }
 
     int hidingZolState(int slot) { return this.enemyInspection.hidingZolState(slot); }
 
@@ -4669,13 +4367,9 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     int evasiveSpeedZ(int slot) { return this.enemyInspection.evasiveSpeedZ(slot); }
 
-    void setEvasivePrivateCountdown1ForTest(int slot, int value) {
-        stalfosEvasiveMotion.setPrivateCountdown1ForTest(slot, value);
-    }
+    void setEvasivePrivateCountdown1ForTest(int slot, int value) { this.entityDebugConfiguration.setEvasivePrivateCountdown1ForTest(slot, value); }
 
-    void setEvasiveFleeingForTest(int slot, int newSpeedX, int newSpeedY) {
-        stalfosEvasiveMotion.setFleeingForTest(slot, newSpeedX, newSpeedY);
-    }
+    void setEvasiveFleeingForTest(int slot, int newSpeedX, int newSpeedY) { this.entityDebugConfiguration.setEvasiveFleeingForTest(slot, newSpeedX, newSpeedY); }
 
     int gibdoState(int slot) { return this.enemyInspection.gibdoState(slot); }
 
@@ -4729,15 +4423,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     int wizrobeNextSpriteVariant(int slot) { return this.enemyInspection.wizrobeNextSpriteVariant(slot); }
 
-    void setWizrobeStateForTest(int slot, int state, int transitionCountdown,
-                                int privateState1, int privateCountdown1, int direction) {
-        validateEntitySlot(slot);
-        validateCountdownTestValue(slot, transitionCountdown);
-        wizrobeMotion.setForTest(slot, state, transitionCountdown, privateState1,
-            privateCountdown1, direction, slots[slot].spriteVariant());
-        enemyTransitionCountdown[slot] = transitionCountdown;
-        enemyPhysicsFlags[slot] = 0x42;
-    }
+    void setWizrobeStateForTest(int slot, int state, int transitionCountdown, int privateState1, int privateCountdown1, int direction) { this.entityDebugConfiguration.setWizrobeStateForTest(slot, state, transitionCountdown, privateState1, privateCountdown1, direction); }
 
     int wizrobeProjectileSpeedX(int slot) { return this.enemyInspection.wizrobeProjectileSpeedX(slot); }
 
@@ -4745,10 +4431,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     int wizrobeProjectileDirection(int slot) { return this.enemyInspection.wizrobeProjectileDirection(slot); }
 
-    void setWizrobeProjectileForTest(int slot, int newSpeedX, int newSpeedY,
-                                     int direction) {
-        wizrobeProjectileMotion.setForTest(slot, newSpeedX, newSpeedY, direction);
-    }
+    void setWizrobeProjectileForTest(int slot, int newSpeedX, int newSpeedY, int direction) { this.entityDebugConfiguration.setWizrobeProjectileForTest(slot, newSpeedX, newSpeedY, direction); }
 
     int peaHatState(int slot) { return this.enemyInspection.peaHatState(slot); }
 
@@ -4847,90 +4530,41 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     int fallingVisualYOffset(int slot) { return this.enemyInspection.fallingVisualYOffset(slot); }
 
-    void setEnemyIgnoreHitsCountdownForTest(int slot, int value) {
-        validateCountdownTestValue(slot, value);
-        enemyIgnoreHitsCountdown[slot] = value;
-    }
+    void setEnemyIgnoreHitsCountdownForTest(int slot, int value) { this.entityDebugConfiguration.setEnemyIgnoreHitsCountdownForTest(slot, value); }
 
-    void setOcarinaPlayback(int countdown, int songFlags, int selectedSong) {
-        setOcarinaPlayback(countdown, songFlags, selectedSong, 0, 0);
-    }
+    void setOcarinaPlayback(int countdown, int songFlags, int selectedSong) { this.entityRuntimeConfiguration.setOcarinaPlayback(countdown, songFlags, selectedSong); }
 
-    void setOcarinaPlayback(int countdown, int songFlags, int selectedSong,
-                            int animationCounter, int animationPhase) {
-        validateByte(countdown, "Ocarina playback countdown");
-        validateByte(songFlags, "Ocarina song flags");
-        validateByte(selectedSong, "Selected Ocarina song");
-        validateByte(animationCounter, "Ocarina animation counter");
-        if (animationPhase < 0 || animationPhase > 1) {
-            throw new IllegalArgumentException("Ocarina animation phase must be 0 or 1");
-        }
-        linkPlayingOcarinaCountdown = countdown;
-        ocarinaSongFlags = songFlags;
-        selectedSongIndex = selectedSong;
-        ocarinaAnimationCounter = animationCounter;
-        ocarinaAnimationPhase = animationPhase;
-    }
+    void setOcarinaPlayback(int countdown, int songFlags, int selectedSong, int animationCounter, int animationPhase) { this.entityRuntimeConfiguration.setOcarinaPlayback(countdown, songFlags, selectedSong, animationCounter, animationPhase); }
 
-    void setOcarinaPlaybackForTest(int countdown, int songFlags, int selectedSong) {
-        setOcarinaPlayback(countdown, songFlags, selectedSong);
-    }
+    void setOcarinaPlaybackForTest(int countdown, int songFlags, int selectedSong) { this.entityDebugConfiguration.setOcarinaPlaybackForTest(countdown, songFlags, selectedSong); }
 
-    void setOcarinaAnimationForTest(int animationCounter, int animationPhase) {
-        validateByte(animationCounter, "Ocarina animation counter");
-        if (animationPhase < 0 || animationPhase > 1) {
-            throw new IllegalArgumentException("Ocarina animation phase must be 0 or 1");
-        }
-        ocarinaAnimationCounter = animationCounter;
-        ocarinaAnimationPhase = animationPhase;
-    }
+    void setOcarinaAnimationForTest(int animationCounter, int animationPhase) { this.entityDebugConfiguration.setOcarinaAnimationForTest(animationCounter, animationPhase); }
 
     int musicalNoteInertiaForTest(int slot) { return this.enemyInspection.musicalNoteInertiaForTest(slot); }
 
-    void setHitboxFlagsForTest(int slot, int value) {
-        validateCountdownTestValue(slot, value);
-        enemyHitboxFlags[slot] = value;
-    }
+    void setHitboxFlagsForTest(int slot, int value) { this.entityDebugConfiguration.setHitboxFlagsForTest(slot, value); }
 
     int hitboxFlagsForTest(int slot) { return this.enemyInspection.hitboxFlagsForTest(slot); }
 
-    void setEnemyFlashCountdownForTest(int slot, int value) {
-        validateCountdownTestValue(slot, value);
-        enemyFlashCountdown[slot] = value;
-    }
+    void setEnemyFlashCountdownForTest(int slot, int value) { this.entityDebugConfiguration.setEnemyFlashCountdownForTest(slot, value); }
 
-    void setEnemyHealthForTest(int slot, int value) {
-        validateCountdownTestValue(slot, value);
-        enemyHealth[slot] = value;
-    }
+    void setEnemyHealthForTest(int slot, int value) { this.entityDebugConfiguration.setEnemyHealthForTest(slot, value); }
 
     int geniePrivateState1ForTest(int slot) { return this.enemyInspection.geniePrivateState1ForTest(slot); }
 
-    void setGeniePrivateState1ForTest(int slot, int value) {
-        validateCountdownTestValue(slot, value);
-        geniePrivateState1[slot] = value;
-    }
+    void setGeniePrivateState1ForTest(int slot, int value) { this.entityDebugConfiguration.setGeniePrivateState1ForTest(slot, value); }
 
     int genieActiveStateForTest(int slot) { return this.enemyInspection.genieActiveStateForTest(slot); }
 
-    void setGenieActiveStateForTest(int slot, int value) {
-        validateCountdownTestValue(slot, value);
-        genieActiveState[slot] = value;
-    }
+    void setGenieActiveStateForTest(int slot, int value) { this.entityDebugConfiguration.setGenieActiveStateForTest(slot, value); }
 
     int geniePrivateState3ForTest(int slot) { return this.enemyInspection.geniePrivateState3ForTest(slot); }
 
-    void setGeniePrivateState3ForTest(int slot, int value) {
-        validateCountdownTestValue(slot, value);
-        geniePrivateState3[slot] = value;
-    }
+    void setGeniePrivateState3ForTest(int slot, int value) { this.entityDebugConfiguration.setGeniePrivateState3ForTest(slot, value); }
 
     int geniePrivateCountdown1ForTest(int slot) { return this.enemyInspection.geniePrivateCountdown1ForTest(slot); }
 
-    void setGeniePrivateCountdown1ForTest(int slot, int value) {
-        validateCountdownTestValue(slot, value);
-        geniePrivateCountdown1[slot] = value;
-    }
+    void setGeniePrivateCountdown1ForTest(int slot, int value) { this.entityDebugConfiguration.setGeniePrivateCountdown1ForTest(slot, value); }
 
     int geniePrivateCountdown2ForTest(int slot) { return this.enemyInspection.geniePrivateCountdown2ForTest(slot); }
 
@@ -4938,10 +4572,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     int genieSpeedZForTest(int slot) { return this.enemyInspection.genieSpeedZForTest(slot); }
 
-    void setGeniePrivateState4ForTest(int slot, int value) {
-        validateCountdownTestValue(slot, value);
-        geniePrivateState4[slot] = value;
-    }
+    void setGeniePrivateState4ForTest(int slot, int value) { this.entityDebugConfiguration.setGeniePrivateState4ForTest(slot, value); }
 
     int geniePrivateState4ForTest(int slot) { return this.enemyInspection.geniePrivateState4ForTest(slot); }
 
@@ -4949,38 +4580,19 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     int rollingBonesBarSpeedXForTest(int slot) { return this.enemyInspection.rollingBonesBarSpeedXForTest(slot); }
 
-    void setPhysicsFlagsForTest(int slot, int value) {
-        validateCountdownTestValue(slot, value);
-        enemyPhysicsFlags[slot] = value;
-    }
+    void setPhysicsFlagsForTest(int slot, int value) { this.entityDebugConfiguration.setPhysicsFlagsForTest(slot, value); }
 
-    void setSpriteVariantForTest(int slot, int variant) {
-        validateEntitySlot(slot);
-        if (variant < -1 || variant > 0xFF) {
-            throw new IllegalArgumentException("Invalid sprite variant: " + variant);
-        }
-        slots[slot] = withVariant(slots[slot], variant);
-    }
+    void setSpriteVariantForTest(int slot, int variant) { this.entityDebugConfiguration.setSpriteVariantForTest(slot, variant); }
 
-    void setThrownDirection(int slot, int value) {
-        validateCountdownTestValue(slot, value);
-        thrownDirection[slot] = value;
-    }
+    void setThrownDirection(int slot, int value) { this.entityRuntimeConfiguration.setThrownDirection(slot, value); }
 
-    void setLedgeTransitionTimer(int slot, int value) {
-        validateCountdownTestValue(slot, value);
-        ledgeTransitionTimer[slot] = value;
-    }
+    void setLedgeTransitionTimer(int slot, int value) { this.entityRuntimeConfiguration.setLedgeTransitionTimer(slot, value); }
 
-    void setThrownDirectionForTest(int slot, int value) {
-        setThrownDirection(slot, value);
-    }
+    void setThrownDirectionForTest(int slot, int value) { this.entityDebugConfiguration.setThrownDirectionForTest(slot, value); }
 
-    void setLedgeTransitionTimerForTest(int slot, int value) {
-        setLedgeTransitionTimer(slot, value);
-    }
+    void setLedgeTransitionTimerForTest(int slot, int value) { this.entityDebugConfiguration.setLedgeTransitionTimerForTest(slot, value); }
 
-    private static void validateCountdownTestValue(int slot, int value) {
+    static void validateCountdownTestValue(int slot, int value) {
         if (slot < 0 || slot >= EntityRoomLoader.MAX_ENTITIES) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
@@ -4991,32 +4603,13 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     int keyDropTransitionCountdown(int slot) { return this.enemyInspection.keyDropTransitionCountdown(slot); }
 
-    void setKeyDropTransitionCountdownForTest(int slot, int value) {
-        validateCountdownTestValue(slot, value);
-        if (!isLoadedEntityOfType(slot, ENTITY_KEY_DROP_POINT)) {
-            throw new IllegalArgumentException("Entity slot does not contain a key drop point: "
-                + slot);
-        }
-        enemyTransitionCountdown[slot] = value;
-    }
+    void setKeyDropTransitionCountdownForTest(int slot, int value) { this.entityDebugConfiguration.setKeyDropTransitionCountdownForTest(slot, value); }
 
-    void setHidingSlimeKeyTransitionCountdownForTest(int slot, int value) {
-        validateCountdownTestValue(slot, value);
-        if (!isLoadedEntityOfType(slot, ENTITY_HIDING_SLIME_KEY)) {
-            throw new IllegalArgumentException("Entity slot does not contain a Hiding Slime Key: "
-                + slot);
-        }
-        enemyTransitionCountdown[slot] = value;
-    }
+    void setHidingSlimeKeyTransitionCountdownForTest(int slot, int value) { this.entityDebugConfiguration.setHidingSlimeKeyTransitionCountdownForTest(slot, value); }
 
-    void setGoldenLeavesCountForTest(int value) {
-        setGoldenLeavesCount(value);
-    }
+    void setGoldenLeavesCountForTest(int value) { this.entityDebugConfiguration.setGoldenLeavesCountForTest(value); }
 
-    void setGoldenLeavesCount(int value) {
-        validateByte(value, "Golden leaves count");
-        entityGoldenLeavesCount = value;
-    }
+    void setGoldenLeavesCount(int value) { this.entityRuntimeConfiguration.setGoldenLeavesCount(value); }
 
     int options1(int slot) {
         if (slot < 0 || slot >= slots.length) {
@@ -5198,44 +4791,19 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     int booBuddyTriggerCount() { return this.enemyInspection.booBuddyTriggerCount(); }
 
-    void setBooBuddyTriggerCount(int value) {
-        validateByte(value, "Boo Buddy trigger count");
-        booBuddyTriggerCount = value;
-    }
+    void setBooBuddyTriggerCount(int value) { this.entityRuntimeConfiguration.setBooBuddyTriggerCount(value); }
 
-    void setWitchEnvironment(int bgPaletteEffectAddress, int paletteDataFlags,
-                             int defaultMusicTrack) {
-        validateByte(bgPaletteEffectAddress, "BG palette effect address");
-        validateByte(paletteDataFlags, "Palette data flags");
-        validateByte(defaultMusicTrack, "Default music track");
-        this.bgPaletteEffectAddress = bgPaletteEffectAddress;
-        this.paletteDataFlags = paletteDataFlags;
-        this.defaultMusicTrack = defaultMusicTrack;
-    }
+    void setWitchEnvironment(int bgPaletteEffectAddress, int paletteDataFlags, int defaultMusicTrack) { this.entityRuntimeConfiguration.setWitchEnvironment(bgPaletteEffectAddress, paletteDataFlags, defaultMusicTrack); }
 
-    void setBooBuddyTriggerCountForTest(int value) {
-        setBooBuddyTriggerCount(value);
-    }
+    void setBooBuddyTriggerCountForTest(int value) { this.entityDebugConfiguration.setBooBuddyTriggerCountForTest(value); }
 
-    void setColorShellStateForTest(int slot, int state, int transitionCountdown,
-                                   int direction, int speedX, int speedY) {
-        colorShellMotion.setStateForTest(slot, state, transitionCountdown,
-            direction, speedX, speedY);
-    }
+    void setColorShellStateForTest(int slot, int state, int transitionCountdown, int direction, int speedX, int speedY) { this.entityDebugConfiguration.setColorShellStateForTest(slot, state, transitionCountdown, direction, speedX, speedY); }
 
     int enemyRecoilSpeedX(int slot) { return this.enemyInspection.enemyRecoilSpeedX(slot); }
 
     int enemyRecoilSpeedY(int slot) { return this.enemyInspection.enemyRecoilSpeedY(slot); }
 
-    void configureEnemyRecoilForTest(int slot, int linkEntityX, int linkEntityY, int length) {
-        validateEntitySlot(slot);
-        RoomEntity entity = slots[slot];
-        if (!entity.loaded()) {
-            throw new IllegalArgumentException("Entity slot is not loaded: " + slot);
-        }
-        enemyRecoilMotion.configure(slot, entity.x(), entity.y(), entity.z(),
-            linkEntityX, linkEntityY, length);
-    }
+    void configureEnemyRecoilForTest(int slot, int linkEntityX, int linkEntityY, int length) { this.entityDebugConfiguration.configureEnemyRecoilForTest(slot, linkEntityX, linkEntityY, length); }
 
     boolean enemyRecoilActive(int slot) { return this.enemyInspection.enemyRecoilActive(slot); }
 
@@ -5718,7 +5286,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
         }
     }
 
-    private static void validateEnemyDropByte(int value, String label) {
+    static void validateEnemyDropByte(int value, String label) {
         if (value < 0 || value > 0xFF) {
             throw new IllegalArgumentException(label + " must be an unsigned byte: " + value);
         }
