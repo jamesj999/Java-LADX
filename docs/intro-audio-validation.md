@@ -110,8 +110,13 @@ The engine 1393 NR42=67/NR43=03/NR44=80 group executes in the emulator at
 relative 1395, cycles 202987116/202987152/202987188, through the same writer.
 The preceding NR42=60 group is audio call 1363 and this group is 1411:
 48 calls, matching engine 1345→1393. The displayed labels span 49 ticks.
-These LCD-transition/display-tick boundaries explain the two snapshot
-mismatches. There is no demonstrated SFX sequencing or envelope-command bug
+Audio calls group variably into displayed ticks: for example, there are no
+noise-driver entry calls at relative frames 1060/1061 and two at 1062. The
+mismatch windows have ordinary 803/804-sample frames, so LCD-off shortening
+is not established as their cause. The exact write trace establishes a
+driver-call versus display-tick scheduling difference behind the two snapshot
+mismatches; it does not identify the responsible CPU workload. There is no
+demonstrated SFX sequencing or envelope-command bug
 to compensate in production. CPU-cycle values describe the diagnostic emulator
 clock; the engine does not model instruction-level execution time.
 
