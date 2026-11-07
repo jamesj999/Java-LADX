@@ -328,11 +328,7 @@ final class EntitySlotPhase2 {
                         EntityCombatEvent.SoundChannel.NOISE, 0x11));
                 }
             }
-            if (state.wasInitializing && state.entity.type() == state.runtime.ENTITY_CHEST_WITH_ITEM) {
-                state.runtime.initializeChestEntity(state.entity);
-                state.updated = withPositionAndVariant(state.entity, state.entity.x(),
-                    (state.entity.y() - 0x08) & 0xFF, state.entity.spriteVariant());
-            }
+            if (!state.runtime.entityHandlers.tick(27, state)) return false;
             if (state.wasInitializing && isCommonDroppableType(state.entity.type())
                 && state.runtime.droppablePrivateState3[state.entity.slot()] != 0) {
                 // The init handler has already set the hidden options. The
@@ -344,56 +340,10 @@ final class EntitySlotPhase2 {
             if (state.preserveGhiniPresentation) {
                 state.updated = withVariant(state.entity, -1);
             }
-            if (state.wasInitializing && state.entity.type() == state.runtime.ENTITY_ZOMBIE) {
-                // The room-loaded Zombie is only a hidden spawn marker; its
-                // bank-$18 handler never renders the parent entity.
-                state.updated = withVariant(state.entity, -1);
-                state.preserveZombiePresentation = true;
-            }
-            if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
-                && state.entity.type() == state.runtime.ENTITY_CHEST_WITH_ITEM) {
-                if (state.runtime.advanceChestEntity(state.index, state.entity)) {
-                    return false;
-                }
-                state.updated = state.runtime.slots[state.index];
-            }
-            if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
-                && state.entity.type() == state.runtime.ENTITY_DROPPABLE_SECRET_SEASHELL) {
-                if (state.runtime.chestSwordLevel >= 0x02
-                    || (state.runtime.entityRoomStatus & 0x10) != 0
-                    || (state.runtime.entityRoomId == 0xE3 && (state.runtime.entityRoomStatus & 0x40) == 0)) {
-                    // DroppableSeashellEntityHandler uses UnloadEntityAndReturn
-                    // for these gates, which deliberately does not mark the
-                    // source load-order bit as completed.
-                    state.runtime.disableEntityWithoutPersistence(state.entity.slot());
-                    return false;
-                }
-                RoomEntityObjectSample objectUnderEntity = state.runtime.objectQuery == null
-                    ? null : state.runtime.objectQuery.sample(state.entity);
-                SecretSeashellMotion.Update shellUpdate = state.runtime.secretSeashellMotion.advance(
-                    state.entity, state.runtime.entityRoomId, state.frame,
-                    false, state.runtime.secretSeashellScreenShakeActive,
-                    state.runtime.secretSeashellPegasusCollisionActive,
-                    state.runtime.secretSeashellPegasusCollisionCoordinatesKnown,
-                    state.runtime.secretSeashellPegasusCollisionX,
-                    state.runtime.secretSeashellPegasusCollisionY,
-                    state.linkEntityX, state.linkEntityY, objectUnderEntity);
-                state.updated = shellUpdate.entity();
-                state.runtime.entityOptions1Override[state.entity.slot()] =
-                    state.runtime.secretSeashellMotion.privateState3(state.entity.slot()) != 0
-                        ? state.runtime.SECRET_SEASHELL_HIDDEN_OPTIONS1
-                        : state.runtime.SECRET_SEASHELL_REVEALED_OPTIONS1;
-                state.preserveSecretSeashellPresentation = true;
-            }
-            if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
-                && state.entity.type() == state.runtime.ENTITY_HIDING_SLIME_KEY
-                && (state.runtime.entityRoomStatus & 0x10) != 0) {
-                // HidingSlimeKeyEntityHandler checks ROOM_STATUS_EVENT_1 before
-                // calling the shared reveal helper and unloads without touching
-                // the source persistence mask.
-                state.runtime.disableEntityWithoutPersistence(state.entity.slot());
-                return false;
-            }
+            if (!state.runtime.entityHandlers.tick(28, state)) return false;
+            if (!state.runtime.entityHandlers.tick(29, state)) return false;
+            if (!state.runtime.entityHandlers.tick(30, state)) return false;
+            if (!state.runtime.entityHandlers.tick(31, state)) return false;
             if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                 && isCommonDroppableType(state.entity.type())) {
                 CommonDroppableUpdate droppableUpdate = state.runtime.advanceCommonDroppable(
@@ -408,87 +358,10 @@ final class EntitySlotPhase2 {
                     return false;
                 }
             }
-            if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
-                && state.entity.type() == state.runtime.ENTITY_HIDING_SLIME_KEY) {
-                int slot = state.entity.slot();
-                SlimeKeyTransitionUpdate keyUpdate = state.runtime.advanceHidingSlimeKey(
-                    state.updated, slot, state.linkEntityX, state.linkEntityY, state.linkZ);
-                state.runtime.enemyTransitionCountdown[slot] = keyUpdate.nextTransitionCountdown();
-                if (keyUpdate.reward() != null) {
-                    state.runtime.pendingSlimeKeyRewardEvents.add(keyUpdate.reward());
-                    state.runtime.pendingDialogRequests.add(new DialogRequest(
-                        0, keyUpdate.reward().dialogLowId()));
-                }
-                if (keyUpdate.unload()) {
-                    state.runtime.disableEntityWithoutPersistence(slot);
-                    return false;
-                }
-                state.keyDropTransitionActive = keyUpdate.holdAboveLink();
-                state.updated = keyUpdate.entity();
-            }
-            if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
-                && state.entity.type() == state.runtime.ENTITY_KEY_DROP_POINT) {
-                // decrementEnemyStatusCountdowns mirrors UpdateEntityTimers'
-                // shared transition-byte decrement before bank-$03's handler
-                // reads it.
-                int slot = state.entity.slot();
-                if (state.runtime.checkForKeyDropQuicksandHole(state.updated)) {
-                    state.runtime.pendingKeyQuicksandEvents.add(new KeyQuicksandEvent(slot));
-                    state.runtime.slots[state.index] = withStatus(state.updated, EntityStatus.FALLING);
-                    state.runtime.enemyTransitionCountdown[slot] = 0x2F;
-                    state.runtime.fallingTargetX[slot] = 0x50;
-                    state.runtime.fallingTargetY[slot] = 0x48;
-                    state.runtime.fallingSpeedX[slot] = 0;
-                    state.runtime.fallingSpeedY[slot] = 0;
-                    state.runtime.fallingSpeedXAccumulator[slot] = 0;
-                    state.runtime.fallingSpeedYAccumulator[slot] = 0;
-                    state.runtime.fallingVisualYOffset[slot] = 0;
-                    state.runtime.pendingEntityEvents.add(new EntityCombatEvent(
-                        slot, state.runtime.ENTITY_KEY_DROP_POINT, 0, false,
-                        EntityCombatEvent.SoundChannel.JINGLE, 0x18));
-                    return false;
-                }
-                boolean hookshotRoom = state.runtime.entityRoomId == 0x80;
-                if (hookshotRoom) {
-                    state.updated = withDefinition(state.updated, state.runtime.spriteDefinitionFor(state.runtime.ENTITY_HOOKSHOT_CHAIN), 0);
-                }
-                KeyDropPointMotion.Update keyUpdate = KeyDropPointMotion.advance(
-                    state.runtime.enemyTransitionCountdown[slot], state.updated.spriteVariant(), hookshotRoom);
-                state.runtime.enemyTransitionCountdown[slot] = keyUpdate.nextTransitionCountdown();
-                if (keyUpdate.dialogLowId() >= 0) {
-                    state.runtime.pendingDialogRequests.add(new DialogRequest(
-                        KeyDropPointMotion.DIALOG_TABLE, keyUpdate.dialogLowId()));
-                }
-                if (keyUpdate.rewardItemType() >= 0) {
-                    state.runtime.pendingKeyRewardEvents.add(new KeyRewardEvent(
-                        slot, keyUpdate.rewardItemType()));
-                }
-                state.keyDropTransitionActive = keyUpdate.holdAboveLink();
-                if (state.keyDropTransitionActive) {
-                    state.updated = withPositionAndVariant(state.updated, state.linkEntityX,
-                        state.linkEntityY - 0x0C, state.updated.spriteVariant());
-                    state.updated = withZ(state.updated, state.linkZ);
-                }
-            }
-            if (state.wasInitializing && state.entity.type() == state.runtime.ENTITY_WIZROBE) {
-                // EntityInitWizrobe decrements the initial display-list variant
-                // before the first active handler dispatch.
-                state.updated = withVariant(state.entity, -1);
-            }
-            if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
-                && state.entity.type() == state.runtime.ENTITY_POLS_VOICE
-                && state.runtime.polsVoiceBalladOcarinaTrigger()) {
-                // The handler checks this before rendering, recoil, movement,
-                // or the ordinary collision path. Its private countdown $1F
-                // is the shared EntityDeathHandler's visible death timer.
-                state.runtime.dyingCountdown[state.entity.slot()] = 0x1F;
-                state.runtime.enemyPhysicsFlags[state.entity.slot()] = 0x04;
-                state.status = EntityStatus.DYING;
-                state.updated = withStatus(state.entity, EntityStatus.DYING);
-                state.runtime.pendingEntityEvents.add(new EntityCombatEvent(
-                    state.entity.slot(), state.entity.type(), 0, false,
-                    EntityCombatEvent.SoundChannel.NOISE, 0x13));
-            }
+            if (!state.runtime.entityHandlers.tick(32, state)) return false;
+            if (!state.runtime.entityHandlers.tick(33, state)) return false;
+            if (!state.runtime.entityHandlers.tick(34, state)) return false;
+            if (!state.runtime.entityHandlers.tick(35, state)) return false;
             if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                 && (state.entity.type() == state.runtime.ENTITY_ROLLING_BONES
                     || state.entity.type() == state.runtime.ENTITY_ROLLING_BONES_BAR)) {
@@ -536,149 +409,12 @@ final class EntitySlotPhase2 {
                 state.entity = recoil.entity();
                 state.updated = state.entity;
             }
-            if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
-                && state.entity.type() == state.runtime.ENTITY_MINI_MOLDORM) {
-                int slot = state.entity.slot();
-                // RenderMiniMoldorm records the history before the bank-$04
-                // recoil helper runs, so keep this ordering explicit.
-                state.runtime.miniMoldormMotion.beginFrame(state.entity, state.runtime.enemyIgnoreHitsCountdown[slot] != 0);
-                EnemyRecoilMotion.Update recoil = state.runtime.applyEnemyRecoilIfNeeded(
-                    state.entity, state.backgroundCollision);
-                state.entity = recoil.entity();
-                state.updated = state.entity;
-                RoomEntityBackgroundInteraction miniBackgroundInteraction = state.runtime.backgroundInteraction;
-                if (miniBackgroundInteraction == null && state.backgroundCollision != null) {
-                    miniBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
-                        state.backgroundCollision);
-                }
-                int transitionForMotion = state.runtime.enemyTransitionCountdown[slot];
-                if (transitionForMotion != 0) {
-                    // The common runtime timer has already performed the ROM
-                    // pre-handler decrement; MiniMoldormMotion mirrors that
-                    // decrement for its direct source-derived API as well.
-                    transitionForMotion = (transitionForMotion + 1) & 0xFF;
-                }
-                MiniMoldormMotion.Update miniUpdate = state.runtime.miniMoldormMotion.advanceAfterHistory(
-                    state.entity, transitionForMotion, state.runtime.enemyIgnoreHitsCountdown[slot],
-                    state.runtime.enemyFlashCountdown[slot], miniBackgroundInteraction,
-                    state.randomByteSupplier, state.frame);
-                state.updated = miniUpdate.entity();
-                state.runtime.enemyTransitionCountdown[slot] = miniUpdate.transitionCountdown();
-                if (state.runtime.spriteHandlers != null) {
-                    state.updated = withDefinition(state.updated,
-                        state.runtime.spriteHandlers.forMiniMoldormState(
-                            miniUpdate.headSpriteVariant(), state.updated.x(),
-                            (state.updated.y() - state.updated.z()) & 0xFF,
-                            miniUpdate.segment1X(), miniUpdate.segment1Y(),
-                            miniUpdate.segment2X(), miniUpdate.segment2Y()), 0);
-                } else if (state.updated.spriteDefinition().supported()
-                    && miniUpdate.headSpriteVariant() < state.updated.spriteDefinition().variantCount()) {
-                    state.updated = withVariant(state.updated, miniUpdate.headSpriteVariant());
-                }
-                state.preserveMiniMoldormPresentation = true;
-            }
-            if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
-                && state.entity.type() == state.runtime.ENTITY_MOLDORM) {
-                int slot = state.entity.slot();
-                if (!state.handlerInteractive || state.countdownBlocksInteraction || state.moldormIntroOpenedThisFrame) {
-                    if (state.runtime.spriteHandlers != null) {
-                        state.runtime.slots[state.index] = withDefinition(state.entity, state.runtime.spriteHandlers.forMoldormState(
-                            state.runtime.moldormMotion.headSpriteVariant(slot), state.entity.x(),
-                            (state.entity.y() - state.entity.z()) & 0xFF,
-                            state.runtime.moldormMotion.currentTailSegments(slot), 0, state.frame), 0);
-                    }
-                    if (state.runtime.roomTransitionActive) state.runtime.moldormMotion.resetHistory(slot);
-                    return false;
-                }
-                RoomEntityBackgroundInteraction moldormBackgroundInteraction =
-                    state.runtime.backgroundInteraction;
-                if (moldormBackgroundInteraction == null && state.backgroundCollision != null) {
-                    moldormBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
-                        state.backgroundCollision);
-                }
-                int transitionForMotion = state.runtime.enemyTransitionCountdown[slot];
-                if (transitionForMotion != 0) {
-                    // Common countdowns have already ticked before dispatch;
-                    // the direct motion API performs the same decrement.
-                    transitionForMotion = (transitionForMotion + 1) & 0xFF;
-                }
-                MoldormMotion.Update moldormUpdate = state.runtime.moldormMotion.advance(
-                    state.entity, state.frame, transitionForMotion, state.runtime.enemyIgnoreHitsCountdown[slot],
-                    state.runtime.enemyFlashCountdown[slot], state.runtime.enemyHealth[slot], state.randomByteSupplier,
-                    moldormBackgroundInteraction);
-                state.updated = moldormUpdate.entity();
-                state.runtime.enemyTransitionCountdown[slot] = moldormUpdate.transitionCountdown();
-                if (moldormUpdate.noiseRequested()) {
-                    state.runtime.pendingEntityEvents.add(new EntityCombatEvent(
-                        slot, state.entity.type(), 0, false,
-                        EntityCombatEvent.SoundChannel.NOISE, 0x1B));
-                }
-                if (state.runtime.spriteHandlers != null) {
-                    MoldormMotion.Presentation presentation = moldormUpdate.presentation();
-                    state.updated = withDefinition(state.updated, state.runtime.spriteHandlers.forMoldormPresentation(
-                        presentation.headSpriteVariant(), presentation.headX(),
-                        presentation.headY(), state.updated.x(),
-                        (state.updated.y() - state.updated.z()) & 0xFF,
-                        presentation.segments(), 0, state.frame), 0);
-                }
-                state.runtime.enemyPhysicsFlags[slot] = 0x02;
-                state.preserveMoldormPresentation = true;
-            }
-            if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
-                && state.entity.type() == state.runtime.ENTITY_MIMIC) {
-                int slot = state.entity.slot();
-                RoomEntityBackgroundInteraction mimicBackgroundInteraction = state.runtime.backgroundInteraction;
-                if (mimicBackgroundInteraction == null && state.backgroundCollision != null) {
-                    mimicBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
-                        state.backgroundCollision);
-                }
-                MimicMotion.Update mimicUpdate = state.runtime.mimicMotion.advance(
-                    state.entity, state.frame, state.runtime.linkPressedButtonsMask, state.romCollisionType,
-                    mimicBackgroundInteraction, state.runtime.enemyIgnoreHitsCountdown[slot], state.frame);
-                state.updated = mimicUpdate.entity();
-                state.preserveMimicPresentation = true;
-            }
-            if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
-                && state.entity.type() == state.runtime.ENTITY_MASKED_MIMIC_GORIYA
-                && state.runtime.entityMapId != 0x1F) {
-                int slot = state.entity.slot();
-                RoomEntityBackgroundInteraction maskedMimicBackgroundInteraction =
-                    state.runtime.backgroundInteraction;
-                if (maskedMimicBackgroundInteraction == null && state.backgroundCollision != null) {
-                    maskedMimicBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
-                        state.backgroundCollision);
-                }
-                MaskedMimicMotion.Update maskedMimicUpdate = state.runtime.maskedMimicMotion.advance(
-                    state.entity, state.linkEntityX, state.linkEntityY, state.romLinkDirection,
-                    state.runtime.linkPressedButtonsMask, state.romCollisionType,
-                    maskedMimicBackgroundInteraction, state.runtime.enemyIgnoreHitsCountdown[slot], state.frame);
-                state.updated = maskedMimicUpdate.entity();
-                state.runtime.entityOptions1Override[slot] = maskedMimicUpdate.options1();
-                state.preserveMaskedMimicPresentation = true;
-            }
-            if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
-                && state.entity.type() == state.runtime.ENTITY_CRYSTAL_SWITCH) {
-                // CrystalSwitchEntityHandler writes $FF before dispatching
-                // its normal collision helper, so sword damage can never
-                // turn this entity into a dying state.
-                state.runtime.enemyHealth[state.entity.slot()] = 0xFF;
-                if (state.runtime.enemyFlashCountdown[state.entity.slot()] > 0) {
-                    // The handler consumes the collision flash as its trigger.
-                    state.runtime.enemyFlashCountdown[state.entity.slot()] = 0;
-                    if (!state.runtime.switchBlockAnimationActive) {
-                        state.runtime.enemyTransitionCountdown[state.entity.slot()] = 0x18;
-                        state.runtime.pendingSwitchBlockAnimationRequest = true;
-                        state.runtime.pendingEntityEvents.add(new EntityCombatEvent(
-                            state.entity.slot(), state.entity.type(), 0, false,
-                            EntityCombatEvent.SoundChannel.WAVE, 0x0E));
-                    }
-                }
-            }
-            if (state.wasInitializing && state.entity.type() == state.runtime.ENTITY_LEEVER) {
-                // EntityInitLeever calls SetEntitySpriteVariant($FF) before
-                // the first active handler dispatch.
-                state.updated = withVariant(state.entity, -1);
-            }
+            if (!state.runtime.entityHandlers.tick(36, state)) return false;
+            if (!state.runtime.entityHandlers.tick(37, state)) return false;
+            if (!state.runtime.entityHandlers.tick(38, state)) return false;
+            if (!state.runtime.entityHandlers.tick(39, state)) return false;
+            if (!state.runtime.entityHandlers.tick(40, state)) return false;
+            if (!state.runtime.entityHandlers.tick(41, state)) return false;
             if (state.wasInitializing && isSparkType(state.entity.type())) {
                 state.updated = state.runtime.sparkMotion.applyInitializationOffset(state.entity);
             }
@@ -688,53 +424,8 @@ final class EntitySlotPhase2 {
                     state.frame, state.linkEntityX, state.linkEntityY, state.backgroundCollision));
             }
 
-            if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
-                && state.entity.type() == state.runtime.ENTITY_BOMBER) {
-                BomberMotion.Update bomberUpdate = state.runtime.bomberMotion.advance(
-                    state.entity, state.runtime.enemyTransitionCountdown[state.entity.slot()], state.linkEntityX, state.linkEntityY,
-                    state.romLinkDirection, state.swordCollisionActive, state.randomByteSupplier,
-                    state.backgroundCollision);
-                state.updated = bomberUpdate.entity();
-                state.runtime.enemyTransitionCountdown[state.entity.slot()] = bomberUpdate.transitionCountdown();
-                if (bomberUpdate.bombSpawn() != null) {
-                    BomberMotion.BombSpawn spawn = bomberUpdate.bombSpawn();
-                    int bombSlot = state.runtime.spawnEnemyBomb(spawn.x(), spawn.y(), spawn.z(),
-                        spawn.transitionCountdown(), spawn.speedX(), spawn.speedY(),
-                        spawn.speedZ());
-                    if (bombSlot >= 0 && bomberUpdate.playJingle()) {
-                        state.runtime.pendingEntityEvents.add(new EntityCombatEvent(
-                            bombSlot, state.runtime.ENTITY_BOMB, 0, false,
-                            EntityCombatEvent.SoundChannel.JINGLE,
-                            state.runtime.BOMBER_THROW_JINGLE_ID));
-                    }
-                }
-            }
-            if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
-                && state.entity.type() == state.runtime.ENTITY_MAD_BOMBER) {
-                // MadBomberEntityHandler rewrites this handler-owned drop
-                // byte on every interactive pass before its state dispatch.
-                state.runtime.droppedItemBySlot[state.entity.slot()] = 0x3C;
-                MadBomberMotion.Update madBomberUpdate = state.runtime.madBomberMotion.advance(
-                    state.entity, state.runtime.enemyTransitionCountdown[state.entity.slot()], state.linkEntityX, state.linkEntityY,
-                    state.runtime.enemyFlashCountdown[state.entity.slot()], state.randomByteSupplier);
-                state.updated = withVariant(madBomberUpdate.entity(),
-                    madBomberUpdate.spriteVariant());
-                state.preserveMadBomberPresentation = true;
-                state.runtime.enemyTransitionCountdown[state.entity.slot()] =
-                    madBomberUpdate.transitionCountdown();
-                if (madBomberUpdate.bombSpawn() != null) {
-                    MadBomberMotion.BombSpawn spawn = madBomberUpdate.bombSpawn();
-                    int bombSlot = state.runtime.spawnEnemyBomb(spawn.x(), spawn.y(), spawn.z(),
-                        spawn.transitionCountdown(), spawn.speedX(), spawn.speedY(),
-                        spawn.speedZ());
-                    if (bombSlot >= 0 && madBomberUpdate.playJingle()) {
-                        state.runtime.pendingEntityEvents.add(new EntityCombatEvent(
-                            bombSlot, state.runtime.ENTITY_BOMB, 0, false,
-                            EntityCombatEvent.SoundChannel.JINGLE,
-                            state.runtime.BOMBER_THROW_JINGLE_ID));
-                    }
-                }
-            }
+            if (!state.runtime.entityHandlers.tick(42, state)) return false;
+            if (!state.runtime.entityHandlers.tick(43, state)) return false;
         return true;
     }
 }

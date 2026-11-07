@@ -21,24 +21,7 @@ import static linksawakening.world.RoomEntityRuntime.*;
 final class EntitySlotPhase5 {
     static boolean run(EntityFrameExecution state) {
 
-            if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
-                && state.entity.type() == state.runtime.ENTITY_ROOSTER) {
-                state.preserveRoosterPresentation = true;
-                if (state.projectileLinkState.motionState() == 0
-                    && (state.linkZ & 0xFF) == 0
-                    && state.runtime.linkAttackStepAnimationCountdown == 0
-                    && state.runtime.cuccoPowerBraceletHeld()
-                    && RoomEntityCombatRules.overlapsLink(state.entity, state.linkEntityX, state.linkEntityY)
-                    && state.runtime.beginLift(state.entity.slot(), state.romLinkDirection)) {
-                    state.runtime.pendingRoosterLinkStateRequests.add(new RoosterLinkStateRequest(
-                        state.entity.slot(), 0x02, 0x00, state.runtime.currentLinkSpeedX, state.runtime.currentLinkSpeedY,
-                        state.romLinkDirection));
-                    state.runtime.pendingEntityEvents.add(new EntityCombatEvent(
-                        state.entity.slot(), state.entity.type(), 0, false,
-                        EntityCombatEvent.SoundChannel.WAVE, RoosterMotion.LIFT_WAVE_SFX));
-                    return false;
-                }
-            }
+            if (!state.runtime.entityHandlers.tick(93, state)) return false;
             if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                 && ColorShellMotion.isColorShellType(state.entity.type())) {
                 ColorShellMotion.Update shellUpdate = state.runtime.colorShellMotion.advance(

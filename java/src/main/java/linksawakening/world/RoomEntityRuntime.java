@@ -797,6 +797,11 @@ public final class RoomEntityRuntime {
         registry.registerAdvance(ENTITY_ANTI_FAIRY, (entity, context) -> antiFairyMotion.advance(entity, context.frameCounter(), context.backgroundCollision(),
                     context.randomByteSupplier()));
         registry.registerAdvance(ENTITY_GIBDO, (entity, context) -> gibdoMotion.advance(entity, context.randomByteSupplier(), context.backgroundCollision()));
+        EntityPhase1Handlers.install(registry);
+        EntityPhase2Handlers.install(registry);
+        EntityPhase3Handlers.install(registry);
+        EntityPhase4Handlers.install(registry);
+        EntityPhase5Handlers.install(registry);
         return registry;
     }
 

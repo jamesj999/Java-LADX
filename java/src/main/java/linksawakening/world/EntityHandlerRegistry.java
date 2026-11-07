@@ -42,4 +42,27 @@ final class EntityHandlerRegistry {
         return supports(entity.type()) ? handlers[entity.type()].advance(entity, context) : entity;
     }
 
+    void registerTick(int type, int stage, java.util.function.Predicate<EntityFrameExecution> tick) {
+        Objects.checkIndex(type, handlers.length);
+        Objects.requireNonNull(tick);
+        EntityHandler previous = handlers[type];
+        handlers[type] = new EntityHandler() {
+            @Override public void initialize(RoomEntity entity, IntSupplier random) {
+                if (previous != null) previous.initialize(entity, random);
+            }
+            @Override public RoomEntity advance(RoomEntity entity, EntityFrameContext context) {
+                return previous == null ? entity : previous.advance(entity, context);
+            }
+            @Override public boolean tick(int requestedStage, EntityFrameExecution state) {
+                if (requestedStage == stage) return tick.test(state);
+                return previous == null || previous.tick(requestedStage, state);
+            }
+        };
+    }
+
+    boolean tick(int stage, EntityFrameExecution state) {
+        int type = state.entity.type();
+        return !supports(type) || handlers[type].tick(stage, state);
+    }
+
 }
