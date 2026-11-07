@@ -41,6 +41,7 @@ public final class DialogRenderLayer implements HardwareRenderLayer {
     }
     @Override public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
         if (!dialogController.isActive()) return;
+        frame.hideSpritesUnderDialog(dialogController.boxPosition() == DialogController.BoxPosition.BOTTOM);
         DialogRenderer.submitWindow(frame, dialogController, backgroundPalette);
         if (objectPalettes != null && dialogController.isWaitingForPageAdvance() && (frameCounter & 0x10) == 0)
             OamDrawing.draw8x16(new RenderContext(new byte[0], gpu, frame), gpu,

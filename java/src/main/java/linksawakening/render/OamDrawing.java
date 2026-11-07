@@ -27,7 +27,7 @@ final class OamDrawing {
     private static void submit(OamSink sink, IntFunction<Tile> tiles, int tile, int x, int y,
                                boolean fx, boolean fy, int[] palette) {
         int base = tile & 254;
-        sink.append(tiles.apply(fy ? base + 1 : base), x, y, fx, fy, palette, false);
-        sink.append(tiles.apply(fy ? base : base + 1), x, y + 8, fx, fy, palette, false);
+        sink.append8x16(tiles.apply(fy ? base + 1 : base), tiles.apply(fy ? base : base + 1),
+            x, y, fx, fy, palette, false);
     }
 }

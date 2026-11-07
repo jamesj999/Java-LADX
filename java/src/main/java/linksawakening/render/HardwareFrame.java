@@ -29,6 +29,10 @@ public final class HardwareFrame implements RenderLayer, OamSink {
 
     void submittingLayer(String name) { submittingLayer = name; }
 
+    public String fidelitySource(int pixel) {
+        return "OBJ=" + objSources[pixel] + " BG=" + bgSources[pixel];
+    }
+
     public String mismatchGroup(int pixel, byte[] legacy, byte[] hardware) {
         int y = pixel / WIDTH, at = pixel * 4;
         String region = y >= 128 ? "HUD" : y < 32 ? "TOP" : "PLAYFIELD";
@@ -90,7 +94,8 @@ public final class HardwareFrame implements RenderLayer, OamSink {
     /** Call after compose. Requires the legacy RGB to equal the resolved HUD color and a hardware-visible OBJ. */
     public boolean explainsHudPriority(byte[] legacy, byte[] hardware, int pixel) {
         boolean evidencedWindow = approvedHudEvidence[pixel]
-            || "DialogRenderLayer".equals(bgSources[pixel]);
+            || ("DialogRenderLayer".equals(bgSources[pixel])
+                && ("LinkRenderLayer".equals(objSources[pixel]) || "DialogRenderLayer".equals(objSources[pixel])));
         if (!evidencedWindow
             || objectOrder[pixel] == Integer.MAX_VALUE || backgroundPalettes[pixel] == null) return false;
         int offset = pixel * 4;
@@ -112,17 +117,33 @@ public final class HardwareFrame implements RenderLayer, OamSink {
     public void sprite8x16(linksawakening.gpu.GPU gpu, int tile, int x, int y,
                            boolean fx, boolean fy, int[] palette) {
         int base = tile & 254;
-        append(gpu.getTile(fy ? base + 1 : base), x, y, fx, fy, palette, false);
-        append(gpu.getTile(fy ? base : base + 1), x, y + 8, fx, fy, palette, false);
+        append8x16(gpu.getTile(fy ? base + 1 : base), gpu.getTile(fy ? base : base + 1),
+            x, y, fx, fy, palette, false);
     }
 
     private record ObjectTile(Tile tile, int x, int y, boolean flipX, boolean flipY,
-                              int[] palette, int order, boolean behind, String source) {}
+                              int[] palette, int order, boolean behind, String source, int entryY) {}
     private final java.util.List<ObjectTile> oam = new java.util.ArrayList<>();
     @Override public void append(Tile tile, int x, int y, boolean flipX, boolean flipY,
                                  int[] palette, boolean behindBackground) {
-        oam.add(new ObjectTile(tile, x, y, flipX, flipY, palette, oam.size(), behindBackground, submittingLayer));
+        oam.add(new ObjectTile(tile, x, y, flipX, flipY, palette, oam.size(), behindBackground, submittingLayer, y));
     }
+    @Override public void appendFromEntry(int entryY, Tile tile, int x, int y, boolean fx, boolean fy,
+                                          int[] palette, boolean behind) {
+        oam.add(new ObjectTile(tile, x, y, fx, fy, palette, oam.size(), behind, submittingLayer, entryY));
+    }
+
+    /** bank1.asm $5F6A-$5FB2: skip reserved Link/prompt entries 0-8, hide whole other entries. */
+    public void hideSpritesUnderDialog(boolean bottom) {
+        if (closedWindowY == 0) return; // $5F6A-$5F6E: fully open inventory has no dialog filter.
+        oam.removeIf(entry -> {
+            if (entry.source().equals("LinkRenderLayer") || entry.source().equals("LinkShadowRenderLayer")
+                || entry.source().equals("DialogRenderLayer")) return false;
+            int rawY = (entry.entryY() + 16) & 255;
+            return bottom ? rawY >= 0x58 : rawY < 0x3E;
+        });
+    }
+
     @Override public void appendInSlot(int slot, Tile tile, int x, int y, boolean fx, boolean fy,
                                        int[] palette, boolean behind) {
         append(tile, x, y, fx, fy, palette, behind);
@@ -132,7 +153,7 @@ public final class HardwareFrame implements RenderLayer, OamSink {
     public void objectTile(Tile tile, int x, int y, boolean flipX, boolean flipY,
                            int[] palette, int oamIndex, boolean behindBackground) {
         if (oamIndex < 0 || oamIndex == Integer.MAX_VALUE) throw new IllegalArgumentException("OAM index");
-        oam.add(new ObjectTile(tile, x, y, flipX, flipY, palette, oam.size(), behindBackground, submittingLayer));
+        oam.add(new ObjectTile(tile, x, y, flipX, flipY, palette, oam.size(), behindBackground, submittingLayer, y));
     }
 
     @Override public void render(RenderContext context) {

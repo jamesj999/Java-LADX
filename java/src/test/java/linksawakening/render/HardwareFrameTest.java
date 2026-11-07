@@ -104,4 +104,36 @@ final class HardwareFrameTest {
         frame.compose(hardware);
         org.junit.jupiter.api.Assertions.assertFalse(frame.explainsHudPriority(legacy, hardware, pixel));
     }
+    @Test void dialogHidingUsesWholeEntryYAndPreservesReservedSources() {
+        for (boolean bottom : new boolean[]{false, true}) {
+            int hiddenY = bottom ? 72 : 45;
+            int visibleY = bottom ? 71 : 46;
+            HardwareFrame frame = new HardwareFrame(true);
+            frame.submittingLayer("EntityRenderLayer");
+            frame.append8x16(solid(2), solid(2), 0, hiddenY, false, false, PALETTE, false);
+            frame.append8x16(solid(2), solid(2), 16, visibleY, false, false, PALETTE, false);
+            frame.submittingLayer("LinkRenderLayer");
+            frame.append8x16(solid(3), solid(3), 32, hiddenY, false, false, PALETTE, false);
+            frame.submittingLayer("DialogRenderLayer");
+            frame.append8x16(solid(1), solid(1), 48, hiddenY, false, false, PALETTE, false);
+            frame.hideSpritesUnderDialog(bottom);
+            assertEquals(0, pixel(frame, 0, hiddenY));
+            assertEquals(0, pixel(frame, 0, hiddenY + 8));
+            assertEquals(33, pixel(frame, 16, visibleY));
+            assertEquals(33, pixel(frame, 16, visibleY + 8));
+            assertEquals(44, pixel(frame, 32, hiddenY));
+            assertEquals(22, pixel(frame, 48, hiddenY));
+        }
+    }
+    @Test void dialogFidelityClassifierNeverAcceptsAnEntitySource() {
+        HardwareFrame frame = new HardwareFrame(true);
+        frame.submittingLayer("DialogRenderLayer");
+        frame.backgroundPixel(0, 0, 3, PALETTE, -1, 1);
+        frame.submittingLayer("EntityRenderLayer");
+        frame.append(solid(2), 0, 0, false, false, PALETTE, false);
+        byte[] hardware = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
+        frame.compose(hardware);
+        byte[] legacy = hardware.clone(); legacy[2] = 44;
+        org.junit.jupiter.api.Assertions.assertFalse(frame.explainsHudPriority(legacy, hardware, 0));
+    }
 }

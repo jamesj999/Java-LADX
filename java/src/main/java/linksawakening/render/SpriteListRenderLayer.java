@@ -30,9 +30,8 @@ public final class SpriteListRenderLayer implements HardwareRenderLayer {
                 int base = sprite.tileIndex() & 0xFE;
                 int top = sprite.flipY() ? base + 1 : base;
                 int bottom = sprite.flipY() ? base : base + 1;
-                frame.append(tiles == null ? gpu.getTile(top) : tiles.tile(top), sprite.x(), sprite.y(),
-                    sprite.flipX(), sprite.flipY(), palette, false);
-                frame.append(tiles == null ? gpu.getTile(bottom) : tiles.tile(bottom), sprite.x(), sprite.y() + 8,
+                frame.append8x16(tiles == null ? gpu.getTile(top) : tiles.tile(top),
+                    tiles == null ? gpu.getTile(bottom) : tiles.tile(bottom), sprite.x(), sprite.y(),
                     sprite.flipX(), sprite.flipY(), palette, false);
             } else {
                 frame.append(gpu.getTile(sprite.tileIndex()), sprite.x(), sprite.y(),

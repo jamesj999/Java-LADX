@@ -88,12 +88,7 @@ public final class EntityRenderLayer implements HardwareRenderLayer {
     }
 
     @Override public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
-        var commands = new java.util.ArrayList<java.util.function.Consumer<OamSink>>();
-        OamSink sink = (tile, x, y, fx, fy, palette, behind) ->
-            commands.add(target -> target.append(tile, x, y, fx, fy, palette, behind));
-        render(new RenderContext(new byte[0], gpu, sink));
-        // Preserve the existing entity painter submission order.
-        for (var command : commands) command.accept(frame);
+        render(new RenderContext(new byte[0], gpu, frame));
     }
 
     private void renderSnapshot(RenderContext context, RoomEntitySnapshot entities,

@@ -156,7 +156,7 @@ tasks.withType(Test).configureEach {
         reportDir.mkdirs()
         def totals = [IDENTICAL: 0L, BLOCKED: 0L, MISMATCH: 0L, EXPECTED_FIDELITY_FIX: 0L, EXPECTED_FIDELITY_FIX_PIXELS: 0L]
         def blockedBy = [:].withDefault { 0L }
-        fileTree(reportDir).matching { include '*.tsv'; exclude 'summary.tsv', 'blocked-by-layer.tsv', '*.groups.tsv' }.each { report ->
+        fileTree(reportDir).matching { include '*.tsv'; exclude 'summary.tsv', 'blocked-by-layer.tsv', '*.groups.tsv', '*.expected.tsv' }.each { report ->
             report.readLines().drop(1).each { line ->
                 def fields = line.split('\t', 3)
                 totals[fields[1]] = totals[fields[1]] + 1L

@@ -23,6 +23,8 @@ public final class SceneParityExtension implements BeforeEachCallback, AfterEach
         context.getStore(KEY).put("rows", rows);
         var groups = new java.util.TreeMap<String, Group>();
         context.getStore(KEY).put("groups", groups);
+        var expectedSources = new java.util.TreeMap<String, Group>();
+        context.getStore(KEY).put("expectedSources", expectedSources);
         boolean probe = Boolean.getBoolean("sceneParity.probe");
         FrameScene.DRAW_OBSERVER.set((scene, rgba, gpu) -> {
             String id = Integer.toString(rows.size());
@@ -36,12 +38,19 @@ public final class SceneParityExtension implements BeforeEachCallback, AfterEach
             model.compose(hardware);
             int expectedPixels = 0, mismatchPixels = 0;
             var sceneGroups = new java.util.HashSet<String>();
+            var sceneExpectedSources = new java.util.HashSet<String>();
             var evidence = new java.util.LinkedHashSet<String>();
             for (int offset = 0; offset < rgba.length; offset += 4) {
                 if (Arrays.equals(rgba, offset, offset + 4, hardware, offset, offset + 4)) continue;
                 int pixel = offset / 4;
                 if (model.explainsHudPriority(rgba, hardware, pixel)) {
-                    expectedPixels++; evidence.add(model.hudEvidence(pixel)); continue;
+                    expectedPixels++; evidence.add(model.hudEvidence(pixel));
+                    String source = model.fidelitySource(pixel);
+                    Group expected = expectedSources.computeIfAbsent(source, key -> new Group());
+                    expected.pixels++;
+                    if (sceneExpectedSources.add(source)) expected.scenes++;
+                    if (expected.example == null) expected.example = "scene=" + id + " pixel=" + pixel % 160 + "," + pixel / 160;
+                    continue;
                 }
                 String detail = "pixel=" + pixel % 160 + "," + pixel / 160 + " " + model.hudEvidence(pixel);
                 if (!probe) {
@@ -75,6 +84,14 @@ public final class SceneParityExtension implements BeforeEachCallback, AfterEach
         Path directory = Path.of("build", "scene-parity", System.getProperty("sceneParity.task", "test"));
         Files.createDirectories(directory);
         Files.write(directory.resolve(name + ".tsv"), rows);
+        @SuppressWarnings("unchecked")
+        var expectedSources = (java.util.Map<String, Group>) context.getStore(KEY).remove("expectedSources");
+        if (expectedSources != null && !expectedSources.isEmpty()) {
+            var report = new ArrayList<String>();
+            report.add("source\tpixels\tscenes\texample");
+            expectedSources.forEach((source, group) -> report.add(source + "\t" + group.pixels + "\t" + group.scenes + "\t" + group.example));
+            Files.write(directory.resolve(name + ".expected.tsv"), report);
+        }
         @SuppressWarnings("unchecked")
         var groups = (java.util.Map<String, Group>) context.getStore(KEY).remove("groups");
         if (groups != null && !groups.isEmpty()) {

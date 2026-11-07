@@ -30,8 +30,7 @@ public final class DroppableRupeeRenderLayer implements HardwareRenderLayer {
             if (!slot.visible()) continue;
             int x = slot.worldX() - 4 - scrollController.screenShakeHorizontal();
             int y = slot.worldY() - (slot.posZSubpixels() >> 4) - 16;
-            frame.append(gpu.getTile(tile), x, y, false, false, palette, false);
-            frame.append(gpu.getTile(tile + 1), x, y + 8, false, false, palette, false);
+            frame.append8x16(gpu.getTile(tile), gpu.getTile(tile + 1), x, y, false, false, palette, false);
         }
     }
 }
