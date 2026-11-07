@@ -1,5 +1,8 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_BOW_WOW;
+
+
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntityRuntime;
@@ -36,9 +39,9 @@ final class BowWowHandler {
                       state.entity,
                       state.runtime.bowWowState != 0
                           ? state.sprites().forFollowerEntityType(
-                              state.runtime.ENTITY_BOW_WOW)
+                              ENTITY_BOW_WOW)
                           : state.sprites().forEntityType(
-                              state.runtime.ENTITY_BOW_WOW, EntityRoomLoader.RoomTable.OVERWORLD),
+                              ENTITY_BOW_WOW, EntityRoomLoader.RoomTable.OVERWORLD),
                       state.entity.spriteVariant());
             }
             state.entity =
@@ -73,7 +76,7 @@ final class BowWowHandler {
                   withDefinition(
                       state.entity,
                       state.sprites().forFollowerEntityType(
-                          state.runtime.ENTITY_BOW_WOW),
+                          ENTITY_BOW_WOW),
                       state.entity.spriteVariant());
               state.replaceEntity(state.entity);
             }

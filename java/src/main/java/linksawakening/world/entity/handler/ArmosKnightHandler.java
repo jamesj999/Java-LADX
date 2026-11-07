@@ -1,5 +1,8 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_LIFTABLE_ROCK;
+
+
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
@@ -80,7 +83,7 @@ final class ArmosKnightHandler {
                 state.emit(
                     new EntityCombatEvent(
                         rubbleSlot,
-                        state.runtime.ENTITY_LIFTABLE_ROCK,
+                        ENTITY_LIFTABLE_ROCK,
                         0,
                         false,
                         EntityCombatEvent.SoundChannel.NOISE,

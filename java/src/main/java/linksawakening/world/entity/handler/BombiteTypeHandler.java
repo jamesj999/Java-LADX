@@ -1,5 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_BOMB;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_BOUNCING_BOMBITE;
+
+
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
@@ -65,7 +69,7 @@ final class BombiteTypeHandler {
                           0x09));
                 }
                 boolean entityCollisionExplosion =
-                    state.entity.type() == state.runtime.ENTITY_BOUNCING_BOMBITE
+                    state.entity.type() == ENTITY_BOUNCING_BOMBITE
                         && state.runtime.bombiteMotion.state(state.entity.slot()) == 2
                         && state.runtime.projectiles.collideBouncingBombiteWithEntities(
                             state.updated, state.frame);
@@ -84,7 +88,7 @@ final class BombiteTypeHandler {
                     state.emit(
                         new EntityCombatEvent(
                             bombSlot,
-                            state.runtime.ENTITY_BOMB,
+                            ENTITY_BOMB,
                             0,
                             false,
                             EntityCombatEvent.SoundChannel.NOISE,

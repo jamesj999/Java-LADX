@@ -1,5 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_HOOKSHOT_CHAIN;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_KEY_DROP_POINT;
+
+
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
@@ -42,7 +46,7 @@ final class KeyDropPointHandler {
               state.emit(
                   new EntityCombatEvent(
                       slot,
-                      state.runtime.ENTITY_KEY_DROP_POINT,
+                      ENTITY_KEY_DROP_POINT,
                       0,
                       false,
                       EntityCombatEvent.SoundChannel.JINGLE,
@@ -55,7 +59,7 @@ final class KeyDropPointHandler {
                   withDefinition(
                       state.updated,
                       state.runtime.slotProperties.spriteDefinitionFor(
-                          state.runtime.ENTITY_HOOKSHOT_CHAIN),
+                          ENTITY_HOOKSHOT_CHAIN),
                       0);
             }
             KeyDropPointMotion.Update keyUpdate =

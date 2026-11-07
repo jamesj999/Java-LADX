@@ -1,5 +1,8 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_ROLLING_BONES_BAR;
+
+
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityRuntime;
@@ -33,7 +36,7 @@ final class RollingBonesHandler {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             RoomEntity bar =
                 state.runtime.roomInspection.firstLoadedEntityOfType(
-                    state.runtime.ENTITY_ROLLING_BONES_BAR);
+                    ENTITY_ROLLING_BONES_BAR);
             if (bar != null) {
               RollingBonesMotion.BossUpdate bossUpdate =
                   state.runtime.rollingBonesMotion.advanceBoss(

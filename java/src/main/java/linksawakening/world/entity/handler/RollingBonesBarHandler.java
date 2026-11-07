@@ -1,5 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_ROLLING_BONES;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_ROLLING_BONES_BAR;
+
+
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
@@ -24,7 +28,7 @@ final class RollingBonesBarHandler {
             state -> {
               if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
                 // BossIntro runs before ReturnIfNonInteractive_06.
-                if (state.entity.type() == state.runtime.ENTITY_ROLLING_BONES
+                if (state.entity.type() == ENTITY_ROLLING_BONES
                     && !state.runtime.roomTransitionActive
                     && !state.link().inventoryAppearing()) {
                   BossIntroMotion.Update intro =
@@ -36,14 +40,14 @@ final class RollingBonesBarHandler {
                   if (intro.musicTrack() >= 0) state.runtime.pendingMusicTrack = intro.musicTrack();
                 }
                 // The bar's room-clear check precedes its interaction guard.
-                if (state.entity.type() == state.runtime.ENTITY_ROLLING_BONES_BAR
+                if (state.entity.type() == ENTITY_ROLLING_BONES_BAR
                     && (state.runtime.entityRoomStatus & 0x20) != 0) {
                   state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
                   return false;
                 }
                 // ReturnIfNonInteractive_06 reads the pre-decrement wC1A8.
                 if (!state.handlerInteractive || state.countdownBlocksInteraction) return false;
-                if (state.entity.type() == state.runtime.ENTITY_ROLLING_BONES
+                if (state.entity.type() == ENTITY_ROLLING_BONES
                     && !state.rollingBonesHitThisFrame
                     && state.slot().ignoreHits(state.entity.slot()) != 0) {
                   // ApplyRecoilIfNeeded_06 pops the handler return address:

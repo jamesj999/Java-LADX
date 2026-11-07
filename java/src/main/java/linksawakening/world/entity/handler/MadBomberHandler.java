@@ -1,5 +1,8 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_BOMB;
+
+
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
@@ -47,7 +50,7 @@ final class MadBomberHandler {
                 state.emit(
                     new EntityCombatEvent(
                         bombSlot,
-                        state.runtime.ENTITY_BOMB,
+                        ENTITY_BOMB,
                         0,
                         false,
                         EntityCombatEvent.SoundChannel.JINGLE,

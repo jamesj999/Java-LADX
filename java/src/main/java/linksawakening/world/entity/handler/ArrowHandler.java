@@ -1,5 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_ARROW;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_BOMB;
+
+
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
@@ -24,7 +28,7 @@ final class ArrowHandler {
                 state.emit(
                     new EntityCombatEvent(
                         explosionSlot,
-                        state.runtime.ENTITY_BOMB,
+                        ENTITY_BOMB,
                         0,
                         false,
                         EntityCombatEvent.SoundChannel.NOISE,
@@ -63,7 +67,7 @@ final class ArrowHandler {
               state.emit(
                   new EntityCombatEvent(
                       state.entity.slot(),
-                      state.runtime.ENTITY_ARROW,
+                      ENTITY_ARROW,
                       0,
                       false,
                       EntityCombatEvent.SoundChannel.JINGLE,

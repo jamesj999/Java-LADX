@@ -1,5 +1,8 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_IRON_MASK;
+
+
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
@@ -19,7 +22,7 @@ final class RoamingEnemyTypeHandler {
             EntityTickStage.PHASE_3_ROAMING_ENEMY_TYPE,
             state -> {
               if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
-                if (state.entity.type() == state.runtime.ENTITY_IRON_MASK
+                if (state.entity.type() == ENTITY_IRON_MASK
                     && state.runtime.ironMaskPrivateState2[state.entity.slot()] != 0) {
                   UnmaskedIronMaskMotion.Update unmaskedUpdate =
                       state.runtime.unmaskedIronMaskMotion.advance(

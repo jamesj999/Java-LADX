@@ -1,5 +1,8 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_BUSH_CRAWLER;
+
+
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
@@ -57,7 +60,7 @@ final class BushCrawlerHandler {
                   withDefinition(
                       state.updated,
                       state.runtime.slotProperties.spriteDefinitionFor(
-                          state.runtime.ENTITY_BUSH_CRAWLER),
+                          ENTITY_BUSH_CRAWLER),
                       state.updated.spriteVariant());
             }
             if (!bushUpdate.specialState()) {

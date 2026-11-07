@@ -1,5 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_MOBLIN_ARROW;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_PHYSICS_HARMLESS;
+
+
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
@@ -82,10 +86,10 @@ final class MoblinKingHandler {
                           : 0x40;
               if (state.runtime.moblinKingMotion.state(state.entity.slot()) == 5) {
                 state.runtime.enemyPhysicsFlags[state.entity.slot()] |=
-                    state.runtime.ENTITY_PHYSICS_HARMLESS;
+                    ENTITY_PHYSICS_HARMLESS;
               } else {
                 state.runtime.enemyPhysicsFlags[state.entity.slot()] &=
-                    ~state.runtime.ENTITY_PHYSICS_HARMLESS;
+                    ~ENTITY_PHYSICS_HARMLESS;
               }
               if (state.sprites() != null) {
                 state.updated =
@@ -107,13 +111,13 @@ final class MoblinKingHandler {
                     new RoamingEnemyMotion.LaunchRequest(
                         state.entity.slot(),
                         state.entity.type(),
-                        state.runtime.ENTITY_MOBLIN_ARROW));
+                        ENTITY_MOBLIN_ARROW));
                 state.enemySpawns().spawnEnemyProjectile(
                     state.entity,
                     new RoamingEnemyMotion.LaunchRequest(
                         state.entity.slot(),
                         state.entity.type(),
-                        state.runtime.ENTITY_MOBLIN_ARROW),
+                        ENTITY_MOBLIN_ARROW),
                     kingUpdate.arrowRequest().direction());
               }
               if (kingUpdate.jingleId() >= 0) {
