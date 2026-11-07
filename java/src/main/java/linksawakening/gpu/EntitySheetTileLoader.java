@@ -1,6 +1,8 @@
 package linksawakening.gpu;
 
 import linksawakening.rom.RomSymbols;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
 import linksawakening.rom.GbcBanks;
 
 final class EntitySheetTileLoader {
@@ -13,8 +15,7 @@ final class EntitySheetTileLoader {
     private static final int ENTITY_SHEET_TILE_COUNT = 0x10;
     private static final int ENTITY_SHEET_SOURCE_BASE = RomSymbols.NpcTilesDataStart.address();
     private static final int ENTITY_SHEET_VRAM_BASE = 0x40;
-    private static final int COLOR_DUNGEON_SHEET_TABLE_BANK = RomSymbols.ColorDungeonEntitySpritesheetsTable_Slot1.bank();
-    private static final int[] COLOR_DUNGEON_SHEET_TABLES = {RomSymbols.ColorDungeonEntitySpritesheetsTable_Slot1.address(), RomSymbols.ColorDungeonEntitySpritesheetsTable_Slot2.address(), RomSymbols.ColorDungeonEntitySpritesheetsTable_Slot3.address(), RomSymbols.ColorDungeonEntitySpritesheetsTable_Slot4.address()};
+    private static final RomAddress[] COLOR_DUNGEON_SHEET_TABLES = {RomSymbols.ColorDungeonEntitySpritesheetsTable_Slot1, RomSymbols.ColorDungeonEntitySpritesheetsTable_Slot2, RomSymbols.ColorDungeonEntitySpritesheetsTable_Slot3, RomSymbols.ColorDungeonEntitySpritesheetsTable_Slot4};
     private static final int COLOR_DUNGEON_ROOM_COUNT = 0x16;
     public void loadEntitySpriteSheets(byte[] romData, int[] sheetValues) {
         if (sheetValues == null || sheetValues.length != 4) {
@@ -45,24 +46,22 @@ final class EntitySheetTileLoader {
         if (roomId < 0 || roomId >= COLOR_DUNGEON_ROOM_COUNT) {
             throw new IllegalArgumentException("Color Dungeon room id out of range: " + roomId);
         }
+        Rom rom = new Rom(romData);
         for (int slot = 0; slot < COLOR_DUNGEON_SHEET_TABLES.length; slot++) {
-            int tableOffset = romOffset(COLOR_DUNGEON_SHEET_TABLE_BANK,
-                COLOR_DUNGEON_SHEET_TABLES[slot] + roomId * 2);
+            RomAddress table = COLOR_DUNGEON_SHEET_TABLES[slot].plus(roomId * 2);
+            int tableOffset = table.offset();
             if (tableOffset < 0 || tableOffset + 2 > romData.length) {
                 throw new IllegalArgumentException("Color Dungeon sheet table exceeds ROM bounds");
             }
-            int sourceHighByte = Byte.toUnsignedInt(romData[tableOffset]);
+            int sourceHighByte = rom.u8(table);
             if (sourceHighByte == 0) {
                 continue;
             }
-            int sourceBank = Byte.toUnsignedInt(romData[tableOffset + 1]);
+            int sourceBank = rom.u8(table.plus(1));
             int destinationTile = ENTITY_SHEET_VRAM_BASE + slot * ENTITY_SHEET_TILE_COUNT;
             target.loadTilesFromROM(romData, sourceBank, sourceHighByte << 8,
                 ENTITY_SHEET_TILE_COUNT, destinationTile);
         }
     }
-    private static int bankAddrToRomOffset(int bank, int address) {
-        return bank == 0 ? address : bank * 0x4000 + address - 0x4000;
-    }
-    private static int romOffset(int bank, int address) { return bankAddrToRomOffset(bank, address); }
+
 }

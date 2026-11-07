@@ -50,8 +50,5 @@ final class TitleIntroTileLoader {
         target.loadTilesFromROM(romData, SAVE_MENU_TILES_BANK, SAVE_MENU_TILES_ADDR,
             SAVE_MENU_TILES_COUNT, 0x080);
     }
-    private static int bankAddrToRomOffset(int bank, int address) {
-        return bank == 0 ? address : bank * 0x4000 + address - 0x4000;
-    }
-    private static int romOffset(int bank, int address) { return bankAddrToRomOffset(bank, address); }
+
 }

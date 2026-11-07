@@ -13,8 +13,6 @@ class RomTileLoader extends Vram {
     public void loadAnimatedTilesGroup(byte[] rom, int group) { animatedTiles.loadAnimatedTilesGroup(rom, group); }
     public void tickAnimatedTiles(byte[] rom) { animatedTiles.tickAnimatedTiles(rom); }
 
-    private static final int BANK_SIZE = 0x4000;
-
     // SwitchBlockTiles in bank0c.asm and the GBC-adjusted bank used by the
     // gameplay tile loader. UpdateSwitchBlockTiles copies four tiles at a
     // time to vTilesSwitchBlockA/B ($9040/$9080).
@@ -128,13 +126,6 @@ class RomTileLoader extends Vram {
 
     public final void loadIndoorTiles(byte[] romData, int mapId, int roomId, boolean sideScrolling) { new RoomTileLoader(this).loadIndoorTiles(romData, mapId, roomId, sideScrolling); }
 
-    private static int bankAddrToRomOffset(int bank, int address) {
-        if (bank == 0) {
-            return address;
-        }
-        return bank * BANK_SIZE + (address - BANK_SIZE);
-    }
-
     // Should be called once per VBlank while in gameplay. Advances the animated
     // tiles frame counter and, when the current group's timing elapses, copies
     // the next animation frame into VRAM tile slot 0x16C.
@@ -163,7 +154,7 @@ class RomTileLoader extends Vram {
     public void loadSharedVfxTiles(byte[] romData) { new InventoryTileLoader(this).loadSharedVfxTiles(romData); }
 
     final void loadTilesFromROM(byte[] romData, int bank, int address, int tileCount, int vramTileIndex) {
-        int romOffset = romOffset(bank, address);
+        int romOffset = linksawakening.rom.RomBank.romOffset(bank, address);
         int vramOffset = vramTileIndex * TILE_DATA_SIZE;
         int byteCount = tileCount * TILE_DATA_SIZE;
 
@@ -177,19 +168,12 @@ class RomTileLoader extends Vram {
         // The legacy selector's bank-zero row uses a flat ROM offset,
         // including addresses outside ROM0's CPU window. Preserve that API.
         byte[] source = bank == 0 && address >= 0x4000
-            ? java.util.Arrays.copyOfRange(romData, romOffset, romOffset + byteCount)
+            ? new Rom(romData).slice(RomAddress.fromOffset(romOffset), byteCount)
             : new Rom(romData).slice(new RomAddress(bank, address), byteCount);
         System.arraycopy(source, 0, vram, vramOffset, byteCount);
         for (int tile = 0; tile < tileCount; tile++) {
             updateTile(vramTileIndex + tile);
         }
-    }
-
-    private int romOffset(int bank, int address) {
-        if (bank == 0) {
-            return address;
-        }
-        return bank * BANK_SIZE + (address - BANK_SIZE);
     }
 
 }

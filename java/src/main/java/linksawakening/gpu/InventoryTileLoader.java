@@ -55,8 +55,5 @@ final class InventoryTileLoader {
         target.loadTilesFromROM(romData, SHARED_VFX_TILES_BANK,
             SHARED_VFX_TILES_ADDR + 0x60, 0x04, 0x26);
     }
-    private static int bankAddrToRomOffset(int bank, int address) {
-        return bank == 0 ? address : bank * 0x4000 + address - 0x4000;
-    }
-    private static int romOffset(int bank, int address) { return bankAddrToRomOffset(bank, address); }
+
 }

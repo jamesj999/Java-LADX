@@ -1,6 +1,7 @@
 package linksawakening.render;
 
 import linksawakening.rom.RomSymbols;
+import linksawakening.render.EntityRenderInputs.Offset;
 
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.dialog.DialogController;
@@ -13,8 +14,6 @@ import linksawakening.world.ScrollController;
 import linksawakening.world.WingedOctorokOam;
 import linksawakening.world.EntityStatus;
 
-import static linksawakening.world.RoomConstants.ROOM_PIXEL_HEIGHT;
-import static linksawakening.world.RoomConstants.ROOM_PIXEL_WIDTH;
 
 /** Renders the ROM-backed OAM display lists for the room's loaded entities. */
 public final class EntityRenderLayer implements HardwareRenderLayer {
@@ -64,7 +63,7 @@ public final class EntityRenderLayer implements HardwareRenderLayer {
             }
         }
         this.snapshot = snapshot;
-        this.objectPalettes = clonePalettes(objectPalettes);
+        this.objectPalettes = EntityRenderInputs.clonePalettes(objectPalettes);
         this.scrollController = scrollController;
         this.frameCounter = frameCounter & 0xFF;
         this.dialogPosition = dialogPosition;
@@ -80,10 +79,10 @@ public final class EntityRenderLayer implements HardwareRenderLayer {
                 && previousRoom.entities().spriteSelection() != null) {
                 renderSnapshot(context, previousRoom.entities(),
                     previousRoom.entities().spriteSelection().objectPalettes(),
-                    previousRoomOffset());
+                    EntityRenderInputs.previousRoomOffset(scrollController));
             }
         }
-        renderSnapshot(context, snapshot, objectPalettes, currentRoomOffset());
+        renderSnapshot(context, snapshot, objectPalettes, EntityRenderInputs.currentRoomOffset(scrollController));
     }
 
     @Override public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
@@ -91,7 +90,7 @@ public final class EntityRenderLayer implements HardwareRenderLayer {
     }
 
     private void renderSnapshot(RenderContext context, RoomEntitySnapshot entities,
-                                int[][] palettes, ScreenOffset offset) {
+                                int[][] palettes, Offset offset) {
         EntitySpriteTileSnapshot tiles = entities.spriteTiles();
         for (RoomEntity entity : entities.loadedEntities()) {
             EntitySpriteDefinition definition = entity.spriteDefinition();
@@ -210,7 +209,7 @@ public final class EntityRenderLayer implements HardwareRenderLayer {
             if ((attributes & OAM_PALETTE_FLIP) != 0) {
                 paletteIndex = 4;
             }
-            int[] palette = resolvePalette(palettes, paletteIndex);
+            int[] palette = EntityRenderInputs.resolvePalette(palettes, paletteIndex);
             OamDrawing.draw8x16(context, context.gpu(),
                 entry.tileIndex(), entry.rawX() + offsetX - OAM_X_SCREEN_ORIGIN,
                 entry.rawY() + offsetY - OAM_Y_SCREEN_ORIGIN,
@@ -369,7 +368,7 @@ public final class EntityRenderLayer implements HardwareRenderLayer {
             // to palette 4 unless hActiveEntityFlipAttribute requested it.
             paletteIndex = 4;
         }
-        int[] palette = resolvePalette(palettes, paletteIndex);
+        int[] palette = EntityRenderInputs.resolvePalette(palettes, paletteIndex);
         // Room snapshots own only the four replaceable entity sheets,
         // $40-$7F. Common item graphics (heart pieces, rupees, etc.) and
         // Link's shared tiles remain in gameplay VRAM outside that range.
@@ -393,52 +392,7 @@ public final class EntityRenderLayer implements HardwareRenderLayer {
             || dialogPosition == DialogController.BoxPosition.BOTTOM && rawY >= 0x58;
     }
 
-    private static int[] resolvePalette(int[][] palettes, int paletteIndex) {
-        if (paletteIndex < 0 || paletteIndex >= palettes.length) {
-            throw new IllegalArgumentException("Object palette index is unavailable: "
-                + paletteIndex);
-        }
-        return palettes[paletteIndex];
-    }
 
-    private ScreenOffset currentRoomOffset() {
-        int shakeX = -scrollController.screenShakeHorizontal();
-        if (!scrollController.isActive()) {
-            return new ScreenOffset(shakeX, 0);
-        }
-        int offset = scrollController.offset();
-        return switch (scrollController.direction()) {
-            case ScrollController.LEFT -> new ScreenOffset(-ROOM_PIXEL_WIDTH + offset + shakeX, 0);
-            case ScrollController.RIGHT -> new ScreenOffset(ROOM_PIXEL_WIDTH - offset + shakeX, 0);
-            case ScrollController.UP -> new ScreenOffset(shakeX, -ROOM_PIXEL_HEIGHT + offset);
-            case ScrollController.DOWN -> new ScreenOffset(shakeX, ROOM_PIXEL_HEIGHT - offset);
-            default -> new ScreenOffset(shakeX, 0);
-        };
-    }
 
-    private ScreenOffset previousRoomOffset() {
-        int shakeX = -scrollController.screenShakeHorizontal();
-        if (!scrollController.isActive()) {
-            return new ScreenOffset(shakeX, 0);
-        }
-        int offset = scrollController.offset();
-        return switch (scrollController.direction()) {
-            case ScrollController.LEFT -> new ScreenOffset(offset + shakeX, 0);
-            case ScrollController.RIGHT -> new ScreenOffset(-offset + shakeX, 0);
-            case ScrollController.UP -> new ScreenOffset(shakeX, offset);
-            case ScrollController.DOWN -> new ScreenOffset(shakeX, -offset);
-            default -> new ScreenOffset(shakeX, 0);
-        };
-    }
 
-    private static int[][] clonePalettes(int[][] source) {
-        int[][] copy = new int[source.length][];
-        for (int i = 0; i < source.length; i++) {
-            copy[i] = source[i].clone();
-        }
-        return copy;
-    }
-
-    private record ScreenOffset(int x, int y) {
-    }
 }
