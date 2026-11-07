@@ -288,4 +288,7 @@ public final class EntityBackgroundMechanics {
     public boolean groundInteractionSideScrolling() { return runtime.groundInteractionSideScrolling; }
     public RoomEntityObjectQuery objectQuery() { return runtime.objectQuery; }
     public RoomEntityGroundInteraction groundInteraction() { return runtime.groundInteraction; }
+  public boolean switchBlockAnimationActive() { return runtime.switchBlockAnimationActive; }
+  public void requestSwitchBlockAnimation() { runtime.pendingSwitchBlockAnimationRequest = true; }
+
 }

@@ -61,7 +61,7 @@ final class ZombieHandler {
               state.enemySpawns().spawnZombieChild(zombieUpdate.spawnRequest());
             }
             if (zombieUpdate.unloadRequested()) {
-              state.runtime.clearEntity(slot);
+              state.lifecycle().clearEntity(slot);
               return false;
             }
             state.preserveZombiePresentation = true;

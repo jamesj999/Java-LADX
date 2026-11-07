@@ -1,5 +1,8 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.BOMBER_THROW_JINGLE_ID;
+
+
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_BOMB;
 
 
@@ -38,7 +41,7 @@ final class MadBomberHandler {
             if (madBomberUpdate.bombSpawn() != null) {
               MadBomberMotion.BombSpawn spawn = madBomberUpdate.bombSpawn();
               int bombSlot =
-                  state.runtime.spawnEnemyBomb(
+                  state.enemySpawns().spawnEnemyBomb(
                       spawn.x(),
                       spawn.y(),
                       spawn.z(),
@@ -54,7 +57,7 @@ final class MadBomberHandler {
                         0,
                         false,
                         EntityCombatEvent.SoundChannel.JINGLE,
-                        state.runtime.BOMBER_THROW_JINGLE_ID));
+                        BOMBER_THROW_JINGLE_ID));
               }
             }
           }

@@ -45,7 +45,7 @@ final class WarpHandler {
                 state.runtime.warpState[slot] = warpUpdate.state();
                 state.runtime.warpTransitionCountdown[slot] = warpUpdate.countdown();
                 if (warpUpdate.musicTrack() >= 0) {
-                  state.runtime.pendingMusicTrack = warpUpdate.musicTrack();
+                  state.requestMusic(warpUpdate.musicTrack());
                 }
                 if (warpUpdate.jingleId() >= 0) {
                   state.emit(

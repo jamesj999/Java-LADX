@@ -61,7 +61,7 @@ final class RoosterHandler {
                 && state.liftThrow().cuccoPowerBraceletHeld()
                 && RoomEntityCombatRules.overlapsLink(
                     state.entity, state.linkEntityX, state.linkEntityY)
-                && state.runtime.beginLift(state.entity.slot(), state.romLinkDirection)) {
+                && state.liftThrow().beginLift(state.entity.slot(), state.romLinkDirection)) {
               state.emit(
                   new RoosterLinkStateRequest(
                       state.entity.slot(),

@@ -107,7 +107,7 @@ final class TarinHandler {
                           EntityCombatEvent.SoundChannel.JINGLE,
                           tarinUpdate.soundId()));
                   if (tarinUpdate.soundId() == 0x23) {
-                    state.runtime.pendingMusicTrack = state.roomInspection().defaultMusicTrack();
+                    state.requestMusic(state.roomInspection().defaultMusicTrack());
                   }
                 }
                 if (tarinUpdate.spawnBomb()) {

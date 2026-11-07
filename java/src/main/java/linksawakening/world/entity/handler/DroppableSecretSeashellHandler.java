@@ -1,5 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.SECRET_SEASHELL_HIDDEN_OPTIONS1;
+import static linksawakening.world.entity.EntityRomConstants.SECRET_SEASHELL_REVEALED_OPTIONS1;
+
+
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
@@ -46,8 +50,8 @@ final class DroppableSecretSeashellHandler {
                     objectUnderEntity);
             state.updated = shellUpdate.entity();
             state.slot().setOptions1Override(state.entity.slot(), state.secretSeashellMotion().privateState3(state.entity.slot()) != 0
-                    ? state.runtime.SECRET_SEASHELL_HIDDEN_OPTIONS1
-                    : state.runtime.SECRET_SEASHELL_REVEALED_OPTIONS1);
+                    ? SECRET_SEASHELL_HIDDEN_OPTIONS1
+                    : SECRET_SEASHELL_REVEALED_OPTIONS1);
             state.preserveSecretSeashellPresentation = true;
           }
           return true;

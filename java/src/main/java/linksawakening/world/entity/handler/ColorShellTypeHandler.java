@@ -1,5 +1,8 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.MAP_COLOR_DUNGEON;
+
+
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.EntityStatus;
@@ -19,7 +22,7 @@ final class ColorShellTypeHandler {
             type,
             EntityTickStage.PHASE_2_COLOR_SHELL_TYPE,
             state -> {
-              if (state.roomInspection().entityMapId() == state.runtime.MAP_COLOR_DUNGEON) {
+              if (state.roomInspection().entityMapId() == MAP_COLOR_DUNGEON) {
                 state.colorShellMotion().enterState6(state.entity);
                 RoomEntity activeShell =
                     state.slotProperties().refreshColorShellDisplay(
@@ -65,7 +68,7 @@ final class ColorShellTypeHandler {
                 state.updated = shellUpdate.entity();
                 state.slot().setIgnoreHits(state.entity.slot(), shellUpdate.nextIgnoreHitsCountdown());
                 if (shellUpdate.unloadRequested()) {
-                  state.runtime.pendingClearedEntityMask |= persistentClearMask(state.entity);
+                  state.lifecycle().requestPersistentClearMask(persistentClearMask(state.entity));
                   state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
                   return false;
                 }

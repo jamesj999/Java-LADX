@@ -34,7 +34,7 @@ final class ArmosKnightHandler {
                     state.roomInspection().entityMapId(),
                     state.lifecycle().transitionSequenceCounter());
             if (bossIntro.musicTrack() >= 0) {
-              state.runtime.pendingMusicTrack = bossIntro.musicTrack();
+              state.requestMusic(bossIntro.musicTrack());
             }
             if (bossIntro.dialogLowId() >= 0) {
               state.emit(
@@ -75,7 +75,7 @@ final class ArmosKnightHandler {
             }
             if (armosKnightUpdate.rubbleRequest() != null) {
               ArmosKnightMotion.RubbleRequest rubble = armosKnightUpdate.rubbleRequest();
-              int rubbleSlot = state.runtime.spawnLiftableRockRubble(rubble.x(), rubble.y());
+              int rubbleSlot = state.playerSpawns().spawnLiftableRockRubble(rubble.x(), rubble.y());
               if (rubbleSlot >= 0) {
                 state.emit(
                     new TransientVfxRequest(TransientVfxType.POOF, rubble.x(), rubble.y()));

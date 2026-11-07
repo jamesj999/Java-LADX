@@ -101,7 +101,7 @@ final class MoblinKingHandler {
                 state.emit(new DialogRequest(1, 0x91, true));
               }
               if (kingUpdate.arrowRequest() != null) {
-                state.runtime.events.projectileLaunchRequests.add(
+                state.emit(
                     new RoamingEnemyMotion.LaunchRequest(
                         state.entity.slot(),
                         state.entity.type(),

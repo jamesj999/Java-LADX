@@ -422,7 +422,7 @@ public final class EntityPlayerSpawns {
         return freeSlot;
     }
 
-    int spawnLiftableRockSmash(int entityX, int entityY, int sourceSpriteVariant) {
+    public int spawnLiftableRockSmash(int entityX, int entityY, int sourceSpriteVariant) {
         if (sourceSpriteVariant != runtime.LIFTABLE_ROCK_SMASH_MODE_ROCK
             && sourceSpriteVariant != runtime.LIFTABLE_ROCK_SMASH_MODE_BUSH
             && sourceSpriteVariant != runtime.LIFTABLE_ROCK_SMASH_MODE_GRASS) {
@@ -434,7 +434,7 @@ public final class EntityPlayerSpawns {
             initialCountdown, runtime.LIFTABLE_ROCK_SMASH_PHYSICS_FLAGS, rock ? 0x09 : 0x05);
     }
 
-    int spawnLiftableRockRubble(int entityX, int entityY) {
+    public int spawnLiftableRockRubble(int entityX, int entityY) {
         return spawnLiftableRockAnimation(entityX, entityY, runtime.LIFTABLE_ROCK_SMASH_MODE_ROCK,
             0x0F, runtime.LIFTABLE_ROCK_RUBBLE_PHYSICS_FLAGS, -1);
     }

@@ -1,5 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.BOMBITE_EXPLOSION_COUNTDOWN;
+import static linksawakening.world.entity.EntityRomConstants.BOMBITE_EXPLOSION_SOUND_ID;
+
+
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_BOMB;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_BOUNCING_BOMBITE;
 
@@ -77,11 +81,11 @@ final class BombiteTypeHandler {
                   // coordinates into a fresh type-$02 enemy bomb and then
                   // lets ConfigureNewEntity supply z=0 and ignore-hits=1.
                   int bombSlot =
-                      state.runtime.spawnEnemyBomb(
+                      state.enemySpawns().spawnEnemyBomb(
                           state.updated.x(),
                           state.updated.y(),
                           0,
-                          state.runtime.BOMBITE_EXPLOSION_COUNTDOWN);
+                          BOMBITE_EXPLOSION_COUNTDOWN);
                   if (bombSlot >= 0) {
                     state.slot().setIgnoreHits(bombSlot, 0x01);
                     state.emit(
@@ -91,7 +95,7 @@ final class BombiteTypeHandler {
                             0,
                             false,
                             EntityCombatEvent.SoundChannel.NOISE,
-                            state.runtime.BOMBITE_EXPLOSION_SOUND_ID));
+                            BOMBITE_EXPLOSION_SOUND_ID));
                   }
                   state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
                   return false;

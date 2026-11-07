@@ -1,5 +1,8 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.LIFTABLE_ROCK_SMASH_MODE_ROCK;
+
+
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityRuntime;
@@ -49,7 +52,7 @@ final class SideViewPotHandler {
                 && SideViewPotContact.liftWindow(state.entity, effectiveLinkX, effectiveLinkY)
                 && state.liftThrow().sideViewPotPowerBraceletHeld()
                 && state.link().linkAttackStepAnimationCountdown() == 0
-                && state.runtime.beginLift(state.entity.slot(), state.romLinkDirection)) {
+                && state.liftThrow().beginLift(state.entity.slot(), state.romLinkDirection)) {
               state.emit(
                   new EntityCombatEvent(
                       state.entity.slot(),
@@ -78,11 +81,11 @@ final class SideViewPotHandler {
                   state.liftThrow().sideViewPotBackgroundCollision(
                       state.entity, movedPot, state.backgroundCollision, state.frame);
               if (collision) {
-                state.runtime.spawnLiftableRockSmash(
+                state.playerSpawns().spawnLiftableRockSmash(
                     movedPot.x(),
                     (movedPot.y() - movedPot.z()) & 0xFF,
-                    state.runtime.LIFTABLE_ROCK_SMASH_MODE_ROCK);
-                state.runtime.clearEntity(state.entity.slot());
+                    LIFTABLE_ROCK_SMASH_MODE_ROCK);
+                state.lifecycle().clearEntity(state.entity.slot());
               } else {
                 state.replaceEntity(movedPot);
               }

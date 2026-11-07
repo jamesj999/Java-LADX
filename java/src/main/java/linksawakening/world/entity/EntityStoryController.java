@@ -395,4 +395,6 @@ public final class EntityStoryController {
             runtime.events.pendingDialogRequests.add(new DialogRequest(0, 0x99));
         }
         }
+  public void presentWitchGotItem(int slot) { runtime.presentWitchGotItem(slot); }
+
 }

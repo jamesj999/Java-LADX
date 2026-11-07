@@ -302,4 +302,12 @@ public final class EntityFrameExecution {
   public linksawakening.world.entity.motion.ColorShellMotion colorShellMotion() { return runtime.colorShellMotion; }
   public linksawakening.world.entity.motion.SecretSeashellMotion secretSeashellMotion() { return runtime.secretSeashellMotion; }
   public linksawakening.world.entity.motion.WarpMotion warpMotion() { return runtime.warpMotion; }
+  public void requestMusic(int track) { runtime.pendingMusicTrack = track; }
+  public void emit(linksawakening.world.entity.event.HookshotBridgeUpdate update) {
+    runtime.events.hookshotBridgeUpdates.add(update);
+  }
+  public void emit(linksawakening.world.entity.motion.RoamingEnemyMotion.LaunchRequest request) {
+    runtime.events.projectileLaunchRequests.add(request);
+  }
+
 }

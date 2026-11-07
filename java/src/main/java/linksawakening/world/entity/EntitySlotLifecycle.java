@@ -132,7 +132,7 @@ public final class EntitySlotLifecycle {
         return null;
     }
 
-    int clearEntity(int slot) {
+    public int clearEntity(int slot) {
         if (slot < 0 || slot >= runtime.slots.length) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
@@ -624,4 +624,8 @@ public final class EntitySlotLifecycle {
         runtime.blooperMotion.decrementPrivateCountdown3(slot);
         runtime.wingedOctorokMotion.decrementPrivateCountdown2(slot);
     }
+  public void requestPersistentClearMask(int mask) { runtime.pendingClearedEntityMask |= mask; }
+  public void delayInteractions(int countdown) { runtime.entityInteractionCountdown = countdown; }
+  public void recordGelClinging(boolean clinging) { runtime.gelClingingToLink |= clinging; }
+
 }

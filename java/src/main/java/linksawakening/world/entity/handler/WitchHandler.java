@@ -55,7 +55,7 @@ final class WitchHandler {
                       witchUpdate.dialogGlobalId() >>> 8, witchUpdate.dialogGlobalId() & 0xFF));
             }
             if (witchUpdate.musicTrack() >= 0) {
-              state.runtime.pendingMusicTrack = witchUpdate.musicTrack();
+              state.requestMusic(witchUpdate.musicTrack());
             }
             if (witchUpdate.jingleId() >= 0) {
               state.emit(
@@ -76,7 +76,7 @@ final class WitchHandler {
             if (witchUpdate.grantMagicPowder()) {
               state.emit(new WitchRewardEvent(state.entity.slot()));
               state.runtime.witchGotItemCountdown[state.entity.slot()] = 0x2A;
-              state.runtime.presentWitchGotItem(state.entity.slot());
+              state.story().presentWitchGotItem(state.entity.slot());
             }
           }
           return true;

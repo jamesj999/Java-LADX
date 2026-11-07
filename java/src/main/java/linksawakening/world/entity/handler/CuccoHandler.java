@@ -52,7 +52,7 @@ final class CuccoHandler {
               return false;
             }
             if (cuccoUpdate.liftRequested()
-                && state.runtime.beginLift(state.entity.slot(), state.romLinkDirection)) {
+                && state.liftThrow().beginLift(state.entity.slot(), state.romLinkDirection)) {
               state.emit(
                   new EntityCombatEvent(
                       state.entity.slot(),

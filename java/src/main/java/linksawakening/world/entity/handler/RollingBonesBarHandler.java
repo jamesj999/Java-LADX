@@ -37,7 +37,7 @@ final class RollingBonesBarHandler {
                           state.entity.type(),
                           state.roomInspection().entityMapId(),
                           state.lifecycle().transitionSequenceCounter());
-                  if (intro.musicTrack() >= 0) state.runtime.pendingMusicTrack = intro.musicTrack();
+                  if (intro.musicTrack() >= 0) state.requestMusic(intro.musicTrack());
                 }
                 // The bar's room-clear check precedes its interaction guard.
                 if (state.entity.type() == ENTITY_ROLLING_BONES_BAR

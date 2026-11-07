@@ -24,19 +24,19 @@ public final class EntityEnemySpawns {
     private final RoomEntityRuntime runtime;
     EntityEnemySpawns(RoomEntityRuntime runtime) { this.runtime = runtime; }
 
-    int spawnEnemyBomb(int entityX, int entityY, int entityZ, int transitionCountdown) {
+    public int spawnEnemyBomb(int entityX, int entityY, int entityZ, int transitionCountdown) {
         return spawnEnemyBomb(entityX, entityY, entityZ, transitionCountdown,
             0, 0, 0, false, 0x01);
     }
 
-    int spawnEnemyBomb(int entityX, int entityY, int entityZ,
+    public int spawnEnemyBomb(int entityX, int entityY, int entityZ,
                                int transitionCountdown, int speedX, int speedY,
                                int speedZ) {
         return spawnEnemyBomb(entityX, entityY, entityZ, transitionCountdown,
             speedX, speedY, speedZ, true, 0x01);
     }
 
-    int spawnEnemyBomb(int entityX, int entityY, int entityZ,
+    public int spawnEnemyBomb(int entityX, int entityY, int entityZ,
                                int transitionCountdown, int speedX, int speedY,
                                int speedZ, boolean initializeMotion, int privateState4) {
         EntitySlotValidation.validateByte(entityX, "Enemy bomb X");

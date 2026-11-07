@@ -91,7 +91,7 @@ import java.util.function.IntUnaryOperator;
 
 /** ROM slot arrays and room handler state; orchestration remains in RoomEntityRuntime. */
 abstract class EntityRuntimeState extends EntityRomConstants {
-    public final EntityEventChannels events = new EntityEventChannels();
+    final EntityEventChannels events = new EntityEventChannels();
     final EntityLinkState linkState = new EntityLinkState();
     final EntityLinkView linkView = new EntityLinkView(linkState);
 
@@ -347,7 +347,7 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     final int[] enemyStunnedCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public boolean gelClingingToLink;
+    boolean gelClingingToLink;
 
     public final int[] dyingCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
 
@@ -468,13 +468,13 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     final int[] chestItemBySlot = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public boolean switchBlockAnimationActive;
+    boolean switchBlockAnimationActive;
 
-    public boolean pendingSwitchBlockAnimationRequest;
+    boolean pendingSwitchBlockAnimationRequest;
 
     ColorShellWorld colorShellWorld = ColorShellWorld.none();
 
-    public int pendingClearedEntityMask;
+    int pendingClearedEntityMask;
 
     int pendingRoomStatusMask;
 
@@ -554,7 +554,7 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     int entityGoldenLeavesCount;
 
-    public int pendingMusicTrack = -1;
+    int pendingMusicTrack = -1;
 
     int pendingMusicFadeOutCountdown;
 
@@ -655,7 +655,7 @@ abstract class EntityRuntimeState extends EntityRomConstants {
     int instrument2Flags;
 
     /** AnimateEntities copies wC111 to wC1A8 before decrementing it. */
-    public int entityInteractionCountdown;
+    int entityInteractionCountdown;
 
     boolean freeMovementMode;
 

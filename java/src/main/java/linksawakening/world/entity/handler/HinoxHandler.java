@@ -38,7 +38,7 @@ final class HinoxHandler {
                     state.roomInspection().entityMapId(),
                     state.lifecycle().transitionSequenceCounter());
             if (bossIntro.musicTrack() >= 0) {
-              state.runtime.pendingMusicTrack = bossIntro.musicTrack();
+              state.requestMusic(bossIntro.musicTrack());
             }
             if (bossIntro.dialogLowId() >= 0) {
               state.emit(
@@ -81,7 +81,7 @@ final class HinoxHandler {
             }
             if (hinoxUpdate.bombSpawn() != null) {
               HinoxMotion.BombSpawn spawn = hinoxUpdate.bombSpawn();
-              state.runtime.spawnEnemyBomb(
+              state.enemySpawns().spawnEnemyBomb(
                   spawn.x(),
                   spawn.y(),
                   spawn.z(),

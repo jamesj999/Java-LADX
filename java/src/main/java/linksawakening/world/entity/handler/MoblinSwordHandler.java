@@ -1,5 +1,8 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.DIALOG_MOBLIN;
+
+
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityRuntime;
@@ -59,7 +62,7 @@ final class MoblinSwordHandler {
             state.updated = moblinSwordUpdate.entity();
             if (moblinSwordUpdate.dialogRequested()) {
               state.emit(
-                  new DialogRequest(1, state.runtime.DIALOG_MOBLIN));
+                  new DialogRequest(1, DIALOG_MOBLIN));
             }
           }
           return true;

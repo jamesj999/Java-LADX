@@ -54,7 +54,7 @@ final class ZolGelTypeHandler {
                         state.slot().ignoreHits(state.entity.slot()),
                         state.link().joypadHeld() || state.link().actionButtonsHeld());
                 state.updated = zolGelUpdate.entity();
-                state.runtime.gelClingingToLink |= zolGelUpdate.clinging();
+                state.lifecycle().recordGelClinging(zolGelUpdate.clinging());
                 if (zolGelUpdate.split() != null) {
                   state.updated =
                       state.lifecycle().applyZolSplit(

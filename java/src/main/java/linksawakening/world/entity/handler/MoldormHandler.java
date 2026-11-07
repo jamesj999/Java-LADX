@@ -31,7 +31,7 @@ final class MoldormHandler {
                     state.entity.type(),
                     state.roomInspection().entityMapId(),
                     state.lifecycle().transitionSequenceCounter());
-            if (intro.musicTrack() >= 0) state.runtime.pendingMusicTrack = intro.musicTrack();
+            if (intro.musicTrack() >= 0) state.requestMusic(intro.musicTrack());
             if (intro.dialogLowId() >= 0) {
               state.emit(
                   new DialogRequest(intro.dialogTableId(), intro.dialogLowId()));
@@ -63,7 +63,7 @@ final class MoldormHandler {
                       new LinkMotionBlockRequest(state.entity.slot(), dx, dy));
                   state.linkEntityX = (state.linkEntityX + dx) & 0xFF;
                   state.linkEntityY = (state.linkEntityY + dy) & 0xFF;
-                  state.runtime.entityInteractionCountdown = 2;
+                  state.lifecycle().delayInteractions(2);
                 }
               }
               return true;

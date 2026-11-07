@@ -70,7 +70,7 @@ final class GenieHandler {
                         state.lifecycle().transitionSequenceCounter())
                     : BossIntroMotion.Update.none();
             if (bossIntro.musicTrack() >= 0) {
-              state.runtime.pendingMusicTrack = bossIntro.musicTrack();
+              state.requestMusic(bossIntro.musicTrack());
             }
             if (bossIntro.dialogLowId() >= 0) {
               state.emit(

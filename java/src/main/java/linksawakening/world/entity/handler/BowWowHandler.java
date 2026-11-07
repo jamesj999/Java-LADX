@@ -89,7 +89,7 @@ final class BowWowHandler {
                     state.runtime.followingNpcState.instrument4Flags(),
                     state.runtime.followingNpcState.powerBraceletLevel(),
                     state.runtime.followingNpcState.db10());
-            state.runtime.pendingMusicTrack = 0x10;
+            state.requestMusic(0x10);
             state.emit(new DialogRequest(1, 0x6C));
             state.emit(
                 new EntityCombatEvent(

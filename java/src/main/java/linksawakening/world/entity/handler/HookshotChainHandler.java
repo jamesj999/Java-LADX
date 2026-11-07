@@ -1,5 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.OBJECT_HOOKSHOT_BRIDGE_PULL_DOWN;
+import static linksawakening.world.entity.EntityRomConstants.OBJECT_HOOKSHOT_BRIDGE_PULL_UP;
+
+
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
@@ -28,12 +32,12 @@ final class HookshotChainHandler {
             HookshotChainMotion.State hookshotState =
                 state.hookshotChainMotion().state(state.entity.slot());
             if (hookshotState == null) {
-              state.runtime.clearEntity(state.entity.slot());
+              state.lifecycle().clearEntity(state.entity.slot());
               return false;
             }
             // $7BE3 cancels the chain before rendering or the pause gate.
             if (state.link().linkPlayingOcarinaCountdown() != 0) {
-              state.runtime.clearEntity(state.entity.slot());
+              state.lifecycle().clearEntity(state.entity.slot());
               return false;
             }
             if (state.projectileTimersInteractive) {
@@ -60,7 +64,7 @@ final class HookshotChainHandler {
               if (state.handlerLinkCollisionEnabled
                   && HookshotChainMotion.overlapsLink(
                       hookshotState, state.linkEntityX, state.linkEntityY)) {
-                state.runtime.clearEntity(state.entity.slot());
+                state.lifecycle().clearEntity(state.entity.slot());
                 return false;
               }
               HookshotChainMotion.PullSpeed pullSpeed =
@@ -81,7 +85,7 @@ final class HookshotChainHandler {
             if (step.returning()) {
               state.hookshotChainMotion().setState(state.entity.slot(), step.state());
               if (state.handlerLinkCollisionEnabled && step.reachedLink()) {
-                state.runtime.clearEntity(state.entity.slot());
+                state.lifecycle().clearEntity(state.entity.slot());
               } else {
                 state.replaceEntity(withPositionAndVariant(
                         state.entity,
@@ -156,7 +160,7 @@ final class HookshotChainHandler {
               if (collisionResult != null && collisionResult.physicsFlag() == 0x60) {
                 if (HookshotChainMotion.shouldUnloadForHookshotable(
                     step.state().transitionCountdown())) {
-                  state.runtime.clearEntity(state.entity.slot());
+                  state.lifecycle().clearEntity(state.entity.slot());
                   return false;
                 }
                 state.hookshotChainMotion().setState(
@@ -182,19 +186,19 @@ final class HookshotChainHandler {
               if (object != null) {
                 int bridgeObject =
                     (hookshotState.speedY() & 0x80) != 0
-                        ? state.runtime.OBJECT_HOOKSHOT_BRIDGE_PULL_DOWN
-                        : state.runtime.OBJECT_HOOKSHOT_BRIDGE_PULL_UP;
+                        ? OBJECT_HOOKSHOT_BRIDGE_PULL_DOWN
+                        : OBJECT_HOOKSHOT_BRIDGE_PULL_UP;
                 if (object.objectId() == bridgeObject
                     && state.playerSpawns().spawnHookshotBridge(
                         object.objectLeft() + 0x08,
                         object.objectTop() + 0x10,
-                        bridgeObject == state.runtime.OBJECT_HOOKSHOT_BRIDGE_PULL_DOWN ? 0 : 1,
+                        bridgeObject == OBJECT_HOOKSHOT_BRIDGE_PULL_DOWN ? 0 : 1,
                         step.state().transitionCountdown())) {
-                  state.runtime.events.hookshotBridgeUpdates.add(
+                  state.emit(
                       new HookshotBridgeUpdate(
                           object.objectLeft(),
                           object.objectTop(),
-                          bridgeObject == state.runtime.OBJECT_HOOKSHOT_BRIDGE_PULL_DOWN ? 0 : 1));
+                          bridgeObject == OBJECT_HOOKSHOT_BRIDGE_PULL_DOWN ? 0 : 1));
                 }
               }
             }
