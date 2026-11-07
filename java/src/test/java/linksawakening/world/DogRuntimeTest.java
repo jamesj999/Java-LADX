@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@linksawakening.testing.RequiresRom
 final class DogRuntimeTest {
     private static final int ENTITY_DOG = 0x6F;
 
@@ -210,8 +211,7 @@ final class DogRuntimeTest {
     }
 
     private static byte[] loadRom() throws IOException {
-        try (var stream = DogRuntimeTest.class.getClassLoader()
-            .getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IOException("Missing ROM resource: rom/azle.gbc");
             }

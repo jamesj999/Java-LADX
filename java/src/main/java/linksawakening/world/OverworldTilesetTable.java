@@ -1,20 +1,19 @@
 package linksawakening.world;
 
-import linksawakening.rom.RomBank;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomSymbols;
 
 public final class OverworldTilesetTable {
 
-    private static final int OVERWORLD_TILESETS_TABLE_BANK = 0x20;
-    private static final int OVERWORLD_TILESETS_TABLE_ADDR = 0x6E73;
     private static final int ROOM_OW_CAMERA_SHOP = 0x37;
     private static final int W_TILESET_KEEP = 0x0F;
     private static final int W_TILESET_CAMERA_SHOP = 0x1A;
     private static final int W_TILESET_NO_UPDATE = 0xFF;
 
-    private final byte[] romData;
+    private final Rom rom;
 
     public OverworldTilesetTable(byte[] romData) {
-        this.romData = romData;
+        this.rom = new Rom(romData);
     }
 
     public int tilesetIdForRoom(int roomId) {
@@ -22,8 +21,7 @@ public final class OverworldTilesetTable {
         // The table is 8x8 over 2x2 room blocks: index = (roomY / 2) * 8 + (roomX / 2).
         // This mirrors SelectRoomTilesets at bank0.asm:$0D60-$0D6E.
         int index = ((room >> 2) & 0xF8) | ((room >> 1) & 0x07);
-        int tableOffset = RomBank.romOffset(OVERWORLD_TILESETS_TABLE_BANK, OVERWORLD_TILESETS_TABLE_ADDR + index);
-        return Byte.toUnsignedInt(romData[tableOffset]);
+        return rom.u8(RomSymbols.OverworldTilesetsTable.plus(index));
     }
 
     public static boolean shouldLoadRoomSpecificTileset(int roomId, int tilesetId, int currentTilesetId) {

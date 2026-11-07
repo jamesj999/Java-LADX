@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+@linksawakening.testing.RequiresRom
 final class TransientVfxMovingSparkleTest {
 
     @Test
@@ -31,8 +32,7 @@ final class TransientVfxMovingSparkleTest {
     }
 
     private static byte[] loadRom() {
-        try (var stream = TransientVfxMovingSparkleTest.class.getClassLoader()
-            .getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IllegalStateException("ROM resource missing");
             }

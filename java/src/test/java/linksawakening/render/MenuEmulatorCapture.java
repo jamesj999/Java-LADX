@@ -9,11 +9,12 @@ import java.awt.image.BufferedImage;
 import java.nio.file.*;
 
 /** Offline screenshots through the production menu controller and framebuffer. */
+@linksawakening.testing.RequiresRom
 final class MenuEmulatorCapture {
     public static void main(String[] args) throws Exception {
         Path out = Path.of(args[0]);
         byte[] rom;
-        try (var stream = MenuEmulatorCapture.class.getResourceAsStream("/rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             rom = stream.readAllBytes();
         }
         var config = new InputConfig(1,2,3,4,5,6,7);

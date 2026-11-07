@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@linksawakening.testing.RequiresRom
 final class EnemyDropResolverTest {
     private static final int[] DESTROYED_HEALTH_GROUP_OFFSETS = {
         0x02, 0x06, 0x01, 0x03, 0x03, 0x03, 0x0D, 0x08, 0x0A, 0x02, 0x07, 0x0B,
@@ -264,8 +265,7 @@ final class EnemyDropResolverTest {
     }
 
     private static byte[] loadRom() throws IOException {
-        try (var stream = EnemyDropResolverTest.class.getClassLoader()
-            .getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IOException("Missing ROM resource: rom/azle.gbc");
             }

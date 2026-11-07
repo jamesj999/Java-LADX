@@ -16,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 
+@linksawakening.testing.RequiresRom
 final class MarinWakeUpLinkStateTest {
     @Test
     void leavingBedAppliesMarinsSourceLinkMotion() {
@@ -73,8 +74,7 @@ final class MarinWakeUpLinkStateTest {
     }
 
     private static byte[] loadRom() throws IOException {
-        try (InputStream input = MarinWakeUpLinkStateTest.class
-            .getResourceAsStream("/rom/azle.gbc")) {
+        try (InputStream input = linksawakening.testing.TestRom.open()) {
             if (input == null) throw new IOException("Missing ROM resource /rom/azle.gbc");
             return input.readAllBytes();
         }

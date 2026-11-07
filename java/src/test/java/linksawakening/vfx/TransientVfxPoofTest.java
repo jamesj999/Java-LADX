@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@linksawakening.testing.RequiresRom
 final class TransientVfxPoofTest {
 
     @Test
@@ -23,8 +24,7 @@ final class TransientVfxPoofTest {
     }
 
     private static byte[] loadRom() {
-        try (var stream = TransientVfxPoofTest.class.getClassLoader()
-            .getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IllegalStateException("ROM resource missing");
             }

@@ -31,6 +31,7 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_F2;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 
+@linksawakening.testing.RequiresRom
 final class MainTest {
     private static final GameSession game = new GameSession();
 
@@ -189,7 +190,7 @@ final class MainTest {
     }
 
     private static byte[] loadRom() {
-        try (var stream = MainTest.class.getClassLoader().getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IllegalStateException("ROM resource missing");
             }

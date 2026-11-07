@@ -1,11 +1,11 @@
 package linksawakening.world;
 
-import linksawakening.rom.RomBank;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
+import linksawakening.rom.RomSymbols;
 
 /** Resolves the five-byte destination copied by {@code TeleportToManboPond}. */
 public final class ManboWarpResolver {
-    private static final int MANBO_WARP_TABLE_BANK = 0x14;
-    private static final int MANBO_WARP_TABLE_ADDRESS = 0x4DF1;
     private static final int MANBO_WARP_TABLE_ENTRIES = 0x10;
     private static final int MANBO_WARP_RECORD_SIZE = 5;
     private static final int MAP_COLOR_DUNGEON = 0xFF;
@@ -36,8 +36,7 @@ public final class ManboWarpResolver {
                 throw new IllegalStateException("Manbo warp table index out of range: "
                     + tableIndex);
             }
-            int source = RomBank.romOffset(MANBO_WARP_TABLE_BANK,
-                MANBO_WARP_TABLE_ADDRESS + tableIndex * MANBO_WARP_RECORD_SIZE);
+            int source = RomSymbols.Data_014_4DF1.plus(tableIndex * MANBO_WARP_RECORD_SIZE).offset();
             return new Warp(
                 readByte(source),
                 readByte(source + 1),
@@ -53,6 +52,6 @@ public final class ManboWarpResolver {
         if (offset < 0 || offset >= romData.length) {
             throw new IllegalArgumentException("Manbo warp table exceeds ROM bounds");
         }
-        return Byte.toUnsignedInt(romData[offset]);
+        return new Rom(romData).u8(RomAddress.fromOffset(offset));
     }
 }

@@ -11,6 +11,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@linksawakening.testing.RequiresRom
 final class GopongaFlowerRuntimeTest {
     private static final int ENTITY_GOPONGA_FLOWER = 0x7E;
 
@@ -110,8 +111,7 @@ final class GopongaFlowerRuntimeTest {
     }
 
     private static byte[] loadRom() throws IOException {
-        try (var stream = GopongaFlowerRuntimeTest.class.getClassLoader()
-            .getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IOException("Missing ROM resource: rom/azle.gbc");
             }

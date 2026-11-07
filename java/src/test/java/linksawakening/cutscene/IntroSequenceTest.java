@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@linksawakening.testing.RequiresRom
 final class IntroSequenceTest {
 
     @Test
@@ -192,8 +193,7 @@ final class IntroSequenceTest {
     }
 
     private static byte[] loadRom() {
-        try (InputStream stream = IntroSequenceTest.class.getClassLoader()
-            .getResourceAsStream("rom/azle.gbc")) {
+        try (InputStream stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IllegalStateException("ROM resource missing");
             }

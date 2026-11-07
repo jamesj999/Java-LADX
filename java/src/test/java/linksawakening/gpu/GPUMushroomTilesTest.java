@@ -4,11 +4,12 @@ import linksawakening.rom.RomBank;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@linksawakening.testing.RequiresRom
 final class GPUMushroomTilesTest {
     @Test
     void mushroomSurvivesBaseReloadAndPowderRewardRestoresTheBag() throws Exception {
         byte[] rom;
-        try (var in = getClass().getResourceAsStream("/rom/azle.gbc")) {
+        try (var in = linksawakening.testing.TestRom.open()) {
             rom = in.readAllBytes();
         }
         GPU gpu = new GPU();

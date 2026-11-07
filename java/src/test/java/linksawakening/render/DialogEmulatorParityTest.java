@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /** Golden full frames from the shipped ROM; no emulator dependency during Gradle tests. */
+@linksawakening.testing.RequiresRom
 final class DialogEmulatorParityTest {
     @Test
     void allSixOpeningPagesMatchIncludingHudNpcAnimationAndArrowBlink() throws Exception {
@@ -61,7 +62,7 @@ final class DialogEmulatorParityTest {
             hashes.put(fields[0], fields[1]);
         }
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        try (var in = getClass().getResourceAsStream("/rom/azle.gbc")) {
+        try (var in = linksawakening.testing.TestRom.open()) {
             assertEquals("c95dd3d9cb798e86c28e3269554e458d434bf3277b96cadf5bc81cfacfb5ee60",
                 HexFormat.of().formatHex(digest.digest(in.readAllBytes())), "Fixture ROM revision");
         }

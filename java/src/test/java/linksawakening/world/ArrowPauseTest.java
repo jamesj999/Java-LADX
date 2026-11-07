@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@linksawakening.testing.RequiresRom
 final class ArrowPauseTest {
     @ParameterizedTest
     @ValueSource(strings = {"dialog", "inventory", "transition", "gameplay", "sequence", "got_item"})
@@ -140,7 +141,7 @@ final class ArrowPauseTest {
 
     private static RoomEntityRuntime runtime(int type) throws IOException {
         byte[] rom;
-        try (var stream = ArrowPauseTest.class.getClassLoader().getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IOException("Missing shipped ROM");
             }

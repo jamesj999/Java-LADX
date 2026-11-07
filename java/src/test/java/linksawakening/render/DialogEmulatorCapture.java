@@ -28,6 +28,7 @@ import java.util.function.BiConsumer;
 import java.io.UncheckedIOException;
 
 /** Settled wake-dialog pages; production rendering, with one initial NPC clock synchronization. */
+@linksawakening.testing.RequiresRom
 public final class DialogEmulatorCapture {
     public static void main(String[] args) throws Exception {
         String scenario = args.length > 1 ? args[1] : "marin";
@@ -65,7 +66,7 @@ public final class DialogEmulatorCapture {
         int linkX = inBed ? 0x38 : 105;
         int linkY = inBed ? 0x34 : 72;
         byte[] rom;
-        try (var in = DialogEmulatorCapture.class.getResourceAsStream("/rom/azle.gbc")) {
+        try (var in = linksawakening.testing.TestRom.open()) {
             rom = in.readAllBytes();
         }
         GPU gpu = new GPU();
