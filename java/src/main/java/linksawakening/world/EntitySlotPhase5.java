@@ -22,20 +22,7 @@ final class EntitySlotPhase5 {
     static boolean run(EntityFrameExecution state) {
 
             if (!state.runtime.entityHandlers.tick(93, state)) return false;
-            if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
-                && ColorShellMotion.isColorShellType(state.entity.type())) {
-                ColorShellMotion.Update shellUpdate = state.runtime.colorShellMotion.advance(
-                    state.entity, state.frame, state.linkEntityX, state.linkEntityY, state.randomByteSupplier,
-                    state.backgroundCollision, state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()],
-                    state.runtime.colorShellWorld, Arrays.asList(state.runtime.slots));
-                state.updated = shellUpdate.entity();
-                state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()] = shellUpdate.nextIgnoreHitsCountdown();
-                if (shellUpdate.unloadRequested()) {
-                    state.runtime.pendingClearedEntityMask |= persistentClearMask(state.entity);
-                    state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
-                    return false;
-                }
-            }
+            if (!state.runtime.entityHandlers.tick(140, state)) return false;
             if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                 && !state.keyDropTransitionActive && state.runtime.enemyDropActive[state.updated.slot()]) {
                 state.updated = state.runtime.enemyDropMotion.advance(state.updated, state.frame,

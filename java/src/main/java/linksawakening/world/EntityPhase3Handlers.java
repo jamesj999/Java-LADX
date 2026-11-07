@@ -614,5 +614,164 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
             }
             return true;
         });
+        for (int type = 0; type < 256; type++) {
+            if ((isBombiteType(type))) {
+                registry.registerTick(type, 133, state -> {
+if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
+                && true) {
+                BombiteMotion.Update bombiteUpdate = state.runtime.bombiteMotion.advance(
+                    state.entity, state.frame, state.linkEntityX, state.linkEntityY,
+                    state.runtime.enemyTransitionCountdown[state.entity.slot()],
+                    state.runtime.slowTransitionCountdown[state.entity.slot()],
+                    state.runtime.bombPrivateCountdown1[state.entity.slot()],
+                    state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()],
+                    state.runtime.runningWithPegasusBoots, state.randomByteSupplier, state.backgroundCollision);
+                state.updated = withVariant(bombiteUpdate.entity(), bombiteUpdate.spriteVariant());
+                state.preserveBombitePresentation = true;
+                state.runtime.enemyTransitionCountdown[state.entity.slot()] =
+                    bombiteUpdate.transitionCountdown();
+                state.runtime.slowTransitionCountdown[state.entity.slot()] =
+                    bombiteUpdate.slowTransitionCountdown();
+                state.runtime.bombPrivateCountdown1[state.entity.slot()] = bombiteUpdate.privateCountdown1();
+                if (bombiteUpdate.bumpJingle()) {
+                    state.runtime.pendingEntityEvents.add(new EntityCombatEvent(
+                        state.entity.slot(), state.entity.type(), 0, false,
+                        EntityCombatEvent.SoundChannel.JINGLE, 0x09));
+                }
+                boolean entityCollisionExplosion = state.entity.type() == state.runtime.ENTITY_BOUNCING_BOMBITE
+                    && state.runtime.bombiteMotion.state(state.entity.slot()) == 2
+                    && state.runtime.projectiles.collideBouncingBombiteWithEntities(state.updated, state.frame);
+                if (bombiteUpdate.explode() || entityCollisionExplosion) {
+                    // BombiteExplode writes the already-positioned source
+                    // coordinates into a fresh type-$02 enemy bomb and then
+                    // lets ConfigureNewEntity supply z=0 and ignore-hits=1.
+                    int bombSlot = state.runtime.spawnEnemyBomb(state.updated.x(), state.updated.y(), 0,
+                        state.runtime.BOMBITE_EXPLOSION_COUNTDOWN);
+                    if (bombSlot >= 0) {
+                        state.runtime.enemyIgnoreHitsCountdown[bombSlot] = 0x01;
+                        state.runtime.pendingEntityEvents.add(new EntityCombatEvent(
+                            bombSlot, state.runtime.ENTITY_BOMB, 0, false,
+                            EntityCombatEvent.SoundChannel.NOISE,
+                            state.runtime.BOMBITE_EXPLOSION_SOUND_ID));
+                    }
+                    state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
+                    return false;
+                }
+            }
+                    return true;
+                });
+            }
+        }
+        for (int type = 0; type < 256; type++) {
+            if ((isRoamingEnemyType(type))) {
+                registry.registerTick(type, 134, state -> {
+if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
+                && true) {
+                if (state.entity.type() == state.runtime.ENTITY_IRON_MASK
+                    && state.runtime.ironMaskPrivateState2[state.entity.slot()] != 0) {
+                    UnmaskedIronMaskMotion.Update unmaskedUpdate =
+                        state.runtime.unmaskedIronMaskMotion.advance(state.entity, state.frame, state.randomByteSupplier,
+                            state.runtime.backgroundInteraction, state.backgroundCollision,
+                            state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()], state.frame);
+                    state.updated = unmaskedUpdate.entity();
+                    state.runtime.enemyTransitionCountdown[state.entity.slot()] =
+                        unmaskedUpdate.transitionCountdown();
+                } else {
+                    RoamingEnemyMotion.Update roamingUpdate = state.runtime.backgroundInteraction == null
+                        ? state.runtime.roamingEnemyMotion.advance(state.entity, state.linkEntityX, state.linkEntityY,
+                            state.randomByteSupplier, state.backgroundCollision, state.creditsGameplay)
+                        : state.runtime.roamingEnemyMotion.advanceWithInteraction(state.entity, state.linkEntityX,
+                            state.linkEntityY, state.randomByteSupplier, state.runtime.backgroundInteraction,
+                            state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()], state.frame, state.creditsGameplay);
+                    state.updated = roamingUpdate.entity();
+                    if (roamingUpdate.launchRequest() != null) {
+                        state.runtime.projectileLaunchRequests.add(roamingUpdate.launchRequest());
+                        state.runtime.entityEnemySpawns.spawnEnemyProjectile(state.entity, roamingUpdate.launchRequest());
+                    }
+                }
+            }
+                    return true;
+                });
+            }
+        }
+        for (int type = 0; type < 256; type++) {
+            if ((isSparkType(type))) {
+                registry.registerTick(type, 135, state -> {
+if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && true) {
+                state.updated = state.runtime.sparkMotion.advance(state.entity, state.frame, state.backgroundCollision);
+            }
+                    return true;
+                });
+            }
+        }
+        for (int type = 0; type < 256; type++) {
+            if ((isZolGelType(type))) {
+                registry.registerTick(type, 136, state -> {
+if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && state.handlerInteractive
+                && true) {
+                RoomEntityBackgroundInteraction zolGelBackgroundInteraction = state.runtime.backgroundInteraction;
+                if (zolGelBackgroundInteraction == null && state.backgroundCollision != null) {
+                    zolGelBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
+                        state.backgroundCollision);
+                }
+                ZolGelMotion.Update zolGelUpdate = state.runtime.zolGelMotion.advance(state.entity, state.linkEntityX,
+                    state.linkEntityY, state.linkZ, state.randomByteSupplier, zolGelBackgroundInteraction,
+                    state.frame, state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()],
+                    state.runtime.joypadHeld || state.runtime.actionButtonsHeld);
+                state.updated = zolGelUpdate.entity();
+                state.runtime.gelClingingToLink |= zolGelUpdate.clinging();
+                if (zolGelUpdate.split() != null) {
+                    state.updated = state.runtime.lifecycle.applyZolSplit(state.entity, state.updated, zolGelUpdate.split());
+                }
+            }
+                    return true;
+                });
+            }
+        }
+        for (int type = 0; type < 256; type++) {
+            if ((isEnemyProjectileType(type))) {
+                registry.registerTick(type, 137, state -> {
+if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
+                && true) {
+                boolean preexistingCollision =
+                    state.runtime.enemyProjectileMotion.pendingLinkCollision(state.entity.slot());
+                boolean hasLinkCollision = state.runtime.enemyProjectileMotion.transitionCountdown(state.entity.slot()) == 0;
+                if (hasLinkCollision) {
+                    var collisionEvent = EnemyProjectileCollision.check(state.entity,
+                        state.runtime.enemyProjectileMotion.direction(state.entity.slot()), state.projectileLinkState);
+                    if (collisionEvent.isPresent()) {
+                        EntityProjectileEvent event = collisionEvent.orElseThrow();
+                        state.projectileEvents.add(event);
+                        if (event.remove()) {
+                            state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
+                            return false;
+                        }
+                        preexistingCollision |= event.startsWallTransition();
+                    }
+                }
+                EnemyProjectileMotion.Update projectileUpdate = state.runtime.enemyProjectileMotion.advance(
+                    state.entity, state.backgroundCollision, preexistingCollision, state.frame,
+                    state.runtime.entityGroundStatus[state.entity.slot()], state.runtime.groundInteractionSideScrolling,
+                    state.handlerInteractive, state.projectileTimersInteractive);
+                if (projectileUpdate.unloaded()) {
+                    state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
+                    return false;
+                }
+                if (projectileUpdate.collidedWithWall()) {
+                    // $6B0C skips the poke jingle when Link collision supplied
+                    // $FF (including shield blocks, which already play a ting).
+                    if (!preexistingCollision) {
+                        state.runtime.pendingEntityEvents.add(new EntityCombatEvent(
+                            state.entity.slot(), state.entity.type(), 0, false,
+                            EntityCombatEvent.SoundChannel.JINGLE, 0x07));
+                    }
+                    state.runtime.swordMoblinAlertingSoundCounter = 0x04;
+                }
+                state.updated = projectileUpdate.entity();
+            }
+                    return true;
+                });
+            }
+        }
     }
 }

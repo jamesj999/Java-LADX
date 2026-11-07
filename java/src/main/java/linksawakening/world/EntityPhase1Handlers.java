@@ -533,5 +533,194 @@ if (state.status == EntityStatus.ACTIVE && true) {
             }
             return true;
         });
+        for (int type = 0; type < 256; type++) {
+            if ((type == 0x35)) {
+                registry.registerTick(type, 94, state -> {
+if (true && (state.runtime.entityRoomStatus & 0x10) != 0) {
+                state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
+                return false;
+            }
+                    return true;
+                });
+            }
+        }
+        for (int type = 0; type < 256; type++) {
+            if ((type == RoomEntityRuntime.ENTITY_CROW)) {
+                registry.registerTick(type, 95, state -> {
+if (true
+                    && state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()] >= 0x10) {
+                    state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()] >>>= 2;
+                }
+                    return true;
+                });
+            }
+        }
+        for (int type = 0; type < 256; type++) {
+            if ((type == RoomEntityRuntime.ENTITY_GENIE)) {
+                registry.registerTick(type, 96, state -> {
+if (true
+                    && state.runtime.geniePrivateCountdown1[state.entity.slot()] > 0) {
+                    state.runtime.geniePrivateCountdown1[state.entity.slot()]--;
+                }
+                    return true;
+                });
+            }
+        }
+        for (int type = 0; type < 256; type++) {
+            if ((type == RoomEntityRuntime.ENTITY_GENIE)) {
+                registry.registerTick(type, 97, state -> {
+if (true
+                    && state.runtime.geniePrivateCountdown2[state.entity.slot()] > 0) {
+                    state.runtime.geniePrivateCountdown2[state.entity.slot()]--;
+                }
+                    return true;
+                });
+            }
+        }
+        for (int type = 0; type < 256; type++) {
+            if (((type == RoomEntityRuntime.ENTITY_ROLLING_BONES || type == RoomEntityRuntime.ENTITY_MOLDORM))) {
+                registry.registerTick(type, 98, state -> {
+if (!state.wasInitializing && !state.runtime.roomTransitionActive && !state.runtime.freeMovementMode
+                && true) {
+                int dx = 0;
+                int dy = 0;
+                if (((state.linkEntityX - 0x11) & 0xFF) >= 0x7E) {
+                    dx = state.linkEntityX < 0x50 ? 1 : -1;
+                } else if (((state.linkEntityY - 0x16) & 0xFF) >= 0x5E) {
+                    dy = -1;
+                }
+                if (dx != 0 || dy != 0) {
+                    state.runtime.pendingLinkMotionBlockRequests.add(
+                        new LinkMotionBlockRequest(state.entity.slot(), dx, dy));
+                    state.linkEntityX = (state.linkEntityX + dx) & 0xFF;
+                    state.linkEntityY = (state.linkEntityY + dy) & 0xFF;
+                    state.runtime.entityInteractionCountdown = 2;
+                }
+            }
+                    return true;
+                });
+            }
+        }
+        for (int type = 0; type < 256; type++) {
+            if ((type == WarpMotion.ENTITY_TYPE)) {
+                registry.registerTick(type, 99, state -> {
+if (state.status == EntityStatus.ACTIVE && state.runtime.indoorRoom
+                && true && state.runtime.warpMotion != null) {
+                int slot = state.entity.slot();
+                state.runtime.slots[state.index] = withPositionAndVariant(state.entity, state.entity.x(), state.entity.y(),
+                    state.runtime.dungeonMinibossReady ? (state.frame >> 3) & 7 : -1);
+                WarpMotion.Update warpUpdate = state.runtime.warpMotion.advance(
+                    state.entity, state.runtime.warpState[slot], state.runtime.warpTransitionCountdown[slot], state.runtime.entityMapId,
+                    state.runtime.entityRoomId, state.runtime.dungeonMinibossReady, state.linkEntityX, state.linkEntityY, state.linkZ);
+                state.runtime.warpState[slot] = warpUpdate.state();
+                state.runtime.warpTransitionCountdown[slot] = warpUpdate.countdown();
+                if (warpUpdate.musicTrack() >= 0) {
+                    state.runtime.pendingMusicTrack = warpUpdate.musicTrack();
+                }
+                if (warpUpdate.jingleId() >= 0) {
+                    state.runtime.pendingEntityEvents.add(new EntityCombatEvent(
+                        slot, state.entity.type(), 0, false,
+                        EntityCombatEvent.SoundChannel.JINGLE, warpUpdate.jingleId()));
+                }
+                if (warpUpdate.motionBlocked()) {
+                    state.runtime.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
+                }
+                if (warpUpdate.state() == WarpMotion.STATE_TRANSITION) {
+                    state.runtime.pendingWarpLinkStateRequests.add(new WarpLinkStateRequest(
+                        slot, state.entity.x(), state.entity.y(), warpUpdate.immunityCountdown()));
+                }
+                if (warpUpdate.destinationReady()) {
+                    state.runtime.pendingDungeonWarpRequests.add(new DungeonWarpRequest(
+                        slot, warpUpdate.destination()));
+                    state.runtime.lifecycle.disableEntityWithoutPersistence(slot);
+                }
+                return false;
+            }
+                    return true;
+                });
+            }
+        }
+        for (int type = 0; type < 256; type++) {
+            if ((type == 0x42)) {
+                registry.registerTick(type, 100, state -> {
+if (state.status == EntityStatus.ACTIVE && true
+                && state.runtime.indoorRoom && state.runtime.entityMapId != 0x16) {
+                state.runtime.story.advanceOwlStatue(state.entity, state.linkEntityX, state.linkEntityY, state.linkZ,
+                    state.projectileLinkState.motionState(), state.linkAirborne);
+                return false;
+            }
+                    return true;
+                });
+            }
+        }
+        for (int type = 0; type < 256; type++) {
+            if (((type == RoomEntityRuntime.ENTITY_KID_71 || type == RoomEntityRuntime.ENTITY_KID_72))) {
+                registry.registerTick(type, 101, state -> {
+if (state.status == EntityStatus.ACTIVE
+                && true
+                && state.runtime.bowWowState == 0x80) {
+                state.runtime.story.advanceKidnapWarningKid(state.entity, state.frame, state.linkEntityX, state.linkEntityY);
+                return false;
+            }
+                    return true;
+                });
+            }
+        }
+        for (int type = 0; type < 256; type++) {
+            if ((type == 0x35)) {
+                registry.registerTick(type, 102, state -> {
+if (state.status == EntityStatus.ACTIVE && true
+                && state.runtime.heartPiecePickup[state.entity.slot()] != null) {
+                state.runtime.pickups.advanceHeartPiecePickup(state.entity, state.linkEntityX, state.linkEntityY, state.linkZ);
+                return false;
+            }
+                    return true;
+                });
+            }
+        }
+        for (int type = 0; type < 256; type++) {
+            if ((type == 0x39)) {
+                registry.registerTick(type, 103, state -> {
+if (state.status == EntityStatus.ACTIVE && true
+                && state.runtime.instrumentParticleKind[state.entity.slot()] == 0
+                && state.runtime.instrumentPickupState[state.entity.slot()] < 3
+                && state.runtime.transitionSequenceCounter == 4 && state.runtime.spriteSelection != null) {
+                int[][] palettes = state.runtime.spriteSelection.objectPalettes();
+                int offset = ((state.frame >> 1) & 0x3C) / 2;
+                palettes[1][2] = state.runtime.instrumentPaletteCycle[offset];
+                palettes[1][3] = state.runtime.instrumentPaletteCycle[offset + 1];
+                state.runtime.spriteSelection = state.runtime.spriteSelection.withObjectPalettes(palettes);
+            }
+                    return true;
+                });
+            }
+        }
+        for (int type = 0; type < 256; type++) {
+            if ((type == EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS)) {
+                registry.registerTick(type, 104, state -> {
+if (state.status == EntityStatus.ACTIVE
+                && true
+                && state.runtime.instrumentParticleKind[state.entity.slot()] == 1) {
+                state.runtime.rewards.advanceInstrumentParticle(state.entity);
+                return false;
+            }
+                    return true;
+                });
+            }
+        }
+        for (int type = 0; type < 256; type++) {
+            if ((type == EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS)) {
+                registry.registerTick(type, 105, state -> {
+if (state.status == EntityStatus.ACTIVE
+                && true
+                && state.runtime.instrumentPickupSequenceActive[state.entity.slot()]) {
+                state.runtime.rewards.advanceInstrumentPickup(state.entity, state.frame, state.linkEntityX, state.linkEntityY, state.linkZ,
+                    state.randomByteSupplier);
+                return false;
+            }
+                    return true;
+                });
+            }
+        }
     }
 }

@@ -397,5 +397,404 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
             }
             return true;
         });
+        for (int type = 0; type < 256; type++) {
+            if ((type == RoomEntityRuntime.ENTITY_SIDE_VIEW_POT)) {
+                registry.registerTick(type, 106, state -> {
+if (true
+                    && state.runtime.enemyTransitionCountdown[state.entity.slot()] != 0) {
+                    state.runtime.slots[state.index] = state.lifted;
+                    return false;
+                }
+                    return true;
+                });
+            }
+        }
+        for (int type = 0; type < 256; type++) {
+            if (((type == RoomEntityRuntime.ENTITY_ROOSTER))) {
+                registry.registerTick(type, 107, state -> {
+if (true) {
+                    RoosterMotion.Update roosterUpdate = RoosterMotion.advanceLifted(
+                        state.frame, state.linkZ & 0xFF, state.runtime.linkPressedButtonsMask, state.romCollisionType,
+                        state.runtime.currentLinkSpeedX, state.runtime.currentLinkSpeedY, state.romLinkDirection);
+                    state.lifted = withVariant(state.lifted, roosterUpdate.spriteVariant());
+                    state.runtime.liftedSourceDirection[state.entity.slot()] = roosterUpdate.romDirection();
+                    state.liftedRomDirection = roosterUpdate.romDirection();
+                    state.runtime.pendingRoosterLinkStateRequests.add(new RoosterLinkStateRequest(
+                        state.entity.slot(), roosterUpdate.positionZ(), roosterUpdate.velocityZ(),
+                        roosterUpdate.speedX(), roosterUpdate.speedY(),
+                        roosterUpdate.romDirection()));
+                    state.runtime.projectiles.playBoomerangSoundIfDue(state.entity);
+                }
+                    return true;
+                });
+            }
+        }
+        for (int type = 0; type < 256; type++) {
+            if (((type == RoomEntityRuntime.ENTITY_BOMB))) {
+                registry.registerTick(type, 108, state -> {
+if (true) {
+                    BombMotion.Decision bombDecision = state.runtime.bombInteractions.advanceBombEntity(state.index, state.entity,
+                        state.projectileEvents, state.linkEntityX, state.linkEntityY, state.projectileLinkState);
+                    state.entity = state.runtime.slots[state.index];
+                    if (bombDecision.unloadAfterPresentation()) {
+                        return false;
+                    }
+                }
+                    return true;
+                });
+            }
+        }
+        for (int type = 0; type < 256; type++) {
+            if ((ColorShellMotion.isColorShellType(type))) {
+                registry.registerTick(type, 109, state -> {
+if (state.runtime.entityMapId == state.runtime.MAP_COLOR_DUNGEON
+                    && true) {
+                    state.runtime.colorShellMotion.enterState6(state.entity);
+                    RoomEntity activeShell = state.runtime.slotProperties.refreshColorShellDisplay(
+                        withStatus(state.entity, EntityStatus.ACTIVE), EntityStatus.ACTIVE);
+                    state.runtime.slots[state.index] = activeShell;
+                    return false;
+                }
+                    return true;
+                });
+            }
+        }
+        for (int type = 0; type < 256; type++) {
+            if (((type == RoomEntityRuntime.ENTITY_MOBLIN_KING))) {
+                registry.registerTick(type, 110, state -> {
+if (true) {
+                    state.runtime.bossRewards.advanceMoblinKingDestruction(state.entity, state.frame, state.randomByteSupplier);
+                    return false;
+                }
+                    return true;
+                });
+            }
+        }
+        for (int type = 0; type < 256; type++) {
+            if ((type == RoomEntityRuntime.ENTITY_GENIE)) {
+                registry.registerTick(type, 111, state -> {
+if (true
+                    && state.runtime.geniePrivateState1[state.entity.slot()] == 1) {
+                    state.runtime.genie.advanceGenieDestruction(state.entity, state.frame, state.randomByteSupplier);
+                    return false;
+                }
+                    return true;
+                });
+            }
+        }
+        for (int type = 0; type < 256; type++) {
+            if (((type == RoomEntityRuntime.ENTITY_ROLLING_BONES))) {
+                registry.registerTick(type, 112, state -> {
+if (true) {
+                    state.runtime.bossRewards.advanceRollingBonesDestruction(state.entity, state.randomByteSupplier);
+                    return false;
+                }
+                    return true;
+                });
+            }
+        }
+        for (int type = 0; type < 256; type++) {
+            if (((type == RoomEntityRuntime.ENTITY_MOLDORM))) {
+                registry.registerTick(type, 113, state -> {
+if (true) {
+                    state.runtime.bossRewards.advanceMoldormDestruction(state.entity, state.frame);
+                    return false;
+                }
+                    return true;
+                });
+            }
+        }
+        for (int type = 0; type < 256; type++) {
+            if (((type == RoomEntityRuntime.ENTITY_BOMB))) {
+                registry.registerTick(type, 114, state -> {
+if (true) {
+                    BombMotion.Decision bombDecision = state.runtime.bombInteractions.advanceBombEntity(state.index, state.entity,
+                        state.projectileEvents, state.linkEntityX, state.linkEntityY, state.projectileLinkState);
+                    state.entity = state.runtime.slots[state.index];
+                    if (bombDecision.unloadAfterPresentation()) {
+                        return false;
+                    }
+                    state.entity = state.runtime.bombInteractions.applyBombStunnedPostActiveWork(state.entity, state.backgroundCollision, state.frame);
+                    state.runtime.slots[state.index] = state.entity;
+                }
+                    return true;
+                });
+            }
+        }
+        for (int type = 0; type < 256; type++) {
+            if ((type == RoomEntityRuntime.ENTITY_HIDING_SLIME_KEY)) {
+                registry.registerTick(type, 115, state -> {
+if (true
+                    && (state.runtime.entityRoomStatus & 0x10) != 0) {
+                    // The handler's first instruction is the completed-room
+                    // gate, including the INIT dispatch path.
+                    state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
+                    return false;
+                }
+                    return true;
+                });
+            }
+        }
+        for (int type = 0; type < 256; type++) {
+            if (((type == RoomEntityRuntime.ENTITY_OCTOROK || type == RoomEntityRuntime.ENTITY_MOBLIN))) {
+                registry.registerTick(type, 116, state -> {
+if (true) {
+                    state.runtime.roamingEnemyMotion.initialize(state.entity.slot());
+                }
+                    return true;
+                });
+            }
+        }
+        for (int type = 0; type < 256; type++) {
+            if (((type == RoomEntityRuntime.ENTITY_MOBLIN_SWORD))) {
+                registry.registerTick(type, 117, state -> {
+if (true) {
+                    state.runtime.moblinSwordMotion.initialize(state.entity.slot(), state.entity.x());
+                }
+                    return true;
+                });
+            }
+        }
+        for (int type = 0; type < 256; type++) {
+            if (((isSparkType(type)))) {
+                registry.registerTick(type, 118, state -> {
+if (true) {
+                    state.runtime.sparkMotion.initialize(state.entity.slot(), state.entity.type());
+                }
+                    return true;
+                });
+            }
+        }
+        for (int type = 0; type < 256; type++) {
+            if (((isZolGelType(type)))) {
+                registry.registerTick(type, 119, state -> {
+if (true) {
+                    state.runtime.zolGelMotion.initialize(state.entity.slot(), state.entity.type(), state.randomByteSupplier);
+                }
+                    return true;
+                });
+            }
+        }
+        for (int type = 0; type < 256; type++) {
+            if (((type == RoomEntityRuntime.ENTITY_MINI_MOLDORM))) {
+                registry.registerTick(type, 120, state -> {
+if (true) {
+                    state.runtime.miniMoldormMotion.initialize(state.entity);
+                }
+                    return true;
+                });
+            }
+        }
+        for (int type = 0; type < 256; type++) {
+            if (((type == RoomEntityRuntime.ENTITY_MOLDORM))) {
+                registry.registerTick(type, 121, state -> {
+if (true) {
+                    state.runtime.moldormMotion.initialize(state.entity);
+                }
+                    return true;
+                });
+            }
+        }
+        for (int type = 0; type < 256; type++) {
+            if (((type == RoomEntityRuntime.ENTITY_WIZROBE))) {
+                registry.registerTick(type, 122, state -> {
+if (true) {
+                    state.runtime.wizrobeMotion.initializeFromRoom(state.entity.slot(), state.entity.spriteVariant());
+                    state.runtime.enemyTransitionCountdown[state.entity.slot()] = 0x80;
+                    state.preserveWizrobePresentation = true;
+                }
+                    return true;
+                });
+            }
+        }
+        for (int type = 0; type < 256; type++) {
+            if (((type == RoomEntityRuntime.ENTITY_WIZROBE_PROJECTILE))) {
+                registry.registerTick(type, 123, state -> {
+if (true) {
+                    state.runtime.wizrobeProjectileMotion.initialize(state.entity.slot(), state.randomByteSupplier);
+                    state.preserveWizrobeProjectilePresentation = true;
+                }
+                    return true;
+                });
+            }
+        }
+        for (int type = 0; type < 256; type++) {
+            if (((isGhiniType(type)))) {
+                registry.registerTick(type, 124, state -> {
+if (true) {
+                    state.runtime.ghiniMotion.initialize(state.entity.slot(), state.entity.type());
+                    if (isHidingGhiniType(state.entity.type())) {
+                        state.preserveGhiniPresentation = true;
+                    }
+                }
+                    return true;
+                });
+            }
+        }
+        for (int type = 0; type < 256; type++) {
+            if (((isBombiteType(type)))) {
+                registry.registerTick(type, 125, state -> {
+if (true) {
+                    state.runtime.bombiteMotion.initialize(state.entity.slot());
+                    state.runtime.slowTimerInitialized[state.entity.slot()] = true;
+                }
+                    return true;
+                });
+            }
+        }
+        for (int type = 0; type < 256; type++) {
+            if (((isFollowingNpcType(type)))) {
+                registry.registerTick(type, 126, state -> {
+if (true) {
+                    if (state.entity.type() == state.runtime.ENTITY_BOW_WOW) {
+                        state.runtime.bowWowMotion.initialize(state.entity.slot());
+                    } else {
+                        state.runtime.followingNpcMotion.initialize(state.entity.slot(), state.entity.type());
+                    }
+                }
+                    return true;
+                });
+            }
+        }
+        for (int type = 0; type < 256; type++) {
+            if (((ColorShellMotion.isColorShellType(type)))) {
+                registry.registerTick(type, 127, state -> {
+if (true) {
+                    state.runtime.colorShellMotion.initialize(state.entity.slot());
+                }
+                    return true;
+                });
+            }
+        }
+        for (int type = 0; type < 256; type++) {
+            if ((type == SideViewPlatformMotion.ENTITY_TYPE)) {
+                registry.registerTick(type, 128, state -> {
+if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
+                && true
+                && state.handlerLinkCollisionEnabled && state.runtime.backgroundMechanics.entityTimersInteractive()
+                && !state.creditsGameplay && state.runtime.transitionSequenceCounter == 0x04) {
+                SideViewPlatformMotion.Frame platformFrame =
+                    state.runtime.sideViewPlatformMotion.beginFrame(state.entity);
+                RoomEntity movedPlatform = platformFrame.entity();
+                if (platformFrame.horizontalDelta() != 0 && state.backgroundCollision != null
+                    && state.backgroundCollision.blocks(state.entity,
+                        platformFrame.horizontalDelta() < 0 ? 1 : 0,
+                        movedPlatform.x(), movedPlatform.y())) {
+                    platformFrame = state.runtime.sideViewPlatformMotion.restoreHorizontalPosition(state.entity,
+                        platformFrame);
+                    movedPlatform = platformFrame.entity();
+                }
+                if (platformFrame.verticalDelta() != 0 && state.backgroundCollision != null) {
+                    int direction = platformFrame.verticalDelta() < 0 ? 2 : 3;
+                    if (state.backgroundCollision.blocks(state.entity, direction, movedPlatform.x(),
+                        movedPlatform.y())) {
+                        platformFrame = state.runtime.sideViewPlatformMotion.restoreVerticalPosition(state.entity,
+                            platformFrame);
+                        movedPlatform = platformFrame.entity();
+                    }
+                }
+                boolean standing = state.runtime.groundInteractionSideScrolling
+                    && (state.linkZ & 0xFF) == 0
+                    && (state.runtime.currentLinkSpeedY & 0x80) == 0
+                    && sideViewPlatformOverlapsLink(movedPlatform, state.linkEntityX, state.linkEntityY)
+                    && (((state.linkEntityY - movedPlatform.y() + 0x08) & 0x80) != 0);
+                boolean activationAllowed = state.runtime.entityRoomId == 0x3B || state.carryingEntity;
+                if (standing) {
+                    state.runtime.pendingSideViewPlatformLinkRequests.add(new SideViewPlatformLinkRequest(
+                        state.entity.slot(), platformFrame.horizontalDelta(),
+                        (movedPlatform.y() - 0x10) & 0xFF, 0x02, true, activationAllowed));
+                }
+                SideViewPlatformMotion.Update platformUpdate = state.runtime.sideViewPlatformMotion.finishFrame(
+                    movedPlatform, platformFrame, state.frame, standing, activationAllowed);
+                state.updated = platformUpdate.entity();
+                if (platformUpdate.rumble()) {
+                    state.runtime.pendingEntityEvents.add(new EntityCombatEvent(
+                        state.entity.slot(), state.entity.type(), 0, false,
+                        EntityCombatEvent.SoundChannel.NOISE, 0x11));
+                }
+            }
+                    return true;
+                });
+            }
+        }
+        for (int type = 0; type < 256; type++) {
+            if ((isCommonDroppableType(type))) {
+                registry.registerTick(type, 129, state -> {
+if (state.wasInitializing && true
+                && state.runtime.droppablePrivateState3[state.entity.slot()] != 0) {
+                // The init handler has already set the hidden options. The
+                // corresponding active handler will be entered on the next
+                // entity tick, so suppress this first display-list pass too.
+                state.updated = withVariant(state.entity, -1);
+                state.preserveDroppablePresentation = true;
+            }
+                    return true;
+                });
+            }
+        }
+        for (int type = 0; type < 256; type++) {
+            if ((isCommonDroppableType(type))) {
+                registry.registerTick(type, 130, state -> {
+if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
+                && true) {
+                CommonDroppableUpdate droppableUpdate = state.runtime.pickups.advanceCommonDroppable(
+                    state.entity, state.linkEntityX, state.linkEntityY,
+                    state.runtime.objectQuery == null ? null : state.runtime.objectQuery.sample(state.entity));
+                state.updated = droppableUpdate.entity();
+                if (droppableUpdate.hidden()) {
+                    // DroppableRevealOrReturnIfNeeded returns past the caller's
+                    // remaining handler. In particular, no rendering, pickup,
+                    // movement, or background interaction may run while hidden.
+                    state.runtime.slots[state.index] = withStatus(withVariant(state.updated, -1), state.status);
+                    return false;
+                }
+            }
+                    return true;
+                });
+            }
+        }
+        for (int type = 0; type < 256; type++) {
+            if (((type == RoomEntityRuntime.ENTITY_ROLLING_BONES
+                    || type == RoomEntityRuntime.ENTITY_ROLLING_BONES_BAR))) {
+                registry.registerTick(type, 131, state -> {
+if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
+                && true) {
+                // BossIntro runs before ReturnIfNonInteractive_06.
+                if (state.entity.type() == state.runtime.ENTITY_ROLLING_BONES
+                    && !state.runtime.roomTransitionActive && !state.runtime.inventoryAppearing) {
+                    BossIntroMotion.Update intro = state.runtime.bossIntroMotion.advance(
+                        state.runtime.options1(state.entity.slot()), state.entity.type(), state.runtime.entityMapId,
+                        state.runtime.transitionSequenceCounter);
+                    if (intro.musicTrack() >= 0) state.runtime.pendingMusicTrack = intro.musicTrack();
+                }
+                // The bar's room-clear check precedes its interaction guard.
+                if (state.entity.type() == state.runtime.ENTITY_ROLLING_BONES_BAR && (state.runtime.entityRoomStatus & 0x20) != 0) {
+                    state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
+                    return false;
+                }
+                // ReturnIfNonInteractive_06 reads the pre-decrement wC1A8.
+                if (!state.handlerInteractive || state.countdownBlocksInteraction) return false;
+                if (state.entity.type() == state.runtime.ENTITY_ROLLING_BONES
+                    && !state.rollingBonesHitThisFrame && state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()] != 0) {
+                    // ApplyRecoilIfNeeded_06 pops the handler return address:
+                    // no jump physics or AI movement occurs during recoil.
+                    state.runtime.slots[state.index] = state.runtime.backgroundMechanics.applyEnemyRecoilIfNeeded(state.entity, state.backgroundCollision).entity();
+                    return false;
+                }
+            }
+                    return true;
+                });
+            }
+        }
+        for (int type = 0; type < 256; type++) {
+            if ((isSparkType(type))) {
+                registry.registerTick(type, 132, state -> {
+if (state.wasInitializing && true) {
+                state.updated = state.runtime.sparkMotion.applyInitializationOffset(state.entity);
+            }
+                    return true;
+                });
+            }
+        }
     }
 }

@@ -20,6 +20,8 @@ import static linksawakening.world.RoomEntityRuntime.*;
 /** Mutable execution locals for one immutable entity frame input. */
 final class EntityFrameExecution {
     final RoomEntityRuntime runtime;
+    RoomEntity lifted;
+    int liftedRomDirection;
     int frameCounter;
     int linkEntityX;
     int linkEntityY;

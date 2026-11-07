@@ -22,44 +22,21 @@ final class EntitySlotPhase2 {
     static boolean run(EntityFrameExecution state) {
 
             if (state.status == EntityStatus.LIFTED) {
-                RoomEntity lifted = state.runtime.liftThrow.renderLiftedEntity(state.entity, state.frame);
+                state.lifted = state.runtime.liftThrow.renderLiftedEntity(state.entity, state.frame);
                 // Side-view pot pickup enters status LIFTED with the ROM's
                 // transition countdown set to $02. UpdateEntityTimers has
                 // already decremented it for this frame; EntityLiftedHandler
                 // does not advance the pot until that countdown reaches zero.
-                // Other lifted entities retain their established generic
+                // Other state.lifted entities retain their established generic
                 // presentation timing here.
-                if (state.entity.type() == state.runtime.ENTITY_SIDE_VIEW_POT
-                    && state.runtime.enemyTransitionCountdown[state.entity.slot()] != 0) {
-                    state.runtime.slots[state.index] = lifted;
-                    return false;
-                }
-                int liftedRomDirection = state.romLinkDirection;
-                if (state.entity.type() == state.runtime.ENTITY_ROOSTER) {
-                    RoosterMotion.Update roosterUpdate = RoosterMotion.advanceLifted(
-                        state.frame, state.linkZ & 0xFF, state.runtime.linkPressedButtonsMask, state.romCollisionType,
-                        state.runtime.currentLinkSpeedX, state.runtime.currentLinkSpeedY, state.romLinkDirection);
-                    lifted = withVariant(lifted, roosterUpdate.spriteVariant());
-                    state.runtime.liftedSourceDirection[state.entity.slot()] = roosterUpdate.romDirection();
-                    liftedRomDirection = roosterUpdate.romDirection();
-                    state.runtime.pendingRoosterLinkStateRequests.add(new RoosterLinkStateRequest(
-                        state.entity.slot(), roosterUpdate.positionZ(), roosterUpdate.velocityZ(),
-                        roosterUpdate.speedX(), roosterUpdate.speedY(),
-                        roosterUpdate.romDirection()));
-                    state.runtime.projectiles.playBoomerangSoundIfDue(state.entity);
-                }
-                state.runtime.slots[state.index] = state.runtime.liftThrow.advanceLiftedEntity(lifted, state.linkEntityX, state.linkEntityY, state.linkZ,
-                    liftedRomDirection);
+                if (!state.runtime.entityHandlers.tick(106, state)) return false;
+                state.liftedRomDirection = state.romLinkDirection;
+                if (!state.runtime.entityHandlers.tick(107, state)) return false;
+                state.runtime.slots[state.index] = state.runtime.liftThrow.advanceLiftedEntity(state.lifted, state.linkEntityX, state.linkEntityY, state.linkZ,
+                    state.liftedRomDirection);
                 return false;
             } else if (state.status == EntityStatus.THROWN) {
-                if (state.entity.type() == state.runtime.ENTITY_BOMB) {
-                    BombMotion.Decision bombDecision = state.runtime.bombInteractions.advanceBombEntity(state.index, state.entity,
-                        state.projectileEvents, state.linkEntityX, state.linkEntityY, state.projectileLinkState);
-                    state.entity = state.runtime.slots[state.index];
-                    if (bombDecision.unloadAfterPresentation()) {
-                        return false;
-                    }
-                }
+                if (!state.runtime.entityHandlers.tick(108, state)) return false;
                 RoomEntity thrown = state.runtime.liftThrow.advanceThrownEntity(state.entity, state.backgroundCollision,
                     state.runtime.groundInteractionSideScrolling, state.romLinkDirection, state.frame);
                 state.runtime.slots[state.index] = thrown;
@@ -68,14 +45,7 @@ final class EntitySlotPhase2 {
                 }
                 return false;
             } else if (state.status == EntityStatus.FALLING) {
-                if (state.runtime.entityMapId == state.runtime.MAP_COLOR_DUNGEON
-                    && ColorShellMotion.isColorShellType(state.entity.type())) {
-                    state.runtime.colorShellMotion.enterState6(state.entity);
-                    RoomEntity activeShell = state.runtime.slotProperties.refreshColorShellDisplay(
-                        withStatus(state.entity, EntityStatus.ACTIVE), EntityStatus.ACTIVE);
-                    state.runtime.slots[state.index] = activeShell;
-                    return false;
-                }
+                if (!state.runtime.entityHandlers.tick(109, state)) return false;
                 RoomEntity falling = state.runtime.backgroundMechanics.advanceFallingEntity(state.entity);
                 if (falling == null) {
                     state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
@@ -92,23 +62,10 @@ final class EntitySlotPhase2 {
                     falling.z(), -1, false);
                 return false;
             } else if (state.status == EntityStatus.DYING) {
-                if (state.entity.type() == state.runtime.ENTITY_MOBLIN_KING) {
-                    state.runtime.bossRewards.advanceMoblinKingDestruction(state.entity, state.frame, state.randomByteSupplier);
-                    return false;
-                }
-                if (state.entity.type() == state.runtime.ENTITY_GENIE
-                    && state.runtime.geniePrivateState1[state.entity.slot()] == 1) {
-                    state.runtime.genie.advanceGenieDestruction(state.entity, state.frame, state.randomByteSupplier);
-                    return false;
-                }
-                if (state.entity.type() == state.runtime.ENTITY_ROLLING_BONES) {
-                    state.runtime.bossRewards.advanceRollingBonesDestruction(state.entity, state.randomByteSupplier);
-                    return false;
-                }
-                if (state.entity.type() == state.runtime.ENTITY_MOLDORM) {
-                    state.runtime.bossRewards.advanceMoldormDestruction(state.entity, state.frame);
-                    return false;
-                }
+                if (!state.runtime.entityHandlers.tick(110, state)) return false;
+                if (!state.runtime.entityHandlers.tick(111, state)) return false;
+                if (!state.runtime.entityHandlers.tick(112, state)) return false;
+                if (!state.runtime.entityHandlers.tick(113, state)) return false;
                 if (isBossKeyDropProducer(state.entity.type())) {
                     state.runtime.bossRewards.advanceBossKeyDropProducer(state.entity, state.randomByteSupplier);
                     return false;
@@ -143,16 +100,7 @@ final class EntitySlotPhase2 {
                 }
                 return false;
             } else if (state.status == EntityStatus.STUNNED) {
-                if (state.entity.type() == state.runtime.ENTITY_BOMB) {
-                    BombMotion.Decision bombDecision = state.runtime.bombInteractions.advanceBombEntity(state.index, state.entity,
-                        state.projectileEvents, state.linkEntityX, state.linkEntityY, state.projectileLinkState);
-                    state.entity = state.runtime.slots[state.index];
-                    if (bombDecision.unloadAfterPresentation()) {
-                        return false;
-                    }
-                    state.entity = state.runtime.bombInteractions.applyBombStunnedPostActiveWork(state.entity, state.backgroundCollision, state.frame);
-                    state.runtime.slots[state.index] = state.entity;
-                }
+                if (!state.runtime.entityHandlers.tick(114, state)) return false;
                 if (state.runtime.powerBraceletButtonHeld
                     && isLiftableEntity(state.entity)
                     && (state.entity.type() == state.runtime.ENTITY_BOMB
@@ -172,43 +120,25 @@ final class EntitySlotPhase2 {
                 }
                 return false;
             } else if (state.status == EntityStatus.INIT) {
-                if (state.entity.type() == state.runtime.ENTITY_HIDING_SLIME_KEY
-                    && (state.runtime.entityRoomStatus & 0x10) != 0) {
-                    // The handler's first instruction is the completed-room
-                    // gate, including the INIT dispatch path.
-                    state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
-                    return false;
-                }
+                if (!state.runtime.entityHandlers.tick(115, state)) return false;
                 state.status = EntityStatus.ACTIVE;
                 state.runtime.pickups.initializeEntityTimers(state.entity);
                 state.runtime.entityHandlers.initialize(state.entity, state.randomByteSupplier);
 
-                if (state.entity.type() == state.runtime.ENTITY_OCTOROK || state.entity.type() == state.runtime.ENTITY_MOBLIN) {
-                    state.runtime.roamingEnemyMotion.initialize(state.entity.slot());
-                }
+                if (!state.runtime.entityHandlers.tick(116, state)) return false;
 
-                if (state.entity.type() == state.runtime.ENTITY_MOBLIN_SWORD) {
-                    state.runtime.moblinSwordMotion.initialize(state.entity.slot(), state.entity.x());
-                }
+                if (!state.runtime.entityHandlers.tick(117, state)) return false;
 
 
 
-                if (isSparkType(state.entity.type())) {
-                    state.runtime.sparkMotion.initialize(state.entity.slot(), state.entity.type());
-                }
-                if (isZolGelType(state.entity.type())) {
-                    state.runtime.zolGelMotion.initialize(state.entity.slot(), state.entity.type(), state.randomByteSupplier);
-                }
+                if (!state.runtime.entityHandlers.tick(118, state)) return false;
+                if (!state.runtime.entityHandlers.tick(119, state)) return false;
 
 
 
 
-                if (state.entity.type() == state.runtime.ENTITY_MINI_MOLDORM) {
-                    state.runtime.miniMoldormMotion.initialize(state.entity);
-                }
-                if (state.entity.type() == state.runtime.ENTITY_MOLDORM) {
-                    state.runtime.moldormMotion.initialize(state.entity);
-                }
+                if (!state.runtime.entityHandlers.tick(120, state)) return false;
+                if (!state.runtime.entityHandlers.tick(121, state)) return false;
 
 
 
@@ -235,43 +165,20 @@ final class EntitySlotPhase2 {
 
 
 
-                if (state.entity.type() == state.runtime.ENTITY_WIZROBE) {
-                    state.runtime.wizrobeMotion.initializeFromRoom(state.entity.slot(), state.entity.spriteVariant());
-                    state.runtime.enemyTransitionCountdown[state.entity.slot()] = 0x80;
-                    state.preserveWizrobePresentation = true;
-                }
-                if (state.entity.type() == state.runtime.ENTITY_WIZROBE_PROJECTILE) {
-                    state.runtime.wizrobeProjectileMotion.initialize(state.entity.slot(), state.randomByteSupplier);
-                    state.preserveWizrobeProjectilePresentation = true;
-                }
+                if (!state.runtime.entityHandlers.tick(122, state)) return false;
+                if (!state.runtime.entityHandlers.tick(123, state)) return false;
 
 
 
 
-                if (isGhiniType(state.entity.type())) {
-                    state.runtime.ghiniMotion.initialize(state.entity.slot(), state.entity.type());
-                    if (isHidingGhiniType(state.entity.type())) {
-                        state.preserveGhiniPresentation = true;
-                    }
-                }
+                if (!state.runtime.entityHandlers.tick(124, state)) return false;
 
 
 
 
-                if (isBombiteType(state.entity.type())) {
-                    state.runtime.bombiteMotion.initialize(state.entity.slot());
-                    state.runtime.slowTimerInitialized[state.entity.slot()] = true;
-                }
-                if (isFollowingNpcType(state.entity.type())) {
-                    if (state.entity.type() == state.runtime.ENTITY_BOW_WOW) {
-                        state.runtime.bowWowMotion.initialize(state.entity.slot());
-                    } else {
-                        state.runtime.followingNpcMotion.initialize(state.entity.slot(), state.entity.type());
-                    }
-                }
-                if (ColorShellMotion.isColorShellType(state.entity.type())) {
-                    state.runtime.colorShellMotion.initialize(state.entity.slot());
-                }
+                if (!state.runtime.entityHandlers.tick(125, state)) return false;
+                if (!state.runtime.entityHandlers.tick(126, state)) return false;
+                if (!state.runtime.entityHandlers.tick(127, state)) return false;
             } else if (state.status == EntityStatus.ACTIVE) {
                 if (!state.freezeTarinTimers && !state.freezeMoblinKingTimers) {
                     state.runtime.lifecycle.decrementSlowTransitionCountdown(state.entity.slot(), state.frame);
@@ -284,59 +191,9 @@ final class EntitySlotPhase2 {
                 }
             }
             state.updated = state.entity;
-            if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
-                && state.entity.type() == SideViewPlatformMotion.ENTITY_TYPE
-                && state.handlerLinkCollisionEnabled && state.runtime.backgroundMechanics.entityTimersInteractive()
-                && !state.creditsGameplay && state.runtime.transitionSequenceCounter == 0x04) {
-                SideViewPlatformMotion.Frame platformFrame =
-                    state.runtime.sideViewPlatformMotion.beginFrame(state.entity);
-                RoomEntity movedPlatform = platformFrame.entity();
-                if (platformFrame.horizontalDelta() != 0 && state.backgroundCollision != null
-                    && state.backgroundCollision.blocks(state.entity,
-                        platformFrame.horizontalDelta() < 0 ? 1 : 0,
-                        movedPlatform.x(), movedPlatform.y())) {
-                    platformFrame = state.runtime.sideViewPlatformMotion.restoreHorizontalPosition(state.entity,
-                        platformFrame);
-                    movedPlatform = platformFrame.entity();
-                }
-                if (platformFrame.verticalDelta() != 0 && state.backgroundCollision != null) {
-                    int direction = platformFrame.verticalDelta() < 0 ? 2 : 3;
-                    if (state.backgroundCollision.blocks(state.entity, direction, movedPlatform.x(),
-                        movedPlatform.y())) {
-                        platformFrame = state.runtime.sideViewPlatformMotion.restoreVerticalPosition(state.entity,
-                            platformFrame);
-                        movedPlatform = platformFrame.entity();
-                    }
-                }
-                boolean standing = state.runtime.groundInteractionSideScrolling
-                    && (state.linkZ & 0xFF) == 0
-                    && (state.runtime.currentLinkSpeedY & 0x80) == 0
-                    && sideViewPlatformOverlapsLink(movedPlatform, state.linkEntityX, state.linkEntityY)
-                    && (((state.linkEntityY - movedPlatform.y() + 0x08) & 0x80) != 0);
-                boolean activationAllowed = state.runtime.entityRoomId == 0x3B || state.carryingEntity;
-                if (standing) {
-                    state.runtime.pendingSideViewPlatformLinkRequests.add(new SideViewPlatformLinkRequest(
-                        state.entity.slot(), platformFrame.horizontalDelta(),
-                        (movedPlatform.y() - 0x10) & 0xFF, 0x02, true, activationAllowed));
-                }
-                SideViewPlatformMotion.Update platformUpdate = state.runtime.sideViewPlatformMotion.finishFrame(
-                    movedPlatform, platformFrame, state.frame, standing, activationAllowed);
-                state.updated = platformUpdate.entity();
-                if (platformUpdate.rumble()) {
-                    state.runtime.pendingEntityEvents.add(new EntityCombatEvent(
-                        state.entity.slot(), state.entity.type(), 0, false,
-                        EntityCombatEvent.SoundChannel.NOISE, 0x11));
-                }
-            }
+            if (!state.runtime.entityHandlers.tick(128, state)) return false;
             if (!state.runtime.entityHandlers.tick(27, state)) return false;
-            if (state.wasInitializing && isCommonDroppableType(state.entity.type())
-                && state.runtime.droppablePrivateState3[state.entity.slot()] != 0) {
-                // The init handler has already set the hidden options. The
-                // corresponding active handler will be entered on the next
-                // entity tick, so suppress this first display-list pass too.
-                state.updated = withVariant(state.entity, -1);
-                state.preserveDroppablePresentation = true;
-            }
+            if (!state.runtime.entityHandlers.tick(129, state)) return false;
             if (state.preserveGhiniPresentation) {
                 state.updated = withVariant(state.entity, -1);
             }
@@ -344,50 +201,12 @@ final class EntitySlotPhase2 {
             if (!state.runtime.entityHandlers.tick(29, state)) return false;
             if (!state.runtime.entityHandlers.tick(30, state)) return false;
             if (!state.runtime.entityHandlers.tick(31, state)) return false;
-            if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
-                && isCommonDroppableType(state.entity.type())) {
-                CommonDroppableUpdate droppableUpdate = state.runtime.pickups.advanceCommonDroppable(
-                    state.entity, state.linkEntityX, state.linkEntityY,
-                    state.runtime.objectQuery == null ? null : state.runtime.objectQuery.sample(state.entity));
-                state.updated = droppableUpdate.entity();
-                if (droppableUpdate.hidden()) {
-                    // DroppableRevealOrReturnIfNeeded returns past the caller's
-                    // remaining handler. In particular, no rendering, pickup,
-                    // movement, or background interaction may run while hidden.
-                    state.runtime.slots[state.index] = withStatus(withVariant(state.updated, -1), state.status);
-                    return false;
-                }
-            }
+            if (!state.runtime.entityHandlers.tick(130, state)) return false;
             if (!state.runtime.entityHandlers.tick(32, state)) return false;
             if (!state.runtime.entityHandlers.tick(33, state)) return false;
             if (!state.runtime.entityHandlers.tick(34, state)) return false;
             if (!state.runtime.entityHandlers.tick(35, state)) return false;
-            if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
-                && (state.entity.type() == state.runtime.ENTITY_ROLLING_BONES
-                    || state.entity.type() == state.runtime.ENTITY_ROLLING_BONES_BAR)) {
-                // BossIntro runs before ReturnIfNonInteractive_06.
-                if (state.entity.type() == state.runtime.ENTITY_ROLLING_BONES
-                    && !state.runtime.roomTransitionActive && !state.runtime.inventoryAppearing) {
-                    BossIntroMotion.Update intro = state.runtime.bossIntroMotion.advance(
-                        state.runtime.options1(state.entity.slot()), state.entity.type(), state.runtime.entityMapId,
-                        state.runtime.transitionSequenceCounter);
-                    if (intro.musicTrack() >= 0) state.runtime.pendingMusicTrack = intro.musicTrack();
-                }
-                // The bar's room-clear check precedes its interaction guard.
-                if (state.entity.type() == state.runtime.ENTITY_ROLLING_BONES_BAR && (state.runtime.entityRoomStatus & 0x20) != 0) {
-                    state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
-                    return false;
-                }
-                // ReturnIfNonInteractive_06 reads the pre-decrement wC1A8.
-                if (!state.handlerInteractive || state.countdownBlocksInteraction) return false;
-                if (state.entity.type() == state.runtime.ENTITY_ROLLING_BONES
-                    && !state.rollingBonesHitThisFrame && state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()] != 0) {
-                    // ApplyRecoilIfNeeded_06 pops the handler return address:
-                    // no jump physics or AI movement occurs during recoil.
-                    state.runtime.slots[state.index] = state.runtime.backgroundMechanics.applyEnemyRecoilIfNeeded(state.entity, state.backgroundCollision).entity();
-                    return false;
-                }
-            }
+            if (!state.runtime.entityHandlers.tick(131, state)) return false;
             if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                 && (usesSharedRecoil(state.entity.type())
                     || (state.entity.type() == state.runtime.ENTITY_POKEY
@@ -415,9 +234,7 @@ final class EntitySlotPhase2 {
             if (!state.runtime.entityHandlers.tick(39, state)) return false;
             if (!state.runtime.entityHandlers.tick(40, state)) return false;
             if (!state.runtime.entityHandlers.tick(41, state)) return false;
-            if (state.wasInitializing && isSparkType(state.entity.type())) {
-                state.updated = state.runtime.sparkMotion.applyInitializationOffset(state.entity);
-            }
+            if (!state.runtime.entityHandlers.tick(132, state)) return false;
             if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                 && state.runtime.entityHandlers.hasAdvance(state.entity.type())) {
                 state.updated = state.runtime.entityHandlers.advance(state.entity, state.context.withRuntimeInputs(

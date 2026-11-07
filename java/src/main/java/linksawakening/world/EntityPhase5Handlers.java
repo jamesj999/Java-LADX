@@ -41,5 +41,26 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
             }
             return true;
         });
+        for (int type = 0; type < 256; type++) {
+            if ((ColorShellMotion.isColorShellType(type))) {
+                registry.registerTick(type, 140, state -> {
+if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
+                && true) {
+                ColorShellMotion.Update shellUpdate = state.runtime.colorShellMotion.advance(
+                    state.entity, state.frame, state.linkEntityX, state.linkEntityY, state.randomByteSupplier,
+                    state.backgroundCollision, state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()],
+                    state.runtime.colorShellWorld, Arrays.asList(state.runtime.slots));
+                state.updated = shellUpdate.entity();
+                state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()] = shellUpdate.nextIgnoreHitsCountdown();
+                if (shellUpdate.unloadRequested()) {
+                    state.runtime.pendingClearedEntityMask |= persistentClearMask(state.entity);
+                    state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
+                    return false;
+                }
+            }
+                    return true;
+                });
+            }
+        }
     }
 }

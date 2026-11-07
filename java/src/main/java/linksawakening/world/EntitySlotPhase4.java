@@ -36,77 +36,11 @@ final class EntitySlotPhase4 {
             if (!state.runtime.entityHandlers.tick(84, state)) return false;
             if (!state.runtime.entityHandlers.tick(85, state)) return false;
             if (!state.runtime.entityHandlers.tick(86, state)) return false;
-            if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
-                && !state.runtime.indoorRoom && state.entity.type() == state.runtime.ENTITY_TARIN
-                && (state.runtime.tarinRaccoonMotion.state(state.entity.slot()) == 0
-                    || state.runtime.roomInspection.tarinTransformationHandlerInteractive())) {
-                RoomEntityBackgroundInteraction tarinBackgroundInteraction = state.runtime.backgroundInteraction;
-                if (tarinBackgroundInteraction == null && state.backgroundCollision != null) {
-                    tarinBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
-                        state.backgroundCollision);
-                }
-                TarinRaccoonMotion.Update tarinUpdate = state.runtime.tarinRaccoonMotion.advance(state.updated,
-                    new TarinRaccoonMotion.Input(state.frame, state.linkEntityX, state.linkEntityY,
-                        state.romLinkDirection, state.runtime.actionButtonAHeld, state.runtime.dialogActive, false,
-                        state.runtime.linkAttackStepAnimationCountdown, state.linkAirborne,
-                        state.runtime.inventoryAppearing, state.runtime.dialogCooldown, state.runtime.windowY,
-                        state.runtime.slowTransitionCountdown[state.entity.slot()],
-                        state.runtime.enemyTransitionCountdown[state.entity.slot()]),
-                    tarinBackgroundInteraction);
-                state.updated = tarinUpdate.entity();
-                state.runtime.slowTransitionCountdown[state.entity.slot()] =
-                    tarinUpdate.slowTransitionCountdown();
-                state.runtime.enemyTransitionCountdown[state.entity.slot()] = tarinUpdate.transitionCountdown();
-                state.preserveTarinPresentation = true;
-                state.runtime.shouldGetLostInMysteriousWoods = tarinUpdate.shouldGetLost();
-                if (tarinUpdate.linkMotionBlocked()) {
-                    state.runtime.pendingLinkMotionBlockRequests.add(
-                        new LinkMotionBlockRequest(state.entity.slot()));
-                }
-                if (tarinUpdate.dialogGlobalId() >= 0) {
-                    state.runtime.pendingDialogRequests.add(new DialogRequest(
-                        tarinUpdate.dialogGlobalId() >>> 8,
-                        tarinUpdate.dialogGlobalId() & 0xFF));
-                }
-                if (tarinUpdate.clearLinkAttack()) {
-                    state.runtime.pendingLinkAttackClearRequests.add(
-                        new LinkAttackClearRequest(state.entity.slot()));
-                }
-                if (tarinUpdate.linkFacingDirection() >= 0) {
-                    state.runtime.pendingLinkFacingRequests.add(new LinkFacingRequest(
-                        state.entity.slot(), tarinUpdate.linkFacingDirection(), true));
-                }
-                if (tarinUpdate.pushLink()) {
-                    if (RoomEntityCombatRules.overlapsLink(
-                        state.updated, state.linkEntityX, state.linkEntityY)) {
-                        state.runtime.backgroundMechanics.requestLinkPush(state.updated, EntityLinkCollisionRules.STANDARD_PUSH);
-                    }
-                }
-                if (tarinUpdate.soundId() >= 0) {
-                    state.runtime.pendingEntityEvents.add(new EntityCombatEvent(state.entity.slot(), state.entity.type(),
-                        0, false, EntityCombatEvent.SoundChannel.JINGLE,
-                        tarinUpdate.soundId()));
-                    if (tarinUpdate.soundId() == 0x23) {
-                        state.runtime.pendingMusicTrack = state.runtime.defaultMusicTrack;
-                    }
-                }
-                if (tarinUpdate.spawnBomb()) {
-                    state.runtime.entityEnemySpawns.spawnTarinTransformationBomb(state.updated);
-                }
-                if (tarinUpdate.roomChanged() || tarinUpdate.tarinFlag()) {
-                    state.runtime.pendingRoomStatusPersistenceRequests.add(
-                        new RoomStatusPersistenceRequest(state.entity.slot(), 0x10, 1));
-                }
-            }
+            if (!state.runtime.entityHandlers.tick(138, state)) return false;
             if (!state.runtime.entityHandlers.tick(87, state)) return false;
             if (!state.runtime.entityHandlers.tick(88, state)) return false;
             if (!state.runtime.entityHandlers.tick(89, state)) return false;
-            if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
-                && isGhiniType(state.entity.type())) {
-                state.updated = state.runtime.ghiniMotion.advance(state.entity, state.frame, state.entity.type(),
-                    state.linkEntityX, state.linkEntityY, state.romCollisionType, state.randomByteSupplier);
-                state.preserveGhiniPresentation = true;
-            }
+            if (!state.runtime.entityHandlers.tick(139, state)) return false;
             if (!state.runtime.entityHandlers.tick(90, state)) return false;
             if (!state.runtime.entityHandlers.tick(91, state)) return false;
             if (!state.runtime.entityHandlers.tick(92, state)) return false;
