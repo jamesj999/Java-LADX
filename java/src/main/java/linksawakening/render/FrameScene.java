@@ -14,7 +14,7 @@ public final class FrameScene {
     static final ThreadLocal<DrawObserver> DRAW_OBSERVER = new ThreadLocal<>();
 
     List<String> unmigratedLayers() {
-        return layers.stream().filter(layer -> !(layer instanceof HardwareRenderLayer))
+        return layers.stream().filter(layer -> !(layer instanceof HardwareRenderLayer hardware) || !hardware.supportsHardware())
             .map(layer -> layer.getClass().getName()).distinct().toList();
     }
 
@@ -42,7 +42,7 @@ public final class FrameScene {
         if (pipeline == RenderPipeline.HARDWARE) {
             // Reject incomplete migrations before any layer can mutate the GPU or output.
             for (RenderLayer layer : layers) {
-                if (!(layer instanceof HardwareRenderLayer)) {
+                if (!(layer instanceof HardwareRenderLayer hardware) || !hardware.supportsHardware()) {
                     throw new IllegalStateException("Layer not migrated: " + layer.getClass().getName());
                 }
             }

@@ -5,7 +5,7 @@ import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.ScrollController;
 
-public final class TransientVfxRenderLayer implements RenderLayer {
+public final class TransientVfxRenderLayer implements HardwareRenderLayer {
     private static final int ATTR_FLIP_X = 0x20;
     private static final int ATTR_FLIP_Y = 0x40;
 
@@ -61,12 +61,19 @@ public final class TransientVfxRenderLayer implements RenderLayer {
                     slot.slotIndex(), slot.variant());
             };
             for (CutLeavesEffectRenderer.SpritePlacement sprite : sprites) {
-                IndexedRenderer.drawSpriteTile(context.buffer(), sprite.tile(), sprite.x() + shakeX,
+                OamDrawing.draw8(context, sprite.tile(), sprite.x() + shakeX,
                     sprite.y(),
                     (sprite.attributes() & ATTR_FLIP_X) != 0,
                     (sprite.attributes() & ATTR_FLIP_Y) != 0,
                     palette);
             }
         }
+    }
+    @Override public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
+        var commands = new java.util.ArrayList<java.util.function.Consumer<OamSink>>();
+        OamSink sink = (tile, x, y, fx, fy, palette, behind) ->
+            commands.add(target -> target.append(tile, x, y, fx, fy, palette, behind));
+        render(new RenderContext(new byte[0], gpu, sink));
+        for (int i = commands.size() - 1; i >= 0; i--) commands.get(i).accept(frame);
     }
 }
