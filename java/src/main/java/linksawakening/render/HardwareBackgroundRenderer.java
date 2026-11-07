@@ -146,7 +146,7 @@ final class HardwareBackgroundRenderer {
                 }
                 int sourceX = flipX ? 7 - tx : tx;
                 int sourceY = flipY ? 7 - ty : ty;
-                buffer.backgroundPixel(px, py, tile.getPixel(sourceX, sourceY), palette, (attr & 128) != 0);
+                buffer.backgroundPixel(px, py, tile.getPixel(sourceX, sourceY), palette, tileId & 255, attr);
             }
         }
     }
@@ -166,7 +166,7 @@ final class HardwareBackgroundRenderer {
         int sourceX = flipX ? 7 - tileX : tileX;
         int sourceY = flipY ? 7 - tileY : tileY;
         int[] palette = palettes[Math.min(paletteIndex, palettes.length - 1)];
-        buffer.backgroundPixel(screenX, screenY, tile.getPixel(sourceX, sourceY), palette, (attr & 128) != 0);
+        buffer.backgroundPixel(screenX, screenY, tile.getPixel(sourceX, sourceY), palette, tileId & 255, attr);
     }
 
 }

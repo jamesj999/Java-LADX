@@ -59,7 +59,10 @@ public final class FrameScene {
                 throw new IllegalStateException("Layer not migrated: " + layer.getClass().getName());
         }
         HardwareFrame frame = new HardwareFrame(true);
-        for (RenderLayer layer : layers) ((HardwareRenderLayer) layer).submit(frame, gpu);
+        for (RenderLayer layer : layers) {
+            frame.submittingLayer(layer.getClass().getSimpleName());
+            ((HardwareRenderLayer) layer).submit(frame, gpu);
+        }
         return frame;
     }
 
