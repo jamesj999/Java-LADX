@@ -2,6 +2,7 @@ package linksawakening;
 
 import linksawakening.app.screen.*;
 import linksawakening.app.SessionBootstrap;
+import linksawakening.app.SaveCoordinator;
 import linksawakening.app.story.OpeningStory;
 
 import linksawakening.config.AppConfig;
@@ -196,8 +197,8 @@ public class GameSession {
     private AppConfig appConfig;
     private final Screen titleScreen = new TitleScreen(new TitleScreen.Dependencies(() -> cutsceneManager, () -> inputState, this::startFileSelection));
     private final Screen cutsceneScreen = new CutsceneScreen(new CutsceneScreen.Dependencies(() -> cutsceneManager, () -> inputState, () -> dialogController, () -> inputConfig, this::routeDialogSounds, () -> currentScreen = titleScreen, () -> { currentScreen = titleScreen; playDirectMusic(directTitleScreenMusicTrack()); }));
-    private final Screen fileMenuScreen = new FileMenuScreen(new FileMenuScreen.Dependencies(() -> fileMenuController, () -> inputState, () -> inputConfig, () -> saveRamStore, slot -> currentSaveSlot = slot, this::startNewGame, this::startSavedGame, this::persistFileMenuMutation, this::completeInputFrame));
-    private final Screen fileSaveScreen = new FileSaveScreen(new FileSaveScreen.Dependencies(() -> fileSaveController, () -> inputState, () -> inputConfig, () -> { fileSaveController = null; currentScreen = this.gameplayScreen; }, this::saveCurrentPlayerState, this::startFileSelection, this::completeInputFrame));
+    private final Screen fileMenuScreen = new FileMenuScreen(new FileMenuScreen.Dependencies(() -> fileMenuController, () -> inputState, () -> inputConfig, () -> saveRamStore, slot -> currentSaveSlot = slot, () -> saves().startNewGame(), saved -> saves().startSavedGame(saved), mutation -> saves().persistFileMenuMutation(mutation), this::completeInputFrame));
+    private final Screen fileSaveScreen = new FileSaveScreen(new FileSaveScreen.Dependencies(() -> fileSaveController, () -> inputState, () -> inputConfig, () -> { fileSaveController = null; currentScreen = this.gameplayScreen; }, () -> saves().saveCurrentPlayerState(), this::startFileSelection, this::completeInputFrame));
     private final Screen gameplayScreen = new GameplayScreen(this::tickGameplayScreen, this::gameplayKey);
     private Screen currentScreen = titleScreen;
 
@@ -247,7 +248,7 @@ public class GameSession {
         if (inputState != null) throw new IllegalStateException("Game already initialized");
         initialize(true);
         dialogController.setPlayerName("A");
-        startNewGame();
+        saves().startNewGame();
     }
 
     void headlessButton(String button, boolean pressed) {
@@ -370,7 +371,7 @@ public class GameSession {
 
         if (shouldEnterFileSave(inputConfig, inputState, key, action)
             && canPresentFileSave()) {
-            startFileSave();
+            saves().startFileSave();
             return;
         }
 
@@ -1387,7 +1388,7 @@ public class GameSession {
 
     private void startConfiguredGameplay() {
         dispatchConfiguredGameplay(
-            currentAppConfig(), this::startNewGame, this::startConfiguredLocationGameplay);
+            currentAppConfig(), () -> saves().startNewGame(), this::startConfiguredLocationGameplay);
     }
 
     private void startDebugGameplay() {
@@ -1468,61 +1469,6 @@ public class GameSession {
         loadOverworldScreen();
     }
 
-    private void startNewGame() {
-        fileMenuController = null;
-        fileSaveController = null;
-        currentScreen = gameplayScreen;
-
-        NewGameStartProfile profile = NewGameStartProfile.romDefaults();
-        profile.initializePlayerState(playerState);
-        roomSession.initializeNewGameWorldState();
-        roomSession.setBirdKeyOwned(playerState.birdKeyCount() != 0);
-        roomSession.setTailKeyOwned(playerState.tailKeyCount() != 0);
-        roomSession.setBowWowState(0);
-        link.setDirection(Link.DIRECTION_DOWN);
-        gpu.loadBaseTiles(romData);
-        roomSession.loadIndoor(profile.mapId(), profile.roomId());
-        link.setRoomEntryRomPosition(profile.entryX(), profile.entryY());
-        newGameWakeUpMotion = new MarinWakeUpMotion();
-        newGameTarinShieldMotion = new TarinShieldMotion();
-        playDirectMusic(newGameHouseMusicTrack());
-        openingStory().updateNewGameMarinPresentation();
-    }
-
-    private void startSavedGame(SaveSlotState saved) {
-        fileMenuController = null;
-        fileSaveController = null;
-        currentScreen = gameplayScreen;
-        newGameWakeUpMotion = null;
-        newGameTarinShieldMotion = null;
-        playerState.applySavedGame(saved);
-        roomSession.setBirdKeyOwned(playerState.birdKeyCount() != 0);
-        roomSession.setTailKeyOwned(playerState.tailKeyCount() != 0);
-        roomSession.restoreRoomStatuses(saved.overworldRoomStatus(), saved.indoorARoomStatus(),
-            saved.indoorBRoomStatus(), saved.colorDungeonRoomStatus());
-        roomSession.restoreDungeonItemFlags(saved.dungeonItemFlags(),
-            saved.colorDungeonItemFlags());
-        roomSession.restoreDungeonProgressFlags(saved.dungeonProgressFlags());
-        roomSession.setBowWowState(saved.bowWowState());
-        roomSession.setTarinFlag(saved.tarinFlag());
-        roomSession.setRichardSpokenFlag(saved.richardSpokenFlag());
-        roomSession.setChestPlayerLevels(playerState.shieldLevel(), playerState.swordLevel(),
-            playerState.powerBraceletLevel());
-        if (saved.spawnIsIndoor() != 0) {
-            gpu.loadBaseTiles(romData);
-            roomSession.loadIndoorFromSavedPosition(
-                saved.spawnMapId(), saved.spawnMapRoom(), saved.spawnIndoorRoom());
-            link.setDirection(Link.DIRECTION_UP);
-        } else {
-            roomSession.loadInitialOverworld(saved.spawnMapRoom());
-            link.setDirection(Link.DIRECTION_DOWN);
-        }
-        link.setRoomEntryRomPosition(saved.spawnPositionX(), saved.spawnPositionY());
-        openingStory().restoreNewGameHouseRuntimeIfNeeded(saved,
-            motion -> newGameWakeUpMotion = motion, motion -> newGameTarinShieldMotion = motion,
-            () -> openingStory().updateNewGameMarinPresentation());
-    }
-
     private void startIntroCutscene() {
         fileMenuController = null;
         fileSaveController = null;
@@ -1566,76 +1512,7 @@ public class GameSession {
         inputState.tickEdges();
     }
 
-    private void persistFileMenuMutation(Runnable mutation) {
-        mutation.run();
-        try {
-            saveRamStore.flush();
-        } catch (IOException exception) {
-            throw new IllegalStateException("Failed to persist file-menu mutation", exception);
-        }
-        startFileSelection();
-    }
-
-    private void startFileSave() {
-        currentScreen = fileSaveScreen;
-        fileMenuController = null;
-        gpu.loadSaveMenuTiles(romData);
-        fileSaveController = new FileSaveController(this::loadFileMenuBackgroundScene);
-        inputState.tickEdges();
-    }
-
-    private void saveCurrentPlayerState() {
-        if (currentSaveSlot < 0 || playerState == null || saveRamStore == null) {
-            return;
-        }
-        saveRamStore.writePlayerState(currentSaveSlot, playerState);
-        saveCurrentSpawnLocation();
-        if (roomSession != null) {
-            saveRamStore.writeRoomStatuses(currentSaveSlot,
-                roomSession.overworldRoomStatusSnapshot(),
-                roomSession.indoorARoomStatusSnapshot(),
-                roomSession.indoorBRoomStatusSnapshot(),
-                roomSession.colorDungeonRoomStatusSnapshot());
-            saveRamStore.writeDungeonItemFlags(currentSaveSlot,
-                roomSession.dungeonItemFlagsSnapshot(),
-                roomSession.colorDungeonItemFlagsSnapshot());
-            saveRamStore.writeDungeonProgressFlags(currentSaveSlot,
-                roomSession.dungeonProgressFlagsSnapshot());
-            saveRamStore.writeBowWowState(currentSaveSlot, roomSession.bowWowState());
-            saveRamStore.writeTarinFlag(currentSaveSlot, roomSession.tarinFlag());
-            saveRamStore.writeRichardSpokenFlag(
-                currentSaveSlot, roomSession.richardSpokenFlag());
-        }
-        try {
-            saveRamStore.flush();
-        } catch (IOException exception) {
-            throw new IllegalStateException("Failed to persist player save state", exception);
-        }
-    }
-
     /** Mirrors the source's wSpawnLocationData fields copied by SaveGameToFile. */
-    private void saveCurrentSpawnLocation() {
-        if (roomSession == null || !roomSession.hasActiveRoom() || link == null) {
-            return;
-        }
-
-        ActiveRoom room = roomSession.activeRoom();
-        boolean isIndoor = room.mapCategory() != Warp.CATEGORY_OVERWORLD;
-        int indoorRoom = roomSession.indoorRoomPositionForSave();
-        if (indoorRoom < 0) {
-            // Small houses/caves have no map-layout table. The source leaves
-            // wIndoorRoom at its previous value in that case.
-            indoorRoom = saveRamStore.readSlot(currentSaveSlot).spawnIndoorRoom();
-        }
-        saveRamStore.writeSpawnLocation(
-            currentSaveSlot,
-            isIndoor ? 1 : 0,
-            isIndoor ? room.mapId() : 0,
-            room.roomId(),
-            link.roomEntryRomPositionX(),
-            link.roomEntryRomPositionY(),
-            indoorRoom);
-    }
 
     private BackgroundScene loadFileMenuBackgroundScene(String sceneId) {
         BackgroundSceneSpec spec = BackgroundSceneCatalog.forFileMenuScene(sceneId);
@@ -1816,5 +1693,18 @@ public class GameSession {
         equipmentController = built.equipmentController();
         link = built.link();
         newGameTarinShieldPalette = built.newGameTarinShieldPalette();
+    }
+    private SaveCoordinator saves() {
+        return new SaveCoordinator(playerState, roomSession, link, gpu, romData, saveRamStore, currentSaveSlot, inputState,
+            () -> { fileMenuController = null; fileSaveController = null; currentScreen = gameplayScreen; },
+            () -> { newGameWakeUpMotion = null; newGameTarinShieldMotion = null; },
+            () -> { newGameWakeUpMotion = new MarinWakeUpMotion(); newGameTarinShieldMotion = new TarinShieldMotion(); },
+            () -> playDirectMusic(newGameHouseMusicTrack()),
+            () -> openingStory().updateNewGameMarinPresentation(),
+            saved -> openingStory().restoreNewGameHouseRuntimeIfNeeded(saved, motion -> newGameWakeUpMotion = motion, motion -> newGameTarinShieldMotion = motion, () -> openingStory().updateNewGameMarinPresentation()),
+            this::startFileSelection,
+            () -> { currentScreen = fileSaveScreen; fileMenuController = null; },
+            controller -> fileSaveController = controller,
+            this::loadFileMenuBackgroundScene);
     }
 }
