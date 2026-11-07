@@ -14,8 +14,9 @@ and full-line `#` comments are permitted. Missing and duplicate labels fail.
 Use `RomSymbols.Label` with `Rom.u8`, `u16le`, or `slice`. `Rom` is a read-only
 view of caller-owned bytes; callers must preserve the backing array. Slice
 returns a copy. `RomAddress.offset()` uses the central bank-window calculation.
-For GBC bank adjustment use an explicit `.inBank(label.bank() | 0x20)` at the
-call site and document the original loader. Never silently adjust all symbols.
+For GBC bank adjustment call `linksawakening.rom.GbcBanks.adjust(bank)` (it mirrors
+`AdjustBankNumberForGBC` in bank 0) at the call site and document the original
+loader. Never silently adjust all symbols.
 
 For world, gpu, render, and entity migration, first match the exact label and
 bank against the local symbol file, retain any intentional offset, then replace
@@ -112,8 +113,8 @@ OverworldBGAttributesBanks 1A:6476, BGAttributesPointers_Overworld 1A:5E76,
 IndoorsA/BObjectsAttrmaps 23/24:4000 and RoomGBCOverlaysA/B 26/27:4000.
 No symbol discrepancies. World original-metric remaining count is 15.
 
-Integration constraint: GbcBanks.adjust is package-private in another owner's
-gpu package. Existing OR-$20 attribute-bank adjustment remains unchanged here:
+Integration note (now resolved: `rom.GbcBanks` is public): GbcBanks.adjust was
+package-private in gpu at the time. Existing OR-$20 attribute-bank adjustment remains unchanged here:
 a RomAddress-based replacement rejected zero-pointer synthetic fixtures before
 file-offset translation. Typed reads preserve the prior offset semantics.
 
