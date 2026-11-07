@@ -69,4 +69,5 @@ public final class InventoryController {
         menu.submit(frame, gpu, palettes);
     }
     public boolean canSubmitFullyOpenWindow() { return menu.isFullyOpen(); }
+    public int windowY() { return menu.windowY(); }
 }

@@ -30,7 +30,10 @@ public final class HardwareFrame implements RenderLayer, OamSink {
     void submittingLayer(String name) { submittingLayer = name; }
 
     public String fidelitySource(int pixel) {
-        return "OBJ=" + objSources[pixel] + " BG=" + bgSources[pixel];
+        String source = objSources[pixel];
+        if (source == null && inventoryOriginalHidden != null && inventoryOriginalHidden[pixel])
+            source = inventoryOriginalSources[pixel];
+        return "OBJ=" + source + " BG=" + bgSources[pixel];
     }
 
     public String mismatchGroup(int pixel, byte[] legacy, byte[] hardware) {
@@ -81,7 +84,7 @@ public final class HardwareFrame implements RenderLayer, OamSink {
         stamp(tile, x, y, (attributes & 32) != 0, (attributes & 64) != 0, (pixel, index) -> {
             hudTiles[pixel] = tileId;
             hudAttributes[pixel] = attributes;
-            approvedHudEvidence[pixel] = pixel / WIDTH >= 128;
+            approvedHudEvidence[pixel] = true;
         });
     }
 
@@ -112,7 +115,51 @@ public final class HardwareFrame implements RenderLayer, OamSink {
     }
 
     /** HideSprites ($01:5F4B-$5F69): at WY=0 every visible gameplay OAM entry is hidden. */
-    public void hideGameplayObjectsForOpenInventory() { oam.clear(); }
+    public void hideGameplayObjectsForOpenInventory() { hideGameplayObjectsUnderWindow(0); }
+
+    private int inventoryCutoffY = -1;
+    private int[] inventoryOriginalColors;
+    private boolean[] inventoryOriginalHidden;
+    private String[] inventoryOriginalSources;
+
+    /** bank1.asm $5F51-$5F67: hide a whole OAM entry when raw Y >= WY+8. */
+    public void hideGameplayObjectsUnderWindow(int windowY) {
+        inventoryCutoffY = windowY;
+        var before = java.util.List.copyOf(oam);
+        var hidden = new java.util.HashSet<ObjectTile>();
+        for (ObjectTile entry : before) {
+            if (((entry.entryY() + 16) & 255) >= windowY + 8) hidden.add(entry);
+        }
+        oam.removeIf(hidden::contains);
+        if (windowY <= 0 || windowY >= 128 || hidden.isEmpty()) return;
+        inventoryOriginalColors = new int[WIDTH * HEIGHT];
+        inventoryOriginalHidden = new boolean[WIDTH * HEIGHT];
+        inventoryOriginalSources = new String[WIDTH * HEIGHT];
+        for (ObjectTile entry : before) {
+            stamp(entry.tile(), entry.x(), entry.y(), entry.flipX(), entry.flipY(), (pixel, index) -> {
+                if (index == 0) return;
+                inventoryOriginalColors[pixel] = entry.palette()[index];
+                inventoryOriginalHidden[pixel] = hidden.contains(entry);
+                inventoryOriginalSources[pixel] = entry.source();
+            });
+        }
+    }
+
+    /** A narrow, ROM-proven whole-entry hiding difference above the moving window. */
+    public boolean explainsInventoryHiding(byte[] legacy, byte[] hardware, int pixel) {
+        if (inventoryOriginalHidden == null || !inventoryOriginalHidden[pixel]
+            || pixel / WIDTH >= inventoryCutoffY || objectOrder[pixel] != Integer.MAX_VALUE
+            || backgroundPalettes[pixel] == null || "DialogRenderLayer".equals(bgSources[pixel])) return false;
+        int at = pixel * 4;
+        int oldRgb = inventoryOriginalColors[pixel];
+        int newRgb = backgroundPalettes[pixel][backgroundIndex[pixel]];
+        for (int channel = 0; channel < 3; channel++) {
+            int shift = 16 - channel * 8;
+            if ((legacy[at + channel] & 255) != ((oldRgb >> shift) & 255)
+                || (hardware[at + channel] & 255) != ((newRgb >> shift) & 255)) return false;
+        }
+        return legacy[at + 3] == (byte)255 && hardware[at + 3] == (byte)255;
+    }
 
     public void sprite8x16(linksawakening.gpu.GPU gpu, int tile, int x, int y,
                            boolean fx, boolean fy, int[] palette) {
@@ -135,7 +182,7 @@ public final class HardwareFrame implements RenderLayer, OamSink {
 
     /** bank1.asm $5F6A-$5FB2: skip reserved Link/prompt entries 0-8, hide whole other entries. */
     public void hideSpritesUnderDialog(boolean bottom) {
-        if (closedWindowY == 0) return; // $5F6A-$5F6E: fully open inventory has no dialog filter.
+        if (closedWindowY == 0 || inventoryCutoffY >= 0) return; // $5F6A-$5F6E: fully open inventory has no dialog filter.
         oam.removeIf(entry -> {
             if (entry.source().equals("LinkRenderLayer") || entry.source().equals("LinkShadowRenderLayer")
                 || entry.source().equals("DialogRenderLayer")) return false;
@@ -162,6 +209,7 @@ public final class HardwareFrame implements RenderLayer, OamSink {
 
     public void compose(byte[] buffer) {
         Arrays.fill(objectOrder, Integer.MAX_VALUE);
+        Arrays.fill(objSources, null);
         for (ObjectTile entry : oam) {
             stamp(entry.tile(), entry.x(), entry.y(), entry.flipX(), entry.flipY(), (pixel, index) -> {
                 if (index == 0) return;

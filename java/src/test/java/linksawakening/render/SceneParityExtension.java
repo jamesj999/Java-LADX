@@ -43,8 +43,10 @@ public final class SceneParityExtension implements BeforeEachCallback, AfterEach
             for (int offset = 0; offset < rgba.length; offset += 4) {
                 if (Arrays.equals(rgba, offset, offset + 4, hardware, offset, offset + 4)) continue;
                 int pixel = offset / 4;
-                if (model.explainsHudPriority(rgba, hardware, pixel)) {
+                if (model.explainsHudPriority(rgba, hardware, pixel) || model.explainsInventoryHiding(rgba, hardware, pixel)) {
                     expectedPixels++; evidence.add(model.hudEvidence(pixel));
+                    if (model.explainsInventoryHiding(rgba, hardware, pixel))
+                        evidence.add("whole-entry inventory hiding: bank1.asm:$5F51-$5F67 rawY>=WY+8");
                     String source = model.fidelitySource(pixel);
                     Group expected = expectedSources.computeIfAbsent(source, key -> new Group());
                     expected.pixels++;

@@ -19,10 +19,10 @@ public final class InventoryRenderLayer implements HardwareRenderLayer {
     public void render(RenderContext context) {
         inventoryController.render(context.buffer(), context.gpu(), roomPalettes);
     }
-    @Override public boolean supportsHardware() { return inventoryController.canSubmitClosedWindow() || inventoryController.canSubmitFullyOpenWindow(); }
+    @Override public boolean supportsHardware() { return true; }
     @Override public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
         if (!inventoryController.canSubmitClosedWindow()) {
-            frame.hideGameplayObjectsForOpenInventory();
+            frame.hideGameplayObjectsUnderWindow(inventoryController.windowY());
             inventoryController.submit(frame, gpu, roomPalettes);
             return;
         }

@@ -24,5 +24,8 @@ filter to submitted nonreserved sources. No BG priority bit is invented.
 Legacy RGBA remains default during migration. Strict parity fails on unexplained
 pixels; `-PsceneParityProbe=true` records all mismatch groups. Reports live in
 java/build/scene-parity. Expected-fix source reports distinguish HUD and dialog.
-Sliding inventory, default switching, route capture and legacy deletion remain
-pending until their gates pass. Generated screenshots/ROM data are local only.
+Sliding inventory uses HideSprites ($01:5F51-$5F67): raw entry Y >= WY+8
+hides both halves. Above-window differences are classified only with a traced
+removed OBJ, exact legacy OBJ RGB, and exact revealed hardware BG RGB. Inventory
+pixels retaining OBJ follow the same CGB priority rule as the closed HUD.
+Default switching, route capture and legacy deletion remain gated. Generated screenshots/ROM data are local only.

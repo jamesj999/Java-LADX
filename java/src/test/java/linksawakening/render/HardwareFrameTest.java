@@ -136,4 +136,24 @@ final class HardwareFrameTest {
         byte[] legacy = hardware.clone(); legacy[2] = 44;
         org.junit.jupiter.api.Assertions.assertFalse(frame.explainsHudPriority(legacy, hardware, 0));
     }
+    @Test void slidingWindowHidesWholeEntriesAtRawYThresholdAndClassifiesOnlyTracedPixels() {
+        HardwareFrame frame = new HardwareFrame(true);
+        frame.submittingLayer("RoomRenderLayer");
+        frame.backgroundTile(solid(1), 0, 56, false, false, PALETTE, false);
+        frame.submittingLayer("EntityRenderLayer");
+        frame.append8x16(solid(2), solid(2), 0, 56, false, false, PALETTE, false);
+        frame.append8x16(solid(2), solid(2), 16, 55, false, false, PALETTE, false);
+        frame.hideGameplayObjectsUnderWindow(64);
+        assertEquals(22, pixel(frame, 0, 56));
+        assertEquals(0, pixel(frame, 0, 64));
+        assertEquals(33, pixel(frame, 16, 55));
+        assertEquals(33, pixel(frame, 16, 63));
+        byte[] hardware = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
+        frame.compose(hardware);
+        int pixel = 56 * Framebuffer.WIDTH;
+        byte[] legacy = hardware.clone(); legacy[pixel * 4 + 2] = 33;
+        org.junit.jupiter.api.Assertions.assertTrue(frame.explainsInventoryHiding(legacy, hardware, pixel));
+        legacy[pixel * 4 + 2] = 44;
+        org.junit.jupiter.api.Assertions.assertFalse(frame.explainsInventoryHiding(legacy, hardware, pixel));
+    }
 }
