@@ -19,11 +19,11 @@ public final class OpenGlFramePresenter {
     private final long window;
     private final int vao;
     private final int vbo;
-    private final Shader shader;
+    private final GlShader shader;
     private final int texture;
     private final ByteBuffer textureUploadBuffer;
 
-    private OpenGlFramePresenter(long window, int vao, int vbo, Shader shader, int texture) {
+    private OpenGlFramePresenter(long window, int vao, int vbo, GlShader shader, int texture) {
         this.window = window;
         this.vao = vao;
         this.vbo = vbo;
@@ -36,7 +36,7 @@ public final class OpenGlFramePresenter {
         GL.createCapabilities();
         GL11.glViewport(0, 0, Framebuffer.WIDTH * Framebuffer.SCALE, Framebuffer.HEIGHT * Framebuffer.SCALE);
 
-        Shader shader = new Shader();
+        GlShader shader = new GlShader();
 
         float[] vertices = {
             -1.0f, -1.0f, 0.0f, 1.0f,
@@ -169,7 +169,7 @@ static final class GlShader {
         if (GL20.glGetProgrami(program, GL20.GL_LINK_STATUS) == GL20.GL_FALSE) {
             String log = GL20.glGetProgramInfoLog(program);
             cleanup();
-            throw new IllegalStateException("Shader program link error: " + log);
+            throw new IllegalStateException("GlShader program link error: " + log);
         }
     }
     
