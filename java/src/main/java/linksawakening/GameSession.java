@@ -105,7 +105,7 @@ import org.lwjgl.glfw.GLFWKeyCallback;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.concurrent.ThreadLocalRandom;
+import linksawakening.world.RomRandomByteSource;
 
 import static linksawakening.world.RoomConstants.*;
 import static org.lwjgl.glfw.GLFW.*;
@@ -116,6 +116,16 @@ public class GameSession {
     private final int GAME_BOY_BG_MAP_TILES = 32 * 32;
 
     private long window;
+    private final RomRandomByteSource random;
+
+    public GameSession() {
+        this(new RomRandomByteSource());
+    }
+
+    public GameSession(RomRandomByteSource random) {
+        this.random = java.util.Objects.requireNonNull(random);
+    }
+
     private GPU gpu;
     private OpenGlFramePresenter framePresenter;
     private GLFWErrorCallback errorCallback;
@@ -382,7 +392,7 @@ public class GameSession {
         TransientVfxSpriteSheet transientVfxSpriteSheet = TransientVfxSpriteSheet.loadFromRom(romData);
         transientVfxSystem = new TransientVfxSystem(16);
         droppableRupeeSystem = new DroppableRupeeSystem(16,
-            () -> ThreadLocalRandom.current().nextInt(0x100));
+            random);
         cutLeavesEffectRenderer = new CutLeavesEffectRenderer(transientVfxSpriteSheet);
         itemRegistry = new ItemRegistry();
         roomSession = new RoomSession(romData, gpu, new RoomLoader(romData),
@@ -420,7 +430,7 @@ public class GameSession {
                 }
             }));
         itemRegistry.register(PlayerState.INVENTORY_SWORD, new Sword(romTables, swordSpriteSheet,
-            gameplaySoundSink, () -> ThreadLocalRandom.current().nextInt(0x100), swordPalette,
+            gameplaySoundSink, random, swordPalette,
             new Sword.BeamTarget() {
                 @Override
                 public boolean fireSwordBeam() {
@@ -822,6 +832,8 @@ public class GameSession {
 
     private void update() {
         frameCounter = (frameCounter + 1) & 0xFF;
+        // The engine's frame boundary uses scanline zero for non-entity draws.
+        random.beginFrame(frameCounter, 0);
 
         if (musicPlayer != null) {
             musicPlayer.update();
