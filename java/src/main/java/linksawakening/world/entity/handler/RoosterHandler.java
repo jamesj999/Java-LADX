@@ -58,7 +58,7 @@ final class RoosterHandler {
             if (state.projectileLinkState.motionState() == 0
                 && (state.linkZ & 0xFF) == 0
                 && state.link().linkAttackStepAnimationCountdown() == 0
-                && state.runtime.liftThrow.cuccoPowerBraceletHeld()
+                && state.liftThrow().cuccoPowerBraceletHeld()
                 && RoomEntityCombatRules.overlapsLink(
                     state.entity, state.linkEntityX, state.linkEntityY)
                 && state.runtime.beginLift(state.entity.slot(), state.romLinkDirection)) {

@@ -85,7 +85,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     public final GenieEntityController genie = new GenieEntityController(this);
     public final EntityProjectileController projectiles = new EntityProjectileController(this);
     public final EntityPickupController pickups = new EntityPickupController(this);
-    public final EntityLiftThrowController liftThrow = new EntityLiftThrowController(this);
+    final EntityLiftThrowController liftThrow = new EntityLiftThrowController(this);
     private final EntityCombatResolver combat = new EntityCombatResolver(this);
     public final EntityBossRewards bossRewards = new EntityBossRewards(this);
     public final EntityRoomInspection roomInspection = new EntityRoomInspection(this);

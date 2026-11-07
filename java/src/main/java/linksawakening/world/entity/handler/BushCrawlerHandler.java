@@ -71,7 +71,7 @@ final class BushCrawlerHandler {
             }
             state.preserveBushCrawlerPresentation = true;
             if (bushUpdate.liftRequested()
-                && state.runtime.liftThrow.beginBushCrawlerLift(
+                && state.liftThrow().beginBushCrawlerLift(
                     state.index,
                     state.updated,
                     bushUpdate.privateState4(),

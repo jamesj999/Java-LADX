@@ -165,6 +165,8 @@ public final class EntityFrameExecution {
 
   public EntityBackgroundMechanics background() { return runtime.backgroundMechanics; }
 
+  public EntityLiftThrowController liftThrow() { return runtime.liftThrow; }
+
   public EntityLinkView link() { return runtime.linkView; }
 
   public EntitySlotView slot() { return runtime.slotView; }

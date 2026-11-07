@@ -31,7 +31,7 @@ final class CuccoHandler {
                     state.linkEntityY,
                     state.linkZ,
                     state.handlerLinkCollisionEnabled,
-                    state.runtime.liftThrow.cuccoPowerBraceletHeld(),
+                    state.liftThrow().cuccoPowerBraceletHeld(),
                     state.link().linkAttackStepAnimationCountdown() != 0,
                     state.randomByteSupplier,
                     state.backgroundCollision,
@@ -61,8 +61,8 @@ final class CuccoHandler {
                       false,
                       EntityCombatEvent.SoundChannel.WAVE,
                       CuccoMotion.LIFT_WAVE_SFX));
-              state.replaceEntity(state.runtime.liftThrow.advanceLiftedEntity(
-                      state.runtime.liftThrow.renderLiftedEntity(
+              state.replaceEntity(state.liftThrow().advanceLiftedEntity(
+                      state.liftThrow().renderLiftedEntity(
                           state.entityAt(state.index), state.frame),
                       state.linkEntityX,
                       state.linkEntityY,
