@@ -1,5 +1,9 @@
 package linksawakening;
 
+import linksawakening.app.*;
+import linksawakening.app.gameplay.*;
+import linksawakening.app.host.*;
+
 import java.awt.image.BufferedImage;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -7,6 +11,7 @@ import javax.imageio.ImageIO;
 
 /** Exercises Main, without scene injection, using the shared button route. */
 public final class OpeningRouteCapture {
+    private static final HeadlessGameDriver game = new HeadlessGameDriver();
     private static int lastHealth = 24;
     private static final StringBuilder instrumentTrace = new StringBuilder();
     private static final StringBuilder kingTrace = new StringBuilder();
@@ -19,7 +24,7 @@ public final class OpeningRouteCapture {
         combatTrace.setLength(0);
         kingTrace.setLength(0);
         instrumentTrace.setLength(0);
-        Main.initializeHeadlessNewGame();
+        game.initializeHeadlessNewGame();
         StringBuilder trace = new StringBuilder();
         int frame = 0, segment = 0;
         byte[] rgba = null;
@@ -28,37 +33,37 @@ public final class OpeningRouteCapture {
             String[] fields = line.split("\\s+");
             int idle = Integer.parseInt(fields[2]);
             if (fields[1].contains("=")) {
-                Main.headlessButton(fields[0].replace("*", ""), true);
+                game.headlessButton(fields[0].replace("*", ""), true);
                 int ticks = 0;
-                while (!reached(fields[0], fields[1], Main.headlessState())) {
-                    if (++ticks > 2000) throw new IllegalStateException("Route blocked: " + line + " " + Main.headlessState() + " entities " + Main.headlessEntityPositions());
-                    pulseButtons(fields[0], ticks - 1);
-                    rgba = Main.headlessFrame();
+                while (!reached(game, fields[0], fields[1], game.headlessState())) {
+                    if (++ticks > 2000) throw new IllegalStateException("Route blocked: " + line + " " + game.headlessState() + " entities " + game.headlessEntityPositions());
+                    pulseButtons(game, fields[0], ticks - 1);
+                    rgba = game.headlessFrame();
                     appendTrace(trace, frame++);
                 }
-                Main.headlessButton(fields[0].replace("*", ""), false);
+                game.headlessButton(fields[0].replace("*", ""), false);
                 do {
                     if (++ticks > 2500) throw new IllegalStateException("Transition did not finish: " + line);
-                    rgba = Main.headlessFrame();
+                    rgba = game.headlessFrame();
                     appendTrace(trace, frame++);
-                } while (Main.headlessState().loading());
+                } while (game.headlessState().loading());
             }
             int held = fields[1].contains("=") ? 0 : Integer.parseInt(fields[1]);
-            if (held > 0) Main.headlessButton(fields[0].replace("*", ""), true);
+            if (held > 0) game.headlessButton(fields[0].replace("*", ""), true);
             for (int tick = 0; tick < held + idle; tick++) {
-                if (tick == held && held > 0) Main.headlessButton(fields[0].replace("*", ""), false);
-                if (tick < held) pulseButtons(fields[0], tick);
-                rgba = Main.headlessFrame();
+                if (tick == held && held > 0) game.headlessButton(fields[0].replace("*", ""), false);
+                if (tick < held) pulseButtons(game, fields[0], tick);
+                rgba = game.headlessFrame();
                 appendTrace(trace, frame++);
             }
-            if (held > 0 && idle == 0) Main.headlessButton(fields[0].replace("*", ""), false);
+            if (held > 0 && idle == 0) game.headlessButton(fields[0].replace("*", ""), false);
             BufferedImage image = new BufferedImage(160, 144, BufferedImage.TYPE_INT_RGB);
             for (int p = 0; p < 160 * 144; p++) image.setRGB(p % 160, p / 160,
                 ((rgba[p*4]&255)<<16)|((rgba[p*4+1]&255)<<8)|(rgba[p*4+2]&255));
             ImageIO.write(image, "png", out.resolve("ours/%02d.png".formatted(segment++)).toFile());
             Files.writeString(out.resolve("java-king.tsv"), kingTrace);
-            System.out.println(segment + " " + Main.headlessState()
-                + " entities " + Main.headlessEntityPositions());
+            System.out.println(segment + " " + game.headlessState()
+                + " entities " + game.headlessEntityPositions());
         }
         Files.writeString(out.resolve("java-trace.tsv"), trace);
         Files.writeString(out.resolve("java-combat.tsv"), combatTrace);
@@ -67,24 +72,24 @@ public final class OpeningRouteCapture {
             java.security.MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(route)));
         Files.writeString(out.resolve("java.json"),
             "{\"route_sha256\":\"" + routeHash + "\",\"checkpoints\":" + segment
-                + ",\"bowwow_state\":" + Main.headlessBowWowState() + "}");
+                + ",\"bowwow_state\":" + game.headlessBowWowState() + "}");
     }
-    static void pulseButtons(String buttons, int tick) {
+    static void pulseButtons(HeadlessGameDriver game, String buttons, int tick) {
         for (String button : buttons.split("\\+")) {
             if (!button.endsWith("*")) continue;
             String key = button.substring(0, button.length() - 1);
-            if (tick % 24 == 8) Main.headlessButton(key, false);
-            else if (tick > 0 && tick % 24 == 0) Main.headlessButton(key, true);
+            if (tick % 24 == 8) game.headlessButton(key, false);
+            else if (tick > 0 && tick % 24 == 0) game.headlessButton(key, true);
         }
     }
 
-    static boolean reached(String button, String condition, Main.HeadlessState s) {
+    static boolean reached(HeadlessGameDriver game, String button, String condition, HeadlessGameDriver.State s) {
         String[] parts = condition.split("=");
         int target = Integer.decode(parts[1]);
         int value = switch (parts[0]) {
-            case "bowwow" -> Main.headlessBowWowState();
-            case "kingstate" -> Integer.parseInt(Main.headlessMoblinKingTrace().split(",")[0]);
-            case "instrumentstate" -> Integer.parseInt(Main.headlessInstrumentTrace().split(";")[1].split(",")[1]);
+            case "bowwow" -> game.headlessBowWowState();
+            case "kingstate" -> Integer.parseInt(game.headlessMoblinKingTrace().split(",")[0]);
+            case "instrumentstate" -> Integer.parseInt(game.headlessInstrumentTrace().split(";")[1].split(",")[1]);
             case "room" -> s.room();
             case "dialog" -> s.dialog() ? 1 : 0;
             case "sword" -> s.sword();
@@ -101,11 +106,11 @@ public final class OpeningRouteCapture {
     }
 
     private static void appendTrace(StringBuilder trace, int frame) {
-        var s = Main.headlessState();
-        if (s.map() == 0x15 && s.room() == 0xE1) kingTrace.append(frame).append('\t').append(Main.headlessMoblinKingTrace()).append('\n');
-        if (s.map() == 0 && s.room() == 2) instrumentTrace.append(frame).append('\t').append(Main.headlessInstrumentTrace()).append('\n');
-        if (s.map() == 0 && (s.room() == 0x11 || s.room() == 0x06)) combatTrace.append(frame).append('\t').append(Main.headlessCombatTrace()).append('\n');
-        if (s.health() < lastHealth) System.out.println("Damage at " + frame + " " + s + " entities " + Main.headlessEntityPositions());
+        var s = game.headlessState();
+        if (s.map() == 0x15 && s.room() == 0xE1) kingTrace.append(frame).append('\t').append(game.headlessMoblinKingTrace()).append('\n');
+        if (s.map() == 0 && s.room() == 2) instrumentTrace.append(frame).append('\t').append(game.headlessInstrumentTrace()).append('\n');
+        if (s.map() == 0 && (s.room() == 0x11 || s.room() == 0x06)) combatTrace.append(frame).append('\t').append(game.headlessCombatTrace()).append('\n');
+        if (s.health() < lastHealth) System.out.println("Damage at " + frame + " " + s + " entities " + game.headlessEntityPositions());
         lastHealth = s.health();
         if (s.health() <= 0) throw new IllegalStateException("Link died at frame " + frame + ": " + s);
         trace.append(frame).append('\t').append(s.map()).append('\t').append(s.room())
