@@ -516,7 +516,7 @@ abstract class EntityRuntimeState extends EntityRomConstants {
     // LinkMotionMapFadeInHandler leaves wTransitionSequenceCounter at $04 once
     // the active room is ready for interaction. Entity ticks are gated during
     // the host transition, so this is the source value visible to gameplay.
-    public int transitionSequenceCounter = 0x04;
+    int transitionSequenceCounter = 0x04;
 
     // ReturnIfNonInteractive_19's gameplay selector and room-transition flag.
     // Live room sessions default to the ordinary active world path; tests can

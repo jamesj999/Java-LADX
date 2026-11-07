@@ -37,7 +37,7 @@ final class WitchHandler {
                         state.linkEntityX,
                         state.linkEntityY,
                         state.romLinkDirection,
-                        state.runtime.transitionSequenceCounter,
+                        state.lifecycle().transitionSequenceCounter(),
                         state.runtime.booBuddyTriggerCount,
                         state.runtime.bgPaletteEffectAddress,
                         state.runtime.paletteDataFlags,

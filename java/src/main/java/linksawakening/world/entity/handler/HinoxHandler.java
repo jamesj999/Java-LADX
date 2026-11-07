@@ -27,7 +27,7 @@ final class HinoxHandler {
               && !state.wasInitializing
               && state.handlerLinkCollisionEnabled
               && state.background().entityTimersInteractive()
-              && state.runtime.transitionSequenceCounter == 0x04
+              && state.lifecycle().transitionSequenceCounter() == 0x04
               && !state.creditsGameplay
              ) {
             int slot = state.entity.slot();
@@ -36,7 +36,7 @@ final class HinoxHandler {
                     state.runtime.options1(state.entity.slot()),
                     state.entity.type(),
                     state.runtime.entityMapId,
-                    state.runtime.transitionSequenceCounter);
+                    state.lifecycle().transitionSequenceCounter());
             if (bossIntro.musicTrack() >= 0) {
               state.runtime.pendingMusicTrack = bossIntro.musicTrack();
             }

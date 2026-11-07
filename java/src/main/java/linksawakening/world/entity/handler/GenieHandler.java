@@ -67,7 +67,7 @@ final class GenieHandler {
                         state.runtime.options1(state.entity.slot()),
                         state.entity.type(),
                         state.runtime.entityMapId,
-                        state.runtime.transitionSequenceCounter)
+                        state.lifecycle().transitionSequenceCounter())
                     : BossIntroMotion.Update.none();
             if (bossIntro.musicTrack() >= 0) {
               state.runtime.pendingMusicTrack = bossIntro.musicTrack();

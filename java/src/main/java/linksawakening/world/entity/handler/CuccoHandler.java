@@ -37,7 +37,7 @@ final class CuccoHandler {
                     state.backgroundCollision,
                     state.runtime.indoorRoom,
                     state.runtime.followingNpcState.marinFollowing(),
-                    state.runtime.transitionSequenceCounter);
+                    state.lifecycle().transitionSequenceCounter());
             state.updated = cuccoUpdate.entity();
             state.slot().setTransitionCountdown(state.entity.slot(), cuccoUpdate.transitionCountdown());
             state.runtime.enemyFlashCountdown[state.entity.slot()] = cuccoUpdate.flashCountdown();

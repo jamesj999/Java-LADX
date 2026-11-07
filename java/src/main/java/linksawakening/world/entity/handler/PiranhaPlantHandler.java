@@ -18,7 +18,7 @@ final class PiranhaPlantHandler {
               && !state.wasInitializing
 
               && !state.creditsGameplay
-              && state.runtime.transitionSequenceCounter == 0x04
+              && state.lifecycle().transitionSequenceCounter() == 0x04
               && state.handlerLinkCollisionEnabled) {
             int slot = state.entity.slot();
             PiranhaMotion.Update piranhaUpdate =

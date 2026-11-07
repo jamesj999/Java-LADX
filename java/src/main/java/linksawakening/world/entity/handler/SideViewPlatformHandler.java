@@ -26,7 +26,7 @@ final class SideViewPlatformHandler {
                   && state.handlerLinkCollisionEnabled
                   && state.background().entityTimersInteractive()
                   && !state.creditsGameplay
-                  && state.runtime.transitionSequenceCounter == 0x04) {
+                  && state.lifecycle().transitionSequenceCounter() == 0x04) {
                 SideViewPlatformMotion.Frame platformFrame =
                     state.runtime.sideViewPlatformMotion.beginFrame(state.entity);
                 RoomEntity movedPlatform = platformFrame.entity();
