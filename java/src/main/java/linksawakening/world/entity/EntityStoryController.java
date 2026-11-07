@@ -22,6 +22,73 @@ public final class EntityStoryController {
     private final RoomEntityRuntime runtime;
     EntityStoryController(RoomEntityRuntime runtime) { this.runtime = runtime; }
 
+    /** Bank 06:607F–620D. Speeds use the ROM's sixteenth-pixel units. */
+    public void advanceVillageKid(RoomEntity entity, int frame, int linkX, int linkY) {
+        int slot = entity.slot();
+        if (runtime.kidBall[slot]) {
+            if (--runtime.kidPlayTimer[slot] <= 0) {
+                runtime.slots[slot] = withStatus(entity, EntityStatus.DISABLED);
+                runtime.kidBall[slot] = false;
+                return;
+            }
+            int x = addFallingSpeedToPosition(entity.x(), runtime.kidPlayState[slot],
+                runtime.kidSpeedXAccumulator, slot);
+            int z = addFallingSpeedToPosition(entity.z(), runtime.kidZSpeed[slot]-- & 255,
+                runtime.kidSpeedYAccumulator, slot);
+            runtime.slots[slot] = withZ(withPositionAndVariant(entity, x, entity.y(), 0), z);
+            return;
+        }
+        if (runtime.bowWowState == 0x80) {
+            advanceKidnapWarningKid(entity, frame, linkX, linkY);
+            return;
+        }
+        if (runtime.spriteHandlers != null)
+            entity = withDefinition(entity, runtime.spriteHandlers.forKidPlaying(),
+                (entity.type() == 0x71 ? 2 : 0) | (runtime.kidPlayState[slot] == 1 ? 1 : 0));
+        int z = addFallingSpeedToPosition(entity.z(), runtime.kidZSpeed[slot]-- & 255,
+            runtime.kidSpeedYAccumulator, slot);
+        boolean landed = (z & 128) != 0;
+        if (landed) { z = 0; runtime.kidZSpeed[slot] = 0; }
+        runtime.slots[slot] = withZ(entity, z);
+        int timer = runtime.kidPlayTimer[slot];
+        if (timer > 0) timer--;
+        if (timer == 0) {
+            if (runtime.kidPlayState[slot] == 0) {
+                runtime.kidPlayState[slot] = 1;
+                timer = 0x80;
+                int ball = runtime.findFreeEntitySlot();
+                if (ball >= 0 && runtime.spriteHandlers != null) {
+                    var definition = runtime.spriteHandlers.forKidBall();
+                    runtime.slots[ball] = new RoomEntity(ball, -1, 0x71, entity.x(), entity.y(),
+                        EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+                    runtime.enemyPhysicsFlags[ball] = ENTITY_PHYSICS_HARMLESS;
+                    runtime.enemyHitboxFlags[ball] = 0;
+                    runtime.entityOptions1Override[ball] = runtime.ENTITY_OPT1_NO_GROUND_INTERACTION;
+                    runtime.kidBall[ball] = true;
+                    runtime.kidPlayTimer[ball] = 0x24;
+                    runtime.kidPlayState[ball] = entity.type() == 0x71 ? 0x14 : 0xEC;
+                    runtime.kidZSpeed[ball] = 0x10;
+                    runtime.kidSpeedXAccumulator[ball] = 0;
+                    runtime.kidSpeedYAccumulator[ball] = 0;
+                    runtime.dynamicEntitySpawnedThisFrame[ball] = true;
+                }
+            } else { runtime.kidPlayState[slot] = 0; timer = 0x60; }
+        } else if (runtime.kidPlayState[slot] == 1 && timer < 0x60) {
+            runtime.slots[slot] = withVariant(runtime.slots[slot], entity.type() == 0x71 ? 2 : 0);
+            if (timer < 0x40 && landed) runtime.kidZSpeed[slot] = 8;
+        }
+        runtime.kidPlayTimer[slot] = timer;
+        if (runtime.linkState.actionButtonAHeld && !runtime.linkState.dialogActive
+            && runtime.linkState.dialogCooldown == 0 && !runtime.linkState.inventoryAppearing
+            && runtime.linkState.windowY == 0x80
+            && Math.abs(signedByte(linkX - entity.x())) < 0x10
+            && Math.abs(signedByte(linkY - entity.y())) < 0x14) {
+            int dialog = (runtime.instrument1Flags & 2) == 0
+                ? 0x18 + (runtime.kidHintIndex++ & 3) : 0x1C + entity.type() - 0x70;
+            runtime.events.pendingDialogRequests.add(new DialogRequest(1, dialog));
+        }
+    }
+
     public void advanceKidnapWarningKid(RoomEntity entity, int frameCounter,
                                          int linkEntityX, int linkEntityY) {
         int slot = entity.slot();
@@ -36,14 +103,13 @@ public final class EntityStoryController {
                 runtime.kidKidnapState[slot] = 1;
             }
             case 1 -> {
-                if (yDistance >= -0x20 && yDistance < 0x20
+                if ((yDistance >= -0x20 && yDistance < 0x20
+                    || --runtime.kidKidnapDelay[slot] == 0)
                     && runtime.transitionSequenceCounter == 0x04) {
                     if (entity.type() == runtime.ENTITY_KID_71) {
                         runtime.events.pendingDialogRequests.add(new DialogRequest(2, 0x20));
                     }
                     runtime.kidKidnapState[slot] = 2;
-                } else if (runtime.kidKidnapDelay[slot] > 0) {
-                    runtime.kidKidnapDelay[slot]--;
                 } else {
                     EnemyRecoilMotion.Vector vector = EnemyRecoilMotion.vectorTowardsLink(
                         entity.x(), entity.y(), entity.z(), linkEntityX, linkEntityY, 0x08);
@@ -57,6 +123,14 @@ public final class EntityStoryController {
                 }
             }
             default -> {
+                int z = addFallingSpeedToPosition(entity.z(), runtime.kidZSpeed[slot] & 255,
+                    runtime.kidSpeedYAccumulator, slot);
+                runtime.kidZSpeed[slot] -= 2;
+                if (z == 0 || (z & 128) != 0) {
+                    z = 0;
+                    runtime.kidZSpeed[slot] = (frameCounter & 31) == 0 ? 0x10 : 0;
+                }
+                runtime.slots[slot] = withZ(runtime.slots[slot], z);
                 int xDistance = Math.abs(signedByte((linkEntityX - entity.x()) & 0xFF));
                 if (runtime.linkState.actionButtonsHeld && !runtime.linkState.dialogActive
                     && xDistance < 0x18 && Math.abs(yDistance) < 0x18) {

@@ -12,15 +12,13 @@ import linksawakening.world.entity.EntityHandlerRegistration;
 final class KidHandler {
   static void install(EntityHandlerRegistration registry) {
     for (int type = 0; type < 256; type++) {
-      if (((type == ENTITY_KID_71 || type == ENTITY_KID_72))) {
+      if (type == ENTITY_KID_71 || type == ENTITY_KID_72) {
         registry.registerTick(
             type,
             EntityTickStage.PHASE_1_KID_72,
             state -> {
-              if (state.status == EntityStatus.ACTIVE
-
-                  && state.story().bowWowState() == 0x80) {
-                state.story().advanceKidnapWarningKid(
+              if (state.status == EntityStatus.ACTIVE) {
+                state.story().advanceVillageKid(
                     state.entity, state.frame, state.linkEntityX, state.linkEntityY);
                 return false;
               }

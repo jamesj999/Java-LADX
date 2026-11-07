@@ -166,6 +166,14 @@ public final class EntitySpriteHandlerCatalog {
     }
 
     /** Selects SirensInstrumentState1Handler's two projectile variants. */
+    public EntitySpriteDefinition forKidPlaying() {
+        return decodePair(0x71, 0x06, 0x606D, 4, 0);
+    }
+
+    public EntitySpriteDefinition forKidBall() {
+        return decodeSingle(0x71, 0x06, 0x607D, 1, 0);
+    }
+
     public EntitySpriteDefinition forInstrumentShard() {
         return decodePair(ENTITY_INSTRUMENT_OF_THE_SIRENS, 0x03, 0x5E8B, 2, 0);
     }

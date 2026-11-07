@@ -628,6 +628,11 @@ abstract class EntityRuntimeState extends EntityRomConstants {
     final int[] instrumentParticleYAccumulator =
         new int[EntityRoomLoader.MAX_ENTITIES];
 
+    final int[] kidPlayTimer = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] kidPlayState = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] kidZSpeed = new int[EntityRoomLoader.MAX_ENTITIES];
+    final boolean[] kidBall = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    int kidHintIndex;
     final int[] kidKidnapState = new int[EntityRoomLoader.MAX_ENTITIES];
 
     final int[] kidKidnapDelay = new int[EntityRoomLoader.MAX_ENTITIES];

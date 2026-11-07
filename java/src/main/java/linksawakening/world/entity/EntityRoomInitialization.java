@@ -106,12 +106,24 @@ if (romData != null) {
         runtime.hookshotChainOam = initial.hookshotChainOam();
         runtime.pincerBodyOam = initial.pincerBodyOam();
         runtime.wingedOctorokOam = initial.wingedOctorokOam();
+        Arrays.fill(runtime.kidBall, false);
+        Arrays.fill(runtime.kidPlayTimer, 0);
+        Arrays.fill(runtime.kidPlayState, 0);
+        Arrays.fill(runtime.kidZSpeed, 0);
+        Arrays.fill(runtime.kidKidnapState, 0);
+        Arrays.fill(runtime.kidKidnapDelay, 0);
+        Arrays.fill(runtime.kidSpeedXAccumulator, 0);
+        Arrays.fill(runtime.kidSpeedYAccumulator, 0);
         Arrays.fill(runtime.entityOptions1Override, -1);
         Arrays.fill(runtime.droppedItemBySlot, 0);
         Arrays.fill(runtime.bombDirection, 0xFF);
         Arrays.fill(runtime.bombFinalPresentationPending, false);
         Arrays.fill(runtime.thrownDirection, 0xFF);
         for (RoomEntity entity : runtime.slots) {
+            if (entity.loaded() && entity.type() == 0x71) {
+                runtime.kidPlayState[entity.slot()] = 1;
+                runtime.kidPlayTimer[entity.slot()] = 0x20;
+            }
             runtime.baseEntityFlipAttribute[entity.slot()] = entity.entityFlipAttribute();
             runtime.fallingVisualYOffset[entity.slot()] = initial.visualYOffset(entity.slot());
             runtime.enemyHealth[entity.slot()] = entity.loaded() ? runtime.initialHealth(entity.type()) : 0;

@@ -7281,6 +7281,38 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void kidnappedBowWowWarningStartsAutomaticallyAndDoesNotRepeatWhileIdle() {
+        RoomEntity kid = new RoomEntity(0, 0, 0x71, 0x40, 0x40,
+            EntityStatus.ACTIVE, pairDefinition(0x71, 4), 0, 0, 0, 0, -1, false);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(kid), false, () -> 0);
+        runtime.configuration().setBowWowState(0x80);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x40, 0x50, () -> 0));
+        assertEquals(1, runtime.consumePendingDialogRequests().size());
+        for (int frame = 2; frame < 64; frame++)
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x40, 0x50, () -> 0));
+        assertTrue(runtime.consumePendingDialogRequests().isEmpty());
+    }
+
+    @Test
+    void villageChildrenThrowABallAndRetireItsSlot() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RoomEntity kid = new RoomEntity(0, 0, 0x72, 0x70, 0x40,
+            EntityStatus.ACTIVE, catalog.forEntityType(0x72,
+                EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false);
+        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(kid), false, () -> 0,
+            catalog, new RomEnemyCombatTables(rom));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x70, () -> 0));
+        assertTrue(runtime.inspection().snapshot().slots().stream().anyMatch(e ->
+            e.loaded() && e.sourceLoadOrder() == -1 && e.spriteDefinition().address() == 0x607D));
+        for (int frame = 1; frame <= 40; frame++)
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x20, 0x70, () -> 0));
+        assertFalse(runtime.inspection().snapshot().slots().stream().anyMatch(e ->
+            e.loaded() && e.sourceLoadOrder() == -1 && e.spriteDefinition().address() == 0x607D));
+    }
+
+    @Test
     void kidnappedBowWowDoesNotReleaseFromAnUnrelatedRoomCollision() {
         RoomEntity bowWow = new RoomEntity(0, 0, 0x6D, 0x88, 0x40,
             EntityStatus.ACTIVE, pairDefinition(0x6D, 7), 0, 0, 0, 0, -1, false);
