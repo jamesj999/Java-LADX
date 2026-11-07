@@ -26,6 +26,7 @@ import java.util.function.IntUnaryOperator;
  * class only advances handler-owned status and sprite-variant fields.
  */
 public final class RoomEntityRuntime extends EntityRuntimeState {
+    private final EntityBackgroundMechanics backgroundMechanics = new EntityBackgroundMechanics(this);
     private final EntityBombInteractions bombInteractions = new EntityBombInteractions(this);
     private final EntitySlotLifecycle lifecycle = new EntitySlotLifecycle(this);
     private final EntityEnemySpawns entityEnemySpawns = new EntityEnemySpawns(this);
@@ -42,7 +43,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     private final EntityLiftThrowController liftThrow = new EntityLiftThrowController(this);
     private final EntityCombatResolver combat = new EntityCombatResolver(this);
     private final EntityBossRewards bossRewards = new EntityBossRewards(this);
-    private final EntityRoomInspection roomInspection = new EntityRoomInspection(this);
+    final EntityRoomInspection roomInspection = new EntityRoomInspection(this);
     final EntityEnemyInspection enemyInspection = new EntityEnemyInspection(this);
 
     final RoomEntity[] slots;
@@ -1292,25 +1293,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     public List<EntityCombatEvent> resolveCombat(int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne, int linkVerticalVelocity, boolean linkInteractive, boolean swordCollisionActive, int swordX, int swordWidth, int swordY, int swordHeight, EnemyAttackContext attackContext) { return combat.resolveCombat(frameCounter, linkEntityX, linkEntityY, linkAirborne, linkVerticalVelocity, linkInteractive, swordCollisionActive, swordX, swordWidth, swordY, swordHeight, attackContext); }
 
-    boolean moldormOrHeadOverlapsSword(RoomEntity entity,
-                                                int swordX, int swordWidth,
-                                                int swordY, int swordHeight) {
-        if (RoomEntityCombatRules.overlapsSword(
-                entity, swordX, swordWidth, swordY, swordHeight)) {
-            return true;
-        }
-        if (entity.type() != ENTITY_MOLDORM) {
-            return false;
-        }
-        if (enemyFlashCountdown[entity.slot()] != 0) {
-            return false;
-        }
-        MoldormMotion.TailPosition tail = moldormMotion.vulnerableTail(entity.slot());
-        RoomEntity tailCollisionEntity = withPositionAndVariant(
-            entity, tail.x(), (tail.y() + entity.z()) & 0xFF, entity.spriteVariant());
-        return RoomEntityCombatRules.overlapsSword(
-            tailCollisionEntity, swordX, swordWidth, swordY, swordHeight);
-    }
+    boolean moldormOrHeadOverlapsSword(RoomEntity entity, int swordX, int swordWidth, int swordY, int swordHeight) { return this.backgroundMechanics.moldormOrHeadOverlapsSword(entity, swordX, swordWidth, swordY, swordHeight); }
 
     /** Supplies the persistent world clock before this frame's entity pass. */
     void setBoomerangSoundCounterForFrame(int counter) { this.entityRuntimeConfiguration.setBoomerangSoundCounterForFrame(counter); }
@@ -1396,28 +1379,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     int contactDamage(int type) { return this.roomInspection.contactDamage(type); }
 
-    void advanceHookshotBridgeEntity(int index, RoomEntity entity) {
-        HookshotBridgeMotion.State bridgeState = hookshotBridgeMotion.state(entity.slot());
-        if (bridgeState == null) {
-            clearEntity(entity.slot());
-            return;
-        }
-
-        HookshotBridgeMotion.ObjectCell cell = HookshotBridgeMotion.objectCell(bridgeState);
-        HookshotBridgeMotion.Step step = hookshotBridgeMotion.advance(entity.slot());
-        RoomEntity moved = withPositionAndVariant(entity, step.state().x(), step.state().y(),
-            entity.spriteVariant());
-        RoomEntityObjectSample object = objectQuery == null ? null : objectQuery.sample(moved);
-        boolean clear = object != null && object.objectId() != OBJECT_HOOKSHOT_BRIDGE_REPLACEMENT
-            && object.physicsFlag() == 0;
-        hookshotBridgeUpdates.add(new HookshotBridgeUpdate(
-            cell.objectLeft(), cell.objectTop(), bridgeState.direction(), !clear));
-        if (clear) {
-            clearEntity(entity.slot());
-        } else {
-            slots[index] = moved;
-        }
-    }
+    void advanceHookshotBridgeEntity(int index, RoomEntity entity) { this.backgroundMechanics.advanceHookshotBridgeEntity(index, entity); }
 
     /** Unloads a slot and returns the persistent first-eight load-order bit. */
     public int clearEntity(int slot) { return this.lifecycle.clearEntity(slot); }
@@ -1445,13 +1407,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     }
 
     /** $03:5269: after block movement, restore Link even during a jump. */
-    void resolvePushedBlockLinkContact(int slot, int linkEntityX, int linkEntityY) {
-        if (slot >= 0 && slot < slots.length && slots[slot].type() == ENTITY_PUSHED_BLOCK
-            && slots[slot].status() == EntityStatus.ACTIVE
-            && RoomEntityCombatRules.overlapsLink(slots[slot], linkEntityX, linkEntityY)) {
-            requestLinkPush(slots[slot], EntityLinkCollisionRules.PUSHED_BLOCK);
-        }
-    }
+    void resolvePushedBlockLinkContact(int slot, int linkEntityX, int linkEntityY) { this.backgroundMechanics.resolvePushedBlockLinkContact(slot, linkEntityX, linkEntityY); }
 
     void removePushedBlock(int slot) {
         if (slot >= 0 && slot < slots.length && slots[slot].type() == ENTITY_PUSHED_BLOCK) {
@@ -1575,7 +1531,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     boolean genieState0Interactive(boolean creditsGameplay) { return this.roomInspection.genieState0Interactive(creditsGameplay); }
 
     /** Mirrors UpdateEntityTimers' gameplay and presentation gates. */
-    boolean gameplayEntityTimersInteractive(boolean creditsGameplay) { return this.roomInspection.gameplayEntityTimersInteractive(creditsGameplay); }
+    boolean gameplayEntityTimersInteractive(boolean creditsGameplay) { return this.backgroundMechanics.gameplayEntityTimersInteractive(creditsGameplay); }
 
     /** Creates the temporary type-$05 entity used by bombed bushes, grass, and pots. */
     int spawnLiftableRockSmash(int entityX, int entityY, int sourceSpriteVariant) { return this.entityPlayerSpawns.spawnLiftableRockSmash(entityX, entityY, sourceSpriteVariant); }
@@ -2018,7 +1974,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     private boolean hasNoGroundInteractionOverride(int slot) { return this.roomInspection.hasNoGroundInteractionOverride(slot); }
 
-    boolean hasNoGroundInteraction(RoomEntity entity) { return this.roomInspection.hasNoGroundInteraction(entity); }
+    boolean hasNoGroundInteraction(RoomEntity entity) { return this.backgroundMechanics.hasNoGroundInteraction(entity); }
 
     RoomEntity applyZolSplit(RoomEntity original, RoomEntity updated, ZolGelMotion.Split split) { return this.lifecycle.applyZolSplit(original, updated, split); }
 
@@ -3117,225 +3073,36 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
         return ((countdown << 1) & 0x30) >>> 4;
     }
 
-    boolean beginFalling(RoomEntity entity,
-                                 RoomEntityGroundInteraction.PitTransition transition,
-                                 boolean ignoreHitsDecrementedBeforeHandler) {
-        int slot = entity.slot();
-        int ignoreHitsCountdown = enemyIgnoreHitsCountdown[slot];
-        if (ignoreHitsDecrementedBeforeHandler) {
-            // The Java runtime keeps a shared combat countdown pass for the
-            // already-ported handlers.  In the ROM, the pit branch reads the
-            // value before that branch's own decrement; reconstruct that
-            // value here so INIT and ACTIVE entities both get one decrement
-            // at the same source-level point.
-            ignoreHitsCountdown = (ignoreHitsCountdown + 1) & 0xFF;
-        }
-        if (ignoreHitsCountdown == 0) {
-            return false;
-        }
-
-        ignoreHitsCountdown--;
-        enemyIgnoreHitsCountdown[slot] = ignoreHitsCountdown;
-        enemyFlashCountdown[slot] = 0;
-        fallingTargetX[slot] = transition.targetX() & 0xFF;
-        fallingTargetY[slot] = transition.targetY() & 0xFF;
-        fallingSpeedX[slot] = 0;
-        fallingSpeedY[slot] = 0;
-        fallingSpeedXAccumulator[slot] = 0;
-        fallingSpeedYAccumulator[slot] = 0;
-        fallingVisualYOffset[slot] = 0;
-
-        boolean longFallingTransition = entity.type() == ENTITY_MOBLIN_SWORD
-            || entity.type() == ENTITY_MOBLIN || entity.type() == ENTITY_OCTOROK;
-        enemyTransitionCountdown[slot] = longFallingTransition ? 0x6F : 0x48;
-        if (!longFallingTransition && ignoreHitsCountdown == 0) {
-            enemyTransitionCountdown[slot] = 0x2F;
-            pendingEntityEvents.add(new EntityCombatEvent(
-                slot, entity.type(), 0, false,
-                EntityCombatEvent.SoundChannel.JINGLE, FALLING_JINGLE_ID));
-        }
-        return true;
-    }
+    boolean beginFalling(RoomEntity entity, RoomEntityGroundInteraction.PitTransition transition, boolean ignoreHitsDecrementedBeforeHandler) { return this.backgroundMechanics.beginFalling(entity, transition, ignoreHitsDecrementedBeforeHandler); }
 
     /** Port of bank-$03 EntityFallHandler's pre-impact falling branch. */
-    RoomEntity advanceFallingEntity(RoomEntity entity) {
-        int slot = entity.slot();
-        int transition = enemyTransitionCountdown[slot] & 0xFF;
-        if (transition == 0) {
-            return null;
-        }
-
-        if (transition >= 0x40) {
-            // EntityFallHandler calls SetEntityVariantForDirection_03 three
-            // times before the family handler. ReturnIfNonInteractive then
-            // stops that handler after presentation because the status is
-            // still FALLING, so movement and wall collision must not run here.
-            fallingVisualYOffset[slot] = 0;
-            int variant = entity.spriteVariant();
-            if (entity.type() == ENTITY_OCTOROK || entity.type() == ENTITY_MOBLIN) {
-                variant = roamingEnemyMotion.advancePresentationVariant(slot, 3);
-            } else if (entity.type() == ENTITY_MOBLIN_SWORD) {
-                variant = moblinSwordMotion.advancePresentationVariant(slot, entity.x(), 3);
-            }
-            return withPositionAndVariant(entity, entity.x(), entity.y(), variant);
-        }
-
-        int phase = (transition >>> 4) & 0x03;
-        fallingVisualYOffset[slot] = FALLING_VISUAL_Y_OFFSETS[phase];
-        if (transition == 0x3F) {
-            pendingEntityEvents.add(new EntityCombatEvent(
-                slot, entity.type(), 0, false,
-                EntityCombatEvent.SoundChannel.JINGLE, FALLING_JINGLE_ID));
-        }
-
-        FallingVector vector = vectorTowardsTarget(entity.x(), entity.y(), entity.z(),
-            fallingTargetX[slot], fallingTargetY[slot], FALLING_VECTOR_LENGTHS[phase]);
-        fallingSpeedX[slot] = vector.x();
-        fallingSpeedY[slot] = vector.y();
-        int x = addFallingSpeedToPosition(entity.x(), fallingSpeedX[slot],
-            fallingSpeedXAccumulator, slot);
-        int y = addFallingSpeedToPosition(entity.y(), fallingSpeedY[slot],
-            fallingSpeedYAccumulator, slot);
-        if (spriteHandlers != null) {
-            entity = withDefinition(entity, spriteHandlers.forFallingEntity(), phase);
-        }
-        return withPositionAndVariant(entity, x, y, phase);
-    }
+    RoomEntity advanceFallingEntity(RoomEntity entity) { return this.backgroundMechanics.advanceFallingEntity(entity); }
 
     void disableEntityWithoutPersistence(int slot) { this.lifecycle.disableEntityWithoutPersistence(slot); }
 
-    int verticalSpeedZ(RoomEntity entity) {
-        int slot = entity.slot();
-        if (enemyDropActive[slot]) {
-            return enemyDropMotion.speedZ(slot);
-        }
-        if (entity.type() == ENTITY_TEKTITE) {
-            return tektiteMotion.speedZ(slot);
-        }
-        if (entity.type() == ENTITY_FISH) {
-            return fishMotion.speedZ(slot);
-        }
-        if (entity.type() == ENTITY_CROW) {
-            return crowMotion.speedZ(slot);
-        }
-        if (entity.type() == ENTITY_CUCCO) {
-            return cuccoMotion.speedZ(slot);
-        }
-        if (entity.type() == ENTITY_DROPPABLE_SECRET_SEASHELL) {
-            return secretSeashellMotion.speedZ(slot);
-        }
-        if (entity.type() == ENTITY_WINGED_OCTOROK) {
-            return wingedOctorokMotion.speedZ(slot);
-        }
-        if (entity.type() == ENTITY_STALFOS_AGGRESSIVE) {
-            return stalfosAggressiveMotion.speedZ(slot);
-        }
-        if (entity.type() == ENTITY_STALFOS_EVASIVE) {
-            return stalfosEvasiveMotion.speedZ(slot);
-        }
-        if (isZolGelType(entity.type())) {
-            return zolGelMotion.speedZ(slot);
-        }
-        if (entity.type() == ENTITY_HIDING_ZOL) {
-            return hidingZolMotion.speedZ(slot);
-        }
-        if (entity.type() == ENTITY_POLS_VOICE) {
-            return polsVoiceMotion.speedZ(slot);
-        }
-        if (entity.type() == ENTITY_SPIKED_BEETLE) {
-            return spikedBeetleMotion.speedZ(slot);
-        }
-        if (entity.type() == ENTITY_DOG) {
-            return dogMotion.speedZ(slot);
-        }
-        if (isEnemyProjectileType(entity.type())) {
-            return enemyProjectileMotion.speedZ(slot);
-        }
-        if (entity.type() == ENTITY_ARROW) {
-            return playerArrowMotion.speedZ(slot);
-        }
-        if (ColorShellMotion.isColorShellType(entity.type())) {
-            return colorShellMotion.speedZ(slot);
-        }
-        return 0;
-    }
+    int verticalSpeedZ(RoomEntity entity) { return this.backgroundMechanics.verticalSpeedZ(entity); }
 
     boolean decrementEnemyCombatCountdowns(int slot, boolean decrementIgnoreHits) { return this.lifecycle.decrementEnemyCombatCountdowns(slot, decrementIgnoreHits); }
 
     void decrementEnemyStatusCountdowns(int slot) { this.lifecycle.decrementEnemyStatusCountdowns(slot); }
 
     /** Shared gameplay gates in ReturnIfNonInteractive_03 and _19. */
-    boolean entityHandlerInteractive(boolean creditsGameplay) { return this.enemyInspection.entityHandlerInteractive(creditsGameplay); }
+    boolean entityHandlerInteractive(boolean creditsGameplay) { return this.backgroundMechanics.entityHandlerInteractive(creditsGameplay); }
 
     boolean sideViewPotPowerBraceletHeld() { return liftThrow.sideViewPotPowerBraceletHeld(); }
 
     void pendingLinkPotContact(int sourceSlot, SideViewPotContact.Result contact) { liftThrow.pendingLinkPotContact(sourceSlot, contact); }
 
     /** Mirrors UpdateEntityTimers' shared dialog/inventory/ocarina early return. */
-    boolean entityTimersInteractive() { return this.enemyInspection.entityTimersInteractive(); }
+    boolean entityTimersInteractive() { return this.backgroundMechanics.entityTimersInteractive(); }
 
-    void requestArmosLinkPush(RoomEntity entity, int linkEntityX, int linkEntityY,
-                                      int linkMotionState) {
-        if (linkMotionState >= EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE
-            || !RoomEntityCombatRules.overlapsLink(entity, linkEntityX, linkEntityY)) {
-            return;
-        }
-        requestLinkPush(entity, EntityLinkCollisionRules.STANDARD_PUSH);
-    }
+    void requestArmosLinkPush(RoomEntity entity, int linkEntityX, int linkEntityY, int linkMotionState) { this.backgroundMechanics.requestArmosLinkPush(entity, linkEntityX, linkEntityY, linkMotionState); }
 
-    void requestLinkPush(RoomEntity entity,
-                                 EntityLinkCollisionRules.LinkPushPolicy policy) {
-        if (entity == null || policy == null || !policy.restoreFinalPosition()) {
-            return;
-        }
-        pendingLinkFinalPositionRequests.add(new LinkFinalPositionRequest(
-            entity.slot(), policy.resetPegasusBoots(), policy.resetHookshotChain(),
-            policy.markLinkPushing(), policy.clearLinkPositionIncrement()));
-        if (policy.resetHookshotChain()) {
-            resetHookshotChainAfterLinkPush();
-        }
-    }
+    void requestLinkPush(RoomEntity entity, EntityLinkCollisionRules.LinkPushPolicy policy) { this.backgroundMechanics.requestLinkPush(entity, policy); }
 
-    private void resetHookshotChainAfterLinkPush() {
-        for (int slot = 0; slot < slots.length; slot++) {
-            if (!slots[slot].loaded() || slots[slot].type() != ENTITY_HOOKSHOT_CHAIN
-                || !hookshotChainMotion.active(slot)) {
-                continue;
-            }
-            HookshotChainMotion.State state = hookshotChainMotion.state(slot);
-            hookshotChainMotion.setState(slot, new HookshotChainMotion.State(
-                state.x(), state.y(), state.z(), state.direction(), state.speedX(),
-                state.speedY(), state.transitionCountdown(), state.speedXAccumulator(),
-                state.speedYAccumulator(), 0, state.wallCollisionPending()));
-            return;
-        }
-    }
+    private void resetHookshotChainAfterLinkPush() { this.backgroundMechanics.resetHookshotChainAfterLinkPush(); }
 
-    EnemyRecoilMotion.Update applyEnemyRecoilIfNeeded(
-            RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision) {
-        int slot = entity.slot();
-        if (!enemyRecoilMotion.isActive(slot)) {
-            return new EnemyRecoilMotion.Update(entity, false);
-        }
-        if (enemyIgnoreHitsCountdown[slot] == 0) {
-            enemyRecoilMotion.clear(slot);
-            return new EnemyRecoilMotion.Update(entity, false);
-        }
-
-        if (isRoamingEnemyType(entity.type())) {
-            roamingEnemyMotion.beginRecoil(slot);
-        }
-        // ApplyRecoilIfNeeded_03/06 decrements the shared countdown
-        // immediately before applying one fixed-point recoil step.
-        enemyIgnoreHitsCountdown[slot]--;
-        EnemyRecoilMotion.Update update = enemyRecoilMotion.advance(
-            entity, backgroundCollision, isRoamingEnemyType(entity.type()));
-        if (update.blocked() && isRoamingEnemyType(entity.type())) {
-            // StopEntityRecoilOnCollision clears the ignore-hits countdown.
-            enemyIgnoreHitsCountdown[slot] = 0;
-        }
-        return update;
-    }
+    EnemyRecoilMotion.Update applyEnemyRecoilIfNeeded( RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision) { return this.backgroundMechanics.applyEnemyRecoilIfNeeded(entity, backgroundCollision); }
 
     static void validateEntitySlot(int slot) {
         if (slot < 0 || slot >= EntityRoomLoader.MAX_ENTITIES) {
