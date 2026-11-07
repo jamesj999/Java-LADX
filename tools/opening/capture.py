@@ -142,5 +142,11 @@ try:
     OUT.joinpath('emulator-combat.tsv').write_text(''.join(combat_trace))
     OUT.joinpath('emulator-trace.tsv').write_text(''.join('\t'.join(map(str, r))+'\n' for r in trace))
 finally:
+    # Failed runs still carry the observations needed to find their first
+    # divergence. A completion manifest is only written by the successful path.
+    OUT.joinpath('emulator-checkpoints.tsv').write_text(''.join('\t'.join(map(str, r))+'\n' for r in checkpoints))
+    OUT.joinpath('emulator-trace.tsv').write_text(''.join('\t'.join(map(str, r))+'\n' for r in trace))
+    OUT.joinpath('emulator-instrument.tsv').write_text(''.join(instrument_trace))
+    OUT.joinpath('emulator-combat.tsv').write_text(''.join(combat_trace))
     OUT.joinpath('emulator-king.tsv').write_text(''.join(king_trace))
     p.stop(save=False)

@@ -28,46 +28,52 @@ public final class OpeningRouteCapture {
         StringBuilder trace = new StringBuilder();
         int frame = 0, segment = 0;
         byte[] rgba = null;
-        for (String line : Files.readAllLines(route)) {
-            if (line.isBlank() || line.startsWith("#")) continue;
-            String[] fields = line.split("\\s+");
-            int idle = Integer.parseInt(fields[2]);
-            if (fields[1].contains("=")) {
-                game.headlessButton(fields[0].replace("*", ""), true);
-                int ticks = 0;
-                while (!reached(game, fields[0], fields[1], game.headlessState())) {
-                    if (++ticks > 2000) throw new IllegalStateException("Route blocked: " + line + " " + game.headlessState() + " entities " + game.headlessEntityPositions());
-                    pulseButtons(game, fields[0], ticks - 1);
+        try {
+            for (String line : Files.readAllLines(route)) {
+                if (line.isBlank() || line.startsWith("#")) continue;
+                String[] fields = line.split("\\s+");
+                int idle = Integer.parseInt(fields[2]);
+                if (fields[1].contains("=")) {
+                    game.headlessButton(fields[0].replace("*", ""), true);
+                    int ticks = 0;
+                    while (!reached(game, fields[0], fields[1], game.headlessState())) {
+                        if (++ticks > 2000) throw new IllegalStateException("Route blocked: " + line + " " + game.headlessState() + " entities " + game.headlessEntityPositions());
+                        pulseButtons(game, fields[0], ticks - 1);
+                        rgba = game.headlessFrame();
+                        appendTrace(trace, frame++);
+                    }
+                    game.headlessButton(fields[0].replace("*", ""), false);
+                    do {
+                        if (++ticks > 2500) throw new IllegalStateException("Transition did not finish: " + line);
+                        rgba = game.headlessFrame();
+                        appendTrace(trace, frame++);
+                    } while (game.headlessState().loading());
+                }
+                int held = fields[1].contains("=") ? 0 : Integer.parseInt(fields[1]);
+                if (held > 0) game.headlessButton(fields[0].replace("*", ""), true);
+                for (int tick = 0; tick < held + idle; tick++) {
+                    if (tick == held && held > 0) game.headlessButton(fields[0].replace("*", ""), false);
+                    if (tick < held) pulseButtons(game, fields[0], tick);
                     rgba = game.headlessFrame();
                     appendTrace(trace, frame++);
                 }
-                game.headlessButton(fields[0].replace("*", ""), false);
-                do {
-                    if (++ticks > 2500) throw new IllegalStateException("Transition did not finish: " + line);
-                    rgba = game.headlessFrame();
-                    appendTrace(trace, frame++);
-                } while (game.headlessState().loading());
+                if (held > 0 && idle == 0) game.headlessButton(fields[0].replace("*", ""), false);
+                BufferedImage image = new BufferedImage(160, 144, BufferedImage.TYPE_INT_RGB);
+                for (int p = 0; p < 160 * 144; p++) image.setRGB(p % 160, p / 160,
+                    ((rgba[p*4]&255)<<16)|((rgba[p*4+1]&255)<<8)|(rgba[p*4+2]&255));
+                ImageIO.write(image, "png", out.resolve("ours/%02d.png".formatted(segment++)).toFile());
+                Files.writeString(out.resolve("java-king.tsv"), kingTrace);
+                System.out.println(segment + " " + game.headlessState()
+                    + " entities " + game.headlessEntityPositions());
             }
-            int held = fields[1].contains("=") ? 0 : Integer.parseInt(fields[1]);
-            if (held > 0) game.headlessButton(fields[0].replace("*", ""), true);
-            for (int tick = 0; tick < held + idle; tick++) {
-                if (tick == held && held > 0) game.headlessButton(fields[0].replace("*", ""), false);
-                if (tick < held) pulseButtons(game, fields[0], tick);
-                rgba = game.headlessFrame();
-                appendTrace(trace, frame++);
-            }
-            if (held > 0 && idle == 0) game.headlessButton(fields[0].replace("*", ""), false);
-            BufferedImage image = new BufferedImage(160, 144, BufferedImage.TYPE_INT_RGB);
-            for (int p = 0; p < 160 * 144; p++) image.setRGB(p % 160, p / 160,
-                ((rgba[p*4]&255)<<16)|((rgba[p*4+1]&255)<<8)|(rgba[p*4+2]&255));
-            ImageIO.write(image, "png", out.resolve("ours/%02d.png".formatted(segment++)).toFile());
+        } finally {
+            // Failed routes are the most useful evidence when diagnosing the
+            // first divergence. Keep their traces without marking them complete.
+            Files.writeString(out.resolve("java-trace.tsv"), trace);
+            Files.writeString(out.resolve("java-combat.tsv"), combatTrace);
+            Files.writeString(out.resolve("java-instrument.tsv"), instrumentTrace);
             Files.writeString(out.resolve("java-king.tsv"), kingTrace);
-            System.out.println(segment + " " + game.headlessState()
-                + " entities " + game.headlessEntityPositions());
         }
-        Files.writeString(out.resolve("java-trace.tsv"), trace);
-        Files.writeString(out.resolve("java-combat.tsv"), combatTrace);
-        Files.writeString(out.resolve("java-instrument.tsv"), instrumentTrace);
         String routeHash = java.util.HexFormat.of().formatHex(
             java.security.MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(route)));
         Files.writeString(out.resolve("java.json"),
