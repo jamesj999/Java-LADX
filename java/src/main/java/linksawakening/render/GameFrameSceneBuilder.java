@@ -43,13 +43,14 @@ public final class GameFrameSceneBuilder {
             int y = state.dialogController().boxPosition() == linksawakening.dialog.DialogController.BoxPosition.BOTTOM
                 ? 0x6B - 16 : 0x23 - 16;
             int[][] palettes = state.room().entities().spriteSelection().objectPalettes();
-            layers.add(context -> {
-                for (int half = 0; half < 2; half++) {
-                    int attr = pairs[offset + half * 2 + 1];
-                    IndexedRenderer.drawSpriteTile8x16(context.buffer(), context.gpu(), pairs[offset + half * 2],
-                        0x8E - 8 + half * 8, y, (attr & 32) != 0, (attr & 64) != 0, palettes[attr & 7]);
-                }
-            });
+            var heartSprites = new ArrayList<SpriteListRenderLayer.Sprite>();
+            for (int half = 0; half < 2; half++) {
+                int attr = pairs[offset + half * 2 + 1];
+                heartSprites.add(new SpriteListRenderLayer.Sprite(pairs[offset + half * 2],
+                    0x8E - 8 + half * 8, y, attr & 7, (attr & 32) != 0, (attr & 64) != 0, 16));
+            }
+            java.util.Collections.reverse(heartSprites);
+            layers.add(new SpriteListRenderLayer(heartSprites, palettes));
         }
         return FrameScene.of(layers);
     }
