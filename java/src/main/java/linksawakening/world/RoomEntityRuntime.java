@@ -1,5 +1,9 @@
 package linksawakening.world;
 
+import static linksawakening.world.EntityMotionMath.*;
+
+import static linksawakening.world.EntitySnapshots.*;
+
 import static linksawakening.world.EntityTypeRules.*;
 
 import linksawakening.entity.EntitySpriteSelection;
@@ -7910,10 +7914,7 @@ public final class RoomEntityRuntime {
         }
     }
 
-    private static int sourceGenieSteerStep(int currentSpeed, int desiredSpeed) {
-        int difference = ((desiredSpeed & 0xFF) - (currentSpeed & 0xFF)) & 0xFF;
-        return (currentSpeed + ((difference & 0x80) != 0 ? -1 : 1)) & 0xFF;
-    }
+
 
     private int spawnGenieAimedFireball(RoomEntity body, int bodySlot,
                                          int linkEntityX, int linkEntityY) {
@@ -8173,23 +8174,9 @@ public final class RoomEntityRuntime {
         }
     }
 
-    private static int bombArrowXOffset(int romDirection) {
-        return switch (romDirection) {
-            case 0 -> 8;
-            case 1 -> -8;
-            case 2, 3 -> 0;
-            default -> throw new IllegalArgumentException("ROM direction must be between 0 and 3");
-        };
-    }
 
-    private static int bombArrowYOffset(int romDirection) {
-        return switch (romDirection) {
-            case 0, 1 -> 0;
-            case 2 -> -3;
-            case 3 -> 4;
-            default -> throw new IllegalArgumentException("ROM direction must be between 0 and 3");
-        };
-    }
+
+
 
     private boolean isLoadedEntityOfType(int slot, int type) {
         return slot >= 0 && slot < slots.length && slots[slot].loaded()
@@ -9780,10 +9767,7 @@ public final class RoomEntityRuntime {
             && dialogCooldown == 0 && windowY == 0x80;
     }
 
-    private static int directionToLink(int xDistance, int yDistance) {
-        return Math.abs(xDistance) >= Math.abs(yDistance)
-            ? (xDistance < 0 ? 1 : 0) : (yDistance < 0 ? 2 : 3);
-    }
+
 
     private void advanceInstrumentPickup(RoomEntity entity, int frameCounter,
                                          int linkEntityX, int linkEntityY, int linkZ,
@@ -10327,14 +10311,7 @@ public final class RoomEntityRuntime {
         return withDefinition(entity, spriteHandlers.forOwlEvent(flying), 0);
     }
 
-    private static int directionFromLinkToEntity(RoomEntity entity, int linkX, int linkY) {
-        int dx = (byte) (entity.x() - linkX);
-        int dy = (byte) (entity.y() - linkY);
-        if (Math.abs(dy) >= Math.abs(dx)) {
-            return dy < 0 ? 2 : 3;
-        }
-        return dx < 0 ? 1 : 0;
-    }
+
 
     void setOwlDialogResolver(IntUnaryOperator resolver) {
         owlDialogResolver = Objects.requireNonNull(resolver, "Owl dialog resolver");
@@ -10356,15 +10333,7 @@ public final class RoomEntityRuntime {
         pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
     }
 
-    private static int approachSignedByteZero(int value) {
-        int signed = signedByte(value);
-        if (signed > 0) {
-            signed--;
-        } else if (signed < 0) {
-            signed++;
-        }
-        return signed & 0xFF;
-    }
+
 
     /** Mirrors Bow-Wow's label_005_4335 target-resolution branches. */
     private void handleBowWowTargetContact(RoomEntity source,
@@ -11587,9 +11556,7 @@ public final class RoomEntityRuntime {
             bomb.x(), bomb.y(), bomb.z(), target.x(), target.y(), 0x30);
     }
 
-    private static boolean isWithinBombExplosionWindow(int source, int target) {
-        return (((((source - target) & 0xFF) + 0x18) & 0xFF) < 0x30);
-    }
+
 
     private RoomEntity renderLiftedEntity(RoomEntity entity, int frameCounter) {
         if (entity.type() != ENTITY_BOMB) {
@@ -13269,41 +13236,9 @@ public final class RoomEntityRuntime {
         entityOptions1Override[slot] = DROPPABLE_REVEALED_OPTIONS1;
     }
 
-    private static Vector vectorAwayFromLink(int entityX, int entityY,
-                                             int linkEntityX, int linkEntityY,
-                                             int vectorLength) {
-        int distanceX = signedByte((linkEntityX - entityX) & 0xFF);
-        int distanceY = signedByte((linkEntityY - entityY) & 0xFF);
-        int absoluteX = Math.abs(distanceX);
-        int absoluteY = Math.abs(distanceY);
-        int smaller = Math.min(absoluteX, absoluteY);
-        int larger = Math.max(absoluteX, absoluteY);
-        int minor = larger == 0 ? vectorLength : divideVectorComponent(
-            smaller, larger, vectorLength);
-        int towardX = absoluteX >= absoluteY ? vectorLength : minor;
-        int towardY = absoluteY > absoluteX ? vectorLength : minor;
-        if (distanceX < 0) {
-            towardX = -towardX;
-        }
-        if (distanceY < 0) {
-            towardY = -towardY;
-        }
-        return new Vector((-towardX) & 0xFF, (-towardY) & 0xFF);
-    }
 
-    private static int divideVectorComponent(int smaller, int larger, int length) {
-        int result = 0;
-        int remainder = 0;
-        for (int count = 0; count < length; count++) {
-            int sum = remainder + smaller;
-            if (sum >= larger) {
-                sum -= larger;
-                result++;
-            }
-            remainder = sum;
-        }
-        return result;
-    }
+
+
 
     private record CommonDroppableUpdate(RoomEntity entity, boolean hidden) {
     }
@@ -13313,8 +13248,7 @@ public final class RoomEntityRuntime {
                                             SlimeKeyRewardEvent reward) {
     }
 
-    private record Vector(int x, int y) {
-    }
+
 
     private SlimeKeyTransitionUpdate advanceHidingSlimeKey(
             RoomEntity entity, int slot, int linkEntityX, int linkEntityY, int linkZ) {
@@ -13398,9 +13332,7 @@ public final class RoomEntityRuntime {
             && withinUnsignedWindow(entity.x(), 0x50, 3);
     }
 
-    private static boolean withinUnsignedWindow(int value, int center, int radius) {
-        return (((value - center + radius) & 0xFF) < radius * 2);
-    }
+
 
 
 
@@ -13456,70 +13388,21 @@ public final class RoomEntityRuntime {
         };
     }
 
-    private static RoomEntity withStatus(RoomEntity entity, EntityStatus status) {
-        return preserveDeathMetadata(entity, new RoomEntity(
-            entity.slot(), entity.sourceLoadOrder(), entity.type(), entity.x(), entity.y(),
-            status, entity.spriteDefinition(), entity.spriteVariant(), entity.entityFlipAttribute(),
-            entity.spriteTileOffset(), entity.z()));
-    }
 
-    private static RoomEntity withType(RoomEntity entity, int type,
-                                       EntitySpriteDefinition definition) {
-        int variant = definition.supported() ? definition.initialVariant() : -1;
-        return preserveDeathMetadata(entity, new RoomEntity(
-            entity.slot(), entity.sourceLoadOrder(), type, entity.x(), entity.y(),
-            entity.status(), definition, variant, entity.entityFlipAttribute(),
-            entity.spriteTileOffset(), entity.z()));
-    }
 
-    private static RoomEntity withVariant(RoomEntity entity, int variant) {
-        return preserveDeathMetadata(entity, new RoomEntity(
-            entity.slot(), entity.sourceLoadOrder(), entity.type(), entity.x(), entity.y(),
-            entity.status(), entity.spriteDefinition(), variant, entity.entityFlipAttribute(),
-            entity.spriteTileOffset(), entity.z()));
-    }
 
-    private static RoomEntity withFlipAttribute(RoomEntity entity, int flipAttribute) {
-        return preserveDeathMetadata(entity, new RoomEntity(
-            entity.slot(), entity.sourceLoadOrder(), entity.type(), entity.x(), entity.y(),
-            entity.status(), entity.spriteDefinition(), entity.spriteVariant(), flipAttribute,
-            entity.spriteTileOffset(), entity.z()));
-    }
 
-    private static RoomEntity withZ(RoomEntity entity, int z) {
-        return preserveDeathMetadata(entity, new RoomEntity(
-            entity.slot(), entity.sourceLoadOrder(), entity.type(), entity.x(), entity.y(),
-            entity.status(), entity.spriteDefinition(), entity.spriteVariant(),
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), z));
-    }
 
-    private static RoomEntity withDefinition(RoomEntity entity,
-                                              EntitySpriteDefinition definition, int variant) {
-        int selectedVariant = definition.supported()
-            ? Math.min(Math.max(variant, 0), definition.variantCount() - 1) : -1;
-        return preserveDeathMetadata(entity, new RoomEntity(
-            entity.slot(), entity.sourceLoadOrder(), entity.type(), entity.x(), entity.y(),
-            entity.status(), definition, selectedVariant, entity.entityFlipAttribute(),
-            entity.spriteTileOffset(), entity.z()));
-    }
 
-    private static RoomEntity preserveDeathMetadata(RoomEntity source, RoomEntity rebuilt) {
-        if (source.status() != EntityStatus.DYING || rebuilt.status() != EntityStatus.DYING) {
-            return rebuilt;
-        }
-        return new RoomEntity(rebuilt.slot(), rebuilt.sourceLoadOrder(), rebuilt.type(),
-            rebuilt.x(), rebuilt.y(), rebuilt.status(), rebuilt.spriteDefinition(),
-            rebuilt.spriteVariant(), rebuilt.entityFlipAttribute(), rebuilt.spriteTileOffset(),
-            rebuilt.z(), source.deathSpriteVariant(), source.powerRecoilDeath());
-    }
 
-    private static RoomEntity withDeathPresentation(RoomEntity entity, int variant,
-                                                     boolean powerRecoil) {
-        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            entity.x(), entity.y(), entity.status(), entity.spriteDefinition(),
-            entity.spriteVariant(), entity.entityFlipAttribute(), entity.spriteTileOffset(),
-            entity.z(), variant, powerRecoil);
-    }
+
+
+
+
+
+
+
+
 
     private static int deathSpriteVariantForCountdown(int countdown) {
         if (countdown >= 0x20 || countdown <= 0) {
@@ -13613,79 +13496,17 @@ public final class RoomEntityRuntime {
         return withPositionAndVariant(entity, x, y, phase);
     }
 
-    private static FallingVector vectorTowardsTarget(int entityX, int entityY, int entityZ,
-                                                      int targetX, int targetY, int length) {
-        int distanceX = signedByte(targetX - entityX);
-        int distanceY = signedByte(targetY - entityY + entityZ);
-        int absoluteX = Math.abs(distanceX);
-        int absoluteY = Math.abs(distanceY);
-        boolean swapped = absoluteX < absoluteY;
-        int smaller = Math.min(absoluteX, absoluteY);
-        int larger = Math.max(absoluteX, absoluteY);
-        int result = romDivide(length, smaller, larger);
-        int x = swapped ? result : length;
-        int y = swapped ? length : result;
-        if (distanceX < 0) {
-            x = -x;
-        }
-        if (distanceY < 0) {
-            y = -y;
-        }
-        return new FallingVector(x & 0xFF, y & 0xFF);
-    }
 
-    private static int romDivide(int length, int smallerDistance, int largerDistance) {
-        if (length == 0) {
-            return 0;
-        }
-        if (largerDistance == 0) {
-            return length;
-        }
-        int result = 0;
-        int remainder = 0;
-        for (int count = 0; count < length; count++) {
-            int sum = remainder + smallerDistance;
-            if (sum >= largerDistance) {
-                sum -= largerDistance;
-                result++;
-            }
-            remainder = sum & 0xFF;
-        }
-        return result;
-    }
 
-    private static int addFallingSpeedToPosition(int position, int speed, int[] accumulator,
-                                                  int slot) {
-        speed &= 0xFF;
-        if (speed == 0) {
-            return position & 0xFF;
-        }
-        int fractionalSum = accumulator[slot] + ((speed << 4) & 0xF0);
-        accumulator[slot] = fractionalSum & 0xFF;
-        int delta = signedByte(speed) >> 4;
-        if (fractionalSum > 0xFF) {
-            delta++;
-        }
-        return (position + delta) & 0xFF;
-    }
 
-    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y,
-                                                       int variant) {
-        return preserveDeathMetadata(entity, new RoomEntity(
-            entity.slot(), entity.sourceLoadOrder(), entity.type(),
-            x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z()));
-    }
 
-    private static RoomEntity withSourceLoadOrder(RoomEntity entity, int sourceLoadOrder) {
-        return preserveDeathMetadata(entity, new RoomEntity(
-            entity.slot(), sourceLoadOrder, entity.type(), entity.x(), entity.y(),
-            entity.status(), entity.spriteDefinition(), entity.spriteVariant(),
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z()));
-    }
 
-    private record FallingVector(int x, int y) {
-    }
+
+
+
+
+
+
 
     private void disableEntityWithoutPersistence(int slot) {
         resetEnemyDropState(slot);
@@ -14033,43 +13854,15 @@ public final class RoomEntityRuntime {
         return update;
     }
 
-    private static int byteValue(int value) {
-        return value & 0xFF;
-    }
 
-    private static int unsignedByteAbs(int value) {
-        int difference = value & 0xFF;
-        return difference < 0x80 ? difference : 0x100 - difference;
-    }
 
-    private static boolean sideViewPlatformOverlapsLink(RoomEntity entity,
-                                                         int linkEntityX, int linkEntityY) {
-        int xDistance = unsignedByteAbs(entity.x() + 0x10 - linkEntityX - 0x08);
-        if (xDistance >= 0x10 + 0x04) {
-            return false;
-        }
-        int yDistance = unsignedByteAbs(entity.y() - entity.z() + 0x0C
-            - linkEntityY - 0x08);
-        return yDistance < 0x12 + 0x04;
-    }
 
-    private static int signedByte(int value) {
-        int unsigned = value & 0xFF;
-        return unsigned < 0x80 ? unsigned : unsigned - 0x100;
-    }
 
-    private static int romDirectionForJavaDirection(int javaDirection) {
-        if (javaDirection < 0 || javaDirection > 3) {
-            throw new IllegalArgumentException("Link direction out of range: " + javaDirection);
-        }
-        return switch (javaDirection) {
-            case 0 -> LiftedEntityMotion.ROM_DIRECTION_DOWN;
-            case 1 -> LiftedEntityMotion.ROM_DIRECTION_UP;
-            case 2 -> LiftedEntityMotion.ROM_DIRECTION_LEFT;
-            case 3 -> LiftedEntityMotion.ROM_DIRECTION_RIGHT;
-            default -> throw new AssertionError(javaDirection);
-        };
-    }
+
+
+
+
+
 
     private static void validateEntitySlot(int slot) {
         if (slot < 0 || slot >= EntityRoomLoader.MAX_ENTITIES) {
