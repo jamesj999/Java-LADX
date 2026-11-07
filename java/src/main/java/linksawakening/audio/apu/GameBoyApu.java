@@ -59,9 +59,17 @@ public final class GameBoyApu {
         return sampleRate;
     }
 
+    private java.util.function.BiConsumer<Integer, Integer> registerObserver = (register, value) -> {};
+
+    /** Optional diagnostic tap; observes writes without changing synthesis. */
+    public void setRegisterObserver(java.util.function.BiConsumer<Integer, Integer> observer) {
+        registerObserver = java.util.Objects.requireNonNull(observer);
+    }
+
     public void writeRegister(int register, int value) {
         validateRegister(register);
         int unsignedValue = value & 0xFF;
+        registerObserver.accept(register, unsignedValue);
         if (register == NR52) {
             if ((unsignedValue & 0x80) == 0) {
                 java.util.Arrays.fill(registers, 0);

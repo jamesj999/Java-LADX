@@ -1,0 +1,13 @@
+// Run from the repository: java/gradlew -p java -I ../tools/audio/capture.gradle captureIntroAudio
+allprojects {
+    afterEvaluate {
+        tasks.register('captureIntroAudio', JavaExec) {
+            dependsOn testClasses
+            classpath = sourceSets.test.runtimeClasspath + files(providers.gradleProperty('la.rom').orElse(providers.environmentVariable('LA_ROM')).map { file(it).parentFile.parentFile }.getOrElse(file('src/main/resources')))
+            mainClass = 'linksawakening.audio.IntroAudioCapture'
+            jvmArgs '-Djava.awt.headless=true'
+            args providers.gradleProperty('audioOutput').getOrElse('/tmp/ladx-intro-audio'),
+                providers.gradleProperty('audioFrames').getOrElse('3000')
+        }
+    }
+}

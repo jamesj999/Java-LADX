@@ -1,0 +1,192 @@
+{
+  "rom_sha256": "c95dd3d9cb798e86c28e3269554e458d434bf3277b96cadf5bc81cfacfb5ee60",
+  "route_sha256": "a92825b2e1cd8fec1f7afab7fcd294c94b8d6f106b56e95e6da360473ae9f199",
+  "emulator": "PyBoy 2.8.1",
+  "sample_rate": 48000,
+  "frames": 3000,
+  "emulator_origin": 88,
+  "engine_origin": "first GameSession.update after initializeHeadlessIntro",
+  "emulator_origin_definition": "first post-tick wGameplaySubtype == 3; includes that tick",
+  "engine_samples": 2400000,
+  "emulator_samples": 2408774,
+  "sample_difference": 8774,
+  "duration_difference_seconds": 0.18279166666666666,
+  "engine_events": [
+    {
+      "frame": 127,
+      "noise": 12
+    },
+    {
+      "frame": 383,
+      "noise": 12
+    },
+    {
+      "frame": 447,
+      "noise": 12
+    },
+    {
+      "frame": 703,
+      "noise": 12
+    },
+    {
+      "frame": 719,
+      "noise": 12
+    },
+    {
+      "frame": 839,
+      "noise": 12
+    },
+    {
+      "frame": 1026,
+      "noise": 12
+    },
+    {
+      "frame": 1043,
+      "noise": 12
+    },
+    {
+      "frame": 1313,
+      "noise": 15
+    },
+    {
+      "frame": 1473,
+      "noise": 15
+    },
+    {
+      "frame": 1633,
+      "noise": 15
+    },
+    {
+      "frame": 1793,
+      "noise": 15
+    },
+    {
+      "frame": 1953,
+      "noise": 15
+    },
+    {
+      "frame": 2113,
+      "noise": 15
+    },
+    {
+      "frame": 2273,
+      "noise": 15
+    },
+    {
+      "frame": 2433,
+      "noise": 15
+    },
+    {
+      "frame": 2593,
+      "noise": 15
+    }
+  ],
+  "emulator_events": [
+    {
+      "frame": 128,
+      "noise": 12
+    },
+    {
+      "frame": 384,
+      "noise": 12
+    },
+    {
+      "frame": 448,
+      "noise": 12
+    },
+    {
+      "frame": 704,
+      "noise": 12
+    },
+    {
+      "frame": 720,
+      "noise": 12
+    },
+    {
+      "frame": 840,
+      "noise": 12
+    },
+    {
+      "frame": 1027,
+      "noise": 12
+    },
+    {
+      "frame": 1044,
+      "noise": 12
+    },
+    {
+      "frame": 1314,
+      "noise": 15
+    },
+    {
+      "frame": 1474,
+      "noise": 15
+    },
+    {
+      "frame": 1634,
+      "noise": 15
+    },
+    {
+      "frame": 1794,
+      "noise": 15
+    },
+    {
+      "frame": 1954,
+      "noise": 15
+    },
+    {
+      "frame": 2114,
+      "noise": 15
+    },
+    {
+      "frame": 2274,
+      "noise": 15
+    },
+    {
+      "frame": 2434,
+      "noise": 15
+    },
+    {
+      "frame": 2594,
+      "noise": 15
+    }
+  ],
+  "paired_event_frame_deltas": [
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1
+  ],
+  "limits": [
+    "Emulator register values are post-tick snapshots, not all writes or CPU timestamps.",
+    "Engine registers have update-level resolution; writes precede the same update PCM render.",
+    "PCM phase/amplitude/filter matching is not established; no waveform equality claim.",
+    "Both WAVs begin at their declared origins; a constant event delta can reflect origin convention."
+  ],
+  "engine_rms": 2676.990567975928,
+  "emulator_rms": 2123.192896731121,
+  "frame_rms_correlation_shift_1": 0.8071886446388344,
+  "noise_register_post_frame_comparison_shift_1": {
+    "33": {
+      "matched": 2871,
+      "compared": 2872
+    },
+    "34": {
+      "matched": 2871,
+      "compared": 2872
+    }
+  }
+}

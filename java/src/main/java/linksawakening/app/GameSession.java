@@ -81,6 +81,13 @@ public class GameSession {
         this.random = java.util.Objects.requireNonNull(random);
     }
 
+    private linksawakening.gameplay.PcmSoundOutput headlessPcm;
+
+    public GameSession(linksawakening.gameplay.PcmSoundOutput output) {
+        this();
+        headlessPcm = java.util.Objects.requireNonNull(output);
+    }
+
     private Host host = new HeadlessHost();
     private GPU gpu;
     private final GameFrameSceneBuilder frameSceneBuilder = new GameFrameSceneBuilder();
@@ -204,6 +211,13 @@ public class GameSession {
         saves().startNewGame();
     }
 
+    /** Starts the production reset intro without creating a native window. */
+    public void initializeHeadlessIntro() {
+        if (inputState != null) throw new IllegalStateException("Game already initialized");
+        initialize(true);
+        router().startIntroCutscene();
+    }
+
     public void headlessButton(String button, boolean pressed) { inputRouter().headlessButton(button, pressed); }
 
     public byte[] headlessFrame() {
@@ -285,7 +299,7 @@ public class GameSession {
             MusicDirector::newGameHouseMusicTrack, this::romDirectionForLink);
     }
     private void initialize(boolean headless) {
-        host = headless ? new HeadlessHost() : new DesktopHost();
+        host = headless ? (headlessPcm == null ? new HeadlessHost() : new HeadlessHost(headlessPcm)) : new DesktopHost();
         gpu = new GPU();
         var built = new SessionBootstrap(random, gpu, transitionController, scrollController,
             new SessionBootstrap.Callbacks((scene) -> router().setCutsceneScene(scene), room -> musicDirector.selectMusicForLoadedRoom(room, playerState, roomSession),
