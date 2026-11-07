@@ -19,7 +19,7 @@ final class HidingSlimeKeyHandler {
           if (state.status == EntityStatus.ACTIVE
               && !state.wasInitializing
 
-              && (state.runtime.entityRoomStatus & 0x10) != 0) {
+              && (state.roomInspection().entityRoomStatus() & 0x10) != 0) {
             // HidingSlimeKeyEntityHandler checks ROOM_STATUS_EVENT_1 before
             // calling the shared reveal helper and unloads without touching
             // the source persistence mask.
@@ -58,7 +58,7 @@ final class HidingSlimeKeyHandler {
             type,
             EntityTickStage.PHASE_2_HIDING_SLIME_KEY_3,
             state -> {
-              if ((state.runtime.entityRoomStatus & 0x10) != 0) {
+              if ((state.roomInspection().entityRoomStatus() & 0x10) != 0) {
                 // The handler's first instruction is the completed-room
                 // gate, including the INIT dispatch path.
                 state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());

@@ -98,7 +98,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     final java.util.List<RoomEntity> slotEntities;
     
     final EntitySpriteTileSnapshot spriteTiles;
-    public final boolean indoorRoom;
+    final boolean indoorRoom;
     private final RomTables romTables;
     final IntSupplier defaultRandomByteSupplier;
     private final RomRandomByteSource fallbackRomRandomByteSource;

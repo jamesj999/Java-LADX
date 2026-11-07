@@ -15,7 +15,7 @@ final class SwordShieldPickupHandler {
         EntityTickStage.PHASE_1_SWORD_SHIELD_PICKUP,
         state -> {
           if (state.status == EntityStatus.ACTIVE) {
-            if (state.runtime.chestSwordLevel == 0 && state.sprites() != null) {
+            if (state.roomInspection().chestSwordLevel() == 0 && state.sprites() != null) {
               state.entity =
                   withDefinition(
                       state.entity,

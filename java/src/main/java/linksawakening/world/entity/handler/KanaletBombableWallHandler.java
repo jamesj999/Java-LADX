@@ -15,7 +15,7 @@ final class KanaletBombableWallHandler {
         EntityTickStage.PHASE_1_KANALET_BOMBABLE_WALL,
         state -> {
           {
-            if ((state.runtime.entityRoomStatus & 0x10) != 0) {
+            if ((state.roomInspection().entityRoomStatus() & 0x10) != 0) {
               state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
               return false;
             }

@@ -23,13 +23,13 @@ final class MoldormHandler {
         state -> {
           if (!state.wasInitializing
 
-              && !state.runtime.roomTransitionActive
+              && !state.roomInspection().roomTransitionActive()
               && !state.link().inventoryAppearing()) {
             BossIntroMotion.Update intro =
                 state.bossIntroMotion().advance(
                     state.slotProperties().options1(state.entity.slot()),
                     state.entity.type(),
-                    state.runtime.entityMapId,
+                    state.roomInspection().entityMapId(),
                     state.lifecycle().transitionSequenceCounter());
             if (intro.musicTrack() >= 0) state.runtime.pendingMusicTrack = intro.musicTrack();
             if (intro.dialogLowId() >= 0) {
@@ -48,8 +48,8 @@ final class MoldormHandler {
             EntityTickStage.PHASE_1_MOLDORM_2,
             state -> {
               if (!state.wasInitializing
-                  && !state.runtime.roomTransitionActive
-                  && !state.runtime.freeMovementMode
+                  && !state.roomInspection().roomTransitionActive()
+                  && !state.roomInspection().freeMovementMode()
                  ) {
                 int dx = 0;
                 int dy = 0;
@@ -91,7 +91,7 @@ final class MoldormHandler {
                             state.frame),
                         0));
               }
-              if (state.runtime.roomTransitionActive)
+              if (state.roomInspection().roomTransitionActive())
                 state.moldormMotion().resetHistory(slot);
               return false;
             }

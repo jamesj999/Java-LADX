@@ -49,7 +49,7 @@ final class EnemyProjectileTypeHandler {
                         preexistingCollision,
                         state.frame,
                         state.runtime.entityGroundStatus[state.entity.slot()],
-                        state.runtime.groundInteractionSideScrolling,
+                        state.background().groundInteractionSideScrolling(),
                         state.handlerInteractive,
                         state.projectileTimersInteractive);
                 if (projectileUpdate.unloaded()) {

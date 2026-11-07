@@ -18,7 +18,7 @@ final class MaskedMimicGoriyaHandler {
           if (state.status == EntityStatus.ACTIVE
               && !state.wasInitializing
 
-              && state.runtime.entityMapId != 0x1F) {
+              && state.roomInspection().entityMapId() != 0x1F) {
             int slot = state.entity.slot();
             RoomEntityBackgroundInteraction maskedMimicBackgroundInteraction =
                 state.background().interaction();

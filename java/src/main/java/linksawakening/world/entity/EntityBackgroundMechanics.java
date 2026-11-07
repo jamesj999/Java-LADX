@@ -285,4 +285,7 @@ public final class EntityBackgroundMechanics {
         }
         return update;
     }
+    public boolean groundInteractionSideScrolling() { return runtime.groundInteractionSideScrolling; }
+    public RoomEntityObjectQuery objectQuery() { return runtime.objectQuery; }
+    public RoomEntityGroundInteraction groundInteraction() { return runtime.groundInteraction; }
 }

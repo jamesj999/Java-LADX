@@ -36,12 +36,12 @@ final class BlooperHandler {
                     state.slot().ignoreHits(state.entity.slot()));
             RoomEntityGroundInteraction.Result groundResult =
                 Objects.requireNonNull(
-                    state.runtime.groundInteraction.apply(
+                    state.background().groundInteraction().apply(
                         movement.entity(),
                         state.frame,
                         state.runtime.entityGroundStatus[state.entity.slot()],
                         state.background().verticalSpeedZ(movement.entity()),
-                        state.runtime.groundInteractionSideScrolling),
+                        state.background().groundInteractionSideScrolling()),
                     "Room entity ground interaction returned null");
             BlooperMotion.Update blooperUpdate =
                 state.blooperMotion().finish(

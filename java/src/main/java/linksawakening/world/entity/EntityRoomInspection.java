@@ -737,4 +737,16 @@ public final class EntityRoomInspection {
         EntitySlotValidation.validateEntitySlot(slot);
         return runtime.fairyMotion.speedY(slot);
     }
+    public int entityMapId() { return runtime.entityMapId; }
+    public int entityRoomId() { return runtime.entityRoomId; }
+    public int entityRoomStatus() { return runtime.entityRoomStatus; }
+    public boolean indoorRoom() { return runtime.indoorRoom; }
+    public boolean roomTransitionActive() { return runtime.roomTransitionActive; }
+    public boolean gameplayWorld() { return runtime.gameplayWorld; }
+    public boolean freeMovementMode() { return runtime.freeMovementMode; }
+    public int chestSwordLevel() { return runtime.chestSwordLevel; }
+    public boolean chestPlayerLevelsKnown() { return runtime.chestPlayerLevelsKnown; }
+    public boolean dungeonMinibossReady() { return runtime.dungeonMinibossReady; }
+    public int defaultMusicTrack() { return runtime.defaultMusicTrack; }
+    public ColorShellWorld colorShellWorld() { return runtime.colorShellWorld; }
 }

@@ -97,7 +97,7 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     public EntitySpriteSelection spriteSelection;
 
-    public RoomEntityGroundInteraction groundInteraction =
+    RoomEntityGroundInteraction groundInteraction =
         (entity, frameCounter, previousGroundStatus, speedZ, sideScrolling) ->
             RoomEntityGroundInteraction.Result.unchanged(entity, 0);
 
@@ -472,7 +472,7 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     public boolean pendingSwitchBlockAnimationRequest;
 
-    public ColorShellWorld colorShellWorld = ColorShellWorld.none();
+    ColorShellWorld colorShellWorld = ColorShellWorld.none();
 
     public int pendingClearedEntityMask;
 
@@ -499,7 +499,7 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     public int paletteDataFlags;
 
-    public int defaultMusicTrack = 0x05;
+    int defaultMusicTrack = 0x05;
 
     final int[] killOrder = new int[0x100];
 
@@ -521,9 +521,9 @@ abstract class EntityRuntimeState extends EntityRomConstants {
     // ReturnIfNonInteractive_19's gameplay selector and room-transition flag.
     // Live room sessions default to the ordinary active world path; tests can
     // select the world-map/transition branches explicitly.
-    public boolean gameplayWorld = true;
+    boolean gameplayWorld = true;
 
-    public boolean roomTransitionActive;
+    boolean roomTransitionActive;
 
     public int swordMoblinAlertingSoundCounter;
 
@@ -546,9 +546,9 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     int chestShieldLevel = 1;
 
-    public int chestSwordLevel = 1;
+    int chestSwordLevel = 1;
 
-    public boolean chestPlayerLevelsKnown;
+    boolean chestPlayerLevelsKnown;
 
     int chestPowerBraceletLevel = 1;
 
@@ -657,7 +657,7 @@ abstract class EntityRuntimeState extends EntityRomConstants {
     /** AnimateEntities copies wC111 to wC1A8 before decrementing it. */
     public int entityInteractionCountdown;
 
-    public boolean freeMovementMode;
+    boolean freeMovementMode;
 
     final int[] owlEventState = new int[EntityRoomLoader.MAX_ENTITIES];
 
@@ -690,15 +690,15 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     IntUnaryOperator owlDefaultMusicResolver = roomId -> 0x05;
 
-    public boolean groundInteractionSideScrolling;
+    boolean groundInteractionSideScrolling;
 
-    public int entityMapId = -1;
+    int entityMapId = -1;
 
-    public int entityRoomId = -1;
+    int entityRoomId = -1;
 
-    public boolean dungeonMinibossReady;
+    boolean dungeonMinibossReady;
 
-    public int entityRoomStatus;
+    int entityRoomStatus;
 
     // These latches represent the HRAM values read by
     // DroppableRevealOrReturnIfNeeded's tree-shell branch. RoomSession feeds
@@ -721,7 +721,7 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     int liftedLinkC13B;
 
-    public RoomEntityObjectQuery objectQuery;
+    RoomEntityObjectQuery objectQuery;
 
     RoomEntityObjectQuery objectIntersectionQuery;
 

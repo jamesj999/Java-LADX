@@ -15,8 +15,8 @@ final class Type0X42Handler {
             state -> {
               if (state.status == EntityStatus.ACTIVE
 
-                  && state.runtime.indoorRoom
-                  && state.runtime.entityMapId != 0x16) {
+                  && state.roomInspection().indoorRoom()
+                  && state.roomInspection().entityMapId() != 0x16) {
                 state.story().advanceOwlStatue(
                     state.entity,
                     state.linkEntityX,

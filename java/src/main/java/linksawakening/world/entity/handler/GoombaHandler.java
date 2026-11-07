@@ -24,7 +24,7 @@ final class GoombaHandler {
                     state.randomByteSupplier,
                     state.backgroundCollision,
                     state.slot().transitionCountdown(state.entity.slot()),
-                    state.runtime.groundInteractionSideScrolling);
+                    state.background().groundInteractionSideScrolling());
             state.updated = goombaUpdate.entity();
             state.slot().setTransitionCountdown(state.entity.slot(), goombaUpdate.transitionCountdown());
             if (goombaUpdate.startDying()) {

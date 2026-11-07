@@ -35,7 +35,7 @@ final class CuccoHandler {
                     state.link().linkAttackStepAnimationCountdown() != 0,
                     state.randomByteSupplier,
                     state.backgroundCollision,
-                    state.runtime.indoorRoom,
+                    state.roomInspection().indoorRoom(),
                     state.runtime.followingNpcState.marinFollowing(),
                     state.lifecycle().transitionSequenceCounter());
             state.updated = cuccoUpdate.entity();

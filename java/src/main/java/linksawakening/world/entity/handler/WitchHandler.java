@@ -41,7 +41,7 @@ final class WitchHandler {
                         state.runtime.booBuddyTriggerCount,
                         state.runtime.bgPaletteEffectAddress,
                         state.runtime.paletteDataFlags,
-                        state.runtime.defaultMusicTrack));
+                        state.roomInspection().defaultMusicTrack()));
             state.updated = witchUpdate.entity();
             state.slot().setTransitionCountdown(state.entity.slot(), witchUpdate.transitionCountdown());
             state.preserveWitchPresentation = true;

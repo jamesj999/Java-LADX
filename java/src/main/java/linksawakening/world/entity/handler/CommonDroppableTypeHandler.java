@@ -44,9 +44,9 @@ final class CommonDroppableTypeHandler {
                         state.entity,
                         state.linkEntityX,
                         state.linkEntityY,
-                        state.runtime.objectQuery == null
+                        state.background().objectQuery() == null
                             ? null
-                            : state.runtime.objectQuery.sample(state.entity));
+                            : state.background().objectQuery().sample(state.entity));
                 state.updated = droppableUpdate.entity();
                 if (droppableUpdate.hidden()) {
                   // DroppableRevealOrReturnIfNeeded returns past the caller's

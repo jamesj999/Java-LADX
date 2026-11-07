@@ -22,7 +22,7 @@ final class WarpHandler {
             EntityTickStage.PHASE_1_TYPE,
             state -> {
               if (state.status == EntityStatus.ACTIVE
-                  && state.runtime.indoorRoom
+                  && state.roomInspection().indoorRoom()
 
                   && state.warpMotion() != null) {
                 int slot = state.entity.slot();
@@ -30,15 +30,15 @@ final class WarpHandler {
                         state.entity,
                         state.entity.x(),
                         state.entity.y(),
-                        state.runtime.dungeonMinibossReady ? (state.frame >> 3) & 7 : -1));
+                        state.roomInspection().dungeonMinibossReady() ? (state.frame >> 3) & 7 : -1));
                 WarpMotion.Update warpUpdate =
                     state.warpMotion().advance(
                         state.entity,
                         state.runtime.warpState[slot],
                         state.runtime.warpTransitionCountdown[slot],
-                        state.runtime.entityMapId,
-                        state.runtime.entityRoomId,
-                        state.runtime.dungeonMinibossReady,
+                        state.roomInspection().entityMapId(),
+                        state.roomInspection().entityRoomId(),
+                        state.roomInspection().dungeonMinibossReady(),
                         state.linkEntityX,
                         state.linkEntityY,
                         state.linkZ);

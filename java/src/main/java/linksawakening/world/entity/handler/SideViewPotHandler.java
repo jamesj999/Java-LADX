@@ -44,7 +44,7 @@ final class SideViewPotHandler {
                 }
               }
             }
-            if (state.runtime.groundInteractionSideScrolling
+            if (state.background().groundInteractionSideScrolling()
                 && state.sideViewPotInteractive
                 && SideViewPotContact.liftWindow(state.entity, effectiveLinkX, effectiveLinkY)
                 && state.liftThrow().sideViewPotPowerBraceletHeld()

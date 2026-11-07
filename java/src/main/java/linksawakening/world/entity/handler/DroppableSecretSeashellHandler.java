@@ -16,10 +16,10 @@ final class DroppableSecretSeashellHandler {
         EntityTickStage.PHASE_2_DROPPABLE_SECRET_SEASHELL,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
-            if (state.runtime.chestSwordLevel >= 0x02
-                || (state.runtime.entityRoomStatus & 0x10) != 0
-                || (state.runtime.entityRoomId == 0xE3
-                    && (state.runtime.entityRoomStatus & 0x40) == 0)) {
+            if (state.roomInspection().chestSwordLevel() >= 0x02
+                || (state.roomInspection().entityRoomStatus() & 0x10) != 0
+                || (state.roomInspection().entityRoomId() == 0xE3
+                    && (state.roomInspection().entityRoomStatus() & 0x40) == 0)) {
               // DroppableSeashellEntityHandler uses UnloadEntityAndReturn
               // for these gates, which deliberately does not mark the
               // source load-order bit as completed.
@@ -27,13 +27,13 @@ final class DroppableSecretSeashellHandler {
               return false;
             }
             RoomEntityObjectSample objectUnderEntity =
-                state.runtime.objectQuery == null
+                state.background().objectQuery() == null
                     ? null
-                    : state.runtime.objectQuery.sample(state.entity);
+                    : state.background().objectQuery().sample(state.entity);
             SecretSeashellMotion.Update shellUpdate =
                 state.secretSeashellMotion().advance(
                     state.entity,
-                    state.runtime.entityRoomId,
+                    state.roomInspection().entityRoomId(),
                     state.frame,
                     false,
                     state.runtime.secretSeashellScreenShakeActive,

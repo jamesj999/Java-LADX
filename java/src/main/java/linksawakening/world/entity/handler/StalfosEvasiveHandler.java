@@ -32,7 +32,7 @@ final class StalfosEvasiveHandler {
                     state.slot().ignoreHits(state.entity.slot()),
                     state.randomByteSupplier,
                     state.backgroundCollision,
-                    state.runtime.entityMapId);
+                    state.roomInspection().entityMapId());
             state.updated = evasiveUpdate.entity();
             state.slot().setTransitionCountdown(state.entity.slot(), evasiveUpdate.transitionCountdown());
             if (evasiveUpdate.cloneRequest() != null) {

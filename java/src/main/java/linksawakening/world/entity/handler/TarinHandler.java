@@ -24,7 +24,7 @@ final class TarinHandler {
         RoomEntityRuntime.ENTITY_TARIN,
         EntityTickStage.PHASE_1_TARIN,
         state -> {
-          if (!state.runtime.indoorRoom && (state.runtime.entityRoomStatus & 0x10) != 0) {
+          if (!state.roomInspection().indoorRoom() && (state.roomInspection().entityRoomStatus() & 0x10) != 0) {
             state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
             return false;
           }
@@ -38,7 +38,7 @@ final class TarinHandler {
             state -> {
               if (state.status == EntityStatus.ACTIVE
                   && !state.wasInitializing
-                  && !state.runtime.indoorRoom
+                  && !state.roomInspection().indoorRoom()
 
                   && (state.tarinRaccoonMotion().state(state.entity.slot()) == 0
                       || state.roomInspection().tarinTransformationHandlerInteractive())) {
@@ -107,7 +107,7 @@ final class TarinHandler {
                           EntityCombatEvent.SoundChannel.JINGLE,
                           tarinUpdate.soundId()));
                   if (tarinUpdate.soundId() == 0x23) {
-                    state.runtime.pendingMusicTrack = state.runtime.defaultMusicTrack;
+                    state.runtime.pendingMusicTrack = state.roomInspection().defaultMusicTrack();
                   }
                 }
                 if (tarinUpdate.spawnBomb()) {

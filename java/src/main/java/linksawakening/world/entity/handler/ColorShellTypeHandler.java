@@ -19,7 +19,7 @@ final class ColorShellTypeHandler {
             type,
             EntityTickStage.PHASE_2_COLOR_SHELL_TYPE,
             state -> {
-              if (state.runtime.entityMapId == state.runtime.MAP_COLOR_DUNGEON) {
+              if (state.roomInspection().entityMapId() == state.runtime.MAP_COLOR_DUNGEON) {
                 state.colorShellMotion().enterState6(state.entity);
                 RoomEntity activeShell =
                     state.slotProperties().refreshColorShellDisplay(
@@ -60,7 +60,7 @@ final class ColorShellTypeHandler {
                         state.randomByteSupplier,
                         state.backgroundCollision,
                         state.slot().ignoreHits(state.entity.slot()),
-                        state.runtime.colorShellWorld,
+                        state.roomInspection().colorShellWorld(),
                         state.entities());
                 state.updated = shellUpdate.entity();
                 state.slot().setIgnoreHits(state.entity.slot(), shellUpdate.nextIgnoreHitsCountdown());

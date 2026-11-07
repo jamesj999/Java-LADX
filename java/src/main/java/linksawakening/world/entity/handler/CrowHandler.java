@@ -35,7 +35,7 @@ final class CrowHandler {
                     state.frame,
                     state.linkEntityX,
                     state.linkEntityY,
-                    state.runtime.entityRoomId != 0x58,
+                    state.roomInspection().entityRoomId() != 0x58,
                     state.slotProperties().kanaletCrowTakeoffTriggered(state.entity));
             state.updated = crowUpdate.entity();
             state.slot().setTransitionCountdown(state.entity.slot(), crowUpdate.transitionCountdown());

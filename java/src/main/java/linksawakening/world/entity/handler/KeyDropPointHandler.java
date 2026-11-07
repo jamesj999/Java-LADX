@@ -53,7 +53,7 @@ final class KeyDropPointHandler {
                       0x18));
               return false;
             }
-            boolean hookshotRoom = state.runtime.entityRoomId == 0x80;
+            boolean hookshotRoom = state.roomInspection().entityRoomId() == 0x80;
             if (hookshotRoom) {
               state.updated =
                   withDefinition(

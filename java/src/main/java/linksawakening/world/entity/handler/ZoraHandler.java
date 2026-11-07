@@ -43,7 +43,7 @@ final class ZoraHandler {
                     state.linkEntityX,
                     state.linkEntityY,
                     state.randomByteSupplier,
-                    state.runtime.objectQuery);
+                    state.background().objectQuery());
             state.updated = zoraUpdate.entity();
             state.slot().setTransitionCountdown(slot, zoraUpdate.transitionCountdown());
             state.slot().setPhysicsFlags(slot, zoraUpdate.physicsFlags());

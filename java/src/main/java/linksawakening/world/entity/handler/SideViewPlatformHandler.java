@@ -53,14 +53,14 @@ final class SideViewPlatformHandler {
                   }
                 }
                 boolean standing =
-                    state.runtime.groundInteractionSideScrolling
+                    state.background().groundInteractionSideScrolling()
                         && (state.linkZ & 0xFF) == 0
                         && (state.link().currentLinkSpeedY() & 0x80) == 0
                         && sideViewPlatformOverlapsLink(
                             movedPlatform, state.linkEntityX, state.linkEntityY)
                         && (((state.linkEntityY - movedPlatform.y() + 0x08) & 0x80) != 0);
                 boolean activationAllowed =
-                    state.runtime.entityRoomId == 0x3B || state.carryingEntity;
+                    state.roomInspection().entityRoomId() == 0x3B || state.carryingEntity;
                 if (standing) {
                   state.emit(
                       new SideViewPlatformLinkRequest(

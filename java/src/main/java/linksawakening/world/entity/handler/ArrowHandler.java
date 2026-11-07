@@ -56,7 +56,7 @@ final class ArrowHandler {
                     state.backgroundCollision,
                     state.frame,
                     state.runtime.entityGroundStatus[state.entity.slot()],
-                    state.runtime.groundInteractionSideScrolling,
+                    state.background().groundInteractionSideScrolling(),
                     state.handlerInteractive,
                     state.projectileTimersInteractive);
             if (arrowUpdate.unloaded()) {

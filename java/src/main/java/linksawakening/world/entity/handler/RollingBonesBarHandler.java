@@ -29,19 +29,19 @@ final class RollingBonesBarHandler {
               if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
                 // BossIntro runs before ReturnIfNonInteractive_06.
                 if (state.entity.type() == ENTITY_ROLLING_BONES
-                    && !state.runtime.roomTransitionActive
+                    && !state.roomInspection().roomTransitionActive()
                     && !state.link().inventoryAppearing()) {
                   BossIntroMotion.Update intro =
                       state.bossIntroMotion().advance(
                           state.slotProperties().options1(state.entity.slot()),
                           state.entity.type(),
-                          state.runtime.entityMapId,
+                          state.roomInspection().entityMapId(),
                           state.lifecycle().transitionSequenceCounter());
                   if (intro.musicTrack() >= 0) state.runtime.pendingMusicTrack = intro.musicTrack();
                 }
                 // The bar's room-clear check precedes its interaction guard.
                 if (state.entity.type() == ENTITY_ROLLING_BONES_BAR
-                    && (state.runtime.entityRoomStatus & 0x20) != 0) {
+                    && (state.roomInspection().entityRoomStatus() & 0x20) != 0) {
                   state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
                   return false;
                 }
@@ -67,7 +67,7 @@ final class RollingBonesBarHandler {
         EntityTickStage.PHASE_4_ROLLING_BONES_BAR,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
-            if ((state.runtime.entityRoomStatus & 0x20) != 0) {
+            if ((state.roomInspection().entityRoomStatus() & 0x20) != 0) {
               state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
               return false;
             }

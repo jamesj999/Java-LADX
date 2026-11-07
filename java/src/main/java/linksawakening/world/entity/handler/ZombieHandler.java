@@ -50,7 +50,7 @@ final class ZombieHandler {
                     state.linkEntityX,
                     state.linkEntityY,
                     state.randomByteSupplier,
-                    state.runtime.objectQuery,
+                    state.background().objectQuery(),
                     zombieBackgroundInteraction,
                     state.slot().ignoreHits(slot));
             state.updated = zombieUpdate.entity();

@@ -35,7 +35,7 @@ final class HinoxHandler {
                 state.bossIntroMotion().advance(
                     state.slotProperties().options1(state.entity.slot()),
                     state.entity.type(),
-                    state.runtime.entityMapId,
+                    state.roomInspection().entityMapId(),
                     state.lifecycle().transitionSequenceCounter());
             if (bossIntro.musicTrack() >= 0) {
               state.runtime.pendingMusicTrack = bossIntro.musicTrack();
