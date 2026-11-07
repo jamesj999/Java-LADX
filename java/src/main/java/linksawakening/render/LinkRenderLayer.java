@@ -30,13 +30,7 @@ public final class LinkRenderLayer implements HardwareRenderLayer {
             screenY - link.pixelY());
     }
     @Override public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
-        java.util.List<java.util.function.Consumer<OamSink>> commands = new java.util.ArrayList<>();
-        OamSink sink = (tile, x, y, fx, fy, palette, behind) ->
-            commands.add(target -> target.append(tile, x, y, fx, fy, palette, behind));
-        collectOam(sink);
-        // Legacy body/equipment drawing is painter ordered; submit its visible
-        // priority order explicitly, without converting the tiles to RGBA.
-        for (int i = commands.size() - 1; i >= 0; i--) commands.get(i).accept(frame);
+        collectOam(frame);
     }
 
     private void collectOam(OamSink sink) {

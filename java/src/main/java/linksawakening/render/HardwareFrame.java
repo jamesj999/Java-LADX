@@ -44,7 +44,11 @@ public final class HardwareFrame implements RenderLayer, OamSink {
     private final java.util.List<ObjectTile> oam = new java.util.ArrayList<>();
     @Override public void append(Tile tile, int x, int y, boolean flipX, boolean flipY,
                                  int[] palette, boolean behindBackground) {
-        objectTile(tile, x, y, flipX, flipY, palette, oam.size(), behindBackground);
+        oam.add(new ObjectTile(tile, x, y, flipX, flipY, palette, Integer.MAX_VALUE - 1, behindBackground));
+    }
+    @Override public void appendInSlot(int slot, Tile tile, int x, int y, boolean fx, boolean fy,
+                                       int[] palette, boolean behind) {
+        objectTile(tile, x, y, fx, fy, palette, slot, behind);
     }
     public void objectTile(Tile tile, int x, int y, boolean flipX, boolean flipY,
                            int[] palette, int oamIndex, boolean behindBackground) {
