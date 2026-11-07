@@ -13,6 +13,7 @@ import linksawakening.physics.OverworldCollision;
 import linksawakening.physics.PhysicsFlags;
 import linksawakening.rom.RomTables;
 import linksawakening.state.PlayerState;
+import linksawakening.state.LinkPlayerState;
 
 import java.util.Objects;
 import java.util.function.BooleanSupplier;
@@ -124,7 +125,7 @@ public final class Link implements RocsFeather.JumpTarget {
     final RomTables romTables;
     final OverworldCollision collision;
     final LinkSpriteSheet spriteSheet;
-    final PlayerState playerState;
+    final LinkPlayerState playerState;
     final ItemRegistry itemRegistry;
     final LinkTunicPalette tunicPalette;
 

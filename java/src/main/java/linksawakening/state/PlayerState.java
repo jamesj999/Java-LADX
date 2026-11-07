@@ -7,7 +7,7 @@ import linksawakening.world.FloatingItemMotion;
 import java.util.Arrays;
 import java.util.Objects;
 
-public final class PlayerState {
+public final class PlayerState implements LinkPlayerState {
 
     public static final int INVENTORY_EMPTY = 0x00;
     public static final int INVENTORY_SWORD = 0x01;
