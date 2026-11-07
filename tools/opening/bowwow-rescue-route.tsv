@@ -152,7 +152,7 @@ a* 24 4 none 0 0
 left+a*+b x=24 4 left
 down+a*+b y=112 4 down+a
 right x=80 4
-down room=0x62 120
+down room=0x62 20 down room=0x62 120
 down+a* y=88 4
 left+a* x=56 4
 up+a*+b room=0x52 4 up+b

@@ -116,6 +116,19 @@ public final class EntityRenderLayer implements RenderLayer {
                 renderWingedOctorokOam(context, entities.wingedOctorokOam(), entity.slot(),
                     palettes, offset.x(), offset.y(), entity);
             }
+            if (!renderingDeath && entity.type() == 0x6D) {
+                // Chain OAM is allocated after the head; draw it first so
+                // the earlier head pair wins overlapping pixels.
+                var chain = entities.bowWowChainOam();
+                for (int i = chain.size() - 1; i >= 0; i--) {
+                    var entry = chain.get(i);
+                    if (entry.sourceSlot() != entity.slot()) continue;
+                    renderOamSprite(context, palettes, tiles,
+                        new EntitySpriteDefinition.OamAttribute(entry.tileIndex(), 0), 0,
+                        entry.rawX() + offset.x() - OAM_X_SCREEN_ORIGIN,
+                        entry.rawY() + offset.y() - OAM_Y_SCREEN_ORIGIN, false);
+                }
+            }
             renderEntity(context, entity, definition, variant, palettes, tiles,
                 offset.x(), offset.y(), entities.sideScrolling(),
                 entities.visualYOffset(entity.slot()));

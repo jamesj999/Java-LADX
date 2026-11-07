@@ -623,6 +623,8 @@ public final class RoomEntityRuntime {
     // only around the live projectile tick so the enemy-bomb branch can mirror
     // its post-collision SLA writes without making Link state part of the
     // entity snapshot.
+    private int currentLinkVelocityZ;
+    private List<BowWowChain.Entry> bowWowChainOam = List.of();
     private int currentLinkSpeedX;
     private int currentLinkSpeedY;
     private int currentLinkFinalPositionX;
@@ -4819,7 +4821,7 @@ public final class RoomEntityRuntime {
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && (isDynamicFollowingNpc(entity)
-                    || (entity.type() == ENTITY_BOW_WOW && bowWowState != 0))) {
+                    || entity.type() == ENTITY_BOW_WOW)) {
                 if (entity.type() == ENTITY_BOW_WOW) {
                     BowWowMotion.Update bowWowUpdate = bowWowMotion.advanceAfterTimers(
                         entity, frame, linkEntityX, linkEntityY, followingLinkZ,
@@ -5038,6 +5040,7 @@ public final class RoomEntityRuntime {
         updateHookshotChainOam(linkEntityX, linkEntityY, frame);
         updatePincerBodyOam();
         updateWingedOctorokOam();
+        updateBowWowChain(frame);
         return List.copyOf(projectileEvents);
     }
 
@@ -8471,7 +8474,7 @@ public final class RoomEntityRuntime {
         return new RoomEntitySnapshot(Arrays.asList(slots), spriteSelection, spriteTiles,
             groundInteractionSideScrolling, hookshotChainOam, pincerBodyOam,
             wingedOctorokOam,
-            fallingVisualYOffset);
+            fallingVisualYOffset, bowWowChainOam);
     }
 
     /** Applies the position and variant writes made by MarinEntityHandler_Indoor. */
@@ -8510,6 +8513,29 @@ public final class RoomEntityRuntime {
         RoomEntity chain = slots[slot];
         hookshotChainOam = HookshotChainOam.entries(
             chain.x(), chain.y(), linkEntityX, linkEntityY, frameCounter);
+    }
+
+    void setLinkVelocityZ(int velocity) {
+        currentLinkVelocityZ = velocity & 0xFF;
+    }
+
+    private void updateBowWowChain(int frame) {
+        List<BowWowChain.Entry> entries = new ArrayList<>();
+        // The handler's dialogue/inventory/transition branches still run the
+        // chain. Its sequence check only returns early on the unpaused path.
+        if (transitionSequenceCounter != 4 && !roomTransitionActive && !dialogActive
+            && !inventoryAppearing && !witchGotItemPresentationActive()) {
+            bowWowChainOam = List.of();
+            return;
+        }
+        boolean moving = (currentLinkSpeedX | currentLinkSpeedY | currentLinkVelocityZ) != 0;
+        for (int slot = 0; slot < slots.length; slot++) {
+            RoomEntity entity = slots[slot];
+            if (entity.type() != ENTITY_BOW_WOW || entity.status() != EntityStatus.ACTIVE) continue;
+            slots[slot] = bowWowMotion.advanceChain(entity, bowWowState, moving);
+            entries.addAll(bowWowMotion.chainEntries(slot, bowWowState, frame));
+        }
+        bowWowChainOam = List.copyOf(entries);
     }
 
     private void updatePincerBodyOam() {
@@ -9012,6 +9038,7 @@ public final class RoomEntityRuntime {
             throw new IllegalArgumentException("Follower state cannot be null");
         }
         followingNpcState = state;
+        if (state.bowWowFollowing()) bowWowState = 1;
     }
 
     void setColorShellWorld(ColorShellWorld world) {

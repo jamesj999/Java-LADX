@@ -1255,6 +1255,7 @@ public class Main {
                     playerState.maxHearts(), playerState.health(),
                     playerState.activePowerUp() != PlayerState.ACTIVE_POWER_UP_NONE);
                 roomSession.setFreeMovementMode(link != null && link.debugNoClip());
+                roomSession.setEntityLinkVelocityZ(link == null ? 0 : link.zVelocity());
                 var projectileEvents = roomSession.tickEntitiesWithProjectileEvents(
                     frameCounter,
                     link == null ? 0x08 : link.romEntityX(),

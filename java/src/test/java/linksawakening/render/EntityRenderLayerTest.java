@@ -171,6 +171,33 @@ final class EntityRenderLayerTest {
     }
 
     @Test
+    void bowWowChainUsesRomTilesPaletteZeroAndRemainsBehindTheHead() {
+        GPU gpu = new GPU();
+        int chainColor = 0x123456;
+        int headColor = 0xABCDEF;
+        int[][] palettes = {{0, chainColor, 0, 0}, {0, 0, 0, 0},
+            {0, 0, 0, 0}, {0, headColor, 0, 0}};
+        for (int tile : new int[] {0x40, 0x41, 0x4E, 0x4F}) writeSolidTile(gpu, tile, 1);
+        EntitySpriteDefinition head = new EntitySpriteDefinition(
+            0x6D, 5, 0x401C, EntitySpriteDefinition.Shape.PAIR, 0,
+            List.of(new EntitySpriteDefinition.Variant(
+                new EntitySpriteDefinition.OamAttribute(0x40, 3),
+                new EntitySpriteDefinition.OamAttribute(0x40, 0x23))));
+        RoomEntity entity = new RoomEntity(3, 0, 0x6D, 0x40, 0x50,
+            EntityStatus.ACTIVE, head, 0);
+        RoomEntitySnapshot snapshot = snapshot(null, gpu.snapshotEntityTiles(), entity)
+            .withBowWowChainOam(List.of(
+                new linksawakening.world.BowWowChain.Entry(3, 0x40, 0x50, 0x4E),
+                new linksawakening.world.BowWowChain.Entry(3, 0x60, 0x50, 0x4E)));
+        byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
+        new EntityRenderLayer(snapshot, palettes, new ScrollController())
+            .render(new RenderContext(buffer, gpu));
+        assertEquals(headColor, pixelColor(buffer, 0x38, 0x40));
+        assertEquals(chainColor, pixelColor(buffer, 0x58, 0x40));
+        assertEquals(chainColor, pixelColor(buffer, 0x58, 0x48));
+    }
+
+    @Test
     void rendersPincerBodyOamFromTheEntityTileSnapshot() {
         GPU gpu = new GPU();
         int bodyColor = 0x123456;

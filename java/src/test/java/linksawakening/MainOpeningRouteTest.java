@@ -106,7 +106,7 @@ final class MainOpeningRouteTest {
         var mushroom = checkpoints.get(130);
         assertEquals(0, mushroom.map());
         assertEquals(0x50, mushroom.room());
-        assertEquals(49, mushroom.x(), "Sword launch frame moves before locking the pickup approach");
+        assertEquals(50, mushroom.x(), "Pickup approach includes the sword launch frame");
         assertEquals(64, mushroom.y());
         assertTrue(mushroom.toadstool());
         assertTrue(mushroom.health() > 0);

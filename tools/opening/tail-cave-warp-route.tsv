@@ -39,7 +39,7 @@ left x=72 4
 down room=0xD0 4
 right x=88 4
 down y=88 4
-left x=40 4
+left x=24 4 left x=40 4
 down room=0xE0 4
 down y=88 4
 right x=104 4
@@ -99,7 +99,7 @@ up+b y=72 4
 left+b room=0xA0 4
 up+b y=28 4
 left+b x=104 4
-up+b room=0x90 4
+up+b room=0x90 10 up+b room=0x90 4
 up+a* room=0x80 180
 a* dialog=0 180
 up+b y=80 4
@@ -301,11 +301,11 @@ left x=24 4
 up y=80 4
 left+a*+b room=0x16 4
 left+a*+b x=104 4
-up+a*+b y=64 4
+a*+b 96 4 up+a*+b y=64 4
 a*+b 24 0
 left+a*+b x=40 4
 a*+b 120 4
-none smallkeys=1 0
+up smallkeys=1 0 none smallkeys=1 0
 down y=72 4
 left+a*+b room=0x15 4
 left+a*+b x=88 10 left+a*+b - 4
@@ -456,7 +456,7 @@ b 12 0
 b 12 0
 down+b y=64 0 up 12 0
 left x=75 0
-left+a* x=40 0
+a* 48 0 left+a* x=40 0
 a* 48 0
 right+b x=88 0
 down+b y=80 0
@@ -475,7 +475,7 @@ up+b y=64 0 none 0 0
 right x=136 0
 up room=0x19 4
 none 64 0
-down+b y=112 0
+down+a*+b y=112 0 down+b y=112 0
 left+a*+b x=24 0
 up+b y=64 0
 left+b room=0x18 4
@@ -536,7 +536,7 @@ up+a* y=80 0
 right+a* room=0x0E 4
 right+a* x=24 0
 down+a* y=112 0
-right+a* x=104 0
+right+a*+b* x=104 0 right+a* x=104 0
 up+a* y=64 0
 right+a* x=136 0
 up y=48 0 up y=48 0

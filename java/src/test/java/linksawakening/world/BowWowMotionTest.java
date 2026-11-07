@@ -21,6 +21,23 @@ final class BowWowMotionTest {
     private static final int ENTITY_BOW_WOW = 0x6D;
 
     @Test
+    void homeBowWowLungesTowardsLinkWhileRetainingHisChainAnchor() {
+        BowWowMotion motion = new BowWowMotion();
+        RoomEntity entity = bowWowEntity(0, 40, 40, 0);
+        entity = motion.advanceAfterTimers(entity, 0, 100, 48, 0, () -> 0,
+            null, List.of(entity), type -> false, 0).entity();
+        motion.advanceAfterTimers(entity, 1, 100, 48, 0,
+            () -> { throw new AssertionError("The home lunge does not sample RNG"); },
+            null, List.of(entity), type -> false, 0);
+        assertEquals(2, motion.activeState(0));
+        assertEquals(0x20, motion.speedX(0));
+        assertEquals(0, motion.speedY(0));
+        assertEquals(0x20, motion.speedZ(0));
+        assertEquals(44, motion.targetX(0));
+        assertEquals(48, motion.targetY(0));
+    }
+
+    @Test
     void kidnappedBowWowKeepsHisPenAnchorAndSkipsTheTargetScan() {
         BowWowMotion motion = new BowWowMotion();
         RoomEntity initial = bowWowEntity(0, 0x78, 0x40, 0);

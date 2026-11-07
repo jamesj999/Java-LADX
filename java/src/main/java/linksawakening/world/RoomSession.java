@@ -292,6 +292,7 @@ public final class RoomSession {
     private boolean hasBirdKey;
     private boolean hasTailKey;
     private int bowWowState;
+    private int entityLinkVelocityZ;
     private int richardSpokenFlag;
     /** WRAM wTarinFlag; persisted NPC/world progression, not player inventory state. */
     private int tarinFlag;
@@ -933,6 +934,10 @@ public final class RoomSession {
     }
 
     /** Supplies wDialogState's active gate to the room entity handlers. */
+    public void setEntityLinkVelocityZ(int velocity) {
+        entityLinkVelocityZ = velocity & 0xFF;
+    }
+
     public void setEntityDialogActive(boolean active) {
         entityDialogActive = active;
         if (entityRuntime != null) {
@@ -1772,6 +1777,7 @@ public final class RoomSession {
         entityRuntime.setDialogAskSelectionIndex(entityDialogAskSelectionIndex);
         entityRuntime.setActiveMusic(entityMusicActive);
         entityRuntime.setBowWowState(bowWowState);
+        entityRuntime.setLinkVelocityZ(entityLinkVelocityZ);
         entityRuntime.setOwlInstrumentFlags(
             Byte.toUnsignedInt(dungeonProgressFlags[0]),
             Byte.toUnsignedInt(dungeonProgressFlags[1]));

@@ -5,7 +5,7 @@ import java.util.function.IntPredicate;
 import java.util.function.IntSupplier;
 
 /**
- * The bounded ordinary-following part of bank-$05's Bow-Wow handler.
+ * The home, kidnapped, and following motion states of bank-$05's Bow-Wow handler.
  *
  * <p>The original keeps Bow-Wow's setup state separate from the active
  * handler state. This class keeps those WRAM-like fields per entity slot so
@@ -17,6 +17,8 @@ final class BowWowMotion {
         0xFC, 0xF8, 0xF4, 0xF8};
     private static final int[] SPEED_Y_BY_RANDOM = {0xF4, 0xF8, 0x04, 0x08,
         0x0C, 0x08, 0xFC, 0xF8};
+
+    private final BowWowChain[] chains = new BowWowChain[EntityRoomLoader.MAX_ENTITIES];
 
     private final int[] activeState = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] selectedVariant = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -91,7 +93,7 @@ final class BowWowMotion {
             return new Update(setup(entity), targetSlot[slot], null);
         }
 
-        if (bowWowState != 0x80) {
+        if (bowWowState != 0 && bowWowState != 0x80) {
             targetX[slot] = byteValue(linkEntityX);
             // Kidnapped BowWow retains the pen anchor written by setup.
             // Following BowWow uses hLinkPositionZModified ($05:40E6).
@@ -108,6 +110,16 @@ final class BowWowMotion {
             case 0 -> {
                 if (transitionCountdown[slot] == 0) {
                     transitionCountdown[slot] = 0x28;
+                    if (bowWowState == 0) {
+                        speedZ[slot] = 0x20;
+                        activeState[slot] = 2;
+                        Vector vector = vectorTowardsTarget(entity,
+                            withPositionAndVariant(entity, linkEntityX, linkEntityY, 0, 0),
+                            z, 0x20);
+                        speedX[slot] = vector.x();
+                        speedY[slot] = vector.y();
+                        break;
+                    }
                     // $05:4297 skips both target scanning and its RNG read
                     // while BowWow is chained inside the hideout.
                     int selectedTarget = bowWowState == 0x80 ? -1
@@ -166,15 +178,17 @@ final class BowWowMotion {
                 }
                 // func_005_41EB reaches label_005_4335 after every moving
                 // state-2/state-4 frame, not only when the timer expires.
-                targetContact = findTargetContact(entity.x(), entity.y(), entity.z(),
-                    targetSlot[slot], entities);
+                if (bowWowState != 0) {
+                    targetContact = findTargetContact(entity.x(), entity.y(), entity.z(),
+                        targetSlot[slot], entities);
+                }
             }
             case 3 -> {
                 if (transitionCountdown[slot] == 0) {
                     // func_005_420E starts a ten-frame pause, then writes B
                     // (zero) back to wEntitiesStateTable for a fresh scan.
-                    randomByteSupplier.getAsInt();
-                    transitionCountdown[slot] = 0x10;
+                    int pause = (randomByteSupplier.getAsInt() & 0x3F) + 0x30;
+                    transitionCountdown[slot] = bowWowState == 0 ? pause : 0x10;
                     activeState[slot] = 0;
                 }
             }
@@ -186,6 +200,7 @@ final class BowWowMotion {
     }
 
     void clear(int slot) {
+        chains[slot] = new BowWowChain();
         activeState[slot] = 0;
         selectedVariant[slot] = 0;
         privateState4[slot] = 0;
@@ -203,6 +218,16 @@ final class BowWowMotion {
         speedZAccumulator[slot] = 0;
         updatedZ[slot] = 0;
         initialized[slot] = false;
+    }
+
+    RoomEntity advanceChain(RoomEntity entity, int questState, boolean linkMoving) {
+        int slot = entity.slot();
+        if (chains[slot] == null) chains[slot] = new BowWowChain();
+        return chains[slot].advance(entity, targetX[slot], targetY[slot], questState, linkMoving);
+    }
+
+    List<BowWowChain.Entry> chainEntries(int slot, int questState, int frame) {
+        return chains[slot] == null ? List.of() : chains[slot].entries(slot, questState, frame);
     }
 
     int activeState(int slot) {
@@ -281,6 +306,7 @@ final class BowWowMotion {
         int y = byteValue(entity.y() + 0x08);
         targetX[slot] = x;
         targetY[slot] = y;
+        chains[slot].initialize(x, y - entity.z());
         privateState4[slot] = 1;
         return withPositionAndVariant(entity, x, y, entity.z(), entity.spriteVariant());
     }

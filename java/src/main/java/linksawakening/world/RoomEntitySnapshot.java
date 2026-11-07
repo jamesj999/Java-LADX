@@ -18,6 +18,7 @@ public final class RoomEntitySnapshot {
     private final List<PincerBodyOam.Entry> pincerBodyOam;
     private final List<WingedOctorokOam.Entry> wingedOctorokOam;
     private final int[] visualYOffsetBySlot;
+    private final List<BowWowChain.Entry> bowWowChainOam;
 
     public RoomEntitySnapshot(List<RoomEntity> slots) {
         this(slots, null, null);
@@ -67,6 +68,17 @@ public final class RoomEntitySnapshot {
                               List<PincerBodyOam.Entry> pincerBodyOam,
                               List<WingedOctorokOam.Entry> wingedOctorokOam,
                               int[] visualYOffsetBySlot) {
+        this(slots, spriteSelection, spriteTiles, sideScrolling, hookshotChainOam,
+            pincerBodyOam, wingedOctorokOam, visualYOffsetBySlot, List.of());
+    }
+
+    public RoomEntitySnapshot(List<RoomEntity> slots, EntitySpriteSelection spriteSelection,
+                              EntitySpriteTileSnapshot spriteTiles, boolean sideScrolling,
+                              List<HookshotChainOam.Entry> hookshotChainOam,
+                              List<PincerBodyOam.Entry> pincerBodyOam,
+                              List<WingedOctorokOam.Entry> wingedOctorokOam,
+                              int[] visualYOffsetBySlot, List<BowWowChain.Entry> bowWowChainOam) {
+        this.bowWowChainOam = List.copyOf(bowWowChainOam);
         if (slots == null || slots.size() != EntityRoomLoader.MAX_ENTITIES) {
             throw new IllegalArgumentException("A room must expose exactly "
                 + EntityRoomLoader.MAX_ENTITIES + " entity slots");
@@ -109,12 +121,12 @@ public final class RoomEntitySnapshot {
 
     public RoomEntitySnapshot withSpriteSelection(EntitySpriteSelection selection) {
         return new RoomEntitySnapshot(slots, selection, spriteTiles, sideScrolling,
-            hookshotChainOam, pincerBodyOam, wingedOctorokOam, visualYOffsetBySlot);
+            hookshotChainOam, pincerBodyOam, wingedOctorokOam, visualYOffsetBySlot, bowWowChainOam);
     }
 
     public RoomEntitySnapshot withSpriteTiles(EntitySpriteTileSnapshot tiles) {
         return new RoomEntitySnapshot(slots, spriteSelection, tiles, sideScrolling,
-            hookshotChainOam, pincerBodyOam, wingedOctorokOam, visualYOffsetBySlot);
+            hookshotChainOam, pincerBodyOam, wingedOctorokOam, visualYOffsetBySlot, bowWowChainOam);
     }
 
     /** Returns whether the room uses the side-scroll OAM path. */
@@ -124,7 +136,7 @@ public final class RoomEntitySnapshot {
 
     public RoomEntitySnapshot withSideScrolling(boolean sideScrolling) {
         return new RoomEntitySnapshot(slots, spriteSelection, spriteTiles, sideScrolling,
-            hookshotChainOam, pincerBodyOam, wingedOctorokOam, visualYOffsetBySlot);
+            hookshotChainOam, pincerBodyOam, wingedOctorokOam, visualYOffsetBySlot, bowWowChainOam);
     }
 
     public List<RoomEntity> slots() {
@@ -151,6 +163,15 @@ public final class RoomEntitySnapshot {
         return pincerBodyOam;
     }
 
+    public RoomEntitySnapshot withBowWowChainOam(List<BowWowChain.Entry> entries) {
+        return new RoomEntitySnapshot(slots, spriteSelection, spriteTiles, sideScrolling,
+            hookshotChainOam, pincerBodyOam, wingedOctorokOam, visualYOffsetBySlot, entries);
+    }
+
+    public List<BowWowChain.Entry> bowWowChainOam() {
+        return bowWowChainOam;
+    }
+
     public List<WingedOctorokOam.Entry> wingedOctorokOam() {
         return wingedOctorokOam;
     }
@@ -174,23 +195,23 @@ public final class RoomEntitySnapshot {
         int[] offsets = visualYOffsetBySlot.clone();
         offsets[slot] = offset;
         return new RoomEntitySnapshot(slots, spriteSelection, spriteTiles, sideScrolling,
-            hookshotChainOam, pincerBodyOam, wingedOctorokOam, offsets);
+            hookshotChainOam, pincerBodyOam, wingedOctorokOam, offsets, bowWowChainOam);
     }
 
     public RoomEntitySnapshot withHookshotChainOam(
         List<HookshotChainOam.Entry> hookshotChainOam) {
         return new RoomEntitySnapshot(slots, spriteSelection, spriteTiles, sideScrolling,
-            hookshotChainOam, pincerBodyOam, wingedOctorokOam, visualYOffsetBySlot);
+            hookshotChainOam, pincerBodyOam, wingedOctorokOam, visualYOffsetBySlot, bowWowChainOam);
     }
 
     public RoomEntitySnapshot withPincerBodyOam(List<PincerBodyOam.Entry> pincerBodyOam) {
         return new RoomEntitySnapshot(slots, spriteSelection, spriteTiles, sideScrolling,
-            hookshotChainOam, pincerBodyOam, wingedOctorokOam, visualYOffsetBySlot);
+            hookshotChainOam, pincerBodyOam, wingedOctorokOam, visualYOffsetBySlot, bowWowChainOam);
     }
 
     public RoomEntitySnapshot withWingedOctorokOam(
         List<WingedOctorokOam.Entry> wingedOctorokOam) {
         return new RoomEntitySnapshot(slots, spriteSelection, spriteTiles, sideScrolling,
-            hookshotChainOam, pincerBodyOam, wingedOctorokOam, visualYOffsetBySlot);
+            hookshotChainOam, pincerBodyOam, wingedOctorokOam, visualYOffsetBySlot, bowWowChainOam);
     }
 }
