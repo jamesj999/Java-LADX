@@ -21,6 +21,23 @@ public final class EntityBossRewards {
     private final RoomEntityRuntime runtime;
     EntityBossRewards(RoomEntityRuntime runtime) { this.runtime = runtime; }
 
+    /** ApplySwordDamagesToEnemy, $03:7361: preserve descending RNG order. */
+    void cascadeGhiniDeath(RoomEntity killed, IntSupplier random) {
+        if (killed.type() != 0x12) return;
+        int[] drops = {0x2D, 0x2E, 0x38, 0x37};
+        for (int slot = RoomEntity.SLOT_COUNT - 1; slot >= 0; slot--) {
+            RoomEntity other = runtime.slots[slot];
+            if (slot == killed.slot() || other == null
+                || (other.type() != 0x10 && other.type() != 0x11)
+                || runtime.ghiniMotion.state(slot) != 0
+                || other.status() == EntityStatus.DISABLED) continue;
+            runtime.slots[slot] = withStatus(other, EntityStatus.DYING);
+            runtime.dyingCountdown[slot] = 0x1F;
+            runtime.droppedItemBySlot[slot] = drops[random.getAsInt() & 3];
+        }
+        runtime.droppedItemBySlot[killed.slot()] = 0x2E;
+    }
+
     void handleTerminalEnemyDeath(RoomEntity entity, IntSupplier randomByteSupplier) {
         boolean swallowedShield = entity.type() == runtime.ENTITY_LIKE_LIKE
             && runtime.likeLikeMotion.privateState1(entity.slot()) != 0;

@@ -412,6 +412,10 @@ final class EntityCombatResolver {
                         runtime.bossDeathProducerState[entity.slot()] = 0;
                         runtime.moldormDestructionTailState[entity.slot()] = 0;
                     }
+                    if (entity.type() == 0x12) {
+                        runtime.bossRewards.cascadeGhiniDeath(entity,
+                            runtime.frameContext(frameCounter).randomByteSupplier());
+                    }
                     runtime.powerRecoilDeath[entity.slot()] = attackContext.powerRecoil();
                     runtime.slots[entity.slot()] = withDeathPresentation(
                         withStatus(entity, EntityStatus.DYING), -1,
