@@ -26,7 +26,7 @@ final class RoomTileLoader {
     private static final int DUNGEONS_TILES_ADDR = RomSymbols.DungeonsTiles.address();
     private static final int DUNGEONS_TILES_COUNT = 0x60;
     private static final int DUNGEONS_TILES_VRAM_INDEX = 0x120;
-    private static final int INDOOR_TILES_BASE_ADDR = 0x5000;
+    private static final int INDOOR_TILES_BASE_ADDR = RomSymbols.IndoorTiles.address();
     private static final int INDOOR_TILES_COUNT_PER_SET = 0x10;
     private static final int INDOOR_TILES_VRAM_INDEX = 0x100;
     private static final int DUNGEON_FLOOR_PTRS_BANK = RomSymbols.DungeonFloorTilesPointers.bank();
@@ -42,8 +42,8 @@ final class RoomTileLoader {
     private static final int MAP_COLOR_DUNGEON = 0xFF;
     private static final int MAP_HOUSE = 0x10;
     private static final int ROOM_CAMERA_SHOP = 0xB5;
-    private static final int COLOR_DUNGEON_BG_BANK = 0x35;
-    private static final int CAMERA_SHOP_TILES_ADDR = 0x6600;
+    private static final int COLOR_DUNGEON_BG_BANK = RomSymbols.CameraShopIndoorTiles.bank();
+    private static final int CAMERA_SHOP_TILES_ADDR = RomSymbols.CameraShopIndoorTiles.address();
     private static final int INDOORS_TILESETS_TABLE_BANK = RomSymbols.IndoorsTilesetsTable.bank();
     private static final int INDOORS_TILESETS_TABLE_ADDR = RomSymbols.IndoorsTilesetsTable.address();
     private static final int W_TILESET_NO_UPDATE = 0xFF;

@@ -1,5 +1,7 @@
 package linksawakening.render;
 
+import linksawakening.rom.RomSymbols;
+
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.dialog.DialogController;
 import linksawakening.gpu.EntitySpriteTileSnapshot;
@@ -19,8 +21,8 @@ public final class EntityRenderLayer implements HardwareRenderLayer {
     private static final int ENTITY_BOMB = 0x02;
     private static final int ENTITY_WINGED_OCTOROK = 0xAE;
     private static final int ENTITY_PINCER = 0xB0;
-    private static final int BOMB_NORMAL_DEFINITION_BANK = 0x03;
-    private static final int BOMB_NORMAL_DEFINITION_ADDRESS = 0x652E;
+    private static final int BOMB_NORMAL_DEFINITION_BANK = RomSymbols.BombSprite.bank();
+    private static final int BOMB_NORMAL_DEFINITION_ADDRESS = RomSymbols.BombSprite.address();
     private static final int ENTITY_PAIRODD = 0x57;
     private static final int OAM_PALETTE_MASK = 0x07;
     private static final int OAM_PALETTE_FLIP = 0x10;

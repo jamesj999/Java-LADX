@@ -348,3 +348,16 @@ MenuFileSaveAttrmap
 ColorDungeonWallsTilesPointers
 data_020_45EA
 ColorDungeonTiles
+
+# Remaining named GPU/render sources and tables.
+BombSprite
+IndoorTiles
+CameraShopIndoorTiles
+ColorDungeonEntitySpritesheetsTable_Slot1
+ColorDungeonEntitySpritesheetsTable_Slot2
+ColorDungeonEntitySpritesheetsTable_Slot3
+ColorDungeonEntitySpritesheetsTable_Slot4
+Npc1Tiles
+Npc2Tiles
+Npc3Tiles
+NpcTilesDataStart

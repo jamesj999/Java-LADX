@@ -229,4 +229,15 @@ public final class RomSymbols {
     public static final RomAddress ColorDungeonWallsTilesPointers = new RomAddress(0x20, 0x45C9);
     public static final RomAddress data_020_45EA = new RomAddress(0x20, 0x45EA);
     public static final RomAddress ColorDungeonTiles = new RomAddress(0x35, 0x6000);
+    public static final RomAddress BombSprite = new RomAddress(0x03, 0x652E);
+    public static final RomAddress IndoorTiles = new RomAddress(0x0D, 0x5000);
+    public static final RomAddress CameraShopIndoorTiles = new RomAddress(0x35, 0x6600);
+    public static final RomAddress ColorDungeonEntitySpritesheetsTable_Slot1 = new RomAddress(0x20, 0x46AA);
+    public static final RomAddress ColorDungeonEntitySpritesheetsTable_Slot2 = new RomAddress(0x20, 0x46D6);
+    public static final RomAddress ColorDungeonEntitySpritesheetsTable_Slot3 = new RomAddress(0x20, 0x4702);
+    public static final RomAddress ColorDungeonEntitySpritesheetsTable_Slot4 = new RomAddress(0x20, 0x472E);
+    public static final RomAddress Npc1Tiles = new RomAddress(0x0E, 0x4000);
+    public static final RomAddress Npc2Tiles = new RomAddress(0x11, 0x4000);
+    public static final RomAddress Npc3Tiles = new RomAddress(0x12, 0x4000);
+    public static final RomAddress NpcTilesDataStart = new RomAddress(0x0E, 0x4000);
 }

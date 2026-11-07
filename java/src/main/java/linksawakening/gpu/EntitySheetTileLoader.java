@@ -1,18 +1,20 @@
 package linksawakening.gpu;
 
 import linksawakening.rom.RomSymbols;
+import linksawakening.rom.GbcBanks;
 
 final class EntitySheetTileLoader {
     private final RomTileLoader target;
     EntitySheetTileLoader(RomTileLoader target) { this.target = target; }
-    private static final int[] NPC_TILES_BANKS_GBC = {0x00, 0x31, 0x2E, 0x32};
+    private static final int[] NPC_TILES_BANKS_GBC = {0x00, GbcBanks.adjust(RomSymbols.Npc2Tiles.bank()),
+        GbcBanks.adjust(RomSymbols.Npc1Tiles.bank()), GbcBanks.adjust(RomSymbols.Npc3Tiles.bank())};
     private static final int ENTITY_SHEET_KEEP = 0xFF;
     private static final int ENTITY_SHEET_BYTE_COUNT = 0x100;
     private static final int ENTITY_SHEET_TILE_COUNT = 0x10;
-    private static final int ENTITY_SHEET_SOURCE_BASE = 0x4000;
+    private static final int ENTITY_SHEET_SOURCE_BASE = RomSymbols.NpcTilesDataStart.address();
     private static final int ENTITY_SHEET_VRAM_BASE = 0x40;
-    private static final int COLOR_DUNGEON_SHEET_TABLE_BANK = 0x20;
-    private static final int[] COLOR_DUNGEON_SHEET_TABLES = {0x46AA, 0x46D6, 0x4702, 0x472E};
+    private static final int COLOR_DUNGEON_SHEET_TABLE_BANK = RomSymbols.ColorDungeonEntitySpritesheetsTable_Slot1.bank();
+    private static final int[] COLOR_DUNGEON_SHEET_TABLES = {RomSymbols.ColorDungeonEntitySpritesheetsTable_Slot1.address(), RomSymbols.ColorDungeonEntitySpritesheetsTable_Slot2.address(), RomSymbols.ColorDungeonEntitySpritesheetsTable_Slot3.address(), RomSymbols.ColorDungeonEntitySpritesheetsTable_Slot4.address()};
     private static final int COLOR_DUNGEON_ROOM_COUNT = 0x16;
     public void loadEntitySpriteSheets(byte[] romData, int[] sheetValues) {
         if (sheetValues == null || sheetValues.length != 4) {
