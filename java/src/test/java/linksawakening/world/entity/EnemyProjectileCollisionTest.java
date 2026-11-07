@@ -245,7 +245,7 @@ final class EnemyProjectileCollisionTest {
 
         assertEquals(1, rockEvents.size());
         assertEquals(EntityProjectileEvent.Kind.SHIELD_BLOCK, rockEvents.getFirst().kind());
-        assertEquals(0x18, rockRuntime.enemyProjectileTransitionCountdown(0));
+        assertEquals(0x18, rockRuntime.enemies().enemyProjectileTransitionCountdown(0));
 
         var nextFrameEvents = rockRuntime.tick(EntityTestFrames.projectileFrame(rockRuntime,
             1, 0x40, 0x50, () -> 0, null,
@@ -260,15 +260,15 @@ final class EnemyProjectileCollisionTest {
 
         assertEquals(1, arrowEvents.size());
         assertTrue(arrowEvents.getFirst().remove());
-        assertEquals(EntityStatus.DISABLED, arrowRuntime.snapshot().slots().get(0).status());
-        assertEquals(0, arrowRuntime.enemyProjectileTransitionCountdown(0));
+        assertEquals(EntityStatus.DISABLED, arrowRuntime.inspection().snapshot().slots().get(0).status());
+        assertEquals(0, arrowRuntime.enemies().enemyProjectileTransitionCountdown(0));
     }
 
     @Test
     void runtimeChecksPairoddProjectileAfterBankFourMovementAndPublishesVfx() {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             projectile(0x58, 0x3F, 0x50, 0)), false, () -> 0);
-        runtime.setPairoddProjectileForTest(0, 0x10, 0, 0);
+        runtime.debug().setPairoddProjectileForTest(0, 0x10, 0, 0);
 
         List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime,
             0, 0x40, 0x50, () -> 0, null,
@@ -277,20 +277,20 @@ final class EnemyProjectileCollisionTest {
         assertEquals(1, events.size());
         assertEquals(EntityProjectileEvent.Kind.LINK_DAMAGE, events.getFirst().kind());
         assertTrue(events.getFirst().remove());
-        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
-        assertEquals(1, runtime.transientVfxRequests().size());
-        TransientVfxRequest vfx = runtime.transientVfxRequests().getFirst();
+        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(1, runtime.enemies().transientVfxRequests().size());
+        TransientVfxRequest vfx = runtime.enemies().transientVfxRequests().getFirst();
         assertEquals(TransientVfxType.SWORD_POKE, vfx.type());
         assertEquals(0x40, vfx.worldX());
         assertEquals(0x50, vfx.worldY());
-        assertEquals(0, runtime.pairoddProjectileSpeedX(0));
+        assertEquals(0, runtime.flyingEnemies().pairoddProjectileSpeedX(0));
     }
 
     @Test
     void runtimeChecksPairoddSwordAfterBankFourMovementAndPublishesBumpResponse() {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             projectile(0x58, 0x32, 0x58, 0x08)), false, () -> 0);
-        runtime.setPairoddProjectileForTest(0, 0x60, 0, 0);
+        runtime.debug().setPairoddProjectileForTest(0, 0x60, 0, 0);
 
         List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime,
             0, 0, 0, () -> 0, null,
@@ -303,13 +303,13 @@ final class EnemyProjectileCollisionTest {
         assertEquals(0x09, event.soundId());
         assertEquals(0x0C, event.linkIgnoreCollisionCountdown());
         assertTrue(event.remove());
-        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
-        assertEquals(1, runtime.transientVfxRequests().size());
-        TransientVfxRequest vfx = runtime.transientVfxRequests().getFirst();
+        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(1, runtime.enemies().transientVfxRequests().size());
+        TransientVfxRequest vfx = runtime.enemies().transientVfxRequests().getFirst();
         assertEquals(TransientVfxType.SWORD_POKE, vfx.type());
         assertEquals(0x38, vfx.worldX());
         assertEquals(0x50, vfx.worldY());
-        assertEquals(0, runtime.pairoddProjectileSpeedX(0));
+        assertEquals(0, runtime.flyingEnemies().pairoddProjectileSpeedX(0));
     }
 
     @Test
@@ -325,8 +325,8 @@ final class EnemyProjectileCollisionTest {
         assertEquals(2, events.size());
         assertEquals(EntityProjectileEvent.Kind.LINK_DAMAGE, events.get(0).kind());
         assertEquals(EntityProjectileEvent.Kind.SWORD_HIT, events.get(1).kind());
-        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
-        assertEquals(1, runtime.transientVfxRequests().size());
+        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(1, runtime.enemies().transientVfxRequests().size());
     }
 
     private static EnemyProjectileCollision.LinkState link(int x, int y, int z,

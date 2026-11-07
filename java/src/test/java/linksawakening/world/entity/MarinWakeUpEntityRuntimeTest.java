@@ -31,7 +31,7 @@ final class MarinWakeUpEntityRuntimeTest {
 
         runtime.applyMarinWakeUpPresentation(0x50, 0x58, 4);
 
-        RoomEntity marin = runtime.snapshot().slots().get(3);
+        RoomEntity marin = runtime.inspection().snapshot().slots().get(3);
         assertEquals(0x50, marin.x());
         assertEquals(0x58, marin.y());
         assertEquals(4, marin.spriteVariant());

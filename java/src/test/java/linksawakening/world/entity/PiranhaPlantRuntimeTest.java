@@ -63,9 +63,9 @@ final class PiranhaPlantRuntimeTest {
             catalog.forEntityType(ENTITY_PIRANHA_PLANT, EntityRoomLoader.RoomTable.INDOORS_A),
             0, 0, 0, 0, -1, false)), true, () -> 0, catalog, new RomEnemyCombatTables(loadRom()));
 
-        assertEquals(0x14, runtime.physicsFlags(0));
+        assertEquals(0x14, runtime.enemies().physicsFlags(0));
         assertEquals(0x00, runtime.options1(0));
-        assertEquals(0x01, runtime.enemyHealth(0));
+        assertEquals(0x01, runtime.enemies().enemyHealth(0));
     }
 
     @Test
@@ -85,8 +85,8 @@ final class PiranhaPlantRuntimeTest {
 
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x78, 0x78, () -> 0));
 
-        assertEquals(0x40, runtime.snapshot().slots().get(0).x());
-        assertEquals(0x40, runtime.snapshot().slots().get(0).y());
+        assertEquals(0x40, runtime.inspection().snapshot().slots().get(0).x());
+        assertEquals(0x40, runtime.inspection().snapshot().slots().get(0).y());
     }
 
     @Test
@@ -100,16 +100,16 @@ final class PiranhaPlantRuntimeTest {
             0, 0, ENTITY_PIRANHA_PLANT, 0x40, 0x40, EntityStatus.ACTIVE,
             definition, 0, 0, 0, 0, -1, false)), true, () -> 0, catalog, new RomEnemyCombatTables(rom));
         creditsRuntime.tick(EntityTestFrames.frame(creditsRuntime, 0, 0x20, 0x40, () -> 0, true));
-        assertEquals(0, creditsRuntime.transitionCountdown(0));
-        assertEquals(0x40, creditsRuntime.snapshot().slots().get(0).y());
+        assertEquals(0, creditsRuntime.enemies().transitionCountdown(0));
+        assertEquals(0x40, creditsRuntime.inspection().snapshot().slots().get(0).y());
 
         RoomEntityRuntime transitionRuntime = RoomEntityRuntime.from(snapshot(new RoomEntity(
             0, 0, ENTITY_PIRANHA_PLANT, 0x40, 0x40, EntityStatus.ACTIVE,
             definition, 0, 0, 0, 0, -1, false)), true, () -> 0, catalog, new RomEnemyCombatTables(rom));
-        transitionRuntime.setTransitionSequenceCounterForTest(0x03);
+        transitionRuntime.debug().setTransitionSequenceCounterForTest(0x03);
         transitionRuntime.tick(EntityTestFrames.frame(transitionRuntime, 0, 0x20, 0x40, () -> 0));
-        assertEquals(0, transitionRuntime.transitionCountdown(0));
-        assertEquals(0x40, transitionRuntime.snapshot().slots().get(0).y());
+        assertEquals(0, transitionRuntime.enemies().transitionCountdown(0));
+        assertEquals(0x40, transitionRuntime.inspection().snapshot().slots().get(0).y());
     }
 
     @Test
@@ -135,19 +135,19 @@ final class PiranhaPlantRuntimeTest {
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x20, () -> 0));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x40, 0x20, () -> 0));
-        assertEquals(0x40, runtime.transitionCountdown(0));
-        assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
+        assertEquals(0x40, runtime.enemies().transitionCountdown(0));
+        assertEquals(0, runtime.inspection().snapshot().slots().get(0).spriteVariant());
 
         for (int frame = 2; frame <= 0x41; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x40, 0x20, () -> 0));
         }
-        assertEquals(0x40, runtime.transitionCountdown(0));
+        assertEquals(0x40, runtime.enemies().transitionCountdown(0));
 
         for (int frame = 0x42; frame <= 0x81; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x00, 0x20, () -> 0));
         }
-        assertEquals(0x40, runtime.transitionCountdown(0));
-        assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
+        assertEquals(0x40, runtime.enemies().transitionCountdown(0));
+        assertEquals(0, runtime.inspection().snapshot().slots().get(0).spriteVariant());
     }
 
     @Test
@@ -160,27 +160,27 @@ final class PiranhaPlantRuntimeTest {
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x00, 0x20, () -> 0));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x00, 0x20, () -> 0));
-        assertEquals(0x40, runtime.transitionCountdown(0));
+        assertEquals(0x40, runtime.enemies().transitionCountdown(0));
 
         for (int frame = 2; frame <= 0x41; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x00, 0x20, () -> 0));
         }
-        assertEquals(0x80, runtime.transitionCountdown(0));
-        assertEquals(4, runtime.snapshot().slots().get(0).spriteVariant());
-        assertEquals(0x40, runtime.snapshot().slots().get(0).y());
+        assertEquals(0x80, runtime.enemies().transitionCountdown(0));
+        assertEquals(4, runtime.inspection().snapshot().slots().get(0).spriteVariant());
+        assertEquals(0x40, runtime.inspection().snapshot().slots().get(0).y());
 
         for (int frame = 0x42; frame <= 0xC1; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x00, 0x20, () -> 0));
         }
-        assertEquals(0x40, runtime.transitionCountdown(0));
-        assertEquals(5, runtime.snapshot().slots().get(0).spriteVariant());
+        assertEquals(0x40, runtime.enemies().transitionCountdown(0));
+        assertEquals(5, runtime.inspection().snapshot().slots().get(0).spriteVariant());
 
         for (int frame = 0xC2; frame <= 0x101; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x00, 0x20, () -> 0));
         }
-        assertEquals(0x00, runtime.transitionCountdown(0));
-        assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
-        assertEquals(0x60, runtime.snapshot().slots().get(0).y());
+        assertEquals(0x00, runtime.enemies().transitionCountdown(0));
+        assertEquals(0, runtime.inspection().snapshot().slots().get(0).spriteVariant());
+        assertEquals(0x60, runtime.inspection().snapshot().slots().get(0).y());
     }
 
     private static RoomEntitySnapshot snapshot(RoomEntity entity) {

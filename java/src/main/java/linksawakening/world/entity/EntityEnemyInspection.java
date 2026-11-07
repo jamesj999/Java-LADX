@@ -135,23 +135,23 @@ public final class EntityEnemyInspection {
         return runtime.laserMotion.speedY(slot);
     }
 
-    List<TransientVfxRequest> transientVfxRequests() {
+    public List<TransientVfxRequest> transientVfxRequests() {
         return List.copyOf(runtime.transientVfxRequests);
     }
 
-    List<BoomerangObjectRequest> boomerangObjectRequests() {
+    public List<BoomerangObjectRequest> boomerangObjectRequests() {
         return List.copyOf(runtime.boomerangObjectRequests);
     }
 
-    List<MagicRodObjectRequest> magicRodObjectRequests() {
+    public List<MagicRodObjectRequest> magicRodObjectRequests() {
         return List.copyOf(runtime.magicRodObjectRequests);
     }
 
-    List<MagicPowderObjectRequest> magicPowderObjectRequests() {
+    public List<MagicPowderObjectRequest> magicPowderObjectRequests() {
         return List.copyOf(runtime.magicPowderObjectRequests);
     }
 
-    int physicsFlags(int slot) {
+    public int physicsFlags(int slot) {
         if (slot < 0 || slot >= runtime.slots.length) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
@@ -614,7 +614,7 @@ public final class EntityEnemyInspection {
         return runtime.butterflyMotion.privateStateY(slot);
     }
 
-    int transitionCountdown(int slot) {
+    public int transitionCountdown(int slot) {
         if (slot < 0 || slot >= runtime.slots.length) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
@@ -674,7 +674,7 @@ public final class EntityEnemyInspection {
         return runtime.powerRecoilDeath[slot];
     }
 
-    int enemyHealth(int slot) {
+    public int enemyHealth(int slot) {
         if (slot < 0 || slot >= runtime.slots.length) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
@@ -688,7 +688,7 @@ public final class EntityEnemyInspection {
         return runtime.enemyFlashCountdown[slot];
     }
 
-    int enemyIgnoreHitsCountdown(int slot) {
+    public int enemyIgnoreHitsCountdown(int slot) {
         if (slot < 0 || slot >= runtime.slots.length) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
@@ -705,12 +705,12 @@ public final class EntityEnemyInspection {
         return runtime.enemyRecoilMotion.recoilSpeedY(slot);
     }
 
-    int ledgeTransitionTimer(int slot) {
+    public int ledgeTransitionTimer(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
         return runtime.ledgeTransitionTimer[slot] & 0xFF;
     }
 
-    int fallingTargetX(int slot) {
+    public int fallingTargetX(int slot) {
         if (slot < 0 || slot >= runtime.slots.length) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
@@ -790,7 +790,7 @@ public final class EntityEnemyInspection {
         }
         return !runtime.dialogActive
             && !runtime.inventoryAppearing
-            && !runtime.witchGotItemPresentationActive()
+            && !runtime.inspection().witchGotItemPresentationActive()
             && !runtime.roomTransitionActive;
     }
 

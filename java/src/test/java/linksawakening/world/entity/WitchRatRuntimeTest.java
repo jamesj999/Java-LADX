@@ -70,9 +70,9 @@ final class WitchRatRuntimeTest {
         assertTrue(RoomEntityCombatRules.supportsEnemyCollision(ENTITY_WITCH_RAT));
         assertEquals(0x04, RoomEntityCombatRules.contactDamage(ENTITY_WITCH_RAT));
         assertEquals(0x01, RoomEntityCombatRules.initialHealth(ENTITY_WITCH_RAT));
-        assertEquals(0xD2, runtime.physicsFlags(0));
+        assertEquals(0xD2, runtime.enemies().physicsFlags(0));
         assertEquals(0x02, runtime.options1(0));
-        assertEquals(0x01, runtime.enemyHealth(0));
+        assertEquals(0x01, runtime.enemies().enemyHealth(0));
     }
 
     @Test
@@ -171,11 +171,11 @@ final class WitchRatRuntimeTest {
         runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x20, 0x20, () -> 0, null,
             new EnemyProjectileCollision.LinkState(0x20, 0x20, 0, 0, 0, false)));
 
-        assertEquals(1, runtime.witchRatState(0));
-        assertEquals(0x30, runtime.witchRatTransitionCountdown(0));
-        assertEquals(0xFE, runtime.witchRatSpeedZ(0));
-        assertEquals(0x15, runtime.snapshot().slots().get(0).spriteDefinition().bank());
-        assertEquals(0x788D, runtime.snapshot().slots().get(0).spriteDefinition().address());
+        assertEquals(1, runtime.enemies().witchRatState(0));
+        assertEquals(0x30, runtime.enemies().witchRatTransitionCountdown(0));
+        assertEquals(0xFE, runtime.enemies().witchRatSpeedZ(0));
+        assertEquals(0x15, runtime.inspection().snapshot().slots().get(0).spriteDefinition().bank());
+        assertEquals(0x788D, runtime.inspection().snapshot().slots().get(0).spriteDefinition().address());
     }
 
     private static RoomEntity witchRat(byte[] rom) {

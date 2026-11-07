@@ -32,12 +32,12 @@ final class PlayerProjectileEnemyCollisionTest {
     void blockingHitboxTakesPrecedenceOverTheIgnoreHitsTimer(int type) throws IOException {
         RoomEntityRuntime runtime = runtime(type, 9, 0, 0);
         int slot = spawn(runtime, type, 0);
-        runtime.setHitboxFlagsForTest(0, 0x80);
-        runtime.setEnemyIgnoreHitsCountdownForTest(0, 8);
-        int health = runtime.enemyHealth(0);
+        runtime.debug().setHitboxFlagsForTest(0, 0x80);
+        runtime.debug().setEnemyIgnoreHitsCountdownForTest(0, 8);
+        int health = runtime.enemies().enemyHealth(0);
         runtime.tick(EntityTestFrames.frame(runtime, 2, 0, 0, () -> 0));
 
-        assertEquals(health, runtime.enemyHealth(0));
+        assertEquals(health, runtime.enemies().enemyHealth(0));
         assertFalse(hitTarget(runtime));
         assertBlocked(runtime, type, slot);
     }
@@ -47,16 +47,16 @@ final class PlayerProjectileEnemyCollisionTest {
     void ignoreHitsTimerAloneLetsTheProjectilePass(int type) throws IOException {
         RoomEntityRuntime runtime = runtime(type, 9, 0, 0);
         int slot = spawn(runtime, type, 0);
-        runtime.setEnemyIgnoreHitsCountdownForTest(0, 8);
-        int beforeX = runtime.snapshot().slots().get(slot).x();
+        runtime.debug().setEnemyIgnoreHitsCountdownForTest(0, 8);
+        int beforeX = runtime.inspection().snapshot().slots().get(slot).x();
         runtime.tick(EntityTestFrames.frame(runtime, 2, 0, 0, () -> 0));
 
-        assertTrue(runtime.snapshot().slots().get(slot).loaded());
+        assertTrue(runtime.inspection().snapshot().slots().get(slot).loaded());
         assertEquals(beforeX + (type == 0 ? 3 : type == 1 ? 2 : 4),
-            runtime.snapshot().slots().get(slot).x());
+            runtime.inspection().snapshot().slots().get(slot).x());
         assertFalse(hitTarget(runtime));
         if (type == 1) {
-            assertEquals(0, runtime.boomerangState(slot));
+            assertEquals(0, runtime.inspection().boomerangState(slot));
         }
     }
 
@@ -65,12 +65,12 @@ final class PlayerProjectileEnemyCollisionTest {
     void attachedIronMaskBlocksOnlyTheFront(int type, int direction) throws IOException {
         RoomEntityRuntime runtime = runtime(type, 0x24, 0, 0);
         int slot = spawn(runtime, type, direction);
-        assertEquals(0, runtime.ironMaskDirection(0));
-        int health = runtime.enemyHealth(0);
+        assertEquals(0, runtime.enemies().ironMaskDirection(0));
+        int health = runtime.enemies().enemyHealth(0);
         runtime.tick(EntityTestFrames.frame(runtime, 2, 0, 0, () -> 0));
 
         if (direction == 1) {
-            assertEquals(health, runtime.enemyHealth(0));
+            assertEquals(health, runtime.enemies().enemyHealth(0));
             assertFalse(hitTarget(runtime));
             assertBlocked(runtime, type, slot);
         } else {
@@ -95,16 +95,16 @@ final class PlayerProjectileEnemyCollisionTest {
     void grabbableTargetsBypassDamageAndHitboxImmunity(int type) throws IOException {
         RoomEntityRuntime runtime = runtime(type, 9, 0, 0);
         int slot = spawn(runtime, type, 0);
-        runtime.setPhysicsFlagsForTest(0, 0x20);
-        runtime.setHitboxFlagsForTest(0, 0x80);
-        runtime.setEnemyIgnoreHitsCountdownForTest(0, 8);
+        runtime.debug().setPhysicsFlagsForTest(0, 0x20);
+        runtime.debug().setHitboxFlagsForTest(0, 0x80);
+        runtime.debug().setEnemyIgnoreHitsCountdownForTest(0, 8);
         runtime.tick(EntityTestFrames.frame(runtime, 2, 0, 0, () -> 0));
         assertFalse(hitTarget(runtime));
-        assertTrue(runtime.snapshot().slots().get(slot).loaded());
+        assertTrue(runtime.inspection().snapshot().slots().get(slot).loaded());
         if (type == 1) {
-            assertEquals(1, runtime.boomerangState(slot));
+            assertEquals(1, runtime.inspection().boomerangState(slot));
         } else if (type == 0) {
-            assertEquals(0, runtime.playerArrowTransitionCountdown(slot));
+            assertEquals(0, runtime.inspection().playerArrowTransitionCountdown(slot));
         }
     }
 
@@ -114,21 +114,21 @@ final class PlayerProjectileEnemyCollisionTest {
             throws IOException {
         RoomEntityRuntime runtime = runtime(0, 9, 0, 0);
         int slot = spawn(runtime, 0, 0);
-        runtime.setHitboxFlagsForTest(0, 0x80);
-        runtime.setDialogActive(paused);
+        runtime.debug().setHitboxFlagsForTest(0, 0x80);
+        runtime.configuration().setDialogActive(paused);
         runtime.tick(EntityTestFrames.frame(runtime, 2, 0, 0, () -> 0));
         if (paused) {
-            assertEquals(0, runtime.playerArrowTransitionCountdown(slot));
+            assertEquals(0, runtime.inspection().playerArrowTransitionCountdown(slot));
             runtime.clearEntity(0);
-            runtime.setDialogActive(false);
+            runtime.configuration().setDialogActive(false);
             runtime.tick(EntityTestFrames.frame(runtime, 3, 0, 0, () -> 0));
         }
-        assertEquals(0x18, runtime.playerArrowTransitionCountdown(slot));
+        assertEquals(0x18, runtime.inspection().playerArrowTransitionCountdown(slot));
         runtime.clearEntity(0);
         runtime.clearEntity(slot);
         assertEquals(slot, runtime.spawnArrow(0x40, 0x50, 0, 0));
         runtime.tick(EntityTestFrames.frame(runtime, 4, 0, 0, () -> 0));
-        assertEquals(0, runtime.playerArrowTransitionCountdown(slot));
+        assertEquals(0, runtime.inspection().playerArrowTransitionCountdown(slot));
     }
 
     @ParameterizedTest
@@ -138,7 +138,7 @@ final class PlayerProjectileEnemyCollisionTest {
         RoomEntityRuntime runtime = runtime(3, 0x24, dx, dy);
         runtime.spawnHookshotChain(0x40, 0x50, 0, 1);
         runtime.tick(EntityTestFrames.frame(runtime, 2, 0xC0, 0xC0, () -> 0));
-        assertEquals(unmasked ? 1 : 0, runtime.ironMaskPrivateState2(0));
+        assertEquals(unmasked ? 1 : 0, runtime.enemies().ironMaskPrivateState2(0));
     }
 
     @Test
@@ -147,30 +147,30 @@ final class PlayerProjectileEnemyCollisionTest {
         runtime.spawnHookshotChain(0x40, 0x50, 0, 1);
         runtime.tick(EntityTestFrames.frame(runtime, 2, 0xC0, 0xC0, () -> 0, (entity, direction, x, y) -> {
             if (entity.type() == 3) {
-                assertEquals(1, runtime.ironMaskPrivateState2(0));
+                assertEquals(1, runtime.enemies().ironMaskPrivateState2(0));
                 return true;
             }
             return false;
         }));
-        assertEquals(1, runtime.ironMaskPrivateState2(0));
+        assertEquals(1, runtime.enemies().ironMaskPrivateState2(0));
     }
 
     @Test
     void returningHookshotSkipsEnemyAndBackgroundInteractions() throws IOException {
         RoomEntityRuntime runtime = runtime(3, 0x24, 0, 0);
-        int physics = runtime.physicsFlags(0);
-        runtime.setPhysicsFlagsForTest(0, 0x40);
+        int physics = runtime.enemies().physicsFlags(0);
+        runtime.debug().setPhysicsFlagsForTest(0, 0x40);
         int slot = runtime.spawnHookshotChain(0x40, 0x50, 0, 1);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0xC0, 0xC0, () -> 0,
             (entity, direction, x, y) -> entity.type() == 3));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0xC0, 0xC0, () -> 0));
-        assertEquals(0, runtime.hookshotTransitionCountdown(slot));
-        runtime.setPhysicsFlagsForTest(0, physics);
+        assertEquals(0, runtime.inspection().hookshotTransitionCountdown(slot));
+        runtime.debug().setPhysicsFlagsForTest(0, physics);
         runtime.tick(EntityTestFrames.frame(runtime, 2, 0xC0, 0xC0, () -> 0, (entity, direction, x, y) -> {
             assertFalse(entity.type() == 3, "Returning hookshot probed the background");
             return false;
         }));
-        assertEquals(0, runtime.ironMaskPrivateState2(0));
+        assertEquals(0, runtime.enemies().ironMaskPrivateState2(0));
     }
 
     private static boolean hitTarget(RoomEntityRuntime runtime) {
@@ -179,16 +179,16 @@ final class PlayerProjectileEnemyCollisionTest {
 
     private static void assertBlocked(RoomEntityRuntime runtime, int type, int slot) {
         if (type == 0) {
-            assertTrue(runtime.snapshot().slots().get(slot).loaded());
-            assertEquals(0x18, runtime.playerArrowTransitionCountdown(slot));
+            assertTrue(runtime.inspection().snapshot().slots().get(slot).loaded());
+            assertEquals(0x18, runtime.inspection().playerArrowTransitionCountdown(slot));
         } else if (type == 1) {
-            assertTrue(runtime.snapshot().slots().get(slot).loaded());
-            assertEquals(1, runtime.boomerangState(slot));
-            assertEquals(0, runtime.boomerangTransitionCountdown(slot));
+            assertTrue(runtime.inspection().snapshot().slots().get(slot).loaded());
+            assertEquals(1, runtime.inspection().boomerangState(slot));
+            assertEquals(0, runtime.inspection().boomerangTransitionCountdown(slot));
         } else {
-            assertFalse(runtime.snapshot().slots().get(slot).loaded());
+            assertFalse(runtime.inspection().snapshot().slots().get(slot).loaded());
             assertEquals(TransientVfxType.SWORD_POKE,
-                runtime.transientVfxRequests().getFirst().type());
+                runtime.enemies().transientVfxRequests().getFirst().type());
         }
     }
 

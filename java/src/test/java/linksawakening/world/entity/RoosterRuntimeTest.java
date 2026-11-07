@@ -32,21 +32,21 @@ final class RoosterRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, -1, MotionTestAccess.RoosterMotion_ENTITY_TYPE, 0x40, 0x50,
                 EntityStatus.ACTIVE, definition(), 0, 0, 0, 0, -1, false)));
-        runtime.setFollowingNpcState(new FollowingNpcState(true, 0, false, false,
+        runtime.configuration().setFollowingNpcState(new FollowingNpcState(true, 0, false, false,
             0, 0, false));
-        runtime.setActionButtonsHeld(false, true);
-        runtime.setLikeLikeLinkInventory(0x00, 0x03);
-        runtime.setPowerBraceletButtonHeld(true);
-        runtime.setLinkAttackStepAnimationCountdown(0);
+        runtime.configuration().setActionButtonsHeld(false, true);
+        runtime.configuration().setLikeLikeLinkInventory(0x00, 0x03);
+        runtime.configuration().setPowerBraceletButtonHeld(true);
+        runtime.configuration().setLinkAttackStepAnimationCountdown(0);
 
         runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x40, 0x50, () -> 0, null,
             new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0, 3, false)));
 
-        RoomEntity rooster = runtime.snapshot().slots().get(0);
+        RoomEntity rooster = runtime.inspection().snapshot().slots().get(0);
         assertEquals(EntityStatus.LIFTED, rooster.status());
-        assertEquals(0xD2, runtime.physicsFlags(0));
-        assertTrue(runtime.liftedEntityState().active());
-        assertEquals(MotionTestAccess.RoosterMotion_ENTITY_TYPE, runtime.liftedEntityState().type());
+        assertEquals(0xD2, runtime.enemies().physicsFlags(0));
+        assertTrue(runtime.inspection().liftedEntityState().active());
+        assertEquals(MotionTestAccess.RoosterMotion_ENTITY_TYPE, runtime.inspection().liftedEntityState().type());
         assertTrue(runtime.consumePendingEntityEvents().contains(new EntityCombatEvent(
             0, MotionTestAccess.RoosterMotion_ENTITY_TYPE, 0, false,
             EntityCombatEvent.SoundChannel.WAVE, RoosterMotion.LIFT_WAVE_SFX)));

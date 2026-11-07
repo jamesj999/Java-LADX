@@ -64,28 +64,28 @@ final class BlooperRuntimeTest {
             new RoomEntity(0, 0, 0xA9, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
             true, () -> 0, catalog, tables);
         AtomicInteger groundCalls = new AtomicInteger();
-        runtime.setGroundInteraction((entity, frameCounter, previousStatus, speedZ,
+        runtime.configuration().setGroundInteraction((entity, frameCounter, previousStatus, speedZ,
                                        sideScrolling) -> {
             groundCalls.incrementAndGet();
             return RoomEntityGroundInteraction.Result.unchanged(entity, 0x01);
         });
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 48, 40, () -> 0));
-        assertEquals(1, runtime.blooperState(0));
-        assertEquals(0x25, runtime.blooperTransitionCountdown(0));
-        assertEquals(1, runtime.blooperDirection(0));
-        assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
+        assertEquals(1, runtime.enemies().blooperState(0));
+        assertEquals(0x25, runtime.enemies().blooperTransitionCountdown(0));
+        assertEquals(1, runtime.enemies().blooperDirection(0));
+        assertEquals(0, runtime.inspection().snapshot().slots().get(0).spriteVariant());
 
         runtime.tick(EntityTestFrames.frame(runtime, 1, 48, 40, () -> 0));
-        assertEquals(1, runtime.snapshot().slots().get(0).spriteVariant());
+        assertEquals(1, runtime.inspection().snapshot().slots().get(0).spriteVariant());
 
         runtime.tick(EntityTestFrames.frame(runtime, 2, 48, 40, () -> 0));
-        assertEquals(0xFF, runtime.blooperSpeedX(0));
-        assertEquals(0xFF, runtime.blooperSpeedY(0));
-        assertEquals(1, runtime.snapshot().slots().get(0).spriteVariant());
+        assertEquals(0xFF, runtime.enemies().blooperSpeedX(0));
+        assertEquals(0xFF, runtime.enemies().blooperSpeedY(0));
+        assertEquals(1, runtime.inspection().snapshot().slots().get(0).spriteVariant());
         assertEquals(3, groundCalls.get());
-        assertEquals(0x02, runtime.physicsFlags(0));
-        assertEquals(0x01, runtime.enemyHealth(0));
+        assertEquals(0x02, runtime.enemies().physicsFlags(0));
+        assertEquals(0x01, runtime.enemies().enemyHealth(0));
     }
 
     @Test
@@ -100,7 +100,7 @@ final class BlooperRuntimeTest {
             new RoomEntity(0, 0, 0xA9, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
             true, () -> 0, catalog, tables);
         AtomicInteger groundCalls = new AtomicInteger();
-        runtime.setGroundInteraction((entity, frameCounter, previousStatus, speedZ,
+        runtime.configuration().setGroundInteraction((entity, frameCounter, previousStatus, speedZ,
                                        sideScrolling) -> {
             groundCalls.incrementAndGet();
             return RoomEntityGroundInteraction.Result.unchanged(entity, 0x01);
@@ -110,13 +110,13 @@ final class BlooperRuntimeTest {
             new EnemyProjectileCollision.LinkState(48, 40, 0,
                 EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE, 0, false)));
 
-        assertEquals(0, runtime.blooperState(0));
-        assertEquals(0, runtime.blooperTransitionCountdown(0));
-        assertEquals(0, runtime.blooperSpeedX(0));
-        assertEquals(0, runtime.blooperSpeedY(0));
+        assertEquals(0, runtime.enemies().blooperState(0));
+        assertEquals(0, runtime.enemies().blooperTransitionCountdown(0));
+        assertEquals(0, runtime.enemies().blooperSpeedX(0));
+        assertEquals(0, runtime.enemies().blooperSpeedY(0));
         assertEquals(0, groundCalls.get());
-        assertEquals(64, runtime.snapshot().slots().get(0).x());
-        assertEquals(64, runtime.snapshot().slots().get(0).y());
+        assertEquals(64, runtime.inspection().snapshot().slots().get(0).x());
+        assertEquals(64, runtime.inspection().snapshot().slots().get(0).y());
     }
 
     private static RoomEntitySnapshot snapshot(RoomEntity entity) {

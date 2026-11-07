@@ -7,7 +7,7 @@ import java.util.Arrays;
 import static linksawakening.world.entity.RoomEntityRuntime.*;
 
 /** Room entity configuration preserving source-shaped handler inputs. */
-final class EntityDebugConfiguration {
+public final class EntityDebugConfiguration {
     private final RoomEntityRuntime runtime;
     EntityDebugConfiguration(RoomEntityRuntime runtime) { this.runtime = runtime; }
 
@@ -65,7 +65,7 @@ final class EntityDebugConfiguration {
     }
 
     void setLikeLikeLinkInventoryForTest(int itemA, int itemB) {
-        runtime.setLikeLikeLinkInventory(itemA, itemB);
+        runtime.configuration().setLikeLikeLinkInventory(itemA, itemB);
     }
 
     void setDroppedItemForTest(int slot, int itemType) {
@@ -75,28 +75,28 @@ final class EntityDebugConfiguration {
     }
 
     void setEntityMapIdForTest(int mapId) {
-        runtime.setEntityMapId(mapId);
+        runtime.configuration().setEntityMapId(mapId);
     }
 
     void setEntityRoomIdForTest(int roomId) {
-        runtime.setEntityRoomId(roomId);
+        runtime.configuration().setEntityRoomId(roomId);
     }
 
     void setEntityRoomStatusForTest(int roomStatus) {
-        runtime.setEntityRoomStatus(roomStatus);
+        runtime.configuration().setEntityRoomStatus(roomStatus);
     }
 
     void setSecretSeashellPegasusCollisionForTest(boolean screenShakeActive,
                                                    boolean collisionActive,
                                                    int collisionX, int collisionY) {
-        runtime.setSecretSeashellPegasusCollisionState(screenShakeActive, collisionActive,
+        runtime.configuration().setSecretSeashellPegasusCollisionState(screenShakeActive, collisionActive,
             collisionX, collisionY);
     }
 
     void setDroppablePegasusCollisionForTest(boolean screenShakeActive,
                                              boolean collisionActive,
                                              int collisionX, int collisionY) {
-        runtime.setSecretSeashellPegasusCollisionState(screenShakeActive, collisionActive,
+        runtime.configuration().setSecretSeashellPegasusCollisionState(screenShakeActive, collisionActive,
             collisionX, collisionY);
     }
 
@@ -184,7 +184,7 @@ final class EntityDebugConfiguration {
     }
 
     void setSwitchBlockAnimationActiveForTest(boolean active) {
-        runtime.setSwitchBlockAnimationActive(active);
+        runtime.configuration().setSwitchBlockAnimationActive(active);
     }
 
     void setSideViewPlatformSpeedYForTest(int slot, int speed) {
@@ -235,13 +235,13 @@ final class EntityDebugConfiguration {
         runtime.wizrobeProjectileMotion.setForTest(slot, newSpeedX, newSpeedY, direction);
     }
 
-    void setEnemyIgnoreHitsCountdownForTest(int slot, int value) {
+    public void setEnemyIgnoreHitsCountdownForTest(int slot, int value) {
         EntitySlotValidation.validateCountdownTestValue(slot, value);
         runtime.enemyIgnoreHitsCountdown[slot] = value;
     }
 
     void setOcarinaPlaybackForTest(int countdown, int songFlags, int selectedSong) {
-        runtime.setOcarinaPlayback(countdown, songFlags, selectedSong);
+        runtime.configuration().setOcarinaPlayback(countdown, songFlags, selectedSong);
     }
 
     void setOcarinaAnimationForTest(int animationCounter, int animationPhase) {
@@ -307,11 +307,11 @@ final class EntityDebugConfiguration {
     }
 
     void setThrownDirectionForTest(int slot, int value) {
-        runtime.setThrownDirection(slot, value);
+        runtime.configuration().setThrownDirection(slot, value);
     }
 
     void setLedgeTransitionTimerForTest(int slot, int value) {
-        runtime.setLedgeTransitionTimer(slot, value);
+        runtime.configuration().setLedgeTransitionTimer(slot, value);
     }
 
     void setKeyDropTransitionCountdownForTest(int slot, int value) {
@@ -333,14 +333,14 @@ final class EntityDebugConfiguration {
     }
 
     void setGoldenLeavesCountForTest(int value) {
-        runtime.setGoldenLeavesCount(value);
+        runtime.configuration().setGoldenLeavesCount(value);
     }
 
     void setBooBuddyTriggerCountForTest(int value) {
-        runtime.setBooBuddyTriggerCount(value);
+        runtime.configuration().setBooBuddyTriggerCount(value);
     }
 
-    void setColorShellStateForTest(int slot, int state, int transitionCountdown,
+    public void setColorShellStateForTest(int slot, int state, int transitionCountdown,
                                    int direction, int speedX, int speedY) {
         runtime.colorShellMotion.setStateForTest(slot, state, transitionCountdown,
             direction, speedX, speedY);

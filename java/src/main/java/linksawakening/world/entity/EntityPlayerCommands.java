@@ -57,7 +57,7 @@ final class EntityPlayerCommands {
 
     boolean throwLiftedEntity(int romDirection) {
         EntitySlotValidation.validateRomDirection(romDirection);
-        LiftedEntityState state = runtime.liftedEntityState();
+        LiftedEntityState state = runtime.inspection().liftedEntityState();
         if (!state.active() || state.carryState() != 0x01) {
             return false;
         }

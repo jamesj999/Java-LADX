@@ -29,7 +29,7 @@ public final class EntityRoomInspection {
         return List.copyOf(runtime.projectileLaunchRequests);
     }
 
-    LiftedEntityState liftedEntityState() {
+    public LiftedEntityState liftedEntityState() {
         if (runtime.liftedEntitySlot < 0 || runtime.liftedEntitySlot >= runtime.slots.length) {
             return LiftedEntityState.none();
         }
@@ -65,7 +65,7 @@ public final class EntityRoomInspection {
         return count;
     }
 
-    int activeProjectileCount() {
+    public int activeProjectileCount() {
         int count = 0;
         for (RoomEntity entity : runtime.slots) {
             if (!entity.loaded()) {
@@ -80,7 +80,7 @@ public final class EntityRoomInspection {
         return count;
     }
 
-    boolean boomerangActive() {
+    public boolean boomerangActive() {
         for (RoomEntity entity : runtime.slots) {
             if (entity.loaded() && entity.type() == runtime.ENTITY_BOOMERANG) {
                 return true;
@@ -174,11 +174,11 @@ public final class EntityRoomInspection {
         return runtime.playerArrowBombArrow[slot];
     }
 
-    boolean lastArrowShotPlayedWhoosh() {
+    public boolean lastArrowShotPlayedWhoosh() {
         return runtime.lastArrowShotPlayedWhoosh;
     }
 
-    boolean lastBombPlacementPlayedBump() {
+    public boolean lastBombPlacementPlayedBump() {
         return runtime.lastBombPlacementPlayedBump;
     }
 
@@ -211,7 +211,7 @@ public final class EntityRoomInspection {
             && runtime.slots[slot].type() == type;
     }
 
-    boolean bombActive() {
+    public boolean bombActive() {
         for (RoomEntity entity : runtime.slots) {
             if (entity.loaded() && entity.type() == runtime.ENTITY_BOMB
                 && !runtime.bombFinalPresentationPending[entity.slot()]) {
@@ -221,7 +221,7 @@ public final class EntityRoomInspection {
         return false;
     }
 
-    int bombDirection(int slot) {
+    public int bombDirection(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
         return runtime.bombDirection[slot] & 0xFF;
     }
@@ -231,7 +231,7 @@ public final class EntityRoomInspection {
         return runtime.bombPrivateCountdown1[slot] & 0xFF;
     }
 
-    boolean hookshotActive() {
+    public boolean hookshotActive() {
         return hookshotSlot() >= 0;
     }
 
@@ -295,7 +295,7 @@ public final class EntityRoomInspection {
         return state != null && state.wallCollisionPending();
     }
 
-    RoomEntitySnapshot snapshot() {
+    public RoomEntitySnapshot snapshot() {
         return new RoomEntitySnapshot(Arrays.asList(runtime.slots), runtime.spriteSelection, runtime.spriteTiles,
             runtime.groundInteractionSideScrolling, runtime.hookshotChainOam, runtime.pincerBodyOam,
             runtime.wingedOctorokOam,
@@ -342,14 +342,14 @@ public final class EntityRoomInspection {
         return runtime.bushCrawlerMotion.speedY(slot);
     }
 
-    int groundStatus(int slot) {
+    public int groundStatus(int slot) {
         if (slot < 0 || slot >= runtime.entityGroundStatus.length) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
         return runtime.entityGroundStatus[slot];
     }
 
-    int bowWowState() {
+    public int bowWowState() {
         return runtime.bowWowState & 0xFF;
     }
 
@@ -357,7 +357,7 @@ public final class EntityRoomInspection {
         return runtime.moblinKingMotion.state(slot);
     }
 
-    boolean shouldGetLostInMysteriousWoods() {
+    public boolean shouldGetLostInMysteriousWoods() {
         return runtime.shouldGetLostInMysteriousWoods;
     }
 
@@ -415,7 +415,7 @@ public final class EntityRoomInspection {
         return runtime.entityRoomStatus & 0xFF;
     }
 
-    int warpTransitionCountdownForTest(int slot) {
+    public int warpTransitionCountdownForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
         return runtime.warpTransitionCountdown[slot] & 0xFF;
     }
@@ -446,7 +446,7 @@ public final class EntityRoomInspection {
         return runtime.sideViewPlatformMotion.privateState4(slot);
     }
 
-    boolean witchGotItemPresentationActive() {
+    public boolean witchGotItemPresentationActive() {
         for (int countdown : runtime.witchGotItemCountdown) {
             if (countdown != 0) {
                 return true;
@@ -455,12 +455,12 @@ public final class EntityRoomInspection {
         return false;
     }
 
-    boolean powerUpPickupSequenceActive() {
+    public boolean powerUpPickupSequenceActive() {
         for (int countdown : runtime.powerUpPickupCountdown) if (countdown != 0) return true;
         return false;
     }
 
-    boolean swordPickupSequenceActive() {
+    public boolean swordPickupSequenceActive() {
         for (boolean active : runtime.swordPickupSequenceActive) {
             if (active) {
                 return true;
@@ -489,7 +489,7 @@ public final class EntityRoomInspection {
         return runtime.likeLikeMotion.walkSpeedY(slot);
     }
 
-    List<HookshotBridgeUpdate> hookshotBridgeUpdates() {
+    public List<HookshotBridgeUpdate> hookshotBridgeUpdates() {
         return List.copyOf(runtime.hookshotBridgeUpdates);
     }
 
@@ -547,18 +547,18 @@ public final class EntityRoomInspection {
             && runtime.dialogCooldown == 0 && runtime.windowY == 0x80;
     }
 
-    boolean heartPiecePickupActive() {
+    public boolean heartPiecePickupActive() {
         for (var motion : runtime.heartPiecePickup) if (motion != null && motion.active()) return true;
         return false;
     }
 
-    HeartPieceVisual heartPieceVisual() {
+    public HeartPieceVisual heartPieceVisual() {
         for (var motion : runtime.heartPiecePickup) if (motion != null && motion.showMeter())
             return new HeartPieceVisual(runtime.heartPiecesCount, runtime.heartPieceMeterPairs);
         return null;
     }
 
-    String instrumentTrace() {
+    public String instrumentTrace() {
         StringBuilder trace = new StringBuilder().append(runtime.activeMusic ? 1 : 0);
         for (RoomEntity entity : runtime.slots) {
             if (entity.loaded() && entity.type() == 0x39 && runtime.instrumentParticleKind[entity.slot()] == 0) {
@@ -571,7 +571,7 @@ public final class EntityRoomInspection {
         return trace.toString();
     }
 
-    String moblinKingTrace() {
+    public String moblinKingTrace() {
         for (RoomEntity entity : runtime.slots) if (entity.loaded() && entity.type() == runtime.ENTITY_MOBLIN_KING) {
             int slot = entity.slot();
             return "%d,%d,%d,%d,%d,%d,%d".formatted(runtime.moblinKingMotion.state(slot),
@@ -581,7 +581,7 @@ public final class EntityRoomInspection {
         return "-1";
     }
 
-    InstrumentWarpVisual instrumentWarpVisual() {
+    public InstrumentWarpVisual instrumentWarpVisual() {
         for (int slot = 0; slot < runtime.instrumentPickupState.length; slot++) {
             // The ROM leaves the white BG/palettes in VRAM after the controller
             // finishes. Keep them until the destination room replaces this runtime.
@@ -683,14 +683,14 @@ public final class EntityRoomInspection {
         return runtime.killCount;
     }
 
-    int killOrderAt(int index) {
+    public int killOrderAt(int index) {
         if (index < 0 || index >= runtime.killOrder.length) {
             throw new IllegalArgumentException("Kill-order index out of range: " + index);
         }
         return runtime.killOrder[index];
     }
 
-    EnemyDropResolver.CounterState enemyDropCounters() {
+    public EnemyDropResolver.CounterState enemyDropCounters() {
         return runtime.enemyDropCounters;
     }
 
@@ -719,12 +719,12 @@ public final class EntityRoomInspection {
         return runtime.enemyDropMotion.speedY(slot);
     }
 
-    int dropSpeedX(int slot) {
+    public int dropSpeedX(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
         return runtime.enemyDropMotion.speedX(slot);
     }
 
-    int dropSpeedZ(int slot) {
+    public int dropSpeedZ(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
         return runtime.enemyDropMotion.speedZ(slot);
     }

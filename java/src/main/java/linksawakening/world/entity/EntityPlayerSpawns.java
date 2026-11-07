@@ -56,7 +56,7 @@ public final class EntityPlayerSpawns {
 
     int spawnHookshotChain(int linkEntityX, int linkEntityY, int linkEntityZ,
                            int romDirection) {
-        if (runtime.hookshotActive()) {
+        if (runtime.inspection().hookshotActive()) {
             return -1;
         }
         int freeSlot = runtime.findFreeEntitySlot();
@@ -144,7 +144,7 @@ public final class EntityPlayerSpawns {
                    boolean pieceOfPower) {
         EntitySlotValidation.validateRomDirection(romDirection);
         runtime.lastArrowShotPlayedWhoosh = false;
-        if (runtime.activeProjectileCount() >= 0x02) {
+        if (runtime.inspection().activeProjectileCount() >= 0x02) {
             return -1;
         }
         int freeSlot = runtime.findFreeEntitySlot();
@@ -194,7 +194,7 @@ public final class EntityPlayerSpawns {
     int spawnBoomerang(int linkEntityX, int linkEntityY, int linkEntityZ,
                        int romDirection, int pressedButtonsMask) {
         EntitySlotValidation.validateRomDirection(romDirection);
-        if (runtime.activeProjectileCount() != 0) {
+        if (runtime.inspection().activeProjectileCount() != 0) {
             return -1;
         }
         int freeSlot = runtime.findFreeEntitySlot();
@@ -228,7 +228,7 @@ public final class EntityPlayerSpawns {
     int spawnSwordBeam(int linkEntityX, int linkEntityY, int linkEntityZ,
                        int romDirection) {
         EntitySlotValidation.validateRomDirection(romDirection);
-        if (runtime.activeProjectileCount() != 0) {
+        if (runtime.inspection().activeProjectileCount() != 0) {
             return -1;
         }
         int freeSlot = runtime.findFreeEntitySlot();
@@ -269,7 +269,7 @@ public final class EntityPlayerSpawns {
     int spawnMagicRodFireball(int linkEntityX, int linkEntityY, int linkEntityZ,
                               int romDirection, boolean pieceOfPower) {
         EntitySlotValidation.validateRomDirection(romDirection);
-        if (runtime.activeProjectileCount() >= 0x02) {
+        if (runtime.inspection().activeProjectileCount() >= 0x02) {
             return -1;
         }
         int freeSlot = runtime.findFreeEntitySlot();
@@ -376,7 +376,7 @@ public final class EntityPlayerSpawns {
         EntitySlotValidation.validateRomDirection(romDirection);
         runtime.lastBombPlacementPlayedBump = false;
         runtime.bombInteractions.finalizePendingBombPresentations();
-        if (runtime.bombActive()) {
+        if (runtime.inspection().bombActive()) {
             return -1;
         }
         int freeSlot = runtime.findFreeEntitySlot();

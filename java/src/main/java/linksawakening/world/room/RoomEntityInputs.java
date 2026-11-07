@@ -41,7 +41,7 @@ final class RoomEntityInputs {
     void setEntityDialogActive(boolean active) {
         entityDialogActive = active;
         if (runtime.get() != null) {
-            runtime.get().setDialogActive(active);
+            runtime.get().configuration().setDialogActive(active);
         }
     }
 
@@ -54,7 +54,7 @@ final class RoomEntityInputs {
         entityDialogCooldown = dialogCooldown;
         entityWindowY = windowY;
         if (runtime.get() != null) {
-            runtime.get().setTalkState(inventoryAppearing, dialogCooldown, windowY);
+            runtime.get().configuration().setTalkState(inventoryAppearing, dialogCooldown, windowY);
         }
     }
 
@@ -64,14 +64,14 @@ final class RoomEntityInputs {
         }
         entityDialogAskSelectionIndex = selectionIndex;
         if (runtime.get() != null) {
-            runtime.get().setDialogAskSelectionIndex(selectionIndex);
+            runtime.get().configuration().setDialogAskSelectionIndex(selectionIndex);
         }
     }
 
     void setEntityMusicActive(boolean active) {
         entityMusicActive = active;
         if (runtime.get() != null) {
-            runtime.get().setActiveMusic(active);
+            runtime.get().configuration().setActiveMusic(active);
         }
     }
 
@@ -80,14 +80,14 @@ final class RoomEntityInputs {
         this.actionButtonBHeld = actionButtonBHeld;
         this.actionButtonsHeld = actionButtonAHeld || actionButtonBHeld;
         if (runtime.get() != null) {
-            runtime.get().setActionButtonsHeld(actionButtonAHeld, actionButtonBHeld);
+            runtime.get().configuration().setActionButtonsHeld(actionButtonAHeld, actionButtonBHeld);
         }
     }
 
     void setEntityJoypadHeld(boolean joypadHeld) {
         this.joypadHeld = joypadHeld;
         if (runtime.get() != null) {
-            runtime.get().setJoypadHeld(joypadHeld);
+            runtime.get().configuration().setJoypadHeld(joypadHeld);
         }
     }
 
@@ -98,7 +98,7 @@ final class RoomEntityInputs {
         }
         entityPressedButtonsMask = pressedButtonsMask;
         if (runtime.get() != null) {
-            runtime.get().setPressedButtonsMask(pressedButtonsMask);
+            runtime.get().configuration().setPressedButtonsMask(pressedButtonsMask);
         }
     }
 
@@ -107,13 +107,13 @@ final class RoomEntityInputs {
             throw new IllegalArgumentException("Entity inventory slots must be unsigned bytes");
         }
         if (runtime.get() != null) {
-            runtime.get().setLikeLikeLinkInventory(itemA, itemB);
+            runtime.get().configuration().setLikeLikeLinkInventory(itemA, itemB);
         }
     }
 
     void setToadstoolPlayerState(boolean hasToadstool, int magicPowderCount) {
         if (runtime.get() != null) {
-            runtime.get().setToadstoolPlayerState(hasToadstool, magicPowderCount);
+            runtime.get().configuration().setToadstoolPlayerState(hasToadstool, magicPowderCount);
         }
     }
 
@@ -124,7 +124,7 @@ final class RoomEntityInputs {
         }
         entityGoldenLeavesCount = goldenLeavesCount;
         if (runtime.get() != null) {
-            runtime.get().setGoldenLeavesCount(goldenLeavesCount);
+            runtime.get().configuration().setGoldenLeavesCount(goldenLeavesCount);
         }
     }
 
@@ -139,7 +139,7 @@ final class RoomEntityInputs {
         secretSeashellPegasusCollisionX = collisionX;
         secretSeashellPegasusCollisionY = collisionY;
         if (runtime.get() != null) {
-            runtime.get().setSecretSeashellPegasusCollisionState(
+            runtime.get().configuration().setSecretSeashellPegasusCollisionState(
                 screenShakeActive, collisionActive, collisionX, collisionY);
         }
     }
@@ -147,14 +147,14 @@ final class RoomEntityInputs {
     void setEntityPowerBraceletButtonHeld(boolean buttonHeld) {
         this.powerBraceletButtonHeld = buttonHeld;
         if (runtime.get() != null) {
-            runtime.get().setPowerBraceletButtonHeld(buttonHeld);
+            runtime.get().configuration().setPowerBraceletButtonHeld(buttonHeld);
         }
     }
 
     void setEntityBombButtonHeld(boolean buttonHeld) {
         this.bombButtonHeld = buttonHeld;
         if (runtime.get() != null) {
-            runtime.get().setBombButtonHeld(buttonHeld);
+            runtime.get().configuration().setBombButtonHeld(buttonHeld);
         }
     }
 
@@ -164,7 +164,7 @@ final class RoomEntityInputs {
                 + countdown);
         }
         if (runtime.get() != null) {
-            runtime.get().setLinkAttackStepAnimationCountdown(countdown);
+            runtime.get().configuration().setLinkAttackStepAnimationCountdown(countdown);
         }
     }
 
@@ -174,7 +174,7 @@ final class RoomEntityInputs {
                 + positionX);
         }
         if (runtime.get() != null) {
-            runtime.get().setLinkFinalPositionX(positionX);
+            runtime.get().configuration().setLinkFinalPositionX(positionX);
         }
     }
 }

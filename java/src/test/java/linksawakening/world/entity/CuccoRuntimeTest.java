@@ -53,13 +53,13 @@ final class CuccoRuntimeTest {
                 0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)), false,
             () -> 0, catalog, new RomEnemyCombatTables(rom));
 
-        assertEquals(0x92, runtime.physicsFlags(0));
+        assertEquals(0x92, runtime.enemies().physicsFlags(0));
         assertEquals(0x02, runtime.options1(0));
-        runtime.setActionButtonsHeld(true, false);
-        runtime.setLikeLikeLinkInventory(0x03, 0x00);
+        runtime.configuration().setActionButtonsHeld(true, false);
+        runtime.configuration().setLikeLikeLinkInventory(0x03, 0x00);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0));
 
-        assertEquals(EntityStatus.LIFTED, runtime.snapshot().slots().get(0).status());
+        assertEquals(EntityStatus.LIFTED, runtime.inspection().snapshot().slots().get(0).status());
         assertTrue(runtime.consumePendingEntityEvents().stream()
             .noneMatch(event -> event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE));
     }
@@ -81,7 +81,7 @@ final class CuccoRuntimeTest {
 
         assertFalse(events.isEmpty());
         assertEquals(0, events.getFirst().linkDamage());
-        assertEquals(0x4C, runtime.enemyHealth(0));
+        assertEquals(0x4C, runtime.enemies().enemyHealth(0));
     }
 
     private static RoomEntitySnapshot snapshot(RoomEntity entity) {

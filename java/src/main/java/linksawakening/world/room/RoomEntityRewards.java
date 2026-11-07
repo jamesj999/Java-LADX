@@ -86,7 +86,7 @@ final class RoomEntityRewards {
         if (session.context.activeRoom.mapId() >= 0 && session.context.activeRoom.mapId() < session.context.roomState.dungeonProgressFlags.length) {
             session.context.roomState.dungeonProgressFlags[session.context.activeRoom.mapId()] |= 0x02;
         }
-        session.context.entityBridge.entityRuntime.setEntityRoomStatus(session.activeRoomStatusFlags());
+        session.context.entityBridge.entityRuntime.configuration().setEntityRoomStatus(session.activeRoomStatusFlags());
     }
 
     void harvestInstrumentCompletions() {

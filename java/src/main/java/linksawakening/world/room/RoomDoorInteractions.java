@@ -55,7 +55,7 @@ final class RoomDoorInteractions {
         session.context.overworldCollision.setRoom(session.context.activeRoom.roomObjectsArea());
         session.context.overworldCollision.setGbcOverlay(session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
             ? session.context.activeRoom.gbcOverlay() : null);
-        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.snapshot());
+        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.inspection().snapshot());
         return new ChestOpenResult(true, itemType, slot, location);
     }
 
@@ -190,7 +190,7 @@ final class RoomDoorInteractions {
         session.context.overworldCollision.setRoom(session.context.activeRoom.roomObjectsArea());
         session.context.overworldCollision.setGbcOverlay(null);
         if (session.context.entityBridge.entityRuntime != null) {
-            session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.snapshot());
+            session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.inspection().snapshot());
         }
         return true;
     }
@@ -204,7 +204,7 @@ final class RoomDoorInteractions {
         if (session.context.activeRoom == null || session.context.entityBridge.entityRuntime == null
             || session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
             || session.context.activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL
-            || !braceletButtonHeld || session.context.entityBridge.entityRuntime.liftedEntityState().active()) {
+            || !braceletButtonHeld || session.context.entityBridge.entityRuntime.inspection().liftedEntityState().active()) {
             session.context.indoorPotPullFrames = 0;
             return false;
         }
@@ -258,7 +258,7 @@ final class RoomDoorInteractions {
         int y = linkPixelY + 0x10;
         session.context.entityBridge.entityRuntime.spawnLiftedRoomObject(
             x, y, session.romDirectionForProjectileCollision(linkDirection), 0);
-        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.snapshot());
+        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.inspection().snapshot());
         return true;
     }
 

@@ -27,7 +27,7 @@ final class RoomStoryState {
             || !session.context.entityBridge.entityRuntime.applyMarinWakeUpPresentation(x, y, spriteVariant)) {
             return false;
         }
-        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.snapshot());
+        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.inspection().snapshot());
         return true;
     }
 
@@ -36,7 +36,7 @@ final class RoomStoryState {
             && session.context.tarinFlag != 1 && session.context.tarinFlag != 2
             && session.context.entityBridge.entityRuntime != null && (frameCounter & 0x1F) == 0) {
             session.context.entityBridge.entityRuntime.updateHouseTarinPresentation(linkX, linkY);
-            session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.snapshot());
+            session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.inspection().snapshot());
         }
     }
 
@@ -47,7 +47,7 @@ final class RoomStoryState {
     void setTailKeyOwned(boolean owned) {
         session.context.hasTailKey = owned;
         if (session.context.entityBridge.entityRuntime != null) {
-            session.context.entityBridge.entityRuntime.setTailKeyOwned(owned);
+            session.context.entityBridge.entityRuntime.configuration().setTailKeyOwned(owned);
         }
     }
 
@@ -84,8 +84,8 @@ final class RoomStoryState {
     void restoreRoomStatuses(byte[] overworldStatus, byte[] indoorAStatus, byte[] indoorBStatus, byte[] colorDungeonStatus) {
         session.context.roomState.restoreRoomStatuses(overworldStatus, indoorAStatus, indoorBStatus, colorDungeonStatus);
         if (session.context.entityBridge.entityRuntime != null && session.context.activeRoom != null) {
-            session.context.entityBridge.entityRuntime.setEntityRoomStatus(session.activeRoomStatusFlags());
-            session.context.entityBridge.entityRuntime.setTailKeyOwned(session.context.hasTailKey);
+            session.context.entityBridge.entityRuntime.configuration().setEntityRoomStatus(session.activeRoomStatusFlags());
+            session.context.entityBridge.entityRuntime.configuration().setTailKeyOwned(session.context.hasTailKey);
         }
     }
 
@@ -103,7 +103,7 @@ final class RoomStoryState {
             session.context.activeRoom.entities().spriteSelection().withSpriteOverrides(merged));
         session.context.activeRoom.replaceEntities(updated);
         if (session.context.entityBridge.entityRuntime != null) {
-            session.context.entityBridge.entityRuntime.setSpriteSelection(updated.spriteSelection());
+            session.context.entityBridge.entityRuntime.configuration().setSpriteSelection(updated.spriteSelection());
         }
     }
 
@@ -137,7 +137,7 @@ final class RoomStoryState {
         }
         session.context.bowWowState = state;
         if (session.context.entityBridge.entityRuntime != null) {
-            session.context.entityBridge.entityRuntime.setBowWowState(state);
+            session.context.entityBridge.entityRuntime.configuration().setBowWowState(state);
         }
     }
 
@@ -170,9 +170,9 @@ final class RoomStoryState {
         }
         session.context.playerShieldLevel = shieldLevel;
         if (session.context.entityBridge.entityRuntime != null) {
-            session.context.entityBridge.entityRuntime.setChestPlayerLevels(shieldLevel, swordLevel, powerBraceletLevel);
+            session.context.entityBridge.entityRuntime.configuration().setChestPlayerLevels(shieldLevel, swordLevel, powerBraceletLevel);
             if (session.context.activeRoom != null) {
-                session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.snapshot());
+                session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.inspection().snapshot());
             }
         }
     }
@@ -187,7 +187,7 @@ final class RoomStoryState {
 
     void updateWitchEnvironment() {
         if (session.context.entityBridge.entityRuntime != null) {
-            session.context.entityBridge.entityRuntime.setWitchEnvironment(session.context.indoorTorchPaletteEffect.effectAddress(),
+            session.context.entityBridge.entityRuntime.configuration().setWitchEnvironment(session.context.indoorTorchPaletteEffect.effectAddress(),
                 session.context.indoorTorchPaletteEffect.paletteDataFlags(), session.context.entityDefaultMusicTrack);
         }
     }
@@ -217,35 +217,35 @@ final class RoomStoryState {
             result.snapshot(), session.context.activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD,
             session.context.entityRandomByteSource, session.context.entitySpriteHandlerCatalog, session.context.enemyCombatTables,
             session.context.chestContentsTable, session.context.romTables, session.context.romData);
-        session.context.entityBridge.entityRuntime.setColorShellWorld(session.context.colorShellWorld);
-        session.context.entityBridge.entityRuntime.setFollowingNpcState(session.context.followingNpcState);
-        session.context.entityBridge.entityRuntime.setEntityMapId(session.context.activeRoom.mapId());
-        session.context.entityBridge.entityRuntime.setEntityRoomId(session.context.activeRoom.roomId());
-        session.context.entityBridge.entityRuntime.setDungeonMinibossReady(session.context.activeRoom.mapId() >= 0
+        session.context.entityBridge.entityRuntime.configuration().setColorShellWorld(session.context.colorShellWorld);
+        session.context.entityBridge.entityRuntime.configuration().setFollowingNpcState(session.context.followingNpcState);
+        session.context.entityBridge.entityRuntime.configuration().setEntityMapId(session.context.activeRoom.mapId());
+        session.context.entityBridge.entityRuntime.configuration().setEntityRoomId(session.context.activeRoom.roomId());
+        session.context.entityBridge.entityRuntime.configuration().setDungeonMinibossReady(session.context.activeRoom.mapId() >= 0
             && session.context.activeRoom.mapId() < session.context.roomState.dungeonProgressFlags.length
             && (session.context.roomState.dungeonProgressFlags[session.context.activeRoom.mapId()] & 0x01) != 0);
-        session.context.entityBridge.entityRuntime.setOwlDialogResolver(session.context.owlEventDialogResolver::globalDialogId);
-        session.context.entityBridge.entityRuntime.setOwlDefaultMusicResolver(session.context.owlEventDialogResolver::defaultMusicTrack);
-        session.context.entityBridge.entityRuntime.setGroundInteraction(session::entityGroundInteraction);
-        session.context.entityBridge.entityRuntime.setBackgroundInteraction(session.context.entityBackgroundInteraction);
-        session.context.entityBridge.entityRuntime.setObjectQuery(session::entityObjectSample);
-        session.context.entityBridge.entityRuntime.setObjectIntersectionQuery(session::entityObjectIntersectionSample);
-        session.context.entityBridge.entityRuntime.setGroundInteractionSideScrolling(
+        session.context.entityBridge.entityRuntime.configuration().setOwlDialogResolver(session.context.owlEventDialogResolver::globalDialogId);
+        session.context.entityBridge.entityRuntime.configuration().setOwlDefaultMusicResolver(session.context.owlEventDialogResolver::defaultMusicTrack);
+        session.context.entityBridge.entityRuntime.configuration().setGroundInteraction(session::entityGroundInteraction);
+        session.context.entityBridge.entityRuntime.configuration().setBackgroundInteraction(session.context.entityBackgroundInteraction);
+        session.context.entityBridge.entityRuntime.configuration().setObjectQuery(session::entityObjectSample);
+        session.context.entityBridge.entityRuntime.configuration().setObjectIntersectionQuery(session::entityObjectIntersectionSample);
+        session.context.entityBridge.entityRuntime.configuration().setGroundInteractionSideScrolling(
             session.context.activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL);
-        session.context.entityBridge.entityRuntime.setActionButtonsHeld(session.context.entityInputs.actionButtonAHeld, session.context.entityInputs.actionButtonBHeld);
-        session.context.entityBridge.entityRuntime.setTalkState(
+        session.context.entityBridge.entityRuntime.configuration().setActionButtonsHeld(session.context.entityInputs.actionButtonAHeld, session.context.entityInputs.actionButtonBHeld);
+        session.context.entityBridge.entityRuntime.configuration().setTalkState(
             session.context.entityInputs.entityInventoryAppearing, session.context.entityInputs.entityDialogCooldown, session.context.entityInputs.entityWindowY);
-        session.context.entityBridge.entityRuntime.setJoypadHeld(session.context.entityInputs.joypadHeld);
-        session.context.entityBridge.entityRuntime.setPressedButtonsMask(session.context.entityInputs.entityPressedButtonsMask);
-        session.context.entityBridge.entityRuntime.setPowerBraceletButtonHeld(session.context.entityInputs.powerBraceletButtonHeld);
-        session.context.entityBridge.entityRuntime.setBombButtonHeld(session.context.entityInputs.bombButtonHeld);
-        session.context.entityBridge.entityRuntime.setLiftedLinkC13B(session.context.followingEntityYOffset);
-        session.context.entityBridge.entityRuntime.setEntityRoomStatus(session.activeRoomStatusFlags());
-        session.context.entityBridge.entityRuntime.setDungeonMinibossReady(session.context.activeRoom.mapId() >= 0
+        session.context.entityBridge.entityRuntime.configuration().setJoypadHeld(session.context.entityInputs.joypadHeld);
+        session.context.entityBridge.entityRuntime.configuration().setPressedButtonsMask(session.context.entityInputs.entityPressedButtonsMask);
+        session.context.entityBridge.entityRuntime.configuration().setPowerBraceletButtonHeld(session.context.entityInputs.powerBraceletButtonHeld);
+        session.context.entityBridge.entityRuntime.configuration().setBombButtonHeld(session.context.entityInputs.bombButtonHeld);
+        session.context.entityBridge.entityRuntime.configuration().setLiftedLinkC13B(session.context.followingEntityYOffset);
+        session.context.entityBridge.entityRuntime.configuration().setEntityRoomStatus(session.activeRoomStatusFlags());
+        session.context.entityBridge.entityRuntime.configuration().setDungeonMinibossReady(session.context.activeRoom.mapId() >= 0
             && session.context.activeRoom.mapId() < session.context.roomState.dungeonProgressFlags.length
             && (session.context.roomState.dungeonProgressFlags[session.context.activeRoom.mapId()] & 0x01) != 0);
-        session.context.entityBridge.entityRuntime.setTailKeyOwned(session.context.hasTailKey);
-        session.context.entityBridge.entityRuntime.setSecretSeashellPegasusCollisionState(
+        session.context.entityBridge.entityRuntime.configuration().setTailKeyOwned(session.context.hasTailKey);
+        session.context.entityBridge.entityRuntime.configuration().setSecretSeashellPegasusCollisionState(
             session.context.entityInputs.secretSeashellScreenShakeActive, session.context.entityInputs.secretSeashellPegasusCollisionActive,
             session.context.entityInputs.secretSeashellPegasusCollisionX, session.context.entityInputs.secretSeashellPegasusCollisionY);
         session.configureEnemyDropRuntime();

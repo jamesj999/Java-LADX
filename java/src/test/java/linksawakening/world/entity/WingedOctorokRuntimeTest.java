@@ -58,12 +58,12 @@ final class WingedOctorokRuntimeTest {
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x40, () -> 0x02));
 
-        assertEquals(1, runtime.wingedOctorokState(0));
-        assertEquals(0x12, runtime.transitionCountdown(0));
-        assertEquals(0, runtime.wingedOctorokSpeedX(0));
-        assertEquals(2, runtime.wingedOctorokOam().size());
-        assertEquals(0x22, runtime.wingedOctorokOam().get(0).tileIndex());
-        assertEquals(0x40, runtime.wingedOctorokOam().get(0).attributes());
+        assertEquals(1, runtime.inspection().wingedOctorokState(0));
+        assertEquals(0x12, runtime.enemies().transitionCountdown(0));
+        assertEquals(0, runtime.inspection().wingedOctorokSpeedX(0));
+        assertEquals(2, runtime.inspection().wingedOctorokOam().size());
+        assertEquals(0x22, runtime.inspection().wingedOctorokOam().get(0).tileIndex());
+        assertEquals(0x40, runtime.inspection().wingedOctorokOam().get(0).attributes());
     }
 
     @Test
@@ -81,7 +81,7 @@ final class WingedOctorokRuntimeTest {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x60, 0x40, () -> 0));
         }
 
-        RoomEntity rock = runtime.snapshot().loadedEntities().stream()
+        RoomEntity rock = runtime.inspection().snapshot().loadedEntities().stream()
             .filter(entity -> entity.type() == 0x0A)
             .findFirst()
             .orElseThrow();

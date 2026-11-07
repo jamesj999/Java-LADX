@@ -81,17 +81,17 @@ final class PokeyRuntimeTest {
             catalog.forEntityType(ENTITY_POKEY, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
             false, () -> 0, catalog, new RomEnemyCombatTables(loadRom()));
 
-        assertEquals(0x01, runtime.enemyHealth(0));
-        assertEquals(0x12, runtime.physicsFlags(0));
+        assertEquals(0x01, runtime.enemies().enemyHealth(0));
+        assertEquals(0x12, runtime.enemies().physicsFlags(0));
         assertEquals(0x02, runtime.options1(0));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x70, 0x50, () -> 0));
-        assertEquals(0x02, runtime.enemyHealth(0));
-        assertEquals(0, runtime.entityInertia(0));
-        assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
+        assertEquals(0x02, runtime.enemies().enemyHealth(0));
+        assertEquals(0, runtime.inspection().entityInertia(0));
+        assertEquals(0, runtime.inspection().snapshot().slots().get(0).spriteVariant());
 
         runtime.tick(EntityTestFrames.frame(runtime, 8, 0x70, 0x50, () -> 0));
-        assertEquals(1, runtime.snapshot().slots().get(0).spriteVariant());
+        assertEquals(1, runtime.inspection().snapshot().slots().get(0).spriteVariant());
     }
 
     @Test
@@ -105,10 +105,10 @@ final class PokeyRuntimeTest {
 
         // The runtime performs the shared pre-handler decrement first, so $15
         // reaches PokeyEntityHandler as the source's $14 spawn trigger.
-        runtime.setEnemyFlashCountdownForTest(0, 0x15);
+        runtime.debug().setEnemyFlashCountdownForTest(0, 0x15);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x70, 0x50, () -> 0));
 
-        RoomEntity segment = runtime.snapshot().slots().stream()
+        RoomEntity segment = runtime.inspection().snapshot().slots().stream()
             .filter(entity -> entity.type() == ENTITY_POKEY && entity.sourceLoadOrder() == -1)
             .findFirst()
             .orElseThrow();
@@ -117,16 +117,16 @@ final class PokeyRuntimeTest {
         assertEquals(0x40, segment.y());
         assertEquals(EntitySpriteDefinition.Shape.PAIR, segment.spriteDefinition().shape());
         assertEquals(0x4CD5, segment.spriteDefinition().address());
-        assertEquals(0x01, runtime.enemyHealth(segment.slot()));
-        assertEquals(0x12, runtime.physicsFlags(segment.slot()));
+        assertEquals(0x01, runtime.enemies().enemyHealth(segment.slot()));
+        assertEquals(0x12, runtime.enemies().physicsFlags(segment.slot()));
         assertEquals(0x02, runtime.options1(segment.slot()));
-        assertEquals(1, runtime.pokeyPrivateState1(segment.slot()));
-        assertEquals(0x18, runtime.pokeyTransitionCountdown(segment.slot()));
-        assertEquals(1, runtime.entityInertia(0));
+        assertEquals(1, runtime.inspection().pokeyPrivateState1(segment.slot()));
+        assertEquals(0x18, runtime.inspection().pokeyTransitionCountdown(segment.slot()));
+        assertEquals(1, runtime.inspection().entityInertia(0));
         assertNotNull(segment);
 
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x70, 0x50, () -> 0));
-        RoomEntity body = runtime.snapshot().slots().get(0);
+        RoomEntity body = runtime.inspection().snapshot().slots().get(0);
         assertEquals(0x4B77, body.spriteDefinition().address());
         assertEquals(4, body.spriteDefinition().rectangleVariant(0).size());
     }

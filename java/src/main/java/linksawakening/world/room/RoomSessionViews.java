@@ -23,7 +23,7 @@ final class RoomSessionViews {
     private final RoomSession session;
     RoomSessionViews(RoomSession session) { this.session = session; }
 
-    int entityHealth(int slot) { return session.context.entityBridge.entityRuntime.enemyHealth(slot); }
+    int entityHealth(int slot) { return session.context.entityBridge.entityRuntime.enemies().enemyHealth(slot); }
 
     ActiveRoom activeRoom() {
         return session.context.activeRoom;
@@ -111,7 +111,7 @@ final class RoomSessionViews {
     }
 
     boolean heartPiecePickupActive() {
-        return session.context.entityBridge.entityRuntime != null && session.context.entityBridge.entityRuntime.heartPiecePickupActive();
+        return session.context.entityBridge.entityRuntime != null && session.context.entityBridge.entityRuntime.inspection().heartPiecePickupActive();
     }
 
     void setHeartPiecesCount(int count) {
@@ -125,26 +125,26 @@ final class RoomSessionViews {
         return updates;
     }
 
-    String instrumentTrace() { return session.context.entityBridge.entityRuntime == null ? "" : session.context.entityBridge.entityRuntime.instrumentTrace(); }
+    String instrumentTrace() { return session.context.entityBridge.entityRuntime == null ? "" : session.context.entityBridge.entityRuntime.inspection().instrumentTrace(); }
 
-    String moblinKingTrace() { return session.context.entityBridge.entityRuntime == null ? "-1" : session.context.entityBridge.entityRuntime.moblinKingTrace(); }
+    String moblinKingTrace() { return session.context.entityBridge.entityRuntime == null ? "-1" : session.context.entityBridge.entityRuntime.inspection().moblinKingTrace(); }
 
     RoomRenderSnapshot renderSnapshot() {
         if (session.context.activeRoom == null) return null;
         RoomRenderSnapshot snapshot = session.context.activeRoom.renderSnapshot();
         return new RoomRenderSnapshot(snapshot.tileIds(), snapshot.tileAttrs(), snapshot.palettes(),
-            snapshot.entities(), session.context.entityBridge.entityRuntime == null ? null : session.context.entityBridge.entityRuntime.instrumentWarpVisual(),
-            session.context.entityBridge.entityRuntime == null ? null : session.context.entityBridge.entityRuntime.heartPieceVisual());
+            snapshot.entities(), session.context.entityBridge.entityRuntime == null ? null : session.context.entityBridge.entityRuntime.inspection().instrumentWarpVisual(),
+            session.context.entityBridge.entityRuntime == null ? null : session.context.entityBridge.entityRuntime.inspection().heartPieceVisual());
     }
 
     LiftedEntityState liftedEntityState() {
         return session.context.entityBridge.entityRuntime == null
             ? LiftedEntityState.none()
-            : session.context.entityBridge.entityRuntime.liftedEntityState();
+            : session.context.entityBridge.entityRuntime.inspection().liftedEntityState();
     }
 
     int bombDirectionForTest(int slot) {
-        return session.context.entityBridge.entityRuntime == null ? 0xFF : session.context.entityBridge.entityRuntime.bombDirection(slot);
+        return session.context.entityBridge.entityRuntime == null ? 0xFF : session.context.entityBridge.entityRuntime.inspection().bombDirection(slot);
     }
 
     void setColorShellSoundSink(GameplaySoundSink soundSink) {
@@ -153,7 +153,7 @@ final class RoomSessionViews {
 
     void setColorShellStateForTest(int slot, int state, int transitionCountdown, int direction, int speedX, int speedY) {
         if (session.context.entityBridge.entityRuntime != null) {
-            session.context.entityBridge.entityRuntime.setColorShellStateForTest(slot, state, transitionCountdown,
+            session.context.entityBridge.entityRuntime.debug().setColorShellStateForTest(slot, state, transitionCountdown,
                 direction, speedX, speedY);
         }
     }
@@ -162,24 +162,24 @@ final class RoomSessionViews {
         if (session.context.entityBridge.entityRuntime == null) {
             return 0;
         }
-        return session.context.entityBridge.entityRuntime.groundStatus(slot);
+        return session.context.entityBridge.entityRuntime.inspection().groundStatus(slot);
     }
 
     void setEntityIgnoreHitsCountdownForTest(int slot, int value) {
         if (session.context.entityBridge.entityRuntime != null) {
-            session.context.entityBridge.entityRuntime.setEnemyIgnoreHitsCountdownForTest(slot, value);
+            session.context.entityBridge.entityRuntime.debug().setEnemyIgnoreHitsCountdownForTest(slot, value);
         }
     }
 
     void setEntityThrownDirectionForTest(int slot, int value) {
         if (session.context.entityBridge.entityRuntime != null) {
-            session.context.entityBridge.entityRuntime.setThrownDirection(slot, value);
+            session.context.entityBridge.entityRuntime.configuration().setThrownDirection(slot, value);
         }
     }
 
     void setEntityLedgeTimerForTest(int slot, int value) {
         if (session.context.entityBridge.entityRuntime != null) {
-            session.context.entityBridge.entityRuntime.setLedgeTransitionTimer(slot, value);
+            session.context.entityBridge.entityRuntime.configuration().setLedgeTransitionTimer(slot, value);
         }
     }
 
@@ -213,11 +213,11 @@ final class RoomSessionViews {
     }
 
     int entityLedgeTimerForTest(int slot) {
-        return session.context.entityBridge.entityRuntime == null ? 0 : session.context.entityBridge.entityRuntime.ledgeTransitionTimer(slot);
+        return session.context.entityBridge.entityRuntime == null ? 0 : session.context.entityBridge.entityRuntime.enemies().ledgeTransitionTimer(slot);
     }
 
     int entityFallingTargetXForTest(int slot) {
-        return session.context.entityBridge.entityRuntime == null ? 0 : session.context.entityBridge.entityRuntime.fallingTargetX(slot);
+        return session.context.entityBridge.entityRuntime == null ? 0 : session.context.entityBridge.entityRuntime.enemies().fallingTargetX(slot);
     }
 
     int entityTransitionCountdownForTest(int slot) {
@@ -226,8 +226,8 @@ final class RoomSessionViews {
         }
         RoomEntity entity = session.context.activeRoom == null ? null : session.context.activeRoom.entities().slots().get(slot);
         return entity != null && EntityTypeRules.isDungeonWarpType(entity.type())
-            ? session.context.entityBridge.entityRuntime.warpTransitionCountdownForTest(slot)
-            : session.context.entityBridge.entityRuntime.transitionCountdown(slot);
+            ? session.context.entityBridge.entityRuntime.inspection().warpTransitionCountdownForTest(slot)
+            : session.context.entityBridge.entityRuntime.enemies().transitionCountdown(slot);
     }
 
     int roomTriggerCountForTest() {
@@ -259,11 +259,11 @@ final class RoomSessionViews {
     }
 
     int entityDropSpeedXForTest(int slot) {
-        return session.context.entityBridge.entityRuntime == null ? 0 : session.context.entityBridge.entityRuntime.dropSpeedX(slot);
+        return session.context.entityBridge.entityRuntime == null ? 0 : session.context.entityBridge.entityRuntime.inspection().dropSpeedX(slot);
     }
 
     int entityDropSpeedZForTest(int slot) {
-        return session.context.entityBridge.entityRuntime == null ? 0 : session.context.entityBridge.entityRuntime.dropSpeedZ(slot);
+        return session.context.entityBridge.entityRuntime == null ? 0 : session.context.entityBridge.entityRuntime.inspection().dropSpeedZ(slot);
     }
 
     void replaceEntityRuntimeForTest(RoomEntityRuntime runtime) {
@@ -278,7 +278,7 @@ final class RoomSessionViews {
     }
 
     int entityPhysicsFlagsForTest(int slot) {
-        return session.context.entityBridge.entityRuntime == null ? 0 : session.context.entityBridge.entityRuntime.physicsFlags(slot);
+        return session.context.entityBridge.entityRuntime == null ? 0 : session.context.entityBridge.entityRuntime.enemies().physicsFlags(slot);
     }
 
     int adjacentIndoorRoomIdForBombWall(int wallIndex) { return session.context.scrollNavigation.adjacentIndoorRoomIdForBombWall(session.context.activeRoom, session.context.indoorMapPosition, wallIndex); }

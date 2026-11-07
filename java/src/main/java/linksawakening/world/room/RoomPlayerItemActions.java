@@ -20,7 +20,7 @@ final class RoomPlayerItemActions {
         boolean thrown = session.context.entityBridge.entityRuntime.throwLiftedEntity(
             session.romDirectionForProjectileCollision(linkDirection));
         if (thrown) {
-            session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.snapshot());
+            session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.inspection().snapshot());
         }
         return thrown;
     }
@@ -34,7 +34,7 @@ final class RoomPlayerItemActions {
         if (slot < 0) {
             return false;
         }
-        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.snapshot());
+        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.inspection().snapshot());
         return true;
     }
 
@@ -47,7 +47,7 @@ final class RoomPlayerItemActions {
         if (slot < 0) {
             return false;
         }
-        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.snapshot());
+        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.inspection().snapshot());
         return true;
     }
 
@@ -60,7 +60,7 @@ final class RoomPlayerItemActions {
         if (slot < 0) {
             return false;
         }
-        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.snapshot());
+        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.inspection().snapshot());
         return true;
     }
 
@@ -77,7 +77,7 @@ final class RoomPlayerItemActions {
         if (slot < 0) {
             return false;
         }
-        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.snapshot());
+        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.inspection().snapshot());
         return true;
     }
 
@@ -90,7 +90,7 @@ final class RoomPlayerItemActions {
         if (slot < 0) {
             return false;
         }
-        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.snapshot());
+        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.inspection().snapshot());
         return true;
     }
 
@@ -204,12 +204,12 @@ final class RoomPlayerItemActions {
         if (slot < 0) {
             return false;
         }
-        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.snapshot());
+        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.inspection().snapshot());
         return true;
     }
 
     boolean lastBombPlacementPlayedBump() {
-        return session.context.entityBridge.entityRuntime != null && session.context.entityBridge.entityRuntime.lastBombPlacementPlayedBump();
+        return session.context.entityBridge.entityRuntime != null && session.context.entityBridge.entityRuntime.inspection().lastBombPlacementPlayedBump();
     }
 
     boolean shootArrow(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
@@ -230,24 +230,24 @@ final class RoomPlayerItemActions {
         if (slot < 0) {
             return new ArrowShotResult(false, false);
         }
-        boolean playWhoosh = session.context.entityBridge.entityRuntime.lastArrowShotPlayedWhoosh();
-        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.snapshot());
+        boolean playWhoosh = session.context.entityBridge.entityRuntime.inspection().lastArrowShotPlayedWhoosh();
+        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.inspection().snapshot());
         return new ArrowShotResult(true, playWhoosh);
     }
 
     int activeProjectileCount() {
-        return session.context.entityBridge.entityRuntime == null ? 0 : session.context.entityBridge.entityRuntime.activeProjectileCount();
+        return session.context.entityBridge.entityRuntime == null ? 0 : session.context.entityBridge.entityRuntime.inspection().activeProjectileCount();
     }
 
     boolean bombActive() {
-        return session.context.entityBridge.entityRuntime != null && session.context.entityBridge.entityRuntime.bombActive();
+        return session.context.entityBridge.entityRuntime != null && session.context.entityBridge.entityRuntime.inspection().bombActive();
     }
 
     boolean hookshotActive() {
-        return session.context.entityBridge.entityRuntime != null && session.context.entityBridge.entityRuntime.hookshotActive();
+        return session.context.entityBridge.entityRuntime != null && session.context.entityBridge.entityRuntime.inspection().hookshotActive();
     }
 
     boolean boomerangActive() {
-        return session.context.entityBridge.entityRuntime != null && session.context.entityBridge.entityRuntime.boomerangActive();
+        return session.context.entityBridge.entityRuntime != null && session.context.entityBridge.entityRuntime.inspection().boomerangActive();
     }
 }

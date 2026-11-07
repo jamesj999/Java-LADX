@@ -210,7 +210,7 @@ public final class EntityFrameExecution {
             && !state.runtime.roomTransitionActive
             && !state.runtime.dialogActive
             && !state.runtime.inventoryAppearing
-            && !state.runtime.witchGotItemPresentationActive();
+            && !state.runtime.inspection().witchGotItemPresentationActive();
     state.projectileTimersInteractive =
         state.runtime.backgroundMechanics.gameplayEntityTimersInteractive(state.creditsGameplay);
     state.sideViewPotInteractive = state.handlerInteractive;
@@ -342,7 +342,7 @@ public final class EntityFrameExecution {
     state.runtime.followingLinkZ = state.linkZ & 0xFF;
     state.runtime.followingLinkDirection = state.linkDirection & 0xFF;
     state.runtime.followingEntityYOffset = state.entityYOffset & 0xFF;
-    state.carryingEntity = state.runtime.liftedEntityState().carryState() != 0;
+    state.carryingEntity = state.runtime.inspection().liftedEntityState().carryState() != 0;
     state.romLinkDirection = romDirectionForJavaDirection(state.linkDirection);
     state.runtime.lastRomLinkDirection = state.romLinkDirection;
     for (state.index = state.runtime.slots.length - 1; state.index >= 0; state.index--) {

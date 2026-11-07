@@ -113,7 +113,7 @@ public final class EntityStoryController {
         }
         if (!runtime.gameplayWorld || runtime.transitionSequenceCounter != 0x04
             || runtime.dialogActive || runtime.inventoryAppearing || runtime.roomTransitionActive
-            || runtime.witchGotItemPresentationActive() || runtime.owlStatueDialogId < 0) {
+            || runtime.inspection().witchGotItemPresentationActive() || runtime.owlStatueDialogId < 0) {
             return;
         }
         int dx = signedByte((linkEntityX - entity.x()) & 0xFF);
@@ -130,7 +130,7 @@ public final class EntityStoryController {
         int slot = entity.slot();
         if (!runtime.gameplayWorld || runtime.transitionSequenceCounter != 0x04
             || runtime.dialogActive || runtime.inventoryAppearing || runtime.roomTransitionActive
-            || runtime.witchGotItemPresentationActive()) {
+            || runtime.inspection().witchGotItemPresentationActive()) {
             return;
         }
         if (runtime.richardState[slot] == 0 && runtime.entityGoldenLeavesCount >= 0x06) {

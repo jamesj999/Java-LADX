@@ -39,25 +39,25 @@ final class FishRuntimeTest {
                 EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)), false, null, catalog);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
-        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
-        assertEquals(0, runtime.fishState(0));
-        assertEquals(0x52, runtime.physicsFlags(0));
+        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(0, runtime.flyingEnemies().fishState(0));
+        assertEquals(0x52, runtime.enemies().physicsFlags(0));
 
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0, 0, () -> 0));
-        assertEquals(1, runtime.fishState(0));
-        assertEquals(0x08, runtime.fishSpeedX(0));
-        assertEquals(0x40, runtime.fishTransitionCountdown(0));
+        assertEquals(1, runtime.flyingEnemies().fishState(0));
+        assertEquals(0x08, runtime.flyingEnemies().fishSpeedX(0));
+        assertEquals(0x40, runtime.flyingEnemies().fishTransitionCountdown(0));
 
         for (int frame = 2; frame < 0x90; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0));
             List<EntityCombatEvent> events = runtime.consumePendingEntityEvents();
             if (!events.isEmpty()) {
-                assertEquals(2, runtime.fishState(0));
-                assertEquals(0x12, runtime.physicsFlags(0));
-                RoomEntity fish = runtime.snapshot().slots().get(0);
+                assertEquals(2, runtime.flyingEnemies().fishState(0));
+                assertEquals(0x12, runtime.enemies().physicsFlags(0));
+                RoomEntity fish = runtime.inspection().snapshot().slots().get(0);
                 assertEquals(List.of(new TransientVfxRequest(
                     TransientVfxType.WATER_SPLASH, fish.x(), fish.y())),
-                    runtime.transientVfxRequests());
+                    runtime.enemies().transientVfxRequests());
                 assertEquals(List.of(new EntityCombatEvent(0, FishMotion.ENTITY_TYPE, 0, false,
                     EntityCombatEvent.SoundChannel.JINGLE, 0x0E)), events);
 

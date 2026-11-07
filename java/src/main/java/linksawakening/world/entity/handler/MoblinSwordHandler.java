@@ -37,7 +37,7 @@ final class MoblinSwordHandler {
               && !state.runtime.roomTransitionActive
               && state.runtime.gameplayWorld
               && state.runtime.transitionSequenceCounter == 0x04
-              && !state.runtime.witchGotItemPresentationActive()
+              && !state.runtime.inspection().witchGotItemPresentationActive()
              ) {
             RoomEntityBackgroundInteraction swordBackgroundInteraction =
                 state.runtime.backgroundInteraction;

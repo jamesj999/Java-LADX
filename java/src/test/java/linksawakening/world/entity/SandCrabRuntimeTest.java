@@ -63,9 +63,9 @@ final class SandCrabRuntimeTest {
         assertTrue(RoomEntityCombatRules.supportsEnemyCollision(ENTITY_SAND_CRAB));
         assertEquals(0x04, RoomEntityCombatRules.contactDamage(ENTITY_SAND_CRAB));
         assertEquals(0x02, RoomEntityCombatRules.initialHealth(ENTITY_SAND_CRAB));
-        assertEquals(0x12, runtime.physicsFlags(0));
+        assertEquals(0x12, runtime.enemies().physicsFlags(0));
         assertEquals(0x02, runtime.options1(0));
-        assertEquals(0x02, runtime.enemyHealth(0));
+        assertEquals(0x02, runtime.enemies().enemyHealth(0));
     }
 
     @Test
@@ -126,7 +126,7 @@ final class SandCrabRuntimeTest {
             catalog.forEntityType(ENTITY_SAND_CRAB, EntityRoomLoader.RoomTable.OVERWORLD),
             0, 0, 0, 0, -1, false)), false, () -> 0, catalog, new RomEnemyCombatTables(rom));
         AtomicInteger groundCalls = new AtomicInteger();
-        runtime.setGroundInteraction((entity, frameCounter, previousStatus, speedZ,
+        runtime.configuration().setGroundInteraction((entity, frameCounter, previousStatus, speedZ,
                                        sideScrolling) -> {
             groundCalls.incrementAndGet();
             return RoomEntityGroundInteraction.Result.unchanged(entity, previousStatus);

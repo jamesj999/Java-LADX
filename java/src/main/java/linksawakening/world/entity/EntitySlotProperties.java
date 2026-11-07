@@ -96,7 +96,7 @@ public final class EntitySlotProperties {
     }
 
     void updateHookshotChainOam(int linkEntityX, int linkEntityY, int frameCounter) {
-        int slot = runtime.hookshotSlot();
+        int slot = runtime.inspection().hookshotSlot();
         if (slot < 0 || !runtime.slots[slot].loaded()) {
             runtime.hookshotChainOam = List.of();
             return;
@@ -111,7 +111,7 @@ public final class EntitySlotProperties {
         // The handler's dialogue/inventory/transition branches still run the
         // chain. Its sequence check only returns early on the unpaused path.
         if (runtime.transitionSequenceCounter != 4 && !runtime.roomTransitionActive && !runtime.dialogActive
-            && !runtime.inventoryAppearing && !runtime.witchGotItemPresentationActive()) {
+            && !runtime.inventoryAppearing && !runtime.inspection().witchGotItemPresentationActive()) {
             runtime.bowWowChainOam = List.of();
             return;
         }

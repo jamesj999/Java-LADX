@@ -252,7 +252,7 @@ final class RoomSessionTest {
             slots.add(RoomEntity.disabled(slot));
         }
         RoomEntityRuntime runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(slots));
-        runtime.setGroundInteractionSideScrolling(true);
+        runtime.configuration().setGroundInteractionSideScrolling(true);
         linksawakening.world.entity.EntityRuntimeTestAccess.setEntityRoomIdForTest(runtime, 0x3B);
         linksawakening.world.entity.EntityRuntimeTestAccess.setTransitionSequenceCounterForTest(runtime, 0x04);
         session.replaceEntityRuntimeForTest(runtime);
@@ -587,7 +587,7 @@ final class RoomSessionTest {
             RoomEntity.disabled(10), RoomEntity.disabled(11), RoomEntity.disabled(12),
             RoomEntity.disabled(13), RoomEntity.disabled(14), RoomEntity.disabled(15))));
         linksawakening.world.entity.EntityRuntimeTestAccess.setEntityRoomIdForTest(runtime, 0xC6);
-        runtime.setObjectQuery(entity -> new RoomEntityObjectSample(0xCC, 0, 0x40, 0x50));
+        runtime.configuration().setObjectQuery(entity -> new RoomEntityObjectSample(0xCC, 0, 0x40, 0x50));
         session.replaceEntityRuntimeForTest(runtime);
         session.setEntityGoldenLeavesCount(5);
 
@@ -616,7 +616,7 @@ final class RoomSessionTest {
             RoomEntity.disabled(10), RoomEntity.disabled(11), RoomEntity.disabled(12),
             RoomEntity.disabled(13), RoomEntity.disabled(14), RoomEntity.disabled(15))));
         linksawakening.world.entity.EntityRuntimeTestAccess.setEntityRoomIdForTest(runtime, 0x58);
-        runtime.setObjectQuery(entity -> new RoomEntityObjectSample(0xCC, 0, 0x40, 0x50));
+        runtime.configuration().setObjectQuery(entity -> new RoomEntityObjectSample(0xCC, 0, 0x40, 0x50));
         session.replaceEntityRuntimeForTest(runtime);
         session.setEntityGoldenLeavesCount(4);
 
@@ -1025,9 +1025,9 @@ final class RoomSessionTest {
         byte[] rom = loadRom();
         RoomEntityRuntime runtime = runtimeWithKillOrder(rom, 0, 1, 2);
         assertEquals(3, linksawakening.world.entity.EntityRuntimeTestAccess.killCount(runtime));
-        assertEquals(0, runtime.killOrderAt(0));
-        assertEquals(1, runtime.killOrderAt(1));
-        assertEquals(2, runtime.killOrderAt(2));
+        assertEquals(0, runtime.inspection().killOrderAt(0));
+        assertEquals(1, runtime.inspection().killOrderAt(1));
+        assertEquals(2, runtime.inspection().killOrderAt(2));
 
         TransientVfxSystem vfx = new TransientVfxSystem(16);
         RoomSession session = newSession(vfx);
@@ -4312,21 +4312,21 @@ final class RoomSessionTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(
             new RoomEntitySnapshot(slots), true, () -> 0, catalog,
             new RomEnemyCombatTables(rom));
-        runtime.setEnemyDropResolver(new EnemyDropResolver(rom));
+        runtime.configuration().setEnemyDropResolver(new EnemyDropResolver(rom));
         int frame = 0;
         for (int sourceOrder : killOrder) {
             int slot = entitySlots[sourceOrder];
-            RoomEntity target = runtime.snapshot().slots().get(slot);
+            RoomEntity target = runtime.inspection().snapshot().slots().get(slot);
             linksawakening.world.entity.EntityRuntimeTestAccess.setEnemyHealthForTest(runtime, slot, 1);
             List<EntityCombatEvent> hit = runtime.resolveCombat(
                 frame++, 0, 0, false, true, true,
                 target.x() - 8, 0x10, target.y() - 8, 0x10);
             assertTrue(hit.stream().anyMatch(event -> event.slot() == slot && event.swordHit()));
             int deathDeadline = frame + 0x80;
-            while (runtime.snapshot().slots().get(slot).loaded() && frame < deathDeadline) {
+            while (runtime.inspection().snapshot().slots().get(slot).loaded() && frame < deathDeadline) {
                 runtime.tick(EntityTestFrames.frame(runtime, frame++, 0, 0, () -> 0));
             }
-            assertFalse(runtime.snapshot().slots().get(slot).loaded());
+            assertFalse(runtime.inspection().snapshot().slots().get(slot).loaded());
         }
         return runtime;
     }
