@@ -21,7 +21,6 @@ public final class HudOverlay {
 
     private static final int RUPEE_DIGITS_COL = 10;
     private static final int RUPEE_DIGITS_ROW = 1;
-    private static final int RUPEE_DIGITS_COUNT = 3;
     private static final int RUPEE_DIGIT_TILE_BASE = 0xB0;
 
     private static final int HEART_COL = 13;

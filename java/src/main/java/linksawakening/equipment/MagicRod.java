@@ -5,7 +5,6 @@ import linksawakening.entity.LinkSpriteSheet;
 import linksawakening.entity.LinkTunicPalette;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
-import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.Tile;
 import linksawakening.rom.RomTables;
 

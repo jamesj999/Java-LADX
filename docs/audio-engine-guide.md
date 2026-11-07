@@ -7,6 +7,12 @@ redistribute the original game, ROMs, or extracted original game assets.
 
 This guide is for future agents working on the Link's Awakening DX audio code. It describes the current music-first implementation, how the pieces fit together, and the safest way to extend it.
 
+The browser retains its sample-driven `OpenAlMusicPlayer` transport. Its
+pause/resume, looping, volume, channel meters and device-status controls go
+beyond the frame-driven `FrameAudioPlayer` API. Moving it requires preserving
+those controls and buffering timing; gameplay continues to use the shared PCM
+output through `FrameAudioPlayer`.
+
 ## Current Scope
 
 The implemented slice is ROM-driven music playback, ROM-backed SFX playback, and a standalone Swing browser. It is not a complete game audio system yet.

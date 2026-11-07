@@ -220,7 +220,7 @@ final class LinkAnimator {
                 && (link.playerState.itemA() == PlayerState.INVENTORY_SHIELD
                     || link.playerState.itemB() == PlayerState.INVENTORY_SHIELD)
                         ? link.playerState.shieldLevel() : 0;
-            return link.spriteSheet.walkingAnimationState(link.romDirectionForJavaDirection(link.direction),
+            return link.spriteSheet.walkingAnimationState(Link.romDirectionForJavaDirection(link.direction),
                 normalFrame, carriedShield, link.linkEquipment.isUsingShield());
         }
         if (link.linkEquipment.isUsingShield() && link.playerState != null && link.playerState.shieldLevel() > 0) {
@@ -296,7 +296,7 @@ final class LinkAnimator {
             throw new IllegalStateException("Sword acquisition spin requires ROM tables");
         }
         if (swordAcquisitionBaseRomDirection < 0) {
-            swordAcquisitionBaseRomDirection = link.romDirectionForJavaDirection(link.direction);
+            swordAcquisitionBaseRomDirection = Link.romDirectionForJavaDirection(link.direction);
             swordAcquisitionAnimationState = resolveAnimationState();
         }
         // The spin handler writes a fresh hLinkAnimationState. Do not let a
@@ -316,7 +316,7 @@ final class LinkAnimator {
             swordAcquisitionAnimationState = animationState;
         }
         link.linkStateMachine.romInteractiveMotionBlocked = true;
-        link.direction = link.javaDirectionForRomDirection(absoluteRomDirection);
+        link.direction = Link.javaDirectionForRomDirection(absoluteRomDirection);
         link.movingThisFrame = false;
     }
 

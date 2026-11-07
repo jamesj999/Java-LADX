@@ -330,8 +330,8 @@ final class LinkStateMachine {
             return;
         }
 
-        int reflectedSpeedX = (-link.signedByte(link.linkMotion.lastRomSpeedX)) >> 2;
-        int reflectedSpeedY = (-link.signedByte(link.linkMotion.lastRomSpeedY)) >> 2;
+        int reflectedSpeedX = (-Link.signedByte(link.linkMotion.lastRomSpeedX)) >> 2;
+        int reflectedSpeedY = (-Link.signedByte(link.linkMotion.lastRomSpeedY)) >> 2;
         link.resetPegasusBoots();
         link.linkMotion.forcedSpeedX = reflectedSpeedX;
         link.linkMotion.forcedSpeedY = reflectedSpeedY;
@@ -342,7 +342,7 @@ final class LinkStateMachine {
         link.linkAirborne.zSubPixels = 0;
         link.linkAirborne.zVelocity = LinkRomConstants.PEGASUS_BOOTS_COLLISION_VELOCITY_Z;
 
-        int romDirection = link.romDirectionForJavaDirection(link.direction);
+        int romDirection = Link.romDirectionForJavaDirection(link.direction);
         int[] xOffsets = {0x10, 0xF0, 0x08, 0x08};
         int[] yOffsets = {0x0C, 0x0C, 0xF0, 0x10};
         pegasusBootsCollisionPosX = (link.linkMotion.romEntityX() + xOffsets[romDirection]) & 0xFF;

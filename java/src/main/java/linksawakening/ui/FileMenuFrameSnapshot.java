@@ -2,7 +2,6 @@ package linksawakening.ui;
 
 import linksawakening.cutscene.IntroSprite;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**

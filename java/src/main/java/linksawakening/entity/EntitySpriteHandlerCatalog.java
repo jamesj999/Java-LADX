@@ -5,7 +5,6 @@ import linksawakening.world.entity.event.MoldormSegmentPosition;
 import linksawakening.rom.RomBank;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntityStatus;
-import linksawakening.world.entity.motion.MoldormMotion;
 
 import java.util.ArrayList;
 import java.util.List;

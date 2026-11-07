@@ -33,8 +33,6 @@ import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.gameplay.GameplayDialogInput;
 import linksawakening.gameplay.OverworldDialogInteraction;
 import linksawakening.gameplay.PcmSoundOutput;
-import linksawakening.gameplay.SfxDialogSoundSink;
-import linksawakening.gameplay.SfxGameplaySoundSink;
 import linksawakening.gameplay.SignpostDialogTable;
 import linksawakening.gpu.GPU;
 import linksawakening.gpu.Framebuffer;

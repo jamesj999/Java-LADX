@@ -321,7 +321,7 @@ final class LinkMotion {
 
     /** Applies only the hLinkSpeedX write emitted by a side-view pot push. */
     void applyRomSpeedX(int speedX) {
-        link.validateRomByte(speedX, "Link X speed");
+        Link.validateRomByte(speedX, "Link X speed");
         forcedSpeedX = (byte) speedX;
         // The pot handler leaves hLinkSpeedY untouched; Link computes its
         // ordinary Y input on the next motion link.update.

@@ -23,8 +23,8 @@ final class LinkSwimming {
         link.linkAirborne.airborne = false;
         link.linkAirborne.zSubPixels = 0;
         link.linkAirborne.zVelocity = 0;
-        swimmingSpeedX = link.romTables.swimmingEntrySpeedX(link.romDirectionForJavaDirection(link.direction));
-        swimmingSpeedY = link.romTables.swimmingEntrySpeedY(link.romDirectionForJavaDirection(link.direction));
+        swimmingSpeedX = link.romTables.swimmingEntrySpeedX(Link.romDirectionForJavaDirection(link.direction));
+        swimmingSpeedY = link.romTables.swimmingEntrySpeedY(Link.romDirectionForJavaDirection(link.direction));
         link.linkMotion.lastRomSpeedX = swimmingSpeedX & 0xFF;
         link.linkMotion.lastRomSpeedY = swimmingSpeedY & 0xFF;
         return true;

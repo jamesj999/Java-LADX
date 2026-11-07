@@ -153,8 +153,8 @@ final class LinkSideView {
         if (horizontalDelta < -0x80 || horizontalDelta > 0x7F) {
             throw new IllegalArgumentException("Side-view platform X delta must be a signed byte");
         }
-        link.validateRomByte(romPositionY, "Side-view platform Link Y");
-        link.validateRomByte(romSpeedY, "Side-view platform Link Y speed");
+        Link.validateRomByte(romPositionY, "Side-view platform Link Y");
+        Link.validateRomByte(romSpeedY, "Side-view platform Link Y speed");
 
         int currentRomX = link.linkMotion.romEntityX() & 0xFF;
         int nextRomX = (currentRomX + horizontalDelta) & 0xFF;
@@ -188,8 +188,8 @@ final class LinkSideView {
 
     /** Applies state-0 pot's top snap and hLinkSpeedY/wC147 writes. */
     void applySideViewPotContact(int romPositionY, int romSpeedY) {
-        link.validateRomByte(romPositionY, "Side-view pot Link Y");
-        link.validateRomByte(romSpeedY, "Side-view pot Link Y speed");
+        Link.validateRomByte(romPositionY, "Side-view pot Link Y");
+        Link.validateRomByte(romSpeedY, "Side-view pot Link Y speed");
         int nextTopLeftY = (romPositionY - 0x10) & 0xFF;
         link.linkMotion.subY = (nextTopLeftY << Link.SUB_PIXEL_SHIFT) | (link.linkMotion.subY & 0x0F);
         standingOnSideViewEntity = true;

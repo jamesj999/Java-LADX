@@ -30,7 +30,7 @@ final class TarinShieldRenderLayerTest {
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
         IndexedRenderer.clear(buffer);
 
-        new TarinShieldRenderLayer(link, new ScrollController())
+        StorySprites.tarinShield(link, new ScrollController())
             .render(new RenderContext(buffer, gpu));
 
         // Four clear pixels on either side centre the shield between Link's hands.
