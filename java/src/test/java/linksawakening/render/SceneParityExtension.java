@@ -26,26 +26,39 @@ public final class SceneParityExtension implements BeforeEachCallback, AfterEach
         var expectedSources = new java.util.TreeMap<String, Group>();
         context.getStore(KEY).put("expectedSources", expectedSources);
         boolean probe = Boolean.getBoolean("sceneParity.probe");
-        FrameScene.DRAW_OBSERVER.set((scene, rgba, gpu) -> {
+        FrameScene.DRAW_OBSERVER.set((scene, rgba, gpu, pipeline) -> {
             String id = Integer.toString(rows.size());
             var blocked = scene.unmigratedLayers();
             if (!blocked.isEmpty()) {
                 rows.add(id + "\tBLOCKED\t" + String.join(",", blocked));
                 return;
             }
+            byte[] legacy = rgba;
             byte[] hardware = new byte[rgba.length];
+            if (pipeline == RenderPipeline.HARDWARE) {
+                hardware = rgba;
+                legacy = new byte[rgba.length];
+                var observer = FrameScene.DRAW_OBSERVER.get();
+                FrameScene.DRAW_OBSERVER.remove();
+                try { scene.drawTo(legacy, gpu, RenderPipeline.LEGACY_RGBA); }
+                finally { FrameScene.DRAW_OBSERVER.set(observer); }
+            }
             HardwareFrame model = scene.hardwareFrame(gpu);
-            model.compose(hardware);
+            byte[] rebuilt = new byte[rgba.length];
+            model.compose(rebuilt);
+            if (pipeline == RenderPipeline.HARDWARE && !Arrays.equals(hardware, rebuilt))
+                throw new AssertionError("Legacy reference rendering mutated hardware output: " + context.getDisplayName());
+            if (pipeline != RenderPipeline.HARDWARE) hardware = rebuilt;
             int expectedPixels = 0, mismatchPixels = 0;
             var sceneGroups = new java.util.HashSet<String>();
             var sceneExpectedSources = new java.util.HashSet<String>();
             var evidence = new java.util.LinkedHashSet<String>();
             for (int offset = 0; offset < rgba.length; offset += 4) {
-                if (Arrays.equals(rgba, offset, offset + 4, hardware, offset, offset + 4)) continue;
+                if (Arrays.equals(legacy, offset, offset + 4, hardware, offset, offset + 4)) continue;
                 int pixel = offset / 4;
-                if (model.explainsHudPriority(rgba, hardware, pixel) || model.explainsInventoryHiding(rgba, hardware, pixel)) {
+                if (model.explainsHudPriority(legacy, hardware, pixel) || model.explainsInventoryHiding(legacy, hardware, pixel)) {
                     expectedPixels++; evidence.add(model.hudEvidence(pixel));
-                    if (model.explainsInventoryHiding(rgba, hardware, pixel))
+                    if (model.explainsInventoryHiding(legacy, hardware, pixel))
                         evidence.add("whole-entry inventory hiding: bank1.asm:$5F51-$5F67 rawY>=WY+8");
                     String source = model.fidelitySource(pixel);
                     Group expected = expectedSources.computeIfAbsent(source, key -> new Group());
@@ -60,7 +73,7 @@ public final class SceneParityExtension implements BeforeEachCallback, AfterEach
                     throw new AssertionError(context.getDisplayName() + " scene " + id + ": " + detail);
                 }
                 mismatchPixels++;
-                String groupKey = model.mismatchGroup(pixel, rgba, hardware);
+                String groupKey = model.mismatchGroup(pixel, legacy, hardware);
                 Group group = groups.computeIfAbsent(groupKey, key -> new Group());
                 group.pixels++;
                 if (sceneGroups.add(groupKey)) group.scenes++;

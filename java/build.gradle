@@ -177,3 +177,10 @@ tasks.withType(Test).configureEach {
         sorted.each { logger.lifecycle("  blocked by ${it.key}: ${it.value}") }
     }
 }
+
+// Headless captures need the same user-ROM overlay as ROM integration tests.
+// This directory is never included in distributions or processResources.
+tasks.named('captureOpeningRoute', JavaExec).configure {
+    dependsOn tasks.named('testRomResources')
+    classpath += files(layout.buildDirectory.dir('test-rom'))
+}

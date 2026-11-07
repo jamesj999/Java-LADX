@@ -10,7 +10,7 @@ public final class FrameScene {
     private final List<RenderLayer> layers;
 
     @FunctionalInterface
-    interface DrawObserver { void drawn(FrameScene scene, byte[] rgba, GPU gpu); }
+    interface DrawObserver { void drawn(FrameScene scene, byte[] rgba, GPU gpu, RenderPipeline pipeline); }
     static final ThreadLocal<DrawObserver> DRAW_OBSERVER = new ThreadLocal<>();
 
     List<String> unmigratedLayers() {
@@ -35,13 +35,15 @@ public final class FrameScene {
     }
 
     public void drawTo(byte[] buffer, GPU gpu) {
-        drawTo(buffer, gpu, RenderPipeline.LEGACY_RGBA);
+        drawTo(buffer, gpu, unmigratedLayers().isEmpty() ? RenderPipeline.HARDWARE : RenderPipeline.LEGACY_RGBA);
     }
 
     public void drawTo(byte[] buffer, GPU gpu, RenderPipeline pipeline) {
         if (pipeline == RenderPipeline.HARDWARE) {
             HardwareFrame frame = hardwareFrame(gpu);
             frame.compose(buffer);
+            DrawObserver observer = DRAW_OBSERVER.get();
+            if (observer != null) observer.drawn(this, buffer, gpu, pipeline);
             return;
         }
         IndexedRenderer.clear(buffer);
@@ -50,7 +52,7 @@ public final class FrameScene {
             layer.render(context);
         }
         DrawObserver observer = DRAW_OBSERVER.get();
-        if (observer != null) observer.drawn(this, buffer, gpu);
+        if (observer != null) observer.drawn(this, buffer, gpu, pipeline);
     }
 
     HardwareFrame hardwareFrame(GPU gpu) {
