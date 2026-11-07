@@ -14,6 +14,8 @@ final class LinkEntityEffects {
     int carryingLiftedObjectState;
     int carryingLiftedObjectRomDirection = 3;
     boolean roosterCarryActive;
+    boolean grabbingObject;
+    boolean pullingObject;
     /** Mirrors wC10A while Marin's scripted bed-exit jump owns Link motion. */
     boolean marinBedJumpMotionLocked;
 

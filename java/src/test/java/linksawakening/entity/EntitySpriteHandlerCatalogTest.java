@@ -15,6 +15,20 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 final class EntitySpriteHandlerCatalogTest {
 
     @Test
+    void liftableStatuesUseTheOriginalFourSpriteRectangles() throws Exception {
+        var catalog = new EntitySpriteHandlerCatalog(loadRom());
+        for (int map : new int[] {1, 5}) {
+            var statue = catalog.forEntityType(0x9D, EntityRoomLoader.RoomTable.INDOORS_A, map);
+            var sprites = statue.rectangleVariant(0);
+            assertEquals(4, sprites.size());
+            assertEquals(-16, sprites.get(0).yOffset());
+            assertEquals(0, sprites.get(0).xOffset());
+            assertEquals(map == 1 ? 0x78 : 0x48, sprites.get(0).oam().tile());
+            assertEquals(0x26, sprites.get(1).oam().attributes());
+        }
+    }
+
+    @Test
     void dungeonWarpDecodesCenterAndFourOrbitingSprites() throws Exception {
         var catalog = new EntitySpriteHandlerCatalog(loadRom());
         var warp = catalog.forEntityType(0x61, EntityRoomLoader.RoomTable.INDOORS_A, 0);

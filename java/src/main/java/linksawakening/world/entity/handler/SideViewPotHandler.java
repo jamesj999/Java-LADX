@@ -104,7 +104,7 @@ final class SideViewPotHandler {
             type,
             EntityTickStage.PHASE_2_SIDE_VIEW_POT,
             state -> {
-              if (state.slot().transitionCountdown(state.entity.slot()) != 0) {
+              if (state.liftThrow().sideViewPotLiftDelay(state.entity.slot())) {
                 state.replaceEntity(state.lifted);
                 return false;
               }

@@ -86,15 +86,12 @@ public final class LiftedEntityMotion {
                 // carry byte, which is the phase-three read at offset three.
                 nextCountdown = countdownTable[phase];
             }
-            // EntityGetLiftedUp jumps directly into this handler with phase 0.
-            // The handler increments the local phase for presentation even
-            // while its countdown is still non-zero.
-            if (nextPhase == 0) {
-                nextPhase = 1;
-            }
         }
 
-        int tableIndex = effectiveDirection * 4 + nextPhase;
+        // E retains the old phase after INC [HL]. Only local E=0 is promoted
+        // to one for drawing; WRAM phase zero survives until its timer expires.
+
+        int tableIndex = effectiveDirection * 4 + (phase == 0 ? 1 : phase);
         if (tableIndex < 0 || tableIndex >= CARRY_STATE.length) {
             throw new IllegalArgumentException("Lift table index out of range: " + tableIndex);
         }

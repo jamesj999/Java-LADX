@@ -201,8 +201,15 @@ final class RoomDoorInteractions {
     }
 
     boolean tryLiftIndoorObject(int linkPixelX, int linkPixelY, int linkDirection, boolean braceletButtonHeld, int pressedButtonsMask, boolean pieceOfPowerActive) {
+        return tryLiftObject(linkPixelX, linkPixelY, linkDirection, braceletButtonHeld, pressedButtonsMask, pieceOfPowerActive, 1);
+    }
+
+    boolean tryLiftObject(int linkPixelX, int linkPixelY, int linkDirection, boolean braceletButtonHeld, int pressedButtonsMask, boolean pieceOfPowerActive, int braceletLevel) {
+        return tryLiftObject(linkPixelX, linkPixelY, linkDirection, braceletButtonHeld, pressedButtonsMask, pieceOfPowerActive, braceletLevel, pieceOfPowerActive);
+    }
+
+    boolean tryLiftObject(int linkPixelX, int linkPixelY, int linkDirection, boolean braceletButtonHeld, int pressedButtonsMask, boolean pieceOfPowerActive, int braceletLevel, boolean anyPowerUpActive) {
         if (session.context.activeRoom == null || session.context.entityBridge.entityRuntime == null
-            || session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
             || session.context.activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL
             || !braceletButtonHeld || session.context.entityBridge.entityRuntime.inspection().liftedEntityState().active()) {
             session.context.indoorPotPullFrames = 0;
@@ -215,11 +222,6 @@ final class RoomDoorInteractions {
             case Link.DIRECTION_RIGHT -> 0x02;
             default -> 0;
         };
-        if (oppositeButton == 0 || (pressedButtonsMask & oppositeButton) == 0) {
-            session.context.indoorPotPullFrames = 0;
-            return false;
-        }
-
         int swordAreaX = switch (linkDirection) {
             case Link.DIRECTION_RIGHT -> 0x0C;
             case Link.DIRECTION_LEFT -> 0x03;
@@ -236,28 +238,73 @@ final class RoomDoorInteractions {
         int objectTop = (linkPixelY + swordAreaY) & 0xF0;
         int touchedLocation = objectTop | (objectLeft >>> 4);
         int touchedObject = session.objectAtRoomLocation(touchedLocation);
-        if (touchedObject != session.OBJECT_LIFTABLE_POT
+        boolean outdoor = session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD;
+        // Statue standing handler, $19:4076: asymmetric 32 by 48 contact window.
+        linksawakening.world.entity.RoomEntity statue = null;
+        if (!outdoor) {
+            for (var entity : session.context.entityBridge.entityRuntime.inspection().snapshot().loadedEntities()) {
+                if (entity.type() == 0x9D && entity.status() == linksawakening.world.entity.EntityStatus.ACTIVE
+                    && (((linkPixelX + 8) - entity.x() + 0x10) & 0xFF) < 0x20
+                    && (((linkPixelY + 16) - entity.y() + 0x20) & 0xFF) < 0x30) {
+                    statue = entity;
+                    break;
+                }
+            }
+        }
+
+        if (statue == null && touchedObject != session.OBJECT_LIFTABLE_POT
+            && !(outdoor && touchedObject == 0x5C)
             && touchedObject != session.OBJECT_POT_WITH_SWITCH) {
             session.context.indoorPotPullFrames = 0;
             return false;
         }
+        if (oppositeButton == 0 || (pressedButtonsMask & oppositeButton) == 0
+            || (statue != null && braceletLevel != 2)) {
+            session.context.indoorPotPullFrames = 0;
+            return true;
+        }
+        session.context.followingEntityYOffset = linkDirection == Link.DIRECTION_UP ? 4 : 0;
         session.context.indoorPotPullFrames++;
-        int pullFrames = pieceOfPowerActive ? 0x03 : session.INDOOR_POT_PULL_FRAMES;
+        int pullFrames = (statue != null ? anyPowerUpActive : pieceOfPowerActive)
+            ? 0x03 : session.INDOOR_POT_PULL_FRAMES;
         if (session.context.indoorPotPullFrames < pullFrames) {
             return true;
         }
         session.context.indoorPotPullFrames = 0;
 
-        session.context.activeRoom.roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + touchedLocation] =
-            touchedObject == session.OBJECT_POT_WITH_SWITCH
-                ? session.OBJECT_SWITCH_BUTTON : 0x0D;
-        session.refreshActiveRoomTilemap();
-        session.context.overworldCollision.setRoom(session.context.activeRoom.roomObjectsArea());
-        session.context.overworldCollision.setGbcOverlay(null);
+        if (statue != null) {
+            session.context.entityBridge.entityRuntime.beginLift(statue.slot(), session.romDirectionForProjectileCollision(linkDirection));
+            session.context.entityBridge.pendingRoomEntityEvents.add(new linksawakening.world.entity.event.EntityCombatEvent(
+                statue.slot(), 0x9D, 0, false,
+                linksawakening.world.entity.event.EntityCombatEvent.SoundChannel.WAVE, 2));
+            session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.inspection().snapshot());
+            return true;
+        }
+        if (outdoor) {
+            if (touchedObject == 0x5C) {
+                session.context.overworldBushInteraction.revealObjectAtLocation(touchedLocation,
+                    session.context.activeRoom.roomId(), true, session.context.activeRoom.roomObjectsArea(),
+                    session.context.activeRoom.renderValues(), session.context.activeRoom.gbcOverlay(),
+                    session.context.activeRoom.tileIds(), session.context.activeRoom.tileAttrs());
+            } else {
+                int room = session.context.activeRoom.roomId();
+                int replacement = room < 0x20 || room == 0xE0 || room == 0xE1 || room == 0xE3 || room == 0xE4
+                    || (room == 0x75) ? 3 : 4;
+                if (room == 0x52 || room == 0x04) replacement = 0xC6;
+                session.writeBombPuzzleObject(touchedLocation, replacement);
+            }
+            session.refreshOverworldCollisionAfterObjectMutation();
+        } else {
+            session.context.activeRoom.roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + touchedLocation] =
+                touchedObject == session.OBJECT_POT_WITH_SWITCH ? session.OBJECT_SWITCH_BUTTON : 0x0D;
+            session.refreshActiveRoomTilemap();
+            session.context.overworldCollision.setRoom(session.context.activeRoom.roomObjectsArea());
+            session.context.overworldCollision.setGbcOverlay(null);
+        }
         int x = linkPixelX + 0x08;
         int y = linkPixelY + 0x10;
         session.context.entityBridge.entityRuntime.spawnLiftedRoomObject(
-            x, y, session.romDirectionForProjectileCollision(linkDirection), 0);
+            x, y, session.romDirectionForProjectileCollision(linkDirection), touchedObject == 0x5C ? 1 : 0);
         session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.inspection().snapshot());
         return true;
     }

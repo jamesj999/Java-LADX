@@ -191,6 +191,10 @@ final class LinkAnimator {
                 : LinkAnimator.SWIMMING_ANIMATION_STATE[link.direction][link.walkFrame];
         }
 
+        if (link.linkEntityEffects.grabbingObject) {
+            return 0x36 + 2 * Link.romDirectionForJavaDirection(link.direction)
+                + (link.linkEntityEffects.pullingObject ? 1 : 0);
+        }
         // func_002_4338 copies the intermediate ROM carry animation state
         // directly (for example $37/$39/$3B/$3D). The final carry state is
         // the regular two-frame lifting list below.

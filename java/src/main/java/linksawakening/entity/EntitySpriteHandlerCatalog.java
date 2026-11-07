@@ -210,6 +210,9 @@ public final class EntitySpriteHandlerCatalog {
             return forColorShellState(entityType, 0, EntityStatus.INIT);
         }
 
+        if (entityType == 0x9D) {
+            return decodeRectangle(entityType, 0x19, mapId == 1 ? 0x4010 : 0x4000, 1, 4, 0);
+        }
         if (entityType == ENTITY_LIFTABLE_ROCK) {
             return decodeLiftableRock(roomTable);
         }

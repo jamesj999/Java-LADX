@@ -512,6 +512,20 @@ public final class RoomSession extends RoomSessionRules {
     /** Mirrors bank 2's $A7 collision counter and entity-$06 spawn branch. */
     public boolean tryPushIndoorBlock(int linkPixelX, int linkPixelY, int linkDirection, int collisionType) { return context.roomDoorInteractions.tryPushIndoorBlock(linkPixelX, linkPixelY, linkDirection, collisionType); }
     /** Mirrors bank 0's sustained Power Bracelet pull on indoor object $20/$8E. */
+    public void setLiftStrengthBoost(boolean redTunic, boolean pieceOfPower) {
+        if (context.entityBridge.entityRuntime != null) {
+            context.entityBridge.entityRuntime.configuration().setLiftStrengthBoost(redTunic, pieceOfPower);
+        }
+    }
+
+    public boolean tryLiftObject(int x, int y, int direction, boolean held, int buttons, boolean power, int level, boolean anyPowerUp) {
+        return context.roomDoorInteractions.tryLiftObject(x, y, direction, held, buttons, power, level, anyPowerUp);
+    }
+
+    public boolean tryLiftObject(int x, int y, int direction, boolean held, int buttons, boolean power, int level) {
+        return context.roomDoorInteractions.tryLiftObject(x, y, direction, held, buttons, power, level);
+    }
+
     public boolean tryLiftIndoorObject(int linkPixelX, int linkPixelY, int linkDirection, boolean braceletButtonHeld, int pressedButtonsMask) { return context.roomDoorInteractions.tryLiftIndoorObject(linkPixelX, linkPixelY, linkDirection, braceletButtonHeld, pressedButtonsMask); }
     /** Includes the source's shortened pull while Piece of Power is active. */
     public boolean tryLiftIndoorObject(int linkPixelX, int linkPixelY, int linkDirection, boolean braceletButtonHeld, int pressedButtonsMask, boolean pieceOfPowerActive) { return context.roomDoorInteractions.tryLiftIndoorObject(linkPixelX, linkPixelY, linkDirection, braceletButtonHeld, pressedButtonsMask, pieceOfPowerActive); }

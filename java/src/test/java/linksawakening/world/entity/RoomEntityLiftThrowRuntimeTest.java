@@ -41,6 +41,64 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 final class RoomEntityLiftThrowRuntimeTest {
 
     @Test
+    void thrownStatueBreaksIntoSixRomRubbleSpritesAndTheyExpire() {
+        var catalog = new linksawakening.entity.EntitySpriteHandlerCatalog(loadRom());
+        var runtime = RoomEntityRuntime.from(runtimeWithEntity(EntityStatus.ACTIVE, 0x9D).inspection().snapshot(),
+            true, () -> 0, catalog);
+        runtime.configuration().setChestPlayerLevels(1, 1, 2);
+        assertTrue(runtime.beginLift(0, 0));
+        for (int frame = 0; frame < 12; frame++) {
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x50, 0x60, () -> 0));
+        }
+        assertTrue(runtime.throwLiftedEntity(0));
+        runtime.configuration().setBackgroundInteraction((e, d, x, y) ->
+            EntityBackgroundCollisionResult.blocked(d, 0x35, 3, x, y));
+        runtime.tick(EntityTestFrames.frame(runtime, 12, 0x50, 0x60, () -> 0));
+        var pieces = runtime.inspection().snapshot().loadedEntities();
+        assertEquals(6, pieces.size());
+        for (var piece : pieces) {
+            assertEquals(EntitySpriteDefinition.Shape.SINGLE, piece.spriteDefinition().shape());
+            assertEquals(0x16, piece.spriteDefinition().variant(0).first().tile());
+        }
+        for (int frame = 13; frame < 80; frame++) {
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x50, 0x60, () -> 0));
+        }
+        assertTrue(runtime.inspection().snapshot().loadedEntities().isEmpty());
+    }
+
+    @Test
+    void strengthBoostsUseFastTimingWithoutChangingBraceletLevel() {
+        for (boolean red : new boolean[] {false, true}) {
+            var runtime = runtimeWithEntity(EntityStatus.ACTIVE);
+            runtime.configuration().setChestPlayerLevels(1, 1, 1);
+            runtime.configuration().setLiftStrengthBoost(red, !red);
+            assertTrue(runtime.beginLift(0, 0));
+            for (int frame = 0; frame < 11; frame++) {
+                runtime.tick(EntityTestFrames.frame(runtime, frame, 0x50, 0x60, () -> 0));
+                assertEquals(0x37, runtime.inspection().liftedEntityState().carryState());
+            }
+            runtime.tick(EntityTestFrames.frame(runtime, 11, 0x50, 0x60, () -> 0));
+            assertEquals(1, runtime.inspection().liftedEntityState().carryState());
+        }
+    }
+
+    @Test
+    void levelTwoBraceletUsesTheFastCarryTransition() {
+        int[] frames = new int[2];
+        for (int level = 1; level <= 2; level++) {
+            RoomEntityRuntime runtime = runtimeWithEntity(EntityStatus.ACTIVE);
+            runtime.configuration().setChestPlayerLevels(1, 1, level);
+            assertTrue(runtime.beginLift(0, 0));
+            while (runtime.inspection().liftedEntityState().carryState() != 1 && frames[level - 1] < 64) {
+                runtime.tick(EntityTestFrames.frame(runtime, frames[level - 1]++, 0x50, 0x60, () -> 0));
+            }
+            assertEquals(1, runtime.inspection().liftedEntityState().carryState());
+        }
+        assertEquals(20, frames[0]);
+        assertEquals(12, frames[1]);
+    }
+
+    @Test
     void liftedStatusUsesTheLinkAnchorAndPublishesTheRomCarryState() {
         RoomEntityRuntime runtime = runtimeWithEntity(EntityStatus.ACTIVE);
 
@@ -53,7 +111,7 @@ final class RoomEntityLiftThrowRuntimeTest {
         assertEquals(0x60, lifted.x());
         assertEquals(0x60, lifted.y());
         assertEquals(0x04, lifted.z());
-        assertEquals(1, runtime.inspection().liftedEntityState().phase());
+        assertEquals(0, runtime.inspection().liftedEntityState().phase());
         assertEquals(0x37, runtime.inspection().liftedEntityState().carryState());
     }
 

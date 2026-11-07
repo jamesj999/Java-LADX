@@ -10,14 +10,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 final class LiftedEntityMotionTest {
 
     @Test
-    void phaseZeroPromotesToPhaseOneAndUsesTheRomCarryTables() {
+    void phaseZeroUsesPhaseOneForDrawingWithoutChangingStoredPhase() {
         LiftedEntityMotion.Update update = LiftedEntityMotion.advance(
             0, 2, LiftedEntityMotion.ROM_DIRECTION_RIGHT,
             LiftedEntityMotion.ROM_DIRECTION_DOWN,
             0x50, 0x60, 0x04, 0,
             0x05, false, false, 0x22);
 
-        assertEquals(1, update.phase());
+        assertEquals(0, update.phase());
         assertEquals(2, update.transitionCountdown());
         assertEquals(0x37, update.carryState());
         assertEquals(LiftedEntityMotion.ROM_DIRECTION_RIGHT, update.effectiveDirection());

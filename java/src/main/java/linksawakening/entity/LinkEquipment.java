@@ -64,7 +64,7 @@ final class LinkEquipment {
     }
 
     boolean itemsBlockMotion(boolean beforeTopDownAnimation) {
-        if (link.isLiftTransitionBlockingMotion()) {
+        if (link.linkEntityEffects.grabbingObject || link.isLiftTransitionBlockingMotion()) {
             return true;
         }
         if (link.itemRegistry == null || link.playerState == null) {
@@ -88,6 +88,7 @@ final class LinkEquipment {
     }
 
     boolean itemsLockFacing(boolean beforeTopDownAnimation) {
+        if (link.linkEntityEffects.grabbingObject) return true;
         if (link.itemRegistry == null || link.playerState == null) {
             return false;
         }

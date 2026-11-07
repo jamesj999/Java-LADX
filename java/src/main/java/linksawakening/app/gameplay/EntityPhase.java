@@ -91,6 +91,9 @@ final class EntityPhase {
                 roomSession.setEntityInventorySlots(
                     playerState == null ? PlayerState.INVENTORY_EMPTY : playerState.itemA(),
                     playerState == null ? PlayerState.INVENTORY_EMPTY : playerState.itemB());
+                roomSession.setLiftStrengthBoost(
+                    playerState != null && playerState.tunicType() == PlayerState.TUNIC_RED,
+                    playerState != null && playerState.activePowerUp() == PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER);
                 roomSession.setChestPlayerLevels(
                     playerState == null ? 1 : playerState.shieldLevel(),
                     playerState == null ? 1 : playerState.swordLevel(),

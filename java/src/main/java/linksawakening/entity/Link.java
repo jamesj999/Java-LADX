@@ -570,6 +570,10 @@ public final class Link implements RocsFeather.JumpTarget {
     public boolean romItemAnimationFrameBlocked() {
         return !linkSideView.sideScrolling && romInteractiveMotionBlockValue() == 2;
     }
+    public void setGrabbingObject(boolean grabbing, boolean pulling) {
+        linkEntityEffects.grabbingObject = grabbing;
+        linkEntityEffects.pullingObject = grabbing && pulling;
+    }
     public void blockNextRomMotionFrame() { linkStateMachine.blockNextRomMotionFrame(); }
     public void initializeRoomPhysicsForRoom(long loadToken, int mapId, int roomId,
                                              int mapCategory) { linkStateMachine.initializeRoomPhysicsForRoom(loadToken, mapId, roomId, mapCategory); }

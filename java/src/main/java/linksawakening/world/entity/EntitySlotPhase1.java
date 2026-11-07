@@ -10,6 +10,7 @@ final class EntitySlotPhase1 {
   static boolean run(EntityFrameExecution state) {
 
     state.entity = state.runtime.slots[state.index];
+    if (state.runtime.liftThrow.advanceStatueRubble(state.entity, state.sideViewPotInteractive)) return false;
     state.moldormIntroOpenedThisFrame = false;
     state.rollingBonesHitThisFrame =
         state.entity.type() == state.runtime.ENTITY_ROLLING_BONES

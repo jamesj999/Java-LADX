@@ -128,6 +128,10 @@ public final class EntityRuntimeConfiguration {
         runtime.linkState.currentLinkFinalPositionXConfigured = true;
     }
 
+    public void setLiftStrengthBoost(boolean redTunic, boolean pieceOfPower) {
+        runtime.linkState.fastLiftTransition = redTunic || pieceOfPower;
+    }
+
     public void setLiftedLinkC13B(int linkC13B) {
         if ((linkC13B & ~0xFF) != 0) {
             throw new IllegalArgumentException("Lifted Link C13B must be an unsigned byte: "

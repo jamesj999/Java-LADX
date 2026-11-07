@@ -1016,6 +1016,31 @@ final class LinkTest {
     }
 
     @Test
+    void grabbingAndPullingHoldFacingAndPositionUntilReleased() throws Exception {
+        InputState input = new InputState();
+        InputConfig config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        RomTables tables = RomTables.loadFromRom(loadRom());
+        OverworldCollision collision = new OverworldCollision(tables);
+        collision.setRoom(emptyRoomObjectsArea());
+        Link link = new Link(input, config, tables, collision, null, new PlayerState(), new ItemRegistry());
+        link.setPixelPosition(64, 64);
+        link.setDirection(Link.DIRECTION_UP);
+        input.onKeyEvent(config.downKey(), GLFW_PRESS);
+        link.setGrabbingObject(true, false);
+        link.update();
+        assertEquals(Link.DIRECTION_UP, link.direction());
+        assertEquals(64, link.pixelY());
+        assertEquals(0x3A, resolvedAnimationState(link));
+        link.setGrabbingObject(true, true);
+        link.update();
+        assertEquals(0x3B, resolvedAnimationState(link));
+        assertEquals(64, link.pixelY());
+        link.setGrabbingObject(false, false);
+        link.update();
+        assertEquals(Link.DIRECTION_DOWN, link.direction());
+    }
+
+    @Test
     void fullyHeldObjectsUseTheRomLiftingAnimationListByDirection() throws Exception {
         Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
             null, null, null, new PlayerState(), new ItemRegistry());

@@ -89,12 +89,25 @@ final class LinkEquipmentPhase {
                     roomSession.setEntityBombButtonHeld(bombButtonHeld);
                     var liftedState = roomSession.liftedEntityState();
                     boolean bombBeingThrown = liftedState.type() == 0x02;
-                    boolean liftedThrowButtonHeld = bombBeingThrown
-                        ? bombButtonHeld : powerBraceletButtonHeld;
-                    if (liftedThrowButtonHeld && liftedState.carryState() == 0x01) {
+                    boolean throwPressed = lift.isThrowButtonPressed(bombBeingThrown);
+                    if (throwPressed && liftedState.carryState() == 0x01) {
                         roomSession.throwLiftedEntity(link.direction());
                     }
                 }
+                boolean canGrab = !keyholeSequenceActive && !link.isAirborne() && link.romMotionState() == 0
+                    && playerState != null && !playerState.runningWithPegasusBoots() && !link.isCarryingLiftedObject();
+                boolean grabbing = roomSession != null && playerState != null
+                    && roomSession.tryLiftObject(link.pixelX(), link.pixelY(), link.direction(),
+                        powerBraceletButtonHeld && canGrab, link.romPressedButtonsMask(),
+                        playerState.activePowerUp() == PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER,
+                        playerState.powerBraceletLevel(), playerState.activePowerUp() != PlayerState.ACTIVE_POWER_UP_NONE);
+                link.setGrabbingObject(grabbing,
+                    (link.romPressedButtonsMask() & switch (link.direction()) {
+                        case Link.DIRECTION_RIGHT -> 2;
+                        case Link.DIRECTION_LEFT -> 1;
+                        case Link.DIRECTION_UP -> 8;
+                        default -> 4;
+                    }) != 0);
                 if (!keyholeSequenceActive && !link.isCarryingLiftedObject()
                     && !link.romItemAnimationFrameBlocked()) {
                     if (link.romMotionState() == 0x05
@@ -128,12 +141,6 @@ final class LinkEquipmentPhase {
                     roomSession.tryInteractWithIndoorBlock(
                         collisionProbeX, collisionProbeY, link.direction(),
                         link.romCollisionType());
-                    roomSession.tryLiftIndoorObject(
-                        link.pixelX(), link.pixelY(), link.direction(),
-                        powerBraceletButtonHeld,
-                        link.romPressedButtonsMask(),
-                        playerState.activePowerUp()
-                            == PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER);
                 }
                 Link.ScreenShakeRequest pegasusShake =
                     link.consumePegasusScreenShakeRequest();

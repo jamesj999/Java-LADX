@@ -65,7 +65,6 @@ final class EntityCombatResolver {
             throw new IllegalArgumentException("Enemy attack context cannot be null");
         }
         runtime.linkState.runningWithPegasusBoots = attackContext.pegasusBoots();
-        runtime.linkState.fastLiftTransition = attackContext.powerRecoil();
         List<EntityCombatEvent> events = runtime.events.outbox.channel(EntityCombatEvent.class, "resolvedCombat");
         events.clear();
         for (int index = runtime.slots.length - 1; index >= 0; index--) {

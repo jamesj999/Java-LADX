@@ -47,6 +47,44 @@ public final class EntityLiftThrowController {
             update.z(), -1, false);
         }
 
+    boolean advanceStatueRubble(RoomEntity entity, boolean interactive) {
+        if (entity.type() != 0x9D || entity.spriteDefinition().shape() != EntitySpriteDefinition.Shape.SINGLE) return false;
+        if (!interactive) return true;
+        var update = runtime.thrownEntityMotion.advance(entity, false, null);
+        runtime.slots[entity.slot()] = update.entity().z() == 0 ? RoomEntity.disabled(entity.slot()) : update.entity();
+        return true;
+    }
+
+    private void smashStatue(RoomEntity entity) {
+        // LiftableStatue_SpawnRubble ($19:4165-$41FE).
+        int[] xs = {0, 8, 0, 8, 0, 8};
+        int[] ys = {-8, -8, 0, 0, 8, 8};
+        int[] vx = {0xFC, 5, 0xFA, 6, 0xFB, 4};
+        int[] vy = {0xFC, 0xF8, 0xFE, 0xFF, 3, 2};
+        int[] vz = {0x18, 0x14, 0x13, 0x16, 0x12, 0x14};
+        if (runtime.spriteHandlers != null) {
+            var definition = runtime.spriteHandlers.decodeSingle(0x9D, 0x19, 0x4020, 1, 0);
+            for (int piece = 0; piece < 6; piece++) {
+                int slot = runtime.findFreeEntitySlot();
+                if (slot < 0) break;
+                runtime.slots[slot] = new RoomEntity(slot, -1, 0x9D,
+                    (entity.x() + xs[piece]) & 255, (entity.y() + ys[piece]) & 255,
+                    EntityStatus.ACTIVE, definition, 0, 0, 0, entity.z(), -1, false);
+                runtime.enemyPhysicsFlags[slot] = 0xC1;
+                runtime.enemyHitboxFlags[slot] = 0;
+                runtime.dynamicEntitySpawnedThisFrame[slot] = true;
+                runtime.thrownEntityMotion.startEnemyBomb(slot, vx[piece], vy[piece], vz[piece]);
+            }
+        }
+        int visualY = (entity.y() - entity.z()) & 255;
+        runtime.events.transientVfxRequests.add(new linksawakening.world.entity.event.TransientVfxRequest(
+            linksawakening.vfx.TransientVfxType.POOF, entity.x(), visualY));
+        runtime.events.transientVfxRequests.add(new linksawakening.world.entity.event.TransientVfxRequest(
+            linksawakening.vfx.TransientVfxType.POOF, entity.x(), (visualY - 16) & 255));
+        runtime.events.pendingEntityEvents.add(new EntityCombatEvent(entity.slot(), 0x9D, 0, false,
+            EntityCombatEvent.SoundChannel.NOISE, 0x29));
+    }
+
     RoomEntity advanceThrownEntity(RoomEntity entity,
                                             RoomEntityBackgroundCollision backgroundCollision,
                                             boolean sideScrolling,
@@ -65,6 +103,22 @@ public final class EntityLiftThrowController {
             if (updated.status() == EntityStatus.ACTIVE) {
                 return updated;
             }
+        }
+        if (entity.type() == 0x9D && (update.blockedX() || update.blockedY() || updated.z() == 0)) {
+            runtime.slots[slot] = RoomEntity.disabled(slot);
+            runtime.thrownEntityMotion.clear(slot);
+            runtime.thrownMotionInitialized[slot] = false;
+            smashStatue(updated);
+            return runtime.slots[slot];
+        }
+        if (entity.type() == runtime.ENTITY_LIFTABLE_ROCK
+            && (update.blockedX() || update.blockedY() || updated.z() == 0)) {
+            collideThrownEntityWithEntities(updated, frame);
+            runtime.slots[slot] = RoomEntity.disabled(slot);
+            runtime.thrownEntityMotion.clear(slot);
+            runtime.thrownMotionInitialized[slot] = false;
+            runtime.spawnLiftableRockSmash(updated.x(), updated.y(), entity.spriteVariant());
+            return runtime.slots[slot];
         }
         if (runtime.thrownEntityMotion.speedX(slot) == 0 && runtime.thrownEntityMotion.speedY(slot) == 0) {
             runtime.thrownEntityMotion.clear(slot);
@@ -275,6 +329,10 @@ public final class EntityLiftThrowController {
             linkEntityY, linkZ, romLinkDirection);
         return true;
         }
+
+    public boolean sideViewPotLiftDelay(int slot) {
+        return runtime.liftedPhase[slot] == 0 && runtime.enemyTransitionCountdown[slot] != 0;
+    }
 
     public boolean sideViewPotPowerBraceletHeld() {
         if (!runtime.linkState.linkInventoryConfigured) {

@@ -22,11 +22,20 @@ public record LiftInteraction(
         if (inputState == null || inputConfig == null || playerState == null) {
             return false;
         }
-        boolean braceletOnA = playerState.itemA() == PlayerState.INVENTORY_POWER_BRACELET
+        if (playerState.itemB() == PlayerState.INVENTORY_POWER_BRACELET) {
+            return inputState.isDown(inputConfig.bKey());
+        }
+        return playerState.itemA() == PlayerState.INVENTORY_POWER_BRACELET
             && inputState.isDown(inputConfig.aKey());
-        boolean braceletOnB = playerState.itemB() == PlayerState.INVENTORY_POWER_BRACELET
-            && inputState.isDown(inputConfig.bKey());
-        return braceletOnA || braceletOnB;
+    }
+
+    /** $14:537D uses newly pressed buttons for throws, with B-slot priority. */
+    public boolean isThrowButtonPressed(boolean bomb) {
+        if (inputState == null || inputConfig == null || playerState == null) return false;
+        int item = bomb ? PlayerState.INVENTORY_BOMBS : PlayerState.INVENTORY_POWER_BRACELET;
+        if (playerState.itemB() == item) return inputState.wasPressed(inputConfig.bKey());
+        if (playerState.itemA() == item) return inputState.wasPressed(inputConfig.aKey());
+        return inputState.wasPressed(inputConfig.aKey()) || inputState.wasPressed(inputConfig.bKey());
     }
 
     public boolean isBombButtonHeld() {

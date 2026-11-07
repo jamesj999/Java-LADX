@@ -4086,6 +4086,45 @@ final class RoomSessionTest {
     }
 
     @Test
+    void bothBraceletsLiftOutdoorRocksAndBushesAfterEightPullFrames() {
+        for (int level = 1; level <= 2; level++) {
+            for (int object : new int[] {0x20, 0x5C}) {
+                RoomSession session = newSession();
+                session.loadInitialOverworld(0x92);
+                int location = 0x33;
+                session.activeRoom().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + location] = object;
+                for (int frame = 0; frame < 7; frame++) {
+                    assertTrue(session.tryLiftObject(0x30, 0x2B, Link.DIRECTION_UP, true, 8, false, level));
+                    assertEquals(object, session.activeRoom().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + location]);
+                }
+                assertTrue(session.tryLiftObject(0x30, 0x2B, Link.DIRECTION_UP, true, 8, false, level));
+                assertEquals(4, session.activeRoom().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + location]);
+                assertTrue(session.liftedEntityState().active());
+                var lifted = session.activeRoom().entities().loadedEntities().stream()
+                    .filter(e -> e.status() == EntityStatus.LIFTED).findFirst().orElseThrow();
+                assertEquals(object == 0x5C ? 1 : 0, lifted.spriteVariant());
+            }
+        }
+    }
+
+    @Test
+    void onlyLevelTwoBraceletCanLiftStatues() {
+        for (int level = 1; level <= 2; level++) {
+            RoomSession session = newSession();
+            session.loadInitialOverworld(0x00);
+            session.loadIndoor(0x05, 0xB2);
+            session.tickEntities(0, 0x80, 0x70);
+            var statue = session.activeRoom().entities().loadedEntities().stream()
+                .filter(e -> e.type() == 0x9D).findFirst().orElseThrow();
+            for (int frame = 0; frame < 8; frame++) {
+                assertTrue(session.tryLiftObject(statue.x() - 8, statue.y() - 8, Link.DIRECTION_UP,
+                    true, 8, false, level));
+            }
+            assertEquals(level == 2, session.liftedEntityState().active());
+        }
+    }
+
+    @Test
     void indoorPowerBraceletPullLiftsSourcePotOnEighthFrame() {
         RoomSession session = newSession();
         session.loadInitialOverworld(0x00);
@@ -4104,7 +4143,7 @@ final class RoomSessionTest {
             assertTrue(session.tryLiftIndoorObject(
                 0x30, 0x1B, Link.DIRECTION_UP, true, 0x08));
         }
-        assertFalse(session.tryLiftIndoorObject(
+        assertTrue(session.tryLiftIndoorObject(
             0x30, 0x1B, Link.DIRECTION_UP, true, 0x00));
         for (int frame = 0; frame < 7; frame++) {
             assertTrue(session.tryLiftIndoorObject(
