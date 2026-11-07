@@ -7,8 +7,8 @@ final class InventoryTileLoader {
     InventoryTileLoader(RomTileLoader target) { this.target = target; }
     private static final int OCARINA_SYMBOLS_TILES_BANK = GbcBanks.adjust(RomSymbols.OcarinaSymbolsTiles.bank());
     private static final int OCARINA_SYMBOLS_TILES_ADDR = RomSymbols.OcarinaSymbolsTiles.address();
-    private static final int SHARED_VFX_TILES_BANK = 0x2C;
-    private static final int SHARED_VFX_TILES_ADDR = 0x4200;
+    private static final int SHARED_VFX_TILES_BANK = GbcBanks.adjust(RomSymbols.CharacterVfxTiles.bank());
+    private static final int SHARED_VFX_TILES_ADDR = RomSymbols.CharacterVfxTiles.address();
     public void updatePowderInventoryTiles(byte[] romData, boolean hasToadstool) {
         if (target.powderIconIsToadstool == hasToadstool) return;
         target.loadTilesFromROM(romData, 0x2C, hasToadstool ? 0x68C0 : 0x48E0, 2, 0x08E);

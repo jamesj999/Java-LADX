@@ -92,3 +92,9 @@ DungeonFloorTilesPointers
 DungeonWallsTilesPointers
 DungeonItemsTilesPointers
 IndoorsTilesetsTable
+
+# GPU animation, VFX, and title sources.
+AnimatedTiles
+CharacterVfxTiles
+TitleDXTilesCGB
+TitleDXOAMTiles

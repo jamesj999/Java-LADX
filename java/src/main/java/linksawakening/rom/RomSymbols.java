@@ -94,4 +94,8 @@ public final class RomSymbols {
     public static final RomAddress DungeonWallsTilesPointers = new RomAddress(0x20, 0x45A9);
     public static final RomAddress DungeonItemsTilesPointers = new RomAddress(0x20, 0x45CA);
     public static final RomAddress IndoorsTilesetsTable = new RomAddress(0x20, 0x6EB3);
+    public static final RomAddress AnimatedTiles = new RomAddress(0x0C, 0x6A00);
+    public static final RomAddress CharacterVfxTiles = new RomAddress(0x0C, 0x4200);
+    public static final RomAddress TitleDXTilesCGB = new RomAddress(0x38, 0x5800);
+    public static final RomAddress TitleDXOAMTiles = new RomAddress(0x38, 0x6500);
 }

@@ -17,10 +17,10 @@ final class TitleIntroTileLoader {
     private static final int TITLE_LOGO_TILES_BANK = GbcBanks.adjust(RomSymbols.TitleLogoTiles.bank());
     private static final int TITLE_LOGO_TILES_ADDR = RomSymbols.TitleLogoTiles.address();
     private static final int TITLE_LOGO_TILES_COUNT = 0x70;
-    private static final int TITLE_DX_TILES_BANK = 0x38;
-    private static final int TITLE_DX_TILES_CGB_ADDR = 0x5800;
+    private static final int TITLE_DX_TILES_BANK = RomSymbols.TitleDXTilesCGB.bank();
+    private static final int TITLE_DX_TILES_CGB_ADDR = RomSymbols.TitleDXTilesCGB.address();
     private static final int TITLE_DX_TILES_COUNT = 0x40;
-    private static final int TITLE_DX_OAM_TILES_ADDR = 0x6500;
+    private static final int TITLE_DX_OAM_TILES_ADDR = RomSymbols.TitleDXOAMTiles.address();
     private static final int TITLE_DX_OAM_TILES_COUNT = 0x10;
     private static final int SAVE_MENU_TILES_BANK = RomSymbols.SaveMenuTiles.bank();
     private static final int SAVE_MENU_TILES_ADDR = RomSymbols.SaveMenuTiles.address();

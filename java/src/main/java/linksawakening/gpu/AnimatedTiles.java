@@ -1,13 +1,15 @@
 package linksawakening.gpu;
 
+import linksawakening.rom.RomSymbols;
+
 /** Stateful gameplay tile animation; counters intentionally survive room changes. */
 final class AnimatedTiles {
     private static final int TILE_DATA_SIZE = Vram.TILE_DATA_SIZE;
     private static final int MAP_COLOR_DUNGEON = 0xFF;
     private final RomTileLoader target;
     AnimatedTiles(RomTileLoader target) { this.target = target; }
-    private static final int ANIMATED_TILES_BANK = 0x2C;
-    private static final int ANIMATED_TILES_BASE_ADDR = 0x6A00;
+    private static final int ANIMATED_TILES_BANK = GbcBanks.adjust(RomSymbols.AnimatedTiles.bank());
+    private static final int ANIMATED_TILES_BASE_ADDR = RomSymbols.AnimatedTiles.address();
     private static final int ANIMATED_TILES_FRAME_COUNT = 0x04;
     private static final int ANIMATED_TILES_FRAME_VRAM_INDEX = 0x16C;
     private static final int ANIMATED_TILES_FRAME_SIZE = 0x40;
