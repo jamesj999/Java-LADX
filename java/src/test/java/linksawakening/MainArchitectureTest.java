@@ -9,10 +9,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class MainArchitectureTest {
+    private static final GameSession game = new GameSession();
 
     @Test
     void mainDoesNotOwnRenderingBackendOrLayerAssembly() throws Exception {
-        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+        String source = Files.readString(Path.of("src/main/java/linksawakening/GameSession.java"));
 
         assertFalse(source.contains("GL11."));
         assertFalse(source.contains("GL12."));
@@ -26,7 +27,7 @@ final class MainArchitectureTest {
 
     @Test
     void mainDoesNotOwnRoomLoadingOrEdgeScrolling() throws Exception {
-        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+        String source = Files.readString(Path.of("src/main/java/linksawakening/GameSession.java"));
 
         assertFalse(source.contains("private static void loadOverworldRoom"));
         assertFalse(source.contains("private static void loadIndoorRoom"));
@@ -43,7 +44,7 @@ final class MainArchitectureTest {
 
     @Test
     void mainConsumesProjectileEventsAtTheEntityFrameBoundary() throws Exception {
-        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+        String source = Files.readString(Path.of("src/main/java/linksawakening/GameSession.java"));
 
         assertTrue(source.contains("tickEntitiesWithProjectileEvents"));
         assertTrue(source.contains("link.romCollisionType()"));
@@ -52,7 +53,7 @@ final class MainArchitectureTest {
 
     @Test
     void mainWiresSwordAndTailCaveCompletionAtTheEntityFrameBoundary() throws Exception {
-        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+        String source = Files.readString(Path.of("src/main/java/linksawakening/GameSession.java"));
         String normalizedSource = source.replaceAll("\\s+", " ");
 
         int swordBox = source.indexOf("sword.enemyCollisionBox(");
@@ -91,7 +92,7 @@ final class MainArchitectureTest {
 
     @Test
     void mainAppliesTarinLinkWritesAtTheEntityFrameBoundary() throws Exception {
-        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+        String source = Files.readString(Path.of("src/main/java/linksawakening/GameSession.java"));
 
         assertTrue(source.contains("consumeLinkAttackClearRequests"));
         assertTrue(source.contains("link.clearRomAttackStepAnimationCountdown()"));
@@ -100,7 +101,7 @@ final class MainArchitectureTest {
 
     @Test
     void mainMergesLinkAttackWritesInDescendingEntitySlotOrder() throws Exception {
-        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+        String source = Files.readString(Path.of("src/main/java/linksawakening/GameSession.java"));
         String normalizedSource = source.replaceAll("\\s+", " ");
 
         assertTrue(normalizedSource.contains("int linkAttackClearIndex = 0;"));
@@ -113,7 +114,7 @@ final class MainArchitectureTest {
 
     @Test
     void mainDoesNotSuppressHinoxThrowDamageBehindInvincibilityGate() throws Exception {
-        String normalizedSource = Files.readString(Path.of("src/main/java/linksawakening/Main.java"))
+        String normalizedSource = Files.readString(Path.of("src/main/java/linksawakening/GameSession.java"))
             .replaceAll("\\s+", " ");
 
         assertFalse(normalizedSource.contains(
@@ -122,7 +123,7 @@ final class MainArchitectureTest {
 
     @Test
     void mainCapturesLinkFinalPositionBeforeLinkMotionForEntityPushes() throws Exception {
-        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+        String source = Files.readString(Path.of("src/main/java/linksawakening/GameSession.java"));
 
         int capture = source.indexOf("link.captureRomFinalPosition();");
         int update = source.indexOf("link.update();");
@@ -134,7 +135,7 @@ final class MainArchitectureTest {
 
     @Test
     void mainMergesSideViewPotContactWithOtherDescendingLinkWrites() throws Exception {
-        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+        String source = Files.readString(Path.of("src/main/java/linksawakening/GameSession.java"));
         String normalizedSource = source.replaceAll("\\s+", " ");
 
         int potConsume = normalizedSource.indexOf(
@@ -150,7 +151,7 @@ final class MainArchitectureTest {
 
     @Test
     void mainAppliesHookshotPullEventsWithoutProjectileIgnoreSideEffects() throws Exception {
-        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+        String source = Files.readString(Path.of("src/main/java/linksawakening/GameSession.java"));
         String normalizedSource = source.replaceAll("\\s+", " ");
 
         assertTrue(source.contains("EntityProjectileEvent.Kind.HOOKSHOT_PULL"));
@@ -163,7 +164,7 @@ final class MainArchitectureTest {
 
     @Test
     void mainRegistersBombWithLinkRomPlacementState() throws Exception {
-        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+        String source = Files.readString(Path.of("src/main/java/linksawakening/GameSession.java"));
         String normalizedSource = source.replaceAll("\\s+", " ");
 
         assertTrue(source.contains("PlayerState.INVENTORY_BOMBS"));
@@ -183,7 +184,7 @@ final class MainArchitectureTest {
 
     @Test
     void mainStartsLinkItemAttackStepAfterASuccessfulBombThrow() throws Exception {
-        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+        String source = Files.readString(Path.of("src/main/java/linksawakening/GameSession.java"));
         String normalizedSource = source.replaceAll("\\s+", " ");
 
         assertTrue(normalizedSource.contains(

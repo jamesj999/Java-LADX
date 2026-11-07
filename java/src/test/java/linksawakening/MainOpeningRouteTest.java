@@ -8,39 +8,40 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /** Real game-loop integration, with buttons only after the new-game bootstrap. */
 final class MainOpeningRouteTest {
+    private static final GameSession game = new GameSession();
     @Test
     void newGameCanDefeatRollingBonesAndWarpBackToTheEntrance() throws Exception {
-        Main.initializeHeadlessNewGame();
-        var checkpoints = new ArrayList<Main.HeadlessState>();
+        game.initializeHeadlessNewGame();
+        var checkpoints = new ArrayList<GameSession.HeadlessState>();
         var entityCheckpoints = new ArrayList<String>();
         for (String line : Files.readAllLines(Path.of("../tools/opening/tail-cave-warp-route.tsv"))) {
             if (line.isBlank() || line.startsWith("#")) continue;
             String[] fields = line.split("\\s+");
             int idle = Integer.parseInt(fields[2]);
             if (fields[1].contains("=")) {
-                Main.headlessButton(fields[0].replace("*", ""), true);
+                game.headlessButton(fields[0].replace("*", ""), true);
                 int ticks = 0;
-                while (!OpeningRouteCapture.reached(fields[0], fields[1], Main.headlessState())) {
-                    assertTrue(++ticks < 2000, "Route blocked: " + line + " " + Main.headlessState());
-                    OpeningRouteCapture.pulseButtons(fields[0], ticks - 1);
+                while (!OpeningRouteCapture.reached(game, fields[0], fields[1], game.headlessState())) {
+                    assertTrue(++ticks < 2000, "Route blocked: " + line + " " + game.headlessState());
+                    OpeningRouteCapture.pulseButtons(game, fields[0], ticks - 1);
                     advanceAlive();
                 }
-                Main.headlessButton(fields[0].replace("*", ""), false);
+                game.headlessButton(fields[0].replace("*", ""), false);
                 do {
                     assertTrue(++ticks < 2500, "Transition stuck: " + line);
                     advanceAlive();
-                } while (Main.headlessState().loading());
+                } while (game.headlessState().loading());
             }
             int held = fields[1].contains("=") ? 0 : Integer.parseInt(fields[1]);
-            if (held > 0) Main.headlessButton(fields[0].replace("*", ""), true);
+            if (held > 0) game.headlessButton(fields[0].replace("*", ""), true);
             for (int tick = 0; tick < held + idle; tick++) {
-                if (tick == held && held > 0) Main.headlessButton(fields[0].replace("*", ""), false);
-                if (tick < held) OpeningRouteCapture.pulseButtons(fields[0], tick);
+                if (tick == held && held > 0) game.headlessButton(fields[0].replace("*", ""), false);
+                if (tick < held) OpeningRouteCapture.pulseButtons(game, fields[0], tick);
                 advanceAlive();
             }
-            if (held > 0 && idle == 0) Main.headlessButton(fields[0].replace("*", ""), false);
-            checkpoints.add(Main.headlessState());
-            entityCheckpoints.add(Main.headlessEntityPositions());
+            if (held > 0 && idle == 0) game.headlessButton(fields[0].replace("*", ""), false);
+            checkpoints.add(game.headlessState());
+            entityCheckpoints.add(game.headlessEntityPositions());
         }
         assertTrue(checkpoints.get(0).dialog());
         assertTrue(checkpoints.get(0).text().startsWith("What a relief!"));
@@ -243,7 +244,7 @@ final class MainOpeningRouteTest {
         assertEquals(0x1D, feather.room());
         assertTrue(feather.dialog());
         assertTrue(feather.text().contains("Roc's Feather"));
-        assertTrue(Main.headlessHasInventoryItem(
+        assertTrue(game.headlessHasInventoryItem(
             linksawakening.state.PlayerState.INVENTORY_ROCS_FEATHER));
         assertEquals(0x18, checkpoints.get(506).room());
         assertEquals(47, checkpoints.get(506).y());
@@ -300,8 +301,8 @@ final class MainOpeningRouteTest {
     }
 
     private static void advanceAlive() {
-        Main.headlessFrame();
-        assertTrue(Main.headlessState().health() > 0,
-            () -> "Route must remain alive throughout: " + Main.headlessState());
+        game.headlessFrame();
+        assertTrue(game.headlessState().health() > 0,
+            () -> "Route must remain alive throughout: " + game.headlessState());
     }
 }

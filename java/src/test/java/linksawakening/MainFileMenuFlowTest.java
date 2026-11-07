@@ -19,17 +19,18 @@ import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 
 final class MainFileMenuFlowTest {
+    private static final GameSession game = new GameSession();
 
     @Test
     void titleEnterIsTheFileMenuBoundary() {
-        assertTrue(Main.shouldEnterFileSelection(Main.SCREEN_TITLE, GLFW_KEY_ENTER, GLFW_PRESS));
-        assertFalse(Main.shouldEnterFileSelection(Main.SCREEN_OVERWORLD, GLFW_KEY_ENTER, GLFW_PRESS));
+        assertTrue(game.shouldEnterFileSelection(game.SCREEN_TITLE, GLFW_KEY_ENTER, GLFW_PRESS));
+        assertFalse(game.shouldEnterFileSelection(game.SCREEN_OVERWORLD, GLFW_KEY_ENTER, GLFW_PRESS));
     }
 
     @Test
     void fileMenuHasItsOwnRenderScreenAndDisassemblyMusicTrack() {
-        assertEquals(RenderScreen.FILE_MENU, Main.renderScreenFor(Main.SCREEN_FILE_MENU));
-        assertEquals(MusicTrackIds.MUSIC_FILE_SELECT, Main.fileSelectionMusicTrack());
+        assertEquals(RenderScreen.FILE_MENU, game.renderScreenFor(game.SCREEN_FILE_MENU));
+        assertEquals(MusicTrackIds.MUSIC_FILE_SELECT, game.fileSelectionMusicTrack());
     }
 
     @Test
@@ -42,14 +43,14 @@ final class MainFileMenuFlowTest {
         inputState.onKeyEvent(GLFW_KEY_ENTER, GLFW_PRESS);
         inputState.onKeyEvent(GLFW_KEY_TAB, GLFW_PRESS);
 
-        assertTrue(Main.shouldEnterFileSave(inputConfig, inputState, GLFW_KEY_TAB, GLFW_PRESS));
+        assertTrue(game.shouldEnterFileSave(inputConfig, inputState, GLFW_KEY_TAB, GLFW_PRESS));
         inputState.onKeyEvent(6, GLFW_RELEASE);
-        assertFalse(Main.shouldEnterFileSave(inputConfig, inputState, GLFW_KEY_TAB, GLFW_PRESS));
+        assertFalse(game.shouldEnterFileSave(inputConfig, inputState, GLFW_KEY_TAB, GLFW_PRESS));
     }
 
     @Test
     void committingAnEmptyFileUsesTheDedicatedNewGameBootstrap() throws Exception {
-        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+        String source = Files.readString(Path.of("src/main/java/linksawakening/GameSession.java"));
         String branchStart = "if (action.type() == FileMenuAction.Type.START_NEW_GAME)";
         int start = source.indexOf(branchStart);
         int end = source.indexOf("} else if (action.type() == FileMenuAction.Type.LOAD_GAME)", start);
@@ -61,9 +62,9 @@ final class MainFileMenuFlowTest {
 
     @Test
     void newGameBootstrapResetsPersistentWorldStateBeforeLoadingTheHouse() throws Exception {
-        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
-        int start = source.indexOf("private static void startNewGame()");
-        int end = source.indexOf("private static void startSavedGame", start);
+        String source = Files.readString(Path.of("src/main/java/linksawakening/GameSession.java"));
+        int start = source.indexOf("private void startNewGame()");
+        int end = source.indexOf("private void startSavedGame", start);
         String bootstrap = source.substring(start, end);
 
         int reset = bootstrap.indexOf("roomSession.initializeNewGameWorldState();");
@@ -79,7 +80,7 @@ final class MainFileMenuFlowTest {
             { "itemProfile": "NEW_GAME" }
             """);
 
-        Main.dispatchConfiguredGameplay(config, () -> calls[0]++, () -> calls[1]++);
+        game.dispatchConfiguredGameplay(config, () -> calls[0]++, () -> calls[1]++);
 
         assertEquals(1, calls[0]);
         assertEquals(0, calls[1]);
@@ -92,7 +93,7 @@ final class MainFileMenuFlowTest {
             { "itemProfile": "DEBUG_ALL_ITEMS" }
             """);
 
-        Main.dispatchConfiguredGameplay(config, () -> calls[0]++, () -> calls[1]++);
+        game.dispatchConfiguredGameplay(config, () -> calls[0]++, () -> calls[1]++);
 
         assertEquals(0, calls[0]);
         assertEquals(1, calls[1]);
@@ -100,7 +101,7 @@ final class MainFileMenuFlowTest {
 
     @Test
     void startupTreatsSavedAndNewGamePositionsAsRomOamCoordinates() throws Exception {
-        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+        String source = Files.readString(Path.of("src/main/java/linksawakening/GameSession.java"));
 
         assertTrue(source.contains("link.setRoomEntryRomPosition(profile.entryX(), profile.entryY());"));
         assertTrue(source.contains("link.setRoomEntryRomPosition(saved.spawnPositionX(),"));
@@ -108,7 +109,7 @@ final class MainFileMenuFlowTest {
 
     @Test
     void newGameRunsMarinsWakeSequenceWithRomBackedDialog() throws Exception {
-        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+        String source = Files.readString(Path.of("src/main/java/linksawakening/GameSession.java"));
 
         assertTrue(source.contains("newGameWakeUpMotion = new MarinWakeUpMotion();"));
         assertTrue(source.contains("tickNewGameWakeUp()"));
@@ -118,7 +119,7 @@ final class MainFileMenuFlowTest {
 
     @Test
     void wakeSequenceConsumesOverworldKeysBeforeSaveAndInventoryActions() throws Exception {
-        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+        String source = Files.readString(Path.of("src/main/java/linksawakening/GameSession.java"));
         int wakeGate = source.indexOf("if (marinWakeUpBlocksKeyInput())");
         int saveChord = source.indexOf("if (shouldEnterFileSave", wakeGate);
         int inventoryToggle = source.indexOf("inventoryController.dispatchToggleInput()", wakeGate);
@@ -130,12 +131,12 @@ final class MainFileMenuFlowTest {
 
     @Test
     void wakeReleaseUsesHeldDirectionsAndMarinFollowUpUsesOnlyA() throws Exception {
-        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
-        int wakeTick = source.indexOf("private static boolean tickNewGameWakeUp()");
-        int wakeTickEnd = source.indexOf("private static boolean marinWakeUpBlocksKeyInput()", wakeTick);
+        String source = Files.readString(Path.of("src/main/java/linksawakening/GameSession.java"));
+        int wakeTick = source.indexOf("private boolean tickNewGameWakeUp()");
+        int wakeTickEnd = source.indexOf("private boolean marinWakeUpBlocksKeyInput()", wakeTick);
         String wakeBody = source.substring(wakeTick, wakeTickEnd);
-        int followUp = source.indexOf("private static boolean tryOpenMarinFollowUpDialog(int key)");
-        int followUpEnd = source.indexOf("private static OverworldDialogBlockers", followUp);
+        int followUp = source.indexOf("private boolean tryOpenMarinFollowUpDialog(int key)");
+        int followUpEnd = source.indexOf("private OverworldDialogBlockers", followUp);
         String followUpBody = source.substring(followUp, followUpEnd);
 
         assertTrue(wakeBody.contains("inputState.isDown(inputConfig.upKey())"));
@@ -146,12 +147,12 @@ final class MainFileMenuFlowTest {
 
     @Test
     void tarinTalkUsesOnlyAAndUnshieldedHouseSavesRestoreHisSequence() throws Exception {
-        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
-        int tarinTalk = source.indexOf("private static boolean tryOpenTarinShieldDialog(int key)");
-        int tarinTalkEnd = source.indexOf("private static boolean tryOpenMarinFollowUpDialog", tarinTalk);
+        String source = Files.readString(Path.of("src/main/java/linksawakening/GameSession.java"));
+        int tarinTalk = source.indexOf("private boolean tryOpenTarinShieldDialog(int key)");
+        int tarinTalkEnd = source.indexOf("private boolean tryOpenMarinFollowUpDialog", tarinTalk);
         String tarinBody = source.substring(tarinTalk, tarinTalkEnd);
-        int savedGame = source.indexOf("private static void startSavedGame");
-        int savedGameEnd = source.indexOf("private static void startIntroCutscene", savedGame);
+        int savedGame = source.indexOf("private void startSavedGame");
+        int savedGameEnd = source.indexOf("private void startIntroCutscene", savedGame);
         String savedBody = source.substring(savedGame, savedGameEnd);
 
         assertTrue(tarinBody.contains("key != inputConfig.aKey()"));
@@ -162,7 +163,7 @@ final class MainFileMenuFlowTest {
 
     @Test
     void fileMenuStartupUsesThePersistentSaveImageForMaskAndNames() throws Exception {
-        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+        String source = Files.readString(Path.of("src/main/java/linksawakening/GameSession.java"));
         int start = source.indexOf("fileMenuController = new FileMenuController(");
         int end = source.indexOf("playDirectMusic(fileSelectionMusicTrack());", start);
         String constructor = source.substring(start, end);
@@ -174,7 +175,7 @@ final class MainFileMenuFlowTest {
 
     @Test
     void newGamePersistsTheSelectedSlotBeforeEnteringGameplay() throws Exception {
-        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+        String source = Files.readString(Path.of("src/main/java/linksawakening/GameSession.java"));
         int start = source.indexOf("if (action.type() == FileMenuAction.Type.START_NEW_GAME)");
         int end = source.indexOf("} else if (action.type() == FileMenuAction.Type.LOAD_GAME)", start);
         String branch = source.substring(start, end);
@@ -185,7 +186,7 @@ final class MainFileMenuFlowTest {
 
     @Test
     void copyAndErasePersistThenRebuildTheFileMenu() throws Exception {
-        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+        String source = Files.readString(Path.of("src/main/java/linksawakening/GameSession.java"));
 
         assertTrue(source.contains("saveRamStore.eraseSlot(action.selectedSlot())"));
         assertTrue(source.contains("saveRamStore.copySlot(action.selectedSlot(), action.targetSlot())"));
@@ -195,7 +196,7 @@ final class MainFileMenuFlowTest {
 
     @Test
     void saveAndQuitUsesTheModeledPlayerStateWriter() throws Exception {
-        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+        String source = Files.readString(Path.of("src/main/java/linksawakening/GameSession.java"));
 
         assertTrue(source.contains("saveCurrentPlayerState();"));
         assertTrue(source.contains("saveRamStore.writePlayerState(currentSaveSlot, playerState);"));
@@ -207,7 +208,7 @@ final class MainFileMenuFlowTest {
 
     @Test
     void initializedFileSelectionLoadsTheSavedRoomInsteadOfThrowing() throws Exception {
-        String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
+        String source = Files.readString(Path.of("src/main/java/linksawakening/GameSession.java"));
         int start = source.indexOf("} else if (action.type() == FileMenuAction.Type.LOAD_GAME)");
         int end = source.indexOf("inputState.tickEdges();", start);
         String branch = source.substring(start, end);

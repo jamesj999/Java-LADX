@@ -26,6 +26,7 @@ import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 
 final class MainTest {
+    private static final GameSession game = new GameSession();
 
     @Test
     void colorDungeonUsesItsOwnRoomPointerTable() {
@@ -62,7 +63,7 @@ final class MainTest {
         playerState.setItemA(PlayerState.INVENTORY_BOW);
         playerState.setItemB(PlayerState.INVENTORY_HOOKSHOT);
 
-        Main.applyConfiguredItemProfile(AppConfig.parse("""
+        game.applyConfiguredItemProfile(AppConfig.parse("""
             { "itemProfile": "NEW_GAME" }
             """), playerState);
 
@@ -120,29 +121,29 @@ final class MainTest {
         AppConfig enabled = AppConfig.parse("{ \"debugEnabled\": true }");
         AppConfig disabled = AppConfig.parse("{ \"debugEnabled\": false }");
 
-        assertTrue(Main.shouldRunDebugDump(enabled, GLFW_KEY_F1, GLFW_PRESS));
-        assertFalse(Main.shouldRunDebugDump(disabled, GLFW_KEY_F1, GLFW_PRESS));
-        assertFalse(Main.shouldRunDebugDump(enabled, GLFW_KEY_F2, GLFW_PRESS));
-        assertFalse(Main.shouldRunDebugDump(enabled, GLFW_KEY_F1, GLFW_RELEASE));
+        assertTrue(game.shouldRunDebugDump(enabled, GLFW_KEY_F1, GLFW_PRESS));
+        assertFalse(game.shouldRunDebugDump(disabled, GLFW_KEY_F1, GLFW_PRESS));
+        assertFalse(game.shouldRunDebugDump(enabled, GLFW_KEY_F2, GLFW_PRESS));
+        assertFalse(game.shouldRunDebugDump(enabled, GLFW_KEY_F1, GLFW_RELEASE));
     }
 
     @Test
     void entityAnimationContinuesDuringInventoryMovementButNotWhileFullyOpen() {
-        assertTrue(Main.shouldTickRoomEntities(false, false, false, false));
-        assertTrue(Main.shouldTickRoomEntities(false, false, true, true));
-        assertFalse(Main.shouldTickRoomEntities(false, false, true, false));
-        assertFalse(Main.shouldTickRoomEntities(true, false, false, false));
-        assertFalse(Main.shouldTickRoomEntities(false, true, false, false));
+        assertTrue(game.shouldTickRoomEntities(false, false, false, false));
+        assertTrue(game.shouldTickRoomEntities(false, false, true, true));
+        assertFalse(game.shouldTickRoomEntities(false, false, true, false));
+        assertFalse(game.shouldTickRoomEntities(true, false, false, false));
+        assertFalse(game.shouldTickRoomEntities(false, true, false, false));
     }
 
     @Test
     void gameplayFrameDecrementsDialogCooldownWhenEntityAnimationIsSkipped() {
         DialogController dialog = closedDialogWithCooldown();
-        assertFalse(Main.shouldTickRoomEntities(false, false, true, false));
-        assertFalse(Main.shouldTickRoomEntities(true, false, false, false));
-        assertFalse(Main.shouldTickRoomEntities(false, true, false, false));
+        assertFalse(game.shouldTickRoomEntities(false, false, true, false));
+        assertFalse(game.shouldTickRoomEntities(true, false, false, false));
+        assertFalse(game.shouldTickRoomEntities(false, true, false, false));
 
-        Main.completeGameplayFrame(dialog);
+        game.completeGameplayFrame(dialog);
 
         assertEquals(0x17, dialog.dialogCooldown());
     }
@@ -154,7 +155,7 @@ final class MainTest {
 
         for (int frame = 0; frame < 0x18; frame++) {
             valuesSeenByOptionalEntityAnimation.add(dialog.dialogCooldown());
-            Main.completeGameplayFrame(dialog);
+            game.completeGameplayFrame(dialog);
         }
 
         assertEquals(0x18, valuesSeenByOptionalEntityAnimation.getFirst());
@@ -169,16 +170,16 @@ final class MainTest {
         CutsceneManager manager = new CutsceneManager(new DialogController(16), loadedScenes::add);
         manager.startIntro();
 
-        assertTrue(Main.skipIntroCutsceneIfRequested(GLFW_KEY_ENTER, GLFW_PRESS, manager));
+        assertTrue(game.skipIntroCutsceneIfRequested(GLFW_KEY_ENTER, GLFW_PRESS, manager));
         assertFalse(manager.isActive());
         assertTrue(manager.isShowingTitleScene());
     }
 
     @Test
     void titleAndIntroMusicTracksMatchDisassemblyEntryPoints() {
-        assertEquals(MusicTrackIds.MUSIC_TITLE_CUTSCENE, Main.introCutsceneMusicTrack());
-        assertEquals(MusicTrackIds.MUSIC_TITLE_SCREEN, Main.naturalIntroTitleMusicTrack());
-        assertEquals(MusicTrackIds.MUSIC_TITLE_SCREEN_NO_INTRO, Main.directTitleScreenMusicTrack());
+        assertEquals(MusicTrackIds.MUSIC_TITLE_CUTSCENE, game.introCutsceneMusicTrack());
+        assertEquals(MusicTrackIds.MUSIC_TITLE_SCREEN, game.naturalIntroTitleMusicTrack());
+        assertEquals(MusicTrackIds.MUSIC_TITLE_SCREEN_NO_INTRO, game.directTitleScreenMusicTrack());
     }
 
     private static byte[] loadRom() {
