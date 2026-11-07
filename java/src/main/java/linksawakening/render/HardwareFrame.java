@@ -89,7 +89,9 @@ public final class HardwareFrame implements RenderLayer, OamSink {
 
     /** Call after compose. Requires the legacy RGB to equal the resolved HUD color and a hardware-visible OBJ. */
     public boolean explainsHudPriority(byte[] legacy, byte[] hardware, int pixel) {
-        if (!approvedHudEvidence[pixel]
+        boolean evidencedWindow = approvedHudEvidence[pixel]
+            || "DialogRenderLayer".equals(bgSources[pixel]);
+        if (!evidencedWindow
             || objectOrder[pixel] == Integer.MAX_VALUE || backgroundPalettes[pixel] == null) return false;
         int offset = pixel * 4;
         if (backgroundPriorityEnabled && backgroundIndex[pixel] != 0

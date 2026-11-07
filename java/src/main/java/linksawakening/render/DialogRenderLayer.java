@@ -39,8 +39,11 @@ public final class DialogRenderLayer implements HardwareRenderLayer {
             }
         }
     }
-    @Override public boolean supportsHardware() { return !dialogController.isActive(); }
     @Override public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
-        if (!supportsHardware()) throw new IllegalStateException("Active dialog not migrated");
+        if (!dialogController.isActive()) return;
+        DialogRenderer.submitWindow(frame, dialogController, backgroundPalette);
+        if (objectPalettes != null && dialogController.isWaitingForPageAdvance() && (frameCounter & 0x10) == 0)
+            OamDrawing.draw8x16(new RenderContext(new byte[0], gpu, frame), gpu,
+                0xA2, 0x97 - 8, dialogController.boxY() + 31, false, true, objectPalettes[2]);
     }
 }

@@ -94,4 +94,36 @@ public final class DialogRenderer {
         buffer[offset + 2] = (byte) (color & 0xFF);
         buffer[offset + 3] = (byte) 0xFF;
     }
+    /** Indexed counterpart; dialog_letters.asm $4A84 writes attribute $01 (no priority bit). */
+    public static void submitWindow(linksawakening.render.HardwareFrame frame,
+                                    DialogController dialog, int[] suppliedPalette) {
+        if (!dialog.isActive()) return;
+        int[] palette = suppliedPalette == null
+            ? new int[] { TEXT_COLOR, BOX_COLOR, BOX_COLOR, BOX_COLOR } : suppliedPalette;
+        int boxY = dialog.boxY();
+        for (int row = 0; row < BOX_HEIGHT / CELL_SIZE; row++) {
+            if (!dialog.isBoxRowVisible(row)) continue;
+            for (int y = 0; y < CELL_SIZE; y++) for (int x = 0; x < BOX_WIDTH; x++)
+                frame.backgroundPixel(BOX_X + x, boxY + row * CELL_SIZE + y, 3, palette, -1, 0x01);
+        }
+        int column = 0, row = 0;
+        String text = dialog.visibleText();
+        int originY = boxY + TEXT_Y_OFFSET + dialog.textScrollOffset();
+        for (int i = 0; i < text.length() && row < VISIBLE_LINES; i++) {
+            char codepoint = text.charAt(i);
+            if (codepoint == '\n') { column = 0; row++; continue; }
+            if (column >= LINE_WIDTH) { column = 0; if (++row >= VISIBLE_LINES) break; }
+            int y = originY + row * LINE_HEIGHT;
+            int boxRow = (y - boxY) / CELL_SIZE;
+            if (codepoint != ' ' && dialog.isBoxRowVisible(boxRow)) {
+                byte[] tile = FONT.tileFor(codepoint);
+                for (int ty = 0; ty < 8; ty++) for (int tx = 0; tx < 8; tx++) {
+                    int bit = 7 - tx;
+                    int index = ((tile[ty * 2] >> bit) & 1) | (((tile[ty * 2 + 1] >> bit) & 1) << 1);
+                    frame.backgroundPixel(TEXT_X + column * CELL_SIZE + tx, y + ty, index, palette, -1, 0x01);
+                }
+            }
+            column++;
+        }
+    }
 }
