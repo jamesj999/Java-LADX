@@ -34,6 +34,7 @@ public final class RoomEntityRuntime {
     private final EntityPickupController pickups = new EntityPickupController(this);
     private final EntityLiftThrowController liftThrow = new EntityLiftThrowController(this);
     private final EntityCombatResolver combat = new EntityCombatResolver(this);
+    private final EntityBossRewards bossRewards = new EntityBossRewards(this);
     private final EntityOutbox outbox = new EntityOutbox();
     private static final int ENTITY_PUSHED_BLOCK = 0x06;
     static final int[] INSTRUMENT_MUSIC_TRACKS = {
@@ -433,7 +434,7 @@ public final class RoomEntityRuntime {
     final EnemyDropMotion enemyDropMotion = new EnemyDropMotion();
     final int[] enemyTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] bossDeathProducerState = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final boolean[] rollingBonesDeathInitialized =
+    final boolean[] rollingBonesDeathInitialized =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
     final int[] moldormDestructionTailState =
         new int[EntityRoomLoader.MAX_ENTITIES];
@@ -555,20 +556,20 @@ public final class RoomEntityRuntime {
     boolean pendingSwitchBlockAnimationRequest;
     ColorShellWorld colorShellWorld = ColorShellWorld.none();
     int pendingClearedEntityMask;
-    private int pendingRoomStatusMask;
-    private EnemyDropResolver enemyDropResolver;
-    private EnemyDropResolver.CounterState enemyDropCounters =
+    int pendingRoomStatusMask;
+    EnemyDropResolver enemyDropResolver;
+    EnemyDropResolver.CounterState enemyDropCounters =
         new EnemyDropResolver.CounterState(0, 0);
-    private int enemyDropMaxHearts = 3;
-    private int enemyDropHealth = 6;
+    int enemyDropMaxHearts = 3;
+    int enemyDropHealth = 6;
     boolean enemyDropActivePowerUp;
-    private boolean enemyDropBossBattle;
-    private int killCount;
+    boolean enemyDropBossBattle;
+    int killCount;
     int booBuddyTriggerCount;
     int bgPaletteEffectAddress;
     int paletteDataFlags;
     int defaultMusicTrack = 0x05;
-    private final int[] killOrder = new int[0x100];
+    final int[] killOrder = new int[0x100];
     boolean actionButtonsHeld;
     boolean actionButtonAHeld;
     boolean actionButtonBHeld;
@@ -4339,249 +4340,23 @@ public final class RoomEntityRuntime {
         return gel;
     }
 
-    void handleTerminalEnemyDeath(RoomEntity entity, IntSupplier randomByteSupplier) {
-        boolean swallowedShield = entity.type() == ENTITY_LIKE_LIKE
-            && likeLikeMotion.privateState1(entity.slot()) != 0;
-        if (entity.type() == ENTITY_MOBLIN_KING) {
-            // The mini-boss option reaches DidKillEnemy's room-event branch,
-            // permanently opening the east rescue-room path.
-            pendingRoomStatusMask |= 0x20;
-        }
-        if (entity.sourceLoadOrder() < 0 || (enemyDropResolver == null && !swallowedShield)) {
-            if (entity.type() == ENTITY_MOBLIN_KING) {
-                pendingClearedEntityMask |= persistentClearMask(entity);
-            }
-            disableEntityWithoutPersistence(entity.slot());
-            return;
-        }
-
-        EnemyDropResolver.Result result;
-        if (swallowedShield) {
-            result = new EnemyDropResolver.Result(
-                ENTITY_SWORD_SHIELD_PICKUP, enemyDropCounters, 0);
-        } else {
-            EnemyDropResolver.Context context = new EnemyDropResolver.Context(
-                entity.type(), enemyDropHealthGroup(entity.type()), droppedItemBySlot[entity.slot()],
-                enemyDropMaxHearts, enemyDropHealth, enemyDropBossBattle,
-                enemyDropActivePowerUp, groundInteractionSideScrolling, enemyDropCounters,
-                randomByteSupplier);
-            result = enemyDropResolver.resolve(context);
-            enemyDropCounters = result.counters();
-        }
-
-        int killIndex = killCount & 0xFF;
-        killOrder[killIndex] = entity.sourceLoadOrder() & 0xFF;
-        killCount = (killCount + 1) & 0xFF;
-        pendingClearedEntityMask |= persistentClearMask(entity);
-        if (result.dropped()) {
-            spawnEnemyDrop(entity, result.itemType());
-        }
-        disableEntityWithoutPersistence(entity.slot());
-    }
+    void handleTerminalEnemyDeath(RoomEntity entity, IntSupplier randomByteSupplier) { this.bossRewards.handleTerminalEnemyDeath(entity, randomByteSupplier); }
 
     /** Ports {@code RollingBonesEntityHandler}'s long miniboss destruction sequence. */
-    void advanceRollingBonesDestruction(RoomEntity entity,
-                                                 IntSupplier randomByteSupplier) {
-        int slot = entity.slot();
-        if (!rollingBonesDeathInitialized[slot]) {
-            rollingBonesDeathInitialized[slot] = true;
-            enemyTransitionCountdown[slot] = 0xFF;
-            enemyFlashCountdown[slot] = 0xFF;
-            return;
-        }
-        int countdown = enemyTransitionCountdown[slot];
-        enemyFlashCountdown[slot] = countdown;
-        if (countdown == 0) {
-            // $06:6CC1 calls DidKillEnemy, including SpawnEnemyDrop. The
-            // ROM health-group tables select the miniboss healing fairy.
-            if (enemyDropResolver != null) {
-                EnemyDropResolver.Result drop = enemyDropResolver.resolve(
-                    new EnemyDropResolver.Context(entity.type(), enemyDropHealthGroup(entity.type()),
-                        droppedItemBySlot[slot], enemyDropMaxHearts, enemyDropHealth,
-                        enemyDropBossBattle, enemyDropActivePowerUp, groundInteractionSideScrolling,
-                        enemyDropCounters, randomByteSupplier));
-                enemyDropCounters = drop.counters();
-                if (drop.dropped()) spawnEnemyDrop(entity, drop.itemType());
-            }
-            int killIndex = killCount & 0xFF;
-            killOrder[killIndex] = entity.sourceLoadOrder() & 0xFF;
-            killCount = (killCount + 1) & 0xFF;
-            pendingClearedEntityMask |= persistentClearMask(entity);
-            if (entityMapId != 0x07) {
-                pendingRoomStatusMask |= 0x20;
-            }
-            disableEntityWithoutPersistence(slot);
-            return;
-        }
-        if (countdown < 0x80 && (countdown & 0x07) == 0) {
-            int x = (entity.x() + ((randomByteSupplier.getAsInt() & 0x1F) - 0x10)) & 0xFF;
-            int y = (entity.y() - entity.z()
-                + ((randomByteSupplier.getAsInt() & 0x1F) - 0x14)) & 0xFF;
-            transientVfxRequests.add(new TransientVfxRequest(TransientVfxType.POOF, x, y));
-            pendingEntityEvents.add(new EntityCombatEvent(
-                slot, entity.type(), 0, false,
-                EntityCombatEvent.SoundChannel.NOISE, 0x13));
-        }
-    }
+    void advanceRollingBonesDestruction(RoomEntity entity, IntSupplier randomByteSupplier) { this.bossRewards.advanceRollingBonesDestruction(entity, randomByteSupplier); }
 
     /** Bank $15:7C37..7CA5: two death waits, then DidKillEnemy. */
-    void advanceMoblinKingDestruction(RoomEntity source, int frame, IntSupplier random) {
-        int slot = source.slot();
-        // Main resolves sword damage before dispatch; the ROM dispatches the
-        // dying branch on the following frame, after this hit's active handler.
-        boolean hitThisFrame = moblinKingLethalHitFrame[slot] == frame + 1;
-        moblinKingLethalHitFrame[slot] = 0;
-        if (hitThisFrame) return;
-        if (spriteHandlers != null) source = withDefinition(source,
-            spriteHandlers.forMoblinKingState(12, -1, source.z() != 0), 0);
-        slots[slot] = withFlipAttribute(source, baseEntityFlipAttribute[slot]
-            ^ ((enemyFlashCountdown[slot] << 2) & 0x10));
-        if (bossDeathProducerState[slot] == 0) {
-            enemyTransitionCountdown[slot] = 0xA0;
-            enemyFlashCountdown[slot] = 0xFF;
-            bossDeathProducerState[slot] = 1;
-        } else if (bossDeathProducerState[slot] == 1) {
-            if (enemyTransitionCountdown[slot] == 0) {
-                enemyTransitionCountdown[slot] = 0xC0;
-                enemyFlashCountdown[slot] = 0xFF;
-                bossDeathProducerState[slot] = 2;
-            }
-        } else if (enemyTransitionCountdown[slot] == 0) {
-            pendingEntityEvents.add(new EntityCombatEvent(slot, source.type(), 0, false,
-                EntityCombatEvent.SoundChannel.NOISE, 0x0C));
-            swordMoblinAlertingSoundCounter = 4;
-            handleTerminalEnemyDeath(source, random);
-        } else if ((enemyTransitionCountdown[slot] & 7) == 0
-            && entityHandlerInteractive(false)) {
-            int x = (source.x() + (random.getAsInt() & 0x1F) - 0x10) & 255;
-            int y = (source.y() - source.z() + (random.getAsInt() & 0x1F) - 0x14) & 255;
-            transientVfxRequests.add(new TransientVfxRequest(TransientVfxType.POOF, x, y));
-            pendingEntityEvents.add(new EntityCombatEvent(slot, source.type(), 0, false,
-                EntityCombatEvent.SoundChannel.NOISE, 0x13));
-        }
-    }
+    void advanceMoblinKingDestruction(RoomEntity source, int frame, IntSupplier random) { this.bossRewards.advanceMoblinKingDestruction(source, frame, random); }
 
-    void advanceMoldormDestruction(RoomEntity source, int frameCounter) {
-        int slot = source.slot();
-        int tailState = moldormDestructionTailState[slot];
-        if (spriteHandlers != null) {
-            RoomEntity rendered = withDefinition(source, spriteHandlers.forMoldormState(
-                moldormMotion.headSpriteVariant(slot), source.x(),
-                (source.y() - source.z()) & 0xFF,
-                moldormMotion.currentTailSegments(slot), tailState, frameCounter), 0);
-            slots[slot] = withFlipAttribute(rendered,
-                baseEntityFlipAttribute[slot]
-                    ^ ((enemyFlashCountdown[slot] << 2) & 0x10));
-        }
+    void advanceMoldormDestruction(RoomEntity source, int frameCounter) { this.bossRewards.advanceMoldormDestruction(source, frameCounter); }
 
-        switch (bossDeathProducerState[slot]) {
-            case 0 -> {
-                enemyTransitionCountdown[slot] = 0x60;
-                enemyFlashCountdown[slot] = 0xFF;
-                bossDeathProducerState[slot] = 1;
-            }
-            case 1 -> {
-                if (enemyTransitionCountdown[slot] == 0) {
-                    enemyTransitionCountdown[slot] = 0xFF;
-                    enemyFlashCountdown[slot] = 0xFF;
-                    bossDeathProducerState[slot] = 2;
-                }
-            }
-            case 2 -> {
-                if ((enemyTransitionCountdown[slot] & 0x1F) != 0) {
-                    return;
-                }
-                if (tailState == 4) {
-                    enemyTransitionCountdown[slot] = 0x30;
-                    bossDeathProducerState[slot] = 3;
-                    return;
-                }
-                MoldormMotion.TailPosition poofPosition =
-                    moldormMotion.currentTailSegments(slot).get(3 - tailState);
-                createMoldormPoof(source, poofPosition.x(), poofPosition.y());
-                moldormDestructionTailState[slot] = tailState + 1;
-            }
-            default -> advanceMoldormBossExplosion(source);
-        }
-    }
+    private void advanceMoldormBossExplosion(RoomEntity source) { this.bossRewards.advanceMoldormBossExplosion(source); }
 
-    private void advanceMoldormBossExplosion(RoomEntity source) {
-        int slot = source.slot();
-        int countdown = enemyTransitionCountdown[slot];
-        if (countdown == 0) {
-            spawnMoldormHeartContainer(source);
-            disableEntityWithoutPersistence(slot);
-            pendingEntityEvents.add(new EntityCombatEvent(
-                slot, source.type(), 0, false,
-                EntityCombatEvent.SoundChannel.NOISE, 0x1A));
-            return;
-        }
-        if ((countdown & 0x03) != 0) {
-            return;
-        }
-        int index = (countdown >> 2) & 0x07;
-        int[] xOffsets = {0, 6, 8, 6, 0, -6, -8, -6};
-        int[] yOffsets = {-8, -6, 0, 6, 8, 6, 0, -6};
-        createMoldormPoof(source,
-            (source.x() + xOffsets[index]) & 0xFF,
-            ((source.y() - source.z()) + yOffsets[index]) & 0xFF);
-        if (countdown == 0x10) {
-            moldormDestructionTailState[slot] = 5;
-        }
-    }
+    void spawnMoldormHeartContainer(RoomEntity source) { this.bossRewards.spawnMoldormHeartContainer(source); }
 
-    void spawnMoldormHeartContainer(RoomEntity source) {
-        int freeSlot = findFreeEntitySlot();
-        if (freeSlot < 0) {
-            return;
-        }
-        int x = Math.max(0x18, Math.min(0x88, source.x()));
-        int y = Math.max(0x20, Math.min(0x70, source.y()));
-        EntitySpriteDefinition definition = spriteDefinitionFor(ENTITY_HEART_CONTAINER);
-        int variant = definition.supported() ? definition.initialVariant() : -1;
-        slots[freeSlot] = new RoomEntity(freeSlot, -1, ENTITY_HEART_CONTAINER,
-            x, y, EntityStatus.ACTIVE, definition, variant, 0, 0, source.z(), -1, false);
-        resetEnemyDropState(freeSlot);
-        enemyDropMotion.initialize(freeSlot, groundInteractionSideScrolling, 0x10);
-        enemyDropActive[freeSlot] = true;
-        slowTransitionCountdown[freeSlot] = 0;
-        slowTimerInitialized[freeSlot] = false;
-        enemyTransitionCountdown[freeSlot] = 0;
-        enemyStunnedCountdown[freeSlot] = 0;
-        dyingCountdown[freeSlot] = 0;
-        powerRecoilDeath[freeSlot] = false;
-        enemyPhysicsFlags[freeSlot] = initialPhysicsFlags(ENTITY_HEART_CONTAINER);
-        enemyHealth[freeSlot] = initialHealth(ENTITY_HEART_CONTAINER);
-        enemyFlashCountdown[freeSlot] = 0;
-        enemyIgnoreHitsCountdown[freeSlot] = 1;
-        entityGroundStatus[freeSlot] = 0;
-        baseEntityFlipAttribute[freeSlot] = 0;
-        entityOptions1Override[freeSlot] = -1;
-        enemyRecoilMotion.clear(freeSlot);
-        dynamicEntitySpawnedThisFrame[freeSlot] = true;
-    }
+    private void createMoldormPoof(RoomEntity source, int x, int y) { this.bossRewards.createMoldormPoof(source, x, y); }
 
-    private void createMoldormPoof(RoomEntity source, int x, int y) {
-        transientVfxRequests.add(new TransientVfxRequest(TransientVfxType.POOF, x, y));
-        pendingEntityEvents.add(new EntityCombatEvent(
-            source.slot(), source.type(), 0, false,
-            EntityCombatEvent.SoundChannel.NOISE, 0x13));
-    }
-
-    void advanceCollectedHeartContainer(RoomEntity entity,
-                                                 int linkEntityX, int linkEntityY,
-                                                 int linkZ) {
-        int slot = entity.slot();
-        if (enemyTransitionCountdown[slot] == 1) {
-            pendingHeartContainerRewards.add(new HeartContainerRewardEvent(slot));
-            disableEntityWithoutPersistence(slot);
-            return;
-        }
-        pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
-        RoomEntity held = withPositionAndVariant(entity, linkEntityX,
-            (linkEntityY - 0x0C) & 0xFF, entity.spriteVariant());
-        slots[slot] = withZ(held, linkZ & 0xFF);
-    }
+    void advanceCollectedHeartContainer(RoomEntity entity, int linkEntityX, int linkEntityY, int linkZ) { this.bossRewards.advanceCollectedHeartContainer(entity, linkEntityX, linkEntityY, linkZ); }
 
     private void startSwordPickup(int slot) {
         swordPickupSequenceActive[slot] = true;
@@ -4792,114 +4567,13 @@ public final class RoomEntityRuntime {
      * {@code $30}. Boss entities stay on their active handler while DYING, so
      * they must not enter the ordinary EnemyDropResolver path.
      */
-    void advanceBossKeyDropProducer(RoomEntity source,
-                                             IntSupplier randomByteSupplier) {
-        int slot = source.slot();
-        if (enemyTransitionCountdown[slot] != 0) {
-            return;
-        }
+    void advanceBossKeyDropProducer(RoomEntity source, IntSupplier randomByteSupplier) { this.bossRewards.advanceBossKeyDropProducer(source, randomByteSupplier); }
 
-        int state = bossDeathProducerState[slot];
-        if (source.type() == ENTITY_DESERT_LANMOLA) {
-            switch (state) {
-                case 0 -> {
-                    // func_006_5629: transition $60, then private state 2++.
-                    bossDeathProducerState[slot] = 1;
-                    enemyTransitionCountdown[slot] = 0x60;
-                    return;
-                }
-                case 1 -> {
-                    // func_006_563A: transition $CF, then private state 2++.
-                    bossDeathProducerState[slot] = 2;
-                    enemyTransitionCountdown[slot] = 0xCF;
-                    return;
-                }
-                default -> {
-                    // func_006_564B: variant $02, z from hMultiPurpose3,
-                    // speedZ $10, and private countdown 1 $10.
-                    spawnBossKeyDrop(source, 0x02, source.z(), 0x10, 0x10);
-                    disableEntityWithoutPersistence(slot);
-                    pendingEntityEvents.add(new EntityCombatEvent(
-                        slot, source.type(), 0, false,
-                        EntityCombatEvent.SoundChannel.NOISE, 0x13));
-                }
-            }
-            return;
-        }
-
-        if (source.type() == ENTITY_ARMOS_KNIGHT || source.type() == ENTITY_HINOX) {
-            switch (state) {
-                case 0 -> {
-                    // ArmosKnightPrivateState0Handler: transition $A0 and
-                    // the first full flash countdown.
-                    bossDeathProducerState[slot] = 1;
-                    enemyTransitionCountdown[slot] = 0xA0;
-                    enemyFlashCountdown[slot] = 0xFF;
-                    return;
-                }
-                case 1 -> {
-                    // ArmosKnightPrivateState1Handler: the second flash
-                    // begins only after the first countdown reaches zero.
-                    bossDeathProducerState[slot] = 2;
-                    enemyTransitionCountdown[slot] = 0xC0;
-                    enemyFlashCountdown[slot] = 0xFF;
-                    return;
-                }
-                default -> {
-                    // The shared inactive handler emits the boss explosion,
-                    // then calls DidKillEnemy. Armos has pre-forced the key;
-                    // Hinox uses the ordinary drop resolver here.
-                    if (source.type() == ENTITY_ARMOS_KNIGHT) {
-                        int killIndex = killCount & 0xFF;
-                        killOrder[killIndex] = source.sourceLoadOrder() & 0xFF;
-                        killCount = (killCount + 1) & 0xFF;
-                        pendingClearedEntityMask |= persistentClearMask(source);
-                        spawnEnemyDrop(source, ENTITY_KEY_DROP_POINT);
-                        disableEntityWithoutPersistence(slot);
-                    } else {
-                        handleTerminalEnemyDeath(source, randomByteSupplier);
-                        // label_006_5355 -> label_006_6CC9 opens the Hinox
-                        // room event except in Eagle's Tower and later maps.
-                        if (entityMapId >= 0 && entityMapId < 0x06) {
-                            pendingRoomStatusMask |= 0x20;
-                        }
-                    }
-                    pendingEntityEvents.add(new EntityCombatEvent(
-                        slot, source.type(), 0, false,
-                        EntityCombatEvent.SoundChannel.NOISE, 0x1A));
-                }
-            }
-            return;
-        }
-
-        switch (state) {
-            case 0 -> {
-                // func_007_7EB6: transition $A0, then private state 2++.
-                bossDeathProducerState[slot] = 1;
-                enemyTransitionCountdown[slot] = 0xA0;
-            }
-            case 1 -> {
-                // func_007_7EC7: transition $C0, then private state 2++.
-                bossDeathProducerState[slot] = 2;
-                enemyTransitionCountdown[slot] = 0xC0;
-            }
-            default -> {
-                // func_007_7ED6: ConfigureNewEntity leaves z at zero;
-                // the producer supplies speedZ $18 and countdown 1 $20.
-                spawnBossKeyDrop(source, 0x00, 0x00, 0x18, 0x20);
-                disableEntityWithoutPersistence(slot);
-                pendingEntityEvents.add(new EntityCombatEvent(
-                    slot, source.type(), 0, false,
-                    EntityCombatEvent.SoundChannel.NOISE, 0x1A));
-            }
-        }
-    }
-
-    private void spawnBossKeyDrop(RoomEntity source, int spriteVariant, int z, int speedZ, int privateCountdown1) { pickups.spawnBossKeyDrop(source, spriteVariant, z, speedZ, privateCountdown1); }
+    void spawnBossKeyDrop(RoomEntity source, int spriteVariant, int z, int speedZ, int privateCountdown1) { pickups.spawnBossKeyDrop(source, spriteVariant, z, speedZ, privateCountdown1); }
 
     private int spawnKeyDropAt(int itemType, int x, int y, int spriteVariant, int z, int speedZ, int privateCountdown1) { return pickups.spawnKeyDropAt(itemType, x, y, spriteVariant, z, speedZ, privateCountdown1); }
 
-    private int enemyDropHealthGroup(int entityType) {
+    int enemyDropHealthGroup(int entityType) {
         if (enemyCombatTables == null) {
             throw new IllegalStateException(
                 "ROM enemy combat tables are required for enemy drop resolution");
@@ -4907,7 +4581,7 @@ public final class RoomEntityRuntime {
         return enemyCombatTables.healthGroup(entityType);
     }
 
-    private void spawnEnemyDrop(RoomEntity source, int itemType) { pickups.spawnEnemyDrop(source, itemType); }
+    void spawnEnemyDrop(RoomEntity source, int itemType) { pickups.spawnEnemyDrop(source, itemType); }
 
     boolean spawnKanaletWallMoblin(RoomEntity wall) {
         int freeSlot = findFreeEntitySlot();
@@ -7321,7 +6995,7 @@ public final class RoomEntityRuntime {
 
     void initializeEntityTimers(RoomEntity entity) { pickups.initializeEntityTimers(entity); }
 
-    private void resetEnemyDropState(int slot) { pickups.resetEnemyDropState(slot); }
+    void resetEnemyDropState(int slot) { pickups.resetEnemyDropState(slot); }
 
     void decrementEnemyDropCountdowns(RoomEntity entity) { pickups.decrementEnemyDropCountdowns(entity); }
 
