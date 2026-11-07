@@ -318,7 +318,7 @@ public final class EntityEnemySpawns {
         runtime.enemyRecoilMotion.clear(freeSlot);
         runtime.stalfosEvasiveMotion.initializeClone(freeSlot, request.speedX(), request.speedY());
         runtime.dynamicEntitySpawnedThisFrame[freeSlot] = true;
-        runtime.pendingEntityEvents.add(new EntityCombatEvent(
+        runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
             source.slot(), source.type(), 0, false,
             EntityCombatEvent.SoundChannel.NOISE, 0x0A));
         return true;

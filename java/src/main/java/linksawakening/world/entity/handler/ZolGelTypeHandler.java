@@ -52,7 +52,7 @@ final class ZolGelTypeHandler {
                         zolGelBackgroundInteraction,
                         state.frame,
                         state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()],
-                        state.runtime.joypadHeld || state.runtime.actionButtonsHeld);
+                        state.runtime.linkState.joypadHeld || state.runtime.linkState.actionButtonsHeld);
                 state.updated = zolGelUpdate.entity();
                 state.runtime.gelClingingToLink |= zolGelUpdate.clinging();
                 if (zolGelUpdate.split() != null) {

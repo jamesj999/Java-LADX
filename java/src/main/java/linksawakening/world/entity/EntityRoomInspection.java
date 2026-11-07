@@ -1,7 +1,6 @@
 package linksawakening.world.entity;
 
 import linksawakening.world.entity.event.HeartPieceVisual;
-import linksawakening.world.entity.WingedOctorokOam;
 import linksawakening.world.entity.event.InstrumentWarpVisual;
 
 import linksawakening.world.entity.event.LiftedEntityState;
@@ -26,7 +25,7 @@ public final class EntityRoomInspection {
     EntityRoomInspection(RoomEntityRuntime runtime) { this.runtime = runtime; }
 
     List<RoamingEnemyMotion.LaunchRequest> projectileLaunchRequests() {
-        return List.copyOf(runtime.projectileLaunchRequests);
+        return List.copyOf(runtime.events.projectileLaunchRequests);
     }
 
     public LiftedEntityState liftedEntityState() {
@@ -183,19 +182,19 @@ public final class EntityRoomInspection {
     }
 
     public boolean tarinTransformationHandlerInteractive() {
-        return runtime.transitionSequenceCounter == 0x04 && !runtime.dialogActive && !runtime.inventoryAppearing;
+        return runtime.transitionSequenceCounter == 0x04 && !runtime.linkState.dialogActive && !runtime.linkState.inventoryAppearing;
     }
 
     boolean tarinTransformationTimersInteractive() {
-        return tarinTransformationHandlerInteractive() && runtime.linkPlayingOcarinaCountdown == 0;
+        return tarinTransformationHandlerInteractive() && runtime.linkState.linkPlayingOcarinaCountdown == 0;
     }
 
     public boolean genieState0Interactive(boolean creditsGameplay) {
         return !creditsGameplay
             && runtime.gameplayWorld
             && runtime.transitionSequenceCounter == 0x04
-            && !runtime.dialogActive
-            && !runtime.inventoryAppearing
+            && !runtime.linkState.dialogActive
+            && !runtime.linkState.inventoryAppearing
             && !witchGotItemPresentationActive()
             && !runtime.roomTransitionActive;
     }
@@ -490,7 +489,7 @@ public final class EntityRoomInspection {
     }
 
     public List<HookshotBridgeUpdate> hookshotBridgeUpdates() {
-        return List.copyOf(runtime.hookshotBridgeUpdates);
+        return List.copyOf(runtime.events.hookshotBridgeUpdates);
     }
 
     public RoomEntity firstLoadedEntityOfType(int type) {
@@ -539,12 +538,12 @@ public final class EntityRoomInspection {
     boolean sourceNpcInteractionAllowed(int xDistance, int yDistance,
                                                 boolean linkAirborne,
                                                 int entityDirection) {
-        return runtime.actionButtonAHeld
+        return runtime.linkState.actionButtonAHeld
             && ((yDistance + 0x14) & 0xFF) < 0x28
             && ((xDistance + 0x10) & 0xFF) < 0x20
-            && (runtime.lastRomLinkDirection ^ 0x01) == entityDirection
-            && !runtime.dialogActive && !runtime.inventoryAppearing && !linkAirborne
-            && runtime.dialogCooldown == 0 && runtime.windowY == 0x80;
+            && (runtime.linkState.lastRomLinkDirection ^ 0x01) == entityDirection
+            && !runtime.linkState.dialogActive && !runtime.linkState.inventoryAppearing && !linkAirborne
+            && runtime.linkState.dialogCooldown == 0 && runtime.linkState.windowY == 0x80;
     }
 
     public boolean heartPiecePickupActive() {

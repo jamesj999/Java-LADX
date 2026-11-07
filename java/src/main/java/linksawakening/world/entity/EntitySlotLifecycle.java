@@ -97,7 +97,7 @@ public final class EntitySlotLifecycle {
                     runtime.enemyTransitionCountdown[entity.slot()] =
                         KeyDropPointMotion.TRANSITION_COUNTDOWN;
                 } else {
-                    runtime.pendingKeyRewardEvents.add(new KeyRewardEvent(
+                    runtime.events.pendingKeyRewardEvents.add(new KeyRewardEvent(
                         entity.slot(), ChestContentsTable.CHEST_SMALL_KEY));
                     clearEntity(entity.slot());
                 }
@@ -370,20 +370,20 @@ public final class EntitySlotLifecycle {
         }
 
         if (target.type() == runtime.ENTITY_DROPPABLE_SECRET_SEASHELL) {
-            if (runtime.entityPrivateState4[targetSlot] == 0 || runtime.dialogActive
+            if (runtime.entityPrivateState4[targetSlot] == 0 || runtime.linkState.dialogActive
                 || runtime.bowWowMotion.privateCountdown2(source.slot()) != 0) {
                 return;
             }
             runtime.bowWowMotion.setTransitionCountdown(source.slot(), 0);
             runtime.bowWowMotion.setPrivateCountdown2(source.slot(), 0x80);
-            runtime.pendingDialogRequests.add(new DialogRequest(1, runtime.DIALOG_BOW_WOW));
+            runtime.events.pendingDialogRequests.add(new DialogRequest(1, runtime.DIALOG_BOW_WOW));
             return;
         }
 
         if (runtime.enemyFlashCountdown[targetSlot] != 0) {
             return;
         }
-        runtime.pendingEntityEvents.add(new EntityCombatEvent(
+        runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
             source.slot(), source.type(), 0, false,
             EntityCombatEvent.SoundChannel.JINGLE, 0x03));
         if (target.type() == runtime.ENTITY_KIKI_THE_MONKEY) {
@@ -418,7 +418,7 @@ public final class EntitySlotLifecycle {
         runtime.powerRecoilDeath[slot] = false;
         runtime.slots[slot] = withDeathPresentation(
             withStatus(entity, EntityStatus.DYING), 3, false);
-        runtime.pendingEntityEvents.add(new EntityCombatEvent(
+        runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
             slot, entity.type(), 0, false,
             EntityCombatEvent.SoundChannel.NOISE, 0x13));
     }

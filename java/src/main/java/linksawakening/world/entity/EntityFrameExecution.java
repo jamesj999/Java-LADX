@@ -1,6 +1,5 @@
 package linksawakening.world.entity;
 
-import linksawakening.world.entity.LinkPositionHistory;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.EntityProjectileEvent;
 
@@ -42,16 +41,12 @@ import linksawakening.world.entity.event.DungeonWarpRequest;
 
 import linksawakening.world.entity.event.DialogRequest;
 
-import linksawakening.world.entity.event.ThrownBackgroundCollisionEvent;
-
 import static linksawakening.world.entity.EntityMotionMath.*;
 import static linksawakening.world.entity.EntitySnapshots.*;
 import static linksawakening.world.entity.EntityTypeRules.*;
 import static linksawakening.world.entity.RoomEntityRuntime.*;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.IntSupplier;
 
 /** Mutable execution locals for one immutable entity frame input. */
@@ -166,51 +161,49 @@ public final class EntityFrameExecution {
     this.context = context;
   }
 
-
-
   public void replaceEntity(RoomEntity replacement) { runtime.slots[index] = replacement; }
 
   public RoomEntity entityAt(int slotIndex) { return runtime.slots[slotIndex]; }
 
-  public void emit(DialogRequest event) { runtime.pendingDialogRequests.add(event); }
+  public void emit(DialogRequest event) { runtime.events.pendingDialogRequests.add(event); }
 
-  public void emit(DungeonWarpRequest event) { runtime.pendingDungeonWarpRequests.add(event); }
+  public void emit(DungeonWarpRequest event) { runtime.events.pendingDungeonWarpRequests.add(event); }
 
-  public void emit(EntityCombatEvent event) { runtime.pendingEntityEvents.add(event); }
+  public void emit(EntityCombatEvent event) { runtime.events.pendingEntityEvents.add(event); }
 
-  public void emit(HinoxLinkEffectRequest event) { runtime.pendingHinoxLinkEffectRequests.add(event); }
+  public void emit(HinoxLinkEffectRequest event) { runtime.events.pendingHinoxLinkEffectRequests.add(event); }
 
-  public void emit(KeyQuicksandEvent event) { runtime.pendingKeyQuicksandEvents.add(event); }
+  public void emit(KeyQuicksandEvent event) { runtime.events.pendingKeyQuicksandEvents.add(event); }
 
-  public void emit(KeyRewardEvent event) { runtime.pendingKeyRewardEvents.add(event); }
+  public void emit(KeyRewardEvent event) { runtime.events.pendingKeyRewardEvents.add(event); }
 
-  public void emit(LikeLikeEvent event) { runtime.pendingLikeLikeEvents.add(event); }
+  public void emit(LikeLikeEvent event) { runtime.events.pendingLikeLikeEvents.add(event); }
 
-  public void emit(LinkAttackClearRequest event) { runtime.pendingLinkAttackClearRequests.add(event); }
+  public void emit(LinkAttackClearRequest event) { runtime.events.pendingLinkAttackClearRequests.add(event); }
 
-  public void emit(LinkFacingRequest event) { runtime.pendingLinkFacingRequests.add(event); }
+  public void emit(LinkFacingRequest event) { runtime.events.pendingLinkFacingRequests.add(event); }
 
-  public void emit(LinkFallenPoseRequest event) { runtime.pendingLinkFallenPoseRequests.add(event); }
+  public void emit(LinkFallenPoseRequest event) { runtime.events.pendingLinkFallenPoseRequests.add(event); }
 
-  public void emit(LinkMotionBlockRequest event) { runtime.pendingLinkMotionBlockRequests.add(event); }
+  public void emit(LinkMotionBlockRequest event) { runtime.events.pendingLinkMotionBlockRequests.add(event); }
 
-  public void emit(RoomStatusPersistenceRequest event) { runtime.pendingRoomStatusPersistenceRequests.add(event); }
+  public void emit(RoomStatusPersistenceRequest event) { runtime.events.pendingRoomStatusPersistenceRequests.add(event); }
 
-  public void emit(RoosterLinkStateRequest event) { runtime.pendingRoosterLinkStateRequests.add(event); }
+  public void emit(RoosterLinkStateRequest event) { runtime.events.pendingRoosterLinkStateRequests.add(event); }
 
-  public void emit(ScreenShakeRequest event) { runtime.pendingScreenShakeRequests.add(event); }
+  public void emit(ScreenShakeRequest event) { runtime.events.pendingScreenShakeRequests.add(event); }
 
-  public void emit(SideViewPlatformLinkRequest event) { runtime.pendingSideViewPlatformLinkRequests.add(event); }
+  public void emit(SideViewPlatformLinkRequest event) { runtime.events.pendingSideViewPlatformLinkRequests.add(event); }
 
-  public void emit(SlimeKeyRewardEvent event) { runtime.pendingSlimeKeyRewardEvents.add(event); }
+  public void emit(SlimeKeyRewardEvent event) { runtime.events.pendingSlimeKeyRewardEvents.add(event); }
 
-  public void emit(WarpLinkStateRequest event) { runtime.pendingWarpLinkStateRequests.add(event); }
+  public void emit(WarpLinkStateRequest event) { runtime.events.pendingWarpLinkStateRequests.add(event); }
 
-  public void emit(WitchExchangeEvent event) { runtime.pendingWitchExchangeEvents.add(event); }
+  public void emit(WitchExchangeEvent event) { runtime.events.pendingWitchExchangeEvents.add(event); }
 
-  public void emit(WitchRewardEvent event) { runtime.pendingWitchRewardEvents.add(event); }
+  public void emit(WitchRewardEvent event) { runtime.events.pendingWitchRewardEvents.add(event); }
 
-  public void emit(TransientVfxRequest event) { runtime.transientVfxRequests.add(event); }
+  public void emit(TransientVfxRequest event) { runtime.events.transientVfxRequests.add(event); }
 
   public EntitySlotLifecycle lifecycle() { return runtime.lifecycle; }
 

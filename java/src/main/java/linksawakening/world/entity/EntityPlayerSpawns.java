@@ -124,7 +124,7 @@ public final class EntityPlayerSpawns {
             runtime.slots[freeSlot] = RoomEntity.disabled(freeSlot);
             return -1;
         }
-        runtime.pendingEntityEvents.add(new EntityCombatEvent(
+        runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
             freeSlot, runtime.ENTITY_LIFTABLE_ROCK, 0, false,
             EntityCombatEvent.SoundChannel.WAVE, 0x02));
         return freeSlot;
@@ -469,7 +469,7 @@ public final class EntityPlayerSpawns {
         runtime.enemyRecoilMotion.clear(freeSlot);
         runtime.entityOptions1Override[freeSlot] = runtime.BOMB_OPTIONS1;
         if (soundId >= 0) {
-            runtime.pendingEntityEvents.add(new EntityCombatEvent(
+            runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
                 freeSlot, runtime.ENTITY_LIFTABLE_ROCK, 0, false,
                 EntityCombatEvent.SoundChannel.NOISE, soundId));
         }

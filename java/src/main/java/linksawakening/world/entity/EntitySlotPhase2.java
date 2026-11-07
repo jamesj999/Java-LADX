@@ -98,7 +98,7 @@ final class EntitySlotPhase2 {
         // hit recoil has expired; bosses use their handlers above.
         if (presentationCountdown >= 0x20 && state.runtime.enemyIgnoreHitsCountdown[slot] == 0) {
           state.runtime.dyingCountdown[slot] = 0x1F;
-          state.runtime.pendingEntityEvents.add(
+          state.runtime.events.pendingEntityEvents.add(
               new EntityCombatEvent(
                   slot, state.entity.type(), 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x13));
         }
@@ -128,7 +128,7 @@ final class EntitySlotPhase2 {
       return false;
     } else if (state.status == EntityStatus.STUNNED) {
       if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_BOMB_2, state)) return false;
-      if (state.runtime.powerBraceletButtonHeld
+      if (state.runtime.linkState.powerBraceletButtonHeld
           && isLiftableEntity(state.entity)
           && (state.entity.type() == state.runtime.ENTITY_BOMB
               || (state.runtime.enemyPhysicsFlags[state.entity.slot()]

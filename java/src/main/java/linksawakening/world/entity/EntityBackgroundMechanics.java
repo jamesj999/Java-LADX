@@ -56,7 +56,7 @@ public final class EntityBackgroundMechanics {
         RoomEntityObjectSample object = runtime.objectQuery == null ? null : runtime.objectQuery.sample(moved);
         boolean clear = object != null && object.objectId() != runtime.OBJECT_HOOKSHOT_BRIDGE_REPLACEMENT
             && object.physicsFlag() == 0;
-        runtime.hookshotBridgeUpdates.add(new HookshotBridgeUpdate(
+        runtime.events.hookshotBridgeUpdates.add(new HookshotBridgeUpdate(
             cell.objectLeft(), cell.objectTop(), bridgeState.direction(), !clear));
         if (clear) {
             runtime.clearEntity(entity.slot());
@@ -110,7 +110,7 @@ public final class EntityBackgroundMechanics {
         runtime.enemyTransitionCountdown[slot] = longFallingTransition ? 0x6F : 0x48;
         if (!longFallingTransition && ignoreHitsCountdown == 0) {
             runtime.enemyTransitionCountdown[slot] = 0x2F;
-            runtime.pendingEntityEvents.add(new EntityCombatEvent(
+            runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
                 slot, entity.type(), 0, false,
                 EntityCombatEvent.SoundChannel.JINGLE, runtime.FALLING_JINGLE_ID));
         }
@@ -142,7 +142,7 @@ public final class EntityBackgroundMechanics {
         int phase = (transition >>> 4) & 0x03;
         runtime.fallingVisualYOffset[slot] = runtime.FALLING_VISUAL_Y_OFFSETS[phase];
         if (transition == 0x3F) {
-            runtime.pendingEntityEvents.add(new EntityCombatEvent(
+            runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
                 slot, entity.type(), 0, false,
                 EntityCombatEvent.SoundChannel.JINGLE, runtime.FALLING_JINGLE_ID));
         }
@@ -235,7 +235,7 @@ public final class EntityBackgroundMechanics {
         if (entity == null || policy == null || !policy.restoreFinalPosition()) {
             return;
         }
-        runtime.pendingLinkFinalPositionRequests.add(new LinkFinalPositionRequest(
+        runtime.events.pendingLinkFinalPositionRequests.add(new LinkFinalPositionRequest(
             entity.slot(), policy.resetPegasusBoots(), policy.resetHookshotChain(),
             policy.markLinkPushing(), policy.clearLinkPositionIncrement()));
         if (policy.resetHookshotChain()) {

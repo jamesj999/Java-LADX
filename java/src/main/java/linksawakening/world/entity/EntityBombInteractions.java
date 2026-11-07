@@ -60,7 +60,7 @@ public final class EntityBombInteractions {
         int slot = entity.slot();
         BombMotion.Decision decision = BombMotion.decide(runtime.enemyTransitionCountdown[slot] & 0xFF);
         if (decision.playExplosionSound()) {
-            runtime.pendingEntityEvents.add(new EntityCombatEvent(
+            runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
                 slot, runtime.ENTITY_BOMB, 0, false,
                 EntityCombatEvent.SoundChannel.NOISE, 0x0C));
         }
@@ -114,7 +114,7 @@ public final class EntityBombInteractions {
 
         int bombX = bomb.x() & 0xFF;
         int bombVisualY = (bomb.y() - bomb.z()) & 0xFF;
-        runtime.pendingBombExplosionEvents.add(new BombExplosionEvent(bombSlot,
+        runtime.events.pendingBombExplosionEvents.add(new BombExplosionEvent(bombSlot,
             BombExplosionEvent.OBJECT_TARGET, bombX, bombVisualY, countdown,
             BombExplosionEvent.DAMAGE_TYPE_BOMB));
         if (countdown != 0x12) {
@@ -138,7 +138,7 @@ public final class EntityBombInteractions {
                     (target.y() - target.z()) & 0xFF, bombVisualY)) {
                 continue;
             }
-            runtime.pendingBombExplosionEvents.add(new BombExplosionEvent(bombSlot, targetSlot,
+            runtime.events.pendingBombExplosionEvents.add(new BombExplosionEvent(bombSlot, targetSlot,
                 bombX, bombVisualY, countdown, BombExplosionEvent.DAMAGE_TYPE_BOMB));
             applyBombDamage(bomb, target);
         }
@@ -169,9 +169,9 @@ public final class EntityBombInteractions {
                 : EntityProjectileEvent.SoundChannel.WAVE,
             collisionProtected ? -1 : 0x03, false, false, 0, 0,
             collisionProtected
-                ? (runtime.currentLinkSpeedX << 1) & 0xFF : (linkResponse.x() << 1) & 0xFF,
+                ? (runtime.linkState.currentLinkSpeedX << 1) & 0xFF : (linkResponse.x() << 1) & 0xFF,
             collisionProtected
-                ? (runtime.currentLinkSpeedY << 1) & 0xFF : (linkResponse.y() << 1) & 0xFF,
+                ? (runtime.linkState.currentLinkSpeedY << 1) & 0xFF : (linkResponse.y() << 1) & 0xFF,
             collisionProtected ? 0 : 0x10));
     }
 
@@ -226,7 +226,7 @@ public final class EntityBombInteractions {
                 }
             }
 
-            runtime.pendingEntityEvents.add(new EntityCombatEvent(
+            runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
                 targetSlot, target.type(), 0, false, enemyDamage, specialAction,
                 EntityCombatEvent.SoundChannel.JINGLE, 0x03,
                 secondaryChannel, secondarySoundId, null));

@@ -249,8 +249,8 @@ public final class EntityDebugConfiguration {
         if (animationPhase < 0 || animationPhase > 1) {
             throw new IllegalArgumentException("Ocarina animation phase must be 0 or 1");
         }
-        runtime.ocarinaAnimationCounter = animationCounter;
-        runtime.ocarinaAnimationPhase = animationPhase;
+        runtime.linkState.ocarinaAnimationCounter = animationCounter;
+        runtime.linkState.ocarinaAnimationPhase = animationPhase;
     }
 
     void setHitboxFlagsForTest(int slot, int value) {

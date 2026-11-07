@@ -26,7 +26,7 @@ final class RollingBonesBarHandler {
                 // BossIntro runs before ReturnIfNonInteractive_06.
                 if (state.entity.type() == state.runtime.ENTITY_ROLLING_BONES
                     && !state.runtime.roomTransitionActive
-                    && !state.runtime.inventoryAppearing) {
+                    && !state.runtime.linkState.inventoryAppearing) {
                   BossIntroMotion.Update intro =
                       state.runtime.bossIntroMotion.advance(
                           state.runtime.options1(state.entity.slot()),

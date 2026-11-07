@@ -39,7 +39,7 @@ public final class EntityStoryController {
                 if (yDistance >= -0x20 && yDistance < 0x20
                     && runtime.transitionSequenceCounter == 0x04) {
                     if (entity.type() == runtime.ENTITY_KID_71) {
-                        runtime.pendingDialogRequests.add(new DialogRequest(2, 0x20));
+                        runtime.events.pendingDialogRequests.add(new DialogRequest(2, 0x20));
                     }
                     runtime.kidKidnapState[slot] = 2;
                 } else if (runtime.kidKidnapDelay[slot] > 0) {
@@ -53,14 +53,14 @@ public final class EntityStoryController {
                         addFallingSpeedToPosition(entity.y(), vector.y() & 0xFF,
                             runtime.kidSpeedYAccumulator, slot),
                         facingVariant);
-                    runtime.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
+                    runtime.events.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
                 }
             }
             default -> {
                 int xDistance = Math.abs(signedByte((linkEntityX - entity.x()) & 0xFF));
-                if (runtime.actionButtonsHeld && !runtime.dialogActive
+                if (runtime.linkState.actionButtonsHeld && !runtime.linkState.dialogActive
                     && xDistance < 0x18 && Math.abs(yDistance) < 0x18) {
-                    runtime.pendingDialogRequests.add(new DialogRequest(2, 0x20));
+                    runtime.events.pendingDialogRequests.add(new DialogRequest(2, 0x20));
                 }
             }
         }
@@ -72,7 +72,7 @@ public final class EntityStoryController {
         int slot = entity.slot();
         if (runtime.enemyTransitionCountdown[slot] == 1) {
             runtime.enemyTransitionCountdown[slot] = 0;
-            runtime.pendingMadamMeowMeowFullHealRequests.add(
+            runtime.events.pendingMadamMeowMeowFullHealRequests.add(
                 new MadamMeowMeowFullHealRequest(slot));
         }
         int xDistance = signedByte((linkEntityX - entity.x()) & 0xFF);
@@ -81,16 +81,16 @@ public final class EntityStoryController {
             ? (xDistance < 0 ? 1 : 0) : (yDistance < 0 ? 2 : 3);
         int variant = direction * 2 + ((frameCounter >>> 4) & 0x01);
         runtime.slots[entity.slot()] = withVariant(entity, variant);
-        boolean linkFacingMadam = (runtime.lastRomLinkDirection ^ 0x01) == direction;
+        boolean linkFacingMadam = (runtime.linkState.lastRomLinkDirection ^ 0x01) == direction;
         boolean interactionWindow = ((yDistance + 0x14) & 0xFF) < 0x28
             && ((xDistance + 0x10) & 0xFF) < 0x20;
-        if (runtime.actionButtonAHeld && interactionWindow && linkFacingMadam
-            && !runtime.dialogActive && !runtime.inventoryAppearing && !linkAirborne
-            && runtime.dialogCooldown == 0 && runtime.windowY == 0x80) {
+        if (runtime.linkState.actionButtonAHeld && interactionWindow && linkFacingMadam
+            && !runtime.linkState.dialogActive && !runtime.linkState.inventoryAppearing && !linkAirborne
+            && runtime.linkState.dialogCooldown == 0 && runtime.linkState.windowY == 0x80) {
             if ((runtime.instrument2Flags & 0x02) != 0 && runtime.bowWowState == 0x01) {
                 runtime.bowWowState = 0;
                 runtime.enemyTransitionCountdown[slot] = 0x10;
-                runtime.pendingDialogRequests.add(new DialogRequest(1, 0x2F));
+                runtime.events.pendingDialogRequests.add(new DialogRequest(1, 0x2F));
                 return;
             }
             int dialogLowId = switch (runtime.bowWowState) {
@@ -98,7 +98,7 @@ public final class EntityStoryController {
                 case 1 -> 0x32;
                 default -> 0x31;
             };
-            runtime.pendingDialogRequests.add(new DialogRequest(1, dialogLowId));
+            runtime.events.pendingDialogRequests.add(new DialogRequest(1, dialogLowId));
         }
         }
 
@@ -112,14 +112,14 @@ public final class EntityStoryController {
             runtime.backgroundMechanics.requestLinkPush(entity, EntityLinkCollisionRules.STANDARD_PUSH);
         }
         if (!runtime.gameplayWorld || runtime.transitionSequenceCounter != 0x04
-            || runtime.dialogActive || runtime.inventoryAppearing || runtime.roomTransitionActive
+            || runtime.linkState.dialogActive || runtime.linkState.inventoryAppearing || runtime.roomTransitionActive
             || runtime.inspection().witchGotItemPresentationActive() || runtime.owlStatueDialogId < 0) {
             return;
         }
         int dx = signedByte((linkEntityX - entity.x()) & 0xFF);
         int dy = signedByte((linkEntityY - entity.y()) & 0xFF);
         if (runtime.roomInspection.sourceNpcInteractionAllowed(dx, dy, linkAirborne, directionToLink(dx, dy))) {
-            runtime.pendingDialogRequests.add(new DialogRequest(
+            runtime.events.pendingDialogRequests.add(new DialogRequest(
                 runtime.owlStatueDialogId >>> 8, runtime.owlStatueDialogId & 0xFF));
         }
         }
@@ -129,7 +129,7 @@ public final class EntityStoryController {
                                 boolean linkAirborne) {
         int slot = entity.slot();
         if (!runtime.gameplayWorld || runtime.transitionSequenceCounter != 0x04
-            || runtime.dialogActive || runtime.inventoryAppearing || runtime.roomTransitionActive
+            || runtime.linkState.dialogActive || runtime.linkState.inventoryAppearing || runtime.roomTransitionActive
             || runtime.inspection().witchGotItemPresentationActive()) {
             return;
         }
@@ -169,32 +169,32 @@ public final class EntityStoryController {
                     return;
                 }
                 if (runtime.bowWowState != 0) {
-                    runtime.pendingDialogRequests.add(new DialogRequest(1, 0x2D));
+                    runtime.events.pendingDialogRequests.add(new DialogRequest(1, 0x2D));
                 } else if ((runtime.entityRoomStatus & 0x10) == 0 || runtime.entityGoldenLeavesCount == 0) {
-                    runtime.pendingDialogRequests.add(new DialogRequest(1, 0x3A));
-                    runtime.pendingRichardProgressEvents.add(new RichardProgressEvent(
+                    runtime.events.pendingDialogRequests.add(new DialogRequest(1, 0x3A));
+                    runtime.events.pendingRichardProgressEvents.add(new RichardProgressEvent(
                         slot, RichardProgressEvent.Kind.START_QUEST,
                         runtime.entityGoldenLeavesCount));
                     runtime.entityRoomStatus |= 0x10;
                     runtime.richardState[slot] = 2;
                 } else if (runtime.entityGoldenLeavesCount < 5) {
-                    runtime.pendingDialogRequests.add(new DialogRequest(1, 0x3F));
+                    runtime.events.pendingDialogRequests.add(new DialogRequest(1, 0x3F));
                 } else {
-                    runtime.pendingDialogRequests.add(new DialogRequest(1, 0x3D));
+                    runtime.events.pendingDialogRequests.add(new DialogRequest(1, 0x3D));
                     runtime.entityGoldenLeavesCount = 0xFF;
-                    runtime.pendingRichardProgressEvents.add(new RichardProgressEvent(
+                    runtime.events.pendingRichardProgressEvents.add(new RichardProgressEvent(
                         slot, RichardProgressEvent.Kind.RETURN_ALL_LEAVES, 0xFF));
                     runtime.richardState[slot] = 3;
                     runtime.enemyTransitionCountdown[slot] = 0x20;
                 }
             }
             case 2 -> {
-                if (runtime.dialogActive || runtime.inventoryAppearing) {
+                if (runtime.linkState.dialogActive || runtime.linkState.inventoryAppearing) {
                     runtime.slots[slot] = updated;
                     return;
                 }
-                runtime.pendingDialogRequests.add(new DialogRequest(
-                    1, runtime.dialogAskSelectionIndex == 0 ? 0x3B : 0x3C));
+                runtime.events.pendingDialogRequests.add(new DialogRequest(
+                    1, runtime.linkState.dialogAskSelectionIndex == 0 ? 0x3B : 0x3C));
                 runtime.richardState[slot] = 1;
             }
             case 3 -> {
@@ -209,14 +209,14 @@ public final class EntityStoryController {
                 if (runtime.roomInspection.sourceNpcInteractionAllowed(xDistance, yDistance, linkAirborne,
                     directionToLink(xDistance, yDistance))) {
                     int dialog = runtime.entityGoldenLeavesCount == 0x06 ? 0x3E : 0x3D;
-                    runtime.pendingDialogRequests.add(new DialogRequest(1, dialog));
+                    runtime.events.pendingDialogRequests.add(new DialogRequest(1, dialog));
                 }
                 if (((linkEntityX - 0x78 + 0x02) & 0xFF) < 0x04
                     && ((linkEntityY - 0x20 + 0x05) & 0xFF) < 0x0A) {
-                    runtime.pendingDungeonWarpRequests.add(new DungeonWarpRequest(
+                    runtime.events.pendingDungeonWarpRequests.add(new DungeonWarpRequest(
                         slot, new linksawakening.world.entity.event.WarpDestination(0x11, 0xD8, 0x88, 0x70)));
                     runtime.pendingMusicFadeOutCountdown = 0x30;
-                    runtime.pendingEntityEvents.add(new EntityCombatEvent(
+                    runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
                         slot, runtime.ENTITY_RICHARD, 0, false,
                         EntityCombatEvent.SoundChannel.NOISE, 0x06));
                     runtime.lifecycle.disableEntityWithoutPersistence(slot);
@@ -286,10 +286,10 @@ public final class EntityStoryController {
             case 1 -> {
                 runtime.entityInteractionCountdown = 5; // OwlState1Handler, $06:693B.
                 runtime.blockLinkForOwl(slot);
-                runtime.pendingLinkFacingRequests.add(new LinkFacingRequest(slot,
+                runtime.events.pendingLinkFacingRequests.add(new LinkFacingRequest(slot,
                     directionFromLinkToEntity(entity, linkEntityX, linkEntityY)));
                 if (runtime.owlBoomerangSfxCounter[slot] == 0) {
-                    runtime.pendingEntityEvents.add(new EntityCombatEvent(slot, entity.type(), 0, false,
+                    runtime.events.pendingEntityEvents.add(new EntityCombatEvent(slot, entity.type(), 0, false,
                         EntityCombatEvent.SoundChannel.NOISE, 0x2D));
                     runtime.owlBoomerangSfxCounter[slot] = 0x1A;
                 } else {
@@ -323,7 +323,7 @@ public final class EntityStoryController {
                 }
                 runtime.slots[slot] = runtime.roomInspection.owlPresentation(entity, frameCounter);
                 int globalDialogId = runtime.owlDialogResolver.applyAsInt(runtime.entityRoomId);
-                runtime.pendingDialogRequests.add(new DialogRequest(
+                runtime.events.pendingDialogRequests.add(new DialogRequest(
                     (globalDialogId >>> 8) & 0xFF, globalDialogId & 0xFF));
                 runtime.enemyTransitionCountdown[slot] = 0x10;
                 runtime.owlEventState[slot] = 3;
@@ -334,7 +334,7 @@ public final class EntityStoryController {
                 }
                 runtime.blockLinkForOwl(slot);
                 runtime.slots[slot] = runtime.roomInspection.owlPresentation(entity, frameCounter);
-                if (runtime.dialogActive) {
+                if (runtime.linkState.dialogActive) {
                     if (runtime.enemyTransitionCountdown[slot] > 0) {
                         runtime.enemyTransitionCountdown[slot]++;
                     }
@@ -342,7 +342,7 @@ public final class EntityStoryController {
                 }
                 if (runtime.enemyTransitionCountdown[slot] == 0) {
                     if (!runtime.owlCompletionEmitted[slot]) {
-                        runtime.pendingOwlEventCompletions.add(new OwlEventCompletion(slot));
+                        runtime.events.pendingOwlEventCompletions.add(new OwlEventCompletion(slot));
                         runtime.owlCompletionEmitted[slot] = true;
                     }
                     runtime.owlSpeedX[slot] = linkEntityX < entity.x() ? 0x20 : 0xE0;
@@ -370,7 +370,7 @@ public final class EntityStoryController {
             flying.z(), runtime.owlSpeedZ[slot], runtime.owlZAccumulator, slot);
         runtime.slots[slot] = withZ(withPositionAndVariant(flying, x, y, 0), z);
         if ((frameCounter & 0x07) == 0) {
-            runtime.pendingEntityEvents.add(new EntityCombatEvent(
+            runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
                 slot, entity.type(), 0, false,
                 EntityCombatEvent.SoundChannel.NOISE, 0x05));
         }
@@ -386,13 +386,13 @@ public final class EntityStoryController {
             return;
         }
         runtime.presentWitchGotItem(slot);
-        if (runtime.dialogActive) {
+        if (runtime.linkState.dialogActive) {
             return;
         }
         countdown--;
         runtime.witchGotItemCountdown[slot] = countdown;
         if (countdown == 0x02) {
-            runtime.pendingDialogRequests.add(new DialogRequest(0, 0x99));
+            runtime.events.pendingDialogRequests.add(new DialogRequest(0, 0x99));
         }
         }
 }

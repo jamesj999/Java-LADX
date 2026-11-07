@@ -161,10 +161,10 @@ public final class EntityLiftThrowController {
         }
 
     public boolean cuccoPowerBraceletHeld() {
-        if (runtime.linkItemB == 0x03) {
-            return runtime.actionButtonBHeld;
+        if (runtime.linkState.linkItemB == 0x03) {
+            return runtime.linkState.actionButtonBHeld;
         }
-        return runtime.linkItemA == 0x03 && runtime.actionButtonAHeld;
+        return runtime.linkState.linkItemA == 0x03 && runtime.linkState.actionButtonAHeld;
         }
 
     public boolean beginBushCrawlerLift(int index, RoomEntity source, int privateState4,
@@ -186,7 +186,7 @@ public final class EntityLiftThrowController {
         runtime.slots[slot] = carried;
         runtime.fallingVisualYOffset[slot] = 0;
         runtime.bushCrawlerMotion.clear(slot);
-        runtime.pendingEntityEvents.add(new EntityCombatEvent(
+        runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
             slot, runtime.ENTITY_BUSH_CRAWLER, 0, false,
             EntityCombatEvent.SoundChannel.WAVE, 0x02));
 
@@ -258,7 +258,7 @@ public final class EntityLiftThrowController {
     public boolean tryLiftBombIfRequested(int index, BombMotion.Decision decision,
                                             int linkEntityX, int linkEntityY, int linkZ,
                                             int romLinkDirection) {
-        if (decision.phase() != BombMotion.Phase.NORMAL || !runtime.bombButtonHeld) {
+        if (decision.phase() != BombMotion.Phase.NORMAL || !runtime.linkState.bombButtonHeld) {
             return false;
         }
         RoomEntity entity = runtime.slots[index];
@@ -277,19 +277,19 @@ public final class EntityLiftThrowController {
         }
 
     public boolean sideViewPotPowerBraceletHeld() {
-        if (!runtime.linkInventoryConfigured) {
-            return runtime.powerBraceletButtonHeld;
+        if (!runtime.linkState.linkInventoryConfigured) {
+            return runtime.linkState.powerBraceletButtonHeld;
         }
         // EntityGetLiftedUp checks the B slot first. An equipped bracelet in
         // B suppresses the A-slot branch even when A also contains one.
-        if (runtime.linkItemB == 0x03) {
-            return runtime.actionButtonBHeld;
+        if (runtime.linkState.linkItemB == 0x03) {
+            return runtime.linkState.actionButtonBHeld;
         }
-        return runtime.linkItemA == 0x03 && runtime.actionButtonAHeld;
+        return runtime.linkState.linkItemA == 0x03 && runtime.linkState.actionButtonAHeld;
         }
 
     public void pendingLinkPotContact(int sourceSlot, SideViewPotContact.Result contact) {
-        runtime.pendingSideViewPotLinkRequests.add(new SideViewPotLinkRequest(
+        runtime.events.pendingSideViewPotLinkRequests.add(new SideViewPotLinkRequest(
             sourceSlot, contact.resetPegasusBoots(), contact.restoreFinalPositionX(),
             contact.ignoreCollisionCountdown(), contact.speedX(), contact.snapTop(),
             contact.positionY(), contact.speedY()));

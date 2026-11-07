@@ -1,7 +1,5 @@
 package linksawakening.world.entity;
 
-import linksawakening.world.entity.PincerBodyOam;
-
 import linksawakening.world.entity.event.BoomerangObjectRequest;
 import linksawakening.world.entity.event.MagicPowderObjectRequest;
 import linksawakening.world.entity.event.MagicRodObjectRequest;
@@ -136,19 +134,19 @@ public final class EntityEnemyInspection {
     }
 
     public List<TransientVfxRequest> transientVfxRequests() {
-        return List.copyOf(runtime.transientVfxRequests);
+        return List.copyOf(runtime.events.transientVfxRequests);
     }
 
     public List<BoomerangObjectRequest> boomerangObjectRequests() {
-        return List.copyOf(runtime.boomerangObjectRequests);
+        return List.copyOf(runtime.events.boomerangObjectRequests);
     }
 
     public List<MagicRodObjectRequest> magicRodObjectRequests() {
-        return List.copyOf(runtime.magicRodObjectRequests);
+        return List.copyOf(runtime.events.magicRodObjectRequests);
     }
 
     public List<MagicPowderObjectRequest> magicPowderObjectRequests() {
-        return List.copyOf(runtime.magicPowderObjectRequests);
+        return List.copyOf(runtime.events.magicPowderObjectRequests);
     }
 
     public int physicsFlags(int slot) {
@@ -754,9 +752,9 @@ public final class EntityEnemyInspection {
     }
 
     public boolean polsVoiceBalladOcarinaTrigger() {
-        return runtime.linkPlayingOcarinaCountdown == 0x01
-            && (runtime.ocarinaSongFlags & 0x04) != 0
-            && runtime.selectedSongIndex == 0;
+        return runtime.linkState.linkPlayingOcarinaCountdown == 0x01
+            && (runtime.linkState.ocarinaSongFlags & 0x04) != 0
+            && runtime.linkState.selectedSongIndex == 0;
     }
 
     boolean shouldDisappear(RoomEntity entity) {
@@ -788,13 +786,13 @@ public final class EntityEnemyInspection {
             && (!runtime.gameplayWorld || runtime.transitionSequenceCounter != 0x04)) {
             return false;
         }
-        return !runtime.dialogActive
-            && !runtime.inventoryAppearing
+        return !runtime.linkState.dialogActive
+            && !runtime.linkState.inventoryAppearing
             && !runtime.inspection().witchGotItemPresentationActive()
             && !runtime.roomTransitionActive;
     }
 
     boolean entityTimersInteractive() {
-        return !runtime.dialogActive && !runtime.inventoryAppearing && runtime.linkPlayingOcarinaCountdown == 0;
+        return !runtime.linkState.dialogActive && !runtime.linkState.inventoryAppearing && runtime.linkState.linkPlayingOcarinaCountdown == 0;
     }
 }

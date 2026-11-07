@@ -26,10 +26,10 @@ final class RoosterHandler {
                     RoosterMotion.advanceLifted(
                         state.frame,
                         state.linkZ & 0xFF,
-                        state.runtime.linkPressedButtonsMask,
+                        state.runtime.linkState.linkPressedButtonsMask,
                         state.romCollisionType,
-                        state.runtime.currentLinkSpeedX,
-                        state.runtime.currentLinkSpeedY,
+                        state.runtime.linkState.currentLinkSpeedX,
+                        state.runtime.linkState.currentLinkSpeedY,
                         state.romLinkDirection);
                 state.lifted = withVariant(state.lifted, roosterUpdate.spriteVariant());
                 state.runtime.liftedSourceDirection[state.entity.slot()] =
@@ -57,7 +57,7 @@ final class RoosterHandler {
             state.preserveRoosterPresentation = true;
             if (state.projectileLinkState.motionState() == 0
                 && (state.linkZ & 0xFF) == 0
-                && state.runtime.linkAttackStepAnimationCountdown == 0
+                && state.runtime.linkState.linkAttackStepAnimationCountdown == 0
                 && state.runtime.liftThrow.cuccoPowerBraceletHeld()
                 && RoomEntityCombatRules.overlapsLink(
                     state.entity, state.linkEntityX, state.linkEntityY)
@@ -67,8 +67,8 @@ final class RoosterHandler {
                       state.entity.slot(),
                       0x02,
                       0x00,
-                      state.runtime.currentLinkSpeedX,
-                      state.runtime.currentLinkSpeedY,
+                      state.runtime.linkState.currentLinkSpeedX,
+                      state.runtime.linkState.currentLinkSpeedY,
                       state.romLinkDirection));
               state.emit(
                   new EntityCombatEvent(

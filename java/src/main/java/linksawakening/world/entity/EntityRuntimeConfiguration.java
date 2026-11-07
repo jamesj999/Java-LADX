@@ -29,7 +29,7 @@ public final class EntityRuntimeConfiguration {
     }
 
     public void setLinkVelocityZ(int velocity) {
-        runtime.currentLinkVelocityZ = velocity & 0xFF;
+        runtime.linkState.currentLinkVelocityZ = velocity & 0xFF;
     }
 
     public void setSpriteSelection(EntitySpriteSelection selection) {
@@ -60,37 +60,37 @@ public final class EntityRuntimeConfiguration {
     }
 
     public void setActionButtonsHeld(boolean actionButtonAHeld, boolean actionButtonBHeld) {
-        runtime.actionButtonAHeld = actionButtonAHeld;
-        runtime.actionButtonBHeld = actionButtonBHeld;
-        runtime.actionButtonsHeld = actionButtonAHeld || actionButtonBHeld;
+        runtime.linkState.actionButtonAHeld = actionButtonAHeld;
+        runtime.linkState.actionButtonBHeld = actionButtonBHeld;
+        runtime.linkState.actionButtonsHeld = actionButtonAHeld || actionButtonBHeld;
     }
 
     public void setJoypadHeld(boolean joypadHeld) {
-        runtime.joypadHeld = joypadHeld;
+        runtime.linkState.joypadHeld = joypadHeld;
     }
 
     public void setPressedButtonsMask(int pressedButtonsMask) {
         EntitySlotValidation.validateByte(pressedButtonsMask, "Pressed buttons mask");
-        runtime.linkPressedButtonsMask = pressedButtonsMask;
+        runtime.linkState.linkPressedButtonsMask = pressedButtonsMask;
     }
 
     public void setDialogActive(boolean dialogActive) {
-        runtime.dialogActive = dialogActive;
+        runtime.linkState.dialogActive = dialogActive;
     }
 
     public void setTalkState(boolean inventoryAppearing, int dialogCooldown, int windowY) {
         EntitySlotValidation.validateByte(dialogCooldown, "Dialog cooldown");
         EntitySlotValidation.validateByte(windowY, "Window Y");
-        runtime.inventoryAppearing = inventoryAppearing;
-        runtime.dialogCooldown = dialogCooldown;
-        runtime.windowY = windowY;
+        runtime.linkState.inventoryAppearing = inventoryAppearing;
+        runtime.linkState.dialogCooldown = dialogCooldown;
+        runtime.linkState.windowY = windowY;
     }
 
     public void setDialogAskSelectionIndex(int selectionIndex) {
         if (selectionIndex < 0 || selectionIndex > 1) {
             throw new IllegalArgumentException("Dialog selection must be 0 or 1");
         }
-        runtime.dialogAskSelectionIndex = selectionIndex;
+        runtime.linkState.dialogAskSelectionIndex = selectionIndex;
     }
 
     public void setActiveMusic(boolean activeMusic) {
@@ -104,28 +104,28 @@ public final class EntityRuntimeConfiguration {
     public void setLikeLikeLinkInventory(int itemA, int itemB) {
         EntitySlotValidation.validateByte(itemA, "Link A inventory slot");
         EntitySlotValidation.validateByte(itemB, "Link B inventory slot");
-        runtime.linkItemA = itemA;
-        runtime.linkItemB = itemB;
-        runtime.linkInventoryConfigured = true;
+        runtime.linkState.linkItemA = itemA;
+        runtime.linkState.linkItemB = itemB;
+        runtime.linkState.linkInventoryConfigured = true;
     }
 
     public void setPowerBraceletButtonHeld(boolean powerBraceletButtonHeld) {
-        runtime.powerBraceletButtonHeld = powerBraceletButtonHeld;
+        runtime.linkState.powerBraceletButtonHeld = powerBraceletButtonHeld;
     }
 
     public void setBombButtonHeld(boolean bombButtonHeld) {
-        runtime.bombButtonHeld = bombButtonHeld;
+        runtime.linkState.bombButtonHeld = bombButtonHeld;
     }
 
     public void setLinkAttackStepAnimationCountdown(int countdown) {
         EntitySlotValidation.validateByte(countdown, "Link attack-step animation countdown");
-        runtime.linkAttackStepAnimationCountdown = countdown;
+        runtime.linkState.linkAttackStepAnimationCountdown = countdown;
     }
 
     public void setLinkFinalPositionX(int positionX) {
         EntitySlotValidation.validateByte(positionX, "Link final position X");
-        runtime.currentLinkFinalPositionX = positionX;
-        runtime.currentLinkFinalPositionXConfigured = true;
+        runtime.linkState.currentLinkFinalPositionX = positionX;
+        runtime.linkState.currentLinkFinalPositionXConfigured = true;
     }
 
     public void setLiftedLinkC13B(int linkC13B) {
@@ -282,11 +282,11 @@ public final class EntityRuntimeConfiguration {
         if (animationPhase < 0 || animationPhase > 1) {
             throw new IllegalArgumentException("Ocarina animation phase must be 0 or 1");
         }
-        runtime.linkPlayingOcarinaCountdown = countdown;
-        runtime.ocarinaSongFlags = songFlags;
-        runtime.selectedSongIndex = selectedSong;
-        runtime.ocarinaAnimationCounter = animationCounter;
-        runtime.ocarinaAnimationPhase = animationPhase;
+        runtime.linkState.linkPlayingOcarinaCountdown = countdown;
+        runtime.linkState.ocarinaSongFlags = songFlags;
+        runtime.linkState.selectedSongIndex = selectedSong;
+        runtime.linkState.ocarinaAnimationCounter = animationCounter;
+        runtime.linkState.ocarinaAnimationPhase = animationPhase;
     }
 
     public void setThrownDirection(int slot, int value) {

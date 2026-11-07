@@ -32,8 +32,8 @@ final class EntityCombatResolver {
         if (attackContext == null) {
             throw new IllegalArgumentException("Enemy attack context cannot be null");
         }
-        runtime.runningWithPegasusBoots = attackContext.pegasusBoots();
-        List<EntityCombatEvent> events = runtime.outbox.channel(EntityCombatEvent.class, "resolvedCombat");
+        runtime.linkState.runningWithPegasusBoots = attackContext.pegasusBoots();
+        List<EntityCombatEvent> events = runtime.events.outbox.channel(EntityCombatEvent.class, "resolvedCombat");
         events.clear();
         for (int index = runtime.slots.length - 1; index >= 0; index--) {
             RoomEntity entity = runtime.slots[index];
@@ -264,7 +264,7 @@ final class EntityCombatResolver {
                 }
             } else if (swordHit && entity.type() == runtime.ENTITY_IRON_MASK
                 && runtime.ironMaskPrivateState2[entity.slot()] == 0
-                && runtime.lastRomLinkDirection != runtime.roamingEnemyMotion.direction(entity.slot())) {
+                && runtime.linkState.lastRomLinkDirection != runtime.roamingEnemyMotion.direction(entity.slot())) {
                 // DefaultEnemyDamageCollisionHandler's masked Iron Mask branch
                 // only accepts a sword hit from the direction the mask faces.
                 // A rear hit pushes Link and the mask apart, then uses the
@@ -431,6 +431,6 @@ final class EntityCombatResolver {
                 secondarySoundChannel, secondarySoundId, swordPokeVfx,
                 linkCollisionResponse));
         }
-        return runtime.outbox.drain(EntityCombatEvent.class, "resolvedCombat");
+        return runtime.events.outbox.drain(EntityCombatEvent.class, "resolvedCombat");
         }
 }
