@@ -53,3 +53,10 @@ audit; includes other owners and genuine non-ROM constants):
 - render: 1 declarations in 1 files: EntityRenderLayer.
 - vfx: 3 declarations in 1 files: TransientVfxSpriteSheet.
 - world: 86 declarations in 14 files: WarpMotion, RoomObjectParser, EntityRoomLoader, RoomSession, EnemyDropResolver, RomEnemyCombatTables, ChestContentsTable, DungeonRoomEventTable, ManboTransitionWave, RoomLoader, RoomPaletteLoader, ManboWarpResolver, OverworldBushInteraction, RoomTilemapBuilder.
+
+Next batch: DungeonRoomEventTable, ManboTransitionWave and ManboWarpResolver
+use typed reads. Seven location declarations replaced; exact azle.sym matches:
+14:4000 DungeonEventsTable, 14:4200 ColorDungeonEventsTable,
+14:4EE8 Data_014_4EE8 and 14:4DF1 Data_014_4DF1. No discrepancies.
+Guard now also rejects _ADDRESS literals. Physics source audit found no
+RomBank accesses, raw romData reads, or bank-window address literals.

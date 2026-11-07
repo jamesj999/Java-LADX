@@ -116,3 +116,11 @@ IndoorsARoomPointers
 IndoorsBRoomPointers
 
 ColorDungeonRoomPointers
+
+DungeonEventsTable
+
+ColorDungeonEventsTable
+
+Data_014_4EE8
+
+Data_014_4DF1

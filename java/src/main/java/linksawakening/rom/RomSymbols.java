@@ -112,4 +112,8 @@ public final class RomSymbols {
     public static final RomAddress IndoorsARoomPointers = new RomAddress(0x0A, 0x4000);
     public static final RomAddress IndoorsBRoomPointers = new RomAddress(0x0B, 0x4000);
     public static final RomAddress ColorDungeonRoomPointers = new RomAddress(0x0A, 0x7B77);
+    public static final RomAddress DungeonEventsTable = new RomAddress(0x14, 0x4000);
+    public static final RomAddress ColorDungeonEventsTable = new RomAddress(0x14, 0x4200);
+    public static final RomAddress Data_014_4EE8 = new RomAddress(0x14, 0x4EE8);
+    public static final RomAddress Data_014_4DF1 = new RomAddress(0x14, 0x4DF1);
 }

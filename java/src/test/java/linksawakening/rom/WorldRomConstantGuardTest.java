@@ -11,11 +11,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 /** Extend the migrated-file list as each owner finishes a ROM access migration. */
 class WorldRomConstantGuardTest {
     private static final List<String> MIGRATED = List.of(
-        "OverworldTilesetTable", "IndoorRoomPointerTables");
+        "OverworldTilesetTable", "IndoorRoomPointerTables",
+        "DungeonRoomEventTable", "ManboTransitionWave", "ManboWarpResolver");
     // No genuine non-ROM _BANK/_ADDR literals in these files currently need exemption.
     private static final Set<String> NON_ROM_ALLOW_LIST = Set.of();
     private static final Pattern LITERAL = Pattern.compile(
-        "\\bint\\s+(\\w*(?:_BANK|_ADDR))\\s*=\\s*(?:0[xX][0-9a-fA-F]+|[0-9]+)\\s*;");
+        "\\bint\\s+(\\w*(?:_BANK|_ADDR|_ADDRESS))\\s*=\\s*(?:0[xX][0-9a-fA-F]+|[0-9]+)\\s*;");
 
     @Test
     void migratedFilesDoNotReintroduceLiteralRomLocations() throws Exception {
