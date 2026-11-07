@@ -5170,7 +5170,7 @@ final class RoomEntityRuntimeTest {
             true, null, catalog, tables);
         runtime.setWizrobeProjectileForTest(0, 0x20, 0x00, 0);
 
-        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime, 
+        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime,
             4, 0x40, 0x50, sequence(0x00), null,
             new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0x00, 0, false)));
 
@@ -6607,7 +6607,7 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, -1, 0x58, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
-        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime, 
+        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime,
             0, 0, 0, () -> 0, null, entity -> true,
             EnemyProjectileCollision.LinkState.nonInteractive(),
             false, 0, 0, 0, 0));
@@ -6627,7 +6627,7 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, -1, 0x58, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
-        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime, 
+        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime,
             0, 0x40, 0x40, () -> 0, null, entity -> false,
             new EnemyProjectileCollision.LinkState(
                 0x40, 0x40, 0, 0, 0, false, 1, 0),
@@ -6702,7 +6702,7 @@ final class RoomEntityRuntimeTest {
             RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
                 new RoomEntity(0, -1, type, 0x40, 0x50, EntityStatus.ACTIVE,
                     pairDefinition(type, 4), 0, 0, 0, 0, -1, false)));
-            List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime, 
+            List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime,
                 0, 0x40, 0x50, () -> 0, null,
                 new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0, 1, true)));
 
@@ -6720,7 +6720,7 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, -1, 0x0A, 0x40, 0x50, EntityStatus.ACTIVE,
                 pairDefinition(0x0A, 1), 0, 0, 0, 0, -1, false)));
-        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime, 
+        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime,
             0, 0x40, 0x50, () -> 0, null,
             new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0, 1, false)));
 
@@ -6883,7 +6883,7 @@ final class RoomEntityRuntimeTest {
         EnemyProjectileCollision.LinkState link = new EnemyProjectileCollision.LinkState(
             0x40, 0x50, 0, 0, 0, true, 2, 0);
 
-        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime, 
+        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime,
             0, 0x40, 0x50, () -> 0, null, link));
 
         assertEquals(1, events.size());
@@ -8993,7 +8993,7 @@ final class RoomEntityRuntimeTest {
             snapshot(), false, () -> 0, catalog, tables);
 
         int bombSlot = runtime.spawnEnemyBomb(0x48, 0x50, 0x00, 0x13);
-        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime, 
+        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime,
             0, 0x48, 0x50, () -> 0, null,
             new EnemyProjectileCollision.LinkState(
                 0x48, 0x50, 0x00, 0x00, 0x03, false, 1, 0x00),
@@ -9017,7 +9017,7 @@ final class RoomEntityRuntimeTest {
             new RomEnemyCombatTables(rom));
 
         int bombSlot = runtime.spawnEnemyBomb(0x48, 0x68, 0x18, 0x13);
-        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime, 
+        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime,
             0, 0x48, 0x50, () -> 0, null,
             new EnemyProjectileCollision.LinkState(
                 0x48, 0x50, 0x00, 0x00, 0x03, false, 1, 0x00),
@@ -9247,7 +9247,7 @@ final class RoomEntityRuntimeTest {
             new RomEnemyCombatTables(rom));
 
         int bombSlot = runtime.spawnEnemyBomb(0x48, 0x50, 0x00, 0x13);
-        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime, 
+        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime,
             0, 0x48, 0x50, () -> 0, null,
             new EnemyProjectileCollision.LinkState(
                 0x48, 0x50, 0x00, 0x00, 0x03, false, 1, 0x01),

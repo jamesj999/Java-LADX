@@ -160,7 +160,7 @@ final class RoomEntityRuntimeHookshotTest {
         runtime.tick(EntityTestFrames.frame(runtime, 6, 0x40, 0x50, () -> 0));
         assertEquals(HookshotChainMotion.PULLING_STATE, runtime.hookshotEntityState(slot));
 
-        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime, 
+        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime,
             7, 0x40, 0x50, () -> 0, null,
             new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0, 0, false)));
 
