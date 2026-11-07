@@ -31,7 +31,7 @@ final class KeyDropPointHandler {
             if (state.runtime.pickups.checkForKeyDropQuicksandHole(state.updated)) {
               state.emit(new KeyQuicksandEvent(slot));
               state.replaceEntity(withStatus(state.updated, EntityStatus.FALLING));
-              state.runtime.enemyTransitionCountdown[slot] = 0x2F;
+              state.slot().setTransitionCountdown(slot, 0x2F);
               state.runtime.fallingTargetX[slot] = 0x50;
               state.runtime.fallingTargetY[slot] = 0x48;
               state.runtime.fallingSpeedX[slot] = 0;
@@ -60,10 +60,10 @@ final class KeyDropPointHandler {
             }
             KeyDropPointMotion.Update keyUpdate =
                 KeyDropPointMotion.advance(
-                    state.runtime.enemyTransitionCountdown[slot],
+                    state.slot().transitionCountdown(slot),
                     state.updated.spriteVariant(),
                     hookshotRoom);
-            state.runtime.enemyTransitionCountdown[slot] = keyUpdate.nextTransitionCountdown();
+            state.slot().setTransitionCountdown(slot, keyUpdate.nextTransitionCountdown());
             if (keyUpdate.dialogLowId() >= 0) {
               state.emit(
                   new DialogRequest(KeyDropPointMotion.DIALOG_TABLE, keyUpdate.dialogLowId()));

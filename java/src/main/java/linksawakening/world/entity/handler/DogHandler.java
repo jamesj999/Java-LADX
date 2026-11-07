@@ -43,7 +43,7 @@ final class DogHandler {
                 state.runtime.dogMotion.advance(
                     state.updated,
                     state.frame,
-                    state.runtime.enemyTransitionCountdown[slot],
+                    state.slot().transitionCountdown(slot),
                     state.runtime.enemyPhysicsFlags[slot],
                     state.linkEntityX,
                     state.linkEntityY,
@@ -53,7 +53,7 @@ final class DogHandler {
                     state.randomByteSupplier,
                     dogBackgroundInteraction);
             state.updated = dogUpdate.entity();
-            state.runtime.enemyTransitionCountdown[slot] = dogUpdate.transitionCountdown();
+            state.slot().setTransitionCountdown(slot, dogUpdate.transitionCountdown());
             state.runtime.enemyPhysicsFlags[slot] = dogUpdate.physicsFlags();
             state.applyGenericGroundInteraction = dogUpdate.appliesBackgroundInteraction();
             if (dogUpdate.dialogRequested()) {

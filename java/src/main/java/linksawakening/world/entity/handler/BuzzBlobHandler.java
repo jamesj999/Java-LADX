@@ -31,11 +31,11 @@ final class BuzzBlobHandler {
                 state.runtime.buzzBlobMotion.advance(
                     state.updated,
                     state.frame,
-                    state.runtime.enemyTransitionCountdown[slot],
+                    state.slot().transitionCountdown(slot),
                     state.randomByteSupplier,
                     buzzBlobBackgroundInteraction);
             state.updated = buzzBlobUpdate.entity();
-            state.runtime.enemyTransitionCountdown[slot] = buzzBlobUpdate.transitionCountdown();
+            state.slot().setTransitionCountdown(slot, buzzBlobUpdate.transitionCountdown());
             state.applyGenericGroundInteraction = buzzBlobUpdate.appliesBackgroundInteraction();
             state.preserveBuzzBlobPresentation = true;
           }

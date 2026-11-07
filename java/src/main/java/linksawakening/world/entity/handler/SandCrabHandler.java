@@ -31,11 +31,11 @@ final class SandCrabHandler {
                 state.runtime.sandCrabMotion.advance(
                     state.updated,
                     state.frame,
-                    state.runtime.enemyTransitionCountdown[slot],
+                    state.slot().transitionCountdown(slot),
                     state.randomByteSupplier,
                     sandCrabBackgroundInteraction);
             state.updated = sandCrabUpdate.entity();
-            state.runtime.enemyTransitionCountdown[slot] = sandCrabUpdate.transitionCountdown();
+            state.slot().setTransitionCountdown(slot, sandCrabUpdate.transitionCountdown());
             state.applyGenericGroundInteraction = sandCrabUpdate.appliesBackgroundInteraction();
             state.preserveSandCrabPresentation = true;
           }

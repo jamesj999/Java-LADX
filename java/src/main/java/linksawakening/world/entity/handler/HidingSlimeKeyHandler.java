@@ -37,7 +37,7 @@ final class HidingSlimeKeyHandler {
             SlimeKeyTransitionUpdate keyUpdate =
                 state.runtime.pickups.advanceHidingSlimeKey(
                     state.updated, slot, state.linkEntityX, state.linkEntityY, state.linkZ);
-            state.runtime.enemyTransitionCountdown[slot] = keyUpdate.nextTransitionCountdown();
+            state.slot().setTransitionCountdown(slot, keyUpdate.nextTransitionCountdown());
             if (keyUpdate.reward() != null) {
               state.emit(keyUpdate.reward());
               state.emit(

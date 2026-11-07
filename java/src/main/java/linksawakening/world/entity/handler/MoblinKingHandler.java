@@ -59,7 +59,7 @@ final class MoblinKingHandler {
                       state.entity,
                       state.linkEntityX,
                       state.linkEntityY,
-                      state.runtime.enemyTransitionCountdown[state.entity.slot()],
+                      state.slot().transitionCountdown(state.entity.slot()),
                       state.runtime.slowTransitionCountdown[state.entity.slot()],
                       state.frame,
                       state.randomByteSupplier,
@@ -70,8 +70,7 @@ final class MoblinKingHandler {
                           && RoomEntityCombatRules.overlapsLink(
                               state.entity, state.linkEntityX, state.linkEntityY));
               state.updated = kingUpdate.entity();
-              state.runtime.enemyTransitionCountdown[state.entity.slot()] =
-                  kingUpdate.transitionCountdown();
+              state.slot().setTransitionCountdown(state.entity.slot(), kingUpdate.transitionCountdown());
               state.runtime.slowTransitionCountdown[state.entity.slot()] =
                   kingUpdate.slowTransitionCountdown();
               state.runtime.slowTimerInitialized[state.entity.slot()] = true;

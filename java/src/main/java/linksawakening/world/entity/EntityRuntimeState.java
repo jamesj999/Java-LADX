@@ -333,7 +333,8 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     final EnemyDropMotion enemyDropMotion = new EnemyDropMotion();
 
-    public final int[] enemyTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    final EntitySlotView slotView = new EntitySlotView(this);
+    final int[] enemyTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
 
     final int[] bossDeathProducerState = new int[EntityRoomLoader.MAX_ENTITIES];
 

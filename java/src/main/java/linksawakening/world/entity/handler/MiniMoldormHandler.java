@@ -36,7 +36,7 @@ final class MiniMoldormHandler {
               miniBackgroundInteraction =
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
             }
-            int transitionForMotion = state.runtime.enemyTransitionCountdown[slot];
+            int transitionForMotion = state.slot().transitionCountdown(slot);
             if (transitionForMotion != 0) {
               // The common runtime timer has already performed the ROM
               // pre-handler decrement; MiniMoldormMotion mirrors that
@@ -53,7 +53,7 @@ final class MiniMoldormHandler {
                     state.randomByteSupplier,
                     state.frame);
             state.updated = miniUpdate.entity();
-            state.runtime.enemyTransitionCountdown[slot] = miniUpdate.transitionCountdown();
+            state.slot().setTransitionCountdown(slot, miniUpdate.transitionCountdown());
             if (state.runtime.spriteHandlers != null) {
               state.updated =
                   withDefinition(

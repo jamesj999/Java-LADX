@@ -30,11 +30,11 @@ final class WitchRatHandler {
                 state.runtime.witchRatMotion.advance(
                     state.updated,
                     state.frame,
-                    state.runtime.enemyTransitionCountdown[slot],
+                    state.slot().transitionCountdown(slot),
                     state.randomByteSupplier,
                     witchRatBackgroundInteraction);
             state.updated = witchRatUpdate.entity();
-            state.runtime.enemyTransitionCountdown[slot] = witchRatUpdate.transitionCountdown();
+            state.slot().setTransitionCountdown(slot, witchRatUpdate.transitionCountdown());
             state.applyGenericGroundInteraction = witchRatUpdate.appliesBackgroundInteraction();
             state.preserveWitchRatPresentation = true;
           }

@@ -58,10 +58,9 @@ final class PolsVoiceHandler {
                       state.linkEntityY,
                       state.randomByteSupplier,
                       state.backgroundCollision,
-                      state.runtime.enemyTransitionCountdown[state.entity.slot()]);
+                      state.slot().transitionCountdown(state.entity.slot()));
               state.updated = polsVoiceUpdate.entity();
-              state.runtime.enemyTransitionCountdown[state.entity.slot()] =
-                  polsVoiceUpdate.transitionCountdown();
+              state.slot().setTransitionCountdown(state.entity.slot(), polsVoiceUpdate.transitionCountdown());
             } finally {
               state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()] = 0;
             }

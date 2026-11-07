@@ -39,12 +39,11 @@ final class RollingBonesHandler {
                   state.runtime.rollingBonesMotion.advanceBoss(
                       state.entity,
                       bar,
-                      state.runtime.enemyTransitionCountdown[state.entity.slot()],
+                      state.slot().transitionCountdown(state.entity.slot()),
                       state.runtime.enemyHealth[state.entity.slot()],
                       state.backgroundCollision);
               state.updated = bossUpdate.entity();
-              state.runtime.enemyTransitionCountdown[state.entity.slot()] =
-                  bossUpdate.transitionCountdown();
+              state.slot().setTransitionCountdown(state.entity.slot(), bossUpdate.transitionCountdown());
               state.preserveRollingBonesPresentation = true;
               if (bossUpdate.jingleId() >= 0) {
                 state.emit(

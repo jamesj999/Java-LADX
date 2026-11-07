@@ -31,8 +31,7 @@ final class RoamingEnemyTypeHandler {
                           state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()],
                           state.frame);
                   state.updated = unmaskedUpdate.entity();
-                  state.runtime.enemyTransitionCountdown[state.entity.slot()] =
-                      unmaskedUpdate.transitionCountdown();
+                  state.slot().setTransitionCountdown(state.entity.slot(), unmaskedUpdate.transitionCountdown());
                 } else {
                   RoamingEnemyMotion.Update roamingUpdate =
                       state.runtime.backgroundInteraction == null

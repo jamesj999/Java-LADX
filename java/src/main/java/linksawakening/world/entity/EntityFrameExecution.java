@@ -161,6 +161,8 @@ public final class EntityFrameExecution {
     this.context = context;
   }
 
+  public EntitySlotView slot() { return runtime.slotView; }
+
   public void replaceEntity(RoomEntity replacement) { runtime.slots[index] = replacement; }
 
   public RoomEntity entityAt(int slotIndex) { return runtime.slots[slotIndex]; }

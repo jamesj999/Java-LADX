@@ -99,7 +99,7 @@ final class SideViewPotHandler {
             type,
             EntityTickStage.PHASE_2_SIDE_VIEW_POT,
             state -> {
-              if (state.runtime.enemyTransitionCountdown[state.entity.slot()] != 0) {
+              if (state.slot().transitionCountdown(state.entity.slot()) != 0) {
                 state.replaceEntity(state.lifted);
                 return false;
               }

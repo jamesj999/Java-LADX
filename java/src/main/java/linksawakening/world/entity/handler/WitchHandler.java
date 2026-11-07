@@ -25,7 +25,7 @@ final class WitchHandler {
             WitchMotion.Update witchUpdate =
                 state.runtime.witchMotion.advance(
                     state.updated,
-                    state.runtime.enemyTransitionCountdown[state.entity.slot()],
+                    state.slot().transitionCountdown(state.entity.slot()),
                     new WitchMotion.Input(
                         state.runtime.playerHasToadstool,
                         state.runtime.linkState.linkItemB,
@@ -43,8 +43,7 @@ final class WitchHandler {
                         state.runtime.paletteDataFlags,
                         state.runtime.defaultMusicTrack));
             state.updated = witchUpdate.entity();
-            state.runtime.enemyTransitionCountdown[state.entity.slot()] =
-                witchUpdate.transitionCountdown();
+            state.slot().setTransitionCountdown(state.entity.slot(), witchUpdate.transitionCountdown());
             state.preserveWitchPresentation = true;
             if (witchUpdate.blockLink()) {
               state.emit(

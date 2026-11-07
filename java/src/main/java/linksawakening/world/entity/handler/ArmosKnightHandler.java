@@ -48,14 +48,13 @@ final class ArmosKnightHandler {
                     state.linkEntityX,
                     state.linkEntityY,
                     state.linkZ,
-                    state.runtime.enemyTransitionCountdown[state.entity.slot()],
+                    state.slot().transitionCountdown(state.entity.slot()),
                     state.runtime.enemyPhysicsFlags[state.entity.slot()],
                     state.runtime.enemyHitboxFlags[state.entity.slot()],
                     state.runtime.options1(state.entity.slot()),
                     state.runtime.enemyHealth[state.entity.slot()]);
             state.updated = armosKnightUpdate.entity();
-            state.runtime.enemyTransitionCountdown[state.entity.slot()] =
-                armosKnightUpdate.transitionCountdown();
+            state.slot().setTransitionCountdown(state.entity.slot(), armosKnightUpdate.transitionCountdown());
             state.runtime.enemyPhysicsFlags[state.entity.slot()] = armosKnightUpdate.physicsFlags();
             state.runtime.enemyHitboxFlags[state.entity.slot()] = armosKnightUpdate.hitboxFlags();
             state.runtime.entityOptions1Override[state.entity.slot()] =

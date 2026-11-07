@@ -19,7 +19,7 @@ final class BomberHandler {
             BomberMotion.Update bomberUpdate =
                 state.runtime.bomberMotion.advance(
                     state.entity,
-                    state.runtime.enemyTransitionCountdown[state.entity.slot()],
+                    state.slot().transitionCountdown(state.entity.slot()),
                     state.linkEntityX,
                     state.linkEntityY,
                     state.romLinkDirection,
@@ -27,8 +27,7 @@ final class BomberHandler {
                     state.randomByteSupplier,
                     state.backgroundCollision);
             state.updated = bomberUpdate.entity();
-            state.runtime.enemyTransitionCountdown[state.entity.slot()] =
-                bomberUpdate.transitionCountdown();
+            state.slot().setTransitionCountdown(state.entity.slot(), bomberUpdate.transitionCountdown());
             if (bomberUpdate.bombSpawn() != null) {
               BomberMotion.BombSpawn spawn = bomberUpdate.bombSpawn();
               int bombSlot =

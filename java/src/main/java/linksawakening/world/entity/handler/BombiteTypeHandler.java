@@ -40,7 +40,7 @@ final class BombiteTypeHandler {
                         state.frame,
                         state.linkEntityX,
                         state.linkEntityY,
-                        state.runtime.enemyTransitionCountdown[state.entity.slot()],
+                        state.slot().transitionCountdown(state.entity.slot()),
                         state.runtime.slowTransitionCountdown[state.entity.slot()],
                         state.runtime.bombPrivateCountdown1[state.entity.slot()],
                         state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()],
@@ -49,8 +49,7 @@ final class BombiteTypeHandler {
                         state.backgroundCollision);
                 state.updated = withVariant(bombiteUpdate.entity(), bombiteUpdate.spriteVariant());
                 state.preserveBombitePresentation = true;
-                state.runtime.enemyTransitionCountdown[state.entity.slot()] =
-                    bombiteUpdate.transitionCountdown();
+                state.slot().setTransitionCountdown(state.entity.slot(), bombiteUpdate.transitionCountdown());
                 state.runtime.slowTransitionCountdown[state.entity.slot()] =
                     bombiteUpdate.slowTransitionCountdown();
                 state.runtime.bombPrivateCountdown1[state.entity.slot()] =

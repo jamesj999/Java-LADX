@@ -28,12 +28,11 @@ final class GiantGopongaFlowerHandler {
                 state.runtime.giantGopongaMotion.advance(
                     state.entity,
                     state.frame,
-                    state.runtime.enemyTransitionCountdown[state.entity.slot()],
+                    state.slot().transitionCountdown(state.entity.slot()),
                     state.linkEntityX,
                     state.linkEntityY);
             state.updated = giantUpdate.entity();
-            state.runtime.enemyTransitionCountdown[state.entity.slot()] =
-                giantUpdate.transitionCountdown();
+            state.slot().setTransitionCountdown(state.entity.slot(), giantUpdate.transitionCountdown());
             if (giantUpdate.projectileSpawn() != null) {
               state.enemySpawns().spawnGopongaProjectile(
                   state.entity, giantUpdate.projectileSpawn());

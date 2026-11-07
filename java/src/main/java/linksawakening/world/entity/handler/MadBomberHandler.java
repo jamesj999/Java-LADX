@@ -24,15 +24,14 @@ final class MadBomberHandler {
             MadBomberMotion.Update madBomberUpdate =
                 state.runtime.madBomberMotion.advance(
                     state.entity,
-                    state.runtime.enemyTransitionCountdown[state.entity.slot()],
+                    state.slot().transitionCountdown(state.entity.slot()),
                     state.linkEntityX,
                     state.linkEntityY,
                     state.runtime.enemyFlashCountdown[state.entity.slot()],
                     state.randomByteSupplier);
             state.updated = withVariant(madBomberUpdate.entity(), madBomberUpdate.spriteVariant());
             state.preserveMadBomberPresentation = true;
-            state.runtime.enemyTransitionCountdown[state.entity.slot()] =
-                madBomberUpdate.transitionCountdown();
+            state.slot().setTransitionCountdown(state.entity.slot(), madBomberUpdate.transitionCountdown());
             if (madBomberUpdate.bombSpawn() != null) {
               MadBomberMotion.BombSpawn spawn = madBomberUpdate.bombSpawn();
               int bombSlot =

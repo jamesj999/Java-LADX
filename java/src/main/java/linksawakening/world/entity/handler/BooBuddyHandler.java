@@ -53,13 +53,12 @@ final class BooBuddyHandler {
                     state.frame,
                     state.linkEntityX,
                     state.linkEntityY,
-                    state.runtime.enemyTransitionCountdown[state.entity.slot()],
+                    state.slot().transitionCountdown(state.entity.slot()),
                     state.runtime.booBuddyTriggerCount,
                     state.swordCollisionActive,
                     state.randomByteSupplier);
             state.updated = booBuddyUpdate.entity();
-            state.runtime.enemyTransitionCountdown[state.entity.slot()] =
-                booBuddyUpdate.transitionCountdown();
+            state.slot().setTransitionCountdown(state.entity.slot(), booBuddyUpdate.transitionCountdown());
             if (booBuddyUpdate.healthOverride() >= 0) {
               state.runtime.enemyHealth[state.entity.slot()] = booBuddyUpdate.healthOverride();
             }

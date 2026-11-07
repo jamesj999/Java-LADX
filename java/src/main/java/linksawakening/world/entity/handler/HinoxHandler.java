@@ -47,7 +47,7 @@ final class HinoxHandler {
             HinoxMotion.Update hinoxUpdate =
                 state.runtime.hinoxMotion.advance(
                     state.entity,
-                    state.runtime.enemyTransitionCountdown[slot],
+                    state.slot().transitionCountdown(slot),
                     state.frame,
                     state.linkEntityX,
                     state.linkEntityY,
@@ -58,7 +58,7 @@ final class HinoxHandler {
                     state.runtime.hinoxMotion.collisionFlags(slot),
                     state.runtime.enemyFlashCountdown[slot]);
             state.updated = hinoxUpdate.entity();
-            state.runtime.enemyTransitionCountdown[slot] = hinoxUpdate.transitionCountdown();
+            state.slot().setTransitionCountdown(slot, hinoxUpdate.transitionCountdown());
             state.preserveHinoxPresentation = true;
             if (hinoxUpdate.linkMotionBlocked()) {
               state.emit(new LinkMotionBlockRequest(slot));

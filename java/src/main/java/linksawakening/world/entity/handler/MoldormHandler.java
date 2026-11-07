@@ -101,7 +101,7 @@ final class MoldormHandler {
               moldormBackgroundInteraction =
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
             }
-            int transitionForMotion = state.runtime.enemyTransitionCountdown[slot];
+            int transitionForMotion = state.slot().transitionCountdown(slot);
             if (transitionForMotion != 0) {
               // Common countdowns have already ticked before dispatch;
               // the direct motion API performs the same decrement.
@@ -118,7 +118,7 @@ final class MoldormHandler {
                     state.randomByteSupplier,
                     moldormBackgroundInteraction);
             state.updated = moldormUpdate.entity();
-            state.runtime.enemyTransitionCountdown[slot] = moldormUpdate.transitionCountdown();
+            state.slot().setTransitionCountdown(slot, moldormUpdate.transitionCountdown());
             if (moldormUpdate.noiseRequested()) {
               state.emit(
                   new EntityCombatEvent(

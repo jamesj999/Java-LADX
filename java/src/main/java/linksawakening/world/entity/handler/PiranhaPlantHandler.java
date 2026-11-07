@@ -24,11 +24,11 @@ final class PiranhaPlantHandler {
             PiranhaMotion.Update piranhaUpdate =
                 state.runtime.piranhaMotion.advance(
                     state.updated,
-                    state.runtime.enemyTransitionCountdown[slot],
+                    state.slot().transitionCountdown(slot),
                     state.linkEntityX,
                     state.linkEntityY);
             state.updated = piranhaUpdate.entity();
-            state.runtime.enemyTransitionCountdown[slot] = piranhaUpdate.transitionCountdown();
+            state.slot().setTransitionCountdown(slot, piranhaUpdate.transitionCountdown());
             state.preservePiranhaPresentation = true;
           }
           return true;
