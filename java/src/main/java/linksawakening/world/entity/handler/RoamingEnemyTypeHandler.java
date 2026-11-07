@@ -1,7 +1,7 @@
 package linksawakening.world.entity.handler;
 
-import linksawakening.world.EntityTickStage;
-import linksawakening.world.EntityStatus;
+import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
 
@@ -13,7 +13,7 @@ import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.motion.RoamingEnemyMotion;
 import linksawakening.world.entity.motion.UnmaskedIronMaskMotion;
 
-import static linksawakening.world.EntityTypeRules.isRoamingEnemyType;
+import static linksawakening.world.entity.EntityTypeRules.isRoamingEnemyType;
 
 /** ROM handler stages for RoamingEnemyType. */
 final class RoamingEnemyTypeHandler {

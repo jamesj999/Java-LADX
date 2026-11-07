@@ -1,5 +1,32 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.EntityTestFrames;
+
+import linksawakening.world.entity.event.InstrumentWarpVisual;
+
+
+
+
+
+import linksawakening.world.entity.event.EntityCombatEvent;
+import linksawakening.world.entity.event.EntityProjectileEvent;
+import linksawakening.world.entity.event.BombExplosionEvent;
+
+import linksawakening.world.entity.RoomEntityGroundInteraction;
+import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.EntityBackgroundCollisionResult;
+import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EnemyProjectileCollision;
+import linksawakening.world.entity.RoomEntityRuntime;
+import linksawakening.world.entity.EnemyDropResolver;
+import linksawakening.world.entity.EntityStatus;
+import linksawakening.world.entity.RomEnemyCombatTables;
+import linksawakening.world.entity.RoomEntityObjectSample;
+import linksawakening.world.entity.EntityPickupEvent;
+import linksawakening.world.entity.RoomEntitySnapshot;
+import linksawakening.world.entity.FollowingNpcEntitySpawner;
+import linksawakening.world.entity.FollowingNpcState;
+
 import linksawakening.world.entity.motion.HookshotBridgeMotion;
 import linksawakening.world.entity.motion.HookshotChainMotion;
 import linksawakening.world.entity.motion.SideViewPlatformMotion;
@@ -216,8 +243,8 @@ final class RoomSessionTest {
         }
         RoomEntityRuntime runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(slots));
         runtime.setGroundInteractionSideScrolling(true);
-        runtime.setEntityRoomIdForTest(0x3B);
-        runtime.setTransitionSequenceCounterForTest(0x04);
+        linksawakening.world.entity.EntityRuntimeTestAccess.setEntityRoomIdForTest(runtime, 0x3B);
+        linksawakening.world.entity.EntityRuntimeTestAccess.setTransitionSequenceCounterForTest(runtime, 0x04);
         session.replaceEntityRuntimeForTest(runtime);
 
         session.tickEntitiesWithProjectileEvents(0, 0x48, 0x40, 0x00, false, 0,
@@ -549,14 +576,14 @@ final class RoomSessionTest {
             RoomEntity.disabled(7), RoomEntity.disabled(8), RoomEntity.disabled(9),
             RoomEntity.disabled(10), RoomEntity.disabled(11), RoomEntity.disabled(12),
             RoomEntity.disabled(13), RoomEntity.disabled(14), RoomEntity.disabled(15))));
-        runtime.setEntityRoomIdForTest(0xC6);
+        linksawakening.world.entity.EntityRuntimeTestAccess.setEntityRoomIdForTest(runtime, 0xC6);
         runtime.setObjectQuery(entity -> new RoomEntityObjectSample(0xCC, 0, 0x40, 0x50));
         session.replaceEntityRuntimeForTest(runtime);
         session.setEntityGoldenLeavesCount(5);
 
         session.tickEntities(0, 0x20, 0x30);
         session.tickEntities(1, 0x20, 0x30);
-        runtime.setHidingSlimeKeyTransitionCountdownForTest(0, 0x11);
+        linksawakening.world.entity.EntityRuntimeTestAccess.setHidingSlimeKeyTransitionCountdownForTest(runtime, 0, 0x11);
         session.tickEntities(2, 0x20, 0x30);
 
         assertEquals(List.of(new SlimeKeyRewardEvent(0, 6, 0xA2)),
@@ -578,14 +605,14 @@ final class RoomSessionTest {
             RoomEntity.disabled(7), RoomEntity.disabled(8), RoomEntity.disabled(9),
             RoomEntity.disabled(10), RoomEntity.disabled(11), RoomEntity.disabled(12),
             RoomEntity.disabled(13), RoomEntity.disabled(14), RoomEntity.disabled(15))));
-        runtime.setEntityRoomIdForTest(0x58);
+        linksawakening.world.entity.EntityRuntimeTestAccess.setEntityRoomIdForTest(runtime, 0x58);
         runtime.setObjectQuery(entity -> new RoomEntityObjectSample(0xCC, 0, 0x40, 0x50));
         session.replaceEntityRuntimeForTest(runtime);
         session.setEntityGoldenLeavesCount(4);
 
         session.tickEntities(0, 0x20, 0x30);
         session.tickEntities(1, 0x40, 0x50);
-        runtime.setHidingSlimeKeyTransitionCountdownForTest(0, 0x11);
+        linksawakening.world.entity.EntityRuntimeTestAccess.setHidingSlimeKeyTransitionCountdownForTest(runtime, 0, 0x11);
         session.tickEntities(2, 0x40, 0x50);
 
         assertEquals(List.of(new SlimeKeyRewardEvent(0, 5, 0xE9)),
@@ -607,7 +634,7 @@ final class RoomSessionTest {
                 : RoomEntity.disabled(slot));
         }
         RoomEntityRuntime runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(slots));
-        runtime.setEntityRoomIdForTest(0xCE);
+        linksawakening.world.entity.EntityRuntimeTestAccess.setEntityRoomIdForTest(runtime, 0xCE);
         session.replaceEntityRuntimeForTest(runtime);
 
         session.tickEntities(0);
@@ -987,7 +1014,7 @@ final class RoomSessionTest {
     void bottleGrottoRoom27RevealsNightmareKeyChestForSourceKillOrder012() {
         byte[] rom = loadRom();
         RoomEntityRuntime runtime = runtimeWithKillOrder(rom, 0, 1, 2);
-        assertEquals(3, runtime.killCount());
+        assertEquals(3, linksawakening.world.entity.EntityRuntimeTestAccess.killCount(runtime));
         assertEquals(0, runtime.killOrderAt(0));
         assertEquals(1, runtime.killOrderAt(1));
         assertEquals(2, runtime.killOrderAt(2));
@@ -1795,13 +1822,13 @@ final class RoomSessionTest {
         }
         RoomEntityRuntime runtime = RoomEntityRuntime.from(
             new RoomEntitySnapshot(dyingBossSlots), true);
-        runtime.setGeniePrivateState1ForTest(0, 1);
+        linksawakening.world.entity.EntityRuntimeTestAccess.setGeniePrivateState1ForTest(runtime, 0, 1);
         session.replaceEntityRuntimeForTest(runtime);
 
         session.tickEntities(0, 0x50, 0x50);
-        runtime.setTransitionCountdownForTest(0, 1);
+        linksawakening.world.entity.EntityRuntimeTestAccess.setTransitionCountdownForTest(runtime, 0, 1);
         session.tickEntities(1, 0x50, 0x50);
-        runtime.setTransitionCountdownForTest(0, 1);
+        linksawakening.world.entity.EntityRuntimeTestAccess.setTransitionCountdownForTest(runtime, 0, 1);
         session.tickEntities(2, 0x50, 0x50);
 
         RoomEntity heart = session.activeRoom().entities().loadedEntities().stream()
@@ -4280,7 +4307,7 @@ final class RoomSessionTest {
         for (int sourceOrder : killOrder) {
             int slot = entitySlots[sourceOrder];
             RoomEntity target = runtime.snapshot().slots().get(slot);
-            runtime.setEnemyHealthForTest(slot, 1);
+            linksawakening.world.entity.EntityRuntimeTestAccess.setEnemyHealthForTest(runtime, slot, 1);
             List<EntityCombatEvent> hit = runtime.resolveCombat(
                 frame++, 0, 0, false, true, true,
                 target.x() - 8, 0x10, target.y() - 8, 0x10);

@@ -2,7 +2,7 @@ package linksawakening.gameplay;
 
 import linksawakening.entity.Link;
 import linksawakening.state.PlayerState;
-import linksawakening.world.EntityProjectileEvent;
+import linksawakening.world.entity.event.EntityProjectileEvent;
 
 import java.util.List;
 import java.util.Objects;

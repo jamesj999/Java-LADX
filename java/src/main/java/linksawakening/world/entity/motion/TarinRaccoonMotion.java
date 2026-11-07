@@ -1,9 +1,9 @@
 package linksawakening.world.entity.motion;
 
-import linksawakening.world.EntityBackgroundCollisionResult;
-import linksawakening.world.EntityRoomLoader;
-import linksawakening.world.RoomEntity;
-import linksawakening.world.RoomEntityBackgroundInteraction;
+import linksawakening.world.entity.EntityBackgroundCollisionResult;
+import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 
 
 /** Bank-$05 outdoor {@code TarinEntityHandler}, including the raccoon transformation. */

@@ -1,10 +1,10 @@
 package linksawakening.world.entity.handler;
 
-import linksawakening.world.EntityTickStage;
-import linksawakening.world.RoomEntityRuntime;
-import linksawakening.world.EntityStatus;
+import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.RoomEntityRuntime;
+import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
-import linksawakening.world.EntityCombatEvent;
+import linksawakening.world.entity.event.EntityCombatEvent;
 
 
 
@@ -17,10 +17,10 @@ import linksawakening.world.entity.motion.KeyDropPointMotion;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.KeyQuicksandEvent;
 import linksawakening.world.entity.event.KeyRewardEvent;
-import static linksawakening.world.EntitySnapshots.withDefinition;
-import static linksawakening.world.EntitySnapshots.withPositionAndVariant;
-import static linksawakening.world.EntitySnapshots.withStatus;
-import static linksawakening.world.EntitySnapshots.withZ;
+import static linksawakening.world.entity.EntitySnapshots.withDefinition;
+import static linksawakening.world.entity.EntitySnapshots.withPositionAndVariant;
+import static linksawakening.world.entity.EntitySnapshots.withStatus;
+import static linksawakening.world.entity.EntitySnapshots.withZ;
 
 /** ROM handler stages for KeyDropPoint. */
 final class KeyDropPointHandler {

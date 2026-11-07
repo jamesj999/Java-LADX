@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.EntityCombatEvent;
+
 import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.Warp;
 

@@ -1,9 +1,9 @@
 package linksawakening.world.entity.handler;
 
-import linksawakening.world.EntityTickStage;
-import linksawakening.world.EntityStatus;
+import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
-import linksawakening.world.EntityCombatEvent;
+import linksawakening.world.entity.event.EntityCombatEvent;
 
 
 
@@ -13,8 +13,8 @@ import linksawakening.world.EntityCombatEvent;
 
 import linksawakening.world.entity.motion.BombiteMotion;
 
-import static linksawakening.world.EntitySnapshots.withVariant;
-import static linksawakening.world.EntityTypeRules.isBombiteType;
+import static linksawakening.world.entity.EntitySnapshots.withVariant;
+import static linksawakening.world.entity.EntityTypeRules.isBombiteType;
 
 /** ROM handler stages for BombiteType. */
 final class BombiteTypeHandler {

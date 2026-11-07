@@ -1,6 +1,6 @@
 package linksawakening.world.entity.motion;
 
-import linksawakening.world.EntityRoomLoader;
+import linksawakening.world.entity.EntityRoomLoader;
 
 
 /**

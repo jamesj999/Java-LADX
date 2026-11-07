@@ -1,10 +1,10 @@
 package linksawakening.world.entity.motion;
 
-import linksawakening.world.EntityBackgroundCollisionResult;
-import linksawakening.world.EntityRoomLoader;
-import linksawakening.world.RoomEntity;
-import linksawakening.world.RoomEntityBackgroundCollision;
-import linksawakening.world.RoomEntityBackgroundInteraction;
+import linksawakening.world.entity.EntityBackgroundCollisionResult;
+import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBackgroundCollision;
+import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 
 
 import java.util.function.IntSupplier;
@@ -328,6 +328,6 @@ public final class RoamingEnemyMotion {
     public record Update(RoomEntity entity, LaunchRequest launchRequest) {
     }
 
-    public record LaunchRequest(int sourceSlot, int sourceType, int projectileType) implements linksawakening.world.EntityRequestBridge {
+    public record LaunchRequest(int sourceSlot, int sourceType, int projectileType) implements linksawakening.world.entity.event.EntityRequestBridge {
     }
 }

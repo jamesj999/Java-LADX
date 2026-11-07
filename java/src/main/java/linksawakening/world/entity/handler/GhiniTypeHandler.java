@@ -1,7 +1,7 @@
 package linksawakening.world.entity.handler;
 
-import linksawakening.world.EntityTickStage;
-import linksawakening.world.EntityStatus;
+import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
 
@@ -10,8 +10,8 @@ import linksawakening.world.entity.EntityHandlerRegistration;
 
 
 
-import static linksawakening.world.EntityTypeRules.isGhiniType;
-import static linksawakening.world.EntityTypeRules.isHidingGhiniType;
+import static linksawakening.world.entity.EntityTypeRules.isGhiniType;
+import static linksawakening.world.entity.EntityTypeRules.isHidingGhiniType;
 
 /** ROM handler stages for GhiniType. */
 final class GhiniTypeHandler {

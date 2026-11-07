@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.RoomEntityRuntime;
+
 import java.util.function.Supplier;
 
 /** Cached player inputs and gates supplied to each room entity runtime. */

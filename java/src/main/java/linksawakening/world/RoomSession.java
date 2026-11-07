@@ -1,5 +1,19 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.EntityCombatEvent;
+import linksawakening.world.entity.event.EntityProjectileEvent;
+import linksawakening.world.entity.event.BombExplosionEvent;
+
+import linksawakening.world.entity.RoomEntityGroundInteraction;
+import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.EntityBackgroundCollisionResult;
+import linksawakening.world.entity.RoomEntityRuntime;
+import linksawakening.world.entity.EnemyDropResolver;
+import linksawakening.world.entity.EnemyAttackContext;
+import linksawakening.world.entity.RoomEntityObjectSample;
+import linksawakening.world.entity.EntityPickupEvent;
+import linksawakening.world.entity.FollowingNpcState;
+
 import linksawakening.world.entity.event.LiftedEntityState;
 
 import linksawakening.world.entity.event.HeartPiecePickupUpdate;

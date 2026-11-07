@@ -1,5 +1,10 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.HeartPieceVisual;
+import linksawakening.world.entity.event.InstrumentWarpVisual;
+
+import linksawakening.world.entity.RoomEntitySnapshot;
+
 public record RoomRenderSnapshot(int[] tileIds, int[] tileAttrs, int[][] palettes,
                                  RoomEntitySnapshot entities, InstrumentWarpVisual instrumentWarp, HeartPieceVisual heartPiece) {
 

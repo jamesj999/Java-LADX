@@ -1,5 +1,10 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.EntityCombatEvent;
+import linksawakening.world.entity.event.BombExplosionEvent;
+
+import linksawakening.world.entity.RoomEntity;
+
 import linksawakening.world.entity.event.MagicPowderObjectAction;
 
 import linksawakening.world.transition.Warp;

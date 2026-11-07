@@ -1,6 +1,6 @@
 package linksawakening.world.entity.motion;
 
-import linksawakening.world.EntityProjectileEvent;
+import linksawakening.world.entity.event.EntityProjectileEvent;
 
 
 import org.junit.jupiter.api.Test;

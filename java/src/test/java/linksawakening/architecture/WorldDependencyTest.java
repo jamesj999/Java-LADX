@@ -77,19 +77,17 @@ class WorldDependencyTest {
             for (String reference : type.references()) {
                 if (reference.startsWith("linksawakening/world/entity/event/")) continue;
                 Class<?> dependency = Class.forName(reference.replace('/', '.'), false, getClass().getClassLoader());
-                boolean contract = reference.equals("linksawakening/world/EntityEvent")
-                    || reference.equals("linksawakening/world/EntityRequestBridge");
-                assertTrue(contract || dependency.isRecord() || dependency.isEnum(), type.name() + " -> " + reference);
+                assertTrue(dependency.isRecord() || dependency.isEnum(), type.name() + " -> " + reference);
             }
         }
     }
 
     // Explicit facade/value surface used by app, including construction-time APIs.
     private static final Set<String> APP_WORLD_API = Set.of(
-        "ActiveRoom", "ChestContentsTable", "DroppableRupeeSystem", "EnemyAttackContext",
-        "EntityCombatEvent", "EntityPickupEvent", "EntityProjectileEvent", "EntityStatus",
-        "OverworldBushInteraction", "OverworldTilesetTable", "RomRandomByteSource",
-        "RoomConstants", "RoomEntity", "RoomEntitySnapshot", "RoomLoadListener", "RoomLoader",
+        "ActiveRoom", "ChestContentsTable", "DroppableRupeeSystem", "entity/EnemyAttackContext",
+        "entity/EntityPickupEvent", "entity/EntityStatus",
+        "OverworldBushInteraction", "OverworldTilesetTable", "entity/RomRandomByteSource",
+        "RoomConstants", "entity/RoomEntity", "entity/RoomEntitySnapshot", "RoomLoadListener", "RoomLoader",
         "RoomRenderSnapshot", "RoomSession", "RoomTransitionCoordinator",
         "transition/RoomBoundaryController", "transition/ScrollController",
         "transition/TransitionController", "transition/Warp");
@@ -115,6 +113,18 @@ class WorldDependencyTest {
                     || reference.startsWith("linksawakening/world/entity/event/")) continue;
                 String facade = reference.substring("linksawakening/world/".length()).split("\\$")[0];
                 assertTrue(APP_WORLD_API.contains(facade), type.name() + " -> " + reference);
+            }
+        }
+    }
+
+    @Test
+    void motionAndHandlersAreReferencedOnlyByEntity() throws Exception {
+        for (var type : classes()) {
+            if (type.name().startsWith("linksawakening/world/entity/")) continue;
+            for (String reference : type.references()) {
+                assertTrue(!reference.startsWith("linksawakening/world/entity/motion/")
+                    && !reference.startsWith("linksawakening/world/entity/handler/"),
+                    type.name() + " -> " + reference);
             }
         }
     }

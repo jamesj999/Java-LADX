@@ -1,5 +1,8 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.EntityStatus;
+
 import linksawakening.world.entity.motion.MotionTestAccess;
 
 import linksawakening.world.entity.motion.MagicRodFireballMotion;

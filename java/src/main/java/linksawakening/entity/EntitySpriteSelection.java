@@ -1,6 +1,6 @@
 package linksawakening.entity;
 
-import linksawakening.world.EntityRoomLoader;
+import linksawakening.world.entity.EntityRoomLoader;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -5,7 +5,7 @@ import linksawakening.scene.BackgroundSceneCatalog;
 import linksawakening.scene.BackgroundSceneLoader;
 import linksawakening.scene.BackgroundSceneSpec;
 import linksawakening.rom.RomBank;
-import linksawakening.world.RomRandomByteSource;
+import linksawakening.world.entity.RomRandomByteSource;
 
 import java.io.IOException;
 import java.io.InputStream;

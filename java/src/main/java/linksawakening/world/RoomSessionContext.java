@@ -1,5 +1,20 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.LinkPositionHistory;
+
+import linksawakening.world.entity.RoomEntityBackgroundInteraction;
+import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.EntityBackgroundCollisionResult;
+import linksawakening.world.entity.EnemyProjectileCollision;
+import linksawakening.world.entity.EntityCollisionPointProbe;
+import linksawakening.world.entity.EnemyDropResolver;
+import linksawakening.world.entity.ColorShellWorld;
+import linksawakening.world.entity.RomEnemyCombatTables;
+import linksawakening.world.entity.FollowingNpcEntitySpawner;
+import linksawakening.world.entity.RomRandomByteSource;
+import linksawakening.world.entity.FollowingNpcState;
+import linksawakening.world.entity.EntityBackgroundCollisionResolver;
+
 import linksawakening.world.transition.Warp;
 
 import linksawakening.world.entity.event.HookshotBridgeUpdate;

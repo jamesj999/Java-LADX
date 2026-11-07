@@ -1,10 +1,10 @@
 package linksawakening.world.entity.handler;
 
-import linksawakening.world.EntityTickStage;
-import linksawakening.world.RoomEntityRuntime;
-import linksawakening.world.EntityStatus;
+import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.RoomEntityRuntime;
+import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
-import linksawakening.world.EntityCombatEvent;
+import linksawakening.world.entity.event.EntityCombatEvent;
 
 
 
@@ -16,7 +16,7 @@ import linksawakening.world.entity.motion.PokeyMotion;
 
 import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.entity.event.TransientVfxRequest;
-import static linksawakening.world.EntitySnapshots.withDefinition;
+import static linksawakening.world.entity.EntitySnapshots.withDefinition;
 
 /** ROM handler stages for Pokey. */
 final class PokeyHandler {

@@ -8,7 +8,7 @@ import linksawakening.gpu.Tile;
 import linksawakening.rom.RomTables;
 
 import java.util.Objects;
-import linksawakening.world.RomRandomByteSource;
+import linksawakening.world.entity.RomRandomByteSource;
 import java.util.function.IntSupplier;
 
 /**

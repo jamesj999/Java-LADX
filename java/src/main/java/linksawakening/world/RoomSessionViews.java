@@ -1,11 +1,15 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityRuntime;
+import linksawakening.world.entity.EnemyDropResolver;
+
 import linksawakening.world.entity.event.LiftedEntityState;
 
 import linksawakening.world.entity.event.HeartPiecePickupUpdate;
 
 import linksawakening.world.entity.motion.HeartPiecePickupMotion;
-import linksawakening.world.entity.motion.WarpMotion;
+import linksawakening.world.entity.EntityTypeRules;
 
 import linksawakening.world.transition.Warp;
 
@@ -222,7 +226,7 @@ final class RoomSessionViews {
             return 0;
         }
         RoomEntity entity = session.context.activeRoom == null ? null : session.context.activeRoom.entities().slots().get(slot);
-        return entity != null && entity.type() == WarpMotion.ENTITY_TYPE
+        return entity != null && EntityTypeRules.isDungeonWarpType(entity.type())
             ? session.context.entityBridge.entityRuntime.warpTransitionCountdownForTest(slot)
             : session.context.entityBridge.entityRuntime.transitionCountdown(slot);
     }

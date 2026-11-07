@@ -1,5 +1,16 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.PairoddProjectileObjectCollision;
+
+import linksawakening.world.entity.RoomEntityGroundInteraction;
+import linksawakening.world.entity.EntityBackgroundCollisionState;
+import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.EntityBackgroundCollisionResult;
+import linksawakening.world.entity.EntityCollisionPointProbe;
+import linksawakening.world.entity.EntityStatus;
+import linksawakening.world.entity.RoomEntityObjectSample;
+import linksawakening.world.entity.EntityBackgroundCollisionResolution;
+
 import linksawakening.world.transition.RoomBoundaryState;
 import linksawakening.world.transition.Warp;
 

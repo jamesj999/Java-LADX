@@ -1,6 +1,6 @@
 package linksawakening.world.entity.motion;
 
-import linksawakening.world.EntityRoomLoader;
+import linksawakening.world.entity.EntityRoomLoader;
 
 
 /** Source-shaped initial jar state for bank-$04's Genie handler. */

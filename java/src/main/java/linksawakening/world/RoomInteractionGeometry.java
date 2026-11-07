@@ -1,5 +1,8 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.RoomEntityGroundInteraction;
+import linksawakening.world.entity.RoomEntity;
+
 import linksawakening.entity.Link;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.physics.PhysicsFlags;

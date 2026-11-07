@@ -1,11 +1,11 @@
 package linksawakening.world.entity.handler;
 
-import linksawakening.world.EntityTickStage;
-import linksawakening.world.EnemyProjectileCollision;
-import linksawakening.world.EntityStatus;
+import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.EnemyProjectileCollision;
+import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
-import linksawakening.world.EntityCombatEvent;
-import linksawakening.world.EntityProjectileEvent;
+import linksawakening.world.entity.event.EntityCombatEvent;
+import linksawakening.world.entity.event.EntityProjectileEvent;
 
 
 
@@ -15,7 +15,7 @@ import linksawakening.world.EntityProjectileEvent;
 
 import linksawakening.world.entity.motion.EnemyProjectileMotion;
 
-import static linksawakening.world.EntityTypeRules.isEnemyProjectileType;
+import static linksawakening.world.entity.EntityTypeRules.isEnemyProjectileType;
 
 /** ROM handler stages for EnemyProjectileType. */
 final class EnemyProjectileTypeHandler {

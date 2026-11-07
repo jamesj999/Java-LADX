@@ -1,14 +1,14 @@
 package linksawakening.world.entity.handler;
 
-import linksawakening.world.EntityTickStage;
-import linksawakening.world.RoomEntity;
-import linksawakening.world.EntityBackgroundCollisionResult;
-import linksawakening.world.RoomEntityRuntime;
-import linksawakening.world.EntityStatus;
+import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.EntityBackgroundCollisionResult;
+import linksawakening.world.entity.RoomEntityRuntime;
+import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
-import linksawakening.world.RoomEntityObjectSample;
-import linksawakening.world.EntityCombatEvent;
-import linksawakening.world.EntityProjectileEvent;
+import linksawakening.world.entity.RoomEntityObjectSample;
+import linksawakening.world.entity.event.EntityCombatEvent;
+import linksawakening.world.entity.event.EntityProjectileEvent;
 
 
 
@@ -21,7 +21,7 @@ import linksawakening.world.entity.motion.HookshotChainMotion;
 import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.entity.event.HookshotBridgeUpdate;
 import linksawakening.world.entity.event.TransientVfxRequest;
-import static linksawakening.world.EntitySnapshots.withPositionAndVariant;
+import static linksawakening.world.entity.EntitySnapshots.withPositionAndVariant;
 
 /** ROM handler stages for HookshotChain. */
 final class HookshotChainHandler {

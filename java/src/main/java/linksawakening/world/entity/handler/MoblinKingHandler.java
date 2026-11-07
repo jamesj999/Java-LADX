@@ -1,11 +1,11 @@
 package linksawakening.world.entity.handler;
 
-import linksawakening.world.EntityTickStage;
-import linksawakening.world.RoomEntityRuntime;
-import linksawakening.world.EntityStatus;
+import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.RoomEntityRuntime;
+import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
-import linksawakening.world.RoomEntityCombatRules;
-import linksawakening.world.EntityCombatEvent;
+import linksawakening.world.entity.RoomEntityCombatRules;
+import linksawakening.world.entity.event.EntityCombatEvent;
 
 
 
@@ -18,7 +18,7 @@ import linksawakening.world.entity.motion.RoamingEnemyMotion;
 
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.ScreenShakeRequest;
-import static linksawakening.world.EntitySnapshots.withDefinition;
+import static linksawakening.world.entity.EntitySnapshots.withDefinition;
 
 /** ROM handler stages for MoblinKing. */
 final class MoblinKingHandler {

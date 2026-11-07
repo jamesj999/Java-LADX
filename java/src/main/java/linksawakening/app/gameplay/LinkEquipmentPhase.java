@@ -6,7 +6,7 @@ import linksawakening.world.entity.event.ScreenShakeRequest;
 
 import linksawakening.entity.Link;
 import linksawakening.state.PlayerState;
-import linksawakening.world.EntityPickupEvent;
+import linksawakening.world.entity.EntityPickupEvent;
 import linksawakening.world.transition.Warp;
 
 import static linksawakening.world.RoomConstants.*;

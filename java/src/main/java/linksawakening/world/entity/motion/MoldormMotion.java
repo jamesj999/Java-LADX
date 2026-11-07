@@ -2,10 +2,10 @@ package linksawakening.world.entity.motion;
 
 import linksawakening.world.entity.event.MoldormSegmentPosition;
 
-import linksawakening.world.EntityBackgroundCollisionResult;
-import linksawakening.world.EntityRoomLoader;
-import linksawakening.world.RoomEntity;
-import linksawakening.world.RoomEntityBackgroundInteraction;
+import linksawakening.world.entity.EntityBackgroundCollisionResult;
+import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 
 
 import java.util.ArrayList;

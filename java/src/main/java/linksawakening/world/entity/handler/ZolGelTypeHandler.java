@@ -1,8 +1,8 @@
 package linksawakening.world.entity.handler;
 
-import linksawakening.world.RoomEntityBackgroundInteraction;
-import linksawakening.world.EntityTickStage;
-import linksawakening.world.EntityStatus;
+import linksawakening.world.entity.RoomEntityBackgroundInteraction;
+import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
 
@@ -13,7 +13,7 @@ import linksawakening.world.entity.EntityHandlerRegistration;
 
 import linksawakening.world.entity.motion.ZolGelMotion;
 
-import static linksawakening.world.EntityTypeRules.isZolGelType;
+import static linksawakening.world.entity.EntityTypeRules.isZolGelType;
 
 /** ROM handler stages for ZolGelType. */
 final class ZolGelTypeHandler {

@@ -1,7 +1,7 @@
 package linksawakening.world.entity.motion;
 
-import linksawakening.world.EntityRoomLoader;
-import linksawakening.world.RoomEntity;
+import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.RoomEntity;
 
 
 import linksawakening.world.entity.event.ScreenShakeRequest;

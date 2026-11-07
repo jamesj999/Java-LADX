@@ -1,9 +1,9 @@
 package linksawakening.world.entity.handler;
 
-import linksawakening.world.EntityTickStage;
-import linksawakening.world.EntityStatus;
+import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
-import linksawakening.world.EntityCombatEvent;
+import linksawakening.world.entity.event.EntityCombatEvent;
 
 
 
@@ -18,7 +18,7 @@ import linksawakening.world.transition.Warp;
 import linksawakening.world.entity.event.DungeonWarpRequest;
 import linksawakening.world.entity.event.LinkMotionBlockRequest;
 import linksawakening.world.entity.event.WarpLinkStateRequest;
-import static linksawakening.world.EntitySnapshots.withPositionAndVariant;
+import static linksawakening.world.entity.EntitySnapshots.withPositionAndVariant;
 
 /** ROM handler stages for Warp. */
 final class WarpHandler {

@@ -1,8 +1,8 @@
 package linksawakening.world.entity.motion;
 
-import linksawakening.world.EntityStatus;
-import linksawakening.world.RoomEntity;
-import linksawakening.world.RoomEntityBackgroundCollision;
+import linksawakening.world.entity.EntityStatus;
+import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBackgroundCollision;
 
 
 import linksawakening.entity.EntitySpriteDefinition;

@@ -1,8 +1,8 @@
 package linksawakening.world.entity.motion;
 
-import linksawakening.world.EntityStatus;
-import linksawakening.world.RoomEntity;
-import linksawakening.world.WingedOctorokOam;
+import linksawakening.world.entity.EntityStatus;
+import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.WingedOctorokOam;
 
 
 import linksawakening.entity.EntitySpriteDefinition;

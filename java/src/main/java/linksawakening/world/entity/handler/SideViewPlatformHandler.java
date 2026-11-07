@@ -1,10 +1,10 @@
 package linksawakening.world.entity.handler;
 
-import linksawakening.world.EntityTickStage;
-import linksawakening.world.RoomEntity;
-import linksawakening.world.EntityStatus;
+import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
-import linksawakening.world.EntityCombatEvent;
+import linksawakening.world.entity.event.EntityCombatEvent;
 
 
 
@@ -15,7 +15,7 @@ import linksawakening.world.EntityCombatEvent;
 import linksawakening.world.entity.motion.SideViewPlatformMotion;
 
 import linksawakening.world.entity.event.SideViewPlatformLinkRequest;
-import static linksawakening.world.EntityMotionMath.sideViewPlatformOverlapsLink;
+import static linksawakening.world.entity.EntityMotionMath.sideViewPlatformOverlapsLink;
 
 /** ROM handler stages for SideViewPlatform. */
 final class SideViewPlatformHandler {

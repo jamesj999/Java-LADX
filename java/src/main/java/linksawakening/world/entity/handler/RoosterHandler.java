@@ -1,11 +1,11 @@
 package linksawakening.world.entity.handler;
 
-import linksawakening.world.EntityTickStage;
-import linksawakening.world.RoomEntityRuntime;
-import linksawakening.world.EntityStatus;
+import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.RoomEntityRuntime;
+import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
-import linksawakening.world.RoomEntityCombatRules;
-import linksawakening.world.EntityCombatEvent;
+import linksawakening.world.entity.RoomEntityCombatRules;
+import linksawakening.world.entity.event.EntityCombatEvent;
 
 
 
@@ -16,7 +16,7 @@ import linksawakening.world.EntityCombatEvent;
 import linksawakening.world.entity.motion.RoosterMotion;
 
 import linksawakening.world.entity.event.RoosterLinkStateRequest;
-import static linksawakening.world.EntitySnapshots.withVariant;
+import static linksawakening.world.entity.EntitySnapshots.withVariant;
 
 /** ROM handler stages for Rooster. */
 final class RoosterHandler {

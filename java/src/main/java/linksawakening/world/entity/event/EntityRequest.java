@@ -1,6 +1,6 @@
 package linksawakening.world.entity.event;
 
-import linksawakening.world.EntityRequestBridge;
+import linksawakening.world.entity.event.EntityRequestBridge;
 
 /** Typed requests emitted by ROM entity handlers. */
 public sealed interface EntityRequest extends EntityRequestBridge

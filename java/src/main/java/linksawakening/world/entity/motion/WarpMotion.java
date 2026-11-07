@@ -1,6 +1,6 @@
 package linksawakening.world.entity.motion;
 
-import linksawakening.world.RoomEntity;
+import linksawakening.world.entity.RoomEntity;
 
 
 import linksawakening.world.entity.event.WarpDestination;

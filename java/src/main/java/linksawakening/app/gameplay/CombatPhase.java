@@ -7,8 +7,8 @@ import linksawakening.equipment.Sword;
 import linksawakening.gameplay.EnemyCombatEventConsumer;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.state.PlayerState;
-import linksawakening.world.EnemyAttackContext;
-import linksawakening.world.EntityCombatEvent;
+import linksawakening.world.entity.EnemyAttackContext;
+import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.transition.Warp;
 
 import static linksawakening.world.RoomConstants.*;

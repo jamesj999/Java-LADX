@@ -1,7 +1,7 @@
 package linksawakening.world.entity.handler;
 
-import linksawakening.world.EntityTickStage;
-import linksawakening.world.EntityStatus;
+import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
 
@@ -10,11 +10,11 @@ import linksawakening.world.entity.EntityHandlerRegistration;
 
 
 
-import linksawakening.world.RoomEntityRuntime.CommonDroppableUpdate;
+import linksawakening.world.entity.RoomEntityRuntime.CommonDroppableUpdate;
 
-import static linksawakening.world.EntitySnapshots.withStatus;
-import static linksawakening.world.EntitySnapshots.withVariant;
-import static linksawakening.world.EntityTypeRules.isCommonDroppableType;
+import static linksawakening.world.entity.EntitySnapshots.withStatus;
+import static linksawakening.world.entity.EntitySnapshots.withVariant;
+import static linksawakening.world.entity.EntityTypeRules.isCommonDroppableType;
 
 /** ROM handler stages for CommonDroppableType. */
 final class CommonDroppableTypeHandler {

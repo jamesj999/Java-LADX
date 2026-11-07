@@ -65,7 +65,7 @@ import linksawakening.world.RoomTransitionCoordinator;
 import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.TransitionController;
 
-import linksawakening.world.RomRandomByteSource;
+import linksawakening.world.entity.RomRandomByteSource;
 
 import static linksawakening.world.RoomConstants.*;
 

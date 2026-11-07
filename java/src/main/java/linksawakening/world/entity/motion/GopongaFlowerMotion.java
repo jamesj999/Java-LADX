@@ -1,7 +1,7 @@
 package linksawakening.world.entity.motion;
 
-import linksawakening.world.RoomEntity;
-import linksawakening.world.RoomEntityCombatRules;
+import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityCombatRules;
 
 
 /** Small deterministic runtime portion of bank-$06's Goponga flower handler. */

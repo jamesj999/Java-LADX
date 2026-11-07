@@ -1,5 +1,12 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.RoomEntityRuntime;
+import linksawakening.world.entity.FollowingNpcRoomContext;
+import linksawakening.world.entity.EnemyDropResolver;
+import linksawakening.world.entity.RoomEntitySnapshot;
+import linksawakening.world.entity.FollowingNpcEntitySpawner;
+import linksawakening.world.entity.FollowingNpcState;
+
 import linksawakening.world.transition.Warp;
 
 import linksawakening.entity.EntitySpriteDefinition;

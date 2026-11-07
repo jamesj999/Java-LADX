@@ -1,5 +1,16 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.EntityCombatEvent;
+
+import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.RoomEntityRuntime;
+import linksawakening.world.entity.EntityStatus;
+import linksawakening.world.entity.EnemyAttackContext;
+import linksawakening.world.entity.RoomEntityCombatRules;
+import linksawakening.world.entity.EntityPickupEvent;
+import linksawakening.world.entity.RoomEntitySnapshot;
+
 import linksawakening.world.entity.event.LiftedEntityState;
 
 import linksawakening.world.entity.motion.MotionTestAccess;
@@ -1438,14 +1449,14 @@ final class RoomTransitionCoordinatorTest {
                 EntitySpriteDefinition.DynamicSprite vulnerableTail = sprites.get(14);
                 tailX = (moldorm.x() + vulnerableTail.xOffset()) & 0xFF;
                 tailY = (moldorm.y() + vulnerableTail.yOffset() + moldorm.z()) & 0xFF;
-                if (!RoomEntityCombatRules.overlapsSword(
+                if (!linksawakening.world.entity.EntityCombatTestAccess.overlapsSword(
                         moldorm, tailX, 0x08, tailY, 0x08)) {
                     break;
                 }
                 session.tickEntitiesWithProjectileEvents(
                     frame++, 0, 0, 0, 0, Link.DIRECTION_DOWN, false);
             } while (frame < extensionDeadline);
-            assertFalse(RoomEntityCombatRules.overlapsSword(
+            assertFalse(linksawakening.world.entity.EntityCombatTestAccess.overlapsSword(
                 moldorm, tailX, 0x08, tailY, 0x08));
             int moldormSlot = moldorm.slot();
             Sword liveSword = new Sword(romTables, null);
@@ -2088,7 +2099,7 @@ final class RoomTransitionCoordinatorTest {
         Sword.CollisionBox swordBox = liveSword.enemyCollisionBox(
             link.romEntityX(), link.romSwordCollisionY(), link.direction());
         assertTrue(swordBox.active());
-        assertTrue(RoomEntityCombatRules.overlapsSword(
+        assertTrue(linksawakening.world.entity.EntityCombatTestAccess.overlapsSword(
             crystalSwitch, swordBox.x(), swordBox.width(), swordBox.y(), swordBox.height()),
             "sword=" + swordBox + " crystal=" + crystalSwitch);
         List<EntityCombatEvent> switchHit = session.resolveEntityCombat(
@@ -2510,7 +2521,7 @@ final class RoomTransitionCoordinatorTest {
             }
             Sword.CollisionBox keeseSwordBox = keeseSword.enemyCollisionBox(
                 link.romEntityX(), link.romSwordCollisionY(), link.direction());
-            assertTrue(RoomEntityCombatRules.overlapsSword(
+            assertTrue(linksawakening.world.entity.EntityCombatTestAccess.overlapsSword(
                 keese, keeseSwordBox.x(), keeseSwordBox.width(),
                 keeseSwordBox.y(), keeseSwordBox.height()),
                 "sword=" + keeseSwordBox + " keese=" + keese);
@@ -2675,7 +2686,7 @@ final class RoomTransitionCoordinatorTest {
         Sword.CollisionBox postStoneSwordBox = postStoneSword.enemyCollisionBox(
             link.romEntityX(), link.romSwordCollisionY(), link.direction());
         assertTrue(postStoneSwordBox.active());
-        assertTrue(RoomEntityCombatRules.overlapsSword(
+        assertTrue(linksawakening.world.entity.EntityCombatTestAccess.overlapsSword(
             postStoneCrystalSwitch, postStoneSwordBox.x(), postStoneSwordBox.width(),
             postStoneSwordBox.y(), postStoneSwordBox.height()));
         List<EntityCombatEvent> postStoneSwitchHit = session.resolveEntityCombat(
@@ -2738,7 +2749,7 @@ final class RoomTransitionCoordinatorTest {
         }
         Sword.CollisionBox postStoneLoweringBox = postStoneLoweringSword.enemyCollisionBox(
             link.romEntityX(), link.romSwordCollisionY(), link.direction());
-        assertTrue(RoomEntityCombatRules.overlapsSword(
+        assertTrue(linksawakening.world.entity.EntityCombatTestAccess.overlapsSword(
             room38CrystalSwitch, postStoneLoweringBox.x(), postStoneLoweringBox.width(),
             postStoneLoweringBox.y(), postStoneLoweringBox.height()));
         List<EntityCombatEvent> postStoneLoweringHit = session.resolveEntityCombat(
@@ -3183,7 +3194,7 @@ final class RoomTransitionCoordinatorTest {
         Sword.CollisionBox hinoxSwordBox = hinoxSword.enemyCollisionBox(
             link.romEntityX(), link.romSwordCollisionY(), link.direction());
         assertTrue(hinoxSwordBox.active(), "sword must be live at the Hinox contact");
-        assertTrue(RoomEntityCombatRules.overlapsSword(
+        assertTrue(linksawakening.world.entity.EntityCombatTestAccess.overlapsSword(
             hinox, hinoxSwordBox.x(), hinoxSwordBox.width(),
             hinoxSwordBox.y(), hinoxSwordBox.height()),
             "position=" + java.util.Arrays.toString(firstSwordPosition)
@@ -3230,7 +3241,7 @@ final class RoomTransitionCoordinatorTest {
                     }
                     Sword.CollisionBox box = swordStrike.enemyCollisionBox(
                         link.romEntityX(), link.romSwordCollisionY(), link.direction());
-                    if (box.active() && RoomEntityCombatRules.overlapsSword(
+                    if (box.active() && linksawakening.world.entity.EntityCombatTestAccess.overlapsSword(
                             liveHinox, box.x(), box.width(), box.y(), box.height())) {
                         List<EntityCombatEvent> hit = session.resolveEntityCombat(
                             frame++, link.romEntityX(), link.romEntityY(), false, true, true,
@@ -3499,7 +3510,7 @@ final class RoomTransitionCoordinatorTest {
                     }
                     Sword.CollisionBox box = booSword.enemyCollisionBox(
                         link.romEntityX(), link.romSwordCollisionY(), link.direction());
-                    if (box.active() && RoomEntityCombatRules.overlapsSword(
+                    if (box.active() && linksawakening.world.entity.EntityCombatTestAccess.overlapsSword(
                             boo, box.x(), box.width(), box.y(), box.height())) {
                         List<EntityCombatEvent> hit = session.resolveEntityCombat(
                             frame++, link.romEntityX(), link.romEntityY(), false, true, true,
@@ -5063,7 +5074,7 @@ final class RoomTransitionCoordinatorTest {
                 (x, y) -> {
                     Sword.CollisionBox box = sword.enemyCollisionBox(
                         x + 8, y + 16, swordDirection);
-                    return box.active() && RoomEntityCombatRules.overlapsSword(
+                    return box.active() && linksawakening.world.entity.EntityCombatTestAccess.overlapsSword(
                         entity, box.x(), box.width(), box.y(), box.height());
             });
             if (path != null) {
@@ -5088,7 +5099,7 @@ final class RoomTransitionCoordinatorTest {
                 startX, startY, (x, y) -> {
                     Sword.CollisionBox box = sword.enemyCollisionBox(
                         x + 8, y + 16, swordDirection);
-                    return box.active() && RoomEntityCombatRules.overlapsSword(
+                    return box.active() && linksawakening.world.entity.EntityCombatTestAccess.overlapsSword(
                         entity, box.x(), box.width(), box.y(), box.height());
                 });
             if (path != null) {

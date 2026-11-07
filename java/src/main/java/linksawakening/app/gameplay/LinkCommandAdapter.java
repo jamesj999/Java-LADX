@@ -20,7 +20,7 @@ import linksawakening.world.transition.Warp;
 
 import linksawakening.entity.LinkCommand;
 
-import linksawakening.world.EntityProjectileEvent;
+import linksawakening.world.entity.event.EntityProjectileEvent;
 
 /** The sole translation boundary between world requests and Link commands. */
 final class LinkCommandAdapter {

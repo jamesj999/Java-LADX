@@ -1,5 +1,8 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.RoomEntitySnapshot;
+
 import linksawakening.world.transition.Warp;
 
 import linksawakening.entity.EntitySpriteCatalog;

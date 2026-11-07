@@ -1,12 +1,12 @@
 package linksawakening.world.entity.handler;
 
-import linksawakening.world.RoomEntityBackgroundInteraction;
-import linksawakening.world.EntityTickStage;
-import linksawakening.world.RoomEntityRuntime;
-import linksawakening.world.EntityStatus;
+import linksawakening.world.entity.RoomEntityBackgroundInteraction;
+import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.RoomEntityRuntime;
+import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
-import linksawakening.world.EntityCombatEvent;
-import linksawakening.world.EntityLinkCollisionRules;
+import linksawakening.world.entity.event.EntityCombatEvent;
+import linksawakening.world.entity.EntityLinkCollisionRules;
 
 
 
@@ -17,7 +17,7 @@ import linksawakening.world.EntityLinkCollisionRules;
 import linksawakening.world.entity.motion.UrchinMotion;
 
 import linksawakening.entity.EntitySpriteDefinition;
-import static linksawakening.world.EntitySnapshots.withDefinition;
+import static linksawakening.world.entity.EntitySnapshots.withDefinition;
 
 /** ROM handler stages for Urchin. */
 final class UrchinHandler {

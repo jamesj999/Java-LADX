@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.RoomEntitySnapshot;
+
 import linksawakening.world.transition.Warp;
 
 import java.util.List;

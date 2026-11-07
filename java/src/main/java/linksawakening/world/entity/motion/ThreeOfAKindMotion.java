@@ -1,9 +1,9 @@
 package linksawakening.world.entity.motion;
 
-import linksawakening.world.EntityRoomLoader;
-import linksawakening.world.EntityStatus;
-import linksawakening.world.RoomEntity;
-import linksawakening.world.RoomEntityBackgroundCollision;
+import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntityStatus;
+import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBackgroundCollision;
 
 
 import java.util.List;

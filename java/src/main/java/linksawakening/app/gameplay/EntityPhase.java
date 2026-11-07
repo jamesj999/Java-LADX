@@ -10,8 +10,8 @@ import linksawakening.gameplay.EnemyCombatEventConsumer;
 import linksawakening.gameplay.EnemyProjectileEventConsumer;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.state.PlayerState;
-import linksawakening.world.EntityProjectileEvent;
-import linksawakening.world.RoomEntityRuntime;
+import linksawakening.world.entity.event.EntityProjectileEvent;
+import linksawakening.world.entity.RoomEntityRuntime;
 
 import static linksawakening.world.RoomConstants.*;
 

@@ -1,8 +1,8 @@
 package linksawakening.world.entity.handler;
 
-import linksawakening.world.EntityTickStage;
-import linksawakening.world.RoomEntity;
-import linksawakening.world.EntityStatus;
+import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
 
@@ -14,8 +14,8 @@ import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.motion.ColorShellMotion;
 
 import java.util.Arrays;
-import static linksawakening.world.EntitySnapshots.withStatus;
-import static linksawakening.world.EntityTypeRules.persistentClearMask;
+import static linksawakening.world.entity.EntitySnapshots.withStatus;
+import static linksawakening.world.entity.EntityTypeRules.persistentClearMask;
 
 /** ROM handler stages for ColorShellType. */
 final class ColorShellTypeHandler {

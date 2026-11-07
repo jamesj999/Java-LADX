@@ -67,7 +67,7 @@ import linksawakening.world.transition.TransitionController;
 
 import java.io.IOException;
 import java.io.InputStream;
-import linksawakening.world.RomRandomByteSource;
+import linksawakening.world.entity.RomRandomByteSource;
 
 import static linksawakening.world.RoomConstants.*;
 

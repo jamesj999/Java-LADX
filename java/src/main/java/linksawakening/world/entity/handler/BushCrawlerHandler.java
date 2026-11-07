@@ -1,10 +1,10 @@
 package linksawakening.world.entity.handler;
 
-import linksawakening.world.EntityTickStage;
-import linksawakening.world.RoomEntityRuntime;
-import linksawakening.world.EntityStatus;
+import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.RoomEntityRuntime;
+import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
-import linksawakening.world.RoomEntityCombatRules;
+import linksawakening.world.entity.RoomEntityCombatRules;
 
 
 
@@ -14,7 +14,7 @@ import linksawakening.world.RoomEntityCombatRules;
 
 import linksawakening.world.entity.motion.BushCrawlerMotion;
 
-import static linksawakening.world.EntitySnapshots.withDefinition;
+import static linksawakening.world.entity.EntitySnapshots.withDefinition;
 
 /** ROM handler stages for BushCrawler. */
 final class BushCrawlerHandler {

@@ -1,12 +1,12 @@
 package linksawakening.world.entity.handler;
 
-import linksawakening.world.EntityTickStage;
-import linksawakening.world.EntityRoomLoader;
-import linksawakening.world.RoomEntityRuntime;
-import linksawakening.world.EntityStatus;
+import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.RoomEntityRuntime;
+import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
-import linksawakening.world.EntityCombatEvent;
-import linksawakening.world.FollowingNpcState;
+import linksawakening.world.entity.event.EntityCombatEvent;
+import linksawakening.world.entity.FollowingNpcState;
 
 
 
@@ -15,9 +15,9 @@ import linksawakening.world.FollowingNpcState;
 
 
 import linksawakening.world.entity.event.DialogRequest;
-import static linksawakening.world.EntityMotionMath.withinUnsignedWindow;
-import static linksawakening.world.EntitySnapshots.withDefinition;
-import static linksawakening.world.EntitySnapshots.withVariant;
+import static linksawakening.world.entity.EntityMotionMath.withinUnsignedWindow;
+import static linksawakening.world.entity.EntitySnapshots.withDefinition;
+import static linksawakening.world.entity.EntitySnapshots.withVariant;
 
 /** ROM handler stages for BowWow. */
 final class BowWowHandler {

@@ -7,7 +7,7 @@ import linksawakening.input.InputState;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
 import linksawakening.state.PlayerState;
-import linksawakening.world.EntityProjectileEvent;
+import linksawakening.world.entity.event.EntityProjectileEvent;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;

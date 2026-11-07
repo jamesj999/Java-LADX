@@ -1,5 +1,10 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.BowWowChain;
+
+import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.EntityStatus;
+
 import linksawakening.entity.EntitySpriteDefinition;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
