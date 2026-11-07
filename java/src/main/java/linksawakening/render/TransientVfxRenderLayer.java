@@ -33,8 +33,7 @@ public final class TransientVfxRenderLayer implements HardwareRenderLayer {
         this.frameCounter = frameCounter & 0xFF;
     }
 
-    @Override
-    public void render(RenderContext context) {
+    private void submitEffects(RenderContext context) {
         if (scrollController.isActive()) {
             return;
         }
@@ -70,6 +69,6 @@ public final class TransientVfxRenderLayer implements HardwareRenderLayer {
         }
     }
     @Override public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
-        render(new RenderContext(new byte[0], gpu, frame));
+        submitEffects(new RenderContext(new byte[0], gpu, frame));
     }
 }

@@ -13,15 +13,7 @@ public final class CutsceneSpriteRenderLayer implements HardwareRenderLayer {
         this.palettes = palettes;
     }
 
-    @Override
-    public void render(RenderContext context) {
-        java.util.List<SpriteListRenderLayer.Sprite> entries = new java.util.ArrayList<>();
-        for (IntroSprite sprite : sprites) {
-            entries.add(new SpriteListRenderLayer.Sprite(sprite.tileIndex(), sprite.x(), sprite.y(),
-                sprite.paletteIndex(), sprite.flipX(), sprite.flipY(), sprite.height()));
-        }
-        new SpriteListRenderLayer(entries, palettes).render(context);
-    }
+
     @Override public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
 
         java.util.List<SpriteListRenderLayer.Sprite> entries = new java.util.ArrayList<>();

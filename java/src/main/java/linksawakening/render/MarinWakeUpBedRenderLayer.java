@@ -28,25 +28,7 @@ public final class MarinWakeUpBedRenderLayer implements HardwareRenderLayer {
         this.scrollController = scrollController;
     }
 
-    @Override
-    public void render(RenderContext context) {
-        if (!link.isMarinWakeUpBedVisible()) {
-            return;
-        }
-        int variant = link.marinWakeUpBedVariant();
-        int originX = 0x38 - 0x08 - scrollController.screenShakeHorizontal();
-        int originY = 0x34 - 0x10;
-        boolean flipX = variant == 1;
-        int[] pair = PAIR_TILES[variant];
-        int palette = variant < 2 ? 7 : 0;
-        // List order is OAM priority order; preserve the former painter order.
-        new SpriteListRenderLayer(java.util.List.of(
-            new SpriteListRenderLayer.Sprite(pair[0], originX, originY, palette, flipX, false, 16),
-            new SpriteListRenderLayer.Sprite(pair[1], originX + 8, originY, palette, flipX, false, 16),
-            new SpriteListRenderLayer.Sprite(0x4E, originX, originY, 6, false, false, 16),
-            new SpriteListRenderLayer.Sprite(0x4E, originX + 8, originY, 6, true, false, 16)
-        ), palettes, tiles).render(context);
-    }
+
     @Override public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
 
         if (!link.isMarinWakeUpBedVisible()) {

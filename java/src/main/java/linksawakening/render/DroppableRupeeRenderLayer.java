@@ -13,13 +13,7 @@ public final class DroppableRupeeRenderLayer implements HardwareRenderLayer {
         this.scrollController = scrollController;
     }
 
-    @Override
-    public void render(RenderContext context) {
-        if (!scrollController.isActive()) {
-            droppableRupeeSystem.render(context.buffer(), context.gpu(),
-                -scrollController.screenShakeHorizontal());
-        }
-    }
+
     @Override public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
         if (scrollController.isActive()) return;
         int tile = droppableRupeeSystem.spriteTileIndex();

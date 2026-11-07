@@ -40,26 +40,5 @@ public final class SpriteListRenderLayer implements HardwareRenderLayer {
         }
     }
 
-    @Override
-    public void render(RenderContext context) {
-        // Earlier OAM entries win when object pixels overlap.
-        java.util.List<Sprite> ordered = new java.util.ArrayList<>();
-        sprites.forEach(ordered::add);
-        for (int index = ordered.size() - 1; index >= 0; index--) {
-            Sprite sprite = ordered.get(index);
-            int paletteIndex = Math.min(sprite.paletteIndex(), palettes.length - 1);
-            if (sprite.height() == 16) {
-                if (tiles != null) {
-                    IndexedRenderer.drawSpriteTile8x16(context.buffer(), tiles, sprite.tileIndex(),
-                        sprite.x(), sprite.y(), sprite.flipX(), sprite.flipY(), palettes[paletteIndex]);
-                    continue;
-                }
-                IndexedRenderer.drawSpriteTile8x16(context.buffer(), context.gpu(), sprite.tileIndex(),
-                    sprite.x(), sprite.y(), sprite.flipX(), sprite.flipY(), palettes[paletteIndex]);
-            } else {
-                IndexedRenderer.drawSpriteTile(context.buffer(), context.gpu().getTile(sprite.tileIndex()),
-                    sprite.x(), sprite.y(), sprite.flipX(), sprite.flipY(), palettes[paletteIndex]);
-            }
-        }
-    }
+
 }

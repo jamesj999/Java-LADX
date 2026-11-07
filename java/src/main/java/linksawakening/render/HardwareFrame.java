@@ -242,7 +242,11 @@ public final class HardwareFrame implements RenderLayer, OamSink {
         compose(context.buffer());
     }
 
-    public void compose(byte[] buffer) {
+    public void compose(byte[] buffer) { compose(buffer, false); }
+
+    void composeOverlay(byte[] buffer) { compose(buffer, true); }
+
+    private void compose(byte[] buffer, boolean overlay) {
         Arrays.fill(objectOrder, Integer.MAX_VALUE);
         Arrays.fill(objSources, null);
         for (ObjectTile entry : oam) {
@@ -255,7 +259,9 @@ public final class HardwareFrame implements RenderLayer, OamSink {
                 objectBehind[pixel] = entry.behind();
             });
         }
-        for (int pixel = 0; pixel < backgroundIndex.length; pixel++) {
+        int pixels = overlay ? Math.min(backgroundIndex.length, buffer.length / 4) : backgroundIndex.length;
+        for (int pixel = 0; pixel < pixels; pixel++) {
+            if (overlay && backgroundPalettes[pixel] == null && objectOrder[pixel] == Integer.MAX_VALUE) continue;
             boolean hidden = backgroundPriorityEnabled && backgroundIndex[pixel] != 0
                 && (backgroundPriority[pixel] || objectBehind[pixel]);
             int rgb = objectOrder[pixel] != Integer.MAX_VALUE && !hidden

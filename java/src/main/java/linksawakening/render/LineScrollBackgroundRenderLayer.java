@@ -12,10 +12,7 @@ final class LineScrollBackgroundRenderLayer implements HardwareRenderLayer {
         this.tiles = tiles; this.attributes = attributes; this.palettes = palettes;
         this.lineX = lineX; this.scrollY = scrollY; this.lineY = lineY;
     }
-    @Override public void render(RenderContext context) {
-        IndexedRenderer.renderBackgroundLineScroll(context.buffer(), context.gpu(), tiles, attributes,
-            palettes, 32, 32, 20, 18, lineX, scrollY, lineY);
-    }
+
     @Override public void submit(HardwareFrame frame, GPU gpu) {
         HardwareBackgroundRenderer.renderBackgroundLineScroll(frame, gpu, tiles, attributes,
             palettes, 32, 32, 20, 18, lineX, scrollY, lineY);

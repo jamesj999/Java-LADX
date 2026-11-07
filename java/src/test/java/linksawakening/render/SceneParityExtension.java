@@ -33,22 +33,14 @@ public final class SceneParityExtension implements BeforeEachCallback, AfterEach
                 rows.add(id + "\tBLOCKED\t" + String.join(",", blocked));
                 return;
             }
-            byte[] legacy = rgba;
-            byte[] hardware = new byte[rgba.length];
-            if (pipeline == RenderPipeline.HARDWARE) {
-                hardware = rgba;
-                legacy = new byte[rgba.length];
-                var observer = FrameScene.DRAW_OBSERVER.get();
-                FrameScene.DRAW_OBSERVER.remove();
-                try { scene.drawTo(legacy, gpu, RenderPipeline.LEGACY_RGBA); }
-                finally { FrameScene.DRAW_OBSERVER.set(observer); }
-            }
+            byte[] legacy = new byte[rgba.length];
+            byte[] hardware = rgba;
+            LegacySceneReference.render(scene, legacy, gpu);
             HardwareFrame model = scene.hardwareFrame(gpu);
             byte[] rebuilt = new byte[rgba.length];
             model.compose(rebuilt);
-            if (pipeline == RenderPipeline.HARDWARE && !Arrays.equals(hardware, rebuilt))
-                throw new AssertionError("Legacy reference rendering mutated hardware output: " + context.getDisplayName());
-            if (pipeline != RenderPipeline.HARDWARE) hardware = rebuilt;
+            if (!Arrays.equals(hardware, rebuilt))
+                throw new AssertionError("Compatibility reference mutated hardware output: " + context.getDisplayName());
             int expectedPixels = 0, mismatchPixels = 0;
             var sceneGroups = new java.util.HashSet<String>();
             var sceneExpectedSources = new java.util.HashSet<String>();

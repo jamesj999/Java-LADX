@@ -69,7 +69,7 @@ final class InstrumentWarpRenderLayerTest {
             FrameScene scene = FrameScene.of(layers);
             byte[] legacy = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
             byte[] indexed = legacy.clone();
-            scene.drawTo(legacy,gpu,RenderPipeline.LEGACY_RGBA);
+            LegacySceneReference.render(scene, legacy, gpu);
             scene.drawTo(indexed,gpu,RenderPipeline.HARDWARE);
             org.junit.jupiter.api.Assertions.assertArrayEquals(legacy,indexed);
         }

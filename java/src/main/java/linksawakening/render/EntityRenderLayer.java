@@ -70,8 +70,7 @@ public final class EntityRenderLayer implements HardwareRenderLayer {
         this.dialogPosition = dialogPosition;
     }
 
-    @Override
-    public void render(RenderContext context) {
+    private void submitEntities(RenderContext context) {
         if (context == null || context.buffer() == null || context.gpu() == null) {
             throw new IllegalArgumentException("Entity render context cannot be null");
         }
@@ -88,7 +87,7 @@ public final class EntityRenderLayer implements HardwareRenderLayer {
     }
 
     @Override public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
-        render(new RenderContext(new byte[0], gpu, frame));
+        submitEntities(new RenderContext(new byte[0], gpu, frame));
     }
 
     private void renderSnapshot(RenderContext context, RoomEntitySnapshot entities,

@@ -1,4 +1,8 @@
 package linksawakening.render;
 
-/** Hardware is the default for production layers; RGBA remains temporarily for parity and callback compatibility. */
-public enum RenderPipeline { LEGACY_RGBA, HARDWARE }
+/** Indexed production composition. */
+public enum RenderPipeline {
+    HARDWARE,
+    /** @deprecated Source-compatible alias for the default pipeline; no RGBA production backend remains. */
+    @Deprecated LEGACY_RGBA
+}

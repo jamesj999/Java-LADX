@@ -21,11 +21,23 @@ top boxes, at least $58 for bottom boxes. Fully open inventory bypasses this
 filter. Entity-layer hiding is retained and the compositor applies the same
 filter to submitted nonreserved sources. No BG priority bit is invented.
 
-Legacy RGBA remains default during migration. Strict parity fails on unexplained
-pixels; `-PsceneParityProbe=true` records all mismatch groups. Reports live in
+Hardware is the production default and FrameScene composes RGBA once. The
+selectable legacy backend and duplicated layer rasterizers have been removed.
+Direct `render(RenderContext)` calls and custom RGBA callbacks retain narrow
+source-compatible adapters; production indexed scenes never use them.
+`RenderPipeline.LEGACY_RGBA` is a deprecated alias, not a second backend.
+The test-only reference preserves old RGBA layer composition through those
+compatibility APIs; independent emulator fixtures still verify raster output.
+Strict parity fails on unexplained pixels; `-PsceneParityProbe=true` records all mismatch groups. Reports live in
 java/build/scene-parity. Expected-fix source reports distinguish HUD and dialog.
 Sliding inventory uses HideSprites ($01:5F51-$5F67): raw entry Y >= WY+8
 hides both halves. Above-window differences are classified only with a traced
 removed OBJ, exact legacy OBJ RGB, and exact revealed hardware BG RGB. Inventory
 pixels retaining OBJ follow the same CGB priority rule as the closed HUD.
-Default switching, route capture and legacy deletion remain gated. Generated screenshots/ROM data are local only.
+The default switch and removal gate passed both suites and the 613-checkpoint
+tail-cave-warp capture (route SHA256
+79c179a1bce0e23d63c84238a6da404b9ddc8f2786b8751550873dcfffb4bf80).
+Closed inventory uses the same submission preparation as open inventory, including
+the mushroom/powder VRAM uploads from InventoryMenu.render. A direct hardware-only
+test checks these uploads with reference rendering disabled, preventing the oracle
+from accidentally supplying rendering-cache side effects. Generated screenshots/ROM data are local only.

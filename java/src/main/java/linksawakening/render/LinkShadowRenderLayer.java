@@ -18,14 +18,7 @@ public final class LinkShadowRenderLayer implements HardwareRenderLayer {
         this.frame = frame;
     }
 
-    @Override
-    public void render(RenderContext context) {
-        if (link.romEntityZ() == 0 || (this.frame & 1) != 0 || scroll.isActive()
-            || link.romEntityY() + 0x0B >= 0x88) return;
-        new SpriteListRenderLayer(java.util.List.of(new SpriteListRenderLayer.Sprite(0x26,
-            link.pixelX() + 4 - scroll.screenShakeHorizontal(), link.pixelY() + 0x0B,
-            0, false, false, 16)), new int[][] { palette }).render(context);
-    }
+
     @Override public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
 
         if (link.romEntityZ() == 0 || (this.frame & 1) != 0 || scroll.isActive()
