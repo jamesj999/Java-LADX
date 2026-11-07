@@ -20,6 +20,7 @@ import java.util.function.IntUnaryOperator;
  * class only advances handler-owned status and sprite-variant fields.
  */
 public final class RoomEntityRuntime {
+    private final EntityHandlerRegistry entityHandlers = createEntityHandlers();
     private final EntityOutbox outbox = new EntityOutbox();
     private static final int ENTITY_PUSHED_BLOCK = 0x06;
     private static final int[] INSTRUMENT_MUSIC_TRACKS = {
@@ -726,6 +727,54 @@ public final class RoomEntityRuntime {
     private final int[] musicalNoteSpeedY = new int[EntityRoomLoader.MAX_ENTITIES];
     private int boomerangSfxCounter;
     private boolean boomerangSoundClockProvided;
+
+    private EntityHandlerRegistry createEntityHandlers() {
+        EntityHandlerRegistry registry = new EntityHandlerRegistry();
+        registry.register(ENTITY_KEESE, (entity, random) -> keeseMotion.initialize(entity.slot(), random));
+        registry.register(ENTITY_IRON_MASK, (entity, random) -> roamingEnemyMotion.initialize(entity.slot()));
+        registry.register(ENTITY_TEKTITE, (entity, random) -> tektiteMotion.initialize(entity.slot(), random));
+        registry.register(ENTITY_LEEVER, (entity, random) -> leeverMotion.initialize(entity.slot()));
+        registry.register(ENTITY_ANTI_FAIRY, (entity, random) -> antiFairyMotion.initialize(entity.slot(), random));
+        registry.register(ENTITY_HIDING_ZOL, (entity, random) -> hidingZolMotion.initialize(entity.slot()));
+        registry.register(ENTITY_STAR, (entity, random) -> starMotion.initialize(entity.slot(), random));
+        registry.register(ENTITY_BLOOPER, (entity, random) -> blooperMotion.initialize(entity.slot()));
+        registry.register(ENTITY_PINCER, (entity, random) -> pincerMotion.initialize(entity.slot()));
+        registry.register(ENTITY_WINGED_OCTOROK, (entity, random) -> wingedOctorokMotion.initialize(entity.slot()));
+        registry.register(ENTITY_SPIKE_TRAP, (entity, random) -> spikeTrapMotion.initialize(entity.slot(), random));
+        registry.register(ENTITY_PAIRODD, (entity, random) -> pairoddMotion.initialize(entity.slot(), random));
+        registry.register(ENTITY_PAIRODD_PROJECTILE, (entity, random) -> pairoddProjectileMotion.initialize(entity.slot(), random));
+        registry.register(ENTITY_WATER_TEKTITE, (entity, random) -> waterTektiteMotion.initialize(entity.slot()));
+        registry.register(ENTITY_FISH, (entity, random) -> fishMotion.initialize(entity.slot()));
+        registry.register(ENTITY_CROW, (entity, random) -> crowMotion.initialize(entity.slot()));
+        registry.register(ENTITY_CUCCO, (entity, random) -> cuccoMotion.initialize(entity.slot()));
+        registry.register(ENTITY_POKEY, (entity, random) -> pokeyMotion.initialize(entity.slot()));
+        registry.register(ENTITY_PIRANHA_PLANT, (entity, random) -> piranhaMotion.initialize(entity.slot()));
+        registry.register(ENTITY_ZORA, (entity, random) -> zoraMotion.initialize(entity.slot()));
+        registry.register(ENTITY_ZOMBIE, (entity, random) -> zombieMotion.initialize(entity.slot()));
+        registry.register(ENTITY_BUZZ_BLOB, (entity, random) -> buzzBlobMotion.initialize(entity.slot()));
+        registry.register(ENTITY_SAND_CRAB, (entity, random) -> sandCrabMotion.initialize(entity.slot()));
+        registry.register(ENTITY_DOG, (entity, random) -> dogMotion.initialize(entity.slot()));
+        registry.register(ENTITY_URCHIN, (entity, random) -> urchinMotion.initialize(entity.slot()));
+        registry.register(ENTITY_WITCH_RAT, (entity, random) -> witchRatMotion.initialize(entity.slot()));
+        registry.register(ENTITY_BOO_BUDDY, (entity, random) -> booBuddyMotion.initialize(entity.slot()));
+        registry.register(ENTITY_DROPPABLE_FAIRY, (entity, random) -> fairyMotion.initialize(entity.slot()));
+        registry.register(ENTITY_STALFOS_AGGRESSIVE, (entity, random) -> stalfosAggressiveMotion.initialize(entity.slot(), random));
+        registry.register(ENTITY_STALFOS_EVASIVE, (entity, random) -> stalfosEvasiveMotion.initialize(entity.slot()));
+        registry.register(ENTITY_GIBDO, (entity, random) -> gibdoMotion.initialize(entity.slot()));
+        registry.register(ENTITY_LIKE_LIKE, (entity, random) -> likeLikeMotion.initialize(entity.slot()));
+        registry.register(ENTITY_POLS_VOICE, (entity, random) -> polsVoiceMotion.initialize(entity.slot()));
+        registry.register(ENTITY_GOOMBA, (entity, random) -> goombaMotion.initialize(entity.slot()));
+        registry.register(ENTITY_SNAKE, (entity, random) -> snakeMotion.initialize(entity.slot()));
+        registry.register(ENTITY_PEAHAT, (entity, random) -> peaHatMotion.initialize(entity.slot()));
+        registry.register(ENTITY_ARMOS_STATUE, (entity, random) -> armosMotion.initialize(entity.slot()));
+        registry.register(ENTITY_ARMOS_KNIGHT, (entity, random) -> armosKnightMotion.initialize(entity.slot()));
+        registry.register(ENTITY_HINOX, (entity, random) -> hinoxMotion.initialize(entity.slot()));
+        registry.register(ENTITY_HARDHAT_BEETLE, (entity, random) -> hardHatMotion.initialize(entity.slot()));
+        registry.register(ENTITY_SPIKED_BEETLE, (entity, random) -> spikedBeetleMotion.initialize(entity.slot()));
+        registry.register(ENTITY_BOMBER, (entity, random) -> bomberMotion.initialize(entity.slot()));
+        registry.register(ENTITY_MAD_BOMBER, (entity, random) -> madBomberMotion.initialize(entity.slot()));
+        return registry;
+    }
 
     /** The ROM-facing state needed by Link's carry animation and throw input. */
     public record LiftedEntityState(int slot, int type, int phase,
@@ -2644,129 +2693,60 @@ public final class RoomEntityRuntime {
                 }
                 status = EntityStatus.ACTIVE;
                 initializeEntityTimers(entity);
-                if (entity.type() == ENTITY_KEESE) {
-                    keeseMotion.initialize(entity.slot(), randomByteSupplier);
-                }
+                entityHandlers.initialize(entity, randomByteSupplier);
+
                 if (entity.type() == ENTITY_OCTOROK || entity.type() == ENTITY_MOBLIN) {
                     roamingEnemyMotion.initialize(entity.slot());
                 }
-                if (entity.type() == ENTITY_IRON_MASK) {
-                    roamingEnemyMotion.initialize(entity.slot());
-                }
+
                 if (entity.type() == ENTITY_MOBLIN_SWORD) {
                     moblinSwordMotion.initialize(entity.slot(), entity.x());
                 }
-                if (entity.type() == ENTITY_TEKTITE) {
-                    tektiteMotion.initialize(entity.slot(), randomByteSupplier);
-                }
-                if (entity.type() == ENTITY_LEEVER) {
-                    leeverMotion.initialize(entity.slot());
-                }
-                if (entity.type() == ENTITY_ANTI_FAIRY) {
-                    antiFairyMotion.initialize(entity.slot(), randomByteSupplier);
-                }
+
+
+
                 if (isSparkType(entity.type())) {
                     sparkMotion.initialize(entity.slot(), entity.type());
                 }
                 if (isZolGelType(entity.type())) {
                     zolGelMotion.initialize(entity.slot(), entity.type(), randomByteSupplier);
                 }
-                if (entity.type() == ENTITY_HIDING_ZOL) {
-                    hidingZolMotion.initialize(entity.slot());
-                }
-                if (entity.type() == ENTITY_STAR) {
-                    starMotion.initialize(entity.slot(), randomByteSupplier);
-                }
-                if (entity.type() == ENTITY_BLOOPER) {
-                    blooperMotion.initialize(entity.slot());
-                }
-                if (entity.type() == ENTITY_PINCER) {
-                    pincerMotion.initialize(entity.slot());
-                }
+
+
+
+
                 if (entity.type() == ENTITY_MINI_MOLDORM) {
                     miniMoldormMotion.initialize(entity);
                 }
                 if (entity.type() == ENTITY_MOLDORM) {
                     moldormMotion.initialize(entity);
                 }
-                if (entity.type() == ENTITY_WINGED_OCTOROK) {
-                    wingedOctorokMotion.initialize(entity.slot());
-                }
-                if (entity.type() == ENTITY_SPIKE_TRAP) {
-                    spikeTrapMotion.initialize(entity.slot(), randomByteSupplier);
-                }
-                if (entity.type() == ENTITY_PAIRODD) {
-                    pairoddMotion.initialize(entity.slot(), randomByteSupplier);
-                }
-                if (entity.type() == ENTITY_PAIRODD_PROJECTILE) {
-                    pairoddProjectileMotion.initialize(entity.slot(), randomByteSupplier);
-                }
-                if (entity.type() == ENTITY_WATER_TEKTITE) {
-                    waterTektiteMotion.initialize(entity.slot());
-                }
-                if (entity.type() == ENTITY_FISH) {
-                    fishMotion.initialize(entity.slot());
-                }
-                if (entity.type() == ENTITY_CROW) {
-                    crowMotion.initialize(entity.slot());
-                }
-                if (entity.type() == ENTITY_CUCCO) {
-                    cuccoMotion.initialize(entity.slot());
-                }
-                if (entity.type() == ENTITY_POKEY) {
-                    pokeyMotion.initialize(entity.slot());
-                }
-                if (entity.type() == ENTITY_PIRANHA_PLANT) {
-                    piranhaMotion.initialize(entity.slot());
-                }
-                if (entity.type() == ENTITY_ZORA) {
-                    zoraMotion.initialize(entity.slot());
-                }
-                if (entity.type() == ENTITY_ZOMBIE) {
-                    zombieMotion.initialize(entity.slot());
-                }
-                if (entity.type() == ENTITY_BUZZ_BLOB) {
-                    buzzBlobMotion.initialize(entity.slot());
-                }
-                if (entity.type() == ENTITY_SAND_CRAB) {
-                    sandCrabMotion.initialize(entity.slot());
-                }
-                if (entity.type() == ENTITY_DOG) {
-                    dogMotion.initialize(entity.slot());
-                }
-                if (entity.type() == ENTITY_URCHIN) {
-                    urchinMotion.initialize(entity.slot());
-                }
-                if (entity.type() == ENTITY_WITCH_RAT) {
-                    witchRatMotion.initialize(entity.slot());
-                }
-                if (entity.type() == ENTITY_BOO_BUDDY) {
-                    booBuddyMotion.initialize(entity.slot());
-                }
-                if (entity.type() == ENTITY_DROPPABLE_FAIRY) {
-                    fairyMotion.initialize(entity.slot());
-                }
-                if (entity.type() == ENTITY_STALFOS_AGGRESSIVE) {
-                    stalfosAggressiveMotion.initialize(entity.slot(), randomByteSupplier);
-                }
-                if (entity.type() == ENTITY_STALFOS_EVASIVE) {
-                    stalfosEvasiveMotion.initialize(entity.slot());
-                }
-                if (entity.type() == ENTITY_GIBDO) {
-                    gibdoMotion.initialize(entity.slot());
-                }
-                if (entity.type() == ENTITY_LIKE_LIKE) {
-                    likeLikeMotion.initialize(entity.slot());
-                }
-                if (entity.type() == ENTITY_POLS_VOICE) {
-                    polsVoiceMotion.initialize(entity.slot());
-                }
-                if (entity.type() == ENTITY_GOOMBA) {
-                    goombaMotion.initialize(entity.slot());
-                }
-                if (entity.type() == ENTITY_SNAKE) {
-                    snakeMotion.initialize(entity.slot());
-                }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                 if (entity.type() == ENTITY_WIZROBE) {
                     wizrobeMotion.initializeFromRoom(entity.slot(), entity.spriteVariant());
                     enemyTransitionCountdown[entity.slot()] = 0x80;
@@ -2776,36 +2756,20 @@ public final class RoomEntityRuntime {
                     wizrobeProjectileMotion.initialize(entity.slot(), randomByteSupplier);
                     preserveWizrobeProjectilePresentation = true;
                 }
-                if (entity.type() == ENTITY_PEAHAT) {
-                    peaHatMotion.initialize(entity.slot());
-                }
-                if (entity.type() == ENTITY_ARMOS_STATUE) {
-                    armosMotion.initialize(entity.slot());
-                }
-                if (entity.type() == ENTITY_ARMOS_KNIGHT) {
-                    armosKnightMotion.initialize(entity.slot());
-                }
-                if (entity.type() == ENTITY_HINOX) {
-                    hinoxMotion.initialize(entity.slot());
-                }
+
+
+
+
                 if (isGhiniType(entity.type())) {
                     ghiniMotion.initialize(entity.slot(), entity.type());
                     if (isHidingGhiniType(entity.type())) {
                         preserveGhiniPresentation = true;
                     }
                 }
-                if (entity.type() == ENTITY_HARDHAT_BEETLE) {
-                    hardHatMotion.initialize(entity.slot());
-                }
-                if (entity.type() == ENTITY_SPIKED_BEETLE) {
-                    spikedBeetleMotion.initialize(entity.slot());
-                }
-                if (entity.type() == ENTITY_BOMBER) {
-                    bomberMotion.initialize(entity.slot());
-                }
-                if (entity.type() == ENTITY_MAD_BOMBER) {
-                    madBomberMotion.initialize(entity.slot());
-                }
+
+
+
+
                 if (isBombiteType(entity.type())) {
                     bombiteMotion.initialize(entity.slot());
                     slowTimerInitialized[entity.slot()] = true;
