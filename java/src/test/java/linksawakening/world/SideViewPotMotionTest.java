@@ -82,6 +82,6 @@ final class SideViewPotMotionTest {
 
     private static RoomEntity entity(int x, int y) {
         return new RoomEntity(0, 0, 0xD6, x, y, EntityStatus.ACTIVE,
-            EntitySpriteDefinition.unsupported(0xD6), -1);
+            EntitySpriteDefinition.unsupported(0xD6), -1, 0, 0, 0, -1, false);
     }
 }

@@ -41,7 +41,7 @@ final class MiniMoldormMotionTest {
         motion.advanceAfterHistory(entity, 0, 0, 0, null, () -> 0, 0);
 
         RoomEntity moved = new RoomEntity(0, 7, 0x29, 0x50, 0x60,
-            EntityStatus.ACTIVE, entity.spriteDefinition(), 0);
+            EntityStatus.ACTIVE, entity.spriteDefinition(), 0, 0, 0, 0, -1, false);
         motion.beginFrame(moved, true);
         assertEquals(2, motion.inertia(moved.slot()));
         assertEquals(0, motion.historyX(moved.sourceLoadOrder(), 0));
@@ -75,7 +75,7 @@ final class MiniMoldormMotionTest {
         };
 
         RoomEntity moved = new RoomEntity(0, 0, 0x29, 0x50, 0x60,
-            EntityStatus.ACTIVE, entity.spriteDefinition(), 0);
+            EntityStatus.ACTIVE, entity.spriteDefinition(), 0, 0, 0, 0, -1, false);
         motion.beginFrame(moved, false);
         MiniMoldormMotion.Update update = motion.advanceAfterHistory(
             moved, 0x0F, 0, 0, blockedRight, () -> 0, 1);
@@ -96,6 +96,6 @@ final class MiniMoldormMotionTest {
                         new EntitySpriteDefinition.OamAttribute(0x70, 0),
                         EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS,
                         true)))),
-            variant);
+            variant, 0, 0, 0, -1, false);
     }
 }

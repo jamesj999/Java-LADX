@@ -41,7 +41,7 @@ final class SideViewPlatformRuntimeTest {
     @Test
     void carryingEntityActivatesPlatformOutsideRoom3B() {
         RoomEntityRuntime runtime = runtime(0x20, platform(), new RoomEntity(1, 1, 0x05, 0x60,
-            0x50, EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(0x05), 0));
+            0x50, EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(0x05), 0, 0, 0, 0, -1, false));
         runtime.beginLift(1, 0);
         // Carry state is established by the existing lifted-entity tick path.
         tick(runtime, 0, 0x48, 0x40, 0x00, 0x00);
@@ -276,6 +276,6 @@ final class SideViewPlatformRuntimeTest {
     private static RoomEntity platform(EntityStatus status) {
         return new RoomEntity(0, 0, SideViewPlatformMotion.ENTITY_TYPE, 0x40, 0x50,
             status, EntitySpriteDefinition.unsupported(
-                SideViewPlatformMotion.ENTITY_TYPE), 0);
+                SideViewPlatformMotion.ENTITY_TYPE), 0, 0, 0, 0, -1, false);
     }
 }

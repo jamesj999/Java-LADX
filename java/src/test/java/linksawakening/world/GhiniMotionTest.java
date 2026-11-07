@@ -190,7 +190,7 @@ final class GhiniMotionTest {
     private static RoomEntity entity(int slot, int type, int x, int y, int z,
                                      EntitySpriteDefinition definition, int flipAttribute) {
         return new RoomEntity(slot, slot, type, x, y, EntityStatus.ACTIVE,
-            definition, definition.initialVariant(), flipAttribute, 0, z);
+            definition, definition.initialVariant(), flipAttribute, 0, z, -1, false);
     }
 
     private static EntitySpriteDefinition pairDefinition(int type) {

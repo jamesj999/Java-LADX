@@ -23,7 +23,7 @@ final class MoldormRuntimeTest {
         byte[] rom = loadRom();
         var catalog = new EntitySpriteHandlerCatalog(rom);
         var boss = new RoomEntity(0, 0, ENTITY_MOLDORM, 64, 64, EntityStatus.ACTIVE,
-            catalog.forEntityType(ENTITY_MOLDORM, EntityRoomLoader.RoomTable.INDOORS_A), 0);
+            catalog.forEntityType(ENTITY_MOLDORM, EntityRoomLoader.RoomTable.INDOORS_A), 0, 0, 0, 0, -1, false);
         var runtime = RoomEntityRuntime.from(snapshot(boss), true,
             () -> 0, catalog, new RomEnemyCombatTables(rom), new ChestContentsTable(rom),
             linksawakening.rom.RomTables.loadFromRom(rom), rom);
@@ -215,7 +215,7 @@ final class MoldormRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
             0, 0, ENTITY_MOLDORM, 0x40, 0x40, EntityStatus.ACTIVE,
-            catalog.forEntityType(ENTITY_MOLDORM, EntityRoomLoader.RoomTable.INDOORS_A), 0)),
+            catalog.forEntityType(ENTITY_MOLDORM, EntityRoomLoader.RoomTable.INDOORS_A), 0, 0, 0, 0, -1, false)),
             true, () -> 0, catalog, new RomEnemyCombatTables(rom));
 
         assertTrue(RoomEntityCombatRules.supportsEnemyCollision(ENTITY_MOLDORM));
@@ -233,7 +233,7 @@ final class MoldormRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
             0, 0, ENTITY_MOLDORM, 0x40, 0x40, EntityStatus.ACTIVE,
-            catalog.forEntityType(ENTITY_MOLDORM, EntityRoomLoader.RoomTable.INDOORS_A), 0)),
+            catalog.forEntityType(ENTITY_MOLDORM, EntityRoomLoader.RoomTable.INDOORS_A), 0, 0, 0, 0, -1, false)),
             true, () -> 0, catalog, new RomEnemyCombatTables(rom));
 
         runtime.tickWithProjectileEvents(0, 0x20, 0x20, () -> 0, null,
@@ -266,7 +266,7 @@ final class MoldormRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
             0, 0, ENTITY_MOLDORM, 0x40, 0x40, EntityStatus.ACTIVE,
-            catalog.forEntityType(ENTITY_MOLDORM, EntityRoomLoader.RoomTable.INDOORS_A), 0)),
+            catalog.forEntityType(ENTITY_MOLDORM, EntityRoomLoader.RoomTable.INDOORS_A), 0, 0, 0, 0, -1, false)),
             true, () -> 0, catalog, new RomEnemyCombatTables(rom));
         runtime.tickWithProjectileEvents(0, 0x20, 0x20, () -> 0, null,
             new EnemyProjectileCollision.LinkState(0x20, 0x20, 0, 0, 0, false));
@@ -308,7 +308,7 @@ final class MoldormRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
             0, 0, ENTITY_MOLDORM, 0x05, 0x90, EntityStatus.ACTIVE,
-            catalog.forEntityType(ENTITY_MOLDORM, EntityRoomLoader.RoomTable.INDOORS_A), 0)),
+            catalog.forEntityType(ENTITY_MOLDORM, EntityRoomLoader.RoomTable.INDOORS_A), 0, 0, 0, 0, -1, false)),
             true, () -> 0, catalog, new RomEnemyCombatTables(rom));
         runtime.tickWithProjectileEvents(0, 0x20, 0x20, () -> 0, null,
             new EnemyProjectileCollision.LinkState(0x20, 0x20, 0, 0, 0, false));
@@ -400,7 +400,7 @@ final class MoldormRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
             0, 0, ENTITY_MOLDORM, 0x40, 0x40, EntityStatus.ACTIVE,
-            catalog.forEntityType(ENTITY_MOLDORM, EntityRoomLoader.RoomTable.INDOORS_A), 0)),
+            catalog.forEntityType(ENTITY_MOLDORM, EntityRoomLoader.RoomTable.INDOORS_A), 0, 0, 0, 0, -1, false)),
             true, () -> 0, catalog, new RomEnemyCombatTables(rom));
 
         runtime.tickWithProjectileEvents(0, 0x20, 0x20, () -> 0, null,
@@ -414,7 +414,7 @@ final class MoldormRuntimeTest {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(rom)
             .forEntityType(ENTITY_MOLDORM, EntityRoomLoader.RoomTable.INDOORS_A);
         return new RoomEntity(0, 0, ENTITY_MOLDORM, 0x40, 0x40,
-            EntityStatus.ACTIVE, definition, 0);
+            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
     }
 
     private static RoomEntitySnapshot snapshot(RoomEntity entity) {

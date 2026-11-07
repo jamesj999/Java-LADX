@@ -339,7 +339,7 @@ final class BombLiftThrowRuntimeTest {
     void preexistingStaticBombWithUnsupportedDirectionDoesNotStartMotion() {
         List<RoomEntity> slots = new ArrayList<>();
         slots.add(new RoomEntity(0, -1, 0x02, 0x40, 0x50, EntityStatus.ACTIVE,
-            EntitySpriteDefinition.unsupported(0x02), -1));
+            EntitySpriteDefinition.unsupported(0x02), -1, 0, 0, 0, -1, false));
         for (int slot = 1; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             slots.add(RoomEntity.disabled(slot));
         }
@@ -395,7 +395,7 @@ final class BombLiftThrowRuntimeTest {
                 new EntitySpriteDefinition.OamAttribute(0x14, 0x22))));
         List<RoomEntity> slots = new ArrayList<>();
         slots.add(new RoomEntity(0, 0, 0x05, 0x20, 0x30, EntityStatus.STUNNED,
-            definition, 0));
+            definition, 0, 0, 0, 0, -1, false));
         for (int slot = 1; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             slots.add(RoomEntity.disabled(slot));
         }

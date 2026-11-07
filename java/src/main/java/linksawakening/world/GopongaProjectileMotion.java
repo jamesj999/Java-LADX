@@ -115,20 +115,20 @@ final class GopongaProjectileMotion {
     private static RoomEntity withVariant(RoomEntity entity, int variant, int flipAttribute) {
         return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
             entity.x(), entity.y(), entity.status(), entity.spriteDefinition(), variant,
-            flipAttribute, entity.spriteTileOffset(), entity.z());
+            flipAttribute, entity.spriteTileOffset(), entity.z(), -1, false);
     }
 
     private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y,
                                                       int variant, int flipAttribute) {
         return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
             entity.status(), entity.spriteDefinition(), variant,
-            flipAttribute, entity.spriteTileOffset(), entity.z());
+            flipAttribute, entity.spriteTileOffset(), entity.z(), -1, false);
     }
 
     private static RoomEntity withFlip(RoomEntity entity, int flipAttribute) {
         return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
             entity.x(), entity.y(), entity.status(), entity.spriteDefinition(),
-            entity.spriteVariant(), flipAttribute, entity.spriteTileOffset(), entity.z());
+            entity.spriteVariant(), flipAttribute, entity.spriteTileOffset(), entity.z(), -1, false);
     }
 
     private int renderFlipAttribute(RoomEntity entity, int slot, int frameCounter) {

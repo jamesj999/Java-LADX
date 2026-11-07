@@ -98,13 +98,13 @@ final class RoomEntityLiftThrowRuntimeTest {
         List<RoomEntity> slots = new ArrayList<>();
         int targetSlot = 0;
         slots.add(new RoomEntity(targetSlot, 1, 0x18, 0x53, 0x63,
-            EntityStatus.ACTIVE, polsVoiceDefinition, 0));
+            EntityStatus.ACTIVE, polsVoiceDefinition, 0, 0, 0, 0, -1, false));
         for (int slot = 1; slot < EntityRoomLoader.MAX_ENTITIES - 1; slot++) {
             slots.add(RoomEntity.disabled(slot));
         }
         int thrownSlot = EntityRoomLoader.MAX_ENTITIES - 1;
         slots.add(new RoomEntity(thrownSlot, 0, 0x05, 0x53, 0x60,
-            EntityStatus.THROWN, potDefinition, 0));
+            EntityStatus.THROWN, potDefinition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(
             new RoomEntitySnapshot(slots), false, () -> 0, null,
             new RomEnemyCombatTables(loadRom()));
@@ -138,7 +138,7 @@ final class RoomEntityLiftThrowRuntimeTest {
         EntitySpriteDefinition definition = definition(0xD6);
         List<RoomEntity> slots = new ArrayList<>();
         slots.add(new RoomEntity(0, 0, 0xD6, 0x50, 0x60,
-            EntityStatus.ACTIVE, definition, 0));
+            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         for (int slot = 1; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             slots.add(RoomEntity.disabled(slot));
         }
@@ -419,9 +419,9 @@ final class RoomEntityLiftThrowRuntimeTest {
             slots.add(RoomEntity.disabled(slot));
         }
         slots.set(potSlot, new RoomEntity(potSlot, 0, 0xD6, 0x50, 0x60,
-            EntityStatus.ACTIVE, potDefinition, 0));
+            EntityStatus.ACTIVE, potDefinition, 0, 0, 0, 0, -1, false));
         slots.set(tarinSlot, new RoomEntity(tarinSlot, 1, 0x3F, 0x20, 0x40,
-            EntityStatus.ACTIVE, tarinDefinition, -1));
+            EntityStatus.ACTIVE, tarinDefinition, -1, 0, 0, 0, -1, false));
         return RoomEntityRuntime.from(
             new RoomEntitySnapshot(slots).withSideScrolling(true));
     }
@@ -597,7 +597,7 @@ final class RoomEntityLiftThrowRuntimeTest {
         EntitySpriteDefinition definition = definition(0xD6);
         List<RoomEntity> slots = new ArrayList<>();
         slots.add(new RoomEntity(0, 0, 0xD6, 0x50, 0x60,
-            EntityStatus.ACTIVE, definition, 0));
+            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         for (int slot = 1; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             slots.add(RoomEntity.disabled(slot));
         }
@@ -610,9 +610,9 @@ final class RoomEntityLiftThrowRuntimeTest {
         EntitySpriteDefinition targetDefinition = definition(0x18);
         List<RoomEntity> slots = new ArrayList<>();
         slots.add(new RoomEntity(0, 0, 0xD6, 0x50, 0x60,
-            EntityStatus.ACTIVE, potDefinition, 0));
+            EntityStatus.ACTIVE, potDefinition, 0, 0, 0, 0, -1, false));
         slots.add(new RoomEntity(1, 1, 0x18, 0x50, 0x52,
-            EntityStatus.ACTIVE, targetDefinition, 0));
+            EntityStatus.ACTIVE, targetDefinition, 0, 0, 0, 0, -1, false));
         for (int slot = 2; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             slots.add(RoomEntity.disabled(slot));
         }
@@ -627,7 +627,7 @@ final class RoomEntityLiftThrowRuntimeTest {
     private static RoomEntityRuntime runtimeWithEntity(EntityStatus status, int type) {
         EntitySpriteDefinition definition = definition(type);
         List<RoomEntity> slots = new ArrayList<>();
-        slots.add(new RoomEntity(0, 0, type, 0x20, 0x30, status, definition, 0));
+        slots.add(new RoomEntity(0, 0, type, 0x20, 0x30, status, definition, 0, 0, 0, 0, -1, false));
         for (int slot = 1; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             slots.add(RoomEntity.disabled(slot));
         }

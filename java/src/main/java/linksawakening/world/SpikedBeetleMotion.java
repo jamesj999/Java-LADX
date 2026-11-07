@@ -156,7 +156,7 @@ final class SpikedBeetleMotion {
         animationVariant[slot] = nextVariant;
         RoomEntity updated = new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
             x, y, entity.status(), entity.spriteDefinition(), renderedVariant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), z);
+            entity.entityFlipAttribute(), entity.spriteTileOffset(), z, -1, false);
         return new Update(updated, countdown, flippedHandler
             ? FLIPPED_OPTIONS1 : NORMAL_OPTIONS1,
             flippedHandler ? FLIPPED_HITBOX_FLAGS : NORMAL_HITBOX_FLAGS);

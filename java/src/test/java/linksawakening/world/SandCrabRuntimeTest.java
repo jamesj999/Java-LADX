@@ -41,7 +41,7 @@ final class SandCrabRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
             0, 0, ENTITY_SAND_CRAB, 0x40, 0x40, EntityStatus.ACTIVE,
-            catalog.forEntityType(ENTITY_SAND_CRAB, EntityRoomLoader.RoomTable.OVERWORLD), 0)),
+            catalog.forEntityType(ENTITY_SAND_CRAB, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
             false, () -> 0, catalog, new RomEnemyCombatTables(rom));
 
         assertTrue(RoomEntityCombatRules.supportsEnemyCollision(ENTITY_SAND_CRAB));
@@ -59,7 +59,7 @@ final class SandCrabRuntimeTest {
             .forEntityType(ENTITY_SAND_CRAB, EntityRoomLoader.RoomTable.OVERWORLD);
         SandCrabMotion motion = new SandCrabMotion();
         RoomEntity crab = new RoomEntity(0, 0, ENTITY_SAND_CRAB, 0x40, 0x40,
-            EntityStatus.ACTIVE, definition, 0);
+            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
 
         SandCrabMotion.Update started = motion.advance(crab, 0, 0x00,
             sequence(0x7F, 0x02), null);
@@ -84,7 +84,7 @@ final class SandCrabRuntimeTest {
             .forEntityType(ENTITY_SAND_CRAB, EntityRoomLoader.RoomTable.OVERWORLD);
         SandCrabMotion motion = new SandCrabMotion();
         RoomEntity crab = new RoomEntity(0, 0, ENTITY_SAND_CRAB, 0x40, 0x40,
-            EntityStatus.ACTIVE, definition, 0);
+            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
 
         SandCrabMotion.Update started = motion.advance(crab, 0, 0x00,
             sequence(0x00, 0x00), null);
@@ -108,7 +108,7 @@ final class SandCrabRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
             0, 0, ENTITY_SAND_CRAB, 0x40, 0x40, EntityStatus.ACTIVE,
             catalog.forEntityType(ENTITY_SAND_CRAB, EntityRoomLoader.RoomTable.OVERWORLD),
-            0)), false, () -> 0, catalog, new RomEnemyCombatTables(rom));
+            0, 0, 0, 0, -1, false)), false, () -> 0, catalog, new RomEnemyCombatTables(rom));
         AtomicInteger groundCalls = new AtomicInteger();
         runtime.setGroundInteraction((entity, frameCounter, previousStatus, speedZ,
                                        sideScrolling) -> {

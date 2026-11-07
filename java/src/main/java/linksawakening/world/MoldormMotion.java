@@ -322,7 +322,7 @@ public final class MoldormMotion {
         return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
             x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(),
             entity.spriteVariant(), entity.entityFlipAttribute(), entity.spriteTileOffset(),
-            entity.z());
+            entity.z(), -1, false);
     }
 
     private static int addSpeedToPosition(int position, int speed, int[] accumulator,

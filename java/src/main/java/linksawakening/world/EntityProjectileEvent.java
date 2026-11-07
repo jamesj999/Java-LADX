@@ -22,7 +22,7 @@ public record EntityProjectileEvent(
     int swordPokeY,
     int linkSpeedX,
     int linkSpeedY,
-    int linkIgnoreCollisionCountdown) {
+    int linkIgnoreCollisionCountdown) implements EntityEvent {
 
     /** Source-shaped hLinkSpeedX/Y write emitted by hookshot state {@code $01}. */
     public static EntityProjectileEvent hookshotPull(int slot, int speedX, int speedY) {

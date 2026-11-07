@@ -50,7 +50,7 @@ final class BeachOpeningRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
             0, 1, ENTITY_SWORD_SHIELD_PICKUP, 0x58, 0x60, EntityStatus.ACTIVE,
             catalog.forEntityType(ENTITY_SWORD_SHIELD_PICKUP,
-                EntityRoomLoader.RoomTable.OVERWORLD), 0)),
+                EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
             false, () -> 0, catalog, new RomEnemyCombatTables(rom));
         runtime.setEntityRoomId(BEACH_ROOM);
         runtime.setEntityRoomStatus(0);
@@ -120,7 +120,7 @@ final class BeachOpeningRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
             0, 0, ENTITY_SLEEPY_TOADSTOOL, 0x58, 0x60, EntityStatus.ACTIVE,
             catalog.forEntityType(ENTITY_SLEEPY_TOADSTOOL,
-                EntityRoomLoader.RoomTable.OVERWORLD), 0)),
+                EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
             false, () -> 0, catalog, new RomEnemyCombatTables(rom));
         runtime.setEntityRoomId(0x50);
         runtime.setToadstoolPlayerState(false, 0);
@@ -186,7 +186,7 @@ final class BeachOpeningRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
             0, 0, ENTITY_OWL_EVENT, 0x08, 0x10, EntityStatus.ACTIVE,
-            catalog.forOwlEvent(false), 0)), false, () -> 0, catalog,
+            catalog.forOwlEvent(false), 0, 0, 0, 0, -1, false)), false, () -> 0, catalog,
             new RomEnemyCombatTables(rom));
         runtime.setEntityRoomId(BEACH_ROOM);
         runtime.setEntityRoomStatus(0);
@@ -230,7 +230,7 @@ final class BeachOpeningRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
             0, 0, ENTITY_OWL_EVENT, 0x08, 0x10, EntityStatus.ACTIVE,
-            catalog.forOwlEvent(false), 0)), false, () -> 0, catalog,
+            catalog.forOwlEvent(false), 0, 0, 0, 0, -1, false)), false, () -> 0, catalog,
             new RomEnemyCombatTables(rom));
         runtime.setEntityRoomId(BEACH_ROOM);
         int frame = 0;
@@ -325,7 +325,7 @@ final class BeachOpeningRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RoomEntity owl = new RoomEntity(
             0, 0, ENTITY_OWL_EVENT, 0x58, 0x50, EntityStatus.ACTIVE,
-            catalog.forOwlEvent(false), 0);
+            catalog.forOwlEvent(false), 0, 0, 0, 0, -1, false);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(owl), false, () -> 0,
             catalog, new RomEnemyCombatTables(rom), new ChestContentsTable(rom));
         runtime.setEntityRoomId(0x41);
@@ -378,7 +378,7 @@ final class BeachOpeningRuntimeTest {
     private static RoomEntityRuntime owlRuntime(EntitySpriteHandlerCatalog catalog, byte[] rom) {
         return RoomEntityRuntime.from(snapshot(new RoomEntity(
             0, 0, ENTITY_OWL_EVENT, 0x58, 0x50, EntityStatus.ACTIVE,
-            catalog.forOwlEvent(false), 0)), false, () -> 0, catalog,
+            catalog.forOwlEvent(false), 0, 0, 0, 0, -1, false)), false, () -> 0, catalog,
             new RomEnemyCombatTables(rom));
     }
 
@@ -387,7 +387,7 @@ final class BeachOpeningRuntimeTest {
         return RoomEntityRuntime.from(snapshot(new RoomEntity(
             0, 0, ENTITY_SLEEPY_TOADSTOOL, 0x58, 0x60, EntityStatus.ACTIVE,
             catalog.forEntityType(ENTITY_SLEEPY_TOADSTOOL,
-                EntityRoomLoader.RoomTable.OVERWORLD), 0)),
+                EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
             false, () -> 0, catalog, new RomEnemyCombatTables(rom));
     }
 

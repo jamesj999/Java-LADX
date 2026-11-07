@@ -21,7 +21,7 @@ final class CrowRuntimeTest {
             CrowMotion.ENTITY_TYPE, EntityRoomLoader.RoomTable.OVERWORLD);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, CrowMotion.ENTITY_TYPE, 0x40, 0x50,
-                EntityStatus.INIT, definition, 0)), false, null, catalog);
+                EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)), false, null, catalog);
 
         runtime.tick(0, 0x44, 0x50, () -> 0);
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
@@ -67,7 +67,7 @@ final class CrowRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, CrowMotion.ENTITY_TYPE, 0x40, 0x50,
                 EntityStatus.INIT, catalog.forEntityType(
-                    CrowMotion.ENTITY_TYPE, EntityRoomLoader.RoomTable.OVERWORLD), 0)),
+                    CrowMotion.ENTITY_TYPE, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
             false, null, catalog);
 
         runtime.tick(0, 0x3C, 0x50, () -> 0);
@@ -91,7 +91,7 @@ final class CrowRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 4, CrowMotion.ENTITY_TYPE, 0x40, 0x50,
                 EntityStatus.INIT, catalog.forEntityType(
-                    CrowMotion.ENTITY_TYPE, EntityRoomLoader.RoomTable.OVERWORLD), 0)),
+                    CrowMotion.ENTITY_TYPE, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
             false, null, catalog);
         runtime.setEntityRoomIdForTest(0x58);
 
@@ -112,7 +112,7 @@ final class CrowRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, CrowMotion.ENTITY_TYPE, 0x40, 0x50,
                 EntityStatus.INIT, catalog.forEntityType(
-                    CrowMotion.ENTITY_TYPE, EntityRoomLoader.RoomTable.OVERWORLD), 0)),
+                    CrowMotion.ENTITY_TYPE, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
             false, null, catalog);
         runtime.setEntityRoomIdForTest(0x58);
         runtime.tick(0, 0, 0, () -> 0);
@@ -131,7 +131,7 @@ final class CrowRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, CrowMotion.ENTITY_TYPE, 0x40, 0x50,
                 EntityStatus.ACTIVE, catalog.forEntityType(
-                    CrowMotion.ENTITY_TYPE, EntityRoomLoader.RoomTable.OVERWORLD), 0)),
+                    CrowMotion.ENTITY_TYPE, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
             false, null, catalog);
         runtime.setEntityRoomIdForTest(0x58);
         runtime.setEnemyIgnoreHitsCountdownForTest(0, 0x20);

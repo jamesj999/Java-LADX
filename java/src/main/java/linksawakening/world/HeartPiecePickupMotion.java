@@ -6,7 +6,7 @@ public final class HeartPiecePickupMotion {
     private int inertia;
 
     public record Update(int dialogId, int tilesCommand, boolean incrementPiece,
-                         boolean newContainer, boolean interactionLocked, boolean complete) {}
+                         boolean newContainer, boolean interactionLocked, boolean complete) implements EntityEvent {}
 
     public Update advance(int countdown, boolean dialogActive, int pieces) {
         boolean locked = state == 4 || state == 5;

@@ -54,6 +54,6 @@ final class HardHatMotionTest {
             EntitySpriteDefinition.Shape.PAIR, 0,
             List.of(new EntitySpriteDefinition.Variant(tile, tile)));
         return new RoomEntity(0, 0, 0x20, 0x40, 0x40,
-            EntityStatus.ACTIVE, definition, 0);
+            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
     }
 }

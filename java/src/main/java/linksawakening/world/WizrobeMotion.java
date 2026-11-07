@@ -120,7 +120,7 @@ final class WizrobeMotion {
         currentSpriteVariant[slot] = normalizeVariant(nextVariant);
         RoomEntity updated = new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
             entity.x(), entity.y(), entity.status(), entity.spriteDefinition(), renderedVariant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z());
+            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false);
         return new Update(updated, countdown, physicsFlags, projectileSpawn);
     }
 

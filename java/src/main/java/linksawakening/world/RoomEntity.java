@@ -18,35 +18,6 @@ public record RoomEntity(
     int deathSpriteVariant,
     boolean powerRecoilDeath) {
 
-    public RoomEntity(int slot, int sourceLoadOrder, int type, int x, int y,
-                      EntityStatus status, EntitySpriteDefinition spriteDefinition,
-                      int spriteVariant) {
-        this(slot, sourceLoadOrder, type, x, y, status, spriteDefinition, spriteVariant,
-            0, 0, 0, -1, false);
-    }
-
-    public RoomEntity(int slot, int sourceLoadOrder, int type, int x, int y,
-                      EntityStatus status, EntitySpriteDefinition spriteDefinition,
-                      int spriteVariant, int entityFlipAttribute) {
-        this(slot, sourceLoadOrder, type, x, y, status, spriteDefinition, spriteVariant,
-            entityFlipAttribute, 0, 0, -1, false);
-    }
-
-    public RoomEntity(int slot, int sourceLoadOrder, int type, int x, int y,
-                      EntityStatus status, EntitySpriteDefinition spriteDefinition,
-                      int spriteVariant, int entityFlipAttribute, int spriteTileOffset) {
-        this(slot, sourceLoadOrder, type, x, y, status, spriteDefinition, spriteVariant,
-            entityFlipAttribute, spriteTileOffset, 0, -1, false);
-    }
-
-    /** Compatibility constructor for callers using the pre-death-state full signature. */
-    public RoomEntity(int slot, int sourceLoadOrder, int type, int x, int y,
-                      EntityStatus status, EntitySpriteDefinition spriteDefinition,
-                      int spriteVariant, int entityFlipAttribute, int spriteTileOffset, int z) {
-        this(slot, sourceLoadOrder, type, x, y, status, spriteDefinition, spriteVariant,
-            entityFlipAttribute, spriteTileOffset, z, -1, false);
-    }
-
     public RoomEntity {
         if (slot < 0 || slot >= EntityRoomLoader.MAX_ENTITIES) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
@@ -97,6 +68,18 @@ public record RoomEntity(
     public static RoomEntity disabled(int slot) {
         return new RoomEntity(slot, -1, 0xFF, 0, 0, EntityStatus.DISABLED,
             EntitySpriteDefinition.unsupported(0xFF), -1, 0, 0, 0, -1, false);
+    }
+
+    public RoomEntity withPosition(int nextX, int nextY) {
+        return new RoomEntity(slot, sourceLoadOrder, type, nextX, nextY, status,
+            spriteDefinition, spriteVariant, entityFlipAttribute, spriteTileOffset, z,
+            deathSpriteVariant, powerRecoilDeath);
+    }
+
+    public RoomEntity withSpriteVariant(int variant) {
+        return new RoomEntity(slot, sourceLoadOrder, type, x, y, status,
+            spriteDefinition, variant, entityFlipAttribute, spriteTileOffset, z,
+            deathSpriteVariant, powerRecoilDeath);
     }
 
     public boolean loaded() {

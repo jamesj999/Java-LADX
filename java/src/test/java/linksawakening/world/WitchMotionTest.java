@@ -151,6 +151,6 @@ final class WitchMotionTest {
 
     private static RoomEntity witch() {
         return new RoomEntity(SLOT, 0, 0x40, 0x48, 0x40, EntityStatus.ACTIVE,
-            linksawakening.entity.EntitySpriteDefinition.unsupported(0x40), 0);
+            linksawakening.entity.EntitySpriteDefinition.unsupported(0x40), 0, 0, 0, 0, -1, false);
     }
 }

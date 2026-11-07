@@ -276,14 +276,14 @@ final class PokeyMotion {
         return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
             x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(),
             entity.spriteVariant(), entity.entityFlipAttribute(), entity.spriteTileOffset(),
-            entity.z());
+            entity.z(), -1, false);
     }
 
     private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y,
                                                      int variant) {
         return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
             x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z());
+            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false);
     }
 
     private static void checkType(RoomEntity entity) {

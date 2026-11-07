@@ -49,7 +49,7 @@ final class DogRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
             0, 0, ENTITY_DOG, 0x40, 0x40, EntityStatus.ACTIVE,
-            catalog.forEntityType(ENTITY_DOG, EntityRoomLoader.RoomTable.OVERWORLD), 2)),
+            catalog.forEntityType(ENTITY_DOG, EntityRoomLoader.RoomTable.OVERWORLD), 2, 0, 0, 0, -1, false)),
             false, () -> 0, catalog, new RomEnemyCombatTables(rom));
 
         assertFalse(RoomEntityCombatRules.supportsEnemyCollision(ENTITY_DOG));
@@ -174,7 +174,7 @@ final class DogRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
             0, 0, ENTITY_DOG, 0x40, 0x40, EntityStatus.ACTIVE,
-            catalog.forEntityType(ENTITY_DOG, EntityRoomLoader.RoomTable.OVERWORLD), 2)),
+            catalog.forEntityType(ENTITY_DOG, EntityRoomLoader.RoomTable.OVERWORLD), 2, 0, 0, 0, -1, false)),
             false, () -> 0, catalog, new RomEnemyCombatTables(rom));
         AtomicInteger terrainCalls = new AtomicInteger();
 
@@ -192,7 +192,7 @@ final class DogRuntimeTest {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(rom)
             .forEntityType(ENTITY_DOG, EntityRoomLoader.RoomTable.OVERWORLD);
         return new RoomEntity(0, 0, ENTITY_DOG, 0x40, 0x40,
-            EntityStatus.ACTIVE, definition, 2);
+            EntityStatus.ACTIVE, definition, 2, 0, 0, 0, -1, false);
     }
 
     private static RoomEntitySnapshot snapshot(RoomEntity entity) {

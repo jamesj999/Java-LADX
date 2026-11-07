@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.*;
 final class BowWowChainTest {
     private static RoomEntity bowWow(int x, int y, int z) {
         return new RoomEntity(0, -1, 0x6D, x, y, EntityStatus.ACTIVE,
-            EntitySpriteDefinition.unsupported(0x6D), 0, 0, 0, z);
+            EntitySpriteDefinition.unsupported(0x6D), 0, 0, 0, z, -1, false);
     }
 
     @Test

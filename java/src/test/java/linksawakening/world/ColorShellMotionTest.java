@@ -134,7 +134,7 @@ final class ColorShellMotionTest {
 
         motion.setStateForTest(0, 5, 0, 0, 0, 0);
         RoomEntity stunned = new RoomEntity(0, 0, 0xE9, 0x40, 0x40,
-            EntityStatus.STUNNED, EntitySpriteDefinition.unsupported(0xE9), -1);
+            EntityStatus.STUNNED, EntitySpriteDefinition.unsupported(0xE9), -1, 0, 0, 0, -1, false);
         motion.advance(stunned, 3, 0, 0, () -> 0, null, 0);
         assertEquals(5, motion.state(0));
     }
@@ -199,7 +199,7 @@ final class ColorShellMotionTest {
         motion.setStateForTest(1, 1, 0, 0, 0, 0);
         RoomEntity first = entity(0x40, 0x40);
         RoomEntity other = new RoomEntity(1, 1, 0xEA, 0x50, 0x40,
-            EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(0xEA), -1);
+            EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(0xEA), -1, 0, 0, 0, -1, false);
         RecordingWorld world = new RecordingWorld(0x00);
 
         motion.advance(first, 0, 0, 0, () -> 0, null, 0, world, List.of(first, other));
@@ -246,12 +246,12 @@ final class ColorShellMotionTest {
 
     private static RoomEntity entity(int x, int y) {
         return new RoomEntity(0, 0, 0xE9, x, y, EntityStatus.ACTIVE,
-            EntitySpriteDefinition.unsupported(0xE9), -1);
+            EntitySpriteDefinition.unsupported(0xE9), -1, 0, 0, 0, -1, false);
     }
 
     private static RoomEntity entityWithZ(int x, int y, int z) {
         return new RoomEntity(0, 0, 0xE9, x, y, EntityStatus.ACTIVE,
-            EntitySpriteDefinition.unsupported(0xE9), -1, 0, 0, z);
+            EntitySpriteDefinition.unsupported(0xE9), -1, 0, 0, z, -1, false);
     }
 
     private static int signed(int value) {

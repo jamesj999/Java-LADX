@@ -144,6 +144,6 @@ final class ThrownEntityMotionTest {
                 new EntitySpriteDefinition.OamAttribute(0, 0),
                 new EntitySpriteDefinition.OamAttribute(2, 0))));
         return new RoomEntity(slot, 0, type, x, y, EntityStatus.THROWN,
-            definition, 0, 0, 0, z);
+            definition, 0, 0, 0, z, -1, false);
     }
 }

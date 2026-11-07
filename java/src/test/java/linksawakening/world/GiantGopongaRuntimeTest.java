@@ -72,7 +72,7 @@ final class GiantGopongaRuntimeTest {
             new RoomEntity(0, 0, ENTITY_GIANT_GOPONGA_FLOWER, 0x40, 0x40,
                 EntityStatus.ACTIVE,
                 catalog.forEntityType(ENTITY_GIANT_GOPONGA_FLOWER,
-                    EntityRoomLoader.RoomTable.OVERWORLD), 0)),
+                    EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
             false, () -> 0, catalog, new RomEnemyCombatTables(rom));
 
         assertEquals(0x04, runtime.enemyHealth(0));
@@ -94,7 +94,7 @@ final class GiantGopongaRuntimeTest {
         RoomEntity giant = new RoomEntity(0, 0, ENTITY_GIANT_GOPONGA_FLOWER, 0x40, 0x40,
             EntityStatus.ACTIVE,
             catalog.forEntityType(ENTITY_GIANT_GOPONGA_FLOWER,
-                EntityRoomLoader.RoomTable.OVERWORLD), 0);
+                EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false);
         GiantGopongaMotion motion = new GiantGopongaMotion();
 
         GiantGopongaMotion.Update stateOne = motion.advance(giant, 0, 0, 0x70, 0x50);
@@ -123,7 +123,7 @@ final class GiantGopongaRuntimeTest {
             new RoomEntity(0, 0, ENTITY_GIANT_GOPONGA_FLOWER, 0x38, 0x40,
                 EntityStatus.ACTIVE,
                 catalog.forEntityType(ENTITY_GIANT_GOPONGA_FLOWER,
-                    EntityRoomLoader.RoomTable.OVERWORLD), 0)),
+                    EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
             false, () -> 0, catalog, new RomEnemyCombatTables(rom));
 
         runtime.tickWithProjectileEvents(0, 0x40, 0x40, () -> 0, null,
@@ -141,7 +141,7 @@ final class GiantGopongaRuntimeTest {
             new RoomEntity(0, 0, ENTITY_GIANT_GOPONGA_FLOWER, 0x40, 0x40,
                 EntityStatus.ACTIVE,
                 catalog.forEntityType(ENTITY_GIANT_GOPONGA_FLOWER,
-                    EntityRoomLoader.RoomTable.OVERWORLD), 0)),
+                    EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
             false, () -> 0, catalog, new RomEnemyCombatTables(rom));
 
         for (int frame = 0; frame < 0xC8; frame++) {
@@ -167,7 +167,7 @@ final class GiantGopongaRuntimeTest {
         RoomEntity projectile = new RoomEntity(0, -1, ENTITY_GOPONGA_FLOWER_PROJECTILE,
             0x40, 0x40, EntityStatus.ACTIVE,
             catalog.forEntityType(ENTITY_GOPONGA_FLOWER_PROJECTILE,
-                EntityRoomLoader.RoomTable.OVERWORLD), 0);
+                EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false);
         GopongaProjectileMotion motion = new GopongaProjectileMotion();
         motion.initializeSpawn(0, projectile, 0x70, 0x50);
 

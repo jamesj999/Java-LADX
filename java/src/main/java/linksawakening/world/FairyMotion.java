@@ -179,7 +179,7 @@ final class FairyMotion {
                                                       int z, int variant) {
         return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
             x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), z & 0xFF);
+            entity.entityFlipAttribute(), entity.spriteTileOffset(), z & 0xFF, -1, false);
     }
 
     private static int signedByte(int value) {

@@ -89,7 +89,7 @@ final class BowWowPauseTest {
             slots.add(RoomEntity.disabled(slot));
         }
         slots.set(0, new RoomEntity(0, -1, 0x6D, 0x40, 0x50, EntityStatus.ACTIVE,
-            catalog.forFollowerEntityType(0x6D), 0));
+            catalog.forFollowerEntityType(0x6D), 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(slots),
             false, () -> 0, catalog, new RomEnemyCombatTables(rom));
         runtime.setFollowingNpcState(new FollowingNpcState(false, 0, false, true, 0, 0, false));

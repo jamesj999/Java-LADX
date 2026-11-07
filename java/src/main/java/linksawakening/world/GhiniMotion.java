@@ -107,7 +107,7 @@ final class GhiniMotion {
             ^ (isNegative(speedX[slot]) ? 0 : 0x20);
         return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
             entity.status(), entity.spriteDefinition(), entity.spriteVariant(), flipAttribute,
-            entity.spriteTileOffset(), z);
+            entity.spriteTileOffset(), z, -1, false);
     }
 
     RoomEntity advance(RoomEntity entity, int frameCounter, int entityType,
@@ -283,7 +283,7 @@ final class GhiniMotion {
         }
         return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
             x, y, entity.status(), entity.spriteDefinition(), selectedVariant,
-            genericFlipAttribute, entity.spriteTileOffset(), z);
+            genericFlipAttribute, entity.spriteTileOffset(), z, -1, false);
     }
 
     private static int animationVariant(int frameCounter, int slot) {
@@ -339,6 +339,6 @@ final class GhiniMotion {
     private static RoomEntity withPosition(RoomEntity entity, int x, int y, int z) {
         return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
             entity.status(), entity.spriteDefinition(), entity.spriteVariant(),
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), z);
+            entity.entityFlipAttribute(), entity.spriteTileOffset(), z, -1, false);
     }
 }

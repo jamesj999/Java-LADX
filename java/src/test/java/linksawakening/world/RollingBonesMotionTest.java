@@ -134,12 +134,12 @@ final class RollingBonesMotionTest {
 
     private static RoomEntity entity(int slot, int type, int x, int y) {
         return new RoomEntity(slot, slot, type, x, y, EntityStatus.ACTIVE,
-            EntitySpriteDefinition.unsupported(type), 0);
+            EntitySpriteDefinition.unsupported(type), 0, 0, 0, 0, -1, false);
     }
 
     private static RoomEntity withX(RoomEntity entity, int x) {
         return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x,
             entity.y(), entity.status(), entity.spriteDefinition(), entity.spriteVariant(),
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z());
+            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false);
     }
 }

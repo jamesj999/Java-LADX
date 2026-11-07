@@ -287,7 +287,7 @@ final class MagicPowderRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         List<RoomEntity> slots = new ArrayList<>(emptySnapshot().slots());
         slots.set(0, new RoomEntity(0, -1, 0x15, x, y, EntityStatus.ACTIVE,
-            catalog.forEntityType(0x15, EntityRoomLoader.RoomTable.OVERWORLD, -1), 0));
+            catalog.forEntityType(0x15, EntityRoomLoader.RoomTable.OVERWORLD, -1), 0, 0, 0, 0, -1, false));
         return RoomEntityRuntime.from(new RoomEntitySnapshot(slots), indoor, () -> 0,
             catalog, new RomEnemyCombatTables(rom), new ChestContentsTable(rom));
     }

@@ -324,7 +324,7 @@ final class EnemyProjectileCollisionTest {
 
     private static RoomEntity projectile(int type, int x, int y, int z) {
         return new RoomEntity(0, -1, type, x, y, EntityStatus.ACTIVE,
-            EntitySpriteDefinition.unsupported(type), -1, 0, 0, z);
+            EntitySpriteDefinition.unsupported(type), -1, 0, 0, z, -1, false);
     }
 
     private static int positionForWindow(int linkPosition, int windowValue) {

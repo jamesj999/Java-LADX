@@ -129,7 +129,7 @@ final class BushCrawlerMotion {
 
         RoomEntity updated = new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
             x, y, entity.status(), entity.spriteDefinition(), renderedVariant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z());
+            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false);
         return new Update(updated, state[slot], countdown, privateState1[slot],
             privateState4[slot], renderedVisualYOffset, liftRequested,
             privateState1[slot] == 2, crawlOverlayRendered);

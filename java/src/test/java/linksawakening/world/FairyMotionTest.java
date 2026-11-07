@@ -103,7 +103,7 @@ final class FairyMotionTest {
 
         FairyMotion.Update down = motion.advance(
             new RoomEntity(0, 0, FairyMotion.ENTITY_TYPE, 0x40, 0x40,
-                EntityStatus.ACTIVE, definition(), 0, 0, 0, 0x11),
+                EntityStatus.ACTIVE, definition(), 0, 0, 0, 0x11, -1, false),
             0x04, 0x40, 0x40, () -> 0, 0);
         assertEquals(0x10, down.entity().z());
     }
@@ -122,7 +122,7 @@ final class FairyMotionTest {
 
     private static RoomEntity entity(int x, int y, int z) {
         return new RoomEntity(0, -1, FairyMotion.ENTITY_TYPE, x, y,
-            EntityStatus.ACTIVE, definition(), 0, 0, 0, z);
+            EntityStatus.ACTIVE, definition(), 0, 0, 0, z, -1, false);
     }
 
     private static EntitySpriteDefinition definition() {

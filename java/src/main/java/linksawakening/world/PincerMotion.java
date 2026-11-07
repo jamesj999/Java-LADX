@@ -127,7 +127,7 @@ final class PincerMotion {
 
         RoomEntity updated = new RoomEntity(entity.slot(), entity.sourceLoadOrder(), ENTITY_TYPE,
             x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z());
+            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false);
         return new Update(updated, state[slot], nextCountdown, nextPhysicsFlags);
     }
 

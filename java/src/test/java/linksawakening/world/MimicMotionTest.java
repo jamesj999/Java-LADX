@@ -78,6 +78,6 @@ final class MimicMotionTest {
 
     private static RoomEntity entity(int x, int y, int variant) {
         return new RoomEntity(0, 0, 0x28, x, y, EntityStatus.ACTIVE,
-            EntitySpriteDefinition.unsupported(0x28), variant);
+            EntitySpriteDefinition.unsupported(0x28), variant, 0, 0, 0, -1, false);
     }
 }

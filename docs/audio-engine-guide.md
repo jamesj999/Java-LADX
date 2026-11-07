@@ -321,3 +321,12 @@ When adding UI:
 - Music package tests: `java/src/test/java/linksawakening/audio/music`
 - APU tests: `java/src/test/java/linksawakening/audio/apu`
 - Browser tests: `java/src/test/java/linksawakening/audio/browser`
+
+The game session now owns one `FrameAudioPlayer` and one host-created
+`PcmSoundOutput`. Desktop uses OpenAL; headless sessions discard PCM. Dialog
+and gameplay event maps submit effects to the same ROM-backed SFX driver and
+APU as music. `MusicDirector.tick()` advances this transport once per game
+frame (60 Hz); sample remainders preserve exact long-term sample counts.
+The session closes the output. The audio browser retains `OpenAlMusicPlayer`
+for its independent sample-driven audition controls. Legacy one-shot sinks
+remain available to standalone clients, but are no longer session wiring.

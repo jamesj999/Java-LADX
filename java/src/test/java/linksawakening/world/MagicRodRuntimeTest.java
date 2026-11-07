@@ -304,7 +304,7 @@ final class MagicRodRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         List<RoomEntity> slots = new ArrayList<>(emptySnapshot().slots());
         slots.set(0, new RoomEntity(0, -1, type, x, y, EntityStatus.ACTIVE,
-            catalog.forEntityType(type, EntityRoomLoader.RoomTable.OVERWORLD, -1), 0));
+            catalog.forEntityType(type, EntityRoomLoader.RoomTable.OVERWORLD, -1), 0, 0, 0, 0, -1, false));
         return RoomEntityRuntime.from(new RoomEntitySnapshot(slots), false, () -> 0,
             catalog, new RomEnemyCombatTables(rom), new ChestContentsTable(rom));
     }

@@ -42,7 +42,7 @@ final class UrchinRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
             0, 0, ENTITY_URCHIN, 0x40, 0x40, EntityStatus.ACTIVE,
-            catalog.forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD), 0)),
+            catalog.forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
             false, () -> 0, catalog, new RomEnemyCombatTables(rom));
 
         assertTrue(RoomEntityCombatRules.supportsEnemyCollision(ENTITY_URCHIN));
@@ -60,7 +60,7 @@ final class UrchinRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
             0, 0, ENTITY_URCHIN, 0x40, 0x40, EntityStatus.ACTIVE,
-            catalog.forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD), 0)),
+            catalog.forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
             false, () -> 0, catalog, new RomEnemyCombatTables(rom));
 
         List<EntityCombatEvent> events = runtime.resolveCombat(
@@ -79,7 +79,7 @@ final class UrchinRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
             0, 0, ENTITY_URCHIN, 0x40, 0x40, EntityStatus.ACTIVE,
-            catalog.forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD), 0)),
+            catalog.forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
             false, () -> 0, catalog);
 
         List<EntityCombatEvent> events = runtime.resolveCombat(
@@ -162,7 +162,7 @@ final class UrchinRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
             0, 0, ENTITY_URCHIN, 0x40, 0x40, EntityStatus.ACTIVE,
-            catalog.forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD), 0)),
+            catalog.forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
             false, () -> 0, catalog, new RomEnemyCombatTables(rom));
 
         runtime.tickWithProjectileEvents(0, 0x48, 0x40, () -> 0, null,
@@ -185,7 +185,7 @@ final class UrchinRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
             0, 0, ENTITY_URCHIN, 0x40, 0x40, EntityStatus.ACTIVE,
-            catalog.forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD), 0)),
+            catalog.forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
             false, () -> 0, catalog, new RomEnemyCombatTables(rom));
 
         runtime.tickWithProjectileEvents(0, 0x48, 0x40, () -> 0, null,
@@ -217,7 +217,7 @@ final class UrchinRuntimeTest {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(rom)
             .forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD);
         return new RoomEntity(0, 0, ENTITY_URCHIN, 0x40, 0x40,
-            EntityStatus.ACTIVE, definition, 0);
+            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
     }
 
     private static RoomEntitySnapshot snapshot(RoomEntity entity) {

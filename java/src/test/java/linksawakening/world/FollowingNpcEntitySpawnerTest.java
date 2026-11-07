@@ -134,7 +134,7 @@ final class FollowingNpcEntitySpawnerTest {
 
     private static RoomEntity active(int slot, int type, EntitySpriteDefinition definition) {
         return new RoomEntity(slot, slot, type, 0x20, 0x30, EntityStatus.ACTIVE,
-            definition, -1);
+            definition, -1, 0, 0, 0, -1, false);
     }
 
     private static void assertSameEntity(RoomEntity expected, RoomEntity actual) {

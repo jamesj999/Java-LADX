@@ -93,6 +93,6 @@ final class WingedOctorokMotionTest {
 
     private static RoomEntity entity(int slot, int x, int y, int variant) {
         return new RoomEntity(slot, 0, 0xAE, x, y, EntityStatus.ACTIVE,
-            EntitySpriteDefinition.unsupported(0xAE), variant);
+            EntitySpriteDefinition.unsupported(0xAE), variant, 0, 0, 0, -1, false);
     }
 }

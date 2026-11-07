@@ -64,7 +64,7 @@ final class PokeyRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
             0, 0, ENTITY_POKEY, 0x40, 0x40, EntityStatus.ACTIVE,
-            catalog.forEntityType(ENTITY_POKEY, EntityRoomLoader.RoomTable.OVERWORLD), 0)),
+            catalog.forEntityType(ENTITY_POKEY, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
             false, () -> 0, catalog, new RomEnemyCombatTables(loadRom()));
 
         assertEquals(0x01, runtime.enemyHealth(0));
@@ -86,7 +86,7 @@ final class PokeyRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
             0, 0, ENTITY_POKEY, 0x40, 0x40, EntityStatus.ACTIVE,
-            catalog.forEntityType(ENTITY_POKEY, EntityRoomLoader.RoomTable.OVERWORLD), 0)),
+            catalog.forEntityType(ENTITY_POKEY, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
             false, () -> 0, catalog, new RomEnemyCombatTables(rom));
 
         // The runtime performs the shared pre-handler decrement first, so $15
@@ -121,7 +121,7 @@ final class PokeyRuntimeTest {
     void detachedSegmentsReverseOnWallsAndPoofAfterThreeHits() throws IOException {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
         RoomEntity segment = new RoomEntity(0, -1, ENTITY_POKEY, 0x40, 0x40,
-            EntityStatus.ACTIVE, catalog.forPokeySegment(), 0);
+            EntityStatus.ACTIVE, catalog.forPokeySegment(), 0, 0, 0, 0, -1, false);
         PokeyMotion motion = new PokeyMotion();
         motion.initializeSegment(0, 0x10, 0x00);
 

@@ -170,7 +170,7 @@ final class WitchMotion {
     private static RoomEntity withPresentation(RoomEntity source, int y, int variant) {
         return new RoomEntity(source.slot(), source.sourceLoadOrder(), source.type(),
             source.x(), y, source.status(), source.spriteDefinition(), variant,
-            source.entityFlipAttribute(), source.spriteTileOffset(), source.z());
+            source.entityFlipAttribute(), source.spriteTileOffset(), source.z(), -1, false);
     }
 
     int stateForTest(int slot) {

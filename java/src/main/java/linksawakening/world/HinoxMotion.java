@@ -282,7 +282,7 @@ final class HinoxMotion {
             x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(),
             entity.spriteDefinition().supported()
                 ? Math.min(spriteVariant, entity.spriteDefinition().variantCount() - 1)
-                : -1, entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z());
+                : -1, entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false);
         return new Update(updated, state[entity.slot()], transition & 0xFF, spriteVariant,
             blocked, heldX & 0xFF, heldY & 0xFF, heldZ & 0xFF,
             linkSpeedX & 0xFF, linkSpeedY & 0xFF, linkVelocityZ & 0xFF,

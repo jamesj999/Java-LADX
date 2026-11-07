@@ -125,6 +125,6 @@ final class EnemyDropMotionTest {
 
     private static RoomEntity entity(int slot, int type, int x, int y, int z) {
         return new RoomEntity(slot, -1, type, x, y, EntityStatus.ACTIVE,
-            EntitySpriteDefinition.unsupported(type), -1, 0, 0, z);
+            EntitySpriteDefinition.unsupported(type), -1, 0, 0, z, -1, false);
     }
 }

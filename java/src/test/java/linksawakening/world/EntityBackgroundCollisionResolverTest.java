@@ -305,7 +305,7 @@ final class EntityBackgroundCollisionResolverTest {
 
     private static RoomEntity entity(int type, int z) {
         return new RoomEntity(0, 0, type, 0x40, 0x40, EntityStatus.ACTIVE,
-            EntitySpriteDefinition.unsupported(type), -1, 0, 0, z);
+            EntitySpriteDefinition.unsupported(type), -1, 0, 0, z, -1, false);
     }
 
     private static EntityBackgroundCollisionResult resolve(
