@@ -26,6 +26,7 @@ import java.util.function.IntUnaryOperator;
  * class only advances handler-owned status and sprite-variant fields.
  */
 public final class RoomEntityRuntime extends EntityRuntimeState {
+    private final EntityPlayerCommands playerCommands = new EntityPlayerCommands(this);
     private void disableEntityWithoutPersistence(int slot) { lifecycle.disableEntityWithoutPersistence(slot); }
     final EntityRoomInitialization roomInitialization = new EntityRoomInitialization(this);
     final EntitySlotProperties slotProperties = new EntitySlotProperties(this);
@@ -862,82 +863,10 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
      * ROM order (right, left, up, down); RoomSession performs the Java-to-ROM
      * conversion at its boundary.
      */
-    boolean beginLift(int slot, int romDirection) {
-        validateEntitySlot(slot);
-        validateRomDirection(romDirection);
-        RoomEntity entity = slots[slot];
-        if (!entity.loaded()) {
-            return false;
-        }
-        if (entity.type() == ENTITY_BOMB && bombFinalPresentationPending[slot]) {
-            return false;
-        }
-        if (liftedEntitySlot >= 0 && liftedEntitySlot != slot
-            && slots[liftedEntitySlot].status() == EntityStatus.LIFTED) {
-            return false;
-        }
-
-        liftedEntitySlot = slot;
-        liftedPhase[slot] = 0;
-        liftedSourceDirection[slot] = romDirection;
-        liftedStateInitialized[slot] = true;
-        liftedCarryState = 0;
-        liftedEffectiveDirection = romDirection;
-        enemyTransitionCountdown[slot] = 0x02;
-        if (entity.type() == ENTITY_BOMB) {
-            if (placedBombMotionInitialized[slot]) {
-                thrownEntityMotion.clear(slot);
-                placedBombMotionInitialized[slot] = false;
-            }
-            bombFinalPresentationPending[slot] = false;
-            enemyFlashCountdown[slot] = 0;
-            entity = withDefinition(entity, slotProperties.spriteDefinitionFor(ENTITY_BOMB), 0);
-        }
-        slots[slot] = withStatus(entity, EntityStatus.LIFTED);
-        return true;
-    }
+    boolean beginLift(int slot, int romDirection) { return this.playerCommands.beginLift(slot, romDirection); }
 
     /** Hands the fully held entity to func_014_53A3's generic throw path. */
-    boolean throwLiftedEntity(int romDirection) {
-        validateRomDirection(romDirection);
-        LiftedEntityState state = liftedEntityState();
-        if (!state.active() || state.carryState() != 0x01) {
-            return false;
-        }
-
-        int slot = state.slot();
-        RoomEntity entity = slots[slot];
-        pendingPreTickLinkAttackStepRequests.add(new LinkAttackStepRequest(slot));
-        pendingPreTickEntityEvents.add(new EntityCombatEvent(slot, entity.type(), 0, false,
-            EntityCombatEvent.SoundChannel.JINGLE, LIFTED_THROW_JINGLE_ID));
-        if (entity.type() == ENTITY_SIDE_VIEW_POT) {
-            thrownDirection[slot] = romDirection;
-            sideViewPotMotion.start(slot, romDirection);
-            thrownEntityMotion.clear(slot);
-            thrownMotionInitialized[slot] = false;
-            liftedStateInitialized[slot] = false;
-            liftedPhase[slot] = 0;
-            liftedCarryState = 0;
-            liftedEffectiveDirection = 0;
-            liftedEntitySlot = -1;
-            enemyTransitionCountdown[slot] = 0;
-            slots[slot] = withStatus(entity, EntityStatus.ACTIVE);
-            return true;
-        }
-        thrownDirection[slot] = romDirection;
-        thrownEntityMotion.start(slot, romDirection, entity.type(),
-            groundInteractionSideScrolling);
-        thrownMotionInitialized[slot] = true;
-        liftedStateInitialized[slot] = false;
-        liftedPhase[slot] = 0;
-        liftedCarryState = 0;
-        liftedEffectiveDirection = 0;
-        liftedEntitySlot = -1;
-        enemyTransitionCountdown[slot] = entity.type() == ENTITY_BOMB
-            ? BombMotion.INITIAL_COUNTDOWN : 0;
-        slots[slot] = withStatus(entity, EntityStatus.THROWN);
-        return true;
-    }
+    boolean throwLiftedEntity(int romDirection) { return this.playerCommands.throwLiftedEntity(romDirection); }
 
     LiftedEntityState liftedEntityState() { return this.roomInspection.liftedEntityState(); }
 
@@ -1072,27 +1001,12 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     /** Spawns bank 0's temporary type-$05 entity already entering lifted status. */
     int spawnLiftedRoomObject(int x, int y, int romDirection, int spriteVariant) { return this.entityPlayerSpawns.spawnLiftedRoomObject(x, y, romDirection, spriteVariant); }
 
-    void movePushedBlock(int slot, int x, int y) {
-        if (slot < 0 || slot >= slots.length
-            || slots[slot].type() != ENTITY_PUSHED_BLOCK
-            || slots[slot].status() == EntityStatus.DISABLED) {
-            return;
-        }
-        RoomEntity entity = slots[slot];
-        slots[slot] = new RoomEntity(slot, entity.sourceLoadOrder(), entity.type(),
-            x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(),
-            entity.spriteVariant(), entity.entityFlipAttribute(), entity.spriteTileOffset(),
-            entity.z(), -1, false);
-    }
+    void movePushedBlock(int slot, int x, int y) { this.playerCommands.movePushedBlock(slot, x, y); }
 
     /** $03:5269: after block movement, restore Link even during a jump. */
     void resolvePushedBlockLinkContact(int slot, int linkEntityX, int linkEntityY) { this.backgroundMechanics.resolvePushedBlockLinkContact(slot, linkEntityX, linkEntityY); }
 
-    void removePushedBlock(int slot) {
-        if (slot >= 0 && slot < slots.length && slots[slot].type() == ENTITY_PUSHED_BLOCK) {
-            slots[slot] = RoomEntity.disabled(slot);
-        }
-    }
+    void removePushedBlock(int slot) { this.playerCommands.removePushedBlock(slot); }
 
     /** Spawns DropKeyEffectHandler's ordinary dungeon key at ($28,$3C,$70). */
     int spawnRoomEventKeyDrop() { return this.entityPlayerSpawns.spawnRoomEventKeyDrop(); }
@@ -1223,31 +1137,9 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     public RoomEntitySnapshot snapshot() { return this.roomInspection.snapshot(); }
 
     /** Applies the position and variant writes made by MarinEntityHandler_Indoor. */
-    public boolean applyMarinWakeUpPresentation(int x, int y, int spriteVariant) {
-        for (int slot = 0; slot < slots.length; slot++) {
-            RoomEntity entity = slots[slot];
-            if (entity.loaded() && entity.type() == 0x3E) {
-                slots[slot] = new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
-                    x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(), spriteVariant,
-                    entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(),
-                    entity.deathSpriteVariant(), entity.powerRecoilDeath());
-                return true;
-            }
-        }
-        return false;
-    }
+    public boolean applyMarinWakeUpPresentation(int x, int y, int spriteVariant) { return this.playerCommands.applyMarinWakeUpPresentation(x, y, spriteVariant); }
 
-    void updateHouseTarinPresentation(int linkX, int linkY) {
-        for (int slot = 0; slot < slots.length; slot++) {
-            RoomEntity entity = slots[slot];
-            if (entity.loaded() && entity.type() == ENTITY_TARIN) {
-                int dx = (byte) (linkX - entity.x());
-                int dy = (byte) (linkY - entity.y());
-                int direction = Math.abs(dy) >= Math.abs(dx) ? (dy < 0 ? 2 : 3) : (dx < 0 ? 1 : 0);
-                slots[slot] = withVariant(entity, direction);
-            }
-        }
-    }
+    void updateHouseTarinPresentation(int linkX, int linkY) { this.playerCommands.updateHouseTarinPresentation(linkX, linkY); }
 
     void setLinkVelocityZ(int velocity) { this.entityRuntimeConfiguration.setLinkVelocityZ(velocity); }
 
@@ -1514,19 +1406,9 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     /** Bank $15:7C37..7CA5: two death waits, then DidKillEnemy. */
 
-    void startSwordPickup(int slot) {
-        swordPickupSequenceActive[slot] = true;
-        swordPickupState[slot] = 0;
-        enemyTransitionCountdown[slot] = 0xA0;
-        slowTimerInitialized[slot] = true;
-        pendingMusicTrack = 0x0F;
-    }
+    void startSwordPickup(int slot) { this.playerCommands.startSwordPickup(slot); }
 
-    void startToadstoolPickup(int slot) {
-        toadstoolPickupSequenceActive[slot] = true;
-        enemyTransitionCountdown[slot] = 0x68;
-        pendingMusicTrack = 0x10;
-    }
+    void startToadstoolPickup(int slot) { this.playerCommands.startToadstoolPickup(slot); }
 
     void setOwlStatueDialogId(int globalDialogId) { this.entityRuntimeConfiguration.setOwlStatueDialogId(globalDialogId); }
 
@@ -1544,23 +1426,11 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     public InstrumentWarpVisual instrumentWarpVisual() { return this.roomInspection.instrumentWarpVisual(); }
 
-    void presentWitchGotItem(int slot) {
-        pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
-        pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
-    }
+    void presentWitchGotItem(int slot) { this.playerCommands.presentWitchGotItem(slot); }
 
     /** ProcessPowerUp ($03:6400) and ApplyGotItem ($00:1033). */
 
-    void holdSwordAboveLink(RoomEntity entity, int linkEntityX, int linkEntityY,
-                                    int linkZ, boolean finalPose) {
-        int slot = entity.slot();
-        pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
-        pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
-        int x = finalPose ? (linkEntityX - 4) & 0xFF : linkEntityX;
-        RoomEntity held = withPositionAndVariant(entity, x,
-            (linkEntityY - 0x0C) & 0xFF, entity.spriteVariant());
-        slots[slot] = withZ(held, linkZ & 0xFF);
-    }
+    void holdSwordAboveLink(RoomEntity entity, int linkEntityX, int linkEntityY, int linkZ, boolean finalPose) { this.playerCommands.holdSwordAboveLink(entity, linkEntityX, linkEntityY, linkZ, finalPose); }
 
     void setOwlDialogResolver(IntUnaryOperator resolver) { this.entityRuntimeConfiguration.setOwlDialogResolver(resolver); }
 

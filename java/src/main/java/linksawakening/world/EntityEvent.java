@@ -1,7 +1,7 @@
 package linksawakening.world;
 
 /** Outbound entity effects, retaining their ROM handler payloads. */
-public sealed interface EntityEvent permits
+sealed interface EntityEvent permits
     RoomEntityRuntime.ThrownBackgroundCollisionEvent,
     RoomEntityRuntime.TransientVfxRequest,
     RoomEntityRuntime.HeartContainerRewardEvent,
