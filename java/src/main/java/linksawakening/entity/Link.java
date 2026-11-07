@@ -73,47 +73,16 @@ public final class Link implements RocsFeather.JumpTarget {
     // hLinkAnimationState values from gameplay.asm. Index = direction, inner
     // index = walking-frame bit (0 = standing, 1 = walking alt). These match
     // LinkAnimationsList_WalkingNoShield (bank2.asm:1208).
-    private static final int[][] ANIMATION_STATE = {
-        { 0x00, 0x01 },  // DOWN:  standing, walking
-        { 0x04, 0x05 },  // UP
-        { 0x06, 0x07 },  // LEFT
-        { 0x0A, 0x0B },  // RIGHT
-    };
 
     // LinkAnimationsList_WalkUsingDefaultShield and the corresponding mirror
     // list in bank2.asm:1214-1240. Java direction order is DOWN, UP, LEFT,
     // RIGHT, matching the ordinary walking table above.
-    private static final int[][] SHIELD_USE_ANIMATION_STATE = {
-        { 0x24, 0x25 },  // DOWN
-        { 0x30, 0x31 },  // UP
-        { 0x28, 0x29 },  // LEFT
-        { 0x2A, 0x2B },  // RIGHT
-    };
-    private static final int[][] MIRROR_SHIELD_USE_ANIMATION_STATE = {
-        { 0x26, 0x27 },  // DOWN
-        { 0x32, 0x33 },  // UP
-        { 0x28, 0x29 },  // LEFT
-        { 0x2E, 0x2F },  // RIGHT
-    };
 
     // LinkAnimationsList_LiftingObject (bank2.asm:1249), indexed in the
     // same Java direction order as the walking table.
-    private static final int[][] LIFTING_ANIMATION_STATE = {
-        { 0x44, 0x45 },  // DOWN
-        { 0x42, 0x43 },  // UP
-        { 0x40, 0x41 },  // LEFT
-        { 0x3E, 0x3F },  // RIGHT
-    };
 
     // Data_002_4948 (bank2.asm:1257), in Java direction order. The second
     // row is selected while hLinkPhysicsModifier is non-zero (diving).
-    private static final int[][] SWIMMING_ANIMATION_STATE = {
-        { 0x4C, 0x4D },  // DOWN
-        { 0x4A, 0x4B },  // UP
-        { 0x48, 0x49 },  // LEFT
-        { 0x46, 0x47 },  // RIGHT
-    };
-    private static final int[] DIVING_ANIMATION_STATE = { 0x4E, 0x4F };
 
     private static final int WALK_FRAME_TICKS = 8;
     private static final int JUMP_FRAME_TICKS = 8;
@@ -134,13 +103,6 @@ public final class Link implements RocsFeather.JumpTarget {
     private static final int PEGASUS_BOOTS_COLLISION_SHAKE = 0x20;
     private static final int PEGASUS_BOOTS_COLLISION_VELOCITY_Z = 0x18;
 
-    private static final int[][] JUMP_ANIMATION_STATE = {
-        { 0x64, 0x65, 0x66 }, // DOWN
-        { 0x67, 0x68, 0x69 }, // UP
-        { 0x5E, 0x5F, 0x60 }, // LEFT
-        { 0x61, 0x62, 0x63 }, // RIGHT
-    };
-    private static final int[] FALL_ANIMATION_STATE = { 0x55, 0x56, 0x57, 0x57 };
 
     private final InputState inputState;
     private final InputConfig inputConfig;
@@ -1500,7 +1462,7 @@ public final class Link implements RocsFeather.JumpTarget {
             // Marin sets wIsLinkInTheAir=2, so UpdateLinkAnimation skips
             // the feather/ledge flip. Walking animation precedes gravity:
             // first pose $0A, then $0B, including the landing frame.
-            romAnimationStateOverride = ANIMATION_STATE[direction][movingThisFrame ? 1 : 0];
+            romAnimationStateOverride = LinkAnimator.ANIMATION_STATE[direction][movingThisFrame ? 1 : 0];
             // ApplyGotItem caches wC145 before this frame changes Z.
             bedJumpRenderZ = zPixels();
             tickJump();
@@ -2509,14 +2471,14 @@ public final class Link implements RocsFeather.JumpTarget {
             return swordAcquisitionAnimationState;
         }
         if (fallingIntoPit) {
-            int frame = Math.min(FALL_ANIMATION_STATE.length - 1, fallingFrameCounter / FALL_FRAME_TICKS);
-            return FALL_ANIMATION_STATE[frame];
+            int frame = Math.min(LinkAnimator.FALL_ANIMATION_STATE.length - 1, fallingFrameCounter / FALL_FRAME_TICKS);
+            return LinkAnimator.FALL_ANIMATION_STATE[frame];
         }
 
         if (motionState == LINK_MOTION_SWIMMING) {
             return physicsModifier != 0
-                ? DIVING_ANIMATION_STATE[walkFrame]
-                : SWIMMING_ANIMATION_STATE[direction][walkFrame];
+                ? LinkAnimator.DIVING_ANIMATION_STATE[walkFrame]
+                : LinkAnimator.SWIMMING_ANIMATION_STATE[direction][walkFrame];
         }
 
         // func_002_4338 copies the intermediate ROM carry animation state
@@ -2528,9 +2490,9 @@ public final class Link implements RocsFeather.JumpTarget {
         // ApplyLinkGroundMotion ($02:4503) sets the step counter to $FF
         // while airborne, selecting the alternate normal pose after the flip.
         int normalFrame = airborne ? 1 : walkFrame;
-        int baseState = ANIMATION_STATE[direction][normalFrame];
+        int baseState = LinkAnimator.ANIMATION_STATE[direction][normalFrame];
         if (carryingLiftedObjectState == 1) {
-            return LIFTING_ANIMATION_STATE[direction][walkFrame];
+            return LinkAnimator.LIFTING_ANIMATION_STATE[direction][walkFrame];
         }
         int override = queryOverride(itemInSlotA());
         if (override >= 0) {
@@ -2541,7 +2503,7 @@ public final class Link implements RocsFeather.JumpTarget {
             return override;
         }
         if (airborne && jumpAnimationFrame < 3 && !swordSuppressesJumpAnimation()) {
-            return JUMP_ANIMATION_STATE[direction][jumpAnimationFrame];
+            return LinkAnimator.JUMP_ANIMATION_STATE[direction][jumpAnimationFrame];
         }
         if (spriteSheet != null) {
             int carriedShield = !gelClinging && playerState != null
@@ -2553,7 +2515,7 @@ public final class Link implements RocsFeather.JumpTarget {
         }
         if (isUsingShield() && playerState != null && playerState.shieldLevel() > 0) {
             int[][] shieldTable = playerState.shieldLevel() >= 2
-                ? MIRROR_SHIELD_USE_ANIMATION_STATE : SHIELD_USE_ANIMATION_STATE;
+                ? LinkAnimator.MIRROR_SHIELD_USE_ANIMATION_STATE : LinkAnimator.SHIELD_USE_ANIMATION_STATE;
             return shieldTable[direction][normalFrame];
         }
         return baseState;
