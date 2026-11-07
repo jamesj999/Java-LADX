@@ -57,7 +57,6 @@ import linksawakening.input.InputState;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.render.GameFrameSceneBuilder;
 import linksawakening.render.GameFrameState;
-import linksawakening.render.OpenGlFramePresenter;
 import linksawakening.render.RenderScreen;
 import linksawakening.rom.RomTables;
 import linksawakening.rom.RomBank;
@@ -100,8 +99,6 @@ import linksawakening.world.RoomTransitionCoordinator;
 import linksawakening.world.ScrollController;
 import linksawakening.world.TransitionController;
 import linksawakening.world.Warp;
-import org.lwjgl.glfw.GLFWErrorCallback;
-import org.lwjgl.glfw.GLFWKeyCallback;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -115,7 +112,6 @@ public class GameSession {
     private final int OBJECT_GROUND_STAIRS = 0xC6;
     private final int GAME_BOY_BG_MAP_TILES = 32 * 32;
 
-    private long window;
     private final RomRandomByteSource random;
 
     public GameSession() {
@@ -126,10 +122,8 @@ public class GameSession {
         this.random = java.util.Objects.requireNonNull(random);
     }
 
+    private Host host = new HeadlessHost();
     private GPU gpu;
-    private OpenGlFramePresenter framePresenter;
-    private GLFWErrorCallback errorCallback;
-    private GLFWKeyCallback keyCallback;
     private final GameFrameSceneBuilder frameSceneBuilder = new GameFrameSceneBuilder();
     private byte[] romData;
     private int[] currentTilemap;
@@ -223,16 +217,16 @@ public class GameSession {
             startTitleScreenWithoutIntro();
         }
 
-        initGLFW();
-        initOpenGL();
+        host = new DesktopHost();
+        host.open(this::onKeyEvent);
 
         long nextFrameNs = System.nanoTime();
 
-        while (!glfwWindowShouldClose(window) && running) {
-            glfwPollEvents();
+        while (!host.shouldClose() && running) {
+            host.pollEvents();
             update();
             composeFrameBuffer();
-            framePresenter.present(indexedDisplayBuffer);
+            host.present(indexedDisplayBuffer);
 
             nextFrameNs += FRAME_DURATION_NS;
             long sleepNs = nextFrameNs - System.nanoTime();
@@ -2256,56 +2250,6 @@ public class GameSession {
         link.setRoomEntryPixelPosition(startX, startY);
     }
 
-    private void initGLFW() {
-        errorCallback = GLFWErrorCallback.createPrint(System.err).set();
-
-        if (!glfwInit()) {
-            throw new IllegalStateException("Failed to initialize GLFW");
-        }
-
-        glfwDefaultWindowHints();
-        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
-
-        window = glfwCreateWindow(
-            Framebuffer.WIDTH * Framebuffer.SCALE,
-            Framebuffer.HEIGHT * Framebuffer.SCALE,
-            "Link's Awakening DX",
-            0,
-            0
-        );
-
-        if (window == 0) {
-            throw new IllegalStateException("Failed to create window");
-        }
-
-        glfwMakeContextCurrent(window);
-        glfwSwapInterval(1);
-        glfwShowWindow(window);
-
-        try {
-            Thread.sleep(200);
-        } catch (InterruptedException ignored) {
-            Thread.currentThread().interrupt();
-        }
-
-        keyCallback = new GLFWKeyCallback() {
-            @Override
-            public void invoke(long handle, int key, int scancode, int action, int mods) {
-                onKeyEvent(key, action);
-            }
-        };
-        glfwSetKeyCallback(window, keyCallback);
-    }
-
-    private void initOpenGL() {
-        framePresenter = OpenGlFramePresenter.initialize(window);
-    }
-
     private void composeFrameBuffer() {
         if (inventoryMenu != null && roomSession != null && roomSession.activeRoom() != null) {
             inventoryMenu.setWorldContext(roomSession.activeRoom().mapCategory() != Warp.CATEGORY_OVERWORLD,
@@ -2344,23 +2288,15 @@ public class GameSession {
     }
 
     private void cleanup() {
-        if (framePresenter != null) {
-            framePresenter.cleanup();
-        }
+        host.releasePresentation();
         if (dialogSoundOutput != null) {
             dialogSoundOutput.close();
         }
         if (musicPlayer != null) {
             musicPlayer.close();
         }
-        if (keyCallback != null) {
-            keyCallback.free();
-        }
-        glfwDestroyWindow(window);
-        glfwTerminate();
-        if (errorCallback != null) {
-            errorCallback.free();
-        }
+
+        host.close();
     }
 
     private void tickTitleScreen() {
