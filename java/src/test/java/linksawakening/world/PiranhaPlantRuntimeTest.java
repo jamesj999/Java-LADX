@@ -49,7 +49,7 @@ final class PiranhaPlantRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
             0, 0, ENTITY_PIRANHA_PLANT, 0x40, 0x60, EntityStatus.ACTIVE,
             catalog.forEntityType(ENTITY_PIRANHA_PLANT, EntityRoomLoader.RoomTable.INDOORS_A),
-            0)), true, () -> 0, catalog, new RomEnemyCombatTables(loadRom()));
+            0, 0, 0, 0, -1, false)), true, () -> 0, catalog, new RomEnemyCombatTables(loadRom()));
 
         assertEquals(0x14, runtime.physicsFlags(0));
         assertEquals(0x00, runtime.options1(0));
@@ -63,7 +63,7 @@ final class PiranhaPlantRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
             0, 0, ENTITY_PIRANHA_PLANT, 0x40, 0x40, EntityStatus.ACTIVE,
             catalog.forEntityType(ENTITY_PIRANHA_PLANT, EntityRoomLoader.RoomTable.INDOORS_A),
-            0)), true, () -> 0, catalog, new RomEnemyCombatTables(rom));
+            0, 0, 0, 0, -1, false)), true, () -> 0, catalog, new RomEnemyCombatTables(rom));
 
         EnemyAttackContext nonDamaging =
             new EnemyAttackContext(0, false, false, false, false);
@@ -86,14 +86,14 @@ final class PiranhaPlantRuntimeTest {
 
         RoomEntityRuntime creditsRuntime = RoomEntityRuntime.from(snapshot(new RoomEntity(
             0, 0, ENTITY_PIRANHA_PLANT, 0x40, 0x40, EntityStatus.ACTIVE,
-            definition, 0)), true, () -> 0, catalog, new RomEnemyCombatTables(rom));
+            definition, 0, 0, 0, 0, -1, false)), true, () -> 0, catalog, new RomEnemyCombatTables(rom));
         creditsRuntime.tick(0, 0x20, 0x40, () -> 0, true);
         assertEquals(0, creditsRuntime.transitionCountdown(0));
         assertEquals(0x40, creditsRuntime.snapshot().slots().get(0).y());
 
         RoomEntityRuntime transitionRuntime = RoomEntityRuntime.from(snapshot(new RoomEntity(
             0, 0, ENTITY_PIRANHA_PLANT, 0x40, 0x40, EntityStatus.ACTIVE,
-            definition, 0)), true, () -> 0, catalog, new RomEnemyCombatTables(rom));
+            definition, 0, 0, 0, 0, -1, false)), true, () -> 0, catalog, new RomEnemyCombatTables(rom));
         transitionRuntime.setTransitionSequenceCounterForTest(0x03);
         transitionRuntime.tick(0, 0x20, 0x40, () -> 0);
         assertEquals(0, transitionRuntime.transitionCountdown(0));
@@ -107,7 +107,7 @@ final class PiranhaPlantRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
             0, 0, ENTITY_PIRANHA_PLANT, 0x40, 0x40, EntityStatus.ACTIVE,
             catalog.forEntityType(ENTITY_PIRANHA_PLANT, EntityRoomLoader.RoomTable.INDOORS_A),
-            0)), true, () -> 0, catalog, new RomEnemyCombatTables(rom));
+            0, 0, 0, 0, -1, false)), true, () -> 0, catalog, new RomEnemyCombatTables(rom));
 
         assertTrue(runtime.resolveCombat(1, 0x40, 0x40, false, true,
             false, 0, 0, 0, 0).isEmpty());
@@ -119,7 +119,7 @@ final class PiranhaPlantRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
             0, 0, ENTITY_PIRANHA_PLANT, 0x40, 0x60, EntityStatus.INIT,
             catalog.forEntityType(ENTITY_PIRANHA_PLANT, EntityRoomLoader.RoomTable.INDOORS_A),
-            0)), true, () -> 0, catalog, new RomEnemyCombatTables(loadRom()));
+            0, 0, 0, 0, -1, false)), true, () -> 0, catalog, new RomEnemyCombatTables(loadRom()));
 
         runtime.tick(0, 0x40, 0x20, () -> 0);
         runtime.tick(1, 0x40, 0x20, () -> 0);
@@ -144,7 +144,7 @@ final class PiranhaPlantRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
             0, 0, ENTITY_PIRANHA_PLANT, 0x40, 0x60, EntityStatus.INIT,
             catalog.forEntityType(ENTITY_PIRANHA_PLANT, EntityRoomLoader.RoomTable.INDOORS_A),
-            0)), true, () -> 0, catalog, new RomEnemyCombatTables(loadRom()));
+            0, 0, 0, 0, -1, false)), true, () -> 0, catalog, new RomEnemyCombatTables(loadRom()));
 
         runtime.tick(0, 0x00, 0x20, () -> 0);
         runtime.tick(1, 0x00, 0x20, () -> 0);

@@ -73,7 +73,7 @@ final class SparkMotion {
         int variant = (frameCounter >>> 1) & 0x01;
         return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
             entity.status(), entity.spriteDefinition(), variant, entity.entityFlipAttribute(),
-            entity.spriteTileOffset(), entity.z());
+            entity.spriteTileOffset(), entity.z(), -1, false);
     }
 
     void clear(int slot) {
@@ -132,7 +132,7 @@ final class SparkMotion {
         return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
             x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(),
             entity.spriteVariant(), entity.entityFlipAttribute(), entity.spriteTileOffset(),
-            entity.z());
+            entity.z(), -1, false);
     }
 
     private static int addSpeedToPosition(int position, int speed, int[] accumulator,

@@ -136,6 +136,6 @@ final class MaskedMimicMotionTest {
         }
         EntitySpriteDefinition definition = new EntitySpriteDefinition(
             0x8F, 0x19, 0x4796, EntitySpriteDefinition.Shape.PAIR, 0, variants);
-        return new RoomEntity(0, 0, 0x8F, x, y, EntityStatus.ACTIVE, definition, 0);
+        return new RoomEntity(0, 0, 0x8F, x, y, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
     }
 }

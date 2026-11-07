@@ -309,13 +309,13 @@ final class LaserMotion {
     private static RoomEntity withPosition(RoomEntity entity, int x, int y) {
         return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
             entity.status(), entity.spriteDefinition(), entity.spriteVariant(),
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z());
+            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false);
     }
 
     private static RoomEntity withVariant(RoomEntity entity, int variant) {
         return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), entity.x(),
             entity.y(), entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z());
+            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false);
     }
 
     record ParentUpdate(RoomEntity entity, boolean spawnSensor, boolean spawnBeam) {

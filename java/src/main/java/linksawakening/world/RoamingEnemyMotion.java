@@ -315,7 +315,7 @@ final class RoamingEnemyMotion {
                                                        int variant) {
         return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
             entity.status(), entity.spriteDefinition(), variant, entity.entityFlipAttribute(),
-            entity.spriteTileOffset(), entity.z());
+            entity.spriteTileOffset(), entity.z(), -1, false);
     }
 
     record Update(RoomEntity entity, LaunchRequest launchRequest) {

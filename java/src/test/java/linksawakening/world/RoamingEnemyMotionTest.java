@@ -196,6 +196,6 @@ final class RoamingEnemyMotionTest {
 
     private static RoomEntity entity(int slot, int type, int x, int y) {
         return new RoomEntity(slot, 0, type, x, y, EntityStatus.ACTIVE,
-            EntitySpriteDefinition.unsupported(type), -1);
+            EntitySpriteDefinition.unsupported(type), -1, 0, 0, 0, -1, false);
     }
 }

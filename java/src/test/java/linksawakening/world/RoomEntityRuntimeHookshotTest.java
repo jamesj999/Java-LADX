@@ -51,7 +51,7 @@ final class RoomEntityRuntimeHookshotTest {
         EntitySpriteDefinition unsupported = EntitySpriteDefinition.unsupported(0xFF);
         for (int slot = 0; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             slots.add(new RoomEntity(slot, 0, 0, 0, 0, EntityStatus.ACTIVE,
-                unsupported, -1));
+                unsupported, -1, 0, 0, 0, -1, false));
         }
 
         RoomEntityRuntime runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(slots));

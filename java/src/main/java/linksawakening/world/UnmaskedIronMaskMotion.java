@@ -54,7 +54,7 @@ final class UnmaskedIronMaskMotion {
 
         return new Update(new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
             x, y, entity.status(), entity.spriteDefinition(), (frame >>> 4) & 0x01,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z()),
+            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false),
             nextTransitionCountdown);
     }
 

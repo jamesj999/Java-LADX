@@ -47,7 +47,7 @@ final class WitchRatRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
             0, 0, ENTITY_WITCH_RAT, 0x40, 0x40, EntityStatus.ACTIVE,
-            catalog.forEntityType(ENTITY_WITCH_RAT, EntityRoomLoader.RoomTable.INDOORS_B), 0)),
+            catalog.forEntityType(ENTITY_WITCH_RAT, EntityRoomLoader.RoomTable.INDOORS_B), 0, 0, 0, 0, -1, false)),
             true, () -> 0, catalog, new RomEnemyCombatTables(rom));
 
         assertTrue(RoomEntityCombatRules.supportsEnemyCollision(ENTITY_WITCH_RAT));
@@ -148,7 +148,7 @@ final class WitchRatRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
             0, 0, ENTITY_WITCH_RAT, 0x40, 0x40, EntityStatus.ACTIVE,
-            catalog.forEntityType(ENTITY_WITCH_RAT, EntityRoomLoader.RoomTable.INDOORS_B), 0)),
+            catalog.forEntityType(ENTITY_WITCH_RAT, EntityRoomLoader.RoomTable.INDOORS_B), 0, 0, 0, 0, -1, false)),
             true, () -> 0, catalog, new RomEnemyCombatTables(rom));
 
         runtime.tickWithProjectileEvents(0, 0x20, 0x20, () -> 0, null,
@@ -165,7 +165,7 @@ final class WitchRatRuntimeTest {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(rom)
             .forEntityType(ENTITY_WITCH_RAT, EntityRoomLoader.RoomTable.INDOORS_B);
         return new RoomEntity(0, 0, ENTITY_WITCH_RAT, 0x40, 0x40,
-            EntityStatus.ACTIVE, definition, 0);
+            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
     }
 
     private static RoomEntitySnapshot snapshot(RoomEntity entity) {

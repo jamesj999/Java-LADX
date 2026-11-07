@@ -42,7 +42,7 @@ final class EntityCollisionPointProbeTest {
         int nextY = 0x90;
         for (int boxType = 0; boxType < 4; boxType++) {
             RoomEntity entity = new RoomEntity(0, 0, 0x20 + boxType, nextX, nextY,
-                EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(0x20 + boxType), -1);
+                EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(0x20 + boxType), -1, 0, 0, 0, -1, false);
             for (int direction = 0; direction < 4; direction++) {
                 EntityCollisionPointProbe.Sample sample = probe.sample(
                     entity, direction, nextX, nextY);

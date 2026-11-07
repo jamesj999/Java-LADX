@@ -28,7 +28,7 @@ final class ThreeOfAKindMotion {
         int x = move(entity, true, collision);
         int y = move(new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
             x, entity.y(), entity.status(), entity.spriteDefinition(), entity.spriteVariant(),
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z()), false, collision);
+            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false), false, collision);
 
         switch (state[slot]) {
             case 0 -> {
@@ -152,6 +152,6 @@ final class ThreeOfAKindMotion {
                                                       int variant) {
         return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
             entity.status(), entity.spriteDefinition(), variant, entity.entityFlipAttribute(),
-            entity.spriteTileOffset(), entity.z());
+            entity.spriteTileOffset(), entity.z(), -1, false);
     }
 }

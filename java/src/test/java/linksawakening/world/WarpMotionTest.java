@@ -75,7 +75,7 @@ final class WarpMotionTest {
 
     private static RoomEntity entity(int x, int y) {
         return new RoomEntity(0, 0, WarpMotion.ENTITY_TYPE, x, y, EntityStatus.ACTIVE,
-            EntitySpriteDefinition.unsupported(WarpMotion.ENTITY_TYPE), 0, 0, 0, 0);
+            EntitySpriteDefinition.unsupported(WarpMotion.ENTITY_TYPE), 0, 0, 0, 0, -1, false);
     }
 
     private static byte[] loadRom() throws IOException {

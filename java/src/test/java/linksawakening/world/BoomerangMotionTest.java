@@ -60,7 +60,7 @@ final class BoomerangMotionTest {
         BoomerangMotion motion = new BoomerangMotion();
         RoomEntity airborne = new RoomEntity(0, -1, BoomerangMotion.ENTITY_TYPE,
             0x40, 0x40, EntityStatus.ACTIVE,
-            EntitySpriteDefinition.unsupported(BoomerangMotion.ENTITY_TYPE), 0, 0, 0, 8);
+            EntitySpriteDefinition.unsupported(BoomerangMotion.ENTITY_TYPE), 0, 0, 0, 8, -1, false);
 
         motion.setVectorTowardsLink(0, airborne, 0x50, 0x40, 8);
 
@@ -121,6 +121,6 @@ final class BoomerangMotionTest {
     private static RoomEntity entity(int x, int y) {
         return new RoomEntity(0, -1, BoomerangMotion.ENTITY_TYPE, x, y,
             EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(BoomerangMotion.ENTITY_TYPE),
-            0);
+            0, 0, 0, 0, -1, false);
     }
 }

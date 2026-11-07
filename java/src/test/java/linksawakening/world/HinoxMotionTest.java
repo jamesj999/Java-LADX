@@ -272,6 +272,6 @@ final class HinoxMotionTest {
 
     private static RoomEntity entity(int x, int y, int spriteVariant) {
         return new RoomEntity(0, 0, HINOX, x, y, EntityStatus.ACTIVE,
-            EntitySpriteDefinition.unsupported(HINOX), spriteVariant);
+            EntitySpriteDefinition.unsupported(HINOX), spriteVariant, 0, 0, 0, -1, false);
     }
 }

@@ -153,7 +153,7 @@ final class ArrowPauseTest {
         }
         if (type != 0) {
             slots.set(0, new RoomEntity(0, -1, type, 0x40, 0x50, EntityStatus.ACTIVE,
-                catalog.forEntityType(type, EntityRoomLoader.RoomTable.OVERWORLD, -1), 0));
+                catalog.forEntityType(type, EntityRoomLoader.RoomTable.OVERWORLD, -1), 0, 0, 0, 0, -1, false));
         }
         RoomEntityRuntime runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(slots),
             false, () -> 0, catalog);

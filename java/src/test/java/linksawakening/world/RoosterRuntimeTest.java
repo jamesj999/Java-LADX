@@ -15,7 +15,7 @@ final class RoosterRuntimeTest {
     void activeFollowingRoosterUsesItsDedicatedPowerBraceletLiftBranch() {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, -1, RoosterMotion.ENTITY_TYPE, 0x40, 0x50,
-                EntityStatus.ACTIVE, definition(), 0)));
+                EntityStatus.ACTIVE, definition(), 0, 0, 0, 0, -1, false)));
         runtime.setFollowingNpcState(new FollowingNpcState(true, 0, false, false,
             0, 0, false));
         runtime.setActionButtonsHeld(false, true);

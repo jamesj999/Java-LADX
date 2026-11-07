@@ -109,6 +109,6 @@ final class GibdoLikeLikeMotionTest {
         EntitySpriteDefinition definition = new EntitySpriteDefinition(type, 6,
             type == 0x1F ? 0x7E6F : 0x7DD4, EntitySpriteDefinition.Shape.PAIR, 0,
             List.of(pair, pair));
-        return new RoomEntity(0, 0, type, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0);
+        return new RoomEntity(0, 0, type, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
     }
 }

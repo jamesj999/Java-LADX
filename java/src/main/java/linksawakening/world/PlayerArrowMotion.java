@@ -267,7 +267,7 @@ final class PlayerArrowMotion {
                                                        int z, int variant) {
         return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
             entity.status(), entity.spriteDefinition(), variant, entity.entityFlipAttribute(),
-            entity.spriteTileOffset(), z);
+            entity.spriteTileOffset(), z, -1, false);
     }
 
     record SpawnData(int offsetX, int offsetY, int speedX, int speedY, int initialVariant) {

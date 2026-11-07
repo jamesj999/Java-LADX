@@ -53,7 +53,7 @@ final class ZombieRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(new RoomEntity(
             0, 0, ENTITY_ZOMBIE, 0x40, 0x40, EntityStatus.ACTIVE,
-            catalog.forEntityType(ENTITY_ZOMBIE, EntityRoomLoader.RoomTable.OVERWORLD), 0)),
+            catalog.forEntityType(ENTITY_ZOMBIE, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
             false, () -> 0, catalog, new RomEnemyCombatTables(rom));
 
         assertTrue(RoomEntityCombatRules.supportsEnemyCollision(ENTITY_ZOMBIE));
@@ -70,7 +70,7 @@ final class ZombieRuntimeTest {
             .forEntityType(ENTITY_ZOMBIE, EntityRoomLoader.RoomTable.OVERWORLD);
         ZombieMotion motion = new ZombieMotion();
         RoomEntity parent = new RoomEntity(0, 0, ENTITY_ZOMBIE, 0x40, 0x40,
-            EntityStatus.ACTIVE, definition, 0);
+            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
         AtomicInteger randomCalls = new AtomicInteger();
 
         ZombieMotion.Update update = motion.advance(parent, 0, 0x00, 0x52,
@@ -99,7 +99,7 @@ final class ZombieRuntimeTest {
         ZombieMotion motion = new ZombieMotion();
         motion.initializeChild(1);
         RoomEntity child = new RoomEntity(1, -1, ENTITY_ZOMBIE, 0x40, 0x40,
-            EntityStatus.ACTIVE, definition, 0);
+            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
 
         ZombieMotion.Update emerging = motion.advance(child, 0, 0x00, 0x12,
             0x70, 0x50, () -> 0, null, null, 0);
@@ -138,7 +138,7 @@ final class ZombieRuntimeTest {
         ZombieMotion motion = new ZombieMotion();
         motion.initializeChild(0);
         RoomEntity child = new RoomEntity(0, -1, ENTITY_ZOMBIE, 0x40, 0x40,
-            EntityStatus.ACTIVE, definition, 0);
+            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
 
         ZombieMotion.Update state0 = motion.advance(child, 0, 0, 0x12,
             0x70, 0x50, () -> 0, null, null, 0);
@@ -172,7 +172,7 @@ final class ZombieRuntimeTest {
         ZombieMotion motion = new ZombieMotion();
         motion.initializeChild(0);
         RoomEntity child = new RoomEntity(0, -1, ENTITY_ZOMBIE, 0x40, 0x40,
-            EntityStatus.ACTIVE, definition, 0);
+            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
         ZombieMotion.Update rising = motion.advance(child, 0, 0, 0x12,
             linkX, linkY, () -> 0, null, null, 0);
         ZombieMotion.Update walking = motion.advance(rising.entity(), 0, 0, 0x12,
@@ -204,7 +204,7 @@ final class ZombieRuntimeTest {
         ZombieMotion motion = new ZombieMotion();
         motion.initializeChild(0);
         RoomEntity child = new RoomEntity(0, -1, ENTITY_ZOMBIE, 0x40, 0x40,
-            EntityStatus.ACTIVE, definition, 0);
+            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
         int[] countdowns = {0, 0x30, 0x18, 0x17, 0, 0x70, 0x6F, 0,
             0x30, 0x18, 0x17, 1};
         int[] frames = {0, 1, 2, 3, 4, 0, 16, 17, 18, 19, 20, 21};
@@ -223,7 +223,7 @@ final class ZombieRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RoomEntity parent = new RoomEntity(0, 0, ENTITY_ZOMBIE, 0x40, 0x40,
             EntityStatus.ACTIVE,
-            catalog.forEntityType(ENTITY_ZOMBIE, EntityRoomLoader.RoomTable.OVERWORLD), 0);
+            catalog.forEntityType(ENTITY_ZOMBIE, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false);
         AtomicInteger randomCalls = new AtomicInteger();
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(parent), false,
             () -> randomCalls.getAndIncrement() == 0 ? 0x03 : 0x12,
@@ -256,7 +256,7 @@ final class ZombieRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RoomEntity parent = new RoomEntity(0, 0, ENTITY_ZOMBIE, 0x40, 0x40,
             EntityStatus.ACTIVE,
-            catalog.forEntityType(ENTITY_ZOMBIE, EntityRoomLoader.RoomTable.OVERWORLD), 0);
+            catalog.forEntityType(ENTITY_ZOMBIE, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(parent), false,
             () -> 0, catalog, new RomEnemyCombatTables(rom));
 
@@ -270,7 +270,7 @@ final class ZombieRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RoomEntity parent = new RoomEntity(0, 0, ENTITY_ZOMBIE, 0x40, 0x40,
             EntityStatus.INIT,
-            catalog.forEntityType(ENTITY_ZOMBIE, EntityRoomLoader.RoomTable.OVERWORLD), 0);
+            catalog.forEntityType(ENTITY_ZOMBIE, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(parent), false,
             () -> 0, catalog, new RomEnemyCombatTables(rom));
 

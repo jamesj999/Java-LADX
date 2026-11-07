@@ -176,7 +176,7 @@ final class BooBuddyPauseTest {
         }
         slots.set(0, new RoomEntity(0, 0, BooBuddyMotion.ENTITY_TYPE, 0x40, 0x50,
             EntityStatus.ACTIVE, catalog.forEntityType(BooBuddyMotion.ENTITY_TYPE,
-                EntityRoomLoader.RoomTable.INDOORS_A), 0));
+                EntityRoomLoader.RoomTable.INDOORS_A), 0, 0, 0, 0, -1, false));
         return RoomEntityRuntime.from(new RoomEntitySnapshot(slots), true, null, catalog);
     }
 }

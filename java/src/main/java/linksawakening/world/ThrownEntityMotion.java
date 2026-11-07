@@ -229,7 +229,7 @@ final class ThrownEntityMotion {
     private static RoomEntity withPosition(RoomEntity entity, int x, int y, int z) {
         return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
             x, y, entity.status(), entity.spriteDefinition(), entity.spriteVariant(),
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), z);
+            entity.entityFlipAttribute(), entity.spriteTileOffset(), z, -1, false);
     }
 
     private static int signedByte(int value) {

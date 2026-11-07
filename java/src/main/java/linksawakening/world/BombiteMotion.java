@@ -292,7 +292,7 @@ final class BombiteMotion {
     private static RoomEntity withPosition(RoomEntity entity, int x, int y) {
         return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
             x, y, entity.status(), entity.spriteDefinition(), entity.spriteVariant(),
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z());
+            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false);
     }
 
     private record Vector(int x, int y) {

@@ -82,6 +82,6 @@ final class BushCrawlerMotionTest {
     private static RoomEntity entity(int slot, int x, int y, int variant) {
         return new RoomEntity(slot, 0, BushCrawlerMotion.ENTITY_BUSH_CRAWLER, x, y,
             EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(
-                BushCrawlerMotion.ENTITY_BUSH_CRAWLER), variant);
+                BushCrawlerMotion.ENTITY_BUSH_CRAWLER), variant, 0, 0, 0, -1, false);
     }
 }

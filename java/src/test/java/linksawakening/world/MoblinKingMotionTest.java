@@ -35,7 +35,7 @@ final class MoblinKingMotionTest {
                 new EntitySpriteDefinition.OamAttribute(0, 0),
                 new EntitySpriteDefinition.OamAttribute(2, 0))));
         RoomEntity king = new RoomEntity(0, 0, 0xE4, 0x58, 0x58,
-            EntityStatus.ACTIVE, loadedDefinition, 0);
+            EntityStatus.ACTIVE, loadedDefinition, 0, 0, 0, 0, -1, false);
 
         MoblinKingMotion.Update setup = motion.advance(king, 0x30, 0x58,
             0, 0, 0, () -> 0, null, false);
@@ -132,6 +132,6 @@ final class MoblinKingMotionTest {
 
     private static RoomEntity entity(int x, int y) {
         return new RoomEntity(0, 0, 0xE4, x, y, EntityStatus.ACTIVE,
-            EntitySpriteDefinition.unsupported(0xE4), -1, 0, 0, 0);
+            EntitySpriteDefinition.unsupported(0xE4), -1, 0, 0, 0, -1, false);
     }
 }

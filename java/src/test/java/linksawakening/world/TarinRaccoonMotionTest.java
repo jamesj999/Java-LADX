@@ -249,11 +249,11 @@ final class TarinRaccoonMotionTest {
     private static RoomEntity withPosition(RoomEntity source, int x, int y, int z) {
         return new RoomEntity(source.slot(), source.sourceLoadOrder(), source.type(), x, y,
             source.status(), source.spriteDefinition(), source.spriteVariant(),
-            source.entityFlipAttribute(), source.spriteTileOffset(), z);
+            source.entityFlipAttribute(), source.spriteTileOffset(), z, -1, false);
     }
 
     private static RoomEntity raccoon() {
         return new RoomEntity(SLOT, 0, 0x3F, 0x78, 0x40, EntityStatus.ACTIVE,
-            EntitySpriteDefinition.unsupported(0x3F), 0);
+            EntitySpriteDefinition.unsupported(0x3F), 0, 0, 0, 0, -1, false);
     }
 }

@@ -43,7 +43,7 @@ final class GopongaFlowerRuntimeTest {
             new RoomEntity(0, 0, ENTITY_GOPONGA_FLOWER, 0x40, 0x40,
                 EntityStatus.ACTIVE,
                 catalog.forEntityType(ENTITY_GOPONGA_FLOWER,
-                    EntityRoomLoader.RoomTable.OVERWORLD), 0)),
+                    EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
             false, () -> 0, catalog, new RomEnemyCombatTables(rom));
 
         runtime.tick(0x00, 0, 0, () -> 0);
@@ -67,7 +67,7 @@ final class GopongaFlowerRuntimeTest {
             new RoomEntity(0, 0, ENTITY_GOPONGA_FLOWER, 0x40, 0x40,
                 EntityStatus.ACTIVE,
                 catalog.forEntityType(ENTITY_GOPONGA_FLOWER,
-                    EntityRoomLoader.RoomTable.OVERWORLD), 0)),
+                    EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
             false, () -> 0, catalog, new RomEnemyCombatTables(rom));
 
         assertEquals(0x04, runtime.enemyHealth(0));
@@ -90,7 +90,7 @@ final class GopongaFlowerRuntimeTest {
             new RoomEntity(0, 0, ENTITY_GOPONGA_FLOWER, 0x38, 0x40,
                 EntityStatus.ACTIVE,
                 catalog.forEntityType(ENTITY_GOPONGA_FLOWER,
-                    EntityRoomLoader.RoomTable.OVERWORLD), 0)),
+                    EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
             false, () -> 0, catalog, new RomEnemyCombatTables(rom));
 
         runtime.tickWithProjectileEvents(0, 0x40, 0x40, () -> 0, null,

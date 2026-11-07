@@ -194,7 +194,7 @@ final class RoomSessionTest {
         List<RoomEntity> slots = new ArrayList<>();
         slots.add(new RoomEntity(0, 0, SideViewPlatformMotion.ENTITY_TYPE, 0x40, 0x50,
             EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(
-                SideViewPlatformMotion.ENTITY_TYPE), 0));
+                SideViewPlatformMotion.ENTITY_TYPE), 0, 0, 0, 0, -1, false));
         for (int slot = 1; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             slots.add(RoomEntity.disabled(slot));
         }
@@ -527,7 +527,7 @@ final class RoomSessionTest {
         session.loadOverworld(0xC6);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(List.of(
             new RoomEntity(0, 0, 0x3C, 0x40, 0x50, EntityStatus.INIT,
-                EntitySpriteDefinition.unsupported(0x3C), -1),
+                EntitySpriteDefinition.unsupported(0x3C), -1, 0, 0, 0, -1, false),
             RoomEntity.disabled(1), RoomEntity.disabled(2), RoomEntity.disabled(3),
             RoomEntity.disabled(4), RoomEntity.disabled(5), RoomEntity.disabled(6),
             RoomEntity.disabled(7), RoomEntity.disabled(8), RoomEntity.disabled(9),
@@ -556,7 +556,7 @@ final class RoomSessionTest {
         session.loadOverworld(0x58);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(List.of(
             new RoomEntity(0, 0xFF, 0x3C, 0x40, 0x50, EntityStatus.INIT,
-                EntitySpriteDefinition.unsupported(0x3C), -1),
+                EntitySpriteDefinition.unsupported(0x3C), -1, 0, 0, 0, -1, false),
             RoomEntity.disabled(1), RoomEntity.disabled(2), RoomEntity.disabled(3),
             RoomEntity.disabled(4), RoomEntity.disabled(5), RoomEntity.disabled(6),
             RoomEntity.disabled(7), RoomEntity.disabled(8), RoomEntity.disabled(9),
@@ -587,7 +587,7 @@ final class RoomSessionTest {
         for (int slot = 0; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             slots.add(slot == 0
                 ? new RoomEntity(0, -1, 0x30, 0x50, 0x48, EntityStatus.ACTIVE,
-                    EntitySpriteDefinition.unsupported(0x30), 0)
+                    EntitySpriteDefinition.unsupported(0x30), 0, 0, 0, 0, -1, false)
                 : RoomEntity.disabled(slot));
         }
         RoomEntityRuntime runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(slots));
@@ -1282,7 +1282,7 @@ final class RoomSessionTest {
         List<RoomEntity> occupiedSlots = new ArrayList<>();
         for (int slot = 0; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             occupiedSlots.add(new RoomEntity(slot, -1, 0x42, 0x08, 0x10,
-                EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(0x42), -1));
+                EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(0x42), -1, 0, 0, 0, -1, false));
         }
         full.replaceEntityRuntimeForTest(
             RoomEntityRuntime.from(new RoomEntitySnapshot(occupiedSlots), true));
@@ -1773,7 +1773,7 @@ final class RoomSessionTest {
         session.loadIndoor(0x01, 0x2B);
         List<RoomEntity> dyingBossSlots = new ArrayList<>();
         dyingBossSlots.add(new RoomEntity(0, 0, 0x5C, 0x50, 0x40,
-            EntityStatus.DYING, EntitySpriteDefinition.unsupported(0x5C), 0));
+            EntityStatus.DYING, EntitySpriteDefinition.unsupported(0x5C), 0, 0, 0, 0, -1, false));
         for (int slot = 1; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             dyingBossSlots.add(RoomEntity.disabled(slot));
         }
@@ -4239,7 +4239,7 @@ final class RoomSessionTest {
 
     private static RoomEntity syntheticEntity(int type) {
         return new RoomEntity(0, 0, type, 0x20, 0x30, EntityStatus.ACTIVE,
-            EntitySpriteDefinition.unsupported(type), -1);
+            EntitySpriteDefinition.unsupported(type), -1, 0, 0, 0, -1, false);
     }
 
     private static RoomEntityRuntime runtimeWithKillOrder(byte[] rom, int... killOrder) {
@@ -4254,7 +4254,7 @@ final class RoomSessionTest {
             int slot = entitySlots[sourceOrder];
             slots.set(slot, new RoomEntity(slot, sourceOrder, 0x0B,
                 entityX[sourceOrder], 0x50, EntityStatus.ACTIVE,
-                catalog.forEntityType(0x0B, EntityRoomLoader.RoomTable.INDOORS_A), 0));
+                catalog.forEntityType(0x0B, EntityRoomLoader.RoomTable.INDOORS_A), 0, 0, 0, 0, -1, false));
         }
         RoomEntityRuntime runtime = RoomEntityRuntime.from(
             new RoomEntitySnapshot(slots), true, () -> 0, catalog,

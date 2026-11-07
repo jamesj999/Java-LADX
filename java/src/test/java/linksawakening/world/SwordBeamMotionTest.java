@@ -69,6 +69,6 @@ final class SwordBeamMotionTest {
     private static RoomEntity entity(int x, int y) {
         return new RoomEntity(0, -1, SwordBeamMotion.ENTITY_TYPE, x, y,
             EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(SwordBeamMotion.ENTITY_TYPE),
-            0);
+            0, 0, 0, 0, -1, false);
     }
 }

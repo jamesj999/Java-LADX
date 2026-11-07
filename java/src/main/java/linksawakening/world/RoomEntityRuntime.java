@@ -2618,7 +2618,7 @@ public final class RoomEntityRuntime {
                     falling.slot(), falling.sourceLoadOrder(), falling.type(), falling.x(),
                     falling.y(), EntityStatus.FALLING, falling.spriteDefinition(),
                     falling.spriteVariant(), renderFlipAttribute, falling.spriteTileOffset(),
-                    falling.z());
+                    falling.z(), -1, false);
                 continue;
             } else if (status == EntityStatus.DYING) {
                 if (entity.type() == ENTITY_MOBLIN_KING) {
@@ -4905,7 +4905,7 @@ public final class RoomEntityRuntime {
                 slots[index] = new RoomEntity(
                     updated.slot(), updated.sourceLoadOrder(), updated.type(), updated.x(), updated.y(),
                     status, updated.spriteDefinition(), variant, renderFlipAttribute,
-                    updated.spriteTileOffset(), updated.z());
+                    updated.spriteTileOffset(), updated.z(), -1, false);
             }
         }
         if (threeOfAKindInteractive) {
@@ -5192,7 +5192,7 @@ public final class RoomEntityRuntime {
         return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
             update.x(), update.y(), EntityStatus.LIFTED, entity.spriteDefinition(),
             entity.spriteVariant(), entity.entityFlipAttribute(), entity.spriteTileOffset(),
-            update.z());
+            update.z(), -1, false);
     }
 
     private RoomEntity advanceThrownEntity(RoomEntity entity,
@@ -6585,7 +6585,7 @@ public final class RoomEntityRuntime {
             ? Math.min(variant & 0x01, definition.variantCount() - 1) : -1;
         RoomEntity mask = new RoomEntity(freeSlot, -1, ENTITY_IRON_MASKS_MASK,
             x & 0xFF, y & 0xFF, EntityStatus.ACTIVE, definition, selectedVariant,
-            0, 0, 0);
+            0, 0, 0, -1, false);
         slots[freeSlot] = mask;
         baseEntityFlipAttribute[freeSlot] = 0;
         enemyTransitionCountdown[freeSlot] = 0;
@@ -6920,7 +6920,7 @@ public final class RoomEntityRuntime {
         int variant = definition.supported() ? definition.initialVariant() : -1;
         RoomEntity chain = new RoomEntity(freeSlot, -1, ENTITY_HOOKSHOT_CHAIN,
             linkEntityX & 0xFF, linkEntityY & 0xFF, EntityStatus.ACTIVE,
-            definition, variant, 0, 0, (linkEntityZ + 1) & 0xFF);
+            definition, variant, 0, 0, (linkEntityZ + 1) & 0xFF, -1, false);
         slots[freeSlot] = chain;
         hookshotChainMotion.initializeSpawn(freeSlot, linkEntityX & 0xFF,
             linkEntityY & 0xFF, linkEntityZ & 0xFF, romDirection);
@@ -6946,7 +6946,7 @@ public final class RoomEntityRuntime {
         EntitySpriteDefinition definition = spriteDefinitionFor(ENTITY_PUSHED_BLOCK);
         int variant = definition.supported() ? definition.initialVariant() : -1;
         slots[freeSlot] = new RoomEntity(freeSlot, -1, ENTITY_PUSHED_BLOCK,
-            x & 0xFF, y & 0xFF, EntityStatus.ACTIVE, definition, variant);
+            x & 0xFF, y & 0xFF, EntityStatus.ACTIVE, definition, variant, 0, 0, 0, -1, false);
         enemyPhysicsFlags[freeSlot] = 2 | ENTITY_PHYSICS_HARMLESS
             | ENTITY_PHYSICS_PROJECTILE_NOCLIP;
         enemyHealth[freeSlot] = 0;
@@ -6964,7 +6964,7 @@ public final class RoomEntityRuntime {
         EntitySpriteDefinition definition = spriteDefinitionFor(ENTITY_LIFTABLE_ROCK);
         int variant = definition.supported() ? spriteVariant : -1;
         slots[freeSlot] = new RoomEntity(freeSlot, -1, ENTITY_LIFTABLE_ROCK,
-            x & 0xFF, y & 0xFF, EntityStatus.ACTIVE, definition, variant);
+            x & 0xFF, y & 0xFF, EntityStatus.ACTIVE, definition, variant, 0, 0, 0, -1, false);
         enemyPhysicsFlags[freeSlot] = 0x02 | ENTITY_PHYSICS_HARMLESS
             | ENTITY_PHYSICS_PROJECTILE_NOCLIP | ENTITY_PHYSICS_SHADOW;
         enemyHealth[freeSlot] = initialHealth(ENTITY_LIFTABLE_ROCK);
@@ -6994,7 +6994,7 @@ public final class RoomEntityRuntime {
         slots[slot] = new RoomEntity(slot, entity.sourceLoadOrder(), entity.type(),
             x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(),
             entity.spriteVariant(), entity.entityFlipAttribute(), entity.spriteTileOffset(),
-            entity.z());
+            entity.z(), -1, false);
     }
 
     /** $03:5269: after block movement, restore Link even during a jump. */
@@ -7040,7 +7040,7 @@ public final class RoomEntityRuntime {
         int variant = romDirection;
         RoomEntity arrow = new RoomEntity(freeSlot, -1, ENTITY_ARROW,
             linkEntityX & 0xFF, linkEntityY & 0xFF, EntityStatus.ACTIVE,
-            definition, variant, 0, 0, (linkEntityZ + 1) & 0xFF);
+            definition, variant, 0, 0, (linkEntityZ + 1) & 0xFF, -1, false);
         slots[freeSlot] = arrow;
         playerArrowMotion.clear(freeSlot);
         playerArrowMotion.initializeSpawn(freeSlot, romDirection, pieceOfPower);
@@ -7090,7 +7090,7 @@ public final class RoomEntityRuntime {
         EntitySpriteDefinition definition = spriteDefinitionFor(ENTITY_BOOMERANG);
         RoomEntity boomerang = new RoomEntity(freeSlot, -1, ENTITY_BOOMERANG,
             linkEntityX & 0xFF, linkEntityY & 0xFF, EntityStatus.ACTIVE,
-            definition, romDirection, 0, 0, (linkEntityZ + 1) & 0xFF);
+            definition, romDirection, 0, 0, (linkEntityZ + 1) & 0xFF, -1, false);
         slots[freeSlot] = boomerang;
         boomerangMotion.clear(freeSlot);
         boomerangMotion.initializeSpawn(freeSlot, romDirection, pressedButtonsMask);
@@ -7126,7 +7126,7 @@ public final class RoomEntityRuntime {
         int variant = definition.supported() ? romDirection : -1;
         RoomEntity beam = new RoomEntity(freeSlot, -1, ENTITY_SWORD_BEAM,
             linkEntityX & 0xFF, linkEntityY & 0xFF, EntityStatus.ACTIVE,
-            definition, variant, 0, 0, (linkEntityZ + 1) & 0xFF);
+            definition, variant, 0, 0, (linkEntityZ + 1) & 0xFF, -1, false);
         slots[freeSlot] = beam;
         swordBeamMotion.clear(freeSlot);
         swordBeamMotion.initializeSpawn(freeSlot, romDirection);
@@ -7171,7 +7171,7 @@ public final class RoomEntityRuntime {
         RoomEntity fireball = new RoomEntity(freeSlot, -1, ENTITY_MAGIC_ROD_FIREBALL,
             (linkEntityX + spawn.offsetX()) & 0xFF,
             (linkEntityY + spawn.offsetY()) & 0xFF, EntityStatus.ACTIVE,
-            definition, variant, 0, 0, (linkEntityZ + 1) & 0xFF);
+            definition, variant, 0, 0, (linkEntityZ + 1) & 0xFF, -1, false);
         slots[freeSlot] = fireball;
         magicRodFireballMotion.clear(freeSlot);
         magicRodFireballMotion.initializeSpawn(freeSlot, romDirection, pieceOfPower);
@@ -7210,7 +7210,7 @@ public final class RoomEntityRuntime {
             ENTITY_MAGIC_POWDER_SPRINKLE,
             (linkEntityX + xOffsets[romDirection]) & 0xFF,
             (linkEntityY + yOffsets[romDirection]) & 0xFF,
-            EntityStatus.ACTIVE, definition, variant, 0, 0, linkEntityZ & 0xFF);
+            EntityStatus.ACTIVE, definition, variant, 0, 0, linkEntityZ & 0xFF, -1, false);
         slots[freeSlot] = sprinkle;
         magicPowderState[freeSlot] = 0;
         enemyTransitionCountdown[freeSlot] = MAGIC_POWDER_TRANSITION_COUNTDOWN;
@@ -7243,7 +7243,7 @@ public final class RoomEntityRuntime {
         int x = linkEntityX + (phase == 0 ? 0x08 : -0x08);
         RoomEntity note = new RoomEntity(freeSlot, -1, ENTITY_MUSICAL_NOTE,
             x & 0xFF, (linkEntityY - 0x08) & 0xFF, EntityStatus.ACTIVE,
-            definition, variant, 0, 0, 0);
+            definition, variant, 0, 0, 0, -1, false);
         slots[freeSlot] = note;
         musicalNoteInertia[freeSlot] = MUSICAL_NOTE_INITIAL_INERTIA;
         musicalNoteSpeedX[freeSlot] = phase == 0 ? 0x06 : 0x01;
@@ -7442,7 +7442,7 @@ public final class RoomEntityRuntime {
         int variant = definition.supported() ? definition.initialVariant() : -1;
         RoomEntity bomb = new RoomEntity(freeSlot, -1, ENTITY_BOMB,
             linkEntityX & 0xFF, linkEntityY & 0xFF, EntityStatus.ACTIVE,
-            definition, variant, 0, 0, (linkEntityZ + 1) & 0xFF);
+            definition, variant, 0, 0, (linkEntityZ + 1) & 0xFF, -1, false);
         slots[freeSlot] = bomb;
         bombDirection[freeSlot] = romDirection;
         thrownEntityMotion.startPlacedBomb(freeSlot, romDirection);
@@ -7508,7 +7508,7 @@ public final class RoomEntityRuntime {
         EntitySpriteDefinition definition = spriteDefinitionFor(ENTITY_BOMB);
         int variant = definition.supported() ? definition.initialVariant() : -1;
         RoomEntity bomb = new RoomEntity(freeSlot, -1, ENTITY_BOMB,
-            entityX, entityY, EntityStatus.ACTIVE, definition, variant, 0, 0, entityZ);
+            entityX, entityY, EntityStatus.ACTIVE, definition, variant, 0, 0, entityZ, -1, false);
         slots[freeSlot] = bomb;
         bombDirection[freeSlot] = 0xFF;
         playerArrowBombArrow[freeSlot] = false;
@@ -8048,7 +8048,7 @@ public final class RoomEntityRuntime {
         int variant = definition.supported() ? definition.initialVariant() : -1;
         slots[freeSlot] = new RoomEntity(freeSlot, -1, ENTITY_GENIE,
             x & 0xFF, y & 0xFF, EntityStatus.ACTIVE, definition, variant,
-            0, 0, 0);
+            0, 0, 0, -1, false);
         genieActiveState[freeSlot] = 0;
         geniePrivateState1[freeSlot] = privateState1 & 0xFF;
         geniePrivateState2[freeSlot] = 0;
@@ -8092,7 +8092,7 @@ public final class RoomEntityRuntime {
             ? liftableRockSmashVariant(sourceSpriteVariant, swampLeaves, initialCountdown) : -1;
         RoomEntity smash = new RoomEntity(freeSlot, -1, ENTITY_LIFTABLE_ROCK,
             entityX & 0xFF, entityY & 0xFF, EntityStatus.ACTIVE,
-            definition, variant, 0, 0, 0);
+            definition, variant, 0, 0, 0, -1, false);
         slots[freeSlot] = smash;
         liftableRockSmashActive[freeSlot] = true;
         liftableRockSmashCountdown[freeSlot] = initialCountdown;
@@ -8125,7 +8125,7 @@ public final class RoomEntityRuntime {
         int variant = definition.supported() ? definition.initialVariant() : -1;
         RoomEntity bomb = new RoomEntity(freeSlot, -1, ENTITY_BOMB,
             arrow.x(), arrow.y(), EntityStatus.ACTIVE, definition, variant,
-            0, 0, arrow.z());
+            0, 0, arrow.z(), -1, false);
         slots[freeSlot] = bomb;
         bombDirection[freeSlot] = playerArrowMotion.direction(arrow.slot());
         bombFinalPresentationPending[freeSlot] = false;
@@ -8224,7 +8224,7 @@ public final class RoomEntityRuntime {
         int variant = definition.supported() ? definition.initialVariant() : -1;
         RoomEntity bridge = new RoomEntity(freeSlot, -1, ENTITY_HOOKSHOT_BRIDGE,
             bridgeX & 0xFF, bridgeY & 0xFF, EntityStatus.ACTIVE,
-            definition, variant, 0, 0, 0);
+            definition, variant, 0, 0, 0, -1, false);
         slots[freeSlot] = bridge;
         hookshotBridgeMotion.initializeSpawn(freeSlot, bridge.x(), bridge.y(), direction);
         enemyPhysicsFlags[freeSlot] = ENTITY_PHYSICS_HARMLESS
@@ -9244,7 +9244,7 @@ public final class RoomEntityRuntime {
         RoomEntity gel = new RoomEntity(slot, original.sourceLoadOrder(), ENTITY_GEL,
             (split.originalX() - 4) & 0xFF, split.originalY(), EntityStatus.ACTIVE,
             gelDefinition, gelVariant, original.entityFlipAttribute(), original.spriteTileOffset(),
-            split.originalZ());
+            split.originalZ(), -1, false);
         enemyTransitionCountdown[slot] = 0;
         enemyStunnedCountdown[slot] = 0;
         enemyHealth[slot] = initialHealth(ENTITY_GEL);
@@ -9260,7 +9260,7 @@ public final class RoomEntityRuntime {
             RoomEntity spawnedGel = new RoomEntity(freeSlot, original.sourceLoadOrder(), ENTITY_GEL,
                 (split.originalX() + 8) & 0xFF, split.originalY(), EntityStatus.ACTIVE,
                 gelDefinition, gelVariant, original.entityFlipAttribute(), original.spriteTileOffset(),
-                split.originalZ());
+                split.originalZ(), -1, false);
             slots[freeSlot] = spawnedGel;
             enemyTransitionCountdown[freeSlot] = 0;
             enemyStunnedCountdown[freeSlot] = 0;
@@ -9477,7 +9477,7 @@ public final class RoomEntityRuntime {
         EntitySpriteDefinition definition = spriteDefinitionFor(ENTITY_HEART_CONTAINER);
         int variant = definition.supported() ? definition.initialVariant() : -1;
         slots[freeSlot] = new RoomEntity(freeSlot, -1, ENTITY_HEART_CONTAINER,
-            x, y, EntityStatus.ACTIVE, definition, variant, 0, 0, source.z());
+            x, y, EntityStatus.ACTIVE, definition, variant, 0, 0, source.z(), -1, false);
         resetEnemyDropState(freeSlot);
         enemyDropMotion.initialize(freeSlot, groundInteractionSideScrolling, 0x10);
         enemyDropActive[freeSlot] = true;
@@ -9951,7 +9951,7 @@ public final class RoomEntityRuntime {
         slots[freeSlot] = new RoomEntity(freeSlot, -1, source.type(),
             (source.x() + xOffsets[offsetIndex]) & 0xFF,
             (source.y() - 0x08) & 0xFF,
-            EntityStatus.ACTIVE, definition, variant & 0x01, 0, 0, 0);
+            EntityStatus.ACTIVE, definition, variant & 0x01, 0, 0, 0, -1, false);
         instrumentParticleKind[freeSlot] = 1;
         instrumentParticleSpeedX[freeSlot] = speedX[offsetIndex];
         instrumentParticleSpeedY[freeSlot] = 0xFD;
@@ -10499,7 +10499,7 @@ public final class RoomEntityRuntime {
             ? Math.min(spriteVariant, definition.variantCount() - 1) : -1;
         RoomEntity drop = new RoomEntity(freeSlot, -1, itemType,
             x & 0xFF, y & 0xFF, EntityStatus.ACTIVE, definition, variant,
-            0, 0, z);
+            0, 0, z, -1, false);
         slots[freeSlot] = drop;
         resetEnemyDropState(freeSlot);
         enemyDropMotion.initialize(freeSlot, groundInteractionSideScrolling, speedZ);
@@ -10544,7 +10544,7 @@ public final class RoomEntityRuntime {
             variant = 3;
         }
         RoomEntity drop = new RoomEntity(freeSlot, -1, itemType, source.x(), source.y(),
-            EntityStatus.ACTIVE, definition, variant, 0, 0, source.z());
+            EntityStatus.ACTIVE, definition, variant, 0, 0, source.z(), -1, false);
         slots[freeSlot] = drop;
         resetEnemyDropState(freeSlot);
         slowTransitionCountdown[freeSlot] = 0x80;
@@ -10581,7 +10581,7 @@ public final class RoomEntityRuntime {
         int variant = definition.supported() ? definition.initialVariant() : -1;
         slots[freeSlot] = new RoomEntity(freeSlot, 0xFF, ENTITY_MOBLIN_SWORD,
             wall.x(), (wall.y() + 0x08) & 0xFF, EntityStatus.INIT,
-            definition, variant, 0, 0, wall.z());
+            definition, variant, 0, 0, wall.z(), -1, false);
         resetEnemyDropState(freeSlot);
         droppedItemBySlot[freeSlot] = ENTITY_HIDING_SLIME_KEY;
         enemyPhysicsFlags[freeSlot] = initialPhysicsFlags(ENTITY_MOBLIN_SWORD);
@@ -10653,7 +10653,7 @@ public final class RoomEntityRuntime {
         EntitySpriteDefinition definition = spriteDefinitionFor(itemType);
         int variant = definition.supported() ? definition.initialVariant() : -1;
         RoomEntity drop = new RoomEntity(freeSlot, -1, itemType, x & 0xFF, y & 0xFF,
-            EntityStatus.ACTIVE, definition, variant, 0, 0, 0);
+            EntityStatus.ACTIVE, definition, variant, 0, 0, 0, -1, false);
         slots[freeSlot] = drop;
         resetEnemyDropState(freeSlot);
         slowTransitionCountdown[freeSlot] = 0x80;
@@ -10706,7 +10706,7 @@ public final class RoomEntityRuntime {
         int y = (objectTop & 0xF0) + 0x10;
         RoomEntity chest = new RoomEntity(freeSlot, -1, ENTITY_CHEST_WITH_ITEM,
             x & 0xFF, y & 0xFF, EntityStatus.INIT, definition, spriteVariant,
-            0, 0, 0);
+            0, 0, 0, -1, false);
         slots[freeSlot] = chest;
         baseEntityFlipAttribute[freeSlot] = 0;
         enemyPhysicsFlags[freeSlot] = CHEST_INITIAL_PHYSICS_FLAGS;
@@ -10760,7 +10760,7 @@ public final class RoomEntityRuntime {
             ? projectileDefinition.initialVariant() : -1;
         RoomEntity projectile = new RoomEntity(freeSlot, -1, ENTITY_PAIRODD_PROJECTILE,
             source.x(), source.y(), EntityStatus.ACTIVE, projectileDefinition,
-            projectileVariant, 0, 0, source.z());
+            projectileVariant, 0, 0, source.z(), -1, false);
         slots[freeSlot] = projectile;
         baseEntityFlipAttribute[freeSlot] = 0;
         enemyTransitionCountdown[freeSlot] = 0;
@@ -10787,7 +10787,7 @@ public final class RoomEntityRuntime {
             ? projectileDefinition.initialVariant() : -1;
         RoomEntity projectile = new RoomEntity(freeSlot, -1,
             ENTITY_GOPONGA_FLOWER_PROJECTILE, spawn.x(), spawn.y(), EntityStatus.ACTIVE,
-            projectileDefinition, projectileVariant, 0, 0, source.z());
+            projectileDefinition, projectileVariant, 0, 0, source.z(), -1, false);
         slots[freeSlot] = projectile;
         baseEntityFlipAttribute[freeSlot] = 0;
         entityOptions1Override[freeSlot] = GopongaProjectileMotion.OPTIONS1;
@@ -10817,7 +10817,7 @@ public final class RoomEntityRuntime {
             ? projectileDefinition.initialVariant() : -1;
         RoomEntity projectile = new RoomEntity(freeSlot, -1,
             ENTITY_GOPONGA_FLOWER_PROJECTILE, spawn.x(), spawn.y(), EntityStatus.ACTIVE,
-            projectileDefinition, projectileVariant, 0, 0, 0);
+            projectileDefinition, projectileVariant, 0, 0, 0, -1, false);
         slots[freeSlot] = projectile;
         baseEntityFlipAttribute[freeSlot] = 0;
         entityOptions1Override[freeSlot] = GopongaProjectileMotion.OPTIONS1;
@@ -10846,7 +10846,7 @@ public final class RoomEntityRuntime {
         int variant = definition.supported() ? definition.initialVariant() : -1;
         RoomEntity child = new RoomEntity(freeSlot, -1, ENTITY_ZOMBIE,
             spawn.x(), spawn.y(), EntityStatus.ACTIVE, definition, variant,
-            0, 0, 0);
+            0, 0, 0, -1, false);
         slots[freeSlot] = child;
         baseEntityFlipAttribute[freeSlot] = 0;
         entityOptions1Override[freeSlot] = -1;
@@ -10878,7 +10878,7 @@ public final class RoomEntityRuntime {
         int variant = definition.supported() ? definition.initialVariant() : -1;
         RoomEntity segment = new RoomEntity(freeSlot, -1, ENTITY_POKEY,
             spawn.x(), spawn.y(), EntityStatus.ACTIVE, definition, variant,
-            0, 0, spawn.z());
+            0, 0, spawn.z(), -1, false);
         slots[freeSlot] = segment;
         baseEntityFlipAttribute[freeSlot] = 0;
         entityOptions1Override[freeSlot] = -1;
@@ -10912,7 +10912,7 @@ public final class RoomEntityRuntime {
             ? spawn.direction() : -1;
         RoomEntity projectile = new RoomEntity(freeSlot, -1, ENTITY_WIZROBE_PROJECTILE,
             spawn.x(), spawn.y(), EntityStatus.ACTIVE, projectileDefinition,
-            projectileVariant, 0, 0, source.z());
+            projectileVariant, 0, 0, source.z(), -1, false);
         slots[freeSlot] = projectile;
         baseEntityFlipAttribute[freeSlot] = 0;
         entityOptions1Override[freeSlot] = WIZROBE_PROJECTILE_OPTIONS1;
@@ -10941,7 +10941,7 @@ public final class RoomEntityRuntime {
         int cloneVariant = cloneDefinition.supported() ? cloneDefinition.initialVariant() : -1;
         RoomEntity clone = new RoomEntity(freeSlot, -1, ENTITY_STALFOS_EVASIVE,
             request.x(), request.y(), EntityStatus.ACTIVE, cloneDefinition, cloneVariant,
-            0, 0, request.z());
+            0, 0, request.z(), -1, false);
         slots[freeSlot] = clone;
         baseEntityFlipAttribute[freeSlot] = 0;
         entityOptions1Override[freeSlot] = EVASIVE_CLONE_OPTIONS;
@@ -10992,7 +10992,7 @@ public final class RoomEntityRuntime {
         RoomEntity projectile = new RoomEntity(freeSlot, -1, request.projectileType(),
             byteValue(source.x() + signedByte(spawn.offsetX())),
             byteValue(source.y() + signedByte(spawn.offsetY())), EntityStatus.ACTIVE,
-            projectileDefinition, projectileVariant, 0, 0, source.z());
+            projectileDefinition, projectileVariant, 0, 0, source.z(), -1, false);
         slots[freeSlot] = projectile;
         baseEntityFlipAttribute[freeSlot] = 0;
         enemyTransitionCountdown[freeSlot] = 0;
@@ -11025,7 +11025,7 @@ public final class RoomEntityRuntime {
         RoomEntity projectile = new RoomEntity(freeSlot, -1, ENTITY_OCTOROK_ROCK,
             byteValue(source.x() + signedByte(spawn.offsetX())),
             byteValue(source.y() + signedByte(spawn.offsetY())), EntityStatus.ACTIVE,
-            projectileDefinition, projectileVariant, 0, 0, source.z());
+            projectileDefinition, projectileVariant, 0, 0, source.z(), -1, false);
         slots[freeSlot] = projectile;
         baseEntityFlipAttribute[freeSlot] = 0;
         enemyTransitionCountdown[freeSlot] = 0;
@@ -11077,7 +11077,7 @@ public final class RoomEntityRuntime {
             ? crawlerDefinition.initialVariant() : -1;
         RoomEntity replacement = new RoomEntity(freeSlot, -1, ENTITY_BUSH_CRAWLER,
             carried.x(), carried.y(), EntityStatus.ACTIVE, crawlerDefinition,
-            crawlerVariant, 0, 0, carried.z());
+            crawlerVariant, 0, 0, carried.z(), -1, false);
         slots[freeSlot] = replacement;
         baseEntityFlipAttribute[freeSlot] = 0;
         entityOptions1Override[freeSlot] = -1;
@@ -11106,7 +11106,7 @@ public final class RoomEntityRuntime {
         int variant = definition.supported() ? definition.initialVariant() : -1;
         RoomEntity angry = new RoomEntity(freeSlot, -1, ENTITY_CUCCO,
             request.x(), request.y(), EntityStatus.ACTIVE, definition, variant,
-            0, 0, request.z());
+            0, 0, request.z(), -1, false);
         slots[freeSlot] = angry;
         cuccoMotion.initializeAngry(freeSlot, request.speedX(), request.speedY());
         baseEntityFlipAttribute[freeSlot] = 0;
@@ -11131,7 +11131,7 @@ public final class RoomEntityRuntime {
         RoomEntity sensor = new RoomEntity(freeSlot, -1, ENTITY_LASER,
             parent.x(), parent.y(), EntityStatus.ACTIVE,
             EntitySpriteDefinition.unsupported(ENTITY_LASER), -1,
-            0, 0, parent.z());
+            0, 0, parent.z(), -1, false);
         slots[freeSlot] = sensor;
         baseEntityFlipAttribute[freeSlot] = 0;
         enemyTransitionCountdown[freeSlot] = 0;
@@ -11154,7 +11154,7 @@ public final class RoomEntityRuntime {
         RoomEntity beam = new RoomEntity(freeSlot, -1, ENTITY_LASER_BEAM,
             parent.x(), parent.y(), EntityStatus.ACTIVE,
             EntitySpriteDefinition.unsupported(ENTITY_LASER_BEAM), -1,
-            0, 0, parent.z());
+            0, 0, parent.z(), -1, false);
         slots[freeSlot] = beam;
         baseEntityFlipAttribute[freeSlot] = 0;
         enemyTransitionCountdown[freeSlot] = 0;
@@ -11307,7 +11307,7 @@ public final class RoomEntityRuntime {
         EntitySpriteDefinition definition = spriteDefinitionFor(ENTITY_ZOL);
         int variant = definition.supported() ? definition.initialVariant() : -1;
         RoomEntity zol = new RoomEntity(freeSlot, -1, ENTITY_ZOL, chest.x(), chest.y(),
-            EntityStatus.ACTIVE, definition, variant, 0, 0, 0x06);
+            EntityStatus.ACTIVE, definition, variant, 0, 0, 0x06, -1, false);
         slots[freeSlot] = zol;
         zolGelMotion.prepareChestSpawn(freeSlot);
         enemyPhysicsFlags[freeSlot] = initialPhysicsFlags(ENTITY_ZOL);

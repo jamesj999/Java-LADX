@@ -210,7 +210,7 @@ final class PlayerProjectileEnemyCollisionTest {
         }
         slots.set(0, new RoomEntity(0, -1, targetType, 0x40 + dx,
             (projectileType == 0xDF ? 0x50 : 0x4F) + dy, EntityStatus.ACTIVE,
-            catalog.forEntityType(targetType, EntityRoomLoader.RoomTable.OVERWORLD, -1), 0));
+            catalog.forEntityType(targetType, EntityRoomLoader.RoomTable.OVERWORLD, -1), 0, 0, 0, 0, -1, false));
         return RoomEntityRuntime.from(new RoomEntitySnapshot(slots), false, () -> 0,
             catalog, new RomEnemyCombatTables(rom), new ChestContentsTable(rom));
     }

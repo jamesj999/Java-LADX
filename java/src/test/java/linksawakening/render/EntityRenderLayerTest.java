@@ -39,7 +39,7 @@ final class EntityRenderLayerTest {
         palettes[4][1] = 0xABCDEF;
         for (int flash : new int[] {0, 0x10}) {
             var entity = new RoomEntity(0, 0, 0xE4, 56, 64, EntityStatus.DYING,
-                definition, 0, flash, 0, 0);
+                definition, 0, flash, 0, 0, -1, false);
             byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
             new EntityRenderLayer(snapshot(null, gpu.snapshotEntityTiles(), entity), palettes,
                 new ScrollController()).render(new RenderContext(buffer, gpu));
@@ -59,7 +59,7 @@ final class EntityRenderLayerTest {
         writeSolidTile(gpu, 0xAD, 2);
         var definition = pairDefinition(new EntitySpriteDefinition.OamAttribute(0xAC, 0),
             new EntitySpriteDefinition.OamAttribute(0x40, 0));
-        var entity = new RoomEntity(0, 0, 0x35, 56, 64, EntityStatus.ACTIVE, definition, 0);
+        var entity = new RoomEntity(0, 0, 0x35, 56, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
         int[][] palettes = {{0, 0x112233, 0x445566, 0x778899}};
         new EntityRenderLayer(snapshot(null, tiles, entity), palettes, new ScrollController())
@@ -82,7 +82,7 @@ final class EntityRenderLayerTest {
             int threshold = position == DialogController.BoxPosition.TOP ? 0x3E : 0x58;
             for (int rawY = threshold - 1; rawY <= threshold; rawY++) {
                 var entity = new RoomEntity(0, 0, 0x7A, 40, rawY,
-                    EntityStatus.ACTIVE, definition, 0);
+                    EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
                 byte[] buffer = filledBuffer(0x11, 0x22, 0x33);
                 new EntityRenderLayer(snapshot(entity), new int[][] {{0, 0xABCDEF, 0, 0}},
                     new ScrollController(), 0, position).render(new RenderContext(buffer, gpu));
@@ -128,7 +128,7 @@ final class EntityRenderLayerTest {
             List.of(new EntitySpriteDefinition.Variant(
                 new EntitySpriteDefinition.OamAttribute(0x84, 0x00), null)));
         RoomEntity sword = new RoomEntity(0, 0, 0x31, 0x58, 0x60,
-            EntityStatus.ACTIVE, swordDefinition, 0);
+            EntityStatus.ACTIVE, swordDefinition, 0, 0, 0, 0, -1, false);
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
 
         new EntityRenderLayer(snapshot(null, gpu.snapshotEntityTiles(), sword), palettes,
@@ -160,7 +160,7 @@ final class EntityRenderLayerTest {
             List.of(new EntitySpriteDefinition.Variant(
                 new EntitySpriteDefinition.OamAttribute(0x84, 0x17), null)));
         RoomEntity sword = new RoomEntity(0, 0, 0x31, 0x58, 0x60,
-            EntityStatus.ACTIVE, swordDefinition, 0);
+            EntityStatus.ACTIVE, swordDefinition, 0, 0, 0, 0, -1, false);
 
         new EntityRenderLayer(snapshot(null, gpu.snapshotEntityTiles(), sword), palettes,
             new ScrollController()).render(new RenderContext(buffer, gpu));
@@ -184,7 +184,7 @@ final class EntityRenderLayerTest {
                 new EntitySpriteDefinition.OamAttribute(0x40, 3),
                 new EntitySpriteDefinition.OamAttribute(0x40, 0x23))));
         RoomEntity entity = new RoomEntity(3, 0, 0x6D, 0x40, 0x50,
-            EntityStatus.ACTIVE, head, 0);
+            EntityStatus.ACTIVE, head, 0, 0, 0, 0, -1, false);
         RoomEntitySnapshot snapshot = snapshot(null, gpu.snapshotEntityTiles(), entity)
             .withBowWowChainOam(List.of(
                 new linksawakening.world.BowWowChain.Entry(3, 0x40, 0x50, 0x4E),
@@ -210,7 +210,7 @@ final class EntityRenderLayerTest {
                 new EntitySpriteDefinition.OamAttribute(0xFF, 0x00),
                 new EntitySpriteDefinition.OamAttribute(0xFF, 0x20))));
         RoomEntity entity = new RoomEntity(3, 0, 0xB0, 0x4C, 0x58,
-            EntityStatus.ACTIVE, hiddenPincer, 0);
+            EntityStatus.ACTIVE, hiddenPincer, 0, 0, 0, 0, -1, false);
         RoomEntitySnapshot snapshot = snapshot(null, gpu.snapshotEntityTiles(), entity)
             .withPincerBodyOam(PincerBodyOam.entries(3, 0x40, 0x50, 0x4C, 0x58, 3));
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
@@ -236,7 +236,7 @@ final class EntityRenderLayerTest {
                 new EntitySpriteDefinition.OamAttribute(0xFF, 0x00),
                 new EntitySpriteDefinition.OamAttribute(0xFF, 0x20))));
         RoomEntity entity = new RoomEntity(2, 0, 0xAE, 0x40, 0x50,
-            EntityStatus.ACTIVE, hiddenWingedOctorok, 0);
+            EntityStatus.ACTIVE, hiddenWingedOctorok, 0, 0, 0, 0, -1, false);
         RoomEntitySnapshot snapshot = snapshot(null, gpu.snapshotEntityTiles(), entity)
             .withWingedOctorokOam(WingedOctorokOam.entries(2, 0, 0x40, 0x50, 0));
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
@@ -288,7 +288,7 @@ final class EntityRenderLayerTest {
                     new EntitySpriteDefinition.OamAttribute(0x62, 0x03),
                     EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true))));
         RoomEntity entity = new RoomEntity(0, 0, 0x14, 24, 32,
-            EntityStatus.ACTIVE, definition, 0);
+            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
 
         new EntityRenderLayer(snapshot(null, gpu.snapshotEntityTiles(), entity), palettes,
@@ -317,7 +317,7 @@ final class EntityRenderLayerTest {
             .forBushCrawlerCrawlState(
                 EntityRoomLoader.RoomTable.OVERWORLD, 0);
         RoomEntity entity = new RoomEntity(0, 0, 0xBB, 0x40, 0x40,
-            EntityStatus.ACTIVE, definition, 0);
+            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
 
         new EntityRenderLayer(snapshot(null, gpu.snapshotEntityTiles(), entity), palettes,
@@ -367,9 +367,9 @@ final class EntityRenderLayerTest {
                     new EntitySpriteDefinition.OamAttribute(0x24, 0x02), null)));
 
         RoomEntity pairEntity = new RoomEntity(0, 0, 0x7A, 24, 32, EntityStatus.ACTIVE,
-            pair, 0, 0);
+            pair, 0, 0, 0, 0, -1, false);
         RoomEntity singleEntity = new RoomEntity(1, 1, 0x91, 56, 32, EntityStatus.ACTIVE,
-            single, 0, 0);
+            single, 0, 0, 0, 0, -1, false);
         byte[] buffer = filledBuffer(0x7A, 0x6B, 0x5C);
 
         new EntityRenderLayer(snapshot(pairEntity, singleEntity), palettes, new ScrollController())
@@ -392,7 +392,7 @@ final class EntityRenderLayerTest {
                 new EntitySpriteDefinition.Variant(
                     new EntitySpriteDefinition.OamAttribute(0x20, 0x00), null)));
         RoomEntity entity = new RoomEntity(0, 0, 0x91, 24, 32, EntityStatus.FALLING,
-            single, 0, 0);
+            single, 0, 0, 0, 0, -1, false);
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
 
         new EntityRenderLayer(snapshot(entity).withVisualYOffset(0, 4), palettes,
@@ -416,7 +416,7 @@ final class EntityRenderLayerTest {
                 new EntitySpriteDefinition.Variant(
                     new EntitySpriteDefinition.OamAttribute(0x20, 0x00), null)));
         RoomEntity entity = new RoomEntity(0, 0, 0x9B, 24, 32, EntityStatus.ACTIVE,
-            mixed, 1, 0);
+            mixed, 1, 0, 0, 0, -1, false);
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
 
         new EntityRenderLayer(snapshot(entity), palettes, new ScrollController())
@@ -460,7 +460,7 @@ final class EntityRenderLayerTest {
         EntitySpriteDefinition pairodd = new EntitySpriteDefinition(0x57, 0x04, 0x5DD1,
             EntitySpriteDefinition.Shape.PAIR, 0, variants);
         RoomEntity entity = new RoomEntity(0, 0, 0x57, 40, 32, EntityStatus.ACTIVE,
-            pairodd, 3, 0);
+            pairodd, 3, 0, 0, 0, -1, false);
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
 
         new EntityRenderLayer(snapshot(entity), palettes, new ScrollController())
@@ -491,7 +491,7 @@ final class EntityRenderLayerTest {
                 new EntitySpriteDefinition.RectangleSprite(-8, 0,
                     new EntitySpriteDefinition.OamAttribute(0x02, 0x00)))));
         RoomEntity entity = new RoomEntity(0, 0, 0x77, 24, 32, EntityStatus.ACTIVE,
-            rectangle, 0, 0, 0x20);
+            rectangle, 0, 0, 0x20, 0, -1, false);
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
 
         new EntityRenderLayer(snapshot(entity), palettes, new ScrollController())
@@ -525,7 +525,7 @@ final class EntityRenderLayerTest {
             new int[] {0xFF, 0xFF, 0xFF, 0xFF}, true, palettes)
             .withSpriteOverride(0x6D, following);
         RoomEntity entity = new RoomEntity(0, 0, 0x6D, 24, 32, EntityStatus.ACTIVE,
-            atHome, 0, 0);
+            atHome, 0, 0, 0, 0, -1, false);
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
 
         new EntityRenderLayer(snapshot(selection, entity), palettes, new ScrollController())
@@ -558,7 +558,7 @@ final class EntityRenderLayerTest {
             new EntitySpriteDefinition.OamAttribute(0x20, 0x00),
             new EntitySpriteDefinition.OamAttribute(0x22, 0x00));
         RoomEntity entity = new RoomEntity(0, 0, 0x01, 24, 32, EntityStatus.ACTIVE,
-            pair, 0, 0x20);
+            pair, 0, 0x20, 0, 0, -1, false);
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
 
         new EntityRenderLayer(snapshot(entity), palettes, new ScrollController())
@@ -582,7 +582,7 @@ final class EntityRenderLayerTest {
             new EntitySpriteDefinition.OamAttribute(0x20, 0x00),
             new EntitySpriteDefinition.OamAttribute(0x20, 0x00));
         RoomEntity entity = new RoomEntity(0, 0, 0x01, 24, 32, EntityStatus.ACTIVE,
-            pair, 0, 0x10);
+            pair, 0, 0x10, 0, 0, -1, false);
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
 
         new EntityRenderLayer(snapshot(entity), palettes, new ScrollController())
@@ -599,7 +599,7 @@ final class EntityRenderLayerTest {
             new EntitySpriteDefinition.OamAttribute(0x20, 0x07),
             new EntitySpriteDefinition.OamAttribute(0x20, 0x07));
         RoomEntity entity = new RoomEntity(0, 0, 0x01, 24, 32, EntityStatus.ACTIVE,
-            pair, 0, 0);
+            pair, 0, 0, 0, 0, -1, false);
         EntityRenderLayer layer = new EntityRenderLayer(snapshot(entity),
             new int[][] {{0, 0x123456, 0, 0}}, new ScrollController());
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
@@ -620,7 +620,7 @@ final class EntityRenderLayerTest {
                 new EntitySpriteDefinition.Variant(
                     new EntitySpriteDefinition.OamAttribute(0x30, 0x00), null)));
         RoomEntity entity = new RoomEntity(0, 0, 0x02, 4, 12, EntityStatus.ACTIVE,
-            single, 0, 0);
+            single, 0, 0, 0, 0, -1, false);
         RoomEntitySnapshot snapshot = snapshot(entity);
         ScrollController scroll = new ScrollController();
         scroll.start(ScrollController.RIGHT, 0, 0, null, 160);
@@ -647,7 +647,7 @@ final class EntityRenderLayerTest {
             EntityRoomLoader.RoomTable.OVERWORLD, 0, 0,
             new int[] {0xFF, 0xFF, 0xFF, 0xFF}, true, palettes);
         RoomEntity entity = new RoomEntity(0, 0, 0x02, 24, 32, EntityStatus.ACTIVE,
-            single, 0, 0);
+            single, 0, 0, 0, 0, -1, false);
 
         for (int direction : new int[] {ScrollController.LEFT, ScrollController.UP}) {
             ScrollController scroll = new ScrollController();
@@ -678,7 +678,7 @@ final class EntityRenderLayerTest {
                 new EntitySpriteDefinition.Variant(
                     new EntitySpriteDefinition.OamAttribute(0x30, 0x00), null)));
         RoomEntity entity = new RoomEntity(0, 0, 0x02, 8, 16, EntityStatus.ACTIVE,
-            single, 0, 0);
+            single, 0, 0, 0, 0, -1, false);
         EntitySpriteSelection selection = new EntitySpriteSelection(
             linksawakening.world.EntityRoomLoader.RoomTable.OVERWORLD, 0, 0,
             new int[] { 0xFF, 0xFF, 0xFF, 0xFF }, true, palettes);
@@ -715,9 +715,9 @@ final class EntityRenderLayerTest {
                 new EntitySpriteDefinition.Variant(
                     new EntitySpriteDefinition.OamAttribute(0x40, 0x00), null)));
         RoomEntity previousEntity = new RoomEntity(0, 0, 0x02, 8, 16, EntityStatus.ACTIVE,
-            single, 0, 0);
+            single, 0, 0, 0, 0, -1, false);
         RoomEntity currentEntity = new RoomEntity(0, 0, 0x02, 152, 16, EntityStatus.ACTIVE,
-            single, 0, 0);
+            single, 0, 0, 0, 0, -1, false);
         EntitySpriteSelection selection = new EntitySpriteSelection(
             linksawakening.world.EntityRoomLoader.RoomTable.OVERWORLD, 0, 0,
             new int[] {0xFF, 0xFF, 0xFF, 0xFF}, true, palettes);
@@ -777,7 +777,7 @@ final class EntityRenderLayerTest {
         for (int variant = 0; variant < rock.variantCount(); variant++) {
             byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
             RoomEntity entity = new RoomEntity(0, -1, 0x0A, 24, 32, EntityStatus.ACTIVE,
-                rock, variant, 0);
+                rock, variant, 0, 0, 0, -1, false);
             new EntityRenderLayer(snapshot(entity), palettes, new ScrollController())
                 .render(new RenderContext(buffer, gpu));
             assertEquals(palettes[variant + 1][1], pixelColor(buffer, 16, 16));
@@ -789,7 +789,7 @@ final class EntityRenderLayerTest {
         for (int variant = 0; variant < arrow.variantCount(); variant++) {
             byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
             RoomEntity entity = new RoomEntity(0, -1, 0x0C, 64, 32, EntityStatus.ACTIVE,
-                arrow, variant, 0);
+                arrow, variant, 0, 0, 0, -1, false);
             new EntityRenderLayer(snapshot(entity), palettes, new ScrollController())
                 .render(new RenderContext(buffer, gpu));
             assertEquals(palettes[variant + 1][1], pixelColor(buffer, 56, 16));
@@ -820,7 +820,7 @@ final class EntityRenderLayerTest {
             {0, 0x112233, 0x223344, 0x334455}
         };
         RoomEntity entity = new RoomEntity(0, -1, 0x0C, 40, 32, EntityStatus.ACTIVE,
-            arrow, 0, 0x60, 0x20, 4);
+            arrow, 0, 0x60, 0x20, 4, -1, false);
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
 
         new EntityRenderLayer(snapshot(entity), palettes, new ScrollController())
@@ -881,7 +881,7 @@ final class EntityRenderLayerTest {
             new int[] {0xFF, 0xFF, 0xFF, 0xFF}, true, palettes)
             .withBurningSpriteDefinition(fire);
         RoomEntity entity = new RoomEntity(0, 0, 0x09, 24, 32, EntityStatus.BURNING,
-            body, 0, 0x20, 0x10, 4);
+            body, 0, 0x20, 0x10, 4, -1, false);
 
         byte[] phaseZero = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
         new EntityRenderLayer(snapshot(selection, entity), palettes, new ScrollController(), 0)
@@ -927,7 +927,7 @@ final class EntityRenderLayerTest {
             List.of(new EntitySpriteDefinition.Variant(
                 new EntitySpriteDefinition.OamAttribute(0xFF, 0x00), null)));
         RoomEntity entity = new RoomEntity(0, 0, 0x86, 24, 32, EntityStatus.ACTIVE,
-            main, 0, 0, 0, 0);
+            main, 0, 0, 0, 0, -1, false);
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
 
         new EntityRenderLayer(snapshot(selection, entity), palettes, new ScrollController(), 0)
@@ -950,7 +950,7 @@ final class EntityRenderLayerTest {
             EntityRoomLoader.RoomTable.COLOR_DUNGEON, 0, 0, new int[0], false, palettes)
             .withSpriteOverlay(0x86, overlay);
         RoomEntity entity = new RoomEntity(0, 0, 0x86, 24, 32, EntityStatus.ACTIVE,
-            EntitySpriteDefinition.unsupported(0x86), -1, 0, 0, 0);
+            EntitySpriteDefinition.unsupported(0x86), -1, 0, 0, 0, -1, false);
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
 
         new EntityRenderLayer(snapshot(selection, entity), palettes, new ScrollController())
@@ -991,9 +991,9 @@ final class EntityRenderLayerTest {
                     new EntitySpriteDefinition.OamAttribute(0x20, 0x00),
                     new EntitySpriteDefinition.OamAttribute(0x20, 0x00))));
         RoomEntity mixedSingle = new RoomEntity(0, 0, 0x86, 24, 32,
-            EntityStatus.ACTIVE, definition, 0, 0);
+            EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
         RoomEntity pair = new RoomEntity(1, 1, 0x86, 56, 32,
-            EntityStatus.ACTIVE, definition, 5, 0);
+            EntityStatus.ACTIVE, definition, 5, 0, 0, 0, -1, false);
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
 
         new EntityRenderLayer(snapshot(mixedSingle, pair).withSideScrolling(true),
@@ -1222,21 +1222,21 @@ final class EntityRenderLayerTest {
 
         byte[] normalBuffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
         new EntityRenderLayer(snapshot(new RoomEntity(0, 0, 0x02, 24, 32,
-            EntityStatus.ACTIVE, normal, 0)), palettes, new ScrollController())
+            EntityStatus.ACTIVE, normal, 0, 0, 0, 0, -1, false)), palettes, new ScrollController())
             .render(new RenderContext(normalBuffer, gpu));
         assertEquals(bombColor, pixelColor(normalBuffer, 20, 18));
         assertEquals(0, pixelColor(normalBuffer, 20, 16));
 
         byte[] warningBuffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
         new EntityRenderLayer(snapshot(new RoomEntity(0, 0, 0x02, 24, 32,
-            EntityStatus.ACTIVE, warning, 0)), palettes, new ScrollController())
+            EntityStatus.ACTIVE, warning, 0, 0, 0, 0, -1, false)), palettes, new ScrollController())
             .render(new RenderContext(warningBuffer, gpu));
         assertEquals(bombColor, pixelColor(warningBuffer, 16, 16));
         assertEquals(0, pixelColor(warningBuffer, 16, 14));
 
         byte[] explosionBuffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
         new EntityRenderLayer(snapshot(new RoomEntity(0, 0, 0x02, 24, 32,
-            EntityStatus.ACTIVE, explosion, 0)), palettes, new ScrollController())
+            EntityStatus.ACTIVE, explosion, 0, 0, 0, 0, -1, false)), palettes, new ScrollController())
             .render(new RenderContext(explosionBuffer, gpu));
         assertEquals(bombColor, pixelColor(explosionBuffer, 16, 16));
         assertEquals(0, pixelColor(explosionBuffer, 16, 14));

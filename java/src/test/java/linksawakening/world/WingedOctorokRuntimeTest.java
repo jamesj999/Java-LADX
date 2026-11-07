@@ -42,7 +42,7 @@ final class WingedOctorokRuntimeTest {
         EntitySpriteDefinition definition = catalog.forEntityType(0xAE,
             EntityRoomLoader.RoomTable.OVERWORLD);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0xAE, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0)),
+            new RoomEntity(0, 0, 0xAE, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
             false, () -> 0, catalog, tables);
 
         runtime.tick(0, 0x20, 0x40, () -> 0x02);
@@ -63,7 +63,7 @@ final class WingedOctorokRuntimeTest {
         EntitySpriteDefinition definition = catalog.forEntityType(0xAE,
             EntityRoomLoader.RoomTable.OVERWORLD);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, 0, 0xAE, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0)),
+            new RoomEntity(0, 0, 0xAE, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
             false, () -> 0, catalog, tables);
 
         for (int frame = 0; frame <= 6; frame++) {

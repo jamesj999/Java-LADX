@@ -11,7 +11,7 @@ final class EntitySnapshots {
         return preserveDeathMetadata(entity, new RoomEntity(
             entity.slot(), entity.sourceLoadOrder(), entity.type(), entity.x(), entity.y(),
             status, entity.spriteDefinition(), entity.spriteVariant(), entity.entityFlipAttribute(),
-            entity.spriteTileOffset(), entity.z()));
+            entity.spriteTileOffset(), entity.z(), -1, false));
     }
 
     static RoomEntity withType(RoomEntity entity, int type,
@@ -20,28 +20,28 @@ final class EntitySnapshots {
         return preserveDeathMetadata(entity, new RoomEntity(
             entity.slot(), entity.sourceLoadOrder(), type, entity.x(), entity.y(),
             entity.status(), definition, variant, entity.entityFlipAttribute(),
-            entity.spriteTileOffset(), entity.z()));
+            entity.spriteTileOffset(), entity.z(), -1, false));
     }
 
     static RoomEntity withVariant(RoomEntity entity, int variant) {
         return preserveDeathMetadata(entity, new RoomEntity(
             entity.slot(), entity.sourceLoadOrder(), entity.type(), entity.x(), entity.y(),
             entity.status(), entity.spriteDefinition(), variant, entity.entityFlipAttribute(),
-            entity.spriteTileOffset(), entity.z()));
+            entity.spriteTileOffset(), entity.z(), -1, false));
     }
 
     static RoomEntity withFlipAttribute(RoomEntity entity, int flipAttribute) {
         return preserveDeathMetadata(entity, new RoomEntity(
             entity.slot(), entity.sourceLoadOrder(), entity.type(), entity.x(), entity.y(),
             entity.status(), entity.spriteDefinition(), entity.spriteVariant(), flipAttribute,
-            entity.spriteTileOffset(), entity.z()));
+            entity.spriteTileOffset(), entity.z(), -1, false));
     }
 
     static RoomEntity withZ(RoomEntity entity, int z) {
         return preserveDeathMetadata(entity, new RoomEntity(
             entity.slot(), entity.sourceLoadOrder(), entity.type(), entity.x(), entity.y(),
             entity.status(), entity.spriteDefinition(), entity.spriteVariant(),
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), z));
+            entity.entityFlipAttribute(), entity.spriteTileOffset(), z, -1, false));
     }
 
     static RoomEntity withDefinition(RoomEntity entity,
@@ -51,7 +51,7 @@ final class EntitySnapshots {
         return preserveDeathMetadata(entity, new RoomEntity(
             entity.slot(), entity.sourceLoadOrder(), entity.type(), entity.x(), entity.y(),
             entity.status(), definition, selectedVariant, entity.entityFlipAttribute(),
-            entity.spriteTileOffset(), entity.z()));
+            entity.spriteTileOffset(), entity.z(), -1, false));
     }
 
     static RoomEntity preserveDeathMetadata(RoomEntity source, RoomEntity rebuilt) {
@@ -77,13 +77,13 @@ final class EntitySnapshots {
         return preserveDeathMetadata(entity, new RoomEntity(
             entity.slot(), entity.sourceLoadOrder(), entity.type(),
             x & 0xFF, y & 0xFF, entity.status(), entity.spriteDefinition(), variant,
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z()));
+            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false));
     }
 
     static RoomEntity withSourceLoadOrder(RoomEntity entity, int sourceLoadOrder) {
         return preserveDeathMetadata(entity, new RoomEntity(
             entity.slot(), sourceLoadOrder, entity.type(), entity.x(), entity.y(),
             entity.status(), entity.spriteDefinition(), entity.spriteVariant(),
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z()));
+            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false));
     }
 }

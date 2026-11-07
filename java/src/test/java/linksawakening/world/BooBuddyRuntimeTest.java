@@ -20,7 +20,7 @@ final class BooBuddyRuntimeTest {
             BooBuddyMotion.ENTITY_TYPE, EntityRoomLoader.RoomTable.INDOORS_A);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, BooBuddyMotion.ENTITY_TYPE, 0x30, 0x40,
-                EntityStatus.ACTIVE, definition, 0)), true, null, catalog);
+                EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)), true, null, catalog);
         runtime.setTransitionCountdownForTest(0, 2);
 
         runtime.tick(4, 0x50, 0x40, () -> 0);
@@ -41,7 +41,7 @@ final class BooBuddyRuntimeTest {
             BooBuddyMotion.ENTITY_TYPE, EntityRoomLoader.RoomTable.INDOORS_A);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, BooBuddyMotion.ENTITY_TYPE, 0x40, 0x50,
-                EntityStatus.INIT, definition, 0)), true, null, catalog);
+                EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)), true, null, catalog);
 
         runtime.tick(0, 0x60, 0x50, () -> 0);
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());

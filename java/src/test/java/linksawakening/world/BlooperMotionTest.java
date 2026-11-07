@@ -104,6 +104,6 @@ final class BlooperMotionTest {
 
     private static RoomEntity entity(int x, int y) {
         return new RoomEntity(0, 0, 0xA9, x, y, EntityStatus.ACTIVE,
-            EntitySpriteDefinition.unsupported(0xA9), -1);
+            EntitySpriteDefinition.unsupported(0xA9), -1, 0, 0, 0, -1, false);
     }
 }

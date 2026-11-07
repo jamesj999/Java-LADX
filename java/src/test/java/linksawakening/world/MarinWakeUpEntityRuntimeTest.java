@@ -19,7 +19,7 @@ final class MarinWakeUpEntityRuntimeTest {
         EntitySpriteDefinition definition = new EntitySpriteDefinition(0x3E, 5, 0x4E0A,
             EntitySpriteDefinition.Shape.PAIR, 6, Collections.nCopies(8, variant));
         slots.set(3, new RoomEntity(3, 0, 0x3E, 0x58, 0x60,
-            EntityStatus.ACTIVE, definition, 6));
+            EntityStatus.ACTIVE, definition, 6, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(slots), true);
 
         runtime.applyMarinWakeUpPresentation(0x50, 0x58, 4);

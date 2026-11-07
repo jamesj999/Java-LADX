@@ -649,7 +649,7 @@ final class TarinRaccoonRuntimeTest {
             slots.add(RoomEntity.disabled(slots.size()));
         }
         slots.set(tarinSlot, new RoomEntity(tarinSlot, 0, ENTITY_TARIN, 0x78, 0x40,
-            status, definition, variant));
+            status, definition, variant, 0, 0, 0, -1, false));
         return RoomEntityRuntime.from(new RoomEntitySnapshot(slots), indoor,
             () -> 0, catalog, new RomEnemyCombatTables(rom),
             new ChestContentsTable(rom));

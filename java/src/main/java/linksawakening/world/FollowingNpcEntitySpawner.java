@@ -142,7 +142,7 @@ public final class FollowingNpcEntitySpawner {
         for (int slot = slots.size() - 1; slot >= 0; slot--) {
             if (!slots.get(slot).loaded()) {
                 RoomEntity entity = new RoomEntity(slot, -1, type, x, y, EntityStatus.ACTIVE,
-                    definition, definition.initialVariant());
+                    definition, definition.initialVariant(), 0, 0, 0, -1, false);
                 slots.set(slot, entity);
                 return new SpawnResult(entity, true);
             }
@@ -153,7 +153,7 @@ public final class FollowingNpcEntitySpawner {
     private static RoomEntity withPosition(RoomEntity entity, int x, int y) {
         return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
             entity.status(), entity.spriteDefinition(), entity.spriteVariant(),
-            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z());
+            entity.entityFlipAttribute(), entity.spriteTileOffset(), entity.z(), -1, false);
     }
 
     private static EntitySpriteSelection withOverrides(EntitySpriteSelection selection,

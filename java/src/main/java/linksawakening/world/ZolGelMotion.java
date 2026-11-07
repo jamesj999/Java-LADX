@@ -196,7 +196,7 @@ final class ZolGelMotion {
 
         RoomEntity updated = new RoomEntity(entity.slot(), entity.sourceLoadOrder(), type, x, y,
             entity.status(), entity.spriteDefinition(), spriteVariant[slot], entity.entityFlipAttribute(),
-            entity.spriteTileOffset(), z);
+            entity.spriteTileOffset(), z, -1, false);
         return new Update(updated, split, clinging);
     }
 

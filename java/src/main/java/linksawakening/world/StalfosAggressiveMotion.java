@@ -111,7 +111,7 @@ final class StalfosAggressiveMotion {
         // effect pending instead of treating a generic collision as identical.
         return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(), x, y,
             entity.status(), entity.spriteDefinition(), variant, entity.entityFlipAttribute(),
-            entity.spriteTileOffset(), z);
+            entity.spriteTileOffset(), z, -1, false);
     }
 
     void clear(int slot) {

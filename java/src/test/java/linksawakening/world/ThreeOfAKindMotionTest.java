@@ -54,6 +54,6 @@ final class ThreeOfAKindMotionTest {
     private static RoomEntity card(int slot) {
         return new RoomEntity(slot, slot, ThreeOfAKindMotion.ENTITY_TYPE,
             0x40 + slot * 8, 0x50, EntityStatus.ACTIVE,
-            EntitySpriteDefinition.unsupported(ThreeOfAKindMotion.ENTITY_TYPE), 0);
+            EntitySpriteDefinition.unsupported(ThreeOfAKindMotion.ENTITY_TYPE), 0, 0, 0, 0, -1, false);
     }
 }
