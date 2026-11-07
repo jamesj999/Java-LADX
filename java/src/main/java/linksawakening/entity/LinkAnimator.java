@@ -374,14 +374,8 @@ final class LinkAnimator {
         Tile rightTop = composedTiles[rightFlipY ? 3 : 2];
         Tile rightBottom = composedTiles[rightFlipY ? 2 : 3];
 
-        sink.append(leftTop,     originX,     originY,     leftFlipX,  leftFlipY,
-            palette, false);
-        sink.append(leftBottom,  originX,     originY + 8, leftFlipX,  leftFlipY,
-            palette, false);
-        sink.append(rightTop,    originX + 8, originY,     rightFlipX, rightFlipY,
-            palette, false);
-        sink.append(rightBottom, originX + 8, originY + 8, rightFlipX, rightFlipY,
-            palette, false);
+        sink.append8x16(leftTop, leftBottom, originX, originY, leftFlipX, leftFlipY, palette, false);
+        sink.append8x16(rightTop, rightBottom, originX + 8, originY, rightFlipX, rightFlipY, palette, false);
 
         // Let equipped items paint their own sprites on top (e.g. the sword
         // blade during a swing). Matches the disassembly's ordering where

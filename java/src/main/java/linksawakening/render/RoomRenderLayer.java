@@ -22,36 +22,7 @@ public final class RoomRenderLayer implements HardwareRenderLayer {
         this.transitionController = transitionController;
     }
 
-    @Override
-    public void render(RenderContext context) {
-        int shakeX = -scrollController.screenShakeHorizontal();
-        int shakeY = -scrollController.screenShakeVertical();
-        if (!scrollController.isActive()) {
-            int[][] palettes = transitionController.applyFade(currentRoom.palettes());
-            int[] waveOffsets = transitionController.manboWaveOffsets(ROOM_PIXEL_HEIGHT);
-            if (waveOffsets == null) {
-                IndexedRenderer.renderRoom(context.buffer(), context.gpu(), currentRoom.tileIds(),
-                    currentRoom.tileAttrs(), palettes, shakeX, shakeY);
-            } else {
-                IndexedRenderer.renderRoomLineScroll(context.buffer(), context.gpu(),
-                    currentRoom.tileIds(), currentRoom.tileAttrs(), palettes, waveOffsets,
-                    scrollController.screenShakeHorizontal(),
-                    scrollController.screenShakeVertical());
-            }
-            return;
-        }
 
-        RoomOffsets offsets = roomOffsets();
-        RoomRenderSnapshot previousRoom = scrollController.previousRoom();
-        if (previousRoom != null) {
-            IndexedRenderer.renderRoom(context.buffer(), context.gpu(), previousRoom.tileIds(),
-                previousRoom.tileAttrs(), previousRoom.palettes(),
-                offsets.previousX() + shakeX, offsets.previousY() + shakeY);
-        }
-        IndexedRenderer.renderRoom(context.buffer(), context.gpu(), currentRoom.tileIds(),
-            currentRoom.tileAttrs(), currentRoom.palettes(),
-            offsets.currentX() + shakeX, offsets.currentY() + shakeY);
-    }
     @Override public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
 
         int shakeX = -scrollController.screenShakeHorizontal();

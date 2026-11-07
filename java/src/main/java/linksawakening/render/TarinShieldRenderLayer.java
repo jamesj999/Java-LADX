@@ -20,16 +20,7 @@ public final class TarinShieldRenderLayer implements HardwareRenderLayer {
         this.scrollController = scrollController;
     }
 
-    @Override
-    public void render(RenderContext context) {
-        // RenderActiveEntitySprite ($3CA4) centres a single 8px OAM column
-        // within the 16px entity pose by adding four pixels to its X origin.
-        int screenX = link.pixelX() + 4 - scrollController.screenShakeHorizontal();
-        int screenY = link.pixelY() - 0x0C;
-        new SpriteListRenderLayer(java.util.List.of(new SpriteListRenderLayer.Sprite(
-            SHIELD_TILE, screenX, screenY, 0, false, false, 16)),
-            new int[][] { link.tarinShieldPalette() }).render(context);
-    }
+
     @Override public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
 
         // RenderActiveEntitySprite ($3CA4) centres a single 8px OAM column

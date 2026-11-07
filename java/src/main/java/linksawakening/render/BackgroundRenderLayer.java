@@ -44,16 +44,7 @@ public final class BackgroundRenderLayer implements HardwareRenderLayer {
             viewportWidth, viewportHeight, 0, scrollY, lineScrollX);
     }
 
-    @Override
-    public void render(RenderContext context) {
-        if (lineScrollX != null) {
-            IndexedRenderer.renderBackgroundLineScroll(context.buffer(), context.gpu(), tilemap, attrmap,
-                palettes, mapWidth, mapHeight, viewportWidth, viewportHeight, lineScrollX, scrollY);
-            return;
-        }
-        IndexedRenderer.renderBackground(context.buffer(), context.gpu(), tilemap, attrmap,
-            palettes, mapWidth, mapHeight, viewportWidth, viewportHeight, scrollX, scrollY);
-    }
+
     @Override public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
 
         if (lineScrollX != null) {

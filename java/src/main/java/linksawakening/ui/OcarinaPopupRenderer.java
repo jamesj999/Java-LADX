@@ -97,4 +97,50 @@ public final class OcarinaPopupRenderer {
             default -> -1;
         };
     }
+
+    public void submit(linksawakening.render.HardwareFrame frameModel, GPU gpu, int[][] objectPalettes,
+                       OcarinaSongMenu menu) {
+        Objects.requireNonNull(frameModel, "displayBuffer");
+        Objects.requireNonNull(gpu, "gpu");
+        Objects.requireNonNull(objectPalettes, "objectPalettes");
+        Objects.requireNonNull(menu, "menu");
+        if (!menu.isVisible() || objectPalettes.length == 0) {
+            return;
+        }
+
+        int frame = Math.max(0, Math.min(FRAME_COUNT - 1, menu.animationFrame()));
+        int base = frame * FRAME_SIZE;
+        for (int entry = 0; entry < ENTRIES_PER_FRAME; entry++) {
+            int offset = base + entry * OAM_ENTRY_SIZE;
+            int y = (oamData[offset] + OAM_Y_OFFSET) & 0xFF;
+            int x = (oamData[offset + 1] + OAM_X_OFFSET) & 0xFF;
+            int tile = oamData[offset + 2] & 0xFF;
+            int attributes = oamData[offset + 3] & 0xFF;
+
+            int songIndex = songIndexForTile(tile);
+            if (songIndex >= 0 && !menu.isSongAvailable(songIndex)) {
+                // func_020_6111 replaces the attribute byte with $20 for an
+                // unavailable icon, preserving the tile while making it read
+                // as the blank/flipped popup variant.
+                attributes = 0x20;
+            }
+            drawOamEntry(frameModel, gpu, objectPalettes, y, x, tile, attributes);
+        }
+
+        int selectedSong = Math.max(0, Math.min(2, menuPlayerSelectedSong(menu)));
+        int markerX = SELECTION_X[selectedSong];
+        drawOamEntry(frameModel, gpu, objectPalettes, SELECTION_Y, markerX,
+            SELECTION_TILE, SELECTION_PALETTE);
+        drawOamEntry(frameModel, gpu, objectPalettes, SELECTION_Y, markerX + 8,
+            SELECTION_TILE, SELECTION_FLIPPED_PALETTE);
+    }
+
+    private static void drawOamEntry(linksawakening.render.HardwareFrame frameModel, GPU gpu, int[][] objectPalettes,
+                                     int oamY, int oamX, int tile, int attributes) {
+        int paletteIndex = attributes & 0x07;
+        int[] palette = objectPalettes[Math.min(paletteIndex, objectPalettes.length - 1)];
+        frameModel.append( gpu.getTile(tile),
+            oamX - OAM_X_SCREEN_OFFSET, oamY - OAM_Y_SCREEN_OFFSET,
+            (attributes & 0x20) != 0, (attributes & 0x40) != 0, palette, false);
+    }
 }

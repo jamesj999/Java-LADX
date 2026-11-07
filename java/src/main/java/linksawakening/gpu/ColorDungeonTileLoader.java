@@ -22,9 +22,6 @@ final class ColorDungeonTileLoader {
     private static final int COLOR_DUNGEON_BG_BANK = RomSymbols.ColorDungeonTiles.bank();
     private static final int COLOR_DUNGEON_BG_FLOOR_ADDR = RomSymbols.ColorDungeonTiles.address();
     private static final int COLOR_DUNGEON_BG_ITEMS_ADDR = RomSymbols.ColorDungeonTiles.address() + 0x100;
-    private static final int COLOR_DUNGEON_ROOM_TILES_TABLE_BANK = RomSymbols.data_020_45EA.bank();
-    private static final int COLOR_DUNGEON_ROOM_TILES_TABLE_ADDR = RomSymbols.data_020_45EA.address();
-    private static final int COLOR_DUNGEON_WALLS_POINTER_ADDR = RomSymbols.ColorDungeonWallsTilesPointers.address();
     void loadBackground(byte[] romData, int roomId) {
         if (roomId < 0 || roomId >= COLOR_DUNGEON_ROOM_COUNT) {
             throw new IllegalArgumentException("Color Dungeon room id out of range: " + roomId);
@@ -50,7 +47,4 @@ final class ColorDungeonTileLoader {
             DUNGEON_ITEMS_TILES_COUNT, DUNGEON_ITEMS_VRAM_INDEX);
     }
 
-    private static int bankAddrToRomOffset(int bank, int address) {
-        return bank == 0 ? address : bank * 0x4000 + address - 0x4000;
-    }
 }

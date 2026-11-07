@@ -374,8 +374,8 @@ public final class Sword implements EquippedItem {
     private void submit8x16(linksawakening.render.OamSink sink, int tile, int x, int y,
                             int attrs, int[] palette) {
         boolean fx = (attrs & 32) != 0, fy = (attrs & 64) != 0;
-        sink.append( spriteSheet.tile(fy ? tile + 1 : tile), x, y, fx, fy, palette, false);
-        sink.append( spriteSheet.tile(fy ? tile : tile + 1), x, y + 8, fx, fy, palette, false);
+        sink.append8x16(spriteSheet.tile(fy ? tile + 1 : tile), spriteSheet.tile(fy ? tile : tile + 1),
+            x, y, fx, fy, palette, false);
     }
 
 

@@ -82,4 +82,30 @@ final class InventoryInstrumentPanel {
                 attrs, palettes, 2, 2, col * 8, row * 8 + windowY);
         }
     }
+
+    void submit(linksawakening.render.HardwareFrame frameModel, int[] attributes, int[][] palettes, byte[] flags, int windowY) {
+        for (int i = 0; i < 8; i++) {
+            int row = positions[i] / 32;
+            int col = positions[i] % 32;
+            int at = row * 20 + col;
+            int[] attrs = {attributes[at], attributes[at + 1],
+                attributes[at + 20], attributes[at + 21]};
+            TilemapRenderer.submit(frameModel, tiles, tilemapForInstrument(i, flags[i]),
+                attrs, palettes, 2, 2, col * 8, row * 8 + windowY);
+        }
+    }
+
+    void submitNavigation(linksawakening.render.HardwareFrame frameModel, int[][] objectPalettes, int frame) {
+        int y = 0x90 - 16;
+        int x = 0x53 - 8;
+        frameModel.sprite8x16( tiles, 0x4A, x, y, true, false, objectPalettes[6]);
+        if (((frame >>> 4) & 3) != 0) {
+            for (int i = 0; i < 8; i++) {
+                frameModel.sprite8x16( tiles, 0x4C + i * 2,
+                    x + (i + 1) * 8, y, false, false, objectPalettes[6]);
+            }
+        }
+        frameModel.sprite8x16( tiles, 0x4A, 0x9B - 8, y,
+            true, false, objectPalettes[6]);
+    }
 }

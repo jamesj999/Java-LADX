@@ -30,9 +30,8 @@ public final class SpriteListRenderLayer implements HardwareRenderLayer {
                 int base = sprite.tileIndex() & 0xFE;
                 int top = sprite.flipY() ? base + 1 : base;
                 int bottom = sprite.flipY() ? base : base + 1;
-                frame.append(tiles == null ? gpu.getTile(top) : tiles.tile(top), sprite.x(), sprite.y(),
-                    sprite.flipX(), sprite.flipY(), palette, false);
-                frame.append(tiles == null ? gpu.getTile(bottom) : tiles.tile(bottom), sprite.x(), sprite.y() + 8,
+                frame.append8x16(tiles == null ? gpu.getTile(top) : tiles.tile(top),
+                    tiles == null ? gpu.getTile(bottom) : tiles.tile(bottom), sprite.x(), sprite.y(),
                     sprite.flipX(), sprite.flipY(), palette, false);
             } else {
                 frame.append(gpu.getTile(sprite.tileIndex()), sprite.x(), sprite.y(),
@@ -41,26 +40,5 @@ public final class SpriteListRenderLayer implements HardwareRenderLayer {
         }
     }
 
-    @Override
-    public void render(RenderContext context) {
-        // Earlier OAM entries win when object pixels overlap.
-        java.util.List<Sprite> ordered = new java.util.ArrayList<>();
-        sprites.forEach(ordered::add);
-        for (int index = ordered.size() - 1; index >= 0; index--) {
-            Sprite sprite = ordered.get(index);
-            int paletteIndex = Math.min(sprite.paletteIndex(), palettes.length - 1);
-            if (sprite.height() == 16) {
-                if (tiles != null) {
-                    IndexedRenderer.drawSpriteTile8x16(context.buffer(), tiles, sprite.tileIndex(),
-                        sprite.x(), sprite.y(), sprite.flipX(), sprite.flipY(), palettes[paletteIndex]);
-                    continue;
-                }
-                IndexedRenderer.drawSpriteTile8x16(context.buffer(), context.gpu(), sprite.tileIndex(),
-                    sprite.x(), sprite.y(), sprite.flipX(), sprite.flipY(), palettes[paletteIndex]);
-            } else {
-                IndexedRenderer.drawSpriteTile(context.buffer(), context.gpu().getTile(sprite.tileIndex()),
-                    sprite.x(), sprite.y(), sprite.flipX(), sprite.flipY(), palettes[paletteIndex]);
-            }
-        }
-    }
+
 }

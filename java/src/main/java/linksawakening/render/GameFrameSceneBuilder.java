@@ -153,9 +153,8 @@ public final class GameFrameSceneBuilder {
         }
         if (fileMenu == null && snapshot != null && snapshot.lineScrollY() != null) {
             int[] lineY = snapshot.lineScrollY();
-            layers.add(context -> IndexedRenderer.renderBackgroundLineScroll(context.buffer(),
-                context.gpu(), tilemap, attrmap, palettes, BG_MAP_WIDTH, BG_MAP_HEIGHT,
-                VIEWPORT_TILE_WIDTH, VIEWPORT_TILE_HEIGHT, lineScrollX, scrollY, lineY));
+            layers.add(new LineScrollBackgroundRenderLayer(tilemap, attrmap, palettes,
+                lineScrollX, scrollY, lineY));
         } else if (lineScrollX != null) {
             layers.add(BackgroundRenderLayer.lineScrolled(tilemap, attrmap, palettes,
                 BG_MAP_WIDTH, BG_MAP_HEIGHT, VIEWPORT_TILE_WIDTH, VIEWPORT_TILE_HEIGHT,

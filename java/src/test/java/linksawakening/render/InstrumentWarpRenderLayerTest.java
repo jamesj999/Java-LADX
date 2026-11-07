@@ -53,4 +53,25 @@ final class InstrumentWarpRenderLayerTest {
         InstrumentWarpRenderLayer.fullscreen(visual, palettes).render(new RenderContext(buffer, new GPU()));
         assertEquals(248, buffer[(160 * 144 - 1) * 4] & 255);
     }
+    @Test void indexedPaletteTransformsAndFullscreenRowsMatchLegacy() {
+        GPU gpu = new GPU();
+        for (int y = 0; y < 8; y++) for (int x = 0; x < 8; x++) gpu.getTile(0).setPixel(x,y,(x+y)%4);
+        int[][] palettes = {{0, 0xF01000, 0x123456, 0x00A0D0}};
+        RenderLayer sprites = new SpriteListRenderLayer(List.of(
+            new SpriteListRenderLayer.Sprite(0, 3, 5, 0, true, false, 8)), palettes);
+        RenderLayer nested = new PaletteOverlayRenderLayer(List.of(
+            new PaletteOverlayRenderLayer(List.of(sprites), 2)), 4);
+        var visual = new InstrumentWarpVisual(31,31,3,new int[360],new int[360]);
+        for (List<RenderLayer> layers : List.<List<RenderLayer>>of(List.of(nested),
+            List.of(InstrumentWarpRenderLayer.fullscreen(visual, new int[8][4])),
+            List.of(new InstrumentWarpRenderLayer(List.of(sprites), 31),
+                InstrumentWarpRenderLayer.fullscreen(visual, new int[8][4])))) {
+            FrameScene scene = FrameScene.of(layers);
+            byte[] legacy = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
+            byte[] indexed = legacy.clone();
+            LegacySceneReference.render(scene, legacy, gpu);
+            scene.drawTo(indexed,gpu,RenderPipeline.HARDWARE);
+            org.junit.jupiter.api.Assertions.assertArrayEquals(legacy,indexed);
+        }
+    }
 }

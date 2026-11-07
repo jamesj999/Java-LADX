@@ -329,4 +329,59 @@ public final class InventoryMenu {
         return new ClosedWindow(tiles, attributes,
             roomPalettes == null ? tilemapLoader.palettes() : roomPalettes, windowY);
     }
+    public void submit(linksawakening.render.HardwareFrame frameModel, GPU gpu, int[][] roomPalettes) {
+        if (romData != null) gpu.updatePowderInventoryTiles(romData, playerState.hasToadstool());
+        int[] tilemap = tilemapLoader.copyBaseTilemap();
+        int[] attrmap = tilemapLoader.copyAttrmap();
+        HudOverlay.apply(tilemap, attrmap, playerState);
+        boolean cursorVisible = isFullyOpen() && (cursorFrameCounter & 0x10) == 0;
+        InventorySubscreenOverlay.apply(tilemap, attrmap, playerState, cursorSlot, cursorVisible);
+
+        if (dungeonPanel != null && !showInstruments && !isFullyClosed())
+            dungeonPanel.apply(tilemap, attrmap, dungeonMapId, dungeonCollapsed, dungeonItems, dungeonRooms);
+        int offsetY = windowY;
+        if (offsetY >= Framebuffer.HEIGHT) {
+            return;
+        }
+
+        int[][] inventoryPalettes = tilemapLoader.palettes();
+        if (instrumentPanel != null && showInstruments && !isFullyClosed()) {
+            inventoryPalettes = instrumentPanel.palettes(inventoryPalettes, instrumentPaletteFrame);
+        }
+        TilemapRenderer.submit(
+            frameModel,
+            gpu,
+            tilemap,
+            attrmap,
+            isFullyClosed() && roomPalettes != null ? roomPalettes : inventoryPalettes,
+            InventoryTilemapLoader.WIDTH,
+            InventoryTilemapLoader.HEIGHT,
+            0,
+            offsetY
+        );
+
+        if (instrumentPanel != null && showInstruments && !isFullyClosed()) {
+            instrumentPanel.submit(frameModel, attrmap, inventoryPalettes, instrumentFlags, offsetY);
+        }
+
+        if (dungeonPanel != null && !showInstruments && !isFullyClosed())
+            dungeonPanel.submit(frameModel, tilemap, attrmap, inventoryPalettes, offsetY,
+                dungeonMapId, dungeonPosition, dungeonFrame, tilemapLoader.objectPalettes());
+
+        if (instrumentPanel != null && isFullyOpen()) {
+            instrumentPanel.submitNavigation(frameModel, tilemapLoader.objectPalettes(), instrumentPaletteFrame);
+        }
+
+        if (ocarinaSongMenu.isVisible()) {
+            if (romData != null && !ocarinaTilesLoaded) {
+                gpu.loadOcarinaSymbolsTiles(romData);
+                ocarinaTilesLoaded = true;
+            }
+            ocarinaPopupRenderer.submit(frameModel, gpu, tilemapLoader.objectPalettes(),
+                ocarinaSongMenu);
+        } else if (ocarinaTilesLoaded && romData != null) {
+            gpu.loadSharedVfxTiles(romData);
+            ocarinaTilesLoaded = false;
+        }
+    }
 }

@@ -13,28 +13,29 @@ final class InventoryTileLoader {
     private static final int SHARED_VFX_TILES_ADDR = RomSymbols.CharacterVfxTiles.address();
     public void updatePowderInventoryTiles(byte[] romData, boolean hasToadstool) {
         if (target.powderIconIsToadstool == hasToadstool) return;
-        target.loadTilesFromROM(romData, 0x2C, hasToadstool ? 0x68C0 : 0x48E0, 2, 0x08E);
+        target.loadTilesFromROM(romData, GbcBanks.adjust(RomSymbols.MushroomTiles.bank()), hasToadstool
+            ? RomSymbols.MushroomTiles.address() : RomSymbols.InventoryEquipmentItemsTiles.address() + 0xE0, 2, 0x08E);
         target.powderIconIsToadstool = hasToadstool;
     }
 
     public void replaceSlimeKeyTilesByGoldenLeaf(byte[] romData) {
-        target.loadTilesFromROM(romData, GbcBanks.adjust(0x0C), 0x68E0, 0x02, 0x0CA);
+        target.loadTilesFromROM(romData, GbcBanks.adjust(RomSymbols.SlimeKeyTiles.bank()), RomSymbols.SlimeKeyTiles.address(), 0x02, 0x0CA);
     }
 
     public void updateHeartPieceMeterTiles(byte[] rom, int command) {
         int source, destination;
         switch (command) {
-            case 3 -> { source = 0x6900; destination = 0x9A; }
-            case 4 -> { source = 0x6930; destination = 0x9D; }
-            case 5 -> { source = 0x49D0; destination = 0x9D; }
-            case 6 -> { source = 0x49A0; destination = 0x9A; }
+            case 3 -> { source = RomSymbols.PieceOfHeartMeterTiles.address(); destination = 0x9A; }
+            case 4 -> { source = RomSymbols.PieceOfHeartMeterTiles.address() + 0x30; destination = 0x9D; }
+            case 5 -> { source = RomSymbols.InventoryEquipmentItemsTiles.address() + 0x1D0; destination = 0x9D; }
+            case 6 -> { source = RomSymbols.InventoryEquipmentItemsTiles.address() + 0x1A0; destination = 0x9A; }
             default -> throw new IllegalArgumentException("Heart meter command: " + command);
         }
-        target.loadTilesFromROM(rom, 0x2C, source, 3, destination);
+        target.loadTilesFromROM(rom, GbcBanks.adjust(RomSymbols.PieceOfHeartMeterTiles.bank()), source, 3, destination);
     }
 
     public void updateTradingItemTiles(byte[] rom, int item) {
-        if (item >= 2) target.loadTilesFromROM(rom, 0x2C, 0x4400 + (item - 2) * 0x40, 4, 0x9A);
+        if (item >= 2) target.loadTilesFromROM(rom, GbcBanks.adjust(RomSymbols.Items1Tiles.bank()), RomSymbols.Items1Tiles.address() + (item - 2) * 0x40, 4, 0x9A);
     }
 
     public void loadOcarinaSymbolsTiles(byte[] romData) {
@@ -54,8 +55,5 @@ final class InventoryTileLoader {
         target.loadTilesFromROM(romData, SHARED_VFX_TILES_BANK,
             SHARED_VFX_TILES_ADDR + 0x60, 0x04, 0x26);
     }
-    private static int bankAddrToRomOffset(int bank, int address) {
-        return bank == 0 ? address : bank * 0x4000 + address - 0x4000;
-    }
-    private static int romOffset(int bank, int address) { return bankAddrToRomOffset(bank, address); }
+
 }

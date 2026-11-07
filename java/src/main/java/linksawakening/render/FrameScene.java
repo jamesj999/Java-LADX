@@ -10,7 +10,7 @@ public final class FrameScene {
     private final List<RenderLayer> layers;
 
     @FunctionalInterface
-    interface DrawObserver { void drawn(FrameScene scene, byte[] rgba, GPU gpu); }
+    interface DrawObserver { void drawn(FrameScene scene, byte[] rgba, GPU gpu, RenderPipeline pipeline); }
     static final ThreadLocal<DrawObserver> DRAW_OBSERVER = new ThreadLocal<>();
 
     List<String> unmigratedLayers() {
@@ -35,23 +35,32 @@ public final class FrameScene {
     }
 
     public void drawTo(byte[] buffer, GPU gpu) {
-        drawTo(buffer, gpu, RenderPipeline.LEGACY_RGBA);
+        if (!unmigratedLayers().isEmpty()) {
+            // Preserve the original functional RenderLayer callback API outside production scenes.
+            RgbaCallbackCompatibility.drawCallbacks(layers, buffer, gpu);
+            notifyDraw(buffer, gpu);
+            return;
+        }
+        drawTo(buffer, gpu, RenderPipeline.HARDWARE);
     }
 
     public void drawTo(byte[] buffer, GPU gpu, RenderPipeline pipeline) {
-        if (pipeline == RenderPipeline.HARDWARE) {
-            HardwareFrame frame = hardwareFrame(gpu);
-            frame.compose(buffer);
+        java.util.Objects.requireNonNull(pipeline, "pipeline");
+        if (pipeline == RenderPipeline.LEGACY_RGBA) {
+            drawTo(buffer, gpu); // Deprecated source-compatibility alias, no legacy backend.
             return;
         }
-        IndexedRenderer.clear(buffer);
-        RenderContext context = new RenderContext(buffer, gpu);
-        for (RenderLayer layer : layers) {
-            layer.render(context);
-        }
-        DrawObserver observer = DRAW_OBSERVER.get();
-        if (observer != null) observer.drawn(this, buffer, gpu);
+        HardwareFrame frame = hardwareFrame(gpu);
+        frame.compose(buffer);
+        notifyDraw(buffer, gpu);
     }
+
+    private void notifyDraw(byte[] buffer, GPU gpu) {
+        DrawObserver observer = DRAW_OBSERVER.get();
+        if (observer != null) observer.drawn(this, buffer, gpu, RenderPipeline.HARDWARE);
+    }
+
+    List<RenderLayer> layersForComparison() { return layers; }
 
     HardwareFrame hardwareFrame(GPU gpu) {
         for (RenderLayer layer : layers) {

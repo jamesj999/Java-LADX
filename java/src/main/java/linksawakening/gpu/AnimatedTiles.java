@@ -3,6 +3,7 @@ package linksawakening.gpu;
 import linksawakening.rom.GbcBanks;
 
 import linksawakening.rom.RomSymbols;
+import linksawakening.rom.Rom;
 
 /** Stateful gameplay tile animation; counters intentionally survive room changes. */
 final class AnimatedTiles {
@@ -15,8 +16,6 @@ final class AnimatedTiles {
     private static final int ANIMATED_TILES_FRAME_COUNT = 0x04;
     private static final int ANIMATED_TILES_FRAME_VRAM_INDEX = 0x16C;
     private static final int ANIMATED_TILES_FRAME_SIZE = 0x40;
-    private static final int ANIMATED_SCROLLING_TILES_BANK = 0x2C;
-    private static final int ANIMATED_SCROLLING_TILES_ADDR = 0x47C0;
     private static final int DUNGEON_TWO_ANIMATED_GROUP = 0x07;
     private static final int COLOR_DUNGEON_SCROLLING_VRAM_INDEX = 0x040;
     private static final int DUNGEON_TWO_SCROLLING_VRAM_INDEX = 0x10C;
@@ -129,15 +128,14 @@ final class AnimatedTiles {
     }
 
     void stageAnimatedScrollingTiles(byte[] romData, int mapId, int roomId) {
-        System.arraycopy(romData, bankAddrToRomOffset(
-                ANIMATED_SCROLLING_TILES_BANK, ANIMATED_SCROLLING_TILES_ADDR),
-            animatedScrollingTiles, 0, animatedScrollingTiles.length);
+        Rom rom = new Rom(romData);
+        byte[] staged = rom.slice(RomSymbols.Items1Tiles
+            .inBank(GbcBanks.adjust(RomSymbols.Items1Tiles.bank())).plus(0x3C0), animatedScrollingTiles.length);
+        System.arraycopy(staged, 0, animatedScrollingTiles, 0, staged.length);
         if (mapId == MAP_COLOR_DUNGEON && roomId == 0x01) {
-            System.arraycopy(romData, bankAddrToRomOffset(0x35, 0x4F00),
-                animatedScrollingTiles, 0, 0x20);
+            byte[] symbols = rom.slice(RomSymbols.ColorDungeonNpcTiles.plus(0xF00), 0x20);
+            System.arraycopy(symbols, 0, animatedScrollingTiles, 0, symbols.length);
         }
     }
-    private static int bankAddrToRomOffset(int bank, int address) {
-        return bank == 0 ? address : bank * 0x4000 + address - 0x4000;
-    }
+
 }

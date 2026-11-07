@@ -15,18 +15,11 @@ public final class InventoryRenderLayer implements HardwareRenderLayer {
         this.roomPalettes = roomPalettes;
     }
 
-    @Override
-    public void render(RenderContext context) {
-        inventoryController.render(context.buffer(), context.gpu(), roomPalettes);
-    }
-    @Override public boolean supportsHardware() { return inventoryController.canSubmitClosedWindow(); }
+
+    @Override public boolean supportsHardware() { return true; }
     @Override public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
-        var window = inventoryController.closedWindow(roomPalettes);
-        for (int y = 0; y < 18; y++) for (int x = 0; x < 20; x++) {
-            int index = y * 20 + x, attr = window.attributes()[index] & 255;
-            int tile = window.tiles()[index] & 255;
-            frame.closedHudTile(gpu.getTile(IndexedRenderer.resolveSignedBgTileIndex(tile)), tile, attr,
-                x * 8, y * 8 + window.y(), window.palettes()[attr & 7]);
-        }
+        if (inventoryController.windowY() < 128)
+            frame.hideGameplayObjectsUnderWindow(inventoryController.windowY());
+        inventoryController.submit(frame, gpu, roomPalettes);
     }
 }

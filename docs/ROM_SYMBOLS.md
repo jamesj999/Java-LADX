@@ -156,15 +156,10 @@ locations were migrated too. Exact local azle.sym matches:
 No discrepancies. Reads use Rom, preserving table lengths, ROM truncation checks,
 stream termination, map selection and caller-owned/copy ownership. Existing
 unrelated inline ROM locations in RoomSession remain outside this batch.
-## Rendering TODO
+## Rendering
 
-Rendering TODO: implement a future `RomOamAllocator` that follows the ROM's
-per-frame OAM allocation, including direction/state-dependent Link and sword
-ordering. Actual CGB hardware resolves OBJ overlap by lower OAM index (not X).
-Until that allocator exists, production composition preserves the emulator-validated
-legacy painter order: later opaque OBJ submissions win. Static slot assignments
-are not a substitute for dynamic allocation. OBJ-vs-BG/window uses CGB color-zero,
-BG/OBJ priority flags, and LCDC bit 0 independently of this temporary OBJ ordering.
+See [RENDERING.md](RENDERING.md) for compositor rules, parity gates, and the
+future `RomOamAllocator` work.
 
 Entity runtime integration checked the public rom.GbcBanks.adjust API after
 merging develop. None of the 15 assigned declarations uses an adjusted bank;

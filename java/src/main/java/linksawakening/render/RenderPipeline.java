@@ -1,4 +1,8 @@
 package linksawakening.render;
 
-/** Migration switch; legacy remains the default until all scene parity gates pass. */
-public enum RenderPipeline { LEGACY_RGBA, HARDWARE }
+/** Indexed production composition. */
+public enum RenderPipeline {
+    HARDWARE,
+    /** @deprecated Source-compatible alias for the default pipeline; no RGBA production backend remains. */
+    @Deprecated LEGACY_RGBA
+}

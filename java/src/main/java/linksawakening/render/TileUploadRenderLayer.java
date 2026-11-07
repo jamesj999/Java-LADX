@@ -13,6 +13,6 @@ final class TileUploadRenderLayer implements HardwareRenderLayer {
     private void upload(GPU gpu) {
         for (int i = 0; i < data.length; i++) gpu.writeVRAM(destination + i, data[i]);
     }
-    @Override public void render(RenderContext context) { upload(context.gpu()); }
+
     @Override public void submit(HardwareFrame frame, GPU gpu) { upload(gpu); }
 }

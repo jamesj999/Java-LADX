@@ -19,7 +19,7 @@ final class RenderPipelineParityTest {
                     new SpriteListRenderLayer.Sprite(2, x + 2, 0, 0, !fx, !fy, height)), palettes)));
                 byte[] legacy = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
                 byte[] hardware = legacy.clone();
-                scene.drawTo(legacy, gpu, RenderPipeline.LEGACY_RGBA);
+                LegacySceneReference.render(scene, legacy, gpu);
                 scene.drawTo(hardware, gpu, RenderPipeline.HARDWARE);
                 assertArrayEquals(legacy, hardware, "x=" + x + " height=" + height + " flip=" + fx + "," + fy);
             }
@@ -37,7 +37,7 @@ final class RenderPipelineParityTest {
                 32, 32, 20, 18, x, y)));
             byte[] legacy = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
             byte[] hardware = legacy.clone();
-            scene.drawTo(legacy, gpu);
+            LegacySceneReference.render(scene, legacy, gpu);
             scene.drawTo(hardware, gpu, RenderPipeline.HARDWARE);
             assertArrayEquals(legacy, hardware, "scroll=" + x + "," + y);
         }

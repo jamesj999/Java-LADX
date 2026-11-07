@@ -3,8 +3,10 @@
 Current guidance and evidence are listed below. Users supply their own ROM;
 never commit ROMs or extracted original game assets.
 
+- [RENDERING.md](RENDERING.md) — compositor rules, OAM hiding and migration gates.
 - [BUILDING.md](BUILDING.md) — Java 21 build, ROM setup, tests and emulator tools.
 - [ROM_SYMBOLS.md](ROM_SYMBOLS.md) — Typed ROM reads, exact symbols, migration checkpoints and OAM limitations.
+- [RENDERING.md](RENDERING.md) — Hardware-faithful compositor: BG/window/OBJ planes, CGB priority rules, parity harness and known future work.
 - [ROM_FORMAT_NOTES.md](ROM_FORMAT_NOTES.md) — Banking, object streams, macros, VRAM, overlays and animation reference.
 - [reconstruction-roadmap.md](reconstruction-roadmap.md) — Verified scope, pending work and verification method.
 - [audio-engine-guide.md](audio-engine-guide.md) — ROM audio sequencing and output reference.
