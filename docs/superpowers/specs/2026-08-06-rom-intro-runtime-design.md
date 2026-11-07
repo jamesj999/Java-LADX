@@ -26,7 +26,7 @@ adding an explicit per-frame snapshot for data that changes during the scene.
 
 ## Source of truth
 
-All runtime graphics and animation data below are read from the shipped ROM
+All runtime graphics and animation data below are read from the user-supplied ROM
 using the bank/address mapping already used by `RomBank`:
 
 - `IntroSeaPaletteTable` at bank `$01:$6E19`;

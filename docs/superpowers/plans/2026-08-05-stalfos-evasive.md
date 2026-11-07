@@ -12,7 +12,7 @@ fixed-point accumulators in a focused `StalfosEvasiveMotion` class; let
 fleeing display definition. `RoomSession` passes a held action-button flag from
 `Main` without turning the host into a Game Boy input emulator.
 
-**Tech Stack:** Java 21, Gradle, JUnit 5, LADX disassembly and shipped ROM.
+**Tech Stack:** Java 21, Gradle, JUnit 5, LADX disassembly and user-supplied ROM.
 
 ---
 

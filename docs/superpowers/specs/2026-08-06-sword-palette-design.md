@@ -4,7 +4,7 @@
 
 Make the Java sword renderer use the exact Game Boy Color object palettes that
 the disassembly selects for the normal and fully charged sword. The live game
-must read the palette bytes from the shipped ROM; no hand-authored color table
+must read the palette bytes from the user-supplied ROM; no hand-authored color table
 may determine the live sword colors.
 
 ## Source of truth

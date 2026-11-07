@@ -37,7 +37,7 @@ The implementation follows these disassembly paths:
   private countdown `$03`; side-scroll items additionally receive speed-Y
   `$EC` instead of the top-down Z speed `$18`.
 
-The ROM data is read from the shipped ROM, never copied into a Java literal
+The ROM data is read from the user-supplied ROM, never copied into a Java literal
 drop table except for test assertions over decoded bytes. The indexed data
 comes from bank `$03`'s `DestroyedEntityHealthGroupOffsetTable`,
 `DropTableByIndex`, `RandomDropChanceTable` at `$55AB`,

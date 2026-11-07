@@ -6,7 +6,7 @@
 ## Goal
 
 Replace the Java engine's direct title-to-configured-room shortcut with the
-shipped ROM's file-selection screen and its new-file name-entry boundary. The
+user-supplied ROM's file-selection screen and its new-file name-entry boundary. The
 screen must use the disassembly's encoded backgrounds, CGB palettes, menu/font
 tiles, cursor positions, and input wrapping rules without implementing a CPU or
 PPU emulator.

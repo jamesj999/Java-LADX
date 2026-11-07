@@ -11,7 +11,7 @@ collision point, then add a type-specific pass-through only for Water Tektite
 and physics flags `$05/$07`. Keep ordinary `pointBlocked` behavior for every
 other entity and terrain type.
 
-**Tech Stack:** Java 21, Gradle, JUnit 5, LADX disassembly and shipped ROM.
+**Tech Stack:** Java 21, Gradle, JUnit 5, LADX disassembly and user-supplied ROM.
 
 ---
 

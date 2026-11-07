@@ -94,7 +94,7 @@ Tests will be test-first and source-shaped:
   nonzero shape entries, broad passable/solid physics, airborne pits, water
   entity exceptions, bomb/wrecking-ball fine pass-through, and open-door
   Spark/boss solidity.
-- Add a room-session regression using the shipped ROM and a live roaming enemy
+- Add a room-session regression using the user-supplied ROM and a live roaming enemy
   probe through the same `entityBackgroundCollisionResult` boundary, proving
   a deep-water sampled cell is no longer treated as an ordinary entity wall
   while a solid sampled cell still blocks.

@@ -6,7 +6,7 @@
 ## Goal
 
 Make the file-menu `START_NEW_GAME` boundary initialize the Java runtime like
-the shipped ROM's `LoadSavedFile.initNewGame` path. A newly created file must
+the user-supplied ROM's `LoadSavedFile.initNewGame` path. A newly created file must
 enter Marin's House with the source entry coordinates and fresh-game player
 state, rather than falling through to the configured debug overworld room.
 
@@ -95,7 +95,7 @@ unnecessary new direction abstraction is added for this boundary.
   state.
 - `PlayerStateTest` verifies the reset clears all inventory/resource state
   while preserving the exact three-heart health value.
-- `RoomSessionTest` verifies the shipped ROM can load map `$10`, room `$A3`
+- `RoomSessionTest` verifies the user-supplied ROM can load map `$10`, room `$A3`
   through the indoor path and reports the expected category.
 - `MainFileMenuFlowTest` source inspection verifies the file-menu new-game
   branch calls the dedicated bootstrap instead of the configured overworld

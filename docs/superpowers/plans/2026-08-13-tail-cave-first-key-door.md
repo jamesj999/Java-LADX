@@ -6,7 +6,7 @@
 
 **Architecture:** Extend the existing ordered integration in `RoomTransitionCoordinatorTest` so no dungeon state is preloaded. Traverse indoor boundaries through `RoomTransitionCoordinator`, invoke the same collision bridge used by `Main`, and assert the source's eight-frame key-door mutation plus both rooms' status bits. Change production only if this live handoff fails for a source-backed reason.
 
-**Tech Stack:** Java 21, JUnit 5, Gradle, LADX disassembly and shipped ROM tables.
+**Tech Stack:** Java 21, JUnit 5, Gradle, LADX disassembly and user-supplied ROM tables.
 
 ---
 

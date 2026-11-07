@@ -31,7 +31,7 @@ new collision behavior is introduced here.
 
 The existing gameplay consumer already maps jingle `$07` to
 `GameplaySoundEvent.SWORD_POKE`. Noise `$0A` gets the explicit
-`SPIKE_TRAP_WHOOSH` gameplay event and resolves through the shipped ROM
+`SPIKE_TRAP_WHOOSH` gameplay event and resolves through the user-supplied ROM
 `NOISE_SFX_WHOOSH` catalog entry.
 
 ## Non-goals

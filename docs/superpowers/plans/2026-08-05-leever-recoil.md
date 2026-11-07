@@ -6,7 +6,7 @@
 
 **Architecture:** Keep `EnemyRecoilMotion` as the ROM-shaped fixed-point recoil state. Admit only entity `$0E` to the existing shared-recoil dispatch, using the non-clearing-on-background-block policy already used by bank-$06 handlers; leave `LeeverMotion`'s separate state machine unchanged.
 
-**Tech Stack:** Java 21, Gradle, JUnit 5, LADX disassembly, shipped ROM-backed combat tables.
+**Tech Stack:** Java 21, Gradle, JUnit 5, LADX disassembly, user-supplied ROM-backed combat tables.
 
 ---
 

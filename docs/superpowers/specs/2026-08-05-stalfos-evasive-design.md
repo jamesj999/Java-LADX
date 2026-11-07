@@ -45,7 +45,7 @@ Gibdo-conversion display path are covered here.
 ## Tests
 
 - Decode and assert both Evasive ROM display-list addresses and bytes from the
-  shipped ROM fixture.
+  user-supplied ROM fixture.
 - Verify an initialized Evasive Stalfos performs the ROM random walk and
   selects its two normal animation variants.
 - Verify held A/B enters the airborne jump state, writes variant `$02`, adds

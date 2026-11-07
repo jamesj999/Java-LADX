@@ -16,7 +16,7 @@ owns reverse-slot allocation and dispatch. `RoomSession` and `Main` route Link
 state, health, sounds, and existing VFX/event sinks at the same frame boundary
 as the ROM. `EntitySpriteHandlerCatalog` remains the only display-list source.
 
-**Tech:** Java 17, Gradle/JUnit 5, `RomBank`/shipped ROM reads, immutable
+**Tech:** Java 17, Gradle/JUnit 5, `RomBank`/user-supplied ROM reads, immutable
 `RoomEntity` snapshots, existing indexed framebuffer and sound/VFX sinks.
 
 **Required references:**

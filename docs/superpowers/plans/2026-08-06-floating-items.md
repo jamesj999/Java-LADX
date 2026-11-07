@@ -68,7 +68,7 @@ same small unit as that test.
    parities, both Z tables, all six effect mappings, and the `$0C` gate.
    Run the focused test class and observe the expected RED failure.
 2. Implement the helper and rerun the focused test class to GREEN.
-3. Add catalog tests against the shipped ROM for the mixed seven-entry main
+3. Add catalog tests against the user-supplied ROM for the mixed seven-entry main
    list, the `$7AD3` source quirk, and the two-frame `$7AEB` overlay. Add
    selection tests proving the overlay survives `withSpriteOverrides`.
 4. Implement catalog/selection/renderer overlay support and run the catalog

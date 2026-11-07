@@ -79,7 +79,7 @@ frame-bit-4 variant.
 
 Add a catalog mapping for `$99` to bank `$07`, address `$752D`, pair shape,
 two variants, and initial variant 0. The catalog continues to decode bytes
-from the shipped ROM; no Java tile or attribute literal is added. Add a test
+from the user-supplied ROM; no Java tile or attribute literal is added. Add a test
 that checks both the mapping and the shipped `$70/$00/$70/$20/$72/$00/$72/$20`
 bytes.
 
@@ -95,7 +95,7 @@ are not guessed into `RoomEntityRuntime` in this increment.
 
 Use red-green TDD:
 
-1. Add display-catalog tests for the bank/address/shape/count and shipped ROM
+1. Add display-catalog tests for the bank/address/shape/count and user-supplied ROM
    bytes; run the focused test and observe the missing mapping or mismatch.
 2. Add runtime tests for noop initialization, frame-bit-4 variants, state-0
    random signed acceleration, state-1 alternating updates, countdown expiry,

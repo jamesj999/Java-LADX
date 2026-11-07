@@ -34,7 +34,7 @@ private static void writePaletteRow(byte[] rom, int palette, int... colors) {
 
 - [x] **Step 2: Add the shipped-ROM framebuffer palette test**
 
-In `SwordTest`, add a test that loads `SwordPalette` and `SwordSpriteSheet` from the shipped ROM, constructs `Sword` with the new palette-aware constructor, advances to `STATE_HOLDING`, renders once at global frame phase `0` and once at phase `4`, and asserts:
+In `SwordTest`, add a test that loads `SwordPalette` and `SwordSpriteSheet` from the user-supplied ROM, constructs `Sword` with the new palette-aware constructor, advances to `STATE_HOLDING`, renders once at global frame phase `0` and once at phase `4`, and asserts:
 
 ```java
 assertTrue(containsOpaqueColor(normalBuffer, palette.normal()[2]));

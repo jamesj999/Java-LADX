@@ -6,7 +6,7 @@
 
 **Architecture:** Reuse EnemyRecoilMotion and the existing RoomEntityRuntime combat/tick ordering. Admit both types through the existing bank-$06 predicate; do not duplicate recoil state or alter ZolGelMotion's movement, clinging, or split logic. Regression tests prove configuration, pre-movement application, blocked-step persistence, and split cleanup.
 
-**Tech Stack:** Java, JUnit 5, Gradle, shipped ROM fixture, LADX disassembly.
+**Tech Stack:** Java, JUnit 5, Gradle, user-supplied ROM fixture, LADX disassembly.
 
 ---
 
@@ -27,7 +27,7 @@ to:
 
 - [x] **Step 2: Add the pre-movement test**
 
-Add a test that loops over 0x1B and 0x1C, creates an ACTIVE entity at (64,64) with the shipped ROM combat tables, resolves a sword collision from (72,72) using a level-zero non-damaging attack context, ticks once with sequence(0x01), and asserts position (61,61) and ignore-hits countdown 0x09. The level-zero context keeps the one-health entities active; the source configures recoil before its damage lookup. This proves the shared recoil runs before ZolGelMotion.advance.
+Add a test that loops over 0x1B and 0x1C, creates an ACTIVE entity at (64,64) with the user-supplied ROM combat tables, resolves a sword collision from (72,72) using a level-zero non-damaging attack context, ticks once with sequence(0x01), and asserts position (61,61) and ignore-hits countdown 0x09. The level-zero context keeps the one-health entities active; the source configures recoil before its damage lookup. This proves the shared recoil runs before ZolGelMotion.advance.
 
 - [x] **Step 3: Add the blocked-step test**
 

@@ -200,7 +200,7 @@ Focused tests will prove:
 - integration through `RoomSession` without changing title, cutscene, or
   unsupported-handler behavior.
 
-Tests will use the shipped ROM for raw-byte assertions and synthetic ROM/state
+Tests will use the user-supplied ROM for raw-byte assertions and synthetic ROM/state
 fixtures for boundary cases. Verification will run focused Gradle tests first,
 then the complete `gradle test` suite from `java/`.
 

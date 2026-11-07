@@ -39,7 +39,7 @@ Run all Gradle commands from `java/`. Use `apply_patch` for source edits. Each i
 4. Implement `EntityStatus` constants, `RoomEntity`, `RoomEntitySnapshot`, and `EntityRoomLoader`. Validate room IDs, pointer addresses, stream bounds, and termination. Use `RomBank.romOffset(0x16, address)` for every bank-$16 read.
 5. Rerun the focused test, then `gradle test --tests linksawakening.world.RoomObjectParserTest --tests linksawakening.world.EntityRoomLoaderTest`.
 
-### 2. Add pointer-table selection coverage against the shipped ROM
+### 2. Add pointer-table selection coverage against the user-supplied ROM
 
 1. Extend `EntityRoomLoaderTest` with the real ROM resource and assert the known overworld streams:
 

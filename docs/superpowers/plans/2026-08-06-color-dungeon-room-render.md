@@ -246,7 +246,7 @@ gradle test --tests linksawakening.world.RoomSessionTest.loadsColorDungeonEntity
 ```
 
 Expected: PASS, with the entity rows, palette, and tilemap all loaded from the
-shipped ROM path.
+user-supplied ROM path.
 
 - [x] **Step 3: Update the reconstruction roadmap**
 

@@ -6,7 +6,7 @@
 
 **Architecture:** Keep Water Tektite state in a dedicated `WaterTektiteMotion` class, following the existing per-handler motion-object pattern. `RoomEntityRuntime` owns lifecycle dispatch, `EntitySpriteHandlerCatalog` decodes the display bytes from the ROM, and `RoomEntityCombatRules` supplies the data-table-derived hitbox and health behavior. The background callback remains the narrow directional collision seam already used by other motion classes.
 
-**Tech Stack:** Java 21, Gradle, JUnit 5, the checked-in LADX disassembly, and the shipped ROM fixture.
+**Tech Stack:** Java 21, Gradle, JUnit 5, the checked-in LADX disassembly, and the user-supplied ROM fixture.
 
 ---
 

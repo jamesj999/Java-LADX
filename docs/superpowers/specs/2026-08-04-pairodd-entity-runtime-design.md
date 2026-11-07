@@ -130,7 +130,7 @@ clear masks.
 
 Focused tests will prove:
 
-- catalog bank/address/shape/variant counts and shipped ROM display bytes;
+- catalog bank/address/shape/variant counts and user-supplied ROM display bytes;
 - initializer random consumption and the resting frame animation;
 - projectile spawn timing at countdown `$18`, signed Link proximity, flash
   gating, countdown thresholds, state transitions, and exact mirrored

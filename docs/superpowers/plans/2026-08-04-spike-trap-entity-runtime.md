@@ -67,7 +67,7 @@ Add `$27` to `EntitySpriteHandlerCatalog` and decode the pair list from the ROM.
 
 ## Completion criteria
 
-- The Spike Trap definition and display bytes come from the shipped ROM through the existing catalog decoder.
+- The Spike Trap definition and display bytes come from the user-supplied ROM through the existing catalog decoder.
 - The four-state movement and fixed-point behavior are covered by focused tests and use no emulator layer.
 - Combat constants match the disassembly's health/damage tables.
 - Focused, relevant-package, and full Gradle tests pass.

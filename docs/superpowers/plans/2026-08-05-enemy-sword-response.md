@@ -110,7 +110,7 @@ jingle IDs to the existing sound sink.
 1. Add failing consumer tests for JINGLE `$09`, JINGLE `$03`, unknown sound,
    and no-sound events. Assert only the two known gameplay sounds are sent.
 2. Add failing sound-map assertions for `JINGLE_BUMP` and
-   `JINGLE_ENEMY_HIT` using the shipped ROM catalog.
+   `JINGLE_ENEMY_HIT` using the user-supplied ROM catalog.
 3. Run the focused gameplay tests and confirm RED.
 4. Implement the consumer and map entries, then invoke it immediately after
    `RoomSession.resolveEntityCombat` in the existing gameplay update boundary.

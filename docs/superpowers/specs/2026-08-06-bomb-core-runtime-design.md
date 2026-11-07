@@ -4,7 +4,7 @@
 
 Port the ordinary player bomb's placement and entity lifecycle into the
 ROM-backed Java room runtime. The implementation must keep the original
-entity type and slot, use the shipped ROM's display data, and preserve the
+entity type and slot, use the user-supplied ROM's display data, and preserve the
 source countdown boundaries for the fuse, pre-explosion warning, explosion,
 and unload phases.
 
@@ -171,7 +171,7 @@ claim that the original game treats those paths as optional.
 2. The ordinary fuse starts at `$A0`; countdown `$18` is the explosion sound
    boundary; countdown `$17..$00` selects the explosion frames; and zero
    unloads.
-3. The pre-explosion and explosion OAM bytes come from the shipped ROM
+3. The pre-explosion and explosion OAM bytes come from the user-supplied ROM
    display lists and retain their raw palette/flip bits.
 4. A failed free-slot allocation does not leave a second visible bomb or
    stale `wHasPlacedBomb` equivalent.

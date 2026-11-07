@@ -12,7 +12,7 @@ and inject a ground-interaction callback into `RoomEntityRuntime`. Keep the
 callback responsible for room physics and source timing while the runtime
 owns handler ordering.
 
-**Tech Stack:** Java 21, Gradle, JUnit 5, LADX disassembly and shipped ROM.
+**Tech Stack:** Java 21, Gradle, JUnit 5, LADX disassembly and user-supplied ROM.
 
 ---
 

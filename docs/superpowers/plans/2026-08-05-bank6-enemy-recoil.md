@@ -6,7 +6,7 @@
 
 **Architecture:** Reuse `EnemyRecoilMotion` for the exact ROM vector and fixed-point accumulators. `RoomEntityRuntime` owns an explicit bank-$06 type predicate, configures recoil in the shared combat branch, and applies one bank-$06 step before the existing family motion; Octorok/Moblin retain bank-$03 collision-stop behavior and spike traps retain their clink-only path.
 
-**Tech Stack:** Java 17, JUnit 5, Gradle, shipped ROM bytes, and LADX disassembly source.
+**Tech Stack:** Java 17, JUnit 5, Gradle, user-supplied ROM bytes, and LADX disassembly source.
 
 ---
 

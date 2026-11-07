@@ -1,7 +1,9 @@
-# Implementation Plan: Link's Awakening Pixel-Perfect WebGL Recreation
+# Implementation Plan: Link's Awakening Engine Reimplementation (Historical WebGL Plan)
 
 ## Goal
-A pixel-perfect web-based recreation of *The Legend of Zelda: Link's Awakening DX* using WebGL/Canvas, derived from the `LADX-Disassembly` source.
+An open source engine reimplementation for preserving *The Legend of Zelda: Link's Awakening DX* and researching how it works, informed by `LADX-Disassembly` and user-supplied ROM data. Users must provide their own ROMs; the engine must not distribute the original game or extracted game assets.
+
+This historical WebGL/Canvas plan predates the current Java engine. Asset extraction below describes local research tooling; final runtime data must come from the user's ROM.
 
 ## Tech Stack
 - **Rendering**: WebGL / HTML5 Canvas (for tile-based rendering and sprite management).

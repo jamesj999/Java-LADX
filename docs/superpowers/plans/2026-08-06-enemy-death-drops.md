@@ -4,7 +4,7 @@
 
 **Goal:** Connect the existing ROM-backed enemy death state to DidKillEnemy and SpawnEnemyDrop, so ordinary enemies update room persistence and produce visible, collectible ROM item entities with the original drop rules and timers.
 
-**Architecture:** Decode the five drop tables and the low-health threshold directly from the shipped ROM in a pure EnemyDropResolver. Keep Guardian Acorn/Piece of Power counters and player/room context at the entity-runtime/session boundary, then resolve the drop at the terminal DYING frame before unloading the source slot. Spawn the chosen item in the highest free slot through EntitySpriteHandlerCatalog, the existing RoomEntity renderer, and the existing pickup path; preserve sourceLoadOrder == -1 for dynamic entities.
+**Architecture:** Decode the five drop tables and the low-health threshold directly from the user-supplied ROM in a pure EnemyDropResolver. Keep Guardian Acorn/Piece of Power counters and player/room context at the entity-runtime/session boundary, then resolve the drop at the terminal DYING frame before unloading the source slot. Spawn the chosen item in the highest free slot through EntitySpriteHandlerCatalog, the existing RoomEntity renderer, and the existing pickup path; preserve sourceLoadOrder == -1 for dynamic entities.
 
 **Tech Stack:** Java records and immutable ROM-table decoders, JUnit 5, Gradle, the shipped azle.gbc test ROM, existing RoomEntityRuntime/RoomSession/PlayerState APIs.
 
@@ -26,7 +26,7 @@
 All addresses below are CPU addresses in the bank named, and must be converted with RomBank.romOffset:
 
 - Bank $03:$4826, 53 bytes: DestroyedEntityHealthGroupOffsetTable (the source
-  comment says 52, but the label and shipped ROM span 53 bytes).
+  comment says 52, but the label and user-supplied ROM span 53 bytes).
 - Bank $03:$559D, 14 bytes: DropTableByIndex.
 - Bank $03:$55AB, 14 bytes: RandomDropChanceTable.
 - Bank $03:$55B9, 14 bytes: RandomDropChanceTableLowHealth.
@@ -342,7 +342,7 @@ git commit -m "feat: spawn ROM enemy death drops"
 
 - [ ] **Step 1: Write failing session-context tests.**
 
-Construct a RoomSession with the shipped ROM, load an entity room containing a supported ordinary enemy, configure maxHearts = 3, health = 1, and no active power-up, then kill the enemy through the existing combat/tick boundary. Assert that low-health behavior uses the low-health chance table, the dynamic item remains in activeRoom().entities(), and collectEntityIfNeeded returns the existing pickup event at the spawned position. Add a room-transition test proving counters survive room loads.
+Construct a RoomSession with the user-supplied ROM, load an entity room containing a supported ordinary enemy, configure maxHearts = 3, health = 1, and no active power-up, then kill the enemy through the existing combat/tick boundary. Assert that low-health behavior uses the low-health chance table, the dynamic item remains in activeRoom().entities(), and collectEntityIfNeeded returns the existing pickup event at the spawned position. Add a room-transition test proving counters survive room loads.
 
 - [ ] **Step 2: Run focused session tests to verify they fail.**
 

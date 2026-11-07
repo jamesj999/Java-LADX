@@ -1,5 +1,14 @@
 # Instructions for Implementation Agent (Next Phase)
 
+This project is an open source engine reimplementation for preservation of
+*The Legend of Zelda: Link's Awakening DX* and research into how it works.
+Users must supply their own ROMs to use it. The engine must not bundle or
+redistribute the original game, ROMs, or extracted original game assets.
+
+These historical TypeScript/atlas instructions predate the Java engine.
+Generated atlases are local research artifacts; current runtime data must be
+loaded from a user-supplied ROM.
+
 ## 🎯 Objective
 Transition from engine initialization to a functional rendering loop that can display the previously generated atlases and tilemaps.
 

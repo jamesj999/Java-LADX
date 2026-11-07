@@ -9,7 +9,7 @@ bank-$03 health-group and damage tables, while preserving the existing recoil,
 sound, and Link-contact boundaries.
 
 **Design:** `RomEnemyCombatTables` decodes the five source tables from the
-shipped ROM. `EnemyAttackContext` mirrors the ROM's sword-level modifiers.
+user-supplied ROM. `EnemyAttackContext` mirrors the ROM's sword-level modifiers.
 `RoomSession` supplies the decoded tables to each runtime, and `Main` supplies
 the current player attack state. No Java copy of the ROM tables is used by the
 active engine path.
@@ -70,7 +70,7 @@ active engine path.
 - Modify: `java/src/test/java/linksawakening/world/RoomEntityRuntimeTest.java`
 - Modify: `java/src/test/java/linksawakening/state/PlayerStateTest.java`
 
-1. Add failing runtime tests using the shipped ROM tables. Assert Octorok
+1. Add failing runtime tests using the user-supplied ROM tables. Assert Octorok
    initial health/contact damage, two-health Moblin progression, and a
    sword-level upgrade that does more than one point.
 2. Add failing tests proving an ignored ROM result leaves health and flash

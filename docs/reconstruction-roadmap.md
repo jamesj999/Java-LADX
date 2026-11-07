@@ -1,5 +1,10 @@
 # Reconstruction roadmap
 
+This project is an open source engine reimplementation for preservation of
+*The Legend of Zelda: Link's Awakening DX* and research into how it works.
+Users must supply their own ROMs to use it. The engine must not bundle or
+redistribute the original game, ROMs, or extracted original game assets.
+
 This document records verified ROM-driven implementation slices. It is a
 progress log, not a claim of complete game parity.
 
@@ -20,7 +25,7 @@ progress log, not a claim of complete game parity.
 - Pair and single OAM rendering covers 8x16 tile order, palette selection,
   transparent color zero, XORed flips, clipping, and both room-scroll halves.
 
-The complete Java test suite passes for this slice with the shipped ROM test
+The complete Java test suite passes for this slice with the user-supplied ROM test
 resource.
 
 ## Verified entity runtime increments — 2026-08-04
@@ -366,7 +371,7 @@ unsupported rather than represented by guessed shapes or generic movement.
 - Tests cover the real parent display bytes, sensor cadence/window/vector,
   beam fixed-point motion, mirror-shield direction filtering and reflection
   side effects, transient rendering, and the live event boundary. The clean
-  complete Java test suite passes with the shipped ROM.
+  complete Java test suite passes with the user-supplied ROM.
 - Successful beam creation at the parent countdown `$10` now emits the raw
   `NOISE_SFX_BEAMOS_LASER` `$08` event through the same live audio boundary;
   failed beam-slot allocation emits neither the beam nor the noise, matching
@@ -385,7 +390,7 @@ runtime collision callback.
 - Blocked launches remain silent, matching the source branch that clears the
   transition countdown and returns before `$759A`. Existing movement,
   countdown, and state transitions are unchanged.
-- Noise `$0A` resolves to the shipped ROM `NOISE_SFX_WHOOSH` catalog entry;
+- Noise `$0A` resolves to the user-supplied ROM `NOISE_SFX_WHOOSH` catalog entry;
   jingle `$07` reuses the existing `SWORD_POKE` mapping. The live
   `RoomSession`/`Main` consumer therefore reaches the same audio sink without
   a parallel sound path.
@@ -514,7 +519,7 @@ runtime collision callback.
   Stalfos Evasive `$1E`; stunned entities return ACTIVE when their countdown
   expires. Timer decrements follow bank-$14 `$4D73-$4DDC`.
 - Color Shells `$E9-$EB` are now admitted through the shared combat gate, so
-  their shipped ROM `$FF` result is reachable without inventing movement or
+  their user-supplied ROM `$FF` result is reachable without inventing movement or
   health data. New countdowns and recoil state are cleared on status transfer,
   slot cleanup, and dynamic replacement.
 - Tests cover raw `$FE`, `$FF`, and `$FD` ROM outcomes, primary/secondary sound
@@ -530,7 +535,7 @@ runtime collision callback.
   physics flags `$04`, and `NOISE_SFX_ENEMY_DESTROYED` `$13`.
 - The runtime emits that raw noise as a pending status event, and the live
   `Main`/`RoomSession` boundary maps it to the explicit gameplay sound
-  `ENEMY_DESTROYED` using the shipped ROM effect. Gibdo `$1F` conversion to
+  `ENEMY_DESTROYED` using the user-supplied ROM effect. Gibdo `$1F` conversion to
   Stalfos Evasive `$1E` remains silent, matching the source branch.
 - The source branch does not call `AddTranscientVfx`; poof/death presentation
   beyond the existing DYING countdown remains intentionally deferred.
@@ -559,7 +564,7 @@ runtime collision callback.
   are ported.
 - Tests cover bank-$36 state transitions, ROM rectangle bytes and attributes,
   live room tilemap replacement, raw sound IDs, poof frames, and completion
-  persistence. The complete Java test suite passes with the shipped ROM.
+  persistence. The complete Java test suite passes with the user-supplied ROM.
 
 ## Verified ROM burning status presentation — 2026-08-05
 
@@ -576,7 +581,7 @@ runtime collision callback.
   existing burn timers, Gibdo replacement, and death transition remain the
   separate runtime behavior already documented above; no unsupported status
   is given a guessed overlay.
-- Tests cover the shipped ROM bytes, both animation phases, palette/flip
+- Tests cover the user-supplied ROM bytes, both animation phases, palette/flip
   selection, tile-offset and Z positioning, room selection installation, and
   the complete Java suite passes from a clean build.
 
@@ -838,7 +843,7 @@ runtime collision callback.
   `Data_002_57FD` two-sprite phases, and jingle `$0E` reaches the gameplay
   sound catalog as `JINGLE_WATER_SPLASH`.
 - Focused collision, runtime, room-session, VFX, and audio tests plus a clean
-  Java suite pass with the shipped ROM. Pit falling, wall rollback, and the
+  Java suite pass with the user-supplied ROM. Pit falling, wall rollback, and the
   side-scroll speed-X/speed-Y damping branch remain pending rather than being
   approximated here.
 
@@ -858,7 +863,7 @@ runtime collision callback.
   Link is in motion state `$06`.
 - Raw jingle `$18` now reaches the gameplay sound map as the ROM item-falling
   effect. Focused runtime/session/audio tests and the complete Java suite cover
-  the slice with the shipped ROM.
+  the slice with the user-supplied ROM.
 
 ## Verified ROM falling presentation handoff — 2026-08-07
 
@@ -873,7 +878,7 @@ runtime collision callback.
   physics Y and Z remain unchanged.
 - Moblin Sword's bank-$07 inline sword pair, bank-$20 generated pair, warning
   sprite, OAM priority, tile-source split, and eight handler variants now
-  decode and render from the shipped ROM.
+  decode and render from the user-supplied ROM.
 - The ordinary bank-$07 active states now mirror the ROM's `$06/$16` speed
   tables, `$80/$30/$18` timers, alert window, ignore-hits alert handoff,
   direction inertia, background collision reversal, and Link-facing/vector
@@ -1064,7 +1069,7 @@ runtime collision callback.
 - `RoomSession` synchronizes its room-owned switch state after room loads,
   test state changes, and the existing crystal-switch VBlank toggle. Focused
   decision, collision, Link movement, and room-session tests plus the complete
-  Java suite pass with the shipped ROM.
+  Java suite pass with the user-supplied ROM.
 - The source's footstep sound and `Data_002_786F` `wC13B` presentation offset,
   switch-button/mobile-block producers, and hookshot-chain transitions remain
   separate source-backed increments.
@@ -1114,7 +1119,7 @@ runtime collision callback.
 
 ## Verified ROM-backed opening intro runtime — 2026-08-06
 
-- The default startup path now passes the shipped ROM into the intro sequence,
+- The default startup path now passes the user-supplied ROM into the intro sequence,
   loads the intro tile data through the existing GPU path, and forwards each
   ROM-derived frame snapshot into the renderer. The ordinary room-render path
   remains unchanged.
@@ -1389,7 +1394,7 @@ runtime collision callback.
 ## Verified ROM Link-bomb damage and recoil — 2026-08-07
 
 - The exact `$12` Link-bomb interaction now resolves damage type `$07` through
-  the shipped ROM health-group, damage-matrix, and damage-value tables before
+  the user-supplied ROM health-group, damage-matrix, and damage-value tables before
   publishing the existing typed explosion event.
 - Numeric, burn (`$FE`), stun (`$FF`), and special (`$F0..$FD`) results retain
   the source generic-damage branches. Normal lethal hits enter the `$2F`
@@ -1601,7 +1606,7 @@ runtime collision callback.
 - The bank-$03 Bouncing Bombite sword special enters state `$02`, reverses the
   ROM vector, starts transition `$40` and private countdown `$08`, and avoids
   ordinary sword damage. Both Bombites use health `$04`, contact damage `$08`,
-  physics `$02`, and splash-in-water options from the shipped ROM tables.
+  physics `$02`, and splash-in-water options from the user-supplied ROM tables.
 - `BombiteExplode` now creates the source type-$02 enemy bomb at the moved
   Bombite position with `z=$00`, countdown `$17`, private state `$01`, the
   initial ignore-hits frame, and `PlayBombExplosionSfx` noise `$0C`. Shipped-ROM
@@ -1680,7 +1685,7 @@ runtime collision callback.
 
 - Entity `$A1` now decodes `SnakeSpriteVariants` from bank `$07:$683E`, with
   the exact four pair frames, palette bytes, and horizontal-flip attributes
-  read from the shipped ROM. Its physics `$12`, normal enemy hitbox, health
+  read from the user-supplied ROM. Its physics `$12`, normal enemy hitbox, health
   group `$00`, and contact damage `$04` are wired into the shared runtime.
 - The bank-$07 handler now follows the source ordering: render the persistent
   direction offset, move with the ROM fixed-point speed tables, apply room
@@ -1769,7 +1774,7 @@ runtime collision callback.
 ## Verified ROM Pols Voice and Ocarina playback seam — 2026-08-07
 
 - Entity `$18` now decodes `PolsVoiceSpriteVariants` from bank `$06:$7373`
-  with the exact two pair frames from the shipped ROM. Its physics `$12`,
+  with the exact two pair frames from the user-supplied ROM. Its physics `$12`,
   splash-only options `$08`, health group `$0C` (four health), and contact
   damage `$08` are wired into the shared runtime.
 - The bank-$06 jump handler follows the source state loop: the six random
@@ -2009,7 +2014,7 @@ runtime collision callback.
   (`$5C/$D3`) request the source reveal, smoke at the intersected object
   coordinates, and noise `$13`; target hits use the ROM combat table and
   projectile recoil seam. Boomerang display, sound, smoke, launch/return, bush,
-  and projectile-gate tests pass against the shipped ROM.
+  and projectile-gate tests pass against the user-supplied ROM.
 - The clean Java suite passes with 1,075 tests and zero failures, errors, or
   skipped tests. Remaining entity handlers, room scripts, and broader
   hardware-visible ordering remain follow-up work.
@@ -2631,7 +2636,7 @@ runtime collision callback.
 ## Verified ROM Goponga Flower entity runtime — 2026-08-08
 
 - Ordinary Goponga Flower (`$7E`) now decodes bank `$06:$63F4`'s two pair
-  variants directly from the shipped ROM: open `$50` and closed `$52`, with
+  variants directly from the user-supplied ROM: open `$50` and closed `$52`, with
   the source palette and X-flip attributes preserved.
 - The active handler ports its `$30` frame-mask animation window and the
   bank-$06 `PushLinkOutOfEntity` collision boundary. The pending Link final
@@ -3684,7 +3689,7 @@ Validation: all 2,362 tests pass. The 663-checkpoint fresh-game combat route com
 
 Added instrument render snapshots, separate background/sprite fade composition, and the eighteen ROM fill commands at $07:6493/$07:64DB, applied two rows per controller tick. The HUD is disabled once those commands begin. The final Dialog150 frame now differs from the original by only 28 RGB555 pixels, all inside the blinking advance arrow (x143..150, y112..117). Evidence: `docs/validation/instrument-hint-2026-11-06.html` and `java/src/test/resources/opening/instrument-hint/results.json`. Java capture `/tmp/ladx-instrument-visual` uses the same 663-checkpoint route as the original reference.
 
-Validation includes transparent sprite-plane composition, RGB555 saturation, progressive two-row fullscreen replacement including the HUD area, and runtime snapshot state at the hint. Intermediate animation is NOT verified: the shipped ROM bytes at $20:6D30 are `21 30 DC`, so the late palette pass starts at wBGPal5, spanning BG palettes 4–7 and OBJ palettes 0–3. Current composition fades the entire sprite plane and does not yet double-increment those four BG palettes. Correct that range before intermediate-frame parity checks. The sixteen-sprite swirl is also still missing. Final fullscreen parity is not evidence of full warp-animation fidelity.
+Validation includes transparent sprite-plane composition, RGB555 saturation, progressive two-row fullscreen replacement including the HUD area, and runtime snapshot state at the hint. Intermediate animation is NOT verified: the user-supplied ROM bytes at $20:6D30 are `21 30 DC`, so the late palette pass starts at wBGPal5, spanning BG palettes 4–7 and OBJ palettes 0–3. Current composition fades the entire sprite plane and does not yet double-increment those four BG palettes. Correct that range before intermediate-frame parity checks. The sixteen-sprite swirl is also still missing. Final fullscreen parity is not evidence of full warp-animation fidelity.
 
 ### Instrument warp palette ranges and swirl (2026-11-06)
 

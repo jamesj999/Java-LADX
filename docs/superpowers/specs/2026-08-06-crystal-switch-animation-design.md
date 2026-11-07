@@ -14,7 +14,7 @@ object producer complete.
 
 ## Source contract
 
-The source of truth is the shipped ROM plus these disassembly paths:
+The source of truth is the user-supplied ROM plus these disassembly paths:
 
 - `src/code/entities/15_crystal_switch.asm`
   - entity `$66` renders its pair from `CrystalSwitchSpriteVariants` at bank

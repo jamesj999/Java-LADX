@@ -8,7 +8,7 @@ the exact object palettes at `ObjectPalettes` (`bank $21:$5518`): green is
 palette 0, red is palette 2 (`RedTunicPalette`), and blue is palette 3
 (`BlueTunicPalette`). The current implementation therefore renders the green
 tunic correctly by accident but cannot render the other two tunics or prove
-that the runtime palette matches the shipped ROM.
+that the runtime palette matches the user-supplied ROM.
 
 The source of truth is `src/code/palettes.asm:1477-1487`,
 `src/code/bank20.asm:5094-5114`, and `PlayerState`'s `wTunicType` values.
@@ -60,7 +60,7 @@ systems can consume the same palette boundary in later slices.
 
 - `LinkTunicPaletteTest` writes synthetic RGB555 values at the source address
   and verifies all three tunic mappings and defensive-copy behavior.
-- A Link framebuffer test uses the shipped ROM's Link tiles, renders the same
+- A Link framebuffer test uses the user-supplied ROM's Link tiles, renders the same
   frame with green and red state, and verifies that at least one tunic pixel
   changes to the exact ROM palette-2 color while its location remains stable.
 - The existing Link, sprite-sheet, and complete Java suites remain required.

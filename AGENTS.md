@@ -1,7 +1,9 @@
-# Project Agents: Link's Awakening Java Reconstruction
+# Project Agents: Link's Awakening Java Engine Reimplementation
 
 ## Overview
-This project aims to create a pixel-perfect Java recreation of *The Legend of Zelda: Link's Awakening DX* using the `LADX-Disassembly` repository and the shipped ROM as the source of truth.
+This project is an open source Java engine reimplementation for *The Legend of Zelda: Link's Awakening DX*, aimed at preserving the original and furthering research into how the game works. It is not a copy or distribution of the original game. The `LADX-Disassembly` repository and a user-supplied ROM are the technical sources of truth.
+
+Users must provide their own ROMs to use the engine. Do not bundle or redistribute ROMs or extracted original game assets with the engine, releases, examples, or test fixtures. Local research and verification must use a user-supplied ROM.
 
 ## Roles and Responsibilities
 
@@ -114,7 +116,8 @@ This project aims to create a pixel-perfect Java recreation of *The Legend of Ze
     - Generate metadata for the Java renderer while keeping ROM-driven loading paths authoritative.
 
 ## Project Guidelines
-- **Accuracy**: The reconstruction must be pixel-perfect regarding tile placement, sprite animation, and palette usage.
+- **Project identity**: Describe the project consistently as an open source engine reimplementation for preservation and research. Documentation and setup instructions must state that users supply their own ROMs.
+- **Accuracy**: The engine reimplementation must be pixel-perfect regarding tile placement, sprite animation, and palette usage.
 - **Performance**: Use hardware-accelerated rendering where practical, but keep the decoded data model faithful to the Game Boy hardware.
 - **Source of Truth**: Always refer back to `LADX-Disassembly` and the ROM for any logic or data discrepancies.
 - **ROM-Only Runtime Data**: Final runtime code should load tiles, tilemaps, attrmaps, and palettes from the ROM rather than from premade PNG exports.

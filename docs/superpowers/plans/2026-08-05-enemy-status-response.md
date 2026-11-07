@@ -4,7 +4,7 @@
 
 **Goal:** Apply the shared ROM `$FE` burning and `$FF` stunned outcomes in the active room entity runtime, with exact countdowns, collision suppression, Color Shell coverage, and ROM sound routing.
 
-**Architecture:** `RoomEntityRuntime` owns per-slot status countdowns and performs the common status transitions before family-specific active motion. `EntityCombatEvent` carries the existing primary sound plus one optional secondary ROM sound write so a burning hit preserves both registers; `EnemyCombatEventConsumer` maps those writes at the gameplay boundary. The three Color Shell types are admitted to the existing collision gate so the shipped ROM's `$FF` result is reachable, while their bank-$36 movement handler remains a separate increment.
+**Architecture:** `RoomEntityRuntime` owns per-slot status countdowns and performs the common status transitions before family-specific active motion. `EntityCombatEvent` carries the existing primary sound plus one optional secondary ROM sound write so a burning hit preserves both registers; `EnemyCombatEventConsumer` maps those writes at the gameplay boundary. The three Color Shell types are admitted to the existing collision gate so the user-supplied ROM's `$FF` result is reachable, while their bank-$36 movement handler remains a separate increment.
 
 **Tech Stack:** Java 21, Gradle, JUnit 5, LWJGL runtime, shipped `azle.gbc` ROM, and the LADX disassembly as the behavioral source of truth.
 
@@ -92,7 +92,7 @@ git commit -m "feat: route ROM enemy status sounds"
 - Modify: java/src/main/java/linksawakening/world/RoomEntityCombatRules.java
 - Test: java/src/test/java/linksawakening/world/RoomEntityRuntimeTest.java
 
-- [ ] **Step 1: Write the failing gate test.** Add a test asserting that entity types $E9, $EA, and $EB are accepted by supportsEnemyCollision. In the same test class, use RomEnemyCombatTables to assert their health values are read from the shipped ROM; do not add a Java health table.
+- [ ] **Step 1: Write the failing gate test.** Add a test asserting that entity types $E9, $EA, and $EB are accepted by supportsEnemyCollision. In the same test class, use RomEnemyCombatTables to assert their health values are read from the user-supplied ROM; do not add a Java health table.
 
 ~~~java
 assertTrue(RoomEntityCombatRules.supportsEnemyCollision(0xE9));
@@ -127,7 +127,7 @@ git commit -m "feat: include Color Shell combat targets"
 - Modify: java/src/main/java/linksawakening/world/RoomEntityRuntime.java
 - Test: java/src/test/java/linksawakening/world/RoomEntityRuntimeTest.java
 
-- [ ] **Step 1: Add failing ROM-backed status tests.** Load the shipped ROM and make a copy-on-write fixture helper in RoomEntityRuntimeTest. Mutate only the test copy at RomBank.romOffset(3, 0x473C) + 1, attack type 0's entry 1 for the Octorok health group, to inject $FE. Add tests for:
+- [ ] **Step 1: Add failing ROM-backed status tests.** Load the user-supplied ROM and make a copy-on-write fixture helper in RoomEntityRuntimeTest. Mutate only the test copy at RomBank.romOffset(3, 0x473C) + 1, attack type 0's entry 1 for the Octorok health group, to inject $FE. Add tests for:
 
   - Octorok $FE: the event reports special $FE, health is unchanged, status is BURNING, countdown is $60, ignore is $0A, primary sound is jingle $03, and secondary sound is noise $12; a second combat pass is empty; 96 ticks end in DYING with countdown $1F.
   - Color Shell Red $E9 from the unmodified ROM: the event reports special $FF, status is STUNNED, countdown is $FF, health is unchanged, only jingle $03 is emitted, a second combat pass is empty, and 255 ticks return it to ACTIVE.

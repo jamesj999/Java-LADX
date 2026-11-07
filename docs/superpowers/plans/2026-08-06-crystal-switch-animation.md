@@ -53,7 +53,7 @@ exists.
    - the final update clears the stage.
 2. Test GPU copies using a synthetic ROM buffer at bank `$2C`, address `$6800`:
    four tiles from each source offset must land at tile slots `$104`/`$108`.
-3. Test the crystal sprite definition against the shipped ROM metadata.
+3. Test the crystal sprite definition against the user-supplied ROM metadata.
 4. Test a crystal sword hit:
    - it produces the standard hit flash/ignore timers;
    - it stays alive;

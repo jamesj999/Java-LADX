@@ -63,7 +63,7 @@
 
 - [ ] **Step 1: Write the failing framebuffer regression**
 
-  Load the shipped ROM's `LinkSpriteSheet` and `LinkTunicPalette`, render the
+  Load the user-supplied ROM's `LinkSpriteSheet` and `LinkTunicPalette`, render the
   same Link frame with green and red `PlayerState`, and assert that a pixel
   whose decoded tile index is 2 has the green row's color in the first buffer
   and the red row's color in the second buffer at the same coordinate.

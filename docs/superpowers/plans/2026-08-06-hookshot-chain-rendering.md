@@ -83,7 +83,7 @@ Wire the object query to the active room's exact ground/object sample. Consume
 runtime bridge requests by writing `$9D` to the padded object area, rebuilding
 the ROM-backed tilemap, and reapplying persistent direction-specific tile
 overrides with bounds guards. Clear overrides when switching rooms. Test with
-the shipped ROM and existing room setup paths.
+the user-supplied ROM and existing room setup paths.
 
 ### 6. Verify and document the completed slice
 

@@ -1,7 +1,7 @@
 # ROM-Backed New Game Bootstrap Implementation Plan
 
 > **For agentic workers:** Execute this plan task-by-task with test-first
-> checkpoints. Keep the source of truth in the disassembly and shipped ROM;
+> checkpoints. Keep the source of truth in the disassembly and user-supplied ROM;
 > do not replace the runtime with a CPU/PPU emulator.
 
 **Goal:** Make a committed empty file enter the disassembly's fresh-game

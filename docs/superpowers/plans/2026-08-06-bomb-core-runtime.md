@@ -18,7 +18,7 @@
 - Modify `java/src/main/java/linksawakening/gameplay/GameplaySoundEvent.java` and `GameplaySoundEffectMap.java`, plus sound-map tests, for explosion noise `$0C` (`$0B` remains hookshot).
 - Modify `docs/reconstruction-roadmap.md` only after verification, recording the verified core scope and the deferred bomb branches.
 
-## Task 1: Decode every bomb display list from the shipped ROM
+## Task 1: Decode every bomb display list from the user-supplied ROM
 
 **Files:** `EntitySpriteHandlerCatalog.java`, `EntitySpriteHandlerCatalogTest.java`
 
@@ -54,7 +54,7 @@ Keep all OAM bytes ROM-derived; do not paste display data into Java.
 - [ ] **Step 4: Run the focused test and inspect the diff.**
 
 Run the focused catalog test and `git diff --check`. Confirm the test checks
-the shipped ROM rather than a Java fixture, then commit:
+the user-supplied ROM rather than a Java fixture, then commit:
 
     git add src/main/java/linksawakening/entity/EntitySpriteHandlerCatalog.java src/test/java/linksawakening/entity/EntitySpriteHandlerCatalogTest.java
     git commit -m "feat: decode ROM bomb display lists"

@@ -113,7 +113,7 @@ gradle test --tests linksawakening.cutscene.CutsceneManagerTest --tests linksawa
 gradle test --tests linksawakening.cutscene.CutsceneManagerTest --tests linksawakening.render.GameFrameSceneBuilderTest --tests linksawakening.scene.BackgroundSceneLoaderTest
 ```
 
-## Task 4: Wire the shipped ROM into startup and validate visible intro frames
+## Task 4: Wire the user-supplied ROM into startup and validate visible intro frames
 
 Files:
 

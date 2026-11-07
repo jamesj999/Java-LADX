@@ -1,5 +1,10 @@
 # Audio Engine Guide
 
+This project is an open source engine reimplementation for preservation of
+*The Legend of Zelda: Link's Awakening DX* and research into how it works.
+Users must supply their own ROMs to use it. The engine must not bundle or
+redistribute the original game, ROMs, or extracted original game assets.
+
 This guide is for future agents working on the Link's Awakening DX audio code. It describes the current music-first implementation, how the pieces fit together, and the safest way to extend it.
 
 ## Current Scope
@@ -8,13 +13,13 @@ The implemented slice is ROM-driven music playback, ROM-backed SFX playback, and
 
 Included:
 
-- Music catalog extraction from the shipped ROM.
+- Music catalog extraction from the user-supplied ROM.
 - A Java reconstruction of the music driver command stream.
 - A software Game Boy APU model for channels 1-4.
 - LWJGL OpenAL streaming for host playback.
 - A standalone AWT/Swing browser launched by Gradle.
 - Dialog/messagebox SFX routed through the real `SoundEffectPlayer` path.
-- SFX pointer-table reads and bank `0x1F` SFX routine execution from the shipped ROM.
+- SFX pointer-table reads and bank `0x1F` SFX routine execution from the user-supplied ROM.
 
 Not included yet:
 

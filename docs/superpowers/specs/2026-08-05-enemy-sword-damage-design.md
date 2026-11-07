@@ -4,7 +4,7 @@
 
 Replace the Java entity runtime's one-point sword shortcut with the shared
 bank-$03 damage lookup used by `ApplySwordDamagesToEnemy`. The active engine
-must resolve sword damage from the shipped ROM, honor the attack-state inputs
+must resolve sword damage from the user-supplied ROM, honor the attack-state inputs
 that change the effective sword level, and use the same ROM tables for enemy
 initial health and contact damage.
 
