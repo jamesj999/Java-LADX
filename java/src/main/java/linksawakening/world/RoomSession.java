@@ -241,6 +241,7 @@ public final class RoomSession {
     private long roomLoadSerial;
     /** ROM wIndoorRoom: the current position in the active map's 8x8 layout. */
     private int indoorMapPosition = -1;
+    private final RoomWorldState roomState;
     private final RoomEntityBridge entityBridge = new RoomEntityBridge();
     private final RoomEntityInputs entityInputs =
         new RoomEntityInputs(() -> entityBridge.entityRuntime);
@@ -250,11 +251,6 @@ public final class RoomSession {
     private PendingShovelDrop pendingShovelDrop;
     private int shovelUseState;
 
-    private final byte[] overworldRoomStatus = new byte[0x100];
-    private final byte[] indoorARoomStatus = new byte[0x100];
-    private final byte[] indoorBRoomStatus = new byte[0x100];
-    private final byte[] colorDungeonRoomStatus = new byte[0x100];
-    private final DungeonItemState dungeonItemState = new DungeonItemState();
     private final Map<Integer, HookshotBridgeUpdate>
         hookshotBridgeTileOverrides = new HashMap<>();
     /** Immediate bomb-wall draw commands use a different tile order than the room object table. */
@@ -310,7 +306,7 @@ public final class RoomSession {
     private int roomTriggerCount;
     private int activeRoomEvent;
     /** wHasInstrument1..: bit 0 records each dungeon miniboss defeat. */
-    private final byte[] dungeonProgressFlags = new byte[0x1A];
+
     private boolean roomEventEffectExecuted;
     private boolean thrownAtDoorTriggerResolved;
     private int roomEventChestRevealCountdown;
@@ -401,6 +397,7 @@ public final class RoomSession {
                        DroppableRupeeSystem droppableRupeeSystem,
                        RoomLoadListener roomLoadListener) {
         this.romData = romData;
+        this.roomState = new RoomWorldState(romData);
         this.indoorTorchPaletteEffect = new IndoorTorchPaletteEffect(romData);
         this.gpu = gpu;
         this.roomLoader = roomLoader;
@@ -469,9 +466,9 @@ public final class RoomSession {
         int nextRoomId = adjacentOverworldRoomId(direction);
         boolean discoveredTailKeyRoom = nextRoomId == ROOM_OW_TAIL_KEY_CHEST
             && direction == ScrollController.UP
-            && (overworldRoomStatus[nextRoomId] & ROOM_STATUS_DISCOVERED) == 0;
+            && (roomState.overworldRoomStatus[nextRoomId] & ROOM_STATUS_DISCOVERED) == 0;
         if (discoveredTailKeyRoom) {
-            overworldRoomStatus[nextRoomId] |= (byte) ROOM_STATUS_DISCOVERED;
+            roomState.overworldRoomStatus[nextRoomId] |= (byte) ROOM_STATUS_DISCOVERED;
         }
         loadRoomSpecificTilesIfNeeded(nextRoomId);
         loadOverworld(nextRoomId);
@@ -519,7 +516,7 @@ public final class RoomSession {
         indoorTorchPaletteEffect.clear();
         recentRoomEntityClears.visit(roomId);
         LoadedRoom room = roomLoader.loadOverworld(
-            roomId, recentRoomEntityClears.mask(roomId), overworldRoomStatus);
+            roomId, recentRoomEntityClears.mask(roomId), roomState.overworldRoomStatus);
         gpu.loadAnimatedTilesGroup(romData, room.animatedTilesGroup());
         setActiveRoom(room);
         updateWitchEnvironment();
@@ -549,7 +546,7 @@ public final class RoomSession {
         indoorMapPosition = findIndoorMapPosition(mapId, roomId);
         clearTransientRoomState();
         recentRoomEntityClears.visit(roomId);
-        dungeonItemState.loadForMap(mapId, true);
+        roomState.dungeonItemState.loadForMap(mapId, true);
         // LoadRoom $00:3162: side-view passages do not mark the map visited.
         if (mapCategory != Warp.CATEGORY_SIDESCROLL)
             indoorStatusTableForMap(mapId)[roomId] |= (byte) 0x80;
@@ -657,34 +654,15 @@ public final class RoomSession {
     }
 
     /** Room-status bytes in the active dungeon's 8x8 ROM map order. */
-    public byte[] dungeonMinimapRoomStatusSnapshot() {
-        byte[] result = new byte[64];
-        if (activeRoom == null) return result;
-        int offset = indoorMapLayoutOffset(activeRoom.mapId());
-        if (offset < 0) return result;
-        byte[] status = indoorStatusTableForMap(activeRoom.mapId());
-        for (int i = 0; i < result.length; i++) {
-            int room = Byte.toUnsignedInt(romData[offset + i]);
-            if (room < status.length) result[i] = status[room];
-        }
-        return result;
-    }
+    public byte[] dungeonMinimapRoomStatusSnapshot() { return roomState.dungeonMinimapRoomStatusSnapshot(activeRoom); }
 
-    public byte[] overworldRoomStatusSnapshot() {
-        return overworldRoomStatus.clone();
-    }
+    public byte[] overworldRoomStatusSnapshot() { return roomState.overworldRoomStatusSnapshot(); }
 
-    public byte[] indoorARoomStatusSnapshot() {
-        return indoorARoomStatus.clone();
-    }
+    public byte[] indoorARoomStatusSnapshot() { return roomState.indoorARoomStatusSnapshot(); }
 
-    public byte[] indoorBRoomStatusSnapshot() {
-        return indoorBRoomStatus.clone();
-    }
+    public byte[] indoorBRoomStatusSnapshot() { return roomState.indoorBRoomStatusSnapshot(); }
 
-    public byte[] colorDungeonRoomStatusSnapshot() {
-        return Arrays.copyOf(colorDungeonRoomStatus, COLOR_DUNGEON_SAVE_STATUS_SIZE);
-    }
+    public byte[] colorDungeonRoomStatusSnapshot() { return roomState.colorDungeonRoomStatusSnapshot(); }
 
     /**
      * Clears the persistent WRAM-shaped world state created for a fresh save.
@@ -694,14 +672,14 @@ public final class RoomSession {
      * as the beach sword and owl.
      */
     public void initializeNewGameWorldState() {
-        Arrays.fill(overworldRoomStatus, (byte) 0);
-        Arrays.fill(indoorARoomStatus, (byte) 0);
-        Arrays.fill(indoorBRoomStatus, (byte) 0);
-        Arrays.fill(colorDungeonRoomStatus, (byte) 0);
+        Arrays.fill(roomState.overworldRoomStatus, (byte) 0);
+        Arrays.fill(roomState.indoorARoomStatus, (byte) 0);
+        Arrays.fill(roomState.indoorBRoomStatus, (byte) 0);
+        Arrays.fill(roomState.colorDungeonRoomStatus, (byte) 0);
         shouldGetLostInMysteriousWoods = false;
         recentRoomEntityClears.reset();
-        Arrays.fill(dungeonProgressFlags, (byte) 0);
-        dungeonItemState.reset();
+        Arrays.fill(roomState.dungeonProgressFlags, (byte) 0);
+        roomState.dungeonItemState.reset();
         followingNpcState = FollowingNpcState.none();
         followingNpcRoomNeedsSync = true;
         followingLinkPositionHistory.fill(0x08, 0x10, 0, 0);
@@ -726,63 +704,29 @@ public final class RoomSession {
     /** Restores the room-status WRAM tables loaded by the source save path. */
     public void restoreRoomStatuses(byte[] overworldStatus, byte[] indoorAStatus,
                                     byte[] indoorBStatus, byte[] colorDungeonStatus) {
-        requireLength(overworldStatus, ROOM_STATUS_TABLE_SIZE, "overworldStatus");
-        requireLength(indoorAStatus, ROOM_STATUS_TABLE_SIZE, "indoorAStatus");
-        requireLength(indoorBStatus, ROOM_STATUS_TABLE_SIZE, "indoorBStatus");
-        requireLength(colorDungeonStatus, COLOR_DUNGEON_SAVE_STATUS_SIZE,
-            "colorDungeonStatus");
-        System.arraycopy(overworldStatus, 0, overworldRoomStatus, 0, ROOM_STATUS_TABLE_SIZE);
-        System.arraycopy(indoorAStatus, 0, indoorARoomStatus, 0, ROOM_STATUS_TABLE_SIZE);
-        System.arraycopy(indoorBStatus, 0, indoorBRoomStatus, 0, ROOM_STATUS_TABLE_SIZE);
-        Arrays.fill(colorDungeonRoomStatus, (byte) 0);
-        System.arraycopy(colorDungeonStatus, 0, colorDungeonRoomStatus, 0,
-            COLOR_DUNGEON_SAVE_STATUS_SIZE);
+        roomState.restoreRoomStatuses(overworldStatus, indoorAStatus, indoorBStatus, colorDungeonStatus);
         if (entityBridge.entityRuntime != null && activeRoom != null) {
             entityBridge.entityRuntime.setEntityRoomStatus(activeRoomStatusFlags());
             entityBridge.entityRuntime.setTailKeyOwned(hasTailKey);
         }
     }
 
-    public byte[] dungeonItemFlagsSnapshot() {
-        return dungeonItemState.dungeonItemFlagsSnapshot();
-    }
+    public byte[] dungeonItemFlagsSnapshot() { return roomState.dungeonItemFlagsSnapshot(); }
 
-    public byte[] colorDungeonItemFlagsSnapshot() {
-        return dungeonItemState.colorDungeonItemFlagsSnapshot();
-    }
+    public byte[] colorDungeonItemFlagsSnapshot() { return roomState.colorDungeonItemFlagsSnapshot(); }
 
-    public byte[] currentDungeonItemFlagsSnapshot() {
-        return dungeonItemState.currentFlagsSnapshot();
-    }
+    public byte[] currentDungeonItemFlagsSnapshot() { return roomState.currentDungeonItemFlagsSnapshot(); }
 
-    public void restoreDungeonItemFlags(byte[] dungeonFlags, byte[] colorFlags) {
-        dungeonItemState.restore(dungeonFlags, colorFlags);
-    }
+    public void restoreDungeonItemFlags(byte[] dungeonFlags, byte[] colorFlags) { roomState.restoreDungeonItemFlags(dungeonFlags, colorFlags); }
 
     /** Snapshots wHasInstrument1..wHasInstrument8 (DB65..DB6C). */
-    public byte[] dungeonProgressFlagsSnapshot() {
-        return Arrays.copyOf(dungeonProgressFlags, 0x08);
-    }
+    public byte[] dungeonProgressFlagsSnapshot() { return roomState.dungeonProgressFlagsSnapshot(); }
 
-    public void restoreDungeonProgressFlags(byte[] flags) {
-        requireLength(flags, 0x08, "dungeonProgressFlags");
-        Arrays.fill(dungeonProgressFlags, (byte) 0);
-        System.arraycopy(flags, 0, dungeonProgressFlags, 0, flags.length);
-    }
+    public void restoreDungeonProgressFlags(byte[] flags) { roomState.restoreDungeonProgressFlags(flags); }
 
-    int overworldRoomStatusForTest(int roomId) {
-        if (roomId < 0 || roomId >= overworldRoomStatus.length) {
-            throw new IllegalArgumentException("Room id out of range: " + roomId);
-        }
-        return Byte.toUnsignedInt(overworldRoomStatus[roomId]);
-    }
+    int overworldRoomStatusForTest(int roomId) { return roomState.overworldRoomStatusForTest(roomId); }
 
-    int indoorRoomStatusForTest(int mapId, int roomId) {
-        if (roomId < 0 || roomId >= 0x100) {
-            throw new IllegalArgumentException("Room id out of range: " + roomId);
-        }
-        return Byte.toUnsignedInt(indoorStatusTableForMap(mapId)[roomId]);
-    }
+    int indoorRoomStatusForTest(int mapId, int roomId) { return roomState.indoorRoomStatusForTest(mapId, roomId); }
 
     void setEnemyDropCountersForTest(int droppedItemCount, int droppedBombArrowCount) {
         enemyDropCounters = new EnemyDropResolver.CounterState(
@@ -1492,8 +1436,8 @@ public final class RoomSession {
     }
 
     boolean hasDungeonInstrumentForTest(int mapId) {
-        return mapId >= 0 && mapId < dungeonProgressFlags.length
-            && (dungeonProgressFlags[mapId] & 0x02) != 0;
+        return mapId >= 0 && mapId < roomState.dungeonProgressFlags.length
+            && (roomState.dungeonProgressFlags[mapId] & 0x02) != 0;
     }
 
     int indoorTorchPaletteEffectAddressForTest() {
@@ -1671,15 +1615,15 @@ public final class RoomSession {
         entityBridge.entityRuntime.setBowWowState(bowWowState);
         entityBridge.entityRuntime.setLinkVelocityZ(entityInputs.entityLinkVelocityZ);
         entityBridge.entityRuntime.setOwlInstrumentFlags(
-            Byte.toUnsignedInt(dungeonProgressFlags[0]),
-            Byte.toUnsignedInt(dungeonProgressFlags[1]));
+            Byte.toUnsignedInt(roomState.dungeonProgressFlags[0]),
+            Byte.toUnsignedInt(roomState.dungeonProgressFlags[1]));
         entityBridge.entityRuntime.setActionButtonsHeld(entityInputs.actionButtonAHeld, entityInputs.actionButtonBHeld);
         int statueMapId = activeRoom.mapId();
         entityBridge.entityRuntime.setOwlStatueDialogId(
             activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD
                 && (statueMapId < 8 || statueMapId == 0xFF)
                 ? owlStatueDialogResolver.globalDialogId(statueMapId, activeRoom.roomId(),
-                    dungeonItemState.currentFlag(DungeonItemState.STONE_BEAK_INDEX) != 0)
+                    roomState.dungeonItemState.currentFlag(DungeonItemState.STONE_BEAK_INDEX) != 0)
                 : -1);
         entityBridge.entityRuntime.setJoypadHeld(entityInputs.joypadHeld);
         entityBridge.entityRuntime.setPressedButtonsMask(entityInputs.entityPressedButtonsMask);
@@ -1751,7 +1695,7 @@ public final class RoomSession {
         for (ChestRewardEvent reward : chestRewards) {
             if (reward.itemType() >= ChestContentsTable.CHEST_MAP
                 && reward.itemType() <= ChestContentsTable.CHEST_SMALL_KEY) {
-                dungeonItemState.incrementCurrentFlag(reward.itemType());
+                roomState.dungeonItemState.incrementCurrentFlag(reward.itemType());
             }
         }
         entityBridge.pendingChestRewardEvents.addAll(chestRewards);
@@ -1772,7 +1716,7 @@ public final class RoomSession {
         for (RoomStatusPersistenceRequest request
             : entityBridge.entityRuntime.consumePendingRoomStatusPersistenceRequests()) {
             if (activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
-                overworldRoomStatus[activeRoom.roomId()] |= (byte) request.roomStatusMask();
+                roomState.overworldRoomStatus[activeRoom.roomId()] |= (byte) request.roomStatusMask();
             }
             tarinFlag = request.tarinFlag();
         }
@@ -2116,7 +2060,7 @@ public final class RoomSession {
             && activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD) {
             // PickDroppableKey sets the Angler's Tunnel source room flag before
             // it starts the held-item transition.
-            indoorARoomStatus[0x69] |= 0x10;
+            roomState.indoorARoomStatus[0x69] |= 0x10;
         }
         if (event.type() == ENTITY_DROPPABLE_SECRET_SEASHELL) {
             // PickSecretSeashell opens Dialog0EF and completes the room after
@@ -2202,11 +2146,11 @@ public final class RoomSession {
         configureStaircase(activeRoom.staircaseLocation());
         boolean minibossDefeated = activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD
             && activeRoom.mapId() >= 0
-            && activeRoom.mapId() < dungeonProgressFlags.length
-            && ((dungeonProgressFlags[activeRoom.mapId()] & 0x01) != 0
+            && activeRoom.mapId() < roomState.dungeonProgressFlags.length
+            && ((roomState.dungeonProgressFlags[activeRoom.mapId()] & 0x01) != 0
                 || (activeRoomStatusFlags() & ROOM_STATUS_EVENT_2) != 0);
         if (minibossDefeated && activeRoomEvent == EVENT_CLEAR_MIDBOSS) {
-            dungeonProgressFlags[activeRoom.mapId()] |= 0x01;
+            roomState.dungeonProgressFlags[activeRoom.mapId()] |= 0x01;
             openActiveRoomShutterDoors();
             activeRoomEvent = 0;
         }
@@ -2238,12 +2182,12 @@ public final class RoomSession {
             entityBridge.entityRuntime.setLiftedLinkC13B(followingEntityYOffset);
             entityBridge.entityRuntime.setEntityRoomStatus(activeRoomStatusFlags());
             entityBridge.entityRuntime.setDungeonMinibossReady(activeRoom.mapId() >= 0
-                && activeRoom.mapId() < dungeonProgressFlags.length
-                && (dungeonProgressFlags[activeRoom.mapId()] & 0x01) != 0);
+                && activeRoom.mapId() < roomState.dungeonProgressFlags.length
+                && (roomState.dungeonProgressFlags[activeRoom.mapId()] & 0x01) != 0);
             entityBridge.entityRuntime.setTailKeyOwned(hasTailKey);
             entityBridge.entityRuntime.setOwlInstrumentFlags(
-                Byte.toUnsignedInt(dungeonProgressFlags[0]),
-                Byte.toUnsignedInt(dungeonProgressFlags[1]));
+                Byte.toUnsignedInt(roomState.dungeonProgressFlags[0]),
+                Byte.toUnsignedInt(roomState.dungeonProgressFlags[1]));
             entityBridge.entityRuntime.setSecretSeashellPegasusCollisionState(
                 entityInputs.secretSeashellScreenShakeActive, entityInputs.secretSeashellPegasusCollisionActive,
                 entityInputs.secretSeashellPegasusCollisionX, entityInputs.secretSeashellPegasusCollisionY);
@@ -2304,8 +2248,8 @@ public final class RoomSession {
         entityBridge.entityRuntime.setEntityMapId(activeRoom.mapId());
         entityBridge.entityRuntime.setEntityRoomId(activeRoom.roomId());
         entityBridge.entityRuntime.setDungeonMinibossReady(activeRoom.mapId() >= 0
-            && activeRoom.mapId() < dungeonProgressFlags.length
-            && (dungeonProgressFlags[activeRoom.mapId()] & 0x01) != 0);
+            && activeRoom.mapId() < roomState.dungeonProgressFlags.length
+            && (roomState.dungeonProgressFlags[activeRoom.mapId()] & 0x01) != 0);
         entityBridge.entityRuntime.setOwlDialogResolver(owlEventDialogResolver::globalDialogId);
         entityBridge.entityRuntime.setOwlDefaultMusicResolver(owlEventDialogResolver::defaultMusicTrack);
         entityBridge.entityRuntime.setGroundInteraction(this::entityGroundInteraction);
@@ -2324,8 +2268,8 @@ public final class RoomSession {
         entityBridge.entityRuntime.setLiftedLinkC13B(followingEntityYOffset);
         entityBridge.entityRuntime.setEntityRoomStatus(activeRoomStatusFlags());
         entityBridge.entityRuntime.setDungeonMinibossReady(activeRoom.mapId() >= 0
-            && activeRoom.mapId() < dungeonProgressFlags.length
-            && (dungeonProgressFlags[activeRoom.mapId()] & 0x01) != 0);
+            && activeRoom.mapId() < roomState.dungeonProgressFlags.length
+            && (roomState.dungeonProgressFlags[activeRoom.mapId()] & 0x01) != 0);
         entityBridge.entityRuntime.setTailKeyOwned(hasTailKey);
         entityBridge.entityRuntime.setSecretSeashellPegasusCollisionState(
             entityInputs.secretSeashellScreenShakeActive, entityInputs.secretSeashellPegasusCollisionActive,
@@ -2726,7 +2670,7 @@ public final class RoomSession {
                     OBJECT_ROCKY_GROUND);
             }
         }
-        overworldRoomStatus[activeRoom.roomId()] |= (byte) OW_ROOM_STATUS_OPENED;
+        roomState.overworldRoomStatus[activeRoom.roomId()] |= (byte) OW_ROOM_STATUS_OPENED;
         refreshOverworldCollisionAfterObjectMutation();
     }
 
@@ -2748,7 +2692,7 @@ public final class RoomSession {
 
         writeBombPuzzleObject(candidate.location(), OBJECT_ROCKY_CAVE_DOOR);
         bombedCaveDoorTileOverrides.add(areaIndex);
-        overworldRoomStatus[activeRoom.roomId()] |= (byte) OW_ROOM_STATUS_OPENED;
+        roomState.overworldRoomStatus[activeRoom.roomId()] |= (byte) OW_ROOM_STATUS_OPENED;
         queuePuzzleSolvedJingle(sourceSlot);
         refreshActiveRoomTilemap();
         refreshOverworldCollisionAfterObjectMutation();
@@ -2815,7 +2759,7 @@ public final class RoomSession {
 
         writeBombPuzzleObject(location, 0xA1);
         byte[] status = activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
-            ? overworldRoomStatus : indoorStatusTableForMap(activeRoom.mapId());
+            ? roomState.overworldRoomStatus : indoorStatusTableForMap(activeRoom.mapId());
         status[activeRoom.roomId()] |= (byte) ROOM_STATUS_CHEST_OPEN;
         // writeBombPuzzleObject already updates the live GBC cell. Rebuilding
         // from the ROM overlay would discard other live mutations (cut bushes).
@@ -2867,7 +2811,7 @@ public final class RoomSession {
                     0, linkPixelX, linkPixelY)) {
                 return false;
             }
-            if (dungeonItemState.currentFlag(DungeonItemState.NIGHTMARE_KEY_INDEX) == 0) {
+            if (roomState.dungeonItemState.currentFlag(DungeonItemState.NIGHTMARE_KEY_INDEX) == 0) {
                 entityBridge.pendingRoomDialogRequests.add(new DialogRequest(0, 0x07));
                 return true;
             }
@@ -2883,7 +2827,7 @@ public final class RoomSession {
         int doorLocation = touchedLocation
             - (objectOffset == 0 ? 0 : doorDirection < 2 ? 1 : 0x10);
         if (!alignedWithIndoorKeyDoor(doorLocation, doorDirection, linkPixelX, linkPixelY)
-            || !dungeonItemState.consumeSmallKey()) return false;
+            || !roomState.dungeonItemState.consumeSmallKey()) return false;
         indoorStatusTableForMap(activeRoom.mapId())[activeRoom.roomId()]
             |= (byte) INDOOR_ROOM_STATUS_EVENT_3;
         indoorKeyDoorDirection = doorDirection;
@@ -3096,7 +3040,7 @@ public final class RoomSession {
             pushBlockContactTicks = 0;
             return false;
         }
-        if (dungeonItemState.currentFlag(DungeonItemState.SMALL_KEYS_INDEX) == 0) {
+        if (roomState.dungeonItemState.currentFlag(DungeonItemState.SMALL_KEYS_INDEX) == 0) {
             pushBlockContactTicks = 0;
             entityBridge.pendingRoomDialogRequests.add(new DialogRequest(0, 0x8C));
             return true;
@@ -3106,7 +3050,7 @@ public final class RoomSession {
             return true;
         }
         pushBlockContactTicks = 0;
-        dungeonItemState.consumeSmallKey();
+        roomState.dungeonItemState.consumeSmallKey();
 
         writeBombPuzzleObject(touchedLocation, OBJECT_FLOOR_OD);
         indoorStatusTableForMap(activeRoom.mapId())[activeRoom.roomId()]
@@ -3179,7 +3123,7 @@ public final class RoomSession {
             || activeRoom.roomId() != roomId
             || linkDirection != Link.DIRECTION_UP
             || (collisionType & LINK_COLLISION_TYPE_UP) == 0
-            || (overworldRoomStatus[roomId] & ROOM_STATUS_EVENT_1) != 0) {
+            || (roomState.overworldRoomStatus[roomId] & ROOM_STATUS_EVENT_1) != 0) {
             return false;
         }
 
@@ -3197,7 +3141,7 @@ public final class RoomSession {
             return true;
         }
 
-        overworldRoomStatus[roomId] |= (byte) ROOM_STATUS_EVENT_1;
+        roomState.overworldRoomStatus[roomId] |= (byte) ROOM_STATUS_EVENT_1;
         tailCaveKeyholeCountdown = TAIL_CAVE_RUMBLE_INITIAL_COUNTDOWN;
         tailCaveResumeMusicTrack = entityDefaultMusicTrack;
         entityBridge.pendingRoomMusicTrack = 0x00;
@@ -3428,66 +3372,21 @@ public final class RoomSession {
         return (activeRoom.roomId() + mapPositionDelta) & 0xFF;
     }
 
-    private int findIndoorMapPosition(int mapId, int roomId) {
-        int layoutOffset = indoorMapLayoutOffset(mapId);
-        if (layoutOffset < 0 || layoutOffset + INDOOR_MAP_LAYOUT_SIZE > romData.length) {
-            return -1;
-        }
-        if ((roomId & 0xFF) == 0) {
-            // MapLayout11 intentionally uses room $00 as both filler and the
-            // Color Dungeon boss room. External loads target the real room;
-            // subsequent transitions retain this position as wIndoorRoom.
-            return mapId == 0xFF ? 0x19 : -1;
-        }
-        for (int position = 0; position < INDOOR_MAP_LAYOUT_SIZE; position++) {
-            if (Byte.toUnsignedInt(romData[layoutOffset + position]) == (roomId & 0xFF)) {
-                return position;
-            }
-        }
-        return -1;
-    }
+    private int findIndoorMapPosition(int mapId, int roomId) { return roomState.findIndoorMapPosition(mapId, roomId); }
 
-    private int indoorMapLayoutOffset(int mapId) {
-        if (mapId == 0xFF) {
-            return RomBank.romOffset(INDOOR_MAP_LAYOUT_BANK, COLOR_DUNGEON_MAP_LAYOUT_ADDR);
-        }
-        if (mapId < 0 || mapId >= 0x0B) {
-            return -1;
-        }
-        // bank0:$192E and bank14:$58B7 select MapLayout12 once Eagle's
-        // Tower's pillar-collapse bit is set in wHasInstrument7.
-        if (mapId == 0x06 && (dungeonProgressFlags[0x06] & 0x04) != 0) {
-            return RomBank.romOffset(
-                INDOOR_MAP_LAYOUT_BANK, EAGLES_TOWER_COLLAPSED_MAP_LAYOUT_ADDR);
-        }
-        return RomBank.romOffset(INDOOR_MAP_LAYOUT_BANK,
-            INDOOR_MAP_LAYOUT_BASE_ADDR + mapId * INDOOR_MAP_LAYOUT_SIZE);
-    }
+    private int indoorMapLayoutOffset(int mapId) { return roomState.indoorMapLayoutOffset(mapId); }
 
-    private byte[] indoorStatusTableForMap(int mapId) {
-        if (mapId == 0xFF) {
-            return colorDungeonRoomStatus;
-        }
-        return mapId >= 0x06 && mapId < 0x1A
-            ? indoorBRoomStatus : indoorARoomStatus;
-    }
+    private byte[] indoorStatusTableForMap(int mapId) { return roomState.indoorStatusTableForMap(mapId); }
 
-    private int activeRoomStatusFlags() {
-        if (activeRoom == null) {
-            return 0;
-        }
-        byte[] status = activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
-            ? overworldRoomStatus : indoorStatusTableForMap(activeRoom.mapId());
-        return Byte.toUnsignedInt(status[activeRoom.roomId()]);
-    }
+    private int activeRoomStatusFlags() { return roomState.activeRoomStatusFlags(activeRoom); }
 
     private void harvestKeyQuicksandEvents() {
         if (entityBridge.entityRuntime == null
             || entityBridge.entityRuntime.consumePendingKeyQuicksandEvents().isEmpty()) {
             return;
         }
-        overworldRoomStatus[0xCE] |= (byte) OW_ROOM_STATUS_FLAG_CHANGED;
-        indoorARoomStatus[0xF8] |= (byte) 0x20;
+        roomState.overworldRoomStatus[0xCE] |= (byte) OW_ROOM_STATUS_FLAG_CHANGED;
+        roomState.indoorARoomStatus[0xF8] |= (byte) 0x20;
     }
 
     private void harvestKeyRewardEvents() {
@@ -3499,7 +3398,7 @@ public final class RoomSession {
         for (KeyRewardEvent reward : rewards) {
             if (reward.itemType() >= ChestContentsTable.CHEST_MAP
                 && reward.itemType() <= ChestContentsTable.CHEST_SMALL_KEY) {
-                dungeonItemState.incrementCurrentFlag(reward.itemType());
+                roomState.dungeonItemState.incrementCurrentFlag(reward.itemType());
             }
             markActiveRoomCompleted();
         }
@@ -3546,8 +3445,8 @@ public final class RoomSession {
         }
         indoorStatusTableForMap(activeRoom.mapId())[activeRoom.roomId()]
             |= (byte) ROOM_STATUS_EVENT_1;
-        if (activeRoom.mapId() >= 0 && activeRoom.mapId() < dungeonProgressFlags.length) {
-            dungeonProgressFlags[activeRoom.mapId()] |= 0x02;
+        if (activeRoom.mapId() >= 0 && activeRoom.mapId() < roomState.dungeonProgressFlags.length) {
+            roomState.dungeonProgressFlags[activeRoom.mapId()] |= 0x02;
         }
         entityBridge.entityRuntime.setEntityRoomStatus(activeRoomStatusFlags());
     }
@@ -3575,7 +3474,7 @@ public final class RoomSession {
             entityBridge.entityRuntime.consumePendingRichardProgressEvents();
         for (RichardProgressEvent event : events) {
             if (event.kind() == RichardProgressEvent.Kind.START_QUEST) {
-                indoorBRoomStatus[0xC7] |= (byte) ROOM_STATUS_EVENT_1;
+                roomState.indoorBRoomStatus[0xC7] |= (byte) ROOM_STATUS_EVENT_1;
                 richardSpokenFlag = Math.max(richardSpokenFlag, 0x02);
             } else {
                 entityInputs.entityGoldenLeavesCount = event.goldenLeavesCount();
@@ -3600,7 +3499,7 @@ public final class RoomSession {
         if (entityBridge.entityRuntime.consumePendingOwlEventCompletions().isEmpty()) {
             return;
         }
-        overworldRoomStatus[activeRoom.roomId()] |= (byte) ROOM_STATUS_EVENT_2;
+        roomState.overworldRoomStatus[activeRoom.roomId()] |= (byte) ROOM_STATUS_EVENT_2;
     }
 
     void markHeartContainerCollected() {
@@ -3610,9 +3509,9 @@ public final class RoomSession {
         byte[] activeStatus = indoorStatusTableForMap(activeRoom.mapId());
         activeStatus[activeRoom.roomId()] |= (byte) ROOM_STATUS_EVENT_2;
         if (activeRoom.mapId() == 0x06) {
-            indoorBRoomStatus[0x2E] |= (byte) ROOM_STATUS_EVENT_2;
+            roomState.indoorBRoomStatus[0x2E] |= (byte) ROOM_STATUS_EVENT_2;
         } else if (activeRoom.mapId() == 0x03) {
-            indoorARoomStatus[0x66] |= (byte) ROOM_STATUS_EVENT_2;
+            roomState.indoorARoomStatus[0x66] |= (byte) ROOM_STATUS_EVENT_2;
         }
     }
 
@@ -3634,7 +3533,7 @@ public final class RoomSession {
             return;
         }
         byte[] status = activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
-            ? overworldRoomStatus : indoorStatusTableForMap(activeRoom.mapId());
+            ? roomState.overworldRoomStatus : indoorStatusTableForMap(activeRoom.mapId());
         status[activeRoom.roomId()] |= (byte) ROOM_STATUS_EVENT_1;
     }
 
@@ -3732,8 +3631,8 @@ public final class RoomSession {
             openActiveRoomShutterDoors(true);
             if (activeRoomEvent == EVENT_CLEAR_MIDBOSS
                 && activeRoom.mapId() >= 0
-                && activeRoom.mapId() < dungeonProgressFlags.length) {
-                dungeonProgressFlags[activeRoom.mapId()] |= 0x01;
+                && activeRoom.mapId() < roomState.dungeonProgressFlags.length) {
+                roomState.dungeonProgressFlags[activeRoom.mapId()] |= 0x01;
                 indoorStatusTableForMap(activeRoom.mapId())[activeRoom.roomId()] |= 0x20;
                 entityBridge.entityRuntime.setDungeonMinibossReady(true);
                 entityBridge.pendingRoomEntityEvents.add(new EntityCombatEvent(
@@ -4075,7 +3974,7 @@ public final class RoomSession {
             activeRoom.roomObjectsArea(), 1 << direction);
         closedShutterMask |= 1 << direction;
         // $02:5D21 uses indoor A even for indoor B (the original's bank selection).
-        byte[] status = activeRoom.mapId() == 0xFF ? colorDungeonRoomStatus : indoorARoomStatus;
+        byte[] status = activeRoom.mapId() == 0xFF ? roomState.colorDungeonRoomStatus : roomState.indoorARoomStatus;
         status[activeRoom.roomId()] &= (byte) ~KEY_DOOR_CURRENT_STATUS[direction];
         shutterCloseDirection = shutterCloseLocation = -1;
         refreshActiveRoomTilemap();
