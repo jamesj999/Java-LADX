@@ -8,7 +8,7 @@ import java.util.Objects;
 import java.util.function.BooleanSupplier;
 
 /** Edge-triggered ordinary bow use from {@code ShootArrow} (bank0.asm:$13BD). */
-public final class Arrow implements EquippedItem {
+public final class Arrow implements EquipmentItem {
     private static final int MAX_ACTIVE_PROJECTILES = 0x02;
     private static final int SHOOTING_COUNTDOWN = 0x10;
 

@@ -8,7 +8,7 @@ import java.util.Objects;
 
 /**
  * Device-independent audio transport. Each update is exactly one gameplay frame.
- * Music, SFX, and externally rendered dialog PCM use the same injected output.
+ * Music and SFX use the same injected output.
  * The caller owns that output and advances this transport at 60 Hz.
  */
 public final class FrameAudioPlayer implements FrameMusicPlayer {
@@ -36,11 +36,6 @@ public final class FrameAudioPlayer implements FrameMusicPlayer {
     }
 
     public void playSoundEffect(SoundEffect effect) { effects.play(effect); }
-
-    /** Dialog synthesis remains external; transport and device selection are shared. */
-    public void playDialogPcm(short[] stereoPcm, int rate) {
-        output.play(stereoPcm, rate);
-    }
 
     @Override public void update() {
         music.tick60Hz();

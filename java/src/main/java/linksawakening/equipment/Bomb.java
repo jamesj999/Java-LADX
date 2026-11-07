@@ -12,7 +12,7 @@ import java.util.function.BooleanSupplier;
  * The room owns the entity slot; this item owns the inventory and sound-side
  * ordering around the spawn request.
  */
-public final class Bomb implements EquippedItem {
+public final class Bomb implements EquipmentItem {
 
     public interface PlacementTarget {
         boolean placeBomb();

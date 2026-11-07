@@ -11,7 +11,7 @@ import java.util.Objects;
  * Song menu navigation is owned by the inventory layer; this item consumes
  * the selected song state and hands the playback countdown to the room.
  */
-public final class Ocarina implements EquippedItem {
+public final class Ocarina implements EquipmentItem {
 
     public interface PlaybackTarget {
         boolean startOcarina(int countdown, int songFlags, int selectedSong);

@@ -108,7 +108,7 @@ final class EquipmentControllerTest {
         assertFalse(sword.spinAttackActive());
     }
 
-    private static final class RecordingItem implements EquippedItem {
+    private static final class RecordingItem implements EquipmentItem {
         private int presses;
         private int releases;
         private int heldTicks;

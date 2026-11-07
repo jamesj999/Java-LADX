@@ -465,8 +465,6 @@ public final class Link implements RocsFeather.JumpTarget {
         return Math.max(0, linkAirborne.zSubPixels >> SUB_PIXEL_SHIFT);
     }
 
-    int resolveAnimationState() { return linkAnimator.resolveAnimationState(); }
-
     public int romAnimationState() {
         return linkAnimator.resolveAnimationState();
     }

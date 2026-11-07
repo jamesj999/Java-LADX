@@ -7,7 +7,7 @@ import java.util.Objects;
  * {@code FireHookshot}. The room/entity target owns the ROM projectile slot;
  * this object only exposes the equipment-facing activation and motion gates.
  */
-public final class Hookshot implements EquippedItem {
+public final class Hookshot implements EquipmentItem {
 
     public interface LaunchTarget {
         boolean fireHookshot();

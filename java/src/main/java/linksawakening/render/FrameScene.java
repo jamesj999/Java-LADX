@@ -46,10 +46,6 @@ public final class FrameScene {
 
     public void drawTo(byte[] buffer, GPU gpu, RenderPipeline pipeline) {
         java.util.Objects.requireNonNull(pipeline, "pipeline");
-        if (pipeline == RenderPipeline.LEGACY_RGBA) {
-            drawTo(buffer, gpu); // Deprecated source-compatibility alias, no legacy backend.
-            return;
-        }
         HardwareFrame frame = hardwareFrame(gpu);
         frame.compose(buffer);
         notifyDraw(buffer, gpu);

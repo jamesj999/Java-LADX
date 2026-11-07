@@ -30,7 +30,7 @@ import java.util.function.IntSupplier;
  * {@code LinkDirectionToSwordDirection}, {@code LinkDirectionTo_wC13A/139/13B},
  * and {@code Data_020_4A93/4AA3} the original uses.
  */
-public final class Sword implements EquippedItem {
+public final class Sword implements EquipmentItem {
 
     /** Optional bridge to the room-owned ROM sword-beam entity. */
     public interface BeamTarget {
