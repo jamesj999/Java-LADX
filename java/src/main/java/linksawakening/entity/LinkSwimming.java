@@ -74,7 +74,7 @@ final class LinkSwimming {
             swimmingSpeedY = link.linkMotion.forcedSpeedY;
             link.linkMotion.forcedSpeedPending = false;
             link.linkMotion.forcedSpeedXOnly = false;
-        } else if ((link.frameCounter & 0x01) == 0) {
+        } else if ((link.linkStateMachine.frameCounter & 0x01) == 0) {
             boolean fast = swimmingFastCountdown >= 0x10;
             int targetX = link.romTables.swimmingSpeedX(mask, fast);
             int targetY = link.romTables.swimmingSpeedY(mask, fast);

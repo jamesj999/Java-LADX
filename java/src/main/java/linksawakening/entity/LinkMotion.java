@@ -47,7 +47,7 @@ final class LinkMotion {
             moveDirection = signedSpeed > 0 ? Link.DIRECTION_DOWN : Link.DIRECTION_UP;
         }
 
-        int probeMask = link.collision != null && !link.debugNoClip && !link.linkAirborne.directionalLedgeJumpMotionLocked
+        int probeMask = link.collision != null && !link.linkStateMachine.debugNoClip && !link.linkAirborne.directionalLedgeJumpMotionLocked
             ? leadingEdgeCollisionMask(candidatePixelX, candidatePixelY, moveDirection) : 0;
         if (probeMask != 0) {
             // BackgroundCollisionHandler $02:6EC6 / $02:6F01 restores the
@@ -143,7 +143,7 @@ final class LinkMotion {
             return true;
         }
 
-        link.resetPegasusBoots();
+        link.linkStateMachine.resetPegasusBoots();
         link.linkAirborne.directionalLedgeCollisionCounter = 0;
         link.linkAirborne.directionalLedgeJumpMotionLocked = true;
         link.linkAirborne.directionalLedgeJumpSpeedX = switch (ledgeDirection) {
@@ -186,7 +186,7 @@ final class LinkMotion {
             return false;
         }
 
-        link.resetPegasusBoots();
+        link.linkStateMachine.resetPegasusBoots();
         subX = (link.romEntityX() & 0xF0) << Link.SUB_PIXEL_SHIFT;
         subY -= 8 << Link.SUB_PIXEL_SHIFT;
         link.linkStateMachine.motionState = 0x02;

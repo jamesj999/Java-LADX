@@ -45,7 +45,7 @@ final class LinkEquipment {
 
     /** Mirrors wIsUsingShield: equipped, held, and permitted by gameplay input. */
     boolean isUsingShield() {
-        if (link.gelClinging || !shieldInputAllowed.getAsBoolean()) {
+        if (link.linkStateMachine.gelClinging || !shieldInputAllowed.getAsBoolean()) {
             return false;
         }
         if (link.inputState == null || link.inputConfig == null || link.playerState == null) {

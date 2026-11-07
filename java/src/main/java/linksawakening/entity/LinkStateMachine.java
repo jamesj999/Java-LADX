@@ -1,8 +1,24 @@
 package linksawakening.entity;
 
+import java.util.Objects;
+import java.util.function.BooleanSupplier;
+import linksawakening.equipment.EquipmentItem;
+import linksawakening.equipment.ItemRegistry;
+import linksawakening.equipment.RocsFeather;
+import linksawakening.gameplay.GameplaySoundEvent;
+import linksawakening.gameplay.GameplaySoundSink;
+import linksawakening.gpu.Framebuffer;
+import linksawakening.gpu.Tile;
+import linksawakening.input.InputConfig;
+import linksawakening.input.InputState;
+import linksawakening.physics.OverworldCollision;
+import linksawakening.physics.PhysicsFlags;
+import linksawakening.rom.RomTables;
+import linksawakening.state.LinkPlayerState;
 import linksawakening.state.PlayerState;
+import static linksawakening.entity.Link.*;
+import static linksawakening.entity.LinkRomConstants.*;
 
-/** ROM-faithful statemachine collaborator for Link. */
 final class LinkStateMachine {
     private final Link link;
     int motionState = Link.LINK_MOTION_DEFAULT;
@@ -16,9 +32,9 @@ final class LinkStateMachine {
 
     void update() {
         link.linkAnimator.bedJumpRenderZ = -1;
-        link.frameCounter = (link.frameCounter + 1) & 0xFF;
-        if (link.pegasusBootsCollisionCountdown > 0) {
-            link.pegasusBootsCollisionCountdown--;
+        frameCounter = (frameCounter + 1) & 0xFF;
+        if (pegasusBootsCollisionCountdown > 0) {
+            pegasusBootsCollisionCountdown--;
         }
         link.linkEquipment.tickRomAttackStepAnimationCountdown();
         int carriedSpeedX = (byte) link.linkMotion.lastRomSpeedX;
@@ -58,7 +74,7 @@ final class LinkStateMachine {
             link.linkAirborne.groundStatus = Link.GROUND_STATUS_NORMAL;
         }
 
-        if (link.debugNoClip) {
+        if (debugNoClip) {
             updateDebugNoClip();
             return;
         }
@@ -190,8 +206,8 @@ final class LinkStateMachine {
         link.linkMotion.lastRomSpeedX = speedX & 0xFF;
         link.linkMotion.lastRomSpeedY = speedY & 0xFF;
         link.movingThisFrame = (speedX != 0 || speedY != 0);
-        boolean applyGroundMotion = link.gelClinging
-            ? (link.gelMotionFrame & 3) == 0 : link.linkAirborne.airborne || link.shouldApplyGroundMotion();
+        boolean applyGroundMotion = gelClinging
+            ? (gelMotionFrame & 3) == 0 : link.linkAirborne.airborne || link.shouldApplyGroundMotion();
 
         if (applyGroundMotion && speedX != 0 && (!bedJumpFrame || link.linkAirborne.airborne)) {
             link.linkMotion.tryMoveAxis(speedX, true);
@@ -280,7 +296,7 @@ final class LinkStateMachine {
         boolean bHeld = link.playerState.itemB() == PlayerState.INVENTORY_PEGASUS_BOOTS
             && link.inputState.isDown(link.inputConfig.bKey());
         if (!aHeld && !bHeld) {
-            link.pegasusBootsChargeMeter = 0;
+            pegasusBootsChargeMeter = 0;
             return;
         }
         if (link.playerState.runningWithPegasusBoots()
@@ -292,11 +308,11 @@ final class LinkStateMachine {
 
         int heldBootsSlots = (aHeld ? 1 : 0) + (bHeld ? 1 : 0);
         for (int slot = 0; slot < heldBootsSlots; slot++) {
-            if (link.pegasusBootsChargeMeter >= LinkRomConstants.PEGASUS_BOOTS_MAX_CHARGE) {
+            if (pegasusBootsChargeMeter >= LinkRomConstants.PEGASUS_BOOTS_MAX_CHARGE) {
                 break;
             }
-            link.pegasusBootsChargeMeter++;
-            if (link.pegasusBootsChargeMeter == LinkRomConstants.PEGASUS_BOOTS_MAX_CHARGE) {
+            pegasusBootsChargeMeter++;
+            if (pegasusBootsChargeMeter == LinkRomConstants.PEGASUS_BOOTS_MAX_CHARGE) {
                 link.playerState.setRunningWithPegasusBoots(true);
                 link.linkMotion.forcedSpeedPending = false;
                 link.linkMotion.forcedSpeedXOnly = false;
@@ -342,10 +358,174 @@ final class LinkStateMachine {
         int romDirection = link.romDirectionForJavaDirection(link.direction);
         int[] xOffsets = {0x10, 0xF0, 0x08, 0x08};
         int[] yOffsets = {0x0C, 0x0C, 0xF0, 0x10};
-        link.pegasusBootsCollisionPosX = (link.linkMotion.romEntityX() + xOffsets[romDirection]) & 0xFF;
-        link.pegasusBootsCollisionPosY = (link.linkMotion.romEntityY() + yOffsets[romDirection]) & 0xFF;
-        link.pegasusBootsCollisionCountdown = LinkRomConstants.PEGASUS_BOOTS_COLLISION_COUNTDOWN;
-        link.pendingPegasusScreenShakeCountdown = LinkRomConstants.PEGASUS_BOOTS_COLLISION_SHAKE;
-        link.pendingPegasusScreenShakePhase = (romDirection & 0x02) << 1;
+        pegasusBootsCollisionPosX = (link.linkMotion.romEntityX() + xOffsets[romDirection]) & 0xFF;
+        pegasusBootsCollisionPosY = (link.linkMotion.romEntityY() + yOffsets[romDirection]) & 0xFF;
+        pegasusBootsCollisionCountdown = LinkRomConstants.PEGASUS_BOOTS_COLLISION_COUNTDOWN;
+        pendingPegasusScreenShakeCountdown = LinkRomConstants.PEGASUS_BOOTS_COLLISION_SHAKE;
+        pendingPegasusScreenShakePhase = (romDirection & 0x02) << 1;
+    }
+
+    long physicsRoomLoadToken = -1;
+    int physicsRoomMapId = -1;
+    int physicsRoomId = -1;
+    int physicsRoomCategory = -1;
+    boolean debugNoClip;
+    int frameCounter;
+    boolean gelClinging;
+    int gelMotionFrame;
+    int pegasusBootsChargeMeter;
+    int pegasusBootsCollisionCountdown;
+    int pegasusBootsCollisionPosX;
+    int pegasusBootsCollisionPosY;
+    int pendingPegasusScreenShakeCountdown;
+    int pendingPegasusScreenShakePhase;
+
+
+    /** Enables the development movement mode; normal gameplay leaves this off. */
+    void setDebugNoClip(boolean enabled) {
+        debugNoClip = enabled;
+        if (enabled) {
+            link.linkAirborne.groundStatus = Link.GROUND_STATUS_NORMAL;
+            link.linkAirborne.fallingIntoPit = false;
+            link.linkAirborne.airborne = false;
+            link.linkAirborne.zSubPixels = 0;
+            link.linkAirborne.zVelocity = 0;
+        }
+    }
+
+    /** Clears scripted presentation/capture state before a debug game reset. */
+    void resetTransientStateForDebug() {
+        debugNoClip = false;
+        romInteractiveMotionBlocked = false;
+        link.linkSideView.standingOnSideViewEntity = false;
+        link.linkSideView.sideViewPlatformVerticalSpeedPending = -1;
+        link.linkDamage.collisionDamageImmune = false;
+        link.linkAnimator.romAnimationStateOverride = -1;
+        link.linkAnimator.swordAcquisitionBaseRomDirection = -1;
+        link.linkAnimator.swordAcquisitionAnimationState = -1;
+        link.linkAnimator.tarinShieldPresentation = false;
+        link.linkAnimator.tarinShieldPalette = null;
+        link.linkAnimator.marinWakeUpBedVariant = -1;
+        link.linkEntityEffects.marinBedJumpMotionLocked = false;
+        link.linkAnimator.bedJumpRenderZ = -1;
+        link.linkAirborne.directionalLedgeJumpMotionLocked = false;
+        link.linkAirborne.overworldLedgeFallActive = false;
+        link.linkEntityEffects.likeLikeCaptured = false;
+        link.linkEntityEffects.likeLikeCapturePinsPosition = false;
+        link.linkAirborne.fallingIntoPit = false;
+        link.linkEntityEffects.carryingLiftedObjectState = 0;
+        link.topDownFeatherStarted = false;
+        link.linkEntityEffects.roosterCarryActive = false;
+        link.linkAirborne.airborne = false;
+        link.linkAirborne.groundStatus = Link.GROUND_STATUS_NORMAL;
+        motionState = Link.LINK_MOTION_DEFAULT;
+        revolvingDoorFrame = 0;
+        revolvingDoorTransitionPending = false;
+        revolvingDoorPaletteVariant = -1;
+        physicsModifier = 0;
+        physicsRoomLoadToken = -1;
+        physicsRoomMapId = -1;
+        physicsRoomId = -1;
+        physicsRoomCategory = -1;
+        link.linkAirborne.zSubPixels = 0;
+        link.linkAirborne.zVelocity = 0;
+        link.linkMotion.forcedSpeedPending = false;
+        link.linkMotion.forcedSpeedXOnly = false;
+        link.linkDamage.collisionIgnoreFramesRemaining = 0;
+        link.romLinkPushing = 0;
+        link.romAttackStepAnimationCountdown = 0;
+        link.movingThisFrame = false;
+        link.walkTickCounter = 0;
+        link.walkFrame = 0;
+    }
+
+    /** ApplyRoomTransition's completion path ($02:793D-$7977). */
+    void finishRoomScroll(boolean downward) {
+        link.linkMotion.lastRomSpeedX = 0;
+        link.linkMotion.lastRomSpeedY = 0;
+        link.linkAirborne.zVelocity = 0;
+        if (!downward || debugNoClip || link.collision == null) {
+            return;
+        }
+        // Run the ordinary downward link.collision handler, including its ledge
+        // half-tile filters, before applying the source's fallback.
+        int probeX = link.linkMotion.pixelX();
+        int probeY = link.linkMotion.pixelY();
+        link.linkMotion.lastRomSpeedY = 0x01;
+        boolean blocked = link.linkMotion.leadingEdgeBlocked(probeX, probeY, Link.DIRECTION_DOWN);
+        int object = link.collision.objectIdAtPoint(
+            probeX + COLLISION_POINTS_X[Link.DIRECTION_DOWN][1],
+            probeY + COLLISION_POINTS_Y[Link.DIRECTION_DOWN][1]);
+        // Switch blocks $DB/$DC are exempt from fallback unstucking.
+        if (object != 0xDB && object != 0xDC && !link.linkAirborne.overworldLedgeFallActive
+            && (object == 0xE1 || blocked)) {
+            // func_002_6EAD aligns X and enters LINK_MOTION_UNSTUCKING.
+            // This transition fallback does not play the ledge jingle.
+            link.linkMotion.subX = (link.linkMotion.romEntityX() & 0xF0) << Link.SUB_PIXEL_SHIFT;
+            link.linkMotion.subY -= 8 << Link.SUB_PIXEL_SHIFT;
+            motionState = 0x02;
+            physicsModifier = 0;
+            link.linkAirborne.overworldLedgeFallActive = true;
+            link.linkMotion.beginOverworldLedgeUnstuckingMotion();
+        }
+    }
+
+    /**
+     * Applies the source room-entry default once per loaded room. The load
+     * serial also distinguishes a save/new-game reload of the same room, so a
+     * prior ladder or diving modifier cannot leak across the reload.
+     */
+    void initializeRoomPhysicsForRoom(long loadToken, int mapId, int roomId,
+                                             int mapCategory) {
+        if (physicsRoomLoadToken == loadToken
+            && physicsRoomMapId == mapId
+            && physicsRoomId == roomId
+            && physicsRoomCategory == mapCategory) {
+            return;
+        }
+        physicsModifier = mapCategory == 2 ? 0x01 : 0x00;
+        physicsRoomLoadToken = loadToken;
+        physicsRoomMapId = mapId;
+        physicsRoomId = roomId;
+        physicsRoomCategory = mapCategory;
+        link.linkDamage.collisionDamageImmune = false;
+    }
+
+    /** Applies the room-entry physics default after a completed warp. */
+    void setRoomPhysicsForRoom(long loadToken, int mapId, int roomId,
+                                      int mapCategory) {
+        physicsModifier = mapCategory == 2 ? 0x01 : 0x00;
+        physicsRoomLoadToken = loadToken;
+        physicsRoomMapId = mapId;
+        physicsRoomId = roomId;
+        physicsRoomCategory = mapCategory;
+        link.linkDamage.collisionDamageImmune = false;
+    }
+
+    /** Mirrors source ladder/diving updates to hLinkPhysicsModifier. */
+    void setRomPhysicsModifier(int modifier) {
+        physicsModifier = modifier & 0xFF;
+    }
+
+    /** Applies the ROM's next-frame hLinkInteractiveMotionBlocked=$02 write. */
+    void blockNextRomMotionFrame() {
+        romInteractiveMotionBlocked = true;
+    }
+
+    /** Mirrors ResetPegasusBoots for handlers that interrupt a dash. */
+    void resetPegasusBoots() {
+        pegasusBootsChargeMeter = 0;
+        if (link.playerState != null) {
+            link.playerState.setRunningWithPegasusBoots(false);
+        }
+    }
+
+    /** Returns and clears the one-shot shake request written this frame. */
+    ScreenShakeRequest consumePegasusScreenShakeRequest() {
+        ScreenShakeRequest request = new ScreenShakeRequest(
+            pendingPegasusScreenShakeCountdown, pendingPegasusScreenShakePhase);
+        pendingPegasusScreenShakeCountdown = 0;
+        pendingPegasusScreenShakePhase = 0;
+        return request.countdown() == 0 ? null : request;
     }
 }

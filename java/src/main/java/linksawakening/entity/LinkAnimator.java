@@ -225,7 +225,7 @@ final class LinkAnimator {
             return LinkAnimator.JUMP_ANIMATION_STATE[link.direction][jumpAnimationFrame];
         }
         if (link.spriteSheet != null) {
-            int carriedShield = !link.gelClinging && link.playerState != null
+            int carriedShield = !link.linkStateMachine.gelClinging && link.playerState != null
                 && (link.playerState.itemA() == PlayerState.INVENTORY_SHIELD
                     || link.playerState.itemB() == PlayerState.INVENTORY_SHIELD)
                         ? link.playerState.shieldLevel() : 0;
