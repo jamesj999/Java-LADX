@@ -15,7 +15,7 @@ output through `FrameAudioPlayer`.
 
 ## Current Scope
 
-The implemented slice is ROM-driven music playback, ROM-backed SFX playback, and a standalone Swing browser. It is not a complete game audio system yet.
+The implemented slice is ROM-driven music playback, ROM-backed SFX playback for gameplay and dialog events through the shared `FrameAudioPlayer` transport, and a standalone Swing browser. It is not a complete game audio system yet.
 
 Included:
 
@@ -24,12 +24,12 @@ Included:
 - A software Game Boy APU model for channels 1-4.
 - LWJGL OpenAL streaming for host playback.
 - A standalone AWT/Swing browser launched by Gradle.
-- Dialog/messagebox SFX routed through the real `SoundEffectPlayer` path.
+- Dialog/messagebox and gameplay SFX routed through the real `SoundEffectPlayer` path, sharing one APU and PCM output with music (see the end of this guide).
 - SFX pointer-table reads and bank `0x1F` SFX routine execution from the user-supplied ROM.
 
 Not included yet:
 
-- Broad gameplay SFX integration outside dialog/messagebox events.
+- Gameplay SFX coverage for every ROM event (only events wired by the engine so far are emitted).
 - Jingle/SFX priority and channel stealing.
 - CPU-level execution of the original music routines.
 - Perfect analog filtering or hardware speaker coloration.
