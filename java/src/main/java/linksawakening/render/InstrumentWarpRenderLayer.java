@@ -36,16 +36,18 @@ final class InstrumentWarpRenderLayer implements RenderLayer {
         return context -> {
             if (commands.length != 256 || entities.spriteTiles() == null) return;
             int start = ((frame >> 3) & 3) * 64;
-            for (int i = 15; i >= 0; i--) {
+            var sprites = new java.util.ArrayList<SpriteListRenderLayer.Sprite>();
+            for (int i = 0; i < 16; i++) {
                 int at = start + i * 4;
                 int tile = commands[at + 2];
                 if (tile == 255) continue;
                 int attr = commands[at + 3];
-                IndexedRenderer.drawSpriteTile8x16(context.buffer(), entities.spriteTiles(), tile,
+                sprites.add(new SpriteListRenderLayer.Sprite(tile,
                     visual.centerX() + (byte) commands[at + 1] - 8,
                     visual.centerY() + (byte) commands[at] - 16,
-                    (attr & 32) != 0, (attr & 64) != 0, palettes[attr & 7]);
+                    attr & 7, (attr & 32) != 0, (attr & 64) != 0, 16));
             }
+            new SpriteListRenderLayer(sprites, palettes, entities.spriteTiles()).render(context);
         };
     }
 
