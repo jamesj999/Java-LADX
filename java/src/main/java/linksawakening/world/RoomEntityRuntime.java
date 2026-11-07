@@ -29,6 +29,7 @@ public final class RoomEntityRuntime {
     private final EntityHandlerRegistry entityHandlers = createEntityHandlers();
     private final EntityRewardController rewards = new EntityRewardController(this);
     private final EntityStoryController story = new EntityStoryController(this);
+    private final GenieEntityController genie = new GenieEntityController(this);
     private final EntityOutbox outbox = new EntityOutbox();
     private static final int ENTITY_PUSHED_BLOCK = 0x06;
     static final int[] INSTRUMENT_MUSIC_TRACKS = {
@@ -116,7 +117,7 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_OPT1_SPLASH_IN_WATER = 0x08;
     private static final int ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL = 0x02;
     private static final int ENTITY_OPT1_ALLOW_OUT_OF_BOUNDS = 0x20;
-    private static final int GENIE_OPTIONS1 = 0xD0;
+    static final int GENIE_OPTIONS1 = 0xD0;
     private static final int WIZROBE_PROJECTILE_OPTIONS1 =
         ENTITY_OPT1_NO_GROUND_INTERACTION | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
     static final int ENTITY_PHYSICS_HARMLESS = 0x80;
@@ -380,29 +381,29 @@ public final class RoomEntityRuntime {
     private final ThreeOfAKindMotion threeOfAKindMotion = new ThreeOfAKindMotion();
     private final MoblinKingMotion moblinKingMotion = new MoblinKingMotion();
     private final BossIntroMotion bossIntroMotion = new BossIntroMotion();
-    private final GenieMotion genieMotion = new GenieMotion();
-    private final int[] genieActiveState = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] geniePrivateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] geniePrivateState2 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] geniePrivateState3 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] geniePrivateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] geniePrivateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] geniePrivateCountdown2 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] genieDirection = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final boolean[] genieDeathInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] genieSpeedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] genieSpeedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] genieSpeedZ = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] genieSpeedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] genieSpeedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] genieSpeedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final boolean[] genieImpactRegisteredThisFrame =
+    final GenieMotion genieMotion = new GenieMotion();
+    final int[] genieActiveState = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] geniePrivateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] geniePrivateState2 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] geniePrivateState3 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] geniePrivateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] geniePrivateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] geniePrivateCountdown2 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] genieDirection = new int[EntityRoomLoader.MAX_ENTITIES];
+    final boolean[] genieDeathInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    final int[] genieSpeedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] genieSpeedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] genieSpeedZ = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] genieSpeedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] genieSpeedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] genieSpeedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final boolean[] genieImpactRegisteredThisFrame =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
-    private int genieControllerSlot = -1;
-    private int genieSharedBodySpeedX;
-    private int genieSharedBodySpeedY;
-    private int bossAgonySfxCountdown;
-    private int bossAgonySourceSlot;
+    int genieControllerSlot = -1;
+    int genieSharedBodySpeedX;
+    int genieSharedBodySpeedY;
+    int bossAgonySfxCountdown;
+    int bossAgonySourceSlot;
     private final GhiniMotion ghiniMotion = new GhiniMotion();
     private final HardHatMotion hardHatMotion = new HardHatMotion();
     private final PolsVoiceMotion polsVoiceMotion = new PolsVoiceMotion();
@@ -416,7 +417,7 @@ public final class RoomEntityRuntime {
     private final ColorShellMotion colorShellMotion = new ColorShellMotion();
     private final SecretSeashellMotion secretSeashellMotion =
         new SecretSeashellMotion();
-    private final ThrownEntityMotion thrownEntityMotion = new ThrownEntityMotion();
+    final ThrownEntityMotion thrownEntityMotion = new ThrownEntityMotion();
     final int[] slowTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     final boolean[] slowTimerInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final int[] droppedItemBySlot = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -446,7 +447,7 @@ public final class RoomEntityRuntime {
         new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] rollingBonesSwordHitFrame = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] moblinKingLethalHitFrame = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] enemyFlashCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] enemyFlashCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] enemyIgnoreHitsCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] enemyHitboxFlags = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] warpState = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -491,7 +492,7 @@ public final class RoomEntityRuntime {
     private final int[] bombPrivateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] magicPowderPrivateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] entityPrivateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] entityInertia = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] entityInertia = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] entityUnknownJ = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] placedBombMotionInitialized =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
@@ -499,7 +500,7 @@ public final class RoomEntityRuntime {
         new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final int[] thrownDirection = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] ledgeTransitionTimer = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final boolean[] thrownMotionInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    final boolean[] thrownMotionInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final int[] chestSpeedY = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] chestSpeedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] chestInertia = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -5225,27 +5226,7 @@ public final class RoomEntityRuntime {
         return updated;
     }
 
-    private RoomEntity registerGenieJarImpact(RoomEntity jar) {
-        int slot = jar.slot();
-        if (genieImpactRegisteredThisFrame[slot]) {
-            return jar;
-        }
-        genieImpactRegisteredThisFrame[slot] = true;
-        geniePrivateState4[slot] = (geniePrivateState4[slot] + 1) & 0xFF;
-        enemyFlashCountdown[slot] = 0x20;
-        pendingEntityEvents.add(new EntityCombatEvent(
-            slot, ENTITY_GENIE, 0, false,
-            EntityCombatEvent.SoundChannel.WAVE, 0x07));
-        if (geniePrivateState4[slot] != GenieMotion.JAR_HEALTH_THRESHOLD) {
-            return jar;
-        }
-        genieActiveState[slot] = 1;
-        geniePrivateState3[slot] = 0;
-        enemyTransitionCountdown[slot] = 0x80;
-        thrownEntityMotion.clear(slot);
-        thrownMotionInitialized[slot] = false;
-        return withStatus(jar, EntityStatus.ACTIVE);
-    }
+    private RoomEntity registerGenieJarImpact(RoomEntity jar) { return genie.registerGenieJarImpact(jar); }
 
     /** Applies the two source-ordered probes made by ApplyEntityInteractionWithBackground. */
     private boolean sideViewPotBackgroundCollision(RoomEntity original, RoomEntity moved,
@@ -7590,496 +7571,29 @@ public final class RoomEntityRuntime {
             0x0F, LIFTABLE_ROCK_RUBBLE_PHYSICS_FLAGS, -1);
     }
 
-    private void advanceGenieJar(RoomEntity jarEntity, int linkEntityY) {
-        int slot = jarEntity.slot();
-        int freeSlots = 0;
-        for (RoomEntity candidate : slots) {
-            if (!candidate.loaded()) {
-                freeSlots++;
-            }
-        }
-        boolean bodySpawnSucceeded = freeSlots >= 1;
-        boolean rockSpawnSucceeded = freeSlots >= 2;
-        GenieMotion.Update update = genieMotion.advanceState0(
-            slot, jarEntity.x(), jarEntity.y(), jarEntity.z(), geniePrivateState4[slot],
-            bodySpawnSucceeded, rockSpawnSucceeded);
-        GenieMotion.JarState jar = update.jar();
-        geniePrivateState1[slot] = jar.privateState1();
-        enemyHealth[slot] = jar.health();
-        enemyPhysicsFlags[slot] = jar.physicsFlags();
-        enemyHitboxFlags[slot] = jar.hitboxFlags();
+    private void advanceGenieJar(RoomEntity jarEntity, int linkEntityY) { this.genie.advanceGenieJar(jarEntity, linkEntityY); }
 
-        RoomEntity fallingJar = slots[slot];
-        int z = addFallingSpeedToPosition(
-            fallingJar.z(), genieSpeedZ[slot], genieSpeedZAccumulator, slot);
-        genieSpeedZ[slot] = (genieSpeedZ[slot] - 2) & 0xFF;
-        boolean landed = (z & 0x80) != 0;
-        if (landed) {
-            z = 0;
-            genieSpeedZ[slot] = 0;
-        }
-        slots[slot] = withZ(fallingJar, z);
+    private RoomEntity advanceGenieJarAttract(RoomEntity jar) { return genie.advanceGenieJarAttract(jar); }
 
-        boolean activatedThisTick = false;
-        if (update.bodySpawn() == null
-            && geniePrivateState4[slot] < GenieMotion.JAR_HEALTH_THRESHOLD
-            && genieActiveState[slot] == 0
-            && (linkEntityY & 0xFF) < 0x70) {
-            genieActiveState[slot] = 1;
-            enemyTransitionCountdown[slot] = 0xFF;
-            activatedThisTick = true;
-        }
-        if (update.bodySpawn() == null
-            && geniePrivateState4[slot] < GenieMotion.JAR_HEALTH_THRESHOLD
-            && genieActiveState[slot] == 1
-            && !activatedThisTick) {
-            if (landed && geniePrivateState3[slot] == 0) {
-                genieSpeedZ[slot] = 0x10;
-                pendingEntityEvents.add(new EntityCombatEvent(
-                    slot, ENTITY_GENIE, 0, false,
-                    EntityCombatEvent.SoundChannel.JINGLE, 0x20));
-            }
-            RoomEntity movedJar = advanceGenieJarAttract(slots[slot]);
-            slots[slot] = movedJar;
-            if (enemyTransitionCountdown[slot] == 1) {
-                spawnGenieEntity(movedJar.x(), movedJar.y() - 0x26,
-                    2, 0x47, GenieMotion.INITIAL_HEALTH,
-                    GenieMotion.INITIAL_PHYSICS_FLAGS,
-                    GenieMotion.INITIAL_HITBOX_FLAGS);
-                pendingEntityEvents.add(new EntityCombatEvent(
-                    slot, ENTITY_GENIE, 0, false,
-                    EntityCombatEvent.SoundChannel.JINGLE, 0x06));
-            }
-        }
+    private void advanceGenieAppearance(RoomEntity appearance) { this.genie.advanceGenieAppearance(appearance); }
 
-        if (update.bodySpawn() != null) {
-            spawnGenieBody(update.bodySpawn());
-        }
-        if (update.rockSpawn() != null && update.rockSpawnSucceeded()) {
-            GenieMotion.RockSpawnRequest rock = update.rockSpawn();
-            spawnLiftableRockAnimation(rock.x(), rock.y(), rock.spriteVariant(),
-                rock.privateCountdown1(), rock.physicsFlags(), -1);
-        }
-        if (update.noiseSfx() >= 0) {
-            pendingEntityEvents.add(new EntityCombatEvent(
-                slot, ENTITY_GENIE, 0, false,
-                EntityCombatEvent.SoundChannel.NOISE, update.noiseSfx()));
-        }
-        if (update.sourceUnloaded()) {
-            disableEntityWithoutPersistence(slot);
-        }
-    }
-
-    private RoomEntity advanceGenieJarAttract(RoomEntity jar) {
-        int slot = jar.slot();
-        if (geniePrivateState3[slot] == 0) {
-            EnemyRecoilMotion.Vector towardCenter = EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
-                jar.x(), jar.y(), jar.z(), 0x50, 0x48, 0x08);
-            genieSpeedX[slot] = towardCenter.x() & 0xFF;
-            genieSpeedY[slot] = towardCenter.y() & 0xFF;
-            if ((((jar.x() - 0x50 + 0x02) & 0xFF) < 0x04)
-                && (((jar.y() - 0x48 + 0x02) & 0xFF) < 0x04)) {
-                geniePrivateState3[slot] = (geniePrivateState3[slot] + 1) & 0xFF;
-            }
-        }
-        int x = addFallingSpeedToPosition(
-            jar.x(), genieSpeedX[slot], genieSpeedXAccumulator, slot);
-        int y = addFallingSpeedToPosition(
-            jar.y(), genieSpeedY[slot], genieSpeedYAccumulator, slot);
-        return withPositionAndVariant(jar, x, y, jar.spriteVariant());
-    }
-
-    private void advanceGenieAppearance(RoomEntity appearance) {
-        int slot = appearance.slot();
-        int countdown = enemyTransitionCountdown[slot];
-        if ((countdown & 0x80) != 0) {
-            if ((countdown & 0x7F) == 0) {
-                if (genieControllerSlot >= 0 && genieControllerSlot < slots.length
-                    && slots[genieControllerSlot].loaded()
-                    && slots[genieControllerSlot].type() == ENTITY_GENIE) {
-                    genieActiveState[genieControllerSlot] = 3;
-                }
-                disableEntityWithoutPersistence(slot);
-            }
-            return;
-        }
-        if (countdown == 0) {
-            disableEntityWithoutPersistence(slot);
-            return;
-        }
-        if (countdown == 0x06) {
-            spawnGenieEntity(appearance.x(), Math.max(appearance.y(), 0x14),
-                1, 0x40, GenieMotion.INITIAL_HEALTH, 0x01, 0x8C);
-        }
-    }
-
-    private void advanceGenieBody(RoomEntity body, int frameCounter,
-                                  int linkEntityX, int linkEntityY,
-                                  IntSupplier randomByteSupplier) {
-        int slot = body.slot();
-        if (genieActiveState[slot] == 0) {
-            if (enemyTransitionCountdown[slot] != 0) {
-                return;
-            }
-            genieActiveState[slot] = 1;
-            geniePrivateCountdown1[slot] = 0xFF;
-            boolean jarExists = genieControllerSlot >= 0
-                && genieControllerSlot < slots.length
-                && slots[genieControllerSlot].loaded()
-                && slots[genieControllerSlot].type() == ENTITY_GENIE;
-            if (jarExists) {
-                pendingDialogRequests.add(new DialogRequest(0, 0x52));
-                return;
-            }
-            genieActiveState[slot] = 4;
-            enemyHealth[slot] = 0x08;
-            pendingDialogRequests.add(new DialogRequest(0, 0x53));
-            return;
-        }
-        if (genieActiveState[slot] == 4) {
-            enemyHitboxFlags[slot] = 0x0C;
-            entityOptions1Override[slot] = 0x81;
-            if (enemyFlashCountdown[slot] == 0x02) {
-                genieActiveState[slot] = 5;
-                enemyTransitionCountdown[slot] = 0x80;
-                return;
-            }
-            int x = addFallingSpeedToPosition(
-                body.x(), genieSpeedX[slot], genieSpeedXAccumulator, slot);
-            int y = addFallingSpeedToPosition(
-                body.y(), genieSpeedY[slot], genieSpeedYAccumulator, slot);
-            RoomEntity moved = withPositionAndVariant(body, x, y,
-                2 + ((frameCounter >>> 4) & 1));
-            slots[slot] = moved;
-            if ((frameCounter & 0x03) == 0) {
-                EnemyRecoilMotion.Vector desired =
-                    EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
-                        moved.x(), moved.y(), moved.z(),
-                        linkEntityX, linkEntityY, 0x10);
-                genieSpeedX[slot] = sourceGenieSteerStep(
-                    genieSpeedX[slot], desired.x());
-                genieSpeedY[slot] = sourceGenieSteerStep(
-                    genieSpeedY[slot], desired.y());
-            }
-            return;
-        }
-        if (genieActiveState[slot] == 5) {
-            enemyPhysicsFlags[slot] = 0x41;
-            if (enemyTransitionCountdown[slot] == 0) {
-                genieActiveState[slot] = 4;
-                enemyPhysicsFlags[slot] = 0x01;
-                RoomEntity resetBody = body;
-                if ((randomByteSupplier.getAsInt() & 1) == 0) {
-                    resetBody = withPositionAndVariant(body,
-                        geniePrivateState4[slot], geniePrivateState3[slot],
-                        body.spriteVariant());
-                    slots[slot] = resetBody;
-                }
-                genieSpeedX[slot] = 0;
-                genieSpeedY[slot] = 0;
-                enemyIgnoreHitsCountdown[slot] = 0;
-                spawnGenieAimedFireball(resetBody, slot, linkEntityX, linkEntityY);
-                return;
-            }
-            EnemyRecoilMotion.Vector centerVector =
-                EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
-                    body.x(), body.y(), body.z(), 0x50, 0x48, 0x20);
-            EnemyRecoilMotion.Vector linkVector =
-                EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
-                    body.x(), body.y(), body.z(), linkEntityX, linkEntityY, 0x04);
-            genieSpeedX[slot] = (-centerVector.x() + linkVector.x()) & 0xFF;
-            genieSpeedY[slot] = (centerVector.y() + linkVector.y()) & 0xFF;
-            int x = addFallingSpeedToPosition(
-                body.x(), genieSpeedX[slot], genieSpeedXAccumulator, slot);
-            int y = addFallingSpeedToPosition(
-                body.y(), genieSpeedY[slot], genieSpeedYAccumulator, slot);
-            RoomEntity moved = withPositionAndVariant(body, x, y,
-                2 + ((frameCounter >>> 4) & 1));
-            slots[slot] = moved;
-            geniePrivateState3[slot] = (0x90 - moved.y()) & 0xFF;
-            geniePrivateState4[slot] = (0xA0 - moved.x()) & 0xFF;
-            return;
-        }
-        if (genieActiveState[slot] == 2) {
-            if (genieControllerSlot < 0 || genieControllerSlot >= slots.length
-                || !slots[genieControllerSlot].loaded()) {
-                return;
-            }
-            RoomEntity jar = slots[genieControllerSlot];
-            int targetY = (jar.y() - 0x20) & 0xFF;
-            EnemyRecoilMotion.Vector towardJar = EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
-                body.x(), body.y(), body.z(), jar.x(), targetY, 0x10);
-            genieSpeedX[slot] = towardJar.x() & 0xFF;
-            genieSpeedY[slot] = towardJar.y() & 0xFF;
-            int x = addFallingSpeedToPosition(
-                body.x(), genieSpeedX[slot], genieSpeedXAccumulator, slot);
-            int y = addFallingSpeedToPosition(
-                body.y(), genieSpeedY[slot], genieSpeedYAccumulator, slot);
-            RoomEntity moved = withPositionAndVariant(body, x, y, body.spriteVariant());
-            slots[slot] = moved;
-            int visualY = (moved.y() - moved.z()) & 0xFF;
-            if ((((moved.x() - jar.x() + 3) & 0xFF) < 6)
-                && (((visualY - targetY + 3) & 0xFF) < 6)) {
-                enemyTransitionCountdown[slot] = 0x10;
-                genieActiveState[slot] = 3;
-            }
-            return;
-        }
-        if (genieActiveState[slot] == 3) {
-            int countdown = enemyTransitionCountdown[slot];
-            if (countdown == 0) {
-                disableEntityWithoutPersistence(slot);
-                return;
-            }
-            if (countdown == 0x04) {
-                spawnGenieEntity(body.x(), body.y(), 2, 0xC7,
-                    GenieMotion.INITIAL_HEALTH, GenieMotion.INITIAL_PHYSICS_FLAGS,
-                    GenieMotion.INITIAL_HITBOX_FLAGS);
-                pendingEntityEvents.add(new EntityCombatEvent(
-                    slot, ENTITY_GENIE, 0, false,
-                    EntityCombatEvent.SoundChannel.JINGLE, 0x1F));
-            }
-            return;
-        }
-        if (genieActiveState[slot] != 1) {
-            return;
-        }
-        RoomEntity moved = withPositionAndVariant(body,
-            addFallingSpeedToPosition(body.x(), genieSpeedX[slot],
-                genieSpeedXAccumulator, slot),
-            addFallingSpeedToPosition(body.y(), genieSpeedY[slot],
-                genieSpeedYAccumulator, slot),
-            (frameCounter >>> 4) & 1);
-        slots[slot] = moved;
-
-        int direction = genieDirection[slot] & 1;
-        if ((frameCounter & 0x07) == 0) {
-            int target = direction == 0 ? 0x08 : 0xF8;
-            if (genieSpeedX[slot] != target) {
-                genieSpeedX[slot] = (genieSpeedX[slot] + (direction == 0 ? 1 : -1)) & 0xFF;
-            }
-        }
-        int boundary = direction == 0 ? 0x60 : 0x40;
-        if (moved.x() == boundary) {
-            genieDirection[slot] ^= 1;
-        }
-        if ((frameCounter & 1) == 0) {
-            int verticalDirection = geniePrivateState2[slot] & 1;
-            int target = verticalDirection == 0 ? 0x08 : 0xF8;
-            genieSpeedY[slot] = (genieSpeedY[slot]
-                + (verticalDirection == 0 ? 1 : -1)) & 0xFF;
-            if (genieSpeedY[slot] == target) {
-                geniePrivateState2[slot] ^= 1;
-            }
-        }
-
-        if (enemyTransitionCountdown[slot] == 0) {
-            int inertia = entityInertia[slot] & 0xFF;
-            if (inertia >= 0x08) {
-                genieActiveState[slot] = 2;
-                enemyTransitionCountdown[slot] = 0x30;
-                return;
-            }
-            int[] delays = {0x10, 0x14, 0x18, 0x20, 0x28, 0x30, 0x38, 0x40};
-            enemyTransitionCountdown[slot] = delays[inertia];
-            int projectileSlot = spawnGenieEntity(moved.x() - 0x0C, moved.y() - 0x14,
-                3, 0, GenieMotion.INITIAL_HEALTH, 0x42,
-                GenieMotion.INITIAL_HITBOX_FLAGS);
-            if (projectileSlot >= 0) {
-                genieSpeedZ[projectileSlot] = 0x20;
-                genieSpeedX[projectileSlot] = 0x0C;
-            }
-        }
-
-        if (geniePrivateCountdown1[slot] == 0) {
-            geniePrivateCountdown1[slot] = 0x30;
-            int xOffset = (entityInertia[slot] & 1) == 0 ? -0x0C : 0x0C;
-            int fireballSlot = spawnGenieEntity(moved.x() + xOffset, moved.y(),
-                4, 0, GenieMotion.INITIAL_HEALTH, 0x12,
-                GenieMotion.INITIAL_HITBOX_FLAGS);
-            if (fireballSlot >= 0) {
-                entityInertia[slot] = (entityInertia[slot] + 1) & 0xFF;
-                genieSpeedZ[fireballSlot] = 0x24;
-                EnemyRecoilMotion.Vector towardLink = EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
-                    moved.x() + xOffset, moved.y(), 0, linkEntityX, linkEntityY, 0x1F);
-                genieSpeedX[fireballSlot] = towardLink.x() & 0xFF;
-                genieSpeedY[fireballSlot] = towardLink.y() & 0xFF;
-                geniePrivateCountdown2[slot] = 0x10;
-                pendingEntityEvents.add(new EntityCombatEvent(
-                    slot, ENTITY_GENIE, 0, false,
-                    EntityCombatEvent.SoundChannel.NOISE, 0x28));
-            }
-        }
-        if (geniePrivateCountdown2[slot] != 0) {
-            slots[slot] = withPositionAndVariant(slots[slot], slots[slot].x(),
-                slots[slot].y(), 2 + (entityInertia[slot] & 1));
-        }
-    }
+    private void advanceGenieBody(RoomEntity body, int frameCounter, int linkEntityX, int linkEntityY, IntSupplier randomByteSupplier) { this.genie.advanceGenieBody(body, frameCounter, linkEntityX, linkEntityY, randomByteSupplier); }
 
 
 
-    private int spawnGenieAimedFireball(RoomEntity body, int bodySlot,
-                                         int linkEntityX, int linkEntityY) {
-        int xOffset = (entityInertia[bodySlot] & 1) == 0 ? -0x0C : 0x0C;
-        int fireballSlot = spawnGenieEntity(body.x() + xOffset, body.y(),
-            4, 0, GenieMotion.INITIAL_HEALTH, 0x12,
-            GenieMotion.INITIAL_HITBOX_FLAGS);
-        if (fireballSlot < 0) {
-            return -1;
-        }
-        entityInertia[bodySlot] = (entityInertia[bodySlot] + 1) & 0xFF;
-        genieSpeedZ[fireballSlot] = 0x24;
-        EnemyRecoilMotion.Vector towardLink =
-            EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
-                body.x() + xOffset, body.y(), 0,
-                linkEntityX, linkEntityY, 0x1F);
-        genieSpeedX[fireballSlot] = towardLink.x() & 0xFF;
-        genieSpeedY[fireballSlot] = towardLink.y() & 0xFF;
-        pendingEntityEvents.add(new EntityCombatEvent(
-            bodySlot, ENTITY_GENIE, 0, false,
-            EntityCombatEvent.SoundChannel.NOISE, 0x28));
-        return fireballSlot;
-    }
+    private int spawnGenieAimedFireball(RoomEntity body, int bodySlot, int linkEntityX, int linkEntityY) { return genie.spawnGenieAimedFireball(body, bodySlot, linkEntityX, linkEntityY); }
 
-    private void advanceGenieDestruction(RoomEntity genie, int frameCounter,
-                                          IntSupplier randomByteSupplier) {
-        int slot = genie.slot();
-        if (!genieDeathInitialized[slot]) {
-            genieDeathInitialized[slot] = true;
-            genieActiveState[slot] = 0;
-            bossAgonySfxCountdown = 0x03;
-            bossAgonySourceSlot = slot;
-        }
-        enemyFlashCountdown[slot] = frameCounter & 0xFF;
-        switch (genieActiveState[slot]) {
-            case 0 -> {
-                enemyTransitionCountdown[slot] = 0x40;
-                genieActiveState[slot] = 1;
-            }
-            case 1 -> {
-                if (enemyTransitionCountdown[slot] == 0) {
-                    enemyTransitionCountdown[slot] = 0xA0;
-                    genieActiveState[slot] = 2;
-                }
-            }
-            default -> {
-                int countdown = enemyTransitionCountdown[slot];
-                if (countdown == 0) {
-                    spawnMoldormHeartContainer(genie);
-                    disableEntityWithoutPersistence(slot);
-                    pendingEntityEvents.add(new EntityCombatEvent(
-                        slot, ENTITY_GENIE, 0, false,
-                        EntityCombatEvent.SoundChannel.NOISE, 0x1A));
-                    return;
-                }
-                if ((countdown & 0x07) == 0) {
-                    int x = (genie.x()
-                        + ((randomByteSupplier.getAsInt() & 0x1F) - 0x10)) & 0xFF;
-                    int y = ((genie.y() - genie.z())
-                        + ((randomByteSupplier.getAsInt() & 0x1F) - 0x10)) & 0xFF;
-                    transientVfxRequests.add(new TransientVfxRequest(
-                        TransientVfxType.POOF, x, y));
-                    pendingEntityEvents.add(new EntityCombatEvent(
-                        slot, ENTITY_GENIE, 0, false,
-                        EntityCombatEvent.SoundChannel.NOISE, 0x13));
-                }
-            }
-        }
-    }
+    private void advanceGenieDestruction(RoomEntity genie, int frameCounter, IntSupplier randomByteSupplier) { this.genie.advanceGenieDestruction(genie, frameCounter, randomByteSupplier); }
 
-    private void advanceGenieSideProjectile(RoomEntity projectile, int frameCounter) {
-        int slot = projectile.slot();
-        int combinedSpeedX = (genieSpeedX[slot] + genieSharedBodySpeedX) & 0xFF;
-        int combinedSpeedY = (genieSpeedY[slot] + genieSharedBodySpeedY) & 0xFF;
-        int x = addFallingSpeedToPosition(
-            projectile.x(), combinedSpeedX, genieSpeedXAccumulator, slot);
-        int y = addFallingSpeedToPosition(
-            projectile.y(), combinedSpeedY, genieSpeedYAccumulator, slot);
-        RoomEntity moved = withPositionAndVariant(projectile, x, y,
-            (frameCounter >>> 3) & 1);
-        if (genieActiveState[slot] == 0) {
-            int z = addFallingSpeedToPosition(
-                moved.z(), genieSpeedZ[slot], genieSpeedZAccumulator, slot);
-            genieSpeedZ[slot] = (genieSpeedZ[slot] - 2) & 0xFF;
-            if ((z & 0x80) != 0) {
-                z = 0;
-                genieActiveState[slot] = 1;
-                enemyTransitionCountdown[slot] = 0x08;
-                genieSpeedX[slot] = 0xE0;
-            }
-            slots[slot] = withZ(moved, z);
-            return;
-        }
-        slots[slot] = moved;
-        if (enemyTransitionCountdown[slot] == 0) {
-            disableEntityWithoutPersistence(slot);
-        }
-    }
+    private void advanceGenieSideProjectile(RoomEntity projectile, int frameCounter) { this.genie.advanceGenieSideProjectile(projectile, frameCounter); }
 
-    private void advanceGenieFireball(RoomEntity fireball, int frameCounter) {
-        int slot = fireball.slot();
-        int x = addFallingSpeedToPosition(
-            fireball.x(), genieSpeedX[slot], genieSpeedXAccumulator, slot);
-        int y = addFallingSpeedToPosition(
-            fireball.y(), genieSpeedY[slot], genieSpeedYAccumulator, slot);
-        int z = addFallingSpeedToPosition(
-            fireball.z(), genieSpeedZ[slot], genieSpeedZAccumulator, slot);
-        genieSpeedZ[slot] = (genieSpeedZ[slot] - 2) & 0xFF;
-        if ((z & 0x80) != 0) {
-            disableEntityWithoutPersistence(slot);
-            return;
-        }
-        slots[slot] = withZ(withPositionAndVariant(fireball, x, y,
-            (frameCounter >>> 3) & 1), z);
-    }
+    private void advanceGenieFireball(RoomEntity fireball, int frameCounter) { this.genie.advanceGenieFireball(fireball, frameCounter); }
 
-    private int spawnGenieBody(GenieMotion.BodySpawnRequest request) {
-        return spawnGenieEntity(request.x(), request.y(), request.privateState1(),
-            request.transitionCountdown(), request.health(),
-            GenieMotion.INITIAL_PHYSICS_FLAGS, GenieMotion.INITIAL_HITBOX_FLAGS);
-    }
+    private int spawnGenieBody(GenieMotion.BodySpawnRequest request) { return genie.spawnGenieBody(request); }
 
-    private int spawnGenieEntity(int x, int y, int privateState1,
-                                 int transitionCountdown, int health,
-                                 int physicsFlags, int hitboxFlags) {
-        int freeSlot = findFreeEntitySlot();
-        if (freeSlot < 0) {
-            return -1;
-        }
-        EntitySpriteDefinition definition = spriteDefinitionFor(ENTITY_GENIE);
-        int variant = definition.supported() ? definition.initialVariant() : -1;
-        slots[freeSlot] = new RoomEntity(freeSlot, -1, ENTITY_GENIE,
-            x & 0xFF, y & 0xFF, EntityStatus.ACTIVE, definition, variant,
-            0, 0, 0, -1, false);
-        genieActiveState[freeSlot] = 0;
-        geniePrivateState1[freeSlot] = privateState1 & 0xFF;
-        geniePrivateState2[freeSlot] = 0;
-        geniePrivateState3[freeSlot] = 0;
-        geniePrivateState4[freeSlot] = 0;
-        geniePrivateCountdown1[freeSlot] = 0;
-        geniePrivateCountdown2[freeSlot] = 0;
-        genieDirection[freeSlot] = 0;
-        genieDeathInitialized[freeSlot] = false;
-        genieSpeedX[freeSlot] = 0;
-        genieSpeedY[freeSlot] = 0;
-        genieSpeedZ[freeSlot] = 0;
-        genieSpeedXAccumulator[freeSlot] = 0;
-        genieSpeedYAccumulator[freeSlot] = 0;
-        genieSpeedZAccumulator[freeSlot] = 0;
-        genieMotion.clear(freeSlot);
-        enemyTransitionCountdown[freeSlot] = transitionCountdown & 0xFF;
-        enemyHealth[freeSlot] = health & 0xFF;
-        enemyPhysicsFlags[freeSlot] = physicsFlags & 0xFF;
-        enemyHitboxFlags[freeSlot] = hitboxFlags & 0xFF;
-        enemyStunnedCountdown[freeSlot] = 0;
-        enemyFlashCountdown[freeSlot] = 0;
-        enemyIgnoreHitsCountdown[freeSlot] = 1;
-        entityOptions1Override[freeSlot] = GENIE_OPTIONS1;
-        dynamicEntitySpawnedThisFrame[freeSlot] = true;
-        return freeSlot;
-    }
+    private int spawnGenieEntity(int x, int y, int privateState1, int transitionCountdown, int health, int physicsFlags, int hitboxFlags) { return genie.spawnGenieEntity(x, y, privateState1, transitionCountdown, health, physicsFlags, hitboxFlags); }
 
-    private int spawnLiftableRockAnimation(int entityX, int entityY, int sourceSpriteVariant,
+    int spawnLiftableRockAnimation(int entityX, int entityY, int sourceSpriteVariant,
                                            int initialCountdown, int physicsFlags, int soundId) {
         int freeSlot = findFreeEntitySlot();
         if (freeSlot < 0) {
@@ -9469,7 +8983,7 @@ public final class RoomEntityRuntime {
         }
     }
 
-    private void spawnMoldormHeartContainer(RoomEntity source) {
+    void spawnMoldormHeartContainer(RoomEntity source) {
         int freeSlot = findFreeEntitySlot();
         if (freeSlot < 0) {
             return;
@@ -10539,7 +10053,7 @@ public final class RoomEntityRuntime {
         return true;
     }
 
-    private EntitySpriteDefinition spriteDefinitionFor(int entityType) {
+    EntitySpriteDefinition spriteDefinitionFor(int entityType) {
         if (spriteHandlers == null) {
             return EntitySpriteDefinition.unsupported(entityType);
         }
