@@ -131,21 +131,21 @@ final class MainTest {
 
     @Test
     void entityAnimationContinuesDuringInventoryMovementButNotWhileFullyOpen() {
-        assertTrue(game.shouldTickRoomEntities(false, false, false, false));
-        assertTrue(game.shouldTickRoomEntities(false, false, true, true));
-        assertFalse(game.shouldTickRoomEntities(false, false, true, false));
-        assertFalse(game.shouldTickRoomEntities(true, false, false, false));
-        assertFalse(game.shouldTickRoomEntities(false, true, false, false));
+        assertTrue(linksawakening.app.gameplay.GameplaySimulation.shouldTickRoomEntities(false, false, false, false));
+        assertTrue(linksawakening.app.gameplay.GameplaySimulation.shouldTickRoomEntities(false, false, true, true));
+        assertFalse(linksawakening.app.gameplay.GameplaySimulation.shouldTickRoomEntities(false, false, true, false));
+        assertFalse(linksawakening.app.gameplay.GameplaySimulation.shouldTickRoomEntities(true, false, false, false));
+        assertFalse(linksawakening.app.gameplay.GameplaySimulation.shouldTickRoomEntities(false, true, false, false));
     }
 
     @Test
     void gameplayFrameDecrementsDialogCooldownWhenEntityAnimationIsSkipped() {
         DialogController dialog = closedDialogWithCooldown();
-        assertFalse(game.shouldTickRoomEntities(false, false, true, false));
-        assertFalse(game.shouldTickRoomEntities(true, false, false, false));
-        assertFalse(game.shouldTickRoomEntities(false, true, false, false));
+        assertFalse(linksawakening.app.gameplay.GameplaySimulation.shouldTickRoomEntities(false, false, true, false));
+        assertFalse(linksawakening.app.gameplay.GameplaySimulation.shouldTickRoomEntities(true, false, false, false));
+        assertFalse(linksawakening.app.gameplay.GameplaySimulation.shouldTickRoomEntities(false, true, false, false));
 
-        game.completeGameplayFrame(dialog);
+        linksawakening.app.gameplay.GameplaySimulation.completeGameplayFrame(dialog);
 
         assertEquals(0x17, dialog.dialogCooldown());
     }
@@ -157,7 +157,7 @@ final class MainTest {
 
         for (int frame = 0; frame < 0x18; frame++) {
             valuesSeenByOptionalEntityAnimation.add(dialog.dialogCooldown());
-            game.completeGameplayFrame(dialog);
+            linksawakening.app.gameplay.GameplaySimulation.completeGameplayFrame(dialog);
         }
 
         assertEquals(0x18, valuesSeenByOptionalEntityAnimation.getFirst());

@@ -13,52 +13,20 @@ import linksawakening.cutscene.IntroCutsceneScript;
 import linksawakening.dialog.DialogController;
 import linksawakening.entity.Link;
 import linksawakening.entity.LinkSpriteSheet;
-import linksawakening.entity.LinkTunicPalette;
 import linksawakening.equipment.EquipmentController;
-import linksawakening.equipment.Arrow;
-import linksawakening.equipment.Bomb;
-import linksawakening.equipment.Boomerang;
-import linksawakening.equipment.Hookshot;
 import linksawakening.equipment.ItemRegistry;
-import linksawakening.equipment.MagicPowder;
-import linksawakening.equipment.MagicRod;
-import linksawakening.equipment.Ocarina;
-import linksawakening.equipment.RocsFeather;
-import linksawakening.equipment.Shovel;
-import linksawakening.equipment.Shield;
 import linksawakening.equipment.Sword;
-import linksawakening.equipment.SwordPalette;
-import linksawakening.equipment.SwordSpriteSheet;
-import linksawakening.audio.apu.GameBoyApu;
-import linksawakening.audio.music.AreaMusicResolver;
 import linksawakening.audio.music.GameplayMusicController;
-import linksawakening.audio.music.MusicCatalog;
-import linksawakening.audio.music.MusicDriver;
 import linksawakening.audio.music.FrameMusicPlayer;
-import linksawakening.audio.music.HeadlessMusicPlayer;
-import linksawakening.audio.music.MusicTrackIds;
-import linksawakening.audio.music.RoomMusicContext;
-import linksawakening.audio.openal.OpenAlMusicPlayer;
-import linksawakening.audio.openal.OpenAlPcmSoundOutput;
-import linksawakening.gameplay.BeachSwordRewardConsumer;
 import linksawakening.gameplay.DialogTextLoader;
 import linksawakening.gameplay.DialogSoundRouter;
 import linksawakening.gameplay.DialogSoundSink;
-import linksawakening.gameplay.EnemyCombatEventConsumer;
-import linksawakening.gameplay.EnemyProjectileEventConsumer;
 import linksawakening.gameplay.GameplaySoundSink;
-import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplayDialogInput;
-import linksawakening.gameplay.LinkDialogPosition;
 import linksawakening.gameplay.OverworldDialogBlockers;
 import linksawakening.gameplay.OverworldDialogInteraction;
 import linksawakening.gameplay.PcmSoundOutput;
-import linksawakening.gameplay.SfxDialogSoundSink;
-import linksawakening.gameplay.SfxGameplaySoundSink;
-import linksawakening.gameplay.SignpostDialogRef;
-import linksawakening.gameplay.SignpostDialogTable;
 import linksawakening.gpu.GPU;
-import linksawakening.gpu.Framebuffer;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.physics.OverworldCollision;
@@ -66,9 +34,7 @@ import linksawakening.render.GameFrameSceneBuilder;
 import linksawakening.render.GameFrameState;
 import linksawakening.render.RenderScreen;
 import linksawakening.rom.RomTables;
-import linksawakening.rom.RomBank;
 import linksawakening.save.SaveRamStore;
-import linksawakening.save.SaveSlotState;
 import linksawakening.scene.BackgroundScene;
 import linksawakening.scene.BackgroundSceneCatalog;
 import linksawakening.scene.BackgroundSceneLoader;
@@ -80,35 +46,20 @@ import linksawakening.startup.StartupCoordinator;
 import linksawakening.startup.TarinShieldMotion;
 import linksawakening.ui.InventoryMenu;
 import linksawakening.ui.InventoryController;
-import linksawakening.ui.InventoryTilemapLoader;
-import linksawakening.ui.FileMenuAction;
 import linksawakening.ui.FileMenuController;
 import linksawakening.ui.FileMenuRomData;
-import linksawakening.ui.FileSaveAction;
 import linksawakening.ui.FileSaveController;
 import linksawakening.vfx.CutLeavesEffectRenderer;
-import linksawakening.vfx.TransientVfxSpriteSheet;
 import linksawakening.vfx.TransientVfxSystem;
-import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.DroppableRupeeSystem;
 import linksawakening.world.ActiveRoom;
-import linksawakening.world.EnemyAttackContext;
-import linksawakening.world.EntityCombatEvent;
-import linksawakening.world.EntityPickupEvent;
-import linksawakening.world.EntityProjectileEvent;
 import linksawakening.world.OverworldBushInteraction;
-import linksawakening.world.OverworldTilesetTable;
-import linksawakening.world.RoomBoundaryController;
-import linksawakening.world.RoomLoader;
-import linksawakening.world.RoomEntityRuntime;
 import linksawakening.world.RoomSession;
 import linksawakening.world.RoomTransitionCoordinator;
 import linksawakening.world.ScrollController;
 import linksawakening.world.TransitionController;
 import linksawakening.world.Warp;
 
-import java.io.IOException;
-import java.io.InputStream;
 import linksawakening.world.RomRandomByteSource;
 
 import static linksawakening.world.RoomConstants.*;
@@ -412,21 +363,6 @@ public class GameSession {
 
     boolean shouldRunDebugDump(AppConfig config, int key, int action) {
         return config.debugEnabled() && key == GLFW_KEY_F1 && action == GLFW_PRESS;
-    }
-
-    boolean shouldTickRoomEntities(boolean scrollActive,
-                                          boolean transitionInputBlocked,
-                                          boolean inventoryBlocksInput,
-                                          boolean inventoryTransitioning) {
-        return !scrollActive
-            && !transitionInputBlocked
-            && (!inventoryBlocksInput || inventoryTransitioning);
-    }
-
-    void completeGameplayFrame(DialogController dialog) {
-        if (dialog != null) {
-            dialog.tickGameplayFrameCooldown();
-        }
     }
 
     private void dumpLinkSurroundings() {
