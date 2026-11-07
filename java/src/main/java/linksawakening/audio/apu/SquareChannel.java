@@ -144,13 +144,7 @@ final class SquareChannel {
         }
 
         envelopeClockAccumulator -= envelopePeriod;
-        if ((envelopeRegister & 0x08) != 0) {
-            if (volume < 0x0F) {
-                volume++;
-            }
-        } else if (volume > 0) {
-            volume--;
-        }
+        volume = EnvelopeStep.next(volume, envelopeRegister);
     }
 
     double render() {

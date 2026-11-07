@@ -9,10 +9,10 @@ import java.io.UncheckedIOException;
 final class DialogFont {
 
     private static final int FONT_BANK = 0x0F;
-    private static final int FONT_ADDRESS = 0x5000;
+    private static final int FONT_ADDRESS = linksawakening.rom.RomSymbols.FontTiles.address();
     private static final int FONT_TILE_COUNT = 0xA0;
     private static final int CODEPOINT_TABLE_BANK = 0x1C;
-    private static final int CODEPOINT_TABLE_ADDRESS = 0x4641;
+    private static final int CODEPOINT_TABLE_ADDRESS = linksawakening.rom.RomSymbols.CodepointToTileMap.address();
     private static final int TILE_SIZE_BYTES = 16;
     private static final int CODEPOINT_COUNT = 256;
     private static final String ROM_RESOURCE = "/rom/azle.gbc";

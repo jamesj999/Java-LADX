@@ -12,10 +12,10 @@ import java.util.Optional;
 
 public final class MusicCatalog {
     private static final int BANK_1B = 0x1B;
-    private static final int BANK_1B_TABLE = 0x4077;
+    private static final int BANK_1B_TABLE = linksawakening.rom.RomSymbols.MusicDataPointerTable_1B.address();
     private static final int BANK_1B_ENTRIES = 0x30;
     private static final int BANK_1E = 0x1E;
-    private static final int BANK_1E_TABLE = 0x407F;
+    private static final int BANK_1E_TABLE = linksawakening.rom.RomSymbols.MusicDataPointerTable_1E.address();
     private static final int BANK_1E_ENTRIES = 0x40;
 
     private static final String[] TRACK_NAMES = {

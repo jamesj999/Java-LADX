@@ -13,7 +13,7 @@ public final class RomTables {
     // reads {@code table[(wIsIndoor << 8) + objectId]}, picking the right
     // table by the wIsIndoor value in register d.
     private static final int PHYSICS_FLAGS_BANK = 0x08;
-    private static final int PHYSICS_FLAGS_ADDR = 0x4AD4;
+    private static final int PHYSICS_FLAGS_ADDR = linksawakening.rom.RomSymbols.OverworldObjectPhysicFlags.address();
     private static final int PHYSICS_FLAGS_TABLE_SIZE = 0x100;
     public static final int PHYSICS_TABLE_OVERWORLD = 0;
     public static final int PHYSICS_TABLE_INDOORS1 = 1;
@@ -23,27 +23,27 @@ public final class RomTables {
     // entity initialization path copies this 256-byte ROM table into
     // wEntitiesOptions1Table before dispatching the entity handler.
     private static final int ENTITY_OPTIONS_BANK = 0x03;
-    private static final int ENTITY_OPTIONS_ADDR = 0x42F1;
+    private static final int ENTITY_OPTIONS_ADDR = linksawakening.rom.RomSymbols.Options1ForEntity.address();
     private static final int ENTITY_OPTIONS_TABLE_SIZE = 0x100;
 
     // HitboxFlagsForEntity in bank $03. The table contains entries $00..$FA;
     // the following health-group table begins at $41F6.
     private static final int ENTITY_HITBOX_FLAGS_BANK = 0x03;
-    private static final int ENTITY_HITBOX_FLAGS_ADDR = 0x40FB;
+    private static final int ENTITY_HITBOX_FLAGS_ADDR = linksawakening.rom.RomSymbols.HitboxFlagsForEntity.address();
     private static final int ENTITY_HITBOX_FLAGS_TABLE_SIZE = 0xFB;
 
     // Shared entity wall-collision probe tables in bank $03. Each table has
     // four signed offsets for each of the four collision-box types, in ROM
     // direction order: right, left, up, down.
     private static final int ENTITY_COLLISION_POINTS_BANK = 0x03;
-    private static final int ENTITY_COLLISION_POINTS_X_ADDR = 0x785F;
-    private static final int ENTITY_COLLISION_POINTS_Y_ADDR = 0x786F;
+    private static final int ENTITY_COLLISION_POINTS_X_ADDR = linksawakening.rom.RomSymbols.EntityCollisionPointsX.address();
+    private static final int ENTITY_COLLISION_POINTS_Y_ADDR = linksawakening.rom.RomSymbols.EntityCollisionPointsY.address();
     private static final int ENTITY_COLLISION_POINTS_TABLE_SIZE = 0x10;
 
     // FineCollisionShapes in bank $03. Four unsigned shape bytes for each
     // physics flag from $7C through $8D.
     private static final int ENTITY_FINE_COLLISION_SHAPES_BANK = 0x03;
-    private static final int ENTITY_FINE_COLLISION_SHAPES_ADDR = 0x7A85;
+    private static final int ENTITY_FINE_COLLISION_SHAPES_ADDR = linksawakening.rom.RomSymbols.FineCollisionShapes.address();
     private static final int ENTITY_FINE_COLLISION_SHAPES_FIRST_PHYSICS = 0x7C;
     private static final int ENTITY_FINE_COLLISION_SHAPES_LAST_PHYSICS = 0x8D;
     private static final int ENTITY_FINE_COLLISION_SHAPES_QUADRANTS = 4;
@@ -53,24 +53,24 @@ public final class RomTables {
     // Unlike the entity table, the source indexes all twenty four-byte rows,
     // including $8E/$8F at the bytes immediately following the named data.
     private static final int LINK_FINE_COLLISION_SHAPES_BANK = 0x02;
-    private static final int LINK_FINE_COLLISION_SHAPES_ADDR = 0x49CA;
+    private static final int LINK_FINE_COLLISION_SHAPES_ADDR = linksawakening.rom.RomSymbols.Data_002_49CA.address();
     private static final int LINK_FINE_COLLISION_SHAPES_FIRST_PHYSICS = 0x7C;
     private static final int LINK_FINE_COLLISION_SHAPES_LAST_PHYSICS = 0x8F;
     private static final int LINK_FINE_COLLISION_SHAPES_LENGTH = 0x50;
 
     private static final int LINK_SPEED_TABLE_BANK = 0x02;
-    private static final int LINK_SPEED_TABLE_X_ADDR = 0x48C5;
-    private static final int LINK_SPEED_TABLE_Y_ADDR = 0x48E5;
+    private static final int LINK_SPEED_TABLE_X_ADDR = linksawakening.rom.RomSymbols.HorizontalIncrementForLinkPosition.address();
+    private static final int LINK_SPEED_TABLE_Y_ADDR = linksawakening.rom.RomSymbols.VerticalIncrementForLinkPosition.address();
     private static final int LINK_SPEED_TABLE_LENGTH = 0x20;
 
     // Swimming target-speed tables in bank 2. Data_002_4EF0/4F00 and
     // Data_002_4F10/4F20 are two consecutive 16-entry tables: normal
     // swimming followed by the faster A-button swimming cadence.
-    private static final int SWIMMING_SPEED_TABLE_X_ADDR = 0x4EF0;
-    private static final int SWIMMING_SPEED_TABLE_Y_ADDR = 0x4F10;
+    private static final int SWIMMING_SPEED_TABLE_X_ADDR = linksawakening.rom.RomSymbols.Data_002_4EF0.address();
+    private static final int SWIMMING_SPEED_TABLE_Y_ADDR = linksawakening.rom.RomSymbols.Data_002_4F10.address();
     private static final int SWIMMING_SPEED_TABLE_LENGTH = 0x20;
-    private static final int SWIMMING_ENTRY_SPEED_X_ADDR = 0x750A;
-    private static final int SWIMMING_ENTRY_SPEED_Y_ADDR = 0x750E;
+    private static final int SWIMMING_ENTRY_SPEED_X_ADDR = linksawakening.rom.RomSymbols.Data_002_750A.address();
+    private static final int SWIMMING_ENTRY_SPEED_Y_ADDR = linksawakening.rom.RomSymbols.Data_002_750E.address();
     private static final int SWIMMING_ENTRY_SPEED_LENGTH = 4;
 
     // Sword-swing animation and position tables in bank 2. All 24 bytes,
@@ -80,48 +80,48 @@ public final class RomTables {
     private static final int SWORD_TABLES_BANK = 0x02;
     private static final int TABLE_LEN = 24;
     // LinkDirectionToSwordDirection (bank2.asm:796)
-    private static final int SWORD_DIR_TABLE_ADDR = 0x461E;
+    private static final int SWORD_DIR_TABLE_ADDR = linksawakening.rom.RomSymbols.LinkDirectionToSwordDirection.address();
     // LinkDirectionToLinkAnimationState1 (bank2.asm:806)
-    private static final int SWORD_ANIM_TABLE_ADDR = 0x4636;
+    private static final int SWORD_ANIM_TABLE_ADDR = linksawakening.rom.RomSymbols.LinkDirectionToLinkAnimationState1.address();
     // LinkDirectionToSwordAnimationState (bank2.asm:852), indexed by
     // base ROM direction * 8 + spin sector.
-    private static final int SWORD_SPIN_ANIM_TABLE_ADDR = 0x46C9;
+    private static final int SWORD_SPIN_ANIM_TABLE_ADDR = linksawakening.rom.RomSymbols.LinkDirectionToSwordAnimationState.address();
     // LinkDirectionToAbsolute (bank2.asm:865), indexed like the spin state
     // table above.
-    private static final int SWORD_SPIN_ABSOLUTE_TABLE_ADDR = 0x46E9;
+    private static final int SWORD_SPIN_ABSOLUTE_TABLE_ADDR = linksawakening.rom.RomSymbols.LinkDirectionToAbsolute.address();
     private static final int SWORD_SPIN_TABLE_LEN = 0x20;
     // LinkDirectionTo_wC13A — blade X offset (bank2.asm:816)
-    private static final int SWORD_X_OFFSET_TABLE_ADDR = 0x464E;
+    private static final int SWORD_X_OFFSET_TABLE_ADDR = linksawakening.rom.RomSymbols.LinkDirectionTo_wC13A.address();
     // LinkDirectionTo_wC139 — blade Y offset added to Link Y (bank2.asm:821)
-    private static final int SWORD_Y_OFFSET_TABLE_ADDR = 0x4666;
+    private static final int SWORD_Y_OFFSET_TABLE_ADDR = linksawakening.rom.RomSymbols.LinkDirectionTo_wC139.address();
     // LinkDirectionTo_wC13B — additional Y offset (bank2.asm:831)
-    private static final int SWORD_Y_BASE_TABLE_ADDR = 0x4696;
+    private static final int SWORD_Y_BASE_TABLE_ADDR = linksawakening.rom.RomSymbols.LinkDirectionTo_wC13B.address();
     // Sword collision rectangle tables used by DefaultEnemyDamageCollisionHandler.
-    private static final int SWORD_COLLISION_NEEDED_TABLE_ADDR = 0x45BE;
-    private static final int SWORD_COLLISION_WIDTH_TABLE_ADDR = 0x45D6;
-    private static final int SWORD_COLLISION_OFFSET_TABLE_ADDR = 0x45EE;
-    private static final int SWORD_COLLISION_HEIGHT_TABLE_ADDR = 0x4606;
+    private static final int SWORD_COLLISION_NEEDED_TABLE_ADDR = linksawakening.rom.RomSymbols.LinkDirectionToStaticSwordCollitionCheckNeeded.address();
+    private static final int SWORD_COLLISION_WIDTH_TABLE_ADDR = linksawakening.rom.RomSymbols.LinkDirectionTo_wC141.address();
+    private static final int SWORD_COLLISION_OFFSET_TABLE_ADDR = linksawakening.rom.RomSymbols.LinkDirectionToOffset.address();
+    private static final int SWORD_COLLISION_HEIGHT_TABLE_ADDR = linksawakening.rom.RomSymbols.LinkDirectionTo_wC143.address();
     private static final int STATIC_SWORD_COLLISION_TABLE_BANK = 0x00;
-    private static final int STATIC_SWORD_COLLISION_X_ADDR = 0x158F;
-    private static final int STATIC_SWORD_COLLISION_Y_ADDR = 0x159B;
+    private static final int STATIC_SWORD_COLLISION_X_ADDR = linksawakening.rom.RomSymbols.SwordCollisionMapX.address();
+    private static final int STATIC_SWORD_COLLISION_Y_ADDR = linksawakening.rom.RomSymbols.SwordCollisionMapY.address();
     private static final int STATIC_SWORD_COLLISION_TABLE_LEN = 12;
 
     // Sword blade sprite tiles + attrs, bank $20. 16 bytes each (8 sword
     // directions x 2 adjacent 8x16 sprites). See Data_020_4A93/4AA3 in
     // bank20.asm and func_020_4AB3 for the OAM layout.
     private static final int SWORD_SPRITE_BANK = 0x20;
-    private static final int SWORD_SPRITE_TILES_ADDR = 0x4A93;
-    private static final int SWORD_SPRITE_ATTRS_ADDR = 0x4AA3;
+    private static final int SWORD_SPRITE_TILES_ADDR = linksawakening.rom.RomSymbols.Data_020_4A93.address();
+    private static final int SWORD_SPRITE_ATTRS_ADDR = linksawakening.rom.RomSymbols.Data_020_4AA3.address();
     private static final int SWORD_SPRITE_TABLE_LEN = 16;
 
     // Magic-rod Link OAM tables in bank $02 (bank2.asm:52E0-5307).
     // The first four entries are the forward swing and the second four are
     // the side swing, in ROM direction order RIGHT, LEFT, UP, DOWN.
     private static final int MAGIC_ROD_TABLE_BANK = 0x02;
-    private static final int MAGIC_ROD_X_OFFSET_ADDR = 0x52E0;
-    private static final int MAGIC_ROD_Y_OFFSET_ADDR = 0x52E8;
-    private static final int MAGIC_ROD_TILES_ADDR = 0x52F0;
-    private static final int MAGIC_ROD_ATTRIBUTES_ADDR = 0x5300;
+    private static final int MAGIC_ROD_X_OFFSET_ADDR = linksawakening.rom.RomSymbols.LinkDirectionToMagicRodXOffset.address();
+    private static final int MAGIC_ROD_Y_OFFSET_ADDR = linksawakening.rom.RomSymbols.LinkDirectionToMagicRodYOffset.address();
+    private static final int MAGIC_ROD_TILES_ADDR = linksawakening.rom.RomSymbols.LinkDirectionToMagicRodTiles.address();
+    private static final int MAGIC_ROD_ATTRIBUTES_ADDR = linksawakening.rom.RomSymbols.LinkDirectionToMagicRodOAMAttributes.address();
     private static final int MAGIC_ROD_DIRECTION_TABLE_LEN = 8;
     private static final int MAGIC_ROD_SPRITE_TABLE_LEN = 16;
 
@@ -129,7 +129,7 @@ public final class RomTables {
     // ROM's shovel timer is active. The table is indexed by ROM direction
     // (RIGHT, LEFT, UP, DOWN), then by the two timer phases.
     private static final int SHOVEL_ANIMATION_BANK = 0x02;
-    private static final int SHOVEL_ANIMATION_ADDR = 0x4B41;
+    private static final int SHOVEL_ANIMATION_ADDR = linksawakening.rom.RomSymbols.LinkDirectionToLinkAnimationState2.address();
     private static final int SHOVEL_ANIMATION_LENGTH = 8;
 
     private final int[][] physicsFlags;
@@ -661,9 +661,6 @@ public final class RomTables {
     }
 
     private static int romOffset(int bank, int address) {
-        if (bank == 0) {
-            return address;
-        }
-        return bank * BANK_SIZE + (address - BANK_SIZE);
+        return RomBank.romOffset(bank, address);
     }
 }
