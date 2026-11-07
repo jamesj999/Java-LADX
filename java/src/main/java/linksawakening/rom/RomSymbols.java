@@ -89,4 +89,23 @@ public final class RomSymbols {
     public static final RomAddress DungeonMinimapTiles = new RomAddress(0x12, 0x7E00);
     public static final RomAddress MinimapLayoutTable = new RomAddress(0x01, 0x4385);
     public static final RomAddress Data_002_66F9 = new RomAddress(0x02, 0x66F9);
+    public static final RomAddress Intro3Tiles = new RomAddress(0x10, 0x5400);
+    public static final RomAddress Intro1Tiles = new RomAddress(0x10, 0x4000);
+    public static final RomAddress IntroRainTiles = new RomAddress(0x01, 0x6D4A);
+    public static final RomAddress TitleLogoTiles = new RomAddress(0x0F, 0x4900);
+    public static final RomAddress SwitchBlockTiles = new RomAddress(0x0C, 0x6800);
+    public static final RomAddress InventoryOverworldItemsTiles = new RomAddress(0x0C, 0x4C00);
+    public static final RomAddress InventoryEquipmentItemsTiles = new RomAddress(0x0C, 0x4800);
+    public static final RomAddress OcarinaSymbolsTiles = new RomAddress(0x0C, 0x6960);
+    public static final RomAddress SaveMenuTiles = new RomAddress(0x0F, 0x4400);
+    public static final RomAddress LinkCharacterTiles = new RomAddress(0x0C, 0x4000);
+    public static final RomAddress DungeonsTiles = new RomAddress(0x0D, 0x4000);
+    public static final RomAddress DungeonFloorTilesPointers = new RomAddress(0x20, 0x4589);
+    public static final RomAddress DungeonWallsTilesPointers = new RomAddress(0x20, 0x45A9);
+    public static final RomAddress DungeonItemsTilesPointers = new RomAddress(0x20, 0x45CA);
+    public static final RomAddress IndoorsTilesetsTable = new RomAddress(0x20, 0x6EB3);
+    public static final RomAddress AnimatedTiles = new RomAddress(0x0C, 0x6A00);
+    public static final RomAddress CharacterVfxTiles = new RomAddress(0x0C, 0x4200);
+    public static final RomAddress TitleDXTilesCGB = new RomAddress(0x38, 0x5800);
+    public static final RomAddress TitleDXOAMTiles = new RomAddress(0x38, 0x6500);
 }

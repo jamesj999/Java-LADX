@@ -15,18 +15,7 @@ final class InstrumentWarpRenderLayer implements RenderLayer {
     }
 
     @Override public void render(RenderContext context) {
-        byte[] plane = new byte[context.buffer().length];
-        RenderContext target = new RenderContext(plane, context.gpu());
-        for (RenderLayer layer : layers) layer.render(target);
-        for (int pixel = 0; pixel < plane.length; pixel += 4) {
-            if (plane[pixel + 3] == 0) continue;
-            for (int channel = 0; channel < 3; channel++) {
-                int value = plane[pixel + channel] & 255;
-                context.buffer()[pixel + channel] = (byte) (increment == 0 ? value
-                    : Math.min(31, (value >> 3) + increment) << 3);
-            }
-            context.buffer()[pixel + 3] = plane[pixel + 3];
-        }
+        new PaletteOverlayRenderLayer(layers, increment).render(context);
     }
 
     static RenderLayer swirl(InstrumentWarpVisual visual,
@@ -36,16 +25,18 @@ final class InstrumentWarpRenderLayer implements RenderLayer {
         return context -> {
             if (commands.length != 256 || entities.spriteTiles() == null) return;
             int start = ((frame >> 3) & 3) * 64;
-            for (int i = 15; i >= 0; i--) {
+            var sprites = new java.util.ArrayList<SpriteListRenderLayer.Sprite>();
+            for (int i = 0; i < 16; i++) {
                 int at = start + i * 4;
                 int tile = commands[at + 2];
                 if (tile == 255) continue;
                 int attr = commands[at + 3];
-                IndexedRenderer.drawSpriteTile8x16(context.buffer(), entities.spriteTiles(), tile,
+                sprites.add(new SpriteListRenderLayer.Sprite(tile,
                     visual.centerX() + (byte) commands[at + 1] - 8,
                     visual.centerY() + (byte) commands[at] - 16,
-                    (attr & 32) != 0, (attr & 64) != 0, palettes[attr & 7]);
+                    attr & 7, (attr & 32) != 0, (attr & 64) != 0, 16));
             }
+            new SpriteListRenderLayer(sprites, palettes, entities.spriteTiles()).render(context);
         };
     }
 

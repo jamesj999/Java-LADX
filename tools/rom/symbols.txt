@@ -85,3 +85,26 @@ InventoryIndoorItemsTiles
 DungeonMinimapTiles
 MinimapLayoutTable
 Data_002_66F9
+
+# GPU ROM upload sources (GBC bank adjustment remains explicit).
+Intro3Tiles
+Intro1Tiles
+IntroRainTiles
+TitleLogoTiles
+SwitchBlockTiles
+InventoryOverworldItemsTiles
+InventoryEquipmentItemsTiles
+OcarinaSymbolsTiles
+SaveMenuTiles
+LinkCharacterTiles
+DungeonsTiles
+DungeonFloorTilesPointers
+DungeonWallsTilesPointers
+DungeonItemsTilesPointers
+IndoorsTilesetsTable
+
+# GPU animation, VFX, and title sources.
+AnimatedTiles
+CharacterVfxTiles
+TitleDXTilesCGB
+TitleDXOAMTiles

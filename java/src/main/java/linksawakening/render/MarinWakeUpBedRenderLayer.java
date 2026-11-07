@@ -5,6 +5,7 @@ import linksawakening.gpu.EntitySpriteTileSnapshot;
 import linksawakening.world.ScrollController;
 
 /** Renders LinksBedSpriteVariants and the GBC mattress from Marin's entity sheet. */
+@Deprecated
 public final class MarinWakeUpBedRenderLayer implements RenderLayer {
     private static final int[][] PAIR_TILES = {
         { 0x40, 0x42 }, { 0x42, 0x40 }, { 0x44, 0x46 },
@@ -35,15 +36,15 @@ public final class MarinWakeUpBedRenderLayer implements RenderLayer {
         int variant = link.marinWakeUpBedVariant();
         int originX = 0x38 - 0x08 - scrollController.screenShakeHorizontal();
         int originY = 0x34 - 0x10;
-        IndexedRenderer.drawSpriteTile8x16(context.buffer(), tiles, 0x4E,
-            originX + 8, originY, true, false, palettes[6]);
-        IndexedRenderer.drawSpriteTile8x16(context.buffer(), tiles, 0x4E,
-            originX, originY, false, false, palettes[6]);
         boolean flipX = variant == 1;
         int[] pair = PAIR_TILES[variant];
-        IndexedRenderer.drawSpriteTile8x16(context.buffer(), tiles, pair[1],
-            originX + 8, originY, flipX, false, palettes[variant < 2 ? 7 : 0]);
-        IndexedRenderer.drawSpriteTile8x16(context.buffer(), tiles, pair[0],
-            originX, originY, flipX, false, palettes[variant < 2 ? 7 : 0]);
+        int palette = variant < 2 ? 7 : 0;
+        // List order is OAM priority order; preserve the former painter order.
+        new SpriteListRenderLayer(java.util.List.of(
+            new SpriteListRenderLayer.Sprite(pair[0], originX, originY, palette, flipX, false, 16),
+            new SpriteListRenderLayer.Sprite(pair[1], originX + 8, originY, palette, flipX, false, 16),
+            new SpriteListRenderLayer.Sprite(0x4E, originX, originY, 6, false, false, 16),
+            new SpriteListRenderLayer.Sprite(0x4E, originX + 8, originY, 6, true, false, 16)
+        ), palettes, tiles).render(context);
     }
 }
