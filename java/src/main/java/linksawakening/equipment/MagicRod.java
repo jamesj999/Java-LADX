@@ -13,7 +13,7 @@ import java.util.Objects;
 import java.util.function.BooleanSupplier;
 
 /** Port of {@code UseMagicRod} and {@code label_002_5310}. */
-public final class MagicRod implements EquipmentItem {
+public final class MagicRod implements EquippedItem {
     public static final int ATTACK_STEP_MAGIC_ROD = 0x8E;
 
     private static final int ATTACK_STEP_DURATION_MASK = 0x7F;
@@ -179,29 +179,7 @@ public final class MagicRod implements EquipmentItem {
 
     private static void drawTile(byte[] buffer, Tile tile, int screenX, int screenY,
                                  int attributes, int[] palette) {
-        if (tile == null) {
-            return;
-        }
-        boolean flipX = (attributes & ATTR_FLIP_X) != 0;
-        boolean flipY = (attributes & ATTR_FLIP_Y) != 0;
-        for (int ty = 0; ty < 8; ty++) {
-            for (int tx = 0; tx < 8; tx++) {
-                int px = screenX + tx;
-                int py = screenY + ty;
-                if (px < 0 || px >= Framebuffer.WIDTH || py < 0 || py >= Framebuffer.HEIGHT) {
-                    continue;
-                }
-                int colorIndex = tile.getPixel(flipX ? 7 - tx : tx, flipY ? 7 - ty : ty);
-                if (colorIndex == 0) {
-                    continue;
-                }
-                int color = palette[colorIndex];
-                int bufferOffset = (py * Framebuffer.WIDTH + px) * 4;
-                buffer[bufferOffset] = (byte) ((color >> 16) & 0xFF);
-                buffer[bufferOffset + 1] = (byte) ((color >> 8) & 0xFF);
-                buffer[bufferOffset + 2] = (byte) (color & 0xFF);
-                buffer[bufferOffset + 3] = (byte) 0xFF;
-            }
-        }
+        ItemSpriteRenderer.drawTile(buffer, tile, screenX, screenY,
+            (attributes & ATTR_FLIP_X) != 0, (attributes & ATTR_FLIP_Y) != 0, palette);
     }
 }

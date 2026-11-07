@@ -8,7 +8,7 @@ import java.util.Objects;
 import java.util.function.BooleanSupplier;
 
 /** Port of {@code UseMagicPowder} and {@code SprinkleMagicPowder}. */
-public final class MagicPowder implements EquipmentItem {
+public final class MagicPowder implements EquippedItem {
 
     public interface SprinkleTarget {
         /** Allocates the ROM's type-$08 sprinkle entity. */
