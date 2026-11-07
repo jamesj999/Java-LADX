@@ -460,7 +460,7 @@ public final class RomTables {
 
     /** Signed 8-bit speed increment for the given D-Pad mask (R<<3|L<<2|U<<1|D). */
     public int linkSpeedX(int joypadMask) {
-        return linkSpeedX[joypadMask & 0x0F];
+        return linkSpeedX[joypadMask & 0x1F];
     }
 
     /** ApplyLinkGroundMotion's per-axis targets, including opposite-button inputs. */
@@ -468,7 +468,7 @@ public final class RomTables {
     public int airSpeedY(int axisMask) { return airSpeedY[axisMask & 3]; }
 
     public int linkSpeedY(int joypadMask) {
-        return linkSpeedY[joypadMask & 0x0F];
+        return linkSpeedY[joypadMask & 0x1F];
     }
 
     /** Signed swimming target speed from Data_002_4EF0/4F10 or its fast row. */

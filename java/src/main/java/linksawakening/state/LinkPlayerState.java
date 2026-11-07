@@ -7,6 +7,7 @@ public interface LinkPlayerState {
     int shieldLevel();
     int tunicType();
     boolean hasFlippers();
+    default int activePowerUp() { return 0; }
     boolean runningWithPegasusBoots();
     void setRunningWithPegasusBoots(boolean value);
     int invincibilityCounter();

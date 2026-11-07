@@ -7,6 +7,22 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 final class RomTablesTest {
 
     @Test
+    void preservesPieceOfPowerGroundSpeedRowAndSignedSpeeds() {
+        byte[] rom = new byte[0x100000];
+        int x = RomSymbols.HorizontalIncrementForLinkPosition.offset();
+        int y = RomSymbols.VerticalIncrementForLinkPosition.offset();
+        rom[x + 1] = 0x10;
+        rom[x + 0x11] = 0x14;
+        rom[y + 5] = (byte) -0x0C;
+        rom[y + 0x15] = (byte) -0x0F;
+        RomTables tables = RomTables.loadFromRom(rom);
+        assertEquals(0x10, tables.linkSpeedX(1));
+        assertEquals(0x14, tables.linkSpeedX(0x11));
+        assertEquals(-0x0C, tables.linkSpeedY(5));
+        assertEquals(-0x0F, tables.linkSpeedY(0x15));
+    }
+
+    @Test
     void loadsEntityCollisionSelectionAndSignedPointOffsetsFromRom() {
         byte[] rom = new byte[0x100000];
         int hitboxOffset = RomBank.romOffset(0x03, 0x40FB);
