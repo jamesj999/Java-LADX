@@ -20,6 +20,7 @@ import java.util.function.IntUnaryOperator;
  * class only advances handler-owned status and sprite-variant fields.
  */
 public final class RoomEntityRuntime {
+    private final EntityOutbox outbox = new EntityOutbox();
     private static final int ENTITY_PUSHED_BLOCK = 0x06;
     private static final int[] INSTRUMENT_MUSIC_TRACKS = {
         0x20, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E
@@ -496,69 +497,46 @@ public final class RoomEntityRuntime {
     private final int[] chestItemBySlot = new int[EntityRoomLoader.MAX_ENTITIES];
     private final List<RoamingEnemyMotion.LaunchRequest> projectileLaunchRequests =
         new ArrayList<>();
-    private final List<TransientVfxRequest> transientVfxRequests = new ArrayList<>();
-    private final List<HeartContainerRewardEvent> pendingHeartContainerRewards =
-        new ArrayList<>();
-    private final List<MadamMeowMeowFullHealRequest> pendingMadamMeowMeowFullHealRequests =
-        new ArrayList<>();
-    private final List<SwordPickupRewardEvent> pendingSwordPickupRewards =
-        new ArrayList<>();
-    private final List<ToadstoolRewardEvent> pendingToadstoolRewards =
-        new ArrayList<>();
-    private final List<InstrumentRewardEvent> pendingInstrumentRewards =
-        new ArrayList<>();
-    private final List<InstrumentCompletionEvent> pendingInstrumentCompletions =
-        new ArrayList<>();
-    private final List<RichardProgressEvent> pendingRichardProgressEvents =
-        new ArrayList<>();
-    private final List<OwlEventCompletion> pendingOwlEventCompletions =
-        new ArrayList<>();
-    private final List<LinkFinalPositionRequest> pendingLinkFinalPositionRequests =
-        new ArrayList<>();
-    private final List<RoosterLinkStateRequest> pendingRoosterLinkStateRequests =
-        new ArrayList<>();
-    private final List<SideViewPlatformLinkRequest> pendingSideViewPlatformLinkRequests =
-        new ArrayList<>();
-    private final List<SideViewPotLinkRequest> pendingSideViewPotLinkRequests =
-        new ArrayList<>();
-    private final List<LinkMotionBlockRequest> pendingLinkMotionBlockRequests =
-        new ArrayList<>();
-    private final List<HinoxLinkEffectRequest> pendingHinoxLinkEffectRequests =
-        new ArrayList<>();
-    private final List<LinkFallenPoseRequest> pendingLinkFallenPoseRequests =
-        new ArrayList<>();
-    private final List<LinkFacingRequest> pendingLinkFacingRequests = new ArrayList<>();
-    private final List<LinkAttackStepRequest> pendingLinkAttackStepRequests =
-        new ArrayList<>();
-    private final List<LinkAttackStepRequest> pendingPreTickLinkAttackStepRequests =
-        new ArrayList<>();
-    private final List<LinkAttackClearRequest> pendingLinkAttackClearRequests =
-        new ArrayList<>();
-    private final List<RoomStatusPersistenceRequest> pendingRoomStatusPersistenceRequests =
-        new ArrayList<>();
-    private final List<LinkHeldItemPoseRequest> pendingLinkHeldItemPoseRequests =
-        new ArrayList<>();
-    private final List<LinkSwordSpinPoseRequest> pendingLinkSwordSpinPoseRequests =
-        new ArrayList<>();
-    private final List<LinkSwordFinalPoseRequest> pendingLinkSwordFinalPoseRequests =
-        new ArrayList<>();
-    private final List<ScreenShakeRequest> pendingScreenShakeRequests = new ArrayList<>();
-    private final List<DialogRequest> pendingDialogRequests = new ArrayList<>();
-    private final List<EntityCombatEvent> pendingEntityEvents = new ArrayList<>();
-    private final List<EntityCombatEvent> pendingPreTickEntityEvents = new ArrayList<>();
-    private final List<ThrownBackgroundCollisionEvent> pendingThrownBackgroundCollisions =
-        new ArrayList<>();
-    private final List<DungeonWarpRequest> pendingDungeonWarpRequests = new ArrayList<>();
-    private final List<WarpLinkStateRequest> pendingWarpLinkStateRequests = new ArrayList<>();
-    private final List<ChestRewardEvent> pendingChestRewardEvents = new ArrayList<>();
-    private final List<KeyRewardEvent> pendingKeyRewardEvents = new ArrayList<>();
-    private final List<SlimeKeyRewardEvent> pendingSlimeKeyRewardEvents = new ArrayList<>();
-    private final List<WitchExchangeEvent> pendingWitchExchangeEvents = new ArrayList<>();
-    private final List<WitchRewardEvent> pendingWitchRewardEvents = new ArrayList<>();
-    private final List<KeyQuicksandEvent> pendingKeyQuicksandEvents = new ArrayList<>();
-    private final List<LikeLikeEvent> pendingLikeLikeEvents = new ArrayList<>();
-    private final List<BombExplosionEvent> pendingBombExplosionEvents = new ArrayList<>();
-    private final List<HookshotBridgeUpdate> hookshotBridgeUpdates = new ArrayList<>();
+    private final List<TransientVfxRequest> transientVfxRequests = outbox.channel(TransientVfxRequest.class, "transientVfxRequests");
+    private final List<HeartContainerRewardEvent> pendingHeartContainerRewards = outbox.channel(HeartContainerRewardEvent.class, "pendingHeartContainerRewards");
+    private final List<MadamMeowMeowFullHealRequest> pendingMadamMeowMeowFullHealRequests = outbox.channel(MadamMeowMeowFullHealRequest.class, "pendingMadamMeowMeowFullHealRequests");
+    private final List<SwordPickupRewardEvent> pendingSwordPickupRewards = outbox.channel(SwordPickupRewardEvent.class, "pendingSwordPickupRewards");
+    private final List<ToadstoolRewardEvent> pendingToadstoolRewards = outbox.channel(ToadstoolRewardEvent.class, "pendingToadstoolRewards");
+    private final List<InstrumentRewardEvent> pendingInstrumentRewards = outbox.channel(InstrumentRewardEvent.class, "pendingInstrumentRewards");
+    private final List<InstrumentCompletionEvent> pendingInstrumentCompletions = outbox.channel(InstrumentCompletionEvent.class, "pendingInstrumentCompletions");
+    private final List<RichardProgressEvent> pendingRichardProgressEvents = outbox.channel(RichardProgressEvent.class, "pendingRichardProgressEvents");
+    private final List<OwlEventCompletion> pendingOwlEventCompletions = outbox.channel(OwlEventCompletion.class, "pendingOwlEventCompletions");
+    private final List<LinkFinalPositionRequest> pendingLinkFinalPositionRequests = outbox.channel(LinkFinalPositionRequest.class, "pendingLinkFinalPositionRequests");
+    private final List<RoosterLinkStateRequest> pendingRoosterLinkStateRequests = outbox.channel(RoosterLinkStateRequest.class, "pendingRoosterLinkStateRequests");
+    private final List<SideViewPlatformLinkRequest> pendingSideViewPlatformLinkRequests = outbox.channel(SideViewPlatformLinkRequest.class, "pendingSideViewPlatformLinkRequests");
+    private final List<SideViewPotLinkRequest> pendingSideViewPotLinkRequests = outbox.channel(SideViewPotLinkRequest.class, "pendingSideViewPotLinkRequests");
+    private final List<LinkMotionBlockRequest> pendingLinkMotionBlockRequests = outbox.channel(LinkMotionBlockRequest.class, "pendingLinkMotionBlockRequests");
+    private final List<HinoxLinkEffectRequest> pendingHinoxLinkEffectRequests = outbox.channel(HinoxLinkEffectRequest.class, "pendingHinoxLinkEffectRequests");
+    private final List<LinkFallenPoseRequest> pendingLinkFallenPoseRequests = outbox.channel(LinkFallenPoseRequest.class, "pendingLinkFallenPoseRequests");
+    private final List<LinkFacingRequest> pendingLinkFacingRequests = outbox.channel(LinkFacingRequest.class, "pendingLinkFacingRequests");
+    private final List<LinkAttackStepRequest> pendingLinkAttackStepRequests = outbox.channel(LinkAttackStepRequest.class, "pendingLinkAttackStepRequests");
+    private final List<LinkAttackStepRequest> pendingPreTickLinkAttackStepRequests = outbox.channel(LinkAttackStepRequest.class, "pendingPreTickLinkAttackStepRequests");
+    private final List<LinkAttackClearRequest> pendingLinkAttackClearRequests = outbox.channel(LinkAttackClearRequest.class, "pendingLinkAttackClearRequests");
+    private final List<RoomStatusPersistenceRequest> pendingRoomStatusPersistenceRequests = outbox.channel(RoomStatusPersistenceRequest.class, "pendingRoomStatusPersistenceRequests");
+    private final List<LinkHeldItemPoseRequest> pendingLinkHeldItemPoseRequests = outbox.channel(LinkHeldItemPoseRequest.class, "pendingLinkHeldItemPoseRequests");
+    private final List<LinkSwordSpinPoseRequest> pendingLinkSwordSpinPoseRequests = outbox.channel(LinkSwordSpinPoseRequest.class, "pendingLinkSwordSpinPoseRequests");
+    private final List<LinkSwordFinalPoseRequest> pendingLinkSwordFinalPoseRequests = outbox.channel(LinkSwordFinalPoseRequest.class, "pendingLinkSwordFinalPoseRequests");
+    private final List<ScreenShakeRequest> pendingScreenShakeRequests = outbox.channel(ScreenShakeRequest.class, "pendingScreenShakeRequests");
+    private final List<DialogRequest> pendingDialogRequests = outbox.channel(DialogRequest.class, "pendingDialogRequests");
+    private final List<EntityCombatEvent> pendingEntityEvents = outbox.channel(EntityCombatEvent.class, "pendingEntityEvents");
+    private final List<EntityCombatEvent> pendingPreTickEntityEvents = outbox.channel(EntityCombatEvent.class, "pendingPreTickEntityEvents");
+    private final List<ThrownBackgroundCollisionEvent> pendingThrownBackgroundCollisions = outbox.channel(ThrownBackgroundCollisionEvent.class, "pendingThrownBackgroundCollisions");
+    private final List<DungeonWarpRequest> pendingDungeonWarpRequests = outbox.channel(DungeonWarpRequest.class, "pendingDungeonWarpRequests");
+    private final List<WarpLinkStateRequest> pendingWarpLinkStateRequests = outbox.channel(WarpLinkStateRequest.class, "pendingWarpLinkStateRequests");
+    private final List<ChestRewardEvent> pendingChestRewardEvents = outbox.channel(ChestRewardEvent.class, "pendingChestRewardEvents");
+    private final List<KeyRewardEvent> pendingKeyRewardEvents = outbox.channel(KeyRewardEvent.class, "pendingKeyRewardEvents");
+    private final List<SlimeKeyRewardEvent> pendingSlimeKeyRewardEvents = outbox.channel(SlimeKeyRewardEvent.class, "pendingSlimeKeyRewardEvents");
+    private final List<WitchExchangeEvent> pendingWitchExchangeEvents = outbox.channel(WitchExchangeEvent.class, "pendingWitchExchangeEvents");
+    private final List<WitchRewardEvent> pendingWitchRewardEvents = outbox.channel(WitchRewardEvent.class, "pendingWitchRewardEvents");
+    private final List<KeyQuicksandEvent> pendingKeyQuicksandEvents = outbox.channel(KeyQuicksandEvent.class, "pendingKeyQuicksandEvents");
+    private final List<LikeLikeEvent> pendingLikeLikeEvents = outbox.channel(LikeLikeEvent.class, "pendingLikeLikeEvents");
+    private final List<BombExplosionEvent> pendingBombExplosionEvents = outbox.channel(BombExplosionEvent.class, "pendingBombExplosionEvents");
+    private final List<HookshotBridgeUpdate> hookshotBridgeUpdates = outbox.channel(HookshotBridgeUpdate.class, "hookshotBridgeUpdates");
     private boolean switchBlockAnimationActive;
     private boolean pendingSwitchBlockAnimationRequest;
     private ColorShellWorld colorShellWorld = ColorShellWorld.none();
@@ -737,12 +715,12 @@ public final class RoomEntityRuntime {
     private final MagicRodFireballMotion magicRodFireballMotion =
         new MagicRodFireballMotion();
     private final SwordBeamMotion swordBeamMotion = new SwordBeamMotion();
-    private final List<BoomerangObjectRequest> boomerangObjectRequests = new ArrayList<>();
-    private final List<MagicRodObjectRequest> magicRodObjectRequests = new ArrayList<>();
+    private final List<BoomerangObjectRequest> boomerangObjectRequests = outbox.channel(BoomerangObjectRequest.class, "boomerangObjectRequests");
+    private final List<MagicRodObjectRequest> magicRodObjectRequests = outbox.channel(MagicRodObjectRequest.class, "magicRodObjectRequests");
     private final int[] magicPowderState = new int[EntityRoomLoader.MAX_ENTITIES];
     private int torchPaletteTargetAddress;
     private boolean torchPaletteTransitionActive;
-    private final List<MagicPowderObjectRequest> magicPowderObjectRequests = new ArrayList<>();
+    private final List<MagicPowderObjectRequest> magicPowderObjectRequests = outbox.channel(MagicPowderObjectRequest.class, "magicPowderObjectRequests");
     private final int[] musicalNoteInertia = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] musicalNoteSpeedX = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] musicalNoteSpeedY = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -764,53 +742,53 @@ public final class RoomEntityRuntime {
 
     /** Collision payload consumed by EntityCheckThrowAtTriggers in bank $03. */
     public record ThrownBackgroundCollisionEvent(int slot, int entityType,
-                                                  int direction, int objectId) {
+                                                  int direction, int objectId) implements EntityEvent {
     }
 
     /** A ROM transient-VFX creation requested by an entity handler this frame. */
     public record TransientVfxRequest(TransientVfxType type, int worldX, int worldY,
-                                      int variant) {
+                                      int variant) implements EntityEvent {
         public TransientVfxRequest(TransientVfxType type, int worldX, int worldY) {
             this(type, worldX, worldY, 0);
         }
     }
 
-    public record HeartContainerRewardEvent(int slot) {
+    public record HeartContainerRewardEvent(int slot) implements EntityEvent {
     }
 
-    public record MadamMeowMeowFullHealRequest(int slot) {
+    public record MadamMeowMeowFullHealRequest(int slot) implements EntityEvent {
     }
 
-    public record SwordPickupRewardEvent(int slot) {
+    public record SwordPickupRewardEvent(int slot) implements EntityEvent {
     }
 
-    public record ToadstoolRewardEvent(int slot) {
+    public record ToadstoolRewardEvent(int slot) implements EntityEvent {
     }
 
-    public record InstrumentRewardEvent(int slot) {
+    public record InstrumentRewardEvent(int slot) implements EntityEvent {
     }
 
-    public record InstrumentCompletionEvent(int slot, int mapId) {
+    public record InstrumentCompletionEvent(int slot, int mapId) implements EntityEvent {
     }
 
-    public record RichardProgressEvent(int slot, Kind kind, int goldenLeavesCount) {
+    public record RichardProgressEvent(int slot, Kind kind, int goldenLeavesCount) implements EntityEvent {
         public enum Kind { START_QUEST, RETURN_ALL_LEAVES }
     }
 
-    public record WitchExchangeEvent(int slot, int inventorySlot) {
+    public record WitchExchangeEvent(int slot, int inventorySlot) implements EntityEvent {
     }
 
-    public record WitchRewardEvent(int slot) {
+    public record WitchRewardEvent(int slot) implements EntityEvent {
     }
 
-    public record OwlEventCompletion(int slot) {
+    public record OwlEventCompletion(int slot) implements EntityEvent {
     }
 
     /** A ROM handler request carrying the complete Link-side push response. */
     public record LinkFinalPositionRequest(int sourceSlot, boolean resetPegasusBoots,
                                            boolean resetHookshotChain,
                                            boolean markLinkPushing,
-                                           boolean clearLinkPositionIncrement) {
+                                           boolean clearLinkPositionIncrement) implements EntityEvent {
         public LinkFinalPositionRequest(int sourceSlot) {
             this(sourceSlot, false, false, false, false);
         }
@@ -831,7 +809,7 @@ public final class RoomEntityRuntime {
 
     /** Link HRAM writes emitted by Rooster's active lifted handler. */
     public record RoosterLinkStateRequest(int sourceSlot, int positionZ, int velocityZ,
-                                          int speedX, int speedY, int romDirection) {
+                                          int speedX, int speedY, int romDirection) implements EntityEvent {
         public RoosterLinkStateRequest {
             if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
                 throw new IllegalArgumentException("Rooster source slot out of range: "
@@ -848,7 +826,7 @@ public final class RoomEntityRuntime {
     }
 
     /** A ROM handler request to block Link's next interactive motion frame. */
-    public record LinkMotionBlockRequest(int sourceSlot, int positionDeltaX, int positionDeltaY) {
+    public record LinkMotionBlockRequest(int sourceSlot, int positionDeltaX, int positionDeltaY) implements EntityEvent {
         public LinkMotionBlockRequest(int sourceSlot) { this(sourceSlot, 0, 0); }
         public LinkMotionBlockRequest {
             if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
@@ -861,7 +839,7 @@ public final class RoomEntityRuntime {
     /** Link-side position/speed writes emitted by the side-view platform handler. */
     public record SideViewPlatformLinkRequest(int sourceSlot, int horizontalDelta,
                                               int positionY, int speedY, boolean standing,
-                                              boolean activate) {
+                                              boolean activate) implements EntityEvent {
         public SideViewPlatformLinkRequest {
             if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES
                 || horizontalDelta < -0x80 || horizontalDelta > 0x7F
@@ -876,7 +854,7 @@ public final class RoomEntityRuntime {
     public record SideViewPotLinkRequest(int sourceSlot, boolean resetPegasusBoots,
                                          boolean restoreFinalPositionX,
                                          int ignoreCollisionCountdown, int speedX,
-                                         boolean snapTop, int positionY, int speedY) {
+                                         boolean snapTop, int positionY, int speedY) implements EntityEvent {
         public SideViewPotLinkRequest {
             if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES
                 || ignoreCollisionCountdown < 0 || ignoreCollisionCountdown > 0xFF
@@ -888,7 +866,7 @@ public final class RoomEntityRuntime {
     }
 
     /** A cleared entity-$61 handler request for the ROM dungeon warp table. */
-    public record DungeonWarpRequest(int sourceSlot, WarpMotion.Destination destination) {
+    public record DungeonWarpRequest(int sourceSlot, WarpMotion.Destination destination) implements EntityEvent {
         public DungeonWarpRequest {
             if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES
                 || destination == null) {
@@ -899,7 +877,7 @@ public final class RoomEntityRuntime {
 
     /** Link HRAM writes emitted by entity-$61's WarpState3Handler. */
     public record WarpLinkStateRequest(int sourceSlot, int positionX, int visualPositionY,
-                                       int immunityCountdown) {
+                                       int immunityCountdown) implements EntityEvent {
         public WarpLinkStateRequest {
             if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES
                 || (positionX & ~0xFF) != 0 || (visualPositionY & ~0xFF) != 0
@@ -914,7 +892,7 @@ public final class RoomEntityRuntime {
                                          int speedX, int speedY, int velocityZ,
                                          int airborneState, int damage,
                                          boolean motionBlocked,
-                                         boolean applyHeldLinkPose) {
+                                         boolean applyHeldLinkPose) implements EntityEvent {
         public HinoxLinkEffectRequest {
             if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
                 throw new IllegalArgumentException("Hinox source slot out of range: " + sourceSlot);
@@ -933,7 +911,7 @@ public final class RoomEntityRuntime {
     }
 
     /** A ROM handler request to show Link's explicit fallen animation pose. */
-    public record LinkFallenPoseRequest(int sourceSlot) {
+    public record LinkFallenPoseRequest(int sourceSlot) implements EntityEvent {
         public LinkFallenPoseRequest {
             if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
                 throw new IllegalArgumentException("Link fallen-pose source slot out of range: "
@@ -943,7 +921,7 @@ public final class RoomEntityRuntime {
     }
 
     public record LinkFacingRequest(int sourceSlot, int romDirection,
-                                    boolean preserveWalkingPhase) {
+                                    boolean preserveWalkingPhase) implements EntityEvent {
         public LinkFacingRequest(int sourceSlot, int romDirection) {
             this(sourceSlot, romDirection, false);
         }
@@ -957,7 +935,7 @@ public final class RoomEntityRuntime {
     }
 
     /** A lifted-throw request applied after AnimateEntities, like the ROM HRAM write. */
-    public record LinkAttackStepRequest(int sourceSlot) {
+    public record LinkAttackStepRequest(int sourceSlot) implements EntityEvent {
         public LinkAttackStepRequest {
             if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
                 throw new IllegalArgumentException(
@@ -967,7 +945,7 @@ public final class RoomEntityRuntime {
     }
 
     /** A source handler's direct write clearing Link's attack animation countdown. */
-    public record LinkAttackClearRequest(int sourceSlot) {
+    public record LinkAttackClearRequest(int sourceSlot) implements EntityEvent {
         public LinkAttackClearRequest {
             if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
                 throw new IllegalArgumentException("Link attack-clear source slot out of range");
@@ -977,7 +955,7 @@ public final class RoomEntityRuntime {
 
     /** Deferred room-save writes that must not alter the live handler's room status. */
     public record RoomStatusPersistenceRequest(int sourceSlot, int roomStatusMask,
-                                               int tarinFlag) {
+                                               int tarinFlag) implements EntityEvent {
         public RoomStatusPersistenceRequest {
             if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES
                 || (roomStatusMask & ~0xFF) != 0 || (tarinFlag & ~0xFF) != 0) {
@@ -986,7 +964,7 @@ public final class RoomEntityRuntime {
         }
     }
 
-    public record LinkHeldItemPoseRequest(int sourceSlot, boolean powerUp) {
+    public record LinkHeldItemPoseRequest(int sourceSlot, boolean powerUp) implements EntityEvent {
         public LinkHeldItemPoseRequest(int sourceSlot) { this(sourceSlot, false); }
         public LinkHeldItemPoseRequest {
             if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
@@ -996,7 +974,7 @@ public final class RoomEntityRuntime {
         }
     }
 
-    public record LinkSwordSpinPoseRequest(int sourceSlot, int countdown) {
+    public record LinkSwordSpinPoseRequest(int sourceSlot, int countdown) implements EntityEvent {
         public LinkSwordSpinPoseRequest {
             if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
                 throw new IllegalArgumentException("Sword-spin source slot out of range: "
@@ -1009,7 +987,7 @@ public final class RoomEntityRuntime {
         }
     }
 
-    public record LinkSwordFinalPoseRequest(int sourceSlot) {
+    public record LinkSwordFinalPoseRequest(int sourceSlot) implements EntityEvent {
         public LinkSwordFinalPoseRequest {
             if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
                 throw new IllegalArgumentException("Sword-final source slot out of range: "
@@ -1019,7 +997,7 @@ public final class RoomEntityRuntime {
     }
 
     /** A ROM handler request to start the source screen-shake timer. */
-    public record ScreenShakeRequest(int sourceSlot, int countdown, int phase) {
+    public record ScreenShakeRequest(int sourceSlot, int countdown, int phase) implements EntityEvent {
         public ScreenShakeRequest {
             if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
                 throw new IllegalArgumentException("Screen-shake source slot out of range: "
@@ -1036,7 +1014,7 @@ public final class RoomEntityRuntime {
 
     /** A boomerang request to reveal the object it intersected after movement. */
     public record BoomerangObjectRequest(int sourceSlot, int location,
-                                         int objectLeft, int objectTop) {
+                                         int objectLeft, int objectTop) implements EntityEvent {
         public BoomerangObjectRequest {
             if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
                 throw new IllegalArgumentException("Boomerang source slot out of range: "
@@ -1050,7 +1028,7 @@ public final class RoomEntityRuntime {
 
     /** A Magic Rod fireball request to reveal the object it burned. */
     public record MagicRodObjectRequest(int sourceSlot, int location,
-                                        int objectLeft, int objectTop) {
+                                        int objectLeft, int objectTop) implements EntityEvent {
         public MagicRodObjectRequest {
             if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
                 throw new IllegalArgumentException("Magic Rod source slot out of range: "
@@ -1072,7 +1050,7 @@ public final class RoomEntityRuntime {
     /** A ROM powder-sprinkle object mutation applied by RoomSession. */
     public record MagicPowderObjectRequest(int sourceSlot, int location,
                                            int objectLeft, int objectTop,
-                                           MagicPowderObjectAction action) {
+                                           MagicPowderObjectAction action) implements EntityEvent {
         public MagicPowderObjectRequest {
             if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
                 throw new IllegalArgumentException("Magic Powder source slot out of range: "
@@ -1088,7 +1066,7 @@ public final class RoomEntityRuntime {
     }
 
     /** A ROM dialog-table entry requested by an entity handler this frame. */
-    public record DialogRequest(int tableId, int dialogLowId, boolean forceTop) {
+    public record DialogRequest(int tableId, int dialogLowId, boolean forceTop) implements EntityEvent {
         public DialogRequest(int tableId, int dialogLowId) { this(tableId, dialogLowId, false); }
         public DialogRequest {
             if (tableId < 0 || tableId > 2) {
@@ -1106,7 +1084,7 @@ public final class RoomEntityRuntime {
     }
 
     /** Reward application requested by EntityInitChestWithItem. */
-    public record ChestRewardEvent(int slot, int itemType) {
+    public record ChestRewardEvent(int slot, int itemType) implements EntityEvent {
         public ChestRewardEvent {
             if (slot < 0 || slot >= EntityRoomLoader.MAX_ENTITIES) {
                 throw new IllegalArgumentException("Chest entity slot out of range: " + slot);
@@ -1119,7 +1097,7 @@ public final class RoomEntityRuntime {
     }
 
     /** Reward application requested by PickDroppableKey. */
-    public record KeyRewardEvent(int slot, int itemType) {
+    public record KeyRewardEvent(int slot, int itemType) implements EntityEvent {
         public KeyRewardEvent {
             if (slot < 0 || slot >= EntityRoomLoader.MAX_ENTITIES) {
                 throw new IllegalArgumentException("Key entity slot out of range: " + slot);
@@ -1132,7 +1110,7 @@ public final class RoomEntityRuntime {
     }
 
     /** Reward, room-completion, and dialog state emitted by HidingSlimeKeyEntityHandler. */
-    public record SlimeKeyRewardEvent(int slot, int goldenLeavesCount, int dialogLowId) {
+    public record SlimeKeyRewardEvent(int slot, int goldenLeavesCount, int dialogLowId) implements EntityEvent {
         public SlimeKeyRewardEvent {
             if (slot < 0 || slot >= EntityRoomLoader.MAX_ENTITIES) {
                 throw new IllegalArgumentException("Slime Key entity slot out of range: " + slot);
@@ -1149,7 +1127,7 @@ public final class RoomEntityRuntime {
     }
 
     /** Status propagation requested by CheckForEntityFallingDownQuicksandHole. */
-    public record KeyQuicksandEvent(int slot) {
+    public record KeyQuicksandEvent(int slot) implements EntityEvent {
         public KeyQuicksandEvent {
             if (slot < 0 || slot >= EntityRoomLoader.MAX_ENTITIES) {
                 throw new IllegalArgumentException("Key entity slot out of range: " + slot);
@@ -1160,7 +1138,7 @@ public final class RoomEntityRuntime {
     /** Link capture/release side effects emitted by Like Like's handler. */
     public record LikeLikeEvent(int slot, Kind kind, int entityX, int entityY,
                                 int stolenInventorySlot, int stolenShieldLevel,
-                                boolean pinLinkPosition) {
+                                boolean pinLinkPosition) implements EntityEvent {
         public enum Kind { CAPTURE, RELEASE }
 
         public LikeLikeEvent(int slot, Kind kind, int entityX, int entityY,
@@ -1172,7 +1150,7 @@ public final class RoomEntityRuntime {
 
     /** A ROM bridge handler request to replace one padded object cell and draw its columns. */
     public record HookshotBridgeUpdate(int objectLeft, int objectTop, int direction,
-                                       boolean active) {
+                                       boolean active) implements EntityEvent {
         public HookshotBridgeUpdate(int objectLeft, int objectTop, int direction) {
             this(objectLeft, objectTop, direction, true);
         }
