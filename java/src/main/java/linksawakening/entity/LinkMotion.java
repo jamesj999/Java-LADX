@@ -179,7 +179,7 @@ final class LinkMotion {
 
     boolean applyOverworldLedgeCollision(int pointY) {
         link.linkAirborne.directionalLedgeCollisionCounter = 0;
-        if (link.roosterCarryActive || link.linkAirborne.overworldLedgeFallActive) {
+        if (link.linkEntityEffects.roosterCarryActive || link.linkAirborne.overworldLedgeFallActive) {
             return true;
         }
         if ((pointY & 0x0F) < 8) {

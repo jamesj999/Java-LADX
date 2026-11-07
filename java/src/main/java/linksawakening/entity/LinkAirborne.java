@@ -28,16 +28,16 @@ final class LinkAirborne {
     LinkAirborne(Link link) { this.link = link; }
 
     void tickJump() {
-        if (!airborne || link.roosterCarryActive) {
+        if (!airborne || link.linkEntityEffects.roosterCarryActive) {
             return;
         }
 
-        if (!link.marinBedJumpMotionLocked && !swordSuppressesJumpAnimation()) tickJumpAnimation();
+        if (!link.linkEntityEffects.marinBedJumpMotionLocked && !swordSuppressesJumpAnimation()) tickJumpAnimation();
         zSubPixels += zVelocity;
         zVelocity -= 2;
         // $02:4523–4561 changes only axes with held input. With no
         // input, momentum is retained; reversing takes 32 speed steps.
-        if (!link.linkSideView.sideScrolling && !link.marinBedJumpMotionLocked
+        if (!link.linkSideView.sideScrolling && !link.linkEntityEffects.marinBedJumpMotionLocked
             && !directionalLedgeJumpMotionLocked && !overworldLedgeFallActive
             && (link.playerState == null || !link.playerState.runningWithPegasusBoots())) {
             int mask = link.buildJoypadMask();
@@ -55,7 +55,7 @@ final class LinkAirborne {
         }
 
         airborne = false;
-        link.marinBedJumpMotionLocked = false;
+        link.linkEntityEffects.marinBedJumpMotionLocked = false;
         directionalLedgeJumpMotionLocked = false;
         directionalLedgeJumpSpeedX = 0;
         directionalLedgeJumpSpeedY = 0;

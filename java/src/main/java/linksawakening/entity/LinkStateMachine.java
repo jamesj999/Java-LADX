@@ -68,9 +68,9 @@ final class LinkStateMachine {
             return;
         }
 
-        if (link.likeLikeCaptured && link.likeLikeCapturePinsPosition) {
-            link.linkMotion.subX = link.likeLikeCaptureSubX;
-            link.linkMotion.subY = link.likeLikeCaptureSubY;
+        if (link.linkEntityEffects.likeLikeCaptured && link.linkEntityEffects.likeLikeCapturePinsPosition) {
+            link.linkMotion.subX = link.linkEntityEffects.likeLikeCaptureSubX;
+            link.linkMotion.subY = link.linkEntityEffects.likeLikeCaptureSubY;
             link.linkAirborne.airborne = false;
             link.linkAirborne.zSubPixels = 0;
             link.linkAirborne.zVelocity = 0;
@@ -111,7 +111,7 @@ final class LinkStateMachine {
         // $02:4406 skips facing selection while link.linkAirborne.airborne; the Feather
         // launch still follows this frame's ordinary ground movement.
         if (newDirection != -1 && (!link.linkAirborne.airborne || featherLaunchFrame)
-            && !link.marinBedJumpMotionLocked
+            && !link.linkEntityEffects.marinBedJumpMotionLocked
             && !link.linkAirborne.directionalLedgeJumpMotionLocked
             && !link.itemsLockFacing(true) && !link.isLiftTransitionBlockingMotion()) {
             link.direction = newDirection;
@@ -152,7 +152,7 @@ final class LinkStateMachine {
         if (link.linkAirborne.directionalLedgeJumpMotionLocked) {
             speedX = link.linkAirborne.directionalLedgeJumpSpeedX;
             speedY = link.linkAirborne.directionalLedgeJumpSpeedY;
-        } else if (link.marinBedJumpMotionLocked) {
+        } else if (link.linkEntityEffects.marinBedJumpMotionLocked) {
             speedX = 0x0C;
             speedY = 0;
         } else if (link.playerState != null && link.playerState.runningWithPegasusBoots()) {
@@ -176,7 +176,7 @@ final class LinkStateMachine {
         if (platformVerticalSpeedForThisUpdate >= 0) {
             speedY = (byte) platformVerticalSpeedForThisUpdate;
         }
-        boolean bedJumpFrame = link.marinBedJumpMotionLocked;
+        boolean bedJumpFrame = link.linkEntityEffects.marinBedJumpMotionLocked;
         if (bedJumpFrame) {
             link.marinWakeUpBedVariant = -1;
             // Marin sets wIsLinkInTheAir=2, so UpdateLinkAnimation skips
