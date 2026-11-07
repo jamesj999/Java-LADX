@@ -149,11 +149,7 @@ public final class GameFrameSceneBuilder {
 
         if (fileMenu == null && snapshot != null && snapshot.animatedTiles() != null) {
             byte[] data = snapshot.animatedTiles();
-            layers.add(context -> {
-                for (int i = 0; i < data.length; i++) {
-                    context.gpu().writeVRAM(snapshot.animatedTilesDestination() + i, data[i]);
-                }
-            });
+            layers.add(new TileUploadRenderLayer(data, snapshot.animatedTilesDestination()));
         }
         if (fileMenu == null && snapshot != null && snapshot.lineScrollY() != null) {
             int[] lineY = snapshot.lineScrollY();
