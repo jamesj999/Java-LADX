@@ -37,9 +37,23 @@ public class EntryProbe {
     System.out.println(b+" "+n+" fraction="+(f.getInt(m)&15));
    }
    System.out.println(b+" complete "+l.romEntityX()+","+l.romEntityY()+" speed="+l.romSpeedX()+","+l.romSpeedY()+" frames="+count+" worldFrame="+s.diagnostics().frameCounter()+" collision="+l.romCollisionType());
+   if(args.length > 2 && b.equals("right")) {
+    byte[] solo=new byte[160*144*4], background=new byte[160*144*4];
+    linksawakening.render.FrameScene.of(java.util.List.of(new linksawakening.render.LinkRenderLayer(l,d.scrollController()))).drawTo(solo,d.gpu());
+    linksawakening.render.FrameScene.of(java.util.List.of(new linksawakening.render.RoomRenderLayer(d.roomSession().renderSnapshot(),d.scrollController(),d.transitionController()))).drawTo(background,d.gpu());
+    int changed=0;
+    for(int yy=l.pixelY();yy<l.pixelY()+16;yy++) for(int xx=l.pixelX();xx<l.pixelX()+16;xx++) {
+     int ii=(yy*160+xx)*4;
+     if(rgba[ii]!=background[ii]||rgba[ii+1]!=background[ii+1]||rgba[ii+2]!=background[ii+2]) changed++;
+    }
+    System.out.println("render animation="+l.romAnimationState()+" z="+l.romEntityZ()+" bed="+l.isMarinWakeUpBedVisible()+" visible pixels over background="+changed);
+    png(solo,Path.of("/tmp/ladx-entry-controlled/link-only-right.png"));
+    png(background,Path.of("/tmp/ladx-entry-controlled/background-only-right.png"));
+   }
    png(rgba,Path.of("/tmp/ladx-entry-controlled/java-"+args[0]+"-"+b+"-complete.png"));
    if(args.length > 1 && b.equals("right")) for(int post=0;post<4;post++) {
-    s.headlessFrame();
+    byte[] postRgba=s.headlessFrame();
+    if(args.length > 2) png(postRgba,Path.of("/tmp/ladx-entry-controlled/java-right-post"+(post+1)+".png"));
     System.out.println("right post worldFrame="+s.diagnostics().frameCounter()+" x="+l.romEntityX()
         +" y="+l.romEntityY()+" speed="+l.romSpeedX()+","+l.romSpeedY()+" collision="+l.romCollisionType());
    }
