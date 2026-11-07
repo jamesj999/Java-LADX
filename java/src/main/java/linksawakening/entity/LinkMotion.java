@@ -35,7 +35,7 @@ final class LinkMotion {
             moveDirection = signedSpeed > 0 ? Link.DIRECTION_DOWN : Link.DIRECTION_UP;
         }
 
-        int probeMask = link.collision != null && !link.debugNoClip && !link.directionalLedgeJumpMotionLocked
+        int probeMask = link.collision != null && !link.debugNoClip && !link.linkAirborne.directionalLedgeJumpMotionLocked
             ? leadingEdgeCollisionMask(candidatePixelX, candidatePixelY, moveDirection) : 0;
         if (probeMask != 0) {
             // BackgroundCollisionHandler $02:6EC6 / $02:6F01 restores the
@@ -82,8 +82,8 @@ final class LinkMotion {
                 link.linkStateMachine.revolvingDoorFrame = 0;
                 link.linkStateMachine.revolvingDoorTransitionPending = false;
                 link.linkStateMachine.revolvingDoorPaletteVariant = -1;
-                link.zSubPixels = link.zVelocity = 0;
-                link.airborne = false;
+                link.linkAirborne.zSubPixels = link.linkAirborne.zVelocity = 0;
+                link.linkAirborne.airborne = false;
                 link.linkDamage.collisionIgnoreFramesRemaining = 0;
                 if (link.playerState != null) link.playerState.setInvincibilityCounter(0);
                 if (link.itemRegistry != null && link.itemRegistry.lookup(PlayerState.INVENTORY_SWORD)
@@ -94,7 +94,7 @@ final class LinkMotion {
                 blocked |= applyOverworldLedgeCollision(pointY);
             } else if (isDirectionalLedgePhysics(physicsFlag)) {
                 if (directionalLedgeHalfIsPassable(physicsFlag, pointX)) {
-                    link.directionalLedgeCollisionCounter = 0;
+                    link.linkAirborne.directionalLedgeCollisionCounter = 0;
                     continue;
                 }
                 blocked |= applyDirectionalLedgeCollision(physicsFlag, dir);
@@ -104,7 +104,7 @@ final class LinkMotion {
             } else {
                 // ApplyCollisionWithObject reaches label_002_7461 for an
                 // ordinary passable probe, which clears wC191.
-                link.directionalLedgeCollisionCounter = 0;
+                link.linkAirborne.directionalLedgeCollisionCounter = 0;
             }
             if (blocked) blockedMask |= 1 << i;
         }
@@ -119,36 +119,36 @@ final class LinkMotion {
             case 3 -> Link.DIRECTION_DOWN;
             default -> -1;
         };
-        if (link.airborne || link.direction != ledgeDirection || moveDirection != ledgeDirection
+        if (link.linkAirborne.airborne || link.direction != ledgeDirection || moveDirection != ledgeDirection
             || (link.buildJoypadMask() & joypadBitForDirection(ledgeDirection)) == 0) {
-            link.directionalLedgeCollisionCounter = 0;
+            link.linkAirborne.directionalLedgeCollisionCounter = 0;
             return true;
         }
 
         boolean pegasusRunning = link.playerState != null && link.playerState.runningWithPegasusBoots();
-        link.directionalLedgeCollisionCounter++;
-        if (!pegasusRunning && link.directionalLedgeCollisionCounter < 0x0C) {
+        link.linkAirborne.directionalLedgeCollisionCounter++;
+        if (!pegasusRunning && link.linkAirborne.directionalLedgeCollisionCounter < 0x0C) {
             return true;
         }
 
         link.resetPegasusBoots();
-        link.directionalLedgeCollisionCounter = 0;
-        link.directionalLedgeJumpMotionLocked = true;
-        link.directionalLedgeJumpSpeedX = switch (ledgeDirection) {
+        link.linkAirborne.directionalLedgeCollisionCounter = 0;
+        link.linkAirborne.directionalLedgeJumpMotionLocked = true;
+        link.linkAirborne.directionalLedgeJumpSpeedX = switch (ledgeDirection) {
             case Link.DIRECTION_RIGHT -> 0x10;
             case Link.DIRECTION_LEFT -> -0x10;
             default -> 0;
         };
-        link.directionalLedgeJumpSpeedY = switch (ledgeDirection) {
+        link.linkAirborne.directionalLedgeJumpSpeedY = switch (ledgeDirection) {
             case Link.DIRECTION_DOWN -> 0x10;
             case Link.DIRECTION_UP -> -0x10;
             default -> 0;
         };
-        lastRomSpeedX = link.directionalLedgeJumpSpeedX & 0xFF;
-        lastRomSpeedY = link.directionalLedgeJumpSpeedY & 0xFF;
-        link.airborne = true;
-        link.zSubPixels = 0;
-        link.zVelocity = 0x1C;
+        lastRomSpeedX = link.linkAirborne.directionalLedgeJumpSpeedX & 0xFF;
+        lastRomSpeedY = link.linkAirborne.directionalLedgeJumpSpeedY & 0xFF;
+        link.linkAirborne.airborne = true;
+        link.linkAirborne.zSubPixels = 0;
+        link.linkAirborne.zVelocity = 0x1C;
         link.jumpAnimationCounter = 0;
         link.jumpAnimationFrame = 0;
         link.soundSink.play(GameplaySoundEvent.LEDGE_FALL);
@@ -166,8 +166,8 @@ final class LinkMotion {
     }
 
     boolean applyOverworldLedgeCollision(int pointY) {
-        link.directionalLedgeCollisionCounter = 0;
-        if (link.roosterCarryActive || link.overworldLedgeFallActive) {
+        link.linkAirborne.directionalLedgeCollisionCounter = 0;
+        if (link.roosterCarryActive || link.linkAirborne.overworldLedgeFallActive) {
             return true;
         }
         if ((pointY & 0x0F) < 8) {
@@ -179,7 +179,7 @@ final class LinkMotion {
         subY -= 8 << Link.SUB_PIXEL_SHIFT;
         link.linkStateMachine.motionState = 0x02;
         link.linkStateMachine.physicsModifier = 0;
-        link.overworldLedgeFallActive = true;
+        link.linkAirborne.overworldLedgeFallActive = true;
         beginOverworldLedgeUnstuckingMotion();
         link.soundSink.play(GameplaySoundEvent.LEDGE_FALL);
         return true;
@@ -187,18 +187,18 @@ final class LinkMotion {
 
     void beginOverworldLedgeUnstuckingMotion() {
         subY += 16 << Link.SUB_PIXEL_SHIFT;
-        link.zSubPixels += 16 << Link.SUB_PIXEL_SHIFT;
+        link.linkAirborne.zSubPixels += 16 << Link.SUB_PIXEL_SHIFT;
         for (int step = 0; step < 16; step++) {
             subY += 8 << Link.SUB_PIXEL_SHIFT;
-            link.zSubPixels += 8 << Link.SUB_PIXEL_SHIFT;
+            link.linkAirborne.zSubPixels += 8 << Link.SUB_PIXEL_SHIFT;
             if (!ledgeUnstuckingPositionBlocked()) {
                 break;
             }
         }
         link.linkStateMachine.physicsModifier = 1;
         subY -= 3 << Link.SUB_PIXEL_SHIFT;
-        link.airborne = true;
-        link.zVelocity = 0;
+        link.linkAirborne.airborne = true;
+        link.linkAirborne.zVelocity = 0;
         link.jumpAnimationCounter = 0;
         link.jumpAnimationFrame = 0;
     }

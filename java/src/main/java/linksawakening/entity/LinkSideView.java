@@ -25,13 +25,13 @@ final class LinkSideView {
         sideViewGrounded = false;
         sideViewFeatherPending = false;
         link.topDownFeatherStarted = false;
-        link.airborne = false;
-        link.zSubPixels = link.zVelocity = 0;
+        link.linkAirborne.airborne = false;
+        link.linkAirborne.zSubPixels = link.linkAirborne.zVelocity = 0;
     }
 
     void updateSideViewMotion(int platformSpeedY) {
         int mask = link.buildJoypadMask();
-        if (!link.airborne && link.itemsBlockMotion()) return;
+        if (!link.linkAirborne.airborne && link.itemsBlockMotion()) return;
         boolean recoiling = link.linkDamage.collisionIgnoreFramesRemaining > 0;
         boolean ladderFrame = sideViewModifier == 1;
         if (link.linkMotion.forcedSpeedPending) {
@@ -42,21 +42,21 @@ final class LinkSideView {
         if (recoiling) {
             link.linkDamage.collisionIgnoreFramesRemaining--;
         } else if (sideViewModifier == 1) {
-            link.airborne = false;
+            link.linkAirborne.airborne = false;
             sideViewSpeedX = (mask & 3) == 1 ? 8 : (mask & 3) == 2 ? -8 : 0;
             sideViewSpeedY = (mask & 12) == 4 ? -16 : (mask & 12) == 8 ? 16 : 0;
             link.direction = Link.DIRECTION_UP;
         } else {
             int targetX = (mask & 3) == 1 ? 16 : (mask & 3) == 2 ? -16 : 0;
             if (sideViewGrounded || standingOnSideViewEntity) {
-                if (link.airborne) {
+                if (link.linkAirborne.airborne) {
                     link.soundSink.play(GameplaySoundEvent.LINK_FOOTSTEP);
                     if (link.playerState != null) link.playerState.setRunningWithPegasusBoots(false);
                 }
-                link.airborne = false;
+                link.linkAirborne.airborne = false;
                 sideViewSpeedX = targetX;
             } else {
-                link.airborne = true;
+                link.linkAirborne.airborne = true;
                 if ((mask & 3) != 0) sideViewSpeedX += Integer.compare(targetX, sideViewSpeedX);
             }
             if ((mask & 3) != 0 && !link.itemsLockFacing())
@@ -87,20 +87,20 @@ final class LinkSideView {
         }
         if (sideViewFeatherPending) {
             sideViewFeatherPending = false;
-            link.airborne = true;
+            link.linkAirborne.airborne = true;
             sideViewSpeedY = (mask & 3) == 0 ? -22 : -24;
             sideViewGrounded = false;
             moveSideViewAndCollide(sideViewSpeedX, sideViewSpeedY, mask);
             link.jumpAnimationCounter = link.jumpAnimationFrame = 0;
             link.soundSink.play(GameplaySoundEvent.ROC_FEATHER_JUMP);
         }
-        link.zSubPixels = link.zVelocity = 0;
+        link.linkAirborne.zSubPixels = link.linkAirborne.zVelocity = 0;
         link.linkMotion.lastRomSpeedX = sideViewSpeedX & 255;
         link.linkMotion.lastRomSpeedY = sideViewSpeedY & 255;
         link.movingThisFrame = link.linkMotion.subX != oldX || link.linkMotion.subY != oldY;
         if (link.movingThisFrame) link.tickAnimation();
         else link.walkTickCounter = link.walkFrame = 0;
-        // Side-view falling uses the normal link.airborne pose, not a Z-axis flip.
+        // Side-view falling uses the normal link.linkAirborne.airborne pose, not a Z-axis flip.
         link.jumpAnimationFrame = 3;
     }
 

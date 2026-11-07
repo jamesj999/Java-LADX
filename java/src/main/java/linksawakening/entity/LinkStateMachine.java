@@ -39,23 +39,23 @@ final class LinkStateMachine {
             link.swordAcquisitionBaseRomDirection = -1;
             link.swordAcquisitionAnimationState = -1;
         }
-        if (interactiveMotionBlocked && !(link.linkSideView.sideScrolling && link.airborne)) {
-            link.zVelocity = 0;
+        if (interactiveMotionBlocked && !(link.linkSideView.sideScrolling && link.linkAirborne.airborne)) {
+            link.linkAirborne.zVelocity = 0;
             link.movingThisFrame = false;
             link.walkTickCounter = 0;
             link.walkFrame = 0;
             return;
         }
 
-        // 6A94's side-view landing branch clears Link's link.airborne presentation
+        // 6A94's side-view landing branch clears Link's link.linkAirborne.airborne presentation
         // before the next normal motion update. Main keeps wC147 set through
         // this update and clears it only before the following entity tick.
         if (link.linkSideView.standingOnSideViewEntity && !link.linkSideView.sideScrolling) {
-            link.airborne = false;
-            link.zSubPixels = 0;
-            link.zVelocity = 0;
-            link.fallingIntoPit = false;
-            link.groundStatus = Link.GROUND_STATUS_NORMAL;
+            link.linkAirborne.airborne = false;
+            link.linkAirborne.zSubPixels = 0;
+            link.linkAirborne.zVelocity = 0;
+            link.linkAirborne.fallingIntoPit = false;
+            link.linkAirborne.groundStatus = Link.GROUND_STATUS_NORMAL;
         }
 
         if (link.debugNoClip) {
@@ -71,22 +71,22 @@ final class LinkStateMachine {
         if (link.likeLikeCaptured && link.likeLikeCapturePinsPosition) {
             link.linkMotion.subX = link.likeLikeCaptureSubX;
             link.linkMotion.subY = link.likeLikeCaptureSubY;
-            link.airborne = false;
-            link.zSubPixels = 0;
-            link.zVelocity = 0;
+            link.linkAirborne.airborne = false;
+            link.linkAirborne.zSubPixels = 0;
+            link.linkAirborne.zVelocity = 0;
             link.movingThisFrame = false;
             return;
         }
 
-        if (link.fallingIntoPit) {
-            link.tickPitFall();
+        if (link.linkAirborne.fallingIntoPit) {
+            link.linkAirborne.tickPitFall();
             return;
         }
 
-        if (link.overworldLedgeFallActive) {
+        if (link.linkAirborne.overworldLedgeFallActive) {
             link.linkMotion.lastRomSpeedY = 0xFF;
             link.linkMotion.subY--;
-            link.tickJump();
+            link.linkAirborne.tickJump();
             return;
         }
 
@@ -102,31 +102,31 @@ final class LinkStateMachine {
 
         if (link.linkDamage.hasRecoil()) {
             link.linkDamage.tickRecoil();
-            link.tickJump();
+            link.linkAirborne.tickJump();
             return;
         }
 
         int mask = link.buildJoypadMask();
         int newDirection = Link.JOYPAD_TO_DIRECTION[mask];
-        // $02:4406 skips facing selection while link.airborne; the Feather
+        // $02:4406 skips facing selection while link.linkAirborne.airborne; the Feather
         // launch still follows this frame's ordinary ground movement.
-        if (newDirection != -1 && (!link.airborne || featherLaunchFrame)
+        if (newDirection != -1 && (!link.linkAirborne.airborne || featherLaunchFrame)
             && !link.marinBedJumpMotionLocked
-            && !link.directionalLedgeJumpMotionLocked
+            && !link.linkAirborne.directionalLedgeJumpMotionLocked
             && !link.itemsLockFacing(true) && !link.isLiftTransitionBlockingMotion()) {
             link.direction = newDirection;
         }
         updatePegasusBootsUse();
-        if (!link.airborne && link.groundStatus != Link.GROUND_STATUS_PIT) {
-            link.refreshGroundStatus();
-            link.updateLastSafePositionIfPossible();
+        if (!link.linkAirborne.airborne && link.linkAirborne.groundStatus != Link.GROUND_STATUS_PIT) {
+            link.linkAirborne.refreshGroundStatus();
+            link.linkAirborne.updateLastSafePositionIfPossible();
         }
 
-        if (link.groundStatus == Link.GROUND_STATUS_PIT) {
+        if (link.linkAirborne.groundStatus == Link.GROUND_STATUS_PIT) {
             link.movingThisFrame = false;
             link.walkTickCounter = 0;
             link.walkFrame = 0;
-            link.slipTowardPitCenter();
+            link.linkAirborne.slipTowardPitCenter();
             return;
         }
 
@@ -136,22 +136,22 @@ final class LinkStateMachine {
         // ROM still refreshes hLinkDirection from held single-axis input before
         // this early-out path, so link.direction update must happen above.
         // $02:43C3 bypasses the item motion gate while Link is above ground.
-        if (link.itemsBlockMotion(true) && !link.airborne) {
+        if (link.itemsBlockMotion(true) && !link.linkAirborne.airborne) {
             link.movingThisFrame = false;
             link.walkTickCounter = 0;
             link.walkFrame = 0;
             if (link.linkDamage.collisionIgnoreFramesRemaining > 0) {
                 link.linkDamage.collisionIgnoreFramesRemaining--;
             }
-            link.tickJump();
+            link.linkAirborne.tickJump();
             return;
         }
 
         int speedX;
         int speedY;
-        if (link.directionalLedgeJumpMotionLocked) {
-            speedX = link.directionalLedgeJumpSpeedX;
-            speedY = link.directionalLedgeJumpSpeedY;
+        if (link.linkAirborne.directionalLedgeJumpMotionLocked) {
+            speedX = link.linkAirborne.directionalLedgeJumpSpeedX;
+            speedY = link.linkAirborne.directionalLedgeJumpSpeedY;
         } else if (link.marinBedJumpMotionLocked) {
             speedX = 0x0C;
             speedY = 0;
@@ -164,8 +164,8 @@ final class LinkStateMachine {
                 ? (byte) link.romTables.linkSpeedY(mask) : link.linkMotion.forcedSpeedY;
             link.linkMotion.forcedSpeedPending = false;
             link.linkMotion.forcedSpeedXOnly = false;
-        } else if (link.airborne && !featherLaunchFrame) {
-            // $02:4402 skips the ground speed lookup while link.airborne.
+        } else if (link.linkAirborne.airborne && !featherLaunchFrame) {
+            // $02:4402 skips the ground speed lookup while link.linkAirborne.airborne.
             // ApplyLinkGroundMotion steers these retained speeds after XY.
             speedX = carriedSpeedX;
             speedY = carriedSpeedY;
@@ -185,18 +185,18 @@ final class LinkStateMachine {
             link.romAnimationStateOverride = LinkAnimator.ANIMATION_STATE[link.direction][link.movingThisFrame ? 1 : 0];
             // ApplyGotItem caches wC145 before this frame changes Z.
             link.bedJumpRenderZ = link.zPixels();
-            link.tickJump();
+            link.linkAirborne.tickJump();
         }
         link.linkMotion.lastRomSpeedX = speedX & 0xFF;
         link.linkMotion.lastRomSpeedY = speedY & 0xFF;
         link.movingThisFrame = (speedX != 0 || speedY != 0);
         boolean applyGroundMotion = link.gelClinging
-            ? (link.gelMotionFrame & 3) == 0 : link.airborne || link.shouldApplyGroundMotion();
+            ? (link.gelMotionFrame & 3) == 0 : link.linkAirborne.airborne || link.shouldApplyGroundMotion();
 
-        if (applyGroundMotion && speedX != 0 && (!bedJumpFrame || link.airborne)) {
+        if (applyGroundMotion && speedX != 0 && (!bedJumpFrame || link.linkAirborne.airborne)) {
             link.linkMotion.tryMoveAxis(speedX, true);
         }
-        if (applyGroundMotion && speedY != 0 && (!bedJumpFrame || link.airborne)) {
+        if (applyGroundMotion && speedY != 0 && (!bedJumpFrame || link.linkAirborne.airborne)) {
             link.linkMotion.tryMoveAxis(speedY, false);
         }
 
@@ -204,12 +204,12 @@ final class LinkStateMachine {
             link.linkDamage.collisionIgnoreFramesRemaining--;
         }
 
-        if (!bedJumpFrame) link.tickJump();
+        if (!bedJumpFrame) link.linkAirborne.tickJump();
         handlePegasusBootsCollision();
 
-        if (!link.airborne) {
+        if (!link.linkAirborne.airborne) {
             if (!link.linkSwimming.enterSwimmingIfNeeded()) {
-                link.updateLastSafePositionIfPossible();
+                link.linkAirborne.updateLastSafePositionIfPossible();
             }
         }
 
@@ -284,8 +284,8 @@ final class LinkStateMachine {
             return;
         }
         if (link.playerState.runningWithPegasusBoots()
-            || romInteractiveMotionBlocked || link.airborne
-            || link.zPixels() != 0 || link.groundStatus == Link.GROUND_STATUS_PIT
+            || romInteractiveMotionBlocked || link.linkAirborne.airborne
+            || link.zPixels() != 0 || link.linkAirborne.groundStatus == Link.GROUND_STATUS_PIT
             || link.isCarryingLiftedObject() || motionState == Link.LINK_MOTION_SWIMMING) {
             return;
         }
@@ -335,9 +335,9 @@ final class LinkStateMachine {
         link.linkMotion.forcedSpeedPending = true;
         link.linkMotion.lastRomSpeedX = reflectedSpeedX & 0xFF;
         link.linkMotion.lastRomSpeedY = reflectedSpeedY & 0xFF;
-        link.airborne = true;
-        link.zSubPixels = 0;
-        link.zVelocity = Link.PEGASUS_BOOTS_COLLISION_VELOCITY_Z;
+        link.linkAirborne.airborne = true;
+        link.linkAirborne.zSubPixels = 0;
+        link.linkAirborne.zVelocity = Link.PEGASUS_BOOTS_COLLISION_VELOCITY_Z;
 
         int romDirection = link.romDirectionForJavaDirection(link.direction);
         int[] xOffsets = {0x10, 0xF0, 0x08, 0x08};

@@ -1,21 +1,5 @@
 package linksawakening.entity;
 
-import linksawakening.equipment.EquippedItem;
-import linksawakening.equipment.ItemRegistry;
-import linksawakening.equipment.RocsFeather;
-import linksawakening.gameplay.GameplaySoundEvent;
-import linksawakening.gameplay.GameplaySoundSink;
-import linksawakening.gpu.Framebuffer;
-import linksawakening.gpu.Tile;
-import linksawakening.input.InputConfig;
-import linksawakening.input.InputState;
-import linksawakening.physics.OverworldCollision;
-import linksawakening.physics.PhysicsFlags;
-import linksawakening.rom.RomTables;
-import linksawakening.state.PlayerState;
-import java.util.Objects;
-import java.util.function.BooleanSupplier;
-import static linksawakening.entity.Link.*;
 
 /** ROM-faithful swimming collaborator for Link. */
 final class LinkSwimming {
@@ -37,9 +21,9 @@ final class LinkSwimming {
         link.linkStateMachine.physicsModifier = 0;
         swimmingFastCountdown = 0;
         divingCountdown = 0;
-        link.airborne = false;
-        link.zSubPixels = 0;
-        link.zVelocity = 0;
+        link.linkAirborne.airborne = false;
+        link.linkAirborne.zSubPixels = 0;
+        link.linkAirborne.zVelocity = 0;
         swimmingSpeedX = link.romTables.swimmingEntrySpeedX(link.romDirectionForJavaDirection(link.direction));
         swimmingSpeedY = link.romTables.swimmingEntrySpeedY(link.romDirectionForJavaDirection(link.direction));
         link.linkMotion.lastRomSpeedX = swimmingSpeedX & 0xFF;
