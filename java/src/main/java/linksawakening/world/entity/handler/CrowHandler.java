@@ -16,8 +16,8 @@ final class CrowHandler {
             type,
             EntityTickStage.PHASE_1_CROW,
             state -> {
-              if (state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()] >= 0x10) {
-                state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()] >>>= 2;
+              if (state.slot().ignoreHits(state.entity.slot()) >= 0x10) {
+                state.slot().shiftIgnoreHitsRight(state.entity.slot(), 2);
               }
               return true;
             });

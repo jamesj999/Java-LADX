@@ -35,7 +35,7 @@ final class MaskedMimicGoriyaHandler {
                     state.link().linkPressedButtonsMask(),
                     state.romCollisionType,
                     maskedMimicBackgroundInteraction,
-                    state.runtime.enemyIgnoreHitsCountdown[slot],
+                    state.slot().ignoreHits(slot),
                     state.frame);
             state.updated = maskedMimicUpdate.entity();
             state.runtime.entityOptions1Override[slot] = maskedMimicUpdate.options1();

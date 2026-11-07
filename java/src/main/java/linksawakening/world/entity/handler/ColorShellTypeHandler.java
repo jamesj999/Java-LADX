@@ -60,12 +60,11 @@ final class ColorShellTypeHandler {
                         state.linkEntityY,
                         state.randomByteSupplier,
                         state.backgroundCollision,
-                        state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()],
+                        state.slot().ignoreHits(state.entity.slot()),
                         state.runtime.colorShellWorld,
                         Arrays.asList(state.runtime.slots));
                 state.updated = shellUpdate.entity();
-                state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()] =
-                    shellUpdate.nextIgnoreHitsCountdown();
+                state.slot().setIgnoreHits(state.entity.slot(), shellUpdate.nextIgnoreHitsCountdown());
                 if (shellUpdate.unloadRequested()) {
                   state.runtime.pendingClearedEntityMask |= persistentClearMask(state.entity);
                   state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());

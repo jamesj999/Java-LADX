@@ -33,7 +33,7 @@ final class BlooperHandler {
                     state.entity,
                     state.frame,
                     blooperBackgroundInteraction,
-                    state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()]);
+                    state.slot().ignoreHits(state.entity.slot()));
             RoomEntityGroundInteraction.Result groundResult =
                 Objects.requireNonNull(
                     state.runtime.groundInteraction.apply(

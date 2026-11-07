@@ -47,8 +47,8 @@ final class BowWowHandler {
             if (!state.bowWowHandlerInteractive) {
               return false;
             }
-            if (state.runtime.enemyIgnoreHitsCountdown[slot] != 0) {
-              state.runtime.enemyIgnoreHitsCountdown[slot]--;
+            if (state.slot().ignoreHits(slot) != 0) {
+              state.slot().decrementIgnoreHits(slot);
             }
           }
           return true;

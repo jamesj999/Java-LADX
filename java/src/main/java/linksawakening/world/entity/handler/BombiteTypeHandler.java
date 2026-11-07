@@ -43,7 +43,7 @@ final class BombiteTypeHandler {
                         state.slot().transitionCountdown(state.entity.slot()),
                         state.runtime.slowTransitionCountdown[state.entity.slot()],
                         state.runtime.bombPrivateCountdown1[state.entity.slot()],
-                        state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()],
+                        state.slot().ignoreHits(state.entity.slot()),
                         state.link().runningWithPegasusBoots(),
                         state.randomByteSupplier,
                         state.backgroundCollision);
@@ -80,7 +80,7 @@ final class BombiteTypeHandler {
                           0,
                           state.runtime.BOMBITE_EXPLOSION_COUNTDOWN);
                   if (bombSlot >= 0) {
-                    state.runtime.enemyIgnoreHitsCountdown[bombSlot] = 0x01;
+                    state.slot().setIgnoreHits(bombSlot, 0x01);
                     state.emit(
                         new EntityCombatEvent(
                             bombSlot,

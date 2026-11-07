@@ -35,7 +35,7 @@ final class HidingZolHandler {
             if (hidingZolUpdate.clearsIgnoreHitsCountdown()) {
               // func_007_73F7 temporarily writes $03 around the
               // background helper, then clears the shared byte.
-              state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()] = 0;
+              state.slot().setIgnoreHits(state.entity.slot(), 0);
             }
             if (hidingZolUpdate.jumpJingle()) {
               state.emit(

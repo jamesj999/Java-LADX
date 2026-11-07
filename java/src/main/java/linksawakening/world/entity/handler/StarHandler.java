@@ -29,7 +29,7 @@ final class StarHandler {
                     state.frame,
                     state.randomByteSupplier,
                     starBackgroundInteraction,
-                    state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()]);
+                    state.slot().ignoreHits(state.entity.slot()));
             state.preserveStarPresentation = true;
           }
           return true;

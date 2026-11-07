@@ -24,7 +24,7 @@ final class ThreeOfAKindHandler {
                     state.entity,
                     state.frame,
                     state.slot().transitionCountdown(state.entity.slot()),
-                    state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()],
+                    state.slot().ignoreHits(state.entity.slot()),
                     state.randomByteSupplier,
                     state.backgroundCollision);
             state.updated = cardUpdate.entity();

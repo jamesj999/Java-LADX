@@ -24,7 +24,7 @@ final class MiniMoldormHandler {
             // RenderMiniMoldorm records the history before the bank-$04
             // recoil helper runs, so keep this ordering explicit.
             state.runtime.miniMoldormMotion.beginFrame(
-                state.entity, state.runtime.enemyIgnoreHitsCountdown[slot] != 0);
+                state.entity, state.slot().ignoreHits(slot) != 0);
             EnemyRecoilMotion.Update recoil =
                 state.runtime.backgroundMechanics.applyEnemyRecoilIfNeeded(
                     state.entity, state.backgroundCollision);
@@ -47,7 +47,7 @@ final class MiniMoldormHandler {
                 state.runtime.miniMoldormMotion.advanceAfterHistory(
                     state.entity,
                     transitionForMotion,
-                    state.runtime.enemyIgnoreHitsCountdown[slot],
+                    state.slot().ignoreHits(slot),
                     state.runtime.enemyFlashCountdown[slot],
                     miniBackgroundInteraction,
                     state.randomByteSupplier,

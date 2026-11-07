@@ -28,7 +28,7 @@ final class RoamingEnemyTypeHandler {
                           state.randomByteSupplier,
                           state.runtime.backgroundInteraction,
                           state.backgroundCollision,
-                          state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()],
+                          state.slot().ignoreHits(state.entity.slot()),
                           state.frame);
                   state.updated = unmaskedUpdate.entity();
                   state.slot().setTransitionCountdown(state.entity.slot(), unmaskedUpdate.transitionCountdown());
@@ -48,7 +48,7 @@ final class RoamingEnemyTypeHandler {
                               state.linkEntityY,
                               state.randomByteSupplier,
                               state.runtime.backgroundInteraction,
-                              state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()],
+                              state.slot().ignoreHits(state.entity.slot()),
                               state.frame,
                               state.creditsGameplay);
                   state.updated = roamingUpdate.entity();

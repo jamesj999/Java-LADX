@@ -112,7 +112,7 @@ final class MoldormHandler {
                     state.entity,
                     state.frame,
                     transitionForMotion,
-                    state.runtime.enemyIgnoreHitsCountdown[slot],
+                    state.slot().ignoreHits(slot),
                     state.runtime.enemyFlashCountdown[slot],
                     state.runtime.enemyHealth[slot],
                     state.randomByteSupplier,

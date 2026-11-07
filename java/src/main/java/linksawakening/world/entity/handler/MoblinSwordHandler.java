@@ -51,7 +51,7 @@ final class MoblinSwordHandler {
                     state.linkEntityX,
                     state.linkEntityY,
                     swordBackgroundInteraction,
-                    state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()],
+                    state.slot().ignoreHits(state.entity.slot()),
                     state.runtime.swordMoblinAlertingSoundCounter,
                     state.runtime.entityMapId,
                     state.runtime.transitionSequenceCounter,

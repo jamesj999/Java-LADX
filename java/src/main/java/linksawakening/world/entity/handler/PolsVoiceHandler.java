@@ -49,7 +49,7 @@ final class PolsVoiceHandler {
             // $01, then clears it with B (zero) before the default enemy
             // collision pass. The shared Java movement probe is the
             // handler's background-interaction seam, so bracket it here.
-            state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()] = 0x01;
+            state.slot().setIgnoreHits(state.entity.slot(), 0x01);
             try {
               PolsVoiceMotion.Update polsVoiceUpdate =
                   state.runtime.polsVoiceMotion.advance(
@@ -62,7 +62,7 @@ final class PolsVoiceHandler {
               state.updated = polsVoiceUpdate.entity();
               state.slot().setTransitionCountdown(state.entity.slot(), polsVoiceUpdate.transitionCountdown());
             } finally {
-              state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()] = 0;
+              state.slot().setIgnoreHits(state.entity.slot(), 0);
             }
             state.preservePolsVoicePresentation = true;
           }

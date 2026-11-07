@@ -28,7 +28,7 @@ final class WingedOctorokHandler {
                     state.randomByteSupplier,
                     state.backgroundCollision,
                     state.slot().transitionCountdown(state.entity.slot()),
-                    state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()],
+                    state.slot().ignoreHits(state.entity.slot()),
                     state.link().actionButtonAHeld(),
                     state.link().actionButtonBHeld(),
                     state.link().linkItemA(),

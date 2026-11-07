@@ -52,7 +52,7 @@ final class ZombieHandler {
                     state.randomByteSupplier,
                     state.runtime.objectQuery,
                     zombieBackgroundInteraction,
-                    state.runtime.enemyIgnoreHitsCountdown[slot]);
+                    state.slot().ignoreHits(slot));
             state.updated = zombieUpdate.entity();
             state.slot().setTransitionCountdown(slot, zombieUpdate.transitionCountdown());
             state.runtime.enemyPhysicsFlags[slot] = zombieUpdate.physicsFlags();

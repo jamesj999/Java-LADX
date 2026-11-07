@@ -45,7 +45,7 @@ final class RollingBonesBarHandler {
                 if (!state.handlerInteractive || state.countdownBlocksInteraction) return false;
                 if (state.entity.type() == state.runtime.ENTITY_ROLLING_BONES
                     && !state.rollingBonesHitThisFrame
-                    && state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()] != 0) {
+                    && state.slot().ignoreHits(state.entity.slot()) != 0) {
                   // ApplyRecoilIfNeeded_06 pops the handler return address:
                   // no jump physics or AI movement occurs during recoil.
                   state.replaceEntity(state

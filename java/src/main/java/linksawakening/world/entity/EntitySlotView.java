@@ -8,4 +8,10 @@ public final class EntitySlotView {
   public void setTransitionCountdown(int slot, int value) {
     state.enemyTransitionCountdown[slot] = value;
   }
+  public int ignoreHits(int slot) { return state.enemyIgnoreHitsCountdown[slot]; }
+  public void setIgnoreHits(int slot, int value) { state.enemyIgnoreHitsCountdown[slot] = value; }
+  public void decrementIgnoreHits(int slot) { state.enemyIgnoreHitsCountdown[slot]--; }
+  public void shiftIgnoreHitsRight(int slot, int distance) {
+    state.enemyIgnoreHitsCountdown[slot] >>>= distance;
+  }
 }

@@ -33,7 +33,7 @@ final class ArmosStatueHandler {
                     state.randomByteSupplier,
                     state.handlerLinkCollisionEnabled,
                     armosBackgroundInteraction,
-                    state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()]);
+                    state.slot().ignoreHits(state.entity.slot()));
             state.updated = armosUpdate.entity();
             if (armosUpdate.linkFinalPositionCopyRequested()
                 && state.projectileLinkState.motionState()
@@ -50,7 +50,7 @@ final class ArmosStatueHandler {
               // State 1 clears the harmless physics bit and enables the
               // normal hitbox/sword path for state 2.
               state.runtime.enemyPhysicsFlags[state.entity.slot()] &= 0x7F;
-              state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()] = 0;
+              state.slot().setIgnoreHits(state.entity.slot(), 0);
             }
           }
           return true;

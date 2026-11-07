@@ -137,7 +137,7 @@ final class HookshotChainHandler {
                       hookshotState.direction(),
                       nextPosition.x(),
                       nextPosition.y(),
-                      state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()],
+                      state.slot().ignoreHits(state.entity.slot()),
                       state.frame);
               blocked = collisionResult.blocked();
             } else {

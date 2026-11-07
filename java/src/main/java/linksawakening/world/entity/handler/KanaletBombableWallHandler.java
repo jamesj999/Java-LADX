@@ -18,7 +18,7 @@ final class KanaletBombableWallHandler {
             }
             state.runtime.droppedItemBySlot[state.entity.slot()] =
                 state.runtime.ENTITY_HIDING_SLIME_KEY;
-            if (state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()] != 0) {
+            if (state.slot().ignoreHits(state.entity.slot()) != 0) {
               if (state.enemySpawns().spawnKanaletWallMoblin(state.entity)) {
                 state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
                 return false;

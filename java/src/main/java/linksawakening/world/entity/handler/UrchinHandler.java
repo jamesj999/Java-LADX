@@ -48,7 +48,7 @@ final class UrchinHandler {
             if (urchinUpdate.pushed()) {
               // UrchinEntityHandler writes $03 for its background probe,
               // then clears wEntitiesIgnoreHitsCountdown immediately.
-              state.runtime.enemyIgnoreHitsCountdown[slot] = 0;
+              state.slot().setIgnoreHits(slot, 0);
             }
             state.applyGenericGroundInteraction = urchinUpdate.appliesBackgroundInteraction();
             if (urchinUpdate.linkCollision()) {

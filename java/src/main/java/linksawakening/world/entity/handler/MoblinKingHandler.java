@@ -46,7 +46,7 @@ final class MoblinKingHandler {
               // ApplyRecoilIfNeeded_15 pops the handler return address:
               // movement/Z physics and AI wait until the recoil ends.
               if (state.runtime.enemyRecoilMotion.isActive(state.entity.slot())
-                  && state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()] != 0) {
+                  && state.slot().ignoreHits(state.entity.slot()) != 0) {
                 state.replaceEntity(state
                         .runtime
                         .backgroundMechanics

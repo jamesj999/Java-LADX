@@ -30,7 +30,7 @@ final class MimicHandler {
                     state.link().linkPressedButtonsMask(),
                     state.romCollisionType,
                     mimicBackgroundInteraction,
-                    state.runtime.enemyIgnoreHitsCountdown[slot],
+                    state.slot().ignoreHits(slot),
                     state.frame);
             state.updated = mimicUpdate.entity();
             state.preserveMimicPresentation = true;
