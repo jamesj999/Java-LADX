@@ -55,6 +55,12 @@ public final class InputState {
         return released[key];
     }
 
+    /** Discard held keys and edges when entering/leaving a modal debug UI. */
+    public void clear() {
+        java.util.Arrays.fill(down, false);
+        tickEdges();
+    }
+
     /** Clear consumed edges while retaining held state for the next frame. */
     public void tickEdges() {
         java.util.Arrays.fill(pressed, false);

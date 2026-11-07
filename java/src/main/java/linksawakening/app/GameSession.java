@@ -101,6 +101,8 @@ public class GameSession {
     private final TransitionController transitionController = new TransitionController();
     private RoomTransitionCoordinator roomTransitionCoordinator;
 
+    private linksawakening.app.debug.DebugMenu debugMenu;
+    private linksawakening.app.debug.DebugMenuOverlay debugMenuOverlay;
     private boolean running = true;
     private boolean debugNoClip;
     private int frameCounter;
@@ -176,14 +178,14 @@ public class GameSession {
             router().startTitleScreenWithoutIntro();
         }
 
-        host.open((key, action) -> inputRouter().onKeyEvent(key, action));
+        host.open(this::onKeyEvent);
 
         long nextFrameNs = System.nanoTime();
 
         while (!host.shouldClose() && running) {
             host.pollEvents();
             update();
-            renderer().composeFrameBuffer();
+            composeFrameBuffer();
             host.present(indexedDisplayBuffer);
 
             nextFrameNs += FRAME_DURATION_NS;
@@ -222,11 +224,54 @@ public class GameSession {
 
     public byte[] headlessFrame() {
         update();
-        renderer().composeFrameBuffer();
+        composeFrameBuffer();
         return indexedDisplayBuffer.clone();
     }
 
+    private void composeFrameBuffer() {
+        renderer().composeFrameBuffer();
+        if (debugMenu != null && debugMenu.isOpen()) {
+            if (debugMenuOverlay == null) debugMenuOverlay = new linksawakening.app.debug.DebugMenuOverlay();
+            debugMenuOverlay.render(debugMenu, indexedDisplayBuffer);
+        }
+    }
+
+    void onKeyEvent(int key, int action) {
+        if (debugMenu != null && debugMenu.isOpen()) {
+            debugMenu.key(key, action);
+            inputState.clear();
+            return;
+        }
+        if (currentAppConfig().debugEnabled()
+            && linksawakening.app.debug.DebugMenu.isToggle(key, action)) {
+            if (currentScreen == gameplayScreen && inputRouter().canPresentFileSave()
+                && !roomSession.tailCaveKeyholeSequenceActive()) {
+                if (debugMenu == null) debugMenu = new linksawakening.app.debug.DebugMenu(
+                    playerState, roomSession, this::debugTeleport);
+                debugMenu.open(roomSession.mapCategory(), roomSession.mapId(),
+                    roomSession.currentRoomId(), link.pixelX(), link.pixelY());
+                inputState.clear();
+            }
+            return;
+        }
+        inputRouter().onKeyEvent(key, action);
+    }
+
+    private void debugTeleport(linksawakening.world.transition.Warp destination) {
+        roomSession.loadWarpDestination(destination);
+        newGameWakeUpMotion = null;
+        newGameTarinShieldMotion = null;
+        link.resetTransientStateForDebug();
+        link.setDebugNoClip(debugNoClip);
+        link.setSideScrolling(destination.category() == linksawakening.world.transition.Warp.CATEGORY_SIDESCROLL);
+        link.setRoomEntryPixelPosition(destination.javaPixelX(), destination.javaPixelY());
+        transientVfxSystem.clear();
+        droppableRupeeSystem.clear();
+        inputState.clear();
+    }
+
     private void update() {
+        if (debugMenu != null && debugMenu.isOpen()) return;
         frameCounter = (frameCounter + 1) & 0xFF;
         // The engine's frame boundary uses scanline zero for non-entity draws.
         random.beginFrame(frameCounter, 0);

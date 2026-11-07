@@ -32,3 +32,76 @@ Install Python dependencies with python3 -m pip install -r tools/requirements.tx
 Run the relevant compare.py --help (opening also has capture.py) for local
 capture and comparison options. These tools require your own ROM and may
 generate screenshots and reference data: never publish extracted assets.
+
+## Debug menu
+
+Set `"debugEnabled": true` in `java/src/main/resources/config/config.json`
+and restart the game. Press **F4 during gameplay** to open the paused debug
+menu. Set it to `false` to disable the menu and the existing F1/F2/F3 shortcuts.
+Finish any dialog, inventory animation, room transition or keyhole sequence
+before opening it. From the title/intro, F2 starts the existing standalone
+all-items debug session; F4 itself preserves the current game and save slot.
+
+- **Tab / Page Down / Page Up:** change page.
+- **Up / Down:** select an entry (long pages scroll automatically).
+- **Left / Right:** decrease/increase; hold **Shift** for steps of 16.
+- **Home / End:** minimum/maximum value, including `FF` for Color Dungeon.
+- **Enter on Teleport:** load the selected destination; remain paused for edits.
+- **F4 / Escape:** close and resume. Escape here does not quit the game.
+
+The Teleport page accepts an overworld, indoor or side-view category, hexadecimal
+map and room IDs, and decimal pixel X/Y for Link's **top-left sprite origin**
+within a room (0–144, 0–112). Overworld room IDs are row/column packed: `92`
+is row 9, column 2 on the 16×16 map. The map field is ignored for overworld.
+Indoor room IDs address the ROM room table; they are not dungeon minimap cells.
+Use matching map/room/category values from the disassembly's room warp records.
+The menu uses normal ROM room loading and does not force solid tiles walkable;
+F3 toggles the existing no-clip mode after closing the menu.
+
+Useful map IDs: `00` Tail Cave, `01` Bottle Grotto, `02` Key Cavern,
+`03` Angler's Tunnel, `04` Catfish's Maw, `05` Face Shrine, `06` Eagle's Tower,
+`07` Turtle Rock, `08` Wind Fish's Egg, `10` houses, `FF` Color Dungeon.
+Color Dungeon rooms are `00`–`15`. For example, indoor map `00`, room `17`,
+X `72`, Y `96` places Link in the Tail Cave entrance room. Teleporting resets
+Link's transient movement and room effects and preserves collected progress.
+It does not reproduce story events leading up to that destination.
+
+Inventory edits the A/B slots and all ten backpack slots; select **Empty** to
+remove an item or select any of the thirteen inventory item IDs to give it.
+The ROM has twelve total slots, so swap items when experimenting with a full
+loadout. Sword, shield and bracelet levels are separate entries: set a nonzero
+level as well as assigning the item. Resources edits rupees, heart containers,
+health in eighth-hearts, heart pieces, ammunition/capacities and seashells.
+Health and ammunition remain limited by their current capacities; raise the
+capacity first. Home/End provides quick empty/refill operations.
+
+Quest includes flippers, toadstool, medicine, keys, trade items, songs, tunic
+and modeled story flags. `Leaves/key` values 0–5 count golden leaves; 6 means
+the Slime Key. Song bits are 1=Frog, 2=Mambo, 4=Ballad (7=all); tunics are
+0=green, 1=red, 2=blue. Dungeons edits each dungeon's map, compass, stone beak,
+Nightmare Key and small keys, plus the eight instrument flags
+(0=none, bit 0=miniboss defeated, bit 1=instrument collected; 3=both).
+These are development controls over state the engine currently models;
+they do not implement missing item behavior or guarantee every later room is
+playable. Re-enter a room to refresh entities affected by progression edits.
+
+The overlay uses an engine-authored bitmap font directly in the RGBA framebuffer.
+It must not use AWT/Java2D or Swing: initializing another native UI toolkit
+inside the GLFW process can stop macOS keyboard and close events. Headless
+checks alone do not exercise that native event-loop interaction.
+
+Edits apply immediately in memory. They are written only through the normal
+save action if playing a save slot; a standalone F2 debug session has no save
+slot. Closing the menu does not undo edits or automatically save them.
+
+Debug-menu verification (2026-11-07): the ROM-free suite passed (953 tests).
+ROM-backed menu tests cover pausing, input isolation, configuration gating,
+inventory/resource writes and overworld/indoor/side-view/Color Dungeon loads.
+The full suite passed 2,473 of 2,474 tests. The opening replay
+`tools/opening/tail-cave-warp-route.tsv` (SHA-256
+`79c179a1bce0e23d63c84238a6da404b9ddc8f2786b8751550873dcfffb4bf80`)
+blocked at `down+a*+b y=88 4`, map `00`, room `42`, ROM position `(140,64)`,
+frame counter 118, health 4, powder 19, before clearing the forest. Re-running
+with the original `GameSession` reproduced the identical failure/state.
+No new emulator pixel comparison was performed: these checks verify debug
+controls and bounded room loading, not later-game parity.

@@ -144,6 +144,9 @@ public final class RoomSession extends RoomSessionRules {
     public void initializeNewGameWorldState() { context.roomStoryState.initializeNewGameWorldState(); }
     /** Restores the room-status WRAM tables loaded by the source save path. */
     public void restoreRoomStatuses(byte[] overworldStatus, byte[] indoorAStatus, byte[] indoorBStatus, byte[] colorDungeonStatus) { context.roomStoryState.restoreRoomStatuses(overworldStatus, indoorAStatus, indoorBStatus, colorDungeonStatus); }
+    public void setDungeonItemForDebug(int mapId, int index, int value) {
+        context.roomState.dungeonItemState.setFlagForDebug(mapId, index, value);
+    }
     public byte[] dungeonItemFlagsSnapshot() { return context.roomSessionViews.dungeonItemFlagsSnapshot(); }
     public byte[] colorDungeonItemFlagsSnapshot() { return context.roomSessionViews.colorDungeonItemFlagsSnapshot(); }
     public byte[] currentDungeonItemFlagsSnapshot() { return context.roomSessionViews.currentDungeonItemFlagsSnapshot(); }

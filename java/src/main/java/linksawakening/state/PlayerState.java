@@ -183,6 +183,13 @@ public final class PlayerState implements LinkPlayerState {
         setHasToadstool(true);
     }
 
+    /** Prevent queued pickups/damage from undoing explicit debug resource edits. */
+    public void clearResourceBuffersForDebug() {
+        addHealthBuffer = 0;
+        subtractHealthBuffer = 0;
+        addRupeeBuffer = 0;
+    }
+
     public int rupees() {
         return rupees;
     }

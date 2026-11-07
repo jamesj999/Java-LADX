@@ -80,6 +80,17 @@ public final class DungeonItemState {
         }
     }
 
+    /** Debug editor write, keeping the active and persistent tables coherent. */
+    public void setFlagForDebug(int mapId, int index, int value) {
+        checkFlagIndex(index);
+        if ((mapId < 0 || mapId > 7) && mapId != MAP_COLOR_DUNGEON)
+            throw new IllegalArgumentException("Not a dungeon map: " + mapId);
+        if (value < 0 || value > 255) throw new IllegalArgumentException("Not a byte: " + value);
+        if (mapId == MAP_COLOR_DUNGEON) colorDungeonItemFlags[index] = (byte) value;
+        else dungeonItemFlags[mapId * ITEM_FLAG_SIZE + index] = (byte) value;
+        if (currentMapId == mapId) currentFlags[index] = (byte) value;
+    }
+
     public byte[] dungeonItemFlagsSnapshot() {
         return dungeonItemFlags.clone();
     }
