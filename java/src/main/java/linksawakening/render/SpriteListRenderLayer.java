@@ -7,10 +7,17 @@ public final class SpriteListRenderLayer implements RenderLayer {
 
     private final Iterable<Sprite> sprites;
     private final int[][] palettes;
+    private linksawakening.gpu.EntitySpriteTileSnapshot tiles;
 
     public SpriteListRenderLayer(Iterable<Sprite> sprites, int[][] palettes) {
         this.sprites = sprites;
         this.palettes = palettes;
+    }
+
+    public SpriteListRenderLayer(Iterable<Sprite> sprites, int[][] palettes,
+                                 linksawakening.gpu.EntitySpriteTileSnapshot tiles) {
+        this(sprites, palettes);
+        this.tiles = tiles;
     }
 
     @Override
@@ -22,6 +29,11 @@ public final class SpriteListRenderLayer implements RenderLayer {
             Sprite sprite = ordered.get(index);
             int paletteIndex = Math.min(sprite.paletteIndex(), palettes.length - 1);
             if (sprite.height() == 16) {
+                if (tiles != null) {
+                    IndexedRenderer.drawSpriteTile8x16(context.buffer(), tiles, sprite.tileIndex(),
+                        sprite.x(), sprite.y(), sprite.flipX(), sprite.flipY(), palettes[paletteIndex]);
+                    continue;
+                }
                 IndexedRenderer.drawSpriteTile8x16(context.buffer(), context.gpu(), sprite.tileIndex(),
                     sprite.x(), sprite.y(), sprite.flipX(), sprite.flipY(), palettes[paletteIndex]);
             } else {
