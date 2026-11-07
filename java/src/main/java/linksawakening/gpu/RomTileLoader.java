@@ -11,14 +11,13 @@ class RomTileLoader extends Vram {
     public void loadAnimatedTilesGroup(byte[] rom, int group) { animatedTiles.loadAnimatedTilesGroup(rom, group); }
     public void tickAnimatedTiles(byte[] rom) { animatedTiles.tickAnimatedTiles(rom); }
 
-
     private static final int BANK_SIZE = 0x4000;
 
-    private static final int INTRO_3_TILES_BANK = (RomSymbols.Intro3Tiles.bank() | 0x20);
+    private static final int INTRO_3_TILES_BANK = GbcBanks.adjust(RomSymbols.Intro3Tiles.bank());
     private static final int INTRO_3_TILES_ADDR = RomSymbols.Intro3Tiles.address();
     private static final int INTRO_3_TILES_COUNT = 0x60;
 
-    private static final int INTRO_1_TILES_BANK = (RomSymbols.Intro1Tiles.bank() | 0x20);
+    private static final int INTRO_1_TILES_BANK = GbcBanks.adjust(RomSymbols.Intro1Tiles.bank());
     private static final int INTRO_1_TILES_ADDR = RomSymbols.Intro1Tiles.address();
     private static final int INTRO_1_TILES_COUNT = 0x100;
 
@@ -26,7 +25,7 @@ class RomTileLoader extends Vram {
     private static final int INTRO_RAIN_TILES_ADDR = RomSymbols.IntroRainTiles.address();
     private static final int INTRO_RAIN_TILES_COUNT = 0x08;
 
-    private static final int TITLE_LOGO_TILES_BANK = (RomSymbols.TitleLogoTiles.bank() | 0x20);
+    private static final int TITLE_LOGO_TILES_BANK = GbcBanks.adjust(RomSymbols.TitleLogoTiles.bank());
     private static final int TITLE_LOGO_TILES_ADDR = RomSymbols.TitleLogoTiles.address();
     private static final int TITLE_LOGO_TILES_COUNT = 0x70;
 
@@ -36,22 +35,10 @@ class RomTileLoader extends Vram {
     private static final int TITLE_DX_OAM_TILES_ADDR = 0x6500;
     private static final int TITLE_DX_OAM_TILES_COUNT = 0x10;
 
-
-
-
-
-
-
-
-
-
-
-
-
     // SwitchBlockTiles in bank0c.asm and the GBC-adjusted bank used by the
     // gameplay tile loader. UpdateSwitchBlockTiles copies four tiles at a
     // time to vTilesSwitchBlockA/B ($9040/$9080).
-    private static final int SWITCH_BLOCK_TILES_BANK = (RomSymbols.SwitchBlockTiles.bank() | 0x20);
+    private static final int SWITCH_BLOCK_TILES_BANK = GbcBanks.adjust(RomSymbols.SwitchBlockTiles.bank());
     private static final int SWITCH_BLOCK_TILES_ADDR = RomSymbols.SwitchBlockTiles.address();
     private static final int SWITCH_BLOCK_TILE_COUNT = 0x04;
     private static final int PRESSED_FLOOR_SWITCH_TILES_BANK = 0x32;
@@ -60,17 +47,6 @@ class RomTileLoader extends Vram {
 
     // Ping-pong offset table used by dungeon-1 and lava animations.
     // Matches AnimatedTilesDataOffsets in home/animated_tiles.asm:267.
-
-
-
-
-
-
-
-
-    private static final int OVERWORLD2_TILES_BANK = 0x0F;
-    private static final int OVERWORLD2_TILES_ADDR = 0x4000;
-    private static final int OVERWORLD2_TILES_COUNT = 0x100;
 
     private static final int INVENTORY_OVERWORLD_ITEMS_TILES_BANK = RomSymbols.InventoryOverworldItemsTiles.bank();
     private static final int INVENTORY_OVERWORLD_ITEMS_TILES_ADDR = RomSymbols.InventoryOverworldItemsTiles.address();
@@ -84,7 +60,7 @@ class RomTileLoader extends Vram {
 
     // TilesGfxSource._08.._0A in home/interrupts.asm. The source label is
     // OcarinaSymbolsTiles in bank $0C at $6960; the GBC loader selects $2C.
-    private static final int OCARINA_SYMBOLS_TILES_BANK = (RomSymbols.OcarinaSymbolsTiles.bank() | 0x20);
+    private static final int OCARINA_SYMBOLS_TILES_BANK = GbcBanks.adjust(RomSymbols.OcarinaSymbolsTiles.bank());
     private static final int OCARINA_SYMBOLS_TILES_ADDR = RomSymbols.OcarinaSymbolsTiles.address();
     private static final int SHARED_VFX_TILES_BANK = 0x2C;
     private static final int SHARED_VFX_TILES_ADDR = 0x4200;
@@ -106,6 +82,7 @@ class RomTileLoader extends Vram {
     private static final int ENTITY_SHEET_KEEP = 0xFF;
     private static final int ENTITY_SHEET_BYTE_COUNT = 0x100;
     private static final int ENTITY_SHEET_TILE_COUNT = 0x10;
+    // NpcTilesDataStart: bank base plus the selector row high byte.
     private static final int ENTITY_SHEET_SOURCE_BASE = 0x4000;
     private static final int ENTITY_SHEET_VRAM_BASE = 0x40;
 
@@ -136,10 +113,10 @@ class RomTileLoader extends Vram {
         // Match the game's LoadBaseTiles: copy 0x100 tiles from InventoryEquipmentItemsTiles
         // to vTiles1 (VRAM tile 0x080). This single bulk copy covers equipment items,
         // inventory items, instruments, and landscape tiles in the correct VRAM positions.
-        loadTilesFromROM(romData, INVENTORY_EQUIPMENT_ITEMS_TILES_BANK | 0x20,
+        loadTilesFromROM(romData, GbcBanks.adjust(INVENTORY_EQUIPMENT_ITEMS_TILES_BANK),
             INVENTORY_EQUIPMENT_ITEMS_TILES_ADDR, 0x100, 0x080);
         // Link character tiles to vTiles0
-        loadTilesFromROM(romData, LINK_CHARACTER_TILES_BANK | 0x20,
+        loadTilesFromROM(romData, GbcBanks.adjust(LINK_CHARACTER_TILES_BANK),
             LINK_CHARACTER_TILES_ADDR, LINK_CHARACTER_TILES_COUNT, 0x000);
     }
 
@@ -147,11 +124,11 @@ class RomTileLoader extends Vram {
     public void loadBaseTiles(byte[] romData) {
         powderIconIsToadstool = false;
         animatedTiles.currentMapId = 0;
-        loadTilesFromROM(romData, LINK_CHARACTER_TILES_BANK | 0x20,
+        loadTilesFromROM(romData, GbcBanks.adjust(LINK_CHARACTER_TILES_BANK),
             LINK_CHARACTER_TILES_ADDR, LINK_CHARACTER_TILES_COUNT, 0x000);
-        loadTilesFromROM(romData, INVENTORY_EQUIPMENT_ITEMS_TILES_BANK | 0x20,
+        loadTilesFromROM(romData, GbcBanks.adjust(INVENTORY_EQUIPMENT_ITEMS_TILES_BANK),
             INVENTORY_EQUIPMENT_ITEMS_TILES_ADDR, 0x100, 0x080);
-        loadTilesFromROM(romData, INVENTORY_EQUIPMENT_ITEMS_TILES_BANK | 0x20,
+        loadTilesFromROM(romData, GbcBanks.adjust(INVENTORY_EQUIPMENT_ITEMS_TILES_BANK),
             0x47A0, 0x02, 0x0E0);
     }
 
@@ -164,7 +141,7 @@ class RomTileLoader extends Vram {
 
     /** Mirrors REPLACE_TILES_GOLDEN_LEAF ($09) at bank0:$1EA1. */
     public void replaceSlimeKeyTilesByGoldenLeaf(byte[] romData) {
-        loadTilesFromROM(romData, 0x0C | 0x20, 0x68E0, 0x02, 0x0CA);
+        loadTilesFromROM(romData, GbcBanks.adjust(0x0C), 0x68E0, 0x02, 0x0CA);
     }
 
     /**
@@ -173,9 +150,9 @@ class RomTileLoader extends Vram {
      */
     public void loadMenuTiles(byte[] romData) {
         loadBaseTiles(romData);
-        loadTilesFromROM(romData, 0x0F | 0x20, 0x4000, 0x40, 0x080);
-        loadTilesFromROM(romData, 0x0F | 0x20, 0x5000, 0x80, 0x100);
-        loadTilesFromROM(romData, 0x0C | 0x20, 0x47A0, 0x02, 0x0E0);
+        loadTilesFromROM(romData, GbcBanks.adjust(0x0F), 0x4000, 0x40, 0x080);
+        loadTilesFromROM(romData, GbcBanks.adjust(0x0F), 0x5000, 0x80, 0x100);
+        loadTilesFromROM(romData, GbcBanks.adjust(0x0C), 0x47A0, 0x02, 0x0E0);
     }
 
     /** Mirrors LoadSaveMenuTiles (bank0.asm:$2E5E). */
@@ -243,8 +220,10 @@ class RomTileLoader extends Vram {
 
     private static final int W_TILESET_KEEP = 0x0F;
     
-    private static final int TILESET_BANK = 0x0F;
-    private static final int TILESET_BASE_ADDR = 0x4000;
+    private static final int TILESET_BANK = RomSymbols.SaveMenuTiles.bank();
+    // constants/tilesets.asm encodes HIGH(label)-$40. LoadRoomSpecificTiles
+    // reconstructs the source from the bank base, not Overworld2Tiles.
+    private static final int OVERWORLD_TILESET_SOURCE_BASE = 0x4000;
     private static final int TILESET_TILE_COUNT = 0x20;
     private static final int TILESET_VRAM_INDEX = 0x100;
     
@@ -253,9 +232,9 @@ class RomTileLoader extends Vram {
             return;
         }
 
-        int offset = TILESET_BASE_ADDR + (tilesetId * 0x100);
+        int offset = OVERWORLD_TILESET_SOURCE_BASE + (tilesetId * 0x100);
 
-        loadTilesFromROM(romData, TILESET_BANK | 0x20, offset, TILESET_TILE_COUNT, TILESET_VRAM_INDEX);
+        loadTilesFromROM(romData, GbcBanks.adjust(TILESET_BANK), offset, TILESET_TILE_COUNT, TILESET_VRAM_INDEX);
     }
 
     // --- Indoor BG tile loading, mirroring LoadIndoorTiles (bank0.asm:4831) ---
@@ -320,7 +299,7 @@ class RomTileLoader extends Vram {
         }
 
         // Shared dungeon tiles (96 tiles at VRAM tile 0x120).
-        loadTilesFromROM(romData, DUNGEONS_TILES_BANK | 0x20,
+        loadTilesFromROM(romData, GbcBanks.adjust(DUNGEONS_TILES_BANK),
             DUNGEONS_TILES_ADDR, DUNGEONS_TILES_COUNT, DUNGEONS_TILES_VRAM_INDEX);
 
         // Per-map walls overlay the first 32 tiles of the shared block. Each
@@ -330,7 +309,7 @@ class RomTileLoader extends Vram {
             DUNGEON_WALLS_PTRS_ADDR + mapId);
         int wallsHighByte = Byte.toUnsignedInt(romData[wallsPtrOffset]);
         if (wallsHighByte != 0) {
-            loadTilesFromROM(romData, DUNGEONS_TILES_BANK | 0x20,
+            loadTilesFromROM(romData, GbcBanks.adjust(DUNGEONS_TILES_BANK),
                 wallsHighByte << 8, DUNGEON_WALLS_TILES_COUNT, DUNGEONS_TILES_VRAM_INDEX);
         }
 
@@ -339,7 +318,7 @@ class RomTileLoader extends Vram {
             DUNGEON_FLOOR_PTRS_ADDR + mapId);
         int floorHighByte = Byte.toUnsignedInt(romData[floorPtrOffset]);
         if (floorHighByte != 0) {
-            loadTilesFromROM(romData, DUNGEONS_TILES_BANK | 0x20,
+            loadTilesFromROM(romData, GbcBanks.adjust(DUNGEONS_TILES_BANK),
                 floorHighByte << 8, DUNGEON_FLOOR_TILES_COUNT, INDOOR_TILES_VRAM_INDEX + 0x10);
         }
 
@@ -350,7 +329,7 @@ class RomTileLoader extends Vram {
             DUNGEON_ITEMS_PTRS_ADDR + mapId);
         int itemsHighByte = Byte.toUnsignedInt(romData[itemsPtrOffset]);
         if (itemsHighByte != 0) {
-            loadTilesFromROM(romData, 0x12 | 0x20,
+            loadTilesFromROM(romData, GbcBanks.adjust(0x12),
                 itemsHighByte << 8, DUNGEON_ITEMS_TILES_COUNT, DUNGEON_ITEMS_VRAM_INDEX);
         }
 
@@ -359,10 +338,10 @@ class RomTileLoader extends Vram {
         // item sheet; dungeon maps use InventoryIndoorItemsTiles.
         if (mapId != MAP_COLOR_DUNGEON) {
             if (mapId >= 0x0A) {
-                loadTilesFromROM(romData, INVENTORY_OVERWORLD_ITEMS_TILES_BANK | 0x20,
+                loadTilesFromROM(romData, GbcBanks.adjust(INVENTORY_OVERWORLD_ITEMS_TILES_BANK),
                     INVENTORY_OVERWORLD_ITEMS_TILES_ADDR, 0x30, 0x0C0);
             } else {
-                loadTilesFromROM(romData, INVENTORY_INDOOR_ITEMS_TILES_BANK | 0x20,
+                loadTilesFromROM(romData, GbcBanks.adjust(INVENTORY_INDOOR_ITEMS_TILES_BANK),
                     INVENTORY_INDOOR_ITEMS_TILES_ADDR, 0x30, 0x0C0);
             }
         }
@@ -372,7 +351,7 @@ class RomTileLoader extends Vram {
         if (sideScrolling) {
             int source = mapId == 0x06 || (mapId >= 0x0A && roomId != 0xE9)
                 ? 0x7000 : 0x7800;
-            loadTilesFromROM(romData, DUNGEONS_TILES_BANK | 0x20,
+            loadTilesFromROM(romData, GbcBanks.adjust(DUNGEONS_TILES_BANK),
                 source, 0x80, 0x100);
             return;
         }
@@ -389,7 +368,7 @@ class RomTileLoader extends Vram {
         int tilesetId = Byte.toUnsignedInt(romData[tilesetsTableOffset]);
         if (tilesetId != W_TILESET_KEEP && tilesetId != W_TILESET_NO_UPDATE) {
             int tilesetAddr = INDOOR_TILES_BASE_ADDR + (tilesetId * 0x100);
-            loadTilesFromROM(romData, DUNGEONS_TILES_BANK | 0x20,
+            loadTilesFromROM(romData, GbcBanks.adjust(DUNGEONS_TILES_BANK),
                 tilesetAddr, INDOOR_TILES_COUNT_PER_SET, INDOOR_TILES_VRAM_INDEX);
         }
 
@@ -399,8 +378,6 @@ class RomTileLoader extends Vram {
             return;
         }
     }
-
-
 
     private void loadColorDungeonBgTiles(byte[] romData, int roomId) {
         if (roomId < 0 || roomId >= COLOR_DUNGEON_ROOM_COUNT) {
@@ -417,13 +394,13 @@ class RomTileLoader extends Vram {
         loadTilesFromROM(romData, COLOR_DUNGEON_BG_BANK, COLOR_DUNGEON_BG_FLOOR_ADDR,
             INDOOR_TILES_COUNT_PER_SET, INDOOR_TILES_VRAM_INDEX + 0x10);
 
-        loadTilesFromROM(romData, DUNGEONS_TILES_BANK | 0x20,
+        loadTilesFromROM(romData, GbcBanks.adjust(DUNGEONS_TILES_BANK),
             DUNGEONS_TILES_ADDR, DUNGEONS_TILES_COUNT, DUNGEONS_TILES_VRAM_INDEX);
 
         int wallsPointerOffset = bankAddrToRomOffset(COLOR_DUNGEON_ROOM_TILES_TABLE_BANK,
             COLOR_DUNGEON_WALLS_POINTER_ADDR);
         int wallsHighByte = Byte.toUnsignedInt(romData[wallsPointerOffset]);
-        loadTilesFromROM(romData, DUNGEONS_TILES_BANK | 0x20, wallsHighByte << 8,
+        loadTilesFromROM(romData, GbcBanks.adjust(DUNGEONS_TILES_BANK), wallsHighByte << 8,
             DUNGEON_WALLS_TILES_COUNT, DUNGEONS_TILES_VRAM_INDEX);
 
         loadTilesFromROM(romData, COLOR_DUNGEON_BG_BANK, COLOR_DUNGEON_BG_ITEMS_ADDR,
@@ -437,17 +414,10 @@ class RomTileLoader extends Vram {
         return bank * BANK_SIZE + (address - BANK_SIZE);
     }
 
-
-
-
-
     // Should be called once per VBlank while in gameplay. Advances the animated
     // tiles frame counter and, when the current group's timing elapses, copies
     // the next animation frame into VRAM tile slot 0x16C.
     // Mirrors AnimateTiles in src/code/home/animated_tiles.asm.
-
-
-
 
     /** Copies one ROM switch-block frame into its gameplay VRAM slot. */
     public void copySwitchBlockTiles(byte[] romData, int sourceOffset, int destinationTile) {
@@ -469,14 +439,9 @@ class RomTileLoader extends Vram {
             PRESSED_FLOOR_SWITCH_TILES_ADDR, 0x04, PRESSED_FLOOR_SWITCH_VRAM_TILE);
     }
 
-
-
-
-
     // Returns the new data offset to load this frame, or -1 if the group
     // should not animate on this tick. Timing masks mirror AnimateTilesSlowSpeed
     // (0x0F), AnimateTilesMediumSpeed (0x07), and AnimateTilesFastSpeed (0x03).
-
 
     /** Executes the two meter uploads and two equipment-tile restorations from ROM. */
     public void updateHeartPieceMeterTiles(byte[] rom, int command) {
