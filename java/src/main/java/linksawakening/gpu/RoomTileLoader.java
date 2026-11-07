@@ -10,8 +10,8 @@ final class RoomTileLoader {
     private static final int SWITCH_BLOCK_TILES_BANK = GbcBanks.adjust(RomSymbols.SwitchBlockTiles.bank());
     private static final int SWITCH_BLOCK_TILES_ADDR = RomSymbols.SwitchBlockTiles.address();
     private static final int SWITCH_BLOCK_TILE_COUNT = 0x04;
-    private static final int PRESSED_FLOOR_SWITCH_TILES_BANK = 0x32;
-    private static final int PRESSED_FLOOR_SWITCH_TILES_ADDR = 0x7F00;
+    private static final int PRESSED_FLOOR_SWITCH_TILES_BANK = GbcBanks.adjust(RomSymbols.DungeonMinimapTiles.bank());
+    private static final int PRESSED_FLOOR_SWITCH_TILES_ADDR = RomSymbols.DungeonMinimapTiles.address() + 0x100;
     private static final int PRESSED_FLOOR_SWITCH_VRAM_TILE = 0x114;
     private static final int INVENTORY_OVERWORLD_ITEMS_TILES_BANK = RomSymbols.InventoryOverworldItemsTiles.bank();
     private static final int INVENTORY_OVERWORLD_ITEMS_TILES_ADDR = RomSymbols.InventoryOverworldItemsTiles.address();
@@ -19,6 +19,7 @@ final class RoomTileLoader {
     private static final int INVENTORY_INDOOR_ITEMS_TILES_ADDR = RomSymbols.InventoryIndoorItemsTiles.address();
     private static final int W_TILESET_KEEP = 0x0F;
     private static final int TILESET_BANK = RomSymbols.SaveMenuTiles.bank();
+    // constants/tilesets.asm: HIGH(label)-$40; LoadRoomSpecificTiles reconstructs from the bank base.
     private static final int OVERWORLD_TILESET_SOURCE_BASE = 0x4000;
     private static final int TILESET_TILE_COUNT = 0x20;
     private static final int TILESET_VRAM_INDEX = 0x100;
@@ -100,7 +101,7 @@ final class RoomTileLoader {
             DUNGEON_ITEMS_PTRS_ADDR + mapId);
         int itemsHighByte = Byte.toUnsignedInt(romData[itemsPtrOffset]);
         if (itemsHighByte != 0) {
-            target.loadTilesFromROM(romData, GbcBanks.adjust(0x12),
+            target.loadTilesFromROM(romData, GbcBanks.adjust(RomSymbols.InventoryIndoorItemsTiles.bank()),
                 itemsHighByte << 8, DUNGEON_ITEMS_TILES_COUNT, DUNGEON_ITEMS_VRAM_INDEX);
         }
 
@@ -121,7 +122,7 @@ final class RoomTileLoader {
         // region for side-view rooms, then returns before the top-view patch.
         if (sideScrolling) {
             int source = mapId == 0x06 || (mapId >= 0x0A && roomId != 0xE9)
-                ? 0x7000 : 0x7800;
+                ? RomSymbols.DungeonSideview1Tiles.address() : RomSymbols.DungeonSideview2Tiles.address();
             target.loadTilesFromROM(romData, GbcBanks.adjust(DUNGEONS_TILES_BANK),
                 source, 0x80, 0x100);
             return;

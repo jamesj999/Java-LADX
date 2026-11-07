@@ -15,8 +15,8 @@ final class AnimatedTiles {
     private static final int ANIMATED_TILES_FRAME_COUNT = 0x04;
     private static final int ANIMATED_TILES_FRAME_VRAM_INDEX = 0x16C;
     private static final int ANIMATED_TILES_FRAME_SIZE = 0x40;
-    private static final int ANIMATED_SCROLLING_TILES_BANK = 0x2C;
-    private static final int ANIMATED_SCROLLING_TILES_ADDR = 0x47C0;
+    private static final int ANIMATED_SCROLLING_TILES_BANK = GbcBanks.adjust(RomSymbols.Items1Tiles.bank());
+    private static final int ANIMATED_SCROLLING_TILES_ADDR = RomSymbols.Items1Tiles.address() + 0x3C0;
     private static final int DUNGEON_TWO_ANIMATED_GROUP = 0x07;
     private static final int COLOR_DUNGEON_SCROLLING_VRAM_INDEX = 0x040;
     private static final int DUNGEON_TWO_SCROLLING_VRAM_INDEX = 0x10C;
@@ -133,7 +133,8 @@ final class AnimatedTiles {
                 ANIMATED_SCROLLING_TILES_BANK, ANIMATED_SCROLLING_TILES_ADDR),
             animatedScrollingTiles, 0, animatedScrollingTiles.length);
         if (mapId == MAP_COLOR_DUNGEON && roomId == 0x01) {
-            System.arraycopy(romData, bankAddrToRomOffset(0x35, 0x4F00),
+            System.arraycopy(romData, bankAddrToRomOffset(RomSymbols.ColorDungeonNpcTiles.bank(),
+                    RomSymbols.ColorDungeonNpcTiles.address() + 0xF00),
                 animatedScrollingTiles, 0, 0x20);
         }
     }

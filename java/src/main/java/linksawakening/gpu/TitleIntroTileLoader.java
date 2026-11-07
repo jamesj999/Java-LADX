@@ -41,9 +41,9 @@ final class TitleIntroTileLoader {
 
     public void loadMenuTiles(byte[] romData) {
         target.loadBaseTiles(romData);
-        target.loadTilesFromROM(romData, GbcBanks.adjust(0x0F), 0x4000, 0x40, 0x080);
-        target.loadTilesFromROM(romData, GbcBanks.adjust(0x0F), 0x5000, 0x80, 0x100);
-        target.loadTilesFromROM(romData, GbcBanks.adjust(0x0C), 0x47A0, 0x02, 0x0E0);
+        target.loadTilesFromROM(romData, GbcBanks.adjust(RomSymbols.MenuTiles.bank()), RomSymbols.MenuTiles.address(), 0x40, 0x080);
+        target.loadTilesFromROM(romData, GbcBanks.adjust(RomSymbols.FontTiles.bank()), RomSymbols.FontTiles.address(), 0x80, 0x100);
+        target.loadTilesFromROM(romData, GbcBanks.adjust(RomSymbols.Items1Tiles.bank()), RomSymbols.Items1Tiles.address() + 0x3A0, 0x02, 0x0E0);
     }
 
     public void loadSaveMenuTiles(byte[] romData) {

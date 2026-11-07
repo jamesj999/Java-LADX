@@ -361,3 +361,12 @@ Npc1Tiles
 Npc2Tiles
 Npc3Tiles
 NpcTilesDataStart
+
+# GPU upload sources with original loader offsets retained.
+Items1Tiles
+MushroomTiles
+SlimeKeyTiles
+PieceOfHeartMeterTiles
+DungeonSideview1Tiles
+DungeonSideview2Tiles
+MenuTiles

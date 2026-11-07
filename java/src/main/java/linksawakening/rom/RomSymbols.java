@@ -240,4 +240,11 @@ public final class RomSymbols {
     public static final RomAddress Npc2Tiles = new RomAddress(0x11, 0x4000);
     public static final RomAddress Npc3Tiles = new RomAddress(0x12, 0x4000);
     public static final RomAddress NpcTilesDataStart = new RomAddress(0x0E, 0x4000);
+    public static final RomAddress Items1Tiles = new RomAddress(0x0C, 0x4400);
+    public static final RomAddress MushroomTiles = new RomAddress(0x0C, 0x68C0);
+    public static final RomAddress SlimeKeyTiles = new RomAddress(0x0C, 0x68E0);
+    public static final RomAddress PieceOfHeartMeterTiles = new RomAddress(0x0C, 0x6900);
+    public static final RomAddress DungeonSideview1Tiles = new RomAddress(0x0D, 0x7000);
+    public static final RomAddress DungeonSideview2Tiles = new RomAddress(0x0D, 0x7800);
+    public static final RomAddress MenuTiles = new RomAddress(0x0F, 0x4000);
 }

@@ -73,7 +73,7 @@ class RomTileLoader extends Vram {
         loadTilesFromROM(romData, GbcBanks.adjust(INVENTORY_EQUIPMENT_ITEMS_TILES_BANK),
             INVENTORY_EQUIPMENT_ITEMS_TILES_ADDR, 0x100, 0x080);
         loadTilesFromROM(romData, GbcBanks.adjust(INVENTORY_EQUIPMENT_ITEMS_TILES_BANK),
-            0x47A0, 0x02, 0x0E0);
+            RomSymbols.Items1Tiles.address() + 0x3A0, 0x02, 0x0E0);
     }
 
     /** ROM $00:1E2B/$1E8D: the mushroom and powder share VRAM $88E0-$88FF. */
