@@ -9,6 +9,16 @@ public final class FrameScene {
 
     private final List<RenderLayer> layers;
 
+    @FunctionalInterface
+    interface DrawObserver { void drawn(FrameScene scene, byte[] rgba, GPU gpu); }
+    static final ThreadLocal<DrawObserver> DRAW_OBSERVER = new ThreadLocal<>();
+
+    List<String> unmigratedLayers() {
+        return layers.stream().filter(layer -> !(layer instanceof HardwareRenderLayer))
+            .map(layer -> layer.getClass().getName()).distinct().toList();
+    }
+
+
     private FrameScene(List<RenderLayer> layers) {
         this.layers = List.copyOf(layers);
     }
@@ -46,6 +56,8 @@ public final class FrameScene {
         for (RenderLayer layer : layers) {
             layer.render(context);
         }
+        DrawObserver observer = DRAW_OBSERVER.get();
+        if (observer != null) observer.drawn(this, buffer, gpu);
     }
 
     public int layerCount() {

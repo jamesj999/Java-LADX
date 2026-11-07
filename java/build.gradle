@@ -140,3 +140,8 @@ tasks.register('verifyRom') {
 }
 tasks.withType(Test).configureEach { dependsOn 'verifyRom' }
 run { classpath += files(romFile.parentFile.parentFile) }
+
+// Keep dual-pipeline scene reports from the full and ROM-free suites separate.
+tasks.withType(Test).configureEach {
+    systemProperty 'sceneParity.task', name
+}
