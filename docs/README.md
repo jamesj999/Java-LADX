@@ -82,3 +82,5 @@ These dated comparisons document bounded evidence, not complete parity.
 - [History](history/README.md) — preserved diary and legacy guidance.
 - [Reconstruction log](history/reconstruction-log.md) — unchanged full dated diary.
 - [Historical plans/specs](history/superpowers/README.md) — archived proposals, not current guidance.
+
+- [ARCHITECTURE.md](ARCHITECTURE.md) — package boundaries, frame lifecycle and verification.
