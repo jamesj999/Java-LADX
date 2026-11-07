@@ -262,6 +262,13 @@ final class LinkMotion {
         markRoomEntryPosition();
     }
 
+    void setRoomScrollEntryPixelPosition(int pixelX, int pixelY) {
+        link.linkSideView.clearSideViewPlatformState();
+        subX += (pixelX - pixelX()) << Link.SUB_PIXEL_SHIFT;
+        subY += (pixelY - pixelY()) << Link.SUB_PIXEL_SHIFT;
+        markRoomEntryPosition();
+    }
+
     void markRoomEntryPosition() {
         roomEntrySubX = subX;
         roomEntrySubY = subY;

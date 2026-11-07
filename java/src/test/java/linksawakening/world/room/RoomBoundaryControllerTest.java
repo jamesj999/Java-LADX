@@ -26,7 +26,7 @@ final class RoomBoundaryControllerTest {
 
         assertEquals(RoomBoundaryDecision.Type.OVERWORLD_SCROLL, decision.type());
         assertEquals(ScrollController.LEFT, decision.direction());
-        assertEquals(ROOM_PIXEL_WIDTH - Link.SPRITE_SIZE, decision.linkTargetX());
+        assertEquals(140, decision.linkTargetX());
         assertEquals(40, decision.linkTargetY());
     }
 
@@ -46,6 +46,21 @@ final class RoomBoundaryControllerTest {
         }
         assertEquals(ScrollController.UP, controller.decide(
             new RoomBoundaryState(Warp.CATEGORY_OVERWORLD, 0x92, false, false, -5, -5)).direction());
+    }
+
+    @Test
+    void overworldScrollLandingRetainsBoundaryOvershoot() {
+        int[][] positions = {{148, 80}, {150, 80}, {-5, 80}, {-7, 80},
+            {40, -5}, {40, -7}, {40, 116}, {40, 118}};
+        int[][] expected = {{3, 80}, {5, 80}, {140, 80}, {138, 80},
+            {40, 111}, {40, 109}, {40, 0}, {40, 2}};
+        for (int i = 0; i < positions.length; i++) {
+            var decision = controller.decide(new RoomBoundaryState(
+                Warp.CATEGORY_OVERWORLD, 0x92, false, false,
+                positions[i][0], positions[i][1]));
+            assertEquals(expected[i][0], decision.linkTargetX());
+            assertEquals(expected[i][1], decision.linkTargetY());
+        }
     }
 
     @Test

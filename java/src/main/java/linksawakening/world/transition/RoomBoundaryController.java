@@ -36,19 +36,22 @@ public final class RoomBoundaryController {
         // with vertical edges taking priority. Java stores the sprite top-left.
         int romX = x + 8;
         int romY = y + 16;
+        // ApplyRoomTransition integrates $3A/16 per frame: 40 horizontal
+        // steps move 145 pixels; 32 vertical steps move 116. Preserve the
+        // boundary overshoot instead of snapping to a fixed destination edge.
         if (romY < 0x0C && roomRow > 0) {
             return RoomBoundaryDecision.overworldScroll(ScrollController.UP, x,
-                ROOM_PIXEL_HEIGHT - Link.SPRITE_SIZE);
+                y + 116);
         }
         if (romY >= 0x84 && roomRow < OVERWORLD_ROWS - 1) {
-            return RoomBoundaryDecision.overworldScroll(ScrollController.DOWN, x, 0);
+            return RoomBoundaryDecision.overworldScroll(ScrollController.DOWN, x, y - 116);
         }
         if (romX < 0x04 && roomCol > 0) {
             return RoomBoundaryDecision.overworldScroll(ScrollController.LEFT,
-                ROOM_PIXEL_WIDTH - Link.SPRITE_SIZE, y);
+                x + 145, y);
         }
         if (romX >= 0x9C && roomCol < OVERWORLD_COLUMNS - 1) {
-            return RoomBoundaryDecision.overworldScroll(ScrollController.RIGHT, 0, y);
+            return RoomBoundaryDecision.overworldScroll(ScrollController.RIGHT, x - 145, y);
         }
 
         // Interior rooms must allow the off-screen margin required above.

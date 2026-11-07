@@ -655,7 +655,7 @@ final class RoomTransitionCoordinatorTest {
         int[] routeToForest = {
             ScrollController.UP, ScrollController.LEFT, ScrollController.LEFT,
             ScrollController.UP, ScrollController.RIGHT, ScrollController.RIGHT,
-            ScrollController.RIGHT, ScrollController.UP, ScrollController.DOWN,
+            ScrollController.RIGHT, ScrollController.RIGHT, ScrollController.LEFT,
             ScrollController.RIGHT, ScrollController.RIGHT, ScrollController.UP,
             ScrollController.LEFT, ScrollController.UP, ScrollController.LEFT,
             ScrollController.UP, ScrollController.LEFT, ScrollController.LEFT,
@@ -663,13 +663,14 @@ final class RoomTransitionCoordinatorTest {
             ScrollController.UP, ScrollController.UP
         };
         int[] expectedRooms = {
-            0xE2, 0xE1, 0xE0, 0xD0, 0xD1, 0xD2, 0xD3, 0xC3,
+            0xE2, 0xE1, 0xE0, 0xD0, 0xD1, 0xD2, 0xD3, 0xD4,
             0xD3, 0xD4, 0xD5, 0xC5, 0xC4, 0xB4, 0xB3, 0xA3,
             0xA2, 0xA1, 0xA0, 0xB0, 0xA0, 0x90, 0x80
         };
         for (int index = 0; index < routeToForest.length; index++) {
             walkToAndCrossOverworldBoundary(
-                coordinator, scroll, collision, link, routeToForest[index]);
+                session, coordinator, scroll, collision, link, routeToForest[index],
+                index + 1 < routeToForest.length ? routeToForest[index + 1] : ScrollController.NONE);
             assertEquals(expectedRooms[index], session.currentRoomId());
         }
         assertEquals(0x80, session.currentRoomId());
@@ -702,7 +703,8 @@ final class RoomTransitionCoordinatorTest {
         };
         for (int index = 0; index < routeToToadstool.length; index++) {
             walkToAndCrossOverworldBoundary(
-                coordinator, scroll, collision, link, routeToToadstool[index]);
+                session, coordinator, scroll, collision, link, routeToToadstool[index],
+                index + 1 < routeToToadstool.length ? routeToToadstool[index + 1] : ScrollController.NONE);
             assertEquals(toadstoolRouteRooms[index], session.currentRoomId());
         }
         assertEquals(0x50, session.currentRoomId());
@@ -740,7 +742,8 @@ final class RoomTransitionCoordinatorTest {
         };
         for (int index = 0; index < routeToWitchHut.length; index++) {
             walkToAndCrossOverworldBoundary(
-                coordinator, scroll, collision, link, routeToWitchHut[index]);
+                session, coordinator, scroll, collision, link, routeToWitchHut[index],
+                index + 1 < routeToWitchHut.length ? routeToWitchHut[index + 1] : ScrollController.NONE);
             assertEquals(witchRouteRooms[index], session.currentRoomId());
         }
         assertEquals(0x65, session.currentRoomId());
@@ -827,7 +830,8 @@ final class RoomTransitionCoordinatorTest {
         };
         for (int index = 0; index < routeToRaccoon.length; index++) {
             walkToAndCrossOverworldBoundary(
-                coordinator, scroll, collision, link, routeToRaccoon[index]);
+                session, coordinator, scroll, collision, link, routeToRaccoon[index],
+                index + 1 < routeToRaccoon.length ? routeToRaccoon[index + 1] : ScrollController.NONE);
             assertEquals(raccoonRouteRooms[index], session.currentRoomId());
         }
         assertEquals(0x51, session.currentRoomId());
@@ -865,7 +869,7 @@ final class RoomTransitionCoordinatorTest {
             .anyMatch(entity -> entity.type() == 0x3F));
 
         walkToAndCrossOverworldBoundary(
-            coordinator, scroll, collision, link, ScrollController.UP);
+            session, coordinator, scroll, collision, link, ScrollController.UP);
         assertEquals(0x41, session.currentRoomId());
         assertEquals(0x40, session.overworldRoomStatusForTest(0x41) & 0x40);
         assertTrue(session.consumeEntityEvents().stream().anyMatch(event ->
@@ -912,7 +916,8 @@ final class RoomTransitionCoordinatorTest {
         };
         for (int index = 0; index < routeToTailCave.length; index++) {
             walkToAndCrossOverworldBoundary(
-                coordinator, scroll, collision, link, routeToTailCave[index]);
+                session, coordinator, scroll, collision, link, routeToTailCave[index],
+                index + 1 < routeToTailCave.length ? routeToTailCave[index + 1] : ScrollController.NONE);
             assertEquals(tailCaveRouteRooms[index], session.currentRoomId());
         }
 
@@ -1586,7 +1591,7 @@ final class RoomTransitionCoordinatorTest {
         assertEquals(0xD3, session.currentRoomId());
 
         walkToAndCrossOverworldBoundary(
-            coordinator, scroll, collision, link, ScrollController.LEFT);
+            session, coordinator, scroll, collision, link, ScrollController.LEFT);
         assertEquals(0xD2, session.currentRoomId());
         assertTrue(session.activeRoom().entities().loadedEntities().stream()
             .anyMatch(entity -> entity.type() == 0x41));
@@ -1610,20 +1615,21 @@ final class RoomTransitionCoordinatorTest {
         assertEquals(0x20, session.overworldRoomStatusForTest(0xD2) & 0x20);
 
         int[] routeToKidnappingWarning = {
-            ScrollController.RIGHT, ScrollController.UP, ScrollController.DOWN,
+            ScrollController.RIGHT, ScrollController.RIGHT, ScrollController.LEFT,
             ScrollController.RIGHT, ScrollController.RIGHT, ScrollController.UP,
             ScrollController.LEFT, ScrollController.UP, ScrollController.LEFT,
             ScrollController.UP, ScrollController.LEFT, ScrollController.LEFT,
             ScrollController.LEFT, ScrollController.DOWN
         };
         int[] kidnappingWarningRooms = {
-            0xD3, 0xC3, 0xD3, 0xD4, 0xD5, 0xC5, 0xC4,
+            0xD3, 0xD4, 0xD3, 0xD4, 0xD5, 0xC5, 0xC4,
             0xB4, 0xB3, 0xA3, 0xA2, 0xA1, 0xA0, 0xB0
         };
         for (int index = 0; index < routeToKidnappingWarning.length; index++) {
             try {
                 walkToAndCrossOverworldBoundary(
-                    coordinator, scroll, collision, link, routeToKidnappingWarning[index]);
+                    session, coordinator, scroll, collision, link, routeToKidnappingWarning[index],
+                index + 1 < routeToKidnappingWarning.length ? routeToKidnappingWarning[index + 1] : ScrollController.NONE);
             } catch (AssertionError error) {
                 throw new AssertionError("kidnapping route index " + index
                     + " from room " + Integer.toHexString(session.currentRoomId()), error);
@@ -1653,7 +1659,8 @@ final class RoomTransitionCoordinatorTest {
         for (int index = 0; index < routeToMoblinHideout.length; index++) {
             try {
                 walkToAndCrossOverworldBoundary(
-                    coordinator, scroll, collision, link, routeToMoblinHideout[index]);
+                    session, coordinator, scroll, collision, link, routeToMoblinHideout[index],
+                index + 1 < routeToMoblinHideout.length ? routeToMoblinHideout[index + 1] : ScrollController.NONE);
             } catch (AssertionError error) {
                 throw new AssertionError("hideout route index " + index
                     + " from room " + Integer.toHexString(session.currentRoomId()), error);
@@ -1835,7 +1842,7 @@ final class RoomTransitionCoordinatorTest {
         assertEquals(0x35, session.currentRoomId());
 
         walkToAndCrossOverworldBoundary(
-            coordinator, scroll, collision, link, ScrollController.RIGHT);
+            session, coordinator, scroll, collision, link, ScrollController.RIGHT);
         assertEquals(0x36, session.currentRoomId());
         assertTrue(session.activeRoom().entities().loadedEntities().stream()
             .anyMatch(entity -> entity.type() == 0x41));
@@ -1869,7 +1876,8 @@ final class RoomTransitionCoordinatorTest {
         int[] gopongaSwampRouteRooms = {0x35, 0x25, 0x35, 0x34, 0x33};
         for (int index = 0; index < routeToGopongaSwamp.length; index++) {
             walkToAndCrossOverworldBoundary(
-                coordinator, scroll, collision, link, routeToGopongaSwamp[index]);
+                session, coordinator, scroll, collision, link, routeToGopongaSwamp[index],
+                index + 1 < routeToGopongaSwamp.length ? routeToGopongaSwamp[index + 1] : ScrollController.NONE);
             assertEquals(gopongaSwampRouteRooms[index], session.currentRoomId());
         }
         assertEquals(2, session.activeRoom().entities().loadedEntities().stream()
@@ -1877,36 +1885,36 @@ final class RoomTransitionCoordinatorTest {
         frame = letBowWowEatAllGoponga(session, collision, link, frame);
 
         walkToAndCrossOverworldBoundary(
-            coordinator, scroll, collision, link, ScrollController.UP);
+            session, coordinator, scroll, collision, link, ScrollController.UP);
         assertEquals(0x23, session.currentRoomId());
         assertEquals(1, session.activeRoom().entities().loadedEntities().stream()
             .filter(entity -> entity.type() == 0x7C).count());
         frame = letBowWowEatAllGoponga(session, collision, link, frame);
 
         walkToAndCrossOverworldBoundary(
-            coordinator, scroll, collision, link, ScrollController.DOWN);
+            session, coordinator, scroll, collision, link, ScrollController.DOWN);
         assertEquals(0x33, session.currentRoomId());
         assertFalse(session.activeRoom().entities().loadedEntities().stream()
             .anyMatch(entity -> entity.type() == 0x7C || entity.type() == 0x7E));
         walkToAndCrossOverworldBoundary(
-            coordinator, scroll, collision, link, ScrollController.UP);
+            session, coordinator, scroll, collision, link, ScrollController.UP);
         assertEquals(0x23, session.currentRoomId());
         assertFalse(session.activeRoom().entities().loadedEntities().stream()
             .anyMatch(entity -> entity.type() == 0x7C));
 
         walkToAndCrossOverworldBoundary(
-            coordinator, scroll, collision, link, ScrollController.LEFT);
+            session, coordinator, scroll, collision, link, ScrollController.LEFT);
         assertEquals(0x22, session.currentRoomId());
         assertEquals(2, session.activeRoom().entities().loadedEntities().stream()
             .filter(entity -> entity.type() == 0x7E).count());
         frame = letBowWowEatAllGoponga(session, collision, link, frame);
         walkToAndCrossOverworldBoundary(
-            coordinator, scroll, collision, link, ScrollController.RIGHT);
+            session, coordinator, scroll, collision, link, ScrollController.RIGHT);
         assertEquals(0x23, session.currentRoomId());
         assertFalse(session.activeRoom().entities().loadedEntities().stream()
             .anyMatch(entity -> entity.type() == 0x7C));
         walkToAndCrossOverworldBoundary(
-            coordinator, scroll, collision, link, ScrollController.RIGHT);
+            session, coordinator, scroll, collision, link, ScrollController.RIGHT);
         assertEquals(0x24, session.currentRoomId());
         assertEquals(5, session.activeRoom().entities().loadedEntities().stream()
             .filter(entity -> entity.type() == 0x7E).count());
@@ -1915,10 +1923,10 @@ final class RoomTransitionCoordinatorTest {
         frame = letBowWowEatAllGoponga(session, collision, link, frame);
 
         walkToAndCrossOverworldBoundary(
-            coordinator, scroll, collision, link, ScrollController.LEFT);
+            session, coordinator, scroll, collision, link, ScrollController.LEFT);
         assertEquals(0x23, session.currentRoomId());
         walkToAndCrossOverworldBoundary(
-            coordinator, scroll, collision, link, ScrollController.RIGHT);
+            session, coordinator, scroll, collision, link, ScrollController.RIGHT);
         assertEquals(0x24, session.currentRoomId());
         assertFalse(session.activeRoom().entities().loadedEntities().stream()
             .anyMatch(entity -> entity.type() == 0x7E));
@@ -4665,10 +4673,10 @@ final class RoomTransitionCoordinatorTest {
         switch (direction) {
             case ScrollController.UP -> link.setPixelPosition(link.pixelX(), -5);
             case ScrollController.DOWN ->
-                link.setPixelPosition(link.pixelX(), RoomConstants.ROOM_PIXEL_HEIGHT);
+                link.setPixelPosition(link.pixelX(), 116);
             case ScrollController.LEFT -> link.setPixelPosition(-5, link.pixelY());
             case ScrollController.RIGHT ->
-                link.setPixelPosition(RoomConstants.ROOM_PIXEL_WIDTH, link.pixelY());
+                link.setPixelPosition(148, link.pixelY());
             default -> throw new IllegalArgumentException("Unknown scroll direction: " + direction);
         }
         coordinator.handleOverworldBoundary(link);
@@ -4678,13 +4686,51 @@ final class RoomTransitionCoordinatorTest {
     }
 
     private static void walkToAndCrossOverworldBoundary(
-            RoomTransitionCoordinator coordinator, ScrollController scroll,
+            RoomSession session, RoomTransitionCoordinator coordinator, ScrollController scroll,
             OverworldCollision collision, Link link, int direction) {
+        walkToAndCrossOverworldBoundary(session, coordinator, scroll, collision, link,
+            direction, ScrollController.NONE);
+    }
+
+    private static void walkToAndCrossOverworldBoundary(
+            RoomSession session, RoomTransitionCoordinator coordinator, ScrollController scroll,
+            OverworldCollision collision, Link link, int direction, int nextDirection) {
         // This is a collision-connectivity harness, not a keyboard-input
         // simulation: find a source-valid pixel path to the requested edge,
         // then exercise the real room-boundary transition from that edge.
-        int[] exit = reachableBoundaryPosition(
-            collision, link.pixelX(), link.pixelY(), direction);
+        int nextRoom = session.currentRoomId() + switch (direction) {
+            case ScrollController.UP -> -16;
+            case ScrollController.DOWN -> 16;
+            case ScrollController.LEFT -> -1;
+            case ScrollController.RIGHT -> 1;
+            default -> throw new IllegalArgumentException();
+        };
+        var destination = session.context.roomLoader.loadOverworld(nextRoom);
+        var landingCollision = new OverworldCollision(session.context.romTables);
+        landingCollision.setRoom(destination.roomObjectsArea());
+        landingCollision.setGbcOverlay(destination.gbcOverlay());
+        int movementDirection = switch (direction) {
+            case ScrollController.UP -> Link.DIRECTION_UP;
+            case ScrollController.DOWN -> Link.DIRECTION_DOWN;
+            case ScrollController.LEFT -> Link.DIRECTION_LEFT;
+            case ScrollController.RIGHT -> Link.DIRECTION_RIGHT;
+            default -> throw new IllegalArgumentException();
+        };
+        // Choose a seam with walkable ground on both sides. The old edge snap
+        // masked exits that landed inside the destination's border wall.
+        int[] exit = reachableBoundaryPosition(collision, link.pixelX(), link.pixelY(), direction,
+            (x, y) -> {
+                int landingX = direction == ScrollController.LEFT ? 140
+                    : direction == ScrollController.RIGHT ? 3 : x;
+                int landingY = direction == ScrollController.UP ? 111
+                    : direction == ScrollController.DOWN ? 0 : y;
+                int dx = direction == ScrollController.LEFT ? -1 : direction == ScrollController.RIGHT ? 1 : 0;
+                int dy = direction == ScrollController.UP ? -1 : direction == ScrollController.DOWN ? 1 : 0;
+                return !leadingEdgeBlocked(landingCollision, landingX + dx, landingY + dy,
+                    movementDirection, true)
+                    && (nextDirection == ScrollController.NONE || reachableBoundaryPosition(
+                        landingCollision, landingX, landingY, nextDirection) != null);
+            });
         assertNotNull(exit, "No sword-accessible collision path from ("
             + link.pixelX() + "," + link.pixelY() + ") toward " + direction
             + "\n" + collisionGrid(collision));
@@ -5263,6 +5309,12 @@ final class RoomTransitionCoordinatorTest {
     private static int[] reachableBoundaryPosition(OverworldCollision collision,
                                                     int startX, int startY,
                                                     int targetDirection) {
+        return reachableBoundaryPosition(collision, startX, startY, targetDirection, (x, y) -> true);
+    }
+
+    private static int[] reachableBoundaryPosition(OverworldCollision collision,
+            int startX, int startY, int targetDirection,
+            java.util.function.BiPredicate<Integer, Integer> landingAllowed) {
         int width = RoomConstants.ROOM_PIXEL_WIDTH - Link.SPRITE_SIZE + 1;
         int height = RoomConstants.ROOM_PIXEL_HEIGHT - Link.SPRITE_SIZE + 1;
         boolean[][] visited = new boolean[height][width];
@@ -5276,7 +5328,8 @@ final class RoomTransitionCoordinatorTest {
             {-1, 0, Link.DIRECTION_LEFT}, {1, 0, Link.DIRECTION_RIGHT}};
         while (!queue.isEmpty()) {
             int[] position = queue.removeFirst();
-            if (isTargetBoundary(position[0], position[1], width, height, targetDirection)) {
+            if (isTargetBoundary(position[0], position[1], width, height, targetDirection)
+                && landingAllowed.test(position[0], position[1])) {
                 return position;
             }
             for (int[] move : moves) {

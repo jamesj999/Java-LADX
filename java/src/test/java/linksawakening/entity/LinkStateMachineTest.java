@@ -5,6 +5,19 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 final class LinkStateMachineTest {
+    @Test void scrollEntryPreservesBothFractionalAccumulatorsAndRecordsLanding() {
+        Link link = new Link(null, null, null, null, null, null, null);
+        link.linkMotion.subX = (148 << Link.SUB_PIXEL_SHIFT) + 10;
+        link.linkMotion.subY = (80 << Link.SUB_PIXEL_SHIFT) + 5;
+        link.setRoomScrollEntryPixelPosition(3, 80);
+        assertEquals((3 << Link.SUB_PIXEL_SHIFT) + 10, link.linkMotion.subX);
+        assertEquals((80 << Link.SUB_PIXEL_SHIFT) + 5, link.linkMotion.subY);
+        assertEquals(link.linkMotion.subX, link.linkMotion.roomEntrySubX);
+        assertEquals(link.linkMotion.subY, link.linkMotion.roomEntrySubY);
+        assertEquals(11, link.roomEntryRomPositionX());
+        assertEquals(96, link.roomEntryRomPositionY());
+    }
+
     @Test void interactiveBlockIsConsumedAfterInvincibilityTicks() {
         PlayerState player = new PlayerState();
         Link link = new Link(null, null, null, null, null, player, null);

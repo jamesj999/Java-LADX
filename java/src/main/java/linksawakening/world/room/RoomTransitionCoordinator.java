@@ -130,7 +130,7 @@ public final class RoomTransitionCoordinator {
         RoomBoundaryDecision boundary = boundaryController.decide(
             roomSession.boundaryState(previousX, previousY, link.isAirborne()));
         if (boundary.type() == RoomBoundaryDecision.Type.OVERWORLD_SCROLL) {
-            link.setRoomEntryPixelPosition(boundary.linkTargetX(), boundary.linkTargetY());
+            link.setRoomScrollEntryPixelPosition(boundary.linkTargetX(), boundary.linkTargetY());
             if (boundary.direction() == ScrollController.UP
                 && roomSession.shouldGetLostInMysteriousWoods()) {
                 roomSession.startMysteriousWoodsLostScroll(

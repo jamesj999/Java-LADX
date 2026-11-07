@@ -484,6 +484,9 @@ public final class Link implements RocsFeather.JumpTarget {
     }
 
     public void setPixelPosition(int pixelX, int pixelY) { linkMotion.setPixelPosition(pixelX, pixelY); }
+    /** Records a scroll landing while retaining the source fractional accumulators. */
+    public void setRoomScrollEntryPixelPosition(int pixelX, int pixelY) { linkMotion.setRoomScrollEntryPixelPosition(pixelX, pixelY); }
+
     public void setRoomEntryPixelPosition(int pixelX, int pixelY) { linkMotion.setRoomEntryPixelPosition(pixelX, pixelY); }
     public void markRoomEntryPosition() { linkMotion.markRoomEntryPosition(); }
     public int roomEntryPixelX() { return linkMotion.roomEntryPixelX(); }
