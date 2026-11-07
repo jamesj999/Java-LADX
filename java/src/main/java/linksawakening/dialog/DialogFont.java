@@ -1,5 +1,11 @@
 package linksawakening.dialog;
 
+import linksawakening.rom.RomSymbols;
+
+import linksawakening.rom.RomAddress;
+
+import linksawakening.rom.Rom;
+
 import linksawakening.rom.RomBank;
 
 import java.io.IOException;
@@ -8,11 +14,11 @@ import java.io.UncheckedIOException;
 
 final class DialogFont {
 
-    private static final int FONT_BANK = 0x0F;
-    private static final int FONT_ADDRESS = 0x5000;
+    private static final int FONT_BANK = RomSymbols.FontTiles.bank();
+    private static final int FONT_ADDRESS = RomSymbols.FontTiles.address();
     private static final int FONT_TILE_COUNT = 0xA0;
-    private static final int CODEPOINT_TABLE_BANK = 0x1C;
-    private static final int CODEPOINT_TABLE_ADDRESS = 0x4641;
+    private static final int CODEPOINT_TABLE_BANK = RomSymbols.CodepointToTileMap.bank();
+    private static final int CODEPOINT_TABLE_ADDRESS = RomSymbols.CodepointToTileMap.address();
     private static final int TILE_SIZE_BYTES = 16;
     private static final int CODEPOINT_COUNT = 256;
     private static final String ROM_RESOURCE = "/rom/azle.gbc";
@@ -53,7 +59,7 @@ final class DialogFont {
 
         int[] codepointToTile = new int[CODEPOINT_COUNT];
         for (int i = 0; i < codepointToTile.length; i++) {
-            codepointToTile[i] = Byte.toUnsignedInt(romData[tableOffset + i]);
+            codepointToTile[i] = new Rom(romData).u8(RomAddress.fromOffset(tableOffset + i));
         }
         return new DialogFont(fontTiles, codepointToTile);
     }

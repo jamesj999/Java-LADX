@@ -1,5 +1,11 @@
 package linksawakening.ui;
 
+import linksawakening.rom.RomSymbols;
+
+import linksawakening.rom.RomAddress;
+
+import linksawakening.rom.Rom;
+
 import linksawakening.rom.RomUtil;
 
 public final class InventoryTilemapLoader {
@@ -7,17 +13,17 @@ public final class InventoryTilemapLoader {
     public static final int WIDTH = 20;
     public static final int HEIGHT = 18;
 
-    private static final int INVENTORY_TILEMAP_BANK = 0x08;
-    private static final int INVENTORY_TILEMAP_ADDR = 0x6748;
-    private static final int INVENTORY_ATTRMAP_BANK = 0x24;
-    private static final int INVENTORY_ATTRMAP_ADDR = 0x6354;
-    private static final int INVENTORY_PALETTES_BANK = 0x20;
-    private static final int INVENTORY_PALETTES_ADDR = 0x5D61;
+    private static final int INVENTORY_TILEMAP_BANK = RomSymbols.InventoryTilemap.bank();
+    private static final int INVENTORY_TILEMAP_ADDR = RomSymbols.InventoryTilemap.address();
+    private static final int INVENTORY_ATTRMAP_BANK = RomSymbols.InventoryAttrmap.bank();
+    private static final int INVENTORY_ATTRMAP_ADDR = RomSymbols.InventoryAttrmap.address();
+    private static final int INVENTORY_PALETTES_BANK = RomSymbols.InventoryPalettes.bank();
+    private static final int INVENTORY_PALETTES_ADDR = RomSymbols.InventoryPalettes.address();
     private static final int INVENTORY_BG_PALETTE_COUNT = 8;
     private static final int INVENTORY_OBJECT_PALETTE_OFFSET = 0x40;
     private static final int INVENTORY_OBJECT_PALETTE_COUNT = 8;
-    private static final int OCARINA_POPUP_BANK = 0x20;
-    private static final int OCARINA_POPUP_ADDR = 0x604B;
+    private static final int OCARINA_POPUP_BANK = RomSymbols.Data_020_604B.bank();
+    private static final int OCARINA_POPUP_ADDR = RomSymbols.Data_020_604B.address();
     private static final int OCARINA_POPUP_BYTE_COUNT = 0xC0;
 
     private final int[] baseTilemap;
@@ -52,7 +58,7 @@ public final class InventoryTilemapLoader {
             throw new IllegalArgumentException("Ocarina popup data exceeds ROM bounds");
         }
         for (int index = 0; index < ocarinaPopupOam.length; index++) {
-            ocarinaPopupOam[index] = Byte.toUnsignedInt(romData[popupOffset + index]);
+            ocarinaPopupOam[index] = new Rom(romData).u8(RomAddress.fromOffset(popupOffset + index));
         }
 
         if (tilemap.length < WIDTH * HEIGHT) {

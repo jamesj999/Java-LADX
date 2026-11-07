@@ -8,20 +8,22 @@ import linksawakening.rom.RomUtil;
 /** ROM CreateMinimapTilemap, LoadMinimap and the dungeon inventory draw commands. */
 final class InventoryDungeonPanel {
     private final byte[] rom;
+    private final linksawakening.rom.Rom data;
     private final GPU tiles = new GPU();
 
     InventoryDungeonPanel(byte[] rom) {
         this.rom = rom;
+        this.data = new linksawakening.rom.Rom(rom);
         tiles.loadBaseTiles(rom);
-        int items = RomUtil.romOffset(0x32, 0x7D00);
-        for (int i = 0; i < 0x300; i++) tiles.writeVRAM(0xC00 + i, rom[items + i]);
+        int items = linksawakening.rom.RomSymbols.InventoryIndoorItemsTiles.withGbcBank().offset();
+        for (int i = 0; i < 0x300; i++) tiles.writeVRAM(0xC00 + i, (byte) data.u8(linksawakening.rom.RomAddress.fromOffset(items + i)));
         // LoadDungeonMinimapTiles: adjusted bank $32, $7E00 -> VRAM $8D00.
-        int source = RomUtil.romOffset(0x32, 0x7E00);
-        for (int i = 0; i < 0x200; i++) tiles.writeVRAM(0xD00 + i, rom[source + i]);
+        int source = linksawakening.rom.RomSymbols.DungeonMinimapTiles.withGbcBank().offset();
+        for (int i = 0; i < 0x200; i++) tiles.writeVRAM(0xD00 + i, (byte) data.u8(linksawakening.rom.RomAddress.fromOffset(source + i)));
     }
 
     private int read(int bank, int address) {
-        return Byte.toUnsignedInt(rom[RomUtil.romOffset(bank, address)]);
+        return data.u8(linksawakening.rom.RomAddress.fromOffset(RomUtil.romOffset(bank, address)));
     }
 
     int minimapTile(int base, int status, boolean map, boolean compass) {
@@ -31,12 +33,12 @@ final class InventoryDungeonPanel {
         if ((status & 0x80) == 0) return base;
         if (base == 0xED && (status & 0x10) == 0
             || base == 0xEE && (status & 0x20) == 0) return base;
-        return map ? 0xD0 + read(2, 0x66F9 + (status & 15)) : 0x7D;
+        return map ? 0xD0 + read(linksawakening.rom.RomSymbols.Data_002_66F9.bank(), linksawakening.rom.RomSymbols.Data_002_66F9.address() + (status & 15)) : 0x7D;
     }
 
     void apply(int[] tilemap, int[] attrs, int mapId, boolean collapsed,
                byte[] items, byte[] roomStatusByPosition) {
-        int layout = read(1, 0x4385 + (mapId == 0xFF ? 15 : mapId));
+        int layout = read(linksawakening.rom.RomSymbols.MinimapLayoutTable.bank(), linksawakening.rom.RomSymbols.MinimapLayoutTable.address() + (mapId == 0xFF ? 15 : mapId));
         for (int y = 7; y < 17; y++) Arrays.fill(attrs, y * 20 + 9, y * 20 + 20, 1);
         // CreateMinimapTilemap: erase the instrument panel, then draw its ROM frame.
         commands(tilemap, bytes(1, 0x54E8, 0x29));
@@ -96,7 +98,7 @@ final class InventoryDungeonPanel {
             TilemapRenderer.render(buffer, tiles, row, attributes, palettes, 11, 1, 72, y * 8 + offsetY);
         }
         if (position < 0 || position >= 64) return;
-        int layout = read(1, 0x4385 + (mapId == 0xFF ? 15 : mapId));
+        int layout = read(linksawakening.rom.RomSymbols.MinimapLayoutTable.bank(), linksawakening.rom.RomSymbols.MinimapLayoutTable.address() + (mapId == 0xFF ? 15 : mapId));
         int x = 88 + (position & 7) * 8 + ((layout & 0x10) != 0 && (position & 7) >= 4 ? 8 : 0);
         int y = 64 + (position & 0x38) - ((layout & 0x20) != 0 && position < 32 ? 8 : 0);
         IndexedRenderer.drawSpriteTile8x16(buffer, tiles, 0x3E, x, y + offsetY,

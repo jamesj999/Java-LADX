@@ -1,5 +1,11 @@
 package linksawakening.ui;
 
+import linksawakening.rom.RomSymbols;
+
+import linksawakening.rom.RomAddress;
+
+import linksawakening.rom.Rom;
+
 import linksawakening.rom.RomBank;
 
 import java.util.Objects;
@@ -12,14 +18,14 @@ import java.util.Objects;
  */
 public final class FileMenuRomData {
 
-    public static final int FILE_MENU_BANK = 0x01;
-    public static final int SELECTION_CURSOR_Y_ADDRESS = 0x48E4;
-    public static final int NAME_ENTRY_CHARACTER_TABLE_ADDRESS = 0x4BB5;
-    public static final int NAME_CURSOR_Y_ADDRESS = 0x4B30;
-    public static final int NAME_CURSOR_X_ADDRESS = 0x4B70;
-    public static final int NAME_POSITION_X_ADDRESS = 0x4BB0;
-    public static final int CODEPOINT_TO_TILE_MAP_BANK = 0x1C;
-    public static final int CODEPOINT_TO_TILE_MAP_ADDRESS = 0x4641;
+    public static final int FILE_MENU_BANK = RomSymbols.NameEntryCharacterTable.bank();
+    public static final int SELECTION_CURSOR_Y_ADDRESS = RomSymbols.Data_001_48E4.address();
+    public static final int NAME_ENTRY_CHARACTER_TABLE_ADDRESS = RomSymbols.NameEntryCharacterTable.address();
+    public static final int NAME_CURSOR_Y_ADDRESS = RomSymbols.Data_001_4B30.address();
+    public static final int NAME_CURSOR_X_ADDRESS = RomSymbols.Data_001_4B70.address();
+    public static final int NAME_POSITION_X_ADDRESS = RomSymbols.Data_001_4BB0.address();
+    public static final int CODEPOINT_TO_TILE_MAP_BANK = RomSymbols.CodepointToTileMap.bank();
+    public static final int CODEPOINT_TO_TILE_MAP_ADDRESS = RomSymbols.CodepointToTileMap.address();
 
     private static final int SELECTION_CURSOR_Y_COUNT = 4;
     private static final int NAME_ENTRY_CHARACTER_COUNT = 0x40;
@@ -28,9 +34,11 @@ public final class FileMenuRomData {
     private static final int CODEPOINT_TO_TILE_MAP_COUNT = 0x100;
 
     private final byte[] romData;
+    private final Rom romView;
 
     public FileMenuRomData(byte[] romData) {
         this.romData = Objects.requireNonNull(romData, "romData").clone();
+        this.romView = new Rom(this.romData);
     }
 
     public int[] deathDigitTiles() {
@@ -80,7 +88,7 @@ public final class FileMenuRomData {
         }
         int[] values = new int[length];
         for (int index = 0; index < length; index++) {
-            values[index] = Byte.toUnsignedInt(romData[offset + index]);
+            values[index] = romView.u8(RomAddress.fromOffset(offset + index));
         }
         return values;
     }

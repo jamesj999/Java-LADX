@@ -1,22 +1,26 @@
 package linksawakening.audio.sfx;
 
-import linksawakening.rom.RomBank;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
+import linksawakening.rom.RomSymbols;
 
 import java.util.Objects;
 
 public final class RomSoundEffectTables {
-    static final int SFX_BANK = 0x1F;
-    static final int JINGLE_BEGIN_TABLE = 0x4100;
-    static final int JINGLE_CONTINUE_TABLE = 0x4182;
-    static final int WAVE_BEGIN_TABLE = 0x541B;
-    static final int WAVE_CONTINUE_TABLE = 0x5461;
-    static final int NOISE_BEGIN_TABLE = 0x63EC;
-    static final int NOISE_CONTINUE_TABLE = 0x646C;
+    static final int SFX_BANK = RomSymbols.SfxPointersTable1.bank();
+    static final int JINGLE_BEGIN_TABLE = RomSymbols.SfxPointersTable1.address();
+    static final int JINGLE_CONTINUE_TABLE = RomSymbols.SfxPointersTable2.address();
+    static final int WAVE_BEGIN_TABLE = RomSymbols.WaveSfxHandlersTable1.address();
+    static final int WAVE_CONTINUE_TABLE = RomSymbols.WaveSfxHandlersTable2.address();
+    static final int NOISE_BEGIN_TABLE = RomSymbols.NoiseSfxHandlersTable1.address();
+    static final int NOISE_CONTINUE_TABLE = RomSymbols.NoiseSfxHandlersTable2.address();
 
     private final byte[] romData;
+    private final Rom rom;
 
     public RomSoundEffectTables(byte[] romData) {
         this.romData = Objects.requireNonNull(romData, "romData");
+        this.rom = new Rom(romData);
     }
 
     public int beginHandlerAddress(SoundEffect effect) {
@@ -41,11 +45,9 @@ public final class RomSoundEffectTables {
             throw new IllegalArgumentException("SFX id out of range: " + id);
         }
         int table = tableBase(namespace, begin);
-        int offset = RomBank.romOffset(SFX_BANK, table + ((id - 1) * 2));
+        int offset = new RomAddress(SFX_BANK, table + ((id - 1) * 2)).offset();
         requireReadable(offset, 2);
-        int low = Byte.toUnsignedInt(romData[offset]);
-        int high = Byte.toUnsignedInt(romData[offset + 1]);
-        return low | (high << 8);
+        return rom.u16le(new RomAddress(SFX_BANK, table + ((id - 1) * 2)));
     }
 
     private void requireReadable(int offset, int length) {

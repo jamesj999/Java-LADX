@@ -1,5 +1,9 @@
 package linksawakening.audio.music;
 
+import linksawakening.rom.RomAddress;
+
+import linksawakening.rom.Rom;
+
 import linksawakening.audio.apu.GameBoyApu;
 import linksawakening.rom.RomBank;
 
@@ -79,6 +83,7 @@ public final class MusicDriver {
     private static final int NOISE_FF_FOLLOW_UP_TICKS = 4;
 
     private final byte[] romData;
+    private final Rom romView;
     private final GameBoyApu apu;
     private final MusicChannelState[] channels = {
             new MusicChannelState(1),
@@ -102,6 +107,7 @@ public final class MusicDriver {
 
     public MusicDriver(byte[] romData, GameBoyApu apu) {
         this.romData = Objects.requireNonNull(romData, "romData");
+        this.romView = new Rom(this.romData);
         this.apu = Objects.requireNonNull(apu, "apu");
     }
 
@@ -117,7 +123,7 @@ public final class MusicDriver {
 
         int headerOffset = track.romOffset();
         requireReadable(headerOffset, HEADER_SIZE, trackBank, track.headerAddress());
-        musicTranspose = (byte) Byte.toUnsignedInt(romData[headerOffset]);
+        musicTranspose = (byte) romView.u8(RomAddress.fromOffset(headerOffset));
         speedTablePointer = readWordAtOffset(headerOffset + 1);
         for (int channel = 1; channel <= CHANNEL_COUNT; channel++) {
             int streamPointer = readWordAtOffset(headerOffset + 1 + (channel * 2));
@@ -456,7 +462,7 @@ public final class MusicDriver {
     private int readByte(int bank, int address) {
         int offset = RomBank.romOffset(bank, address);
         requireReadable(offset, 1, bank, address);
-        return Byte.toUnsignedInt(romData[offset]);
+        return romView.u8(RomAddress.fromOffset(offset));
     }
 
     private int readWord(int bank, int address) {
@@ -466,7 +472,7 @@ public final class MusicDriver {
     }
 
     private int readWordAtOffset(int offset) {
-        return Byte.toUnsignedInt(romData[offset]) | (Byte.toUnsignedInt(romData[offset + 1]) << 8);
+        return romView.u8(RomAddress.fromOffset(offset)) | (romView.u8(RomAddress.fromOffset(offset + 1)) << 8);
     }
 
     private void requireReadable(int offset, int length, int bank, int address) {

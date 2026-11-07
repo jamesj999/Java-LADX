@@ -8,7 +8,7 @@ import linksawakening.gpu.Tile;
 import linksawakening.rom.RomTables;
 
 import java.util.Objects;
-import java.util.concurrent.ThreadLocalRandom;
+import linksawakening.world.RomRandomByteSource;
 import java.util.function.IntSupplier;
 
 /**
@@ -107,7 +107,7 @@ public final class Sword implements EquippedItem {
 
     public Sword(RomTables romTables, SwordSpriteSheet spriteSheet) {
         this(romTables, spriteSheet, GameplaySoundSink.none(),
-                () -> ThreadLocalRandom.current().nextInt(0x100), SwordPalette.compatibility(),
+                new RomRandomByteSource(), SwordPalette.compatibility(),
                 () -> false);
     }
 

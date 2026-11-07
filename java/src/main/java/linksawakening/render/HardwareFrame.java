@@ -1,0 +1,69 @@
+package linksawakening.render;
+
+import java.util.Arrays;
+import linksawakening.gpu.Framebuffer;
+import linksawakening.gpu.Tile;
+
+/** CGB pixel composition before RGB conversion. Window replaces BG, including color zero. */
+public final class HardwareFrame implements RenderLayer {
+    private static final int WIDTH = Framebuffer.WIDTH;
+    private static final int HEIGHT = Framebuffer.HEIGHT;
+    private final int[] background = new int[WIDTH * HEIGHT];
+    private final byte[] backgroundIndex = new byte[WIDTH * HEIGHT];
+    private final boolean[] backgroundPriority = new boolean[WIDTH * HEIGHT];
+    private final int[] objects = new int[WIDTH * HEIGHT];
+    private final int[] objectOrder = new int[WIDTH * HEIGHT];
+    private final boolean[] objectBehind = new boolean[WIDTH * HEIGHT];
+    private final boolean backgroundPriorityEnabled;
+
+    public HardwareFrame(boolean backgroundPriorityEnabled) {
+        this.backgroundPriorityEnabled = backgroundPriorityEnabled;
+        Arrays.fill(objectOrder, Integer.MAX_VALUE);
+    }
+
+    /** Call BG first, then window tiles in screen coordinates. */
+    public void backgroundTile(Tile tile, int x, int y, boolean flipX, boolean flipY,
+                               int[] palette, boolean priority) {
+        stamp(tile, x, y, flipX, flipY, (pixel, index) -> {
+            background[pixel] = palette[index];
+            backgroundIndex[pixel] = (byte) index;
+            backgroundPriority[pixel] = priority;
+        });
+    }
+
+    /** Smaller OAM indices win even when the winning OBJ is hidden by BG. */
+    public void objectTile(Tile tile, int x, int y, boolean flipX, boolean flipY,
+                           int[] palette, int oamIndex, boolean behindBackground) {
+        if (oamIndex < 0 || oamIndex == Integer.MAX_VALUE) throw new IllegalArgumentException("OAM index");
+        stamp(tile, x, y, flipX, flipY, (pixel, index) -> {
+            if (index == 0 || oamIndex >= objectOrder[pixel]) return;
+            objects[pixel] = palette[index];
+            objectOrder[pixel] = oamIndex;
+            objectBehind[pixel] = behindBackground;
+        });
+    }
+
+    @Override public void render(RenderContext context) {
+        for (int pixel = 0; pixel < background.length; pixel++) {
+            boolean hidden = backgroundPriorityEnabled && backgroundIndex[pixel] != 0
+                && (backgroundPriority[pixel] || objectBehind[pixel]);
+            int rgb = objectOrder[pixel] != Integer.MAX_VALUE && !hidden
+                ? objects[pixel] : background[pixel];
+            int offset = pixel * 4;
+            context.buffer()[offset] = (byte) (rgb >> 16);
+            context.buffer()[offset + 1] = (byte) (rgb >> 8);
+            context.buffer()[offset + 2] = (byte) rgb;
+            context.buffer()[offset + 3] = (byte) 255;
+        }
+    }
+
+    private interface PixelWriter { void write(int pixel, int index); }
+    private static void stamp(Tile tile, int x, int y, boolean flipX, boolean flipY, PixelWriter writer) {
+        if (tile == null) return;
+        for (int ty = 0; ty < 8; ty++) for (int tx = 0; tx < 8; tx++) {
+            int px = x + tx, py = y + ty;
+            if (px < 0 || py < 0 || px >= WIDTH || py >= HEIGHT) continue;
+            writer.write(py * WIDTH + px, tile.getPixel(flipX ? 7 - tx : tx, flipY ? 7 - ty : ty));
+        }
+    }
+}

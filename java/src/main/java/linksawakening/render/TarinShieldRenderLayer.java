@@ -4,6 +4,7 @@ import linksawakening.entity.Link;
 import linksawakening.world.ScrollController;
 
 /** Renders data_005_4cc6 while Tarin holds the shield above Link. */
+@Deprecated
 public final class TarinShieldRenderLayer implements RenderLayer {
     private static final int SHIELD_TILE = 0x86;
     private final Link link;
@@ -23,7 +24,8 @@ public final class TarinShieldRenderLayer implements RenderLayer {
         // within the 16px entity pose by adding four pixels to its X origin.
         int screenX = link.pixelX() + 4 - scrollController.screenShakeHorizontal();
         int screenY = link.pixelY() - 0x0C;
-        IndexedRenderer.drawSpriteTile8x16(context.buffer(), context.gpu(), SHIELD_TILE,
-            screenX, screenY, false, false, link.tarinShieldPalette());
+        new SpriteListRenderLayer(java.util.List.of(new SpriteListRenderLayer.Sprite(
+            SHIELD_TILE, screenX, screenY, 0, false, false, 16)),
+            new int[][] { link.tarinShieldPalette() }).render(context);
     }
 }
