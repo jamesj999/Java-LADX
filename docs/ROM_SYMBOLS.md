@@ -99,3 +99,20 @@ entity-runtime-owned WarpMotion 1, EntityRoomLoader 1 and RoomSession 6.
 EnemyDropResolver 6 and RomEnemyCombatTables 1 left untouched because their
 entity/combat ownership is ambiguous. Physics has zero matching declarations.
 This turn migrated 57 named declarations across seven files, plus inline tables.
+
+## Final owned-world follow-up
+
+RoomTilemapBuilder and OverworldBushInteraction now derive all 27 named ROM
+location constants (23 under the original suffix metric) from exact symbols.
+All byte reads use Rom; overlay and attribute selection remain unchanged.
+Verified IndoorObjectsTilemapCGB 08:43B0, ColorDungeonObjectsTilemap 08:4760,
+ColorDungeonBGAttributes 23:6000, BGAttributesPointers_IndoorsA/B
+1A:6076/6276, OverworldObjectsTilemapCGB 1A:6B1D,
+OverworldBGAttributesBanks 1A:6476, BGAttributesPointers_Overworld 1A:5E76,
+IndoorsA/BObjectsAttrmaps 23/24:4000 and RoomGBCOverlaysA/B 26/27:4000.
+No symbol discrepancies. World original-metric remaining count is 15.
+
+Integration constraint: GbcBanks.adjust is package-private in another owner's
+gpu package. Existing OR-$20 attribute-bank adjustment remains unchanged here:
+a RomAddress-based replacement rejected zero-pointer synthetic fixtures before
+file-offset translation. Typed reads preserve the prior offset semantics.

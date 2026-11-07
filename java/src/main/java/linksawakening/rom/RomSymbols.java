@@ -191,4 +191,16 @@ public final class RomSymbols {
     public static final RomAddress Data_021_56C8 = new RomAddress(0x21, 0x56C8);
     public static final RomAddress IndoorSpritePaletteIndexData = new RomAddress(0x21, 0x523A);
     public static final RomAddress TilemapPaletteTable = new RomAddress(0x21, 0x51F6);
+    public static final RomAddress IndoorObjectsTilemapCGB = new RomAddress(0x08, 0x43B0);
+    public static final RomAddress ColorDungeonObjectsTilemap = new RomAddress(0x08, 0x4760);
+    public static final RomAddress ColorDungeonBGAttributes = new RomAddress(0x23, 0x6000);
+    public static final RomAddress BGAttributesPointers_IndoorsA = new RomAddress(0x1A, 0x6076);
+    public static final RomAddress BGAttributesPointers_IndoorsB = new RomAddress(0x1A, 0x6276);
+    public static final RomAddress OverworldObjectsTilemapCGB = new RomAddress(0x1A, 0x6B1D);
+    public static final RomAddress OverworldBGAttributesBanks = new RomAddress(0x1A, 0x6476);
+    public static final RomAddress BGAttributesPointers_Overworld = new RomAddress(0x1A, 0x5E76);
+    public static final RomAddress IndoorsAObjectsAttrmaps = new RomAddress(0x23, 0x4000);
+    public static final RomAddress IndoorsBObjectsAttrmaps = new RomAddress(0x24, 0x4000);
+    public static final RomAddress RoomGBCOverlaysA = new RomAddress(0x26, 0x4000);
+    public static final RomAddress RoomGBCOverlaysB = new RomAddress(0x27, 0x4000);
 }

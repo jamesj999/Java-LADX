@@ -274,3 +274,27 @@ Data_021_56C8
 IndoorSpritePaletteIndexData
 
 TilemapPaletteTable
+
+IndoorObjectsTilemapCGB
+
+ColorDungeonObjectsTilemap
+
+ColorDungeonBGAttributes
+
+BGAttributesPointers_IndoorsA
+
+BGAttributesPointers_IndoorsB
+
+OverworldObjectsTilemapCGB
+
+OverworldBGAttributesBanks
+
+BGAttributesPointers_Overworld
+
+IndoorsAObjectsAttrmaps
+
+IndoorsBObjectsAttrmaps
+
+RoomGBCOverlaysA
+
+RoomGBCOverlaysB
