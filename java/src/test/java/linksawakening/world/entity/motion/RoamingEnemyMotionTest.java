@@ -68,10 +68,22 @@ final class RoamingEnemyMotionTest {
     }
 
     @Test
+    void directionCycleDoesNotSuppressShooting() {
+        for (int cycle = 0; cycle < 4; cycle++) {
+            RoamingEnemyMotion motion = new RoamingEnemyMotion();
+            motion.setStateForTest(0, 1, 0x0B, 0, cycle, 0);
+            assertNotNull(motion.advance(entity(0, 0x09, 0x40, 0x40),
+                0x50, 0x40, () -> 0, null, false).launchRequest());
+        }
+    }
+
+    @Test
     void launchRequiresPrivateCountdownOneToBeZero() {
         RoamingEnemyMotion motion = new RoamingEnemyMotion();
         RoomEntity source = entity(0, 0x09, 0x40, 0x40);
         motion.setStateForTest(0, 1, 0x0B, 0, 1, 0);
+
+        motion.setPrivateCountdown1ForTest(0, 2);
 
         RoamingEnemyMotion.Update update = motion.advance(source, 0x50, 0x40,
             () -> 0, null, false);

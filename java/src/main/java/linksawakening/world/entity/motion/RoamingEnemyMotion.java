@@ -28,6 +28,7 @@ public final class RoamingEnemyMotion {
     private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
@@ -44,6 +45,7 @@ public final class RoamingEnemyMotion {
         speedXAccumulator[slot] = 0;
         speedYAccumulator[slot] = 0;
         privateState1[slot] = 0;
+        privateCountdown1[slot] = 0;
         inertia[slot] = 0;
         collisionsTable[slot] = 0;
         horizontallyCollidedObject[slot] = 0;
@@ -105,6 +107,9 @@ public final class RoamingEnemyMotion {
         if (!initialized[slot]) {
             initialize(slot);
         }
+        if (privateCountdown1[slot] > 0) {
+            privateCountdown1[slot]--;
+        }
         if (transitionCountdown[slot] > 0) {
             transitionCountdown[slot]--;
         }
@@ -112,7 +117,7 @@ public final class RoamingEnemyMotion {
         if (state[slot] != 0) {
             LaunchRequest launchRequest = launchRequestIfEligible(
                 entity, linkEntityX, linkEntityY, creditsGameplay);
-            if (launchRequest != null) {
+            if (launchRequest != null && entity.type() == ENTITY_OCTOROK) {
                 return new Update(entity, launchRequest);
             }
             if (transitionCountdown[slot] == 0) {
@@ -124,8 +129,12 @@ public final class RoamingEnemyMotion {
                     : randomByteSupplier.getAsInt() & 0x03;
                 speedX[slot] = speedXFor(entity.type(), direction[slot]);
                 speedY[slot] = speedYFor(entity.type(), direction[slot]);
+            } else if (backgroundInteraction != null) {
+                EntityBackgroundCollisionResult result = backgroundInteraction.probe(
+                    entity, direction[slot], entity.x(), entity.y(), ignoreHitsCountdown, frameCounter);
+                collisionsTable[slot] = result.blocked() ? result.collisionFlag() : 0;
             }
-            return new Update(entity, null);
+            return new Update(entity, launchRequest);
         }
 
         int x = entity.x();
@@ -175,7 +184,7 @@ public final class RoamingEnemyMotion {
                                                    int linkEntityY, boolean creditsGameplay) {
         int type = entity.type() & 0xFF;
         if (transitionCountdown[entity.slot()] != 0x0A
-            || privateState1[entity.slot()] != 0
+            || privateCountdown1[entity.slot()] != 0
             || type == ENTITY_IRON_MASK) {
             return null;
         }
@@ -195,6 +204,10 @@ public final class RoamingEnemyMotion {
             return new LaunchRequest(entity.slot(), type, ENTITY_MOBLIN_ARROW);
         }
         return null;
+    }
+
+    void setPrivateCountdown1ForTest(int slot, int value) {
+        privateCountdown1[slot] = value & 0xFF;
     }
 
     public void clear(int slot) {
