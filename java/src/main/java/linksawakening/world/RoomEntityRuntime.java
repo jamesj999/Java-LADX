@@ -31,6 +31,7 @@ public final class RoomEntityRuntime {
     private final EntityStoryController story = new EntityStoryController(this);
     private final GenieEntityController genie = new GenieEntityController(this);
     private final EntityProjectileController projectiles = new EntityProjectileController(this);
+    private final EntityPickupController pickups = new EntityPickupController(this);
     private final EntityOutbox outbox = new EntityOutbox();
     private static final int ENTITY_PUSHED_BLOCK = 0x06;
     static final int[] INSTRUMENT_MUSIC_TRACKS = {
@@ -101,12 +102,12 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_SLEEPY_TOADSTOOL = 0x3A;
     static final int ENTITY_HIDING_SLIME_KEY = 0x3C;
     static final int ENTITY_RICHARD = 0x95;
-    private static final int ROOM_OW_POTHOLE_FIELD_SLIME_KEY = 0xC6;
-    private static final int GOLDEN_LEAVES_FINAL_COUNT = 0x06;
-    private static final int GOLDEN_LEAVES_FIVE_COUNT = 0x05;
-    private static final int DIALOG_SLIME_KEY = 0xA2;
-    private static final int DIALOG_GOLDEN_LEAF = 0xE8;
-    private static final int DIALOG_FINAL_GOLDEN_LEAF = 0xE9;
+    static final int ROOM_OW_POTHOLE_FIELD_SLIME_KEY = 0xC6;
+    static final int GOLDEN_LEAVES_FINAL_COUNT = 0x06;
+    static final int GOLDEN_LEAVES_FIVE_COUNT = 0x05;
+    static final int DIALOG_SLIME_KEY = 0xA2;
+    static final int DIALOG_GOLDEN_LEAF = 0xE8;
+    static final int DIALOG_FINAL_GOLDEN_LEAF = 0xE9;
     static final int ENTITY_STALFOS_AGGRESSIVE = 0x1A;
     static final int ENTITY_STALFOS_EVASIVE = 0x1E;
     private static final int ENTITY_GIBDO = 0x1F;
@@ -136,8 +137,8 @@ public final class RoomEntityRuntime {
     static final int BOMB_INITIAL_PHYSICS_FLAGS = 0xD2;
     static final int CHEST_INITIAL_PHYSICS_FLAGS = 0xC2;
     private static final int CHEST_OPTIONS1 = 0x02;
-    private static final int CHEST_OPEN_NOISE_ID = 0x04;
-    private static final int CHEST_TREASURE_JINGLE_ID = 0x01;
+    static final int CHEST_OPEN_NOISE_ID = 0x04;
+    static final int CHEST_TREASURE_JINGLE_ID = 0x01;
     private static final int BOMB_OPTIONS1 = ENTITY_OPT1_SPLASH_IN_WATER
         | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
     private static final int BOMB_EXPLOSION_PHYSICS_LOW_BITS = 0x08;
@@ -173,26 +174,26 @@ public final class RoomEntityRuntime {
     static final int ENTITY_TARIN = TarinRaccoonMotion.ENTITY_TYPE;
     static final int ENTITY_BOW_WOW = 0x6D;
     private static final int ENTITY_KIKI_THE_MONKEY = 0xAD;
-    private static final int ENTITY_DROPPABLE_SECRET_SEASHELL = 0x3D;
-    private static final int SECRET_SEASHELL_HIDDEN_OPTIONS1 =
+    static final int ENTITY_DROPPABLE_SECRET_SEASHELL = 0x3D;
+    static final int SECRET_SEASHELL_HIDDEN_OPTIONS1 =
         ENTITY_OPT1_NO_GROUND_INTERACTION | ENTITY_OPT1_NO_WALL_COLLISION;
     private static final int SECRET_SEASHELL_REVEALED_OPTIONS1 =
         ENTITY_OPT1_SPLASH_IN_WATER | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
-    private static final int DROPPABLE_HIDDEN_OPTIONS1 =
+    static final int DROPPABLE_HIDDEN_OPTIONS1 =
         ENTITY_OPT1_NO_GROUND_INTERACTION | ENTITY_OPT1_NO_WALL_COLLISION;
-    private static final int HIDING_SLIME_KEY_HIDDEN_OPTIONS1 =
+    static final int HIDING_SLIME_KEY_HIDDEN_OPTIONS1 =
         ENTITY_OPT1_NO_GROUND_INTERACTION | ENTITY_OPT1_SPLASH_IN_WATER
             | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL | ENTITY_OPT1_NO_WALL_COLLISION;
-    private static final int DROPPABLE_REVEALED_OPTIONS1 =
+    static final int DROPPABLE_REVEALED_OPTIONS1 =
         ENTITY_OPT1_SPLASH_IN_WATER | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
-    private static final int DROPPABLE_HIDDEN_STATE_BURIED = 0x02;
-    private static final int DROPPABLE_HIDDEN_STATE_PEGASUS = 0x01;
-    private static final int DROPPABLE_REVEAL_COUNTDOWN = 0x18;
-    private static final int DROPPABLE_REVEAL_SLOW_COUNTDOWN = 0x80;
-    private static final int DROPPABLE_REVEAL_VECTOR_LENGTH = 0x0C;
-    private static final int DROPPABLE_REVEAL_SPEED_Z = 0x20;
-    private static final int DROPPABLE_OBJECT_SHORT_GRASS = 0x04;
-    private static final int DROPPABLE_OBJECT_SHOVEL_HOLE = 0xCC;
+    static final int DROPPABLE_HIDDEN_STATE_BURIED = 0x02;
+    static final int DROPPABLE_HIDDEN_STATE_PEGASUS = 0x01;
+    static final int DROPPABLE_REVEAL_COUNTDOWN = 0x18;
+    static final int DROPPABLE_REVEAL_SLOW_COUNTDOWN = 0x80;
+    static final int DROPPABLE_REVEAL_VECTOR_LENGTH = 0x0C;
+    static final int DROPPABLE_REVEAL_SPEED_Z = 0x20;
+    static final int DROPPABLE_OBJECT_SHORT_GRASS = 0x04;
+    static final int DROPPABLE_OBJECT_SHOVEL_HOLE = 0xCC;
     private static final int ENTITY_HEART_CONTAINER = 0x36;
     static final int ENTITY_MOBLIN_SWORD = 0x14;
     static final int ENTITY_LASER = 0x2A;
@@ -205,7 +206,7 @@ public final class RoomEntityRuntime {
     static final int ENTITY_SWORD_BEAM = 0xDF;
     static final int ENTITY_BOMB = 0x02;
     static final int ENTITY_SWORD_SHIELD_PICKUP = 0x31;
-    private static final int ENTITY_OWL_EVENT = 0x41;
+    static final int ENTITY_OWL_EVENT = 0x41;
     static final int ROOM_OW_TAIL_KEY_CHEST = 0x41;
     static final int ROOM_OW_EAST_OF_MOBLIN_HIDEOUT = 0x36;
     static final int ROOM_OW_WEST_OF_TAIL_CAVE = 0xD2;
@@ -291,7 +292,7 @@ public final class RoomEntityRuntime {
         | ENTITY_OPT1_NO_WALL_COLLISION | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
 
     final RoomEntity[] slots;
-    private EntitySpriteSelection spriteSelection;
+    EntitySpriteSelection spriteSelection;
     private final EntitySpriteTileSnapshot spriteTiles;
     final boolean indoorRoom;
     private final RomTables romTables;
@@ -299,7 +300,7 @@ public final class RoomEntityRuntime {
     private final RomRandomByteSource fallbackRomRandomByteSource;
     final EntitySpriteHandlerCatalog spriteHandlers;
     final RomEnemyCombatTables enemyCombatTables;
-    private final ChestContentsTable chestContentsTable;
+    final ChestContentsTable chestContentsTable;
     private RoomEntityGroundInteraction groundInteraction =
         (entity, frameCounter, previousGroundStatus, speedZ, sideScrolling) ->
             RoomEntityGroundInteraction.Result.unchanged(entity, 0);
@@ -321,7 +322,7 @@ public final class RoomEntityRuntime {
     private final MoblinSwordMotion moblinSwordMotion = new MoblinSwordMotion();
     final PlayerArrowMotion playerArrowMotion = new PlayerArrowMotion();
     private final EnemyProjectileMotion enemyProjectileMotion = new EnemyProjectileMotion();
-    private final HookshotChainMotion hookshotChainMotion = new HookshotChainMotion();
+    final HookshotChainMotion hookshotChainMotion = new HookshotChainMotion();
     private final HookshotBridgeMotion hookshotBridgeMotion = new HookshotBridgeMotion();
     private final LaserMotion laserMotion = new LaserMotion();
     private final TektiteMotion tektiteMotion = new TektiteMotion();
@@ -363,7 +364,7 @@ public final class RoomEntityRuntime {
     private final FishMotion fishMotion = new FishMotion();
     private final CrowMotion crowMotion = new CrowMotion();
     private final BooBuddyMotion booBuddyMotion = new BooBuddyMotion();
-    private final FairyMotion fairyMotion = new FairyMotion();
+    final FairyMotion fairyMotion = new FairyMotion();
     private final StalfosAggressiveMotion stalfosAggressiveMotion =
         new StalfosAggressiveMotion();
     private final StalfosEvasiveMotion stalfosEvasiveMotion = new StalfosEvasiveMotion();
@@ -416,18 +417,18 @@ public final class RoomEntityRuntime {
     private final FollowingNpcMotion followingNpcMotion = new FollowingNpcMotion();
     private final BowWowMotion bowWowMotion = new BowWowMotion();
     private final ColorShellMotion colorShellMotion = new ColorShellMotion();
-    private final SecretSeashellMotion secretSeashellMotion =
+    final SecretSeashellMotion secretSeashellMotion =
         new SecretSeashellMotion();
     final ThrownEntityMotion thrownEntityMotion = new ThrownEntityMotion();
     final int[] slowTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     final boolean[] slowTimerInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] droppedItemBySlot = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] dropPrivateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] dropPrivateCountdown3 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] droppablePrivateState3 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] droppablePrivateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final boolean[] enemyDropActive = new boolean[EntityRoomLoader.MAX_ENTITIES];
-    private final EnemyDropMotion enemyDropMotion = new EnemyDropMotion();
+    final int[] droppedItemBySlot = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] dropPrivateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] dropPrivateCountdown3 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] droppablePrivateState3 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] droppablePrivateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final boolean[] enemyDropActive = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    final EnemyDropMotion enemyDropMotion = new EnemyDropMotion();
     final int[] enemyTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] bossDeathProducerState = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] rollingBonesDeathInitialized =
@@ -453,7 +454,7 @@ public final class RoomEntityRuntime {
     final int[] enemyHitboxFlags = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] warpState = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] warpTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] entityGroundStatus = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] entityGroundStatus = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] fallingTargetX = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] fallingTargetY = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] fallingSpeedX = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -461,7 +462,7 @@ public final class RoomEntityRuntime {
     private final int[] fallingSpeedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] fallingSpeedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] fallingVisualYOffset = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] baseEntityFlipAttribute = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] baseEntityFlipAttribute = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] entityOptions1Override = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] enemyProjectileSpawnedThisFrame =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
@@ -502,10 +503,10 @@ public final class RoomEntityRuntime {
     final int[] thrownDirection = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] ledgeTransitionTimer = new int[EntityRoomLoader.MAX_ENTITIES];
     final boolean[] thrownMotionInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] chestSpeedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] chestSpeedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] chestInertia = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] chestItemBySlot = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] chestSpeedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] chestSpeedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] chestInertia = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] chestItemBySlot = new int[EntityRoomLoader.MAX_ENTITIES];
     private final List<RoamingEnemyMotion.LaunchRequest> projectileLaunchRequests =
         new ArrayList<>();
     final List<TransientVfxRequest> transientVfxRequests = outbox.channel(TransientVfxRequest.class, "transientVfxRequests");
@@ -539,7 +540,7 @@ public final class RoomEntityRuntime {
     private final List<ThrownBackgroundCollisionEvent> pendingThrownBackgroundCollisions = outbox.channel(ThrownBackgroundCollisionEvent.class, "pendingThrownBackgroundCollisions");
     final List<DungeonWarpRequest> pendingDungeonWarpRequests = outbox.channel(DungeonWarpRequest.class, "pendingDungeonWarpRequests");
     private final List<WarpLinkStateRequest> pendingWarpLinkStateRequests = outbox.channel(WarpLinkStateRequest.class, "pendingWarpLinkStateRequests");
-    private final List<ChestRewardEvent> pendingChestRewardEvents = outbox.channel(ChestRewardEvent.class, "pendingChestRewardEvents");
+    final List<ChestRewardEvent> pendingChestRewardEvents = outbox.channel(ChestRewardEvent.class, "pendingChestRewardEvents");
     private final List<KeyRewardEvent> pendingKeyRewardEvents = outbox.channel(KeyRewardEvent.class, "pendingKeyRewardEvents");
     private final List<SlimeKeyRewardEvent> pendingSlimeKeyRewardEvents = outbox.channel(SlimeKeyRewardEvent.class, "pendingSlimeKeyRewardEvents");
     private final List<WitchExchangeEvent> pendingWitchExchangeEvents = outbox.channel(WitchExchangeEvent.class, "pendingWitchExchangeEvents");
@@ -618,10 +619,10 @@ public final class RoomEntityRuntime {
     private int currentLinkSpeedY;
     private int currentLinkFinalPositionX;
     private boolean currentLinkFinalPositionXConfigured;
-    private int chestShieldLevel = 1;
+    int chestShieldLevel = 1;
     int chestSwordLevel = 1;
     private boolean chestPlayerLevelsKnown;
-    private int chestPowerBraceletLevel = 1;
+    int chestPowerBraceletLevel = 1;
     int entityGoldenLeavesCount;
     int pendingMusicTrack = -1;
     int pendingMusicFadeOutCountdown;
@@ -640,9 +641,9 @@ public final class RoomEntityRuntime {
     final int[] instrumentHintBatches = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] instrumentWarpX = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] instrumentWarpY = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final HeartPiecePickupMotion[] heartPiecePickup = new HeartPiecePickupMotion[EntityRoomLoader.MAX_ENTITIES];
-    private final List<HeartPiecePickupMotion.Update> heartPieceUpdates = new ArrayList<>();
-    private int heartPiecesCount;
+    final HeartPiecePickupMotion[] heartPiecePickup = new HeartPiecePickupMotion[EntityRoomLoader.MAX_ENTITIES];
+    final List<HeartPiecePickupMotion.Update> heartPieceUpdates = new ArrayList<>();
+    int heartPiecesCount;
     private final int[] heartPieceMeterPairs = new int[20];
     private final int[] instrumentPaletteCycle = new int[32];
     private final int[] instrumentWarpSprites = new int[256];
@@ -702,7 +703,7 @@ public final class RoomEntityRuntime {
     IntUnaryOperator owlDialogResolver = roomId -> 0x0D9;
     int owlStatueDialogId = -1;
     IntUnaryOperator owlDefaultMusicResolver = roomId -> 0x05;
-    private boolean groundInteractionSideScrolling;
+    boolean groundInteractionSideScrolling;
     int entityMapId = -1;
     int entityRoomId = -1;
     private boolean dungeonMinibossReady;
@@ -711,11 +712,11 @@ public final class RoomEntityRuntime {
     // These latches represent the HRAM values read by
     // DroppableRevealOrReturnIfNeeded's tree-shell branch. RoomSession feeds
     // them from Link's live Pegasus-Boots collision record before dispatch.
-    private boolean secretSeashellScreenShakeActive;
-    private boolean secretSeashellPegasusCollisionActive;
-    private boolean secretSeashellPegasusCollisionCoordinatesKnown;
-    private int secretSeashellPegasusCollisionX;
-    private int secretSeashellPegasusCollisionY;
+    boolean secretSeashellScreenShakeActive;
+    boolean secretSeashellPegasusCollisionActive;
+    boolean secretSeashellPegasusCollisionCoordinatesKnown;
+    int secretSeashellPegasusCollisionX;
+    int secretSeashellPegasusCollisionY;
     private int liftedEntitySlot = -1;
     private int liftedCarryState;
     private int liftedEffectiveDirection;
@@ -5943,7 +5944,7 @@ public final class RoomEntityRuntime {
 
     private void applyPlayerProjectileDamage(RoomEntity target, int damageType, int speedX, int speedY) { projectiles.applyPlayerProjectileDamage(target, damageType, speedX, speedY); }
 
-    private int initialHealth(int type) {
+    int initialHealth(int type) {
         return enemyCombatTables == null
             ? RoomEntityCombatRules.initialHealth(type)
             : enemyCombatTables.initialHealth(type);
@@ -8376,23 +8377,7 @@ public final class RoomEntityRuntime {
         return result;
     }
 
-    private void advanceHeartPiecePickup(RoomEntity entity, int x, int y, int z) {
-        int slot = entity.slot();
-        var update = heartPiecePickup[slot].advance(enemyTransitionCountdown[slot], dialogActive, heartPiecesCount);
-        heartPieceUpdates.add(update);
-        if (update.incrementPiece()) heartPiecesCount++;
-        if (update.newContainer()) heartPiecesCount = 0;
-        if (update.dialogId() >= 0) pendingDialogRequests.add(new DialogRequest(0, update.dialogId()));
-        if (update.newContainer()) pendingEntityEvents.add(new EntityCombatEvent(slot, entity.type(), 0, false,
-            EntityCombatEvent.SoundChannel.JINGLE, 0x19));
-        if (update.complete()) {
-            disableEntityWithoutPersistence(slot);
-            return;
-        }
-        pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
-        pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
-        slots[slot] = withZ(withPositionAndVariant(entity, x, (y - 12) & 255, entity.spriteVariant()), z);
-    }
+    private void advanceHeartPiecePickup(RoomEntity entity, int x, int y, int z) { pickups.advanceHeartPiecePickup(entity, x, y, z); }
 
     public String instrumentTrace() {
         StringBuilder trace = new StringBuilder().append(activeMusic ? 1 : 0);
@@ -8642,48 +8627,9 @@ public final class RoomEntityRuntime {
         }
     }
 
-    private void spawnBossKeyDrop(RoomEntity source, int spriteVariant, int z,
-                                  int speedZ, int privateCountdown1) {
-        spawnKeyDropAt(ENTITY_KEY_DROP_POINT, source.x(), source.y(), spriteVariant, z, speedZ,
-            privateCountdown1);
-    }
+    private void spawnBossKeyDrop(RoomEntity source, int spriteVariant, int z, int speedZ, int privateCountdown1) { pickups.spawnBossKeyDrop(source, spriteVariant, z, speedZ, privateCountdown1); }
 
-    private int spawnKeyDropAt(int itemType, int x, int y, int spriteVariant, int z,
-                               int speedZ, int privateCountdown1) {
-        int freeSlot = findFreeEntitySlot();
-        if (freeSlot < 0) {
-            return -1;
-        }
-
-        EntitySpriteDefinition definition = spriteDefinitionFor(itemType);
-        int variant = definition.supported()
-            ? Math.min(spriteVariant, definition.variantCount() - 1) : -1;
-        RoomEntity drop = new RoomEntity(freeSlot, -1, itemType,
-            x & 0xFF, y & 0xFF, EntityStatus.ACTIVE, definition, variant,
-            0, 0, z, -1, false);
-        slots[freeSlot] = drop;
-        resetEnemyDropState(freeSlot);
-        enemyDropMotion.initialize(freeSlot, groundInteractionSideScrolling, speedZ);
-        enemyDropActive[freeSlot] = true;
-        slowTransitionCountdown[freeSlot] = 0;
-        slowTimerInitialized[freeSlot] = false;
-        dropPrivateCountdown1[freeSlot] = privateCountdown1;
-        dropPrivateCountdown3[freeSlot] = 0;
-        enemyTransitionCountdown[freeSlot] = 0;
-        enemyStunnedCountdown[freeSlot] = 0;
-        dyingCountdown[freeSlot] = 0;
-        powerRecoilDeath[freeSlot] = false;
-        enemyPhysicsFlags[freeSlot] = initialPhysicsFlags(itemType);
-        enemyHealth[freeSlot] = initialHealth(itemType);
-        enemyFlashCountdown[freeSlot] = 0;
-        enemyIgnoreHitsCountdown[freeSlot] = 1;
-        entityGroundStatus[freeSlot] = 0;
-        baseEntityFlipAttribute[freeSlot] = 0;
-        entityOptions1Override[freeSlot] = -1;
-        enemyRecoilMotion.clear(freeSlot);
-        dynamicEntitySpawnedThisFrame[freeSlot] = true;
-        return freeSlot;
-    }
+    private int spawnKeyDropAt(int itemType, int x, int y, int spriteVariant, int z, int speedZ, int privateCountdown1) { return pickups.spawnKeyDropAt(itemType, x, y, spriteVariant, z, speedZ, privateCountdown1); }
 
     private int enemyDropHealthGroup(int entityType) {
         if (enemyCombatTables == null) {
@@ -8693,45 +8639,7 @@ public final class RoomEntityRuntime {
         return enemyCombatTables.healthGroup(entityType);
     }
 
-    private void spawnEnemyDrop(RoomEntity source, int itemType) {
-        int freeSlot = findFreeEntitySlot();
-        if (freeSlot < 0) {
-            return;
-        }
-
-        EntitySpriteDefinition definition = spriteDefinitionFor(itemType);
-        int variant = definition.supported() ? definition.initialVariant() : -1;
-        if (itemType == ENTITY_KEY_DROP_POINT && source.type() == ENTITY_ARMOS_KNIGHT) {
-            variant = 3;
-        }
-        RoomEntity drop = new RoomEntity(freeSlot, -1, itemType, source.x(), source.y(),
-            EntityStatus.ACTIVE, definition, variant, 0, 0, source.z(), -1, false);
-        slots[freeSlot] = drop;
-        resetEnemyDropState(freeSlot);
-        slowTransitionCountdown[freeSlot] = 0x80;
-        slowTimerInitialized[freeSlot] = true;
-        enemyTransitionCountdown[freeSlot] = 0;
-        enemyStunnedCountdown[freeSlot] = 0;
-        dyingCountdown[freeSlot] = 0;
-        powerRecoilDeath[freeSlot] = false;
-        enemyPhysicsFlags[freeSlot] = initialPhysicsFlags(itemType);
-        enemyHealth[freeSlot] = initialHealth(itemType);
-        enemyFlashCountdown[freeSlot] = 0;
-        enemyIgnoreHitsCountdown[freeSlot] = 1;
-        entityGroundStatus[freeSlot] = 0;
-        baseEntityFlipAttribute[freeSlot] = 0;
-        entityOptions1Override[freeSlot] = -1;
-        enemyRecoilMotion.clear(freeSlot);
-        dropPrivateCountdown1[freeSlot] = 0x18;
-        dropPrivateCountdown3[freeSlot] = 0x03;
-        if (itemType == ENTITY_DROPPABLE_FAIRY) {
-            fairyMotion.initialize(freeSlot);
-        } else {
-            enemyDropMotion.initialize(freeSlot, groundInteractionSideScrolling);
-            enemyDropActive[freeSlot] = true;
-        }
-        dynamicEntitySpawnedThisFrame[freeSlot] = true;
-    }
+    private void spawnEnemyDrop(RoomEntity source, int itemType) { pickups.spawnEnemyDrop(source, itemType); }
 
     private boolean spawnKanaletWallMoblin(RoomEntity wall) {
         int freeSlot = findFreeEntitySlot();
@@ -9388,98 +9296,12 @@ public final class RoomEntityRuntime {
                 : spriteSelection.roomTable(), entityMapId);
     }
 
-    private void initializeChestEntity(RoomEntity entity) {
-        int slot = entity.slot();
-        int itemType = chestItemBySlot[slot] & 0xFF;
-        chestSpeedY[slot] = 0xFC;
-        chestSpeedYAccumulator[slot] = 0;
-        chestInertia[slot] = 0;
-        pendingEntityEvents.add(new EntityCombatEvent(
-            slot, ENTITY_CHEST_WITH_ITEM, 0, false,
-            EntityCombatEvent.SoundChannel.NOISE, CHEST_OPEN_NOISE_ID));
-        if (itemType == ChestContentsTable.CHEST_TAIL_KEY) {
-            for (RoomEntity candidate : slots) {
-                if (candidate.loaded() && candidate.type() == ENTITY_OWL_EVENT) {
-                    owlPrivateCountdown1[candidate.slot()] = 0x38;
-                    break;
-                }
-            }
-        }
-        if (itemType < ChestContentsTable.CHEST_MESSAGE) {
-            pendingChestRewardEvents.add(new ChestRewardEvent(slot, itemType));
-        }
-    }
+    private void initializeChestEntity(RoomEntity entity) { pickups.initializeChestEntity(entity); }
 
     /** Returns true when the source handler unloaded the chest this frame. */
-    private boolean advanceChestEntity(int index, RoomEntity entity) {
-        int slot = entity.slot();
-        int itemType = chestItemBySlot[slot] & 0xFF;
-        if (itemType == ChestContentsTable.CHEST_ZOL) {
-            spawnChestZol(entity);
-            clearEntity(slot);
-            return true;
-        }
+    private boolean advanceChestEntity(int index, RoomEntity entity) { return pickups.advanceChestEntity(index, entity); }
 
-        // ChestWithItemEntityHandler ($07:7C5E) renders before this gate,
-        // but does not move, advance inertia, or unload while text is open.
-        if (dialogActive) {
-            return false;
-        }
-
-        int y = addFallingSpeedToPosition(entity.y(), chestSpeedY[slot],
-            chestSpeedYAccumulator, slot);
-        int inertia = (chestInertia[slot] + 1) & 0xFF;
-        chestInertia[slot] = inertia;
-        if (inertia == 0x10) {
-            chestSpeedY[slot] = 0;
-        }
-        if (inertia == 0x08 && chestContentsTable != null) {
-            int soundValue = chestContentsTable.presentationSoundValue(itemType);
-            if (soundValue == CHEST_TREASURE_JINGLE_ID) {
-                pendingEntityEvents.add(new EntityCombatEvent(
-                    slot, ENTITY_CHEST_WITH_ITEM, 0, false,
-                    EntityCombatEvent.SoundChannel.JINGLE, CHEST_TREASURE_JINGLE_ID));
-            } else if (soundValue != 0) {
-                pendingMusicTrack = soundValue;
-            }
-        }
-        if (inertia == 0x26 && chestContentsTable != null) {
-            int roomId = spriteSelection == null ? -1 : spriteSelection.roomId();
-            int dialogLow = chestContentsTable.dialogLowIdFor(itemType,
-                chestShieldLevel, chestSwordLevel, chestPowerBraceletLevel,
-                entityMapId < 0 ? 0 : entityMapId, roomId < 0 ? 0 : roomId);
-            int tableId = itemType == ChestContentsTable.CHEST_MESSAGE && roomId == 0x96
-                ? 1 : 0;
-            pendingDialogRequests.add(new DialogRequest(tableId, dialogLow));
-        }
-        if (inertia == 0x28) {
-            clearEntity(slot);
-            return true;
-        }
-        slots[index] = withPositionAndVariant(entity, entity.x(), y, itemType);
-        return false;
-    }
-
-    private void spawnChestZol(RoomEntity chest) {
-        int freeSlot = findFreeEntitySlot();
-        if (freeSlot < 0) {
-            return;
-        }
-        EntitySpriteDefinition definition = spriteDefinitionFor(ENTITY_ZOL);
-        int variant = definition.supported() ? definition.initialVariant() : -1;
-        RoomEntity zol = new RoomEntity(freeSlot, -1, ENTITY_ZOL, chest.x(), chest.y(),
-            EntityStatus.ACTIVE, definition, variant, 0, 0, 0x06, -1, false);
-        slots[freeSlot] = zol;
-        zolGelMotion.prepareChestSpawn(freeSlot);
-        enemyPhysicsFlags[freeSlot] = initialPhysicsFlags(ENTITY_ZOL);
-        enemyHitboxFlags[freeSlot] = 0;
-        enemyHealth[freeSlot] = initialHealth(ENTITY_ZOL);
-        enemyIgnoreHitsCountdown[freeSlot] = 1;
-        dynamicEntitySpawnedThisFrame[freeSlot] = true;
-        pendingEntityEvents.add(new EntityCombatEvent(
-            freeSlot, ENTITY_ZOL, 0, false,
-            EntityCombatEvent.SoundChannel.JINGLE, 0x1D));
-    }
+    private void spawnChestZol(RoomEntity chest) { pickups.spawnChestZol(chest); }
 
     private void finalizePendingBombPresentations() {
         for (int slot = 0; slot < slots.length; slot++) {
@@ -11306,192 +11128,35 @@ public final class RoomEntityRuntime {
         };
     }
 
-    private void initializeCommonDroppable(RoomEntity entity) {
-        int slot = entity.slot();
-        // EntityInitDiggableBushOrPotDroppable is used by hearts and magic
-        // powder directly. The other ordinary drops use the tree/pot init
-        // handler, which selects the Pegasus branch outdoors and the buried
-        // branch indoors.
-        droppablePrivateState3[slot] = entity.type() == ENTITY_DROPPABLE_HEART
-            || entity.type() == ENTITY_DROPPABLE_MAGIC_POWDER
-            || entity.type() == ENTITY_HIDING_SLIME_KEY
-            || indoorRoom
-            ? DROPPABLE_HIDDEN_STATE_BURIED
-            : DROPPABLE_HIDDEN_STATE_PEGASUS;
-        droppablePrivateState4[slot] = 0;
-        entityOptions1Override[slot] = entity.type() == ENTITY_HIDING_SLIME_KEY
-            ? HIDING_SLIME_KEY_HIDDEN_OPTIONS1 : DROPPABLE_HIDDEN_OPTIONS1;
+    private void initializeCommonDroppable(RoomEntity entity) { pickups.initializeCommonDroppable(entity); }
+
+    private CommonDroppableUpdate advanceCommonDroppable(RoomEntity entity, int linkEntityX, int linkEntityY, RoomEntityObjectSample objectUnderEntity) { return pickups.advanceCommonDroppable(entity, linkEntityX, linkEntityY, objectUnderEntity); }
+
+    private void revealCommonDroppable(RoomEntity entity, int linkEntityX, int linkEntityY) { pickups.revealCommonDroppable(entity, linkEntityX, linkEntityY); }
+
+
+
+
+
+    record CommonDroppableUpdate(RoomEntity entity, boolean hidden) {
     }
 
-    private CommonDroppableUpdate advanceCommonDroppable(
-            RoomEntity entity, int linkEntityX, int linkEntityY,
-            RoomEntityObjectSample objectUnderEntity) {
-        int slot = entity.slot();
-        int hiddenState = droppablePrivateState3[slot];
-        if (hiddenState != 0) {
-            boolean reveal = false;
-            if (hiddenState == DROPPABLE_HIDDEN_STATE_BURIED) {
-                // DroppableRevealOrReturnIfNeeded deliberately keeps ordinary
-                // buried drops invisible indoors. Outdoors, hearts reveal on
-                // short grass or a shovel hole; the remaining shared drops
-                // require the shovel-hole path and set privateState4 first.
-                if (!indoorRoom) {
-                    int objectId = objectUnderEntity == null
-                        ? 0xFF : objectUnderEntity.objectId() & 0xFF;
-                    if (entity.type() == ENTITY_DROPPABLE_HEART) {
-                        reveal = objectId == DROPPABLE_OBJECT_SHORT_GRASS
-                            || objectId == DROPPABLE_OBJECT_SHOVEL_HOLE;
-                    } else {
-                        droppablePrivateState4[slot] = 1;
-                        reveal = objectId == DROPPABLE_OBJECT_SHOVEL_HOLE;
-                    }
-                }
-            } else if (hiddenState == DROPPABLE_HIDDEN_STATE_PEGASUS) {
-                reveal = secretSeashellScreenShakeActive
-                    && secretSeashellPegasusCollisionActive
-                    && (!secretSeashellPegasusCollisionCoordinatesKnown
-                        || withinUnsignedWindow(entity.x() + 0x08,
-                            secretSeashellPegasusCollisionX, 0x10)
-                        && withinUnsignedWindow(entity.y() + 0x08,
-                            secretSeashellPegasusCollisionY, 0x10));
-            }
-
-            if (!reveal) {
-                entityOptions1Override[slot] = entity.type() == ENTITY_HIDING_SLIME_KEY
-                    ? HIDING_SLIME_KEY_HIDDEN_OPTIONS1 : DROPPABLE_HIDDEN_OPTIONS1;
-                return new CommonDroppableUpdate(withVariant(entity, -1), true);
-            }
-            revealCommonDroppable(entity, linkEntityX, linkEntityY);
-        }
-
-        entityOptions1Override[slot] = hiddenState == 0
-            ? entityOptions1Override[slot] : DROPPABLE_REVEALED_OPTIONS1;
-        if (entity.type() != ENTITY_DROPPABLE_FAIRY && !enemyDropActive[slot]) {
-            enemyDropMotion.initialize(slot, groundInteractionSideScrolling);
-            enemyDropActive[slot] = true;
-        }
-        return new CommonDroppableUpdate(
-            withVariant(entity, entity.spriteDefinition().supported() ? 0 : -1), false);
-    }
-
-    private void revealCommonDroppable(RoomEntity entity, int linkEntityX, int linkEntityY) {
-        int slot = entity.slot();
-        droppablePrivateState3[slot] = 0;
-        droppablePrivateState4[slot] = 0;
-        dropPrivateCountdown1[slot] = DROPPABLE_REVEAL_COUNTDOWN;
-        slowTransitionCountdown[slot] = DROPPABLE_REVEAL_SLOW_COUNTDOWN;
-        slowTimerInitialized[slot] = true;
-
-        if (entity.type() == ENTITY_DROPPABLE_FAIRY) {
-            Vector vector = vectorAwayFromLink(entity.x(), entity.y(),
-                linkEntityX, linkEntityY, DROPPABLE_REVEAL_VECTOR_LENGTH);
-            fairyMotion.setSpeed(slot, vector.x(), vector.y());
-            return;
-        }
-
-        enemyDropMotion.initialize(slot, groundInteractionSideScrolling,
-            DROPPABLE_REVEAL_SPEED_Z);
-        enemyDropMotion.initializeAwayFromLink(slot, entity.x(), entity.y(),
-            linkEntityX, linkEntityY, DROPPABLE_REVEAL_VECTOR_LENGTH);
-        enemyDropActive[slot] = true;
-        entityOptions1Override[slot] = DROPPABLE_REVEALED_OPTIONS1;
-    }
-
-
-
-
-
-    private record CommonDroppableUpdate(RoomEntity entity, boolean hidden) {
-    }
-
-    private record SlimeKeyTransitionUpdate(RoomEntity entity, int nextTransitionCountdown,
+    record SlimeKeyTransitionUpdate(RoomEntity entity, int nextTransitionCountdown,
                                             boolean holdAboveLink, boolean unload,
                                             SlimeKeyRewardEvent reward) {
     }
 
 
 
-    private SlimeKeyTransitionUpdate advanceHidingSlimeKey(
-            RoomEntity entity, int slot, int linkEntityX, int linkEntityY, int linkZ) {
-        int transition = enemyTransitionCountdown[slot];
-        if (transition == 0) {
-            return new SlimeKeyTransitionUpdate(entity, 0, false, false, null);
-        }
-        if (transition == 1) {
-            // The handler decrements A locally for this branch and then takes
-            // UnloadEntityAndReturn; the transition table byte itself is not
-            // observed again because the entity is gone.
-            return new SlimeKeyTransitionUpdate(entity, transition, false, true, null);
-        }
+    private SlimeKeyTransitionUpdate advanceHidingSlimeKey(RoomEntity entity, int slot, int linkEntityX, int linkEntityY, int linkZ) { return pickups.advanceHidingSlimeKey(entity, slot, linkEntityX, linkEntityY, linkZ); }
 
-        SlimeKeyRewardEvent reward = null;
-        int nextTransition = transition;
-        if (transition == 0x10) {
-            nextTransition = 0x0F;
-            int leaves = Math.min(0x63, entityGoldenLeavesCount & 0xFF);
-            if (!indoorRoom && entityRoomId == ROOM_OW_POTHOLE_FIELD_SLIME_KEY) {
-                leaves = GOLDEN_LEAVES_FIVE_COUNT;
-            }
-            leaves = Math.min(0x63, leaves + 1);
-            entityGoldenLeavesCount = leaves;
-            int dialogLowId = leaves == GOLDEN_LEAVES_FINAL_COUNT
-                ? DIALOG_SLIME_KEY
-                : leaves == GOLDEN_LEAVES_FIVE_COUNT
-                    ? DIALOG_FINAL_GOLDEN_LEAF : DIALOG_GOLDEN_LEAF;
-            reward = new SlimeKeyRewardEvent(slot, leaves, dialogLowId);
-        }
+    private void initializeEntityTimers(RoomEntity entity) { pickups.initializeEntityTimers(entity); }
 
-        RoomEntity held = withPositionAndVariant(entity, linkEntityX,
-            linkEntityY - 0x0C, entity.spriteVariant());
-        held = withZ(held, linkZ);
-        return new SlimeKeyTransitionUpdate(held, nextTransition, true, false, reward);
-    }
+    private void resetEnemyDropState(int slot) { pickups.resetEnemyDropState(slot); }
 
-    private void initializeEntityTimers(RoomEntity entity) {
-        int slot = entity.slot();
-        enemyPhysicsFlags[slot] = initialPhysicsFlags(entity.type());
-        if (isCommonDroppableType(entity.type())) {
-            initializeCommonDroppable(entity);
-        }
-        if (entity.type() == ENTITY_DROPPABLE_SECRET_SEASHELL) {
-            secretSeashellMotion.ensureInitialized(slot, entityRoomId);
-            entityOptions1Override[slot] = SECRET_SEASHELL_HIDDEN_OPTIONS1;
-        }
-        if (indoorRoom && RoomEntityPickupRules.usesIndoorDefaultSlowTimer(entity.type())) {
-            slowTransitionCountdown[slot] = 0x80;
-            slowTimerInitialized[slot] = true;
-        }
-    }
+    private void decrementEnemyDropCountdowns(RoomEntity entity) { pickups.decrementEnemyDropCountdowns(entity); }
 
-    private void resetEnemyDropState(int slot) {
-        droppedItemBySlot[slot] = 0;
-        dropPrivateCountdown1[slot] = 0;
-        dropPrivateCountdown3[slot] = 0;
-        droppablePrivateState3[slot] = 0;
-        droppablePrivateState4[slot] = 0;
-        enemyDropActive[slot] = false;
-        enemyDropMotion.clear(slot);
-        fairyMotion.clear(slot);
-        hookshotChainMotion.clear(slot);
-    }
-
-    private void decrementEnemyDropCountdowns(RoomEntity entity) {
-        int slot = entity.slot();
-        if (dropPrivateCountdown1[slot] > 0) {
-            dropPrivateCountdown1[slot]--;
-        }
-        if (dropPrivateCountdown3[slot] > 0) {
-            dropPrivateCountdown3[slot]--;
-        }
-    }
-
-    private boolean checkForKeyDropQuicksandHole(RoomEntity entity) {
-        if (indoorRoom || entityRoomId != 0xCE || entity.z() != 0) {
-            return false;
-        }
-        return withinUnsignedWindow(entity.y(), 0x48, 3)
-            && withinUnsignedWindow(entity.x(), 0x50, 3);
-    }
+    private boolean checkForKeyDropQuicksandHole(RoomEntity entity) { return pickups.checkForKeyDropQuicksandHole(entity); }
 
 
 
