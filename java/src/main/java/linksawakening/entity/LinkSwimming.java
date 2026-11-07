@@ -60,7 +60,7 @@ final class LinkSwimming {
             swimmingFastCountdown = 0x20;
         }
 
-        if (link.itemsBlockMotion()) {
+        if (link.linkEquipment.itemsBlockMotion()) {
             link.movingThisFrame = false;
             link.walkTickCounter = 0;
             link.walkFrame = 0;

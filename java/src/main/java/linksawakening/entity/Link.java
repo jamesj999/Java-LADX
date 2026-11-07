@@ -33,6 +33,8 @@ import java.util.function.BooleanSupplier;
  */
 public final class Link implements RocsFeather.JumpTarget {
 
+    final LinkEquipment linkEquipment = new LinkEquipment(this);
+
     final LinkAnimator linkAnimator = new LinkAnimator(this);
 
     final LinkEntityEffects linkEntityEffects = new LinkEntityEffects(this);
@@ -427,37 +429,15 @@ public final class Link implements RocsFeather.JumpTarget {
         return romAttackStepAnimationCountdown & 0xFF;
     }
 
-    /** Starts the ROM's generic item attack-step animation window. */
-    public void startRomItemAttackStep() {
-        romAttackStepAnimationCountdown = ROM_ITEM_ATTACK_STEP_COUNTDOWN;
-    }
 
-    /** Starts SprinkleMagicPowder's two-frame-longer generic item window ($0E). */
-    public void startRomMagicPowderAttackStep() {
-        romAttackStepAnimationCountdown = 0x0E;
-    }
 
-    /** Starts UseMagicRod's high-bit attack-step animation window. */
-    public void startRomMagicRodAttackStep() {
-        romAttackStepAnimationCountdown = 0x8E;
-    }
 
-    /** Mirrors TarinEntityHandler's direct clear of the item attack-step byte. */
-    public void clearRomAttackStepAnimationCountdown() {
-        romAttackStepAnimationCountdown = 0;
-    }
 
-    /**
-     * Mirrors the leading CheckItemsToUse gate used before an equipped item
-     * spends inventory. Airborne motion remains eligible; PlaceBomb does not
-     * reject it, while pit, carry, and interactive item motion do.
-     */
-    public boolean canUseItems() {
-        if (romMotionState() != 0 || isCarryingLiftedObject() || isRomLinkPushing()) {
-            return false;
-        }
-        return !itemsBlockMotion();
-    }
+
+
+
+
+
 
     /** Mirrors the unsigned {@code wCollisionType} byte written by Link motion. */
     public int romCollisionType() {
@@ -548,27 +528,10 @@ public final class Link implements RocsFeather.JumpTarget {
         gelMotionFrame = worldFrame & 0xFF;
     }
 
-    private BooleanSupplier shieldInputAllowed = () -> true;
 
-    /** Live input gate, also consulted when rendering a paused dialogue frame. */
-    public void setShieldInputAllowed(BooleanSupplier allowed) {
-        shieldInputAllowed = Objects.requireNonNull(allowed);
-    }
 
-    /** Mirrors wIsUsingShield: equipped, held, and permitted by gameplay input. */
-    public boolean isUsingShield() {
-        if (gelClinging || !shieldInputAllowed.getAsBoolean()) {
-            return false;
-        }
-        if (inputState == null || inputConfig == null || playerState == null) {
-            return false;
-        }
-        boolean usingA = playerState.itemA() == PlayerState.INVENTORY_SHIELD
-            && inputState.isDown(inputConfig.aKey());
-        boolean usingB = playerState.itemB() == PlayerState.INVENTORY_SHIELD
-            && inputState.isDown(inputConfig.bKey());
-        return usingA || usingB;
-    }
+
+
 
     /** ROM wC145: the Y origin used by sword collision while linkAirborne.airborne. */
     public int romSwordCollisionY() {
@@ -579,18 +542,7 @@ public final class Link implements RocsFeather.JumpTarget {
         return direction;
     }
 
-    /**
-     * Mirrors {@code func_157C}: a single currently-held D-pad direction
-     * immediately becomes Link's facing before an arrow is spawned; neutral
-     * and diagonal masks preserve the existing facing.
-     */
-    public int applyRomItemDirectionFromInput() {
-        int newDirection = JOYPAD_TO_DIRECTION[buildJoypadMask()];
-        if (newDirection != -1) {
-            direction = newDirection;
-        }
-        return romDirectionForJavaDirection(direction);
-    }
+
 
     /** Mirrors wIsLinkImmuneToCollisionDamage independently of hit flashing. */
     public boolean isCollisionDamageImmune() {
@@ -710,58 +662,19 @@ public final class Link implements RocsFeather.JumpTarget {
         }
     }
 
-    void tickRomAttackStepAnimationCountdown() {
-        if ((romAttackStepAnimationCountdown & ATTACK_STEP_DURATION_MASK) == 0) {
-            romAttackStepAnimationCountdown = 0;
-        } else {
-            romAttackStepAnimationCountdown = (romAttackStepAnimationCountdown - 1) & 0xFF;
-        }
-    }
 
-    boolean itemsBlockMotion() {
-        return itemsBlockMotion(false);
-    }
 
-    boolean itemsBlockMotion(boolean beforeTopDownAnimation) {
-        if (isLiftTransitionBlockingMotion()) {
-            return true;
-        }
-        if (itemRegistry == null || playerState == null) {
-            return false;
-        }
-        EquipmentItem a = itemRegistry.lookup(playerState.itemA());
-        if (a != null && itemBlocksMotion(a, beforeTopDownAnimation)) {
-            return true;
-        }
-        EquipmentItem b = itemRegistry.lookup(playerState.itemB());
-        return b != null && itemBlocksMotion(b, beforeTopDownAnimation);
-    }
 
-    private static boolean itemBlocksMotion(EquipmentItem item, boolean beforeTopDownAnimation) {
-        return beforeTopDownAnimation && item instanceof linksawakening.equipment.Sword sword
-            ? sword.blocksTopDownMotion() : item.blocksMotion();
-    }
 
-    boolean itemsLockFacing() {
-        return itemsLockFacing(false);
-    }
 
-    boolean itemsLockFacing(boolean beforeTopDownAnimation) {
-        if (itemRegistry == null || playerState == null) {
-            return false;
-        }
-        EquipmentItem a = itemRegistry.lookup(playerState.itemA());
-        if (a != null && itemLocksFacing(a, beforeTopDownAnimation)) {
-            return true;
-        }
-        EquipmentItem b = itemRegistry.lookup(playerState.itemB());
-        return b != null && itemLocksFacing(b, beforeTopDownAnimation);
-    }
 
-    private static boolean itemLocksFacing(EquipmentItem item, boolean beforeTopDownAnimation) {
-        return beforeTopDownAnimation && item instanceof linksawakening.equipment.Sword sword
-            ? sword.locksTopDownFacing() : item.locksFacing();
-    }
+
+
+
+
+
+
+
 
     boolean shouldApplyGroundMotion() {
         groundMotionCounter++;
@@ -847,19 +760,9 @@ public final class Link implements RocsFeather.JumpTarget {
         };
     }
 
-    EquipmentItem itemInSlotA() {
-        if (itemRegistry == null || playerState == null) {
-            return null;
-        }
-        return itemRegistry.lookup(playerState.itemA());
-    }
 
-    EquipmentItem itemInSlotB() {
-        if (itemRegistry == null || playerState == null) {
-            return null;
-        }
-        return itemRegistry.lookup(playerState.itemB());
-    }
+
+
 
     public void setPixelPosition(int pixelX, int pixelY) { linkMotion.setPixelPosition(pixelX, pixelY); }
     public void setRoomEntryPixelPosition(int pixelX, int pixelY) { linkMotion.setRoomEntryPixelPosition(pixelX, pixelY); }
@@ -908,4 +811,12 @@ public final class Link implements RocsFeather.JumpTarget {
     public void showSwordAcquisitionFinalPose() { linkAnimator.showSwordAcquisitionFinalPose(); }
     public void showMarinWakeUpBed(int spriteVariant) { linkAnimator.showMarinWakeUpBed(spriteVariant); }
     public void render(byte[] displayBuffer, int offsetX, int offsetY) { linkAnimator.render(displayBuffer, offsetX, offsetY); }
+    public void startRomItemAttackStep() { linkEquipment.startRomItemAttackStep(); }
+    public void startRomMagicPowderAttackStep() { linkEquipment.startRomMagicPowderAttackStep(); }
+    public void startRomMagicRodAttackStep() { linkEquipment.startRomMagicRodAttackStep(); }
+    public void clearRomAttackStepAnimationCountdown() { linkEquipment.clearRomAttackStepAnimationCountdown(); }
+    public boolean canUseItems() { return linkEquipment.canUseItems(); }
+    public void setShieldInputAllowed(BooleanSupplier allowed) { linkEquipment.setShieldInputAllowed(allowed); }
+    public boolean isUsingShield() { return linkEquipment.isUsingShield(); }
+    public int applyRomItemDirectionFromInput() { return linkEquipment.applyRomItemDirectionFromInput(); }
 }

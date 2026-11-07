@@ -20,7 +20,7 @@ final class LinkStateMachine {
         if (link.pegasusBootsCollisionCountdown > 0) {
             link.pegasusBootsCollisionCountdown--;
         }
-        link.tickRomAttackStepAnimationCountdown();
+        link.linkEquipment.tickRomAttackStepAnimationCountdown();
         int carriedSpeedX = (byte) link.linkMotion.lastRomSpeedX;
         int carriedSpeedY = (byte) link.linkMotion.lastRomSpeedY;
         boolean featherLaunchFrame = link.topDownFeatherStarted;
@@ -113,7 +113,7 @@ final class LinkStateMachine {
         if (newDirection != -1 && (!link.linkAirborne.airborne || featherLaunchFrame)
             && !link.linkEntityEffects.marinBedJumpMotionLocked
             && !link.linkAirborne.directionalLedgeJumpMotionLocked
-            && !link.itemsLockFacing(true) && !link.isLiftTransitionBlockingMotion()) {
+            && !link.linkEquipment.itemsLockFacing(true) && !link.isLiftTransitionBlockingMotion()) {
             link.direction = newDirection;
         }
         updatePegasusBootsUse();
@@ -136,7 +136,7 @@ final class LinkStateMachine {
         // ROM still refreshes hLinkDirection from held single-axis input before
         // this early-out path, so link.direction update must happen above.
         // $02:43C3 bypasses the item motion gate while Link is above ground.
-        if (link.itemsBlockMotion(true) && !link.linkAirborne.airborne) {
+        if (link.linkEquipment.itemsBlockMotion(true) && !link.linkAirborne.airborne) {
             link.movingThisFrame = false;
             link.walkTickCounter = 0;
             link.walkFrame = 0;

@@ -31,7 +31,7 @@ final class LinkSideView {
 
     void updateSideViewMotion(int platformSpeedY) {
         int mask = link.buildJoypadMask();
-        if (!link.linkAirborne.airborne && link.itemsBlockMotion()) return;
+        if (!link.linkAirborne.airborne && link.linkEquipment.itemsBlockMotion()) return;
         boolean recoiling = link.linkDamage.collisionIgnoreFramesRemaining > 0;
         boolean ladderFrame = sideViewModifier == 1;
         if (link.linkMotion.forcedSpeedPending) {
@@ -59,7 +59,7 @@ final class LinkSideView {
                 link.linkAirborne.airborne = true;
                 if ((mask & 3) != 0) sideViewSpeedX += Integer.compare(targetX, sideViewSpeedX);
             }
-            if ((mask & 3) != 0 && !link.itemsLockFacing())
+            if ((mask & 3) != 0 && !link.linkEquipment.itemsLockFacing())
                 link.direction = (mask & 1) != 0 ? Link.DIRECTION_RIGHT : Link.DIRECTION_LEFT;
             if ((mask & 15) == 4) link.direction = Link.DIRECTION_UP;
             if ((mask & 15) == 8) link.direction = Link.DIRECTION_DOWN;

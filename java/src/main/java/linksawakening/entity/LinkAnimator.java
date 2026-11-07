@@ -213,11 +213,11 @@ final class LinkAnimator {
         if (link.linkEntityEffects.carryingLiftedObjectState == 1) {
             return LinkAnimator.LIFTING_ANIMATION_STATE[link.direction][link.walkFrame];
         }
-        int override = queryOverride(link.itemInSlotA());
+        int override = queryOverride(link.linkEquipment.itemInSlotA());
         if (override >= 0) {
             return override;
         }
-        override = queryOverride(link.itemInSlotB());
+        override = queryOverride(link.linkEquipment.itemInSlotB());
         if (override >= 0) {
             return override;
         }
@@ -230,9 +230,9 @@ final class LinkAnimator {
                     || link.playerState.itemB() == PlayerState.INVENTORY_SHIELD)
                         ? link.playerState.shieldLevel() : 0;
             return link.spriteSheet.walkingAnimationState(link.romDirectionForJavaDirection(link.direction),
-                normalFrame, carriedShield, link.isUsingShield());
+                normalFrame, carriedShield, link.linkEquipment.isUsingShield());
         }
-        if (link.isUsingShield() && link.playerState != null && link.playerState.shieldLevel() > 0) {
+        if (link.linkEquipment.isUsingShield() && link.playerState != null && link.playerState.shieldLevel() > 0) {
             int[][] shieldTable = link.playerState.shieldLevel() >= 2
                 ? LinkAnimator.MIRROR_SHIELD_USE_ANIMATION_STATE : LinkAnimator.SHIELD_USE_ANIMATION_STATE;
             return shieldTable[link.direction][normalFrame];
