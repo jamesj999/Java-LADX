@@ -3,7 +3,7 @@ package linksawakening.world.entity.motion;
 import linksawakening.world.EntityRoomLoader;
 import linksawakening.world.RoomEntity;
 import linksawakening.world.RoomEntityObjectSample;
-import linksawakening.world.transition.*;
+
 
 /**
  * Bank-$03's hidden secret-seashell state and reveal physics.

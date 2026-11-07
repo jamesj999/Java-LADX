@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.handler.EntityHandlerFamilies;
+
 import linksawakening.world.entity.motion.GenieMotion;
 import linksawakening.world.entity.motion.LiftedEntityMotion;
 import linksawakening.world.entity.motion.ThrownEntityMotion;

@@ -3,7 +3,7 @@ package linksawakening.world.entity.motion;
 import linksawakening.world.EntityRoomLoader;
 import linksawakening.world.RoomEntity;
 import linksawakening.world.RoomEntityBackgroundCollision;
-import linksawakening.world.transition.*;
+
 
 /** Bank-$06 SparkClockwise/CounterClockwiseEntityHandler's orbit loop. */
 public final class SparkMotion {

@@ -4,10 +4,10 @@ import linksawakening.entity.EntitySpriteDefinition;
 import static linksawakening.world.EntityMotionMath.*;
 
 /** Shared immutable slot snapshot transformations. */
-final class EntitySnapshots {
+public final class EntitySnapshots {
     private EntitySnapshots() {}
 
-    static RoomEntity withStatus(RoomEntity entity, EntityStatus status) {
+    public static RoomEntity withStatus(RoomEntity entity, EntityStatus status) {
         return preserveDeathMetadata(entity, new RoomEntity(
             entity.slot(), entity.sourceLoadOrder(), entity.type(), entity.x(), entity.y(),
             status, entity.spriteDefinition(), entity.spriteVariant(), entity.entityFlipAttribute(),
@@ -23,28 +23,28 @@ final class EntitySnapshots {
             entity.spriteTileOffset(), entity.z(), -1, false));
     }
 
-    static RoomEntity withVariant(RoomEntity entity, int variant) {
+    public static RoomEntity withVariant(RoomEntity entity, int variant) {
         return preserveDeathMetadata(entity, new RoomEntity(
             entity.slot(), entity.sourceLoadOrder(), entity.type(), entity.x(), entity.y(),
             entity.status(), entity.spriteDefinition(), variant, entity.entityFlipAttribute(),
             entity.spriteTileOffset(), entity.z(), -1, false));
     }
 
-    static RoomEntity withFlipAttribute(RoomEntity entity, int flipAttribute) {
+    public static RoomEntity withFlipAttribute(RoomEntity entity, int flipAttribute) {
         return preserveDeathMetadata(entity, new RoomEntity(
             entity.slot(), entity.sourceLoadOrder(), entity.type(), entity.x(), entity.y(),
             entity.status(), entity.spriteDefinition(), entity.spriteVariant(), flipAttribute,
             entity.spriteTileOffset(), entity.z(), -1, false));
     }
 
-    static RoomEntity withZ(RoomEntity entity, int z) {
+    public static RoomEntity withZ(RoomEntity entity, int z) {
         return preserveDeathMetadata(entity, new RoomEntity(
             entity.slot(), entity.sourceLoadOrder(), entity.type(), entity.x(), entity.y(),
             entity.status(), entity.spriteDefinition(), entity.spriteVariant(),
             entity.entityFlipAttribute(), entity.spriteTileOffset(), z, -1, false));
     }
 
-    static RoomEntity withDefinition(RoomEntity entity,
+    public static RoomEntity withDefinition(RoomEntity entity,
                                               EntitySpriteDefinition definition, int variant) {
         int selectedVariant = definition.supported()
             ? Math.min(Math.max(variant, 0), definition.variantCount() - 1) : -1;
@@ -72,7 +72,7 @@ final class EntitySnapshots {
             entity.z(), variant, powerRecoil);
     }
 
-    static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y,
+    public static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y,
                                                        int variant) {
         return preserveDeathMetadata(entity, new RoomEntity(
             entity.slot(), entity.sourceLoadOrder(), entity.type(),

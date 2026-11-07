@@ -3,7 +3,7 @@ package linksawakening.world.entity.motion;
 import linksawakening.world.EntityRoomLoader;
 import linksawakening.world.EntitySideViewGravity;
 import linksawakening.world.RoomEntity;
-import linksawakening.world.transition.*;
+
 
 /**
  * Bank-$03's common {@code BouncingEntityPhysics} state for an enemy drop.

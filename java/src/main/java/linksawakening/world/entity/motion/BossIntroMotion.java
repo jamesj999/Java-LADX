@@ -1,7 +1,7 @@
 package linksawakening.world.entity.motion;
 
 
-import linksawakening.world.transition.*;
+
 
 /** Bank-$00 BossIntro's delayed one-shot music and dialog request. */
 public final class BossIntroMotion {

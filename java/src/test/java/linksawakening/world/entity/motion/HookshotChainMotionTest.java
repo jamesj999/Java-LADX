@@ -1,7 +1,7 @@
 package linksawakening.world.entity.motion;
 
 import linksawakening.world.EntityProjectileEvent;
-import linksawakening.world.transition.*;
+
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

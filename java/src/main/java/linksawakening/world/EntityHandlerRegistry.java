@@ -7,7 +7,7 @@ import java.util.function.IntSupplier;
 import java.util.function.Predicate;
 
 /** ROM type-byte dispatch; unregistered types remain explicitly unsupported. */
-final class EntityHandlerRegistry {
+final class EntityHandlerRegistry implements linksawakening.world.entity.EntityHandlerRegistration {
   private static final class Binding implements EntityHandler {
     private final EntityHandler initializer;
     private BiFunction<RoomEntity, EntityFrameContext, RoomEntity> advance;
@@ -77,7 +77,7 @@ final class EntityHandlerRegistry {
     return supports(entity.type()) ? handlers[entity.type()].advance(entity, context) : entity;
   }
 
-  void registerTick(int type, EntityTickStage stage, Predicate<EntityFrameExecution> tick) {
+  public void registerTick(int type, EntityTickStage stage, Predicate<EntityFrameExecution> tick) {
     Objects.checkIndex(type, handlers.length);
     Objects.requireNonNull(tick);
     Objects.requireNonNull(stage);

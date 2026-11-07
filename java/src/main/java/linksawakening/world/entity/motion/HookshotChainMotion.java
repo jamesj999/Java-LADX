@@ -1,7 +1,7 @@
 package linksawakening.world.entity.motion;
 
 import linksawakening.world.EntityRoomLoader;
-import linksawakening.world.transition.*;
+
 
 /**
  * ROM-facing state for entity {@code $03}, the hookshot chain.

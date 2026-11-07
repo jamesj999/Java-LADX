@@ -29,7 +29,7 @@ import java.util.function.IntUnaryOperator;
 import static linksawakening.world.RoomEntityRuntime.*;
 
 /** ROM background collision, falling, recoil and Link push glue. */
-final class EntityBackgroundMechanics {
+public final class EntityBackgroundMechanics {
     private final RoomEntityRuntime runtime;
     EntityBackgroundMechanics(RoomEntityRuntime runtime) { this.runtime = runtime; }
 
@@ -53,7 +53,7 @@ final class EntityBackgroundMechanics {
             tailCollisionEntity, swordX, swordWidth, swordY, swordHeight);
     }
 
-    void advanceHookshotBridgeEntity(int index, RoomEntity entity) {
+    public void advanceHookshotBridgeEntity(int index, RoomEntity entity) {
         HookshotBridgeMotion.State bridgeState = runtime.hookshotBridgeMotion.state(entity.slot());
         if (bridgeState == null) {
             runtime.clearEntity(entity.slot());
@@ -172,7 +172,7 @@ final class EntityBackgroundMechanics {
         return withPositionAndVariant(entity, x, y, phase);
     }
 
-    int verticalSpeedZ(RoomEntity entity) {
+    public int verticalSpeedZ(RoomEntity entity) {
         int slot = entity.slot();
         if (runtime.enemyDropActive[slot]) {
             return runtime.enemyDropMotion.speedZ(slot);
@@ -230,9 +230,9 @@ final class EntityBackgroundMechanics {
 
     boolean entityHandlerInteractive(boolean creditsGameplay) { return runtime.enemyInspection.entityHandlerInteractive(creditsGameplay); }
 
-    boolean entityTimersInteractive() { return runtime.enemyInspection.entityTimersInteractive(); }
+    public boolean entityTimersInteractive() { return runtime.enemyInspection.entityTimersInteractive(); }
 
-    void requestArmosLinkPush(RoomEntity entity, int linkEntityX, int linkEntityY,
+    public void requestArmosLinkPush(RoomEntity entity, int linkEntityX, int linkEntityY,
                                       int linkMotionState) {
         if (linkMotionState >= EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE
             || !RoomEntityCombatRules.overlapsLink(entity, linkEntityX, linkEntityY)) {
@@ -241,7 +241,7 @@ final class EntityBackgroundMechanics {
         requestLinkPush(entity, EntityLinkCollisionRules.STANDARD_PUSH);
     }
 
-    void requestLinkPush(RoomEntity entity,
+    public void requestLinkPush(RoomEntity entity,
                                  EntityLinkCollisionRules.LinkPushPolicy policy) {
         if (entity == null || policy == null || !policy.restoreFinalPosition()) {
             return;
@@ -269,7 +269,7 @@ final class EntityBackgroundMechanics {
         }
     }
 
-    EnemyRecoilMotion.Update applyEnemyRecoilIfNeeded(
+    public EnemyRecoilMotion.Update applyEnemyRecoilIfNeeded(
             RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         if (!runtime.enemyRecoilMotion.isActive(slot)) {

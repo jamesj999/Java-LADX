@@ -3,7 +3,7 @@ package linksawakening.world.entity.motion;
 import linksawakening.world.entity.event.FloatingItemPickupEffect;
 
 
-import linksawakening.world.transition.*;
+
 
 /** Pure ROM rules shared by the two bank-$06 floating-item handlers. */
 public final class FloatingItemMotion {

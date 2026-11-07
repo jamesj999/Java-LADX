@@ -32,7 +32,7 @@ import java.util.function.IntUnaryOperator;
 import static linksawakening.world.RoomEntityRuntime.*;
 
 /** ROM per-slot options, sprite definitions and handler metadata. */
-final class EntitySlotProperties {
+public final class EntitySlotProperties {
     private final RoomEntityRuntime runtime;
     EntitySlotProperties(RoomEntityRuntime runtime) { this.runtime = runtime; }
 
@@ -78,7 +78,7 @@ final class EntitySlotProperties {
 
     int contactDamage(int type) { return runtime.roomInspection.contactDamage(type); }
 
-    RoomEntity advanceMusicalNoteEntity(RoomEntity entity) {
+    public RoomEntity advanceMusicalNoteEntity(RoomEntity entity) {
         int slot = entity.slot();
         int inertia = (runtime.musicalNoteInertia[slot] - 1) & 0xFF;
         runtime.musicalNoteInertia[slot] = inertia;
@@ -152,7 +152,7 @@ final class EntitySlotProperties {
         runtime.wingedOctorokOam = List.copyOf(entries);
     }
 
-    boolean kanaletCrowTakeoffTriggered(RoomEntity crow) {
+    public boolean kanaletCrowTakeoffTriggered(RoomEntity crow) {
         for (RoomEntity candidate : runtime.slots) {
             if (!candidate.loaded()) {
                 continue;
@@ -187,13 +187,13 @@ final class EntitySlotProperties {
         return false;
     }
 
-    EntitySpriteDefinition spriteDefinitionFor(int entityType) { return runtime.roomInspection.spriteDefinitionFor(entityType); }
+    public EntitySpriteDefinition spriteDefinitionFor(int entityType) { return runtime.roomInspection.spriteDefinitionFor(entityType); }
 
-    EntitySpriteDefinition spriteDefinitionForBushCrawlerState(int privateState1) { return runtime.roomInspection.spriteDefinitionForBushCrawlerState(privateState1); }
+    public EntitySpriteDefinition spriteDefinitionForBushCrawlerState(int privateState1) { return runtime.roomInspection.spriteDefinitionForBushCrawlerState(privateState1); }
 
     EntitySpriteDefinition spriteDefinitionForPokeySegment() { return runtime.roomInspection.spriteDefinitionForPokeySegment(); }
 
-    EntitySpriteDefinition spriteDefinitionForBushCrawlerCrawlState(int privateState4) { return runtime.roomInspection.spriteDefinitionForBushCrawlerCrawlState(privateState4); }
+    public EntitySpriteDefinition spriteDefinitionForBushCrawlerCrawlState(int privateState4) { return runtime.roomInspection.spriteDefinitionForBushCrawlerCrawlState(privateState4); }
 
     EntitySpriteDefinition spriteDefinitionForChest(int itemType) {
         if (itemType == ChestContentsTable.CHEST_ZOL) {
@@ -215,7 +215,7 @@ final class EntitySlotProperties {
 
     EntitySpriteDefinition spriteDefinitionForEvasiveState( EntitySpriteDefinition fallback, int privateState1) { return runtime.roomInspection.spriteDefinitionForEvasiveState(fallback, privateState1); }
 
-    RoomEntity refreshColorShellDisplay(RoomEntity entity, EntityStatus status) { return runtime.roomInspection.refreshColorShellDisplay(entity, status); }
+    public RoomEntity refreshColorShellDisplay(RoomEntity entity, EntityStatus status) { return runtime.roomInspection.refreshColorShellDisplay(entity, status); }
 
     int options1(int slot) {
         if (slot < 0 || slot >= runtime.slots.length) {

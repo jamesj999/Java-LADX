@@ -7,7 +7,7 @@ import linksawakening.entity.EntitySpriteHandlerCatalog;
 import static linksawakening.world.RoomEntityRuntime.LIFTABLE_ROCK_SMASH_MODE_ROCK;
 
 /** Shared ROM byte arithmetic and collision geometry. */
-final class EntityMotionMath {
+public final class EntityMotionMath {
     private EntityMotionMath() {}
 
     static int sourceGenieSteerStep(int currentSpeed, int desiredSpeed) {
@@ -97,7 +97,7 @@ final class EntityMotionMath {
         return result;
     }
 
-    static boolean withinUnsignedWindow(int value, int center, int radius) {
+    public static boolean withinUnsignedWindow(int value, int center, int radius) {
         return (((value - center + radius) & 0xFF) < radius * 2);
     }
 
@@ -166,7 +166,7 @@ final class EntityMotionMath {
         return difference < 0x80 ? difference : 0x100 - difference;
     }
 
-    static boolean sideViewPlatformOverlapsLink(RoomEntity entity,
+    public static boolean sideViewPlatformOverlapsLink(RoomEntity entity,
                                                          int linkEntityX, int linkEntityY) {
         int xDistance = unsignedByteAbs(entity.x() + 0x10 - linkEntityX - 0x08);
         if (xDistance >= 0x10 + 0x04) {

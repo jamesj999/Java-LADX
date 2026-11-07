@@ -1,7 +1,7 @@
 package linksawakening.world.entity.motion;
 
 
-import linksawakening.world.transition.*;
+
 
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;

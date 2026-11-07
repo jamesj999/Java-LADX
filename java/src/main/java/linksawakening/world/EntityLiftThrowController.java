@@ -24,11 +24,11 @@ import java.util.function.IntUnaryOperator;
 import static linksawakening.world.RoomEntityRuntime.*;
 
 /** ROM lift, carry and throw mechanics, sharing the owning room slot table. */
-final class EntityLiftThrowController {
+public final class EntityLiftThrowController {
     private final RoomEntityRuntime runtime;
     EntityLiftThrowController(RoomEntityRuntime runtime) { this.runtime = runtime; }
 
-    RoomEntity advanceLiftedEntity(RoomEntity entity, int linkEntityX,
+    public RoomEntity advanceLiftedEntity(RoomEntity entity, int linkEntityX,
                                             int linkEntityY, int linkZ,
                                             int romLinkDirection) {
         int slot = entity.slot();
@@ -84,7 +84,7 @@ final class EntityLiftThrowController {
         return updated;
         }
 
-    boolean sideViewPotBackgroundCollision(RoomEntity original, RoomEntity moved,
+    public boolean sideViewPotBackgroundCollision(RoomEntity original, RoomEntity moved,
                                                    RoomEntityBackgroundCollision fallback,
                                                    int frame) {
         int slot = original.slot();
@@ -139,7 +139,7 @@ final class EntityLiftThrowController {
         }
         }
 
-    RoomEntity advancePlacedBombEntity(
+    public RoomEntity advancePlacedBombEntity(
             RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision, int frame) {
         int slot = entity.slot();
         if (!runtime.placedBombMotionInitialized[slot]) {
@@ -157,7 +157,7 @@ final class EntityLiftThrowController {
             backgroundCollision, frame, runtime.entityGroundStatus[slot]).entity();
         }
 
-    RoomEntity advanceEnemyBombEntity(
+    public RoomEntity advanceEnemyBombEntity(
             RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision, int frame) {
         int slot = entity.slot();
         if (!runtime.enemyBombMotionInitialized[slot]) {
@@ -169,14 +169,14 @@ final class EntityLiftThrowController {
             backgroundCollision, frame, runtime.entityGroundStatus[slot]).entity();
         }
 
-    boolean cuccoPowerBraceletHeld() {
+    public boolean cuccoPowerBraceletHeld() {
         if (runtime.linkItemB == 0x03) {
             return runtime.actionButtonBHeld;
         }
         return runtime.linkItemA == 0x03 && runtime.actionButtonAHeld;
         }
 
-    boolean beginBushCrawlerLift(int index, RoomEntity source, int privateState4,
+    public boolean beginBushCrawlerLift(int index, RoomEntity source, int privateState4,
                                          int romLinkDirection) {
         if (source.type() != runtime.ENTITY_BUSH_CRAWLER) {
             return false;
@@ -226,7 +226,7 @@ final class EntityLiftThrowController {
         return true;
         }
 
-    void advanceLiftableRockSmash(int index, RoomEntity entity, int frameCounter) {
+    public void advanceLiftableRockSmash(int index, RoomEntity entity, int frameCounter) {
         int slot = entity.slot();
         int countdown = runtime.liftableRockSmashCountdown[slot] & 0xFF;
         if (countdown <= 1) {
@@ -251,7 +251,7 @@ final class EntityLiftThrowController {
         runtime.slots[index] = withVariant(entity, variant);
         }
 
-    RoomEntity renderLiftedEntity(RoomEntity entity, int frameCounter) {
+    public RoomEntity renderLiftedEntity(RoomEntity entity, int frameCounter) {
         if (entity.type() != runtime.ENTITY_BOMB) {
             return entity.type() == runtime.ENTITY_CUCCO
                 ? withVariant(entity, (frameCounter >>> 2) & 0x01) : entity;
@@ -264,7 +264,7 @@ final class EntityLiftThrowController {
         return renderLiftedEntity(entity, 0);
         }
 
-    boolean tryLiftBombIfRequested(int index, BombMotion.Decision decision,
+    public boolean tryLiftBombIfRequested(int index, BombMotion.Decision decision,
                                             int linkEntityX, int linkEntityY, int linkZ,
                                             int romLinkDirection) {
         if (decision.phase() != BombMotion.Phase.NORMAL || !runtime.bombButtonHeld) {
@@ -285,7 +285,7 @@ final class EntityLiftThrowController {
         return true;
         }
 
-    boolean sideViewPotPowerBraceletHeld() {
+    public boolean sideViewPotPowerBraceletHeld() {
         if (!runtime.linkInventoryConfigured) {
             return runtime.powerBraceletButtonHeld;
         }
@@ -297,7 +297,7 @@ final class EntityLiftThrowController {
         return runtime.linkItemA == 0x03 && runtime.actionButtonAHeld;
         }
 
-    void pendingLinkPotContact(int sourceSlot, SideViewPotContact.Result contact) {
+    public void pendingLinkPotContact(int sourceSlot, SideViewPotContact.Result contact) {
         runtime.pendingSideViewPotLinkRequests.add(new SideViewPotLinkRequest(
             sourceSlot, contact.resetPegasusBoots(), contact.restoreFinalPositionX(),
             contact.ignoreCollisionCountdown(), contact.speedX(), contact.snapTop(),

@@ -2,7 +2,7 @@ package linksawakening.world.entity.motion;
 
 import linksawakening.world.EntityRoomLoader;
 import linksawakening.world.RoomEntity;
-import linksawakening.world.transition.*;
+
 
 /** State and timing port of bank-$05 {@code WitchEntityHandler}. */
 public final class WitchMotion {

@@ -1,0 +1,46 @@
+package linksawakening.world.entity.handler;
+
+import linksawakening.world.EntityTickStage;
+import linksawakening.world.RoomEntityRuntime;
+import linksawakening.world.EntityStatus;
+import linksawakening.world.entity.EntityHandlerRegistration;
+
+
+
+
+
+
+
+import linksawakening.world.entity.motion.ThreeOfAKindMotion;
+
+
+
+/** ROM handler stages for ThreeOfAKind. */
+final class ThreeOfAKindHandler {
+  static void install(EntityHandlerRegistration registry) {
+    registry.registerTick(
+        RoomEntityRuntime.ENTITY_THREE_OF_A_KIND,
+        EntityTickStage.PHASE_3_THREE_OF_A_KIND,
+        state -> {
+          if (state.status == EntityStatus.ACTIVE
+              && !state.wasInitializing
+
+              && state.threeOfAKindInteractive) {
+            state.runtime.enemyHealth[state.entity.slot()] = 0x20;
+            ThreeOfAKindMotion.Update cardUpdate =
+                state.runtime.threeOfAKindMotion.advance(
+                    state.entity,
+                    state.frame,
+                    state.runtime.enemyTransitionCountdown[state.entity.slot()],
+                    state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()],
+                    state.randomByteSupplier,
+                    state.backgroundCollision);
+            state.updated = cardUpdate.entity();
+            state.runtime.enemyTransitionCountdown[state.entity.slot()] =
+                cardUpdate.transitionCountdown();
+            state.preserveThreeOfAKindPresentation = true;
+          }
+          return true;
+        });
+  }
+}

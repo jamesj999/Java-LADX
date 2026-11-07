@@ -29,7 +29,7 @@ import java.util.function.IntUnaryOperator;
 import static linksawakening.world.RoomEntityRuntime.*;
 
 /** ROM reward presentation sequences, sharing the owning room slot table. */
-final class EntityRewardController {
+public final class EntityRewardController {
     private final RoomEntityRuntime runtime;
     EntityRewardController(RoomEntityRuntime runtime) { this.runtime = runtime; }
 
@@ -45,7 +45,7 @@ final class EntityRewardController {
         runtime.pendingMusicTrack = 0x1B;
         }
 
-    void advanceInstrumentPickup(RoomEntity entity, int frameCounter,
+    public void advanceInstrumentPickup(RoomEntity entity, int frameCounter,
                                          int linkEntityX, int linkEntityY, int linkZ,
                                          IntSupplier randomByteSupplier) {
         int slot = entity.slot();
@@ -170,7 +170,7 @@ final class EntityRewardController {
         runtime.dynamicEntitySpawnedThisFrame[freeSlot] = true;
         }
 
-    void advanceInstrumentParticle(RoomEntity entity) {
+    public void advanceInstrumentParticle(RoomEntity entity) {
         int slot = entity.slot();
         if (runtime.enemyTransitionCountdown[slot] == 0) {
             runtime.lifecycle.disableEntityWithoutPersistence(slot);
@@ -183,7 +183,7 @@ final class EntityRewardController {
         runtime.slots[slot] = withPositionAndVariant(entity, x, y, entity.spriteVariant());
         }
 
-    void advanceToadstoolPickup(RoomEntity entity,
+    public void advanceToadstoolPickup(RoomEntity entity,
                                         int linkEntityX, int linkEntityY, int linkZ) {
         int slot = entity.slot();
         int countdown = runtime.enemyTransitionCountdown[slot];
@@ -208,7 +208,7 @@ final class EntityRewardController {
         runtime.slots[slot] = withZ(held, linkZ & 0xFF);
         }
 
-    void advanceSwordPickup(RoomEntity entity, int frameCounter,
+    public void advanceSwordPickup(RoomEntity entity, int frameCounter,
                                     int linkEntityX, int linkEntityY, int linkZ) {
         int slot = entity.slot();
         if (runtime.dialogActive) {

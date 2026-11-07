@@ -4,7 +4,7 @@ import linksawakening.world.EntityBackgroundCollisionResult;
 import linksawakening.world.EntityRoomLoader;
 import linksawakening.world.RoomEntity;
 import linksawakening.world.RoomEntityBackgroundInteraction;
-import linksawakening.world.transition.*;
+
 
 /** ROM bank-$07 Moblin Sword state machine plus bank-$03 falling presentation state. */
 public final class MoblinSwordMotion {

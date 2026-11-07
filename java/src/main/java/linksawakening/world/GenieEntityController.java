@@ -24,11 +24,11 @@ import java.util.function.IntUnaryOperator;
 import static linksawakening.world.RoomEntityRuntime.*;
 
 /** ROM Genie encounter phases, sharing the owning room slot table. */
-final class GenieEntityController {
+public final class GenieEntityController {
     private final RoomEntityRuntime runtime;
     GenieEntityController(RoomEntityRuntime runtime) { this.runtime = runtime; }
 
-    void advanceGenieJar(RoomEntity jarEntity, int linkEntityY) {
+    public void advanceGenieJar(RoomEntity jarEntity, int linkEntityY) {
         int slot = jarEntity.slot();
         int freeSlots = 0;
         for (RoomEntity candidate : runtime.slots) {
@@ -127,7 +127,7 @@ final class GenieEntityController {
         return withPositionAndVariant(jar, x, y, jar.spriteVariant());
         }
 
-    void advanceGenieAppearance(RoomEntity appearance) {
+    public void advanceGenieAppearance(RoomEntity appearance) {
         int slot = appearance.slot();
         int countdown = runtime.enemyTransitionCountdown[slot];
         if ((countdown & 0x80) != 0) {
@@ -151,7 +151,7 @@ final class GenieEntityController {
         }
         }
 
-    void advanceGenieBody(RoomEntity body, int frameCounter,
+    public void advanceGenieBody(RoomEntity body, int frameCounter,
                                   int linkEntityX, int linkEntityY,
                                   IntSupplier randomByteSupplier) {
         int slot = body.slot();
@@ -377,7 +377,7 @@ final class GenieEntityController {
         return fireballSlot;
         }
 
-    void advanceGenieDestruction(RoomEntity genie, int frameCounter,
+    public void advanceGenieDestruction(RoomEntity genie, int frameCounter,
                                           IntSupplier randomByteSupplier) {
         int slot = genie.slot();
         if (!runtime.genieDeathInitialized[slot]) {
@@ -423,7 +423,7 @@ final class GenieEntityController {
         }
         }
 
-    void advanceGenieSideProjectile(RoomEntity projectile, int frameCounter) {
+    public void advanceGenieSideProjectile(RoomEntity projectile, int frameCounter) {
         int slot = projectile.slot();
         int combinedSpeedX = (runtime.genieSpeedX[slot] + runtime.genieSharedBodySpeedX) & 0xFF;
         int combinedSpeedY = (runtime.genieSpeedY[slot] + runtime.genieSharedBodySpeedY) & 0xFF;
@@ -452,7 +452,7 @@ final class GenieEntityController {
         }
         }
 
-    void advanceGenieFireball(RoomEntity fireball, int frameCounter) {
+    public void advanceGenieFireball(RoomEntity fireball, int frameCounter) {
         int slot = fireball.slot();
         int x = addFallingSpeedToPosition(
             fireball.x(), runtime.genieSpeedX[slot], runtime.genieSpeedXAccumulator, slot);

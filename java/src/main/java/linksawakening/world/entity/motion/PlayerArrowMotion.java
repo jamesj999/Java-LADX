@@ -5,7 +5,7 @@ import linksawakening.world.EntitySideViewGravity;
 import linksawakening.world.PlayerProjectileLaunchSpeed;
 import linksawakening.world.RoomEntity;
 import linksawakening.world.RoomEntityBackgroundCollision;
-import linksawakening.world.transition.*;
+
 
 /**
  * Handler-owned movement state for the ordinary player arrow (entity $00).

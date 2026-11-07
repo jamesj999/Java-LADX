@@ -18,7 +18,7 @@ public final class EnemyProjectileCollision {
     static final int ENTITY_WIZROBE_PROJECTILE = 0x22;
     static final int ENTITY_PAIRODD_PROJECTILE = 0x58;
     static final int ENTITY_LASER_BEAM = 0x2B;
-    static final int LINK_MOTION_NON_INTERACTIVE = 0x02;
+    public static final int LINK_MOTION_NON_INTERACTIVE = 0x02;
     static final int COLLISION_NONE = 0x00;
     static final int COLLISION_PROJECTILE = 0xFF;
     static final int LINK_DAMAGE = 0x08;
@@ -117,7 +117,7 @@ public final class EnemyProjectileCollision {
      * deliberately separate from RoomEntityCombatRules: Pairodd projectiles
      * are not part of the generic enemy combat pass.
      */
-    static Optional<EntityProjectileEvent> checkSwordCollision(
+    public static Optional<EntityProjectileEvent> checkSwordCollision(
         RoomEntity projectile, boolean swordCollisionActive,
         int swordX, int swordWidth, int swordY, int swordHeight) {
         if (projectile == null) {

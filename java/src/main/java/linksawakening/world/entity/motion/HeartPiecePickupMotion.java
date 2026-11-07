@@ -3,7 +3,7 @@ package linksawakening.world.entity.motion;
 import linksawakening.world.entity.event.HeartPiecePickupUpdate;
 
 
-import linksawakening.world.transition.*;
+
 
 /** HeartPieceState1..8Handler ($03:5A6D), including the locked meter animation. */
 public final class HeartPiecePickupMotion {

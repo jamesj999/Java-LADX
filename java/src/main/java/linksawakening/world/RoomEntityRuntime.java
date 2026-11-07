@@ -79,9 +79,9 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     private final EntityPlayerCommands playerCommands = new EntityPlayerCommands(this);
     private void disableEntityWithoutPersistence(int slot) { lifecycle.disableEntityWithoutPersistence(slot); }
     final EntityRoomInitialization roomInitialization = new EntityRoomInitialization(this);
-    final EntitySlotProperties slotProperties = new EntitySlotProperties(this);
-    final EntityBackgroundMechanics backgroundMechanics = new EntityBackgroundMechanics(this);
-    final EntityBombInteractions bombInteractions = new EntityBombInteractions(this);
+    public final EntitySlotProperties slotProperties = new EntitySlotProperties(this);
+    public final EntityBackgroundMechanics backgroundMechanics = new EntityBackgroundMechanics(this);
+    public final EntityBombInteractions bombInteractions = new EntityBombInteractions(this);
     final EntitySlotLifecycle lifecycle = new EntitySlotLifecycle(this);
     final EntityEnemySpawns entityEnemySpawns = new EntityEnemySpawns(this);
     final EntityPlayerSpawns entityPlayerSpawns = new EntityPlayerSpawns(this);
@@ -89,28 +89,28 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     private final EntityRuntimeConfiguration entityRuntimeConfiguration = new EntityRuntimeConfiguration(this);
     final EntityDebugConfiguration entityDebugConfiguration = new EntityDebugConfiguration(this);
     final EntityHandlerRegistry entityHandlers = roomInitialization.createEntityHandlers();
-    final EntityRewardController rewards = new EntityRewardController(this);
-    final EntityStoryController story = new EntityStoryController(this);
-    final GenieEntityController genie = new GenieEntityController(this);
-    final EntityProjectileController projectiles = new EntityProjectileController(this);
-    final EntityPickupController pickups = new EntityPickupController(this);
-    final EntityLiftThrowController liftThrow = new EntityLiftThrowController(this);
+    public final EntityRewardController rewards = new EntityRewardController(this);
+    public final EntityStoryController story = new EntityStoryController(this);
+    public final GenieEntityController genie = new GenieEntityController(this);
+    public final EntityProjectileController projectiles = new EntityProjectileController(this);
+    public final EntityPickupController pickups = new EntityPickupController(this);
+    public final EntityLiftThrowController liftThrow = new EntityLiftThrowController(this);
     private final EntityCombatResolver combat = new EntityCombatResolver(this);
-    final EntityBossRewards bossRewards = new EntityBossRewards(this);
-    final EntityRoomInspection roomInspection = new EntityRoomInspection(this);
+    public final EntityBossRewards bossRewards = new EntityBossRewards(this);
+    public final EntityRoomInspection roomInspection = new EntityRoomInspection(this);
     final EntityBossInspection bossInspection = new EntityBossInspection(this);
     final EntityFlyingEnemyInspection flyingEnemyInspection = new EntityFlyingEnemyInspection(this);
     final EntityPickupInspection pickupInspection = new EntityPickupInspection(this);
-    final EntityEnemyInspection enemyInspection = new EntityEnemyInspection(this);
+    public final EntityEnemyInspection enemyInspection = new EntityEnemyInspection(this);
 
-    final RoomEntity[] slots;
+    public final RoomEntity[] slots;
     
     final EntitySpriteTileSnapshot spriteTiles;
-    final boolean indoorRoom;
+    public final boolean indoorRoom;
     private final RomTables romTables;
     final IntSupplier defaultRandomByteSupplier;
     private final RomRandomByteSource fallbackRomRandomByteSource;
-    final EntitySpriteHandlerCatalog spriteHandlers;
+    public final EntitySpriteHandlerCatalog spriteHandlers;
     final RomEnemyCombatTables enemyCombatTables;
     final ChestContentsTable chestContentsTable;
 
@@ -121,7 +121,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     void setFreeMovementMode(boolean enabled) { freeMovementMode = enabled; }
 
-    final WarpMotion warpMotion;
+    public final WarpMotion warpMotion;
 
     /** The ROM-facing state needed by Link's carry animation and throw input. */
 
@@ -291,7 +291,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
      * ROM order (right, left, up, down); RoomSession performs the Java-to-ROM
      * conversion at its boundary.
      */
-    boolean beginLift(int slot, int romDirection) { return this.playerCommands.beginLift(slot, romDirection); }
+    public boolean beginLift(int slot, int romDirection) { return this.playerCommands.beginLift(slot, romDirection); }
 
     /** Hands the fully held entity to func_014_53A3's generic throw path. */
     boolean throwLiftedEntity(int romDirection) { return this.playerCommands.throwLiftedEntity(romDirection); }
@@ -503,22 +503,22 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     int spawnBomb(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) { return this.entityPlayerSpawns.spawnBomb(linkEntityX, linkEntityY, linkEntityZ, romDirection); }
 
     /** Creates the source's type-$02 enemy bomb with privateState4 set to $01. */
-    int spawnEnemyBomb(int entityX, int entityY, int entityZ, int transitionCountdown) { return this.entityEnemySpawns.spawnEnemyBomb(entityX, entityY, entityZ, transitionCountdown); }
+    public int spawnEnemyBomb(int entityX, int entityY, int entityZ, int transitionCountdown) { return this.entityEnemySpawns.spawnEnemyBomb(entityX, entityY, entityZ, transitionCountdown); }
 
     /** Creates a Bomber-spawned type-$02 enemy bomb with its source speeds. */
-    int spawnEnemyBomb(int entityX, int entityY, int entityZ, int transitionCountdown, int speedX, int speedY, int speedZ) { return this.entityEnemySpawns.spawnEnemyBomb(entityX, entityY, entityZ, transitionCountdown, speedX, speedY, speedZ); }
+    public int spawnEnemyBomb(int entityX, int entityY, int entityZ, int transitionCountdown, int speedX, int speedY, int speedZ) { return this.entityEnemySpawns.spawnEnemyBomb(entityX, entityY, entityZ, transitionCountdown, speedX, speedY, speedZ); }
 
-    int spawnEnemyBomb(int entityX, int entityY, int entityZ, int transitionCountdown, int speedX, int speedY, int speedZ, boolean initializeMotion, int privateState4) { return this.entityEnemySpawns.spawnEnemyBomb(entityX, entityY, entityZ, transitionCountdown, speedX, speedY, speedZ, initializeMotion, privateState4); }
+    public int spawnEnemyBomb(int entityX, int entityY, int entityZ, int transitionCountdown, int speedX, int speedY, int speedZ, boolean initializeMotion, int privateState4) { return this.entityEnemySpawns.spawnEnemyBomb(entityX, entityY, entityZ, transitionCountdown, speedX, speedY, speedZ, initializeMotion, privateState4); }
 
     /** Mirrors the state-$00 return gate reached after Genie's BossIntro call. */
 
     /** Mirrors UpdateEntityTimers' gameplay and presentation gates. */
 
     /** Creates the temporary type-$05 entity used by bombed bushes, grass, and pots. */
-    int spawnLiftableRockSmash(int entityX, int entityY, int sourceSpriteVariant) { return this.entityPlayerSpawns.spawnLiftableRockSmash(entityX, entityY, sourceSpriteVariant); }
+    public int spawnLiftableRockSmash(int entityX, int entityY, int sourceSpriteVariant) { return this.entityPlayerSpawns.spawnLiftableRockSmash(entityX, entityY, sourceSpriteVariant); }
 
     /** Creates one of the four silent type-$05 rubble entities from bank-$36. */
-    int spawnLiftableRockRubble(int entityX, int entityY) { return this.entityPlayerSpawns.spawnLiftableRockRubble(entityX, entityY); }
+    public int spawnLiftableRockRubble(int entityX, int entityY) { return this.entityPlayerSpawns.spawnLiftableRockRubble(entityX, entityY); }
 
     boolean bombActive() { return this.roomInspection.bombActive(); }
 
@@ -778,7 +778,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     List<LinkHeldItemPoseRequest> consumePendingLinkHeldItemPoseRequests() { return this.effects.consumePendingLinkHeldItemPoseRequests(); }
 
-    boolean witchGotItemPresentationActive() { return this.roomInspection.witchGotItemPresentationActive(); }
+    public boolean witchGotItemPresentationActive() { return this.roomInspection.witchGotItemPresentationActive(); }
 
     boolean powerUpPickupSequenceActive() { return this.roomInspection.powerUpPickupSequenceActive(); }
 
@@ -846,7 +846,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     public InstrumentWarpVisual instrumentWarpVisual() { return this.roomInspection.instrumentWarpVisual(); }
 
-    void presentWitchGotItem(int slot) { this.playerCommands.presentWitchGotItem(slot); }
+    public void presentWitchGotItem(int slot) { this.playerCommands.presentWitchGotItem(slot); }
 
     /** ProcessPowerUp ($03:6400) and ApplyGotItem ($00:1033). */
 
@@ -1408,7 +1408,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     void setGoldenLeavesCount(int value) { this.entityRuntimeConfiguration.setGoldenLeavesCount(value); }
 
-    int options1(int slot) { return this.slotProperties.options1(slot); }
+    public int options1(int slot) { return this.slotProperties.options1(slot); }
 
     int colorShellState(int slot) { return this.pickupInspection.colorShellState(slot); }
 
@@ -1478,10 +1478,10 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     boolean enemyRecoilActive(int slot) { return this.enemyInspection.enemyRecoilActive(slot); }
 
-    record CommonDroppableUpdate(RoomEntity entity, boolean hidden) {
+    public record CommonDroppableUpdate(RoomEntity entity, boolean hidden) {
     }
 
-    record SlimeKeyTransitionUpdate(RoomEntity entity, int nextTransitionCountdown,
+    public record SlimeKeyTransitionUpdate(RoomEntity entity, int nextTransitionCountdown,
                                             boolean holdAboveLink, boolean unload,
                                             SlimeKeyRewardEvent reward) {
     }

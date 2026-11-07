@@ -4,7 +4,7 @@ import linksawakening.world.EntityRoomLoader;
 import linksawakening.world.EntitySideViewGravity;
 import linksawakening.world.RoomEntity;
 import linksawakening.world.RoomEntityBackgroundCollision;
-import linksawakening.world.transition.*;
+
 
 /**
  * Shared movement state for the Octorok rock and Moblin arrow handlers.

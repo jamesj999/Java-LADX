@@ -2,7 +2,7 @@ package linksawakening.world.entity.motion;
 
 import linksawakening.world.EntityRoomLoader;
 import linksawakening.world.RoomEntity;
-import linksawakening.world.transition.*;
+
 
 /** Bank-$06 CrowEntityHandler's proximity, flight, and bounds state machine. */
 public final class CrowMotion {

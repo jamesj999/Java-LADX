@@ -21,7 +21,7 @@ import java.util.function.IntUnaryOperator;
 import static linksawakening.world.RoomEntityRuntime.*;
 
 /** ROM slot allocation and player-created entity spawning. */
-final class EntityPlayerSpawns {
+public final class EntityPlayerSpawns {
     private final RoomEntityRuntime runtime;
     EntityPlayerSpawns(RoomEntityRuntime runtime) { this.runtime = runtime; }
 
@@ -485,7 +485,7 @@ final class EntityPlayerSpawns {
         return freeSlot;
     }
 
-    int spawnBombFromBombArrow(RoomEntity arrow) {
+    public int spawnBombFromBombArrow(RoomEntity arrow) {
         int freeSlot = runtime.findFreeEntitySlot();
         if (freeSlot < 0) {
             return -1;
@@ -518,7 +518,7 @@ final class EntityPlayerSpawns {
         return freeSlot;
     }
 
-    boolean spawnHookshotBridge(int bridgeX, int bridgeY, int direction,
+    public boolean spawnHookshotBridge(int bridgeX, int bridgeY, int direction,
                                         int transitionCountdown) {
         if (!runtime.indoorRoom) {
             return false;

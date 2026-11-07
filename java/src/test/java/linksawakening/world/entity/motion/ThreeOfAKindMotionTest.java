@@ -3,7 +3,7 @@ package linksawakening.world.entity.motion;
 import linksawakening.world.EntityRoomLoader;
 import linksawakening.world.EntityStatus;
 import linksawakening.world.RoomEntity;
-import linksawakening.world.transition.*;
+
 
 import linksawakening.entity.EntitySpriteDefinition;
 import org.junit.jupiter.api.Test;

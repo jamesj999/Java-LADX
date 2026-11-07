@@ -4,7 +4,7 @@ import linksawakening.world.EntityBackgroundCollisionResult;
 import linksawakening.world.EntityRoomLoader;
 import linksawakening.world.RoomEntity;
 import linksawakening.world.RoomEntityBackgroundInteraction;
-import linksawakening.world.transition.*;
+
 
 /** Bank-$19 ordinary Masked Mimic/Goriya movement for entity $8F. */
 public final class MaskedMimicMotion {

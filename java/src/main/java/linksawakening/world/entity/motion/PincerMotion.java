@@ -2,7 +2,7 @@ package linksawakening.world.entity.motion;
 
 import linksawakening.world.EntityRoomLoader;
 import linksawakening.world.RoomEntity;
-import linksawakening.world.transition.*;
+
 
 /** Bank-$07 PincerEntityHandler's hidden, lunge, and return state machine. */
 public final class PincerMotion {

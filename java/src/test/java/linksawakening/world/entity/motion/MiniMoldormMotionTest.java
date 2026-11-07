@@ -4,7 +4,7 @@ import linksawakening.world.EntityBackgroundCollisionResult;
 import linksawakening.world.EntityStatus;
 import linksawakening.world.RoomEntity;
 import linksawakening.world.RoomEntityBackgroundInteraction;
-import linksawakening.world.transition.*;
+
 
 import linksawakening.entity.EntitySpriteDefinition;
 import org.junit.jupiter.api.Test;

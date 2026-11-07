@@ -1,17 +1,17 @@
 package linksawakening.world;
 
 /** Source-shaped state-0 Link contact for entity $D6. */
-final class SideViewPotContact {
+public final class SideViewPotContact {
     private static final int COLLISION_X = 0x08;
     private static final int COLLISION_Y = 0x08;
 
     private SideViewPotContact() {
     }
 
-    record Result(boolean collided, boolean resetPegasusBoots,
+    public record Result(boolean collided, boolean resetPegasusBoots,
                   boolean restoreFinalPositionX, int ignoreCollisionCountdown,
                   int speedX, boolean snapTop, int positionY, int speedY) {
-        static Result none() {
+        public static Result none() {
             return new Result(false, false, false, 0, 0, false, 0, 0);
         }
     }
@@ -34,7 +34,7 @@ final class SideViewPotContact {
      * Mirrors SideViewPotState0Handler and func_019_599B. The input positions
      * are the ROM hLinkPositionX/Y and entity position bytes.
      */
-    static Result resolve(RoomEntity entity, int linkPositionX, int linkPositionY,
+    public static Result resolve(RoomEntity entity, int linkPositionX, int linkPositionY,
                           boolean linkAirborne, int linkSpeedY) {
         if (!overlaps(entity, linkPositionX, linkPositionY)) {
             return Result.none();
@@ -65,7 +65,7 @@ final class SideViewPotContact {
             (entity.y() - 0x10) & 0xFF, snapTop ? 0x02 : 0);
     }
 
-    static boolean liftWindow(RoomEntity entity, int linkPositionX, int linkPositionY) {
+    public static boolean liftWindow(RoomEntity entity, int linkPositionX, int linkPositionY) {
         return withinSignedWindow(linkPositionX - entity.x(), 0x12)
             && withinSignedWindow(linkPositionY - entity.y(), 0x12);
     }

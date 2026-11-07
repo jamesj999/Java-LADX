@@ -2,7 +2,7 @@ package linksawakening.world.entity.motion;
 
 import linksawakening.world.EntityRoomLoader;
 import linksawakening.world.RoomEntity;
-import linksawakening.world.transition.*;
+
 
 /** Bank-$36 PiranhaPlantEntityHandler's pipe rise, hold, and lower states. */
 public final class PiranhaMotion {

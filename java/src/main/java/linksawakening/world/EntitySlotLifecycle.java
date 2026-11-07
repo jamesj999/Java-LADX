@@ -27,7 +27,7 @@ import java.util.function.IntUnaryOperator;
 import static linksawakening.world.RoomEntityRuntime.*;
 
 /** Slot clearing, status countdowns and persistence lifecycle. */
-final class EntitySlotLifecycle {
+public final class EntitySlotLifecycle {
     private final RoomEntityRuntime runtime;
     EntitySlotLifecycle(RoomEntityRuntime runtime) { this.runtime = runtime; }
 
@@ -322,7 +322,7 @@ final class EntitySlotLifecycle {
             ? 1 << entity.sourceLoadOrder() : 0;
     }
 
-    RoomEntity applyZolSplit(RoomEntity original, RoomEntity updated,
+    public RoomEntity applyZolSplit(RoomEntity original, RoomEntity updated,
                                       ZolGelMotion.Split split) {
         EntitySpriteDefinition gelDefinition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_GEL);
         int gelVariant = gelDefinition.supported() ? 0 : -1;
@@ -437,7 +437,7 @@ final class EntitySlotLifecycle {
 
     boolean shouldDisappear(RoomEntity entity) { return runtime.enemyInspection.shouldDisappear(entity); }
 
-    void disableEntityWithoutPersistence(int slot) {
+    public void disableEntityWithoutPersistence(int slot) {
         runtime.pickups.resetEnemyDropState(slot);
         runtime.sideViewPlatformMotion.clear(slot);
         runtime.sideViewPotMotion.clear(slot);

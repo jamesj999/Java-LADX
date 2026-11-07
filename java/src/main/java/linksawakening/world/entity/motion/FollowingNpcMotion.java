@@ -4,7 +4,7 @@ import linksawakening.world.EntityRoomLoader;
 import linksawakening.world.LinkPositionHistory;
 import linksawakening.world.RoomEntity;
 import linksawakening.world.RoomEntityBackgroundCollision;
-import linksawakening.world.transition.*;
+
 
 /**
  * The ordinary overworld follow movement shared by the bank-$19 Ghost and

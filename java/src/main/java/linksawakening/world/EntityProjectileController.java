@@ -29,11 +29,11 @@ import java.util.function.IntUnaryOperator;
 import static linksawakening.world.RoomEntityRuntime.*;
 
 /** ROM player-projectile collision and object effects, sharing the owning room slot table. */
-final class EntityProjectileController {
+public final class EntityProjectileController {
     private final RoomEntityRuntime runtime;
     EntityProjectileController(RoomEntityRuntime runtime) { this.runtime = runtime; }
 
-    void playBoomerangSoundIfDue(RoomEntity entity) {
+    public void playBoomerangSoundIfDue(RoomEntity entity) {
         // PlayBoomerangSfx ($20:4C98) only reads the shared clock.
         if (runtime.boomerangSfxCounter == 0) {
             runtime.pendingEntityEvents.add(new EntityCombatEvent(
@@ -42,7 +42,7 @@ final class EntityProjectileController {
         }
         }
 
-    void advanceBoomerangEntity(int index, RoomEntity entity, int frame,
+    public void advanceBoomerangEntity(int index, RoomEntity entity, int frame,
                                          int linkEntityX, int linkEntityY, int linkEntityZ,
                                          int linkMotionState, boolean handlerInteractive,
                                          boolean timersInteractive) {
@@ -116,7 +116,7 @@ final class EntityProjectileController {
             variant);
         }
 
-    void advanceSwordBeamEntity(int index, RoomEntity entity, int frame,
+    public void advanceSwordBeamEntity(int index, RoomEntity entity, int frame,
                                         int linkEntityX, int linkEntityY,
                                         int romLinkDirection, boolean handlerInteractive) {
         int slot = entity.slot();
@@ -175,7 +175,7 @@ final class EntityProjectileController {
         runtime.slots[index] = withPositionAndVariant(moved, moved.x(), moved.y(), variant);
         }
 
-    void advanceMagicRodFireballEntity(int index, RoomEntity entity, int frame,
+    public void advanceMagicRodFireballEntity(int index, RoomEntity entity, int frame,
                                                boolean handlerInteractive,
                                                boolean timersInteractive) {
         int slot = entity.slot();
@@ -255,7 +255,7 @@ final class EntityProjectileController {
         return objectId == runtime.OBJECT_BUSH || objectId == runtime.OBJECT_BUSH_GROUND_STAIRS;
         }
 
-    void advanceMagicPowderSprinkleEntity(int index, RoomEntity entity, int frame,
+    public void advanceMagicPowderSprinkleEntity(int index, RoomEntity entity, int frame,
                                                    int linkMotionState,
                                                    boolean handlerInteractive,
                                                    boolean timersInteractive) {
@@ -535,7 +535,7 @@ final class EntityProjectileController {
         return unloadOnHit;
         }
 
-    boolean collidePlayerArrowWithEntities(RoomEntity arrow, int frame) {
+    public boolean collidePlayerArrowWithEntities(RoomEntity arrow, int frame) {
         boolean unload = false;
         int arrowSlot = arrow.slot();
         int attackType = runtime.playerArrowBombArrow[arrowSlot]
@@ -642,7 +642,7 @@ final class EntityProjectileController {
             && (runtime.roamingEnemyMotion.direction(target.slot()) ^ 1) == direction;
         }
 
-    boolean collideBouncingBombiteWithEntities(RoomEntity source, int frame) {
+    public boolean collideBouncingBombiteWithEntities(RoomEntity source, int frame) {
         int sourceSlot = source.slot();
         int sourceVisualY = (source.y() - source.z()) & 0xFF;
         int sourceSpeedX = runtime.bombiteMotion.speedX(sourceSlot);
@@ -678,7 +678,7 @@ final class EntityProjectileController {
         return collided;
         }
 
-    boolean collideHookshotWithEntities(
+    public boolean collideHookshotWithEntities(
             RoomEntity hookshot, HookshotChainMotion.State hookshotState, int frame) {
         boolean unmasked = false;
         int sourceSlot = hookshot.slot();

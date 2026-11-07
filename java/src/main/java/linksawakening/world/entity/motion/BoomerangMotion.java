@@ -2,7 +2,7 @@ package linksawakening.world.entity.motion;
 
 import linksawakening.world.EntityRoomLoader;
 import linksawakening.world.RoomEntity;
-import linksawakening.world.transition.*;
+
 
 /**
  * Handler-owned state for the ROM's player boomerang entity ({@code $01}).

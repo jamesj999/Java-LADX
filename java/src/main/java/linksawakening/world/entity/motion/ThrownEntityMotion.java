@@ -4,7 +4,7 @@ import linksawakening.world.EntityRoomLoader;
 import linksawakening.world.EntitySideViewGravity;
 import linksawakening.world.RoomEntity;
 import linksawakening.world.RoomEntityBackgroundCollision;
-import linksawakening.world.transition.*;
+
 
 /**
  * ROM-shaped speed and fixed-point motion for the generic thrown-entity path.

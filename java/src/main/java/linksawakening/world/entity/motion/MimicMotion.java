@@ -4,7 +4,7 @@ import linksawakening.world.EntityBackgroundCollisionResult;
 import linksawakening.world.EntityRoomLoader;
 import linksawakening.world.RoomEntity;
 import linksawakening.world.RoomEntityBackgroundInteraction;
-import linksawakening.world.transition.*;
+
 
 /** Bank-$19 movement and input state for entity $28 (Mimic). */
 public final class MimicMotion {

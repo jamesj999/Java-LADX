@@ -1,7 +1,7 @@
 package linksawakening.world.entity.motion;
 
 import linksawakening.world.ChestContentsTable;
-import linksawakening.world.transition.*;
+
 
 /**
  * Source-shaped countdown branch for KeyDropPointEntityHandler in bank $03.

@@ -3,7 +3,7 @@ package linksawakening.world.entity.motion;
 import linksawakening.world.EntityStatus;
 import linksawakening.world.LinkPositionHistory;
 import linksawakening.world.RoomEntity;
-import linksawakening.world.transition.*;
+
 
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;

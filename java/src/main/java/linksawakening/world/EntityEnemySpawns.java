@@ -29,7 +29,7 @@ import java.util.function.IntUnaryOperator;
 import static linksawakening.world.RoomEntityRuntime.*;
 
 /** ROM slot allocation and enemy child spawning. */
-final class EntityEnemySpawns {
+public final class EntityEnemySpawns {
     private final RoomEntityRuntime runtime;
     EntityEnemySpawns(RoomEntityRuntime runtime) { this.runtime = runtime; }
 
@@ -93,12 +93,12 @@ final class EntityEnemySpawns {
         return freeSlot;
     }
 
-    int spawnTarinTransformationBomb(RoomEntity tarin) {
+    public int spawnTarinTransformationBomb(RoomEntity tarin) {
         return spawnEnemyBomb(tarin.x(), tarin.y(), tarin.z(), 0x20,
             0, 0, 0, false, 0x4C);
     }
 
-    boolean spawnKanaletWallMoblin(RoomEntity wall) {
+    public boolean spawnKanaletWallMoblin(RoomEntity wall) {
         int freeSlot = runtime.findFreeEntitySlot();
         if (freeSlot < 0) {
             return false;
@@ -118,7 +118,7 @@ final class EntityEnemySpawns {
         return true;
     }
 
-    void spawnPairoddProjectile(RoomEntity source, int linkEntityX, int linkEntityY) {
+    public void spawnPairoddProjectile(RoomEntity source, int linkEntityX, int linkEntityY) {
         int freeSlot = runtime.findFreeEntitySlot();
         if (freeSlot < 0) {
             return;
@@ -144,7 +144,7 @@ final class EntityEnemySpawns {
         runtime.pairoddProjectileMotion.initializeSpawn(freeSlot, source, linkEntityX, linkEntityY);
     }
 
-    void spawnGopongaProjectile(RoomEntity source,
+    public void spawnGopongaProjectile(RoomEntity source,
                                          GiantGopongaMotion.ProjectileSpawn spawn) {
         int freeSlot = runtime.findFreeEntitySlot();
         if (freeSlot < 0) {
@@ -175,7 +175,7 @@ final class EntityEnemySpawns {
         runtime.dynamicEntitySpawnedThisFrame[freeSlot] = true;
     }
 
-    void spawnZoraProjectile(ZoraMotion.ProjectileSpawn spawn) {
+    public void spawnZoraProjectile(ZoraMotion.ProjectileSpawn spawn) {
         int freeSlot = runtime.findFreeEntitySlot();
         if (freeSlot < 0) {
             return;
@@ -205,7 +205,7 @@ final class EntityEnemySpawns {
         runtime.dynamicEntitySpawnedThisFrame[freeSlot] = true;
     }
 
-    void spawnZombieChild(ZombieMotion.SpawnRequest spawn) {
+    public void spawnZombieChild(ZombieMotion.SpawnRequest spawn) {
         int freeSlot = runtime.findFreeEntitySlotAtMost(0x05);
         if (freeSlot < 0) {
             return;
@@ -236,7 +236,7 @@ final class EntityEnemySpawns {
         runtime.dynamicEntitySpawnedThisFrame[freeSlot] = true;
     }
 
-    void spawnPokeySegment(PokeyMotion.SegmentSpawn spawn) {
+    public void spawnPokeySegment(PokeyMotion.SegmentSpawn spawn) {
         int freeSlot = runtime.findFreeEntitySlot();
         if (freeSlot < 0) {
             return;
@@ -267,7 +267,7 @@ final class EntityEnemySpawns {
         runtime.dynamicEntitySpawnedThisFrame[freeSlot] = true;
     }
 
-    void spawnWizrobeProjectile(RoomEntity source,
+    public void spawnWizrobeProjectile(RoomEntity source,
                                          WizrobeMotion.ProjectileSpawn spawn) {
         int freeSlot = runtime.findFreeEntitySlot();
         if (freeSlot < 0) {
@@ -297,7 +297,7 @@ final class EntityEnemySpawns {
         runtime.dynamicEntitySpawnedThisFrame[freeSlot] = true;
     }
 
-    boolean spawnEvasiveClone(RoomEntity source,
+    public boolean spawnEvasiveClone(RoomEntity source,
                                       StalfosEvasiveMotion.CloneRequest request) {
         int freeSlot = runtime.findFreeEntitySlot();
         if (freeSlot < 0) {
@@ -333,12 +333,12 @@ final class EntityEnemySpawns {
         return true;
     }
 
-    void spawnEnemyProjectile(RoomEntity source,
+    public void spawnEnemyProjectile(RoomEntity source,
                                       RoamingEnemyMotion.LaunchRequest request) {
         spawnEnemyProjectile(source, request, runtime.roamingEnemyMotion.direction(source.slot()));
     }
 
-    void spawnEnemyProjectile(RoomEntity source,
+    public void spawnEnemyProjectile(RoomEntity source,
                                       RoamingEnemyMotion.LaunchRequest request,
                                       int direction) {
         // Dynamic projectiles must carry the ROM-decoded display definition;
@@ -375,7 +375,7 @@ final class EntityEnemySpawns {
         runtime.enemyProjectileSpawnedThisFrame[freeSlot] = true;
     }
 
-    void spawnWingedOctorokRock(RoomEntity source, int direction) {
+    public void spawnWingedOctorokRock(RoomEntity source, int direction) {
         // SpawnNewEntity returns with carry when no room slot is available.
         // The ROM handler simply abandons the launch in that case.
         if (runtime.spriteHandlers == null) {
@@ -408,7 +408,7 @@ final class EntityEnemySpawns {
         runtime.enemyProjectileSpawnedThisFrame[freeSlot] = true;
     }
 
-    boolean spawnCuccoAngry(CuccoMotion.SpawnRequest request) {
+    public boolean spawnCuccoAngry(CuccoMotion.SpawnRequest request) {
         int freeSlot = runtime.findFreeEntitySlot();
         if (freeSlot < 0) {
             return false;

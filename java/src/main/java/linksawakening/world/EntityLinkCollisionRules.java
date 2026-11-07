@@ -8,14 +8,14 @@ package linksawakening.world;
  * the urchin and a few stateful handlers write only a subset of the shared
  * side effects.</p>
  */
-final class EntityLinkCollisionRules {
+public final class EntityLinkCollisionRules {
     static final LinkPushPolicy NONE = new LinkPushPolicy(false, false, false, false);
-    static final LinkPushPolicy RESTORE_ONLY = new LinkPushPolicy(true, false, false, false);
-    static final LinkPushPolicy STANDARD_PUSH = new LinkPushPolicy(true, true, true, false);
+    public static final LinkPushPolicy RESTORE_ONLY = new LinkPushPolicy(true, false, false, false);
+    public static final LinkPushPolicy STANDARD_PUSH = new LinkPushPolicy(true, true, true, false);
     static final LinkPushPolicy STANDARD_PUSH_WITH_SPEED_CLEAR =
         new LinkPushPolicy(true, true, true, false, true);
-    static final LinkPushPolicy URCHIN = new LinkPushPolicy(true, false, false, false);
-    static final LinkPushPolicy ZORA = new LinkPushPolicy(true, true, false, false);
+    public static final LinkPushPolicy URCHIN = new LinkPushPolicy(true, false, false, false);
+    public static final LinkPushPolicy ZORA = new LinkPushPolicy(true, true, false, false);
     static final LinkPushPolicy PUSHED_BLOCK = new LinkPushPolicy(true, false, false, true);
 
     private EntityLinkCollisionRules() {

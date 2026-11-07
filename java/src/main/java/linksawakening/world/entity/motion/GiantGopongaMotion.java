@@ -3,7 +3,7 @@ package linksawakening.world.entity.motion;
 import linksawakening.world.EntityRoomLoader;
 import linksawakening.world.RoomEntity;
 import linksawakening.world.RoomEntityCombatRules;
-import linksawakening.world.transition.*;
+
 
 /** Bank-$06 GiantGopongaFlowerEntityHandler state and projectile launch. */
 public final class GiantGopongaMotion {

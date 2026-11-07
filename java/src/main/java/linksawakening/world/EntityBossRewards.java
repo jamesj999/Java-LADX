@@ -26,7 +26,7 @@ import java.util.function.IntUnaryOperator;
 import static linksawakening.world.RoomEntityRuntime.*;
 
 /** Boss destruction and source-shaped reward production. */
-final class EntityBossRewards {
+public final class EntityBossRewards {
     private final RoomEntityRuntime runtime;
     EntityBossRewards(RoomEntityRuntime runtime) { this.runtime = runtime; }
 
@@ -70,7 +70,7 @@ final class EntityBossRewards {
         runtime.lifecycle.disableEntityWithoutPersistence(entity.slot());
     }
 
-    void advanceRollingBonesDestruction(RoomEntity entity,
+    public void advanceRollingBonesDestruction(RoomEntity entity,
                                                  IntSupplier randomByteSupplier) {
         int slot = entity.slot();
         if (!runtime.rollingBonesDeathInitialized[slot]) {
@@ -114,7 +114,7 @@ final class EntityBossRewards {
         }
     }
 
-    void advanceMoblinKingDestruction(RoomEntity source, int frame, IntSupplier random) {
+    public void advanceMoblinKingDestruction(RoomEntity source, int frame, IntSupplier random) {
         int slot = source.slot();
         // Main resolves sword damage before dispatch; the ROM dispatches the
         // dying branch on the following frame, after this hit's active handler.
@@ -150,7 +150,7 @@ final class EntityBossRewards {
         }
     }
 
-    void advanceMoldormDestruction(RoomEntity source, int frameCounter) {
+    public void advanceMoldormDestruction(RoomEntity source, int frameCounter) {
         int slot = source.slot();
         int tailState = runtime.moldormDestructionTailState[slot];
         if (runtime.spriteHandlers != null) {
@@ -257,7 +257,7 @@ final class EntityBossRewards {
             EntityCombatEvent.SoundChannel.NOISE, 0x13));
     }
 
-    void advanceCollectedHeartContainer(RoomEntity entity,
+    public void advanceCollectedHeartContainer(RoomEntity entity,
                                                  int linkEntityX, int linkEntityY,
                                                  int linkZ) {
         int slot = entity.slot();

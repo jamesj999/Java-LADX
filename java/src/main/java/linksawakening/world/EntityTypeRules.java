@@ -137,7 +137,7 @@ import static linksawakening.world.RoomEntityRuntime.MAD_BOMBER_INITIAL_PHYSICS_
 import static linksawakening.world.RoomEntityRuntime.SWORD_SHIELD_PICKUP_INITIAL_PHYSICS_FLAGS;
 
 /** ROM entity-type policies shared by initialization, collision and persistence. */
-final class EntityTypeRules {
+public final class EntityTypeRules {
     private EntityTypeRules() {}
 
     static boolean isLiftableEntity(RoomEntity entity) {
@@ -153,29 +153,29 @@ final class EntityTypeRules {
         return entityType != ENTITY_SIDE_VIEW_POT;
     }
 
-    static boolean isFollowingNpcType(int type) {
+    public static boolean isFollowingNpcType(int type) {
         return type == ENTITY_GHOST || type == ENTITY_ROOSTER
             || type == ENTITY_MARIN_AT_THE_SHORE || type == ENTITY_BOW_WOW;
     }
 
-    static boolean isGhiniType(int type) {
+    public static boolean isGhiniType(int type) {
         return type == ENTITY_HIDING_GHINI || type == ENTITY_GIANT_GHINI
             || type == ENTITY_GHINI;
     }
 
-    static boolean isHidingGhiniType(int type) {
+    public static boolean isHidingGhiniType(int type) {
         return type == ENTITY_HIDING_GHINI || type == ENTITY_GIANT_GHINI;
     }
 
-    static boolean isSparkType(int type) {
+    public static boolean isSparkType(int type) {
         return type == ENTITY_SPARK_COUNTER_CLOCKWISE || type == ENTITY_SPARK_CLOCKWISE;
     }
 
-    static boolean isZolGelType(int type) {
+    public static boolean isZolGelType(int type) {
         return type == ENTITY_ZOL || type == ENTITY_GEL;
     }
 
-    static boolean isRoamingEnemyType(int type) {
+    public static boolean isRoamingEnemyType(int type) {
         return type == ENTITY_OCTOROK || type == ENTITY_MOBLIN || type == ENTITY_IRON_MASK;
     }
 
@@ -223,11 +223,11 @@ final class EntityTypeRules {
             || isGhiniType(type);
     }
 
-    static boolean isBombiteType(int type) {
+    public static boolean isBombiteType(int type) {
         return type == ENTITY_BOUNCING_BOMBITE || type == ENTITY_TIMER_BOMBITE;
     }
 
-    static boolean isEnemyProjectileType(int type) {
+    public static boolean isEnemyProjectileType(int type) {
         return type == ENTITY_OCTOROK_ROCK || type == ENTITY_MOBLIN_ARROW;
     }
 
@@ -328,7 +328,7 @@ final class EntityTypeRules {
         return type == ENTITY_HINOX ? 0x08 : 0;
     }
 
-    static int persistentClearMask(RoomEntity entity) {
+    public static int persistentClearMask(RoomEntity entity) {
         return entity.sourceLoadOrder() >= 0 && entity.sourceLoadOrder() < 8
             ? 1 << entity.sourceLoadOrder() : 0;
     }
@@ -345,7 +345,7 @@ final class EntityTypeRules {
             && entity.spriteDefinition().supported();
     }
 
-    static boolean isCommonDroppableType(int type) {
+    public static boolean isCommonDroppableType(int type) {
         return type == ENTITY_DROPPABLE_HEART
             || type == ENTITY_DROPPABLE_RUPEE
             || type == ENTITY_DROPPABLE_FAIRY

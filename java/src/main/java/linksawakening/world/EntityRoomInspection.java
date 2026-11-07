@@ -26,7 +26,7 @@ import java.util.function.IntUnaryOperator;
 import static linksawakening.world.RoomEntityRuntime.*;
 
 /** Read-only views over ROM slot state for gameplay and diagnostics. */
-final class EntityRoomInspection {
+public final class EntityRoomInspection {
     private final RoomEntityRuntime runtime;
     EntityRoomInspection(RoomEntityRuntime runtime) { this.runtime = runtime; }
 
@@ -187,7 +187,7 @@ final class EntityRoomInspection {
         return runtime.lastBombPlacementPlayedBump;
     }
 
-    boolean tarinTransformationHandlerInteractive() {
+    public boolean tarinTransformationHandlerInteractive() {
         return runtime.transitionSequenceCounter == 0x04 && !runtime.dialogActive && !runtime.inventoryAppearing;
     }
 
@@ -195,7 +195,7 @@ final class EntityRoomInspection {
         return tarinTransformationHandlerInteractive() && runtime.linkPlayingOcarinaCountdown == 0;
     }
 
-    boolean genieState0Interactive(boolean creditsGameplay) {
+    public boolean genieState0Interactive(boolean creditsGameplay) {
         return !creditsGameplay
             && runtime.gameplayWorld
             && runtime.transitionSequenceCounter == 0x04
@@ -498,7 +498,7 @@ final class EntityRoomInspection {
         return List.copyOf(runtime.hookshotBridgeUpdates);
     }
 
-    RoomEntity firstLoadedEntityOfType(int type) {
+    public RoomEntity firstLoadedEntityOfType(int type) {
         for (RoomEntity candidate : runtime.slots) {
             if (candidate.loaded() && candidate.type() == type) {
                 return candidate;

@@ -4,7 +4,7 @@ import linksawakening.world.EntityBackgroundCollisionResult;
 import linksawakening.world.EntityRoomLoader;
 import linksawakening.world.RoomEntity;
 import linksawakening.world.RoomEntityBackgroundInteraction;
-import linksawakening.world.transition.*;
+
 
 /** Bank-$05 outdoor {@code TarinEntityHandler}, including the raccoon transformation. */
 public final class TarinRaccoonMotion {

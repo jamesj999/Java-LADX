@@ -23,7 +23,7 @@ import java.util.function.IntUnaryOperator;
 import static linksawakening.world.RoomEntityRuntime.*;
 
 /** Read-only views over ROM slot state for gameplay and diagnostics. */
-final class EntityEnemyInspection {
+public final class EntityEnemyInspection {
     private final RoomEntityRuntime runtime;
     EntityEnemyInspection(RoomEntityRuntime runtime) { this.runtime = runtime; }
 
@@ -762,7 +762,7 @@ final class EntityEnemyInspection {
         return runtime.enemyRecoilMotion.isActive(slot);
     }
 
-    boolean polsVoiceBalladOcarinaTrigger() {
+    public boolean polsVoiceBalladOcarinaTrigger() {
         return runtime.linkPlayingOcarinaCountdown == 0x01
             && (runtime.ocarinaSongFlags & 0x04) != 0
             && runtime.selectedSongIndex == 0;

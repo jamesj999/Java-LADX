@@ -24,7 +24,7 @@ import java.util.function.IntUnaryOperator;
 import static linksawakening.world.RoomEntityRuntime.*;
 
 /** ROM pickup, reveal and drop mechanics, sharing the owning room slot table. */
-final class EntityPickupController {
+public final class EntityPickupController {
     private final RoomEntityRuntime runtime;
     EntityPickupController(RoomEntityRuntime runtime) { this.runtime = runtime; }
 
@@ -45,7 +45,7 @@ final class EntityPickupController {
             ? runtime.HIDING_SLIME_KEY_HIDDEN_OPTIONS1 : runtime.DROPPABLE_HIDDEN_OPTIONS1;
         }
 
-    CommonDroppableUpdate advanceCommonDroppable(
+    public CommonDroppableUpdate advanceCommonDroppable(
             RoomEntity entity, int linkEntityX, int linkEntityY,
             RoomEntityObjectSample objectUnderEntity) {
         int slot = entity.slot();
@@ -119,7 +119,7 @@ final class EntityPickupController {
         runtime.entityOptions1Override[slot] = runtime.DROPPABLE_REVEALED_OPTIONS1;
         }
 
-    SlimeKeyTransitionUpdate advanceHidingSlimeKey(
+    public SlimeKeyTransitionUpdate advanceHidingSlimeKey(
             RoomEntity entity, int slot, int linkEntityX, int linkEntityY, int linkZ) {
         int transition = runtime.enemyTransitionCountdown[slot];
         if (transition == 0) {
@@ -193,7 +193,7 @@ final class EntityPickupController {
         }
         }
 
-    boolean checkForKeyDropQuicksandHole(RoomEntity entity) {
+    public boolean checkForKeyDropQuicksandHole(RoomEntity entity) {
         if (runtime.indoorRoom || runtime.entityRoomId != 0xCE || entity.z() != 0) {
             return false;
         }
@@ -201,7 +201,7 @@ final class EntityPickupController {
             && withinUnsignedWindow(entity.x(), 0x50, 3);
         }
 
-    void advanceHeartPiecePickup(RoomEntity entity, int x, int y, int z) {
+    public void advanceHeartPiecePickup(RoomEntity entity, int x, int y, int z) {
         int slot = entity.slot();
         var update = runtime.heartPiecePickup[slot].advance(runtime.enemyTransitionCountdown[slot], runtime.dialogActive, runtime.heartPiecesCount);
         runtime.heartPieceUpdates.add(update);
@@ -219,7 +219,7 @@ final class EntityPickupController {
         runtime.slots[slot] = withZ(withPositionAndVariant(entity, x, (y - 12) & 255, entity.spriteVariant()), z);
         }
 
-    void initializeChestEntity(RoomEntity entity) {
+    public void initializeChestEntity(RoomEntity entity) {
         int slot = entity.slot();
         int itemType = runtime.chestItemBySlot[slot] & 0xFF;
         runtime.chestSpeedY[slot] = 0xFC;
@@ -241,7 +241,7 @@ final class EntityPickupController {
         }
         }
 
-    boolean advanceChestEntity(int index, RoomEntity entity) {
+    public boolean advanceChestEntity(int index, RoomEntity entity) {
         int slot = entity.slot();
         int itemType = runtime.chestItemBySlot[slot] & 0xFF;
         if (itemType == ChestContentsTable.CHEST_ZOL) {

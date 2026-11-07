@@ -51,51 +51,51 @@ import java.util.Objects;
 import java.util.function.IntSupplier;
 
 /** Mutable execution locals for one immutable entity frame input. */
-final class EntityFrameExecution {
-  final RoomEntityRuntime runtime;
-  RoomEntity lifted;
-  int liftedRomDirection;
-  int frameCounter;
-  int linkEntityX;
-  int linkEntityY;
+public final class EntityFrameExecution {
+  public final RoomEntityRuntime runtime;
+  public RoomEntity lifted;
+  public int liftedRomDirection;
+  public int frameCounter;
+  public int linkEntityX;
+  public int linkEntityY;
   int collisionType;
-  IntSupplier randomByteSupplier;
-  RoomEntityBackgroundCollision backgroundCollision;
-  RoomEntityObjectCollision objectCollision;
+  public IntSupplier randomByteSupplier;
+  public RoomEntityBackgroundCollision backgroundCollision;
+  public RoomEntityObjectCollision objectCollision;
   LinkPositionHistory linkPositionHistory;
-  int linkZ;
-  boolean linkAirborne;
+  public int linkZ;
+  public boolean linkAirborne;
   int linkDirection;
   int entityYOffset;
-  EnemyProjectileCollision.LinkState projectileLinkState;
-  boolean creditsGameplay;
-  boolean swordCollisionActive;
-  int swordX;
-  int swordWidth;
-  int swordY;
-  int swordHeight;
-  boolean handlerLinkCollisionEnabled;
-  boolean countdownBlocksInteraction;
-  boolean threeOfAKindInteractive;
-  boolean handlerInteractive;
-  boolean bowWowHandlerInteractive;
-  boolean projectileTimersInteractive;
-  boolean sideViewPotInteractive;
-  boolean sideViewPotLinkCollisionInteractive;
-  int frame;
-  int romCollisionType;
-  RoomEntityBackgroundInteraction hinoxBackgroundInteraction;
-  List<EntityProjectileEvent> projectileEvents;
-  boolean carryingEntity;
-  int romLinkDirection;
-  int index;
-  RoomEntity entity;
-  boolean moldormIntroOpenedThisFrame;
-  boolean rollingBonesHitThisFrame;
+  public EnemyProjectileCollision.LinkState projectileLinkState;
+  public boolean creditsGameplay;
+  public boolean swordCollisionActive;
+  public int swordX;
+  public int swordWidth;
+  public int swordY;
+  public int swordHeight;
+  public boolean handlerLinkCollisionEnabled;
+  public boolean countdownBlocksInteraction;
+  public boolean threeOfAKindInteractive;
+  public boolean handlerInteractive;
+  public boolean bowWowHandlerInteractive;
+  public boolean projectileTimersInteractive;
+  public boolean sideViewPotInteractive;
+  public boolean sideViewPotLinkCollisionInteractive;
+  public int frame;
+  public int romCollisionType;
+  public RoomEntityBackgroundInteraction hinoxBackgroundInteraction;
+  public List<EntityProjectileEvent> projectileEvents;
+  public boolean carryingEntity;
+  public int romLinkDirection;
+  public int index;
+  public RoomEntity entity;
+  public boolean moldormIntroOpenedThisFrame;
+  public boolean rollingBonesHitThisFrame;
   boolean kanaletLeafProducer;
   RoomEntity originalEntity;
-  EntityStatus initialStatus;
-  boolean wasInitializing;
+  public EntityStatus initialStatus;
+  public boolean wasInitializing;
   boolean freezeTarinTimers;
   boolean freezeThreeOfAKindTimers;
   boolean freezeHinoxTimers;
@@ -106,52 +106,52 @@ final class EntityFrameExecution {
   boolean freezeBowWowTimers;
   boolean freezeMoblinKingTimers;
   boolean ignoreHitsDecrementedBeforeHandler;
-  EntityStatus status;
-  boolean preserveGhiniPresentation;
-  boolean preserveMadBomberPresentation;
-  boolean preserveBombitePresentation;
-  boolean preserveIronMaskPresentation;
-  boolean preserveSnakePresentation;
-  boolean preserveStarPresentation;
-  boolean preserveBlooperPresentation;
-  boolean preserveWingedOctorokPresentation;
-  boolean preservePincerPresentation;
-  boolean preserveBushCrawlerPresentation;
-  boolean preserveMimicPresentation;
-  boolean preserveMaskedMimicPresentation;
-  boolean preserveMiniMoldormPresentation;
-  boolean preserveMoldormPresentation;
-  boolean preserveCuccoPresentation;
-  boolean preserveGopongaFlowerPresentation;
-  boolean preserveGiantGopongaPresentation;
-  boolean preserveGopongaProjectilePresentation;
-  boolean preservePokeyPresentation;
-  boolean preservePiranhaPresentation;
-  boolean preserveZoraPresentation;
-  boolean preserveZombiePresentation;
-  boolean preserveBuzzBlobPresentation;
-  boolean preserveSandCrabPresentation;
-  boolean preserveDogPresentation;
-  boolean preserveUrchinPresentation;
-  boolean preserveWitchRatPresentation;
-  boolean preserveWitchPresentation;
-  boolean preserveRoosterPresentation;
-  boolean preserveWizrobePresentation;
-  boolean preserveWizrobeProjectilePresentation;
-  boolean preservePolsVoicePresentation;
-  boolean preserveSpikedBeetlePresentation;
-  boolean preserveArmosKnightPresentation;
-  boolean preserveHinoxPresentation;
-  boolean preserveRollingBonesPresentation;
-  boolean preserveThreeOfAKindPresentation;
-  boolean preserveMoblinKingPresentation;
-  boolean preserveSecretSeashellPresentation;
-  boolean preserveDroppablePresentation;
-  boolean preserveTarinPresentation;
-  boolean keyDropTransitionActive;
-  RoomEntityGroundInteraction.Result preAppliedGroundResult;
-  boolean applyGenericGroundInteraction;
-  RoomEntity updated;
+  public EntityStatus status;
+  public boolean preserveGhiniPresentation;
+  public boolean preserveMadBomberPresentation;
+  public boolean preserveBombitePresentation;
+  public boolean preserveIronMaskPresentation;
+  public boolean preserveSnakePresentation;
+  public boolean preserveStarPresentation;
+  public boolean preserveBlooperPresentation;
+  public boolean preserveWingedOctorokPresentation;
+  public boolean preservePincerPresentation;
+  public boolean preserveBushCrawlerPresentation;
+  public boolean preserveMimicPresentation;
+  public boolean preserveMaskedMimicPresentation;
+  public boolean preserveMiniMoldormPresentation;
+  public boolean preserveMoldormPresentation;
+  public boolean preserveCuccoPresentation;
+  public boolean preserveGopongaFlowerPresentation;
+  public boolean preserveGiantGopongaPresentation;
+  public boolean preserveGopongaProjectilePresentation;
+  public boolean preservePokeyPresentation;
+  public boolean preservePiranhaPresentation;
+  public boolean preserveZoraPresentation;
+  public boolean preserveZombiePresentation;
+  public boolean preserveBuzzBlobPresentation;
+  public boolean preserveSandCrabPresentation;
+  public boolean preserveDogPresentation;
+  public boolean preserveUrchinPresentation;
+  public boolean preserveWitchRatPresentation;
+  public boolean preserveWitchPresentation;
+  public boolean preserveRoosterPresentation;
+  public boolean preserveWizrobePresentation;
+  public boolean preserveWizrobeProjectilePresentation;
+  public boolean preservePolsVoicePresentation;
+  public boolean preserveSpikedBeetlePresentation;
+  public boolean preserveArmosKnightPresentation;
+  public boolean preserveHinoxPresentation;
+  public boolean preserveRollingBonesPresentation;
+  public boolean preserveThreeOfAKindPresentation;
+  public boolean preserveMoblinKingPresentation;
+  public boolean preserveSecretSeashellPresentation;
+  public boolean preserveDroppablePresentation;
+  public boolean preserveTarinPresentation;
+  public boolean keyDropTransitionActive;
+  public RoomEntityGroundInteraction.Result preAppliedGroundResult;
+  public boolean applyGenericGroundInteraction;
+  public RoomEntity updated;
   EntityLinkCollisionRules.LinkPushPolicy genericLinkPushPolicy;
   int variant;
   int renderFlipAttribute;
@@ -359,53 +359,53 @@ final class EntityFrameExecution {
     return state.runtime.outbox.drain(EntityProjectileEvent.class, "projectileEvents");
   }
 
-  void replaceEntity(RoomEntity replacement) { runtime.slots[index] = replacement; }
+  public void replaceEntity(RoomEntity replacement) { runtime.slots[index] = replacement; }
 
-  RoomEntity entityAt(int slotIndex) { return runtime.slots[slotIndex]; }
+  public RoomEntity entityAt(int slotIndex) { return runtime.slots[slotIndex]; }
 
-  void emit(DialogRequest event) { runtime.pendingDialogRequests.add(event); }
+  public void emit(DialogRequest event) { runtime.pendingDialogRequests.add(event); }
 
-  void emit(DungeonWarpRequest event) { runtime.pendingDungeonWarpRequests.add(event); }
+  public void emit(DungeonWarpRequest event) { runtime.pendingDungeonWarpRequests.add(event); }
 
-  void emit(EntityCombatEvent event) { runtime.pendingEntityEvents.add(event); }
+  public void emit(EntityCombatEvent event) { runtime.pendingEntityEvents.add(event); }
 
-  void emit(HinoxLinkEffectRequest event) { runtime.pendingHinoxLinkEffectRequests.add(event); }
+  public void emit(HinoxLinkEffectRequest event) { runtime.pendingHinoxLinkEffectRequests.add(event); }
 
-  void emit(KeyQuicksandEvent event) { runtime.pendingKeyQuicksandEvents.add(event); }
+  public void emit(KeyQuicksandEvent event) { runtime.pendingKeyQuicksandEvents.add(event); }
 
-  void emit(KeyRewardEvent event) { runtime.pendingKeyRewardEvents.add(event); }
+  public void emit(KeyRewardEvent event) { runtime.pendingKeyRewardEvents.add(event); }
 
-  void emit(LikeLikeEvent event) { runtime.pendingLikeLikeEvents.add(event); }
+  public void emit(LikeLikeEvent event) { runtime.pendingLikeLikeEvents.add(event); }
 
-  void emit(LinkAttackClearRequest event) { runtime.pendingLinkAttackClearRequests.add(event); }
+  public void emit(LinkAttackClearRequest event) { runtime.pendingLinkAttackClearRequests.add(event); }
 
-  void emit(LinkFacingRequest event) { runtime.pendingLinkFacingRequests.add(event); }
+  public void emit(LinkFacingRequest event) { runtime.pendingLinkFacingRequests.add(event); }
 
-  void emit(LinkFallenPoseRequest event) { runtime.pendingLinkFallenPoseRequests.add(event); }
+  public void emit(LinkFallenPoseRequest event) { runtime.pendingLinkFallenPoseRequests.add(event); }
 
-  void emit(LinkMotionBlockRequest event) { runtime.pendingLinkMotionBlockRequests.add(event); }
+  public void emit(LinkMotionBlockRequest event) { runtime.pendingLinkMotionBlockRequests.add(event); }
 
-  void emit(RoomStatusPersistenceRequest event) { runtime.pendingRoomStatusPersistenceRequests.add(event); }
+  public void emit(RoomStatusPersistenceRequest event) { runtime.pendingRoomStatusPersistenceRequests.add(event); }
 
-  void emit(RoosterLinkStateRequest event) { runtime.pendingRoosterLinkStateRequests.add(event); }
+  public void emit(RoosterLinkStateRequest event) { runtime.pendingRoosterLinkStateRequests.add(event); }
 
-  void emit(ScreenShakeRequest event) { runtime.pendingScreenShakeRequests.add(event); }
+  public void emit(ScreenShakeRequest event) { runtime.pendingScreenShakeRequests.add(event); }
 
-  void emit(SideViewPlatformLinkRequest event) { runtime.pendingSideViewPlatformLinkRequests.add(event); }
+  public void emit(SideViewPlatformLinkRequest event) { runtime.pendingSideViewPlatformLinkRequests.add(event); }
 
-  void emit(SlimeKeyRewardEvent event) { runtime.pendingSlimeKeyRewardEvents.add(event); }
+  public void emit(SlimeKeyRewardEvent event) { runtime.pendingSlimeKeyRewardEvents.add(event); }
 
-  void emit(WarpLinkStateRequest event) { runtime.pendingWarpLinkStateRequests.add(event); }
+  public void emit(WarpLinkStateRequest event) { runtime.pendingWarpLinkStateRequests.add(event); }
 
-  void emit(WitchExchangeEvent event) { runtime.pendingWitchExchangeEvents.add(event); }
+  public void emit(WitchExchangeEvent event) { runtime.pendingWitchExchangeEvents.add(event); }
 
-  void emit(WitchRewardEvent event) { runtime.pendingWitchRewardEvents.add(event); }
+  public void emit(WitchRewardEvent event) { runtime.pendingWitchRewardEvents.add(event); }
 
-  void emit(TransientVfxRequest event) { runtime.transientVfxRequests.add(event); }
+  public void emit(TransientVfxRequest event) { runtime.transientVfxRequests.add(event); }
 
-  EntitySlotLifecycle lifecycle() { return runtime.lifecycle; }
+  public EntitySlotLifecycle lifecycle() { return runtime.lifecycle; }
 
-  EntityEnemySpawns enemySpawns() { return runtime.entityEnemySpawns; }
+  public EntityEnemySpawns enemySpawns() { return runtime.entityEnemySpawns; }
 
-  EntityPlayerSpawns playerSpawns() { return runtime.entityPlayerSpawns; }
+  public EntityPlayerSpawns playerSpawns() { return runtime.entityPlayerSpawns; }
 }

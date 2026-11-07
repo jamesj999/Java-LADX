@@ -5,7 +5,7 @@ import linksawakening.world.EntityRoomLoader;
 import linksawakening.world.RoomEntity;
 import linksawakening.world.RoomEntityBackgroundInteraction;
 import linksawakening.world.RoomEntityGroundInteraction;
-import linksawakening.world.transition.*;
+
 
 /** Bank-$07 BlooperEntityHandler's water-bound movement and swim state machine. */
 public final class BlooperMotion {

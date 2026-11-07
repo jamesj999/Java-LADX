@@ -21,7 +21,7 @@ import java.util.function.IntUnaryOperator;
 import static linksawakening.world.RoomEntityRuntime.*;
 
 /** ROM bomb explosion, damage and delayed presentation ordering. */
-final class EntityBombInteractions {
+public final class EntityBombInteractions {
     private final RoomEntityRuntime runtime;
     EntityBombInteractions(RoomEntityRuntime runtime) { this.runtime = runtime; }
 
@@ -59,7 +59,7 @@ final class EntityBombInteractions {
         }
     }
 
-    BombMotion.Decision advanceBombEntity(
+    public BombMotion.Decision advanceBombEntity(
             int index, RoomEntity entity, List<EntityProjectileEvent> projectileEvents,
             int linkEntityX, int linkEntityY,
             EnemyProjectileCollision.LinkState projectileLinkState) {
@@ -242,7 +242,7 @@ final class EntityBombInteractions {
             bomb.x(), bomb.y(), bomb.z(), target.x(), target.y(), 0x30);
     }
 
-    RoomEntity applyBombStunnedPostActiveWork(
+    public RoomEntity applyBombStunnedPostActiveWork(
             RoomEntity stunned, RoomEntityBackgroundCollision backgroundCollision, int frame) {
         int slot = stunned.slot();
         RoomEntity moved = stunned;

@@ -1,7 +1,7 @@
 package linksawakening.world.entity.motion;
 
 
-import linksawakening.world.transition.*;
+
 
 /** Bank-$19 RoosterEntityHandler's active lifted/carry state. */
 public final class RoosterMotion {

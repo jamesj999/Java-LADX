@@ -29,11 +29,11 @@ import java.util.function.IntUnaryOperator;
 import static linksawakening.world.RoomEntityRuntime.*;
 
 /** ROM story and NPC presentation sequences, sharing the owning room slot table. */
-final class EntityStoryController {
+public final class EntityStoryController {
     private final RoomEntityRuntime runtime;
     EntityStoryController(RoomEntityRuntime runtime) { this.runtime = runtime; }
 
-    void advanceKidnapWarningKid(RoomEntity entity, int frameCounter,
+    public void advanceKidnapWarningKid(RoomEntity entity, int frameCounter,
                                          int linkEntityX, int linkEntityY) {
         int slot = entity.slot();
         int yDistance = signedByte((linkEntityY - entity.y()) & 0xFF);
@@ -77,7 +77,7 @@ final class EntityStoryController {
         }
         }
 
-    void advanceMadamMeowMeow(RoomEntity entity, int frameCounter,
+    public void advanceMadamMeowMeow(RoomEntity entity, int frameCounter,
                                       int linkEntityX, int linkEntityY,
                                       boolean linkAirborne) {
         int slot = entity.slot();
@@ -113,7 +113,7 @@ final class EntityStoryController {
         }
         }
 
-    void advanceOwlStatue(RoomEntity entity, int linkEntityX, int linkEntityY,
+    public void advanceOwlStatue(RoomEntity entity, int linkEntityX, int linkEntityY,
                                    int linkZ, int linkMotionState, boolean linkAirborne) {
         // The shipped handler pushes before ReturnIfNonInteractive_18.
         // CheckLinkCollisionWithEnemy uses the already incremented visual Y;
@@ -135,7 +135,7 @@ final class EntityStoryController {
         }
         }
 
-    void advanceRichard(RoomEntity entity, int frameCounter,
+    public void advanceRichard(RoomEntity entity, int frameCounter,
                                 int linkEntityX, int linkEntityY,
                                 boolean linkAirborne) {
         int slot = entity.slot();
@@ -239,7 +239,7 @@ final class EntityStoryController {
         runtime.slots[slot] = updated;
         }
 
-    void advanceOwlEvent(RoomEntity entity, int frameCounter,
+    public void advanceOwlEvent(RoomEntity entity, int frameCounter,
                                  int linkEntityX, int linkEntityY,
                                  boolean handlerLinkInteractive) {
         int slot = entity.slot();
@@ -391,7 +391,7 @@ final class EntityStoryController {
         }
         }
 
-    void advanceWitchGotItemPresentation(int slot) {
+    public void advanceWitchGotItemPresentation(int slot) {
         int countdown = runtime.witchGotItemCountdown[slot];
         if (countdown == 0) {
             return;
