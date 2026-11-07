@@ -1,5 +1,6 @@
 package linksawakening.entity;
 
+import linksawakening.rom.*;
 import linksawakening.rom.RomBank;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.room.RoomPaletteLoader;
@@ -11,14 +12,14 @@ public final class EntitySpriteCatalog {
     public static final int OBJECT_PALETTE_COUNT = 6;
     public static final int EAGLES_TOWER_OBJECT_PALETTE_COUNT = 7;
 
-    private static final int DATA_BANK = 0x20;
-    private static final int OVERWORLD_GROUP_ADDRESS = 0x70D3;
-    private static final int INDOORS_A_GROUP_ADDRESS = 0x71D3;
-    private static final int INDOORS_B_GROUP_ADDRESS = 0x72D3;
-    private static final int OVERWORLD_SHEETS_ADDRESS = 0x73F3;
-    private static final int INDOOR_SHEETS_ADDRESS = 0x763B;
-    private static final int PALETTE_BANK = 0x21;
-    private static final int OBJECT_PALETTES_ADDRESS = 0x5518;
+    private static final int DATA_BANK = RomSymbols.RoomSpritesheetGroupsTable.bank();
+    private static final int OVERWORLD_GROUP_ADDRESS = RomSymbols.RoomSpritesheetGroupsTable.address();
+    private static final int INDOORS_A_GROUP_ADDRESS = RomSymbols.RoomSpritesheetGroupsTable.plus(0x100).address();
+    private static final int INDOORS_B_GROUP_ADDRESS = RomSymbols.RoomSpritesheetGroupsTable.plus(0x200).address();
+    private static final int OVERWORLD_SHEETS_ADDRESS = RomSymbols.OverworldEntitySpritesheetsTable.address();
+    private static final int INDOOR_SHEETS_ADDRESS = RomSymbols.IndoorEntitySpritesheetsTable.address();
+    private static final int PALETTE_BANK = RomSymbols.ObjectPalettes.bank();
+    private static final int OBJECT_PALETTES_ADDRESS = RomSymbols.ObjectPalettes.address();
 
     private static final int MAP_HOUSE = 0x10;
     private static final int ROOM_INDOOR_B_CAMERA_SHOP = 0xB5;
@@ -90,7 +91,7 @@ public final class EntitySpriteCatalog {
         };
         int groupOffset = checkedOffset(DATA_BANK, groupAddress + roomId, 1,
             "room spritesheet group");
-        int groupIndex = Byte.toUnsignedInt(romData[groupOffset]);
+        int groupIndex = new Rom(romData).u8(RomAddress.fromOffset(groupOffset));
         groupIndex = applyRoomContextOverride(roomTable, roomId, groupIndex, mapId,
             overworldRoomStatus);
         int[][] palettes = switch (roomTable) {
@@ -123,7 +124,7 @@ public final class EntitySpriteCatalog {
             ENTITY_SHEET_SLOT_COUNT, "entity spritesheet table");
         int[] sheetValues = new int[ENTITY_SHEET_SLOT_COUNT];
         for (int slot = 0; slot < ENTITY_SHEET_SLOT_COUNT; slot++) {
-            sheetValues[slot] = Byte.toUnsignedInt(romData[sheetOffset + slot]);
+            sheetValues[slot] = new Rom(romData).u8(RomAddress.fromOffset(sheetOffset + slot));
         }
         EntitySpriteDefinition floatingOverlay = entitySpriteHandlerCatalog.forFloatingItemOverlay();
         return new EntitySpriteSelection(roomTable, roomId, groupIndex, sheetValues,
@@ -172,8 +173,8 @@ public final class EntitySpriteCatalog {
             paletteCount * 4 * 2, "object palette table");
         for (int palette = 0; palette < paletteCount; palette++) {
             for (int color = 0; color < 4; color++) {
-                int low = Byte.toUnsignedInt(romData[offset++]);
-                int high = Byte.toUnsignedInt(romData[offset++]);
+                int low = new Rom(romData).u8(RomAddress.fromOffset(offset++));
+                int high = new Rom(romData).u8(RomAddress.fromOffset(offset++));
                 palettes[palette][color] = RomBank.decodeRgb555(low | (high << 8));
             }
         }

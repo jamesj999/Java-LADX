@@ -165,3 +165,28 @@ Entity runtime integration checked the public rom.GbcBanks.adjust API after
 merging develop. None of the 15 assigned declarations uses an adjusted bank;
 BombedCaveDoorTilesIndexesGBC is a fixed bank-03 tile-index table. No new bank
 adjustment was introduced.
+
+## Final src/main constant audit
+
+Migrated the last 26 suffix-metric declarations in EntitySpriteCatalog (8),
+LinkSpriteSheet (5), DialogTextLoader (4), OwlEventDialogResolver (3),
+TransientVfxSpriteSheet (3), SignpostDialogTable (2), SwordSpriteSheet (1).
+All match local azle.sym; no address discrepancies. Group pages retain offsets
+$100/$200 from RoomSpritesheetGroupsTable (bank20.asm, table local labels
+.indoors_a/.indoors_b). Other verified labels: OverworldEntitySpritesheetsTable
+20:73F3, IndoorEntitySpritesheetsTable 20:763B, ObjectPalettes 21:5518,
+LinkCharacterTiles 0C:4000, CharacterVfxTiles 0C:4200, LinkCharacter2Tiles
+0C:5800, LinkAnimationStateTable 20:5319, data_020_5407 20:5407,
+DialogPointerTable 1C:4001, DialogBankTable 1C:4741, SignpostDialogTable
+14:5118, MapSpecialLocationNamesLookupTable 01:5909,
+MapSpecialLocationNamesTable 01:5959 and OverworldMusicTracks 02:4000.
+LinkAnimationsLists 02:4910 also replaces an inline location.
+Link/sword retain explicit GbcBanks adjustment; transient VFX retains bank 0C.
+Typed reads retain range checks and dialog copy ownership. No routes or fixtures
+changed. WorldRomConstantGuardTest now scans all Java sources under src/main,
+excluding generated RomSymbols, with a documented empty non-ROM allow-list.
+The suffix-metric literal declaration count is zero across src/main.
+Validation: `./gradlew test romFreeTest --rerun-tasks` passed: 2,438 full tests
+and 936 ROM-free tests, zero failures/errors/skips. Generated symbols pass
+`--check`. Scene parity reports zero mismatches within its tested scope; no new
+emulator replay comparison was performed for this address-preserving refactor.

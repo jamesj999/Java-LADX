@@ -393,3 +393,15 @@ PieceOfHeartMeterTiles
 DungeonSideview1Tiles
 DungeonSideview2Tiles
 MenuTiles
+DialogBankTable
+DialogPointerTable
+LinkAnimationStateTable
+LinkAnimationsLists
+LinkCharacter2Tiles
+MapSpecialLocationNamesLookupTable
+MapSpecialLocationNamesTable
+SignpostDialogTable
+data_020_5407
+RoomSpritesheetGroupsTable
+IndoorEntitySpritesheetsTable
+OverworldEntitySpritesheetsTable
