@@ -65,6 +65,7 @@ import static linksawakening.world.RoomConstants.ROOM_PIXEL_HEIGHT;
 import static linksawakening.world.RoomConstants.ROOM_PIXEL_WIDTH;
 
 public final class RoomSession {
+    final RoomTransitionController roomTransitionController = new RoomTransitionController(this);
     final RoomLoadCoordinator roomLoadCoordinator = new RoomLoadCoordinator(this);
     static long nextRoomSessionId;
     static final int ROOM_STATUS_TABLE_SIZE = 0x100;
@@ -424,85 +425,16 @@ public final class RoomSession {
 
     public void loadInitialOverworld(int roomId) { roomLoadCoordinator.loadInitialOverworld(roomId); }
 
-    public void loadWarpDestination(Warp warp) {
-        // GameplayWorldLoadRoomHandler ($01:442B) clears $C000..$D2FF,
-        // including the recent-room ring and transient entity-clear masks.
-        // Scrolling between adjacent rooms does not take this path.
-        recentRoomEntityClears.reset();
-        boolean wasIndoor = activeRoom != null && activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD;
-        dungeonTitleMessageCountdown = 0;
-        if (warp.category() == Warp.CATEGORY_OVERWORLD) {
-            if (wasIndoor) {
-                gpu.loadBaseOverworldTiles(romData);
-                currentOverworldTilesetId = W_TILESET_NO_UPDATE;
-            }
-            loadOverworld(warp.destRoom());
-            loadRoomSpecificTilesIfNeeded(warp.destRoom());
-        } else {
-            loadIndoor(warp.destMap(), warp.destRoom(), warp.category());
-            // $00:194C-1965: old wIsIndoor is hFreeWarpDataAddress.
-            if (!wasIndoor && warp.destMap() < 0x0A) dungeonTitleMessageCountdown = 0x30;
-        }
-    }
+    public void loadWarpDestination(Warp warp) { roomTransitionController.loadWarpDestination(warp); }
 
     /** $00:0F53 countdown and $01:61EE dungeon-title dialog gates. */
-    public int tickDungeonTitleMessage(boolean dialogActive, boolean inventoryClosed,
-                                        int linkMotionState, boolean freeMovement) {
-        if (dungeonTitleMessageCountdown == 0 || dialogActive || !inventoryClosed) return -1;
-        if (--dungeonTitleMessageCountdown != 0 || linkMotionState != 0 || freeMovement) return -1;
-        return 0x56 + activeRoom.mapId();
-    }
+    public int tickDungeonTitleMessage(boolean dialogActive, boolean inventoryClosed, int linkMotionState, boolean freeMovement) { return roomTransitionController.tickDungeonTitleMessage(dialogActive, inventoryClosed, linkMotionState, freeMovement); }
 
-    public void startAdjacentOverworldScroll(ScrollController scrollController,
-                                             int direction,
-                                             int linkScreenX,
-                                             int linkScreenY) {
-        RoomRenderSnapshot previousRoom = renderSnapshot();
-        int nextRoomId = adjacentOverworldRoomId(direction);
-        boolean discoveredTailKeyRoom = nextRoomId == ROOM_OW_TAIL_KEY_CHEST
-            && direction == ScrollController.UP
-            && (roomState.overworldRoomStatus[nextRoomId] & ROOM_STATUS_DISCOVERED) == 0;
-        if (discoveredTailKeyRoom) {
-            roomState.overworldRoomStatus[nextRoomId] |= (byte) ROOM_STATUS_DISCOVERED;
-        }
-        loadRoomSpecificTilesIfNeeded(nextRoomId);
-        loadOverworld(nextRoomId);
-        if (discoveredTailKeyRoom) {
-            entityBridge.pendingRoomEntityEvents.add(new EntityCombatEvent(
-                0, ENTITY_OWL_EVENT, 0, false,
-                EntityCombatEvent.SoundChannel.JINGLE, 0x02));
-        }
-        scrollController.start(direction, linkScreenX, linkScreenY, previousRoom, scrollTarget(direction));
-    }
+    public void startAdjacentOverworldScroll(ScrollController scrollController, int direction, int linkScreenX, int linkScreenY) { roomTransitionController.startAdjacentOverworldScroll(scrollController, direction, linkScreenX, linkScreenY); }
 
-    void startMysteriousWoodsLostScroll(ScrollController scrollController,
-                                        int linkScreenX, int linkScreenY) {
-        RoomRenderSnapshot previousRoom = renderSnapshot();
-        loadRoomSpecificTilesIfNeeded(ROOM_OW_MYSTERIOUS_WOODS_LOST);
-        loadOverworld(ROOM_OW_MYSTERIOUS_WOODS_LOST);
-        scrollController.start(ScrollController.UP, linkScreenX, linkScreenY,
-            previousRoom, scrollTarget(ScrollController.UP));
-        entityBridge.pendingRoomEntityEvents.add(new EntityCombatEvent(
-            0, ENTITY_TARIN, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x1E));
-    }
+    void startMysteriousWoodsLostScroll(ScrollController scrollController, int linkScreenX, int linkScreenY) { roomTransitionController.startMysteriousWoodsLostScroll(scrollController, linkScreenX, linkScreenY); }
 
-    public void startAdjacentIndoorScroll(ScrollController scrollController,
-                                          int direction,
-                                          int linkScreenX,
-                                          int linkScreenY) {
-        RoomRenderSnapshot previousRoom = renderSnapshot();
-        RoomScrollNavigation.IndoorRoomDestination destination = adjacentIndoorRoom(direction);
-        loadIndoor(activeRoom.mapId(), destination.roomId(), activeRoom.mapCategory(),
-            switch (direction) {
-                case ScrollController.RIGHT -> 0;
-                case ScrollController.LEFT -> 1;
-                case ScrollController.UP -> 2;
-                case ScrollController.DOWN -> 3;
-                default -> throw new IllegalArgumentException("Indoor scroll direction " + direction);
-            });
-        indoorMapPosition = destination.mapPosition();
-        scrollController.start(direction, linkScreenX, linkScreenY, previousRoom, scrollTarget(direction));
-    }
+    public void startAdjacentIndoorScroll(ScrollController scrollController, int direction, int linkScreenX, int linkScreenY) { roomTransitionController.startAdjacentIndoorScroll(scrollController, direction, linkScreenX, linkScreenY); }
 
     public void loadOverworld(int roomId) { roomLoadCoordinator.loadOverworld(roomId); }
 
@@ -904,73 +836,26 @@ public final class RoomSession {
     }
 
     /** Starts the source UseOcarina countdown consumed by active entities. */
-    public boolean startOcarina(int countdown, int songFlags, int selectedSong) {
-        if (countdown < 0 || countdown > 0xFF) {
-            throw new IllegalArgumentException("Ocarina countdown must be an unsigned byte: "
-                + countdown);
-        }
-        if (songFlags < 0 || songFlags > 0xFF) {
-            throw new IllegalArgumentException("Ocarina song flags must be an unsigned byte: "
-                + songFlags);
-        }
-        if (selectedSong < 0 || selectedSong > 0xFF) {
-            throw new IllegalArgumentException("Selected Ocarina song must be an unsigned byte: "
-                + selectedSong);
-        }
-        if (activeRoom == null || entityBridge.entityRuntime == null || ocarinaPlaybackCountdown != 0) {
-            return false;
-        }
-        ocarinaPlaybackCountdown = countdown;
-        ocarinaSongFlags = songFlags & 0xFF;
-        selectedSongIndex = selectedSong & 0xFF;
-        ocarinaAnimationCounter = 0;
-        ocarinaAnimationPhase = 0;
-        pendingManboTransition = false;
-        pendingInstrumentTransition = false;
-        return true;
-    }
+    public boolean startOcarina(int countdown, int songFlags, int selectedSong) { return roomTransitionController.startOcarina(countdown, songFlags, selectedSong); }
 
     /** Mirrors wLinkPlayingOcarinaCountdown for Link's motion gate. */
-    public boolean ocarinaPlaying() {
-        return ocarinaPlaybackCountdown != 0;
-    }
+    public boolean ocarinaPlaying() { return roomTransitionController.ocarinaPlaying(); }
 
     /** Mirrors hLinkAnimationState $75/$76 while LinkPlayingOcarinaHandler runs. */
-    public int ocarinaAnimationState() {
-        if (!ocarinaPlaying()) {
-            return -1;
-        }
-        return ocarinaAnimationPhase == 0 ? 0x76 : 0x75;
-    }
+    public int ocarinaAnimationState() { return roomTransitionController.ocarinaAnimationState(); }
 
     /**
      * Returns the ROM destination prepared by the completed Mambo branch.
      * The caller starts the non-interactive transition and applies this warp
      * only after the source's {@code $C0}-frame effect has finished.
      */
-    public Warp consumeManboPondTransitionRequest() {
-        if (!pendingManboTransition || activeRoom == null) {
-            return null;
-        }
-        pendingManboTransition = false;
-        return manboWarpResolver.resolve(activeRoom.mapCategory(), activeRoom.mapId());
-    }
+    public Warp consumeManboPondTransitionRequest() { return roomTransitionController.consumeManboPondTransitionRequest(); }
 
     /** Returns the room's prepared warp after the instrument effect completes. */
-    public Warp consumeInstrumentTransitionRequest() {
-        if (!pendingInstrumentTransition || activeRoom == null || !activeRoom.hasWarps()) {
-            return null;
-        }
-        pendingInstrumentTransition = false;
-        return activeRoom.firstWarp();
-    }
+    public Warp consumeInstrumentTransitionRequest() { return roomTransitionController.consumeInstrumentTransitionRequest(); }
 
     /** Returns the completed entity-$61 request emitted by the ROM handler. */
-    Warp consumeClearedDungeonWarp() {
-        Warp pending = pendingDungeonWarp;
-        pendingDungeonWarp = null;
-        return pending;
-    }
+    Warp consumeClearedDungeonWarp() { return roomTransitionController.consumeClearedDungeonWarp(); }
 
     /** Supplies the player fields consumed by the ROM enemy-drop resolver. */
     public void setEnemyDropPlayerState(int maxHearts, int health, boolean activePowerUp) {
@@ -1695,34 +1580,9 @@ public final class RoomSession {
     }
 
     /** Mirrors the countdown-zero branches of LinkPlayingOcarinaHandler. */
-    void finishOcarinaPlayback() {
-        if (followingNpcState.marinFollowing()) {
-            if (selectedSongIndex == 0x01) {
-                pendingManboTransition = true;
-            } else if (activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
-                entityBridge.pendingRoomDialogRequests.add(new DialogRequest(
-                    OCARINA_MARIN_DIALOG_TABLE, OCARINA_MARIN_DIALOG_ID));
-            }
-            return;
-        }
-        if (ocarinaSongFlags == 0) {
-            entityBridge.pendingRoomDialogRequests.add(new DialogRequest(
-                OCARINA_NO_SONG_DIALOG_TABLE, OCARINA_NO_SONG_DIALOG_ID));
-        } else if (selectedSongIndex == 0x01) {
-            pendingManboTransition = true;
-        }
-    }
+    void finishOcarinaPlayback() { roomTransitionController.finishOcarinaPlayback(); }
 
-    void tickOcarinaAnimationHandler() {
-        if (!ocarinaPlaying()) {
-            return;
-        }
-        ocarinaAnimationCounter++;
-        if (ocarinaAnimationCounter >= 0x38) {
-            ocarinaAnimationCounter = 0;
-            ocarinaAnimationPhase ^= 0x01;
-        }
-    }
+    void tickOcarinaAnimationHandler() { roomTransitionController.tickOcarinaAnimationHandler(); }
 
     /** Returns and clears entity side-effect events emitted by the last tick. */
     public List<EntityCombatEvent> consumeEntityEvents() { return entityBridge.consumeEntityEvents(); }
@@ -3626,39 +3486,9 @@ public final class RoomSession {
     }
 
     /** Mirrors renderTranscientVFXs' hStaircase leave-and-return state machine. */
-    public Warp pollStaircaseWarp(int linkEntityX, int linkEntityY,
-                                  int linkZ, boolean carryingObject) {
-        if (staircaseState == STAIRCASE_NONE || activeRoom == null) {
-            return null;
-        }
-        if (staircaseState == STAIRCASE_INACTIVE) {
-            if (!withinUnsignedByteRange(linkEntityX, staircaseX, 0x06, 0x0C)
-                || !withinUnsignedByteRange(linkEntityY, staircaseY, 0x06, 0x0C)) {
-                staircaseState = STAIRCASE_ACTIVE;
-            }
-            return null;
-        }
-        if (linkZ != 0 || carryingObject
-            || !withinUnsignedByteRange(linkEntityX, staircaseX, 0x05, 0x0A)
-            || !withinUnsignedByteRange(linkEntityY, staircaseY, 0x05, 0x0A)
-            || !activeRoom.hasWarps()) {
-            return null;
-        }
-        staircaseState = STAIRCASE_NONE;
-        return activeRoom.firstWarp();
-    }
+    public Warp pollStaircaseWarp(int linkEntityX, int linkEntityY, int linkZ, boolean carryingObject) { return roomTransitionController.pollStaircaseWarp(linkEntityX, linkEntityY, linkZ, carryingObject); }
 
-    void configureStaircase(int location) {
-        if (location < 0) {
-            staircaseState = STAIRCASE_NONE;
-            staircaseX = 0;
-            staircaseY = 0;
-            return;
-        }
-        staircaseState = STAIRCASE_INACTIVE;
-        staircaseY = (location & 0xF0) + 0x10;
-        staircaseX = ((location & 0x0F) << 4) + 0x08;
-    }
+    void configureStaircase(int location) { roomTransitionController.configureStaircase(location); }
 
     static boolean withinUnsignedByteRange(int value, int center,
                                                    int bias, int size) {
@@ -4167,9 +3997,9 @@ public final class RoomSession {
 
     void loadRoomSpecificTilesIfNeeded(int roomId) { roomLoadCoordinator.loadRoomSpecificTilesIfNeeded(roomId); }
 
-    int adjacentOverworldRoomId(int direction) { return scrollNavigation.adjacentOverworldRoomId(activeRoom, direction); }
+    int adjacentOverworldRoomId(int direction) { return roomTransitionController.adjacentOverworldRoomId(direction); }
 
-    RoomScrollNavigation.IndoorRoomDestination adjacentIndoorRoom(int direction) { return scrollNavigation.adjacentIndoorRoom(activeRoom, indoorMapPosition, direction); }
+    RoomScrollNavigation.IndoorRoomDestination adjacentIndoorRoom(int direction) { return roomTransitionController.adjacentIndoorRoom(direction); }
 
     static int scrollTarget(int direction) { return RoomScrollNavigation.scrollTarget(direction); }
 }
