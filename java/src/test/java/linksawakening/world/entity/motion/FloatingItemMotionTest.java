@@ -1,5 +1,7 @@
 package linksawakening.world.entity.motion;
 
+import linksawakening.world.entity.event.FloatingItemPickupEffect;
+
 
 import linksawakening.world.transition.*;
 
@@ -35,17 +37,17 @@ final class FloatingItemMotionTest {
 
     @Test
     void mapsEachSourceVariantToItsRomPickupEffectAndItemType() {
-        assertEquals(FloatingItemMotion.PickupEffect.TEN_RUPEES,
+        assertEquals(FloatingItemPickupEffect.TEN_RUPEES,
             FloatingItemMotion.pickupEffect(0x86, 0));
-        assertEquals(FloatingItemMotion.PickupEffect.MAGIC_POWDER,
+        assertEquals(FloatingItemPickupEffect.MAGIC_POWDER,
             FloatingItemMotion.pickupEffect(0x86, 1));
-        assertEquals(FloatingItemMotion.PickupEffect.TEN_BOMBS,
+        assertEquals(FloatingItemPickupEffect.TEN_BOMBS,
             FloatingItemMotion.pickupEffect(0x86, 2));
-        assertEquals(FloatingItemMotion.PickupEffect.TEN_RUPEES,
+        assertEquals(FloatingItemPickupEffect.TEN_RUPEES,
             FloatingItemMotion.pickupEffect(0x86, 3));
-        assertEquals(FloatingItemMotion.PickupEffect.HEALTH_18,
+        assertEquals(FloatingItemPickupEffect.HEALTH_18,
             FloatingItemMotion.pickupEffect(0xE5, 4));
-        assertEquals(FloatingItemMotion.PickupEffect.TEN_ARROWS,
+        assertEquals(FloatingItemPickupEffect.TEN_ARROWS,
             FloatingItemMotion.pickupEffect(0xE5, 5));
 
         assertEquals(0x2E, FloatingItemMotion.pickupEntityType(0x86, 0));

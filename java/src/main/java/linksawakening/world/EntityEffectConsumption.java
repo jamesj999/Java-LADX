@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.HeartPiecePickupUpdate;
+
 import linksawakening.world.entity.motion.HeartPiecePickupMotion;
 
 import linksawakening.world.entity.event.ChestRewardEvent;
@@ -202,7 +204,7 @@ final class EntityEffectConsumption {
         return runtime.outbox.drain(BombExplosionEvent.class, "pendingBombExplosionEvents");
     }
 
-    List<HeartPiecePickupMotion.Update> consumeHeartPieceUpdates() {
+    List<HeartPiecePickupUpdate> consumeHeartPieceUpdates() {
         var result = List.copyOf(runtime.heartPieceUpdates);
         runtime.heartPieceUpdates.clear();
         return result;

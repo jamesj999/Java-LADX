@@ -6,7 +6,7 @@ import linksawakening.world.transition.*;
 
 
 /** Bank-$14 func_014_54F8's screen-shake countdown and phase tables. */
-public final class ScreenShakeMotion {
+public final class ScreenShakeMotion implements linksawakening.world.entity.ScreenShake {
     private static final int[] HORIZONTAL_BY_PHASE = {0, 2, 0, -2, 0, 0, 0, 0};
     private static final int[] VERTICAL_BY_PHASE = {0, 0, 0, 0, 0, 2, 0, -2};
 

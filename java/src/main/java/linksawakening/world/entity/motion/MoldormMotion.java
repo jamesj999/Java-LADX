@@ -1,5 +1,7 @@
 package linksawakening.world.entity.motion;
 
+import linksawakening.world.entity.event.MoldormSegmentPosition;
+
 import linksawakening.world.EntityBackgroundCollisionResult;
 import linksawakening.world.EntityRoomLoader;
 import linksawakening.world.RoomEntity;
@@ -48,20 +50,15 @@ public final class MoldormMotion {
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] headSpriteVariant = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] noiseCadence = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final TailPosition[] vulnerableTail =
-        new TailPosition[EntityRoomLoader.MAX_ENTITIES];
+    private final MoldormSegmentPosition[] vulnerableTail =
+        new MoldormSegmentPosition[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
-    public record TailPosition(int x, int y) {
-        public TailPosition {
-            x &= 0xFF;
-            y &= 0xFF;
-        }
-    }
+
 
     public record Update(RoomEntity entity, int transitionCountdown, int headSpriteVariant,
                   int speedX, int speedY, int collisionFlags, int inertia,
-                  boolean noiseRequested, List<TailPosition> segments,
+                  boolean noiseRequested, List<MoldormSegmentPosition> segments,
                   Presentation presentation) {
         public Update {
             segments = List.copyOf(segments);
@@ -69,7 +66,7 @@ public final class MoldormMotion {
     }
 
     public record Presentation(int headSpriteVariant, int headX, int headY,
-                        List<TailPosition> segments) {
+                        List<MoldormSegmentPosition> segments) {
         public Presentation {
             segments = List.copyOf(segments);
         }
@@ -91,7 +88,7 @@ public final class MoldormMotion {
         headSpriteVariant[slot] = entity.spriteVariant() >= 0
             && entity.spriteVariant() < 8 ? entity.spriteVariant() : 0;
         noiseCadence[slot] = 0;
-        vulnerableTail[slot] = new TailPosition(0, 0);
+        vulnerableTail[slot] = new MoldormSegmentPosition(0, 0);
         initialized[slot] = true;
     }
 
@@ -120,7 +117,7 @@ public final class MoldormMotion {
         speedYAccumulator[slot] = 0;
         headSpriteVariant[slot] = 0;
         noiseCadence[slot] = 0;
-        vulnerableTail[slot] = new TailPosition(0, 0);
+        vulnerableTail[slot] = new MoldormSegmentPosition(0, 0);
     }
 
     public Update advance(RoomEntity entity, int frameCounter, int transitionCountdown,
@@ -145,7 +142,7 @@ public final class MoldormMotion {
         if (nextTransition > 0) {
             nextTransition--;
         }
-        List<TailPosition> presentationSegments = tailSegments(slot);
+        List<MoldormSegmentPosition> presentationSegments = tailSegments(slot);
         Presentation presentation = new Presentation(headSpriteVariant[slot],
             entity.x(), (entity.y() - entity.z()) & 0xFF, presentationSegments);
 
@@ -172,7 +169,7 @@ public final class MoldormMotion {
         }
 
         headSpriteVariant[slot] = HEAD_SPRITE_VARIANTS[privateState1[slot] >> 1];
-        List<TailPosition> segments = tailSegments(slot);
+        List<MoldormSegmentPosition> segments = tailSegments(slot);
         vulnerableTail[slot] = segments.get(3);
         return new Update(moved, nextTransition, headSpriteVariant[slot],
             speedX[slot], speedY[slot], collisionFlags, inertia[slot],
@@ -195,12 +192,12 @@ public final class MoldormMotion {
         privateCountdown2[slot] = 0xC8;
     }
 
-    public TailPosition vulnerableTail(int slot) {
-        TailPosition position = vulnerableTail[slot];
-        return position == null ? new TailPosition(0, 0) : position;
+    public MoldormSegmentPosition vulnerableTail(int slot) {
+        MoldormSegmentPosition position = vulnerableTail[slot];
+        return position == null ? new MoldormSegmentPosition(0, 0) : position;
     }
 
-    public List<TailPosition> currentTailSegments(int slot) {
+    public List<MoldormSegmentPosition> currentTailSegments(int slot) {
         return tailSegments(slot);
     }
 
@@ -281,11 +278,11 @@ public final class MoldormMotion {
         historyY[slot][inertia[slot]] = y & 0xFF;
     }
 
-    private List<TailPosition> tailSegments(int slot) {
-        List<TailPosition> segments = new ArrayList<>(TAIL_HISTORY_OFFSETS.length);
+    private List<MoldormSegmentPosition> tailSegments(int slot) {
+        List<MoldormSegmentPosition> segments = new ArrayList<>(TAIL_HISTORY_OFFSETS.length);
         for (int offset : TAIL_HISTORY_OFFSETS) {
             int index = (inertia[slot] - offset) & HISTORY_MASK;
-            segments.add(new TailPosition(historyX[slot][index], historyY[slot][index]));
+            segments.add(new MoldormSegmentPosition(historyX[slot][index], historyY[slot][index]));
         }
         return List.copyOf(segments);
     }

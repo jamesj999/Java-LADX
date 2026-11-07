@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.MoldormSegmentPosition;
+
 import linksawakening.world.entity.motion.MoldormMotion;
 
 import linksawakening.world.entity.event.HeartContainerRewardEvent;
@@ -183,7 +185,7 @@ final class EntityBossRewards {
                     runtime.bossDeathProducerState[slot] = 3;
                     return;
                 }
-                MoldormMotion.TailPosition poofPosition =
+                MoldormSegmentPosition poofPosition =
                     runtime.moldormMotion.currentTailSegments(slot).get(3 - tailState);
                 createMoldormPoof(source, poofPosition.x(), poofPosition.y());
                 runtime.moldormDestructionTailState[slot] = tailState + 1;

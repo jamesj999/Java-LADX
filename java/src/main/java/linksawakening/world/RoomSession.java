@@ -1,5 +1,9 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.LiftedEntityState;
+
+import linksawakening.world.entity.event.HeartPiecePickupUpdate;
+
 import linksawakening.world.entity.motion.HeartPiecePickupMotion;
 
 import linksawakening.world.transition.ScrollController;
@@ -143,7 +147,7 @@ public final class RoomSession extends RoomSessionRules {
     public int[][] palettes() { return context.roomSessionViews.palettes(); }
     public boolean heartPiecePickupActive() { return context.roomSessionViews.heartPiecePickupActive(); }
     public void setHeartPiecesCount(int count) { context.roomSessionViews.setHeartPiecesCount(count); }
-    public List<HeartPiecePickupMotion.Update> consumeHeartPieceUpdates() { return context.roomSessionViews.consumeHeartPieceUpdates(); }
+    public List<HeartPiecePickupUpdate> consumeHeartPieceUpdates() { return context.roomSessionViews.consumeHeartPieceUpdates(); }
     public String instrumentTrace() { return context.roomSessionViews.instrumentTrace(); }
     public String moblinKingTrace() { return context.roomSessionViews.moblinKingTrace(); }
     public RoomRenderSnapshot renderSnapshot() { return context.roomSessionViews.renderSnapshot(); }
@@ -234,7 +238,7 @@ public final class RoomSession extends RoomSessionRules {
     Warp consumeClearedDungeonWarp() { return context.roomTransitionController.consumeClearedDungeonWarp(); }
     /** Supplies the player fields consumed by the ROM enemy-drop resolver. */
     public void setEnemyDropPlayerState(int maxHearts, int health, boolean activePowerUp) { context.entityBridge.setEnemyDropPlayerState(maxHearts, health, activePowerUp); }
-    public RoomEntityRuntime.LiftedEntityState liftedEntityState() { return context.roomSessionViews.liftedEntityState(); }
+    public LiftedEntityState liftedEntityState() { return context.roomSessionViews.liftedEntityState(); }
     /** Throws the currently held object using Link's Java direction order. */
     public boolean throwLiftedEntity(int linkDirection) { return context.roomPlayerItemActions.throwLiftedEntity(linkDirection); }
     /**

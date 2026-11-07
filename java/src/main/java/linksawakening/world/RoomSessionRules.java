@@ -1,6 +1,5 @@
 package linksawakening.world;
 
-import linksawakening.world.entity.motion.TarinRaccoonMotion;
 
 import static linksawakening.world.RoomConstants.ROOM_PIXEL_HEIGHT;
 import static linksawakening.world.RoomConstants.ROOM_PIXEL_WIDTH;
@@ -55,7 +54,7 @@ abstract class RoomSessionRules {
     static final int ROOM_OW_TAIL_CAVE_ENTRANCE = 0xD3;
     static final int ROOM_OW_KEY_CAVERN_ENTRANCE = 0xB5;
     static final int ROOM_OW_MYSTERIOUS_WOODS_LOST = 0x63;
-    static final int ENTITY_TARIN = TarinRaccoonMotion.ENTITY_TYPE;
+    static final int ENTITY_TARIN = EntityRomConstants.ENTITY_TARIN;
     static final int ENTITY_OWL_EVENT = 0x41;
     static final int TAIL_CAVE_GATE_LOCATION = 0x16;
     static final int KEYHOLE_DIALOG_TABLE = 2;

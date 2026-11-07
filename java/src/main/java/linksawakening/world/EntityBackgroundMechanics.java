@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.MoldormSegmentPosition;
+
 import linksawakening.world.entity.motion.ColorShellMotion;
 import linksawakening.world.entity.motion.EnemyRecoilMotion;
 import linksawakening.world.entity.motion.HookshotBridgeMotion;
@@ -44,7 +46,7 @@ final class EntityBackgroundMechanics {
         if (runtime.enemyFlashCountdown[entity.slot()] != 0) {
             return false;
         }
-        MoldormMotion.TailPosition tail = runtime.moldormMotion.vulnerableTail(entity.slot());
+        MoldormSegmentPosition tail = runtime.moldormMotion.vulnerableTail(entity.slot());
         RoomEntity tailCollisionEntity = withPositionAndVariant(
             entity, tail.x(), (tail.y() + entity.z()) & 0xFF, entity.spriteVariant());
         return RoomEntityCombatRules.overlapsSword(

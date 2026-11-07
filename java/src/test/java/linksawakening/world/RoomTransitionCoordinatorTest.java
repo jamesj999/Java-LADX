@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.LiftedEntityState;
+
 import linksawakening.world.entity.motion.MotionTestAccess;
 
 import linksawakening.world.entity.motion.BooBuddyMotion;
@@ -4509,7 +4511,7 @@ final class RoomTransitionCoordinatorTest {
         assertTrue(session.consumeLinkHeldItemPoseRequests().isEmpty());
         assertTrue(session.consumeLinkSwordSpinPoseRequests().isEmpty());
         assertTrue(session.consumeLinkSwordFinalPoseRequests().isEmpty());
-        RoomEntityRuntime.LiftedEntityState lifted = session.liftedEntityState();
+        LiftedEntityState lifted = session.liftedEntityState();
         if (lifted.active()) {
             link.setCarryingLiftedObjectState(lifted.carryState(),
                 lifted.effectiveRomDirection());

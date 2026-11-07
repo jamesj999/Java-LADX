@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.HeartPiecePickupUpdate;
+
 import linksawakening.world.entity.motion.AntiFairyMotion;
 import linksawakening.world.entity.motion.ArmosKnightMotion;
 import linksawakening.world.entity.motion.ArmosMotion;
@@ -779,8 +781,8 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     final HeartPiecePickupMotion[] heartPiecePickup = new HeartPiecePickupMotion[EntityRoomLoader.MAX_ENTITIES];
 
-    final List<HeartPiecePickupMotion.Update> heartPieceUpdates =
-        outbox.channel(HeartPiecePickupMotion.Update.class, "heartPieceUpdates");
+    final List<HeartPiecePickupUpdate> heartPieceUpdates =
+        outbox.channel(HeartPiecePickupUpdate.class, "heartPieceUpdates");
 
     int heartPiecesCount;
 

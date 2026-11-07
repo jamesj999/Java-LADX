@@ -1,5 +1,9 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.LiftedEntityState;
+
+import linksawakening.world.entity.event.HeartPiecePickupUpdate;
+
 import linksawakening.world.entity.motion.HeartPiecePickupMotion;
 import linksawakening.world.entity.motion.WarpMotion;
 
@@ -111,10 +115,10 @@ final class RoomSessionViews {
         if (session.context.entityBridge.entityRuntime != null) session.context.entityBridge.entityRuntime.setHeartPiecesCount(count);
     }
 
-    List<HeartPiecePickupMotion.Update> consumeHeartPieceUpdates() {
+    List<HeartPiecePickupUpdate> consumeHeartPieceUpdates() {
         if (session.context.entityBridge.entityRuntime == null) return List.of();
         var updates = session.context.entityBridge.entityRuntime.consumeHeartPieceUpdates();
-        if (updates.stream().anyMatch(HeartPiecePickupMotion.Update::complete)) session.markActiveRoomCompleted();
+        if (updates.stream().anyMatch(HeartPiecePickupUpdate::complete)) session.markActiveRoomCompleted();
         return updates;
     }
 
@@ -130,9 +134,9 @@ final class RoomSessionViews {
             session.context.entityBridge.entityRuntime == null ? null : session.context.entityBridge.entityRuntime.heartPieceVisual());
     }
 
-    RoomEntityRuntime.LiftedEntityState liftedEntityState() {
+    LiftedEntityState liftedEntityState() {
         return session.context.entityBridge.entityRuntime == null
-            ? RoomEntityRuntime.LiftedEntityState.none()
+            ? LiftedEntityState.none()
             : session.context.entityBridge.entityRuntime.liftedEntityState();
     }
 

@@ -5,13 +5,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** Checks compiled references, including descriptors and generic signatures. */
 class WorldDependencyTest {
-    private static final Path ROOT = Path.of("build/classes/java/main/linksawakening/world");
+    private static final Path ROOT = Path.of("build/classes/java/main/linksawakening");
     private static final Pattern TYPE = Pattern.compile("linksawakening/[A-Za-z0-9_$/]+");
 
     private record CompiledType(String name, List<String> references) {}
@@ -41,7 +42,7 @@ class WorldDependencyTest {
                         }
                     }
                 }
-                result.add(new CompiledType("linksawakening/world/" + ROOT.relativize(path)
+                result.add(new CompiledType("linksawakening/" + ROOT.relativize(path)
                     .toString().replace('\\', '/').replace(".class", ""), references));
             }
         }
@@ -51,8 +52,11 @@ class WorldDependencyTest {
 
     @Test
     void worldDoesNotDependOnApp() throws Exception {
-        for (var type : classes()) for (String reference : type.references()) {
+        for (var type : classes()) {
+            if (!type.name().startsWith("linksawakening/world/")) continue;
+            for (String reference : type.references()) {
             assertTrue(!reference.startsWith("linksawakening/app/"), type.name() + " -> " + reference);
+            }
         }
     }
 
@@ -76,6 +80,41 @@ class WorldDependencyTest {
                 boolean contract = reference.equals("linksawakening/world/EntityEvent")
                     || reference.equals("linksawakening/world/EntityRequestBridge");
                 assertTrue(contract || dependency.isRecord() || dependency.isEnum(), type.name() + " -> " + reference);
+            }
+        }
+    }
+
+    // Explicit facade/value surface used by app, including construction-time APIs.
+    private static final Set<String> APP_WORLD_API = Set.of(
+        "ActiveRoom", "ChestContentsTable", "DroppableRupeeSystem", "EnemyAttackContext",
+        "EntityCombatEvent", "EntityPickupEvent", "EntityProjectileEvent", "EntityStatus",
+        "OverworldBushInteraction", "OverworldTilesetTable", "RomRandomByteSource",
+        "RoomConstants", "RoomEntity", "RoomEntitySnapshot", "RoomLoadListener", "RoomLoader",
+        "RoomRenderSnapshot", "RoomSession", "RoomTransitionCoordinator",
+        "transition/RoomBoundaryController", "transition/ScrollController",
+        "transition/TransitionController", "transition/Warp");
+
+    @Test
+    void motionAndHandlersAreWorldInternal() throws Exception {
+        for (var type : classes()) {
+            if (type.name().startsWith("linksawakening/world/")) continue;
+            for (String reference : type.references()) {
+                assertTrue(!reference.startsWith("linksawakening/world/entity/motion/")
+                    && !reference.startsWith("linksawakening/world/entity/handler/"),
+                    type.name() + " -> " + reference);
+            }
+        }
+    }
+
+    @Test
+    void appUsesOnlyExplicitWorldFacades() throws Exception {
+        for (var type : classes()) {
+            if (!type.name().startsWith("linksawakening/app/")) continue;
+            for (String reference : type.references()) {
+                if (!reference.startsWith("linksawakening/world/")
+                    || reference.startsWith("linksawakening/world/entity/event/")) continue;
+                String facade = reference.substring("linksawakening/world/".length()).split("\\$")[0];
+                assertTrue(APP_WORLD_API.contains(facade), type.name() + " -> " + reference);
             }
         }
     }

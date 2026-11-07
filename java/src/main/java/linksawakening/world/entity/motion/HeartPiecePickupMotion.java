@@ -1,5 +1,7 @@
 package linksawakening.world.entity.motion;
 
+import linksawakening.world.entity.event.HeartPiecePickupUpdate;
+
 
 import linksawakening.world.transition.*;
 
@@ -8,10 +10,9 @@ public final class HeartPiecePickupMotion {
     private int state = 1;
     private int inertia;
 
-    public record Update(int dialogId, int tilesCommand, boolean incrementPiece,
-                         boolean newContainer, boolean interactionLocked, boolean complete) implements linksawakening.world.EntityRequestBridge {}
 
-    public Update advance(int countdown, boolean dialogActive, int pieces) {
+
+    public HeartPiecePickupUpdate advance(int countdown, boolean dialogActive, int pieces) {
         boolean locked = state == 4 || state == 5;
         int dialog = -1, tiles = 0;
         boolean increment = false, container = false, complete = false;
@@ -34,7 +35,7 @@ public final class HeartPiecePickupMotion {
             case 8 -> { tiles = 6; complete = true; state = 9; }
             default -> { }
         }
-        return new Update(dialog, tiles, increment, container, locked, complete);
+        return new HeartPiecePickupUpdate(dialog, tiles, increment, container, locked, complete);
     }
 
     public boolean showMeter() { return state >= 5 && state <= 7; }

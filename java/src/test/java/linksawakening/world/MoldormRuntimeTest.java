@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.MoldormSegmentPosition;
+
 import linksawakening.world.entity.motion.MoldormMotion;
 
 import linksawakening.world.entity.event.DialogRequest;
@@ -93,10 +95,10 @@ final class MoldormRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
         EntitySpriteDefinition definition = catalog.forMoldormState(
             6, 0x40, 0x40,
-            List.of(new MoldormMotion.TailPosition(0x30, 0x30),
-                new MoldormMotion.TailPosition(0x24, 0x34),
-                new MoldormMotion.TailPosition(0x28, 0x38),
-                new MoldormMotion.TailPosition(0x2C, 0x3C)),
+            List.of(new MoldormSegmentPosition(0x30, 0x30),
+                new MoldormSegmentPosition(0x24, 0x34),
+                new MoldormSegmentPosition(0x28, 0x38),
+                new MoldormSegmentPosition(0x2C, 0x3C)),
             0, 0x0C);
 
         assertEquals(16, definition.dynamicVariant(0).size());
@@ -125,10 +127,10 @@ final class MoldormRuntimeTest {
         assertEquals(0x01, started.inertia());
         assertFalse(started.noiseRequested());
         assertEquals(List.of(
-            new MoldormMotion.TailPosition(0, 0),
-            new MoldormMotion.TailPosition(0, 0),
-            new MoldormMotion.TailPosition(0, 0),
-            new MoldormMotion.TailPosition(0, 0)), started.segments());
+            new MoldormSegmentPosition(0, 0),
+            new MoldormSegmentPosition(0, 0),
+            new MoldormSegmentPosition(0, 0),
+            new MoldormSegmentPosition(0, 0)), started.segments());
     }
 
     @Test
@@ -181,13 +183,13 @@ final class MoldormRuntimeTest {
         MoldormMotion.Update started = motion.advance(moldorm, 0, 0x10,
             0, 0, 4, sequence(0), null);
         AtomicInteger probes = new AtomicInteger();
-        List<MoldormMotion.TailPosition> probePositions = new ArrayList<>();
+        List<MoldormSegmentPosition> probePositions = new ArrayList<>();
 
         MoldormMotion.Update flashing = motion.advance(started.entity(), 1,
             started.transitionCountdown(), 0, 1, 4, sequence(1),
             (entity, direction, nextX, nextY) -> {
                 probes.incrementAndGet();
-                probePositions.add(new MoldormMotion.TailPosition(nextX, nextY));
+                probePositions.add(new MoldormSegmentPosition(nextX, nextY));
                 return EntityBackgroundCollisionResult.blocked(direction, 0x40, 0x40,
                     nextX, nextY);
             });

@@ -1,5 +1,7 @@
 package linksawakening.world.entity.motion;
 
+import linksawakening.world.entity.event.FloatingItemPickupEffect;
+
 
 import linksawakening.world.transition.*;
 
@@ -18,13 +20,7 @@ public final class FloatingItemMotion {
         0x00, 0x00, 0x01, 0x02, 0x02, 0x02, 0x01, 0x00
     };
 
-    public enum PickupEffect {
-        TEN_RUPEES,
-        MAGIC_POWDER,
-        TEN_BOMBS,
-        HEALTH_18,
-        TEN_ARROWS
-    }
+
 
     private FloatingItemMotion() {
     }
@@ -76,38 +72,12 @@ public final class FloatingItemMotion {
     }
 
     /** Mirrors the six-entry JP_TABLE at bank $06:$7B95. */
-    public static PickupEffect pickupEffect(int entityType, int sourceVariant) {
-        validateEntityType(entityType);
-        if (sourceVariant < 0 || sourceVariant > 0xFF) {
-            throw new IllegalArgumentException("Floating item source variant must be a byte: "
-                + sourceVariant);
-        }
-        if (entityType == ENTITY_FLOATING_ITEM) {
-            return switch (sourceVariant) {
-                case 0, 3 -> PickupEffect.TEN_RUPEES;
-                case 1 -> PickupEffect.MAGIC_POWDER;
-                case 2 -> PickupEffect.TEN_BOMBS;
-                default -> throw invalidVariant(entityType, sourceVariant);
-            };
-        }
-        return switch (sourceVariant) {
-            case 4 -> PickupEffect.HEALTH_18;
-            case 5 -> PickupEffect.TEN_ARROWS;
-            default -> throw invalidVariant(entityType, sourceVariant);
-        };
-    }
-
-    private static IllegalArgumentException invalidVariant(int entityType, int sourceVariant) {
-        return new IllegalArgumentException("Invalid floating item variant 0x"
-            + Integer.toHexString(sourceVariant) + " for entity 0x"
-            + Integer.toHexString(entityType));
+    public static FloatingItemPickupEffect pickupEffect(int entityType, int sourceVariant) {
+        return FloatingItemPickupEffect.pickupEffect(entityType, sourceVariant);
     }
 
     private static void validateEntityType(int entityType) {
-        if (!isFloatingItem(entityType)) {
-            throw new IllegalArgumentException("Not a floating item entity type: 0x"
-                + Integer.toHexString(entityType));
-        }
+        FloatingItemPickupEffect.validateEntityType(entityType);
     }
 
     private static void validateByte(int value, String name) {

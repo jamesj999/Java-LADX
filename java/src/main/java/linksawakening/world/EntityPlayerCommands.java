@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.LiftedEntityState;
+
 import linksawakening.world.entity.motion.BombMotion;
 
 import linksawakening.world.entity.event.LinkAttackStepRequest;

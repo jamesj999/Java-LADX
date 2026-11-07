@@ -1,5 +1,9 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.HeartPiecePickupUpdate;
+
+import linksawakening.world.entity.event.LiftedEntityState;
+
 import linksawakening.world.entity.motion.HeartPiecePickupMotion;
 import linksawakening.world.entity.motion.RoamingEnemyMotion;
 import linksawakening.world.entity.motion.WarpMotion;
@@ -120,17 +124,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     final WarpMotion warpMotion;
 
     /** The ROM-facing state needed by Link's carry animation and throw input. */
-    public record LiftedEntityState(int slot, int type, int phase,
-                                   int transitionCountdown, int carryState,
-                                   int sourceRomDirection, int effectiveRomDirection) {
-        static LiftedEntityState none() {
-            return new LiftedEntityState(-1, 0xFF, 0, 0, 0, 0, 0);
-        }
 
-        public boolean active() {
-            return slot >= 0;
-        }
-    }
 
     /** Object-side effect emitted by MagicPowderSprinkleEntityHandler. */
 
@@ -844,7 +838,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     public void setHeartPiecesCount(int count) { heartPiecesCount = count; }
 
-    public List<HeartPiecePickupMotion.Update> consumeHeartPieceUpdates() { return this.effects.consumeHeartPieceUpdates(); }
+    public List<HeartPiecePickupUpdate> consumeHeartPieceUpdates() { return this.effects.consumeHeartPieceUpdates(); }
 
     public String instrumentTrace() { return this.roomInspection.instrumentTrace(); }
 

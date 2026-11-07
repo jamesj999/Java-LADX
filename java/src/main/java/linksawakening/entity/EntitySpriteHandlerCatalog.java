@@ -1,5 +1,7 @@
 package linksawakening.entity;
 
+import linksawakening.world.entity.event.MoldormSegmentPosition;
+
 import linksawakening.rom.RomBank;
 import linksawakening.world.EntityRoomLoader;
 import linksawakening.world.EntityStatus;
@@ -411,10 +413,10 @@ public final class EntitySpriteHandlerCatalog {
         }
         if (entityType == ENTITY_MOLDORM) {
             return forMoldormState(0, 0, 0, List.of(
-                new MoldormMotion.TailPosition(0, 0),
-                new MoldormMotion.TailPosition(0, 0),
-                new MoldormMotion.TailPosition(0, 0),
-                new MoldormMotion.TailPosition(0, 0)), 0, 0);
+                new MoldormSegmentPosition(0, 0),
+                new MoldormSegmentPosition(0, 0),
+                new MoldormSegmentPosition(0, 0),
+                new MoldormSegmentPosition(0, 0)), 0, 0);
         }
         if (entityType == ENTITY_ROLLING_BONES) {
             return decodeRectangle(entityType, 0x06, 0x6E1E, 6, 4, 0);
@@ -722,7 +724,7 @@ public final class EntitySpriteHandlerCatalog {
     /** Builds Moldorm's eight-sprite head and delayed four-pair tail. */
     public EntitySpriteDefinition forMoldormState(
             int headVariant, int entityX, int entityY,
-            List<MoldormMotion.TailPosition> segments,
+            List<MoldormSegmentPosition> segments,
             int privateState3, int frameCounter) {
         return forMoldormPresentation(headVariant, entityX, entityY,
             entityX, entityY, segments, privateState3, frameCounter);
@@ -731,7 +733,7 @@ public final class EntitySpriteHandlerCatalog {
     /** Builds pre-update Moldorm OAM relative to the post-update entity position. */
     public EntitySpriteDefinition forMoldormPresentation(
             int headVariant, int headX, int headY, int renderBaseX, int renderBaseY,
-            List<MoldormMotion.TailPosition> segments,
+            List<MoldormSegmentPosition> segments,
             int privateState3, int frameCounter) {
         if (headVariant < 0 || headVariant > 7) {
             throw new IllegalArgumentException("Moldorm head variant must be 0..7: "
@@ -767,7 +769,7 @@ public final class EntitySpriteHandlerCatalog {
         int visibleTailPairs = 4 - privateState3;
         int[] tailVariants = {0, 0, 1, 2 + ((frameCounter >> 3) & 0x01)};
         for (int index = 0; index < visibleTailPairs; index++) {
-            MoldormMotion.TailPosition position = segments.get(index);
+            MoldormSegmentPosition position = segments.get(index);
             EntitySpriteDefinition.Variant pair = tail.variant(tailVariants[index]);
             int paletteXor = index == 3 && (frameCounter & 0x04) != 0 ? 0x10 : 0;
             appendMoldormTailPair(sprites, pair,

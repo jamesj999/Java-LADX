@@ -1,6 +1,6 @@
 package linksawakening.world.transition;
 
-import linksawakening.world.entity.motion.ScreenShakeMotion;
+import linksawakening.world.entity.ScreenShake;
 
 import linksawakening.world.RoomRenderSnapshot;
 
@@ -18,7 +18,7 @@ public final class ScrollController {
     private int linkScreenX;
     private int linkScreenY;
     private RoomRenderSnapshot previousRoom;
-    private final ScreenShakeMotion screenShakeMotion = new ScreenShakeMotion();
+    private final ScreenShake screenShakeMotion = ScreenShake.create();
     private boolean scriptedScreenShakeActive;
     private int scriptedScreenShakeHorizontal;
 
