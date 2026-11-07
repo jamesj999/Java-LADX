@@ -143,3 +143,13 @@ constants with other suffixes and inline reads also need auditing by their owner
 - EnemyDropResolver.java:30 — DROP_TABLE_RANDOM_BANK.
 - EnemyDropResolver.java:34 — THRESHOLD_LOW_HEALTH_TABLE_BANK.
 - RomEnemyCombatTables.java:10 — BOW_WOW_EATABLE_BANK.
+
+## Rendering TODO
+
+Rendering TODO: implement a future `RomOamAllocator` that follows the ROM's
+per-frame OAM allocation, including direction/state-dependent Link and sword
+ordering. Actual CGB hardware resolves OBJ overlap by lower OAM index (not X).
+Until that allocator exists, production composition preserves the emulator-validated
+legacy painter order: later opaque OBJ submissions win. Static slot assignments
+are not a substitute for dynamic allocation. OBJ-vs-BG/window uses CGB color-zero,
+BG/OBJ priority flags, and LCDC bit 0 independently of this temporary OBJ ordering.

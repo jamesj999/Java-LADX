@@ -1,5 +1,7 @@
 package linksawakening.gpu;
 
+import linksawakening.rom.GbcBanks;
+
 import linksawakening.rom.RomSymbols;
 
 /** Stateful gameplay tile animation; counters intentionally survive room changes. */

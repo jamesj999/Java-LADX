@@ -344,3 +344,7 @@ MenuFileCopyAttrmap
 MenuFileSaveTilemap
 
 MenuFileSaveAttrmap
+# Color Dungeon GPU uploads.
+ColorDungeonWallsTilesPointers
+data_020_45EA
+ColorDungeonTiles

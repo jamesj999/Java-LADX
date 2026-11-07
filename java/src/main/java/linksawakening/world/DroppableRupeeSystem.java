@@ -45,6 +45,9 @@ public final class DroppableRupeeSystem {
         0x00000000,
     };
 
+    public int spriteTileIndex() { return RUPEE_TILE_INDEX; }
+    public int[] spritePalette() { return BLUE_OBJECTS_SPRITE_PALETTE.clone(); }
+
     public record Slot(int slotIndex, int worldX, int worldY, int posZSubpixels,
                        int slowCountdown, int pickupDelay, boolean visible) {}
 

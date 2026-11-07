@@ -226,4 +226,7 @@ public final class RomSymbols {
     public static final RomAddress MenuFileCopyAttrmap = new RomAddress(0x24, 0x617D);
     public static final RomAddress MenuFileSaveTilemap = new RomAddress(0x08, 0x6A6D);
     public static final RomAddress MenuFileSaveAttrmap = new RomAddress(0x24, 0x6262);
+    public static final RomAddress ColorDungeonWallsTilesPointers = new RomAddress(0x20, 0x45C9);
+    public static final RomAddress data_020_45EA = new RomAddress(0x20, 0x45EA);
+    public static final RomAddress ColorDungeonTiles = new RomAddress(0x35, 0x6000);
 }

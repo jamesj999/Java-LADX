@@ -1,6 +1,6 @@
 package linksawakening.render;
 
-public final class BackgroundRenderLayer implements RenderLayer {
+public final class BackgroundRenderLayer implements HardwareRenderLayer {
     private final int[] tilemap;
     private final int[] attrmap;
     private final int[][] palettes;
@@ -54,4 +54,15 @@ public final class BackgroundRenderLayer implements RenderLayer {
         IndexedRenderer.renderBackground(context.buffer(), context.gpu(), tilemap, attrmap,
             palettes, mapWidth, mapHeight, viewportWidth, viewportHeight, scrollX, scrollY);
     }
+    @Override public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
+
+        if (lineScrollX != null) {
+            HardwareBackgroundRenderer.renderBackgroundLineScroll(frame, gpu, tilemap, attrmap,
+                palettes, mapWidth, mapHeight, viewportWidth, viewportHeight, lineScrollX, scrollY);
+            return;
+        }
+        HardwareBackgroundRenderer.renderBackground(frame, gpu, tilemap, attrmap,
+            palettes, mapWidth, mapHeight, viewportWidth, viewportHeight, scrollX, scrollY);
+        }
+
 }
