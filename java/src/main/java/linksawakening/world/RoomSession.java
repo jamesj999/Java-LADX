@@ -65,6 +65,7 @@ import static linksawakening.world.RoomConstants.ROOM_PIXEL_HEIGHT;
 import static linksawakening.world.RoomConstants.ROOM_PIXEL_WIDTH;
 
 public final class RoomSession {
+    final RoomPuzzleController roomPuzzleController = new RoomPuzzleController(this);
     final RoomStoryState roomStoryState = new RoomStoryState(this);
     final RoomDoorInteractions roomDoorInteractions = new RoomDoorInteractions(this);
     final RoomObjectMutations roomObjectMutations = new RoomObjectMutations(this);
@@ -2143,310 +2144,29 @@ public final class RoomSession {
     void markActiveRoomCompleted() { roomStoryState.markActiveRoomCompleted(); }
 
     /** Mirrors EntityCheckThrowAtTriggers' $35..$3C shutter-object test. */
-    void harvestThrownRoomEventCollisions() {
-        if (entityBridge.entityRuntime == null) {
-            return;
-        }
-        for (ThrownBackgroundCollisionEvent collision
-                : entityBridge.entityRuntime.consumePendingThrownBackgroundCollisions()) {
-            int objectId = collision.objectId();
-            if ((activeRoomEvent & EVENT_TRIGGER_MASK) == EVENT_TRIGGER_THROW_AT_DOOR
-                && objectId >= 0x35 && objectId < 0x3D) {
-                thrownAtDoorTriggerResolved = true;
-            }
-        }
-    }
+    void harvestThrownRoomEventCollisions() { roomPuzzleController.harvestThrownRoomEventCollisions(); }
 
     /** Executes the source's first common dungeon-event path used by Tail Cave. */
-    void tickRoomEvent(int linkEntityX, int linkEntityY) {
-        tickIndoorKeyDoorAnimation();
-        if (tickShutterClosing()) return;
-        tickSwitchButton(linkEntityX, linkEntityY);
-        tickRoomEventChestReveal(linkEntityX, linkEntityY);
-        tickRoomEventStairReveal();
-        if (pushedBlocksTriggerEffectPending) {
-            pushedBlocksTriggerEffectPending = false;
-            return;
-        }
-        if (activeRoom == null || activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
-            || activeRoomEvent == 0) {
-            return;
-        }
-        int effect = activeRoomEvent & EVENT_EFFECT_MASK;
-        // OpenLockedDoorsEffectHandler does not call EventEffectGuard:
-        // opening a chest sets bit $10 too, but must not cancel the shutters.
-        if (effect != EVENT_EFFECT_OPEN_LOCKED_DOORS
-            && effect != EVENT_EFFECT_CLEAR_MIDBOSS
-            && (activeRoomStatusFlags() & ROOM_STATUS_EVENT_1) != 0) {
-            return;
-        }
-        int trigger = activeRoomEvent & EVENT_TRIGGER_MASK;
-        if (!roomEventEffectExecuted
-            && ((trigger == EVENT_TRIGGER_KILL_ALL_ENEMIES
-                    && killAllEnemiesTriggerResolved())
-                || (trigger == EVENT_TRIGGER_STEP_ON_BUTTON
-                    && switchButtonPressed != 0)
-                || (trigger == EVENT_TRIGGER_LIGHT_TORCHES
-                    && roomTriggerCount == 0x02)
-                || (trigger == EVENT_TRIGGER_THROW_AT_DOOR
-                    && thrownAtDoorTriggerResolved)
-                || (trigger == EVENT_TRIGGER_KILL_IN_ORDER
-                    && entityBridge.entityRuntime != null
-                    && entityBridge.entityRuntime.killOrderAt(0) == 0
-                    && entityBridge.entityRuntime.killOrderAt(1) == 1
-                    && entityBridge.entityRuntime.killOrderAt(2) == 2))) {
-            roomEventEffectExecuted = true;
-            colorShellSoundSink.play(GameplaySoundEvent.PUZZLE_SOLVED);
-        }
-        if (!roomEventEffectExecuted) {
-            if ((effect == EVENT_EFFECT_OPEN_LOCKED_DOORS || effect == EVENT_EFFECT_CLEAR_MIDBOSS)
-                && !shutterCloseStarted && pendingShutterCloseMask != 0
-                && ((linkEntityX - 0x11) & 255) < 0x7E
-                && ((linkEntityY - 0x16) & 255) < 0x5E) {
-                shutterCloseStarted = true;
-                colorShellSoundSink.play(GameplaySoundEvent.DOOR_CLOSED);
-                tickShutterClosing();
-            }
-            return;
-        }
-        if (effect == EVENT_EFFECT_REVEAL_CHEST) {
-            activeRoomEvent = 0;
-            roomEventChestRevealCountdown = ROOM_EVENT_CHEST_REVEAL_COUNTDOWN;
-            if (transientVfxSystem != null) {
-                transientVfxSystem.spawn(TransientVfxType.CHEST_APPEARS, 0x88,
-                    roomEventChestTop(linkEntityX, linkEntityY) + 0x10);
-            }
-        } else if (effect == EVENT_EFFECT_OPEN_LOCKED_DOORS) {
-            openActiveRoomShutterDoors(true);
-            activeRoomEvent = 0;
-            colorShellSoundSink.play(GameplaySoundEvent.DOOR_UNLOCKED);
-        } else if (effect == EVENT_EFFECT_DROP_KEY) {
-            if (entityBridge.entityRuntime != null && entityBridge.entityRuntime.spawnRoomEventKeyDrop() >= 0) {
-                activeRoom.replaceEntities(entityBridge.entityRuntime.snapshot());
-            }
-            activeRoomEvent = 0;
-        } else if (effect == EVENT_EFFECT_REVEAL_STAIRWAY) {
-            markActiveRoomCompleted();
-            activeRoomEvent = 0;
-            roomEventStairRevealCountdown = ROOM_EVENT_CHEST_REVEAL_COUNTDOWN;
-            if (transientVfxSystem != null) {
-                transientVfxSystem.spawn(TransientVfxType.STAIRS_APPEARS, 0x88, 0x20);
-            }
-        } else if (effect == EVENT_EFFECT_CLEAR_MIDBOSS) {
-            openActiveRoomShutterDoors(true);
-            if (activeRoomEvent == EVENT_CLEAR_MIDBOSS
-                && activeRoom.mapId() >= 0
-                && activeRoom.mapId() < roomState.dungeonProgressFlags.length) {
-                roomState.dungeonProgressFlags[activeRoom.mapId()] |= 0x01;
-                indoorStatusTableForMap(activeRoom.mapId())[activeRoom.roomId()] |= 0x20;
-                entityBridge.entityRuntime.setDungeonMinibossReady(true);
-                entityBridge.pendingRoomEntityEvents.add(new EntityCombatEvent(
-                    0, 0x61, 0, false,
-                    EntityCombatEvent.SoundChannel.JINGLE, 0x1B));
-            }
-            activeRoomEvent = 0;
-        }
-    }
+    void tickRoomEvent(int linkEntityX, int linkEntityY) { roomPuzzleController.tickRoomEvent(linkEntityX, linkEntityY); }
 
-    void tickPushedBlockMotion(int linkEntityX, int linkEntityY) {
-        if (pushedBlockMotionFrames == 0 || activeRoom == null) {
-            return;
-        }
-        if (entityInputs.entityDialogActive || entityInputs.entityInventoryAppearing || entityInputs.entityDialogCooldown != 0) {
-            return;
-        }
-        pushedBlockMotionFrames--;
-        int elapsedFrames = PUSHED_BLOCK_MOTION_FRAMES - pushedBlockMotionFrames;
-        int distance = elapsedFrames >>> 1;
-        int sourceX = ((pushedBlockSourceLocation & 0x0F) << 4) + 0x08;
-        int sourceY = (pushedBlockSourceLocation & 0xF0) + 0x10;
-        int x = sourceX;
-        int y = sourceY;
-        switch (pushedBlockDirection) {
-            case 0 -> y -= distance;
-            case 1 -> y += distance;
-            case 2 -> x -= distance;
-            case 3 -> x += distance;
-            default -> {
-                pushedBlockMotionFrames = 0;
-                return;
-            }
-        }
-        if (entityBridge.entityRuntime != null) {
-            entityBridge.entityRuntime.movePushedBlock(pushedBlockEntitySlot, x, y);
-            if (currentLinkMotionState < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE) {
-                entityBridge.entityRuntime.resolvePushedBlockLinkContact(pushedBlockEntitySlot, linkEntityX, linkEntityY);
-            }
-            activeRoom.replaceEntities(entityBridge.entityRuntime.snapshot());
-        }
-        if (pushedBlockMotionFrames != 0) {
-            return;
-        }
-        int destinationIndex = RoomConstants.ROOM_OBJECTS_BASE
-            + pushedBlockDestinationLocation;
-        if (destinationIndex >= 0
-            && destinationIndex < activeRoom.roomObjectsArea().length) {
-            activeRoom.roomObjectsArea()[destinationIndex] = OBJECT_SETTLED_PUSHED_BLOCK;
-        }
-        if (entityBridge.entityRuntime != null) {
-            entityBridge.entityRuntime.removePushedBlock(pushedBlockEntitySlot);
-            activeRoom.replaceEntities(entityBridge.entityRuntime.snapshot());
-        }
-        pushedBlockEntitySlot = -1;
-        refreshActiveRoomTilemap();
-        overworldCollision.setRoom(activeRoom.roomObjectsArea());
-        overworldCollision.setGbcOverlay(null);
-        if ((activeRoomEvent & EVENT_TRIGGER_MASK) == EVENT_TRIGGER_PUSH_SINGLE_BLOCK) {
-            roomEventEffectExecuted = true;
-            colorShellSoundSink.play(GameplaySoundEvent.PUZZLE_SOLVED);
-        } else if ((activeRoomEvent & EVENT_TRIGGER_MASK) == EVENT_TRIGGER_PUSH_BLOCKS
-            && pushedBlocksTriggerResolved()) {
-            roomEventEffectExecuted = true;
-            pushedBlocksTriggerEffectPending = true;
-            colorShellSoundSink.play(GameplaySoundEvent.PUZZLE_SOLVED);
-        }
-    }
+    void tickPushedBlockMotion(int linkEntityX, int linkEntityY) { roomPuzzleController.tickPushedBlockMotion(linkEntityX, linkEntityY); }
 
-    boolean pushedBlocksTriggerResolved() {
-        if (activeRoom == null || pushedBlockDestinationLocation < 0) {
-            return false;
-        }
-        int neighborLocation = switch (pushedBlockDirection) {
-            // The source checks the object collided with on the block's
-            // movement-facing side; only horizontal pushes can satisfy $07.
-            case 2 -> pushedBlockDestinationLocation - 1;
-            case 3 -> pushedBlockDestinationLocation + 1;
-            default -> -1;
-        };
-        if (neighborLocation < 0) {
-            return false;
-        }
-        int neighbor = objectAtRoomLocation(neighborLocation);
-        return neighbor == OBJECT_SETTLED_PUSHED_BLOCK || neighbor == OBJECT_PUSHABLE_BLOCK;
-    }
+    boolean pushedBlocksTriggerResolved() { return roomPuzzleController.pushedBlocksTriggerResolved(); }
 
-    void tickIndoorKeyDoorAnimation() {
-        if (indoorKeyDoorAnimationCountdown == 0 || indoorKeyDoorDirection < 0
-            || activeRoom == null) {
-            return;
-        }
-        worldLinkMotionBlockPending = true;
-        indoorKeyDoorAnimationCountdown--;
-        if (indoorKeyDoorAnimationCountdown != 0) {
-            return;
-        }
+    void tickIndoorKeyDoorAnimation() { roomPuzzleController.tickIndoorKeyDoorAnimation(); }
 
-        int direction = indoorKeyDoorDirection;
-        indoorKeyDoorDirection = -1;
-        if (indoorBossDoorOpening) {
-            replaceBossDoorObjects(indoorKeyDoorLocation);
-            indoorBossDoorOpening = false;
-        } else {
-            replaceKeyDoorObjects(direction, indoorKeyDoorLocation);
-        }
-        indoorKeyDoorLocation = -1;
-        byte[] status = indoorStatusTableForMap(activeRoom.mapId());
-        status[activeRoom.roomId()] |= (byte) KEY_DOOR_CURRENT_STATUS[direction];
-        int adjacentRoom = adjacentIndoorRoomIdForBombWall(direction);
-        status[adjacentRoom] |= (byte) KEY_DOOR_ADJACENT_STATUS[direction];
-        refreshActiveRoomTilemap();
-        overworldCollision.setRoom(activeRoom.roomObjectsArea());
-        overworldCollision.setGbcOverlay(null);
-    }
+    void replaceKeyDoorObjects(int direction, int location) { roomPuzzleController.replaceKeyDoorObjects(direction, location); }
 
-    void replaceKeyDoorObjects(int direction, int location) {
-        int firstClosedObject = KEY_DOOR_CLOSED_OBJECTS[direction];
-        int[] openObjects = KEY_DOOR_OPEN_OBJECTS[direction];
-        int[] objects = activeRoom.roomObjectsArea();
-        int secondLocation = location + (direction < 2 ? 1 : 0x10);
-        int[] locations = {location, secondLocation};
-        for (int objectOffset = 0; objectOffset < locations.length; objectOffset++) {
-            int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + locations[objectOffset];
-            if (areaIndex >= 0 && areaIndex < objects.length
-                && (objects[areaIndex] & 0xFF) == firstClosedObject + objectOffset) {
-                objects[areaIndex] = openObjects[objectOffset];
-                if (activeRoom.renderValues() != null) {
-                    activeRoom.renderValues()[areaIndex] = openObjects[objectOffset];
-                }
-            }
-        }
-    }
+    void replaceBossDoorObjects(int location) { roomPuzzleController.replaceBossDoorObjects(location); }
 
-    void replaceBossDoorObjects(int location) {
-        int[] objects = activeRoom.roomObjectsArea();
-        int[] openObjects = KEY_DOOR_OPEN_OBJECTS[0];
-        for (int offset = 0; offset < 2; offset++) {
-            int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + location + offset;
-            if (areaIndex >= 0 && areaIndex < objects.length
-                && objects[areaIndex] == 0xA4 + offset) {
-                objects[areaIndex] = openObjects[offset];
-                if (activeRoom.renderValues() != null) {
-                    activeRoom.renderValues()[areaIndex] = openObjects[offset];
-                }
-            }
-        }
-    }
+    boolean killAllEnemiesTriggerResolved() { return roomPuzzleController.killAllEnemiesTriggerResolved(); }
 
-    boolean killAllEnemiesTriggerResolved() {
-        for (RoomEntity entity : activeRoom.entities().slots()) {
-            if (entity.status() != EntityStatus.DISABLED
-                && (romTables.entityOptions1(entity.type())
-                    & ENTITY_OPTION_EXCLUDED_FROM_KILL_ALL) == 0) {
-                return false;
-            }
-        }
-        return true;
-    }
+    void tickSwitchButton(int linkEntityX, int linkEntityY) { roomPuzzleController.tickSwitchButton(linkEntityX, linkEntityY); }
 
-    void tickSwitchButton(int linkEntityX, int linkEntityY) {
-        if (activeRoom == null || activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
-            || switchButtonPressed != 0) {
-            return;
-        }
-        int objectUnderLink = overworldCollision.groundInteractionSample(
-            linkEntityX, linkEntityY).objectId();
-        if (objectUnderLink != OBJECT_SWITCH_BUTTON) {
-            switchButtonPressCounter = 0;
-            return;
-        }
-        switchButtonPressCounter = (switchButtonPressCounter + 1) & 0xFF;
-        if (switchButtonPressCounter == SWITCH_BUTTON_PRESS_FRAMES) {
-            switchButtonPressed = SWITCH_BUTTON_PRESSED;
-            gpu.copyPressedFloorSwitchTiles(romData);
-            colorShellSoundSink.play(GameplaySoundEvent.FLOOR_SWITCH);
-        }
-    }
-
-    void tickRoomEventChestReveal(int linkEntityX, int linkEntityY) {
-        if (roomEventChestRevealCountdown == 0) {
-            return;
-        }
-        roomEventChestRevealCountdown--;
-        if (roomEventChestRevealCountdown != ROOM_EVENT_CHEST_WRITE_COUNTDOWN) {
-            return;
-        }
-        int location = roomEventChestTop(linkEntityX, linkEntityY) | 0x08;
-        writeBombPuzzleObject(location, 0xA0);
-        refreshActiveRoomTilemap();
-        overworldCollision.setRoom(activeRoom.roomObjectsArea());
-    }
+    void tickRoomEventChestReveal(int linkEntityX, int linkEntityY) { roomPuzzleController.tickRoomEventChestReveal(linkEntityX, linkEntityY); }
 
     /** Type-$04 poof calls func_002_5F5C when its countdown reaches four. */
-    void tickRoomEventStairReveal() {
-        if (roomEventStairRevealCountdown == 0) {
-            return;
-        }
-        roomEventStairRevealCountdown--;
-        if (roomEventStairRevealCountdown != ROOM_EVENT_CHEST_WRITE_COUNTDOWN) {
-            return;
-        }
-        int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + EVENT_STAIRWAY_LOCATION;
-        activeRoom.roomObjectsArea()[areaIndex] = OBJECT_STAIRS_DOWN;
-        configureStaircase(EVENT_STAIRWAY_LOCATION);
-        refreshActiveRoomTilemap();
-        overworldCollision.setRoom(activeRoom.roomObjectsArea());
-        overworldCollision.setGbcOverlay(null);
-    }
+    void tickRoomEventStairReveal() { roomPuzzleController.tickRoomEventStairReveal(); }
 
     /** Mirrors renderTranscientVFXs' hStaircase leave-and-return state machine. */
     public Warp pollStaircaseWarp(int linkEntityX, int linkEntityY, int linkZ, boolean carryingObject) { return roomTransitionController.pollStaircaseWarp(linkEntityX, linkEntityY, linkZ, carryingObject); }
@@ -2493,93 +2213,11 @@ public final class RoomSession {
     }
 
     /** $02:599D selects each shutter; $02:5C04 closes it over eight frames. */
-    boolean tickShutterClosing() {
-        if (!shutterCloseStarted || activeRoom == null) return false;
-        if (shutterCloseDirection < 0) {
-            if (pendingShutterCloseMask == 0) return false;
-            shutterCloseDirection = Integer.numberOfTrailingZeros(pendingShutterCloseMask);
-            pendingShutterCloseMask &= ~(1 << shutterCloseDirection);
-            shutterCloseLocation = new RoomObjectParser(romData).indoorShutterLocation(
-                activeRoom.roomObjectsArea(), shutterCloseDirection);
-            shutterCloseTicks = 0;
-            return true;
-        }
-        worldLinkMotionBlockPending = true;
-        if (shutterCloseLocation >= 0) {
-            int direction = shutterCloseDirection;
-            int left = (shutterCloseLocation & 15) * 16
-                + Byte.toUnsignedInt(romData[RomBank.romOffset(2, 0x5BE0 + direction + 4)]);
-            int top = (shutterCloseLocation >>> 4) * 16;
-            int source = RomBank.romOffset(2, 0x5BC4 + direction * 4);
-            int rowOffset = RomBank.romOffset(2, 0x5BE8 + direction + 4);
-            for (int row = 0; row < 2; row++) {
-                int y = top + Byte.toUnsignedInt(romData[rowOffset + row * 4]);
-                int index = (y / 8) * RoomConstants.ROOM_TILE_WIDTH + left / 8;
-                for (int col = 0; col < 2; col++) {
-                    int tile = Byte.toUnsignedInt(romData[source + row * 2 + col]);
-                    if (index + col < activeRoom.tileIds().length) {
-                        activeRoom.tileIds()[index + col] = tile;
-                        shutterTileOverrides.put(index + col, tile);
-                    }
-                }
-            }
-        }
-        if (++shutterCloseTicks < 8) return true;
-        int direction = shutterCloseDirection;
-        shutterTileOverrides.clear();
-        new RoomObjectParser(romData).applyIndoorShutterClosedState(
-            activeRoom.roomObjectsArea(), 1 << direction);
-        closedShutterMask |= 1 << direction;
-        // $02:5D21 uses indoor A even for indoor B (the original's bank selection).
-        byte[] status = activeRoom.mapId() == 0xFF ? roomState.colorDungeonRoomStatus : roomState.indoorARoomStatus;
-        status[activeRoom.roomId()] &= (byte) ~KEY_DOOR_CURRENT_STATUS[direction];
-        shutterCloseDirection = shutterCloseLocation = -1;
-        refreshActiveRoomTilemap();
-        overworldCollision.setRoom(activeRoom.roomObjectsArea());
-        return true;
-    }
+    boolean tickShutterClosing() { return roomPuzzleController.tickShutterClosing(); }
 
-    void openActiveRoomShutterDoors() {
-        openActiveRoomShutterDoors(false);
-    }
+    void openActiveRoomShutterDoors() { roomPuzzleController.openActiveRoomShutterDoors(); }
 
-    void openActiveRoomShutterDoors(boolean persistDirectionalStatus) {
-        pendingShutterCloseMask = closedShutterMask = 0;
-        shutterCloseDirection = shutterCloseLocation = -1;
-        shutterTileOverrides.clear();
-        if (activeRoom == null) {
-            return;
-        }
-        int shutterMask = activeRoom.shutterDoorMask();
-        if (shutterMask != 0 && activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD) {
-            RoomObjectParser parser = new RoomObjectParser(romData);
-            int[] openDoorTypes = {0xF4, 0xF5, 0xF6, 0xF7};
-            for (int direction = 0; direction < openDoorTypes.length; direction++) {
-                if ((shutterMask & (1 << direction)) != 0) {
-                    int location = parser.indoorShutterLocation(
-                        activeRoom.roomObjectsArea(), direction);
-                    if (location < 0) {
-                        continue;
-                    }
-                    parser.applyIndoorDoorMacro(
-                        activeRoom.roomObjectsArea(), openDoorTypes[direction],
-                        location);
-                    if (persistDirectionalStatus) {
-                        byte[] status = indoorStatusTableForMap(activeRoom.mapId());
-                        status[activeRoom.roomId()]
-                            |= (byte) KEY_DOOR_CURRENT_STATUS[direction];
-                        int adjacentRoom = adjacentIndoorRoomIdForBombWall(direction);
-                        status[adjacentRoom]
-                            |= (byte) KEY_DOOR_ADJACENT_STATUS[direction];
-                    }
-                }
-            }
-            refreshActiveRoomTilemap();
-            overworldCollision.setRoom(activeRoom.roomObjectsArea());
-            overworldCollision.setGbcOverlay(null);
-        }
-        activeRoom.openShutterDoors();
-    }
+    void openActiveRoomShutterDoors(boolean persistDirectionalStatus) { roomPuzzleController.openActiveRoomShutterDoors(persistDirectionalStatus); }
 
     RoomEntityObjectSample entityObjectSample(RoomEntity entity) {
         OverworldCollision.GroundInteractionSample sample =
