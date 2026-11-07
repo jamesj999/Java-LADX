@@ -26,3 +26,11 @@ LADX-Disassembly/*.gbc
 LADX-Disassembly/*.o
 LADX-Disassembly/*.1bpp
 LADX-Disassembly/*.2bpp
+
+# Build output and local emulator state anywhere
+**/.gradle/
+**/build/
+*.srm
+*.state
+__pycache__/
+*.pyc
