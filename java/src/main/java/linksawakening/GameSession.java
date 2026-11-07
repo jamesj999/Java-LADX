@@ -1,5 +1,7 @@
 package linksawakening;
 
+import linksawakening.app.screen.*;
+
 import linksawakening.config.AppConfig;
 import linksawakening.cutscene.CutsceneManager;
 import linksawakening.cutscene.IntroCutsceneScript;
@@ -138,12 +140,7 @@ public class GameSession {
     private boolean running = true;
     private boolean debugNoClip;
     private int frameCounter;
-    private final Screen titleScreen = new TitleScreen(this::tickTitleScreen, this::titleKey);
-    private final Screen cutsceneScreen = new CutsceneScreen(this::tickCutsceneScreen, this::cutsceneKey);
-    private final Screen fileMenuScreen = new FileMenuScreen(this::tickFileMenuScreen, (key, action) -> {});
-    private final Screen fileSaveScreen = new FileSaveScreen(this::tickFileSaveScreen, (key, action) -> {});
-    private final Screen gameplayScreen = new GameplayScreen(this::tickGameplayScreen, this::gameplayKey);
-    private Screen currentScreen = titleScreen;
+
 
     // Room pixel dimensions
     private final int ROOM_PIXEL_WIDTH = ROOM_TILE_WIDTH * 8;   // 160
@@ -196,6 +193,12 @@ public class GameSession {
     private TarinShieldMotion newGameTarinShieldMotion;
     private int[] newGameTarinShieldPalette;
     private AppConfig appConfig;
+    private final Screen titleScreen = new TitleScreen(new TitleScreen.Dependencies(() -> cutsceneManager, () -> inputState, this::startFileSelection));
+    private final Screen cutsceneScreen = new CutsceneScreen(new CutsceneScreen.Dependencies(() -> cutsceneManager, () -> inputState, () -> dialogController, () -> inputConfig, this::routeDialogSounds, () -> currentScreen = titleScreen, () -> { currentScreen = titleScreen; playDirectMusic(directTitleScreenMusicTrack()); }));
+    private final Screen fileMenuScreen = new FileMenuScreen(new FileMenuScreen.Dependencies(() -> fileMenuController, () -> inputState, () -> inputConfig, () -> saveRamStore, slot -> currentSaveSlot = slot, this::startNewGame, this::startSavedGame, this::persistFileMenuMutation, this::completeInputFrame));
+    private final Screen fileSaveScreen = new FileSaveScreen(new FileSaveScreen.Dependencies(() -> fileSaveController, () -> inputState, () -> inputConfig, () -> { fileSaveController = null; currentScreen = this.gameplayScreen; }, this::saveCurrentPlayerState, this::startFileSelection, this::completeInputFrame));
+    private final Screen gameplayScreen = new GameplayScreen(this::tickGameplayScreen, this::gameplayKey);
+    private Screen currentScreen = titleScreen;
 
 
     private final long FRAME_DURATION_NS = 1_000_000_000L / 60L;
@@ -701,21 +704,9 @@ public class GameSession {
         currentScreen.onKey(key, action);
     }
 
-    private void titleKey(int key, int action) {
-        if (shouldEnterFileSelection(currentScreen, key, action)) startFileSelection();
-    }
 
-    private void cutsceneKey(int key, int action) {
-        if (skipIntroCutsceneIfRequested(key, action, cutsceneManager)) {
-            currentScreen = titleScreen;
-            playDirectMusic(directTitleScreenMusicTrack());
-            return;
-        }
-        if (action == GLFW_PRESS && dialogController != null
-            && (key == inputConfig.aKey() || key == inputConfig.bKey() || key == GLFW_KEY_ENTER)) {
-            dialogController.advance();
-        }
-    }
+
+
 
     private void gameplayKey(int key, int action) {
         if (action != GLFW_PRESS) return;
@@ -2261,22 +2252,18 @@ public class GameSession {
     }
 
     private GameFrameState currentGameFrameState() {
-        return GameFrameState.empty()
+        return currentScreen.renderState(GameFrameState.empty()
             .withScreen(currentRenderScreen())
             .withBackground(currentTilemap, currentAttrmap, bgPalettes, objPalettes)
             .withCutsceneManager(cutsceneManager)
             .withIntroFrameSnapshot(cutsceneManager == null ? null : cutsceneManager.frameSnapshot())
-            .withFileMenuFrame(currentScreen == fileMenuScreen && fileMenuController != null
-                ? fileMenuController.snapshot()
-                : currentScreen == fileSaveScreen && fileSaveController != null
-                    ? fileSaveController.snapshot() : null)
             .withRoom(roomSession == null ? null : roomSession.renderSnapshot(), scrollController, transitionController)
             .withLink(link)
             .withTransientVfx(transientVfxSystem, cutLeavesEffectRenderer, GREEN_OBJECTS_SPRITE_PALETTE)
             .withDroppableRupees(droppableRupeeSystem)
             .withInventoryController(inventoryController)
             .withDialogController(dialogController)
-            .withFrameCounter(frameCounter);
+            .withFrameCounter(frameCounter));
     }
 
     private RenderScreen currentRenderScreen() {
@@ -2299,76 +2286,8 @@ public class GameSession {
         host.close();
     }
 
-    private void tickTitleScreen() {
-            if (cutsceneManager != null) cutsceneManager.tick();
-            inputState.tickEdges();
-            return;
-        
-    }
-    private void tickCutsceneScreen() {
-            if (dialogController != null) {
-                dialogController.tick();
-                routeDialogSounds();
-            }
-            if (cutsceneManager != null && cutsceneManager.isActive()) {
-                cutsceneManager.tick();
-            }
-            if (cutsceneManager != null && !cutsceneManager.isActive()
-                && cutsceneManager.isShowingTitleScene()) {
-                currentScreen = titleScreen;
-            }
-            inputState.tickEdges();
-            return;
-        
-    }
-    private void tickFileMenuScreen() {
-            if (fileMenuController == null) {
-                throw new IllegalStateException("File menu controller is not initialized");
-            }
-            FileMenuAction action = fileMenuController.tick(inputState, inputConfig);
-            if (action.type() == FileMenuAction.Type.START_NEW_GAME) {
-                try {
-                    saveRamStore.createNewGame(action.selectedSlot(), action.nameBytes());
-                    saveRamStore.flush();
-                } catch (IOException exception) {
-                    throw new IllegalStateException("Failed to persist new save file", exception);
-                }
-                currentSaveSlot = action.selectedSlot();
-                startNewGame();
-            } else if (action.type() == FileMenuAction.Type.LOAD_GAME) {
-                SaveSlotState saved = saveRamStore.readSlot(action.selectedSlot());
-                currentSaveSlot = action.selectedSlot();
-                if (saved.spawnPositionX() == 0) {
-                    startNewGame();
-                } else {
-                    startSavedGame(saved);
-                }
-            } else if (action.type() == FileMenuAction.Type.ERASE_SLOT) {
-                persistFileMenuMutation(() -> saveRamStore.eraseSlot(action.selectedSlot()));
-            } else if (action.type() == FileMenuAction.Type.COPY_SLOT) {
-                persistFileMenuMutation(() ->
-                    saveRamStore.copySlot(action.selectedSlot(), action.targetSlot()));
-            }
-            inputState.tickEdges();
-            overworldDialogInputConsumedThisFrame = false;
-            return;
-        
-    }
-    private void tickFileSaveScreen() {
-            if (fileSaveController == null) {
-                throw new IllegalStateException("File save controller is not initialized");
-            }
-            FileSaveAction action = fileSaveController.tick(inputState, inputConfig);
-            if (action.type() == FileSaveAction.Type.RETURN_TO_GAME) {
-                fileSaveController = null;
-                currentScreen = gameplayScreen;
-            } else if (action.type() == FileSaveAction.Type.SAVE_AND_QUIT) {
-                saveCurrentPlayerState();
-                startFileSelection();
-            }
-            inputState.tickEdges();
-            overworldDialogInputConsumedThisFrame = false;
-            return;
-        
-    }
+
+
+
+
 }

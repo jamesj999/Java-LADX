@@ -1,5 +1,7 @@
 package linksawakening;
 
+import linksawakening.app.screen.*;
+
 import linksawakening.config.AppConfig;
 import linksawakening.cutscene.CutsceneManager;
 import linksawakening.dialog.DialogController;
