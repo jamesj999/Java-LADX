@@ -273,8 +273,13 @@ final class EntityPhase {
                 }
                 EnemyProjectileEventConsumer.consume(projectileEvents, playerState, link,
                     gameplaySoundSink);
-                EnemyCombatEventConsumer.consume(roomSession.consumeEntityEvents(),
-                    gameplaySoundSink, transientVfxSystem);
+                var entityCombatEvents = roomSession.consumeEntityEvents();
+                EnemyCombatEventConsumer.consume(entityCombatEvents, gameplaySoundSink, transientVfxSystem);
+                for (var event : entityCombatEvents) {
+                    if (link != null && event.linkDamage() == 0 && event.linkCollisionResponse().active()) {
+                        link.apply(LinkCommandAdapter.from(event));
+                    }
+                }
                 int musicFadeOutCountdown =
                     roomSession.consumePendingMusicFadeOutCountdown();
                 if (musicFadeOutCountdown != 0 && gameplayMusicController != null) {

@@ -1,5 +1,6 @@
 package linksawakening.app.gameplay;
 
+import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.LinkFinalPositionRequest;
 import linksawakening.world.entity.event.HinoxLinkEffectRequest;
 import linksawakening.world.entity.event.SideViewPotLinkRequest;
@@ -14,6 +15,23 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 final class LinkCommandAdapterTest {
+    @Test void deferredContactCapturesThePostMovementVectorBeforeTheNextLinkStep() {
+        Link link = link();
+        link.applyRomSpeed(0xEC, 0xEC);
+        link.setCollisionIgnoreFrames(0x10);
+        var event = new EntityCombatEvent(2, 0x0E, 0, false,
+            0, -1, EntityCombatEvent.SoundChannel.NONE, -1,
+            EntityCombatEvent.SoundChannel.NONE, -1, null,
+            EntityCombatEvent.LinkAction.NONE,
+            new EntityCombatEvent.LinkCollisionResponse(0, 0xEC, 0x10));
+        link.apply(LinkCommandAdapter.from(event));
+        link.update();
+        assertEquals(64, link.pixelX());
+        assertEquals(62, link.pixelY());
+        assertEquals(0, link.romSpeedX());
+        assertEquals(0xEC, link.romSpeedY());
+    }
+
     private Link link() {
         Link link = new Link(null, null, null, null, null, null, null);
         link.setPixelPosition(64, 64);

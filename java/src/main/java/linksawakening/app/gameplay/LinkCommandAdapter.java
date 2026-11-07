@@ -1,5 +1,6 @@
 package linksawakening.app.gameplay;
 
+import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.LinkHeldItemPoseRequest;
 import linksawakening.world.entity.event.LinkAttackStepRequest;
 import linksawakening.world.entity.event.WarpLinkStateRequest;
@@ -62,6 +63,10 @@ final class LinkCommandAdapter {
         return r.kind() == LikeLikeEvent.Kind.CAPTURE
             ? new LinkCommand.Capture(r.entityX(), r.entityY(), r.pinLinkPosition())
             : LinkCommand.Action.RELEASE_CAPTURE;
+    }
+    static LinkCommand from(EntityCombatEvent event) {
+        var response = event.linkCollisionResponse();
+        return new LinkCommand.ContactRecoil(response.speedX(), response.speedY(), response.ignoreCollisionCountdown());
     }
     static LinkCommand from(EntityProjectileEvent r) {
         return new LinkCommand.ProjectileResponse(r.linkSpeedX(), r.linkSpeedY(),

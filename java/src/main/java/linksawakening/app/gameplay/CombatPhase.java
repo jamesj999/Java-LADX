@@ -63,9 +63,10 @@ final class CombatPhase {
                         if (event.linkCollisionResponse().active()) {
                             EntityCombatEvent.LinkCollisionResponse response =
                                 event.linkCollisionResponse();
-                            link.applyRomSpeed(response.speedX(), response.speedY());
-                            link.setCollisionIgnoreFrames(
-                                response.ignoreCollisionCountdown());
+                            if (!roomSession.deferContactRecoil(event.slot(), link.romEntityX(), link.romEntityY())) {
+                                link.applyRomSpeed(response.speedX(), response.speedY());
+                            }
+                            link.setCollisionIgnoreFrames(response.ignoreCollisionCountdown());
                             if (response.invincibilityCountdown() != 0) {
                                 playerState.setInvincibilityCounter(
                                     response.invincibilityCountdown());

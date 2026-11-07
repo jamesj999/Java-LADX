@@ -15,6 +15,7 @@ never commit ROMs or extracted original game assets.
 
 These dated comparisons document bounded evidence, not complete parity.
 
+- [Leever contact recoil](evidence/leever-contact-recoil.md) — controlled source/Java contact timing, 2026-11-07; rescue replay remains incomplete.
 - [acquisition-spin-combat-2026-11-06.html](validation/acquisition-spin-combat-2026-11-06.html) — acquisition spin combat comparison evidence.
 - [airborne-facing-2026-11-06.html](validation/airborne-facing-2026-11-06.html) — airborne facing comparison evidence.
 - [bed-exit-emulator-fixes-2026-11-06.html](validation/bed-exit-emulator-fixes-2026-11-06.html) — bed exit emulator fixes comparison evidence.

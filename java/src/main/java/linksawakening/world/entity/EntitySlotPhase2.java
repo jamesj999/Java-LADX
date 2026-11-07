@@ -275,6 +275,10 @@ final class EntitySlotPhase2 {
               state.entity,
               state.context.withRuntimeInputs(
                   state.frame, state.linkEntityX, state.linkEntityY, state.backgroundCollision));
+      if (state.entity.type() == state.runtime.ENTITY_LEEVER
+          && state.handlerInteractive && state.handlerLinkCollisionEnabled) {
+        state.runtime.finishLeeverContactRecoil(state.updated);
+      }
     }
 
     if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_BOMBER, state)) return false;

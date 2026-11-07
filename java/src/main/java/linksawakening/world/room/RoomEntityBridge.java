@@ -615,6 +615,11 @@ final class RoomEntityBridge {
         return events;
     }
 
+    boolean deferContactRecoil(int slot, int linkX, int linkY) {
+        return session.context.entityBridge.entityRuntime != null
+            && session.context.entityBridge.entityRuntime.deferContactRecoil(slot, linkX, linkY);
+    }
+
     int clearEntity(int slot) {
         if (session.context.activeRoom == null || session.context.entityBridge.entityRuntime == null) {
             return 0;

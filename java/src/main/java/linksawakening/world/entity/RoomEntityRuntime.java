@@ -271,10 +271,21 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
         try {
             return advanceFrame(context);
         } finally {
+            combat.clearDeferredContactRecoil();
             linkState.currentLinkSpeedX = 0;
             linkState.currentLinkSpeedY = 0;
         }
     }
+
+    /** Defers only a Leever contact already accepted by the player damage gate. */
+    public boolean deferContactRecoil(int slot, int linkX, int linkY) {
+        EntitySlotValidation.validateEntitySlot(slot);
+        validateByte(linkX, "Link X");
+        validateByte(linkY, "Link Y");
+        return combat.deferContactRecoil(slot, linkX, linkY);
+    }
+
+    void finishLeeverContactRecoil(RoomEntity moved) { combat.finishLeeverContactRecoil(moved); }
 
     /** Source-ordered frame gates and descending slot dispatch. */
     private List<EntityProjectileEvent> advanceFrame(EntityFrameContext context) {

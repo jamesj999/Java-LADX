@@ -84,6 +84,13 @@ public interface LinkCommand {
         public void applyTo(Link link) { link.applyLikeLikeCapture(positionX, positionY, pinPosition); }
     }
 
+    public record ContactRecoil(int speedX, int speedY, int ignoreCollisionCountdown) implements LinkCommand {
+        public void applyTo(Link link) {
+            link.applyRomSpeed(speedX, speedY);
+            link.setCollisionIgnoreFrames(ignoreCollisionCountdown);
+        }
+    }
+
     public record ProjectileResponse(int speedX, int speedY, int ignoreCollisionCountdown,
                               boolean immediatePosition) implements LinkCommand {
         public void applyTo(Link link) {

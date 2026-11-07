@@ -14,7 +14,38 @@ import static linksawakening.world.entity.RoomEntityRuntime.*;
 /** ROM sword and contact combat resolution, sharing the owning room slot table. */
 final class EntityCombatResolver {
     private final RoomEntityRuntime runtime;
+    private final boolean[] deferredLeeverContact = new boolean[RoomEntity.SLOT_COUNT];
+    private final int[] contactLinkX = new int[RoomEntity.SLOT_COUNT];
+    private final int[] contactLinkY = new int[RoomEntity.SLOT_COUNT];
     EntityCombatResolver(RoomEntityRuntime runtime) { this.runtime = runtime; }
+
+    boolean deferContactRecoil(int slot, int linkX, int linkY) {
+        RoomEntity entity = runtime.slots[slot];
+        if (entity.type() != runtime.ENTITY_LEEVER || entity.status() != EntityStatus.ACTIVE) return false;
+        deferredLeeverContact[slot] = true;
+        contactLinkX[slot] = linkX;
+        contactLinkY[slot] = linkY;
+        return true;
+    }
+
+    void clearDeferredContactRecoil() {
+        java.util.Arrays.fill(deferredLeeverContact, false);
+    }
+
+    void finishLeeverContactRecoil(RoomEntity moved) {
+        int slot = moved.slot();
+        if (!deferredLeeverContact[slot]) return;
+        deferredLeeverContact[slot] = false;
+        // $04:7F01 moves before $7F49 calls the shared collision handler.
+        // Its hitbox uses cached hActiveEntityPosX/Y, but $03:7565 reads
+        // the updated position tables when selecting Link's recoil vector.
+        var vector = EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
+            moved.x(), moved.y(), moved.z(), contactLinkX[slot], contactLinkY[slot], 0x14);
+        runtime.events.pendingEntityEvents.add(new EntityCombatEvent(slot, moved.type(),
+            0, false, 0, -1, EntityCombatEvent.SoundChannel.NONE, -1,
+            EntityCombatEvent.SoundChannel.NONE, -1, null, EntityCombatEvent.LinkAction.NONE,
+            new EntityCombatEvent.LinkCollisionResponse(vector.x() & 255, vector.y() & 255, 0x10)));
+    }
 
     List<EntityCombatEvent> resolveCombat(int frameCounter,
                                                  int linkEntityX,
@@ -29,6 +60,7 @@ final class EntityCombatResolver {
                                                  int swordHeight,
                                                  EnemyAttackContext attackContext) {
         EntitySlotValidation.validateByte(linkVerticalVelocity, "Link vertical velocity");
+        clearDeferredContactRecoil();
         if (attackContext == null) {
             throw new IllegalArgumentException("Enemy attack context cannot be null");
         }

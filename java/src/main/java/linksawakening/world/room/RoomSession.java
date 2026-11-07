@@ -366,6 +366,7 @@ public final class RoomSession extends RoomSessionRules {
     void tickOcarinaAnimationHandler() { context.roomTransitionController.tickOcarinaAnimationHandler(); }
     /** Returns and clears entity side-effect events emitted by the last tick. */
     public List<EntityCombatEvent> consumeEntityEvents() { return context.entityBridge.consumeEntityEvents(); }
+    public boolean deferContactRecoil(int slot, int linkX, int linkY) { return context.entityBridge.deferContactRecoil(slot, linkX, linkY); }
     /** Returns and clears handlers that restore Link's pre-entity final position. */
     public List<LinkFinalPositionRequest>
             consumeLinkFinalPositionRequests() { return context.entityBridge.consumeLinkFinalPositionRequests(); }
