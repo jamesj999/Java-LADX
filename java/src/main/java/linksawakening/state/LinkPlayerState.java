@@ -14,5 +14,6 @@ public interface LinkPlayerState {
     void setInvincibilityCounter(int value);
     void tickInvincibility();
     void damage(int amount);
+    default void addSubtractHealthBuffer(int amount) { damage(amount); }
     void clearSubtractHealthBuffer();
 }

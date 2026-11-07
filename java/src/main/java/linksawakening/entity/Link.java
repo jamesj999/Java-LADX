@@ -392,6 +392,7 @@ public final class Link implements RocsFeather.JumpTarget {
 
     public void update() {
         linkStateMachine.update();
+        linkDamage.applySpikeGroundPhysics();
         // ApplyLinkGroundPhysics uses the completed motion position. Dialogs
         // and scrolling reuse this result while ordinary Link updates pause.
         grassGroundEffectActive = collision != null && !linkSideView.sideScrolling
