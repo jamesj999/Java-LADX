@@ -115,25 +115,17 @@ public final class RoomSession extends RoomSessionRules {
     void loadIndoor(int mapId, int roomId, int mapCategory, int transitionDirection) { context.roomLoadCoordinator.loadIndoor(mapId, roomId, mapCategory, transitionDirection); }
 
     /** Current ROM health byte for diagnostic captures. */
-    public int entityHealth(int slot) { return context.entityBridge.entityRuntime.enemyHealth(slot); }
+    public int entityHealth(int slot) { return context.roomSessionViews.entityHealth(slot); }
 
-    public ActiveRoom activeRoom() {
-        return context.activeRoom;
-    }
+    public ActiveRoom activeRoom() { return context.roomSessionViews.activeRoom(); }
 
     /** Identifies the current load instance for Link room-entry state. */
-    public long roomLoadSerial() {
-        return context.roomLoadSerial;
-    }
+    public long roomLoadSerial() { return context.roomSessionViews.roomLoadSerial(); }
 
     /** Distinguishes same-room loads performed by different live sessions. */
-    public long roomLoadToken() {
-        return (context.roomSessionId << 32) ^ context.roomLoadSerial;
-    }
+    public long roomLoadToken() { return context.roomSessionViews.roomLoadToken(); }
 
-    public boolean hasActiveRoom() {
-        return context.activeRoom != null;
-    }
+    public boolean hasActiveRoom() { return context.roomSessionViews.hasActiveRoom(); }
 
     public boolean applyMarinWakeUpPresentation(int x, int y, int spriteVariant) { return context.roomStoryState.applyMarinWakeUpPresentation(x, y, spriteVariant); }
 
@@ -146,40 +138,29 @@ public final class RoomSession extends RoomSessionRules {
     /** Supplies wHasTailKey to the active owl-event handler. */
     public void setTailKeyOwned(boolean owned) { context.roomStoryState.setTailKeyOwned(owned); }
 
-    public int currentRoomId() {
-        return context.activeRoom.roomId();
-    }
+    public int currentRoomId() { return context.roomSessionViews.currentRoomId(); }
 
-    public int mapCategory() {
-        return context.activeRoom.mapCategory();
-    }
+    public int mapCategory() { return context.roomSessionViews.mapCategory(); }
 
-    public int mapId() {
-        return context.activeRoom.mapId();
-    }
+    public int mapId() { return context.roomSessionViews.mapId(); }
 
     /**
      * Returns the source {@code wIndoorRoom} value for the active indoor map.
      * A negative result means this map has no ROM layout table, so the caller
      * should preserve the existing save byte rather than inventing one.
      */
-    public int indoorRoomPositionForSave() {
-        if (context.activeRoom == null || context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
-            return -1;
-        }
-        return context.indoorMapPosition;
-    }
+    public int indoorRoomPositionForSave() { return context.roomSessionViews.indoorRoomPositionForSave(); }
 
     /** Room-status bytes in the active dungeon's 8x8 ROM map order. */
-    public byte[] dungeonMinimapRoomStatusSnapshot() { return context.roomState.dungeonMinimapRoomStatusSnapshot(context.activeRoom); }
+    public byte[] dungeonMinimapRoomStatusSnapshot() { return context.roomSessionViews.dungeonMinimapRoomStatusSnapshot(); }
 
-    public byte[] overworldRoomStatusSnapshot() { return context.roomState.overworldRoomStatusSnapshot(); }
+    public byte[] overworldRoomStatusSnapshot() { return context.roomSessionViews.overworldRoomStatusSnapshot(); }
 
-    public byte[] indoorARoomStatusSnapshot() { return context.roomState.indoorARoomStatusSnapshot(); }
+    public byte[] indoorARoomStatusSnapshot() { return context.roomSessionViews.indoorARoomStatusSnapshot(); }
 
-    public byte[] indoorBRoomStatusSnapshot() { return context.roomState.indoorBRoomStatusSnapshot(); }
+    public byte[] indoorBRoomStatusSnapshot() { return context.roomSessionViews.indoorBRoomStatusSnapshot(); }
 
-    public byte[] colorDungeonRoomStatusSnapshot() { return context.roomState.colorDungeonRoomStatusSnapshot(); }
+    public byte[] colorDungeonRoomStatusSnapshot() { return context.roomSessionViews.colorDungeonRoomStatusSnapshot(); }
 
     /**
      * Clears the persistent WRAM-shaped world state created for a fresh save.
@@ -193,71 +174,42 @@ public final class RoomSession extends RoomSessionRules {
     /** Restores the room-status WRAM tables loaded by the source save path. */
     public void restoreRoomStatuses(byte[] overworldStatus, byte[] indoorAStatus, byte[] indoorBStatus, byte[] colorDungeonStatus) { context.roomStoryState.restoreRoomStatuses(overworldStatus, indoorAStatus, indoorBStatus, colorDungeonStatus); }
 
-    public byte[] dungeonItemFlagsSnapshot() { return context.roomState.dungeonItemFlagsSnapshot(); }
+    public byte[] dungeonItemFlagsSnapshot() { return context.roomSessionViews.dungeonItemFlagsSnapshot(); }
 
-    public byte[] colorDungeonItemFlagsSnapshot() { return context.roomState.colorDungeonItemFlagsSnapshot(); }
+    public byte[] colorDungeonItemFlagsSnapshot() { return context.roomSessionViews.colorDungeonItemFlagsSnapshot(); }
 
-    public byte[] currentDungeonItemFlagsSnapshot() { return context.roomState.currentDungeonItemFlagsSnapshot(); }
+    public byte[] currentDungeonItemFlagsSnapshot() { return context.roomSessionViews.currentDungeonItemFlagsSnapshot(); }
 
-    public void restoreDungeonItemFlags(byte[] dungeonFlags, byte[] colorFlags) { context.roomState.restoreDungeonItemFlags(dungeonFlags, colorFlags); }
+    public void restoreDungeonItemFlags(byte[] dungeonFlags, byte[] colorFlags) { context.roomSessionViews.restoreDungeonItemFlags(dungeonFlags, colorFlags); }
 
     /** Snapshots wHasInstrument1..wHasInstrument8 (DB65..DB6C). */
-    public byte[] dungeonProgressFlagsSnapshot() { return context.roomState.dungeonProgressFlagsSnapshot(); }
+    public byte[] dungeonProgressFlagsSnapshot() { return context.roomSessionViews.dungeonProgressFlagsSnapshot(); }
 
-    public void restoreDungeonProgressFlags(byte[] flags) { context.roomState.restoreDungeonProgressFlags(flags); }
+    public void restoreDungeonProgressFlags(byte[] flags) { context.roomSessionViews.restoreDungeonProgressFlags(flags); }
 
-    int overworldRoomStatusForTest(int roomId) { return context.roomState.overworldRoomStatusForTest(roomId); }
+    int overworldRoomStatusForTest(int roomId) { return context.roomSessionViews.overworldRoomStatusForTest(roomId); }
 
-    int indoorRoomStatusForTest(int mapId, int roomId) { return context.roomState.indoorRoomStatusForTest(mapId, roomId); }
+    int indoorRoomStatusForTest(int mapId, int roomId) { return context.roomSessionViews.indoorRoomStatusForTest(mapId, roomId); }
 
-    void setEnemyDropCountersForTest(int droppedItemCount, int droppedBombArrowCount) {
-        context.enemyDropCounters = new EnemyDropResolver.CounterState(
-            droppedItemCount, droppedBombArrowCount);
-    }
+    void setEnemyDropCountersForTest(int droppedItemCount, int droppedBombArrowCount) { context.roomSessionViews.setEnemyDropCountersForTest(droppedItemCount, droppedBombArrowCount); }
 
-    EnemyDropResolver.CounterState enemyDropCountersForTest() {
-        return context.enemyDropCounters;
-    }
+    EnemyDropResolver.CounterState enemyDropCountersForTest() { return context.roomSessionViews.enemyDropCountersForTest(); }
 
-    void setSwitchButtonPressedForTest(int value) {
-        if ((value & ~0xFF) != 0) {
-            throw new IllegalArgumentException("Switch-button state must be an unsigned byte");
-        }
-        context.switchButtonPressed = value;
-    }
+    void setSwitchButtonPressedForTest(int value) { context.roomSessionViews.setSwitchButtonPressedForTest(value); }
 
-    int switchButtonPressedForTest() {
-        return context.switchButtonPressed;
-    }
+    int switchButtonPressedForTest() { return context.roomSessionViews.switchButtonPressedForTest(); }
 
-    public int[][] palettes() {
-        return context.activeRoom == null ? null : context.activeRoom.palettes();
-    }
+    public int[][] palettes() { return context.roomSessionViews.palettes(); }
 
-    public boolean heartPiecePickupActive() {
-        return context.entityBridge.entityRuntime != null && context.entityBridge.entityRuntime.heartPiecePickupActive();
-    }
+    public boolean heartPiecePickupActive() { return context.roomSessionViews.heartPiecePickupActive(); }
 
-    public void setHeartPiecesCount(int count) {
-        if (context.entityBridge.entityRuntime != null) context.entityBridge.entityRuntime.setHeartPiecesCount(count);
-    }
-    public List<HeartPiecePickupMotion.Update> consumeHeartPieceUpdates() {
-        if (context.entityBridge.entityRuntime == null) return List.of();
-        var updates = context.entityBridge.entityRuntime.consumeHeartPieceUpdates();
-        if (updates.stream().anyMatch(HeartPiecePickupMotion.Update::complete)) markActiveRoomCompleted();
-        return updates;
-    }
+    public void setHeartPiecesCount(int count) { context.roomSessionViews.setHeartPiecesCount(count); }
+    public List<HeartPiecePickupMotion.Update> consumeHeartPieceUpdates() { return context.roomSessionViews.consumeHeartPieceUpdates(); }
 
-    public String instrumentTrace() { return context.entityBridge.entityRuntime == null ? "" : context.entityBridge.entityRuntime.instrumentTrace(); }
-    public String moblinKingTrace() { return context.entityBridge.entityRuntime == null ? "-1" : context.entityBridge.entityRuntime.moblinKingTrace(); }
+    public String instrumentTrace() { return context.roomSessionViews.instrumentTrace(); }
+    public String moblinKingTrace() { return context.roomSessionViews.moblinKingTrace(); }
 
-    public RoomRenderSnapshot renderSnapshot() {
-        if (context.activeRoom == null) return null;
-        RoomRenderSnapshot snapshot = context.activeRoom.renderSnapshot();
-        return new RoomRenderSnapshot(snapshot.tileIds(), snapshot.tileAttrs(), snapshot.palettes(),
-            snapshot.entities(), context.entityBridge.entityRuntime == null ? null : context.entityBridge.entityRuntime.instrumentWarpVisual(),
-            context.entityBridge.entityRuntime == null ? null : context.entityBridge.entityRuntime.heartPieceVisual());
-    }
+    public RoomRenderSnapshot renderSnapshot() { return context.roomSessionViews.renderSnapshot(); }
 
     /**
      * Applies the follower display-list selections used by
@@ -384,11 +336,7 @@ public final class RoomSession extends RoomSessionRules {
     /** Supplies the player fields consumed by the ROM enemy-drop resolver. */
     public void setEnemyDropPlayerState(int maxHearts, int health, boolean activePowerUp) { context.entityBridge.setEnemyDropPlayerState(maxHearts, health, activePowerUp); }
 
-    public RoomEntityRuntime.LiftedEntityState liftedEntityState() {
-        return context.entityBridge.entityRuntime == null
-            ? RoomEntityRuntime.LiftedEntityState.none()
-            : context.entityBridge.entityRuntime.liftedEntityState();
-    }
+    public RoomEntityRuntime.LiftedEntityState liftedEntityState() { return context.roomSessionViews.liftedEntityState(); }
 
     /** Throws the currently held object using Link's Java direction order. */
     public boolean throwLiftedEntity(int linkDirection) { return context.roomPlayerItemActions.throwLiftedEntity(linkDirection); }
@@ -461,9 +409,7 @@ public final class RoomSession extends RoomSessionRules {
     /** Returns whether the live room currently owns an ordinary bomb entity. */
     public boolean bombActive() { return context.roomPlayerItemActions.bombActive(); }
 
-    int bombDirectionForTest(int slot) {
-        return context.entityBridge.entityRuntime == null ? 0xFF : context.entityBridge.entityRuntime.bombDirection(slot);
-    }
+    int bombDirectionForTest(int slot) { return context.roomSessionViews.bombDirectionForTest(slot); }
 
     /** Returns whether the live room currently owns entity {@code $03}. */
     public boolean hookshotActive() { return context.roomPlayerItemActions.hookshotActive(); }
@@ -471,129 +417,51 @@ public final class RoomSession extends RoomSessionRules {
     /** Returns whether the live room currently owns the boomerang entity. */
     public boolean boomerangActive() { return context.roomPlayerItemActions.boomerangActive(); }
 
-    public void setColorShellSoundSink(GameplaySoundSink soundSink) {
-        context.colorShellSoundSink = soundSink == null ? GameplaySoundSink.none() : soundSink;
-    }
+    public void setColorShellSoundSink(GameplaySoundSink soundSink) { context.roomSessionViews.setColorShellSoundSink(soundSink); }
 
-    void setColorShellStateForTest(int slot, int state, int transitionCountdown,
-                                   int direction, int speedX, int speedY) {
-        if (context.entityBridge.entityRuntime != null) {
-            context.entityBridge.entityRuntime.setColorShellStateForTest(slot, state, transitionCountdown,
-                direction, speedX, speedY);
-        }
-    }
+    void setColorShellStateForTest(int slot, int state, int transitionCountdown, int direction, int speedX, int speedY) { context.roomSessionViews.setColorShellStateForTest(slot, state, transitionCountdown, direction, speedX, speedY); }
 
-    int entityGroundStatusForTest(int slot) {
-        if (context.entityBridge.entityRuntime == null) {
-            return 0;
-        }
-        return context.entityBridge.entityRuntime.groundStatus(slot);
-    }
+    int entityGroundStatusForTest(int slot) { return context.roomSessionViews.entityGroundStatusForTest(slot); }
 
-    void setEntityIgnoreHitsCountdownForTest(int slot, int value) {
-        if (context.entityBridge.entityRuntime != null) {
-            context.entityBridge.entityRuntime.setEnemyIgnoreHitsCountdownForTest(slot, value);
-        }
-    }
+    void setEntityIgnoreHitsCountdownForTest(int slot, int value) { context.roomSessionViews.setEntityIgnoreHitsCountdownForTest(slot, value); }
 
-    void setEntityThrownDirectionForTest(int slot, int value) {
-        if (context.entityBridge.entityRuntime != null) {
-            context.entityBridge.entityRuntime.setThrownDirection(slot, value);
-        }
-    }
+    void setEntityThrownDirectionForTest(int slot, int value) { context.roomSessionViews.setEntityThrownDirectionForTest(slot, value); }
 
-    void setEntityLedgeTimerForTest(int slot, int value) {
-        if (context.entityBridge.entityRuntime != null) {
-            context.entityBridge.entityRuntime.setLedgeTransitionTimer(slot, value);
-        }
-    }
+    void setEntityLedgeTimerForTest(int slot, int value) { context.roomSessionViews.setEntityLedgeTimerForTest(slot, value); }
 
-    void setEntitySwitchBlocksStateForTest(int value) {
-        if (value < 0 || value > 0xFF) {
-            throw new IllegalArgumentException(
-                "Switch-block state must be an unsigned byte: " + value);
-        }
-        context.switchBlocksState = value;
-        synchronizeSwitchBlockCollisionState();
-    }
+    void setEntitySwitchBlocksStateForTest(int value) { context.roomSessionViews.setEntitySwitchBlocksStateForTest(value); }
 
-    void setSwitchableObjectAnimationStageForTest(int value) {
-        if (value < 0 || value > 0xFF) {
-            throw new IllegalArgumentException(
-                "Switch-block animation stage must be an unsigned byte: " + value);
-        }
-        context.switchableObjectAnimationStage = value;
-    }
+    void setSwitchableObjectAnimationStageForTest(int value) { context.roomSessionViews.setSwitchableObjectAnimationStageForTest(value); }
 
-    int entitySwitchBlocksStateForTest() {
-        return context.switchBlocksState & 0xFF;
-    }
+    int entitySwitchBlocksStateForTest() { return context.roomSessionViews.entitySwitchBlocksStateForTest(); }
 
-    int switchableObjectAnimationStageForTest() {
-        return context.switchableObjectAnimationStage & 0xFF;
-    }
+    int switchableObjectAnimationStageForTest() { return context.roomSessionViews.switchableObjectAnimationStageForTest(); }
 
-    boolean linkCollisionPointBlockedForTest(int pixelX, int pixelY) {
-        return context.overworldCollision.pointBlocked(pixelX, pixelY);
-    }
+    boolean linkCollisionPointBlockedForTest(int pixelX, int pixelY) { return context.roomSessionViews.linkCollisionPointBlockedForTest(pixelX, pixelY); }
 
-    int entityLedgeTimerForTest(int slot) {
-        return context.entityBridge.entityRuntime == null ? 0 : context.entityBridge.entityRuntime.ledgeTransitionTimer(slot);
-    }
+    int entityLedgeTimerForTest(int slot) { return context.roomSessionViews.entityLedgeTimerForTest(slot); }
 
-    int entityFallingTargetXForTest(int slot) {
-        return context.entityBridge.entityRuntime == null ? 0 : context.entityBridge.entityRuntime.fallingTargetX(slot);
-    }
+    int entityFallingTargetXForTest(int slot) { return context.roomSessionViews.entityFallingTargetXForTest(slot); }
 
-    int entityTransitionCountdownForTest(int slot) {
-        if (context.entityBridge.entityRuntime == null) {
-            return 0;
-        }
-        RoomEntity entity = context.activeRoom == null ? null : context.activeRoom.entities().slots().get(slot);
-        return entity != null && entity.type() == WarpMotion.ENTITY_TYPE
-            ? context.entityBridge.entityRuntime.warpTransitionCountdownForTest(slot)
-            : context.entityBridge.entityRuntime.transitionCountdown(slot);
-    }
+    int entityTransitionCountdownForTest(int slot) { return context.roomSessionViews.entityTransitionCountdownForTest(slot); }
 
-    int roomTriggerCountForTest() {
-        return context.roomTriggerCount & 0xFF;
-    }
+    int roomTriggerCountForTest() { return context.roomSessionViews.roomTriggerCountForTest(); }
 
-    int activeRoomEventForTest() {
-        return context.activeRoomEvent & 0xFF;
-    }
+    int activeRoomEventForTest() { return context.roomSessionViews.activeRoomEventForTest(); }
 
-    boolean hasDungeonInstrumentForTest(int mapId) {
-        return mapId >= 0 && mapId < context.roomState.dungeonProgressFlags.length
-            && (context.roomState.dungeonProgressFlags[mapId] & 0x02) != 0;
-    }
+    boolean hasDungeonInstrumentForTest(int mapId) { return context.roomSessionViews.hasDungeonInstrumentForTest(mapId); }
 
-    int indoorTorchPaletteEffectAddressForTest() {
-        return context.indoorTorchPaletteEffect.effectAddress();
-    }
+    int indoorTorchPaletteEffectAddressForTest() { return context.roomSessionViews.indoorTorchPaletteEffectAddressForTest(); }
 
-    void igniteIndoorTorchPaletteForTest() {
-        context.indoorTorchPaletteEffect.igniteTorch();
-    }
+    void igniteIndoorTorchPaletteForTest() { context.roomSessionViews.igniteIndoorTorchPaletteForTest(); }
 
-    void setRoomTriggerCountForTest(int value) {
-        if ((value & ~0xFF) != 0) {
-            throw new IllegalArgumentException("Room trigger count must be an unsigned byte");
-        }
-        context.roomTriggerCount = value;
-    }
+    void setRoomTriggerCountForTest(int value) { context.roomSessionViews.setRoomTriggerCountForTest(value); }
 
-    int entityDropSpeedXForTest(int slot) {
-        return context.entityBridge.entityRuntime == null ? 0 : context.entityBridge.entityRuntime.dropSpeedX(slot);
-    }
+    int entityDropSpeedXForTest(int slot) { return context.roomSessionViews.entityDropSpeedXForTest(slot); }
 
-    int entityDropSpeedZForTest(int slot) {
-        return context.entityBridge.entityRuntime == null ? 0 : context.entityBridge.entityRuntime.dropSpeedZ(slot);
-    }
+    int entityDropSpeedZForTest(int slot) { return context.roomSessionViews.entityDropSpeedZForTest(slot); }
 
-    void replaceEntityRuntimeForTest(RoomEntityRuntime runtime) {
-        context.entityBridge.entityRuntime = runtime;
-    }
+    void replaceEntityRuntimeForTest(RoomEntityRuntime runtime) { context.roomSessionViews.replaceEntityRuntimeForTest(runtime); }
 
     /** WorldHandler's shared sound clock persists across entity and room loads. */
     public void advanceBoomerangSoundClock(boolean worldGameplay) { context.entityBridge.advanceBoomerangSoundClock(worldGameplay); }
@@ -816,12 +684,7 @@ public final class RoomSession extends RoomSessionRules {
 
     void applyOutdoorBombableCaveDoorCandidate(BombObjectInteraction.Candidate candidate, int sourceSlot) { context.roomObjectMutations.applyOutdoorBombableCaveDoorCandidate(candidate, sourceSlot); }
 
-    int objectAtRoomLocation(int location) {
-        int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0)
-            + (location & 0x0F);
-        int[] objects = context.activeRoom.roomObjectsArea();
-        return areaIndex < 0 || areaIndex >= objects.length ? 0xFF : objects[areaIndex] & 0xFF;
-    }
+    int objectAtRoomLocation(int location) { return context.roomSessionViews.objectAtRoomLocation(location); }
 
     /** Result of the ROM shovel probe made when Link begins using the item. */
     public record ShovelStartResult(boolean started, boolean poking, int location) {
@@ -864,9 +727,7 @@ public final class RoomSession extends RoomSessionRules {
     /** Includes the source's shortened pull while Piece of Power is active. */
     public boolean tryLiftIndoorObject(int linkPixelX, int linkPixelY, int linkDirection, boolean braceletButtonHeld, int pressedButtonsMask, boolean pieceOfPowerActive) { return context.roomDoorInteractions.tryLiftIndoorObject(linkPixelX, linkPixelY, linkDirection, braceletButtonHeld, pressedButtonsMask, pieceOfPowerActive); }
 
-    int entityPhysicsFlagsForTest(int slot) {
-        return context.entityBridge.entityRuntime == null ? 0 : context.entityBridge.entityRuntime.physicsFlags(slot);
-    }
+    int entityPhysicsFlagsForTest(int slot) { return context.roomSessionViews.entityPhysicsFlagsForTest(slot); }
 
     /** Dispatches bank 2's shared $A7/$DE interactive-block collision branch. */
     public boolean tryInteractWithIndoorBlock(int linkPixelX, int linkPixelY, int linkDirection, int collisionType) { return context.roomDoorInteractions.tryInteractWithIndoorBlock(linkPixelX, linkPixelY, linkDirection, collisionType); }
@@ -915,15 +776,15 @@ public final class RoomSession extends RoomSessionRules {
 
     boolean applyIndoorBombableBlockCandidate(BombObjectInteraction.Candidate candidate) { return context.roomObjectMutations.applyIndoorBombableBlockCandidate(candidate); }
 
-    int adjacentIndoorRoomIdForBombWall(int wallIndex) { return context.scrollNavigation.adjacentIndoorRoomIdForBombWall(context.activeRoom, context.indoorMapPosition, wallIndex); }
+    int adjacentIndoorRoomIdForBombWall(int wallIndex) { return context.roomSessionViews.adjacentIndoorRoomIdForBombWall(wallIndex); }
 
-    int findIndoorMapPosition(int mapId, int roomId) { return context.roomState.findIndoorMapPosition(mapId, roomId); }
+    int findIndoorMapPosition(int mapId, int roomId) { return context.roomSessionViews.findIndoorMapPosition(mapId, roomId); }
 
-    int indoorMapLayoutOffset(int mapId) { return context.roomState.indoorMapLayoutOffset(mapId); }
+    int indoorMapLayoutOffset(int mapId) { return context.roomSessionViews.indoorMapLayoutOffset(mapId); }
 
-    byte[] indoorStatusTableForMap(int mapId) { return context.roomState.indoorStatusTableForMap(mapId); }
+    byte[] indoorStatusTableForMap(int mapId) { return context.roomSessionViews.indoorStatusTableForMap(mapId); }
 
-    int activeRoomStatusFlags() { return context.roomState.activeRoomStatusFlags(context.activeRoom); }
+    int activeRoomStatusFlags() { return context.roomSessionViews.activeRoomStatusFlags(); }
 
     void harvestKeyQuicksandEvents() { context.roomEntityRewards.harvestKeyQuicksandEvents(); }
 

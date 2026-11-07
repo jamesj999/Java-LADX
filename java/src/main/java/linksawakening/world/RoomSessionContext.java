@@ -64,6 +64,7 @@ import static linksawakening.world.RoomSession.*;
 
 /** Shared lifetime and state for the room facade and its focused collaborators. */
 final class RoomSessionContext {
+    final RoomSessionViews roomSessionViews;
 
     final RoomTransientState roomTransientState;
     final RoomEntityRewards roomEntityRewards;
@@ -223,6 +224,7 @@ final class RoomSessionContext {
                        TransientVfxSystem transientVfxSystem,
                        DroppableRupeeSystem droppableRupeeSystem,
                        RoomLoadListener roomLoadListener) {
+        roomSessionViews = new RoomSessionViews(session);
         roomTransitionController = new RoomTransitionController(session);
         roomPlayerItemActions = new RoomPlayerItemActions(session);
         roomPuzzleController = new RoomPuzzleController(session);
