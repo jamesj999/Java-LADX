@@ -120,4 +120,6 @@ public final class RomSymbols {
     public static final RomAddress ColorDungeonRoomChestsTable = new RomAddress(0x14, 0x4860);
     public static final RomAddress GotItemDialog = new RomAddress(0x07, 0x7B99);
     public static final RomAddress Data_007_7BBB = new RomAddress(0x07, 0x7BBB);
+    public static final RomAddress OverworldRoomPointers = new RomAddress(0x09, 0x4000);
+    public static final RomAddress OverworldRoomsSecondHalf = new RomAddress(0x1A, 0x4000);
 }

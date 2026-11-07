@@ -2,13 +2,13 @@ package linksawakening.world;
 
 import linksawakening.entity.EntitySpriteCatalog;
 import linksawakening.rom.RomBank;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
+import linksawakening.rom.RomSymbols;
 
 public final class RoomLoader {
     private static final int MAP_OVERWORLD = 0x00;
 
-    private static final int OVERWORLD_ROOM_BANK = 0x09;
-    private static final int OVERWORLD_ROOM_BANK_SECOND_HALF = 0x1A;
-    private static final int OVERWORLD_ROOM_POINTERS_ADDR = 0x4000;
     private static final int ROOM_SECTION_OW_SECOND_HALF = 0x80;
 
     private final byte[] romData;
@@ -37,18 +37,18 @@ public final class RoomLoader {
 
     LoadedRoom loadOverworld(int roomId, int clearedEntitiesMask,
                              byte[] overworldRoomStatus) {
-        int roomPointerOffset = RomBank.romOffset(OVERWORLD_ROOM_BANK, OVERWORLD_ROOM_POINTERS_ADDR + roomId * 2);
-        int roomLo = Byte.toUnsignedInt(romData[roomPointerOffset]);
-        int roomHi = Byte.toUnsignedInt(romData[roomPointerOffset + 1]);
+        int roomPointerOffset = RomSymbols.OverworldRoomPointers.plus(roomId * 2).offset();
+        int roomLo = new Rom(romData).u8(RomAddress.fromOffset(roomPointerOffset));
+        int roomHi = new Rom(romData).u8(RomAddress.fromOffset(roomPointerOffset + 1));
         int roomAddr = (roomHi << 8) | roomLo;
 
         int roomDataBank = roomId >= ROOM_SECTION_OW_SECOND_HALF
-            ? OVERWORLD_ROOM_BANK_SECOND_HALF
-            : OVERWORLD_ROOM_BANK;
+            ? RomSymbols.OverworldRoomsSecondHalf.bank()
+            : RomSymbols.OverworldRoomPointers.bank();
         int roomDataOffset = RomBank.romOffset(roomDataBank, roomAddr);
 
-        int animatedTilesGroup = Byte.toUnsignedInt(romData[roomDataOffset]);
-        int floorObject = Byte.toUnsignedInt(romData[roomDataOffset + 1]);
+        int animatedTilesGroup = new Rom(romData).u8(RomAddress.fromOffset(roomDataOffset));
+        int floorObject = new Rom(romData).u8(RomAddress.fromOffset(roomDataOffset + 1));
         int roomStatusFlags = overworldRoomStatus == null || roomId < 0
             || roomId >= overworldRoomStatus.length
             ? 0 : Byte.toUnsignedInt(overworldRoomStatus[roomId]);
@@ -117,13 +117,13 @@ public final class RoomLoader {
                           boolean hasBirdKey, int tarinFlag, int shieldLevel) {
         RoomPointerTable pointerTable = IndoorRoomPointerTables.forMap(mapId);
         int roomPointerOffset = RomBank.romOffset(pointerTable.bank(), pointerTable.address() + roomId * 2);
-        int roomLo = Byte.toUnsignedInt(romData[roomPointerOffset]);
-        int roomHi = Byte.toUnsignedInt(romData[roomPointerOffset + 1]);
+        int roomLo = new Rom(romData).u8(RomAddress.fromOffset(roomPointerOffset));
+        int roomHi = new Rom(romData).u8(RomAddress.fromOffset(roomPointerOffset + 1));
         int roomAddr = (roomHi << 8) | roomLo;
         int roomDataOffset = RomBank.romOffset(pointerTable.bank(), roomAddr);
 
-        int animatedTilesGroup = Byte.toUnsignedInt(romData[roomDataOffset]);
-        int floorAndTemplate = Byte.toUnsignedInt(romData[roomDataOffset + 1]);
+        int animatedTilesGroup = new Rom(romData).u8(RomAddress.fromOffset(roomDataOffset));
+        int floorAndTemplate = new Rom(romData).u8(RomAddress.fromOffset(roomDataOffset + 1));
         int roomStatusFlags = indoorRoomStatus == null || roomId < 0
             || roomId >= indoorRoomStatus.length
             ? 0 : Byte.toUnsignedInt(indoorRoomStatus[roomId]);

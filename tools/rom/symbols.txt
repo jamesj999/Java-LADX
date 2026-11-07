@@ -132,3 +132,7 @@ ColorDungeonRoomChestsTable
 GotItemDialog
 
 Data_007_7BBB
+
+OverworldRoomPointers
+
+OverworldRoomsSecondHalf

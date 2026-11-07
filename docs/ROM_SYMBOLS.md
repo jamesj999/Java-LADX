@@ -66,3 +66,9 @@ and page selection. Verified exact matches 14:4560 RoomChestsTable,
 14:4860 ColorDungeonRoomChestsTable, 07:7B99 GotItemDialog and
 07:7BBB Data_007_7BBB. No discrepancies; guard expanded to this file.
 Remaining original-metric world declarations: 81 (the metric omits _ADDRESS).
+
+RoomLoader migrated three location declarations and all ROM byte reads.
+Verified 09:4000 OverworldRoomPointers and 1A:4000 OverworldRoomsSecondHalf.
+No discrepancies; pointer/page selection unchanged. Guard expanded.
+Remaining original-metric world declarations: 79 (BANK_SECOND_HALF was never
+included in that metric). This turn has migrated 16 location declarations.
