@@ -5,64 +5,92 @@ import java.util.function.IntSupplier;
 
 /** ROM type-byte dispatch; unregistered types remain explicitly unsupported. */
 final class EntityHandlerRegistry {
-    private final boolean[] advancing = new boolean[256];
-    private final EntityHandler[] handlers = new EntityHandler[256];
+  private record TickKey(int type, EntityTickStage stage) {}
 
-    void register(int type, EntityHandler handler) {
-        Objects.checkIndex(type, handlers.length);
-        if (handlers[type] != null) throw new IllegalArgumentException("Duplicate entity type: " + type);
-        handlers[type] = Objects.requireNonNull(handler);
-    }
+  private final java.util.Set<TickKey> tickKeys = new java.util.HashSet<>();
+  private final boolean[] advancing = new boolean[256];
+  private final EntityHandler[] handlers = new EntityHandler[256];
 
-    boolean supports(int type) {
-        return type >= 0 && type < handlers.length && handlers[type] != null;
-    }
+  void register(int type, EntityHandler handler) {
+    Objects.checkIndex(type, handlers.length);
+    if (handlers[type] != null)
+      throw new IllegalArgumentException("Duplicate entity type: " + type);
+    handlers[type] = Objects.requireNonNull(handler);
+  }
 
-    void initialize(RoomEntity entity, IntSupplier randomByteSupplier) {
-        if (supports(entity.type())) handlers[entity.type()].initialize(entity, randomByteSupplier);
-    }
-    void registerAdvance(int type, java.util.function.BiFunction<RoomEntity, EntityFrameContext, RoomEntity> advance) {
-        Objects.checkIndex(type, handlers.length);
-        EntityHandler initializer = handlers[type];
-        advancing[type] = true;
-        Objects.requireNonNull(advance);
-        handlers[type] = new EntityHandler() {
-            @Override public void initialize(RoomEntity entity, IntSupplier random) {
-                if (initializer != null) initializer.initialize(entity, random);
-            }
-            @Override public RoomEntity advance(RoomEntity entity, EntityFrameContext context) {
-                return advance.apply(entity, context);
-            }
+  boolean supports(int type) {
+    return type >= 0 && type < handlers.length && handlers[type] != null;
+  }
+
+  void initialize(RoomEntity entity, IntSupplier randomByteSupplier) {
+    if (supports(entity.type())) handlers[entity.type()].initialize(entity, randomByteSupplier);
+  }
+
+  void registerAdvance(
+      int type, java.util.function.BiFunction<RoomEntity, EntityFrameContext, RoomEntity> advance) {
+    Objects.checkIndex(type, handlers.length);
+    EntityHandler initializer = handlers[type];
+    if (advancing[type])
+      throw new IllegalArgumentException("Duplicate advancing entity type: " + type);
+    Objects.requireNonNull(advance);
+    advancing[type] = true;
+    handlers[type] =
+        new EntityHandler() {
+          @Override
+          public void initialize(RoomEntity entity, IntSupplier random) {
+            if (initializer != null) initializer.initialize(entity, random);
+          }
+
+          @Override
+          public RoomEntity advance(RoomEntity entity, EntityFrameContext context) {
+            return advance.apply(entity, context);
+          }
+
+          @Override
+          public boolean tick(EntityTickStage stage, EntityFrameExecution state) {
+            return initializer == null || initializer.tick(stage, state);
+          }
         };
-    }
+  }
 
-    boolean hasAdvance(int type) { return type >= 0 && type < advancing.length && advancing[type]; }
+  boolean hasAdvance(int type) {
+    return type >= 0 && type < advancing.length && advancing[type];
+  }
 
-    RoomEntity advance(RoomEntity entity, EntityFrameContext context) {
-        return supports(entity.type()) ? handlers[entity.type()].advance(entity, context) : entity;
-    }
+  RoomEntity advance(RoomEntity entity, EntityFrameContext context) {
+    return supports(entity.type()) ? handlers[entity.type()].advance(entity, context) : entity;
+  }
 
-    void registerTick(int type, int stage, java.util.function.Predicate<EntityFrameExecution> tick) {
-        Objects.checkIndex(type, handlers.length);
-        Objects.requireNonNull(tick);
-        EntityHandler previous = handlers[type];
-        handlers[type] = new EntityHandler() {
-            @Override public void initialize(RoomEntity entity, IntSupplier random) {
-                if (previous != null) previous.initialize(entity, random);
-            }
-            @Override public RoomEntity advance(RoomEntity entity, EntityFrameContext context) {
-                return previous == null ? entity : previous.advance(entity, context);
-            }
-            @Override public boolean tick(int requestedStage, EntityFrameExecution state) {
-                if (requestedStage == stage) return tick.test(state);
-                return previous == null || previous.tick(requestedStage, state);
-            }
+  void registerTick(
+      int type, EntityTickStage stage, java.util.function.Predicate<EntityFrameExecution> tick) {
+    Objects.checkIndex(type, handlers.length);
+    Objects.requireNonNull(tick);
+    Objects.requireNonNull(stage);
+    if (!tickKeys.add(new TickKey(type, stage)))
+      throw new IllegalArgumentException("Duplicate tick stage for type: " + type);
+    EntityHandler previous = handlers[type];
+    handlers[type] =
+        new EntityHandler() {
+          @Override
+          public void initialize(RoomEntity entity, IntSupplier random) {
+            if (previous != null) previous.initialize(entity, random);
+          }
+
+          @Override
+          public RoomEntity advance(RoomEntity entity, EntityFrameContext context) {
+            return previous == null ? entity : previous.advance(entity, context);
+          }
+
+          @Override
+          public boolean tick(EntityTickStage requestedStage, EntityFrameExecution state) {
+            if (requestedStage == stage) return tick.test(state);
+            return previous == null || previous.tick(requestedStage, state);
+          }
         };
-    }
+  }
 
-    boolean tick(int stage, EntityFrameExecution state) {
-        int type = state.entity.type();
-        return !supports(type) || handlers[type].tick(stage, state);
-    }
-
+  boolean tick(EntityTickStage stage, EntityFrameExecution state) {
+    int type = state.entity.type();
+    return !supports(type) || handlers[type].tick(stage, state);
+  }
 }

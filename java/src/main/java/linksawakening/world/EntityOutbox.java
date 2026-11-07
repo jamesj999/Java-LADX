@@ -7,45 +7,50 @@ import java.util.Objects;
 
 /** One ordered store for entity effects, with typed views for legacy consumers. */
 final class EntityOutbox {
-    private record Entry(String channel, EntityEvent event) {}
-    private final List<Entry> entries = new ArrayList<>();
+  private record Entry(String channel, EntityEvent event) {}
 
-    <T extends EntityEvent> List<T> drain(Class<T> type, String channel) {
-        List<T> events = channel(type, channel);
-        List<T> snapshot = List.copyOf(events);
-        events.clear();
-        return snapshot;
-    }
+  private final List<Entry> entries = new ArrayList<>();
 
-    /** Separate channels preserve pre-tick staging even for the same payload type. */
-    <T extends EntityEvent> List<T> channel(Class<T> type, String channel) {
-        return new AbstractList<>() {
-            private boolean matches(Entry entry) {
-                return entry.channel().equals(channel) && type.isInstance(entry.event());
-            }
+  <T extends EntityEvent> List<T> drain(Class<T> type, String channel) {
+    List<T> events = channel(type, channel);
+    List<T> snapshot = List.copyOf(events);
+    events.clear();
+    return snapshot;
+  }
 
-            @Override public int size() {
-                int count = 0;
-                for (Entry entry : entries) if (matches(entry)) count++;
-                return count;
-            }
+  /** Separate channels preserve pre-tick staging even for the same payload type. */
+  <T extends EntityEvent> List<T> channel(Class<T> type, String channel) {
+    return new AbstractList<>() {
+      private boolean matches(Entry entry) {
+        return entry.channel().equals(channel) && type.isInstance(entry.event());
+      }
 
-            @Override public T get(int index) {
-                Objects.checkIndex(index, size());
-                for (Entry entry : entries) {
-                    if (matches(entry) && index-- == 0) return type.cast(entry.event());
-                }
-                throw new IndexOutOfBoundsException();
-            }
+      @Override
+      public int size() {
+        int count = 0;
+        for (Entry entry : entries) if (matches(entry)) count++;
+        return count;
+      }
 
-            @Override public boolean add(T event) {
-                entries.add(new Entry(channel, type.cast(Objects.requireNonNull(event))));
-                return true;
-            }
+      @Override
+      public T get(int index) {
+        Objects.checkIndex(index, size());
+        for (Entry entry : entries) {
+          if (matches(entry) && index-- == 0) return type.cast(entry.event());
+        }
+        throw new IndexOutOfBoundsException();
+      }
 
-            @Override public void clear() {
-                entries.removeIf(this::matches);
-            }
-        };
-    }
+      @Override
+      public boolean add(T event) {
+        entries.add(new Entry(channel, type.cast(Objects.requireNonNull(event))));
+        return true;
+      }
+
+      @Override
+      public void clear() {
+        entries.removeIf(this::matches);
+      }
+    };
+  }
 }
