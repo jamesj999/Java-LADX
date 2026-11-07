@@ -32,8 +32,7 @@ final class RoosterHandler {
                         state.link().currentLinkSpeedY(),
                         state.romLinkDirection);
                 state.lifted = withVariant(state.lifted, roosterUpdate.spriteVariant());
-                state.runtime.liftedSourceDirection[state.entity.slot()] =
-                    roosterUpdate.romDirection();
+                state.liftThrow().setLiftedSourceDirection(state.entity.slot(), roosterUpdate.romDirection());
                 state.liftedRomDirection = roosterUpdate.romDirection();
                 state.emit(
                     new RoosterLinkStateRequest(

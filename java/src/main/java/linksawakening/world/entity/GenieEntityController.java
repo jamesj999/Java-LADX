@@ -529,4 +529,16 @@ public final class GenieEntityController {
         runtime.thrownMotionInitialized[slot] = false;
         return withStatus(jar, EntityStatus.ACTIVE);
         }
+  public int geniePrivateCountdown1(int slot) { return runtime.geniePrivateCountdown1[slot]; }
+  public void decrementGeniePrivateCountdown1(int slot) { runtime.geniePrivateCountdown1[slot]--; }
+  public int geniePrivateCountdown2(int slot) { return runtime.geniePrivateCountdown2[slot]; }
+  public void decrementGeniePrivateCountdown2(int slot) { runtime.geniePrivateCountdown2[slot]--; }
+  public int geniePrivateState1(int slot) { return runtime.geniePrivateState1[slot]; }
+  public int geniePrivateState4(int slot) { return runtime.geniePrivateState4[slot]; }
+  public void setGenieControllerSlot(int value) { runtime.genieControllerSlot = value; }
+  public void setGenieSharedBodySpeedX(int value) { runtime.genieSharedBodySpeedX = value; }
+  public int genieSpeedX(int slot) { return runtime.genieSpeedX[slot]; }
+  public void setGenieSharedBodySpeedY(int value) { runtime.genieSharedBodySpeedY = value; }
+  public int genieSpeedY(int slot) { return runtime.genieSpeedY[slot]; }
+  public int genieActiveState(int slot) { return runtime.genieActiveState[slot]; }
 }

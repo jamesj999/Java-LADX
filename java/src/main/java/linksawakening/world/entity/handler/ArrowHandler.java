@@ -20,7 +20,7 @@ final class ArrowHandler {
         EntityTickStage.PHASE_1_ARROW,
         state -> {
           if (state.status == EntityStatus.ACTIVE) {
-            if (state.runtime.playerArrowBombArrow[state.entity.slot()]
+            if (state.projectiles().playerArrowBombArrow(state.entity.slot())
                 && state.playerArrowMotion().transitionCountdown(state.entity.slot()) != 0) {
               int explosionSlot =
                   state.playerSpawns().spawnBombFromBombArrow(state.entity);
@@ -43,7 +43,7 @@ final class ArrowHandler {
                 state.playerArrowMotion().transitionCountdown(state.entity.slot()) == 0
                     && state.projectiles().collidePlayerArrowWithEntities(
                         state.entity, state.frame);
-            if (hitEntity && !state.runtime.playerArrowBombArrow[state.entity.slot()]) {
+            if (hitEntity && !state.projectiles().playerArrowBombArrow(state.entity.slot())) {
               // func_003_75A2 reaches jr_003_7737 after an ordinary
               // arrow target hit. With no wall-collision byte set on
               // the active arrow, the state-0 arrow unloads there.
@@ -55,7 +55,7 @@ final class ArrowHandler {
                     state.entity,
                     state.backgroundCollision,
                     state.frame,
-                    state.runtime.entityGroundStatus[state.entity.slot()],
+                    state.background().entityGroundStatus(state.entity.slot()),
                     state.background().groundInteractionSideScrolling(),
                     state.handlerInteractive,
                     state.projectileTimersInteractive);
@@ -74,7 +74,7 @@ final class ArrowHandler {
                       0x07));
               // AlertSwordMoblins is shared by player arrows, enemy
               // projectiles, and bomb explosions.
-              state.runtime.swordMoblinAlertingSoundCounter = 0x04;
+              state.projectiles().setSwordMoblinAlertingSoundCounter(0x04);
             }
             state.replaceEntity(arrowUpdate.entity());
             return false;

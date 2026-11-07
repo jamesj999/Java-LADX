@@ -26,7 +26,7 @@ final class MadBomberHandler {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             // MadBomberEntityHandler rewrites this handler-owned drop
             // byte on every interactive pass before its state dispatch.
-            state.runtime.droppedItemBySlot[state.entity.slot()] = 0x3C;
+            state.lifecycle().setDroppedItemBySlot(state.entity.slot(), 0x3C);
             MadBomberMotion.Update madBomberUpdate =
                 state.madBomberMotion().advance(
                     state.entity,

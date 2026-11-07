@@ -21,8 +21,8 @@ final class GenieHandler {
             type,
             EntityTickStage.PHASE_1_GENIE,
             state -> {
-              if (state.runtime.geniePrivateCountdown1[state.entity.slot()] > 0) {
-                state.runtime.geniePrivateCountdown1[state.entity.slot()]--;
+              if (state.genie().geniePrivateCountdown1(state.entity.slot()) > 0) {
+                state.genie().decrementGeniePrivateCountdown1(state.entity.slot());
               }
               return true;
             });
@@ -34,8 +34,8 @@ final class GenieHandler {
             type,
             EntityTickStage.PHASE_1_GENIE_2,
             state -> {
-              if (state.runtime.geniePrivateCountdown2[state.entity.slot()] > 0) {
-                state.runtime.geniePrivateCountdown2[state.entity.slot()]--;
+              if (state.genie().geniePrivateCountdown2(state.entity.slot()) > 0) {
+                state.genie().decrementGeniePrivateCountdown2(state.entity.slot());
               }
               return true;
             });
@@ -47,7 +47,7 @@ final class GenieHandler {
             type,
             EntityTickStage.PHASE_2_GENIE,
             state -> {
-              if (state.runtime.geniePrivateState1[state.entity.slot()] == 1) {
+              if (state.genie().geniePrivateState1(state.entity.slot()) == 1) {
                 state.genie().advanceGenieDestruction(
                     state.entity, state.frame, state.randomByteSupplier);
                 return false;
@@ -77,13 +77,13 @@ final class GenieHandler {
                   new DialogRequest(bossIntro.dialogTableId(), bossIntro.dialogLowId()));
             }
             boolean genieThresholdReached =
-                state.runtime.geniePrivateState4[state.entity.slot()]
+                state.genie().geniePrivateState4(state.entity.slot())
                     >= GenieMotion.JAR_HEALTH_THRESHOLD;
-            if (state.runtime.geniePrivateState1[state.entity.slot()] == 0
+            if (state.genie().geniePrivateState1(state.entity.slot()) == 0
                 && !genieThresholdReached) {
-              state.runtime.genieControllerSlot = state.entity.slot();
+              state.genie().setGenieControllerSlot(state.entity.slot());
             }
-            if (state.runtime.geniePrivateState1[state.entity.slot()] == 0
+            if (state.genie().geniePrivateState1(state.entity.slot()) == 0
                 && (genieThresholdReached
                     || state.roomInspection().genieState0Interactive(
                         state.creditsGameplay))) {
@@ -93,7 +93,7 @@ final class GenieHandler {
               }
               state.updated = state.entityAt(state.entity.slot());
             }
-            if (state.runtime.geniePrivateState1[state.entity.slot()] == 2
+            if (state.genie().geniePrivateState1(state.entity.slot()) == 2
                 && state.roomInspection().genieState0Interactive(state.creditsGameplay)) {
               state.genie().advanceGenieAppearance(state.entity);
               if (!state.entityAt(state.entity.slot()).loaded()) {
@@ -101,7 +101,7 @@ final class GenieHandler {
               }
               state.updated = state.entityAt(state.entity.slot());
             }
-            if (state.runtime.geniePrivateState1[state.entity.slot()] == 3
+            if (state.genie().geniePrivateState1(state.entity.slot()) == 3
                 && state.roomInspection().genieState0Interactive(state.creditsGameplay)) {
               state.genie().advanceGenieSideProjectile(state.entity, state.frameCounter);
               if (!state.entityAt(state.entity.slot()).loaded()) {
@@ -109,7 +109,7 @@ final class GenieHandler {
               }
               state.updated = state.entityAt(state.entity.slot());
             }
-            if (state.runtime.geniePrivateState1[state.entity.slot()] == 4
+            if (state.genie().geniePrivateState1(state.entity.slot()) == 4
                 && state.roomInspection().genieState0Interactive(state.creditsGameplay)) {
               if (state.handlerLinkCollisionEnabled
                   && RoomEntityCombatRules.overlapsLink(
@@ -123,13 +123,11 @@ final class GenieHandler {
               }
               state.updated = state.entityAt(state.entity.slot());
             }
-            if (state.runtime.geniePrivateState1[state.entity.slot()] == 1
+            if (state.genie().geniePrivateState1(state.entity.slot()) == 1
                 && state.roomInspection().genieState0Interactive(state.creditsGameplay)) {
-              state.runtime.genieSharedBodySpeedX =
-                  state.runtime.genieSpeedX[state.entity.slot()] & 0xFF;
-              state.runtime.genieSharedBodySpeedY =
-                  state.runtime.genieSpeedY[state.entity.slot()] & 0xFF;
-              if (state.runtime.genieActiveState[state.entity.slot()] != 5
+              state.genie().setGenieSharedBodySpeedX(state.genie().genieSpeedX(state.entity.slot()) & 0xFF);
+              state.genie().setGenieSharedBodySpeedY(state.genie().genieSpeedY(state.entity.slot()) & 0xFF);
+              if (state.genie().genieActiveState(state.entity.slot()) != 5
                   && state.handlerLinkCollisionEnabled
                   && RoomEntityCombatRules.overlapsLink(
                       state.entity, state.linkEntityX, state.linkEntityY)) {

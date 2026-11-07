@@ -32,4 +32,5 @@ public final class EntitySlotView {
   public void setSlowTransitionCountdown(int slot, int value) { state.slowTransitionCountdown[slot] = value; }
   public boolean slowTimerInitialized(int slot) { return state.slowTimerInitialized[slot]; }
   public void setSlowTimerInitialized(int slot, boolean value) { state.slowTimerInitialized[slot] = value; }
+  public int ironMaskPrivateState2(int slot) { return state.ironMaskPrivateState2[slot]; }
 }

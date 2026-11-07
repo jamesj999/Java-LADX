@@ -20,7 +20,7 @@ final class PincerHandler {
               && state.handlerLinkCollisionEnabled) {
             // PincerEntityHandler clears its stale ground status before
             // rendering and does not call the generic background helper.
-            state.runtime.entityGroundStatus[state.entity.slot()] = 0;
+            state.background().setEntityGroundStatus(state.entity.slot(), 0);
             PincerMotion.Update pincerUpdate =
                 state.pincerMotion().advance(
                     state.entity,

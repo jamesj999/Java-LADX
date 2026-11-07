@@ -36,14 +36,13 @@ final class WingedOctorokHandler {
             state.updated = wingedUpdate.entity();
             state.slot().setTransitionCountdown(state.entity.slot(), wingedUpdate.transitionCountdown());
             state.preserveWingedOctorokPresentation = true;
-            state.runtime.wingedStateTwoThisFrame[state.entity.slot()] =
-                wingedUpdate.skippedDefaultCollision();
+            state.projectiles().setWingedStateTwoThisFrame(state.entity.slot(), wingedUpdate.skippedDefaultCollision());
             if (wingedUpdate.rockSpawn() != null) {
               state.enemySpawns().spawnWingedOctorokRock(
                   state.updated, wingedUpdate.rockSpawn().direction());
             }
             if (wingedUpdate.jumped()) {
-              state.runtime.wingedSwordAttackThisFrame[state.entity.slot()] = true;
+              state.projectiles().setWingedSwordAttackThisFrame(state.entity.slot(), true);
               state.emit(
                   new EntityCombatEvent(
                       state.entity.slot(),

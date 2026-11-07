@@ -15,7 +15,7 @@ final class IronMaskHandler {
         EntityTickStage.PHASE_3_IRON_MASK,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
-            int privateState2 = state.runtime.ironMaskPrivateState2[state.entity.slot()];
+            int privateState2 = state.slot().ironMaskPrivateState2(state.entity.slot());
             int variant =
                 privateState2 == 0 ? state.updated.spriteVariant() : ((state.frame >>> 4) & 0x01);
             if (state.sprites() != null) {

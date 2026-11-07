@@ -14,7 +14,7 @@ final class LiftableRockHandler {
         state -> {
           if (state.status == EntityStatus.ACTIVE
 
-              && state.runtime.liftableRockSmashActive[state.entity.slot()]) {
+              && state.liftThrow().liftableRockSmashActive(state.entity.slot())) {
             state.liftThrow().advanceLiftableRockSmash(
                 state.index, state.entity, state.frame);
             return false;

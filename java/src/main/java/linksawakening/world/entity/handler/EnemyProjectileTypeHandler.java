@@ -48,7 +48,7 @@ final class EnemyProjectileTypeHandler {
                         state.backgroundCollision,
                         preexistingCollision,
                         state.frame,
-                        state.runtime.entityGroundStatus[state.entity.slot()],
+                        state.background().entityGroundStatus(state.entity.slot()),
                         state.background().groundInteractionSideScrolling(),
                         state.handlerInteractive,
                         state.projectileTimersInteractive);
@@ -69,7 +69,7 @@ final class EnemyProjectileTypeHandler {
                             EntityCombatEvent.SoundChannel.JINGLE,
                             0x07));
                   }
-                  state.runtime.swordMoblinAlertingSoundCounter = 0x04;
+                  state.projectiles().setSwordMoblinAlertingSoundCounter(0x04);
                 }
                 state.updated = projectileUpdate.entity();
               }

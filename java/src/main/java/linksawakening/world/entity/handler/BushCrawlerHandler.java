@@ -40,7 +40,7 @@ final class BushCrawlerHandler {
                     state.link().linkItemA(),
                     state.link().linkItemB());
             state.slot().setTransitionCountdown(state.entity.slot(), bushUpdate.transitionCountdown());
-            state.runtime.fallingVisualYOffset[state.entity.slot()] = bushUpdate.visualYOffset();
+            state.background().setFallingVisualYOffset(state.entity.slot(), bushUpdate.visualYOffset());
             state.updated = bushUpdate.entity();
             if (bushUpdate.specialState()) {
               state.updated =

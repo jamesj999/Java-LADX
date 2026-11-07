@@ -34,16 +34,16 @@ final class WarpHandler {
                 WarpMotion.Update warpUpdate =
                     state.warpMotion().advance(
                         state.entity,
-                        state.runtime.warpState[slot],
-                        state.runtime.warpTransitionCountdown[slot],
+                        state.lifecycle().warpState(slot),
+                        state.lifecycle().warpTransitionCountdown(slot),
                         state.roomInspection().entityMapId(),
                         state.roomInspection().entityRoomId(),
                         state.roomInspection().dungeonMinibossReady(),
                         state.linkEntityX,
                         state.linkEntityY,
                         state.linkZ);
-                state.runtime.warpState[slot] = warpUpdate.state();
-                state.runtime.warpTransitionCountdown[slot] = warpUpdate.countdown();
+                state.lifecycle().setWarpState(slot, warpUpdate.state());
+                state.lifecycle().setWarpTransitionCountdown(slot, warpUpdate.countdown());
                 if (warpUpdate.musicTrack() >= 0) {
                   state.requestMusic(warpUpdate.musicTrack());
                 }

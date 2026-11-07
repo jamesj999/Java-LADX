@@ -291,4 +291,16 @@ public final class EntityBackgroundMechanics {
   public boolean switchBlockAnimationActive() { return runtime.switchBlockAnimationActive; }
   public void requestSwitchBlockAnimation() { runtime.pendingSwitchBlockAnimationRequest = true; }
 
+  public int entityGroundStatus(int slot) { return runtime.entityGroundStatus[slot]; }
+  public void setEntityGroundStatus(int slot, int value) { runtime.entityGroundStatus[slot] = value; }
+  public void setFallingVisualYOffset(int slot, int value) { runtime.fallingVisualYOffset[slot] = value; }
+  public void initializeKeyQuicksandFall(int slot) {
+    runtime.fallingTargetX[slot] = 0x50;
+    runtime.fallingTargetY[slot] = 0x48;
+    runtime.fallingSpeedX[slot] = 0;
+    runtime.fallingSpeedY[slot] = 0;
+    runtime.fallingSpeedXAccumulator[slot] = 0;
+    runtime.fallingSpeedYAccumulator[slot] = 0;
+    runtime.fallingVisualYOffset[slot] = 0;
+  }
 }

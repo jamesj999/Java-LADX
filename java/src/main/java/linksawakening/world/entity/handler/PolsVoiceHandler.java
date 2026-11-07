@@ -24,7 +24,7 @@ final class PolsVoiceHandler {
             // The handler checks this before rendering, recoil, movement,
             // or the ordinary collision path. Its private countdown $1F
             // is the shared EntityDeathHandler's visible death timer.
-            state.runtime.dyingCountdown[state.entity.slot()] = 0x1F;
+            state.lifecycle().setDyingCountdown(state.entity.slot(), 0x1F);
             state.slot().setPhysicsFlags(state.entity.slot(), 0x04);
             state.status = EntityStatus.DYING;
             state.updated = withStatus(state.entity, EntityStatus.DYING);

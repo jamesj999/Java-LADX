@@ -33,9 +33,9 @@ final class GoombaHandler {
               // DYING and physics flags to 4. Keep both the source
               // table and the runtime death countdown synchronized;
               // the latter drives the shared Java death presentation.
-              state.runtime.droppedItemBySlot[state.entity.slot()] = 0x2D;
-              state.runtime.dropPrivateCountdown3[state.entity.slot()] = 0x0C;
-              state.runtime.dyingCountdown[state.entity.slot()] = 0x0C;
+              state.lifecycle().setDroppedItemBySlot(state.entity.slot(), 0x2D);
+              state.lifecycle().setDropPrivateCountdown3(state.entity.slot(), 0x0C);
+              state.lifecycle().setDyingCountdown(state.entity.slot(), 0x0C);
               state.slot().setPhysicsFlags(state.entity.slot(), 0x04);
               state.status = EntityStatus.DYING;
             }

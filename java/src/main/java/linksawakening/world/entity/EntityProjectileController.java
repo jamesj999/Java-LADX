@@ -781,4 +781,9 @@ public final class EntityProjectileController {
             EntityCombatEvent.SoundChannel.JINGLE, 0x03,
             secondaryChannel, secondarySoundId, null));
         }
+  public boolean playerArrowBombArrow(int slot) { return runtime.playerArrowBombArrow[slot]; }
+  public void setWingedStateTwoThisFrame(int slot, boolean value) { runtime.wingedStateTwoThisFrame[slot] = value; }
+  public void setWingedSwordAttackThisFrame(int slot, boolean value) { runtime.wingedSwordAttackThisFrame[slot] = value; }
+  public int swordMoblinAlertingSoundCounter() { return runtime.swordMoblinAlertingSoundCounter; }
+  public void setSwordMoblinAlertingSoundCounter(int value) { runtime.swordMoblinAlertingSoundCounter = value; }
 }

@@ -39,7 +39,7 @@ final class BlooperHandler {
                     state.background().groundInteraction().apply(
                         movement.entity(),
                         state.frame,
-                        state.runtime.entityGroundStatus[state.entity.slot()],
+                        state.background().entityGroundStatus(state.entity.slot()),
                         state.background().verticalSpeedZ(movement.entity()),
                         state.background().groundInteractionSideScrolling()),
                     "Room entity ground interaction returned null");

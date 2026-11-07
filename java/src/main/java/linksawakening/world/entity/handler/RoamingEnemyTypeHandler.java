@@ -23,7 +23,7 @@ final class RoamingEnemyTypeHandler {
             state -> {
               if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
                 if (state.entity.type() == ENTITY_IRON_MASK
-                    && state.runtime.ironMaskPrivateState2[state.entity.slot()] != 0) {
+                    && state.slot().ironMaskPrivateState2(state.entity.slot()) != 0) {
                   UnmaskedIronMaskMotion.Update unmaskedUpdate =
                       state.unmaskedIronMaskMotion().advance(
                           state.entity,

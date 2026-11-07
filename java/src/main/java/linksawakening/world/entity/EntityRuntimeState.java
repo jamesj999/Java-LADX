@@ -246,27 +246,27 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     final GenieMotion genieMotion = new GenieMotion();
 
-    public final int[] genieActiveState = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] genieActiveState = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public final int[] geniePrivateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] geniePrivateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
 
     final int[] geniePrivateState2 = new int[EntityRoomLoader.MAX_ENTITIES];
 
     final int[] geniePrivateState3 = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public final int[] geniePrivateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] geniePrivateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public final int[] geniePrivateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] geniePrivateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public final int[] geniePrivateCountdown2 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] geniePrivateCountdown2 = new int[EntityRoomLoader.MAX_ENTITIES];
 
     final int[] genieDirection = new int[EntityRoomLoader.MAX_ENTITIES];
 
     final boolean[] genieDeathInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
-    public final int[] genieSpeedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] genieSpeedX = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public final int[] genieSpeedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] genieSpeedY = new int[EntityRoomLoader.MAX_ENTITIES];
 
     final int[] genieSpeedZ = new int[EntityRoomLoader.MAX_ENTITIES];
 
@@ -279,11 +279,11 @@ abstract class EntityRuntimeState extends EntityRomConstants {
     final boolean[] genieImpactRegisteredThisFrame =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
 
-    public int genieControllerSlot = -1;
+    int genieControllerSlot = -1;
 
-    public int genieSharedBodySpeedX;
+    int genieSharedBodySpeedX;
 
-    public int genieSharedBodySpeedY;
+    int genieSharedBodySpeedY;
 
     int bossAgonySfxCountdown;
 
@@ -320,11 +320,11 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     final boolean[] slowTimerInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
-    public final int[] droppedItemBySlot = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] droppedItemBySlot = new int[EntityRoomLoader.MAX_ENTITIES];
 
     final int[] dropPrivateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public final int[] dropPrivateCountdown3 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] dropPrivateCountdown3 = new int[EntityRoomLoader.MAX_ENTITIES];
 
     public final int[] droppablePrivateState3 = new int[EntityRoomLoader.MAX_ENTITIES];
 
@@ -349,7 +349,7 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     boolean gelClingingToLink;
 
-    public final int[] dyingCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] dyingCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
 
     final boolean[] powerRecoilDeath = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
@@ -357,7 +357,7 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     final int[] enemyHealth = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public final int[] ironMaskPrivateState2 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] ironMaskPrivateState2 = new int[EntityRoomLoader.MAX_ENTITIES];
 
     final int[] ironMasksMaskSourceHookshotSlot =
         new int[EntityRoomLoader.MAX_ENTITIES];
@@ -372,25 +372,25 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     final int[] enemyHitboxFlags = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public final int[] warpState = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] warpState = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public final int[] warpTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] warpTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public final int[] entityGroundStatus = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] entityGroundStatus = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public final int[] fallingTargetX = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] fallingTargetX = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public final int[] fallingTargetY = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] fallingTargetY = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public final int[] fallingSpeedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] fallingSpeedX = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public final int[] fallingSpeedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] fallingSpeedY = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public final int[] fallingSpeedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] fallingSpeedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public final int[] fallingSpeedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] fallingSpeedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public final int[] fallingVisualYOffset = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] fallingVisualYOffset = new int[EntityRoomLoader.MAX_ENTITIES];
 
     final int[] baseEntityFlipAttribute = new int[EntityRoomLoader.MAX_ENTITIES];
 
@@ -408,24 +408,24 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     List<WingedOctorokOam.Entry> wingedOctorokOam = List.of();
 
-    public final boolean[] wingedSwordAttackThisFrame =
+    final boolean[] wingedSwordAttackThisFrame =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
 
-    public final boolean[] wingedStateTwoThisFrame =
+    final boolean[] wingedStateTwoThisFrame =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     final int[] liftedPhase = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public final int[] liftedSourceDirection = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] liftedSourceDirection = new int[EntityRoomLoader.MAX_ENTITIES];
 
     final boolean[] liftedStateInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     final int[] bombDirection = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public final boolean[] playerArrowBombArrow =
+    final boolean[] playerArrowBombArrow =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
 
-    public final int[] bombPrivateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] bombPrivateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
 
     final int[] bombPrivateCountdown3 = new int[EntityRoomLoader.MAX_ENTITIES];
 
@@ -435,10 +435,10 @@ abstract class EntityRuntimeState extends EntityRomConstants {
     final int[] liftableRockSmashSourceVariant =
         new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public final boolean[] liftableRockSmashActive =
+    final boolean[] liftableRockSmashActive =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
 
-    public final int[] bombPrivateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] bombPrivateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
 
     final int[] magicPowderPrivateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
 
@@ -525,7 +525,7 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     boolean roomTransitionActive;
 
-    public int swordMoblinAlertingSoundCounter;
+    int swordMoblinAlertingSoundCounter;
 
     int bombArrowCooldown;
 

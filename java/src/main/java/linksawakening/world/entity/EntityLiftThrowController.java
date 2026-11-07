@@ -298,4 +298,6 @@ public final class EntityLiftThrowController {
     return runtime.beginLift(slot, direction);
   }
 
+  public void setLiftedSourceDirection(int slot, int value) { runtime.liftedSourceDirection[slot] = value; }
+  public boolean liftableRockSmashActive(int slot) { return runtime.liftableRockSmashActive[slot]; }
 }
