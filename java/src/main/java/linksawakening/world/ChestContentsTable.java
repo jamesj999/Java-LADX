@@ -1,20 +1,16 @@
 package linksawakening.world;
 
-import linksawakening.rom.RomBank;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
+import linksawakening.rom.RomSymbols;
 
 import java.util.Objects;
 
 /** ROM-backed chest contents lookup used by the source chest-spawn path. */
 public final class ChestContentsTable {
 
-    private static final int TABLE_BANK = 0x14;
-    private static final int ROOM_TABLE_ADDRESS = 0x4560;
-    private static final int COLOR_DUNGEON_TABLE_ADDRESS = 0x4860;
     private static final int ROOM_TABLE_SIZE = 0x100;
     private static final int COLOR_DUNGEON_TABLE_SIZE = 0x20;
-    private static final int DIALOG_TABLE_BANK = 0x07;
-    private static final int DIALOG_TABLE_ADDRESS = 0x7B99;
-    private static final int PRESENTATION_SOUND_TABLE_ADDRESS = 0x7BBB;
     private static final int PRESENTATION_TABLE_SIZE = 0x22;
 
     public static final int MAP_COLOR_DUNGEON = 0xFF;
@@ -68,29 +64,28 @@ public final class ChestContentsTable {
     public int itemForRoom(int mapId, int roomId, boolean indoor) {
         validateByte(mapId, "mapId");
         validateByte(roomId, "roomId");
-        int tableAddress;
+        RomAddress tableAddress;
         int tableSize;
         if (mapId == MAP_COLOR_DUNGEON) {
             if (roomId >= COLOR_DUNGEON_TABLE_SIZE) {
                 throw new IllegalArgumentException("Color Dungeon room id out of range: " + roomId);
             }
-            tableAddress = COLOR_DUNGEON_TABLE_ADDRESS;
+            tableAddress = RomSymbols.ColorDungeonRoomChestsTable;
             tableSize = COLOR_DUNGEON_TABLE_SIZE;
         } else {
             int tablePage = indoor ? 1 : 0;
             if (indoor && mapId >= 0x06 && mapId < 0x1A) {
                 tablePage++;
             }
-            tableAddress = ROOM_TABLE_ADDRESS + tablePage * ROOM_TABLE_SIZE;
+            tableAddress = RomSymbols.RoomChestsTable.plus(tablePage * ROOM_TABLE_SIZE);
             tableSize = ROOM_TABLE_SIZE;
         }
-        int offset = RomBank.romOffset(TABLE_BANK, tableAddress + roomId);
-        if (offset < 0 || offset >= romData.length || offset >= RomBank.romOffset(
-            TABLE_BANK, tableAddress + tableSize)) {
+        int offset = tableAddress.plus(roomId).offset();
+        if (offset < 0 || offset >= romData.length || offset >= tableAddress.plus(tableSize).offset()) {
             throw new IllegalArgumentException("Chest table is truncated at ROM offset 0x"
                 + Integer.toHexString(Math.max(offset, 0)));
         }
-        return Byte.toUnsignedInt(romData[offset]);
+        return new Rom(romData).u8(RomAddress.fromOffset(offset));
     }
 
     /** Mirrors func_014_5900's upgraded-sword replacement for secret-shell chests. */
@@ -134,14 +129,14 @@ public final class ChestContentsTable {
         if (itemType == CHEST_POWER_BRACELET && powerBraceletLevel == 2) {
             return 0xEE;
         }
-        return readBoundedByte(DIALOG_TABLE_BANK, DIALOG_TABLE_ADDRESS,
+        return readBoundedByte(RomSymbols.GotItemDialog,
             PRESENTATION_TABLE_SIZE, itemType, "GotItemDialog");
     }
 
     /** Mirrors Data_007_7BBB, the sound/music value selected at inertia $08. */
     public int presentationSoundValue(int itemType) {
         validateDialogItem(itemType);
-        return readBoundedByte(DIALOG_TABLE_BANK, PRESENTATION_SOUND_TABLE_ADDRESS,
+        return readBoundedByte(RomSymbols.Data_007_7BBB,
             PRESENTATION_TABLE_SIZE, itemType, "Data_007_7BBB");
     }
 
@@ -152,15 +147,15 @@ public final class ChestContentsTable {
         }
     }
 
-    private int readBoundedByte(int bank, int address, int tableSize, int index,
+    private int readBoundedByte(RomAddress address, int tableSize, int index,
                                 String tableName) {
-        int offset = RomBank.romOffset(bank, address + index);
-        int end = RomBank.romOffset(bank, address + tableSize);
+        int offset = address.plus(index).offset();
+        int end = address.plus(tableSize).offset();
         if (offset < 0 || offset >= romData.length || offset >= end) {
             throw new IllegalArgumentException(tableName + " is truncated at ROM offset 0x"
                 + Integer.toHexString(Math.max(offset, 0)));
         }
-        return Byte.toUnsignedInt(romData[offset]);
+        return new Rom(romData).u8(RomAddress.fromOffset(offset));
     }
 
     private static void validateByte(int value, String label) {

@@ -116,4 +116,8 @@ public final class RomSymbols {
     public static final RomAddress ColorDungeonEventsTable = new RomAddress(0x14, 0x4200);
     public static final RomAddress Data_014_4EE8 = new RomAddress(0x14, 0x4EE8);
     public static final RomAddress Data_014_4DF1 = new RomAddress(0x14, 0x4DF1);
+    public static final RomAddress RoomChestsTable = new RomAddress(0x14, 0x4560);
+    public static final RomAddress ColorDungeonRoomChestsTable = new RomAddress(0x14, 0x4860);
+    public static final RomAddress GotItemDialog = new RomAddress(0x07, 0x7B99);
+    public static final RomAddress Data_007_7BBB = new RomAddress(0x07, 0x7BBB);
 }

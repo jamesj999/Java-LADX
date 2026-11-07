@@ -60,3 +60,9 @@ use typed reads. Seven location declarations replaced; exact azle.sym matches:
 14:4EE8 Data_014_4EE8 and 14:4DF1 Data_014_4DF1. No discrepancies.
 Guard now also rejects _ADDRESS literals. Physics source audit found no
 RomBank accesses, raw romData reads, or bank-window address literals.
+
+ChestContentsTable: six location declarations migrated, preserving table bounds
+and page selection. Verified exact matches 14:4560 RoomChestsTable,
+14:4860 ColorDungeonRoomChestsTable, 07:7B99 GotItemDialog and
+07:7BBB Data_007_7BBB. No discrepancies; guard expanded to this file.
+Remaining original-metric world declarations: 81 (the metric omits _ADDRESS).

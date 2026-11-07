@@ -124,3 +124,11 @@ ColorDungeonEventsTable
 Data_014_4EE8
 
 Data_014_4DF1
+
+RoomChestsTable
+
+ColorDungeonRoomChestsTable
+
+GotItemDialog
+
+Data_007_7BBB
