@@ -88,20 +88,20 @@ final class BushCrawlerRuntimeTest {
             false, () -> 0, catalog, new RomEnemyCombatTables(rom));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x47, () -> 0));
-        assertEquals(1, runtime.bushCrawlerState(0));
-        assertEquals(0x30, runtime.transitionCountdown(0));
-        assertEquals(0x10, runtime.bushCrawlerSpeedY(0));
-        assertEquals(0, runtime.snapshot().visualYOffset(0));
+        assertEquals(1, runtime.inspection().bushCrawlerState(0));
+        assertEquals(0x30, runtime.enemies().transitionCountdown(0));
+        assertEquals(0x10, runtime.inspection().bushCrawlerSpeedY(0));
+        assertEquals(0, runtime.inspection().snapshot().visualYOffset(0));
 
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x00, 0x00, () -> 0));
-        assertEquals(0x41, runtime.snapshot().slots().get(0).y());
-        assertEquals(0, runtime.snapshot().visualYOffset(0));
+        assertEquals(0x41, runtime.inspection().snapshot().slots().get(0).y());
+        assertEquals(0, runtime.inspection().snapshot().visualYOffset(0));
 
         runtime.tick(EntityTestFrames.frame(runtime, 8, 0x00, 0x00, () -> 0));
-        RoomEntity crawling = runtime.snapshot().slots().get(0);
+        RoomEntity crawling = runtime.inspection().snapshot().slots().get(0);
         assertEquals(EntitySpriteDefinition.Shape.DYNAMIC, crawling.spriteDefinition().shape());
         assertEquals(4, crawling.spriteDefinition().dynamicVariant(0).size());
-        assertEquals(-4, runtime.snapshot().visualYOffset(0));
+        assertEquals(-4, runtime.inspection().snapshot().visualYOffset(0));
     }
 
     @Test
@@ -114,13 +114,13 @@ final class BushCrawlerRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, 0xBB, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
             false, () -> 0, catalog, new RomEnemyCombatTables(rom));
-        runtime.setActionButtonsHeld(true, false);
-        runtime.setLikeLikeLinkInventory(0x03, 0x00);
+        runtime.configuration().setActionButtonsHeld(true, false);
+        runtime.configuration().setLikeLikeLinkInventory(0x03, 0x00);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x38, () -> 0));
 
-        RoomEntity carried = runtime.snapshot().slots().get(0);
-        RoomEntity replacement = runtime.snapshot().loadedEntities().stream()
+        RoomEntity carried = runtime.inspection().snapshot().slots().get(0);
+        RoomEntity replacement = runtime.inspection().snapshot().loadedEntities().stream()
             .filter(entity -> entity.type() == 0xBB && entity.slot() != 0)
             .findFirst()
             .orElseThrow();
@@ -129,8 +129,8 @@ final class BushCrawlerRuntimeTest {
         assertEquals(1, carried.spriteVariant());
         assertEquals(0xBB, replacement.type());
         assertEquals(EntityStatus.ACTIVE, replacement.status());
-        assertEquals(0x40, runtime.transitionCountdown(replacement.slot()));
-        assertEquals(0, runtime.liftedEntityState().carryState());
+        assertEquals(0x40, runtime.enemies().transitionCountdown(replacement.slot()));
+        assertEquals(0, runtime.inspection().liftedEntityState().carryState());
 
         List<EntityCombatEvent> events = runtime.consumePendingEntityEvents();
         assertEquals(1, events.size());

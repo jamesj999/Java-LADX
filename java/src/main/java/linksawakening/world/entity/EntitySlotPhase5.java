@@ -68,10 +68,10 @@ final class EntitySlotPhase5 {
         state.status = EntityStatus.FALLING;
       }
       if (groundResult.waterSplash()) {
-        state.runtime.transientVfxRequests.add(
+        state.runtime.events.transientVfxRequests.add(
             new TransientVfxRequest(
                 TransientVfxType.WATER_SPLASH, state.updated.x(), state.updated.y()));
-        state.runtime.pendingEntityEvents.add(
+        state.runtime.events.pendingEntityEvents.add(
             new EntityCombatEvent(
                 state.updated.slot(),
                 state.updated.type(),

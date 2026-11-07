@@ -32,7 +32,7 @@ final class CuccoHandler {
                     state.linkZ,
                     state.handlerLinkCollisionEnabled,
                     state.runtime.liftThrow.cuccoPowerBraceletHeld(),
-                    state.runtime.linkAttackStepAnimationCountdown != 0,
+                    state.runtime.linkState.linkAttackStepAnimationCountdown != 0,
                     state.randomByteSupplier,
                     state.backgroundCollision,
                     state.runtime.indoorRoom,

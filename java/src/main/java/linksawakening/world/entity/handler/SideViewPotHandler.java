@@ -30,13 +30,13 @@ final class SideViewPotHandler {
                       state.linkEntityX,
                       state.linkEntityY,
                       state.linkAirborne,
-                      state.runtime.currentLinkSpeedY);
+                      state.runtime.linkState.currentLinkSpeedY);
               if (contact.collided()) {
                 state.runtime.liftThrow.pendingLinkPotContact(state.entity.slot(), contact);
                 if (contact.restoreFinalPositionX()) {
                   effectiveLinkX =
-                      state.runtime.currentLinkFinalPositionXConfigured
-                          ? state.runtime.currentLinkFinalPositionX
+                      state.runtime.linkState.currentLinkFinalPositionXConfigured
+                          ? state.runtime.linkState.currentLinkFinalPositionX
                           : state.linkEntityX;
                 }
                 if (contact.snapTop()) {
@@ -48,7 +48,7 @@ final class SideViewPotHandler {
                 && state.sideViewPotInteractive
                 && SideViewPotContact.liftWindow(state.entity, effectiveLinkX, effectiveLinkY)
                 && state.runtime.liftThrow.sideViewPotPowerBraceletHeld()
-                && state.runtime.linkAttackStepAnimationCountdown == 0
+                && state.runtime.linkState.linkAttackStepAnimationCountdown == 0
                 && state.runtime.beginLift(state.entity.slot(), state.romLinkDirection)) {
               state.emit(
                   new EntityCombatEvent(

@@ -1,15 +1,5 @@
 package linksawakening.world.entity;
 
-import linksawakening.world.entity.PincerBodyOam;
-import linksawakening.world.entity.WingedOctorokOam;
-import linksawakening.world.entity.LinkPositionHistory;
-import linksawakening.world.entity.event.BombExplosionEvent;
-import linksawakening.world.entity.event.EntityCombatEvent;
-import linksawakening.world.entity.HookshotChainOam;
-import linksawakening.world.entity.BowWowChain;
-
-import linksawakening.world.entity.event.HeartPiecePickupUpdate;
-
 import linksawakening.world.entity.motion.AntiFairyMotion;
 import linksawakening.world.entity.motion.ArmosKnightMotion;
 import linksawakening.world.entity.motion.ArmosMotion;
@@ -95,57 +85,14 @@ import linksawakening.world.entity.motion.ZolGelMotion;
 import linksawakening.world.entity.motion.ZombieMotion;
 import linksawakening.world.entity.motion.ZoraMotion;
 
-import linksawakening.world.entity.event.BoomerangObjectRequest;
-import linksawakening.world.entity.event.ChestRewardEvent;
-import linksawakening.world.entity.event.DialogRequest;
-import linksawakening.world.entity.event.DungeonWarpRequest;
-import linksawakening.world.entity.event.HeartContainerRewardEvent;
-import linksawakening.world.entity.event.HinoxLinkEffectRequest;
-import linksawakening.world.entity.event.HookshotBridgeUpdate;
-import linksawakening.world.entity.event.InstrumentCompletionEvent;
-import linksawakening.world.entity.event.InstrumentRewardEvent;
-import linksawakening.world.entity.event.KeyQuicksandEvent;
-import linksawakening.world.entity.event.KeyRewardEvent;
-import linksawakening.world.entity.event.LikeLikeEvent;
-import linksawakening.world.entity.event.LinkAttackClearRequest;
-import linksawakening.world.entity.event.LinkAttackStepRequest;
-import linksawakening.world.entity.event.LinkFacingRequest;
-import linksawakening.world.entity.event.LinkFallenPoseRequest;
-import linksawakening.world.entity.event.LinkFinalPositionRequest;
-import linksawakening.world.entity.event.LinkHeldItemPoseRequest;
-import linksawakening.world.entity.event.LinkMotionBlockRequest;
-import linksawakening.world.entity.event.LinkSwordFinalPoseRequest;
-import linksawakening.world.entity.event.LinkSwordSpinPoseRequest;
-import linksawakening.world.entity.event.MadamMeowMeowFullHealRequest;
-import linksawakening.world.entity.event.MagicPowderObjectRequest;
-import linksawakening.world.entity.event.MagicRodObjectRequest;
-import linksawakening.world.entity.event.OwlEventCompletion;
-import linksawakening.world.entity.event.RichardProgressEvent;
-import linksawakening.world.entity.event.RoomStatusPersistenceRequest;
-import linksawakening.world.entity.event.RoosterLinkStateRequest;
-import linksawakening.world.entity.event.ScreenShakeRequest;
-import linksawakening.world.entity.event.SideViewPlatformLinkRequest;
-import linksawakening.world.entity.event.SideViewPotLinkRequest;
-import linksawakening.world.entity.event.SlimeKeyRewardEvent;
-import linksawakening.world.entity.event.SwordPickupRewardEvent;
-import linksawakening.world.entity.event.ThrownBackgroundCollisionEvent;
-import linksawakening.world.entity.event.ToadstoolRewardEvent;
-import linksawakening.world.entity.event.TransientVfxRequest;
-import linksawakening.world.entity.event.WarpLinkStateRequest;
-import linksawakening.world.entity.event.WitchExchangeEvent;
-import linksawakening.world.entity.event.WitchRewardEvent;
-
-import static linksawakening.world.entity.EntityMotionMath.*;
-import static linksawakening.world.entity.EntitySnapshots.*;
-import static linksawakening.world.entity.EntityTypeRules.*;
 import linksawakening.entity.EntitySpriteSelection;
 import java.util.List;
 import java.util.function.IntUnaryOperator;
-import static linksawakening.world.entity.RoomEntityRuntime.*;
 
 /** ROM slot arrays and room handler state; orchestration remains in RoomEntityRuntime. */
 abstract class EntityRuntimeState extends EntityRomConstants {
-    final EntityOutbox outbox = new EntityOutbox();
+    public final EntityEventChannels events = new EntityEventChannels();
+    public final EntityLinkState linkState = new EntityLinkState();
 
     public EntitySpriteSelection spriteSelection;
 
@@ -158,16 +105,6 @@ abstract class EntityRuntimeState extends EntityRomConstants {
     public FollowingNpcState followingNpcState = FollowingNpcState.none();
 
     LinkPositionHistory followingLinkPositionHistory = new LinkPositionHistory();
-
-    int followingLinkZ;
-
-    int followingLinkDirection;
-
-    int lastRomLinkDirection;
-
-    int followingEntityYOffset;
-
-    public int linkAttackStepAnimationCountdown;
 
     final ButterflyMotion butterflyMotion = new ButterflyMotion();
 
@@ -529,89 +466,6 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     final int[] chestItemBySlot = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public final List<RoamingEnemyMotion.LaunchRequest> projectileLaunchRequests =
-        outbox.channel(RoamingEnemyMotion.LaunchRequest.class, "projectileLaunchRequests");
-
-    final List<TransientVfxRequest> transientVfxRequests = outbox.channel(TransientVfxRequest.class, "transientVfxRequests");
-
-    final List<HeartContainerRewardEvent> pendingHeartContainerRewards = outbox.channel(HeartContainerRewardEvent.class, "pendingHeartContainerRewards");
-
-    final List<MadamMeowMeowFullHealRequest> pendingMadamMeowMeowFullHealRequests = outbox.channel(MadamMeowMeowFullHealRequest.class, "pendingMadamMeowMeowFullHealRequests");
-
-    final List<SwordPickupRewardEvent> pendingSwordPickupRewards = outbox.channel(SwordPickupRewardEvent.class, "pendingSwordPickupRewards");
-
-    final List<ToadstoolRewardEvent> pendingToadstoolRewards = outbox.channel(ToadstoolRewardEvent.class, "pendingToadstoolRewards");
-
-    final List<InstrumentRewardEvent> pendingInstrumentRewards = outbox.channel(InstrumentRewardEvent.class, "pendingInstrumentRewards");
-
-    final List<InstrumentCompletionEvent> pendingInstrumentCompletions = outbox.channel(InstrumentCompletionEvent.class, "pendingInstrumentCompletions");
-
-    final List<RichardProgressEvent> pendingRichardProgressEvents = outbox.channel(RichardProgressEvent.class, "pendingRichardProgressEvents");
-
-    final List<OwlEventCompletion> pendingOwlEventCompletions = outbox.channel(OwlEventCompletion.class, "pendingOwlEventCompletions");
-
-    final List<LinkFinalPositionRequest> pendingLinkFinalPositionRequests = outbox.channel(LinkFinalPositionRequest.class, "pendingLinkFinalPositionRequests");
-
-    final List<RoosterLinkStateRequest> pendingRoosterLinkStateRequests = outbox.channel(RoosterLinkStateRequest.class, "pendingRoosterLinkStateRequests");
-
-    final List<SideViewPlatformLinkRequest> pendingSideViewPlatformLinkRequests = outbox.channel(SideViewPlatformLinkRequest.class, "pendingSideViewPlatformLinkRequests");
-
-    final List<SideViewPotLinkRequest> pendingSideViewPotLinkRequests = outbox.channel(SideViewPotLinkRequest.class, "pendingSideViewPotLinkRequests");
-
-    final List<LinkMotionBlockRequest> pendingLinkMotionBlockRequests = outbox.channel(LinkMotionBlockRequest.class, "pendingLinkMotionBlockRequests");
-
-    final List<HinoxLinkEffectRequest> pendingHinoxLinkEffectRequests = outbox.channel(HinoxLinkEffectRequest.class, "pendingHinoxLinkEffectRequests");
-
-    final List<LinkFallenPoseRequest> pendingLinkFallenPoseRequests = outbox.channel(LinkFallenPoseRequest.class, "pendingLinkFallenPoseRequests");
-
-    final List<LinkFacingRequest> pendingLinkFacingRequests = outbox.channel(LinkFacingRequest.class, "pendingLinkFacingRequests");
-
-    final List<LinkAttackStepRequest> pendingLinkAttackStepRequests = outbox.channel(LinkAttackStepRequest.class, "pendingLinkAttackStepRequests");
-
-    final List<LinkAttackStepRequest> pendingPreTickLinkAttackStepRequests = outbox.channel(LinkAttackStepRequest.class, "pendingPreTickLinkAttackStepRequests");
-
-    final List<LinkAttackClearRequest> pendingLinkAttackClearRequests = outbox.channel(LinkAttackClearRequest.class, "pendingLinkAttackClearRequests");
-
-    final List<RoomStatusPersistenceRequest> pendingRoomStatusPersistenceRequests = outbox.channel(RoomStatusPersistenceRequest.class, "pendingRoomStatusPersistenceRequests");
-
-    final List<LinkHeldItemPoseRequest> pendingLinkHeldItemPoseRequests = outbox.channel(LinkHeldItemPoseRequest.class, "pendingLinkHeldItemPoseRequests");
-
-    final List<LinkSwordSpinPoseRequest> pendingLinkSwordSpinPoseRequests = outbox.channel(LinkSwordSpinPoseRequest.class, "pendingLinkSwordSpinPoseRequests");
-
-    final List<LinkSwordFinalPoseRequest> pendingLinkSwordFinalPoseRequests = outbox.channel(LinkSwordFinalPoseRequest.class, "pendingLinkSwordFinalPoseRequests");
-
-    final List<ScreenShakeRequest> pendingScreenShakeRequests = outbox.channel(ScreenShakeRequest.class, "pendingScreenShakeRequests");
-
-    final List<DialogRequest> pendingDialogRequests = outbox.channel(DialogRequest.class, "pendingDialogRequests");
-
-    final List<EntityCombatEvent> pendingEntityEvents = outbox.channel(EntityCombatEvent.class, "pendingEntityEvents");
-
-    final List<EntityCombatEvent> pendingPreTickEntityEvents = outbox.channel(EntityCombatEvent.class, "pendingPreTickEntityEvents");
-
-    final List<ThrownBackgroundCollisionEvent> pendingThrownBackgroundCollisions = outbox.channel(ThrownBackgroundCollisionEvent.class, "pendingThrownBackgroundCollisions");
-
-    final List<DungeonWarpRequest> pendingDungeonWarpRequests = outbox.channel(DungeonWarpRequest.class, "pendingDungeonWarpRequests");
-
-    final List<WarpLinkStateRequest> pendingWarpLinkStateRequests = outbox.channel(WarpLinkStateRequest.class, "pendingWarpLinkStateRequests");
-
-    final List<ChestRewardEvent> pendingChestRewardEvents = outbox.channel(ChestRewardEvent.class, "pendingChestRewardEvents");
-
-    final List<KeyRewardEvent> pendingKeyRewardEvents = outbox.channel(KeyRewardEvent.class, "pendingKeyRewardEvents");
-
-    final List<SlimeKeyRewardEvent> pendingSlimeKeyRewardEvents = outbox.channel(SlimeKeyRewardEvent.class, "pendingSlimeKeyRewardEvents");
-
-    final List<WitchExchangeEvent> pendingWitchExchangeEvents = outbox.channel(WitchExchangeEvent.class, "pendingWitchExchangeEvents");
-
-    final List<WitchRewardEvent> pendingWitchRewardEvents = outbox.channel(WitchRewardEvent.class, "pendingWitchRewardEvents");
-
-    final List<KeyQuicksandEvent> pendingKeyQuicksandEvents = outbox.channel(KeyQuicksandEvent.class, "pendingKeyQuicksandEvents");
-
-    final List<LikeLikeEvent> pendingLikeLikeEvents = outbox.channel(LikeLikeEvent.class, "pendingLikeLikeEvents");
-
-    final List<BombExplosionEvent> pendingBombExplosionEvents = outbox.channel(BombExplosionEvent.class, "pendingBombExplosionEvents");
-
-    public final List<HookshotBridgeUpdate> hookshotBridgeUpdates = outbox.channel(HookshotBridgeUpdate.class, "hookshotBridgeUpdates");
-
     public boolean switchBlockAnimationActive;
 
     public boolean pendingSwitchBlockAnimationRequest;
@@ -647,56 +501,15 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     final int[] killOrder = new int[0x100];
 
-    public boolean actionButtonsHeld;
-
-    public boolean actionButtonAHeld;
-
-    public boolean actionButtonBHeld;
-
-    public boolean joypadHeld;
-
-    public boolean dialogActive;
-
-    public boolean inventoryAppearing;
-
-    public int dialogCooldown;
-
-    public int windowY = 0x80;
-
-    int dialogAskSelectionIndex;
-
     public boolean shouldGetLostInMysteriousWoods;
 
     boolean activeMusic;
 
     public int bowWowState;
 
-    public int linkPressedButtonsMask;
-
-    public int linkItemA;
-
-    public int linkItemB;
-
-    boolean linkInventoryConfigured;
-
-    boolean powerBraceletButtonHeld;
-
-    boolean bombButtonHeld;
-
-    public boolean runningWithPegasusBoots;
-
     // The three WRAM values read by PolsVoiceEntityHandler's Ocarina preamble.
     // RoomSession supplies these from the active Ocarina item state once per
     // entity tick; the zero values preserve the ordinary no-song path.
-    public int linkPlayingOcarinaCountdown;
-
-    int ocarinaSongFlags;
-
-    int selectedSongIndex;
-
-    int ocarinaAnimationCounter;
-
-    int ocarinaAnimationPhase;
 
     // LinkMotionMapFadeInHandler leaves wTransitionSequenceCounter at $04 once
     // the active room is ready for interaction. Entity ticks are gated during
@@ -726,17 +539,8 @@ abstract class EntityRuntimeState extends EntityRomConstants {
     // only around the live projectile tick so the enemy-bomb branch can mirror
     // its post-collision SLA writes without making Link state part of the
     // entity snapshot.
-    int currentLinkVelocityZ;
 
     List<BowWowChain.Entry> bowWowChainOam = List.of();
-
-    public int currentLinkSpeedX;
-
-    public int currentLinkSpeedY;
-
-    public int currentLinkFinalPositionX;
-
-    public boolean currentLinkFinalPositionXConfigured;
 
     int chestShieldLevel = 1;
 
@@ -779,9 +583,6 @@ abstract class EntityRuntimeState extends EntityRomConstants {
     final int[] instrumentWarpY = new int[EntityRoomLoader.MAX_ENTITIES];
 
     public final HeartPiecePickupMotion[] heartPiecePickup = new HeartPiecePickupMotion[EntityRoomLoader.MAX_ENTITIES];
-
-    final List<HeartPiecePickupUpdate> heartPieceUpdates =
-        outbox.channel(HeartPiecePickupUpdate.class, "heartPieceUpdates");
 
     int heartPiecesCount;
 
@@ -929,17 +730,11 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     final SwordBeamMotion swordBeamMotion = new SwordBeamMotion();
 
-    final List<BoomerangObjectRequest> boomerangObjectRequests = outbox.channel(BoomerangObjectRequest.class, "boomerangObjectRequests");
-
-    final List<MagicRodObjectRequest> magicRodObjectRequests = outbox.channel(MagicRodObjectRequest.class, "magicRodObjectRequests");
-
     final int[] magicPowderState = new int[EntityRoomLoader.MAX_ENTITIES];
 
     int torchPaletteTargetAddress;
 
     boolean torchPaletteTransitionActive;
-
-    final List<MagicPowderObjectRequest> magicPowderObjectRequests = outbox.channel(MagicPowderObjectRequest.class, "magicPowderObjectRequests");
 
     final int[] musicalNoteInertia = new int[EntityRoomLoader.MAX_ENTITIES];
 

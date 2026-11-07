@@ -195,19 +195,19 @@ public final class EntityPickupController {
 
     public void advanceHeartPiecePickup(RoomEntity entity, int x, int y, int z) {
         int slot = entity.slot();
-        var update = runtime.heartPiecePickup[slot].advance(runtime.enemyTransitionCountdown[slot], runtime.dialogActive, runtime.heartPiecesCount);
-        runtime.heartPieceUpdates.add(update);
+        var update = runtime.heartPiecePickup[slot].advance(runtime.enemyTransitionCountdown[slot], runtime.linkState.dialogActive, runtime.heartPiecesCount);
+        runtime.events.heartPieceUpdates.add(update);
         if (update.incrementPiece()) runtime.heartPiecesCount++;
         if (update.newContainer()) runtime.heartPiecesCount = 0;
-        if (update.dialogId() >= 0) runtime.pendingDialogRequests.add(new DialogRequest(0, update.dialogId()));
-        if (update.newContainer()) runtime.pendingEntityEvents.add(new EntityCombatEvent(slot, entity.type(), 0, false,
+        if (update.dialogId() >= 0) runtime.events.pendingDialogRequests.add(new DialogRequest(0, update.dialogId()));
+        if (update.newContainer()) runtime.events.pendingEntityEvents.add(new EntityCombatEvent(slot, entity.type(), 0, false,
             EntityCombatEvent.SoundChannel.JINGLE, 0x19));
         if (update.complete()) {
             runtime.lifecycle.disableEntityWithoutPersistence(slot);
             return;
         }
-        runtime.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
-        runtime.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
+        runtime.events.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
+        runtime.events.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
         runtime.slots[slot] = withZ(withPositionAndVariant(entity, x, (y - 12) & 255, entity.spriteVariant()), z);
         }
 
@@ -217,7 +217,7 @@ public final class EntityPickupController {
         runtime.chestSpeedY[slot] = 0xFC;
         runtime.chestSpeedYAccumulator[slot] = 0;
         runtime.chestInertia[slot] = 0;
-        runtime.pendingEntityEvents.add(new EntityCombatEvent(
+        runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
             slot, runtime.ENTITY_CHEST_WITH_ITEM, 0, false,
             EntityCombatEvent.SoundChannel.NOISE, runtime.CHEST_OPEN_NOISE_ID));
         if (itemType == ChestContentsTable.CHEST_TAIL_KEY) {
@@ -229,7 +229,7 @@ public final class EntityPickupController {
             }
         }
         if (itemType < ChestContentsTable.CHEST_MESSAGE) {
-            runtime.pendingChestRewardEvents.add(new ChestRewardEvent(slot, itemType));
+            runtime.events.pendingChestRewardEvents.add(new ChestRewardEvent(slot, itemType));
         }
         }
 
@@ -244,7 +244,7 @@ public final class EntityPickupController {
 
         // ChestWithItemEntityHandler ($07:7C5E) renders before this gate,
         // but does not move, advance inertia, or unload while text is open.
-        if (runtime.dialogActive) {
+        if (runtime.linkState.dialogActive) {
             return false;
         }
 
@@ -258,7 +258,7 @@ public final class EntityPickupController {
         if (inertia == 0x08 && runtime.chestContentsTable != null) {
             int soundValue = runtime.chestContentsTable.presentationSoundValue(itemType);
             if (soundValue == runtime.CHEST_TREASURE_JINGLE_ID) {
-                runtime.pendingEntityEvents.add(new EntityCombatEvent(
+                runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
                     slot, runtime.ENTITY_CHEST_WITH_ITEM, 0, false,
                     EntityCombatEvent.SoundChannel.JINGLE, runtime.CHEST_TREASURE_JINGLE_ID));
             } else if (soundValue != 0) {
@@ -272,7 +272,7 @@ public final class EntityPickupController {
                 runtime.entityMapId < 0 ? 0 : runtime.entityMapId, roomId < 0 ? 0 : roomId);
             int tableId = itemType == ChestContentsTable.CHEST_MESSAGE && roomId == 0x96
                 ? 1 : 0;
-            runtime.pendingDialogRequests.add(new DialogRequest(tableId, dialogLow));
+            runtime.events.pendingDialogRequests.add(new DialogRequest(tableId, dialogLow));
         }
         if (inertia == 0x28) {
             runtime.clearEntity(slot);
@@ -298,7 +298,7 @@ public final class EntityPickupController {
         runtime.enemyHealth[freeSlot] = runtime.initialHealth(runtime.ENTITY_ZOL);
         runtime.enemyIgnoreHitsCountdown[freeSlot] = 1;
         runtime.dynamicEntitySpawnedThisFrame[freeSlot] = true;
-        runtime.pendingEntityEvents.add(new EntityCombatEvent(
+        runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
             freeSlot, runtime.ENTITY_ZOL, 0, false,
             EntityCombatEvent.SoundChannel.JINGLE, 0x1D));
         }

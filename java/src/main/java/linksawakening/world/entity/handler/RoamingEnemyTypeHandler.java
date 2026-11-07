@@ -54,7 +54,7 @@ final class RoamingEnemyTypeHandler {
                               state.creditsGameplay);
                   state.updated = roamingUpdate.entity();
                   if (roamingUpdate.launchRequest() != null) {
-                    state.runtime.projectileLaunchRequests.add(roamingUpdate.launchRequest());
+                    state.runtime.events.projectileLaunchRequests.add(roamingUpdate.launchRequest());
                     state.enemySpawns().spawnEnemyProjectile(
                         state.entity, roamingUpdate.launchRequest());
                   }

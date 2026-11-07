@@ -77,9 +77,9 @@ final class BuzzBlobRuntimeTest {
         assertTrue(RoomEntityCombatRules.supportsEnemyCollision(ENTITY_BUZZ_BLOB));
         assertEquals(0x08, RoomEntityCombatRules.contactDamage(ENTITY_BUZZ_BLOB));
         assertEquals(0x04, RoomEntityCombatRules.initialHealth(ENTITY_BUZZ_BLOB));
-        assertEquals(0x12, runtime.physicsFlags(0));
+        assertEquals(0x12, runtime.enemies().physicsFlags(0));
         assertEquals(0x00, runtime.options1(0));
-        assertEquals(0x04, runtime.enemyHealth(0));
+        assertEquals(0x04, runtime.enemies().enemyHealth(0));
     }
 
     @Test
@@ -164,7 +164,7 @@ final class BuzzBlobRuntimeTest {
             catalog.forEntityType(ENTITY_BUZZ_BLOB, EntityRoomLoader.RoomTable.OVERWORLD),
             0, 0, 0, 0, -1, false)), false, () -> 0, catalog, new RomEnemyCombatTables(rom));
         AtomicInteger groundCalls = new AtomicInteger();
-        runtime.setGroundInteraction((entity, frameCounter, previousStatus, speedZ,
+        runtime.configuration().setGroundInteraction((entity, frameCounter, previousStatus, speedZ,
                                        sideScrolling) -> {
             groundCalls.incrementAndGet();
             return RoomEntityGroundInteraction.Result.unchanged(entity, previousStatus);
@@ -185,18 +185,18 @@ final class BuzzBlobRuntimeTest {
             0, 0, ENTITY_BUZZ_BLOB, 0x40, 0x40, EntityStatus.ACTIVE,
             catalog.forEntityType(ENTITY_BUZZ_BLOB, EntityRoomLoader.RoomTable.OVERWORLD),
             0, 0, 0, 0, -1, false)), false, () -> 0, catalog, new RomEnemyCombatTables(rom));
-        runtime.configureEnemyRecoilForTest(0, 0x40, 0x40, 0x10);
-        runtime.setEnemyIgnoreHitsCountdownForTest(0, 0x0A);
+        runtime.debug().configureEnemyRecoilForTest(0, 0x40, 0x40, 0x10);
+        runtime.debug().setEnemyIgnoreHitsCountdownForTest(0, 0x0A);
 
         runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x40, 0x40, () -> 0, null,
             new EnemyProjectileCollision.LinkState(0x40, 0x40, 0,
                 EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE, 0, false)));
 
-        RoomEntity after = runtime.snapshot().slots().get(0);
+        RoomEntity after = runtime.inspection().snapshot().slots().get(0);
         assertEquals(0x40, after.x());
         assertEquals(0x40, after.y());
-        assertEquals(0x0A, runtime.enemyIgnoreHitsCountdown(0));
-        assertTrue(runtime.enemyRecoilActive(0));
+        assertEquals(0x0A, runtime.enemies().enemyIgnoreHitsCountdown(0));
+        assertTrue(runtime.enemies().enemyRecoilActive(0));
     }
 
     @Test

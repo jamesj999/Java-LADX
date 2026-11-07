@@ -52,13 +52,13 @@ final class FairyRuntimeTest {
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x40, sequence(0x0F, 0x00)));
 
-        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
-        assertEquals(0xB1, runtime.physicsFlags(0));
+        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(0xB1, runtime.enemies().physicsFlags(0));
         assertEquals(0x13, runtime.options1(0));
-        assertEquals(0x30, runtime.transitionCountdown(0));
-        assertEquals(0x07, runtime.fairySpeedX(0));
-        assertEquals(0xF8, runtime.fairySpeedY(0));
-        assertTrue(runtime.snapshot().slots().get(0).spriteDefinition().supported());
+        assertEquals(0x30, runtime.enemies().transitionCountdown(0));
+        assertEquals(0x07, runtime.inspection().fairySpeedX(0));
+        assertEquals(0xF8, runtime.inspection().fairySpeedY(0));
+        assertTrue(runtime.inspection().snapshot().slots().get(0).spriteDefinition().supported());
     }
 
     @Test
@@ -71,19 +71,19 @@ final class FairyRuntimeTest {
                 0x09, EntityRoomLoader.RoomTable.OVERWORLD, -1), 0, 0, 0, 0x10, -1, false);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(source), false,
             () -> 0, catalog, tables);
-        runtime.setEnemyDropResolver(new EnemyDropResolver(rom));
-        runtime.setDroppedItemForTest(15, 0x2F);
+        runtime.configuration().setEnemyDropResolver(new EnemyDropResolver(rom));
+        runtime.debug().setDroppedItemForTest(15, 0x2F);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
-        assertEquals(0x2F, runtime.snapshot().slots().get(14).type());
+        assertEquals(0x2F, runtime.inspection().snapshot().slots().get(14).type());
 
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0, 0, () -> 0));
 
-        RoomEntity fairy = runtime.snapshot().slots().get(14);
+        RoomEntity fairy = runtime.inspection().snapshot().slots().get(14);
         assertEquals(0x10, fairy.z());
-        assertEquals(0xB1, runtime.physicsFlags(14));
+        assertEquals(0xB1, runtime.enemies().physicsFlags(14));
         assertEquals(0x13, runtime.options1(14));
-        assertEquals(0, runtime.dropSpeedZ(14));
+        assertEquals(0, runtime.inspection().dropSpeedZ(14));
     }
 
     private static IntSupplier sequence(int... values) {

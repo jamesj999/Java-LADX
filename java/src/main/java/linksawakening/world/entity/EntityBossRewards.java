@@ -98,8 +98,8 @@ public final class EntityBossRewards {
             int x = (entity.x() + ((randomByteSupplier.getAsInt() & 0x1F) - 0x10)) & 0xFF;
             int y = (entity.y() - entity.z()
                 + ((randomByteSupplier.getAsInt() & 0x1F) - 0x14)) & 0xFF;
-            runtime.transientVfxRequests.add(new TransientVfxRequest(TransientVfxType.POOF, x, y));
-            runtime.pendingEntityEvents.add(new EntityCombatEvent(
+            runtime.events.transientVfxRequests.add(new TransientVfxRequest(TransientVfxType.POOF, x, y));
+            runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
                 slot, entity.type(), 0, false,
                 EntityCombatEvent.SoundChannel.NOISE, 0x13));
         }
@@ -127,7 +127,7 @@ public final class EntityBossRewards {
                 runtime.bossDeathProducerState[slot] = 2;
             }
         } else if (runtime.enemyTransitionCountdown[slot] == 0) {
-            runtime.pendingEntityEvents.add(new EntityCombatEvent(slot, source.type(), 0, false,
+            runtime.events.pendingEntityEvents.add(new EntityCombatEvent(slot, source.type(), 0, false,
                 EntityCombatEvent.SoundChannel.NOISE, 0x0C));
             runtime.swordMoblinAlertingSoundCounter = 4;
             handleTerminalEnemyDeath(source, random);
@@ -135,8 +135,8 @@ public final class EntityBossRewards {
             && runtime.backgroundMechanics.entityHandlerInteractive(false)) {
             int x = (source.x() + (random.getAsInt() & 0x1F) - 0x10) & 255;
             int y = (source.y() - source.z() + (random.getAsInt() & 0x1F) - 0x14) & 255;
-            runtime.transientVfxRequests.add(new TransientVfxRequest(TransientVfxType.POOF, x, y));
-            runtime.pendingEntityEvents.add(new EntityCombatEvent(slot, source.type(), 0, false,
+            runtime.events.transientVfxRequests.add(new TransientVfxRequest(TransientVfxType.POOF, x, y));
+            runtime.events.pendingEntityEvents.add(new EntityCombatEvent(slot, source.type(), 0, false,
                 EntityCombatEvent.SoundChannel.NOISE, 0x13));
         }
     }
@@ -191,7 +191,7 @@ public final class EntityBossRewards {
         if (countdown == 0) {
             spawnMoldormHeartContainer(source);
             runtime.lifecycle.disableEntityWithoutPersistence(slot);
-            runtime.pendingEntityEvents.add(new EntityCombatEvent(
+            runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
                 slot, source.type(), 0, false,
                 EntityCombatEvent.SoundChannel.NOISE, 0x1A));
             return;
@@ -242,8 +242,8 @@ public final class EntityBossRewards {
     }
 
     void createMoldormPoof(RoomEntity source, int x, int y) {
-        runtime.transientVfxRequests.add(new TransientVfxRequest(TransientVfxType.POOF, x, y));
-        runtime.pendingEntityEvents.add(new EntityCombatEvent(
+        runtime.events.transientVfxRequests.add(new TransientVfxRequest(TransientVfxType.POOF, x, y));
+        runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
             source.slot(), source.type(), 0, false,
             EntityCombatEvent.SoundChannel.NOISE, 0x13));
     }
@@ -253,11 +253,11 @@ public final class EntityBossRewards {
                                                  int linkZ) {
         int slot = entity.slot();
         if (runtime.enemyTransitionCountdown[slot] == 1) {
-            runtime.pendingHeartContainerRewards.add(new HeartContainerRewardEvent(slot));
+            runtime.events.pendingHeartContainerRewards.add(new HeartContainerRewardEvent(slot));
             runtime.lifecycle.disableEntityWithoutPersistence(slot);
             return;
         }
-        runtime.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
+        runtime.events.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
         RoomEntity held = withPositionAndVariant(entity, linkEntityX,
             (linkEntityY - 0x0C) & 0xFF, entity.spriteVariant());
         runtime.slots[slot] = withZ(held, linkZ & 0xFF);
@@ -290,7 +290,7 @@ public final class EntityBossRewards {
                     // speedZ $10, and private countdown 1 $10.
                     runtime.pickups.spawnBossKeyDrop(source, 0x02, source.z(), 0x10, 0x10);
                     runtime.lifecycle.disableEntityWithoutPersistence(slot);
-                    runtime.pendingEntityEvents.add(new EntityCombatEvent(
+                    runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
                         slot, source.type(), 0, false,
                         EntityCombatEvent.SoundChannel.NOISE, 0x13));
                 }
@@ -335,7 +335,7 @@ public final class EntityBossRewards {
                             runtime.pendingRoomStatusMask |= 0x20;
                         }
                     }
-                    runtime.pendingEntityEvents.add(new EntityCombatEvent(
+                    runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
                         slot, source.type(), 0, false,
                         EntityCombatEvent.SoundChannel.NOISE, 0x1A));
                 }
@@ -359,7 +359,7 @@ public final class EntityBossRewards {
                 // the producer supplies speedZ $18 and countdown 1 $20.
                 runtime.pickups.spawnBossKeyDrop(source, 0x00, 0x00, 0x18, 0x20);
                 runtime.lifecycle.disableEntityWithoutPersistence(slot);
-                runtime.pendingEntityEvents.add(new EntityCombatEvent(
+                runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
                     slot, source.type(), 0, false,
                     EntityCombatEvent.SoundChannel.NOISE, 0x1A));
             }

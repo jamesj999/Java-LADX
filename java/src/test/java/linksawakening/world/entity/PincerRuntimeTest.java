@@ -63,14 +63,14 @@ final class PincerRuntimeTest {
             new EnemyProjectileCollision.LinkState(48, 40, 0,
                 EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE, 0, false)));
 
-        assertEquals(0, runtime.pincerState(0));
-        assertEquals(0, runtime.transitionCountdown(0));
-        assertEquals(0, runtime.pincerSpeedX(0));
-        assertEquals(0, runtime.pincerSpeedY(0));
-        assertEquals(0x02, runtime.physicsFlags(0));
-        assertEquals(64, runtime.snapshot().slots().get(0).x());
-        assertEquals(64, runtime.snapshot().slots().get(0).y());
-        assertEquals(List.of(), runtime.pincerBodyOam());
+        assertEquals(0, runtime.enemies().pincerState(0));
+        assertEquals(0, runtime.enemies().transitionCountdown(0));
+        assertEquals(0, runtime.enemies().pincerSpeedX(0));
+        assertEquals(0, runtime.enemies().pincerSpeedY(0));
+        assertEquals(0x02, runtime.enemies().physicsFlags(0));
+        assertEquals(64, runtime.inspection().snapshot().slots().get(0).x());
+        assertEquals(64, runtime.inspection().snapshot().slots().get(0).y());
+        assertEquals(List.of(), runtime.enemies().pincerBodyOam());
     }
 
     @Test
@@ -90,10 +90,10 @@ final class PincerRuntimeTest {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 96, 64, () -> 0));
         }
 
-        assertEquals(3, runtime.pincerState(0));
-        assertEquals(3, runtime.pincerBodyOam().size());
-        assertEquals(0x6A, runtime.pincerBodyOam().get(0).tileIndex());
-        assertEquals(0x02, runtime.pincerBodyOam().get(0).attributes());
+        assertEquals(3, runtime.enemies().pincerState(0));
+        assertEquals(3, runtime.enemies().pincerBodyOam().size());
+        assertEquals(0x6A, runtime.enemies().pincerBodyOam().get(0).tileIndex());
+        assertEquals(0x02, runtime.enemies().pincerBodyOam().get(0).attributes());
     }
 
     private static RoomEntitySnapshot snapshot(RoomEntity entity) {

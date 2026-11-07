@@ -48,7 +48,7 @@ public final class EntitySlotProperties {
             .findFirst().orElse(0);
         int jingle = result == ThreeOfAKindMotion.PuzzleResult.MATCH
             ? runtime.threeOfAKindMotion.matchedJingle(coordinatorSlot) : 0x1D;
-        runtime.pendingEntityEvents.add(new EntityCombatEvent(
+        runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
             coordinatorSlot, runtime.ENTITY_THREE_OF_A_KIND, 0, false,
             EntityCombatEvent.SoundChannel.JINGLE, jingle));
         if (result != ThreeOfAKindMotion.PuzzleResult.MATCH) {
@@ -68,7 +68,7 @@ public final class EntitySlotProperties {
         }
         // The source writes the shared noise register once per card in the
         // same handler pass; only the final register value is audible.
-        runtime.pendingEntityEvents.add(new EntityCombatEvent(
+        runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
             coordinatorSlot, runtime.ENTITY_THREE_OF_A_KIND, 0, false,
             EntityCombatEvent.SoundChannel.NOISE, 0x13));
     }
@@ -96,7 +96,7 @@ public final class EntitySlotProperties {
     }
 
     void updateHookshotChainOam(int linkEntityX, int linkEntityY, int frameCounter) {
-        int slot = runtime.hookshotSlot();
+        int slot = runtime.inspection().hookshotSlot();
         if (slot < 0 || !runtime.slots[slot].loaded()) {
             runtime.hookshotChainOam = List.of();
             return;
@@ -110,12 +110,12 @@ public final class EntitySlotProperties {
         List<BowWowChain.Entry> entries = new ArrayList<>();
         // The handler's dialogue/inventory/transition branches still run the
         // chain. Its sequence check only returns early on the unpaused path.
-        if (runtime.transitionSequenceCounter != 4 && !runtime.roomTransitionActive && !runtime.dialogActive
-            && !runtime.inventoryAppearing && !runtime.witchGotItemPresentationActive()) {
+        if (runtime.transitionSequenceCounter != 4 && !runtime.roomTransitionActive && !runtime.linkState.dialogActive
+            && !runtime.linkState.inventoryAppearing && !runtime.inspection().witchGotItemPresentationActive()) {
             runtime.bowWowChainOam = List.of();
             return;
         }
-        boolean moving = (runtime.currentLinkSpeedX | runtime.currentLinkSpeedY | runtime.currentLinkVelocityZ) != 0;
+        boolean moving = (runtime.linkState.currentLinkSpeedX | runtime.linkState.currentLinkSpeedY | runtime.linkState.currentLinkVelocityZ) != 0;
         for (int slot = 0; slot < runtime.slots.length; slot++) {
             RoomEntity entity = runtime.slots[slot];
             if (entity.type() != runtime.ENTITY_BOW_WOW || entity.status() != EntityStatus.ACTIVE) continue;

@@ -69,9 +69,9 @@ final class RoomPuzzleController {
                     && session.context.thrownAtDoorTriggerResolved)
                 || (trigger == session.EVENT_TRIGGER_KILL_IN_ORDER
                     && session.context.entityBridge.entityRuntime != null
-                    && session.context.entityBridge.entityRuntime.killOrderAt(0) == 0
-                    && session.context.entityBridge.entityRuntime.killOrderAt(1) == 1
-                    && session.context.entityBridge.entityRuntime.killOrderAt(2) == 2))) {
+                    && session.context.entityBridge.entityRuntime.inspection().killOrderAt(0) == 0
+                    && session.context.entityBridge.entityRuntime.inspection().killOrderAt(1) == 1
+                    && session.context.entityBridge.entityRuntime.inspection().killOrderAt(2) == 2))) {
             session.context.roomEventEffectExecuted = true;
             session.context.colorShellSoundSink.play(GameplaySoundEvent.PUZZLE_SOLVED);
         }
@@ -99,7 +99,7 @@ final class RoomPuzzleController {
             session.context.colorShellSoundSink.play(GameplaySoundEvent.DOOR_UNLOCKED);
         } else if (effect == session.EVENT_EFFECT_DROP_KEY) {
             if (session.context.entityBridge.entityRuntime != null && session.context.entityBridge.entityRuntime.spawnRoomEventKeyDrop() >= 0) {
-                session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.snapshot());
+                session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.inspection().snapshot());
             }
             session.context.activeRoomEvent = 0;
         } else if (effect == session.EVENT_EFFECT_REVEAL_STAIRWAY) {
@@ -116,7 +116,7 @@ final class RoomPuzzleController {
                 && session.context.activeRoom.mapId() < session.context.roomState.dungeonProgressFlags.length) {
                 session.context.roomState.dungeonProgressFlags[session.context.activeRoom.mapId()] |= 0x01;
                 session.indoorStatusTableForMap(session.context.activeRoom.mapId())[session.context.activeRoom.roomId()] |= 0x20;
-                session.context.entityBridge.entityRuntime.setDungeonMinibossReady(true);
+                session.context.entityBridge.entityRuntime.configuration().setDungeonMinibossReady(true);
                 session.context.entityBridge.pendingRoomEntityEvents.add(new EntityCombatEvent(
                     0, 0x61, 0, false,
                     EntityCombatEvent.SoundChannel.JINGLE, 0x1B));
@@ -154,7 +154,7 @@ final class RoomPuzzleController {
             if (session.context.currentLinkMotionState < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE) {
                 session.context.entityBridge.entityRuntime.resolvePushedBlockLinkContact(session.context.pushedBlockEntitySlot, linkEntityX, linkEntityY);
             }
-            session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.snapshot());
+            session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.inspection().snapshot());
         }
         if (session.context.pushedBlockMotionFrames != 0) {
             return;
@@ -167,7 +167,7 @@ final class RoomPuzzleController {
         }
         if (session.context.entityBridge.entityRuntime != null) {
             session.context.entityBridge.entityRuntime.removePushedBlock(session.context.pushedBlockEntitySlot);
-            session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.snapshot());
+            session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.inspection().snapshot());
         }
         session.context.pushedBlockEntitySlot = -1;
         session.refreshActiveRoomTilemap();

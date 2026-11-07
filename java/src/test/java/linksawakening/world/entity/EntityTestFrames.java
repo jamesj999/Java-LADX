@@ -62,7 +62,7 @@ public final class EntityTestFrames {
     public static EntityFrameContext projectileFrame(RoomEntityRuntime runtime, int frameCounter, int linkEntityX, int linkEntityY,
         IntSupplier randomByteSupplier, RoomEntityBackgroundCollision backgroundCollision,
         EnemyProjectileCollision.LinkState projectileLinkState) {
-        return new EntityFrameContext(frameCounter, linkEntityX, linkEntityY, 0, randomByteSupplier, backgroundCollision, null, null, projectileLinkState.z(), false, projectileLinkState.direction(), 0, projectileLinkState, false, 0, 0, 0, 0, runtime.currentLinkSpeedX, runtime.currentLinkSpeedY, false, projectileLinkState.motionState() < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE);
+        return new EntityFrameContext(frameCounter, linkEntityX, linkEntityY, 0, randomByteSupplier, backgroundCollision, null, null, projectileLinkState.z(), false, projectileLinkState.direction(), 0, projectileLinkState, false, 0, 0, 0, 0, runtime.linkState.currentLinkSpeedX, runtime.linkState.currentLinkSpeedY, false, projectileLinkState.motionState() < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE);
     }
 
     public static EntityFrameContext projectileFrame(RoomEntityRuntime runtime, int frameCounter, int linkEntityX, int linkEntityY,
@@ -77,7 +77,7 @@ public final class EntityTestFrames {
         EnemyProjectileCollision.LinkState projectileLinkState,
         boolean swordCollisionActive, int swordX, int swordWidth,
         int swordY, int swordHeight) {
-        return new EntityFrameContext(frameCounter, linkEntityX, linkEntityY, 0, randomByteSupplier, backgroundCollision, null, null, projectileLinkState.z(), false, projectileLinkState.direction(), 0, projectileLinkState, swordCollisionActive, swordX, swordWidth, swordY, swordHeight, runtime.currentLinkSpeedX, runtime.currentLinkSpeedY, false, projectileLinkState.motionState()
+        return new EntityFrameContext(frameCounter, linkEntityX, linkEntityY, 0, randomByteSupplier, backgroundCollision, null, null, projectileLinkState.z(), false, projectileLinkState.direction(), 0, projectileLinkState, swordCollisionActive, swordX, swordWidth, swordY, swordHeight, runtime.linkState.currentLinkSpeedX, runtime.linkState.currentLinkSpeedY, false, projectileLinkState.motionState()
                 < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE);
     }
 
@@ -87,7 +87,7 @@ public final class EntityTestFrames {
         EnemyProjectileCollision.LinkState projectileLinkState,
         boolean swordCollisionActive, int swordX, int swordWidth,
         int swordY, int swordHeight) {
-        return new EntityFrameContext(frameCounter, linkEntityX, linkEntityY, 0, randomByteSupplier, backgroundCollision, objectCollision, null, projectileLinkState.z(), false, projectileLinkState.direction(), 0, projectileLinkState, swordCollisionActive, swordX, swordWidth, swordY, swordHeight, runtime.currentLinkSpeedX, runtime.currentLinkSpeedY, false, projectileLinkState.motionState()
+        return new EntityFrameContext(frameCounter, linkEntityX, linkEntityY, 0, randomByteSupplier, backgroundCollision, objectCollision, null, projectileLinkState.z(), false, projectileLinkState.direction(), 0, projectileLinkState, swordCollisionActive, swordX, swordWidth, swordY, swordHeight, runtime.linkState.currentLinkSpeedX, runtime.linkState.currentLinkSpeedY, false, projectileLinkState.motionState()
                 < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE);
     }
 
@@ -99,7 +99,7 @@ public final class EntityTestFrames {
         EnemyProjectileCollision.LinkState projectileLinkState,
         boolean swordCollisionActive, int swordX, int swordWidth,
         int swordY, int swordHeight) {
-        return new EntityFrameContext(frameCounter, linkEntityX, linkEntityY, collisionType, randomByteSupplier, backgroundCollision, objectCollision, linkPositionHistory, linkZ, false, linkDirection, entityYOffset, projectileLinkState, swordCollisionActive, swordX, swordWidth, swordY, swordHeight, runtime.currentLinkSpeedX, runtime.currentLinkSpeedY, false, projectileLinkState.motionState()
+        return new EntityFrameContext(frameCounter, linkEntityX, linkEntityY, collisionType, randomByteSupplier, backgroundCollision, objectCollision, linkPositionHistory, linkZ, false, linkDirection, entityYOffset, projectileLinkState, swordCollisionActive, swordX, swordWidth, swordY, swordHeight, runtime.linkState.currentLinkSpeedX, runtime.linkState.currentLinkSpeedY, false, projectileLinkState.motionState()
                 < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE);
     }
 
@@ -130,7 +130,7 @@ public final class EntityTestFrames {
         LinkPositionHistory linkPositionHistory,
         int linkZ, int linkDirection, int entityYOffset,
         EnemyProjectileCollision.LinkState projectileLinkState) {
-        return new EntityFrameContext(frameCounter, linkEntityX, linkEntityY, 0, randomByteSupplier, backgroundCollision, null, linkPositionHistory, linkZ, false, linkDirection, entityYOffset, projectileLinkState, false, 0, 0, 0, 0, runtime.currentLinkSpeedX, runtime.currentLinkSpeedY, false, projectileLinkState.motionState()
+        return new EntityFrameContext(frameCounter, linkEntityX, linkEntityY, 0, randomByteSupplier, backgroundCollision, null, linkPositionHistory, linkZ, false, linkDirection, entityYOffset, projectileLinkState, false, 0, 0, 0, 0, runtime.linkState.currentLinkSpeedX, runtime.linkState.currentLinkSpeedY, false, projectileLinkState.motionState()
                 < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE);
     }
 
@@ -141,7 +141,7 @@ public final class EntityTestFrames {
         EnemyProjectileCollision.LinkState projectileLinkState,
         boolean swordCollisionActive, int swordX, int swordWidth,
         int swordY, int swordHeight) {
-        return new EntityFrameContext(frameCounter, linkEntityX, linkEntityY, 0, randomByteSupplier, backgroundCollision, null, linkPositionHistory, linkZ, false, linkDirection, entityYOffset, projectileLinkState, swordCollisionActive, swordX, swordWidth, swordY, swordHeight, runtime.currentLinkSpeedX, runtime.currentLinkSpeedY, false, projectileLinkState.motionState()
+        return new EntityFrameContext(frameCounter, linkEntityX, linkEntityY, 0, randomByteSupplier, backgroundCollision, null, linkPositionHistory, linkZ, false, linkDirection, entityYOffset, projectileLinkState, swordCollisionActive, swordX, swordWidth, swordY, swordHeight, runtime.linkState.currentLinkSpeedX, runtime.linkState.currentLinkSpeedY, false, projectileLinkState.motionState()
                 < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE);
     }
 
@@ -153,7 +153,7 @@ public final class EntityTestFrames {
         EnemyProjectileCollision.LinkState projectileLinkState,
         boolean swordCollisionActive, int swordX, int swordWidth,
         int swordY, int swordHeight) {
-        return new EntityFrameContext(frameCounter, linkEntityX, linkEntityY, 0, randomByteSupplier, backgroundCollision, objectCollision, linkPositionHistory, linkZ, false, linkDirection, entityYOffset, projectileLinkState, swordCollisionActive, swordX, swordWidth, swordY, swordHeight, runtime.currentLinkSpeedX, runtime.currentLinkSpeedY, false, projectileLinkState.motionState()
+        return new EntityFrameContext(frameCounter, linkEntityX, linkEntityY, 0, randomByteSupplier, backgroundCollision, objectCollision, linkPositionHistory, linkZ, false, linkDirection, entityYOffset, projectileLinkState, swordCollisionActive, swordX, swordWidth, swordY, swordHeight, runtime.linkState.currentLinkSpeedX, runtime.linkState.currentLinkSpeedY, false, projectileLinkState.motionState()
                 < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE);
     }
 }

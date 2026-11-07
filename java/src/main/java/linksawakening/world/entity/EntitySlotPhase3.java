@@ -53,7 +53,7 @@ final class EntitySlotPhase3 {
       }
       if (laserUpdate.spawnBeam()) {
         if (state.runtime.entityEnemySpawns.spawnLaserBeam(state.entity)) {
-          state.runtime.pendingEntityEvents.add(
+          state.runtime.events.pendingEntityEvents.add(
               new EntityCombatEvent(
                   state.entity.slot(),
                   state.entity.type(),
@@ -120,7 +120,7 @@ final class EntitySlotPhase3 {
         state.runtime.laserMotion.reflectBeam(
             state.entity.slot(), state.projectileLinkState.direction());
         if (event.swordPokeVfx()) {
-          state.runtime.transientVfxRequests.add(
+          state.runtime.events.transientVfxRequests.add(
               new TransientVfxRequest(
                   TransientVfxType.SWORD_POKE, state.updated.x(), state.updated.y()));
         }
@@ -132,7 +132,7 @@ final class EntitySlotPhase3 {
           return false;
         }
         state.updated = beamUpdate.entity();
-        state.runtime.transientVfxRequests.add(
+        state.runtime.events.transientVfxRequests.add(
             new TransientVfxRequest(
                 TransientVfxType.LASER_BEAM, state.updated.x() + 0x04, state.updated.y()));
       }

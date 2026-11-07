@@ -69,12 +69,12 @@ final class FollowingNpcEntitySpawnerTest {
 
         FollowingNpcEntitySpawner.Result result = new FollowingNpcEntitySpawner(
             new EntitySpriteHandlerCatalog(syntheticRom()))
-            .synchronize(runtime.snapshot(),
+            .synchronize(runtime.inspection().snapshot(),
                 new FollowingNpcRoomContext(false, false, 0x00, 0x20),
                 new FollowingNpcState(true, 0, false, false, 0, 0, false),
                 0x58, 0x60, 0x00, 0x00, 0x00, new LinkPositionHistory());
 
-        assertTrue(runtime.snapshot().sideScrolling());
+        assertTrue(runtime.inspection().snapshot().sideScrolling());
         assertTrue(result.snapshot().sideScrolling());
     }
 

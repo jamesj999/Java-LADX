@@ -1,7 +1,5 @@
 package linksawakening.world.entity;
 
-import linksawakening.world.entity.PincerBodyOam;
-
 import linksawakening.world.entity.event.BoomerangObjectRequest;
 import linksawakening.world.entity.event.MagicPowderObjectRequest;
 import linksawakening.world.entity.event.MagicRodObjectRequest;
@@ -135,23 +133,23 @@ public final class EntityEnemyInspection {
         return runtime.laserMotion.speedY(slot);
     }
 
-    List<TransientVfxRequest> transientVfxRequests() {
-        return List.copyOf(runtime.transientVfxRequests);
+    public List<TransientVfxRequest> transientVfxRequests() {
+        return List.copyOf(runtime.events.transientVfxRequests);
     }
 
-    List<BoomerangObjectRequest> boomerangObjectRequests() {
-        return List.copyOf(runtime.boomerangObjectRequests);
+    public List<BoomerangObjectRequest> boomerangObjectRequests() {
+        return List.copyOf(runtime.events.boomerangObjectRequests);
     }
 
-    List<MagicRodObjectRequest> magicRodObjectRequests() {
-        return List.copyOf(runtime.magicRodObjectRequests);
+    public List<MagicRodObjectRequest> magicRodObjectRequests() {
+        return List.copyOf(runtime.events.magicRodObjectRequests);
     }
 
-    List<MagicPowderObjectRequest> magicPowderObjectRequests() {
-        return List.copyOf(runtime.magicPowderObjectRequests);
+    public List<MagicPowderObjectRequest> magicPowderObjectRequests() {
+        return List.copyOf(runtime.events.magicPowderObjectRequests);
     }
 
-    int physicsFlags(int slot) {
+    public int physicsFlags(int slot) {
         if (slot < 0 || slot >= runtime.slots.length) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
@@ -614,7 +612,7 @@ public final class EntityEnemyInspection {
         return runtime.butterflyMotion.privateStateY(slot);
     }
 
-    int transitionCountdown(int slot) {
+    public int transitionCountdown(int slot) {
         if (slot < 0 || slot >= runtime.slots.length) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
@@ -674,7 +672,7 @@ public final class EntityEnemyInspection {
         return runtime.powerRecoilDeath[slot];
     }
 
-    int enemyHealth(int slot) {
+    public int enemyHealth(int slot) {
         if (slot < 0 || slot >= runtime.slots.length) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
@@ -688,7 +686,7 @@ public final class EntityEnemyInspection {
         return runtime.enemyFlashCountdown[slot];
     }
 
-    int enemyIgnoreHitsCountdown(int slot) {
+    public int enemyIgnoreHitsCountdown(int slot) {
         if (slot < 0 || slot >= runtime.slots.length) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
@@ -705,12 +703,12 @@ public final class EntityEnemyInspection {
         return runtime.enemyRecoilMotion.recoilSpeedY(slot);
     }
 
-    int ledgeTransitionTimer(int slot) {
+    public int ledgeTransitionTimer(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
         return runtime.ledgeTransitionTimer[slot] & 0xFF;
     }
 
-    int fallingTargetX(int slot) {
+    public int fallingTargetX(int slot) {
         if (slot < 0 || slot >= runtime.slots.length) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
@@ -754,9 +752,9 @@ public final class EntityEnemyInspection {
     }
 
     public boolean polsVoiceBalladOcarinaTrigger() {
-        return runtime.linkPlayingOcarinaCountdown == 0x01
-            && (runtime.ocarinaSongFlags & 0x04) != 0
-            && runtime.selectedSongIndex == 0;
+        return runtime.linkState.linkPlayingOcarinaCountdown == 0x01
+            && (runtime.linkState.ocarinaSongFlags & 0x04) != 0
+            && runtime.linkState.selectedSongIndex == 0;
     }
 
     boolean shouldDisappear(RoomEntity entity) {
@@ -788,13 +786,13 @@ public final class EntityEnemyInspection {
             && (!runtime.gameplayWorld || runtime.transitionSequenceCounter != 0x04)) {
             return false;
         }
-        return !runtime.dialogActive
-            && !runtime.inventoryAppearing
-            && !runtime.witchGotItemPresentationActive()
+        return !runtime.linkState.dialogActive
+            && !runtime.linkState.inventoryAppearing
+            && !runtime.inspection().witchGotItemPresentationActive()
             && !runtime.roomTransitionActive;
     }
 
     boolean entityTimersInteractive() {
-        return !runtime.dialogActive && !runtime.inventoryAppearing && runtime.linkPlayingOcarinaCountdown == 0;
+        return !runtime.linkState.dialogActive && !runtime.linkState.inventoryAppearing && runtime.linkState.linkPlayingOcarinaCountdown == 0;
     }
 }

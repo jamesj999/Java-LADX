@@ -28,7 +28,7 @@ public final class EntityProjectileController {
     public void playBoomerangSoundIfDue(RoomEntity entity) {
         // PlayBoomerangSfx ($20:4C98) only reads the shared clock.
         if (runtime.boomerangSfxCounter == 0) {
-            runtime.pendingEntityEvents.add(new EntityCombatEvent(
+            runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
                 entity.slot(), entity.type(), 0, false,
                 EntityCombatEvent.SoundChannel.NOISE, runtime.BOOMERANG_SFX_ID));
         }
@@ -68,7 +68,7 @@ public final class EntityProjectileController {
             && runtime.boomerangMotion.transitionCountdown(slot) != 0 ? entity : moved;
         if (bushCollision) {
             int location = (object.objectTop() | (object.objectLeft() >>> 4)) & 0xFF;
-            runtime.boomerangObjectRequests.add(new BoomerangObjectRequest(
+            runtime.events.boomerangObjectRequests.add(new BoomerangObjectRequest(
                 slot, location, object.objectLeft(), object.objectTop()));
         }
 
@@ -83,10 +83,10 @@ public final class EntityProjectileController {
                 runtime.boomerangMotion.setState(slot, 1);
             } else if (stateCollision) {
                 runtime.boomerangMotion.setTransitionCountdown(slot, 0);
-                runtime.transientVfxRequests.add(new TransientVfxRequest(
+                runtime.events.transientVfxRequests.add(new TransientVfxRequest(
                     TransientVfxType.SWORD_POKE, positioned.x(),
                     (positioned.y() - positioned.z() + 0x03) & 0xFF));
-                runtime.pendingEntityEvents.add(new EntityCombatEvent(
+                runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
                     slot, runtime.ENTITY_BOOMERANG, 0, false,
                     EntityCombatEvent.SoundChannel.JINGLE, 0x07));
             }
@@ -119,7 +119,7 @@ public final class EntityProjectileController {
                 & 0xFF;
             runtime.swordBeamMotion.initializeFirstHandler(slot, romLinkDirection);
             runtime.enemyFlashCountdown[slot] = 0xFF;
-            runtime.pendingEntityEvents.add(new EntityCombatEvent(
+            runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
                 slot, runtime.ENTITY_SWORD_BEAM, 0, false,
                 EntityCombatEvent.SoundChannel.JINGLE, runtime.SWORD_BEAM_JINGLE_ID));
             // The state-0 handler only applies the Link-relative launch
@@ -152,7 +152,7 @@ public final class EntityProjectileController {
             // Physics $FF unloads inside bank $03, bypassing this branch.
             if (objectCollision != ProjectileObjectCollision.UNLOAD
                 && (entityCollision.blocked() || objectCollision == ProjectileObjectCollision.BLOCKED)) {
-                runtime.transientVfxRequests.add(new TransientVfxRequest(
+                runtime.events.transientVfxRequests.add(new TransientVfxRequest(
                     TransientVfxType.SWORD_POKE, entity.x(),
                     (entity.y() - entity.z() + 3) & 0xFF));
             }
@@ -160,7 +160,7 @@ public final class EntityProjectileController {
         }
 
         if (((frame + 1) & 0x03) == 0) {
-            runtime.transientVfxRequests.add(new TransientVfxRequest(
+            runtime.events.transientVfxRequests.add(new TransientVfxRequest(
                 TransientVfxType.SWORD_BEAM, entity.x(),
                 (entity.y() - entity.z()) & 0xFF, variant));
         }
@@ -219,7 +219,7 @@ public final class EntityProjectileController {
         if (isMagicRodBurnableObject(object)) {
             runtime.magicRodFireballMotion.setCollision(slot, false);
             int location = (object.objectTop() | (object.objectLeft() >>> 4)) & 0xFF;
-            runtime.magicRodObjectRequests.add(new MagicRodObjectRequest(
+            runtime.events.magicRodObjectRequests.add(new MagicRodObjectRequest(
                 slot, location, object.objectLeft(), object.objectTop()));
             runtime.slots[index] = withVariant(positioned, variant);
             return;
@@ -276,7 +276,7 @@ public final class EntityProjectileController {
             int objectLeft = entity.x() & 0xF0;
             int objectTop = entity.y() & 0xF0;
             int location = (objectTop | (objectLeft >>> 4)) & 0xFF;
-            runtime.magicPowderObjectRequests.add(new MagicPowderObjectRequest(
+            runtime.events.magicPowderObjectRequests.add(new MagicPowderObjectRequest(
                 slot, location, objectLeft, objectTop,
                 MagicPowderObjectAction.EXTINGUISH_TORCH));
             // Keep the palette state visible to later powder handlers in
@@ -318,11 +318,11 @@ public final class EntityProjectileController {
 
         if (!runtime.indoorRoom && (objectId == runtime.OBJECT_BUSH
             || objectId == runtime.OBJECT_BUSH_GROUND_STAIRS)) {
-            runtime.magicPowderObjectRequests.add(new MagicPowderObjectRequest(
+            runtime.events.magicPowderObjectRequests.add(new MagicPowderObjectRequest(
                 slot, location, objectLeft, objectTop, MagicPowderObjectAction.REVEAL));
-            runtime.transientVfxRequests.add(new TransientVfxRequest(
+            runtime.events.transientVfxRequests.add(new TransientVfxRequest(
                 TransientVfxType.POOF, entity.x(), (entity.y() - entity.z()) & 0xFF));
-            runtime.pendingEntityEvents.add(new EntityCombatEvent(
+            runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
                 slot, runtime.ENTITY_MAGIC_POWDER_SPRINKLE, 0, false,
                 EntityCombatEvent.SoundChannel.JINGLE, runtime.MAGIC_POWDER_POOF_JINGLE_ID));
             runtime.clearEntity(slot);
@@ -346,10 +346,10 @@ public final class EntityProjectileController {
             EntitySpriteDefinition torchDefinition = runtime.spriteHandlers == null
                 ? entity.spriteDefinition() : runtime.spriteHandlers.forMagicPowderTorchState(true);
             runtime.slots[index] = withDefinition(torch, torchDefinition, 0);
-            runtime.magicPowderObjectRequests.add(new MagicPowderObjectRequest(
+            runtime.events.magicPowderObjectRequests.add(new MagicPowderObjectRequest(
                 slot, location, objectLeft, objectTop,
                 MagicPowderObjectAction.IGNITE_TORCH));
-            runtime.pendingEntityEvents.add(new EntityCombatEvent(
+            runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
                 slot, runtime.ENTITY_MAGIC_POWDER_SPRINKLE, 0, false,
                 EntityCombatEvent.SoundChannel.NOISE, 0x12));
             return;
@@ -776,7 +776,7 @@ public final class EntityProjectileController {
             runtime.enemyIgnoreHitsCountdown[targetSlot] = 0x0A;
         }
 
-        runtime.pendingEntityEvents.add(new EntityCombatEvent(
+        runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
             targetSlot, target.type(), 0, false, enemyDamage, specialAction,
             EntityCombatEvent.SoundChannel.JINGLE, 0x03,
             secondaryChannel, secondarySoundId, null));

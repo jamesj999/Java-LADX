@@ -47,7 +47,7 @@ public final class EntityRewardController {
             int[] xOffsets = {-0x18, 0x18, -0x18, 0x18};
             int[] yOffsets = {-0x2C, -0x2C, 0x04, 0x04};
             for (int variant = 3; variant >= 0; variant--) {
-                runtime.transientVfxRequests.add(new TransientVfxRequest(
+                runtime.events.transientVfxRequests.add(new TransientVfxRequest(
                     TransientVfxType.MOVING_SPARKLE,
                     (linkEntityX + xOffsets[variant]) & 0xFF,
                     (linkEntityY + yOffsets[variant]) & 0xFF,
@@ -58,9 +58,9 @@ public final class EntityRewardController {
             && runtime.enemyTransitionCountdown[slot] == 0x10) {
             runtime.enemyTransitionCountdown[slot] = 0x0F;
             runtime.instrumentPickupState[slot] = 1;
-            runtime.pendingDialogRequests.add(new DialogRequest(1, runtime.entityMapId & 0xFF));
-            runtime.pendingInstrumentRewards.add(new InstrumentRewardEvent(slot));
-        } else if (runtime.instrumentPickupState[slot] == 1 && !runtime.activeMusic && !runtime.dialogActive) {
+            runtime.events.pendingDialogRequests.add(new DialogRequest(1, runtime.entityMapId & 0xFF));
+            runtime.events.pendingInstrumentRewards.add(new InstrumentRewardEvent(slot));
+        } else if (runtime.instrumentPickupState[slot] == 1 && !runtime.activeMusic && !runtime.linkState.dialogActive) {
             int mapId = runtime.entityMapId & 0xFF;
             if (mapId < runtime.INSTRUMENT_MUSIC_TRACKS.length) {
                 runtime.pendingMusicTrack = runtime.INSTRUMENT_MUSIC_TRACKS[mapId];
@@ -74,7 +74,7 @@ public final class EntityRewardController {
             runtime.instrumentWarpY[slot] = entity.y();
             runtime.slowTransitionCountdown[slot] = 0x80;
             runtime.slowTimerInitialized[slot] = true;
-            runtime.pendingEntityEvents.add(new EntityCombatEvent(
+            runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
                 slot, entity.type(), 0, false,
                 EntityCombatEvent.SoundChannel.JINGLE, 0x2B));
         } else if (runtime.instrumentPickupState[slot] == 2) {
@@ -88,8 +88,8 @@ public final class EntityRewardController {
                     runtime.instrumentParticleSpawnCounter[slot] & 0x01,
                     randomByteSupplier.getAsInt() & 0x01);
             }
-        } else if (runtime.instrumentPickupState[slot] == 3 && !runtime.dialogActive
-            && !runtime.inventoryAppearing && !runtime.roomTransitionActive) {
+        } else if (runtime.instrumentPickupState[slot] == 3 && !runtime.linkState.dialogActive
+            && !runtime.linkState.inventoryAppearing && !runtime.roomTransitionActive) {
             runtime.lifecycle.decrementSlowTransitionCountdown(slot, frameCounter);
             // $03:5E29: the warp controller advances its fade every eight
             // frames, then starts the fullscreen hint controller ($07:6523).
@@ -97,14 +97,14 @@ public final class EntityRewardController {
                 runtime.instrumentHintBatches[slot] = Math.min(9, runtime.instrumentHintBatches[slot] + 1);
                 if (--runtime.instrumentHintCountdown[slot] == 0 && !runtime.instrumentHintOpened[slot]) {
                     runtime.instrumentHintOpened[slot] = true;
-                    runtime.pendingDialogRequests.add(new DialogRequest(1, 0x50 + (runtime.entityMapId & 0xFF)));
+                    runtime.events.pendingDialogRequests.add(new DialogRequest(1, 0x50 + (runtime.entityMapId & 0xFF)));
                 }
             }
             if (runtime.slowTransitionCountdown[slot] < 0x50
                 && runtime.instrumentWarpFadeStep[slot] < 0x19 && (frameCounter & 7) == 0) {
                 int step = runtime.instrumentWarpFadeStep[slot]++;
                 if (step == 0) {
-                    runtime.pendingEntityEvents.add(new EntityCombatEvent(slot, entity.type(), 0, false,
+                    runtime.events.pendingEntityEvents.add(new EntityCombatEvent(slot, entity.type(), 0, false,
                         EntityCombatEvent.SoundChannel.NOISE, 0x2C));
                 }
                 if (step == 0x18) runtime.instrumentHintCountdown[slot] = 0x60;
@@ -122,14 +122,14 @@ public final class EntityRewardController {
             if (runtime.slowTransitionCountdown[slot] == 0) {
                 runtime.instrumentPickupState[slot] = 4;
                 runtime.instrumentPickupSequenceActive[slot] = false;
-                runtime.pendingInstrumentCompletions.add(
+                runtime.events.pendingInstrumentCompletions.add(
                     new InstrumentCompletionEvent(slot, runtime.entityMapId & 0xFF));
                 runtime.lifecycle.disableEntityWithoutPersistence(slot);
                 return;
             }
         }
-        runtime.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
-        runtime.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
+        runtime.events.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
+        runtime.events.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
         RoomEntity held = withPositionAndVariant(entity, linkEntityX,
             (linkEntityY - 0x0C) & 0xFF, entity.spriteVariant());
         runtime.slots[slot] = withZ(held, linkZ & 0xFF);
@@ -180,22 +180,22 @@ public final class EntityRewardController {
                                         int linkEntityX, int linkEntityY, int linkZ) {
         int slot = entity.slot();
         int countdown = runtime.enemyTransitionCountdown[slot];
-        if (runtime.dialogActive) {
+        if (runtime.linkState.dialogActive) {
             // UpdateEntityTimers is paused while a dialogue is open in the
             // ROM. Undo this runtime's generic tick before holding the item.
             if (countdown > 0) runtime.enemyTransitionCountdown[slot]++;
         } else if (countdown == 0x10) {
             runtime.enemyTransitionCountdown[slot] = 0x0F;
-            runtime.pendingDialogRequests.add(new DialogRequest(0, 0x0F));
+            runtime.events.pendingDialogRequests.add(new DialogRequest(0, 0x0F));
         } else if (countdown == 1) {
-            runtime.pendingToadstoolRewards.add(new ToadstoolRewardEvent(slot));
+            runtime.events.pendingToadstoolRewards.add(new ToadstoolRewardEvent(slot));
             runtime.pendingMusicTrack = runtime.owlDefaultMusicResolver.applyAsInt(runtime.entityRoomId);
             runtime.toadstoolPickupSequenceActive[slot] = false;
             runtime.lifecycle.disableEntityWithoutPersistence(slot);
             return;
         }
-        runtime.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
-        runtime.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
+        runtime.events.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
+        runtime.events.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
         RoomEntity held = withPositionAndVariant(entity, linkEntityX,
             (linkEntityY - 0x0C) & 0xFF, entity.spriteVariant());
         runtime.slots[slot] = withZ(held, linkZ & 0xFF);
@@ -204,7 +204,7 @@ public final class EntityRewardController {
     public void advanceSwordPickup(RoomEntity entity, int frameCounter,
                                     int linkEntityX, int linkEntityY, int linkZ) {
         int slot = entity.slot();
-        if (runtime.dialogActive) {
+        if (runtime.linkState.dialogActive) {
             if (runtime.enemyTransitionCountdown[slot] > 0) {
                 runtime.enemyTransitionCountdown[slot]++;
             }
@@ -212,7 +212,7 @@ public final class EntityRewardController {
                 runtime.holdSwordAboveLink(entity, linkEntityX, linkEntityY, linkZ,
                     runtime.swordPickupState[slot] == 3);
             } else {
-                runtime.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
+                runtime.events.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
             }
             return;
         }
@@ -225,7 +225,7 @@ public final class EntityRewardController {
                 int countdown = runtime.enemyTransitionCountdown[slot];
                 if (countdown == 0x10) {
                     runtime.enemyTransitionCountdown[slot]--;
-                    runtime.pendingDialogRequests.add(new DialogRequest(0, 0x9B));
+                    runtime.events.pendingDialogRequests.add(new DialogRequest(0, 0x9B));
                 } else if (countdown == 1) {
                     runtime.pendingMusicTrack = 0x31;
                     runtime.slowTransitionCountdown[slot] = 0x52;
@@ -239,9 +239,9 @@ public final class EntityRewardController {
                     runtime.slots[slot] = withVariant(runtime.slots[slot], -1);
                     runtime.enemyTransitionCountdown[slot] = 0x20;
                     runtime.swordPickupState[slot] = 2;
-                    runtime.pendingLinkSwordSpinPoseRequests.add(
+                    runtime.events.pendingLinkSwordSpinPoseRequests.add(
                         new LinkSwordSpinPoseRequest(slot, 0x20));
-                    runtime.pendingEntityEvents.add(new EntityCombatEvent(
+                    runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
                         slot, entity.type(), 0, false,
                         EntityCombatEvent.SoundChannel.NOISE, 0x03));
                 }
@@ -250,7 +250,7 @@ public final class EntityRewardController {
                 // SwordShieldPickableState2Handler only advances the entity
                 // countdown and restores variant 0; Link's spin handler owns
                 // the motion lock and animation pose for these frames.
-                runtime.pendingLinkSwordSpinPoseRequests.add(new LinkSwordSpinPoseRequest(
+                runtime.events.pendingLinkSwordSpinPoseRequests.add(new LinkSwordSpinPoseRequest(
                     slot, runtime.enemyTransitionCountdown[slot]));
                 if (runtime.enemyTransitionCountdown[slot] == 0) {
                     runtime.enemyTransitionCountdown[slot] = 0x20;
@@ -259,19 +259,19 @@ public final class EntityRewardController {
                 }
             }
             default -> {
-                runtime.pendingLinkSwordFinalPoseRequests.add(new LinkSwordFinalPoseRequest(slot));
+                runtime.events.pendingLinkSwordFinalPoseRequests.add(new LinkSwordFinalPoseRequest(slot));
                 runtime.holdSwordAboveLink(entity, linkEntityX, linkEntityY, linkZ, true);
                 if (runtime.enemyTransitionCountdown[slot] == 0x1A) {
-                    runtime.transientVfxRequests.add(new TransientVfxRequest(
+                    runtime.events.transientVfxRequests.add(new TransientVfxRequest(
                         TransientVfxType.SWORD_POKE, entity.x(),
                         (entity.y() - 0x0C) & 0xFF));
-                    runtime.pendingEntityEvents.add(new EntityCombatEvent(
+                    runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
                         slot, entity.type(), 0, false,
                         EntityCombatEvent.SoundChannel.JINGLE, 0x07));
                 }
                 if (runtime.enemyTransitionCountdown[slot] == 0) {
                     runtime.pendingMusicTrack = 0x05;
-                    runtime.pendingSwordPickupRewards.add(new SwordPickupRewardEvent(slot));
+                    runtime.events.pendingSwordPickupRewards.add(new SwordPickupRewardEvent(slot));
                     runtime.swordPickupSequenceActive[slot] = false;
                     runtime.lifecycle.disableEntityWithoutPersistence(slot);
                 }
@@ -286,28 +286,28 @@ public final class EntityRewardController {
             int[] xOffsets = {-0x1C, 0x14, -0x1C, 0x14};
             int[] yOffsets = {-0x2C, -0x2C, 0x04, 0x04};
             for (int variant = 3; variant >= 0; variant--) {
-                runtime.transientVfxRequests.add(new TransientVfxRequest(TransientVfxType.MOVING_SPARKLE,
+                runtime.events.transientVfxRequests.add(new TransientVfxRequest(TransientVfxType.MOVING_SPARKLE,
                     (linkX + xOffsets[variant]) & 0xFF,
                     (linkY + yOffsets[variant]) & 0xFF, variant));
             }
         }
-        if (!runtime.dialogActive) {
+        if (!runtime.linkState.dialogActive) {
             int countdown = --runtime.powerUpPickupCountdown[slot];
             if (countdown == 0x2E) {
-                runtime.pendingEntityEvents.add(new EntityCombatEvent(slot, entity.type(), 0, false,
+                runtime.events.pendingEntityEvents.add(new EntityCombatEvent(slot, entity.type(), 0, false,
                     EntityCombatEvent.SoundChannel.JINGLE, 0x17));
             }
             if (countdown == 2) {
                 runtime.powerUpPickupCountdown[slot] = 1;
-                runtime.pendingDialogRequests.add(new DialogRequest(0, entity.type() == 0x33 ? 0x08 : 0xEC));
+                runtime.events.pendingDialogRequests.add(new DialogRequest(0, entity.type() == 0x33 ? 0x08 : 0xEC));
             } else if (countdown == 0) {
                 runtime.pendingMusicTrack = 0x49;
                 runtime.clearEntity(slot);
                 return;
             }
         }
-        runtime.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
-        runtime.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot, true));
+        runtime.events.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
+        runtime.events.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot, true));
         RoomEntity held = withPositionAndVariant(entity, linkX, (linkY - 0x10) & 0xFF,
             entity.type() == 0x33 ? (frame >>> 4) & 1 : entity.spriteVariant());
         runtime.slots[slot] = withZ(held, linkZ & 0xFF);

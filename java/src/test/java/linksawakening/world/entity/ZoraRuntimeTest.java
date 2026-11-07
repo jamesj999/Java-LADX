@@ -72,9 +72,9 @@ final class ZoraRuntimeTest {
         assertTrue(RoomEntityCombatRules.supportsEnemyCollision(ENTITY_ZORA));
         assertEquals(0x04, RoomEntityCombatRules.contactDamage(ENTITY_ZORA));
         assertEquals(0x01, RoomEntityCombatRules.initialHealth(ENTITY_ZORA));
-        assertEquals(0x02, runtime.physicsFlags(0));
+        assertEquals(0x02, runtime.enemies().physicsFlags(0));
         assertEquals(0x02, runtime.options1(0));
-        assertEquals(0x01, runtime.enemyHealth(0));
+        assertEquals(0x01, runtime.enemies().enemyHealth(0));
     }
 
     @Test
@@ -186,23 +186,23 @@ final class ZoraRuntimeTest {
             catalog.forEntityType(ENTITY_ZORA, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(zora), false,
             () -> 0, catalog, new RomEnemyCombatTables(rom));
-        runtime.setObjectQuery(entity -> new RoomEntityObjectSample(0x00, 0x07, 0x40, 0x40));
+        runtime.configuration().setObjectQuery(entity -> new RoomEntityObjectSample(0x00, 0x07, 0x40, 0x40));
 
         for (int frame = 0; frame <= 0xD0; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x70, 0x50, () -> 0));
         }
 
-        RoomEntity projectile = runtime.snapshot().slots().stream()
+        RoomEntity projectile = runtime.inspection().snapshot().slots().stream()
             .filter(entity -> entity.type() == ENTITY_GOPONGA_FLOWER_PROJECTILE)
             .findFirst().orElseThrow();
         assertEquals(15, projectile.slot());
         assertEquals(0x18, projectile.x());
         assertEquals(0x0E, projectile.y());
-        assertEquals(0x42, runtime.physicsFlags(projectile.slot()));
-        assertEquals(0x30, runtime.enemyHealth(projectile.slot()));
+        assertEquals(0x42, runtime.enemies().physicsFlags(projectile.slot()));
+        assertEquals(0x30, runtime.enemies().enemyHealth(projectile.slot()));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0xD4, 0x70, 0x50, () -> 0));
-        RoomEntity flashedProjectile = runtime.snapshot().slots().stream()
+        RoomEntity flashedProjectile = runtime.inspection().snapshot().slots().stream()
             .filter(entity -> entity.type() == ENTITY_GOPONGA_FLOWER_PROJECTILE)
             .findFirst().orElseThrow();
         assertEquals(0x10, flashedProjectile.entityFlipAttribute());

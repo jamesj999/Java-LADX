@@ -33,9 +33,9 @@ final class SideViewPlatformRuntimeTest {
 
         assertEquals(List.of(new SideViewPlatformLinkRequest(
             0, 0, 0x40, 0x02, true, true)), runtime.consumePendingSideViewPlatformLinkRequests());
-        assertEquals(0x10, runtime.sideViewPlatformPrivateState2ForTest(0));
-        assertEquals(1, runtime.sideViewPlatformPrivateState4ForTest(0));
-        assertEquals(1, runtime.sideViewPlatformSpeedYForTest(0));
+        assertEquals(0x10, runtime.inspection().sideViewPlatformPrivateState2ForTest(0));
+        assertEquals(1, runtime.inspection().sideViewPlatformPrivateState4ForTest(0));
+        assertEquals(1, runtime.inspection().sideViewPlatformSpeedYForTest(0));
     }
 
     @Test
@@ -49,8 +49,8 @@ final class SideViewPlatformRuntimeTest {
         assertEquals(0x40, request.positionY());
         assertTrue(request.standing());
         assertTrue(!request.activate());
-        assertEquals(0x10, runtime.sideViewPlatformPrivateState2ForTest(0));
-        assertEquals(0, runtime.sideViewPlatformSpeedYForTest(0));
+        assertEquals(0x10, runtime.inspection().sideViewPlatformPrivateState2ForTest(0));
+        assertEquals(0, runtime.inspection().sideViewPlatformSpeedYForTest(0));
     }
 
     @Test
@@ -119,34 +119,34 @@ final class SideViewPlatformRuntimeTest {
     @Test
     void blockingMovedPlatformRestoresYStillContacts() {
         RoomEntityRuntime runtime = runtime(0x3B, platform());
-        runtime.setSideViewPlatformSpeedYForTest(0, 0x10);
+        runtime.debug().setSideViewPlatformSpeedYForTest(0, 0x10);
         runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x48, 0x40, () -> 0,
             (entity, direction, nextX, nextY) -> true,
             new EnemyProjectileCollision.LinkState(0x48, 0x40, 0, 0, 3, false),
             0x00, 0x00));
 
-        assertEquals(0x50, runtime.snapshot().slots().get(0).y());
-        assertEquals(0x10, runtime.sideViewPlatformSpeedYForTest(0));
+        assertEquals(0x50, runtime.inspection().snapshot().slots().get(0).y());
+        assertEquals(0x10, runtime.inspection().sideViewPlatformSpeedYForTest(0));
         assertEquals(1, runtime.consumePendingSideViewPlatformLinkRequests().size());
     }
 
     @Test
     void blockingVerticalMotionStillActivatesAndRampsState() {
         RoomEntityRuntime runtime = runtime(0x3B, platform());
-        runtime.setSideViewPlatformSpeedYForTest(0, 0x10);
+        runtime.debug().setSideViewPlatformSpeedYForTest(0, 0x10);
         runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x48, 0x40, () -> 0,
             (entity, direction, nextX, nextY) -> true,
             new EnemyProjectileCollision.LinkState(0x48, 0x40, 0, 0, 3, false),
             0x00, 0x00));
-        assertEquals(1, runtime.sideViewPlatformPrivateState4ForTest(0));
-        assertEquals(0x10, runtime.sideViewPlatformSpeedYForTest(0));
+        assertEquals(1, runtime.inspection().sideViewPlatformPrivateState4ForTest(0));
+        assertEquals(0x10, runtime.inspection().sideViewPlatformSpeedYForTest(0));
     }
 
     @Test
     void horizontalBackgroundBlockRestoresXAndQueriesWithPostMoveY() {
         RoomEntityRuntime runtime = runtime(0x3B, platform());
-        runtime.setSideViewPlatformSpeedXForTest(0, 0x10);
-        runtime.setSideViewPlatformSpeedYForTest(0, 0x10);
+        runtime.debug().setSideViewPlatformSpeedXForTest(0, 0x10);
+        runtime.debug().setSideViewPlatformSpeedYForTest(0, 0x10);
         List<int[]> queries = new ArrayList<>();
         runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x48, 0x40, () -> 0,
             (entity, direction, nextX, nextY) -> {
@@ -155,8 +155,8 @@ final class SideViewPlatformRuntimeTest {
             },
             new EnemyProjectileCollision.LinkState(0x48, 0x40, 0, 0, 3, false),
             0x00, 0x00));
-        assertEquals(0x40, runtime.snapshot().slots().get(0).x());
-        assertEquals(0x10, runtime.sideViewPlatformSpeedXForTest(0));
+        assertEquals(0x40, runtime.inspection().snapshot().slots().get(0).x());
+        assertEquals(0x10, runtime.inspection().sideViewPlatformSpeedXForTest(0));
         assertTrue(queries.stream().anyMatch(q -> q[2] == 0x51));
         assertEquals(1, runtime.consumePendingSideViewPlatformLinkRequests().get(0)
             .horizontalDelta());
@@ -165,8 +165,8 @@ final class SideViewPlatformRuntimeTest {
     @Test
     void verticalProbeUsesPostHorizontalPositionOnDiagonalMotion() {
         RoomEntityRuntime runtime = runtime(0x3B, platform());
-        runtime.setSideViewPlatformSpeedXForTest(0, 0x10);
-        runtime.setSideViewPlatformSpeedYForTest(0, 0x10);
+        runtime.debug().setSideViewPlatformSpeedXForTest(0, 0x10);
+        runtime.debug().setSideViewPlatformSpeedYForTest(0, 0x10);
         List<int[]> queries = new ArrayList<>();
         runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x48, 0x40, () -> 0,
             (entity, direction, nextX, nextY) -> {
@@ -183,7 +183,7 @@ final class SideViewPlatformRuntimeTest {
     @Test
     void leftwardContactEmitsSignedHorizontalDelta() {
         RoomEntityRuntime runtime = runtime(0x3B, platform());
-        runtime.setSideViewPlatformSpeedXForTest(0, 0xF0);
+        runtime.debug().setSideViewPlatformSpeedXForTest(0, 0xF0);
         tick(runtime, 0, 0x48, 0x40, 0x00, 0x00);
         assertEquals(-1, runtime.consumePendingSideViewPlatformLinkRequests().get(0)
             .horizontalDelta());
@@ -194,7 +194,7 @@ final class SideViewPlatformRuntimeTest {
         RoomEntityRuntime runtime = runtime(0x3B, platform(EntityStatus.INIT));
         tick(runtime, 0, 0x48, 0x40, 0x00, 0x00);
         assertTrue(runtime.consumePendingSideViewPlatformLinkRequests().isEmpty());
-        assertEquals(0x50, runtime.snapshot().slots().get(0).y());
+        assertEquals(0x50, runtime.inspection().snapshot().slots().get(0).y());
         tick(runtime, 1, 0x48, 0x40, 0x00, 0x00);
         assertEquals(1, runtime.consumePendingSideViewPlatformLinkRequests().size());
     }
@@ -202,19 +202,19 @@ final class SideViewPlatformRuntimeTest {
     @Test
     void dialogActivePlatformDoesNotMoveOrEmit() {
         RoomEntityRuntime runtime = runtime(0x3B, platform());
-        runtime.setDialogActive(true);
+        runtime.configuration().setDialogActive(true);
         tick(runtime, 0, 0x48, 0x40, 0x00, 0x00);
         assertTrue(runtime.consumePendingSideViewPlatformLinkRequests().isEmpty());
-        assertEquals(0x50, runtime.snapshot().slots().get(0).y());
+        assertEquals(0x50, runtime.inspection().snapshot().slots().get(0).y());
     }
 
     @Test
     void nonGameplayTransitionSequenceBlocksPlatformHandler() {
         RoomEntityRuntime runtime = runtime(0x3B, platform());
-        runtime.setTransitionSequenceCounterForTest(0x03);
+        runtime.debug().setTransitionSequenceCounterForTest(0x03);
         tick(runtime, 0, 0x48, 0x40, 0x00, 0x00);
         assertTrue(runtime.consumePendingSideViewPlatformLinkRequests().isEmpty());
-        assertEquals(0x50, runtime.snapshot().slots().get(0).y());
+        assertEquals(0x50, runtime.inspection().snapshot().slots().get(0).y());
     }
 
     @Test
@@ -222,7 +222,7 @@ final class SideViewPlatformRuntimeTest {
         RoomEntityRuntime runtime = runtime(0x3B, platform());
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x48, 0x40, () -> 0, true));
         assertTrue(runtime.consumePendingSideViewPlatformLinkRequests().isEmpty());
-        assertEquals(0x50, runtime.snapshot().slots().get(0).y());
+        assertEquals(0x50, runtime.inspection().snapshot().slots().get(0).y());
     }
 
     @Test
@@ -239,7 +239,7 @@ final class SideViewPlatformRuntimeTest {
     @Test
     void horizontalDeltaPropagatesToRequest() {
         RoomEntityRuntime runtime = runtime(0x3B, platform());
-        runtime.setSideViewPlatformSpeedXForTest(0, 0x10);
+        runtime.debug().setSideViewPlatformSpeedXForTest(0, 0x10);
         tick(runtime, 0, 0x48, 0x40, 0x00, 0x00);
         assertEquals(1, runtime.consumePendingSideViewPlatformLinkRequests().get(0)
             .horizontalDelta());
@@ -248,13 +248,13 @@ final class SideViewPlatformRuntimeTest {
     @Test
     void clearingPlatformSlotResetsMotionState() {
         RoomEntityRuntime runtime = runtime(0x3B, platform());
-        runtime.setSideViewPlatformSpeedYForTest(0, 0x10);
-        runtime.setSideViewPlatformSpeedXForTest(0, 0x10);
+        runtime.debug().setSideViewPlatformSpeedYForTest(0, 0x10);
+        runtime.debug().setSideViewPlatformSpeedXForTest(0, 0x10);
         runtime.clearEntity(0);
-        assertEquals(0, runtime.sideViewPlatformSpeedYForTest(0));
-        assertEquals(0, runtime.sideViewPlatformSpeedXForTest(0));
-        assertEquals(0, runtime.sideViewPlatformPrivateState2ForTest(0));
-        assertEquals(0, runtime.sideViewPlatformPrivateState4ForTest(0));
+        assertEquals(0, runtime.inspection().sideViewPlatformSpeedYForTest(0));
+        assertEquals(0, runtime.inspection().sideViewPlatformSpeedXForTest(0));
+        assertEquals(0, runtime.inspection().sideViewPlatformPrivateState2ForTest(0));
+        assertEquals(0, runtime.inspection().sideViewPlatformPrivateState4ForTest(0));
     }
 
     private static void tick(RoomEntityRuntime runtime, int frame, int linkX, int linkY,
@@ -278,9 +278,9 @@ final class SideViewPlatformRuntimeTest {
             slots.add(RoomEntity.disabled(slot));
         }
         RoomEntityRuntime runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(slots));
-        runtime.setGroundInteractionSideScrolling(true);
-        runtime.setEntityRoomIdForTest(roomId);
-        runtime.setTransitionSequenceCounterForTest(0x04);
+        runtime.configuration().setGroundInteractionSideScrolling(true);
+        runtime.debug().setEntityRoomIdForTest(roomId);
+        runtime.debug().setTransitionSequenceCounterForTest(0x04);
         return runtime;
     }
 

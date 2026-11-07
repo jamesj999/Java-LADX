@@ -31,12 +31,12 @@ final class ArrowPauseTest {
         for (int type : new int[] {0, 0x0A, 0x0C}) {
             RoomEntityRuntime runtime = runtime(type);
             int slot = slot(type);
-            RoomEntity before = runtime.snapshot().slots().get(slot);
+            RoomEntity before = runtime.inspection().snapshot().slots().get(slot);
             setGate(runtime, gate, true);
             tick(runtime, 0, (entity, direction, x, y) -> {
                 throw new AssertionError("Paused projectile reached collision probe");
             });
-            RoomEntity paused = runtime.snapshot().slots().get(slot);
+            RoomEntity paused = runtime.inspection().snapshot().slots().get(slot);
             assertEquals(before.x(), paused.x());
             assertEquals(before.y(), paused.y());
             assertEquals(before.z(), paused.z());
@@ -44,7 +44,7 @@ final class ArrowPauseTest {
             setGate(runtime, gate, false);
             tick(runtime, 1, null);
             assertEquals(before.x() + (type == 0 ? 3 : 2),
-                runtime.snapshot().slots().get(slot).x());
+                runtime.inspection().snapshot().slots().get(slot).x());
         }
     }
 
@@ -56,10 +56,10 @@ final class ArrowPauseTest {
             tick(runtime, 0, (entity, direction, x, y) -> true);
             assertEquals(0x18, countdown(runtime, type));
             int slot = slot(type);
-            RoomEntity before = runtime.snapshot().slots().get(slot);
+            RoomEntity before = runtime.inspection().snapshot().slots().get(slot);
             setGate(runtime, gate, true);
             tick(runtime, 1, null);
-            RoomEntity paused = runtime.snapshot().slots().get(slot);
+            RoomEntity paused = runtime.inspection().snapshot().slots().get(slot);
             assertEquals(before.x(), paused.x());
             assertEquals(before.y(), paused.y());
             assertEquals(before.z(), paused.z());
@@ -68,7 +68,7 @@ final class ArrowPauseTest {
             setGate(runtime, gate, false);
             tick(runtime, 2, null);
             assertEquals(gate.equals("got_item") ? 0x16 : 0x17, countdown(runtime, type));
-            assertEquals((before.z() + 1) & 0xFF, runtime.snapshot().slots().get(slot).z());
+            assertEquals((before.z() + 1) & 0xFF, runtime.inspection().snapshot().slots().get(slot).z());
         }
     }
 
@@ -77,31 +77,31 @@ final class ArrowPauseTest {
     void ocarinaFreezesReboundTimerButNotGravity(int type) throws IOException {
         RoomEntityRuntime runtime = runtime(type);
         tick(runtime, 0, (entity, direction, x, y) -> true);
-        RoomEntity before = runtime.snapshot().slots().get(slot(type));
-        runtime.setOcarinaPlaybackForTest(1, 0, 0);
+        RoomEntity before = runtime.inspection().snapshot().slots().get(slot(type));
+        runtime.debug().setOcarinaPlaybackForTest(1, 0, 0);
         tick(runtime, 1, null);
         assertEquals(0x18, countdown(runtime, type));
-        assertEquals(before.z() + 1, runtime.snapshot().slots().get(slot(type)).z());
+        assertEquals(before.z() + 1, runtime.inspection().snapshot().slots().get(slot(type)).z());
     }
 
     @ParameterizedTest
     @ValueSource(ints = {0x0A, 0x0C})
     void shieldCollisionBeforePauseIsConsumedWhenTheHandlerResumes(int type) throws IOException {
         RoomEntityRuntime runtime = runtime(type);
-        runtime.setDialogActive(true);
+        runtime.configuration().setDialogActive(true);
         var events = runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x40, 0x50, () -> 0, null,
             new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0, 1, true)));
         assertEquals(1, events.size());
         assertEquals(EntityProjectileEvent.Kind.SHIELD_BLOCK, events.getFirst().kind());
         assertEquals(0, countdown(runtime, type));
-        assertEquals(0x40, runtime.snapshot().slots().get(0).x());
+        assertEquals(0x40, runtime.inspection().snapshot().slots().get(0).x());
 
-        runtime.setDialogActive(false);
+        runtime.configuration().setDialogActive(false);
         tick(runtime, 1, null);
         assertEquals(0x18, countdown(runtime, type));
-        assertEquals(0x42, runtime.snapshot().slots().get(0).x());
+        assertEquals(0x42, runtime.inspection().snapshot().slots().get(0).x());
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
-        assertEquals(4, runtime.swordMoblinAlertingSoundCounter());
+        assertEquals(4, runtime.enemies().swordMoblinAlertingSoundCounter());
     }
 
     @ParameterizedTest
@@ -113,15 +113,15 @@ final class ArrowPauseTest {
             tick(runtime, frame, null);
         }
         assertEquals(2, countdown(runtime, type));
-        runtime.setWitchGotItemPresentationActiveForTest(true);
+        runtime.debug().setWitchGotItemPresentationActiveForTest(true);
         tick(runtime, 23, null);
         assertEquals(1, countdown(runtime, type));
-        assertTrue(runtime.snapshot().slots().get(slot(type)).loaded());
+        assertTrue(runtime.inspection().snapshot().slots().get(slot(type)).loaded());
 
-        runtime.setWitchGotItemPresentationActiveForTest(false);
-        runtime.setOcarinaPlaybackForTest(1, 0, 0);
+        runtime.debug().setWitchGotItemPresentationActiveForTest(false);
+        runtime.debug().setOcarinaPlaybackForTest(1, 0, 0);
         tick(runtime, 24, null);
-        assertFalse(runtime.snapshot().slots().get(slot(type)).loaded());
+        assertFalse(runtime.inspection().snapshot().slots().get(slot(type)).loaded());
     }
 
     @ParameterizedTest
@@ -130,11 +130,11 @@ final class ArrowPauseTest {
         RoomEntityRuntime runtime = runtime(type);
         tick(runtime, 0, (entity, direction, x, y) -> true);
         tick(runtime, 1, null);
-        assertEquals(0, runtime.snapshot().slots().get(slot(type)).spriteVariant());
-        runtime.setDialogActive(true);
+        assertEquals(0, runtime.inspection().snapshot().slots().get(slot(type)).spriteVariant());
+        runtime.configuration().setDialogActive(true);
         for (int frame = 2; frame <= 10; frame++) {
             tick(runtime, frame, null);
-            assertEquals(1, runtime.snapshot().slots().get(slot(type)).spriteVariant());
+            assertEquals(1, runtime.inspection().snapshot().slots().get(slot(type)).spriteVariant());
             assertEquals(0x17, countdown(runtime, type));
         }
     }
@@ -143,12 +143,12 @@ final class ArrowPauseTest {
     @ValueSource(ints = {0, 0x0A, 0x0C})
     void creditsAllowMovementOutsideOrdinaryWorldGameplay(int type) throws IOException {
         RoomEntityRuntime runtime = runtime(type);
-        int startX = runtime.snapshot().slots().get(slot(type)).x();
-        runtime.setGameplayWorldForTest(false);
-        runtime.setTransitionSequenceCounterForTest(3);
+        int startX = runtime.inspection().snapshot().slots().get(slot(type)).x();
+        runtime.debug().setGameplayWorldForTest(false);
+        runtime.debug().setTransitionSequenceCounterForTest(3);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0, true));
         assertEquals(startX + (type == 0 ? 3 : 2),
-            runtime.snapshot().slots().get(slot(type)).x());
+            runtime.inspection().snapshot().slots().get(slot(type)).x());
     }
 
     private static RoomEntityRuntime runtime(int type) throws IOException {
@@ -181,8 +181,8 @@ final class ArrowPauseTest {
     }
 
     private static int countdown(RoomEntityRuntime runtime, int type) {
-        return type == 0 ? runtime.playerArrowTransitionCountdown(15)
-            : runtime.enemyProjectileTransitionCountdown(0);
+        return type == 0 ? runtime.inspection().playerArrowTransitionCountdown(15)
+            : runtime.enemies().enemyProjectileTransitionCountdown(0);
     }
 
     private static void tick(RoomEntityRuntime runtime, int frame,
@@ -193,12 +193,12 @@ final class ArrowPauseTest {
 
     private static void setGate(RoomEntityRuntime runtime, String gate, boolean active) {
         switch (gate) {
-            case "dialog" -> runtime.setDialogActive(active);
-            case "inventory" -> runtime.setTalkState(active, 0, 0x80);
-            case "transition" -> runtime.setRoomTransitionStateForTest(active);
-            case "gameplay" -> runtime.setGameplayWorldForTest(!active);
-            case "sequence" -> runtime.setTransitionSequenceCounterForTest(active ? 3 : 4);
-            case "got_item" -> runtime.setWitchGotItemPresentationActiveForTest(active);
+            case "dialog" -> runtime.configuration().setDialogActive(active);
+            case "inventory" -> runtime.configuration().setTalkState(active, 0, 0x80);
+            case "transition" -> runtime.debug().setRoomTransitionStateForTest(active);
+            case "gameplay" -> runtime.debug().setGameplayWorldForTest(!active);
+            case "sequence" -> runtime.debug().setTransitionSequenceCounterForTest(active ? 3 : 4);
+            case "got_item" -> runtime.debug().setWitchGotItemPresentationActiveForTest(active);
             default -> throw new IllegalArgumentException("Unexpected gate");
         }
     }

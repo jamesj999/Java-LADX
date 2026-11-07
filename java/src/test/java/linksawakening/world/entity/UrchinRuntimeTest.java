@@ -65,11 +65,11 @@ final class UrchinRuntimeTest {
 
         assertTrue(RoomEntityCombatRules.supportsEnemyCollision(ENTITY_URCHIN));
         assertTrue(RoomEntityCombatRules.supportsLinkCollision(ENTITY_URCHIN));
-        assertEquals(0x12, runtime.physicsFlags(0));
+        assertEquals(0x12, runtime.enemies().physicsFlags(0));
         assertEquals(0x02, runtime.options1(0));
-        assertEquals(0x01, runtime.enemyHealth(0));
+        assertEquals(0x01, runtime.enemies().enemyHealth(0));
         assertTrue(RoomEntityCombatRules.overlapsLink(
-            runtime.snapshot().slots().get(0), 0x4C, 0x40));
+            runtime.inspection().snapshot().slots().get(0), 0x4C, 0x40));
     }
 
     @Test
@@ -186,9 +186,9 @@ final class UrchinRuntimeTest {
         runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x48, 0x40, () -> 0, null,
             new EnemyProjectileCollision.LinkState(0x48, 0x40, 0, 0, 2, true)));
 
-        assertEquals(0x3F, runtime.snapshot().slots().get(0).x());
-        assertEquals(0x92, runtime.physicsFlags(0));
-        assertEquals(0, runtime.enemyIgnoreHitsCountdown(0));
+        assertEquals(0x3F, runtime.inspection().snapshot().slots().get(0).x());
+        assertEquals(0x92, runtime.enemies().physicsFlags(0));
+        assertEquals(0, runtime.enemies().enemyIgnoreHitsCountdown(0));
         assertEquals(List.of(new LinkFinalPositionRequest(0)),
             runtime.consumePendingLinkFinalPositionRequests());
         List<EntityCombatEvent> events = runtime.consumePendingEntityEvents();
@@ -209,7 +209,7 @@ final class UrchinRuntimeTest {
         runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x48, 0x40, () -> 0, null,
             new EnemyProjectileCollision.LinkState(0x48, 0x40, 0, 0, 2, false)));
 
-        assertEquals(0x12, runtime.physicsFlags(0));
+        assertEquals(0x12, runtime.enemies().physicsFlags(0));
         assertEquals(List.of(new LinkFinalPositionRequest(0)),
             runtime.consumePendingLinkFinalPositionRequests());
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());

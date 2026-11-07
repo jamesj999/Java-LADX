@@ -57,15 +57,15 @@ final class EntityPlayerCommands {
 
     boolean throwLiftedEntity(int romDirection) {
         EntitySlotValidation.validateRomDirection(romDirection);
-        LiftedEntityState state = runtime.liftedEntityState();
+        LiftedEntityState state = runtime.inspection().liftedEntityState();
         if (!state.active() || state.carryState() != 0x01) {
             return false;
         }
 
         int slot = state.slot();
         RoomEntity entity = runtime.slots[slot];
-        runtime.pendingPreTickLinkAttackStepRequests.add(new LinkAttackStepRequest(slot));
-        runtime.pendingPreTickEntityEvents.add(new EntityCombatEvent(slot, entity.type(), 0, false,
+        runtime.events.pendingPreTickLinkAttackStepRequests.add(new LinkAttackStepRequest(slot));
+        runtime.events.pendingPreTickEntityEvents.add(new EntityCombatEvent(slot, entity.type(), 0, false,
             EntityCombatEvent.SoundChannel.JINGLE, runtime.LIFTED_THROW_JINGLE_ID));
         if (entity.type() == runtime.ENTITY_SIDE_VIEW_POT) {
             runtime.thrownDirection[slot] = romDirection;
@@ -156,15 +156,15 @@ final class EntityPlayerCommands {
     }
 
     void presentWitchGotItem(int slot) {
-        runtime.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
-        runtime.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
+        runtime.events.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
+        runtime.events.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
     }
 
     void holdSwordAboveLink(RoomEntity entity, int linkEntityX, int linkEntityY,
                                     int linkZ, boolean finalPose) {
         int slot = entity.slot();
-        runtime.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
-        runtime.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
+        runtime.events.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
+        runtime.events.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
         int x = finalPose ? (linkEntityX - 4) & 0xFF : linkEntityX;
         RoomEntity held = withPositionAndVariant(entity, x,
             (linkEntityY - 0x0C) & 0xFF, entity.spriteVariant());

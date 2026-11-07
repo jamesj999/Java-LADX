@@ -72,7 +72,7 @@ final class RoomCollisionQueries {
 
     EntityBackgroundCollisionResult entityBackgroundCollisionResult( RoomEntity entity, int direction, int nextX, int nextY) {
         int ignoreHitsCountdown = session.context.entityBridge.entityRuntime == null
-            ? 0 : session.context.entityBridge.entityRuntime.enemyIgnoreHitsCountdown(entity.slot());
+            ? 0 : session.context.entityBridge.entityRuntime.enemies().enemyIgnoreHitsCountdown(entity.slot());
         return session.entityBackgroundCollisionResult(
             entity, direction, nextX, nextY, ignoreHitsCountdown, 0);
     }
@@ -90,7 +90,7 @@ final class RoomCollisionQueries {
         int objectId = session.context.overworldCollision.objectIdAtPoint(pointX, pointY);
         int physicsFlag = session.context.overworldCollision.objectPhysicsFlagAtPoint(pointX, pointY);
         int ledgeTimer = session.context.entityBridge.entityRuntime == null
-            ? 0 : session.context.entityBridge.entityRuntime.ledgeTransitionTimer(entity.slot());
+            ? 0 : session.context.entityBridge.entityRuntime.enemies().ledgeTransitionTimer(entity.slot());
         if ((entity.z() & 0x80) != 0) {
             ledgeTimer = 0;
         }
@@ -106,7 +106,7 @@ final class RoomCollisionQueries {
                 entity, direction, sample, objectId, physicsFlag,
                 ignoreHitsCountdown, state);
         if (session.context.entityBridge.entityRuntime != null) {
-            session.context.entityBridge.entityRuntime.setLedgeTransitionTimer(entity.slot(), resolution.nextLedgeTimer());
+            session.context.entityBridge.entityRuntime.configuration().setLedgeTransitionTimer(entity.slot(), resolution.nextLedgeTimer());
         }
         return resolution.result();
     }
@@ -117,7 +117,7 @@ final class RoomCollisionQueries {
 
     EntityBackgroundCollisionResult entityBackgroundCollisionResultForTest( RoomEntity entity, int direction, int nextX, int nextY, int frameCounter) {
         int ignoreHitsCountdown = session.context.entityBridge.entityRuntime == null
-            ? 0 : session.context.entityBridge.entityRuntime.enemyIgnoreHitsCountdown(entity.slot());
+            ? 0 : session.context.entityBridge.entityRuntime.enemies().enemyIgnoreHitsCountdown(entity.slot());
         return session.entityBackgroundCollisionResult(entity, direction, nextX, nextY,
             ignoreHitsCountdown, frameCounter);
     }

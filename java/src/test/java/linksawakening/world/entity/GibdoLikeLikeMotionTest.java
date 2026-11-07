@@ -65,7 +65,7 @@ final class GibdoLikeLikeMotionTest {
             // zeroed privateState4 counter. Rendering precedes $7F05's write.
             runtime.tick(EntityTestFrames.frame(runtime, 0x88 + pass, 0xA0, 0xA0, () -> 1));
             assertEquals(pass >= 17 && pass <= 32 ? 1 : 0,
-                runtime.snapshot().slots().get(0).spriteVariant(), "Handler pass " + pass);
+                runtime.inspection().snapshot().slots().get(0).spriteVariant(), "Handler pass " + pass);
         }
     }
 

@@ -32,17 +32,17 @@ final class BooBuddyRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, BooBuddyMotion.ENTITY_TYPE, 0x30, 0x40,
                 EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)), true, null, catalog);
-        runtime.setTransitionCountdownForTest(0, 2);
+        runtime.debug().setTransitionCountdownForTest(0, 2);
 
         runtime.tick(EntityTestFrames.frame(runtime, 4, 0x50, 0x40, () -> 0));
 
-        assertEquals(1, runtime.booBuddyTransitionCountdown(0));
-        assertEquals(0x70, runtime.snapshot().slots().get(0).x());
-        assertEquals(0x50, runtime.snapshot().slots().get(0).y());
+        assertEquals(1, runtime.flyingEnemies().booBuddyTransitionCountdown(0));
+        assertEquals(0x70, runtime.inspection().snapshot().slots().get(0).x());
+        assertEquals(0x50, runtime.inspection().snapshot().slots().get(0).y());
         runtime.tick(EntityTestFrames.frame(runtime, 5, 0x50, 0x40, () -> 0));
-        assertEquals(0x70, runtime.snapshot().slots().get(0).x());
-        assertEquals(0x50, runtime.snapshot().slots().get(0).y());
-        assertEquals(0, runtime.booBuddySpeedX(0));
+        assertEquals(0x70, runtime.inspection().snapshot().slots().get(0).x());
+        assertEquals(0x50, runtime.inspection().snapshot().slots().get(0).y());
+        assertEquals(0, runtime.flyingEnemies().booBuddySpeedX(0));
     }
 
     @Test
@@ -55,29 +55,29 @@ final class BooBuddyRuntimeTest {
                 EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)), true, null, catalog);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x60, 0x50, () -> 0));
-        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
-        assertEquals(0, runtime.booBuddyState(0));
-        assertEquals(0x12, runtime.physicsFlags(0));
+        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(0, runtime.flyingEnemies().booBuddyState(0));
+        assertEquals(0x12, runtime.enemies().physicsFlags(0));
         assertEquals(0x28, runtime.options1(0));
-        assertEquals(0x79A9, runtime.snapshot().slots().get(0)
+        assertEquals(0x79A9, runtime.inspection().snapshot().slots().get(0)
             .spriteDefinition().address());
 
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x60, 0x50, () -> 0));
-        assertEquals(4, runtime.booBuddySpeedX(0));
+        assertEquals(4, runtime.flyingEnemies().booBuddySpeedX(0));
         assertEquals(0x08, runtime.resolveCombat(1, 0x40, 0x50, false, true,
             false, 0, 0, 0, 0).getFirst().linkDamage());
         assertTrue(runtime.resolveCombat(1, 0x40, 0x50, false, true,
             true, 0x40, 0x10, 0x50, 0x10).isEmpty());
 
-        runtime.setBooBuddyTriggerCountForTest(1);
+        runtime.debug().setBooBuddyTriggerCountForTest(1);
         runtime.tick(EntityTestFrames.frame(runtime, 2, 0x60, 0x50, () -> 0));
-        assertEquals(1, runtime.booBuddyState(0));
+        assertEquals(1, runtime.flyingEnemies().booBuddyState(0));
         assertEquals(0x08, runtime.resolveCombat(3, 0x40, 0x50, false, true,
             false, 0, 0, 0, 0).getFirst().linkDamage());
 
         runtime.tick(EntityTestFrames.frame(runtime, 3, 0x60, 0x50, () -> 0));
-        assertEquals(0xFC, runtime.booBuddySpeedX(0));
-        assertEquals(0x01, runtime.enemyHealth(0));
+        assertEquals(0xFC, runtime.flyingEnemies().booBuddySpeedX(0));
+        assertEquals(0x01, runtime.enemies().enemyHealth(0));
         assertEquals(0x08, runtime.resolveCombat(5, 0x40, 0x50, false, true,
             false, 0, 0, 0, 0).getFirst().linkDamage());
     }

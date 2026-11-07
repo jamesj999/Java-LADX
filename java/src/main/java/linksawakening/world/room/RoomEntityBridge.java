@@ -160,15 +160,15 @@ final class RoomEntityBridge {
     }
 
     boolean gotItemPresentationActive() {
-        return entityRuntime != null && entityRuntime.witchGotItemPresentationActive();
+        return entityRuntime != null && entityRuntime.inspection().witchGotItemPresentationActive();
     }
 
     boolean powerUpPickupSequenceActive() {
-        return entityRuntime != null && entityRuntime.powerUpPickupSequenceActive();
+        return entityRuntime != null && entityRuntime.inspection().powerUpPickupSequenceActive();
     }
 
     boolean swordPickupSequenceActive() {
-        return entityRuntime != null && entityRuntime.swordPickupSequenceActive();
+        return entityRuntime != null && entityRuntime.inspection().swordPickupSequenceActive();
     }
 
     List<LinkSwordSpinPoseRequest>
@@ -394,46 +394,46 @@ final class RoomEntityBridge {
         if (!session.context.boomerangSoundClockProvided) {
             session.advanceBoomerangSoundClock(true);
         }
-        session.context.entityBridge.entityRuntime.setBoomerangSoundCounterForFrame(session.context.boomerangSoundCounter);
+        session.context.entityBridge.entityRuntime.configuration().setBoomerangSoundCounterForFrame(session.context.boomerangSoundCounter);
         session.context.boomerangSoundClockProvided = false;
         session.context.indoorTorchPaletteEffect.tick(session.context.entityInputs.entityDialogActive, false,
             session.context.currentLinkMotionState, session.context.activeRoom.mapId());
-        session.context.entityBridge.entityRuntime.setTorchPaletteTransitionState(session.context.indoorTorchPaletteEffect.targetAddress(),
+        session.context.entityBridge.entityRuntime.configuration().setTorchPaletteTransitionState(session.context.indoorTorchPaletteEffect.targetAddress(),
             session.context.indoorTorchPaletteEffect.transitionActive());
         session.copyIndoorTorchPalettesToActiveRoom();
         session.tickOcarinaAnimationHandler();
-        session.context.entityBridge.entityRuntime.setSwitchBlockAnimationActive(
+        session.context.entityBridge.entityRuntime.configuration().setSwitchBlockAnimationActive(
             SwitchBlockAnimation.isAnimating(session.context.switchableObjectAnimationStage));
-        session.context.entityBridge.entityRuntime.setDialogActive(session.context.entityInputs.entityDialogActive);
-        session.context.entityBridge.entityRuntime.setTalkState(
+        session.context.entityBridge.entityRuntime.configuration().setDialogActive(session.context.entityInputs.entityDialogActive);
+        session.context.entityBridge.entityRuntime.configuration().setTalkState(
             session.context.entityInputs.entityInventoryAppearing, session.context.entityInputs.entityDialogCooldown, session.context.entityInputs.entityWindowY);
-        session.context.entityBridge.entityRuntime.setDialogAskSelectionIndex(session.context.entityInputs.entityDialogAskSelectionIndex);
-        session.context.entityBridge.entityRuntime.setActiveMusic(session.context.entityInputs.entityMusicActive);
-        session.context.entityBridge.entityRuntime.setBowWowState(session.context.bowWowState);
-        session.context.entityBridge.entityRuntime.setLinkVelocityZ(session.context.entityInputs.entityLinkVelocityZ);
-        session.context.entityBridge.entityRuntime.setOwlInstrumentFlags(
+        session.context.entityBridge.entityRuntime.configuration().setDialogAskSelectionIndex(session.context.entityInputs.entityDialogAskSelectionIndex);
+        session.context.entityBridge.entityRuntime.configuration().setActiveMusic(session.context.entityInputs.entityMusicActive);
+        session.context.entityBridge.entityRuntime.configuration().setBowWowState(session.context.bowWowState);
+        session.context.entityBridge.entityRuntime.configuration().setLinkVelocityZ(session.context.entityInputs.entityLinkVelocityZ);
+        session.context.entityBridge.entityRuntime.configuration().setOwlInstrumentFlags(
             Byte.toUnsignedInt(session.context.roomState.dungeonProgressFlags[0]),
             Byte.toUnsignedInt(session.context.roomState.dungeonProgressFlags[1]));
-        session.context.entityBridge.entityRuntime.setActionButtonsHeld(session.context.entityInputs.actionButtonAHeld, session.context.entityInputs.actionButtonBHeld);
+        session.context.entityBridge.entityRuntime.configuration().setActionButtonsHeld(session.context.entityInputs.actionButtonAHeld, session.context.entityInputs.actionButtonBHeld);
         int statueMapId = session.context.activeRoom.mapId();
-        session.context.entityBridge.entityRuntime.setOwlStatueDialogId(
+        session.context.entityBridge.entityRuntime.configuration().setOwlStatueDialogId(
             session.context.activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD
                 && (statueMapId < 8 || statueMapId == 0xFF)
                 ? session.context.owlStatueDialogResolver.globalDialogId(statueMapId, session.context.activeRoom.roomId(),
                     session.context.roomState.dungeonItemState.currentFlag(DungeonItemState.STONE_BEAK_INDEX) != 0)
                 : -1);
-        session.context.entityBridge.entityRuntime.setJoypadHeld(session.context.entityInputs.joypadHeld);
-        session.context.entityBridge.entityRuntime.setPressedButtonsMask(session.context.entityInputs.entityPressedButtonsMask);
-        session.context.entityBridge.entityRuntime.setPowerBraceletButtonHeld(session.context.entityInputs.powerBraceletButtonHeld);
-        session.context.entityBridge.entityRuntime.setBombButtonHeld(session.context.entityInputs.bombButtonHeld);
-        session.context.entityBridge.entityRuntime.setLiftedLinkC13B(session.context.followingEntityYOffset);
-        session.context.entityBridge.entityRuntime.setBooBuddyTriggerCount(session.context.roomTriggerCount);
+        session.context.entityBridge.entityRuntime.configuration().setJoypadHeld(session.context.entityInputs.joypadHeld);
+        session.context.entityBridge.entityRuntime.configuration().setPressedButtonsMask(session.context.entityInputs.entityPressedButtonsMask);
+        session.context.entityBridge.entityRuntime.configuration().setPowerBraceletButtonHeld(session.context.entityInputs.powerBraceletButtonHeld);
+        session.context.entityBridge.entityRuntime.configuration().setBombButtonHeld(session.context.entityInputs.bombButtonHeld);
+        session.context.entityBridge.entityRuntime.configuration().setLiftedLinkC13B(session.context.followingEntityYOffset);
+        session.context.entityBridge.entityRuntime.configuration().setBooBuddyTriggerCount(session.context.roomTriggerCount);
         session.updateWitchEnvironment();
-        session.context.entityBridge.entityRuntime.setOcarinaPlayback(session.context.ocarinaPlaybackCountdown,
+        session.context.entityBridge.entityRuntime.configuration().setOcarinaPlayback(session.context.ocarinaPlaybackCountdown,
             session.context.ocarinaSongFlags, session.context.selectedSongIndex, session.context.ocarinaAnimationCounter,
             session.context.ocarinaAnimationPhase);
-        session.context.entityBridge.entityRuntime.setGoldenLeavesCount(session.context.entityInputs.entityGoldenLeavesCount);
-        session.context.entityBridge.entityRuntime.setSecretSeashellPegasusCollisionState(
+        session.context.entityBridge.entityRuntime.configuration().setGoldenLeavesCount(session.context.entityInputs.entityGoldenLeavesCount);
+        session.context.entityBridge.entityRuntime.configuration().setSecretSeashellPegasusCollisionState(
             session.context.entityInputs.secretSeashellScreenShakeActive, session.context.entityInputs.secretSeashellPegasusCollisionActive,
             session.context.entityInputs.secretSeashellPegasusCollisionX, session.context.entityInputs.secretSeashellPegasusCollisionY);
         // rLY is not a meaningful value in the host renderer. Keep the
@@ -463,8 +463,8 @@ final class RoomEntityBridge {
             session.context.pendingDungeonWarp = new Warp(Warp.CATEGORY_INDOOR, destination.mapId(),
                 destination.roomId(), destination.x(), destination.y(), 0x34);
         }
-        session.context.shouldGetLostInMysteriousWoods = session.context.entityBridge.entityRuntime.shouldGetLostInMysteriousWoods();
-        int runtimeBowWowState = session.context.entityBridge.entityRuntime.bowWowState();
+        session.context.shouldGetLostInMysteriousWoods = session.context.entityBridge.entityRuntime.inspection().shouldGetLostInMysteriousWoods();
+        int runtimeBowWowState = session.context.entityBridge.entityRuntime.inspection().bowWowState();
         if (runtimeBowWowState != session.context.bowWowState) {
             session.context.bowWowState = runtimeBowWowState;
             session.context.followingNpcState = new FollowingNpcState(
@@ -521,10 +521,10 @@ final class RoomEntityBridge {
             && session.context.switchableObjectAnimationStage == 0) {
             session.context.switchableObjectAnimationStage = 0x01;
         }
-        session.context.enemyDropCounters = session.context.entityBridge.entityRuntime.enemyDropCounters();
+        session.context.enemyDropCounters = session.context.entityBridge.entityRuntime.inspection().enemyDropCounters();
         if (session.context.transientVfxSystem != null) {
             for (TransientVfxRequest request
-                : session.context.entityBridge.entityRuntime.transientVfxRequests()) {
+                : session.context.entityBridge.entityRuntime.enemies().transientVfxRequests()) {
                 session.context.transientVfxSystem.spawn(request.type(), request.worldX(), request.worldY(),
                     request.variant());
             }
@@ -537,16 +537,16 @@ final class RoomEntityBridge {
         if (roomStatusMask != 0 && session.context.activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD) {
             byte[] status = session.indoorStatusTableForMap(session.context.activeRoom.mapId());
             status[session.context.activeRoom.roomId()] |= (byte) roomStatusMask;
-            session.context.entityBridge.entityRuntime.setEntityRoomStatus(
+            session.context.entityBridge.entityRuntime.configuration().setEntityRoomStatus(
                 Byte.toUnsignedInt(status[session.context.activeRoom.roomId()]));
         }
-        session.applyHookshotBridgeUpdates(session.context.entityBridge.entityRuntime.hookshotBridgeUpdates());
-        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.snapshot());
+        session.applyHookshotBridgeUpdates(session.context.entityBridge.entityRuntime.inspection().hookshotBridgeUpdates());
+        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.inspection().snapshot());
         session.applyBombObjectInteractions(bombExplosionEvents);
-        session.applyBoomerangObjectInteractions(session.context.entityBridge.entityRuntime.boomerangObjectRequests());
-        session.applyMagicRodObjectInteractions(session.context.entityBridge.entityRuntime.magicRodObjectRequests());
-        session.applyMagicPowderObjectInteractions(session.context.entityBridge.entityRuntime.magicPowderObjectRequests());
-        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.snapshot());
+        session.applyBoomerangObjectInteractions(session.context.entityBridge.entityRuntime.enemies().boomerangObjectRequests());
+        session.applyMagicRodObjectInteractions(session.context.entityBridge.entityRuntime.enemies().magicRodObjectRequests());
+        session.applyMagicPowderObjectInteractions(session.context.entityBridge.entityRuntime.enemies().magicPowderObjectRequests());
+        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.inspection().snapshot());
         session.tickPushedBlockMotion(linkEntityX, linkEntityY);
         session.tickRoomEvent(linkEntityX, linkEntityY);
         return events;
@@ -611,7 +611,7 @@ final class RoomEntityBridge {
             frameCounter, linkEntityX, linkEntityY, linkAirborne, linkVerticalVelocity,
             linkInteractive, swordCollisionActive, swordX, swordWidth, swordY, swordHeight,
             attackContext);
-        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.snapshot());
+        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.inspection().snapshot());
         return events;
     }
 
@@ -623,7 +623,7 @@ final class RoomEntityBridge {
         if (mask != 0) {
             session.context.recentRoomEntityClears.addMask(session.context.activeRoom.roomId(), mask);
         }
-        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.snapshot());
+        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.inspection().snapshot());
         return mask;
     }
 
@@ -669,7 +669,7 @@ final class RoomEntityBridge {
                 EntityCombatEvent.SoundChannel.WAVE, 0x01));
         }
         session.harvestKeyRewardEvents();
-        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.snapshot());
+        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.inspection().snapshot());
         return event;
     }
 

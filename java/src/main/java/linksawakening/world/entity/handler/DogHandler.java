@@ -48,8 +48,8 @@ final class DogHandler {
                     state.linkEntityX,
                     state.linkEntityY,
                     state.romLinkDirection,
-                    state.runtime.actionButtonAHeld,
-                    state.runtime.dialogActive,
+                    state.runtime.linkState.actionButtonAHeld,
+                    state.runtime.linkState.dialogActive,
                     state.randomByteSupplier,
                     dogBackgroundInteraction);
             state.updated = dogUpdate.entity();

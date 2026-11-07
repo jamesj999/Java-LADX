@@ -69,7 +69,7 @@ final class EntitySlotPhase1 {
         state.entity.type() == state.runtime.ENTITY_GENIE
             && (!state.runtime.backgroundMechanics.gameplayEntityTimersInteractive(
                     state.creditsGameplay)
-                || state.runtime.witchGotItemPresentationActive());
+                || state.runtime.inspection().witchGotItemPresentationActive());
     state.freezeWitchTimers =
         state.entity.type() == state.runtime.ENTITY_WITCH && !state.projectileTimersInteractive;
     state.freezePowderTimers =

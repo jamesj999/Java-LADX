@@ -29,10 +29,10 @@ final class WingedOctorokHandler {
                     state.backgroundCollision,
                     state.runtime.enemyTransitionCountdown[state.entity.slot()],
                     state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()],
-                    state.runtime.actionButtonAHeld,
-                    state.runtime.actionButtonBHeld,
-                    state.runtime.linkItemA,
-                    state.runtime.linkItemB);
+                    state.runtime.linkState.actionButtonAHeld,
+                    state.runtime.linkState.actionButtonBHeld,
+                    state.runtime.linkState.linkItemA,
+                    state.runtime.linkState.linkItemB);
             state.updated = wingedUpdate.entity();
             state.runtime.enemyTransitionCountdown[state.entity.slot()] =
                 wingedUpdate.transitionCountdown();

@@ -33,13 +33,13 @@ final class PlayerProjectilePauseTest {
     void gameplayGatesStopMovementAndObjectLookup(int type, String gate) {
         RoomEntityRuntime runtime = runtime();
         int slot = spawn(runtime, type);
-        RoomEntity before = runtime.snapshot().slots().get(slot);
+        RoomEntity before = runtime.inspection().snapshot().slots().get(slot);
         setGate(runtime, gate, true);
-        runtime.setObjectIntersectionQuery(entity -> {
+        runtime.configuration().setObjectIntersectionQuery(entity -> {
             throw new AssertionError("Paused projectile reached object lookup: " + gate);
         });
         tick(runtime, 8, 0);
-        RoomEntity paused = runtime.snapshot().slots().get(slot);
+        RoomEntity paused = runtime.inspection().snapshot().slots().get(slot);
         assertEquals(before.x(), paused.x());
         assertEquals(before.y(), paused.y());
         assertEquals(before.z(), paused.z());
@@ -47,13 +47,13 @@ final class PlayerProjectilePauseTest {
         if (type == 1) {
             // wC1A8 gates the handler, but UpdateEntityTimers does not read it.
             assertEquals(gate.equals("got_item") ? 0x27 : 0x28,
-                runtime.boomerangTransitionCountdown(slot));
+                runtime.inspection().boomerangTransitionCountdown(slot));
         }
 
         setGate(runtime, gate, false);
-        runtime.setObjectIntersectionQuery(entity -> RoomEntityObjectSample.none());
+        runtime.configuration().setObjectIntersectionQuery(entity -> RoomEntityObjectSample.none());
         tick(runtime, 9, 0);
-        assertEquals(before.x() + speed(type), runtime.snapshot().slots().get(slot).x());
+        assertEquals(before.x() + speed(type), runtime.inspection().snapshot().slots().get(slot).x());
     }
 
     @ParameterizedTest
@@ -61,9 +61,9 @@ final class PlayerProjectilePauseTest {
     void linksMotionStateAloneDoesNotPauseProjectiles(int type, int motionState) {
         RoomEntityRuntime runtime = runtime();
         int slot = spawn(runtime, type);
-        int beforeX = runtime.snapshot().slots().get(slot).x();
+        int beforeX = runtime.inspection().snapshot().slots().get(slot).x();
         tick(runtime, 8, motionState);
-        assertEquals(beforeX + speed(type), runtime.snapshot().slots().get(slot).x());
+        assertEquals(beforeX + speed(type), runtime.inspection().snapshot().slots().get(slot).x());
     }
 
     @ParameterizedTest
@@ -71,27 +71,27 @@ final class PlayerProjectilePauseTest {
     void wallFlameUsesTheTimerGateWhileItsPaletteStillUpdates(String gate) {
         RoomEntityRuntime runtime = runtime();
         int slot = spawn(runtime, 4);
-        runtime.setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(1, 1, 0x40, 0x40));
+        runtime.configuration().setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(1, 1, 0x40, 0x40));
         tick(runtime, 0, 0);
-        assertEquals(0x30, runtime.magicRodFireballPrivateCountdown1(slot));
+        assertEquals(0x30, runtime.inspection().magicRodFireballPrivateCountdown1(slot));
         setGate(runtime, gate, true);
         tick(runtime, 8, 0);
         tick(runtime, 9, 0);
         assertEquals(gate.equals("got_item") ? 0x2E : 0x30,
-            runtime.magicRodFireballPrivateCountdown1(slot));
+            runtime.inspection().magicRodFireballPrivateCountdown1(slot));
         // The fireball writes its next frame before ReturnIfNonInteractive.
-        assertEquals(1, runtime.snapshot().slots().get(slot).spriteVariant());
+        assertEquals(1, runtime.inspection().snapshot().slots().get(slot).spriteVariant());
     }
 
     @Test
     void ocarinaStopsTheBoomerangTimerWithoutStoppingItsHandler() {
         RoomEntityRuntime runtime = runtime();
         int slot = spawn(runtime, 1);
-        int beforeX = runtime.snapshot().slots().get(slot).x();
-        runtime.setOcarinaPlaybackForTest(1, 0, 0);
+        int beforeX = runtime.inspection().snapshot().slots().get(slot).x();
+        runtime.debug().setOcarinaPlaybackForTest(1, 0, 0);
         tick(runtime, 8, 0);
-        assertEquals(0x28, runtime.boomerangTransitionCountdown(slot));
-        assertEquals(beforeX + 2, runtime.snapshot().slots().get(slot).x());
+        assertEquals(0x28, runtime.inspection().boomerangTransitionCountdown(slot));
+        assertEquals(beforeX + 2, runtime.inspection().snapshot().slots().get(slot).x());
     }
 
     @ParameterizedTest
@@ -99,11 +99,11 @@ final class PlayerProjectilePauseTest {
     void creditsBypassTheWorldGameplayAndTransitionSequenceChecks(int type) {
         RoomEntityRuntime runtime = runtime();
         int slot = spawn(runtime, type);
-        int beforeX = runtime.snapshot().slots().get(slot).x();
-        runtime.setGameplayWorldForTest(false);
-        runtime.setTransitionSequenceCounterForTest(3);
+        int beforeX = runtime.inspection().snapshot().slots().get(slot).x();
+        runtime.debug().setGameplayWorldForTest(false);
+        runtime.debug().setTransitionSequenceCounterForTest(3);
         runtime.tick(EntityTestFrames.frame(runtime, 8, 0, 0, () -> 0, true));
-        assertEquals(beforeX + speed(type), runtime.snapshot().slots().get(slot).x());
+        assertEquals(beforeX + speed(type), runtime.inspection().snapshot().slots().get(slot).x());
     }
 
     private static RoomEntityRuntime runtime() {
@@ -147,12 +147,12 @@ final class PlayerProjectilePauseTest {
 
     private static void setGate(RoomEntityRuntime runtime, String gate, boolean active) {
         switch (gate) {
-            case "dialog" -> runtime.setDialogActive(active);
-            case "inventory" -> runtime.setTalkState(active, 0, 0x80);
-            case "transition" -> runtime.setRoomTransitionStateForTest(active);
-            case "gameplay" -> runtime.setGameplayWorldForTest(!active);
-            case "sequence" -> runtime.setTransitionSequenceCounterForTest(active ? 3 : 4);
-            case "got_item" -> runtime.setWitchGotItemPresentationActiveForTest(active);
+            case "dialog" -> runtime.configuration().setDialogActive(active);
+            case "inventory" -> runtime.configuration().setTalkState(active, 0, 0x80);
+            case "transition" -> runtime.debug().setRoomTransitionStateForTest(active);
+            case "gameplay" -> runtime.debug().setGameplayWorldForTest(!active);
+            case "sequence" -> runtime.debug().setTransitionSequenceCounterForTest(active ? 3 : 4);
+            case "got_item" -> runtime.debug().setWitchGotItemPresentationActiveForTest(active);
             default -> throw new IllegalArgumentException("Unexpected gate");
         }
     }

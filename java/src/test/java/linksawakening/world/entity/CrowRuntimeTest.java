@@ -37,25 +37,25 @@ final class CrowRuntimeTest {
                 EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)), false, null, catalog);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x44, 0x50, () -> 0));
-        assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
-        assertEquals(0, runtime.crowState(0));
-        assertEquals(0x52, runtime.physicsFlags(0));
+        assertEquals(EntityStatus.ACTIVE, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(0, runtime.flyingEnemies().crowState(0));
+        assertEquals(0x52, runtime.enemies().physicsFlags(0));
         assertTrue(runtime.resolveCombat(1, 0x40, 0x50, false, true,
             false, 0, 0, 0, 0).isEmpty());
 
-        runtime.setEntityRoomIdForTest(0x58);
+        runtime.debug().setEntityRoomIdForTest(0x58);
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x44, 0x50, () -> 0));
-        assertEquals(0, runtime.crowState(0));
+        assertEquals(0, runtime.flyingEnemies().crowState(0));
 
         int bombSlot = runtime.spawnBomb(0x38, 0x50, 0, 0);
-        runtime.setBombTransitionCountdownForTest(bombSlot, 0x13);
-        runtime.setEnemyFlashCountdownForTest(bombSlot, 0x10);
+        runtime.debug().setBombTransitionCountdownForTest(bombSlot, 0x13);
+        runtime.debug().setEnemyFlashCountdownForTest(bombSlot, 0x10);
         runtime.tick(EntityTestFrames.frame(runtime, 2, 0x44, 0x50, () -> 0));
-        RoomEntity triggered = runtime.snapshot().slots().get(0);
-        assertEquals(1, runtime.crowState(0));
-        assertEquals(0x22, runtime.crowTransitionCountdown(0));
+        RoomEntity triggered = runtime.inspection().snapshot().slots().get(0);
+        assertEquals(1, runtime.flyingEnemies().crowState(0));
+        assertEquals(0x22, runtime.flyingEnemies().crowTransitionCountdown(0));
         assertEquals(0x4C, triggered.y());
-        assertEquals(0x12, runtime.physicsFlags(0));
+        assertEquals(0x12, runtime.enemies().physicsFlags(0));
         assertEquals(0x20, runtime.options1(0));
 
         assertEquals(0x08, runtime.resolveCombat(3, triggered.x(), triggered.y(), false,
@@ -66,12 +66,12 @@ final class CrowRuntimeTest {
             .anyMatch(event -> event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE
                 && event.soundId() == 0x2D));
         // Crow calls the same read-only sound routine as the boomerang.
-        runtime.setBoomerangSoundCounterForFrame(0);
+        runtime.configuration().setBoomerangSoundCounterForFrame(0);
         runtime.tick(EntityTestFrames.frame(runtime, 4, 0x44, 0x50, () -> 0));
         assertTrue(runtime.consumePendingEntityEvents().stream()
             .anyMatch(event -> event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE
                 && event.soundId() == 0x2D));
-        assertFalse(runtime.snapshot().slots().get(0).status() == EntityStatus.DISABLED);
+        assertFalse(runtime.inspection().snapshot().slots().get(0).status() == EntityStatus.DISABLED);
     }
 
     @Test
@@ -85,17 +85,17 @@ final class CrowRuntimeTest {
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x3C, 0x50, () -> 0));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x3C, 0x50, () -> 0));
-        assertEquals(1, runtime.crowState(0));
-        assertEquals(2, runtime.snapshot().slots().get(0).spriteVariant());
+        assertEquals(1, runtime.flyingEnemies().crowState(0));
+        assertEquals(2, runtime.inspection().snapshot().slots().get(0).spriteVariant());
 
         for (int frame = 2; frame <= 17; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x3C, 0x50, () -> 0));
-            assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant(),
+            assertEquals(0, runtime.inspection().snapshot().slots().get(0).spriteVariant(),
                 "The unmirrored wing frame stays zero until the Z=$08 write is presented");
         }
-        assertEquals(8, runtime.snapshot().slots().get(0).z());
+        assertEquals(8, runtime.inspection().snapshot().slots().get(0).z());
         runtime.tick(EntityTestFrames.frame(runtime, 18, 0x3C, 0x50, () -> 0));
-        assertEquals(1, runtime.snapshot().slots().get(0).spriteVariant());
+        assertEquals(1, runtime.inspection().snapshot().slots().get(0).spriteVariant());
     }
 
     @Test
@@ -106,17 +106,17 @@ final class CrowRuntimeTest {
                 EntityStatus.INIT, catalog.forEntityType(
                     CrowMotion.ENTITY_TYPE, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
             false, null, catalog);
-        runtime.setEntityRoomIdForTest(0x58);
+        runtime.debug().setEntityRoomIdForTest(0x58);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
 
-        RoomEntity crow = runtime.snapshot().slots().get(0);
+        RoomEntity crow = runtime.inspection().snapshot().slots().get(0);
         assertEquals(0xFF, crow.sourceLoadOrder());
-        assertEquals(0x3C, runtime.droppedItemForTest(0));
+        assertEquals(0x3C, runtime.inspection().droppedItemForTest(0));
 
-        runtime.setEntityRoomStatusForTest(0x10);
+        runtime.debug().setEntityRoomStatusForTest(0x10);
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0, 0, () -> 0));
-        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
+        assertEquals(EntityStatus.DISABLED, runtime.inspection().snapshot().slots().get(0).status());
     }
 
     @Test
@@ -127,15 +127,15 @@ final class CrowRuntimeTest {
                 EntityStatus.INIT, catalog.forEntityType(
                     CrowMotion.ENTITY_TYPE, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
             false, null, catalog);
-        runtime.setEntityRoomIdForTest(0x58);
+        runtime.debug().setEntityRoomIdForTest(0x58);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x40, 0x50, () -> 0));
-        assertEquals(0, runtime.crowState(0));
+        assertEquals(0, runtime.flyingEnemies().crowState(0));
 
         runtime.spawnLiftableRockSmash(0x40, 0x50, 0);
         runtime.tick(EntityTestFrames.frame(runtime, 2, 0, 0, () -> 0));
 
-        assertEquals(1, runtime.crowState(0));
+        assertEquals(1, runtime.flyingEnemies().crowState(0));
     }
 
     @Test
@@ -146,12 +146,12 @@ final class CrowRuntimeTest {
                 EntityStatus.ACTIVE, catalog.forEntityType(
                     CrowMotion.ENTITY_TYPE, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
             false, null, catalog);
-        runtime.setEntityRoomIdForTest(0x58);
-        runtime.setEnemyIgnoreHitsCountdownForTest(0, 0x20);
+        runtime.debug().setEntityRoomIdForTest(0x58);
+        runtime.debug().setEnemyIgnoreHitsCountdownForTest(0, 0x20);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
 
-        assertEquals(0x07, runtime.enemyIgnoreHitsCountdown(0));
+        assertEquals(0x07, runtime.enemies().enemyIgnoreHitsCountdown(0));
     }
 
     private static RoomEntitySnapshot snapshot(RoomEntity entity) {

@@ -56,7 +56,7 @@ final class EntitySlotPhase4 {
                 state.frame,
                 state.linkEntityX,
                 state.linkEntityY,
-                state.runtime.followingLinkZ,
+                state.runtime.linkState.followingLinkZ,
                 state.randomByteSupplier,
                 state.backgroundCollision,
                 Arrays.asList(state.runtime.slots),
@@ -76,9 +76,9 @@ final class EntitySlotPhase4 {
                 state.frame,
                 state.linkEntityX,
                 state.linkEntityY,
-                state.runtime.followingLinkZ,
-                state.runtime.followingLinkDirection,
-                state.runtime.followingEntityYOffset,
+                state.runtime.linkState.followingLinkZ,
+                state.runtime.linkState.followingLinkDirection,
+                state.runtime.linkState.followingEntityYOffset,
                 state.runtime.followingLinkPositionHistory,
                 state.backgroundCollision);
       }

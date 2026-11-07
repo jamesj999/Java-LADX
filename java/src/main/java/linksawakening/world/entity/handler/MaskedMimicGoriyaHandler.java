@@ -32,7 +32,7 @@ final class MaskedMimicGoriyaHandler {
                     state.linkEntityX,
                     state.linkEntityY,
                     state.romLinkDirection,
-                    state.runtime.linkPressedButtonsMask,
+                    state.runtime.linkState.linkPressedButtonsMask,
                     state.romCollisionType,
                     maskedMimicBackgroundInteraction,
                     state.runtime.enemyIgnoreHitsCountdown[slot],

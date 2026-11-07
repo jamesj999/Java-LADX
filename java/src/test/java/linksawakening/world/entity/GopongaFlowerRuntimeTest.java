@@ -63,16 +63,16 @@ final class GopongaFlowerRuntimeTest {
             false, () -> 0, catalog, new RomEnemyCombatTables(rom));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0x00, 0, 0, () -> 0));
-        assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
+        assertEquals(0, runtime.inspection().snapshot().slots().get(0).spriteVariant());
 
         runtime.tick(EntityTestFrames.frame(runtime, 0x10, 0, 0, () -> 0));
-        assertEquals(1, runtime.snapshot().slots().get(0).spriteVariant());
+        assertEquals(1, runtime.inspection().snapshot().slots().get(0).spriteVariant());
 
         runtime.tick(EntityTestFrames.frame(runtime, 0x30, 0, 0, () -> 0));
-        assertEquals(1, runtime.snapshot().slots().get(0).spriteVariant());
+        assertEquals(1, runtime.inspection().snapshot().slots().get(0).spriteVariant());
 
         runtime.tick(EntityTestFrames.frame(runtime, 0x40, 0, 0, () -> 0));
-        assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
+        assertEquals(0, runtime.inspection().snapshot().slots().get(0).spriteVariant());
     }
 
     @Test
@@ -86,8 +86,8 @@ final class GopongaFlowerRuntimeTest {
                     EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
             false, () -> 0, catalog, new RomEnemyCombatTables(rom));
 
-        assertEquals(0x04, runtime.enemyHealth(0));
-        assertEquals(0x02, runtime.physicsFlags(0));
+        assertEquals(0x04, runtime.enemies().enemyHealth(0));
+        assertEquals(0x02, runtime.enemies().physicsFlags(0));
         assertEquals(0x02, runtime.options1(0));
         assertEquals(0x04, RoomEntityCombatRules.initialHealth(ENTITY_GOPONGA_FLOWER));
         assertEquals(0x08, RoomEntityCombatRules.contactDamage(ENTITY_GOPONGA_FLOWER));

@@ -27,7 +27,7 @@ final class MimicHandler {
                 state.runtime.mimicMotion.advance(
                     state.entity,
                     state.frame,
-                    state.runtime.linkPressedButtonsMask,
+                    state.runtime.linkState.linkPressedButtonsMask,
                     state.romCollisionType,
                     mimicBackgroundInteraction,
                     state.runtime.enemyIgnoreHitsCountdown[slot],
