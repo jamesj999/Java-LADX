@@ -117,9 +117,9 @@ final class SandCrabRuntimeTest {
             return RoomEntityGroundInteraction.Result.unchanged(entity, previousStatus);
         });
 
-        runtime.tickWithProjectileEvents(0, 0x40, 0x40, () -> 0, null,
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x40, 0x40, () -> 0, null,
             new EnemyProjectileCollision.LinkState(0x40, 0x40, 0,
-                EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE, 0, false));
+                EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE, 0, false)));
 
         assertEquals(0, groundCalls.get());
     }

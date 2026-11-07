@@ -1,0 +1,14 @@
+package linksawakening.world.entity.event;
+
+import linksawakening.world.*;
+import linksawakening.vfx.TransientVfxType;
+
+public record LinkHeldItemPoseRequest(int sourceSlot, boolean powerUp) implements EntityRequest {
+    public LinkHeldItemPoseRequest(int sourceSlot) { this(sourceSlot, false); }
+    public LinkHeldItemPoseRequest {
+        if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
+            throw new IllegalArgumentException("Held-item source slot out of range: "
+                + sourceSlot);
+        }
+    }
+}

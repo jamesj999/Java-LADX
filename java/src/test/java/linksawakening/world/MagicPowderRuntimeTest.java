@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.MagicPowderObjectRequest;
+
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.vfx.TransientVfxType;
@@ -55,7 +57,7 @@ final class MagicPowderRuntimeTest {
 
         assertFalse(runtime.snapshot().slots().get(slot).loaded());
         assertEquals(1, runtime.magicPowderObjectRequests().size());
-        RoomEntityRuntime.MagicPowderObjectRequest request =
+        MagicPowderObjectRequest request =
             runtime.magicPowderObjectRequests().getFirst();
         assertEquals(RoomEntityRuntime.MagicPowderObjectAction.REVEAL,
             request.action());
@@ -186,7 +188,7 @@ final class MagicPowderRuntimeTest {
         runtime.setObjectIntersectionQuery(entity -> {
             throw new AssertionError("Credits reached the powder object handler");
         });
-        runtime.tick(0, 0, 0, () -> 0, true);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0, true));
         assertEquals(7, runtime.magicPowderTransitionCountdown(slot));
         assertEquals(1, runtime.snapshot().slots().get(slot).spriteVariant());
     }
@@ -302,9 +304,9 @@ final class MagicPowderRuntimeTest {
 
     private static void tick(RoomEntityRuntime runtime, int frame, int linkX, int linkY,
                              int linkMotionState) {
-        runtime.tickWithProjectileEvents(frame, linkX, linkY, () -> 0, null,
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, frame, linkX, linkY, () -> 0, null,
             new EnemyProjectileCollision.LinkState(linkX, linkY, 0, linkMotionState,
-                0, false));
+                0, false)));
     }
 
     private static RoomEntitySnapshot emptySnapshot() {

@@ -57,7 +57,7 @@ final class WarpMotionTest {
         WarpMotion.Update destination = motion.advance(entity, countdown.state(),
             countdown.countdown(), 0x01, 0x28, true, 0x48, 0x40, 0);
         assertTrue(destination.destinationReady());
-        assertEquals(new WarpMotion.Destination(0x01, 0x36, 0x50, 0x48),
+        assertEquals(new linksawakening.world.entity.event.WarpDestination(0x01, 0x36, 0x50, 0x48),
             destination.destination());
     }
 
@@ -70,7 +70,7 @@ final class WarpMotionTest {
         assertEquals(3, armed.state());
         WarpMotion.Update destination = motion.advance(entity, armed.state(), 1,
             0x00, 0x17, true, 0x48, 0x40, 0);
-        assertEquals(new WarpMotion.Destination(0x00, 0x11, 0x50, 0x48),
+        assertEquals(new linksawakening.world.entity.event.WarpDestination(0x00, 0x11, 0x50, 0x48),
             destination.destination());
     }
 

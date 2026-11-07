@@ -72,12 +72,12 @@ final class PokeyRuntimeTest {
         assertEquals(0x12, runtime.physicsFlags(0));
         assertEquals(0x02, runtime.options1(0));
 
-        runtime.tick(0, 0x70, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x70, 0x50, () -> 0));
         assertEquals(0x02, runtime.enemyHealth(0));
         assertEquals(0, runtime.entityInertia(0));
         assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
 
-        runtime.tick(8, 0x70, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 8, 0x70, 0x50, () -> 0));
         assertEquals(1, runtime.snapshot().slots().get(0).spriteVariant());
     }
 
@@ -93,7 +93,7 @@ final class PokeyRuntimeTest {
         // The runtime performs the shared pre-handler decrement first, so $15
         // reaches PokeyEntityHandler as the source's $14 spawn trigger.
         runtime.setEnemyFlashCountdownForTest(0, 0x15);
-        runtime.tick(0, 0x70, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x70, 0x50, () -> 0));
 
         RoomEntity segment = runtime.snapshot().slots().stream()
             .filter(entity -> entity.type() == ENTITY_POKEY && entity.sourceLoadOrder() == -1)
@@ -112,7 +112,7 @@ final class PokeyRuntimeTest {
         assertEquals(1, runtime.entityInertia(0));
         assertNotNull(segment);
 
-        runtime.tick(1, 0x70, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x70, 0x50, () -> 0));
         RoomEntity body = runtime.snapshot().slots().get(0);
         assertEquals(0x4B77, body.spriteDefinition().address());
         assertEquals(4, body.spriteDefinition().rectangleVariant(0).size());

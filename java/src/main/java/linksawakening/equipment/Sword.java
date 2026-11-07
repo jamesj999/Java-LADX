@@ -38,7 +38,8 @@ public final class Sword implements EquippedItem {
     }
 
     /** The ROM's wC140..wC143 rectangle for enemy collision. */
-    public record CollisionBox(boolean active, int x, int width, int y, int height) {
+    public record CollisionBox(boolean active, int x, int width, int y, int height)
+            implements EquipmentItem.CollisionBox {
         public static CollisionBox inactive() {
             return new CollisionBox(false, 0, 0, 0, 0);
         }
@@ -549,37 +550,11 @@ public final class Sword implements EquippedItem {
         // which tile is on top and flips each vertically.
         Tile top = spriteSheet.tile(flipY ? tileIndex + 1 : tileIndex);
         Tile bottom = spriteSheet.tile(flipY ? tileIndex : tileIndex + 1);
-        drawTile(buffer, top,    screenX, screenY,     flipX, flipY, palette);
-        drawTile(buffer, bottom, screenX, screenY + 8, flipX, flipY, palette);
+        ItemSpriteRenderer.drawTile(buffer, top,    screenX, screenY,     flipX, flipY, palette);
+        ItemSpriteRenderer.drawTile(buffer, bottom, screenX, screenY + 8, flipX, flipY, palette);
     }
 
-    private static void drawTile(byte[] buffer, Tile tile, int screenX, int screenY,
-                                 boolean flipX, boolean flipY, int[] palette) {
-        if (tile == null) {
-            return;
-        }
-        for (int ty = 0; ty < 8; ty++) {
-            for (int tx = 0; tx < 8; tx++) {
-                int px = screenX + tx;
-                int py = screenY + ty;
-                if (px < 0 || px >= Framebuffer.WIDTH || py < 0 || py >= Framebuffer.HEIGHT) {
-                    continue;
-                }
-                int sx = flipX ? 7 - tx : tx;
-                int sy = flipY ? 7 - ty : ty;
-                int colorIndex = tile.getPixel(sx, sy);
-                if (colorIndex == 0) {
-                    continue;
-                }
-                int color = palette[colorIndex];
-                int offset = (py * Framebuffer.WIDTH + px) * 4;
-                buffer[offset] = (byte) ((color >> 16) & 0xFF);
-                buffer[offset + 1] = (byte) ((color >> 8) & 0xFF);
-                buffer[offset + 2] = (byte) (color & 0xFF);
-                buffer[offset + 3] = (byte) 0xFF;
-            }
-        }
-    }
+
 
     private static int toRomDirection(int javaDirection) {
         switch (javaDirection) {

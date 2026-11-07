@@ -58,7 +58,7 @@ final class DogRuntimeTest {
         assertEquals(0x00, runtime.options1(0));
         assertEquals(0x01, runtime.enemyHealth(0));
 
-        runtime.tick(0, 0x40, 0x40, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x40, () -> 0));
 
         assertEquals(0x4C, runtime.enemyHealth(0));
         assertEquals(0x01, runtime.dogState(0));
@@ -179,12 +179,12 @@ final class DogRuntimeTest {
             false, () -> 0, catalog, new RomEnemyCombatTables(rom));
         AtomicInteger terrainCalls = new AtomicInteger();
 
-        runtime.tickWithProjectileEvents(0, 0x40, 0x40, () -> 0,
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x40, 0x40, () -> 0,
             (entity, direction, nextX, nextY) -> {
                 terrainCalls.incrementAndGet();
                 return true;
             }, new EnemyProjectileCollision.LinkState(0x40, 0x40, 0,
-                EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE, 0, false));
+                EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE, 0, false)));
 
         assertEquals(0, terrainCalls.get());
     }

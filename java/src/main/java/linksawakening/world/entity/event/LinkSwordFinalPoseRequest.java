@@ -1,0 +1,13 @@
+package linksawakening.world.entity.event;
+
+import linksawakening.world.*;
+import linksawakening.vfx.TransientVfxType;
+
+public record LinkSwordFinalPoseRequest(int sourceSlot) implements EntityRequest {
+    public LinkSwordFinalPoseRequest {
+        if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
+            throw new IllegalArgumentException("Sword-final source slot out of range: "
+                + sourceSlot);
+        }
+    }
+}

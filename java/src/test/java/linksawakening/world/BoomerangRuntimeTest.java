@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.BoomerangObjectRequest;
+
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -63,15 +65,15 @@ final class BoomerangRuntimeTest {
             RoomEntityRuntime runtime = runtime(false);
             int slot = runtime.spawnBoomerang(0x10, 0x50, 7, 0, 0);
             for (int frame = 0; frame < 40; frame++) {
-                runtime.tickWithProjectileEvents(frame, 0x20, 0x50, () -> 0, null,
-                    new EnemyProjectileCollision.LinkState(0x20, 0x50, linkZ, 0, 0, false));
+                runtime.tick(EntityTestFrames.projectileFrame(runtime, frame, 0x20, 0x50, () -> 0, null,
+                    new EnemyProjectileCollision.LinkState(0x20, 0x50, linkZ, 0, 0, false)));
             }
             assertEquals(8, runtime.snapshot().slots().get(slot).z());
             assertEquals(0xF8, runtime.boomerangSpeedX(slot));
             assertEquals(1, runtime.boomerangSpeedY(slot));
 
-            runtime.tickWithProjectileEvents(40, 0x20, 0x50, () -> 0, null,
-                new EnemyProjectileCollision.LinkState(0x20, 0x50, linkZ, 0, 0, false));
+            runtime.tick(EntityTestFrames.projectileFrame(runtime, 40, 0x20, 0x50, () -> 0, null,
+                new EnemyProjectileCollision.LinkState(0x20, 0x50, linkZ, 0, 0, false)));
             assertEquals(0xE0, runtime.boomerangSpeedX(slot));
             assertEquals(4, runtime.boomerangSpeedY(slot));
         }
@@ -87,16 +89,16 @@ final class BoomerangRuntimeTest {
         runtime.setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(
             0x5C, 0x10, 0x30, 0x40));
 
-        runtime.tick(0, 0x20, 0x40, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x40, () -> 0));
         assertEquals(1, runtime.boomerangObjectRequests().size());
         assertEquals(0x20, runtime.snapshot().slots().get(slot).x());
         assertEquals(0x27, runtime.boomerangTransitionCountdown(slot));
-        RoomEntityRuntime.BoomerangObjectRequest request =
+        BoomerangObjectRequest request =
             runtime.boomerangObjectRequests().get(0);
 
         runtime.setObjectIntersectionQuery(entity -> RoomEntityObjectSample.none());
-        runtime.tick(1, 0x20, 0x40, () -> 0);
-        runtime.tick(2, 0x20, 0x40, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x20, 0x40, () -> 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 0x20, 0x40, () -> 0));
 
         assertEquals(slot, request.sourceSlot());
         assertEquals(0x43, request.location());
@@ -294,8 +296,8 @@ final class BoomerangRuntimeTest {
 
     private static void tickInteractive(RoomEntityRuntime runtime, int frame,
                                          int linkX, int linkY) {
-        runtime.tickWithProjectileEvents(frame, linkX, linkY, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(linkX, linkY, 0, 0, 0, false));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, frame, linkX, linkY, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(linkX, linkY, 0, 0, 0, false)));
     }
 
     private static byte[] loadRom() throws IOException {

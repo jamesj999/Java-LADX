@@ -34,9 +34,7 @@ public final class EquipmentController {
 
     /** Finish existing animations without activating or holding equipment. */
     public void tickEquippedItemsWithoutInput(int frameCounter) {
-        Sword sword = activeSword();
-        if (sword != null) sword.releaseHoldWithoutSpin();
-        itemRegistry.tickAll(false, false, playerState.itemA(), playerState.itemB(), frameCounter);
+        itemRegistry.tickWithoutInput(playerState, frameCounter);
     }
 
     private void tickEquippedItems(Integer frameCounter) {
@@ -50,22 +48,11 @@ public final class EquipmentController {
     }
 
     public Sword activeSword() {
-        EquippedItem a = itemRegistry.lookup(playerState.itemA());
-        if (a instanceof Sword sword) {
-            return sword;
-        }
-        EquippedItem b = itemRegistry.lookup(playerState.itemB());
-        if (b instanceof Sword sword) {
-            return sword;
-        }
-        // The acquisition sequence spins the sword before it enters inventory.
-        EquippedItem registered = itemRegistry.lookup(PlayerState.INVENTORY_SWORD);
-        if (registered instanceof Sword sword && sword.spinAttackActive()) return sword;
-        return null;
+        return itemRegistry.activeSword(playerState);
     }
 
     private void dispatchButtonEdges(int glfwKey, int inventoryId) {
-        EquippedItem item = itemRegistry.lookup(inventoryId);
+        EquipmentItem item = itemRegistry.lookup(inventoryId);
         if (item == null) {
             return;
         }

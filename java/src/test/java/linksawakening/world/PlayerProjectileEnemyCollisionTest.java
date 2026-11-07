@@ -23,7 +23,7 @@ final class PlayerProjectileEnemyCollisionTest {
         runtime.setHitboxFlagsForTest(0, 0x80);
         runtime.setEnemyIgnoreHitsCountdownForTest(0, 8);
         int health = runtime.enemyHealth(0);
-        runtime.tick(2, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 0, 0, () -> 0));
 
         assertEquals(health, runtime.enemyHealth(0));
         assertFalse(hitTarget(runtime));
@@ -37,7 +37,7 @@ final class PlayerProjectileEnemyCollisionTest {
         int slot = spawn(runtime, type, 0);
         runtime.setEnemyIgnoreHitsCountdownForTest(0, 8);
         int beforeX = runtime.snapshot().slots().get(slot).x();
-        runtime.tick(2, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 0, 0, () -> 0));
 
         assertTrue(runtime.snapshot().slots().get(slot).loaded());
         assertEquals(beforeX + (type == 0 ? 3 : type == 1 ? 2 : 4),
@@ -55,7 +55,7 @@ final class PlayerProjectileEnemyCollisionTest {
         int slot = spawn(runtime, type, direction);
         assertEquals(0, runtime.ironMaskDirection(0));
         int health = runtime.enemyHealth(0);
-        runtime.tick(2, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 0, 0, () -> 0));
 
         if (direction == 1) {
             assertEquals(health, runtime.enemyHealth(0));
@@ -74,7 +74,7 @@ final class PlayerProjectileEnemyCollisionTest {
                                                        boolean hit) throws IOException {
         RoomEntityRuntime runtime = runtime(type, 9, dx, dy);
         spawn(runtime, type, 0);
-        runtime.tick(2, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 0, 0, () -> 0));
         assertEquals(hit, hitTarget(runtime));
     }
 
@@ -86,7 +86,7 @@ final class PlayerProjectileEnemyCollisionTest {
         runtime.setPhysicsFlagsForTest(0, 0x20);
         runtime.setHitboxFlagsForTest(0, 0x80);
         runtime.setEnemyIgnoreHitsCountdownForTest(0, 8);
-        runtime.tick(2, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 0, 0, () -> 0));
         assertFalse(hitTarget(runtime));
         assertTrue(runtime.snapshot().slots().get(slot).loaded());
         if (type == 1) {
@@ -104,18 +104,18 @@ final class PlayerProjectileEnemyCollisionTest {
         int slot = spawn(runtime, 0, 0);
         runtime.setHitboxFlagsForTest(0, 0x80);
         runtime.setDialogActive(paused);
-        runtime.tick(2, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 0, 0, () -> 0));
         if (paused) {
             assertEquals(0, runtime.playerArrowTransitionCountdown(slot));
             runtime.clearEntity(0);
             runtime.setDialogActive(false);
-            runtime.tick(3, 0, 0, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, 3, 0, 0, () -> 0));
         }
         assertEquals(0x18, runtime.playerArrowTransitionCountdown(slot));
         runtime.clearEntity(0);
         runtime.clearEntity(slot);
         assertEquals(slot, runtime.spawnArrow(0x40, 0x50, 0, 0));
-        runtime.tick(4, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 4, 0, 0, () -> 0));
         assertEquals(0, runtime.playerArrowTransitionCountdown(slot));
     }
 
@@ -125,7 +125,7 @@ final class PlayerProjectileEnemyCollisionTest {
             throws IOException {
         RoomEntityRuntime runtime = runtime(3, 0x24, dx, dy);
         runtime.spawnHookshotChain(0x40, 0x50, 0, 1);
-        runtime.tick(2, 0xC0, 0xC0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 0xC0, 0xC0, () -> 0));
         assertEquals(unmasked ? 1 : 0, runtime.ironMaskPrivateState2(0));
     }
 
@@ -133,13 +133,13 @@ final class PlayerProjectileEnemyCollisionTest {
     void hookshotUnmasksBeforeTestingBackgroundCollision() throws IOException {
         RoomEntityRuntime runtime = runtime(3, 0x24, 0, 0);
         runtime.spawnHookshotChain(0x40, 0x50, 0, 1);
-        runtime.tick(2, 0xC0, 0xC0, () -> 0, (entity, direction, x, y) -> {
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 0xC0, 0xC0, () -> 0, (entity, direction, x, y) -> {
             if (entity.type() == 3) {
                 assertEquals(1, runtime.ironMaskPrivateState2(0));
                 return true;
             }
             return false;
-        });
+        }));
         assertEquals(1, runtime.ironMaskPrivateState2(0));
     }
 
@@ -149,15 +149,15 @@ final class PlayerProjectileEnemyCollisionTest {
         int physics = runtime.physicsFlags(0);
         runtime.setPhysicsFlagsForTest(0, 0x40);
         int slot = runtime.spawnHookshotChain(0x40, 0x50, 0, 1);
-        runtime.tick(0, 0xC0, 0xC0, () -> 0,
-            (entity, direction, x, y) -> entity.type() == 3);
-        runtime.tick(1, 0xC0, 0xC0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0xC0, 0xC0, () -> 0,
+            (entity, direction, x, y) -> entity.type() == 3));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0xC0, 0xC0, () -> 0));
         assertEquals(0, runtime.hookshotTransitionCountdown(slot));
         runtime.setPhysicsFlagsForTest(0, physics);
-        runtime.tick(2, 0xC0, 0xC0, () -> 0, (entity, direction, x, y) -> {
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 0xC0, 0xC0, () -> 0, (entity, direction, x, y) -> {
             assertFalse(entity.type() == 3, "Returning hookshot probed the background");
             return false;
-        });
+        }));
         assertEquals(0, runtime.ironMaskPrivateState2(0));
     }
 
@@ -188,8 +188,8 @@ final class PlayerProjectileEnemyCollisionTest {
             default -> throw new IllegalArgumentException();
         };
         if (type == 0xDF) {
-            runtime.tickWithProjectileEvents(1, 0x40, 0x50, () -> 0, null,
-                new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0, 3, false));
+            runtime.tick(EntityTestFrames.projectileFrame(runtime, 1, 0x40, 0x50, () -> 0, null,
+                new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0, 3, false)));
             runtime.consumePendingEntityEvents();
         }
         return slot;

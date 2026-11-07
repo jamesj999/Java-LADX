@@ -1,5 +1,17 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.DialogRequest;
+import linksawakening.world.entity.event.KeyQuicksandEvent;
+import linksawakening.world.entity.event.KeyRewardEvent;
+import linksawakening.world.entity.event.LikeLikeEvent;
+import linksawakening.world.entity.event.LinkFallenPoseRequest;
+import linksawakening.world.entity.event.LinkFinalPositionRequest;
+import linksawakening.world.entity.event.LinkHeldItemPoseRequest;
+import linksawakening.world.entity.event.LinkMotionBlockRequest;
+import linksawakening.world.entity.event.ScreenShakeRequest;
+import linksawakening.world.entity.event.SlimeKeyRewardEvent;
+import linksawakening.world.entity.event.TransientVfxRequest;
+
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.rom.RomBank;
@@ -37,11 +49,11 @@ final class RoomEntityRuntimeTest {
         runtime.setEntityMapIdForTest(0);
         runtime.setEntityRoomId(0x11);
         assertEquals(-1, runtime.snapshot().slots().get(0).spriteVariant());
-        runtime.tick(0, 120, 32, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 32, () -> 0));
         assertEquals(-1, runtime.snapshot().slots().get(0).spriteVariant());
         runtime.setDungeonMinibossReady(true);
         for (int phase = 0; phase < 8; phase++) {
-            runtime.tick(phase * 8, 120, 32, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, phase * 8, 120, 32, () -> 0));
             assertEquals(phase, runtime.snapshot().slots().get(0).spriteVariant());
         }
     }
@@ -56,7 +68,7 @@ final class RoomEntityRuntimeTest {
                 RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
                     new RoomEntity(0, 0, type, 0x70, 0x40, EntityStatus.ACTIVE,
                         EntitySpriteDefinition.unsupported(type), 0, 0, 0, 0, -1, false)), true);
-                runtime.tick(0, point[0], point[1], () -> 0);
+                runtime.tick(EntityTestFrames.frame(runtime, 0, point[0], point[1], () -> 0));
                 var requests = runtime.consumePendingLinkMotionBlockRequests();
                 if (point[2] == 0 && point[3] == 0) {
                     assertTrue(requests.isEmpty());
@@ -66,11 +78,11 @@ final class RoomEntityRuntimeTest {
                     assertEquals(point[3], requests.get(0).positionDeltaY());
                 }
                 runtime.setFreeMovementMode(true);
-                runtime.tick(1, 8, 72, () -> 0);
+                runtime.tick(EntityTestFrames.frame(runtime, 1, 8, 72, () -> 0));
                 assertTrue(runtime.consumePendingLinkMotionBlockRequests().isEmpty());
                 runtime.setFreeMovementMode(false);
                 runtime.setRoomTransitionStateForTest(true);
-                runtime.tick(2, 8, 72, () -> 0);
+                runtime.tick(EntityTestFrames.frame(runtime, 2, 8, 72, () -> 0));
                 assertTrue(runtime.consumePendingLinkMotionBlockRequests().isEmpty());
             }
         }
@@ -82,14 +94,14 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 3, 0x51, 0x40, 0x50, EntityStatus.ACTIVE,
                 EntitySpriteDefinition.unsupported(0x51), 0, 0, 0, 0, -1, false)), true);
         knightRuntime.setEntityMapIdForTest(0x14);
-        knightRuntime.tick(0, 0, 0, () -> 0);
+        knightRuntime.tick(EntityTestFrames.frame(knightRuntime, 0, 0, 0, () -> 0));
         assertEquals(0xFF, knightRuntime.snapshot().slots().get(0).sourceLoadOrder());
         assertEquals(0x3C, knightRuntime.droppedItemForTest(0));
 
         RoomEntityRuntime bomberRuntime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 2, 0x93, 0x40, 0x50, EntityStatus.ACTIVE,
                 EntitySpriteDefinition.unsupported(0x93), 0, 0, 0, 0, -1, false)), false);
-        bomberRuntime.tick(0, 0, 0, () -> 0);
+        bomberRuntime.tick(EntityTestFrames.frame(bomberRuntime, 0, 0, 0, () -> 0));
         assertEquals(0xFF, bomberRuntime.snapshot().slots().get(0).sourceLoadOrder());
         assertEquals(0x3C, bomberRuntime.droppedItemForTest(0));
     }
@@ -132,7 +144,7 @@ final class RoomEntityRuntimeTest {
         runtime.setEnemyDropResolver(new EnemyDropResolver(rom));
         runtime.setEntityMapIdForTest(0x14);
 
-        runtime.tick(0, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
 
         RoomEntity leaf = runtime.snapshot().slots().stream()
             .filter(entity -> entity.loaded() && entity.type() == 0x3C)
@@ -153,7 +165,7 @@ final class RoomEntityRuntimeTest {
         runtime.setEnemyIgnoreHitsCountdownForTest(0, 0x0A);
         runtime.setEnemyIgnoreHitsCountdownForTest(1, 0x0A);
 
-        runtime.tick(0, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
 
         List<RoomEntity> moblins = runtime.snapshot().slots().stream()
             .filter(entity -> entity.loaded() && entity.type() == 0x14)
@@ -178,7 +190,7 @@ final class RoomEntityRuntimeTest {
         runtime.setEntityRoomStatusForTest(0x10);
         runtime.setEnemyIgnoreHitsCountdownForTest(0, 0x0A);
 
-        runtime.tick(0, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
 
         assertFalse(runtime.snapshot().slots().stream()
             .anyMatch(entity -> entity.loaded() && entity.type() == 0x14));
@@ -199,7 +211,7 @@ final class RoomEntityRuntimeTest {
         runtime.setEntityMapIdForTest(0x14);
         runtime.setEnemyIgnoreHitsCountdownForTest(0, 0x0A);
 
-        runtime.tick(0, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
 
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
         assertFalse(runtime.snapshot().slots().stream()
@@ -220,7 +232,7 @@ final class RoomEntityRuntimeTest {
         int bombSlot = runtime.spawnBomb(0x40, 0x50, 0, 0);
         runtime.setBombTransitionCountdownForTest(bombSlot, 0x13);
 
-        runtime.tick(0, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
 
         RoomEntity moblin = runtime.snapshot().slots().stream()
             .filter(entity -> entity.loaded() && entity.type() == 0x14)
@@ -237,8 +249,8 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(hinox));
         runtime.setTransitionCountdownForTest(0, 0x12);
 
-        runtime.tickWithProjectileEvents(0, 0x40, 0x40, () -> 0, null, null, 0, 0, 0,
-            EnemyProjectileCollision.LinkState.nonInteractive());
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x40, 0x40, () -> 0, null, null, 0, 0, 0,
+            EnemyProjectileCollision.LinkState.nonInteractive()));
 
         assertEquals(0x12, runtime.transitionCountdown(0));
         assertEquals(HinoxMotion.STATE_INITIAL, runtime.hinoxStateForTest(0));
@@ -252,8 +264,8 @@ final class RoomEntityRuntimeTest {
         runtime.setTransitionSequenceCounterForTest(0x03);
         runtime.setTransitionCountdownForTest(0, 0x12);
 
-        runtime.tickWithProjectileEvents(0, 0x40, 0x40, () -> 0, null, null, 0, 0, 0,
-            new EnemyProjectileCollision.LinkState(0x40, 0x40, 0, 0, 3, false));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x40, 0x40, () -> 0, null, null, 0, 0, 0,
+            new EnemyProjectileCollision.LinkState(0x40, 0x40, 0, 0, 3, false)));
 
         assertEquals(0x12, runtime.transitionCountdown(0));
         assertEquals(HinoxMotion.STATE_INITIAL, runtime.hinoxStateForTest(0));
@@ -266,18 +278,18 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotAt(hinox), false, () -> 0);
         runtime.setEntityMapIdForTest(0x05);
 
-        runtime.tick(0, 0x40, 0x40, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x40, () -> 0));
         assertEquals(0xA0, runtime.transitionCountdown(15));
         assertEquals(0xFF, runtime.enemyFlashCountdown(15));
 
         for (int frame = 1; frame <= 0xA0; frame++) {
-            runtime.tick(frame, 0x40, 0x40, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x40, 0x40, () -> 0));
         }
         assertEquals(0xC0, runtime.transitionCountdown(15));
         assertEquals(0xFF, runtime.enemyFlashCountdown(15));
 
         for (int frame = 0xA1; frame <= 0x160; frame++) {
-            runtime.tick(frame, 0x40, 0x40, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x40, 0x40, () -> 0));
         }
 
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(15).status());
@@ -296,8 +308,8 @@ final class RoomEntityRuntimeTest {
             new EnemyProjectileCollision.LinkState(0x40, 0x40, 0, 0, 3, false);
 
         for (int frame = 0; frame <= 0x20; frame++) {
-            runtime.tickWithProjectileEvents(frame, 0x40, 0x40, () -> 0, null, null, 0, 0, 0,
-                interactive);
+            runtime.tick(EntityTestFrames.projectileFrame(runtime, frame, 0x40, 0x40, () -> 0, null, null, 0, 0, 0,
+                interactive));
         }
         assertEquals(0x50, runtime.consumePendingMusicTrack());
     }
@@ -327,9 +339,9 @@ final class RoomEntityRuntimeTest {
         runtime.setHinoxSpeedForTest(0, 0x08, 0);
         runtime.setTransitionCountdownForTest(0, 0x20);
 
-        runtime.tickWithProjectileEvents(0, 0x40, 0x40, () -> 0,
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x40, 0x40, () -> 0,
             (entity, direction, nextX, nextY) -> true,
-            new EnemyProjectileCollision.LinkState(0x40, 0x40, 0, 0, 3, false));
+            new EnemyProjectileCollision.LinkState(0x40, 0x40, 0, 0, 3, false)));
 
         assertEquals(0x40, runtime.snapshot().slots().get(0).x());
     }
@@ -342,8 +354,8 @@ final class RoomEntityRuntimeTest {
         runtime.setHinoxStateForTest(0, HinoxMotion.STATE_CHARGE);
         runtime.setTransitionCountdownForTest(0, 0);
 
-        runtime.tickWithProjectileEvents(0, 0x30, 0x30, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0x30, 0x30, 0, 0, 3, false));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x30, 0x30, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0x30, 0x30, 0, 0, 3, false)));
 
         List<EntityCombatEvent> events = runtime.consumePendingEntityEvents();
         assertTrue(events.contains(new EntityCombatEvent(0,
@@ -362,8 +374,8 @@ final class RoomEntityRuntimeTest {
             runtime.setThreeOfAKindSettledForTest(slot, 0);
         }
 
-        runtime.tickWithProjectileEvents(1, 0, 0, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0, 0, 0, 0, 3, false));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 1, 0, 0, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0, 0, 0, 0, 3, false)));
 
         assertTrue(runtime.snapshot().loadedEntities().stream()
             .allMatch(card -> card.status() == EntityStatus.DYING));
@@ -380,15 +392,15 @@ final class RoomEntityRuntimeTest {
     void swordHitFeedsThreeOfAKindsGenericIgnoreHitLatch() {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(
             snapshot(threeOfAKind(0, 0x40, 0x50)), true, () -> 0);
-        runtime.tickWithProjectileEvents(1, 0, 0, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0, 0, 0, 0, 3, false));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 1, 0, 0, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0, 0, 0, 0, 3, false)));
 
         List<EntityCombatEvent> hit = runtime.resolveCombat(
             1, 0, 0, false, true, true, 0x40, 0x10, 0x50, 0x10);
         assertTrue(hit.getFirst().swordHit());
 
-        runtime.tickWithProjectileEvents(2, 0, 0, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0, 0, 0, 0, 3, false));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 2, 0, 0, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0, 0, 0, 0, 3, false)));
         assertEquals(2, runtime.threeOfAKindStateForTest(0));
     }
 
@@ -413,8 +425,8 @@ final class RoomEntityRuntimeTest {
             runtime.setTransitionCountdownForTest(slot, 1);
         }
 
-        runtime.tickWithProjectileEvents(1, 0, 0, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0, 0, 0, 7, 3, false));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 1, 0, 0, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0, 0, 0, 7, 3, false)));
 
         assertEquals(1, runtime.transitionCountdownForTest(0));
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
@@ -422,8 +434,8 @@ final class RoomEntityRuntimeTest {
             .allMatch(card -> card.status() == EntityStatus.ACTIVE));
 
         runtime.setDialogActive(true);
-        runtime.tickWithProjectileEvents(2, 0, 0, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0, 0, 0, 0, 3, false));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 2, 0, 0, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0, 0, 0, 0, 3, false)));
         assertEquals(1, runtime.transitionCountdownForTest(0));
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
     }
@@ -434,12 +446,12 @@ final class RoomEntityRuntimeTest {
             EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(0x3F), 0, 0, 0, 0, -1, false);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(tarin), true, () -> 0);
 
-        runtime.tickWithProjectileEvents(0, 0x00, 0x00, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0, 0, 0, 0, 3, false));
-        runtime.tickWithProjectileEvents(1, 0x50, 0x60, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0x50, 0x60, 0, 0, 3, false));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x00, 0x00, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0, 0, 0, 0, 3, false)));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 1, 0x50, 0x60, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0x50, 0x60, 0, 0, 3, false)));
 
-        assertEquals(List.of(new RoomEntityRuntime.LinkFinalPositionRequest(0, true, true, false)),
+        assertEquals(List.of(new LinkFinalPositionRequest(0, true, true, false)),
             runtime.consumePendingLinkFinalPositionRequests());
     }
 
@@ -449,12 +461,12 @@ final class RoomEntityRuntimeTest {
             EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(0x3F), 0, 0, 0, 0, -1, false);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(tarin), true, () -> 0);
 
-        runtime.tickWithProjectileEvents(0, 0x00, 0x00, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0, 0, 0, 0, 3, false));
-        runtime.tickWithProjectileEvents(1, 0x50, 0x60, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0x50, 0x60, 1, 0, 3, false));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x00, 0x00, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0, 0, 0, 0, 3, false)));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 1, 0x50, 0x60, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0x50, 0x60, 1, 0, 3, false)));
 
-        assertEquals(List.of(new RoomEntityRuntime.LinkFinalPositionRequest(0, true, true, false)),
+        assertEquals(List.of(new LinkFinalPositionRequest(0, true, true, false)),
             runtime.consumePendingLinkFinalPositionRequests());
     }
 
@@ -551,7 +563,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x0A, runtime.enemyIgnoreHitsCountdown(0));
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
 
-        runtime.tick(0, 120, 120, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
 
         assertEquals(0, runtime.enemyFlashCountdown(0));
         assertEquals(0x18, runtime.transitionCountdown(0));
@@ -576,11 +588,11 @@ final class RoomEntityRuntimeTest {
             true, null, catalog, tables);
 
         runtime.setPressedButtonsMask(0x01);
-        runtime.tick(0, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
         assertEquals(0x40, runtime.snapshot().slots().get(0).x());
         assertEquals(4, runtime.snapshot().slots().get(0).spriteVariant());
 
-        runtime.tick(1, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0, 0, () -> 0));
         assertEquals(0x3F, runtime.snapshot().slots().get(0).x());
         assertEquals(4, runtime.snapshot().slots().get(0).spriteVariant());
         assertEquals(0x04, runtime.enemyHealth(0));
@@ -607,16 +619,16 @@ final class RoomEntityRuntimeTest {
             true, null, catalog, tables);
 
         runtime.setPressedButtonsMask(0x01);
-        runtime.tick(0, 0x50, 0x50, () -> 0,
-            null, null, 0, 3, 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x50, () -> 0,
+            null, null, 0, 3, 0));
         assertEquals(0x3F, runtime.snapshot().slots().get(0).x());
         assertEquals(0x02, runtime.snapshot().slots().get(0).spriteVariant());
         assertEquals(0x02, runtime.enemyHealth(0));
         assertEquals(0x12, runtime.physicsFlags(0));
         assertEquals(0x48, runtime.options1(0));
 
-        runtime.tick(1, 0x50, 0x50, () -> 0,
-            null, null, 0, 3, 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x50, 0x50, () -> 0,
+            null, null, 0, 3, 0));
         assertEquals(0x3E, runtime.snapshot().slots().get(0).x());
         assertEquals(0x08, runtime.options1(0));
 
@@ -640,8 +652,8 @@ final class RoomEntityRuntimeTest {
             true, null, catalog, tables);
 
         runtime.setPressedButtonsMask(0x01);
-        runtime.tick(0, 0x50, 0x50, () -> 0,
-            null, null, 0, 3, 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x50, () -> 0,
+            null, null, 0, 3, 0));
         assertEquals(0x48, runtime.options1(0));
 
         List<EntityCombatEvent> swordHit = runtime.resolveCombat(
@@ -671,10 +683,10 @@ final class RoomEntityRuntimeTest {
             true, null, catalog, tables);
 
         runtime.setPressedButtonsMask(0x08);
-        runtime.tick(0, 0x40, 0x70, () -> 0,
-            null, null, 0, 0, 0);
-        runtime.tick(1, 0x40, 0x70, () -> 0,
-            null, null, 0, 0, 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x70, () -> 0,
+            null, null, 0, 0, 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x40, 0x70, () -> 0,
+            null, null, 0, 0, 0));
         assertEquals(0x08, runtime.options1(0));
 
         RoomEntity maskedMimic = runtime.snapshot().slots().get(0);
@@ -701,7 +713,7 @@ final class RoomEntityRuntimeTest {
 
         runtime.setSwitchBlockAnimationActiveForTest(true);
         runtime.setEnemyFlashCountdownForTest(0, 0x02);
-        runtime.tick(0, 120, 120, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
 
         assertEquals(0, runtime.enemyFlashCountdown(0));
         assertFalse(runtime.consumePendingSwitchBlockAnimationRequest());
@@ -758,7 +770,7 @@ final class RoomEntityRuntimeTest {
         assertTrue(runtime.snapshot().slots().get(0).powerRecoilDeath());
 
         for (int frame = 1; frame <= 0x30; frame++) {
-            runtime.tick(frame, 120, 120, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, () -> 0));
         }
 
         RoomEntity rebuilt = runtime.snapshot().slots().get(0);
@@ -781,7 +793,7 @@ final class RoomEntityRuntimeTest {
         assertTrue(runtime.powerRecoilDeath(0));
 
         for (int frame = 0; frame < 0x40; frame++) {
-            runtime.tick(frame, 120, 120, sequence(0x00));
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, sequence(0x00)));
         }
 
         assertFalse(runtime.snapshot().slots().get(0).loaded());
@@ -810,9 +822,9 @@ final class RoomEntityRuntimeTest {
         runtime.clearEntity(15);
         assertFalse(runtime.powerRecoilDeath(15));
 
-        runtime.tick(0, 80, 64, () -> 0, false);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 64, () -> 0, false));
         for (int frame = 1; frame <= 6; frame++) {
-            runtime.tick(frame, 80, 64, () -> 0, false);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 80, 64, () -> 0, false));
         }
 
         RoomEntity projectile = runtime.snapshot().slots().get(15);
@@ -830,11 +842,11 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x33, 24, 32, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
-        runtime.tick(0x00);
+        runtime.tick(EntityTestFrames.frame(runtime, 0x00));
         assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
-        runtime.tick(0x08);
+        runtime.tick(EntityTestFrames.frame(runtime, 0x08));
         assertEquals(1, runtime.snapshot().slots().get(0).spriteVariant());
-        runtime.tick(0x10);
+        runtime.tick(EntityTestFrames.frame(runtime, 0x10));
         assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
     }
 
@@ -855,8 +867,8 @@ final class RoomEntityRuntimeTest {
             return RoomEntityGroundInteraction.Result.unchanged(updated, 0x02);
         });
 
-        runtime.tick(0, 0, 0, () -> 0);
-        runtime.tick(1, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0, 0, () -> 0));
 
         assertEquals(2, calls.get());
         assertEquals(34, runtime.snapshot().slots().get(0).x());
@@ -876,8 +888,8 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(
             snapshot(initialEntity), false, () -> 0, catalog);
 
-        runtime.tick(0, 0, 0, () -> 0,
-            (entity, direction, nextX, nextY) -> false);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0,
+            (entity, direction, nextX, nextY) -> false));
 
         RoomEntity updated = runtime.snapshot().slots().get(0);
         assertEquals(EntitySpriteDefinition.Shape.DYNAMIC,
@@ -894,8 +906,8 @@ final class RoomEntityRuntimeTest {
         assertEquals(-0x60,
             updated.spriteDefinition().dynamicVariant(0).get(4).yOffset());
 
-        runtime.tick(1, 0, 0, () -> 0,
-            (entity, direction, nextX, nextY) -> false);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0, 0, () -> 0,
+            (entity, direction, nextX, nextY) -> false));
         assertEquals(0x51, runtime.snapshot().slots().get(0).x());
     }
 
@@ -927,8 +939,8 @@ final class RoomEntityRuntimeTest {
         assertEquals(1, events.size());
         assertTrue(runtime.enemyRecoilActive(0));
 
-        runtime.tick(0, 0, 0, () -> 0,
-            (entity, direction, nextX, nextY) -> true);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0,
+            (entity, direction, nextX, nextY) -> true));
 
         assertTrue(observedIgnoreHits.contains(0x09),
             () -> "observed=" + observedIgnoreHits
@@ -967,11 +979,11 @@ final class RoomEntityRuntimeTest {
         runtime.setGroundInteraction((entity, frame, previousStatus, speedZ, sideScrolling) ->
             RoomEntityGroundInteraction.Result.unloaded(entity, 0x02, true));
 
-        runtime.tick(0, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
 
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
         assertEquals(0, runtime.groundStatus(0));
-        assertEquals(List.of(new RoomEntityRuntime.TransientVfxRequest(
+        assertEquals(List.of(new TransientVfxRequest(
             TransientVfxType.WATER_SPLASH, 0x40, 0x50)),
             runtime.transientVfxRequests());
         assertEquals(List.of(new EntityCombatEvent(0, 0x4D, 0, false,
@@ -990,7 +1002,7 @@ final class RoomEntityRuntimeTest {
         runtime.setGroundInteraction((entity, frame, previousStatus, speedZ, sideScrolling) ->
             RoomEntityGroundInteraction.Result.pit(entity, 0x01, 0x68, 0x70));
 
-        runtime.tick(0, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
 
         RoomEntity falling = runtime.snapshot().slots().get(0);
         assertEquals(EntityStatus.FALLING, falling.status());
@@ -1012,7 +1024,7 @@ final class RoomEntityRuntimeTest {
         runtime.setGroundInteraction((entity, frame, previousStatus, speedZ, sideScrolling) ->
             RoomEntityGroundInteraction.Result.pit(entity, 0x01, 0x68, 0x70));
 
-        runtime.tick(0, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
 
         assertEquals(EntityStatus.FALLING, runtime.snapshot().slots().get(0).status());
         assertEquals(0x6F, runtime.transitionCountdown(0));
@@ -1031,10 +1043,10 @@ final class RoomEntityRuntimeTest {
         runtime.setGroundInteraction((entity, frame, previousStatus, speedZ, sideScrolling) ->
             RoomEntityGroundInteraction.Result.pit(entity, 0x01, 0x68, 0x70));
 
-        runtime.tick(0, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
         assertEquals(EntityStatus.FALLING, runtime.snapshot().slots().get(0).status());
 
-        runtime.tick(1, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0, 0, () -> 0));
 
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
         assertEquals(0x06, runtime.colorShellState(0));
@@ -1050,10 +1062,10 @@ final class RoomEntityRuntimeTest {
         runtime.setGroundInteraction((entity, frame, previousStatus, speedZ, sideScrolling) ->
             RoomEntityGroundInteraction.Result.pit(entity, 0x01, 0x68, 0x70));
 
-        runtime.tick(0, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
         List<EntityCombatEvent> fallingEvents = new ArrayList<>();
         for (int frame = 1; frame <= 16; frame++) {
-            runtime.tick(frame, 0, 0, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0));
             fallingEvents.addAll(runtime.consumePendingEntityEvents());
         }
 
@@ -1068,12 +1080,12 @@ final class RoomEntityRuntimeTest {
             fallingEvents);
 
         for (int frame = 17; frame <= 25; frame++) {
-            runtime.tick(frame, 0, 0, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0));
         }
         assertEquals(4, runtime.fallingVisualYOffset(0));
         assertEquals(4, runtime.snapshot().visualYOffset(0));
         for (int frame = 26; frame <= 72; frame++) {
-            runtime.tick(frame, 0, 0, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0));
         }
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
     }
@@ -1089,7 +1101,7 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial, false, null, catalog);
         runtime.setTransitionCountdownForTest(0, 0x31);
 
-        runtime.tick(0, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
 
         RoomEntity falling = runtime.snapshot().slots().get(0);
         assertEquals(EntityStatus.FALLING, falling.status());
@@ -1115,11 +1127,11 @@ final class RoomEntityRuntimeTest {
             return EntityBackgroundCollisionResult.passable(direction, 0, nextX, nextY);
         });
 
-        runtime.tick(0, 0, 0, () -> 0);
-        runtime.tick(1, 0, 0, () -> 0);
-        runtime.tick(2, 0, 0, () -> 0);
-        runtime.tick(3, 0, 0, () -> 0);
-        runtime.tick(4, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0, 0, () -> 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 0, 0, () -> 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 3, 0, 0, () -> 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 4, 0, 0, () -> 0));
 
         RoomEntity falling = runtime.snapshot().slots().get(0);
         assertEquals(EntityStatus.FALLING, falling.status());
@@ -1153,7 +1165,7 @@ final class RoomEntityRuntimeTest {
         });
 
         for (int frame = 0; frame <= 4; frame++) {
-            runtime.tick(frame, 0, 0, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0));
         }
 
         RoomEntity falling = runtime.snapshot().slots().get(0);
@@ -1182,7 +1194,7 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(1, 1, 0x6E, 40, 32, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
-        runtime.tick(0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0));
 
         assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
         assertEquals(1, runtime.snapshot().slots().get(1).spriteVariant());
@@ -1198,7 +1210,7 @@ final class RoomEntityRuntimeTest {
         // State 0 selects +4 X speed; state 16 selects -4 Y speed.
         IntSupplier randomBytes = sequence(0x00, 0x01);
         for (int frame = 0; frame <= 17; frame++) {
-            runtime.tick(frame, 200, 32, randomBytes);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 200, 32, randomBytes));
         }
 
         RoomEntity butterfly = runtime.snapshot().slots().get(0);
@@ -1217,9 +1229,9 @@ final class RoomEntityRuntimeTest {
         // then writes the vector toward Link into its private state. The
         // subsequent 32-frame speed selection adds that private X component.
         IntSupplier randomBytes = sequence(0x00, 0x00, 0x00);
-        runtime.tick(64, 40, 32, randomBytes);
+        runtime.tick(EntityTestFrames.frame(runtime, 64, 40, 32, randomBytes));
         for (int frame = 65; frame <= 99; frame++) {
-            runtime.tick(frame, 40, 32, randomBytes);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 40, 32, randomBytes));
         }
 
         // The attraction vector is stored in private state at frame 64. The
@@ -1238,7 +1250,7 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
         // GetVectorTowardsLink(2) turns dx=16, dy=8 into (2,1), not (2,2).
-        runtime.tick(0, 80, 72, sequence(0x00, 0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 72, sequence(0x00, 0x00)));
 
         assertEquals(2, runtime.butterflyPrivateStateX(0));
         assertEquals(1, runtime.butterflyPrivateStateY(0));
@@ -1251,12 +1263,12 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x19, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
-        runtime.tick(0, 96, 64, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 96, 64, sequence(0x00)));
         assertEquals(0, runtime.keeseState(0));
         assertEquals(0, runtime.keeseTransitionCountdown(0));
         assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
 
-        runtime.tick(1, 72, 64, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 72, 64, sequence(0x00)));
         assertEquals(1, runtime.keeseState(0));
         assertEquals(0x50, runtime.keeseTransitionCountdown(0));
         assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
@@ -1272,9 +1284,9 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
         IntSupplier randomBytes = sequence(0x00, 0x01, 0x01);
 
-        runtime.tick(0, 72, 64, randomBytes);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 72, 64, randomBytes));
         for (int frame = 1; frame <= 11; frame++) {
-            runtime.tick(frame, 72, 64, randomBytes);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 72, 64, randomBytes));
         }
 
         assertEquals(1, runtime.keeseState(0));
@@ -1294,7 +1306,7 @@ final class RoomEntityRuntimeTest {
 
         // AnimateEntities starts at MAX_ENTITIES - 1 and decrements. Slot 1
         // therefore consumes the first wake timer byte.
-        runtime.tick(0, 72, 72, sequence(0x00, 0x3F));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 72, 72, sequence(0x00, 0x3F)));
 
         assertEquals(0x8F, runtime.keeseTransitionCountdown(0));
         assertEquals(0x50, runtime.keeseTransitionCountdown(1));
@@ -1346,19 +1358,19 @@ final class RoomEntityRuntimeTest {
         assertFalse(runtime.snapshot().slots().get(0).powerRecoilDeath());
 
         for (int frame = 1; frame <= 11; frame++) {
-            runtime.tick(frame, 120, 120, sequence(0x00));
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, sequence(0x00)));
         }
         assertEquals(0x1F, runtime.dyingCountdown(0));
         assertEquals(-1, runtime.snapshot().slots().get(0).deathSpriteVariant());
-        runtime.tick(12, 120, 120, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 12, 120, 120, sequence(0x00)));
         assertEquals(0x1E, runtime.dyingCountdown(0));
         assertEquals(3, runtime.snapshot().slots().get(0).deathSpriteVariant());
 
         for (int frame = 13; frame < 42; frame++) {
-            runtime.tick(frame, 120, 120, sequence(0x00));
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, sequence(0x00)));
         }
         assertTrue(runtime.snapshot().slots().get(0).loaded());
-        runtime.tick(42, 120, 120, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 42, 120, 120, sequence(0x00)));
         assertFalse(runtime.snapshot().slots().get(0).loaded());
     }
 
@@ -1378,7 +1390,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(-1, runtime.snapshot().slots().get(0).deathSpriteVariant());
         assertTrue(runtime.snapshot().slots().get(0).powerRecoilDeath());
         for (int frame = 1; frame <= 11; frame++) {
-            runtime.tick(frame, 120, 120, sequence(0x00));
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, sequence(0x00)));
         }
         assertEquals(0x40 - 11, runtime.dyingCountdown(0));
         assertEquals(-1, runtime.snapshot().slots().get(0).deathSpriteVariant());
@@ -1395,13 +1407,13 @@ final class RoomEntityRuntimeTest {
 
         // State 0 pauses for ($10 + random & $0F) frames, then state 1
         // selects direction 3 (down) and the ROM's +8/16 fixed-point speed.
-        runtime.tick(0, 200, 32, randomBytes);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 200, 32, randomBytes));
         assertEquals(1, runtime.octorokState(0));
         assertEquals(0x12, runtime.octorokTransitionCountdown(0));
         assertEquals(0, runtime.octorokSpeedY(0));
 
         for (int frame = 1; frame <= 0x12; frame++) {
-            runtime.tick(frame, 200, 32, randomBytes);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 200, 32, randomBytes));
         }
         assertEquals(0, runtime.octorokState(0),
             () -> "state=" + runtime.octorokState(0)
@@ -1411,8 +1423,8 @@ final class RoomEntityRuntimeTest {
         assertEquals(8, runtime.octorokSpeedY(0));
         assertEquals(64, runtime.snapshot().slots().get(0).y());
 
-        runtime.tick(0x13, 200, 32, randomBytes);
-        runtime.tick(0x14, 200, 32, randomBytes);
+        runtime.tick(EntityTestFrames.frame(runtime, 0x13, 200, 32, randomBytes));
+        runtime.tick(EntityTestFrames.frame(runtime, 0x14, 200, 32, randomBytes));
         assertEquals(65, runtime.snapshot().slots().get(0).y());
         assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
     }
@@ -1436,7 +1448,7 @@ final class RoomEntityRuntimeTest {
         IntSupplier randomBytes = sequence(0x00, 0x00, 0x03);
 
         assertEquals(2, runtime.enemyHealth(0));
-        runtime.tick(0, 0xC0, 0xC0, randomBytes);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0xC0, 0xC0, randomBytes));
 
         assertEquals(1, runtime.ironMaskState(0));
         assertEquals(0x10, runtime.ironMaskTransitionCountdown(0));
@@ -1444,7 +1456,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x4FCB, runtime.snapshot().slots().get(0).spriteDefinition().address());
 
         for (int frame = 1; frame <= 0x10; frame++) {
-            runtime.tick(frame, 0xC0, 0xC0, randomBytes);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0xC0, 0xC0, randomBytes));
         }
 
         assertEquals(0, runtime.ironMaskState(0));
@@ -1453,8 +1465,8 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x20, runtime.ironMaskTransitionCountdown(0));
         assertEquals(0x4FCB, runtime.snapshot().slots().get(0).spriteDefinition().address());
 
-        runtime.tick(0x11, 0xC0, 0xC0, randomBytes);
-        runtime.tick(0x12, 0xC0, 0xC0, randomBytes);
+        runtime.tick(EntityTestFrames.frame(runtime, 0x11, 0xC0, 0xC0, randomBytes));
+        runtime.tick(EntityTestFrames.frame(runtime, 0x12, 0xC0, 0xC0, randomBytes));
         assertEquals(0x51, runtime.snapshot().slots().get(0).y());
     }
 
@@ -1471,7 +1483,7 @@ final class RoomEntityRuntimeTest {
 
         // Java direction 1 is ROM UP, while the freshly initialized Iron Mask
         // is facing ROM RIGHT (direction 0).
-        runtime.tick(0, 0xC0, 0xC0, () -> 0, null, null, 0, 1, 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0xC0, 0xC0, () -> 0, null, null, 0, 1, 0));
         List<EntityCombatEvent> events = runtime.resolveCombat(
             0, 0xC0, 0xC0, false, true, true, 0x58, 1, 0x58, 1);
 
@@ -1502,7 +1514,7 @@ final class RoomEntityRuntimeTest {
         int hookshotSlot = runtime.spawnHookshotChain(0x50, 0x50, 0, 1);
         assertEquals(15, hookshotSlot);
 
-        runtime.tick(0, 0xC0, 0xC0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0xC0, 0xC0, () -> 0));
 
         assertEquals(1, runtime.ironMaskPrivateState2(0));
         RoomEntity mask = runtime.snapshot().slots().stream()
@@ -1517,9 +1529,9 @@ final class RoomEntityRuntimeTest {
         assertEquals(chain.spriteVariant() & 0x01, mask.spriteVariant());
         assertEquals(0xB2, runtime.physicsFlags(mask.slot()));
 
-        runtime.tick(1, 0xC0, 0xC0, () -> 0);
-        runtime.tick(2, 0xC0, 0xC0, () -> 0);
-        runtime.tick(3, 0xC0, 0xC0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0xC0, 0xC0, () -> 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 0xC0, 0xC0, () -> 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 3, 0xC0, 0xC0, () -> 0));
 
         RoomEntity unmasked = runtime.snapshot().slots().get(0);
         assertEquals(0x4F, unmasked.x());
@@ -1541,9 +1553,9 @@ final class RoomEntityRuntimeTest {
             return 0;
         };
 
-        runtime.tick(0, 80, 64, randomBytes, false);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 64, randomBytes, false));
         for (int frame = 1; frame <= 6; frame++) {
-            runtime.tick(frame, 80, 64, randomBytes, false);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 80, 64, randomBytes, false));
         }
 
         assertEquals(1, randomCalls.get());
@@ -1568,9 +1580,9 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x09, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
-        runtime.tick(0, 80, 64, () -> 0, true);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 64, () -> 0, true));
         for (int frame = 1; frame <= 6; frame++) {
-            runtime.tick(frame, 80, 64, () -> 0, true);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 80, 64, () -> 0, true));
         }
 
         assertTrue(runtime.projectileLaunchRequests().isEmpty());
@@ -1585,16 +1597,16 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
         IntSupplier randomBytes = sequence(0x02, 0x03);
 
-        runtime.tick(0, 200, 32, randomBytes);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 200, 32, randomBytes));
         for (int frame = 1; frame <= 0x12; frame++) {
-            runtime.tick(frame, 200, 32, randomBytes);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 200, 32, randomBytes));
         }
 
         assertEquals(0, runtime.octorokState(0));
         assertEquals(3, runtime.octorokDirection(0));
         assertEquals(8, runtime.octorokSpeedY(0));
-        runtime.tick(0x13, 200, 32, randomBytes);
-        runtime.tick(0x14, 200, 32, randomBytes);
+        runtime.tick(EntityTestFrames.frame(runtime, 0x13, 200, 32, randomBytes));
+        runtime.tick(EntityTestFrames.frame(runtime, 0x14, 200, 32, randomBytes));
         assertEquals(65, runtime.snapshot().slots().get(0).y());
         assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
     }
@@ -1606,18 +1618,18 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x14, 0x50, 64, EntityStatus.ACTIVE, definition, 6, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
-        runtime.tick(0, 0xC0, 64, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0xC0, 64, () -> 0));
         assertEquals(1, runtime.moblinSwordState(0));
         assertEquals(0x80, runtime.moblinSwordTransitionCountdown(0));
         assertEquals(0, runtime.moblinSwordDirection(0));
         assertEquals(0x06, runtime.moblinSwordSpeedX(0));
 
-        runtime.tick(1, 0xC0, 64, () -> 0);
-        runtime.tick(2, 0xC0, 64, () -> 0);
-        runtime.tick(3, 0xC0, 64, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0xC0, 64, () -> 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 0xC0, 64, () -> 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 3, 0xC0, 64, () -> 0));
         assertEquals(0x51, runtime.snapshot().slots().get(0).x());
 
-        runtime.tick(4, 0x70, 64, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 4, 0x70, 64, () -> 0));
         assertEquals(2, runtime.moblinSwordState(0));
         assertEquals(0x80, runtime.moblinSwordTransitionCountdown(0));
         assertEquals(0x10, runtime.moblinSwordPrivateCountdown1(0));
@@ -1628,13 +1640,13 @@ final class RoomEntityRuntimeTest {
     void swordMoblinPausesMotionAndTimersDuringDialogue() {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, 0x14, 0x50, 64, EntityStatus.ACTIVE, pairDefinition(0x14, 8), 6, 0, 0, 0, -1, false)));
-        runtime.tick(0, 0xC0, 64, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0xC0, 64, () -> 0));
         runtime.setDialogActive(true);
-        for (int frame = 1; frame <= 180; frame++) runtime.tick(frame, 0xC0, 64, () -> 0);
+        for (int frame = 1; frame <= 180; frame++) runtime.tick(EntityTestFrames.frame(runtime, frame, 0xC0, 64, () -> 0));
         assertEquals(0x50, runtime.snapshot().slots().get(0).x());
         assertEquals(0x80, runtime.moblinSwordTransitionCountdown(0));
         runtime.setDialogActive(false);
-        for (int frame = 181; frame <= 184; frame++) runtime.tick(frame, 0xC0, 64, () -> 0);
+        for (int frame = 181; frame <= 184; frame++) runtime.tick(EntityTestFrames.frame(runtime, frame, 0xC0, 64, () -> 0));
         assertTrue(runtime.snapshot().slots().get(0).x() > 0x50);
     }
 
@@ -1667,15 +1679,15 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(1, 1, 0x0C, 0x20, 64, EntityStatus.ACTIVE,
                 pairDefinition(0x0C, 4), 0, 0, 0, 0, -1, false)));
 
-        runtime.tick(0, 0xC0, 64, () -> 0,
-            (entity, direction, nextX, nextY) -> entity.type() == 0x0C && direction == 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0xC0, 64, () -> 0,
+            (entity, direction, nextX, nextY) -> entity.type() == 0x0C && direction == 0));
 
         assertEquals(0x04, runtime.swordMoblinAlertingSoundCounter());
         assertEquals(2, runtime.moblinSwordState(0));
         assertEquals(0x10, runtime.moblinSwordPrivateCountdown1(0));
 
-        runtime.tick(1, 0xC0, 64, () -> 0,
-            (entity, direction, nextX, nextY) -> false);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0xC0, 64, () -> 0,
+            (entity, direction, nextX, nextY) -> false));
         assertEquals(0x03, runtime.swordMoblinAlertingSoundCounter());
     }
 
@@ -1687,12 +1699,12 @@ final class RoomEntityRuntimeTest {
         runtime.setEntityMapIdForTest(0x15);
         runtime.setTransitionSequenceCounterForTest(0x04);
 
-        runtime.tick(0, 0xC0, 0x40, () -> 0);
-        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(1, 0x90)),
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0xC0, 0x40, () -> 0));
+        assertEquals(List.of(new DialogRequest(1, 0x90)),
             runtime.consumePendingDialogRequests());
         assertEquals(1, runtime.moblinSwordPrivateState3(0));
 
-        runtime.tick(3, 0x70, 0x40, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 3, 0x70, 0x40, () -> 0));
         assertTrue(runtime.consumePendingDialogRequests().isEmpty());
         assertEquals(1, runtime.moblinSwordPrivateState3(0));
     }
@@ -1705,15 +1717,15 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
         IntSupplier randomBytes = sequence(0x00, 0x03, 0x01);
 
-        runtime.tick(0, 200, 32, randomBytes);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 200, 32, randomBytes));
         for (int frame = 1; frame <= 0x12; frame++) {
-            runtime.tick(frame, 200, 32, randomBytes);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 200, 32, randomBytes));
         }
 
         RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) -> direction == 3;
-        runtime.tick(0x13, 200, 32, randomBytes, wall);
-        runtime.tick(0x14, 200, 32, randomBytes, wall);
-        runtime.tick(0x15, 200, 32, randomBytes, wall);
+        runtime.tick(EntityTestFrames.frame(runtime, 0x13, 200, 32, randomBytes, wall));
+        runtime.tick(EntityTestFrames.frame(runtime, 0x14, 200, 32, randomBytes, wall));
+        runtime.tick(EntityTestFrames.frame(runtime, 0x15, 200, 32, randomBytes, wall));
 
         assertEquals(64, runtime.snapshot().slots().get(0).y());
         assertEquals(0, runtime.octorokSpeedY(0));
@@ -1763,7 +1775,7 @@ final class RoomEntityRuntimeTest {
             1, 120, 120, false, true, true, 72, 1, 72, 1).isEmpty());
 
         for (int frame = 1; frame <= 0x18; frame++) {
-            runtime.tick(frame, 120, 120, sequence(0x00));
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, sequence(0x00)));
         }
         assertEquals(0, runtime.enemyFlashCountdown(0));
 
@@ -1796,7 +1808,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(0xD0, runtime.enemyRecoilSpeedX(0));
         assertEquals(0xD0, runtime.enemyRecoilSpeedY(0));
 
-        runtime.tick(1, 120, 120, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, sequence(0x00)));
 
         RoomEntity afterRecoil = runtime.snapshot().slots().get(0);
         assertEquals(61, afterRecoil.x(), "x=" + afterRecoil.x());
@@ -1849,7 +1861,7 @@ final class RoomEntityRuntimeTest {
         assertTrue(runtime.enemyRecoilActive(0));
 
         for (int frame = 0; frame < 0x40; frame++) {
-            runtime.tick(frame, 120, 120, sequence(0x00));
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, sequence(0x00)));
         }
 
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
@@ -1881,7 +1893,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(1, runtime.enemyHealth(0));
 
         for (int frame = 1; frame <= 0x18; frame++) {
-            runtime.tick(frame, 120, 120, sequence(0x00));
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, sequence(0x00)));
         }
         RoomEntity afterFirstHit = runtime.snapshot().slots().get(0);
         List<EntityCombatEvent> secondHit = runtime.resolveCombat(
@@ -1927,7 +1939,7 @@ final class RoomEntityRuntimeTest {
         runtime.setColorShellStateForTest(0, 0x08, 1, 0, 0, 0);
         world.objectValue = 0x5E;
 
-        runtime.tick(0, 0x40, 0x40, () -> 0x00, null);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x40, () -> 0x00, null));
 
         RoomEntity shell = runtime.snapshot().slots().get(0);
         assertEquals(0x0C, runtime.colorShellState(0));
@@ -1946,7 +1958,7 @@ final class RoomEntityRuntimeTest {
         runtime.setColorShellWorld(world);
         runtime.setColorShellStateForTest(0, 0x0D, 1, 0, 0, 0);
 
-        runtime.tick(0, 0x40, 0x40, () -> 0x00, null);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x40, () -> 0x00, null));
 
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
         assertEquals(1, runtime.consumePendingClearedEntityMask());
@@ -1966,14 +1978,14 @@ final class RoomEntityRuntimeTest {
         runtime.setEntityRoomIdForTest(0x10);
         runtime.setObjectQuery(entity -> new RoomEntityObjectSample(0x09, 0, 0x40, 0x40));
 
-        runtime.tick(0, 0x20, 0x30, () -> 0, null);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x30, () -> 0, null));
 
         assertEquals(-1, runtime.snapshot().slots().get(0).spriteVariant());
         assertEquals(0x02, runtime.secretSeashellPrivateState3(0));
         assertEquals(0x00, runtime.secretSeashellPrivateState4(0));
 
         runtime.setObjectQuery(entity -> new RoomEntityObjectSample(0x04, 0, 0x40, 0x40));
-        runtime.tick(1, 0x20, 0x30, () -> 0, null);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x20, 0x30, () -> 0, null));
 
         RoomEntity revealed = runtime.snapshot().slots().get(0);
         assertEquals(0, revealed.spriteVariant());
@@ -1998,7 +2010,7 @@ final class RoomEntityRuntimeTest {
         runtime.setEntityRoomIdForTest(0xDA);
         runtime.setObjectQuery(entity -> new RoomEntityObjectSample(0x09, 0, 0x40, 0x40));
 
-        runtime.tick(0, 0x20, 0x30, () -> 0, null);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x30, () -> 0, null));
 
         assertEquals(-1, runtime.snapshot().slots().get(0).spriteVariant());
         assertEquals(0x02, runtime.secretSeashellPrivateState3(0));
@@ -2017,18 +2029,18 @@ final class RoomEntityRuntimeTest {
         runtime.setEntityRoomIdForTest(0xA4);
         runtime.setObjectQuery(entity -> new RoomEntityObjectSample(0x04, 0, 0x40, 0x40));
 
-        runtime.tick(0, 0x20, 0x30, () -> 0, null);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x30, () -> 0, null));
         assertEquals(-1, runtime.snapshot().slots().get(0).spriteVariant());
         assertEquals(0x01, runtime.secretSeashellPrivateState3(0));
 
         runtime.setSecretSeashellPegasusCollisionForTest(true, true, 0x90, 0x90);
-        runtime.tick(1, 0x20, 0x30, () -> 0, null);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x20, 0x30, () -> 0, null));
 
         assertEquals(-1, runtime.snapshot().slots().get(0).spriteVariant());
         assertEquals(0x01, runtime.secretSeashellPrivateState3(0));
 
         runtime.setSecretSeashellPegasusCollisionForTest(true, true, 0x48, 0x58);
-        runtime.tick(2, 0x20, 0x30, () -> 0, null);
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 0x20, 0x30, () -> 0, null));
 
         assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
         assertEquals(0, runtime.secretSeashellPrivateState3(0));
@@ -2047,7 +2059,7 @@ final class RoomEntityRuntimeTest {
         runtime.setChestPlayerLevels(1, 2, 1);
         runtime.setObjectQuery(entity -> new RoomEntityObjectSample(0x04, 0, 0x40, 0x40));
 
-        runtime.tick(0, 0x20, 0x30, () -> 0, null);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x30, () -> 0, null));
 
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
         assertEquals(0, runtime.consumePendingClearedEntityMask());
@@ -2060,7 +2072,7 @@ final class RoomEntityRuntimeTest {
         runtime.setEntityRoomStatusForTest(0x10);
         runtime.setObjectQuery(entity -> new RoomEntityObjectSample(0x04, 0, 0x40, 0x40));
 
-        runtime.tick(0, 0x20, 0x30, () -> 0, null);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x30, () -> 0, null));
 
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
         assertEquals(0, runtime.consumePendingClearedEntityMask());
@@ -2094,7 +2106,7 @@ final class RoomEntityRuntimeTest {
             true, 72, 1, 72, 1).isEmpty());
 
         for (int frame = 0; frame < 0x60; frame++) {
-            runtime.tick(frame, 120, 120, sequence(0x00));
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, sequence(0x00)));
         }
         assertEquals(EntityStatus.DYING, runtime.snapshot().slots().get(0).status());
         assertEquals(0x1F, runtime.dyingCountdown(0));
@@ -2133,7 +2145,7 @@ final class RoomEntityRuntimeTest {
             true, 72, 1, 72, 1).isEmpty());
 
         for (int frame = 0; frame < 0xFF; frame++) {
-            runtime.tick(frame, 120, 120, sequence(0x00));
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, sequence(0x00)));
         }
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
         assertEquals(0, runtime.stunnedCountdown(0));
@@ -2153,7 +2165,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(0xFE, events.get(0).enemySpecialAction());
 
         for (int frame = 0; frame < 0x60; frame++) {
-            runtime.tick(frame, 120, 120, sequence(0x00));
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, sequence(0x00)));
         }
         assertEquals(0x1E, runtime.snapshot().slots().get(0).type());
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
@@ -2277,17 +2289,17 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(2, 2, 0x20, 56, 32, EntityStatus.ACTIVE, pairDefinition(0x20, 2), 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
-        runtime.tick(0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0));
         assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
         assertEquals(1, runtime.snapshot().slots().get(1).spriteVariant());
         assertEquals(0, runtime.snapshot().slots().get(2).spriteVariant());
 
-        runtime.tick(8);
+        runtime.tick(EntityTestFrames.frame(runtime, 8));
         assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
         assertEquals(1, runtime.snapshot().slots().get(1).spriteVariant());
         assertEquals(1, runtime.snapshot().slots().get(2).spriteVariant());
 
-        runtime.tick(16);
+        runtime.tick(EntityTestFrames.frame(runtime, 16));
         assertEquals(1, runtime.snapshot().slots().get(0).spriteVariant());
         assertEquals(0, runtime.snapshot().slots().get(1).spriteVariant());
         assertEquals(0, runtime.snapshot().slots().get(2).spriteVariant());
@@ -2300,7 +2312,7 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x12, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
-        runtime.tick(0, 96, 96, sequence(0x00, 0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 96, 96, sequence(0x00, 0x00)));
         assertEquals(0x20, runtime.ghiniTransitionCountdown(0));
         assertEquals(0x18, runtime.ghiniPrivateCountdown1(0));
         assertEquals(0, runtime.ghiniTargetXDirection(0));
@@ -2309,7 +2321,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(1, runtime.ghiniSpeedY(0));
         assertEquals(1, runtime.snapshot().slots().get(0).z());
 
-        runtime.tick(4, 96, 96, sequence(0x00, 0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 4, 96, 96, sequence(0x00, 0x00)));
         assertEquals(2, runtime.ghiniSpeedX(0));
         assertEquals(2, runtime.ghiniSpeedY(0));
         assertEquals(2, runtime.snapshot().slots().get(0).z());
@@ -2341,7 +2353,7 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x12, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
-        runtime.tick(0, 96, 96, sequence(0x1F, 0x0F));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 96, 96, sequence(0x1F, 0x0F)));
 
         assertEquals(0x3F, runtime.ghiniTransitionCountdown(0));
         assertEquals(1, runtime.ghiniTargetXDirection(0));
@@ -2389,7 +2401,7 @@ final class RoomEntityRuntimeTest {
                 return RoomEntityGroundInteraction.Result.unchanged(entity, previousStatus);
             });
 
-            runtime.tick(0, 0x90, 0x90, 0, sequence(0x00));
+            runtime.tick(EntityTestFrames.frame(runtime, 0, 0x90, 0x90, 0, sequence(0x00)));
 
             RoomEntity afterInit = runtime.snapshot().slots().get(0);
             assertEquals(EntityStatus.ACTIVE, afterInit.status());
@@ -2411,14 +2423,14 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime compatibilityRuntime = RoomEntityRuntime.from(
             snapshot(ghiniEntity(catalog, 0, 0x10, EntityStatus.ACTIVE)), false,
             sequence(0x00), catalog, tables);
-        compatibilityRuntime.tick(0, 0x50, 0x50, sequence(0x00));
+        compatibilityRuntime.tick(EntityTestFrames.frame(compatibilityRuntime, 0, 0x50, 0x50, sequence(0x00)));
         assertEquals(-1, compatibilityRuntime.snapshot().slots().get(0).spriteVariant());
 
         RoomEntityRuntime runtime = RoomEntityRuntime.from(
             snapshot(ghiniEntity(catalog, 0, 0x10, EntityStatus.ACTIVE)), false,
             sequence(0x00), catalog, tables);
         RoomEntity before = runtime.snapshot().slots().get(0);
-        runtime.tick(0, 0x50, 0x50, 0x08, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x50, 0x08, sequence(0x00)));
 
         RoomEntity revealTick = runtime.snapshot().slots().get(0);
         assertEquals(-1, revealTick.spriteVariant());
@@ -2427,7 +2439,7 @@ final class RoomEntityRuntimeTest {
         assertTrue(runtime.resolveCombat(1, 0x50, 0x50, false, true,
             true, 0x58, 1, 0x58, 1).isEmpty());
 
-        runtime.tick(1, 0x50, 0x50, 0, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x50, 0x50, 0, sequence(0x00)));
         RoomEntity visible = runtime.snapshot().slots().get(0);
         assertTrue(visible.spriteVariant() >= 0);
         List<EntityCombatEvent> contact = runtime.resolveCombat(
@@ -2445,14 +2457,14 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime normalRuntime = RoomEntityRuntime.from(
             snapshot(ghiniEntity(catalog, 0, 0x12, EntityStatus.ACTIVE)), false,
             sequence(0x00), catalog, tables);
-        normalRuntime.tick(0, 0x90, 0x90, 0, sequence(0x00));
+        normalRuntime.tick(EntityTestFrames.frame(normalRuntime, 0, 0x90, 0x90, 0, sequence(0x00)));
         assertNotEquals(0, normalRuntime.snapshot().slots().get(0).entityFlipAttribute() & 0x20);
 
         RoomEntityRuntime giantRuntime = RoomEntityRuntime.from(
             snapshot(ghiniEntity(catalog, 0, 0x11, EntityStatus.ACTIVE)), false,
             sequence(0x00), catalog, tables);
-        giantRuntime.tick(0, 0x50, 0x50, 0x01, sequence(0x00));
-        giantRuntime.tick(1, 0x90, 0x90, 0, sequence(0x00));
+        giantRuntime.tick(EntityTestFrames.frame(giantRuntime, 0, 0x50, 0x50, 0x01, sequence(0x00)));
+        giantRuntime.tick(EntityTestFrames.frame(giantRuntime, 1, 0x90, 0x90, 0, sequence(0x00)));
         RoomEntity giant = giantRuntime.snapshot().slots().get(0);
         assertEquals(2, giant.spriteVariant());
         assertEquals(0, giant.entityFlipAttribute() & 0x20);
@@ -2471,9 +2483,9 @@ final class RoomEntityRuntimeTest {
                 snapshot(ghiniEntity(catalog, 0, type, EntityStatus.ACTIVE)), false,
                 sequence(0x00), catalog, tables);
             if (type != 0x12) {
-                runtime.tick(0, 0x50, 0x50, 0x01, sequence(0x00));
+                runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x50, 0x01, sequence(0x00)));
             }
-            runtime.tick(1, 0x90, 0x90, 0, sequence(0x00));
+            runtime.tick(EntityTestFrames.frame(runtime, 1, 0x90, 0x90, 0, sequence(0x00)));
 
             RoomEntity current = runtime.snapshot().slots().get(0);
             int linkX = (current.x() + 0x08) & 0xFF;
@@ -2500,8 +2512,8 @@ final class RoomEntityRuntimeTest {
             snapshot(ghiniEntity(catalog, 0, 0x11, EntityStatus.ACTIVE)), false,
             sequence(0x00), catalog, tables);
 
-        runtime.tick(0, 0x50, 0x50, 0x01, sequence(0x00));
-        runtime.tick(1, 0x90, 0x90, 0, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x50, 0x01, sequence(0x00)));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x90, 0x90, 0, sequence(0x00)));
         List<EntityCombatEvent> events = runtime.resolveCombat(
             0, 0x90, 0x90, false, false, true, 0x58, 1, 0x58, 1,
             EnemyAttackContext.standard());
@@ -2529,7 +2541,7 @@ final class RoomEntityRuntimeTest {
             return RoomEntityGroundInteraction.Result.unchanged(entity, previousStatus);
         });
 
-        runtime.tick(0, 0x90, 0x90, 0, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x90, 0x90, 0, sequence(0x00)));
 
         assertTrue(groundCalls.isEmpty());
         for (int slot = 0; slot < 3; slot++) {
@@ -2544,14 +2556,14 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x20, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
-        runtime.tick(0, 80, 72, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 72, sequence(0x00)));
         assertEquals(1, runtime.hardHatSpeedX(0));
         assertEquals(1, runtime.hardHatSpeedY(0));
         assertEquals(64, runtime.snapshot().slots().get(0).x());
         assertEquals(64, runtime.snapshot().slots().get(0).y());
 
         for (int frame = 1; frame <= 4; frame++) {
-            runtime.tick(frame, 80, 72, sequence(0x00));
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 80, 72, sequence(0x00)));
         }
         assertEquals(2, runtime.hardHatSpeedX(0));
         assertEquals(2, runtime.hardHatSpeedY(0));
@@ -2586,7 +2598,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(1, events.size());
         assertEquals(0xD0, runtime.enemyRecoilSpeedX(0));
         assertEquals(0xD0, runtime.enemyRecoilSpeedY(0));
-        runtime.tick(1, 64, 64, sequence(0));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 64, 64, sequence(0)));
         assertEquals(61, runtime.snapshot().slots().getFirst().x());
         assertEquals(61, runtime.snapshot().slots().getFirst().y());
     }
@@ -2608,7 +2620,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(0xD0, runtime.enemyRecoilSpeedX(0));
         assertEquals(0xD0, runtime.enemyRecoilSpeedY(0));
 
-        runtime.tick(1, 72, 72, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 72, 72, sequence(0x00)));
 
         RoomEntity afterRecoil = runtime.snapshot().slots().get(0);
         assertEquals(61, afterRecoil.x());
@@ -2626,7 +2638,7 @@ final class RoomEntityRuntimeTest {
         RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) ->
             direction == 1 || direction == 2;
 
-        runtime.tick(1, 72, 72, sequence(0x00), wall);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 72, 72, sequence(0x00), wall));
 
         assertEquals(64, runtime.snapshot().slots().get(0).x());
         assertEquals(64, runtime.snapshot().slots().get(0).y());
@@ -2674,7 +2686,7 @@ final class RoomEntityRuntimeTest {
 
             runtime.resolveCombat(0, 120, 120, false, false,
                 true, 72, 1, 72, 1, nonDamaging);
-            runtime.tick(1, 72, 72, sequence(0x01));
+            runtime.tick(EntityTestFrames.frame(runtime, 1, 72, 72, sequence(0x01)));
 
             assertEquals(61, runtime.snapshot().slots().get(0).x(),
                 "type=" + Integer.toHexString(type));
@@ -2702,7 +2714,7 @@ final class RoomEntityRuntimeTest {
             RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) ->
                 direction == 1 || direction == 2;
 
-            runtime.tick(1, 72, 72, sequence(0x01), wall);
+            runtime.tick(EntityTestFrames.frame(runtime, 1, 72, 72, sequence(0x01), wall));
 
             assertEquals(64, runtime.snapshot().slots().get(0).x(),
                 "type=" + Integer.toHexString(type));
@@ -2739,9 +2751,9 @@ final class RoomEntityRuntimeTest {
             }
         });
 
-        runtime.tick(0, 80, 64, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 64, sequence(0x00)));
         for (int frame = 1; frame <= 8; frame++) {
-            runtime.tick(frame, 80, 64, sequence(0x00));
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 80, 64, sequence(0x00)));
         }
 
         assertFalse(observedIgnoreHits.isEmpty());
@@ -2829,7 +2841,7 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x0D, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
         runtime.resolveCombat(0, 72, 72, false, true, true, 72, 1, 72, 1);
-        runtime.tick(1, 72, 72, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 72, 72, sequence(0x00)));
 
         assertEquals(61, runtime.snapshot().slots().get(0).x());
         assertEquals(61, runtime.snapshot().slots().get(0).y());
@@ -2843,19 +2855,19 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x0F, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
-        runtime.tick(0, 64, 64, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 64, 64, sequence(0x00)));
         assertEquals(1, runtime.armosState(0));
         assertEquals(0x30, runtime.armosTransitionCountdown(0));
         assertEquals(0, runtime.armosSpeedX(0));
         assertEquals(0, runtime.armosSpeedY(0));
 
-        runtime.tick(1, 120, 120, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, sequence(0x00)));
         assertEquals(0x2F, runtime.armosTransitionCountdown(0));
         assertEquals(0xF8, runtime.armosSpeedX(0));
         assertEquals(0, runtime.armosSpeedY(0));
 
         for (int frame = 2; frame <= 0x30; frame++) {
-            runtime.tick(frame, 120, 120, sequence(0x00));
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, sequence(0x00)));
         }
         assertEquals(2, runtime.armosState(0));
         assertEquals(0, runtime.armosTransitionCountdown(0));
@@ -2870,15 +2882,15 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, 0x0F, 56, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
-        runtime.tickWithProjectileEvents(0, 64, 64, sequence(0x00), null,
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 64, 64, sequence(0x00), null,
             // The statue uses CheckLinkCollisionWithEnemy.collisionEvenInTheAir;
             // Link's Z must not suppress this collision.
-            new EnemyProjectileCollision.LinkState(64, 64, 0x10, 0, 0, false));
+            new EnemyProjectileCollision.LinkState(64, 64, 0x10, 0, 0, false)));
 
         RoomEntity statue = runtime.snapshot().slots().get(0);
         assertEquals(56, statue.x());
         assertEquals(64, statue.y());
-        assertEquals(List.of(new RoomEntityRuntime.LinkFinalPositionRequest(0)),
+        assertEquals(List.of(new LinkFinalPositionRequest(0)),
             runtime.consumePendingLinkFinalPositionRequests());
     }
 
@@ -2888,7 +2900,7 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, 0x0F, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
-        runtime.tick(0, 64, 64, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 64, 64, sequence(0x00)));
         List<Integer> directions = new ArrayList<>();
         runtime.setBackgroundInteraction((entity, direction, nextX, nextY) -> {
             directions.add(direction);
@@ -2896,9 +2908,9 @@ final class RoomEntityRuntimeTest {
                 direction, 0x01, 0x00, nextX, nextY);
         });
 
-        runtime.tick(1, 120, 120, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, sequence(0x00)));
         int beforeBlockedStep = runtime.snapshot().slots().get(0).x();
-        runtime.tick(2, 120, 120, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 120, 120, sequence(0x00)));
 
         assertEquals(List.of(EntityBackgroundCollisionResult.LEFT), directions);
         assertEquals(beforeBlockedStep, runtime.snapshot().slots().get(0).x());
@@ -2910,8 +2922,8 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, 0x0F, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
-        runtime.tickWithProjectileEvents(0, 64, 64, sequence(0x00), null,
-            new EnemyProjectileCollision.LinkState(64, 64, 0, 0x02, 0, false));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 64, 64, sequence(0x00), null,
+            new EnemyProjectileCollision.LinkState(64, 64, 0, 0x02, 0, false)));
 
         assertEquals(0, runtime.armosState(0));
         assertTrue(runtime.consumePendingLinkFinalPositionRequests().isEmpty());
@@ -2927,7 +2939,7 @@ final class RoomEntityRuntimeTest {
         assertTrue(runtime.resolveCombat(1, 64, 64, false, true,
             true, 72, 1, 72, 1).isEmpty());
 
-        runtime.tick(0, 64, 64, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 64, 64, sequence(0x00)));
         assertEquals(1, runtime.armosState(0));
         assertEquals(0x18, runtime.enemyFlashCountdown(0));
         assertEquals(0x92, runtime.physicsFlags(0));
@@ -2935,7 +2947,7 @@ final class RoomEntityRuntimeTest {
             true, 72, 1, 72, 1).isEmpty());
 
         for (int frame = 1; frame <= 0x30; frame++) {
-            runtime.tick(frame, 120, 120, sequence(0x00));
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, sequence(0x00)));
         }
 
         assertEquals(2, runtime.armosState(0));
@@ -2958,7 +2970,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x0A, runtime.enemyIgnoreHitsCountdown(0));
         assertTrue(runtime.enemyRecoilActive(0));
 
-        runtime.tick(0x31, 0, 0, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0x31, 0, 0, sequence(0x00)));
         assertEquals(0x09, runtime.enemyIgnoreHitsCountdown(0));
         assertTrue(runtime.enemyRecoilActive(0));
     }
@@ -2970,11 +2982,11 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x0F, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
-        runtime.tick(0, 64, 64, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 64, 64, sequence(0x00)));
         for (int frame = 1; frame <= 0x30; frame++) {
-            runtime.tick(frame, 120, 120, sequence(0x00));
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, sequence(0x00)));
         }
-        runtime.tick(0x31, 120, 120, sequence(0x04));
+        runtime.tick(EntityTestFrames.frame(runtime, 0x31, 120, 120, sequence(0x04)));
 
         assertEquals(2, runtime.armosState(0));
         assertEquals(0x24, runtime.armosTransitionCountdown(0));
@@ -2996,15 +3008,15 @@ final class RoomEntityRuntimeTest {
         assertEquals(0xC4, runtime.options1(0));
         assertEquals(0x80, runtime.hitboxFlagsForTest(0));
 
-        runtime.tick(0, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
         assertEquals(0, runtime.armosKnightState(0));
 
-        runtime.tick(1, 0x50, 0x60, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x50, 0x60, () -> 0));
         assertEquals(1, runtime.armosKnightState(0));
         assertEquals(0x30, runtime.armosKnightTransitionCountdown(0));
 
         for (int frame = 2; frame <= 0x31; frame++) {
-            runtime.tick(frame, 0x50, 0x60, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x50, 0x60, () -> 0));
         }
         assertEquals(2, runtime.armosKnightState(0));
         assertEquals(0x80, runtime.armosKnightTransitionCountdown(0));
@@ -3012,7 +3024,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x80, runtime.hitboxFlagsForTest(0));
 
         for (int frame = 0x32; frame <= 0xB1; frame++) {
-            runtime.tick(frame, 0x50, 0x60, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x50, 0x60, () -> 0));
         }
         assertEquals(3, runtime.armosKnightState(0));
         assertEquals(0x50, runtime.armosKnightTransitionCountdown(0));
@@ -3028,14 +3040,14 @@ final class RoomEntityRuntimeTest {
                 EntitySpriteDefinition.unsupported(0x88), 0, 0, 0, 0, -1, false)), true);
 
         for (int frame = 0; frame < 0x20; frame++) {
-            runtime.tick(frame, 0x50, 0x60, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x50, 0x60, () -> 0));
             assertEquals(-1, runtime.consumePendingMusicTrack());
         }
 
-        runtime.tick(0x20, 0x50, 0x60, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0x20, 0x50, 0x60, () -> 0));
         assertEquals(0x50, runtime.consumePendingMusicTrack());
 
-        runtime.tick(0x21, 0x50, 0x60, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0x21, 0x50, 0x60, () -> 0));
         assertEquals(-1, runtime.consumePendingMusicTrack());
     }
 
@@ -3050,7 +3062,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x8C, runtime.hitboxFlagsForTest(0));
         assertEquals(0, runtime.geniePrivateState1ForTest(0));
 
-        runtime.tick(0, 0x50, 0x70, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x70, () -> 0));
 
         assertEquals(0x20, runtime.enemyHealth(0));
         assertEquals(0x81, runtime.physicsFlags(0));
@@ -3073,11 +3085,11 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x5C, 0x50, 0x68, EntityStatus.ACTIVE,
                 EntitySpriteDefinition.unsupported(0x5C), 0, 0, 0, 0, -1, false)), true);
 
-        runtime.tick(0, 0x50, 0x70, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x70, () -> 0));
         assertEquals(0, runtime.genieActiveStateForTest(0));
         assertEquals(0, runtime.transitionCountdown(0));
 
-        runtime.tick(1, 0x50, 0x6F, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x50, 0x6F, () -> 0));
         assertEquals(1, runtime.genieActiveStateForTest(0));
         assertEquals(0xFF, runtime.transitionCountdown(0));
         assertEquals(0x68, runtime.snapshot().slots().get(0).y());
@@ -3091,7 +3103,7 @@ final class RoomEntityRuntimeTest {
         runtime.setGenieActiveStateForTest(0, 1);
         runtime.setTransitionCountdownForTest(0, 2);
 
-        runtime.tick(0, 0x50, 0x6F, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x6F, () -> 0));
 
         assertEquals(1, runtime.geniePrivateState3ForTest(0));
         RoomEntity jar = runtime.snapshot().slots().get(0);
@@ -3115,13 +3127,13 @@ final class RoomEntityRuntimeTest {
         runtime.setGenieActiveStateForTest(0, 1);
         runtime.setTransitionCountdownForTest(0, 0x20);
 
-        runtime.tick(0, 0x50, 0x6F, () -> 0);
-        runtime.tick(1, 0x50, 0x6F, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x6F, () -> 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x50, 0x6F, () -> 0));
         assertTrue(runtime.consumePendingEntityEvents().stream().anyMatch(event ->
             event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE
                 && event.soundId() == 0x20));
 
-        runtime.tick(2, 0x50, 0x6F, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 0x50, 0x6F, () -> 0));
         assertEquals(1, runtime.snapshot().slots().get(0).z());
     }
 
@@ -3133,7 +3145,7 @@ final class RoomEntityRuntimeTest {
         runtime.setGeniePrivateState1ForTest(0, 2);
         runtime.setTransitionCountdownForTest(0, 7);
 
-        runtime.tick(0, 0x50, 0x6F, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x6F, () -> 0));
 
         RoomEntity body = runtime.snapshot().loadedEntities().stream()
             .filter(entity -> entity.slot() != 0 && entity.type() == 0x5C)
@@ -3157,12 +3169,12 @@ final class RoomEntityRuntimeTest {
         runtime.setGeniePrivateState1ForTest(1, 1);
         runtime.setTransitionCountdownForTest(1, 2);
 
-        runtime.tick(0, 0x50, 0x70, () -> 0);
-        runtime.tick(1, 0x50, 0x70, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x70, () -> 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x50, 0x70, () -> 0));
 
         assertEquals(1, runtime.genieActiveStateForTest(1));
         assertEquals(0xFF, runtime.geniePrivateCountdown1ForTest(1));
-        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, 0x52)),
+        assertEquals(List.of(new DialogRequest(0, 0x52)),
             runtime.consumePendingDialogRequests());
     }
 
@@ -3174,12 +3186,12 @@ final class RoomEntityRuntimeTest {
         runtime.setGeniePrivateState1ForTest(0, 1);
         runtime.setTransitionCountdownForTest(0, 1);
 
-        runtime.tick(0, 0x50, 0x70, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x70, () -> 0));
 
         assertEquals(4, runtime.genieActiveStateForTest(0));
         assertEquals(0x08, runtime.enemyHealth(0));
         assertEquals(0xFF, runtime.geniePrivateCountdown1ForTest(0));
-        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, 0x53)),
+        assertEquals(List.of(new DialogRequest(0, 0x53)),
             runtime.consumePendingDialogRequests());
     }
 
@@ -3193,7 +3205,7 @@ final class RoomEntityRuntimeTest {
         runtime.setTransitionCountdownForTest(0, 1);
         runtime.setGeniePrivateCountdown1ForTest(0, 0xFF);
 
-        runtime.tick(0, 0x30, 0x70, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x30, 0x70, () -> 0));
 
         assertEquals(0x10, runtime.transitionCountdown(0));
         RoomEntity projectile = runtime.snapshot().loadedEntities().stream()
@@ -3208,7 +3220,7 @@ final class RoomEntityRuntimeTest {
 
         runtime.clearEntity(0);
         for (int frame = 1; frame <= 80; frame++) {
-            runtime.tick(frame, 0x30, 0x70, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x30, 0x70, () -> 0));
         }
         assertEquals(EntityStatus.DISABLED,
             runtime.snapshot().slots().get(projectile.slot()).status());
@@ -3224,7 +3236,7 @@ final class RoomEntityRuntimeTest {
         runtime.setTransitionCountdownForTest(0, 0x20);
         runtime.setGeniePrivateCountdown1ForTest(0, 1);
 
-        runtime.tick(0, 0x30, 0x70, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x30, 0x70, () -> 0));
 
         assertEquals(1, runtime.entityInertia(0));
         assertEquals(0x30, runtime.geniePrivateCountdown1ForTest(0));
@@ -3243,7 +3255,7 @@ final class RoomEntityRuntimeTest {
 
         runtime.clearEntity(0);
         for (int frame = 1; frame <= 80; frame++) {
-            runtime.tick(frame, 0x30, 0x70, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x30, 0x70, () -> 0));
         }
         assertEquals(EntityStatus.DISABLED,
             runtime.snapshot().slots().get(fireball.slot()).status());
@@ -3256,7 +3268,7 @@ final class RoomEntityRuntimeTest {
                 EntitySpriteDefinition.unsupported(0x5C), 0, 0, 0, 0, -1, false)), true);
         runtime.setGeniePrivateState1ForTest(0, 4);
 
-        runtime.tick(0, 0x50, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x50, () -> 0));
 
         assertFalse(runtime.consumePendingLinkFinalPositionRequests().isEmpty());
     }
@@ -3272,7 +3284,7 @@ final class RoomEntityRuntimeTest {
         runtime.setGeniePrivateCountdown1ForTest(0, 0x20);
         runtime.setEntityInertiaForTest(0, 8);
 
-        runtime.tick(0, 0x30, 0x70, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x30, 0x70, () -> 0));
 
         assertEquals(2, runtime.genieActiveStateForTest(0));
         assertEquals(0x30, runtime.transitionCountdown(0));
@@ -3288,10 +3300,10 @@ final class RoomEntityRuntimeTest {
                 EntitySpriteDefinition.unsupported(0x5C), 0, 0, 0, 0, -1, false)), true);
         runtime.setGeniePrivateState1ForTest(1, 1);
         runtime.setTransitionCountdownForTest(1, 0x20);
-        runtime.tick(0, 0x30, 0x70, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x30, 0x70, () -> 0));
         runtime.setGenieActiveStateForTest(1, 2);
 
-        runtime.tick(1, 0x30, 0x70, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x30, 0x70, () -> 0));
 
         assertEquals(3, runtime.genieActiveStateForTest(1));
         assertEquals(0x10, runtime.transitionCountdown(1));
@@ -3306,7 +3318,7 @@ final class RoomEntityRuntimeTest {
         runtime.setGenieActiveStateForTest(0, 3);
         runtime.setTransitionCountdownForTest(0, 5);
 
-        runtime.tick(0, 0x30, 0x70, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x30, 0x70, () -> 0));
 
         RoomEntity controller = runtime.snapshot().loadedEntities().stream()
             .filter(entity -> entity.slot() != 0 && entity.type() == 0x5C)
@@ -3329,7 +3341,7 @@ final class RoomEntityRuntimeTest {
         runtime.setGenieActiveStateForTest(0, 4);
         runtime.setEnemyFlashCountdownForTest(0, 3);
 
-        runtime.tick(0, 0x70, 0x70, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x70, 0x70, () -> 0));
 
         assertEquals(5, runtime.genieActiveStateForTest(0));
         assertEquals(0x80, runtime.transitionCountdown(0));
@@ -3346,7 +3358,7 @@ final class RoomEntityRuntimeTest {
         runtime.setGenieActiveStateForTest(0, 5);
         runtime.setTransitionCountdownForTest(0, 0x20);
 
-        runtime.tick(0, 0x70, 0x70, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x70, 0x70, () -> 0));
 
         RoomEntity moved = runtime.snapshot().slots().get(0);
         assertEquals((0x90 - moved.y()) & 0xFF,
@@ -3367,7 +3379,7 @@ final class RoomEntityRuntimeTest {
         runtime.setGeniePrivateState3ForTest(0, 0x60);
         runtime.setGeniePrivateState4ForTest(0, 0x70);
 
-        runtime.tick(0, 0x20, 0x20, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x20, () -> 0));
 
         RoomEntity body = runtime.snapshot().slots().get(0);
         assertEquals(4, runtime.genieActiveStateForTest(0));
@@ -3391,17 +3403,17 @@ final class RoomEntityRuntimeTest {
                 EntitySpriteDefinition.unsupported(0x5C), 0, 0, 0, 0, -1, false)), true);
         runtime.setGeniePrivateState1ForTest(0, 1);
 
-        runtime.tick(0, 0x50, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x50, () -> 0));
         assertEquals(1, runtime.genieActiveStateForTest(0));
         assertEquals(0x40, runtime.transitionCountdown(0));
 
         runtime.setTransitionCountdownForTest(0, 1);
-        runtime.tick(1, 0x50, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x50, 0x50, () -> 0));
         assertEquals(2, runtime.genieActiveStateForTest(0));
         assertEquals(0xA0, runtime.transitionCountdown(0));
 
         runtime.setTransitionCountdownForTest(0, 1);
-        runtime.tick(2, 0x50, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 0x50, 0x50, () -> 0));
 
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
         RoomEntity heart = runtime.snapshot().loadedEntities().stream()
@@ -3420,11 +3432,11 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x5C, 0x50, 0x40, EntityStatus.DYING,
                 EntitySpriteDefinition.unsupported(0x5C), 0, 0, 0, 0, -1, false)), true);
         runtime.setGeniePrivateState1ForTest(0, 1);
-        runtime.tick(0, 0x50, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x50, () -> 0));
         runtime.setGenieActiveStateForTest(0, 2);
         runtime.setTransitionCountdownForTest(0, 9);
 
-        runtime.tick(1, 0x50, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x50, 0x50, () -> 0));
 
         assertFalse(runtime.transientVfxRequests().isEmpty());
         assertTrue(runtime.consumePendingEntityEvents().stream().anyMatch(event ->
@@ -3439,13 +3451,13 @@ final class RoomEntityRuntimeTest {
                 EntitySpriteDefinition.unsupported(0x5C), 0, 0, 0, 0, -1, false)), true);
         runtime.setGeniePrivateState1ForTest(0, 1);
 
-        runtime.tick(0, 0x50, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x50, () -> 0));
         runtime.consumePendingEntityEvents();
-        runtime.tick(1, 0x50, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x50, 0x50, () -> 0));
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
-        runtime.tick(2, 0x50, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 0x50, 0x50, () -> 0));
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
-        runtime.tick(3, 0x50, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 3, 0x50, 0x50, () -> 0));
 
         assertTrue(runtime.consumePendingEntityEvents().stream().anyMatch(event ->
             event.soundChannel() == EntityCombatEvent.SoundChannel.WAVE
@@ -3462,11 +3474,11 @@ final class RoomEntityRuntimeTest {
         runtime.setGeniePrivateState1ForTest(1, 2);
         runtime.setTransitionCountdownForTest(1, 0x82);
 
-        runtime.tick(0, 0x50, 0x70, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x70, () -> 0));
         assertEquals(0x81, runtime.transitionCountdown(1));
         assertEquals(0, runtime.genieActiveStateForTest(0));
 
-        runtime.tick(1, 0x50, 0x70, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x50, 0x70, () -> 0));
 
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(1).status());
         assertEquals(3, runtime.genieActiveStateForTest(0));
@@ -3484,7 +3496,7 @@ final class RoomEntityRuntimeTest {
         });
         runtime.setDialogActive(true);
 
-        runtime.tick(0, 0x50, 0x68, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x68, () -> 0));
 
         assertEquals(0x06, runtime.enemyHealth(0));
         assertEquals(0, groundCalls.get());
@@ -3492,7 +3504,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(List.of(), runtime.consumePendingLinkFinalPositionRequests());
 
         runtime.setDialogActive(false);
-        runtime.tick(1, 0x50, 0x68, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x50, 0x68, () -> 0));
         assertEquals(0x20, runtime.enemyHealth(0));
         assertEquals(0, groundCalls.get());
 
@@ -3511,17 +3523,17 @@ final class RoomEntityRuntimeTest {
         runtime.setTransitionSequenceCounterForTest(0x04);
 
         for (int frame = 0; frame < 0x20; frame++) {
-            runtime.tick(frame, 0x50, 0x70, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x50, 0x70, () -> 0));
             assertEquals(-1, runtime.consumePendingMusicTrack());
             assertEquals(List.of(), runtime.consumePendingDialogRequests());
         }
 
-        runtime.tick(0x20, 0x50, 0x70, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0x20, 0x50, 0x70, () -> 0));
         assertEquals(0x19, runtime.consumePendingMusicTrack());
-        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, 0xB4)),
+        assertEquals(List.of(new DialogRequest(0, 0xB4)),
             runtime.consumePendingDialogRequests());
 
-        runtime.tick(0x21, 0x50, 0x70, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0x21, 0x50, 0x70, () -> 0));
         assertEquals(-1, runtime.consumePendingMusicTrack());
         assertEquals(List.of(), runtime.consumePendingDialogRequests());
     }
@@ -3536,21 +3548,21 @@ final class RoomEntityRuntimeTest {
         runtime.setTalkState(true, 0, 0);
 
         for (int frame = 0; frame < 0x20; frame++) {
-            runtime.tick(frame, 0x50, 0x70, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x50, 0x70, () -> 0));
         }
         runtime.setTalkState(false, 0, 0);
         runtime.setRoomTransitionStateForTest(true);
         for (int frame = 0x20; frame < 0x40; frame++) {
-            runtime.tick(frame, 0x50, 0x70, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x50, 0x70, () -> 0));
         }
         assertEquals(-1, runtime.consumePendingMusicTrack());
 
         runtime.setRoomTransitionStateForTest(false);
         for (int frame = 0x40; frame < 0x60; frame++) {
-            runtime.tick(frame, 0x50, 0x70, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x50, 0x70, () -> 0));
             assertEquals(-1, runtime.consumePendingMusicTrack());
         }
-        runtime.tick(0x60, 0x50, 0x70, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0x60, 0x50, 0x70, () -> 0));
         assertEquals(0x19, runtime.consumePendingMusicTrack());
     }
 
@@ -3561,7 +3573,7 @@ final class RoomEntityRuntimeTest {
                 EntitySpriteDefinition.unsupported(0x5C), 0, 0, 0, 0, -1, false)), true);
         runtime.setGeniePrivateState4ForTest(0, 0x03);
 
-        runtime.tick(0, 0x50, 0x70, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x70, () -> 0));
 
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
         RoomEntity body = runtime.snapshot().loadedEntities().stream()
@@ -3590,7 +3602,7 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x5C, 0x50, 0x68, EntityStatus.THROWN,
                 EntitySpriteDefinition.unsupported(0x5C), 0, 0, 0, 0, -1, false)), true);
 
-        runtime.tick(0, 0, 0, () -> 0, (entity, direction, nextX, nextY) -> true);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0, (entity, direction, nextX, nextY) -> true));
 
         assertEquals(1, runtime.geniePrivateState4ForTest(0));
         assertEquals(0x20, runtime.enemyFlashCountdown(0));
@@ -3607,7 +3619,7 @@ final class RoomEntityRuntimeTest {
                 EntitySpriteDefinition.unsupported(0x5C), 0, 0, 0, 0, -1, false)), true);
         runtime.setGeniePrivateState4ForTest(0, 2);
 
-        runtime.tick(0, 0, 0, () -> 0, (entity, direction, nextX, nextY) -> true);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0, (entity, direction, nextX, nextY) -> true));
 
         assertEquals(3, runtime.geniePrivateState4ForTest(0));
         assertEquals(1, runtime.genieActiveStateForTest(0));
@@ -3616,7 +3628,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
 
         runtime.setDialogActive(true);
-        runtime.tick(1, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0, 0, () -> 0));
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
         assertTrue(runtime.snapshot().loadedEntities().stream()
             .anyMatch(entity -> entity.type() == 0x5C));
@@ -3634,7 +3646,7 @@ final class RoomEntityRuntimeTest {
         runtime.setGeniePrivateState4ForTest(0, 2);
         runtime.setHitboxFlagsForTest(1, 0x80);
 
-        runtime.tick(0, 0, 0, () -> 0, (entity, direction, nextX, nextY) -> false);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0, (entity, direction, nextX, nextY) -> false));
 
         assertEquals(2, runtime.geniePrivateState4ForTest(0));
         assertEquals(EntityStatus.THROWN, runtime.snapshot().slots().get(0).status());
@@ -3650,20 +3662,20 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x88, 0x50, 0x60, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
             true, () -> 0, catalog, new RomEnemyCombatTables(rom));
 
-        runtime.tick(0, 0, 0, () -> 0);
-        runtime.tick(1, 0x50, 0x60, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x50, 0x60, () -> 0));
         for (int frame = 2; frame <= 0x31; frame++) {
-            runtime.tick(frame, 0x50, 0x60, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x50, 0x60, () -> 0));
         }
         for (int frame = 0x32; frame <= 0xB1; frame++) {
-            runtime.tick(frame, 0x50, 0x60, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x50, 0x60, () -> 0));
         }
         assertEquals(3, runtime.armosKnightState(0));
 
-        runtime.tickWithProjectileEvents(0xB2, 0x50, 0x60, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0x50, 0x60, 0x04, 0x00, 0, false));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0xB2, 0x50, 0x60, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0x50, 0x60, 0x04, 0x00, 0, false)));
 
-        assertEquals(List.of(new RoomEntityRuntime.LinkFinalPositionRequest(0, true, true, false)),
+        assertEquals(List.of(new LinkFinalPositionRequest(0, true, true, false)),
             runtime.consumePendingLinkFinalPositionRequests());
     }
 
@@ -3677,13 +3689,13 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x88, 0x50, 0x60, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
             true, () -> 0, catalog, new RomEnemyCombatTables(rom));
 
-        runtime.tick(0, 0, 0, () -> 0);
-        runtime.tick(1, 0x50, 0x60, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x50, 0x60, () -> 0));
         for (int frame = 2; frame <= 0x31; frame++) {
-            runtime.tick(frame, 0x50, 0x60, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x50, 0x60, () -> 0));
         }
         for (int frame = 0x32; frame <= 0xB1; frame++) {
-            runtime.tick(frame, 0x50, 0x60, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x50, 0x60, () -> 0));
         }
         assertEquals(3, runtime.armosKnightState(0));
         assertEquals(0x0C, runtime.enemyHealth(0));
@@ -3702,7 +3714,7 @@ final class RoomEntityRuntimeTest {
 
             runtime.setEnemyIgnoreHitsCountdownForTest(0, 0);
             runtime.setEnemyFlashCountdownForTest(0, 0);
-            runtime.tick(frame, 0x50, 0x60, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x50, 0x60, () -> 0));
         }
 
         assertEquals(0x06, runtime.enemyHealth(0));
@@ -3716,7 +3728,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x05, rubble.spriteVariant());
         assertEquals(0xC4, runtime.physicsFlags(rubble.slot()));
         assertEquals(0x0A, runtime.options1(rubble.slot()));
-        assertEquals(List.of(new RoomEntityRuntime.TransientVfxRequest(
+        assertEquals(List.of(new TransientVfxRequest(
             TransientVfxType.POOF, 0x57, 0x50)), runtime.transientVfxRequests());
         assertEquals(List.of(new EntityCombatEvent(rubble.slot(), 0x05, 0, false,
             EntityCombatEvent.SoundChannel.NOISE, 0x29)),
@@ -3733,19 +3745,19 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x88, 0x50, 0x60, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
             true, () -> 0, catalog, new RomEnemyCombatTables(rom));
 
-        runtime.tick(0, 0, 0, () -> 0);
-        runtime.tick(1, 0x50, 0x60, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x50, 0x60, () -> 0));
         for (int frame = 2; frame <= 0x31; frame++) {
-            runtime.tick(frame, 0x50, 0x60, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x50, 0x60, () -> 0));
         }
         for (int frame = 0x32; frame <= 0xB1; frame++) {
-            runtime.tick(frame, 0x50, 0x60, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x50, 0x60, () -> 0));
         }
         assertEquals(3, runtime.armosKnightState(0));
         assertEquals(0x50, runtime.armosKnightTransitionCountdown(0));
 
         for (int frame = 0xB2; frame <= 0x101; frame++) {
-            runtime.tick(frame, 0x50, 0x60, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x50, 0x60, () -> 0));
         }
         assertEquals(4, runtime.armosKnightState(0));
         assertEquals(0x30, runtime.armosKnightSpeedZ(0));
@@ -3754,13 +3766,13 @@ final class RoomEntityRuntimeTest {
             runtime.consumePendingEntityEvents());
 
         for (int frame = 0x102; frame <= 0x119; frame++) {
-            runtime.tick(frame, 0x50, 0x60, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x50, 0x60, () -> 0));
         }
         assertEquals(5, runtime.armosKnightState(0));
         assertEquals(0x10, runtime.armosKnightTransitionCountdown(0));
 
         for (int frame = 0x11A; frame <= 0x130; frame++) {
-            runtime.tick(frame, 0x50, 0x60, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x50, 0x60, () -> 0));
         }
         assertEquals(7, runtime.armosKnightState(0));
         assertEquals(0x30, runtime.armosKnightTransitionCountdown(0));
@@ -3768,17 +3780,17 @@ final class RoomEntityRuntimeTest {
         assertEquals(List.of(new EntityCombatEvent(0, 0x88, 0, false,
             EntityCombatEvent.SoundChannel.JINGLE, 0x0B)),
             runtime.consumePendingEntityEvents());
-        assertEquals(List.of(new RoomEntityRuntime.ScreenShakeRequest(0, 0x30, 0x04)),
+        assertEquals(List.of(new ScreenShakeRequest(0, 0x30, 0x04)),
             runtime.consumePendingScreenShakeRequests());
 
         for (int frame = 0x131; frame <= 0x160; frame++) {
-            runtime.tick(frame, 0x50, 0x60, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x50, 0x60, () -> 0));
         }
         assertEquals(2, runtime.armosKnightState(0));
         assertEquals(0, runtime.armosKnightTransitionCountdown(0));
-        assertEquals(List.of(new RoomEntityRuntime.LinkMotionBlockRequest(0)),
+        assertEquals(List.of(new LinkMotionBlockRequest(0)),
             runtime.consumePendingLinkMotionBlockRequests());
-        assertEquals(List.of(new RoomEntityRuntime.LinkFallenPoseRequest(0)),
+        assertEquals(List.of(new LinkFallenPoseRequest(0)),
             runtime.consumePendingLinkFallenPoseRequests());
     }
 
@@ -3790,22 +3802,22 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
         IntSupplier randomBytes = sequence(0x00, 0x00, 0x00, 0x00);
 
-        runtime.tick(0, 120, 120, randomBytes);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, randomBytes));
         assertEquals(1, runtime.tektiteState(0));
         assertEquals(0x10, runtime.tektiteTransitionCountdown(0));
         assertEquals(0, runtime.snapshot().slots().get(0).z());
         assertEquals(1, runtime.snapshot().slots().get(0).spriteVariant());
 
         for (int frame = 1; frame <= 16; frame++) {
-            runtime.tick(frame, 120, 120, randomBytes);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, randomBytes));
         }
         assertEquals(1, runtime.tektiteState(0));
         assertEquals(0, runtime.tektiteTransitionCountdown(0));
 
         for (int frame = 17; frame <= 31; frame++) {
-            runtime.tick(frame, 120, 120, randomBytes);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, randomBytes));
         }
-        runtime.tick(32, 120, 120, randomBytes);
+        runtime.tick(EntityTestFrames.frame(runtime, 32, 120, 120, randomBytes));
         assertEquals(0, runtime.tektiteState(0));
         assertEquals(0x10, runtime.tektiteSpeedZ(0));
         assertEquals(0x10, runtime.tektiteSpeedX(0));
@@ -3823,7 +3835,7 @@ final class RoomEntityRuntimeTest {
         IntSupplier randomBytes = sequence(0x00, 0x00, 0x00, 0x00);
 
         for (int frame = 0; frame <= 32; frame++) {
-            runtime.tick(frame, 120, 120, randomBytes);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, randomBytes));
         }
         assertEquals(0, runtime.tektiteState(0));
         assertEquals(0x10, runtime.tektiteSpeedX(0));
@@ -3831,7 +3843,7 @@ final class RoomEntityRuntimeTest {
 
         RoomEntityBackgroundCollision rightWall =
             (entity, direction, nextX, nextY) -> direction == 0;
-        runtime.tick(33, 120, 120, randomBytes, rightWall);
+        runtime.tick(EntityTestFrames.frame(runtime, 33, 120, 120, randomBytes, rightWall));
 
         assertEquals(64, runtime.snapshot().slots().get(0).x());
         assertEquals(65, runtime.snapshot().slots().get(0).y());
@@ -3848,11 +3860,11 @@ final class RoomEntityRuntimeTest {
         IntSupplier randomBytes = sequence(0x00, 0x00, 0x00, 0x00);
 
         for (int frame = 0; frame <= 32; frame++) {
-            runtime.tick(frame, 120, 120, randomBytes);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, randomBytes));
         }
         RoomEntityBackgroundCollision downWall =
             (entity, direction, nextX, nextY) -> direction == 3;
-        runtime.tick(33, 120, 120, randomBytes, downWall);
+        runtime.tick(EntityTestFrames.frame(runtime, 33, 120, 120, randomBytes, downWall));
 
         assertEquals(65, runtime.snapshot().slots().get(0).x());
         assertEquals(64, runtime.snapshot().slots().get(0).y());
@@ -3867,7 +3879,7 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x0D, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0x80, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
-        runtime.tick(0, 120, 120, sequence(0x1F));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x1F)));
 
         assertEquals(0x2F, runtime.tektiteTransitionCountdown(0));
     }
@@ -3880,9 +3892,9 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
         IntSupplier randomBytes = sequence(0x00, 0x00, 0x00, 0x01);
-        runtime.tick(0, 120, 120, randomBytes);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, randomBytes));
         for (int frame = 1; frame <= 32; frame++) {
-            runtime.tick(frame, 80, 72, randomBytes);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 80, 72, randomBytes));
         }
 
         assertEquals(0x14, runtime.tektiteSpeedX(0));
@@ -3918,23 +3930,23 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
         IntSupplier randomBytes = sequence(0x00);
 
-        runtime.tick(0, 120, 120, randomBytes);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, randomBytes));
         assertEquals(1, runtime.leeverState(0));
         assertEquals(0x1F, runtime.leeverTransitionCountdown(0));
         assertEquals(-1, runtime.snapshot().slots().get(0).spriteVariant());
 
         for (int frame = 1; frame <= 30; frame++) {
-            runtime.tick(frame, 120, 120, randomBytes);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, randomBytes));
         }
         assertEquals(1, runtime.leeverState(0));
         assertEquals(1, runtime.leeverTransitionCountdown(0));
         assertEquals(1, runtime.snapshot().slots().get(0).spriteVariant());
 
-        runtime.tick(31, 120, 120, randomBytes);
+        runtime.tick(EntityTestFrames.frame(runtime, 31, 120, 120, randomBytes));
         assertEquals(2, runtime.leeverState(0));
         assertEquals(0x70, runtime.leeverTransitionCountdown(0));
 
-        runtime.tick(32, 80, 64, randomBytes);
+        runtime.tick(EntityTestFrames.frame(runtime, 32, 80, 64, randomBytes));
         assertEquals(0x08, runtime.leeverSpeedX(0));
         assertEquals(0, runtime.leeverSpeedY(0));
         assertEquals(2, runtime.snapshot().slots().get(0).spriteVariant());
@@ -3947,7 +3959,7 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x0E, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
-        runtime.tick(0, 120, 120, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
 
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
         assertEquals(-1, runtime.snapshot().slots().get(0).spriteVariant());
@@ -3964,7 +3976,7 @@ final class RoomEntityRuntimeTest {
         IntSupplier randomBytes = sequence(0x00);
 
         for (int frame = 0; frame <= 143; frame++) {
-            runtime.tick(frame, 120, 64, randomBytes);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 64, randomBytes));
         }
         assertEquals(3, runtime.leeverState(0));
         assertEquals(0x1F, runtime.leeverTransitionCountdown(0));
@@ -3972,15 +3984,15 @@ final class RoomEntityRuntimeTest {
         assertEquals(0, runtime.leeverSpeedY(0));
 
         for (int frame = 144; frame <= 173; frame++) {
-            runtime.tick(frame, 120, 64, randomBytes);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 64, randomBytes));
         }
-        runtime.tick(174, 120, 64, randomBytes);
+        runtime.tick(EntityTestFrames.frame(runtime, 174, 120, 64, randomBytes));
         assertEquals(0, runtime.leeverState(0));
         assertEquals(0x30, runtime.leeverTransitionCountdown(0));
         assertEquals(0x08, runtime.leeverSpeedX(0));
         assertEquals(0, runtime.leeverSpeedY(0));
 
-        runtime.tick(175, 120, 64, randomBytes);
+        runtime.tick(EntityTestFrames.frame(runtime, 175, 120, 64, randomBytes));
         assertEquals(-1, runtime.snapshot().slots().get(0).spriteVariant());
     }
 
@@ -3997,7 +4009,7 @@ final class RoomEntityRuntimeTest {
         assertTrue(hiddenContact.isEmpty());
 
         for (int frame = 0; frame <= 31; frame++) {
-            runtime.tick(frame, 120, 120, randomBytes);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, randomBytes));
         }
         List<EntityCombatEvent> contact = runtime.resolveCombat(
             1, 64, 64, false, true, false, 0, 0, 0, 0);
@@ -4017,7 +4029,7 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x0E, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
         for (int frame = 0; frame <= 31; frame++) {
-            runtime.tick(frame, 120, 120, sequence(0x00));
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, sequence(0x00)));
         }
         assertEquals(2, runtime.leeverState(0));
 
@@ -4034,7 +4046,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(0xD0, runtime.enemyRecoilSpeedX(0));
         assertEquals(0xD0, runtime.enemyRecoilSpeedY(0));
 
-        runtime.tick(1, 120, 120, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, sequence(0x00)));
 
         RoomEntity afterRecoil = runtime.snapshot().slots().get(0);
         assertEquals(61, afterRecoil.x());
@@ -4049,7 +4061,7 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x0E, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
         for (int frame = 0; frame <= 31; frame++) {
-            runtime.tick(frame, 120, 120, sequence(0x00));
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, sequence(0x00)));
         }
         assertEquals(2, runtime.leeverState(0));
 
@@ -4057,7 +4069,7 @@ final class RoomEntityRuntimeTest {
         RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) ->
             direction == 1 || direction == 2;
 
-        runtime.tick(1, 120, 120, sequence(0x00), wall);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, sequence(0x00), wall));
 
         assertEquals(64, runtime.snapshot().slots().get(0).x());
         assertEquals(64, runtime.snapshot().slots().get(0).y());
@@ -4072,16 +4084,16 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x0E, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
         for (int frame = 0; frame <= 31; frame++) {
-            runtime.tick(frame, 120, 120, sequence(0x00));
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, sequence(0x00)));
         }
-        runtime.tick(32, 80, 64, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 32, 80, 64, sequence(0x00)));
         assertEquals(2, runtime.leeverState(0));
         assertEquals(0x08, runtime.leeverSpeedX(0));
 
         RoomEntityBackgroundCollision rightWall =
             (entity, direction, nextX, nextY) -> direction == 0;
-        runtime.tick(33, 80, 64, sequence(0x00), rightWall);
-        runtime.tick(34, 80, 64, sequence(0x00), rightWall);
+        runtime.tick(EntityTestFrames.frame(runtime, 33, 80, 64, sequence(0x00), rightWall));
+        runtime.tick(EntityTestFrames.frame(runtime, 34, 80, 64, sequence(0x00), rightWall));
 
         assertEquals(64, runtime.snapshot().slots().get(0).x());
         assertEquals(0x08, runtime.leeverSpeedX(0));
@@ -4095,11 +4107,11 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x0E, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
         for (int frame = 0; frame <= 31; frame++) {
-            runtime.tick(frame, 120, 120, sequence(0x00));
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, sequence(0x00)));
         }
-        runtime.tick(32, 80, 64, sequence(0x00));
-        runtime.tick(33, 80, 64, sequence(0x00));
-        runtime.tick(34, 80, 64, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 32, 80, 64, sequence(0x00)));
+        runtime.tick(EntityTestFrames.frame(runtime, 33, 80, 64, sequence(0x00)));
+        runtime.tick(EntityTestFrames.frame(runtime, 34, 80, 64, sequence(0x00)));
 
         assertEquals(65, runtime.snapshot().slots().get(0).x());
         assertEquals(0x08, runtime.leeverSpeedX(0));
@@ -4113,24 +4125,24 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
         IntSupplier randomBytes = sequence(0x00);
 
-        runtime.tick(0, 120, 120, randomBytes);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, randomBytes));
         assertEquals(1, runtime.peaHatState(0));
         assertEquals(0, runtime.peaHatPrivateState1(0));
         assertEquals(0, runtime.snapshot().slots().get(0).z());
         assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
 
         for (int frame = 1; frame <= 128; frame++) {
-            runtime.tick(frame, 120, 120, randomBytes);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, randomBytes));
         }
         assertEquals(1, runtime.peaHatState(0));
         assertEquals(8, runtime.peaHatPrivateState1(0));
 
-        runtime.tick(129, 120, 120, randomBytes);
+        runtime.tick(EntityTestFrames.frame(runtime, 129, 120, 120, randomBytes));
         assertEquals(2, runtime.peaHatState(0));
         assertEquals(0x80, runtime.peaHatSlowTransitionCountdown(0));
 
         for (int frame = 130; frame <= 136; frame++) {
-            runtime.tick(frame, 120, 120, randomBytes);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, randomBytes));
         }
         assertEquals(1, runtime.snapshot().slots().get(0).z());
     }
@@ -4144,7 +4156,7 @@ final class RoomEntityRuntimeTest {
         IntSupplier randomBytes = sequence(0x00);
 
         for (int frame = 0; frame <= 280; frame++) {
-            runtime.tick(frame, 120, 120, randomBytes);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, randomBytes));
         }
 
         assertEquals(2, runtime.peaHatState(0));
@@ -4154,7 +4166,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(0, runtime.peaHatSpeedY(0));
 
         for (int frame = 281; frame <= 304; frame++) {
-            runtime.tick(frame, 120, 120, randomBytes);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, randomBytes));
         }
 
         assertEquals(0x0F, runtime.peaHatPrivateState4(0));
@@ -4174,7 +4186,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(1, grounded.size());
         assertEquals(0x04, grounded.get(0).linkDamage());
 
-        runtime.tick(0, 120, 120, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
         List<EntityCombatEvent> airborne = runtime.resolveCombat(
             1, 64, 64, false, true, false, 0, 0, 0, 0);
         assertTrue(airborne.isEmpty());
@@ -4199,7 +4211,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(0xD0, runtime.enemyRecoilSpeedX(0));
         assertEquals(0xD0, runtime.enemyRecoilSpeedY(0));
 
-        runtime.tick(1, 72, 72, sequence(0x01));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 72, 72, sequence(0x01)));
 
         RoomEntity afterRecoil = runtime.snapshot().slots().get(0);
         assertEquals(61, afterRecoil.x());
@@ -4221,7 +4233,7 @@ final class RoomEntityRuntimeTest {
         RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) ->
             direction == 1 || direction == 2;
 
-        runtime.tick(1, 72, 72, sequence(0x01), wall);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 72, 72, sequence(0x01), wall));
 
         assertEquals(64, runtime.snapshot().slots().get(0).x());
         assertEquals(64, runtime.snapshot().slots().get(0).y());
@@ -4240,8 +4252,8 @@ final class RoomEntityRuntimeTest {
         IntSupplier unblockedRandom = sequence(0x00);
 
         for (int frame = 0; frame <= 280; frame++) {
-            blocked.tick(frame, 120, 120, blockedRandom);
-            unblocked.tick(frame, 120, 120, unblockedRandom);
+            blocked.tick(EntityTestFrames.frame(blocked, frame, 120, 120, blockedRandom));
+            unblocked.tick(EntityTestFrames.frame(unblocked, frame, 120, 120, unblockedRandom));
         }
         RoomEntity phaseStart = blocked.snapshot().slots().get(0);
         assertEquals(2, blocked.peaHatState(0));
@@ -4250,8 +4262,8 @@ final class RoomEntityRuntimeTest {
         RoomEntityBackgroundCollision rightWall =
             (entity, direction, nextX, nextY) -> direction == 0;
         for (int frame = 281; frame <= 304; frame++) {
-            blocked.tick(frame, 120, 120, blockedRandom, rightWall);
-            unblocked.tick(frame, 120, 120, unblockedRandom);
+            blocked.tick(EntityTestFrames.frame(blocked, frame, 120, 120, blockedRandom, rightWall));
+            unblocked.tick(EntityTestFrames.frame(unblocked, frame, 120, 120, unblockedRandom));
         }
 
         RoomEntity blockedEntity = blocked.snapshot().slots().get(0);
@@ -4270,7 +4282,7 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, 0xA0, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
-        runtime.tick(0, 120, 120, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
         assertEquals(1, runtime.peaHatState(0));
 
         List<EntityCombatEvent> events = runtime.resolveCombat(
@@ -4299,24 +4311,24 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x1A, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
-        runtime.tick(0, 64, 64, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 64, 64, sequence(0x00)));
         assertEquals(1, runtime.stalfosState(0));
         assertEquals(0, runtime.snapshot().slots().get(0).z());
 
-        runtime.tick(1, 64, 64, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 64, 64, sequence(0x00)));
         assertEquals(2, runtime.stalfosState(0));
         assertEquals(0x28, runtime.stalfosSpeedZ(0));
         assertEquals(0x10, runtime.stalfosSpeedX(0));
         assertEquals(0x10, runtime.stalfosSpeedY(0));
         assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
 
-        runtime.tick(2, 64, 64, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 64, 64, sequence(0x00)));
         assertEquals(0x02, runtime.snapshot().slots().get(0).z());
         assertEquals(0x26, runtime.stalfosSpeedZ(0));
         assertEquals(2, runtime.snapshot().slots().get(0).spriteVariant());
 
         for (int frame = 3; frame <= 21; frame++) {
-            runtime.tick(frame, 64, 64, sequence(0x00));
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 64, 64, sequence(0x00)));
         }
         assertEquals(3, runtime.stalfosState(0));
         assertEquals(0x10, runtime.stalfosTransitionCountdown(0));
@@ -4325,7 +4337,7 @@ final class RoomEntityRuntimeTest {
 
         int frame = 22;
         while (runtime.stalfosState(0) != 0 && frame < 100) {
-            runtime.tick(frame++, 64, 64, sequence(0x00));
+            runtime.tick(EntityTestFrames.frame(runtime, frame++, 64, 64, sequence(0x00)));
         }
         assertEquals(0, runtime.stalfosState(0));
         assertEquals(0, runtime.snapshot().slots().get(0).z());
@@ -4360,14 +4372,14 @@ final class RoomEntityRuntimeTest {
 
         // EntityInitHandlersTable._1F only increments the state. The first
         // handler pass therefore takes the forced-direction path.
-        runtime.tick(0, 120, 120, sequence(0xFF));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0xFF)));
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
         assertEquals(1, runtime.gibdoState(0));
         assertEquals(0, runtime.gibdoSpeedX(0));
         assertEquals(0, runtime.gibdoSpeedY(0));
 
         // LikeLikeGibdoSpeeds[2] is $F8 (-8 pixels per 16 frames).
-        runtime.tick(1, 120, 120, sequence(0x02));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, sequence(0x02)));
         assertEquals(0, runtime.gibdoState(0));
         assertEquals(0xF8, runtime.gibdoSpeedX(0));
         assertEquals(0, runtime.gibdoSpeedY(0));
@@ -4375,7 +4387,7 @@ final class RoomEntityRuntimeTest {
 
         // A nonzero random low six bits keeps the selected direction and the
         // ROM fixed-point update moves the entity left by one pixel here.
-        runtime.tick(2, 120, 120, sequence(0x01));
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 120, 120, sequence(0x01)));
         assertEquals(63, runtime.snapshot().slots().get(0).x());
         assertEquals(0xF8, runtime.gibdoSpeedX(0));
     }
@@ -4386,18 +4398,18 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, 0x23, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
 
-        runtime.tick(0, 120, 120, sequence(0xFF));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0xFF)));
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
         assertEquals(1, runtime.likeLikeWalkState(0));
 
         // LikeLikeGibdoSpeeds[1] is $08 (+8 pixels per 16 frames).
-        runtime.tick(1, 120, 120, sequence(0x00, 0x01));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, sequence(0x00, 0x01)));
         assertEquals(0, runtime.likeLikeWalkState(0));
         assertEquals(0x08, runtime.likeLikeWalkSpeedY(0));
         assertEquals(64, runtime.snapshot().slots().get(0).y());
 
-        runtime.tick(2, 120, 120, sequence(0xFF));
-        runtime.tick(3, 120, 120, sequence(0xFF));
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 120, 120, sequence(0xFF)));
+        runtime.tick(EntityTestFrames.frame(runtime, 3, 120, 120, sequence(0xFF)));
         assertEquals(65, runtime.snapshot().slots().get(0).y());
     }
 
@@ -4407,16 +4419,16 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, 0x23, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
 
-        runtime.tick(0, 64, 64, sequence(0xFF));
-        runtime.tickWithProjectileEvents(1, 64, 64, sequence(0x00, 0x00), null,
-            new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0));
-        runtime.tickWithProjectileEvents(2, 64, 64, sequence(0x00, 0x00), null,
-            new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 64, 64, sequence(0xFF)));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 1, 64, 64, sequence(0x00, 0x00), null,
+            new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0)));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 2, 64, 64, sequence(0x00, 0x00), null,
+            new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0)));
 
-        List<RoomEntityRuntime.LikeLikeEvent> events =
+        List<LikeLikeEvent> events =
             runtime.consumePendingLikeLikeEvents();
         assertEquals(1, events.size());
-        assertEquals(RoomEntityRuntime.LikeLikeEvent.Kind.CAPTURE, events.getFirst().kind());
+        assertEquals(LikeLikeEvent.Kind.CAPTURE, events.getFirst().kind());
         assertEquals(-1, events.getFirst().stolenInventorySlot());
         assertEquals(1, runtime.likeLikeState(0));
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
@@ -4432,16 +4444,16 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, 0x23, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
         runtime.setLikeLikeLinkInventoryForTest(0x04, 0x04);
-        runtime.tick(0, 64, 64, sequence(0xFF));
-        runtime.tickWithProjectileEvents(1, 64, 64, sequence(0x00), null,
-            new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 64, 64, sequence(0xFF)));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 1, 64, 64, sequence(0x00), null,
+            new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0)));
         runtime.consumePendingLikeLikeEvents();
 
-        runtime.tickWithProjectileEvents(2, 64, 64, sequence(0x00), null,
-            new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0));
-        RoomEntityRuntime.LikeLikeEvent stolen =
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 2, 64, 64, sequence(0x00), null,
+            new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0)));
+        LikeLikeEvent stolen =
             runtime.consumePendingLikeLikeEvents().getFirst();
-        assertEquals(RoomEntityRuntime.LikeLikeEvent.Kind.CAPTURE, stolen.kind());
+        assertEquals(LikeLikeEvent.Kind.CAPTURE, stolen.kind());
         assertEquals(0, stolen.stolenInventorySlot());
         assertEquals(1, stolen.stolenShieldLevel());
         assertEquals(1, runtime.likeLikePrivateState1(0));
@@ -4449,13 +4461,13 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime levelTwo = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, 0x23, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
         levelTwo.setLikeLikeLinkInventoryForTest(0x00, 0x04);
-        levelTwo.tick(0, 64, 64, sequence(0xFF));
-        levelTwo.tickWithProjectileEvents(1, 64, 64, sequence(0x00), null,
-            new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 2, 0));
+        levelTwo.tick(EntityTestFrames.frame(levelTwo, 0, 64, 64, sequence(0xFF)));
+        levelTwo.tick(EntityTestFrames.projectileFrame(levelTwo, 1, 64, 64, sequence(0x00), null,
+            new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 2, 0)));
         levelTwo.consumePendingLikeLikeEvents();
-        levelTwo.tickWithProjectileEvents(2, 64, 64, sequence(0x00), null,
-            new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 2, 0));
-        RoomEntityRuntime.LikeLikeEvent protectedShield =
+        levelTwo.tick(EntityTestFrames.projectileFrame(levelTwo, 2, 64, 64, sequence(0x00), null,
+            new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 2, 0)));
+        LikeLikeEvent protectedShield =
             levelTwo.consumePendingLikeLikeEvents().getFirst();
         assertEquals(-1, protectedShield.stolenInventorySlot());
         assertEquals(0, levelTwo.likeLikePrivateState1(0));
@@ -4467,16 +4479,16 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x23, 64, 64, EntityStatus.INIT,
                 pairDefinition(0x23, 2), 0, 0, 0, 0, -1, false)));
         runtime.setLikeLikeLinkInventoryForTest(0x00, 0x04);
-        runtime.tick(0, 64, 64, sequence(0xFF));
-        runtime.tickWithProjectileEvents(1, 64, 64, sequence(0x00), null,
-            new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 64, 64, sequence(0xFF)));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 1, 64, 64, sequence(0x00), null,
+            new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0)));
         runtime.consumePendingLikeLikeEvents();
 
-        runtime.tickWithProjectileEvents(2, 80, 80, sequence(0x00), null,
-            new EnemyProjectileCollision.LinkState(80, 80, 0, 1, 0, false, 1, 0));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 2, 80, 80, sequence(0x00), null,
+            new EnemyProjectileCollision.LinkState(80, 80, 0, 1, 0, false, 1, 0)));
         var events = runtime.consumePendingLikeLikeEvents();
         assertEquals(1, events.size());
-        assertEquals(RoomEntityRuntime.LikeLikeEvent.Kind.CAPTURE, events.getFirst().kind());
+        assertEquals(LikeLikeEvent.Kind.CAPTURE, events.getFirst().kind());
         assertFalse(events.getFirst().pinLinkPosition());
         assertEquals(0, events.getFirst().stolenInventorySlot());
         assertEquals(1, runtime.likeLikePrivateState1(0));
@@ -4487,25 +4499,25 @@ final class RoomEntityRuntimeTest {
         EntitySpriteDefinition definition = pairDefinition(0x23, 2);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, 0x23, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
-        runtime.tick(0, 64, 64, sequence(0xFF));
-        runtime.tickWithProjectileEvents(1, 64, 64, sequence(0x00), null,
-            new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 64, 64, sequence(0xFF)));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 1, 64, 64, sequence(0x00), null,
+            new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0)));
         runtime.consumePendingLikeLikeEvents();
 
         runtime.setActionButtonsHeld(true);
         for (int frame = 2; frame <= 8; frame++) {
-            runtime.tickWithProjectileEvents(frame, 64, 64, sequence(0x00), null,
-                new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0));
+            runtime.tick(EntityTestFrames.projectileFrame(runtime, frame, 64, 64, sequence(0x00), null,
+                new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0)));
             runtime.consumePendingLikeLikeEvents();
         }
         assertEquals(1, runtime.likeLikeState(0));
         assertEquals(7, runtime.likeLikeInertia(0));
 
-        runtime.tickWithProjectileEvents(9, 64, 64, sequence(0x00), null,
-            new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0));
-        RoomEntityRuntime.LikeLikeEvent release =
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 9, 64, 64, sequence(0x00), null,
+            new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0)));
+        LikeLikeEvent release =
             runtime.consumePendingLikeLikeEvents().getFirst();
-        assertEquals(RoomEntityRuntime.LikeLikeEvent.Kind.RELEASE, release.kind());
+        assertEquals(LikeLikeEvent.Kind.RELEASE, release.kind());
         assertEquals(0, runtime.likeLikeState(0));
         assertEquals(0x15, runtime.slowTransitionCountdown(0));
     }
@@ -4523,8 +4535,8 @@ final class RoomEntityRuntimeTest {
 
         // The room init is a noop for Goomba; its first active handler pass
         // chooses the random-walk interval and direction.
-        runtime.tick(0, 120, 120, sequence(0x00));
-        runtime.tick(1, 120, 120, sequence(0x00, 0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, sequence(0x00, 0x00)));
 
         assertEquals(1, runtime.goombaState(0));
         assertEquals(0x30, runtime.goombaTransitionCountdown(0));
@@ -4532,12 +4544,12 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x00, runtime.goombaSpeedY(0));
         assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
 
-        runtime.tick(2, 120, 120, sequence(0xFF));
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 120, 120, sequence(0xFF)));
         assertEquals(0x2F, runtime.goombaTransitionCountdown(0));
         assertEquals(64, runtime.snapshot().slots().get(0).x());
         assertEquals(0x02, runtime.goombaSpeedY(0));
 
-        runtime.tick(0x10, 120, 120, sequence(0xFF));
+        runtime.tick(EntityTestFrames.frame(runtime, 0x10, 120, 120, sequence(0xFF)));
         assertEquals(1, runtime.snapshot().slots().get(0).spriteVariant());
     }
 
@@ -4589,7 +4601,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
 
         for (int frame = 0; frame < 0x30; frame++) {
-            runtime.tick(frame, 120, 120, sequence(0x00));
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, sequence(0x00)));
         }
         assertEquals(EntityStatus.DYING, runtime.snapshot().slots().get(0).status());
         assertEquals(0x2D, runtime.droppedItemForTest(0));
@@ -4636,7 +4648,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(2, runtime.goombaState(0));
 
         for (int frame = 0; frame < 0x30; frame++) {
-            runtime.tick(frame, 120, 120, sequence(0x00));
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, sequence(0x00)));
         }
         assertEquals(EntityStatus.DYING, runtime.snapshot().slots().get(0).status());
     }
@@ -4652,8 +4664,8 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0xA1, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
             true, null, catalog, tables);
 
-        runtime.tick(0, 120, 120, sequence(0x00));
-        runtime.tick(1, 120, 120, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, sequence(0x00)));
 
         assertEquals(1, runtime.snakeState(0));
         assertEquals(0x30, runtime.snakeTransitionCountdown(0));
@@ -4662,12 +4674,12 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x00, runtime.snakeSpeedY(0));
         assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
 
-        runtime.tick(2, 120, 120, sequence(0xFF));
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 120, 120, sequence(0xFF)));
         assertEquals(0x2F, runtime.snakeTransitionCountdown(0));
         assertEquals(0x2E, runtime.snakePrivateCountdown1(0));
         assertEquals(64, runtime.snapshot().slots().get(0).x());
 
-        runtime.tick(8, 120, 120, sequence(0xFF));
+        runtime.tick(EntityTestFrames.frame(runtime, 8, 120, 120, sequence(0xFF)));
         assertEquals(2, runtime.snapshot().slots().get(0).spriteVariant());
     }
 
@@ -4682,9 +4694,9 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0xA1, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
             true, null, catalog, tables);
 
-        runtime.tick(0, 120, 120, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
         for (int frame = 1; frame <= 48; frame++) {
-            runtime.tick(frame, 64, 120, sequence(0x02));
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 64, 120, sequence(0x02)));
         }
 
         assertEquals(2, runtime.snakeState(0));
@@ -4706,10 +4718,10 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0xA1, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
             true, null, catalog, tables);
 
-        runtime.tick(0, 120, 120, sequence(0x00));
-        runtime.tick(1, 120, 120, sequence(0x00));
-        runtime.tick(2, 120, 120, sequence(0x00));
-        runtime.tick(3, 120, 120, sequence(0x00), (entity, direction, nextX, nextY) -> true);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, sequence(0x00)));
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 120, 120, sequence(0x00)));
+        runtime.tick(EntityTestFrames.frame(runtime, 3, 120, 120, sequence(0x00), (entity, direction, nextX, nextY) -> true));
 
         assertEquals(0, runtime.snakeState(0));
         assertEquals(0x08, runtime.snakeTransitionCountdown(0));
@@ -4754,8 +4766,8 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x2C, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
             true, null, catalog, tables);
 
-        runtime.tick(0, 120, 80, sequence(0x00));
-        runtime.tick(1, 120, 80, sequence(0x00, 0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 80, sequence(0x00)));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 80, sequence(0x00, 0x00)));
 
         assertEquals(1, runtime.spikedBeetleState(0));
         assertEquals(0x30, runtime.spikedBeetleTransitionCountdown(0));
@@ -4766,17 +4778,17 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x80, runtime.hitboxFlagsForTest(0));
 
         for (int frame = 2; frame <= 0x31; frame++) {
-            runtime.tick(frame, 120, 80, sequence(0xFF));
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 80, sequence(0xFF)));
         }
         assertEquals(0, runtime.spikedBeetleState(0));
         assertEquals(0x18, runtime.spikedBeetleTransitionCountdown(0));
         assertEquals(0x06, runtime.spikedBeetleSpeedX(0));
         assertEquals(0x00, runtime.spikedBeetleSpeedY(0));
 
-        runtime.tick(0x40, 120, 64, sequence(0xFF));
+        runtime.tick(EntityTestFrames.frame(runtime, 0x40, 120, 64, sequence(0xFF)));
         assertEquals(1, runtime.spikedBeetleState(0));
         assertEquals(0xFF, runtime.spikedBeetleTransitionCountdown(0));
-        runtime.tick(0x41, 120, 64, sequence(0xFF));
+        runtime.tick(EntityTestFrames.frame(runtime, 0x41, 120, 64, sequence(0xFF)));
         assertEquals(2, runtime.spikedBeetleState(0));
         assertEquals(0xFF, runtime.spikedBeetleTransitionCountdown(0));
         assertEquals(0x00, runtime.spikedBeetleSpeedX(0));
@@ -4794,17 +4806,17 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x2C, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
             true, null, catalog, tables);
 
-        runtime.tick(0, 120, 80, sequence(0x00));
-        runtime.tick(0xE1, 120, 80, sequence(0x00, 0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 80, sequence(0x00)));
+        runtime.tick(EntityTestFrames.frame(runtime, 0xE1, 120, 80, sequence(0x00, 0x00)));
         for (int frame = 0xE2; frame != 0x12; frame = (frame + 1) & 0xFF) {
-            runtime.tick(frame, 120, 80, sequence(0xFF));
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 80, sequence(0xFF)));
         }
 
         assertEquals(0, runtime.spikedBeetleState(0));
         assertEquals(1, runtime.snapshot().slots().get(0).spriteVariant());
 
-        runtime.tick(0x20, 120, 80, sequence(0xFF));
-        runtime.tick(0x21, 120, 80, sequence(0xFF));
+        runtime.tick(EntityTestFrames.frame(runtime, 0x20, 120, 80, sequence(0xFF)));
+        runtime.tick(EntityTestFrames.frame(runtime, 0x21, 120, 80, sequence(0xFF)));
         assertEquals(1, runtime.snapshot().slots().get(0).spriteVariant());
     }
 
@@ -4820,7 +4832,7 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x2C, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
             true, null, catalog, tables);
 
-        runtime.tick(0, 120, 120, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
         assertEquals(0x48, runtime.options1(0));
 
         List<EntityCombatEvent> events = runtime.resolveCombat(
@@ -4840,7 +4852,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x00, runtime.spikedBeetleSpeedY(0));
         assertEquals(0x02, runtime.enemyHealth(0));
 
-        runtime.tick(1, 120, 120, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, sequence(0x00)));
         assertEquals(0x08, runtime.options1(0));
         assertEquals(0x00, runtime.hitboxFlagsForTest(0));
     }
@@ -4859,7 +4871,7 @@ final class RoomEntityRuntimeTest {
                 new RoomEntity(0, 0, 0x2C, 64, 64, EntityStatus.ACTIVE,
                     catalog.forEntityType(0x2C, EntityRoomLoader.RoomTable.INDOORS_A, 0), 0, 0, 0, 0, -1, false)),
                 true, null, catalog, tables);
-            runtime.tick(0, 120, 120, sequence(0));
+            runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0)));
             var away = new EnemyAttackContext(1, false, false, false, false,
                 true, direction ^ 1, 0);
             var misses = runtime.resolveCombat(1, linkX[direction], linkY[direction],
@@ -4888,8 +4900,8 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x2C, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
             true, null, catalog, tables);
 
-        runtime.tick(0, 120, 80, sequence(0x00));
-        runtime.tick(1, 120, 80, sequence(0x00, 0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 80, sequence(0x00)));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 80, sequence(0x00, 0x00)));
         List<EntityCombatEvent> events = runtime.resolveCombat(
             2, 120, 120, false, true, true, 72, 1, 72, 1);
 
@@ -4903,7 +4915,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(1, runtime.spikedBeetleState(0));
         assertEquals(0x02, runtime.enemyHealth(0));
 
-        runtime.tick(2, 120, 80, sequence(0xFF));
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 120, 80, sequence(0xFF)));
         assertEquals(0, runtime.spikedBeetleSpeedX(0));
         assertEquals(0, runtime.spikedBeetleSpeedY(0));
     }
@@ -4937,8 +4949,8 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x18, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
             true, null, catalog, tables);
 
-        runtime.tick(0, 120, 80, sequence(0x00));
-        runtime.tick(1, 120, 80, sequence(0x00, 0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 80, sequence(0x00)));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 80, sequence(0x00, 0x00)));
 
         assertEquals(1, runtime.polsVoiceState(0));
         assertEquals(0x10, runtime.polsVoiceSpeedZ(0));
@@ -4948,13 +4960,13 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x08, runtime.options1(0));
         assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
 
-        runtime.tick(2, 120, 80, sequence(0xFF));
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 120, 80, sequence(0xFF)));
         assertEquals(1, runtime.snapshot().slots().get(0).z());
         assertEquals(0x0F, runtime.polsVoiceSpeedZ(0));
 
         int frame = 3;
         while (runtime.polsVoiceState(0) == 1 && frame < 80) {
-            runtime.tick(frame, 120, 80, sequence(0x03));
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 80, sequence(0x03)));
             frame++;
         }
         assertEquals(2, runtime.polsVoiceState(0));
@@ -4963,9 +4975,9 @@ final class RoomEntityRuntimeTest {
         assertEquals(0, runtime.polsVoiceSpeedY(0));
         assertEquals(0x1B, runtime.polsVoiceTransitionCountdown(0));
 
-        runtime.tick(frame, 120, 80, sequence(0xFF));
+        runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 80, sequence(0xFF)));
         assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
-        runtime.tick(frame + 1, 120, 80, sequence(0xFF));
+        runtime.tick(EntityTestFrames.frame(runtime, frame + 1, 120, 80, sequence(0xFF)));
         assertEquals(1, runtime.snapshot().slots().get(0).spriteVariant());
     }
 
@@ -4980,8 +4992,8 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x18, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
             true, null, catalog, tables);
 
-        runtime.tick(0, 64, 64, sequence(0x00));
-        runtime.tick(1, 64, 64, sequence(0x00, 0x06));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 64, 64, sequence(0x00)));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 64, 64, sequence(0x00, 0x06)));
 
         // GetVectorTowardsLink's repeated-remainder loop increments both
         // components when both source distances are zero.
@@ -5017,9 +5029,9 @@ final class RoomEntityRuntimeTest {
             }
         });
 
-        runtime.tick(0, 120, 80, sequence(0x00));
-        runtime.tick(1, 120, 80, sequence(0x00, 0x00));
-        runtime.tick(2, 120, 80, sequence(0xFF));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 80, sequence(0x00)));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 80, sequence(0x00, 0x00)));
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 120, 80, sequence(0xFF)));
 
         assertTrue(observedIgnoreHits.contains(0x01));
         assertEquals(0, runtime.enemyIgnoreHitsCountdown(0));
@@ -5037,7 +5049,7 @@ final class RoomEntityRuntimeTest {
             true, null, catalog, tables);
         runtime.setOcarinaPlaybackForTest(0x01, 0x04, 0x00);
 
-        runtime.tick(0, 120, 80, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 80, sequence(0x00)));
 
         assertEquals(EntityStatus.DYING, runtime.snapshot().slots().get(0).status());
         assertEquals(0x1F, runtime.dyingCountdown(0));
@@ -5057,7 +5069,7 @@ final class RoomEntityRuntimeTest {
         runtime.setOcarinaPlaybackForTest(0x20, 0x01, 0x00);
         runtime.setOcarinaAnimationForTest(0x14, 0x00);
 
-        runtime.tick(0, 0x40, 0x50, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, sequence(0x00)));
 
         RoomEntity note = runtime.snapshot().loadedEntities().stream()
             .filter(entity -> entity.type() == 0xC9)
@@ -5068,7 +5080,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x7EF8, note.spriteDefinition().address());
         assertEquals(0x40, runtime.musicalNoteInertiaForTest(note.slot()));
 
-        runtime.tick(1, 0x40, 0x50, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x40, 0x50, sequence(0x00)));
 
         RoomEntity movedNote = runtime.snapshot().slots().get(note.slot());
         assertEquals(0x4E, movedNote.x());
@@ -5106,14 +5118,14 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x21, 0x40, 0x50, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
             true, null, catalog, tables);
 
-        runtime.tick(0, 0x80, 0x50, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x80, 0x50, sequence(0x00)));
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
         assertEquals(0x80, runtime.transitionCountdown(0));
         assertEquals(-1, runtime.snapshot().slots().get(0).spriteVariant());
         assertEquals(0x02, runtime.physicsFlags(0));
 
         for (int frame = 1; frame <= 0x80; frame++) {
-            runtime.tick(frame, 0x80, 0x50, sequence(0x00));
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x80, 0x50, sequence(0x00)));
         }
         assertEquals(1, runtime.wizrobeState(0));
         assertEquals(0x20, runtime.wizrobePrivateCountdown1(0));
@@ -5121,18 +5133,18 @@ final class RoomEntityRuntimeTest {
         assertEquals(-1, runtime.snapshot().slots().get(0).spriteVariant());
 
         runtime.setWizrobeStateForTest(0, 2, 0, 1, 2, 0);
-        runtime.tick(0x81, 0x80, 0x50, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0x81, 0x80, 0x50, sequence(0x00)));
         assertEquals(3, runtime.wizrobeState(0));
         assertEquals(0x01, runtime.wizrobePrivateState1(0));
         assertEquals(0x01, runtime.wizrobePrivateCountdown1(0));
 
-        runtime.tick(0x82, 0x80, 0x50, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0x82, 0x80, 0x50, sequence(0x00)));
         assertEquals(0x40, runtime.wizrobePrivateCountdown1(0));
         assertEquals(0, runtime.wizrobeDirection(0));
         assertEquals(1, runtime.wizrobeNextSpriteVariant(0));
 
         runtime.setWizrobeStateForTest(0, 3, 0, 0xFF, 0x29, 0);
-        runtime.tick(0x83, 0x80, 0x50, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0x83, 0x80, 0x50, sequence(0x00)));
         assertEquals(0x28, runtime.wizrobePrivateCountdown1(0));
         RoomEntity projectile = runtime.snapshot().slots().get(15);
         assertEquals(EntityStatus.ACTIVE, projectile.status());
@@ -5159,9 +5171,9 @@ final class RoomEntityRuntimeTest {
             true, null, catalog, tables);
         runtime.setWizrobeProjectileForTest(0, 0x20, 0x00, 0);
 
-        List<EntityProjectileEvent> events = runtime.tickWithProjectileEvents(
+        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime,
             4, 0x40, 0x50, sequence(0x00), null,
-            new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0x00, 0, false));
+            new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0x00, 0, false)));
 
         assertEquals(1, events.size());
         assertEquals(EntityProjectileEvent.Kind.LINK_DAMAGE, events.getFirst().kind());
@@ -5205,15 +5217,15 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x1E, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
-        runtime.tick(0, 120, 120, sequence(0x01));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x01)));
         for (int frame = 1; frame <= 4; frame++) {
-            runtime.tick(frame, 120, 120, sequence(0x01));
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, sequence(0x01)));
         }
 
         assertEquals(65, runtime.snapshot().slots().get(0).x());
         assertEquals(64, runtime.snapshot().slots().get(0).y());
 
-        runtime.tick(8, 120, 120, sequence(0x01));
+        runtime.tick(EntityTestFrames.frame(runtime, 8, 120, 120, sequence(0x01)));
         assertEquals(1, runtime.snapshot().slots().get(0).spriteVariant());
     }
 
@@ -5224,7 +5236,7 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x1E, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
         runtime.setActionButtonsHeld(true);
-        runtime.tick(0, 80, 64, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 64, sequence(0x00)));
 
         assertEquals(1, runtime.evasiveInertia(0));
         assertEquals(0x08, runtime.transitionCountdown(0));
@@ -5236,14 +5248,14 @@ final class RoomEntityRuntimeTest {
         assertEquals(64, runtime.snapshot().slots().get(0).y());
 
         runtime.setActionButtonsHeld(false);
-        runtime.tick(1, 80, 64, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 80, 64, sequence(0x00)));
         assertEquals(62, runtime.snapshot().slots().get(0).x());
         assertEquals(1, runtime.snapshot().slots().get(0).z());
         assertEquals(0x14, runtime.evasiveSpeedZ(0));
 
         int frame = 2;
         while (runtime.evasiveInertia(0) != 0 && frame < 100) {
-            runtime.tick(frame++, 80, 64, sequence(0x00));
+            runtime.tick(EntityTestFrames.frame(runtime, frame++, 80, 64, sequence(0x00)));
         }
 
         assertEquals(0, runtime.evasiveInertia(0));
@@ -5259,15 +5271,15 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x1E, 64, 64, EntityStatus.ACTIVE,
                 pairDefinition(0x1E, 3), 0, 0, 0, 0, -1, false)));
         runtime.setActionButtonsHeld(true);
-        runtime.tick(0, 80, 64, sequence(0));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 64, sequence(0)));
         runtime.setActionButtonsHeld(false);
         for (int frame = 0; frame < 8; frame++) {
-            if (frame != 0) runtime.tick(frame, 80, 64, sequence(0));
+            if (frame != 0) runtime.tick(EntityTestFrames.frame(runtime, frame, 80, 64, sequence(0)));
             RoomEntity entity = runtime.snapshot().slots().get(0);
             assertTrue(runtime.resolveCombat(frame, 0, 0, false, 0, true,
                 true, entity.x() - 8, 16, entity.y() - entity.z() - 8, 16).isEmpty());
         }
-        runtime.tick(8, 80, 64, sequence(0));
+        runtime.tick(EntityTestFrames.frame(runtime, 8, 80, 64, sequence(0)));
         RoomEntity airborne = runtime.snapshot().slots().get(0);
         assertTrue(airborne.z() > 0);
         assertEquals(1, runtime.evasiveInertia(0));
@@ -5288,7 +5300,7 @@ final class RoomEntityRuntimeTest {
         // handler; raw value two therefore enters the source's ==1 branch.
         runtime.setEvasivePrivateCountdown1ForTest(0, 0x02);
 
-        runtime.tick(0, 0x70, 0x50, sequence(0x01));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x70, 0x50, sequence(0x01)));
 
         RoomEntity clone = runtime.snapshot().slots().get(15);
         assertEquals(EntityStatus.ACTIVE, clone.status());
@@ -5324,9 +5336,9 @@ final class RoomEntityRuntimeTest {
             return RoomEntityGroundInteraction.Result.unchanged(entity, previousStatus);
         });
 
-        runtime.tick(0, 0x70, 0x50, sequence(0x01));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x70, 0x50, sequence(0x01)));
         groundInteractionSlots.clear();
-        runtime.tick(1, 0x70, 0x50, sequence(0x01));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x70, 0x50, sequence(0x01)));
 
         assertFalse(groundInteractionSlots.contains(15));
     }
@@ -5339,7 +5351,7 @@ final class RoomEntityRuntimeTest {
         runtime.setEntityMapIdForTest(0x02);
         runtime.setEvasivePrivateCountdown1ForTest(0, 0x02);
 
-        runtime.tick(0, 0x70, 0x50, sequence(0x01));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x70, 0x50, sequence(0x01)));
 
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(15).status());
         assertEquals(0x01, runtime.evasivePrivateCountdown1(0));
@@ -5360,7 +5372,7 @@ final class RoomEntityRuntimeTest {
         runtime.setEntityMapIdForTest(0x03);
         runtime.setEvasivePrivateCountdown1ForTest(0, 0x02);
 
-        runtime.tick(0, 0x70, 0x50, sequence(0x01));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x70, 0x50, sequence(0x01)));
 
         assertEquals(0x1E, runtime.snapshot().slots().get(0).type());
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
@@ -5375,14 +5387,14 @@ final class RoomEntityRuntimeTest {
         runtime.setEvasiveFleeingForTest(0, 0x10, 0);
         RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) -> direction == 0;
 
-        runtime.tick(0, 0x70, 0x50, sequence(0x00), wall);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x70, 0x50, sequence(0x00), wall));
 
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
         List<EntityCombatEvent> events = runtime.consumePendingEntityEvents();
         assertEquals(1, events.size());
         assertEquals(EntityCombatEvent.SoundChannel.JINGLE, events.getFirst().soundChannel());
         assertEquals(0x07, events.getFirst().soundId());
-        assertEquals(List.of(new RoomEntityRuntime.TransientVfxRequest(
+        assertEquals(List.of(new TransientVfxRequest(
             TransientVfxType.SWORD_POKE, 0x40, 0x4E)), runtime.transientVfxRequests());
     }
 
@@ -5393,7 +5405,7 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x1E, 0xA7, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
         runtime.setEvasiveFleeingForTest(0, 0x10, 0);
 
-        runtime.tick(0, 0x70, 0x50, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x70, 0x50, sequence(0x00)));
 
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
@@ -5407,8 +5419,8 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x1F, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
-        runtime.tick(0, 120, 120, sequence(0x00));
-        runtime.tick(1, 120, 120, sequence(0x00, 0x01));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, sequence(0x00, 0x01)));
 
         assertEquals(0, runtime.gibdoSpeedX(0));
         assertEquals(0x08, runtime.gibdoSpeedY(0));
@@ -5422,11 +5434,11 @@ final class RoomEntityRuntimeTest {
         RoomEntitySnapshot initial = snapshot(
             new RoomEntity(0, 0, 0x1F, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
-        runtime.tick(0, 120, 120, sequence(0xFF));
-        runtime.tick(1, 120, 120, sequence(0x02));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0xFF)));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, sequence(0x02)));
 
         RoomEntityBackgroundCollision leftWall = (entity, direction, nextX, nextY) -> direction == 1;
-        runtime.tick(2, 120, 120, sequence(0x01), leftWall);
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 120, 120, sequence(0x01), leftWall));
 
         assertEquals(64, runtime.snapshot().slots().get(0).x());
         assertEquals(0x08, runtime.gibdoSpeedX(0));
@@ -5461,20 +5473,20 @@ final class RoomEntityRuntimeTest {
 
         // EntityRandomSpeedX/Y[1] = (+12, -12). The init handler runs before
         // the first active handler pass.
-        runtime.tick(0, 120, 120, sequence(0x01));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x01)));
         assertEquals(0x0C, runtime.antiFairySpeedX(0));
         assertEquals(0xF4, runtime.antiFairySpeedY(0));
         assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
 
-        runtime.tick(1, 120, 120, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, sequence(0x00)));
         assertEquals(64, runtime.snapshot().slots().get(0).x());
         assertEquals(63, runtime.snapshot().slots().get(0).y());
 
-        runtime.tick(2, 120, 120, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 120, 120, sequence(0x00)));
         assertEquals(65, runtime.snapshot().slots().get(0).x());
         assertEquals(62, runtime.snapshot().slots().get(0).y());
 
-        runtime.tick(8, 120, 120, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 8, 120, 120, sequence(0x00)));
         assertEquals(1, runtime.snapshot().slots().get(0).spriteVariant());
     }
 
@@ -5484,10 +5496,10 @@ final class RoomEntityRuntimeTest {
         RoomEntitySnapshot initial = snapshot(
             new RoomEntity(0, 0, 0x15, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
-        runtime.tick(0, 120, 120, sequence(0x02));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x02)));
 
         RoomEntityBackgroundCollision leftWall = (entity, direction, nextX, nextY) -> direction == 1;
-        runtime.tick(1, 120, 120, sequence(0x00), leftWall);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, sequence(0x00), leftWall));
 
         assertEquals(64, runtime.snapshot().slots().get(0).x());
         assertEquals(0x0C, runtime.antiFairySpeedX(0));
@@ -5524,20 +5536,20 @@ final class RoomEntityRuntimeTest {
         // EntityInitWithRandomSpeed[1] = (+12, -12). The Star handler keeps
         // the fifth ROM display-list variant available but selects variants
         // 0..3 from (hFrameCounter >> 3) & 3.
-        runtime.tick(0, 120, 120, sequence(0x01));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x01)));
         assertEquals(0x0C, runtime.starSpeedX(0));
         assertEquals(0xF4, runtime.starSpeedY(0));
         assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
 
-        runtime.tick(1, 120, 120, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, sequence(0x00)));
         assertEquals(64, runtime.snapshot().slots().get(0).x());
         assertEquals(63, runtime.snapshot().slots().get(0).y());
 
-        runtime.tick(2, 120, 120, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 120, 120, sequence(0x00)));
         assertEquals(65, runtime.snapshot().slots().get(0).x());
         assertEquals(62, runtime.snapshot().slots().get(0).y());
 
-        runtime.tick(24, 120, 120, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 24, 120, 120, sequence(0x00)));
         assertEquals(3, runtime.snapshot().slots().get(0).spriteVariant());
     }
 
@@ -5547,11 +5559,11 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, 0x9C, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
 
-        runtime.tick(0, 120, 120, sequence(0x00));
-        runtime.tick(1, 120, 120, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, sequence(0x00)));
         RoomEntityBackgroundCollision corner = (entity, direction, nextX, nextY) ->
             direction == 0 || direction == 3;
-        runtime.tick(2, 120, 120, sequence(0x00), corner);
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 120, 120, sequence(0x00), corner));
 
         assertEquals(64, runtime.snapshot().slots().get(0).x());
         assertEquals(64, runtime.snapshot().slots().get(0).y());
@@ -5565,13 +5577,13 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, 0x9C, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
 
-        runtime.tick(0, 120, 120, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
         EnemyProjectileCollision.LinkState nonInteractive =
             new EnemyProjectileCollision.LinkState(120, 120, 0, 0x02, 0, false);
-        runtime.tickWithProjectileEvents(1, 120, 120, sequence(0x00), null,
-            nonInteractive);
-        runtime.tickWithProjectileEvents(2, 120, 120, sequence(0x00), null,
-            nonInteractive);
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 1, 120, 120, sequence(0x00), null,
+            nonInteractive));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 2, 120, 120, sequence(0x00), null,
+            nonInteractive));
 
         assertEquals(64, runtime.snapshot().slots().get(0).x());
         assertEquals(64, runtime.snapshot().slots().get(0).y());
@@ -5584,15 +5596,15 @@ final class RoomEntityRuntimeTest {
         EntitySpriteDefinition definition = pairDefinition(0x9C, 5);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, 0x9C, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
-        runtime.tick(0, 120, 120, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
         runtime.setTalkState(true, 0, 0x78);
         EnemyProjectileCollision.LinkState interactive =
             new EnemyProjectileCollision.LinkState(120, 120, 0, 0, 0, false);
 
-        runtime.tickWithProjectileEvents(1, 120, 120, sequence(0x00), null,
-            interactive);
-        runtime.tickWithProjectileEvents(2, 120, 120, sequence(0x00), null,
-            interactive);
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 1, 120, 120, sequence(0x00), null,
+            interactive));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 2, 120, 120, sequence(0x00), null,
+            interactive));
 
         assertEquals(64, runtime.snapshot().slots().get(0).x());
         assertEquals(64, runtime.snapshot().slots().get(0).y());
@@ -5621,7 +5633,7 @@ final class RoomEntityRuntimeTest {
         EntitySpriteDefinition counterDefinition = pairDefinition(0x16, 2);
         RoomEntityRuntime counterClockwise = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, 0x16, 64, 64, EntityStatus.INIT, counterDefinition, 0, 0, 0, 0, -1, false)));
-        counterClockwise.tick(0);
+        counterClockwise.tick(EntityTestFrames.frame(counterClockwise, 0));
 
         assertEquals(61, counterClockwise.snapshot().slots().get(0).y());
         assertEquals(0, counterClockwise.sparkPrivateState2(0));
@@ -5631,7 +5643,7 @@ final class RoomEntityRuntimeTest {
         EntitySpriteDefinition clockwiseDefinition = pairDefinition(0x17, 2);
         RoomEntityRuntime clockwise = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, 0x17, 64, 64, EntityStatus.INIT, clockwiseDefinition, 0, 0, 0, 0, -1, false)));
-        clockwise.tick(0);
+        clockwise.tick(EntityTestFrames.frame(clockwise, 0));
 
         assertEquals(67, clockwise.snapshot().slots().get(0).y());
         assertEquals(4, clockwise.sparkPrivateState2(0));
@@ -5643,15 +5655,15 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, 0x16, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
 
-        runtime.tick(0);
-        runtime.tick(1, 120, 120, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, () -> 0));
 
         assertEquals(0, runtime.sparkPrivateState1(0));
         assertEquals(9, runtime.sparkTransitionCountdown(0));
         assertEquals(0x10, runtime.sparkSpeedX(0));
         assertEquals(0x00, runtime.sparkSpeedY(0));
 
-        runtime.tick(2, 120, 120, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 120, 120, () -> 0));
         assertEquals(65, runtime.snapshot().slots().get(0).x());
         assertEquals(1, runtime.snapshot().slots().get(0).spriteVariant());
     }
@@ -5661,10 +5673,10 @@ final class RoomEntityRuntimeTest {
         EntitySpriteDefinition definition = pairDefinition(0x16, 2);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, 0x16, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
-        runtime.tick(0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0));
 
         RoomEntityBackgroundCollision rightWall = (entity, direction, nextX, nextY) -> direction == 0;
-        runtime.tick(1, 120, 120, () -> 0, rightWall);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, () -> 0, rightWall));
 
         assertEquals(1, runtime.sparkPrivateState1(0));
         assertEquals(0x00, runtime.sparkSpeedX(0));
@@ -5698,17 +5710,17 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x1B, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
             false, sequence(0x01));
 
-        runtime.tick(0, 80, 64, sequence(0x01));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 64, sequence(0x01)));
         assertEquals(2, runtime.enemyHealth(0));
         assertEquals(0, runtime.zolState(0));
 
-        runtime.tick(1, 80, 64, sequence(0x01));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 80, 64, sequence(0x01)));
         assertEquals(1, runtime.zolState(0));
         assertEquals(7, runtime.zolTransitionCountdown(0));
         assertEquals(0x04, runtime.zolSpeedX(0));
         assertEquals(0x00, runtime.zolSpeedY(0));
 
-        runtime.tick(2, 80, 64, sequence(0x01));
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 80, 64, sequence(0x01)));
         assertEquals(6, runtime.zolTransitionCountdown(0));
         assertEquals(64, runtime.snapshot().slots().get(0).x());
     }
@@ -5721,7 +5733,7 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x1B, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
             false, sequence(0x01), catalog);
 
-        runtime.tick(0, 80, 64, sequence(0x01));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 64, sequence(0x01)));
         List<EntityCombatEvent> sword = runtime.resolveCombat(
             1, 120, 120, false, true, true, 72, 1, 72, 1);
         assertEquals(1, sword.size());
@@ -5729,7 +5741,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x7C11, runtime.snapshot().slots().get(0).spriteDefinition().address());
 
         for (int frame = 1; frame <= 16; frame++) {
-            runtime.tick(frame, 80, 64, sequence(0x01));
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 80, 64, sequence(0x01)));
         }
 
         RoomEntity originalSlot = runtime.snapshot().slots().get(0);
@@ -5755,9 +5767,9 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x1B, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
             false, sequence(0x01));
 
-        runtime.tick(0, 80, 64, sequence(0x01));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 64, sequence(0x01)));
         for (int frame = 1; frame <= 7; frame++) {
-            runtime.tick(frame, 80, 64, sequence(0x01));
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 80, 64, sequence(0x01)));
         }
 
         assertEquals(2, runtime.zolState(0));
@@ -5771,15 +5783,15 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x1B, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
             false, sequence(0x00));
 
-        runtime.tick(0, 80, 64, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 64, sequence(0x00)));
         for (int frame = 1; frame <= 7; frame++) {
-            runtime.tick(frame, 80, 64, sequence(0x00));
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 80, 64, sequence(0x00)));
         }
         assertEquals(2, runtime.zolState(0));
         assertEquals(0x50, runtime.zolTransitionCountdown(0));
 
-        runtime.tick(8, 80, 64, sequence(0x00));
-        runtime.tick(9, 80, 64, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 8, 80, 64, sequence(0x00)));
+        runtime.tick(EntityTestFrames.frame(runtime, 9, 80, 64, sequence(0x00)));
 
         assertEquals(0x40, runtime.snapshot().slots().get(0).x());
         assertEquals(0x40, runtime.snapshot().slots().get(0).y());
@@ -5812,14 +5824,14 @@ final class RoomEntityRuntimeTest {
         assertFalse(runtime.gelClingingToLink());
         runtime.setJoypadHeld(true);
         for (int frame = 0; frame < 43; frame++) {
-            runtime.tick(frame, 68, 64, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 68, 64, () -> 0));
             assertTrue(runtime.gelClingingToLink());
             if (frame == 2) {
                 assertEquals(67, runtime.snapshot().slots().get(0).x());
                 assertEquals(62, runtime.snapshot().slots().get(0).y());
             }
         }
-        runtime.tick(43, 68, 64, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 43, 68, 64, () -> 0));
         assertFalse(runtime.gelClingingToLink());
     }
 
@@ -5836,18 +5848,18 @@ final class RoomEntityRuntimeTest {
 
         runtime.setJoypadHeld(true);
         for (int frame = 0; frame < 42; frame++) {
-            runtime.tick(frame, 68, 64, sequence(0x00));
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 68, 64, sequence(0x00)));
         }
         assertEquals(4, runtime.zolState(0));
         assertEquals(0x02, runtime.zolTransitionCountdown(0));
 
         // The third decrement reaches zero at the end of this clinging
         // handler invocation; the state-4 release runs on the next frame.
-        runtime.tick(42, 68, 64, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 42, 68, 64, sequence(0x00)));
         assertEquals(4, runtime.zolState(0));
         assertEquals(0, runtime.zolTransitionCountdown(0));
 
-        runtime.tick(43, 68, 64, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 43, 68, 64, sequence(0x00)));
         assertEquals(3, runtime.zolState(0));
     }
 
@@ -5860,27 +5872,27 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x9B, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
             false, sequence(0x02));
 
-        runtime.tick(0, 120, 120, sequence(0x02));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x02)));
         assertEquals(0, runtime.hidingZolState(0));
         assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
 
-        runtime.tick(1, 80, 64, sequence(0x02));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 80, 64, sequence(0x02)));
         assertEquals(1, runtime.hidingZolState(0));
         assertEquals(0x20, runtime.hidingZolTransitionCountdown(0));
         assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
 
-        runtime.tick(2, 80, 64, sequence(0x02));
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 80, 64, sequence(0x02)));
         assertEquals(0x1F, runtime.hidingZolTransitionCountdown(0));
         assertEquals(1, runtime.snapshot().slots().get(0).spriteVariant());
 
         for (int frame = 3; frame <= 18; frame++) {
-            runtime.tick(frame, 80, 64, sequence(0x02));
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 80, 64, sequence(0x02)));
         }
         assertEquals(0x0F, runtime.hidingZolTransitionCountdown(0));
         assertEquals(2, runtime.snapshot().slots().get(0).spriteVariant());
 
         for (int frame = 19; frame <= 33; frame++) {
-            runtime.tick(frame, 80, 64, sequence(0x02));
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 80, 64, sequence(0x02)));
         }
         assertEquals(2, runtime.hidingZolState(0));
         assertEquals(0, runtime.hidingZolTransitionCountdown(0));
@@ -5897,20 +5909,20 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x9B, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
             false, sequence(0x00));
 
-        runtime.tick(0, 80, 64, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 64, sequence(0x00)));
         assertTrue(runtime.resolveCombat(1, 72, 72, false, true,
             true, 72, 1, 72, 1).isEmpty());
 
         int frame = 1;
         while (runtime.hidingZolState(0) != 3 && frame < 200) {
-            runtime.tick(frame++, 80, 64, sequence(0x00));
+            runtime.tick(EntityTestFrames.frame(runtime, frame++, 80, 64, sequence(0x00)));
         }
         assertEquals(3, runtime.hidingZolState(0));
 
         // The state-2 handler is the frame that enters state 3, so its
         // state-3 sword continuation has not run yet. Advance one handler
         // frame before checking state-3 collision behavior.
-        runtime.tick(frame++, 80, 64, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, frame++, 80, 64, sequence(0x00)));
         RoomEntity hidingZol = runtime.snapshot().slots().get(0);
         List<EntityCombatEvent> contact = runtime.resolveCombat(
             1, hidingZol.x() + 4, hidingZol.y() + 4, false, true,
@@ -5935,7 +5947,7 @@ final class RoomEntityRuntimeTest {
         runtime.configureEnemyRecoilForTest(0, 80, 80, 0x30);
         runtime.setEnemyIgnoreHitsCountdownForTest(0, 0x0A);
 
-        runtime.tick(1, 120, 120, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, sequence(0x00)));
 
         RoomEntity afterRecoil = runtime.snapshot().slots().get(0);
         assertEquals(61, afterRecoil.x());
@@ -5956,7 +5968,7 @@ final class RoomEntityRuntimeTest {
         runtime.configureEnemyRecoilForTest(0, 80, 80, 0x30);
         runtime.setEnemyIgnoreHitsCountdownForTest(0, 0x0A);
 
-        runtime.tick(1, 120, 120, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, sequence(0x00)));
 
         RoomEntity afterRecoil = runtime.snapshot().slots().get(0);
         assertEquals(64, afterRecoil.x());
@@ -5992,17 +6004,17 @@ final class RoomEntityRuntimeTest {
                     nextX, nextY);
             }
         });
-        runtime.tick(0, 80, 64, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 64, sequence(0x00)));
 
         int frame = 1;
         while (runtime.hidingZolState(0) != 3 && frame < 200) {
-            runtime.tick(frame++, 80, 64, sequence(0x00));
+            runtime.tick(EntityTestFrames.frame(runtime, frame++, 80, 64, sequence(0x00)));
         }
         assertEquals(3, runtime.hidingZolState(0));
         observedIgnoreHits.clear();
 
-        runtime.tick(frame++, 80, 64, sequence(0x00));
-        runtime.tick(frame++, 80, 64, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, frame++, 80, 64, sequence(0x00)));
+        runtime.tick(EntityTestFrames.frame(runtime, frame++, 80, 64, sequence(0x00)));
 
         assertTrue(observedIgnoreHits.isEmpty(),
             () -> "state-3 background probes=" + observedIgnoreHits);
@@ -6015,11 +6027,11 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, 0x9B, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
             false, sequence(0x00));
-        runtime.tick(0, 80, 64, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 64, sequence(0x00)));
 
         int frame = 1;
         while (runtime.hidingZolState(0) != 5 && frame < 300) {
-            runtime.tick(frame++, 80, 64, sequence(0x00));
+            runtime.tick(EntityTestFrames.frame(runtime, frame++, 80, 64, sequence(0x00)));
         }
         assertEquals(5, runtime.hidingZolState(0));
 
@@ -6045,8 +6057,8 @@ final class RoomEntityRuntimeTest {
         });
         runtime.setEnemyIgnoreHitsCountdownForTest(0, 0x09);
 
-        runtime.tick(frame++, 80, 64, sequence(0x00));
-        runtime.tick(frame++, 80, 64, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, frame++, 80, 64, sequence(0x00)));
+        runtime.tick(EntityTestFrames.frame(runtime, frame++, 80, 64, sequence(0x00)));
 
         assertTrue(observedIgnoreHits.contains(0x03),
             () -> "flying background probes=" + observedIgnoreHits);
@@ -6061,10 +6073,10 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x9B, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
             false, sequence(0x00));
 
-        runtime.tick(0, 120, 120, sequence(0x00));
-        runtime.tick(1, 80, 64, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 80, 64, sequence(0x00)));
         for (int frame = 2; frame <= 33; frame++) {
-            runtime.tick(frame, 80, 64, sequence(0x00));
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 80, 64, sequence(0x00)));
         }
 
         assertEquals(2, runtime.hidingZolState(0));
@@ -6081,23 +6093,23 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x9B, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
             false, sequence(0x00));
 
-        runtime.tick(0, 120, 120, sequence(0x00));
-        runtime.tick(1, 80, 64, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 80, 64, sequence(0x00)));
         for (int frame = 2; frame <= 33; frame++) {
-            runtime.tick(frame, 80, 64, sequence(0x00));
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 80, 64, sequence(0x00)));
         }
         assertEquals(2, runtime.hidingZolState(0));
         assertEquals(0x24, runtime.consumePendingEntityEvents().getFirst().soundId());
 
         int frame = 34;
         while (runtime.hidingZolState(0) != 4 && frame < 200) {
-            runtime.tick(frame++, 80, 64, sequence(0x00));
+            runtime.tick(EntityTestFrames.frame(runtime, frame++, 80, 64, sequence(0x00)));
         }
         assertEquals(4, runtime.hidingZolState(0));
 
         boolean foundSecondJumpJingle = false;
         for (int count = 0; count < 40; count++) {
-            runtime.tick(frame++, 80, 64, sequence(0x00));
+            runtime.tick(EntityTestFrames.frame(runtime, frame++, 80, 64, sequence(0x00)));
             List<EntityCombatEvent> events = runtime.consumePendingEntityEvents();
             if (!events.isEmpty()) {
                 assertEquals(1, events.size());
@@ -6120,12 +6132,12 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x9B, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
             false, sequence(0x00));
 
-        runtime.tick(0, 120, 120, sequence(0x00));
-        runtime.tick(1, 80, 64, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 80, 64, sequence(0x00)));
 
         int frame = 2;
         while (runtime.hidingZolState(0) != 6 && frame < 1000) {
-            runtime.tick(frame++, 80, 64, sequence(0x00));
+            runtime.tick(EntityTestFrames.frame(runtime, frame++, 80, 64, sequence(0x00)));
         }
 
         assertEquals(6, runtime.hidingZolState(0));
@@ -6138,38 +6150,38 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, 0x27, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
 
-        runtime.tick(0, 120, 120, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
         assertEquals(0, runtime.spikeTrapState(0));
         assertEquals(0, runtime.spikeTrapDirection(0));
 
-        runtime.tick(1, 80, 64, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 80, 64, sequence(0x00)));
         assertEquals(1, runtime.spikeTrapState(0));
         assertEquals(64, runtime.spikeTrapPrivateState1(0));
         assertEquals(64, runtime.spikeTrapPrivateState2(0));
 
         // Link is within the Y window, so state 1 chooses the right-facing
         // $20 X speed and immediately enters state 2.
-        runtime.tick(2, 80, 64, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 80, 64, sequence(0x00)));
         assertEquals(2, runtime.spikeTrapState(0));
         assertEquals(0, runtime.spikeTrapDirection(0));
         assertEquals(0x20, runtime.spikeTrapSpeedX(0));
         assertEquals(0, runtime.spikeTrapSpeedY(0));
         assertEquals(0x18, runtime.spikeTrapTransitionCountdown(0));
 
-        runtime.tick(3, 80, 64, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 3, 80, 64, sequence(0x00)));
         assertEquals(66, runtime.snapshot().slots().get(0).x());
         assertEquals(0x17, runtime.spikeTrapTransitionCountdown(0));
 
         for (int frame = 4; frame <= 26; frame++) {
-            runtime.tick(frame, 80, 64, sequence(0x00));
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 80, 64, sequence(0x00)));
         }
         assertEquals(3, runtime.spikeTrapState(0));
         assertEquals(112, runtime.snapshot().slots().get(0).x());
 
         int frame = 27;
         while (runtime.spikeTrapState(0) != 1 && frame < 280) {
-            runtime.tick(frame++, 80, 64, sequence(0x00));
+            runtime.tick(EntityTestFrames.frame(runtime, frame++, 80, 64, sequence(0x00)));
         }
         assertEquals(1, runtime.spikeTrapState(0));
         assertEquals(64, runtime.snapshot().slots().get(0).x());
@@ -6183,9 +6195,9 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, 0x27, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
 
-        runtime.tick(0, 120, 120, sequence(0x00));
-        runtime.tick(1, 80, 64, sequence(0x00));
-        runtime.tick(2, 80, 64, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 80, 64, sequence(0x00)));
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 80, 64, sequence(0x00)));
 
         List<EntityCombatEvent> launchEvents = runtime.consumePendingEntityEvents();
         assertEquals(1, launchEvents.size());
@@ -6195,7 +6207,7 @@ final class RoomEntityRuntimeTest {
             launchEvents.get(0).soundChannel());
         assertEquals(0x0A, launchEvents.get(0).soundId());
 
-        runtime.tick(3, 80, 64, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 3, 80, 64, sequence(0x00)));
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
     }
 
@@ -6205,10 +6217,10 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, 0x27, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
 
-        runtime.tick(0, 120, 120, sequence(0x00));
-        runtime.tick(1, 80, 64, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 80, 64, sequence(0x00)));
         RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) -> direction == 0;
-        runtime.tick(2, 80, 64, sequence(0x00), wall);
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 80, 64, sequence(0x00), wall));
 
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
     }
@@ -6219,17 +6231,17 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, 0x27, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
 
-        runtime.tick(0, 120, 120, sequence(0x00));
-        runtime.tick(1, 80, 64, sequence(0x00));
-        runtime.tick(2, 80, 64, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 80, 64, sequence(0x00)));
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 80, 64, sequence(0x00)));
         assertEquals(0x0A, runtime.consumePendingEntityEvents().getFirst().soundId());
 
         for (int frame = 3; frame <= 25; frame++) {
-            runtime.tick(frame, 80, 64, sequence(0x00));
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 80, 64, sequence(0x00)));
             assertTrue(runtime.consumePendingEntityEvents().isEmpty());
         }
 
-        runtime.tick(26, 80, 64, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 26, 80, 64, sequence(0x00)));
         List<EntityCombatEvent> endpointEvents = runtime.consumePendingEntityEvents();
         assertEquals(1, endpointEvents.size());
         assertEquals(EntityCombatEvent.SoundChannel.JINGLE,
@@ -6237,7 +6249,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x07, endpointEvents.get(0).soundId());
         assertEquals(3, runtime.spikeTrapState(0));
 
-        runtime.tick(27, 80, 64, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 27, 80, 64, sequence(0x00)));
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
     }
 
@@ -6247,13 +6259,13 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, 0x27, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
 
-        runtime.tick(0, 120, 120, sequence(0x00));
-        runtime.tick(1, 80, 64, sequence(0x00));
-        runtime.tick(2, 80, 64, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 80, 64, sequence(0x00)));
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 80, 64, sequence(0x00)));
         assertEquals(0x0A, runtime.consumePendingEntityEvents().getFirst().soundId());
 
         RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) -> true;
-        runtime.tick(3, 80, 64, sequence(0x00), wall);
+        runtime.tick(EntityTestFrames.frame(runtime, 3, 80, 64, sequence(0x00), wall));
 
         List<EntityCombatEvent> collisionEvents = runtime.consumePendingEntityEvents();
         assertEquals(1, collisionEvents.size());
@@ -6269,9 +6281,9 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, 0x27, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
 
-        runtime.tick(0, 120, 120, sequence(0x02));
-        runtime.tick(1, 64, 100, sequence(0x02));
-        runtime.tick(2, 64, 100, sequence(0x02));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x02)));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 64, 100, sequence(0x02)));
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 64, 100, sequence(0x02)));
 
         assertEquals(2, runtime.spikeTrapState(0));
         assertEquals(3, runtime.spikeTrapDirection(0));
@@ -6286,10 +6298,10 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, 0x27, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
 
-        runtime.tick(0, 120, 120, sequence(0x00));
-        runtime.tick(1, 80, 64, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 80, 64, sequence(0x00)));
         RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) -> direction == 0;
-        runtime.tick(2, 80, 64, sequence(0x00), wall);
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 80, 64, sequence(0x00), wall));
 
         assertEquals(1, runtime.spikeTrapState(0));
         assertEquals(0, runtime.spikeTrapTransitionCountdown(0));
@@ -6336,14 +6348,14 @@ final class RoomEntityRuntimeTest {
             return 0x00;
         };
 
-        runtime.tick(0, 120, 120, randomBytes);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, randomBytes));
         assertEquals(0, randomCalls.get());
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
 
-        runtime.tick(0x00, 120, 120, randomBytes);
+        runtime.tick(EntityTestFrames.frame(runtime, 0x00, 120, 120, randomBytes));
         assertEquals(2, randomCalls.get());
         assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
-        runtime.tick(0x10, 120, 120, randomBytes);
+        runtime.tick(EntityTestFrames.frame(runtime, 0x10, 120, 120, randomBytes));
         assertEquals(1, runtime.snapshot().slots().get(0).spriteVariant());
     }
 
@@ -6354,36 +6366,36 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x99, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
         IntSupplier randomBytes = sequence(0x00, 0x02);
 
-        runtime.tick(0, 120, 120, randomBytes);
-        runtime.tick(1, 120, 120, randomBytes);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, randomBytes));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, randomBytes));
         assertEquals(1, runtime.waterTektiteState(0));
         assertEquals(0x20, runtime.waterTektiteTransitionCountdown(0));
         assertEquals(0xFF, runtime.waterTektitePrivateState1(0));
         assertEquals(0x01, runtime.waterTektitePrivateState2(0));
 
-        runtime.tick(2, 120, 120, randomBytes);
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 120, 120, randomBytes));
         assertEquals(0, runtime.waterTektiteSpeedX(0));
         assertEquals(0, runtime.waterTektiteSpeedY(0));
-        runtime.tick(3, 120, 120, randomBytes);
+        runtime.tick(EntityTestFrames.frame(runtime, 3, 120, 120, randomBytes));
         assertEquals(0xFF, runtime.waterTektiteSpeedX(0));
         assertEquals(0x01, runtime.waterTektiteSpeedY(0));
         assertEquals(64, runtime.snapshot().slots().get(0).x());
         assertEquals(64, runtime.snapshot().slots().get(0).y());
 
         for (int frame = 4; frame <= 33; frame++) {
-            runtime.tick(frame, 120, 120, randomBytes);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, randomBytes));
         }
         assertEquals(2, runtime.waterTektiteState(0));
         assertEquals(0xF1, runtime.waterTektiteSpeedX(0));
         assertEquals(0x0F, runtime.waterTektiteSpeedY(0));
 
-        runtime.tick(34, 120, 120, randomBytes);
+        runtime.tick(EntityTestFrames.frame(runtime, 34, 120, 120, randomBytes));
         assertEquals(0xF2, runtime.waterTektiteSpeedX(0));
         assertEquals(0x0E, runtime.waterTektiteSpeedY(0));
-        runtime.tick(35, 120, 120, randomBytes);
+        runtime.tick(EntityTestFrames.frame(runtime, 35, 120, 120, randomBytes));
         assertEquals(0xF2, runtime.waterTektiteSpeedX(0));
         assertEquals(0x0E, runtime.waterTektiteSpeedY(0));
-        runtime.tick(36, 120, 120, randomBytes);
+        runtime.tick(EntityTestFrames.frame(runtime, 36, 120, 120, randomBytes));
         assertEquals(0xF3, runtime.waterTektiteSpeedX(0));
         assertEquals(0x0D, runtime.waterTektiteSpeedY(0));
     }
@@ -6395,16 +6407,16 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x99, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
         IntSupplier randomBytes = sequence(0x02);
 
-        runtime.tick(0, 120, 120, randomBytes);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, randomBytes));
         for (int frame = 1; frame <= 33; frame++) {
-            runtime.tick(frame, 120, 120, randomBytes);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, randomBytes));
         }
         assertEquals(2, runtime.waterTektiteState(0));
         int beforeX = runtime.snapshot().slots().get(0).x();
         int beforeY = runtime.snapshot().slots().get(0).y();
         RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) -> true;
 
-        runtime.tick(34, 120, 120, randomBytes, wall);
+        runtime.tick(EntityTestFrames.frame(runtime, 34, 120, 120, randomBytes, wall));
 
         RoomEntity blocked = runtime.snapshot().slots().get(0);
         assertEquals(beforeX, blocked.x());
@@ -6435,7 +6447,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(0xD0, runtime.enemyRecoilSpeedX(0));
         assertEquals(0xD0, runtime.enemyRecoilSpeedY(0));
 
-        runtime.tick(1, 72, 72, sequence(0x01));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 72, 72, sequence(0x01)));
 
         assertEquals(61, runtime.snapshot().slots().get(0).x());
         assertEquals(61, runtime.snapshot().slots().get(0).y());
@@ -6458,7 +6470,7 @@ final class RoomEntityRuntimeTest {
         RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) ->
             direction == 1 || direction == 2;
 
-        runtime.tick(1, 72, 72, sequence(0x01), wall);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 72, 72, sequence(0x01), wall));
 
         assertEquals(64, runtime.snapshot().slots().get(0).x());
         assertEquals(64, runtime.snapshot().slots().get(0).y());
@@ -6506,12 +6518,12 @@ final class RoomEntityRuntimeTest {
         };
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial, false, randomBytes);
 
-        runtime.tick(0, 0x00, 0x00, randomBytes);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x00, 0x00, randomBytes));
         assertEquals(1, randomCalls.get());
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
         assertEquals(0, runtime.pairoddState(0));
 
-        runtime.tick(1, 64, 80, randomBytes);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 64, 80, randomBytes));
 
         assertEquals(1, runtime.pairoddState(0));
         assertEquals(0x20, runtime.pairoddTransitionCountdown(0));
@@ -6530,7 +6542,7 @@ final class RoomEntityRuntimeTest {
         runtime.configureEnemyRecoilForTest(0, 80, 80, 0x30);
         runtime.setEnemyIgnoreHitsCountdownForTest(0, 0x0A);
 
-        runtime.tick(1, 120, 120, sequence(0x00));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, sequence(0x00)));
 
         RoomEntity afterRecoil = runtime.snapshot().slots().get(0);
         assertEquals(61, afterRecoil.x());
@@ -6550,14 +6562,14 @@ final class RoomEntityRuntimeTest {
 
         // Initialize the active snapshot, enter the teleport, and let the
         // disassembly's countdown reach the mirrored resting position.
-        runtime.tick(0, 0, 0, () -> 0);
-        runtime.tick(1, 64, 80, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 64, 80, () -> 0));
         int frame = 2;
         while (runtime.pairoddState(0) == 1) {
-            runtime.tick(frame++, 0, 0, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame++, 0, 0, () -> 0));
         }
         while (runtime.pairoddState(0) == 2) {
-            runtime.tick(frame++, 0, 0, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame++, 0, 0, () -> 0));
         }
         assertEquals(0, runtime.pairoddState(0));
         assertEquals(0x30, runtime.pairoddTransitionCountdown(0));
@@ -6565,9 +6577,9 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x40, runtime.snapshot().slots().get(0).y());
 
         while (runtime.pairoddTransitionCountdown(0) > 0x19) {
-            runtime.tick(frame++, 0, 0, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame++, 0, 0, () -> 0));
         }
-        runtime.tick(frame, 0x70, 0x58, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, frame, 0x70, 0x58, () -> 0));
 
         RoomEntity projectile = runtime.snapshot().slots().get(15);
         assertEquals(EntityStatus.ACTIVE, projectile.status());
@@ -6596,15 +6608,15 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, -1, 0x58, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
-        List<EntityProjectileEvent> events = runtime.tickWithProjectileEvents(
+        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime,
             0, 0, 0, () -> 0, null, entity -> true,
             EnemyProjectileCollision.LinkState.nonInteractive(),
-            false, 0, 0, 0, 0);
+            false, 0, 0, 0, 0));
 
         assertTrue(events.isEmpty());
         assertFalse(runtime.snapshot().slots().get(0).loaded());
         assertEquals(1, runtime.transientVfxRequests().size());
-        RoomEntityRuntime.TransientVfxRequest request = runtime.transientVfxRequests().get(0);
+        TransientVfxRequest request = runtime.transientVfxRequests().get(0);
         assertEquals(TransientVfxType.SWORD_POKE, request.type());
         assertEquals(0x40, request.worldX());
         assertEquals(0x40, request.worldY());
@@ -6616,11 +6628,11 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, -1, 0x58, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
-        List<EntityProjectileEvent> events = runtime.tickWithProjectileEvents(
+        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime,
             0, 0x40, 0x40, () -> 0, null, entity -> false,
             new EnemyProjectileCollision.LinkState(
                 0x40, 0x40, 0, 0, 0, false, 1, 0),
-            false, 0, 0, 0, 0);
+            false, 0, 0, 0, 0));
 
         assertEquals(1, events.size());
         assertEquals(EntityProjectileEvent.Kind.LINK_DAMAGE, events.get(0).kind());
@@ -6643,7 +6655,7 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial, false, () -> 0, catalog);
 
         for (int frame = 0; frame <= 6; frame++) {
-            runtime.tick(frame, 0x70, 0x50, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x70, 0x50, () -> 0));
         }
 
         RoomEntity projectile = runtime.snapshot().slots().get(14);
@@ -6675,12 +6687,12 @@ final class RoomEntityRuntimeTest {
                     pairDefinition(type, 4), 0, 0, 0, 0, -1, false)));
             RoomEntityBackgroundCollision wall =
                 (entity, direction, nextX, nextY) -> direction == 0;
-            runtime.tick(0, 0, 0, () -> 0, wall);
+            runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0, wall));
             assertEquals(List.of(new EntityCombatEvent(0, type, 0, false,
                 EntityCombatEvent.SoundChannel.JINGLE, 0x07)),
                 runtime.consumePendingEntityEvents());
 
-            runtime.tick(1, 0, 0, () -> 0, wall);
+            runtime.tick(EntityTestFrames.frame(runtime, 1, 0, 0, () -> 0, wall));
             assertTrue(runtime.consumePendingEntityEvents().isEmpty());
         }
     }
@@ -6691,9 +6703,9 @@ final class RoomEntityRuntimeTest {
             RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
                 new RoomEntity(0, -1, type, 0x40, 0x50, EntityStatus.ACTIVE,
                     pairDefinition(type, 4), 0, 0, 0, 0, -1, false)));
-            List<EntityProjectileEvent> events = runtime.tickWithProjectileEvents(
+            List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime,
                 0, 0x40, 0x50, () -> 0, null,
-                new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0, 1, true));
+                new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0, 1, true)));
 
             assertEquals(1, events.size());
             assertEquals(EntityProjectileEvent.Kind.SHIELD_BLOCK, events.get(0).kind());
@@ -6709,9 +6721,9 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, -1, 0x0A, 0x40, 0x50, EntityStatus.ACTIVE,
                 pairDefinition(0x0A, 1), 0, 0, 0, 0, -1, false)));
-        List<EntityProjectileEvent> events = runtime.tickWithProjectileEvents(
+        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime,
             0, 0x40, 0x50, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0, 1, false));
+            new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0, 1, false)));
 
         assertEquals(1, events.size());
         assertEquals(EntityProjectileEvent.Kind.LINK_DAMAGE, events.get(0).kind());
@@ -6729,17 +6741,17 @@ final class RoomEntityRuntimeTest {
                 arrowDefinition, 0, 0, 0, 0, -1, false)), false, () -> 0, catalog);
         RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) -> direction == 0;
 
-        arrowRuntime.tick(0, 0, 0, () -> 0, wall);
+        arrowRuntime.tick(EntityTestFrames.frame(arrowRuntime, 0, 0, 0, () -> 0, wall));
         assertEquals(0x18, arrowRuntime.enemyProjectileTransitionCountdown(0));
-        arrowRuntime.tick(1, 0, 0, () -> 0, wall);
+        arrowRuntime.tick(EntityTestFrames.frame(arrowRuntime, 1, 0, 0, () -> 0, wall));
         assertEquals(0x17, arrowRuntime.enemyProjectileTransitionCountdown(0));
         assertEquals(0, arrowRuntime.snapshot().slots().get(0).spriteVariant());
         for (int frame = 2; frame <= 9; frame++) {
-            arrowRuntime.tick(frame, 0, 0, () -> 0, wall);
+            arrowRuntime.tick(EntityTestFrames.frame(arrowRuntime, frame, 0, 0, () -> 0, wall));
         }
         assertEquals(0x0F, arrowRuntime.enemyProjectileTransitionCountdown(0));
         assertEquals(1, arrowRuntime.snapshot().slots().get(0).spriteVariant());
-        arrowRuntime.tick(10, 0, 0, () -> 0, wall);
+        arrowRuntime.tick(EntityTestFrames.frame(arrowRuntime, 10, 0, 0, () -> 0, wall));
         assertEquals(3, arrowRuntime.snapshot().slots().get(0).spriteVariant());
 
         EntitySpriteDefinition rockDefinition = catalog.forEntityType(
@@ -6747,8 +6759,8 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime rockRuntime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, -1, 0x0A, 0x20, 0x20, EntityStatus.ACTIVE,
                 rockDefinition, 0, 0, 0, 0, -1, false)), false, () -> 0, catalog);
-        rockRuntime.tick(0, 0, 0, () -> 0, wall);
-        rockRuntime.tick(1, 0, 0, () -> 0, wall);
+        rockRuntime.tick(EntityTestFrames.frame(rockRuntime, 0, 0, 0, () -> 0, wall));
+        rockRuntime.tick(EntityTestFrames.frame(rockRuntime, 1, 0, 0, () -> 0, wall));
         assertEquals(0, rockRuntime.snapshot().slots().get(0).spriteVariant());
     }
 
@@ -6759,7 +6771,7 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x2A, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
         for (int frame = 0; frame < 8; frame++) {
-            runtime.tick(frame, 0x10, 0x10, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x10, 0x10, () -> 0));
         }
 
         RoomEntity parent = runtime.snapshot().slots().get(0);
@@ -6781,7 +6793,7 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x2A, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
         runtime.setLaserParentForTest(0, 0x10, 0x20, 0xF0);
 
-        runtime.tick(0, 0x10, 0x10, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x10, 0x10, () -> 0));
 
         RoomEntity beam = runtime.snapshot().slots().get(15);
         assertEquals(0x0F, runtime.laserParentTransitionCountdown(0));
@@ -6813,7 +6825,7 @@ final class RoomEntityRuntimeTest {
             new RoomEntitySnapshot(entities));
         runtime.setLaserParentForTest(0, 0x10, 0x20, 0xF0);
 
-        runtime.tick(0, 0x10, 0x10, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x10, 0x10, () -> 0));
 
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(15).status());
         assertEquals(0xFF, runtime.snapshot().slots().get(15).type());
@@ -6827,12 +6839,12 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x2A, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
 
         for (int frame = 0; frame < 8; frame++) {
-            runtime.tick(frame, 0x10, 0x10, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x10, 0x10, () -> 0));
         }
 
         EnemyProjectileCollision.LinkState link = new EnemyProjectileCollision.LinkState(
             0x40, 0x50, 0, 0, 0, false, 0, 0);
-        runtime.tickWithProjectileEvents(8, 0x40, 0x50, () -> 0, null, link);
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 8, 0x40, 0x50, () -> 0, null, link));
 
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(15).status());
         assertEquals(0x1F, runtime.laserParentTransitionCountdown(0));
@@ -6849,14 +6861,14 @@ final class RoomEntityRuntimeTest {
                 EntitySpriteDefinition.unsupported(0x2B), -1, 0, 0, 0, -1, false)));
         runtime.setLaserBeamForTest(0, 0x10, 0, 0);
 
-        runtime.tickWithProjectileEvents(0, 0, 0, () -> 0, null,
-            EnemyProjectileCollision.LinkState.nonInteractive());
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0, 0, () -> 0, null,
+            EnemyProjectileCollision.LinkState.nonInteractive()));
 
         RoomEntity beam = runtime.snapshot().slots().get(0);
         assertEquals(0x21, beam.x());
         assertEquals(0x30, beam.y());
         assertEquals(1, runtime.transientVfxRequests().size());
-        RoomEntityRuntime.TransientVfxRequest request =
+        TransientVfxRequest request =
             runtime.transientVfxRequests().get(0);
         assertEquals(TransientVfxType.LASER_BEAM, request.type());
         assertEquals(0x25, request.worldX());
@@ -6872,8 +6884,8 @@ final class RoomEntityRuntimeTest {
         EnemyProjectileCollision.LinkState link = new EnemyProjectileCollision.LinkState(
             0x40, 0x50, 0, 0, 0, true, 2, 0);
 
-        List<EntityProjectileEvent> events = runtime.tickWithProjectileEvents(
-            0, 0x40, 0x50, () -> 0, null, link);
+        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime,
+            0, 0x40, 0x50, () -> 0, null, link));
 
         assertEquals(1, events.size());
         assertEquals(EntityProjectileEvent.Kind.SHIELD_BLOCK, events.get(0).kind());
@@ -6905,13 +6917,13 @@ final class RoomEntityRuntimeTest {
         RoomEntityBackgroundCollision rightWall = (entity, direction, nextX, nextY) -> direction == 0;
 
         for (int frame = 0; frame <= 6; frame++) {
-            runtime.tick(frame, 0x70, 0x50, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x70, 0x50, () -> 0));
         }
-        runtime.tick(7, 0x70, 0x50, () -> 0, rightWall);
+        runtime.tick(EntityTestFrames.frame(runtime, 7, 0x70, 0x50, () -> 0, rightWall));
         assertEquals(0x18, runtime.enemyProjectileTransitionCountdown(14));
 
         for (int frame = 8; frame <= 30; frame++) {
-            runtime.tick(frame, 0x70, 0x50, () -> 0, rightWall);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x70, 0x50, () -> 0, rightWall));
         }
 
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(14).status());
@@ -6935,7 +6947,7 @@ final class RoomEntityRuntimeTest {
             new RoomEntitySnapshot(entities), false, () -> 0, catalog);
 
         for (int frame = 0; frame <= 6; frame++) {
-            runtime.tick(frame, 0x70, 0x50, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x70, 0x50, () -> 0));
         }
 
         assertEquals(0x0B, runtime.snapshot().slots().get(15).type());
@@ -6968,7 +6980,7 @@ final class RoomEntityRuntimeTest {
             0, 0, false));
 
         for (int frame = 0; frame <= 8; frame++) {
-            runtime.tick(frame, 0x40, 0x30, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x40, 0x30, () -> 0));
         }
 
         RoomEntity ghost = runtime.snapshot().slots().get(0);
@@ -6989,7 +7001,7 @@ final class RoomEntityRuntimeTest {
         history.fill(0x10, 0x20, 0x01, 0x02);
         history.write(1, 0x30, 0x40, 0x03, 0x01);
 
-        runtime.tick(0, 0x50, 0x60, () -> 0, null, history, 0x04, 0x00, 0x00);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x60, () -> 0, null, history, 0x04, 0x00, 0x00));
 
         RoomEntity marin = runtime.snapshot().slots().get(0);
         assertEquals(0x30, marin.x());
@@ -7008,13 +7020,13 @@ final class RoomEntityRuntimeTest {
         runtime.setFollowingNpcState(new FollowingNpcState(false, 0, false, true,
             0, 0, false));
 
-        runtime.tick(0, 0x60, 0x70, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x60, 0x70, () -> 0));
         assertEquals(0x44, runtime.snapshot().slots().get(0).x());
         assertEquals(0x58, runtime.snapshot().slots().get(0).y());
 
-        runtime.tick(1, 0x60, 0x70, () -> 0);
-        runtime.tick(2, 0x60, 0x70, () -> 0);
-        runtime.tick(3, 0x60, 0x70, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x60, 0x70, () -> 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 0x60, 0x70, () -> 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 3, 0x60, 0x70, () -> 0));
 
         RoomEntity bowWow = runtime.snapshot().slots().get(0);
         assertEquals(0x44, bowWow.x());
@@ -7030,9 +7042,9 @@ final class RoomEntityRuntimeTest {
 
         boolean openedIntro = false;
         for (int frame = 0; frame < 36; frame++) {
-            runtime.tick(frame, 0x30, 0x58, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x30, 0x58, () -> 0));
             openedIntro |= runtime.consumePendingDialogRequests().equals(
-                List.of(new RoomEntityRuntime.DialogRequest(1, 0x91, true)));
+                List.of(new DialogRequest(1, 0x91, true)));
         }
 
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
@@ -7050,7 +7062,7 @@ final class RoomEntityRuntimeTest {
         runtime.setSlowTransitionCountdownForTest(0, 0x30);
         runtime.setDialogActive(true);
 
-        for (int frame = 0; frame < 300; frame++) runtime.tick(frame, 0x30, 0x58, () -> 0);
+        for (int frame = 0; frame < 300; frame++) runtime.tick(EntityTestFrames.frame(runtime, frame, 0x30, 0x58, () -> 0));
 
         assertEquals(3, runtime.moblinKingState(0));
         assertEquals(0x20, runtime.transitionCountdownForTest(0));
@@ -7065,11 +7077,11 @@ final class RoomEntityRuntimeTest {
         runtime.setBowWowState(0x80);
         runtime.setMoblinKingStateForTest(0, 3, 0, 0, 0, 0, 0);
         runtime.setRoomTransitionStateForTest(true);
-        for (int frame = 0; frame < 60; frame++) runtime.tick(frame, 0x30, 0x58, () -> 0);
+        for (int frame = 0; frame < 60; frame++) runtime.tick(EntityTestFrames.frame(runtime, frame, 0x30, 0x58, () -> 0));
         assertEquals(3, runtime.moblinKingState(0));
         assertEquals(0x58, runtime.snapshot().slots().get(0).x());
         runtime.setRoomTransitionStateForTest(false);
-        runtime.tick(60, 0x30, 0x58, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 60, 0x30, 0x58, () -> 0));
         assertEquals(4, runtime.moblinKingState(0));
     }
 
@@ -7079,7 +7091,7 @@ final class RoomEntityRuntimeTest {
             EntityStatus.ACTIVE, pairDefinition(0xE4, 14), 0, 0, 0, 0, -1, false);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(king), true, () -> 0);
 
-        runtime.tick(0, 0x30, 0x58, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x30, 0x58, () -> 0));
 
         assertFalse(runtime.snapshot().slots().get(0).loaded());
     }
@@ -7091,7 +7103,7 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(king), true, () -> 0);
         runtime.setBowWowState(0x80);
         runtime.setMoblinKingStateForTest(0, 2, 0, 0, 0, 0, 0x30);
-        runtime.tick(0, 0x30, 0x58, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x30, 0x58, () -> 0));
 
         runtime.resolveCombat(1, 0x30, 0x58, false, true,
             true, 0x58, 8, 0x58, 8);
@@ -7099,14 +7111,14 @@ final class RoomEntityRuntimeTest {
 
         runtime.setMoblinKingStateForTest(0, 5, 0, 0, 0, 0, 0x60);
         runtime.setEnemyIgnoreHitsCountdownForTest(0, 0);
-        runtime.tick(2, 0x30, 0x58, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 0x30, 0x58, () -> 0));
         runtime.resolveCombat(3, 0x30, 0x58, false, true,
             true, 0x58, 8, 0x58, 8);
 
         assertEquals(0x07, runtime.enemyHealth(0));
         int beforeX = runtime.snapshot().slots().get(0).x();
         int beforeZ = runtime.snapshot().slots().get(0).z();
-        runtime.tick(4, 0x30, 0x58, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 4, 0x30, 0x58, () -> 0));
         assertTrue(runtime.snapshot().slots().get(0).x() > beforeX);
         assertEquals(beforeZ, runtime.snapshot().slots().get(0).z());
         assertEquals(5, runtime.moblinKingState(0));
@@ -7120,9 +7132,9 @@ final class RoomEntityRuntimeTest {
         runtime.setBowWowState(0x80);
         runtime.setMoblinKingStateForTest(0, 4, 0, 0x28, 0, 0, 0x22);
 
-        runtime.tick(0, 0x58, 0x58, () -> 0, true);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x58, 0x58, () -> 0, true));
         assertEquals(4, runtime.moblinKingState(0));
-        runtime.tick(1, 0x58, 0x58, () -> 0, true);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x58, 0x58, () -> 0, true));
         List<EntityCombatEvent> events = runtime.resolveCombat(
             3, 0x58, 0x58, false, true, false, 0, 0, 0, 0);
 
@@ -7142,7 +7154,7 @@ final class RoomEntityRuntimeTest {
         runtime.setBowWowState(0x80);
         runtime.setMoblinKingStateForTest(0, 5, 0, 0, 0, 0, 0x60);
 
-        runtime.tick(0, 0x58, 0x58, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x58, 0x58, () -> 0));
         List<EntityCombatEvent> events = runtime.resolveCombat(
             1, 0x58, 0x58, false, true, false, 0, 0, 0, 0);
 
@@ -7157,21 +7169,21 @@ final class RoomEntityRuntimeTest {
         runtime.setBowWowState(0x80);
         runtime.setEnemyHealthForTest(0, 1);
         runtime.setMoblinKingStateForTest(0, 5, 0, 0, 0, 0, 0x60);
-        runtime.tick(0, 0x30, 0x58, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x30, 0x58, () -> 0));
 
         runtime.resolveCombat(1, 0x30, 0x58, false, true,
             true, 0x58, 8, 0x58, 8);
-        runtime.tick(2, 0x30, 0x58, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 0x30, 0x58, () -> 0));
         assertEquals(0xA0, runtime.transitionCountdownForTest(0));
-        for (int frame = 3; frame <= 162; frame++) runtime.tick(frame, 0x30, 0x58, () -> 0);
+        for (int frame = 3; frame <= 162; frame++) runtime.tick(EntityTestFrames.frame(runtime, frame, 0x30, 0x58, () -> 0));
         assertEquals(0xC0, runtime.transitionCountdownForTest(0));
         assertTrue(runtime.snapshot().slots().get(0).loaded());
         assertEquals(0, runtime.consumePendingRoomStatusMask());
         for (int frame = 163; frame < 354; frame++) {
-            runtime.tick(frame, 0x30, 0x58, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x30, 0x58, () -> 0));
         }
         assertTrue(runtime.snapshot().slots().get(0).loaded());
-        runtime.tick(354, 0x30, 0x58, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 354, 0x30, 0x58, () -> 0));
         assertFalse(runtime.snapshot().slots().get(0).loaded());
         assertEquals(0x20, runtime.consumePendingRoomStatusMask());
     }
@@ -7183,12 +7195,12 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(bowWow), true, () -> 0);
         runtime.setBowWowState(0x80);
 
-        runtime.tick(0, 0x88, 0x40, 1, () -> 0,
-            null, null, 0, 0, 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x88, 0x40, 1, () -> 0,
+            null, null, 0, 0, 0));
 
         assertEquals(1, runtime.bowWowState());
         assertEquals(0x10, runtime.consumePendingMusicTrack());
-        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(1, 0x6C)),
+        assertEquals(List.of(new DialogRequest(1, 0x6C)),
             runtime.consumePendingDialogRequests());
     }
 
@@ -7203,8 +7215,8 @@ final class RoomEntityRuntimeTest {
             snapshot(bowWow), true, () -> 0, catalog, new RomEnemyCombatTables(rom));
         runtime.setBowWowState(0x80);
 
-        runtime.tick(0, 0x88, 0x40, 1, () -> 0,
-            null, null, 0, 0, 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x88, 0x40, 1, () -> 0,
+            null, null, 0, 0, 0));
 
         RoomEntity rescued = runtime.snapshot().slots().get(0);
         assertEquals(0x05, rescued.spriteDefinition().bank());
@@ -7222,13 +7234,13 @@ final class RoomEntityRuntimeTest {
             snapshot(bowWow), true, () -> 0, catalog, new RomEnemyCombatTables(rom));
         runtime.setBowWowState(0x80);
         runtime.setDialogActive(true);
-        runtime.tick(0, 0x20, 0x40, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x40, () -> 0));
         assertEquals(0x80, runtime.bowWowState());
         assertEquals(0x401C, runtime.snapshot().slots().get(0).spriteDefinition().address());
         assertTrue(runtime.consumePendingDialogRequests().isEmpty());
 
         runtime.setBowWowState(0);
-        runtime.tick(1, 0x20, 0x40, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x20, 0x40, () -> 0));
         assertEquals(0x4000, runtime.snapshot().slots().get(0).spriteDefinition().address());
     }
 
@@ -7239,7 +7251,7 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(bowWow), true, () -> 0);
         runtime.setBowWowState(0x80);
 
-        runtime.tick(0, 0x20, 0x20, () -> 0, true);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x20, () -> 0, true));
 
         assertEquals(0x80, runtime.bowWowState());
         assertEquals(-1, runtime.consumePendingMusicTrack());
@@ -7253,8 +7265,8 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(bowWow), true, () -> 0);
         runtime.setBowWowState(0x80);
 
-        runtime.tick(0, 0x88, 0x40, 0, () -> 0,
-            null, null, 0, 0, 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x88, 0x40, 0, () -> 0,
+            null, null, 0, 0, 0));
 
         assertEquals(0x80, runtime.bowWowState());
         assertEquals(-1, runtime.consumePendingMusicTrack());
@@ -7278,8 +7290,8 @@ final class RoomEntityRuntimeTest {
         runtime.setFollowingNpcState(new FollowingNpcState(false, 0, false, true,
             0, 0, false));
 
-        runtime.tick(0, 0x60, 0x70, () -> 0);
-        runtime.tick(1, 0x60, 0x70, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x60, 0x70, () -> 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x60, 0x70, () -> 0));
 
         assertEquals(10, runtime.bowWowTargetSlot(5));
     }
@@ -7301,10 +7313,10 @@ final class RoomEntityRuntimeTest {
         runtime.setEnemyDropResolver(new EnemyDropResolver(rom));
         runtime.setDroppedItemForTest(6, EnemyDropResolver.ENTITY_NONE);
 
-        runtime.tick(0, 0x44, 0x58, () -> 0);
-        runtime.tick(1, 0x44, 0x58, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x44, 0x58, () -> 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x44, 0x58, () -> 0));
         runtime.setBowWowTransitionCountdownForTest(5, 1);
-        runtime.tick(2, 0x44, 0x58, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 0x44, 0x58, () -> 0));
 
         assertFalse(runtime.snapshot().slots().get(6).loaded());
         assertEquals(1, runtime.killCount());
@@ -7330,10 +7342,10 @@ final class RoomEntityRuntimeTest {
         runtime.setFollowingNpcState(new FollowingNpcState(false, 0, false, true,
             0, 0, false));
 
-        runtime.tick(0, 0x44, 0x58, () -> 0);
-        runtime.tick(1, 0x44, 0x58, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x44, 0x58, () -> 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x44, 0x58, () -> 0));
         runtime.setBowWowTransitionCountdownForTest(5, 1);
-        runtime.tick(2, 0x44, 0x58, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 0x44, 0x58, () -> 0));
 
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(6).status());
         assertEquals(0x18, runtime.enemyFlashCountdown(6));
@@ -7360,15 +7372,15 @@ final class RoomEntityRuntimeTest {
             0, 0, false));
         runtime.setEntityPrivateState4ForTest(6, 1);
 
-        runtime.tick(0, 0x44, 0x58, () -> 0);
-        runtime.tick(1, 0x44, 0x58, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x44, 0x58, () -> 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x44, 0x58, () -> 0));
         runtime.setBowWowTransitionCountdownForTest(5, 1);
-        runtime.tick(2, 0x44, 0x58, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 0x44, 0x58, () -> 0));
 
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(6).status());
         assertEquals(0, runtime.bowWowTransitionCountdown(5));
         assertEquals(0x80, runtime.bowWowPrivateCountdown2(5));
-        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(1, 0x15)),
+        assertEquals(List.of(new DialogRequest(1, 0x15)),
             runtime.consumePendingDialogRequests());
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
     }
@@ -7380,13 +7392,13 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x70, 24, 32, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
-        runtime.tick(0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0));
         assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
-        runtime.tick(8);
+        runtime.tick(EntityTestFrames.frame(runtime, 8));
         assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
-        runtime.tick(16);
+        runtime.tick(EntityTestFrames.frame(runtime, 16));
         assertEquals(1, runtime.snapshot().slots().get(0).spriteVariant());
-        runtime.tick(32);
+        runtime.tick(EntityTestFrames.frame(runtime, 32));
         assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
     }
 
@@ -7411,7 +7423,7 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x2D, 24, 32, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
 
-        runtime.tick(0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0));
 
         assertNull(runtime.collectIfNeeded(0, 24, 34, false, true));
         EntityPickupEvent pickup = runtime.collectIfNeeded(1, 24, 34, false, true);
@@ -7429,14 +7441,14 @@ final class RoomEntityRuntimeTest {
             EntityStatus.INIT, definition, 0, 0, 0, 0x13, -1, false);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(initialEntity));
 
-        runtime.tick(0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0));
         RoomEntity first = runtime.snapshot().slots().get(0);
         assertEquals(EntityStatus.ACTIVE, first.status());
         assertEquals(0x0F, first.z());
         assertEquals(24, first.x());
         assertEquals(64, first.y());
 
-        runtime.tick(24);
+        runtime.tick(EntityTestFrames.frame(runtime, 24));
         assertEquals(0x11, runtime.snapshot().slots().get(0).z());
     }
 
@@ -7517,17 +7529,17 @@ final class RoomEntityRuntimeTest {
             assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
             assertFalse(runtime.liftedEntityState().active());
             assertNull(runtime.collectIfNeeded(1, 24, 34, false, true));
-            for (int frame = 0; frame < 46; frame++) runtime.tick(frame);
-            assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, type == 0x33 ? 0x08 : 0xEC)),
+            for (int frame = 0; frame < 46; frame++) runtime.tick(EntityTestFrames.frame(runtime, frame));
+            assertEquals(List.of(new DialogRequest(0, type == 0x33 ? 0x08 : 0xEC)),
                 runtime.consumePendingDialogRequests());
             runtime.setDialogActive(true);
-            for (int frame = 46; frame < 246; frame++) runtime.tick(frame);
+            for (int frame = 46; frame < 246; frame++) runtime.tick(EntityTestFrames.frame(runtime, frame));
             assertTrue(runtime.powerUpPickupSequenceActive());
             assertFalse(runtime.liftedEntityState().active());
-            assertEquals(List.of(new RoomEntityRuntime.LinkHeldItemPoseRequest(0, true)),
+            assertEquals(List.of(new LinkHeldItemPoseRequest(0, true)),
                 runtime.consumePendingLinkHeldItemPoseRequests());
             runtime.setDialogActive(false);
-            runtime.tick(246);
+            runtime.tick(EntityTestFrames.frame(runtime, 246));
             assertFalse(runtime.powerUpPickupSequenceActive());
             assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
         }
@@ -7548,7 +7560,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x30, pickup.type());
         assertEquals(1, pickup.persistentClearMask());
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
-        assertEquals(List.of(new RoomEntityRuntime.KeyRewardEvent(
+        assertEquals(List.of(new KeyRewardEvent(
             0, ChestContentsTable.CHEST_SMALL_KEY)),
             runtime.consumePendingKeyRewardEvents());
     }
@@ -7565,16 +7577,16 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x68, runtime.keyDropTransitionCountdown(0));
 
         runtime.setKeyDropTransitionCountdownForTest(0, 0x11);
-        runtime.tick(2, 0x40, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 0x40, 0x50, () -> 0));
 
         RoomEntity held = runtime.snapshot().slots().get(0);
         assertEquals(EntityStatus.ACTIVE, held.status());
         assertEquals(0x40, held.x());
         assertEquals(0x44, held.y());
         assertEquals(0x0F, runtime.keyDropTransitionCountdown(0));
-        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, 0xA3)),
+        assertEquals(List.of(new DialogRequest(0, 0xA3)),
             runtime.consumePendingDialogRequests());
-        assertEquals(List.of(new RoomEntityRuntime.KeyRewardEvent(
+        assertEquals(List.of(new KeyRewardEvent(
             0, ChestContentsTable.CHEST_ANGLER_KEY)),
             runtime.consumePendingKeyRewardEvents());
     }
@@ -7589,16 +7601,16 @@ final class RoomEntityRuntimeTest {
         runtime.setEntityRoomIdForTest(0x80);
         runtime.setKeyDropTransitionCountdownForTest(0, 0x11);
 
-        runtime.tick(1, 0x40, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x40, 0x50, () -> 0));
 
         RoomEntity held = runtime.snapshot().slots().get(0);
         assertEquals(-1, held.spriteDefinition().bank());
         assertEquals(EntitySpriteDefinition.Shape.PAIR, held.spriteDefinition().shape());
         assertEquals(0x36, held.spriteDefinition().variant(0).first().tile());
         assertEquals(0x0F, runtime.keyDropTransitionCountdown(0));
-        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, 0x93)),
+        assertEquals(List.of(new DialogRequest(0, 0x93)),
             runtime.consumePendingDialogRequests());
-        assertEquals(List.of(new RoomEntityRuntime.KeyRewardEvent(
+        assertEquals(List.of(new KeyRewardEvent(
             0, ChestContentsTable.CHEST_HOOKSHOT)),
             runtime.consumePendingKeyRewardEvents());
     }
@@ -7610,14 +7622,14 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, -1, 0x30, 0x50, 0x48, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
         runtime.setEntityRoomIdForTest(0xCE);
 
-        runtime.tick(0, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
 
         RoomEntity falling = runtime.snapshot().slots().get(0);
         assertEquals(EntityStatus.FALLING, falling.status());
         assertEquals(0x2F, runtime.transitionCountdown(0));
         assertEquals(0x50, runtime.fallingTargetX(0));
         assertEquals(0x48, runtime.fallingTargetY(0));
-        assertEquals(List.of(new RoomEntityRuntime.KeyQuicksandEvent(0)),
+        assertEquals(List.of(new KeyQuicksandEvent(0)),
             runtime.consumePendingKeyQuicksandEvents());
         assertEquals(List.of(new EntityCombatEvent(0, 0x30, 0, false,
             EntityCombatEvent.SoundChannel.JINGLE, 0x18)),
@@ -7633,19 +7645,19 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotAt(source), false,
             () -> 0, catalog);
 
-        runtime.tick(0, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
         assertEquals(0xA0, runtime.transitionCountdown(15));
         assertEquals(0xFF, runtime.enemyFlashCountdown(15));
         assertEquals(EntityStatus.DYING, runtime.snapshot().slots().get(15).status());
 
         for (int frame = 1; frame <= 0xA0; frame++) {
-            runtime.tick(frame, 0, 0, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0));
         }
         assertEquals(0xC0, runtime.transitionCountdown(15));
         assertEquals(0xFF, runtime.enemyFlashCountdown(15));
 
         for (int frame = 0xA1; frame <= 0x160; frame++) {
-            runtime.tick(frame, 0, 0, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0));
         }
 
         RoomEntity drop = runtime.snapshot().slots().get(14);
@@ -7675,11 +7687,11 @@ final class RoomEntityRuntimeTest {
             snapshotWithSlots(bar, boss), true, () -> 0, catalog,
             new RomEnemyCombatTables(rom));
 
-        runtime.tick(0, 0x50, 0x48, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x48, () -> 0));
         assertEquals(0x18, runtime.transitionCountdown(1));
 
         for (int frame = 1; frame <= 0x18; frame++) {
-            runtime.tick(frame, 0x50, 0x48, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x50, 0x48, () -> 0));
         }
 
         assertEquals(1, runtime.rollingBonesBarStateForTest(0));
@@ -7689,7 +7701,7 @@ final class RoomEntityRuntimeTest {
             runtime.snapshot().slots().get(0).spriteDefinition().shape());
 
         for (int frame = 0x19; frame <= 0x1C; frame++) {
-            runtime.tick(frame, 0x50, 0x48, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x50, 0x48, () -> 0));
         }
         RoomEntity animatedBar = runtime.snapshot().slots().get(0);
         assertEquals(
@@ -7710,7 +7722,7 @@ final class RoomEntityRuntimeTest {
             true, () -> 0, catalog, new RomEnemyCombatTables(rom));
         runtime.configureEnemyRecoilForTest(1, 87, 64, 0x30);
         runtime.setEnemyIgnoreHitsCountdownForTest(1, 10);
-        runtime.tick(0, 80, 72, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 72, () -> 0));
         assertEquals(68, runtime.snapshot().slots().get(1).x());
         assertEquals(0, runtime.transitionCountdown(1),
             "Recoil must not also enter the prepare-roll state");
@@ -7729,16 +7741,16 @@ final class RoomEntityRuntimeTest {
             true, () -> 0, catalog, new RomEnemyCombatTables(rom));
         runtime.resolveCombat(0, 87, 64, false, true, true, 71, 8, 64, 8);
         assertEquals(7, runtime.enemyHealth(1));
-        runtime.tick(0, 80, 72, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 72, () -> 0));
         assertEquals(71, runtime.snapshot().slots().get(1).x());
         assertEquals(10, runtime.enemyIgnoreHitsCountdown(1));
         assertEquals(0x18, runtime.enemyFlashCountdown(1));
         assertEquals(0x18, runtime.transitionCountdown(1),
             "The hit frame still executes the ordinary approach handler");
-        runtime.tick(1, 80, 72, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 80, 72, () -> 0));
         assertEquals(68, runtime.snapshot().slots().get(1).x());
         assertEquals(9, runtime.enemyIgnoreHitsCountdown(1));
-        for (int frame = 2; frame < 24; frame++) runtime.tick(frame, 80, 72, () -> 0);
+        for (int frame = 2; frame < 24; frame++) runtime.tick(EntityTestFrames.frame(runtime, frame, 80, 72, () -> 0));
         RoomEntity recovered = runtime.snapshot().slots().get(1);
         assertEquals(1, runtime.enemyFlashCountdown(1));
         runtime.resolveCombat(24, 87, 64, false, true, true,
@@ -7765,12 +7777,12 @@ final class RoomEntityRuntimeTest {
         runtime.setEnemyDropPlayerState(3, 4, false);
         runtime.setEnemyDropBossBattle(true);
 
-        runtime.tick(0, 0, 0, sequence(0x00, 0x1F));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, sequence(0x00, 0x1F)));
         assertEquals(0xFF, runtime.transitionCountdown(15));
         assertEquals(0xFF, runtime.enemyFlashCountdown(15));
 
         for (int frame = 1; frame <= 0xFF; frame++) {
-            runtime.tick(frame, 0, 0, sequence(0x00, 0x1F));
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, sequence(0x00, 0x1F)));
         }
 
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(15).status());
@@ -7782,7 +7794,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(boss.y(), fairy.y());
 
         runtime.setEntityRoomStatusForTest(0x20);
-        runtime.tick(0x100, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0x100, 0, 0, () -> 0));
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(14).status());
     }
 
@@ -7819,17 +7831,17 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotAt(source), false,
             () -> 0, catalog);
 
-        runtime.tick(0, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
         assertEquals(0x60, runtime.transitionCountdown(15));
         assertEquals(EntityStatus.DYING, runtime.snapshot().slots().get(15).status());
 
         for (int frame = 1; frame <= 0x60; frame++) {
-            runtime.tick(frame, 0, 0, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0));
         }
         assertEquals(0xCF, runtime.transitionCountdown(15));
 
         for (int frame = 0x61; frame <= 0x12F; frame++) {
-            runtime.tick(frame, 0, 0, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0));
         }
 
         RoomEntity drop = runtime.snapshot().slots().get(14);
@@ -7856,16 +7868,16 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshotAt(source), true,
             () -> 0, catalog);
 
-        runtime.tick(0, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
         assertEquals(0xA0, runtime.transitionCountdown(15));
 
         for (int frame = 1; frame <= 0xA0; frame++) {
-            runtime.tick(frame, 0, 0, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0));
         }
         assertEquals(0xC0, runtime.transitionCountdown(15));
 
         for (int frame = 0xA1; frame <= 0x160; frame++) {
-            runtime.tick(frame, 0, 0, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0));
         }
 
         RoomEntity drop = runtime.snapshot().slots().get(14);
@@ -7890,7 +7902,7 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x37, 24, 32, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false));
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial, true);
 
-        runtime.tick(0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0));
 
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
         assertEquals(0x80, runtime.slowTransitionCountdown(0));
@@ -7899,7 +7911,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(-1, runtime.snapshot().slots().get(0).spriteVariant());
 
         for (int frame = 1; frame <= 0x200; frame++) {
-            runtime.tick(frame);
+            runtime.tick(EntityTestFrames.frame(runtime, frame));
         }
         assertEquals(0x00, runtime.slowTransitionCountdown(0));
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
@@ -7912,7 +7924,7 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, 0x37, 0x40, 0x50, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
 
-        runtime.tick(0, 0x20, 0x30, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x30, () -> 0));
 
         assertEquals(0x01, runtime.droppablePrivateState3(0));
         assertEquals(0x11, runtime.options1(0));
@@ -7920,7 +7932,7 @@ final class RoomEntityRuntimeTest {
         assertNull(runtime.collectIfNeeded(1, 0x48, 0x58, false, true));
 
         runtime.setDroppablePegasusCollisionForTest(true, true, 0x48, 0x58);
-        runtime.tick(1, 0x20, 0x30, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x20, 0x30, () -> 0));
 
         assertEquals(0x00, runtime.droppablePrivateState3(0));
         assertEquals(0x00, runtime.droppablePrivateState4(0));
@@ -7933,7 +7945,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
 
         for (int frame = 2; frame <= 34; frame++) {
-            runtime.tick(frame, 0x20, 0x30, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x20, 0x30, () -> 0));
         }
         RoomEntity bounced = runtime.snapshot().slots().get(0);
         assertEquals(0x59, bounced.x());
@@ -7951,11 +7963,11 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x2D, 0x40, 0x50, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
         runtime.setObjectQuery(entity -> new RoomEntityObjectSample(0x04, 0, 0x40, 0x50));
 
-        runtime.tick(0, 0x20, 0x30, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x30, () -> 0));
         assertEquals(0x02, runtime.droppablePrivateState3(0));
         assertEquals(-1, runtime.snapshot().slots().get(0).spriteVariant());
 
-        runtime.tick(1, 0x20, 0x30, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x20, 0x30, () -> 0));
 
         assertEquals(0x00, runtime.droppablePrivateState3(0));
         assertEquals(0x00, runtime.droppablePrivateState4(0));
@@ -7974,7 +7986,7 @@ final class RoomEntityRuntimeTest {
         runtime.setEntityRoomIdForTest(0xC6);
         runtime.setObjectQuery(entity -> new RoomEntityObjectSample(0x04, 0, 0x40, 0x50));
 
-        runtime.tick(0, 0x20, 0x30, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x30, () -> 0));
 
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
         assertEquals(0x02, runtime.droppablePrivateState3(0));
@@ -7983,7 +7995,7 @@ final class RoomEntityRuntimeTest {
         assertNull(runtime.collectIfNeeded(1, 0x40, 0x50, false, true));
 
         runtime.setObjectQuery(entity -> new RoomEntityObjectSample(0xCC, 0, 0x40, 0x50));
-        runtime.tick(1, 0x20, 0x30, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x20, 0x30, () -> 0));
 
         assertEquals(0x00, runtime.droppablePrivateState3(0));
         assertEquals(0x00, runtime.droppablePrivateState4(0));
@@ -8001,20 +8013,20 @@ final class RoomEntityRuntimeTest {
         runtime.setGoldenLeavesCountForTest(5);
         runtime.setObjectQuery(entity -> new RoomEntityObjectSample(0xCC, 0, 0x40, 0x50));
 
-        runtime.tick(0, 0x20, 0x30, () -> 0);
-        runtime.tick(1, 0x20, 0x30, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x30, () -> 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x20, 0x30, () -> 0));
         runtime.setHidingSlimeKeyTransitionCountdownForTest(0, 0x11);
 
-        runtime.tick(2, 0x20, 0x30, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 0x20, 0x30, () -> 0));
 
         RoomEntity held = runtime.snapshot().slots().get(0);
         assertEquals(EntityStatus.ACTIVE, held.status());
         assertEquals(0x0F, runtime.transitionCountdown(0));
         assertEquals(0x20, held.x());
         assertEquals(0x24, held.y());
-        assertEquals(List.of(new RoomEntityRuntime.SlimeKeyRewardEvent(0, 6, 0xA2)),
+        assertEquals(List.of(new SlimeKeyRewardEvent(0, 6, 0xA2)),
             runtime.consumePendingSlimeKeyRewardEvents());
-        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, 0xA2)),
+        assertEquals(List.of(new DialogRequest(0, 0xA2)),
             runtime.consumePendingDialogRequests());
     }
 
@@ -8025,7 +8037,7 @@ final class RoomEntityRuntimeTest {
                 pairDefinition(0x3C, 1), 0, 0, 0, 0, -1, false)));
         runtime.setEntityRoomStatusForTest(0x10);
 
-        runtime.tick(0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0));
 
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
         assertEquals(0, runtime.consumePendingClearedEntityMask());
@@ -8037,11 +8049,11 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, 0x2F, 0x40, 0x50, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)));
 
-        runtime.tick(0, 0x20, 0x30, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x30, () -> 0));
         assertEquals(0x01, runtime.droppablePrivateState3(0));
 
         runtime.setDroppablePegasusCollisionForTest(true, true, 0x48, 0x58);
-        runtime.tick(1, 0x20, 0x30, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x20, 0x30, () -> 0));
 
         assertEquals(0x00, runtime.droppablePrivateState3(0));
         assertEquals(0x0A, runtime.options1(0));
@@ -8060,7 +8072,7 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x2E, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)));
         runtime.setDroppableRevealedForTest(0, 0x1A);
 
-        runtime.tick(1, 0x20, 0x30, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x20, 0x30, () -> 0));
 
         assertEquals(0x1A, runtime.slowTransitionCountdown(0));
         assertEquals(-1, runtime.snapshot().slots().get(0).spriteVariant());
@@ -8077,7 +8089,7 @@ final class RoomEntityRuntimeTest {
             dyingEntity(0, 0, 0x09, catalog)), false, () -> 0, catalog, tables);
         staticRuntime.setEnemyDropResolver(resolver);
         staticRuntime.setDroppedItemForTest(0, EnemyDropResolver.ENTITY_NONE);
-        staticRuntime.tick(0, 0, 0, () -> 0);
+        staticRuntime.tick(EntityTestFrames.frame(staticRuntime, 0, 0, 0, () -> 0));
 
         assertEquals(EntityStatus.DISABLED, staticRuntime.snapshot().slots().get(0).status());
         assertEquals(1, staticRuntime.killCount());
@@ -8088,7 +8100,7 @@ final class RoomEntityRuntimeTest {
             dyingEntity(0, -1, 0x09, catalog)), false, () -> 0, catalog, tables);
         dynamicRuntime.setEnemyDropResolver(resolver);
         dynamicRuntime.setDroppedItemForTest(0, EnemyDropResolver.ENTITY_NONE);
-        dynamicRuntime.tick(0, 0, 0, () -> 0);
+        dynamicRuntime.tick(EntityTestFrames.frame(dynamicRuntime, 0, 0, 0, () -> 0));
 
         assertEquals(EntityStatus.DISABLED, dynamicRuntime.snapshot().slots().get(0).status());
         assertEquals(0, dynamicRuntime.killCount());
@@ -8111,10 +8123,10 @@ final class RoomEntityRuntimeTest {
         runtime.setDroppedItemForTest(1, 0);
         AtomicInteger randomReads = new AtomicInteger();
 
-        runtime.tick(0, 0, 0, () -> {
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> {
             randomReads.incrementAndGet();
             return 0x01;
-        });
+        }));
 
         assertFalse(runtime.snapshot().slots().get(0).loaded());
         assertFalse(runtime.snapshot().slots().get(1).loaded());
@@ -8144,7 +8156,7 @@ final class RoomEntityRuntimeTest {
         runtime.setEnemyDropResolver(new EnemyDropResolver(rom));
         runtime.setDroppedItemForTest(15, 0x2E);
 
-        runtime.tick(0, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
 
         RoomEntity drop = runtime.snapshot().slots().get(14);
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(15).status());
@@ -8163,7 +8175,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x00, runtime.dropSpeedY(14));
         assertEquals(0, runtime.droppedItemForTest(15));
 
-        runtime.tick(1, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0, 0, () -> 0));
 
         assertEquals(0x17, runtime.dropPrivateCountdown1(14));
         assertEquals(0x02, runtime.dropPrivateCountdown3(14));
@@ -8173,10 +8185,10 @@ final class RoomEntityRuntimeTest {
             false, true));
 
         for (int frame = 2; frame <= 24; frame++) {
-            runtime.tick(frame, 0, 0, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0));
         }
         assertEquals(0, runtime.dropPrivateCountdown1(14));
-        runtime.tick(25, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 25, 0, 0, () -> 0));
         EntityPickupEvent pickup = runtime.collectIfNeeded(25, sourceX, sourceY + 2,
             false, true);
         assertNotNull(pickup);
@@ -8204,7 +8216,7 @@ final class RoomEntityRuntimeTest {
         runtime.setEnemyDropResolver(new EnemyDropResolver(rom));
         runtime.setDroppedItemForTest(15, 0x2D);
 
-        runtime.tick(0, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
 
         RoomEntity drop = runtime.snapshot().slots().get(14);
         assertEquals(EntityStatus.ACTIVE, drop.status());
@@ -8236,11 +8248,11 @@ final class RoomEntityRuntimeTest {
         runtime.setEnemyDropResolver(new EnemyDropResolver(rom));
         runtime.setDroppedItemForTest(15, 0x2D);
 
-        runtime.tick(0, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
         RoomEntityBackgroundCollision collision = (entity, direction, nextX, nextY) ->
             direction == EntityBackgroundCollisionResult.DOWN;
         for (int frame = 1; frame <= 11; frame++) {
-            runtime.tick(frame, 0, 0, () -> 0, collision);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0, collision));
         }
 
         RoomEntity drop = runtime.snapshot().slots().get(14);
@@ -8267,7 +8279,7 @@ final class RoomEntityRuntimeTest {
         runtime.setEnemyDropResolver(new EnemyDropResolver(rom));
         runtime.setDroppedItemForTest(15, 0x2E);
 
-        runtime.tick(0, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
 
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(15).status());
         assertFalse(runtime.snapshot().slots().stream().anyMatch(
@@ -8319,7 +8331,7 @@ final class RoomEntityRuntimeTest {
         assertTrue(runtime.bombActive());
         assertTrue(runtime.lastBombPlacementPlayedBump());
 
-        runtime.tick(0, 0x40, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0));
 
         RoomEntity afterFirstTick = runtime.snapshot().slots().get(slot);
         assertEquals(slot, afterFirstTick.slot());
@@ -8352,15 +8364,15 @@ final class RoomEntityRuntimeTest {
             .orElseThrow()
             .soundId());
 
-        runtime.tick(0, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
         assertEquals(0x06, runtime.snapshot().slots().get(slot).spriteVariant());
-        runtime.tick(1, 0, 0, () -> 0);
-        runtime.tick(2, 0, 0, () -> 0);
-        runtime.tick(3, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0, 0, () -> 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 0, 0, () -> 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 3, 0, 0, () -> 0));
         assertEquals(0x07, runtime.snapshot().slots().get(slot).spriteVariant());
 
         for (int frame = 4; frame <= 29; frame++) {
-            runtime.tick(frame, 0, 0, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0));
         }
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(slot).status());
     }
@@ -8382,7 +8394,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x0A, runtime.options1(slot));
         assertEquals(List.of(), runtime.consumePendingEntityEvents());
 
-        runtime.tick(0, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
         assertEquals(0x05, runtime.snapshot().slots().get(slot).spriteVariant());
     }
 
@@ -8434,7 +8446,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(3, runtime.playerArrowDirection(slot));
         assertEquals(1, runtime.activePlayerArrowCount());
 
-        runtime.tick(0, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
 
         assertEquals(0x53, runtime.snapshot().slots().get(slot).y());
     }
@@ -8465,7 +8477,7 @@ final class RoomEntityRuntimeTest {
         // $75A2 checks (hFrameCounter XOR targetSlot) bit 0. Slot 15 is
         // therefore checked on frame 1. The arrow collision runs before its
         // own movement, exactly as ArrowEntityHandler does.
-        runtime.tick(1, 0x40, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x40, 0x50, () -> 0));
 
         assertEquals(0, runtime.enemyHealth(15));
         assertEquals(EntityStatus.DYING, runtime.snapshot().slots().get(15).status());
@@ -8497,7 +8509,7 @@ final class RoomEntityRuntimeTest {
         assertTrue(runtime.isBombArrowForTest(arrowSlot));
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(candidateBomb).status());
 
-        runtime.tick(1, 0x40, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x40, 0x50, () -> 0));
 
         assertEquals(2, runtime.enemyHealth(15));
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(15).status());
@@ -8549,7 +8561,7 @@ final class RoomEntityRuntimeTest {
         int arrowSlot = runtime.spawnArrow(0x40, 0x50, 0, 0);
         assertFalse(runtime.isBombArrowForTest(arrowSlot));
         for (int frame = 0; frame < 6; frame++) {
-            runtime.tick(frame, 0x40, 0x50, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x40, 0x50, () -> 0));
         }
 
         assertEquals(0, runtime.bombArrowCooldownForTest());
@@ -8570,11 +8582,11 @@ final class RoomEntityRuntimeTest {
         assertTrue(runtime.isBombArrowForTest(arrowSlot));
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(bombSlot).status());
 
-        runtime.tick(0, 0x40, 0x50, () -> 0,
-            (entity, direction, nextX, nextY) -> direction == 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0,
+            (entity, direction, nextX, nextY) -> direction == 0));
         assertEquals(0x18, runtime.playerArrowTransitionCountdown(arrowSlot));
 
-        runtime.tick(1, 0x40, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x40, 0x50, () -> 0));
 
         RoomEntity explosion = runtime.snapshot().loadedEntities().getFirst();
         assertEquals(0x02, explosion.type());
@@ -8595,11 +8607,11 @@ final class RoomEntityRuntimeTest {
 
         // Target slot 15 is skipped by the even-frame damage cadence. The
         // arrow hits a wall instead, then overlaps the target on frame 1.
-        runtime.tick(0, 0, 0, () -> 0,
-            (entity, direction, x, y) -> entity.type() == 0 && direction == 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0,
+            (entity, direction, x, y) -> entity.type() == 0 && direction == 0));
         assertEquals(0x18, runtime.playerArrowTransitionCountdown(arrowSlot));
         runtime.consumePendingEntityEvents();
-        runtime.tick(1, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0, 0, () -> 0));
 
         assertEquals(1, runtime.enemyHealth(15));
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(15).status());
@@ -8621,8 +8633,8 @@ final class RoomEntityRuntimeTest {
             new RoomEntitySnapshot(new ArrayList<>(snapshot().slots())), false, null, catalog);
         int slot = runtime.spawnArrow(0x40, 0x50, 0x00, 0);
 
-        runtime.tick(0, 0, 0, () -> 0,
-            (entity, direction, nextX, nextY) -> direction == 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0,
+            (entity, direction, nextX, nextY) -> direction == 0));
 
         assertEquals(0x04, runtime.swordMoblinAlertingSoundCounter());
         assertEquals(0x18, runtime.playerArrowTransitionCountdown(slot));
@@ -8635,11 +8647,11 @@ final class RoomEntityRuntimeTest {
     void playerArrowRuntimeDisplaysThePreviousReboundSpinFrame() {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot());
         int slot = runtime.spawnArrow(0x40, 0x50, 0, 0);
-        runtime.tick(0, 0, 0, () -> 0,
-            (entity, direction, nextX, nextY) -> direction == 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0,
+            (entity, direction, nextX, nextY) -> direction == 0));
 
         for (int frame = 1; frame <= 11; frame++) {
-            runtime.tick(frame, 0, 0, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0));
             int expected = frame == 1 ? 0 : frame <= 9 ? 1 : 3;
             assertEquals(expected, runtime.snapshot().slots().get(slot).spriteVariant(),
                 "frame " + frame);
@@ -8650,13 +8662,13 @@ final class RoomEntityRuntimeTest {
     void playerArrowReboundUsesTheSideViewRoomGravity() {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot().withSideScrolling(true));
         int slot = runtime.spawnArrow(0x40, 0x50, 0, 0);
-        runtime.tick(0, 0, 0, () -> 0,
-            (entity, direction, nextX, nextY) -> direction == 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0,
+            (entity, direction, nextX, nextY) -> direction == 0));
         int startingZ = runtime.snapshot().slots().get(slot).z();
         int startingY = runtime.snapshot().slots().get(slot).y();
 
         for (int frame = 1; frame <= 9; frame++) {
-            runtime.tick(frame, 0, 0, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0));
         }
 
         RoomEntity arrow = runtime.snapshot().slots().get(slot);
@@ -8672,14 +8684,14 @@ final class RoomEntityRuntimeTest {
             EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(0x0C), 0, 0, 0, 0, -1, false);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(
             snapshot(projectile).withSideScrolling(true));
-        runtime.tickWithProjectileEvents(0, 0, 0, () -> 0,
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0, 0, () -> 0,
             (entity, direction, nextX, nextY) -> direction == 0,
-            EnemyProjectileCollision.LinkState.nonInteractive());
+            EnemyProjectileCollision.LinkState.nonInteractive()));
         assertEquals(0x18, runtime.enemyProjectileTransitionCountdown(0));
 
         for (int frame = 1; frame <= 9; frame++) {
-            runtime.tickWithProjectileEvents(frame, 0, 0, () -> 0, null,
-                EnemyProjectileCollision.LinkState.nonInteractive());
+            runtime.tick(EntityTestFrames.projectileFrame(runtime, frame, 0, 0, () -> 0, null,
+                EnemyProjectileCollision.LinkState.nonInteractive()));
         }
 
         RoomEntity arrow = runtime.snapshot().slots().get(0);
@@ -8747,7 +8759,7 @@ final class RoomEntityRuntimeTest {
         int slot = runtime.spawnBomb(0x40, 0x50, 0, 0);
 
         runtime.setBombTransitionCountdownForTest(slot, 0x22);
-        runtime.tick(0, 0x40, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0));
         RoomEntity warning = runtime.snapshot().slots().get(slot);
         assertEquals(0x02, warning.type());
         assertEquals(0x5484, warning.spriteDefinition().address());
@@ -8757,7 +8769,7 @@ final class RoomEntityRuntimeTest {
 
         // UpdateEntityTimers decrements before BombEntityHandler sees $18.
         runtime.setBombTransitionCountdownForTest(slot, 0x19);
-        runtime.tick(1, 0x40, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x40, 0x50, () -> 0));
         RoomEntity warningAtSound = runtime.snapshot().slots().get(slot);
         assertEquals(slot, warningAtSound.slot());
         assertEquals(0x02, warningAtSound.type());
@@ -8767,7 +8779,7 @@ final class RoomEntityRuntimeTest {
             EntityCombatEvent.SoundChannel.NOISE, 0x0C)),
             runtime.consumePendingEntityEvents());
 
-        runtime.tick(2, 0x40, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 0x40, 0x50, () -> 0));
         RoomEntity explosionVariantThree = runtime.snapshot().slots().get(slot);
         assertEquals(slot, explosionVariantThree.slot());
         assertEquals(0x02, explosionVariantThree.type());
@@ -8777,21 +8789,21 @@ final class RoomEntityRuntimeTest {
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
 
         runtime.setBombTransitionCountdownForTest(slot, 0x14);
-        runtime.tick(3, 0x40, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 3, 0x40, 0x50, () -> 0));
         assertEquals(0x6530, runtime.snapshot().slots().get(slot).spriteDefinition().address());
         assertEquals(2, runtime.snapshot().slots().get(slot).spriteVariant());
 
         runtime.setBombTransitionCountdownForTest(slot, 0x10);
-        runtime.tick(4, 0x40, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 4, 0x40, 0x50, () -> 0));
         assertEquals(1, runtime.snapshot().slots().get(slot).spriteVariant());
 
         runtime.setBombTransitionCountdownForTest(slot, 0x08);
-        runtime.tick(5, 0x40, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 5, 0x40, 0x50, () -> 0));
         assertEquals(0, runtime.snapshot().slots().get(slot).spriteVariant());
         assertTrue(runtime.bombActive());
 
         runtime.setBombTransitionCountdownForTest(slot, 0x01);
-        runtime.tick(6, 0x40, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 6, 0x40, 0x50, () -> 0));
 
         RoomEntity finalExplosion = runtime.snapshot().slots().get(slot);
         assertEquals(slot, finalExplosion.slot());
@@ -8803,7 +8815,7 @@ final class RoomEntityRuntimeTest {
         assertFalse(runtime.bombActive());
         assertEquals(1, runtime.snapshot().loadedEntities().size());
 
-        runtime.tick(7, 0x40, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 7, 0x40, 0x50, () -> 0));
 
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(slot).status());
         assertFalse(runtime.bombActive());
@@ -8820,7 +8832,7 @@ final class RoomEntityRuntimeTest {
         int slot = runtime.spawnBomb(0x40, 0x50, 0, 0);
 
         runtime.setBombTransitionCountdownForTest(slot, 0x01);
-        runtime.tick(0, 0x40, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0));
 
         assertFalse(runtime.bombActive());
         assertEquals(slot, runtime.spawnBomb(0x44, 0x54, 0, 1));
@@ -8843,7 +8855,7 @@ final class RoomEntityRuntimeTest {
         int slot = runtime.spawnBomb(0x40, 0x50, 0, 3);
 
         runtime.setBombTransitionCountdownForTest(slot, 0x01);
-        runtime.tick(0, 0x40, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0));
 
         Field pendingField = RoomEntityRuntime.class
             .getDeclaredField("bombFinalPresentationPending");
@@ -8878,7 +8890,7 @@ final class RoomEntityRuntimeTest {
         int bombSlot = runtime.spawnBomb(0x40, 0x50, 0, 0);
         runtime.setBombTransitionCountdownForTest(bombSlot, 0x13);
 
-        runtime.tick(0, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
 
         List<BombExplosionEvent> events = runtime.consumeBombExplosionEvents();
         assertEquals(List.of(13, 12), events.stream()
@@ -8895,7 +8907,7 @@ final class RoomEntityRuntimeTest {
         }
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
 
-        runtime.tick(1, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0, 0, () -> 0));
         List<BombExplosionEvent> nextFrame = runtime.consumeBombExplosionEvents();
         assertEquals(List.of(BombExplosionEvent.OBJECT_TARGET), nextFrame.stream()
             .map(BombExplosionEvent::targetSlot).toList());
@@ -8920,7 +8932,7 @@ final class RoomEntityRuntimeTest {
         int bombSlot = runtime.spawnBomb(0x40, 0x50, 0, 0);
         runtime.setBombTransitionCountdownForTest(bombSlot, 0x13);
 
-        runtime.tick(0, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
 
         List<BombExplosionEvent> events = runtime.consumeBombExplosionEvents();
         List<BombExplosionEvent> targetEvents = events.stream()
@@ -8949,7 +8961,7 @@ final class RoomEntityRuntimeTest {
         // visual Y is aligned with the explosion while its X is eight pixels
         // to the left. The ROM's final length-$30 vector must therefore be
         // -$30 on X and zero on Y.
-        runtime.tick(0, 0x40, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0));
 
         assertEquals(0, runtime.enemyHealth(14));
         assertEquals(EntityStatus.DYING, runtime.snapshot().slots().get(14).status());
@@ -8982,11 +8994,11 @@ final class RoomEntityRuntimeTest {
             snapshot(), false, () -> 0, catalog, tables);
 
         int bombSlot = runtime.spawnEnemyBomb(0x48, 0x50, 0x00, 0x13);
-        List<EntityProjectileEvent> events = runtime.tickWithProjectileEvents(
+        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime,
             0, 0x48, 0x50, () -> 0, null,
             new EnemyProjectileCollision.LinkState(
                 0x48, 0x50, 0x00, 0x00, 0x03, false, 1, 0x00),
-            0x10, 0xF0);
+            0x10, 0xF0));
 
         assertEquals(List.of(new EntityProjectileEvent(
             bombSlot, 0x02, EntityProjectileEvent.Kind.LINK_DAMAGE, 0x00, 0x08,
@@ -9006,11 +9018,11 @@ final class RoomEntityRuntimeTest {
             new RomEnemyCombatTables(rom));
 
         int bombSlot = runtime.spawnEnemyBomb(0x48, 0x68, 0x18, 0x13);
-        List<EntityProjectileEvent> events = runtime.tickWithProjectileEvents(
+        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime,
             0, 0x48, 0x50, () -> 0, null,
             new EnemyProjectileCollision.LinkState(
                 0x48, 0x50, 0x00, 0x00, 0x03, false, 1, 0x00),
-            0x10, 0xF0);
+            0x10, 0xF0));
 
         assertEquals(List.of(), events);
         assertEquals(0x04, runtime.swordMoblinAlertingSoundCounter());
@@ -9032,7 +9044,7 @@ final class RoomEntityRuntimeTest {
                 bomberDefinition, 0, 0, 0, 0x00, -1, false)),
             false, () -> 0, catalog, tables);
 
-        runtime.tick(0, 0x50, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x50, () -> 0));
 
         RoomEntity bomb = runtime.snapshot().slots().get(15);
         assertTrue(bomb.loaded());
@@ -9059,9 +9071,9 @@ final class RoomEntityRuntimeTest {
                 0, 0, 0, 0x00, -1, false)),
             false, () -> 0, catalog, new RomEnemyCombatTables(rom));
 
-        runtime.tick(0, 0x70, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x70, 0x50, () -> 0));
         runtime.consumePendingEntityEvents();
-        runtime.tick(1, 0x70, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x70, 0x50, () -> 0));
 
         RoomEntity bomb = runtime.snapshot().slots().get(15);
         assertEquals(0x51, bomb.x());
@@ -9089,7 +9101,7 @@ final class RoomEntityRuntimeTest {
             false, () -> 0, catalog, tables);
 
         for (int frame = 0; frame <= 136; frame++) {
-            runtime.tick(frame, 0xC0, 0xC0, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0xC0, 0xC0, () -> 0));
         }
 
         RoomEntity bomb = runtime.snapshot().slots().get(15);
@@ -9127,7 +9139,7 @@ final class RoomEntityRuntimeTest {
         boolean explosionSound = false;
         boolean sourceCleared = false;
         for (int frame = 0; frame < 520; frame++) {
-            runtime.tick(frame, 0xC0, 0xC0, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0xC0, 0xC0, () -> 0));
             explosionSound |= runtime.consumePendingEntityEvents().stream()
                 .anyMatch(event -> event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE
                     && event.soundId() == 0x0C);
@@ -9206,7 +9218,7 @@ final class RoomEntityRuntimeTest {
         // Frame 1 selects target slot 1 in func_003_75A2's alternating pass.
         // The source moves three pixels toward the upper-left first, remaining
         // inside the ROM's strict twelve-pixel entity-collision windows.
-        runtime.tick(1, 0xC0, 0xC0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0xC0, 0xC0, () -> 0));
 
         assertFalse(runtime.snapshot().slots().get(0).loaded());
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(1).status());
@@ -9236,11 +9248,11 @@ final class RoomEntityRuntimeTest {
             new RomEnemyCombatTables(rom));
 
         int bombSlot = runtime.spawnEnemyBomb(0x48, 0x50, 0x00, 0x13);
-        List<EntityProjectileEvent> events = runtime.tickWithProjectileEvents(
+        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime,
             0, 0x48, 0x50, () -> 0, null,
             new EnemyProjectileCollision.LinkState(
                 0x48, 0x50, 0x00, 0x00, 0x03, false, 1, 0x01),
-            0x10, 0xF0);
+            0x10, 0xF0));
 
         assertEquals(List.of(new EntityProjectileEvent(
             bombSlot, 0x02, EntityProjectileEvent.Kind.LINK_DAMAGE, 0x00, 0x00,
@@ -9266,7 +9278,7 @@ final class RoomEntityRuntimeTest {
         int bombSlot = runtime.spawnBomb(0x40, 0x50, 0, 0);
         runtime.setBombTransitionCountdownForTest(bombSlot, 0x13);
 
-        runtime.tick(0, 0x40, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0));
 
         assertEquals(4, runtime.enemyHealth(14));
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(14).status());
@@ -9288,21 +9300,21 @@ final class RoomEntityRuntimeTest {
         int bombSlot = runtime.spawnBomb(0x40, 0x50, 0, 0);
 
         runtime.setBombTransitionCountdownForTest(bombSlot, 0x18);
-        runtime.tick(0, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
         assertTrue(runtime.consumeBombExplosionEvents().isEmpty());
 
         runtime.setBombTransitionCountdownForTest(bombSlot, 0x17);
-        runtime.tick(1, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0, 0, () -> 0));
         assertEquals(List.of(0x16), runtime.consumeBombExplosionEvents().stream()
             .map(BombExplosionEvent::countdown).toList());
 
         runtime.setBombTransitionCountdownForTest(bombSlot, 0x0F);
-        runtime.tick(2, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 0, 0, () -> 0));
         assertEquals(List.of(0x0E), runtime.consumeBombExplosionEvents().stream()
             .map(BombExplosionEvent::countdown).toList());
 
         runtime.setBombTransitionCountdownForTest(bombSlot, 0x0E);
-        runtime.tick(3, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 3, 0, 0, () -> 0));
         assertTrue(runtime.consumeBombExplosionEvents().isEmpty());
     }
 

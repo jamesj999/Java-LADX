@@ -65,7 +65,7 @@ final class RoomEntityRuntimeHookshotTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(emptySnapshot());
         int slot = runtime.spawnHookshotChain(0x40, 0x50, 0, 0);
 
-        runtime.tick(0, 0x40, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0));
 
         assertEquals(0x43, runtime.snapshot().slots().get(slot).x());
         assertEquals(0x29, runtime.hookshotTransitionCountdown(slot));
@@ -77,7 +77,7 @@ final class RoomEntityRuntimeHookshotTest {
         runtime.spawnHookshotChain(0x40, 0x50, 0, 0);
 
         for (int frame = 0; frame < 0x2A + 0x2A; frame++) {
-            runtime.tick(frame, 0x40, 0x50, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x40, 0x50, () -> 0));
         }
 
         assertFalse(runtime.hookshotActive());
@@ -88,15 +88,15 @@ final class RoomEntityRuntimeHookshotTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(emptySnapshot());
         int slot = runtime.spawnHookshotChain(0x40, 0x50, 0, 0);
 
-        runtime.tick(0, 0x40, 0x50, () -> 0,
-            (entity, direction, nextX, nextY) -> true);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0,
+            (entity, direction, nextX, nextY) -> true));
 
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(slot).status());
         assertTrue(runtime.hookshotActive());
         assertTrue(runtime.hookshotWallCollisionPending(slot));
 
-        runtime.tick(1, 0x40, 0x50, () -> 0,
-            (entity, direction, nextX, nextY) -> true);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x40, 0x50, () -> 0,
+            (entity, direction, nextX, nextY) -> true));
 
         assertEquals(0, runtime.hookshotTransitionCountdown(slot));
         assertFalse(runtime.hookshotWallCollisionPending(slot));
@@ -120,10 +120,10 @@ final class RoomEntityRuntimeHookshotTest {
                 direction, EntityBackgroundCollisionResult.NO_OBJECT, 0, nextX, nextY));
 
         for (int frame = 0; frame < 5; frame++) {
-            runtime.tick(frame, 0x40, 0x50, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x40, 0x50, () -> 0));
         }
         blocked[0] = true;
-        runtime.tick(5, 0x40, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 5, 0x40, 0x50, () -> 0));
 
         assertTrue(runtime.hookshotActive());
         assertEquals(HookshotChainMotion.PULLING_STATE, runtime.hookshotEntityState(slot));
@@ -137,7 +137,7 @@ final class RoomEntityRuntimeHookshotTest {
         runtime.setBackgroundInteraction((entity, direction, nextX, nextY) ->
             EntityBackgroundCollisionResult.blocked(direction, 0xA0, 0x60, nextX, nextY));
 
-        runtime.tick(0, 0x40, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0));
 
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(slot).status());
         assertFalse(runtime.hookshotActive());
@@ -154,15 +154,15 @@ final class RoomEntityRuntimeHookshotTest {
                 : EntityBackgroundCollisionResult.passableWithObject(
                     direction, EntityBackgroundCollisionResult.NO_OBJECT, 0, nextX, nextY));
         for (int frame = 0; frame < 6; frame++) {
-            runtime.tick(frame, 0x40, 0x50, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x40, 0x50, () -> 0));
         }
         blocked[0] = true;
-        runtime.tick(6, 0x40, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 6, 0x40, 0x50, () -> 0));
         assertEquals(HookshotChainMotion.PULLING_STATE, runtime.hookshotEntityState(slot));
 
-        List<EntityProjectileEvent> events = runtime.tickWithProjectileEvents(
+        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime,
             7, 0x40, 0x50, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0, 0, false));
+            new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0, 0, false)));
 
         assertEquals(1, events.size());
         assertEquals(EntityProjectileEvent.Kind.HOOKSHOT_PULL, events.getFirst().kind());
@@ -174,7 +174,7 @@ final class RoomEntityRuntimeHookshotTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(emptySnapshot());
         runtime.spawnHookshotChain(0x40, 0x50, 0, 0);
 
-        runtime.tick(0, 0x40, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0));
 
         EntityCombatEvent event = runtime.consumePendingEntityEvents().getFirst();
         assertEquals(EntityCombatEvent.SoundChannel.NOISE, event.soundChannel());
@@ -187,15 +187,15 @@ final class RoomEntityRuntimeHookshotTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(emptySnapshot());
         int slot = runtime.spawnHookshotChain(0x40, 0x50, 0, 0);
         setGate(runtime, gate, true);
-        runtime.tick(0, 0x20, 0x20, () -> 0, (entity, direction, x, y) -> {
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x20, () -> 0, (entity, direction, x, y) -> {
             throw new AssertionError("Paused hookshot reached background collision");
-        });
+        }));
         assertEquals(0x40, runtime.snapshot().slots().get(slot).x());
         assertEquals(gate.equals("got_item") ? 0x29 : 0x2A,
             runtime.hookshotTransitionCountdown(slot));
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
         setGate(runtime, gate, false);
-        runtime.tick(1, 0x20, 0x20, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x20, 0x20, () -> 0));
         assertEquals(0x43, runtime.snapshot().slots().get(slot).x());
     }
 
@@ -203,7 +203,7 @@ final class RoomEntityRuntimeHookshotTest {
     void creditsTickTheTimerButSkipTheBankEighteenHandler() {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(emptySnapshot());
         int slot = runtime.spawnHookshotChain(0x40, 0x50, 0, 0);
-        runtime.tick(0, 0x20, 0x20, () -> 0, true);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x20, () -> 0, true));
         assertEquals(0x29, runtime.hookshotTransitionCountdown(slot));
         assertEquals(0x40, runtime.snapshot().slots().get(slot).x());
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
@@ -216,7 +216,7 @@ final class RoomEntityRuntimeHookshotTest {
         runtime.spawnHookshotChain(0x40, 0x50, 0, 0);
         runtime.setDialogActive(dialog);
         runtime.setOcarinaPlaybackForTest(1, 0, 0);
-        runtime.tick(0, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
         assertFalse(runtime.hookshotActive());
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
     }
