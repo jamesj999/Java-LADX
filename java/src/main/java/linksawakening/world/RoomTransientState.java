@@ -68,65 +68,65 @@ final class RoomTransientState {
     RoomTransientState(RoomSession session) { this.session = session; }
 
     void clearTransientRoomState() {
-        session.pendingShutterCloseMask = session.closedShutterMask = session.shutterCloseTicks = 0;
-        session.shutterCloseDirection = session.shutterCloseLocation = -1;
-        session.shutterCloseStarted = false;
-        session.shutterTileOverrides.clear();
-        if (session.transientVfxSystem != null) {
-            session.transientVfxSystem.clear();
+        session.context.pendingShutterCloseMask = session.context.closedShutterMask = session.context.shutterCloseTicks = 0;
+        session.context.shutterCloseDirection = session.context.shutterCloseLocation = -1;
+        session.context.shutterCloseStarted = false;
+        session.context.shutterTileOverrides.clear();
+        if (session.context.transientVfxSystem != null) {
+            session.context.transientVfxSystem.clear();
         }
-        if (session.droppableRupeeSystem != null) {
-            session.droppableRupeeSystem.clear();
+        if (session.context.droppableRupeeSystem != null) {
+            session.context.droppableRupeeSystem.clear();
         }
-        session.hookshotBridgeTileOverrides.clear();
-        session.bombedWallTileOverrides.clear();
-        session.bombedBlockTileOverrides.clear();
-        session.bombedCaveDoorTileOverrides.clear();
-        session.retainedTorchTiles.clear();
-        session.entityBridge.pendingBombExplosionEvents.clear();
-        session.pendingDungeonWarp = null;
-        session.entityBridge.pendingRoomEntityEvents.clear();
-        session.entityBridge.pendingChestRewardEvents.clear();
-        session.entityBridge.pendingKeyRewardEvents.clear();
-        session.entityBridge.pendingSlimeKeyRewardEvents.clear();
-        session.entityBridge.pendingHeartContainerRewards.clear();
-        session.entityBridge.pendingMadamMeowMeowFullHealRequests.clear();
-        session.entityBridge.pendingRichardProgressEvents.clear();
-        session.entityBridge.pendingSwordPickupRewards.clear();
-        session.entityBridge.pendingToadstoolRewards.clear();
-        session.entityBridge.pendingWitchExchangeEvents.clear();
-        session.entityBridge.pendingWitchRewardEvents.clear();
-        session.entityBridge.pendingRoomDialogRequests.clear();
-        session.pendingManboTransition = false;
-        session.pendingInstrumentTransition = false;
-        session.pendingShovelDrop = null;
-        session.shovelUseState = 0;
-        session.roomTriggerCount = 0;
-        session.activeRoomEvent = 0;
-        session.roomEventEffectExecuted = false;
-        session.thrownAtDoorTriggerResolved = false;
-        session.roomEventChestRevealCountdown = 0;
-        session.roomEventStairRevealCountdown = 0;
-        session.staircaseState = session.STAIRCASE_NONE;
-        session.staircaseX = 0;
-        session.staircaseY = 0;
-        session.switchButtonPressCounter = 0;
-        session.indoorKeyDoorAnimationCountdown = 0;
-        session.indoorKeyDoorDirection = -1;
-        session.indoorKeyDoorLocation = -1;
-        session.indoorBossDoorOpening = false;
-        session.pushBlockContactTicks = 0;
-        session.indoorPotPullFrames = 0;
-        session.pushedBlockMotionFrames = 0;
-        session.pushedBlockSourceLocation = -1;
-        session.pushedBlockDestinationLocation = -1;
-        session.pushedBlockDirection = -1;
-        session.pushedBlockEntitySlot = -1;
-        session.pushedBlocksTriggerEffectPending = false;
-        session.worldLinkMotionBlockPending = false;
-        session.tailCaveKeyholeCountdown = 0;
-        session.tailCaveFinalMotionBlockPending = false;
-        session.nextWorldMusicTrackCountdown = 0;
-        session.entityBridge.pendingRoomMusicTrack = -1;
+        session.context.hookshotBridgeTileOverrides.clear();
+        session.context.bombedWallTileOverrides.clear();
+        session.context.bombedBlockTileOverrides.clear();
+        session.context.bombedCaveDoorTileOverrides.clear();
+        session.context.retainedTorchTiles.clear();
+        session.context.entityBridge.pendingBombExplosionEvents.clear();
+        session.context.pendingDungeonWarp = null;
+        session.context.entityBridge.pendingRoomEntityEvents.clear();
+        session.context.entityBridge.pendingChestRewardEvents.clear();
+        session.context.entityBridge.pendingKeyRewardEvents.clear();
+        session.context.entityBridge.pendingSlimeKeyRewardEvents.clear();
+        session.context.entityBridge.pendingHeartContainerRewards.clear();
+        session.context.entityBridge.pendingMadamMeowMeowFullHealRequests.clear();
+        session.context.entityBridge.pendingRichardProgressEvents.clear();
+        session.context.entityBridge.pendingSwordPickupRewards.clear();
+        session.context.entityBridge.pendingToadstoolRewards.clear();
+        session.context.entityBridge.pendingWitchExchangeEvents.clear();
+        session.context.entityBridge.pendingWitchRewardEvents.clear();
+        session.context.entityBridge.pendingRoomDialogRequests.clear();
+        session.context.pendingManboTransition = false;
+        session.context.pendingInstrumentTransition = false;
+        session.context.pendingShovelDrop = null;
+        session.context.shovelUseState = 0;
+        session.context.roomTriggerCount = 0;
+        session.context.activeRoomEvent = 0;
+        session.context.roomEventEffectExecuted = false;
+        session.context.thrownAtDoorTriggerResolved = false;
+        session.context.roomEventChestRevealCountdown = 0;
+        session.context.roomEventStairRevealCountdown = 0;
+        session.context.staircaseState = session.STAIRCASE_NONE;
+        session.context.staircaseX = 0;
+        session.context.staircaseY = 0;
+        session.context.switchButtonPressCounter = 0;
+        session.context.indoorKeyDoorAnimationCountdown = 0;
+        session.context.indoorKeyDoorDirection = -1;
+        session.context.indoorKeyDoorLocation = -1;
+        session.context.indoorBossDoorOpening = false;
+        session.context.pushBlockContactTicks = 0;
+        session.context.indoorPotPullFrames = 0;
+        session.context.pushedBlockMotionFrames = 0;
+        session.context.pushedBlockSourceLocation = -1;
+        session.context.pushedBlockDestinationLocation = -1;
+        session.context.pushedBlockDirection = -1;
+        session.context.pushedBlockEntitySlot = -1;
+        session.context.pushedBlocksTriggerEffectPending = false;
+        session.context.worldLinkMotionBlockPending = false;
+        session.context.tailCaveKeyholeCountdown = 0;
+        session.context.tailCaveFinalMotionBlockPending = false;
+        session.context.nextWorldMusicTrackCountdown = 0;
+        session.context.entityBridge.pendingRoomMusicTrack = -1;
     }
 }

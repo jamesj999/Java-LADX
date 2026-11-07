@@ -320,20 +320,20 @@ final class RoomEntityBridge {
         if (health < 0 || health > 0xFF) {
             throw new IllegalArgumentException("Health must be an unsigned byte: " + health);
         }
-        session.enemyDropMaxHearts = maxHearts;
-        session.enemyDropHealth = health;
-        session.enemyDropActivePowerUp = activePowerUp;
+        session.context.enemyDropMaxHearts = maxHearts;
+        session.context.enemyDropHealth = health;
+        session.context.enemyDropActivePowerUp = activePowerUp;
         session.configureEnemyDropRuntime();
     }
 
     void advanceBoomerangSoundClock(boolean worldGameplay) {
         if (worldGameplay) {
-            session.boomerangSoundCounter = (session.boomerangSoundCounter + 1)
+            session.context.boomerangSoundCounter = (session.context.boomerangSoundCounter + 1)
                 % RoomEntityRuntime.BOOMERANG_SFX_COUNTER_PERIOD;
         }
         // Main may run several world frames without an entity pass during a
         // transition. The next pass must use that clock without ticking twice.
-        session.boomerangSoundClockProvided = true;
+        session.context.boomerangSoundClockProvided = true;
     }
 
     void tickEntities(int frameCounter) {
@@ -342,7 +342,7 @@ final class RoomEntityBridge {
 
     void tickEntities(int frameCounter, int linkEntityX, int linkEntityY) {
         session.tickEntities(frameCounter, linkEntityX, linkEntityY,
-            session.followingLinkZ, session.followingLinkDirection);
+            session.context.followingLinkZ, session.context.followingLinkDirection);
     }
 
     void tickEntities(int frameCounter, int linkEntityX, int linkEntityY, int linkEntityZ, int linkDirection) {
@@ -396,127 +396,127 @@ final class RoomEntityBridge {
     }
 
     List<EntityProjectileEvent> tickEntitiesWithProjectileEvents( int frameCounter, int linkEntityX, int linkEntityY, int linkEntityZ, boolean linkAirborne, int linkMotionState, int linkDirection, int collisionType, boolean usingShield, int shieldLevel, int invincibilityCounter, boolean swordCollisionActive, int swordX, int swordWidth, int swordY, int swordHeight, int linkSpeedX, int linkSpeedY) {
-        session.followingLinkX = linkEntityX & 0xFF;
-        session.followingLinkY = linkEntityY & 0xFF;
-        session.followingLinkZ = linkEntityZ & 0xFF;
-        session.followingLinkDirection = linkDirection & 0xFF;
-        session.currentLinkMotionState = linkMotionState & 0xFF;
-        session.shouldGetLostInMysteriousWoods = false;
-        if (session.activeRoom == null || session.entityBridge.entityRuntime == null) {
+        session.context.followingLinkX = linkEntityX & 0xFF;
+        session.context.followingLinkY = linkEntityY & 0xFF;
+        session.context.followingLinkZ = linkEntityZ & 0xFF;
+        session.context.followingLinkDirection = linkDirection & 0xFF;
+        session.context.currentLinkMotionState = linkMotionState & 0xFF;
+        session.context.shouldGetLostInMysteriousWoods = false;
+        if (session.context.activeRoom == null || session.context.entityBridge.entityRuntime == null) {
             return List.of();
         }
-        if (!session.boomerangSoundClockProvided) {
+        if (!session.context.boomerangSoundClockProvided) {
             session.advanceBoomerangSoundClock(true);
         }
-        session.entityBridge.entityRuntime.setBoomerangSoundCounterForFrame(session.boomerangSoundCounter);
-        session.boomerangSoundClockProvided = false;
-        session.indoorTorchPaletteEffect.tick(session.entityInputs.entityDialogActive, false,
-            session.currentLinkMotionState, session.activeRoom.mapId());
-        session.entityBridge.entityRuntime.setTorchPaletteTransitionState(session.indoorTorchPaletteEffect.targetAddress(),
-            session.indoorTorchPaletteEffect.transitionActive());
+        session.context.entityBridge.entityRuntime.setBoomerangSoundCounterForFrame(session.context.boomerangSoundCounter);
+        session.context.boomerangSoundClockProvided = false;
+        session.context.indoorTorchPaletteEffect.tick(session.context.entityInputs.entityDialogActive, false,
+            session.context.currentLinkMotionState, session.context.activeRoom.mapId());
+        session.context.entityBridge.entityRuntime.setTorchPaletteTransitionState(session.context.indoorTorchPaletteEffect.targetAddress(),
+            session.context.indoorTorchPaletteEffect.transitionActive());
         session.copyIndoorTorchPalettesToActiveRoom();
         session.tickOcarinaAnimationHandler();
-        session.entityBridge.entityRuntime.setSwitchBlockAnimationActive(
-            SwitchBlockAnimation.isAnimating(session.switchableObjectAnimationStage));
-        session.entityBridge.entityRuntime.setDialogActive(session.entityInputs.entityDialogActive);
-        session.entityBridge.entityRuntime.setTalkState(
-            session.entityInputs.entityInventoryAppearing, session.entityInputs.entityDialogCooldown, session.entityInputs.entityWindowY);
-        session.entityBridge.entityRuntime.setDialogAskSelectionIndex(session.entityInputs.entityDialogAskSelectionIndex);
-        session.entityBridge.entityRuntime.setActiveMusic(session.entityInputs.entityMusicActive);
-        session.entityBridge.entityRuntime.setBowWowState(session.bowWowState);
-        session.entityBridge.entityRuntime.setLinkVelocityZ(session.entityInputs.entityLinkVelocityZ);
-        session.entityBridge.entityRuntime.setOwlInstrumentFlags(
-            Byte.toUnsignedInt(session.roomState.dungeonProgressFlags[0]),
-            Byte.toUnsignedInt(session.roomState.dungeonProgressFlags[1]));
-        session.entityBridge.entityRuntime.setActionButtonsHeld(session.entityInputs.actionButtonAHeld, session.entityInputs.actionButtonBHeld);
-        int statueMapId = session.activeRoom.mapId();
-        session.entityBridge.entityRuntime.setOwlStatueDialogId(
-            session.activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD
+        session.context.entityBridge.entityRuntime.setSwitchBlockAnimationActive(
+            SwitchBlockAnimation.isAnimating(session.context.switchableObjectAnimationStage));
+        session.context.entityBridge.entityRuntime.setDialogActive(session.context.entityInputs.entityDialogActive);
+        session.context.entityBridge.entityRuntime.setTalkState(
+            session.context.entityInputs.entityInventoryAppearing, session.context.entityInputs.entityDialogCooldown, session.context.entityInputs.entityWindowY);
+        session.context.entityBridge.entityRuntime.setDialogAskSelectionIndex(session.context.entityInputs.entityDialogAskSelectionIndex);
+        session.context.entityBridge.entityRuntime.setActiveMusic(session.context.entityInputs.entityMusicActive);
+        session.context.entityBridge.entityRuntime.setBowWowState(session.context.bowWowState);
+        session.context.entityBridge.entityRuntime.setLinkVelocityZ(session.context.entityInputs.entityLinkVelocityZ);
+        session.context.entityBridge.entityRuntime.setOwlInstrumentFlags(
+            Byte.toUnsignedInt(session.context.roomState.dungeonProgressFlags[0]),
+            Byte.toUnsignedInt(session.context.roomState.dungeonProgressFlags[1]));
+        session.context.entityBridge.entityRuntime.setActionButtonsHeld(session.context.entityInputs.actionButtonAHeld, session.context.entityInputs.actionButtonBHeld);
+        int statueMapId = session.context.activeRoom.mapId();
+        session.context.entityBridge.entityRuntime.setOwlStatueDialogId(
+            session.context.activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD
                 && (statueMapId < 8 || statueMapId == 0xFF)
-                ? session.owlStatueDialogResolver.globalDialogId(statueMapId, session.activeRoom.roomId(),
-                    session.roomState.dungeonItemState.currentFlag(DungeonItemState.STONE_BEAK_INDEX) != 0)
+                ? session.context.owlStatueDialogResolver.globalDialogId(statueMapId, session.context.activeRoom.roomId(),
+                    session.context.roomState.dungeonItemState.currentFlag(DungeonItemState.STONE_BEAK_INDEX) != 0)
                 : -1);
-        session.entityBridge.entityRuntime.setJoypadHeld(session.entityInputs.joypadHeld);
-        session.entityBridge.entityRuntime.setPressedButtonsMask(session.entityInputs.entityPressedButtonsMask);
-        session.entityBridge.entityRuntime.setPowerBraceletButtonHeld(session.entityInputs.powerBraceletButtonHeld);
-        session.entityBridge.entityRuntime.setBombButtonHeld(session.entityInputs.bombButtonHeld);
-        session.entityBridge.entityRuntime.setLiftedLinkC13B(session.followingEntityYOffset);
-        session.entityBridge.entityRuntime.setBooBuddyTriggerCount(session.roomTriggerCount);
+        session.context.entityBridge.entityRuntime.setJoypadHeld(session.context.entityInputs.joypadHeld);
+        session.context.entityBridge.entityRuntime.setPressedButtonsMask(session.context.entityInputs.entityPressedButtonsMask);
+        session.context.entityBridge.entityRuntime.setPowerBraceletButtonHeld(session.context.entityInputs.powerBraceletButtonHeld);
+        session.context.entityBridge.entityRuntime.setBombButtonHeld(session.context.entityInputs.bombButtonHeld);
+        session.context.entityBridge.entityRuntime.setLiftedLinkC13B(session.context.followingEntityYOffset);
+        session.context.entityBridge.entityRuntime.setBooBuddyTriggerCount(session.context.roomTriggerCount);
         session.updateWitchEnvironment();
-        session.entityBridge.entityRuntime.setOcarinaPlayback(session.ocarinaPlaybackCountdown,
-            session.ocarinaSongFlags, session.selectedSongIndex, session.ocarinaAnimationCounter,
-            session.ocarinaAnimationPhase);
-        session.entityBridge.entityRuntime.setGoldenLeavesCount(session.entityInputs.entityGoldenLeavesCount);
-        session.entityBridge.entityRuntime.setSecretSeashellPegasusCollisionState(
-            session.entityInputs.secretSeashellScreenShakeActive, session.entityInputs.secretSeashellPegasusCollisionActive,
-            session.entityInputs.secretSeashellPegasusCollisionX, session.entityInputs.secretSeashellPegasusCollisionY);
+        session.context.entityBridge.entityRuntime.setOcarinaPlayback(session.context.ocarinaPlaybackCountdown,
+            session.context.ocarinaSongFlags, session.context.selectedSongIndex, session.context.ocarinaAnimationCounter,
+            session.context.ocarinaAnimationPhase);
+        session.context.entityBridge.entityRuntime.setGoldenLeavesCount(session.context.entityInputs.entityGoldenLeavesCount);
+        session.context.entityBridge.entityRuntime.setSecretSeashellPegasusCollisionState(
+            session.context.entityInputs.secretSeashellScreenShakeActive, session.context.entityInputs.secretSeashellPegasusCollisionActive,
+            session.context.entityInputs.secretSeashellPegasusCollisionX, session.context.entityInputs.secretSeashellPegasusCollisionY);
         // rLY is not a meaningful value in the host renderer. Keep the
         // non-emulator policy explicit while preserving the ROM seed update.
-        session.entityRandomByteSource.beginFrame(frameCounter & 0xFF, 0);
-        if (session.pendingShovelDrop != null) {
-            PendingShovelDrop drop = session.pendingShovelDrop;
-            session.pendingShovelDrop = null;
-            session.entityBridge.entityRuntime.spawnShovelDrop(
+        session.context.entityRandomByteSource.beginFrame(frameCounter & 0xFF, 0);
+        if (session.context.pendingShovelDrop != null) {
+            PendingShovelDrop drop = session.context.pendingShovelDrop;
+            session.context.pendingShovelDrop = null;
+            session.context.entityBridge.entityRuntime.spawnShovelDrop(
                 drop.objectLeft(), drop.objectTop(), drop.linkEntityX(), drop.linkEntityY(),
                 drop.allowDrop());
         }
-        List<EntityProjectileEvent> events = session.entityBridge.entityRuntime.tick(new EntityFrameContext(
+        List<EntityProjectileEvent> events = session.context.entityBridge.entityRuntime.tick(new EntityFrameContext(
             frameCounter, linkEntityX, linkEntityY, collisionType & 0xFF,
-            session.entityRandomByteSource,
+            session.context.entityRandomByteSource,
             session::entityBackgroundCollision, session::pairoddProjectileObjectCollision,
-            session.followingLinkPositionHistory, session.followingLinkZ, linkAirborne,
-            session.followingLinkDirection, session.followingEntityYOffset,
+            session.context.followingLinkPositionHistory, session.context.followingLinkZ, linkAirborne,
+            session.context.followingLinkDirection, session.context.followingEntityYOffset,
             new EnemyProjectileCollision.LinkState(
                 linkEntityX, linkEntityY, linkEntityZ, linkMotionState,
                 session.romDirectionForProjectileCollision(linkDirection), usingShield, shieldLevel,
                 invincibilityCounter), swordCollisionActive, swordX, swordWidth,
             swordY, swordHeight, linkSpeedX, linkSpeedY));
         for (DungeonWarpRequest request
-            : session.entityBridge.entityRuntime.consumePendingDungeonWarpRequests()) {
+            : session.context.entityBridge.entityRuntime.consumePendingDungeonWarpRequests()) {
             linksawakening.world.entity.event.WarpDestination destination = request.destination();
-            session.pendingDungeonWarp = new Warp(Warp.CATEGORY_INDOOR, destination.mapId(),
+            session.context.pendingDungeonWarp = new Warp(Warp.CATEGORY_INDOOR, destination.mapId(),
                 destination.roomId(), destination.x(), destination.y(), 0x34);
         }
-        session.shouldGetLostInMysteriousWoods = session.entityBridge.entityRuntime.shouldGetLostInMysteriousWoods();
-        int runtimeBowWowState = session.entityBridge.entityRuntime.bowWowState();
-        if (runtimeBowWowState != session.bowWowState) {
-            session.bowWowState = runtimeBowWowState;
-            session.followingNpcState = new FollowingNpcState(
-                session.followingNpcState.roosterFollowing(),
-                session.followingNpcState.ghostFollowingState(),
-                session.followingNpcState.marinFollowing(), runtimeBowWowState == 0x01,
-                session.followingNpcState.instrument4Flags(),
-                session.followingNpcState.powerBraceletLevel(), session.followingNpcState.db10());
+        session.context.shouldGetLostInMysteriousWoods = session.context.entityBridge.entityRuntime.shouldGetLostInMysteriousWoods();
+        int runtimeBowWowState = session.context.entityBridge.entityRuntime.bowWowState();
+        if (runtimeBowWowState != session.context.bowWowState) {
+            session.context.bowWowState = runtimeBowWowState;
+            session.context.followingNpcState = new FollowingNpcState(
+                session.context.followingNpcState.roosterFollowing(),
+                session.context.followingNpcState.ghostFollowingState(),
+                session.context.followingNpcState.marinFollowing(), runtimeBowWowState == 0x01,
+                session.context.followingNpcState.instrument4Flags(),
+                session.context.followingNpcState.powerBraceletLevel(), session.context.followingNpcState.db10());
             // The rescue/return handler changes the existing entity in place.
             // CreateFollowingNpcEntity runs on room entry, not on this quest
             // flag write: respawning here teleports BowWow onto Link and
             // reconstructs every other entity's runtime state.
         }
-        if (session.ocarinaPlaybackCountdown > 0) {
-            session.ocarinaPlaybackCountdown--;
-            if (session.ocarinaPlaybackCountdown == 0) {
+        if (session.context.ocarinaPlaybackCountdown > 0) {
+            session.context.ocarinaPlaybackCountdown--;
+            if (session.context.ocarinaPlaybackCountdown == 0) {
                 session.finishOcarinaPlayback();
             }
         }
-        List<BombExplosionEvent> bombExplosionEvents = session.entityBridge.entityRuntime.consumeBombExplosionEvents();
-        session.entityBridge.pendingBombExplosionEvents.clear();
-        session.entityBridge.pendingBombExplosionEvents.addAll(bombExplosionEvents);
+        List<BombExplosionEvent> bombExplosionEvents = session.context.entityBridge.entityRuntime.consumeBombExplosionEvents();
+        session.context.entityBridge.pendingBombExplosionEvents.clear();
+        session.context.entityBridge.pendingBombExplosionEvents.addAll(bombExplosionEvents);
         List<ChestRewardEvent> chestRewards =
-            session.entityBridge.entityRuntime.consumePendingChestRewardEvents();
+            session.context.entityBridge.entityRuntime.consumePendingChestRewardEvents();
         for (ChestRewardEvent reward : chestRewards) {
             if (reward.itemType() >= ChestContentsTable.CHEST_MAP
                 && reward.itemType() <= ChestContentsTable.CHEST_SMALL_KEY) {
-                session.roomState.dungeonItemState.incrementCurrentFlag(reward.itemType());
+                session.context.roomState.dungeonItemState.incrementCurrentFlag(reward.itemType());
             }
         }
-        session.entityBridge.pendingChestRewardEvents.addAll(chestRewards);
+        session.context.entityBridge.pendingChestRewardEvents.addAll(chestRewards);
         session.harvestKeyQuicksandEvents();
         session.harvestKeyRewardEvents();
         session.harvestSlimeKeyRewardEvents();
         session.harvestThrownRoomEventCollisions();
         session.harvestHeartContainerRewards();
-        session.entityBridge.pendingMadamMeowMeowFullHealRequests.addAll(
-            session.entityBridge.entityRuntime.consumePendingMadamMeowMeowFullHealRequests());
+        session.context.entityBridge.pendingMadamMeowMeowFullHealRequests.addAll(
+            session.context.entityBridge.entityRuntime.consumePendingMadamMeowMeowFullHealRequests());
         session.harvestSwordPickupRewards();
         session.harvestToadstoolRewards();
         session.harvestInstrumentRewards();
@@ -525,76 +525,76 @@ final class RoomEntityBridge {
         session.harvestWitchEvents();
         session.harvestOwlEventCompletions();
         for (RoomStatusPersistenceRequest request
-            : session.entityBridge.entityRuntime.consumePendingRoomStatusPersistenceRequests()) {
-            if (session.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
-                session.roomState.overworldRoomStatus[session.activeRoom.roomId()] |= (byte) request.roomStatusMask();
+            : session.context.entityBridge.entityRuntime.consumePendingRoomStatusPersistenceRequests()) {
+            if (session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
+                session.context.roomState.overworldRoomStatus[session.context.activeRoom.roomId()] |= (byte) request.roomStatusMask();
             }
-            session.tarinFlag = request.tarinFlag();
+            session.context.tarinFlag = request.tarinFlag();
         }
-        if (session.entityBridge.entityRuntime.consumePendingSwitchBlockAnimationRequest()
-            && session.switchableObjectAnimationStage == 0) {
-            session.switchableObjectAnimationStage = 0x01;
+        if (session.context.entityBridge.entityRuntime.consumePendingSwitchBlockAnimationRequest()
+            && session.context.switchableObjectAnimationStage == 0) {
+            session.context.switchableObjectAnimationStage = 0x01;
         }
-        session.enemyDropCounters = session.entityBridge.entityRuntime.enemyDropCounters();
-        if (session.transientVfxSystem != null) {
+        session.context.enemyDropCounters = session.context.entityBridge.entityRuntime.enemyDropCounters();
+        if (session.context.transientVfxSystem != null) {
             for (TransientVfxRequest request
-                : session.entityBridge.entityRuntime.transientVfxRequests()) {
-                session.transientVfxSystem.spawn(request.type(), request.worldX(), request.worldY(),
+                : session.context.entityBridge.entityRuntime.transientVfxRequests()) {
+                session.context.transientVfxSystem.spawn(request.type(), request.worldX(), request.worldY(),
                     request.variant());
             }
         }
-        int clearedMask = session.entityBridge.entityRuntime.consumePendingClearedEntityMask();
+        int clearedMask = session.context.entityBridge.entityRuntime.consumePendingClearedEntityMask();
         if (clearedMask != 0) {
-            session.recentRoomEntityClears.addMask(session.activeRoom.roomId(), clearedMask);
+            session.context.recentRoomEntityClears.addMask(session.context.activeRoom.roomId(), clearedMask);
         }
-        int roomStatusMask = session.entityBridge.entityRuntime.consumePendingRoomStatusMask();
-        if (roomStatusMask != 0 && session.activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD) {
-            byte[] status = session.indoorStatusTableForMap(session.activeRoom.mapId());
-            status[session.activeRoom.roomId()] |= (byte) roomStatusMask;
-            session.entityBridge.entityRuntime.setEntityRoomStatus(
-                Byte.toUnsignedInt(status[session.activeRoom.roomId()]));
+        int roomStatusMask = session.context.entityBridge.entityRuntime.consumePendingRoomStatusMask();
+        if (roomStatusMask != 0 && session.context.activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD) {
+            byte[] status = session.indoorStatusTableForMap(session.context.activeRoom.mapId());
+            status[session.context.activeRoom.roomId()] |= (byte) roomStatusMask;
+            session.context.entityBridge.entityRuntime.setEntityRoomStatus(
+                Byte.toUnsignedInt(status[session.context.activeRoom.roomId()]));
         }
-        session.applyHookshotBridgeUpdates(session.entityBridge.entityRuntime.hookshotBridgeUpdates());
-        session.activeRoom.replaceEntities(session.entityBridge.entityRuntime.snapshot());
+        session.applyHookshotBridgeUpdates(session.context.entityBridge.entityRuntime.hookshotBridgeUpdates());
+        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.snapshot());
         session.applyBombObjectInteractions(bombExplosionEvents);
-        session.applyBoomerangObjectInteractions(session.entityBridge.entityRuntime.boomerangObjectRequests());
-        session.applyMagicRodObjectInteractions(session.entityBridge.entityRuntime.magicRodObjectRequests());
-        session.applyMagicPowderObjectInteractions(session.entityBridge.entityRuntime.magicPowderObjectRequests());
-        session.activeRoom.replaceEntities(session.entityBridge.entityRuntime.snapshot());
+        session.applyBoomerangObjectInteractions(session.context.entityBridge.entityRuntime.boomerangObjectRequests());
+        session.applyMagicRodObjectInteractions(session.context.entityBridge.entityRuntime.magicRodObjectRequests());
+        session.applyMagicPowderObjectInteractions(session.context.entityBridge.entityRuntime.magicPowderObjectRequests());
+        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.snapshot());
         session.tickPushedBlockMotion(linkEntityX, linkEntityY);
         session.tickRoomEvent(linkEntityX, linkEntityY);
         return events;
     }
 
     List<WarpLinkStateRequest> consumeWarpLinkStateRequests() {
-        List<WarpLinkStateRequest> requests = session.entityBridge.entityRuntime == null
-            ? List.of() : session.entityBridge.entityRuntime.consumePendingWarpLinkStateRequests();
+        List<WarpLinkStateRequest> requests = session.context.entityBridge.entityRuntime == null
+            ? List.of() : session.context.entityBridge.entityRuntime.consumePendingWarpLinkStateRequests();
         if (!requests.isEmpty()) {
-            session.ocarinaPlaybackCountdown = 0;
-            session.ocarinaAnimationCounter = 0;
-            session.ocarinaAnimationPhase = 0;
-            session.entityInputs.entityDialogActive = false;
-            session.entityInputs.entityDialogCooldown = 0;
-            session.entityInputs.entityInventoryAppearing = false;
+            session.context.ocarinaPlaybackCountdown = 0;
+            session.context.ocarinaAnimationCounter = 0;
+            session.context.ocarinaAnimationPhase = 0;
+            session.context.entityInputs.entityDialogActive = false;
+            session.context.entityInputs.entityDialogCooldown = 0;
+            session.context.entityInputs.entityInventoryAppearing = false;
         }
         return requests;
     }
 
     boolean consumeWorldLinkMotionBlockRequest() {
-        boolean pending = session.worldLinkMotionBlockPending;
-        session.worldLinkMotionBlockPending = false;
+        boolean pending = session.context.worldLinkMotionBlockPending;
+        session.context.worldLinkMotionBlockPending = false;
         return pending;
     }
 
     void tickGameplayVBlank() {
-        if (SwitchBlockAnimation.isAnimating(session.switchableObjectAnimationStage)) {
+        if (SwitchBlockAnimation.isAnimating(session.context.switchableObjectAnimationStage)) {
             SwitchBlockAnimation.Step step = SwitchBlockAnimation.advance(
-                session.switchableObjectAnimationStage, session.switchBlocksState);
-            session.switchBlocksState = step.switchBlocksState();
-            session.switchableObjectAnimationStage = step.nextStage();
+                session.context.switchableObjectAnimationStage, session.context.switchBlocksState);
+            session.context.switchBlocksState = step.switchBlocksState();
+            session.context.switchableObjectAnimationStage = step.nextStage();
             session.synchronizeSwitchBlockCollisionState();
             if (step.tileCopy() != null) {
-                session.gpu.copySwitchBlockTiles(session.romData,
+                session.context.gpu.copySwitchBlockTiles(session.context.romData,
                     step.tileCopy().sourceOffset(), step.tileCopy().destinationTile());
             }
             // AnimateTiles returns after UpdateSwitchBlockTiles while the
@@ -602,7 +602,7 @@ final class RoomEntityBridge {
             // until the next idle VBlank.
             return;
         }
-        session.gpu.tickAnimatedTiles(session.romData);
+        session.context.gpu.tickAnimatedTiles(session.context.romData);
     }
 
     List<EntityCombatEvent> resolveEntityCombat(int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne, boolean linkInteractive, boolean swordCollisionActive, int swordX, int swordWidth, int swordY, int swordHeight) {
@@ -618,72 +618,72 @@ final class RoomEntityBridge {
     }
 
     List<EntityCombatEvent> resolveEntityCombat(int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne, int linkVerticalVelocity, boolean linkInteractive, boolean swordCollisionActive, int swordX, int swordWidth, int swordY, int swordHeight, EnemyAttackContext attackContext) {
-        if (session.activeRoom == null || session.entityBridge.entityRuntime == null) {
+        if (session.context.activeRoom == null || session.context.entityBridge.entityRuntime == null) {
             return List.of();
         }
-        List<EntityCombatEvent> events = session.entityBridge.entityRuntime.resolveCombat(
+        List<EntityCombatEvent> events = session.context.entityBridge.entityRuntime.resolveCombat(
             frameCounter, linkEntityX, linkEntityY, linkAirborne, linkVerticalVelocity,
             linkInteractive, swordCollisionActive, swordX, swordWidth, swordY, swordHeight,
             attackContext);
-        session.activeRoom.replaceEntities(session.entityBridge.entityRuntime.snapshot());
+        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.snapshot());
         return events;
     }
 
     int clearEntity(int slot) {
-        if (session.activeRoom == null || session.entityBridge.entityRuntime == null) {
+        if (session.context.activeRoom == null || session.context.entityBridge.entityRuntime == null) {
             return 0;
         }
-        int mask = session.entityBridge.entityRuntime.clearEntity(slot);
+        int mask = session.context.entityBridge.entityRuntime.clearEntity(slot);
         if (mask != 0) {
-            session.recentRoomEntityClears.addMask(session.activeRoom.roomId(), mask);
+            session.context.recentRoomEntityClears.addMask(session.context.activeRoom.roomId(), mask);
         }
-        session.activeRoom.replaceEntities(session.entityBridge.entityRuntime.snapshot());
+        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.snapshot());
         return mask;
     }
 
     EntityPickupEvent collectEntityIfNeeded(int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne, boolean linkInteractive) {
         return session.collectEntityIfNeeded(frameCounter, linkEntityX, linkEntityY, linkAirborne,
-            linkInteractive, session.followingLinkDirection, session.followingLinkZ);
+            linkInteractive, session.context.followingLinkDirection, session.context.followingLinkZ);
     }
 
     EntityPickupEvent collectEntityIfNeeded(int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne, boolean linkInteractive, int linkDirection) {
         return session.collectEntityIfNeeded(frameCounter, linkEntityX, linkEntityY, linkAirborne,
-            linkInteractive, linkDirection, session.followingLinkZ);
+            linkInteractive, linkDirection, session.context.followingLinkZ);
     }
 
     EntityPickupEvent collectEntityIfNeeded(int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne, boolean linkInteractive, int linkDirection, int linkZ) {
-        if (session.activeRoom == null || session.entityBridge.entityRuntime == null) {
+        if (session.context.activeRoom == null || session.context.entityBridge.entityRuntime == null) {
             return null;
         }
-        session.followingLinkZ = linkZ & 0xFF;
-        session.followingLinkDirection = linkDirection & 0xFF;
-        EntityPickupEvent event = session.entityBridge.entityRuntime.collectIfNeeded(
+        session.context.followingLinkZ = linkZ & 0xFF;
+        session.context.followingLinkDirection = linkDirection & 0xFF;
+        EntityPickupEvent event = session.context.entityBridge.entityRuntime.collectIfNeeded(
             frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive,
             linkDirection, linkZ);
         if (event == null) {
             return null;
         }
         if (event.persistentClearMask() != 0) {
-            session.recentRoomEntityClears.addMask(
-                session.activeRoom.roomId(), event.persistentClearMask());
+            session.context.recentRoomEntityClears.addMask(
+                session.context.activeRoom.roomId(), event.persistentClearMask());
         }
-        if (event.type() == 0x30 && session.activeRoom.roomId() == 0x7C
-            && session.activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD) {
+        if (event.type() == 0x30 && session.context.activeRoom.roomId() == 0x7C
+            && session.context.activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD) {
             // PickDroppableKey sets the Angler's Tunnel source room flag before
             // it starts the held-item transition.
-            session.roomState.indoorARoomStatus[0x69] |= 0x10;
+            session.context.roomState.indoorARoomStatus[0x69] |= 0x10;
         }
         if (event.type() == session.ENTITY_DROPPABLE_SECRET_SEASHELL) {
             // PickSecretSeashell opens Dialog0EF and completes the room after
             // the shared pickup collision has cleared the source entity.
             session.markActiveRoomCompleted();
-            session.entityBridge.pendingRoomDialogRequests.add(new DialogRequest(0, 0xEF));
-            session.entityBridge.pendingRoomEntityEvents.add(new EntityCombatEvent(
+            session.context.entityBridge.pendingRoomDialogRequests.add(new DialogRequest(0, 0xEF));
+            session.context.entityBridge.pendingRoomEntityEvents.add(new EntityCombatEvent(
                 event.slot(), event.type(), 0, false,
                 EntityCombatEvent.SoundChannel.WAVE, 0x01));
         }
         session.harvestKeyRewardEvents();
-        session.activeRoom.replaceEntities(session.entityBridge.entityRuntime.snapshot());
+        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.snapshot());
         return event;
     }
 

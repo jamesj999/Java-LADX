@@ -68,137 +68,137 @@ final class RoomEntityRewards {
     RoomEntityRewards(RoomSession session) { this.session = session; }
 
     void harvestKeyQuicksandEvents() {
-        if (session.entityBridge.entityRuntime == null
-            || session.entityBridge.entityRuntime.consumePendingKeyQuicksandEvents().isEmpty()) {
+        if (session.context.entityBridge.entityRuntime == null
+            || session.context.entityBridge.entityRuntime.consumePendingKeyQuicksandEvents().isEmpty()) {
             return;
         }
-        session.roomState.overworldRoomStatus[0xCE] |= (byte) session.OW_ROOM_STATUS_FLAG_CHANGED;
-        session.roomState.indoorARoomStatus[0xF8] |= (byte) 0x20;
+        session.context.roomState.overworldRoomStatus[0xCE] |= (byte) session.OW_ROOM_STATUS_FLAG_CHANGED;
+        session.context.roomState.indoorARoomStatus[0xF8] |= (byte) 0x20;
     }
 
     void harvestKeyRewardEvents() {
-        if (session.entityBridge.entityRuntime == null) {
+        if (session.context.entityBridge.entityRuntime == null) {
             return;
         }
         List<KeyRewardEvent> rewards =
-            session.entityBridge.entityRuntime.consumePendingKeyRewardEvents();
+            session.context.entityBridge.entityRuntime.consumePendingKeyRewardEvents();
         for (KeyRewardEvent reward : rewards) {
             if (reward.itemType() >= ChestContentsTable.CHEST_MAP
                 && reward.itemType() <= ChestContentsTable.CHEST_SMALL_KEY) {
-                session.roomState.dungeonItemState.incrementCurrentFlag(reward.itemType());
+                session.context.roomState.dungeonItemState.incrementCurrentFlag(reward.itemType());
             }
             session.markActiveRoomCompleted();
         }
-        session.entityBridge.pendingKeyRewardEvents.addAll(rewards);
+        session.context.entityBridge.pendingKeyRewardEvents.addAll(rewards);
     }
 
     void harvestHeartContainerRewards() {
-        if (session.entityBridge.entityRuntime == null) {
+        if (session.context.entityBridge.entityRuntime == null) {
             return;
         }
         List<HeartContainerRewardEvent> rewards =
-            session.entityBridge.entityRuntime.consumePendingHeartContainerRewards();
+            session.context.entityBridge.entityRuntime.consumePendingHeartContainerRewards();
         if (rewards.isEmpty()) {
             return;
         }
         session.markHeartContainerCollected();
-        session.entityBridge.pendingHeartContainerRewards.addAll(rewards);
+        session.context.entityBridge.pendingHeartContainerRewards.addAll(rewards);
     }
 
     void harvestSwordPickupRewards() {
-        if (session.entityBridge.entityRuntime == null) {
+        if (session.context.entityBridge.entityRuntime == null) {
             return;
         }
         List<SwordPickupRewardEvent> rewards =
-            session.entityBridge.entityRuntime.consumePendingSwordPickupRewards();
+            session.context.entityBridge.entityRuntime.consumePendingSwordPickupRewards();
         if (rewards.isEmpty()) {
             return;
         }
         session.markActiveRoomCompleted();
-        session.entityBridge.pendingSwordPickupRewards.addAll(rewards);
+        session.context.entityBridge.pendingSwordPickupRewards.addAll(rewards);
     }
 
     void harvestToadstoolRewards() {
-        if (session.entityBridge.entityRuntime != null) {
-            session.entityBridge.pendingToadstoolRewards.addAll(session.entityBridge.entityRuntime.consumePendingToadstoolRewards());
+        if (session.context.entityBridge.entityRuntime != null) {
+            session.context.entityBridge.pendingToadstoolRewards.addAll(session.context.entityBridge.entityRuntime.consumePendingToadstoolRewards());
         }
     }
 
     void harvestInstrumentRewards() {
-        if (session.entityBridge.entityRuntime == null || session.activeRoom == null
-            || session.entityBridge.entityRuntime.consumePendingInstrumentRewards().isEmpty()
-            || session.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
+        if (session.context.entityBridge.entityRuntime == null || session.context.activeRoom == null
+            || session.context.entityBridge.entityRuntime.consumePendingInstrumentRewards().isEmpty()
+            || session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
             return;
         }
-        session.indoorStatusTableForMap(session.activeRoom.mapId())[session.activeRoom.roomId()]
+        session.indoorStatusTableForMap(session.context.activeRoom.mapId())[session.context.activeRoom.roomId()]
             |= (byte) session.ROOM_STATUS_EVENT_1;
-        if (session.activeRoom.mapId() >= 0 && session.activeRoom.mapId() < session.roomState.dungeonProgressFlags.length) {
-            session.roomState.dungeonProgressFlags[session.activeRoom.mapId()] |= 0x02;
+        if (session.context.activeRoom.mapId() >= 0 && session.context.activeRoom.mapId() < session.context.roomState.dungeonProgressFlags.length) {
+            session.context.roomState.dungeonProgressFlags[session.context.activeRoom.mapId()] |= 0x02;
         }
-        session.entityBridge.entityRuntime.setEntityRoomStatus(session.activeRoomStatusFlags());
+        session.context.entityBridge.entityRuntime.setEntityRoomStatus(session.activeRoomStatusFlags());
     }
 
     void harvestInstrumentCompletions() {
-        if (session.entityBridge.entityRuntime == null) {
+        if (session.context.entityBridge.entityRuntime == null) {
             return;
         }
         for (InstrumentCompletionEvent completion
-            : session.entityBridge.entityRuntime.consumePendingInstrumentCompletions()) {
-            session.pendingInstrumentTransition = true;
+            : session.context.entityBridge.entityRuntime.consumePendingInstrumentCompletions()) {
+            session.context.pendingInstrumentTransition = true;
             if (completion.mapId() == 0x00) {
-                session.bowWowState = 0x80;
+                session.context.bowWowState = 0x80;
             } else if (completion.mapId() == 0x01) {
-                session.tarinFlag = 0x02;
+                session.context.tarinFlag = 0x02;
             }
         }
     }
 
     void harvestRichardProgressEvents() {
-        if (session.entityBridge.entityRuntime == null) {
+        if (session.context.entityBridge.entityRuntime == null) {
             return;
         }
         List<RichardProgressEvent> events =
-            session.entityBridge.entityRuntime.consumePendingRichardProgressEvents();
+            session.context.entityBridge.entityRuntime.consumePendingRichardProgressEvents();
         for (RichardProgressEvent event : events) {
             if (event.kind() == RichardProgressEvent.Kind.START_QUEST) {
-                session.roomState.indoorBRoomStatus[0xC7] |= (byte) session.ROOM_STATUS_EVENT_1;
-                session.richardSpokenFlag = Math.max(session.richardSpokenFlag, 0x02);
+                session.context.roomState.indoorBRoomStatus[0xC7] |= (byte) session.ROOM_STATUS_EVENT_1;
+                session.context.richardSpokenFlag = Math.max(session.context.richardSpokenFlag, 0x02);
             } else {
-                session.entityInputs.entityGoldenLeavesCount = event.goldenLeavesCount();
+                session.context.entityInputs.entityGoldenLeavesCount = event.goldenLeavesCount();
             }
         }
-        session.entityBridge.pendingRichardProgressEvents.addAll(events);
+        session.context.entityBridge.pendingRichardProgressEvents.addAll(events);
     }
 
     void harvestWitchEvents() {
-        if (session.entityBridge.entityRuntime != null) {
-            session.entityBridge.pendingWitchExchangeEvents.addAll(
-                session.entityBridge.entityRuntime.consumePendingWitchExchangeEvents());
-            session.entityBridge.pendingWitchRewardEvents.addAll(
-                session.entityBridge.entityRuntime.consumePendingWitchRewardEvents());
+        if (session.context.entityBridge.entityRuntime != null) {
+            session.context.entityBridge.pendingWitchExchangeEvents.addAll(
+                session.context.entityBridge.entityRuntime.consumePendingWitchExchangeEvents());
+            session.context.entityBridge.pendingWitchRewardEvents.addAll(
+                session.context.entityBridge.entityRuntime.consumePendingWitchRewardEvents());
         }
     }
 
     void harvestOwlEventCompletions() {
-        if (session.entityBridge.entityRuntime == null || session.activeRoom == null) {
+        if (session.context.entityBridge.entityRuntime == null || session.context.activeRoom == null) {
             return;
         }
-        if (session.entityBridge.entityRuntime.consumePendingOwlEventCompletions().isEmpty()) {
+        if (session.context.entityBridge.entityRuntime.consumePendingOwlEventCompletions().isEmpty()) {
             return;
         }
-        session.roomState.overworldRoomStatus[session.activeRoom.roomId()] |= (byte) session.ROOM_STATUS_EVENT_2;
+        session.context.roomState.overworldRoomStatus[session.context.activeRoom.roomId()] |= (byte) session.ROOM_STATUS_EVENT_2;
     }
 
     void harvestSlimeKeyRewardEvents() {
-        if (session.entityBridge.entityRuntime == null) {
+        if (session.context.entityBridge.entityRuntime == null) {
             return;
         }
         List<SlimeKeyRewardEvent> rewards =
-            session.entityBridge.entityRuntime.consumePendingSlimeKeyRewardEvents();
+            session.context.entityBridge.entityRuntime.consumePendingSlimeKeyRewardEvents();
         for (SlimeKeyRewardEvent reward : rewards) {
-            session.entityInputs.entityGoldenLeavesCount = reward.goldenLeavesCount();
+            session.context.entityInputs.entityGoldenLeavesCount = reward.goldenLeavesCount();
             session.markActiveRoomCompleted();
         }
-        session.entityBridge.pendingSlimeKeyRewardEvents.addAll(rewards);
+        session.context.entityBridge.pendingSlimeKeyRewardEvents.addAll(rewards);
     }
 }

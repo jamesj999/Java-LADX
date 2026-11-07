@@ -68,7 +68,7 @@ final class RoomObjectMutations {
     RoomObjectMutations(RoomSession session) { this.session = session; }
 
     void applyBombObjectInteractions(List<BombExplosionEvent> events) {
-        if (session.activeRoom == null || session.activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL
+        if (session.context.activeRoom == null || session.context.activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL
             || events == null || events.isEmpty()) {
             return;
         }
@@ -77,9 +77,9 @@ final class RoomObjectMutations {
             if (!event.targetsRoomObjects()) {
                 continue;
             }
-            RoomEntity bomb = event.bombSlot() < session.activeRoom.entities().slots().size()
-                ? session.activeRoom.entities().slots().get(event.bombSlot()) : null;
-            if (session.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
+            RoomEntity bomb = event.bombSlot() < session.context.activeRoom.entities().slots().size()
+                ? session.context.activeRoom.entities().slots().get(event.bombSlot()) : null;
+            if (session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
                 BombObjectInteraction.Candidate candidate = BombObjectInteraction.basicCandidate(
                     event.bombX(), event.bombVisualY(), event.countdown());
                 session.applyBasicBombObjectCandidate(candidate);
@@ -103,49 +103,49 @@ final class RoomObjectMutations {
         }
         int location = candidate.location();
         OverworldBushInteraction.CutResult result =
-            session.overworldBushInteraction.revealObjectAtLocation(
+            session.context.overworldBushInteraction.revealObjectAtLocation(
                 location,
-                session.activeRoom.roomId(),
+                session.context.activeRoom.roomId(),
                 true,
-                session.activeRoom.roomObjectsArea(),
-                session.activeRoom.renderValues(),
-                session.activeRoom.gbcOverlay(),
-                session.activeRoom.tileIds(),
-                session.activeRoom.tileAttrs());
+                session.context.activeRoom.roomObjectsArea(),
+                session.context.activeRoom.renderValues(),
+                session.context.activeRoom.gbcOverlay(),
+                session.context.activeRoom.tileIds(),
+                session.context.activeRoom.tileAttrs());
         if (!result.changed()) {
             return;
         }
 
-        if (result.bushLeavesVisible() && session.entityBridge.entityRuntime != null) {
+        if (result.bushLeavesVisible() && session.context.entityBridge.entityRuntime != null) {
             int sourceSpriteVariant = result.originalObjectId() == 0x0A ? 0xFF : 0x01;
-            session.entityBridge.entityRuntime.spawnLiftableRockSmash(
-                session.overworldBushInteraction.effectOriginXForLocation(location),
-                session.overworldBushInteraction.effectOriginYForLocation(location),
+            session.context.entityBridge.entityRuntime.spawnLiftableRockSmash(
+                session.context.overworldBushInteraction.effectOriginXForLocation(location),
+                session.context.overworldBushInteraction.effectOriginYForLocation(location),
                 sourceSpriteVariant);
         }
         session.refreshOverworldCollisionAfterObjectMutation();
     }
 
     void applyBoomerangObjectInteractions( List<BoomerangObjectRequest> requests) {
-        if (session.activeRoom == null || session.activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD
+        if (session.context.activeRoom == null || session.context.activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD
             || requests == null || requests.isEmpty()) {
             return;
         }
 
         for (BoomerangObjectRequest request : requests) {
             OverworldBushInteraction.CutResult result =
-                session.overworldBushInteraction.revealObjectAtLocation(
-                    request.location(), session.activeRoom.roomId(), true,
-                    session.activeRoom.roomObjectsArea(), session.activeRoom.renderValues(),
-                    session.activeRoom.gbcOverlay(), session.activeRoom.tileIds(), session.activeRoom.tileAttrs());
+                session.context.overworldBushInteraction.revealObjectAtLocation(
+                    request.location(), session.context.activeRoom.roomId(), true,
+                    session.context.activeRoom.roomObjectsArea(), session.context.activeRoom.renderValues(),
+                    session.context.activeRoom.gbcOverlay(), session.context.activeRoom.tileIds(), session.context.activeRoom.tileAttrs());
             if (!result.changed()) {
                 continue;
             }
-            if (session.transientVfxSystem != null) {
-                session.transientVfxSystem.spawn(TransientVfxType.SMOKE,
+            if (session.context.transientVfxSystem != null) {
+                session.context.transientVfxSystem.spawn(TransientVfxType.SMOKE,
                     request.objectLeft() + 0x08, request.objectTop() + 0x10);
             }
-            session.entityBridge.pendingRoomEntityEvents.add(new EntityCombatEvent(
+            session.context.entityBridge.pendingRoomEntityEvents.add(new EntityCombatEvent(
                 request.sourceSlot(), 0x01, 0, false,
                 EntityCombatEvent.SoundChannel.NOISE, 0x13));
             session.refreshOverworldCollisionAfterObjectMutation();
@@ -153,33 +153,33 @@ final class RoomObjectMutations {
     }
 
     void applyMagicRodObjectInteractions( List<MagicRodObjectRequest> requests) {
-        if (session.activeRoom == null || requests == null || requests.isEmpty()) {
+        if (session.context.activeRoom == null || requests == null || requests.isEmpty()) {
             return;
         }
 
         for (MagicRodObjectRequest request : requests) {
             boolean changed = false;
-            if (session.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
+            if (session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
                 OverworldBushInteraction.CutResult result =
-                    session.overworldBushInteraction.revealObjectAtLocation(
-                        request.location(), session.activeRoom.roomId(), true,
-                        session.activeRoom.roomObjectsArea(), session.activeRoom.renderValues(),
-                        session.activeRoom.gbcOverlay(), session.activeRoom.tileIds(), session.activeRoom.tileAttrs());
+                    session.context.overworldBushInteraction.revealObjectAtLocation(
+                        request.location(), session.context.activeRoom.roomId(), true,
+                        session.context.activeRoom.roomObjectsArea(), session.context.activeRoom.renderValues(),
+                        session.context.activeRoom.gbcOverlay(), session.context.activeRoom.tileIds(), session.context.activeRoom.tileAttrs());
                 changed = result.changed();
-            } else if (session.activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL
+            } else if (session.context.activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL
                 && session.objectAtRoomLocation(request.location()) == 0x8A) {
                 int areaIndex = RoomConstants.ROOM_OBJECTS_BASE
                     + (request.location() & 0xF0) + (request.location() & 0x0F);
-                int[] objects = session.activeRoom.roomObjectsArea();
+                int[] objects = session.context.activeRoom.roomObjectsArea();
                 if (areaIndex >= 0 && areaIndex < objects.length) {
                     objects[areaIndex] = 0x04; // OBJECT_SIDE_VIEW_EMPTY
-                    if (session.activeRoom.renderValues() != null
-                        && areaIndex < session.activeRoom.renderValues().length) {
-                        session.activeRoom.renderValues()[areaIndex] = 0x04;
+                    if (session.context.activeRoom.renderValues() != null
+                        && areaIndex < session.context.activeRoom.renderValues().length) {
+                        session.context.activeRoom.renderValues()[areaIndex] = 0x04;
                     }
                     session.refreshActiveRoomTilemap();
-                    session.overworldCollision.setRoom(session.activeRoom.roomObjectsArea());
-                    session.overworldCollision.setGbcOverlay(null);
+                    session.context.overworldCollision.setRoom(session.context.activeRoom.roomObjectsArea());
+                    session.context.overworldCollision.setGbcOverlay(null);
                     changed = true;
                 }
             }
@@ -187,58 +187,58 @@ final class RoomObjectMutations {
             if (!changed) {
                 continue;
             }
-            if (session.transientVfxSystem != null) {
-                session.transientVfxSystem.spawn(TransientVfxType.SMOKE,
+            if (session.context.transientVfxSystem != null) {
+                session.context.transientVfxSystem.spawn(TransientVfxType.SMOKE,
                     request.objectLeft() + 0x08, request.objectTop() + 0x10);
             }
-            session.entityBridge.pendingRoomEntityEvents.add(new EntityCombatEvent(
+            session.context.entityBridge.pendingRoomEntityEvents.add(new EntityCombatEvent(
                 request.sourceSlot(), 0x04, 0, false,
                 EntityCombatEvent.SoundChannel.NOISE, 0x13));
-            if (session.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
+            if (session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
                 session.refreshOverworldCollisionAfterObjectMutation();
             }
         }
     }
 
     void applyMagicPowderObjectInteractions( List<MagicPowderObjectRequest> requests) {
-        if (session.activeRoom == null || requests == null || requests.isEmpty()) {
+        if (session.context.activeRoom == null || requests == null || requests.isEmpty()) {
             return;
         }
 
         for (MagicPowderObjectRequest request : requests) {
             boolean changed = switch (request.action()) {
-                case REVEAL -> session.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
-                    && session.overworldBushInteraction.revealObjectAtLocation(
-                        request.location(), session.activeRoom.roomId(), true,
-                        session.activeRoom.roomObjectsArea(), session.activeRoom.renderValues(),
-                        session.activeRoom.gbcOverlay(), session.activeRoom.tileIds(), session.activeRoom.tileAttrs())
+                case REVEAL -> session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
+                    && session.context.overworldBushInteraction.revealObjectAtLocation(
+                        request.location(), session.context.activeRoom.roomId(), true,
+                        session.context.activeRoom.roomObjectsArea(), session.context.activeRoom.renderValues(),
+                        session.context.activeRoom.gbcOverlay(), session.context.activeRoom.tileIds(), session.context.activeRoom.tileAttrs())
                         .changed();
                 case IGNITE_TORCH -> session.writeMagicPowderTorchObject(
                     request.location(), 0xAB, 0xAC, true);
                 case EXTINGUISH_TORCH -> session.writeMagicPowderTorchObject(
                     request.location(), -1, 0xAB,
-                    session.activeRoom.roomId() != 0x74
-                        && (session.indoorTorchPaletteEffect.targetAddress() >= 0x0C
-                            || session.currentLinkMotionState != 0x05));
+                    session.context.activeRoom.roomId() != 0x74
+                        && (session.context.indoorTorchPaletteEffect.targetAddress() >= 0x0C
+                            || session.context.currentLinkMotionState != 0x05));
             };
 
             if (!changed) {
                 continue;
             }
             if (request.action() == RoomEntityRuntime.MagicPowderObjectAction.IGNITE_TORCH) {
-                session.roomTriggerCount = (session.roomTriggerCount + 1) & 0xFF;
-                session.indoorTorchPaletteEffect.igniteTorch();
+                session.context.roomTriggerCount = (session.context.roomTriggerCount + 1) & 0xFF;
+                session.context.indoorTorchPaletteEffect.igniteTorch();
             } else if (request.action()
                 == RoomEntityRuntime.MagicPowderObjectAction.EXTINGUISH_TORCH
-                && session.activeRoom.roomId() != 0x74) {
-                session.roomTriggerCount = (session.roomTriggerCount - 1) & 0xFF;
-                session.indoorTorchPaletteEffect.extinguishTorch(session.currentLinkMotionState != 0x05);
+                && session.context.activeRoom.roomId() != 0x74) {
+                session.context.roomTriggerCount = (session.context.roomTriggerCount - 1) & 0xFF;
+                session.context.indoorTorchPaletteEffect.extinguishTorch(session.context.currentLinkMotionState != 0x05);
             }
-            if (session.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
+            if (session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
                 session.refreshOverworldCollisionAfterObjectMutation();
             } else {
-                session.overworldCollision.setRoom(session.activeRoom.roomObjectsArea());
-                session.overworldCollision.setGbcOverlay(null);
+                session.context.overworldCollision.setRoom(session.context.activeRoom.roomObjectsArea());
+                session.context.overworldCollision.setGbcOverlay(null);
             }
         }
     }
@@ -250,19 +250,19 @@ final class RoomObjectMutations {
         }
         int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0)
             + (location & 0x0F);
-        int[] objects = session.activeRoom.roomObjectsArea();
+        int[] objects = session.context.activeRoom.roomObjectsArea();
         if (areaIndex < 0 || areaIndex >= objects.length) {
             return false;
         }
         if (redraw) {
-            session.retainedTorchTiles.remove(areaIndex);
+            session.context.retainedTorchTiles.remove(areaIndex);
         } else {
             session.retainTorchTiles(areaIndex);
         }
         objects[areaIndex] = replacementObject & 0xFF;
-        if (redraw && session.activeRoom.renderValues() != null
-            && areaIndex < session.activeRoom.renderValues().length) {
-            session.activeRoom.renderValues()[areaIndex] = replacementObject & 0xFF;
+        if (redraw && session.context.activeRoom.renderValues() != null
+            && areaIndex < session.context.activeRoom.renderValues().length) {
+            session.context.activeRoom.renderValues()[areaIndex] = replacementObject & 0xFF;
         }
         if (redraw) {
             session.refreshActiveRoomTilemap();
@@ -277,35 +277,35 @@ final class RoomObjectMutations {
         int[] saved = new int[8];
         for (int tile = 0; tile < 4; tile++) {
             int index = topLeft + (tile / 2) * RoomConstants.ROOM_TILE_WIDTH + tile % 2;
-            saved[tile] = session.activeRoom.tileIds()[index];
-            saved[tile + 4] = session.activeRoom.tileAttrs()[index];
+            saved[tile] = session.context.activeRoom.tileIds()[index];
+            saved[tile + 4] = session.context.activeRoom.tileAttrs()[index];
         }
-        session.retainedTorchTiles.putIfAbsent(areaIndex, saved);
+        session.context.retainedTorchTiles.putIfAbsent(areaIndex, saved);
     }
 
     void applyRetainedTorchTiles() {
-        session.retainedTorchTiles.keySet().removeIf(
-            areaIndex -> session.activeRoom.roomObjectsArea()[areaIndex] != 0xAB);
-        for (Map.Entry<Integer, int[]> entry : session.retainedTorchTiles.entrySet()) {
+        session.context.retainedTorchTiles.keySet().removeIf(
+            areaIndex -> session.context.activeRoom.roomObjectsArea()[areaIndex] != 0xAB);
+        for (Map.Entry<Integer, int[]> entry : session.context.retainedTorchTiles.entrySet()) {
             int location = entry.getKey() - RoomConstants.ROOM_OBJECTS_BASE;
             int topLeft = (location >>> 4) * 2 * RoomConstants.ROOM_TILE_WIDTH
                 + (location & 0x0F) * 2;
             int[] saved = entry.getValue();
             for (int tile = 0; tile < 4; tile++) {
                 int index = topLeft + (tile / 2) * RoomConstants.ROOM_TILE_WIDTH + tile % 2;
-                session.activeRoom.tileIds()[index] = saved[tile];
-                session.activeRoom.tileAttrs()[index] = saved[tile + 4];
+                session.context.activeRoom.tileIds()[index] = saved[tile];
+                session.context.activeRoom.tileAttrs()[index] = saved[tile + 4];
             }
         }
     }
 
     int countUnlitTorches() {
-        if (session.activeRoom == null || session.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
-            || session.activeRoom.roomId() == 0xC4) {
+        if (session.context.activeRoom == null || session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
+            || session.context.activeRoom.roomId() == 0xC4) {
             return 0;
         }
         int count = 0;
-        int[] objects = session.activeRoom.roomObjectsArea();
+        int[] objects = session.context.activeRoom.roomObjectsArea();
         for (int row = 0; row < RoomConstants.OBJECTS_PER_COLUMN; row++) {
             for (int column = 0; column < RoomConstants.OBJECTS_PER_ROW; column++) {
                 int index = RoomConstants.ROOM_OBJECTS_BASE
@@ -319,11 +319,11 @@ final class RoomObjectMutations {
     }
 
     void copyIndoorTorchPalettesToActiveRoom() {
-        if (session.activeRoom == null || session.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
+        if (session.context.activeRoom == null || session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
             return;
         }
-        int[][] source = session.indoorTorchPaletteEffect.palettes();
-        int[][] target = session.activeRoom.palettes();
+        int[][] source = session.context.indoorTorchPaletteEffect.palettes();
+        int[][] target = session.context.activeRoom.palettes();
         if (target == null) {
             return;
         }
@@ -351,9 +351,9 @@ final class RoomObjectMutations {
         int blockLeft = candidate.objectLeft() & 0xE0;
         int[] rubbleXOffsets = {0x18, 0x08, 0x18, 0x08};
         int[] rubbleYOffsets = {0x20, 0x20, 0x10, 0x10};
-        if (session.entityBridge.entityRuntime != null) {
+        if (session.context.entityBridge.entityRuntime != null) {
             for (int index = 0; index < rubbleXOffsets.length; index++) {
-                session.entityBridge.entityRuntime.spawnLiftableRockRubble(
+                session.context.entityBridge.entityRuntime.spawnLiftableRockRubble(
                     blockLeft + rubbleXOffsets[index],
                     blockTop + rubbleYOffsets[index] - sourceZ);
             }
@@ -368,13 +368,13 @@ final class RoomObjectMutations {
                     session.OBJECT_ROCKY_GROUND);
             }
         }
-        session.roomState.overworldRoomStatus[session.activeRoom.roomId()] |= (byte) session.OW_ROOM_STATUS_OPENED;
+        session.context.roomState.overworldRoomStatus[session.context.activeRoom.roomId()] |= (byte) session.OW_ROOM_STATUS_OPENED;
         session.refreshOverworldCollisionAfterObjectMutation();
     }
 
     void applyOutdoorBombableCaveDoorCandidate(BombObjectInteraction.Candidate candidate, int sourceSlot) {
         int objectId = session.objectAtRoomLocation(candidate.location());
-        int doorIndex = session.romTables.objectPhysicsFlag(RomTables.PHYSICS_TABLE_OVERWORLD, objectId)
+        int doorIndex = session.context.romTables.objectPhysicsFlag(RomTables.PHYSICS_TABLE_OVERWORLD, objectId)
             - session.BOMBABLE_WALL_PHYSICS_BASE;
         if (objectId != session.OBJECT_BOMBABLE_CAVE_DOOR || doorIndex < 0 || doorIndex >= 4) {
             return;
@@ -382,14 +382,14 @@ final class RoomObjectMutations {
 
         int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (candidate.objectTop() & 0xF0)
             + ((candidate.objectLeft() & 0xF0) >>> 4);
-        int[] objects = session.activeRoom.roomObjectsArea();
+        int[] objects = session.context.activeRoom.roomObjectsArea();
         if (areaIndex < 0 || areaIndex >= objects.length) {
             return;
         }
 
         session.writeBombPuzzleObject(candidate.location(), session.OBJECT_ROCKY_CAVE_DOOR);
-        session.bombedCaveDoorTileOverrides.add(areaIndex);
-        session.roomState.overworldRoomStatus[session.activeRoom.roomId()] |= (byte) session.OW_ROOM_STATUS_OPENED;
+        session.context.bombedCaveDoorTileOverrides.add(areaIndex);
+        session.context.roomState.overworldRoomStatus[session.context.activeRoom.roomId()] |= (byte) session.OW_ROOM_STATUS_OPENED;
         session.queuePuzzleSolvedJingle(sourceSlot);
         session.refreshActiveRoomTilemap();
         session.refreshOverworldCollisionAfterObjectMutation();
@@ -398,22 +398,22 @@ final class RoomObjectMutations {
     void writeBombPuzzleObject(int location, int objectId) {
         int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0)
             + (location & 0x0F);
-        int[] objects = session.activeRoom.roomObjectsArea();
+        int[] objects = session.context.activeRoom.roomObjectsArea();
         if (areaIndex < 0 || areaIndex >= objects.length) {
             return;
         }
         objects[areaIndex] = objectId & 0xFF;
-        if (session.activeRoom.renderValues() != null) {
-            session.activeRoom.renderValues()[areaIndex] = objectId & 0xFF;
+        if (session.context.activeRoom.renderValues() != null) {
+            session.context.activeRoom.renderValues()[areaIndex] = objectId & 0xFF;
         }
-        session.overworldBushInteraction.refreshRoomObjectCell(
-            session.activeRoom.roomId(), location, objects, session.activeRoom.renderValues(),
-            session.activeRoom.gbcOverlay(), session.activeRoom.tileIds(), session.activeRoom.tileAttrs());
+        session.context.overworldBushInteraction.refreshRoomObjectCell(
+            session.context.activeRoom.roomId(), location, objects, session.context.activeRoom.renderValues(),
+            session.context.activeRoom.gbcOverlay(), session.context.activeRoom.tileIds(), session.context.activeRoom.tileAttrs());
     }
 
     void refreshOverworldCollisionAfterObjectMutation() {
-        session.overworldCollision.setRoom(session.activeRoom.roomObjectsArea());
-        session.overworldCollision.setGbcOverlay(session.activeRoom.gbcOverlay());
+        session.context.overworldCollision.setRoom(session.context.activeRoom.roomObjectsArea());
+        session.context.overworldCollision.setGbcOverlay(session.context.activeRoom.gbcOverlay());
     }
 
     void applyIndoorBombableWallCandidate(BombObjectInteraction.Candidate candidate, int sourceSlot) {
@@ -422,9 +422,9 @@ final class RoomObjectMutations {
         }
         int location = candidate.location();
         int objectId = session.objectAtRoomLocation(location);
-        int physicsTable = session.activeRoom.mapId() == 0xFF
+        int physicsTable = session.context.activeRoom.mapId() == 0xFF
             ? RomTables.PHYSICS_TABLE_INDOORS2 : RomTables.PHYSICS_TABLE_INDOORS1;
-        int wallIndex = session.romTables.objectPhysicsFlag(physicsTable, objectId)
+        int wallIndex = session.context.romTables.objectPhysicsFlag(physicsTable, objectId)
             - session.BOMBABLE_WALL_PHYSICS_BASE;
         if (wallIndex < 0 || wallIndex >= 4) {
             return;
@@ -432,14 +432,14 @@ final class RoomObjectMutations {
 
         int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0)
             + (location & 0x0F);
-        int[] objects = session.activeRoom.roomObjectsArea();
+        int[] objects = session.context.activeRoom.roomObjectsArea();
         if (areaIndex < 0 || areaIndex >= objects.length) {
             return;
         }
         objects[areaIndex] = wallIndex < 2
             ? session.OBJECT_BOMBED_PASSAGE_VERTICAL : session.OBJECT_BOMBED_PASSAGE_HORIZONTAL;
 
-        byte[] status = session.indoorStatusTableForMap(session.activeRoom.mapId());
+        byte[] status = session.indoorStatusTableForMap(session.context.activeRoom.mapId());
         int currentStatus = switch (wallIndex) {
             case 0 -> 0x04;
             case 1 -> 0x08;
@@ -455,18 +455,18 @@ final class RoomObjectMutations {
             default -> throw new AssertionError(wallIndex);
         };
         int adjacentRoom = session.adjacentIndoorRoomIdForBombWall(wallIndex);
-        status[session.activeRoom.roomId()] |= (byte) currentStatus;
+        status[session.context.activeRoom.roomId()] |= (byte) currentStatus;
         status[adjacentRoom] |= (byte) adjacentStatus;
-        session.bombedWallTileOverrides.put(areaIndex, wallIndex < 2 ? 0 : 1);
+        session.context.bombedWallTileOverrides.put(areaIndex, wallIndex < 2 ? 0 : 1);
         session.queuePuzzleSolvedJingle(sourceSlot);
 
         session.refreshActiveRoomTilemap();
-        session.overworldCollision.setRoom(session.activeRoom.roomObjectsArea());
-        session.overworldCollision.setGbcOverlay(null);
+        session.context.overworldCollision.setRoom(session.context.activeRoom.roomObjectsArea());
+        session.context.overworldCollision.setGbcOverlay(null);
     }
 
     void queuePuzzleSolvedJingle(int sourceSlot) {
-        session.entityBridge.pendingRoomEntityEvents.add(new EntityCombatEvent(
+        session.context.entityBridge.pendingRoomEntityEvents.add(new EntityCombatEvent(
             sourceSlot, 0x02, 0, false,
             EntityCombatEvent.SoundChannel.JINGLE, 0x02));
     }
@@ -481,42 +481,42 @@ final class RoomObjectMutations {
         }
         int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0)
             + (location & 0x0F);
-        int[] objects = session.activeRoom.roomObjectsArea();
+        int[] objects = session.context.activeRoom.roomObjectsArea();
         if (areaIndex < 0 || areaIndex >= objects.length) {
             return false;
         }
 
         objects[areaIndex] = session.OBJECT_FLOOR_OD;
-        session.indoorStatusTableForMap(session.activeRoom.mapId())[session.activeRoom.roomId()]
+        session.indoorStatusTableForMap(session.context.activeRoom.mapId())[session.context.activeRoom.roomId()]
             |= (byte) session.INDOOR_ROOM_STATUS_EVENT_3;
-        session.bombedBlockTileOverrides.add(areaIndex);
+        session.context.bombedBlockTileOverrides.add(areaIndex);
 
-        if (session.entityBridge.entityRuntime != null) {
-            session.entityBridge.entityRuntime.spawnLiftableRockSmash(
+        if (session.context.entityBridge.entityRuntime != null) {
+            session.context.entityBridge.entityRuntime.spawnLiftableRockSmash(
                 candidate.objectLeft() + 0x08, candidate.objectTop() + 0x10, 0x00);
         }
 
         session.refreshActiveRoomTilemap();
-        session.overworldCollision.setRoom(session.activeRoom.roomObjectsArea());
-        session.overworldCollision.setGbcOverlay(null);
+        session.context.overworldCollision.setRoom(session.context.activeRoom.roomObjectsArea());
+        session.context.overworldCollision.setGbcOverlay(null);
         return true;
     }
 
     int colorShellObjectAt(RoomEntity entity, int relativeOffset) {
-        if (session.activeRoom == null || entity == null) {
+        if (session.context.activeRoom == null || entity == null) {
             return 0xFF;
         }
         int index = session.colorShellObjectIndex(entity) + relativeOffset;
-        int[] objects = session.activeRoom.roomObjectsArea();
+        int[] objects = session.context.activeRoom.roomObjectsArea();
         return index >= 0 && index < objects.length ? objects[index] : 0xFF;
     }
 
     void writeColorShellObject(RoomEntity entity, int objectId) {
-        if (session.activeRoom == null || entity == null) {
+        if (session.context.activeRoom == null || entity == null) {
             return;
         }
         int index = session.colorShellObjectIndex(entity);
-        int[] objects = session.activeRoom.roomObjectsArea();
+        int[] objects = session.context.activeRoom.roomObjectsArea();
         if (index < 0 || index >= objects.length) {
             return;
         }
