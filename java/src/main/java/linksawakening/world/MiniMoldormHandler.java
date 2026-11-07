@@ -1,5 +1,8 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.EnemyRecoilMotion;
+import linksawakening.world.entity.motion.MiniMoldormMotion;
+
 import static linksawakening.world.EntitySnapshots.withDefinition;
 import static linksawakening.world.EntitySnapshots.withVariant;
 

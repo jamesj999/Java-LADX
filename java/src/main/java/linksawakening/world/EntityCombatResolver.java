@@ -1,5 +1,8 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.EnemyRecoilMotion;
+import linksawakening.world.entity.motion.HinoxMotion;
+
 import static linksawakening.world.EntityMotionMath.*;
 import static linksawakening.world.EntitySnapshots.*;
 import static linksawakening.world.EntityTypeRules.*;

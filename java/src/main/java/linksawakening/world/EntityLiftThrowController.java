@@ -1,5 +1,9 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.BombMotion;
+import linksawakening.world.entity.motion.LiftedEntityMotion;
+import linksawakening.world.entity.motion.ThrownEntityMotion;
+
 import linksawakening.world.entity.event.SideViewPotLinkRequest;
 
 import static linksawakening.world.EntityMotionMath.*;

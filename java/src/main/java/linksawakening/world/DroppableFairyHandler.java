@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.FairyMotion;
+
 
 
 /** ROM handler stages for DroppableFairy. */

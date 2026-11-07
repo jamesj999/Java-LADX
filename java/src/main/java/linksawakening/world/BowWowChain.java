@@ -11,12 +11,12 @@ public final class BowWowChain {
 
     public record Entry(int sourceSlot, int rawX, int rawY, int tileIndex) { }
 
-    void initialize(int entityX, int visualY) {
+    public void initialize(int entityX, int visualY) {
         Arrays.fill(x, entityX & 0xFF);
         Arrays.fill(y, visualY & 0xFF);
     }
 
-    RoomEntity advance(RoomEntity entity, int anchorX, int anchorY,
+    public RoomEntity advance(RoomEntity entity, int anchorX, int anchorY,
                        int questState, boolean linkMoving) {
         x[0] = entity.x() & 0xFF;
         y[0] = (entity.y() - entity.z()) & 0xFF;
@@ -65,7 +65,7 @@ public final class BowWowChain {
         }
     }
 
-    List<Entry> entries(int slot, int questState, int frame) {
+    public List<Entry> entries(int slot, int questState, int frame) {
         List<Entry> entries = new ArrayList<>(3);
         for (int i = 5; i > 0; i--) {
             if (((frame ^ i) & 1) == 0) {

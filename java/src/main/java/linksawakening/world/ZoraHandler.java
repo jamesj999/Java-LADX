@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.ZoraMotion;
+
 import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.entity.event.TransientVfxRequest;
 

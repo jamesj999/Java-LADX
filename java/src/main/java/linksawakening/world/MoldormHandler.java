@@ -1,5 +1,8 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.BossIntroMotion;
+import linksawakening.world.entity.motion.MoldormMotion;
+
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.LinkMotionBlockRequest;
 import static linksawakening.world.EntitySnapshots.withDefinition;

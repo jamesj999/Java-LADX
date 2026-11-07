@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.HookshotBridgeMotion;
+
 import linksawakening.world.transition.Warp;
 
 import linksawakening.world.entity.event.HookshotBridgeUpdate;

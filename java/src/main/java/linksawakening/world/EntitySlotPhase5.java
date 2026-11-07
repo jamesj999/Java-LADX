@@ -1,5 +1,8 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.ColorShellMotion;
+import linksawakening.world.entity.motion.FloatingItemMotion;
+
 import linksawakening.world.entity.event.TransientVfxRequest;
 
 import static linksawakening.world.EntityMotionMath.*;

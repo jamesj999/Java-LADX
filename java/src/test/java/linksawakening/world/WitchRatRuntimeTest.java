@@ -1,5 +1,9 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.MotionTestAccess;
+
+import linksawakening.world.entity.motion.WitchRatMotion;
+
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import org.junit.jupiter.api.Test;
@@ -96,7 +100,7 @@ final class WitchRatRuntimeTest {
         assertEquals(0x40, firstMove.entity().y());
         assertTrue(firstMove.appliesBackgroundInteraction());
 
-        motion.setStateForTest(0, 1, 0x00, 0x00, 0x00, 0x00, 0xFE);
+        MotionTestAccess.setStateForTest(motion, 0, 1, 0x00, 0x00, 0x00, 0x00, 0xFE);
         WitchRatMotion.Update landed = motion.advance(rat, 2, 0x00,
             sequence(0), null);
         assertEquals(0, landed.state());

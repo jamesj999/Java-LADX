@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.MoldormMotion;
+
 import linksawakening.world.entity.event.HeartContainerRewardEvent;
 import linksawakening.world.entity.event.LinkHeldItemPoseRequest;
 import linksawakening.world.entity.event.TransientVfxRequest;

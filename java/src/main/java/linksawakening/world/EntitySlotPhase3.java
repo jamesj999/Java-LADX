@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.LaserMotion;
+
 import linksawakening.world.entity.event.TransientVfxRequest;
 
 import static linksawakening.world.EntityMotionMath.*;

@@ -1,5 +1,30 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.BooBuddyMotion;
+import linksawakening.world.entity.motion.BoomerangMotion;
+import linksawakening.world.entity.motion.BuzzBlobMotion;
+import linksawakening.world.entity.motion.CrowMotion;
+import linksawakening.world.entity.motion.DogMotion;
+import linksawakening.world.entity.motion.FairyMotion;
+import linksawakening.world.entity.motion.FishMotion;
+import linksawakening.world.entity.motion.GiantGopongaMotion;
+import linksawakening.world.entity.motion.GopongaFlowerMotion;
+import linksawakening.world.entity.motion.GopongaProjectileMotion;
+import linksawakening.world.entity.motion.HinoxMotion;
+import linksawakening.world.entity.motion.HookshotBridgeMotion;
+import linksawakening.world.entity.motion.HookshotChainMotion;
+import linksawakening.world.entity.motion.PiranhaMotion;
+import linksawakening.world.entity.motion.PokeyMotion;
+import linksawakening.world.entity.motion.PolsVoiceMotion;
+import linksawakening.world.entity.motion.SandCrabMotion;
+import linksawakening.world.entity.motion.SpikedBeetleMotion;
+import linksawakening.world.entity.motion.TarinRaccoonMotion;
+import linksawakening.world.entity.motion.UrchinMotion;
+import linksawakening.world.entity.motion.WitchMotion;
+import linksawakening.world.entity.motion.WitchRatMotion;
+import linksawakening.world.entity.motion.ZombieMotion;
+import linksawakening.world.entity.motion.ZoraMotion;
+
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 
 /** Immutable ROM handler identifiers, flags, and lookup constants. */

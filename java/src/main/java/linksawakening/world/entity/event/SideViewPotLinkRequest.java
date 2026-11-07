@@ -1,6 +1,6 @@
 package linksawakening.world.entity.event;
 
-import linksawakening.world.*;
+import linksawakening.world.RoomEntity;
 import linksawakening.vfx.TransientVfxType;
 
 /** Link-side writes emitted by entity-$D6's state-0 collision handler. */

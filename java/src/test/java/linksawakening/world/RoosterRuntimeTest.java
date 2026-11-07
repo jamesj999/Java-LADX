@@ -1,5 +1,9 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.MotionTestAccess;
+
+import linksawakening.world.entity.motion.RoosterMotion;
+
 import linksawakening.entity.EntitySpriteDefinition;
 import org.junit.jupiter.api.Test;
 
@@ -14,7 +18,7 @@ final class RoosterRuntimeTest {
     @Test
     void activeFollowingRoosterUsesItsDedicatedPowerBraceletLiftBranch() {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
-            new RoomEntity(0, -1, RoosterMotion.ENTITY_TYPE, 0x40, 0x50,
+            new RoomEntity(0, -1, MotionTestAccess.RoosterMotion_ENTITY_TYPE, 0x40, 0x50,
                 EntityStatus.ACTIVE, definition(), 0, 0, 0, 0, -1, false)));
         runtime.setFollowingNpcState(new FollowingNpcState(true, 0, false, false,
             0, 0, false));
@@ -30,9 +34,9 @@ final class RoosterRuntimeTest {
         assertEquals(EntityStatus.LIFTED, rooster.status());
         assertEquals(0xD2, runtime.physicsFlags(0));
         assertTrue(runtime.liftedEntityState().active());
-        assertEquals(RoosterMotion.ENTITY_TYPE, runtime.liftedEntityState().type());
+        assertEquals(MotionTestAccess.RoosterMotion_ENTITY_TYPE, runtime.liftedEntityState().type());
         assertTrue(runtime.consumePendingEntityEvents().contains(new EntityCombatEvent(
-            0, RoosterMotion.ENTITY_TYPE, 0, false,
+            0, MotionTestAccess.RoosterMotion_ENTITY_TYPE, 0, false,
             EntityCombatEvent.SoundChannel.WAVE, RoosterMotion.LIFT_WAVE_SFX)));
     }
 
@@ -54,7 +58,7 @@ final class RoosterRuntimeTest {
         for (int i = 0; i < 8; i++) {
             variants.add(new EntitySpriteDefinition.Variant(first, second));
         }
-        return new EntitySpriteDefinition(RoosterMotion.ENTITY_TYPE, 0x19, 0x59BC,
+        return new EntitySpriteDefinition(MotionTestAccess.RoosterMotion_ENTITY_TYPE, 0x19, 0x59BC,
             EntitySpriteDefinition.Shape.PAIR, 0, variants);
     }
 }

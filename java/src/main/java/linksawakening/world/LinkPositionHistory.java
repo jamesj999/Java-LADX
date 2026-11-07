@@ -31,7 +31,7 @@ public final class LinkPositionHistory {
         direction[index] = byteValue(linkDirection);
     }
 
-    void writePositionAndDirection(int index, int positionX, int positionY,
+    public void writePositionAndDirection(int index, int positionX, int positionY,
                                    int linkDirection) {
         checkIndex(index);
         x[index] = byteValue(positionX);
@@ -39,7 +39,7 @@ public final class LinkPositionHistory {
         direction[index] = byteValue(linkDirection);
     }
 
-    void writeZ(int index, int positionZ) {
+    public void writeZ(int index, int positionZ) {
         checkIndex(index);
         z[index] = byteValue(positionZ);
     }

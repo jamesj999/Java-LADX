@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.PolsVoiceMotion;
+
 import static linksawakening.world.EntitySnapshots.withStatus;
 
 /** ROM handler stages for PolsVoice. */

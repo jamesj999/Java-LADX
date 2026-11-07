@@ -1,5 +1,9 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.MotionTestAccess;
+
+import linksawakening.world.entity.motion.MagicRodFireballMotion;
+
 import linksawakening.entity.EntitySpriteDefinition;
 import org.junit.jupiter.api.Test;
 
@@ -36,10 +40,10 @@ final class MagicRodMotionTest {
 
         motion.beginFireTransition(0);
 
-        assertEquals(MagicRodFireballMotion.FIRE_TRANSITION_COUNTDOWN,
+        assertEquals(MotionTestAccess.MagicRodFireballMotion_FIRE_TRANSITION_COUNTDOWN,
             motion.privateCountdown1(0));
-        assertEquals(0, motion.frameVariant(0));
-        assertEquals(1, motion.frameVariant(8));
+        assertEquals(0, linksawakening.world.entity.motion.MotionTestAccess.frameVariant(0));
+        assertEquals(1, linksawakening.world.entity.motion.MotionTestAccess.frameVariant(8));
         assertEquals(false, motion.tickFireTransition(0));
         assertEquals(0x2F, motion.privateCountdown1(0));
 
@@ -61,8 +65,8 @@ final class MagicRodMotionTest {
     }
 
     private static RoomEntity entity(int x, int y) {
-        return new RoomEntity(0, -1, MagicRodFireballMotion.ENTITY_TYPE, x, y,
+        return new RoomEntity(0, -1, MotionTestAccess.MagicRodFireballMotion_ENTITY_TYPE, x, y,
             EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(
-                MagicRodFireballMotion.ENTITY_TYPE), 0, 0, 0, 0, -1, false);
+                MotionTestAccess.MagicRodFireballMotion_ENTITY_TYPE), 0, 0, 0, 0, -1, false);
     }
 }

@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.SideViewPotMotion;
+
 
 
 /** ROM handler stages for SideViewPot. */

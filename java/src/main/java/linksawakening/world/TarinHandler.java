@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.TarinRaccoonMotion;
+
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.LinkAttackClearRequest;
 import linksawakening.world.entity.event.LinkFacingRequest;

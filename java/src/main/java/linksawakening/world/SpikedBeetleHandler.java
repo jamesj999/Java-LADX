@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.SpikedBeetleMotion;
+
 
 
 /** ROM handler stages for SpikedBeetle. */

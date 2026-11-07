@@ -1,6 +1,6 @@
 package linksawakening.world.entity.event;
 
-import linksawakening.world.*;
+import linksawakening.world.RoomEntity;
 import linksawakening.vfx.TransientVfxType;
 
 /** A ROM handler request to block Link's next interactive motion frame. */

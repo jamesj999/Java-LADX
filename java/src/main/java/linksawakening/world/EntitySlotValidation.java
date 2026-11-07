@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.LiftedEntityMotion;
+
 /** Byte, direction and slot validation at ROM-facing boundaries. */
 final class EntitySlotValidation {
     private EntitySlotValidation() {}

@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.ColorShellMotion;
+
 import java.util.Arrays;
 import static linksawakening.world.EntitySnapshots.withStatus;
 import static linksawakening.world.EntityTypeRules.persistentClearMask;

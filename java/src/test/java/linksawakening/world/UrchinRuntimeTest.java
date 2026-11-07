@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.UrchinMotion;
+
 import linksawakening.world.entity.event.LinkFinalPositionRequest;
 
 import linksawakening.entity.EntitySpriteDefinition;

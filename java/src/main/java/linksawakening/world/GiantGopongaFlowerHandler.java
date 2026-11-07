@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.GiantGopongaMotion;
+
 
 
 /** ROM handler stages for GiantGopongaFlower. */

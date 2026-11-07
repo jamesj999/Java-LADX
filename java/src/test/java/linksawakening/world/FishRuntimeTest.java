@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.FishMotion;
+
 import linksawakening.world.entity.event.TransientVfxRequest;
 
 import linksawakening.entity.EntitySpriteDefinition;

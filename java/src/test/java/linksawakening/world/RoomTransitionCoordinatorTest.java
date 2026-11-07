@@ -1,5 +1,10 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.MotionTestAccess;
+
+import linksawakening.world.entity.motion.BooBuddyMotion;
+import linksawakening.world.entity.motion.HinoxMotion;
+
 import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.RoomBoundaryController;
 import linksawakening.world.transition.Warp;
@@ -3194,7 +3199,7 @@ final class RoomTransitionCoordinatorTest {
         while (frame < bombDeadline && !hinoxBombResponseObserved) {
             tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
             hinoxBombResponseObserved = session.activeRoom().entities().loadedEntities()
-                .stream().anyMatch(entity -> entity.type() == HinoxMotion.ENTITY_BOMB);
+                .stream().anyMatch(entity -> entity.type() == MotionTestAccess.HinoxMotion_ENTITY_BOMB);
         }
         assertTrue(hinoxBombResponseObserved,
             "a live sword flash must enter Hinox's bomb response");

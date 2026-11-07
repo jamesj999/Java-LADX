@@ -1,6 +1,6 @@
 package linksawakening.world.entity.event;
 
-import linksawakening.world.*;
+import linksawakening.world.RoomEntity;
 import linksawakening.vfx.TransientVfxType;
 
 /** Deferred room-save writes that must not alter the live handler's room status. */

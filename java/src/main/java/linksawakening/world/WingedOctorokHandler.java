@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.WingedOctorokMotion;
+
 
 
 /** ROM handler stages for WingedOctorok. */

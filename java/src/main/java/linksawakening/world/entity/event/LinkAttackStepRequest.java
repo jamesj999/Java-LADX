@@ -1,6 +1,6 @@
 package linksawakening.world.entity.event;
 
-import linksawakening.world.*;
+import linksawakening.world.RoomEntity;
 import linksawakening.vfx.TransientVfxType;
 
 /** A lifted-throw request applied after AnimateEntities, like the ROM HRAM write. */

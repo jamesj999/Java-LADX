@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.ZolGelMotion;
+
 import static linksawakening.world.EntityTypeRules.isZolGelType;
 
 /** ROM handler stages for ZolGelType. */

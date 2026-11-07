@@ -1,5 +1,8 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.EnemyRecoilMotion;
+import linksawakening.world.entity.motion.GenieMotion;
+
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.TransientVfxRequest;
 

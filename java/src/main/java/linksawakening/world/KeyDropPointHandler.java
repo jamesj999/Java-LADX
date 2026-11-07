@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.KeyDropPointMotion;
+
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.KeyQuicksandEvent;
 import linksawakening.world.entity.event.KeyRewardEvent;

@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.GopongaFlowerMotion;
+
 import static linksawakening.world.EntitySnapshots.withVariant;
 
 /** ROM handler stages for GopongaFlower. */

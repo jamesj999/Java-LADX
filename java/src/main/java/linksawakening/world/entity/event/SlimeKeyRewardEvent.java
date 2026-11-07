@@ -1,6 +1,6 @@
 package linksawakening.world.entity.event;
 
-import linksawakening.world.*;
+import linksawakening.world.RoomEntity;
 import linksawakening.vfx.TransientVfxType;
 
 /** Reward, room-completion, and dialog state emitted by HidingSlimeKeyEntityHandler. */

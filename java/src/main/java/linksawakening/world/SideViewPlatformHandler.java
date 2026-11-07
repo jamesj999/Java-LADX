@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.SideViewPlatformMotion;
+
 import linksawakening.world.entity.event.SideViewPlatformLinkRequest;
 import static linksawakening.world.EntityMotionMath.sideViewPlatformOverlapsLink;
 

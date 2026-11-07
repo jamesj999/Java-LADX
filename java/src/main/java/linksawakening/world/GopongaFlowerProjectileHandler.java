@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.GopongaProjectileMotion;
+
 
 
 /** ROM handler stages for GopongaFlowerProjectile. */

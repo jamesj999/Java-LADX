@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.EnemyProjectileMotion;
+
 import static linksawakening.world.EntityTypeRules.isEnemyProjectileType;
 
 /** ROM handler stages for EnemyProjectileType. */

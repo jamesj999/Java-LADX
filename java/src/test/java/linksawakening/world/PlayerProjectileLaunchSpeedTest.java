@@ -1,5 +1,8 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.MagicRodFireballMotion;
+import linksawakening.world.entity.motion.PlayerArrowMotion;
+
 import linksawakening.entity.EntitySpriteDefinition;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;

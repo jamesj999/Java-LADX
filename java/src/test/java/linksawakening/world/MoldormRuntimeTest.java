@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.MoldormMotion;
+
 import linksawakening.world.entity.event.DialogRequest;
 
 import linksawakening.entity.EntitySpriteDefinition;

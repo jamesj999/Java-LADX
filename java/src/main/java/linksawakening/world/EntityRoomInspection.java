@@ -1,5 +1,9 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.ColorShellMotion;
+import linksawakening.world.entity.motion.HookshotChainMotion;
+import linksawakening.world.entity.motion.RoamingEnemyMotion;
+
 import linksawakening.world.entity.event.HookshotBridgeUpdate;
 
 import static linksawakening.world.EntityMotionMath.*;

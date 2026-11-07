@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.HookshotBridgeMotion;
+
 import linksawakening.world.entity.event.HookshotBridgeUpdate;
 
 import org.junit.jupiter.api.Test;

@@ -1,5 +1,8 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.BossIntroMotion;
+import linksawakening.world.entity.motion.RollingBonesMotion;
+
 import linksawakening.world.entity.event.ScreenShakeRequest;
 import static linksawakening.world.EntitySnapshots.withDefinition;
 

@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.UrchinMotion;
+
 import linksawakening.entity.EntitySpriteDefinition;
 import static linksawakening.world.EntitySnapshots.withDefinition;
 

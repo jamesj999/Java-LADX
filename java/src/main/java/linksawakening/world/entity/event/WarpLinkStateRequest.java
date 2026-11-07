@@ -2,7 +2,7 @@ package linksawakening.world.entity.event;
 
 import linksawakening.world.transition.Warp;
 
-import linksawakening.world.*;
+import linksawakening.world.RoomEntity;
 import linksawakening.vfx.TransientVfxType;
 
 /** Link HRAM writes emitted by entity-$61's WarpState3Handler. */

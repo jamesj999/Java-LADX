@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.HeartPiecePickupMotion;
+
 import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.RoomBoundaryState;
 import linksawakening.world.transition.Warp;

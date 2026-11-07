@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.PiranhaMotion;
+
 
 
 /** ROM handler stages for PiranhaPlant. */

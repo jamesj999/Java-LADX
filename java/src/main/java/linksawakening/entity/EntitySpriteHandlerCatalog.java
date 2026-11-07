@@ -3,7 +3,7 @@ package linksawakening.entity;
 import linksawakening.rom.RomBank;
 import linksawakening.world.EntityRoomLoader;
 import linksawakening.world.EntityStatus;
-import linksawakening.world.MoldormMotion;
+import linksawakening.world.entity.motion.MoldormMotion;
 
 import java.util.ArrayList;
 import java.util.List;

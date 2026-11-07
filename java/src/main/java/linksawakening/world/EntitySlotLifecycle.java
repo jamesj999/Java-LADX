@@ -1,5 +1,11 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.BowWowMotion;
+import linksawakening.world.entity.motion.FloatingItemMotion;
+import linksawakening.world.entity.motion.HeartPiecePickupMotion;
+import linksawakening.world.entity.motion.KeyDropPointMotion;
+import linksawakening.world.entity.motion.ZolGelMotion;
+
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.KeyRewardEvent;
 

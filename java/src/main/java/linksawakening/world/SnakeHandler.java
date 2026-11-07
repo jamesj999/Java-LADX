@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.SnakeMotion;
+
 
 
 /** ROM handler stages for Snake. */

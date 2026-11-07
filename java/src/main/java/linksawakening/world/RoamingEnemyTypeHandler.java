@@ -1,5 +1,8 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.RoamingEnemyMotion;
+import linksawakening.world.entity.motion.UnmaskedIronMaskMotion;
+
 import static linksawakening.world.EntityTypeRules.isRoamingEnemyType;
 
 /** ROM handler stages for RoamingEnemyType. */

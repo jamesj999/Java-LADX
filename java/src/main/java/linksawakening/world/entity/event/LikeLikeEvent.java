@@ -1,6 +1,6 @@
 package linksawakening.world.entity.event;
 
-import linksawakening.world.*;
+
 import linksawakening.vfx.TransientVfxType;
 
 /** Link capture/release side effects emitted by Like Like's handler. */

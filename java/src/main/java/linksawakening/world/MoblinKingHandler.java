@@ -1,5 +1,8 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.MoblinKingMotion;
+import linksawakening.world.entity.motion.RoamingEnemyMotion;
+
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.ScreenShakeRequest;
 import static linksawakening.world.EntitySnapshots.withDefinition;

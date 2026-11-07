@@ -1,5 +1,9 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.BoomerangMotion;
+import linksawakening.world.entity.motion.HookshotChainMotion;
+import linksawakening.world.entity.motion.SwordBeamMotion;
+
 import linksawakening.world.entity.event.MagicPowderObjectAction;
 
 import linksawakening.world.entity.event.BoomerangObjectRequest;

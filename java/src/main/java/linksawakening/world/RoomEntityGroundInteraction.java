@@ -6,7 +6,7 @@ package linksawakening.world;
  * runtime owns the ordering relative to entity-family motion.
  */
 @FunctionalInterface
-interface RoomEntityGroundInteraction {
+public interface RoomEntityGroundInteraction {
     Result apply(RoomEntity entity, int frameCounter, int previousGroundStatus,
                  int speedZ, boolean sideScrolling);
 
@@ -17,7 +17,7 @@ interface RoomEntityGroundInteraction {
         }
     }
 
-    record Result(RoomEntity entity, int groundStatus, PitTransition pitTransition,
+    public record Result(RoomEntity entity, int groundStatus, PitTransition pitTransition,
                   boolean unloaded, boolean waterSplash) {
         static Result unchanged(RoomEntity entity, int groundStatus) {
             return new Result(entity, groundStatus, null, false, false);

@@ -1,5 +1,8 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.HeartPiecePickupMotion;
+import linksawakening.world.entity.motion.WarpMotion;
+
 import linksawakening.world.transition.Warp;
 
 import linksawakening.gameplay.GameplaySoundSink;

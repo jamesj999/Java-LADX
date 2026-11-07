@@ -394,12 +394,12 @@ public final class RoomEntityCombatRules {
     }
 
     /** Mirrors func_003_6C6B's alternating entity-slot cadence. */
-    static boolean collisionCadenceMatches(int frameCounter, int slot) {
+    public static boolean collisionCadenceMatches(int frameCounter, int slot) {
         return (((frameCounter & 0xFF) ^ slot) & 0x01) != 0;
     }
 
     /** Mirrors CheckLinkCollisionWithEnemy using the entity's ROM hitbox entry. */
-    static boolean overlapsLink(RoomEntity entity, int linkPixelX, int linkPixelY) {
+    public static boolean overlapsLink(RoomEntity entity, int linkPixelX, int linkPixelY) {
         if (!supportsLinkCollision(entity.type())) {
             return false;
         }

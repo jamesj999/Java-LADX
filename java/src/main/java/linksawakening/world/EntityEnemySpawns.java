@@ -1,5 +1,16 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.CuccoMotion;
+import linksawakening.world.entity.motion.EnemyProjectileMotion;
+import linksawakening.world.entity.motion.GiantGopongaMotion;
+import linksawakening.world.entity.motion.GopongaProjectileMotion;
+import linksawakening.world.entity.motion.PokeyMotion;
+import linksawakening.world.entity.motion.RoamingEnemyMotion;
+import linksawakening.world.entity.motion.StalfosEvasiveMotion;
+import linksawakening.world.entity.motion.WizrobeMotion;
+import linksawakening.world.entity.motion.ZombieMotion;
+import linksawakening.world.entity.motion.ZoraMotion;
+
 import static linksawakening.world.EntityMotionMath.*;
 import static linksawakening.world.EntitySnapshots.*;
 import static linksawakening.world.EntityTypeRules.*;

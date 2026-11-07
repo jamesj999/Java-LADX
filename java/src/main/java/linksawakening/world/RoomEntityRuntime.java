@@ -1,5 +1,9 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.HeartPiecePickupMotion;
+import linksawakening.world.entity.motion.RoamingEnemyMotion;
+import linksawakening.world.entity.motion.WarpMotion;
+
 import linksawakening.world.entity.event.BoomerangObjectRequest;
 import linksawakening.world.entity.event.ChestRewardEvent;
 import linksawakening.world.entity.event.DialogRequest;

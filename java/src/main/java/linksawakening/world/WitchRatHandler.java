@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.WitchRatMotion;
+
 
 
 /** ROM handler stages for WitchRat. */

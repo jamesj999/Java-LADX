@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.MimicMotion;
+
 
 
 /** ROM handler stages for Mimic. */

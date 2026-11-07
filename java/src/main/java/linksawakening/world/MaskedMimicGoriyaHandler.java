@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.MaskedMimicMotion;
+
 
 
 /** ROM handler stages for MaskedMimicGoriya. */

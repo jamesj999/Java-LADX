@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.ThreeOfAKindMotion;
+
 
 
 /** ROM handler stages for ThreeOfAKind. */

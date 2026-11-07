@@ -2,7 +2,7 @@ package linksawakening.state;
 
 import linksawakening.save.SaveSlotState;
 import linksawakening.world.ChestContentsTable;
-import linksawakening.world.FloatingItemMotion;
+import linksawakening.world.entity.motion.FloatingItemMotion;
 
 import java.util.Arrays;
 import java.util.Objects;

@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.RoosterMotion;
+
 import linksawakening.world.entity.event.RoosterLinkStateRequest;
 import static linksawakening.world.EntitySnapshots.withVariant;
 

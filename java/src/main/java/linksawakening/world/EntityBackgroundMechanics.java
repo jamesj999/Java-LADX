@@ -1,5 +1,11 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.ColorShellMotion;
+import linksawakening.world.entity.motion.EnemyRecoilMotion;
+import linksawakening.world.entity.motion.HookshotBridgeMotion;
+import linksawakening.world.entity.motion.HookshotChainMotion;
+import linksawakening.world.entity.motion.MoldormMotion;
+
 import linksawakening.world.entity.event.HookshotBridgeUpdate;
 import linksawakening.world.entity.event.LinkFinalPositionRequest;
 

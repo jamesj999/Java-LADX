@@ -1,5 +1,9 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.MotionTestAccess;
+
+import linksawakening.world.entity.motion.MagicRodFireballMotion;
+
 import linksawakening.world.entity.event.MagicRodObjectRequest;
 
 import linksawakening.entity.EntitySpriteHandlerCatalog;
@@ -52,7 +56,7 @@ final class MagicRodRuntimeTest {
 
         tick(runtime, 0, 0x20, 0x20);
 
-        assertEquals(MagicRodFireballMotion.FIRE_TRANSITION_COUNTDOWN,
+        assertEquals(MotionTestAccess.MagicRodFireballMotion_FIRE_TRANSITION_COUNTDOWN,
             runtime.magicRodFireballPrivateCountdown1(slot));
         assertEquals(0x69AA, runtime.snapshot().slots().get(slot).spriteDefinition().address());
         assertEquals(0, runtime.snapshot().slots().get(slot).spriteVariant());

@@ -1,5 +1,8 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.GiantGopongaMotion;
+import linksawakening.world.entity.motion.GopongaProjectileMotion;
+
 import linksawakening.world.entity.event.LinkFinalPositionRequest;
 
 import linksawakening.entity.EntitySpriteDefinition;

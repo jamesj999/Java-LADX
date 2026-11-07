@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.BombiteMotion;
+
 import static linksawakening.world.EntitySnapshots.withVariant;
 import static linksawakening.world.EntityTypeRules.isBombiteType;
 

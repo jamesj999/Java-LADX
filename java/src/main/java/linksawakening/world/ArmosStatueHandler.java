@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.ArmosMotion;
+
 
 
 /** ROM handler stages for ArmosStatue. */

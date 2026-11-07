@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.BombMotion;
+
 
 
 /** ROM handler stages for Bomb. */

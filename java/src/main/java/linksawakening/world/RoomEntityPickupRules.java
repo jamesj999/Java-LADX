@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.FloatingItemMotion;
+
 /** Exact collision and sword-collection rules shared by static pickable handlers. */
 public final class RoomEntityPickupRules {
     private static final int FIRST_PICKABLE_TYPE = 0x2D;

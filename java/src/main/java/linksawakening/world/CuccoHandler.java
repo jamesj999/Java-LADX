@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.CuccoMotion;
+
 import linksawakening.world.entity.event.DialogRequest;
 
 /** ROM handler stages for Cucco. */

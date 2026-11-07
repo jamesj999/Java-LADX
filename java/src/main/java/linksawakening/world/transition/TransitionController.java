@@ -1,6 +1,6 @@
 package linksawakening.world.transition;
 
-import linksawakening.world.*;
+
 
 /**
  * Room-to-room fade transition state machine, ported from the LADX disassembly's

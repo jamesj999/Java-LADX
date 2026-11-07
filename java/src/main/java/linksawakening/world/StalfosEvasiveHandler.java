@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.StalfosEvasiveMotion;
+
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.entity.event.TransientVfxRequest;

@@ -1,5 +1,10 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.GenieMotion;
+import linksawakening.world.entity.motion.LiftedEntityMotion;
+import linksawakening.world.entity.motion.ThrownEntityMotion;
+import linksawakening.world.entity.motion.WarpMotion;
+
 import static linksawakening.world.EntityMotionMath.*;
 import static linksawakening.world.EntitySnapshots.*;
 import static linksawakening.world.EntityTypeRules.*;

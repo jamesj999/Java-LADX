@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.SandCrabMotion;
+
 
 
 /** ROM handler stages for SandCrab. */

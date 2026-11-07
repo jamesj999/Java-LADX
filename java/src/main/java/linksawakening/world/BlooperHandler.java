@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.BlooperMotion;
+
 import java.util.Objects;
 
 /** ROM handler stages for Blooper. */

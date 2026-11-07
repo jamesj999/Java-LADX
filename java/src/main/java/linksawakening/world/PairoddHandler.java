@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.PairoddMotion;
+
 
 
 /** ROM handler stages for Pairodd. */

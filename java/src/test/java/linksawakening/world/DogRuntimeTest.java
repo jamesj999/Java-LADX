@@ -1,5 +1,9 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.MotionTestAccess;
+
+import linksawakening.world.entity.motion.DogMotion;
+
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import org.junit.jupiter.api.Test;
@@ -89,7 +93,7 @@ final class DogRuntimeTest {
     void stateOneMovesBeforeRetargetingAndHopsWhenBackgroundBlocksIt() throws IOException {
         DogMotion motion = new DogMotion();
         RoomEntity dog = dog(loadRom());
-        motion.setStateForTest(0, 1, 0, 0x10, 0x00, 0x00);
+        MotionTestAccess.setStateForTest(motion, 0, 1, 0, 0x10, 0x00, 0x00);
 
         DogMotion.Update moved = motion.advance(dog, 8, 0x03, 0x92,
             0x70, 0x40, 0, false, false, () -> 0, null);
@@ -116,7 +120,7 @@ final class DogRuntimeTest {
     void stateOneCollisionWithExpiredTimerReturnsToStateZero() throws IOException {
         DogMotion motion = new DogMotion();
         RoomEntity dog = dog(loadRom());
-        motion.setStateForTest(0, 1, 0, 0x10, 0x00, 0x00);
+        MotionTestAccess.setStateForTest(motion, 0, 1, 0, 0x10, 0x00, 0x00);
 
         DogMotion.Update update = motion.advance(dog, 0, 0x00, 0x92,
             0x70, 0x40, 0, false, false, () -> 0,
@@ -134,7 +138,7 @@ final class DogRuntimeTest {
     void stateTwoLaunchesWithRomVectorAndStateThreeResetsOnCollision() throws IOException {
         DogMotion motion = new DogMotion();
         RoomEntity dog = dog(loadRom());
-        motion.setStateForTest(0, 2, 0, 0x00, 0x00, 0x00);
+        MotionTestAccess.setStateForTest(motion, 0, 2, 0, 0x00, 0x00, 0x00);
 
         DogMotion.Update launched = motion.advance(dog, 0, 0x00, 0x92,
             0x70, 0x40, 0, false, false, () -> 0, null);
@@ -145,7 +149,7 @@ final class DogRuntimeTest {
         assertEquals(0x00, launched.direction());
         assertEquals(0x00, launched.entity().z());
 
-        motion.setStateForTest(0, 3, 0, 0x10, 0x00, 0x00);
+        MotionTestAccess.setStateForTest(motion, 0, 3, 0, 0x10, 0x00, 0x00);
         DogMotion.Update blocked = motion.advance(dog, 0, 0x20, 0x92,
             0x70, 0x40, 0, false, false, () -> 0,
             (entity, direction, nextX, nextY) ->

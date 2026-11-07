@@ -1,5 +1,8 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.GibdoMotion;
+import linksawakening.world.entity.motion.LikeLikeMotion;
+
 import linksawakening.world.entity.event.LikeLikeEvent;
 
 import linksawakening.entity.EntitySpriteDefinition;

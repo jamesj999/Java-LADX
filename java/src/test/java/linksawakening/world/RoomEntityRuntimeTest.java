@@ -1,5 +1,12 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.MotionTestAccess;
+
+import linksawakening.world.entity.motion.HinoxMotion;
+import linksawakening.world.entity.motion.RoamingEnemyMotion;
+import linksawakening.world.entity.motion.ThreeOfAKindMotion;
+import linksawakening.world.entity.motion.ZolGelMotion;
+
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.KeyQuicksandEvent;
 import linksawakening.world.entity.event.KeyRewardEvent;
@@ -253,7 +260,7 @@ final class RoomEntityRuntimeTest {
             EnemyProjectileCollision.LinkState.nonInteractive()));
 
         assertEquals(0x12, runtime.transitionCountdown(0));
-        assertEquals(HinoxMotion.STATE_INITIAL, runtime.hinoxStateForTest(0));
+        assertEquals(MotionTestAccess.HinoxMotion_STATE_INITIAL, runtime.hinoxStateForTest(0));
     }
 
     @Test
@@ -268,7 +275,7 @@ final class RoomEntityRuntimeTest {
             new EnemyProjectileCollision.LinkState(0x40, 0x40, 0, 0, 3, false)));
 
         assertEquals(0x12, runtime.transitionCountdown(0));
-        assertEquals(HinoxMotion.STATE_INITIAL, runtime.hinoxStateForTest(0));
+        assertEquals(MotionTestAccess.HinoxMotion_STATE_INITIAL, runtime.hinoxStateForTest(0));
     }
 
     @Test
@@ -335,7 +342,7 @@ final class RoomEntityRuntimeTest {
         RoomEntity hinox = new RoomEntity(0, 0, HinoxMotion.ENTITY_TYPE, 0x40, 0x40,
             EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(HinoxMotion.ENTITY_TYPE), 0, 0, 0, 0, -1, false);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(hinox));
-        runtime.setHinoxStateForTest(0, HinoxMotion.STATE_WANDER);
+        runtime.setHinoxStateForTest(0, MotionTestAccess.HinoxMotion_STATE_WANDER);
         runtime.setHinoxSpeedForTest(0, 0x08, 0);
         runtime.setTransitionCountdownForTest(0, 0x20);
 
@@ -351,7 +358,7 @@ final class RoomEntityRuntimeTest {
         RoomEntity hinox = new RoomEntity(0, 0, HinoxMotion.ENTITY_TYPE, 0x50, 0x40,
             EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(HinoxMotion.ENTITY_TYPE), 0, 0, 0, 0, -1, false);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(hinox));
-        runtime.setHinoxStateForTest(0, HinoxMotion.STATE_CHARGE);
+        runtime.setHinoxStateForTest(0, MotionTestAccess.HinoxMotion_STATE_CHARGE);
         runtime.setTransitionCountdownForTest(0, 0);
 
         runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x30, 0x30, () -> 0, null,
@@ -9488,8 +9495,8 @@ final class RoomEntityRuntimeTest {
     }
 
     private static RoomEntity threeOfAKind(int slot, int x, int y) {
-        return new RoomEntity(slot, slot, ThreeOfAKindMotion.ENTITY_TYPE, x, y,
+        return new RoomEntity(slot, slot, MotionTestAccess.ThreeOfAKindMotion_ENTITY_TYPE, x, y,
             EntityStatus.ACTIVE,
-            EntitySpriteDefinition.unsupported(ThreeOfAKindMotion.ENTITY_TYPE), 0, 0, 0, 0, -1, false);
+            EntitySpriteDefinition.unsupported(MotionTestAccess.ThreeOfAKindMotion_ENTITY_TYPE), 0, 0, 0, 0, -1, false);
     }
 }

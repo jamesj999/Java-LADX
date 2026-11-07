@@ -1,5 +1,8 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.ArmosKnightMotion;
+import linksawakening.world.entity.motion.BossIntroMotion;
+
 import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.LinkFallenPoseRequest;

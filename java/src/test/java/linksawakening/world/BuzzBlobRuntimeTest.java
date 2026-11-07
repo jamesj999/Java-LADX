@@ -1,5 +1,9 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.MotionTestAccess;
+
+import linksawakening.world.entity.motion.BuzzBlobMotion;
+
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import org.junit.jupiter.api.Test;
@@ -121,7 +125,7 @@ final class BuzzBlobRuntimeTest {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
             .forEntityType(ENTITY_BUZZ_BLOB, EntityRoomLoader.RoomTable.OVERWORLD);
         BuzzBlobMotion motion = new BuzzBlobMotion();
-        motion.initializeStateOne(0);
+        MotionTestAccess.initializeStateOne(motion, 0);
         RoomEntity buzzBlob = new RoomEntity(0, 0, ENTITY_BUZZ_BLOB, 0x40, 0x40,
             EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
 

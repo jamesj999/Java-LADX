@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.HookshotChainMotion;
+
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.physics.PhysicsFlags;
 import linksawakening.rom.RomBank;

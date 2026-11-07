@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.BushCrawlerMotion;
+
 import static linksawakening.world.EntitySnapshots.withDefinition;
 
 /** ROM handler stages for BushCrawler. */

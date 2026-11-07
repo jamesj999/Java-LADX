@@ -1,5 +1,9 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.HookshotBridgeMotion;
+import linksawakening.world.entity.motion.HookshotChainMotion;
+import linksawakening.world.entity.motion.SideViewPlatformMotion;
+
 import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.Warp;
 

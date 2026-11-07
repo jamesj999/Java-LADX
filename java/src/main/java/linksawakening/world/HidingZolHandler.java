@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.motion.HidingZolMotion;
+
 
 
 /** ROM handler stages for HidingZol. */
