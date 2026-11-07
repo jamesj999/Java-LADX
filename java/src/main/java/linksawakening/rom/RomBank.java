@@ -31,8 +31,8 @@ public final class RomBank {
 
         for (int paletteIndex = 0; paletteIndex < paletteCount; paletteIndex++) {
             for (int colorIndex = 0; colorIndex < 4; colorIndex++) {
-                int low = Byte.toUnsignedInt(romData[offset++]);
-                int high = Byte.toUnsignedInt(romData[offset++]);
+                int low = new Rom(romData).u8(RomAddress.fromOffset(offset++));
+                int high = new Rom(romData).u8(RomAddress.fromOffset(offset++));
                 palettes[paletteIndex][colorIndex] = decodeRgb555(low | (high << 8));
             }
         }
@@ -66,21 +66,21 @@ public final class RomBank {
         int[] bgMap = initialMap.clone();
         int offset = romOffset(bank, address);
         while (offset < romData.length) {
-            int high = Byte.toUnsignedInt(romData[offset]);
+            int high = new Rom(romData).u8(RomAddress.fromOffset(offset));
             if (high == 0) {
                 break;
             }
 
-            int targetAddress = (high << 8) | Byte.toUnsignedInt(romData[offset + 1]);
-            int options = Byte.toUnsignedInt(romData[offset + 2]);
+            int targetAddress = (high << 8) | new Rom(romData).u8(RomAddress.fromOffset(offset + 1));
+            int options = new Rom(romData).u8(RomAddress.fromOffset(offset + 2));
             int amount = (options & 0x3F) + 1;
             boolean repeat = (options & 0x40) != 0;
             boolean vertical = (options & 0x80) != 0;
             offset += 3;
 
-            int repeatedValue = repeat ? Byte.toUnsignedInt(romData[offset]) : 0;
+            int repeatedValue = repeat ? new Rom(romData).u8(RomAddress.fromOffset(offset)) : 0;
             for (int i = 0; i < amount; i++) {
-                int value = repeat ? repeatedValue : Byte.toUnsignedInt(romData[offset + i]);
+                int value = repeat ? repeatedValue : new Rom(romData).u8(RomAddress.fromOffset(offset + i));
                 int bgOffset = targetAddress - 0x9800;
                 if (bgOffset >= 0 && bgOffset < bgMap.length) {
                     bgMap[bgOffset] = value;

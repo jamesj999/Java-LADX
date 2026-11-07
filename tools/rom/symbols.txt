@@ -74,3 +74,14 @@ FontTiles
 PlayActiveJingle
 PlayActiveWaveSfx
 PlayActiveNoiseSfx
+Data_002_4E1C
+Data_001_6BCF
+Data_001_6BD7
+Data_001_6BDF
+InventoryInstrumentCyclingColors
+ColorDungeonNpcTiles
+SirenInstrumentsTiles
+InventoryIndoorItemsTiles
+DungeonMinimapTiles
+MinimapLayoutTable
+Data_002_66F9
