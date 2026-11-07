@@ -140,7 +140,7 @@ final class LinkEntityEffects {
             (romPositionY - 0x10) & 0xFF);
         link.linkStateMachine.romInteractiveMotionBlocked = motionBlocked;
         if (applyHeldLinkPose) {
-            link.romAnimationStateOverride = 0x6A;
+            link.linkAnimator.romAnimationStateOverride = 0x6A;
         }
         link.movingThisFrame = false;
         if (applyHeldLinkPose) {
@@ -162,7 +162,7 @@ final class LinkEntityEffects {
         link.linkMotion.setPixelPosition((romPositionX - 0x08) & 0xFF,
             (visualRomPositionY - 0x10) & 0xFF);
         link.linkStateMachine.romInteractiveMotionBlocked = true;
-        link.romAnimationStateOverride = -1;
+        link.linkAnimator.romAnimationStateOverride = -1;
         link.romAttackStepAnimationCountdown = 0;
         link.linkDamage.collisionIgnoreFramesRemaining = 0;
         link.movingThisFrame = false;
@@ -184,10 +184,10 @@ final class LinkEntityEffects {
     void leaveMarinWakeUpBed() {
         link.linkStateMachine.motionState = Link.LINK_MOTION_DEFAULT;
         link.linkStateMachine.romInteractiveMotionBlocked = false;
-        link.romAnimationStateOverride = -1;
+        link.linkAnimator.romAnimationStateOverride = -1;
         // The entity handler has already drawn the bed on the launch frame.
         // Ordinary Link rendering takes over at the next physics link.update.
-        link.marinWakeUpBedVariant = 3;
+        link.linkAnimator.marinWakeUpBedVariant = 3;
         marinBedJumpMotionLocked = true;
         link.movingThisFrame = false;
         link.linkAirborne.airborne = true;

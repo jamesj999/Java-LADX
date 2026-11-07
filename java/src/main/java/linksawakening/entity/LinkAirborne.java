@@ -92,11 +92,11 @@ final class LinkAirborne {
         // updates; phase 3 stops overriding the normal walking animation.
         // The unstucking handler does not refresh walking animation, so it
         // retains the final flip pose until landing ($02:49AA-$49C7).
-        if (link.jumpAnimationCounter < 3 * Link.JUMP_FRAME_TICKS) {
-            link.jumpAnimationFrame = link.jumpAnimationCounter / Link.JUMP_FRAME_TICKS;
-            link.jumpAnimationCounter++;
+        if (link.linkAnimator.jumpAnimationCounter < 3 * Link.JUMP_FRAME_TICKS) {
+            link.linkAnimator.jumpAnimationFrame = link.linkAnimator.jumpAnimationCounter / Link.JUMP_FRAME_TICKS;
+            link.linkAnimator.jumpAnimationCounter++;
         } else if (!overworldLedgeFallActive) {
-            link.jumpAnimationFrame = 3;
+            link.linkAnimator.jumpAnimationFrame = 3;
         }
     }
 

@@ -91,7 +91,7 @@ final class LinkSideView {
             sideViewSpeedY = (mask & 3) == 0 ? -22 : -24;
             sideViewGrounded = false;
             moveSideViewAndCollide(sideViewSpeedX, sideViewSpeedY, mask);
-            link.jumpAnimationCounter = link.jumpAnimationFrame = 0;
+            link.linkAnimator.jumpAnimationCounter = link.linkAnimator.jumpAnimationFrame = 0;
             link.soundSink.play(GameplaySoundEvent.ROC_FEATHER_JUMP);
         }
         link.linkAirborne.zSubPixels = link.linkAirborne.zVelocity = 0;
@@ -101,7 +101,7 @@ final class LinkSideView {
         if (link.movingThisFrame) link.tickAnimation();
         else link.walkTickCounter = link.walkFrame = 0;
         // Side-view falling uses the normal link.linkAirborne.airborne pose, not a Z-axis flip.
-        link.jumpAnimationFrame = 3;
+        link.linkAnimator.jumpAnimationFrame = 3;
     }
 
     void moveSideViewAndCollide(int speedX, int speedY, int mask) {

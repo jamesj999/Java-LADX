@@ -161,8 +161,8 @@ final class LinkMotion {
         link.linkAirborne.airborne = true;
         link.linkAirborne.zSubPixels = 0;
         link.linkAirborne.zVelocity = 0x1C;
-        link.jumpAnimationCounter = 0;
-        link.jumpAnimationFrame = 0;
+        link.linkAnimator.jumpAnimationCounter = 0;
+        link.linkAnimator.jumpAnimationFrame = 0;
         link.soundSink.play(GameplaySoundEvent.LEDGE_FALL);
         return true;
     }
@@ -211,8 +211,8 @@ final class LinkMotion {
         subY -= 3 << Link.SUB_PIXEL_SHIFT;
         link.linkAirborne.airborne = true;
         link.linkAirborne.zVelocity = 0;
-        link.jumpAnimationCounter = 0;
-        link.jumpAnimationFrame = 0;
+        link.linkAnimator.jumpAnimationCounter = 0;
+        link.linkAnimator.jumpAnimationFrame = 0;
     }
 
     boolean ledgeUnstuckingPositionBlocked() {

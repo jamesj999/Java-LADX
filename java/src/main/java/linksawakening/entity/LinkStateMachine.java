@@ -15,7 +15,7 @@ final class LinkStateMachine {
     LinkStateMachine(Link link) { this.link = link; }
 
     void update() {
-        link.bedJumpRenderZ = -1;
+        link.linkAnimator.bedJumpRenderZ = -1;
         link.frameCounter = (link.frameCounter + 1) & 0xFF;
         if (link.pegasusBootsCollisionCountdown > 0) {
             link.pegasusBootsCollisionCountdown--;
@@ -35,9 +35,9 @@ final class LinkStateMachine {
         boolean interactiveMotionBlocked = romInteractiveMotionBlocked;
         romInteractiveMotionBlocked = false;
         if (!interactiveMotionBlocked) {
-            link.romAnimationStateOverride = -1;
-            link.swordAcquisitionBaseRomDirection = -1;
-            link.swordAcquisitionAnimationState = -1;
+            link.linkAnimator.romAnimationStateOverride = -1;
+            link.linkAnimator.swordAcquisitionBaseRomDirection = -1;
+            link.linkAnimator.swordAcquisitionAnimationState = -1;
         }
         if (interactiveMotionBlocked && !(link.linkSideView.sideScrolling && link.linkAirborne.airborne)) {
             link.linkAirborne.zVelocity = 0;
@@ -178,13 +178,13 @@ final class LinkStateMachine {
         }
         boolean bedJumpFrame = link.linkEntityEffects.marinBedJumpMotionLocked;
         if (bedJumpFrame) {
-            link.marinWakeUpBedVariant = -1;
+            link.linkAnimator.marinWakeUpBedVariant = -1;
             // Marin sets wIsLinkInTheAir=2, so UpdateLinkAnimation skips
             // the feather/ledge flip. Walking animation precedes gravity:
             // first pose $0A, then $0B, including the landing frame.
-            link.romAnimationStateOverride = LinkAnimator.ANIMATION_STATE[link.direction][link.movingThisFrame ? 1 : 0];
+            link.linkAnimator.romAnimationStateOverride = LinkAnimator.ANIMATION_STATE[link.direction][link.movingThisFrame ? 1 : 0];
             // ApplyGotItem caches wC145 before this frame changes Z.
-            link.bedJumpRenderZ = link.zPixels();
+            link.linkAnimator.bedJumpRenderZ = link.zPixels();
             link.linkAirborne.tickJump();
         }
         link.linkMotion.lastRomSpeedX = speedX & 0xFF;
@@ -232,12 +232,12 @@ final class LinkStateMachine {
         if (revolvingDoorFrame == 0 || revolvingDoorFrame == 0x28) revolvingDoorPaletteVariant = 0;
         if (revolvingDoorFrame == 0x18) revolvingDoorPaletteVariant = 1;
         if (revolvingDoorFrame < 0x38) {
-            link.romAnimationStateOverride = link.romTables.revolvingDoorAnimation(revolvingDoorFrame);
+            link.linkAnimator.romAnimationStateOverride = link.romTables.revolvingDoorAnimation(revolvingDoorFrame);
         }
         if (++revolvingDoorFrame >= 0x38) {
             link.linkMotion.subY = (-5 - 16) << Link.SUB_PIXEL_SHIFT;
             link.direction = Link.DIRECTION_UP;
-            link.romAnimationStateOverride = 0x04;
+            link.linkAnimator.romAnimationStateOverride = 0x04;
         }
         if (revolvingDoorFrame == 0x48) {
             motionState = Link.LINK_MOTION_DEFAULT;

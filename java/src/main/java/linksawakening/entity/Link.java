@@ -30,6 +30,8 @@ import java.util.function.BooleanSupplier;
  */
 public final class Link implements RocsFeather.JumpTarget {
 
+    final LinkAnimator linkAnimator = new LinkAnimator(this);
+
     final LinkEntityEffects linkEntityEffects = new LinkEntityEffects(this);
 
     final LinkMotion linkMotion = new LinkMotion(this);
@@ -100,7 +102,7 @@ public final class Link implements RocsFeather.JumpTarget {
 
     static final int WALK_FRAME_TICKS = 8;
     static final int JUMP_FRAME_TICKS = 8;
-    private static final int FALL_FRAME_TICKS = 16;
+    static final int FALL_FRAME_TICKS = 16;
     static final int FALL_DURATION_FRAMES = 96;
     private static final int PIT_RECOVERY_INVINCIBILITY_FRAMES = 0x40;
     private static final int PIT_DAMAGE = PlayerState.HP_PER_HEART / 2;
@@ -121,10 +123,10 @@ public final class Link implements RocsFeather.JumpTarget {
     final InputConfig inputConfig;
     final RomTables romTables;
     final OverworldCollision collision;
-    private final LinkSpriteSheet spriteSheet;
+    final LinkSpriteSheet spriteSheet;
     final PlayerState playerState;
     final ItemRegistry itemRegistry;
-    private final LinkTunicPalette tunicPalette;
+    final LinkTunicPalette tunicPalette;
 
     // Two collision check points per direction, as offsets from the
     // sprite's top-left. Ported from LinkCollisionPointsX/Y
@@ -165,15 +167,8 @@ public final class Link implements RocsFeather.JumpTarget {
     /** Warp entry sets hLinkPhysicsModifier=1 at $00:18F0. */
 
     boolean debugNoClip;
-    int romAnimationStateOverride = -1;
-    int swordAcquisitionBaseRomDirection = -1;
-    int swordAcquisitionAnimationState = -1;
-    private boolean tarinShieldPresentation;
-    private int[] tarinShieldPalette;
     private int romLinkPushing;
-    int marinWakeUpBedVariant = -1;
     /** Mirrors wC10A while Marin's scripted bed-exit jump owns Link motion. */
-    int bedJumpRenderZ = -1;
     /** Mirrors wC191, the collision-probe countdown for directional ledges. */
     /** Mirrors wC10A while a directional ledge jump owns Link's XY speed. */
     /** Mirrors LINK_MOTION_UNSTUCKING after an overworld $10 ledge collision. */
@@ -183,10 +178,7 @@ public final class Link implements RocsFeather.JumpTarget {
     private int physicsRoomCategory = -1;
     int frameCounter;
     int romAttackStepAnimationCountdown;
-    int jumpAnimationCounter;
-    int jumpAnimationFrame;
     final GameplaySoundSink soundSink;
-    private final Tile[] composedTiles = new Tile[4];
 
     public Link(InputState inputState,
                 InputConfig inputConfig,
@@ -258,14 +250,14 @@ public final class Link implements RocsFeather.JumpTarget {
         linkSideView.standingOnSideViewEntity = false;
         linkSideView.sideViewPlatformVerticalSpeedPending = -1;
         linkDamage.collisionDamageImmune = false;
-        romAnimationStateOverride = -1;
-        swordAcquisitionBaseRomDirection = -1;
-        swordAcquisitionAnimationState = -1;
-        tarinShieldPresentation = false;
-        tarinShieldPalette = null;
-        marinWakeUpBedVariant = -1;
+        linkAnimator.romAnimationStateOverride = -1;
+        linkAnimator.swordAcquisitionBaseRomDirection = -1;
+        linkAnimator.swordAcquisitionAnimationState = -1;
+        linkAnimator.tarinShieldPresentation = false;
+        linkAnimator.tarinShieldPalette = null;
+        linkAnimator.marinWakeUpBedVariant = -1;
         linkEntityEffects.marinBedJumpMotionLocked = false;
-        bedJumpRenderZ = -1;
+        linkAnimator.bedJumpRenderZ = -1;
         linkAirborne.directionalLedgeJumpMotionLocked = false;
         linkAirborne.overworldLedgeFallActive = false;
         linkEntityEffects.likeLikeCaptured = false;
@@ -422,132 +414,26 @@ public final class Link implements RocsFeather.JumpTarget {
         linkStateMachine.romInteractiveMotionBlocked = true;
     }
 
-    /** Applies the ROM's explicit hLinkAnimationState=$6A fallen-pose write. */
-    public void showRomFallenPose() {
-        linkStateMachine.romInteractiveMotionBlocked = true;
-        romAnimationStateOverride = 0x6A;
-        movingThisFrame = false;
-    }
-
-    /** Applies HoldEntityAboveLink's got-item pose and interaction lock. */
-    public void showHeldItemPose() {
-        linkStateMachine.romInteractiveMotionBlocked = true;
-        romAnimationStateOverride = 0x6C;
-        direction = DIRECTION_DOWN;
-        romAttackStepAnimationCountdown = 0;
-        movingThisFrame = false;
-    }
-
-    /** HandleGotItemB's power-up pose, distinct from lifting a physical object. */
-    public void showPowerUpPickupPose() {
-        linkStateMachine.romInteractiveMotionBlocked = true;
-        romAnimationStateOverride = 0x6B;
-        linkDamage.collisionIgnoreFramesRemaining = 0;
-        linkMotion.forcedSpeedPending = false;
-        romAttackStepAnimationCountdown = 0;
-        movingThisFrame = false;
-    }
-
-    /** Applies TarinShield2Handler's shield-specific got-item presentation. */
-    public void showTarinShieldPresentation(int[] palette) {
-        if (palette == null || palette.length < 4) {
-            throw new IllegalArgumentException("Tarin shield palette must contain four colors");
-        }
-        showHeldItemPose();
-        tarinShieldPresentation = true;
-        tarinShieldPalette = palette.clone();
-    }
-
-    public void clearTarinShieldPresentation() {
-        tarinShieldPresentation = false;
-    }
-
     public boolean isTarinShieldPresentationVisible() {
-        return tarinShieldPresentation;
+        return linkAnimator.tarinShieldPresentation;
     }
 
     public int[] tarinShieldPalette() {
-        return tarinShieldPalette == null ? null : tarinShieldPalette.clone();
-    }
-
-    /** Mirrors TarinShield2Handler's final LINK_ANIMATION_STATE_STANDING_SHIELD_DOWN write. */
-    public void showStandingShieldDownPose() {
-        tarinShieldPresentation = false;
-        romAnimationStateOverride = 0x22;
-        linkStateMachine.romInteractiveMotionBlocked = false;
-        direction = DIRECTION_DOWN;
-        movingThisFrame = false;
-    }
-
-    /** Applies one ROM spin sector while obtaining the beach sword. */
-    public void showSwordAcquisitionSpinPose(int countdown) {
-        if (countdown < 0 || countdown > 0x20) {
-            throw new IllegalArgumentException("Sword-spin countdown must be between 0 and 32");
-        }
-        if (romTables == null) {
-            throw new IllegalStateException("Sword acquisition spin requires ROM tables");
-        }
-        if (swordAcquisitionBaseRomDirection < 0) {
-            swordAcquisitionBaseRomDirection = romDirectionForJavaDirection(direction);
-            swordAcquisitionAnimationState = resolveAnimationState();
-        }
-        // The spin handler writes a fresh hLinkAnimationState. Do not let a
-        // preceding generic motion-block request leave its $6A butt pose in
-        // front of this ROM-driven sword pose.
-        romAnimationStateOverride = -1;
-        int sector = Math.min(7, countdown >> 2);
-        int swordState = romTables.swordSpinAnimationState(
-            swordAcquisitionBaseRomDirection, sector);
-        int absoluteRomDirection = romTables.swordSpinAbsoluteDirection(
-            swordAcquisitionBaseRomDirection, sector);
-        int animationState = romTables.swordDirectionAnimState(
-            absoluteRomDirection, swordState);
-        // UpdateSpinAttackAnimation leaves hLinkAnimationState unchanged for
-        // LINK_ANIMATION_STATE_HIDDEN, so retain the previous ROM pose.
-        if (animationState != 0xFF) {
-            swordAcquisitionAnimationState = animationState;
-        }
-        linkStateMachine.romInteractiveMotionBlocked = true;
-        direction = javaDirectionForRomDirection(absoluteRomDirection);
-        movingThisFrame = false;
-    }
-
-    /** Mirrors the sword handler's final hLinkAnimationState=$6B write. */
-    public void showSwordAcquisitionFinalPose() {
-        linkStateMachine.romInteractiveMotionBlocked = true;
-        swordAcquisitionBaseRomDirection = -1;
-        swordAcquisitionAnimationState = -1;
-        romAnimationStateOverride = 0x6B;
-        direction = DIRECTION_DOWN;
-        movingThisFrame = false;
-    }
-
-    /** Hides ordinary Link OAM and selects Marin's dedicated bed display list. */
-    public void showMarinWakeUpBed(int spriteVariant) {
-        if (spriteVariant < 0 || spriteVariant > 4) {
-            throw new IllegalArgumentException("Bed sprite variant must be between 0 and 4");
-        }
-        marinWakeUpBedVariant = spriteVariant;
+        return linkAnimator.tarinShieldPalette == null ? null : linkAnimator.tarinShieldPalette.clone();
     }
 
     public boolean isMarinWakeUpBedVisible() {
-        return marinWakeUpBedVariant >= 0;
+        return linkAnimator.marinWakeUpBedVariant >= 0;
     }
 
     public int marinWakeUpBedVariant() {
-        return marinWakeUpBedVariant;
+        return linkAnimator.marinWakeUpBedVariant;
     }
 
     /** ROM hLinkPositionZ used by follower position history and OAM Z state. */
     public int romEntityZ() {
         return zPixels();
     }
-
-
-
-
-
-
 
     public boolean isLikeLikeCaptured() {
         return linkEntityEffects.likeLikeCaptured;
@@ -785,24 +671,10 @@ public final class Link implements RocsFeather.JumpTarget {
         return romDirectionForJavaDirection(direction);
     }
 
-
-
-
-
-
-
-
-
-
-
     /** Mirrors wIsLinkImmuneToCollisionDamage independently of hit flashing. */
     public boolean isCollisionDamageImmune() {
         return linkDamage.collisionDamageImmune;
     }
-
-
-
-
 
     public boolean isRoosterCarryActive() {
         return linkEntityEffects.roosterCarryActive;
@@ -865,8 +737,8 @@ public final class Link implements RocsFeather.JumpTarget {
         linkAirborne.airborne = true;
         linkAirborne.zSubPixels = 0;
         linkAirborne.zVelocity = 0x20;
-        jumpAnimationCounter = 0;
-        jumpAnimationFrame = 0;
+        linkAnimator.jumpAnimationCounter = 0;
+        linkAnimator.jumpAnimationFrame = 0;
         soundSink.play(GameplaySoundEvent.ROC_FEATHER_JUMP);
     }
 
@@ -1030,146 +902,14 @@ public final class Link implements RocsFeather.JumpTarget {
         };
     }
 
-    public void render(byte[] displayBuffer, int offsetX, int offsetY) {
-        if (linkEntityEffects.likeLikeCaptured) {
-            return;
-        }
-        int animationState = resolveAnimationState();
-        spriteSheet.resolveTiles(animationState, composedTiles);
-
-        boolean leftFlipX = spriteSheet.leftHalfFlipX(animationState);
-        boolean leftFlipY = spriteSheet.leftHalfFlipY(animationState);
-        boolean rightFlipX = spriteSheet.rightHalfFlipX(animationState);
-        boolean rightFlipY = spriteSheet.rightHalfFlipY(animationState);
-
-        int originX = linkMotion.pixelX() + offsetX;
-        int renderY = linkMotion.pixelY() - (bedJumpRenderZ >= 0 ? bedJumpRenderZ : zPixels());
-        int originY = renderY + offsetY;
-        int[] palette = playerState != null
-            && (playerState.invincibilityCounter() & 0x04) != 0
-            // DrawLinkSprite's GBC path selects object palette 4 from bit 2
-            // of wInvincibilityCounter while Link is flashing.
-            ? tunicPalette.forObjectPalette(4)
-            : tunicPalette.forTunic(
-                playerState == null ? PlayerState.TUNIC_GREEN : playerState.tunicType());
-
-        if (linkStateMachine.revolvingDoorPaletteVariant >= 0 && linkStateMachine.revolvingDoorFrame < 0x38) {
-            palette = romTables.revolvingDoorPalette(linkStateMachine.revolvingDoorPaletteVariant);
-        }
-
-        // Column-major tile layout: [0]=UL, [1]=LL, [2]=UR, [3]=LR.
-        // GB 8x16 flipY swaps the two stacked tiles inside a column and flips
-        // each vertically.
-        Tile leftTop = composedTiles[leftFlipY ? 1 : 0];
-        Tile leftBottom = composedTiles[leftFlipY ? 0 : 1];
-        Tile rightTop = composedTiles[rightFlipY ? 3 : 2];
-        Tile rightBottom = composedTiles[rightFlipY ? 2 : 3];
-
-        drawTile(displayBuffer, leftTop,     originX,     originY,     leftFlipX,  leftFlipY,
-            palette);
-        drawTile(displayBuffer, leftBottom,  originX,     originY + 8, leftFlipX,  leftFlipY,
-            palette);
-        drawTile(displayBuffer, rightTop,    originX + 8, originY,     rightFlipX, rightFlipY,
-            palette);
-        drawTile(displayBuffer, rightBottom, originX + 8, originY + 8, rightFlipX, rightFlipY,
-            palette);
-
-        // Let equipped items paint their own sprites on top (e.g. the sword
-        // blade during a swing). Matches the disassembly's ordering where
-        // DrawLinkSprite writes Link's body to wLinkOAMBuffer slots 1-2 and
-        // ApplyLinkMotionState/func_020_4AB3 writes the sword into slots 4-5.
-        renderEquippedItems(displayBuffer, offsetX, offsetY);
-    }
-
-    private void renderEquippedItems(byte[] displayBuffer, int offsetX, int offsetY) {
-        if (itemRegistry == null || playerState == null) {
-            return;
-        }
-        EquipmentItem a = itemRegistry.lookup(playerState.itemA());
-        if (a != null) {
-            a.render(displayBuffer, linkMotion.pixelX(), linkMotion.pixelY() - zPixels(), direction, offsetX, offsetY);
-        }
-        EquipmentItem b = itemRegistry.lookup(playerState.itemB());
-        if (b != null && b != a) {
-            b.render(displayBuffer, linkMotion.pixelX(), linkMotion.pixelY() - zPixels(), direction, offsetX, offsetY);
-        }
-        if (swordAcquisitionAnimationState >= 0) {
-            // ApplyLinkMotionState draws the sword during the pickup spin
-            // before GiveInventoryItem awards it to slot A/B. Reuse the ROM
-            // sword handler from the registry, but do not draw it twice if a
-            // save already has the sword equipped.
-            EquipmentItem acquisitionSword = itemRegistry.lookup(PlayerState.INVENTORY_SWORD);
-            if (acquisitionSword != null && acquisitionSword != a && acquisitionSword != b) {
-                acquisitionSword.render(displayBuffer, linkMotion.pixelX(), linkMotion.pixelY() - zPixels(),
-                    direction, offsetX, offsetY);
-            }
-        }
-    }
-
     int zPixels() {
         return Math.max(0, linkAirborne.zSubPixels >> SUB_PIXEL_SHIFT);
     }
 
+    private int resolveAnimationState() { return linkAnimator.resolveAnimationState(); }
+
     public int romAnimationState() {
-        return resolveAnimationState();
-    }
-
-    private int resolveAnimationState() {
-        if (romAnimationStateOverride >= 0) {
-            return romAnimationStateOverride;
-        }
-        if (swordAcquisitionAnimationState >= 0) {
-            return swordAcquisitionAnimationState;
-        }
-        if (linkAirborne.fallingIntoPit) {
-            int frame = Math.min(LinkAnimator.FALL_ANIMATION_STATE.length - 1, linkAirborne.fallingFrameCounter / FALL_FRAME_TICKS);
-            return LinkAnimator.FALL_ANIMATION_STATE[frame];
-        }
-
-        if (linkStateMachine.motionState == LINK_MOTION_SWIMMING) {
-            return linkStateMachine.physicsModifier != 0
-                ? LinkAnimator.DIVING_ANIMATION_STATE[walkFrame]
-                : LinkAnimator.SWIMMING_ANIMATION_STATE[direction][walkFrame];
-        }
-
-        // func_002_4338 copies the intermediate ROM carry animation state
-        // directly (for example $37/$39/$3B/$3D). The final carry state is
-        // the regular two-frame lifting list below.
-        if (linkEntityEffects.carryingLiftedObjectState >= 2) {
-            return linkEntityEffects.carryingLiftedObjectState;
-        }
-        // ApplyLinkGroundMotion ($02:4503) sets the step counter to $FF
-        // while linkAirborne.airborne, selecting the alternate normal pose after the flip.
-        int normalFrame = linkAirborne.airborne ? 1 : walkFrame;
-        int baseState = LinkAnimator.ANIMATION_STATE[direction][normalFrame];
-        if (linkEntityEffects.carryingLiftedObjectState == 1) {
-            return LinkAnimator.LIFTING_ANIMATION_STATE[direction][walkFrame];
-        }
-        int override = queryOverride(itemInSlotA());
-        if (override >= 0) {
-            return override;
-        }
-        override = queryOverride(itemInSlotB());
-        if (override >= 0) {
-            return override;
-        }
-        if (linkAirborne.airborne && jumpAnimationFrame < 3 && !linkAirborne.swordSuppressesJumpAnimation()) {
-            return LinkAnimator.JUMP_ANIMATION_STATE[direction][jumpAnimationFrame];
-        }
-        if (spriteSheet != null) {
-            int carriedShield = !gelClinging && playerState != null
-                && (playerState.itemA() == PlayerState.INVENTORY_SHIELD
-                    || playerState.itemB() == PlayerState.INVENTORY_SHIELD)
-                        ? playerState.shieldLevel() : 0;
-            return spriteSheet.walkingAnimationState(romDirectionForJavaDirection(direction),
-                normalFrame, carriedShield, isUsingShield());
-        }
-        if (isUsingShield() && playerState != null && playerState.shieldLevel() > 0) {
-            int[][] shieldTable = playerState.shieldLevel() >= 2
-                ? LinkAnimator.MIRROR_SHIELD_USE_ANIMATION_STATE : LinkAnimator.SHIELD_USE_ANIMATION_STATE;
-            return shieldTable[direction][normalFrame];
-        }
-        return baseState;
+        return linkAnimator.resolveAnimationState();
     }
 
     boolean isLiftTransitionBlockingMotion() {
@@ -1186,54 +926,20 @@ public final class Link implements RocsFeather.JumpTarget {
         };
     }
 
-    private EquipmentItem itemInSlotA() {
+    EquipmentItem itemInSlotA() {
         if (itemRegistry == null || playerState == null) {
             return null;
         }
         return itemRegistry.lookup(playerState.itemA());
     }
 
-    private EquipmentItem itemInSlotB() {
+    EquipmentItem itemInSlotB() {
         if (itemRegistry == null || playerState == null) {
             return null;
         }
         return itemRegistry.lookup(playerState.itemB());
     }
 
-    private int queryOverride(EquipmentItem item) {
-        if (item == null) {
-            return -1;
-        }
-        return item.overrideAnimationState(direction, walkFrame);
-    }
-
-    private static void drawTile(byte[] buffer, Tile tile, int screenX, int screenY,
-                                 boolean flipX, boolean flipY, int[] palette) {
-        if (tile == null) {
-            return;
-        }
-        for (int ty = 0; ty < 8; ty++) {
-            for (int tx = 0; tx < 8; tx++) {
-                int px = screenX + tx;
-                int py = screenY + ty;
-                if (px < 0 || px >= Framebuffer.WIDTH || py < 0 || py >= Framebuffer.HEIGHT) {
-                    continue;
-                }
-                int sx = flipX ? 7 - tx : tx;
-                int sy = flipY ? 7 - ty : ty;
-                int colorIndex = tile.getPixel(sx, sy);
-                if (colorIndex == 0) {
-                    continue; // transparent
-                }
-                int color = palette[colorIndex];
-                int offset = (py * Framebuffer.WIDTH + px) * 4;
-                buffer[offset] = (byte) ((color >> 16) & 0xFF);
-                buffer[offset + 1] = (byte) ((color >> 8) & 0xFF);
-                buffer[offset + 2] = (byte) (color & 0xFF);
-                buffer[offset + 3] = (byte) 0xFF;
-            }
-        }
-    }
     public void setPixelPosition(int pixelX, int pixelY) { linkMotion.setPixelPosition(pixelX, pixelY); }
     public void setRoomEntryPixelPosition(int pixelX, int pixelY) { linkMotion.setRoomEntryPixelPosition(pixelX, pixelY); }
     public void markRoomEntryPosition() { linkMotion.markRoomEntryPosition(); }
@@ -1271,4 +977,14 @@ public final class Link implements RocsFeather.JumpTarget {
                                 int immunityCountdown) { linkEntityEffects.applyWarpState3(romPositionX, visualRomPositionY, immunityCountdown); }
     public void leaveMarinWakeUpBed() { linkEntityEffects.leaveMarinWakeUpBed(); }
     public void clearRoosterCarryState() { linkEntityEffects.clearRoosterCarryState(); }
+    public void showRomFallenPose() { linkAnimator.showRomFallenPose(); }
+    public void showHeldItemPose() { linkAnimator.showHeldItemPose(); }
+    public void showPowerUpPickupPose() { linkAnimator.showPowerUpPickupPose(); }
+    public void showTarinShieldPresentation(int[] palette) { linkAnimator.showTarinShieldPresentation(palette); }
+    public void clearTarinShieldPresentation() { linkAnimator.clearTarinShieldPresentation(); }
+    public void showStandingShieldDownPose() { linkAnimator.showStandingShieldDownPose(); }
+    public void showSwordAcquisitionSpinPose(int countdown) { linkAnimator.showSwordAcquisitionSpinPose(countdown); }
+    public void showSwordAcquisitionFinalPose() { linkAnimator.showSwordAcquisitionFinalPose(); }
+    public void showMarinWakeUpBed(int spriteVariant) { linkAnimator.showMarinWakeUpBed(spriteVariant); }
+    public void render(byte[] displayBuffer, int offsetX, int offsetY) { linkAnimator.render(displayBuffer, offsetX, offsetY); }
 }
