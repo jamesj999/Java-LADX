@@ -268,4 +268,16 @@ public final class RomSymbols {
     public static final RomAddress DungeonSideview1Tiles = new RomAddress(0x0D, 0x7000);
     public static final RomAddress DungeonSideview2Tiles = new RomAddress(0x0D, 0x7800);
     public static final RomAddress MenuTiles = new RomAddress(0x0F, 0x4000);
+    public static final RomAddress DialogBankTable = new RomAddress(0x1C, 0x4741);
+    public static final RomAddress DialogPointerTable = new RomAddress(0x1C, 0x4001);
+    public static final RomAddress LinkAnimationStateTable = new RomAddress(0x20, 0x5319);
+    public static final RomAddress LinkAnimationsLists = new RomAddress(0x02, 0x4910);
+    public static final RomAddress LinkCharacter2Tiles = new RomAddress(0x0C, 0x5800);
+    public static final RomAddress MapSpecialLocationNamesLookupTable = new RomAddress(0x01, 0x5909);
+    public static final RomAddress MapSpecialLocationNamesTable = new RomAddress(0x01, 0x5959);
+    public static final RomAddress SignpostDialogTable = new RomAddress(0x14, 0x5118);
+    public static final RomAddress data_020_5407 = new RomAddress(0x20, 0x5407);
+    public static final RomAddress RoomSpritesheetGroupsTable = new RomAddress(0x20, 0x70D3);
+    public static final RomAddress IndoorEntitySpritesheetsTable = new RomAddress(0x20, 0x763B);
+    public static final RomAddress OverworldEntitySpritesheetsTable = new RomAddress(0x20, 0x73F3);
 }

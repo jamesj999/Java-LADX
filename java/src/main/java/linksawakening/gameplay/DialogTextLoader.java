@@ -1,13 +1,14 @@
 package linksawakening.gameplay;
 
+import linksawakening.rom.*;
 import linksawakening.rom.RomBank;
 
 public final class DialogTextLoader {
 
-    private static final int POINTER_TABLE_BANK = 0x1C;
-    private static final int POINTER_TABLE_ADDR = 0x4001;
-    private static final int BANK_TABLE_BANK = 0x1C;
-    private static final int BANK_TABLE_ADDR = 0x4741;
+    private static final int POINTER_TABLE_BANK = RomSymbols.DialogPointerTable.bank();
+    private static final int POINTER_TABLE_ADDR = RomSymbols.DialogPointerTable.address();
+    private static final int BANK_TABLE_BANK = RomSymbols.DialogBankTable.bank();
+    private static final int BANK_TABLE_ADDR = RomSymbols.DialogBankTable.address();
     private static final int DIALOG_TABLE_SIZE = 0x100;
     private static final int ROM_BANK_MASK = 0x3F;
     private static final int TERMINATOR = 0xFF;
@@ -36,15 +37,15 @@ public final class DialogTextLoader {
         }
         int dialogIndex = dialogRef.globalDialogId();
         int pointerOffset = RomBank.romOffset(POINTER_TABLE_BANK, POINTER_TABLE_ADDR + dialogIndex * 2);
-        int address = Byte.toUnsignedInt(romData[pointerOffset])
-            | (Byte.toUnsignedInt(romData[pointerOffset + 1]) << 8);
+        int address = new Rom(romData).u8(RomAddress.fromOffset(pointerOffset))
+            | (new Rom(romData).u8(RomAddress.fromOffset(pointerOffset + 1)) << 8);
         int bankOffset = RomBank.romOffset(BANK_TABLE_BANK, BANK_TABLE_ADDR + dialogIndex);
-        int bank = Byte.toUnsignedInt(romData[bankOffset]) & ROM_BANK_MASK;
+        int bank = new Rom(romData).u8(RomAddress.fromOffset(bankOffset)) & ROM_BANK_MASK;
         int textOffset = RomBank.romOffset(bank, address);
 
         StringBuilder text = new StringBuilder();
         for (int offset = textOffset; offset < romData.length; offset++) {
-            int codepoint = Byte.toUnsignedInt(romData[offset]);
+            int codepoint = new Rom(romData).u8(RomAddress.fromOffset(offset));
             text.append(decode(codepoint));
             if (codepoint == TERMINATOR || codepoint == ASK) {
                 return text.toString();

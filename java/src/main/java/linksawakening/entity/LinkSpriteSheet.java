@@ -1,5 +1,6 @@
 package linksawakening.entity;
 
+import linksawakening.rom.*;
 import linksawakening.gpu.Tile;
 
 /**
@@ -17,16 +18,15 @@ import linksawakening.gpu.Tile;
  */
 public final class LinkSpriteSheet {
 
-    private static final int BANK_SIZE = 0x4000;
 
-    private static final int LINK_CHARACTER_2_TILES_BANK = 0x0C | 0x20;
-    private static final int LINK_CHARACTER_2_TILES_ADDR = 0x5800;
+    private static final int LINK_CHARACTER_2_TILES_BANK = GbcBanks.adjust(RomSymbols.LinkCharacter2Tiles.bank());
+    private static final int LINK_CHARACTER_2_TILES_ADDR = RomSymbols.LinkCharacter2Tiles.address();
     private static final int LINK_CHARACTER_2_TILES_COUNT = 0x100;
     private static final int TILE_BYTES = 0x10;
 
-    private static final int STATE_TABLE_BANK = 0x20;
-    private static final int STATE_TABLE_ADDR = 0x5319;
-    private static final int ATTRS_TABLE_ADDR = 0x5407;
+    private static final int STATE_TABLE_BANK = RomSymbols.LinkAnimationStateTable.bank();
+    private static final int STATE_TABLE_ADDR = RomSymbols.LinkAnimationStateTable.address();
+    private static final int ATTRS_TABLE_ADDR = RomSymbols.data_020_5407.address();
     // LinkAnimationStateTable contains entries through $77, including the
     // $75/$76 Ocarina poses written by LinkPlayingOcarinaHandler.
     private static final int STATE_TABLE_LENGTH = 120; // entries, 2 bytes each
@@ -53,18 +53,18 @@ public final class LinkSpriteSheet {
         int[] stateTable = new int[STATE_TABLE_LENGTH * 2];
         int stateOffset = romOffset(STATE_TABLE_BANK, STATE_TABLE_ADDR);
         for (int i = 0; i < stateTable.length; i++) {
-            stateTable[i] = Byte.toUnsignedInt(romData[stateOffset + i]);
+            stateTable[i] = new Rom(romData).u8(RomAddress.fromOffset(stateOffset + i));
         }
 
         int[] attrsTable = new int[STATE_TABLE_LENGTH * 2];
         int attrsOffset = romOffset(STATE_TABLE_BANK, ATTRS_TABLE_ADDR);
         for (int i = 0; i < attrsTable.length; i++) {
-            attrsTable[i] = Byte.toUnsignedInt(romData[attrsOffset + i]);
+            attrsTable[i] = new Rom(romData).u8(RomAddress.fromOffset(attrsOffset + i));
         }
 
         int[] walkingStates = new int[5 * 8];
-        int walkingOffset = romOffset(0x02, 0x4910);
-        for (int i = 0; i < walkingStates.length; i++) walkingStates[i] = romData[walkingOffset + i] & 0xFF;
+        int walkingOffset = RomSymbols.LinkAnimationsLists.offset();
+        for (int i = 0; i < walkingStates.length; i++) walkingStates[i] = new Rom(romData).u8(RomAddress.fromOffset(walkingOffset + i));
         return new LinkSpriteSheet(tiles, stateTable, attrsTable, walkingStates);
     }
 
@@ -121,8 +121,8 @@ public final class LinkSpriteSheet {
     private static Tile decodeTile(byte[] romData, int offset) {
         Tile tile = new Tile();
         for (int y = 0; y < 8; y++) {
-            int lowByte = Byte.toUnsignedInt(romData[offset + y * 2]);
-            int highByte = Byte.toUnsignedInt(romData[offset + y * 2 + 1]);
+            int lowByte = new Rom(romData).u8(RomAddress.fromOffset(offset + y * 2));
+            int highByte = new Rom(romData).u8(RomAddress.fromOffset(offset + y * 2 + 1));
             for (int x = 0; x < 8; x++) {
                 int bitIndex = 7 - x;
                 int low = (lowByte >> bitIndex) & 1;
@@ -134,9 +134,6 @@ public final class LinkSpriteSheet {
     }
 
     private static int romOffset(int bank, int address) {
-        if (bank == 0) {
-            return address;
-        }
-        return bank * BANK_SIZE + (address - BANK_SIZE);
+        return new RomAddress(bank, address).offset();
     }
 }

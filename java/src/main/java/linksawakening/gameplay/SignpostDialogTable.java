@@ -1,11 +1,12 @@
 package linksawakening.gameplay;
 
+import linksawakening.rom.*;
 import linksawakening.rom.RomBank;
 
 public final class SignpostDialogTable {
 
-    private static final int SIGNPOST_DIALOG_TABLE_BANK = 0x14;
-    private static final int SIGNPOST_DIALOG_TABLE_ADDR = 0x5118;
+    private static final int SIGNPOST_DIALOG_TABLE_BANK = RomSymbols.SignpostDialogTable.bank();
+    private static final int SIGNPOST_DIALOG_TABLE_ADDR = RomSymbols.SignpostDialogTable.address();
     private static final int ROOM_COUNT = 0x100;
     private static final int DIALOG_083_LOW = 0x83;
     private static final int DIALOG_22D_LOW = 0x2D;
@@ -29,7 +30,7 @@ public final class SignpostDialogTable {
         }
         int[] dialogLowIds = new int[ROOM_COUNT];
         for (int i = 0; i < ROOM_COUNT; i++) {
-            dialogLowIds[i] = Byte.toUnsignedInt(romData[offset + i]);
+            dialogLowIds[i] = new Rom(romData).u8(RomAddress.fromOffset(offset + i));
         }
         return new SignpostDialogTable(dialogLowIds);
     }
